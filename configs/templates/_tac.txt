@@ -1,0 +1,66 @@
+# NOTE: This file uses duplicate VMC_DEFAULT and VM_DEFAULT sections 
+# These duplicate sections are used to override the "internal options" with
+# only the TAC-specific variables.
+
+[USER-DEFINED]
+TAC_WEBSERVICE = $MANAGER_IP
+TAC_WEBSERVICE_PORT = 6060
+TAC_INITIAL_VMCS = need_to_be_configured_by_user 
+
+[VMC_DEFAULTS : TAC_CLOUDCONFIG]
+INITIAL_VMCS = $TAC_INITIAL_VMCS
+ACCESS = ${TAC_WEBSERVICE}:${TAC_WEBSERVICE_PORT}
+CREDENTIALS = $Empty
+EXTRA_INFO = $Empty
+
+[VM_DEFAULTS : TAC_CLOUDCONFIG]
+ACCESS = ${TAC_WEBSERVICE}:${TAC_WEBSERVICE_PORT}
+REAL_IP = $True
+CAPTURE_SUPPORTED = $False
+RUNSTATE_SUPPORTED = $True
+RESIZE_SUPPORTED = $True
+EXTRA_SWAP_DISK = vdb
+
+[AI_DEFAULTS : TAC_CLOUDCONFIG]
+CAPTURE_SUPPORTED = $False
+RUNSTATE_SUPPORTED = $True
+RESIZE_SUPPORTED = $True
+
+[VM_TEMPLATES : TAC_CLOUDCONFIG]
+CLIENT_DAYTRADER = size:micro32, imageids:2, imageid1:cloudbench_root, imageid2:cloudbench_swap
+DRIVER_DAYTRADER = size:micro32, imageids:2, imageid1:cloudbench_root, imageid2:cloudbench_swap
+CLIENT_TRADELITE = size:micro32, imageids:2, imageid1:cloudbench_root, imageid2:cloudbench_swap
+DRIVER_TRADELITE = size:micro32, imageids:2, imageid1:cloudbench_root, imageid2:cloudbench_swap
+DB2 = size:copper32, lb_size:gold32, eclipsed_size:gold32, imageids:2, imageid1:cloudbench_root, imageid2:cloudbench_swap
+WAS = size:iron32, eclipsed_size:gold32, imageids:2, imageid1:cloudbench_root, imageid2:cloudbench_swap
+CLIENT_SPECWEB = size:micro32, imageids:2, imageid1:cloudbench_root, imageid2:cloudbench_swap
+SPECWEBFRONT = size:copper32, eclipsed_size:gold32, imageids:2, imageid1:cloudbench_specweb, imageid2:cloudbench_swap
+SPECWEBBACK = size:nano32, eclipsed_size:gold32, imageids:2, imageid1:cloudbench_specweb, imageid2:cloudbench_swap
+CLIENT_LOST = size:micro32, imageids:2, imageid1:cloudbench_root, imageid2:cloudbench_swap
+LOSTFRONT = size:copper32, eclipsed_size:gold32, imageids:2, imageid1:cloudbench_root, imageid2:cloudbench_swap
+LOSTBACK = size:copper32, eclipsed_size:gold32, imageids:2, imageid1:cloudbench_root, imageid2:cloudbench_swap
+DRIVER_HADOOP = size:nano32, imageids:2, imageid1:cloudbench_root, imageid2:cloudbench_swap
+HADOOPMASTER = size:copper32, eclipsed_size:gold32, imageids:2, imageid1:cloudbench_root, imageid2:cloudbench_swap
+HADOOPSLAVE = size:iron32, eclipsed_size:gold32, imageids:2, imageid1:cloudbench_root, imageid2:cloudbench_swap
+DRIVER_NETPERF = size:nano32, imageids:2, imageid1:cloudbench_root, imageid2:cloudbench_swap
+NETCLIENT = size:iron32, imageids:2, imageid1:cloudbench_root, imageid2:cloudbench_swap
+NETSERVER = size:iron32, imageids:2, imageid1:cloudbench_root, imageid2:cloudbench_swap
+DRIVER_COREMARK = size:nano32, imageids:2, imageid1:cloudbench_root, imageid2:cloudbench_swap
+COREMARK = size:iron32, eclipsed_size:gold32, imageids:2, imageid1:cloudbench_root, imageid2:cloudbench_swap
+CLIENT_WINDOWS = size:nano32, imageids:2, imageid1:cloudbench_root, imageid2:cloudbench_swap
+WINDOWS = size:iron32, imageids:1, imageid1:cloudbench_windows
+DRIVER_FILEBENCH = size:nano32, imageids:2, imageid1:cloudbench_root, imageid2:cloudbench_swap
+FILEBENCH = size:iron32, eclipsed_size:gold32, imageids:2, imageid1:cloudbench_root, imageid2:cloudbench_swap
+DRIVER_FBNFSRD = size:nano32, imageids:2, imageid1:cloudbench_root, imageid2:cloudbench_swap
+STORAGECLIENT = size:iron32, imageids:2, imageid1:cloudbench_root, imageid2:cloudbench_swap
+STORAGESERVER = size:iron32, eclipsed_size:gold32, imageids:2, imageid1:cloudbench_root, imageid2:cloudbench_swap
+TINYVM = size:pico32, imageids:1, imageid1:cloudbench_tinyvm
+RUBIS_APPSRV = size:bronze32, imageids:1, imageid1:cloudbench_rubis_appsrv1
+RUBIS_LB = size:bronze32, imageids:1, imageid1:cloudbench_rubis_loadbalancer
+RUBIS_DRIVER = size:bronze32, imageids:1, imageid1:cloudbench_rubis_driver
+RUBIS_DATABASE = size:bronze32, imageids:1, imageid1:cloudbench_rubis_database
+FEN_HPC = size:bronze32, imageids:1, imageid1:cloudbench_hpc
+CN_HPC = size:bronze32, imageids:1, imageid1:cloudbench_hpc
+DDGEN = size:bronze32, imageids:1, imageid1:cloudbench_hpc
+SPECJBB = size:iron32, eclipsed_size:gold32, imageids:2, imageid1:cloudbench_root, imageid2:cloudbench_swap
+LB = size:iron32, eclipsed_size:gold32, imageids:2, imageid1:cloudbench_root, imageid2:cloudbench_swap

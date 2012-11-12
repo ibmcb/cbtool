@@ -1,0 +1,9 @@
+Create an application 'skeleton' by creating the 
+virtual machine components of an application without
+actually running the application.
+Use 'apprun()' to start the application
+
+The resulting UUID refers to the dormant application as a whole.
+
+Depending on the cloud, the resulting VMs may or may not actually have
+IP addresses associated with them (such as SCP or TAC).

@@ -1,0 +1,54 @@
+    <div id="AttachModal" style="display:none">
+    <div id="AttachContents">
+        <form method='get' action='BOOTDEST/provision'>
+        <input type='hidden' name='object' value='BOOTACTIVE'/>
+        <input type='hidden' name='operation' value='attach'/>
+        <table>
+            BOOTATTACH
+            <tr><td>
+            &nbsp;<button type="submit" class="btn btn-primary">
+            <i class="icon-arrow-right icon-white"></i>&nbsp;Attach</button>
+            </td></tr>
+        </table>
+        <input type='hidden' name='keywords' value='BOOTKEYWORDS'/>
+        </form>
+    </div>
+    </div>
+	<script>
+	var isVisible = false;
+	var clickedAway = false;
+	var pop = $('#attachpop').popover({ 
+	    html : true,
+	    title: "New BOOTOBJECTNAME:",
+	    placement : 'bottom',
+        trigger: 'manual',
+	    template: '<div id="attachpopover" class="popover"><div class="popover-inner"><h3 class="popover-title"></h3><div class="popover-content"><p></p></div></div></div>',
+	    content: function() {
+	      return $('#AttachModal').html();
+	    }
+	  });
+	  /* Allow the popover to close when clicking somewhere else on the screen */
+	  pop.data('popover').tip().css('z-index', 1030).css('margin-left', '200px');
+	  pop.click(function(e) {
+	        $(this).popover('show');
+	        clickedAway = false;
+	        isVisible = true;
+	        e.preventDefault();
+	    });
+
+		$(document).click(function(e) {
+	      if(findParentNode('AttachContents', e.srcElement, 'cbody') == true)
+	      	return;
+	      if(findParentNode('attachpopover', e.srcElement, 'cbody') == true)
+	      	return;
+		  if(isVisible & clickedAway)
+		  {
+		    $('#attachpop').popover('hide')
+		    isVisible = clickedAway = false
+		  }
+		  else
+		  {
+		    clickedAway = true
+		  }
+		});
+	</script>

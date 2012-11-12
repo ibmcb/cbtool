@@ -1,0 +1,23 @@
+Alters (updates) one or more attributes of a VMC (belonging to a Cloud) 
+currently attached to a CloudBench experiment.
+
+This command can only be executed after at least one cloud was attached.
+
+Usage: vmcalter <cloud name> <attribute1>=<value1>,<attribute2>=<value2>,...,<attributeN>=<valueN> <vmc identifier> 
+
+	<cloud name> is the arbitrary name used to identify this cloud within the experiment.
+		If a default cloud was set through the command "clddefault <cloud name>"
+		then this parameter becomes optional.
+
+	<attribute1>=<value1> is a comma-separated attribute list of attribute,value 
+		pairs to be altered. If the attribute does not exist, it will be created.
+
+	<vmc identifier> is the cloud-specific name of the VMC, as listed in the cloud configuration
+		file (e.g., "RegionOne", "Rack3", "Host3").
+
+Example :	
+	(Cloudbench) vmcalter TESTCLOUD cpu_overcommit=2.0 test_host1
+	The following attributes for the VMC object were changed (Cloud TESTCLOUD):
+	|attribute                              |old value                          |new value                          
+	|cpu_overcommit                         |1.5                                |2.0                                
+	(Cloudbench) 

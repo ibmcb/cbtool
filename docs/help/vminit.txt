@@ -1,0 +1,4 @@
+Create a dormant VM without any basic initialization.
+        
+Depending on the cloud, the resulting VM may or may not actually have
+IP addresses associated with them (such as SCP or TAC).

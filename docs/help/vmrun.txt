@@ -1,0 +1,2 @@
+Resume the initialization of a previously created dormant VM
+that was created from vminit()

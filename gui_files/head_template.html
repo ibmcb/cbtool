@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Cloud Rapid Experimentation Toolkit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Cloud Rapid Experimentation Toolkit">
+  <meta name="author" content="Marcio Silva, Michael R. Hines">
+  <link href="BOOTSTRAP/css/bootstrap.css" rel="stylesheet">
+  <link href="CBSTRAP/cloudbench.css" rel="stylesheet">
+  <link href="BOOTSTRAP/css/bootstrap-responsive.css" rel="stylesheet">
+
+  <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <script src="BOOTSTRAP/js/jquery.js"></script>
+  <script src="BOOTSTRAP/js/bootstrap-transition.js"></script>
+  <script src="BOOTSTRAP/js/bootstrap-alert.js"></script>
+  <script src="BOOTSTRAP/js/bootstrap-modal.js"></script>
+  <script src="BOOTSTRAP/js/bootstrap-dropdown.js"></script>
+  <script src="BOOTSTRAP/js/bootstrap-scrollspy.js"></script>
+  <script src="BOOTSTRAP/js/bootstrap-tab.js"></script>
+  <script src="BOOTSTRAP/js/bootstrap-tooltip.js"></script>
+  <script src="BOOTSTRAP/js/bootstrap-popover.js"></script>
+  <script src="BOOTSTRAP/js/bootstrap-button.js"></script>
+  <script src="BOOTSTRAP/js/bootstrap-collapse.js"></script>
+  <script src="BOOTSTRAP/js/bootstrap-carousel.js"></script>
+  <script src="BOOTSTRAP/js/bootstrap-typeahead.js"></script>
+  <script src="BOOTSTRAP/js/bootstrap-affix.js"></script>
+  <!--<script src="BOOTSTRAP/../../../d3.v2.min.js"></script>-->
+  <script src="CBSTRAP/cloudbench.js"></script>
+  
+  </head>
+    <body data-spy='scroll' data-target='.bs-docs-sidebar' id='cbody'>
+    <div style="display:none" id="ConnectModal">
+	    <form  action='BOOTDEST/connect' method='post' enctype="multipart/form-data">
+	    <h5>&nbsp;&nbsp;&nbsp;Config File: <input type="file" name="definitions" id="file" /> </h5>
+	    <p>
+	    &nbsp;<button name='connect' type="submit" class="btn btn-primary" value='empty'>
+	      <i class="icon-arrow-right icon-white"></i>&nbsp;Start</button>
+	    </p>
+	    </form>
+	    <form action='BOOTDEST/connect' method='post'>
+	    <h5>&nbsp;Available Clouds: BOOTAVAILABLECLOUDS</h5>
+	    <p>
+	    &nbsp;
+	    <button name='connect' type="submit" class="btn btn-primary" value='empty'>
+	      <i class="icon-arrow-right icon-white"></i>&nbsp;Connect</button>
+	    </p>
+	    </form>
+	    <form action='BOOTDEST/connect' method='post'>
+	    <h5>&nbsp;Running Clouds: BOOTCLOUDS</h5>
+	    <p>
+	    &nbsp;
+	    <button name='connect' type="submit" class="btn btn-primary" value='empty'>
+	      <i class="icon-arrow-right icon-white"></i>&nbsp;Re-Connect</button>
+	    </p>
+	    </form>
+    </div>
+    <div class="container-fluid">
+       <div class="row-fluid">
+           <div class="span12">
+             <div class="navbar navbar-fixed-top">
+                  <div class="navbar-inner">
+                      <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                      <span class="icon-bar"></span>
+                      <span class="icon-bar"></span>
+                      <span class="icon-bar"></span>
+                      </a>
+                      <a class='brand' href='#'>&nbsp;&nbsp;BOOTCLOUDNAME</a>
+                          <div class="nav-collapse collapse">
+                            <ul class="nav">
+                            BOOTNAV
+                            </ul>
+                      <a href='http://www.ibm.com'><img class='brand nav pull-right' src='CBSTRAP/favicon.ico' width='20px'/></a>
+                  </div><!--/.nav-collapse -->
+               </div><!--navbar-inner-->
+            </div><!--navbar-->
+         </div><!--span12-->
+     </div><!--row-->
+     <div class='row-fluid'>
+BOOTBODY
+     </div>
+		<script>
+			pop = $('#connectpop').popover({ 
+			    html : true,
+			    title: "Start or Re-Connect:",
+			    placement : 'bottom',
+			    content: function() {
+			      return $('#ConnectModal').html();
+			    }
+			  });
+			data = pop.data('popover');
+			if(data != undefined)
+				data.tip().css('z-index', 1030);
+		</script>
+BOOTSHOWPOPOVER
+</body>
+</html>

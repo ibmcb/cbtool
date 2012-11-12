@@ -1,0 +1,66 @@
+[USER-DEFINED]
+SIM_INITIAL_VMCS = need_to_be_configured_by_user 
+
+[VMC_DEFAULTS : SIM_CLOUDCONFIG]
+INITIAL_VMCS = $SIM_INITIAL_VMCS
+ACCESS = $Empty
+CREDENTIALS = $Empty
+EXTRA_INFO = $Empty
+
+[VM_DEFAULTS : SIM_CLOUDCONFIG]
+TRANSFER_FILES = $False
+ACCESS = $Empty
+CREDENTIALS = $Empty
+EXTRA_INFO = $Empty
+RUN_SCRIPTS = $False
+REAL_IP = $False
+CAPTURE_SUPPORTED = $True
+RUNSTATE_SUPPORTED = $True
+RESIZE_SUPPORTED = $False
+
+[AI_DEFAULTS : SIM_CLOUDCONFIG]
+CAPTURE_SUPPORTED = $True
+RUNSTATE_SUPPORTED = $True
+RESIZE_SUPPORTED = $True
+RUN_SCRIPTS = $False
+
+[VM_TEMPLATES : SIM_CLOUDCONFIG]
+CLIENT_DAYTRADER = size:nano32,imageid1:cloudbench_root 
+DRIVER_DAYTRADER = size:nano32,imageid1:cloudbench_root 
+CLIENT_TRADELITE = size:nano32,imageid1:cloudbench_root 
+DRIVER_TRADELITE = size:nano32,imageid1:cloudbench_root 
+DB2 = size:copper32, lb_size:gold32,imageid1:cloudbench_root 
+WAS = size:iron32,imageid1:cloudbench_root 
+CLIENT_SPECWEB = size:micro32,imageid1:cloudbench_root 
+SPECWEBFRONT = size:copper32,imageid1:cloudbench_specweb 
+SPECWEBBACK = size:nano32,imageid1:cloudbench_specweb 
+CLIENT_LOST = size:micro32,imageid1:cloudbench_root 
+LOSTFRONT = size:copper32,imageid1:cloudbench_root 
+LOSTBACK = size:copper32,imageid1:cloudbench_root 
+DRIVER_HADOOP = size:nano32,imageid1:cloudbench_root 
+HADOOPMASTER = size:copper32,imageid1:cloudbench_root 
+HADOOPSLAVE = size:iron32,imageid1:cloudbench_root 
+DRIVER_NETPERF = size:nano32,imageid1:cloudbench_root 
+NETCLIENT = size:iron32,imageid1:cloudbench_root 
+NETSERVER = size:iron32,imageid1:cloudbench_root 
+DRIVER_COREMARK = size:nano32,imageid1:cloudbench_root 
+COREMARK = size:iron32,imageid1:cloudbench_root 
+CLIENT_WINDOWS = size:nano32,imageid1:cloudbench_root 
+WILLFAIL = size:nano32,imageid1:doesnotmatter
+FAILDB2 = size:copper32,imageid1:cloudbench_root
+WINDOWS = size:iron32, imageids:1, imageid1:cloudbench_windows
+DRIVER_FILEBENCH = size:nano32,imageid1:cloudbench_root 
+FILEBENCH = size:iron32,imageid1:cloudbench_root 
+DRIVER_FBNFSRD = size:nano32,imageid1:cloudbench_root 
+STORAGECLIENT = size:iron32,imageid1:cloudbench_root 
+STORAGESERVER = size:iron32,imageid1:cloudbench_root 
+TINYVM = size:pico32, imageids:1, imageid1:cloudbench_tinyvm
+RUBIS_APPSRV = size:bronze32, imageids:1, imageid1:cloudbench_rubis_appsrv1
+RUBIS_LB = size:bronze32, imageids:1, imageid1:cloudbench_rubis_loadbalancer
+RUBIS_DRIVER = size:bronze32, imageids:1, imageid1:cloudbench_rubis_driver
+RUBIS_DATABASE = size:bronze32, imageids:1, imageid1:cloudbench_rubis_database
+FEN_HPC = size:bronze32, imageids:1, imageid1:cloudbench_hpc
+CN_HPC = size:bronze32, imageids:1, imageid1:cloudbench_hpc
+DDGEN = size:bronze32, imageids:1, imageid1:cloudbench_hpc
+SPECJBB = size:iron32,imageid1:cloudbench_root 
+LB = size:iron32,imageid1:cloudbench_root 

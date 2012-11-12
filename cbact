@@ -1,0 +1,637 @@
+#!/usr/bin/env python
+
+#/*******************************************************************************
+# Copyright (c) 2012 IBM Corp.
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#     http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#/*******************************************************************************
+
+from logging import getLogger, StreamHandler, Formatter, Filter, DEBUG, ERROR, \
+INFO, WARN, CRITICAL
+from lib.auxiliary.code_instrumentation import VerbosityFilter, MsgFilter
+from logging.handlers import logging, SysLogHandler, RotatingFileHandler
+from optparse import OptionParser
+from time import sleep, time
+from os import getuid, environ
+from pwd import getpwuid
+from subprocess import Popen, PIPE
+from random import randint
+from uuid import uuid5, NAMESPACE_DNS
+from sys import stdout, path
+
+import sys
+import os
+import signal
+import threading
+
+from lib.operations.active_operations import ActiveObjectOperations
+from lib.operations.passive_operations import PassiveObjectOperations
+from lib.operations.background_operations import BackgroundObjectOperations
+from lib.auxiliary.code_instrumentation import cbdebug, cberr, cbwarn, cbinfo, cbcrit
+from lib.auxiliary.data_ops import str2dic, dic2str
+
+from daemon import DaemonContext
+
+def actuator_cli_parsing() :
+    
+    # Do command line parsing
+    usage = '''usage: %prog [options] 
+    '''
+    
+    parser = OptionParser(usage)
+    
+    parser.add_option("--debug_host", dest = "debug_host", metavar = "<ip address>", \
+                      default = None, \
+                      help = "Point CloudBench to a remote debugger")
+    
+    # Process options
+    parser.add_option("--procid", dest = "processid", metavar = "processid", \
+                      default = "TEST_" + getpwuid(getuid())[0], \
+                      help = "Set the processid")
+    
+    # Parameters
+    parser.add_option("--osp", dest = "osp", metavar = "OSP", \
+                      default = None, \
+                      help ="Set Object Store Parameters")
+    parser.add_option("--cn", dest = "cn", metavar = "CN", \
+                      default = None, \
+                      help ="Set the Cloud name")
+    parser.add_option("--operation", dest = "operation", metavar = "OP", \
+                      default = None, \
+                      help ="Set the Operation")
+    parser.add_option("--oop", dest = "oop", metavar = "OOP", \
+                      default = None, \
+                      help ="Set Object Operations Parameters")
+    parser.add_option("--uuid", dest = "ouuid", metavar = "OUUID", \
+                      default = None, help ="Set Object UUID")
+    
+    parser.add_option("--syslogp", dest = "syslogp", metavar = "SYSLOGP", \
+                      default = None, \
+                      help ="Set syslog port")
+    parser.add_option("--syslogh", dest = "syslogh", metavar = "SYSLOGH", \
+                      default = None, \
+                      help ="Set syslog hostname")
+    parser.add_option("--syslogf", dest = "syslogf", metavar = "SYSLOGF", \
+                      default = None, \
+                      help ="Set syslog facility")
+    
+    parser.add_option("-k", "--keepsession", dest = "keepsession", action = "store_true", \
+                      default = False, help = "Keep previous server session")
+    
+    parser.add_option('--guiport', default='8080', dest='guiport', \
+                      help='GUI Port to serve on (default 8080)')
+    
+    parser.add_option('--guihost', default='0.0.0.0', dest='guihost', \
+                      help='GUI hostname to which to bind (default 0.0.0.0)')
+
+    parser.add_option('--apiport', default='7070', dest='apiport', \
+                      help='GUI Port to serve on (default 7070)')
+    
+    parser.add_option('--apihost', default='127.0.0.1', dest='apihost', \
+                      help='GUI hostname to which to bind (default 127.0.0.1)')
+
+    parser.add_option("--daemon", dest = "daemon", action = "store_true", \
+                  default = False, \
+                  help ="Execute operation in daemonized mode")
+    
+    # Verbosity Options
+    parser.add_option("-v", "--verbosity", dest = "verbosity", metavar = "LV", \
+                      default = -1, help = "Set verbosity level.")
+    parser.add_option("-q", dest = "quiet", action = "store_true", \
+                      help = "Set quiet output.")
+    
+    parser.set_defaults()
+    (options, _args) = parser.parse_args()
+
+    if options.debug_host is not None :
+        import debug
+        print str(sys.path)
+        import pydevd
+        pydevd.settrace(host=options.debug_host)
+        
+    try :
+        _fmsg = ""
+        _home = environ["HOME"]
+        _from_file = False
+        _fn = _home + "/cb_os_parameters.txt"
+        _fh = open(_fn, "r")
+        _fc = _fh.readlines()
+        _fh.close()
+        options.osp = ''
+        for _line in _fc :
+            _line = _line.strip()
+            if _line.count("#OSKN-") :
+                options.osp += "kind:" + _line[6:] + ','
+            elif _line.count("#OSHN-") :
+                options.osp += "hostname:" + _line[6:] + ','
+            elif _line.count("#OSPN-") :
+                options.osp += "port:" + _line[6:] + ','
+            elif _line.count("#OSDN-") :
+                options.osp += "database:" + _line[6:] + ','
+            elif _line.count("#OSTO-") :
+                options.osp += "timeout:" + _line[6:] + ','
+            elif _line.count("#OSCN-") :
+                options.cn = _line[6:]
+            else :
+                True
+        options.osp = options.osp[:-1]
+        _from_file = True
+
+    except IOError, msg :
+        _status = 10
+        _fmsg = str(msg) 
+
+    except OSError, msg :
+        _status = 20
+        _fmsg = str(msg) 
+
+    except Exception, e :
+        _status = 23
+        _fmsg = str(e)
+        
+    finally :
+        if options.operation and options.osp and (options.operation == "cloud-api" or options.operation == "cloud-gui" or options.cn) :
+            if (options.operation == "cloud-api" or options.operation == "cloud-gui") and (not options.apiport or not options.apihost) :
+                print "The following parameters are mandatory: --apiport, --apihost"
+                exit(19)
+
+            return options
+        else :
+            print "The following parameters are mandatory: --osp, --operation, --oop, --cn"
+            exit(18)
+            
+        if not options.cn and (not options.syslogp or not options.syslogf or not options.syslogh):
+                print "The following parameters are mandatory: --apiport, --apihost, --syslogf, --syslogh, --syslogp"
+                exit(20)
+
+def setup_object_store_adapter(os_kind) :
+    '''
+    TBD
+    '''
+    try :
+        _fmsg = ""
+        _status = 100
+
+        _os_adapter = __import__("lib.stores." + os_kind + "_datastore_adapter", \
+                                 fromlist=[os_kind.capitalize() + "MgdConn"])
+
+        _os_conn_class = getattr(_os_adapter, os_kind.capitalize() + "MgdConn")
+        _status = 0
+        
+    except ImportError, msg :
+        _status = 20
+        _fmsg = str(msg)
+
+    except AttributeError, msg :
+        _status = 20
+        _fmsg = str(msg)
+        
+    finally :
+        if _status :
+            _msg = "Failure while setting up object store adapter: " + _fmsg
+            print _msg
+            exit(2)
+        else :
+            _msg = "Object store adapter set up successfully."
+            return _os_conn_class
+
+def setup_syslog(operation, facility, verbosity, port, hostname, quiet = False) :
+    '''
+    TBD
+    '''
+    try :
+        _fmsg = ""
+        _status = 100
+        # HACK ALERT - A very crude "syslog facility selector"
+        _syslog_selector = {}
+        _syslog_selector["16"] = SysLogHandler.LOG_LOCAL0
+        _syslog_selector["17"] = SysLogHandler.LOG_LOCAL1
+        _syslog_selector["18"] = SysLogHandler.LOG_LOCAL2
+        _syslog_selector["19"] = SysLogHandler.LOG_LOCAL3
+        _syslog_selector["20"] = SysLogHandler.LOG_LOCAL4
+        _syslog_selector["21"] = SysLogHandler.LOG_LOCAL5
+        _syslog_selector["22"] = SysLogHandler.LOG_LOCAL6
+        _syslog_selector["23"] = SysLogHandler.LOG_LOCAL7
+  
+        _verbosity = int(verbosity)
+
+        logger = getLogger()
+
+        # Reset the logging handlers
+        while len(logger.handlers) != 0 :
+            logger.removeHandler(logger.handlers[0])
+
+        if not hostname or not port :
+            hdlr = StreamHandler(stdout)
+        else :
+            _facility = int(facility)
+
+            if _facility > 23 or _facility < 16 :
+                _facility = 23
+
+            hdlr = SysLogHandler(address = (hostname, \
+                                            int(port)), \
+                                            facility=_syslog_selector[str(_facility)])
+
+        formatter = Formatter('%(asctime)s %(levelname)s %(module)s %(message)s')
+        hdlr.setFormatter(formatter)
+        logger.addHandler(hdlr)
+
+        if _verbosity :
+            if int(_verbosity) >= 6 :
+                logger.setLevel(DEBUG)
+            elif int(_verbosity) >= 5 :
+                # Used to filter out all function calls from all modules in the
+                # "stores" subdirectory.
+                hdlr.addFilter(VerbosityFilter("stores"))
+                hdlr.addFilter(VerbosityFilter("datastore"))
+                logger.setLevel(DEBUG)
+            elif int(_verbosity) >= 4 :
+                # Used to filter out all function calls from the "auxiliary"
+                # subdirectory.
+                hdlr.addFilter(VerbosityFilter("auxiliary"))
+                # Used to filter out all function calls from all modules in the
+                # "stores" subdirectory.
+                hdlr.addFilter(VerbosityFilter("stores"))
+                hdlr.addFilter(VerbosityFilter("datastore"))
+                logger.setLevel(DEBUG)
+            elif int(_verbosity) >= 3 :
+                # Filter out gmetad logging statements
+                hdlr.addFilter(VerbosityFilter("gmetad"))
+                # Used to filter out all function calls from the "auxiliary"
+                # subdirectory.
+                hdlr.addFilter(VerbosityFilter("auxiliary"))
+                # Used to filter out all function calls from the "remote"
+                # subdirectory.
+                hdlr.addFilter(VerbosityFilter("remote"))
+                # Used to filter out all function calls from all modules in the
+                # "stores" subdirectory.
+                hdlr.addFilter(VerbosityFilter("stores"))
+                hdlr.addFilter(VerbosityFilter("datastore"))
+                hdlr.addFilter(MsgFilter("Exit point"))
+                hdlr.addFilter(MsgFilter("Entry point"))
+                logger.setLevel(DEBUG)
+            elif int(_verbosity) >= 2 :
+                # Filter out gmetad logging statements
+                hdlr.addFilter(VerbosityFilter("gmetad"))
+                # Used to filter out all function calls from the "auxiliary"
+                # subdirectory.
+                hdlr.addFilter(VerbosityFilter("auxiliary"))
+                # Used to filter out all function calls from all modules in the
+                # "collectors" subdirectory.
+                hdlr.addFilter(VerbosityFilter("collectors"))
+                # Used to filter out all function calls from the "remote"
+                # subdirectory.
+                hdlr.addFilter(VerbosityFilter("remote"))
+                # Used to filter out all function calls from all modules in the
+                # "stores" subdirectory.
+                hdlr.addFilter(VerbosityFilter("stores"))
+                hdlr.addFilter(VerbosityFilter("datastore"))
+                logger.setLevel(DEBUG)
+            elif int(_verbosity) == 1 :
+                # Filter out gmetad logging statements
+                hdlr.addFilter(VerbosityFilter("gmetad"))
+                # Used to filter out all function calls from the "auxiliary"
+                # subdirectory.
+                hdlr.addFilter(VerbosityFilter("auxiliary"))
+                # Used to filter out all function calls from all modules in the
+                # "stores" subdirectory.
+                hdlr.addFilter(VerbosityFilter("stores"))
+                hdlr.addFilter(VerbosityFilter("datastore"))
+                # Used to filter out all function calls from all modules in the
+                # "collectors" subdirectory.
+                hdlr.addFilter(VerbosityFilter("collectors"))
+                # Used to filter out all function calls from the "remote"
+                # subdirectory.
+                hdlr.addFilter(VerbosityFilter("remote"))
+                # Used to filter out all function calls from all modules in the
+                # "stores" subdirectory.
+                hdlr.addFilter(VerbosityFilter("clouds"))
+                logger.setLevel(DEBUG)
+        else :
+            logger.setLevel(INFO)
+
+        if quiet :
+            logger.setLevel(ERROR)
+
+        _status = 0
+
+    except Exception, e :
+        _status = 23
+        _fmsg = str(e)
+
+    finally :
+        if _status :
+            _msg = "Failure while setting up syslog channel: " + _fmsg
+            print _msg
+            exit(2)
+        else :
+            _msg = "Syslog channel set up successfully."
+            return True
+
+def main(options) :
+    '''
+    TBD
+    '''
+    try :
+        threading.current_thread().abort = False
+        _status = 100
+        _fmsg = ""
+        _local_process = False
+        _uuid = None
+        _oscp = str2dic(options.osp)
+
+        _obj_type, _operation = options.operation.split('-')
+        
+        if options.cn :
+            _oscp["cloud_name"] = options.cn
+        
+            _oscc = setup_object_store_adapter(_oscp["kind"])                     
+            _osci = _oscc(options.processid, _oscp["hostname"], int(_oscp["port"]),\
+                           int(_oscp["database"]), float(_oscp["timeout"]), \
+                           options.processid + ':' + options.cn)
+    
+            _mscp = _osci.get_object("GLOBAL", False, "metricstore", False)
+            _log_defaults = _osci.get_object("GLOBAL", False, "logstore", False)
+            _dir_defaults = _osci.get_object("GLOBAL", False, "space", False)
+            _base_dir = _dir_defaults["base_dir"]
+        else :
+            _log_defaults = {
+                             "hostname" : options.syslogh,
+                             "port" : options.syslogp,
+                             _operation + "_facility" : options.syslogf,
+                             "verbosity" : options.verbosity
+                             }
+
+        if str(options.verbosity).strip() != "-1" :
+            _log_defaults["verbosity"] = options.verbosity 
+
+        setup_syslog(_operation, \
+                        _log_defaults[_operation + "_facility"], \
+                        _log_defaults["verbosity"], \
+                        _log_defaults["port"], \
+                        _log_defaults["hostname"], \
+                        options.quiet)
+
+        if options.oop :
+            _parameters = options.oop.split(',')
+            _parameters = ' '.join(_parameters)
+        else :
+            _parameters = "none"
+
+        _msg = "Operation is \"" + _operation + "\" and object is \""
+        _msg += _obj_type.upper() + "\". Object operation parameters are: " 
+        _msg += _parameters + '.'
+        cbdebug(_msg)
+
+        if options.cn :
+            _active_obj_command = ActiveObjectOperations(options.processid, _oscp, _mscp)
+            _passive_obj_command = PassiveObjectOperations(options.processid, _oscp, _mscp)
+            _background_obj_command = BackgroundObjectOperations(options.processid, _oscp, _mscp)
+        else :
+            _active_obj_command = ActiveObjectOperations(options.processid, _oscp)
+            _passive_obj_command = PassiveObjectOperations(options.processid, _oscp)
+            _background_obj_command = BackgroundObjectOperations(options.processid, _oscp)
+
+        if _operation.count("attach") :
+            
+            _local_process = True
+            _obj_attr_list = {}
+
+            _obj_attr_list["async"] = "true"
+
+            if options.ouuid :
+                _obj_attr_list["uuid"] = options.ouuid
+            else :
+                _obj_attr_list["uuid"] = str(uuid5(NAMESPACE_DNS, \
+                                                       str(randint(0, \
+                                                                   1000000000000000000)))).upper()
+
+            _uuid = _obj_attr_list["uuid"]
+
+            if _obj_type.upper() == "VM" :
+                _obj_attr_list["ai"] = "none"
+                _obj_attr_list["ai_name"] = "none"                
+                _obj_attr_list["aidrs"] = "none"
+                _obj_attr_list["aidrs_name"] = "none"
+                _obj_attr_list["pattern"] = "none"
+                _obj_attr_list["type"] = "none"
+            else :
+                True
+
+            if _operation == "attachall" and _obj_type.upper() == "VMC" :
+                _status, _fmsg, _object = _active_obj_command.vmcattachall(_obj_attr_list, \
+                                                                           _parameters, \
+                                                                        options.operation)
+            else :
+                _status, _fmsg, _object = _active_obj_command.objattach(_obj_attr_list, \
+                                                                    _parameters, \
+                                                                    options.operation)
+
+        elif _operation.count("submit") :
+
+            _local_process = True
+            _uuid = options.ouuid
+
+            if _obj_type.upper() == "AIDR" :
+                _obj_type = "AIDRS"
+                _status, _msg = _active_obj_command.aidsubmit(options.cn, _base_dir, _obj_type, _uuid)
+            elif _obj_type.upper() == "VMCR" :
+                _obj_type = "VMCRS"
+                _status, _msg = _active_obj_command.vmcrsubmit(options.cn, _base_dir, _obj_type, _uuid)
+            else :
+                _msg = "Unknown Submitter Type"
+                _status = 99
+
+        elif _operation.count("subscribe") :
+            
+            _obj_type = "AI"
+            _local_process = False
+            _uuid = options.ouuid
+            _osci.subscribe_channel(_obj_type, _uuid, 3600)
+            _status = 0
+            
+        elif _operation.count("api") :
+            _local_process = True
+            _obj_type = "GLOBAL"
+            _status, _msg = _passive_obj_command.run_api_service(_passive_obj_command, \
+                                                                 _active_obj_command, \
+                                                                 _background_obj_command, \
+                                                                 options.debug_host,
+                                                                 options.apiport,
+                                                                 options.apihost)
+
+        elif _operation.count("gui") :
+            from lib.auxiliary.gui import gui 
+            _local_process = True
+            _obj_type = "GLOBAL"
+            gui(options)
+            _status = 0
+            _msg = "Complete"
+
+        elif _operation.count("monitor_host") :
+            _local_process = True
+            _uuid = options.ouuid
+            _obj_type = "GLOBAL"
+            _status, _msg = _passive_obj_command.monitor_performance(options.cn, _uuid, host = True)
+            _status = 0
+
+        elif _operation.count("monitor_vm") :
+            _local_process = True
+            _obj_type = "GLOBAL"
+            _status, _msg = _passive_obj_command.monitor_performance(options.cn, None, vm = True)
+            _status = 0
+            
+        elif _operation.count("watch") :
+            _local_process = True
+            _obj_type = "GLOBAL"
+            _status, _msg = _passive_obj_command.cloud_watch(options.cn, _uuid)
+            _status = 0
+            
+        elif _operation.count("execute") :
+            
+            _obj_type = "AI"            
+            _local_process = False
+            _uuid = options.ouuid
+
+            _status, _msg = _active_obj_command.aiexecute(options.cn, \
+                                                          _obj_type, _uuid)
+
+        elif _operation.count("capture") :
+ 
+            _local_process = True
+            _uuid = options.ouuid
+
+            _obj_attr_list = {}
+
+            _obj_attr_list["async"] = "true"
+
+            if _obj_type.upper() == "VM" :
+                _obj_type = "VM"
+                _status, _fmsg, _object = _active_obj_command.vmcapture(_obj_attr_list, \
+                                                                        _parameters, \
+                                                                        options.operation)
+            elif _obj_type.upper() == "AI" :
+                _obj_type = "AI"
+                _status, _fmsg, _object = _active_obj_command.aicapture(_obj_attr_list, \
+                                                                        _parameters, \
+                                                                        options.operation)
+
+        elif _operation.count("runstate") :
+                    
+            _local_process = True
+            _uuid = options.ouuid
+
+            _obj_attr_list = {}
+
+            if _obj_type.upper() == "VM" :
+                _obj_type = "VM"
+                _status, _fmsg, _object = _active_obj_command.vmrunstate(_obj_attr_list, \
+                                                                        _parameters, \
+                                                                        options.operation)
+            elif _obj_type.upper() == "AI" :
+                _obj_type = "AI"
+                _status, _fmsg, _object = _active_obj_command.airunstate(_obj_attr_list, \
+                                                                        _parameters, \
+                                                                        options.operation)
+        
+        elif _operation.count("fail") :
+            _local_process = True
+            _uuid = options.ouuid
+
+            _obj_attr_list = {}
+
+            if _obj_type.upper() == "VM" :
+                _status, _fmsg, _object = _active_obj_command.vmfail_repair(_obj_attr_list, \
+                                                                            _parameters, \
+                                                                            options.operation)
+
+            elif _obj_type.upper() == "HOST" :
+                _status, _fmsg, _object = _active_obj_command.hostfail_repair(_obj_attr_list, \
+                                                                              _parameters, \
+                                                                              options.operation)
+                
+        elif _operation.count("repair") :
+                    
+            _local_process = True
+            _uuid = options.ouuid
+
+            _obj_attr_list = {}
+
+            if _obj_type.upper() == "VM" :
+                _status, _fmsg, _object = _active_obj_command.vmfail_repair(_obj_attr_list, \
+                                                                            _parameters, \
+                                                                            options.operation)
+            elif _obj_type.upper() == "HOST" :
+                _status, _fmsg, _object = _active_obj_command.hostfail_repair(_obj_attr_list, \
+                                                                              _parameters, \
+                                                                              options.operation)
+        
+        elif _operation.count("detach") :
+
+            _local_process = True
+            _uuid = options.ouuid
+
+            # The dictionary needs to be reset anyway.
+            _obj_attr_list = {}
+
+            _status, _fmsg, _object = _active_obj_command.objdetach(_obj_attr_list, \
+                                                                    _parameters, \
+                                                                    options.operation)
+
+        else :
+            _local_process = False
+            _fmsg = "Unknown operation: " + _operation
+            _status = 45
+
+    except KeyboardInterrupt:
+        _status = 27
+        _fmsg = "CTRL-C Exiting"
+
+    except Exception, e :
+        _status = 23
+        _fmsg = str(e)
+
+    finally :
+
+        if _local_process and options.cn :
+            _obj_id = str(_uuid) + '-' + _operation
+            _msg = "Removing the entry from the \"running_processes\" list " 
+            _msg += " on the object store (FQVN: " + options.processid
+            _msg += ':' + options.cn + ":GLOBAL:running_processes"
+            cbdebug(_msg)
+            _active_obj_command.update_process_list(options.cn, \
+                                                    _obj_type.upper(), \
+                                                    _obj_id, None, "remov")
+        if _status :
+            _msg = "Operation \""  + options.operation + "\" failure: " + _fmsg
+            cberr(_msg)
+            exit(2)
+        else :
+            _msg = "Operation \""  + options.operation + "\" success."
+            cbdebug(_msg)
+#            exit(0)
+            os.kill(os.getpid(), signal.SIGKILL)
+
+# Executed code
+_options = actuator_cli_parsing()
+
+MainThread = threading.current_thread()
+MainThread.abort = False
+MainThread.aborted = False
+
+if _options.daemon :
+    with DaemonContext(working_directory="/tmp", pidfile=None) :
+        main(_options)
+else :
+    main(_options)

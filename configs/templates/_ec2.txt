@@ -1,0 +1,59 @@
+[USER-DEFINED]
+EC2_ACCESS = need_to_be_configured_by_user 
+EC2_SECURITY_GROUP = need_to_be_configured_by_user 
+EC2_CREDENTIALS = need_to_be_configured_by_user 
+EC2_KEY_NAME = need_to_be_configured_by_user 
+EC2_INITIAL_VMCS = need_to_be_configured_by_user 
+
+[VMC_DEFAULTS : EC2_CLOUDCONFIG ]
+ACCESS = $EC2_ACCESS
+CREDENTIALS = $EC2_CREDENTIALS
+KEY_NAME = $EC2_KEY_NAME
+INITIAL_VMCS = $EC2_INITIAL_VMCS
+EXTRA_INFO = $EMPTY
+
+[VM_DEFAULTS : EC2_CLOUDCONFIG ]
+ACCESS = $EC2_ACCESS
+CREDENTIALS = $EC2_CREDENTIALS
+KEY_NAME = $EC2_KEY_NAME
+SECURITY_GROUPS = $EC2_SECURITY_GROUP
+REAL_IP = $True
+CAPTURE_SUPPORTED = $True
+RUNSTATE_SUPPORTED = $True
+RESIZE_SUPPORTED = $False
+
+[AI_DEFAULTS : EC2_CLOUDCONFIG ]
+CAPTURE_SUPPORTED = $True
+RUNSTATE_SUPPORTED = $True
+RESIZE_SUPPORTED = $True
+
+[VM_TEMPLATES : EC2_CLOUDCONFIG ]
+CLIENT_DAYTRADER = size:t1.micro, imageid1:ami-b3e44dda
+DRIVER_DAYTRADER = size:t1.micro, imageid1:ami-b3e44dda
+CLIENT_TRADELITE = size:t1.micro, imageid1:ami-b3e44dda
+DRIVER_TRADELIE = size:t1.micro, imageid1:ami-b3e44dda
+DB2 = size:m1.large, imageid1:ami-b3e44dda
+WAS = size:m1.large, imageid1:ami-b3e44dda
+CLIENT_SPECWEB = size:t1.micro, imageid1:ami-b3e44dda
+SPECWEBFRONT = size:m1.large, class:value, imageid1:ami-43e74e2a
+SPECWEBBACK = size:m1.large, class:value, imageid1:ami-43e74e2a
+CLIENT_LOST = size:t1.micro, imageid1:ami-b3e44dda
+LOSTFRONT = size:m1.large, class:value, imageid1:ami-b3e44dda
+LOSTBACK = size:m1.large, class:value, imageid1:ami-b3e44dda
+DRIVER_HADOOP = size:t1.micro, imageid1:ami-b3e44dda
+HADOOPMASTER = size:m1.large, imageid1:ami-b3e44dda
+HADOOPSLAVE = size:m1.large, imageid1:ami-b3e44dda
+DRIVER_NETPERF = size:t1.micro, imageid1:ami-b3e44dda
+NETCLIENT = size:m1.small, imageid1:ami-b3e44dda
+NETSERVER = size:m1.small, imageid1:ami-b3e44dda
+DRIVER_COREMARK = size:t1.micro, imageid1:ami-b3e44dda
+COREMARK = size:m1.small, imageid1:ami-b3e44dda
+CLIENT_WINDOWS = size:t1.micro, imageid1:ami-b3e44dda
+WINDOWS = size:m1.large, imageid1:????
+DRIVER_FILEBENCH = size:t1.micro, imageid1:ami-b3e44dda
+FILEBENCH = size:m1.small, imageid1:ami-b3e44dda
+DRIVER_FBNFSRD = size:t1.micro, imageid1:ami-b3e44dda
+STORAGECLIENT = size:m1.small, imageid1:ami-b3e44dda
+STORAGESERVER = size:m1.small, imageid1:ami-b3e44dda
+LB = size:t1.micro, imageid1:ami-b3e44dda
+TINYVM = size:t1.micro, imageid1:ami-b3e44dda

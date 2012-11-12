@@ -1,0 +1,18 @@
+Cleans up (i.e., remove all leftover VMs) from a VMCs (belonging to a Cloud) 
+currently attached to a CloudBench experiment.
+
+This command can only be executed after at least one cloud was attached.
+
+Usage: vmccleanup <cloud name> <vmc identifier> 
+
+	<cloud name> is the arbitrary name used to identify this cloud within the experiment.
+		If a default cloud was set through the command "clddefault <cloud name>"
+		then this parameter becomes optional.
+
+	<vmc identifier> is the cloud-specific name of the VMC, as listed in the cloud configuration
+		file (e.g., "RegionOne", "Rack3", "Host3").
+
+Examples :	
+	(Cloudbench) vmccleanup TESTCLOUD test_host1
+	VMC object named "test_host1" was sucessfully cleaned up on this cloudbench experiment.
+	(Cloudbench) 

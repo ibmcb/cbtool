@@ -1,0 +1,21 @@
+Alters (updates) one or more attributes of a VM currently attached to a CloudBench experiment.
+
+This command can only be executed after at least one cloud was attached.
+
+Usage: vmalter <cloud name> <attribute1>=<value1>,<attribute2>=<value2>,...,<attributeN>=<valueN> <vm identifier> 
+
+	<cloud name> is the arbitrary name used to identify this cloud within the experiment.
+		If a default cloud was set through the command "clddefault <cloud name>"
+		then this parameter becomes optional.
+
+	<attribute1>=<value1> is a comma-separated attribute list of attribute,value 
+		pairs to be altered. If the attribute does not exist, it will be created.
+
+	<vm identifier> is the CloudBench-specific name of the VM (i.e., "vm_<counter>").
+
+Example :	
+	(Cloudbench) vmalter TESTCLOUD update_frequency=5 vm_5
+	The following attributes for the VM object were changed (Cloud TESTCLOUD):
+	|attribute                              |old value                          |new value                          
+	|update_frequecy                        |15                                 |5                                  
+	(Cloudbench) 

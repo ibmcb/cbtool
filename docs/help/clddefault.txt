@@ -1,0 +1,16 @@
+Sets a default cloud for a CloudBench experiment.
+
+If a default cloud is set, the <cloud name> parameter required by any other command
+becomes optional
+
+This command can only be executed after at least one cloud was attached
+
+Usage: clddefault <cloud name>
+
+	<cloud name> is the arbitrary name used to identify this cloud within the experiment.
+
+Example :	
+	(Cloudbench) clddefault TESTCLOUD
+	Default cloud set to "TESTCLOUD". From now on, all commands will assume this
+	as the value of the otherwise mandatory <cloud name> parameter
+	(Cloudbench) 

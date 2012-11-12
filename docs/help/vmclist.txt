@@ -1,0 +1,19 @@
+Lists all VMCs (belonging to a Cloud) currently attached to a CloudBench experiment.
+
+This command can only be executed after at least one cloud was attached.
+
+Usage: vmclist <cloud name>
+
+	<cloud name> is the arbitrary name used to identify this cloud within the experiment.
+		If a default cloud was set through the command "clddefault <cloud name>"
+		then this parameter becomes optional.
+
+Example :	
+	(Cloudbench) vmclist TESTCLOUD
+	The following VMCs are attached to this cloudbench experiment (Cloud TESTCLOUD) :
+	|name                    |host_count      |pool                    |cloud_hostname                  |cloud_ip         
+	|test_host2              |1               |sut                     |test_host2                      |82.243.225.207   
+	|test_host3              |1               |sut                     |test_host3                      |13.111.51.228    
+	|test_host4              |1               |lg                      |test_host4                      |182.44.6.233     
+	
+	(Cloudbench) 

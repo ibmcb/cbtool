@@ -1,0 +1,31 @@
+Detaches (i.e., removes) a Cloud from an CloudBench experiment. All objects 
+belonging to this cloud (i.e., Virtual Machines, Application Instances) are 
+terminated and all Cloud attributes are removed from CloudBench's "Object Store".
+
+Usage: clddetach <cloud name>
+
+	<cloud name> is the arbitrary name used to identify this cloud within the experiment.
+		If a default cloud was set through the command "clddefault <cloud name>"
+		then this parameter becomes optional.
+
+Example :	
+	(Cloudbench) clddetach TESTCLOUD
+	Removing the cloud-specific "monitor" and "dashboard" processes from this cloudbench experiment.
+	Waiting for all active AIDRS daemons to finish gracefully....
+	All AIDRS (daemons and objects were removed).
+	Giving extra time for all AIs to finish attachment/detachment gracefully......
+	Done
+	Removing all AI objects attached to this cloudbench experiment.
+	Giving extra time for all VMs to finish attachment/detachment gracefully......
+	Done
+	Removing all VM objects attached to this cloudbench experiment.
+	Giving extra time for all SVMs to finish attachment/detachment gracefully......
+	Done
+	Removing all SVM objects attached to this cloudbench experiment.
+	Giving extra time for all VMCs to finish attachment/detachment gracefully......
+	Done
+	Removing all VMC objects attached to this cloudbench experiment.
+	Removing all contents from Object Store (GLOBAL objects,VIEWS, etc.)
+	Disassociating default cloud: TESTCLOUD
+	Cloud TESTCLOUD was successfully detached from this cloudbench experiment.
+	(Cloudbench) 

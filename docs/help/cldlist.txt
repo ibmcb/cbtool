@@ -1,0 +1,14 @@
+Lists all Clouds currently attached to a CloudBench experiment
+
+This command can only be executed after at least one cloud was attached.
+
+Usage: cldlist
+
+Example :	
+	(Cloudbench) cldlist
+	The following CLOUDs are attached to this cloudbench experiment (Cloud "ITSELF") :
+	|name                    |model                   |description             
+	|TESTCLOUD3              |sim                     |Cloudbench SimCloud.    
+	|TESTCLOUD2              |sim                     |Cloudbench SimCloud.    
+	|TESTCLOUD               |sim                     |Cloudbench SimCloud.    
+	(Cloudbench) 

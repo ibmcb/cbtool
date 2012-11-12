@@ -1,0 +1,1 @@
+Inform the API that you have updated your local cache of listed objects and are not expecting to consult the API for a while.

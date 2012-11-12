@@ -1,0 +1,47 @@
+Attaches (i.e., registers) a new Virtual Machine Container (VMC), belonging to 
+a given Cloud, to a CloudBench experiment.
+
+At least one VMC is required before Virtual Machines and Application Instances 
+can be created.
+
+This command can only be executed after at least one cloud was attached.
+
+Usage: vmcattach <cloud name> <vmc name> [pool] [mode] 
+
+	<cloud name> is the arbitrary name used to identify this cloud within the experiment.
+		If a default cloud was set through the command "clddefault <cloud name>"
+		then this parameter becomes optional.
+
+	<vmc name> is a cloud-specific VMC identifier. The identifiers must be listed
+		on the cloud configuration file, read by the cldattach command. If the
+		special keyword "all" is used, the all VMCs listed on the cloud configuration
+		file will be attached in parallel (but still synchronous)
+
+	[pool] allows VMCs to be arbitrarily grouped into pools. Later, Virtual Machines
+		/Application Instances can be created/deployed directly into pools, instead
+		of individual VMCs. The default pool for newly attached VMCs (without
+		any pool specification) is "SUT".
+		 
+	[mode] indicates the execution mode. The default execution mode is synchronous,
+		which blocks the command line execution until the operation is completed.
+		By adding the keyword "async" to the command, a new daemon is spawned, and
+		the attachment process occurs in the background.
+
+Examples :	
+	(Cloudbench) vmcattach TESTCLOUD test_host2
+	 status: VMC C654AB93-8540-5B36-9E40-EE8DAC019F3F was successfully registered on SimCloud "TESTCLOUD".
+	VMC test_host2 (C654AB93-8540-5B36-9E40-EE8DAC019F3F) attached. ssh-accessible at: 167.137.138.5 (test_host2).
+	(Cloudbench) 
+	
+	(Cloudbench) vmcattach TESTCLOUD all
+	 status: VMC 827C6F41-22B6-5515-85C3-461EEE6DB241 was successfully registered on SimCloud "TESTCLOUD".
+	 status: VMC 5854D597-2E8B-586F-B9BD-29D3EA2A9102 was successfully registered on SimCloud "TESTCLOUD".
+	 status: VMC D90E07F0-6E70-5DDA-BDFA-6570CAF1A4C4 was successfully registered on SimCloud "TESTCLOUD".
+	 status: VMC 7062FA49-A10E-586B-869D-AB026CD6D77D was successfully registered on SimCloud "TESTCLOUD".
+	All VMCs successfully attached to this cloudbench experiment.
+	(Cloudbench) 
+	
+	(Cloudbench) vmattach TESTCLOUD tinyvm async
+	Background operation execution success.Operation "vmc-attach" will be processed asynchronously, through the command "/home/cbrtuser/cloudbench/cloudbench_actuator.py --procid=TEST_cbrtuser --osp=port:49014,timeout:70,hostname:9.2.208.60,database:0,protocol:TCP,kind:redis --oop=TESTCLOUD,test_host2 --operation=vmc-attach --cn=TESTCLOUD --uuid=49E616FB-0431-5C36-9326-462EA5FE0678 --daemon". The process id is 24615.
+
+	(Cloudbench) 

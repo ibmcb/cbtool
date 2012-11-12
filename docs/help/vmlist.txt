@@ -1,0 +1,20 @@
+Lists all VMs currently attached to a CloudBench experiment.
+
+This command can only be executed after at least one cloud was attached.
+
+Usage: vmlist <cloud name>
+
+	<cloud name> is the arbitrary name used to identify this cloud within the experiment.
+		If a default cloud was set through the command "clddefault <cloud name>"
+		then this parameter becomes optional.
+
+Example :	
+	(Cloudbench) vmlist TESTCLOUD 
+	The following VMs are attached to this cloudbench experiment (Cloud TESTCLOUD) :
+	|name          |role                |size        |cloud_ip        |host_name            |vmc_pool            |ai      |aidrs      |svm_stub_vmc     
+	|vm_31         |db2                 |copper32    |103.29.151.210  |test_host3           |SUT                 |none    |none       |none             
+	|vm_33         |db2                 |gold32      |181.236.235.158 |test_host4           |LG                  |none    |none       |none             
+	|vm_34         |windows             |gold32      |198.174.230.83  |test_host4           |LG                  |none    |none       |none             
+	|vm_35         |specjbb             |iron32      |183.54.219.18   |test_host2           |SUT                 |none    |none       |none             
+	
+	(Cloudbench) 

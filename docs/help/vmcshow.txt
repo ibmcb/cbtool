@@ -1,0 +1,86 @@
+Displays all attributes of a VMC (belonging to a Cloud) currently attached to a
+CloudBench experiment.
+
+This command can only be executed after at least one cloud was attached.
+
+Usage: Usage: vmcshow <cloud name> <attribute1>,<attribute2>,...,<attributeN> <vmc identifier> 
+
+	<cloud name> is the arbitrary name used to identify this cloud within the experiment.
+		If a default cloud was set through the command "clddefault <cloud name>"
+		then this parameter becomes optional.
+
+	<attributeX> is a comma-separated attribute list to be shown.
+		Alternatively, the special keyword "all" can be used show all attributes
+		of a VMC.
+
+	<vmc identifier> is the cloud-specific name of the VMC, as listed in the cloud configuration
+		file (e.g., "RegionOne", "Rack3", "Host3").
+
+Examples :	
+	(Cloudbench) vmcshow TESTCLOUD nr_vms test_host1
+	The VMC object test_host1, attached to this cloudbench experiment, has the following attributes (Cloud TESTCLOUD:
+	|attribute (VMC object key)               |value                                
+	|nr_vms                                   |37                                 
+	
+	(Cloudbench) 
+	
+	(Cloudbench) vmcshow TESTCLOUD all test_host1
+	The VMC object test_host1, attached to this cloudbench experiment, has the following attributes (Cloud TESTCLOUD:
+	|attribute (VMC object key)               |value                                
+	|access                                   |                                     
+	|ai_arrived                               |0                                    
+	|ai_departed                              |0                                    
+	|ai_failed                                |0                                    
+	|ai_reservations                          |0                                    
+	|arrival                                  |1339567217                           
+	|attach_parallel                          |true                                 
+	|attempts                                 |2                                    
+	|base_dir                                 |/home/maugusto/cloudbench            
+	|cleanup_on_attach                        |True                                 
+	|cleanup_on_detach                        |True                                 
+	|cloud_hostname                           |test_host1                           
+	|cloud_ip                                 |101.253.200.111                      
+	|cloud_name                               |TESTCLOUD                            
+	|cloud_uuid                               |EFAF5EE0-5D4C-50F5-9761-F0A9C7B1BBA5 
+	|collect_from_host                        |True                                 
+	|command                                  |vmc-attach TESTCLOUD test_host1 sut  
+	|command_originated                       |1339567217                           
+	|counter                                  |1                                    
+	|cpu_overcommit                           |1.0                                  
+	|credentials                              |                                     
+	|extra_info                               |                                     
+	|host_count                               |1                                    
+	|host_list                                |{'EFAF5EE0-5D4C-50F5-9761-F0A9C7B1BBA5': {'username': 'maugusto', 'function': 'hypervisor', 'mgt_003_provisioning_request_completed': 0, 'name': 'host_test_host1', 'notification': 'False', 'counter': 1, 'arrival': 1339567217, 'mgt_002_provisioning_request_sent': 0, 'cloud_ip': '101.253.200.111', 'mgt_001_provisioning_request_originated': 1339567217, 'cores': 4, 'model': 'sim', 'cloud_hostname': 'test_host1', 'vmc_name': 'test_host1', 'cloud_uuid': 'EFAF5EE0-5D4C-50F5-9761-F0A9C7B1BBA5', 'pool': 'sut', 'uuid': 'EFAF5EE0-5D4C-50F5-9761-F0A9C7B1BBA5'}}
+	|hosts                                    |EFAF5EE0-5D4C-50F5-9761-F0A9C7B1BBA5 
+	|identity                                 |/home/maugusto/cloudbench/credentials/common/klab_id_rsa
+	|instance                                 |TEST_maugusto:TESTCLOUD              
+	|max_vm_reservations                      |100000                               
+	|memory_overcommit                        |1.0                                  
+	|mgt_001_provisioning_request_originated  |1339567217                           
+	|mgt_002_provisioning_request_sent        |0                                    
+	|mgt_003_provisioning_request_completed   |0                                    
+	|model                                    |sim                                  
+	|name                                     |test_host1                           
+	|network_overcommit                       |1.0                                  
+	|notification                             |False                                
+	|nr_vms                                   |37                                 
+	|operation                                |vmc-attach                           
+	|parameters                               |TESTCLOUD test_host1 sut             
+	|pool                                     |sut                                  
+	|replication_port_used                    |                                     
+	|replication_vmcs                         |                                     
+	|storage_overcommit                       |1.0                                  
+	|timeout                                  |240                                  
+	|update_attempts                          |36                                   
+	|update_frequency                         |1                                    
+	|username                                 |maugusto                             
+	|uuid                                     |08D594A7-A8CF-544A-B573-D3BF44CCA5D9 
+	|vm_arrived                               |0                                    
+	|vm_departed                              |0                                    
+	|vm_failed                                |0                                    
+	|vm_reservations                          |0                                    
+	|vmc_arrived                              |0                                    
+	|vmc_departed                             |0                                    
+	|vmc_failed                               |0                                    
+	
+	(Cloudbench) 

@@ -1,0 +1,1 @@
+Stop FT replication for an existing instance and optionally prematurely failover the primary to the secondary VM.

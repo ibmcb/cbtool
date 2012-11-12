@@ -1,0 +1,24 @@
+Alters (updates) one or more attributes of a cloud currently attached to a 
+CloudBench experiment.
+
+This command can only be executed after at least one cloud was attached
+
+Usage: cldalter <cloud name> <attribute> <key>=<value>
+
+	<cloud name> is the arbitrary name used to identify this cloud within the experiment.
+		If a default cloud was set through the command "clddefault <cloud name>"
+		then this parameter becomes optional.
+
+	<attribute> is the name of a set of key,value pair grouped as one "global object".
+		The list of global objects can be obtained by the use of the cldshow command.
+		If the attribute does not exist, it will be created.
+
+	<key>=<value> represents a list of comma separated key,value pairs for a given
+		attribute.
+
+Example :	
+	(Cloudbench) cldalter TESTCLOUD admission_control ai_max_reservations=20000
+	The attribute "admission_control" on Cloud TESTCLOUD was modified:
+	|"sub-attribute" (key)                |old value                          |new value                          
+	|ai_max_reservations                  |100000                             |20000                              
+	(Cloudbench) 

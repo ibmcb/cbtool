@@ -1,0 +1,1 @@
+Prematurely failover an existing pair of FT replicated objects.

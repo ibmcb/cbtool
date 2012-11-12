@@ -1,0 +1,291 @@
+############################# INTERNAL PARAMETERS #############################
+# You should not touch it unless you are absolutely sure of what you are doing!
+# Proceed at your own risk. You have been warned.
+
+[USER-DEFINED]
+# Variable $IP_AUTO attempts to auto-discover IP address
+MANAGER_IP = $IP_AUTO
+MAIN_UPDATE_FREQUENCY = 5
+MAIN_UPDATE_ATTEMPTS = 36
+MAIN_NOTIFICATION = $False
+MAIN_ATTEMPTS = 2
+MAIN_TIMEOUT = 240
+# Variable $USER auto-selects current username
+MAIN_USERNAME = $USER_AUTO
+# Name of the ssh key pair (two files are supposed to exist inside the 
+# "credentials" directory, bogus_id_rsa and bogus_id_rsa.pub
+MAIN_SSH_KEY_NAME = bogus_id_rsa
+# This is the username created inside the VMs
+MAIN_LOGIN = klabuser
+# Variable $PATH_TO_TOOL attempts to auto-selects the appropriate path 
+MAIN_BASE_DIR = $PATH_TO_TOOL
+
+[SETUP]
+GLOBAL_OBJECT_LIST = setup,logstore,metricstore,dash_defaults,mon_defaults,space,time,vmc_defaults,vm_defaults,svm_defaults,ai_defaults,aidrs_defaults,vmcrs_defaults,firs_defaults,vm_templates,ai_templates,aidrs_templates,vmcrs_templates,query,admission_control,api_defaults,gui_defaults
+
+[SPACE]
+BASE_DIR = $MAIN_BASE_DIR
+INSTANCE_DIR = /tmp/$PROCESSID
+BINARIES_DIR = $BASE_DIR/binaries
+CERTIFICATES_DIR = $BASE_DIR/certificates
+CONFIGURATION_TEMPLATES_DIR = $BASE_DIR/configuration_templates
+SCRIPTS_DIR = $BASE_DIR/scripts
+CREDENTIALS_DIR = $BASE_DIR/credentials
+DAEMON_WORKING_DIR = $INSTANCE_DIR
+STORES_WORKING_DIR = $BASE_DIR/stores
+USERNAME = $MAIN_USERNAME
+SSH_KEY_NAME = $MAIN_SSH_KEY_NAME
+# This variable should match what the layout of the VM image uses (user name and directory)
+VM_DAEMON_DIR = /home/klabuser
+#  The "cloudbench/jar" part of the directory is hardcoded in lib/active_operations.py
+#  and the directory layout of the 'cloudbench.git' source distribution
+JARS_DIR = /home/klabuser/cloudbench/jar
+
+[TIME]
+USERNAME = $MAIN_USERNAME
+START_TIME = $DATE
+EXPERIMENT_ID = EXP 
+STEP_DELAY = 5
+EXTERNAL_TIMEOUT = 360
+EXTERNAL_TRIES = 2
+EXTERNAL_TIMEOUT = 30
+INTERNAL_TRIES = 2
+
+[QUERY]
+USERNAME = $MAIN_USERNAME
+OBJECT_TYPE_LIST = VMC, HOST, VM, SVM, AI, AIDRS, VMCRS, FIRS
+HOST = BYUSERNAME, BYVMC
+VMC = BYPOOL, BYUSERNAME
+VM = BYUSERNAME, BYVMC, BYHOST, BYROLE, BYTYPE, BYAI, BYAIDRS
+SVM = BYUSERNAME, BYVMC, BYROLE, BYTYPE, BYAI, BYAIDRS
+AI = BYUSERNAME, BYTYPE, BYAIDRS
+AIDRS = BYUSERNAME, BYPATTERN
+VMCRS = BYUSERNAME, BYTYPE
+FIRS = BYUSERNAME, BYSCOPE
+MANDATORY_TAGS = name, cloud_hostname, cloud_ip
+CLOUD_ATTRIBUTES = name, model, description, all, instance, username, client_should_refresh, start_time, all_vmcs_attached
+
+[ADMISSION_CONTROL]
+VMC_MAX_RESERVATIONS = 100000
+VM_MAX_RESERVATIONS = 100000 
+SVM_MAX_RESERVATIONS = 100000
+AI_MAX_RESERVATIONS = 100000
+AIDRS_MAX_RESERVATIONS = 100000
+VMCRS_MAX_RESERVATIONS = 100000
+FIRS_MAX_RESERVATIONS = 100000
+
+[VMC_DEFAULTS]
+USERNAME = $MAIN_USERNAME
+CREDENTIALS = $EMPTY
+INITIAL_VMCS = $EMPTY
+TIMEOUT = $MAIN_TIMEOUT
+ATTEMPTS = $MAIN_ATTEMPTS
+NOTIFICATION = $MAIN_NOTIFICATION
+UPDATE_FREQUENCY = $MAIN_UPDATE_FREQUENCY
+UPDATE_ATTEMPTS = $MAIN_UPDATE_ATTEMPTS
+MAX_VM_RESERVATIONS = 100000 
+MEMORY_OVERCOMMIT = 1.0
+CPU_OVERCOMMIT = 1.0
+NETWORK_OVERCOMMIT = 1.0
+STORAGE_OVERCOMMIT = 1.0
+CLEANUP_ON_ATTACH = $True
+CLEANUP_ON_DETACH = $True
+REPLICATION_VMCS = $EMPTY
+DETACH_PARALLELISM = 20
+DISCOVER_HOSTS = $True
+
+[VM_DEFAULTS]
+USERNAME = $MAIN_USERNAME
+LOGIN = $MAIN_LOGIN
+SSH_KEY_NAME = $MAIN_SSH_KEY_NAME
+UPDATE_FREQUENCY = $MAIN_UPDATE_FREQUENCY
+UPDATE_ATTEMPTS = $MAIN_UPDATE_ATTEMPTS
+TIMEOUT = $MAIN_TIMEOUT
+ATTEMPTS = $MAIN_ATTEMPTS
+NOTIFICATION = $MAIN_NOTIFICATION
+RUN_SCRIPTS = $True
+TRANSFER_FILES = $True
+BOOT_TIME = 90
+# Any VM which contains the string "client" on his role name will be created
+# on the "LG" pool, if this pools exists.
+CLIENT_PREF_POOL = lg
+# Any VM which contains the string "driver" on his role name will be created
+# on the "LG" pool, if this pools exists.
+DRIVER_PREF_POOL = lg
+SVM_STUB = $False
+SVM_STUB_UUID = $EMPTY
+SVM_STUB_NAME = $EMPTY
+SVM_STUB_VMC  = none
+SVM_DESTINATION = $EMPTY
+QEMU_DEBUG = $False
+QEMU_DEBUG_PORT_BASE = 12300
+QEMU_DEBUG_PORT_MAX = 13300
+QEMU_DEBUG_PORT = $EMPTY
+ECLIPSED = $False
+DETACH_PARALLELISM = 20
+RUNSTATE_PARALLELISM = 5
+RANDOMIZE_IMAGE_NAME = $False
+
+[SVM_DEFAULTS]
+SSH_KEY_NAME = $MAIN_SSH_KEY_NAME
+REPLICATION = $True
+REPLICATION_PORT_BASE = 4000
+REPLICATION_PORT_MAX  = 5000
+REPLICATION_PORT = $EMPTY
+SVM_QEMU_DEBUG = $False
+SVM_QEMU_DEBUG_PORT_BASE = 12300
+SVM_QEMU_DEBUG_PORT_MAX = 13300
+SVM_QEMU_DEBUG_PORT = $EMPTY
+RDMA = $False
+RDMA_PORT_BASE = 14300
+RDMA_PORT_MAX = 15300
+RDMA_PORT = $EMPTY
+DETACH_PARALLELISM = 20
+
+[AI_DEFAULTS]
+USERNAME = $MAIN_USERNAME
+LOGIN = $MAIN_LOGIN
+SSH_KEY_NAME = $MAIN_SSH_KEY_NAME
+UPDATE_FREQUENCY = $MAIN_UPDATE_FREQUENCY
+UPDATE_ATTEMPTS = $MAIN_UPDATE_ATTEMPTS
+TIMEOUT = $MAIN_TIMEOUT
+ATTEMPTS = $MAIN_ATTEMPTS
+NOTIFICATION = $MAIN_NOTIFICATION
+VM_CREATION = explicit
+VM_DESTRUCTION = explicit
+MODE = controllable
+RUN_SCRIPTS = $True
+LOG_OUTPUT_COMMAND = $True
+SAVE_ON_ATTACH = $False
+SECONDS_BEFORE_SAVE = 0
+DONT_START_LOAD_MANAGER = $False
+REPLICATED_VMS = 0
+ATTACH_PARALLELISM = 1
+DETACH_PARALLELISM = 20
+RUNSTATE_PARALLELISM = 5
+
+[AIDRS_DEFAULTS]
+USERNAME = $MAIN_USERNAME
+LOGIN = $MAIN_LOGIN
+SSH_KEY_NAME = $MAIN_SSH_KEY_NAME
+SUBMITTER = $True
+UPDATE_FREQUENCY = $MAIN_UPDATE_FREQUENCY
+UPDATE_ATTEMPTS = $MAIN_UPDATE_ATTEMPTS
+NOTIFICATION = $MAIN_NOTIFICATION
+DETACH_PARALLELISM = 20
+# This controls the number of simultaneously running AI daemons
+# Critical who run CB inside a VM with limited memory =)
+# Also for anyone planning to run on their laptop or
+# servers with limited memory
+# Each daemon process takes up at least 16 MB of memory, so 100 can easily
+# surpass 1GB of memory. We need a reasonable default (50), increase if necessary
+DAEMON_PARALLELISM = 50 
+
+[VMCRS_DEFAULTS]
+USERNAME = $MAIN_USERNAME
+LOGIN = $MAIN_LOGIN
+SSH_KEY_NAME = $MAIN_SSH_KEY_NAME
+SUBMITTER = $True 
+UPDATE_FREQUENCY = $MAIN_UPDATE_FREQUENCY
+UPDATE_ATTEMPTS = $MAIN_UPDATE_ATTEMPTS
+NOTIFICATION = $MAIN_NOTIFICATION
+DETACH_PARALLELISM = 20
+
+[FIRS_DEFAULTS]
+USERNAME = $MAIN_USERNAME
+LOGIN = $MAIN_LOGIN
+SSH_KEY_NAME = $MAIN_SSH_KEY_NAME
+SUBMITTER = $True
+SWITCH_IP = $EMPTY
+HOSTS = $EMPTY
+UPDATE_FREQUENCY = $MAIN_UPDATE_FREQUENCY
+UPDATE_ATTEMPTS = $MAIN_UPDATE_ATTEMPTS
+NOTIFICATION = $MAIN_NOTIFICATION
+DETACH_PARALLELISM = 20
+
+[DASH_DEFAULTS]
+DASHBOARD_HOSTNAME = $MANAGER_IP
+DASHBOARD_PORT = 8080
+# This is a basic dashboard configuration that filters out fields
+# for objects that don't make sense. Additional filters can be
+# added by clicking on the dashboard and saving the configuration URL
+# in the user's own configuration file
+DASHBOARD_PARAMETERS = dashboard?kb2mb=no&failedvm=yes&4k2mb=no&b2mb=no&p=yes&h=yes&s=yes&a=yes&filter=s-vmc_name,s-vms,h-type,h-vmc_name,a-vmc_name,h-aidrs_name,h-size,h-age,h-host_name,h-ai_name,h-role,p-vms,a-vms,p-latest_update
+
+[MON_DEFAULTS]
+USERNAME = $MAIN_USERNAME
+DATA_FILE_LOCATION = /home/$MAIN_USERNAME
+PROTOCOL = TCP
+HOSTNAME = $MANAGER_IP
+TIMEOUT = $MAIN_TIMEOUT
+TIMESERVER = $MANAGER_IP
+COLLECT_FROM_HOST = $False
+COLLECT_FROM_GUEST = $False
+COLLECTOR_KIND = ganglia
+COLLECTOR_EXECUTABLE_PATH_SUFFIX = 3rd_party/monitor-core/gmetad-python/gmetad.py
+COLLECTOR_PLUGINS_DIR_SUFFIX = 3rd_party/monitor-core/gmetad-python/plugins
+COLLECTOR_PROTOCOL = UDP
+COLLECTOR_MULTICAST_IP = 239.2.11.71
+COLLECTOR_MULTICAST_PORT = 8649
+COLLECTOR_AGGREGATOR_HOST_ADDRESS = $MANAGER_IP
+COLLECTOR_HOST_PORT = 8649
+COLLECTOR_VM_PORT = 8650
+COLLECTOR_AGGREGATOR_PORT = 8651
+COLLECTOR_SUMMARIZER_PORT = 8652
+FILLER_STRING=NA
+
+# Attributes recorded during management operations
+TRACE_ATTRIBUTES = command_originated, command, name, vmc_arrived, vmc_departed, vmc_failed, vm_reservations, vm_arrived, vm_arriving, vm_departed, vm_failed, ai_reservations, ai_arrived, ai_departed, ai_failed
+HOST_ATTRIBUTES = uuid, name, cloud_ip, cloud_name, model, cloud_hostname, nr_vms
+VM_ATTRIBUTES = uuid, name, cloud_ip, last_known_state, cloud_name, model, cloud_hostname, vmc_name, vmc_cloud_ip, host_name, host_cloud_ip, role, size, imageid1, ai, ai_name, type, aidrs, aidrs_name, pattern
+
+### Layout of the trace file
+TRACE_HEADER = TRACE_ATTRIBUTES
+
+### Layout of the management metrics file
+# Layout "components"
+VM_ID1 = uuid, name, last_known_state, cloud_ip, cloud_name, model, cloud_hostname, host_name, host_cloud_ip, vmc_name, vmc_cloud_ip, role, size, imageid1, ai, ai_name, type, aidrs, aidrs_name, pattern
+HS_ID1 = uuid, name, cloud_ip, model, vmc_name, vmc_cloud_ip
+CRT_M = mgt_001_provisioning_request_originated, mgt_002_provisioning_request_sent, mgt_003_provisioning_request_completed, mgt_004_network_acessible, mgt_005_file_transfer, mgt_006_application_start
+
+CAP_M = mgt_101_capture_request_originated, mgt_102_capture_request_sent, mgt_103_capture_request_completed
+RST_M = mgt_201_runstate_request_originated, mgt_202_runstate_request_sent, mgt_203_runstate_request_completed
+DST_M = mgt_901_deprovisioning_request_originated, mgt_902_deprovisioning_request_sent, mgt_903_deprovisioning_request_completed
+
+FLR_M = mgt_999_provisioning_request_failed
+# Actual layout (do not prefix these variables with $)
+VM_MANAGEMENT_METRICS_HEADER = VM_ID1, CRT_M, CAP_M, RST_M, DST_M, FLR_M 
+HOST_MANAGEMENT_METRICS_HEADER = HS_ID1, CRT_M, DST_M
+
+### Layout of the runtime metrics file
+# Layout "components"
+TSTAMP = time, time_h
+VM_ID2 = uuid, name, role, ai_name, type
+HS_ID2 = uuid, name
+#CPU_M = cpu_speed, cores, cpu_num, proc_total, proc_run, cpu_idle, cpu_aidle, cpu_user, cpu_system, cpu_wio, cpu_intr, cpu_sintr, cpu_nice
+CPU_M = cpu_speed, cores, cpu_num, proc_total, proc_run, cpu_idle, cpu_aidle, cpu_user, cpu_system, cpu_wio, cpu_nice
+MEM_M = mem_total, mem_free, mem_cached, mem_buffers, mem_shared
+SWAP_M = swap_total, swap_free, swap_procs_running, swap_in_flight, swap_procs_blocked, swap_KB_read, swap_ios_read, swap_KB_write, swap_ios_write
+NET_M = pkts_in, bytes_in, pkts_out, bytes_out
+DSK_M = disk_total, disk_free, ds_in_flight, ds_KB_read, ds_ios_read, ds_KB_write, ds_ios_write
+APP_M = app_load_id, app_load_level, app_throughput, app_latency
+# Actual layout (do not prefix these variables with $)
+VM_RUNTIME_OS_METRICS_HEADER = TSTAMP, VM_ID2, CPU_M, MEM_M, SWAP_M, NET_M, DSK_M
+VM_RUNTIME_APP_METRICS_HEADER = TSTAMP, VM_ID2, APP_M
+HOST_RUNTIME_OS_METRICS_HEADER = TSTAMP, HS_ID2, CPU_M, MEM_M, SWAP_M, NET_M, DSK_M 
+#
+REPORTED_MANAGEMENT_VM_METRIC_NAMES = VM_ID1, CRT_M, CAP_M, RST_M, DST_M, FLR_M 
+REPORTED_RUNTIME_OS_HOST_METRIC_NAMES = CPU_M, MEM_M, SWAP_M, NET_M, DSK_M
+REPORTED_RUNTIME_OS_VM_METRIC_NAMES = CPU_M, MEM_M, SWAP_M, NET_M, DSK_M
+REPORTED_RUNTIME_APP_VM_METRIC_NAMES = app_load_id, app_load_level, app_throughput, app_latency
+
+[API_DEFAULTS]
+PORT = 7070
+PROTOCOL = TCP
+HOSTNAME = $MANAGER_IP
+PARAMETERS = $EMPTY
+
+[GUI_DEFAULTS]
+PORT = 8080
+PROTOCOL = TCP
+HOSTNAME = 0.0.0.0

@@ -1,0 +1,2 @@
+Periodically poll the FT standby stub for a status update.
+This will print replication performance statistics to the CLI.

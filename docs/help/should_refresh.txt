@@ -1,0 +1,1 @@
+Indicates to the client whether or not sufficient state has changed in the API to warrant retrieving an updated list of objects to monitor.

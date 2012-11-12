@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+
+#/*******************************************************************************
+# Copyright (c) 2012 IBM Corp.
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#     http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#/*******************************************************************************
+
+source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
+
+LOAD_LEVEL=$1
+LOAD_DURATION=$2
+LOAD_ID=$3
+
+if [[ -z "$LOAD_LEVEL" || -z "$LOAD_DURATION" || -z "$LOAD_ID" ]]
+then
+	syslog_netcat "Usage: cb_netperf.sh <load level> <load duration> <load_id>"
+	exit 1
+fi
+
+LOAD_GENERATOR_IP=`get_my_ai_attribute load_generator_ip`
+LOAD_GENERATOR_TARGET_IP=`get_my_ai_attribute load_generator_target_ip`
+
+netperf=`which netperf`
+
+declare -A CMDLINE_START
+
+CMDLINE_START[1]="-t TCP_STREAM"
+CMDLINE_START[2]="-t TCP_MAERTS"
+CMDLINE_START[3]="-t UDP_STREAM"
+CMDLINE_START[4]="-t TCP_RR"
+CMDLINE_START[5]="-t TCP_CC"
+CMDLINE_START[6]="-t TCP_CRR"
+CMDLINE_START[7]="-t UDP_RR"
+
+CMDLINE_END="-D 10 -H ${LOAD_GENERATOR_TARGET_IP} -l ${LOAD_DURATION}"
+
+ARRAY_SIZE=${#CMDLINE_START[*]}
+if [ ${LOAD_LEVEL} -gt $ARRAY_SIZE ]; then
+	CMDLINE="$netperf ${CMDLINE_START[${ARRAY_SIZE}]} $CMDLINE_END"
+elif [ ${LOAD_LEVEL} -lt 1 ]; then
+	CMDLINE="$netperf ${CMDLINE_START[1]} $CMDLINE_END"
+else
+	CMDLINE="$netperf ${CMDLINE_START[${LOAD_LEVEL}]} $CMDLINE_END"
+fi
+
+syslog_netcat "Benchmarking netperf SUT: NET_CLIENT=${LOAD_GENERATOR_IP} -> NET_SERVER=${LOAD_GENERATOR_TARGET_IP} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID})"
+
+OUTPUT_FILE=`mktemp`
+
+source ~/cb_barrier.sh start
+
+syslog_netcat "Command line is: ${CMDLINE}. Output file is ${OUTPUT_FILE}"
+if [ x"${log_output_command}" == x"true" ]; then
+	syslog_netcat "Command output will be shown"
+	$CMDLINE 2>&1 | while read line ; do
+		syslog_netcat "$line"
+		echo $line >> $OUTPUT_FILE
+	done
+else
+	syslog_netcat "Command output will NOT be shown"
+	$CMDLINE 2>&1 >> $OUTPUT_FILE
+fi
+
+syslog_netcat "netperf run complete. Will collect and report the results"
+
+if [ ${LOAD_LEVEL} -le 2 ]; then
+	bw=`tail -1 ${OUTPUT_FILE} | awk '{ print $5 }' | tr -d ' '`
+	tp="-1"
+elif [  ${LOAD_LEVEL} -eq 3 ]; then
+	bw=`tail -2 ${OUTPUT_FILE} | head -1 | awk '{ print $4 }' | tr -d ' '`
+	tp="-1"
+else
+	bw="-1"
+	tp=`tail -2 ${OUTPUT_FILE} | head -1 | awk '{ print $6 }' | tr -d ' '`
+fi
+
+report_app_metrics load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_duration:${LOAD_DURATION}:sec throughput:$tp:tps bandwidth:$bw:MBps
+
+rm ${OUTPUT_FILE}
+
+exit 0

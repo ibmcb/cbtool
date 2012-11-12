@@ -1,0 +1,21 @@
+       </div>
+       <div class="span2">
+        <div class="accordion" id="commands">
+            <div class="accordion-group">
+                <div class="accordion-heading">
+                    <a class='accordion-toggle'
+                    data-toggle='collapse' data-parent='#commands'
+                    href='#commandcollapse'>Recent CLI Commands Executed:</a>
+                </div>
+                <div id='commandcollapse' class='accordion-body collapse in'>
+                    <div class='accordion-inner' id='commanddump'>
+                BOOTSPINNER&nbsp;Loading Commands...
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div> <!--row-->
+    </div> <!--container-->
+    <script>
+    go('#commanddump', 'BOOTDEST/commands', '#commandcontent', "CloudBench is unreachable. Will try again later...", true, false, true);
+    </script>

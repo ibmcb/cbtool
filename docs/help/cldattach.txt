@@ -1,0 +1,33 @@
+Attaches (i.e., instantiates) a new cloud, effectively starting a CloudBench 
+experiment. Parses a "cloud defaults " file (containing cloud attributes/key,value 
+pairs) and loads it on CloudBench's "Object Store".
+
+This is the first command that has to be executed on an experiment, and its 
+execution is idempotent. If this command is applied to an already attached cloud,
+it will just return a success message.
+
+Usage: cldattach <cloud model> <cloud name> [definitions file]
+
+	<cloud model> is a three letter acronym that design the cloud type
+		Currently, the following cloud types are supported:"
+        nac - Cloudbench nanocloud
+		emc - Cloudbench emulated cloud
+		sim - Cloudbench simulated cloud
+		scp1 - IBM Smart Cloud Provisioning 1.X
+		scp2 - IBM Smart Cloud Provisioning 2.X
+		sce - IBM Smart Cloud Enterprise
+		ec2 - Amazon Elastic Compute Cloud
+		osk - OpenStack (Essex release only)
+
+	[definitions file] is the string contents of a configuration file
+		If omitted, cloudbench will look for the following file names:
+			<username>_cloud_defaults.txt
+			cloud_defaults.txt
+
+	<cloud name> is an arbitrary name used to identify this cloud within the experiment.
+
+Example :	
+	(Cloudbench) cldattach sim TESTCLOUD
+ 	status: Checking if services are running (may take a while the first time)...
+	The "sim" named "TESTCLOUD" was successfully attached to this cloudbench experiment. The instance identifier is TEST_cbrtuser:TESTCLOUD. The experiment identifier is EXP_06_13_2012_05_35_55_AM_EDT
+	(Cloudbench) 

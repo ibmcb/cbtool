@@ -1,0 +1,39 @@
+Detaches (i.e., unregisters) one or all VMs attached to
+ a CloudBench experiment.
+
+This command can only be executed after at least one cloud was attached.
+
+Usage: vmdetach <cloud name> <vmc identifier> [force] [mode]
+
+	<cloud name> is the arbitrary name used to identify this cloud within the experiment.
+		If a default cloud was set through the command "clddefault <cloud name>"
+		then this parameter becomes optional.
+
+	<vm identifier> is the CloudBench-specific name of the VM (i.e., "vm_<counter>").
+		If the special keyword "all" is used, then all VMs currently attached will
+		be removed in parallel detached in parallel (but still synchronous).
+
+	[force] detaches the VMC, even if there are still VMs currently created on it.
+		Basically used for CloudBench internal operations.
+		 
+	[mode] indicates the execution mode. The default execution mode is synchronous,
+		which blocks the command line execution until the operation is completed.
+		By adding the keyword "async" to the command, a new daemon is spawned, and
+		the attachment process occurs in the background.
+
+Examples :	
+	(Cloudbench) vmdetach TESTCLOUD vm_32
+	 status: VM 642C137C-D72F-5E89-8DBA-7E1CBAFB9F21 was successfully destroyed on SimCloud "TESTCLOUD".
+	VM object 642C137C-D72F-5E89-8DBA-7E1CBAFB9F21 (named "vm_32") was sucessfully detached from this cloudbench experiment.
+	(Cloudbench) 
+	
+	(Cloudbench) vmdetach TESTCLOUD vm_33 async
+	Background operation execution success.Operation "vm-detach" will be processed asynchronously, through the command "/home/cbrtuser/cloudbench/cloudbench_actuator.py --procid=TEST_cbrtuser --osp=port:49014,timeout:70,hostname:9.2.208.60,database:0,protocol:TCP,kind:redis --oop=TESTCLOUD,vm_33 --operation=vm-detach --cn=TESTCLOUD --uuid=B4BE1D3E-4602-5710-8A24-B245856ED297 --daemon". The process id is 30669.
+	(Cloudbench)
+	
+	(Cloudbench) vmdetach TESTCLOUD all
+	 status: VM 1EA7D73B-DC2E-5741-BB0D-85031FC45352 was successfully destroyed on SimCloud "TESTCLOUD".
+	 status: VM 2FCCA61C-4D94-503E-B4A5-1A98C766F1A6 was successfully destroyed on SimCloud "TESTCLOUD".
+	 status: VM 90F30C79-0548-55C0-8507-4BD15FADCBD4 was successfully destroyed on SimCloud "TESTCLOUD".
+	All VMs successfully detached
+	(Cloudbench) 

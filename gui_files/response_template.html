@@ -1,0 +1,38 @@
+Your configuration file is not compatible with the GUI.<br>
+<br>
+To do so, please add the following to your configuration file:<br>
+<br>
+[USER-DEFINED]<br>
+CLOUDOPTION_NAME1 = cldattach model1 NAME1, vmcattach all<br>
+CLOUDOPTION_NAME2 = cldattach model2 NAME2, vmcattach all<br>
+...<br>
+CLOUDOPTION_NAMEX = cldattach modelX NAMEX, vmcattach all<br>
+<br>
+[CATEGORY : CLOUDOPTION_NAMEX]<br>
+KEY = VALUE<br>
+<br>
+# For each per-cloud category, suffix the category with the name of the cloud<br>
+# to which the request configuration options<br>
+# should belong.<br>
+<br>
+# Where:
+# NAMEX = An arbitrary identifier chosen by you, <br>
+#  one for as many clouds as you want to be able<br>
+#  to use through the user interface.<br>
+#  modelX = the model of the respective cloud (ec2, osk, scp, tac, etc...)<br>
+<br>
+Example:<br> 
+<br>
+[USER-DEFINED]<br>
+CLOUDOPTION_OPENSTACK = cldattach osk OPENSTACK, vmcattach all<br>
+CLOUDOPTION_REDHAT = cldattach tac REDHAT, vmcattach all     <br>
+CLOUDOPTION_OPENSTACK_OSK_INITIAL_VMCS = xxxxx<br>
+CLOUDOPTION_REDHAT_TAC_INITIAL_VMCS = xxxxx<br>
+<br>
+# This gives your per-cloud-name flexibility<br>
+# within a single configuration file<br>
+[VM_DEFAULTS : CLOUDOPTION_OPENSTACK]<br>
+SOMEKEY = SOMEVALUE<br>
+<br>
+[AI_TEMPLATES : CLOUDOPTION_REDHAT_DAYTRADER ]<br>
+SOMEKEY = SOMEVALUE<br>

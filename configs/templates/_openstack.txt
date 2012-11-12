@@ -1,0 +1,64 @@
+[USER-DEFINED]
+OSK_ACCESS = need_to_be_configured_by_user
+OSK_CREDENTIALS = need_to_be_configured_by_user
+OSK_KEY_NAME = need_to_be_configured_by_user
+OSK_INITIAL_VMCS = need_to_be_configured_by_user
+OSK_SECURITY_GROUP = need_to_be_configured_by_user
+
+[VMC_DEFAULTS : OSK_CLOUDCONFIG]
+ACCESS = $OSK_ACCESS
+CREDENTIALS = $OSK_CREDENTIALS
+KEY_NAME = $OSK_KEY_NAME
+INITIAL_VMCS = $OSK_INITIAL_VMCS
+EXTRA_INFO = $Empty
+
+[VM_DEFAULTS : OSK_CLOUDCONFIG]
+ACCESS = $OSK_ACCESS
+CREDENTIALS = $OSK_CREDENTIALS
+KEY_NAME = $OSK_KEY_NAME
+SECURITY_GROUPS = $OSK_SECURITY_GROUP
+REAL_IP = $True
+CLOUD_MAC = $True
+CAPTURE_SUPPORTED = $True
+RUNSTATE_SUPPORTED = $True
+RESIZE_SUPPORTED = $False
+
+[AI_DEFAULTS : OSK_CLOUDCONFIG]
+CAPTURE_SUPPORTED = $True
+RUNSTATE_SUPPORTED = $True
+RESIZE_SUPPORTED = $True
+
+[VM_TEMPLATES : OSK_CLOUDCONFIG]
+CLIENT_DAYTRADER = size:m1.small, imageid1:cloudbench_root
+DRIVER_DAYTRADER = size:m1.tiny, imageid1:cloudbench_root
+CLIENT_TRADELITE = size:m1.small, imageid1:cloudbench_root
+DRIVER_TRADELITE = size:m1.tiny, imageid1:cloudbench_root
+DB2 = size:m1.medium, lb_size:m1.large, imageid1:cloudbench_root
+WAS = size:m1.medium, imageid1:cloudbench_root
+CLIENT_SPECWEB = size:m1.small, imageid1:cloudbench_specweb
+SPECWEBFRONT = size:m1.medium, imageid1:cloudbench_specweb
+SPECWEBBACK = size:m1.medium, imageid1:cloudbench_specweb
+CLIENT_LOST = size:m1.small, imageid1:cloudbench_root
+LOSTFRONT = size:m1.medium, imageid1:cloudbench_root
+LOSTBACK = size:m1.medium, imageid1:cloudbench_root
+DRIVER_HADOOP = size:m1.tiny, imageid1:cloudbench_root
+HADOOPMASTER = size:m1.small, imageid1:cloudbench_root
+HADOOPSLAVE = size:m1.medium, imageid1:cloudbench_root
+DRIVER_NETPERF = size:m1.tiny, imageid1:cloudbench_root
+NETCLIENT = size:m1.tiny, imageid1:cloudbench_root
+NETSERVER = size:m1.tiny, imageid1:cloudbench_root
+DRIVER_COREMARK = size:m1.tiny, imageid1:cloudbench_root
+COREMARK = size:m1.tiny, imageid1:cloudbench_root
+CLIENT_WINDOWS = size:m1.small, imageid1:cloudbench_root
+WINDOWS = size:m1.medium, imageid1:cloudbench_windows
+DRIVER_FILEBENCH = size:m1.tiny, imageid1:cloudbench_root
+FILEBENCH = size:m1.small, imageid1:cloudbench_root
+DRIVER_FBNFSRD = size:m1.tiny, imageid1:cloudbench_root
+STORAGECLIENT = size:m1.small, imageid1:cloudbench_root
+STORAGESERVER = size:m1.medium, imageid1:cloudbench_root
+TINYVM = size:m1.tiny, imageid1:cloudbench_tinyvm
+FEN_HPC = size:m1.medium, imageid1:cloudbench_hpc
+CN_HPC = size:m1.medium, imageid1:cloudbench_hpc
+DDGEN = size:m1.medium, imageid1:cloudbench_hpc
+SPECJBB = size:m1.medium, imageid1:cloudbench_root
+LB = size:m1.medium, imageid1:cloudbench_root

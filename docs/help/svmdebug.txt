@@ -1,0 +1,1 @@
+Same as 'vmdebug', except for the FT standby replication stub.

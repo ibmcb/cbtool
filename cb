@@ -1,0 +1,136 @@
+#!/usr/bin/env python
+
+#/*******************************************************************************
+# Copyright (c) 2012 IBM Corp.
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#     http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#/*******************************************************************************
+
+'''
+    Created on Aug 22, 2011
+
+    CloudBench Command Processor Command Line Interface
+
+    @author: Marcio Silva, Michael R. Hines
+'''
+
+from sys import stdout, path, argv
+from subprocess import Popen, PIPE
+from pwd import getpwuid
+
+from lib.auxiliary.config import get_startup_commands
+
+import os
+import re
+import threading
+import readline
+
+def main() :
+    '''
+    Before parsing the config files, see if there are
+    any executable CLI commands buried at the end of the
+    argument list, which don't include "-" or "--" in the arguments.
+    If so, this means the user intends for cloudbench to execute
+    those commands and exit quietly.
+    '''
+
+    threading.current_thread().abort = False
+    _command_found = True 
+    for _possible_command in argv :
+        if _possible_command.count("-") :
+            _command_found = False 
+            break
+
+    _path = re.compile(".*\/").search(os.path.realpath(__file__)).group(0)
+    _history = _path + "/.cb_history"
+    _3rd_party = _path + "/3rd_party"
+
+    if not os.path.exists(_3rd_party) :
+        os.mkdir(_3rd_party)
+
+    if not os.path.exists(_history) :
+        from lib.auxiliary.dependencies import dependency_checker
+        _msg = "Looks like this is the first time that CloudBench is executed"
+        _msg += " on this node. Will check for dependencies..."
+        print _msg
+        _status, _msg = dependency_checker("127.0.0.1", getpwuid(os.getuid())[0], _3rd_party)
+        if _status :
+            print _msg
+            print "\n Please add the missing dependency(ies) and re-run configure again."
+            exit(_status)
+
+    from lib.auxiliary.cli import CBCLI
+    _cmd_processor = CBCLI()
+    _cmd_processor.setup_default_options()
+    (options, _args) = _cmd_processor.parser.parse_args()
+
+    if options.debug_host is not None :
+        import debug
+        print str(path)
+        import pydevd
+        pydevd.settrace(host=options.debug_host)
+    
+    _initial_command = ""
+    if len(_args) > 0 :
+        for _arg in _args :
+            _initial_command += _arg + " "
+        _initial_command = _initial_command[:-1]
+
+    _cmd_processor.setup_logging(options)
+
+    if options.hard_reset :
+        from lib.stores.stores_initial_setup import hard_reset
+        _msg = "Executing \"hard reset\" (killing all running CloudBench processes"
+        _msg += " an then flushing Object Store and Metric Store) before starting"
+        _msg += " the experiment......"
+        print _msg,
+        
+        _status, _msg = hard_reset("hard_reset", _cmd_processor.instance, _cmd_processor.cld_attr_lst)
+        print _msg
+
+    _cmd_processor.start_api_and_gui()
+
+    _cmd_processor.do_cldlist("", False)
+
+    # Handle the new multi-cloud configuration system
+    if "startup_cloud" in _cmd_processor.cld_attr_lst["user-defined"] :
+        available_clouds = get_startup_commands(_cmd_processor.cld_attr_lst, return_all_options = True)
+        for cloud in available_clouds :
+            if _cmd_processor.cld_attr_lst["user-defined"]["startup_cloud"].lower() == cloud :
+                for command in available_clouds[cloud] :
+                    _cmd_processor.onecmd(command)
+    else :
+        # Or do it the old way
+        for command in get_startup_commands(_cmd_processor.cld_attr_lst) :
+            _cmd_processor.onecmd(command)
+
+    if _initial_command != "" :
+        for _command in _initial_command.split(",") :
+            _cmd_processor.onecmd(_command.strip())
+    else :
+        if options.tracefile :
+            if options.tracefile[0] != "/" :
+                options.tracefile = path[0] + "/" + options.tracefile
+            _msg = "Loading trace file commands from: " + options.tracefile
+            print (_msg)
+            _cmd_processor.cmdqueue.extend(file(options.tracefile))
+
+        while True :
+            try :
+                _cmd_processor.cmdloop()
+                break
+            except KeyboardInterrupt :
+                print ("CTRL-D or quit to exit")
+    readline.write_history_file(path[0] + "/.cb_history")
+    
+main()

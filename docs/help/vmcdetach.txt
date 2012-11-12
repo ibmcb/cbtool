@@ -1,0 +1,41 @@
+Detaches (i.e., unregisters) one or all VMCs (belonging to a Cloud), from
+a CloudBench experiment.
+
+This command can only be executed after at least one cloud was attached.
+
+Usage: vmcdetach <cloud name> <vmc identifier> [force] [mode]
+
+	<cloud name> is the arbitrary name used to identify this cloud within the experiment.
+		If a default cloud was set through the command "clddefault <cloud name>"
+		then this parameter becomes optional.
+
+	<vmc identifier> is a cloud-specific VMC identifier. The identifiers must be listed
+		on the cloud configuration file, read by the cldattach command. If the
+		special keyword "all" is used, then all VMCs currently attached will be 
+		detached in parallel (but still synchronous)
+
+	[force] detaches the VMC, even if there are still VMs currently created on it.
+		Basically used for CloudBench internal operations.
+		 
+	[mode] indicates the execution mode. The default execution mode is synchronous,
+		which blocks the command line execution until the operation is completed.
+		By adding the keyword "async" to the command, a new daemon is spawned, and
+		the attachment process occurs in the background.
+
+Examples :	
+	(Cloudbench) vmcdetach TESTCLOUD test_host1
+	 status: VMC B09F0F2B-031E-5240-8B91-34D1E0ACCF80 was successfully unregistered on SimCloud "TESTCLOUD".
+	VMC object B09F0F2B-031E-5240-8B91-34D1E0ACCF80 (named "test_host1") was sucessfully detached from this cloudbench experiment.
+	(Cloudbench) 
+	
+	(Cloudbench) vmcdetach TESTCLOUD test_host1 async
+	Background operation execution success.Operation "vmc-detach" will be processed asynchronously, through the command "/home/cbrtuser/cloudbench/cloudbench_actuator.py --procid=TEST_cbrtuser --osp=port:49014,timeout:70,hostname:9.2.208.60,database:0,protocol:TCP,kind:redis --oop=TESTCLOUD,test_host1 --operation=vmc-detach --cn=TESTCLOUD --uuid=49E616FB-0431-5C36-9326-462EA5FE0678 --daemon". The process id is 18760.
+	
+	(Cloudbench) 
+	
+	(Cloudbench) vmcdetach TESTCLOUD all
+ 	 status: VMC 0584FA9A-015A-5303-B93C-91439DA2BFE1 was successfully unregistered on SimCloud "TESTCLOUD".
+	 status: VMC E5281D4E-9EBF-5814-BF95-32244F9E1097 was successfully unregistered on SimCloud "TESTCLOUD".
+	 status: VMC 2C6FD944-05CE-5721-9359-EC889CD2DB1E was successfully unregistered on SimCloud "TESTCLOUD".
+	All VMCs successfully detached
+	(Cloudbench) 

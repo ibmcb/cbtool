@@ -1,0 +1,119 @@
+Displays all attributes of a VM currently attached to a CloudBench experiment.
+
+This command can only be executed after at least one cloud was attached.
+
+Usage: Usage: vmshow <cloud name> <attribute1>,<attribute2>,...,<attributeN> <vm identifier> 
+
+	<cloud name> is the arbitrary name used to identify this cloud within the experiment.
+		If a default cloud was set through the command "clddefault <cloud name>"
+		then this parameter becomes optional.
+
+	<attributeX> is a comma-separated attribute list to be shown.
+		Alternatively, the special keyword "all" can be used show all attributes
+		of a VM.
+
+	<vm identifier> is the CloudBench-specific name of the VM (i.e., "vm_<counter>").
+
+Examples :	
+	(Cloudbench) vmshow TESTCLOUD vcpus vm_31
+	The VM object vm_31, attached to this cloudbench experiment, has the following attributes (Cloud TESTCLOUD:
+	|attribute (VM object key)               |value                                
+	|vcpus                                   |1                                    
+	
+	(Cloudbench) 
+	
+	(Cloudbench) vmshow TESTCLOUD all vm_31
+	The VM object vm_31, attached to this cloudbench experiment, has the following attributes (Cloud TESTCLOUD:
+	|attribute (VM object key)               |value                                
+	|access                                  |                                     
+	|ai                                      |none                                 
+	|ai_arrived                              |0                                    
+	|ai_departed                             |0                                    
+	|ai_failed                               |0                                    
+	|ai_name                                 |none                                 
+	|ai_reservations                         |0                                    
+	|aidrs                                   |none                                 
+	|aidrs_name                              |none                                 
+	|arrival                                 |1339710988                           
+	|attempts                                |2                                    
+	|base_dir                                |/home/cbrtuser/cloudbench            
+	|boot_time                               |90                                   
+	|capture_supported                       |True                                 
+	|class                                   |standard                             
+	|client_pref_pool                        |lg                                   
+	|cloud_hostname                          |cb-cbrtuser-vm_31-db2.simcloud.com   
+	|cloud_ip                                |103.29.151.210                       
+	|cloud_mac                               |00:16:3e:6b:45:ed                    
+	|cloud_name                              |TESTCLOUD                            
+	|cloud_uuid                              |cb-cbrtuser-vm_31-db2                
+	|cloud_vm_name                           |cb-cbrtuser-vm_31-db2                
+	|command                                 |vm-attach TESTCLOUD db2              
+	|command_originated                      |1339710987                           
+	|counter                                 |31                                   
+	|cpu_lower                               |500                                  
+	|cpu_upper                               |1000                                 
+	|credentials                             |                                     
+	|daemon_dir                              |/home/klabuser                       
+	|driver_pref_pool                        |lg                                   
+	|eclipsed                                |False                                
+	|exclude_list                            |/home/cbrtuser/cloudbench/exclude_list.txt
+	|extra_info                              |                                     
+	|host_cloud_ip                           |60.63.46.85                          
+	|host_name                               |test_host3                           
+	|identity                                |/home/cbrtuser/cloudbench/credentials/common/klab_id_rsa
+	|imageid1                                |cloudbench_root                      
+	|instance                                |TEST_cbrtuser:TESTCLOUD              
+	|jars_dir                                |/home/klabuser/cloudbench/jar        
+	|last_known_state                        |running with ip assigned             
+	|lb_size                                 |gold32                               
+	|login                                   |klabuser                             
+	|memory_lower                            |50                                   
+	|memory_upper                            |100                                  
+	|mgt_001_provisioning_request_originated |1339710987                           
+	|mgt_002_provisioning_request_sent       |0                                    
+	|mgt_003_provisioning_request_completed  |1                                    
+	|mgt_004_network_acessible               |0                                    
+	|mgt_005_file_transfer                   |0                                    
+	|mgt_006_application_start               |0                                    
+	|model                                   |sim                                  
+	|name                                    |vm_31                                
+	|notification                            |False                                
+	|pattern                                 |none                                 
+	|qemu_debug                              |False                                
+	|qemu_debug_port                         |                                     
+	|qemu_debug_port_base                    |12300                                
+	|qemu_debug_port_max                     |13300                                
+	|resize_supported                        |False                                
+	|role                                    |db2                                  
+	|runstate_supported                      |True                                 
+	|size                                    |copper32                             
+	|svm_destination                         |                                     
+	|svm_stub                                |False                                
+	|svm_stub_name                           |                                     
+	|svm_stub_uuid                           |                                     
+	|svm_stub_vmc                            |none                                 
+	|timeout                                 |240                                  
+	|transfer_files                          |False                                
+	|type                                    |none                                 
+	|update_attempts                         |36                                   
+	|update_frequency                        |1                                    
+	|username                                |cbrtuser                             
+	|uuid                                    |2FCCA61C-4D94-503E-B4A5-1A98C766F1A6 
+	|vcpus                                   |1                                    
+	|vm_arrived                              |1                                    
+	|vm_departed                             |1                                    
+	|vm_failed                               |0                                    
+	|vm_reservations                         |0                                    
+	|vmc                                     |E6921217-1BC6-5DCD-91D6-1230F2A6DE9E 
+	|vmc_access                              |                                     
+	|vmc_arrived                             |12                                   
+	|vmc_cloud_ip                            |60.63.46.85                          
+	|vmc_departed                            |8                                    
+	|vmc_failed                              |0                                    
+	|vmc_name                                |test_host3                           
+	|vmc_pool                                |SUT                                  
+	|vmemory                                 |2048                                 
+	|vnics                                   |1                                    
+	|vstorage                                |61440                                
+	
+	(Cloudbench) 
