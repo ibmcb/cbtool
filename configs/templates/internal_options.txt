@@ -92,7 +92,9 @@ CLEANUP_ON_ATTACH = $True
 CLEANUP_ON_DETACH = $True
 REPLICATION_VMCS = $EMPTY
 DETACH_PARALLELISM = 20
-DISCOVER_HOSTS = $True
+# This does not work on all clouds by default
+# Nor does it work on all openstack releases
+DISCOVER_HOSTS = $False
 
 [VM_DEFAULTS]
 USERNAME = $MAIN_USERNAME
