@@ -45,6 +45,13 @@ To exit, use the ```exit``` command. You can exit and restart the tool at any mo
 
 Whenever a CLI is started, a web GUI daemon is also started. Just point your browser to the port indicated at the tool's CLI prompt (look for "GUI Service daemon was successfully started"), and then click on the ```Connect``` button on the top.
 
+REPORTING BUGS:
+===============
+
+The tools writes all logs to a folder located @ "stores/logs". When you run into a bug, please packup the logs folder and send it to us and we'll work with you to get it fixed.
+
+We would also like to start using github's bug tracking system: You could post all the details of your issue there - that would be very helpful.
+
 USING THE TOOL IN A REAL CLOUD
 ============================
 
