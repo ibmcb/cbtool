@@ -890,6 +890,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                       obj_attr_list["vmc"], False)
     
                 obj_attr_list["vmc_max_vm_reservations"] = _vmc_attr_list["max_vm_reservations"]
+                obj_attr_list["discover_hosts"] = _vmc_attr_list["discover_hosts"]
                 obj_attr_list["vmc_name"] = _vmc_attr_list["name"]
                 obj_attr_list["vmc_cloud_ip"] = _vmc_attr_list["cloud_ip"]
                 if "svm_destination" in _vmc_attr_list and "svm_stub_ip" in obj_attr_list :
@@ -1375,8 +1376,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                  obj_attr_list["arrival"]
                         
                         if _obj_type == "VM" and "host_name" in obj_attr_list and obj_attr_list["host_name"] != "unknown" :
-                            _host_attr_list = self.osci.get_object("HOST", True, obj_attr_list["host_name"], False)
-                            obj_attr_list["host"] = _host_attr_list["uuid"]
+                            if obj_attr_list["discover_hosts"].lower() == "true" :
+                                _host_attr_list = self.osci.get_object("HOST", True, obj_attr_list["host_name"], False)
+                                obj_attr_list["host"] = _host_attr_list["uuid"]
     
                         self.osci.create_object(_obj_type, obj_attr_list["uuid"], \
                                                 obj_attr_list, False, True)
