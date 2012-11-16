@@ -45,7 +45,7 @@ if [ x"${load_manager_vm}" == x"${my_vm_uuid}" ] ; then
 	
 	if [ x"${running_load_managers}" == x ] ; then
 	    syslog_netcat "Starting Load Manager"
-	    ~/cbtool/cbact --procid=${osprocid} --uuid=${my_ai_uuid} --operation=$operation $daemonize $options
+	    ~/cloudbench/cbact --procid=${osprocid} --uuid=${my_ai_uuid} --operation=$operation $daemonize $options
 	    exit 0
 	else
 		syslog_netcat "A Load Manager is already running"

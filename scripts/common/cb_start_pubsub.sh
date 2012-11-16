@@ -30,7 +30,7 @@ running_subscribers=`pgrep -f ai-subscribe`
 
 if [ x"${running_subscribers}" == x ] ; then
     syslog_netcat "Starting Subscriber"
-	~/cbtool/cbact --procid=${osprocid} --uuid=${my_ai_uuid} --operation=ai-subscribe $daemonize $options
+	~/cloudbench/cbact --procid=${osprocid} --uuid=${my_ai_uuid} --operation=ai-subscribe $daemonize $options
     exit 0
 else
 	syslog_netcat "A Subscriber is already running"

@@ -43,7 +43,7 @@ class NetworkException(Exception):
         return self.msg
 
 @trace
-def get_ip_address(processid) :
+def get_ip_address() :
     '''
     TBD
     '''
@@ -135,7 +135,7 @@ def get_ip_address(processid) :
     return _default_ip
 
 @trace
-def get_syslog_port(processid, username) :
+def get_syslog_port(username) :
     '''
     TBD
     '''

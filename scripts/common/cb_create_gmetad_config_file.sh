@@ -27,7 +27,7 @@ COLLECTOR_AGGREGATOR_PORT=`get_global_sub_attribute mon_defaults collector_aggre
 COLLECTOR_SUMMARIZER_PORT=`get_global_sub_attribute mon_defaults collector_summarizer_port`
 COLLECTOR_VM_PORT=`get_global_sub_attribute mon_defaults collector_vm_port`
 PLUGINS_DIR=~/monitor-core/gmetad-python/plugins
-MAIN_PATH=~/cbtool
+MAIN_PATH=~/cloudbench
 API_HOSTNAME=`get_global_sub_attribute api_defaults hostname`
 API_PORT=`get_global_sub_attribute api_defaults port` 
 

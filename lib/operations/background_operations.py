@@ -87,8 +87,6 @@ class BackgroundObjectOperations(BaseObjectOperations) :
 
 
             if not _status :
-                self.conn_check()
-
                 _cloud_parameters = self.get_cloud_parameters(_obj_attr_list["cloud_name"])
 
                 #if not command.count("detachall") :
@@ -104,7 +102,8 @@ class BackgroundObjectOperations(BaseObjectOperations) :
         
                         _cmd = self.path + "/cbact"
                         _cmd += " --procid=" + self.pid
-                        _cmd += " --osp=" + dic2str(self.oscp)
+                        _cmd += " --osp=" + dic2str(self.osci.oscp())
+                        _cmd += " --msp=" + dic2str(self.msci.mscp())
                         _cmd += " --oop=" + ','.join(_parameters.split())
                         _cmd += " --operation=" + command
                         _cmd += " --cn=" + _obj_attr_list["cloud_name"]
@@ -116,7 +115,7 @@ class BackgroundObjectOperations(BaseObjectOperations) :
                         
                         self.pre_select_object(_obj_attr_list, _obj_type, _cloud_parameters["username"])    
                         
-                        _obj_uuid = self.osci.object_exists(_obj_type, \
+                        _obj_uuid = self.osci.object_exists(_obj_attr_list["cloud_name"], _obj_type, \
                                                             _obj_attr_list["name"], \
                                                             True)
     
@@ -129,7 +128,8 @@ class BackgroundObjectOperations(BaseObjectOperations) :
                         else :
                             _cmd = self.path + "/cbact"
                             _cmd += " --procid=" + self.pid
-                            _cmd += " --osp=" + dic2str(self.oscp)
+                            _cmd += " --osp=" + dic2str(self.osci.oscp())
+                            _cmd += " --msp=" + dic2str(self.msci.mscp())
                             _cmd += " --oop=" + ','.join(_parameters.split())
                             _cmd += " --operation=" + command
                             _cmd += " --cn=" + _obj_attr_list["cloud_name"]
@@ -143,7 +143,7 @@ class BackgroundObjectOperations(BaseObjectOperations) :
                     command.count("resize") or command.count("detachall") :
     
                         if _obj_type != "HOST" :
-                            _obj_uuid = self.osci.object_exists(_obj_type, \
+                            _obj_uuid = self.osci.object_exists(_obj_attr_list["cloud_name"], _obj_type, \
                                                                 _obj_attr_list["name"], \
                                                                 True)
                         else : 
@@ -157,7 +157,8 @@ class BackgroundObjectOperations(BaseObjectOperations) :
                         else :
                             _cmd = self.path + "/cbact"
                             _cmd += " --procid=" + self.pid
-                            _cmd += " --osp=" + dic2str(self.oscp)
+                            _cmd += " --osp=" + dic2str(self.osci.oscp())
+                            _cmd += " --msp=" + dic2str(self.msci.mscp())
                             _cmd += " --oop=" + ','.join(_parameters.split())
                             _cmd += " --operation=" + command
                             _cmd += " --cn=" + _obj_attr_list["cloud_name"]
@@ -173,7 +174,7 @@ class BackgroundObjectOperations(BaseObjectOperations) :
         
                         if _proc_h.pid :
                                 _obj_id = _obj_uuid + '-' + _operation
-                                self.update_process_list(self.cn, _obj_type, \
+                                self.update_process_list(_obj_attr_list["cloud_name"], _obj_type, \
                                                          _obj_id, \
                                                          str(_proc_h.pid), "add")
                                 _smsg += "Operation \"" + command + "\" will be processed "
@@ -195,7 +196,7 @@ class BackgroundObjectOperations(BaseObjectOperations) :
                             
                     _result = _obj_attr_list
                     
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
@@ -216,8 +217,7 @@ class BackgroundObjectOperations(BaseObjectOperations) :
     def vminit(self, cloud_name, role, vmc_pool = "auto", size = "default"):
         try :
             vm = {}
-            self.conn_check()
-            sub_channel = self.osci.subscribe("VM", "pause_on_attach")
+            sub_channel = self.osci.subscribe(cloud_name, "VM", "pause_on_attach")
             info = "unknown error"
             vm = self.background_execute(cloud_name + " " + role + " " + vmc_pool + " " + size + " pause async", "vm-attach")[2]
             if not int(vm["status"]) :
@@ -236,7 +236,7 @@ class BackgroundObjectOperations(BaseObjectOperations) :
                             break
                             
             sub_channel.unsubscribe()
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             vm["status"] = obj.status
             vm["info"] = str(obj)
             vm["result"] = None
@@ -244,19 +244,18 @@ class BackgroundObjectOperations(BaseObjectOperations) :
         return vm
     
     @trace
-    def vmrun(self, started_uuid):
+    def vmrun(self, cloud_name, started_uuid):
         try :
             status = 342
             vm = {}
-            self.conn_check()
             info = "unknown error"
-            sub_channel = self.osci.subscribe("VM", "pause_on_attach")
-            self.osci.publish_message("VM", "pause_on_attach", started_uuid + ";continue;success", 1, 3600)
+            sub_channel = self.osci.subscribe(cloud_name, "VM", "pause_on_attach")
+            self.osci.publish_message(cloud_name, "VM", "pause_on_attach", started_uuid + ";continue;success", 1, 3600)
             for message in sub_channel.listen() :
                 uuid, status, info = message["data"].split(";")
                 if started_uuid == uuid :
                     if status == "vmfinished" :
-                        attrs = self.osci.get_object("VM", False, uuid, False)
+                        attrs = self.osci.get_object(cloud_name, "VM", False, uuid, False)
                         vm = {"status" : 0, "msg" : "success", "result": attrs}
                         break
                     if status == "error" :
@@ -264,7 +263,7 @@ class BackgroundObjectOperations(BaseObjectOperations) :
                         break
                     
             sub_channel.unsubscribe()
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             vm["msg"] = "Failed to run initialized VM: " + str(obj)
             vm["status"] = obj.status
             vm["result"] = None
@@ -275,8 +274,7 @@ class BackgroundObjectOperations(BaseObjectOperations) :
     def appinit(self, cloud_name, type, load_level = "default", load_duration = "default", lifetime = "none", aidrs = "none"):
         try :
             app = {}
-            self.conn_check()
-            sub_channel = self.osci.subscribe("VM", "pause_on_attach")
+            sub_channel = self.osci.subscribe(cloud_name, "VM", "pause_on_attach")
             info = "unknown error"
             total = 0
             count = 0
@@ -305,7 +303,7 @@ class BackgroundObjectOperations(BaseObjectOperations) :
                             break
                             
             sub_channel.unsubscribe()
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             app["status"] = obj.status
             app["info"] = str(obj)
             app["result"] = None
@@ -313,19 +311,18 @@ class BackgroundObjectOperations(BaseObjectOperations) :
         return app 
 
     @trace
-    def apprun(self, started_uuid):
+    def apprun(self, cloud_name, started_uuid):
         try :
             status = 342
             app = {}
-            self.conn_check()
             info = "unknown error"
-            sub_channel = self.osci.subscribe("VM", "pause_on_attach")
-            self.osci.publish_message("VM", "pause_on_attach", started_uuid + ";continue;success", 1, 3600)
+            sub_channel = self.osci.subscribe(cloud_name, "VM", "pause_on_attach")
+            self.osci.publish_message(cloud_name, "VM", "pause_on_attach", started_uuid + ";continue;success", 1, 3600)
             for message in sub_channel.listen() :
                 uuid, status, info = message["data"].split(";")
                 if started_uuid == uuid :
                     if status == "appfinished" :
-                        attrs = self.osci.get_object("AI", False, uuid, False)
+                        attrs = self.osci.get_object(cloud_name, "AI", False, uuid, False)
                         app = {"status" : 0, "msg" : "success", "result": attrs}
                         break
                     if status == "error" :
@@ -333,7 +330,7 @@ class BackgroundObjectOperations(BaseObjectOperations) :
                         break
                     
             sub_channel.unsubscribe()
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             app["msg"] = "Failed to run initialized Application: " + str(obj)
             app["status"] = obj.status
             app["result"] = None

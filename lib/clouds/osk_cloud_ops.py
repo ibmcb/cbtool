@@ -40,14 +40,13 @@ class OskCmds(CommonCloudFunctions) :
     TBD
     '''
     @trace
-    def __init__ (self, pid, oscp, obj_inst) :
+    def __init__ (self, pid, osci) :
         '''
         TBD
         '''
-        CommonCloudFunctions.__init__(self, pid, oscp)
+        CommonCloudFunctions.__init__(self, pid, osci)
         self.pid = pid
-        self.oscp = oscp
-        self.obj_inst = obj_inst
+        self.osci = osci
         self.oskconn = False
         self.ft_supported = False 
 

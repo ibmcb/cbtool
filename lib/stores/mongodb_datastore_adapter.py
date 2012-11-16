@@ -24,8 +24,12 @@
     @author: Marcio A. Silva
 '''
 
+import os
+
 from time import sleep, time
 from random import randint
+from pwd import getpwuid
+from lib.auxiliary.config import get_my_parameters, set_my_parameters 
 
 from pymongo import Connection
 from pymongo import errors as PymongoException
@@ -52,17 +56,12 @@ class MongodbMgdConn :
     '''
 
     @trace
-    def __init__(self, processid, hostname, hostport, databaseid, timeout, \
-                 instance) :
+    def __init__(self, parameters) :
         '''
         TBD
         '''
-        self.pid = processid
-        self.host = hostname
-        self.port = hostport
-        self.dbid = databaseid
-        self.timout = timeout
-        self.obj_inst = instance
+        set_my_parameters(self, parameters)
+        self.pid = "TEST_" + getpwuid(os.getuid())[0]
         self.mongodb_conn = False
 
     class MetricStoreMgdConnException(Exception):
@@ -76,6 +75,9 @@ class MongodbMgdConn :
         def __str__(self):
             return self.msg
 
+    def mscp(self) :
+        return get_my_parameters(self)
+        
     @trace
     def connect(self, tout) :
         '''
@@ -84,17 +86,17 @@ class MongodbMgdConn :
         try:
 
             if tout > 0:
-                _conn = Connection(host = self.host, port = self.port, \
+                _conn = Connection(host = self.hostname, port = self.port, \
                                     max_pool_size=10, network_timeout = tout)
             else :
-                _conn = Connection(host = self.host, port = self.port, \
+                _conn = Connection(host = self.hostname, port = self.port, \
                                     max_pool_size=10)
 
             self.mongodb_conn = _conn
             
             _msg = "A connection to MongoDB running on host "
-            _msg += self.host + ", port " + str(self.port) + ", database"
-            _msg += ' ' + str(self.dbid) + ", with a timeout of "
+            _msg += self.hostname + ", port " + str(self.port) + ", database"
+            _msg += ' ' + str(self.database) + ", with a timeout of "
             _msg += str(tout) + "s was established."
             cbdebug(_msg)
             return self.mongodb_conn
@@ -107,24 +109,24 @@ class MongodbMgdConn :
         try:
 
             if tout > 0:
-                _conn = Connection(host = self.host, port = self.port, \
+                _conn = Connection(host = self.hostname, port = self.port, \
                                    network_timeout = tout)
             else :
-                _conn = Connection(host = self.host, port = self.port)
+                _conn = Connection(host = self.hostname, port = self.port)
 
             self.mongodb_conn = _conn
             
             _msg = "A connection to MongoDB running on host "
-            _msg += self.host + ", port " + str(self.port) + ", database"
-            _msg += ' ' + str(self.dbid) + ", with a timeout of "
+            _msg += self.hostname + ", port " + str(self.port) + ", database"
+            _msg += ' ' + str(self.database) + ", with a timeout of "
             _msg += str(tout) + "s was established."
             cbdebug(_msg)
             return self.mongodb_conn
 
         except PymongoException, msg :
             _msg = "Unable to establish a connection with the MongoDB "
-            _msg += "server on host " + self.host + " port "
-            _msg += str(self.port) + "database " + str(self.dbid) + ": "
+            _msg += "server on host " + self.hostname + " port "
+            _msg += str(self.port) + "database " + str(self.database) + ": "
             _msg += str(msg) + '.'
             cberr(_msg)
             raise self.MetricStoreMgdConnException(str(_msg), 1)
@@ -139,15 +141,15 @@ class MongodbMgdConn :
             self.mongodb_conn.disconnect()
             self.mongodb_conn = False
             _msg = "A connection to MongoDB running on host "
-            _msg += self.host + ", port " + str(self.port) + ", database"
-            _msg += ' ' + str(self.dbid) + ", was terminated."
+            _msg += self.hostname + ", port " + str(self.port) + ", database"
+            _msg += ' ' + str(self.database) + ", was terminated."
             cbdebug(_msg)
             return self.mongodb_conn
 
         except PymongoException, msg :
             _msg = "Unable to terminate a connection with the MongoDB "
-            _msg += "server on host " + self.host + " port "
-            _msg += str(self.port) + "database " + str(self.dbid) + ": "
+            _msg += "server on host " + self.hostname + " port "
+            _msg += str(self.port) + "database " + str(self.database) + ": "
             _msg += str(msg) + '.'
             cberr(_msg)
             raise self.MetricStoreMgdConnException(str(_msg), 1)
@@ -159,7 +161,7 @@ class MongodbMgdConn :
         '''
         if not self.mongodb_conn :
             try :
-                self.connect(self.timout)
+                self.connect(self.timeout)
             except self.MetricStoreMgdConnException, obj :
                 raise self.MetricStoreMgdConnException(obj.msg, 2)
 
@@ -180,7 +182,7 @@ class MongodbMgdConn :
                             ]
 
             for _collection in _collections :
-                _collection_handle = self.mongodb_conn[self.dbid][_collection]
+                _collection_handle = self.mongodb_conn[self.database][_collection]
                 _collection_handle.drop()
                 
             _collections = [ "trace_" + username, \
@@ -191,7 +193,7 @@ class MongodbMgdConn :
                             "runtime_os_HOST_" + username ]
 
             for _collection in _collections :
-                _collection_handle = self.mongodb_conn[self.dbid][_collection]
+                _collection_handle = self.mongodb_conn[self.database][_collection]
                 _collection_handle.ensure_index("dashboard_polled")
                 _collection_handle.ensure_index("expid")
                 _collection_handle.ensure_index("time")
@@ -227,7 +229,7 @@ class MongodbMgdConn :
                             "runtime_os_HOST_" + username ]
 
             for _collection in _collections :
-                _collection_handle = self.mongodb_conn[self.dbid][_collection]
+                _collection_handle = self.mongodb_conn[self.database][_collection]
                 _collection_handle.drop()
 
             self.disconnect()
@@ -248,7 +250,7 @@ class MongodbMgdConn :
         self.conn_check()
 
         try :
-            _collection_handle = self.mongodb_conn[self.dbid][collection]
+            _collection_handle = self.mongodb_conn[self.database][collection]
             _collection_handle.insert(document)
             if disconnect_finish :
                 self.disconnect()
@@ -271,7 +273,7 @@ class MongodbMgdConn :
         self.conn_check()
 
         try :
-            _collection_handle = self.mongodb_conn[self.dbid][collection]
+            _collection_handle = self.mongodb_conn[self.database][collection]
 
             if allmatches :
                 _results = _collection_handle.find(criteria, \
@@ -303,7 +305,7 @@ class MongodbMgdConn :
         self.conn_check()
 
         try :
-            _collection_handle = self.mongodb_conn[self.dbid][collection]
+            _collection_handle = self.mongodb_conn[self.database][collection]
             _collection_handle.save(document)
 
             if disconnect_finish :
@@ -324,7 +326,7 @@ class MongodbMgdConn :
         self.conn_check()
 
         try :
-            _collection_handle = self.mongodb_conn[self.dbid][collection]
+            _collection_handle = self.mongodb_conn[self.database][collection]
             _collection_handle.remove(criteria)
             if disconnect_finish :
                 self.disconnect()
@@ -344,7 +346,7 @@ class MongodbMgdConn :
         self.conn_check()
 
         try :
-            _collection_handle = self.mongodb_conn[self.dbid][collection]
+            _collection_handle = self.mongodb_conn[self.database][collection]
             _collection_handle.drop()
             if disconnect_finish :
                 self.disconnect()
@@ -365,7 +367,7 @@ class MongodbMgdConn :
         self.conn_check()
 
         try :
-            _collection_handle = self.mongodb_conn[self.dbid][collection]
+            _collection_handle = self.mongodb_conn[self.database][collection]
             _matches = _collection_handle.find(criteria)
             if disconnect_finish :
                 self.disconnect()
@@ -390,7 +392,7 @@ class MongodbMgdConn :
             for _attribute in _attributes :
                 _result[_attribute + 's'] = []
             
-            _collection_handle = self.mongodb_conn[self.dbid][collection]
+            _collection_handle = self.mongodb_conn[self.database][collection]
             _documents = _collection_handle.find()
             for _document in _documents :
                 for _attribute in _attributes :
@@ -421,7 +423,7 @@ class MongodbMgdConn :
         self.conn_check()
 
         try :
-            _collection_handle = self.mongodb_conn[self.dbid][collection]
+            _collection_handle = self.mongodb_conn[self.database][collection]
             _start_time = _collection_handle.find(spec = {}, fields = {"time" : "1"}, sort = [("time" , 1)], limit = 1)[0]["time"]
             _end_time = _collection_handle.find(spec = {}, fields = {"time" : "1"}, sort = [("time" , -1)], limit = 1)[0]["time"]
 
@@ -445,8 +447,8 @@ class MongodbMgdConn :
         self.conn_check()
 
         try :
-            _buildinfo = self.mongodb_conn[self.dbid].command("buildinfo")
-            _dbstats = self.mongodb_conn[self.dbid].command("dbstats")
+            _buildinfo = self.mongodb_conn[self.database].command("buildinfo")
+            _dbstats = self.mongodb_conn[self.database].command("dbstats")
 
             _output = []
             _output.append(["MongoDB Version", _buildinfo["version"]]) 
@@ -460,7 +462,7 @@ class MongodbMgdConn :
             return _output
 
         except PymongoException, msg :
-            _msg = "Unable to get info database " + self.dbid + ": " 
+            _msg = "Unable to get info database " + self.database + ": " 
             _msg += str(msg) + '.'
             cberr(_msg)
             raise self.MetricStoreMgdConnException(str(_msg), 1)

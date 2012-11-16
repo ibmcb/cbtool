@@ -30,7 +30,6 @@ from lib.auxiliary.data_ops import str2dic, DataOpsException
 from lib.auxiliary.code_instrumentation import trace, cblog, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.value_generation import ValueGeneration
 from lib.auxiliary.data_ops import dic2str, makeTimestamp
-from lib.stores.mongodb_datastore_adapter import MongodbMgdConn
 from lib.auxiliary.config import parse_cld_defs_file, load_store_functions, get_startup_commands
 
 from base_operations import BaseObjectOperations
@@ -39,7 +38,7 @@ from DocXMLRPCServer import DocXMLRPCServer
 from DocXMLRPCServer import DocXMLRPCRequestHandler
 from sys import stdout, path
 import sys
-from lib.auxiliary.cli import CBCLI
+from lib.auxiliary.cli import help 
 from functools import wraps
 import inspect
 import threading
@@ -64,7 +63,6 @@ class FakeStdout():
     def write(self, msg):
         self.capture_msg += msg
         
-unused_cli = CBCLI(do_nothing = True)
 fake_stdout = FakeStdout()
 
 class API():
@@ -74,7 +72,6 @@ class API():
         self.active = active
         self.background = background
         self.pid = pid
-        self.msattrs = None
 
         '''
           If there is a "help_*" function available, run it
@@ -85,7 +82,7 @@ class API():
             if func is not None and inspect.isroutine(func) and not name.count("__"):
                 fake_stdout.switch()
                 try :
-                    unused_cli.do_help(func.__name__)
+                    help(func.__name__)
                     func.__func__.__doc__ = fake_stdout.capture_msg 
                     True
                 except Exception, obj:
@@ -112,22 +109,12 @@ class API():
 
             
     def cldparse(self, definitions):
-        attributes = parse_cld_defs_file(self.pid, definitions)
+        attributes = parse_cld_defs_file(definitions)
         commands = get_startup_commands(attributes, return_all_options = True)
         return {"msg" : "Success", "status" : 0, "result": commands }
     
     def cldattach(self, model, name, cloud_definitions = None) :
         result = self.active.cldattach({}, model + " " + name, cloud_definitions, "cloud-attach")[2]
-        self.passive.osci = self.background.osci = self.active.osci
-        if not int(result["status"]) and not self.msattrs:
-            msattrs = self.cldshow(name, "metricstore")["result"]
-            self.passive.mscp = msattrs 
-            self.background.mscp = msattrs
-            self.active.mscp = msattrs 
-            self.passive.conn_check("MS")
-            self.background.conn_check("MS")
-            self.active.conn_check("MS")
-            self.msattrs = msattrs 
         return result
 
     def cldlist(self, set_default_cloud = "false"):
@@ -288,7 +275,7 @@ class API():
         return self.background.appinit(cloud_name, type, str(load_level), str(load_duration), str(lifetime), aidrs)
     
     def apprun(self, cloud_name, uuid) :
-        return self.background.apprun(uuid)
+        return self.background.apprun(cloud_name, uuid)
     
     def aidrsattach(self, cloud_name, pattern, async = False):
         if async :
@@ -313,7 +300,7 @@ class API():
         return self.background.vminit(cloud_name, role, vmc_pool, size)
     
     def vmrun(self, cloud_name, uuid):
-        return self.background.vmrun(uuid)
+        return self.background.vmrun(cloud_name, uuid)
     
     def vmdetach(self, cloud_name, identifier, force = False, async = False):
         force = "force" if force else "false"
