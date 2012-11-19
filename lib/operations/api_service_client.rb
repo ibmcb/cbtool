@@ -75,7 +75,7 @@ class APIClient < XMLRPC::Client
  def get_latest_data(cloud_name, uuid, type)
    self.dashboard_conn_check(cloud_name)
    metrics = self.find("latest_#{type}_#{@username}", {"uuid" => uuid})
-   if not metrics :
+   if not metrics
       raise APINoSuchMetricException, "No #{type} data available for uuid #{uuid}, cloud #{cloud_name}"
    end
    return metrics
