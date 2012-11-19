@@ -39,6 +39,8 @@ from lib.operations.passive_operations import PassiveObjectOperations
 from lib.operations.background_operations import BackgroundObjectOperations
 from lib.auxiliary.code_instrumentation import cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import str2dic, dic2str
+from lib.stores.mongodb_datastore_adapter import MongodbMgdConn
+from lib.stores.redis_datastore_adapter import RedisMgdConn
 
 from daemon import DaemonContext
 
@@ -55,14 +57,17 @@ def actuator_cli_parsing() :
                       help = "Point CloudBench to a remote debugger")
     
     # Process options
-    parser.add_option("--procid", dest = "processid", metavar = "processid", \
+    parser.add_option("--procid", dest = "procid", metavar = "procid", \
                       default = "TEST_" + getpwuid(getuid())[0], \
-                      help = "Set the processid")
+                      help = "Set the process id")
     
     # Parameters
     parser.add_option("--osp", dest = "osp", metavar = "OSP", \
                       default = None, \
                       help ="Set Object Store Parameters")
+    parser.add_option("--msp", dest = "msp", metavar = "MSP", \
+                      default = None, \
+                      help ="Set Metric Store Parameters")
     parser.add_option("--cn", dest = "cn", metavar = "CN", \
                       default = None, \
                       help ="Set the Cloud name")
@@ -74,7 +79,8 @@ def actuator_cli_parsing() :
                       help ="Set Object Operations Parameters")
     parser.add_option("--uuid", dest = "ouuid", metavar = "OUUID", \
                       default = None, help ="Set Object UUID")
-    
+    parser.add_option("--logdest", dest = "logdest", metavar = "LOGDEST", \
+                      default = None, help ="Alter default logging behavior")
     parser.add_option("--syslogp", dest = "syslogp", metavar = "SYSLOGP", \
                       default = None, \
                       help ="Set syslog port")
@@ -111,13 +117,13 @@ def actuator_cli_parsing() :
                       help = "Set quiet output.")
     
     parser.set_defaults()
-    (options, _args) = parser.parse_args()
+    (_options, _args) = parser.parse_args()
 
-    if options.debug_host is not None :
+    if _options.debug_host is not None :
         import debug
         print str(sys.path)
         import pydevd
-        pydevd.settrace(host=options.debug_host)
+        pydevd.settrace(host=_options.debug_host)
         
     try :
         _fmsg = ""
@@ -127,24 +133,24 @@ def actuator_cli_parsing() :
         _fh = open(_fn, "r")
         _fc = _fh.readlines()
         _fh.close()
-        options.osp = ''
+        _options.osp = ''
         for _line in _fc :
             _line = _line.strip()
             if _line.count("#OSKN-") :
-                options.osp += "kind:" + _line[6:] + ','
+                _options.osp += "kind:" + _line[6:] + ','
             elif _line.count("#OSHN-") :
-                options.osp += "hostname:" + _line[6:] + ','
+                _options.osp += "host:" + _line[6:] + ','
             elif _line.count("#OSPN-") :
-                options.osp += "port:" + _line[6:] + ','
+                _options.osp += "port:" + _line[6:] + ','
             elif _line.count("#OSDN-") :
-                options.osp += "database:" + _line[6:] + ','
+                _options.osp += "dbid:" + _line[6:] + ','
             elif _line.count("#OSTO-") :
-                options.osp += "timeout:" + _line[6:] + ','
+                _options.osp += "timout:" + _line[6:] + ','
             elif _line.count("#OSCN-") :
-                options.cn = _line[6:]
+                _options.cn = _line[6:]
             else :
                 True
-        options.osp = options.osp[:-1]
+        _options.osp = _options.osp[:-1]
         _from_file = True
 
     except IOError, msg :
@@ -160,50 +166,19 @@ def actuator_cli_parsing() :
         _fmsg = str(e)
         
     finally :
-        if options.operation and options.osp and (options.operation == "cloud-api" or options.operation == "cloud-gui" or options.cn) :
-            if (options.operation == "cloud-api" or options.operation == "cloud-gui") and (not options.apiport or not options.apihost) :
+        if _options.operation and _options.osp and (_options.operation == "cloud-api" or _options.operation == "cloud-gui" or _options.cn) :
+            if (_options.operation == "cloud-api" or _options.operation == "cloud-gui") and (not _options.apiport or not _options.apihost) :
                 print "The following parameters are mandatory: --apiport, --apihost"
                 exit(19)
 
-            return options
+            return _options
         else :
-            print "The following parameters are mandatory: --osp, --operation, --oop, --cn"
+            print "The following parameters are mandatory: --osp, --msp, --operation, --oop, --cn"
             exit(18)
             
-        if not options.cn and (not options.syslogp or not options.syslogf or not options.syslogh):
+        if not _options.cn and (not _options.syslogp or not _options.syslogf or not _options.syslogh):
                 print "The following parameters are mandatory: --apiport, --apihost, --syslogf, --syslogh, --syslogp"
                 exit(20)
-
-def setup_object_store_adapter(os_kind) :
-    '''
-    TBD
-    '''
-    try :
-        _fmsg = ""
-        _status = 100
-
-        _os_adapter = __import__("lib.stores." + os_kind + "_datastore_adapter", \
-                                 fromlist=[os_kind.capitalize() + "MgdConn"])
-
-        _os_conn_class = getattr(_os_adapter, os_kind.capitalize() + "MgdConn")
-        _status = 0
-        
-    except ImportError, msg :
-        _status = 20
-        _fmsg = str(msg)
-
-    except AttributeError, msg :
-        _status = 20
-        _fmsg = str(msg)
-        
-    finally :
-        if _status :
-            _msg = "Failure while setting up object store adapter: " + _fmsg
-            print _msg
-            exit(2)
-        else :
-            _msg = "Object store adapter set up successfully."
-            return _os_conn_class
 
 def setup_syslog(operation, facility, verbosity, port, hostname, quiet = False) :
     '''
@@ -349,23 +324,38 @@ def main(options) :
         _fmsg = ""
         _local_process = False
         _uuid = None
-        _oscp = str2dic(options.osp)
-
+        
+        '''
+        OSCI and MSCI are cloud-independent entities. They can be instantiated
+        immediately and passed down the entire function call stack.
+        '''
+        
         _obj_type, _operation = options.operation.split('-')
         
+        _oscp = str2dic(options.osp)
         if options.cn :
             _oscp["cloud_name"] = options.cn
+        _osci = RedisMgdConn(_oscp)
+
+        '''
+        fixme
+        '''
+        _osci.experiment_inst = options.procid
+        _msci = MongodbMgdConn(str2dic(options.msp)) if options.msp else None
+
+        use_log_defaults = False
         
-            _oscc = setup_object_store_adapter(_oscp["kind"])                     
-            _osci = _oscc(options.processid, _oscp["hostname"], int(_oscp["port"]),\
-                           int(_oscp["database"]), float(_oscp["timeout"]), \
-                           options.processid + ':' + options.cn)
-    
-            _mscp = _osci.get_object("GLOBAL", False, "metricstore", False)
-            _log_defaults = _osci.get_object("GLOBAL", False, "logstore", False)
-            _dir_defaults = _osci.get_object("GLOBAL", False, "space", False)
+        if options.cn :
+            _log_defaults = _osci.get_object(options.cn, "GLOBAL", False, "logstore", False)
+            _dir_defaults = _osci.get_object(options.cn, "GLOBAL", False, "space", False)
             _base_dir = _dir_defaults["base_dir"]
         else :
+            use_log_defaults = True
+            
+        if options.logdest and options.logdest == "console" :
+            use_log_defaults = True
+            
+        if use_log_defaults :
             _log_defaults = {
                              "hostname" : options.syslogh,
                              "port" : options.syslogp,
@@ -394,14 +384,13 @@ def main(options) :
         _msg += _parameters + '.'
         cbdebug(_msg)
 
-        if options.cn :
-            _active_obj_command = ActiveObjectOperations(options.processid, _oscp, _mscp)
-            _passive_obj_command = PassiveObjectOperations(options.processid, _oscp, _mscp)
-            _background_obj_command = BackgroundObjectOperations(options.processid, _oscp, _mscp)
-        else :
-            _active_obj_command = ActiveObjectOperations(options.processid, _oscp)
-            _passive_obj_command = PassiveObjectOperations(options.processid, _oscp)
-            _background_obj_command = BackgroundObjectOperations(options.processid, _oscp)
+        _active_obj_command = ActiveObjectOperations(_osci, _msci)
+        _passive_obj_command = PassiveObjectOperations(_osci, _msci)
+        _background_obj_command = BackgroundObjectOperations(_osci, _msci)
+            
+        _active_obj_command.osci.experiment_inst = options.procid
+        _passive_obj_command.osci.experiment_inst = options.procid
+        _background_obj_command.osci.experiment_inst = options.procid
 
         if _operation.count("attach") :
             
@@ -458,7 +447,7 @@ def main(options) :
             _obj_type = "AI"
             _local_process = False
             _uuid = options.ouuid
-            _osci.subscribe_channel(_obj_type, _uuid, 3600)
+            _osci.subscribe_channel(options.cn, _obj_type, _uuid, 3600)
             _status = 0
             
         elif _operation.count("api") :
@@ -607,7 +596,7 @@ def main(options) :
         if _local_process and options.cn :
             _obj_id = str(_uuid) + '-' + _operation
             _msg = "Removing the entry from the \"running_processes\" list " 
-            _msg += " on the object store (FQVN: " + options.processid
+            _msg += " on the object store (FQVN: " + options.procid
             _msg += ':' + options.cn + ":GLOBAL:running_processes"
             cbdebug(_msg)
             _active_obj_command.update_process_list(options.cn, \

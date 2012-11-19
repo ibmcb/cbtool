@@ -71,15 +71,9 @@ def main() :
 
     from lib.auxiliary.cli import CBCLI
     _cmd_processor = CBCLI()
-    _cmd_processor.setup_default_options()
-    (options, _args) = _cmd_processor.parser.parse_args()
+    options = _cmd_processor.options
+    _args = _cmd_processor.args
 
-    if options.debug_host is not None :
-        import debug
-        print str(path)
-        import pydevd
-        pydevd.settrace(host=options.debug_host)
-    
     _initial_command = ""
     if len(_args) > 0 :
         for _arg in _args :
@@ -95,7 +89,7 @@ def main() :
         _msg += " the experiment......"
         print _msg,
         
-        _status, _msg = hard_reset("hard_reset", _cmd_processor.instance, _cmd_processor.cld_attr_lst)
+        _status, _msg = hard_reset(_cmd_processor.cld_attr_lst)
         print _msg
 
     _cmd_processor.start_api_and_gui()

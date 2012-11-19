@@ -35,7 +35,7 @@ from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cb
 from lib.remote.network_functions import get_ip_address, NetworkException
 
 @trace
-def parse_evaluate_variable(pid, _variable, _orig_string, \
+def parse_evaluate_variable(_variable, _orig_string, \
                             _curr_global_object, _cld_attr_lst, aux_var) :
     '''
     Evaluates a conf variable by expanding its value
@@ -54,13 +54,13 @@ def parse_evaluate_variable(pid, _variable, _orig_string, \
                 raise Exception("configuration error: " + _orig_string)
                 _variable_value = getpwuid(os.getuid())[0] + '_' + _aux_tmp[1]
     elif aux_var.count("processid") and len(aux_var) == 9 :
-        _variable_value = pid
+        _variable_value = getpwuid(os.getuid())[0]
     elif aux_var.count("path_to_tool") and len(aux_var) == 12 :
         _variable_value = path
     elif aux_var.count("empty") and len(aux_var) == 5 :
         _variable_value = " "
     elif aux_var.count("ip_auto") :
-        _variable_value = get_ip_address(pid)
+        _variable_value = get_ip_address()
     elif aux_var.count("date") :
         _variable_value = str(int(time()))
     elif aux_var.count("true") :
@@ -87,7 +87,7 @@ def parse_evaluate_variable(pid, _variable, _orig_string, \
     if isinstance(_variable_value, str) and _variable_value.count('$') and not _variable_value.count('${') :
         for _variable in _variable_value.split('/') :
             if _variable.count('$') :
-                _value = parse_evaluate_variable(pid, _variable, _value,
+                _value = parse_evaluate_variable(_variable, _value,
                                                       _curr_global_object, \
                                                       _cld_attr_lst, 
                                                       _variable[1:].lower())
@@ -95,17 +95,26 @@ def parse_evaluate_variable(pid, _variable, _orig_string, \
     return _value
 
 @trace
-def parse_cld_defs_file(pid, cloud_definitions = None, print_message = False) :
+def parse_cld_defs_file(cloud_definitions = None, print_message = False, \
+                        extra_file = False) :
     '''
     TBD
     '''
     _cld_attr_lst = {}
     _username = getpwuid(os.getuid())[0]
     path = re.compile(".*\/").search(os.path.realpath(__file__)).group(0) + "/../../"
-    loc = path + "/"
-    _file_names = [ loc + "configs/" + _username + "_cloud_definitions.txt", \
-                    loc + "configs/" +"definitions.txt", \
-                    loc + "configs/" +"cloud_definitions.txt" ]
+    loc = path + '/'
+    _file_names = []
+    
+    if extra_file :
+        _file_names.append(extra_file)
+        _file_names.append(loc + extra_file)
+        _file_names.append(loc + "configs/" + extra_file)
+    
+    _file_names.append(loc + "configs/" + _username + "_cloud_definitions.txt")
+    _file_names.append(loc + "configs/" +"definitions.txt")
+    _file_names.append(loc + "configs/" +"cloud_definitions.txt")
+
     r = compile("(#.*)")
 
     for _file_name in _file_names :
@@ -258,7 +267,7 @@ def parse_cld_defs_file(pid, cloud_definitions = None, print_message = False) :
                         if _value.count('$') == 1 or (_value.count('$') > 1 and _value.count('/')) :
                             for _variable in _value.split('/') :
                                 if _variable.count('$') :
-                                    _eval_value = parse_evaluate_variable(pid, _variable, _eval_value, \
+                                    _eval_value = parse_evaluate_variable(_variable, _eval_value, \
                                                                            _global, _cld_attr_lst,
                                                                            _variable[1:].lower())
 
@@ -268,7 +277,7 @@ def parse_cld_defs_file(pid, cloud_definitions = None, print_message = False) :
                                 _next_variable = v.search(_eval_value)
                                 if _next_variable is None :
                                     raise Exception("configuration error: invalid multi-inline variable specification: " + _eval_value)
-                                _eval_value = parse_evaluate_variable(pid, _next_variable.group(0), _eval_value, \
+                                _eval_value = parse_evaluate_variable(_next_variable.group(0), _eval_value, \
                                                                            _global, _cld_attr_lst,
                                                                            _next_variable.group(0)[2:-1].lower())
                         elif _value.count('$') :
@@ -310,7 +319,6 @@ def load_store_functions(cld_attr_lst) :
     _store_ops = __import__("lib.stores.stores_initial_setup", fromlist=["*"])
 
     os_func = getattr(_store_ops, cld_attr_lst["objectstore"]["kind"] + "_objectstore_setup")
-
     ms_func = getattr(_store_ops, cld_attr_lst["metricstore"]["kind"] + "_metricstore_setup")
     ls_func = getattr(_store_ops, cld_attr_lst["logstore"]["kind"] + "_logstore_setup")
 
@@ -341,3 +349,30 @@ def get_startup_commands(cld_attr_lst, return_all_options = False) :
                 commands.append(_command.strip())
             
     return commands
+
+@trace
+def get_my_parameters(me):
+    '''
+    Convert class attributes into a dictionary
+    Python rocks.
+    '''
+    params = {}
+    for var in me.__dict__ :
+        value = me.__dict__[var]
+        if not var.count("__") and (isinstance(value, str) or isinstance(value, int)) or isinstance(value, float) or isinstance(value, bool): 
+            params[var] = value 
+
+    return params
+
+@trace
+def set_my_parameters(me, parameters):
+    for key, value in parameters.iteritems() :
+        try:
+            int(value)
+            setattr(me, key, int(value))
+        except ValueError:
+            try :
+                float(value)
+                setattr(me, key, float(value))
+            except ValueError:
+                setattr(me, key, value)

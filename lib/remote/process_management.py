@@ -105,6 +105,29 @@ class ProcessManagement :
             else: 
                 return False, False
 
+    def get_port_from_pid(self, pid) :
+        '''
+        TBD
+        '''
+        _cmd = "sudo netstat -tulpn | grep '" + str(pid) + "/*'"
+        _status, _result_stdout, _result_stderr = self.run_os_command(_cmd)
+        if not _status :
+            if len(_result_stdout) :
+                '''
+                Some daemons (e.g., mongod) listen to more than one port
+                simultenously. Here we are assuming that the first port is the 
+                one that matters
+                '''
+                _result_stdout = _result_stdout.split('\n')[0]
+                _result_stdout = _result_stdout.split()[3]
+                if _result_stdout.count(':') :
+                    _port = _result_stdout.split(':')[1]
+                    return _port
+                else :
+                    return False
+            else: 
+                return False
+
     @trace
     def get_free_port(self, starting_port, protocol = "tcp") :
         '''

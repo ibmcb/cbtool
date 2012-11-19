@@ -40,7 +40,7 @@ class DataOpsException(Exception):
         return self.msg
 
 @trace
-def selective_dict_update(processid, maindict, extradict) :
+def selective_dict_update(maindict, extradict) :
     '''
     This function performs a "reverse" maindict.update(extradict) method, where
     the keys already present on maindict will not be overwritten by the values
@@ -145,7 +145,7 @@ def wait_on_process(processid, proc_h, output_list) :
         return True
 
 @trace
-def message_beautifier(processid, message) :
+def message_beautifier(message) :
     '''
     TBD
     '''

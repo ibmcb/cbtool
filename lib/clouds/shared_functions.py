@@ -49,42 +49,21 @@ class CommonCloudFunctions:
     TBD
     '''
 
-    def __init__ (self, pid, oscp) :
+    def __init__ (self, pid, osci) :
         '''
         TBD
         '''
         self.pid = pid
-        self.oscp = oscp
-        self.osci = False
+        self.osci = osci
         self.path = re.compile(".*\/").search(os.path.realpath(__file__)).group(0) + "/../.."
 
     @trace
-    def conn_check(self) :
-        '''
-        TBD
-        '''
-        try :
-            if not self.osci :
-                self.osci = RedisMgdConn(self.pid, self.oscp["hostname"], \
-                                         int(self.oscp["port"]), \
-                                         int(self.oscp["database"]), \
-                                         float(self.oscp["timeout"]), \
-                                         self.pid + ":" + 
-                                         (str(self.oscp["cloud_name"]) if "cloud_name" in self.oscp else self.cn))
-
-        except RedisMgdConn.ObjectStoreMgdConnException, obj :
-            _msg = str(obj.msg)
-            cberr(_msg)
-            raise self.CloudOpsException(str(_msg), 1)
-
-    @trace
-    def lock (self, obj_type, obj_id, id_str):
+    def lock (self, cloud_name, obj_type, obj_id, id_str):
         '''
         TBD
         '''
         try:
-            self.conn_check()
-            _lock = self.osci.acquire_lock(obj_type, obj_id, id_str, 1)
+            _lock = self.osci.acquire_lock(cloud_name, obj_type, obj_id, id_str, 1)
             return _lock
 
         except RedisMgdConn.ObjectStoreMgdConnException, obj :
@@ -93,13 +72,12 @@ class CommonCloudFunctions:
             return False
 
     @trace
-    def unlock (self, obj_type, obj_id, lock) :
+    def unlock (self, cloud_name, obj_type, obj_id, lock) :
         '''
         TBD
         '''
         try:
-            self.conn_check()
-            self.osci.release_lock(obj_type, obj_id, lock)
+            self.osci.release_lock(cloud_name, obj_type, obj_id, lock)
             return True
 
         except RedisMgdConn.ObjectStoreMgdConnException, obj :
@@ -128,7 +106,6 @@ class CommonCloudFunctions:
         _msg = "Waiting for " + obj_attr_list["name"] + ""
         _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") to start..."
         cbdebug(_msg, True)
-        self.conn_check()
     
         _curr_tries = 0
         _max_tries = int(obj_attr_list["update_attempts"])
@@ -145,8 +122,7 @@ class CommonCloudFunctions:
             if self.is_vm_ready(obj_attr_list) :
                 _time_mark_prc = int(time())
                 obj_attr_list["mgt_003_provisioning_request_completed"] = _time_mark_prc - time_mark_prs
-                self.conn_check()
-                self.osci.pending_object_set("VM", obj_attr_list["uuid"], "Booting...")
+                self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "Booting...")
                 break
             else :
                 _msg = "" + obj_attr_list["name"] + ""
@@ -178,7 +154,6 @@ class CommonCloudFunctions:
         '''
         _max_tries = int(obj_attr_list["update_attempts"])
         _wait = int(obj_attr_list["update_frequency"])
-        self.conn_check()
 
         if "real_ip" in obj_attr_list and obj_attr_list["real_ip"] == "False" :
             _network_reachable = True
@@ -209,7 +184,7 @@ class CommonCloudFunctions:
 
                 if _nh_conn.check_port(22, "TCP") :
                     obj_attr_list["mgt_004_network_acessible"] = int(time()) - time_mark_prc 
-                    self.osci.pending_object_set("VM", obj_attr_list["uuid"], "Network accessible now. Continuing...")
+                    self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "Network accessible now. Continuing...")
                     _network_reachable = True
                     break
                 else :
@@ -229,7 +204,7 @@ class CommonCloudFunctions:
             cbdebug(_msg, True)
             sleep(_wait)
             obj_attr_list["mgt_004_network_acessible"] = int(time()) - time_mark_prc 
-            self.osci.pending_object_set("VM", obj_attr_list["uuid"], "Network accessible now. Continuing...")
+            self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "Network accessible now. Continuing...")
 
         if _curr_tries < _max_tries :
             _msg = "" + obj_attr_list["name"] + ""
@@ -240,7 +215,7 @@ class CommonCloudFunctions:
 
             # It should be mgt_006, NOT mgt_005
             obj_attr_list["mgt_006_application_start"] = "0"
-            self.osci.pending_object_set("VM", obj_attr_list["uuid"], "Application starting up...")
+            self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "Application starting up...")
         else :
             _msg = "" + obj_attr_list["name"] + ""
             _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
@@ -263,10 +238,9 @@ class CommonCloudFunctions:
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
-            self.conn_check()
-            sub_channel = self.osci.subscribe("VM", "pause_on_attach")
+            sub_channel = self.osci.subscribe(obj_attr_list["cloud_name"], "VM", "pause_on_attach")
             target_uuid = obj_attr_list["ai"] if obj_attr_list["ai"] != "none" else obj_attr_list["uuid"]
-            self.osci.publish_message("VM", "pause_on_attach", target_uuid + ";vmready;" + dic2str(obj_attr_list), 1, 3600)
+            self.osci.publish_message(obj_attr_list["cloud_name"], "VM", "pause_on_attach", target_uuid + ";vmready;" + dic2str(obj_attr_list), 1, 3600)
             cbdebug("VM " + obj_attr_list["cloud_uuid"] + " pausing on attach for continue signal ....")
             for message in sub_channel.listen() :
                 uuid, status, info = message["data"].split(";")
@@ -276,7 +250,7 @@ class CommonCloudFunctions:
                     break
             sub_channel.unsubscribe()
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 

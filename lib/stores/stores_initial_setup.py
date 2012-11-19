@@ -45,14 +45,14 @@ class StoreSetupException(Exception):
     def __str__(self):
         return self.msg
 
-def redis_objectstore_setup(processid, instance, global_objects, operation = "check") :
+def redis_objectstore_setup(global_objects, operation, cloud_name = None) :
     '''
     TBD
     '''
     _protocol = global_objects["objectstore"]["protocol"]
-    _hostname = global_objects["objectstore"]["hostname"]
-    _databaseid = int(global_objects["objectstore"]["database"])
-    _timeout = float(global_objects["objectstore"]["timeout"])
+    _hostname = global_objects["objectstore"]["host"]
+    _databaseid = int(global_objects["objectstore"]["dbid"])
+    _timeout = float(global_objects["objectstore"]["timout"])
     _username = global_objects["objectstore"]["username"]
     _usage = global_objects["objectstore"]["usage"].lower()
 
@@ -86,7 +86,8 @@ def redis_objectstore_setup(processid, instance, global_objects, operation = "ch
                 _cmd = "redis-server " + _config_file_fn
 
                 _proc_man =  ProcessManagement(username = _username)
-                _redis_pid = _proc_man.get_pid_from_cmdline(_cmd)                
+                
+                _redis_pid = _proc_man.get_pid_from_cmdline("redis-server")      
 
                 if not _redis_pid :
                     global_objects["objectstore"]["port"] = _proc_man.get_free_port(global_objects["objectstore"]["port"], protocol = "tcp")
@@ -109,15 +110,8 @@ def redis_objectstore_setup(processid, instance, global_objects, operation = "ch
                         print _msg
                         exit(8)
                 else :
-                    _config_file_fd = open(_config_file_fn, 'r')
-                    _config_file_contents = _config_file_fd.readlines()
-                    _config_file_fd.close()
-
-                    for _line in _config_file_contents :
-                        if _line.count("port") :
-                            global_objects["objectstore"]["port"] = _line.split()[1]
-                            _hostport = int(global_objects["objectstore"]["port"])
-                            break
+                    global_objects["objectstore"]["port"] = _proc_man.get_port_from_pid(_redis_pid[0]) 
+                    _hostport = int(global_objects["objectstore"]["port"])
 
             _nh_conn = Nethashget(_hostname)
 
@@ -129,6 +123,9 @@ def redis_objectstore_setup(processid, instance, global_objects, operation = "ch
             _status = 0
 
         else :
+            if not cloud_name :
+                raise StoreSetupException("Name of cloud is required for the 'initialize' mode", 22)
+            
             operation = "initialize"
 
             _hostport = int(global_objects["objectstore"]["port"])
@@ -152,13 +149,12 @@ def redis_objectstore_setup(processid, instance, global_objects, operation = "ch
                 global_objects["mon_defaults"][_collection_name] = \
                 global_objects["mon_defaults"][_collection_name][:-1].replace(",,",',')
 
-            _rmc = RedisMgdConn(processid, _hostname, _hostport, _databaseid, \
-                                _timeout, instance)
+            _rmc = RedisMgdConn(global_objects["objectstore"])
 
             _instance_dir = global_objects["space"]["instance_dir"]
 
             # First we remove the leftovers from previous experiments.
-            if _rmc.initialize_object_store(global_objects, True) :
+            if _rmc.initialize_object_store(cloud_name, global_objects, True) :
                 if not path.exists(_instance_dir) :
                     mkdir(_instance_dir)
 
@@ -171,16 +167,14 @@ def redis_objectstore_setup(processid, instance, global_objects, operation = "ch
                 _msg += "directory " + _instance_dir + " were removed."
                 cbdebug(_msg)
 
-                _msg = "The cloud \"" + instance.split(':')[1] + "\" was successfully "
-                _msg += "instantiated on the redis datastore on server " + _hostname
+                _msg = "The Redis datastore was successfully initialized on server " + _hostname
                 _msg += ", port " + str(_hostport) + ", database id \"" + str(_databaseid)
                 _msg += "\"."
                 cbdebug(_msg)
                 _status = 0
 
             else :
-                _msg = "The cloud \"" + instance.split(':')[1] + "\" was already "
-                _msg += "instantiated on the Object Store of the kind \"Redis\" "
+                _msg = "The Object Store of the kind \"Redis\" was successfully initialized "
                 _msg += "on node " + _hostname + ". To change its "
                 _msg += "attributes/state, use the *alter commands"
                 _msg += "(e.g., cldalter, vmcalter, vmalter) or explicity detach "
@@ -219,7 +213,7 @@ def redis_objectstore_setup(processid, instance, global_objects, operation = "ch
         _msg = str(e)
         raise StoreSetupException(_msg, 9)
     
-def syslog_logstore_setup(processid, instance, global_objects, operation = "check") :
+def syslog_logstore_setup(global_objects, operation = "check") :
     '''
     TBD
     '''
@@ -292,7 +286,7 @@ def syslog_logstore_setup(processid, instance, global_objects, operation = "chec
                             break
 
         _nh_conn = Nethashget(_hostname)
-    
+
         _nh_conn.nmap(_hostport, _protocol)
         _msg = "A Log Store of the kind \"rsyslog\" (" + _usage + ") "
         _msg += "on node " + _hostname + ", " + _protocol
@@ -317,7 +311,7 @@ def syslog_logstore_setup(processid, instance, global_objects, operation = "chec
         _msg = str(e)
         raise StoreSetupException(_msg, 9)
 
-def mongodb_metricstore_setup(processid, instance, global_objects, operation = "check") :
+def mongodb_metricstore_setup(global_objects, operation = "check") :
     '''
     TBD
     '''
@@ -353,7 +347,7 @@ def mongodb_metricstore_setup(processid, instance, global_objects, operation = "
                 _cmd = "mongod -f " + _config_file_fn + " --pidfilepath " + global_objects["space"]["stores_working_dir"] + "/mongod.pid"
     
                 _proc_man =  ProcessManagement(username = _username)
-                _mongodb_pid = _proc_man.get_pid_from_cmdline(_cmd)     
+                _mongodb_pid = _proc_man.get_pid_from_cmdline("mongod")
 
                 if not _mongodb_pid :
                     global_objects["metricstore"]["port"] = _proc_man.get_free_port(global_objects["metricstore"]["port"], protocol = "tcp")
@@ -381,15 +375,8 @@ def mongodb_metricstore_setup(processid, instance, global_objects, operation = "
                         exit(8)
 
                 else :
-                    _config_file_fd = open(_config_file_fn, 'r')
-                    _config_file_contents = _config_file_fd.readlines()
-                    _config_file_fd.close()
-
-                    for _line in _config_file_contents :
-                        if _line.count("port=") :
-                            global_objects["metricstore"]["port"] = _line.split('=')[1]
-                            _hostport = int(global_objects["metricstore"]["port"])
-                            break
+                    global_objects["metricstore"]["port"] = _proc_man.get_port_from_pid(_mongodb_pid[0])
+                    _hostport = int(global_objects["metricstore"]["port"])
 
             _nh_conn = Nethashget(_hostname)
 
@@ -403,18 +390,11 @@ def mongodb_metricstore_setup(processid, instance, global_objects, operation = "
 
         else:
             operation = "initialize"
-
-            _hostport = int(global_objects["metricstore"]["port"])
-
-            _mmc = MongodbMgdConn(processid, _hostname, _hostport, _databaseid, \
-                                  _timeout, instance)
-    
+            _mmc = MongodbMgdConn(global_objects["metricstore"])
             _mmc.initialize_metric_store(_username)
             
-            _msg = "The cloud \"" + instance.split(':')[1] + "\" was successfully "
-            _msg += "instantiated on a Metric Store of the kind \"MongoDB\" "
-            _msg += "on node " + _hostname + ", port " + str(_hostport) 
-            _msg += ", database id \"" + str(_databaseid) + "\"."
+            _msg = "The Metric Store of the kind \"MongoDB\" was successfully initialized "
+            _msg += "on node: " + str(global_objects["metricstore"])
             cbdebug(_msg)
             _status = 0
             
@@ -445,25 +425,11 @@ def mongodb_metricstore_setup(processid, instance, global_objects, operation = "
         _msg = str(e)
         raise StoreSetupException(_msg, 9)
 
-def hard_reset(processid, instance, global_objects) :
+def hard_reset(global_objects) :
     '''
     TBD
     '''
-    _os_protocol = global_objects["objectstore"]["protocol"]
-    _os_hostname = global_objects["objectstore"]["hostname"]
-    _os_hostport = int(global_objects["objectstore"]["port"])
-    _os_databaseid = int(global_objects["objectstore"]["database"])
-    _os_timeout = float(global_objects["objectstore"]["timeout"])
-    _os_username = global_objects["objectstore"]["username"]
-    _ms_protocol = global_objects["metricstore"]["protocol"]
-    _ms_hostname = global_objects["metricstore"]["hostname"]
-    _ms_hostport = int(global_objects["metricstore"]["port"])
-    _ms_databaseid = global_objects["metricstore"]["database"]
-    _ms_timeout = float(global_objects["metricstore"]["timeout"])
-    _ms_username = global_objects["mon_defaults"]["username"]
-
     try :
-
         _msg = "Killing all processes"
         cbdebug(_msg)
         _proc_man =  ProcessManagement()
@@ -475,15 +441,15 @@ def hard_reset(processid, instance, global_objects) :
         _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f gmetad.py")
         _proc_man.run_os_command("screen -wipe")
 
-        _msg = "Flushing Object Store"
-        cbdebug(_msg)
-        _rmc = RedisMgdConn(processid, _os_hostname, _os_hostport, _os_databaseid, _os_timeout, instance)
+        _msg = "Flushing Object Store" 
+        cbdebug(_msg) 
+        _rmc = RedisMgdConn(global_objects["objectstore"])
         _rmc.flush_object_store()
 
         _msg = "Flushing Metric Store"
         cbdebug(_msg)
-        _mmc = MongodbMgdConn(processid, _ms_hostname, _ms_hostport, _ms_databaseid, _ms_timeout, instance)
-        _mmc.flush_metric_store(_ms_username)
+        _mmc = MongodbMgdConn(global_objects["metricstore"])
+        _mmc.flush_metric_store(global_objects["mon_defaults"]["username"])
 
         _msg = "Success"
         _status = 0

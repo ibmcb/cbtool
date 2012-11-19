@@ -135,9 +135,9 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _fmt_obj_list = ''.join(_fields) + '\n'
     
                     if _obj_type == "CLOUD" :
-                        _obj_list = self.osci.get_object_list(_obj_type)
+                        _obj_list = self.osci.get_object_list(obj_attr_list["cloud_name"], _obj_type)
                     else :
-                        _obj_list = self.osci.query_by_view(_obj_type, "BYUSERNAME", obj_attr_list["username"], "name", "all", False)
+                        _obj_list = self.osci.query_by_view(obj_attr_list["cloud_name"], _obj_type, "BYUSERNAME", obj_attr_list["username"], "name", "all", False)
     
                     if _obj_list :
                         for _obj in _obj_list :
@@ -145,11 +145,11 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                 _obj_uuid, _obj_name = _obj.split('|')
                             else :
                                 _obj_uuid = _obj
-                            _obj_attrs = self.osci.get_object(_obj_type, False, _obj_uuid, False)
+                            _obj_attrs = self.osci.get_object(obj_attr_list["cloud_name"], _obj_type, False, _obj_uuid, False)
     
                             if _obj_type == "VM" or _obj_type == "AI" :
                                 if obj_attr_list["state"]  != "all" : 
-                                    _state = self.osci.get_object_state(_obj_type, _obj_uuid)
+                                    _state = self.osci.get_object_state(obj_attr_list["cloud_name"], _obj_type, _obj_uuid)
                                     if _state != obj_attr_list["state"] :
                                         continue
                                 
@@ -165,7 +165,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                 (_af == "svm_stub_vmc" and _obj_attrs[_af] != "none") or \
                                 (_af == "ai" and _obj_attrs[_af] != "none") or \
                                 (_af == "aidrs" and _obj_attrs[_af] != "none") :
-                                    _obj_name = self.fast_uuid_to_name(_af.split("_")[-1].upper(), \
+                                    _obj_name = self.fast_uuid_to_name(obj_attr_list["cloud_name"], _af.split("_")[-1].upper(), \
                                                                        _obj_attrs[_af], \
                                                                        _translation_cache)
                                     
@@ -183,19 +183,19 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _fmt_obj_list = "No objects available."
 
                 if obj_attr_list["state"] == "pending" :
-                    for obj in self.osci.get_list(_obj_type, "PENDING", True) :
+                    for obj in self.osci.get_list(obj_attr_list["cloud_name"], _obj_type, "PENDING", True) :
                         _obj_uuid, _obj_name = obj[0].split("|")
                         _result.append({"uuid" : _obj_uuid, "name" : _obj_name, "status" : "pending", 
-                                        "tracking" : self.osci.pending_object_get(_obj_type, _obj_uuid)})
+                                        "tracking" : self.osci.pending_object_get(obj_attr_list["cloud_name"], _obj_type, _obj_uuid)})
                         
                 for state in ["failed", "finished" ] :
                     if obj_attr_list["state"] != state :
                         continue
-                    objs = self.osci.get_object_list(state.upper() + "TRACKING" + _obj_type, True)
+                    objs = self.osci.get_object_list(obj_attr_list["cloud_name"], state.upper() + "TRACKING" + _obj_type, True)
                     if not objs :
                         continue
                     for obj in objs :
-                        _result.append(self.osci.get_object(state.upper() + "TRACKING" + _obj_type, False, obj, False)) 
+                        _result.append(self.osci.get_object(obj_attr_list["cloud_name"], state.upper() + "TRACKING" + _obj_type, False, obj, False)) 
     
                 _status = 0
             
@@ -206,12 +206,12 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _status = 8
             _fmsg = str(obj.msg)
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
-            _status = 8
+        except self.osci.ObjectStoreMgdConnException, obj :
+            _status = 2
             _fmsg = str(obj.msg)
 
         except Exception, e :
-            _status = 23
+            _status = 24
             _fmsg = str(e)
 
         finally :
@@ -269,7 +269,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _fmt_obj_attr_list = ''.join(_fields) + '\n'
         
                         for _obj_id in _obj_ids :
-                            _obj_attribs = self.osci.get_object(_obj_type, False, \
+                            _obj_attribs = self.osci.get_object(obj_attr_list["cloud_name"], _obj_type, False, \
                                                                 _obj_id, False)
                             
                             _result[_obj_id] = {}
@@ -316,10 +316,10 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _fields.append("|value                                ")
     
                         _fmt_obj_attr_list = ''.join(_fields) + '\n'
-                        _obj_attribs = self.osci.get_object(_obj_type, True, \
+                        _obj_attribs = self.osci.get_object(obj_attr_list["cloud_name"], _obj_type, True, \
                                                             obj_attr_list["name"], \
                                                             False)
-                        _obj_attribs["state"] = self.osci.get_object_state(_obj_type, _obj_attribs["uuid"])
+                        _obj_attribs["state"] = self.osci.get_object_state(obj_attr_list["cloud_name"], _obj_type, _obj_attribs["uuid"])
     
                         for _attrib, _value in iter(sorted(_obj_attribs.iteritems())) :
                             if _attrib in _obj_select_attribs or \
@@ -341,7 +341,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _status = 8
             _fmsg = str(obj.msg)
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = 8
             _fmsg = str(obj.msg)
 
@@ -430,7 +430,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
     
                     _fmt_obj_chg_attr = ''.join(_fields) + '\n'
     
-                    _old_values = self.osci.get_object(_obj_type, _can_be_tag, \
+                    _old_values = self.osci.get_object(obj_attr_list["cloud_name"], _obj_type, _can_be_tag, \
                                                        _obj_uuid, False)
 
                     for _kv in _obj_attrib_kvs :
@@ -443,10 +443,10 @@ class PassiveObjectOperations(BaseObjectOperations) :
     
                         if _key[0] == '-' :
                             _key = _key[1:]
-                            self.osci.remove_object_attribute(_obj_type, _obj_uuid, \
+                            self.osci.remove_object_attribute(obj_attr_list["cloud_name"], _obj_type, _obj_uuid, \
                                                               _can_be_tag, _key)
                         else :
-                            self.osci.update_object_attribute(_obj_type, _obj_uuid, \
+                            self.osci.update_object_attribute(obj_attr_list["cloud_name"], _obj_type, _obj_uuid, \
                                                               _can_be_tag, _key, _value)
                             
     
@@ -464,7 +464,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _status = 8
             _xfmsg = str(obj.msg)
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = 8
             _xfmsg = str(obj.msg)
 
@@ -482,7 +482,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _msg += " Checking if a Host OS performance data collection"
                     _msg += " daemon restart is needed."
                     cbdebug(_msg)
-                    self.update_host_os_perfmon()
+                    self.update_host_os_perfmon(obj_attr_list)
                 _msg = _smsg
                 cbdebug(_smsg)
 
@@ -523,7 +523,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 _fields.append("|Object Type                 ")
                 _fields.append("|Predicate                        ")
 
-                _expression_list = self.osci.query_by_view(_obj_type, _criterion, _expression, _sorting, _filter, True)
+                _expression_list = self.osci.query_by_view(obj_attr_list["cloud_name"], _obj_type, _criterion, _expression, _sorting, _filter, True)
                 _fields.append("|Object UUID                           ")
                 _fields.append("|Object Name            ")
                 _fields.append("|" + _sorting.capitalize() + " Time                       ")
@@ -552,7 +552,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _status = 8
             _fmsg = str(obj.msg)
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = 8
             _fmsg = str(obj.msg)
 
@@ -599,9 +599,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 _status, _fmsg = self.initialize_object(obj_attr_list, command)
 
                 if not _status :
-                    self.ms_connect()
-    
-                    _query_object = self.osci.get_object("GLOBAL", False, "query", False)
+                    _query_object = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "query", False)
     
                     _fmt_obj_list = "------------------------- OBJECT STORE -----------------------\n"
                     _result.append(["Object Store", "Metric", "Value", []])
@@ -644,7 +642,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _fmt_obj_list += ''.join(_fields) + '\n'
     
                     for _obj_type in _query_object["object_type_list"].split(',') :
-                        _obj_count = self.get_object_count(self.cn, _obj_type)
+                        _obj_count = self.get_object_count(obj_attr_list["cloud_name"], _obj_type)
                         _result[result_idx][3].append((_obj_type + 's', str(_obj_count)))
                         _fmt_obj_list += ('|' + _obj_type + 's').ljust(len(_fields[0]))
                         _fmt_obj_list += ('|' + _obj_count ).ljust(len(_fields[1]))
@@ -660,60 +658,60 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _fmt_obj_list += ''.join(_fields) + '\n'
     
                     for _obj_type in _query_object["object_type_list"].split(',') :
-                        _result[result_idx][3].append((_obj_type + ' Reservations', str(self.get_object_count(self.cn, _obj_type, "RESERVATIONS"))))
+                        _result[result_idx][3].append((_obj_type + ' Reservations', str(self.get_object_count(obj_attr_list["cloud_name"], _obj_type, "RESERVATIONS"))))
                         _fmt_obj_list += ('|' + _obj_type + " RESERVATIONS").ljust(len(_fields[0]))
                         _fmt_obj_list += ('|' + _result[result_idx][3][-1][1]).ljust(len(_fields[1]))
                         _fmt_obj_list += '\n'
-                        _result[result_idx][3].append((_obj_type + 's Arrived', str(self.get_object_count(self.cn, _obj_type, "ARRIVED"))))
+                        _result[result_idx][3].append((_obj_type + 's Arrived', str(self.get_object_count(obj_attr_list["cloud_name"], _obj_type, "ARRIVED"))))
                         _fmt_obj_list += ('|' + _obj_type + "s ARRIVED").ljust(len(_fields[0]))
                         _fmt_obj_list += ('|' + _result[result_idx][3][-1][1]).ljust(len(_fields[1]))
                         _fmt_obj_list += '\n'
-                        _result[result_idx][3].append((_obj_type + 's Arriving', str(self.get_object_count(self.cn, _obj_type, "ARRIVING"))))
+                        _result[result_idx][3].append((_obj_type + 's Arriving', str(self.get_object_count(obj_attr_list["cloud_name"], _obj_type, "ARRIVING"))))
                         _fmt_obj_list += ('|' + _obj_type + "s ARRIVING").ljust(len(_fields[0]))
                         _fmt_obj_list += ('|' + _result[result_idx][3][-1][1]).ljust(len(_fields[1]))
                         _fmt_obj_list += '\n'
                         if _obj_type == "VM" or _obj_type == "AI" :
-                            _result[result_idx][3].append((_obj_type + 's Capturing', str(self.get_object_count(self.cn, _obj_type, "CAPTURING"))))
+                            _result[result_idx][3].append((_obj_type + 's Capturing', str(self.get_object_count(obj_attr_list["cloud_name"], _obj_type, "CAPTURING"))))
                             _fmt_obj_list += ('|' + _obj_type + "s CAPTURING").ljust(len(_fields[0]))
                             _fmt_obj_list += ('|' + _result[result_idx][3][-1][1]).ljust(len(_fields[1]))
                             _fmt_obj_list += '\n'
-                        _result[result_idx][3].append((_obj_type + 's Departed', str(self.get_object_count(self.cn, _obj_type, "DEPARTED"))))
+                        _result[result_idx][3].append((_obj_type + 's Departed', str(self.get_object_count(obj_attr_list["cloud_name"], _obj_type, "DEPARTED"))))
                         _fmt_obj_list += ('|' + _obj_type + "s DEPARTED").ljust(len(_fields[0]))
                         _fmt_obj_list += ('|' + _result[result_idx][3][-1][1]).ljust(len(_fields[1]))
                         _fmt_obj_list += '\n'
-                        _result[result_idx][3].append((_obj_type + 's Departing', str(self.get_object_count(self.cn, _obj_type, "DEPARTING"))))
+                        _result[result_idx][3].append((_obj_type + 's Departing', str(self.get_object_count(obj_attr_list["cloud_name"], _obj_type, "DEPARTING"))))
                         _fmt_obj_list += ('|' + _obj_type + "s DEPARTING").ljust(len(_fields[0]))
                         _fmt_obj_list += ('|' + _result[result_idx][3][-1][1]).ljust(len(_fields[1]))
                         _fmt_obj_list += '\n'
-                        _result[result_idx][3].append((_obj_type + 's Failed', str(self.get_object_count(self.cn, _obj_type, "FAILED"))))
+                        _result[result_idx][3].append((_obj_type + 's Failed', str(self.get_object_count(obj_attr_list["cloud_name"], _obj_type, "FAILED"))))
                         _fmt_obj_list += ('|' + _obj_type + "s FAILED").ljust(len(_fields[0]))
                         _fmt_obj_list += ('|' + _result[result_idx][3][-1][1]).ljust(len(_fields[1]))
                         _fmt_obj_list += '\n'
     
-                    _result[result_idx][3].append(("Experiment Counter", str(self.osci.count_object("GLOBAL", "experiment_counter"))))
+                    _result[result_idx][3].append(("Experiment Counter", str(self.osci.count_object(obj_attr_list["cloud_name"], "GLOBAL", "experiment_counter"))))
                     _fmt_obj_list += "|EXPERIMENT COUNTER".ljust(len(_fields[0]))
                     _fmt_obj_list += ('|' + _result[result_idx][3][-1][1]).ljust(len(_fields[1]))
                     _fmt_obj_list += '\n'
     
-                    _vmc_uuid_list = self.osci.get_object_list("VMC")
+                    _vmc_uuid_list = self.osci.get_object_list(obj_attr_list["cloud_name"], "VMC")
                     if _vmc_uuid_list :
                         result_idx += 1
                         _result.append(["VMC-Wide Counters", "Hypervisor / Region", "Virtual Machines", []])
                         _fmt_obj_list += "\n ---------------- VMC-WIDE COUNTERS ----------------\n"
                         for _vmc_uuid in _vmc_uuid_list :
-                            _vmc_attr_list = self.osci.get_object("VMC", False, _vmc_uuid, False)
+                            _vmc_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "VMC", False, _vmc_uuid, False)
                             _result[result_idx][3].append((_vmc_attr_list["name"] + " VM Reservations", str(_vmc_attr_list["nr_vms"])))
                             _fmt_obj_list += ('|' + _vmc_uuid + " (" + _vmc_attr_list["name"] + ") VM RESERVATIONS").ljust(len(_fields[0]))
                             _fmt_obj_list += ('|' + _result[result_idx][3][-1][1]).ljust(len(_fields[1]))
                             _fmt_obj_list += '\n'
     
-                    _aidrs_uuid_list = self.osci.get_object_list("AIDRS")
+                    _aidrs_uuid_list = self.osci.get_object_list(obj_attr_list["cloud_name"], "AIDRS")
                     if _aidrs_uuid_list :
                         result_idx += 1
                         _result.append(["AIDRS-Wide Counters", "Submitter", "Virtual Applications", []])
                         _fmt_obj_list += "\n ---------------- AIDRS-WIDE COUNTERS ----------------\n"
                         for _aidrs_uuid in _aidrs_uuid_list :
-                            _aidrs_attr_list = self.osci.get_object("AIDRS", False, _aidrs_uuid, False)
+                            _aidrs_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "AIDRS", False, _aidrs_uuid, False)
                             _result[result_idx][3].append((_aidrs_attr_list["name"] + " AI Reservations", str(_aidrs_attr_list["nr_ais"])))
                             _fmt_obj_list += ('|' + _aidrs_uuid + " (" + _aidrs_attr_list["name"] + ") AI RESERVATIONS").ljust(len(_fields[0]))
                             _fmt_obj_list += ('|' + _result[result_idx][3][-1][1]).ljust(len(_fields[1]))
@@ -725,7 +723,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _status = 8
             _fmsg = str(obj.msg)
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = 8
             _fmsg = str(obj.msg)
 
@@ -780,15 +778,15 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 _fields.append("|Object UUID                             ")
                 _fields.append("|State                     ")
                 _fmt_obj_list += ''.join(_fields) + '\n'
-                _query_object = self.osci.get_object("GLOBAL", False, "query", False)
+                _query_object = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "query", False)
 
                 _count = 0
                 
                 for _obj_type in _query_object["object_type_list"].split(',') :
-                    _obj_list = self.osci.get_object_list(_obj_type)
+                    _obj_list = self.osci.get_object_list(obj_attr_list["cloud_name"], _obj_type)
                     if _obj_list :
                         for _obj_uuid in _obj_list :
-                            _obj_state = self.osci.get_object_state(_obj_type, _obj_uuid)
+                            _obj_state = self.osci.get_object_state(obj_attr_list["cloud_name"], _obj_type, _obj_uuid)
                             _obj_name = self.get_object_attribute(obj_attr_list["cloud_name"], \
                                                     _obj_type, _obj_uuid, "name")
                             if _filter and _obj_state != _filter :
@@ -814,7 +812,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _status = 8
             _fmsg = str(obj.msg)
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = 8
             _fmsg = str(obj.msg)
 
@@ -853,13 +851,13 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 _status, _fmsg = self.initialize_object(obj_attr_list, command)
 
             if not _status :
-                _query_object = self.osci.get_object("GLOBAL", False, "query", False)
+                _query_object = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "query", False)
 
                 for _obj_type in _query_object["object_type_list"].split(',') :
-                    _obj_uuid = self.osci.object_exists(_obj_type, obj_attr_list["name"], True)
+                    _obj_uuid = self.osci.object_exists(obj_attr_list["cloud_name"], _obj_type, obj_attr_list["name"], True)
                     if _obj_uuid :
-                        _old_state = str(self.osci.get_object_state(_obj_type, _obj_uuid))
-                        str(self.osci.set_object_state(_obj_type, _obj_uuid, obj_attr_list["specified_state"]))
+                        _old_state = str(self.osci.get_object_state(obj_attr_list["cloud_name"], _obj_type, _obj_uuid))
+                        str(self.osci.set_object_state(obj_attr_list["cloud_name"], _obj_type, _obj_uuid, obj_attr_list["specified_state"]))
                         break
                 _status = 0
 
@@ -867,7 +865,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _status = 8
             _fmsg = str(obj.msg)
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = 8
             _fmsg = str(obj.msg)
 
@@ -965,10 +963,6 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
             _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
             
-            if not self.cn :
-                self.cn = obj_attr_list["cloud_name"]
-            self.conn_check()
-            
             if not _status :
                 
                 _obj_type = obj_attr_list["type"].upper()
@@ -990,7 +984,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     cberr(_msg)
                     raise self.ObjectOperationException(_msg, _status)            
 
-                _counter_value = self.get_object_count(self.cn, _obj_type, _counter_type)                
+                _counter_value = self.get_object_count(obj_attr_list["cloud_name"], _obj_type, _counter_type)                
                 if _counter_value != "-1" :
                     True
                 else :
@@ -1013,7 +1007,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         sleep(_check_interval)
                         _current_time = int(time())
 
-                        _counter_value = self.get_object_count(self.cn, _obj_type, _counter_type)
+                        _counter_value = self.get_object_count(obj_attr_list["cloud_name"], _obj_type, _counter_type)
 
                         _msg = "Counter \"" + _obj_type + ' ' + _counter_name
                         _msg += "\" equals " + str(_counter_value) + " after "
@@ -1033,7 +1027,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _fmsg += " does not exist."
                     _status = 34
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
@@ -1071,14 +1065,10 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
             _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
             
-            if not self.cn :
-                self.cn = obj_attr_list["cloud_name"]
-            self.conn_check()
-
             if not _status :
 
                 _obj_type = obj_attr_list["type"].upper()                
-                _sub_channel = self.osci.subscribe(_obj_type, obj_attr_list["channel"])
+                _sub_channel = self.osci.subscribe(obj_attr_list["cloud_name"], _obj_type, obj_attr_list["channel"])
 
                 _msg = "Subscribed to channel \"" + obj_attr_list["channel"] + "\""
                 _msg += " (object \"" + _obj_type + "\" listening for messages with"
@@ -1101,7 +1091,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
                 _status = 0
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
@@ -1135,18 +1125,14 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
             _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
             
-            if not self.cn :
-                self.cn = obj_attr_list["cloud_name"]
-            self.conn_check()
-
             if not _status :
 
                 _obj_type = obj_attr_list["type"].upper()                
-                self.osci.publish_message(_obj_type, obj_attr_list["channel"], obj_attr_list["message"], 1, 3600)
+                self.osci.publish_message(obj_attr_list["cloud_name"], _obj_type, obj_attr_list["channel"], obj_attr_list["message"], 1, 3600)
 
                 _status = 0
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
@@ -1205,12 +1191,12 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     
                     if not cmd.count("svm") :
                         _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
-                        _cld_conn = _cld_ops_class(self.pid, self.oscp, obj_attr_list["instance"])
+                        _cld_conn = _cld_ops_class(self.pid, self.osci)
                         sleep(2)
                         unused, unused2 = _cld_conn.vm_fixpause(obj_attr_list)
                     _status = 0
                         
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = 40
             _fmsg = str(obj.msg)
             
@@ -1233,26 +1219,23 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
             _smsg = ''
-            if not self.cn :
-                if BaseObjectOperations.default_cloud is not None:
-                    self.cn = BaseObjectOperations.default_cloud
+            if BaseObjectOperations.default_cloud is not None:
+                _cn = BaseObjectOperations.default_cloud
+            else :
+                if len(parameters.split()) > 1 :
+                    _cn = parameters.split()[0]
                 else :
-                    if len(parameters.split()) > 1 :
-                        self.cn = parameters.split()[0]
-                    else :
-                        _status = 9
-                        _msg = "Usage: monextract <cloud name> all"
-                        raise self.ObjectOperationException(_msg, 11)
+                    _status = 9
+                    _msg = "Usage: monextract <cloud name> all"
+                    raise self.ObjectOperationException(_msg, 11)
 
-            self.conn_check()
+            _cloud_list = self.osci.get_object_list("ITSELF", "CLOUD")
 
-            _cloud_list = self.osci.get_object_list("CLOUD")
-
-            if _cloud_list and self.cn in list(_cloud_list) :
+            if _cloud_list and _cn in list(_cloud_list) :
                 # Cloud is attached, we can proceed
                 True
             else :
-                _msg = "The cloud \"" + self.cn + "\" is not yet attached "
+                _msg = "The cloud \"" + _cn + "\" is not yet attached "
                 _msg += "to this experiment. Please attach it first."
                 _status = 9876
                 raise self.ObjectOperationException(_msg, _status)
@@ -1268,7 +1251,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _status = 8
             _fmsg = str(obj.msg)
 
-        except self.mscc.MetricStoreMgdConnException, obj :
+        except self.msci.MetricStoreMgdConnException, obj :
             _status = 40
             _fmsg = str(obj.msg)
 
@@ -1323,8 +1306,6 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     else :
                         _criteria = { "expid" : _obj_attr_list["expid"] }
                     
-                    self.conn_check("MS")
-
                     _csv_contents_header = _obj_attr_list[_obj_type + '_' + _metric_type + "_metrics_header"]
     
                     _fn = _obj_attr_list["data_file_location"] + '/' 
@@ -1476,7 +1457,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _status = 8
             _fmsg = str(obj.msg)
 
-        except self.mscc.MetricStoreMgdConnException, obj :
+        except self.msci.MetricStoreMgdConnException, obj :
             _status = 40
             _fmsg = str(obj.msg)
 
@@ -1515,8 +1496,6 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _curr_time = int(time())
                     _obj_type = _obj_attr_list["type"]
                     
-                    self.conn_check("MS")
-    
                     _msg = "The following " + _obj_type + "s reported management metrics:\n"
                     _field1 = "Name                        "
                     _field2 = "Age (seconds)"
@@ -1534,7 +1513,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _metrics_list = self.msci.find_document("latest_runtime_os_" + _obj_type + '_' + _obj_attr_list["username"], {}, True)
                     
                     for _metric in _metrics_list :
-                        _obj_attr_list = self.osci.get_object(_obj_type, False, _metric["_id"], False)
+                        _obj_attr_list = self.osci.get_object(_obj_attr_list["cloud_name"], _obj_type, False, _metric["_id"], False)
                         _msg += _obj_attr_list["name"].ljust(len(_field1))
                         _msg += '|' +  str( _curr_time- int(_metric["time"])).ljust(len(_field2)) + '\n'
 
@@ -1545,7 +1524,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _metrics_list = self.msci.find_document("latest_runtime_app_" + _obj_type + '_' + _obj_attr_list["username"], {}, True)
 
                         for _metric in _metrics_list :
-                            _obj_attr_list = self.osci.get_object(_obj_type, False, _metric["_id"], False)
+                            _obj_attr_list = self.osci.get_object(_obj_attr_list["cloud_name"], _obj_type, False, _metric["_id"], False)
                             _msg += _obj_attr_list["name"].ljust(len(_field1))
                             _msg += '|' +  str( _curr_time- int(_metric["time"])).ljust(len(_field2)) + '\n'                                               
 
@@ -1555,7 +1534,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _status = 8
             _fmsg = str(obj.msg)
 
-        except self.mscc.MetricStoreMgdConnException, obj :
+        except self.msci.MetricStoreMgdConnException, obj :
             _status = 40
             _fmsg = str(obj.msg)
 
@@ -1621,18 +1600,14 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
-            if not self.cn :
-                self.cn = cloud_name
-            self.conn_check()
-            
             _cloud_parameters = self.get_cloud_parameters(cloud_name)
 
             _cld_ops_class = self.get_cloud_class(_cloud_parameters["model"])
                 
-            _cld_conn = _cld_ops_class(self.pid, self.oscp, _cloud_parameters["instance"])
+            _cld_conn = _cld_ops_class(self.pid, self.osci)
 
-            for _vmc_uuid in self.osci.get_object_list("VMC") : 
-                _obj_attr_list = self.osci.get_object("VMC", False, _vmc_uuid, False)
+            for _vmc_uuid in self.osci.get_object_list(cloud_name, "VMC") : 
+                _obj_attr_list = self.osci.get_object(cloud_name, "VMC", False, _vmc_uuid, False)
                 _obj_attr_list["vmc_name"] = _obj_attr_list["name"]
                 _vm_list = _cld_conn.get_vm_instances(_obj_attr_list) 
                 if _vm_list :
@@ -1641,7 +1616,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         sleep(float(_obj_attr_list["update_frequency"]))
             _status = 0
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = 40
             _fmsg = str(obj.msg)
 
@@ -1695,7 +1670,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _status = 8
             _fmsg = str(obj.msg)
 
-        except self.mscc.MetricStoreMgdConnException, obj :
+        except self.msci.MetricStoreMgdConnException, obj :
             _status = 40
             _fmsg = str(obj.msg)
 
@@ -1742,13 +1717,11 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 if not _status :
                     _list_name = obj_attr_list["object_type"][:-1].lower() + '_' + obj_attr_list["object_attribute"]
         
-                    _username = obj_attr_list["instance"].split('_')[1]
-        
-                    _result = list(self.osci.get_list("GLOBAL", _list_name))
+                    _result = list(self.osci.get_list(obj_attr_list["cloud_name"], "GLOBAL", _list_name))
         
                     _list = ", ".join(_result)
 
-                    _vmc_list = self.osci.get_object_list("VMC")
+                    _vmc_list = self.osci.get_object_list(obj_attr_list["cloud_name"], "VMC")
 
                     if not _vmc_list :
                         _vmc_list = []
@@ -1756,27 +1729,27 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     if _list_name == "view_criteria" :
                         _view_dict = {
                                       "vmc" : { 
-                                               "pool": [ 0, { "label" : "VMC Pool", "criterion" : "pool", "expression" : sorted(list(self.osci.get_list("GLOBAL", "vmc_pools"))) } ],
-                                               "arrival": [ 1, { "label" : "Arrival Time", "criterion" : "username", "expression" : _username} ],
+                                               "pool": [ 0, { "label" : "VMC Pool", "criterion" : "pool", "expression" : sorted(list(self.osci.get_list(obj_attr_list["cloud_name"], "GLOBAL", "vmc_pools"))) } ],
+                                               "arrival": [ 1, { "label" : "Arrival Time", "criterion" : "username", "expression" : self.username } ],
                                                },
 
                                       "host" : { 
                                                "vmc": [ 0, { "label" : "VMC", "criterion" : "vmc", "expression" : sorted(list(_vmc_list)) } ],
-                                               "arrival": [ 1, { "label" : "Arrival Time", "criterion" : "username", "expression" : _username} ],
+                                               "arrival": [ 1, { "label" : "Arrival Time", "criterion" : "username", "expression" : self.username} ],
                                                },
                                       
                                       "vm" : { 
-                                              "role": [ 0, { "label" : "Role", "criterion" : "role", "expression" : sorted(list(self.osci.get_list("GLOBAL", "vm_roles")))} ],
-                                              "type": [ 1, { "label" : "Type", "criterion" : "type", "expression" : sorted(list(self.osci.get_list("GLOBAL", "ai_types")))} ],
-                                              "arrival": [ 2, { "label" : "Arrival", "criterion" : "arrival", "expression" : _username} ],
+                                              "role": [ 0, { "label" : "Role", "criterion" : "role", "expression" : sorted(list(self.osci.get_list(obj_attr_list["cloud_name"], "GLOBAL", "vm_roles")))} ],
+                                              "type": [ 1, { "label" : "Type", "criterion" : "type", "expression" : sorted(list(self.osci.get_list(obj_attr_list["cloud_name"], "GLOBAL", "ai_types")))} ],
+                                              "arrival": [ 2, { "label" : "Arrival", "criterion" : "arrival", "expression" : self.username} ],
                                               },
         
                                       "app" : {
-                                               "type": [ 0, { "label" : "Type", "criterion" : "type", "expression" : sorted(list(self.osci.get_list("GLOBAL", "ai_types")))} ],
+                                               "type": [ 0, { "label" : "Type", "criterion" : "type", "expression" : sorted(list(self.osci.get_list(obj_attr_list["cloud_name"], "GLOBAL", "ai_types")))} ],
                                                "arrival": [ 1, { "label" : "Arrival", "criterion" : "arrival", "expression" : "all"} ],
                                                },
                                       "aidrs" : {
-                                                 "pattern": [ 0, { "label" : "Pattern", "criterion" : "pattern", "expression" : sorted(list(self.osci.get_list("GLOBAL", "aidrs_patterns")))} ],
+                                                 "pattern": [ 0, { "label" : "Pattern", "criterion" : "pattern", "expression" : sorted(list(self.osci.get_list(obj_attr_list["cloud_name"], "GLOBAL", "aidrs_patterns")))} ],
                                                  "arrival": [ 1, { "label" : "Arrival", "criterion" : "arrival", "expression" : "all"} ],
                                                },
                                       
@@ -1786,7 +1759,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
         
                     _status = 0
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = 8
             _fmsg = str(obj.msg)
 
@@ -1796,7 +1769,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
         finally :
             if _status :
-                _msg = "Unable to get object list: " + _fmsg
+                _msg = "Unable to get GLOBAL object list: " + _fmsg
                 cberr(_msg)
                 _view_dict = False
 
@@ -1833,10 +1806,10 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 if not _status :
                     _list_name = obj_attr_list["object_type"].lower() + '_' + obj_attr_list["object_attribute"] + 's'
 
-                    if obj_attr_list["attribute_name"] in list(self.osci.get_list("GLOBAL", _list_name)) :
+                    if obj_attr_list["attribute_name"] in list(self.osci.get_list(obj_attr_list["cloud_name"], "GLOBAL", _list_name)) :
 
                         _formatted_result = []
-                        _object_contents = self.osci.get_object("GLOBAL", False, obj_attr_list["global_object"], False)
+                        _object_contents = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, obj_attr_list["global_object"], False)
 
                         if obj_attr_list["global_object"] == "vm_templates" :
                             if obj_attr_list["attribute_name"] in _object_contents :
@@ -1895,7 +1868,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _fmsg += obj_attr_list["object_attribute"] 
                         _fmsg += " (" + obj_attr_list["attribute_name"] + ")"
                         
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = 8
             _fmsg = str(obj.msg)
 
@@ -1956,14 +1929,14 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
                     _fmt_obj_chg_attr = ''.join(_fields) + '\n'
 
-                    _old_values = self.osci.get_object("GLOBAL", False, \
+                    _old_values = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, \
                                                        obj_attr_list["global_object"], \
                                                        False)
 
                     if not _obj_attrib in _old_values :
                         _old_values[_obj_attrib] = "non-existent"
 
-                    self.osci.update_object_attribute("GLOBAL", obj_attr_list["global_object"], \
+                    self.osci.update_object_attribute(obj_attr_list["cloud_name"], "GLOBAL", obj_attr_list["global_object"], \
                                                       False, _obj_attrib, _obj_value)
 
                     _fmt_obj_chg_attr += '|' + _obj_attrib.ljust(len(_fields[0]) - 1)
@@ -1980,7 +1953,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _status = 8
             _xfmsg = str(obj.msg)
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = 8
             _xfmsg = str(obj.msg)
 
@@ -2036,7 +2009,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
         
                     _status = 0
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = 8
             _fmsg = str(obj.msg)
 
@@ -2046,7 +2019,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
         finally :
             if _status :
-                _msg = "Unable to get object list: " + _fmsg
+                _msg = "Unable to get EXPID object list: " + _fmsg
                 cberr(_msg)
                 _view_dict = False
 

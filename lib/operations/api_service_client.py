@@ -124,28 +124,6 @@ class APIVM():
 class APIClient(Server):
     def api_error_check(self, func):
         def wrapped(*args, **kwargs):
-            if self.server_msci_initialized == False:
-                self.server_msci_initialized = None
-                try :
-                    clouds = self.cldlist()
-                except Exception, e :
-                    self.server_msci_initialized = False 
-                    raise APIException("124", str(e))
-                    
-                if len(clouds) > 0 :
-                    print "Initializing remote mongo connection..."
-                    try :
-                        # This attach is a no-op
-                        # Just used to initialize the mongodb connection
-                        # On the server side
-                        self.cldattach(clouds[0]["model"], clouds[0]["name"])
-                    except Exception, e :
-                        self.server_msci_initialized = False 
-                        raise APIException("123", str(e))
-                    self.server_msci_initialized = True
-                else :
-                    self.server_msci_initialized = False 
-                
             resp = func(*args, **kwargs)
             if int(resp["status"]) :
                 raise APIException(str(resp["status"]), resp["msg"])
@@ -158,7 +136,7 @@ class APIClient(Server):
             Open a connection to the metric store
             """
             self.msattrs = self.cldshow(cloud_name, "metricstore") if msattrs is None else msattrs
-            self.msci = MongodbMgdConn ("elasticity", self.msattrs["hostname"], int(self.msattrs["port"]), self.msattrs["database"], float(self.msattrs["timeout"]), "unused")
+            self.msci = MongodbMgdConn(self.msattrs)
             self.username = self.cldshow(cloud_name, "time")["username"] if username is None else username
 
     def __init__ (self, service_url):
@@ -179,7 +157,6 @@ class APIClient(Server):
         self.msattrs = None
         self.msci = None
         self.username = None
-        self.server_msci_initialized = False
         
     def check_for_new_vm(self, cloud_name, identifier):
         info = self.vmshow(cloud_name, identifier)

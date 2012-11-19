@@ -64,8 +64,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             if _status :
                 return self.package(_status, _msg, None)
 
-            self.conn_check("OS")
-            _attached_cloud_list = self.osci.get_object_list("CLOUD")
+            _attached_cloud_list = self.osci.get_object_list("ITSELF", "CLOUD")
 
             if _attached_cloud_list :
                 _attached_cloud_list = list(_attached_cloud_list)
@@ -73,12 +72,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _attached_cloud_list = []
 
             if cld_attr_lst["cloud_name"] in _attached_cloud_list :
-
-                self.cn = cld_attr_lst["cloud_name"]
-                self.oscp["cloud_name"] = self.cn
-                self.osci = False
-
-                self.conn_check("OS")
                 cld_attr_lst = self.get_cloud_parameters(cld_attr_lst["cloud_name"])
                 
                 _idmsg = "The \"" + cld_attr_lst["model"] + "\" cloud named \""
@@ -86,7 +79,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _smsg = _idmsg + " was already attached to this experiment."
                 _fmsg = _idmsg + " could not be attached to this experiment: "
                 
-                _time_attr_list = self.osci.get_object("GLOBAL", False, "time", False)
+                _time_attr_list = self.osci.get_object(cld_attr_lst["name"], "GLOBAL", False, "time", False)
                 _expid = _time_attr_list["experiment_id"]
                 _cld_name = cld_attr_lst["name"]
             else :
@@ -109,7 +102,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     definitions = fh.read()
                     fh.close()
                     
-                cld_attr_lst.update(parse_cld_defs_file(self.pid, definitions))
+                cld_attr_lst.update(parse_cld_defs_file(definitions))
                 '''
                 First, we have new support in the GUI for single-file configurations
                 that are capable of hosting multiple cloud configurations in a single file.
@@ -228,7 +221,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _initial_vmcs = str2dic(_vmcs)
                 else :
                     _initial_vmcs = []
-                    _cld_conn = _cld_ops_class(self.pid, None, None)
+                    _cld_conn = _cld_ops_class(self.pid, None)
     
                 _msg = "Attempting to connect to all VMCs described in the cloud "
                 _msg += "defaults file, in order to check the access parameters "
@@ -236,19 +229,18 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 cbdebug(_msg)
     
                 for _vmc_entry in _initial_vmcs :
-                    _cld_conn = _cld_ops_class(self.pid, None, None)
+                    _cld_conn = _cld_ops_class(self.pid, None)
                     _cld_conn.test_vmc_connection(_vmc_entry.split(':')[0], \
                                                   cld_attr_lst["vmc_defaults"]["access"], \
                                                   cld_attr_lst["vmc_defaults"]["credentials"], \
                                                   cld_attr_lst["vmc_defaults"]["extra_info"])
     
-                cld_attr_lst["instance"] = self.pid + ':' + cld_attr_lst["cloud_name"]
                 _all_global_objects = cld_attr_lst.keys()
                 cld_attr_lst["client_should_refresh"] = "no"
     
                 _remove_from_global_objects = [ "name", "model", "user-defined", \
                                                "dependencies", "cloud_filename", \
-                                               "cloud_name", "instance", "objectstore", \
+                                               "cloud_name", "objectstore", \
                                                "command_originated", "state", \
                                                "tracking", "channel", "sorting", \
                                                "ai_arrived", "ai_departed", \
@@ -275,8 +267,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
     
                 os_func, ms_func, unused  = load_store_functions(cld_attr_lst)
 
-                os_func(self.pid, cld_attr_lst["instance"], cld_attr_lst, "initialize")
-                ms_func(self.pid, cld_attr_lst["instance"], cld_attr_lst, "initialize")
+                os_func(cld_attr_lst, "initialize", cloud_name = cld_attr_lst["name"])
+                ms_func(cld_attr_lst, "initialize")
     
                 # This needs to be better coded later. Right now, it is just a fix to avoid
                 # the problems caused by the fact that git keeps resetting RSA's private key
@@ -288,9 +280,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
     
             _status = 0
     
-            _msg = _smsg + "\nThe instance identifier is " + cld_attr_lst["instance"]
-            _msg += ". \nThe experiment identifier is "
-            _msg += _expid
+            _msg = _smsg + "\nThe experiment identifier is " + _expid + "\n"
             cld_attr_lst["cloud_name"] = _cld_name
 
         except ImportError, msg :
@@ -351,39 +341,28 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status, _fmsg = self.parse_cli(cld_attr_list, parameters, command)
 
             if not _status :
+                _cld_attr_list = self.osci.get_object(cld_attr_list["name"], "CLOUD", False, cld_attr_list["name"], False)
 
-                if self.cn == cld_attr_list["name"] :
-                    True
-                else :
-                    self.cn = cld_attr_list["name"]
-                    self.oscp["cloud_name"] = self.cn
-                    #self.osci.disconnect()
-                    self.osci = False
-
-                self.conn_check()
-
-                _cld_attr_list = self.osci.get_object("CLOUD", False, cld_attr_list["name"], False)
-
-                self.update_cloud_attribute("client_should_refresh", "yes")
+                self.update_cloud_attribute(cld_attr_list["name"], "client_should_refresh", "yes")
 
                 _msg = "Waiting for all active AIDRS daemons to finish gracefully...." 
                 cbdebug(_msg, True)
 
                 _curr_tries = 0
-                _aidrs_list = self.osci.get_object_list("AIDRS")
+                _aidrs_list = self.osci.get_object_list(cld_attr_list["name"], "AIDRS")
                 while _aidrs_list :
                     cbdebug("Still waiting.... ")
-                    _aidrs_list = self.osci.get_object_list("AIDRS")
+                    _aidrs_list = self.osci.get_object_list(cld_attr_list["name"], "AIDRS")
 
                     if _aidrs_list and _curr_tries < _max_tries :
                         for _aidrs_uuid in _aidrs_list :
-                            _aidrs_attr_list = self.osci.get_object("AIDRS", \
+                            _aidrs_attr_list = self.osci.get_object(cld_attr_list["name"], "AIDRS", \
                                                                  False, \
                                                                  _aidrs_uuid, \
                                                                  False)
 
                             _x_attr_list = {}
-                            _parameters = self.cn + ' ' + _aidrs_attr_list["name"] + " true"
+                            _parameters = cld_attr_list["name"] + ' ' + _aidrs_attr_list["name"] + " true"
                             self.objdetach(_x_attr_list, _parameters, "aidrs-detach")
 
                         sleep(_update_frequency)
@@ -408,14 +387,14 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _msg += "finish attachment/detachment gracefully......"
                     cbdebug(_msg)
                     
-                    _active = int(self.get_object_count(self.cn, _object_typ, "ARRIVING"))
-                    _active += int(self.get_object_count(self.cn, _object_typ, "DEPARTING"))
+                    _active = int(self.get_object_count(cld_attr_list["name"], _object_typ, "ARRIVING"))
+                    _active += int(self.get_object_count(cld_attr_list["name"], _object_typ, "DEPARTING"))
 
                     while _active :
                         cbdebug(str(_active) + ' ' + _object_typ + "s are still attaching/detaching....")
                     
-                    _active = int(self.get_object_count(self.cn, _object_typ, "ARRIVING"))
-                    _active += int(self.get_object_count(self.cn, _object_typ, "DEPARTING"))
+                    _active = int(self.get_object_count(cld_attr_list["name"], _object_typ, "ARRIVING"))
+                    _active += int(self.get_object_count(cld_attr_list["name"], _object_typ, "DEPARTING"))
 
                     if _active :
                         if _curr_tries < _max_tries :
@@ -438,15 +417,15 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _msg += " this experiment."
                     cbdebug(_msg, True)
                     
-                    _obj_list = self.osci.get_object_list(_object_typ)
+                    _obj_list = self.osci.get_object_list(cld_attr_list["name"], _object_typ)
                     if _obj_list :
                         for _obj_uuid in _obj_list :
-                            _obj_attr_list = self.osci.get_object(_object_typ, False, _obj_uuid, False)
+                            _obj_attr_list = self.osci.get_object(cld_attr_list["name"], _object_typ, False, _obj_uuid, False)
                             _x_attr_list = {}
                             if BaseObjectOperations.default_cloud is not None :
                                 _parameters = _obj_attr_list["name"] + " true"
                             else :
-                                _parameters = self.cn + ' ' + _obj_attr_list["name"] + " true"
+                                _parameters = cld_attr_list["name"] + ' ' + _obj_attr_list["name"] + " true"
 
                             self.objdetach(_x_attr_list, _parameters, _object_typ.lower() + "-detach")
 
@@ -454,18 +433,18 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 
                 sleep (_update_frequency)
 
-                _proc_man = ProcessManagement(username = _cld_attr_list["username"], cloud_name = self.cn)
+                _proc_man = ProcessManagement(username = _cld_attr_list["username"], cloud_name = cld_attr_list["name"])
                 _gmetad_pid = _proc_man.get_pid_from_cmdline("gmetad.py")
 
                 if len(_gmetad_pid) :
                     cbdebug("Killing the running Host OS performance monitor (gmetad.py)......", True)
-                    _proc_man.kill_process("gmetad.py", self.cn)
+                    _proc_man.kill_process("gmetad.py", cld_attr_list["name"])
 
                 _msg = "Removing all contents from Object Store (GLOBAL objects,"
                 _msg += "VIEWS, etc.)"
                 cbdebug(_msg, True)
                 
-                self.osci.clean_object_store(_cld_attr_list)
+                self.osci.clean_object_store(cld_attr_list["name"], _cld_attr_list)
 
                 _status = 0
 
@@ -473,7 +452,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg =  str(obj.msg)
 
@@ -516,16 +495,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             if not _status :
                 _status = 101
                 
-                if self.cn == obj_attr_list["cloud_name"] :
-                    True
-                else :
-                    self.cn = obj_attr_list["cloud_name"]
-                    self.oscp["cloud_name"] = self.cn
-                    #self.osci.disconnect()
-                    self.osci = False
-                
-                self.conn_check()
-                _firs_defaults = self.osci.get_object("GLOBAL", False, "firs_defaults", False)
+                _firs_defaults = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "firs_defaults", False)
                 _host_list = str2dic(_firs_defaults["hosts"])
                 obj_attr_list["switch_ip"] = _firs_defaults["switch_ip"]
 
@@ -538,7 +508,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             if not _status :
                 _status = 101
-                _failed_hosts = self.osci.get_list(_obj_type, "FAILED_HOSTS", True)
+                _failed_hosts = self.osci.get_list(obj_attr_list["cloud_name"], _obj_type, "FAILED_HOSTS", True)
 
                 for _failed_host in _failed_hosts :
 
@@ -553,7 +523,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             _msg += obj_attr_list["switch_ip"] + " in order to "
                             _msg += "repair HOST " + obj_attr_list["name"]
                             cbdebug(_msg)
-                            self.osci.remove_from_list("HOST", "FAILED_HOSTS", obj_attr_list["name"], True)
+                            self.osci.remove_from_list(obj_attr_list["cloud_name"], "HOST", "FAILED_HOSTS", obj_attr_list["name"], True)
                         break
 
                 if _target_state.lower() == "fail" and not _host_already_failed :
@@ -561,11 +531,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _msg += "\" on the switch at " + obj_attr_list["switch_ip"]
                     _msg += " in order to fail HOST " + obj_attr_list["name"]
                     cbdebug(_msg)
-                    self.osci.add_to_list("HOST", "FAILED_HOSTS", obj_attr_list["name"], int(time()))            
+                    self.osci.add_to_list(obj_attr_list["cloud_name"], "HOST", "FAILED_HOSTS", obj_attr_list["name"], int(time()))            
     
                 _status = 0
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
@@ -603,7 +573,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 if not _status :                    
                     _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])            
-                    _cld_conn = _cld_ops_class(self.pid, self.oscp, obj_attr_list["instance"])
+                    _cld_conn = _cld_ops_class(self.pid, self.osci)
     
                     _status, _fmsg = _cld_conn.vmccleanup(obj_attr_list)
 
@@ -612,7 +582,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
@@ -663,10 +633,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
             if not _status :
                 _status, _fmsg = self.initialize_object(obj_attr_list, command)
 
-            _vmc_defaults = self.osci.get_object("GLOBAL", False, \
+            _vmc_defaults = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, \
                                                  "vmc_defaults", False)
 
-            _cloud_parameters = self.get_cloud_parameters(self.cn)
+            _cloud_parameters = self.get_cloud_parameters(obj_attr_list["cloud_name"])
 
             if _cloud_parameters["all_vmcs_attached"].lower() == "false" :
                 _obj_type = command.split('-')[0].upper()
@@ -678,7 +648,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _obj_attr_list["cloud_name"] = parameters.split()[0]
 
                 _obj_attr_list["command_originated"] = int(time())
-                _obj_attr_list["command"] = "vmcattach " + self.cn + " all"
+                _obj_attr_list["command"] = "vmcattach " + obj_attr_list["cloud_name"] + " all"
                 _obj_attr_list["name"] = "all"
 
                 self.get_counters(_obj_attr_list["cloud_name"], _obj_attr_list)
@@ -706,28 +676,29 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _vmc_counter += 1
 
                     _obj_attr_list["attach_parallelism"] = _vmc_counter            
+                    _obj_attr_list["cloud_name"] = obj_attr_list["cloud_name"]
                     _status, _fmsg = self.parallel_obj_operation("attach", _obj_attr_list)
 
                     if not _status :
-                        self.update_cloud_attribute("all_vmcs_attached", "true")
+                        self.update_cloud_attribute(_obj_attr_list["cloud_name"], "all_vmcs_attached", "true")
 
-                        self.update_host_os_perfmon()
+                        self.update_host_os_perfmon(_obj_attr_list)
 
                         _status = 0
             else :
                 _smsg = " It looks like all VMCs were already attached." 
                 #_smsg = " There is "
                 #_smsg += "no need to re-attach them. Check it with the "
-                #_smsg += "\"vmclist " + self.cn + "\" command. If that is in "
+                #_smsg += "\"vmclist " + obj_attr_list["cloud_name"] + "\" command. If that is in "
                 #_smsg += "error, please issue the command \" cldalter vmc_defaults"
-                #_smsg += " all_vmcs_attached=false " + self.cn + "\" and try again"
+                #_smsg += " all_vmcs_attached=false " + obj_attr_list["cloud_name"] + "\" and try again"
                 _status = 0
 
         except self.ObjectOperationException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
@@ -764,7 +735,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _fmsg = "An error has occurred, but no error message was captured"
             _conf_vmc_list = {}
 
-            _monitor_attr_list = self.osci.get_object("GLOBAL", False, \
+            _monitor_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, \
                                                       "mon_defaults", False)
 
             obj_attr_list["collect_from_host"] = _monitor_attr_list["collect_from_host"]
@@ -791,7 +762,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 
             obj_attr_list["nr_vms"] = 0
                 
-            self.initialize_metric_name_list()
+            self.initialize_metric_name_list(obj_attr_list)
 
             _status = 0
 
@@ -831,7 +802,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             obj_attr_list["vmc_pool"] = obj_attr_list["pool"]
             del obj_attr_list["pool"]
 
-            _vmc_pools = self.osci.get_list("GLOBAL", "vmc_pools")
+            _vmc_pools = self.osci.get_list(obj_attr_list["cloud_name"], "GLOBAL", "vmc_pools")
 
             _vmc_pools = list(_vmc_pools)
 
@@ -856,7 +827,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 if not len(_vmc_pools) :
                     _status = 181
                     _fmsg = "No additional VMC pools available for VM creation"
-                    raise self.oscc.ObjectStoreMgdConnException(_fmsg, _status)
+                    raise self.osci.ObjectStoreMgdConnException(_fmsg, _status)
 
                 for _key in obj_attr_list.keys() :
                     if _key.count("pref_pool") :
@@ -873,7 +844,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     else :
                         obj_attr_list["vmc_pool"] = choice(_vmc_pools)
 
-            _vm_uuid_list = self.osci.query_by_view("VMC", \
+            _vm_uuid_list = self.osci.query_by_view(obj_attr_list["cloud_name"], "VMC", \
                                                     "BYPOOL", \
                                                     obj_attr_list["vmc_pool"])
 
@@ -884,9 +855,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _status = 181
                     _msg = "No VMCs on pool \"" +  obj_attr_list["vmc_pool"] + "\""
                     _msg += " are available for VM creation."
-                    raise self.oscc.ObjectStoreMgdConnException(_msg, _status)
+                    raise self.osci.ObjectStoreMgdConnException(_msg, _status)
     
-                _vmc_attr_list = self.osci.get_object("VMC", False, \
+                _vmc_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "VMC", False, \
                                                       obj_attr_list["vmc"], False)
     
                 obj_attr_list["vmc_max_vm_reservations"] = _vmc_attr_list["max_vm_reservations"]
@@ -897,7 +868,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     obj_attr_list["svm_stub_ip"] = _vmc_attr_list["svm_destination"]
                 obj_attr_list["vmc_access"] = _vmc_attr_list["access"]
     
-                _vm_templates = self.osci.get_object("GLOBAL", False, \
+                _vm_templates = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, \
                                                      "vm_templates", False)
 
                 _vm_template_attr_list = str2dic(_vm_templates[obj_attr_list["role"]])
@@ -908,12 +879,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     else :
                         obj_attr_list["size"] = "default"
                     
-                selective_dict_update(self.pid, obj_attr_list, _vm_template_attr_list)
+                selective_dict_update(obj_attr_list, _vm_template_attr_list)
 
                 _status = 0
 
             else :
-                self.osci.remove_from_list("GLOBAL", "vmc_pools", obj_attr_list["vmc_pool"])
+                self.osci.remove_from_list(obj_attr_list["cloud_name"], "GLOBAL", "vmc_pools", obj_attr_list["vmc_pool"])
                 _fmsg = "An empty VMC pool was selected. This pool was already "
                 _fmsg += "removed from the list of pools."
                 cbdebug(_fmsg)
@@ -930,7 +901,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = 40
             _fmsg = str(obj.msg)
 
@@ -977,7 +948,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             if not _status :
                 _status, _fmsg = self.auto_allocate_vm_port("rdma", obj_attr_list)
                 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = 40
             _fmsg = str(obj.msg)
 
@@ -1019,19 +990,19 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _post_speculative_admission_control = False
             _fmsg = "An error has occurred, but no error message was captured"
 
-            _vmc_list = self.osci.get_object_list("VMC")
+            _vmc_list = self.osci.get_object_list(obj_attr_list["cloud_name"], "VMC")
             if not _vmc_list :
                 _msg = "No VMC attached to this experiment. Please "
                 _msg += "attach at least one VMC, or the VM creations triggered "
                 _msg += "by this AI attachment operation will fail."
-                raise self.oscc.ObjectStoreMgdConnException(_msg, _status)
+                raise self.osci.ObjectStoreMgdConnException(_msg, _status)
 
             if "aidrs" in obj_attr_list and obj_attr_list["aidrs"].lower() != "none" :
 
-                _object_exists = self.osci.object_exists("AIDRS", obj_attr_list["aidrs"], False)
+                _object_exists = self.osci.object_exists(obj_attr_list["cloud_name"], "AIDRS", obj_attr_list["aidrs"], False)
 
                 if _object_exists :
-                    _aidrs_attr_list = self.osci.get_object("AIDRS", False, \
+                    _aidrs_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "AIDRS", False, \
                                                           obj_attr_list["aidrs"], False)
         
                     obj_attr_list["max_ais"] = _aidrs_attr_list["max_ais"]
@@ -1047,7 +1018,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     obj_attr_list["aidrs_name"] = "none"
                     obj_attr_list["pattern"] = "none"
                                         
-            _ai_templates = self.osci.get_object("GLOBAL", False, \
+            _ai_templates = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, \
                                                  "ai_templates", False)
             _ai_template_attr_list = {}
             _app_type = obj_attr_list["type"]
@@ -1085,7 +1056,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             _post_speculative_admission_control = True
 
-            self.osci.pending_object_set("AI", obj_attr_list["uuid"], "Creating VMs: Switch tabs for tracking..." )
+            self.osci.pending_object_set(obj_attr_list["cloud_name"], "AI", obj_attr_list["uuid"], "Creating VMs: Switch tabs for tracking..." )
             if obj_attr_list["vm_creation"].lower() == "explicit" : 
                 _status, _fmsg = self.parallel_obj_operation("attach", obj_attr_list)
 
@@ -1093,7 +1064,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _vm_uuid_list = obj_attr_list["vms"].split(',')
                 obj_attr_list["vms"] = ''
                 for _vm_uuid in _vm_uuid_list :
-                    _vm_attr_list = self.osci.get_object("VM", False, _vm_uuid, False)
+                    _vm_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "VM", False, _vm_uuid, False)
                     obj_attr_list["vms"] += _vm_uuid + '|' + _vm_attr_list["role"] + '|' + _vm_attr_list["name"] + ','
     
                 obj_attr_list["vms"] = obj_attr_list["vms"][:-1]
@@ -1105,7 +1076,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _fmsg = "CTRL-C interrupt"
             cbdebug("VM objects need to be aborted...", True)
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = 41
             _fmsg = str(obj.msg)
 
@@ -1149,15 +1120,15 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             _fmsg = "An error has occurred, but no error message was captured"
 
-            _vmc_list = self.osci.get_object_list("VMC")
+            _vmc_list = self.osci.get_object_list(obj_attr_list["cloud_name"], "VMC")
             if not _vmc_list :
                 _msg = "No VMC attached to this experiment. Please "
                 _msg += "attach at least one VMC, or the VM creations triggered "
                 _msg += "by the AIs instantiated by the AS attachment operation "
                 _msg += "will fail."
-                raise self.oscc.ObjectStoreMgdConnException(_msg, _status)
+                raise self.osci.ObjectStoreMgdConnException(_msg, _status)
                             
-            _aidrs_templates = self.osci.get_object("GLOBAL", False, \
+            _aidrs_templates = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, \
                                                  "aidrs_templates", False)
             _aidrs_templates["patterns"] = []
             for _element in _aidrs_templates :
@@ -1186,7 +1157,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
                 _fmsg = "Unknown pattern: " + obj_attr_list["pattern"] 
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = 40
             _fmsg = str(obj.msg)
 
@@ -1218,7 +1189,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             _fmsg = "An error has occurred, but no error message was captured"
                             
-            _vmcrs_templates = self.osci.get_object("GLOBAL", False, \
+            _vmcrs_templates = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, \
                                                     "vmcrs_templates", False)
             cbdebug(_vmcrs_templates["patterns"])
             if _vmcrs_templates["patterns"].count(obj_attr_list["pattern"]) :
@@ -1240,7 +1211,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
                 _fmsg = "Unknown pattern: " + obj_attr_list["pattern"] 
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = 40
             _fmsg = str(obj.msg)
 
@@ -1306,14 +1277,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _status, _fmsg = self.initialize_object(obj_attr_list, command)
 
                 if not _status :
-                    self.osci.add_to_list(_obj_type, "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], int(time()))
-                    self.osci.pending_object_set(_obj_type, obj_attr_list["uuid"], "Initializing...")
+                    self.osci.add_to_list(obj_attr_list["cloud_name"], _obj_type, "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], int(time()))
+                    self.osci.pending_object_set(obj_attr_list["cloud_name"], _obj_type, obj_attr_list["uuid"], "Initializing...")
                     _created_pending = True
     
                     _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
                         
-                    _cld_conn = _cld_ops_class(self.pid, self.oscp, \
-                                               obj_attr_list["instance"])
+                    _cld_conn = _cld_ops_class(self.pid, self.osci)
     
                     if _obj_type == "VMC" :
                         self.pre_attach_vmc(obj_attr_list)
@@ -1377,10 +1347,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         
                         if _obj_type == "VM" and "host_name" in obj_attr_list and obj_attr_list["host_name"] != "unknown" :
                             if obj_attr_list["discover_hosts"].lower() == "true" :
-                                _host_attr_list = self.osci.get_object("HOST", True, obj_attr_list["host_name"], False)
+                                _host_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "HOST", True, obj_attr_list["host_name"], False)
                                 obj_attr_list["host"] = _host_attr_list["uuid"]
     
-                        self.osci.create_object(_obj_type, obj_attr_list["uuid"], \
+                        self.osci.create_object(obj_attr_list["cloud_name"], _obj_type, obj_attr_list["uuid"], \
                                                 obj_attr_list, False, True)
                         _created_object = True
     
@@ -1409,7 +1379,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
@@ -1438,7 +1408,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 cberr(_msg)
 
                 if self.osci :
-                    self.osci.update_counter(_obj_type, "FAILED", "increment")
+                    if "cloud_name" in obj_attr_list :
+                        self.osci.update_counter(obj_attr_list["cloud_name"], _obj_type, "FAILED", "increment")
     
                     if _obj_type == "VM" or _obj_type == "SVM" :
                         if "mgt_001_provisioning_request_originated" in obj_attr_list :
@@ -1457,7 +1428,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                 self.parallel_obj_operation("detach", obj_attr_list)
                                 
                         if obj_attr_list["action_after_vm_attach"] == "pause" :
-                            self.osci.publish_message("VM", "pause_on_attach", obj_attr_list["uuid"] + ";error;" + _msg, 1, 3600)
+                            self.osci.publish_message(obj_attr_list["cloud_name"], "VM", "pause_on_attach", obj_attr_list["uuid"] + ";error;" + _msg, 1, 3600)
 
 
                     if _obj_type == "VM" :
@@ -1466,7 +1437,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                            "VM", obj_attr_list, "attach")
                         if obj_attr_list["action_after_vm_attach"] == "pause" :
                             uuid = obj_attr_list["ai"] if obj_attr_list["ai"] != "none" else obj_attr_list["uuid"]
-                            self.osci.publish_message("VM", "pause_on_attach", uuid + ";error;" + _msg, 1, 3600)
+                            self.osci.publish_message(obj_attr_list["cloud_name"], "VM", "pause_on_attach", uuid + ";error;" + _msg, 1, 3600)
 
                     if _admission_control or ( _obj_type == "AI" and _pre_attach) :
                         self.admission_control(_obj_type, obj_attr_list, \
@@ -1488,19 +1459,19 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _cld_conn.aiundefine(obj_attr_list)
     
                     if _created_object :
-                        self.osci.destroy_object(_obj_type, obj_attr_list["uuid"], \
+                        self.osci.destroy_object(obj_attr_list["cloud_name"], _obj_type, obj_attr_list["uuid"], \
                                                 obj_attr_list, False)
     
                     obj_attr_list["tracking"] = _fmsg
-                    if "uuid" in obj_attr_list :
-                        self.osci.create_object("FAILEDTRACKING" + _obj_type, obj_attr_list["uuid"] + unique_state_key, \
+                    if "uuid" in obj_attr_list and "cloud_name" in obj_attr_list :
+                        self.osci.create_object(obj_attr_list["cloud_name"], "FAILEDTRACKING" + _obj_type, obj_attr_list["uuid"] + unique_state_key, \
                                                 obj_attr_list, False, True, 3600)
                     _xmsg = "Done "
                     cberr(_xmsg)                
 
             else :
                 _result = copy.deepcopy(obj_attr_list)
-                self.osci.update_counter(_obj_type, "ARRIVED", "increment")
+                self.osci.update_counter(obj_attr_list["cloud_name"], _obj_type, "ARRIVED", "increment")
                 
                 _msg = _obj_type + " object " + obj_attr_list["uuid"] 
                 _msg += " (named \"" + obj_attr_list["name"] +  "\") sucessfully "
@@ -1511,12 +1482,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _msg += " (" + obj_attr_list["cloud_hostname"] + ")."
                 cbdebug(_msg)
                 obj_attr_list["tracking"] = "Attach: success." 
-                self.osci.create_object("FINISHEDTRACKING" + _obj_type, obj_attr_list["uuid"] + unique_state_key, \
+                self.osci.create_object(obj_attr_list["cloud_name"], "FINISHEDTRACKING" + _obj_type, obj_attr_list["uuid"] + unique_state_key, \
                                         obj_attr_list, False, True, 3600)
 
             if _created_pending :
-                self.osci.pending_object_remove(_obj_type, obj_attr_list["uuid"])
-                self.osci.remove_from_list(_obj_type, "PENDING",obj_attr_list["uuid"] + "|" + obj_attr_list["name"], True)
+                self.osci.pending_object_remove(obj_attr_list["cloud_name"], _obj_type, obj_attr_list["uuid"])
+                self.osci.remove_from_list(obj_attr_list["cloud_name"], _obj_type, "PENDING",obj_attr_list["uuid"] + "|" + obj_attr_list["name"], True)
                 
             return self.package(_status, _msg, _result)
 
@@ -1529,19 +1500,17 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
-            self.conn_check()
-
             if "hosts" in obj_attr_list and len(obj_attr_list["hosts"]) :
                 for _host_uuid in obj_attr_list["hosts"].split(',') :
-                    self.osci.create_object("HOST", _host_uuid, \
+                    self.osci.create_object(obj_attr_list["cloud_name"], "HOST", _host_uuid, \
                                             obj_attr_list["host_list"][_host_uuid], False, True)
                     self.record_management_metrics(obj_attr_list["cloud_name"], \
                                                    "HOST", obj_attr_list["host_list"][_host_uuid], "attach")
 
                 if not "attach_parallel" in obj_attr_list :
-                    self.update_host_os_perfmon()
+                    self.update_host_os_perfmon(obj_attr_list)
                 elif obj_attr_list["attach_parallel"].lower() != "true" :
-                    self.update_host_os_perfmon()
+                    self.update_host_os_perfmon(obj_attr_list)
 
             self.record_management_metrics(obj_attr_list["cloud_name"], "VMC", \
                                            obj_attr_list, "attach")
@@ -1556,7 +1525,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = 23
             _fmsg = str(e)
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
@@ -1578,20 +1547,19 @@ class ActiveObjectOperations(BaseObjectOperations) :
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
-            self.conn_check()
-            self.osci.update_object_attribute("VM", obj_attr_list["primary_uuid"], \
+            self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["primary_uuid"], \
                                               False, "svm_stub_uuid", \
                                               obj_attr_list["uuid"], False)
             
-            self.osci.update_object_attribute("VM", obj_attr_list["primary_uuid"], \
+            self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["primary_uuid"], \
                                               False, "svm_stub_name", \
                                               obj_attr_list["name"], False)
             
-            self.osci.update_object_attribute("VM", obj_attr_list["primary_uuid"], \
+            self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["primary_uuid"], \
                                               False, "svm_stub_vmc", \
                                               obj_attr_list["vmc"], False)
 
-            self.osci.update_object_attribute("VM", obj_attr_list["primary_uuid"], \
+            self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["primary_uuid"], \
                                               False, "svm_stub_ip", \
                                               obj_attr_list["svm_stub_ip"], False)
 
@@ -1600,7 +1568,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             
             if obj_attr_list["model"].lower() != "sim" :
                 _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
-                _cld_conn = _cld_ops_class(self.pid, self.oscp, obj_attr_list["instance"])
+                _cld_conn = _cld_ops_class(self.pid, self.osci)
                 _status, _fmsg = cld_conn.vmreplicate_start(obj_attr_list)
             
             _status = 100
@@ -1610,7 +1578,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         obj_attr_list["cloud_name"], "AI", obj_attr_list["ai"], \
                             "replicated_vms"))
             
-                self.osci.update_object_attribute("AI", obj_attr_list["ai"], \
+                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "AI", obj_attr_list["ai"], \
                           False, "replicated_vms", _replicated_vms + 1, False)
                 
             _status = 0
@@ -1619,7 +1587,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = obj.status
             _fmsg = str(obj.msg)
             
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
@@ -1666,20 +1634,20 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _cmd += " -o StrictHostKeyChecking=no"
                     _cmd += " -o UserKnownHostsFile=/dev/null " 
                     _cmd += obj_attr_list["login"] + "@"
-                    _cmd += obj_attr_list["cloud_ip"] + " \"mkdir -p ~/cbtool;"
-                    _cmd += "echo '#OSKN-" + self.oscp["kind"] + "' > ~/cb_os_parameters.txt;"
-                    _cmd += "echo '#OSHN-" + self.oscp["hostname"] + "' >> ~/cb_os_parameters.txt;"
-                    _cmd += "echo '#OSPN-" + self.oscp["port"] + "' >> ~/cb_os_parameters.txt;"
-                    _cmd += "echo '#OSDN-" + self.oscp["database"] + "' >> ~/cb_os_parameters.txt;"
-                    _cmd += "echo '#OSTO-" + self.oscp["timeout"] + "' >> ~/cb_os_parameters.txt;"
+                    _cmd += obj_attr_list["cloud_ip"] + " \"mkdir -p ~/cloudbench;"
+                    _cmd += "echo '#OSKN-redis' > ~/cb_os_parameters.txt;"
+                    _cmd += "echo '#OSHN-" + self.osci.host + "' >> ~/cb_os_parameters.txt;"
+                    _cmd += "echo '#OSPN-" + str(self.osci.port) + "' >> ~/cb_os_parameters.txt;"
+                    _cmd += "echo '#OSDN-" + str(self.osci.dbid) + "' >> ~/cb_os_parameters.txt;"
+                    _cmd += "echo '#OSTO-" + str(self.osci.timout) + "' >> ~/cb_os_parameters.txt;"
                     _cmd += "echo '#OSCN-" + obj_attr_list["cloud_name"] + "' >> ~/cb_os_parameters.txt;"
                     _cmd += "echo '#OSMO-integrated' >> ~/cb_os_parameters.txt;"
-                    _cmd += "echo '#OSOI-" + obj_attr_list["instance"] + "' >> ~/cb_os_parameters.txt\";"
+                    _cmd += "echo '#OSOI-" + "TEST_" + obj_attr_list["username"] + ":" + obj_attr_list["cloud_name"] + "' >> ~/cb_os_parameters.txt\";"
 
                     _cmd += "rsync -e \"ssh -o StrictHostKeyChecking=no -l " + obj_attr_list["login"] + " -i " 
                     _cmd += obj_attr_list["identity"] + "\" --exclude-from "
                     _cmd += "'" +  obj_attr_list["exclude_list"] + "' -az " + obj_attr_list["base_dir"] + "/* " 
-                    _cmd += obj_attr_list["cloud_ip"] + ":~/cbtool/"
+                    _cmd += obj_attr_list["cloud_ip"] + ":~/cloudbench/"
 
                     _msg = "RSYNC: " + _cmd
                     cbdebug(_msg)
@@ -1709,11 +1677,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _fmsg += "tries. The VM seems unreachable."
             else :
 
-                self.conn_check()
                 _delay = int(time()) - _start
-                self.osci.pending_object_set("VM", obj_attr_list["uuid"], "Files transferred...")
+                self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "Files transferred...")
                 obj_attr_list["mgt_005_file_transfer"] = _delay
-                self.osci.update_object_attribute("VM", obj_attr_list["uuid"], \
+                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], \
                                                   False, "mgt_005_file_transfer", \
                                                   _delay)
 
@@ -1728,7 +1695,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                [obj_attr_list["cloud_ip"]], \
                                                [obj_attr_list["login"]], [None], \
                                                [obj_attr_list["identity"]], \
-                                               ["~/cbtool/scripts/common/cb_post_boot.sh"], \
+                                               ["~/cloudbench/scripts/common/cb_post_boot.sh"], \
                                                None, obj_attr_list, "execute") :
                             _status = 1495
                             _fmsg = "Failure while executing remote post_boot scripts."
@@ -1740,13 +1707,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             if obj_attr_list["action_after_vm_attach"] == "pause" :
                 uuid = obj_attr_list["ai"] if obj_attr_list["ai"] != "none" else obj_attr_list["uuid"]
-                self.osci.publish_message("VM", "pause_on_attach", uuid + ";vmfinished;" + dic2str(obj_attr_list), 1, 3600)
+                self.osci.publish_message(obj_attr_list["cloud_name"], "VM", "pause_on_attach", uuid + ";vmfinished;" + dic2str(obj_attr_list), 1, 3600)
 
         except self.ObjectOperationException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
             
@@ -1776,7 +1743,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _fmsg = "An error has occurred, but no error message was captured"
 
             if "run_scripts" in obj_attr_list and obj_attr_list["run_scripts"].lower() != "false" :
-                self.osci.pending_object_set("AI", obj_attr_list["uuid"], "Running VM Applications..." )
+                self.osci.pending_object_set(obj_attr_list["cloud_name"], "AI", obj_attr_list["uuid"], "Running VM Applications..." )
                 _status, _fmsg  = self.parallel_vm_config_for_ai(obj_attr_list["cloud_name"], \
                                                                  obj_attr_list["uuid"], "setup")
             else :
@@ -1796,11 +1763,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         try :
                             _msg = "Will wait " + str(secs) + " seconds to reach steady state before saving..."
                             cbdebug(_msg, True)
-                            self.osci.pending_object_set("AI", obj_attr_list["uuid"], _msg)
+                            self.osci.pending_object_set(obj_attr_list["cloud_name"], "AI", obj_attr_list["uuid"], _msg)
                             sleep(secs)
                             _msg = "Saving " + obj_attr_list["name"] + " now...."
                             cbdebug(_msg)
-                            self.osci.pending_object_set("AI", obj_attr_list["uuid"], _msg)
+                            self.osci.pending_object_set(obj_attr_list["cloud_name"], "AI", obj_attr_list["uuid"], _msg)
                             
                         except KeyboardInterrupt :
                             _fmsg = "CTRL-C: Cancelled VM save..."
@@ -1819,13 +1786,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _status = 0
                     
             if obj_attr_list["action_after_vm_attach"] == "pause" :
-                self.osci.publish_message("VM", "pause_on_attach", obj_attr_list["uuid"] + ";appfinished;" + dic2str(obj_attr_list), 1, 3600)
+                self.osci.publish_message(obj_attr_list["cloud_name"], "VM", "pause_on_attach", obj_attr_list["uuid"] + ";appfinished;" + dic2str(obj_attr_list), 1, 3600)
 
         except self.ObjectOperationException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
@@ -1856,7 +1823,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             _cmd = self.path + "/cbact"
             _cmd += " --procid=" + self.pid
-            _cmd += " --osp=" + dic2str(self.oscp)
+            _cmd += " --osp=" + dic2str(self.osci.oscp())
+            _cmd += " --msp=" + dic2str(self.msci.mscp())
             _cmd += " --uuid=" + obj_attr_list["uuid"] 
             _cmd += " --operation=aidr-submit"
             _cmd += " --cn=" + obj_attr_list["cloud_name"]
@@ -1872,7 +1840,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 cbdebug(_msg)
 
                 _obj_id = obj_attr_list["uuid"] + '-' + "submit"
-                self.update_process_list(self.cn, "AIDRS", _obj_id, \
+                self.update_process_list(obj_attr_list["cloud_name"], "AIDRS", _obj_id, \
                                          str(_proc_h.pid), "add")
 
             _status = 0
@@ -1902,7 +1870,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             _cmd = self.path + "/cbact"
             _cmd += " --procid=" + self.pid
-            _cmd += " --osp=" + dic2str(self.oscp)
+            _cmd += " --osp=" + dic2str(self.osci.oscp())
+            _cmd += " --msp=" + dic2str(self.msci.mscp())
             _cmd += " --uuid=" + obj_attr_list["uuid"] 
             _cmd += " --operation=vmcr-submit"
             _cmd += " --cn=" + obj_attr_list["cloud_name"]
@@ -1917,7 +1886,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 cbdebug(_msg)
 
                 _obj_id = obj_attr_list["uuid"] + '-' + "submit"
-                self.update_process_list(self.cn, "VMCRS", _obj_id, str(_proc_h.pid), "add")
+                self.update_process_list(obj_attr_list["cloud_name"], "VMCRS", _obj_id, str(_proc_h.pid), "add")
 
             _status = 0
 
@@ -1954,7 +1923,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
                 _status = 0
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
             
@@ -1994,13 +1963,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 elif obj_attr_list["force_detach"].lower() != "false" :
                     _msg = "Will forcefully stop replication before destroying primary VM..."
                     cbdebug(_msg, True)
-                    svm_obj_attr_list = self.osci.get_object("SVM", False, obj_attr_list["svm_stub_uuid"], False)
+                    svm_obj_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "SVM", False, obj_attr_list["svm_stub_uuid"], False)
                     _status, _fmsg, _unused = self.objdetach(svm_obj_attr_list, svm_obj_attr_list["name"], "svm-detach")
                 else :
                     _status = 47
                     _fmsg = "SVM FT Replication must be stopped before detachment."
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
@@ -2027,7 +1996,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"            
 
-            _exists = self.osci.object_exists("VM", obj_attr_list["primary_uuid"], False) 
+            _exists = self.osci.object_exists(obj_attr_list["cloud_name"], "VM", obj_attr_list["primary_uuid"], False) 
             if not _exists :
                 _msg = "SVM FT stub's primary VM is gone. Just going to cleanup..."
                 cbwarn(_msg, True)
@@ -2039,7 +2008,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _status = 0
             else :
                 _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
-                _cld_conn = _cld_ops_class(self.pid, self.oscp, obj_attr_list["instance"])
+                _cld_conn = _cld_ops_class(self.pid, self.osci)
                 _msg = "Going to disable replication to stub " + obj_attr_list["name"] + "..."
                 cbdebug(_msg, True)
                 # Put back when disabling works.....
@@ -2050,7 +2019,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = obj.status
             _fmsg = str(obj.msg)
             
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
@@ -2085,11 +2054,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
             
             if obj_attr_list["aidrs"] == "none" or\
              obj_attr_list["force_detach"].lower() != "false" or \
-             not self.osci.object_exists("AIDRS", obj_attr_list["aidrs"], False) :
+             not self.osci.object_exists(obj_attr_list["cloud_name"], "AIDRS", obj_attr_list["aidrs"], False) :
 
                 _msg = "Removing AI from the \"BYAIDRS\" view"
                 cbdebug(_msg)
-                self.osci.remove_from_view("AI", obj_attr_list, "BYAIDRS")
+                self.osci.remove_from_view(obj_attr_list["cloud_name"], "AI", obj_attr_list, "BYAIDRS")
 
                 _msg = "Destroying all VMs belonging to this AI"
                 cbdebug(_msg)
@@ -2108,7 +2077,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
             
@@ -2201,16 +2170,15 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _status, _fmsg = self.initialize_object(obj_attr_list, command)
 
             if not _status :
-                self.osci.add_to_list(_obj_type, "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], int(time()))
-                self.osci.pending_object_set(_obj_type, obj_attr_list["uuid"], "Detaching...")
+                self.osci.add_to_list(obj_attr_list["cloud_name"], _obj_type, "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], int(time()))
+                self.osci.pending_object_set(obj_attr_list["cloud_name"], _obj_type, obj_attr_list["uuid"], "Detaching...")
                 _detach_pending = True
                 
                 _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
-                _cld_conn = _cld_ops_class(self.pid, self.oscp, \
-                                           obj_attr_list["instance"])
+                _cld_conn = _cld_ops_class(self.pid, self.osci)
 
                 obj_attr_list["current_state"] = \
-                self.osci.get_object_state(_obj_type, obj_attr_list["uuid"])
+                self.osci.get_object_state(obj_attr_list["cloud_name"], _obj_type, obj_attr_list["uuid"])
 
                 _admission_control = self.admission_control(_obj_type, \
                                                             obj_attr_list, \
@@ -2229,7 +2197,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     if obj_attr_list["failover"] == "false" :
                         _status, _msg = _cld_conn.vmdestroy(obj_attr_list)
                     else :
-                        _primary = self.osci.get_object("VM", False, obj_attr_list["primary_uuid"], False)
+                        _primary = self.osci.get_object(obj_attr_list["cloud_name"], "VM", False, obj_attr_list["primary_uuid"], False)
                         _primary["svm_stub_ip"] = "undefined" 
                         _primary["mgt_901_deprovisioning_request_originated"] = int(time())
                         _status, _msg = _cld_conn.vmdestroy(_primary)
@@ -2254,7 +2222,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     raise self.ObjectOperationException(_msg, 28)
 
                 if not _status :
-                    self.osci.destroy_object(_obj_type, obj_attr_list["uuid"], \
+                    self.osci.destroy_object(obj_attr_list["cloud_name"], _obj_type, obj_attr_list["uuid"], \
                                              obj_attr_list, False)
 
                     _destroyed_object = True
@@ -2284,7 +2252,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg =  str(obj.msg)
 
@@ -2313,7 +2281,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 cberr(_msg)
 
                 if self.osci :
-                    self.osci.update_counter(_obj_type, "FAILED", "increment")
+                    if "cloud_name" in obj_attr_list :
+                        self.osci.update_counter(obj_attr_list["cloud_name"], _obj_type, "FAILED", "increment")
     
                     if _admission_control :
                         self.admission_control(_obj_type, obj_attr_list, \
@@ -2322,7 +2291,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     obj_attr_list["tracking"] = _fmsg
             else :
                 _result = copy.deepcopy(obj_attr_list)
-                self.osci.update_counter(_obj_type, "DEPARTED", "increment")
+                self.osci.update_counter(obj_attr_list["cloud_name"], _obj_type, "DEPARTED", "increment")
                 
                 _msg = _obj_type + " object " + obj_attr_list["uuid"] + " ("
                 _msg += "named \"" + obj_attr_list["name"] + "\") was "
@@ -2333,11 +2302,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
             unique_state_key = "-detach-" + str(time())
             if self.osci and obj_attr_list["uuid"] != "undefined":
                 tracking = "FINISHED" if not _status else "FAILED"
-                self.osci.create_object(tracking + "TRACKING" + _obj_type, obj_attr_list["uuid"] + unique_state_key, \
+                self.osci.create_object(obj_attr_list["cloud_name"], tracking + "TRACKING" + _obj_type, obj_attr_list["uuid"] + unique_state_key, \
                                         obj_attr_list, False, True, 3600)
                 if _detach_pending :
-                    self.osci.pending_object_remove(_obj_type, obj_attr_list["uuid"])
-                    self.osci.remove_from_list(_obj_type, "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], True)
+                    self.osci.pending_object_remove(obj_attr_list["cloud_name"], _obj_type, obj_attr_list["uuid"])
+                    self.osci.remove_from_list(obj_attr_list["cloud_name"], _obj_type, "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], True)
             
             return self.package(_status, _msg, _result)
 
@@ -2350,12 +2319,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
-            self.conn_check()
-
             if "hosts" in obj_attr_list :
                 for _host_uuid in obj_attr_list["hosts"].split(',') :
-                    _host_attr_list =  self.osci.get_object("HOST", False, _host_uuid, False)
-                    self.osci.destroy_object("HOST", _host_uuid, _host_attr_list, False)
+                    _host_attr_list =  self.osci.get_object(obj_attr_list["cloud_name"], "HOST", False, _host_uuid, False)
+                    self.osci.destroy_object(obj_attr_list["cloud_name"], "HOST", _host_uuid, _host_attr_list, False)
                     self.record_management_metrics(obj_attr_list["cloud_name"], \
                                                    "HOST", _host_attr_list, \
                                                    "detach")
@@ -2398,19 +2365,19 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _fmsg = "An error has occurred, but no error message was captured"
             
             if obj_attr_list["primary_uuid"] != "none" :
-                self.osci.update_object_attribute("VM", obj_attr_list["primary_uuid"], \
+                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["primary_uuid"], \
                                                   False, "svm_stub", "false", False)
                 
-                self.osci.update_object_attribute("VM", obj_attr_list["primary_uuid"], \
+                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["primary_uuid"], \
                                                   False, "svm_stub_uuid", "", False)
                 
-                self.osci.update_object_attribute("VM", obj_attr_list["primary_uuid"], \
+                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["primary_uuid"], \
                                                   False, "svm_stub_name", "", False)
                 
-                self.osci.update_object_attribute("VM", obj_attr_list["primary_uuid"], \
+                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["primary_uuid"], \
                                                   False, "svm_stub_vmc", "none", False)
                 
-                self.osci.update_object_attribute("VM", obj_attr_list["primary_uuid"], \
+                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["primary_uuid"], \
                                                   False, "svm_stub_ip", "none", False)
                 
                 if obj_attr_list["ai"] != "none" :
@@ -2418,22 +2385,22 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             obj_attr_list["cloud_name"], "AI", obj_attr_list["ai"], \
                                 "replicated_vms"))
                 
-                    self.osci.update_object_attribute("AI", obj_attr_list["ai"], \
+                    self.osci.update_object_attribute(obj_attr_list["cloud_name"], "AI", obj_attr_list["ai"], \
                               False, "replicated_vms", _replicated_vms - 1, False)
                 
             if obj_attr_list["failover"] != "false" :
-                self.osci.update_object_attribute("VM", obj_attr_list["primary_uuid"], \
+                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["primary_uuid"], \
                                                   False, "vmc", obj_attr_list["vmc"], False)
-                self.osci.update_object_attribute("VM", obj_attr_list["primary_uuid"], \
+                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["primary_uuid"], \
                                                   False, "vmc_name", obj_attr_list["vmc_name"], False)
-                self.osci.update_object_attribute("VM", obj_attr_list["primary_uuid"], \
+                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["primary_uuid"], \
                                                   False, "vmc_cloud_ip", obj_attr_list["vmc_cloud_ip"], False)
-                self.osci.update_object_attribute("VM", obj_attr_list["primary_uuid"], \
+                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["primary_uuid"], \
                                                   False, "vmc_pool", obj_attr_list["vmc_pool"], False)
                 
             _status = 0
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg =  str(obj.msg)
 
@@ -2461,7 +2428,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _fmsg = "An error has occurred, but no error message was captured"
 
             self.auto_free_vm_port("qemu_debug", obj_attr_list)
-            self.conn_check()
 
             if obj_attr_list["current_state"] != "attached" :
 
@@ -2469,14 +2435,14 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _scores = True
                 else :
                     _scores = False
-                self.osci.remove_from_list("VM", "VMS_UNDERGOING_" + obj_attr_list["current_state"].upper(), obj_attr_list["uuid"], _scores)
+                self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "VMS_UNDERGOING_" + obj_attr_list["current_state"].upper(), obj_attr_list["uuid"], _scores)
 
             self.record_management_metrics(obj_attr_list["cloud_name"], "VM", \
                                            obj_attr_list, "detach")
 
             _status = 0
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg =  str(obj.msg)
 
@@ -2509,7 +2475,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _scores = True
                 else :
                     _scores = False
-                self.osci.remove_from_list("AI", "AIS_UNDERGOING_" + \
+                self.osci.remove_from_list(obj_attr_list["cloud_name"], "AI", "AIS_UNDERGOING_" + \
                                            obj_attr_list["current_state"].upper(), \
                                            obj_attr_list["uuid"], _scores)
 
@@ -2579,11 +2545,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _status, _fmsg = self.initialize_object(obj_attr_list, command)
                 
             _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
-            _cld_conn = _cld_ops_class(self.pid, self.oscp, obj_attr_list["instance"])
+            _cld_conn = _cld_ops_class(self.pid, self.osci)
             
             cbdebug("Going to show SVM progress. CTRL-C to quit", True) 
             
-            _primary_obj_attribs = self.osci.get_object("VM", False, \
+            _primary_obj_attribs = self.osci.get_object(obj_attr_list["cloud_name"], "VM", False, \
                                     obj_attr_list["primary_uuid"], False)
             while True :
                 unused, _msg = _cld_conn.vmreplicate_status(_primary_obj_attribs)
@@ -2597,7 +2563,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = obj.status
             _fmsg = str(obj.msg)
             
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
@@ -2632,21 +2598,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     parameters = BaseObjectOperations.default_cloud + ' ' + parameters
                 _obj_attr_list["cloud_name"] = parameters.split()[0]           
 
-            if self.cn == _obj_attr_list["cloud_name"] :
-                True
-            else :
-                self.cn = _obj_attr_list["cloud_name"]
-                self.oscp["cloud_name"] = self.cn
-                #self.osci.disconnect()
-                self.osci = False
-
-            self.conn_check()
-
             _obj_attr_list["command_originated"] = int(time())
             _obj_attr_list["command"] = _obj_type.lower() + "detach " + _obj_attr_list["cloud_name"] + " all"
             _obj_attr_list["name"] = "all"
 
-            _obj_defaults = self.osci.get_object("GLOBAL", False, \
+            _obj_defaults = self.osci.get_object(_obj_attr_list["cloud_name"], "GLOBAL", False, \
                                                  _obj_type.lower() + "_defaults", \
                                                  False)
 
@@ -2655,16 +2611,16 @@ class ActiveObjectOperations(BaseObjectOperations) :
             self.get_counters(_obj_attr_list["cloud_name"], _obj_attr_list)
             self.record_management_metrics(_obj_attr_list["cloud_name"], _obj_type, _obj_attr_list, "trace")
 
-            _obj_list = self.osci.get_object_list(_obj_type)
+            _obj_list = self.osci.get_object_list(_obj_attr_list["cloud_name"], _obj_type)
 
             if _obj_list :        
                 _obj_counter = 0
                 _obj_attr_list["parallel_operations"] = {}
                 _obj_attr_list["parallel_operations"][_obj_counter] = {}
                 for _obj in _obj_list :
-                    _current_state = self.osci.get_object_state(_obj_type, _obj)
+                    _current_state = self.osci.get_object_state(_obj_attr_list["cloud_name"], _obj_type, _obj)
                     if _current_state == "attached" : 
-                        _obj_name = self.osci.get_object(_obj_type, False, _obj, False)["name"]
+                        _obj_name = self.osci.get_object(_obj_attr_list["cloud_name"], _obj_type, False, _obj, False)["name"]
                         _obj_attr_list["parallel_operations"][_obj_counter] = {}
                         _obj_attr_list["parallel_operations"][_obj_counter]["parameters"] = _obj_attr_list["cloud_name"]  + ' ' + _obj_name
                         _obj_attr_list["parallel_operations"][_obj_counter]["operation"] = _obj_type.lower() + "-detach"
@@ -2679,14 +2635,14 @@ class ActiveObjectOperations(BaseObjectOperations) :
             if _obj_type == "VMC" :
                 _cloud_parameters = self.get_cloud_parameters(_obj_attr_list["cloud_name"])
                 _cloud_parameters["all_vmcs_attached"] = "false"
-                self.update_cloud_attribute("all_vmcs_attached", "false")
+                self.update_cloud_attribute(_obj_attr_list["cloud_name"], "all_vmcs_attached", "false")
 
-                _proc_man = ProcessManagement(username = _cloud_parameters["username"], cloud_name = self.cn)
+                _proc_man = ProcessManagement(username = _cloud_parameters["username"], cloud_name = obj_attr_list["cloud_name"])
                 _gmetad_pid = _proc_man.get_pid_from_cmdline("gmetad.py")
 
                 if len(_gmetad_pid) :
                     cbdebug("Killing the running Host OS performance monitor (gmetad.py)......", True)
-                    _proc_man.kill_process("gmetad.py", self.cn)
+                    _proc_man.kill_process("gmetad.py", _obj_attr_list["cloud_name"])
 
             _status = 0
 
@@ -2694,7 +2650,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
@@ -2741,26 +2697,26 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 if not _status :
                     _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
-                    _cld_conn = _cld_ops_class(self.pid, self.oscp, obj_attr_list["instance"])
+                    _cld_conn = _cld_ops_class(self.pid, self.osci)
                     
                     if "vmcrs" in obj_attr_list :
-                        self.osci.update_object_attribute("VMCRS", \
+                        self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VMCRS", \
                                                           obj_attr_list["vmcrs"], \
                                                           False, "nr_vmcapreqs", \
                                                           1, True)
     
                     if "ai" in obj_attr_list and obj_attr_list["ai"].lower() != "none" :
-                        _ai_attr_list = self.osci.get_object("AI", False, obj_attr_list["ai"], False)
+                        _ai_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "AI", False, obj_attr_list["ai"], False)
                         
-                        _current_state = self.osci.get_object_state("AI", obj_attr_list["ai"])
+                        _current_state = self.osci.get_object_state(obj_attr_list["cloud_name"], "AI", obj_attr_list["ai"])
                         
                         if _current_state == "attached" :
     
-                            self.osci.add_to_list("AI", "AIS_UNDERGOING_CAPTURE", obj_attr_list["ai"], int(time())) 
-                            self.osci.set_object_state("AI", obj_attr_list["ai"], "capture")
+                            self.osci.add_to_list(obj_attr_list["cloud_name"], "AI", "AIS_UNDERGOING_CAPTURE", obj_attr_list["ai"], int(time())) 
+                            self.osci.set_object_state(obj_attr_list["cloud_name"], "AI", obj_attr_list["ai"], "capture")
                             
-                            self.osci.add_to_list("VM", "VMS_UNDERGOING_CAPTURE", obj_attr_list["uuid"], int(time()))
-                            self.osci.set_object_state("VM", obj_attr_list["uuid"], "capture")
+                            self.osci.add_to_list(obj_attr_list["cloud_name"], "VM", "VMS_UNDERGOING_CAPTURE", obj_attr_list["uuid"], int(time()))
+                            self.osci.set_object_state(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "capture")
     
                             _ai_attr_list["exclude_vm"] = obj_attr_list["uuid"]
                             _ai_attr_list["pre_capture"] = "true"            
@@ -2775,12 +2731,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
     
                     else :
                         
-                        _current_state = self.osci.get_object_state("VM", obj_attr_list["uuid"])
+                        _current_state = self.osci.get_object_state(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"])
                         
                         if _current_state == "attached" :
                             
-                            self.osci.add_to_list("VM", "VMS_UNDERGOING_CAPTURE", obj_attr_list["uuid"], int(time()))
-                            self.osci.set_object_state("VM", obj_attr_list["uuid"], "capture")
+                            self.osci.add_to_list(obj_attr_list["cloud_name"], "VM", "VMS_UNDERGOING_CAPTURE", obj_attr_list["uuid"], int(time()))
+                            self.osci.set_object_state(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "capture")
     
                         else : 
                             _fmsg = "VM object named \"" + obj_attr_list["name"] + "\" could "
@@ -2793,29 +2749,27 @@ class ActiveObjectOperations(BaseObjectOperations) :
     
                         _status, _fmsg = _cld_conn.vmcapture(obj_attr_list)
      
-                        self.conn_check()
-    
-                        self.osci.update_object_attribute("VM", \
+                        self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
                                                           obj_attr_list["uuid"], \
                                                           False, \
                                                           "mgt_101_capture_request_originated", \
                                                           obj_attr_list["mgt_101_capture_request_originated"])
     
-                        self.osci.update_object_attribute("VM", \
+                        self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
                                                           obj_attr_list["uuid"], \
                                                           False, \
                                                           "mgt_102_capture_request_sent", \
                                                           obj_attr_list["mgt_102_capture_request_sent"])
 
                         if "mgt_103_capture_request_completed" in obj_attr_list :
-                            self.osci.update_object_attribute("VM", \
+                            self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
                                                               obj_attr_list["uuid"], \
                                                               False, \
                                                               "mgt_103_capture_request_completed", \
                                                               obj_attr_list["mgt_103_capture_request_completed"])
 
                         else :
-                            self.osci.update_object_attribute("VM", \
+                            self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
                                                               obj_attr_list["uuid"], \
                                                               False, \
                                                               "mgt_999_capture_request_failed", \
@@ -2828,7 +2782,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                        "vm-detach")
         
                         if "vmcrs" in obj_attr_list :
-                            self.osci.update_object_attribute("VMCRS", \
+                            self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VMCRS", \
                                                               obj_attr_list["vmcrs"], \
                                                               False, "nr_vmcapreqs", \
                                                               -1, True)
@@ -2839,7 +2793,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
@@ -2894,20 +2848,20 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 
             if not _status :
                 _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
-                _cld_conn = _cld_ops_class(self.pid, self.oscp, obj_attr_list["instance"])
+                _cld_conn = _cld_ops_class(self.pid, self.osci)
 
                 if "ai" in obj_attr_list and obj_attr_list["ai"].lower() != "none" :
-                    _ai_attr_list = self.osci.get_object("AI", False, obj_attr_list["ai"], False)
+                    _ai_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "AI", False, obj_attr_list["ai"], False)
                     
-                    _current_state = self.osci.get_object_state("AI", obj_attr_list["ai"])
+                    _current_state = self.osci.get_object_state(obj_attr_list["cloud_name"], "AI", obj_attr_list["ai"])
                     
                     if _current_state == "attached" :
 
-                        self.osci.add_to_list("AI", "AIS_UNDERGOING_RESIZE", obj_attr_list["ai"]) 
-                        self.osci.set_object_state("AI", obj_attr_list["ai"], "resize")
+                        self.osci.add_to_list(obj_attr_list["cloud_name"], "AI", "AIS_UNDERGOING_RESIZE", obj_attr_list["ai"]) 
+                        self.osci.set_object_state(obj_attr_list["cloud_name"], "AI", obj_attr_list["ai"], "resize")
                         
-                        self.osci.add_to_list("VM", "VMS_UNDERGOING_RESIZE", obj_attr_list["uuid"])
-                        self.osci.set_object_state("VM", obj_attr_list["uuid"], "resize")
+                        self.osci.add_to_list(obj_attr_list["cloud_name"], "VM", "VMS_UNDERGOING_RESIZE", obj_attr_list["uuid"])
+                        self.osci.set_object_state(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "resize")
 
                     else :
                         _fmsg = "VM object named \"" + obj_attr_list["name"] + "\" could "
@@ -2918,12 +2872,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 else :
                     
-                    _current_state = self.osci.get_object_state("VM", obj_attr_list["uuid"])
+                    _current_state = self.osci.get_object_state(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"])
                     
                     if _current_state == "attached" :
                         
-                        self.osci.add_to_list("VM", "VMS_UNDERGOING_RESIZE", obj_attr_list["uuid"])
-                        self.osci.set_object_state("VM", obj_attr_list["uuid"], "resize")
+                        self.osci.add_to_list(obj_attr_list["cloud_name"], "VM", "VMS_UNDERGOING_RESIZE", obj_attr_list["uuid"])
+                        self.osci.set_object_state(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "resize")
 
                     else : 
                         _fmsg = "VM object named \"" + obj_attr_list["name"] + "\" could "
@@ -2939,28 +2893,28 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _status, _fmsg = _cld_conn.vmresize(obj_attr_list)
                     
                     update = {}
-                    self.osci.update_object_attribute("VM", \
+                    self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
                                                       obj_attr_list["uuid"], \
                                                       False, \
                                                       "mgt_301_resize_request_originated", \
                                                       obj_attr_list["mgt_301_resize_request_originated"])
 
-                    self.osci.update_object_attribute("VM", \
+                    self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
                                                       obj_attr_list["uuid"], \
                                                       False, \
                                                       "mgt_302_resize_request_sent", \
                                                       obj_attr_list["mgt_302_resize_request_sent"])
                     
-                    self.osci.update_object_attribute("VM", \
+                    self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
                                                       obj_attr_list["uuid"], \
                                                       False, \
                                                       "mgt_303_resize_request_completed", \
                                                       obj_attr_list["mgt_303_resize_request_completed"])
 
-                    self.osci.remove_from_list("AI", "AIS_UNDERGOING_RESIZE", obj_attr_list["ai"])
-                    self.osci.remove_from_list("VM", "VMS_UNDERGOING_RESIZE", obj_attr_list["uuid"])
-                    self.osci.set_object_state("VM", obj_attr_list["uuid"], "attached")
-                    self.osci.set_object_state("AI", obj_attr_list["ai"], "attached")
+                    self.osci.remove_from_list(obj_attr_list["cloud_name"], "AI", "AIS_UNDERGOING_RESIZE", obj_attr_list["ai"])
+                    self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "VMS_UNDERGOING_RESIZE", obj_attr_list["uuid"])
+                    self.osci.set_object_state(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "attached")
+                    self.osci.set_object_state(obj_attr_list["cloud_name"], "AI", obj_attr_list["ai"], "attached")
 
                     _status = 0
 
@@ -2968,7 +2922,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
@@ -3022,10 +2976,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _status, _fmsg = self.initialize_object(obj_attr_list, command)
                 
                 if not _status :
-                    self.osci.add_to_list("VM", "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], int(time()))
-                    self.osci.pending_object_set("VM", obj_attr_list["uuid"], "Changing state to: " + obj_attr_list["target_state"])
+                    self.osci.add_to_list(obj_attr_list["cloud_name"], "VM", "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], int(time()))
+                    self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "Changing state to: " + obj_attr_list["target_state"])
                     _runstate_pending = True
-                    _current_state = self.osci.get_object_state("VM", obj_attr_list["uuid"])
+                    _current_state = self.osci.get_object_state(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"])
     
                     _target_state = obj_attr_list["target_state"].lower()
                     if _target_state == "resume" :
@@ -3039,7 +2993,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         if _target_state != _current_state :
                             obj_attr_list["current_state"] = _current_state
                             _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
-                            _cld_conn = _cld_ops_class(self.pid, self.oscp, obj_attr_list["instance"])
+                            _cld_conn = _cld_ops_class(self.pid, self.osci)
                                      
                             # TAC looks up libvirt function based on target state
                             # Do not remove this
@@ -3057,27 +3011,27 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             _status, _fmsg = _cld_conn.vmrunstate(obj_attr_list)
                             
                             if not _status :
-                                self.osci.set_object_state("VM", obj_attr_list["uuid"], _target_state)
+                                self.osci.set_object_state(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], _target_state)
                                 if _target_state != "attached" :
-                                    self.osci.add_to_list("VM", "VMS_UNDERGOING_" + _target_state.upper(), obj_attr_list["uuid"])
+                                    self.osci.add_to_list(obj_attr_list["cloud_name"], "VM", "VMS_UNDERGOING_" + _target_state.upper(), obj_attr_list["uuid"])
                                 elif _target_state == "attached" :
-                                    self.osci.remove_from_list("VM", "VMS_UNDERGOING_SAVE", obj_attr_list["uuid"])
-                                    self.osci.remove_from_list("VM", "VMS_UNDERGOING_SUSPEND", obj_attr_list["uuid"]) 
-                                    self.osci.remove_from_list("VM", "VMS_UNDERGOING_FAIL", obj_attr_list["uuid"]) 
+                                    self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "VMS_UNDERGOING_SAVE", obj_attr_list["uuid"])
+                                    self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "VMS_UNDERGOING_SUSPEND", obj_attr_list["uuid"]) 
+                                    self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "VMS_UNDERGOING_FAIL", obj_attr_list["uuid"]) 
     
-                                self.osci.update_object_attribute("VM", \
+                                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
                                                                   obj_attr_list["uuid"], \
                                                                   False, \
                                                                   "mgt_201_runstate_request_originated", \
                                                                   obj_attr_list["mgt_201_runstate_request_originated"])
     
-                                self.osci.update_object_attribute("VM", \
+                                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
                                                                   obj_attr_list["uuid"], \
                                                                   False, \
                                                                   "mgt_202_runstate_request_sent", \
                                                                   obj_attr_list["mgt_202_runstate_request_sent"])
                                 
-                                self.osci.update_object_attribute("VM", \
+                                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
                                                                   obj_attr_list["uuid"], \
                                                                   False, \
                                                                   "mgt_203_runstate_request_completed", \
@@ -3095,7 +3049,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
@@ -3118,14 +3072,14 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _msg += obj_attr_list["target_state"] + "\" on this "
                     _msg += "experiment: " + _fmsg
                     cberr(_msg)
+                    obj_attr_list["tracking"] = "Change state request: " + _fmsg
+                    if "uuid" in obj_attr_list and "cloud_name" in obj_attr_list and self.osci :
+                        self.osci.create_object(obj_attr_list["cloud_name"], "FAILEDTRACKINGVM", \
+                                                obj_attr_list["uuid"] + \
+                                                unique_state_key, \
+                                                obj_attr_list, False, True, 3600)
                 else :
                     _msg = _fmsg
-                obj_attr_list["tracking"] = "Change state request: " + _fmsg
-                if "uuid" in obj_attr_list and self.osci :
-                    self.osci.create_object("FAILEDTRACKINGVM", \
-                                            obj_attr_list["uuid"] + \
-                                            unique_state_key, \
-                                            obj_attr_list, False, True, 3600)
             else :
                 _msg = "VM object " + obj_attr_list["uuid"] 
                 _msg += " (named \"" + obj_attr_list["name"] +  "\") had "
@@ -3134,12 +3088,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _msg += "experiment." 
                 cbdebug(_msg)
                 obj_attr_list["tracking"] = "Change state request: success." 
-                self.osci.create_object("FINISHEDTRACKINGVM", obj_attr_list["uuid"] + unique_state_key, \
+                self.osci.create_object(obj_attr_list["cloud_name"], "FINISHEDTRACKINGVM", obj_attr_list["uuid"] + unique_state_key, \
                                         obj_attr_list, False, True, 3600)
                 
             if _runstate_pending :
-                self.osci.pending_object_remove("VM", obj_attr_list["uuid"])
-                self.osci.remove_from_list("VM", "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], True)
+                self.osci.pending_object_remove(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"])
+                self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], True)
 
             return self.package(_status, _msg, _result)
 
@@ -3175,19 +3129,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _status = 9
                 _fmsg = "Usage: vmrunstate <cloud name> <vm name> <runstate> [mode]"
 
-            if self.cn == _obj_attr_list["cloud_name"] :
-                True
-            else :
-                self.cn = _obj_attr_list["cloud_name"]
-                self.oscp["cloud_name"] = self.cn
-                #self.osci.disconnect()
-                self.osci = False
-
             if not _status :    
-                self.conn_check()
-
                 _obj_attr_list["command_originated"] = int(time())
-                _obj_attr_list["command"] = "vmrunstateall " + self.cn + " all"
+                _obj_attr_list["command"] = "vmrunstateall " + _obj_attr_list["cloud_name"] + " all"
                 _obj_attr_list["name"] = "all"
 
                 self.get_counters(_obj_attr_list["cloud_name"], _obj_attr_list)
@@ -3195,15 +3139,15 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 _vm_list = False
                 if _target_state == "attached" and command == "repair" :
-                    _vm_list = self.osci.get_list("VM", "VMS_UNDERGOING_FAIL")
+                    _vm_list = self.osci.get_list(_obj_attr_list["cloud_name"], "VM", "VMS_UNDERGOING_FAIL")
 
                 elif _target_state == "attached" and command == "restore" :
-                    _vm_list = self.osci.get_list("VM", "VMS_UNDERGOING_SAVE")
+                    _vm_list = self.osci.get_list(_obj_attr_list["cloud_name"], "VM", "VMS_UNDERGOING_SAVE")
 
                 else :
                     _vm_list = []
-                    for _vm in self.osci.get_object_list("VM") :
-                        _current_state = self.osci.get_object_state("VM", _vm)
+                    for _vm in self.osci.get_object_list(_obj_attr_list["cloud_name"], "VM") :
+                        _current_state = self.osci.get_object_state(_obj_attr_list["cloud_name"], "VM", _vm)
                         if _current_state and _current_state == "attached" :
                             _vm_list.append(_vm)
 
@@ -3216,7 +3160,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             _vm_uuid = _vm[0]
                         else :
                             _vm_uuid = _vm
-                        _vm_attr_list = self.osci.get_object("VM", False, _vm_uuid, False)
+                        _vm_attr_list = self.osci.get_object(_obj_attr_list["cloud_name"], "VM", False, _vm_uuid, False)
                         _vm_name = _vm_attr_list["name"]
                         _obj_attr_list["parallel_operations"][_vm_counter] = {}
                         _obj_attr_list["parallel_operations"][_vm_counter]["parameters"] = _obj_attr_list["cloud_name"]  + ' ' + _vm_name + ' ' + _target_state
@@ -3239,7 +3183,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
@@ -3283,7 +3227,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status, _fmsg = self.parallel_obj_operation("runstate", obj_attr_list)
             
             if not _status :
-                self.osci.set_object_state("AI", obj_attr_list["uuid"], _target_state)
+                self.osci.set_object_state(obj_attr_list["cloud_name"], "AI", obj_attr_list["uuid"], _target_state)
 
         return _status, _fmsg
     
@@ -3305,8 +3249,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _status, _fmsg = self.initialize_object(obj_attr_list, command)
 
                 if not _status :
-                    self.osci.add_to_list("AI", "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], int(time()))
-                    self.osci.pending_object_set("AI", obj_attr_list["uuid"], "Changing state to: " + obj_attr_list["target_state"])
+                    self.osci.add_to_list(obj_attr_list["cloud_name"], "AI", "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], int(time()))
+                    self.osci.pending_object_set(obj_attr_list["cloud_name"], "AI", obj_attr_list["uuid"], "Changing state to: " + obj_attr_list["target_state"])
                     _runstate_pending = True
                     _status, _fmsg = self.airunstate_actual(obj_attr_list)
                     _result = obj_attr_list
@@ -3315,7 +3259,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
@@ -3335,7 +3279,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _msg = _fmsg
 
                 if "uuid" in obj_attr_list and self.osci :
-                    self.osci.create_object("FAILEDTRACKINGAI", \
+                    self.osci.create_object(obj_attr_list["cloud_name"], "FAILEDTRACKINGAI", \
                                             obj_attr_list["uuid"] + \
                                             unique_state_key, \
                                             obj_attr_list, False, True, 3600)
@@ -3344,11 +3288,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _msg += "\" state successfully."
                 cbdebug(_msg, True)
                 obj_attr_list["tracking"] = "Change state request: success."
-                self.osci.create_object("FINISHEDTRACKINGAI", obj_attr_list["uuid"] + unique_state_key, \
+                self.osci.create_object(obj_attr_list["cloud_name"], "FINISHEDTRACKINGAI", obj_attr_list["uuid"] + unique_state_key, \
                                         obj_attr_list, False, True, 3600)
                 if _runstate_pending :
-                    self.osci.pending_object_remove("AI", obj_attr_list["uuid"])
-                    self.osci.remove_from_list("AI", "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], True)
+                    self.osci.pending_object_remove(obj_attr_list["cloud_name"], "AI", obj_attr_list["uuid"])
+                    self.osci.remove_from_list(obj_attr_list["cloud_name"], "AI", "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], True)
                 
             return self.package(_status, _msg, _result)
 
@@ -3375,15 +3319,15 @@ class ActiveObjectOperations(BaseObjectOperations) :
             if not _status :
 
                 obj_attr_list["parallel_operations"] = {}
-                _current_state = self.osci.get_object_state("AI", obj_attr_list["uuid"])
+                _current_state = self.osci.get_object_state(obj_attr_list["cloud_name"], "AI", obj_attr_list["uuid"])
                
                 _time_mark_rrs = int(time())
                 obj_attr_list["mgt_402_resize_request_sent"] = _time_mark_rrs - obj_attr_list["mgt_401_resize_request_originated"]
                            
                 if _current_state and _current_state == "attached" :
 
-                    self.osci.add_to_list("AI", "AIS_UNDERGOING_RESIZE", obj_attr_list["uuid"]) 
-                    self.osci.set_object_state("AI", obj_attr_list["uuid"], "resize")
+                    self.osci.add_to_list(obj_attr_list["cloud_name"], "AI", "AIS_UNDERGOING_RESIZE", obj_attr_list["uuid"]) 
+                    self.osci.set_object_state(obj_attr_list["cloud_name"], "AI", obj_attr_list["uuid"], "resize")
                     
                     _delta = obj_attr_list["quantity"][0]
                     _nr_vms = obj_attr_list["quantity"][1:]
@@ -3422,13 +3366,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                             for _vm_uuid in _vm_uuid_list :
 
-                                _vm_attr_list = self.osci.get_object("VM", False, _vm_uuid, False)
+                                _vm_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "VM", False, _vm_uuid, False)
                                 obj_attr_list["vms"] += ',' + _vm_uuid + '|' + _vm_attr_list["role"] + '|' + _vm_attr_list["name"]
 
                             del obj_attr_list["temp_vms"]
 
-                            self.osci.update_object_attribute("AI", obj_attr_list["uuid"], False, "vms", obj_attr_list["vms"])
-                            self.osci.update_object_attribute("AI", obj_attr_list["uuid"], False, "vms_nr", _vm_counter)
+                            self.osci.update_object_attribute(obj_attr_list["cloud_name"], "AI", obj_attr_list["uuid"], False, "vms", obj_attr_list["vms"])
+                            self.osci.update_object_attribute(obj_attr_list["cloud_name"], "AI", obj_attr_list["uuid"], False, "vms_nr", _vm_counter)
 
                     elif _delta == "-" :
 
@@ -3469,8 +3413,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         
                         if not _status :                            
                         
-                            self.osci.update_object_attribute("AI", obj_attr_list["uuid"], False, "vms", obj_attr_list["vms"])
-                            self.osci.update_object_attribute("AI", obj_attr_list["uuid"], False, "vms_nr", _vm_counter)
+                            self.osci.update_object_attribute(obj_attr_list["cloud_name"], "AI", obj_attr_list["uuid"], False, "vms", obj_attr_list["vms"])
+                            self.osci.update_object_attribute(obj_attr_list["cloud_name"], "AI", obj_attr_list["uuid"], False, "vms_nr", _vm_counter)
                             
                             if _destroyed_vms < _nr_vms :
                                 _msg = "The request to destroy " + str(_nr_vms)
@@ -3489,8 +3433,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _fmsg = "none"
 
                     if not _status :
-                        self.osci.remove_from_list("AI", "AIS_UNDERGOING_RESIZE", obj_attr_list["name"])
-                        self.osci.set_object_state("AI", obj_attr_list["uuid"], "attached")
+                        self.osci.remove_from_list(obj_attr_list["cloud_name"], "AI", "AIS_UNDERGOING_RESIZE", obj_attr_list["name"])
+                        self.osci.set_object_state(obj_attr_list["cloud_name"], "AI", obj_attr_list["uuid"], "attached")
 
                         _aux_dict = {}
                         for _vm in obj_attr_list["vms"].split(',') :
@@ -3504,19 +3448,19 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             obj_attr_list["mgt_403_resize_request_completed"] = int(time()) - _time_mark_rrs
     
     
-                            self.osci.update_object_attribute("VM", \
+                            self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
                                                               _vm_uuid, \
                                                               False, \
                                                               "mgt_401_resize_request_originated", \
                                                               obj_attr_list["mgt_401_resize_request_originated"])
         
-                            self.osci.update_object_attribute("VM", \
+                            self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
                                                               _vm_uuid, \
                                                               False, \
                                                               "mgt_402_resize_request_sent", \
                                                               obj_attr_list["mgt_402_resize_request_sent"])
                             
-                            self.osci.update_object_attribute("VM", \
+                            self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
                                                               _vm_uuid, \
                                                               False, \
                                                               "mgt_403_resize_request_completed", \
@@ -3531,7 +3475,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                         obj_attr_list["sut"] = obj_attr_list["sut"][:-2]
                         
-                        self.osci.update_object_attribute("AI", obj_attr_list["uuid"], False, "sut", obj_attr_list["sut"])
+                        self.osci.update_object_attribute(obj_attr_list["cloud_name"], "AI", obj_attr_list["uuid"], False, "sut", obj_attr_list["sut"])
 
                         _status = 0
 
@@ -3546,7 +3490,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
@@ -3594,7 +3538,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _msg = "About to call vmcapture method, from aicapture method"
                         cbdebug(_msg)
                         if "async" in obj_attr_list and obj_attr_list["async"] == "true" :
-                            _status, _fmsg, _object = self.vmcapture(_capture_vm_attr_list, self.cn + ' ' + _vm_name, "vm-capture")
+                            _status, _fmsg, _object = self.vmcapture(_capture_vm_attr_list, obj_attr_list["cloud_name"] + ' ' + _vm_name, "vm-capture")
                         elif not BaseObjectOperations.default_cloud :
                             _cloud_name = parameters.split()[0]
                             _status, _fmsg, _object = self.vmcapture(_capture_vm_attr_list, _cloud_name + ' ' + _vm_name, "vm-capture")
@@ -3606,7 +3550,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
@@ -3634,11 +3578,14 @@ class ActiveObjectOperations(BaseObjectOperations) :
         '''
         TBD
         '''
+        
+        _status = 100
+        _fmsg = "An error has occurred, but no error message was captured"
+        _rollback = False
+        thread_pool = None
+            
         try :
-            _status = 100
-            _fmsg = "An error has occurred, but no error message was captured"
-            _rollback = False
-            _obj_operation_thrpool = ThreadPool(int(obj_attr_list[operation_type + "_parallelism"]))
+                
             for _object in obj_attr_list["parallel_operations"].keys() :
                 
                 obj_attr_list["parallel_operations"][_object][operation_type + "_parallel"] = "true"
@@ -3646,6 +3593,14 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _operation = obj_attr_list["parallel_operations"][_object]["operation"]
                 _obj_type = _operation.split('-')[0]
                 
+                if not thread_pool :
+                    pool_key = operation_type + "_" + _obj_type
+                    if pool_key not in self.thread_pools :
+                        thread_pool = ThreadPool(int(obj_attr_list[operation_type + "_parallelism"]))
+                        self.thread_pools[pool_key] = thread_pool
+                    else :
+                        thread_pool = self.thread_pools[pool_key]
+                        
                 if operation_type == "attach" :       
                     _func = self.objattach
                 elif operation_type == "detach" :
@@ -3671,9 +3626,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 if serial_mode : 
                     _func(_tmp_list, _command, _operation)
                 else :
-                    _obj_operation_thrpool.add_task(_func, _tmp_list, _command, _operation)
+                    thread_pool.add_task(_func, _tmp_list, _command, _operation)
 
-            _obj_operation_thrpool.wait_completion()
+            if thread_pool :
+                thread_pool.wait_completion()
 
             # Make sure the operations succeeded
             _rollback = False
@@ -3681,7 +3637,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _obj_type = obj_attr_list["parallel_operations"][_object]["operation"].split('-')[0].upper()
                 _obj_uuid = obj_attr_list["parallel_operations"][_object]["uuid"]
                 _command = obj_attr_list["parallel_operations"][_object]["parameters"]
-                _exists = self.osci.object_exists(_obj_type, _obj_uuid, False) 
+                _exists = self.osci.object_exists(obj_attr_list["cloud_name"], _obj_type, _obj_uuid, False) 
                 if _exists and operation_type == "attach" :
                     True
                 elif operation_type == "detach" :
@@ -3689,7 +3645,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _status = 19
                         break
                 elif operation_type == "runstate" :
-                    _state = self.osci.get_object_state("VM", _obj_uuid)
+                    _state = self.osci.get_object_state(obj_attr_list["cloud_name"], "VM", _obj_uuid)
                     if _command.count("save") :
                         if _state != "save" :
                             _status = 20
@@ -3722,13 +3678,14 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = 42
             _fmsg = "CTRL-C interrupt"
             cbdebug("Signal children to abort...", True)
-            _obj_operation_thrpool.abort()
+            if thread_pool :
+                thread_pool.abort()
             
         except self.ObjectOperationException, obj :
             _status = 45
             _fmsg = str(obj.msg)
 
-        except self.oscc.ObjectStoreMgdConnException, obj :
+        except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
@@ -3756,17 +3713,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
         _prev_load_duration = 0
         _prev_load_id =  0
 
-        if self.cn == cloud_name :
-            True
-        else :
-            self.cn = cloud_name
-            self.oscp["cloud_name"] = self.cn
-            #self.osci.disconnect()
-            self.osci = False
-
-        self.conn_check()
-
-        _initial_ai_attr_list = self.osci.get_object("AI", False, object_uuid, False)
+        _initial_ai_attr_list = self.osci.get_object(cloud_name, "AI", False, object_uuid, False)
         
         _mode = _initial_ai_attr_list["mode"]
         _check_frequency = float(_initial_ai_attr_list["update_frequency"])
@@ -3774,8 +3721,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
         while _ai_state :
 
             if _mode == "controllable" :
-                _ai_state = self.osci.get_object_state("AI", object_uuid)
-                _ai_attr_list = self.osci.get_object("AI", False, object_uuid, False)
+                _ai_state = self.osci.get_object_state(cloud_name, "AI", object_uuid)
+                _ai_attr_list = self.osci.get_object(cloud_name, "AI", False, object_uuid, False)
                 _mode = _ai_attr_list["mode"]
                 _check_frequency = float(_ai_attr_list["update_frequency"])
             else :
@@ -3881,21 +3828,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
         '''
         _aidrs_state = True
 
-        if self.cn == cloud_name :
-            True
-        else :
-            self.cn = cloud_name
-            self.oscp["cloud_name"] = self.cn
-            #self.osci.disconnect()
-            self.osci = False
-
-        self.conn_check()
-
         while _aidrs_state :
 
-            _aidrs_state = self.osci.get_object_state("AIDRS", object_uuid)
+            _aidrs_state = self.osci.get_object_state(cloud_name, "AIDRS", object_uuid)
 
-            _aidrs_attr_list = self.osci.get_object("AIDRS", False, object_uuid, False)
+            _aidrs_attr_list = self.osci.get_object(cloud_name, "AIDRS", False, object_uuid, False)
 
             _check_frequency = int(_aidrs_attr_list["update_frequency"])
 
@@ -3912,7 +3849,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                     _cmd = base_dir + "/cbact"
                     _cmd += " --procid=" + self.pid
-                    _cmd += " --osp=" + dic2str(self.oscp)
+                    _cmd += " --osp=" + dic2str(self.osci.oscp())
+                    _cmd += " --msp=" + dic2str(self.msci.mscp())
 
                     _cmd += " --oop=" + cloud_name + ',' + _aidrs_attr_list["type"] + ',' + _aidrs_attr_list["load_level"]
                     _cmd += ',' + _aidrs_attr_list["load_duration"] + ',' + _aidrs_attr_list["lifetime"]  + ',' + object_uuid
@@ -3932,7 +3870,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         cbdebug(_msg)
 
                         _obj_id = _ai_uuid + '-' + "attach"
-                        self.update_process_list(self.cn, "AI", \
+                        self.update_process_list(cloud_name, "AI", \
                                                  _obj_id, \
                                                  str(_proc_h.pid), \
                                                  "add")
@@ -3959,7 +3897,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             while _inter_arrival_time < int(_aidrs_attr_list["current_inter_arrival_time"]) :
 
-                _my_overdue_ais = self.osci.query_by_view("AI", "BYAIDRS", \
+                _my_overdue_ais = self.osci.query_by_view(cloud_name, "AI", "BYAIDRS", \
                                                           object_uuid, \
                                                           "departure", \
                                                           "overdue")
@@ -3974,12 +3912,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     for _ai in _my_overdue_ais :
                         _ai_uuid, _ai_name = _ai.split('|')
                         
-                        _current_state = self.osci.get_object_state("AI", _ai_uuid)
+                        _current_state = self.osci.get_object_state(cloud_name, "AI", _ai_uuid)
 
                         if _current_state and _current_state == "attached" :                    
                             _cmd = base_dir + "/cbact"
                             _cmd += " --procid=" + self.pid
-                            _cmd += " --osp=" + dic2str(self.oscp)
+                            _cmd += " --osp=" + dic2str(self.osci.oscp())
+                            _cmd += " --msp=" + dic2str(self.msci.mscp())
                             _cmd += " --oop=" + cloud_name + ',' + _ai_name + ',true'
                             _cmd += " --operation=ai-detach"
                             _cmd += " --cn=" + cloud_name
@@ -3996,7 +3935,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                 cbdebug(_msg)
     
                                 _obj_id = _ai_uuid + '-' + "detach"
-                                self.update_process_list(self.cn, "AI", \
+                                self.update_process_list(cloud_name, "AI", \
                                                          _obj_id, \
                                                          str(_proc_h.pid), \
                                                          "add")
@@ -4009,7 +3948,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _msg = "No AIs have reached the end of their lifetimes."
                     cbdebug(_msg)
 
-                _aidrs_state = self.osci.get_object_state("AIDRS", object_uuid)
+                _aidrs_state = self.osci.get_object_state(cloud_name, "AIDRS", object_uuid)
 
                 if not _aidrs_state  :
                     _msg = "AIDRS object " + object_uuid 
@@ -4043,21 +3982,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
         '''
         _vmcrs_state = True
 
-        if self.cn == cloud_name :
-            True
-        else :
-            self.cn = cloud_name
-            self.oscp["cloud_name"] = self.cn
-            #self.osci.disconnect()
-            self.osci = False
-
-        self.conn_check()
-
         while _vmcrs_state :
 
-            _vmcrs_state = self.osci.get_object_state("VMCRS", object_uuid)
+            _vmcrs_state = self.osci.get_object_state(cloud_name, "VMCRS", object_uuid)
 
-            _vmcrs_attr_list = self.osci.get_object("VMCRS", False, object_uuid, False)
+            _vmcrs_attr_list = self.osci.get_object(cloud_name, "VMCRS", False, object_uuid, False)
 
             _check_frequency = float(_vmcrs_attr_list["update_frequency"])
 
@@ -4080,12 +4009,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 if _vmcrs_state and _vmcrs_state != "stopped" :
 
-                    _capturable_ais = self.osci.query_by_view("AI", "BYTYPE", _vmcrs_attr_list["type"], "arrival", "minage:" + _vmcrs_attr_list["min_cap_age"])
+                    _capturable_ais = self.osci.query_by_view(cloud_name, "AI", "BYTYPE", _vmcrs_attr_list["type"], "arrival", "minage:" + _vmcrs_attr_list["min_cap_age"])
 
                     if len(_capturable_ais) :
                         _selected_ai = choice(_capturable_ais)
                         _ai_uuid, _ai_name = _selected_ai.split('|')
-                        _ai_attr_list = self.osci.get_object("AI", False, _ai_uuid, False)    
+                        _ai_attr_list = self.osci.get_object(cloud_name, "AI", False, _ai_uuid, False)    
                         _vm_list = _ai_attr_list["vms"].split(',')
                         _vm_candidate_list = []
                         for _vm in _vm_list :
@@ -4097,7 +4026,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _vm_uuid, _vm_role, _vm_name = _vm.split('|')
                         _cmd = base_dir + "/cbact"
                         _cmd += " --procid=" + self.pid
-                        _cmd += " --osp=" + dic2str(self.oscp)
+                        _cmd += " --osp=" + dic2str(self.osci.oscp())
+                        _cmd += " --msp=" + dic2str(self.msci.mscp())
                         _cmd += " --oop=" + cloud_name + ',' + _vm_name
                         _cmd += " --operation=vm-capture"
                         _cmd += " --cn=" + cloud_name
@@ -4116,7 +4046,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             cbdebug(_msg)
 
                             _obj_id = _ai_uuid + '-' + "capture"
-                            self.update_process_list(self.cn, "AI", \
+                            self.update_process_list(cloud_name, "AI", \
                                                      _obj_id, \
                                                      str(_proc_h.pid), \
                                                      "add")
@@ -4144,7 +4074,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             while _inter_arrival_time < _vmcr_inter_arrival_time :
 
-                _vmcrs_state = self.osci.get_object_state("VMCRS", object_uuid)
+                _vmcrs_state = self.osci.get_object_state(cloud_name, "VMCRS", object_uuid)
                 
                 if not _vmcrs_state  :
                     _msg = "VMCRS object " + object_uuid 

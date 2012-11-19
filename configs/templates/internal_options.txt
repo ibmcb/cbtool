@@ -63,7 +63,7 @@ AIDRS = BYUSERNAME, BYPATTERN
 VMCRS = BYUSERNAME, BYTYPE
 FIRS = BYUSERNAME, BYSCOPE
 MANDATORY_TAGS = name, cloud_hostname, cloud_ip
-CLOUD_ATTRIBUTES = name, model, description, all, instance, username, client_should_refresh, start_time, all_vmcs_attached
+CLOUD_ATTRIBUTES = name, model, description, all, username, client_should_refresh, start_time, all_vmcs_attached
 
 [ADMISSION_CONTROL]
 VMC_MAX_RESERVATIONS = 100000
@@ -92,8 +92,6 @@ CLEANUP_ON_ATTACH = $True
 CLEANUP_ON_DETACH = $True
 REPLICATION_VMCS = $EMPTY
 DETACH_PARALLELISM = 20
-# This does not work on all clouds by default
-# Nor does it work on all openstack releases
 DISCOVER_HOSTS = $False
 
 [VM_DEFAULTS]

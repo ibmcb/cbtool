@@ -16,14 +16,6 @@
 # limitations under the License.
 #/*******************************************************************************
 
-'''
-Created on Nov 06, 2011
-
-Thread Pool Library
-
-@author: Emilio Monti (ActiveState Code Recipe)
-'''
-
 from Queue import Queue
 from threading import Thread
 from time import sleep
@@ -42,13 +34,17 @@ class Worker(Thread):
         while True:
             func, args, kargs = self.tasks.get()
             try: 
+                #print ("THREAD STARTED: " + func.__name__ + ": " + str(args) + " " + str(kargs))
                 self.abort = False
                 self.aborted = False
                 func(*args, **kargs)
                 self.aborted = True
             except Exception, e:
+                #print ("THREAD FAILED: " + func.__name__ + ": " + str(args) + " " + str(kargs))
                 print e
-            self.tasks.task_done()
+            finally :
+                #print ("THREAD FINISHED: " + func.__name__ + ": " + str(args) + " " + str(kargs))
+                self.tasks.task_done()
 
 class ThreadPool:
     """Pool of threads consuming tasks from a queue"""
