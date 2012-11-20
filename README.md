@@ -200,11 +200,12 @@ In order to use it, you would choose a language:
 1. Python: from import api_service_client import *
 2. Java: import api.*;
 3. Ruby: require 'api_service_client'
+4. C++: #include "apl_service_client.hpp";
 
 API Client Examples in each language:
 =========
-1. Python: clients/provision_vm.py, clients/provision_app.py
+1. Python: clients/provision_vm.py, clients/provision_application.py
 2. Java: clients/ProvisionVM.java, clients/ProvisionAPP.java
-3. Ruby: clients/provision_vm.rb, clients/provision_app.rb
-
+3. Ruby: clients/provision_vm.rb, clients/provision_application.rb
+4. C++: clients/provision_vm.cpp, clients/provision_application.cpp, clients/list_regions.cpp
 These examples are fairily self-explanatory. If you help or would like bindings written in a new language, don't hesitate to contact us and we'll try to accomodate you.
