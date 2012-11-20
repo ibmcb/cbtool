@@ -208,4 +208,5 @@ API Client Examples in each language:
 2. Java: clients/ProvisionVM.java, clients/ProvisionAPP.java
 3. Ruby: clients/provision_vm.rb, clients/provision_application.rb
 4. C++: clients/provision_vm.cpp, clients/provision_application.cpp, clients/list_regions.cpp
+
 These examples are fairily self-explanatory. If you help or would like bindings written in a new language, don't hesitate to contact us and we'll try to accomodate you.
