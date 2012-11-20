@@ -13,8 +13,6 @@ int main() {
     try {
 	APIClient api("172.16.1.222", 7070);
 
-	api.dashboard_conn_check("SIM1");
-
 	cout << "Creating Application..."<< endl;
 
 	APIValue answer = api.perform("appattach", "SIM1", "nullworkload"); 
