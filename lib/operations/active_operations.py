@@ -2637,7 +2637,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _cloud_parameters["all_vmcs_attached"] = "false"
                 self.update_cloud_attribute(_obj_attr_list["cloud_name"], "all_vmcs_attached", "false")
 
-                _proc_man = ProcessManagement(username = _cloud_parameters["username"], cloud_name = obj_attr_list["cloud_name"])
+                _proc_man = ProcessManagement(username = _cloud_parameters["username"], cloud_name = _obj_attr_list["cloud_name"])
                 _gmetad_pid = _proc_man.get_pid_from_cmdline("gmetad.py")
 
                 if len(_gmetad_pid) :
