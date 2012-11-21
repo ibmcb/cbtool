@@ -443,6 +443,12 @@ def check_python_twisted_version(hostname, username, trd_party_dir) :
         
         _msg = "Checking python-twisted library version....."
         import twisted
+        from twisted.web.wsgi import WSGIResource
+        from twisted.internet import reactor
+        from twisted.web.static import File
+        from twisted.web.resource import Resource
+        from twisted.web.server import Site
+        from twisted.web import wsgi
         
         _version = str(twisted.__version__).strip()
         del twisted
@@ -473,6 +479,7 @@ def check_python_webob_version(hostname, username, trd_party_dir) :
         
         _msg = "Checking python-webob library version..... (any)"
         import webob
+        from webob import Request, Response, exc
         
         #_version = str(webob.__version__).strip()
         del webob 
@@ -503,6 +510,7 @@ def check_python_beaker_version(hostname, username, trd_party_dir) :
         
         _msg = "Checking python-beaker library version..... (any)"
         import beaker 
+        from beaker.middleware import SessionMiddleware
         
         #_version = str(beaker.__version__).strip()
         del beaker 
