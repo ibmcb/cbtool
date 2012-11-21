@@ -33,8 +33,6 @@ def final_result(read, write, pid)
 end
 
 class CloudBenchPythonSCPProxy 
- @isa
-
  def initialize(conf)
    @isa = IaasAdapter.new(conf)
  end
@@ -116,7 +114,7 @@ class CloudBenchPythonSCPProxy
 
 end
 
-if ARGV.size != 1 :
+if ARGV.size != 1
 	print "Need port number.\n"
 	exit(1)
 end

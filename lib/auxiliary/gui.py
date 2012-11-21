@@ -34,15 +34,14 @@ from twisted.web.static import File
 from twisted.web.resource import Resource
 from twisted.web.server import Site
 from twisted.web import wsgi
-from webob import Request, Response
-from webob.exc import *
+from webob import Request, Response, exc
 from beaker.middleware import SessionMiddleware
 from optparse import OptionParser
 
 cwd = (re.compile(".*\/").search(os.path.realpath(__file__)).group(0)) + "/../../"
 path.append(cwd)
 
-from lib.operations.api_service_client import *
+from lib.api.api_service_client import *
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 
 def prefix(uri) :
@@ -554,10 +553,10 @@ class GUI(object):
         
         try:
             resp = self.common(req)
-        except HTTPTemporaryRedirect, e :
+        except exc.HTTPTemporaryRedirect, e :
             resp = e
             resp.location = req.dest + resp.location + req.active
-        except HTTPException, e:
+        except exc.HTTPException, e:
             resp = e
         except Exception, e :
             exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -1250,7 +1249,7 @@ class GUI(object):
                         output += self.heromsg + "\n<h4>Successfully " + (operation_attrs["label"] + "ed: ").replace("ee", "e") + "BOOTOBJECTNAME: " + params.get("keyword1")
                         output += "</h4></div>"
                     else :
-                        raise HTTPTemporaryRedirect(location = "/provision?object=")
+                        raise exc.HTTPTemporaryRedirect(location = "/provision?object=")
                         
                 except APIException, obj :
                     success = False

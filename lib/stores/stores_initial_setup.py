@@ -331,7 +331,7 @@ def mongodb_metricstore_setup(global_objects, operation = "check") :
                 
                 if not pre_check_port(_hostname, _hostport, _protocol) :
                     _proc_man =  ProcessManagement(username = "root")
-                    _mongodb_pid = _proc_man.get_pid_from_cmdline("mongod")
+                    _mongodb_pid = _proc_man.get_pid_from_cmdline("mongod -f")
     
                     _cmd = "/usr/local/bin/mongod -f /etc/mongod.conf --pidfilepath /var/run/mongod.pid"
                     if not _mongodb_pid :
@@ -347,7 +347,7 @@ def mongodb_metricstore_setup(global_objects, operation = "check") :
                 _cmd = "mongod -f " + _config_file_fn + " --pidfilepath " + global_objects["space"]["stores_working_dir"] + "/mongod.pid"
     
                 _proc_man =  ProcessManagement(username = _username)
-                _mongodb_pid = _proc_man.get_pid_from_cmdline("mongod")
+                _mongodb_pid = _proc_man.get_pid_from_cmdline("mongod -f")
 
                 if not _mongodb_pid :
                     global_objects["metricstore"]["port"] = _proc_man.get_free_port(global_objects["metricstore"]["port"], protocol = "tcp")

@@ -27,6 +27,8 @@
 import os
 import sys
 import readline
+import re
+import xmlrpclib
 
 from cmd import Cmd
 from pwd import getpwuid
@@ -35,7 +37,7 @@ from subprocess import Popen, PIPE
 from optparse import OptionParser
 from re import sub, compile
 from time import time
-import re
+
 
 
 from logging import getLogger, StreamHandler, Formatter, Filter, DEBUG, ERROR, INFO
@@ -51,17 +53,19 @@ from lib.operations.base_operations import BaseObjectOperations
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.stores.mongodb_datastore_adapter import MongodbMgdConn
 from lib.stores.redis_datastore_adapter import RedisMgdConn
-from lib.auxiliary.config import parse_cld_defs_file, load_store_functions
+from lib.auxiliary.config import parse_cld_defs_file, load_store_functions, get_available_clouds
+from lib.api.api_service_client import *
+from lib.api.api_service import API
 
 class CBCLI(Cmd) :
-
     @trace
     def __init__ (self, definitions = None) :
         '''
         TBD
         '''
+        self.stdout = sys.stdout
         self.path = re.compile(".*\/").search(os.path.realpath(__file__)).group(0) + "/../../"
-        self.cld_attr_lst = {"logstore" : {}, "user-defined" : {}} # will be overriden later
+        self.cld_attr_lst = {"logstore" : {}, "user-defined" : {}, "api_defaults" : {}} # will be overriden later, used for setup_default_options()
         self.username = getpwuid(os.getuid())[0]
         self.pid = "TEST_" + self.username 
         history = self.path + "/.cb_history"
@@ -70,10 +74,7 @@ class CBCLI(Cmd) :
         self.passive_operations = None
         self.background_operations = None
         self.attached_clouds = []
-        Cmd.__init__(self)
-        Cmd.prompt = "() "
-        Cmd.emptyline = self.emptyline()
-
+        
         _status = 100
         _msg = "An error has occurred, but no error message was captured"
 
@@ -92,9 +93,34 @@ class CBCLI(Cmd) :
             _msg = "Parsing \"cloud definitions\" file....."
             print _msg,
 
-            self.cld_attr_lst = parse_cld_defs_file(None, True, self.options.config)
-            self.setup_default_options()
+            '''
+             We have to store the resulting definitions themselves in
+             addition to the attributes because the user may have used
+             the '-c' option, in which case the user-specified definitions
+             have to be passed to the cldattach() command manually.
+            '''
+            
+            self.cld_attr_lst, self.definitions = parse_cld_defs_file(None, True, self.options.config)
 
+            '''
+            Using the new multi-cloud configuration is mandatory, now.
+
+            This is because the github.com configuration format
+            is expected to "just work" out of the box. This is done
+            by offering a functional "default" simulated cloud in the
+            public configuration file in addition to per-cloud
+            example configurations for the user to try out.
+
+            This cannot be done without a proper multi-cloud configuration.
+            '''
+            if not self.options.oldconfig :
+                clouds = get_available_clouds(self.cld_attr_lst, return_all_options = True) 
+
+                if len(clouds) == 0 :
+                    raise Exception("configuration error: Your configuration is deprecated. Please refer to configs/cloud_definitions.txt for examples on the new configuration format.\nIf you want to revert to use the deprecated format, specify --oldconfig on the command-line.")
+
+            self.setup_default_options()
+            
             oscp = self.cld_attr_lst["objectstore"].copy()
             del oscp["config_string"]
             del oscp["usage"]
@@ -132,12 +158,93 @@ class CBCLI(Cmd) :
 
             self.osci = RedisMgdConn(oscp)
             self.msci = MongodbMgdConn(mscp)
+            self.api_service_url = "http://" + self.cld_attr_lst["api_defaults"]["hostname"] + ":" + self.cld_attr_lst["api_defaults"]["port"]
+            
+            _orig_Method = xmlrpclib._Method
+            
+            '''
+            XML-RPC doesn't support keyword arguments,
+            so we have to do it ourselves...
+            '''
+            class KeywordArgMethod(_orig_Method):     
+                def __call__(self, *args, **kwargs):
+                    args = list(args) 
+                    if kwargs:
+                        args.append(("kwargs", kwargs))
+                    return _orig_Method.__call__(self, *args)
+            
+            xmlrpclib._Method = KeywordArgMethod
+        
+            self.api = APIClient(self.api_service_url)
+            
+            '''
+             All thanks to python. This works, again, by using decorators:
+             
+             The Cmd class looks up the corresponding function as it usually
+             does 'do_function', but instead it finds a decorator which accepts
+             the same "parameters" argument. The decorator "unpack_arguments_for_api"
+             then builds a list of python named arguments and passes it to the
+             corresponding API function. In order to figure out which API function
+             to use, the API exposes a function to list those function, which
+             in turn allows us to setup the appropriate function pointer.
+            '''
+             
+            self.signatures = {}
+            self.usage = {}
+            for methodtuple in inspect.getmembers(API, predicate=inspect.ismethod) :
+                
+                # Record the function signatures required to be provided by the CLI
+                name = methodtuple[0]
+                
+                if name in ["__init__", "success", "error"] :
+                    continue
+                
+                # Do not install the function if it's already implemented
+                # by the CBCLI class
+                try :
+                    getattr(self, "do_" + name)
+                    continue
+                except AttributeError, msg :
+                    pass
+                
+                func = getattr(API, name)
+                
+                argspec = inspect.getargspec(func) 
+                spec = argspec[0]
+                defaults = [] if argspec[3] is None else argspec[3]
+                num_spec = len(spec)
+                num_defaults = len(defaults)
+                diff = num_spec - num_defaults
+                named = diff - 1 
+                self.signatures[name] = {"args" : spec[1:], "named" : named }
+                
+                # Now, we can build the Usage strings automatically
+                # by inspecting the functions themselves
+                _msg = "Usage: vmattach <cloud name> <role> [vmc pool] [size] [action after attach] [mode]"
+                doc = "Usage: " + name + " "
+                for x in range(1, diff) :
+                    doc += "<" + spec[x] + "> "
+                for x in range(diff, num_spec) :
+                    if spec[x].lower() == "async" :
+                        doc += "[mode] "
+                        continue
+                    doc += "[" + spec[x] + " = " + str(defaults[x - diff]) + "] "
+                self.usage[name] = doc
+            
+            self.install_functions()
+                
+            self.api.print_message = True 
+                
+            Cmd.prompt = "() "
+            Cmd.emptyline = self.emptyline()
+            Cmd.__init__(self)
 
         except StoreSetupException, obj :
             _status = str(obj.status)
             _msg = str(obj.msg)
 
-        except IOError :
+        except IOError, msg :
+            print ("IOError: " + str(msg))
             pass
         
         except OSError, msg :
@@ -152,7 +259,87 @@ class CBCLI(Cmd) :
             if _status :
                 print(_msg)
                 exit(_status)
-
+                
+    def install_functions(self):
+        for name in self.signatures :
+            # Install the API functions into the command-line
+            new_function = name 
+            if len(new_function) >= 4 and new_function[:3] == "app" :
+                new_function = "ai" + new_function[3:]
+            setattr(self, "do_" + new_function, self.unpack_arguments_for_api(getattr(self.api, name)))
+            setattr(CBCLI, "do_" + new_function, self.unpack_arguments_for_api(getattr(self.api, name)))
+                
+    def unpack_arguments_for_api(self, func):
+        def wrapped(*args, **kwargs):
+            name = func.__name__ if self.options.local else func._Method__name
+            
+            '''
+            This function is called by Cmd class.
+            The first parameter contains the parameter list which
+            we relay over to the API.
+            '''
+            temp_parameters = args[0].strip().split() 
+            if len(temp_parameters) == 0 :
+                temp_parameters = []
+            if len(args) > 1 :
+                temp_parameters = temp_parameters + list(args)[1:]
+                
+            '''
+            The 'async' option and '=' keywords are special, because we are allowing
+            them to liberally float around the command line without being
+            properly positioned by the user.
+            
+            The API requires that 'async' be a keyword argument,
+            and requires the components of the '=' sign to be splitup.
+            '''
+               
+            parameters = []
+            for param in temp_parameters :
+                if param.count("async") :
+                    kwargs["async"] = param
+                    continue
+                if param.count("=") and name.count("alter") :
+                    pieces = param.split("=", 1)
+                    parameters.append(pieces[0])
+                    parameters.append(pieces[1])
+                    continue
+                parameters.append(param)
+            
+            '''
+            All API functions, like the CLI require the name of the cloud
+            to be specified.
+            '''
+            if BaseObjectOperations.default_cloud :
+                if len(parameters) == 0 or parameters[0] != BaseObjectOperations.default_cloud :
+                    parameters = [BaseObjectOperations.default_cloud] + parameters
+                    
+            num_parms = len(parameters)
+                
+            if len(name) >= 3 and name[:2] == "ai" :
+                name = "app" + name[2:]
+            required =  int(self.signatures[name]["named"])
+            
+            '''
+            Now that we know the required number of arguments,
+            we can yell at the user if they typed the wrong number
+            of parameters based on the exact signature of
+            the actual function.
+            '''
+            
+            if num_parms < required :
+                print self.usage[name]
+                return
+            
+            # Now, actually send to the API
+            try :
+                response = func(*parameters, **kwargs)
+                if self.options.local :
+                    print(message_beautifier(response["msg"]))
+            except APIException, obj :
+                print(obj)
+                
+        return wrapped
+    
     @trace
     def setup_default_options(self) :
         '''
@@ -161,6 +348,24 @@ class CBCLI(Cmd) :
         usage = '''usage: %prog [options] [command]
         '''
         self.parser = OptionParser(usage)
+        
+        self.parser.add_option("--oldconfig", dest = "oldconfig", action = "store_true", \
+                      default = False, \
+                        help = "Use the deprecated configuration format.")
+
+        '''
+         This options controls whether or not the API is used *in memory*
+         or over the network as a service.
+         
+         Setting local = $True in your config file is useful for regression
+         tests and running the command-line in a debugger in order to
+         track down bugs.
+        '''
+        
+        self.parser.add_option("-l", "--local", dest = "local", action = "store_true", \
+                      default = False if "local" not in self.cld_attr_lst["api_defaults"] \
+                        else self.cld_attr_lst["api_defaults"]["local"], \
+                        help = "Use a local-memory API instance instead of remote for debugging.")
         
         self.parser.add_option("--debug_host", dest = "debug_host", metavar = "<ip address>", \
                       default = None, \
@@ -223,6 +428,10 @@ class CBCLI(Cmd) :
     
         self.parser.set_defaults()
         (self.options, self.args) = self.parser.parse_args()
+        
+        #if self.options.debug_host is not None :
+        #    self.options.local = True
+
         
     @trace
     def setup_logging(self, options) :
@@ -343,19 +552,19 @@ class CBCLI(Cmd) :
 
             _proc_man = ProcessManagement(username = self.cld_attr_lst["objectstore"]["username"])
 
-            _cmd = self.path + "/cbact"
-            _cmd += " --procid=" + self.pid
-            _cmd += " --osp=" + dic2str(self.osci.oscp()) 
-            _cmd += " --msp=" + dic2str(self.msci.mscp()) 
-            _cmd += " --operation=cloud-api"
-            _cmd += " --apiport=" + self.cld_attr_lst["api_defaults"]["port"]
-            _cmd += " --apihost=" + self.cld_attr_lst["api_defaults"]["hostname"]
-            _cmd += " --syslogp=" + self.cld_attr_lst["logstore"]["port"]
-            _cmd += " --syslogf=" + self.cld_attr_lst["logstore"]["api_facility"]
-            _cmd += " --syslogh=" + self.cld_attr_lst["logstore"]["hostname"]
-            _cmd += " --verbosity=" + self.cld_attr_lst["logstore"]["verbosity"]
-            _cmd += " --daemon"
-            #_cmd += " --debug_host=localhost"
+            _base_cmd = self.path + "/cbact"
+            _base_cmd += " --procid=" + self.pid
+            _base_cmd += " --osp=" + dic2str(self.osci.oscp()) 
+            _base_cmd += " --msp=" + dic2str(self.msci.mscp()) 
+            _base_cmd += " --operation=cloud-api"
+            _base_cmd += " --apiport=" + self.cld_attr_lst["api_defaults"]["port"]
+            _base_cmd += " --apihost=" + self.cld_attr_lst["api_defaults"]["hostname"]
+            _base_cmd += " --syslogp=" + self.cld_attr_lst["logstore"]["port"]
+            _base_cmd += " --syslogf=" + self.cld_attr_lst["logstore"]["api_facility"]
+            _base_cmd += " --syslogh=" + self.cld_attr_lst["logstore"]["hostname"]
+            _base_cmd += " --verbosity=" + self.cld_attr_lst["logstore"]["verbosity"]
+            _cmd = _base_cmd + " --daemon"
+            #_cmd = _base_cmd + " --debug_host=localhost"
 
             cbdebug(_cmd) 
 
@@ -374,6 +583,7 @@ class CBCLI(Cmd) :
                     _msg += _username + "). Please change "
                     _msg += "the port number in API_DEFAULTS and try again."
                     _status = 8181
+
                     raise ProcessManagement.ProcessManagementException(_status, _msg)
                 else :
                     _api_pid = _api_pid[0]
@@ -382,26 +592,28 @@ class CBCLI(Cmd) :
                     _msg += "Port " + str(self.cld_attr_lst["api_defaults"]["port"]) + '.\n'
                     sys.stdout.write(_msg)
             else :
-                _msg = "Pid list for command line \"" + _cmd + "\" returned empty."
+                _msg = "\nAPI failed to start. To discover why, please run:\n\n" + _base_cmd + " --logdest=console\n\n ... and report the bug."
                 _status = 7161
                 raise ProcessManagement.ProcessManagementException(_status, _msg)
 
             print "Checking for a running GUI service daemon.....",
+            _base_cmd = self.path + "/cbact"
+            _base_cmd += " --procid=" + self.pid
+            _base_cmd += " --osp=" + dic2str(self.osci.oscp()) 
+            _base_cmd += " --msp=" + dic2str(self.msci.mscp()) 
+            _base_cmd += " --operation=cloud-gui"
+            _base_cmd += " --apiport=" + str(self.cld_attr_lst["api_defaults"]["port"])
+            _base_cmd += " --apihost=" + self.cld_attr_lst["api_defaults"]["hostname"]
+            _base_cmd += " --guiport=" + str(self.cld_attr_lst["gui_defaults"]["port"])
+            _base_cmd += " --guihost=" + self.cld_attr_lst["gui_defaults"]["hostname"]
+            _base_cmd += " --syslogp=" + self.cld_attr_lst["logstore"]["port"]
+            _base_cmd += " --syslogf=" + self.cld_attr_lst["logstore"]["gui_facility"]
+            _base_cmd += " --syslogh=" + self.cld_attr_lst["logstore"]["hostname"]
+            _base_cmd += " --verbosity=" + self.cld_attr_lst["logstore"]["verbosity"]
+
             _cmd = "screen -d -m -S cbgui" + self.cld_attr_lst["objectstore"]["username"] 
-            _cmd += " bash -c '" + self.path + "/cbact"
-            _cmd += " --procid=" + self.pid
-            _cmd += " --osp=" + dic2str(self.osci.oscp()) 
-            _cmd += " --msp=" + dic2str(self.msci.mscp()) 
-            _cmd += " --operation=cloud-gui"
-            _cmd += " --apiport=" + str(self.cld_attr_lst["api_defaults"]["port"])
-            _cmd += " --apihost=" + self.cld_attr_lst["api_defaults"]["hostname"]
-            _cmd += " --guiport=" + str(self.cld_attr_lst["gui_defaults"]["port"])
-            _cmd += " --guihost=" + self.cld_attr_lst["gui_defaults"]["hostname"]
-            _cmd += " --syslogp=" + self.cld_attr_lst["logstore"]["port"]
-            _cmd += " --syslogf=" + self.cld_attr_lst["logstore"]["gui_facility"]
-            _cmd += " --syslogh=" + self.cld_attr_lst["logstore"]["hostname"]
-            _cmd += " --verbosity=" + self.cld_attr_lst["logstore"]["verbosity"]
-            _cmd += "'"
+            _cmd += " bash -c '" + _base_cmd + "'"
+
             # DaemonContext Doesn't work with Twisted 
             # Someone else will have to figure it out.
 
@@ -430,7 +642,7 @@ class CBCLI(Cmd) :
                     _msg += "Port " + str(self.cld_attr_lst["gui_defaults"]["port"]) + '.\n'
                     sys.stdout.write(_msg)  
             else :
-                _msg = "Pid list for command line \"" + _cmd + "\" returned empty."
+                _msg = "\nGUI failed to start. To discover why, please run:\n\n" + _base_cmd + " --logdest=console\n\n ... and report the bug."
                 _status = 7161
                 raise ProcessManagement.ProcessManagementException(_status, _msg)
 
@@ -492,45 +704,14 @@ class CBCLI(Cmd) :
         TBD
         '''
         _status, _msg, _object  = self.active_operations.cldattach({}, \
-                                                                   parameters, \
-                                                                   None, \
-                                                                   "cloud-attach", \
-                                                                   self.cld_attr_lst)
+                                       parameters, \
+                                       self.definitions, \
+                                       "cloud-attach", \
+                                       self.cld_attr_lst)
 
         if not _status  :
             self.do_cldlist("", False)
 
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_expid(self, parameters) :
-        '''
-        TBD
-        '''
-        _status, _msg, _object = self.passive_operations.expid(self.cld_attr_lst, \
-                                                               parameters, \
-                                                               "expid-manage")
-
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_reset_refresh(self, parameters) :
-        '''
-        TBD
-        '''
-        _status, _msg, _result = self.passive_operations.reset_refresh(self.cld_attr_lst, \
-                                                                       parameters, \
-                                                                       "api-reset")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_should_refresh(self, parameters) :
-        '''
-        TBD
-        '''
-        _status, _msg, _result = self.passive_operations.should_refresh(self.cld_attr_lst, \
-                                                                        parameters, \
-                                                                        "api-check")
         print(message_beautifier(_msg))
 
     @trace
@@ -560,116 +741,6 @@ class CBCLI(Cmd) :
                                                                 "mon-list")
         print(message_beautifier(_msg))
 
-    @trace
-    def do_rolelist(self, parameters) :
-        '''
-        TBD
-        '''
-        _config_attr_list = {}
-        _status, _msg, _object = self.passive_operations.globallist(_config_attr_list, \
-                                                                    parameters + " vm_templates+roles+VMs", \
-                                                                    "global-list")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_roleshow(self, parameters) :
-        '''
-        TBD
-        '''
-        _config_attr_list = {}
-        _status, _msg, _object = self.passive_operations.globalshow(_config_attr_list, \
-                                                                    parameters + " vm_templates role", \
-                                                                    "global-show")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_typelist(self, parameters) :
-        '''
-        TBD
-        '''
-        _config_attr_list = {}
-        _status, _msg, _object = self.passive_operations.globallist(_config_attr_list, \
-                                                                    parameters + " ai_templates+types+AIs", \
-                                                                    "global-list")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_typeshow(self, parameters) :
-        '''
-        TBD
-        '''
-        _config_attr_list = {}
-        _status, _msg, _object = self.passive_operations.globalshow(_config_attr_list, \
-                                                                    parameters + " ai_templates type", \
-                                                                    "global-show")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_typealter(self, parameters) :
-        '''
-        TBD
-        '''
-        _config_attr_list = {}
-        _status, _msg, _object = self.passive_operations.globalalter(_config_attr_list, \
-                                                                     parameters + " ai_templates type", \
-                                                                     "global-alter")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_patternlist(self, parameters) :
-        '''
-        TBD
-        '''
-        _config_attr_list = {}
-        _status, _msg, _object = self.passive_operations.globallist(_config_attr_list, \
-                                                                    parameters + " aidrs_templates+patterns+AIDRSs", \
-                                                                    "global-list")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_patternshow(self, parameters) :
-        '''
-        TBD
-        '''
-        _config_attr_list = {}
-        _status, _msg, _object = self.passive_operations.globalshow(_config_attr_list, \
-                                                                    parameters + " aidrs_templates pattern ", \
-                                                                    "global-show")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_patternalter(self, parameters) :
-        '''
-        TBD
-        '''
-        _config_attr_list = {}
-        _status, _msg, _object = self.passive_operations.globalalter(_config_attr_list, \
-                                                                     parameters + " aidrs_templates pattern", \
-                                                                     "global-alter")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_poollist(self, parameters) :
-        '''
-        TBD
-        '''
-        _config_attr_list = {}
-        _status, _msg, _object = self.passive_operations.globallist(_config_attr_list, \
-                                                                    parameters + " X+pools+VMCs", \
-                                                                    "global-list")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_viewlist(self, parameters) :
-        '''
-        TBD
-        '''
-        _config_attr_list = {}
-        _status, _msg, _object = self.passive_operations.globallist(_config_attr_list, \
-                                                                    parameters + " query+criteria+VIEWs", \
-                                                                    "global-list")
-        print(message_beautifier(_msg))
-        
     @trace
     def do_clddetach(self, parameters) :
         '''
@@ -735,838 +806,15 @@ class CBCLI(Cmd) :
                                                                 self.msci, \
                                                                 self.attached_clouds)
 
+        if self.options.local :
+            # Use a local copy of the API so that we can do local debugging
+            self.api = API(self.pid, self.passive_operations, self.active_operations, self.background_operations)
+            self.install_functions()
+                
         if print_message :
             print(message_beautifier(_msg))
 
-    @trace
-    def do_cldshow(self, parameters) :
-        '''
-        TBD
-        '''        
-        _status, _msg, _object = self.passive_operations.show_object(self.cld_attr_lst, \
-                                                                     parameters, \
-                                                                     "cloud-show")
-        print(message_beautifier(_msg))
 
-    @trace
-    def do_cldalter(self, parameters) :
-        '''
-        TBD
-        '''        
-        _status, _msg, _object = self.passive_operations.alter_object(self.cld_attr_lst, \
-                                                                      parameters, \
-                                                                      "cloud-alter")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_vmccleanup(self, parameters) :
-        '''
-        TBD
-        '''        
-        _vmc_attr_list = {}
-        _status, _msg, _object = self.active_operations.vmccleanup(_vmc_attr_list, \
-                                                                   parameters, \
-                                                                   "vmc-cleanup")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_vmcattach(self, parameters) :
-        '''
-        TBD
-        '''        
-        if parameters.count("async") :
-            if parameters.count("all") :
-                _status, _msg, _object = self.background_operations.background_execute(parameters, \
-                                                                                       "vmc-attachall")
-            else :
-
-                _status, _msg, _object = self.background_operations.background_execute(parameters, \
-                                                                                       "vmc-attach")
-
-        else :
-            _vmc_attr_list = {}
-            if parameters.count("all") :
-                _status, _msg, _object = self.active_operations.vmcattachall(_vmc_attr_list, \
-                                                                             parameters, \
-                                                                             "vmc-attachall")
-            else :
-                _status, _msg, _object = self.active_operations.objattach(_vmc_attr_list, \
-                                                                          parameters, \
-                                                                          "vmc-attach")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_vmcdetach(self, parameters) :
-        '''
-        TBD
-        '''
-        if parameters.count("async") :
-            if parameters.count("all") :
-                
-                _status, _msg, _object = self.background_operations.background_execute(parameters, \
-                                                                                       "vmc-detachall")
-            else :
-                _status, _msg, _object = self.background_operations.background_execute(parameters, \
-                                                                                       "vmc-detach")
-        else :
-            if parameters.count("all") :
-                _status, _msg, _object = self.active_operations.objdetachall(parameters, \
-                                                                             "vmc-detachall")
-            else :
-                _vmc_attr_list = {}
-                _status, _msg, _object = self.active_operations.objdetach(_vmc_attr_list, \
-                                                                          parameters, \
-                                                                          "vmc-detach")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_vmclist(self, parameters) :
-        '''
-        TBD
-        '''        
-        _vmc_attr_list = {}
-
-        _status, _msg, _object = self.passive_operations.list_objects(_vmc_attr_list, \
-                                                                      parameters, \
-                                                                      "vmc-list")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_vmcshow(self, parameters) :
-        '''
-        TBD
-        '''        
-        _vmc_attr_list = {}
-        _status, _msg, _object = self.passive_operations.show_object(_vmc_attr_list, \
-                                                                     parameters, \
-                                                                     "vmc-show")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_vmcalter(self, parameters) :
-        '''
-        TBD
-        '''        
-        _vmc_attr_list = {}
-        _status, _msg, _object = self.passive_operations.alter_object(_vmc_attr_list, \
-                                                                      parameters, \
-                                                                      "vmc-alter")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_hostlist(self, parameters) :
-        '''
-        TBD
-        '''        
-        _host_attr_list = {}
-        _status, _msg, _object = self.passive_operations.list_objects(_host_attr_list, \
-                                                                      parameters, \
-                                                                      "host-list")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_hostshow(self, parameters) :
-        '''
-        TBD
-        '''        
-        _host_attr_list = {}
-        _status, _msg, _object = self.passive_operations.show_object(_host_attr_list, \
-                                                                     parameters, \
-                                                                     "host-show")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_hostfail(self, parameters) :
-        '''
-        TBD
-        '''
-        if parameters.count("async") :
-            _status, _msg = self.background_operations.background_execute(parameters, \
-                                                                          "host-fail")
-        else :
-            _host_attr_list = {}
-            _status, _msg, _object = self.active_operations.hostfail_repair(_host_attr_list, \
-                                                                            parameters, \
-                                                                            "host-fail")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_hostrepair(self, parameters) :
-        '''
-        TBD
-        '''
-        if parameters.count("async") :
-            _status, _msg = self.background_operations.background_execute(parameters, \
-                                                                          "host-repair")
-        else :
-            _host_attr_list = {}
-            _status, _msg, _object = self.active_operations.hostfail_repair(_host_attr_list, \
-                                                                            parameters, \
-                                                                            "host-repair")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_vmattach(self, parameters) :
-        '''
-        TBD
-        '''        
-        if parameters.count("async") :
-            _status, _msg, _object = self.background_operations.background_execute(parameters, \
-                                                                                   "vm-attach")
-            
-        else :
-            _vm_attr_list = {}
-            _status, _msg, _object = self.active_operations.objattach(_vm_attr_list, \
-                                                                      parameters, \
-                                                                      "vm-attach")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_vmdetach(self, parameters) :
-        '''
-        TBD
-        '''
-        if parameters.count("async") :
-            if parameters.count("all") :
-                _status, _msg, _object = self.background_operations.background_execute(parameters, \
-                                                                                       "vm-detachall")
-            else :
-                _status, _msg, _object = self.background_operations.background_execute(parameters, \
-                                                                                       "vm-detach")
-        else :
-            if parameters.count("all") :
-                _status, _msg, _object = self.active_operations.objdetachall(parameters, \
-                                                                             "vm-detach")
-            else :
-                _vm_attr_list = {}
-                _status, _msg, _object = self.active_operations.objdetach(_vm_attr_list, \
-                                                                          parameters, \
-                                                                          "vm-detach")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_vmdebug(self, parameters) :
-        '''
-        TBD
-        '''
-        _vm_attr_list = {}
-        _status, _msg, _object = self.passive_operations.debug_startup(_vm_attr_list, \
-                                                                       parameters, \
-                                                                       "vm-debug")
-        print(message_beautifier(_msg))
-            
-    @trace
-    def do_svmdebug(self, parameters) :
-        '''
-        TBD
-        '''
-        _vm_attr_list = {}
-        _status, _msg, _object = self.passive_operations.debug_startup(_vm_attr_list, \
-                                                                       parameters, \
-                                                                       "svm-debug")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_vmrunstate(self, parameters) :
-        '''
-        TBD
-        '''
-        if parameters.count("async") :
-            _status, _msg, _object = self.background_operations.background_execute(parameters, \
-                                                                                   "vm-runstate")
-        else :
-            _vm_attr_list = {}
-            _status, _msg, _object = self.active_operations.vmrunstate(_vm_attr_list, \
-                                                                       parameters, \
-                                                                       "vm-runstate")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_vmsave(self, parameters) :
-        '''
-        TBD
-        '''
-        parameters += " save" 
-        if parameters.count("async") :
-            if parameters.count("all") :
-                _status, _msg, _object = self.active_operations.vmrunstateall(parameters, \
-                                                                              "save")
-            else :
-                _status, _msg = self.background_operations.background_execute(parameters, \
-                                                                              "vm-runstate")
-        else :
-            if parameters.count("all") :
-                _status, _msg, _object = self.active_operations.vmrunstateall(parameters, \
-                                                                              "save")
-            else :
-                _vm_attr_list = {}
-                _status, _msg, _object = self.active_operations.vmrunstate(_vm_attr_list, \
-                                                                           parameters, \
-                                                                           "vm-runstate")
-
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_vmrestore(self, parameters) :
-        '''
-        TBD
-        '''
-        parameters += " attached" 
-        if parameters.count("async") :
-            if parameters.count("all") :
-                _status, _msg, _object = self.active_operations.vmrunstateall(parameters, \
-                                                                              "restore")
-            else :
-                _status, _msg = self.background_operations.background_execute(parameters, \
-                                                                              "vm-runstate")
-        else :
-            if parameters.count("all") :
-                _status, _msg, _object = self.active_operations.vmrunstateall(parameters, \
-                                                                              "restore")
-            else :
-                _vm_attr_list = {}
-                _status, _msg, _object = self.active_operations.vmrunstate(_vm_attr_list, \
-                                                                           parameters, \
-                                                                           "vm-runstate")
-
-        print(message_beautifier(_msg))
-            
-    @trace
-    def do_vmfail(self, parameters) :
-        '''
-        TBD
-        '''
-        parameters += " fail" 
-        if parameters.count("async") :
-            if parameters.count("all") :
-                _status, _msg, _object = self.active_operations.vmrunstateall(parameters, \
-                                                                              "fail")
-            else :
-                _status, _msg = self.background_operations.background_execute(parameters, \
-                                                                              "vm-runstate")
-        else :
-            if parameters.count("all") :
-                _status, _msg, _object = self.active_operations.vmrunstateall(parameters, \
-                                                                              "fail")
-            else :
-                _vm_attr_list = {}
-                _status, _msg, _object = self.active_operations.vmrunstate(_vm_attr_list, \
-                                                                           parameters, \
-                                                                           "vm-runstate")
-
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_vmrepair(self, parameters) :
-        '''
-        TBD
-        '''
-        parameters += " attached" 
-        if parameters.count("async") :
-            if parameters.count("all") :
-                _status, _msg, _object = self.active_operations.vmrunstateall(parameters, \
-                                                                              "repair")
-            else :
-                _status, _msg = self.background_operations.background_execute(parameters, \
-                                                                              "vm-runstate")
-        else :
-            if parameters.count("all") :
-                _status, _msg, _object = self.active_operations.vmrunstateall(parameters, \
-                                                                              "repair")
-            else :
-                _vm_attr_list = {}
-                _status, _msg, _object = self.active_operations.vmrunstate(_vm_attr_list, \
-                                                                           parameters, \
-                                                                           "vm-runstate")
-
-        print(message_beautifier(_msg))
-            
-    @trace
-    def do_svmattach(self, parameters) :
-        '''
-        TBD
-        '''
-        _svm_attr_list = {}
-        _status, _msg, _object = self.active_operations.objattach(_svm_attr_list, \
-                                                                  parameters, \
-                                                                  "svm-attach")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_svmdetach(self, parameters) :
-        '''
-        TBD
-        '''
-        _svm_attr_list = {}
-        _status, _msg, _object = self.active_operations.objdetach(_svm_attr_list, \
-                                                                  parameters, \
-                                                                  "svm-detach")
-        print(message_beautifier(_msg))
-            
-    @trace
-    def do_svmstat(self, parameters) :
-        '''
-        TBD
-        '''
-        _svm_attr_list = {}
-        _status, _msg, _object = self.active_operations.svmstat(_svm_attr_list, \
-                                                                parameters, \
-                                                                "svm-stat")
-        print(message_beautifier(_msg))
-            
-    @trace
-    def do_svmfail(self, parameters) :
-        '''
-            This command is identical to 'svmdetach vm_X fail'
-            This is because 'detaching' the SVM object needs to go through
-            the proper procedures regardless whether or not we are actually failing over
-            the primary VM or simply deactivating FT replication for the primary VM.
-            In either case, significant changes happen in the datastore.
-        '''
-        parameters += " fail"
-        _svm_attr_list = {}
-        _status, _msg, _object = self.active_operations.objdetach(_svm_attr_list, \
-                                                                  parameters, \
-                                                                  "svm-detach")
-        print(message_beautifier(_msg))
-            
-    @trace
-    def do_vmcapture(self, parameters) :
-        '''
-        TBD
-        '''
-        if parameters.count("async") :
-            _status, _msg, _object = self.background_operations.background_execute(parameters, \
-                                                                                   "vm-capture")
-        else :
-            _vm_attr_list = {}
-            _status, _msg, _object = self.active_operations.vmcapture(_vm_attr_list, \
-                                                                      parameters, \
-                                                                      "vm-capture")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_vmresize(self, parameters) :
-        '''
-        TBD
-        '''        
-        if parameters.count("async") :
-            _status, _msg, _object = self.background_operations.background_execute(parameters, \
-                                                                                   "vm-resize")
-        else :
-            _vm_attr_list = {}
-            _status, _msg, _object = self.active_operations.vmresize(_vm_attr_list, \
-                                                                     parameters, \
-                                                                     "vm-resize")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_vmlist(self, parameters) :
-        '''
-        TBD
-        '''        
-        _vm_attr_list = {}
-        _status, _msg, _object = self.passive_operations.list_objects(_vm_attr_list, \
-                                                                      parameters, \
-                                                                      "vm-list")
-        print(message_beautifier(_msg))
-            
-    @trace
-    def do_svmlist(self, parameters) :
-        '''
-        TBD
-        '''        
-        _svm_attr_list = {}
-        _status, _msg, _object = self.passive_operations.list_objects(_svm_attr_list, \
-                                                                      parameters, \
-                                                                      "svm-list")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_vmshow(self, parameters) :
-        '''
-        TBD
-        '''        
-        _vm_attr_list = {}
-        _status, _msg, _object = self.passive_operations.show_object(_vm_attr_list, \
-                                                                     parameters, \
-                                                                     "vm-show")
-        print(message_beautifier(_msg))
-            
-    @trace
-    def do_svmshow(self, parameters) :
-        '''
-        TBD
-        '''        
-        _svm_attr_list = {}
-        _status, _msg, _object = self.passive_operations.show_object(_svm_attr_list, \
-                                                                     parameters, \
-                                                                     "svm-show")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_vmalter(self, parameters) :
-        '''
-        TBD
-        '''        
-        _vm_attr_list = {}
-        _status, _msg, _object = self.passive_operations.alter_object(_vm_attr_list, \
-                                                                      parameters, \
-                                                                      "vm-alter")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_aiattach(self, parameters) :
-        '''
-        TBD
-        '''        
-        if parameters.count("async") :
-            _status, _msg, _object = self.background_operations.background_execute(parameters, \
-                                                                                   "ai-attach")
-        else :
-            _ai_attr_list = {}
-
-            _status, _msg, _object = self.active_operations.objattach(_ai_attr_list, \
-                                                                      parameters, \
-                                                                      "ai-attach")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_aidetach(self, parameters) :
-        '''
-        TBD
-        '''        
-        if parameters.count("async") :
-            if parameters.count("all") :
-                _status, _msg, _object = self.background_operations.background_execute(parameters, \
-                                                                                       "ai-detachall")
-            else :
-                _status, _msg, _object = self.background_operations.background_execute(parameters, \
-                                                                                       "ai-detach")
-        else :
-            if parameters.count("all") :
-                _status, _msg, _object = self.active_operations.objdetachall(parameters, \
-                                                                             "ai-detach")
-            else :
-                _ai_attr_list = {}
-                _status, _msg, _object = self.active_operations.objdetach(_ai_attr_list, \
-                                                                          parameters, \
-                                                                          "ai-detach")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_aicapture(self, parameters) :
-        '''
-        TBD
-        '''        
-        if parameters.count("async") :
-            _status, _msg, _object = self.background_operations.background_execute(parameters, \
-                                                                                   "ai-capture")
-        else :
-            _ai_attr_list = {}
-            _status, _msg, _object = self.active_operations.aicapture(_ai_attr_list, \
-                                                                      parameters, \
-                                                                      "ai-capture")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_airestore(self, parameters) :
-        '''
-        TBD
-        '''
-        parameters += " attached" 
-        if parameters.count("async") :
-            if parameters.count("all") :
-                _status, _msg, _object = self.active_operations.airunstate(parameters, \
-                                                                           "fail")
-            else :
-                _status, _msg, _object = self.background_operations.background_execute(parameters, \
-                                                                                       "ai-runstate")
-        else :
-            if parameters.count("all") :
-                True
-                #_status, _msg, _object = _vm_command.vmrunstateall(parameters, "repair")
-            else :
-                _ai_attr_list = {}
-                _status, _msg, _object = self.active_operations.airunstate(_ai_attr_list, \
-                                                                           parameters, \
-                                                                           "ai-runstate")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_aisave(self, parameters) :
-        '''
-        TBD
-        '''
-        parameters += " save" 
-        if parameters.count("async") :
-            if parameters.count("all") :
-                _status, _msg, _object = self.active_operations.airunstate(parameters, \
-                                                                           "fail")
-            else :
-                _status, _msg, _object = self.background_operations.background_execute(parameters, \
-                                                                                       "ai-runstate")
-        else :
-            if parameters.count("all") :
-                True
-                #_status, _msg, _object = _vm_command.vmrunstateall(parameters, "repair")
-            else :
-                _ai_attr_list = {}
-                _status, _msg, _object = self.active_operations.airunstate(_ai_attr_list, \
-                                                                           parameters, \
-                                                                           "ai-runstate")
-        print(message_beautifier(_msg))
-            
-    @trace
-    def do_aifail(self, parameters) :
-        '''
-        TBD
-        '''
-        parameters += " fail" 
-        if parameters.count("async") :
-            if parameters.count("all") :
-                _status, _msg, _object = self.active_operations.airunstate(parameters, \
-                                                                           "fail")
-            else :
-                _status, _msg, _object = self.background_operations.background_execute(parameters, \
-                                                                                       "ai-runstate")
-        else :
-            if parameters.count("all") :
-                True
-                #_status, _msg, _object = _vm_command.vmrunstateall(parameters, "repair")
-            else :
-                _ai_attr_list = {}
-                _status, _msg, _object = self.active_operations.airunstate(_ai_attr_list, \
-                                                                           parameters, \
-                                                                           "ai-runstate")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_airepair(self, parameters) :
-        '''
-        TBD
-        '''
-        parameters += " attached" 
-        if parameters.count("async") :
-            if parameters.count("all") :
-                _status, _msg, _object = self.active_operations.airunstate(parameters, \
-                                                                           "repair")
-            else :                
-                _status, _msg, _object = self.background_operations.background_execute(parameters, \
-                                                                                       "ai-runstate")
-        else :
-            if parameters.count("all") :
-                True
-                #_status, _msg, _object = _vm_command.vmrunstateall(parameters, "repair")
-            else :
-                _ai_attr_list = {}
-                _status, _msg, _object = self.active_operations.airunstate(_ai_attr_list, \
-                                                                           parameters, \
-                                                                           "ai-runstate")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_airesize(self, parameters) :
-        '''
-        TBD
-        '''
-        if parameters.count("async") :
-            _status, _msg, _object = self.background_operations.background_execute(parameters, \
-                                                                                   "ai-resize")
-        else :
-            _ai_attr_list = {}
-            _status, _msg, _object = self.active_operations.airesize(_ai_attr_list, \
-                                                                     parameters, \
-                                                                     "ai-resize")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_ailist(self, parameters) :
-        '''
-        TBD
-        '''        
-        _ai_attr_list = {}
-        _status, _msg, _object = self.passive_operations.list_objects(_ai_attr_list, \
-                                                                      parameters, \
-                                                                      "ai-list")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_aishow(self, parameters) :
-        '''
-        TBD
-        '''        
-        _ai_attr_list = {}
-        _status, _msg, _object = self.passive_operations.show_object(_ai_attr_list, \
-                                                                     parameters, \
-                                                                     "ai-show")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_aialter(self, parameters) :
-        '''
-        TBD
-        '''
-        _ai_attr_list = {}
-        _status, _msg, _object = self.passive_operations.alter_object(_ai_attr_list, \
-                                                                      parameters, \
-                                                                      "ai-alter")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_aidrsattach(self, parameters) :
-        '''
-        TBD
-        '''        
-        _aidrs_attr_list = {}
-        _status, _msg, _object = self.active_operations.objattach(_aidrs_attr_list, \
-                                                                  parameters, \
-                                                                  "aidrs-attach")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_aidrsdetach(self, parameters) :
-        '''
-        TBD
-        ''' 
-        if parameters.count("all") :
-            _status, _msg, _object = self.active_operations.objdetachall(parameters, \
-                                                                         "aidrs-detachall")
-        else :
-            _aidrs_attr_list = {}
-            _status, _msg, _object = self.active_operations.objdetach(_aidrs_attr_list, \
-                                                                      parameters, \
-                                                                      "aidrs-detach")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_aidrslist(self, parameters) :
-        '''
-        TBD
-        '''        
-        _aidrs_attr_list = {}
-        _status, _msg, _object = self.passive_operations.list_objects(_aidrs_attr_list, \
-                                                                      parameters, \
-                                                                      "aidrs-list")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_aidrsshow(self, parameters) :
-        '''
-        TBD
-        '''        
-        _aidrs_attr_list = {}
-        _status, _msg, _object = self.passive_operations.show_object(_aidrs_attr_list, \
-                                                                     parameters, \
-                                                                     "aidrs-show")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_aidrsalter(self, parameters) :
-        '''
-        TBD
-        '''        
-        _aidrs_attr_list = {}
-        _status, _msg, _object = self.passive_operations.alter_object(_aidrs_attr_list, \
-                                                                      parameters, \
-                                                                      "aidrs-alter")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_vmcrsattach(self, parameters) :
-        '''
-        TBD
-        '''        
-        _vmcrs_attr_list = {}
-        _status, _msg, _object = self.active_operations.objattach(_vmcrs_attr_list, \
-                                                                  parameters, \
-                                                                  "vmcrs-attach")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_vmcrsdetach(self, parameters) :
-        '''
-        TBD
-        '''        
-        _vmcrs_attr_list = {}
-        _status, _msg, _object = self.active_operations.objdetach(_vmcrs_attr_list, \
-                                                                  parameters, \
-                                                                  "vmcrs-detach")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_vmcrslist(self, parameters) :
-        '''
-        TBD
-        '''        
-        _vmcrs_attr_list = {}
-        _status, _msg, _object = self.passive_operations.list_objects(_vmcrs_attr_list, \
-                                                                      parameters, \
-                                                                      "vmcrs-list")
-        
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_vmcrsshow(self, parameters) :
-        '''
-        TBD
-        '''        
-        _vmcrs_attr_list = {}
-        _status, _msg, _object = self.passive_operations.show_object(_vmcrs_attr_list, \
-                                                                     parameters, \
-                                                                     "vmcrs-show")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_vmcrsalter(self, parameters) :
-        '''
-        TBD
-        '''
-        _vmcrs_attr_list = {}
-        _status, _msg, _object = self.passive_operations.alter_object(_vmcrs_attr_list, \
-                                                                      parameters, \
-                                                                      "vmcrs-alter")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_viewshow(self, parameters) :
-        '''
-        TBD
-        '''
-        _status, _msg, _object = self.passive_operations.show_view(self.cld_attr_lst, \
-                                                                   parameters, \
-                                                                   "view-show")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_stats(self, parameters) :
-        '''
-        TBD
-        '''        
-        _status, _msg, _object = self.passive_operations.stats(self.cld_attr_lst, \
-                                                               parameters, \
-                                                               "stats-get")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_stateshow(self, parameters) :
-        '''
-        TBD
-        '''        
-        _status, _msg, _object = self.passive_operations.show_state(self.cld_attr_lst, \
-                                                                    parameters, \
-                                                                    "state-show")
-        print(message_beautifier(_msg))
-
-    @trace
-    def do_statealter(self, parameters) :
-        '''
-        TBD
-        '''        
-        _status, _msg, _object = self.passive_operations.alter_state(self.cld_attr_lst, \
-                                                                     parameters, \
-                                                                     "state-alter")
-        print(message_beautifier(_msg))
 
     @trace
     def do_waitfor(self, parameters) :
@@ -1627,20 +875,10 @@ class CBCLI(Cmd) :
 
     @trace
     def do_quit(self, line) :
-        '''
-        TBD
-        '''
-        if self.console is not None :
-            self.console.send_top("Use CTRL-D or CTRL-] to exit.", True)
         return True
 
     @trace
     def do_exit(self, line) :
-        '''
-        TBD
-        '''
-        if self.console is not None :
-            self.console.send_top("Use CTRL-D or CTRL-] to exit.", True)
         return True
 
     @trace
@@ -1673,6 +911,7 @@ def help(args):
                 print _line,
         else :
             "No help available for " + args
+            return False
         print ''
         return True
     else :

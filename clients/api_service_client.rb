@@ -1,1 +1,1 @@
-../lib/operations/api_service_client.rb
+../lib/api/api_service_client.rb

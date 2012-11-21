@@ -28,7 +28,7 @@ from sys import stdout, path, argv
 from subprocess import Popen, PIPE
 from pwd import getpwuid
 
-from lib.auxiliary.config import get_startup_commands
+from lib.auxiliary.config import get_available_clouds
 
 import os
 import re
@@ -98,14 +98,14 @@ def main() :
 
     # Handle the new multi-cloud configuration system
     if "startup_cloud" in _cmd_processor.cld_attr_lst["user-defined"] :
-        available_clouds = get_startup_commands(_cmd_processor.cld_attr_lst, return_all_options = True)
+        available_clouds = get_available_clouds(_cmd_processor.cld_attr_lst, return_all_options = True)
         for cloud in available_clouds :
             if _cmd_processor.cld_attr_lst["user-defined"]["startup_cloud"].lower() == cloud :
                 for command in available_clouds[cloud] :
                     _cmd_processor.onecmd(command)
     else :
         # Or do it the old way
-        for command in get_startup_commands(_cmd_processor.cld_attr_lst) :
+        for command in get_available_clouds(_cmd_processor.cld_attr_lst) :
             _cmd_processor.onecmd(command)
 
     if _initial_command != "" :

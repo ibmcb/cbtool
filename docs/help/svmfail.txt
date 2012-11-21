@@ -1,1 +1,7 @@
 Prematurely failover an existing pair of FT replicated objects.
+
+This command is identical to 'svmdetach vm_X fail'
+This is because 'detaching' the SVM object needs to go through
+the proper procedures regardless whether or not we are actually failing over
+the primary VM or simply deactivating FT replication for the primary VM.
+In either case, significant changes happen in the datastore.

@@ -38,7 +38,7 @@ from lib.auxiliary.value_generation import ValueGeneration
 from lib.stores.stores_initial_setup import StoreSetupException
 from lib.auxiliary.thread_pool import ThreadPool
 from lib.auxiliary.data_ops import selective_dict_update
-from lib.auxiliary.config import parse_cld_defs_file, load_store_functions, get_startup_commands
+from lib.auxiliary.config import parse_cld_defs_file, load_store_functions, get_available_clouds
 from lib.clouds.shared_functions import CldOpsException
 from base_operations import BaseObjectOperations
 
@@ -102,7 +102,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     definitions = fh.read()
                     fh.close()
                     
-                cld_attr_lst.update(parse_cld_defs_file(definitions))
+                _attributes, _unused_definitions = parse_cld_defs_file(definitions)
+                cld_attr_lst.update(_attributes)
                 '''
                 First, we have new support in the GUI for single-file configurations
                 that are capable of hosting multiple cloud configurations in a single file.
@@ -115,7 +116,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 '''
                 # First, Make a pass through config.py to verify that any available
                 # CONFIGOPTION keywords are properly installed
-                available_clouds = get_startup_commands(cld_attr_lst, return_all_options = True)
+                available_clouds = get_available_clouds(cld_attr_lst, return_all_options = True)
                 if len(available_clouds) :
                     for cloud_name in available_clouds :
                         if cld_attr_lst["cloud_name"].lower() != cloud_name :
@@ -483,6 +484,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
+            _result = None
             
             obj_attr_list["name"] = "undefined"
             obj_attr_list["target_state"] = "undefined"
@@ -533,6 +535,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     cbdebug(_msg)
                     self.osci.add_to_list(obj_attr_list["cloud_name"], "HOST", "FAILED_HOSTS", obj_attr_list["name"], int(time()))            
     
+                _result = obj_attr_list
                 _status = 0
 
         except self.osci.ObjectStoreMgdConnException, obj :
@@ -554,7 +557,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _msg += "successfully " + _target_state.lower() + "ed on this "
                 _msg += "experiment." 
                 cbdebug(_msg)
-            return _status, _msg, None
+            return self.package(_status, _msg, _result)
 
     @trace    
     def vmccleanup(self, obj_attr_list, parameters, command) :
@@ -564,6 +567,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
+            _result = None
             obj_attr_list["name"] = "undefined"
             _obj_type = command.split('-')[0].upper()
             _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
@@ -576,7 +580,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _cld_conn = _cld_ops_class(self.pid, self.osci)
     
                     _status, _fmsg = _cld_conn.vmccleanup(obj_attr_list)
-
+                    _result = obj_attr_list
 
         except self.ObjectOperationException, obj :
             _status = obj.status
@@ -612,7 +616,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _msg = "VMC object named \"" + obj_attr_list["name"] + "\" was "
                 _msg += "sucessfully cleaned up on this experiment." 
                 cbdebug(_msg)
-            return _status, _msg, None
+            return self.package(_status, _msg, _result)
 
     @trace    
     def vmcattachall(self, obj_attr_list, parameters, command) :
@@ -1462,7 +1466,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         self.osci.destroy_object(obj_attr_list["cloud_name"], _obj_type, obj_attr_list["uuid"], \
                                                 obj_attr_list, False)
     
-                    obj_attr_list["tracking"] = _fmsg
+                    obj_attr_list["tracking"] = str(_fmsg)
                     if "uuid" in obj_attr_list and "cloud_name" in obj_attr_list :
                         self.osci.create_object(obj_attr_list["cloud_name"], "FAILEDTRACKING" + _obj_type, obj_attr_list["uuid"] + unique_state_key, \
                                                 obj_attr_list, False, True, 3600)
@@ -1511,7 +1515,14 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     self.update_host_os_perfmon(obj_attr_list)
                 elif obj_attr_list["attach_parallel"].lower() != "true" :
                     self.update_host_os_perfmon(obj_attr_list)
-
+            else :
+                _msg = "The host list for VMC \"" + obj_attr_list["name"] + "\" is empty"
+                if obj_attr_list["discover_hosts"].lower() == "false" :
+                    _msg += " (\"discover_hosts\" was set to \"false\")"
+                _msg += '.'
+                _msg += " Skipping Host OS performance monitor daemon startup"
+                cbdebug(_msg, True)
+                
             self.record_management_metrics(obj_attr_list["cloud_name"], "VMC", \
                                            obj_attr_list, "attach")
 
@@ -2169,7 +2180,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
             if not _status :
                 _status, _fmsg = self.initialize_object(obj_attr_list, command)
 
-            if not _status :
+            if _status == 912543 :
+                if _obj_type in ["VMC", "AIDRS"] :
+                    command += "all"
+                _status, _fmsg, _result = self.objdetachall(parameters, command)
+                
+            elif not _status :
                 self.osci.add_to_list(obj_attr_list["cloud_name"], _obj_type, "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], int(time()))
                 self.osci.pending_object_set(obj_attr_list["cloud_name"], _obj_type, obj_attr_list["uuid"], "Detaching...")
                 _detach_pending = True
@@ -2528,53 +2544,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 cbdebug(_msg)
                 return _status, _msg
 
-    def svmstat(self, obj_attr_list, parameters, command) :
-        '''
-        TBD
-        '''
-        try :
-            _status = 100
-            _fmsg = "An error has occurred, but no error message was captured"
-            _obj_type = command.split('-')[0].upper()
-             
-            obj_attr_list["name"] = "undefined"
-            
-            _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
-
-            if not _status :
-                _status, _fmsg = self.initialize_object(obj_attr_list, command)
-                
-            _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
-            _cld_conn = _cld_ops_class(self.pid, self.osci)
-            
-            cbdebug("Going to show SVM progress. CTRL-C to quit", True) 
-            
-            _primary_obj_attribs = self.osci.get_object(obj_attr_list["cloud_name"], "VM", False, \
-                                    obj_attr_list["primary_uuid"], False)
-            while True :
-                unused, _msg = _cld_conn.vmreplicate_status(_primary_obj_attribs)
-                cbdebug(_msg, True)
-                sleep(3)
-            
-        except KeyboardInterrupt :
-            _status = 0
-            
-        except CldOpsException, obj :
-            _status = obj.status
-            _fmsg = str(obj.msg)
-            
-        except self.osci.ObjectStoreMgdConnException, obj :
-            _status = obj.status
-            _fmsg = str(obj.msg)
-
-        finally :
-            _msg = "SVM statistics "
-            if _status :
-                _msg += "failure: " + _fmsg
-            else :
-                _msg += "success."
-            return _status, _msg, None
-
     @trace
     def objdetachall(self, parameters, command) :
         '''
@@ -2683,6 +2652,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
+            _result = None
 
             obj_attr_list["uuid"] = "undefined"            
             obj_attr_list["name"] = "undefined"
@@ -2788,6 +2758,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                               -1, True)
                         
                     _status = 0
+                    _result = obj_attr_list
 
         except self.ObjectOperationException, obj :
             _status = obj.status
@@ -2825,7 +2796,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _msg += "on this experiment."
                 cbdebug(_msg)
 
-            return _status, _msg, None
+            return self.package(_status, _msg, _result)
 
     @trace    
     def vmresize(self, obj_attr_list, parameters, command) :
@@ -2975,7 +2946,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
             if not _status :
                 _status, _fmsg = self.initialize_object(obj_attr_list, command)
                 
-                if not _status :
+                if _status == 912543 :
+                    _status, _fmsg, _result = self.vmrunstateall(parameters, obj_attr_list["suspected_command"])
+                
+                elif not _status :
                     self.osci.add_to_list(obj_attr_list["cloud_name"], "VM", "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], int(time()))
                     self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "Changing state to: " + obj_attr_list["target_state"])
                     _runstate_pending = True
@@ -3040,6 +3014,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                 self.record_management_metrics(obj_attr_list["cloud_name"], "VM", obj_attr_list, "runstate")
                                 _status = 0
                         else :
+                            _result = obj_attr_list
                             _msg = "VM is already at the \"" + obj_attr_list["target_state"]
                             _msg += "\" state. There is no need to explicitly change it."
                             cbdebug(_msg)
@@ -3138,7 +3113,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 self.record_management_metrics(_obj_attr_list["cloud_name"], "VM", _obj_attr_list, "trace")
 
                 _vm_list = False
-                if _target_state == "attached" and command == "repair" :
+                if _target_state == "attached" and (command == "repair" or command == "resume") :
                     _vm_list = self.osci.get_list(_obj_attr_list["cloud_name"], "VM", "VMS_UNDERGOING_FAIL")
 
                 elif _target_state == "attached" and command == "restore" :
@@ -3146,10 +3121,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 else :
                     _vm_list = []
-                    for _vm in self.osci.get_object_list(_obj_attr_list["cloud_name"], "VM") :
-                        _current_state = self.osci.get_object_state(_obj_attr_list["cloud_name"], "VM", _vm)
-                        if _current_state and _current_state == "attached" :
-                            _vm_list.append(_vm)
+                    _vms = self.osci.get_object_list(_obj_attr_list["cloud_name"], "VM")
+                    if _vms :
+                        for _vm in  _vms :
+                            _current_state = self.osci.get_object_state(_obj_attr_list["cloud_name"], "VM", _vm)
+                            if _current_state and _current_state == "attached" :
+                                _vm_list.append(_vm)
 
                 if _vm_list :
                     _vm_counter = 0
@@ -3162,7 +3139,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             _vm_uuid = _vm
                         _vm_attr_list = self.osci.get_object(_obj_attr_list["cloud_name"], "VM", False, _vm_uuid, False)
                         _vm_name = _vm_attr_list["name"]
+                        _obj_attr_list["runstate_parallelism"] = _vm_attr_list["runstate_parallelism"]
                         _obj_attr_list["parallel_operations"][_vm_counter] = {}
+                        _obj_attr_list["parallel_operations"][_vm_counter]["uuid"] = _vm_attr_list["uuid"]
                         _obj_attr_list["parallel_operations"][_vm_counter]["parameters"] = _obj_attr_list["cloud_name"]  + ' ' + _vm_name + ' ' + _target_state
                         _obj_attr_list["parallel_operations"][_vm_counter]["operation"] = "vm-runstate"
                         _vm_counter += 1
@@ -3247,6 +3226,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             if not _status :
                 _status, _fmsg = self.initialize_object(obj_attr_list, command)
+                
+                if _status == 912543 :
+                    _status, _fmsg, _result = self.airunstateall(parameters, obj_attr_list["suspected_command"])
 
                 if not _status :
                     self.osci.add_to_list(obj_attr_list["cloud_name"], "AI", "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], int(time()))
@@ -3304,6 +3286,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
+            _result = None
             
             obj_attr_list["name"] = "undefined"
             obj_attr_list["uuid"] = "undefined"   
@@ -3478,6 +3461,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         self.osci.update_object_attribute(obj_attr_list["cloud_name"], "AI", obj_attr_list["uuid"], False, "sut", obj_attr_list["sut"])
 
                         _status = 0
+                        _result = obj_attr_list
 
                 else :
 
@@ -3509,7 +3493,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _msg += " (named \"" + obj_attr_list["name"] +  "\") successfully resized "
                 _msg += "on this experiment."
                 cbdebug(_msg)
-            return _status, _msg, None
+            return self.package(_status, _msg, None)
 
     @trace    
     def aicapture(self, obj_attr_list, parameters, command) :
@@ -3520,6 +3504,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
             _vm_name = "Unknown"
+            _result = None
             obj_attr_list["name"] = "undefined"
             obj_attr_list["uuid"] = "undefined"
 
@@ -3545,6 +3530,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         else :
                             _status, _fmsg, _object = self.vmcapture(_capture_vm_attr_list, _vm_name, "vm-capture")
                         break
+                _result = obj_attr_list
 
         except self.ObjectOperationException, obj :
             _status = obj.status
@@ -3571,7 +3557,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _msg += " (named \"" + obj_attr_list["name"] +  "\") successfully captured "
                 _msg += "on this experiment."
                 cbdebug(_msg)
-            return _status, _msg, None
+            return self.package(_status, _msg, _result)
 
     @trace            
     def parallel_obj_operation(self, operation_type, obj_attr_list) :

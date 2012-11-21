@@ -17,8 +17,8 @@ public class ProvisionAPP {
 			 for(String vm : app.get("vms").split(",")) {
 				 String [] components = vm.split("|");
 				 String uuid = components[0];
-				 String role = components[1];
-				 String name = components[2];
+				 //String role = components[1];
+				 //String name = components[2];
 				 Object data = api.get_latest_data("SIM1", uuid, "runtime_app_VM");
 				 System.out.println("Looked up data for VM " + uuid + ": " + data);
 			 }
