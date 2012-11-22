@@ -183,13 +183,14 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                 template_key = cld_attr_lst["model"] + "_" + _attribute
                                 if template_key in cld_attr_lst["user-defined"] :
                                     cld_attr_lst[_category][_attribute] = cld_attr_lst["user-defined"][template_key]
-                                    continue
+                                    '''
+                                    Have to check it twice =)
+                                    '''
+                                    if cld_attr_lst[_category][_attribute] != "need_to_be_configured_by_user" :
+                                        continue
                                 _msg = "Your configuration file is missing the following configuration: \n"
                                 _msg += "\t[USER-DEFINED]\n"
-                                if "startup_cloud" in cld_attr_lst["user-defined"] :
-                                    _msg += "\tCLOUDOPTION_" + cld_attr_lst["name"] + "_" + cld_attr_lst["model"].upper() + "_" + _attribute.upper() + " = XXXXX\n"
-                                else :
-                                    _msg += "\t" + cld_attr_lst["model"].upper() + "_" + _attribute.upper() + " = XXXXX\n"
+                                _msg += "\tCLOUDOPTION_" + cld_attr_lst["name"] + "_" + cld_attr_lst["model"].upper() + "_" + _attribute.upper() + " = XXXXX\n"
                                 _msg += "\n"
                                 _msg += "Please update your configuration and try again."
                                 raise Exception(_msg)
