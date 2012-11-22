@@ -116,6 +116,7 @@ def parse_cld_defs_file(cloud_definitions = None, print_message = False, \
     _file_names.append(loc + "configs/" +"cloud_definitions.txt")
 
     r = compile("(#.*)")
+    _cloud_definitions_fc = []
 
     for _file_name in _file_names :
         try :
@@ -155,7 +156,6 @@ def parse_cld_defs_file(cloud_definitions = None, print_message = False, \
 
             _lines += cloud_definitions
             _lines = _lines.split("\n")
-            _cloud_definitions_fc = []
 
             # First we pre-process all "INCLUDE" statements on the file
 
@@ -292,7 +292,7 @@ def parse_cld_defs_file(cloud_definitions = None, print_message = False, \
             if print_message :
                 print _msg
 
-            return _cld_attr_lst
+            return _cld_attr_lst, "\n".join(_cloud_definitions_fc)
 
         except IOError, msg :
             if _file_names.index(_file_name) == len(_file_names) - 1 :
@@ -325,7 +325,7 @@ def load_store_functions(cld_attr_lst) :
     return os_func, ms_func, ls_func
 
 @trace
-def get_startup_commands(cld_attr_lst, return_all_options = False) :
+def get_available_clouds(cld_attr_lst, return_all_options = False) :
     '''
     TBD
     '''

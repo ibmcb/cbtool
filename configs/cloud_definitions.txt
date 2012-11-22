@@ -26,7 +26,7 @@ CLOUDOPTION_TESTCLOUD = cldattach sim TESTCLOUD, vmcattach all
 CLOUDOPTION_MYOPENSTACK_OSK_ACCESS = http://<address>:5000/v2.0/
 CLOUDOPTION_MYOPENSTACK_OSK_CREDENTIALS =  <user>-<password>-<tenant>
 CLOUDOPTION_MYOPENSTACK_OSK_KEY_NAME = <key name>         # Create the key on OpenStack first
-CLOUDOPTION_MYOPENSTACK_OSK_SECURITY_GROUP = default	  # Make sure that this group exists first
+CLOUDOPTION_MYOPENSTACK_OSK_SECURITY_GROUPS = default	  # Make sure that this group exists first
 CLOUDOPTION_MYOPENSTACK_OSK_INITIAL_VMCS = RegionOne:sut  # Change "RegionOne" accordingly
 CLOUDOPTION_MYOPENSTACK = cldattach osk MYOPENSTACK, vmcattach all
 

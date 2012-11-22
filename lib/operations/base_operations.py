@@ -37,7 +37,7 @@ from pwd import getpwuid
 
 from lib.auxiliary.code_instrumentation import trace, cblog, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.value_generation import ValueGeneration
-from lib.auxiliary.data_ops import str2dic, dic2str, DataOpsException
+from lib.auxiliary.data_ops import message_beautifier, dic2str, str2dic, DataOpsException
 from lib.auxiliary.config import parse_cld_defs_file
 from lib.auxiliary.data_ops import selective_dict_update
 from lib.remote.network_functions import Nethashget 
@@ -309,6 +309,9 @@ class BaseObjectOperations :
             if _length >= 3 :
                 object_attribute_list["name"] = _parameters[1]
                 object_attribute_list["target_state"] = _parameters[2]
+                object_attribute_list["suspected_command"] = _parameters[2] 
+            if _length >= 4 :
+                object_attribute_list["suspected_command"] = _parameters[3] 
             if _length < 3:
                 _status = 9
                 _msg = "Usage: vmrunstate <cloud name> <vm name> <runstate> [mode]"
@@ -382,6 +385,9 @@ class BaseObjectOperations :
             if _length >= 3 :
                 object_attribute_list["name"] = _parameters[1]
                 object_attribute_list["target_state"] = _parameters[2]
+                object_attribute_list["suspected_command"] = _parameters[2] 
+            if _length >= 4 :
+                object_attribute_list["suspected_command"] = _parameters[3] 
 
             if _length < 3:
                 _status = 9
@@ -756,7 +762,7 @@ class BaseObjectOperations :
             _obj_type = "unknown"
 
             obj_attr_list["command_originated"] = int(time())
-            obj_attr_list["tracking"] = None
+            obj_attr_list["tracking"] = "none"
 
             _cloud_list = self.osci.get_object_list(obj_attr_list["cloud_name"], "CLOUD")
  
@@ -929,15 +935,18 @@ class BaseObjectOperations :
 
             elif cmd.count("detach") or cmd.count("capture") or \
                 cmd.count("runstate") or cmd.count("resize") or \
-                cmd.count("restore") or cmd.count("console") or \
-                cmd.count("svm-stat") or cmd.count("debug"):
+                cmd.count("restore") or cmd.count("console") :
                                         
+                if obj_attr_list["name"] == "all" :
+                    _status = 912543
+                    _fmsg = "need to pass through the appropriate 'all' function"
+                    return _status, _fmsg
                 _cloud_parameters = self.get_cloud_parameters(obj_attr_list["cloud_name"])
 
                 self.pre_select_object(obj_attr_list, _obj_type, _cloud_parameters["username"])
 
                 if '_' not in obj_attr_list["name"] and '-' not in obj_attr_list["name"] and _obj_type.upper() != "VMC" :
-                    obj_attr_list["name"] = _obj_type.lower() + "_" + obj_attr_list["name"]
+                        obj_attr_list["name"] = _obj_type.lower() + "_" + obj_attr_list["name"]
                     
                 _object_exists = self.osci.object_exists(obj_attr_list["cloud_name"], _obj_type, \
                                                          obj_attr_list["name"], \
@@ -2535,7 +2544,7 @@ class BaseObjectOperations :
                 return _process_number
 
     @trace
-    def wait_for_port_ready(self, hostname, port) :
+    def wait_for_port_ready(self, hostname, port, try_once = False) :
         '''
         TBD
         '''
@@ -2548,12 +2557,15 @@ class BaseObjectOperations :
                 break
             except socket.error, (value, message) :
                 if value == 98 : 
-                    cbwarn("Previous port " + str(port) + " still shutting down! Trying again later...")
+                    cbwarn("Previous port " + str(port) + " taken! ...")
+                    if try_once :
+                        return False
                     sleep(30)
                     continue
                 else :
                     cberr("Could not test port " + str(port) + " liveness: " +  message)
                     raise
+        return True
 
     @trace
     def auto_allocate_vm_port(self, name, obj_attr_list):
@@ -2784,9 +2796,11 @@ class BaseObjectOperations :
                     cbdebug(_msg, True)
 
                     _status = 0
+
             else :
-                # Do not start gmetad
-                True                    
+                _msg = "Attribute \"collect_from_host\" was set to \"false\". "
+                _msg += "Skipping Host OS performance monitor daemon startup"
+                cbdebug(_msg, True)
                 _status = 0
 
         except self.osci.ObjectStoreMgdConnException, obj :
@@ -2816,7 +2830,8 @@ class BaseObjectOperations :
         '''
         TBD
         '''
-        return status, msg, {"status" : status, "msg" : msg if status else "", "result" : result}
+        msg = message_beautifier(msg)
+        return status, msg, {"status" : status, "msg" : msg, "result" : result}
 
     @trace
     def update_cloud_attribute(self, cloud_name , key, value):

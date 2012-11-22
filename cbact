@@ -180,7 +180,7 @@ def actuator_cli_parsing() :
                 print "The following parameters are mandatory: --apiport, --apihost, --syslogf, --syslogh, --syslogp"
                 exit(20)
 
-def setup_syslog(operation, facility, verbosity, port, hostname, quiet = False) :
+def setup_syslog(operation, facility, verbosity, port, hostname, quiet, logdest) :
     '''
     TBD
     '''
@@ -206,7 +206,7 @@ def setup_syslog(operation, facility, verbosity, port, hostname, quiet = False) 
         while len(logger.handlers) != 0 :
             logger.removeHandler(logger.handlers[0])
 
-        if not hostname or not port :
+        if logdest == "console" or (not hostname or not port) :
             hdlr = StreamHandler(stdout)
         else :
             _facility = int(facility)
@@ -336,11 +336,8 @@ def main(options) :
         if options.cn :
             _oscp["cloud_name"] = options.cn
         _osci = RedisMgdConn(_oscp)
-
-        '''
-        fixme
-        '''
         _osci.experiment_inst = options.procid
+
         _msci = MongodbMgdConn(str2dic(options.msp)) if options.msp else None
 
         use_log_defaults = False
@@ -352,26 +349,24 @@ def main(options) :
         else :
             use_log_defaults = True
             
-        if options.logdest and options.logdest == "console" :
-            use_log_defaults = True
-            
         if use_log_defaults :
-            _log_defaults = {
-                             "hostname" : options.syslogh,
-                             "port" : options.syslogp,
-                             _operation + "_facility" : options.syslogf,
-                             "verbosity" : options.verbosity
-                             }
+	    _log_defaults = {
+			     "hostname" : options.syslogh,
+			     "port" : options.syslogp,
+			     _operation + "_facility" : options.syslogf,
+			     "verbosity" : options.verbosity
+			     }
 
         if str(options.verbosity).strip() != "-1" :
             _log_defaults["verbosity"] = options.verbosity 
 
-        setup_syslog(_operation, \
-                        _log_defaults[_operation + "_facility"], \
-                        _log_defaults["verbosity"], \
-                        _log_defaults["port"], \
-                        _log_defaults["hostname"], \
-                        options.quiet)
+	setup_syslog(_operation, \
+			_log_defaults[_operation + "_facility"], \
+			_log_defaults["verbosity"], \
+			_log_defaults["port"], \
+			_log_defaults["hostname"], \
+			options.quiet,
+			options.logdest)
 
         if options.oop :
             _parameters = options.oop.split(',')
@@ -388,10 +383,6 @@ def main(options) :
         _passive_obj_command = PassiveObjectOperations(_osci, _msci)
         _background_obj_command = BackgroundObjectOperations(_osci, _msci)
             
-        _active_obj_command.osci.experiment_inst = options.procid
-        _passive_obj_command.osci.experiment_inst = options.procid
-        _background_obj_command.osci.experiment_inst = options.procid
-
         if _operation.count("attach") :
             
             _local_process = True

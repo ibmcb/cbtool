@@ -845,6 +845,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             obj_attr_list["name"] = "undefined"
             obj_attr_list["cloud_name"] = "undefined"
             _old_state = "undefined"
+            _result = None
             _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
 
             if not _status :
@@ -859,6 +860,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _old_state = str(self.osci.get_object_state(obj_attr_list["cloud_name"], _obj_type, _obj_uuid))
                         str(self.osci.set_object_state(obj_attr_list["cloud_name"], _obj_type, _obj_uuid, obj_attr_list["specified_state"]))
                         break
+                _result = obj_attr_list
                 _status = 0
 
         except self.ObjectOperationException, obj :
@@ -887,7 +889,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 _msg +=" on this experiment (Cloud "
                 _msg += obj_attr_list["cloud_name"] + ")\n"
                 cbdebug(_msg)
-            return _status, _msg, None
+            return self.package(_status, _msg, _result)
 
     @trace
     def wait_for(self, obj_attr_list, parameters, command) :
@@ -1559,7 +1561,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
             self.wait_for_port_ready(hostname, port)
-            from lib.operations.api_service import APIService
+            from lib.api.api_service import APIService
             apiservice = APIService(self.pid, \
                                     passive, \
                                     active, \
@@ -1980,7 +1982,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
-            _result = {}
+            _result = None 
 
             _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
 
@@ -1995,6 +1997,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         if not _status :
                             _msg = "Current experiment identifier is \"" 
                             _msg += _object["result"]["experiment_id"] + "\"."
+                            _result = _object["result"]["experiment_id"]
             
                     else :
                         parameters = obj_attr_list["cloud_name"] + " time experiment_id=" + obj_attr_list["command"].split()[2]

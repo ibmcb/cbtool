@@ -160,6 +160,10 @@ class TacCmds(CommonCloudFunctions) :
             _fmsg = "An error has occurred, but no error message was captured"
             _orig_Method = xmlrpclib._Method
             
+            '''
+            XML-RPC doesn't support keyword arguments,
+            so we have to do it ourselves
+            '''
             class KeywordArgMethod(_orig_Method):     
                 def __call__(self, *args, **kwargs):
                     args = list(args) 

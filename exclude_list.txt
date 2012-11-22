@@ -42,3 +42,8 @@ regression
 windows
 scripts/lost
 scripts/windesktop
+3rd_party/bootstrap
+3rd_party/mongo
+3rd_party/redis
+3rd_party/d3
+3rd_party/python-novaclient
