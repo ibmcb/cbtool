@@ -26,7 +26,7 @@ api = APIClient("http://172.16.1.222:7070")
 #api = APIClient("http://10.10.3.10:7070")
 
 start = int(time())
-expid = "daytrader_" + makeTimestamp(start).replace(" ", "_")
+expid = "singlevm_" + makeTimestamp(start).replace(" ", "_")
 
 print "starting experiment: " + expid
 
@@ -34,29 +34,21 @@ try :
     '''
     Mockup of what needs to happen for CloudNet use case
     '''
-    app = None
+    vm = None
     error = False
 
     api.cldalter("TCP", "time", "experiment_id", expid)
 
-    _tmp_app = api.appinit("TCP", "daytrader")
-    uuid = _tmp_app["uuid"]
+    _tmp_vm = api.vminit("TCP", "tinyvm")
+    uuid = _tmp_vm["uuid"]
 
-    print "Started an APP with uuid = " + uuid 
+    print "Started an VM with uuid = " + uuid 
 
-    for vm in _tmp_app["vms"] :
-        print _tmp_app["vms"][vm]["role"]
+    vm = api.vmrun("TCP", _tmp_vm["uuid"])
 
-    # The structure of the 'app' dictionary has changed
-    # So get a new copy
-    app = api.apprun("TCP", _tmp_app["uuid"])
+    print "Resumed VM with uuid = " + vm["uuid"]
 
-    print "Resumed APP with uuid = " + app["uuid"]
-
-    print str(app)
-    
-    api.appalter("TCP", app["uuid"], "load_level", 20)
-    
+    print str(vm)
 
 except APIException, obj :
     error = True
@@ -69,8 +61,8 @@ except Exception, msg :
 
 finally :
     try :
-        if app :
-            print "Destroying APP.."
-            api.appdetach("TCP", app["uuid"])
+        if vm :
+            print "Destroying VM.."
+            api.vmdetach("TCP", vm["uuid"])
     except APIException, obj :
         print "Error cleaning up: (" + str(obj.status) + "): " + obj.msg

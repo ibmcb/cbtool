@@ -222,7 +222,11 @@ class BackgroundObjectOperations(BaseObjectOperations) :
             vm = self.background_execute(cloud_name + " " + role + " " + vmc_pool + " " + size + " pause async", "vm-attach")[2]
             if not int(vm["status"]) :
                 for message in sub_channel.listen() :
-                    uuid, status, info = message["data"].split(";")
+                    args = str(message["data"]).split(";")
+                    if len(args) != 3 :
+                        cbdebug("Message is not for me: " + str(args))
+                        continue
+                    uuid, status, info = args
                     if vm["result"]["uuid"] == uuid :
                         if status == "vmready" :
                             vm["status"] = 0
@@ -252,7 +256,11 @@ class BackgroundObjectOperations(BaseObjectOperations) :
             sub_channel = self.osci.subscribe(cloud_name, "VM", "pause_on_attach")
             self.osci.publish_message(cloud_name, "VM", "pause_on_attach", started_uuid + ";continue;success", 1, 3600)
             for message in sub_channel.listen() :
-                uuid, status, info = message["data"].split(";")
+                args = str(message["data"]).split(";")
+                if len(args) != 3 :
+                    cbdebug("Message is not for me: " + str(args))
+                    continue
+                uuid, status, info = args
                 if started_uuid == uuid :
                     if status == "vmfinished" :
                         attrs = self.osci.get_object(cloud_name, "VM", False, uuid, False)
@@ -282,7 +290,11 @@ class BackgroundObjectOperations(BaseObjectOperations) :
             app["vms"] = {}
             if not int(app["status"]) :
                 for message in sub_channel.listen() :
-                    uuid, status, info = message["data"].split(";")
+                    args = str(message["data"]).split(";")
+                    if len(args) != 3 :
+                        cbdebug("Message is not for me: " + str(args))
+                        continue
+                    uuid, status, info = args
                     if app["result"]["uuid"] == uuid :
                         if status == "vmready" :
                             vm = str2dic(info)
@@ -319,7 +331,11 @@ class BackgroundObjectOperations(BaseObjectOperations) :
             sub_channel = self.osci.subscribe(cloud_name, "VM", "pause_on_attach")
             self.osci.publish_message(cloud_name, "VM", "pause_on_attach", started_uuid + ";continue;success", 1, 3600)
             for message in sub_channel.listen() :
-                uuid, status, info = message["data"].split(";")
+                args = str(message["data"]).split(";")
+                if len(args) != 3 :
+                    cbdebug("Message is not for me: " + str(args))
+                    continue
+                uuid, status, info = args
                 if started_uuid == uuid :
                     if status == "appfinished" :
                         attrs = self.osci.get_object(cloud_name, "AI", False, uuid, False)

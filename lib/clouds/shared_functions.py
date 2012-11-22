@@ -243,7 +243,11 @@ class CommonCloudFunctions:
             self.osci.publish_message(obj_attr_list["cloud_name"], "VM", "pause_on_attach", target_uuid + ";vmready;" + dic2str(obj_attr_list), 1, 3600)
             cbdebug("VM " + obj_attr_list["cloud_uuid"] + " pausing on attach for continue signal ....")
             for message in sub_channel.listen() :
-                uuid, status, info = message["data"].split(";")
+                args = str(message["data"]).split(";")
+                if len(args) != 3 :
+                    cbdebug("Message is not for me: " + str(args))
+                    continue
+                uuid, status, info = args
                 if target_uuid == uuid and status == "continue" :
                     _status = 0
                     obj_attr_list["pause_complete"] = True

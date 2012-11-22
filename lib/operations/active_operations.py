@@ -3596,7 +3596,22 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 if not thread_pool :
                     pool_key = operation_type + "_" + _obj_type
                     if pool_key not in self.thread_pools :
-                        thread_pool = ThreadPool(int(obj_attr_list[operation_type + "_parallelism"]))
+                        '''
+                         For the life of me, I cannot figure out the problem with this bug.
+                         Here's the bug:
+                         
+                         If the the size of the thread pool == len(obj_attr_list["parallel_operations"])
+                         then, after the threads complete, the thread pool wait() does not return.
+                         
+                         But if the number of available threads is only larger by ONE available thread,
+                         then the wait() will return successfully.
+                         
+                         The only fix I can think of is to ensure that the 
+                         size of the thread pool is to put a minimum.
+                        ''' 
+                        min_size = max(len(obj_attr_list["parallel_operations"]), int(obj_attr_list[operation_type + "_parallelism"]))
+                        
+                        thread_pool = ThreadPool(min_size + 1)
                         self.thread_pools[pool_key] = thread_pool
                     else :
                         thread_pool = self.thread_pools[pool_key]
