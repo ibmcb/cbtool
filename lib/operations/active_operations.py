@@ -2977,7 +2977,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                     obj_attr_list["target_state"] = "restore"
                                 else :
                                     obj_attr_list["target_state"] = "resume"
-                            elif _target_state == "fail" and _current_state != "attached" :
+                            elif _target_state in [ "fail", "suspend"] and _current_state != "attached" :
                                 _msg = "Unable to fail a VM that is not on the \""
                                 _msg += "attached\" state."
                                 _status = 871
@@ -3653,14 +3653,15 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             _status = 20
                             _rollback = True
                             break
-                    elif _command.count("suspend") :
-                        if _state != "suspend" :
+                    elif (_command.count("suspend") or _command.count("fail")) :
+                        if _state not in [ "suspend", "fail" ] :
                             _status = 22
                             _rollback = True
                             break
                     elif _state != "attached" :
                         _status = 21
                         _rollback = True
+                        _fmsg = "Objects are not in the right state. Runstate operation failed."
                         break
                 else :
                     _status = 18

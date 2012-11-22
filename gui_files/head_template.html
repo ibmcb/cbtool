@@ -33,7 +33,7 @@
   
   </head>
     <body data-spy='scroll' data-target='.bs-docs-sidebar' id='cbody'>
-    <div style="display:none" id="ConnectModal">
+    <div style="display:none" id="ConnectContents">
 	    <form  action='BOOTDEST/connect' method='post' enctype="multipart/form-data">
 	    <h5>&nbsp;&nbsp;&nbsp;Config File: <input type="file" name="definitions" id="file" /> </h5>
 	    <p>
@@ -82,19 +82,54 @@
      <div class='row-fluid'>
 BOOTBODY
      </div>
-		<script>
-			pop = $('#connectpop').popover({ 
-			    html : true,
-			    title: "Start or Re-Connect:",
-			    placement : 'bottom',
-			    content: function() {
-			      return $('#ConnectModal').html();
-			    }
-			  });
-			data = pop.data('popover');
-			if(data != undefined)
-				data.tip().css('z-index', 1030);
-		</script>
+	<script>
+	var isVisible = false;
+	var clickedAway = false;
+	var pop = $('#connectpop').popover({ 
+	    html : true,
+	    title: "Start or Re-Connect:",
+	    placement : 'bottom',
+            trigger: 'manual',
+	    template: '<div id="connectpopover" class="popover"><div class="arrow"></div><div class="popover-inner"><h3 class="popover-title"></h3><div class="popover-content"><p></p></div></div></div>',
+	    content: function() {
+	      return $('#ConnectContents').html();
+	    }
+	  });
+	  /* Allow the popover to close when clicking somewhere else on the screen */
+	data = pop.data('popover');
+
+	if(data != undefined) {
+	   clickedAway = true;
+	   isVisible = true;
+	   pop.data('popover').tip().css('z-index', 1030);
+	}
+
+	  pop.click(function(e) {
+		$(this).popover('show');
+		clickedAway = false;
+		isVisible = true;
+		e.preventDefault();
+	    });
+
+	$(document).click(function(e) {
+	      if(findParentNode('ConnectContents', e.srcElement, 'cbody') == true) {
+		return;
+ 	      }
+	      if(findParentNode('connectpopover', e.srcElement, 'cbody') == true) {
+		return;
+		}
+
+		  if(isVisible & clickedAway)
+		  {
+		    $('#connectpop').popover('hide')
+		    isVisible = clickedAway = false
+		  }
+		  else
+		  {
+		    clickedAway = true
+		  }
+	});
+	</script>
 BOOTSHOWPOPOVER
 </body>
 </html>

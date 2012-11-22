@@ -235,12 +235,16 @@ function make_child(node) {
   function findParentNode(parentName, childObj, stopName) {
 	    var testObj = childObj.parentNode;
 	    var count = 1;
-	    while(testObj.getAttribute('id') != parentName && testObj.getAttribute('id') != stopName) {
-//	        alert('My id  is ' + testObj.getAttribute('id') + '. Let\'s try moving up one level to see what we get.');
-	        testObj = testObj.parentNode;
-	        count++;
+	    if("getAttribute" in testObj) {
+		    while(testObj.getAttribute('id') != parentName && testObj.getAttribute('id') != stopName) {
+	//	        alert('My id  is ' + testObj.getAttribute('id') + '. Let\'s try moving up one level to see what we get.');
+			testObj = testObj.parentNode;
+			count++;
+		    }
+	    } else {
+		return false;
 	    }
 	    // now you have the object you are looking for - do something with it
 //	    alert('Finally found ' + testObj.getAttribute('id') + ' after going up ' + count + ' level(s) through the DOM tree');
-		return (testObj.getAttribute('id') == stopName) ? false : true;
+	    return (testObj.getAttribute('id') == stopName) ? false : true;
   }

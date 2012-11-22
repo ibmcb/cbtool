@@ -1039,7 +1039,7 @@ class GUI(object):
             found_view = False
             if req.active != "host" :
                 output += """
-                    <a id='attachpop' class='btn btn-success' style='padding: 3px' href='#'><i class='icon-play icon-white'></i>&nbsp;Attach</a>
+                    <a id='attachpop' class='btn btn-success' style='padding: 3px' href='#'><i class='icon-play icon-white'></i>&nbsp;Create</a>
                     <p>
                 """
             
