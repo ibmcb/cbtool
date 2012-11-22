@@ -2774,12 +2774,12 @@ class BaseObjectOperations :
                     _proc_man.kill_process("gmetad.py", obj_attr_list["cloud_name"])
                 
                 cbdebug("Starting a new Host OS performance monitor daemon (gmetad.py)......", True)
-                _cmd = _space_attr_list["base_dir"] + '/' + _monitor_attr_list["collector_executable_path_suffix"]
-                _cmd += " --syslogn " + _log_attr_list["hostname"]
+                _base_cmd = _space_attr_list["base_dir"] + '/' + _monitor_attr_list["collector_executable_path_suffix"]
+                _base_cmd += " -c " + _gmetad_config_fn
+                _base_cmd += " --cn " + obj_attr_list["cloud_name"]
+                _cmd = _base_cmd + " --syslogn " + _log_attr_list["hostname"]
                 _cmd += " --syslogp " + _log_attr_list["port"]
                 _cmd += " --syslogf " + _log_attr_list["monitor_host_facility"]
-                _cmd += " --cn " + obj_attr_list["cloud_name"]
-                _cmd += " -c " + _gmetad_config_fn
                 _cmd += " -d 4"
                 
                 cbdebug(_cmd)
@@ -2794,8 +2794,10 @@ class BaseObjectOperations :
                     _msg += " and " + _monitor_attr_list["collector_summarizer_port"]
                     _msg += ")."
                     cbdebug(_msg, True)
-
                     _status = 0
+                else :
+                    _fmsg = "\nHost monitor failed to start. To discover why, please run: \n\n" + \
+                            _base_cmd + " -d 5\n\n... and report the results as a bug...\n"
 
             else :
                 _msg = "Attribute \"collect_from_host\" was set to \"false\". "

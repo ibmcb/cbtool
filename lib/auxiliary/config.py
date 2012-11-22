@@ -341,6 +341,13 @@ def get_available_clouds(cld_attr_lst, return_all_options = False) :
                 cloud_name = parts[1]
                 commands[cloud_name] = []
                 for command in cld_attr_lst["user-defined"][key].split(',') :
+                    '''
+                     Try to simply the multi-cloud configuration a little bit.
+                     Permit the cldattach command to 'omit' the cloud name,
+                     since we already know the cloud name in the variable names themselves.
+                    '''
+                    if command.count("cldattach") and not command.lower().count(cloud_name.lower()) :
+                        command += " " + cloud_name.upper()
                     commands[cloud_name].append(command.strip())
     else :
         commands = []
