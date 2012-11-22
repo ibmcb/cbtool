@@ -196,7 +196,9 @@ class CBCLI(Cmd) :
                 # Record the function signatures required to be provided by the CLI
                 name = methodtuple[0]
                 
-                if name in ["__init__", "success", "error"] :
+                if name in ["__init__", "success", "error", "get_functions", \
+                            "get_signature", "should_refresh", "reset_refresh", \
+                            "vminit", "vmrun", "appinit", "apprun" ] :
                     continue
                 
                 # Do not install the function if it's already implemented
@@ -268,6 +270,8 @@ class CBCLI(Cmd) :
                 new_function = "ai" + new_function[3:]
             setattr(self, "do_" + new_function, self.unpack_arguments_for_api(getattr(self.api, name)))
             setattr(CBCLI, "do_" + new_function, self.unpack_arguments_for_api(getattr(self.api, name)))
+            setattr(self, "help_" + new_function, help)
+            setattr(CBCLI, "help_" + new_function, help)
                 
     def unpack_arguments_for_api(self, func):
         def wrapped(*args, **kwargs):
