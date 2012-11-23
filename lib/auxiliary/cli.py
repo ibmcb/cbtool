@@ -198,7 +198,9 @@ class CBCLI(Cmd) :
                 
                 if name in ["__init__", "success", "error", "get_functions", \
                             "get_signature", "should_refresh", "reset_refresh", \
-                            "vminit", "vmrun", "appinit", "apprun" ] :
+                            "vminit", "appinit" ] :
+                    # vminit and appinit are exposed to the command-line
+                    # as regular attach commands using a separate parameter
                     continue
                 
                 # Do not install the function if it's already implemented
@@ -223,7 +225,7 @@ class CBCLI(Cmd) :
                 # Now, we can build the Usage strings automatically
                 # by inspecting the functions themselves
                 _msg = "Usage: vmattach <cloud name> <role> [vmc pool] [size] [action after attach] [mode]"
-                doc = "Usage: " + name + " "
+                doc = "Usage: " + self.convert_app_to_ai(name) + " "
                 for x in range(1, diff) :
                     doc += "<" + spec[x] + "> "
                 for x in range(diff, num_spec) :
@@ -262,12 +264,15 @@ class CBCLI(Cmd) :
                 print(_msg)
                 exit(_status)
                 
+    def convert_app_to_ai(self, name):
+        if len(name) >= 4 and name[:3] == "app" :
+           name = "ai" + name[3:]
+        return name
+           
     def install_functions(self):
         for name in self.signatures :
             # Install the API functions into the command-line
-            new_function = name 
-            if len(new_function) >= 4 and new_function[:3] == "app" :
-                new_function = "ai" + new_function[3:]
+            new_function = self.convert_app_to_ai(name)
             setattr(self, "do_" + new_function, self.unpack_arguments_for_api(getattr(self.api, name)))
             setattr(CBCLI, "do_" + new_function, self.unpack_arguments_for_api(getattr(self.api, name)))
             setattr(self, "help_" + new_function, help)

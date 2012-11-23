@@ -579,6 +579,9 @@ class GUI(object):
                 objs.sort(key=self.keyfunc)
             for idx in range(0, len(objs)) :
                 obj = objs[idx]
+                # appinit()/vminit() was used
+                init_pending = True if ("tracking" in obj and str(obj["tracking"]).lower().count("paused waiting for run command")) else False 
+                    
                 if link :
                     if idx != 0 and (idx % mod) == 0 :
                         output += "<tr><td></td></tr>"
@@ -591,19 +594,24 @@ class GUI(object):
                 if link :
                     output += "<a class='btn btn-mini btn-info' href='BOOTDEST/provision?object=" + active + "&explode=" + obj["uuid"] + "'><i class='icon-info-sign icon-white'></i>&nbsp;"
                 else :
-                    if not icon :
-                        output += "BOOTSPINNER&nbsp;"
-                    output += "<span class='label " + label + "'>"
-                    if icon :
-                        output += "<i class='" + icon + " icon-white'></i>" + "&nbsp;&nbsp;"
-                output += obj["name"]
+                    if not init_pending :
+                        if not icon :
+                            output += "BOOTSPINNER&nbsp;"
+                        output += "<span class='label " + label + "'>"
+                        if icon :
+                            output += "<i class='" + icon + " icon-white'></i>" + "&nbsp;&nbsp;"
     
-                if link :
-                    output += "</a>&nbsp;" 
-                else :
-                    output += "</span>&nbsp;" 
+                if not init_pending :
+                    output += obj["name"]
+                    
+                    if link :
+                        output += "</a>&nbsp;" 
+                    else :
+                        output += "</span>&nbsp;" 
     
                 if not link  :
+                    if init_pending :
+                        output += "<a class='btn btn-mini btn-info' href='BOOTDEST/provision?object=" + active + "&operation=runstate&keywords=4&keyword1=" + obj["uuid"] + "&keyword2=attached&keyword3=run&keyword4=async'><i class='icon-play icon-white'></i>&nbsp;" + obj["name"] + "</a>&nbsp;&nbsp;"
                     act = obj["tracking"] if "tracking" in obj else None
                     output += (str(act) if (act is not None and act != "None") else "")
                 output += "</td>"
@@ -647,7 +655,8 @@ class GUI(object):
                               "keyword1" : { "label" : "Role", "values" : [x.strip() for x in self.api.rolelist(session['cloud_name'])] } ,
                               "keyword2" : { "label" : "Pool", "values" : ["auto"] + [x.strip() for x in self.api.poollist(session['cloud_name'])] } ,
                               "keyword3" : { "label" : "Size", "values" : "default" } ,
-                              "keyword4" : { "label" : "Mode", "values" : "async" } ,
+                              "keyword4" : { "label" : "staging", "values" : ["continue", "initialize"] } ,
+                              "keyword5" : { "label" : "Mode", "values" : "async" } ,
                            },
                     "app" : { 
                               "keyword1" : { "label" : "Type", "values" : [x.strip() for x in self.api.typelist(session['cloud_name'])] } ,
@@ -655,7 +664,8 @@ class GUI(object):
                               "keyword3" : { "label" : "Load Duration", "values" : "default" } ,
                               "keyword4" : { "label" : "Lifetime", "values" : "none" } ,
                               "keyword5" : { "label" : "Submitter", "values" : "none" } ,
-                              "keyword6" : { "label" : "Mode", "values" : "async" } ,
+                              "keyword6" : { "label" : "staging", "values" : ["continue", "initialize"] } ,
+                              "keyword7" : { "label" : "Mode", "values" : "async" } ,
                             },
                     "vmc" : { "keyword1" : { "label" : "Name", "values" : "" } },
                     "svm" : { "keyword1" : { "label" : "Identifier", "values" : "vms" } },
@@ -751,11 +761,12 @@ class GUI(object):
                     "detach" : [1, {"operations" : [ "vm", "vmc", "app", "svm", "aidrs"], "icon" : "trash", "state" : "any" } ], 
                     "save" : [2, {"operations" : [ "vm", "vmc", "app"], "icon" : "stop", "state" : "attached" } ], 
                     "restore" : [3, {"operations" : [ "vm", "vmc", "app"], "icon" : "play", "state" : "save" } ], 
-                    "suspend" : [4, {"operations" : [ "vm", "vmc", "app"], "icon" : "pause", "state" : "attached" } ], 
+                    "suspend" : [4, {"operations" : [ "vm", "vmc", "app"], "icon" : "pause_on_vm_attach", "state" : "attached" } ], 
                     "resume" : [5, {"operations" : [ "vm", "vmc", "app"], "icon" : "play", "state" : "fail" } ], 
                     "protect" : [6, {"operations" : [ "vm" ], "icon" : "star" , "ft" : "attach", "state" : "attached" } ], 
                     "unprotect" : [7, {"operations" : [ "vm" ], "icon" : "ok" , "ft" : "detach", "state" : "attached"} ], 
                     "fail" : [8, {"operations" : [ "vm" ], "icon" : "fire", "ft" : "fail", "state" : "attached" } ], 
+                    "runstate" : [9, {"operations" : [ "vm", "app"], "icon" : "play", "state" : "any" } ],
                 }
                 
                 for operation in req.session["operations"].keys() :
@@ -1148,6 +1159,8 @@ class GUI(object):
                 elif operation in [ "unprotect", "fail" ] :
                     if "svm_stub_vmc" not in attrs or attrs["svm_stub_vmc"] == "none" :
                         continue
+                elif operation in [ "runstate" ] :
+                    continue
                 elif operation == "protect" :
                     if "svm_stub_vmc" in attrs and attrs["svm_stub_vmc"] != "none" :
                         continue

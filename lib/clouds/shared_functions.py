@@ -229,7 +229,7 @@ class CommonCloudFunctions:
         '''
         TBD
         '''
-        if obj_attr_list["action_after_vm_attach"] != "pause" :
+        if obj_attr_list["staging"] != "pause_on_vm_attach" :
             return
 
         if "pause_complete" in obj_attr_list :

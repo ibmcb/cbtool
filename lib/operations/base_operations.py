@@ -34,6 +34,7 @@ from uuid import uuid5, NAMESPACE_DNS
 from hashlib import sha1
 from base64 import b64encode
 from pwd import getpwuid
+from subprocess import Popen, PIPE
 
 from lib.auxiliary.code_instrumentation import trace, cblog, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.value_generation import ValueGeneration
@@ -250,7 +251,7 @@ class BaseObjectOperations :
         elif command == "vm-attach" :
             object_attribute_list["pool"] = "auto"
             object_attribute_list["size"] = "default"
-            object_attribute_list["action_after_vm_attach"] = "continue"
+            object_attribute_list["staging"] = "continue"
 
             if _length >= 2 :
                 object_attribute_list["role"] = _parameters[1]
@@ -259,7 +260,7 @@ class BaseObjectOperations :
             if _length >= 4:
                 object_attribute_list["size"] = _parameters[3]
             if _length >= 5 :
-                object_attribute_list["action_after_vm_attach"] = _parameters[4]
+                object_attribute_list["staging"] = _parameters[4]
             if _length < 2 :
                 _status = 9
                 _msg = "Usage: vmattach <cloud name> <role> [vmc pool] [size] [action after attach] [mode]"
@@ -306,10 +307,10 @@ class BaseObjectOperations :
                 _msg = "Usage: svmdebug <cloud name> <vm name>"
 
         elif command == "vm-runstate" :
+            object_attribute_list["suspected_command"] = "unknown" 
             if _length >= 3 :
                 object_attribute_list["name"] = _parameters[1]
                 object_attribute_list["target_state"] = _parameters[2]
-                object_attribute_list["suspected_command"] = _parameters[2] 
             if _length >= 4 :
                 object_attribute_list["suspected_command"] = _parameters[3] 
             if _length < 3:
@@ -361,7 +362,7 @@ class BaseObjectOperations :
             object_attribute_list["load_duration"] = "default"
             object_attribute_list["lifetime"] = "none"
             object_attribute_list["aidrs"] = "none"
-            object_attribute_list["action_after_vm_attach"] = "continue"
+            object_attribute_list["staging"] = "continue"
             
             if _length >= 2 :
                 object_attribute_list["type"] = _parameters[1]
@@ -374,7 +375,7 @@ class BaseObjectOperations :
             if _length >= 6 :
                 object_attribute_list["aidrs"] = _parameters[5]
             if _length >= 7 :
-                object_attribute_list["action_after_vm_attach"] = _parameters[6]
+                object_attribute_list["staging"] = _parameters[6]
             if _length < 2:
                 _status = 9
                 _msg = "Usage: aiattach <cloud name> <type> [load level] [load duration] [lifetime] [parent] [action after VM attach] [mode]"
@@ -382,16 +383,16 @@ class BaseObjectOperations :
             object_attribute_list["name"] = "to generate"    
 
         elif command == "ai-runstate" :
+            object_attribute_list["suspected_command"] = "unknown" 
             if _length >= 3 :
                 object_attribute_list["name"] = _parameters[1]
                 object_attribute_list["target_state"] = _parameters[2]
-                object_attribute_list["suspected_command"] = _parameters[2] 
             if _length >= 4 :
                 object_attribute_list["suspected_command"] = _parameters[3] 
 
             if _length < 3:
                 _status = 9
-                _msg = "Usage: airestore|aisave <cloud name> <ai name> [mode]"
+                _msg = "Usage: airestore|aisave|airun <cloud name> <ai name> [mode]"
                 
         elif command == "ai-detach" :
             object_attribute_list["force_detach"] = "false"
@@ -823,6 +824,8 @@ class BaseObjectOperations :
                         
             elif cmd.count("attach") :
 
+                _postpone_counter = False
+                
                 obj_attr_list["mgt_001_provisioning_request_originated"] = obj_attr_list["command_originated"]
  
                 _cloud_parameters = self.get_cloud_parameters(obj_attr_list["cloud_name"])
@@ -830,9 +833,13 @@ class BaseObjectOperations :
                 if '_' not in obj_attr_list["name"] and '-' not in obj_attr_list["name"] and _obj_type.upper() == "SVM" :
                     obj_attr_list["name"] = _obj_type.lower() + "_" + obj_attr_list["name"]
 
-                _obj_counter = self.osci.update_counter(obj_attr_list["cloud_name"], _obj_type, \
-                                                        "COUNTER", \
-                                                        "increment")
+                if "staging" in obj_attr_list and obj_attr_list["staging"] == "initialize" :
+                    _postpone_counter = True
+                    
+                if not _postpone_counter :
+                    _obj_counter = self.osci.update_counter(obj_attr_list["cloud_name"], _obj_type, \
+                                                            "COUNTER", \
+                                                            "increment")
 
                 # VMCs have pre-defined names (usually by the cloud itself), 
                 # all other object names are generated on the fly, so they never
@@ -856,7 +863,10 @@ class BaseObjectOperations :
                     _object_exists = False
                 
                 if obj_attr_list["name"] == "to generate" :
-                    obj_attr_list["name"] = _obj_type.lower() + '_' + str(_obj_counter)
+                    if _postpone_counter :
+                        obj_attr_list["name"] = "unused"
+                    else :
+                        obj_attr_list["name"] = _obj_type.lower() + '_' + str(_obj_counter)
 
                 obj_attr_list["cloud_name"] = _cloud_parameters["name"]
                 obj_attr_list["model"] = _cloud_parameters["model"]
@@ -936,6 +946,12 @@ class BaseObjectOperations :
             elif cmd.count("detach") or cmd.count("capture") or \
                 cmd.count("runstate") or cmd.count("resize") or \
                 cmd.count("restore") or cmd.count("console") :
+                
+                if "target_state" in obj_attr_list and obj_attr_list["target_state"] == "attached" and obj_attr_list["suspected_command"] == "run" :
+                    obj_attr_list["uuid"] = obj_attr_list["name"]
+                    _status = 483920
+                    _fmsg = "Going to resume AI from pending initialized state..."
+                    return _status, _fmsg
                                         
                 if obj_attr_list["name"] == "all" :
                     _status = 912543
@@ -1576,7 +1592,7 @@ class BaseObjectOperations :
                 if obj_attr_list["load_balancer"].strip().lower() == "true" :
                     _size = 'load_balanced_default'
                     
-                _attach_action = obj_attr_list["action_after_vm_attach"]
+                _attach_action = obj_attr_list["staging"]
  
                 _vg = ValueGeneration(self.pid)
                 _nr_vms = int(_vg.get_value(_nr_vms, _nr_vms))
@@ -1627,7 +1643,7 @@ class BaseObjectOperations :
             obj_attr_list["vms_nr"] = _vm_counter
             obj_attr_list["drivers_nr"] = _nr_drivers
             
-            if obj_attr_list["action_after_vm_attach"] == "pause" :
+            if obj_attr_list["staging"] == "pause_on_vm_attach" :
                 self.osci.publish_message(obj_attr_list["cloud_name"], "VM", "pause_on_attach", obj_attr_list["uuid"] + ";vmcount;" + str(_vm_counter), 1, 3600)
 
             _msg = "VM attach command list is: " + _vm_command_list
@@ -2843,3 +2859,178 @@ class BaseObjectOperations :
         _cloud_parameters = self.get_cloud_parameters(cloud_name)
         _cloud_parameters[key] = value 
         self.osci.update_cloud(cloud_name, _cloud_parameters)
+
+    @trace    
+    def background_execute(self, parameters, command) :
+        '''
+        TBD
+        '''
+        try :
+            _result = {}
+            _status = 100
+            _smsg = ''
+            _fmsg = "unknown error"
+            _obj_type, _operation = command.split('-')
+            _obj_type = _obj_type.upper()
+
+            # Some small pre-processing is in order. We just need to remove the
+            # word "async" from the parameter list
+ 
+            _p_parameters = parameters.split()
+            _parameters = ''
+            _parallel_operations = 1
+            _inter_spawn_time = False
+            for _parameter in _p_parameters :
+                if not _parameter.count("async") :
+                    _parameters += _parameter + ' '
+                else :
+                    if _parameter.count('=') :
+                        _x, _parallel_operations = _parameter.split('=')
+                        if _parameter.count(":") :
+                            _parallel_operations, _inter_spawn_time = _parallel_operations.split(':')
+
+                        _msg = "Going to start " + _parallel_operations + " \""
+                        _msg += command.replace('-','') + "\" operations in parallel. "
+
+                        if _inter_spawn_time :
+                            _msg += "Wait time between each operation is " + _inter_spawn_time + " seconds."
+                        print _msg
+
+            _obj_attr_list = {}
+
+            # The parse_cli method is used just to get the cloud name and
+            # object name.
+            _status, _fmsg = self.parse_cli(_obj_attr_list, _parameters, command)
+
+            if BaseObjectOperations.default_cloud is not None and _parameters.split()[0] != BaseObjectOperations.default_cloud :
+                _parameters = BaseObjectOperations.default_cloud + ' ' + _parameters
+                _status = 0
+
+
+            if not _status :
+                _cloud_parameters = self.get_cloud_parameters(_obj_attr_list["cloud_name"])
+
+                #if not command.count("detachall") :
+                #    _parallel_operations = 1
+ 
+                for _op in range(0,int(_parallel_operations)) :
+
+                    if command.count("attach") or command.count("capture") :
+                        
+                        _obj_uuid = str(uuid5(NAMESPACE_DNS, str(randint(0, \
+                                                                             1000000000000000000)))).upper()
+                        _obj_attr_list["uuid"] = _obj_uuid
+        
+                        _cmd = self.path + "/cbact"
+                        _cmd += " --procid=" + self.pid
+                        _cmd += " --osp=" + dic2str(self.osci.oscp())
+                        _cmd += " --msp=" + dic2str(self.msci.mscp())
+                        _cmd += " --oop=" + ','.join(_parameters.split())
+                        _cmd += " --operation=" + command
+                        _cmd += " --cn=" + _obj_attr_list["cloud_name"]
+                        _cmd += " --uuid=" + _obj_uuid
+                        _cmd += " --daemon"
+                        #_cmd += "  --debug_host=localhost"
+                        
+                    elif command.count("detach") and not command.count("detachall") :
+                        
+                        self.pre_select_object(_obj_attr_list, _obj_type, _cloud_parameters["username"])    
+                        
+                        _obj_uuid = self.osci.object_exists(_obj_attr_list["cloud_name"], _obj_type, \
+                                                            _obj_attr_list["name"], \
+                                                            True)
+    
+                        if not _obj_uuid :
+                            _fmsg = "Object is not instantiated on the object store."
+                            _fmsg += "There is no need for explicitly detach it from "
+                            _fmsg += "this experiment."
+                            _status = 37
+    
+                        else :
+                            _cmd = self.path + "/cbact"
+                            _cmd += " --procid=" + self.pid
+                            _cmd += " --osp=" + dic2str(self.osci.oscp())
+                            _cmd += " --msp=" + dic2str(self.msci.mscp())
+                            _cmd += " --oop=" + ','.join(_parameters.split())
+                            _cmd += " --operation=" + command
+                            _cmd += " --cn=" + _obj_attr_list["cloud_name"]
+                            _cmd += " --uuid=" + _obj_uuid
+                            _cmd += " --daemon"
+                            #_cmd += "  --debug_host=localhost"
+    
+                    elif command.count("runstate") or \
+                    command.count("fail") or command.count("repair") or \
+                    command.count("save") or command.count("restore") or \
+                    command.count("resize") or command.count("detachall") :
+    
+                        if _obj_type != "HOST" and ("suspected_command" not in _obj_attr_list or _obj_attr_list["suspected_command"] != "run") :
+                            _obj_uuid = self.osci.object_exists(_obj_attr_list["cloud_name"], _obj_type, \
+                                                                _obj_attr_list["name"], \
+                                                                True)
+                        else : 
+                            _obj_uuid = _obj_attr_list["name"]
+    
+                        if not _obj_uuid :
+                            _fmsg = "Object is not instantiated on the object store."
+                            _fmsg += "It cannot be captured on this experiment."
+                            _status = 37
+    
+                        else :
+                            _cmd = self.path + "/cbact"
+                            _cmd += " --procid=" + self.pid
+                            _cmd += " --osp=" + dic2str(self.osci.oscp())
+                            _cmd += " --msp=" + dic2str(self.msci.mscp())
+                            _cmd += " --oop=" + ','.join(_parameters.split())
+                            _cmd += " --operation=" + command
+                            _cmd += " --cn=" + _obj_attr_list["cloud_name"]
+                            _cmd += " --uuid=" + _obj_uuid
+                            _cmd += " --daemon"
+                            #_cmd += "  --debug_host=localhost"
+                    else :
+                        _msg = "Unknown Operation" + command
+                        _status = 100
+    
+                    if not _status :
+                        _proc_h = Popen(_cmd, shell=True, stdout=PIPE, stderr=PIPE)
+        
+                        if _proc_h.pid :
+                                _obj_id = _obj_uuid + '-' + _operation
+                                self.update_process_list(_obj_attr_list["cloud_name"], _obj_type, \
+                                                         _obj_id, \
+                                                         str(_proc_h.pid), "add")
+                                _smsg += "Operation \"" + command + "\" will be processed "
+                                _smsg += "asynchronously, through the command \""
+                                _smsg += _cmd + "\". The process id is "
+                                _smsg += str(_proc_h.pid) + ".\n"
+                                _status = 0
+        
+                        else :
+                            _status = 9
+                            _fmsg = "Unable to spawn a new process with the command line \""
+                            _fmsg += _cmd + "\". No PID was obtained."
+
+                    if _inter_spawn_time :
+                        _msg = command.replace('-','') + ' ' + str(_op + 1) + " dispatched..."
+                        cbdebug(_msg, True)
+                        if _op < (int(_parallel_operations) - 1) :
+                            sleep(int(_inter_spawn_time))               
+                            
+                    _result = _obj_attr_list
+                    
+        except self.osci.ObjectStoreMgdConnException, obj :
+            _status = obj.status
+            _fmsg = str(obj.msg)
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+
+        finally :
+            if _status :
+                _msg = "Background operation execution failure: " + _fmsg
+                cberr(_msg)
+            else :
+                _msg = "Background operation execution success. " + _smsg
+                cbdebug(_msg)
+            return self.package(_status, _msg, _result)
+        

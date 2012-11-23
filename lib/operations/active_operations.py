@@ -1256,34 +1256,60 @@ class ActiveObjectOperations(BaseObjectOperations) :
             for key in ["ai", "ai_name", "aidrs", "aidrs_name", "pattern", "type"] :
                 if key not in obj_attr_list :
                     obj_attr_list[key] = "none"
+                    
+        _status = 100
+        _fmsg = "An error has occurred, but no error message was captured"
+        _obj_type = command.split('-')[0].upper()
+        _result = {}
+
+        _pre_attach = False
+        _admission_control = False
+        _vmcregister = False
+        _vmcreate = False
+        _svmcreate = False
+        _aidefine = False
+        _created_object = False
+        _created_pending = False
+
+        obj_attr_list["name"] = "undefined"
+        obj_attr_list["cloud_ip"] = "undefined"
+        obj_attr_list["cloud_hostname"] = "undefined"
             
         try :
-            _status = 100
-            _fmsg = "An error has occurred, but no error message was captured"
-            _obj_type = command.split('-')[0].upper()
-            _result = {}
-
-            _pre_attach = False
-            _admission_control = False
-            _vmcregister = False
-            _vmcreate = False
-            _svmcreate = False
-            _aidefine = False
-            _created_object = False
-            _created_pending = False
-
-            obj_attr_list["name"] = "undefined"
-            obj_attr_list["cloud_ip"] = "undefined"
-            obj_attr_list["cloud_hostname"] = "undefined"
-
             _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
 
             if not _status :
                 _status, _fmsg = self.initialize_object(obj_attr_list, command)
+                _cloud_name = obj_attr_list["cloud_name"]
 
-                if not _status :
-                    self.osci.add_to_list(obj_attr_list["cloud_name"], _obj_type, "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], int(time()))
-                    self.osci.pending_object_set(obj_attr_list["cloud_name"], _obj_type, obj_attr_list["uuid"], "Initializing...")
+                '''
+                Just like objdetach()/runstate() functions, we're using this
+                function as a launching point for operations that need to be
+                performed in the background based on the parameters of the
+                function (like 'all' or 'async', etc.)
+                '''
+                if "staging" in obj_attr_list and obj_attr_list["staging"] == "initialize" :
+                    if _obj_type == "VM" :
+                        _tmp_result = self.vminit(_cloud_name, obj_attr_list["role"], \
+                                                  obj_attr_list["pool"], obj_attr_list["size"])
+                    elif _obj_type == "AI" :
+                        _tmp_result = self.appinit(_cloud_name, obj_attr_list["type"], \
+                                                   str(obj_attr_list["load_level"]), \
+                                                   str(obj_attr_list["load_duration"]), \
+                                                   str(obj_attr_list["lifetime"]), 
+                                                   obj_attr_list["aidrs"])
+                                                   
+                    _status = _tmp_result["status"]
+                    _fmsg = _tmp_result["msg"]
+                    _result = _tmp_result["result"]
+                    obj_attr_list.update(_result)
+                    obj_attr_list["staging"] = "initialize"
+                elif not _status :
+                    self.osci.add_to_list(_cloud_name, _obj_type, "PENDING", \
+                          obj_attr_list["uuid"] + "|" + obj_attr_list["name"], int(time()))
+                    self.osci.pending_object_set(_cloud_name, _obj_type, \
+                                        obj_attr_list["uuid"], "Initializing...")
+                    
                     _created_pending = True
     
                     _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
@@ -1352,10 +1378,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         
                         if _obj_type == "VM" and "host_name" in obj_attr_list and obj_attr_list["host_name"] != "unknown" :
                             if obj_attr_list["discover_hosts"].lower() == "true" :
-                                _host_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "HOST", True, obj_attr_list["host_name"], False)
+                                _host_attr_list = self.osci.get_object(_cloud_name, "HOST", True, obj_attr_list["host_name"], False)
                                 obj_attr_list["host"] = _host_attr_list["uuid"]
     
-                        self.osci.create_object(obj_attr_list["cloud_name"], _obj_type, obj_attr_list["uuid"], \
+                        self.osci.create_object(_cloud_name, _obj_type, obj_attr_list["uuid"], \
                                                 obj_attr_list, False, True)
                         _created_object = True
     
@@ -1414,7 +1440,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 if self.osci :
                     if "cloud_name" in obj_attr_list :
-                        self.osci.update_counter(obj_attr_list["cloud_name"], _obj_type, "FAILED", "increment")
+                        self.osci.update_counter(_cloud_name, _obj_type, "FAILED", "increment")
     
                     if _obj_type == "VM" or _obj_type == "SVM" :
                         if "mgt_001_provisioning_request_originated" in obj_attr_list :
@@ -1432,17 +1458,17 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             and obj_attr_list["destroy_vms"] != "0" :
                                 self.parallel_obj_operation("detach", obj_attr_list)
                                 
-                        if obj_attr_list["action_after_vm_attach"] == "pause" :
-                            self.osci.publish_message(obj_attr_list["cloud_name"], "VM", "pause_on_attach", obj_attr_list["uuid"] + ";error;" + _msg, 1, 3600)
+                        if obj_attr_list["staging"] == "pause_on_vm_attach" :
+                            self.osci.publish_message(_cloud_name, "VM", "pause_on_attach", obj_attr_list["uuid"] + ";error;" + _msg, 1, 3600)
 
 
                     if _obj_type == "VM" :
                         if "cloud_name" in obj_attr_list :
-                            self.record_management_metrics(obj_attr_list["cloud_name"], \
+                            self.record_management_metrics(_cloud_name, \
                                                            "VM", obj_attr_list, "attach")
-                        if obj_attr_list["action_after_vm_attach"] == "pause" :
+                        if obj_attr_list["staging"] == "pause_on_vm_attach" :
                             uuid = obj_attr_list["ai"] if obj_attr_list["ai"] != "none" else obj_attr_list["uuid"]
-                            self.osci.publish_message(obj_attr_list["cloud_name"], "VM", "pause_on_attach", uuid + ";error;" + _msg, 1, 3600)
+                            self.osci.publish_message(_cloud_name, "VM", "pause_on_attach", uuid + ";error;" + _msg, 1, 3600)
 
                     if _admission_control or ( _obj_type == "AI" and _pre_attach) :
                         self.admission_control(_obj_type, obj_attr_list, \
@@ -1464,35 +1490,43 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _cld_conn.aiundefine(obj_attr_list)
     
                     if _created_object :
-                        self.osci.destroy_object(obj_attr_list["cloud_name"], _obj_type, obj_attr_list["uuid"], \
+                        self.osci.destroy_object(_cloud_name, _obj_type, obj_attr_list["uuid"], \
                                                 obj_attr_list, False)
     
                     obj_attr_list["tracking"] = str(_fmsg)
                     if "uuid" in obj_attr_list and "cloud_name" in obj_attr_list :
-                        self.osci.create_object(obj_attr_list["cloud_name"], "FAILEDTRACKING" + _obj_type, obj_attr_list["uuid"] + unique_state_key, \
+                        self.osci.create_object(_cloud_name, "FAILEDTRACKING" + _obj_type, obj_attr_list["uuid"] + unique_state_key, \
                                                 obj_attr_list, False, True, 3600)
                     _xmsg = "Done "
                     cberr(_xmsg)                
 
             else :
-                _result = copy.deepcopy(obj_attr_list)
-                self.osci.update_counter(obj_attr_list["cloud_name"], _obj_type, "ARRIVED", "increment")
                 
                 _msg = _obj_type + " object " + obj_attr_list["uuid"] 
                 _msg += " (named \"" + obj_attr_list["name"] +  "\") sucessfully "
-                _msg += "attached to this experiment."
                 
-                if not "submitter" in obj_attr_list and _obj_type != "SVM":
-                    _msg += " It is ssh-accessible at the IP address " + obj_attr_list["cloud_ip"]
-                    _msg += " (" + obj_attr_list["cloud_hostname"] + ")."
-                cbdebug(_msg)
-                obj_attr_list["tracking"] = "Attach: success." 
-                self.osci.create_object(obj_attr_list["cloud_name"], "FINISHEDTRACKING" + _obj_type, obj_attr_list["uuid"] + unique_state_key, \
+                if "staging" in obj_attr_list and obj_attr_list["staging"] != "continue" :
+                    action = obj_attr_list["staging"]
+                    _msg += action + "d."
+                    obj_attr_list["tracking"] = action + ": success." 
+                else :
+                    _result = copy.deepcopy(obj_attr_list)
+                    self.osci.update_counter(_cloud_name, _obj_type, "ARRIVED", "increment")
+                    _msg += "attached to this experiment."
+                
+                    if not "submitter" in obj_attr_list and _obj_type != "SVM":
+                        _msg += " It is ssh-accessible at the IP address " + obj_attr_list["cloud_ip"]
+                        _msg += " (" + obj_attr_list["cloud_hostname"] + ")."
+                    obj_attr_list["tracking"] = "Attach: success." 
+                    
+                self.osci.create_object(_cloud_name, "FINISHEDTRACKING" + _obj_type, obj_attr_list["uuid"] + unique_state_key, \
                                         obj_attr_list, False, True, 3600)
+                        
+                cbdebug(_msg)
 
             if _created_pending :
-                self.osci.pending_object_remove(obj_attr_list["cloud_name"], _obj_type, obj_attr_list["uuid"])
-                self.osci.remove_from_list(obj_attr_list["cloud_name"], _obj_type, "PENDING",obj_attr_list["uuid"] + "|" + obj_attr_list["name"], True)
+                self.osci.pending_object_remove(_cloud_name, _obj_type, obj_attr_list["uuid"])
+                self.osci.remove_from_list(_cloud_name, _obj_type, "PENDING",obj_attr_list["uuid"] + "|" + obj_attr_list["name"], True)
                 
             return self.package(_status, _msg, _result)
 
@@ -1717,7 +1751,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     self.record_management_metrics(obj_attr_list["cloud_name"], \
                                                    "VM", obj_attr_list, "attach")
 
-            if obj_attr_list["action_after_vm_attach"] == "pause" :
+            if obj_attr_list["staging"] == "pause_on_vm_attach" :
                 uuid = obj_attr_list["ai"] if obj_attr_list["ai"] != "none" else obj_attr_list["uuid"]
                 self.osci.publish_message(obj_attr_list["cloud_name"], "VM", "pause_on_attach", uuid + ";vmfinished;" + dic2str(obj_attr_list), 1, 3600)
 
@@ -1797,7 +1831,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 else :
                     _status = 0
                     
-            if obj_attr_list["action_after_vm_attach"] == "pause" :
+            if obj_attr_list["staging"] == "pause_on_vm_attach" :
                 self.osci.publish_message(obj_attr_list["cloud_name"], "VM", "pause_on_attach", obj_attr_list["uuid"] + ";appfinished;" + dic2str(obj_attr_list), 1, 3600)
 
         except self.ObjectOperationException, obj :
@@ -2164,18 +2198,18 @@ class ActiveObjectOperations(BaseObjectOperations) :
         threading.current_thread().abort = False 
         threading.current_thread().aborted = False
         
-        try :
-            _status = 100
-            _fmsg = "An error has occurred, but no error message was captured"
-            _obj_type = command.split('-')[0].upper()
-            _result = {}
-             
-            _admission_control = False
-            _detach_pending = False
+        _status = 100
+        _fmsg = "An error has occurred, but no error message was captured"
+        _obj_type = command.split('-')[0].upper()
+        _result = {}
+         
+        _admission_control = False
+        _detach_pending = False
 
-            obj_attr_list["uuid"] = "undefined"
-            obj_attr_list["name"] = "undefined"
-            
+        obj_attr_list["uuid"] = "undefined"
+        obj_attr_list["name"] = "undefined"
+        
+        try :
             _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
 
             if not _status :
@@ -2946,80 +2980,91 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             if not _status :
                 _status, _fmsg = self.initialize_object(obj_attr_list, command)
+                _cloud_name = obj_attr_list["cloud_name"]
                 
-                if _status == 912543 :
-                    _status, _fmsg, _result = self.vmrunstateall(parameters, obj_attr_list["suspected_command"])
-                
-                elif not _status :
-                    self.osci.add_to_list(obj_attr_list["cloud_name"], "VM", "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], int(time()))
-                    self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "Changing state to: " + obj_attr_list["target_state"])
-                    _runstate_pending = True
-                    _current_state = self.osci.get_object_state(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"])
-    
-                    _target_state = obj_attr_list["target_state"].lower()
-                    if _target_state == "resume" :
-                        _target_state = "attached"
-    
-                    if  _target_state not in ["save", "suspend", "fail", "attached" ] :
-                        _fmsg = "Unknown state: " + _target_state
-                        _status = 101
-    
-                    if not _status :
-                        if _target_state != _current_state :
-                            obj_attr_list["current_state"] = _current_state
-                            _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
-                            _cld_conn = _cld_ops_class(self.pid, self.osci)
-                                     
-                            # TAC looks up libvirt function based on target state
-                            # Do not remove this
-                            if _target_state == "attached" :
-                                if _current_state == "save" :
-                                    obj_attr_list["target_state"] = "restore"
-                                else :
-                                    obj_attr_list["target_state"] = "resume"
-                            elif _target_state in [ "fail", "suspend"] and _current_state != "attached" :
-                                _msg = "Unable to fail a VM that is not on the \""
-                                _msg += "attached\" state."
-                                _status = 871
-                                raise self.ObjectOperationException(_msg, _status)
-                            
-                            _status, _fmsg = _cld_conn.vmrunstate(obj_attr_list)
-                            
-                            if not _status :
-                                self.osci.set_object_state(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], _target_state)
-                                if _target_state != "attached" :
-                                    self.osci.add_to_list(obj_attr_list["cloud_name"], "VM", "VMS_UNDERGOING_" + _target_state.upper(), obj_attr_list["uuid"])
-                                elif _target_state == "attached" :
-                                    self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "VMS_UNDERGOING_SAVE", obj_attr_list["uuid"])
-                                    self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "VMS_UNDERGOING_SUSPEND", obj_attr_list["uuid"]) 
-                                    self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "VMS_UNDERGOING_FAIL", obj_attr_list["uuid"]) 
-    
-                                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
-                                                                  obj_attr_list["uuid"], \
-                                                                  False, \
-                                                                  "mgt_201_runstate_request_originated", \
-                                                                  obj_attr_list["mgt_201_runstate_request_originated"])
-    
-                                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
-                                                                  obj_attr_list["uuid"], \
-                                                                  False, \
-                                                                  "mgt_202_runstate_request_sent", \
-                                                                  obj_attr_list["mgt_202_runstate_request_sent"])
+                if _status in [0, 483920, 912543] :
+                    if _status not in [483920] :
+                        self.osci.add_to_list(_cloud_name, "VM", "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], int(time()))
+                        self.osci.pending_object_set(_cloud_name, "VM", obj_attr_list["uuid"], "Changing state to: " + obj_attr_list["target_state"] + "(" + obj_attr_list["suspected_command"] + ")")
+                        _runstate_pending = True
+                    
+                    if _status == 483920 :
+                        _tmp_result = self.vmrun(_cloud_name, obj_attr_list["uuid"])
+                        _status = _tmp_result["status"]
+                        _fmsg = _tmp_result["msg"]
+                        _result = _tmp_result["result"]
+                        obj_attr_list.update(_result)
+                        obj_attr_list["target_state"] = "attached"
+                        obj_attr_list["suspected_command"] = "run"
+                    elif _status == 912543 :
+                        _status, _fmsg, _result = self.vmrunstateall(parameters, obj_attr_list["suspected_command"])
+                    elif not _status :
+                        _current_state = self.osci.get_object_state(_cloud_name, "VM", obj_attr_list["uuid"])
+        
+                        _target_state = obj_attr_list["target_state"].lower()
+                        if _target_state == "resume" :
+                            _target_state = "attached"
+        
+                        if  _target_state not in ["save", "suspend", "fail", "attached" ] :
+                            _fmsg = "Unknown state: " + _target_state
+                            _status = 101
+        
+                        if not _status :
+                            if _target_state != _current_state :
+                                obj_attr_list["current_state"] = _current_state
+                                _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
+                                _cld_conn = _cld_ops_class(self.pid, self.osci)
+                                         
+                                # TAC looks up libvirt function based on target state
+                                # Do not remove this
+                                if _target_state == "attached" :
+                                    if _current_state == "save" :
+                                        obj_attr_list["target_state"] = "restore"
+                                    else :
+                                        obj_attr_list["target_state"] = "resume"
+                                elif _target_state in [ "fail", "suspend"] and _current_state != "attached" :
+                                    _msg = "Unable to fail a VM that is not on the \""
+                                    _msg += "attached\" state."
+                                    _status = 871
+                                    raise self.ObjectOperationException(_msg, _status)
                                 
-                                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
-                                                                  obj_attr_list["uuid"], \
-                                                                  False, \
-                                                                  "mgt_203_runstate_request_completed", \
-                                                                  obj_attr_list["mgt_203_runstate_request_completed"])
+                                _status, _fmsg = _cld_conn.vmrunstate(obj_attr_list)
                                 
-                                self.record_management_metrics(obj_attr_list["cloud_name"], "VM", obj_attr_list, "runstate")
+                                if not _status :
+                                    self.osci.set_object_state(_cloud_name, "VM", obj_attr_list["uuid"], _target_state)
+                                    if _target_state != "attached" :
+                                        self.osci.add_to_list(_cloud_name, "VM", "VMS_UNDERGOING_" + _target_state.upper(), obj_attr_list["uuid"])
+                                    elif _target_state == "attached" :
+                                        self.osci.remove_from_list(_cloud_name, "VM", "VMS_UNDERGOING_SAVE", obj_attr_list["uuid"])
+                                        self.osci.remove_from_list(_cloud_name, "VM", "VMS_UNDERGOING_SUSPEND", obj_attr_list["uuid"]) 
+                                        self.osci.remove_from_list(_cloud_name, "VM", "VMS_UNDERGOING_FAIL", obj_attr_list["uuid"]) 
+        
+                                    self.osci.update_object_attribute(_cloud_name, "VM", \
+                                                                      obj_attr_list["uuid"], \
+                                                                      False, \
+                                                                      "mgt_201_runstate_request_originated", \
+                                                                      obj_attr_list["mgt_201_runstate_request_originated"])
+        
+                                    self.osci.update_object_attribute(_cloud_name, "VM", \
+                                                                      obj_attr_list["uuid"], \
+                                                                      False, \
+                                                                      "mgt_202_runstate_request_sent", \
+                                                                      obj_attr_list["mgt_202_runstate_request_sent"])
+                                    
+                                    self.osci.update_object_attribute(_cloud_name, "VM", \
+                                                                      obj_attr_list["uuid"], \
+                                                                      False, \
+                                                                      "mgt_203_runstate_request_completed", \
+                                                                      obj_attr_list["mgt_203_runstate_request_completed"])
+                                    
+                                    self.record_management_metrics(_cloud_name, "VM", obj_attr_list, "runstate")
+                                    _status = 0
+                            else :
+                                _result = obj_attr_list
+                                _msg = "VM is already at the \"" + obj_attr_list["target_state"]
+                                _msg += "\" state. There is no need to explicitly change it."
+                                cbdebug(_msg)
                                 _status = 0
-                        else :
-                            _result = obj_attr_list
-                            _msg = "VM is already at the \"" + obj_attr_list["target_state"]
-                            _msg += "\" state. There is no need to explicitly change it."
-                            cbdebug(_msg)
-                            _status = 0
 
         except self.ObjectOperationException, obj :
             _status = obj.status
@@ -3050,7 +3095,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     cberr(_msg)
                     obj_attr_list["tracking"] = "Change state request: " + _fmsg
                     if "uuid" in obj_attr_list and "cloud_name" in obj_attr_list and self.osci :
-                        self.osci.create_object(obj_attr_list["cloud_name"], "FAILEDTRACKINGVM", \
+                        self.osci.create_object(_cloud_name, "FAILEDTRACKINGVM", \
                                                 obj_attr_list["uuid"] + \
                                                 unique_state_key, \
                                                 obj_attr_list, False, True, 3600)
@@ -3064,12 +3109,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _msg += "experiment." 
                 cbdebug(_msg)
                 obj_attr_list["tracking"] = "Change state request: success." 
-                self.osci.create_object(obj_attr_list["cloud_name"], "FINISHEDTRACKINGVM", obj_attr_list["uuid"] + unique_state_key, \
+                self.osci.create_object(_cloud_name, "FINISHEDTRACKINGVM", obj_attr_list["uuid"] + unique_state_key, \
                                         obj_attr_list, False, True, 3600)
                 
             if _runstate_pending :
-                self.osci.pending_object_remove(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"])
-                self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], True)
+                self.osci.pending_object_remove(_cloud_name, "VM", obj_attr_list["uuid"])
+                self.osci.remove_from_list(_cloud_name, "VM", "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], True)
 
             return self.package(_status, _msg, _result)
 
@@ -3227,16 +3272,27 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             if not _status :
                 _status, _fmsg = self.initialize_object(obj_attr_list, command)
+                _cloud_name = obj_attr_list["cloud_name"]
                 
-                if _status == 912543 :
-                    _status, _fmsg, _result = self.airunstateall(parameters, obj_attr_list["suspected_command"])
-
-                if not _status :
-                    self.osci.add_to_list(obj_attr_list["cloud_name"], "AI", "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], int(time()))
-                    self.osci.pending_object_set(obj_attr_list["cloud_name"], "AI", obj_attr_list["uuid"], "Changing state to: " + obj_attr_list["target_state"])
-                    _runstate_pending = True
-                    _status, _fmsg = self.airunstate_actual(obj_attr_list)
-                    _result = obj_attr_list
+                if _status in [0, 483920, 912543] :
+                    if _status not in [483920] :
+                        self.osci.add_to_list(_cloud_name, "AI", "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], int(time()))
+                        self.osci.pending_object_set(_cloud_name, "AI", obj_attr_list["uuid"], "Changing state to: " + obj_attr_list["target_state"] + "(" + obj_attr_list["suspected_command"] + ")")
+                        _runstate_pending = True
+                
+                    if _status == 483920 :
+                        _tmp_result = self.apprun(_cloud_name, obj_attr_list["uuid"])
+                        _status = _tmp_result["status"]
+                        _fmsg = _tmp_result["msg"]
+                        _result = _tmp_result["result"]
+                        obj_attr_list.update(_result)
+                        obj_attr_list["target_state"] = "attached"
+                        obj_attr_list["suspected_command"] = "run"
+                    elif _status == 912543 :
+                        _status, _fmsg, _result = self.airunstateall(parameters, obj_attr_list["suspected_command"])
+                    elif not _status :
+                        _status, _fmsg = self.airunstate_actual(obj_attr_list)
+                        _result = obj_attr_list
 
         except self.ObjectOperationException, obj :
             _status = obj.status
@@ -3262,7 +3318,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _msg = _fmsg
 
                 if "uuid" in obj_attr_list and self.osci :
-                    self.osci.create_object(obj_attr_list["cloud_name"], "FAILEDTRACKINGAI", \
+                    self.osci.create_object(_cloud_name, "FAILEDTRACKINGAI", \
                                             obj_attr_list["uuid"] + \
                                             unique_state_key, \
                                             obj_attr_list, False, True, 3600)
@@ -3271,11 +3327,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _msg += "\" state successfully."
                 cbdebug(_msg, True)
                 obj_attr_list["tracking"] = "Change state request: success."
-                self.osci.create_object(obj_attr_list["cloud_name"], "FINISHEDTRACKINGAI", obj_attr_list["uuid"] + unique_state_key, \
+                self.osci.create_object(_cloud_name, "FINISHEDTRACKINGAI", obj_attr_list["uuid"] + unique_state_key, \
                                         obj_attr_list, False, True, 3600)
                 if _runstate_pending :
-                    self.osci.pending_object_remove(obj_attr_list["cloud_name"], "AI", obj_attr_list["uuid"])
-                    self.osci.remove_from_list(obj_attr_list["cloud_name"], "AI", "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], True)
+                    self.osci.pending_object_remove(_cloud_name, "AI", obj_attr_list["uuid"])
+                    self.osci.remove_from_list(_cloud_name, "AI", "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], True)
                 
             return self.package(_status, _msg, _result)
 
@@ -4102,3 +4158,147 @@ class ActiveObjectOperations(BaseObjectOperations) :
         
         return _status, _msg
 
+    @trace
+    def vminit(self, cloud_name, role, vmc_pool = "auto", size = "default"):
+        try :
+            vm = {}
+            sub_channel = self.osci.subscribe(cloud_name, "VM", "pause_on_attach")
+            info = "unknown error"
+            vm = self.background_execute(cloud_name + " " + role + " " + vmc_pool + " " + size + " pause_on_vm_attach async", "vm-attach")[2]
+            if not int(vm["status"]) :
+                for message in sub_channel.listen() :
+                    args = str(message["data"]).split(";")
+                    if len(args) != 3 :
+                        cbdebug("Message is not for me: " + str(args))
+                        continue
+                    uuid, status, info = args
+                    if vm["result"]["uuid"] == uuid :
+                        if status == "vmready" :
+                            vm["status"] = 0
+                            vm["msg"] = "Successful VM initialization." 
+                            vm["result"] = str2dic(info)
+                            break
+                        if status == "error" :
+                            vm["status"] = 343 
+                            vm["msg"] = "Failure in Object Storage PubSub: " + info 
+                            vm["result"] = None
+                            break
+                            
+            # If you change this message, change the GUI, because the GUI depends on it
+            self.osci.pending_object_set(cloud_name, "VM", vm["result"]["uuid"], "Paused waiting for run command from user [" + vm["result"]["uuid"] + "]...")
+            sub_channel.unsubscribe()
+        except self.osci.ObjectStoreMgdConnException, obj :
+            vm["status"] = obj.status
+            vm["info"] = str(obj)
+            vm["result"] = None
+        
+        return vm
+    
+    @trace
+    def vmrun(self, cloud_name, started_uuid):
+        try :
+            status = 342
+            vm = {}
+            info = "unknown error"
+            sub_channel = self.osci.subscribe(cloud_name, "VM", "pause_on_attach")
+            self.osci.publish_message(cloud_name, "VM", "pause_on_attach", started_uuid + ";continue;success", 1, 3600)
+            for message in sub_channel.listen() :
+                args = str(message["data"]).split(";")
+                if len(args) != 3 :
+                    cbdebug("Message is not for me: " + str(args))
+                    continue
+                uuid, status, info = args
+                if started_uuid == uuid :
+                    if status == "vmfinished" :
+                        attrs = self.osci.get_object(cloud_name, "VM", False, uuid, False)
+                        vm = {"status" : 0, "msg" : "Successfully run VM after prior initialization", "result": attrs}
+                        break
+                    if status == "error" :
+                        vm = {"status" : 432, "msg" : info, "result" : None}
+                        break
+                    
+            sub_channel.unsubscribe()
+        except self.osci.ObjectStoreMgdConnException, obj :
+            vm["msg"] = "Failed to run initialized VM: " + str(obj)
+            vm["status"] = obj.status
+            vm["result"] = None 
+        
+        return vm
+
+    @trace
+    def appinit(self, cloud_name, type, load_level = "default", load_duration = "default", lifetime = "none", aidrs = "none"):
+        try :
+            app = {}
+            sub_channel = self.osci.subscribe(cloud_name, "VM", "pause_on_attach")
+            info = "unknown error"
+            total = 0
+            count = 0
+            app = self.background_execute(cloud_name + " " + type + " " + load_level + " " + load_duration + " " + lifetime + " " + aidrs + " pause_on_vm_attach async", "ai-attach")[2]
+            app["vms"] = {}
+            if not int(app["status"]) :
+                for message in sub_channel.listen() :
+                    args = str(message["data"]).split(";")
+                    if len(args) != 3 :
+                        cbdebug("Message is not for me: " + str(args))
+                        continue
+                    uuid, status, info = args
+                    if app["result"]["uuid"] == uuid :
+                        if status == "vmready" :
+                            vm = str2dic(info)
+                            if vm["uuid"] not in app["vms"] :
+                                app["vms"][vm["uuid"]] = vm
+                                count += 1
+                            if total > 0 and count == total :
+                                app["status"] = 0
+                                app["msg"] = "Successful app initialization." 
+                                app["result"]["vms"] = app["vms"]
+                                app["result"]["name"] = vm["ai_name"] 
+                                break
+                        elif status == "vmcount" :
+                            total = int(info)
+                        elif status == "error" :
+                            app["status"] = 343 
+                            app["msg"] = "Failure in Object Storage PubSub: " + info 
+                            app["result"] = None
+                            break
+                            
+            # If you change this message, change the GUI, because the GUI depends on it
+            self.osci.pending_object_set(cloud_name, "AI", app["result"]["uuid"], "Paused waiting for run command from user [" + app["result"]["uuid"] + "]...")
+            sub_channel.unsubscribe()
+        except self.osci.ObjectStoreMgdConnException, obj :
+            app["status"] = obj.status
+            app["info"] = str(obj)
+            app["result"] = None
+        
+        return app 
+
+    @trace
+    def apprun(self, cloud_name, started_uuid):
+        try :
+            status = 342
+            app = {}
+            info = "unknown error"
+            sub_channel = self.osci.subscribe(cloud_name, "VM", "pause_on_attach")
+            self.osci.publish_message(cloud_name, "VM", "pause_on_attach", started_uuid + ";continue;success", 1, 3600)
+            for message in sub_channel.listen() :
+                args = str(message["data"]).split(";")
+                if len(args) != 3 :
+                    cbdebug("Message is not for me: " + str(args))
+                    continue
+                uuid, status, info = args
+                if started_uuid == uuid :
+                    if status == "appfinished" :
+                        attrs = self.osci.get_object(cloud_name, "AI", False, uuid, False)
+                        app = {"status" : 0, "msg" : "Successfully run application after prior initialization.", "result": attrs}
+                        break
+                    if status == "error" :
+                        app = {"status" : 432, "msg" : info, "result" : None}
+                        break
+                    
+            sub_channel.unsubscribe()
+        except self.osci.ObjectStoreMgdConnException, obj :
+            app["msg"] = "Failed to run initialized Application: " + str(obj)
+            app["status"] = obj.status
+            app["result"] = None
+        
+        return app 

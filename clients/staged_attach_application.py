@@ -30,16 +30,18 @@ expid = "daytrader_" + makeTimestamp(start).replace(" ", "_")
 
 print "starting experiment: " + expid
 
+'''
+Mockup of what needs to happen for CloudNet use case
+'''
+app = None
+error = False
+cloud_name = "SIM1"
+
 try :
-    '''
-    Mockup of what needs to happen for CloudNet use case
-    '''
-    app = None
-    error = False
 
-    api.cldalter("TCP", "time", "experiment_id", expid)
+    api.cldalter(cloud_name, "time", "experiment_id", expid)
 
-    _tmp_app = api.appinit("TCP", "daytrader")
+    _tmp_app = api.appinit(cloud_name, "daytrader")
     uuid = _tmp_app["uuid"]
 
     print "Started an APP with uuid = " + uuid 
@@ -49,13 +51,13 @@ try :
 
     # The structure of the 'app' dictionary has changed
     # So get a new copy
-    app = api.apprun("TCP", _tmp_app["uuid"])
+    app = api.apprun(cloud_name, _tmp_app["uuid"])
 
     print "Resumed APP with uuid = " + app["uuid"]
 
     print str(app)
     
-    api.appalter("TCP", app["uuid"], "load_level", 20)
+    api.appalter(cloud_name, app["uuid"], "load_level", 20)
     
 
 except APIException, obj :
@@ -71,6 +73,6 @@ finally :
     try :
         if app :
             print "Destroying APP.."
-            api.appdetach("TCP", app["uuid"])
+            api.appdetach(cloud_name, app["uuid"])
     except APIException, obj :
         print "Error cleaning up: (" + str(obj.status) + "): " + obj.msg

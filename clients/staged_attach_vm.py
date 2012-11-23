@@ -30,6 +30,8 @@ expid = "singlevm_" + makeTimestamp(start).replace(" ", "_")
 
 print "starting experiment: " + expid
 
+cloud_name = "SIM1"
+
 try :
     '''
     Mockup of what needs to happen for CloudNet use case
@@ -37,14 +39,14 @@ try :
     vm = None
     error = False
 
-    api.cldalter("TCP", "time", "experiment_id", expid)
+    api.cldalter(cloud_name, "time", "experiment_id", expid)
 
-    _tmp_vm = api.vminit("TCP", "tinyvm")
+    _tmp_vm = api.vminit(cloud_name, "tinyvm")
     uuid = _tmp_vm["uuid"]
 
     print "Started an VM with uuid = " + uuid 
 
-    vm = api.vmrun("TCP", _tmp_vm["uuid"])
+    vm = api.vmrun(cloud_name, _tmp_vm["uuid"])
 
     print "Resumed VM with uuid = " + vm["uuid"]
 
@@ -63,6 +65,6 @@ finally :
     try :
         if vm :
             print "Destroying VM.."
-            api.vmdetach("TCP", vm["uuid"])
+            api.vmdetach(cloud_name, vm["uuid"])
     except APIException, obj :
         print "Error cleaning up: (" + str(obj.status) + "): " + obj.msg
