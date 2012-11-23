@@ -16,43 +16,53 @@ MAIN_LOGIN = klabuser
 # Variable $PATH_TO_TOOL attempts to auto-selects the appropriate path 
 MAIN_BASE_DIR = $PATH_TO_TOOL
 
+# Which cloud to pick first when the tool first starts
 STARTUP_CLOUD = TESTCLOUD
 
-# Simulated Cloud (SIM) requires the following parameters
-CLOUDOPTION_TESTCLOUD_SIM_INITIAL_VMCS = test_host1:sut,test_host2:sut,test_host3:sut,test_host4:sut,test_host5:sut,test_host6:sut,test_host7:lg,test_host8:lg,test_host9:lg,test_host10:lg
+# List the clouds you want to define
 CLOUDOPTION_TESTCLOUD = cldattach sim, vmcattach all
+CLOUDOPTION_MYSMARTCLOUD = cldattach scp, vmcattach all
+CLOUDOPTION_MYOPENSTACK = cldattach osk, vmcattach all
+CLOUDOPTION_MYAMAZON = cldattach ec2, vmcattach all
+CLOUDOPTION_MYTAC = cldattach tac, vmcattach all
+
+# Now, Specify the individual parameters for each cloud
+
+# Simulated Cloud (SIM) requires the following parameters
+[USER-DEFINED : CLOUDOPTION_TESTCLOUD]
+SIM_INITIAL_VMCS = test_host1:sut,test_host2:sut,test_host3:sut,test_host4:sut,test_host5:sut,test_host6:sut,test_host7:lg,test_host8:lg,test_host9:lg,test_host10:lg
 
 # OpenStack (OSK) requires the following parameters (replace everything between <>)
-CLOUDOPTION_MYOPENSTACK_OSK_ACCESS = http://<address>:5000/v2.0/
-CLOUDOPTION_MYOPENSTACK_OSK_CREDENTIALS =  <user>-<password>-<tenant>
-CLOUDOPTION_MYOPENSTACK_OSK_KEY_NAME = <key name>         # Create the key on OpenStack first
-CLOUDOPTION_MYOPENSTACK_OSK_SECURITY_GROUPS = default	  # Make sure that this group exists first
-CLOUDOPTION_MYOPENSTACK_OSK_INITIAL_VMCS = RegionOne:sut  # Change "RegionOne" accordingly
-CLOUDOPTION_MYOPENSTACK = cldattach osk, vmcattach all
+[USER-DEFINED : CLOUDOPTION_MYOPENSTACK]
+OSK_ACCESS = http://<address>:5000/v2.0/
+OSK_CREDENTIALS =  <user>-<password>-<tenant>
+OSK_KEY_NAME = <key name>         # Create the key on OpenStack first
+OSK_SECURITY_GROUPS = default	  # Make sure that this group exists first
+OSK_INITIAL_VMCS = RegionOne:sut  # Change "RegionOne" accordingly
 
 # Smart Cloud Provisioning (SCP) requires the following parameters
-CLOUDOPTION_MYSMARTCLOUD_SCP_IAAS_ACCESS_ID = <user>
-CLOUDOPTION_MYSMARTCLOUD_SCP_IAAS_PRIVATE_KEY = /iaas/cli/adminkey/admin.key
-CLOUDOPTION_MYSMARTCLOUD_SCP_IAAS_SERVICE_PUBLIC_KEY = /iaas/cli/adminkey/vm_service.key
-CLOUDOPTION_MYSMARTCLOUD_SCP_IAAS_PROXY_PORT = 9090
-CLOUDOPTION_MYSMARTCLOUD_SCP_IAAS_WEBSERVICE_PORT = 5678/query/
-CLOUDOPTION_MYSMARTCLOUD_SCP_IAAS_CLI_LOCATION = <hostname> # address of the webservice VM for SCP
-CLOUDOPTION_MYSMARTCLOUD_SCP_INITIAL_VMCS = kvm_rack1:sut # Change "kvm_rack1" accordingly
-CLOUDOPTION_MYSMARTCLOUD = cldattach scp, vmcattach all
+[USER-DEFINED : CLOUDOPTION_MYSMARTCLOUD]
+SCP_IAAS_ACCESS_ID = <user>
+SCP_IAAS_PRIVATE_KEY = /iaas/cli/adminkey/admin.key
+SCP_IAAS_SERVICE_PUBLIC_KEY = /iaas/cli/adminkey/vm_service.key
+SCP_IAAS_PROXY_PORT = 9090
+SCP_IAAS_WEBSERVICE_PORT = 5678/query/
+SCP_IAAS_CLI_LOCATION = <hostname> # address of the webservice VM for SCP
+SCP_INITIAL_VMCS = kvm_rack1:sut # Change "kvm_rack1" accordingly
 
 # Elastic Compute Cloud (EC2) requires the following paramaters 
-CLOUDOPTION_MYAMAZON_EC2_ACCESS = ABCDEFGHIJKLMNOPQRST # This is the AWS access key id
-CLOUDOPTION_MYAMAZON_EC2_SECURITY_GROUP = cloudbench   # Make sure that this group exists first 
-CLOUDOPTION_MYAMAZON_EC2_CREDENTIALS = ABCDEFGHIJKLMNOPQRSTUVXYWZ01234567890-+* # This is the AWS secret access key 
-CLOUDOPTION_MYAMAZON_EC2_KEY_NAME = cloudbench         # Make sure that this key exists first 
-CLOUDOPTION_MYAMAZON_EC2_INITIAL_VMCS = us-east-1:sut  # Change "us-east-1" accordingly
-CLOUDOPTION_MYAMAZON = cldattach ec2, vmcattach all
+[USER-DEFINED : CLOUDOPTION_MYAMAZON]
+EC2_ACCESS = ABCDEFGHIJKLMNOPQRST # This is the AWS access key id
+EC2_SECURITY_GROUP = cloudbench   # Make sure that this group exists first 
+EC2_CREDENTIALS = ABCDEFGHIJKLMNOPQRSTUVXYWZ01234567890-+* # This is the AWS secret access key 
+EC2_KEY_NAME = cloudbench         # Make sure that this key exists first 
+EC2_INITIAL_VMCS = us-east-1:sut  # Change "us-east-1" accordingly
 
 # Thin Agile Cloud (TAC) requires the following paramaters 
+[USER-DEFINED : CLOUDOPTION_MYTAC]
 CLOUDOPTION_MYTAC_TAC_WEBSERVICE = <address>
 CLOUDOPTION_MYTAC_TAC_WEBSERVICE_PORT = 6060
 CLOUDOPTION_MYTAC_TAC_INITIAL_VMCS = RegionOne:sut  # Change "RegionOne" accordingly
-CLOUDOPTION_MYTAC = cldattach tac, vmcattach all
 
 [MON_DEFAULTS : CLOUDOPTION_TESTCLOUD ]
 COLLECT_FROM_HOST = $False  # Change to $True if using any cloud other than EC2 or SIM
