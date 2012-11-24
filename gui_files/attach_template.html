@@ -15,8 +15,8 @@
     </div>
     </div>
 	<script>
-	var isVisible = false;
-	var clickedAway = false;
+	var isAttachVisible = false;
+	var isAttachClickedAway = false;
 	var pop = $('#attachpop').popover({ 
 	    html : true,
 	    title: "New BOOTOBJECTNAME:",
@@ -31,8 +31,8 @@
 	  pop.data('popover').tip().css('z-index', 1030).css('margin-left', '200px');
 	  pop.click(function(e) {
 	        $(this).popover('show');
-	        clickedAway = false;
-	        isVisible = true;
+	        isAttachClickedAway = false;
+	        isAttachVisible = true;
 	        e.preventDefault();
 	    });
 
@@ -41,14 +41,14 @@
 	      	return;
 	      if(findParentNode('attachpopover', e.srcElement, 'cbody') == true)
 	      	return;
-		  if(isVisible & clickedAway)
+		  if(isAttachVisible & isAttachClickedAway)
 		  {
 		    $('#attachpop').popover('hide')
-		    isVisible = clickedAway = false
+		    isAttachVisible = isAttachClickedAway = false
 		  }
 		  else
 		  {
-		    clickedAway = true
+		    isAttachClickedAway = true
 		  }
 		});
 	</script>
