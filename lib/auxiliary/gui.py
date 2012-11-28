@@ -655,7 +655,7 @@ class GUI(object):
                               "keyword1" : { "label" : "Role", "values" : [x.strip() for x in self.api.rolelist(session['cloud_name'])] } ,
                               "keyword2" : { "label" : "Pool", "values" : ["auto"] + [x.strip() for x in self.api.poollist(session['cloud_name'])] } ,
                               "keyword3" : { "label" : "Size", "values" : "default" } ,
-                              "keyword4" : { "label" : "staging", "values" : ["continue", "initialize"] } ,
+                              "keyword4" : { "label" : "Pause Step", "values" : [["continue" , "None"], ["prepare_provision_complete", "Step 3: Provision Complete"], ["network_ready", "Step 4: Network Accessible"]] } ,
                               "keyword5" : { "label" : "Mode", "values" : "async" } ,
                            },
                     "app" : { 
@@ -664,7 +664,7 @@ class GUI(object):
                               "keyword3" : { "label" : "Load Duration", "values" : "default" } ,
                               "keyword4" : { "label" : "Lifetime", "values" : "none" } ,
                               "keyword5" : { "label" : "Submitter", "values" : "none" } ,
-                              "keyword6" : { "label" : "staging", "values" : ["continue", "initialize"] } ,
+                              "keyword6" : { "label" : "Pause Step", "values" : [["continue" , "None"], ["prepare_provision_complete", "Step 3: Provision Complete"], ["network_ready", "Step 4: Network Accessible"]] } ,
                               "keyword7" : { "label" : "Mode", "values" : "async" } ,
                             },
                     "vmc" : { "keyword1" : { "label" : "Name", "values" : "" } },
@@ -761,7 +761,7 @@ class GUI(object):
                     "detach" : [1, {"operations" : [ "vm", "vmc", "app", "svm", "aidrs"], "icon" : "trash", "state" : "any" } ], 
                     "save" : [2, {"operations" : [ "vm", "vmc", "app"], "icon" : "stop", "state" : "attached" } ], 
                     "restore" : [3, {"operations" : [ "vm", "vmc", "app"], "icon" : "play", "state" : "save" } ], 
-                    "suspend" : [4, {"operations" : [ "vm", "vmc", "app"], "icon" : "pause_on_vm_attach", "state" : "attached" } ], 
+                    "suspend" : [4, {"operations" : [ "vm", "vmc", "app"], "icon" : "pause", "state" : "attached" } ], 
                     "resume" : [5, {"operations" : [ "vm", "vmc", "app"], "icon" : "play", "state" : "fail" } ], 
                     "protect" : [6, {"operations" : [ "vm" ], "icon" : "star" , "ft" : "attach", "state" : "attached" } ], 
                     "unprotect" : [7, {"operations" : [ "vm" ], "icon" : "ok" , "ft" : "detach", "state" : "attached"} ], 
@@ -1351,7 +1351,12 @@ class GUI(object):
                         attach += "<select name='" + keyword + "'>"
                             
                         for option in values :
-                                attach += "<option>" + option + "</option>"
+                                if isinstance(option, list) and len(option) == 2 :
+                                    name = option[0]
+                                    value = option[1] 
+                                    attach += "<option value='" + name + "'>" + value  + "</option>"
+                                else :
+                                    attach += "<option>" + str(option) + "</option>"
         
                         attach += """
                             </select>

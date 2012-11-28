@@ -1458,17 +1458,17 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             and obj_attr_list["destroy_vms"] != "0" :
                                 self.parallel_obj_operation("detach", obj_attr_list)
                                 
-                        if obj_attr_list["staging"] == "pause_on_vm_attach" :
-                            self.osci.publish_message(_cloud_name, "VM", "pause_on_attach", obj_attr_list["uuid"] + ";error;" + _msg, 1, 3600)
+                        if obj_attr_list["staging"] == "provision_complete" :
+                            self.osci.publish_message(_cloud_name, "VM", "staging", obj_attr_list["uuid"] + ";error;" + _msg, 1, 3600)
 
 
                     if _obj_type == "VM" :
                         if "cloud_name" in obj_attr_list :
                             self.record_management_metrics(_cloud_name, \
                                                            "VM", obj_attr_list, "attach")
-                        if obj_attr_list["staging"] == "pause_on_vm_attach" :
+                        if obj_attr_list["staging"] == "provision_complete" :
                             uuid = obj_attr_list["ai"] if obj_attr_list["ai"] != "none" else obj_attr_list["uuid"]
-                            self.osci.publish_message(_cloud_name, "VM", "pause_on_attach", uuid + ";error;" + _msg, 1, 3600)
+                            self.osci.publish_message(_cloud_name, "VM", "staging", uuid + ";error;" + _msg, 1, 3600)
 
                     if _admission_control or ( _obj_type == "AI" and _pre_attach) :
                         self.admission_control(_obj_type, obj_attr_list, \
@@ -1505,7 +1505,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _msg = _obj_type + " object " + obj_attr_list["uuid"] 
                 _msg += " (named \"" + obj_attr_list["name"] +  "\") sucessfully "
                 
-                if "staging" in obj_attr_list and obj_attr_list["staging"] != "continue" :
+                if "staging" in obj_attr_list and obj_attr_list["staging"] != "none" :
                     action = obj_attr_list["staging"]
                     _msg += action + "d."
                     obj_attr_list["tracking"] = action + ": success." 
@@ -1535,10 +1535,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
         '''
         TBD
         '''
+        _status = 100
+        _fmsg = "An error has occurred, but no error message was captured"
+        
         try :
-            _status = 100
-            _fmsg = "An error has occurred, but no error message was captured"
-
             if "hosts" in obj_attr_list and len(obj_attr_list["hosts"]) :
                 for _host_uuid in obj_attr_list["hosts"].split(',') :
                     self.osci.create_object(obj_attr_list["cloud_name"], "HOST", _host_uuid, \
@@ -1656,18 +1656,28 @@ class ActiveObjectOperations(BaseObjectOperations) :
         '''
         TBD
         '''
+        if obj_attr_list["cloud_ip"] == "undefined" :
+            _msg = "VM creation previously failed. Will not send files"
+            _status = 452
+            raise self.ObjectOperationException(_msg, _status)
+        
+        _status = 100
+        _fmsg = "An error has occurred, but no error message was captured"
+        _curr_tries = 0
+        _start = int(time())
+        _max_tries = int(obj_attr_list["update_attempts"])
+        _output_list = []
+        
         try :
-            if obj_attr_list["cloud_ip"] == "undefined" :
-                _msg = "VM creation previously failed. Will not send files"
-                _status = 452
-                raise self.ObjectOperationException(_msg, _status)
+            '''
+            if "staging" in obj_attr_list and obj_attr_list["staging"] == "network_ready" :
+                _sub_channel = self.osci.subscribe(_cloud_name, "VM", "staging")
+                _tmp_result = self.pause_vm(obj_attr_list, _sub_channel, obj_attr_list)
+                _status = _tmp_result["status"]
+                _fmsg = _tmp_result["msg"]
+                _result = _tmp_result["result"]
+            '''
 
-            _status = 100
-            _fmsg = "An error has occurred, but no error message was captured"
-            _curr_tries = 0
-            _start = int(time())
-            _max_tries = int(obj_attr_list["update_attempts"])
-            _output_list = []
             while _curr_tries < _max_tries :
                 if "async" not in obj_attr_list or obj_attr_list["async"].lower() == "false" :
                     if threading.current_thread().abort :
@@ -1751,9 +1761,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     self.record_management_metrics(obj_attr_list["cloud_name"], \
                                                    "VM", obj_attr_list, "attach")
 
-            if obj_attr_list["staging"] == "pause_on_vm_attach" :
+            if obj_attr_list["staging"] == "provision_complete" :
                 uuid = obj_attr_list["ai"] if obj_attr_list["ai"] != "none" else obj_attr_list["uuid"]
-                self.osci.publish_message(obj_attr_list["cloud_name"], "VM", "pause_on_attach", uuid + ";vmfinished;" + dic2str(obj_attr_list), 1, 3600)
+                self.osci.publish_message(obj_attr_list["cloud_name"], "VM", "staging", uuid + ";vmfinished;" + dic2str(obj_attr_list), 1, 3600)
 
         except self.ObjectOperationException, obj :
             _status = obj.status
@@ -1831,8 +1841,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 else :
                     _status = 0
                     
-            if obj_attr_list["staging"] == "pause_on_vm_attach" :
-                self.osci.publish_message(obj_attr_list["cloud_name"], "VM", "pause_on_attach", obj_attr_list["uuid"] + ";appfinished;" + dic2str(obj_attr_list), 1, 3600)
+            if obj_attr_list["staging"] == "provision_complete" :
+                self.osci.publish_message(obj_attr_list["cloud_name"], "VM", "staging", obj_attr_list["uuid"] + ";appfinished;" + dic2str(obj_attr_list), 1, 3600)
 
         except self.ObjectOperationException, obj :
             _status = obj.status
@@ -2989,7 +2999,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _runstate_pending = True
                     
                     if _status == 483920 :
-                        _tmp_result = self.vmrun(_cloud_name, obj_attr_list["uuid"])
+                        _tmp_result = self.continue_vm(obj_attr_list)
                         _status = _tmp_result["status"]
                         _fmsg = _tmp_result["msg"]
                         _result = _tmp_result["result"]
@@ -3281,7 +3291,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _runstate_pending = True
                 
                     if _status == 483920 :
-                        _tmp_result = self.apprun(_cloud_name, obj_attr_list["uuid"])
+                        _tmp_result = self.continue_app(obj_attr_list)
                         _status = _tmp_result["status"]
                         _fmsg = _tmp_result["msg"]
                         _result = _tmp_result["result"]
@@ -4158,13 +4168,47 @@ class ActiveObjectOperations(BaseObjectOperations) :
         
         return _status, _msg
 
+    
     @trace
-    def vminit(self, cloud_name, role, vmc_pool = "auto", size = "default"):
+    def continue_vm(self, obj_attr_list) :
+        status = 342
+        cloud_name = obj_attr_list["cloud_name"]
+        started_uuid = obj_attr_list["uuid"]
+        vm = {}
+        info = "unknown error"
+        
         try :
-            vm = {}
-            sub_channel = self.osci.subscribe(cloud_name, "VM", "pause_on_attach")
-            info = "unknown error"
-            vm = self.background_execute(cloud_name + " " + role + " " + vmc_pool + " " + size + " pause_on_vm_attach async", "vm-attach")[2]
+            sub_channel = self.osci.subscribe(cloud_name, "VM", "staging")
+            self.osci.publish_message(cloud_name, "VM", "staging", started_uuid + ";continue;success", 1, 3600)
+            for message in sub_channel.listen() :
+                args = str(message["data"]).split(";")
+                if len(args) != 3 :
+                    cbdebug("Message is not for me: " + str(args))
+                    continue
+                uuid, status, info = args
+                if started_uuid == uuid :
+                    if status == "vmfinished" :
+                        attrs = self.osci.get_object(cloud_name, "VM", False, uuid, False)
+                        vm = {"status" : 0, "msg" : "Successfully run VM after prior initialization", "result": attrs}
+                        break
+                    if status == "error" :
+                        vm = {"status" : 432, "msg" : info, "result" : None}
+                        break
+                    
+            sub_channel.unsubscribe()
+        except self.osci.ObjectStoreMgdConnException, obj :
+            vm["msg"] = "Failed to run initialized VM: " + str(obj)
+            vm["status"] = obj.status
+            vm["result"] = None 
+        
+        return vm
+
+    @trace
+    def pause_vm(self, obj_attr_list, sub_channel, vm):
+        cloud_name = obj_attr_list["cloud_name"]
+        info = "unknown error"
+        
+        try :
             if not int(vm["status"]) :
                 for message in sub_channel.listen() :
                     args = str(message["data"]).split(";")
@@ -4195,45 +4239,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
         return vm
     
     @trace
-    def vmrun(self, cloud_name, started_uuid):
-        try :
-            status = 342
-            vm = {}
-            info = "unknown error"
-            sub_channel = self.osci.subscribe(cloud_name, "VM", "pause_on_attach")
-            self.osci.publish_message(cloud_name, "VM", "pause_on_attach", started_uuid + ";continue;success", 1, 3600)
-            for message in sub_channel.listen() :
-                args = str(message["data"]).split(";")
-                if len(args) != 3 :
-                    cbdebug("Message is not for me: " + str(args))
-                    continue
-                uuid, status, info = args
-                if started_uuid == uuid :
-                    if status == "vmfinished" :
-                        attrs = self.osci.get_object(cloud_name, "VM", False, uuid, False)
-                        vm = {"status" : 0, "msg" : "Successfully run VM after prior initialization", "result": attrs}
-                        break
-                    if status == "error" :
-                        vm = {"status" : 432, "msg" : info, "result" : None}
-                        break
-                    
-            sub_channel.unsubscribe()
-        except self.osci.ObjectStoreMgdConnException, obj :
-            vm["msg"] = "Failed to run initialized VM: " + str(obj)
-            vm["status"] = obj.status
-            vm["result"] = None 
+    def pause_app(self, obj_attr_list, sub_channel, app):
+        info = "unknown error"
+        total = 0
+        count = 0
+        cloud_name = obj_attr_list["cloud_name"]
         
-        return vm
-
-    @trace
-    def appinit(self, cloud_name, type, load_level = "default", load_duration = "default", lifetime = "none", aidrs = "none"):
         try :
-            app = {}
-            sub_channel = self.osci.subscribe(cloud_name, "VM", "pause_on_attach")
-            info = "unknown error"
-            total = 0
-            count = 0
-            app = self.background_execute(cloud_name + " " + type + " " + load_level + " " + load_duration + " " + lifetime + " " + aidrs + " pause_on_vm_attach async", "ai-attach")[2]
             app["vms"] = {}
             if not int(app["status"]) :
                 for message in sub_channel.listen() :
@@ -4273,13 +4285,15 @@ class ActiveObjectOperations(BaseObjectOperations) :
         return app 
 
     @trace
-    def apprun(self, cloud_name, started_uuid):
+    def continue_app(self, obj_attr_list) :
         try :
             status = 342
+            cloud_name = obj_attr_list["cloud_name"]
+            started_uuid = obj_attr_list["uuid"]
             app = {}
             info = "unknown error"
-            sub_channel = self.osci.subscribe(cloud_name, "VM", "pause_on_attach")
-            self.osci.publish_message(cloud_name, "VM", "pause_on_attach", started_uuid + ";continue;success", 1, 3600)
+            sub_channel = self.osci.subscribe(cloud_name, "VM", "staging")
+            self.osci.publish_message(cloud_name, "VM", "staging", started_uuid + ";continue;success", 1, 3600)
             for message in sub_channel.listen() :
                 args = str(message["data"]).split(";")
                 if len(args) != 3 :
@@ -4302,3 +4316,4 @@ class ActiveObjectOperations(BaseObjectOperations) :
             app["result"] = None
         
         return app 
+    

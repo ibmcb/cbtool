@@ -251,7 +251,7 @@ class BaseObjectOperations :
         elif command == "vm-attach" :
             object_attribute_list["pool"] = "auto"
             object_attribute_list["size"] = "default"
-            object_attribute_list["staging"] = "continue"
+            object_attribute_list["staging"] = "none"
 
             if _length >= 2 :
                 object_attribute_list["role"] = _parameters[1]
@@ -362,7 +362,7 @@ class BaseObjectOperations :
             object_attribute_list["load_duration"] = "default"
             object_attribute_list["lifetime"] = "none"
             object_attribute_list["aidrs"] = "none"
-            object_attribute_list["staging"] = "continue"
+            object_attribute_list["staging"] = "none"
             
             if _length >= 2 :
                 object_attribute_list["type"] = _parameters[1]
@@ -833,7 +833,13 @@ class BaseObjectOperations :
                 if '_' not in obj_attr_list["name"] and '-' not in obj_attr_list["name"] and _obj_type.upper() == "SVM" :
                     obj_attr_list["name"] = _obj_type.lower() + "_" + obj_attr_list["name"]
 
-                if "staging" in obj_attr_list and obj_attr_list["staging"] == "initialize" :
+                '''
+                    Staging operations which contain the keyword 'prepare' indicate that this process
+                    must fork a background process first to perform the actual object attachment.
+                    In which case, we don't actually want to generate a name for this object - 
+                    we want the child process to do it instead.
+                '''
+                if "staging" in obj_attr_list and obj_attr_list["staging"].count("prepare") :
                     _postpone_counter = True
                     
                 if not _postpone_counter :
@@ -1643,8 +1649,8 @@ class BaseObjectOperations :
             obj_attr_list["vms_nr"] = _vm_counter
             obj_attr_list["drivers_nr"] = _nr_drivers
             
-            if obj_attr_list["staging"] == "pause_on_vm_attach" :
-                self.osci.publish_message(obj_attr_list["cloud_name"], "VM", "pause_on_attach", obj_attr_list["uuid"] + ";vmcount;" + str(_vm_counter), 1, 3600)
+            if obj_attr_list["staging"] == "provision_complete" :
+                self.osci.publish_message(obj_attr_list["cloud_name"], "VM", "staging", obj_attr_list["uuid"] + ";vmcount;" + str(_vm_counter), 1, 3600)
 
             _msg = "VM attach command list is: " + _vm_command_list
             cbdebug(_msg)
