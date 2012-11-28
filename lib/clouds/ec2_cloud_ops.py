@@ -396,7 +396,7 @@ class Ec2Cmds(CommonCloudFunctions) :
         '''        
         if self.is_vm_running(obj_attr_list) :
 
-            self.pause_on_attach_if_requested(obj_attr_list)
+            self.pause_after_provision_if_requested(obj_attr_list)
 
             if self.get_ip_address(obj_attr_list) :
                 obj_attr_list["last_known_state"] = "running with ip assigned"

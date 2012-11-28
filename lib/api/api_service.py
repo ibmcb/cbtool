@@ -379,15 +379,15 @@ class API():
         else :
             return self.active.objattach({}, cloud_name + " " + identifier, "vmcrs-attach")[2]
     
-    def appattach(self, cloud_name, type, load_level = "default", load_duration = "default", lifetime = "none", aidrs = "none", staging = "continue", async = False):
-        parameters = cloud_name + " " + type + " " + str(load_level) + " " + str(load_duration) + " " + str(lifetime) + " " + aidrs + " " + staging 
+    def appattach(self, cloud_name, type, load_level = "default", load_duration = "default", lifetime = "none", aidrs = "none", pause_step = "none", async = False):
+        parameters = cloud_name + " " + type + " " + str(load_level) + " " + str(load_duration) + " " + str(lifetime) + " " + aidrs + " " + pause_step 
         if async and str(async).count("async") :
             return self.active.background_execute(parameters + (" " + async), "ai-attach")[2]
         else :
             return self.active.objattach({}, parameters, "ai-attach")[2]
     
-    def appinit(self, cloud_name, type, load_level = "default", load_duration = "default", lifetime = "none", aidrs = "none"):
-        return self.appattach(cloud_name, type, str(load_level), str(load_duration), str(lifetime), aidrs, "initialize")
+    def appinit(self, cloud_name, type, load_level = "default", load_duration = "default", lifetime = "none", aidrs = "none", pause_step = "prepare_provision_complete"):
+        return self.appattach(cloud_name, type, str(load_level), str(load_duration), str(lifetime), aidrs, pause_step)
     
     def apprun(self, cloud_name, uuid) :
         return self.apprunstate(cloud_name, uuid, "attached", "run")
@@ -398,8 +398,8 @@ class API():
         else :
             return self.active.objattach({}, cloud_name + " " + pattern, "aidrs-attach")[2]
 
-    def vmattach(self, cloud_name, role, vmc_pool = "auto", size = "default", staging = "continue", async = False):
-        parameters = cloud_name + " " + role + " " + vmc_pool + " " + size + " " + staging 
+    def vmattach(self, cloud_name, role, vmc_pool = "auto", size = "default", pause_step = "none", async = False):
+        parameters = cloud_name + " " + role + " " + vmc_pool + " " + size + " " + pause_step 
         if async and str(async).count("async") :
             return self.active.background_execute(parameters + (" " + async), "vm-attach")[2]
         else :
@@ -411,8 +411,8 @@ class API():
         else :
             return self.active.objattach({}, cloud_name + " " + identifier, "svm-attach")[2]
     
-    def vminit(self, cloud_name, role, vmc_pool = "auto", size = "default"):
-        return self.vmattach(cloud_name, role, vmc_pool, size, "initialize")
+    def vminit(self, cloud_name, role, vmc_pool = "auto", size = "default", pause_step = "prepare_provision_complete"):
+        return self.vmattach(cloud_name, role, vmc_pool, size, pause_step)
     
     def vmrun(self, cloud_name, uuid):
         return self.vmrunstate(cloud_name, uuid, "attached", "run")

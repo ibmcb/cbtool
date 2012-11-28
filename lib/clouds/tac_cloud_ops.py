@@ -336,7 +336,7 @@ class TacCmds(CommonCloudFunctions) :
         TBD
         '''
         if self.is_vm_running(obj_attr_list) :
-            self.pause_on_attach_if_requested(obj_attr_list)
+            self.pause_after_provision_if_requested(obj_attr_list)
             if self.get_ip_address(obj_attr_list) :
                 cbdebug("VM " + obj_attr_list["name"] + " received IP: " + obj_attr_list["cloud_ip"])
                 obj_attr_list["cloud_hostname"] = "cb-" + obj_attr_list["cloud_ip"].replace('.', '-')

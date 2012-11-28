@@ -225,11 +225,11 @@ class CommonCloudFunctions:
             raise CldOpsException(_msg, 89)
 
     @trace
-    def pause_on_attach_if_requested(self, obj_attr_list):
+    def pause_after_provision_if_requested(self, obj_attr_list):
         '''
         TBD
         '''
-        if obj_attr_list["staging"] != "pause_on_vm_attach" :
+        if obj_attr_list["staging"] != "provision_complete" :
             return
 
         if "pause_complete" in obj_attr_list :
@@ -238,9 +238,9 @@ class CommonCloudFunctions:
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
-            sub_channel = self.osci.subscribe(obj_attr_list["cloud_name"], "VM", "pause_on_attach")
+            sub_channel = self.osci.subscribe(obj_attr_list["cloud_name"], "VM", "staging")
             target_uuid = obj_attr_list["ai"] if obj_attr_list["ai"] != "none" else obj_attr_list["uuid"]
-            self.osci.publish_message(obj_attr_list["cloud_name"], "VM", "pause_on_attach", target_uuid + ";vmready;" + dic2str(obj_attr_list), 1, 3600)
+            self.osci.publish_message(obj_attr_list["cloud_name"], "VM", "staging", target_uuid + ";vmready;" + dic2str(obj_attr_list), 1, 3600)
             cbdebug("VM " + obj_attr_list["cloud_uuid"] + " pausing on attach for continue signal ....")
             for message in sub_channel.listen() :
                 args = str(message["data"]).split(";")
@@ -260,11 +260,11 @@ class CommonCloudFunctions:
 
         finally :
             if _status :
-                _msg = "Error while pause_on_attach: " + _fmsg
+                _msg = "Error while staging: " + _fmsg
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
             else :
-                _msg = "Finished pause_on_attach for " + self.get_description()
+                _msg = "Finished staging for " + self.get_description()
                 cbdebug(_msg)
 
             return _status, _msg
