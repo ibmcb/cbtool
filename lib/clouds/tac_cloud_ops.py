@@ -173,7 +173,7 @@ class TacCmds(CommonCloudFunctions) :
             
             xmlrpclib._Method = KeywordArgMethod
 
-            self.tacconn = TACServiceClient("http://" + webservice_url)
+            self.tacconn = TACServiceClient(webservice_url)
             _status = 0
         except Exception, e :
             _status = 23
@@ -230,7 +230,7 @@ class TacCmds(CommonCloudFunctions) :
         TBD
         '''
         self.connect(obj_attr_list["access"])
-        self.tacconn.node_cleanup(obj_attr_list["name"], "cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"])
+        self.tacconn.node_cleanup(obj_attr_list["name"], "cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"], lvm = obj_attr_list["lvm"])
         _msg = "VMC " + obj_attr_list["name"] + " was successfully cleaned up "
         _msg += "on TACloud \"" + obj_attr_list["cloud_name"] + "\""
         cbdebug(_msg)
@@ -336,7 +336,9 @@ class TacCmds(CommonCloudFunctions) :
         TBD
         '''
         if self.is_vm_running(obj_attr_list) :
-            self.pause_on_attach_if_requested(obj_attr_list)
+
+            self.take_action_if_requested("VM", obj_attr_list, "provision_complete")
+
             if self.get_ip_address(obj_attr_list) :
                 cbdebug("VM " + obj_attr_list["name"] + " received IP: " + obj_attr_list["cloud_ip"])
                 obj_attr_list["cloud_hostname"] = "cb-" + obj_attr_list["cloud_ip"].replace('.', '-')
@@ -374,7 +376,10 @@ class TacCmds(CommonCloudFunctions) :
         kwargs = self.dic_to_rpc_kwargs(self.tacconn, "run_instances", obj_attr_list)
         kwargs["imageids"] = []
         for _idx in range(1, int(obj_attr_list["imageids"]) + 1) :
-            kwargs["imageids"].append(obj_attr_list["imageid" + str(_idx)] + ".qcow2")
+            imageid = obj_attr_list["imageid" + str(_idx)]
+            if obj_attr_list["lvm"].lower() == "false" :
+                imageid += ".qcow2"
+            kwargs["imageids"].append(imageid)
 
         _status, _fmsg, result = self.tacconn.run_instances(**kwargs)
 
@@ -711,6 +716,7 @@ class TacCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
+        self.take_action_if_requested("AI", obj_attr_list, "all_vms_booted")
         _msg = "AI " + obj_attr_list["uuid"] + " was successfully "
         _msg += "defined on TACloud \"" + obj_attr_list["cloud_name"]
         _msg += "\"."

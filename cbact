@@ -52,7 +52,7 @@ def actuator_cli_parsing() :
     
     parser = OptionParser(usage)
     
-    parser.add_option("--debug_host", dest = "debug_host", metavar = "<ip address>", \
+    parser.add_option("-d", "--debug_host", dest = "debug_host", metavar = "<ip address>", \
                       default = None, \
                       help = "Point CloudBench to a remote debugger")
     
@@ -106,7 +106,7 @@ def actuator_cli_parsing() :
     parser.add_option('--apihost', default='127.0.0.1', dest='apihost', \
                       help='GUI hostname to which to bind (default 127.0.0.1)')
 
-    parser.add_option("--daemon", dest = "daemon", action = "store_true", \
+    parser.add_option("-D", "--daemon", dest = "daemon", action = "store_true", \
                   default = False, \
                   help ="Execute operation in daemonized mode")
     
@@ -350,7 +350,7 @@ def main(options) :
             use_log_defaults = True
             
         if use_log_defaults :
-	    _log_defaults = {
+            _log_defaults = {
 			     "hostname" : options.syslogh,
 			     "port" : options.syslogp,
 			     _operation + "_facility" : options.syslogf,
@@ -360,7 +360,7 @@ def main(options) :
         if str(options.verbosity).strip() != "-1" :
             _log_defaults["verbosity"] = options.verbosity 
 
-	setup_syslog(_operation, \
+        setup_syslog(_operation, \
 			_log_defaults[_operation + "_facility"], \
 			_log_defaults["verbosity"], \
 			_log_defaults["port"], \
@@ -370,7 +370,22 @@ def main(options) :
 
         if options.oop :
             _parameters = options.oop.split(',')
-            _parameters = ' '.join(_parameters)
+            '''
+            If any parameter contains a comma (that is the case for "meta_tags"
+            and temporary key-value pairs, it was "protected" by converting them
+            to some special, very unlikely to be use sequence. We cannot simply
+            get rid of the command on meta_tags and temporary key-value pairs, 
+            because it is used by the dic2str function to create a dictionary
+            later. Here we just "recover" the command by reconverting it.
+
+            We do the same to "recover" the ">" character, since it is used in
+            the AI sut description
+            '''
+            _temp_parameters = ' '
+            for _parameter in _parameters :
+                _temp_parameters += _parameter.replace("+_*",',') + ' '
+                _temp_parameters = _temp_parameters.replace("-+-+-+", "->")
+            _parameters = _temp_parameters
         else :
             _parameters = "none"
 

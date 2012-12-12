@@ -4,6 +4,10 @@
 
 [USER-DEFINED]
 # Variable $IP_AUTO attempts to auto-discover IP address
+
+# PLEASE TYPE DOCUMENTATION HERE for the wizard
+# For each key, add a corresponding '_DOC' key
+
 MANAGER_IP = $IP_AUTO
 MAIN_UPDATE_FREQUENCY = 5
 MAIN_UPDATE_ATTEMPTS = 36
@@ -12,13 +16,22 @@ MAIN_ATTEMPTS = 2
 MAIN_TIMEOUT = 240
 # Variable $USER auto-selects current username
 MAIN_USERNAME = $USER_AUTO
-# Name of the ssh key pair (two files are supposed to exist inside the 
-# "credentials" directory, bogus_id_rsa and bogus_id_rsa.pub
-MAIN_SSH_KEY_NAME = bogus_id_rsa
 # This is the username created inside the VMs
-MAIN_LOGIN = klabuser
 # Variable $PATH_TO_TOOL attempts to auto-selects the appropriate path 
 MAIN_BASE_DIR = $PATH_TO_TOOL
+
+# The SSH key name and username keys are 
+# mandatory and is made mandatory
+# in each individual _cloud.txt file
+# with the 'need_to_be_configured_by_user' keyword
+# The actual key name should not be specified in the
+# template configuration files. It must be overriden.
+# Only simcloud has the correct defaults.
+# All other clouds need to specify the key and username
+# explicitly and will be warned by the tool.
+LOGIN_DOC = Please indicate the username that will be used for SSH inside your VMs.\nYou should have already created (or acquired access to) a pre-existing\nimage that exists in the cloud to which you are trying to connect\nas well as already have distributed a public/private key\npair for that image.
+SSH_KEY_NAME_DOC = Please indicate the location of the SSH private key that will\nallow the tool to login to your VMs over the network.\nIn order to use this, the tool *must* have direct SSH access to your\nvirtual machines in the cloud or the tool cannot function. \nThis key is used to bootstrap the application startup process as\nwell as test for network connectivity when the VMs are booting up in the Cloud.\nNote: You should have already uploaded an image which contains a matching public key\nfor the private key that you are using here, or the tool cannot login to the VMs.
+INITIAL_VMCS_DOC = Please specify a list of Regions\n(analagous to an EC2 or OpenStack region).\nThis name is arbitrary, and represents the point at\nwhich hypervisors are grouped together in a typical cloud.
 
 [SETUP]
 GLOBAL_OBJECT_LIST = setup,logstore,metricstore,dash_defaults,mon_defaults,space,time,vmc_defaults,vm_defaults,svm_defaults,ai_defaults,aidrs_defaults,vmcrs_defaults,firs_defaults,vm_templates,ai_templates,aidrs_templates,vmcrs_templates,query,admission_control,api_defaults,gui_defaults
@@ -34,7 +47,6 @@ CREDENTIALS_DIR = $BASE_DIR/credentials
 DAEMON_WORKING_DIR = $INSTANCE_DIR
 STORES_WORKING_DIR = $BASE_DIR/stores
 USERNAME = $MAIN_USERNAME
-SSH_KEY_NAME = $MAIN_SSH_KEY_NAME
 # This variable should match what the layout of the VM image uses (user name and directory)
 VM_DAEMON_DIR = /home/klabuser
 #  The "cloudbench/jar" part of the directory is hardcoded in lib/active_operations.py
@@ -93,41 +105,36 @@ CLEANUP_ON_DETACH = $True
 REPLICATION_VMCS = $EMPTY
 DETACH_PARALLELISM = 20
 DISCOVER_HOSTS = $False
+LVM = $False
 
 [VM_DEFAULTS]
 USERNAME = $MAIN_USERNAME
-LOGIN = $MAIN_LOGIN
-SSH_KEY_NAME = $MAIN_SSH_KEY_NAME
 UPDATE_FREQUENCY = $MAIN_UPDATE_FREQUENCY
 UPDATE_ATTEMPTS = $MAIN_UPDATE_ATTEMPTS
 TIMEOUT = $MAIN_TIMEOUT
 ATTEMPTS = $MAIN_ATTEMPTS
 NOTIFICATION = $MAIN_NOTIFICATION
+REMOTE_DIR_NAME = cloudbench
 RUN_SCRIPTS = $True
 TRANSFER_FILES = $True
-BOOT_TIME = 90
 # Any VM which contains the string "client" on his role name will be created
 # on the "LG" pool, if this pools exists.
 CLIENT_PREF_POOL = lg
 # Any VM which contains the string "driver" on his role name will be created
 # on the "LG" pool, if this pools exists.
 DRIVER_PREF_POOL = lg
-SVM_STUB = $False
-SVM_STUB_UUID = $EMPTY
-SVM_STUB_NAME = $EMPTY
-SVM_STUB_VMC  = none
-SVM_DESTINATION = $EMPTY
-QEMU_DEBUG = $False
-QEMU_DEBUG_PORT_BASE = 12300
-QEMU_DEBUG_PORT_MAX = 13300
-QEMU_DEBUG_PORT = $EMPTY
 ECLIPSED = $False
 DETACH_PARALLELISM = 20
 RUNSTATE_PARALLELISM = 5
-RANDOMIZE_IMAGE_NAME = $False
+RANDOMIZE_IMAGE_NAME = $False 
+EXECUTE_SCRIPT_NAME = execute_on_staging.sh 
+EXECUTE_JSON_FILENAME_PREFIX = cb
+LVM = $False
+QEMU_DEBUG = $False
+SVM_STUB = $False
+SVM_STUB_VMC  = none
 
 [SVM_DEFAULTS]
-SSH_KEY_NAME = $MAIN_SSH_KEY_NAME
 REPLICATION = $True
 REPLICATION_PORT_BASE = 4000
 REPLICATION_PORT_MAX  = 5000
@@ -144,8 +151,6 @@ DETACH_PARALLELISM = 20
 
 [AI_DEFAULTS]
 USERNAME = $MAIN_USERNAME
-LOGIN = $MAIN_LOGIN
-SSH_KEY_NAME = $MAIN_SSH_KEY_NAME
 UPDATE_FREQUENCY = $MAIN_UPDATE_FREQUENCY
 UPDATE_ATTEMPTS = $MAIN_UPDATE_ATTEMPTS
 TIMEOUT = $MAIN_TIMEOUT
@@ -160,16 +165,14 @@ SAVE_ON_ATTACH = $False
 SECONDS_BEFORE_SAVE = 0
 DONT_START_LOAD_MANAGER = $False
 REPLICATED_VMS = 0
-
-# '1' ? Is this correct? 
 ATTACH_PARALLELISM = 1
 DETACH_PARALLELISM = 20
 RUNSTATE_PARALLELISM = 5
+EXECUTE_SCRIPT_NAME = execute_on_staging.sh 
+EXECUTE_JSON_FILENAME_PREFIX = cb
 
 [AIDRS_DEFAULTS]
 USERNAME = $MAIN_USERNAME
-LOGIN = $MAIN_LOGIN
-SSH_KEY_NAME = $MAIN_SSH_KEY_NAME
 SUBMITTER = $True
 UPDATE_FREQUENCY = $MAIN_UPDATE_FREQUENCY
 UPDATE_ATTEMPTS = $MAIN_UPDATE_ATTEMPTS
@@ -185,8 +188,6 @@ DAEMON_PARALLELISM = 50
 
 [VMCRS_DEFAULTS]
 USERNAME = $MAIN_USERNAME
-LOGIN = $MAIN_LOGIN
-SSH_KEY_NAME = $MAIN_SSH_KEY_NAME
 SUBMITTER = $True 
 UPDATE_FREQUENCY = $MAIN_UPDATE_FREQUENCY
 UPDATE_ATTEMPTS = $MAIN_UPDATE_ATTEMPTS
@@ -195,8 +196,6 @@ DETACH_PARALLELISM = 20
 
 [FIRS_DEFAULTS]
 USERNAME = $MAIN_USERNAME
-LOGIN = $MAIN_LOGIN
-SSH_KEY_NAME = $MAIN_SSH_KEY_NAME
 SUBMITTER = $True
 SWITCH_IP = $EMPTY
 HOSTS = $EMPTY
@@ -228,12 +227,15 @@ COLLECTOR_EXECUTABLE_PATH_SUFFIX = 3rd_party/monitor-core/gmetad-python/gmetad.p
 COLLECTOR_PLUGINS_DIR_SUFFIX = 3rd_party/monitor-core/gmetad-python/plugins
 COLLECTOR_PROTOCOL = UDP
 COLLECTOR_MULTICAST_IP = 239.2.11.71
-COLLECTOR_MULTICAST_PORT = 8649
+COLLECTOR_HOST_MULTICAST_PORT = 8649
+COLLECTOR_VM_MULTICAST_PORT = 8649
 COLLECTOR_AGGREGATOR_HOST_ADDRESS = $MANAGER_IP
 COLLECTOR_HOST_PORT = 8649
 COLLECTOR_VM_PORT = 8650
-COLLECTOR_AGGREGATOR_PORT = 8651
-COLLECTOR_SUMMARIZER_PORT = 8652
+COLLECTOR_HOST_AGGREGATOR_PORT = 8651
+COLLECTOR_HOST_SUMMARIZER_PORT = 8652
+COLLECTOR_VM_AGGREGATOR_PORT = 8651
+COLLECTOR_VM_SUMMARIZER_PORT = 8652
 FILLER_STRING=NA
 
 # Attributes recorded during management operations
@@ -286,7 +288,7 @@ PORT = 7070
 PROTOCOL = TCP
 HOSTNAME = $MANAGER_IP
 PARAMETERS = $EMPTY
-LOCAL = $True
+REMOTE = $False
 
 [GUI_DEFAULTS]
 PORT = 7080

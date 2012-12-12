@@ -30,7 +30,7 @@ CLOUDOPTION_MYTAC = cldattach tac, vmcattach all
 
 # Simulated Cloud (SIM) requires the following parameters
 [USER-DEFINED : CLOUDOPTION_TESTCLOUD]
-SIM_INITIAL_VMCS = test_host1:sut,test_host2:sut,test_host3:sut,test_host4:sut,test_host5:sut,test_host6:sut,test_host7:lg,test_host8:lg,test_host9:lg,test_host10:lg
+SIM_INITIAL_VMCS = simzone_a:sut,simzone_b:sut,simzone_c:sut,simzone_d:lg
 
 # OpenStack (OSK) requires the following parameters (replace everything between <>)
 [USER-DEFINED : CLOUDOPTION_MYOPENSTACK]
@@ -39,6 +39,8 @@ OSK_CREDENTIALS =  <user>-<password>-<tenant>
 OSK_KEY_NAME = <key name>         # Create the key on OpenStack first
 OSK_SECURITY_GROUPS = default	  # Make sure that this group exists first
 OSK_INITIAL_VMCS = RegionOne:sut  # Change "RegionOne" accordingly
+OSK_SSH_KEY_NAME = path_to_local_private_key_file
+OSK_LOGIN = klabuser
 
 # Smart Cloud Provisioning (SCP) requires the following parameters
 [USER-DEFINED : CLOUDOPTION_MYSMARTCLOUD]
@@ -49,40 +51,45 @@ SCP_IAAS_PROXY_PORT = 9090
 SCP_IAAS_WEBSERVICE_PORT = 5678/query/
 SCP_IAAS_CLI_LOCATION = <hostname> # address of the webservice VM for SCP
 SCP_INITIAL_VMCS = kvm_rack1:sut # Change "kvm_rack1" accordingly
+SCP_SSH_KEY_NAME = path_to_local_private_key_file
+SCP_LOGIN = klabuser
 
 # Elastic Compute Cloud (EC2) requires the following paramaters 
 [USER-DEFINED : CLOUDOPTION_MYAMAZON]
 EC2_ACCESS = ABCDEFGHIJKLMNOPQRST # This is the AWS access key id
-EC2_SECURITY_GROUP = cloudbench   # Make sure that this group exists first 
+EC2_SECURITY_GROUPS = cloudbench   # Make sure that this group exists first 
 EC2_CREDENTIALS = ABCDEFGHIJKLMNOPQRSTUVXYWZ01234567890-+* # This is the AWS secret access key 
 EC2_KEY_NAME = cloudbench         # Make sure that this key exists first 
 EC2_INITIAL_VMCS = us-east-1:sut  # Change "us-east-1" accordingly
+EC2_SSH_KEY_NAME = path_to_local_private_key_file
+EC2_LOGIN = klabuser
 
 # Thin Agile Cloud (TAC) requires the following paramaters 
 [USER-DEFINED : CLOUDOPTION_MYTAC]
-CLOUDOPTION_MYTAC_TAC_WEBSERVICE = <address>
-CLOUDOPTION_MYTAC_TAC_WEBSERVICE_PORT = 6060
-CLOUDOPTION_MYTAC_TAC_INITIAL_VMCS = RegionOne:sut  # Change "RegionOne" accordingly
+TAC_ACCESS = http://<address>:6060
+TAC_INITIAL_VMCS = klinux1,klinux2
+TAC_SSH_KEY_NAME = path_to_local_private_key_file
+TAC_LOGIN = klabuser
 
 [MON_DEFAULTS : CLOUDOPTION_TESTCLOUD ]
-COLLECT_FROM_HOST = $False  # Change to $True if using any cloud other than EC2 or SIM
-COLLECT_FROM_GUEST = $False # Change to $True if using any cloud other than SIM
+COLLECT_FROM_HOST = $False # simulated, nothing to monitor 
+COLLECT_FROM_GUEST = $False # simulated, nothing to monitor
 
 [MON_DEFAULTS : CLOUDOPTION_MYOPENSTACK ]
-COLLECT_FROM_HOST = $False  # Change to $True if using any cloud other than EC2 or SIM
-COLLECT_FROM_GUEST = $False # Change to $True if using any cloud other than SIM
+COLLECT_FROM_HOST = $False # requires ganglia installation on hypervisor
+COLLECT_FROM_GUEST = $True
 
 [MON_DEFAULTS : CLOUDOPTION_MYSMARTCLOUD ]
-COLLECT_FROM_HOST = $False  # Change to $True if using any cloud other than EC2 or SIM
-COLLECT_FROM_GUEST = $False # Change to $True if using any cloud other than SIM
+COLLECT_FROM_HOST = $False # requires ganglia installation on hypervisor 
+COLLECT_FROM_GUEST = $True
 
 [MON_DEFAULTS : CLOUDOPTION_MYAMAZON ]
-COLLECT_FROM_HOST = $False  # Change to $True if using any cloud other than EC2 or SIM
-COLLECT_FROM_GUEST = $False # Change to $True if using any cloud other than SIM
+COLLECT_FROM_HOST = $False # impossible for amazon
+COLLECT_FROM_GUEST = $True
 
 [MON_DEFAULTS : CLOUDOPTION_MYTAC ]
-COLLECT_FROM_HOST = $False  # Change to $True if using any cloud other than EC2 or SIM
-COLLECT_FROM_GUEST = $False # Change to $True if using any cloud other than SIM
+COLLECT_FROM_HOST = $True
+COLLECT_FROM_GUEST = $True
 
 [API_DEFAULTS]
 PORT = 7070

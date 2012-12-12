@@ -38,13 +38,11 @@ from optparse import OptionParser
 from re import sub, compile
 from time import time
 
-
-
 from logging import getLogger, StreamHandler, Formatter, Filter, DEBUG, ERROR, INFO
 from logging.handlers import logging, SysLogHandler, RotatingFileHandler
 from lib.auxiliary.code_instrumentation import VerbosityFilter, MsgFilter, AntiMsgFilter, STATUS
 from lib.stores.stores_initial_setup import StoreSetupException
-from lib.auxiliary.data_ops import message_beautifier, dic2str
+from lib.auxiliary.data_ops import message_beautifier, dic2str, is_valid_temp_attr_list
 from lib.remote.process_management import ProcessManagement
 from lib.operations.active_operations import ActiveObjectOperations
 from lib.operations.passive_operations import PassiveObjectOperations
@@ -160,21 +158,6 @@ class CBCLI(Cmd) :
             self.msci = MongodbMgdConn(mscp)
             self.api_service_url = "http://" + self.cld_attr_lst["api_defaults"]["hostname"] + ":" + self.cld_attr_lst["api_defaults"]["port"]
             
-            _orig_Method = xmlrpclib._Method
-            
-            '''
-            XML-RPC doesn't support keyword arguments,
-            so we have to do it ourselves...
-            '''
-            class KeywordArgMethod(_orig_Method):     
-                def __call__(self, *args, **kwargs):
-                    args = list(args) 
-                    if kwargs:
-                        args.append(("kwargs", kwargs))
-                    return _orig_Method.__call__(self, *args)
-            
-            xmlrpclib._Method = KeywordArgMethod
-        
             self.api = APIClient(self.api_service_url)
             
             '''
@@ -198,7 +181,7 @@ class CBCLI(Cmd) :
                 
                 if name in ["__init__", "success", "error", "get_functions", \
                             "get_signature", "should_refresh", "reset_refresh", \
-                            "vminit", "appinit" ] :
+                            "vminit", "appinit", "cldparse" ] :
                     # vminit and appinit are exposed to the command-line
                     # as regular attach commands using a separate parameter
                     continue
@@ -266,7 +249,7 @@ class CBCLI(Cmd) :
                 
     def convert_app_to_ai(self, name):
         if len(name) >= 4 and name[:3] == "app" :
-           name = "ai" + name[3:]
+            name = "ai" + name[3:]
         return name
            
     def install_functions(self):
@@ -278,9 +261,12 @@ class CBCLI(Cmd) :
             setattr(self, "help_" + new_function, help)
             setattr(CBCLI, "help_" + new_function, help)
                 
-    def unpack_arguments_for_api(self, func):
+    def unpack_arguments_for_api(self, func) :
+        '''
+        TBD
+        '''
         def wrapped(*args, **kwargs):
-            name = func.__name__ if self.options.local else func._Method__name
+            name = func.__name__ if not self.options.remote else func._Method__name
             
             '''
             This function is called by Cmd class.
@@ -294,11 +280,11 @@ class CBCLI(Cmd) :
                 temp_parameters = temp_parameters + list(args)[1:]
                 
             '''
-            The 'async' option and '=' keywords are special, because we are allowing
-            them to liberally float around the command line without being
-            properly positioned by the user.
+            The 'async' and other '=' keywords/options are special, because we 
+            are allowing them to liberally float around the command line without
+            being properly positioned by the user.
             
-            The API requires that 'async' be a keyword argument,
+            The API requires that 'async' and tkv be a keyword arguments,
             and requires the components of the '=' sign to be splitup.
             '''
                
@@ -307,6 +293,12 @@ class CBCLI(Cmd) :
                 if param.count("async") :
                     kwargs["async"] = param
                     continue
+
+                if name.count("attach") :
+                    if is_valid_temp_attr_list(param) :
+                        kwargs["temp_attr_list"] = param
+                        continue
+
                 if param.count("=") and name.count("alter") :
                     pieces = param.split("=", 1)
                     parameters.append(pieces[0])
@@ -319,9 +311,17 @@ class CBCLI(Cmd) :
             to be specified.
             '''
             if BaseObjectOperations.default_cloud :
-                if len(parameters) == 0 or parameters[0] != BaseObjectOperations.default_cloud :
+                if len(parameters) > 0 :
+                        _possible_cloud_name = parameters[0]
+                        if _possible_cloud_name == BaseObjectOperations.default_cloud :
+                            True
+                        elif _possible_cloud_name in self.attached_clouds :
+                            True 
+                        else :
+                            parameters = [BaseObjectOperations.default_cloud] + parameters
+                else :
                     parameters = [BaseObjectOperations.default_cloud] + parameters
-                    
+
             num_parms = len(parameters)
                 
             if len(name) >= 3 and name[:2] == "ai" :
@@ -334,19 +334,27 @@ class CBCLI(Cmd) :
             of parameters based on the exact signature of
             the actual function.
             '''
-            
             if num_parms < required :
                 print self.usage[name]
                 return
-            
+
+            if num_parms > len(self.signatures[name]["args"]) :
+                print self.usage[name]
+                return
+
             # Now, actually send to the API
             try :
                 response = func(*parameters, **kwargs)
-                if self.options.local :
+                if not self.options.remote :
                     print(message_beautifier(response["msg"]))
+
             except APIException, obj :
                 print(obj)
-                
+
+            except Exception, e :
+                _status = 23
+                _msg = str(e)
+
         return wrapped
     
     @trace
@@ -365,18 +373,14 @@ class CBCLI(Cmd) :
         '''
          This options controls whether or not the API is used *in memory*
          or over the network as a service.
-         
-         Setting local = $True in your config file is useful for regression
-         tests and running the command-line in a debugger in order to
-         track down bugs.
         '''
         
-        self.parser.add_option("-l", "--local", dest = "local", action = "store_true", \
-                      default = False if "local" not in self.cld_attr_lst["api_defaults"] \
-                        else self.cld_attr_lst["api_defaults"]["local"], \
-                        help = "Use a local-memory API instance instead of remote for debugging.")
+        self.parser.add_option("-r", "--remote", dest = "remote", action = "store_true", \
+                      default = False if "remote" not in self.cld_attr_lst["api_defaults"] \
+                        else self.cld_attr_lst["api_defaults"]["remote"], \
+                        help = "Use a remote API instance instead of local in-memory API.")
         
-        self.parser.add_option("--debug_host", dest = "debug_host", metavar = "<ip address>", \
+        self.parser.add_option("-d", "--debug_host", dest = "debug_host", metavar = "<ip address>", \
                       default = None, \
                       help = "Point CloudBench to a remote debugger")
         
@@ -420,8 +424,16 @@ class CBCLI(Cmd) :
                           help = "Manually specific the path to a configuration file.")
         
         # Hard Reset
-        self.parser.add_option("-f", "--hard_reset", dest = "hard_reset", action = "store_true", \
+        self.parser.add_option("-x", "--hard_reset", dest = "hard_reset", action = "store_true", \
                           help = "Hard reset (flushes Object Store and Metric Store before starting a new experiment).")
+        # Soft Reset
+        '''
+        Hard resets delete data from Mongo, which is bad.
+        Soft reset should be the default for regular usage,
+        so data is not lost.
+        ''' 
+        self.parser.add_option("-f", "--soft_reset", dest = "soft_reset", action = "store_true", \
+                          help = "Hard reset (flushes Object Store but leaves experiment data intact.).")
     
         # Verbosity Options
         self.parser.add_option("-v", "--verbosity", dest = "verbosity", metavar = "LV", \
@@ -437,9 +449,6 @@ class CBCLI(Cmd) :
     
         self.parser.set_defaults()
         (self.options, self.args) = self.parser.parse_args()
-        
-        #if self.options.debug_host is not None :
-        #    self.options.local = True
 
         
     @trace
@@ -741,16 +750,6 @@ class CBCLI(Cmd) :
         print(message_beautifier(_msg))
 
     @trace
-    def do_monlist(self, parameters) :
-        '''
-        TBD
-        '''
-
-        _status, _msg = self.passive_operations.monitoring_list(parameters, \
-                                                                "mon-list")
-        print(message_beautifier(_msg))
-
-    @trace
     def do_clddetach(self, parameters) :
         '''
         TBD
@@ -815,25 +814,13 @@ class CBCLI(Cmd) :
                                                                 self.msci, \
                                                                 self.attached_clouds)
 
-        if self.options.local :
+        if not self.options.remote :
             # Use a local copy of the API so that we can do local debugging
             self.api = API(self.pid, self.passive_operations, self.active_operations, self.background_operations)
             self.install_functions()
                 
         if print_message :
             print(message_beautifier(_msg))
-
-
-
-    @trace
-    def do_waitfor(self, parameters) :
-        '''
-        TBD
-        '''        
-        _status, _msg, _object = self.passive_operations.wait_for(self.cld_attr_lst, \
-                                                                  parameters, \
-                                                                  "wait-for")
-        print(message_beautifier(_msg))
 
     @trace
     def do_waituntil(self, parameters) :
@@ -894,6 +881,10 @@ class CBCLI(Cmd) :
     def do_help(self, args):
         if not help(args) :
             Cmd.do_help(self, args)
+
+    @trace
+    def do_pause(self, args):
+        raw_input("CLI was paused.Press any key to continue....")
 
     @trace
     def do_EOF(self, line) :

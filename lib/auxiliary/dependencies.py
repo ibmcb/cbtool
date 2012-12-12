@@ -26,6 +26,7 @@
 from sys import path
 from os import access, F_OK
 import re
+import sys
 from lib.remote.process_management import ProcessManagement
 
 
@@ -394,11 +395,45 @@ def check_mongo_binary(hostname, username, trd_party_dir) :
 
     finally :
         if _status or _msg.count("NOT OK"):
+            if len('%x'%sys.maxint) == 8 :
+                _mongo_url = "http://fastdl.mongodb.org/linux/mongodb-linux-i686-2.2.2.tgz"
+            else :
+                _mongo_url = "http://fastdl.mongodb.org/linux/mongodb-linux-x86_64-2.2.2.tgz"
+
             _msg += " Please install MongoDB with: cd " + trd_party_dir
-            _msg += "; git clone https://github.com/ibmcb/mongo.git; "
-            _msg += "cd mongo; scons all; sudo scons install. Alternatively, "
-            _msg += "you can download pre-compiled binaries from "
-            _msg += "http://www.mongodb.org/downloads\n"
+            _msg += "; wget " + _mongo_url + "; tar -zxf mongodb-linux-*.tgz; cd mongodb-linux-*; sudo cp bin/* /usr/bin\n"
+            _msg += "If you have a different machine architecture, you will have to download the binaries from http://www.mongodb.org/downloads\n"
+
+        return _status, _msg
+
+def check_python_setuptools(hostname, username, trd_party_dir) :
+    '''
+    TBD
+    '''
+    try:
+        _status = 100
+        _fmsg = "An error has occurred, but no error message was captured"
+        
+        _msg = "Checking for python-setuptools....."
+        import setuptools 
+        from setuptools import sandbox 
+
+        del setuptools 
+
+        _msg += "done." 
+        _status = 0
+        
+    except ImportError, e:
+        _status = 7282
+#        _msg += str(e)
+        
+    except Exception, e :
+        _status = 23
+#        _msg += str(e)
+
+    finally :
+        if _status or _msg.count("NOT OK"):
+            _msg += " Please install setuptools with: This is usually under the package name 'python-setuptools' (yum or apt-get)\n"
         return _status, _msg
 
 def check_mongo_python_bindings(hostname, username, trd_party_dir) :
@@ -560,6 +595,64 @@ def check_custom_gmetad(hostname, username, trd_party_dir) :
             _msg += trd_party_dir + "; git clone https://github.com/ibmcb/monitor-core.git\n"    
         return _status, _msg
 
+def check_wizard(hostname, username, trd_party_dir) :
+    '''
+    TBD
+    '''
+    try:
+        _status = 100
+        _fmsg = "An error has occurred, but no error message was captured"
+
+        _proc_man =  ProcessManagement()
+        _msg = "Checking wizard version....."
+
+        if access(path[0] + "/3rd_party/Bootstrap-Wizard/README.md", F_OK) :
+            _version = "1.0.0"
+
+            _msg += compare_versions('1.0.0', _version)
+            _status = 0
+        else :
+            _status = 1728289
+
+    except Exception, e :
+        _status = 23
+#        _msg += str(e)
+
+    finally :
+        if _status or _msg.count("NOT OK"):
+            _msg += " Please install Bootstrap-Wizard with: cd "
+            _msg += trd_party_dir + "; git clone https://github.com/ibmcb/Bootstrap-Wizard.git\n"
+        return _status, _msg
+
+def check_d3(hostname, username, trd_party_dir) :
+    '''
+    TBD
+    '''
+    try:
+        _status = 100
+        _fmsg = "An error has occurred, but no error message was captured"
+
+        _proc_man =  ProcessManagement()
+        _msg = "Checking d3 version....."
+
+        if access(path[0] + "/3rd_party/d3/component.json", F_OK) :
+            _version = "1.0.0"
+
+            _msg += compare_versions('1.0.0', _version)
+            _status = 0
+        else :
+            _status = 1728289
+
+    except Exception, e :
+        _status = 23
+#        _msg += str(e)
+
+    finally :
+        if _status or _msg.count("NOT OK"):
+            _msg += " Please install d3 with: cd "
+            _msg += trd_party_dir + "; git clone https://github.com/ibmcb/d3.git\n"
+        return _status, _msg
+
 def check_bootstrap(hostname, username, trd_party_dir) :
     '''
     TBD
@@ -671,8 +764,11 @@ def dependency_checker(hostname, username, trd_party_dir) :
     _func_pointer["redis-py"] = check_redis_python_bindings
     _func_pointer["mongo"] = check_mongo_binary
     _func_pointer["pymongo"] = check_mongo_python_bindings
+    _func_pointer["python-setuptools"] = check_python_setuptools
     _func_pointer["monitor-core"] = check_custom_gmetad
     _func_pointer["bootstrap"] = check_bootstrap
+    _func_pointer["d3"] = check_d3
+    _func_pointer["wizard"] = check_wizard
     _func_pointer["novaclient"] = check_openstack_python_bindings
     _func_pointer["boto"] = check_ec2_python_bindings
     _func_pointer["rsync"] = check_rsync_version

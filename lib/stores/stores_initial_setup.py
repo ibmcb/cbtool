@@ -425,7 +425,13 @@ def mongodb_metricstore_setup(global_objects, operation = "check") :
         _msg = str(e)
         raise StoreSetupException(_msg, 9)
 
-def hard_reset(global_objects) :
+'''
+Hard resets delete data from Mongo, which is bad.
+Soft reset should be the default for regular usage,
+so data is not lost.
+''' 
+    
+def reset(global_objects, soft = True) :
     '''
     TBD
     '''
@@ -433,6 +439,7 @@ def hard_reset(global_objects) :
         _msg = "Killing all processes"
         cbdebug(_msg)
         _proc_man =  ProcessManagement()
+        _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f cbact")
         _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f cloud-")
         _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f ai-")
         _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f vm-")
@@ -446,10 +453,11 @@ def hard_reset(global_objects) :
         _rmc = RedisMgdConn(global_objects["objectstore"])
         _rmc.flush_object_store()
 
-        _msg = "Flushing Metric Store"
-        cbdebug(_msg)
-        _mmc = MongodbMgdConn(global_objects["metricstore"])
-        _mmc.flush_metric_store(global_objects["mon_defaults"]["username"])
+        if not soft :
+            _msg = "Flushing Metric Store"
+            cbdebug(_msg)
+            _mmc = MongodbMgdConn(global_objects["metricstore"])
+            _mmc.flush_metric_store(global_objects["mon_defaults"]["username"])
 
         _msg = "Success"
         _status = 0

@@ -16,6 +16,10 @@
 body {
 	padding-top: 25px;
 }
+
+.bwizard-steps li {
+	border: 0;
+}
 .sidebar-nav {
 	padding: 9px 0;
 }

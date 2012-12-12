@@ -23,8 +23,8 @@ GMETAD_VMS=~/gmetad-vms.conf
 
 myip=`get_my_ip_addr`
 COLLECTOR_UNICAST_IP=`get_ai_attribute ${my_ai_uuid} metric_aggregator_ip`
-COLLECTOR_AGGREGATOR_PORT=`get_global_sub_attribute mon_defaults collector_aggregator_port`
-COLLECTOR_SUMMARIZER_PORT=`get_global_sub_attribute mon_defaults collector_summarizer_port`
+COLLECTOR_AGGREGATOR_PORT=`get_global_sub_attribute mon_defaults collector_vm_aggregator_port`
+COLLECTOR_SUMMARIZER_PORT=`get_global_sub_attribute mon_defaults collector_vm_summarizer_port`
 COLLECTOR_VM_PORT=`get_global_sub_attribute mon_defaults collector_vm_port`
 PLUGINS_DIR=~/monitor-core/gmetad-python/plugins
 MAIN_PATH=~/cloudbench

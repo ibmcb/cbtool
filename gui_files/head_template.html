@@ -9,6 +9,8 @@
   <link href="BOOTSTRAP/css/bootstrap.css" rel="stylesheet">
   <link href="CBSTRAP/cloudbench.css" rel="stylesheet">
   <link href="BOOTSTRAP/css/bootstrap-responsive.css" rel="stylesheet">
+  <link href="BOOTSTRAP/css/bootstrap-wizard.css" rel="stylesheet">
+  <link href="BOOTSTRAP/../../../Bootstrap-Wizard/css/bwizard.min.css" rel="stylesheet">
 
   <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
   <!--[if lt IE 9]>
@@ -28,12 +30,19 @@
   <script src="BOOTSTRAP/js/bootstrap-carousel.js"></script>
   <script src="BOOTSTRAP/js/bootstrap-typeahead.js"></script>
   <script src="BOOTSTRAP/js/bootstrap-affix.js"></script>
-  <!--<script src="BOOTSTRAP/../../../d3.v2.min.js"></script>-->
+  <script src="BOOTSTRAP/js/bootstrap-wizard.js"></script>
+  <script src="BOOTSTRAP/../../../d3/d3.v2.min.js"></script>
+  <script src="BOOTSTRAP/../../../Bootstrap-Wizard/js/bwizard.min.js"></script>
   <script src="CBSTRAP/cloudbench.js"></script>
   
   </head>
     <body data-spy='scroll' data-target='.bs-docs-sidebar' id='cbody'>
     <div style="display:none" id="ConnectContents">
+	    <h5>&nbsp;Connection Wizard:</h5>
+	    <p>
+	    &nbsp;
+	      <a class='btn btn-primary' href='BOOTDEST/wizard'><i class="icon-star icon-white"></i>&nbsp;Begin</a>
+	    </p>
 	    <form  action='BOOTDEST/connect' method='post' enctype="multipart/form-data">
 	    <h5>&nbsp;Config File: <input type="file" name="definitions" id="file" /> </h5>
 	    <p>
@@ -85,12 +94,18 @@ BOOTBODY
 	<script>
 	var isVisible = false;
 	var clickedAway = false;
+	function getTemplate() {
+		if(window.innerWidth < 500)
+			return "<div style='margin-left: 150px; margin-top: -100px' id='connectpopover' class='popover'><div class='arrow'></div><div class='popover-inner'><h3 class='popover-title'></h3><div class='popover-content'><p></p></div></div></div>";
+		else
+			return "<div id='connectpopover' class='popover'><div class='arrow'></div><div class='popover-inner'><h3 class='popover-title'></h3><div class='popover-content'><p></p></div></div></div>";
+	}
 	var pop = $('#connectpop').popover({ 
 	    html : true,
 	    title: "Start or Re-Connect:",
 	    placement : 'bottom',
             trigger: 'manual',
-	    template: '<div id="connectpopover" class="popover"><div class="arrow"></div><div class="popover-inner"><h3 class="popover-title"></h3><div class="popover-content"><p></p></div></div></div>',
+	    template: getTemplate(),
 	    content: function() {
 	      return $('#ConnectContents').html();
 	    }

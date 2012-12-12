@@ -27,9 +27,9 @@ from time import time, sleep
 from random import randint
 from uuid import uuid5, NAMESPACE_DNS
 
-from ..auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from ..auxiliary.data_ops import str2dic, DataOpsException
-from ..remote.network_functions import Nethashget 
+from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
+from lib.auxiliary.data_ops import str2dic, DataOpsException
+from lib.remote.network_functions import Nethashget 
 from shared_functions import CldOpsException, CommonCloudFunctions 
 
 class SimCmds(CommonCloudFunctions) :
@@ -132,33 +132,42 @@ class SimCmds(CommonCloudFunctions) :
                 cbdebug(_msg)
                 return True
 
-    def discover_hosts(self, obj_attr_list, vmc_extra_attr_list, start) :
+    def discover_hosts(self, obj_attr_list, start) :
         '''
         TBD
         '''
         _host_uuid = obj_attr_list["cloud_uuid"]
-        obj_attr_list["hosts"] = _host_uuid
-        obj_attr_list["host_count"] = 1
+        obj_attr_list["hosts"] = ''
+        obj_attr_list["host_count"] = int(obj_attr_list["hosts_per_vmc"])
         obj_attr_list["host_list"] = {}
-        obj_attr_list["host_list"][_host_uuid] = vmc_extra_attr_list
-        obj_attr_list["host_list"][_host_uuid]["pool"] = obj_attr_list["pool"]
-        obj_attr_list["host_list"][_host_uuid]["username"] = obj_attr_list["username"]
-        obj_attr_list["host_list"][_host_uuid]["cloud_ip"] = obj_attr_list["cloud_ip"]
-        obj_attr_list["host_list"][_host_uuid]["pool"] = obj_attr_list["pool"]
-        obj_attr_list["host_list"][_host_uuid]["notification"] = "False"
-        obj_attr_list["host_list"][_host_uuid]["cloud_hostname"] = obj_attr_list["cloud_hostname"]
-        obj_attr_list["host_list"][_host_uuid]["name"] = "host_" + obj_attr_list["cloud_hostname"]
-        obj_attr_list["host_list"][_host_uuid]["vmc_name"] = obj_attr_list["name"]
-        obj_attr_list["host_list"][_host_uuid]["cloud_uuid"] = obj_attr_list["cloud_uuid"]
-        obj_attr_list["host_list"][_host_uuid]["uuid"] = obj_attr_list["cloud_uuid"]
-        obj_attr_list["host_list"][_host_uuid]["model"] = obj_attr_list["model"]
-        obj_attr_list["host_list"][_host_uuid]["function"] = "hypervisor"
-        obj_attr_list["host_list"][_host_uuid]["arrival"] = int(time())
-        obj_attr_list["host_list"][_host_uuid]["counter"] = obj_attr_list["counter"]
-        obj_attr_list["host_list"][_host_uuid]["mgt_001_provisioning_request_originated"] = obj_attr_list["mgt_001_provisioning_request_originated"]
-        obj_attr_list["host_list"][_host_uuid]["mgt_002_provisioning_request_sent"] = obj_attr_list["mgt_002_provisioning_request_sent"]
-        _time_mark_prc = int(time())
-        obj_attr_list["host_list"][_host_uuid]["mgt_003_provisioning_request_completed"] = _time_mark_prc - start
+
+        for _host_n in range(0, int(obj_attr_list["hosts_per_vmc"])) :
+            _host_uuid = self.generate_random_uuid()
+            obj_attr_list["hosts"] += _host_uuid + ','            
+            obj_attr_list["host_list"][_host_uuid] = {}
+            obj_attr_list["host_list"][_host_uuid]["pool"] = obj_attr_list["pool"].upper()
+            obj_attr_list["host_list"][_host_uuid]["username"] = obj_attr_list["username"]
+            obj_attr_list["host_list"][_host_uuid]["cloud_ip"] = self.generate_random_ip_address()
+            obj_attr_list["host_list"][_host_uuid]["notification"] = "False"
+            obj_attr_list["host_list"][_host_uuid]["cloud_hostname"] = "simhost" + obj_attr_list["name"][-1] + str(_host_n)
+            obj_attr_list["host_list"][_host_uuid]["name"] = "host_simhost" + obj_attr_list["name"][-1] + str(_host_n)
+            obj_attr_list["host_list"][_host_uuid]["vmc_name"] = obj_attr_list["name"]
+            obj_attr_list["host_list"][_host_uuid]["vmc"] = obj_attr_list["uuid"]
+            obj_attr_list["host_list"][_host_uuid]["cloud_uuid"] = _host_uuid
+            obj_attr_list["host_list"][_host_uuid]["uuid"] = _host_uuid
+            obj_attr_list["host_list"][_host_uuid]["model"] = obj_attr_list["model"]
+            obj_attr_list["host_list"][_host_uuid]["function"] = "hypervisor"
+            obj_attr_list["host_list"][_host_uuid]["cores"] = 16
+            obj_attr_list["host_list"][_host_uuid]["memory"] = 131072            
+            obj_attr_list["host_list"][_host_uuid]["arrival"] = int(time())
+            obj_attr_list["host_list"][_host_uuid]["counter"] = obj_attr_list["counter"]
+            obj_attr_list["host_list"][_host_uuid]["mgt_001_provisioning_request_originated"] = obj_attr_list["mgt_001_provisioning_request_originated"]
+            obj_attr_list["host_list"][_host_uuid]["mgt_002_provisioning_request_sent"] = obj_attr_list["mgt_002_provisioning_request_sent"]
+            _time_mark_prc = int(time())
+            obj_attr_list["host_list"][_host_uuid]["mgt_003_provisioning_request_completed"] = _time_mark_prc - start
+
+        obj_attr_list["hosts"] = obj_attr_list["hosts"][:-1]
+        
         return True
 
     @trace
@@ -216,9 +225,7 @@ class SimCmds(CommonCloudFunctions) :
             obj_attr_list["arrival"] = int(time())
             
             if obj_attr_list["discover_hosts"].lower() == "true" :
-                _vmc_extra_attr_list = {}
-                _vmc_extra_attr_list["cores"] = 4
-                self.discover_hosts(obj_attr_list, _vmc_extra_attr_list, _time_mark_prs)
+                self.discover_hosts(obj_attr_list, _time_mark_prs)
             else :
                 obj_attr_list["hosts"] = ''
                 obj_attr_list["host_list"] = {}
@@ -314,11 +321,11 @@ class SimCmds(CommonCloudFunctions) :
         return True
     
     def is_vm_ready(self, obj_attr_list) :
-        
+
         if self.is_vm_running(obj_attr_list) :
-            
-            self.pause_on_attach_if_requested(obj_attr_list)
-            
+
+            self.take_action_if_requested("VM", obj_attr_list, "provision_complete")
+
             if self.get_ip_address(obj_attr_list) :
                 obj_attr_list["last_known_state"] = "running with ip assigned"
                 return True
@@ -352,11 +359,24 @@ class SimCmds(CommonCloudFunctions) :
                 _status = 7778
                 _msg = "Failed to create VM image"
                 raise CldOpsException(_msg, _status)
+
+            if "host_name" not in obj_attr_list :
+                obj_attr_list["host_name"] = "simhost" + obj_attr_list["vmc_name"][-1]
+                obj_attr_list["host_name"] += str(randint(0, int(obj_attr_list["hosts_per_vmc"])-1))
+
+            if "meta_tags" in obj_attr_list :
+                if obj_attr_list["meta_tags"] != "empty" and \
+                obj_attr_list["meta_tags"].count(':') and \
+                obj_attr_list["meta_tags"].count(',') :
+                    obj_attr_list["meta_tags"] = str2dic(obj_attr_list["meta_tags"])
+                else :
+                    obj_attr_list["meta_tags"] = "empty"
+            else :
+                obj_attr_list["meta_tags"] = "empty"
+ 
+            self.take_action_if_requested("VM", obj_attr_list, "provision_started")
  
             _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
-            
-            obj_attr_list["host_name"] = obj_attr_list["vmc_name"]
-            obj_attr_list["host_cloud_ip"] = obj_attr_list["vmc_cloud_ip"]
 
             self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
 
@@ -573,9 +593,12 @@ class SimCmds(CommonCloudFunctions) :
         '''
         try :
             _fmsg = "An error has occurred, but no error message was captured"
+
             for _vm in obj_attr_list["vms"].split(',') :
                 if _vm.count("faildb2") :
                     _fmsg = "Forced failure during AI definition"
+
+            self.take_action_if_requested("AI", obj_attr_list, "all_vms_booted")
 
             if _fmsg == "Forced failure during AI definition" :
                 _status = 181

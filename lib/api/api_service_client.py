@@ -33,6 +33,7 @@
 
 from sys import path
 from xmlrpclib import Server
+import xmlrpclib
 import sys
 import re
 import os
@@ -152,7 +153,23 @@ class APIClient(Server):
          client side without writing ANOTHER lookup table.
         '''
         
+        _orig_Method = xmlrpclib._Method
+        
+        '''
+        XML-RPC doesn't support keyword arguments,
+        so we have to do it ourselves...
+        '''
+        class KeywordArgMethod(_orig_Method):     
+            def __call__(self, *args, **kwargs):
+                args = list(args) 
+                if kwargs:
+                    args.append(("kwargs", kwargs))
+                return _orig_Method.__call__(self, *args)
+        
+        xmlrpclib._Method = KeywordArgMethod
+        
         Server.__init__(self, service_url)
+        
         setattr(self, "_ServerProxy__request", self.api_error_check(self._ServerProxy__request))
         self.vms = {}
         self.msattrs = None

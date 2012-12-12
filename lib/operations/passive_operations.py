@@ -911,7 +911,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     if _time_to_wait > 10 :
                         _update_interval = 10
                     else :
-                        _update_interval = _time_to_wait/10
+                        _update_interval = max(1,_time_to_wait/10)
                 else :
                     _update_interval = _time_to_wait/int(obj_attr_list["interval"])
 
@@ -950,7 +950,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             else :
                 _msg = "Waited for " + str(_time_to_wait) + " seconds."
                 cbdebug(_msg)
-            return _status, _msg, None
+            return self.package(_status, _msg, None)
         
     @trace
     def wait_until(self, obj_attr_list, parameters, command) :
@@ -975,13 +975,13 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 else :
                     _counter_type = False
                     _counter_name = "(Objects created on the Object Store)"
-
+                
                 if obj_attr_list["direction"] == "increasing" :
                     _direction = "increasing"
                 elif obj_attr_list["direction"] == "decreasing" :
                     _direction = "decreasing"
                 else :
-                    _msg = "Unknown direction for counter: " + str(_direction)
+                    _msg = "Unknown direction for counter: " + str(obj_attr_list["direction"])
                     _status = 716
                     cberr(_msg)
                     raise self.ObjectOperationException(_msg, _status)            
@@ -1148,7 +1148,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 cberr(_msg)
             else :
                 _msg = "Message \"" + obj_attr_list["message"] + "\""
-                _msg += " published on channe \"" + obj_attr_list["channel"] 
+                _msg += " published on channel \"" + obj_attr_list["channel"] 
                 _msg += "\" (object \"" + _obj_type + "\" )."
                 cbdebug(_msg)
 
@@ -1242,10 +1242,10 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 _status = 9876
                 raise self.ObjectOperationException(_msg, _status)
             
-            self.monitoring_extract("HOST os", "mon-extract")
-            self.monitoring_extract("VM os", "mon-extract")
-            self.monitoring_extract("VM app", "mon-extract")
-            self.monitoring_extract("VM management", "mon-extract")
+            self.monitoring_extract(_cn + " HOST os", "mon-extract")
+            self.monitoring_extract(_cn + " VM os", "mon-extract")
+            self.monitoring_extract(_cn + " VM app", "mon-extract")
+            self.monitoring_extract(_cn + " VM management", "mon-extract")
 
             _status = 0
             
@@ -1486,7 +1486,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
         try : 
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
-
+            _result = {"management" : [], "runtime" : []} 
             _obj_attr_list = {}
             _status, _fmsg = self.parse_cli(_obj_attr_list, parameters, command)
             _msg = ""
@@ -1516,6 +1516,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     
                     for _metric in _metrics_list :
                         _obj_attr_list = self.osci.get_object(_obj_attr_list["cloud_name"], _obj_type, False, _metric["_id"], False)
+                        _result["runtime"].append([_obj_attr_list["name"], _obj_attr_list["time"]])
                         _msg += _obj_attr_list["name"].ljust(len(_field1))
                         _msg += '|' +  str( _curr_time- int(_metric["time"])).ljust(len(_field2)) + '\n'
 
@@ -1526,6 +1527,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _metrics_list = self.msci.find_document("latest_runtime_app_" + _obj_type + '_' + _obj_attr_list["username"], {}, True)
 
                         for _metric in _metrics_list :
+                            _result["management"].append([_obj_attr_list["name"], _obj_attr_list["time"]])
                             _obj_attr_list = self.osci.get_object(_obj_attr_list["cloud_name"], _obj_type, False, _metric["_id"], False)
                             _msg += _obj_attr_list["name"].ljust(len(_field1))
                             _msg += '|' +  str( _curr_time- int(_metric["time"])).ljust(len(_field2)) + '\n'                                               
@@ -1550,7 +1552,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 cberr(_msg)
             else :
                 cbdebug(_msg)
-            return _status, _msg
+            return self.package(_status, _msg, _result)
             
     @trace
     def run_api_service(self, passive, active, background, debug, port, hostname) :

@@ -19,16 +19,18 @@
 from Queue import Queue
 from threading import Thread
 from time import sleep
+import copy
 
 class Worker(Thread):
     """Thread executing tasks from a given tasks queue"""
-    def __init__(self, tasks):
+    def __init__(self, tasks, pool):
         Thread.__init__(self)
         self.tasks = tasks
         self.daemon = True
         self.abort = False
         self.aborted = False
         self.start()
+        self.pool = pool
 
     def run(self):
         while True:
@@ -37,7 +39,7 @@ class Worker(Thread):
                 #print ("THREAD STARTED: " + func.__name__ + ": " + str(args) + " " + str(kargs))
                 self.abort = False
                 self.aborted = False
-                func(*args, **kargs)
+                self.pool.results.append(func(*args, **kargs))
                 self.aborted = True
             except Exception, e:
                 #print ("THREAD FAILED: " + func.__name__ + ": " + str(args) + " " + str(kargs))
@@ -49,9 +51,10 @@ class Worker(Thread):
 class ThreadPool:
     """Pool of threads consuming tasks from a queue"""
     def __init__(self, num_threads):
+        self.results = [] 
         self.workers = []
         self.tasks = Queue(num_threads)
-        for _ in range(num_threads): self.workers.append(Worker(self.tasks))
+        for _ in range(num_threads): self.workers.append(Worker(self.tasks, self))
 
     def add_task(self, func, *args, **kargs):
         """Add a task to the queue"""
@@ -74,3 +77,10 @@ class ThreadPool:
         """Wait for completion of all the tasks in the queue"""
         while self.tasks.unfinished_tasks > 0 :
             sleep(0.5)
+            
+        '''
+        Reset the results for the next time.
+        '''
+        result = copy.deepcopy(self.results)
+        self.results = []
+        return result 

@@ -199,6 +199,40 @@ def parse_cld_defs_file(cloud_definitions = None, print_message = False, \
                     # Will eventually be stored in the parent section's dictionary
                     if _curr_global_object.count(":") :
                         _sec, _subsec = _curr_global_object.split(":")
+                        
+                        # Support the '>' symbol after the colon to indicate
+                        # explicit order of operations:
+                       
+                        if _subsec.count(">") :
+                            _new_subsec = "" 
+                            _parts = _subsec.split(">")
+                            
+                            '''
+                            Sanity check:
+                            '''
+                            if len(_parts) > 3 :
+                                raise Exception("\nconfiguration error: too many components listed after the colon: " + _line)
+                            if len(_parts) == 3 :
+                                if not _parts[0].lower().count("cloudoption") :
+                                    raise Exception("\nconfiguration error: order is incorrect: " + _line)
+                                if not _parts[1].lower().count("cloudconfig") :
+                                    raise Exception("\nconfiguration error: order is incorrect: " + _line)
+                                if _parts[2].lower().count("cloudoption") or _parts[0].lower().count("cloudconfig"):
+                                    raise Exception("\nconfiguration error: order is incorrect: " + _line)
+                            if len(_parts) == 2 :
+                                if not _parts[0].lower().count("cloudoption") and not _parts[0].lower().count("cloudconfig"):
+                                    raise Exception("\nconfiguration error: order is incorrect: " + _line)
+                            
+                            for _part in _parts :
+                               if _part.strip() == "" :
+                                    raise Exception("\nconfiguration error: invalid component listing after colon: " + _line)
+                                
+                               if _new_subsec != "" :
+                                   _new_subsec += "_" 
+                               _new_subsec += _part.strip() 
+                            
+                            _subsec = _new_subsec
+                        
                         _global_subsection = _subsec.strip()
                         _curr_global_object = _sec.strip() 
                     else :
@@ -342,7 +376,7 @@ def get_available_clouds(cld_attr_lst, return_all_options = False) :
                 commands[cloud_name] = []
                 for command in cld_attr_lst["user-defined"][key].split(',') :
                     '''
-                     Try to simply the multi-cloud configuration a little bit.
+                     Try to simplify the multi-cloud configuration a little bit.
                      Permit the cldattach command to 'omit' the cloud name,
                      since we already know the cloud name in the variable names themselves.
                     '''

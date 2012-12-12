@@ -32,6 +32,7 @@ from novaclient.v1_1 import client
 from novaclient import exceptions as novaexceptions
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
+from lib.auxiliary.data_ops import str2dic, DataOpsException
 from lib.remote.network_functions import hostname2ip
 from shared_functions import CldOpsException, CommonCloudFunctions 
 
@@ -488,16 +489,12 @@ class OskCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
-        if "private" in instance.addresses :
-            _ip_address_key = "private"
-        elif "brnet" in instance.addresses :
-            _ip_address_key = "brnet"
-        else :
-            _ip_address_key = False
-                
-        if _ip_address_key :
+        _networks = instance.addresses.keys()
+
+        if len(_networks) :
+            _network = _networks[0]                
             obj_attr_list["cloud_hostname"] = obj_attr_list["cloud_vm_name"]
-            obj_attr_list["cloud_ip"] = '{0}'.format(instance.addresses[_ip_address_key][0]["addr"])      
+            obj_attr_list["cloud_ip"] = '{0}'.format(instance.addresses[_network][0]["addr"])      
             return True
         else :
             return False
@@ -507,13 +504,21 @@ class OskCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
+
         if "cloud_mac" in obj_attr_list : 
             if obj_attr_list["cloud_mac"] == "True" :
-                _virtual_interfaces = self.oskconn.virtual_interfaces.list(obj_attr_list["cloud_uuid"])
-                if _virtual_interfaces and len(_virtual_interfaces) :
-                    obj_attr_list["cloud_mac"] = _virtual_interfaces[0].mac_address
+                '''
+                If the MAC retrieval fails, just ignore it.
+                Nested 'try' is fine for now.
+                '''
+                try :
+                    _virtual_interfaces = self.oskconn.virtual_interfaces.list(instance.id)
+                    if _virtual_interfaces and len(_virtual_interfaces) :
+                        obj_attr_list["cloud_mac"] = _virtual_interfaces[0].mac_address
+                except :
+                    obj_attr_list["cloud_mac"] = "N/A"
             else :
-                obj_attr_list["cloud_mac"] = "NA"
+                obj_attr_list["cloud_mac"] = "N/A"
         return True
 
     @trace
@@ -587,7 +592,7 @@ class OskCmds(CommonCloudFunctions) :
         
         if _instance :
 
-            self.pause_on_attach_if_requested(obj_attr_list)
+            self.take_action_if_requested("VM", obj_attr_list, "provision_complete")
 
             if self.get_ip_address(obj_attr_list, _instance) :
                 obj_attr_list["last_known_state"] = "ACTIVE with ip assigned"
@@ -632,7 +637,11 @@ class OskCmds(CommonCloudFunctions) :
             obj_attr_list["cloud_uuid"] = "NA"
             _instance = False
             
-            obj_attr_list["cloud_vm_name"] = "cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"] + '-' + "vm" + obj_attr_list["name"].split("_")[1] + '-' + obj_attr_list["role"]
+            obj_attr_list["cloud_vm_name"] = "cb-" + obj_attr_list["username"]
+            obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["cloud_name"]
+            obj_attr_list["cloud_vm_name"] += '-' + "vm"
+            obj_attr_list["cloud_vm_name"] += obj_attr_list["name"].split("_")[1]
+            obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["role"]
 
             obj_attr_list["last_known_state"] = "about to connect to openstack manager"
 
@@ -660,7 +669,22 @@ class OskCmds(CommonCloudFunctions) :
 
             _flavor = self.get_flavors(obj_attr_list)            
             _imageid = self.get_images(obj_attr_list)
+
+            if "host_name" in obj_attr_list :
+                _scheduler_hints = { "force_hosts" : obj_attr_list["host_name"] }
+            else :
+                _scheduler_hints = None
             
+            if "meta_tags" in obj_attr_list :
+                if obj_attr_list["meta_tags"] != "empty" and \
+                obj_attr_list["meta_tags"].count(':') and \
+                obj_attr_list["meta_tags"].count(',') :
+                    _meta = str2dic(obj_attr_list["meta_tags"])
+                else :
+                    _meta = None
+            else :
+                _meta = None
+
             _msg = "Starting an instance on OpenStack, using the imageid \""
             _msg += obj_attr_list["imageid1"] + "\" (" + str(_imageid) + ") and "
             _msg += "size \"" + obj_attr_list["size"] + "\" (" + str(_flavor) + ")"
@@ -671,7 +695,9 @@ class OskCmds(CommonCloudFunctions) :
                                                     image = _imageid, \
                                                     flavor = _flavor, \
                                                     security_groups = _security_groups, \
-                                                    key_name = obj_attr_list["key_name"])
+                                                    key_name = obj_attr_list["key_name"], \
+                                                    scheduler_hints = _scheduler_hints, \
+                                                    meta = _meta)
 
             if _instance :
                 
@@ -679,7 +705,11 @@ class OskCmds(CommonCloudFunctions) :
 
                 obj_attr_list["cloud_uuid"] = '{0}'.format(_instance.id)
 
+                self.take_action_if_requested("VM", obj_attr_list, "provision_started")
+
                 _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
+
+                self.get_mac_address(obj_attr_list, _instance)
                             
                 self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
 
@@ -1007,6 +1037,9 @@ class OskCmds(CommonCloudFunctions) :
         '''
         try :
             _fmsg = "An error has occurred, but no error message was captured"
+
+            self.take_action_if_requested("AI", obj_attr_list, "all_vms_booted")
+
             _status = 0
 
         except Exception, e :

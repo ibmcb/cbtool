@@ -127,7 +127,7 @@ if [ $standalone == online ]; then
 		fi
 		echo $line >> $OUTPUT_FILE
 	
-		if [ x"${APP_COLLECTION}" == x"eager"]; then
+		if [ x"${APP_COLLECTION}" == x"eager" ]; then
 			if [ x"`echo "$line" | grep -E "pg elem\/s"`" != x ] ; then
 				tp=$(echo "$line" | grep -Eo "pg elem/s = [0-9]+\.[0-9]*$" | grep -oE "[0-9]+\.[0-9]*")
 				lat=$(echo "$line" | grep -Eo "resp avg = [0-9]+\.[0-9]* |" | grep -oE "[0-9]+\.[0-9]*")

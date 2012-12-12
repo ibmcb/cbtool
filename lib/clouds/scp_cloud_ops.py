@@ -627,7 +627,7 @@ class ScpCmds(CommonCloudFunctions) :
         
         if _instance :
             
-            self.pause_on_attach_if_requested(obj_attr_list)
+            self.take_action_if_requested("VM", obj_attr_list, "provision_complete")
             
             if self.get_ip_address(obj_attr_list, _instance) :
                 obj_attr_list["last_known_state"] = "running with ip assigned"
@@ -683,6 +683,8 @@ class ScpCmds(CommonCloudFunctions) :
             if _instance :
                 obj_attr_list["cloud_uuid"] = _instance["gid"]
                 obj_attr_list["cloud_uuid2"] = _instance["instance_id"]
+
+                self.take_action_if_requested("VM", obj_attr_list, "provision_started")
 
                 _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
                             
@@ -917,6 +919,9 @@ class ScpCmds(CommonCloudFunctions) :
         '''
         try :
             _fmsg = "An error has occurred, but no error message was captured"
+
+            self.take_action_if_requested("AI", obj_attr_list, "all_vms_booted")
+            
             _status = 0
 
         except Exception, e :

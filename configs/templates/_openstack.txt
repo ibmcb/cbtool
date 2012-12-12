@@ -2,8 +2,29 @@
 OSK_ACCESS = need_to_be_configured_by_user
 OSK_CREDENTIALS = need_to_be_configured_by_user
 OSK_KEY_NAME = need_to_be_configured_by_user
+OSK_SECURITY_GROUPS = need_to_be_configured_by_user
 OSK_INITIAL_VMCS = need_to_be_configured_by_user
-OSK_SECURITY_GROUP = need_to_be_configured_by_user
+OSK_SSH_KEY_NAME = need_to_be_configured_by_user
+OSK_LOGIN = need_to_be_configured_by_user
+
+# PEBCAK documentation for the Wizard and CLI
+OSK_ACCESS_DOC = Please enter the HTTP address of the nova API\nused for access through nova to interact with the cloud.\nThis is usually in the form of http://<address>:5000/v2.0/
+OSK_ACCESS_DEFAULT = http://<address>:5000/v2.0/
+OSK_CREDENTIALS_DOC = This option requires a specific syntax:\n<username>-<password>-<tenant>\n ... Please enter these parameters as you\nwould use them to login to the OpenStack\nuser interface.
+OSK_CREDENTIALS_DEFAULT = admin-passwrd-admin
+OSK_KEY_NAME_DOC = Please enter the OpenStack key used to login\nto your VMs as root. This key needs to be generated in\nthe OpenStack user interface before starting the tool.
+OSK_KEY_NAME_DEFAULT = some_key_name 
+OSK_SECURITY_GROUPS_DOC = Please enter the security group used in\nyour OpenStack vms. This group needs to be created\nin the OpenStack user interface before\nstarting the tool.
+OSK_SECURITY_GROUPS_DEFAULT = some_security_group
+OSK_LOGIN_DOC = $LOGIN_DOC
+OSK_LOGIN_DEFAULT = klabuser
+OSK_SSH_KEY_NAME_DOC = $SSH_KEY_NAME_DOC
+OSK_SSH_KEY_NAME_DEFAULT = id_rsa.private
+OSK_INITIAL_VMCS_DOC = $INITIAL_VMCS_DOC 
+OSK_INITIAL_VMCS_DEFAULT = RegionOne,RegionTwo
+
+[SPACE : OSK_CLOUDCONFIG ]
+SSH_KEY_NAME = $OSK_SSH_KEY_NAME
 
 [VMC_DEFAULTS : OSK_CLOUDCONFIG]
 ACCESS = $OSK_ACCESS
@@ -16,17 +37,40 @@ EXTRA_INFO = $Empty
 ACCESS = $OSK_ACCESS
 CREDENTIALS = $OSK_CREDENTIALS
 KEY_NAME = $OSK_KEY_NAME
-SECURITY_GROUPS = $OSK_SECURITY_GROUP
+SECURITY_GROUPS = $OSK_SECURITY_GROUPS
 REAL_IP = $True
 CLOUD_MAC = $True
 CAPTURE_SUPPORTED = $True
 RUNSTATE_SUPPORTED = $True
 RESIZE_SUPPORTED = $False
+LOGIN = $OSK_LOGIN
+SSH_KEY_NAME = $OSK_SSH_KEY_NAME
+# Other methods could be used to check if a VM already booted
+CHECK_BOOT_COMPLETE = tcp_on_22
+#CHECK_BOOT_COMPLETE = subscribe_on_booting
+#CHECK_BOOT_COMPLETE = wait_for_90
+
+[SVM_DEFAULTS : OSK_CLOUDCONFIG]
+SSH_KEY_NAME = $OSK_SSH_KEY_NAME
 
 [AI_DEFAULTS : OSK_CLOUDCONFIG]
 CAPTURE_SUPPORTED = $True
 RUNSTATE_SUPPORTED = $True
 RESIZE_SUPPORTED = $True
+LOGIN = $OSK_LOGIN
+SSH_KEY_NAME = $OSK_SSH_KEY_NAME
+
+[AIDRS_DEFAULTS : OSK_CLOUDCONFIG]
+LOGIN = $OSK_LOGIN
+SSH_KEY_NAME = $OSK_SSH_KEY_NAME
+
+[VMCRS_DEFAULTS : OSK_CLOUDCONFIG]
+LOGIN = $OSK_LOGIN
+SSH_KEY_NAME = $OSK_SSH_KEY_NAME
+
+[FIRS_DEFAULTS : OSK_CLOUDCONFIG]
+LOGIN = $OSK_LOGIN
+SSH_KEY_NAME = $OSK_SSH_KEY_NAME
 
 [VM_TEMPLATES : OSK_CLOUDCONFIG]
 CLIENT_DAYTRADER = size:m1.small, imageid1:cloudbench_root

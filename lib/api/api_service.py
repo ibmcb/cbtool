@@ -146,86 +146,86 @@ class API():
     def cldparse(self, definitions):
         attributes, unused_definitions = parse_cld_defs_file(definitions)
         clouds = get_available_clouds(attributes, return_all_options = True)
-        return {"msg" : "Success", "status" : 0, "result": clouds }
-    
-    def cldattach(self, model, name, cloud_definitions = None) :
-        result = self.active.cldattach({}, model + " " + name, cloud_definitions, "cloud-attach")[2]
+        return {"msg" : "Success", "status" : 0, "result": { "clouds": clouds, "attributes" : attributes} }
+
+    def cldattach(self, model, name, cloud_definitions = None, temp_attr_list = "empty=empty") :
+        result = self.active.cldattach({}, model + ' ' + name + ' ' + temp_attr_list, cloud_definitions, "cloud-attach")[2]
         return result
 
     def cldlist(self, set_default_cloud = "false"):
         return self.passive.list_objects({}, set_default_cloud, "cloud-list")[2]
-    
+
     def expid(self, cloud_name, command_name):
-        return self.passive.expid({"name" : cloud_name}, cloud_name + " " + command_name, "expid-manage")[2]
-    
+        return self.passive.expid({"name" : cloud_name}, cloud_name + ' ' + command_name, "expid-manage")[2]
+
     def vmlist(self, cloud_name, state = "default", limit = "none"):
-        return self.passive.list_objects({}, cloud_name + " " + state + " " + str(limit), "vm-list")[2]
-    
+        return self.passive.list_objects({}, cloud_name + ' ' + state + ' ' + str(limit), "vm-list")[2]
+
     def svmlist(self, cloud_name, state = "default", limit = "none"):
-        return self.passive.list_objects({}, cloud_name + " " + state + " " + str(limit), "svm-list")[2]
-    
+        return self.passive.list_objects({}, cloud_name + ' ' + state + ' ' + str(limit), "svm-list")[2]
+
     def vmclist(self, cloud_name, state = "default", limit = "none"):
-        return self.passive.list_objects({}, cloud_name + " " + state + " " + str(limit), "vmc-list")[2]
-    
+        return self.passive.list_objects({}, cloud_name + ' ' + state + ' ' + str(limit), "vmc-list")[2]
+
     def hostlist(self, cloud_name, state = "default", limit = "none"):
-        return self.passive.list_objects({}, cloud_name + " " + state + " " + str(limit), "host-list")[2]
-    
+        return self.passive.list_objects({}, cloud_name + ' ' + state + ' ' + str(limit), "host-list")[2]
+
     def vmcrslist(self, cloud_name, state = "default", limit = "none"):
-        return self.passive.list_objects({}, cloud_name + " " + state + " " + str(limit), "vmcrs-list")[2]
-    
+        return self.passive.list_objects({}, cloud_name + ' ' + state + ' ' + str(limit), "vmcrs-list")[2]
+
     def applist(self, cloud_name, state = "default", limit = "none"):
-        return self.passive.list_objects({}, cloud_name + " " + state + " " + str(limit), "ai-list")[2]
-    
+        return self.passive.list_objects({}, cloud_name + ' ' + state + ' ' + str(limit), "ai-list")[2]
+
     def appdrslist(self, cloud_name, state = "default", limit = "none"):
-        return self.passive.list_objects({}, cloud_name + " " + state + " " + str(limit), "aidrs-list")[2]
-    
+        return self.passive.list_objects({}, cloud_name + ' ' + state + ' ' + str(limit), "aidrs-list")[2]
+
     def poollist(self, cloud_name):
-        return self.passive.globallist({}, cloud_name + " " + "X+pools+VMCs", "global-list")[2]
-                
+        return self.passive.globallist({}, cloud_name + ' ' + "X+pools+VMCs", "global-list")[2]
+
     def cldshow(self, cloud_name, object_type) :
-        return self.passive.show_object({"name": cloud_name}, cloud_name + " " + object_type, "cloud-show")[2]
-    
+        return self.passive.show_object({"name": cloud_name}, cloud_name + ' ' + object_type, "cloud-show")[2]
+
     def statealter(self, cloud_name, identifier, new_state):
-        return self.passive.alter_state({"name": cloud_name}, cloud_name + " " + identifier + " " + new_state, "state-alter")[2]
-    
+        return self.passive.alter_state({"name": cloud_name}, cloud_name + ' ' + identifier + ' ' + new_state, "state-alter")[2]
+
     def stateshow(self, cloud_name, state = ""):
-        return self.passive.show_state({"name": cloud_name}, cloud_name + " " + state, "state-show")[2]
-    
+        return self.passive.show_state({"name": cloud_name}, cloud_name + ' ' + state, "state-show")[2]
+
     def typeshow(self, cloud_name, vapp_type) :
-        return self.passive.globalshow({}, cloud_name + " " + vapp_type + " ai_templates type", "global-show")[2]
-    
+        return self.passive.globalshow({}, cloud_name + ' ' + vapp_type + " ai_templates type", "global-show")[2]
+
     def patternshow(self, cloud_name, pattern) :
-        return self.passive.globalshow({}, cloud_name + " " + pattern + " aidrs_templates pattern", "global-show")[2]
-    
+        return self.passive.globalshow({}, cloud_name + ' ' + pattern + " aidrs_templates pattern", "global-show")[2]
+
     def patternalter(self, cloud_name, pattern_name, attribute, value):
-        return self.passive.globalalter({}, cloud_name + " " + pattern_name + " " + attribute + "=" + value + " aidrs_templates pattern", "global-alter")[2]
-    
+        return self.passive.globalalter({}, cloud_name + ' ' + pattern_name + ' ' + attribute + "=" + value + " aidrs_templates pattern", "global-alter")[2]
+
     def typealter(self, cloud_name, type_name, attribute, value):
-        return self.passive.globalalter({}, cloud_name + " " + type_name + " " + attribute + "=" + value + " ai_templates type", "global-alter")[2]
-    
+        return self.passive.globalalter({}, cloud_name + ' ' + type_name + ' ' + attribute + "=" + value + " ai_templates type", "global-alter")[2]
+
     def roleshow(self, cloud_name, role) :
-        return self.passive.globalshow({}, cloud_name + " " + role + " vm_templates role", "global-show")[2]
+        return self.passive.globalshow({}, cloud_name + ' ' + role + " vm_templates role", "global-show")[2]
     
     def vmshow(self, cloud_name, identifier, key = "all"):
-        return self.passive.show_object({}, cloud_name + " " + identifier + " " + key, "vm-show")[2]
+        return self.passive.show_object({}, cloud_name + ' ' + identifier + ' ' + key, "vm-show")[2]
     
     def svmshow(self, cloud_name, identifier, key = "all"):
-        return self.passive.show_object({}, cloud_name + " " + identifier + " " + key, "svm-show")[2]
+        return self.passive.show_object({}, cloud_name + ' ' + identifier + ' ' + key, "svm-show")[2]
     
     def vmcshow(self, cloud_name, identifier, key = "all"):
-        return self.passive.show_object({}, cloud_name + " " + identifier + " " + key, "vmc-show")[2]
+        return self.passive.show_object({}, cloud_name + ' ' + identifier + ' ' + key, "vmc-show")[2]
     
     def hostshow(self, cloud_name, identifier, key = "all"):
-        return self.passive.show_object({}, cloud_name + " " + identifier + " " + key, "host-show")[2]
+        return self.passive.show_object({}, cloud_name + ' ' + identifier + ' ' + key, "host-show")[2]
     
     def appshow(self, cloud_name, identifier, key = "all"):
-        return self.passive.show_object({}, cloud_name + " " + identifier + " " + key, "ai-show")[2]
+        return self.passive.show_object({}, cloud_name + ' ' + identifier + ' ' + key, "ai-show")[2]
     
     def appdrsshow(self, cloud_name, identifier, key = "all"):
-        return self.passive.show_object({}, cloud_name + " " + identifier + " " + key, "aidrs-show")[2]
+        return self.passive.show_object({}, cloud_name + ' ' + identifier + ' ' + key, "aidrs-show")[2]
     
     def vmcrsshow(self, cloud_name, identifier, key = "all"):
-        return self.passive.show_object({}, cloud_name + " " + identifier + " " + key, "vmcrs-show")[2]
+        return self.passive.show_object({}, cloud_name + ' ' + identifier + ' ' + key, "vmcrs-show")[2]
          
     def reset_refresh(self, cloud_name):
         return self.passive.reset_refresh({}, cloud_name, "api-reset")[2]
@@ -234,70 +234,70 @@ class API():
         return self.passive.should_refresh({}, cloud_name, "api-check")[2]
     
     def vmresize(self, cloud_name, identifier, resource, value):
-        return self.active.vmresize({}, cloud_name + " " + identifier + " " + resource + "=" + str(value), "vm-resize")[2]
+        return self.active.vmresize({}, cloud_name + ' ' + identifier + ' ' + resource + "=" + str(value), "vm-resize")[2]
     
     def appresume(self, cloud_name, identifier, async = False):
         if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + " " + identifier + " attached resume" + (" " + async), "ai-runstate")[2]
+            return self.active.background_execute(cloud_name + ' ' + identifier + " attached resume" + (' ' + async), "ai-runstate")[2]
         else :
-            return self.active.airunstate({}, cloud_name + " " + identifier + " attached resume", "ai-runstate")[2]
+            return self.active.airunstate({}, cloud_name + ' ' + identifier + " attached resume", "ai-runstate")[2]
     
     def apprestore(self, cloud_name, identifier, async = False):
         if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + " " + identifier + " attached restore" + (" " + async), "ai-runstate")[2]
+            return self.active.background_execute(cloud_name + ' ' + identifier + " attached restore" + (' ' + async), "ai-runstate")[2]
         else :
-            return self.active.airunstate({}, cloud_name + " " + identifier + " attached restore", "ai-runstate")[2]
+            return self.active.airunstate({}, cloud_name + ' ' + identifier + " attached restore", "ai-runstate")[2]
         
     def appcapture(self, cloud_name, identifier, async = False):
         if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + " " + identifier + (" " + async), "ai-capture")[2]
+            return self.active.background_execute(cloud_name + ' ' + identifier + (' ' + async), "ai-capture")[2]
         else :
-            return self.active.aicapture({}, cloud_name + " " + identifier, "ai-capture")[2]
+            return self.active.aicapture({}, cloud_name + ' ' + identifier, "ai-capture")[2]
         
     def vmcapture(self, cloud_name, identifier, async = False):
         if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + " " + identifier + (" " + async), "vm-capture")[2]
+            return self.active.background_execute(cloud_name + ' ' + identifier + (' ' + async), "vm-capture")[2]
         else :
-            return self.active.vmcapture({}, cloud_name + " " + identifier, "vm-capture")[2]
+            return self.active.vmcapture({}, cloud_name + ' ' + identifier, "vm-capture")[2]
         
     def hostfail(self, cloud_name, identifier, async = False):
-        parameters = cloud_name + " " + identifier
+        parameters = cloud_name + ' ' + identifier
         if async and str(async).count("async") :
-            return self.active.background_execute(parameters + (" " + async), "host-fail")[2]
+            return self.active.background_execute(parameters + (' ' + async), "host-fail")[2]
         else :
             return self.active.hostfail_repair({}, parameters, "host-fail")[2]
         
     def hostrepair(self, cloud_name, identifier, async = False):
-        parameters = cloud_name + " " + identifier
+        parameters = cloud_name + ' ' + identifier
         if async and str(async).count("async") :
-            return self.active.background_execute(parameters + (" " + async), "host-repair")[2]
+            return self.active.background_execute(parameters + (' ' + async), "host-repair")[2]
         else :
             return self.active.hostfail_repair({}, parameters, "host-repair")[2]
         
     def appresize(self, cloud_name, identifier, role, delta, async = False):
-        parameters = cloud_name + " " + identifier + " " + role + " " + delta
+        parameters = cloud_name + ' ' + identifier + ' ' + role + ' ' + delta
         if async and str(async).count("async") :
-            return self.active.background_execute(parameters + (" " + async), "ai-resize")[2]
+            return self.active.background_execute(parameters + (' ' + async), "ai-resize")[2]
         else :
             return self.active.airesize({}, parameters, "ai-resize")[2]
     
     def appsave(self, cloud_name, identifier, async = False):
         if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + " " + identifier + " save" + (" " + async), "ai-runstate")[2]
+            return self.active.background_execute(cloud_name + ' ' + identifier + " save" + (' ' + async), "ai-runstate")[2]
         else :
-            return self.active.airunstate({}, cloud_name + " " + identifier + " save", "ai-runstate")[2]
+            return self.active.airunstate({}, cloud_name + ' ' + identifier + " save", "ai-runstate")[2]
         
     def vmrunstate(self, cloud_name, identifier, runstate, command = "unknown", async = False):
-        parameters = cloud_name + " " + identifier + " " + runstate + " " + command
+        parameters = cloud_name + ' ' + identifier + ' ' + runstate + ' ' + command
         if async and str(async).count("async") :
-            return self.active.background_execute(parameters + (" " + async), "vm-runstate")[2]
+            return self.active.background_execute(parameters + (' ' + async), "vm-runstate")[2]
         else :
             return self.active.vmrunstate({}, parameters, "vm-runstate")[2]
         
     def apprunstate(self, cloud_name, identifier, runstate, command = "unknown", async = False):
-        parameters = cloud_name + " " + identifier + " " + runstate + " " + command
+        parameters = cloud_name + ' ' + identifier + ' ' + runstate + ' ' + command
         if async and str(async).count("async") :
-            return self.active.background_execute(parameters + (" " + async), "ai-runstate")[2]
+            return self.active.background_execute(parameters + (' ' + async), "ai-runstate")[2]
         else :
             return self.active.airunstate({}, parameters, "ai-runstate")[2]
         
@@ -309,27 +309,27 @@ class API():
     
     def appsuspend(self, cloud_name, identifier, async = False):
         if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + " " + identifier + " fail" + (" " + async), "ai-runstate")[2]
+            return self.active.background_execute(cloud_name + ' ' + identifier + " fail" + (' ' + async), "ai-runstate")[2]
         else :
-            return self.active.airunstate({}, cloud_name + " " + identifier + " fail", "ai-runstate")[2]
+            return self.active.airunstate({}, cloud_name + ' ' + identifier + " fail", "ai-runstate")[2]
     
     def vmrestore(self, cloud_name, identifier, async = False):
         if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + " " + identifier + " attached restore" + (" " + async), "vm-runstate")[2]
+            return self.active.background_execute(cloud_name + ' ' + identifier + " attached restore" + (' ' + async), "vm-runstate")[2]
         else :
-            return self.active.vmrunstate({}, cloud_name + " " + identifier + " attached restore", "vm-runstate")[2]
+            return self.active.vmrunstate({}, cloud_name + ' ' + identifier + " attached restore", "vm-runstate")[2]
     
     def vmsave(self, cloud_name, identifier, async = False):
         if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + " " + identifier + " save" + (" " + async), "vm-runstate")[2]
+            return self.active.background_execute(cloud_name + ' ' + identifier + " save" + (' ' + async), "vm-runstate")[2]
         else :
-            return self.active.vmrunstate({}, cloud_name + " " + identifier + " save", "vm-runstate")[2]
+            return self.active.vmrunstate({}, cloud_name + ' ' + identifier + " save", "vm-runstate")[2]
     
     def vmresume(self, cloud_name, identifier, async = False):
         if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + " " + identifier + " attached resume" + (" " + async), "vm-runstate")[2]
+            return self.active.background_execute(cloud_name + ' ' + identifier + " attached resume" + (' ' + async), "vm-runstate")[2]
         else :
-            return self.active.vmrunstate({}, cloud_name + " " + identifier + " attached resume", "vm-runstate")[2]
+            return self.active.vmrunstate({}, cloud_name + ' ' + identifier + " attached resume", "vm-runstate")[2]
         
     def vmfail(self, cloud_name, identifier, async = False):
         return self.vmsuspend(cloud_name, identifier, async)
@@ -339,133 +339,148 @@ class API():
     
     def vmsuspend(self, cloud_name, identifier, async = False):
         if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + " " + identifier + " fail" + (" " + async), "vm-runstate")[2]
+            return self.active.background_execute(cloud_name + ' ' + identifier + " fail" + (' ' + async), "vm-runstate")[2]
         else :
-            return self.active.vmrunstate({}, cloud_name + " " + identifier + " fail", "vm-runstate")[2]
+            return self.active.vmrunstate({}, cloud_name + ' ' + identifier + " fail", "vm-runstate")[2]
         
     def cldalter(self, cloud_name, object, attribute, value):
-        return self.passive.alter_object({"name": cloud_name}, cloud_name + " " + object + " " + attribute + "=" + str(value), "cloud-alter")[2]
+        return self.passive.alter_object({"name": cloud_name}, cloud_name + ' ' + object + ' ' + attribute + "=" + str(value), "cloud-alter")[2]
     
     def appalter(self, cloud_name, identifier, attribute, value):
-        return self.passive.alter_object({}, cloud_name + " " + identifier + " " + attribute + "=" + str(value), "ai-alter")[2]
+        return self.passive.alter_object({}, cloud_name + ' ' + identifier + ' ' + attribute + "=" + str(value), "ai-alter")[2]
     
     def vmalter(self, cloud_name, identifier, attribute, value):
-        return self.passive.alter_object({}, cloud_name + " " + identifier + " " + attribute + "=" + str(value), "vm-alter")[2]
+        return self.passive.alter_object({}, cloud_name + ' ' + identifier + ' ' + attribute + "=" + str(value), "vm-alter")[2]
     
     def appdrsalter(self, cloud_name, identifier, attribute, value):
-        return self.passive.alter_object({}, cloud_name + " " + identifier + " " + attribute + "=" + str(value), "aidrs-alter")[2]
+        return self.passive.alter_object({}, cloud_name + ' ' + identifier + ' ' + attribute + "=" + str(value), "aidrs-alter")[2]
     
-    def vmcalter(self, cloud_name, identifier, attribute, value):
-        return self.passive.alter_object({}, cloud_name + " " + identifier + " " + attribute + "=" + str(value), "vmc-alter")[2]
+    def vmcalter(self, cloud_name, identifier, attribute, value) :
+        return self.passive.alter_object({}, cloud_name + ' ' + identifier + ' ' + attribute + "=" + str(value), "vmc-alter")[2]
     
     def vmcrsalter(self, cloud_name, identifier, attribute, value):
-        return self.passive.alter_object({}, cloud_name + " " + identifier + " " + attribute + "=" + str(value), "vmcrs-alter")[2]
+        return self.passive.alter_object({}, cloud_name + ' ' + identifier + ' ' + attribute + "=" + str(value), "vmcrs-alter")[2]
     
-    def vmcattach(self, cloud_name, identifier, async = False):
+    def vmcattach(self, cloud_name, identifier, temp_attr_list = "empty=empty", async = False) :
         if async and str(async).count("async") :
             if identifier == "all" :
-                return self.active.background_execute(cloud_name + " " + identifier + (" " + async), "vmc-attachall")[2]
+                return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + temp_attr_list + (' ' + async), "vmc-attachall")[2]
             else :
-                return self.active.background_execute(cloud_name + " " + identifier + (" " + async), "vmc-attach")[2]
+                return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + temp_attr_list + (' ' + async), "vmc-attach")[2]
         else :
             if identifier == "all" :
-                return self.active.vmcattachall({}, cloud_name + " " + identifier, "vmc-attachall")[2]
+                return self.active.vmcattachall({}, cloud_name + ' ' + identifier + ' ' + temp_attr_list, "vmc-attachall")[2]
             else :
-                return self.active.objattach({}, cloud_name + " " + identifier, "vmc-attach")[2]
+                return self.active.objattach({}, cloud_name + ' ' + identifier + ' ' + temp_attr_list, "vmc-attach")[2]
     
-    def vmcrsattach(self, cloud_name, identifier, async = False):
+    def vmcrsattach(self, cloud_name, identifier, temp_attr_list = "empty=empty", async = False):
         if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + " " + identifier + (" " + async), "vmcrs-attach")[2]
+            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + temp_attr_list + (' ' + async), "vmcrs-attach")[2]
         else :
-            return self.active.objattach({}, cloud_name + " " + identifier, "vmcrs-attach")[2]
+            return self.active.objattach({}, cloud_name + ' ' + identifier + ' ' + temp_attr_list, "vmcrs-attach")[2]
     
-    def appattach(self, cloud_name, type, load_level = "default", load_duration = "default", lifetime = "none", aidrs = "none", staging = "continue", async = False):
-        parameters = cloud_name + " " + type + " " + str(load_level) + " " + str(load_duration) + " " + str(lifetime) + " " + aidrs + " " + staging 
+    def appattach(self, cloud_name, type, load_level = "default", load_duration = "default", lifetime = "none", aidrs = "none", pause_step = "none", temp_attr_list = "empty=empty", async = False):
+        parameters = cloud_name + ' ' + type + ' ' + str(load_level) + ' ' + str(load_duration) + ' ' + str(lifetime) + ' ' + aidrs + ' ' + pause_step + ' ' + temp_attr_list
         if async and str(async).count("async") :
-            return self.active.background_execute(parameters + (" " + async), "ai-attach")[2]
+            return self.active.background_execute(parameters + (' ' + async), "ai-attach")[2]
         else :
             return self.active.objattach({}, parameters, "ai-attach")[2]
     
-    def appinit(self, cloud_name, type, load_level = "default", load_duration = "default", lifetime = "none", aidrs = "none"):
-        return self.appattach(cloud_name, type, str(load_level), str(load_duration), str(lifetime), aidrs, "initialize")
+    def appinit(self, cloud_name, type, load_level = "default", load_duration = "default", lifetime = "none", aidrs = "none", pause_step = "prepare_provision_complete"):
+        return self.appattach(cloud_name, type, str(load_level), str(load_duration), str(lifetime), aidrs, pause_step)
     
     def apprun(self, cloud_name, uuid) :
         return self.apprunstate(cloud_name, uuid, "attached", "run")
     
-    def appdrsattach(self, cloud_name, pattern, async = False):
+    def appdrsattach(self, cloud_name, pattern, temp_attr_list = "empty=empty", async = False):
         if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + " " + pattern + (" " + async), "aidrs-attach")[2]
+            return self.active.background_execute(cloud_name + ' ' + pattern + ' ' + temp_attr_list + (' ' + async), "aidrs-attach")[2]
         else :
-            return self.active.objattach({}, cloud_name + " " + pattern, "aidrs-attach")[2]
+            return self.active.objattach({}, cloud_name + ' ' + pattern + ' ' + temp_attr_list, "aidrs-attach")[2]
 
-    def vmattach(self, cloud_name, role, vmc_pool = "auto", size = "default", staging = "continue", async = False):
-        parameters = cloud_name + " " + role + " " + vmc_pool + " " + size + " " + staging 
+    def vmattach(self, cloud_name, role, vm_location = "auto", meta_tags = "empty", size = "default", pause_step = "none", temp_attr_list = "empty=empty", async = False):
+        parameters = cloud_name + ' ' + role + ' ' + vm_location + ' ' + meta_tags + ' ' + size + ' ' + pause_step + ' ' + temp_attr_list
+
         if async and str(async).count("async") :
-            return self.active.background_execute(parameters + (" " + async), "vm-attach")[2]
+            return self.active.background_execute(parameters + (' ' + async), "vm-attach")[2]
         else :
             return self.active.objattach({}, parameters, "vm-attach")[2]
         
-    def svmattach(self, cloud_name, identifier, async = False):
+    def svmattach(self, cloud_name, identifier, temp_attr_list = "empty=empty", async = False):
         if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + " " + identifier + (" " + async), "svm-attach")[2]
+            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + temp_attr_list + (' ' + async), "svm-attach")[2]
         else :
-            return self.active.objattach({}, cloud_name + " " + identifier, "svm-attach")[2]
+            return self.active.objattach({}, cloud_name + ' ' + identifier + ' ' + temp_attr_list, "svm-attach")[2]
     
-    def vminit(self, cloud_name, role, vmc_pool = "auto", size = "default"):
-        return self.vmattach(cloud_name, role, vmc_pool, size, "initialize")
+    def vminit(self, cloud_name, role, vmc_pool = "auto", size = "default", pause_step = "prepare_provision_complete"):
+        return self.vmattach(cloud_name, role, vmc_pool, size, pause_step)
     
     def vmrun(self, cloud_name, uuid):
         return self.vmrunstate(cloud_name, uuid, "attached", "run")
     
     def vmdetach(self, cloud_name, identifier, force = False, async = False):
-        force = "force" if force else "false"
+        force = str(force).lower() if force else "false"
         if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + " " + identifier + " " + force + (" " + async), "vm-detach")[2]
+            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + force + (' ' + async), "vm-detach")[2]
         else :
-            return self.active.objdetach({}, cloud_name + " " + identifier + " " + force, "vm-detach")[2]
+            return self.active.objdetach({}, cloud_name + ' ' + identifier + ' ' + force, "vm-detach")[2]
     
-    def svmdetach(self, cloud_name, identifier, async = False):
+    def svmdetach(self, cloud_name, identifier, force = False, async = False):
+        '''
+        force not currently used here...
+        '''
+        force = str(force).lower() if force else "false"
         if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + " " + identifier + (" " + async), "svm-detach")[2]
+            return self.active.background_execute(cloud_name + ' ' + identifier + (' ' + async), "svm-detach")[2]
         else :
-            return self.active.objdetach({}, cloud_name + " " + identifier, "svm-detach")[2]
+            return self.active.objdetach({}, cloud_name + ' ' + identifier, "svm-detach")[2]
         
     def svmfail(self, cloud_name, identifier, async = False):
         if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + " " + identifier + " fail" + (" " + async), "svm-detach")[2]
+            return self.active.background_execute(cloud_name + ' ' + identifier + " fail" + (' ' + async), "svm-detach")[2]
         else :
-            return self.active.objdetach({}, cloud_name + " " + identifier + " fail", "svm-detach")[2]
+            return self.active.objdetach({}, cloud_name + ' ' + identifier + " fail", "svm-detach")[2]
     
-    def vmcdetach(self, cloud_name, identifier, async = False):
+    def vmcdetach(self, cloud_name, identifier, force = False, async = False):
+        force = str(force).lower() if force else "false"
         if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + " " + identifier + (" " + async), "vmc-detach")[2]
+            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + force + (' ' + async), "vmc-detach")[2]
         else :
-            return self.active.objdetach({}, cloud_name + " " + identifier, "vmc-detach")[2]
+            return self.active.objdetach({}, cloud_name + ' ' + identifier + ' ' + force, "vmc-detach")[2]
         
-    def vmccleanup(self, cloud_name, identifier):
-        return self.active.vmccleanup({}, cloud_name + " " + identifier, "vmc-cleanup")[2]
+    def vmccleanup(self, cloud_name, identifier) :
+        return self.active.vmccleanup({}, cloud_name + ' ' + identifier, "vmc-cleanup")[2]
     
-    def vmcrsdetach(self, cloud_name, identifier, async = False):
+    def vmcrsdetach(self, cloud_name, identifier, force = False, async = False):
+        force = str(force).lower() if force else "false"
         if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + " " + identifier + (" " + async), "vmcrs-detach")[2]
+            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + force + (' ' + async), "vmcrs-detach")[2]
         else :
-            return self.active.objdetach({}, cloud_name + " " + identifier, "vmcrs-detach")[2]
+            return self.active.objdetach({}, cloud_name + ' ' + identifier + ' ' + force, "vmcrs-detach")[2]
     
     def appdetach(self, cloud_name, identifier, force = False, async = False):
-        force = "force" if force else "false"
+        force = str(force).lower() if force else "false"
         if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + " " + identifier + " " + force + (" " + async), "ai-detach")[2]
+            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + force + (' ' + async), "ai-detach")[2]
         else :
-            return self.active.objdetach({}, cloud_name + " " + identifier + " " + force, "ai-detach")[2]
+            return self.active.objdetach({}, cloud_name + ' ' + identifier + ' ' + force, "ai-detach")[2]
     
-    def appdrsdetach(self, cloud_name, identifier, async = False):
+    def appdrsdetach(self, cloud_name, identifier, force = False, async = False):
+        force = str(force).lower() if force else "false"
         if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + " " + identifier + (" " + async), "aidrs-detach")[2]
+            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + force + (' ' + async), "aidrs-detach")[2]
         else :
-            return self.active.objdetach({}, cloud_name + " " + identifier, "aidrs-detach")[2]
+            return self.active.objdetach({}, cloud_name + ' ' + identifier + ' ' + force, "aidrs-detach")[2]
     
     def viewshow(self, cloud_name, object, criterion, expression, sorting = "default", filter = "default"):
-        return self.passive.show_view({"name": cloud_name}, cloud_name + " " + object + " " + criterion + " " + expression + " " + sorting + " " + filter, "view-show")[2]
+        return self.passive.show_view({"name": cloud_name}, cloud_name + ' ' + object + ' ' + criterion + ' ' + expression + ' ' + sorting + ' ' + filter, "view-show")[2]
+    
+    def monlist(self, cloud_name, object_type):
+        result = self.passive.monitoring_list(cloud_name + ' ' + object_type, "mon-list")[2]
+        return result
+    
+    def waitfor(self, cloud_name, time, update_interval = "default"):
+        return self.passive.wait_for({}, cloud_name + ' ' + time + ' ' + str(update_interval), "wait-for")[2]
     
     def stats(self, cloud_name):
         return self.passive.stats({"name": cloud_name}, cloud_name, "stats-get")[2]

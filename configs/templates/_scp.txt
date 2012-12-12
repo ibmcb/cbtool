@@ -6,14 +6,57 @@ SCP_IAAS_SERVICE_PUBLIC_KEY = need_to_be_configured_by_user
 SCP_IAAS_PRIVATE_KEY = need_to_be_configured_by_user 
 SCP_IAAS_ACCESS_ID = need_to_be_configured_by_user 
 SCP_INITIAL_VMCS = need_to_be_configured_by_user 
+SCP_SSH_KEY_NAME = need_to_be_configured_by_user
+SCP_LOGIN = need_to_be_configured_by_user
+
+# PEBCAK documentation for the Wizard and CLI
+SCP_IAAS_CLI_LOCATION_DOC = Please enter the hostname of the json API used to administrate your SCP deployment. 
+SCP_IAAS_CLI_LOCATION_DEFAULT = <hostname> 
+SCP_IAAS_PROXY_PORT_DOC = The tool creates a proxy in the webservice VM\nin order to relay commands between python and\nruby. Please enter an available port on\nwhich to start the proxy. It will be started\nfor you automatically.
+SCP_IAAS_PROXY_PORT_DEFAULT = 9090
+SCP_IAAS_WEBSERVICE_PORT_DOC = This usually defaults to to '5678/query/'.\nEnter that and change it if necessary.
+SCP_IAAS_WEBSERVICE_PORT_DEFAULT = 5678/query/
+SCP_IAAS_SERVICE_PUBLIC_KEY_DOC = This usually defaults to '/iaas/cli/adminkey/vm_service.key'.\nEnter that and change it if necessary.
+SCP_IAAS_SERVICE_PUBLIC_KEY_DEFAULT = /iaas/cli/adminkey/vm_service.key
+SCP_IAAS_PRIVATE_KEY_DOC = This usually defaults to '/iaas/cli/adminkey/admin.key'.\nEnter that and change it if necessary.
+SCP_IAAS_PRIVATE_KEY_DEFAULT = /iaas/cli/adminkey/admin.key
+SCP_IAAS_ACCESS_ID_DOC = Please enter the username used to login and adminstrate your SCP deployment.
+SCP_IAAS_ACCESS_ID_DEFAULT = admin 
+SCP_LOGIN_DOC = $LOGIN_DOC
+SCP_LOGIN_DEFAULT = klabuser
+SCP_SSH_KEY_NAME_DOC = $SSH_KEY_NAME_DOC
+SCP_SSH_KEY_NAME_DEFAULT = path_to_some_private_ssh_key_file
+SCP_INITIAL_VMCS_DOC = $INITIAL_VMCS_DOC 
+SCP_INITIAL_VMCS_DEFAULT = kvm_rack1
+
+[SPACE : SCP_CLOUDCONFIG ]
+SSH_KEY_NAME = $SCP_SSH_KEY_NAME
 
 [VMC_DEFAULTS : SCP_CLOUDCONFIG ]
+# These need to be here for testing that
+# the user has entered the correct parameters.
+IAAS_CLI_LOCATION = $SCP_IAAS_CLI_LOCATION
+IAAS_PROXY_PORT = $SCP_IAAS_PROXY_PORT
+IAAS_WEBSERVICE_PORT = $SCP_IAAS_WEBSERVICE_PORT
+IAAS_SERVICE_PUBLIC_KEY = $SCP_IAAS_SERVICE_PUBLIC_KEY
+IAAS_PRIVATE_KEY = $SCP_IAAS_PRIVATE_KEY
+IAAS_ACCESS_ID = $SCP_IAAS_ACCESS_ID
+# These are the ones that actually get used
 ACCESS = ${SCP_IAAS_CLI_LOCATION}:${SCP_IAAS_PROXY_PORT}-${SCP_IAAS_CLI_LOCATION}:${SCP_IAAS_WEBSERVICE_PORT}
 CREDENTIALS = ${SCP_IAAS_ACCESS_ID}-${SCP_IAAS_PRIVATE_KEY}-${SCP_IAAS_SERVICE_PUBLIC_KEY}
 INITIAL_VMCS = $SCP_INITIAL_VMCS
 EXTRA_INFO = $Empty
 
 [VM_DEFAULTS : SCP_CLOUDCONFIG]
+# These need to be here for testing that
+# the user has entered the correct parameters.
+IAAS_CLI_LOCATION = $SCP_IAAS_CLI_LOCATION
+IAAS_PROXY_PORT = $SCP_IAAS_PROXY_PORT
+IAAS_WEBSERVICE_PORT = $SCP_IAAS_WEBSERVICE_PORT
+IAAS_SERVICE_PUBLIC_KEY = $SCP_IAAS_SERVICE_PUBLIC_KEY
+IAAS_PRIVATE_KEY = $SCP_IAAS_PRIVATE_KEY
+IAAS_ACCESS_ID = $SCP_IAAS_ACCESS_ID
+# These are the ones that actually get used
 ACCESS = ${SCP_IAAS_CLI_LOCATION}:${SCP_IAAS_PROXY_PORT}-${SCP_IAAS_CLI_LOCATION}:${SCP_IAAS_WEBSERVICE_PORT}
 CREDENTIALS = ${SCP_IAAS_ACCESS_ID}-${SCP_IAAS_PRIVATE_KEY}-${SCP_IAAS_SERVICE_PUBLIC_KEY}
 INITIAL_VMCS = $SCP_INITIAL_VMCS
@@ -21,11 +64,34 @@ REAL_IP = $True
 CAPTURE_SUPPORTED = $True
 RUNSTATE_SUPPORTED = $False
 RESIZE_SUPPORTED = $False
+LOGIN = $SCP_LOGIN
+SSH_KEY_NAME = $SCP_SSH_KEY_NAME
+# Other methods could be used to check if a VM already booted
+CHECK_BOOT_COMPLETE = tcp_on_22
+#CHECK_BOOT_COMPLETE = subscribe_on_booting
+#CHECK_BOOT_COMPLETE = wait_for_90
+
+[SVM_DEFAULTS : SCP_CLOUDCONFIG]
+SSH_KEY_NAME = $SCP_SSH_KEY_NAME
 
 [AI_DEFAULTS : SCP_CLOUDCONFIG]
 CAPTURE_SUPPORTED = $True
 RUNSTATE_SUPPORTED = $False
 RESIZE_SUPPORTED = $False
+LOGIN = $SCP_LOGIN
+SSH_KEY_NAME = $SCP_SSH_KEY_NAME
+
+[AIDRS_DEFAULTS : SCP_CLOUDCONFIG]
+LOGIN = $SCP_LOGIN
+SSH_KEY_NAME = $SCP_SSH_KEY_NAME
+
+[VMCRS_DEFAULTS : SCP_CLOUDCONFIG]
+LOGIN = $SCP_LOGIN
+SSH_KEY_NAME = $SCP_SSH_KEY_NAME
+
+[FIRS_DEFAULTS : SCP_CLOUDCONFIG]
+LOGIN = $SCP_LOGIN
+SSH_KEY_NAME = $SCP_SSH_KEY_NAME
 
 # available sizes:
 # xsmall: 512MB, 1 vcpu

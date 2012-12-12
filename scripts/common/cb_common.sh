@@ -167,6 +167,7 @@ then
 	my_role=`get_my_vm_attribute role`
 	my_ai_uuid=`get_my_vm_attribute ai`
 	my_type=`get_my_vm_attribute type`
+	my_base_type=`get_my_vm_attribute base_type`
 	my_cloud_model=`get_my_vm_attribute model`
 fi
 
@@ -686,7 +687,7 @@ function post_boot_steps {
 
 		if [ x"${my_ai_uuid}" != x"none" ]; then
 			syslog_netcat "Copying application-specific scripts to the home directory"
-			ln -sf "${dir}/../${my_type}/"* ~
+			ln -sf "${dir}/../${my_base_type}/"* ~
 		fi
 
 		if [ x"${collect_from_guest}" == x"true" ]; then

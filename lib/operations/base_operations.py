@@ -38,8 +38,7 @@ from subprocess import Popen, PIPE
 
 from lib.auxiliary.code_instrumentation import trace, cblog, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.value_generation import ValueGeneration
-from lib.auxiliary.data_ops import message_beautifier, dic2str, str2dic, DataOpsException
-from lib.auxiliary.config import parse_cld_defs_file
+from lib.auxiliary.data_ops import message_beautifier, dic2str, str2dic, is_valid_temp_attr_list, DataOpsException
 from lib.auxiliary.data_ops import selective_dict_update
 from lib.remote.network_functions import Nethashget 
 from lib.remote.ssh_ops import repeated_ssh
@@ -144,7 +143,22 @@ class BaseObjectOperations :
 
         object_attribute_list["command"] = command + ' ' + parameters
 
-        _parameters = parameters.split()
+        '''
+        The temporary attribute list, in the form attribute1=value1;...;attributeN=valueN
+        has to be cleaned up from the command parameter list, for all "attach"
+        commands.
+        '''
+        if command.count("attach") :
+            _parameters = []
+            _temp_parameters = parameters.split()
+            for _temp_parameter in _temp_parameters :
+                if is_valid_temp_attr_list(_temp_parameter) :
+                    object_attribute_list["temp_attr_list"] = _temp_parameter
+                else :
+                    _parameters.append(_temp_parameter)
+        else :            
+            _parameters = parameters.split()
+
         _length = len(_parameters)
 
         ######### "ACTIVE" OPERATION PARAMETER PARSING - BEGIN #########
@@ -250,20 +264,23 @@ class BaseObjectOperations :
     
         elif command == "vm-attach" :
             object_attribute_list["pool"] = "auto"
+            object_attribute_list["meta_tags"] = "empty"
             object_attribute_list["size"] = "default"
-            object_attribute_list["staging"] = "continue"
+            object_attribute_list["staging"] = "none"
 
             if _length >= 2 :
                 object_attribute_list["role"] = _parameters[1]
             if _length >= 3 :
                 object_attribute_list["pool"] = _parameters[2]
-            if _length >= 4:
-                object_attribute_list["size"] = _parameters[3]
-            if _length >= 5 :
-                object_attribute_list["staging"] = _parameters[4]
+            if _length >= 4 :
+                object_attribute_list["meta_tags"] = _parameters[3]
+            if _length >= 5:
+                object_attribute_list["size"] = _parameters[4]
+            if _length >= 6 :
+                object_attribute_list["staging"] = _parameters[5]
             if _length < 2 :
                 _status = 9
-                _msg = "Usage: vmattach <cloud name> <role> [vmc pool] [size] [action after attach] [mode]"
+                _msg = "Usage: vmattach <cloud name> <role> [vmc pool/host name] [meta_tags] [size] [action after attach] [mode]"
 
             object_attribute_list["name"] = "to generate"
             
@@ -362,7 +379,7 @@ class BaseObjectOperations :
             object_attribute_list["load_duration"] = "default"
             object_attribute_list["lifetime"] = "none"
             object_attribute_list["aidrs"] = "none"
-            object_attribute_list["staging"] = "continue"
+            object_attribute_list["staging"] = "none"
             
             if _length >= 2 :
                 object_attribute_list["type"] = _parameters[1]
@@ -706,7 +723,7 @@ class BaseObjectOperations :
                 object_attribute_list["keyword"] = _parameters[3]
             else :
                 _status =  9
-                _msg = "Usage: waituntil <cloud name> <object type> <channel> <keyword>"
+                _msg = "Usage: waiton <cloud name> <object type> <channel> <keyword>"
 
         elif command == "msg-pub" :
             if _length >= 4 :
@@ -821,11 +838,11 @@ class BaseObjectOperations :
 
             elif cmd == "vmc-attachall" :
                 _status = 0
-                        
+
             elif cmd.count("attach") :
 
                 _postpone_counter = False
-                
+
                 obj_attr_list["mgt_001_provisioning_request_originated"] = obj_attr_list["command_originated"]
  
                 _cloud_parameters = self.get_cloud_parameters(obj_attr_list["cloud_name"])
@@ -833,9 +850,15 @@ class BaseObjectOperations :
                 if '_' not in obj_attr_list["name"] and '-' not in obj_attr_list["name"] and _obj_type.upper() == "SVM" :
                     obj_attr_list["name"] = _obj_type.lower() + "_" + obj_attr_list["name"]
 
-                if "staging" in obj_attr_list and obj_attr_list["staging"] == "initialize" :
+                '''
+                    Staging operations which contain the keyword 'prepare' indicate that this process
+                    must fork a background process first to perform the actual object attachment.
+                    In which case, we don't actually want to generate a name for this object - 
+                    we want the child process to do it instead.
+                '''
+                if "staging" in obj_attr_list and obj_attr_list["staging"].count("prepare") :
                     _postpone_counter = True
-                    
+
                 if not _postpone_counter :
                     _obj_counter = self.osci.update_counter(obj_attr_list["cloud_name"], _obj_type, \
                                                             "COUNTER", \
@@ -861,7 +884,7 @@ class BaseObjectOperations :
                     obj_attr_list["base_dir"] = _space_obj_attr_list["base_dir"]
                 else :
                     _object_exists = False
-                
+
                 if obj_attr_list["name"] == "to generate" :
                     if _postpone_counter :
                         obj_attr_list["name"] = "unused"
@@ -883,6 +906,29 @@ class BaseObjectOperations :
                     _obj_defaults = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, \
                                                          _obj_type.lower() + "_defaults", \
                                                          False)
+
+                    '''
+                    Unpack and update the obj_attr_list dictionary with the keys
+                    from the "temporary" object attributes list before performing
+                    the "selective dictionary update"
+                    '''
+
+                    if not "temp_attr_list" in obj_attr_list :
+                        obj_attr_list["temp_attr_list"] = "empty=empty"
+
+                    if obj_attr_list["temp_attr_list"] != "empty=empty" :
+                        _temp_attr_list = obj_attr_list["temp_attr_list"].replace(';',',')
+                        _temp_attr_list = _temp_attr_list.replace('=',':')
+                        _temp_attr_list = str2dic(_temp_attr_list)
+                        obj_attr_list.update(_temp_attr_list)
+
+                    '''
+                    Now we perform the "selective" dictionary update. It is
+                    "selective" in the sense that any already set key will not
+                    be overwritten by the keys in <OBJECT_TYPE>_DEFAULTS, as it
+                    would normally occur with the "update" method from python
+                    '''
+
                     selective_dict_update(obj_attr_list, _obj_defaults)
 
                     obj_attr_list["counter"] = self.osci.update_counter(obj_attr_list["cloud_name"], "GLOBAL", \
@@ -1168,6 +1214,7 @@ class BaseObjectOperations :
                     True
 
             elif transaction == "detach" :
+
                 _reservation = self.osci.update_counter(obj_attr_list["cloud_name"], obj_type, "RESERVATIONS", \
                                                             "decrement")
 
@@ -1541,7 +1588,7 @@ class BaseObjectOperations :
             _vm_counter = 0  
             _vm_creation_list = {}
             _vm_command_list = ''
-            
+
             _tiers = obj_attr_list["sut"].split("->")
             
             obj_attr_list["sut"] = ''
@@ -1578,11 +1625,19 @@ class BaseObjectOperations :
                         obj_attr_list["load_generator_target_role"] = _tiers[_tier_nr + 1].split("_x_")[1]
                     else :
                         obj_attr_list["load_generator_target_role"] = _tiers[_tier_nr].split("_x_")[1]
-                        
-                if _vm_role + "_pref_pool" in obj_attr_list :
-                    _pool = obj_attr_list[_vm_role + "_pref_pool"]
+
+                if _vm_role + "_pref_host" in obj_attr_list :
+                    _pool = obj_attr_list[_vm_role + "_pref_host"]
                 else :
-                    _pool = "auto"
+                    if _vm_role + "_pref_pool" in obj_attr_list :
+                        _pool = obj_attr_list[_vm_role + "_pref_pool"]
+                    else :
+                        _pool = "auto"
+
+                if _vm_role + "_meta_tag" in obj_attr_list :
+                    _meta_tag = obj_attr_list[_vm_role + "_meta_tag"]
+                else :
+                    _meta_tag = "empty"
 
                 if _vm_role + "_size" in obj_attr_list :
                     _size = obj_attr_list[_vm_role + "_size"]
@@ -1609,9 +1664,10 @@ class BaseObjectOperations :
                     obj_attr_list["parallel_operations"][_vm_counter]["aidrs_name"] = obj_attr_list["aidrs_name"]
                     obj_attr_list["parallel_operations"][_vm_counter]["pattern"] = obj_attr_list["pattern"]
                     obj_attr_list["parallel_operations"][_vm_counter]["type"] = obj_attr_list["type"]
-                    obj_attr_list["parallel_operations"][_vm_counter]["parameters"] = obj_attr_list["cloud_name"] + ' ' + _vm_role + ' ' + _pool + ' ' + _size + ' ' + _attach_action 
+                    obj_attr_list["parallel_operations"][_vm_counter]["base_type"] = obj_attr_list["base_type"]
+                    obj_attr_list["parallel_operations"][_vm_counter]["parameters"] = obj_attr_list["cloud_name"] + ' ' + _vm_role + ' ' + _pool + ' ' + _meta_tag + ' ' + _size + ' ' + _attach_action 
                     obj_attr_list["parallel_operations"][_vm_counter]["operation"] = "vm-attach"
-                    _vm_command_list += obj_attr_list["cloud_name"] + ' ' + _vm_role + ", " + _pool + ", " + ", " + _size + ", " + _attach_action
+                    _vm_command_list += obj_attr_list["cloud_name"] + ' ' + _vm_role + ", " + _pool + ", " + _meta_tag + ", " + _size + ", " + _attach_action + "; "
                     _vm_counter += 1
 
             if not "drivers_per_sut" in obj_attr_list :
@@ -1634,17 +1690,22 @@ class BaseObjectOperations :
                     obj_attr_list["parallel_operations"][_vm_counter]["ai"] = obj_attr_list["uuid"]
                     obj_attr_list["parallel_operations"][_vm_counter]["as"] = obj_attr_list["as"]
                     obj_attr_list["parallel_operations"][_vm_counter]["type"] = obj_attr_list["type"]
-                    obj_attr_list["parallel_operations"][_vm_counter]["parameters"] = obj_attr_list["cloud_name"] + " driver_" + _app_type
+                    obj_attr_list["parallel_operations"][_vm_counter]["parameters"] = obj_attr_list["cloud_name"] + " driver_" + _app_type + ' ' + _pool + ' ' + _meta_tag + ' ' + _size + ' ' + _attach_action
                     obj_attr_list["parallel_operations"][_vm_counter]["operation"] = "vm-attach"
-                    _vm_command_list += obj_attr_list["cloud_name"] + " driver_" + _app_type + ", "
+                    _vm_command_list += obj_attr_list["cloud_name"] + " driver_" + _app_type + ", " + ' ' + _pool + ' ' + _meta_tag + ' ' + _size + ' ' + _attach_action + "; "
                     _vm_counter += 1
 
             obj_attr_list["vms"] = obj_attr_list["vms"][:-1]
             obj_attr_list["vms_nr"] = _vm_counter
             obj_attr_list["drivers_nr"] = _nr_drivers
             
-            if obj_attr_list["staging"] == "pause_on_vm_attach" :
-                self.osci.publish_message(obj_attr_list["cloud_name"], "VM", "pause_on_attach", obj_attr_list["uuid"] + ";vmcount;" + str(_vm_counter), 1, 3600)
+            if obj_attr_list["staging"] + "_complete" in obj_attr_list :
+                self.osci.publish_message(obj_attr_list["cloud_name"], \
+                                          "VM", \
+                                          "staging", \
+                                          obj_attr_list["uuid"] + ";vmcount;" + str(_vm_counter), \
+                                          1, \
+                                          3600)
 
             _msg = "VM attach command list is: " + _vm_command_list
             cbdebug(_msg)
@@ -1853,11 +1914,12 @@ class BaseObjectOperations :
                 if not access(_obj_attr_list["identity"], F_OK) :
                     _obj_attr_list["identity"] = _obj_attr_list["identity"].replace(_obj_attr_list["username"], _obj_attr_list["login"])
                 _vm_priv_keys.append(_obj_attr_list["identity"])
-                _vm_post_boot_commands.append("~/cloudbench/scripts/common/cb_post_boot.sh")
+                _vm_post_boot_commands.append("~/" + _obj_attr_list["remote_dir_name"] + "/scripts/common/cb_post_boot.sh")
             
             if operation == "setup" or operation == "resize" :
                 _msg = "Performing generic application instance post_boot configuration ..."
                 cbdebug(_msg, True)
+                self.osci.pending_object_set(cloud_name, "AI", ai_uuid, _msg)
                 if not repeated_ssh(self.pid, _obj_types, _vm_names, \
                                        _vm_ip_addrs, _vm_logins, _vm_passwds, \
                                        _vm_priv_keys, _vm_post_boot_commands, \
@@ -1885,6 +1947,7 @@ class BaseObjectOperations :
             if not _status :
                 _msg = "Running application-specific \"" + operation + "\" operations..."
                 cbdebug(_msg, True)
+                self.osci.pending_object_set(cloud_name, "AI", ai_uuid, _msg)
                 
                 _lmr = False
                 
@@ -2759,10 +2822,10 @@ class BaseObjectOperations :
             if _monitor_attr_list["collect_from_host"].lower() == "true" :
 
                 _gmetad_config_fc = ""
-                _gmetad_config_fc += "xml_port " + _monitor_attr_list["collector_aggregator_port"] + '\n'
-                _gmetad_config_fc += "interactive_port " + _monitor_attr_list["collector_summarizer_port"] + '\n'
+                _gmetad_config_fc += "xml_port " + _monitor_attr_list["collector_host_aggregator_port"] + '\n'
+                _gmetad_config_fc += "interactive_port " + _monitor_attr_list["collector_host_summarizer_port"] + '\n'
                 _gmetad_config_fc += "plugins_dir " + _space_attr_list["base_dir"] + '/' + _monitor_attr_list["collector_plugins_dir_suffix"] + '\n'
-                _gmetad_config_fc += "data_source \"localhost\" 127.0.0.1:"  + _monitor_attr_list["collector_host_port"] + '\n'
+                _gmetad_config_fc += "data_source \"localhost\" " + _monitor_attr_list["collector_aggregator_host_address"] + ":"  + _monitor_attr_list["collector_host_port"] + '\n'
 #               _gmetad_config_fc += "data_source \"" + _monitor_attr_list["hostname"]  + "\" " + _monitor_attr_list["hostname"] + ":"  + _monitor_attr_list["collector_host_port"] + '\n'
 #                _hosts = self.osci.get_object_list(obj_attr_list["cloud_name"], "HOST")
 #                if _hosts :
@@ -2806,8 +2869,8 @@ class BaseObjectOperations :
                     _msg = "Host OS performance monitor daemon (gmetad.py) "
                     _msg += "started successfully. The process id is "
                     _msg += str(_gmetad_pid[0]) + " (using ports "
-                    _msg += _monitor_attr_list["collector_aggregator_port"]
-                    _msg += " and " + _monitor_attr_list["collector_summarizer_port"]
+                    _msg += _monitor_attr_list["collector_host_aggregator_port"]
+                    _msg += " and " + _monitor_attr_list["collector_host_summarizer_port"]
                     _msg += ")."
                     cbdebug(_msg, True)
                     _status = 0
@@ -2860,7 +2923,7 @@ class BaseObjectOperations :
         _cloud_parameters[key] = value 
         self.osci.update_cloud(cloud_name, _cloud_parameters)
 
-    @trace    
+    @trace
     def background_execute(self, parameters, command) :
         '''
         TBD
@@ -2875,7 +2938,6 @@ class BaseObjectOperations :
 
             # Some small pre-processing is in order. We just need to remove the
             # word "async" from the parameter list
- 
             _p_parameters = parameters.split()
             _parameters = ''
             _parallel_operations = 1
@@ -2902,10 +2964,28 @@ class BaseObjectOperations :
             # object name.
             _status, _fmsg = self.parse_cli(_obj_attr_list, _parameters, command)
 
-            if BaseObjectOperations.default_cloud is not None and _parameters.split()[0] != BaseObjectOperations.default_cloud :
+            if BaseObjectOperations.default_cloud is not None and \
+            _parameters.split()[0] != BaseObjectOperations.default_cloud :
                 _parameters = BaseObjectOperations.default_cloud + ' ' + _parameters
                 _status = 0
 
+            '''
+            If any parameter contains a comma (that is the case for "meta_tags"
+            and temporary key-value pairs, then "protect" it by converting them
+            to some special, very unlikely to be use sequence. We cannot simply
+            get rid of the command on meta_tags and temporary key-value pairs, 
+            because it is used by the dic2str function to create a dictionary
+            later.
+            '''
+            _parameters = _parameters.replace(',',"+_*")
+
+            '''
+            Also protect the ">", used in an AI's sut description (connectivity
+            is indicated by "->", since this character has a special meaning for
+            the shell interpreter
+            '''
+
+            _parameters = _parameters.replace("->","-+-+-+")
 
             if not _status :
                 _cloud_parameters = self.get_cloud_parameters(_obj_attr_list["cloud_name"])
@@ -2933,12 +3013,17 @@ class BaseObjectOperations :
                         #_cmd += "  --debug_host=localhost"
                         
                     elif command.count("detach") and not command.count("detachall") :
-                        
-                        self.pre_select_object(_obj_attr_list, _obj_type, _cloud_parameters["username"])    
-                        
-                        _obj_uuid = self.osci.object_exists(_obj_attr_list["cloud_name"], _obj_type, \
-                                                            _obj_attr_list["name"], \
-                                                            True)
+
+                        if parameters.count("all") :
+                            _obj_uuid = "ALL"
+                        else :
+                            self.pre_select_object(_obj_attr_list, \
+                                                   _obj_type, \
+                                                   _cloud_parameters["username"])    
+                            
+                            _obj_uuid = self.osci.object_exists(_obj_attr_list["cloud_name"], _obj_type, \
+                                                                _obj_attr_list["name"], \
+                                                                True)
     
                         if not _obj_uuid :
                             _fmsg = "Object is not instantiated on the object store."

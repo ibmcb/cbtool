@@ -27,11 +27,14 @@ from time import time, sleep
 import threading
 import re
 import os 
+import copy
+import json
 
 from lib.auxiliary.data_ops import str2dic, dic2str
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.remote.network_functions import Nethashget
 from lib.stores.redis_datastore_adapter import RedisMgdConn
+from lib.remote.process_management import ProcessManagement
     
 class CldOpsException(Exception) :
     '''
@@ -105,6 +108,7 @@ class CommonCloudFunctions:
         '''
         _msg = "Waiting for " + obj_attr_list["name"] + ""
         _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") to start..."
+        self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], _msg)
         cbdebug(_msg, True)
     
         _curr_tries = 0
@@ -125,18 +129,20 @@ class CommonCloudFunctions:
                 self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "Booting...")
                 break
             else :
-                _msg = "" + obj_attr_list["name"] + ""
+                _msg = "(" + str(_curr_tries) + ") " + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
                 _msg += "still not ready. Will wait for " + str(_wait)
                 _msg += " seconds and check again."
                 cbdebug(_msg)
                 sleep(_wait)
                 _curr_tries += 1
+                self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], _msg)
     
         if _curr_tries < _max_tries :
             _msg = "" + obj_attr_list["name"] + ""
             _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
             _msg += "started successfully, got IP address " + obj_attr_list["cloud_ip"]
+            self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], _msg)
             cbdebug(_msg)
             return _time_mark_prc
         else :
@@ -171,9 +177,10 @@ class CommonCloudFunctions:
             _msg += obj_attr_list["cloud_uuid"] + "), on IP address "
             _msg += obj_attr_list["cloud_ip"] + "..."
             cbdebug(_msg, True)
+            self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], _msg)
 
-            _nh_conn = Nethashget(obj_attr_list["cloud_ip"])
             sleep(_wait)
+
             while not _network_reachable and _curr_tries < _max_tries :
 
                 if "async" not in obj_attr_list or obj_attr_list["async"].lower() == "false" :
@@ -182,21 +189,39 @@ class CommonCloudFunctions:
                         _status = 123
                         raise CldOpsException(_msg, _status)
 
-                if _nh_conn.check_port(22, "TCP") :
+                if obj_attr_list["check_boot_complete"].count("tcp_on_") :
+                    _nh_conn = Nethashget(obj_attr_list["cloud_ip"])
+                    _port_to_check = obj_attr_list["check_boot_complete"].replace("tcp_on_",'')
+                    _vm_is_booted = _nh_conn.check_port(int(_port_to_check), "TCP")
+                elif obj_attr_list["check_boot_complete"].count("subscribe_to_") :
+                    True
+                    # Will write code here later
+                else :
+                    _vm_is_booted = False    
+                    
+                if _vm_is_booted :
                     obj_attr_list["mgt_004_network_acessible"] = int(time()) - time_mark_prc 
-                    self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "Network accessible now. Continuing...")
+                    self.osci.pending_object_set(obj_attr_list["cloud_name"], \
+                                                 "VM", obj_attr_list["uuid"], \
+                                                 "Network accessible now. Continuing...")
                     _network_reachable = True
                     break
+
                 else :
-                    _msg = "" + obj_attr_list["name"] + ""
+                    _msg = "(" + str(_curr_tries) + ") " + obj_attr_list["name"]
                     _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
                     _msg += "still not network reachable. Will wait for " + str(_wait)
                     _msg += " seconds and check again."
+                    self.osci.pending_object_set(obj_attr_list["cloud_name"], \
+                                                 "VM", \
+                                                 obj_attr_list["uuid"], \
+                                                 _msg)
                     cbdebug(_msg)
                     sleep(_wait)
                     _curr_tries += 1
 
         else :
+
             _msg = "Fake trying to establish network connectivity to "
             _msg +=  obj_attr_list["name"] + " (cloud-assigned uuid "
             _msg += obj_attr_list["cloud_uuid"] + "), on IP address "
@@ -204,7 +229,9 @@ class CommonCloudFunctions:
             cbdebug(_msg, True)
             sleep(_wait)
             obj_attr_list["mgt_004_network_acessible"] = int(time()) - time_mark_prc 
-            self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "Network accessible now. Continuing...")
+            self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
+                                         obj_attr_list["uuid"], \
+                                         "Network accessible now. Continuing...")
 
         if _curr_tries < _max_tries :
             _msg = "" + obj_attr_list["name"] + ""
@@ -215,7 +242,9 @@ class CommonCloudFunctions:
 
             # It should be mgt_006, NOT mgt_005
             obj_attr_list["mgt_006_application_start"] = "0"
-            self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "Application starting up...")
+            self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
+                                         obj_attr_list["uuid"], \
+                                         "Application starting up...")
         else :
             _msg = "" + obj_attr_list["name"] + ""
             _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
@@ -225,46 +254,122 @@ class CommonCloudFunctions:
             raise CldOpsException(_msg, 89)
 
     @trace
-    def pause_on_attach_if_requested(self, obj_attr_list):
+    def take_action_if_requested(self, obj_type, obj_attr_list, current_step):
         '''
         TBD
         '''
-        if obj_attr_list["staging"] != "pause_on_vm_attach" :
+        if not obj_attr_list["staging"].count(current_step) :
             return
 
-        if "pause_complete" in obj_attr_list :
+        if obj_attr_list["staging"] + "_complete" in obj_attr_list : 
             return
 
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
-            sub_channel = self.osci.subscribe(obj_attr_list["cloud_name"], "VM", "pause_on_attach")
-            target_uuid = obj_attr_list["ai"] if obj_attr_list["ai"] != "none" else obj_attr_list["uuid"]
-            self.osci.publish_message(obj_attr_list["cloud_name"], "VM", "pause_on_attach", target_uuid + ";vmready;" + dic2str(obj_attr_list), 1, 3600)
-            cbdebug("VM " + obj_attr_list["cloud_uuid"] + " pausing on attach for continue signal ....")
-            for message in sub_channel.listen() :
-                args = str(message["data"]).split(";")
-                if len(args) != 3 :
-                    cbdebug("Message is not for me: " + str(args))
-                    continue
-                uuid, status, info = args
-                if target_uuid == uuid and status == "continue" :
-                    _status = 0
-                    obj_attr_list["pause_complete"] = True
-                    break
-            sub_channel.unsubscribe()
+
+            if obj_attr_list["staging"] == "pause_" + current_step :
+
+                # Always subscribe for the VM channel, no matter the object
+                sub_channel = self.osci.subscribe(obj_attr_list["cloud_name"], "VM", "staging")
+    
+                if obj_type == "VM" and obj_attr_list["ai"] != "none" :
+                    _target_uuid = obj_attr_list["ai"]
+                    _target_name = obj_attr_list["ai_name"]
+                    _cloud_uuid = obj_attr_list["cloud_uuid"] 
+                else :
+                    _target_uuid = obj_attr_list["uuid"]
+                    _target_name = obj_attr_list["name"]
+                    _cloud_uuid = _target_uuid
+
+                self.osci.publish_message(obj_attr_list["cloud_name"], \
+                                          obj_type, \
+                                          "staging", \
+                                          _target_uuid + ";vmready;" + dic2str(obj_attr_list),\
+                                           1, \
+                                           3600)
+
+                _msg = obj_type + ' ' + _cloud_uuid + " ("
+                _msg += _target_name + ") pausing on attach for continue signal ...."
+                cbdebug(_msg, True)
+
+                for message in sub_channel.listen() :
+                    args = str(message["data"]).split(";")
+    
+                    if len(args) != 3 :
+                        cbdebug("Message is not for me: " + str(args))
+                        continue
+
+                    _id, _status, _info = args
+    
+                    if (_id == _target_uuid or _id == _target_name) and _status == "continue" :
+                        obj_attr_list[obj_attr_list["staging"] + "_complete"] = int(time())
+                        _status = 0
+                        break
+    
+                sub_channel.unsubscribe()
+
+                _status = 0
+
+            elif obj_attr_list["staging"] == "execute_" + current_step :
+
+                _proc_man = ProcessManagement(username = obj_attr_list["username"], \
+                                              cloud_name = obj_attr_list["cloud_name"])
+
+                _json_contents = copy.deepcopy(obj_attr_list)
+
+                if obj_type == "AI" :
+                    _json_contents["vms"] = {}
+
+                    _vm_id_list = obj_attr_list["vms"].split(',')
+                    for _vm_id in _vm_id_list :
+                        _vm_uuid = _vm_id.split('|')[0]
+                        _vm_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "VM", False, _vm_uuid, False)
+                        _json_contents["vms"][_vm_attr_list["uuid"]] = _vm_attr_list 
+
+                obj_attr_list["execute_json_filename"] = "/tmp/" 
+                obj_attr_list["execute_json_filename"] += obj_attr_list["execute_json_filename_prefix"]
+                obj_attr_list["execute_json_filename"] += "_vapp_" + obj_attr_list["cloud_name"] 
+                obj_attr_list["execute_json_filename"] += "_" + obj_attr_list["name"] + "_" 
+                obj_attr_list["execute_json_filename"] += obj_attr_list["uuid"] + ".json"
+
+                _json_fh = open(obj_attr_list["execute_json_filename"], 'w')
+                _json_fh.write(json.dumps(_json_contents, sort_keys = True, indent = 4))
+                _json_fh.close()
+                
+                _msg = "JSON contents written to " 
+                _msg += obj_attr_list["execute_json_filename"] + '.'
+                cbdebug(_msg, True)
+
+                _cmd = obj_attr_list["execute_script_name"] + ' '
+                _cmd += obj_attr_list["execute_json_filename"]
+
+                _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_cmd)
+
+                _msg = "Command \"" + _cmd + "\" executed, with return code " + str(_status)
+                cbdebug(_msg, True)
+
+            obj_attr_list[obj_attr_list["staging"] + "_complete"] = int(time())
 
         except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
+        except OSError, obj :
+            _status = obj.status
+            _fmsg = str(obj.msg)
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+
         finally :
             if _status :
-                _msg = "Error while pause_on_attach: " + _fmsg
+                _msg = "Error while staging: " + _fmsg
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
             else :
-                _msg = "Finished pause_on_attach for " + self.get_description()
+                _msg = "Finished staging for " + self.get_description()
                 cbdebug(_msg)
 
             return _status, _msg

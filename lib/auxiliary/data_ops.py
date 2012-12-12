@@ -124,6 +124,34 @@ def dic2str(input_dictionary) :
         else :
             return _string
 
+def is_valid_temp_attr_list(input_string) :
+    '''
+    TBD
+    '''
+    try :
+        _status = 100
+        _input_string = input_string.split(',')
+        _is_temp_attr_list = True
+        for _sub_string in _input_string :
+            if len(_sub_string.split('=')) == 2 :
+                True
+            else :
+                _is_temp_attr_list = False
+                break  
+        _status = 0
+
+    except Exception, e :
+        _status = 23
+        _fmsg = str(e)
+
+    finally :
+        if _status :
+            _msg = "Dictionary to string conversion failure: " + _fmsg
+            cberr(_msg)
+            raise DataOpsException(_status, _msg)
+        else :
+            return _is_temp_attr_list
+
 @trace
 def wait_on_process(processid, proc_h, output_list) :
     '''

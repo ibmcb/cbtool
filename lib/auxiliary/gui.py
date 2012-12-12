@@ -14,6 +14,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 '''
+
 import ast, json
 import traceback
 import os
@@ -650,13 +651,32 @@ class GUI(object):
         return output
         
     def repopulate_views(self, session) :
+        session['discover_hosts'] = self.api.cldshow(session['cloud_name'], "vmc_defaults")["discover_hosts"].strip().lower()
+        session['networks'] = ['default']
+        ai_templates = self.api.cldshow(session['cloud_name'], "ai_templates")
+        for key in ai_templates :
+            if key.count("virtnet_template") :
+                for network in ai_templates[key].strip().split(",") :
+                    if network not in session['networks'] :
+                        session['networks'].append(network)
+                
         session["attach_params"] = {
                     "vm" : { 
                               "keyword1" : { "label" : "Role", "values" : [x.strip() for x in self.api.rolelist(session['cloud_name'])] } ,
-                              "keyword2" : { "label" : "Pool", "values" : ["auto"] + [x.strip() for x in self.api.poollist(session['cloud_name'])] } ,
-                              "keyword3" : { "label" : "Size", "values" : "default" } ,
-                              "keyword4" : { "label" : "staging", "values" : ["continue", "initialize"] } ,
-                              "keyword5" : { "label" : "Mode", "values" : "async" } ,
+                              "keyword2" : { "label" : "Pool / Host", "values" : ["auto"] + [x.strip() for x in self.api.poollist(session['cloud_name'])] \
+                                                            + ([x["name"] for x in self.api.hostlist(session['cloud_name'])] if session["discover_hosts"] == "true" else [])},
+                              "keyword3" : { "label" : "Meta Tags", "values" : "empty" },
+                              "keyword4" : { "label" : "Size", "values" : "default" } ,
+                              "keyword5" : { "label" : "Pause Step", "values" : [["continue" , "None"], 
+                                                                                 ["pause_provision_started", "Pause at the end of step 2 (Provision Started)"], 
+                                                                                 ["execute_provision_started", "Execute script at the end of step 2 (Provision Started)"],
+                                                                                 ["pause_provision_complete", "Pause at the end of step 3 (Provision Complete)"], 
+                                                                                 ["execute_provision_started", "Execute script at the end of step 3 (Provision Complete)"],
+                                                                                 ["pause_all_vms_booted", "Pause at the beginning of step 5 (Application Start)"],
+                                                                                 ["execute_all_vms_booted", "Execute script at the beginning of step 5 (Application Start)"]
+                                                                                 ] } ,
+                              "keyword6" : { "label" : "Temporary Attributes", "values" : "" } ,
+                              "keyword7" : { "label" : "Mode", "values" : "async" }
                            },
                     "app" : { 
                               "keyword1" : { "label" : "Type", "values" : [x.strip() for x in self.api.typelist(session['cloud_name'])] } ,
@@ -664,12 +684,25 @@ class GUI(object):
                               "keyword3" : { "label" : "Load Duration", "values" : "default" } ,
                               "keyword4" : { "label" : "Lifetime", "values" : "none" } ,
                               "keyword5" : { "label" : "Submitter", "values" : "none" } ,
-                              "keyword6" : { "label" : "staging", "values" : ["continue", "initialize"] } ,
-                              "keyword7" : { "label" : "Mode", "values" : "async" } ,
+                              "keyword6" : { "label" : "Pause Step", "values" : [["continue" , "None"], 
+                                                                                 ["pause_provision_started", "Pause at the end of step 2 (Provision Started)"], 
+                                                                                 ["execute_provision_started", "Execute script at the end of step 2 (Provision Started)"],
+                                                                                 ["pause_provision_complete", "Pause at the end of step 3 (Provision Complete)"], 
+                                                                                 ["execute_provision_started", "Execute script at the end of step 3 (Provision Complete)"],
+                                                                                 ["pause_all_vms_booted", "Pause at the beginning of step 5 (Application Start)"],
+                                                                                 ["execute_all_vms_booted", "Execute script at the beginning of step 5 (Application Start)"],
+                                                                                 ] } ,
+                              "keyword7" : { "label" : "Temporary Attributes", "values" : "" } ,
+                              "keyword8" : { "label" : "Mode", "values" : "async" } ,
                             },
-                    "vmc" : { "keyword1" : { "label" : "Name", "values" : "" } },
+                    "vmc" : { 
+                             "keyword1" : { "label" : "Name", "values" : "" } ,
+                             "keyword2" : { "label" : "Temporary Attributes", "values" : "" }
+                             }, 
                     "svm" : { "keyword1" : { "label" : "Identifier", "values" : "vms" } },
-                    "aidrs" : { "keyword1" : { "label" : "Pattern", "values" : [x.strip() for x in self.api.patternlist(session['cloud_name'])] } },
+                    "aidrs" : { "keyword1" : { "label" : "Pattern", "values" : [x.strip() for x in self.api.patternlist(session['cloud_name'])] },
+                                "keyword2" : { "label" : "Temporary Attributes", "values" : "" }
+                            },
         }
         session['views'] = self.api.viewlist(session['cloud_name'])
         session.save()
@@ -679,10 +712,13 @@ class GUI(object):
     
         try :
             if req.http.params.get("connect") :
-                if req.http.params.get("available") :
+                if req.http.params.get("available") or req.http.params.get("definition_contents") :
                     requested_cloud_name = req.http.params.get("available").lower()
-                    definitions = req.session["definitions"]
-                    available_clouds = self.api.cldparse(definitions)
+                    if req.http.params.get("definition_contents") :
+                        definitions = req.http.params.get("definition_contents")
+                    else :
+                        definitions = req.session["definitions"]
+                    available_clouds = self.api.cldparse(definitions)["clouds"]
                     for cloud_name in available_clouds :
                         cloud_name = cloud_name.lower()
                         if cloud_name == requested_cloud_name :
@@ -693,12 +729,12 @@ class GUI(object):
                                     continue
                                 
                                 if len(parts) < 2 :
-                                    return self.bootstrap(req, self.heromsg + "\n<h4>Malformed command in your STARTUP_COMMAND_ LIST in your config file: " + command + "</h4></div>")
+                                    return self.bootstrap(req, self.heromsg + "\n<h4>Malformed command in your STARTUP_COMMAND_ LIST in your config file: " + command + "</h4></div>", error = True)
                                     
                                 try :
                                     func = getattr(self.api, parts[0])
                                 except AttributeError, msg :
-                                    return self.bootstrap(req, self.heromsg + "\n<h4>Malformed command in your STARTUP_COMMAND_ LIST in your config file: " + command + "</h4></div>")
+                                    return self.bootstrap(req, self.heromsg + "\n<h4>Malformed command in your STARTUP_COMMAND_ LIST in your config file: " + command + "</h4></div>", error = True)
                                 
                                 if parts[0] != "cldattach" and 'cloud_name' in req.session and not command.lower().count(req.session['cloud_name'].lower()) :
                                     fixed = [parts[0], req.session['cloud_name']] + parts[1:]
@@ -707,12 +743,12 @@ class GUI(object):
                                 
                                 if fixed[0] == "vmcattach" and fixed[2] == "all" :
                                     if len(fixed) < 2 :
-                                        return self.bootstrap(req, self.heromsg + "\n<h4>Malformed command in your STARTUP_COMMAND_ LIST in your config file: " + command + "</h4></div>")
+                                        return self.bootstrap(req, self.heromsg + "\n<h4>Malformed command in your STARTUP_COMMAND_ LIST in your config file: " + command + "</h4></div>", error = True)
                                     if not command.count("async") :
                                         fixed.append("async")
                                 if fixed[0] == "cldattach" :
                                     if len(fixed) < 3 :
-                                        return self.bootstrap(req, self.heromsg + "\n<h4>Malformed command in your STARTUP_COMMAND_ LIST in your config file: " + command + "</h4></div>")
+                                        return self.bootstrap(req, self.heromsg + "\n<h4>Malformed command in your STARTUP_COMMAND_ LIST in your config file: " + command + "</h4></div>, error = True")
                                     if len(fixed) == 3 :
                                         fixed.append(definitions)
                                     
@@ -730,13 +766,14 @@ class GUI(object):
                 else :
                     fh = req.http.params.get("definitions")
                     definitions = fh.file.read()
-                    available_clouds = self.api.cldparse(definitions)
+                        
+                    available_clouds = self.api.cldparse(definitions)["clouds"]
                     if not len(available_clouds) :
                         req.skip_show = True
                         response_fd = open(cwd + "/gui_files/response_template.html", "r")
                         response = response_fd.read().replace(" ", "&nbsp;")
                         response_fd.close()
-                        return self.bootstrap(req, self.heromsg + "\n<h4>" + response + "</h4></div>")
+                        return self.bootstrap(req, self.heromsg + "\n<h4>" + response + "</h4></div>", error = True)
                     
                     req.session["available_clouds"] = available_clouds
                     req.session["definitions"] = definitions
@@ -761,7 +798,7 @@ class GUI(object):
                     "detach" : [1, {"operations" : [ "vm", "vmc", "app", "svm", "aidrs"], "icon" : "trash", "state" : "any" } ], 
                     "save" : [2, {"operations" : [ "vm", "vmc", "app"], "icon" : "stop", "state" : "attached" } ], 
                     "restore" : [3, {"operations" : [ "vm", "vmc", "app"], "icon" : "play", "state" : "save" } ], 
-                    "suspend" : [4, {"operations" : [ "vm", "vmc", "app"], "icon" : "pause_on_vm_attach", "state" : "attached" } ], 
+                    "suspend" : [4, {"operations" : [ "vm", "vmc", "app"], "icon" : "pause", "state" : "attached" } ], 
                     "resume" : [5, {"operations" : [ "vm", "vmc", "app"], "icon" : "play", "state" : "fail" } ], 
                     "protect" : [6, {"operations" : [ "vm" ], "icon" : "star" , "ft" : "attach", "state" : "attached" } ], 
                     "unprotect" : [7, {"operations" : [ "vm" ], "icon" : "ok" , "ft" : "detach", "state" : "attached"} ], 
@@ -793,8 +830,9 @@ class GUI(object):
             else :
                 req.session['clouds'] = self.api.cldlist() 
                 req.session.save()
-                return self.bootstrap(req, self.heromsg + "\n<h4>You need to connect, first.</h4></div>")
-    
+                if not req.action.count("wizard") :
+                    return self.bootstrap(req, self.heromsg + "\n<h4>You need to connect, first.</h4></div>")
+                
             if req.action == "monitor" : 
                 self.api.dashboard_conn_check(req.cloud_name, req.session['msattrs'], req.session['time_vars']['username'])
                 mon = Dashboard(self.api.msci, req.unparsed_uri, req.session['time_vars'], req.session['msattrs'], req.cloud_name)
@@ -850,7 +888,7 @@ class GUI(object):
                         <ul data-spy='affix' class="pager nav nav-list bs-docs-sidenav">
                 """
                 
-                settings = self.api.cldshow(req.cloud_name)
+                settings = self.api.cldshow(req.cloud_name, "all")
                 for category in sorted(settings.keys()) :
                     printable = " ".join(category.upper().split("_")).replace("DEFAULTS", "defaults").replace("TEMPLATES", "templates")
                     output += "<li align='left'><a href='#" + category + "'><i class='icon-chevron-right'></i>" + printable + "</a></li>"
@@ -913,7 +951,7 @@ class GUI(object):
                 try :
                     expid = self.api.cldshow(req.cloud_name, "time")["experiment_id"]
                 except APIException, obj :
-                    return self.bootstrap(req, self.heromsg + "<h4>Could not retrieve current experiment ID from the API</h4></div>")
+                    return self.bootstrap(req, self.heromsg + "<h4>Could not retrieve current experiment ID from the API</h4></div>", error = True)
                         
                 mon = Dashboard(self.api.msci, req.unparsed_uri, req.session['time_vars'], req.session['msattrs'], req.session['cloud_name'])
                 result = []
@@ -927,6 +965,18 @@ class GUI(object):
                 d3_html = d3_fd.read()
                 d3_fd.close()
                 return self.bootstrap(req, d3_html)
+            elif req.action == "wizard" :
+                wizard_fd = open(cwd + "/gui_files/wizard_template.html", "r")
+                wizard_html = wizard_fd.read()
+                wizard_fd.close()
+                return self.bootstrap(req, wizard_html) 
+            
+            elif req.action == "wizard_options" :
+                '''
+                Return raw JSON and deal with it in the browser.
+                '''
+                return self.bootstrap(req, json.dumps(self.api.cldparse('')['attributes'], sort_keys = True, indent = 4), now = True)
+    
             elif req.action == "monitordata" :
                 self.api.dashboard_conn_check(req.cloud_name, req.session['msattrs'], req.session['time_vars']['username'])
                 mon = Dashboard(self.api.msci, req.unparsed_uri, req.session['time_vars'], req.session['msattrs'], req.session['cloud_name'])
@@ -1006,14 +1056,14 @@ class GUI(object):
                 req.session.save()
                 return self.bootstrap(req, self.heromsg + "\n<h4>Disconnected from API @ " + self.api_access + "</h4></div>")
             
-            return self.bootstrap(req, self.heromsg + "\n<h4>We do not understand you! Try again...</h4></div>")
+            return self.bootstrap(req, self.heromsg + "\n<h4>We do not understand you! Try again...</h4></div>", error = True)
     
         except APIException, obj :
-            return self.bootstrap(req, self.heromsg + "\n<h4>Error: API Service says: " + str(obj.status) + ": " + obj.msg + "</h4></div>")
+            return self.bootstrap(req, self.heromsg + "\n<h4>Error: API Service says:</h4>" + str(obj.status) + ": " + obj.msg.replace("<", "&lt;").replace(">", "&gt;").replace("\\n", "<br>").replace("\n", "<br>") + "</h4></div>", error = True)
         except IOError, msg :
-            return self.bootstrap(req, self.heromsg + "\n<h4>Error: API Service (" + self.api_access + ") is not responding: " + str(msg) + "</h4></div>")
+            return self.bootstrap(req, self.heromsg + "\n<h4>Error: API Service (" + self.api_access + ") is not responding: " + str(msg) + "</h4></div>", error = True)
         except socket.error, v:
-            return self.bootstrap(req, self.heromsg + "\n<h4>Error: API Service (" + self.api_access + ") is not responding: " + str(v) + "</h4></div>")
+            return self.bootstrap(req, self.heromsg + "\n<h4>Error: API Service (" + self.api_access + ") is not responding: " + str(v) + "</h4></div>", error = True)
         #except Exception, msg:
         #    return self.bootstrap(req, self.heromsg + "\n<h4>Error: Something bad happened: " + str(msg) + "</h4></div>")
         
@@ -1155,7 +1205,7 @@ class GUI(object):
                         force = True
                     if force :
                         label = "Force " + label
-                        #keywords["keyword" + str(len(keywords) + 1)] = "force" 
+                    keywords["keyword" + str(len(keywords) + 1)] = str(force).lower() 
                 elif operation in [ "unprotect", "fail" ] :
                     if "svm_stub_vmc" not in attrs or attrs["svm_stub_vmc"] == "none" :
                         continue
@@ -1256,6 +1306,11 @@ class GUI(object):
                 for keyidx in range(1, keywords + 1) :
                     args.append(params.get("keyword"+ str(keyidx)))
                     
+                '''
+                TODO: the API supports keyword arguments now.
+                Start utilizing them so that future API changes
+                don't brake the GUI.
+                '''
                 try :
                     func(req.cloud_name, *args)
                     if params.get("sync") :
@@ -1270,7 +1325,7 @@ class GUI(object):
                     output += "</h4></div>"
                     
             if not success :
-                return self.bootstrap(req, output)
+                return self.bootstrap(req, output, error = True)
     
             output += """
                 <div id='pendingstatus'></div>
@@ -1351,7 +1406,12 @@ class GUI(object):
                         attach += "<select name='" + keyword + "'>"
                             
                         for option in values :
-                                attach += "<option>" + option + "</option>"
+                                if isinstance(option, list) and len(option) == 2 :
+                                    name = option[0]
+                                    value = option[1] 
+                                    attach += "<option value='" + name + "'>" + value  + "</option>"
+                                else :
+                                    attach += "<option>" + str(option) + "</option>"
         
                         attach += """
                             </select>
@@ -1372,7 +1432,7 @@ class GUI(object):
         """
         return output 
     
-    def bootstrap(self, req, body, now = False) :
+    def bootstrap(self, req, body, now = False, error = False) :
         replacements = []
         navcontents = ""
         cloudcontents = "None Available"
@@ -1382,6 +1442,7 @@ class GUI(object):
                     $('#connectpop').popover('show');
                     </script>
                     """
+            
         if now :
             contents = body
         else :
@@ -1435,7 +1496,7 @@ class GUI(object):
                          cloudcontents,
                          availablecontents,
                          body,
-                         popoveractivate if (not req.session["connected"] and not req.skip_show) else "",
+                         popoveractivate if (not req.session["connected"] and not req.skip_show and not req.action.count("wizard") and not error) else "",
                          self.spinner,
                          req.dest,
                          req.active if req.active else "",
@@ -1458,6 +1519,8 @@ class GUIDispatcher(Resource) :
         self.third_party = File(cwd + "/3rd_party")
         self.files = File(cwd + "/gui_files")
         self.icon = File(cwd + "/gui_files/favicon.ico")
+        self.git = File(cwd + "/.git")
+        self.git.indexNames = ["test.rpy"]
         self.dashboard = GUI(apiport, apihost)
         
         session_opts = {
@@ -1483,6 +1546,8 @@ class GUIDispatcher(Resource) :
                 return self.files
         elif name.count("favicon.ico"):
                 return self.icon
+        elif name.count("git"):
+                return self.git
         else :
             return self.app
 

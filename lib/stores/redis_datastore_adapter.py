@@ -278,6 +278,7 @@ class RedisMgdConn :
 
             self.redis_conn.delete(obj_inst + ":GLOBAL:experiment_counter")
             self.redis_conn.delete(obj_inst + ":GLOBAL:vmc_pools")
+            self.redis_conn.delete(obj_inst + ":GLOBAL:host_names")
             self.redis_conn.delete(obj_inst + ":GLOBAL:aidrs_patterns") 
             self.redis_conn.delete(obj_inst + ":GLOBAL:ai_types")
             self.redis_conn.delete(obj_inst + ":GLOBAL:view_criteria")
@@ -503,6 +504,11 @@ class RedisMgdConn :
                     _obj_count_fn = _obj_inst_fn + ':' + obj_uuid + ":RESERVATIONS"
                     self.redis_conn.set(_obj_count_fn, 0)
                     self.add_to_list(cloud_name, "GLOBAL", "vmc_pools", obj_attr_list["pool"].upper())
+
+                if obj_type == "HOST" :
+                    _obj_count_fn = _obj_inst_fn + ':' + obj_uuid + ":RESERVATIONS"
+                    self.redis_conn.set(_obj_count_fn, 0)
+                    self.add_to_list(cloud_name, "GLOBAL", "host_names", obj_attr_list["name"][5:].upper())
 
                 _obj_state_fn = _obj_inst_fn + ':' + obj_uuid + ":STATE"
                 self.redis_conn.set(_obj_state_fn, "attached")

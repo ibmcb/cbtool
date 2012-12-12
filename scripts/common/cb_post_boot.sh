@@ -16,8 +16,17 @@
 # limitations under the License.
 #/*******************************************************************************
 
-ln -sf ~/cloudbench/scripts/common/* ~
-ln -sf ~/cloudbench/jar/*.jar ~
+# Better way of getting absolute path instead of relative path
+if [ $0 != "-bash" ] ; then
+	pushd `dirname "$0"` 2>&1 > /dev/null
+fi
+dir=$(pwd)
+if [ $0 != "-bash" ] ; then
+	popd 2>&1 > /dev/null
+fi
+
+ln -sf $dir/* ~
+#ln -sf ~/cloudbench/jar/*.jar ~
 rm -rf ~/cb_os_cache.txt
 
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh

@@ -111,7 +111,7 @@ class Ec2Cmds(CommonCloudFunctions) :
         try :
             self.connect(access, credentials, vmc_name)
                         
-        except self.CldOpsException, obj :
+        except CldOpsException, obj :
             _msg = str(obj.msg)
             cberr(_msg)
             _status = 2
@@ -396,7 +396,7 @@ class Ec2Cmds(CommonCloudFunctions) :
         '''        
         if self.is_vm_running(obj_attr_list) :
 
-            self.pause_on_attach_if_requested(obj_attr_list)
+            self.take_action_if_requested("VM", obj_attr_list, "provision_complete")
 
             if self.get_ip_address(obj_attr_list) :
                 obj_attr_list["last_known_state"] = "running with ip assigned"
@@ -464,7 +464,9 @@ class Ec2Cmds(CommonCloudFunctions) :
                 
                 obj_attr_list["cloud_uuid"] = '{0}'.format(_instance.id)
                 obj_attr_list["instance_obj"] = _instance
-                
+
+                self.take_action_if_requested("VM", obj_attr_list, "provision_started")
+
                 _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
                           
                 self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
@@ -782,6 +784,9 @@ class Ec2Cmds(CommonCloudFunctions) :
         '''
         try :
             _fmsg = "An error has occurred, but no error message was captured"
+
+            self.take_action_if_requested("AI", obj_attr_list, "all_vms_booted")
+
             _status = 0
 
         except Exception, e :
