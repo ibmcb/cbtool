@@ -1886,7 +1886,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     if not access(obj_attr_list["identity"], F_OK) :
                         obj_attr_list["identity"] = obj_attr_list["identity"].replace(obj_attr_list["username"], obj_attr_list["login"])
 
-                    if "run_scripts" in obj_attr_list and obj_attr_list["run_scripts"].lower() != "false" :
+                    if "run_generic_scripts" in obj_attr_list and obj_attr_list["run_generic_scripts"].lower() != "false" :
                         _msg = "Performing generic VM post_boot configuration ..."
                         cbdebug(_msg, True)
                         if not repeated_ssh(self.pid, ["VM"], [obj_attr_list["name"]], \
@@ -1899,7 +1899,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             _fmsg = "Failure while executing remote post_boot scripts."
                         else :
                             _status = 0
-                        
+                    else :
+                        _msg = "Bypassing generic VM post_boot configuration."
+                        cbdebug(_msg, True)
+                        _status = 0
+
                     self.record_management_metrics(obj_attr_list["cloud_name"], \
                                                    "VM", obj_attr_list, "attach")
 
@@ -1958,12 +1962,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
-            if "run_scripts" in obj_attr_list and obj_attr_list["run_scripts"].lower() != "false" :
-                self.osci.pending_object_set(obj_attr_list["cloud_name"], "AI", obj_attr_list["uuid"], "Running VM Applications..." )
-                _status, _fmsg  = self.parallel_vm_config_for_ai(obj_attr_list["cloud_name"], \
-                                                                 obj_attr_list["uuid"], "setup")
-            else :
-                _status = 0
+
+            self.osci.pending_object_set(obj_attr_list["cloud_name"], "AI", obj_attr_list["uuid"], "Running VM Applications..." )
+            _status, _fmsg  = self.parallel_vm_config_for_ai(obj_attr_list["cloud_name"], \
+                                                             obj_attr_list["uuid"], "setup")
 
             if not _status :
                 self.record_management_metrics(obj_attr_list["cloud_name"], \
@@ -1994,9 +1996,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     self.runstate_list_for_ai(obj_attr_list, "save")
                     if obj_attr_list["state_changed_vms"] != "0" :
                         _status, _fmsg = self.parallel_obj_operation("runstate", obj_attr_list)
-
-                elif obj_attr_list["run_scripts"].lower() == "false" :
-                    _status = 0
 
                 else :
                     _status = 0
@@ -3665,13 +3664,15 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                 _msg += "destroyed."
                                 cbdebug(_msg)
 
-                    if "run_scripts" in obj_attr_list and obj_attr_list["run_scripts"].lower() != "false" :
+                    if "run_application_scripts" in obj_attr_list and obj_attr_list["run_application_scripts"].lower() != "false" :
                         _status, _fmsg  = self.parallel_vm_config_for_ai(obj_attr_list["cloud_name"], \
                                                                          obj_attr_list["uuid"], \
                                                                          "resize")
                     else :
-                        _status = 0
+                        _msg = "Bypassing application-specific \"setup\" operations"
                         _fmsg = "none"
+                        cbdebug(_msg, True)
+                        _status = 0
 
                     if not _status :
                         self.osci.remove_from_list(obj_attr_list["cloud_name"], "AI", "AIS_UNDERGOING_RESIZE", obj_attr_list["name"])

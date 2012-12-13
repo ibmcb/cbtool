@@ -1897,6 +1897,8 @@ class BaseObjectOperations :
             
             _vm_list = _ai_attr_list["vms"].split(',')
 
+            _run_generic_scripts = False
+
             for _vm in _vm_list :
                 
                 _vm_uuid, _vm_role, _vm_name = _vm.split('|')
@@ -1911,23 +1913,37 @@ class BaseObjectOperations :
                 _vm_ip_addrs.append(_obj_attr_list["cloud_ip"])
                 _vm_logins.append(_obj_attr_list["login"])
                 _vm_passwds.append(None)
+
                 if not access(_obj_attr_list["identity"], F_OK) :
                     _obj_attr_list["identity"] = _obj_attr_list["identity"].replace(_obj_attr_list["username"], _obj_attr_list["login"])
                 _vm_priv_keys.append(_obj_attr_list["identity"])
-                _vm_post_boot_commands.append("~/" + _obj_attr_list["remote_dir_name"] + "/scripts/common/cb_post_boot.sh")
-            
+
+                if "run_generic_scripts" in _obj_attr_list and \
+                _obj_attr_list["run_generic_scripts"].lower() != "false" :
+                    _run_generic_scripts = True
+                    _vm_post_boot_commands.append("~/" + _obj_attr_list["remote_dir_name"] + "/scripts/common/cb_post_boot.sh")
+
             if operation == "setup" or operation == "resize" :
-                _msg = "Performing generic application instance post_boot configuration ..."
-                cbdebug(_msg, True)
-                self.osci.pending_object_set(cloud_name, "AI", ai_uuid, _msg)
-                if not repeated_ssh(self.pid, _obj_types, _vm_names, \
-                                       _vm_ip_addrs, _vm_logins, _vm_passwds, \
-                                       _vm_priv_keys, _vm_post_boot_commands, \
-                                       None, _ai_attr_list, "execute") :
-                    _status = 1495
-                    _fmsg = "Failure while executing remote post_boot scripts."
+
+                if _run_generic_scripts :
+
+                    _vm_post_boot_commands.append("~/" + _obj_attr_list["remote_dir_name"] + "/scripts/common/cb_post_boot.sh")
+
+                    _msg = "Performing generic application instance post_boot configuration ..."
+                    cbdebug(_msg, True)
+                    self.osci.pending_object_set(cloud_name, "AI", ai_uuid, _msg)
+                    if not repeated_ssh(self.pid, _obj_types, _vm_names, \
+                                           _vm_ip_addrs, _vm_logins, _vm_passwds, \
+                                           _vm_priv_keys, _vm_post_boot_commands, \
+                                           None, _ai_attr_list, "execute") :
+                        _status = 1495
+                        _fmsg = "Failure while executing remote post_boot scripts."
+                    else :
+                        _status = 0
                 else :
-                    _status = 0
+                    _msg = "Bypassing generic VM post_boot configuration."
+                    cbdebug(_msg, True)
+                    _status = 0                        
             else :
                 _status = 0
 
@@ -1945,64 +1961,72 @@ class BaseObjectOperations :
             # Just assuming the user will not have more than 100 initialization scripts
             # for each VM
             if not _status :
-                _msg = "Running application-specific \"" + operation + "\" operations..."
-                cbdebug(_msg, True)
-                self.osci.pending_object_set(cloud_name, "AI", ai_uuid, _msg)
                 
-                _lmr = False
+                if "run_application_scripts" in _ai_attr_list and \
+                _ai_attr_list["run_application_scripts"].lower() != "false" :
                 
-                for _num in range(1, 100) :
-                    _found = False
-                    _vm_command_list = []
-                    for _idx in range(0, len(_vm_names)) :
-                        _command_key = _vm_roles[_idx] + '_' + operation + str(_num)
-    
-                        if _command_key in _ai_attr_list :
-                            if len(_ai_attr_list[_command_key]) > 1 :
-                                _command = "~/" + _ai_attr_list[_command_key]
-                                _found = True
+                    _msg = "Running application-specific \"" + operation + "\" operations..."
+                    cbdebug(_msg, True)
+                    self.osci.pending_object_set(cloud_name, "AI", ai_uuid, _msg)
+                    
+                    _lmr = False
+                    
+                    for _num in range(1, 100) :
+                        _found = False
+                        _vm_command_list = []
+                        for _idx in range(0, len(_vm_names)) :
+                            _command_key = _vm_roles[_idx] + '_' + operation + str(_num)
+        
+                            if _command_key in _ai_attr_list :
+                                if len(_ai_attr_list[_command_key]) > 1 :
+                                    _command = "~/" + _ai_attr_list[_command_key]
+                                    _found = True
+                                else :
+                                    _command = ""
                             else :
                                 _command = ""
-                        else :
-                            _command = ""
+        
+                            _vm_command_list.append(_command)
+        
+                        if not _found :
+                            if _lmr or operation != "setup" :
+                                break
+                            else :
+                                if "dont_start_load_manager" in _ai_attr_list and _ai_attr_list["dont_start_load_manager"].lower() == "true" :
+                                    _msg = "Load Manager will NOT be automatically"
+                                    _msg += " started during this AI deployment."
+                                    cbdebug(_msg, True)
+                                else :
+                                    # This needs to be done only once, at the AI's
+                                    # initial deployment.
+                                    _lmr = _ai_attr_list["load_manager_role"]
+                                    
+                                    _msg = "Adding the startup of the load manager to the "
+                                    _msg += "list of commands. It will be executed on the "
+                                    _msg += "VM with the role \"" + _lmr + "\""
+                                    cbdebug(_msg)
+                                    
+                                    _ai_attr_list[_lmr + '_' + operation + str(_num + 1)] = "cb_start_load_manager.sh"
+        
+                        _msg = "The following command list will be executed: "
+                        _msg += ','.join(_vm_command_list)
+                        cbdebug(_msg)
     
-                        _vm_command_list.append(_command)
-    
-                    if not _found :
-                        if _lmr or operation != "setup" :
+                        # Now run the application-specific initializations
+                        if not repeated_ssh(self.pid, _obj_types, _vm_names, \
+                                            _vm_ip_addrs, _vm_logins, _vm_passwds, \
+                                            _vm_priv_keys, _vm_command_list, None, \
+                                            _ai_attr_list, "execute") :
+        
+                            _fmsg = "Failure while executing remote setup scripts."
+                            _status = 37
                             break
                         else :
-                            if "dont_start_load_manager" in _ai_attr_list and _ai_attr_list["dont_start_load_manager"].lower() == "true" :
-                                _msg = "Load Manager will NOT be automatically"
-                                _msg += " started during this AI deployment."
-                                cbdebug(_msg)
-                            else :
-                                # This needs to be done only once, at the AI's
-                                # initial deployment.
-                                _lmr = _ai_attr_list["load_manager_role"]
-                                
-                                _msg = "Adding the startup of the load manager to the "
-                                _msg += "list of commands. It will be executed on the "
-                                _msg += "VM with the role \"" + _lmr + "\""
-                                cbdebug(_msg)
-                                
-                                _ai_attr_list[_lmr + '_' + operation + str(_num + 1)] = "cb_start_load_manager.sh"
-    
-                    _msg = "The following command list will be executed: "
-                    _msg += ','.join(_vm_command_list)
-                    cbdebug(_msg)
-
-                    # Now run the application-specific initializations
-                    if not repeated_ssh(self.pid, _obj_types, _vm_names, \
-                                        _vm_ip_addrs, _vm_logins, _vm_passwds, \
-                                        _vm_priv_keys, _vm_command_list, None, \
-                                        _ai_attr_list, "execute") :
-    
-                        _fmsg = "Failure while executing remote setup scripts."
-                        _status = 37
-                        break
-                    else :
-                        _status = 0
+                            _status = 0
+                else :
+                    _msg = "Bypassing application-specific \"setup\" operations"
+                    cbdebug(_msg, True)
+                    _status = 0
 
         except Exception, e :
             _status = 23

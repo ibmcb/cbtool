@@ -28,7 +28,7 @@ source ~/.bashrc
 
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
-HADOOP_HOME=~/hadoop-0.20.2
+HADOOP_HOME=`get_my_ai_attribute_with_default hadoop_home ~/hadoop-0.20.2`
 HADOOP_CONF_DIR=$HADOOP_HOME/conf
 
 hadoop_master_ip=`get_ips_from_role hadoopmaster`
@@ -95,7 +95,7 @@ fi
 #tab_LOAD_LEVEL_options[6]=  #could be [-m <#maps>] [-r <#reducers>]
 	
 #######################################################################################
-# Resuling log destinations 
+# Result log destinations 
 #
 # Should be set correctly by the user
 # Currently the following (especially the IP of CB master VM) info. is hard-coded.

@@ -140,6 +140,7 @@ LOAD_DURATION = 60
 # "Special" modifier parameters for the AI HADOOP. These should be set on
 # YOUR configuration file, not on this template! Please DO NOT uncomment them 
 # here.
+#HADOOP_HOME=~/hadoop-0.20.2
 #LOAD_FACTOR = 1000
 #DONT_GENERATE_INPUT_DATA = $False
 #SYNC_COUNTER_NAME = synchronization_counter

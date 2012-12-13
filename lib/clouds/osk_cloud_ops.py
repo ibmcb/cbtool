@@ -242,8 +242,6 @@ class OskCmds(CommonCloudFunctions) :
                     _msg += "\". Will wait for " + str(_wait) + " seconds and check again."
                     sleep(_wait)
                     _curr_tries += 1
-                                
-                sleep(int(obj_attr_list["update_frequency"]))
 
             if _curr_tries > _max_tries  :
                 _status = 1077
@@ -253,8 +251,6 @@ class OskCmds(CommonCloudFunctions) :
                 cberr(_msg, True)
             else :
                 _status = 0
-            
-            sleep(int(obj_attr_list["update_frequency"]))
 
         except novaexceptions, obj:
             _status = int(obj.error_code)

@@ -115,7 +115,7 @@ TIMEOUT = $MAIN_TIMEOUT
 ATTEMPTS = $MAIN_ATTEMPTS
 NOTIFICATION = $MAIN_NOTIFICATION
 REMOTE_DIR_NAME = cloudbench
-RUN_SCRIPTS = $True
+RUN_GENERIC_SCRIPTS = $True
 TRANSFER_FILES = $True
 # Any VM which contains the string "client" on his role name will be created
 # on the "LG" pool, if this pools exists.
@@ -159,10 +159,10 @@ NOTIFICATION = $MAIN_NOTIFICATION
 VM_CREATION = explicit
 VM_DESTRUCTION = explicit
 MODE = controllable
-RUN_SCRIPTS = $True
 LOG_OUTPUT_COMMAND = $True
 SAVE_ON_ATTACH = $False
 SECONDS_BEFORE_SAVE = 0
+RUN_APPLICATION_SCRIPTS = $True
 DONT_START_LOAD_MANAGER = $False
 REPLICATED_VMS = 0
 ATTACH_PARALLELISM = 1
