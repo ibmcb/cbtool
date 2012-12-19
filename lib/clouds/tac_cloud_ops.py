@@ -188,7 +188,8 @@ class TacCmds(CommonCloudFunctions) :
                 cbdebug("TAC connection successful.")
     
     @trace
-    def test_vmc_connection(self, vmc_hn, access, credentials, extra_info) :
+    def test_vmc_connection(self, vmc_hn, access, credentials, key_name, \
+                            security_group_name, vm_templates) :
         '''
         TBD
         '''

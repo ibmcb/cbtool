@@ -1,0 +1,239 @@
+		<script>
+			var model = "osk";
+		</script>
+		<div class='row-fluid'>
+		<div class='span10'>
+		<div id="wizard">
+			<ol>
+				<li class='btn btn-link' onclick="$('#wizard').bwizard('show', 0)">Introduction</li>
+				<li class='btn btn-link' onclick="$('#wizard').bwizard('show', 1)">Choose Cloud</li>
+				<li class='btn btn-link' onclick="$('#wizard').bwizard('show', 2)">Configure Cloud</li>
+				<li class='btn btn-link' onclick="$('#wizard').bwizard('show', 3)">Customize</li>
+				<li class='btn btn-link' onclick="$('#wizard').bwizard('show', 4)">Save &amp; Connect!</li>
+			</ol>
+			<div>
+				<h3>Getting started with the Cloud Rapid Experimentation and Analysis Toolkit</h3>
+				<h4>This wizard will help you create a basic configuration file that
+				will connect the toolkit to your Cloud.</h4>
+				<p>
+				You should verify that the necessary preparatory steps have
+				been taken care of before we can begin:	
+				</p> 
+				<ol>
+				<li>
+				<h5>You must have a basic virtual machine image available.</h5>
+				This image needs to have been tested
+				with your cloud and be capable of password-less SSH public key authentication
+				uploaded and ready for use. The toolkit *must* have network access to
+				VMs created in your Cloud or the toolkit cannot perform its functions.	
+				</li>	
+				<li><h5>This toolkit uses open APIs to programmably interact with your cloud.</h5>
+					Thus, you must verify that the necessary credentials for connecting to
+					your cloud from an automated program are working.
+					<br>This includes:
+					<ul>
+						<li>Any security keys that the cloud requires.</li>
+						<li>Any firewall or security groups are installed correctly.</li>
+						<li>Any username/password combinations have the appropriate permissions for the toolkit to use.</li>
+						<li>You have access to the address of the server responsible for responding to API calls that the toolkit will use for interacting with your cloud.</li>
+					</ul>
+					</li>
+				</ol>
+				<h3>Click 'Next' to start the Wizard...</h4>
+			</div>
+			<div>
+				<p>
+				</p>
+				<h3>First, Choose a Cloud Model:</h3>
+	   
+				<select id='cloud_model' style='width: 500' onchange="model = this.value; repopulate_options(cld_attr_list)">
+					<option value='osk'>OpenStack Compute Cloud</option>
+					<option value='ec2'>Amazon Elastic Compute Cloud</option>
+					<option value='scp'>IBM Smart Cloud Provisioning</option>
+					<option value='tac'>Thin, Agile Cloud</option>
+					<option value='sim'>Simulated Cloud</option>
+				</select>
+				<h3>Name Your Cloud:</h3>
+				<input id='cloud_name' type='text' width='300' value='MYCLOUD' onchange="model = this.value; repopulate_options(cld_attr_list)"></input>
+				<h4>This name is arbitrary and will be used to identify the connection between the toolkit and your cloud while you are performing benchmarks.</h4>
+				<h3>Identify Your VM Base Image:</h3>
+				<h4><input id='image_id' type="text" value='image-xxxx, ami-xxxxx'/>&nbsp;&nbsp;What is the ID of your VM image as identified by the Cloud?</h4>
+				<h5>This image ID will be used to test VM creation in your Cloud.</h5>
+				<p/><br/>
+				<h4><input id='image_name' type="text" value='testimage'/>&nbsp;&nbsp;Choose an easy-to-remember name for this image.</h4>
+				<h5>This name is easier to use when interacting with the toolkit.</h5>
+				<p/><br/>
+				<h4><input id='image_size' type="text" value='m1.small'/>&nbsp;&nbsp;What size VM instance should we start with?</h4>
+				<h5>These 'sizes' are usually specific to the Cloud:</h5>
+				<h5>&nbsp;&nbsp;OpenStack, for example: 't1.micro', 'm1.large'</h5>
+				<h5>&nbsp;&nbsp;Amazon, for example: 'm1.small', 'm1.medium'</h5>
+			</div>
+			<div>
+				<h3>Tell us the individual connection parameters of your Cloud:</h3>
+				<h4>(all fields are required)</h4>
+				<div id='wizardoptions'></div>
+			</div>
+			<div>
+			<h3>Additional Configuration Options:</h3>	
+			<h4><input id='mon_defaults_collect_from_guest' type="checkbox" checked/>&nbsp;&nbsp;Monitor Virtual Machines?</h4>
+			<h5>If your have setup ganglia appropriately inside your VM, allow us to monitor them?</h5>
+			<h4><input id='vmc_defaults_discover_hosts' type="checkbox"/>&nbsp;&nbsp;Discover Hypervisors?</h4>
+			<h5>Some clouds (OpenStack, SCP, TAC) expose hypervisors. Try to discover them?</h5>
+			<h4><input id='mon_defaults_collect_from_host' type="checkbox"/>&nbsp;&nbsp;Monitor Hypervisors?</h4>
+			<h5>Similarly, select this if have ganglia running on your hypervisors and can see them through the Cloud.</h5>
+			<h4><input id='admission_control_vm_max_reservations' type="text"/>&nbsp;&nbsp;Maximum Number of Virtual Machines?</h4>
+			<h5>Pick an upper bound on the number of VMs the tool will create.</h5>
+			<h4><input id='admission_control_ai_max_reservations' type="text"/>&nbsp;&nbsp;Maximum Number of Virtual Applications?</h4>
+			<h5>Pick an upper bound on the number of Virtual Applications the tool will create.</h5>
+			<h4><input id='api_defaults_port' type="text"/>&nbsp;&nbsp;XMLRPC Port For API programmability?</h4>
+			<h5>Client programs of the toolkit connect to this port. (Requires toolkit restart)</h5>
+			<h4><input id='objectstore_usage' type="text"/>&nbsp;&nbsp;How is your Redis server used?</h4>
+			<h5>Leave this alone if you don't know what it means. (Requires toolkit restart)</h5>
+			<h4><input id='objectstore_host' type="text"/>&nbsp;&nbsp;Where is your Redis server located?</h4>
+			<h5>Leave this alone if you don't know what it means. (Requires toolkit restart)</h5>
+			<h4><input id='objectstore_port' type="text"/>&nbsp;&nbsp;What port does your Redis server use?</h4>
+			<h5>Leave this alone if you don't know what it means. (Requires toolkit restart)</h5>
+			<h4><input id='objectstore_dbid' type="text"/>&nbsp;&nbsp;Which Redis database?</h4>
+			<h5>Leave this alone if you don't know what it means. (Requires toolkit restart)</h5>
+			<h4><input id='metricstore_usage' type="text"/>&nbsp;&nbsp;How is your Mongo server used?</h4>
+			<h5>Leave this alone if you don't know what it means. (Requires toolkit restart)</h5>
+			<h4><input id='metricstore_hostname' type="text"/>&nbsp;&nbsp;Where is your Mongo server located?</h4>
+			<h5>Leave this alone if you don't know what it means. (Requires toolkit restart)</h5>
+			<h4><input id='metricstore_port' type="text"/>&nbsp;&nbsp;Where port does your Mongo server use?</h4>
+			<h5>Leave this alone if you don't know what it means. (Requires toolkit restart)</h5>
+			<h4><input id='space_stores_working_dir' type="text"/>&nbsp;&nbsp;Where should data and logfiles be placed?</h4>
+			<h5>Leave this alone if you don't know what it means. (Requires toolkit restart)</h5>
+			</div>
+			<div>
+				<h3>Almost Done!</h3>
+				<div id='download'></div>
+				<h4>Click this button and save to cbtool/configs/definitions.txt</h4>
+				<div id="definitions"></div>
+			</div>
+		</div>
+
+	<script type="text/javascript"> 
+		/*
+		 * Populate the wizard with the defaults from the User's own configuration,
+		 * including the templates. 
+		 * 
+		 * This works by asking the API the JSON description of the configuration
+		 * file and populating the Wizard if and only if the option is
+		 * identifiable as an HTML object.
+		 */
+		function repopulate_everything_else(cld_attr_list) {
+			 for(var category in cld_attr_list) {
+			 	if(category != "user-defined") {
+			 		var options = cld_attr_list[category]
+			 		for(var attribute in options) {
+			 			var subkey = "#" + category + "_" + attribute; 
+			 			var obj = $(subkey);
+			 			if (obj != undefined) {
+			 				if(obj.is(':text')) {
+					 			$(subkey).val(options[attribute]);
+			 				} else if(obj.is(':checkbox')) {
+			 					var checked_value = options[attribute].toString().toLowerCase();
+			 					if((checked_value.split("true").length - 1) == 0)
+				 					$(subkey).prop('checked', false);
+			 					else 
+				 					$(subkey).prop('checked', true);
+			 				}
+			 			}
+			 		}
+			 	}
+			 }
+		}
+		 
+		/*
+		 * The cloud specific options are populated differently.
+		 */ 
+		function repopulate_options(cld_attr_list) {
+	   		var orig_name = $("#cloud_name").val().toLowerCase();
+	   		var model = $("#cloud_model option:selected").val();
+            var output = "<table class='table'>\n";
+            for(var key in cld_attr_list["user-defined"]) {
+            	var value = cld_attr_list["user-defined"][key];
+                if ((key.split(model).length - 1) == 0)
+                    continue
+                if (value == "need_to_be_configured_by_user") {
+                    output += "<tr><td><h4>" + key.toUpperCase() + ":</h4><input type='text' id='" + key + "' value=\""
+                    var userkey = "cloudoption_" + orig_name + "_" + key;
+                    if (userkey in cld_attr_list["user-defined"]) {
+                        output += cld_attr_list["user-defined"][userkey];
+                    } else if ((key + "_default") in cld_attr_list["user-defined"])
+                        output += cld_attr_list["user-defined"][key + "_default"];
+                    else
+                        output += "default value missing";
+                        
+                    output += "\"/>";
+                        
+                    if((key + "_doc") in cld_attr_list["user-defined"])
+                        output += "</td><td>&nbsp;&nbsp;&nbsp;</td><td>" +
+                            cld_attr_list["user-defined"][key + "_doc"].replace("<", "&lt;").replace(">", "&gt;").replace(/\n/g, "<br/>").replace(/\\n/g, "<br/>");
+                    output += "</td></tr>";
+               }
+             }
+             output += "</table>\n";
+             repopulate_everything_else(cld_attr_list);
+		   $("#wizardoptions").html(output);
+		}
+		
+		var cld_attr_list = (function () { 
+			var json  = null;
+			$.ajax({ 'global': false, 'async' : false, 'url': bootdest + "/wizard_options", 'dataType': "json", 'success': function (cld_attr_list) { 
+			   repopulate_options(cld_attr_list);
+			   json = cld_attr_list;
+			} });
+			return json;
+		 })(); 
+	 
+	   $("#wizard").bwizard();
+	   $("#wizard").bwizard({ validating: function (e, ui) { 
+	   		var orig_name = $("#cloud_name").val();
+	   		var name = "CLOUDOPTION_" + orig_name.toUpperCase();
+	   		var model = $("#cloud_model option:selected").val();
+	   		var d = ""
+	   		d += "[USER-DEFINED]"
+	   		d += "\nSTARTUP_CLOUD = " + $("#cloud_name").val();
+	   		d += "\n" + name + " = cldattach " + model + ", vmcattach all"
+	   		d += "\n\n[USER-DEFINED : " + name + "]"
+	   		var keys = $("input[id^=" + model + "_]");
+	   		for (var i = 0; i < keys.length; i++) {
+	   			key = keys[i];
+	   			d += "\n" + key.id.toUpperCase() + " = " + key.value.replace("<", "&lt;").replace(">", "&gt;");
+	   		}
+	   		d += "\n\n[VM_TEMPLATES : " + model.toUpperCase() + "_CLOUDCONFIG]"
+	   		d += "\n" + $("#image_name").val().toUpperCase() + " = size:" + $("#image_size").val() + ", imageid1:" + $("#image_id").val()
+	   		d += "\n\n[ADMISSION_CONTROL : " + name + "]"
+	   		d += "\nVM_MAX_RESERVATIONS = " + $("#admission_control_vm_max_reservations").val();
+	   		d += "\nAI_MAX_RESERVATIONS = " + $("#admission_control_ai_max_reservations").val();
+	   		d += "\n\n[MON_DEFAULTS : " + name + "]"
+	   		d += "\nCOLLECT_FROM_GUEST = $" + ($("#mon_defaults_collect_from_guest").is(':checked') ? "True" : "False");
+	   		d += "\nCOLLECT_FROM_HOST = $" + ($("#mon_defaults_collect_from_host").is(':checked') ? "True" : "False");
+	   		d += "\n\n[VMC_DEFAULTS : " + name + "]"
+	   		d += "\nDISCOVER_HOSTS = $" + ($("#vmc_defaults_discover_hosts").is(':checked') ? "True" : "False");
+	   		d += "\n\n[OBJECTSTORE]"
+	   		d += "\nUSAGE = " + $("#objectstore_usage").val();
+	   		d += "\nHOST = " + $("#objectstore_host").val();
+	   		d += "\nPORT = " + $("#objectstore_port").val();
+	   		d += "\nDBID = " + $("#objectstore_dbid").val();
+	   		d += "\n\n[METRICSTORE]"
+	   		d += "\nUSAGE = " + $("#metricstore_usage").val();
+	   		d += "\nHOSTNAME = " + $("#metricstore_hostname").val();
+	   		d += "\nPORT = " + $("#metricstore_port").val();
+	   		d += "\n\n[SPACE]"
+	   		d += "\nSTORES_WORKING_DIR = " + $("#space_stores_working_dir").val();
+	   		d += "\n"
+	   		$("#definitions").html("<pre><code>" + d + "</code></pre>");
+	   		var buttons = "<form method='post' action='" + bootdest + "/connect'><a class='btn btn-primary' href='data:txt/html;base64," + btoa(d) + "'><i class='icon-download-alt icon-white'></i>&nbsp;Download Configuration</a>";
+	   		buttons += "&nbsp;&nbsp;<input type='hidden' name='definition_contents' value='";
+	   		buttons += d + "'/><button class='btn btn-primary' name='connect' value='empty' type='submit'>";
+	   		buttons += "<i class='icon-arrow-right icon-white'></i>&nbsp;<b>Connect to Cloud: "; 
+	   		buttons += orig_name.toUpperCase() + "!</b></button><input type='hidden' name='available' value='";
+	   		buttons += orig_name + "'/></form>";
+			$("#download").html(buttons);
+	   	} });
+	   
+	</script>
+	</div>
+	</div>

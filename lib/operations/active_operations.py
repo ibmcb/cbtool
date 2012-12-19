@@ -38,7 +38,7 @@ from lib.auxiliary.value_generation import ValueGeneration
 from lib.stores.stores_initial_setup import StoreSetupException
 from lib.auxiliary.thread_pool import ThreadPool
 from lib.auxiliary.data_ops import selective_dict_update
-from lib.auxiliary.config import parse_cld_defs_file, load_store_functions, get_available_clouds
+from lib.auxiliary.config import parse_cld_defs_file, load_store_functions, get_available_clouds, rewrite_cloudconfig, rewrite_cloudoptions
 from lib.clouds.shared_functions import CldOpsException
 from base_operations import BaseObjectOperations
 
@@ -49,7 +49,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
     '''
     TBD
     '''
-
     @trace
     def cldattach(self, cld_attr_lst, params, definitions, cmd, \
                   uni_attr_lst = None) :
@@ -104,53 +103,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     
                 _attributes, _unused_definitions = parse_cld_defs_file(definitions)
                 cld_attr_lst.update(_attributes)
-                '''
-                First, we have new support in the GUI for single-file configurations
-                that are capable of hosting multiple cloud configurations in a single file.
-                
-                This is done through the use of the "CLOUDOPTION_XXX" user-defined keyword.
-                
-                For this to work, we need to search through all the keys and re-write the
-                keynames so that they look the way they are supposed to before we try
-                to attach the cloud. 
-                '''
-                # First, Make a pass through config.py to verify that any available
+
+                # Make a pass through config.py to verify that any available
                 # CONFIGOPTION keywords are properly installed
                 available_clouds = get_available_clouds(cld_attr_lst, return_all_options = True)
-                if len(available_clouds) :
-                    for cloud_name in available_clouds :
-                        if cld_attr_lst["cloud_name"].lower() != cloud_name :
-                            continue
-                        searchkey = "cloudoption_" + cloud_name
-                        for _category in cld_attr_lst.keys() :
-                            if not isinstance(cld_attr_lst[_category], dict) :
-                                continue 
-                            for  _attribute in cld_attr_lst[_category].keys() :
-                                if _attribute.count(searchkey) :
-                                    # Don't rewrite the cloudoption keyword
-                                    # indicators themselves
-                                    if _category == "user-defined" and _attribute.lower() == searchkey :
-                                        continue
-                                    _new = _attribute.replace(searchkey + "_", "")
-                                    cld_attr_lst[_category][_new] = cld_attr_lst[_category][_attribute]
-                                    # Remove the unneeded ones
-                                    del cld_attr_lst[_category][_attribute]
-                        break
-                    
-                    '''
-                    Let's also cleanup the attribute list and remove 'cloudoption' keywords
-                    for clouds that do not belong to this particular instance:
-                    '''
-                    for cloud_name in available_clouds :
-                        if cld_attr_lst["cloud_name"].lower() == cloud_name :
-                            continue
-                        searchkey = "cloudoption_" + cloud_name
-                        for _category in cld_attr_lst.keys() :
-                            if not isinstance(cld_attr_lst[_category], dict) :
-                                continue 
-                            for  _attribute in cld_attr_lst[_category].keys() :
-                                if _attribute.count(searchkey) :
-                                    del cld_attr_lst[_category][_attribute]
+
+                rewrite_cloudoptions(cld_attr_lst, available_clouds, True)
 
                 '''
                 The ports for the Object Store, Log Store and Metric Store were
@@ -163,55 +121,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     cld_attr_lst["objectstore"].update(uni_attr_lst["objectstore"])
                     cld_attr_lst["logstore"].update(uni_attr_lst["logstore"])
                     cld_attr_lst["metricstore"].update(uni_attr_lst["metricstore"])
+
+                rewrite_cloudconfig(cld_attr_lst)
                 
-                '''
-                  At this point in the attachment, the configuration dictionary
-                  has the configurations of all possible clouds in the form of:
-                   
-                    cld_attr_lst[*][model + "_cloudconfig_" + attribute]
-                 
-                  Now that we know the model the user actually cares about, we need
-                  to re-write the configuration so the rest of the operations code
-                  functions the same way it did before.
-                '''
-                for _category in cld_attr_lst.keys() :
-                    if isinstance(cld_attr_lst[_category], dict) :
-                        for  _attribute in cld_attr_lst[_category].keys() :
-                            if _attribute.count("_cloudconfig_") :
-                                if _attribute.count(cld_attr_lst["model"] + "_cloudconfig_") :
-                                    _new = _attribute.replace(cld_attr_lst["model"] + "_cloudconfig_", "")
-                                    cld_attr_lst[_category][_new] = cld_attr_lst[_category][_attribute]
-                                # Remove the unneeded ones
-                                del cld_attr_lst[_category][_attribute]
-                                
-                '''
-                  Next, we need to check the current cloud model's configuration
-                  for any variables that the User forgot to perform by searching for
-                  a specific "need_to_be_configured_by_user" keyword
-                '''
-                for _category in cld_attr_lst :
-                    if isinstance(cld_attr_lst[_category], dict) and _category != "user-defined" :
-                        for  _attribute in cld_attr_lst[_category] :
-                            if cld_attr_lst[_category][_attribute] == "need_to_be_configured_by_user" :
-                                # Fixup custom multi-cloud options that 
-                                # are pulled in from the templates
-                                template_key = cld_attr_lst["model"] + "_" + _attribute
-                                if template_key in cld_attr_lst["user-defined"] :
-                                    cld_attr_lst[_category][_attribute] = cld_attr_lst["user-defined"][template_key]
-                                    '''
-                                    Have to check it twice =)
-                                    '''
-                                    if cld_attr_lst[_category][_attribute] != "need_to_be_configured_by_user" :
-                                        continue
-                                _msg = "Your configuration file is missing the following configuration: \n"
-                                _msg += "\t[USER-DEFINED : CLOUDOPTION_" + cld_attr_lst["name"].upper() + "]\n"
-                                _msg += "\t" + template_key.upper() + " = XXXXX\n"
-                                _msg += "\n"
-                                if (template_key + "_doc") in cld_attr_lst["user-defined"] :
-                                    _msg += "\n" + cld_attr_lst["user-defined"][template_key + "_doc"].replace("\\n", "\n") + "\n\n"
-                                _msg += "Please update your configuration and try again.\n"
-                                raise Exception(_msg)
-                            
+                rewrite_cloudoptions(cld_attr_lst, available_clouds, False)
     
                 _idmsg = "The \"" + cld_attr_lst["model"] + "\" cloud named \""
                 _idmsg += cld_attr_lst["cloud_name"] + "\""
@@ -252,7 +165,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _cld_conn.test_vmc_connection(_vmc_entry.split(':')[0], \
                                                   cld_attr_lst["vmc_defaults"]["access"], \
                                                   cld_attr_lst["vmc_defaults"]["credentials"], \
-                                                  cld_attr_lst["vmc_defaults"]["extra_info"])
+                                                  cld_attr_lst["vmc_defaults"]["key_name"], \
+                                                  cld_attr_lst["vmc_defaults"]["security_groups"], \
+                                                  cld_attr_lst["vm_templates"])
+
     
                 _all_global_objects = cld_attr_lst.keys()
                 cld_attr_lst["client_should_refresh"] = "no"
@@ -412,15 +328,15 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     while _active :
                         cbdebug(str(_active) + ' ' + _object_typ + "s are still attaching/detaching....")
                     
-                    _active = int(self.get_object_count(cld_attr_list["name"], _object_typ, "ARRIVING"))
-                    _active += int(self.get_object_count(cld_attr_list["name"], _object_typ, "DEPARTING"))
-
-                    if _active :
-                        if _curr_tries < _max_tries :
-                            sleep (_update_frequency)
-                            _curr_tries += 1
-                        else :
-                            break
+                        _active = int(self.get_object_count(cld_attr_list["name"], _object_typ, "ARRIVING"))
+                        _active += int(self.get_object_count(cld_attr_list["name"], _object_typ, "DEPARTING"))
+    
+                        if _active :
+                            if _curr_tries < _max_tries :
+                                sleep (_update_frequency)
+                                _curr_tries += 1
+                            else :
+                                break
                 
                     if _curr_tries >= _max_tries :
                         _msg = "Some " + _obj_type + " attach (daemons) did not die after " 
@@ -873,6 +789,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _fmsg = "No additional VMC pools available for VM creation"
                     raise self.osci.ObjectStoreMgdConnException(_fmsg, _status)
 
+                # Will have to think about changing it later. It is quite 
+                # ineficient, considering that there is a "pool" attribute
+                # being loaded already
                 for _key in obj_attr_list.keys() :
                     if _key.count("pref_pool") :
                         _pref_pool_role = _key.split("_pref_pool")[0]
@@ -1842,7 +1761,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _msg = "RSYNC: " + _cmd
                     cbdebug(_msg)
 
-                    _msg = "Sending files to " + obj_attr_list["name"] + " ("+ obj_attr_list["cloud_ip"] + ")..."
+                    _msg = "Sending a copy of the code tree to "
+                    _msg += obj_attr_list["name"] + " ("+ obj_attr_list["cloud_ip"] + ")..."
                     cbdebug(_msg, True)
 
                     #_proc_man = ProcessManagement(username = obj_attr_list["username"], \
@@ -1865,8 +1785,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         else :
                             _curr_tries = _curr_tries + 1
                             sleep(int(obj_attr_list["update_frequency"]))
+
                 else :
                     _output_list = []
+                    _msg = "Bypassing the sending of a copy of the code tree to "
+                    _msg += obj_attr_list["name"] + " ("+ obj_attr_list["cloud_ip"] + ")..."           
+                    cbdebug(_msg, True)
                     _status = 0
                     break
                 
@@ -2329,6 +2253,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
+            _msg = " Changing AIDRS \"" + obj_attr_list["name"] + "\" to \""
+            _msg += "stopped\"."
+            self.osci.set_object_state(obj_attr_list["cloud_name"], "AIDRS", obj_attr_list["uuid"], "stopped")
+            # For now, will just sleep for 20 seconds. Need to find a better
+            # solution later
+            sleep(20)
             _status = 0
 
         except Exception, e :
@@ -2443,10 +2373,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     self.pre_detach_ai(obj_attr_list)
 
                 elif _obj_type == "AIDRS" :
-                    self.pre_attach_aidrs(obj_attr_list)
+                    self.pre_detach_aidrs(obj_attr_list)
 
                 elif _obj_type == "VMCRS" :
-                    self.pre_attach_vmcrs(obj_attr_list)
+                    self.pre_detach_vmcrs(obj_attr_list)
 
                 else :
                     _msg = "Unknown object: " + _obj_type
@@ -2803,13 +2733,19 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _obj_attr_list["parallel_operations"][_obj_counter] = {}
                 for _obj in _obj_list :
                     _current_state = self.osci.get_object_state(_obj_attr_list["cloud_name"], _obj_type, _obj)
-                    if _current_state == "attached" : 
-                        _obj_name = self.osci.get_object(_obj_attr_list["cloud_name"], _obj_type, False, _obj, False)["name"]
-                        _obj_attr_list["parallel_operations"][_obj_counter] = {}
-                        _obj_attr_list["parallel_operations"][_obj_counter]["parameters"] = _obj_attr_list["cloud_name"]  + ' ' + _obj_name
-                        _obj_attr_list["parallel_operations"][_obj_counter]["operation"] = _obj_type.lower() + "-detach"
-                        _obj_attr_list["parallel_operations"][_obj_counter]["uuid"] = _obj
-                        _obj_counter += 1
+                    # The default behavior is to get rid of all VApps, irrespective
+                    # of their states. If someone ever needs to "protect" VApps
+                    # in the saved state from a "vappadetach all" just uncomment
+                    # the following line. I am reluctant in making that another
+                    # VApp parameter, because I don't know how much it will be 
+                    # used.
+#                    if _current_state == "attached" : 
+                    _obj_name = self.osci.get_object(_obj_attr_list["cloud_name"], _obj_type, False, _obj, False)["name"]
+                    _obj_attr_list["parallel_operations"][_obj_counter] = {}
+                    _obj_attr_list["parallel_operations"][_obj_counter]["parameters"] = _obj_attr_list["cloud_name"]  + ' ' + _obj_name
+                    _obj_attr_list["parallel_operations"][_obj_counter]["operation"] = _obj_type.lower() + "-detach"
+                    _obj_attr_list["parallel_operations"][_obj_counter]["uuid"] = _obj
+                    _obj_counter += 1
 
                 _status, _fmsg = self.parallel_obj_operation("detach", _obj_attr_list)
 

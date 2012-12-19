@@ -25,22 +25,27 @@ SSH_KEY_NAME = $TAC_SSH_KEY_NAME
 INITIAL_VMCS = $TAC_INITIAL_VMCS
 ACCESS = $TAC_ACCESS
 CREDENTIALS = $Empty
-EXTRA_INFO = $Empty
+SECURITY_GROUPS = $Empty
+KEY_NAME = $Empty
 LVM = $False
 
 [VM_DEFAULTS : TAC_CLOUDCONFIG]
 ACCESS = $TAC_ACCESS
-REAL_IP = $True
 CAPTURE_SUPPORTED = $False
 RUNSTATE_SUPPORTED = $True
 RESIZE_SUPPORTED = $True
 EXTRA_SWAP_DISK = vdb
 LOGIN = $TAC_LOGIN
+SECURITY_GROUPS = $Empty
+KEY_NAME = $Empty
 SSH_KEY_NAME = $TAC_SSH_KEY_NAME
-# Other methods could be used to check if a VM already booted
+CHECK_BOOT_STARTED = poll_cloud
+# Other methods could be used to check if a VM *STARTED* booting
+#CHECK_BOOT_STARTED = subscribe_on_starting
 CHECK_BOOT_COMPLETE = tcp_on_22
+# Other methods could be used to check if a VM *FINISHED* booting
 #CHECK_BOOT_COMPLETE = subscribe_on_booting
-#CHECK_BOOT_COMPLETE = wait_for_90
+#CHECK_BOOT_COMPLETE = wait_for_0
 SVM_STUB_UUID = $EMPTY
 SVM_STUB_NAME = $EMPTY
 SVM_DESTINATION = $EMPTY

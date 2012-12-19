@@ -54,7 +54,8 @@ class SimCmds(CommonCloudFunctions) :
         return "Cloudbench SimCloud."
     
     @trace
-    def test_vmc_connection(self, vmc_hn, access, credentials, extra_info) :
+    def test_vmc_connection(self, vmc_hn, access, credentials, key_name, \
+                            security_group_name, vm_templates) :
         '''
         TBD
         '''
@@ -309,7 +310,11 @@ class SimCmds(CommonCloudFunctions) :
         TBD
         '''
         obj_attr_list["last_known_state"] = "running with ip assigned"
-        obj_attr_list["cloud_ip"] = self.generate_random_ip_address()
+        if obj_attr_list["role"] != "predictablevm" :
+            obj_attr_list["cloud_ip"] = self.generate_random_ip_address()
+        else :
+            obj_attr_list["cloud_ip"] = "1.2.3.4"
+
         obj_attr_list["cloud_hostname"] = obj_attr_list["cloud_uuid"] + ".simcloud.com"
         return True        
 
@@ -344,8 +349,12 @@ class SimCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
-            obj_attr_list["cloud_uuid"] = "cb-" + obj_attr_list["username"] + '-' + "vm_" + obj_attr_list["name"].split("_")[1] + '-' + obj_attr_list["role"]
-            obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_uuid"]
+            if obj_attr_list["role"] != "predictablevm" :
+                obj_attr_list["cloud_uuid"] = self.generate_random_uuid()
+            else :
+                obj_attr_list["cloud_uuid"] = "11111111-1111-1111-1111-111111111111"
+
+            obj_attr_list["cloud_vm_name"] = "cb-" + obj_attr_list["username"] + '-' + "vm_" + obj_attr_list["name"].split("_")[1] + '-' + obj_attr_list["role"]
             
             obj_attr_list["cloud_mac"] = self.generate_random_mac_address()
             self.get_virtual_hardware_config(obj_attr_list)
@@ -382,12 +391,7 @@ class SimCmds(CommonCloudFunctions) :
 
             obj_attr_list["arrival"] = int(time())
 
-            obj_attr_list["mgt_005_file_transfer"] = "0"
-
             obj_attr_list["mgt_006_application_start"] = "0"
-            
-            _msg = "Fake sending files to " + obj_attr_list["name"] + " (" + obj_attr_list["cloud_ip"] + ")..."
-            cbdebug(_msg, True)
 
             _status = 0
 

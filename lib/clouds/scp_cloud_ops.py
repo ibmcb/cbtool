@@ -30,6 +30,7 @@ from random import choice
 import xmlrpclib
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
+from lib.auxiliary.data_ops import str2dic
 from lib.remote.network_functions import hostname2ip
 from shared_functions import CldOpsException, CommonCloudFunctions 
 
@@ -93,8 +94,11 @@ class ScpCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
-            if not self.scpconn.__str__().count("ServerProxy") :
-                self.connect(obj_attr_list["access"], obj_attr_list["credentials"], obj_attr_list["name"])
+            if obj_attr_list :
+                if not self.scpconn.__str__().count("ServerProxy") :
+                    self.connect(obj_attr_list["access"], \
+                                 obj_attr_list["credentials"], \
+                                 obj_attr_list["name"])
 
 #            if lock :
 #                _lock = self.lock("VMC", obj_attr_list["vmc"], "operation")
@@ -169,7 +173,7 @@ class ScpCmds(CommonCloudFunctions) :
         _access_url, _iaas_endpoint = access.split('-')            
         _target, _port_number = _access_url.split(':')
         _deploy_python_proxy_script = self.path + "/scripts/common/scp_python_proxy.sh"
-        _python_proxy_script = "scp" + str(version) + "_python_proxy.rb"
+        _python_proxy_script = "scp2" + str(version) + "_python_proxy.rb"
         _iaas_access_id, _iaas_private_key, _iaas_service_public_key = credentials.split('-')
 
         _cmd = _deploy_python_proxy_script + ' ' + _target + ' ' + _port_number
@@ -206,18 +210,75 @@ class ScpCmds(CommonCloudFunctions) :
             cberr(_msg, True)
             raise CldOpsException(_msg, 98)
 
-    def test_vmc_connection(self, vmc_name, access, credentials, extra_info) :
+    def test_vmc_connection(self, vmc_name, access, credentials, key_name, \
+                            security_group_name, vm_templates) :
         '''
         TBD
         '''
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
-            # This deployment is not working....haven't had the time to debug it......
-            if extra_info != "skip_deployment" :
-                self.test_vmc_common(vmc_name, access, credentials, 2)
+            self.test_vmc_common(vmc_name, access, credentials, 2)
             self.connect(access, credentials, vmc_name)
             self.query("describe_service_region", None, False)
+
+            _msg = "Checking if the imageids associated to each \"VM role\" are"
+            _msg += " registered on VMC " + vmc_name + "...."
+            cbdebug(_msg, True)
+
+            _registered_image_list = self.query("describe_images", None, True)
+            _registered_imageid_list = []
+
+            for _registered_image in _registered_image_list :
+                _registered_imageid_list.append(_registered_image["image_id"])
+
+            _required_imageid_list = {}
+
+            for _vm_role in vm_templates.keys() :
+                _imageid = str2dic(vm_templates[_vm_role])["imageid1"]                
+                if _imageid not in _required_imageid_list :
+                    _required_imageid_list[_imageid] = []
+                _required_imageid_list[_imageid].append(_vm_role)
+
+            _msg = 'y'
+
+            _detected_imageids = {}
+            _undetected_imageids = {}
+
+            for _imageid in _required_imageid_list.keys() :
+                
+                # Unfortunately we have to check image names one by one,
+                # because they might be appended by a generic suffix for
+                # image randomization (i.e., deploying the same image multiple
+                # times as if it were different images.
+                _image_detected = False
+                for _registered_image_list in _registered_imageid_list :
+                    if str(_registered_image_list).count(_imageid) :
+                        _image_detected = True
+                        _detected_imageids[_imageid] = "detected"
+                    else :
+                        _undetected_imageids[_imageid] = "undetected"
+
+                if _image_detected :
+                    True
+#                    _msg += "xImage id for VM roles \"" + ','.join(_required_imageid_list[_imageid]) + "\" is \""
+#                    _msg += _imageid + "\" and it is already registered.\n"
+                else :
+                    _msg = "xWARNING Image id for VM roles \""
+                    _msg += ','.join(_required_imageid_list[_imageid]) + "\": \""
+                    _msg += _imageid + "\" is NOT registered "
+                    _msg += "(attaching VMs with this role will result in error).\n"
+            
+            if not len(_detected_imageids) :
+                _msg = "None of the image ids used by any VM \"role\" were detected"
+                _msg += " in this SCP cloud. Please register at least one "
+                _msg += "of the following images: " + ','.join(_undetected_imageids.keys())
+                cberr(_msg, True)
+            else :
+                _msg = _msg.replace("yx",'')
+                _msg = _msg.replace('x',"         ")
+                _msg = _msg[:-2]
+                cbdebug(_msg, True)
 
             _status = 0
 
@@ -231,7 +292,7 @@ class ScpCmds(CommonCloudFunctions) :
 
         finally :
             if _status :
-                _msg = "VMC \"" + vmc_name + "\" could not be tested."
+                _msg = "VMC \"" + vmc_name + "\" did not pass the connection test."
                 _msg += "\" : " + _fmsg
                 cberr(_msg, True)
                 raise CldOpsException(_msg, _status)

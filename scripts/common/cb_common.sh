@@ -30,7 +30,8 @@ cloudname=`cat ~/cb_os_parameters.txt | grep "#OSCN" | cut -d "-" -f 2`
 oshostname=`cat ~/cb_os_parameters.txt | grep "#OSHN" | cut -d "-" -f 2`
 osportnumber=`cat ~/cb_os_parameters.txt | grep "#OSPN" | cut -d "-" -f 2`
 osdatabasenumber=`cat ~/cb_os_parameters.txt | grep "#OSDN" | cut -d "-" -f 2`
-osinstance=`cat ~/cb_os_parameters.txt | grep "#OSOI" | cut -d "-" -f 2`
+#osinstance=`cat ~/cb_os_parameters.txt | grep "#OSOI" | cut -d "-" -f 2`
+osinstance=`cat ~/cb_os_parameters.txt | grep "#OSOI" | sed 's/#OSOI-//g'`
 osprocid=`echo ${osinstance} | cut -d ":" -f 1`
 osmode=`cat ~/cb_os_parameters.txt | grep "#OSMO" | cut -d "-" -f 2`
 
@@ -539,8 +540,7 @@ function refresh_hosts_file {
 	if [ x"${my_ai_uuid}" != x"none" ]; then
 		build_ai_mapping
 	else
-		rm -rf ${ai_mapping_file}
-		touch ${ai_mapping_file}
+		echo "${my_ip_addr} ${HOSTNAME}" > ${ai_mapping_file}
 	fi
 
 	syslog_netcat "Refreshing hosts file ... "
@@ -725,6 +725,7 @@ function post_boot_steps {
 			fi
 		else
 			syslog_netcat "Collect from Guest is ${collect_from_guest}"
+			sleep 2
 			syslog_netcat "Bypassing the gmond and gmetad restart"
 		fi
 	fi

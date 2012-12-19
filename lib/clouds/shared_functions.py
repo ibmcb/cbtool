@@ -122,8 +122,55 @@ class CommonCloudFunctions:
                     _msg = "VM Create Aborting..."
                     _status = 123
                     raise CldOpsException(_msg, _status)
-            
-            if self.is_vm_ready(obj_attr_list) :
+
+            if obj_attr_list["check_boot_started"].count("poll_cloud") :
+                _msg = "Check if the VM \"" + obj_attr_list["name"]
+                _msg += "\" (" + obj_attr_list["cloud_uuid"] + ") has started by "
+                _msg += "querying the cloud directly."
+                cbdebug(_msg)                
+                _vm_started = self.is_vm_ready(obj_attr_list) 
+
+            elif obj_attr_list["check_boot_started"].count("subscribe_on_") :
+
+                _string_to_search = obj_attr_list["cloud_uuid"] + " has started"
+
+                _channel_to_subscribe = obj_attr_list["check_boot_started"].replace("subscribe_on_",'')
+
+                _msg = "Check if the VM \"" + obj_attr_list["name"]
+                _msg += "\" (" + obj_attr_list["cloud_uuid"] + ") has started by "
+                _msg += "subscribing to channel \"" + str(_channel_to_subscribe)
+                _msg += "\" and waiting for the message \""
+                _msg += _string_to_search + "\"."
+                cbdebug(_msg)
+
+                self.osci.add_to_list(obj_attr_list["cloud_name"], "VM", "VMS_STARTING", obj_attr_list["cloud_uuid"])                 
+                _sub_channel = self.osci.subscribe(obj_attr_list["cloud_name"], "VM", _channel_to_subscribe)
+                for _message in _sub_channel.listen() :
+                    if str(_message["data"]).count(_string_to_search) :
+                        _vm_started = True
+                        break
+    
+                _sub_channel.unsubscribe()
+                self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "VMS_STARTING", obj_attr_list["cloud_uuid"])
+                _vm_started = self.is_vm_ready(obj_attr_list) 
+
+            elif obj_attr_list["check_boot_started"].count("wait_for_") :
+                _boot_wait_time = int(obj_attr_list["check_boot_started"].replace("wait_for_",''))
+
+                _msg = "Assuming that the VM \"" + obj_attr_list["cloud_name"]
+                _msg += "\" (" + obj_attr_list["name"] + ") is booted after"
+                _msg += " waiting for " + str(_boot_wait_time) + " seconds."
+                cbdebug(_msg, True)
+
+                if _boot_wait_time :
+                    sleep(_boot_wait_time)
+                _vm_started = self.is_vm_ready(obj_attr_list)                 
+
+            else :
+                _vm_started = False
+
+                
+            if  _vm_started :
                 _time_mark_prc = int(time())
                 obj_attr_list["mgt_003_provisioning_request_completed"] = _time_mark_prc - time_mark_prs
                 self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "Booting...")
@@ -161,13 +208,10 @@ class CommonCloudFunctions:
         _max_tries = int(obj_attr_list["update_attempts"])
         _wait = int(obj_attr_list["update_frequency"])
 
-        if "real_ip" in obj_attr_list and obj_attr_list["real_ip"] == "False" :
+        if not self.get_svm_stub(obj_attr_list) :
+            _network_reachable = False 
+        else: 
             _network_reachable = True
-        else :
-            if not self.get_svm_stub(obj_attr_list) :
-                _network_reachable = False 
-            else: 
-                _network_reachable = True
 
         _curr_tries = 0
 
@@ -190,12 +234,57 @@ class CommonCloudFunctions:
                         raise CldOpsException(_msg, _status)
 
                 if obj_attr_list["check_boot_complete"].count("tcp_on_") :
+                    
                     _nh_conn = Nethashget(obj_attr_list["cloud_ip"])
                     _port_to_check = obj_attr_list["check_boot_complete"].replace("tcp_on_",'')
+                    
+                    _msg = "Check if the VM \"" + obj_attr_list["cloud_name"]
+                    _msg += "\" (" + obj_attr_list["name"] + ") is booted by "
+                    _msg += "attempting to establish a TCP connection to port "
+                    _msg += str(_port_to_check) + " on address "
+                    _msg += obj_attr_list["cloud_ip"]
+                    cbdebug(_msg)
+                    
                     _vm_is_booted = _nh_conn.check_port(int(_port_to_check), "TCP")
-                elif obj_attr_list["check_boot_complete"].count("subscribe_to_") :
-                    True
-                    # Will write code here later
+
+                elif obj_attr_list["check_boot_complete"].count("subscribe_on_") :
+
+                    _string_to_search = obj_attr_list["cloud_ip"] + " is "
+                    _string_to_search += "booted"
+                    
+                    _channel_to_subscribe = obj_attr_list["check_boot_complete"].replace("subscribe_on_",'')
+
+                    _msg = "Check if the VM \"" + obj_attr_list["name"]
+                    _msg += "\" (" + obj_attr_list["cloud_uuid"] + ") has started by "
+                    _msg += "subscribing to channel \"" + str(_channel_to_subscribe)
+                    _msg += "\" and waiting for the message \""
+                    _msg += _string_to_search + "\"."
+                    cbdebug(_msg)
+
+                    self.osci.add_to_list(obj_attr_list["cloud_name"], "VM", "VMS_BOOTING", obj_attr_list["cloud_ip"])
+                    
+                    _sub_channel = self.osci.subscribe(obj_attr_list["cloud_name"], "VM", _channel_to_subscribe)
+                    for _message in _sub_channel.listen() :
+
+                        if str(_message["data"]).count(_string_to_search) :
+                            _vm_is_booted = True
+                            break
+        
+                    _sub_channel.unsubscribe()
+                    self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "VMS_BOOTING", obj_attr_list["cloud_ip"])
+
+                elif obj_attr_list["check_boot_complete"].count("wait_for_") :
+                    _boot_wait_time = int(obj_attr_list["check_boot_complete"].replace("wait_for_",''))
+
+                    _msg = "Assuming that the VM \"" + obj_attr_list["cloud_name"]
+                    _msg += "\" (" + obj_attr_list["name"] + ") is booted after"
+                    _msg += " waiting for " + str(_boot_wait_time) + " seconds."
+                    cbdebug(_msg)
+
+                    if _boot_wait_time :
+                        sleep(_boot_wait_time)
+                    _vm_is_booted = True                 
+                
                 else :
                     _vm_is_booted = False    
                     
@@ -219,19 +308,6 @@ class CommonCloudFunctions:
                     cbdebug(_msg)
                     sleep(_wait)
                     _curr_tries += 1
-
-        else :
-
-            _msg = "Fake trying to establish network connectivity to "
-            _msg +=  obj_attr_list["name"] + " (cloud-assigned uuid "
-            _msg += obj_attr_list["cloud_uuid"] + "), on IP address "
-            _msg += obj_attr_list["cloud_ip"] + "..."
-            cbdebug(_msg, True)
-            sleep(_wait)
-            obj_attr_list["mgt_004_network_acessible"] = int(time()) - time_mark_prc 
-            self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
-                                         obj_attr_list["uuid"], \
-                                         "Network accessible now. Continuing...")
 
         if _curr_tries < _max_tries :
             _msg = "" + obj_attr_list["name"] + ""
@@ -271,7 +347,7 @@ class CommonCloudFunctions:
             if obj_attr_list["staging"] == "pause_" + current_step :
 
                 # Always subscribe for the VM channel, no matter the object
-                sub_channel = self.osci.subscribe(obj_attr_list["cloud_name"], "VM", "staging")
+                _sub_channel = self.osci.subscribe(obj_attr_list["cloud_name"], "VM", "staging")
     
                 if obj_type == "VM" and obj_attr_list["ai"] != "none" :
                     _target_uuid = obj_attr_list["ai"]
@@ -293,21 +369,21 @@ class CommonCloudFunctions:
                 _msg += _target_name + ") pausing on attach for continue signal ...."
                 cbdebug(_msg, True)
 
-                for message in sub_channel.listen() :
-                    args = str(message["data"]).split(";")
+                for _message in _sub_channel.listen() :
+                    _args = str(_message["data"]).split(";")
     
-                    if len(args) != 3 :
-                        cbdebug("Message is not for me: " + str(args))
+                    if len(_args) != 3 :
+                        #cbdebug("Message is not for me: " + str(_args))
                         continue
 
-                    _id, _status, _info = args
+                    _id, _status, _info = _args
     
                     if (_id == _target_uuid or _id == _target_name) and _status == "continue" :
                         obj_attr_list[obj_attr_list["staging"] + "_complete"] = int(time())
                         _status = 0
                         break
     
-                sub_channel.unsubscribe()
+                _sub_channel.unsubscribe()
 
                 _status = 0
 

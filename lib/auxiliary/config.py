@@ -417,3 +417,113 @@ def set_my_parameters(me, parameters):
                 setattr(me, key, float(value))
             except ValueError:
                 setattr(me, key, value)
+
+@trace
+def rewrite_cloudconfig(cld_attr_lst) :
+    '''
+      At this point in the attachment, the configuration dictionary
+      has the configurations of all possible clouds in the form of:
+       
+        cld_attr_lst[*][model + "_cloudconfig_" + attribute]
+     
+      Now that we know the model the user actually cares about, we need
+      to re-write the configuration so the rest of the operations code
+      functions the same way it did before.
+    '''
+    for _category in cld_attr_lst.keys() :
+        if isinstance(cld_attr_lst[_category], dict) :
+            for  _attribute in cld_attr_lst[_category].keys() :
+                if _attribute.count("_cloudconfig_") :
+                    if _attribute.count(cld_attr_lst["model"] + "_cloudconfig_") :
+                        _new = _attribute.replace(cld_attr_lst["model"] + "_cloudconfig_", "")
+                        cld_attr_lst[_category][_new] = cld_attr_lst[_category][_attribute]
+                    # Remove the unneeded ones
+                    del cld_attr_lst[_category][_attribute]
+                    
+    '''
+      Next, we need to check the current cloud model's configuration
+      for any variables that the User forgot to perform by searching for
+      a specific "need_to_be_configured_by_user" keyword
+    '''
+    for _category in cld_attr_lst :
+        if isinstance(cld_attr_lst[_category], dict) and _category != "user-defined" :
+            for  _attribute in cld_attr_lst[_category] :
+                if cld_attr_lst[_category][_attribute] == "need_to_be_configured_by_user" :
+                    # Fixup custom multi-cloud options that 
+                    # are pulled in from the templates
+                    template_key = cld_attr_lst["model"] + "_" + _attribute
+                    if template_key in cld_attr_lst["user-defined"] :
+                        cld_attr_lst[_category][_attribute] = cld_attr_lst["user-defined"][template_key]
+                        '''
+                        Have to check it twice =)
+                        '''
+                        if cld_attr_lst[_category][_attribute] != "need_to_be_configured_by_user" :
+                            continue
+                    _msg = "Your configuration file is missing the following configuration: \n"
+                    _msg += "\t[USER-DEFINED : CLOUDOPTION_" + cld_attr_lst["name"].upper() + "]\n"
+                    _msg += "\t" + template_key.upper() + " = XXXXX\n"
+                    _msg += "\n"
+                    if (template_key + "_doc") in cld_attr_lst["user-defined"] :
+                        _msg += "\n" + cld_attr_lst["user-defined"][template_key + "_doc"].replace("\\n", "\n") + "\n\n"
+                    _msg += "Please update your configuration and try again.\n"
+                    raise Exception(_msg)
+
+@trace
+def rewrite_cloudoptions(cld_attr_lst, available_clouds, user_defined_only = True) :
+    '''
+    First, we have new support in the GUI for single-file configurations
+    that are capable of hosting multiple cloud configurations in a single file.
+    
+    This is done through the use of the "CLOUDOPTION_XXX" user-defined keyword.
+    
+    For this to work, we need to search through all the keys and re-write the
+    keynames so that they look the way they are supposed to before we try
+    to attach the cloud. 
+
+    '''
+    if len(available_clouds) :
+        for cloud_name in available_clouds :
+            if cld_attr_lst["cloud_name"].lower() != cloud_name :
+                continue
+            searchkey = "cloudoption_" + cloud_name
+            for _category in cld_attr_lst.keys() :
+                if user_defined_only :
+                    if _category != "user-defined" :
+                        continue
+                else :
+                    if _category == "user-defined" :
+                        continue
+                if not isinstance(cld_attr_lst[_category], dict) :
+                    continue 
+                for  _attribute in cld_attr_lst[_category].keys() :
+                    if _attribute.count(searchkey) :
+                        # Don't rewrite the cloudoption keyword
+                        # indicators themselves
+                        if _category == "user-defined" and _attribute.lower() == searchkey :
+                            continue
+                        _new = _attribute.replace(searchkey + "_", "")
+                        cld_attr_lst[_category][_new] = cld_attr_lst[_category][_attribute]
+                        # Remove the unneeded ones
+                        del cld_attr_lst[_category][_attribute]
+            break
+        
+        '''
+        Let's also cleanup the attribute list and remove 'cloudoption' keywords
+        for clouds that do not belong to this particular instance:
+        '''
+        for cloud_name in available_clouds :
+            if cld_attr_lst["cloud_name"].lower() == cloud_name :
+                continue
+            searchkey = "cloudoption_" + cloud_name
+            for _category in cld_attr_lst.keys() :
+                if user_defined_only :
+                    if _category != "user-defined" :
+                        continue
+                else :
+                    if _category == "user-defined" :
+                        continue
+                if not isinstance(cld_attr_lst[_category], dict) :
+                    continue 
+                for  _attribute in cld_attr_lst[_category].keys() :
+                    if _attribute.count(searchkey) :
+                        del cld_attr_lst[_category][_attribute]

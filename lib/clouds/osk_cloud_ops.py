@@ -72,7 +72,7 @@ class OskCmds(CommonCloudFunctions) :
             _region = region
             _msg = "Selected region is " + str(region)
             _status = 0
-                
+
         except novaexceptions, obj:
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
@@ -92,7 +92,8 @@ class OskCmds(CommonCloudFunctions) :
                 return _status, _msg, _region
     
     @trace
-    def test_vmc_connection(self, vmc_name, access, credentials, extra_info) :
+    def test_vmc_connection(self, vmc_name, access, credentials, key_name, \
+                            security_group_name, vm_templates) :
         '''
         TBD
         '''
@@ -100,17 +101,109 @@ class OskCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
             self.connect(access, credentials, vmc_name)
+
+            _msg = "Checking if the ssh key pair \"" + key_name + "\" is created"
+            _msg += " on VMC " + vmc_name + "...."
+            cbdebug(_msg, True)
+
+            _key_pair_found = False
+            for _key_pair in self.oskconn.keypairs.list() :
+                if _key_pair.name == key_name :
+                    _key_pair_found = True
+
+            if not _key_pair_found :
+                _msg = "Please create the ssh key pair \"" + key_name + "\" in "
+                _msg += "OpenStack before proceeding."
+                cberr(_msg)
+                raise CldOpsException(_msg, _status)
+                
+            _msg = "Checking if the security group \"" + security_group_name
+            _msg += "\" is created on VMC " + vmc_name + "...."
+            cbdebug(_msg, True)
+
+            _security_group_found = False
+            for security_group in self.oskconn.security_groups.list() :
+                if security_group.name == security_group_name :
+                    _security_group_found = True
+
+            if not _security_group_found :
+                _msg = "Please create the security group \"" + security_group_name + "\" in "
+                _msg += "OpenStack before proceeding."
+                cberr(_msg)
+
+            _msg = "Checking if the imageids associated to each \"VM role\" are"
+            _msg += " registered on VMC " + vmc_name + "...."
+            cbdebug(_msg, True)
+
+            _registered_image_list = self.oskconn.images.list()
+            _registered_imageid_list = []
+
+            for _registered_image in _registered_image_list :
+                _registered_imageid_list.append(_registered_image.name)
+
+            _required_imageid_list = {}
+
+            for _vm_role in vm_templates.keys() :
+                _imageid = str2dic(vm_templates[_vm_role])["imageid1"]                
+                if _imageid not in _required_imageid_list :
+                    _required_imageid_list[_imageid] = []
+                _required_imageid_list[_imageid].append(_vm_role)
+
+            _msg = 'y'
+
+            _detected_imageids = {}
+            _undetected_imageids = {}
+
+            for _imageid in _required_imageid_list.keys() :
+
+                # Unfortunately we have to check image names one by one,
+                # because they might be appended by a generic suffix for
+                # image randomization (i.e., deploying the same image multiple
+                # times as if it were different images.
+                _image_detected = False
+                for _registered_image_list in _registered_imageid_list :
+                    if str(_registered_image_list).count(_imageid) :
+                        _image_detected = True
+                        _detected_imageids[_imageid] = "detected"
+                    else :
+                        _undetected_imageids[_imageid] = "undetected"
+
+                if _image_detected :
+                    True
+#                    _msg += "xImage id for VM roles \"" + ','.join(_required_imageid_list[_imageid]) + "\" is \""
+#                    _msg += _imageid + "\" and it is already registered.\n"
+                else :
+                    _msg += "xWARNING Image id for VM roles \""
+                    _msg += ','.join(_required_imageid_list[_imageid]) + "\": \""
+                    _msg += _imageid + "\" is NOT registered "
+                    _msg += "(attaching VMs with this role will result in error).\n"
+
+            if not len(_detected_imageids) :
+                _msg = "None of the image ids used by any VM \"role\" were detected"
+                _msg += " in this OpenStack cloud. Please register at least one "
+                _msg += "of the following images: " + ','.join(_undetected_imageids.keys()) 
+            else :
+                _msg = _msg.replace("yx",'')
+                _msg = _msg.replace('x',"         ")
+                _msg = _msg[:-2]
+                cbdebug(_msg, True)
+
+            if not (_key_pair_found and _security_group_found and len(_detected_imageids)) :
+                _msg = "Check the previous errors, fix it (using OpenStack's web"
+                _msg += " GUI (horizon) or nova CLI"
+                _status = 1178
+                raise CldOpsException(_msg, _status) 
+            
             _status = 0
 
         except CldOpsException, obj :
             _fmsg = str(obj.msg)
             cberr(_fmsg)
             _status = 2
-            raise CldOpsException(_fmsg, _status)
 
         finally :
             if _status :
-                _msg = "VMC \"" + vmc_name + "\" could not be tested."
+                _msg = "VMC \"" + vmc_name + "\" did not pass the connection test."
                 _msg += "\" : " + _fmsg
                 cberr(_msg, True)
                 raise CldOpsException(_msg, _status)
@@ -237,11 +330,9 @@ class OskCmds(CommonCloudFunctions) :
                             _msg += " (" + _instance.name + ") to "
                             _msg += "start and then destroy it."
                             cbdebug(_msg, True)
-                            
-                    _msg = "Some instances are still starting on VMC \"" + obj_attr_list["name"] 
-                    _msg += "\". Will wait for " + str(_wait) + " seconds and check again."
-                    sleep(_wait)
-                    _curr_tries += 1
+                sleep(_wait)
+
+                _curr_tries += 1
 
             if _curr_tries > _max_tries  :
                 _status = 1077

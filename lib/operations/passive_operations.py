@@ -1720,7 +1720,6 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
                 if not _status :
                     _list_name = obj_attr_list["object_type"][:-1].lower() + '_' + obj_attr_list["object_attribute"]
-        
                     _result = list(self.osci.get_list(obj_attr_list["cloud_name"], "GLOBAL", _list_name))
         
                     _list = ", ".join(_result)

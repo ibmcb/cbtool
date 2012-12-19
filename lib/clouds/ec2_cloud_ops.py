@@ -104,18 +104,125 @@ class Ec2Cmds(CommonCloudFunctions) :
                 return _status, _msg, _region_hostname
     
     @trace
-    def test_vmc_connection(self, vmc_name, access, credentials, extra_info) :
+    def test_vmc_connection(self, vmc_name, access, credentials, key_name, \
+                            security_group_name, vm_templates) :
         '''
         TBD
         '''
         try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
             self.connect(access, credentials, vmc_name)
+
+            _msg = "Checking if the ssh key pair \"" + key_name + "\" is created"
+            _msg += " on VMC " + vmc_name + "...."
+            cbdebug(_msg, True)
+
+            _key_pair_found = False
+            for _key_pair in self.ec2conn.get_all_key_pairs() :
+                if _key_pair.name == key_name :
+                    _key_pair_found = True
+
+            if not _key_pair_found :
+                _msg = "Please create the ssh key pair \"" + key_name + "\" in "
+                _msg += "Amazon EC2 before proceeding."
+                cberr(_msg)
+                
+            _msg = "Checking if the security group \"" + security_group_name
+            _msg += "\" is created on VMC " + vmc_name + "...."
+            cbdebug(_msg, True)
+
+            _security_group_found = False
+            for security_group in self.ec2conn.get_all_security_groups() :
+                if security_group.name == security_group_name :
+                    _security_group_found = True
+
+            if not _security_group_found :
+                _msg = "Please create the security group \"" + security_group_name + "\" in "
+                _msg += "Amazon EC2 before proceeding."
+                cberr(_msg)
+
+            _msg = "Checking if the imageids associated to each \"VM role\" are"
+            _msg += " registered on VMC " + vmc_name + "...."
+            cbdebug(_msg, True)
+
+            _registered_image_list = self.ec2conn.get_all_images()
+            _registered_imageid_list = []
+
+            for _registered_image in _registered_image_list :
+                _registered_imageid_list.append(_registered_image.name)
+
+            _required_imageid_list = {}
+
+            for _vm_role in vm_templates.keys() :
+                _imageid = str2dic(vm_templates[_vm_role])["imageid1"]                
+                if _imageid not in _required_imageid_list :
+                    _required_imageid_list[_imageid] = []
+                _required_imageid_list[_imageid].append(_vm_role)
+
+            _msg = 'y'
+
+            _detected_imageids = {}
+            _undetected_imageids = {}
+
+            for _imageid in _required_imageid_list.keys() :
+                
+                # Unfortunately we have to check image names one by one,
+                # because they might be appended by a generic suffix for
+                # image randomization (i.e., deploying the same image multiple
+                # times as if it were different images.
+                _image_detected = False
+                for _registered_image_list in _registered_imageid_list :
+                    if str(_registered_image_list).count(_imageid) :
+                        _image_detected = True
+                        _detected_imageids[_imageid] = "detected"
+                    else :
+                        _undetected_imageids[_imageid] = "undetected"
+
+                if _image_detected :
+                    True
+#                    _msg += "xImage id for VM roles \"" + ','.join(_required_imageid_list[_imageid]) + "\" is \""
+#                    _msg += _imageid + "\" and it is already registered.\n"
+                else :
+                    _msg = "xWARNING Image id for VM roles \""
+                    _msg += ','.join(_required_imageid_list[_imageid]) + "\": \""
+                    _msg += _imageid + "\" is NOT registered "
+                    _msg += "(attaching VMs with this role will result in error).\n"
+            
+            if not len(_detected_imageids) :
+                _msg = "None of the image ids used by any VM \"role\" were detected"
+                _msg += " in this EC2 cloud. Please register at least one "
+                _msg += "of the following images: " + ','.join(_undetected_imageids.keys())
+                cberr(_msg, True)
+            else :
+                _msg = _msg.replace("yx",'')
+                _msg = _msg.replace('x',"         ")
+                _msg = _msg[:-2]
+                cbdebug(_msg, True)
+
+            if not (_key_pair_found and _security_group_found and len(_detected_imageids)) :
+                _fmsg = "Check the previous errors, fix it (using EC2's web"
+                _fmsg += " GUI (AWS Console) or ec2-* CLI utilities"
+                _status = 1178
+                raise CldOpsException(_fmsg, _status) 
+
+            _status = 0
                         
         except CldOpsException, obj :
-            _msg = str(obj.msg)
+            _fmsg = str(obj.msg)
             cberr(_msg)
             _status = 2
-            raise CldOpsException(_msg, _status)
+
+        finally :
+            if _status :
+                _msg = "VMC \"" + vmc_name + "\" did not pass the connection test."
+                _msg += "\" : " + _fmsg
+                cberr(_msg, True)
+                raise CldOpsException(_msg, _status)
+            else :
+                _msg = "VMC \"" + vmc_name + "\" was successfully tested."
+                cbdebug(_msg, True)
+                return _status, _msg
 
     @trace
     def vmccleanup(self, obj_attr_list) :
@@ -210,6 +317,11 @@ class Ec2Cmds(CommonCloudFunctions) :
             obj_attr_list["mgt_002_provisioning_request_sent"] = _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
             
             if "cleanup_on_attach" in obj_attr_list and obj_attr_list["cleanup_on_attach"] == "True" :
+                _msg = "Removing all VMs previously created on VMC \""
+                _msg += obj_attr_list["name"] + "\" (only VMs names starting with"
+                _msg += " \"" + "cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]
+                _msg += "\")....."
+                cbdebug(_msg, True)                
                 _status, _fmsg = self.vmccleanup(obj_attr_list)
 
             _x, _y, _hostname = self.connect(obj_attr_list["access"], obj_attr_list["credentials"], obj_attr_list["name"])
