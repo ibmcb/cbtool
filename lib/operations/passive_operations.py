@@ -128,6 +128,11 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _fields.append("|pattern                ")
             #            _fields.append("|uuid                                 ")
                         _fields.append("|type              ")
+                    elif _obj_type == "VMCRS" :
+                        _fields = []
+                        _fields.append("|name                ")
+                        _fields.append("|scope                ")
+            #            _fields.append("|uuid                                 ")
                     else :
                         _msg = "Unknown object: " + _obj_type
                         raise self.ObjectOperationException(_msg, 28)
@@ -310,7 +315,8 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                 _result = copy.deepcopy(_obj_attribs)
         
                     elif _obj_type == "VMC" or _obj_type == "VM" or _obj_type == "HOST" or \
-                        _obj_type == "AI" or _obj_type == "AIDRS" or _obj_type == "SVM":
+                        _obj_type == "AI" or _obj_type == "AIDRS" or _obj_type == "SVM" or \
+                        _obj_type == "VMCRS" :
                         _fields = []            
                         _fields.append("|attribute (" + _obj_type + " object key)               ")
                         _fields.append("|value                                ")

@@ -64,13 +64,13 @@ else
 fi
 
 ###################################################################
-# Editing hadoop conf .xml files to add mendatory conf knobs. 
+# Editing hadoop conf.xml files to add mendatory conf knobs. 
 #
 # NOTE: ONE PROBLEM: the input tmp conf files should also contain 
 #       the strings "HADDOP_NAMENODE_IP" and "HADOOP_JOBTRACKER_IP" !!!
 #       Now we have the fix: the name of the knob and its value
 #	can be defined in cb_hadoop_common.sh (see below). 
-#	But currently since the hadoop conf .xml files in the golden image
+#	But currently since the hadoop conf.xml files in the golden image
 #	are using have the following placeholders (HADOOP_NAMENODE_IP..),
 #	we stick to the following three seds.	
 ###################################################################
@@ -79,9 +79,11 @@ syslog_netcat "..Editing hadoop conf files"
 sed -i s/HADOOP_NAMENODE_IP/$hadoop_master_ip/g $HADOOP_CONF_DIR/core-site.xml
 sed -i s/HADOOP_JOBTRACKER_IP/$hadoop_master_ip/g $HADOOP_CONF_DIR/mapred-site.xml
 sed -i s/NUM_REPLICA/1/g $HADOOP_CONF_DIR/hdfs-site.xml #3 is default. 1 is given for sort's performance
+sed -i s/DFS_NAME_DIR/${DFS_NAME_DIR}/g $HADOOP_CONF_DIR/hdfs-site.xml
+sed -i s/DFS_DATA_DIR/${DFS_DATA_DIR}/g $HADOOP_CONF_DIR/hdfs-site.xml
 
 ###################################################################
-# Editing hadoop conf .xml files for the optional confs 
+# Editing hadoop conf.xml files for the optional confs 
 # as defined in cb_hadoop_common.sh
 ###################################################################
 #core-site.xml
@@ -133,6 +135,24 @@ do
 	echo "</property>" >> $output_file
 
 done
-echo "</configuration>" >> $output_file 
+echo "</configuration>" >> $output_file
+
+if [ -d /etc/hadoop ]
+then
+	syslog_netcat "Since a \"/etc/hadoop/\" directory was detected, configuration files will be copied to there too"
+	sudo cp $HADOOP_CONF_DIR/hadoop-env.sh /etc/hadoop
+	sudo cp $HADOOP_CONF_DIR/core-site.xml /etc/hadoop
+	if [ -e $HADOOP_CONF_DIR/slaves ]
+	then
+		sudo cp $HADOOP_CONF_DIR/slaves /etc/hadoop
+	fi
+	if [ -e $HADOOP_CONF_DIR/masters ]
+	then
+		sudo cp $HADOOP_CONF_DIR/masters /etc/hadoop
+	fi
+	sudo cp $HADOOP_CONF_DIR/mapred-site.xml /etc/hadop
+	sudo cp $HADOOP_CONF_DIR/hdfs-site.xml /etc/hadoop
+fi
+
 syslog_netcat "....Done...."
 exit 0

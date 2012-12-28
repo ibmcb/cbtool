@@ -1116,7 +1116,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _aidrs_templates["patterns"].append(_element[0:-5])
             
             obj_attr_list["nr_ais"] = 0
-            obj_attr_list["arrival"] = int(time())
 
             if obj_attr_list["pattern"] in _aidrs_templates["patterns"] :
                 # This is just a trick to remove the application name from the
@@ -1133,6 +1132,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                 obj_attr_list[_key[_x:]] = _value
                         else :
                             obj_attr_list[_key[_x:]] = _value
+
+                obj_attr_list["arrival"] = int(time())
+
                 _status = 0
             else :
                 _fmsg = "Unknown pattern: " + obj_attr_list["pattern"] 
@@ -1165,13 +1167,21 @@ class ActiveObjectOperations(BaseObjectOperations) :
         TBD
         '''
         try :
+
             _status = 100
 
             _fmsg = "An error has occurred, but no error message was captured"
                             
             _vmcrs_templates = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, \
                                                     "vmcrs_templates", False)
-            cbdebug(_vmcrs_templates["patterns"])
+
+            _vmcrs_templates["patterns"] = []
+            for _element in _vmcrs_templates :
+                if _element.count("ivmcat") :
+                    _vmcrs_templates["patterns"].append(_element[0:-7])
+
+            obj_attr_list["nr_vmcapreqs"] = 0
+
             if _vmcrs_templates["patterns"].count(obj_attr_list["pattern"]) :
                 # This is just a trick to remove the application name from the
                 # start of the AIDRS attributes on the template. 
@@ -1187,6 +1197,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                 obj_attr_list[_key[_x:]] = _value
                         else :
                             obj_attr_list[_key[_x:]] = _value
+
+                obj_attr_list["arrival"] = int(time())
+
                 _status = 0
             else :
                 _fmsg = "Unknown pattern: " + obj_attr_list["pattern"] 
@@ -2686,6 +2699,35 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 raise self.ObjectOperationException(_msg, _status)
             else :
                 _msg = "AIDRS post-detachment operations success."
+                cbdebug(_msg)
+                return _status, _msg
+
+    @trace
+    def post_detach_vmcrs(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+            
+            _status = 0
+
+        except IndexError, msg :
+            _status = 40
+            _fmsg = str(msg)
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+
+        finally :
+            if _status :
+                _msg = "VMCRS post-detachment operations failure: " + _fmsg
+                cberr(_msg)
+                raise self.ObjectOperationException(_msg, _status)
+            else :
+                _msg = "VMCRS post-detachment operations success."
                 cbdebug(_msg)
                 return _status, _msg
 
@@ -4200,6 +4242,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             _vmcrs_attr_list = self.osci.get_object(cloud_name, "VMCRS", False, object_uuid, False)
 
+            _type_list = self.osci.get_list(_vmcrs_attr_list["cloud_name"], "GLOBAL", "ai_types")
+
             _check_frequency = float(_vmcrs_attr_list["update_frequency"])
 
             _ivmcat_parms = _vmcrs_attr_list["ivmcat"]
@@ -4221,7 +4265,19 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 if _vmcrs_state and _vmcrs_state != "stopped" :
 
-                    _capturable_ais = self.osci.query_by_view(cloud_name, "AI", "BYTYPE", _vmcrs_attr_list["type"], "arrival", "minage:" + _vmcrs_attr_list["min_cap_age"])
+                    if _vmcrs_attr_list["scope"] in _type_list :
+                        _view = "BYTYPE"
+                    elif _vmcrs_attr_list["scope"] == _vmcrs_attr_list["username"] :
+                        _view = "BYUSERNAME"
+                    else :
+                        _view = "BYAIDRS"
+
+                    _capturable_ais = self.osci.query_by_view(cloud_name, \
+                                                              "AI", \
+                                                              _view, \
+                                                              _vmcrs_attr_list["scope"],\
+                                                               "arrival", \
+                                                               "minage:" + _vmcrs_attr_list["min_cap_age"])
 
                     if len(_capturable_ais) :
                         _selected_ai = choice(_capturable_ais)
@@ -4314,6 +4370,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
     
     @trace
     def continue_vm(self, obj_attr_list) :
+        '''
+        TBD
+        '''
         status = 342
         cloud_name = obj_attr_list["cloud_name"]
         started_uuid = obj_attr_list["uuid"]
@@ -4443,6 +4502,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
     @trace
     def continue_app(self, obj_attr_list) :
+        '''
+        TBD
+        '''
         try :
             status = 342
             cloud_name = obj_attr_list["cloud_name"]
@@ -4472,5 +4534,4 @@ class ActiveObjectOperations(BaseObjectOperations) :
             app["status"] = obj.status
             app["result"] = None
         
-        return app 
-    
+        return app

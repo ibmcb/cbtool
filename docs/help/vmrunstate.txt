@@ -1,1 +1,1 @@
-To be written
+Usage: vmrunstate <cloud name> <vm name> <runstate> [mode]

@@ -1,1 +1,1 @@
-To be written
+Usage: hostfail <cloud name> <host name> [mode]

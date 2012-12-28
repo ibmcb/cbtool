@@ -373,11 +373,11 @@ class API():
             else :
                 return self.active.objattach({}, cloud_name + ' ' + identifier + ' ' + temp_attr_list, "vmc-attach")[2]
     
-    def vmcrsattach(self, cloud_name, identifier, temp_attr_list = "empty=empty", async = False):
+    def vmcrsattach(self, cloud_name, identifier, scope = '', max_cap_reqs = '', ivmcat = '', min_cap_age = '', temp_attr_list = "empty=empty", async = False):
         if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + temp_attr_list + (' ' + async), "vmcrs-attach")[2]
+            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + scope + ' ' + max_cap_reqs + ' ' + ivmcat + ' ' + min_cap_age + ' ' + temp_attr_list + (' ' + async), "vmcrs-attach")[2]
         else :
-            return self.active.objattach({}, cloud_name + ' ' + identifier + ' ' + temp_attr_list, "vmcrs-attach")[2]
+            return self.active.objattach({}, cloud_name + ' ' + identifier + ' ' + scope + ' ' + max_cap_reqs + ' ' + ivmcat + ' ' + min_cap_age + ' ' + temp_attr_list, "vmcrs-attach")[2]
     
     def appattach(self, cloud_name, type, load_level = "default", load_duration = "default", lifetime = "none", aidrs = "none", pause_step = "none", temp_attr_list = "empty=empty", async = False):
         parameters = cloud_name + ' ' + type + ' ' + str(load_level) + ' ' + str(load_duration) + ' ' + str(lifetime) + ' ' + aidrs + ' ' + pause_step + ' ' + temp_attr_list

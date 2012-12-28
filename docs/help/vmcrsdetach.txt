@@ -1,1 +1,1 @@
-To be written
+Usage: vmcrsdetach <cloud name> <vmcrs name> [force] [mode]

@@ -1,1 +1,1 @@
-To be written
+Usage: vmcapture <cloud name> <vm name> [mode]

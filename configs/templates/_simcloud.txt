@@ -1,6 +1,6 @@
 [USER-DEFINED]
 SIM_INITIAL_VMCS = need_to_be_configured_by_user 
-# Name of the ssh key pair (two files are supposed to exist inside the 
+# Name of the ssh key pair
 SIM_SSH_KEY_NAME = bogus_id_rsa 
 SIM_LOGIN = klabuser 
 

@@ -172,6 +172,8 @@ class MongodbMgdConn :
         '''
         self.conn_check()
 
+        username = username.replace('-',"dash")
+
         try :
             _collections = [ \
                             "latest_management_VM_" + username, \
@@ -215,6 +217,8 @@ class MongodbMgdConn :
         '''
         self.conn_check()
 
+        username = username.replace('-',"dash")
+
         try :
             _collections = ["latest_management_VM_" + username, \
                             "latest_management_HOST_" + username, \
@@ -249,6 +253,8 @@ class MongodbMgdConn :
         '''
         self.conn_check()
 
+        collection = collection.replace('-',"dash")
+
         try :
             _collection_handle = self.mongodb_conn[self.database][collection]
             _collection_handle.insert(document)
@@ -271,6 +277,8 @@ class MongodbMgdConn :
         TBD
         '''
         self.conn_check()
+
+        collection = collection.replace('-',"dash")
 
         try :
             _collection_handle = self.mongodb_conn[self.database][collection]
@@ -304,6 +312,8 @@ class MongodbMgdConn :
         '''
         self.conn_check()
 
+        collection = collection.replace('-',"dash")
+
         try :
             _collection_handle = self.mongodb_conn[self.database][collection]
             _collection_handle.save(document)
@@ -325,6 +335,8 @@ class MongodbMgdConn :
         '''
         self.conn_check()
 
+        collection = collection.replace('-',"dash")
+
         try :
             _collection_handle = self.mongodb_conn[self.database][collection]
             _collection_handle.remove(criteria)
@@ -344,6 +356,8 @@ class MongodbMgdConn :
         TBD
         '''
         self.conn_check()
+
+        collection = collection.replace('-',"dash")
 
         try :
             _collection_handle = self.mongodb_conn[self.database][collection]
@@ -366,6 +380,8 @@ class MongodbMgdConn :
         '''
         self.conn_check()
 
+        collection = collection.replace('-',"dash")
+
         try :
             _collection_handle = self.mongodb_conn[self.database][collection]
             _matches = _collection_handle.find(criteria)
@@ -385,6 +401,8 @@ class MongodbMgdConn :
         TBD
         '''
         self.conn_check()
+
+        collection = collection.replace('-',"dash")
 
         try :
             _result = {}
@@ -421,6 +439,8 @@ class MongodbMgdConn :
         TBD
         '''
         self.conn_check()
+
+        collection = collection.replace('-',"dash")
 
         try :
             _collection_handle = self.mongodb_conn[self.database][collection]

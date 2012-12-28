@@ -1,1 +1,1 @@
-To be written
+aidrsdetach <cloud name> <aidrs name> [force] [mode]

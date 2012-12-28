@@ -49,9 +49,9 @@ STORES_WORKING_DIR = $BASE_DIR/stores
 USERNAME = $MAIN_USERNAME
 # This variable should match what the layout of the VM image uses (user name and directory)
 VM_DAEMON_DIR = /home/klabuser
-#  The "cloudbench/jar" part of the directory is hardcoded in lib/active_operations.py
-#  and the directory layout of the 'cloudbench.git' source distribution
-JARS_DIR = /home/klabuser/cloudbench/jar
+#  The "cbtool/jar" part of the directory is hardcoded in lib/active_operations.py
+#  and the directory layout of the 'cbtool.git' source distribution
+JARS_DIR = /home/klabuser/cbtool/jar
 
 [TIME]
 USERNAME = $MAIN_USERNAME
@@ -72,8 +72,8 @@ VM = BYUSERNAME, BYVMC, BYHOST, BYROLE, BYTYPE, BYAI, BYAIDRS
 SVM = BYUSERNAME, BYVMC, BYROLE, BYTYPE, BYAI, BYAIDRS
 AI = BYUSERNAME, BYTYPE, BYAIDRS
 AIDRS = BYUSERNAME, BYPATTERN
-VMCRS = BYUSERNAME, BYTYPE
-FIRS = BYUSERNAME, BYSCOPE
+VMCRS = BYUSERNAME, BYPATTERN, BYSCOPE
+FIRS = BYUSERNAME, BYPATTERN, BYSCOPE
 MANDATORY_TAGS = name, cloud_hostname, cloud_ip
 CLOUD_ATTRIBUTES = name, model, description, all, username, client_should_refresh, start_time, all_vmcs_attached
 

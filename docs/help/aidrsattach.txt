@@ -1,1 +1,1 @@
-To be written
+Usage: aidrsattach <cloud name> <pattern> [max AIs] [inter ai arrival time] [ai lifetime] [ai load level] [ai load duration] [mode]

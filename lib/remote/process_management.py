@@ -56,21 +56,36 @@ class ProcessManagement :
             self.status = status
         def __str__(self):
             return self.msg
+
     @trace
     def run_os_command(self, cmdline) :
         '''
         TBD
         '''
         if self.hostname == "127.0.0.1" or self.hostname == "0.0.0.0" :
-            _cmd = cmdline
+            _local = True
+        else :
+            _local = False
 
-        cbdebug("starting daemon: " + _cmd);
+        if _local :     
+            _cmd = cmdline
+        else :
+            if self.username :
+                self.username = self.username + "@"
+            else :
+                self.username = ''
+
+            _cmd = "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "
+            _cmd += self.username + self.hostname + " \"" + cmdline + "\""
+
+        _msg = "running os command: " + _cmd
+        cbdebug(_msg);
         _proc_h = Popen(_cmd, shell=True, stdout=PIPE, stderr=PIPE)
 
         if _proc_h.pid :
             if not cmdline.count("--debug_host=localhost") :
                 _result = _proc_h.communicate()
-                if _proc_h.returncode and len(_result[1]) :
+                if _proc_h.returncode and len(_result[1]) and _local :
                     _msg = "Error while checking for a pid for a process with the "
                     _msg += "command line \"" + cmdline + "\" (returncode = "
                     _msg += str(_proc_h.pid) + ") :" + str(_result[1])

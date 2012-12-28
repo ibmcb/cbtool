@@ -182,11 +182,6 @@ class BaseObjectOperations :
             else :
                 _status = 9
                 _msg = "Usage: clddetach <cloud name>"
-    
-        elif command == "mon-attach" :
-            if _length < 1 :
-                _status = 9
-                _msg = "Usage: monattach <cloud name>"
 
         elif command == "mon-extract" :
             if _length == 3 :
@@ -301,13 +296,6 @@ class BaseObjectOperations :
             if _length < 2:
                 _status = 9
                 _msg = "Usage: svmstat <cloud name> <svm name> [mode]"
-                
-        elif command == "vm-console" :
-            if _length >= 2 :
-                object_attribute_list["name"] = _parameters[1]
-            if _length < 2:
-                _status = 9
-                _msg = "Usage: vmconsole <cloud name> <vm name>"
 
         elif command == "vm-debug" :
             if _length >= 2 :
@@ -474,7 +462,7 @@ class BaseObjectOperations :
                 object_attribute_list["force_detach"] = _parameters[1]
             if _length < 2 :
                 _status = 9
-                _msg = "Usage: aidrsattach <cloud name> <aidrs name> [force] [mode]"
+                _msg = "Usage: aidrsdetach <cloud name> <aidrs name> [force] [mode]"
                 
         elif command == "vmcrs-attach" :
             object_attribute_list["max_caps"] = "default"
@@ -485,14 +473,16 @@ class BaseObjectOperations :
             if _length >= 2 :
                 object_attribute_list["pattern"] = _parameters[1]
             if _length >= 3 :
-                object_attribute_list["max_caps"] = _parameters[2]
+                object_attribute_list["scope"] = _parameters[2]
             if _length >= 4 :
-                object_attribute_list["ivmcat"] = _parameters[3]
+                object_attribute_list["max_caps"] = _parameters[3]
             if _length >= 5 :
-                object_attribute_list["min_cap_age"] = _parameters[4]
+                object_attribute_list["ivmcat"] = _parameters[4]
+            if _length >= 6 :
+                object_attribute_list["min_cap_age"] = _parameters[5]
             if _length < 2:
                 _status = 9
-                _msg = "Usage: vmcrsattach <cloud name> <pattern> [max capreqs] [inter vm cap req arrival time] [min_cap_age] [mode]"
+                _msg = "Usage: vmcrsattach <cloud name> <pattern> [scope] [max capreqs] [inter vm cap req arrival time] [min_cap_age] [mode]"
 
             object_attribute_list["name"] = "to generate"  
 
@@ -737,7 +727,7 @@ class BaseObjectOperations :
         elif command == "stats-get" :
             if not _length :
                 _status =  9
-                _msg = "Usage: stats <cloud name> "
+                _msg = "Usage: stats <cloud name>"
 
         elif command == "shell-execute" :
             if _length >= 2 :
@@ -751,7 +741,7 @@ class BaseObjectOperations :
                 object_attribute_list["cmdexec"] = ' '.join(_parameters[1:]) 
             else :
                 _status =  9
-                _msg = "Usage: Usage: shell <cloud name> <command name>"
+                _msg = "Usage: expid <cloud name> <experiment id>"
         
         ######### "PASSIVE" OPERATION PARAMETER PARSING - END ######### 
 
@@ -1968,7 +1958,12 @@ class BaseObjectOperations :
                     _msg = "Running application-specific \"" + operation + "\" operations..."
                     cbdebug(_msg, True)
                     self.osci.pending_object_set(cloud_name, "AI", ai_uuid, _msg)
-                    
+
+                    if "dont_start_load_manager" in _ai_attr_list and _ai_attr_list["dont_start_load_manager"].lower() == "true" :
+                        _msg = "Load Manager will NOT be automatically"
+                        _msg += " started during this AI deployment."
+                        cbdebug(_msg, True)
+
                     _lmr = False
                     
                     for _num in range(1, 100) :
@@ -1993,9 +1988,7 @@ class BaseObjectOperations :
                                 break
                             else :
                                 if "dont_start_load_manager" in _ai_attr_list and _ai_attr_list["dont_start_load_manager"].lower() == "true" :
-                                    _msg = "Load Manager will NOT be automatically"
-                                    _msg += " started during this AI deployment."
-                                    cbdebug(_msg, True)
+                                    True
                                 else :
                                     # This needs to be done only once, at the AI's
                                     # initial deployment.

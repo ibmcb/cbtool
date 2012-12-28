@@ -207,6 +207,10 @@ class RedisMgdConn :
                 if _key.count("_type") :
                     self.add_to_list(cloud_name, "GLOBAL", "aidrs_patterns", _key.replace("_type", ''))
 
+            for _key in cloud_kv_list["vmcrs_templates"].keys() :
+                if _key.count("_scope") :
+                    self.add_to_list(cloud_name, "GLOBAL", "vmcrs_patterns", _key.replace("_scope", ''))
+
             for _key in cloud_kv_list["vm_templates"].keys() :
                 self.add_to_list(cloud_name, "GLOBAL", "vm_roles", _key)
 

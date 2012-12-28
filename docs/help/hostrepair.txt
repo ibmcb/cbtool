@@ -1,1 +1,1 @@
-To be written
+Usage: hostrepair <cloud name> <host name> [mode]

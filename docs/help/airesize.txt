@@ -1,1 +1,1 @@
-To be written
+Usage: airesize <cloud name> <ai name> <role> (+/-)<delta>

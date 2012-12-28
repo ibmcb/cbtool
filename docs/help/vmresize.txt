@@ -1,4 +1,7 @@
 Perform vertical elasticity on a virtual machine.
+
+Usage: vmresize <cloud name> <vm name> <resource specification>
+
 <name> is the VM to be resized
 <resource> is the physical resource to resized / eclipsed
 <value> is the value to which you want the resource to be changed.

@@ -319,6 +319,8 @@ function report_app_metrics {
 	ATTEMPT=0
 	OUTERR=1
 
+	my_mongodb_username=`echo ${my_username} | sed s/'-'/'dash'/g`
+
 	metric_samples_dictionary=""
 	reported_metric_names_dictionary=""
 	for metric in "$@"
@@ -357,7 +359,7 @@ function report_app_metrics {
 
 	while [[ (( ${ECODE} -ne 0 || ${OUTERR} -eq 1 )) && ${ATTEMPT} -le ${ATTEMPTS} ]]
 	do
-		OUTPUT=`mongo ${metricstore_hostname}:${metricstore_port}/${metricstore_database} --eval "db.runtime_app_VM_${my_username}.save({${app_dictionary}})"`
+		OUTPUT=`mongo ${metricstore_hostname}:${metricstore_port}/${metricstore_database} --eval "db.runtime_app_VM_${my_mongodb_username}.save({${app_dictionary}})"`
 		ECODE=$?
 		OUTERR=`echo ${OUTPUT} | grep -c "Error"`
 		SLEEP_TIME=$(( $RANDOM % ${RANGE} ))
@@ -365,17 +367,18 @@ function report_app_metrics {
 		sleep $SLEEP_TIME
 		ATTEMPT=$(( ${ATTEMPT} + 1 ))
 	done
+
 	syslog_netcat "Application Metrics reported successfully. Data package sent was: \"$app_dictionary\""
-	
+
 	if [ "$write_latest" = "true" ]
 	then
-		mongo ${metricstore_hostname}:${metricstore_port}/${metricstore_database} --eval "db.latest_runtime_app_VM_${my_username}.save({${app_latest_dictionary}})"
+		mongo ${metricstore_hostname}:${metricstore_port}/${metricstore_database} --eval "db.latest_runtime_app_VM_${my_mongodb_username}.save({${app_latest_dictionary}})"
 		syslog_netcat "Latest app performance data updated successfully"
 	fi
 
 	if [ "$update_reported_metrics" = "true" ]
 	then
-		mongo ${metricstore_hostname}:${metricstore_port}/${metricstore_database} --eval "db.reported_runtime_app_VM_metric_names_${my_username}.save({${reported_metric_names}})"
+		mongo ${metricstore_hostname}:${metricstore_port}/${metricstore_database} --eval "db.reported_runtime_app_VM_metric_names_${my_mongodb_username}.save({${reported_metric_names}})"
 		syslog_netcat "Reported runtime application metric names collection updated successfully. Data package sent was: \"$reported_metric_names\""
 	fi
 }

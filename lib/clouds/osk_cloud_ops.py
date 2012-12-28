@@ -161,8 +161,8 @@ class OskCmds(CommonCloudFunctions) :
                 # image randomization (i.e., deploying the same image multiple
                 # times as if it were different images.
                 _image_detected = False
-                for _registered_image_list in _registered_imageid_list :
-                    if str(_registered_image_list).count(_imageid) :
+                for _registered_imageid in _registered_imageid_list :
+                    if str(_registered_imageid).count(_imageid) :
                         _image_detected = True
                         _detected_imageids[_imageid] = "detected"
                     else :
@@ -176,7 +176,7 @@ class OskCmds(CommonCloudFunctions) :
                     _msg += "xWARNING Image id for VM roles \""
                     _msg += ','.join(_required_imageid_list[_imageid]) + "\": \""
                     _msg += _imageid + "\" is NOT registered "
-                    _msg += "(attaching VMs with this role will result in error).\n"
+                    _msg += "(attaching VMs with any of these roles will result in error).\n"
 
             if not len(_detected_imageids) :
                 _msg = "None of the image ids used by any VM \"role\" were detected"

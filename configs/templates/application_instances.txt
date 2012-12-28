@@ -147,6 +147,8 @@ LOAD_DURATION = 60
 #CONCURRENT_AIS = 2
 #SYNC_CHANNEL_NAME = synchronization_channel
 #RUN_COUNTER_NAME = experiment_id_counter
+#DFS_NAME_DIR = /tmp/name
+#DFS_DATA_DIR = /tmp/data
 
 [AI_TEMPLATES : HDAUTOCONF]
 SUT = hadoopmaster->10_x_hadoopslave

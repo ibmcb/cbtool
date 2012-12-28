@@ -1,1 +1,1 @@
-To be written
+Usage: stats <cloud name>
