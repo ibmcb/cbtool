@@ -31,219 +31,47 @@
     <!-- MAIN CONTENT -->
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
-        <h1>INTRODUCTION:</h1>
+        <h1>Welcome to the Cloud Rapid Experimentation and Analysis Toolkit</h1>
 
-<p>Cloud Rapid Experimentation and Analysis Tool is a framework that automates IaaS cloud benchmarking through the running of controlled experiments.</p>
+<p>This toolkit is designed for rapid, large-scale experimentation in the Cloud.</p>
 
-<h1>FEATURES:</h1>
+<p>If you don't have a <em>running</em> cloud, you can't use it.</p>
 
-<ul>
-<li>Automatic deployment and controlled execution of multiple multi-tier applications.</li>
-<li>Each individual application can have a specific load profile using probability distributions.</li>
-<li>Adapters for multiple clouds (EC2 and OpenStack, among others), with a plugin structure that allows new cloud models to be added incrementally.</li>
-<li>Can orchestrate different arrival rates and lifetimes for VMs using probability distributions.</li>
-<li>Collects application and system (OS) performance data from hosts and guests in real time.</li>
-<li>It is designed from the ground up to be highly scalable and parallel.</li>
-</ul><h1>CONTACTS:</h1>
+<p>( If you're not planning to run more than a handful of VMs, then this tool is really not for you. )</p>
 
-<p>Marcio A. L. Silva <a href="mailto:marcios@us.ibm.com">marcios@us.ibm.com</a></p>
+<h2>To get started:</h2>
+
+<ol>
+<li>
+<a href="https://github.com/ibmcb/cbtool/wiki/START-HERE:-README:-Getting-Started-on-the-Command-Line">START HERE: Go to the README</a> first for startup documentation on how to begin using the tool from the command-line</li>
+<li>Read our latest paper (to appear in IC2E 2013).</li>
+<li>Try to get connected with the <a href="https://github.com/ibmcb/cbtool/wiki/HOWTO:-Using-the-Wizard-for-first-time-connection">Graphical Wizard</a>
+</li>
+<li>Try administrating the tool with the <a href="https://github.com/ibmcb/cbtool/wiki/HOWTO:-Using-the-Graphical-Environment">Graphical Environment</a>
+</li>
+<li>Then try <a href="https://github.com/ibmcb/cbtool/wiki/HOWTO:-Monitoring-with-the-Graphical-Environment">monitoring your experiments with the Graphical Environment</a>
+</li>
+</ol><h2>Features:</h2>
+
+<ol>
+<li>It runs actual multi-tier benchmarks (both IBM and non-IBM software).</li>
+<li>It can orchestrate different arrival rates and lifetimes using probability distributions.</li>
+<li>It exercises all of the components of the Cloud, including hosts, virtual machines, and their applications.</li>
+<li>It has integrated monitoring of application and system performance.</li>
+<li>It is designed from the ground up to be highly-scalable and parallel.</li>
+</ol><h2>Supported Clouds:</h2>
+
+<ol>
+<li>Amazon</li>
+<li>OpenStack</li>
+<li>IBM SCP and IBM Tivoli</li>
+<li>Libvirt (for machines without clouds)</li>
+<li>VMWare vCloud (in progress)</li>
+</ol><p>Contact:</p>
+
+<p>Marcio Silva <a href="mailto:marcios@us.ibm.com">marcios@us.ibm.com</a></p>
 
 <p>Michael R. Hines <a href="mailto:mrhines@us.ibm.com">mrhines@us.ibm.com</a></p>
-
-<h1>QUICKSTART</h1>
-
-<p>If you are running the tool for the first time, please run <code>configure</code> first. It will check if all dependencies (e.g., Redis, MongoDB) are properly installed and configured.</p>
-
-<p>The tool reads all configuration parameters from a file name <code>cloud_definitions.txt</code> located on the <code>configs</code> directory. It is recommended that you make a copy of this file (on the same directory),
-naming it <code>&lt;you username&gt;_cloud_definitions.txt</code>.</p>
-
-<p>To run the tool's CLI, use <code>cb</code>. Initially, you will see an empty prompt, <code>()</code>, indicating that there is no
-cloud attached to this experiment.</p>
-
-<p>In the tool prompt, try to attach a simulated cloud using the command <code>cldattach sim TESTCLOUD</code>. You will you see that now the prompt changes to <code>(TESCLOUD)</code>.</p>
-
-<p>After that, attach all simulated hosts defined on the configuration file with the command <code>vmcattach all</code>. List all simulated HOSTS on this cloud with the command <code>hostlist</code>.</p>
-
-<p>At this point you can create some simple simulated VMs with the command <code>vmattach db2</code> or <code>vmattach was</code>. Make sure all simulated VMs are created with the command <code>vmlist</code>.</p>
-
-<p>All <code>&lt;object&gt;attach</code> commands block the CLI during its execution. Since some commands (e.g., <code>aiattach</code>) can take quite a bit of time to complete, the keyword <code>async</code> can be appended at the end of the command to allow its execution in background. For instance, while deploying a DayTrader Virtual Application with the command <code>aiattach daytrader</code> would block the CLI for several minutes (depending on the cloud), the command <code>aiattach daytrader async</code> would return immediately, leaving a daemon executing the deployment in the background.</p>
-
-<p>The purpose of starting  with a simulated cloud is to make sure that everything is working properly within the tool <em>before</em> starting to use the tool against a real cloud.</p>
-
-<p>To exit, use the <code>exit</code> command. You can exit and restart the tool at any moment; the data/state is stored on an <code>Object Store</code> (Redis server) that is accessed by the CLI.</p>
-
-<p>Whenever a CLI is started, a web GUI daemon is also started. Just point your browser to the port indicated at the tool's CLI prompt (look for "GUI Service daemon was successfully started"), and then click on the <code>Connect</code> button on the top.</p>
-
-<h1>REPORTING BUGS:</h1>
-
-<p>The tools writes all logs to a folder located @ "stores/logs". When you run into a bug, please packup the logs folder and send it to us and we'll work with you to get it fixed.</p>
-
-<p>We would also like to start using github's bug tracking system: You could post all the details of your issue there - that would be very helpful.</p>
-
-<h1>USING THE TOOL IN A REAL CLOUD</h1>
-
-<p>Currently the tool supports the following Clouds:</p>
-
-<ul>
-<li>OpenStack</li>
-<li>Amazon EC2</li>
-<li>IBM Smart Cloud Provisioning</li>
-<li>Thin Agile Cloud (barebones tool based on libvirt/KVM, used internally)</li>
-</ul><p>All aspects of VApp deployment are automated. The tool will know which VMs to create (based on a VApp template), and will contact the cloud management system directly to carry out the creation.
-After the VMs are started, it logins on the VMs (through SSH), configures the applications and starts a load manager daemon. At this point, <code>management metrics</code> (e.g., image creation time, boot time) are collected.
-During the whole VApp lifecycle, application and OS <code>runtime metrics</code> are collected and stored. If the cloud allows direct access to the hosts, their performance data is also collected.
-If the VApp was implicitly deployed by a VApp Submitter, it is automatically removed at the end of its lifetime. If the VApp was explicitly deployed, it has to be removed by the experimenter.</p>
-
-<p>Before using the tool in a real cloud, the following steps must be taken:</p>
-
-<ol>
-<li><p>Add your own pair of ssh keys to the <code>credentials</code> directory</p></li>
-<li>
-<p>Prepare your own images to be used with the tool.</p>
-
-<ol>
-<li> Make sure that the VMs can be contacted through passwordless SSH.</li>
-<li> Make sure that the applications are installed/configured on your VM.
-Unfortunately, at this time we cannot provide pre-configured VMs due to
-licensing issues.</li>
-<li> Copy the tool's code to the VM, and then run "configure" there. If the dependencies are installed on the VM, then the VM can be remotely accessed and controlled.</li>
-</ol>
-</li>
-<li><p>Fill out the information required to access the cloud (e.g., account names, credentials) on the configuration file. This file is either <code>cloud_definitions.txt</code> or preferably <code>&lt;your username&gt;_cloud_definitions.txt</code></p></li>
-</ol><p>After these steps are taken, go to the section "RUNNING EXPERIMENTS" and try to
-run the first experiment (it is short, just type the commands).</p>
-
-<h1>GENERAL DESCRIPTION</h1>
-
-<p>An <code>experiment</code> is executed by the deployment and running of a set of <code>Virtual Applications</code> (VApps). An experiment can be done interactively, having the user typing commands directly on the CLI, or having a series of commands in text format in an <code>experiment file</code>.</p>
-
-<p>A VApp represents a group of VMs, with different <code>roles</code>, logically connected to execute different application types. For instance, a <code>DayTrader VApp</code> is composed by one VM with the role "load driver", one VM with the role "application server" (either Tomcat or WAS) and one VM with the role "db"
-(either DB2 or MySQL). On other hand a <code>Hadoop VApp</code> is composed by one VM with the role "master" and N VMs with the role "slave". To see a list of available VM roles, use the command <code>rolelist</code> on the CLI. To see a list of VApp types use the command <code>typelist</code>. To see a description of a particular VApp, use the command <code>typeshow &lt;vapp type&gt;</code>.</p>
-
-<p>Each VApp has its own <code>load profile</code>, with independent load level and load duration. The values for load level and load duration can be set as random distributions, fixed numbers or monotonically increasing/decreasing sequences. The <code>load level</code>, has a meaning that is specific to each VApp type. For
-instance, for a DayTrader Vapp, it represents the number of simultaneous clients on the load generator, while for Hadoop it represents the size of dataset to be sorted.</p>
-
-<p>VApps can be deployed explicitly by the experimenter or implicitly through one or more <code>VApp Submitters</code>. A submitter deploys Vapps with a given <code>pattern</code>, represented by a certain inter-arrival time and a lifetime (also fixed, distributions or sequences). To see a list of available patterns, use the command <code>patternlist</code> on the CLI. To see a description of a particular pattern, use the command <code>patternshow &lt;submitter pattern&gt;</code>.</p>
-
-<h1>RUNNING EXPERIMENTS</h1>
-
-<p>For instance, the following experiment file will create three VMs on an
-OpenStack cloud, without generating any application load on it:</p>
-
-<pre><code>cldattach osk TESTCLOUD
-clddefault TESTCLOUD
-expid exp1
-vmcattach all
-vmclist
-hostlist
-vmattach db2
-vmattach netperf
-vmlist
-waitfor 4m
-vmdetach all
-monextract all
-clddetach
-exit
-</code></pre>
-
-<p>This second experiment will deploy a single DayTrader VApp on EC2, and will vary
-the load level with a normal distribution with average 10, standard deviation 5,
-and maximum and minimal values 1 and 20. It will select a new load level each
-minute, and will run for 5 hours.</p>
-
-<pre><code>cldattach ec2 TESTCLOUD
-clddefault TESTCLOUD
-expid exp2
-vmcattach all
-vmclist
-typealter daytrader load_level=normalI10I5I1I20
-typealter daytrader load_duration=60
-aiattach daytrader
-waitfor 5h
-aidetach all
-monextract all
-clddetach
-exit
-</code></pre>
-
-<p>Finally this third experiment will keep generating new DayTrader and Hadoop
-VApps, with a specific arrival rate for each VApp Type. DayTrader VApps will
-arrive with an inter-arrival time according to an exponential distribution with
-an average of 600 seconds (with maximum and minimum values of 200 and 2000
-seconds), while Hadoop VApps will arrive with an inter-arrival time according to
-a uniform distribution with values between 200 and 900 seconds. Also the load
-level of the VApp Hadoop is set to be fixed in 9, while the lifetime is fixed to
-be 7200 seconds. Finally, no more than 40 DayTrader VApps should be created,
-and we should wait until the number of created VApps is equal to 100, and the
-wait for 5 more hours.</p>
-
-<pre><code>cldattach scp TESTCLOUD
-clddefault TESTCLOUD
-expid exp3
-vmcattach all
-vmclist
-patternlist
-patternshow simpledt
-patternalter simpledt iait=exponentialI600IXI200I2000
-patternalter simpledt max_ais=40
-patternshow simpledt
-patternshow simplehd
-patternalter simplehd iait=uniformIXIXI200I900
-patternalter simplehd load_level=9
-patternshow simplehd lifetime=7200
-patternshow simplehd
-aidrsattach simpledt
-aidrsattach simplehd
-waituntil AI ARRIVED=100
-aidrsdetach all
-waituntil AI ARRIVING=0
-ailist
-waitfor 5h
-aidetach all
-monextract all
-clddetach
-exit
-</code></pre>
-
-<h1>DATA EXTRACTION AND ANALYSIS</h1>
-
-<p>The command "monextract all" will create four different comma-separated value
-files:</p>
-
-<ol>
-<li>
-<code>VM_management_&lt;experiment id&gt;.csv</code>: contains information regarding the provisioning time, capture time, among others, all extracted directly from the cloud management system.</li>
-<li>
-<code>VM_runtime_app_&lt;experiment id&gt;.csv</code>: contains information regarding the application performance, such as latency, throughput and bandwidth, all generated directly from the VM.</li>
-<li>
-<code>VM_runtime_os_&lt;experiment id&gt;.csv</code>: contains OS metrics (CPU, memory, disk I/O, network I/O) all generated by the VM.</li>
-<li>
-<code>HOST_runtime_os_&lt;experiment id&gt;.csv</code>: contains OS metrics (CPU, memory, disk I/O, network I/O) all generated by the HOSTS. It can only be used on  Clouds where there is direct access to the hosts (this means that this data cannot be collected on EC2, for instance), and where the Ganglia monitoring tool was manually configured on the hosts.</li>
-</ol><p>A small script (called cbp.R), written in the R language, is available in the <code>util/plot</code> directory, and can be used to quickly and automatically produce plots using the data supplied by the csv files.</p>
-
-<h1>Write Client code against the tool's API</h1>
-
-<p>This toolkit provides API for client programming in 3 different languages using XML-RPC to be used to direct benchmarks and algorithms against the API for maximum flexibility.</p>
-
-<p>Additionally, these bindings also provide accessor methods for retrieving data from the mongodb database which the tool uses to store monitoring data.</p>
-
-<p>Typically, upon starting up the tool, an "API Service" (xmlrpc server) is started on port 7070.</p>
-
-<p>In order to use it, you would choose a language:</p>
-
-<ol>
-<li>Python: from import api_service_client import *</li>
-<li>Java: import api.*;</li>
-<li>Ruby: require 'api_service_client'</li>
-<li>C++: #include "apl_service_client.hpp";</li>
-</ol><h1>API Client Examples in each language:</h1>
-
-<ol>
-<li>Python: clients/provision_vm.py, clients/provision_application.py</li>
-<li>Java: clients/ProvisionVM.java, clients/ProvisionAPP.java</li>
-<li>Ruby: clients/provision_vm.rb, clients/provision_application.rb</li>
-<li>C++: clients/provision_vm.cpp, clients/provision_application.cpp, clients/list_regions.cpp</li>
-</ol><p>These examples are fairily self-explanatory. If you help or would like bindings written in a new language, don't hesitate to contact us and we'll try to accomodate you.</p>
       </section>
     </div>
 
