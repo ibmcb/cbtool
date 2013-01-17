@@ -13,6 +13,7 @@ If you don't have a *running* cloud, you can't use it.
 3. Try to get connected with the [Graphical Wizard](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Using-the-Wizard-for-first-time-connection)
 4. Try administrating the tool with the [Graphical Environment](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Using-the-Graphical-Environment)
 5. Then try [monitoring your experiments with the Graphical Environment](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Monitoring-with-the-Graphical-Environment)
+6. Try to [save experimental results to CSV files on the commandline](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Save-Monitoring-Data-on-the-Command-Line)
 
 ## Features:
 
