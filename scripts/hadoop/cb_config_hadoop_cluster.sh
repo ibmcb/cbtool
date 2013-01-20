@@ -54,7 +54,11 @@ echo "${slave_ips}" > $HADOOP_CONF_DIR/slaves
 syslog_netcat "....Done...."
 
 ###################################################################
+<<<<<<< HEAD
 # Editing hadoop conf.xml files to add mandatory conf knobs. 
+=======
+# Editing hadoop conf.xml files to add mendatory conf knobs. 
+>>>>>>> 6410ca691eb6d8d7056c9ebc9e1f124bfb4cc3c2
 #
 # NOTE: ONE PROBLEM: the input tmp conf files should also contain 
 #       the strings "HADDOP_NAMENODE_IP" and "HADOOP_JOBTRACKER_IP" !!!
@@ -66,6 +70,7 @@ syslog_netcat "....Done...."
 ###################################################################
 
 syslog_netcat "..Editing hadoop conf files"
+<<<<<<< HEAD
 sed -i -e "s/HADOOP_NAMENODE_IP/${hadoop_master_ip}/g" $HADOOP_CONF_DIR/core-site.xml
 sed -i -e "s/HADOOP_JOBTRACKER_IP/${hadoop_master_ip}/g" $HADOOP_CONF_DIR/mapred-site.xml
 sed -i -e "s/NUM_REPLICA/1/g" $HADOOP_CONF_DIR/hdfs-site.xml #3 is default. 1 is given for sort's performance
@@ -77,6 +82,13 @@ sed -i -e "s/DFS_NAME_DIR/${TEMP_DFS_NAME_DIR}/g" $HADOOP_CONF_DIR/hdfs-site.xml
 sed -i -e "s/DFS_DATA_DIR/${TEMP_DFS_DATA_DIR}/g" $HADOOP_CONF_DIR/hdfs-site.xml
 
 sed -i -e "s/-__-__/\//g" $HADOOP_CONF_DIR/hdfs-site.xml
+=======
+sed -i s/HADOOP_NAMENODE_IP/$hadoop_master_ip/g $HADOOP_CONF_DIR/core-site.xml
+sed -i s/HADOOP_JOBTRACKER_IP/$hadoop_master_ip/g $HADOOP_CONF_DIR/mapred-site.xml
+sed -i s/NUM_REPLICA/1/g $HADOOP_CONF_DIR/hdfs-site.xml #3 is default. 1 is given for sort's performance
+sed -i s/DFS_NAME_DIR/${DFS_NAME_DIR}/g $HADOOP_CONF_DIR/hdfs-site.xml
+sed -i s/DFS_DATA_DIR/${DFS_DATA_DIR}/g $HADOOP_CONF_DIR/hdfs-site.xml
+>>>>>>> 6410ca691eb6d8d7056c9ebc9e1f124bfb4cc3c2
 
 ###################################################################
 # Editing hadoop conf.xml files for the optional confs 
