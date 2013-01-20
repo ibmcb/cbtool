@@ -273,7 +273,9 @@ class CBCLI(Cmd) :
             The first parameter contains the parameter list which
             we relay over to the API.
             '''
-            temp_parameters = args[0].strip().split() 
+            temp_parameters = args[0]
+            temp_parameters = self.cleanup_comments(temp_parameters).strip().split()
+
             if len(temp_parameters) == 0 :
                 temp_parameters = []
             if len(args) > 1 :
@@ -287,7 +289,7 @@ class CBCLI(Cmd) :
             The API requires that 'async' and tkv be a keyword arguments,
             and requires the components of the '=' sign to be splitup.
             '''
-               
+
             parameters = []
             for param in temp_parameters :
                 if param.count("async") :
@@ -449,8 +451,7 @@ class CBCLI(Cmd) :
     
         self.parser.set_defaults()
         (self.options, self.args) = self.parser.parse_args()
-
-        
+     
     @trace
     def setup_logging(self, options) :
         '''
@@ -690,6 +691,23 @@ class CBCLI(Cmd) :
         '''
         return
 
+    def cleanup_comments(self, parameters) :
+        ''' 
+        TBD
+        '''
+        if parameters.count('#') :
+            _processed_parameters = ''
+            _parameters = parameters.split()
+
+            for _parameter in _parameters :
+                if not _parameter.count('#') :
+                    _processed_parameters += _parameter + ' '
+                else :
+                    break
+            parameters = _processed_parameters
+
+        return parameters
+
     @trace
     def do_trace(self, f) :
         '''
@@ -758,7 +776,7 @@ class CBCLI(Cmd) :
                                                                   parameters, \
                                                                   "cloud-detach")
 
-        if not _status and BaseObjectOperations.default_cloud == parameters.strip():
+        if not _status and BaseObjectOperations.default_cloud == self.cld_attr_lst["name"] :
             print("Disassociating default cloud: " + BaseObjectOperations.default_cloud)
             self.do_clddefault("none")
             self.do_cldlist("", False)
@@ -769,7 +787,9 @@ class CBCLI(Cmd) :
     def do_clddefault(self, parameters) :
         '''
         TBD
-        '''        
+        '''
+        parameters = self.cleanup_comments(parameters)
+
         default_cloud = parameters.strip()
         if default_cloud == "" :
             _msg = "Current default cloud is \"" + str(BaseObjectOperations.default_cloud)

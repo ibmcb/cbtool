@@ -29,7 +29,6 @@ import re
 import sys
 from lib.remote.process_management import ProcessManagement
 
-
 def compare_versions(version_a, version_b) :
     '''
     TBD
@@ -746,6 +745,73 @@ def check_ec2_python_bindings(hostname, username, trd_party_dir) :
             _msg += "cd boto; sudo python setup.py install\n"
         return _status, _msg
 
+def check_pypureomapi(hostname, username, trd_party_dir) :
+    '''
+    TBD
+    '''
+    try:
+        _status = 100
+        _fmsg = "An error has occurred, but no error message was captured"
+        
+        _msg = "Checking OMAPI python bindings (boto) version....."
+        import pypureomapi
+        
+        _version = str(pypureomapi.__version__).strip()
+        del pypureomapi
+
+        _msg += compare_versions('0.2', _version)
+        _status = 0
+        
+    except ImportError, e:
+        _status = 7282
+#        _msg += str(e)
+
+    except Exception, e :
+        _status = 23
+#        _msg += str(e)
+
+    finally :
+        if _status or _msg.count("NOT OK"):
+            _msg += " Please install OMAPI python bindings with: cd "
+            _msg += trd_party_dir + "; wget http://pypureomapi.googlecode.com/files/pypureomapi-0.3.tar.gz;"
+            _msg += " tar -xzvf pypureomapi-0.3.tar.gz; cd pypureomapi-0.3; "
+            _msg += "sudo python setup.py install\n"
+        return _status, _msg
+
+def check_netcat(hostname, username, trd_party_dir) :
+    '''
+    TBD
+    '''
+    try:
+        _status = 100
+        _fmsg = "An error has occurred, but no error message was captured"
+        
+        _proc_man =  ProcessManagement()
+        _msg = "Checking netcat (openbsd) version....."
+        _status, _result_stdout, _result_stderr = _proc_man.run_os_command("nc -h")
+
+        if not _status :
+            _version = "1.9"
+            _msg += compare_versions('1.6', _version)
+            _status = 0
+        else :
+            _status = 1728289
+        
+    except ProcessManagement.ProcessManagementException, obj :
+        _status = str(obj.status)
+#        _msg = str(obj.msg)
+
+    except Exception, e :
+        _status = 23
+#        _msg = str(e)
+
+    finally :
+        if _status or _msg.count("NOT OK"):
+            _msg += " Please install nc using you package management system (yum or apt-get)."
+            _msg += " The package is usually called \"netcat-openbsd\" or "
+            _msg += "simply \"netcat\".\n"
+        return _status, _msg
+
 def dependency_checker(hostname, username, trd_party_dir) :
     '''
     TBD
@@ -773,7 +839,9 @@ def dependency_checker(hostname, username, trd_party_dir) :
     _func_pointer["boto"] = check_ec2_python_bindings
     _func_pointer["rsync"] = check_rsync_version
     _func_pointer["ganglia"] = check_gmond_version
-        
+    _func_pointer["pypureomapi"] = check_pypureomapi
+    _func_pointer["netcat"] = check_netcat
+                
     for _dep in [ "sudo", "git" ]:
         _status, _msg = _func_pointer[_dep](hostname, username, trd_party_dir)
         print _msg

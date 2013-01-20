@@ -1,1 +1,1 @@
-To be written
+Usage: vmcrsattach <cloud name> <pattern> [scope] [max simultaneous capreqs] [max total capreqs] [inter vm cap req arrival time] [min_cap_age] [mode]

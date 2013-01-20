@@ -86,16 +86,16 @@ class MongodbMgdConn :
         try:
 
             if tout > 0:
-                _conn = Connection(host = self.hostname, port = self.port, \
+                _conn = Connection(host = self.host, port = self.port, \
                                     max_pool_size=10, network_timeout = tout)
             else :
-                _conn = Connection(host = self.hostname, port = self.port, \
+                _conn = Connection(host = self.host, port = self.port, \
                                     max_pool_size=10)
 
             self.mongodb_conn = _conn
             
             _msg = "A connection to MongoDB running on host "
-            _msg += self.hostname + ", port " + str(self.port) + ", database"
+            _msg += self.host + ", port " + str(self.port) + ", database"
             _msg += ' ' + str(self.database) + ", with a timeout of "
             _msg += str(tout) + "s was established."
             cbdebug(_msg)
@@ -109,15 +109,15 @@ class MongodbMgdConn :
         try:
 
             if tout > 0:
-                _conn = Connection(host = self.hostname, port = self.port, \
+                _conn = Connection(host = self.host, port = self.port, \
                                    network_timeout = tout)
             else :
-                _conn = Connection(host = self.hostname, port = self.port)
+                _conn = Connection(host = self.host, port = self.port)
 
             self.mongodb_conn = _conn
             
             _msg = "A connection to MongoDB running on host "
-            _msg += self.hostname + ", port " + str(self.port) + ", database"
+            _msg += self.host + ", port " + str(self.port) + ", database"
             _msg += ' ' + str(self.database) + ", with a timeout of "
             _msg += str(tout) + "s was established."
             cbdebug(_msg)
@@ -125,7 +125,7 @@ class MongodbMgdConn :
 
         except PymongoException, msg :
             _msg = "Unable to establish a connection with the MongoDB "
-            _msg += "server on host " + self.hostname + " port "
+            _msg += "server on host " + self.host + " port "
             _msg += str(self.port) + "database " + str(self.database) + ": "
             _msg += str(msg) + '.'
             cberr(_msg)
@@ -141,14 +141,14 @@ class MongodbMgdConn :
             self.mongodb_conn.disconnect()
             self.mongodb_conn = False
             _msg = "A connection to MongoDB running on host "
-            _msg += self.hostname + ", port " + str(self.port) + ", database"
+            _msg += self.host + ", port " + str(self.port) + ", database"
             _msg += ' ' + str(self.database) + ", was terminated."
             cbdebug(_msg)
             return self.mongodb_conn
 
         except PymongoException, msg :
             _msg = "Unable to terminate a connection with the MongoDB "
-            _msg += "server on host " + self.hostname + " port "
+            _msg += "server on host " + self.host + " port "
             _msg += str(self.port) + "database " + str(self.database) + ": "
             _msg += str(msg) + '.'
             cberr(_msg)
@@ -171,6 +171,8 @@ class MongodbMgdConn :
         TBD
         '''
         self.conn_check()
+
+        username = username.replace('-',"dash")
 
         try :
             _collections = [ \
@@ -215,6 +217,8 @@ class MongodbMgdConn :
         '''
         self.conn_check()
 
+        username = username.replace('-',"dash")
+
         try :
             _collections = ["latest_management_VM_" + username, \
                             "latest_management_HOST_" + username, \
@@ -249,6 +253,8 @@ class MongodbMgdConn :
         '''
         self.conn_check()
 
+        collection = collection.replace('-',"dash")
+
         try :
             _collection_handle = self.mongodb_conn[self.database][collection]
             _collection_handle.insert(document)
@@ -271,6 +277,8 @@ class MongodbMgdConn :
         TBD
         '''
         self.conn_check()
+
+        collection = collection.replace('-',"dash")
 
         try :
             _collection_handle = self.mongodb_conn[self.database][collection]
@@ -304,6 +312,8 @@ class MongodbMgdConn :
         '''
         self.conn_check()
 
+        collection = collection.replace('-',"dash")
+
         try :
             _collection_handle = self.mongodb_conn[self.database][collection]
             _collection_handle.save(document)
@@ -325,6 +335,8 @@ class MongodbMgdConn :
         '''
         self.conn_check()
 
+        collection = collection.replace('-',"dash")
+
         try :
             _collection_handle = self.mongodb_conn[self.database][collection]
             _collection_handle.remove(criteria)
@@ -344,6 +356,8 @@ class MongodbMgdConn :
         TBD
         '''
         self.conn_check()
+
+        collection = collection.replace('-',"dash")
 
         try :
             _collection_handle = self.mongodb_conn[self.database][collection]
@@ -366,6 +380,8 @@ class MongodbMgdConn :
         '''
         self.conn_check()
 
+        collection = collection.replace('-',"dash")
+
         try :
             _collection_handle = self.mongodb_conn[self.database][collection]
             _matches = _collection_handle.find(criteria)
@@ -385,6 +401,8 @@ class MongodbMgdConn :
         TBD
         '''
         self.conn_check()
+
+        collection = collection.replace('-',"dash")
 
         try :
             _result = {}
@@ -421,6 +439,8 @@ class MongodbMgdConn :
         TBD
         '''
         self.conn_check()
+
+        collection = collection.replace('-',"dash")
 
         try :
             _collection_handle = self.mongodb_conn[self.database][collection]

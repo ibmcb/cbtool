@@ -26,10 +26,29 @@ if [ x"$my_role" == x"hadoopmaster" ]; then
 	syslog_netcat "....Formating namenode...."
 	${HADOOP_HOME}/bin/hadoop namenode -format
 
-	syslog_netcat "....starting hadoop service...."
+	syslog_netcat "....starting hadoop services...."
+	syslog_netcat "....starting primary NameNode...."
 	${HADOOP_HOME}/bin/start-dfs.sh
+	syslog_netcat "....starting JobTracker...."
 	${HADOOP_HOME}/bin/start-mapred.sh
+#	${HADOOP_HOME}/bin/start-all.sh
 fi
+
+syslog_netcat "Waiting for all Datanodes to become available....."
+while [ z${DATANODES_AVAILABLE} != z"true" ]
+do
+    DFSADMINOUTPUT=`${HADOOP_HOME}/bin/hadoop dfsadmin -report | grep "Datanodes available"`
+    AVAILABLE_NODES=`echo ${DFSADMINOUTPUT} | cut -d ":" -f 2 | cut -d " " -f 2`
+    TOTAL_NODES=`echo ${DFSADMINOUTPUT} | cut -d ":" -f 2 | cut -d " " -f 3 | sed 's/(//g'`
+	if [[ ${AVAILABLE_NODES} -ne 0 && z${AVAILABLE_NODES} == z${TOTAL_NODES} ]]
+    then
+        DATANODES_AVAILABLE="true"
+    else
+        DATANODES_AVAILABLE="false"
+    fi
+    sleep 1
+done
+syslog_netcat "All Datanodes (${TOTAL_NODES}) available now"
 
 #Prepare input data for the hadoop execution
 #Run teragen!
@@ -45,7 +64,7 @@ if [ x"$my_role" == x"hadoopmaster" ]; then
 	else
 		for key in "${!tab_LOAD_LEVEL_geninput[@]}"
 		do
-			syslog_netcat "....Generate input by \"${tab_LOAD_LEVEL_geninput[$key]} \"!...."
+			syslog_netcat "....Generating input by running the command \"${jar_command} ${tab_LOAD_LEVEL_geninput[$key]} \"...."
 			$jar_command ${tab_LOAD_LEVEL_geninput[$key]} 2>&1 | while read line; do
 				syslog_netcat "$line"
 			done

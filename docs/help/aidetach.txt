@@ -1,1 +1,1 @@
-To be written
+Usage: aidetach <cloud name> <ai name> [force] [mode]

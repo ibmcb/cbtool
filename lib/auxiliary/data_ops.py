@@ -213,3 +213,101 @@ def makeTimestamp(supplied_epoch_time = False) :
         
     result += strftime(" %Z", localtime(time())) 
     return result
+
+@trace
+def plm_message_beautifier(processid, obj_type, obj_list) :
+    '''
+    TBD
+    '''    
+    if obj_type == "group" :
+        _fields = []
+        _fields.append("|cloud_hostname    ")
+        _fields.append("|computenodes                                                                          ")
+
+    elif obj_type == "node" :
+        _fields = []
+        _fields.append("|cloud_hostname ")
+        _fields.append("|cloud_ip       ")
+        _fields.append("|function       ")
+        _fields.append("|group         ")
+        _fields.append("|pcpu_arch ")  
+        _fields.append("|pcpu_freq ")
+        _fields.append("|pcpus")
+        _fields.append("|vcpus")
+        _fields.append("|pmem      ")
+        _fields.append("|vmem      ")
+        _fields.append("|instances")
+
+    elif obj_type == "instance" :
+        _fields = []
+        _fields.append("|cloud_lvid                       ")
+        _fields.append("|cloud_ip       ")
+        _fields.append("|host_name      ")
+        _fields.append("|group         ")
+        _fields.append("|size         ")
+        _fields.append("|class         ")
+        _fields.append("|vcpus ")
+        _fields.append("|vmem      ")
+        _fields.append("|volumes ")
+        _fields.append("|root_disk_format ")
+        _fields.append("|hypervisor ")                
+        _fields.append("|state      ")
+        _fields.append("|creator ")
+
+    elif obj_type == "storagepool" :
+        _fields = []
+        _fields.append("|cloud_lvid                          ")
+        _fields.append("|type      ")
+        _fields.append("|capacity      ")
+        _fields.append("|available     ")
+        _fields.append("|path                                 ")
+        _fields.append("|volumes  ")
+        _fields.append("|state    ")
+        _fields.append("|creator ")        
+
+    elif obj_type == "volume" :
+        _fields = []
+        _fields.append("|cloud_lvid                                                            ")
+        _fields.append("|type      ")
+        _fields.append("|format      ")
+        _fields.append("|capacity      ")
+        _fields.append("|allocation     ")
+        _fields.append("|path                                                                ")
+        _fields.append("|instance_lvid                   ")
+        _fields.append("|snapshot  ")
+        _fields.append("|creator ")
+
+    else :
+        _msg = "Unknown object: " + obj_type
+        return _msg
+
+    _header = ''.join(_fields)
+    _fmt_obj_list = _header + '\n'
+    _fmt_obj_list += '-'.rjust(len(_header),'-') + '\n'
+
+    for _obj in obj_list.keys() :
+        _obj_attrs = obj_list[_obj]
+        for _field in _fields :
+            _af = _field[1:].strip()
+            if _af in _obj_attrs :
+                _display_value = str(_obj_attrs[_af])
+            else :
+                _display_value = "NA"
+            _fmt_obj_list += ('|' + _display_value).ljust(len(_field))
+        _fmt_obj_list += '\n'
+
+    return _fmt_obj_list
+
+def plm_parse_host_groups(processid, group_string) :
+    '''
+    TBD
+    '''
+    _groups_list = {}
+    for _group in group_string.split('/') :
+        _group_name, _host_list = _group.split(':')
+        _groups_list[_group_name] = _host_list
+
+    _msg = str(len(_groups_list)) + " Host Group(s) found: "
+    _msg += ','.join(_groups_list.keys())
+    cbdebug(_msg)
+    return _groups_list

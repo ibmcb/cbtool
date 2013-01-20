@@ -207,6 +207,14 @@ class RedisMgdConn :
                 if _key.count("_type") :
                     self.add_to_list(cloud_name, "GLOBAL", "aidrs_patterns", _key.replace("_type", ''))
 
+            for _key in cloud_kv_list["vmcrs_templates"].keys() :
+                if _key.count("_scope") :
+                    self.add_to_list(cloud_name, "GLOBAL", "vmcrs_patterns", _key.replace("_scope", ''))
+
+            for _key in cloud_kv_list["firs_templates"].keys() :
+                if _key.count("_scope") :
+                    self.add_to_list(cloud_name, "GLOBAL", "firs_patterns", _key.replace("_scope", ''))
+
             for _key in cloud_kv_list["vm_templates"].keys() :
                 self.add_to_list(cloud_name, "GLOBAL", "vm_roles", _key)
 
@@ -279,7 +287,9 @@ class RedisMgdConn :
             self.redis_conn.delete(obj_inst + ":GLOBAL:experiment_counter")
             self.redis_conn.delete(obj_inst + ":GLOBAL:vmc_pools")
             self.redis_conn.delete(obj_inst + ":GLOBAL:host_names")
-            self.redis_conn.delete(obj_inst + ":GLOBAL:aidrs_patterns") 
+            self.redis_conn.delete(obj_inst + ":GLOBAL:aidrs_patterns")
+            self.redis_conn.delete(obj_inst + ":GLOBAL:vmcrs_patterns")
+            self.redis_conn.delete(obj_inst + ":GLOBAL:firs_patterns")
             self.redis_conn.delete(obj_inst + ":GLOBAL:ai_types")
             self.redis_conn.delete(obj_inst + ":GLOBAL:view_criteria")
             self.redis_conn.delete(obj_inst + ":GLOBAL:vm_roles")
@@ -1008,7 +1018,7 @@ class RedisMgdConn :
                         _obj_life_fn = _obj_id_fn + ":SHOULDBEALIVE"
                         self.redis_conn.delete(_obj_life_fn)
 
-                if obj_type == "VMC" :
+                if obj_type == "VMC" or obj_type == "HOST" :
                     _obj_count_fn = _obj_inst_fn + ':' + obj_uuid + ":RESERVATIONS"
                     self.redis_conn.delete(_obj_count_fn)
 

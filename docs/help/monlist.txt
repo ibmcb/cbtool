@@ -1,1 +1,1 @@
-To be written
+Usage: monlist <cloud name> <object type>

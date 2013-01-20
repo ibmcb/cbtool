@@ -67,7 +67,9 @@ class OskCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
             _username, _password, _tenant = authentication_data.split('-')
-            self.oskconn = client.Client(_username, _password, _tenant, access_url, region_name=region, service_type="compute")
+            self.oskconn = client.Client(_username, _password, _tenant, \
+                                         access_url, region_name=region, \
+                                         service_type="compute")
             self.oskconn.flavors.list()
             _region = region
             _msg = "Selected region is " + str(region)
@@ -161,8 +163,8 @@ class OskCmds(CommonCloudFunctions) :
                 # image randomization (i.e., deploying the same image multiple
                 # times as if it were different images.
                 _image_detected = False
-                for _registered_image_list in _registered_imageid_list :
-                    if str(_registered_image_list).count(_imageid) :
+                for _registered_imageid in _registered_imageid_list :
+                    if str(_registered_imageid).count(_imageid) :
                         _image_detected = True
                         _detected_imageids[_imageid] = "detected"
                     else :
@@ -176,7 +178,7 @@ class OskCmds(CommonCloudFunctions) :
                     _msg += "xWARNING Image id for VM roles \""
                     _msg += ','.join(_required_imageid_list[_imageid]) + "\": \""
                     _msg += _imageid + "\" is NOT registered "
-                    _msg += "(attaching VMs with this role will result in error).\n"
+                    _msg += "(attaching VMs with any of these roles will result in error).\n"
 
             if not len(_detected_imageids) :
                 _msg = "None of the image ids used by any VM \"role\" were detected"
@@ -186,7 +188,8 @@ class OskCmds(CommonCloudFunctions) :
                 _msg = _msg.replace("yx",'')
                 _msg = _msg.replace('x',"         ")
                 _msg = _msg[:-2]
-                cbdebug(_msg, True)
+                if len(_msg) :
+                    cbdebug(_msg, True)
 
             if not (_key_pair_found and _security_group_found and len(_detected_imageids)) :
                 _msg = "Check the previous errors, fix it (using OpenStack's web"
@@ -581,8 +584,15 @@ class OskCmds(CommonCloudFunctions) :
         if len(_networks) :
             _network = _networks[0]                
             obj_attr_list["cloud_hostname"] = obj_attr_list["cloud_vm_name"]
-            obj_attr_list["cloud_ip"] = '{0}'.format(instance.addresses[_network][0]["addr"])      
-            return True
+            _address_list = instance.addresses[_network]
+            if len(_address_list) :
+                obj_attr_list["cloud_ip"] = '{0}'.format(_address_list[0]["addr"])
+                return True
+            else :
+                _status = 1181
+                _msg = "IP address list for network " + str(_network) + " is empty."
+                cberr(_msg)
+                raise CldOpsException(_msg, _status)                
         else :
             return False
 
@@ -655,6 +665,12 @@ class OskCmds(CommonCloudFunctions) :
             if _instance :
                 if _instance.status == "ACTIVE" :
                     return _instance
+                elif _instance.status == "ERROR" :
+                    _msg = "Instance \"" + obj_attr_list["cloud_vm_name"] + "\"" 
+                    _msg += " reported an error (from OpenStack)"
+                    _status = 1870
+                    cberr(_msg)
+                    raise CldOpsException(_msg, _status)                    
                 else :
                     return False
             else :
@@ -738,7 +754,7 @@ class OskCmds(CommonCloudFunctions) :
 
             if self.is_vm_running(obj_attr_list) :
                 _msg = "An instance named \"" + obj_attr_list["cloud_vm_name"]
-                _msg += " is already running. It needs to be destroyed first."
+                _msg += "\" is already running. It needs to be destroyed first."
                 _status = 187
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
@@ -772,9 +788,24 @@ class OskCmds(CommonCloudFunctions) :
             else :
                 _meta = None
 
+            # This is not working. Will keep it disable for now
+#            if "netid" in obj_attr_list :
+#                if len(obj_attr_list["netid"]) == 36 :
+#                    _netid = {"networks" : [{"uuid" : obj_attr_list["netid"]}]}
+#                else :
+#                    _netid = None
+#            else :
+#                _netid = None
+
+            _netid = None
+
             _msg = "Starting an instance on OpenStack, using the imageid \""
             _msg += obj_attr_list["imageid1"] + "\" (" + str(_imageid) + ") and "
             _msg += "size \"" + obj_attr_list["size"] + "\" (" + str(_flavor) + ")"
+            if _scheduler_hints :
+                _msg += " with scheduler hints \"" + str(_scheduler_hints) + "\", "
+            if _netid :
+                _msg += " network identifier \"" + str(_netid) + "\", "
             _msg += " on VMC \"" + obj_attr_list["vmc_name"] + "\""
             cbdebug(_msg, True)
     
@@ -784,7 +815,8 @@ class OskCmds(CommonCloudFunctions) :
                                                     security_groups = _security_groups, \
                                                     key_name = obj_attr_list["key_name"], \
                                                     scheduler_hints = _scheduler_hints, \
-                                                    meta = _meta)
+                                                    meta = _meta, \
+                                                    nics = _netid)
 
             if _instance :
                 

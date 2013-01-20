@@ -1,6 +1,6 @@
 [USER-DEFINED]
 SIM_INITIAL_VMCS = need_to_be_configured_by_user 
-# Name of the ssh key pair (two files are supposed to exist inside the 
+# Name of the ssh key pair
 SIM_SSH_KEY_NAME = bogus_id_rsa 
 SIM_LOGIN = klabuser 
 
@@ -45,6 +45,7 @@ CHECK_BOOT_COMPLETE = wait_for_0
 # Other methods could be used to check if a VM *FINISHED* booting
 #CHECK_BOOT_COMPLETE = subscribe_on_booting
 #CHECK_BOOT_COMPLETE = tcp_on_22
+NETID = vlan123
 
 [SVM_DEFAULTS : SIM_CLOUDCONFIG]
 SSH_KEY_NAME = $SIM_SSH_KEY_NAME
@@ -74,7 +75,7 @@ UPDATE_FREQUENCY = 1
 SSH_KEY_NAME = $SIM_SSH_KEY_NAME
 
 [VM_TEMPLATES : SIM_CLOUDCONFIG]
-CLIENT_DAYTRADER = size:nano32,imageid1:cloudbench_root 
+CLIENT_DAYTRADER = size:nano32,imageid1:cloudbench_root
 DRIVER_DAYTRADER = size:nano32,imageid1:cloudbench_root 
 CLIENT_TRADELITE = size:nano32,imageid1:cloudbench_root 
 DRIVER_TRADELITE = size:nano32,imageid1:cloudbench_root 

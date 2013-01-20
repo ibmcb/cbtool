@@ -7,6 +7,7 @@ TAC_ACCESS = need_to_be_configured_by_user
 TAC_INITIAL_VMCS = need_to_be_configured_by_user 
 TAC_SSH_KEY_NAME = need_to_be_configured_by_user
 TAC_LOGIN = need_to_be_configured_by_user
+TAC_DISK_FORMAT = need_to_be_configured_by_user 
 
 # PEBCAK documentation for the Wizard and CLI
 TAC_ACCESS_DOC = Please enter the XMLRPC address and port\nof the TAC python daemon. This is generally on the\nsame host as the tool, but not necessarily.\nThe format is 'http://<address>:6060'
@@ -17,6 +18,8 @@ TAC_SSH_KEY_NAME_DOC = $SSH_KEY_NAME_DOC
 TAC_SSH_KEY_NAME_DEFAULT = klab_id_rsa
 TAC_INITIAL_VMCS_DOC = $INITIAL_VMCS_DOC 
 TAC_INITIAL_VMCS_DEFAULT = klinux2,klinux3,klinux4
+TAC_DISK_FORMAT_DEFAULT = qcow2
+TAC_DISK_FORMAT_DOC = Specify which disk format to tell libvirt: Options are qcow2, qed, or lvm.
 
 [SPACE : TAC_CLOUDCONFIG]
 SSH_KEY_NAME = $TAC_SSH_KEY_NAME
@@ -27,7 +30,7 @@ ACCESS = $TAC_ACCESS
 CREDENTIALS = $Empty
 SECURITY_GROUPS = $Empty
 KEY_NAME = $Empty
-LVM = $False
+DISK_FORMAT = $TAC_DISK_FORMAT 
 
 [VM_DEFAULTS : TAC_CLOUDCONFIG]
 ACCESS = $TAC_ACCESS
@@ -52,7 +55,7 @@ SVM_DESTINATION = $EMPTY
 QEMU_DEBUG_PORT_BASE = 12300
 QEMU_DEBUG_PORT_MAX = 13300
 QEMU_DEBUG_PORT = $EMPTY
-LVM = $False
+DISK_FORMAT = $TAC_DISK_FORMAT 
 
 [SVM_DEFAULTS : TAC_CLOUDCONFIG]
 SSH_KEY_NAME = $TAC_SSH_KEY_NAME

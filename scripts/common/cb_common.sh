@@ -247,7 +247,7 @@ function get_global_sub_attribute {
 
 if [ "${osmode}" = "integrated" ]
 then
-	metricstore_hostname=`get_global_sub_attribute metricstore hostname`
+	metricstore_hostname=`get_global_sub_attribute metricstore host`
 	metricstore_port=`get_global_sub_attribute metricstore port`
 	metricstore_database=`get_global_sub_attribute metricstore database`
 	my_experiment_id=`get_global_sub_attribute time experiment_id`
@@ -319,6 +319,8 @@ function report_app_metrics {
 	ATTEMPT=0
 	OUTERR=1
 
+	my_mongodb_username=`echo ${my_username} | sed s/'-'/'dash'/g`
+
 	metric_samples_dictionary=""
 	reported_metric_names_dictionary=""
 	for metric in "$@"
@@ -357,7 +359,7 @@ function report_app_metrics {
 
 	while [[ (( ${ECODE} -ne 0 || ${OUTERR} -eq 1 )) && ${ATTEMPT} -le ${ATTEMPTS} ]]
 	do
-		OUTPUT=`mongo ${metricstore_hostname}:${metricstore_port}/${metricstore_database} --eval "db.runtime_app_VM_${my_username}.save({${app_dictionary}})"`
+		OUTPUT=`mongo ${metricstore_hostname}:${metricstore_port}/${metricstore_database} --eval "db.runtime_app_VM_${my_mongodb_username}.save({${app_dictionary}})"`
 		ECODE=$?
 		OUTERR=`echo ${OUTPUT} | grep -c "Error"`
 		SLEEP_TIME=$(( $RANDOM % ${RANGE} ))
@@ -365,17 +367,18 @@ function report_app_metrics {
 		sleep $SLEEP_TIME
 		ATTEMPT=$(( ${ATTEMPT} + 1 ))
 	done
+
 	syslog_netcat "Application Metrics reported successfully. Data package sent was: \"$app_dictionary\""
-	
+
 	if [ "$write_latest" = "true" ]
 	then
-		mongo ${metricstore_hostname}:${metricstore_port}/${metricstore_database} --eval "db.latest_runtime_app_VM_${my_username}.save({${app_latest_dictionary}})"
+		mongo ${metricstore_hostname}:${metricstore_port}/${metricstore_database} --eval "db.latest_runtime_app_VM_${my_mongodb_username}.save({${app_latest_dictionary}})"
 		syslog_netcat "Latest app performance data updated successfully"
 	fi
 
 	if [ "$update_reported_metrics" = "true" ]
 	then
-		mongo ${metricstore_hostname}:${metricstore_port}/${metricstore_database} --eval "db.reported_runtime_app_VM_metric_names_${my_username}.save({${reported_metric_names}})"
+		mongo ${metricstore_hostname}:${metricstore_port}/${metricstore_database} --eval "db.reported_runtime_app_VM_metric_names_${my_mongodb_username}.save({${reported_metric_names}})"
 		syslog_netcat "Reported runtime application metric names collection updated successfully. Data package sent was: \"$reported_metric_names\""
 	fi
 }
@@ -640,7 +643,7 @@ function post_boot_steps {
 
 	if [ $standalone == online ] ; then
 		syslog_netcat "Killing previously running ganglia monitoring processes on $SHORT_HOSTNAME"
-		$SUDO_CMD $KILL_CMD screen 
+		$SUDO_CMD $KILL_CMD SCREEN 
 		$SUDO_CMD $KILL_CMD gmond 
 		sleep 3
 		result="$(ps aux | grep gmond | grep -v grep)"
@@ -695,8 +698,10 @@ function post_boot_steps {
 			syslog_netcat "Creating ganglia (gmond) file"
 			~/cb_create_gmond_config_file.sh
 			syslog_netcat "Restarting ganglia monitoring processes (gmond) on $SHORT_HOSTNAME"
+			GANGLIA_FILE_LOCATION=~
+			eval GANGLIA_FILE_LOCATION=${GANGLIA_FILE_LOCATION}
 			sudo su root -l -c "pkill -9 -f gmond"
-			sudo su root -l -c "screen -d -m -S gmond bash -c 'while true ; do sleep 10; if [ x\`$PIDOF_CMD gmond\` == x ] ; then gmond -c /home/klabuser/gmond-vms.conf; fi; done'"
+			sudo su root -l -c "screen -d -m -S gmond bash -c 'while true ; do sleep 10; if [ x\`$PIDOF_CMD gmond\` == x ] ; then gmond -c ${GANGLIA_FILE_LOCATION}/gmond-vms.conf; fi; done'"
 			result="$(ps aux | grep gmond | grep -v grep)"
 			if [ x"$result" == x ] ; then
 				syslog_netcat "Ganglia monitoring processes (gmond) could not be restarted on $SHORT_HOSTNAME - NOK"
@@ -712,8 +717,8 @@ function post_boot_steps {
 				syslog_netcat "Restarting ganglia meta process (gmetad) on $SHORT_HOSTNAME"
 				sudo su root -l -c "pkill -9 -f gmetad"
 
-				$GMETAD_PATH/gmetad.py -c /home/klabuser/gmetad-vms.conf -d 1
-#				$GMETAD_PATH/gmetad.py -c /home/klabuser/gmetad-vms.conf --syslogn 127.0.0.1 --syslogp 6379 --syslogf 22 -d 4
+				$GMETAD_PATH/gmetad.py -c ~/gmetad-vms.conf -d 1
+#				$GMETAD_PATH/gmetad.py -c ~/gmetad-vms.conf --syslogn 127.0.0.1 --syslogp 6379 --syslogf 22 -d 4
 
 				result="$(ps aux | grep gmeta | grep -v grep)"
 				if [ x"$result" == x ] ; then

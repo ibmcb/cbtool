@@ -18,6 +18,11 @@
 
 # Used for remote-debugging. Eclipse passes "--debug_host". If there are such
 # options, then do not daemonize the process so that we may connect the debugger
+
+source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
+
+REMOTE_DIR=`get_my_vm_attribute remote_dir_name`
+
 operation="ai-execute"
 daemonize=" --daemon"
 options="$@"
@@ -45,7 +50,7 @@ if [ x"${load_manager_vm}" == x"${my_vm_uuid}" ] ; then
 	
 	if [ x"${running_load_managers}" == x ] ; then
 	    syslog_netcat "Starting Load Manager"
-	    ~/cloudbench/cbact --procid=${osprocid} --uuid=${my_ai_uuid} --operation=$operation $daemonize $options
+		~/${REMOTE_DIR}/cbact --procid=${osprocid} --uuid=${my_ai_uuid} --operation=$operation $daemonize $options
 	    exit 0
 	else
 		syslog_netcat "A Load Manager is already running"

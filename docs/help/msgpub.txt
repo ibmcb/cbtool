@@ -1,1 +1,1 @@
-To be written
+Usage: msgpub <cloud name> <object type> <channel> <message>

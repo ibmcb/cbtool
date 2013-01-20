@@ -1,1 +1,1 @@
-To be written
+Usage: waiton <cloud name> <object type> <channel> <keyword>

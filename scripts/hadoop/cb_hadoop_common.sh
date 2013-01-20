@@ -29,11 +29,20 @@ source ~/.bashrc
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
 HADOOP_HOME=`get_my_ai_attribute_with_default hadoop_home ~/hadoop-0.20.2`
+
+eval HADOOP_HOME=${HADOOP_HOME}
+
 HADOOP_CONF_DIR=$HADOOP_HOME/conf
 
 hadoop_master_ip=`get_ips_from_role hadoopmaster`
 
 slave_ips=`get_ips_from_role hadoopslave`
+
+DFS_NAME_DIR=`get_my_ai_attribute_with_default dfs_name_dir /tmp/cbhadoopname`
+eval DFS_NAME_DIR=${DFS_NAME_DIR}
+
+DFS_DATA_DIR=`get_my_ai_attribute_with_default dfs_data_dir /tmp/cbhadoopdata`
+eval DFS_DATA_DIR=${DFS_DATA_DIR}
 
 slave_ips_csv=`echo ${slave_ips} | sed ':a;N;$!ba;s/\n/, /g'`
 
@@ -56,7 +65,7 @@ if [ x"$my_role" == x"hadoopmaster" ]
 then
 
 	load_level=`get_my_ai_attribute load_level`
-	load_factor=`get_my_ai_attribute_with_default tradedb_size 1000`
+	load_factor=`get_my_ai_attribute_with_default load_factor 1000`
 	
 	is_max_min=`echo ${load_level} | grep -c "I"`
 	

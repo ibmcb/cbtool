@@ -34,7 +34,7 @@ SSH_KEY_NAME_DOC = Please indicate the location of the SSH private key that will
 INITIAL_VMCS_DOC = Please specify a list of Regions\n(analagous to an EC2 or OpenStack region).\nThis name is arbitrary, and represents the point at\nwhich hypervisors are grouped together in a typical cloud.
 
 [SETUP]
-GLOBAL_OBJECT_LIST = setup,logstore,metricstore,dash_defaults,mon_defaults,space,time,vmc_defaults,vm_defaults,svm_defaults,ai_defaults,aidrs_defaults,vmcrs_defaults,firs_defaults,vm_templates,ai_templates,aidrs_templates,vmcrs_templates,query,admission_control,api_defaults,gui_defaults
+GLOBAL_OBJECT_LIST = setup,logstore,metricstore,dash_defaults,mon_defaults,space,time,vmc_defaults,vm_defaults,svm_defaults,ai_defaults,aidrs_defaults,vmcrs_defaults,firs_defaults,vm_templates,ai_templates,aidrs_templates,vmcrs_templates,firs_templates,query,admission_control,api_defaults,gui_defaults
 
 [SPACE]
 BASE_DIR = $MAIN_BASE_DIR
@@ -46,6 +46,7 @@ SCRIPTS_DIR = $BASE_DIR/scripts
 CREDENTIALS_DIR = $BASE_DIR/credentials
 DAEMON_WORKING_DIR = $INSTANCE_DIR
 STORES_WORKING_DIR = $BASE_DIR/stores
+DATA_WORKING_DIR = $BASE_DIR/data
 USERNAME = $MAIN_USERNAME
 # This variable should match what the layout of the VM image uses (user name and directory)
 VM_DAEMON_DIR = /home/klabuser
@@ -72,8 +73,8 @@ VM = BYUSERNAME, BYVMC, BYHOST, BYROLE, BYTYPE, BYAI, BYAIDRS
 SVM = BYUSERNAME, BYVMC, BYROLE, BYTYPE, BYAI, BYAIDRS
 AI = BYUSERNAME, BYTYPE, BYAIDRS
 AIDRS = BYUSERNAME, BYPATTERN
-VMCRS = BYUSERNAME, BYTYPE
-FIRS = BYUSERNAME, BYSCOPE
+VMCRS = BYUSERNAME, BYPATTERN, BYSCOPE
+FIRS = BYUSERNAME, BYPATTERN, BYSCOPE
 MANDATORY_TAGS = name, cloud_hostname, cloud_ip
 CLOUD_ATTRIBUTES = name, model, description, all, username, client_should_refresh, start_time, all_vmcs_attached
 
@@ -105,7 +106,6 @@ CLEANUP_ON_DETACH = $True
 REPLICATION_VMCS = $EMPTY
 DETACH_PARALLELISM = 20
 DISCOVER_HOSTS = $False
-LVM = $False
 
 [VM_DEFAULTS]
 USERNAME = $MAIN_USERNAME
@@ -129,7 +129,6 @@ RUNSTATE_PARALLELISM = 5
 RANDOMIZE_IMAGE_NAME = $False 
 EXECUTE_SCRIPT_NAME = execute_on_staging.sh 
 EXECUTE_JSON_FILENAME_PREFIX = cb
-LVM = $False
 QEMU_DEBUG = $False
 SVM_STUB = $False
 SVM_STUB_VMC  = none
@@ -198,7 +197,6 @@ DETACH_PARALLELISM = 20
 USERNAME = $MAIN_USERNAME
 SUBMITTER = $True
 SWITCH_IP = $EMPTY
-HOSTS = $EMPTY
 UPDATE_FREQUENCY = $MAIN_UPDATE_FREQUENCY
 UPDATE_ATTEMPTS = $MAIN_UPDATE_ATTEMPTS
 NOTIFICATION = $MAIN_NOTIFICATION
@@ -215,7 +213,6 @@ DASHBOARD_PARAMETERS = dashboard?kb2mb=no&failedvm=yes&4k2mb=no&b2mb=no&p=yes&h=
 
 [MON_DEFAULTS]
 USERNAME = $MAIN_USERNAME
-DATA_FILE_LOCATION = /home/$MAIN_USERNAME
 PROTOCOL = TCP
 HOSTNAME = $MANAGER_IP
 TIMEOUT = $MAIN_TIMEOUT
@@ -272,7 +269,7 @@ MEM_M = mem_total, mem_free, mem_cached, mem_buffers, mem_shared
 SWAP_M = swap_total, swap_free, swap_procs_running, swap_in_flight, swap_procs_blocked, swap_KB_read, swap_ios_read, swap_KB_write, swap_ios_write
 NET_M = pkts_in, bytes_in, pkts_out, bytes_out
 DSK_M = disk_total, disk_free, ds_in_flight, ds_KB_read, ds_ios_read, ds_KB_write, ds_ios_write
-APP_M = app_load_id, app_load_level, app_throughput, app_latency
+APP_M = app_load_id, app_load_level, app_throughput, app_latency, app_bandwidth
 # Actual layout (do not prefix these variables with $)
 VM_RUNTIME_OS_METRICS_HEADER = TSTAMP, VM_ID2, CPU_M, MEM_M, SWAP_M, NET_M, DSK_M
 VM_RUNTIME_APP_METRICS_HEADER = TSTAMP, VM_ID2, APP_M

@@ -1,1 +1,1 @@
-To be written
+Usage: aiattach <cloud name> <type> [load level] [load duration] [lifetime] [parent] [action after VM attach] [mode]

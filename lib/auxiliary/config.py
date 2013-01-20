@@ -224,12 +224,12 @@ def parse_cld_defs_file(cloud_definitions = None, print_message = False, \
                                     raise Exception("\nconfiguration error: order is incorrect: " + _line)
                             
                             for _part in _parts :
-                               if _part.strip() == "" :
+                                if _part.strip() == "" :
                                     raise Exception("\nconfiguration error: invalid component listing after colon: " + _line)
                                 
-                               if _new_subsec != "" :
-                                   _new_subsec += "_" 
-                               _new_subsec += _part.strip() 
+                                if _new_subsec != "" :
+                                    _new_subsec += "_" 
+                                _new_subsec += _part.strip() 
                             
                             _subsec = _new_subsec
                         

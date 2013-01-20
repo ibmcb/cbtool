@@ -23,11 +23,14 @@ source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 START=`provision_application_start`
 
 COREMARK_HOME=~/3rd_party/_coremark-1.0
+eval COREMARK_HOME=${COREMARK_HOME}
+
+CBUSERLOGIN=`get_my_ai_attribute login`
 
 sudo touch $COREMARK_HOME/run1.log
-sudo chown klabuser:klabuser $COREMARK_HOME/run1.log
+sudo chown ${CBUSERLOGIN}:${CBUSERLOGIN} $COREMARK_HOME/run1.log
 sudo touch $COREMARK_HOME/run2.log
-sudo chown klabuser:klabuser $COREMARK_HOME/run2.log
+sudo chown ${CBUSERLOGIN}:${CBUSERLOGIN} $COREMARK_HOME/run2.log
 
 NR_CPUS=`cat /proc/cpuinfo | grep processor | wc -l`
 THREADS_PER_CPU=2

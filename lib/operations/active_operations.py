@@ -44,6 +44,7 @@ from base_operations import BaseObjectOperations
 
 import copy
 import threading
+import os
 
 class ActiveObjectOperations(BaseObjectOperations) :
     '''
@@ -126,6 +127,17 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 
                 rewrite_cloudoptions(cld_attr_lst, available_clouds, False)
     
+                ssh_filename = cld_attr_lst["space"]["credentials_dir"] + '/' + cld_attr_lst["space"]["ssh_key_name"]
+
+                if not os.path.isfile(ssh_filename) :
+                    if not os.path.isfile(cld_attr_lst["space"]["ssh_key_name"]) :
+                        _fmsg = "Error: "
+                        raise Exception("\n   Your " + cld_attr_lst["model"].upper() + "_SSH_KEY_NAME parameter is wrong:\n" + \
+                                        "\n   Neither files exists: " + cld_attr_lst["space"]["ssh_key_name"] + " nor " + ssh_filename + \
+                                        "\n   Please update your configuration and try again.\n");
+                else :
+                   cld_attr_lst["space"]["ssh_key_name"] = ssh_filename 
+
                 _idmsg = "The \"" + cld_attr_lst["model"] + "\" cloud named \""
                 _idmsg += cld_attr_lst["cloud_name"] + "\""
                 _smsg = _idmsg + " was successfully attached to this "
@@ -208,7 +220,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 # This needs to be better coded later. Right now, it is just a fix to avoid
                 # the problems caused by the fact that git keeps resetting RSA's private key
                 # back to 644 (which are too open).
-                chmod(cld_attr_lst["space"]["credentials_dir"] + '/' + cld_attr_lst["space"]["ssh_key_name"], 0600)
+                chmod(cld_attr_lst["space"]["ssh_key_name"], 0600)
     
                 _expid = cld_attr_lst["time"]["experiment_id"]
                 _cld_name = cld_attr_lst["name"]
@@ -317,7 +329,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 sleep (_update_frequency) 
 
                 _curr_tries = 0
-                for _object_typ in [ "AI", "VM", "SVM", "VMC"] :            
+                for _object_typ in [ "VMCRS", "FIRS", "AI", "VM", "SVM", "VMC" ] :            
                     _msg = "Giving extra time for all " + _object_typ + "s to " 
                     _msg += "finish attachment/detachment gracefully......"
                     cbdebug(_msg)
@@ -738,8 +750,26 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
         try :
             _vmc_pools = list(self.osci.get_list(obj_attr_list["cloud_name"], "GLOBAL", "vmc_pools"))
-
             _hosts = list(self.osci.get_list(obj_attr_list["cloud_name"], "GLOBAL", "host_names"))
+            
+            '''
+            Blacklists are for Anti-Colocation. Please don't break them. =) 
+            FT depends on anti-colocation. Others might also in the future.
+            '''
+            if "vmc_pool_blacklist" in obj_attr_list.keys() :
+                _blacklist = obj_attr_list["vmc_pool_blacklist"].split(",")
+                for _bad_pool in _blacklist :
+                    for _idx in range(0, len(_vmc_pools)) :
+                        if _bad_pool.upper() == _vmc_pools[_idx] :
+                            del _vmc_pools[_idx]
+                            break
+            elif "host_name_blacklist" in obj_attr_list.keys() :
+                _blacklist = obj_attr_list["host_name_blacklist"].split(",")
+                for _bad_host in _blacklist :
+                    for _idx in range(0, len(_hosts)) :
+                        if _bad_host.upper() == _hosts[_idx] :
+                            del _hosts[_idx]
+                            break
 
             if "vmc_pool" in obj_attr_list :
                 _vm_location = obj_attr_list["vmc_pool"].upper()
@@ -775,14 +805,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
             # Do NOT use "else" here. _vm_location can have its value changed
             # in the previous if statement
             if _vm_location == "AUTO"  :
-                
-                if "vmc_pool_blacklist" in obj_attr_list.keys() :
-                    _blacklist = obj_attr_list["vmc_pool_blacklist"].split(",")
-                    for _bad_pool in _blacklist :
-                        for _idx in range(0, len(_vmc_pools)) :
-                            if _bad_pool.upper() == _vmc_pools[_idx] :
-                                del _vmc_pools[_idx]
-                                break
 
                 if not len(_vmc_pools) :
                     _status = 181
@@ -790,7 +812,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     raise self.osci.ObjectStoreMgdConnException(_fmsg, _status)
 
                 # Will have to think about changing it later. It is quite 
-                # ineficient, considering that there is a "pool" attribute
+                # inefficient, considering that there is a "pool" attribute
                 # being loaded already
                 for _key in obj_attr_list.keys() :
                     if _key.count("pref_pool") :
@@ -900,6 +922,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
         #upper-level handling code....
         
         obj_attr_list["vmc_pool_blacklist"] = obj_attr_list["primary_vmc_pool"]
+        if "primary_host_name" in obj_attr_list :
+            obj_attr_list["host_name_blacklist"] = obj_attr_list["primary_host_name"]
         obj_attr_list["svm_stub_ip"] = "undefined" 
         self.pre_attach_vm(obj_attr_list)
         
@@ -1116,7 +1140,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _aidrs_templates["patterns"].append(_element[0:-5])
             
             obj_attr_list["nr_ais"] = 0
-            obj_attr_list["arrival"] = int(time())
 
             if obj_attr_list["pattern"] in _aidrs_templates["patterns"] :
                 # This is just a trick to remove the application name from the
@@ -1133,6 +1156,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                 obj_attr_list[_key[_x:]] = _value
                         else :
                             obj_attr_list[_key[_x:]] = _value
+
+                obj_attr_list["arrival"] = int(time())
+
                 _status = 0
             else :
                 _fmsg = "Unknown pattern: " + obj_attr_list["pattern"] 
@@ -1165,13 +1191,22 @@ class ActiveObjectOperations(BaseObjectOperations) :
         TBD
         '''
         try :
+
             _status = 100
 
             _fmsg = "An error has occurred, but no error message was captured"
                             
             _vmcrs_templates = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, \
                                                     "vmcrs_templates", False)
-            cbdebug(_vmcrs_templates["patterns"])
+
+            _vmcrs_templates["patterns"] = []
+            for _element in _vmcrs_templates :
+                if _element.count("ivmcat") :
+                    _vmcrs_templates["patterns"].append(_element[0:-7])
+
+            obj_attr_list["nr_simultaneous_cap_reqs"] = 0
+            obj_attr_list["nr_total_cap_reqs"] = 0
+
             if _vmcrs_templates["patterns"].count(obj_attr_list["pattern"]) :
                 # This is just a trick to remove the application name from the
                 # start of the AIDRS attributes on the template. 
@@ -1187,6 +1222,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                 obj_attr_list[_key[_x:]] = _value
                         else :
                             obj_attr_list[_key[_x:]] = _value
+
+                obj_attr_list["arrival"] = int(time())
+
                 _status = 0
             else :
                 _fmsg = "Unknown pattern: " + obj_attr_list["pattern"] 
@@ -1210,6 +1248,71 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 raise self.ObjectOperationException(_msg, _status)
             else :
                 _msg = "VMCRS pre-attachment operations success."
+                cbdebug(_msg)
+                return _status, _msg
+
+    def pre_attach_firs(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        try :
+
+            _status = 100
+
+            _fmsg = "An error has occurred, but no error message was captured"
+                            
+            _firs_templates = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, \
+                                                    "firs_templates", False)
+
+            _firs_templates["patterns"] = []
+            for _element in _firs_templates :
+                if _element.count("ifat") :
+                    _firs_templates["patterns"].append(_element[0:-4])
+
+            obj_attr_list["nr_simultaneous_faults"] = 0
+            obj_attr_list["nr_total_faults"] = 0
+
+            if _firs_templates["patterns"].count(obj_attr_list["pattern"]) :
+                # This is just a trick to remove the application name from the
+                # start of the AIDRS attributes on the template. 
+                # For instance, instead of adding the key "simpledt_max_ais"
+                # to the list of attributes of the AS we want the key to be in fact 
+                # only "max_ais"
+                _x = len(obj_attr_list["pattern"]) + 1
+            
+                for _key, _value in _firs_templates.iteritems() :
+                    if _key.count(obj_attr_list["pattern"]) :
+                        if _key[_x:] in obj_attr_list : 
+                            if obj_attr_list[_key[_x:]] == "default" :
+                                obj_attr_list[_key[_x:]] = _value
+                        else :
+                            obj_attr_list[_key[_x:]] = _value
+
+                obj_attr_list["arrival"] = int(time())
+
+                _status = 0
+            else :
+                _fmsg = "Unknown pattern: " + obj_attr_list["pattern"] 
+
+        except self.osci.ObjectStoreMgdConnException, obj :
+            _status = 40
+            _fmsg = str(obj.msg)
+
+        except self.ObjectOperationException, obj :
+            _status = obj.status
+            _fmsg = str(obj.msg)
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+
+        finally :
+            if _status :
+                _msg = "FIRS pre-attachment operations failure: " + _fmsg
+                cberr(_msg)
+                raise self.ObjectOperationException(_msg, _status)
+            else :
+                _msg = "FIRS pre-attachment operations success."
                 cbdebug(_msg)
                 return _status, _msg
 
@@ -1350,6 +1453,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
     
                     elif _obj_type == "VMCRS" :
                         self.pre_attach_vmcrs(obj_attr_list)
+
+                    elif _obj_type == "FIRS" :
+                        self.pre_attach_firs(obj_attr_list)
     
                     else :
                         _msg = "Unknown object: " + _obj_type
@@ -1384,6 +1490,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     
                     elif _obj_type == "VMCRS" :
                         True
+
+                    elif _obj_type == "FIRS" :
+                        True
     
                     else :
                         False
@@ -1395,7 +1504,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                 obj_attr_list["departure"] = obj_attr_list["lifetime"] +\
                                  obj_attr_list["arrival"]
                         
-                        if _obj_type == "VM" and "host_name" in obj_attr_list and obj_attr_list["host_name"] != "unknown" :
+                        if _obj_type in ["VM", "SVM"] and "host_name" in obj_attr_list and obj_attr_list["host_name"] != "unknown" :
                             if obj_attr_list["discover_hosts"].lower() == "true" :
                                 _host_attr_list = self.osci.get_object(_cloud_name, "HOST", True, "host_" + obj_attr_list["host_name"], False)
                                 obj_attr_list["host"] = _host_attr_list["uuid"]
@@ -1422,7 +1531,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
     
                         elif _obj_type == "VMCRS" :
                             self.post_attach_vmcrs(obj_attr_list)
-    
+
+                        elif _obj_type == "FIRS" :
+                            self.post_attach_firs(obj_attr_list)
+
                         else :
                             True
 
@@ -1765,26 +1877,16 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _msg += obj_attr_list["name"] + " ("+ obj_attr_list["cloud_ip"] + ")..."
                     cbdebug(_msg, True)
 
-                    #_proc_man = ProcessManagement(username = obj_attr_list["username"], \
-                    #                              cloud_name = obj_attr_list["cloud_name"])
+                    _proc_man = ProcessManagement(username = obj_attr_list["username"], \
+                                                  cloud_name = obj_attr_list["cloud_name"])
 
-                    #while _status :
-                        #_status, _result_stdout, _result_stderr = _proc_man.run_os_command(_cmd)
-                        #_curr_tries = _curr_tries + 1
-                        #sleep(int(obj_attr_list["update_frequency"]))
-                                                    
-                    _proc_h = Popen(_cmd, bufsize=-1, shell=True, stdout=PIPE, stderr=PIPE) 
-                    if not _proc_h :
-                        _msg = "Failed to create subprocess with " + _cmd
-                        _curr_tries = _curr_tries + 1
-                        sleep(int(obj_attr_list["inter_connection_attempts_time"]))
+                    _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_cmd)
+
+                    if not _status :
+                        break
                     else :
-                        if wait_on_process(self.pid, _proc_h, _output_list) :
-                            _status = 0
-                            break
-                        else :
-                            _curr_tries = _curr_tries + 1
-                            sleep(int(obj_attr_list["update_frequency"]))
+                        _curr_tries = _curr_tries + 1
+                        sleep(int(obj_attr_list["update_frequency"]))
 
                 else :
                     _output_list = []
@@ -1981,17 +2083,24 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _cmd += " --daemon"
             #_cmd += "  --debug_host=127.0.0.1"
 
-            _proc_h = Popen(_cmd, shell=True, stdout=PIPE, stderr=PIPE)
+            _proc_man = ProcessManagement(username = obj_attr_list["username"], \
+                                          cloud_name = obj_attr_list["cloud_name"])
 
-            if _proc_h.pid :
+            _aidrs_pid = _proc_man.start_daemon(_cmd)
+
+            if _aidrs_pid :
+
                 _msg = "AIDRS attachment command \"" + _cmd + "\" "
                 _msg += " was successfully started."
-                _msg += "The process id is " + str(_proc_h.pid) + "."
+                _msg += "The process id is " + str(_aidrs_pid) + "."
                 cbdebug(_msg)
 
                 _obj_id = obj_attr_list["uuid"] + '-' + "submit"
                 self.update_process_list(obj_attr_list["cloud_name"], "AIDRS", _obj_id, \
-                                         str(_proc_h.pid), "add")
+                                         str(_aidrs_pid), "add")
+            else :
+                _fmsg = "AIDRS attachment command \"" + _cmd + "\" "
+                _fmsg += " failed while starting."
 
             _status = 0
 
@@ -2027,16 +2136,24 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _cmd += " --cn=" + obj_attr_list["cloud_name"]
             _cmd += " --daemon"
 
-            _proc_h = Popen(_cmd, shell=True, stdout=PIPE, stderr=PIPE)
+            _proc_man = ProcessManagement(username = obj_attr_list["username"], \
+                                          cloud_name = obj_attr_list["cloud_name"])
 
-            if _proc_h.pid :
+            _vmcrs_pid = _proc_man.start_daemon(_cmd)
+
+            if _vmcrs_pid :
+
                 _msg = "VMCRS attachment command \"" + _cmd + "\" "
                 _msg += " was successfully started."
-                _msg += "The process id is " + str(_proc_h.pid) + "."
+                _msg += "The process id is " + str(_vmcrs_pid) + "."
                 cbdebug(_msg)
 
                 _obj_id = obj_attr_list["uuid"] + '-' + "submit"
-                self.update_process_list(obj_attr_list["cloud_name"], "VMCRS", _obj_id, str(_proc_h.pid), "add")
+                self.update_process_list(obj_attr_list["cloud_name"], "VMCRS", _obj_id, \
+                                         str(_vmcrs_pid), "add")
+            else :
+                _fmsg = "VMCRS attachment command \"" + _cmd + "\" "
+                _fmsg += " failed while starting."
 
             _status = 0
 
@@ -2051,6 +2168,58 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 raise self.ObjectOperationException(_msg, _status)
             else :
                 _msg = "VMCRS post-attachment operations success."
+                cbdebug(_msg)
+                return _status, _msg
+
+    def post_attach_firs(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"            
+
+            _cmd = self.path + "/cbact"
+            _cmd += " --procid=" + self.pid
+            _cmd += " --osp=" + dic2str(self.osci.oscp())
+            _cmd += " --msp=" + dic2str(self.msci.mscp())
+            _cmd += " --uuid=" + obj_attr_list["uuid"] 
+            _cmd += " --operation=fir-submit"
+            _cmd += " --cn=" + obj_attr_list["cloud_name"]
+            _cmd += " --daemon"
+
+            _proc_man = ProcessManagement(username = obj_attr_list["username"], \
+                                          cloud_name = obj_attr_list["cloud_name"])
+
+            _firs_pid = _proc_man.start_daemon(_cmd)
+
+            if _firs_pid :
+
+                _msg = "FIRS attachment command \"" + _cmd + "\" "
+                _msg += " was successfully started."
+                _msg += "The process id is " + str(_vmcrs_pid) + "."
+                cbdebug(_msg)
+
+                _obj_id = obj_attr_list["uuid"] + '-' + "submit"
+                self.update_process_list(obj_attr_list["cloud_name"], "FIRS", _obj_id, \
+                                         str(_vmcrs_pid), "add")
+            else :
+                _fmsg = "FIRS attachment command \"" + _cmd + "\" "
+                _fmsg += " failed while starting."
+
+            _status = 0
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+
+        finally :
+            if _status :
+                _msg = "FIRS post-attachment operations failure: " + _fmsg
+                cberr(_msg)
+                raise self.ObjectOperationException(_msg, _status)
+            else :
+                _msg = "FIRS post-attachment operations success."
                 cbdebug(_msg)
                 return _status, _msg
         
@@ -2299,6 +2468,29 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 cbdebug(_msg)
                 return True
 
+    def pre_detach_firs(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+            _status = 0
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+
+        finally :
+            if _status :
+                _msg = "FIRS pre-detachment operations failure: " + _fmsg
+                cberr(_msg)
+                raise self.ObjectOperationException(_msg, _status)
+            else :
+                _msg = "FIRS pre-detachment operations success."
+                cbdebug(_msg)
+                return True
+
     @trace    
     def objdetach(self, obj_attr_list, parameters, command) :
         '''
@@ -2378,6 +2570,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 elif _obj_type == "VMCRS" :
                     self.pre_detach_vmcrs(obj_attr_list)
 
+                elif _obj_type == "FIRS" :
+                    self.pre_detach_firs(obj_attr_list)
+
                 else :
                     _msg = "Unknown object: " + _obj_type
                     raise self.ObjectOperationException(_msg, 28)
@@ -2405,6 +2600,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                     elif _obj_type == "VMCRS" :
                         self.post_detach_vmcrs(obj_attr_list)
+
+                    elif _obj_type == "FIRS" :
+                        self.post_detach_firs(obj_attr_list)
 
                     else :
                         True
@@ -2690,6 +2888,63 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 return _status, _msg
 
     @trace
+    def post_detach_vmcrs(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+            
+            _status = 0
+
+        except IndexError, msg :
+            _status = 40
+            _fmsg = str(msg)
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+
+        finally :
+            if _status :
+                _msg = "VMCRS post-detachment operations failure: " + _fmsg
+                cberr(_msg)
+                raise self.ObjectOperationException(_msg, _status)
+            else :
+                _msg = "VMCRS post-detachment operations success."
+                cbdebug(_msg)
+                return _status, _msg
+
+    def post_detach_firs(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+            
+            _status = 0
+
+        except IndexError, msg :
+            _status = 40
+            _fmsg = str(msg)
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+
+        finally :
+            if _status :
+                _msg = "FIRS post-detachment operations failure: " + _fmsg
+                cberr(_msg)
+                raise self.ObjectOperationException(_msg, _status)
+            else :
+                _msg = "VMCRS post-detachment operations success."
+                cbdebug(_msg)
+                return _status, _msg
+
+    @trace
     def objdetachall(self, parameters, command) :
         '''
         TBD
@@ -2819,11 +3074,16 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 if not _status :
                     _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
                     _cld_conn = _cld_ops_class(self.pid, self.osci)
-                    
-                    if "vmcrs" in obj_attr_list :
+
+                    if "vmcrs" in obj_attr_list and obj_attr_list["vmcrs"] != "none" :
                         self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VMCRS", \
                                                           obj_attr_list["vmcrs"], \
-                                                          False, "nr_vmcapreqs", \
+                                                          False, "nr_simultaneous_cap_reqs", \
+                                                          1, True)
+
+                        self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VMCRS", \
+                                                          obj_attr_list["vmcrs"], \
+                                                          False, "nr_total_cap_reqs", \
                                                           1, True)
     
                     if "ai" in obj_attr_list and obj_attr_list["ai"].lower() != "none" :
@@ -2902,10 +3162,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                        ' ' + obj_attr_list["name"] + " true", \
                                        "vm-detach")
         
-                        if "vmcrs" in obj_attr_list :
+                        if "vmcrs" in obj_attr_list and obj_attr_list["vmcrs"] != "none" :
                             self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VMCRS", \
                                                               obj_attr_list["vmcrs"], \
-                                                              False, "nr_vmcapreqs", \
+                                                              False, "nr_simultaneous_cap_reqs", \
                                                               -1, True)
                         
                     _status = 0
@@ -3519,6 +3779,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             else :
                                 _size = "default"
 
+                            _extra_parms = ''
+                            if _vm_role + "_netid" in obj_attr_list :
+                                _extra_parms += "netid=" + obj_attr_list[_vm_role + "_netid"]
+
                             obj_attr_list["parallel_operations"][_vm_counter] = {} 
                             _pobj_uuid = str(uuid5(NAMESPACE_DNS, str(randint(0,10000000000000000) + _vm_counter)))
                             _pobj_uuid = _pobj_uuid.upper()
@@ -3528,9 +3792,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             obj_attr_list["parallel_operations"][_vm_counter]["ai"] = obj_attr_list["uuid"]
                             obj_attr_list["parallel_operations"][_vm_counter]["aidrs"] = obj_attr_list["aidrs"]
                             obj_attr_list["parallel_operations"][_vm_counter]["type"] = obj_attr_list["type"]
-                            obj_attr_list["parallel_operations"][_vm_counter]["parameters"] = obj_attr_list["cloud_name"] + ' ' + _vm_role + ' ' + _pool + ' ' + _meta_tag + ' ' + _size
+                            obj_attr_list["parallel_operations"][_vm_counter]["parameters"] = obj_attr_list["cloud_name"] + ' ' + _vm_role + ' ' + _pool + ' ' + _meta_tag + ' ' + _size + ' ' + _extra_parms 
                             obj_attr_list["parallel_operations"][_vm_counter]["operation"] = "vm-attach"
-                            _vm_command_list += obj_attr_list["cloud_name"] + ' ' + _vm_role + ", " + _pool + ", " + _meta_tag + ", " + _size + "; "
+                            _vm_command_list += obj_attr_list["cloud_name"] + ' ' + _vm_role + ", " + _pool + ", " + _meta_tag + ", " + _size + ", " + _extra_parms + "; "
                             _vm_counter += 1
 
                         obj_attr_list["temp_vms"] = obj_attr_list["temp_vms"][:-1]
@@ -4200,13 +4464,22 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             _vmcrs_attr_list = self.osci.get_object(cloud_name, "VMCRS", False, object_uuid, False)
 
+            _type_list = self.osci.get_list(_vmcrs_attr_list["cloud_name"], "GLOBAL", "ai_types")
+
             _check_frequency = float(_vmcrs_attr_list["update_frequency"])
 
             _ivmcat_parms = _vmcrs_attr_list["ivmcat"]
             _vg = ValueGeneration(self.pid)
             _vmcr_inter_arrival_time = int(_vg.get_value(_ivmcat_parms, 0))
 
-            if "nr_vmcapreqs" in _vmcrs_attr_list and int(_vmcrs_attr_list["nr_vmcapreqs"]) > int(_vmcrs_attr_list["max_capreqs"]) :
+            if "nr_simultaneous_cap_reqs" in _vmcrs_attr_list and \
+            int(_vmcrs_attr_list["nr_simultaneous_cap_reqs"]) >= int(_vmcrs_attr_list["max_simultaneous_cap_reqs"]) :
+                _vmcrs_overload = True
+            else :
+                _vmcrs_overload = False
+
+            if "nr_total_cap_reqs" in _vmcrs_attr_list and \
+            int(_vmcrs_attr_list["nr_total_cap_reqs"]) >= int(_vmcrs_attr_list["max_total_cap_reqs"]) :
                 _vmcrs_overload = True
             else :
                 _vmcrs_overload = False
@@ -4221,7 +4494,19 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 if _vmcrs_state and _vmcrs_state != "stopped" :
 
-                    _capturable_ais = self.osci.query_by_view(cloud_name, "AI", "BYTYPE", _vmcrs_attr_list["type"], "arrival", "minage:" + _vmcrs_attr_list["min_cap_age"])
+                    if _vmcrs_attr_list["scope"] in _type_list :
+                        _view = "BYTYPE"
+                    elif _vmcrs_attr_list["scope"] == _vmcrs_attr_list["username"] :
+                        _view = "BYUSERNAME"
+                    else :
+                        _view = "BYAIDRS"
+
+                    _capturable_ais = self.osci.query_by_view(cloud_name, \
+                                                              "AI", \
+                                                              _view, \
+                                                              _vmcrs_attr_list["scope"],\
+                                                               "arrival", \
+                                                               "minage:" + _vmcrs_attr_list["min_cap_age"])
 
                     if len(_capturable_ais) :
                         _selected_ai = choice(_capturable_ais)
@@ -4229,6 +4514,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _ai_attr_list = self.osci.get_object(cloud_name, "AI", False, _ai_uuid, False)    
                         _vm_list = _ai_attr_list["vms"].split(',')
                         _vm_candidate_list = []
+
                         for _vm in _vm_list :
                             _vm_uuid, _vm_role, _vm_name = _vm.split('|')
                         if _vm_role == _ai_attr_list["capture_role"] :
@@ -4240,7 +4526,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _cmd += " --procid=" + self.pid
                         _cmd += " --osp=" + dic2str(self.osci.oscp())
                         _cmd += " --msp=" + dic2str(self.msci.mscp())
-                        _cmd += " --oop=" + cloud_name + ',' + _vm_name
+                        _cmd += " --oop=" + cloud_name + ',' + _vm_name + ',' + object_uuid
                         _cmd += " --operation=vm-capture"
                         _cmd += " --cn=" + cloud_name
                         _cmd += " --uuid=" + _vm_uuid
@@ -4275,10 +4561,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     cbdebug(_msg)
 
             else :
-                _msg = "VMCRS object reached maximum number"
-                _msg += " of Capture Requests allowed. Will keep checking its state and "
-                _msg += " destroying overdue AIs, but will not create new ones"
-                _msg += " until the number of AIs drops below the limit."
+                _msg = "VMCRS object reached maximum number of Capture Requests"
+                _msg += " allowed. Will keep checking its state, but it will"
+                _msg += " not capture any more VMs until the maximum number of"
+                _msg += " capture requests is changed."
                 cbdebug(_msg)
                 _inter_arrival_time = _check_frequency * 2
 
@@ -4311,9 +4597,159 @@ class ActiveObjectOperations(BaseObjectOperations) :
         
         return _status, _msg
 
+    def firsubmit(self, cloud_name, base_dir, object_type, object_uuid) :
+        '''
+        TBD
+        '''
+        _firs_state = False
+
+        while _firs_state :
+
+            _firs_state = self.osci.get_object_state(cloud_name, "FIRS", object_uuid)
+
+            _firs_attr_list = self.osci.get_object(cloud_name, "FIRS", False, object_uuid, False)
+
+            _type_list = self.osci.get_list(_firs_attr_list["cloud_name"], "GLOBAL", "ai_types")
+
+            _check_frequency = float(_firs_attr_list["update_frequency"])
+
+            _ifat_parms = _firs_attr_list["ifat"]
+            _vg = ValueGeneration(self.pid)
+            _fault_inter_arrival_time = int(_vg.get_value(_ifat_parms, 0))
+
+            _ftl_parms = _firs_attr_list["ftl"]
+            _fault_time_length = int(_vg.get_value(_ftl_parms, 0))
+
+            if "nr_simultaneous_faults" in _firs_attr_list and \
+            int(_firs_attr_list["nr_simultaneous_faults"]) >= int(_firs_attr_list["max_simultaneous_faults"]) :
+                _firs_overload = True
+            else :
+                _firs_overload = False
+
+            if "nr_total_faults" in _vmcrs_attr_list and \
+            int(_firs_attr_list["nr_total_faults"]) >= int(_vmcrs_attr_list["max_total_faults"]) :
+                _firs_overload = True
+            else :
+                _firs_overload = False
+
+            _inter_arrival_time = 0
+
+            if not _firs_overload :
+
+                _msg = "The selected inter-Fault Injection Request arrival time was "
+                _msg += str(_vmcr_inter_arrival_time) + " seconds."
+                cbdebug(_msg)
+
+                if _firs_state and _firs_state != "stopped" :
+
+                    if _firs_attr_list["scope"] in _type_list :
+                        _view = "BYTYPE"
+                    elif _firs_attr_list["scope"] == _firs_attr_list["username"] :
+                        _view = "BYUSERNAME"
+                    else :
+                        _view = "BYAIDRS"
+
+                    _capturable_ais = self.osci.query_by_view(cloud_name, \
+                                                              "AI", \
+                                                              _view, \
+                                                              _firs_attr_list["scope"],\
+                                                               "arrival", \
+                                                               "minage:" + _firs_attr_list["min_cap_age"])
+
+                    if len(_capturable_ais) :
+                        _selected_ai = choice(_capturable_ais)
+                        _ai_uuid, _ai_name = _selected_ai.split('|')
+                        _ai_attr_list = self.osci.get_object(cloud_name, "AI", False, _ai_uuid, False)    
+                        _vm_list = _ai_attr_list["vms"].split(',')
+                        _vm_candidate_list = []
+
+                        for _vm in _vm_list :
+                            _vm_uuid, _vm_role, _vm_name = _vm.split('|')
+                        if _vm_role == _ai_attr_list["capture_role"] :
+                            _vm_candidate_list.append(_vm)
+                            _selected_vm = choice(_vm_candidate_list)
+
+                        _vm_uuid, _vm_role, _vm_name = _vm.split('|')
+                        _cmd = base_dir + "/cbact"
+                        _cmd += " --procid=" + self.pid
+                        _cmd += " --osp=" + dic2str(self.osci.oscp())
+                        _cmd += " --msp=" + dic2str(self.msci.mscp())
+                        _cmd += " --oop=" + cloud_name + ',' + _vm_name + ',' + object_uuid
+                        _cmd += " --operation=vm-capture"
+                        _cmd += " --cn=" + cloud_name
+                        _cmd += " --uuid=" + _vm_uuid
+                        _cmd += " --daemon"
+                        #_cmd += "  --debug_host=127.0.0.1"
+
+                        cbdebug(_cmd)
+                        
+                        _proc_h = Popen(_cmd, shell=True, stdout=PIPE, stderr=PIPE)
+    
+                        if _proc_h.pid :
+                            _msg = "VM capture command \"" + _cmd + "\" "
+                            _msg += " was successfully started."
+                            _msg += "The process id is " + str(_proc_h.pid) + "."
+                            cbdebug(_msg)
+
+                            _obj_id = _ai_uuid + '-' + "capture"
+                            self.update_process_list(cloud_name, "AI", \
+                                                     _obj_id, \
+                                                     str(_proc_h.pid), \
+                                                     "add")
+
+                    else :
+                        _msg = "No VMs are eligible for capture"
+                        _inter_arrival_time = _check_frequency * 2
+                        cbdebug(_msg)
+
+                else :
+                    _msg = "Unable to get state, or state is \"stopped\"."
+                    _msg += "Will stop capturing new VMs until the VMCRS state"
+                    _msg += " changes."
+                    cbdebug(_msg)
+
+            else :
+                _msg = "VMCRS object reached maximum number of Capture Requests"
+                _msg += " allowed. Will keep checking its state, but it will"
+                _msg += " not capture any more VMs until the maximum number of"
+                _msg += " capture requests is changed."
+                cbdebug(_msg)
+                _inter_arrival_time = _check_frequency * 2
+
+            _inter_arrival_time_start = time()
+
+            while _inter_arrival_time < _vmcr_inter_arrival_time :
+
+                _firs_state = self.osci.get_object_state(cloud_name, "VMCRS", object_uuid)
+                
+                if not _firs_state  :
+                    _msg = "FIRS object " + object_uuid 
+                    _msg += " state could not be obtained. This process "
+                    _msg += " will exit, leaving all the AIs behind."
+                    cbdebug(_msg)
+                    break
+                elif _firs_state == "stopped" :
+                    _msg ="FIRS object " + object_uuid 
+                    _msg += " state was set to \"stopped\"."
+                    cbdebug(_msg)
+                else :
+                    True
+                sleep(_check_frequency)
+                _inter_arrival_time = time() - _inter_arrival_time_start
+
+        _msg = "This FIRS daemon has detected that the FIRS object associated to it was "
+        _msg += "detached. Proceeding to remove its pid from"
+        _msg += " the process list before finishing."
+        cbdebug(_msg)
+        _status = 0
+        
+        return _status, _msg
     
     @trace
     def continue_vm(self, obj_attr_list) :
+        '''
+        TBD
+        '''
         status = 342
         cloud_name = obj_attr_list["cloud_name"]
         started_uuid = obj_attr_list["uuid"]
@@ -4443,6 +4879,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
     @trace
     def continue_app(self, obj_attr_list) :
+        '''
+        TBD
+        '''
         try :
             status = 342
             cloud_name = obj_attr_list["cloud_name"]
@@ -4472,5 +4911,4 @@ class ActiveObjectOperations(BaseObjectOperations) :
             app["status"] = obj.status
             app["result"] = None
         
-        return app 
-    
+        return app

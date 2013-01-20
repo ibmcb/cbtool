@@ -1,1 +1,1 @@
-To be written
+Usage: aicapture <cloud name> <ai identifier> [mode]

@@ -23,8 +23,8 @@
 
     @author: Marcio A. Silva, Michael R. Hines
 '''
-from os import chmod, makedirs
-from os.path import isdir
+from os import chmod, makedirs, access, F_OK
+from os.path import isdir 
 from time import asctime, localtime, sleep, time
 from random import randint
 from subprocess import Popen, PIPE
@@ -128,6 +128,16 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _fields.append("|pattern                ")
             #            _fields.append("|uuid                                 ")
                         _fields.append("|type              ")
+                    elif _obj_type == "VMCRS" :
+                        _fields = []
+                        _fields.append("|name                ")
+                        _fields.append("|scope                ")
+            #            _fields.append("|uuid                                 ")
+                    elif _obj_type == "FIRS" :
+                        _fields = []
+                        _fields.append("|name                ")
+                        _fields.append("|scope                ")
+            #            _fields.append("|uuid                                 ")
                     else :
                         _msg = "Unknown object: " + _obj_type
                         raise self.ObjectOperationException(_msg, 28)
@@ -310,8 +320,9 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                 _result = copy.deepcopy(_obj_attribs)
         
                     elif _obj_type == "VMC" or _obj_type == "VM" or _obj_type == "HOST" or \
-                        _obj_type == "AI" or _obj_type == "AIDRS" or _obj_type == "SVM":
-                        _fields = []            
+                        _obj_type == "AI" or _obj_type == "AIDRS" or _obj_type == "SVM" or \
+                        _obj_type == "VMCRS" or _obj_type == "FIRS" :
+                        _fields = []
                         _fields.append("|attribute (" + _obj_type + " object key)               ")
                         _fields.append("|value                                ")
     
@@ -1241,7 +1252,9 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 _msg += "to this experiment. Please attach it first."
                 _status = 9876
                 raise self.ObjectOperationException(_msg, _status)
-            
+
+            _obj_attr_list = self.osci.get_object(_cn, "GLOBAL", False, "space", False)
+     
             self.monitoring_extract(_cn + " HOST os", "mon-extract")
             self.monitoring_extract(_cn + " VM os", "mon-extract")
             self.monitoring_extract(_cn + " VM app", "mon-extract")
@@ -1267,7 +1280,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 cberr(_msg)
             else :
                 _msg = "Monitor extraction success. All metrics written to csv"
-                _msg += " files on the current directory."
+                _msg += " files on the directory \""  + _obj_attr_list["data_working_dir"] + "\"."
                 cbdebug(_msg)
             return _status, _msg
         
@@ -1307,14 +1320,21 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _criteria = { "expid" : _obj_attr_list["current_experiment_id"] }
                     else :
                         _criteria = { "expid" : _obj_attr_list["expid"] }
-                    
+
+                    _space_attr_list = self.osci.get_object(_obj_attr_list["cloud_name"], "GLOBAL", False, "space", False)
+
+                    _obj_attr_list["data_file_location"] = _space_attr_list["data_working_dir"] + '/' + _criteria["expid"]
+
+                    if not access(_obj_attr_list["data_file_location"], F_OK) :
+                        makedirs(_obj_attr_list["data_file_location"])
+
                     _csv_contents_header = _obj_attr_list[_obj_type + '_' + _metric_type + "_metrics_header"]
-    
+
                     _fn = _obj_attr_list["data_file_location"] + '/' 
                     _fn += _obj_type.upper() + '_' + _metric_type + '_'
                     _fn += _criteria["expid"] + ".csv"
                     _fd = open(_fn, 'w', 0)
-    
+
                     _fd.write("#field:column #\n")
                     for _index, _item in enumerate(_csv_contents_header.split(',')) :
                         _fd.write('#' + _item + ':' + str(_index + 1) + '\n')
@@ -1339,10 +1359,12 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     # contains all the information that maps UUIDs to all other attributes.
                     # Given that a user can change the "experiment id" after a given
                     # object was attached, we get all management metrics for the 
-                    # UUID to other attribute map, but only print the metrics pertaining
+                    # UUID to "all other attributes" map, but only print the metrics pertaining
                     # to the current "experiment id". This needs to be optimized 
                     # later.
-                    _management_metrics_list = self.msci.find_document("management_" + _obj_type.upper() + '_' + _obj_attr_list["username"], {}, True)
+                    
+                    _collection_name = "management_" + _obj_type.upper() + '_' + _obj_attr_list["username"]
+                    _management_metrics_list = self.msci.find_document(_collection_name, {}, True)
                     
                     for _metric in _management_metrics_list :
                         _csv_contents_line = ''
@@ -1365,7 +1387,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     cbdebug(_msg)
     
                     if _metric_type == "management" :
-        
+                        _empty = False
                         _trace_csv_contents_header = _obj_attr_list["trace_header"]
         
                         _trace_desired_keys = _trace_csv_contents_header.split(',')
@@ -1381,8 +1403,12 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _trace_fd.write("\n")
     
                         _trace_fd.write(_trace_csv_contents_header + '\n')
-                        
-                        _trace_list = self.msci.find_document("trace_" + _obj_attr_list["username"], _criteria, True)
+
+                        _collection_name = "trace_" + _obj_attr_list["username"]                         
+                        _trace_list = self.msci.find_document(_collection_name, \
+                                                              _criteria, \
+                                                              True, \
+                                                              [("command_originated", 1)])
     
                         for _trace_item in _trace_list :
                             _trace_csv_contents_header = ''
@@ -1399,11 +1425,18 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     
                     if _metric_type == "runtime_os" or _metric_type == "runtime_app" :
                         _last_unchanged_metric = {}
-    
-                        _runtime_metric_list = self.msci.find_document(_metric_type + '_' + _obj_type.upper() + '_' + _obj_attr_list["username"], _criteria, True)
-    
+
+                        _start_time = None
+
+                        _collection_name = _metric_type + '_' + _obj_type.upper() + '_' + _obj_attr_list["username"]
+                        _runtime_metric_list = self.msci.find_document(_collection_name, \
+                                                                       _criteria, \
+                                                                       True, \
+                                                                       [("time", 1)])
+                        _empty = True
                         for _metric in _runtime_metric_list :
-                            
+
+                            _empty = False
                             _current_uuid = _metric["uuid"]
                             _csv_contents_line = ''
     
@@ -1430,7 +1463,11 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                     _val = str(_metric[_key])
     
                                 elif _key == "time" :
-                                    _val = str(int(_metric[_key]))
+                                    if not _start_time :
+                                        _val = "0"
+                                        _start_time = int(_metric[_key])
+                                    else :
+                                        _val = str(int(_metric[_key]) - _start_time)
     
                                 elif _metric["uuid"] in _uuid_to_attr_dict and _key in _uuid_to_attr_dict[_metric["uuid"]] :
                                     _val = str(_uuid_to_attr_dict[_metric["uuid"]][_key])
@@ -1447,12 +1484,23 @@ class PassiveObjectOperations(BaseObjectOperations) :
                             _fd.write(_csv_contents_line[:-1] + '\n')
     
                     _fd.close()
-                            
+
+                    if _empty :
+                        _msg = "No samples of " + _metric_type + " metrics for "
+                        _msg += "all " + _obj_type.upper() + "s were found (the"
+                        _msg += " file " + _fn + " will be empty)."
+                        cbdebug(_msg, True)
+                    else :
+                        _msg = "Multiple samples of " + _metric_type + " metrics for "
+                        _msg += "all " + _obj_type.upper() + "s were found (the"
+                        _msg += " file " + _fn + " will *NOT* be empty)."
+                        cbdebug(_msg, True)
+
                     _msg = _metric_type + " metrics for all " + _obj_type.upper()
                     _msg += " objects were successfully extracted. File name is "
                     _msg += _fn + ' .'
                     cbdebug(_msg)
-    
+
                     _status = 0
 
         except self.ObjectOperationException, obj :
@@ -1474,7 +1522,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             else :
                 _msg = "Monitor extraction success. " + _obj_type.upper()
                 _msg += ' ' + _metric_type.replace("_app", " application").replace("_os", " OS")
-                _msg += " performance data samples were written to the file " + _fn + '.'
+                _msg += " performance data samples were written to the file " + _fn
                 cbdebug(_msg)
             return _status, _msg
 
@@ -1497,6 +1545,8 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 if not _status :
                     _curr_time = int(time())
                     _obj_type = _obj_attr_list["type"]
+
+                    _cloud_name = _obj_attr_list["cloud_name"]
                     
                     _msg = "The following " + _obj_type + "s reported management metrics:\n"
                     _field1 = "Name                        "
@@ -1513,11 +1563,12 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _msg += _field1 + '|' + _field2 + '\n'
 
                     _metrics_list = self.msci.find_document("latest_runtime_os_" + _obj_type + '_' + _obj_attr_list["username"], {}, True)
-                    
+                  
                     for _metric in _metrics_list :
-                        _obj_attr_list = self.osci.get_object(_obj_attr_list["cloud_name"], _obj_type, False, _metric["_id"], False)
-                        _result["runtime"].append([_obj_attr_list["name"], _obj_attr_list["time"]])
+                        _obj_attr_list = self.osci.get_object(_cloud_name, _obj_type, False, _metric["_id"], False)
+                        _result["runtime"].append([_obj_attr_list["name"], _metric["time"]])
                         _msg += _obj_attr_list["name"].ljust(len(_field1))
+
                         _msg += '|' +  str( _curr_time- int(_metric["time"])).ljust(len(_field2)) + '\n'
 
                     if _obj_type == "VM" :
@@ -1527,7 +1578,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _metrics_list = self.msci.find_document("latest_runtime_app_" + _obj_type + '_' + _obj_attr_list["username"], {}, True)
 
                         for _metric in _metrics_list :
-                            _result["management"].append([_obj_attr_list["name"], _obj_attr_list["time"]])
+                            _result["management"].append([_obj_attr_list["name"], _metric["time"]])
                             _obj_attr_list = self.osci.get_object(_obj_attr_list["cloud_name"], _obj_type, False, _metric["_id"], False)
                             _msg += _obj_attr_list["name"].ljust(len(_field1))
                             _msg += '|' +  str( _curr_time- int(_metric["time"])).ljust(len(_field2)) + '\n'                                               
@@ -1823,7 +1874,14 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         elif obj_attr_list["global_object"] == "ai_templates" or obj_attr_list["global_object"] == "aidrs_templates" :
                             for _key, _value in _object_contents.items() :
                                 if _key.count(obj_attr_list["attribute_name"]) :
-                                    _key = _key.replace(obj_attr_list["attribute_name"] + '_', '')
+                                    if not (_key.count("_pref_host") or \
+                                            _key.count("_pref_pool") or \
+                                            _key.count("_meta_tag") or \
+                                            _key.count("_size") or \
+                                            _key.count("_netid")) :
+                                        _key = _key.replace(obj_attr_list["attribute_name"] + '_', '')
+                                    else :
+                                        _key = _key.replace(obj_attr_list["attribute_name"] + '_', '',1)
                                     # A trick to display the AI definition
                                     # in a specific order. It is ugly and not
                                     # efficient, but it will do for now.
@@ -1936,11 +1994,35 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                                        obj_attr_list["global_object"], \
                                                        False)
 
+                    # This is just an ugly hack. The global object "vm_templates"
+                    # is stored on a manner very different from any other object
+                    if obj_attr_list["global_object"] == "vm_templates" :
+                        _obj_attrib = _p_obj_attrib
+                        _old_values = _old_values[obj_attr_list["specified_attribute"]]
+                        _old_values = str2dic(_old_values)
+                        _current_values = copy.deepcopy(_old_values)
+
                     if not _obj_attrib in _old_values :
                         _old_values[_obj_attrib] = "non-existent"
 
-                    self.osci.update_object_attribute(obj_attr_list["cloud_name"], "GLOBAL", obj_attr_list["global_object"], \
-                                                      False, _obj_attrib, _obj_value)
+                    # Ugly hack continues here.
+                    if obj_attr_list["global_object"] == "vm_templates" :
+                        _current_values[_obj_attrib] = _obj_value
+                        _current_values = dic2str(_current_values)
+
+                        self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
+                                                          "GLOBAL", \
+                                                          obj_attr_list["global_object"], \
+                                                          False, \
+                                                          obj_attr_list["specified_attribute"], \
+                                                          _current_values)
+                    else :
+                        self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
+                                                          "GLOBAL", \
+                                                          obj_attr_list["global_object"], \
+                                                          False, \
+                                                          _obj_attrib, \
+                                                          _obj_value)
 
                     _fmt_obj_chg_attr += '|' + _obj_attrib.ljust(len(_fields[0]) - 1)
                     _fmt_obj_chg_attr += '|' + _old_values[_obj_attrib].ljust(len(_fields[1]) - 1)

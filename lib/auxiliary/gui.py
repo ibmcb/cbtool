@@ -697,14 +697,16 @@ class GUI(object):
                             },
                     "vmc" : { 
                              "keyword1" : { "label" : "Name", "values" : "" } ,
-                             "keyword2" : { "label" : "Temporary Attributes", "values" : "" }
+                             "keyword2" : { "label" : "Temporary Attributes", "values" : "" },
+                             "keyword3" : { "label" : "Mode", "values" : "async" },
                              }, 
                     "svm" : { "keyword1" : { "label" : "Identifier", "values" : "vms" } },
-                    "aidrs" : { "keyword1" : { "label" : "Pattern", "values" : [x.strip() for x in self.api.patternlist(session['cloud_name'])] },
+                    "appdrs" : { "keyword1" : { "label" : "Pattern", "values" : [x.strip() for x in self.api.patternlist(session['cloud_name'])] },
                                 "keyword2" : { "label" : "Temporary Attributes", "values" : "" }
                             },
         }
         session['views'] = self.api.viewlist(session['cloud_name'])
+        session['views']['appdrs'] = session['views']['aidrs']
         session.save()
 
     def common(self, req) :
@@ -723,6 +725,11 @@ class GUI(object):
                         cloud_name = cloud_name.lower()
                         if cloud_name == requested_cloud_name :
                             for command in available_clouds[cloud_name] :
+                                kwargs = {}
+                                if command.count("async") :
+                                    kwargs["async"] = True
+                                    command.replace("async", "")
+                                    
                                 parts = command.split()
                                 
                                 if parts[0] == "clddefault" :
@@ -745,14 +752,14 @@ class GUI(object):
                                     if len(fixed) < 2 :
                                         return self.bootstrap(req, self.heromsg + "\n<h4>Malformed command in your STARTUP_COMMAND_ LIST in your config file: " + command + "</h4></div>", error = True)
                                     if not command.count("async") :
-                                        fixed.append("async")
+                                        kwargs["async"] = "async"
                                 if fixed[0] == "cldattach" :
                                     if len(fixed) < 3 :
-                                        return self.bootstrap(req, self.heromsg + "\n<h4>Malformed command in your STARTUP_COMMAND_ LIST in your config file: " + command + "</h4></div>, error = True")
+                                        return self.bootstrap(req, self.heromsg + "\n<h4>Malformed command in your STARTUP_COMMAND_ LIST in your config file: " + command + "</h4></div>", error = True)
                                     if len(fixed) == 3 :
                                         fixed.append(definitions)
                                     
-                                func(*fixed[1:])
+                                func(*fixed[1:], **kwargs)
                                 
                                 if fixed[0] == "cldattach" :
                                     req.session['model'] = fixed[1]
@@ -794,8 +801,8 @@ class GUI(object):
                 self.repopulate_views(req.session)
     
                 req.session["operations"] = {
-                    "attach" : [0, {"operations" : [ "vm", "vmc", "app", "svm", "aidrs"], "icon" : "play", "state" : "any" } ], 
-                    "detach" : [1, {"operations" : [ "vm", "vmc", "app", "svm", "aidrs"], "icon" : "trash", "state" : "any" } ], 
+                    "attach" : [0, {"operations" : [ "vm", "vmc", "app", "svm", "appdrs"], "icon" : "play", "state" : "any" } ], 
+                    "detach" : [1, {"operations" : [ "vm", "vmc", "app", "svm", "appdrs"], "icon" : "trash", "state" : "any" } ], 
                     "save" : [2, {"operations" : [ "vm", "vmc", "app"], "icon" : "stop", "state" : "attached" } ], 
                     "restore" : [3, {"operations" : [ "vm", "vmc", "app"], "icon" : "play", "state" : "save" } ], 
                     "suspend" : [4, {"operations" : [ "vm", "vmc", "app"], "icon" : "pause", "state" : "attached" } ], 
@@ -814,7 +821,7 @@ class GUI(object):
                      "host": [ 1, "Hypervisors" ],
                      "app": [ 2, "Virtual Applications" ],
                      "vm": [ 3, "Virtual Machines" ],
-                     "aidrs": [ 4, "Application Submitters" ],
+                     "appdrs": [ 4, "Application Submitters" ],
                      "svm": [ 5, "FTVM Stubs" ],
                      #"vmcrs": [ 5, "Capture Submitters" ],
                 } 

@@ -1,1 +1,1 @@
-To be written
+Usage: viewshow <cloud name> <object type> <criterion> <expression> [sorting] [filter]

@@ -51,6 +51,7 @@ CHECK_BOOT_COMPLETE = tcp_on_22
 # Other methods could be used to check if a VM *FINISHED* booting
 #CHECK_BOOT_COMPLETE = subscribe_on_booting
 #CHECK_BOOT_COMPLETE = wait_for_0
+NETID = $Empty
 
 [SVM_DEFAULTS : OSK_CLOUDCONFIG]
 SSH_KEY_NAME = $OSK_SSH_KEY_NAME

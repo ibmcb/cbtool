@@ -1,1 +1,1 @@
-To be written
+Usage: waitfor <cloud_name> <time> [update interval]

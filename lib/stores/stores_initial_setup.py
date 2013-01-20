@@ -316,7 +316,7 @@ def mongodb_metricstore_setup(global_objects, operation = "check") :
     TBD
     '''
     _protocol = global_objects["metricstore"]["protocol"]
-    _hostname = global_objects["metricstore"]["hostname"]
+    _hostname = global_objects["metricstore"]["host"]
     _databaseid = global_objects["metricstore"]["database"]
     _timeout = float(global_objects["metricstore"]["timeout"])
     _username = global_objects["mon_defaults"]["username"]

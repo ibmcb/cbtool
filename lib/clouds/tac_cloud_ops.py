@@ -231,7 +231,7 @@ class TacCmds(CommonCloudFunctions) :
         TBD
         '''
         self.connect(obj_attr_list["access"])
-        self.tacconn.node_cleanup(obj_attr_list["name"], "cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"], lvm = obj_attr_list["lvm"])
+        self.tacconn.node_cleanup(obj_attr_list["name"], "cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"], disk_format = obj_attr_list["disk_format"])
         _msg = "VMC " + obj_attr_list["name"] + " was successfully cleaned up "
         _msg += "on TACloud \"" + obj_attr_list["cloud_name"] + "\""
         cbdebug(_msg)
@@ -378,8 +378,8 @@ class TacCmds(CommonCloudFunctions) :
         kwargs["imageids"] = []
         for _idx in range(1, int(obj_attr_list["imageids"]) + 1) :
             imageid = obj_attr_list["imageid" + str(_idx)]
-            if obj_attr_list["lvm"].lower() == "false" :
-                imageid += ".qcow2"
+            if obj_attr_list["disk_format"].lower() != "lvm" :
+                imageid += "." + obj_attr_list["disk_format"]
             kwargs["imageids"].append(imageid)
 
         _status, _fmsg, result = self.tacconn.run_instances(**kwargs)
