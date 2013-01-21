@@ -33,17 +33,13 @@
       <section id="main_content" class="inner">
         <h1>Welcome to the Cloud Rapid Experimentation and Analysis Toolkit</h1>
 
-<p>This toolkit is designed for rapid, large-scale experimentation in the Cloud.</p>
-
-<p>If you don't have a <em>running</em> cloud, you can't use it.</p>
-
-<p>( If you're not planning to run more than a handful of VMs, then this tool is really not for you. )</p>
+<p>Cloud Rapid Experimentation and Analysis Tool is a framework that automates IaaS cloud benchmarking through the running of controlled experiments.</p>
 
 <h2>To get started:</h2>
 
 <ol>
-<li>
-<a href="https://github.com/ibmcb/cbtool/wiki/START-HERE:-README:-Getting-Started-on-the-Command-Line">START HERE: Go to the README</a> first for startup documentation on how to begin using the tool from the command-line</li>
+<li><a href="https://github.com/ibmcb/cbtool/wiki/HOWTO:-Initial-Installation">Perform the initial installation</a></li>
+<li><a href="https://github.com/ibmcb/cbtool/wiki/HOWTO:-Running-the-tool-for-the-first-time">Run the tool for the first time</a></li>
 <li>Read our latest paper (to appear in IC2E 2013).</li>
 <li>Try to get connected with the <a href="https://github.com/ibmcb/cbtool/wiki/HOWTO:-Using-the-Wizard-for-first-time-connection">Graphical Wizard</a>
 </li>
@@ -55,19 +51,20 @@
 </li>
 </ol><h2>Features:</h2>
 
-<ol>
-<li>It runs actual multi-tier benchmarks (both IBM and non-IBM software).</li>
-<li>It can orchestrate different arrival rates and lifetimes using probability distributions.</li>
-<li>It exercises all of the components of the Cloud, including hosts, virtual machines, and their applications.</li>
-<li>It has integrated monitoring of application and system performance.</li>
-<li>It is designed from the ground up to be highly-scalable and parallel.</li>
-</ol><h2>Supported Clouds:</h2>
+<ul>
+<li>Automatic deployment and controlled execution of multiple multi-tier applications.
+Each individual application can have a specific load profile using probability distributions.</li>
+<li>Adapters for multiple clouds (EC2 and OpenStack, among others), with a plugin structure that allows new cloud models to be added incrementally.</li>
+<li>Can orchestrate different arrival rates and lifetimes for VMs using probability distributions.</li>
+<li>Collects application and system (OS) performance data from hosts and guests in real time.</li>
+<li>It is designed from the ground up to be highly scalable and parallel.</li>
+</ul><h2>Supported Clouds:</h2>
 
 <ol>
-<li>Amazon</li>
+<li>Amazon EC2</li>
 <li>OpenStack</li>
-<li>IBM SCP and IBM Tivoli</li>
-<li>Libvirt (for machines without clouds)</li>
+<li>IBM SCP and IBM SCE</li>
+<li>"pure" Libvirt+KVM or Libvirt+XEN (soon)</li>
 <li>VMWare vCloud (in progress)</li>
 </ol><p>Contact:</p>
 
