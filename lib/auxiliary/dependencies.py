@@ -788,7 +788,7 @@ def check_netcat(hostname, username, trd_party_dir) :
         
         _proc_man =  ProcessManagement()
         _msg = "Checking netcat (openbsd) version....."
-        _status, _result_stdout, _result_stderr = _proc_man.run_os_command("nc -h")
+        _status, _result_stdout, _result_stderr = _proc_man.run_os_command("nc -v -w 1 localhost -z 22")
 
         if not _status :
             _version = "1.9"
@@ -808,8 +808,8 @@ def check_netcat(hostname, username, trd_party_dir) :
     finally :
         if _status or _msg.count("NOT OK"):
             _msg += " Please install nc using you package management system (yum or apt-get)."
-            _msg += " The package is usually called \"netcat-openbsd\" or "
-            _msg += "simply \"netcat\".\n"
+            _msg += " The package is usually called \"netcat-openbsd\", \" netcat \""
+            _msg += " or simply \"nc\".\n"
         return _status, _msg
 
 def dependency_checker(hostname, username, trd_party_dir) :

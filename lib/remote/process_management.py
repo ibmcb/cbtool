@@ -243,20 +243,23 @@ class ProcessManagement :
         TBD
         '''
         _pid = ['X']
-        
+
         while len(_pid) :
 
             _pid = self.get_pid_from_cmdline(cmdline)
-    
+
             if len(_pid) :
                 _pid = _pid[0]
 
                 if self.hostname == "127.0.0.1" :
                     # Not using SIGKILL is insufficient for threaded python processes
                     # You need to hard-kill them.
+
+                    _pid = _pid.replace(self.cloud_name,'')
                     _cmd = "kill -9 " + kill_options + ' ' + str(_pid)
-    
+
                 self.run_os_command(_cmd)
+
                 sleep(1)
                 _old_pid = _pid
 

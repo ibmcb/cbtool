@@ -127,7 +127,8 @@ msg <- paste("Generating aggregated runtime application metrics plot for all ",
 cat(msg, sep='\n')
 
 plot_runtime_application_data(rapp_metrics, selected_directory, "all", "all", 
-		selected_time_intervals, selected_metric_intervals, selected_plot_size)
+		"none", selected_time_intervals, selected_metric_intervals, 
+		selected_plot_size)
 
 for (experiment in experiment_list) {
 
@@ -141,15 +142,21 @@ for (experiment in experiment_list) {
 			"\"", experiment, "\"....", sep = '')
 	cat(msg, sep='\n')
 	
-	plot_runtime_application_data(rapp_metrics, selected_directory, experiment, "all", 
+	vm_arrivals <- subset(mgt_metrics, expid == experiment, 
+					select = c("vm_arrival_start", "vm_arrival_end"))
+
+	vm_arrivals <- unique(vm_arrivals)
+
+	plot_runtime_application_data(rapp_metrics, selected_directory, experiment, "all", vm_arrivals, 
 			selected_time_intervals, selected_metric_intervals, selected_plot_size)
 	
 	msg <- paste("Generating runtime VM os resource usage plot for experiment ", 
 			"\"", experiment, "\"....", sep = '')
 	cat(msg, sep='\n')
 
-	plot_runtime_os_data(vros_metrics, selected_directory, experiment, "all",
-			selected_time_intervals, selected_metric_intervals, selected_plot_size)	
+	plot_runtime_os_data(vros_metrics, selected_directory, experiment, "all", 
+			selected_time_intervals, selected_metric_intervals, 
+			selected_plot_size)	
 
 	experiment_host_list <- subset(mgt_metrics, expid == experiment, select = c("host_name", "expid"))
 	experiment_host_list <- experiment_host_list[experiment_host_list$host_name != "unknown",]
