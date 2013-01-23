@@ -49,3 +49,5 @@ gmetad-hosts.conf
 *hosts.conf
 configs/definitions.txt
 data
+.project
+.pydevproject
