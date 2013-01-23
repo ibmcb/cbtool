@@ -78,11 +78,12 @@ pre_process_files <- function(ednl, fp2df_dict) {
 				file_contents <- within(file_contents, "expid" <- experiment_name)
 				if ("name" %in% names(file_contents) & 
 						"role" %in% names(file_contents)) {
+
 					# Create another column, containing a combined string for "full_obj_name"
 					file_contents <- within(file_contents, 
 							"full_obj_name" <- paste(file_contents$name, 
-									file_contents$role, file_contents$expid, 
-									sep = ' | '))
+									file_contents$role, file_contents$aidrs_name, 
+									file_contents$expid, sep = '|'))
 					}
 	
 				# Another column, "relative time"
@@ -95,7 +96,26 @@ pre_process_files <- function(ednl, fp2df_dict) {
 					file_contents <- within(file_contents, 
 							"relative_time" <- (file_contents$time/time_unit))				
 					}
-	
+
+				if ("mgt_001_provisioning_request_originated" %in% names(file_contents)) {
+					file_contents <- within(file_contents, 
+							"vm_arrival_start" <- (file_contents$mgt_001_provisioning_request_originated / time_unit))				
+					file_contents <- within(file_contents, 
+							"vm_arrival_end" <- ((file_contents$mgt_001_provisioning_request_originated + 
+										file_contents$mgt_003_provisioning_request_completed +
+										file_contents$mgt_004_network_acessible + 
+										file_contents$mgt_005_file_transfer +
+										file_contents$mgt_006_application_start) / time_unit))
+
+					file_contents <- within(file_contents, 
+							"vm_arrival_diff" <- ((file_contents$vm_arrival_end - file_contents$vm_arrival_start) * time_unit))
+					
+					file_contents <- within(file_contents, 
+								"partial_obj_name" <- paste(file_contents$role, 
+										file_contents$aidrs_name, file_contents$expid, 
+										sep = '|'))
+					}					
+
 				# Drop some unneeded columns before writing to file
 				if ("time_h" %in% names(file_contents)) {
 					drop_columns <- c("time","time_h","uuid")
@@ -114,11 +134,10 @@ create_data_frame <- function(ed, file_prefix) {
 	actual_pattern <- paste("processed_", file_prefix, sep = '')
 	processed_experiment_file_list <- list.files(path = ed, 
 			pattern = actual_pattern, recursive = TRUE)
-
+	
 	aggregate_data_frame <- ''
 
 	for (processed_experiment_file_name in processed_experiment_file_list) {
-
 		partial_data_frame <- read.csv(file = processed_experiment_file_name, 
 				head = TRUE, comment.char = "#", blank.lines.skip = "true")
 
@@ -128,6 +147,7 @@ create_data_frame <- function(ed, file_prefix) {
 			aggregate_data_frame <- partial_data_frame
 			}
 		}
+
 	return(aggregate_data_frame)
 	}
 
@@ -145,7 +165,7 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps) {
 		selected_vm_name = c(vm)
 		}
 
-	# Provisioning latency for data
+	# Provisioning latency data
 	prov_lat_data <- subset(mmdf, (expid %in% selected_expid) & 
 					(name %in% selected_vm_name), 
 			select = c("full_obj_name", 
@@ -160,8 +180,9 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps) {
 
 	columns_remove <- c("name")
 	prov_lat_data <- prov_lat_data[,!(names(prov_lat_data) %in% columns_remove)]
+	prov_lat_data <- prov_lat_data[!is.na(prov_lat_data$mgt_002_provisioning_request_sent),]
 	prov_lat_data <- melt(prov_lat_data, id.vars="full_obj_name")
-	
+
 	# Plot provisioning latency
 	prov_lat_plot_title <- paste("Provisioning Latency for VM(s) \"", vmn, 
 			"\" on experiment \"", en, "\"", sep = '')
@@ -179,7 +200,53 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps) {
 		}
 	file_location <- paste(ed, en, "prov_lat_plot.pdf", sep = '')
 
-	ggsave(prov_lat_plot, file = file_location, width = round(number_of_vms * 3), limitsize = FALSE)
+	determined_width <- round(number_of_vms * 4)
+	
+	if (determined_width < 15) {
+		determined_width <- 15
+		}
+
+	ggsave(prov_lat_plot, file = file_location, width = determined_width, limitsize = FALSE)
+	
+
+	# Provisioning latency data
+	agg_prov_lat_data <- subset(mmdf, (expid %in% selected_expid) & 
+					(name %in% selected_vm_name), 
+			select = c("partial_obj_name", 
+					"vm_arrival_diff"))
+
+	agg_prov_lat_data <- data.table(agg_prov_lat_data)
+	
+	agg_prov_lat_data <- agg_prov_lat_data[,list(avg = mean(vm_arrival_diff)), by = "partial_obj_name"]
+	
+	number_of_vms <- length(agg_prov_lat_data$partial_obj_name)
+
+	agg_prov_lat_data <- melt(agg_prov_lat_data, id.vars="partial_obj_name")
+
+	agg_prov_lat_data <- agg_prov_lat_data[!is.na(agg_prov_lat_data$value),]
+	
+	agg_prov_lat_data <- agg_prov_lat_data[as.numeric(agg_prov_lat_data$value) > 0,]	
+	
+	# Plot provisioning latency
+	agg_prov_lat_plot_title <- paste("Average Provisioning Latency for VM(s) \"", vmn, 
+			"\" on experiment \"", en, "\"", sep = '')
+	
+	agg_prov_lat_plot <- ggplot(agg_prov_lat_data, 
+					aes(x = partial_obj_name, y = value, fill = variable)) + 
+			geom_bar() + xlab("VM role|submitter|expid") + 
+			ylab("Average Provisioning Latency (seconds)") + 
+			labs(title = prov_lat_plot_title)
+	
+	if (en == "all") {
+		en <- '/'
+	} else {
+		en <- paste('/', en, '/', sep = '')
+	}
+	file_location <- paste(ed, en, "agg_prov_lat_plot.pdf", sep = '')
+
+	ggsave(agg_prov_lat_plot, file = file_location, width = sps, limitsize = FALSE)
+	
+	
 	}
 
 plot_get_x_y_limits <- function(gdf, xati, yati) {
@@ -187,7 +254,8 @@ plot_get_x_y_limits <- function(gdf, xati, yati) {
 	column_names <- c(names(gdf))
 
 	if ("relative_time" %in% column_names) {
-		x_start <- round(min(gdf$relative_time))
+#		x_start <- round(min(gdf$relative_time))
+		x_start <- 0
 		x_end <- round(max(gdf$relative_time))
 		} else {
 		x_start <- round(min(gdf$app_load_level))
@@ -213,7 +281,8 @@ plot_get_x_y_limits <- function(gdf, xati, yati) {
 	return(xy_limits)
 	}	
 
-plot_runtime_application_data <- function(ramdf, ed, en, vmn, xati, yati, sps) {
+plot_runtime_application_data <- function(ramdf, ed, en, vmn, vmadl, xati, yati,
+		sps) {
 
 	if (en == "all") {
 		selected_expid = c(levels(ramdf$expid))
@@ -225,6 +294,14 @@ plot_runtime_application_data <- function(ramdf, ed, en, vmn, xati, yati, sps) {
 		selected_vm_name = c(levels(ramdf$name))
 		} else {
 		selected_vm_name = c(vm)
+		}
+
+	if (vmadl == "none") {
+		vmasl <- c(0)
+		vmael <- c(0)
+	    } else {
+		vmasl <- c(vmadl$vm_arrival_start)
+		vmael <- c(vmadl$vm_arrival_end)
 		}
 
 	metric_types <- c("app_latency","app_throughput", "app_bandwidth")
@@ -266,10 +343,13 @@ plot_runtime_application_data <- function(ramdf, ed, en, vmn, xati, yati, sps) {
 				perf_vs_time_plot <- ggplot(perf_vs_time_data, aes(x=relative_time, y=value, 
 										colour=full_obj_name)) + geom_line() + 
 						geom_point()  + 
+						geom_vline(xintercept = vmasl, linetype=4, colour="black") +
+						geom_vline(xintercept = vmael, linetype=1, colour="black") +
 						xlab("Time (minutes)") + 
 						ylab(metric_types2metric_names[[metric_type]]) + 
 						labs(title = perf_vs_time_plot_title) + 
-						scale_x_continuous(limits = xy_lims[[1]], breaks = xy_lims[[2]]) 
+						scale_x_continuous(limits = xy_lims[[1]], breaks = xy_lims[[2]])
+
 #				+ scale_y_continuous(limits = xy_lims[[3]], breaks = xy_lims[[4]])
 
 				if (en == "all") {

@@ -34,13 +34,13 @@ SIM_INITIAL_VMCS = simzone_a:sut,simzone_b:sut,simzone_c:sut,simzone_d:lg
 
 # OpenStack (OSK) requires the following parameters (replace everything between <>)
 [USER-DEFINED : CLOUDOPTION_MYOPENSTACK]
-OSK_ACCESS = http://<address>:5000/v2.0/
+OSK_ACCESS = http://<address>:5000/v2.0/                   # Address of controlled node (where nova-api runs)
 OSK_CREDENTIALS =  <user>-<password>-<tenant>
-OSK_KEY_NAME = <key name>         # Create the key on OpenStack first
-OSK_SECURITY_GROUPS = default	  # Make sure that this group exists first
-OSK_INITIAL_VMCS = RegionOne:sut  # Change "RegionOne" accordingly
-OSK_SSH_KEY_NAME = path_to_local_private_key_file
-OSK_LOGIN = klabuser
+OSK_KEY_NAME = <key name>                                  # Create the key on OpenStack first
+OSK_SECURITY_GROUPS = default	                           # Make sure that this group exists first
+OSK_INITIAL_VMCS = RegionOne:sut                           # Change "RegionOne" accordingly
+OSK_SSH_KEY_NAME = priv_key_filename                       # Name of the private key used to login on the VMs
+OSK_LOGIN = cbuser                                         # The username that logins on the VMs
 
 # Smart Cloud Provisioning (SCP) requires the following parameters
 [USER-DEFINED : CLOUDOPTION_MYSMARTCLOUD]
@@ -49,27 +49,27 @@ SCP_IAAS_PRIVATE_KEY = /iaas/cli/adminkey/admin.key
 SCP_IAAS_SERVICE_PUBLIC_KEY = /iaas/cli/adminkey/vm_service.key
 SCP_IAAS_PROXY_PORT = 9090
 SCP_IAAS_WEBSERVICE_PORT = 5678/query/
-SCP_IAAS_CLI_LOCATION = <hostname> # address of the webservice VM for SCP
-SCP_INITIAL_VMCS = kvm_rack1:sut # Change "kvm_rack1" accordingly
-SCP_SSH_KEY_NAME = path_to_local_private_key_file
-SCP_LOGIN = klabuser
+SCP_IAAS_CLI_LOCATION = <hostname>                         # Address of the webservice VM for SCP
+SCP_INITIAL_VMCS = kvm_rack1:sut                           # Change "kvm_rack1" accordingly
+SCP_SSH_KEY_NAME = priv_key_filename                       # Name of the private key used to login on the VMs
+SCP_LOGIN = cbuser                                         # The username that logins on the VMs
 
 # Elastic Compute Cloud (EC2) requires the following paramaters 
 [USER-DEFINED : CLOUDOPTION_MYAMAZON]
-EC2_ACCESS = ABCDEFGHIJKLMNOPQRST # This is the AWS access key id
-EC2_SECURITY_GROUPS = cloudbench   # Make sure that this group exists first 
+EC2_ACCESS = ABCDEFGHIJKLMNOPQRST                          # This is the AWS access key id
+EC2_SECURITY_GROUPS = cloudbench                           # Make sure that this group exists first 
 EC2_CREDENTIALS = ABCDEFGHIJKLMNOPQRSTUVXYWZ01234567890-+* # This is the AWS secret access key 
-EC2_KEY_NAME = cloudbench         # Make sure that this key exists first 
-EC2_INITIAL_VMCS = us-east-1:sut  # Change "us-east-1" accordingly
-EC2_SSH_KEY_NAME = path_to_local_private_key_file
-EC2_LOGIN = klabuser
+EC2_KEY_NAME = cloudbench                                  # Make sure that this key exists first 
+EC2_INITIAL_VMCS = us-east-1:sut                           # Change "us-east-1" accordingly
+EC2_SSH_KEY_NAME = priv_key_filename                       # Name of the private key used to login on the VMs
+EC2_LOGIN = cbuser                                         # The username that logins on the VMs
 
 # Thin Agile Cloud (TAC) requires the following paramaters 
 [USER-DEFINED : CLOUDOPTION_MYTAC]
 TAC_ACCESS = http://<address>:6060
 TAC_INITIAL_VMCS = klinux1,klinux2
 TAC_SSH_KEY_NAME = path_to_local_private_key_file
-TAC_LOGIN = klabuser
+TAC_LOGIN = cbuser
 
 [MON_DEFAULTS : CLOUDOPTION_TESTCLOUD ]
 COLLECT_FROM_HOST = $False # simulated, nothing to monitor 

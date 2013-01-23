@@ -1354,7 +1354,18 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _uuid_to_attr_dict = {}
                     
                     _desired_keys = _csv_contents_header.split(',')
-                    
+
+                    # We use the "trace" collection to determine the actual start
+                    # of the experiment. It is *very* important to have VMs and 
+                    # the main CloudbBench host synchronized through NTP
+                    _collection_name = "trace_" + _obj_attr_list["username"]                         
+                    _trace = self.msci.find_document(_collection_name, \
+                                                          _criteria, \
+                                                          False, \
+                                                          [("command_originated", 1)])
+
+                    _experiment_start_time = int(_trace["command_originated"])
+
                     # Management metrics collection is always extracted, because it 
                     # contains all the information that maps UUIDs to all other attributes.
                     # Given that a user can change the "experiment id" after a given
@@ -1371,10 +1382,13 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         for _key in _desired_keys  :
                             if _metric["expid"] == _criteria["expid"] :
                                 if _key in _metric :
-                                    _csv_contents_line += str(_metric[_key]) + ','
+                                    if _key == "mgt_001_provisioning_request_originated" :
+                                        _csv_contents_line += str(int(_metric[_key]) - _experiment_start_time) + ','
+                                    else :
+                                        _csv_contents_line += str(_metric[_key]) + ','
                                 else :
                                     _csv_contents_line += _obj_attr_list["filler_string"] + ','
-    
+
                             # The uuid to attribute cache/map has to be unconditionally
                             # populated.
                             _uuid_to_attr_dict[_metric["_id"]] = _metric
@@ -1426,8 +1440,6 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     if _metric_type == "runtime_os" or _metric_type == "runtime_app" :
                         _last_unchanged_metric = {}
 
-                        _start_time = None
-
                         _collection_name = _metric_type + '_' + _obj_type.upper() + '_' + _obj_attr_list["username"]
                         _runtime_metric_list = self.msci.find_document(_collection_name, \
                                                                        _criteria, \
@@ -1463,11 +1475,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                     _val = str(_metric[_key])
     
                                 elif _key == "time" :
-                                    if not _start_time :
-                                        _val = "0"
-                                        _start_time = int(_metric[_key])
-                                    else :
-                                        _val = str(int(_metric[_key]) - _start_time)
+                                    _val = str(int(_metric[_key]) - _experiment_start_time)
     
                                 elif _metric["uuid"] in _uuid_to_attr_dict and _key in _uuid_to_attr_dict[_metric["uuid"]] :
                                     _val = str(_uuid_to_attr_dict[_metric["uuid"]][_key])
@@ -1563,13 +1571,13 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _msg += _field1 + '|' + _field2 + '\n'
 
                     _metrics_list = self.msci.find_document("latest_runtime_os_" + _obj_type + '_' + _obj_attr_list["username"], {}, True)
-                  
-                    for _metric in _metrics_list :
-                        _obj_attr_list = self.osci.get_object(_cloud_name, _obj_type, False, _metric["_id"], False)
-                        _result["runtime"].append([_obj_attr_list["name"], _metric["time"]])
-                        _msg += _obj_attr_list["name"].ljust(len(_field1))
 
-                        _msg += '|' +  str( _curr_time- int(_metric["time"])).ljust(len(_field2)) + '\n'
+                    for _metric in _metrics_list :
+                        if self.osci.object_exists(_cloud_name, _obj_type, _metric["_id"], False) :
+                            _obj_attr_list = self.osci.get_object(_cloud_name, _obj_type, False, _metric["_id"], False)
+                            _result["runtime"].append([_obj_attr_list["name"], _metric["time"]])
+                            _msg += _obj_attr_list["name"].ljust(len(_field1))
+                            _msg += '|' +  str( _curr_time- int(_metric["time"])).ljust(len(_field2)) + '\n'
 
                     if _obj_type == "VM" :
                         _msg += "\nThe following " + _obj_type  + "s reported runtime (Application) metrics:\n"
@@ -1578,10 +1586,11 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _metrics_list = self.msci.find_document("latest_runtime_app_" + _obj_type + '_' + _obj_attr_list["username"], {}, True)
 
                         for _metric in _metrics_list :
-                            _result["management"].append([_obj_attr_list["name"], _metric["time"]])
-                            _obj_attr_list = self.osci.get_object(_obj_attr_list["cloud_name"], _obj_type, False, _metric["_id"], False)
-                            _msg += _obj_attr_list["name"].ljust(len(_field1))
-                            _msg += '|' +  str( _curr_time- int(_metric["time"])).ljust(len(_field2)) + '\n'                                               
+                            if self.osci.object_exists(_cloud_name, _obj_type, _metric["_id"], False) :
+                                _result["management"].append([_obj_attr_list["name"], _metric["time"]])
+                                _obj_attr_list = self.osci.get_object(_obj_attr_list["cloud_name"], _obj_type, False, _metric["_id"], False)
+                                _msg += _obj_attr_list["name"].ljust(len(_field1))
+                                _msg += '|' +  str( _curr_time- int(_metric["time"])).ljust(len(_field2)) + '\n'                                               
 
                     _status = 0
 

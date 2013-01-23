@@ -385,7 +385,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 if len(_gmetad_pid) :
                     cbdebug("Killing the running Host OS performance monitor (gmetad.py)......", True)
-                    _proc_man.kill_process("gmetad.py", cld_attr_list["name"])
+                    _proc_man.kill_process("gmetad.py")
 
                 _msg = "Removing all contents from Object Store (GLOBAL objects,"
                 _msg += "VIEWS, etc.)"
@@ -404,6 +404,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _fmsg =  str(obj.msg)
 
         except ProcessManagement.ProcessManagementException, obj :
+            print("AQUI")
             _status = str(obj.status)
             _msg = _fmsg + str(obj.msg)
 
@@ -3017,7 +3018,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 if len(_gmetad_pid) :
                     cbdebug("Killing the running Host OS performance monitor (gmetad.py)......", True)
-                    _proc_man.kill_process("gmetad.py", _obj_attr_list["cloud_name"])
+                    _proc_man.kill_process("gmetad.py")
 
             _status = 0
 

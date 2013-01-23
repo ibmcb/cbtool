@@ -38,17 +38,10 @@ hadoop_master_ip=`get_ips_from_role hadoopmaster`
 
 slave_ips=`get_ips_from_role hadoopslave`
 
-<<<<<<< HEAD
 DFS_NAME_DIR=`get_my_ai_attribute_with_default dfs_name_dir /tmp/cbhadoopname`
 eval DFS_NAME_DIR=${DFS_NAME_DIR}
 
 DFS_DATA_DIR=`get_my_ai_attribute_with_default dfs_data_dir /tmp/cbhadoopdata`
-=======
-DFS_NAME_DIR=`get_my_ai_attribute_with_default dfs_name_dir /tmp/name`
-eval DFS_NAME_DIR=${DFS_NAME_DIR}
-
-DFS_DATA_DIR=`get_my_ai_attribute_with_default dfs_data_dir /tmp/data`
->>>>>>> 6410ca691eb6d8d7056c9ebc9e1f124bfb4cc3c2
 eval DFS_DATA_DIR=${DFS_DATA_DIR}
 
 slave_ips_csv=`echo ${slave_ips} | sed ':a;N;$!ba;s/\n/, /g'`

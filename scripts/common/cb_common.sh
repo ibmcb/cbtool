@@ -599,6 +599,22 @@ function start_syslog {
 	fi
 }
 
+function restart_ntp {
+	is_ntp_service_name_ntpd=`ls -la /etc/init.d/ | grep -v ntpdate | grep -v open | grep -c ntpd`
+	if [ ${is_ntp_service_name_ntpd} -eq 0 ]
+	then
+		ntp_service_name="ntp"
+	else
+		ntp_service_name="ntpd"
+	fi
+	syslog_netcat "Stopping ${ntp_service_name} service...." 
+	sudo service ${ntp_service_name} stop
+	syslog_netcat "Creating ${ntp_service_name} (ntp.conf) file"
+	~/cb_create_ntp_config_file.sh
+	syslog_netcat "Starting ${ntp_service_name} service...." 
+	sudo service ${ntp_service_name} start
+}
+
 function online_or_offline {
 	if [ x"$1" == x ] ; then
 		echo online 
@@ -675,11 +691,7 @@ function post_boot_steps {
 		sleep 1
 
 		sudo bash -c "chmod 777 /dev/pts/*"
-		sudo service ntpd stop
-		syslog_netcat "Creating ntpd (ntp.conf) file"
-		~/cb_create_ntp_config_file.sh
-		sudo service ntpd start
-
+		restart_ntp
 		sudo ln -sf ${dir}/../../3rd_party/monitor-core ~
 		sudo ln -sf ${dir}/../../util ~
 
