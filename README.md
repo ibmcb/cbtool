@@ -14,7 +14,8 @@ Cloud Rapid Experimentation and Analysis Tool (aka CBTOOL) is a framework that a
 8. Try to get connected with the [Graphical Wizard](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Using-the-Wizard-for-first-time-connection)
 9. Try administrating the tool with the [Graphical Environment](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Using-the-Graphical-Environment)
 10. Then try [monitoring your experiments with the Graphical Environment](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Monitoring-with-the-Graphical-Environment)
-11. Read the [Frequently Asked Questions](https://github.com/ibmcb/cbtool/wiki/FAQ)
+11. Try to [customize your dashboard monitoring data with filters in the Graphical Environment](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Customize-Dashboard-Monitoring-in-the-Graphical-Environment)
+12. Read the [Frequently Asked Questions](https://github.com/ibmcb/cbtool/wiki/FAQ)
 
 ## Features:
 - Automatic deployment and controlled execution of multiple multi-tier applications.
