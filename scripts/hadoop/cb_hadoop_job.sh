@@ -18,13 +18,14 @@
 
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_hadoop_common.sh
 
-LOAD_LEVEL=$1
-LOAD_DURATION=$2
-LOAD_ID=$3
+LOAD_PROFILE=$1
+LOAD_LEVEL=$2
+LOAD_DURATION=$3
+LOAD_ID=$4
 
-if [[ -z "$LOAD_LEVEL" || -z "$LOAD_DURATION" || -z "$LOAD_ID" ]]
+if [[ -z "$LOAD_PROFILE" || -z "$LOAD_LEVEL" || -z "$LOAD_DURATION" || -z "$LOAD_ID" ]]
 then
-	syslog_netcat "Usage: cb_hadoop_job.sh <load level> <load duration> <load_id>"
+	syslog_netcat "Usage: cb_hadoop_job.sh <load_profile> <load level> <load duration> <load_id>"
 	exit 1
 fi
 
@@ -39,7 +40,7 @@ if [ ${is_valid_LOAD_LEVEL} -eq 0 ]; then
 	LOAD_LEVEL=1
 fi
 
-syslog_netcat "Benchmarking hadoop SUT: MASTER=${hadoop_master_ip} -> SLAVES=${slave_ips_csv} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID})"
+syslog_netcat "Benchmarking hadoop SUT: MASTER=${hadoop_master_ip} -> SLAVES=${slave_ips_csv} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
 
 command_line="$jar_command ${tab_LOAD_LEVEL_jar[$LOAD_LEVEL]} ${tab_LOAD_LEVEL_options[$LOAD_LEVEL]}  ${tab_LOAD_LEVEL_input[$LOAD_LEVEL]} ${tab_LOAD_LEVEL_output[$LOAD_LEVEL]}"
 
@@ -62,20 +63,13 @@ fi
 syslog_netcat "..hadoop job is done. Ready to do a summary..."
 
 #Parse and report the performace
-LOG_SUMMARY_EXE=~/job_history_summary.py
-summary_tmp=summary.txt
-username=`whoami`
 
-logfile_name=`$HADOOP_EXE fs -ls /user/$username/${tab_LOAD_LEVEL_output[$LOAD_LEVEL]}/_logs/history | grep -v ".xml" | grep -v Found | awk '{print $8}'`
+~/cb_hadoop_report.py ${HADOOP_EXE} /user/${my_login_username}/${tab_LOAD_LEVEL_output[$LOAD_LEVEL]}/_logs/history load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec
+
+logfile_name=`$HADOOP_EXE fs -ls /user/${my_login_username}/${tab_LOAD_LEVEL_output[$LOAD_LEVEL]}/_logs/history | grep -v ".xml" | grep -v Found | awk '{print $8}'`
 syslog_netcat "....logfile_name: $logfile_name"
 
 if [ x"${logfile_name}" != x ]; then
-        $HADOOP_EXE fs -text $logfile_name | $LOG_SUMMARY_EXE > $summary_tmp
-        lat_mr=`echo "\`grep -i mrlatency $summary_tmp | awk '{print $2}'\` * 1000" | bc`
-        lat=`echo "\`grep -i totlatency $summary_tmp | awk '{print $2}'\` * 1000" | bc`
-        
-        report_app_metrics load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_duration:${LOAD_DURATION}:msec latency_mr:$lat_mr:msec latency:$lat:msec
-
 #       rsync ${logfile_name} $HADOOP_LOG_DEST/${logfile_name}_${LOAD_LEVEL} 
 #       syslog_netcat "sending $logfile_name ${CB_NODE}:$HADOOP_LOG_DIR/${logfile_name}_${LOAD_LEVEL}" 
 

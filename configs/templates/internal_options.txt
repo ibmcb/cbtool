@@ -123,6 +123,7 @@ CLIENT_PREF_POOL = lg
 # Any VM which contains the string "driver" on his role name will be created
 # on the "LG" pool, if this pools exists.
 DRIVER_PREF_POOL = lg
+MODE = controllable
 ECLIPSED = $False
 DETACH_PARALLELISM = 20
 RUNSTATE_PARALLELISM = 5
@@ -269,7 +270,7 @@ MEM_M = mem_total, mem_free, mem_cached, mem_buffers, mem_shared
 SWAP_M = swap_total, swap_free, swap_procs_running, swap_in_flight, swap_procs_blocked, swap_KB_read, swap_ios_read, swap_KB_write, swap_ios_write
 NET_M = pkts_in, bytes_in, pkts_out, bytes_out
 DSK_M = disk_total, disk_free, ds_in_flight, ds_KB_read, ds_ios_read, ds_KB_write, ds_ios_write
-APP_M = app_load_id, app_load_level, app_throughput, app_latency, app_bandwidth
+APP_M = app_load_profile, app_load_id, app_load_level, app_throughput, app_latency, app_bandwidth
 # Actual layout (do not prefix these variables with $)
 VM_RUNTIME_OS_METRICS_HEADER = TSTAMP, VM_ID2, CPU_M, MEM_M, SWAP_M, NET_M, DSK_M
 VM_RUNTIME_APP_METRICS_HEADER = TSTAMP, VM_ID2, APP_M

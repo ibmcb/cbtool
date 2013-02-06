@@ -31,6 +31,7 @@ from subprocess import Popen, PIPE
 from uuid import uuid5, NAMESPACE_DNS
 from fileinput import FileInput
 import copy
+import shutil
 
 from lib.auxiliary.code_instrumentation import trace, cblog, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.value_generation import ValueGeneration
@@ -416,7 +417,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _fields.append("|old value                          ")
                         _fields.append("|new value                          ")
     
-                        _smsg = "The attribute \"" + obj_attr_list["specified_attributes"]
+                        _smsg = "The global object \"" + obj_attr_list["specified_attributes"]
                         _smsg += "\" on Cloud " + obj_attr_list["cloud_name"] 
                         _smsg += " was modified:\n"
     
@@ -1253,12 +1254,35 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 _status = 9876
                 raise self.ObjectOperationException(_msg, _status)
 
-            _obj_attr_list = self.osci.get_object(_cn, "GLOBAL", False, "space", False)
-     
+            _space_attr_list = self.osci.get_object(_cn, "GLOBAL", False, "space", False)
+            _time_attr_list = self.osci.get_object(_cn, "GLOBAL", False, "time", False)
+
             self.monitoring_extract(_cn + " HOST os", "mon-extract")
             self.monitoring_extract(_cn + " VM os", "mon-extract")
             self.monitoring_extract(_cn + " VM app", "mon-extract")
             self.monitoring_extract(_cn + " VM management", "mon-extract")
+
+            _destination = _space_attr_list["data_working_dir"] + '/' + _time_attr_list["experiment_id"]
+            
+            if _space_attr_list["tracefile"].lower() != "none" :
+                _msg = "This experiment was created with a trace file, which will"
+                _msg += " also be included alongside the extracted metrics."
+                cbdebug(_msg, True)
+                if _space_attr_list["tracefile"][0] != "/" :
+                    _source = _space_attr_list["base_dir"] + '/' + _space_attr_list["tracefile"]
+                shutil.copy2(_source, _destination)
+
+            if _time_attr_list["hard_reset"].lower() == "true" :
+                _msg = "This experiment was run right after a \"hard reset\"."
+                _msg += "Will also include all logs files (from the Log Store) "
+                _msg += "alongside the extracted metrics."
+                cbdebug(_msg, True)
+
+                for _filenu in range(0, 8) :
+                    _source = _space_attr_list["stores_working_dir"] + "/logs/local" + str(_filenu) + ".log"                    
+                    shutil.copy2(_source, _destination)
+
+                self.osci.update_object_attribute(_cn, "GLOBAL", "time", False, "hard_reset", "False")
 
             _status = 0
             
@@ -1280,7 +1304,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 cberr(_msg)
             else :
                 _msg = "Monitor extraction success. All metrics written to csv"
-                _msg += " files on the directory \""  + _obj_attr_list["data_working_dir"] + "\"."
+                _msg += " files on the directory \""  + _space_attr_list["data_working_dir"] + "\"."
                 cbdebug(_msg)
             return _status, _msg
         
@@ -1558,39 +1582,53 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     
                     _msg = "The following " + _obj_type + "s reported management metrics:\n"
                     _field1 = "Name                        "
-                    _field2 = "Age (seconds)"
-                    _msg += _field1 + '|' + _field2 + '\n'
+                    _field2 = "Age (seconds)     "
+                    _field3 = "Experiment id                  "
+                    _field4 = "Number of samples"
+                    _msg += _field1 + '|' + _field2 + '|' + _field3 + '|' + _field4 + '\n'
 
-                    _metrics_list = self.msci.find_document("latest_management_" + _obj_type + '_' + _obj_attr_list["username"], {}, True)
-                    
+                    _coll_name = "latest_management_" + _obj_type + '_' + _obj_attr_list["username"]
+                    _metrics_list = self.msci.find_document(_coll_name, {}, True)
+
                     for _metric in _metrics_list :
                         _msg += _metric["name"].ljust(len(_field1))
-                        _msg += '|' + str( _curr_time- int(_metric["mgt_001_provisioning_request_originated"])).ljust(len(_field2)) + '\n'
+                        _msg += '|' + str( _curr_time- int(_metric["mgt_001_provisioning_request_originated"])).ljust(len(_field2))
+                        _msg += '|' + _metric["expid"].ljust(len(_field3))
+                        _nr_samples = self.msci.count_document(_coll_name.replace("latest_",''), {"expid": _metric["expid"], "uuid": _metric["uuid"]})
+                        _msg += '|' + str(_nr_samples).ljust(len(_field4)) + '\n'
 
                     _msg += "\nThe following " + _obj_type  + "s reported runtime (OS) metrics:\n"
-                    _msg += _field1 + '|' + _field2 + '\n'
+                    _msg += _field1 + '|' + _field2 + '|' + _field3 + '|' + _field4 + '\n'
 
-                    _metrics_list = self.msci.find_document("latest_runtime_os_" + _obj_type + '_' + _obj_attr_list["username"], {}, True)
+                    _coll_name = "latest_runtime_os_" + _obj_type + '_' + _obj_attr_list["username"]
+                    _metrics_list = self.msci.find_document(_coll_name, {}, True)
 
                     for _metric in _metrics_list :
                         if self.osci.object_exists(_cloud_name, _obj_type, _metric["_id"], False) :
                             _obj_attr_list = self.osci.get_object(_cloud_name, _obj_type, False, _metric["_id"], False)
                             _result["runtime"].append([_obj_attr_list["name"], _metric["time"]])
                             _msg += _obj_attr_list["name"].ljust(len(_field1))
-                            _msg += '|' +  str( _curr_time- int(_metric["time"])).ljust(len(_field2)) + '\n'
-
+                            _msg += '|' +  str( _curr_time- int(_metric["time"])).ljust(len(_field2))
+                            _msg += '|' + _metric["expid"].ljust(len(_field3))
+                            _nr_samples = self.msci.count_document(_coll_name.replace("latest_",''), {"expid": _metric["expid"], "uuid": _metric["uuid"]})
+                            _msg += '|' + str(_nr_samples).ljust(len(_field4)) + '\n'
+                        
                     if _obj_type == "VM" :
                         _msg += "\nThe following " + _obj_type  + "s reported runtime (Application) metrics:\n"
-                        _msg += _field1 + '|' + _field2 + '\n'
-                        
-                        _metrics_list = self.msci.find_document("latest_runtime_app_" + _obj_type + '_' + _obj_attr_list["username"], {}, True)
+                        _msg += _field1 + '|' + _field2 + '|' + _field3 + '|' + _field4 + '\n'
+
+                        _coll_name = "latest_runtime_app_" + _obj_type + '_' + _obj_attr_list["username"]
+                        _metrics_list = self.msci.find_document(_coll_name, {}, True)
 
                         for _metric in _metrics_list :
                             if self.osci.object_exists(_cloud_name, _obj_type, _metric["_id"], False) :
                                 _result["management"].append([_obj_attr_list["name"], _metric["time"]])
                                 _obj_attr_list = self.osci.get_object(_obj_attr_list["cloud_name"], _obj_type, False, _metric["_id"], False)
                                 _msg += _obj_attr_list["name"].ljust(len(_field1))
-                                _msg += '|' +  str( _curr_time- int(_metric["time"])).ljust(len(_field2)) + '\n'                                               
+                                _msg += '|' +  str( _curr_time- int(_metric["time"])).ljust(len(_field2))                                              
+                                _msg += '|' + _metric["expid"].ljust(len(_field3))
+                                _nr_samples = self.msci.count_document(_coll_name.replace("latest_",''), {"expid": _metric["expid"], "uuid": _metric["uuid"]})
+                                _msg += '|' + str(_nr_samples).ljust(len(_field4)) + '\n'
 
                     _status = 0
 

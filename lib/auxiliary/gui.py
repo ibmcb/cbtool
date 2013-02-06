@@ -307,17 +307,24 @@ class Dashboard () :
                         # Some float values are zero. Get rid of the decimal
                         # if they are zero and only print integer to save
                         # screen space
+                        try :
+                            if  str(val).count(":") == 0 :
+                                try:
+                                    val = str(float(val))
+                                    if "." in val :
+                                        integer, decimal = val.split(".") 
+                                        if decimal == "0" :
+                                            val = integer
+                                except ValueError:
+                                    pass
+     
+                                row.append(val) 
+                            else :
+                                row.append("--")
                         
-                        if  str(val).count(":") == 0 :  
-                            val = str(float(val))
-                            if "." in val :
-                                integer, decimal = val.split(".") 
-                                if decimal == "0" :
-                                    val = integer 
-                        row.append(val) 
-                    else :
-                        row.append("--")
-                        
+                        except Exception, msg :
+                            pass
+
                 self.destinations[dest] += self.makeRow(dest, row)
             
             
@@ -1071,8 +1078,8 @@ class GUI(object):
             return self.bootstrap(req, self.heromsg + "\n<h4>Error: API Service (" + self.api_access + ") is not responding: " + str(msg) + "</h4></div>", error = True)
         except socket.error, v:
             return self.bootstrap(req, self.heromsg + "\n<h4>Error: API Service (" + self.api_access + ") is not responding: " + str(v) + "</h4></div>", error = True)
-        #except Exception, msg:
-        #    return self.bootstrap(req, self.heromsg + "\n<h4>Error: Something bad happened: " + str(msg) + "</h4></div>")
+        except Exception, msg:
+            return self.bootstrap(req, self.heromsg + "\n<h4>Error: Something bad happened: " + str(msg) + "</h4></div>")
         
     def default(self, req, params, attach_params, views, operations, objects, liststates):
         if not req.active : 

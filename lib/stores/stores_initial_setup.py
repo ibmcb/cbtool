@@ -436,8 +436,8 @@ def reset(global_objects, soft = True) :
     TBD
     '''
     try :
-        _msg = "Killing all processes"
-        cbdebug(_msg)
+        _msg = "Killing all processes..."
+        print _msg,
         _proc_man =  ProcessManagement()
         _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f cbact")
         _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f cloud-")
@@ -446,20 +446,31 @@ def reset(global_objects, soft = True) :
         _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f submit-")
         _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f capture-")
         _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f gmetad.py")
+        print "done"
+
         _proc_man.run_os_command("screen -wipe")
 
-        _msg = "Flushing Object Store" 
-        cbdebug(_msg) 
+        _msg = "Flushing Object Store..." 
+        print _msg,
         _rmc = RedisMgdConn(global_objects["objectstore"])
         _rmc.flush_object_store()
-
+        print "done"
+        
         if not soft :
-            _msg = "Flushing Metric Store"
-            cbdebug(_msg)
+            _msg = "Flushing Metric Store..."
+            print _msg,
             _mmc = MongodbMgdConn(global_objects["metricstore"])
             _mmc.flush_metric_store(global_objects["mon_defaults"]["username"])
+            print "done"
 
-        _msg = "Success"
+            _msg = "Flushing Log Store..."
+            print _msg,
+            _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f rsyslogd")
+            _proc_man.run_os_command("rm " + global_objects["space"]["stores_working_dir"] + "/logs/*.log")
+            _status, _msg = syslog_logstore_setup(global_objects, "check")
+            print "done"
+
+        _msg = ""
         _status = 0
 
     except ProcessManagement.ProcessManagementException, obj :
@@ -479,11 +490,7 @@ def reset(global_objects, soft = True) :
         _msg = str(e)
     
     finally :
-        if _status :
-            print _msg
-            exit(_status)
-        else :
-            return _status, _msg
+        return _status, _msg
 
 def pre_check_port(hostname, hostport, protocol) :
     '''

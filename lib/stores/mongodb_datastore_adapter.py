@@ -409,7 +409,7 @@ class MongodbMgdConn :
             _attributes = [ "vm_name", "role", "ai_name", "type", "aidrs_name", "pattern" ]
             for _attribute in _attributes :
                 _result[_attribute + 's'] = []
-            
+
             _collection_handle = self.mongodb_conn[self.database][collection]
             _documents = _collection_handle.find()
             for _document in _documents :

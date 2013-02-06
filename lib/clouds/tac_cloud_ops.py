@@ -266,7 +266,11 @@ class TacCmds(CommonCloudFunctions) :
         if _replication_vmcs.strip() != "" :
             _rvmcs = str2dic(_replication_vmcs)
             if obj_attr_list["name"] in _rvmcs :
-                obj_attr_list["svm_destination"] = gethostbyname(_rvmcs[obj_attr_list["name"]])
+                try :
+                    obj_attr_list["svm_destination"] = gethostbyname(_rvmcs[obj_attr_list["name"]])
+                except Exception, msg :
+                    _fmsg = "Could not lookup 'svm_destinations' " + _rvmcs[obj_attr_list["name"]] + " (probably bad /etc/hosts): " + str(msg)
+                    raise CldOpsException(_fmsg, 1295)
             
         if "svm_destination" not in obj_attr_list :
             obj_attr_list["svm_destination"] = obj_attr_list["cloud_ip"]

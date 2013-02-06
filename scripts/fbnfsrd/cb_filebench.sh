@@ -18,18 +18,22 @@
 
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_filebench_common.sh
 
-LOAD_LEVEL=$1
-LOAD_DURATION=$2
-LOAD_ID=$3
+LOAD_PROFILE=$1
+LOAD_LEVEL=$2
+LOAD_DURATION=$3
+LOAD_ID=$4
 
-sleep ${SETUP_TIME}
-report_metric "load_id" $LOAD_ID "int32" seqnum 0 all
-report_metric "load" 0 "int32" load 0 all
-#report_metric "throughput" 0 "float" tps 0
-#report_metric "latency" 0 "float" msec 0
-#report_metric "bandwidth" 0 "float" mBps 0
+if [[ -z "$LOAD_PROFILE" || -z "$LOAD_LEVEL" || -z "$LOAD_DURATION" || -z "$LOAD_ID" ]]
+then
+	syslog_netcat "Usage: cb_filebench.sh <load_profile> <load level> <load duration> <load_id>"
+	exit 1
+fi
 
 FILEBENCH_IP=`get_ips_from_role filebench`
+
+filebench=`which ${FB_BINARY_NAME}`
+
+cd ~
 
 declare -A PERSONALITY
 
@@ -57,23 +61,39 @@ sed -i "s/LOAD_DURATION/$LOAD_DURATION/g" ${PERSONALITY_FILE}
 
 CMDLINE="${filebench} -f ${PERSONALITY_FILE}"
 
-syslog_netcat "Benchmarking filebench SUT: FILEBENCH=${FILEBENCH_IP} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID})"
+syslog_netcat "Benchmarking filebench SUT: FILEBENCH=${FILEBENCH_IP} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
 
 OUTPUT_FILE=`mktemp`
 
-report_metric "load" $LOAD_LEVEL "int32" load 0 all
+source ~/cb_barrier.sh start
 
 syslog_netcat "Command line is: ${CMDLINE}"
-$CMDLINE | while read line ; do
-        syslog_netcat "$line"
-        echo $line >> $OUTPUT_FILE
-done
+if [ x"${log_output_command}" == x"true" ]; then
+	syslog_netcat "Command output will be shown"
+	$CMDLINE | while read line ; do
+		syslog_netcat "$line"
+		echo $line >> $OUTPUT_FILE
+	done
+else
+	syslog_netcat "Command output will NOT be shown"
+	$CMDLINE 2>&1 >> $OUTPUT_FILE
+fi
 
+#is_filebench_running="true"
+
+#while [ x"${is_filebench_running}" != x ]
+#do
+#	is_filebench_running=`pgrep -f "${CMDLINE}"`
+#	sleep 5
+#done
+ 
 syslog_netcat "filebench run complete. Will collect and report the results"
 
-report_metric "throughput" `cat ${OUTPUT_FILE} | grep Summary | cut -d "," -f 2 | tr -d ' ' | sed 's/\(.*\)...../\1/'` "float" tps 0
-report_metric "latency" `cat ${OUTPUT_FILE} | grep Summary | cut -d "," -f 6 | tr -d ' ' | sed 's/\(.*\)........./\1/'` "float" msec 0
-report_metric "bandwidth" `cat ${OUTPUT_FILE} | grep Summary | cut -d "," -f 4 | tr -d ' ' | sed 's/\(.*\)..../\1/'` "float" mBps 0
+tp=`cat ${OUTPUT_FILE} | grep Summary | cut -d "," -f 2 | tr -d ' ' | sed 's/\(.*\)...../\1/'`
+lat=`cat ${OUTPUT_FILE} | grep Summary | cut -d "," -f 6 | tr -d ' ' | sed 's/\(.*\)........./\1/'`
+bw=`cat ${OUTPUT_FILE} | grep Summary | cut -d "," -f 4 | tr -d ' ' | sed 's/\(.*\)..../\1/'`
+
+report_app_metrics load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec latency:$lat:msec throughput:$tp:tps bandwidth:$bw:MBps
 
 rm ${OUTPUT_FILE}
 rm ${PERSONALITY_FILE}

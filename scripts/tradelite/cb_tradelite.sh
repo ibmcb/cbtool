@@ -33,9 +33,17 @@ NR_USERS=15000
 
 if [ $standalone == online ] ; then
 	# retrieve online values from API
-	LOAD_LEVEL=$1
-	LOAD_DURATION=$2
-	LOAD_ID=$3
+    LOAD_PROFILE=$1
+    LOAD_LEVEL=$2
+    LOAD_DURATION=$3
+    LOAD_ID=$4
+
+    if [[ -z "$LOAD_PROFILE" || -z "$LOAD_LEVEL" || -z "$LOAD_DURATION" || -z "$LOAD_ID" ]]
+    then
+	    syslog_netcat "Usage: cb_tradelite.sh <load profile> <load level> <load duration> <load_id>"
+	    exit 1
+    fi
+
 	WAS_IPS=`get_ips_from_role was`
 	DB2_IP=`get_ips_from_role db2`
 	IS_LOAD_BALANCED=`get_my_ai_attribute load_balancer`
@@ -67,7 +75,7 @@ then
 	LOAD_BALANCER_IP=`get_ips_from_role lb`
 	syslog_netcat "Benchmarking tradelite SUT: LOAD_BALANCER=${LOAD_BALANCER_IP} -> WAS_SERVERS=${WAS_IPS_CSV} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID})"
 else
-	syslog_netcat "Benchmarking tradelite SUT: WAS_SERVER=${WAS_IPS} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID})"
+	syslog_netcat "Benchmarking tradelite SUT: WAS_SERVER=${WAS_IPS} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
 fi
 
 CMDLINE="iwlengine --enginename testit --define hostname=${LOAD_GENERATOR_TARGET_IP}:9080 --define botClient=0 --define topClient=${NR_USERS} --define stocks=${NR_QUOTES} -e 0 -s /home/klabuser/iwl/bin/TradeApp.jxs --timelimit $LOAD_DURATION -c $LOAD_LEVEL"
@@ -120,7 +128,7 @@ done
 syslog_netcat "iwlengine run complete. Will collect and report the results"
 tp=`cat ${OUTPUT_FILE} | grep throughput | grep Page | grep -v element | cut -d " " -f 5 | tr -d ' '`
 lat=`echo "\`cat ${OUTPUT_FILE} | grep response | grep -v all | cut -d " " -f 9 | tr -d ' '\` * 1000" | bc`
-report_app_metrics load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_duration:${LOAD_DURATION}:sec throughput:$tp:tps latency:$lat:msec
+report_app_metrics load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_duration:${LOAD_DURATION}:sec load_profile:${LOAD_PROFILE}:name throughput:$tp:tps latency:$lat:msec
 
 rm ${OUTPUT_FILE}
 

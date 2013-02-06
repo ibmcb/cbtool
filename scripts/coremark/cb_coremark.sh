@@ -18,13 +18,14 @@
 
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
-LOAD_LEVEL=$1
-LOAD_DURATION=$2
-LOAD_ID=$3
+LOAD_PROFILE=$1
+LOAD_LEVEL=$2
+LOAD_DURATION=$3
+LOAD_ID=$4
 
-if [[ -z "$LOAD_LEVEL" || -z "$LOAD_DURATION" || -z "$LOAD_ID" ]]
+if [[ -z "$LOAD_PROFILE" || -z "$LOAD_LEVEL" || -z "$LOAD_DURATION" || -z "$LOAD_ID" ]]
 then
-	syslog_netcat "Usage: cb_coremark.sh <load level> <load duration> <load_id>"
+	syslog_netcat "Usage: cb_coremark.sh <load_profile> <load level> <load duration> <load_id>"
 	exit 1
 fi
 
@@ -54,7 +55,7 @@ else
 	CMDLINE="$coremark ${CMDLINE_PARAMS_SEEDS} ${CMDLINE_PARAMS_ITERATIONS[${LOAD_LEVEL}]} ${CMDLINE_PARAMS_INTERNAL}"
 fi
 
-syslog_netcat "Benchmarking coremark SUT: COREMARK=${LOAD_GENERATOR_TARGET_IP} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID})"
+syslog_netcat "Benchmarking coremark SUT: COREMARK=${LOAD_GENERATOR_TARGET_IP} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
 
 OUTPUT_FILE=`mktemp`
 
@@ -76,7 +77,7 @@ syslog_netcat "coremark run complete. Will collect and report the results"
 
 tp=`cat ${OUTPUT_FILE} | grep Sec | cut -d ":" -f 2 | tr -d ' '`
 lat=`echo "\`cat ${OUTPUT_FILE} | grep time | cut -d ":" -f 2 | tr -d ' '\` * 1000 " | bc`
-report_app_metrics load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_duration:${LOAD_DURATION}:sec throughput:$tp:tps latency:$lat:msec
+report_app_metrics load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec throughput:$tp:tps latency:$lat:msec
 
 rm ${OUTPUT_FILE}
 

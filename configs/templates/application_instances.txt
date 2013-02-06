@@ -45,6 +45,7 @@ DB2_SETUP2 = cb_restart_db2.sh
 WAS_RESET1 = cb_restart_was.sh
 DB2_RESET1 = cb_restart_db2.sh
 START = cb_daytrader.sh
+LOAD_PROFILE = default
 LOAD_LEVEL = uniformIXIXI1I10
 # The load duration for daytrader should not be smaller than 90 seconds
 LOAD_DURATION = uniformIXIXI90I120
@@ -82,6 +83,7 @@ DB2_RESET1 = cb_restart_db2.sh
 # This is always executed
 WAS_RESET1 = cb_restart_was.sh
 START = cb_tradelite.sh
+LOAD_PROFILE = default
 LOAD_LEVEL = uniformIXIXI2I5
 # The load duration for tradelite should not be smaller than 90 seconds
 LOAD_DURATION = uniformIXIXI90I120
@@ -114,6 +116,7 @@ CLIENT_LOST_RESET1 = cb_restart_autobench.sh
 LOSTFRONT_RESET1 = cb_restart_autobench.sh
 LOSTBACK_RESET1 = cb_restart_autobench.sh
 START = cb_lostrun.sh
+LOAD_PROFILE = default
 LOAD_LEVEL = uniformIXIXI1I40
 # The load duration for lost should not be smaller than 240 seconds
 LOAD_DURATION = uniformIXIXI1000I3000
@@ -134,6 +137,7 @@ HADOOPMASTER_SETUP2 = cb_start_hadoop_cluster.sh
 HADOOPMASTER_RESIZE1 = cb_restart_hadoop_cluster.sh
 HADOOPSLAVE_RESIZE1 = cb_restart_hadoop_cluster.sh
 START = cb_hadoop_job.sh
+LOAD_PROFILE = terasort
 LOAD_LEVEL = uniformIXIXI1I3
 # The load duration is *not* respected for hadoop (task ends asynchronously).
 LOAD_DURATION = 60
@@ -164,7 +168,7 @@ HADOOPMASTER_SETUP1 = cb_config_hadoop_cluster.sh
 HADOOPSLAVE_SETUP1 = cb_config_hadoop_cluster.sh
 HADOOPMASTER_SETUP2 = cb_start_hadoop_cluster.sh
 START = cb_hadoop_job.sh
-#START = cb_run_nothing.sh
+LOAD_PROFILE = terasort
 LOAD_LEVEL = 1
 # The load duration is *not* respected for hadoop (task ends asynchronously).
 LOAD_DURATION = 300
@@ -182,6 +186,7 @@ LOAD_BALANCER_TARGET_CHILDREN = 2
 NETCLIENT_SETUP1 = cb_check_netperf_client.sh
 NETSERVER_SETUP1 = cb_check_netperf_server.sh
 START = cb_netperf.sh
+LOAD_PROFILE = tcp_stream
 LOAD_LEVEL = 1
 LOAD_DURATION = uniformIXIXI70I90
 # "Special" modifier parameters for the AI NETPERF. These should be set on
@@ -204,6 +209,7 @@ LOAD_BALANCER_TARGET_URL = unknown
 LOAD_BALANCER_TARGET_CHILDREN = 2
 COREMARK_SETUP1 = cb_setup_cmk.sh
 START = cb_coremark.sh
+LOAD_PROFILE = default
 LOAD_LEVEL = uniformIXIXI1I7
 # The load duration is *not* respected for coremark (task ends asynchronously).
 LOAD_DURATION = uniformIXIXI40I60
@@ -227,6 +233,7 @@ LOAD_BALANCER_TARGET_URL = unknown
 LOAD_BALANCER_TARGET_CHILDREN = 2
 DDGEN_SETUP1 = cb_check_dd_utility.sh
 START = cb_ddgen.sh
+LOAD_PROFILE = default
 LOAD_LEVEL = 1024
 # The load duration is *not* respected for hadoop (task ends asynchronously).
 LOAD_DURATION = 180
@@ -254,6 +261,7 @@ LOAD_BALANCER_TARGET_URL = unknown
 LOAD_BALANCER_TARGET_CHILDREN = 2
 FILEBENCH_SETUP1 = cb_setup_storage.sh
 START = cb_filebench.sh
+LOAD_PROFILE = fileserver
 LOAD_LEVEL = uniformIXIXI1I1
 # The load duration for filebench should not be smaller than 60 seconds
 LOAD_DURATION = uniformIXIXI60I90
@@ -278,6 +286,7 @@ LOAD_BALANCER_TARGET_CHILDREN = 2
 STORAGESERVER_SETUP1 = cb_setup_nfs_ramdisk.sh
 STORAGESERVER_SETUP2 = cb_setup_storage.sh
 START = cb_filebench.sh
+LOAD_PROFILE = fileserver
 LOAD_LEVEL = uniformIXIXI1I1
 # The load duration for FBNFSRD should not be smaller than 60 seconds
 LOAD_DURATION = uniformIXIXI60I90
@@ -294,6 +303,7 @@ LOAD_BALANCER_TARGET_URL = unknown
 LOAD_BALANCER_TARGET_CHILDREN = 2
 CLIENT_WINDOWS_SETUP1 = cb_windesktop_setup.sh
 START = cb_windesktop_run.sh
+LOAD_PROFILE = default
 LOAD_LEVEL = uniformIXIXI1I6
 LOAD_DURATION = 120
 
@@ -311,6 +321,7 @@ CLIENT_SPECWEB_RESET1 = cb_reset_java_clients.sh
 SPECWEBFRONT_RESET1 = cb_restart_webserver.sh
 SPECWEBBACK_RESET1 = cb_restart_webserver.sh
 START = cb_specrun.sh
+LOAD_PROFILE = default
 LOAD_LEVEL = uniformIXIXI10I100
 LOAD_DURATION = uniformIXIXI1200I3600
 
@@ -326,6 +337,7 @@ LOAD_BALANCER_TARGET_URL = unknown
 LOAD_BALANCER_TARGET_CHILDREN = 2
 TINYVM_SETUP1 = cb_start_nothing.sh
 START = cb_run_nothing.sh
+LOAD_PROFILE = default
 LOAD_LEVEL = uniformIXIXI1I100
 LOAD_DURATION = 30
 # "Special" modifier parameters for the AI NULLWORKLOAD. These should be set on
@@ -347,6 +359,7 @@ LOAD_BALANCER_TARGET_PORT = 80
 LOAD_BALANCER_TARGET_URL = unknown 
 SPECJBB_SETUP1 = cb_setup_specjbb.sh
 START = cb_specjbb.sh
+LOAD_PROFILE = default
 LOAD_LEVEL = 1
 LOAD_DURATION = uniformIXIXI90I120
 # "Special" modifier parameters for the AI SPECJBB. These should be set on YOUR
@@ -372,6 +385,7 @@ CAPTURE_ROLE = cn_hpc
 LOAD_BALANCER = $False
 FEN_HPC_SETUP1 = cb_config_fen_hpc.sh
 START = cb_hpcc.sh
+LOAD_PROFILE = default
 LOAD_LEVEL = uniformIXIXI1I6
 # The load duration is *not* respected for hpcc (task ends asynchronously).
 LOAD_DURATION = 60

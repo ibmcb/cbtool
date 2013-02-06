@@ -25,6 +25,7 @@
 '''
 
 from pwd import getpwuid
+from shutil import copyfile
 
 import os
 import re
@@ -48,5 +49,20 @@ def main() :
         print _msg
         print "Please add the missing dependency(ies) and re-run configure again."
         exit()
+    else :
+        print _msg
 
+    _username = getpwuid(os.getuid())[0]
+    
+    _msg = "Checking for a \"private\" configuration file for user \"" + _username
+    _msg += "\" in " + _path + _username + "_cloud_definitions.txt)"
+    print _msg
+    if not os.path.exists(_path + "/configs/" + _username + "_cloud_definitions.txt") :
+        _msg = "Copying " + _path + "/configs/cloud_definitions.txt to "
+        _msg += _path + "/configs/" + _username + "_cloud_definitions.txt..."
+        print _msg
+        copyfile(_path + "/configs/cloud_definitions.txt", _path + "/configs/" + _username + "_cloud_definitions.txt")
+        print "Please re-run configure again"
+    else :
+        print "File already exists, tool is ready to be used."
 main()

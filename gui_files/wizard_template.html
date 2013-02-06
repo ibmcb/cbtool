@@ -60,20 +60,8 @@
 				<h4><input id='image_id' type="text" value='image-xxxx, ami-xxxxx'/>&nbsp;&nbsp;What is the ID of your VM image as identified by the Cloud?</h4>
 				<h5>This image ID will be used to test VM creation in your Cloud.</h5>
 				<p/><br/>
-                               <h4><select id='image_name' style='width: 500'>
-                                       <option>tinyvm</option>
-                                       <option>hadoopmaster</option>
-                                       <option>hadoopslave</option>
-                                       <option>was</option>
-                                       <option>db2</option>
-                                       <option>specwebfront</option>
-                                       <option>specwebback</option>
-                                       <option>coremark</option>
-                                       <option>netclient</option>
-                                       <option>netserver</option>
-                                       <option>windows</option>
-                               </select> &nbsp;&nbsp;Which application to test first?</h4>
-                               <h5>This name is used by CB to associate workloads to images. These are reserved keywords used by CB and can b
+				<h4><input id='image_name' type="text" value='testimage'/>&nbsp;&nbsp;Choose an easy-to-remember name for this image.</h4>
+				<h5>This name is easier to use when interacting with the toolkit.</h5>
 				<p/><br/>
 				<h4><input id='image_size' type="text" value='m1.small'/>&nbsp;&nbsp;What size VM instance should we start with?</h4>
 				<h5>These 'sizes' are usually specific to the Cloud:</h5>
@@ -215,7 +203,7 @@
 	   			d += "\n" + key.id.toUpperCase() + " = " + key.value.replace("<", "&lt;").replace(">", "&gt;");
 	   		}
 	   		d += "\n\n[VM_TEMPLATES : " + model.toUpperCase() + "_CLOUDCONFIG]"
-                        d += "\n" + $("#image_name option:selected").val().toUpperCase() + " = size:" + $("#image_size").val() + ", imageid1:"
+	   		d += "\n" + $("#image_name").val().toUpperCase() + " = size:" + $("#image_size").val() + ", imageid1:" + $("#image_id").val()
 	   		d += "\n\n[ADMISSION_CONTROL : " + name + "]"
 	   		d += "\nVM_MAX_RESERVATIONS = " + $("#admission_control_vm_max_reservations").val();
 	   		d += "\nAI_MAX_RESERVATIONS = " + $("#admission_control_ai_max_reservations").val();

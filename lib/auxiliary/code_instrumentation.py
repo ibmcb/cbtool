@@ -105,6 +105,7 @@ def _cblog(*args):
     
         if 'processid' in f.f_locals :
             _procid = str(f.f_locals['processid'])
+
         try:
             # Local variable 'processid' takes precendence first
             # Only if this does not exist should we use the object-level 'self.pid'
@@ -114,6 +115,7 @@ def _cblog(*args):
             _log_prefix = f.f_code.co_filename.split('/')[-1] + '/' 
             _log_prefix += f.f_locals['self'].__class__.__name__ + '.'
             _log_prefix += f.f_code.co_name
+
         except KeyError:
             _log_prefix = f.f_code.co_filename.split('/')[-1] + '/'
             _log_prefix += f.f_code.co_name
@@ -123,8 +125,10 @@ def _cblog(*args):
             
         _msg = _log_prefix + ' ' + _procid + " - " + _msg + _log_suffix
         _log_severity[_severity](_msg)
+    
     except Exception, msg :
         print ("exception: " + str(msg) + " : " + _msg)
+
     return True
 
 def cblog(*args) :

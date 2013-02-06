@@ -84,7 +84,7 @@ class CBCLI(Cmd) :
             print str(path)
             import pydevd
             pydevd.settrace(host=self.options.debug_host)
-    
+
         try :
 
             self.cld_attr_lst = {}
@@ -99,6 +99,11 @@ class CBCLI(Cmd) :
             '''
             
             self.cld_attr_lst, self.definitions = parse_cld_defs_file(None, True, self.options.config)
+
+            if self.options.hard_reset :
+                self.cld_attr_lst["time"]["hard_reset"] = True
+                
+            self.cld_attr_lst["space"]["tracefile"] = self.options.tracefile
 
             '''
             Using the new multi-cloud configuration is mandatory, now.
@@ -115,7 +120,12 @@ class CBCLI(Cmd) :
                 clouds = get_available_clouds(self.cld_attr_lst, return_all_options = True) 
 
                 if len(clouds) == 0 :
-                    raise Exception("configuration error: Your configuration is deprecated. Please refer to configs/cloud_definitions.txt for examples on the new configuration format.\nIf you want to revert to use the deprecated format, specify --oldconfig on the command-line.")
+                    _msg = "Configuration Error: Your configuration is deprecated."
+                    _msg += "Please refer to configs/cloud_definitions.txt for "
+                    _msg += "examples on the new configuration format.\n "
+                    _msg += "If you want to revert to use the deprecated format,"
+                    _msg += " specify --oldconfig on the command-line."
+                    raise Exception(_msg)
 
             self.setup_default_options()
             
@@ -156,7 +166,8 @@ class CBCLI(Cmd) :
 
             self.osci = RedisMgdConn(oscp)
             self.msci = MongodbMgdConn(mscp)
-            self.api_service_url = "http://" + self.cld_attr_lst["api_defaults"]["hostname"] + ":" + self.cld_attr_lst["api_defaults"]["port"]
+            self.api_service_url = "http://" + self.cld_attr_lst["api_defaults"]["hostname"]
+            self.api_service_url += ":" + self.cld_attr_lst["api_defaults"]["port"]
             
             self.api = APIClient(self.api_service_url)
             
@@ -427,7 +438,7 @@ class CBCLI(Cmd) :
         
         # Hard Reset
         self.parser.add_option("-x", "--hard_reset", dest = "hard_reset", action = "store_true", \
-                          help = "Hard reset (flushes Object Store and Metric Store before starting a new experiment).")
+                          help = "Hard reset (flushes Object Store, Log Store and Metric Store before starting a new experiment).")
         # Soft Reset
         '''
         Hard resets delete data from Mongo, which is bad.
@@ -487,7 +498,10 @@ class CBCLI(Cmd) :
         else :
             hdlr = RotatingFileHandler(options.logdest, maxBytes=20971520, \
                                        backupCount=20)
-        formatter = Formatter('%(asctime)s %(levelname)s %(message)s')
+            
+        formatter = Formatter("[%(asctime)s] [%(levelname)s] %(message)s")
+#        formatter = Formatter('%(asctime)s %(levelname)s %(message)s')
+
         status_formatter = Formatter('%(message)s')
         status_handler.setFormatter(status_formatter)
         hdlr.setFormatter(formatter)

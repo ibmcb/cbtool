@@ -32,6 +32,10 @@ SCP_INITIAL_VMCS_DEFAULT = kvm_rack1
 [SPACE : SCP_CLOUDCONFIG ]
 SSH_KEY_NAME = $SCP_SSH_KEY_NAME
 
+[MON_DEFAULTS : SCP_CLOUDCONFIG ]
+COLLECT_FROM_HOST = $False # requires ganglia installation on hypervisor 
+COLLECT_FROM_GUEST = $True
+
 [VMC_DEFAULTS : SCP_CLOUDCONFIG ]
 # These need to be here for testing that
 # the user has entered the correct parameters.

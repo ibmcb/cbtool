@@ -157,8 +157,9 @@ def wait_on_process(processid, proc_h, output_list) :
     '''
     TBD
     '''
+
     (output_stdout, output_stderr) = proc_h.communicate()
-    
+
     if output_list is not None :
         if len(str(output_stdout)) > 0 :
             output_list.append(str(output_stdout))

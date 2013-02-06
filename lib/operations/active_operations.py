@@ -136,7 +136,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                         "\n   Neither files exists: " + cld_attr_lst["space"]["ssh_key_name"] + " nor " + ssh_filename + \
                                         "\n   Please update your configuration and try again.\n");
                 else :
-                   cld_attr_lst["space"]["ssh_key_name"] = ssh_filename 
+                    cld_attr_lst["space"]["ssh_key_name"] = ssh_filename 
 
                 _idmsg = "The \"" + cld_attr_lst["model"] + "\" cloud named \""
                 _idmsg += cld_attr_lst["cloud_name"] + "\""
@@ -203,6 +203,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 cld_attr_lst["username"] = cld_attr_lst["time"]["username"]
                 cld_attr_lst["start_time"] = str(int(time()))
                 cld_attr_lst["client_should_refresh"] = "yes"
+                cld_attr_lst["time"]["hard_reset"] = uni_attr_lst["time"]["hard_reset"]
+                cld_attr_lst["space"]["tracefile"] = uni_attr_lst["space"]["tracefile"]
 
                 # While setting up the Object Store, check for free ports for the 
                 # API, GUI, and Gmetad (Host OS performance data collection)
@@ -1863,7 +1865,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _cmd += "echo '#OSDN-" + str(self.osci.dbid) + "' >> ~/cb_os_parameters.txt;"
                     _cmd += "echo '#OSTO-" + str(self.osci.timout) + "' >> ~/cb_os_parameters.txt;"
                     _cmd += "echo '#OSCN-" + obj_attr_list["cloud_name"] + "' >> ~/cb_os_parameters.txt;"
-                    _cmd += "echo '#OSMO-integrated' >> ~/cb_os_parameters.txt;"
+                    _cmd += "echo '#OSMO-" + obj_attr_list["mode"] + "' >> ~/cb_os_parameters.txt;"
                     _cmd += "echo '#OSOI-" + "TEST_" + obj_attr_list["username"] + ":" + obj_attr_list["cloud_name"] + "' >> ~/cb_os_parameters.txt\";"
 
                     _cmd += "rsync -e \"ssh -o StrictHostKeyChecking=no -l " + obj_attr_list["login"] + " -i " 
@@ -1901,7 +1903,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _fmsg = "Unable to connect to VM after " + str(_max_tries)
                 _fmsg += "tries. The VM seems unreachable."
             else :
-
                 _delay = int(time()) - _start
                 self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "Files transferred...")
                 obj_attr_list["mgt_005_file_transfer"] = _delay
@@ -4253,6 +4254,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 if not _reset_status and _ai_attr_list["load_generator_ip"] == _ai_attr_list["load_manager_ip"] :
                     _cmd = "~/" + _ai_attr_list["start"] + ' '
+                    _cmd += str(_ai_attr_list["current_load_profile"]) + ' '                    
                     _cmd += str(_ai_attr_list["current_load_level"]) + ' '
                     _cmd += str(_ai_attr_list["current_load_duration"]) + ' '
                     _cmd += str(_ai_attr_list["current_load_id"])

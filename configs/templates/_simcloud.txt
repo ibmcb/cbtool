@@ -1,17 +1,21 @@
 [USER-DEFINED]
-SIM_INITIAL_VMCS = need_to_be_configured_by_user 
+SIM_INITIAL_VMCS = simzone_a:sut,simzone_b:sut,simzone_c:sut,simzone_d:lg
 # Name of the ssh key pair
 SIM_SSH_KEY_NAME = bogus_id_rsa 
-SIM_LOGIN = klabuser 
+SIM_LOGIN = klabuser
 
 # PEBCAK documentation for the Wizard and CLI
 SIM_LOGIN_DOC = $LOGIN_DOC
 SIM_SSH_KEY_NAME_DOC = $SSH_KEY_NAME_DOC
 SIM_INITIAL_VMCS_DOC = $INITIAL_VMCS_DOC 
-SIM_INITIAL_VMCS_DEFAULT = test_host1,test_host2
+SIM_INITIAL_VMCS_DEFAULT = simzone_a:sut,simzone_b:sut,simzone_c:sut,simzone_d:lg
 
 [SPACE : SIM_CLOUDCONFIG ]
 SSH_KEY_NAME = $SIM_SSH_KEY_NAME
+
+[MON_DEFAULTS : SIM_CLOUDCONFIG ]
+COLLECT_FROM_HOST = $False # simulated, nothing to monitor 
+COLLECT_FROM_GUEST = $False # simulated, nothing to monitor
 
 [VMC_DEFAULTS : SIM_CLOUDCONFIG]
 INITIAL_VMCS = $SIM_INITIAL_VMCS

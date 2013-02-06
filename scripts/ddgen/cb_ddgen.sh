@@ -18,13 +18,14 @@
 
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
-LOAD_LEVEL=$1
-LOAD_DURATION=$2
-LOAD_ID=$3
+LOAD_PROFILE=$1
+LOAD_LEVEL=$2
+LOAD_DURATION=$3
+LOAD_ID=$4
 
-if [[ -z "$LOAD_LEVEL" || -z "$LOAD_DURATION" || -z "$LOAD_ID" ]]
+if [[ -z "$LOAD_PROFILE" || -z "$LOAD_LEVEL" || -z "$LOAD_DURATION" || -z "$LOAD_ID" ]]
 then
-	syslog_netcat "Usage: cb_ddgen.sh <load level> <load duration> <load_id>"
+	syslog_netcat "Usage: cb_ddgen.sh <load_profile> <load level> <load duration> <load_id>"
 	exit 1
 fi
 
@@ -36,7 +37,7 @@ RUN_COUNTER_NAME=`get_my_ai_attribute_with_default run_counter_name none`
 
 CMDLINE="sudo dd if=${DATA_SOURCE} of=${DATA_DESTINATION}/testfile.bin oflag=direct bs=${BLOCK_SIZE} count=${LOAD_LEVEL}"
 
-syslog_netcat "Benchmarking ddgen SUT: HPCVM=${my_ip_addr} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID})"
+syslog_netcat "Benchmarking ddgen SUT: HPCVM=${my_ip_addr} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
 
 OUTPUT_FILE=`mktemp`
 source ~/cb_barrier.sh start
@@ -69,7 +70,7 @@ else
 	bw=`cat ${OUTPUT_FILE} | grep copied | awk '{ print $8 }'`
 	unbw=`cat ${OUTPUT_FILE} | grep copied | awk '{ print $9 }'`
 	
-	report_app_metrics load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_duration:${LOAD_DURATION}:sec bandwidth:${bw}:${unbw}
+	report_app_metrics load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec bandwidth:${bw}:${unbw}
 	
 	rm ${OUTPUT_FILE}
 fi

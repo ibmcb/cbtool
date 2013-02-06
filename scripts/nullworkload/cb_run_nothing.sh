@@ -18,19 +18,20 @@
 
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
-LOAD_LEVEL=$1
-LOAD_DURATION=$2
-LOAD_ID=$3
+LOAD_PROFILE=$1
+LOAD_LEVEL=$2
+LOAD_DURATION=$3
+LOAD_ID=$4
 
-if [[ -z "$LOAD_LEVEL" || -z "$LOAD_DURATION" || -z "$LOAD_ID" ]]
+if [[ -z "$LOAD_PROFILE" || -z "$LOAD_LEVEL" || -z "$LOAD_DURATION" || -z "$LOAD_ID" ]]
 then
-	syslog_netcat "Usage: cb_run_nothing.sh <load level> <load duration> <load_id>"
+	syslog_netcat "Usage: cb_run_nothing.sh <load_profile> <load level> <load duration> <load_id>"
 	exit 1
 fi
 
 CMDLINE="sleep ${LOAD_DURATION}"
 
-syslog_netcat "Benchmarking nullworkload SUT: TINYVM=${my_ip_addr} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID})"
+syslog_netcat "Benchmarking nullworkload SUT: TINYVM=${my_ip_addr} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
 
 OUTPUT_FILE=`mktemp`
 
@@ -64,7 +65,10 @@ bw=`echo "$LOAD_ID*3.14 + 3.14" | bc`
 tp=`echo "$LOAD_ID*2.78 + 2.78" | bc`
 lat=`echo "$LOAD_ID*0.577 + 0.577" | bc`
 
-report_app_metrics load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_duration:${LOAD_DURATION}:sec bandwidth:${bw}:mbps throughput:${tp}:tps latency:${lat}:msec
+# Uncomment to test the python version of the same function
+~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum load_profile:${LOAD_PROFILE}:name load_level:${LOAD_LEVEL}:load load_duration:${LOAD_DURATION}:sec bandwidth:${bw}:mbps throughput:${tp}:tps latency:${lat}:msec
+
+#report_app_metrics load_id:${LOAD_ID}:seqnum load_profile:${LOAD_PROFILE}:name load_level:${LOAD_LEVEL}:load load_duration:${LOAD_DURATION}:sec bandwidth:${bw}:mbps throughput:${tp}:tps latency:${lat}:msec
 
 rm ${OUTPUT_FILE}
 

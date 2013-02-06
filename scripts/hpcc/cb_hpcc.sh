@@ -18,12 +18,14 @@
 
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
-LOAD_LEVEL=$1
-LOAD_DURATION=$2
-LOAD_ID=$3
-if [[ -z "$LOAD_LEVEL" || -z "$LOAD_DURATION" || -z "$LOAD_ID" ]]
+LOAD_PROFILE=$1
+LOAD_LEVEL=$2
+LOAD_DURATION=$3
+LOAD_ID=$4
+
+if [[ -z "$LOAD_PROFILE" || -z "$LOAD_LEVEL" || -z "$LOAD_DURATION" || -z "$LOAD_ID" ]]
 then
-	syslog_netcat "Usage: cb_hpcc.sh <load level> <load duration> <load_id>"
+	syslog_netcat "Usage: cb_hpcc.sh <load profile> <load level> <load duration> <load_id>"
 	exit 1
 fi
 
@@ -31,7 +33,7 @@ FEN_HPC_IP=`get_ips_from_role fen_hpc`
 CN_HPC_IPS=`get_ips_from_role cn_hpc`
 CN_HPC_IPS_CSV=`echo ${CN_HPC_IPS} | sed ':a;N;$!ba;s/\n/, /g'`
 
-syslog_netcat "Benchmarking HPCC SUT: FEN_HPC=${FEN_HPC_IP} -> CEN_HPC=${CN_HPC_IPS_CSV} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID})"
+syslog_netcat "Benchmarking HPCC SUT: FEN_HPC=${FEN_HPC_IP} -> CEN_HPC=${CN_HPC_IPS_CSV} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
 
 cluster_hosts_file=~/cluster.hosts
 bench_app_dir=~/hpc_files/hpcc-1.4.1
@@ -107,7 +109,7 @@ tp7=`cat $outfile | grep -a RandomlyOrderedRingBandwidth_GBytes | cut -d "=" -f 
 lat=`cat $outfile | grep -a RandomlyOrderedRingLatency_usec | cut -d "=" -f 2`
 lat=`echo "scale=8;  ${lat} / 1000" | bc`
 
-report_app_metrics load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_duration:${LOAD_DURATION}:sec throughput_G_HPL:$tp1:Tflops throughput_G_PTRANS:$tp2:GBps throughput_G_RandomAccess:$tp3:Gupps throughput_G_FFTE:$tp4:Gflops throughput_EP_STREAM_Triad:$tp5:GBps throughput_EP_DGEMM:$tp6:Gflops throughput_RandomRing:$tp7:GBps lat_RandomRing:$lat:usec
+report_app_metrics load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec throughput_G_HPL:$tp1:Tflops throughput_G_PTRANS:$tp2:GBps throughput_G_RandomAccess:$tp3:Gupps throughput_G_FFTE:$tp4:Gflops throughput_EP_STREAM_Triad:$tp5:GBps throughput_EP_DGEMM:$tp6:Gflops throughput_RandomRing:$tp7:GBps lat_RandomRing:$lat:usec
 
 rm $outfile
 

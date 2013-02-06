@@ -87,10 +87,15 @@ def main() :
         _msg = "Executing \"" + ("hard" if options.hard_reset else "soft")
         _msg += "\" reset: (killing all running toolkit processes"
         _msg += " and flushing stores) before starting the experiment......"
-        print _msg,
+        print _msg
         
         _status, _msg = reset(_cmd_processor.cld_attr_lst, soft = False if options.hard_reset else True)
-        print _msg
+        if not _status :
+            _msg = "\"" + ("Hard" if options.hard_reset else "Soft")
+            _msg += "\" reset executed successfully."
+        else : 
+            print "Error:" + _msg
+            exit()
 
     _cmd_processor.start_api_and_gui()
 

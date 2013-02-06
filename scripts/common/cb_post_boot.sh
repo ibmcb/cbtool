@@ -36,7 +36,7 @@ load_manager_vm_uuid=`get_my_ai_attribute load_manager_vm`
 
 if [[ x"${my_vm_uuid}" == x"${load_manager_vm_uuid}" || x"${my_type}" == x"none" ]]
 then
-	start_syslog ${osportnumber}
+	start_syslog `get_global_sub_attribute logstore port`
 	syslog_netcat "Local (AI) Log store started"
 	start_redis ${osportnumber}
 	syslog_netcat "Local (AI) Object store started"
@@ -54,4 +54,5 @@ else
 	put_my_vm_attribute post_boot_executed true
 fi
 syslog_netcat "Ended generic VM post_boot configuration - OK"
+exit 0
 exit 0

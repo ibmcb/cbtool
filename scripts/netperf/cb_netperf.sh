@@ -18,13 +18,14 @@
 
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
-LOAD_LEVEL=$1
-LOAD_DURATION=$2
-LOAD_ID=$3
+LOAD_PROFILE=$1
+LOAD_LEVEL=$2
+LOAD_DURATION=$3
+LOAD_ID=$4
 
-if [[ -z "$LOAD_LEVEL" || -z "$LOAD_DURATION" || -z "$LOAD_ID" ]]
+if [[ -z "$LOAD_PROFILE" || -z "$LOAD_LEVEL" || -z "$LOAD_DURATION" || -z "$LOAD_ID" ]]
 then
-	syslog_netcat "Usage: cb_netperf.sh <load level> <load duration> <load_id>"
+	syslog_netcat "Usage: cb_netperf.sh <load profile> <load level> <load duration> <load_id>"
 	exit 1
 fi
 
@@ -33,28 +34,27 @@ LOAD_GENERATOR_TARGET_IP=`get_my_ai_attribute load_generator_target_ip`
 
 netperf=`which netperf`
 
+LOAD_PROFILE=`echo ${LOAD_PROFILE} | tr '[:upper:]' '[:lower:]'`
+
 declare -A CMDLINE_START
 
-CMDLINE_START[1]="-t TCP_STREAM"
-CMDLINE_START[2]="-t TCP_MAERTS"
-CMDLINE_START[3]="-t UDP_STREAM"
-CMDLINE_START[4]="-t TCP_RR"
-CMDLINE_START[5]="-t TCP_CC"
-CMDLINE_START[6]="-t TCP_CRR"
-CMDLINE_START[7]="-t UDP_RR"
+CMDLINE_START["tcp_stream"]="-t TCP_STREAM"
+CMDLINE_START["tcp_maerts"]="-t TCP_MAERTS"
+CMDLINE_START["udp_stream"]="-t UDP_STREAM"
+CMDLINE_START["tcp_rr"]="-t TCP_RR"
+CMDLINE_START["tcp_cc"]="-t TCP_CC"
+CMDLINE_START["tcp_crr"]="-t TCP_CRR"
+CMDLINE_START["udp_rr"]="-t UDP_RR"
 
 CMDLINE_END="-D 10 -H ${LOAD_GENERATOR_TARGET_IP} -l ${LOAD_DURATION}"
 
-ARRAY_SIZE=${#CMDLINE_START[*]}
-if [ ${LOAD_LEVEL} -gt $ARRAY_SIZE ]; then
-	CMDLINE="$netperf ${CMDLINE_START[${ARRAY_SIZE}]} $CMDLINE_END"
-elif [ ${LOAD_LEVEL} -lt 1 ]; then
-	CMDLINE="$netperf ${CMDLINE_START[1]} $CMDLINE_END"
-else
-	CMDLINE="$netperf ${CMDLINE_START[${LOAD_LEVEL}]} $CMDLINE_END"
+if [ x"${CMDLINE_START[${LOAD_PROFILE}]}" == x ]; then
+	CMDLINE="$netperf ${CMDLINE_START["tcp_stream"]} $CMDLINE_END"
+else 
+	CMDLINE="$netperf ${CMDLINE_START[${LOAD_PROFILE}]} $CMDLINE_END"
 fi
 
-syslog_netcat "Benchmarking netperf SUT: NET_CLIENT=${LOAD_GENERATOR_IP} -> NET_SERVER=${LOAD_GENERATOR_TARGET_IP} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID})"
+syslog_netcat "Benchmarking netperf SUT: NET_CLIENT=${LOAD_GENERATOR_IP} -> NET_SERVER=${LOAD_GENERATOR_TARGET_IP} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
 
 OUTPUT_FILE=`mktemp`
 
@@ -85,7 +85,7 @@ else
 	tp=`tail -2 ${OUTPUT_FILE} | head -1 | awk '{ print $6 }' | tr -d ' '`
 fi
 
-report_app_metrics load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_duration:${LOAD_DURATION}:sec throughput:$tp:tps bandwidth:$bw:MBps
+report_app_metrics load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec throughput:$tp:tps bandwidth:$bw:MBps
 
 rm ${OUTPUT_FILE}
 

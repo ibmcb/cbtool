@@ -391,8 +391,6 @@ class SimCmds(CommonCloudFunctions) :
 
             obj_attr_list["arrival"] = int(time())
 
-            obj_attr_list["mgt_006_application_start"] = "0"
-
             _status = 0
 
         except CldOpsException, obj :

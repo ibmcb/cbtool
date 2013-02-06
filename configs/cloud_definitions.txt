@@ -71,26 +71,6 @@ TAC_INITIAL_VMCS = klinux1,klinux2
 TAC_SSH_KEY_NAME = path_to_local_private_key_file
 TAC_LOGIN = cbuser
 
-[MON_DEFAULTS : CLOUDOPTION_TESTCLOUD ]
-COLLECT_FROM_HOST = $False # simulated, nothing to monitor 
-COLLECT_FROM_GUEST = $False # simulated, nothing to monitor
-
-[MON_DEFAULTS : CLOUDOPTION_MYOPENSTACK ]
-COLLECT_FROM_HOST = $False # requires ganglia installation on hypervisor
-COLLECT_FROM_GUEST = $True
-
-[MON_DEFAULTS : CLOUDOPTION_MYSMARTCLOUD ]
-COLLECT_FROM_HOST = $False # requires ganglia installation on hypervisor 
-COLLECT_FROM_GUEST = $True
-
-[MON_DEFAULTS : CLOUDOPTION_MYAMAZON ]
-COLLECT_FROM_HOST = $False # impossible for amazon
-COLLECT_FROM_GUEST = $True
-
-[MON_DEFAULTS : CLOUDOPTION_MYTAC ]
-COLLECT_FROM_HOST = $True
-COLLECT_FROM_GUEST = $True
-
 [API_DEFAULTS]
 PORT = 7070
 

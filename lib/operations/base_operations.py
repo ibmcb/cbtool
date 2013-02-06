@@ -1743,6 +1743,7 @@ class BaseObjectOperations :
                     obj_attr_list["parallel_operations"][_vm_counter]["pattern"] = obj_attr_list["pattern"]
                     obj_attr_list["parallel_operations"][_vm_counter]["type"] = obj_attr_list["type"]
                     obj_attr_list["parallel_operations"][_vm_counter]["base_type"] = obj_attr_list["base_type"]
+                    obj_attr_list["parallel_operations"][_vm_counter]["mode"] = obj_attr_list["mode"]
                     obj_attr_list["parallel_operations"][_vm_counter]["parameters"] = obj_attr_list["cloud_name"] + ' ' + _vm_role + ' ' + _pool + ' ' + _meta_tag + ' ' + _size + ' ' + _attach_action + ' ' + _extra_parms 
                     obj_attr_list["parallel_operations"][_vm_counter]["operation"] = "vm-attach"
                     _vm_command_list += obj_attr_list["cloud_name"] + ' ' + _vm_role + ", " + _pool + ", " + _meta_tag + ", " + _size + ", " + _attach_action + ", " + _extra_parms + "; "
@@ -2428,16 +2429,17 @@ class BaseObjectOperations :
                 _vg = ValueGeneration(self.pid)
                 obj_attr_list["current_load_level"] = int(_vg.get_value(obj_attr_list["load_level"], previous_load))                
                 obj_attr_list["current_load_duration"] = int(_vg.get_value(obj_attr_list["load_duration"], previous_duration))
-
+                obj_attr_list["current_load_profile"] = obj_attr_list["load_profile"]
                 obj_attr_list["current_load_id"] = int(previous_load_id) + 1
 
                 _msg = "The selected load level for load id " 
-                _msg += str(obj_attr_list["current_load_id"]) + " was "  
+                _msg += str(obj_attr_list["current_load_id"]) + "(load profile \""
+                _msg += obj_attr_list["current_load_profile"] + "\") was "  
                 _msg += str(obj_attr_list["current_load_level"])
                 _msg += " and it will be applied to the sut for "
                 _msg += str(obj_attr_list["current_load_duration"]) + " seconds."
-                cbdebug(_msg)            
-                
+                cbdebug(_msg)
+
                 _status = 0
 
         except ValueGeneration.ValueGenerationException, obj :

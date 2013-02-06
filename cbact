@@ -146,10 +146,13 @@ def actuator_cli_parsing() :
                 _options.osp += "dbid:" + _line[6:] + ','
             elif _line.count("#OSTO-") :
                 _options.osp += "timout:" + _line[6:] + ','
+            elif _line.count("#OSMO-") :
+                _options.osp += "mode:" + _line[6:] + ','
             elif _line.count("#OSCN-") :
                 _options.cn = _line[6:]
             else :
                 True
+
         _options.osp = _options.osp[:-1]
         _from_file = True
 
@@ -218,7 +221,8 @@ def setup_syslog(operation, facility, verbosity, port, hostname, quiet, logdest)
                                             int(port)), \
                                             facility=_syslog_selector[str(_facility)])
 
-        formatter = Formatter('%(asctime)s %(levelname)s %(module)s %(message)s')
+        formatter = Formatter("[%(asctime)s] [%(levelname)s] %(message)s")
+#        formatter = Formatter('%(asctime)s %(levelname)s %(module)s %(message)s')
         hdlr.setFormatter(formatter)
         logger.addHandler(hdlr)
 
@@ -340,16 +344,12 @@ def main(options) :
 
         _msci = MongodbMgdConn(str2dic(options.msp)) if options.msp else None
 
-        use_log_defaults = False
         
         if options.cn :
             _log_defaults = _osci.get_object(options.cn, "GLOBAL", False, "logstore", False)
             _dir_defaults = _osci.get_object(options.cn, "GLOBAL", False, "space", False)
             _base_dir = _dir_defaults["base_dir"]
-        else :
-            use_log_defaults = True
-            
-        if use_log_defaults :
+        else :  
             _log_defaults = {
 			     "hostname" : options.syslogh,
 			     "port" : options.syslogp,

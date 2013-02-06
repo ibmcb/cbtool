@@ -23,17 +23,30 @@
     @author: Michael R. Hines, Marcio A. Silva
 
 """
+from logging import getLogger, StreamHandler, Formatter, Filter, DEBUG, ERROR, \
+INFO, WARN, CRITICAL
+from logging.handlers import logging, SysLogHandler, RotatingFileHandler
+from time import time, sleep, strftime
+from sys import path, argv, stdout
+from subprocess import Popen, PIPE, STDOUT
+from hashlib import sha1
+from base64 import b64encode
 
-from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
-from time import time, sleep
-from os import getuid, environ
+import os
+import fnmatch
 import socket
-import sys
-from sys import path
-import et.ElementTree as ET
 import re
 import urllib
-from subprocess import Popen, PIPE, STDOUT
+
+#for _path, _dirs, _files in os.walk(os.path.abspath(path[0])):
+#    for _filename in fnmatch.filter(_files, "code_instrumentation.py") :
+#        path.append(_path.replace("/lib/auxiliary",''))
+#        break
+
+import scripts.common.et.ElementTree as ET
+
+from lib.auxiliary.code_instrumentation import VerbosityFilter, MsgFilter
+from lib.auxiliary.code_instrumentation import cbdebug, cberr, cbwarn, cbinfo, cbcrit
 
 class NetworkException(Exception) :
     '''
@@ -43,7 +56,7 @@ class NetworkException(Exception) :
         Exception.__init__(self)
         self.msg = msg
         self.status = status
-        
+
 class Nethashget :
     '''
     TBD
@@ -96,7 +109,7 @@ class Nethashget :
             self.socket.settimeout(5)
             self.socket.connect((self.hostname, self.port if port is None else port))
             return True
-        
+
         except socket.error, msg :
             _msg = "Unable to connect to " + protocol + " port " + str(port)
             _msg += " on host " + self.hostname + ": " + str(msg)
@@ -109,14 +122,14 @@ def nmap(port) :
     '''
     TBD
     '''
-    if len(sys.argv) < 3 :
+    if len(argv) < 3 :
         print ("Need ip address and collection frequency")
         exit(1)
-        
-    app = Nethashget(sys.argv[2])
 
-    _msg = "Application on " + sys.argv[2] + ":" + str(port) + " is not available"
-    
+    app = Nethashget(argv[2])
+
+    _msg = "Application on " + argv[2] + ":" + str(port) + " is not available"
+
     try : 
         if app.nmap(port) is False :
             print(_msg)
@@ -124,55 +137,47 @@ def nmap(port) :
     except NetworkException, msg :
         print(_msg)
         exit(1)
-    return sys.argv[1], sys.argv[2]
+    return argv[1], argv[2]
 
-def get_os_conn() :
+def get_my_ip() :
+    '''
+    TBD
+    ''' 
+    
+    _cmd = "ip -o addr show $(ip route | grep default"
+    _cmd += " | grep -oE \"dev [a-z]+[0-9]+\" | sed \"s/dev //g\") "
+    _cmd += "| grep -Eo \"[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*\" | grep -v 255"
+
+    proc_h = Popen(_cmd, shell=True, stdout=PIPE, stderr=PIPE)
+    (_output_stdout, _output_stderr) = proc_h.communicate()
+    
+    if proc_h.returncode > 0 :
+        return _output_stderr 
+    else :
+        return _output_stdout.strip()
+    
+def get_uuid_from_ip(ipaddr) :
     '''
     TBD
     '''
+    
     try :
         _fmsg = ""
-        _home = environ["HOME"]        
-        _from_file = False
-        _fn = _home + "/cb_os_parameters.txt"
+
+        _uuid = None
+
+        _fn = "/etc/hosts"
         _fh = open(_fn, "r")
         _fc = _fh.readlines()
         _fh.close()
 
-        os_params = {}
         for _line in _fc :
             _line = _line.strip()
-            if _line.count("#OSKN-") :
-                os_params["kind"] = _line[6:]
-            elif _line.count("#OSHN-") :
-                os_params["hostname"] = _line[6:]
-            elif _line.count("#OSPN-") :
-                os_params["port"] = _line[6:]
-            elif _line.count("#OSDN-") :
-                os_params["database"] = _line[6:]
-            elif _line.count("#OSTO-") :
-                os_params["timeout"] = _line[6:]
-            elif _line.count("#OSCN-") :
-                os_params["cloud_name"] = _line[6:]
-            elif _line.count("#OSOI-") :
-                os_params["instance"] = _line[6:]
+            if _line.count(ipaddr) and not _line.count("just_for_lost") :
+                _line = _line.split(",")
+                _uuid = _line[-1]
             else :
                 True
-
-        if "instance" in os_params :
-            os_params["processid"] = os_params["instance"].split(':')[0]
-
-        _os_adapter = __import__("stores." + os_params["kind"] + "_datastore_adapter", \
-                                 fromlist=[os_params["kind"].capitalize() + "MgdConn"])
-
-        _os_conn_class = getattr(_os_adapter, os_params["kind"].capitalize() + "MgdConn")
-        
-        _osci = _os_conn_class(os_params["processid"], \
-                               os_params["hostname"], \
-                               int(os_params["port"]), \
-                               int(os_params["database"]), \
-                               float(os_params["timeout"]), \
-                               os_params["instance"])
         
         _status = 0
 
@@ -183,8 +188,314 @@ def get_os_conn() :
     except OSError, msg :
         _status = 20
         _fmsg = str(msg) 
+    
+    except Exception, e :
+        _status = 23
+        _fmsg = str(e)
+    
+    finally :
+        if _status :
+            _msg = "Failure while getting uuid from IP: " + _fmsg
+            print _msg
+            exit(2)
+        else :
+            return _uuid
 
+def get_stores_parms () :
+    '''
+    TBD
+    '''
+    try :
+        _fmsg = ""
+        _home = os.environ["HOME"]        
+        _from_file = False
+        _fn = _home + "/cb_os_parameters.txt"
+        _fh = open(_fn, "r")
+        _fc = _fh.readlines()
+        _fh.close()
+
+        _oscp = {}
+        for _line in _fc :
+            _line = _line.strip()
+            if _line.count("#OSKN-") :
+                _oscp["kind"] = _line[6:]
+            elif _line.count("#OSHN-") :
+                _oscp["host"] = _line[6:]
+            elif _line.count("#OSPN-") :
+                _oscp["port"] = _line[6:]
+            elif _line.count("#OSDN-") :
+                _oscp["dbid"] = _line[6:]
+            elif _line.count("#OSTO-") :
+                _oscp["timout"] = _line[6:]
+            elif _line.count("#OSCN-") :
+                _oscp["cloud_name"] = _line[6:]
+            elif _line.count("#OSMO-") :
+                _oscp["mode"] = _line[6:]
+            elif _line.count("#OSOI-") :
+                _oscp["experiment_inst"] = _line[6:].replace(':' + _oscp["cloud_name"],'')
+                _oscp["pid"] = _oscp["experiment_inst"]
+            else :
+                True
+
+        _oscp["protocol"] = "TCP"
+        _oscp["redis_conn"] = False
+
+        _home = os.environ["HOME"]        
+        _fn = _home + "/cb_os_cache.txt"
+        _fh = open(_fn, "r")
+        _fc = _fh.readlines()
+        _fh.close()
+
+        _mscp = {}
+        for _line in _fc :
+            _line = _line.strip()
+            if _line.count("metricstore") :
+                _line = _line.split("metricstore")
+                _line = _line[1].split()
+                _mscp[_line[0]] = _line[1]
+            elif _line.count("time experiment_id") :
+                _line = _line.split("experiment_id")
+                _mscp["experiment_id"] = _line[1].strip()
+            else :
+                True
+
+        _mscp["mongodb_conn"] = False
+
+        _lscp = {}
+        _lscp["hostname"] = None
+        _lscp["port"] = None
+
+        for _line in _fc :
+            _line = _line.strip()
+            if _line.count("logstore") :
+                _line = _line.split("logstore")
+                _line = _line[1].split()
+                _lscp[_line[0]] = _line[1]
+            elif _line.count("metric_aggregator_ip") :
+                _line = _line.split("metric_aggregator_ip")
+                _lscp["metric_aggregator_ip"] = _line[1]
+            else :
+                True
+
+        if _oscp["mode"] == "scalable" :
+            _lscp["hostname"] = _lscp["metric_aggregator_ip"]
+
+        _status = 0
+
+    except IOError, msg :
+        _status = 10
+        _fmsg = str(msg) 
+    
+    except OSError, msg :
+        _status = 20
+        _fmsg = str(msg) 
+
+    finally :
+        if _status :
+            _msg = "Failure while getting Object Store parameters: " + _fmsg
+            print _msg
+            exit(2)
+        else :
+            _msg = "Object Store parameters obtained successfully."
+            return _oscp, _mscp, _lscp
+
+def setup_syslog(verbosity, quiet = False, logdest = "syslog") :
+    '''
+    TBD
+    '''
+    try :
+
+        _fmsg = ""
+        _status = 100
         
+        _oscp, _mscp, _lscp = get_stores_parms()
+        
+        # HACK ALERT - A very crude "syslog facility selector"
+        _syslog_selector = {}
+        _syslog_selector["16"] = SysLogHandler.LOG_LOCAL0
+        _syslog_selector["17"] = SysLogHandler.LOG_LOCAL1
+        _syslog_selector["18"] = SysLogHandler.LOG_LOCAL2
+        _syslog_selector["19"] = SysLogHandler.LOG_LOCAL3
+        _syslog_selector["20"] = SysLogHandler.LOG_LOCAL4
+        _syslog_selector["21"] = SysLogHandler.LOG_LOCAL5
+        _syslog_selector["22"] = SysLogHandler.LOG_LOCAL6
+        _syslog_selector["23"] = SysLogHandler.LOG_LOCAL7
+  
+        _verbosity = int(verbosity)
+
+        logger = getLogger()
+
+        # Reset the logging handlers
+        while len(logger.handlers) != 0 :
+            logger.removeHandler(logger.handlers[0])
+
+        if logdest == "console" or (not _lscp["hostname"] or not _lscp["port"]) :
+            hdlr = StreamHandler(stdout)
+        else :
+            _facility = int(21)
+
+            if _facility > 23 or _facility < 16 :
+                _facility = 23
+
+            hdlr = SysLogHandler(address = (_lscp["hostname"], \
+                                            int(_lscp["port"])), \
+                                            facility=_syslog_selector[str(_facility)])
+
+        formatter = Formatter("[%(asctime)s] [%(levelname)s] %(message)s")
+        hdlr.setFormatter(formatter)
+        logger.addHandler(hdlr)
+
+        if _verbosity :
+            if int(_verbosity) >= 6 :
+                logger.setLevel(DEBUG)
+            elif int(_verbosity) >= 5 :
+                # Used to filter out all function calls from all modules in the
+                # "stores" subdirectory.
+                hdlr.addFilter(VerbosityFilter("stores"))
+                hdlr.addFilter(VerbosityFilter("datastore"))
+                logger.setLevel(DEBUG)
+            elif int(_verbosity) >= 4 :
+                # Used to filter out all function calls from the "auxiliary"
+                # subdirectory.
+                hdlr.addFilter(VerbosityFilter("auxiliary"))
+                # Used to filter out all function calls from all modules in the
+                # "stores" subdirectory.
+                hdlr.addFilter(VerbosityFilter("stores"))
+                hdlr.addFilter(VerbosityFilter("datastore"))
+                logger.setLevel(DEBUG)
+            elif int(_verbosity) >= 3 :
+                # Filter out gmetad logging statements
+                hdlr.addFilter(VerbosityFilter("gmetad"))
+                # Used to filter out all function calls from the "auxiliary"
+                # subdirectory.
+                hdlr.addFilter(VerbosityFilter("auxiliary"))
+                # Used to filter out all function calls from the "remote"
+                # subdirectory.
+                hdlr.addFilter(VerbosityFilter("remote"))
+                # Used to filter out all function calls from all modules in the
+                # "stores" subdirectory.
+                hdlr.addFilter(VerbosityFilter("stores"))
+                hdlr.addFilter(VerbosityFilter("datastore"))
+                hdlr.addFilter(MsgFilter("Exit point"))
+                hdlr.addFilter(MsgFilter("Entry point"))
+                logger.setLevel(DEBUG)
+            elif int(_verbosity) >= 2 :
+                # Filter out gmetad logging statements
+                hdlr.addFilter(VerbosityFilter("gmetad"))
+                # Used to filter out all function calls from the "auxiliary"
+                # subdirectory.
+                hdlr.addFilter(VerbosityFilter("auxiliary"))
+                # Used to filter out all function calls from all modules in the
+                # "collectors" subdirectory.
+                hdlr.addFilter(VerbosityFilter("collectors"))
+                # Used to filter out all function calls from the "remote"
+                # subdirectory.
+                hdlr.addFilter(VerbosityFilter("remote"))
+                # Used to filter out all function calls from all modules in the
+                # "stores" subdirectory.
+                hdlr.addFilter(VerbosityFilter("stores"))
+                hdlr.addFilter(VerbosityFilter("datastore"))
+                logger.setLevel(DEBUG)
+            elif int(_verbosity) == 1 :
+                # Filter out gmetad logging statements
+                hdlr.addFilter(VerbosityFilter("gmetad"))
+                # Used to filter out all function calls from the "auxiliary"
+                # subdirectory.
+                hdlr.addFilter(VerbosityFilter("auxiliary"))
+                # Used to filter out all function calls from all modules in the
+                # "stores" subdirectory.
+                hdlr.addFilter(VerbosityFilter("stores"))
+                hdlr.addFilter(VerbosityFilter("datastore"))
+                # Used to filter out all function calls from all modules in the
+                # "collectors" subdirectory.
+                hdlr.addFilter(VerbosityFilter("collectors"))
+                # Used to filter out all function calls from the "remote"
+                # subdirectory.
+                hdlr.addFilter(VerbosityFilter("remote"))
+                # Used to filter out all function calls from all modules in the
+                # "stores" subdirectory.
+                hdlr.addFilter(VerbosityFilter("clouds"))
+                logger.setLevel(DEBUG)
+        else :
+            logger.setLevel(INFO)
+
+        if quiet :
+            logger.setLevel(ERROR)
+
+        _status = 0
+
+    except Exception, e :
+        _status = 23
+        _fmsg = str(e)
+
+    finally :
+        if _status :
+            _msg = "Failure while setting up syslog channel: " + _fmsg
+            print _msg
+            exit(2)
+        else :
+            _msg = "Syslog channel set up successfully."
+            return True
+
+def get_ms_conn(mscp = None, cn = None) :
+    '''
+    TBD
+    '''
+    try :
+
+        _oscp, _mscp, _lscp = get_stores_parms()
+
+        _ms_adapter = __import__("lib.stores." + _mscp["kind"] + "_datastore_adapter", \
+                                 fromlist=[_mscp["kind"].capitalize() + "MgdConn"])
+
+        _ms_conn_class = getattr(_ms_adapter, _mscp["kind"].capitalize() + "MgdConn")
+        
+        _msci = _ms_conn_class(_mscp)
+        
+        _status = 0
+
+    except ImportError, msg :
+        _status = 20
+        _fmsg = str(msg)
+
+    except AttributeError, msg :
+        _status = 20
+        _fmsg = str(msg)
+    
+    except Exception, e :
+        _status = 23
+        _fmsg = str(e)
+    
+    finally :
+        if _status :
+            _msg = "Failure while setting up metric store adapter: " + _fmsg
+            print _msg
+            exit(2)
+        else :
+            _msg = "Metric store adapter set up successfully."
+            return _msci, _mscp["experiment_id"], _mscp["username"]
+
+def get_os_conn(oscp = None) :
+    '''
+    TBD
+    '''
+    try :
+        _fmsg = ""
+
+        if not oscp :
+            _oscp, _mscp, _lscp = get_stores_parms()
+        else :
+            _oscp = oscp
+
+        _os_adapter = __import__("lib.stores." + _oscp["kind"] + "_datastore_adapter", \
+                                 fromlist=[_oscp["kind"].capitalize() + "MgdConn"])
+
+        _os_conn_class = getattr(_os_adapter, _oscp["kind"].capitalize() + "MgdConn")
+        
+        _osci = _os_conn_class(_oscp)
+        
+        _status = 0
+
     except ImportError, msg :
         _status = 20
         _fmsg = str(msg)
@@ -204,16 +515,70 @@ def get_os_conn() :
             exit(2)
         else :
             _msg = "Object store adapter set up successfully."
-            return _os_conn_class
+            return _osci
             
-def verify_and_send(role, rate, latency) :
-    #if rate + latency <= 0 :
-    #    exit(1)
+def report_app_metrics(vmuuid, metriclist) :
 
-    script = "~/cb_report_metric.sh "
-    Popen(script + " latency " + str(latency) + " int32 millisec 0 " + role, shell=True)
-    Popen(script + " throughput " + str(rate) + " int32 tps 0 " + role, shell=True)
-    sleep(1)
+    _msci, _expid, _username = get_ms_conn()
+    setup_syslog(1)
+    
+    try :
+
+        _metrics_dict = {}
+        _reported_metrics_dict = {}
+    
+        for _metric in metriclist.split() :
+            _metric = _metric.split(':')
+            _metrics_dict["app_"  + _metric[0]] = {}
+            _metrics_dict["app_"  + _metric[0]]["val"] = _metric[1] if len(_metric[1]) else "-3"
+            _metrics_dict["app_"  + _metric[0]]["units"] = _metric[2]
+    
+        _metrics_dict["time"] = int(time())
+        _metrics_dict["time_h"] = strftime("%a %b %d %X %Z %Y")
+        _metrics_dict["expid"] = _expid
+        _metrics_dict["uuid"] = vmuuid
+
+        if "app_load_id" in _metrics_dict and _metrics_dict["app_load_id"]["val"] == "1" :
+            for _key in _metrics_dict.keys() :
+                if not _key.count("time") and not _key.count("uuid") and not _key.count("time_h") :
+                    _reported_metrics_dict[_key] = "1"
+            _reported_metrics_dict["expid"] = _expid
+            _reported_metrics_dict["_id"] = b64encode(sha1(_expid).digest())
+
+        _msci.add_document("runtime_app_VM_" + _username, _metrics_dict)
+        _msg = "Application Metrics reported successfully. Data package sent was: \"" 
+        _msg += str(_metrics_dict) + "\""
+        cbdebug(_msg)
+    
+        _metrics_dict["_id"] = _metrics_dict["uuid"]
+        _msci.update_document("latest_runtime_app_VM_" + _username, _metrics_dict)
+        _msg = "Latest app performance data updated successfully"
+        cbdebug(_msg)
+
+        if len(_reported_metrics_dict) :
+            _msci.add_document("reported_runtime_app_VM_metric_names_" + _username, _reported_metrics_dict)
+            _msg = "Reported runtime application metric names collection "
+            _msg += "updated successfully. Data package sent was: \""
+            _msg += str(_reported_metrics_dict) + "\""
+            cbdebug(_msg)
+        
+        _status = 0
+        
+    except _msci.MetricStoreMgdConnException, obj :
+        _status = obj.status
+        _fmsg = str(obj.msg)
+
+    except Exception, e :
+        _status = 23
+        _fmsg = str(e)
+
+    finally :
+        if _status :
+            _msg = "Application performance metrics record failure: " + _fmsg
+            cberr(_msg)
+            return False
+        else :
+            return True
 
 def wget(url) :
     '''
@@ -274,7 +639,7 @@ def collect_db(role, dbtype, port, auth, query) :
         secs = time2 - time1
         rate = int(count / secs)
         latency = 0
-    verify_and_send(role, rate, latency)
+    report_app_metrics(role, rate, latency)
 
 def collect_apache(role, grep) :
     '''
@@ -302,7 +667,7 @@ def collect_apache(role, grep) :
             continue
         
     urllib.urlopen("http://" + ip + "/tm?reset").read()
-    verify_and_send(role, rate, latency)
+    report_app_metrics(role, rate, latency)
 
 def et_find(path, tree) :
     '''
@@ -348,4 +713,4 @@ def collect_was(role, port, ejb_name) :
             latency = total / count
             rate = count / 5 
 
-    verify_and_send(role, rate, latency)
+    report_app_metrics(role, rate, latency)

@@ -213,7 +213,7 @@ def repeated_ssh(processid, types, tags, ips, logins, passwds, keys, commands, \
             _success, _stack_results = ssh_cnt.transfer()
         else :
             _success, _stack_results = ssh_cnt.execute()
-        
+
         _all_stack_results = ''
         if _success :
             for _output in _stack_results :

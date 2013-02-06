@@ -753,7 +753,7 @@ def check_pypureomapi(hostname, username, trd_party_dir) :
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
         
-        _msg = "Checking OMAPI python bindings (boto) version....."
+        _msg = "Checking OMAPI python bindings version....."
         import pypureomapi
         
         _version = str(pypureomapi.__version__).strip()
@@ -812,6 +812,73 @@ def check_netcat(hostname, username, trd_party_dir) :
             _msg += " or simply \"nc\".\n"
         return _status, _msg
 
+def check_libcloud_python_bindings(hostname, username, trd_party_dir) :
+    '''
+    TBD
+    '''
+    try:
+        _status = 100
+        _fmsg = "An error has occurred, but no error message was captured"
+        
+        _msg = "Checking libcloud python bindings version....."
+        import libcloud
+        
+        _version = str(libcloud.__version__).replace("-dev",'').strip()
+        del libcloud
+        _msg += compare_versions('0.11.0', _version)
+        _status = 0
+        
+    except ImportError, e:
+        _status = 7282
+#        _msg += str(e)
+
+    except Exception, e :
+        _status = 23
+#        _msg += str(e)
+
+    finally :
+        if _status or _msg.count("NOT OK"):
+            _msg += " Please install LibCloud python bindings with: cd "
+            _msg += trd_party_dir + "; git clone https://github.com/apache/libcloud.git;"
+            _msg += "cd libcloud; sudo python setup.py install\n"           
+        return _status, _msg
+
+def check_R_version(hostname, username, trd_party_dir) :
+    '''
+    TBD
+    '''
+    try:
+        _status = 100
+        _fmsg = "An error has occurred, but no error message was captured"
+        
+        _proc_man =  ProcessManagement()
+        _msg = "Checking R version....."
+        _status, _result_stdout, _result_stderr = _proc_man.run_os_command("R --version | grep version | grep -v GNU")
+
+        if not _status and _result_stdout.count("version") :
+            for _word in _result_stdout.split() :
+                if _word.count('.') == 2 :
+                    _version = _word
+                    break
+            _msg += compare_versions('2.1', _version)
+            _status = 0
+        else :
+            _status = 1728289
+        
+    except ProcessManagement.ProcessManagementException, obj :
+        _status = str(obj.status)
+#        _msg = str(obj.msg)
+
+    except Exception, e :
+        _status = 23
+#        _msg = str(e)
+
+    finally :
+        if _status or _msg.count("NOT OK"):
+            _msg += " Please install R using you package management system (yum or apt-get)."
+            _msg += " The package is usually called \"R\" or \"r-base\"\n"
+        return _status, _msg
+
 def dependency_checker(hostname, username, trd_party_dir) :
     '''
     TBD
@@ -841,6 +908,8 @@ def dependency_checker(hostname, username, trd_party_dir) :
     _func_pointer["ganglia"] = check_gmond_version
     _func_pointer["pypureomapi"] = check_pypureomapi
     _func_pointer["netcat"] = check_netcat
+    _func_pointer["libcloud"] = check_libcloud_python_bindings
+    _func_pointer["R"] = check_R_version
                 
     for _dep in [ "sudo", "git" ]:
         _status, _msg = _func_pointer[_dep](hostname, username, trd_party_dir)

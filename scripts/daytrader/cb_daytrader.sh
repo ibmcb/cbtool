@@ -43,12 +43,13 @@ syslog_netcat "Selected TRADEDB size is $SIZE. The number of quotes will be $NR_
 
 if [ $standalone == online ] ; then
 	# retrieve online values from API
-	LOAD_LEVEL=$1
-	LOAD_DURATION=$2
-	LOAD_ID=$3
-	if [[ -z "$LOAD_LEVEL" || -z "$LOAD_DURATION" || -z "$LOAD_ID" ]]
+    LOAD_PROFILE=$1
+    LOAD_LEVEL=$2
+    LOAD_DURATION=$3
+    LOAD_ID=$4
+    if [[ -z "$LOAD_PROFILE" || -z "$LOAD_LEVEL" || -z "$LOAD_DURATION" || -z "$LOAD_ID" ]]
 	then
-		syslog_netcat "Usage: cb_daytrader.sh <load level> <load duration> <load_id>"
+		syslog_netcat "Usage: cb_daytrader.sh <load_profile> <load level> <load duration> <load_id>"
 		exit 1
 	fi
 	WAS_IPS=`get_ips_from_role was`
@@ -93,7 +94,7 @@ fi
 if [ x"${IS_LOAD_BALANCED}" == x"true" ]
 then
 	LOAD_BALANCER_IP=`get_ips_from_role lb`
-	syslog_netcat "Benchmarking daytrader SUT: LOAD_BALANCER=${LOAD_BALANCER_IP} -> WAS_SERVERS=${WAS_IPS_CSV} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID})"
+	syslog_netcat "Benchmarking daytrader SUT: LOAD_BALANCER=${LOAD_BALANCER_IP} -> WAS_SERVERS=${WAS_IPS_CSV} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
 else
 	syslog_netcat "Benchmarking daytrader SUT: WAS_SERVER=${WAS_IPS} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID})"
 fi
@@ -106,10 +107,10 @@ then
 	syslog_netcat "Periodic measurement of WAS and DB2 vms is enabled"
 	for ip in $WAS_IPS
 	do
-		reset_periodic_monitor was_collect.py 30 $ip
+		reset_periodic_monitor cb_was_collect.py 30 $ip
 	done
 
-	reset_periodic_monitor db2_collect.py 30 $DB2_IP
+	reset_periodic_monitor cb_db2_collect.py 30 $DB2_IP
 else 
 	syslog_netcat "Periodic measurement of WAS and DB2 vms is disabled"
 fi
@@ -148,7 +149,7 @@ if [ $standalone == online ]; then
 	syslog_netcat "iwlengine run complete. Will collect and report the results"
 	tp=`cat ${OUTPUT_FILE} | grep throughput | grep Page | grep -v element | cut -d " " -f 5 | tr -d ' '`
 	lat=`echo "\`cat ${OUTPUT_FILE} | grep response | grep -v all | cut -d " " -f 9 | tr -d ' '\` * 1000" | bc`
-	report_app_metrics load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_duration:${LOAD_DURATION}:sec throughput:$tp:tps latency:$lat:msec
+	report_app_metrics load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec throughput:$tp:tps latency:$lat:msec
 	
 	rm ${OUTPUT_FILE}
 

@@ -55,7 +55,7 @@ else :
 	run_counter=`get_my_ai_attribute run_counter_name`
 	if [ ${counter_value} -lt ${barrier_value} ]; then
 		syslog_netcat "Will wait for the \"go\" message on channel \"${barrier_channel}\""
-		barrier AI ${barrier_channel} go
+		subscribeai ${barrier_channel} go
 	else :
 		if [ x"${operation}" == x"start" ]; then 
 			if [ x"${run_counter}" == x ]; then

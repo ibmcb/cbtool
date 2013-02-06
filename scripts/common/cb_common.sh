@@ -30,7 +30,6 @@ cloudname=`cat ~/cb_os_parameters.txt | grep "#OSCN" | cut -d "-" -f 2`
 oshostname=`cat ~/cb_os_parameters.txt | grep "#OSHN" | cut -d "-" -f 2`
 osportnumber=`cat ~/cb_os_parameters.txt | grep "#OSPN" | cut -d "-" -f 2`
 osdatabasenumber=`cat ~/cb_os_parameters.txt | grep "#OSDN" | cut -d "-" -f 2`
-#osinstance=`cat ~/cb_os_parameters.txt | grep "#OSOI" | cut -d "-" -f 2`
 osinstance=`cat ~/cb_os_parameters.txt | grep "#OSOI" | sed 's/#OSOI-//g'`
 osprocid=`echo ${osinstance} | cut -d ":" -f 1`
 osmode=`cat ~/cb_os_parameters.txt | grep "#OSMO" | cut -d "-" -f 2`
@@ -46,7 +45,7 @@ standalone="online"
 
 PGREP_CMD=`which pgrep`
 PKILL_CMD=`which pkill`
-BARRIER_CMD=~/barrier.py
+SUBSCRIBE_CMD=~/cb_subscribe.py
 RSYSLOGD_CMD=/sbin/rsyslogd
 
 NC=`which nc`
@@ -105,14 +104,18 @@ function retriable_execution {
         ATTEMPT=0
         OUTERR=1
         EXPRESSION=`echo $1 | cut -d ' ' -f 9-15`
-        
+
         if [[ -f ~/cb_os_cache.txt && ${non_cacheable} -eq 0 ]]; then
             OUTPUT=`cat ~/cb_os_cache.txt | grep "${EXPRESSION}" -m 1 | awk '{print $NF}'`
-		else
-			OUTPUT="" 
         fi
 
         if [ x"${OUTPUT}" == x ]; then
+            can_cache=1
+        else
+            can_cache=0
+        fi
+
+        if [[ x"${OUTPUT}" == x || x"${osmode}" != x"scalable" ]]; then
             while [[ (( ${ECODE} -ne 0 || ${OUTERR} -eq 1 )) && ${ATTEMPT} -le ${ATTEMPTS} ]]
             do
                 OUTPUT=`${COMMAND}`
@@ -123,27 +126,27 @@ function retriable_execution {
                 sleep $SLEEP_TIME
                 ATTEMPT=$(( ${ATTEMPT} + 1 ))
             done
-        	if [[ x"${OUTPUT}" != x && ${non_cacheable} -eq 0 ]]; then
-			echo "${EXPRESSION} ${OUTPUT}" >> ~/cb_os_cache.txt
-            fi
         fi
-            echo $OUTPUT
+
+	if [[ x"${OUTPUT}" != x && ${can_cache} -eq 1 && ${non_cacheable} -eq 0 ]]; then
+		echo "${EXPRESSION} ${OUTPUT}" >> ~/cb_os_cache.txt
+        fi
+
+        echo $OUTPUT
 }
 
 function get_time {
-        time=`retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber time"`
+        time=`retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber time" 1`
         echo -n $time | cut -d " " -f 1
 }
 
 function get_vm_uuid_from_ip {
 	uip=$1
-	fqon=`retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber get ${osinstance}:VM:TAG:CLOUD_IP:${uip}"`
+	fqon=`retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber get ${osinstance}:VM:TAG:CLOUD_IP:${uip}" 0`
 	echo $fqon | cut -d ':' -f 4
 }
-if [ "${osmode}" = "integrated" ]
-then
-	my_vm_uuid=`get_vm_uuid_from_ip ${my_ip_addr}`
-fi
+
+my_vm_uuid=`get_vm_uuid_from_ip ${my_ip_addr}`
 
 function get_hash {
 	object_type=$1
@@ -163,22 +166,21 @@ function get_my_vm_attribute {
 	attribute=`echo $1 | tr '[:upper:]' '[:lower:]'`
 	get_hash VM ${my_vm_uuid} ${attribute} 0
 }
-if [ "${osmode}" = "integrated" ]
-then
-	my_role=`get_my_vm_attribute role`
-	my_ai_uuid=`get_my_vm_attribute ai`
-	my_type=`get_my_vm_attribute type`
-	my_base_type=`get_my_vm_attribute base_type`
-	my_cloud_model=`get_my_vm_attribute model`
-fi
+
+my_role=`get_my_vm_attribute role`
+my_ai_uuid=`get_my_vm_attribute ai`
+my_base_type=`get_my_vm_attribute base_type`
+my_cloud_model=`get_my_vm_attribute model`
 
 function get_my_application_type {
 	get_my_vm_attribute type
 }
+my_type=`get_my_application_type type`
 
 function get_login_username {
 	get_my_vm_attribute login 
 }
+my_login_username=`get_login_username`
 
 function put_hash {
 	object_type=$1
@@ -221,11 +223,7 @@ function get_my_ai_attribute_with_default {
 	fi
 }
 
-if [ "${osmode}" = "integrated" ]
-then
-	mode=`get_my_ai_attribute mode`
-	my_username=`get_my_ai_attribute username`
-fi
+my_username=`get_my_ai_attribute username`
 
 function put_my_ai_attribute {
 	attribute_name=`echo $1 | tr '[:upper:]' '[:lower:]'`
@@ -245,13 +243,13 @@ function get_global_sub_attribute {
 	retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber hget ${osinstance}:GLOBAL:${global_attribute} ${global_sub_attribute}" 0
 }
 
-if [ "${osmode}" = "integrated" ]
-then
-	metricstore_hostname=`get_global_sub_attribute metricstore host`
-	metricstore_port=`get_global_sub_attribute metricstore port`
-	metricstore_database=`get_global_sub_attribute metricstore database`
-	my_experiment_id=`get_global_sub_attribute time experiment_id`
-fi
+metricstore_hostname=`get_global_sub_attribute metricstore host`
+metricstore_port=`get_global_sub_attribute metricstore port`
+metricstore_database=`get_global_sub_attribute metricstore database`
+metricstore_kind=`get_global_sub_attribute metricstore kind`
+metricstore_username=`get_global_sub_attribute metricstore username`
+metricstore_timeout=`get_global_sub_attribute metricstore timeout`
+my_experiment_id=`get_global_sub_attribute time experiment_id`
 
 collect_from_guest=`get_global_sub_attribute mon_defaults collect_from_guest`
 collect_from_guest=`echo ${collect_from_guest} | tr '[:upper:]' '[:lower:]'`
@@ -351,7 +349,7 @@ function report_app_metrics {
 		fi
 		write_latest="true"
 		reported_metric_names=$metric_name":\"1\","${reported_metric_names}
-		metric_samples_dictionary=$metric_name":{"\"val\":"$metric_value",\"units\":\"$metric_units\""},"${metric_samples_dictionary}
+		metric_samples_dictionary=$metric_name":{"\"val\":\""$metric_value"\",\"units\":\"$metric_units\""},"${metric_samples_dictionary}
 	done
 
 	app_dictionary=${metric_samples_dictionary}"time:"`date +%s`",time_h:\""`date`"\",uuid:\""${my_vm_uuid}"\",expid:\"${my_experiment_id}\""
@@ -495,26 +493,36 @@ function publishai {
 	publish_msg AI $channel $msg
 	}
 	
-function barrier {
+function subscribemsg {
 	object=`echo $1 | tr '[:lower:]' '[:upper:]'`
 	channel=$2
 	message=$3
-	${BARRIER_CMD} $oshostname $osportnumber $osdatabasenumber ${osinstance}:${object}:${channel} $message
+	${SUBSCRIBE_CMD} ${object} ${channel} $message
 }
 
-if [ "${osmode}" = "integrated" ]
-then
-	log_output_command=`get_my_ai_attribute log_output_command`
-	log_output_command=`echo ${log_output_command} | tr '[:upper:]' '[:lower:]'`
+function subscribevm {
+	channel=$1
+	message=$2
+	${SUBSCRIBE_CMD} VM ${channel} $message
+}
 
-	load_manager_ip=`get_my_ai_attribute load_manager_ip`
-fi
+function subscribeai {
+	channel=$1
+	message=$2
+	${SUBSCRIBE_CMD} AI ${channel} $message
+}
+
+log_output_command=`get_my_ai_attribute log_output_command`
+log_output_command=`echo ${log_output_command} | tr '[:upper:]' '[:lower:]'`
+load_manager_ip=`get_my_ai_attribute load_manager_ip`
 
 if [ x"${NC_HOST_SYSLOG}" == x ]; then
-	if [ x"${mode}" != x"scalable" ]; then
+	if [ x"${osmode}" != x"scalable" ]; then
 		NC_HOST_SYSLOG=`get_global_sub_attribute logstore hostname`
+        NC_OPTIONS="-w1 -u"
 	else 
 		NC_HOST_SYSLOG=`get_my_ai_attribute load_manager_ip`
+        NC_OPTIONS="-w1 -u -q1"
 	fi
 fi
 
@@ -526,7 +534,6 @@ if [ x"${NC_FACILITY_SYSLOG}" == x ]; then
 	NC_FACILITY_SYSLOG="<"`get_global_sub_attribute logstore script_facility`">"
 fi
 
-NC_OPTIONS="-w1 -u"
 NC_CMD=${NC}" "${NC_OPTIONS}" "${NC_HOST_SYSLOG}" "${NC_PORT_SYSLOG}
 
 function syslog_netcat {
@@ -712,14 +719,14 @@ function post_boot_steps {
 			syslog_netcat "Restarting ganglia monitoring processes (gmond) on $SHORT_HOSTNAME"
 			GANGLIA_FILE_LOCATION=~
 			eval GANGLIA_FILE_LOCATION=${GANGLIA_FILE_LOCATION}
-			sudo su root -l -c "pkill -9 -f gmond"
-			sudo su root -l -c "screen -d -m -S gmond bash -c 'while true ; do sleep 10; if [ x\`$PIDOF_CMD gmond\` == x ] ; then gmond -c ${GANGLIA_FILE_LOCATION}/gmond-vms.conf; fi; done'"
+			sudo pkill -9 -f gmond
+            sudo screen -d -m -S gmond bash -c "while true ; do sleep 10; if [ x\`$PIDOF_CMD gmond\` == x ] ; then gmond -c ${GANGLIA_FILE_LOCATION}/gmond-vms.conf; fi; done"
 			result="$(ps aux | grep gmond | grep -v grep)"
 			if [ x"$result" == x ] ; then
 				syslog_netcat "Ganglia monitoring processes (gmond) could not be restarted on $SHORT_HOSTNAME - NOK"
 				exit 2
 			else
-				syslog_netcat "Ganglia monitoring processes (gmond) restarted successfully on $SHORT_HOSTNAME - OK"
+				syslog_netcat "Ganglia monitoring processes (gmond) restarted successfully on $SHORT_HOSTNAME"
 			fi
 
 			if [[ x"${my_vm_uuid}" == x"${metric_aggregator_vm_uuid}" || x"${my_type}" == x"none" ]]
@@ -727,7 +734,7 @@ function post_boot_steps {
 				syslog_netcat "Starting Gmetad"
 				~/cb_create_gmetad_config_file.sh
 				syslog_netcat "Restarting ganglia meta process (gmetad) on $SHORT_HOSTNAME"
-				sudo su root -l -c "pkill -9 -f gmetad"
+				sudo pkill -9 -f gmetad
 
 				$GMETAD_PATH/gmetad.py -c ~/gmetad-vms.conf -d 1
 #				$GMETAD_PATH/gmetad.py -c ~/gmetad-vms.conf --syslogn 127.0.0.1 --syslogp 6379 --syslogf 22 -d 4
@@ -737,7 +744,7 @@ function post_boot_steps {
 					syslog_netcat "Ganglia meta process (gmetad) could not be restarted on $SHORT_HOSTNAME - NOK"
 					exit 2
 				else
-					syslog_netcat "Ganglia meta process (gmetad) restarted successfully on $SHORT_HOSTNAME - OK"
+					syslog_netcat "Ganglia meta process (gmetad) restarted successfully on $SHORT_HOSTNAME"
 				fi
 			fi
 		else
