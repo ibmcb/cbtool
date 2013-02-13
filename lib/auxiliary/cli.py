@@ -102,7 +102,9 @@ class CBCLI(Cmd) :
 
             if self.options.hard_reset :
                 self.cld_attr_lst["time"]["hard_reset"] = True
-                
+            else :
+                self.cld_attr_lst["time"]["hard_reset"] = False
+ 
             self.cld_attr_lst["space"]["tracefile"] = self.options.tracefile
 
             '''
