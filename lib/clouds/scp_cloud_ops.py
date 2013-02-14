@@ -356,6 +356,8 @@ class ScpCmds(CommonCloudFunctions) :
     
             obj_attr_list["hosts"] = obj_attr_list["hosts"][:-1]
 
+            self.additional_host_discovery (obj_attr_list)
+
             return True
 
         except CldOpsException, obj :
@@ -616,6 +618,7 @@ class ScpCmds(CommonCloudFunctions) :
             obj_attr_list["vmc_name"], obj_attr_list["host_name"], _x, _y =  instance["instance_id"].split('.')
             obj_attr_list["cloud_hostname"] = _x + '.' + _y
             obj_attr_list["cloud_ip"] = instance["private_ip"]
+            obj_attr_list["prov_cloud_ip"] = obj_attr_list["cloud_ip"]
             return True
         else :
             return False

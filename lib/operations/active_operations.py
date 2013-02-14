@@ -1858,7 +1858,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _cmd += " -o StrictHostKeyChecking=no"
                     _cmd += " -o UserKnownHostsFile=/dev/null " 
                     _cmd += obj_attr_list["login"] + "@"
-                    _cmd += obj_attr_list["cloud_ip"] + " \"mkdir -p ~/" + obj_attr_list["remote_dir_name"] +  ';'
+                    _cmd += obj_attr_list["prov_cloud_ip"] + " \"mkdir -p ~/" + obj_attr_list["remote_dir_name"] +  ';'
                     _cmd += "echo '#OSKN-redis' > ~/cb_os_parameters.txt;"
                     _cmd += "echo '#OSHN-" + self.osci.host + "' >> ~/cb_os_parameters.txt;"
                     _cmd += "echo '#OSPN-" + str(self.osci.port) + "' >> ~/cb_os_parameters.txt;"
@@ -1871,13 +1871,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _cmd += "rsync -e \"ssh -o StrictHostKeyChecking=no -l " + obj_attr_list["login"] + " -i " 
                     _cmd += obj_attr_list["identity"] + "\" --exclude-from "
                     _cmd += "'" +  obj_attr_list["exclude_list"] + "' -az " + obj_attr_list["base_dir"] + "/* " 
-                    _cmd += obj_attr_list["cloud_ip"] + ":~/" + obj_attr_list["remote_dir_name"] + '/'
+                    _cmd += obj_attr_list["prov_cloud_ip"] + ":~/" + obj_attr_list["remote_dir_name"] + '/'
 
                     _msg = "RSYNC: " + _cmd
                     cbdebug(_msg)
 
                     _msg = "Sending a copy of the code tree to "
-                    _msg += obj_attr_list["name"] + " ("+ obj_attr_list["cloud_ip"] + ")..."
+                    _msg += obj_attr_list["name"] + " ("+ obj_attr_list["prov_cloud_ip"] + ")..."
                     cbdebug(_msg, True)
 
                     _proc_man = ProcessManagement(username = obj_attr_list["username"], \
@@ -1894,7 +1894,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 else :
                     _output_list = []
                     _msg = "Bypassing the sending of a copy of the code tree to "
-                    _msg += obj_attr_list["name"] + " ("+ obj_attr_list["cloud_ip"] + ")..."           
+                    _msg += obj_attr_list["name"] + " ("+ obj_attr_list["prov_cloud_ip"] + ")..."           
                     cbdebug(_msg, True)
                     _status = 0
                     break
@@ -1912,13 +1912,14 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 if "ai" in obj_attr_list and obj_attr_list["ai"] == "none" :
                     if not access(obj_attr_list["identity"], F_OK) :
-                        obj_attr_list["identity"] = obj_attr_list["identity"].replace(obj_attr_list["username"], obj_attr_list["login"])
+                        obj_attr_list["identity"] = obj_attr_list["identity"].replace(obj_attr_list["username"], \
+                                                                                      obj_attr_list["login"])
 
                     if "run_generic_scripts" in obj_attr_list and obj_attr_list["run_generic_scripts"].lower() != "false" :
                         _msg = "Performing generic VM post_boot configuration ..."
                         cbdebug(_msg, True)
                         if not repeated_ssh(self.pid, ["VM"], [obj_attr_list["name"]], \
-                                               [obj_attr_list["cloud_ip"]], \
+                                               [obj_attr_list["prov_cloud_ip"]], \
                                                [obj_attr_list["login"]], [None], \
                                                [obj_attr_list["identity"]], \
                                                ["~/" + obj_attr_list["remote_dir_name"] + "/scripts/common/cb_post_boot.sh"], \
@@ -2075,6 +2076,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"            
 
+            _proc_man = ProcessManagement(username = obj_attr_list["username"], \
+                                          cloud_name = obj_attr_list["cloud_name"])
+
+            # First, a Vapp Submmiter is instantiated
             _cmd = self.path + "/cbact"
             _cmd += " --procid=" + self.pid
             _cmd += " --osp=" + dic2str(self.osci.oscp())
@@ -2085,15 +2090,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _cmd += " --daemon"
             #_cmd += "  --debug_host=127.0.0.1"
 
-            _proc_man = ProcessManagement(username = obj_attr_list["username"], \
-                                          cloud_name = obj_attr_list["cloud_name"])
-
             _aidrs_pid = _proc_man.start_daemon(_cmd)
 
             if _aidrs_pid :
 
                 _msg = "AIDRS attachment command \"" + _cmd + "\" "
-                _msg += " was successfully started."
+                _msg += " was successfully started (submit)."
                 _msg += "The process id is " + str(_aidrs_pid) + "."
                 cbdebug(_msg)
 
@@ -2102,7 +2104,34 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                          str(_aidrs_pid), "add")
             else :
                 _fmsg = "AIDRS attachment command \"" + _cmd + "\" "
-                _fmsg += " failed while starting."
+                _fmsg += " failed while starting (submit)."
+
+            # Second, a Vapp Remover is instantiated
+            _cmd = self.path + "/cbact"
+            _cmd += " --procid=" + self.pid
+            _cmd += " --osp=" + dic2str(self.osci.oscp())
+            _cmd += " --msp=" + dic2str(self.msci.mscp())
+            _cmd += " --uuid=" + obj_attr_list["uuid"] 
+            _cmd += " --operation=aidr-remove"
+            _cmd += " --cn=" + obj_attr_list["cloud_name"]
+            _cmd += " --daemon"
+            #_cmd += "  --debug_host=127.0.0.1"
+
+            _aidrs_pid = _proc_man.start_daemon(_cmd)
+
+            if _aidrs_pid :
+
+                _msg = "AIDRS attachment command \"" + _cmd + "\" "
+                _msg += " was successfully started (remove)."
+                _msg += "The process id is " + str(_aidrs_pid) + "."
+                cbdebug(_msg)
+
+                _obj_id = obj_attr_list["uuid"] + '-' + "remove"
+                self.update_process_list(obj_attr_list["cloud_name"], "AIDRS", _obj_id, \
+                                         str(_aidrs_pid), "add")
+            else :
+                _fmsg = "AIDRS attachment command \"" + _cmd + "\" "
+                _fmsg += " failed while starting (remove)."
 
             _status = 0
 
@@ -4058,8 +4087,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                          The only fix I can think of is to ensure that the 
                          size of the thread pool is to put a minimum.
                         ''' 
-                        min_size = max(len(obj_attr_list["parallel_operations"]), int(obj_attr_list[operation_type + "_parallelism"]))
-                        
+                        min_size = max(len(obj_attr_list["parallel_operations"]), \
+                                       int(obj_attr_list[operation_type + "_parallelism"]))
+
                         _thread_pool = ThreadPool(min_size + 1)
                         self.thread_pools[pool_key] = _thread_pool
                     else :
@@ -4309,6 +4339,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
         while _aidrs_state :
 
+            _inter_arrival_time = 0
+
+            _inter_arrival_time_start = time()
+
             _aidrs_state = self.osci.get_object_state(cloud_name, "AIDRS", object_uuid)
 
             _aidrs_attr_list = self.osci.get_object(cloud_name, "AIDRS", False, object_uuid, False)
@@ -4316,8 +4350,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _check_frequency = int(_aidrs_attr_list["update_frequency"])
 
             _aidrs_overload, _msg = self.get_aidrs_params(cloud_name, _aidrs_attr_list)
-
-            _inter_arrival_time = 0
 
             if not _aidrs_overload :
                 
@@ -4339,19 +4371,23 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _cmd += " --uuid=" + _ai_uuid
                     _cmd += " --daemon"
                     #_cmd += "  --debug_host=127.0.0.1"
-                    
-                    _proc_h = Popen(_cmd, shell=True, stdout=PIPE, stderr=PIPE)
 
-                    if _proc_h.pid :
+                    _proc_man = ProcessManagement(username = _aidrs_attr_list["username"], \
+                                                  cloud_name = _aidrs_attr_list["cloud_name"])
+            
+                    _aid_pid = _proc_man.run_os_command(_cmd)
+            
+                    if _aid_pid :
+
                         _msg = "AI attachment command \"" + _cmd + "\" "
                         _msg += "was successfully started."
-                        _msg += "The process id is " + str(_proc_h.pid) + "."
+                        #_msg += "The process id is " + str(_aid_pid) + "."
                         cbdebug(_msg)
 
                         _obj_id = _ai_uuid + '-' + "attach"
                         self.update_process_list(cloud_name, "AI", \
                                                  _obj_id, \
-                                                 str(_proc_h.pid), \
+                                                 str(_aid_pid), \
                                                  "add")
                     else :
                         _msg = "AI attachment command \"" + _cmd + "\" "
@@ -4372,79 +4408,123 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 if int(_aidrs_attr_list["current_inter_arrival_time"]) < _check_frequency :
                     _check_frequency = int(_aidrs_attr_list["current_inter_arrival_time"]) / 2
 
-            _inter_arrival_time_start = time()
+            _aidrs_state = self.osci.get_object_state(cloud_name, "AIDRS", object_uuid)
+
+            if not _aidrs_state  :
+                _msg = "AIDRS object " + object_uuid 
+                _msg += " state could not be obtained. This process "
+                _msg += " will exit, leaving all the AIs behind."
+                cbdebug(_msg)
+                break
+
+            elif _aidrs_state == "stopped" :
+                _msg ="AIDRS object " + object_uuid 
+                _msg += " state was set to \"stopped\"."
+                cbdebug(_msg)
+            else :
+                True
 
             while _inter_arrival_time < int(_aidrs_attr_list["current_inter_arrival_time"]) :
 
-                _my_overdue_ais = self.osci.query_by_view(cloud_name, "AI", "BYAIDRS", \
-                                                          object_uuid, \
-                                                          "departure", \
-                                                          "overdue")
-
-                if len(_my_overdue_ais) :
-
-                    _msg = "Some AIs have reached the end of their "
-                    _msg += "lifetimes, and will now be removed."
-                    _msg += "Overdue AI list is :" + ','.join(_my_overdue_ais)
-                    cbdebug(_msg)
-
-                    for _ai in _my_overdue_ais :
-                        _ai_uuid, _ai_name = _ai.split('|')
-                        
-                        _current_state = self.osci.get_object_state(cloud_name, "AI", _ai_uuid)
-
-                        if _current_state and _current_state == "attached" :                    
-                            _cmd = base_dir + "/cbact"
-                            _cmd += " --procid=" + self.pid
-                            _cmd += " --osp=" + dic2str(self.osci.oscp())
-                            _cmd += " --msp=" + dic2str(self.msci.mscp())
-                            _cmd += " --oop=" + cloud_name + ',' + _ai_name + ',true'
-                            _cmd += " --operation=ai-detach"
-                            _cmd += " --cn=" + cloud_name
-                            _cmd += " --uuid=" + _ai_uuid                        
-                            _cmd += " --daemon"
-                            #_cmd += "  --debug_host=127.0.0.1"
-    
-                            _proc_h = Popen(_cmd, shell=True, stdout=PIPE, stderr=PIPE)
-    
-                            if _proc_h.pid :
-                                _msg = "Overdue AI detachment command \"" + _cmd + "\" "
-                                _msg += " was successfully started."
-                                _msg += "The process id is " + str(_proc_h.pid) + "."
-                                cbdebug(_msg)
-    
-                                _obj_id = _ai_uuid + '-' + "detach"
-                                self.update_process_list(cloud_name, "AI", \
-                                                         _obj_id, \
-                                                         str(_proc_h.pid), \
-                                                         "add")
-                        else :
-                            _msg = "AI \"" + _ai_uuid + "\" is on the \""
-                            _msg += _current_state + "\" and therefore cannot "
-                            _msg += "detached."
-                            cbdebug(_msg)
-                else :
-                    _msg = "No AIs have reached the end of their lifetimes."
-                    cbdebug(_msg)
-
-                _aidrs_state = self.osci.get_object_state(cloud_name, "AIDRS", object_uuid)
-
-                if not _aidrs_state  :
-                    _msg = "AIDRS object " + object_uuid 
-                    _msg += " state could not be obtained. This process "
-                    _msg += " will exit, leaving all the AIs behind."
-                    cbdebug(_msg)
-                    break
-
-                elif _aidrs_state == "stopped" :
-                    _msg ="AIDRS object " + object_uuid 
-                    _msg += " state was set to \"stopped\"."
-                    cbdebug(_msg)
-                else :
-                    True
-                sleep(_check_frequency)
-
                 _inter_arrival_time = time() - _inter_arrival_time_start
+                
+                if _inter_arrival_time < _check_frequency :
+                    sleep(1)
+                else :
+                    sleep(_check_frequency)
+
+        _msg = "This AIDRS daemon has detected that the AIDRS object associated to it was "
+        _msg += "detached. Proceeding to remove its pid from"
+        _msg += " the process list before finishing."
+        cbdebug(_msg)
+        _status = 0
+
+        return _status, _msg
+
+    @trace
+    def aidremove(self, cloud_name, base_dir, object_type, object_uuid) :
+        '''
+        TBD
+        '''
+        _aidrs_state = True
+
+        while _aidrs_state :
+
+            _aidrs_attr_list = self.osci.get_object(cloud_name, "AIDRS", False, \
+                                                    object_uuid, False)
+
+            _my_overdue_ais = self.osci.query_by_view(cloud_name, "AI", "BYAIDRS", \
+                                                      object_uuid, \
+                                                      "departure", \
+                                                      "overdue")
+
+            if len(_my_overdue_ais) :
+
+                _msg = "Some AIs have reached the end of their "
+                _msg += "lifetimes, and will now be removed."
+                _msg += "Overdue AI list is :" + ','.join(_my_overdue_ais)
+                cbdebug(_msg)
+
+                for _ai in _my_overdue_ais :
+                    _ai_uuid, _ai_name = _ai.split('|')
+                    
+                    _current_state = self.osci.get_object_state(cloud_name, "AI", _ai_uuid)
+
+                    if _current_state and _current_state == "attached" :                    
+                        _cmd = base_dir + "/cbact"
+                        _cmd += " --procid=" + self.pid
+                        _cmd += " --osp=" + dic2str(self.osci.oscp())
+                        _cmd += " --msp=" + dic2str(self.msci.mscp())
+                        _cmd += " --oop=" + cloud_name + ',' + _ai_name + ',true'
+                        _cmd += " --operation=ai-detach"
+                        _cmd += " --cn=" + cloud_name
+                        _cmd += " --uuid=" + _ai_uuid                        
+                        _cmd += " --daemon"
+                        #_cmd += "  --debug_host=127.0.0.1"
+
+                        _proc_man = ProcessManagement(username = _aidrs_attr_list["username"], \
+                                                      cloud_name = _aidrs_attr_list["cloud_name"])
+                
+                        _aid_pid = _proc_man.run_os_command(_cmd)
+
+                        if _aid_pid :
+                            _msg = "Overdue AI detachment command \"" + _cmd + "\" "
+                            _msg += " was successfully started."
+                            #_msg += "The process id is " + str(_aid_pid) + "."
+                            cbdebug(_msg)
+
+                            _obj_id = _ai_uuid + '-' + "detach"
+                            self.update_process_list(cloud_name, "AI", \
+                                                     _obj_id, \
+                                                     str(_aid_pid), \
+                                                     "add")
+                    else :
+                        _msg = "AI \"" + _ai_uuid + "\" is on the \""
+                        _msg += _current_state + "\" and therefore cannot "
+                        _msg += "detached."
+                        cbdebug(_msg)
+            else :
+                _msg = "No AIs have reached the end of their lifetimes."
+                cbdebug(_msg)
+
+            _aidrs_state = self.osci.get_object_state(cloud_name, "AIDRS", object_uuid)
+
+            if not _aidrs_state  :
+                print "X"
+                _msg = "AIDRS object " + object_uuid 
+                _msg += " state could not be obtained. This process "
+                _msg += " will exit, leaving all the AIs behind."
+                cbdebug(_msg)
+                break
+
+            elif _aidrs_state == "stopped" :
+                _msg ="AIDRS object " + object_uuid 
+                _msg += " state was set to \"stopped\"."
+                cbdebug(_msg)
+            else :
+                True
+
+            sleep(int(_aidrs_attr_list["update_frequency"]))
 
         _msg = "This AIDRS daemon has detected that the AIDRS object associated to it was "
         _msg += "detached. Proceeding to remove its pid from"

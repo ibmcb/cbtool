@@ -114,10 +114,10 @@ class OskCmds(CommonCloudFunctions) :
                     _key_pair_found = True
 
             if not _key_pair_found :
-                _msg = "Please create the ssh key pair \"" + key_name + "\" in "
-                _msg += "OpenStack before proceeding."
-                cberr(_msg)
-                raise CldOpsException(_msg, _status)
+                _msg = "Creating the ssh key pair \"" + key_name + "\""
+                _msg += " on VMC " + vmc_name + "...."
+                cbdebug(_msg, True)
+                self.oskconn.keypairs.create(key_name)
                 
             _msg = "Checking if the security group \"" + security_group_name
             _msg += "\" is created on VMC " + vmc_name + "...."
@@ -131,7 +131,9 @@ class OskCmds(CommonCloudFunctions) :
             if not _security_group_found :
                 _msg = "Please create the security group \"" + security_group_name + "\" in "
                 _msg += "OpenStack before proceeding."
+                _fmsg = _msg 
                 cberr(_msg)
+                raise CldOpsException(_msg, _status)
 
             _msg = "Checking if the imageids associated to each \"VM role\" are"
             _msg += " registered on VMC " + vmc_name + "...."
@@ -196,7 +198,7 @@ class OskCmds(CommonCloudFunctions) :
                 _msg += " GUI (horizon) or nova CLI"
                 _status = 1178
                 raise CldOpsException(_msg, _status) 
-            
+
             _status = 0
 
         except CldOpsException, obj :
@@ -265,6 +267,8 @@ class OskCmds(CommonCloudFunctions) :
                 obj_attr_list["host_list"][_host_uuid]["mgt_003_provisioning_request_completed"] = _time_mark_prc - start
     
             obj_attr_list["hosts"] = obj_attr_list["hosts"][:-1]
+
+            self.additional_host_discovery (obj_attr_list)
             
             _status = 0
 
@@ -582,15 +586,45 @@ class OskCmds(CommonCloudFunctions) :
         _networks = instance.addresses.keys()
 
         if len(_networks) :
-            _network = _networks[0]                
+            if _networks.count(obj_attr_list["run_netname"]) :
+                _msg = "Network \"" + obj_attr_list["run_netname"] + "\" found."
+                cbdebug(_msg)
+                _run_network = _networks[_networks.index(obj_attr_list["run_netname"])]
+            else :
+                _msg = "Network \"" + obj_attr_list["run_netname"] + "\" found."
+                _msg += "Using the first network (\"" + _networks[0] + "\") instead)."
+                cbdebug(_msg)
+                _run_network = _networks[0]
+
             obj_attr_list["cloud_hostname"] = obj_attr_list["cloud_vm_name"]
-            _address_list = instance.addresses[_network]
+            _address_list = instance.addresses[_run_network]
+
             if len(_address_list) :
                 obj_attr_list["cloud_ip"] = '{0}'.format(_address_list[0]["addr"])
-                return True
+
+                if obj_attr_list["prov_netname"] == obj_attr_list["run_netname"] :
+                    obj_attr_list["prov_cloud_ip"] = '{0}'.format(_address_list[0]["addr"])
+                    return True
+                else :
+                    if _networks.count(obj_attr_list["prov_netname"]) :
+                        _msg = "Network \"" + obj_attr_list["prov_netname"] + "\" found."
+                        cbdebug(_msg)
+                        _prov_network = _networks[_networks.index(obj_attr_list["prov_netname"])]
+                    else :
+                        _msg = "Network \"" + obj_attr_list["prov_netname"] + "\" found."
+                        _msg += "Using the first network (\"" + _networks[0] + "\") instead)."
+                        cbdebug(_msg)
+                        _prov_network = _networks[0]
+
+                    _address_list = instance.addresses[_run_network]
+        
+                    if len(_address_list) :
+                        obj_attr_list["prov_cloud_ip"] = '{0}'.format(_address_list[0]["addr"])
+                        return True
+
             else :
                 _status = 1181
-                _msg = "IP address list for network " + str(_network) + " is empty."
+                _msg = "IP address list for network " + str(_run_network) + " is empty."
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)                
         else :

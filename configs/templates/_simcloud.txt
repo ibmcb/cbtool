@@ -7,8 +7,6 @@ SIM_LOGIN = klabuser
 # PEBCAK documentation for the Wizard and CLI
 SIM_LOGIN_DOC = $LOGIN_DOC
 SIM_SSH_KEY_NAME_DOC = $SSH_KEY_NAME_DOC
-SIM_INITIAL_VMCS_DOC = $INITIAL_VMCS_DOC 
-SIM_INITIAL_VMCS_DEFAULT = simzone_a:sut,simzone_b:sut,simzone_c:sut,simzone_d:lg
 
 [SPACE : SIM_CLOUDCONFIG ]
 SSH_KEY_NAME = $SIM_SSH_KEY_NAME
@@ -18,7 +16,8 @@ COLLECT_FROM_HOST = $False # simulated, nothing to monitor
 COLLECT_FROM_GUEST = $False # simulated, nothing to monitor
 
 [VMC_DEFAULTS : SIM_CLOUDCONFIG]
-INITIAL_VMCS = $SIM_INITIAL_VMCS
+INITIAL_VMCS = simzone_a:sut,simzone_b:sut,simzone_c:sut,simzone_d:lg
+INITIAL_HOSTS = $Empty
 HOSTS_PER_VMC = 5
 DISCOVER_HOSTS = $True
 UPDATE_FREQUENCY = 1
@@ -26,6 +25,7 @@ ACCESS = $Empty
 CREDENTIALS = $Empty
 SECURITY_GROUPS = $Empty
 KEY_NAME = $Empty
+ADDITIONAL_DISCOVERY = $Empty
 
 [VM_DEFAULTS : SIM_CLOUDCONFIG]
 TRANSFER_FILES = $False

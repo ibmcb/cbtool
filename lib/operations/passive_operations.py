@@ -1408,6 +1408,12 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                 if _key in _metric :
                                     if _key == "mgt_001_provisioning_request_originated" :
                                         _csv_contents_line += str(int(_metric[_key]) - _experiment_start_time) + ','
+                                    elif _key == "mgt_101_capture_request_originated" :
+                                        _csv_contents_line += str(int(_metric[_key]) - _experiment_start_time) + ','                                        
+                                    elif _key == "mgt_201_runstate_request_originated" :
+                                        _csv_contents_line += str(int(_metric[_key]) - _experiment_start_time) + ','
+                                    elif _key == "mgt_901_deprovisioning_request_originated" :
+                                        _csv_contents_line += str(int(_metric[_key]) - _experiment_start_time) + ','                                           
                                     else :
                                         _csv_contents_line += str(_metric[_key]) + ','
                                 else :

@@ -28,10 +28,26 @@ source ~/.bashrc
 
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
-HADOOP_HOME=`get_my_ai_attribute_with_default hadoop_home ~/hadoop-0.20.2`
+JAVA_HOME=`get_my_ai_attribute_with_default java_home ~/jdk1.6.0_21`
+
+eval JAVA_HOME=${JAVA_HOME}
+
+# START - This section might be removed on the future #
+HADOOP_PACKAGE=`ls hadoop*.tar.gz`
+
+if [ -z ${HADOOP_PACKAGE} ]; then
+	HADOOP_VERSION=`echo ${HADOOP_HOME} | sed 's/hadoop-//g' | sed 's/-bin//g'` 
+	HADOOP_HOME=`get_my_ai_attribute_with_default hadoop_home ~/hadoop-0.20.2`
+else
+    HADOOP_VERSION=`echo ${HADOOP_PACKAGE} | sed 's/\.tar\.gz//g' | sed 's/hadoop-//g' | sed 's/-bin//g'`
+	if [ ! -d ~/hadoop-${HADOOP_VERSION} ]; then
+		tar -xzvf ${HADOOP_PACKAGE}
+	fi
+	HADOOP_HOME=~/hadoop-${HADOOP_VERSION}
+fi
+# END - This section might be removed on the future #
 
 eval HADOOP_HOME=${HADOOP_HOME}
-
 HADOOP_CONF_DIR=$HADOOP_HOME/conf
 
 hadoop_master_ip=`get_ips_from_role hadoopmaster`

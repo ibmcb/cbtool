@@ -23,7 +23,7 @@ else
 	source $dir/../common/cb_common.sh
 fi
 
-standalone=`online_or_offline "$4"`
+standalone=`online_or_offline "$5"`
 
 export PATH=$PATH:~/iwl/bin
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/iwl/bin

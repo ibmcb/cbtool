@@ -29,7 +29,7 @@ from socket import gethostbyname
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import str2dic, DataOpsException
-from lib.remote.network_functions import Nethashget
+from lib.remote.network_functions import hostname2ip
 
 from shared_functions import CldOpsException, CommonCloudFunctions 
 
@@ -89,9 +89,9 @@ class Ec2Cmds(CommonCloudFunctions) :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
-        except Exception, e :
+        except Exception, msg :
+            _fmsg = str(msg)
             _status = 23
-            _fmsg = str(e)
 
         finally :
             if _status :
@@ -126,9 +126,9 @@ class Ec2Cmds(CommonCloudFunctions) :
             if not _key_pair_found :
                 _msg = "Please create the ssh key pair \"" + key_name + "\" in "
                 _msg += "Amazon EC2 before proceeding."
-                _fmsg = _msg 
-                cberr(_msg)
-                
+                _fmsg = _msg
+                raise CldOpsException(_msg, _status)
+
             _msg = "Checking if the security group \"" + security_group_name
             _msg += "\" is created on VMC " + vmc_name + "...."
             cbdebug(_msg, True)
@@ -141,9 +141,10 @@ class Ec2Cmds(CommonCloudFunctions) :
             if not _security_group_found :
                 _msg = "Please create the security group \"" + security_group_name + "\" in "
                 _msg += "Amazon EC2 before proceeding."
-                _fmsg = _msg 
+                _fmsg = _msg
                 cberr(_msg)
-
+                raise CldOpsException(_msg, _status)
+            
             _msg = "Checking if the imageids associated to each \"VM role\" are"
             _msg += " registered on VMC " + vmc_name + "...."
             cbdebug(_msg, True)
@@ -218,13 +219,15 @@ class Ec2Cmds(CommonCloudFunctions) :
                 raise CldOpsException(_fmsg, _status) 
 
             _status = 0
-                        
-        except Exception, msg :
-            print "this sucks: " + str(msg)
+
         except CldOpsException, obj :
             _fmsg = str(obj.msg)
             cberr(_msg)
             _status = 2
+
+        except Exception, msg :
+            _fmsg = str(msg)
+            _status = 23
 
         finally :
             if _status :
@@ -297,12 +300,13 @@ class Ec2Cmds(CommonCloudFunctions) :
             _fmsg = str(obj.error_message)
             
         except CldOpsException, obj :
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
+            _fmsg = str(obj.msg)
+            cberr(_msg)
+            _status = 2
 
-        except Exception, e :
+        except Exception, msg :
+            _fmsg = str(msg)
             _status = 23
-            _fmsg = str(e)
     
         finally :
             if _status :
@@ -361,18 +365,19 @@ class Ec2Cmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except CldOpsException, obj :
-            _status = obj.status
-            _fmsg = str(obj.msg)
-
         except AWSException, obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
+            
+        except CldOpsException, obj :
+            _fmsg = str(obj.msg)
+            cberr(_msg)
+            _status = 2
 
-        except Exception, e :
+        except Exception, msg :
+            _fmsg = str(msg)
             _status = 23
-            _fmsg = str(e)
-    
+
         finally :
             if _status :
                 _msg = "VMC " + obj_attr_list["uuid"] + " could not be registered "
@@ -411,17 +416,17 @@ class Ec2Cmds(CommonCloudFunctions) :
             
             _status = 0
 
-        except CldOpsException, obj :
-            _status = obj.status
-            _fmsg = str(obj.msg)
-
         except AWSException, obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
-        except Exception, e :
+        except CldOpsException, obj :
+            _status = obj.status
+            _fmsg = str(obj.msg)
+
+        except Exception, msg :
+            _fmsg = str(msg)
             _status = 23
-            _fmsg = str(e)
     
         finally :
             if _status :
@@ -443,8 +448,22 @@ class Ec2Cmds(CommonCloudFunctions) :
         TBD
         '''
         try :
-            obj_attr_list["cloud_hostname"] = '{0}'.format(obj_attr_list["instance_obj"].private_dns_name)
-            obj_attr_list["cloud_ip"] = '{0}'.format(obj_attr_list["instance_obj"].private_ip_address)
+            _private_hostname = '{0}'.format(obj_attr_list["instance_obj"].private_dns_name)
+            _private_ip_address = '{0}'.format(obj_attr_list["instance_obj"].private_ip_address)
+            _public_hostname = '{0}'.format(obj_attr_list["instance_obj"].public_dns_name)
+            _public_hostname, _public_ip_address = hostname2ip(_public_hostname)
+            if obj_attr_list["run_netname"] == "private" :
+                obj_attr_list["cloud_hostname"] = _private_hostname
+                obj_attr_list["cloud_ip"] = _private_ip_address
+            else :
+                obj_attr_list["cloud_hostname"] = _public_hostname
+                obj_attr_list["cloud_ip"] = _public_ip_address
+
+            if obj_attr_list["prov_netname"] == "private" :
+                obj_attr_list["prov_cloud_ip"] = _private_ip_address
+            else :
+                obj_attr_list["prov_cloud_ip"]  = _public_ip_address
+
             return True
         except :
             return False
@@ -478,9 +497,10 @@ class Ec2Cmds(CommonCloudFunctions) :
             _fmsg = str(obj.error_message)
             raise CldOpsException(_fmsg, _status)
         
-        except Exception, e :
+        except Exception, msg :
+            _fmsg = str(msg)
+            cberr(_fmsg)
             _status = 23
-            _fmsg = str(e)
             raise CldOpsException(_fmsg, _status)
 
     def is_vm_running(self, obj_attr_list):
@@ -509,9 +529,10 @@ class Ec2Cmds(CommonCloudFunctions) :
             _fmsg = str(obj.error_message)
             raise CldOpsException(_fmsg, _status)
         
-        except Exception, e :
+        except Exception, msg :
+            _fmsg = str(msg)
+            cberr(_fmsg)
             _status = 23
-            _fmsg = str(e)
             raise CldOpsException(_fmsg, _status)
 
     @trace
@@ -605,7 +626,6 @@ class Ec2Cmds(CommonCloudFunctions) :
             else :
                 _fmsg = "Failed to obtain instance's (cloud-assigned) uuid. The "
                 _fmsg += "instance creation failed for some unknown reason."
-                cberr(_fmsg)
                 _status = 100
 
         except CldOpsException, obj :
@@ -616,9 +636,9 @@ class Ec2Cmds(CommonCloudFunctions) :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
-        except Exception, e :
+        except Exception, msg :
+            _fmsg = str(msg)
             _status = 23
-            _fmsg = str(e)
     
         finally :
             if "instance_obj" in obj_attr_list :
@@ -716,9 +736,9 @@ class Ec2Cmds(CommonCloudFunctions) :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
-        except Exception, e :
+        except Exception, msg :
+            _fmsg = str(msg)
             _status = 23
-            _fmsg = str(e)
     
         finally :
             if _status :
@@ -816,9 +836,9 @@ class Ec2Cmds(CommonCloudFunctions) :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except Exception, e :
+        except Exception, msg :
+            _fmsg = str(msg)
             _status = 23
-            _fmsg = str(e)
     
         finally :
             if _status :
@@ -885,9 +905,9 @@ class Ec2Cmds(CommonCloudFunctions) :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
-        except Exception, e :
+        except Exception, msg :
+            _fmsg = str(msg)
             _status = 23
-            _fmsg = str(e)
     
         finally :
             if _status :
@@ -914,9 +934,10 @@ class Ec2Cmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except Exception, e :
+        except Exception, msg :
+            _fmsg = str(msg)
+            cberr(_fmsg)
             _status = 23
-            _fmsg = str(e)
     
         finally :
             if _status :
@@ -941,9 +962,10 @@ class Ec2Cmds(CommonCloudFunctions) :
             _fmsg = "An error has occurred, but no error message was captured"
             _status = 0
 
-        except Exception, e :
+        except Exception, msg :
+            _fmsg = str(msg)
+            cberr(_fmsg)
             _status = 23
-            _fmsg = str(e)
     
         finally :
             if _status :

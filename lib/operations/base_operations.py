@@ -1989,7 +1989,7 @@ class BaseObjectOperations :
                 _vm_names.append(_obj_attr_list["name"])
                 _vm_hns.append(_obj_attr_list["cloud_hostname"])
                 _vm_roles.append(_obj_attr_list["role"])
-                _vm_ip_addrs.append(_obj_attr_list["cloud_ip"])
+                _vm_ip_addrs.append(_obj_attr_list["prov_cloud_ip"])
                 _vm_logins.append(_obj_attr_list["login"])
                 _vm_passwds.append(None)
 

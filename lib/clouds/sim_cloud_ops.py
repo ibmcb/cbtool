@@ -138,11 +138,18 @@ class SimCmds(CommonCloudFunctions) :
         TBD
         '''
         _host_uuid = obj_attr_list["cloud_uuid"]
-        obj_attr_list["hosts"] = ''
-        obj_attr_list["host_count"] = int(obj_attr_list["hosts_per_vmc"])
-        obj_attr_list["host_list"] = {}
 
-        for _host_n in range(0, int(obj_attr_list["hosts_per_vmc"])) :
+        obj_attr_list["host_list"] = {}
+        obj_attr_list["hosts"] = ''
+        _auto_name = False
+        if len(obj_attr_list["initial_hosts"]) < 2 :
+            _auto_name = True
+            obj_attr_list["host_count"] = int(obj_attr_list["hosts_per_vmc"])
+        else :
+            obj_attr_list["initial_hosts"] = obj_attr_list["initial_hosts"].split(',')
+            obj_attr_list["host_count"] = len(obj_attr_list["initial_hosts"])
+    
+        for _host_n in range(0, obj_attr_list["host_count"]) :
             _host_uuid = self.generate_random_uuid()
             obj_attr_list["hosts"] += _host_uuid + ','            
             obj_attr_list["host_list"][_host_uuid] = {}
@@ -150,8 +157,12 @@ class SimCmds(CommonCloudFunctions) :
             obj_attr_list["host_list"][_host_uuid]["username"] = obj_attr_list["username"]
             obj_attr_list["host_list"][_host_uuid]["cloud_ip"] = self.generate_random_ip_address()
             obj_attr_list["host_list"][_host_uuid]["notification"] = "False"
-            obj_attr_list["host_list"][_host_uuid]["cloud_hostname"] = "simhost" + obj_attr_list["name"][-1] + str(_host_n)
-            obj_attr_list["host_list"][_host_uuid]["name"] = "host_simhost" + obj_attr_list["name"][-1] + str(_host_n)
+            if _auto_name :
+                obj_attr_list["host_list"][_host_uuid]["cloud_hostname"] = "simhost" + obj_attr_list["name"][-1] + str(_host_n)
+            else :
+                obj_attr_list["host_list"][_host_uuid]["cloud_hostname"] = obj_attr_list["initial_hosts"][_host_n]
+
+            obj_attr_list["host_list"][_host_uuid]["name"] = "host_"  + obj_attr_list["host_list"][_host_uuid]["cloud_hostname"]
             obj_attr_list["host_list"][_host_uuid]["vmc_name"] = obj_attr_list["name"]
             obj_attr_list["host_list"][_host_uuid]["vmc"] = obj_attr_list["uuid"]
             obj_attr_list["host_list"][_host_uuid]["cloud_uuid"] = _host_uuid
@@ -168,7 +179,9 @@ class SimCmds(CommonCloudFunctions) :
             obj_attr_list["host_list"][_host_uuid]["mgt_003_provisioning_request_completed"] = _time_mark_prc - start
 
         obj_attr_list["hosts"] = obj_attr_list["hosts"][:-1]
-        
+
+        self.additional_host_discovery (obj_attr_list)
+
         return True
 
     @trace
@@ -315,6 +328,7 @@ class SimCmds(CommonCloudFunctions) :
         else :
             obj_attr_list["cloud_ip"] = "1.2.3.4"
 
+        obj_attr_list["prov_cloud_ip"] = obj_attr_list["cloud_ip"]
         obj_attr_list["cloud_hostname"] = obj_attr_list["cloud_uuid"] + ".simcloud.com"
         return True        
 

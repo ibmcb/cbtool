@@ -448,8 +448,20 @@ def main(options) :
                 _msg = "Unknown Submitter Type"
                 _status = 99
 
+        elif _operation.count("remove") :
+
+            _local_process = True
+            _uuid = options.ouuid
+
+            if _obj_type.upper() == "AIDR" :
+                _obj_type = "AIDRS"
+                _status, _msg = _active_obj_command.aidremove(options.cn, _base_dir, _obj_type, _uuid)
+            else :
+                _msg = "Unknown Remover Type"
+                _status = 99
+
         elif _operation.count("subscribe") :
-            
+
             _obj_type = "AI"
             _local_process = False
             _uuid = options.ouuid

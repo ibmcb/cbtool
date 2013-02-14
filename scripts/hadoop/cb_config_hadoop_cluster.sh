@@ -37,11 +37,18 @@ source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_hadoop_common.sh
 syslog_netcat "hadoop_master_ip: $hadoop_master_ip"
 syslog_netcat "..my_ip=$my_ip_addr .."
 
+if [ ~/.bashrc ]
+then
+    echo "export PATH=$PATH:$HADOOP_HOME/bin" >> .bashrc
+	echo "export HADOOP_HOME=${HADOOP_HOME}" >> .bashrc
+fi
+
 is_preferIPv4Stack=`cat ${HADOOP_CONF_DIR}/hadoop-env.sh | grep -c "preferIPv4Stack=true"`
 if [ ${is_preferIPv4Stack} -eq 0 ]
 then
 	syslog_netcat "Adding extra options to hadoop-env.sh to ignore IPv6 addresses"
 	echo "export HADOOP_OPTS=-Djava.net.preferIPv4Stack=true" >> $HADOOP_CONF_DIR/hadoop-env.sh
+	echo "export JAVA_HOME=${JAVA_HOME}" >> $HADOOP_CONF_DIR/hadoop-env.sh
 fi
 
 ###################################################################
@@ -51,6 +58,71 @@ fi
 syslog_netcat "..Editing masters/slaves files.."
 echo "${hadoop_master_ip}" > $HADOOP_CONF_DIR/masters
 echo "${slave_ips}" > $HADOOP_CONF_DIR/slaves
+syslog_netcat "....Done...."
+
+syslog_netcat "..Creating core-site.xml, hdfs-site.xml and mapred-site.xml"
+cat << EOF > $HADOOP_CONF_DIR/core-site.xml
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<!-- Put site-specific property overrides in this file. -->
+
+<configuration>
+<property>
+<name>fs.default.name</name>
+<value>hdfs://HADOOP_NAMENODE_IP:9000</value>
+<description>The name of the default file system. Either the
+literal string "local" or a host:port for NDFS.
+</description>
+<final>true</final>
+</property>
+</configuration>
+EOF
+
+cat << EOF > $HADOOP_CONF_DIR/mapred-site.xml
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<!-- Put site-specific property overrides in this file. -->
+
+<configuration>
+<property>
+<name>mapred.job.tracker</name>
+<value>HADOOP_JOBTRACKER_IP:9001</value>
+<final>true</final>
+</property>
+</configuration>
+EOF
+
+cat << EOF > $HADOOP_CONF_DIR/hdfs-site.xml
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<!-- Put site-specific property overrides in this file. -->
+
+<configuration>
+<property>
+<name>dfs.name.dir</name>
+<value>DFS_NAME_DIR</value>
+<description>Determines where on the local filesystem the DFS name node
+should store the name table. If this is a comma-delimited list
+of directories then the name table is replicated in all of the
+directories, for redundancy. </description>
+<final>true</final>
+</property>
+
+<property>
+<name>dfs.data.dir</name>
+<value>DFS_DATA_DIR</value>
+<description>Determines where on the local filesystem an DFS data node
+should store its blocks. If this is a comma-delimited
+list of directories, then data will be stored in all named
+directories, typically on different devices.
+Directories that do not exist are ignored.
+</description>
+</property>
+</configuration>
+EOF
 syslog_netcat "....Done...."
 
 ###################################################################

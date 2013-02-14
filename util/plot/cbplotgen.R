@@ -34,14 +34,21 @@ option_list <- list(
 				dest="verbose", help="Print little output"),
 		make_option(c("-a", "--aggregate"), action="store_true", default=FALSE,
 				dest="aggregate", help="Plot aggregate (all experiments) metrics"),
-		make_option(c("-r", "--runtime"), action="store_true", default=FALSE,
-				dest="runtime", help="Plot runtime application performance metrics"),
+		make_option(c("-p", "--provisionmetrics"), action="store_true", default=FALSE,
+				dest="provisionmetrics", help="Plot provision performance metrics"),
+		make_option(c("-r", "--runtimemetrics"), action="store_true", default=FALSE,
+				dest="runtimemetrics", help="Plot runtime application performance metrics"),
 		make_option(c("-o", "--hostosmetrics"), action="store_true", default=FALSE,
 				dest="hostosmetrics", help="Plot HOST os resource usage metrics"),
 		make_option(c("-g", "--guestosmetrics"), action="store_true", default=FALSE,
 				dest="guestosmetrics", help="Plot VM os resource usage metrics"),
 		make_option(c("-c", "--cleanup"), action="store_true", default=FALSE,
 				dest="cleanup", help="Cleanup processed files and plots"),
+		make_option(c("-z", "--maxvms"), default=9,
+				help = "Maximum number of VMs to be included in the provisioning plots [default \"%default\"]", 
+				metavar="selected_maxvms"),
+		make_option(c("-l", "--layer"), action="store_true", default=FALSE,
+				dest="layer", help="Layer provisioning events on top of runtime"),
 		make_option(c("-d", "--directory"), default=getwd(),
 				help = "Directory where the csv files to be processed are located [default \"%default\"]", 
 				metavar="selected_directory"),
@@ -51,6 +58,12 @@ option_list <- list(
 		make_option(c("-m", "--metric"), default="all",
 				help = "Metric type to be plotted [default \"%default\"]", 
 				metavar="selected_metric"),
+		make_option(c("-w", "--window"), default="all",
+				help = "Time window to be plotted [default \"%default\"]", 
+				metavar="selected_window"),
+		make_option(c("-n", "--namedevent"), default="none",
+				help = "Named events to be plotted on top of the host OS metrics [default \"%default\"]", 
+				metavar="selected_named"),		
 		make_option(c("-s", "--size"), type="integer", default=15,
 				help = "Plot size [default \"%default\"]", 
 				metavar="selected_plot_size"),
@@ -148,28 +161,52 @@ experiment_list <- get_experiment_name_list(experiment_directories)
 
 for (experiment in experiment_list) {
 
-	msg <- paste("### Generating management metrics plot for experiment ", 
-			"\"", experiment, "\".... ###", sep = '')
-	cat(msg, sep='\n')
+	plot_trace_data(trace_metrics, opt$directory, experiment, opt$size)
+	
+	if (opt$provisionmetrics) {
+	
+		msg <- paste("### Generating management metrics plot for experiment ", 
+				"\"", experiment, "\".... ###", sep = '')
+		cat(msg, sep='\n')
+	
+		plot_management_data(mgt_metrics, opt$directory, experiment, "all", 
+				opt$size, opt$maxvms)
+		
+		msg <- paste("### Done ###", sep = '')
+		cat(msg, sep='\n')
+		} else {
+			msg <- paste("### BYPASSING management application metrics plotting for experiment ", 
+					"\"", experiment, "\" ###", sep = '')
+			cat(msg, sep='\n')	
+		}
 
-	plot_management_data(mgt_metrics, opt$directory, experiment, "all", 
-			opt$size)
-	
-	msg <- paste("### Done ###", sep = '')
-	cat(msg, sep='\n')
-	
-	if (opt$runtime) {
+	if (opt$runtimemetrics) {
 		msg <- paste("### Generating VM runtime application metrics plot for experiment ", 
 				"\"", experiment, "\"....###", sep = '')
 		cat(msg, sep='\n')
 		
-		vm_arrivals <- subset(mgt_metrics, expid == experiment, 
-				select = c("vm_arrival_start", "vm_arrival_end"))
-		
-		vm_arrivals <- unique(vm_arrivals)
-		
-		plot_runtime_application_data(rapp_metrics, opt$directory, experiment, "all", vm_arrivals, 
-				opt$xint, opt$yint, opt$size)
+		if (opt$layer) {
+			msg <- paste("### Layering provisioning events on top of the runtime",
+					"application metrics plot for experiment", "\"", experiment,
+					"\" ###", sep = '')
+			cat(msg, sep='\n')	
+
+			vm_events <- subset(mgt_metrics, expid == experiment, 
+					select = c("vm_arrival_start", "vm_arrival_end", "vm_capture_start", "vm_capture_end"))
+
+			vm_events$vm_arrival_start[is.na(vm_events$vm_arrival_start)] <- -1
+			vm_events$vm_arrival_end[is.na(vm_events$vm_arrival_end)] <- -1
+			vm_events$vm_capture_start[is.na(vm_events$vm_capture_start)] <- -1
+			vm_events$vm_capture_end[is.na(vm_events$vm_capture_end)] <- -1
+
+			vm_events <- unique(vm_events)
+
+			} else {
+				vm_events <- "none"
+				}
+
+		plot_runtime_application_data(rapp_metrics, opt$directory, experiment, 
+				"all", vm_events, opt$xint, opt$yint, opt$size)
 
 		msg <- paste("### Done ###", sep = '')
 		cat(msg, sep='\n')
@@ -210,10 +247,34 @@ for (experiment in experiment_list) {
 
 	if (opt$hostosmetrics) {
 
+		if (opt$namedevent != "none") {
+			named_events <- trace_metrics[grep(opt$namedevent, trace_metrics$command), ]
+			named_events <- subset(named_events, select = c("relative_time"))
+			} else {
+				named_events <- "none"
+				}
+
+		if (opt$layer && opt$namedevent == "none") {
+			msg <- paste("### Layering provisioning events on top of the runtime",
+					"host metrics plot for experiment", "\"", experiment,
+					"\" ###", sep = '')
+			cat(msg, sep='\n')	
+			
+			vm_events <- subset(mgt_metrics, expid == experiment , 
+					select = c("host_name", "vm_arrival_start", "vm_arrival_end", "vm_capture_start", "vm_capture_end"))
+
+			vm_events$vm_arrival_start[is.na(vm_events$vm_arrival_start)] <- -1
+			vm_events$vm_arrival_end[is.na(vm_events$vm_arrival_end)] <- -1
+			vm_events$vm_capture_start[is.na(vm_events$vm_capture_start)] <- -1
+			vm_events$vm_capture_end[is.na(vm_events$vm_capture_end)] <- -1
+			
+			named_events <- unique(vm_events)
+			}
+				
 		experiment_host_list <- subset(mgt_metrics, expid == experiment, select = c("host_name", "expid"))
 		experiment_host_list <- experiment_host_list[experiment_host_list$host_name != "unknown",]
-	
-		if (length(experiment_host_list$host_name) > 1 ) {
+
+		if (length(experiment_host_list$host_name) > 0 ) {
 	
 			experiment_host_list <- c(levels(factor(experiment_host_list$host_name)))
 			experiment_host_list <- paste("host_", experiment_host_list, sep = '')
@@ -224,7 +285,7 @@ for (experiment in experiment_list) {
 	
 			plot_runtime_os_data(hros_metrics, opt$directory, experiment, 
 					experiment_host_list, opt$xint, 
-					opt$yint, opt$size)
+					opt$yint, opt$size, named_events)
 
 			msg <- paste("### Done ###", sep = '')
 			cat(msg, sep='\n')

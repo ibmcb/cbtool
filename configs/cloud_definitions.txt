@@ -17,20 +17,16 @@ MAIN_LOGIN = klabuser
 MAIN_BASE_DIR = $PATH_TO_TOOL
 
 # Which cloud to pick first when the tool first starts
-STARTUP_CLOUD = TESTCLOUD
+STARTUP_CLOUD = MYSIMCLOUD
 
 # List the clouds you want to define
-CLOUDOPTION_TESTCLOUD = cldattach sim, vmcattach all
+CLOUDOPTION_MYSIMCLOUD = cldattach sim, vmcattach all
 CLOUDOPTION_MYSMARTCLOUD = cldattach scp, vmcattach all
 CLOUDOPTION_MYOPENSTACK = cldattach osk, vmcattach all
 CLOUDOPTION_MYAMAZON = cldattach ec2, vmcattach all
-CLOUDOPTION_MYTAC = cldattach tac, vmcattach all
+CLOUDOPTION_MYPLM = cldattach plm, vmcattach all
 
 # Now, Specify the individual parameters for each cloud
-
-# Simulated Cloud (SIM) requires the following parameters
-[USER-DEFINED : CLOUDOPTION_TESTCLOUD]
-SIM_INITIAL_VMCS = simzone_a:sut,simzone_b:sut,simzone_c:sut,simzone_d:lg
 
 # OpenStack (OSK) requires the following parameters (replace everything between <>)
 [USER-DEFINED : CLOUDOPTION_MYOPENSTACK]
@@ -54,7 +50,7 @@ SCP_INITIAL_VMCS = kvm_rack1:sut                           # Change "kvm_rack1" 
 SCP_SSH_KEY_NAME = priv_key_filename                       # Name of the private key used to login on the VMs
 SCP_LOGIN = cbuser                                         # The username that logins on the VMs
 
-# Elastic Compute Cloud (EC2) requires the following paramaters 
+# Elastic Compute Cloud (EC2) requires the following parameters 
 [USER-DEFINED : CLOUDOPTION_MYAMAZON]
 EC2_ACCESS = ABCDEFGHIJKLMNOPQRST                          # This is the AWS access key id
 EC2_SECURITY_GROUPS = cloudbench                           # Make sure that this group exists first 
@@ -64,12 +60,12 @@ EC2_INITIAL_VMCS = us-east-1:sut                           # Change "us-east-1" 
 EC2_SSH_KEY_NAME = priv_key_filename                       # Name of the private key used to login on the VMs
 EC2_LOGIN = cbuser                                         # The username that logins on the VMs
 
-# Thin Agile Cloud (TAC) requires the following paramaters 
-[USER-DEFINED : CLOUDOPTION_MYTAC]
-TAC_ACCESS = http://<address>:6060
-TAC_INITIAL_VMCS = klinux1,klinux2
-TAC_SSH_KEY_NAME = path_to_local_private_key_file
-TAC_LOGIN = cbuser
+# Parallel Libvirt Manager (PLM) requires the following parameters 
+[USER-DEFINED : CLOUDOPTION_MYPLM]
+PLM_ACCESS = <address>:6060
+PLM_INITIAL_VMCS = groupone:host1,host2/group2:host3,host4
+PLM_SSH_KEY_NAME = path_to_local_private_key_file
+PLM_LOGIN = cbuser
 
 [API_DEFAULTS]
 PORT = 7070

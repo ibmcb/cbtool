@@ -1,0 +1,190 @@
+#!/usr/bin/env python
+'''
+Created on Aug 16, 2012
+
+PLM Command Line tool - Describe one or more Storage Pools
+
+@author: Marcio A. Silva
+'''
+from sys import stdout, argv, path
+from optparse import OptionParser
+from pwd import getpwuid
+from os import getuid
+from time import time
+from random import randint
+from logging import getLogger, StreamHandler, Formatter, Filter, DEBUG, ERROR, INFO
+from logging.handlers import logging, SysLogHandler, RotatingFileHandler
+
+path.append('/'.join(path[0].split('/')[0:-2]))
+from plm_ops import PlmCmds
+from lib.auxiliary.data_ops import plm_message_beautifier
+from lib.auxiliary.code_instrumentation import VerbosityFilter, MsgFilter, AntiMsgFilter, STATUS
+
+def main() :
+    '''
+    TBD    '''
+
+    # Do command line parsing
+    usage = '''usage: %prog [options] [command]
+    '''
+
+    parser = OptionParser(usage)
+
+    # PLM daemon options
+    parser.add_option("--plm_host", \
+                      dest = "plm_host", \
+                      metavar = "PLM_HOST", \
+                      default = "127.0.0.1", \
+                      help = "TBD")
+
+    parser.add_option("--plm_port", \
+                      dest = "plm_port", \
+                      metavar = "PLM_PORT", \
+                      default = "6060", \
+                      help = "TBD")
+
+    # Storage Pool options
+    parser.add_option("-t", "--tag", \
+                      dest = "tag", \
+                      metavar = "TAG", \
+                      default = "all", \
+                      help = "TBD")
+    # Log options
+    parser.add_option("--logdest", \
+                      dest = "logdest", \
+                      metavar = "LDEST", \
+                      default = "syslog", \
+                      help ="Set the log destination (console|filename|syslog)")
+
+    # Syslog options
+    parser.add_option("--syslogn", \
+                      dest = "syslogn", \
+                      metavar ="TBID", \
+                      default = "127.0.0.1", \
+                      help = "Set the syslog's ip/hostname" )
+    
+    parser.add_option("--syslogp", \
+                      dest = "syslogp", \
+                      metavar ="TBID", \
+                      default = 514, \
+                      help = "Set the syslog's port" )
+    
+    parser.add_option("--syslogf", \
+                      dest = "syslogf", \
+                      metavar ="TBID", \
+                      default = 23, \
+                      help = "Set the syslog's facility" )
+
+    # Verbosity Options
+    parser.add_option("-v", "--verbosity", \
+                      dest = "verbosity", \
+                      metavar = "LV", \
+                      default = 2, \
+                      help = "Set verbosity level.")
+
+    parser.add_option("-d", \
+                      dest = "debug", \
+                      action = "store_true", \
+                      help = "Show internal status messages of commands as they execute")
+
+    parser.add_option("-q", \
+                      dest = "quiet", \
+                      action = "store_true", \
+                      help = "Set quiet output.")
+
+    parser.set_defaults()
+    (options, _args) = parser.parse_args()
+
+    # HACK ALERT - A very crude "syslog facility selector"
+    _syslog_selector = {}
+    _syslog_selector["16"] = SysLogHandler.LOG_LOCAL0 
+    _syslog_selector["17"] = SysLogHandler.LOG_LOCAL1 
+    _syslog_selector["18"] = SysLogHandler.LOG_LOCAL2 
+    _syslog_selector["19"] = SysLogHandler.LOG_LOCAL3 
+    _syslog_selector["20"] = SysLogHandler.LOG_LOCAL4 
+    _syslog_selector["21"] = SysLogHandler.LOG_LOCAL5 
+    _syslog_selector["22"] = SysLogHandler.LOG_LOCAL6 
+    _syslog_selector["23"] = SysLogHandler.LOG_LOCAL7
+
+    if int(options.syslogf) > 23 or int(options.syslogf) < 16 :
+        options.syslogf = 21 
+
+    logger = getLogger()
+
+    status_handler = StreamHandler(stdout)
+    #status_handler = StreamHandler(CursesHandler(console))
+
+    # Reset the logging handlers
+    while len(logger.handlers) != 0 :
+        logger.removeHandler(logger.handlers[0])
+
+    if options.logdest == "console" :
+        hdlr = StreamHandler(stdout)
+    elif options.logdest == "syslog" :
+        hdlr = SysLogHandler(address = (options.syslogn, int(options.syslogp)), \
+                             facility=_syslog_selector[str(options.syslogf)])
+    else :
+        hdlr = RotatingFileHandler(options.logdest, maxBytes=20971520, \
+                                   backupCount=20)
+    formatter = Formatter('%(asctime)s %(levelname)s %(message)s')
+    status_formatter = Formatter('%(message)s')
+    status_handler.setFormatter(status_formatter)
+    hdlr.setFormatter(formatter)
+    hdlr.addFilter(MsgFilter(STATUS))
+    status_handler.addFilter(AntiMsgFilter(STATUS))
+
+    if not options.debug :
+        status_handler.addFilter(MsgFilter(STATUS))
+                
+    logger.addHandler(hdlr)
+    logger.addHandler(status_handler)
+    
+    if options.verbosity :
+        if int(options.verbosity) >= 3 :
+            logger.setLevel(DEBUG)
+        elif int(options.verbosity) >= 2 :
+            hdlr.addFilter(VerbosityFilter("code_instrumentation"))
+            hdlr.addFilter(VerbosityFilter("data_ops"))
+            hdlr.addFilter(VerbosityFilter("hotplug_rem_ops"))
+            hdlr.addFilter(VerbosityFilter("network_functions"))
+            hdlr.addFilter(VerbosityFilter("pypureomapi"))
+            hdlr.addFilter(VerbosityFilter("redis_adapter"))
+            hdlr.addFilter(VerbosityFilter("value_generation"))
+            logger.setLevel(DEBUG)
+        elif int(options.verbosity) >= 1 :
+            hdlr.addFilter(VerbosityFilter("code_instrumentation"))
+            hdlr.addFilter(VerbosityFilter("data_ops"))
+            hdlr.addFilter(VerbosityFilter("hotplug_rem_ops"))
+            hdlr.addFilter(VerbosityFilter("network_functions"))
+            hdlr.addFilter(VerbosityFilter("pypureomapi"))
+            hdlr.addFilter(VerbosityFilter("redis_adapter"))
+            hdlr.addFilter(VerbosityFilter("value_generation"))
+            hdlr.addFilter(VerbosityFilter("plm_cloud_ops"))
+            logger.setLevel(DEBUG)
+    else :
+        logger.setLevel(INFO)
+
+    if options.quiet :
+        logger.setLevel(ERROR)
+
+    _coal = {}
+    _coal["access"] = str(options.plm_host) + ':' + str(options.plm_port)
+
+    _pid = int(time())
+    _userid = getpwuid(getuid())[0]
+    _coal["userid"] = _userid
+
+    _plm_command = PlmCmds(_pid, "PLMCLI")
+    _coal["tag"] = options.tag
+
+    _status, _msg, _info = _plm_command.storpoolsdescribe(_coal)
+
+    if not _status :
+        print _msg + '\n'
+        if len(_info) :
+            print plm_message_beautifier("0","storagepool", _info)
+    else :
+        print "Error: " + _msg
+    exit(_status)
+
+main()

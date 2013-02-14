@@ -40,6 +40,16 @@ if [ ${is_valid_LOAD_LEVEL} -eq 0 ]; then
 	LOAD_LEVEL=1
 fi
 
+if [ x"${collect_from_guest}" == x"true" ]
+then
+	if [ x"${LOAD_ID}" == x"1" ]
+	then
+		syslog_netcat "Restarting gmetad for Hadoop's first load"
+		sudo su root -l -c "pkill -9 -f gmetad"
+		${dir}/monitor-core/gmetad-python/gmetad.py -c /home/klabuser/gmetad-vms.conf -d 1
+	fi
+fi
+
 syslog_netcat "Benchmarking hadoop SUT: MASTER=${hadoop_master_ip} -> SLAVES=${slave_ips_csv} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
 
 command_line="$jar_command ${tab_LOAD_LEVEL_jar[$LOAD_LEVEL]} ${tab_LOAD_LEVEL_options[$LOAD_LEVEL]}  ${tab_LOAD_LEVEL_input[$LOAD_LEVEL]} ${tab_LOAD_LEVEL_output[$LOAD_LEVEL]}"

@@ -142,17 +142,16 @@ def nmap(port) :
 def get_my_ip() :
     '''
     TBD
-    ''' 
-    
-    _cmd = "ip -o addr show $(ip route | grep default"
+    '''
+    _cmd = " ip -o addr show $(ip route | grep default"
     _cmd += " | grep -oE \"dev [a-z]+[0-9]+\" | sed \"s/dev //g\") "
     _cmd += "| grep -Eo \"[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*\" | grep -v 255"
 
     proc_h = Popen(_cmd, shell=True, stdout=PIPE, stderr=PIPE)
     (_output_stdout, _output_stderr) = proc_h.communicate()
-    
+
     if proc_h.returncode > 0 :
-        return _output_stderr 
+        return _output_stderr
     else :
         return _output_stdout.strip()
     

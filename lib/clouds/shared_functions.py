@@ -88,6 +88,45 @@ class CommonCloudFunctions:
             cberr(_msg)
             return False
 
+    def additional_host_discovery (self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        _status = 100
+        _fmsg = "An error has occurred, but no error message was captured"
+        
+        try :
+            if "additional_discovery" in obj_attr_list :
+                if len(obj_attr_list["additional_discovery"]) > 1 :
+                    _proc_man = ProcessManagement(username = obj_attr_list["username"], \
+                                                  cloud_name = obj_attr_list["cloud_name"])
+        
+                    _cmd = obj_attr_list["additional_discovery"]
+        
+                    _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_cmd)
+                    _extra_attr_list = json.loads(_result_stdout)
+        
+                    for _host_uuid in obj_attr_list["hosts"].split(',') :
+                        if obj_attr_list["host_list"][_host_uuid]["cloud_hostname"] in _extra_attr_list :
+                            obj_attr_list["host_list"][_host_uuid].update(_extra_attr_list[obj_attr_list["host_list"][_host_uuid]["cloud_hostname"]])            
+                    _status = 0
+                else :
+                    _status = 0
+            else :
+                _status = 0
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+
+        finally :
+            if _status :
+                _msg = "Error while running additional discovery: " + _fmsg
+                cberr(_msg)
+                raise CldOpsException(_msg, _status)
+            else :
+                return True
+
     @trace
     def get_svm_stub(self, obj_attr_list) :
         '''
@@ -219,7 +258,7 @@ class CommonCloudFunctions:
             _msg = "Trying to establish network connectivity to "
             _msg +=  obj_attr_list["name"] + " (cloud-assigned uuid "
             _msg += obj_attr_list["cloud_uuid"] + "), on IP address "
-            _msg += obj_attr_list["cloud_ip"] + "..."
+            _msg += obj_attr_list["prov_cloud_ip"] + "..."
             cbdebug(_msg, True)
             self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], _msg)
 
@@ -235,21 +274,21 @@ class CommonCloudFunctions:
 
                 if obj_attr_list["check_boot_complete"].count("tcp_on_") :
                     
-                    _nh_conn = Nethashget(obj_attr_list["cloud_ip"])
+                    _nh_conn = Nethashget(obj_attr_list["prov_cloud_ip"])
                     _port_to_check = obj_attr_list["check_boot_complete"].replace("tcp_on_",'')
                     
                     _msg = "Check if the VM \"" + obj_attr_list["cloud_name"]
                     _msg += "\" (" + obj_attr_list["name"] + ") is booted by "
                     _msg += "attempting to establish a TCP connection to port "
                     _msg += str(_port_to_check) + " on address "
-                    _msg += obj_attr_list["cloud_ip"]
+                    _msg += obj_attr_list["prov_cloud_ip"]
                     cbdebug(_msg)
                     
                     _vm_is_booted = _nh_conn.check_port(int(_port_to_check), "TCP")
 
                 elif obj_attr_list["check_boot_complete"].count("subscribe_on_") :
 
-                    _string_to_search = obj_attr_list["cloud_ip"] + " is "
+                    _string_to_search = obj_attr_list["prov_cloud_ip"] + " is "
                     _string_to_search += "booted"
                     
                     _channel_to_subscribe = obj_attr_list["check_boot_complete"].replace("subscribe_on_",'')
@@ -261,7 +300,7 @@ class CommonCloudFunctions:
                     _msg += _string_to_search + "\"."
                     cbdebug(_msg)
 
-                    self.osci.add_to_list(obj_attr_list["cloud_name"], "VM", "VMS_BOOTING", obj_attr_list["cloud_ip"])
+                    self.osci.add_to_list(obj_attr_list["cloud_name"], "VM", "VMS_BOOTING", obj_attr_list["prov_cloud_ip"])
                     
                     _sub_channel = self.osci.subscribe(obj_attr_list["cloud_name"], "VM", _channel_to_subscribe)
                     for _message in _sub_channel.listen() :
@@ -271,7 +310,7 @@ class CommonCloudFunctions:
                             break
         
                     _sub_channel.unsubscribe()
-                    self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "VMS_BOOTING", obj_attr_list["cloud_ip"])
+                    self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "VMS_BOOTING", obj_attr_list["prov_cloud_ip"])
 
                 elif obj_attr_list["check_boot_complete"].count("wait_for_") :
                     _boot_wait_time = int(obj_attr_list["check_boot_complete"].replace("wait_for_",''))

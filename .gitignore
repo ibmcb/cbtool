@@ -42,6 +42,8 @@ jar/file.jar
 jar/http.jar
 jar/database.jar
 jar/supporting
+scripts/hadoop/HiBench
+hadoop-1.0.4-bin.tar.gz
 bin
 .externalToolBuilders/
 3rd_party

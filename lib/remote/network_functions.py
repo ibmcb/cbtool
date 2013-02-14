@@ -200,6 +200,9 @@ def hostname2ip(hostname) :
     if validIPv4(hostname) :
         _hostip = hostname
         hostname = gethostbyaddr(hostname)[0]
+        if hostname.count("in-addr.arpa") :
+            hostname = hostname.replace(".in-addr.arpa",'')
+            hostname = hostname.split('.')[0]
     else :
         _hostip = gethostbyname(hostname)
     return hostname, _hostip
