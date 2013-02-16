@@ -161,8 +161,8 @@ experiment_list <- get_experiment_name_list(experiment_directories)
 
 for (experiment in experiment_list) {
 
-	plot_trace_data(trace_metrics, opt$directory, experiment, opt$size)
-	
+#	plot_trace_data(trace_metrics, opt$directory, experiment, opt$size)
+
 	if (opt$provisionmetrics) {
 	
 		msg <- paste("### Generating management metrics plot for experiment ", 

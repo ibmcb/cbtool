@@ -873,6 +873,8 @@ class BaseObjectOperations :
 
             ######### "ACTIVE" OPERATION OBJECT INITIALIZATION - BEGIN #########
             if cmd.count("cleanup") :
+                _time_parameters = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "time", False)
+                obj_attr_list["experiment_id"] = _time_parameters["experiment_id"]
 
                 _cloud_parameters = self.get_cloud_parameters(obj_attr_list["cloud_name"])
                 
@@ -911,6 +913,9 @@ class BaseObjectOperations :
             elif cmd.count("attach") :
 
                 _postpone_counter = False
+
+                _time_parameters = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "time", False)
+                obj_attr_list["experiment_id"] = _time_parameters["experiment_id"]
 
                 obj_attr_list["mgt_001_provisioning_request_originated"] = obj_attr_list["command_originated"]
  

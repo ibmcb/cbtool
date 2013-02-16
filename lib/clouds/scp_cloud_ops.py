@@ -39,7 +39,7 @@ class ScpCmds(CommonCloudFunctions) :
     TBD
     '''
     @trace
-    def __init__ (self, pid, osci) :
+    def __init__ (self, pid, osci, expid = None) :
         '''
         TBD
         '''
@@ -50,6 +50,7 @@ class ScpCmds(CommonCloudFunctions) :
         self.access_url = False
         self.ft_supported = False
         self.lock = False
+        self.expid = expid
 
     @trace
     def get_description(self) :
@@ -469,6 +470,8 @@ class ScpCmds(CommonCloudFunctions) :
                 _msg += "\")....."
                 cbdebug(_msg, True)
                 _status, _fmsg = self.vmccleanup(obj_attr_list)
+            else :
+                _status = 0
 
             _access_url, _iaas_endpoint = obj_attr_list["access"].split('-')
             _name, _discard = _access_url.split(':')

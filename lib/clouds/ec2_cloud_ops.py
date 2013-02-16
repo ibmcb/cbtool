@@ -41,7 +41,7 @@ class Ec2Cmds(CommonCloudFunctions) :
     TBD
     '''
     @trace
-    def __init__ (self, pid, osci) :
+    def __init__ (self, pid, osci, expid = None) :
         '''
         TBD
         '''
@@ -49,6 +49,7 @@ class Ec2Cmds(CommonCloudFunctions) :
         self.pid = pid
         self.osci = osci
         self.ec2conn = False
+        self.expid = expid
 
     @trace
     def get_description(self) :
@@ -340,6 +341,8 @@ class Ec2Cmds(CommonCloudFunctions) :
                 _msg += "\")....."
                 cbdebug(_msg, True)                
                 _status, _fmsg = self.vmccleanup(obj_attr_list)
+            else :
+                _status = 0
 
             _x, _y, _hostname = self.connect(obj_attr_list["access"], obj_attr_list["credentials"], obj_attr_list["name"])
 

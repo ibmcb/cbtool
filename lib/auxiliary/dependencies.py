@@ -112,6 +112,60 @@ def check_git_version(hostname, username, trd_party_dir) :
             _msg += " The package is usually called \"git-core\"\n"
         return _status, _msg
 
+def check_ip_utility(hostname, username, trd_party_dir) :
+    '''
+    TBD
+    '''
+    try:
+        _status = 100
+        _fmsg = "An error has occurred, but no error message was captured"
+        
+        _proc_man =  ProcessManagement()
+        _msg = "Checking \"ip\" utility....."
+        _status, _result_stdout, _result_stderr = _proc_man.run_os_command("ip -V")
+        if not _status :
+            _msg += "OK"
+        
+    except ProcessManagement.ProcessManagementException, obj :
+        _status = str(obj.status)
+#        _msg += str(obj.msg)
+
+    except Exception, e :
+        _status = 23
+#        _msg += str(e)
+
+    finally :
+        if _status :
+            _msg += "Please make sure that the \"ip\" utility can be executed (i.e., is the PATH correct?)\n"
+        return _status, _msg
+
+def check_ifconfig_utility(hostname, username, trd_party_dir) :
+    '''
+    TBD
+    '''
+    try:
+        _status = 100
+        _fmsg = "An error has occurred, but no error message was captured"
+        
+        _proc_man =  ProcessManagement()
+        _msg = "Checking \"ifconfig\" utility....."
+        _status, _result_stdout, _result_stderr = _proc_man.run_os_command("ifconfig")
+        if not _status :
+            _msg += "OK"
+
+    except ProcessManagement.ProcessManagementException, obj :
+        _status = str(obj.status)
+#        _msg += str(obj.msg)
+
+    except Exception, e :
+        _status = 23
+#        _msg += str(e)
+
+    finally :
+        if _status :
+            _msg += "Please make sure that the \"ifconfig\" utility can be executed (i.e., is the PATH correct?)\n"
+        return _status, _msg
+
 def check_screen_version(hostname, username, trd_party_dir) :
     '''
     TBD
@@ -416,10 +470,10 @@ def check_python_setuptools(hostname, username, trd_party_dir) :
         _msg = "Checking for python-setuptools....."
         import setuptools 
         from setuptools import sandbox 
-
+        
         del setuptools 
 
-        _msg += "done." 
+        _msg += "OK" 
         _status = 0
         
     except ImportError, e:
@@ -503,7 +557,7 @@ def check_python_twisted_version(hostname, username, trd_party_dir) :
             _msg += " The packages are usually called \"python-twisted-web\"\n"       
         return _status, _msg
 
-def check_python_webob_version(hostname, username, trd_party_dir) :
+def check_python_webob(hostname, username, trd_party_dir) :
     '''
     TBD
     '''
@@ -511,10 +565,10 @@ def check_python_webob_version(hostname, username, trd_party_dir) :
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
         
-        _msg = "Checking python-webob library version..... (any)"
+        _msg = "Checking python-webob library....."
         import webob
         from webob import Request, Response, exc
-        
+        _msg += "OK"
         #_version = str(webob.__version__).strip()
         del webob 
         #_msg += compare_versions('0.9.6', _version)
@@ -534,7 +588,7 @@ def check_python_webob_version(hostname, username, trd_party_dir) :
             _msg += " The packages are usually called \"python-webob\"\n"       
         return _status, _msg
 
-def check_python_beaker_version(hostname, username, trd_party_dir) :
+def check_python_beaker(hostname, username, trd_party_dir) :
     '''
     TBD
     '''
@@ -542,10 +596,11 @@ def check_python_beaker_version(hostname, username, trd_party_dir) :
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
         
-        _msg = "Checking python-beaker library version..... (any)"
+        _msg = "Checking python-beaker library..... "
         import beaker 
         from beaker.middleware import SessionMiddleware
-        
+        _msg += "OK"
+
         #_version = str(beaker.__version__).strip()
         del beaker 
         #_msg += compare_versions('1.3.0', _version)
@@ -745,7 +800,7 @@ def check_ec2_python_bindings(hostname, username, trd_party_dir) :
             _msg += "cd boto; sudo python setup.py install\n"
         return _status, _msg
 
-def check_pypureomapi(hostname, username, trd_party_dir) :
+def check_omapi_python_bindings(hostname, username, trd_party_dir) :
     '''
     TBD
     '''
@@ -776,6 +831,37 @@ def check_pypureomapi(hostname, username, trd_party_dir) :
             _msg += trd_party_dir + "; wget http://pypureomapi.googlecode.com/files/pypureomapi-0.3.tar.gz;"
             _msg += " tar -xzvf pypureomapi-0.3.tar.gz; cd pypureomapi-0.3; "
             _msg += "sudo python setup.py install\n"
+        return _status, _msg
+
+def check_libvirt_python_bindings(hostname, username, trd_party_dir) :
+    '''
+    TBD
+    '''
+    try:
+        _status = 100
+        _fmsg = "An error has occurred, but no error message was captured"
+        
+        _msg = "Checking libvirt python bindings version....."
+        import libvirt
+        
+        _version = str(libvirt.getVersion()).strip()
+        del libvirt
+
+        _msg += compare_versions('9003', _version)
+        _status = 0
+        
+    except ImportError, e:
+        _status = 7282
+#        _msg += str(e)
+
+    except Exception, e :
+        _status = 23
+#        _msg += str(e)
+
+    finally :
+        if _status or _msg.count("NOT OK"):
+            _msg += " Please install libvirt python bindings using you package management system (yum or apt-get)."
+            _msg += " The packages are usually called \"libvirt-python\" or \"python-libvirt\"\n"       
         return _status, _msg
 
 def check_netcat(hostname, username, trd_party_dir) :
@@ -890,8 +976,8 @@ def dependency_checker(hostname, username, trd_party_dir) :
     _func_pointer["screen"] = check_screen_version    
     _func_pointer["python-daemon"] = check_python_daemon_version    
     _func_pointer["python-twisted"] = check_python_twisted_version 
-    _func_pointer["python-webob"] = check_python_webob_version 
-    _func_pointer["python-beaker"] = check_python_beaker_version 
+    _func_pointer["python-webob"] = check_python_webob 
+    _func_pointer["python-beaker"] = check_python_beaker 
     _func_pointer["rsyslog"] = check_rsyslogd_version 
     _func_pointer["redis"] = check_redis_binary
     _func_pointer["redis-py"] = check_redis_python_bindings
@@ -906,10 +992,13 @@ def dependency_checker(hostname, username, trd_party_dir) :
     _func_pointer["boto"] = check_ec2_python_bindings
     _func_pointer["rsync"] = check_rsync_version
     _func_pointer["ganglia"] = check_gmond_version
-    _func_pointer["pypureomapi"] = check_pypureomapi
+    _func_pointer["pypureomapi"] = check_omapi_python_bindings
     _func_pointer["netcat"] = check_netcat
     _func_pointer["libcloud"] = check_libcloud_python_bindings
     _func_pointer["R"] = check_R_version
+    _func_pointer["libvirt"] = check_libvirt_python_bindings
+    _func_pointer["ip"] = check_ip_utility
+    _func_pointer["ifconfig"] = check_ifconfig_utility
                 
     for _dep in [ "sudo", "git" ]:
         _status, _msg = _func_pointer[_dep](hostname, username, trd_party_dir)

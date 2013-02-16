@@ -41,7 +41,7 @@ class OskCmds(CommonCloudFunctions) :
     TBD
     '''
     @trace
-    def __init__ (self, pid, osci) :
+    def __init__ (self, pid, osci, expid = None) :
         '''
         TBD
         '''
@@ -49,7 +49,8 @@ class OskCmds(CommonCloudFunctions) :
         self.pid = pid
         self.osci = osci
         self.oskconn = False
-        self.ft_supported = False 
+        self.expid = expid
+        self.ft_supported = False
 
     @trace
     def get_description(self) :
@@ -394,6 +395,8 @@ class OskCmds(CommonCloudFunctions) :
                 _msg += "\")....."
                 cbdebug(_msg, True)
                 _status, _fmsg = self.vmccleanup(obj_attr_list)
+            else :
+                _status = 0
 
             if not _status :
                 _x, _y, _hostname = self.connect(obj_attr_list["access"], \
@@ -668,12 +671,17 @@ class OskCmds(CommonCloudFunctions) :
                              obj_attr_list["vmc_name"])
 
             _instances = self.oskconn.servers.list(search_opts = _search_opts)
-    
-            if len(_instances) : 
-                if vmidentifier != "all" :   
-                    return _instances[0]
-                else :
+
+            if len(_instances) > 0 :
+                if vmidentifier == "all" :   
                     return _instances
+                else :
+                    for _instance in _instances :
+                        _metadata = _instance.metadata
+                        if "experiment_id" in _metadata :
+                            if _metadata["experiment_id"] == self.expid :
+                                return _instance
+                    return False
             else :
                 return False
 
@@ -812,15 +820,14 @@ class OskCmds(CommonCloudFunctions) :
             else :
                 _scheduler_hints = None
             
+            _meta = {}
             if "meta_tags" in obj_attr_list :
                 if obj_attr_list["meta_tags"] != "empty" and \
                 obj_attr_list["meta_tags"].count(':') and \
                 obj_attr_list["meta_tags"].count(',') :
                     _meta = str2dic(obj_attr_list["meta_tags"])
-                else :
-                    _meta = None
-            else :
-                _meta = None
+            
+            _meta["experiment_id"] = obj_attr_list["experiment_id"]
 
             # This is not working. Will keep it disable for now
 #            if "netid" in obj_attr_list :

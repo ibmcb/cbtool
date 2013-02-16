@@ -301,7 +301,8 @@ plot_trace_data <- function(tdf, ed, en, sps) {
 		trace_data <- subset(tdf, (expid %in% selected_expid), 
 				select = c("ai_reservations", "ai_failed", "relative_time"))
 
-		#trace_data <- trace_data[!is.na(prov_lat_data$vm_arrival_diff),]
+		trace_data <- within(trace_data, "ai_reservations" <- ifelse(is.na(trace_data$ai_reservations), 0, trace_data$ai_reservations))
+		trace_data <- within(trace_data, "ai_failed" <- ifelse(is.na(trace_data$ai_failed), 0, trace_data$ai_failed))		
 
 		output_csv_table(ed, en, trace_data)
 
@@ -349,11 +350,12 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 
 	prov_lat_data <- prov_lat_data[!is.na(prov_lat_data$vm_arrival_diff),]
 
+	output_csv_table(ed, en, prov_lat_data)
+
 	number_of_vms <- length(prov_lat_data$name)
 
-	selected_vms <- c(c("1", "2", "3"), seq(number_of_vms - 2, number_of_vms))
-
 	if (number_of_vms > mnv ) {
+		selected_vms <- c(c("1", "2", "3"), seq(number_of_vms - 2, number_of_vms))
 		msg <- paste("WARNING: The number of VMs is too large (", number_of_vms, 
 				"). Will", " plot only the 3 smallest and the 3 largest ", 
 				"provisioning time", sep = '')
@@ -367,8 +369,6 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 
 	columns_remove <- c("name", "vm_arrival_diff")
 	prov_lat_data <- prov_lat_data[,!(names(prov_lat_data) %in% columns_remove)]
-
-	output_csv_table(ed, en, prov_lat_data)
 
 	prov_lat_data <- melt(prov_lat_data, id.vars="full_obj_name")
 

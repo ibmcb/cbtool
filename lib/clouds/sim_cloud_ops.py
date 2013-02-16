@@ -37,7 +37,7 @@ class SimCmds(CommonCloudFunctions) :
     TBD
     '''
     @trace
-    def __init__ (self, pid, osci) :
+    def __init__ (self, pid, osci, expid = None) :
         '''
         TBD
         '''
@@ -45,6 +45,7 @@ class SimCmds(CommonCloudFunctions) :
         self.pid = pid
         self.osci = osci
         self.ft_supported = False
+        self.expid = expid
 
     @trace
     def get_description(self) :
@@ -227,6 +228,8 @@ class SimCmds(CommonCloudFunctions) :
 
             if "cleanup_on_attach" in obj_attr_list and obj_attr_list["cleanup_on_attach"] == "True" :
                 _status, _fmsg = self.vmccleanup(obj_attr_list)
+            else :
+                _status = 0
 
             obj_attr_list["cloud_hostname"] = obj_attr_list["name"]
             obj_attr_list["cloud_ip"] = self.generate_random_ip_address()

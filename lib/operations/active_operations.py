@@ -526,7 +526,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 if not _status :                    
                     _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])            
-                    _cld_conn = _cld_ops_class(self.pid, self.osci)
+                    _cld_conn = _cld_ops_class(self.pid, self.osci, obj_attr_list["experiment_id"])
     
                     _status, _fmsg = _cld_conn.vmccleanup(obj_attr_list)
                     _result = obj_attr_list
@@ -1437,11 +1437,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
     
                     _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
                         
-                    _cld_conn = _cld_ops_class(self.pid, self.osci)
+                    _cld_conn = _cld_ops_class(self.pid, self.osci, obj_attr_list["experiment_id"])
     
                     if _obj_type == "VMC" :
                         self.pre_attach_vmc(obj_attr_list)
-    
+
                     elif _obj_type == "VM" :
                         self.pre_attach_vm(obj_attr_list)
     
@@ -1790,7 +1790,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             
             if obj_attr_list["model"].lower() != "sim" :
                 _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
-                _cld_conn = _cld_ops_class(self.pid, self.osci)
+                _cld_conn = _cld_ops_class(self.pid, self.osci, obj_attr_list["experiment_id"])
                 _status, _fmsg = cld_conn.vmreplicate_start(obj_attr_list)
             
             _status = 100
@@ -2358,7 +2358,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _status = 0
             else :
                 _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
-                _cld_conn = _cld_ops_class(self.pid, self.osci)
+                _cld_conn = _cld_ops_class(self.pid, self.osci, obj_attr_list["experiment_id"])
                 _msg = "Going to disable replication to stub " + obj_attr_list["name"] + "..."
                 cbdebug(_msg, True)
                 # Put back when disabling works.....
@@ -2559,7 +2559,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _detach_pending = True
                 
                 _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
-                _cld_conn = _cld_ops_class(self.pid, self.osci)
+                _cld_conn = _cld_ops_class(self.pid, self.osci, obj_attr_list["experiment_id"])
 
                 obj_attr_list["current_state"] = \
                 self.osci.get_object_state(obj_attr_list["cloud_name"], _obj_type, obj_attr_list["uuid"])
@@ -3104,7 +3104,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 if not _status :
                     _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
-                    _cld_conn = _cld_ops_class(self.pid, self.osci)
+                    _cld_conn = _cld_ops_class(self.pid, self.osci, obj_attr_list["experiment_id"])
 
                     if "vmcrs" in obj_attr_list and obj_attr_list["vmcrs"] != "none" :
                         self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VMCRS", \
@@ -3261,7 +3261,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 
             if not _status :
                 _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
-                _cld_conn = _cld_ops_class(self.pid, self.osci)
+                _cld_conn = _cld_ops_class(self.pid, self.osci, obj_attr_list["experiment_id"])
 
                 if "ai" in obj_attr_list and obj_attr_list["ai"].lower() != "none" :
                     _ai_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "AI", False, obj_attr_list["ai"], False)
@@ -3422,7 +3422,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             if _target_state != _current_state :
                                 obj_attr_list["current_state"] = _current_state
                                 _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
-                                _cld_conn = _cld_ops_class(self.pid, self.osci)
+                                _cld_conn = _cld_ops_class(self.pid, self.osci, obj_attr_list["experiment_id"])
                                          
                                 # TAC looks up libvirt function based on target state
                                 # Do not remove this
@@ -4374,7 +4374,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                     _proc_man = ProcessManagement(username = _aidrs_attr_list["username"], \
                                                   cloud_name = _aidrs_attr_list["cloud_name"])
-            
+
+                    # Here, instead of using "start_daemon", "run_os_command" is
+                    # used to save a few seconds. 
                     _aid_pid = _proc_man.run_os_command(_cmd)
             
                     if _aid_pid :
@@ -4484,7 +4486,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                         _proc_man = ProcessManagement(username = _aidrs_attr_list["username"], \
                                                       cloud_name = _aidrs_attr_list["cloud_name"])
-                
+
+                        # Here, instead of using "start_daemon", "run_os_command" is
+                        # used to save a few seconds.                 
                         _aid_pid = _proc_man.run_os_command(_cmd)
 
                         if _aid_pid :
