@@ -35,6 +35,7 @@ if [ x"$my_role" == x"hadoopmaster" ]; then
 fi
 
 syslog_netcat "Waiting for all Datanodes to become available....."
+syslog_netcat "`${HADOOP_HOME}/bin/hadoop dfsadmin -report`"
 while [ z${DATANODES_AVAILABLE} != z"true" ]
 do
     DFSADMINOUTPUT=`${HADOOP_HOME}/bin/hadoop dfsadmin -report | grep "Datanodes available"`
@@ -50,28 +51,6 @@ do
 done
 syslog_netcat "All Datanodes (${TOTAL_NODES}) available now"
 
-#Prepare input data for the hadoop execution
-#Run teragen!
-
-if [ x"$my_role" == x"hadoopmaster" ]; then
-
-	dont_generate_input_data=`get_my_ai_attribute dont_generate_input_data`
-	dont_generate_input_data=`echo ${dont_generate_input_data} | tr '[:upper:]' '[:lower:]'`
-
-	if [ "${dont_generate_input_data}" = "true" ]
-	then
-		syslog_netcat "AI parameter \"dont_generate_input_data\" set to \"true\". No input data will be generated (useful for diagnostic purposes)"
-	else
-		for key in "${!tab_LOAD_LEVEL_geninput[@]}"
-		do
-			syslog_netcat "....Generating input by running the command \"${jar_command} ${tab_LOAD_LEVEL_geninput[$key]} \"...."
-			$jar_command ${tab_LOAD_LEVEL_geninput[$key]} 2>&1 | while read line; do
-				syslog_netcat "$line"
-			done
-			syslog_netcat "......Done......"
-		done
-	fi
-fi
 syslog_netcat "......exit......"
 provision_application_stop $START
 exit 0

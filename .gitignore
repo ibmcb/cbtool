@@ -27,6 +27,7 @@ docs/*_metrics.ppt
 util/*.sh
 util/experimental
 util/graveyard
+util/pydevm/*
 util/*.sh
 util/*omapi
 util/get_qemu*

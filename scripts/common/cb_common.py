@@ -143,7 +143,7 @@ def get_my_ip() :
     '''
     TBD
     '''
-    _cmd = " ip -o addr show $(ip route | grep default"
+    _cmd = "ip -o addr show $(ip route | grep default"
     _cmd += " | grep -oE \"dev [a-z]+[0-9]+\" | sed \"s/dev //g\") "
     _cmd += "| grep -Eo \"[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*\" | grep -v 255"
 
@@ -200,7 +200,7 @@ def get_uuid_from_ip(ipaddr) :
         else :
             return _uuid
 
-def get_stores_parms () :
+def get_stores_parms() :
     '''
     TBD
     '''
@@ -213,6 +213,7 @@ def get_stores_parms () :
         _fc = _fh.readlines()
         _fh.close()
 
+        _my_uuid = False
         _oscp = {}
         for _line in _fc :
             _line = _line.strip()
@@ -230,6 +231,8 @@ def get_stores_parms () :
                 _oscp["cloud_name"] = _line[6:]
             elif _line.count("#OSMO-") :
                 _oscp["mode"] = _line[6:]
+            elif _line.count("#VMUUID-") :
+                _my_uuid = _line[8:]                
             elif _line.count("#OSOI-") :
                 _oscp["experiment_inst"] = _line[6:].replace(':' + _oscp["cloud_name"],'')
                 _oscp["pid"] = _oscp["experiment_inst"]
@@ -296,7 +299,7 @@ def get_stores_parms () :
             exit(2)
         else :
             _msg = "Object Store parameters obtained successfully."
-            return _oscp, _mscp, _lscp
+            return _my_uuid, _oscp, _mscp, _lscp
 
 def setup_syslog(verbosity, quiet = False, logdest = "syslog") :
     '''
@@ -307,7 +310,7 @@ def setup_syslog(verbosity, quiet = False, logdest = "syslog") :
         _fmsg = ""
         _status = 100
         
-        _oscp, _mscp, _lscp = get_stores_parms()
+        _my_uuid, _oscp, _mscp, _lscp = get_stores_parms()
         
         # HACK ALERT - A very crude "syslog facility selector"
         _syslog_selector = {}
@@ -442,7 +445,7 @@ def get_ms_conn(mscp = None, cn = None) :
     '''
     try :
 
-        _oscp, _mscp, _lscp = get_stores_parms()
+        _my_uuid, _oscp, _mscp, _lscp = get_stores_parms()
 
         _ms_adapter = __import__("lib.stores." + _mscp["kind"] + "_datastore_adapter", \
                                  fromlist=[_mscp["kind"].capitalize() + "MgdConn"])
@@ -472,7 +475,7 @@ def get_ms_conn(mscp = None, cn = None) :
             exit(2)
         else :
             _msg = "Metric store adapter set up successfully."
-            return _msci, _mscp["experiment_id"], _mscp["username"]
+            return _msci, _my_uuid, _mscp["experiment_id"], _mscp["username"]
 
 def get_os_conn(oscp = None) :
     '''
@@ -482,7 +485,7 @@ def get_os_conn(oscp = None) :
         _fmsg = ""
 
         if not oscp :
-            _oscp, _mscp, _lscp = get_stores_parms()
+            _my_uuid, _oscp, _mscp, _lscp = get_stores_parms()
         else :
             _oscp = oscp
 
@@ -514,11 +517,11 @@ def get_os_conn(oscp = None) :
             exit(2)
         else :
             _msg = "Object store adapter set up successfully."
-            return _osci
+            return _osci, _my_uuid
             
-def report_app_metrics(vmuuid, metriclist) :
+def report_app_metrics(metriclist) :
 
-    _msci, _expid, _username = get_ms_conn()
+    _msci, _my_uuid, _expid, _username = get_ms_conn()
     setup_syslog(1)
     
     try :
@@ -535,7 +538,7 @@ def report_app_metrics(vmuuid, metriclist) :
         _metrics_dict["time"] = int(time())
         _metrics_dict["time_h"] = strftime("%a %b %d %X %Z %Y")
         _metrics_dict["expid"] = _expid
-        _metrics_dict["uuid"] = vmuuid
+        _metrics_dict["uuid"] = _my_uuid
 
         if "app_load_id" in _metrics_dict and _metrics_dict["app_load_id"]["val"] == "1" :
             for _key in _metrics_dict.keys() :

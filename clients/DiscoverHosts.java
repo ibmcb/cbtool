@@ -19,28 +19,28 @@ import api.APIServiceClient;
 import api.APIException;
 import api.APINoSuchDataException;
 
-public class ProvisionVM {
+public class DiscoverHosts {
 	@SuppressWarnings("unchecked")
 	public static void main(String[] args) throws APINoSuchDataException {
 		 try {
-			 APIServiceClient api = new APIServiceClient("172.16.1.250", 7080);
 			 
-			 // Create a VM
-			 HashMap<String, String> vm = (HashMap<String, String>) api.perform("vmattach", "TESTSIMCLOUD", "tinyvm");
-			 
-			 System.out.println("Created VM: " + vm.get("uuid"));
-			 
-			 // Lookup some data from the monitoring system
-			 //System.out.println(api.get_latest_data("TESTSIMCLOUD", vm.get("uuid"), "runtime_os_VM"));
-			 
-    		 for(String key : vm.keySet()) {
-    			 System.out.println(key + " = " + String.valueOf(vm.get(key)));
-    		 }
-    		 
-    		 // Destroy the VM
-    		 // System.out.println("Destroying VM...");
-    		 // api.perform("vmdetach",  "TESTSIMCLOUD", vm.get("uuid"));
-    		 
+			 String cloudname = "TESTOPENSTACK";
+
+			 APIServiceClient api = new APIServiceClient("172.16.1.250", 7070);
+
+			 Object[] hostlist = (Object[]) api.perform("hostlist", cloudname);
+
+    		 System.out.println("-----------------------------------------");
+			 for (int i = 0; i < hostlist.length; i++) {
+				 HashMap<String, String> hostshortdict = (HashMap<String, String>) hostlist[i];
+				 String hostname = String.valueOf(hostshortdict.get("name"));
+				 HashMap<String, String> hostlongdict = (HashMap<String, String>) api.perform("hostshow", cloudname, hostname);
+	    		 for(String key : hostlongdict.keySet()) {
+	    		     System.out.println(key + " = " + String.valueOf(hostlongdict.get(key)));
+	    		  }
+	    		 System.out.println("-----------------------------------------");
+			 }
+
 		 } catch (APIException e) {
 		     System.err.println("APIServiceClient failure: " + e);
 		 }

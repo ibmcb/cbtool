@@ -76,12 +76,9 @@ syslog_netcat "netperf run complete. Will collect and report the results"
 
 if [ ${LOAD_LEVEL} -le 2 ]; then
 	bw=`tail -1 ${OUTPUT_FILE} | awk '{ print $5 }' | tr -d ' '`
-	tp="-1"
 elif [  ${LOAD_LEVEL} -eq 3 ]; then
 	bw=`tail -2 ${OUTPUT_FILE} | head -1 | awk '{ print $4 }' | tr -d ' '`
-	tp="-1"
 else
-	bw="-1"
 	tp=`tail -2 ${OUTPUT_FILE} | head -1 | awk '{ print $6 }' | tr -d ' '`
 fi
 

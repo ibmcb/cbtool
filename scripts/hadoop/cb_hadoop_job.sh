@@ -29,16 +29,121 @@ then
 	exit 1
 fi
 
-is_valid_LOAD_LEVEL=0
-for k in "${!tab_LOAD_LEVEL_jar[@]}"
-do
-	if [ "$k" -eq "$LOAD_LEVEL" ]; then
-		is_valid_LOAD_LEVEL=1
-	fi
-done
-if [ ${is_valid_LOAD_LEVEL} -eq 0 ]; then
-	LOAD_LEVEL=1
-fi
+DATA_HDFS=`get_my_ai_attribute_with_default dfs_data_dir /tmp/cbhadoopdata`
+export DATA_HDFS
+
+LOAD_FACTOR=`get_my_ai_attribute_with_default load_factor "1000"`
+
+case ${LOAD_PROFILE} in
+	bayes)
+	PAGES=$((${LOAD_LEVEL}*${LOAD_FACTOR}))
+	CLASSES=`get_my_ai_attribute_with_default classes "20"`
+	NUM_MAPS=`get_my_ai_attribute_with_default num_maps "2"`
+	NUM_REDS=`get_my_ai_attribute_with_default num_reds "2"`
+	NGRAMS=`get_my_ai_attribute_with_default ngrams "3"`
+	export PAGES
+	export NUM_MAPS
+	export NUM_REDS
+	export NGRAMS
+	SCRIPT_NAMES="prepare run"
+	syslog_netcat "Parameters used for bayes are: PAGES=${PAGES}, CLASSES=${CLASSES}, NUM_MAPS=${NUM_MAPS}, NUM_REDS=${NUM_REDS}, NGRAMS=${NGRAMS}"	
+	;;
+	dfsioe)
+	RD_NUM_OF_FILES=$((${LOAD_LEVEL}*${LOAD_FACTOR}))
+	RD_FILE_SIZE=`get_my_ai_attribute_with_default rd_file_size "2"`
+	WT_NUM_OF_FILES=$((${LOAD_LEVEL}*${LOAD_FACTOR}))
+	WT_FILE_SIZE=`get_my_ai_attribute_with_default wt_file_size "1"`
+	export RD_NUM_OF_FILES
+	export RD_FILE_SIZE
+	export WT_NUM_OF_FILES
+	export WT_FILE_SIZE
+	SCRIPT_NAMES="prepare-read run-read run-write"
+	syslog_netcat "Parameters used for dfsioe are: RD_NUM_OF_FILES=${RD_NUM_OF_FILES}, RD_FILE_SIZE=${RD_FILE_SIZE}, WT_NUM_OF_FILES=${WT_NUM_OF_FILES}, WT_FILE_SIZE=${WT_FILE_SIZE}"	
+	;;
+	hivebench)
+	USERVISITS=$((8*${LOAD_LEVEL}*${LOAD_FACTOR}))
+	PAGES=$((${LOAD_LEVEL}*${LOAD_FACTOR}))
+	NUM_MAPS=`get_my_ai_attribute_with_default num_maps "2"`
+	NUM_REDS=`get_my_ai_attribute_with_default num_reds "2"`
+	export USERVISITS
+	export PAGES
+	export NUM_MAPS
+	export NUM_REDS
+	SCRIPT_NAMES="prepare run-aggregator run-join"
+	syslog_netcat "Parameters used for hivebench are: USERVISITS=${USERVISITS}, PAGES=${PAGES}, NUM_MAPS=${NUM_MAPS}, NUM_REDS=${NUM_REDS}"
+	;;
+	kmeans)
+	NUM_OF_CLUSTERS=`get_my_ai_attribute_with_default num_of_clusters "5"`
+	NUM_OF_SAMPLES=$((5*${LOAD_LEVEL}*${LOAD_FACTOR}))
+	SAMPLES_PER_INPUTFILE=$((${LOAD_LEVEL}*${LOAD_FACTOR}))
+	DIMENSIONS=`get_my_ai_attribute_with_default dimensions "20"`
+	MAX_ITERATION=`get_my_ai_attribute_with_default max_iteration "5"`
+	export NUM_OF_CLUSTERS
+	export NUM_OF_SAMPLES
+	export SAMPLES_PER_INPUTFILE
+	export DIMENSIONS
+	export MAX_ITERATION
+	SCRIPT_NAMES="prepare run"
+	syslog_netcat "Parameters used for kmeans are: NUM_OF_CLUSTERS=${NUM_OF_CLUSTERS}, NUM_OF_SAMPLES=${NUM_OF_SAMPLES}, SAMPLES_PER_INPUTFILE=${SAMPLES_PER_INPUTFILE}, DIMENSIONS=${DIMENSIONS}, MAX_ITERATION=${MAX_ITERATION}"
+	;;
+	nutchindexing)
+	PAGES=$((${LOAD_LEVEL}*${LOAD_FACTOR}))
+	NUM_MAPS=`get_my_ai_attribute_with_default num_maps "2"`
+	NUM_REDS=`get_my_ai_attribute_with_default num_reds "2"`
+	export PAGES
+	export NUM_MAPS
+	export NUM_REDS	
+	syslog_netcat "Parameters used for nutchindexing are: PAGES=${PAGES}, NUM_MAPS=${NUM_MAPS}, NUM_REDS=${NUM_REDS}"
+	;;
+	pagerank)
+	PAGES=$((${LOAD_LEVEL}*${LOAD_FACTOR}))
+	NUM_MAPS=`get_my_ai_attribute_with_default num_maps "2"`
+	NUM_REDS=`get_my_ai_attribute_with_default num_reds "2"`
+	NUM_ITERATIONS=`get_my_ai_attribute_with_default num_iterations "3"`
+	BLOCK=`get_my_ai_attribute_with_default block "0"`
+	BLOCK_WIDTH=`get_my_ai_attribute_with_default block_width "16"`
+	export PAGES
+	export NUM_MAPS
+	export NUM_REDS
+	export BLOCK
+	export BLOCK_WIDTH
+	SCRIPT_NAMES="prepare run"	
+	syslog_netcat "Parameters used for pagerank are: PAGES=${PAGES}, NUM_MAPS=${NUM_MAPS}, NUM_REDS=${NUM_REDS}, BLOCK=${BLOCK}, BLOCK_WIDTH=${BLOCK_WIDTH}"
+	;;
+	sort)
+	DATASIZE=$((${LOAD_LEVEL}*${LOAD_FACTOR}))
+	NUM_MAPS=`get_my_ai_attribute_with_default num_maps "2"`
+	NUM_REDS=`get_my_ai_attribute_with_default num_reds "2"`
+	export DATASIZE
+	export NUM_MAPS
+	export NUM_REDS
+	SCRIPT_NAMES="prepare run"	
+	syslog_netcat "Parameters used for sort are: DATASIZE=${DATASIZE}, NUM_MAPS=${NUM_MAPS}, NUM_REDS=${NUM_REDS}"
+	;;
+	terasort)
+	DATASIZE=$((${LOAD_LEVEL}*${LOAD_FACTOR}))
+	NUM_MAPS=`get_my_ai_attribute_with_default num_maps "2"`
+	NUM_REDS=`get_my_ai_attribute_with_default num_reds "2"`
+	export DATASIZE
+	export NUM_MAPS
+	export NUM_REDS
+	SCRIPT_NAMES="prepare run"	
+	syslog_netcat "Parameters used for terasort are: DATASIZE=${DATASIZE}, NUM_MAPS=${NUM_MAPS}, NUM_REDS=${NUM_REDS}"
+	;;
+	wordcount)
+	DATASIZE=$((${LOAD_LEVEL}*${LOAD_FACTOR}))
+	NUM_MAPS=`get_my_ai_attribute_with_default num_maps "2"`
+	NUM_REDS=`get_my_ai_attribute_with_default num_reds "2"`
+	export DATASIZE
+	export NUM_MAPS
+	export NUM_REDS
+	SCRIPT_NAMES="prepare run"	
+	syslog_netcat "Parameters used for wordcount are: DATASIZE=${DATASIZE}, NUM_MAPS=${NUM_MAPS}, NUM_REDS=${NUM_REDS}"
+	;;
+	*)
+    syslog_netcat "Unknown load profile: ${LOAD_PROFILE}"
+    exit 1
+esac
 
 if [ x"${collect_from_guest}" == x"true" ]
 then
@@ -52,48 +157,38 @@ fi
 
 syslog_netcat "Benchmarking hadoop SUT: MASTER=${hadoop_master_ip} -> SLAVES=${slave_ips_csv} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
 
-command_line="$jar_command ${tab_LOAD_LEVEL_jar[$LOAD_LEVEL]} ${tab_LOAD_LEVEL_options[$LOAD_LEVEL]}  ${tab_LOAD_LEVEL_input[$LOAD_LEVEL]} ${tab_LOAD_LEVEL_output[$LOAD_LEVEL]}"
-
 source ~/cb_barrier.sh start
+
+syslog_netcat "Removing old HiBench report file"
+rm -rf ${HIBENCH_HOME}/hibench.report
 
 OUTPUT_FILE=`mktemp`
 
-syslog_netcat "Command line is: ${command_line}"
-if [ x"${log_output_command}" == x"true" ]; then
-	syslog_netcat "Command output will be shown"
-	$command_line | while read line ; do
-		syslog_netcat "$line"
-		echo $line >> $OUTPUT_FILE
-	done
-else
-	syslog_netcat "Command output will NOT be shown"
-	$command_line 2>&1 >> $OUTPUT_FILE
-fi
+for script_name in ${SCRIPT_NAMES}; do
+	command_line="${HIBENCH_HOME}/${LOAD_PROFILE}/bin/${script_name}.sh"
+	syslog_netcat "Command line is: ${command_line}"
+	if [ x"${log_output_command}" == x"true" ]; then
+		syslog_netcat "Command output will be shown"
+		$command_line | while read line ; do
+			syslog_netcat "$line"
+			echo $line >> $OUTPUT_FILE
+		done
+	else
+		syslog_netcat "Command output will NOT be shown"
+		$command_line 2>&1 >> $OUTPUT_FILE
+	fi
+done
 
 syslog_netcat "..hadoop job is done. Ready to do a summary..."
 
 #Parse and report the performace
 
-~/cb_hadoop_report.py ${HADOOP_EXE} /user/${my_login_username}/${tab_LOAD_LEVEL_output[$LOAD_LEVEL]}/_logs/history load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec
+lat=`cat ${HIBENCH_HOME}/hibench.report | grep -v Type | tr -s ' ' | cut -d ' ' -f 5`
+lat=`echo "${lat} * 1000" | bc`
+tput=`cat ${HIBENCH_HOME}/hibench.report | grep -v Type | tr -s ' ' | cut -d ' ' -f 6`
 
-logfile_name=`$HADOOP_EXE fs -ls /user/${my_login_username}/${tab_LOAD_LEVEL_output[$LOAD_LEVEL]}/_logs/history | grep -v ".xml" | grep -v Found | awk '{print $8}'`
-syslog_netcat "....logfile_name: $logfile_name"
+report_app_metrics load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec throughput:$tput:tps latency:$lat:msec
 
-if [ x"${logfile_name}" != x ]; then
-#       rsync ${logfile_name} $HADOOP_LOG_DEST/${logfile_name}_${LOAD_LEVEL} 
-#       syslog_netcat "sending $logfile_name ${CB_NODE}:$HADOOP_LOG_DIR/${logfile_name}_${LOAD_LEVEL}" 
-
-        short_name=${tab_LOAD_LEVEL_output[$LOAD_LEVEL]}
-        filename=`$HADOOP_EXE fs -ls | grep $short_name | awk '{print $NF}'`
-        if [[ $filename =~ /*/*/$short_name ]]
-        then
-                $HADOOP_EXE fs -rmr $filename
-                syslog_netcat "---removing old dir $filename---"
-        fi
-
-else
-        syslog_netcat "File $logfile_name does not exist"
-fi
 syslog_netcat "...hadoop job finished..."
 
 exit 0

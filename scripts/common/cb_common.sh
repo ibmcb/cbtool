@@ -33,6 +33,7 @@ osdatabasenumber=`cat ~/cb_os_parameters.txt | grep "#OSDN" | cut -d "-" -f 2`
 osinstance=`cat ~/cb_os_parameters.txt | grep "#OSOI" | sed 's/#OSOI-//g'`
 osprocid=`echo ${osinstance} | cut -d ":" -f 1`
 osmode=`cat ~/cb_os_parameters.txt | grep "#OSMO" | cut -d "-" -f 2`
+my_vm_uuid=`cat ~/cb_os_parameters.txt | grep VMUUID | sed 's/#VMUUID-//g'`
 
 RANGE=60
 ATTEMPTS=3
@@ -66,6 +67,7 @@ if [ x"$RSYSLOGD_CMD" == x ] ; then
 fi
 
 export PATH=$PATH:~
+eval PATH=$PATH
 
 # Test for redis-cli
 if [ x"$(uname -a | grep CYGWIN)" != x ] ; then
@@ -85,16 +87,6 @@ else
 fi
 
 SCRIPT_NAME=$0
-
-function get_my_net_iface {
-	/bin/netstat -rn | grep ^0.0.0.0 | awk '{ print $8 }'
-}
-
-function get_my_ip_addr {
-	myiface=`get_my_net_iface`
-	/sbin/ifconfig $myiface | grep "inet addr" | awk '{ print $2 }' | cut -d ':' -f 2
-}
-my_ip_addr=`get_my_ip_addr`
 
 function retriable_execution {
         COMMAND=$1
@@ -146,8 +138,6 @@ function get_vm_uuid_from_ip {
 	echo $fqon | cut -d ':' -f 4
 }
 
-my_vm_uuid=`get_vm_uuid_from_ip ${my_ip_addr}`
-
 function get_hash {
 	object_type=$1
 	key_name=$2
@@ -166,21 +156,13 @@ function get_my_vm_attribute {
 	attribute=`echo $1 | tr '[:upper:]' '[:lower:]'`
 	get_hash VM ${my_vm_uuid} ${attribute} 0
 }
-
 my_role=`get_my_vm_attribute role`
 my_ai_uuid=`get_my_vm_attribute ai`
 my_base_type=`get_my_vm_attribute base_type`
 my_cloud_model=`get_my_vm_attribute model`
-
-function get_my_application_type {
-	get_my_vm_attribute type
-}
-my_type=`get_my_application_type type`
-
-function get_login_username {
-	get_my_vm_attribute login 
-}
-my_login_username=`get_login_username`
+my_ip_addr=`get_my_vm_attribute cloud_ip`
+my_type=`get_my_vm_attribute type`
+my_login_username=`get_my_vm_attribute login`
 
 function put_hash {
 	object_type=$1
@@ -222,7 +204,6 @@ function get_my_ai_attribute_with_default {
 		exit 1
 	fi
 }
-
 my_username=`get_my_ai_attribute username`
 
 function put_my_ai_attribute {
@@ -242,7 +223,6 @@ function get_global_sub_attribute {
 	global_sub_attribute=`echo $2 | tr '[:upper:]' '[:lower:]'`
 	retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber hget ${osinstance}:GLOBAL:${global_attribute} ${global_sub_attribute}" 0
 }
-
 metricstore_hostname=`get_global_sub_attribute metricstore host`
 metricstore_port=`get_global_sub_attribute metricstore port`
 metricstore_database=`get_global_sub_attribute metricstore database`
@@ -250,7 +230,6 @@ metricstore_kind=`get_global_sub_attribute metricstore kind`
 metricstore_username=`get_global_sub_attribute metricstore username`
 metricstore_timeout=`get_global_sub_attribute metricstore timeout`
 my_experiment_id=`get_global_sub_attribute time experiment_id`
-
 collect_from_guest=`get_global_sub_attribute mon_defaults collect_from_guest`
 collect_from_guest=`echo ${collect_from_guest} | tr '[:upper:]' '[:lower:]'`
 

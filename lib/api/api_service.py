@@ -155,8 +155,8 @@ class API():
     def cldlist(self, set_default_cloud = "false"):
         return self.passive.list_objects({}, set_default_cloud, "cloud-list")[2]
 
-    def expid(self, cloud_name, command_name):
-        return self.passive.expid({"name" : cloud_name}, cloud_name + ' ' + command_name, "expid-manage")[2]
+    def expid(self, cloud_name, experiment_name = ''):
+        return self.passive.expid({"name" : cloud_name}, cloud_name + ' ' + experiment_name, "expid-manage")[2]
 
     def vmlist(self, cloud_name, state = "default", limit = "none"):
         return self.passive.list_objects({}, cloud_name + ' ' + state + ' ' + str(limit), "vm-list")[2]

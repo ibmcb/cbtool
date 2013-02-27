@@ -43,7 +43,7 @@ get_experiment_name_list <- function(ednl) {
 	return(experiment_list[-1])
 	}
 	
-output_csv_table <- function(ed, en, pd, pn = '') {
+output_table <- function(ed, en, pd, pn = '') {
 	
 	if (en == "all") {
 		en <- '/'
@@ -56,12 +56,12 @@ output_csv_table <- function(ed, en, pd, pn = '') {
 	} else {
 		file_name <- pn
 	}
-	
-	file_name <- paste("processed_table_", file_name, ".csv", sep = '')
-	
-	file_location <- paste(ed, en, file_name, sep = '')
 
-	write.table(pd, file_location, sep=",", row.names = FALSE, col.names =TRUE)	
+	file_location_csv <- paste(ed, en, file_name, ".csv", sep = '')
+	file_location_tex <- paste(ed, en, file_name, ".tex", sep = '')
+
+	write.table(pd, file_location_csv, sep=",", row.names = FALSE, col.names =TRUE)	
+	print(xtable(pd), floating = FALSE, file = file_location_tex)
 }
 
 output_pdf_plot <- function(ed, en, po, pn = '', sps = 15, vmn = -1) {
@@ -142,7 +142,9 @@ cleanup_files <- function(ednl) {
 
 	plot_file_list <- c(list.files(path = ednl, pattern = "pdf", recursive = TRUE))
 
-	file_list <- c(processed_file_list, plot_file_list)
+	table_file_list <- c(list.files(path = ednl, pattern = "tex", recursive = TRUE))
+	
+	file_list <- c(processed_file_list, plot_file_list, table_file_list)
 
 	file.remove(file_list)
 	}
@@ -299,12 +301,35 @@ plot_trace_data <- function(tdf, ed, en, sps) {
 
 		################## START Provisioning vs VM ##################
 		trace_data <- subset(tdf, (expid %in% selected_expid), 
-				select = c("ai_reservations", "ai_failed", "relative_time"))
+				select = c("vm_reservations", "vm_failed", "ai_reservations", "ai_failed", "relative_time"))
 
-		trace_data <- within(trace_data, "ai_reservations" <- ifelse(is.na(trace_data$ai_reservations), 0, trace_data$ai_reservations))
-		trace_data <- within(trace_data, "ai_failed" <- ifelse(is.na(trace_data$ai_failed), 0, trace_data$ai_failed))		
+		trace_data <- within(trace_data, "ai_reservations" <- 
+						ifelse(is.na(trace_data$ai_reservations), 0, 
+								trace_data$ai_reservations))
+		trace_data <- within(trace_data, "ai_failed" <- 
+						ifelse(is.na(trace_data$ai_failed), 0, 
+								trace_data$ai_failed))		
+		trace_data <- within(trace_data, "vm_reservations" <- 
+						ifelse(is.na(trace_data$vm_reservations), 0, 
+								trace_data$vm_reservations))
+		trace_data <- within(trace_data, "vm_failed" <- 
+						ifelse(is.na(trace_data$vm_failed), 0, 
+								trace_data$vm_failed))
 
-		output_csv_table(ed, en, trace_data)
+		if (sum(trace_data$ai_reservations) > 0) {
+			columns <- c("ai_reservations", "ai_failed", "relative_time")
+		} else {
+			if (sum(trace_data$vm_reservations) > 0) {
+				columns <- c("vm_reservations", "vm_failed", "relative_time")
+			} else {
+				columns <- c("vmc_reservations", "vmc_failed", "relative_time")
+			}
+		}
+
+		trace_data <- subset(trace_data, relative_time > 0, 
+				select = columns)
+
+		#output_table(ed, en, trace_data, "001_operations_vs_time")
 
 		trace_data <- melt(trace_data, id.vars="relative_time")
 		
@@ -318,8 +343,7 @@ plot_trace_data <- function(tdf, ed, en, sps) {
 				ylab("Number of Objects") + 
 				labs(title = trace_plot_title)
 	
-		output_pdf_plot(ed, en, trace_data_plot, '', sps)
-		q()
+		output_pdf_plot(ed, en, trace_data_plot, "001_operations_vs_time", sps)
 		################## END Provisioning vs VM ##################
 		}
 
@@ -350,7 +374,7 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 
 	prov_lat_data <- prov_lat_data[!is.na(prov_lat_data$vm_arrival_diff),]
 
-	output_csv_table(ed, en, prov_lat_data)
+	output_table(ed, en, prov_lat_data, "002_individual_vm_provision_latency")
 
 	number_of_vms <- length(prov_lat_data$name)
 
@@ -379,11 +403,11 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 
 	prov_lat_plot <- ggplot(prov_lat_data, 
 					aes(x=full_obj_name, y=value, fill=variable)) + 
-			geom_bar(stat='identity') + xlab("VM name") + 
+			geom_bar(stat='identity', width=0.2) + xlab("VM name") + 
 			ylab("Provisioning Latency (seconds)") + 
 			labs(title = prov_lat_plot_title)
 
-	output_pdf_plot(ed, en, prov_lat_plot, '', sps, number_of_vms)
+	output_pdf_plot(ed, en, prov_lat_plot, "002_individual_vm_provision_latency", sps, number_of_vms)
 	################## END Provisioning vs VM ##################
 
 	################## START Provisioning vs VApp Submitter ##################
@@ -398,7 +422,7 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 	
 	agg_prov_lat_data <- agg_prov_lat_data[,list(avg = mean(vm_arrival_diff)), by = "partial_obj_name"]
 
-	output_csv_table(ed, en, agg_prov_lat_data)
+	output_table(ed, en, agg_prov_lat_data, "003_average_vm_provision_latency")
 	
 	agg_prov_lat_data <- melt(agg_prov_lat_data, id.vars="partial_obj_name")
 
@@ -413,11 +437,11 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 
 	agg_prov_lat_plot <- ggplot(agg_prov_lat_data, 
 					aes(x = partial_obj_name, y = value, fill = variable)) + 
-			geom_bar(stat='identity') + xlab("VM role|submitter|expid") + 
+			geom_bar(stat='identity', width=0.2) + xlab("VM role|submitter|expid") + 
 			ylab("Average Provisioning Latency (seconds)") + 
 			labs(title = agg_prov_lat_plot_title)
 
-	output_pdf_plot(ed, en, agg_prov_lat_plot, '', sps, number_of_vms)
+	output_pdf_plot(ed, en, agg_prov_lat_plot, "003_average_vm_provision_latency", sps, number_of_vms)
 	################## END Provisioning vs VApp Submitter ##################	
 
 	################## START Provisioning Failures vs VApp Submitter ##################
@@ -477,7 +501,7 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 	
 	agg_prov_fail_data <- merge(arrivals, departures, by="partial_obj_name")
 
-	output_csv_table(ed, en, agg_prov_fail_data)
+	output_table(ed, en, agg_prov_fail_data, "004_total_vm_provision_failure")
 
 	agg_prov_fail_data <- melt(agg_prov_fail_data, id.vars="partial_obj_name")
 
@@ -488,11 +512,11 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 
 	agg_prov_fail_plot <- ggplot(agg_prov_fail_data, 
 					aes(x = partial_obj_name, y = value, fill = variable)) + 
-			geom_bar(stat='identity', position = "dodge") + xlab("VM role|submitter|expid") + 
+			geom_bar(stat='identity', position = "dodge", width=0.2) + xlab("VM role|submitter|expid") + 
 			ylab("Number of Provisioning Successes + Failures") + 
 			labs(title = agg_prov_fail_plot_title)
 
-	output_pdf_plot(ed, en, agg_prov_fail_plot, '', sps, number_of_vms)	
+	output_pdf_plot(ed, en, agg_prov_fail_plot, "004_total_vm_provision_failure", sps, number_of_vms)	
 	################## END Provisioning Failures vs VApp Submitter ##################
 	}
 
@@ -534,6 +558,14 @@ plot_runtime_application_data <- function(ramdf, ed, en, vmn, vmel, xati, yati,
 	for (vapp_type in vapp_types) {
 
 		for (metric_type in metric_types) {
+
+			if (metric_type == "app_latency") {
+				prefix = "006_"
+			} else if (metric_type == "app_throughput") {
+				prefix = "005_"
+			} else {
+				prefix = "007_"
+			}
 			
 			################## START Performance vs Time ##################
 			perf_vs_time_data <- subset(ramdf, (expid %in% selected_expid) & 
@@ -573,7 +605,7 @@ plot_runtime_application_data <- function(ramdf, ed, en, vmn, vmel, xati, yati,
 
 #				+ scale_y_continuous(limits = xy_lims[[3]], breaks = xy_lims[[4]])
 
-				output_pdf_plot(ed, en, perf_vs_time_plot, paste("vm_", 
+				output_pdf_plot(ed, en, perf_vs_time_plot, paste(prefix, "vm_", 
 								metric_type, "_vs_time_plot_", vapp_type, 
 								sep = ''))
 
@@ -595,7 +627,7 @@ plot_runtime_application_data <- function(ramdf, ed, en, vmn, vmel, xati, yati,
 				perf_vs_load_data <- perf_vs_load_data[,list(avg = mean(get(metric_type))), 
 						by = "app_load_level,full_obj_name"]
 
-				output_csv_table(ed, en, perf_vs_load_data, paste("vm_", 
+				output_table(ed, en, perf_vs_load_data, paste(prefix, "vm_", 
 								metric_type, "_vs_load_data_", vapp_type, 
 								sep = ''))
 
@@ -639,7 +671,7 @@ plot_runtime_application_data <- function(ramdf, ed, en, vmn, vmel, xati, yati,
 							scale_x_continuous(limits = xy_lims[[1]], breaks = xy_lims[[2]]) 
 #				+ scale_y_continuous(limits = xy_lims[[3]], breaks = xy_lims[[4]])
 
-					output_pdf_plot(ed, en, perf_vs_load_plot, paste("vm_", 
+					output_pdf_plot(ed, en, perf_vs_load_plot, paste(prefix, "vm_", 
 									metric_type, "_vs_load_plot_", vapp_type, 
 									sep = ''))	
 
@@ -703,7 +735,7 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 		os_cpu_data <- subset(rosmdf, (name == experiment_node), 
 				select = c("relative_time", "cpu_user", "cpu_system", "cpu_wio"))
 
-		output_csv_table(ed, en, os_cpu_data, paste("os_cpu_vs_time_data_", experiment_node_name, sep = ''))
+		#output_table(ed, en, os_cpu_data, paste("os_cpu_vs_time_data_", experiment_node_name, sep = ''))
 
 		os_cpu_data <- melt(os_cpu_data, id.vars="relative_time")
 
@@ -731,7 +763,7 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 				scale_x_continuous(limits = xy_lims[[1]], breaks = xy_lims[[2]])
 	#				+ scale_y_continuous(limits =  xy_lims[[3]], breaks =  xy_lims[[4]])
 
-		output_pdf_plot(ed, en, os_cpu_vs_time_plot, paste("os_cpu_vs_time_plot_", experiment_node_name, sep = ''), sps)
+		output_pdf_plot(ed, en, os_cpu_vs_time_plot, paste("008_os_cpu_vs_time_plot_", experiment_node_name, sep = ''), sps)
 		################## END CPU Usage vs Time ##################
 		
 		################## START Memory Usage vs Time ##################
@@ -745,7 +777,7 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 		os_mem_data <- within(os_mem_data, 
 				"mem_shared" <- abs(os_mem_data$mem_shared / (1024)))
 		
-		output_csv_table(ed, en, os_mem_data, paste("os_mem_vs_time_data_", experiment_node_name, sep = ''))
+		#output_table(ed, en, os_mem_data, paste("os_mem_vs_time_data_", experiment_node_name, sep = ''))
 		
 		os_mem_data <- melt(os_mem_data, id.vars="relative_time")
 
@@ -773,7 +805,7 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 				scale_x_continuous(limits =  xy_lims[[1]], breaks =  xy_lims[[2]]) 
 	#				+ scale_y_continuous(limits =  xy_lims[[3]], breaks =  xy_lims[[4]])
 	
-		output_pdf_plot(ed, en, os_mem_vs_time_plot, paste("os_mem_vs_time_plot_", experiment_node_name, sep = ''), sps)
+		output_pdf_plot(ed, en, os_mem_vs_time_plot, paste("009_os_mem_vs_time_plot_", experiment_node_name, sep = ''), sps)
 		################## END Memory Usage vs Time ##################
 
 		# For network, swap and disk, differences need to be calculated
@@ -918,7 +950,7 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 
 		################## START Network Bandwidth vs Time ##################
 
-		output_csv_table(ed, en, os_net_bw_data, paste("os_net_bw_vs_time_data_", experiment_node_name, sep = ''))
+		#output_table(ed, en, os_net_bw_data, paste("os_net_bw_vs_time_data_", experiment_node_name, sep = ''))
 
 		os_net_bw_data <- melt(os_net_bw_data, id.vars="relative_time")
 
@@ -944,12 +976,12 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 				scale_x_continuous(limits =  xy_lims[[1]], breaks =  xy_lims[[2]]) 
 	#				+ scale_y_continuous(limits =  xy_lims[[3]], breaks =  xy_lims[[4]])
 	
-		output_pdf_plot(ed, en, os_net_bw_vs_time_plot, paste("os_net_bw_vs_time_plot_", experiment_node_name, sep = ''), sps)
+		output_pdf_plot(ed, en, os_net_bw_vs_time_plot, paste("010_os_net_bw_vs_time_plot_", experiment_node_name, sep = ''), sps)
 		################## END Network Bandwidth vs Time ##################
 
 		################## START Network Throughput vs Time ##################
 
-		output_csv_table(ed, en, os_net_tput_data, paste("os_net_tput_vs_time_data_", experiment_node_name, sep = ''))
+		#output_table(ed, en, os_net_tput_data, paste("os_net_tput_vs_time_data_", experiment_node_name, sep = ''))
 
 		os_net_tput_data <- melt(os_net_tput_data, id.vars="relative_time")
 
@@ -975,13 +1007,13 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 				scale_x_continuous(limits =  xy_lims[[1]], breaks =  xy_lims[[2]]) 
 	#				+ scale_y_continuous(limits =  xy_lims[[3]], breaks =  xy_lims[[4]])
 	
-		output_pdf_plot(ed, en, os_net_tput_vs_time_plot, paste("os_net_tput_vs_time_plot_", experiment_node_name, sep = ''), sps)
+		output_pdf_plot(ed, en, os_net_tput_vs_time_plot, paste("011_os_net_tput_vs_time_plot_", experiment_node_name, sep = ''), sps)
 		################## END Network Throughput vs Time ##################
 
 		if (swap_activity) {
 			################## START Swap Bandwidth vs Time ##################
 	
-			output_csv_table(ed, en, os_swap_bw_data, paste("os_swap_vs_time_data_", experiment_node_name, sep = ''))
+			#output_table(ed, en, os_swap_bw_data, paste("os_swap_vs_time_data_", experiment_node_name, sep = ''))
 	
 			os_swap_bw_data <- melt(os_swap_bw_data, id.vars="relative_time")
 			
@@ -1003,12 +1035,12 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 					scale_x_continuous(limits =  xy_lims[[1]], breaks =  xy_lims[[2]]) 
 			#				+ scale_y_continuous(limits =  xy_lims[[3]], breaks =  xy_lims[[4]])
 			
-			output_pdf_plot(ed, en, os_swap_bw_vs_time_plot, paste("os_swap_bw_vs_time_plot_", experiment_node_name, sep = ''), sps)
+			output_pdf_plot(ed, en, os_swap_bw_vs_time_plot, paste("012_os_swap_bw_vs_time_plot_", experiment_node_name, sep = ''), sps)
 			################## END Swap Bandwidth vs Time ##################
 	
 			################## START Swap Throughput vs Time ##################
 			
-			output_csv_table(ed, en, os_swap_tput_data, paste("os_swap_tput_vs_time_data_", experiment_node_name, sep = ''))
+			#output_table(ed, en, os_swap_tput_data, paste("os_swap_tput_vs_time_data_", experiment_node_name, sep = ''))
 	
 			os_swap_tput_data <- melt(os_swap_tput_data, id.vars="relative_time")
 			
@@ -1034,14 +1066,14 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 					scale_x_continuous(limits =  xy_lims[[1]], breaks =  xy_lims[[2]]) 
 			#				+ scale_y_continuous(limits =  xy_lims[[3]], breaks =  xy_lims[[4]])
 			
-			output_pdf_plot(ed, en, os_swap_tput_vs_time_plot, paste("os_swap_tput_vs_time_plot_", experiment_node_name, sep = ''), sps)
+			output_pdf_plot(ed, en, os_swap_tput_vs_time_plot, paste("013_os_swap_tput_vs_time_plot_", experiment_node_name, sep = ''), sps)
 			################## END Swap Throughput vs Time ##################
 			}
 			
 		if (disk_activity) {
 			################## START Disk Bandwidth vs Time ##################
 			
-			output_csv_table(ed, en, os_dsk_bw_data, paste("os_dsk_bw_vs_time_data_", experiment_node_name, sep = ''))
+			#output_table(ed, en, os_dsk_bw_data, paste("os_dsk_bw_vs_time_data_", experiment_node_name, sep = ''))
 	
 			os_dsk_bw_data <- melt(os_dsk_bw_data, id.vars="relative_time")
 	
@@ -1067,12 +1099,12 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 					scale_x_continuous(limits =  xy_lims[[1]], breaks =  xy_lims[[2]]) 
 		#				+ scale_y_continuous(limits =  xy_lims[[3]], breaks =  xy_lims[[4]])
 		
-			output_pdf_plot(ed, en, os_dsk_bw_vs_time_plot, paste("os_dsk_bw_vs_time_plot_", experiment_node_name, sep = ''), sps)
+			output_pdf_plot(ed, en, os_dsk_bw_vs_time_plot, paste("014_os_dsk_bw_vs_time_plot_", experiment_node_name, sep = ''), sps)
 			################## END Disk Bandwidth vs Time ##################
 	
 			################## START Disk Throughput vs Time ##################
 			
-			output_csv_table(ed, en, os_dsk_tput_data, paste("os_dsk_tput_vs_time_data_", experiment_node_name, sep = ''))
+			#output_table(ed, en, os_dsk_tput_data, paste("os_dsk_tput_vs_time_data_", experiment_node_name, sep = ''))
 	
 			os_dsk_tput_data <- melt(os_dsk_tput_data, id.vars="relative_time")
 	
@@ -1098,7 +1130,7 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 					scale_x_continuous(limits =  xy_lims[[1]], breaks =  xy_lims[[2]]) 
 		#				+ scale_y_continuous(limits =  xy_lims[[3]], breaks =  xy_lims[[4]])
 		
-			output_pdf_plot(ed, en, os_dsk_tput_vs_time_plot, paste("os_dsk_tput_vs_time_plot_", experiment_node_name, sep = ''), sps)
+			output_pdf_plot(ed, en, os_dsk_tput_vs_time_plot, paste("015_os_dsk_tput_vs_time_plot_", experiment_node_name, sep = ''), sps)
 			################## END Disk Throughput vs Time ##################
 			}
 		}

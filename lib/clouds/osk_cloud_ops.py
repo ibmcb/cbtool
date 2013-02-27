@@ -669,15 +669,19 @@ class OskCmds(CommonCloudFunctions) :
             if not self.oskconn :
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
                              obj_attr_list["vmc_name"])
-
+            
             _instances = self.oskconn.servers.list(search_opts = _search_opts)
 
             if len(_instances) > 0 :
+
                 if vmidentifier == "all" :   
                     return _instances
                 else :
+
                     for _instance in _instances :
+
                         _metadata = _instance.metadata
+
                         if "experiment_id" in _metadata :
                             if _metadata["experiment_id"] == self.expid :
                                 return _instance
@@ -703,7 +707,6 @@ class OskCmds(CommonCloudFunctions) :
         try :
             _instance = self.get_vm_instances(obj_attr_list, \
                                            obj_attr_list["cloud_vm_name"])
-
             if _instance :
                 if _instance.status == "ACTIVE" :
                     return _instance
@@ -733,8 +736,9 @@ class OskCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
+
         _instance = self.is_vm_running(obj_attr_list)
-        
+
         if _instance :
 
             self.take_action_if_requested("VM", obj_attr_list, "provision_complete")

@@ -21,7 +21,6 @@ source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
 GMETAD_VMS=~/gmetad-vms.conf
 
-myip=`get_my_ip_addr`
 COLLECTOR_UNICAST_IP=`get_ai_attribute ${my_ai_uuid} metric_aggregator_ip`
 COLLECTOR_AGGREGATOR_PORT=`get_global_sub_attribute mon_defaults collector_vm_aggregator_port`
 COLLECTOR_SUMMARIZER_PORT=`get_global_sub_attribute mon_defaults collector_vm_summarizer_port`
@@ -34,7 +33,7 @@ API_PORT=`get_global_sub_attribute api_defaults port`
 #DATA_SOURCE="data_source \"127.0.0.1\" 127.0.0.1:${COLLECTOR_VM_PORT}\n"
 #if [ x"${my_type}" == x"none" ]
 #then
-#	DATA_SOURCE+="data_source \"${myip}\" ${myip}:${COLLECTOR_VM_PORT}\n"
+#	DATA_SOURCE+="data_source \"${my_ip_addr}\" ${my_ip_addr}:${COLLECTOR_VM_PORT}\n"
 #else
 #	for vmip in `get_vm_ips_from_ai`
 #	do

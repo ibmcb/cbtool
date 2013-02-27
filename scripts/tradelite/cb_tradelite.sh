@@ -26,7 +26,10 @@ fi
 standalone=`online_or_offline "$5"`
 
 export PATH=$PATH:~/iwl/bin
+eval PATH=${PATH}
+
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/iwl/bin
+eval LD_LIBRARY_PATH=${LD_LIBRARY_PATH}
 
 NR_QUOTES=40000
 NR_USERS=15000

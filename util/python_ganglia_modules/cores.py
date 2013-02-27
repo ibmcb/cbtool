@@ -32,7 +32,7 @@ def metric_cleanup():
 
 #This code is for debugging and unit testing
 if __name__ == '__main__':
-    metric_init({})
+    descriptors = metric_init({})
     for d in descriptors:
         v = d['call_back'](d['name'])
         print 'value for %s is %u' % (d['name'],  v)

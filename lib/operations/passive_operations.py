@@ -1277,9 +1277,19 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 _msg += "Will also include all logs files (from the Log Store) "
                 _msg += "alongside the extracted metrics."
                 cbdebug(_msg, True)
+                
+                _file_list = []
+                _file_list.append("operations.log")
+                _file_list.append("report.log")
+                _file_list.append("submmiter.log")
+                _file_list.append("loadmanager.log")
+                _file_list.append("gui.log")
+                _file_list.append("remotescripts.log")
+                _file_list.append("monitor.log")
+                _file_list.append("subscribe.log")
 
-                for _filenu in range(0, 8) :
-                    _source = _space_attr_list["stores_working_dir"] + "/logs/local" + str(_filenu) + ".log"                    
+                for _fn in  _file_list :
+                    _source = _space_attr_list["stores_working_dir"] + "/logs/" + _fn                    
                     shutil.copy2(_source, _destination)
 
                 self.osci.update_object_attribute(_cn, "GLOBAL", "time", False, "hard_reset", "False")
@@ -2140,11 +2150,12 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _status, _msg, _object = self.alter_object(obj_attr_list, \
                                                                    parameters, \
                                                                    "cloud-alter")
-            
+
                         if not _status :
                             _msg = "Experiment identifier was changed from \""
                             _msg += _object["result"]["old_experiment_id"] + "\" to \""
                             _msg += _object["result"]["experiment_id"] + "\". " 
+                            _result = _object["result"]["experiment_id"]
         
                     _status = 0
 

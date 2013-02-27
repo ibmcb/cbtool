@@ -23,7 +23,6 @@ GMOND_VMS=~/gmond-vms.conf
 python_module_path=~/util/python_ganglia_modules
 python_modules=~/util/ganglia_conf.d
 
-myip=`get_my_ip_addr`
 COLLECTOR_UNICAST_IP=`get_ai_attribute ${my_ai_uuid} metric_aggregator_ip`
 COLLECTOR_MULTICAST_IP=`get_global_sub_attribute mon_defaults collector_multicast_ip`
 COLLECTOR_MULTICAST_PORT=`get_global_sub_attribute mon_defaults collector_vm_multicast_port`
@@ -65,7 +64,7 @@ EOF
 else
 cat << EOF >> $GMOND_VMS
 udp_send_channel {
- host = ${myip}
+ host = ${my_ip_addr}
  port = ${COLLECTOR_VM_PORT}
 }
 
@@ -75,7 +74,7 @@ fi
 cat << EOF >> $GMOND_VMS
 udp_recv_channel {
   port = ${COLLECTOR_VM_PORT}
-  bind = ${myip} 
+  bind = ${my_ip_addr} 
 }
 
 udp_recv_channel {

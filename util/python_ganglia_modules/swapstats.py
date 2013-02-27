@@ -35,8 +35,14 @@ class UpdateMetricThread(threading.Thread):
         if "refresh_rate" in params:
             self.refresh_rate = int(params["refresh_rate"])
         self.metric       = {}
-        self.re_disk      = r"^.db$"
-      #  self.re_disk      = r"^.d[a-z]$"
+
+        self.swap_devices = {}
+
+        f = open("/proc/swaps", "r")
+        for l in f :
+           l = l.split()
+           if l[0] != "Filename" :
+               self.swap_devices[l[0].split('/')[2]] = 1
         self.re_procs     = r"^procs_"
 
     def shutdown(self):
@@ -62,7 +68,7 @@ class UpdateMetricThread(threading.Thread):
         f = open("/proc/diskstats", "r")
         for l in f:
             elm = l.split(None)
-            if not re.search(self.re_disk, elm[2]):
+            if not elm[2] in self.swap_devices :
                 continue
             for (k,v) in Diskstats_Pos.iteritems():
                 if (k == "swap_KB_read" or k == "swap_KB_write"):
@@ -82,7 +88,6 @@ class UpdateMetricThread(threading.Thread):
             self.metric[k] = int(elm[1])
             dprint("%s %d", k, self.metric[k])
         f.close
-
 
     def metric_of(self, name):
         val = 0

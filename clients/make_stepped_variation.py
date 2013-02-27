@@ -36,9 +36,19 @@ through a series of performance changes so that the
 
 Just read the API calls......they're self-explanatory.
 '''
+from sys import path
 
-from api_service_client import *
-from time import sleep
+import fnmatch
+import os
+
+_home = os.environ["HOME"]
+
+for _path, _dirs, _files in os.walk(os.path.abspath(_home)):
+    for _filename in fnmatch.filter(_files, "code_instrumentation.py") :
+        path.append(_path.replace("/lib/auxiliary",''))
+        break
+
+from lib.api.api_service_client import *
 
 api = APIClient("http://172.16.1.222:7070")
 

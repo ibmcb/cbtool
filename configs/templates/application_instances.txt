@@ -144,16 +144,27 @@ LOAD_DURATION = 60
 # "Special" modifier parameters for the AI HADOOP. These should be set on
 # YOUR configuration file, not on this template! Please DO NOT uncomment them 
 # here.
-#JAVA_HOME=~/jdk1.6.0_21
-#HADOOP_HOME=~/hadoop-0.20.2
+#JAVA_HOME = ~/jdk1.6.0_21
+#HADOOP_HOME = ~/hadoop-1.0.4
+#HIBENCH_HOME = ~/HiBench
+#DFS_NAME_DIR = /tmp/cbhadoopname
+#DFS_DATA_DIR = /tmp/cbhadoopdata
 #LOAD_FACTOR = 1000
-#DONT_GENERATE_INPUT_DATA = $False
+#CLASSES = 20
+#NUM_MAPS = 2
+#NUM_REDS = 2
+#NGRAMS = 3
+#RD_FILE_SIZE = 20
+#WT_FILE_SIZE = 10
+#NUM_CLUSTERS = 5
+#DIMENSIONS = 20
+#MAX_ITERATION = 5
+#BLOCK = 0
+#BLOCK_WIDTH = 16
 #SYNC_COUNTER_NAME = synchronization_counter
 #CONCURRENT_AIS = 2
 #SYNC_CHANNEL_NAME = synchronization_channel
 #RUN_COUNTER_NAME = experiment_id_counter
-#DFS_NAME_DIR = /tmp/cbhadoopname
-#DFS_DATA_DIR = /tmp/cbhadoopdata
 
 [AI_TEMPLATES : HDAUTOCONF]
 SUT = hadoopmaster->10_x_hadoopslave

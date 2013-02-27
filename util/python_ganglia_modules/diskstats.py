@@ -35,9 +35,7 @@ class UpdateMetricThread(threading.Thread):
         if "refresh_rate" in params:
             self.refresh_rate = int(params["refresh_rate"])
         self.metric       = {}
-#        self.re_disk      = r"^.*d.*$"
-        self.re_disk      = r"^.da$"
-#        self.re_disk      = r"^.d[a-z]$"
+        self.re_disk      = r"^.*[v|s|x]d[a-z].[0-9]*$"
         self.re_procs     = r"^procs_"
 
     def shutdown(self):
@@ -66,11 +64,13 @@ class UpdateMetricThread(threading.Thread):
             if not re.search(self.re_disk, elm[2]):
                 continue
             for (k,v) in Diskstats_Pos.iteritems():
+                if not k in self.metric :
+                    self.metric[k] = 0
                 if (k == "ds_KB_read" or k == "ds_KB_write"):
                     dprint("  %s (%d)", k, int(elm[v]))
-                    self.metric[k] = int(elm[v])/2 # *512/1024
+                    self.metric[k] += int(elm[v])/2 # *512/1024
                 else:
-                    self.metric[k] = int(elm[v])
+                    self.metric[k] += int(elm[v])
                 dprint("%s %d", k, self.metric[k])
         f.close
 
@@ -83,7 +83,6 @@ class UpdateMetricThread(threading.Thread):
             self.metric[k] = int(elm[1])
             dprint("%s %d", k, self.metric[k])
         f.close
-
 
     def metric_of(self, name):
         val = 0

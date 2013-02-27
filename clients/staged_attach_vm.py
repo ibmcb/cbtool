@@ -14,16 +14,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #/*******************************************************************************
-import sys
-import os
-import re
 from sys import path
-path.append(re.compile(".*\/").search(os.path.realpath(__file__)).group(0) + "/..")
+from time import time
+import os
+import fnmatch
+
+_home = os.environ["HOME"]
+
+for _path, _dirs, _files in os.walk(os.path.abspath(_home)):
+    for _filename in fnmatch.filter(_files, "code_instrumentation.py") :
+        path.append(_path.replace("/lib/auxiliary",''))
+        break
+
 from lib.api.api_service_client import *
-from time import sleep, time
 
 api = APIClient("http://172.16.1.222:7070")
-#api = APIClient("http://10.10.3.10:7070")
 
 start = int(time())
 expid = "singlevm_" + makeTimestamp(start).replace(" ", "_")

@@ -21,6 +21,7 @@ suppressPackageStartupMessages(library(reshape2))
 suppressPackageStartupMessages(library(ggplot2))
 suppressPackageStartupMessages(library(hash))
 suppressPackageStartupMessages(library(data.table))
+suppressPackageStartupMessages(library(xtable))
 
 initial.options <- commandArgs(trailingOnly = FALSE)
 file.arg.name <- "--file="
@@ -161,7 +162,7 @@ experiment_list <- get_experiment_name_list(experiment_directories)
 
 for (experiment in experiment_list) {
 
-#	plot_trace_data(trace_metrics, opt$directory, experiment, opt$size)
+	plot_trace_data(trace_metrics, opt$directory, experiment, opt$size)
 
 	if (opt$provisionmetrics) {
 	
@@ -297,8 +298,12 @@ for (experiment in experiment_list) {
 					" for experiment ", "\"", experiment, "\" ###", sep = '')
 			cat(msg, sep='\n')			
 		}
+
+	pdf_dir <- paste(opt$directory, '/', experiment, sep = '')
+	command <- paste("pdftk ", pdf_dir, "/*.pdf cat output ", pdf_dir, "/all_plots.pdf", sep = '')
+	system(command)
 	}
 
-msg <- paste("################################## END PHASE 2 - Plotting Graph", 
+msg <- paste("################################## END PHASE 2 - Plotting Graphs", 
 		" files ##################################", sep = '')
 cat(msg, sep='\n')

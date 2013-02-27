@@ -28,13 +28,9 @@ for _path, _dirs, _files in os.walk(os.path.abspath(_home)):
         path.append(_path.replace("/lib/auxiliary",''))
         break
 
-from scripts.common.cb_common import get_my_ip, get_uuid_from_ip, report_app_metrics
+from scripts.common.cb_common import report_app_metrics
 
-#_osci = get_os_conn()
-
-_my_ip = get_my_ip()
-
-_my_uuid = get_uuid_from_ip(_my_ip)
+#_osci, _my_uuid = get_os_conn()
 
 _metric_list = ''
 
@@ -42,4 +38,4 @@ for _arg in argv :
     if _arg.count(":") == 2 :
         _metric_list += _arg + ' '
 
-report_app_metrics(_my_uuid, _metric_list)
+report_app_metrics(_metric_list)

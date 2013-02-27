@@ -16,8 +16,6 @@
 # limitations under the License.
 #/*******************************************************************************
 
-#source ~/.bashrc
-
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_hadoop_common.sh
 
 #####################################################################################
@@ -37,12 +35,6 @@ source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_hadoop_common.sh
 syslog_netcat "hadoop_master_ip: $hadoop_master_ip"
 syslog_netcat "..my_ip=$my_ip_addr .."
 
-if [ ~/.bashrc ]
-then
-    echo "export PATH=$PATH:$HADOOP_HOME/bin" >> .bashrc
-	echo "export HADOOP_HOME=${HADOOP_HOME}" >> .bashrc
-fi
-
 is_preferIPv4Stack=`cat ${HADOOP_CONF_DIR}/hadoop-env.sh | grep -c "preferIPv4Stack=true"`
 if [ ${is_preferIPv4Stack} -eq 0 ]
 then
@@ -51,16 +43,22 @@ then
 	echo "export JAVA_HOME=${JAVA_HOME}" >> $HADOOP_CONF_DIR/hadoop-env.sh
 fi
 
+DFS_NAME_DIR=`get_my_ai_attribute_with_default dfs_name_dir /tmp/cbhadoopname`
+eval DFS_NAME_DIR=${DFS_NAME_DIR}
+
+DFS_DATA_DIR=`get_my_ai_attribute_with_default dfs_data_dir /tmp/cbhadoopdata`
+eval DFS_DATA_DIR=${DFS_DATA_DIR}
+
 ###################################################################
 # Set up masters/slaves files in the hadoop master vm
 ###################################################################
 
-syslog_netcat "..Editing masters/slaves files.."
+syslog_netcat "..Updating masters/slaves files in ${HADOOP_CONF_DIR}..."
 echo "${hadoop_master_ip}" > $HADOOP_CONF_DIR/masters
 echo "${slave_ips}" > $HADOOP_CONF_DIR/slaves
 syslog_netcat "....Done...."
 
-syslog_netcat "..Creating core-site.xml, hdfs-site.xml and mapred-site.xml"
+syslog_netcat "..Creating files core-site.xml, hdfs-site.xml and mapred-site.xml in ${HADOOP_CONF_DIR}..."
 cat << EOF > $HADOOP_CONF_DIR/core-site.xml
 <?xml version="1.0"?>
 <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>

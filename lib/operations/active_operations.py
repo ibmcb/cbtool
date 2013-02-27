@@ -678,7 +678,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _msg = "All VMCs successfully attached to this experiment." + _smsg
                 cbdebug(_msg)
 
-            return self.package(_status, _msg, None)
+            return self.package(_status, _msg, self.get_cloud_parameters(obj_attr_list["cloud_name"]))
 
     @trace
     def pre_attach_vmc(self, obj_attr_list) :
@@ -1866,11 +1866,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _cmd += "echo '#OSTO-" + str(self.osci.timout) + "' >> ~/cb_os_parameters.txt;"
                     _cmd += "echo '#OSCN-" + obj_attr_list["cloud_name"] + "' >> ~/cb_os_parameters.txt;"
                     _cmd += "echo '#OSMO-" + obj_attr_list["mode"] + "' >> ~/cb_os_parameters.txt;"
-                    _cmd += "echo '#OSOI-" + "TEST_" + obj_attr_list["username"] + ":" + obj_attr_list["cloud_name"] + "' >> ~/cb_os_parameters.txt\";"
-
+                    _cmd += "echo '#OSOI-" + "TEST_" + obj_attr_list["username"] + ":" + obj_attr_list["cloud_name"] + "' >> ~/cb_os_parameters.txt;"
+                    _cmd += "echo '#VMUUID-" + obj_attr_list["uuid"] + "' >> ~/cb_os_parameters.txt;"
+                    _cmd += "sudo chown -R " +  obj_attr_list["login"] + " ~/" + obj_attr_list["remote_dir_name"] + "\";"
                     _cmd += "rsync -e \"ssh -o StrictHostKeyChecking=no -l " + obj_attr_list["login"] + " -i " 
                     _cmd += obj_attr_list["identity"] + "\" --exclude-from "
-                    _cmd += "'" +  obj_attr_list["exclude_list"] + "' -az " + obj_attr_list["base_dir"] + "/* " 
+                    _cmd += "'" +  obj_attr_list["exclude_list"] + "' -az  --no-o --no-g --inplace -O " + obj_attr_list["base_dir"] + "/* " 
                     _cmd += obj_attr_list["prov_cloud_ip"] + ":~/" + obj_attr_list["remote_dir_name"] + '/'
 
                     _msg = "RSYNC: " + _cmd
@@ -4341,7 +4342,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             _inter_arrival_time = 0
 
-            _inter_arrival_time_start = time()
+            _inter_arrival_time_start = int(time())
 
             _aidrs_state = self.osci.get_object_state(cloud_name, "AIDRS", object_uuid)
 
@@ -4350,6 +4351,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _check_frequency = int(_aidrs_attr_list["update_frequency"])
 
             _aidrs_overload, _msg = self.get_aidrs_params(cloud_name, _aidrs_attr_list)
+
+            _curr_iait = int(_aidrs_attr_list["current_inter_arrival_time"])
 
             if not _aidrs_overload :
                 
@@ -4407,8 +4410,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _msg += " until the number of AIs/Daemons drops below the limit."
                 cbdebug(_msg)
 
-                if int(_aidrs_attr_list["current_inter_arrival_time"]) < _check_frequency :
-                    _check_frequency = int(_aidrs_attr_list["current_inter_arrival_time"]) / 2
+                if _curr_iait < _check_frequency :
+                    _check_frequency = _curr_iait / 2
 
             _aidrs_state = self.osci.get_object_state(cloud_name, "AIDRS", object_uuid)
 
@@ -4426,12 +4429,14 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
                 True
 
-            while _inter_arrival_time < int(_aidrs_attr_list["current_inter_arrival_time"]) :
+            _inter_arrival_time = int(time()) - _inter_arrival_time_start
 
-                _inter_arrival_time = time() - _inter_arrival_time_start
+            while _inter_arrival_time < _curr_iait :
+
+                _inter_arrival_time = int(time()) - _inter_arrival_time_start
                 
-                if _inter_arrival_time < _check_frequency :
-                    sleep(1)
+                if _inter_arrival_time - _curr_iait < _check_frequency :
+                    sleep(_check_frequency/10)
                 else :
                     sleep(_check_frequency)
 

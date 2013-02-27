@@ -109,41 +109,36 @@ SSH_KEY_NAME = $SCP_SSH_KEY_NAME
 # xlarge: 8GB, 2 vcpus
 
 [VM_TEMPLATES : SCP_CLOUDCONFIG]
-# Please do not rename these imageIDs....
-# For some reason SCP does not support the other names because they are too long
-# No idea why. By making the names shorter, the ./iaas-register-image started
-# working. It does not work for the long names.
-# I assume Lindeman has more work to do to fix the bug....
-CLIENT_DAYTRADER = size:small, imageid1:cloudbench_root.raw
-DRIVER_DAYTRADER = size:xsmall, imageid1:cloudbench_root.raw
-CLIENT_TRADELITE = size:small, imageid1:cloudbench_root.raw
-DRIVER_TRADELITE = size:xsmall, imageid1:cloudbench_root.raw
-DB2 = size:medium, lb_size:large, imageid1:cloudbench_root.raw
-WAS = size:medium, imageid1:cloudbench_root.raw
+CLIENT_DAYTRADER = size:small, imageid1:cloudbench_hibench_daytrader.raw
+DRIVER_DAYTRADER = size:xsmall, imageid1:cloudbench_hibench_daytrader.raw
+CLIENT_TRADELITE = size:small, imageid1:cloudbench_hibench_daytrader.raw
+DRIVER_TRADELITE = size:xsmall, imageid1:cloudbench_hibench_daytrader.raw
+DB2 = size:medium, lb_size:large, imageid1:cloudbench_hibench_daytrader.raw
+WAS = size:medium, imageid1:cloudbench_hibench_daytrader.raw
 CLIENT_SPECWEB = size:small, imageid1:cloudbench_specweb
 SPECWEBFRONT = size:medium, imageid1:cloudbench_specweb
 SPECWEBBACK = size:medium, imageid1:cloudbench_specweb
-CLIENT_LOST = size:small, imageid1:cloudbench_root.raw
-LOSTFRONT = size:medium, imageid1:cloudbench_root.raw
-LOSTBACK = size:medium, imageid1:cloudbench_root.raw
-DRIVER_HADOOP = size:xsmall, imageid1:cloudbench_root.raw
-HADOOPMASTER = size:medium, imageid1:cloudbench_root.raw
-HADOOPSLAVE = size:medium, imageid1:cloudbench_root.raw
-DRIVER_NETPERF = size:xsmall, imageid1:cloudbench_root.raw
-NETCLIENT = size:small, imageid1:cloudbench_root.raw
-NETSERVER = size:small, imageid1:cloudbench_root.raw
-DRIVER_COREMARK = size:small, imageid1:cloudbench_root.raw
-COREMARK = size:small, imageid1:cloudbench_root.raw
-CLIENT_WINDOWS = size:small, imageid1:cloudbench_root.raw
+CLIENT_LOST = size:small, imageid1:cloudbench_hibench_daytrader.raw
+LOSTFRONT = size:medium, imageid1:cloudbench_hibench_daytrader.raw
+LOSTBACK = size:medium, imageid1:cloudbench_hibench_daytrader.raw
+DRIVER_HADOOP = size:xsmall, imageid1:cloudbench_hibench_daytrader.raw
+HADOOPMASTER = size:medium, imageid1:cloudbench_hibench_daytrader.raw
+HADOOPSLAVE = size:medium, imageid1:cloudbench_hibench_daytrader.raw
+DRIVER_NETPERF = size:xsmall, imageid1:cloudbench_hibench_daytrader.raw
+NETCLIENT = size:small, imageid1:cloudbench_hibench_daytrader.raw
+NETSERVER = size:small, imageid1:cloudbench_hibench_daytrader.raw
+DRIVER_COREMARK = size:small, imageid1:cloudbench_hibench_daytrader.raw
+COREMARK = size:small, imageid1:cloudbench_hibench_daytrader.raw
+CLIENT_WINDOWS = size:small, imageid1:cloudbench_hibench_daytrader.raw
 WINDOWS = size:medium, imageid1:cloudbench_windows.raw
-DRIVER_FILEBENCH = size:xsmall, imageid1:cloudbench_root.raw
-FILEBENCH = size:medium, imageid1:cloudbench_root.raw
-DRIVER_FBNFSRD = size:xsmall, imageid1:cloudbench_root.raw
-STORAGECLIENT = size:medium, imageid1:cloudbench_root.raw
-STORAGESERVER = size:medium, imageid1:cloudbench_root.raw
+DRIVER_FILEBENCH = size:xsmall, imageid1:cloudbench_hibench_daytrader.raw
+FILEBENCH = size:medium, imageid1:cloudbench_hibench_daytrader.raw
+DRIVER_FBNFSRD = size:xsmall, imageid1:cloudbench_hibench_daytrader.raw
+STORAGECLIENT = size:medium, imageid1:cloudbench_hibench_daytrader.raw
+STORAGESERVER = size:medium, imageid1:cloudbench_hibench_daytrader.raw
 TINYVM = size:xsmall, imageid1:cloudbench_tinyvm.raw
-FEN_HPC = size:medium, imageid1:cloudbench_hpc.raw
-CN_HPC = size:medium, imageid1:cloudbench_hpc.raw
-DDGEN = size:medium, imageid1:cloudbench_hpc.raw
-SPECJBB = size:medium, imageid1:cloudbench_root.raw
-LB = size:medium, imageid1:cloudbench_root.raw
+FEN_HPC = size:medium, imageid1:cloudbench_hpcc.raw
+CN_HPC = size:medium, imageid1:cloudbench_hpcc.raw
+DDGEN = size:medium, imageid1:cloudbench_hpcc.raw
+SPECJBB = size:medium, imageid1:cloudbench_hibench_daytrader.raw
+LB = size:medium, imageid1:cloudbench_hibench_daytrader.raw

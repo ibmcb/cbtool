@@ -14,51 +14,45 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #/*******************************************************************************
-'''
-This is a Python example of how to provision a virtual machine through CloudBench
 
-This assumes you have already attached to a cloud through the GUI or CLI.
-'''
-
-from time import sleep
 from sys import path
 
-import os
 import fnmatch
+import os
 
 _home = os.environ["HOME"]
 
-for _path, _dirs, _files in os.walk(os.path.abspath(_home)):
+_path_set = False
+
+for _path, _dirs, _files in os.walk(os.path.abspath(path[0] + "/../")):
     for _filename in fnmatch.filter(_files, "code_instrumentation.py") :
-        path.append(_path.replace("/lib/auxiliary",''))
+        if _path.count("/lib/auxiliary") :
+            path.append(_path.replace("/lib/auxiliary",''))
+            _path_set = True
+            break
+    if _path_set :
         break
 
 from lib.api.api_service_client import *
 
-api = APIClient("http://172.16.1.222:7070")
+'''
+This is a Python example of how to discover Hosts through CloudBench
+
+This assumes you have already attached to a cloud through the GUI or CLI.
+'''
+
+api = APIClient("http://172.16.1.250:7070")
 
 try :
     error = False
-    vm = None
+    hosts = None
 
-    print "creating new VM..."
-    vm = api.vmattach("SIM1", "tinyvm")
+    print "Getting hostlist....."
+    _hosts = api.hostlist("TESTOPENSTACK")
 
-    print vm["name"]
-
-    # Get some data from the monitoring system
-    for data in api.get_latest_data("SIM1", vm["uuid"], "runtime_os_VM") :
-        print data
-
-    # 'vm' is a dicitionary containing all the details of the VM
-
-    print "CTRL-C to unpause..."
-    while True :
-        sleep(10)
-
-    print "destroying VM..."
-
-    api.vmdetach("SIM1", vm["uuid"])
+    for _host in _hosts :
+        _host_data = api.hostshow("TESTOPENSTACK", _host["name"])
+        print _host_data
 
 except APIException, obj :
     error = True
@@ -68,18 +62,14 @@ except APINoSuchMetricException, obj :
     error = True
     print "API Problem (" + str(obj.status) + "): " + obj.msg
 
-except KeyboardInterrupt :
-    print "Aborting this VM."
-
 except Exception, msg :
     error = True
     print "Problem during experiment: " + str(msg)
 
 finally :
-    if vm is not None :
+    if hosts is not None :
         try :
             if error :
-                print "Destroying VM..."
-                api.vmdetach("SIM1", vm["uuid"])
+                print "Unable to get host list"
         except APIException, obj :
             print "Error finishing up: (" + str(obj.status) + "): " + obj.msg

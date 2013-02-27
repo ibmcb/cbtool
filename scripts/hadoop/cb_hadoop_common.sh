@@ -28,96 +28,50 @@ source ~/.bashrc
 
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
-JAVA_HOME=`get_my_ai_attribute_with_default java_home ~/jdk1.6.0_21`
-
-eval JAVA_HOME=${JAVA_HOME}
-
-# START - This section might be removed on the future #
-HADOOP_PACKAGE=`ls hadoop*.tar.gz`
-
-if [ -z ${HADOOP_PACKAGE} ]; then
-	HADOOP_VERSION=`echo ${HADOOP_HOME} | sed 's/hadoop-//g' | sed 's/-bin//g'` 
-	HADOOP_HOME=`get_my_ai_attribute_with_default hadoop_home ~/hadoop-0.20.2`
-else
-    HADOOP_VERSION=`echo ${HADOOP_PACKAGE} | sed 's/\.tar\.gz//g' | sed 's/hadoop-//g' | sed 's/-bin//g'`
-	if [ ! -d ~/hadoop-${HADOOP_VERSION} ]; then
-		tar -xzvf ${HADOOP_PACKAGE}
+if [[ -z ${JAVA_HOME} ]]
+then
+	JAVA_HOME=`get_my_ai_attribute_with_default java_home ~/jdk1.6.0_21`
+	eval JAVA_HOME=${JAVA_HOME}
+	if [[ -f ~/.bashrc ]]
+	then
+		syslog_netcat "Adding JAVA_HOME to bashrc"
+		echo "export JAVA_HOME=${JAVA_HOME}" >> .bashrc
 	fi
-	HADOOP_HOME=~/hadoop-${HADOOP_VERSION}
 fi
-# END - This section might be removed on the future #
 
-eval HADOOP_HOME=${HADOOP_HOME}
+if [[ -z ${HADOOP_HOME} ]]
+then
+	HADOOP_HOME=`get_my_ai_attribute_with_default hadoop_home ~/hadoop-1.0.4`
+	
+	HADOOP_VERSION=`echo ${HADOOP_HOME} | sed 's/hadoop-//g' | sed 's/-bin//g'` 
+	eval HADOOP_HOME=${HADOOP_HOME}
+
+	if [[ -f ~/.bashrc ]]
+	then
+		syslog_netcat "Adding HADOOP_HOME to bashrc"
+		echo "export HADOOP_HOME=${HADOOP_HOME}" >> .bashrc
+		echo "export PATH=\$PATH:$HADOOP_HOME/bin" >> .bashrc
+	fi
+fi
+
 HADOOP_CONF_DIR=$HADOOP_HOME/conf
+
+if [[ -z ${HIBENCH_HOME} ]]
+then
+	HIBENCH_HOME=`get_my_ai_attribute_with_default hibench_home ~/HiBench`
+
+	if [[ -f ~/.bashrc ]]
+	then
+		syslog_netcat "Adding HIBENCH_HOME to bashrc"
+		echo "export HIBENCH_HOME=${HIBENCH_HOME}" >> .bashrc
+	fi
+fi
 
 hadoop_master_ip=`get_ips_from_role hadoopmaster`
 
 slave_ips=`get_ips_from_role hadoopslave`
 
-DFS_NAME_DIR=`get_my_ai_attribute_with_default dfs_name_dir /tmp/cbhadoopname`
-eval DFS_NAME_DIR=${DFS_NAME_DIR}
-
-DFS_DATA_DIR=`get_my_ai_attribute_with_default dfs_data_dir /tmp/cbhadoopdata`
-eval DFS_DATA_DIR=${DFS_DATA_DIR}
-
 slave_ips_csv=`echo ${slave_ips} | sed ':a;N;$!ba;s/\n/, /g'`
-
-#############################################################################
-# LOAD_LEVEL defs -- different hadoop jobs
-#
-# - jar / input / output
-#############################################################################
-
-HADOOP_EXE="$HADOOP_HOME/bin/hadoop" 
-jar_command="$HADOOP_EXE jar"
-
-declare -A tab_LOAD_LEVEL_jar
-declare -A tab_LOAD_LEVEL_input
-declare -A tab_LOAD_LEVEL_output
-declare -A tab_LOAD_LEVEL_geninput
-declare -A tab_LOAD_LEVEL_options
-
-if [ x"$my_role" == x"hadoopmaster" ]
-then
-
-	load_level=`get_my_ai_attribute load_level`
-	load_factor=`get_my_ai_attribute_with_default load_factor 1000`
-	
-	is_max_min=`echo ${load_level} | grep -c "I"`
-	
-	if [ "${is_max_min}" = "1" ]
-	then
-		load_level_min=`echo $load_level | cut -d "I" -f 4`
-		load_level_max=`echo $load_level | cut -d "I" -f 5`
-	else
-		load_level_min=${load_level}
-		load_level_max=$((${load_level}+1))
-	fi 
-	syslog_netcat "Mininum load level is ${load_level_min}. Maximum load level is ${load_level_max}"
-	for ((i = ${load_level_min} ; i < ${load_level_max} ; i++))
-	do
-	## terasort with 100-byte records
-		tab_LOAD_LEVEL_jar[$i]="$HADOOP_HOME/hadoop-*examples*.jar terasort"
-		tab_LOAD_LEVEL_input[$i]="sort-input-$i"
-		tab_LOAD_LEVEL_output[$i]="sort-output-$i"
-		teragen_size=$(($i*${load_factor}))
-		tab_LOAD_LEVEL_geninput[$i]="$HADOOP_HOME/hadoop-*examples*.jar teragen ${teragen_size} ${tab_LOAD_LEVEL_input[$i]}" #giga-sort
-		tab_LOAD_LEVEL_options[$i]=
-	done
-fi
-## random writer - not used so far
-#tab_LOAD_LEVEL_jar[5]="$HADOOP_HOME/hadoop-*examples*.jar randomwriter"
-#tab_LOAD_LEVEL_input[5]=
-#tab_LOAD_LEVEL_output[5]="rdw-5"
-#tab_LOAD_LEVEL_geninput[5]=
-#tab_LOAD_LEVEL_options[5]="-Dtest.randomwrite.bytes_per_map=1000"
-	
-## wordcount - not used so far
-#tab_LOAD_LEVEL_jar[6]="$HADOOP_HOME/hadoop-*examples*.jar wordcount"
-#tab_LOAD_LEVEL_input[6]="wc-input-1"
-#tab_LOAD_LEVEL_output[6]="wc-output-1"
-#tab_LOAD_LEVEL_geninput[6]= "$HADOOP_EXE fs -mkdir ${tab_LOAD_LEVEL_input[6]}; $HADOOP_EXE fs -put ./${tab_LOAD_LEVEL_input[3]} ${tab_LOAD_LEVEL_input[3]}"
-#tab_LOAD_LEVEL_options[6]=  #could be [-m <#maps>] [-r <#reducers>]
 	
 #######################################################################################
 # Result log destinations 
@@ -125,9 +79,8 @@ fi
 # Should be set correctly by the user
 # Currently the following (especially the IP of CB master VM) info. is hard-coded.
 #######################################################################################
-#login_user=`get_login_username`
 	
-#HADOOP_LOG_DEST="172.16.1.202:/home/${login_user}/hadoopautoconfig/hadoopvisualizer/logs"
+#HADOOP_LOG_DEST="172.16.1.202:/home/${my_login_username}/hadoopautoconfig/hadoopvisualizer/logs"
 	
 #######################################################################################
 # Optional hadoop cluster configuration related options. 
