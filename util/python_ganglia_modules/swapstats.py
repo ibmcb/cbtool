@@ -40,9 +40,9 @@ class UpdateMetricThread(threading.Thread):
 
         f = open("/proc/swaps", "r")
         for l in f :
-           l = l.split()
-           if l[0] != "Filename" :
-               self.swap_devices[l[0].split('/')[2]] = 1
+            l = l.split()
+            if l[0] != "Filename" :
+                self.swap_devices[l[0].split('/')[2]] = 1
         self.re_procs     = r"^procs_"
 
     def shutdown(self):

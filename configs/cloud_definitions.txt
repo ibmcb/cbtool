@@ -63,7 +63,7 @@ EC2_LOGIN = cbuser                                         # The username that l
 # Parallel Libvirt Manager (PLM) requires the following parameters 
 [USER-DEFINED : CLOUDOPTION_MYPLM]
 PLM_ACCESS = <address>:6060
-PLM_INITIAL_VMCS = groupone:host1,host2/group2:host3,host4
+PLM_INITIAL_VMCS = grouptwo:sut
 PLM_SSH_KEY_NAME = path_to_local_private_key_file
 PLM_LOGIN = cbuser
 

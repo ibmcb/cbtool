@@ -167,6 +167,7 @@ DONT_START_LOAD_MANAGER = $False
 REPLICATED_VMS = 0
 ATTACH_PARALLELISM = 1
 DETACH_PARALLELISM = 20
+EXECUTE_PARALLELISM = 6
 RUNSTATE_PARALLELISM = 5
 EXECUTE_SCRIPT_NAME = execute_on_staging.sh 
 EXECUTE_JSON_FILENAME_PREFIX = cb
@@ -237,7 +238,7 @@ COLLECTOR_VM_SUMMARIZER_PORT = 8652
 FILLER_STRING=NA
 
 # Attributes recorded during management operations
-TRACE_ATTRIBUTES = command_originated, command, name, vmc_arrived, vmc_departed, vmc_failed, vm_reservations, vm_arrived, vm_arriving, vm_departed, vm_failed, ai_reservations, ai_arrived, ai_departed, ai_failed
+TRACE_ATTRIBUTES = command_originated, command, name, vmc_arrived, vmc_departed, vmc_failed, vm_reservations, vm_arrived, vm_arriving, vm_departed, vm_failed, ai_reservations, ai_arrived, ai_arriving, ai_departed, ai_failed
 HOST_ATTRIBUTES = uuid, name, cloud_ip, cloud_name, model, cloud_hostname, nr_vms
 VM_ATTRIBUTES = uuid, name, cloud_ip, last_known_state, cloud_name, model, cloud_hostname, vmc_name, vmc_cloud_ip, host_name, host_cloud_ip, role, size, imageid1, ai, ai_name, type, aidrs, aidrs_name, pattern
 

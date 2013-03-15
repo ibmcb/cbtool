@@ -86,6 +86,20 @@ case ${LOAD_PROFILE} in
 	SCRIPT_NAMES="prepare run"
 	syslog_netcat "Parameters used for kmeans are: NUM_OF_CLUSTERS=${NUM_OF_CLUSTERS}, NUM_OF_SAMPLES=${NUM_OF_SAMPLES}, SAMPLES_PER_INPUTFILE=${SAMPLES_PER_INPUTFILE}, DIMENSIONS=${DIMENSIONS}, MAX_ITERATION=${MAX_ITERATION}"
 	;;
+	mm)
+	ROWS_OF_BLOCKS=`get_my_ai_attribute_with_default rows_of_blocks "2"`
+	COLS_OF_BLOCKS=`get_my_ai_attribute_with_default cols_of_blocks "2"`
+	TOTAL_ROWS=$((${LOAD_LEVEL}*${LOAD_FACTOR}))
+	TOTAL_COLS=$((${LOAD_LEVEL}*${LOAD_FACTOR}))	
+	SEED_BASE=`get_my_ai_attribute_with_default seed_base "1234567890"`
+	export ROWS_OF_BLOCKS
+	export COLS_OF_BLOCKS
+	export TOTAL_ROWS
+	export TOTAL_COLS
+	export SEED_BASE
+	SCRIPT_NAMES="prepare run"
+	syslog_netcat "Parameters used for mm are: ROWS_OF_BLOCKS=${ROWS_OF_BLOCKS}, COLS_OF_BLOCKS=${COLS_OF_BLOCKS}, TOTAL_ROWS=${TOTAL_ROWS}, TOTAL_COLS=${TOTAL_COLS}, SEED_BASE=${SEED_BASE}"
+	;;
 	nutchindexing)
 	PAGES=$((${LOAD_LEVEL}*${LOAD_FACTOR}))
 	NUM_MAPS=`get_my_ai_attribute_with_default num_maps "2"`
@@ -187,7 +201,7 @@ lat=`cat ${HIBENCH_HOME}/hibench.report | grep -v Type | tr -s ' ' | cut -d ' ' 
 lat=`echo "${lat} * 1000" | bc`
 tput=`cat ${HIBENCH_HOME}/hibench.report | grep -v Type | tr -s ' ' | cut -d ' ' -f 6`
 
-report_app_metrics load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec throughput:$tput:tps latency:$lat:msec
+~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec throughput:$tput:tps latency:$lat:msec
 
 syslog_netcat "...hadoop job finished..."
 

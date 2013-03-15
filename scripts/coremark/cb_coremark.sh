@@ -77,7 +77,8 @@ syslog_netcat "coremark run complete. Will collect and report the results"
 
 tp=`cat ${OUTPUT_FILE} | grep Sec | cut -d ":" -f 2 | tr -d ' '`
 lat=`echo "\`cat ${OUTPUT_FILE} | grep time | cut -d ":" -f 2 | tr -d ' '\` * 1000 " | bc`
-report_app_metrics load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec throughput:$tp:tps latency:$lat:msec
+
+~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec throughput:$tp:tps latency:$lat:msec
 
 rm ${OUTPUT_FILE}
 

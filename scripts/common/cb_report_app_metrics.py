@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
 
@@ -14,12 +16,26 @@
 # limitations under the License.
 #/*******************************************************************************
 
-__version__ = '2.0'
+from sys import argv, path
 
-__all__ = [ 'ec2_cloud_ops', \
-            'osk_cloud_ops', \
-            'plm_cloud_ops', \
-            'scp_cloud_ops', \
-            'shared_functions', \
-            'sim_cloud_ops', \
-           'tsam_cloud_ops' ]
+import os
+import fnmatch
+
+_home = os.environ["HOME"]
+
+for _path, _dirs, _files in os.walk(os.path.abspath(_home)):
+    for _filename in fnmatch.filter(_files, "code_instrumentation.py") :
+        path.append(_path.replace("/lib/auxiliary",''))
+        break
+
+from scripts.common.cb_common import report_app_metrics
+
+#_osci, _my_uuid = get_os_conn()
+
+_metric_list = ''
+
+for _arg in argv :
+    if _arg.count(":") == 2 :
+        _metric_list += _arg + ' '
+
+report_app_metrics(_metric_list)

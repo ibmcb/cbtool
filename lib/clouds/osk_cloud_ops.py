@@ -32,7 +32,7 @@ from novaclient.v1_1 import client
 from novaclient import exceptions as novaexceptions
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from lib.auxiliary.data_ops import str2dic, DataOpsException
+from lib.auxiliary.data_ops import str2dic
 from lib.remote.network_functions import hostname2ip
 from shared_functions import CldOpsException, CommonCloudFunctions 
 
@@ -119,7 +119,8 @@ class OskCmds(CommonCloudFunctions) :
                 _msg += " on VMC " + vmc_name + "...."
                 cbdebug(_msg, True)
                 self.oskconn.keypairs.create(key_name)
-                
+                _key_pair_found = True
+
             _msg = "Checking if the security group \"" + security_group_name
             _msg += "\" is created on VMC " + vmc_name + "...."
             cbdebug(_msg, True)
@@ -186,7 +187,8 @@ class OskCmds(CommonCloudFunctions) :
             if not len(_detected_imageids) :
                 _msg = "None of the image ids used by any VM \"role\" were detected"
                 _msg += " in this OpenStack cloud. Please register at least one "
-                _msg += "of the following images: " + ','.join(_undetected_imageids.keys()) 
+                _msg += "of the following images: " + ','.join(_undetected_imageids.keys())
+                cbdebug(_msg, True)
             else :
                 _msg = _msg.replace("yx",'')
                 _msg = _msg.replace('x',"         ")
@@ -204,8 +206,11 @@ class OskCmds(CommonCloudFunctions) :
 
         except CldOpsException, obj :
             _fmsg = str(obj.msg)
-            cberr(_fmsg)
             _status = 2
+
+        except Exception, msg :
+            _fmsg = str(msg)
+            _status = 23
 
         finally :
             if _status :
@@ -235,38 +240,43 @@ class OskCmds(CommonCloudFunctions) :
             obj_attr_list["host_list"] = {}
     
             _host_list = self.oskconn.hypervisors.list()
-       
-            obj_attr_list["host_count"] = len(_host_list)
-    
-            for _host in _host_list :
-    
-                # Host UUID is artificially generated
-                _host_uuid = str(uuid5(UUID('4f3f2898-69e3-5a0d-820a-c4e87987dbce'), obj_attr_list["cloud_name"] + str(_host.service["id"])))
-                obj_attr_list["host_list"][_host_uuid] = {}
-                obj_attr_list["hosts"] += _host_uuid + ','
-                obj_attr_list["host_list"][_host_uuid]["cloud_hostname"], obj_attr_list["host_list"][_host_uuid]["cloud_ip"] = hostname2ip(_host.hypervisor_hostname)
 
-                if obj_attr_list["host_list"][_host_uuid]["cloud_ip"] == obj_attr_list["cloud_ip"] :
-                    obj_attr_list["host_list"][_host_uuid]["function"] = "controller"
-                else :
-                    obj_attr_list["host_list"][_host_uuid]["function"] = "compute"
-                obj_attr_list["host_list"][_host_uuid]["name"] = "host_" + obj_attr_list["host_list"][_host_uuid]["cloud_hostname"]
-                obj_attr_list["host_list"][_host_uuid]["memory_size"] = _host.memory_mb
-                obj_attr_list["host_list"][_host_uuid]["cores"] = _host.vcpus
-                obj_attr_list["host_list"][_host_uuid]["pool"] = obj_attr_list["pool"]
-                obj_attr_list["host_list"][_host_uuid]["username"] = obj_attr_list["username"]
-                obj_attr_list["host_list"][_host_uuid]["notification"] = "False"
-                obj_attr_list["host_list"][_host_uuid]["model"] = obj_attr_list["model"]
-                obj_attr_list["host_list"][_host_uuid]["vmc_name"] = obj_attr_list["name"]
-                obj_attr_list["host_list"][_host_uuid]["vmc"] = obj_attr_list["uuid"]
-                obj_attr_list["host_list"][_host_uuid]["uuid"] = _host_uuid
-                obj_attr_list["host_list"][_host_uuid]["arrival"] = int(time())
-                obj_attr_list["host_list"][_host_uuid]["counter"] = obj_attr_list["counter"]
-                obj_attr_list["host_list"][_host_uuid]["mgt_001_provisioning_request_originated"] = obj_attr_list["mgt_001_provisioning_request_originated"]
-                obj_attr_list["host_list"][_host_uuid]["mgt_002_provisioning_request_sent"] = obj_attr_list["mgt_002_provisioning_request_sent"]
-                _time_mark_prc = int(time())
-                obj_attr_list["host_list"][_host_uuid]["mgt_003_provisioning_request_completed"] = _time_mark_prc - start
+            obj_attr_list["host_count"] = len(_host_list)
+
+            _service_ids_found = {}
+            for _host in _host_list :
+                # Sometimes, the same hypervisor is reported more than once,
+                # with slightly different names. We need to remove (in fact,
+                # avoid the insertion of) duplicates.
+                if not _host.service["id"] in _service_ids_found :
+                    # Host UUID is artificially generated
+                    _host_uuid = str(uuid5(UUID('4f3f2898-69e3-5a0d-820a-c4e87987dbce'), obj_attr_list["cloud_name"] + str(_host.service["id"])))
+                    obj_attr_list["host_list"][_host_uuid] = {}
+                    obj_attr_list["hosts"] += _host_uuid + ','
+                    obj_attr_list["host_list"][_host_uuid]["cloud_hostname"], obj_attr_list["host_list"][_host_uuid]["cloud_ip"] = hostname2ip(_host.hypervisor_hostname)
     
+                    if obj_attr_list["host_list"][_host_uuid]["cloud_ip"] == obj_attr_list["cloud_ip"] :
+                        obj_attr_list["host_list"][_host_uuid]["function"] = "controller"
+                    else :
+                        obj_attr_list["host_list"][_host_uuid]["function"] = "compute"
+                    obj_attr_list["host_list"][_host_uuid]["name"] = "host_" + obj_attr_list["host_list"][_host_uuid]["cloud_hostname"]
+                    obj_attr_list["host_list"][_host_uuid]["memory_size"] = _host.memory_mb
+                    obj_attr_list["host_list"][_host_uuid]["cores"] = _host.vcpus
+                    obj_attr_list["host_list"][_host_uuid]["pool"] = obj_attr_list["pool"]
+                    obj_attr_list["host_list"][_host_uuid]["username"] = obj_attr_list["username"]
+                    obj_attr_list["host_list"][_host_uuid]["notification"] = "False"
+                    obj_attr_list["host_list"][_host_uuid]["model"] = obj_attr_list["model"]
+                    obj_attr_list["host_list"][_host_uuid]["vmc_name"] = obj_attr_list["name"]
+                    obj_attr_list["host_list"][_host_uuid]["vmc"] = obj_attr_list["uuid"]
+                    obj_attr_list["host_list"][_host_uuid]["uuid"] = _host_uuid
+                    obj_attr_list["host_list"][_host_uuid]["arrival"] = int(time())
+                    obj_attr_list["host_list"][_host_uuid]["counter"] = obj_attr_list["counter"]
+                    obj_attr_list["host_list"][_host_uuid]["mgt_001_provisioning_request_originated"] = obj_attr_list["mgt_001_provisioning_request_originated"]
+                    obj_attr_list["host_list"][_host_uuid]["mgt_002_provisioning_request_sent"] = obj_attr_list["mgt_002_provisioning_request_sent"]
+                    _time_mark_prc = int(time())
+                    obj_attr_list["host_list"][_host_uuid]["mgt_003_provisioning_request_completed"] = _time_mark_prc - start
+                    _service_ids_found[ _host.service["id"]] = "1"
+
             obj_attr_list["hosts"] = obj_attr_list["hosts"][:-1]
 
             self.additional_host_discovery (obj_attr_list)
@@ -530,6 +540,43 @@ class OskCmds(CommonCloudFunctions) :
                 raise CldOpsException(_msg, _status)
             else :
                 return _imageid
+
+    def get_networks(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+            
+            _network_list = self.oskconn.networks.list()
+
+            _status = 168
+            _fmsg = "Please check if the defined network is present on this "
+            _fmsg += "OpenStack Cloud"
+
+            _networkid = False
+            for _idx in range(0,len(_network_list)) :
+                if _network_list[_idx].label.count(obj_attr_list["prov_netname"]) :
+                    _networkid = _network_list[_idx]
+                    _status = 0
+                    break
+
+        except novaexceptions, obj:
+            _status = int(obj.error_code)
+            _fmsg = str(obj.error_message)
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+            
+        finally :
+            if _status :
+                _msg = "Network (" +  obj_attr_list["prov_netname"] + " ) not found: " + _fmsg
+                cberr(_msg, True)
+                raise CldOpsException(_msg, _status)
+            else :
+                return _networkid
                             
     @trace
     def vmcunregister(self, obj_attr_list) :
@@ -599,11 +646,16 @@ class OskCmds(CommonCloudFunctions) :
                 cbdebug(_msg)
                 _run_network = _networks[0]
 
-            obj_attr_list["cloud_hostname"] = obj_attr_list["cloud_vm_name"]
+
             _address_list = instance.addresses[_run_network]
 
             if len(_address_list) :
                 obj_attr_list["cloud_ip"] = '{0}'.format(_address_list[0]["addr"])
+
+                if obj_attr_list["vm_hostname_key"] == "cloud_vm_name" :
+                    obj_attr_list["cloud_hostname"] = obj_attr_list["cloud_vm_name"]
+                elif obj_attr_list["vm_hostname_key"] == "cloud_ip" :
+                    obj_attr_list["cloud_hostname"] = obj_attr_list["cloud_ip"].replace('.','-')
 
                 if obj_attr_list["prov_netname"] == obj_attr_list["run_netname"] :
                     obj_attr_list["prov_cloud_ip"] = '{0}'.format(_address_list[0]["addr"])
@@ -833,24 +885,16 @@ class OskCmds(CommonCloudFunctions) :
             
             _meta["experiment_id"] = obj_attr_list["experiment_id"]
 
-            # This is not working. Will keep it disable for now
-#            if "netid" in obj_attr_list :
-#                if len(obj_attr_list["netid"]) == 36 :
-#                    _netid = {"networks" : [{"uuid" : obj_attr_list["netid"]}]}
-#                else :
-#                    _netid = None
-#            else :
-#                _netid = None
-
-            _netid = None
+            _networkid = self.get_networks(obj_attr_list)
+            _netid = [{"net-id" : _networkid.id}]
 
             _msg = "Starting an instance on OpenStack, using the imageid \""
             _msg += obj_attr_list["imageid1"] + "\" (" + str(_imageid) + ") and "
             _msg += "size \"" + obj_attr_list["size"] + "\" (" + str(_flavor) + ")"
             if _scheduler_hints :
-                _msg += " with scheduler hints \"" + str(_scheduler_hints) + "\", "
-            if _netid :
-                _msg += " network identifier \"" + str(_netid) + "\", "
+                _msg += ", with scheduler hints \"" + str(_scheduler_hints) + "\" "
+
+            _msg += ", network identifier \"" + str(_netid) + "\","
             _msg += " on VMC \"" + obj_attr_list["vmc_name"] + "\""
             cbdebug(_msg, True)
     

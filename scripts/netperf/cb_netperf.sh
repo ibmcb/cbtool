@@ -82,7 +82,7 @@ else
 	tp=`tail -2 ${OUTPUT_FILE} | head -1 | awk '{ print $6 }' | tr -d ' '`
 fi
 
-report_app_metrics load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec throughput:$tp:tps bandwidth:$bw:MBps
+~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec throughput:$tp:tps bandwidth:$bw:MBps
 
 rm ${OUTPUT_FILE}
 

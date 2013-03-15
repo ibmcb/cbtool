@@ -1,18 +1,27 @@
-#!/usr/bin/python
+#!/usr/bin/env python
+
+#/*******************************************************************************
+# Copyright (c) 2012 IBM Corp.
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#     http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#/*******************************************************************************
+
 '''
- Copyright (c) 2012 IBM Corp.
+    Created on Oct 25, 2012
 
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
+    GUI formatter
 
-     http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
+    @author: Michael R. Hines
 '''
 
 import ast, json
@@ -63,7 +72,8 @@ class Dashboard () :
                                   "HOST" : "latest_management_HOST_" + self.username }
         self.latest_os_collection = {"VM" : "latest_runtime_os_VM_" + self.username, \
                                      "HOST" : "latest_runtime_os_HOST_" + self.username } 
-        self.latest_app_collection = {"VM" : "latest_runtime_app_VM_" + self.username} 
+        self.latest_app_collection = {"VM" : "latest_runtime_app_VM_" + self.username}
+        self.reported_app_metrics_collections = {"VM" : "reported_runtime_app_VM_metric_names_" + self.username}
 
         self.destinations = {}
         self.user_generated_categories = { 'p' : "Provisioning", 'a' : "Application" }
@@ -157,7 +167,18 @@ class Dashboard () :
             
             if _obj_type in self.latest_app_collection :
                 _app_metrics = self.msci.find_document(self.latest_app_collection[_obj_type], {"_id" : attrs["uuid"]})
+
                 if _app_metrics :
+                    _reported_app_metrics = self.msci.find_document(self.reported_app_metrics_collections[_obj_type], {"expid" : _app_metrics["expid"]})
+                    del _reported_app_metrics["_id"]
+                    del _reported_app_metrics["expid"]
+
+                    for _metric_name in _reported_app_metrics.keys() :
+                        if _metric_name not in _app_metrics :
+                            _app_metrics[_metric_name] = {}
+                            _app_metrics[_metric_name]["val"] = "NA"
+                            _app_metrics[_metric_name]["units"] = " "
+
                     metrics.update(_app_metrics)
 
             if _obj_type == "VM" :
@@ -1078,8 +1099,9 @@ class GUI(object):
             return self.bootstrap(req, self.heromsg + "\n<h4>Error: API Service (" + self.api_access + ") is not responding: " + str(msg) + "</h4></div>", error = True)
         except socket.error, v:
             return self.bootstrap(req, self.heromsg + "\n<h4>Error: API Service (" + self.api_access + ") is not responding: " + str(v) + "</h4></div>", error = True)
-        except Exception, msg:
-            return self.bootstrap(req, self.heromsg + "\n<h4>Error: Something bad happened: " + str(msg) + "</h4></div>")
+#        DO NOT UNCOMMENT THIS!!!!!!!
+#        except Exception, msg:
+#            return self.bootstrap(req, self.heromsg + "\n<h4>Error: Something bad happened: " + str(msg) + "</h4></div>")
         
     def default(self, req, params, attach_params, views, operations, objects, liststates):
         if not req.active : 
@@ -1574,4 +1596,5 @@ def gui(options) :
     reactor.listenTCP(  int(options.guiport), \
                         Site(GUIDispatcher(options.keepsession, options.apiport, options.apihost)), \
                         interface = options.guihost)
+
     reactor.run()

@@ -19,23 +19,24 @@
 '''
     Created on Nov 15, 2011
 
-    Network primitives for CloudBench
+    Process management (local and remote) primitives for CloudBench
 
     @author: Michael R. Hines, Marcio A. Silva
 '''
 
 from subprocess import PIPE,Popen
 from time import sleep
-from platform import system
 
+from lib.auxiliary.thread_pool import ThreadPool
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-     
+
 class ProcessManagement :
     '''
     TBD
     '''
     @trace
-    def __init__(self, hostname = "127.0.0.1", port = "22", username = None, cloud_name = None) :
+    def __init__(self, hostname = "127.0.0.1", port = "22", username = None, \
+                 cloud_name = None, priv_key = None) :
         '''
         TBD
         '''
@@ -44,6 +45,8 @@ class ProcessManagement :
         self.port = int(port)
         self.username = username
         self.cloud_name = cloud_name
+        self.priv_key = priv_key
+        self.thread_pools = {}
 
     @trace
     class ProcessManagementException(Exception):
@@ -58,11 +61,16 @@ class ProcessManagement :
             return self.msg
 
     @trace
-    def run_os_command(self, cmdline) :
+    def run_os_command(self, cmdline, override_hostname = None) :
         '''
         TBD
         '''
-        if self.hostname == "127.0.0.1" or self.hostname == "0.0.0.0" :
+        if override_hostname :
+            _hostname = override_hostname
+        else :
+            _hostname = self.hostname
+
+        if _hostname == "127.0.0.1" or _hostname == "0.0.0.0" :
             _local = True
         else :
             _local = False
@@ -71,12 +79,18 @@ class ProcessManagement :
             _cmd = cmdline
         else :
             if self.username :
-                self.username = self.username + "@"
+                _username = " -l " + self.username + ' '
             else :
-                self.username = ''
+                _username = ''
 
-            _cmd = "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "
-            _cmd += self.username + self.hostname + " \"" + cmdline + "\""
+            if self.priv_key :
+                _priv_key = " -i " + self.priv_key + ' '
+            else :
+                _priv_key = ''
+
+            _cmd = "ssh " + _priv_key + " -o StrictHostKeyChecking=no "
+            _cmd += "-o UserKnownHostsFile=/dev/null " + _username
+            _cmd += _hostname + " \"" + cmdline + "\""
 
         _msg = "running os command: " + _cmd
         cbdebug(_msg);
@@ -103,7 +117,120 @@ class ProcessManagement :
             _status = 81713
             _result_stdout = ""
             _result_stderr = ""
+
         return _status, _result_stdout, _result_stderr
+
+    def retriable_run_os_command(self, cmdline, override_hostname = None, total_attempts = 2) :
+        '''
+        TBD
+        '''
+        _attempts = 0
+        while _attempts < total_attempts :
+            _status, _result_stdout, _result_stderr = self.run_os_command(cmdline, override_hostname)
+    
+            if not _status and _result_stdout and not _result_stdout.count("NOK") :
+                break
+            else :
+                _msg = "Command \"" + cmdline + "\" failed to execute on "
+                _msg += "hostname " + str(override_hostname) + " after attempt "
+                _msg += str(_attempts) + '.'
+                _attempts += 1 
+                sleep(30)
+
+        if _attempts >= total_attempts :
+            _status = 17368
+            _fmsg = "Giving up on executing command \"" + cmdline + "\" on hostname "
+            _fmsg += str(override_hostname) + ". Too many attempts (" + str(_attempts) + ").\n"
+            _fmsg += "STDOUT is :\n" + str(_result_stdout) + '\n'
+            _fmsg += "STDERR is :\n" + str(_result_stderr) + '\n'
+            cberr(_fmsg)
+            return _status, _fmsg
+        else :
+            _status = 0
+            _msg = "Command \"" + cmdline + "\" executed on hostname "
+            _msg += str(override_hostname) + " successfully."
+            cbdebug(_msg)
+            return _status, _msg, {"status" : _status, "msg" : _msg, "result" : _status}
+
+    def parallel_run_os_command(self, cmdline_list, override_hostname_list, total_attempts, execute_parallelism) :
+        '''
+        TBD
+        '''
+        _status = 100
+        _xfmsg = "An error has occurred, but no error message was captured"
+        _thread_pool = None
+        _child_failure = False
+
+        try :
+            for _index in range(0, len(override_hostname_list)) :
+                serial_mode = False # only used for debugging
+
+                if not _thread_pool and not serial_mode :
+                    pool_key = override_hostname_list[_index]
+                    if pool_key not in self.thread_pools :
+                        _thread_pool = ThreadPool(int(execute_parallelism))
+                        self.thread_pools[pool_key] = _thread_pool
+                    else :
+                        _thread_pool = self.thread_pools[pool_key]
+
+                if serial_mode :
+                    if len(cmdline_list[_index]) > 0:
+                        _status, _fmsg, _object = \
+                        self.retriable_run_os_command(cmdline_list[_index], \
+                                                      override_hostname_list[_index], \
+                                                      total_attempts)
+                    else :
+                        _status = 0
+                        _xfmsg = "OK"
+
+                    if _status :
+                        _xfmsg = _fmsg
+                        _child_failure = True
+                        break
+                else :
+                    if len(cmdline_list[_index]) > 0:
+                        _thread_pool.add_task(self.retriable_run_os_command, \
+                                              cmdline_list[_index], \
+                                              override_hostname_list[_index], \
+                                              total_attempts)
+
+            if _thread_pool and not serial_mode:
+                _xfmsg = ''
+                _results = _thread_pool.wait_completion()
+
+                if len(_results) :
+                    for (_status, _fmsg, _object) in _results :
+                        if int(_status) :
+                            _xfmsg += _fmsg
+                            _child_failure = True
+                            break
+
+                if _child_failure :
+                    _status = 81717
+                else :
+                    _status = 0
+    
+        except KeyboardInterrupt :
+            _status = 42
+            _xfmsg = "CTRL-C interrupt"
+            cbdebug("Signal children to abort...", True)
+            if _thread_pool :
+                _thread_pool.abort()
+
+        except Exception, e :
+            _status = 23
+            _xfmsg = str(e)
+            if _thread_pool :
+                _thread_pool.abort()
+        finally :
+            if _status :
+                _msg = "Parallel run os command operation failure: " + _xfmsg
+                cberr(_msg, True)
+            else :
+                _msg = "Parallel run os command success."
+                cbdebug(_msg)
+
+            return _status, _msg
 
     @trace
     def get_pid_from_port(self, port, protocol = "tcp") :

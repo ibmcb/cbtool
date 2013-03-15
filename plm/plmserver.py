@@ -1357,7 +1357,7 @@ class Plm :
             if _current_state == "paused"  and target_state == "resume" :
                 self.alterstate_instance(lvt_cnt, tag, target_state)
 
-            elif _current_state == "shutoff" and target_state == "restore" :
+            elif _current_state == "save" and target_state == "restore" :
                 if options.hypervisor == "kvm" :
                     self.alterstate_instance(lvt_cnt, tag, target_state)
                 elif options.hypervisor == "xen" :
@@ -2073,7 +2073,8 @@ class Plm :
         _state_code2value["2"] = "blocked"
         _state_code2value["3"] = "paused"
         _state_code2value["4"] = "shutdown"
-        _state_code2value["5"] = "shutoff"
+        # Temporarily renaming "shutoff" to "save"
+        _state_code2value["5"] = "save"
         _state_code2value["6"] = "crashed"
 
         try :

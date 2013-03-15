@@ -109,7 +109,7 @@ tp7=`cat $outfile | grep -a RandomlyOrderedRingBandwidth_GBytes | cut -d "=" -f 
 lat=`cat $outfile | grep -a RandomlyOrderedRingLatency_usec | cut -d "=" -f 2`
 lat=`echo "scale=8;  ${lat} / 1000" | bc`
 
-report_app_metrics load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec throughput_G_HPL:$tp1:Tflops throughput_G_PTRANS:$tp2:GBps throughput_G_RandomAccess:$tp3:Gupps throughput_G_FFTE:$tp4:Gflops throughput_EP_STREAM_Triad:$tp5:GBps throughput_EP_DGEMM:$tp6:Gflops throughput_RandomRing:$tp7:GBps lat_RandomRing:$lat:usec
+~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec throughput_G_HPL:$tp1:Tflops throughput_G_PTRANS:$tp2:GBps throughput_G_RandomAccess:$tp3:Gupps throughput_G_FFTE:$tp4:Gflops throughput_EP_STREAM_Triad:$tp5:GBps throughput_EP_DGEMM:$tp6:Gflops throughput_RandomRing:$tp7:GBps lat_RandomRing:$lat:usec
 
 rm $outfile
 

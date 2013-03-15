@@ -50,8 +50,6 @@ scripts/stores/hard_reset.sh
 scripts/specweb/specwebgui.jar
 scripts/specweb/reporter.jar
 scripts/specweb/jfreechart-1.0.12.jar
-scripts/hadoop/HiBench
-scripts/hadoop/hadoop-1.0.4-bin.tar.gz
 scripts/windesktop
 3rd_party/bootstrap
 3rd_party/mongo

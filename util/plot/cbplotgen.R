@@ -136,7 +136,7 @@ if (opt$aggregate) {
 	cat(msg, sep='\n')
 	
 	plot_management_data(mgt_metrics, opt$directory, "all", "all", 
-			opt$size)
+			opt$size, opt$maxvms)
 	
 	msg <- paste("### Done ###", sep = '')
 	cat(msg, sep='\n')
@@ -300,9 +300,23 @@ for (experiment in experiment_list) {
 		}
 
 	pdf_dir <- paste(opt$directory, '/', experiment, sep = '')
+	command <- paste("pdflatex -output-directory=", pdf_dir, ' ', pdf_dir, "/*.tex", sep = '')
+	system(command)
 	command <- paste("pdftk ", pdf_dir, "/*.pdf cat output ", pdf_dir, "/all_plots.pdf", sep = '')
 	system(command)
+		
 	}
+
+pdf_dir <- paste(opt$directory, sep = '')
+system(paste("rm ", pdf_dir, "/Rplots.pdf", sep = ''))
+system(paste("rm ", pdf_dir, "/texput.log", sep = ''))
+
+if (opt$aggregate) {
+	command <- paste("pdflatex -output-directory=", pdf_dir, ' ', pdf_dir, "/*.tex", sep = '')
+	system(command)
+	command <- paste("pdftk ", pdf_dir, "/*.pdf cat output ", pdf_dir, "/all_plots.pdf", sep = '')
+	system(command)
+}
 
 msg <- paste("################################## END PHASE 2 - Plotting Graphs", 
 		" files ##################################", sep = '')

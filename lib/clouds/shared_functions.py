@@ -102,7 +102,8 @@ class CommonCloudFunctions:
                                                   cloud_name = obj_attr_list["cloud_name"])
         
                     _cmd = obj_attr_list["additional_discovery"]
-        
+                    _cmd = _cmd.replace("--"," --")
+
                     _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_cmd)
                     _extra_attr_list = json.loads(_result_stdout)
         
@@ -133,6 +134,8 @@ class CommonCloudFunctions:
         TBD
         '''
         if "svm_stub_ip" in obj_attr_list :
+            if not obj_attr_list["svm_stub_ip"] :
+                return False
             if not self.ft_supported :
                 _msg = "Fault-Tolerant Stub VMs are not implemented for " + self.get_description()
                 _status = 1024

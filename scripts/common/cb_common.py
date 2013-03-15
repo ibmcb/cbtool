@@ -17,8 +17,8 @@
 #/*******************************************************************************
 
 """
-    Library functions periodically making measurements of
-    multi-tier servers over the network
+    Library functions to allow VMs to perform operations on Object and Metric
+    stores remotely
 
     @author: Michael R. Hines, Marcio A. Silva
 
@@ -527,13 +527,14 @@ def report_app_metrics(metriclist) :
     try :
 
         _metrics_dict = {}
-        _reported_metrics_dict = {}
+        _new_reported_metrics_dict = {}
     
         for _metric in metriclist.split() :
             _metric = _metric.split(':')
-            _metrics_dict["app_"  + _metric[0]] = {}
-            _metrics_dict["app_"  + _metric[0]]["val"] = _metric[1] if len(_metric[1]) else "-3"
-            _metrics_dict["app_"  + _metric[0]]["units"] = _metric[2]
+            if len(_metric[1]) :
+                _metrics_dict["app_"  + _metric[0]] = {}
+                _metrics_dict["app_"  + _metric[0]]["val"] = _metric[1]
+                _metrics_dict["app_"  + _metric[0]]["units"] = _metric[2]
     
         _metrics_dict["time"] = int(time())
         _metrics_dict["time_h"] = strftime("%a %b %d %X %Z %Y")
@@ -543,9 +544,13 @@ def report_app_metrics(metriclist) :
         if "app_load_id" in _metrics_dict and _metrics_dict["app_load_id"]["val"] == "1" :
             for _key in _metrics_dict.keys() :
                 if not _key.count("time") and not _key.count("uuid") and not _key.count("time_h") :
-                    _reported_metrics_dict[_key] = "1"
-            _reported_metrics_dict["expid"] = _expid
-            _reported_metrics_dict["_id"] = b64encode(sha1(_expid).digest())
+                    _new_reported_metrics_dict[_key] = "1"
+            _new_reported_metrics_dict["expid"] = _expid
+            _new_reported_metrics_dict["_id"] = b64encode(sha1(_expid).digest())
+            _reported_metrics_dict = \
+            _msci.find_document("reported_runtime_app_VM_metric_names_" + \
+                                _username, {"_id" : _new_reported_metrics_dict["_id"]})
+            _reported_metrics_dict.update(_new_reported_metrics_dict)
 
         _msci.add_document("runtime_app_VM_" + _username, _metrics_dict)
         _msg = "Application Metrics reported successfully. Data package sent was: \"" 
@@ -558,7 +563,7 @@ def report_app_metrics(metriclist) :
         cbdebug(_msg)
 
         if len(_reported_metrics_dict) :
-            _msci.add_document("reported_runtime_app_VM_metric_names_" + _username, _reported_metrics_dict)
+            _msci.update_document("reported_runtime_app_VM_metric_names_" + _username, _reported_metrics_dict)
             _msg = "Reported runtime application metric names collection "
             _msg += "updated successfully. Data package sent was: \""
             _msg += str(_reported_metrics_dict) + "\""

@@ -65,10 +65,7 @@ bw=`echo "$LOAD_ID*3.14 + 3.14" | bc`
 tp=`echo "$LOAD_ID*2.78 + 2.78" | bc`
 lat=`echo "$LOAD_ID*0.577 + 0.577" | bc`
 
-# Uncomment to test the python version of the same function
 ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum load_profile:${LOAD_PROFILE}:name load_level:${LOAD_LEVEL}:load load_duration:${LOAD_DURATION}:sec bandwidth:${bw}:mbps throughput:${tp}:tps latency:${lat}:msec
-
-#report_app_metrics load_id:${LOAD_ID}:seqnum load_profile:${LOAD_PROFILE}:name load_level:${LOAD_LEVEL}:load load_duration:${LOAD_DURATION}:sec bandwidth:${bw}:mbps throughput:${tp}:tps latency:${lat}:msec
 
 rm ${OUTPUT_FILE}
 

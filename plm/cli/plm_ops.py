@@ -411,6 +411,7 @@ class PlmCmds() :
 
             self.connect(obj_attr_list["access"])
             kwargs = self.dic_to_rpc_kwargs(self.plmconn, "instance_run", obj_attr_list)
+
             _status, _msg, _result = self.plmconn.instance_run(**kwargs)
 
             if _result :

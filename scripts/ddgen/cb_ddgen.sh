@@ -70,7 +70,7 @@ else
 	bw=`cat ${OUTPUT_FILE} | grep copied | awk '{ print $8 }'`
 	unbw=`cat ${OUTPUT_FILE} | grep copied | awk '{ print $9 }'`
 	
-	report_app_metrics load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec bandwidth:${bw}:${unbw}
+	~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec bandwidth:${bw}:${unbw}
 	
 	rm ${OUTPUT_FILE}
 fi

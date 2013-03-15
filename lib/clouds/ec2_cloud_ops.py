@@ -223,7 +223,6 @@ class Ec2Cmds(CommonCloudFunctions) :
 
         except CldOpsException, obj :
             _fmsg = str(obj.msg)
-            cberr(_msg)
             _status = 2
 
         except Exception, msg :

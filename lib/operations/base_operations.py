@@ -146,7 +146,7 @@ class BaseObjectOperations :
             if not command.count("cloud-attach") and len(parameters.split()) > 0:
                 object_attribute_list["cloud_name"] = parameters.split()[0]
         else :
-            if not command.count("cloud-attach") and not parameters.count("async"):
+            if not command.count("cloud-attach") and not parameters.count(" async"):
                 if len(parameters) > 0 :
                     _possible_cloud_name = parameters.split()[0]
                     if _possible_cloud_name == BaseObjectOperations.default_cloud :
@@ -2013,19 +2013,31 @@ class BaseObjectOperations :
 
                     _vm_post_boot_commands.append("~/" + _obj_attr_list["remote_dir_name"] + "/scripts/common/cb_post_boot.sh")
 
-                    _msg = "Performing generic application instance post_boot configuration ..."
+                    _msg = "Performing generic application instance post_boot "
+                    _msg += "configuration on all VMs beloging to " + _ai_attr_list["name"] + "..."                
                     cbdebug(_msg, True)
                     self.osci.pending_object_set(cloud_name, "AI", ai_uuid, _msg)
-                    if not repeated_ssh(self.pid, _obj_types, _vm_names, \
-                                           _vm_ip_addrs, _vm_logins, _vm_passwds, \
-                                           _vm_priv_keys, _vm_post_boot_commands, \
-                                           None, _ai_attr_list, "execute") :
+                    
+                    _proc_man = ProcessManagement(username = _vm_logins[0], \
+                              cloud_name = _ai_attr_list["cloud_name"], \
+                              priv_key = _vm_priv_keys[0])
+
+                    _status, _xfmsg = _proc_man.parallel_run_os_command(_vm_post_boot_commands, \
+                                                                        _vm_ip_addrs, \
+                                                                        _ai_attr_list["update_attempts"], \
+                                                                        _ai_attr_list["execute_parallelism"])
+
+                    if _status :
+
                         _status = 1495
-                        _fmsg = "Failure while executing remote post_boot scripts."
+                        _fmsg = "Failure while executing generic post_boot configuration on "
+                        _fmsg += "on all VMs beloging to " + _ai_attr_list["name"] + ": "
+                        _fmsg += _xfmsg                
                     else :
                         _status = 0
                 else :
-                    _msg = "Bypassing generic VM post_boot configuration."
+                    _msg = "Bypassing generic VM post_boot configuration on all "
+                    _msg += "VMs beloging to " + _ai_attr_list["name"] + "..."                
                     cbdebug(_msg, True)
                     _status = 0                        
             else :
@@ -2036,7 +2048,7 @@ class BaseObjectOperations :
             # the user may specify commands (on the cloud defaults file) to be run 
             # in all of the applications in the form:
             # "<application type>_<role>_SETUP1" = command1
-            # ""<application type>_<role>_SETUP2" = command2 and so forth.
+            # "<application type>_<role>_SETUP2" = command2 and so forth.
 
             # We then take that command and run it inside each VM in parallel.
             # When the last command completes inside all the VMs, we move to the next
@@ -2049,13 +2061,15 @@ class BaseObjectOperations :
                 if "run_application_scripts" in _ai_attr_list and \
                 _ai_attr_list["run_application_scripts"].lower() != "false" :
                 
-                    _msg = "Running application-specific \"" + operation + "\" operations..."
+                    _msg = "Running application-specific \"" + operation + "\" "
+                    _msg += "configuration on all VMs beloging to " + _ai_attr_list["name"] + "..."                
                     cbdebug(_msg, True)
                     self.osci.pending_object_set(cloud_name, "AI", ai_uuid, _msg)
 
                     if "dont_start_load_manager" in _ai_attr_list and _ai_attr_list["dont_start_load_manager"].lower() == "true" :
                         _msg = "Load Manager will NOT be automatically"
-                        _msg += " started during this AI deployment."
+                        _msg += " started during the deployment of "
+                        _msg += _ai_attr_list["name"] + "..."                
                         cbdebug(_msg, True)
 
                     _lmr = False
@@ -2081,8 +2095,9 @@ class BaseObjectOperations :
                             if _lmr or operation != "setup" :
                                 break
                             else :
-                                if "dont_start_load_manager" in _ai_attr_list and _ai_attr_list["dont_start_load_manager"].lower() == "true" :
-                                    True
+                                if "dont_start_load_manager" in _ai_attr_list \
+                                and _ai_attr_list["dont_start_load_manager"].lower() == "true" :
+                                    _lmr = True
                                 else :
                                     # This needs to be done only once, at the AI's
                                     # initial deployment.
@@ -2100,18 +2115,29 @@ class BaseObjectOperations :
                         cbdebug(_msg)
     
                         # Now run the application-specific initializations
-                        if not repeated_ssh(self.pid, _obj_types, _vm_names, \
-                                            _vm_ip_addrs, _vm_logins, _vm_passwds, \
-                                            _vm_priv_keys, _vm_command_list, None, \
-                                            _ai_attr_list, "execute") :
+                        _msg = "Executing command list described on " + operation
+                        _msg += " step " + str(_num) + "..."
+                        cbdebug(_msg)
+
+                        _proc_man = ProcessManagement(username = _vm_logins[0], \
+                                                      cloud_name = _ai_attr_list["cloud_name"], \
+                                                      priv_key = _vm_priv_keys[0])
+
+                        _status, _xfmsg = _proc_man.parallel_run_os_command(_vm_command_list, \
+                                                                            _vm_ip_addrs, \
+                                                                            _ai_attr_list["update_attempts"], \
+                                                                            _ai_attr_list["execute_parallelism"])
+
+                        if _status :
         
-                            _fmsg = "Failure while executing remote setup scripts."
-                            _status = 37
+                            _fmsg = "Failure while executing application-specific configuration on "
+                            _fmsg += "on all VMs beloging to " + _ai_attr_list["name"] + ":\n "
+                            _fmsg += _xfmsg   
                             break
-                        else :
-                            _status = 0
+
                 else :
-                    _msg = "Bypassing application-specific \"setup\" operations"
+                    _msg = "Bypassing application-specific configuration on all "
+                    _msg += "VMs beloging to " + _ai_attr_list["name"] + "..."  
                     cbdebug(_msg, True)
                     _status = 0
 
@@ -2265,7 +2291,8 @@ class BaseObjectOperations :
             _key_list = _mon_defaults["trace_attributes"].split(',')         
             
             for _key in _key_list :
-                if _key.count("reservations") or _key.count("arrived") or _key.count("departed") or _key.count("failed") :
+                if _key.count("reservations") or _key.count("arrived") or \
+                _key.count("departed") or _key.count("failed") or _key.count("arriving") :
                     _obj_type, _counter_type = _key.upper().split('_')
                     obj_attr_list[_key] = self.get_object_count(cloud_name, _obj_type, _counter_type)
 

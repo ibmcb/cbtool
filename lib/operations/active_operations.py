@@ -1852,7 +1852,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _msg = "VM creation aborted during transfer file step..."
                         _status = 12345
                         raise self.ObjectOperationException(_msg, _status)
-    
+
                 if obj_attr_list["transfer_files"].lower() != "false" :
                     _cmd = "ssh -i " + obj_attr_list["identity"]
                     _cmd += " -o StrictHostKeyChecking=no"
@@ -1871,7 +1871,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _cmd += "sudo chown -R " +  obj_attr_list["login"] + " ~/" + obj_attr_list["remote_dir_name"] + "\";"
                     _cmd += "rsync -e \"ssh -o StrictHostKeyChecking=no -l " + obj_attr_list["login"] + " -i " 
                     _cmd += obj_attr_list["identity"] + "\" --exclude-from "
-                    _cmd += "'" +  obj_attr_list["exclude_list"] + "' -az  --no-o --no-g --inplace -O " + obj_attr_list["base_dir"] + "/* " 
+                    _cmd += "'" +  obj_attr_list["exclude_list"] + "' -az --delete --no-o --no-g --inplace -O " + obj_attr_list["base_dir"] + "/* " 
                     _cmd += obj_attr_list["prov_cloud_ip"] + ":~/" + obj_attr_list["remote_dir_name"] + '/'
 
                     _msg = "RSYNC: " + _cmd
@@ -1917,20 +1917,28 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                                                       obj_attr_list["login"])
 
                     if "run_generic_scripts" in obj_attr_list and obj_attr_list["run_generic_scripts"].lower() != "false" :
-                        _msg = "Performing generic VM post_boot configuration ..."
+                        _msg = "Performing generic VM post_boot configuration on "
+                        _msg += obj_attr_list["name"] + " ("+ obj_attr_list["prov_cloud_ip"] + ")..."     
                         cbdebug(_msg, True)
-                        if not repeated_ssh(self.pid, ["VM"], [obj_attr_list["name"]], \
-                                               [obj_attr_list["prov_cloud_ip"]], \
-                                               [obj_attr_list["login"]], [None], \
-                                               [obj_attr_list["identity"]], \
-                                               ["~/" + obj_attr_list["remote_dir_name"] + "/scripts/common/cb_post_boot.sh"], \
-                                               None, obj_attr_list, "execute") :
-                            _status = 1495
-                            _fmsg = "Failure while executing remote post_boot scripts."
-                        else :
-                            _status = 0
+                        
+                        _proc_man = ProcessManagement(username = obj_attr_list["login"], \
+                                                      cloud_name = obj_attr_list["cloud_name"], \
+                                                      priv_key = obj_attr_list["identity"])
+
+                        _cmdline = "~/" + obj_attr_list["remote_dir_name"] + "/scripts/common/cb_post_boot.sh"
+                        
+                        _status, _xfmsg, _object = \
+                        _proc_man.retriable_run_os_command(_cmdline, \
+                                                           obj_attr_list["prov_cloud_ip"], \
+                                                           obj_attr_list["update_attempts"])
+                        if _status :
+                            _fmsg = "Failure while executing generic VM "
+                            _fmsg += "post_boot configuration on "
+                            _fmsg += obj_attr_list["name"] + '.\n'
+#                            _fmsg += _xfmsg
                     else :
-                        _msg = "Bypassing generic VM post_boot configuration."
+                        _msg = "Bypassing generic VM post_boot configuration on "
+                        _msg += obj_attr_list["name"] + " ("+ obj_attr_list["prov_cloud_ip"] + ")..."  
                         cbdebug(_msg, True)
                         _status = 0
 
@@ -1973,8 +1981,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
         finally :
             if _status :
-                if len(_output_list) > 0 :
-                    _fmsg = _output_list[0]
                 _msg = "VM post-attachment operations failure: " + _fmsg
                 cberr(_msg)
                 raise self.ObjectOperationException(_msg, _status)
@@ -2229,12 +2235,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 _msg = "FIRS attachment command \"" + _cmd + "\" "
                 _msg += " was successfully started."
-                _msg += "The process id is " + str(_vmcrs_pid) + "."
+                _msg += "The process id is " + str(_firs_pid) + "."
                 cbdebug(_msg)
 
                 _obj_id = obj_attr_list["uuid"] + '-' + "submit"
                 self.update_process_list(obj_attr_list["cloud_name"], "FIRS", _obj_id, \
-                                         str(_vmcrs_pid), "add")
+                                         str(_firs_pid), "add")
             else :
                 _fmsg = "FIRS attachment command \"" + _cmd + "\" "
                 _fmsg += " failed while starting."
@@ -3415,6 +3421,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         if _target_state == "resume" :
                             _target_state = "attached"
         
+                        if _target_state == "restore" :
+                            _target_state = "attached"
+
                         if  _target_state not in ["save", "suspend", "fail", "attached" ] :
                             _fmsg = "Unknown state: " + _target_state
                             _status = 101
@@ -3432,6 +3441,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                         obj_attr_list["target_state"] = "restore"
                                     else :
                                         obj_attr_list["target_state"] = "resume"
+
                                 elif _target_state in [ "fail", "suspend"] and _current_state != "attached" :
                                     _msg = "Unable to fail a VM that is not on the \""
                                     _msg += "attached\" state."
@@ -4073,25 +4083,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _obj_type = _operation.split('-')[0]
                 
                 if not _thread_pool :
-                    pool_key = operation_type + "_" + _obj_type
+                    pool_key = operation_type + '_' + str(len(obj_attr_list["parallel_operations"])) + '_' + _obj_type + 's'
                     if pool_key not in self.thread_pools :
-                        '''
-                         For the life of me, I cannot figure out the problem with this bug.
-                         Here's the bug:
-                         
-                         If the the size of the thread pool == len(obj_attr_list["parallel_operations"])
-                         then, after the threads complete, the thread pool wait() does not return.
-                         
-                         But if the number of available threads is only larger by ONE available thread,
-                         then the wait() will return successfully.
-                         
-                         The only fix I can think of is to ensure that the 
-                         size of the thread pool is to put a minimum.
-                        ''' 
-                        min_size = max(len(obj_attr_list["parallel_operations"]), \
-                                       int(obj_attr_list[operation_type + "_parallelism"]))
-
-                        _thread_pool = ThreadPool(min_size + 1)
+                        _thread_pool = ThreadPool(int(obj_attr_list[operation_type + "_parallelism"]))
                         self.thread_pools[pool_key] = _thread_pool
                     else :
                         _thread_pool = self.thread_pools[pool_key]
@@ -4193,14 +4187,20 @@ class ActiveObjectOperations(BaseObjectOperations) :
         except self.ObjectOperationException, obj :
             _status = 45
             _fmsg = str(obj.msg)
-
+            if _thread_pool :
+                _thread_pool.abort()
+                
         except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
-
+            if _thread_pool :
+                _thread_pool.abort()
+                
         except Exception, e :
             _status = 23
             _fmsg = str(e)
+            if _thread_pool :
+                _thread_pool.abort()
 
         finally :
             if _status :

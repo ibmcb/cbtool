@@ -152,7 +152,7 @@ else
 			app_metric_string+=" latency_${TEST}_${TYPE}:"${RESPONSE_TIME}":msec"
 		done
 	done
-	report_app_metrics load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec ${app_metric_string}
+	~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec ${app_metric_string}
 
 	if [ x"${EXPOUTCOLDIR}" == x ]; then
 		true

@@ -51,6 +51,14 @@ do
 done
 syslog_netcat "All Datanodes (${TOTAL_NODES}) available now"
 
+if [ x"$my_role" == x"hadoopmaster" ]; then
+	if [ -f ~/mm.tar ]; then 
+		cd ${HIBENCH_HOME}
+		tar -xvf ~/mm.tar
+		rm ~/mm.tar
+	fi
+fi
+
 syslog_netcat "......exit......"
 provision_application_stop $START
 exit 0

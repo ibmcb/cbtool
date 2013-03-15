@@ -34,8 +34,7 @@ class UpdateMetricThread(threading.Thread):
         self.refresh_rate = 10
         if "refresh_rate" in params:
             self.refresh_rate = int(params["refresh_rate"])
-        self.metric       = {}
-        self.re_disk      = r"^.*[v|s|x]d[a-z].[0-9]*$"
+        self.re_disk      = r"^.*[v|s|x]d[a-z]$"
         self.re_procs     = r"^procs_"
 
     def shutdown(self):
@@ -57,6 +56,7 @@ class UpdateMetricThread(threading.Thread):
 
     def update_metric(self):
         elm = []
+        self.metric = {}
 
         f = open("/proc/diskstats", "r")
         for l in f:
