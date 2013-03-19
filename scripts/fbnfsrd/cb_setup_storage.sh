@@ -26,7 +26,7 @@ sudo bash -c "echo \"0\" > /proc/sys/kernel/randomize_va_space"
 
 sudo mkdir -p /$STORAGE_PATH
 
-sudo chown ${USERNAME}:${USERNAME} /$STORAGE_PATH
+sudo chown ${my_login_username}:${my_login_username} /$STORAGE_PATH
 
 sudo mount -t nfs ${STORAGESERVER_IP}:/$STORAGE_PATH /$STORAGE_PATH
 

@@ -41,7 +41,7 @@ then
 	then
 		syslog_netcat "Restarting gmetad for NullWorkload's first load"
 		sudo su root -l -c "pkill -9 -f gmetad"
-		${dir}/monitor-core/gmetad-python/gmetad.py -c /home/klabuser/gmetad-vms.conf -d 1
+		${dir}/monitor-core/gmetad-python/gmetad.py -c ~/gmetad-vms.conf -d 1
 	fi
 fi
 

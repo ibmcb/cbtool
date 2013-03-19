@@ -527,7 +527,7 @@ def report_app_metrics(metriclist) :
     try :
 
         _metrics_dict = {}
-        _new_reported_metrics_dict = {}
+        _reported_metrics_dict = {}
     
         for _metric in metriclist.split() :
             _metric = _metric.split(':')
@@ -542,6 +542,7 @@ def report_app_metrics(metriclist) :
         _metrics_dict["uuid"] = _my_uuid
 
         if "app_load_id" in _metrics_dict and _metrics_dict["app_load_id"]["val"] == "1" :
+            _new_reported_metrics_dict = {}
             for _key in _metrics_dict.keys() :
                 if not _key.count("time") and not _key.count("uuid") and not _key.count("time_h") :
                     _new_reported_metrics_dict[_key] = "1"

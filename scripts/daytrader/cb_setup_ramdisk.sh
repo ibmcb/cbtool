@@ -37,7 +37,7 @@ else
 	sudo mkdir ${DATABASE_PATH} 
 	sudo mkfs.ext4 /dev/ram0
 	sudo mount /dev/ram0 $DATABASE_PATH
-	sudo chown klabuser:klabuser $DATABASE_PATH
+	sudo chown ${my_login_username}:${my_login_username} $DATABASE_PATH
 	syslog_netcat "Copying ${DATABASE_PATH}_${SIZE} contents to ${DATABASE_PATH}"
 	cp -r ${DATABASE_PATH}_${SIZE}/* ${DATABASE_PATH}
 	syslog_netcat "DB2 database ${DATABASE_NAME} now on ramdisk device ${RAMDISK_DEVICE} - OK"

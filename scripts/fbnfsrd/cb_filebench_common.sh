@@ -18,7 +18,6 @@
 
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
-USERNAME=klabuser
-FB_BINARY_PATH=/home/klabuser/3rd_party/_filebench-1.4.9.1/experimental_low_overhead/filebench
+FB_BINARY_PATH=~/3rd_party/_filebench-1.4.9.1/experimental_low_overhead/filebench
 FB_BINARY_NAME=filebench_elo
 STORAGE_PATH=fbtest

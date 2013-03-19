@@ -154,15 +154,23 @@ cleanup_files <- function(ednl) {
 	cat(msg, sep='\n')
 
 	processed_file_list <- c(list.files(path = ednl, pattern = "processed_", 
-					recursive = TRUE))
+					recursive = TRUE, full.name = TRUE))
 
-	plot_file_list <- c(list.files(path = ednl, pattern = "pdf", 
-					recursive = TRUE))
+#	plot_file_list <- c(list.files(path = ednl, pattern = "pdf", 
+#					recursive = TRUE, full.name = TRUE))
 
-	table_file_list <- c(list.files(path = ednl, pattern = "_table", 
-					recursive = TRUE))
-	
-	file_list <- c(processed_file_list, plot_file_list, table_file_list)
+#	tex_file_list <- c(list.files(path = ednl, pattern = "tex", 
+#					recursive = TRUE, full.name = TRUE))
+
+	produced_file_list <- c(list.files(path = ednl, 
+					pattern = "^[0-9][0-9][0-9]_", recursive = TRUE, 
+					full.name = TRUE))
+
+#	table_file_list <- c(list.files(path = ednl, pattern = "_table", 
+#					recursive = TRUE, full.name = TRUE))
+
+#	file_list <- c(processed_file_list, plot_file_list, tex_file_list, table_file_list)
+	file_list <- c(processed_file_list, produced_file_list)
 
 	file.remove(file_list)
 }
@@ -305,12 +313,19 @@ pre_process_files <- function(ednl, fp2df_dict) {
 	}
 }
 
-create_data_frame <- function(ed, file_prefix) {
+create_data_frame <- function(ed, expid, file_prefix) {
 	
+	if (expid == "all") {
+		actual_path <- paste(ed)
+	} else {
+		actual_path <- paste(ed, '/', expid, sep = '')
+	}
+
 	actual_pattern <- paste("processed_", file_prefix, sep = '')
-	processed_experiment_file_list <- list.files(path = ed, 
-			pattern = actual_pattern, recursive = TRUE)
 	
+	processed_experiment_file_list <- list.files(path = actual_path, 
+			pattern = actual_pattern, recursive = TRUE, full.names = TRUE)
+
 	aggregate_data_frame <- ''
 
 	for (processed_experiment_file_name in processed_experiment_file_list) {

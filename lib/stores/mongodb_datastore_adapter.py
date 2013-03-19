@@ -230,7 +230,12 @@ class MongodbMgdConn :
                             "management_VM_" + username, \
                             "runtime_os_VM_" + username, \
                             "runtime_app_VM_" + username, \
-                            "runtime_os_HOST_" + username ]
+                            "runtime_os_HOST_" + username, \
+                            "reported_management_VM_metric_names_" + username, \
+                            "reported_runtime_app_VM_metric_names_" + username, \
+                            "reported_runtime_os_HOST_metric_names_" + username, \
+                            "reported_runtime_os_VM_metric_names_" + username, \
+                            ]
 
             for _collection in _collections :
                 _collection_handle = self.mongodb_conn[self.database][_collection]

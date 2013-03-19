@@ -90,7 +90,7 @@ then
 	then
 		syslog_netcat "Restarting gmetad for DayTrader's first load"
 		sudo su root -l -c "pkill -9 -f gmetad"
-		${dir}/monitor-core/gmetad-python/gmetad.py -c /home/klabuser/gmetad-vms.conf -d 1
+		${dir}/monitor-core/gmetad-python/gmetad.py -c ~/gmetad-vms.conf -d 1
 	fi
 fi
 
@@ -102,7 +102,7 @@ else
 	syslog_netcat "Benchmarking daytrader SUT: WAS_SERVER=${WAS_IPS} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID})"
 fi
 
-CMDLINE="iwlengine --enginename testit --define hostname=${LOAD_GENERATOR_TARGET_IP}:9080 --define botClient=0 --define topClient=${NR_USERS} --define stocks=${NR_QUOTES} -e 0 -s /home/klabuser/iwl/bin/test.jxs --timelimit $LOAD_DURATION -c $LOAD_LEVEL"
+CMDLINE="iwlengine --enginename testit --define hostname=${LOAD_GENERATOR_TARGET_IP}:9080 --define botClient=0 --define topClient=${NR_USERS} --define stocks=${NR_QUOTES} -e 0 -s ~/iwl/bin/test.jxs --timelimit $LOAD_DURATION -c $LOAD_LEVEL"
 
 PERIODIC_MEASUREMENTES=`echo ${PERIODIC_MEASUREMENTS} | tr '[:upper:]' '[:lower:]'`
 if [ x"$PERIODIC_MEASUREMENTS" == x"true" ]

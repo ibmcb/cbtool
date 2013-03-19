@@ -26,7 +26,7 @@ sudo bash -c "echo \"0\" > /proc/sys/kernel/randomize_va_space"
 
 sudo mkdir -p /$STORAGE_PATH
 
-sudo chown ${USERNAME}:${USERNAME} /$STORAGE_PATH
+sudo chown ${my_login_username}:${my_login_username} /$STORAGE_PATH
 syslog_netcat "Storage setup for filebench - OK"
 provision_application_stop $START
 exit 0

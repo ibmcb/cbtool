@@ -76,7 +76,9 @@ option_list <- list(
 				metavar="selected_time_intervals"),
 		make_option(c("-y", "--yint"), type="integer", default=10,
 				help = "Metric unit intervals [default \"%default\"]", 
-				metavar="selected_metric_intervals")
+				metavar="selected_metric_intervals"),
+		make_option(c("-u", "--update"), action="store_true", default=FALSE,
+				dest="layer", help="Outuput Latex/CSV tables with the plot points")		
 )
 
 opt <- parse_args(OptionParser(option_list=option_list))
@@ -107,8 +109,12 @@ if (opt$cleanup) {
 	cleanup_files(opt$directory)
 	}
 
-experiment_directories <- list.dirs(path = opt$directory, 
-		full.names = FALSE, recursive = FALSE)
+if (opt$expid == "all") {
+	experiment_directories <- list.dirs(path = opt$directory, 
+			full.names = FALSE, recursive = FALSE)
+} else {
+	experiment_directories <- c(paste(opt$directory, '/', opt$expid, sep =''))
+}
 
 msg <- paste("################################## START PHASE 1 - Pre-processing", 
 		" files ##################################", sep = '')
@@ -122,7 +128,7 @@ cat(msg, sep='\n')
 
 for (file_prefix in file_prefixes) {
 	assign(file_prefix2data_frame_name[[ file_prefix ]], 
-			create_data_frame(opt$directory, file_prefix))
+			create_data_frame(opt$directory, opt$expid, file_prefix))
 }
 
 msg <- paste("################################## START PHASE 2 - Plotting Graph", 
@@ -157,9 +163,13 @@ if (opt$aggregate) {
 				sep = '')
 		cat(msg, sep='\n')		
 	}
-	
-experiment_list <- get_experiment_name_list(experiment_directories)
 
+if (opt$expid == "all")	{
+	experiment_list <- get_experiment_name_list(experiment_directories)	
+} else {
+	experiment_list <- c(opt$expid)
+}
+	
 for (experiment in experiment_list) {
 
 	plot_trace_data(trace_metrics, opt$directory, experiment, opt$size)
@@ -299,22 +309,33 @@ for (experiment in experiment_list) {
 			cat(msg, sep='\n')			
 		}
 
-	pdf_dir <- paste(opt$directory, '/', experiment, sep = '')
-	command <- paste("pdflatex -output-directory=", pdf_dir, ' ', pdf_dir, "/*.tex", sep = '')
-	system(command)
-	command <- paste("pdftk ", pdf_dir, "/*.pdf cat output ", pdf_dir, "/all_plots.pdf", sep = '')
-	system(command)
+		pdf_dir <- paste(opt$directory, '/', experiment, sep = '')
+		
+		tex_files <- c(list.files(path = opt$directory, pattern = "tex", recursive = TRUE))
+		if (length(tex_files) > 1) {
+			command <- paste("pdflatex -output-directory=", pdf_dir, ' ', pdf_dir, "/*.tex", sep = '')
+			system(command)
+		}
+		
+		command <- paste("rm -rf ", pdf_dir, "/all_plots.pdf; pdftk ", pdf_dir, "/*.pdf cat output ", pdf_dir, "/all_plots.pdf", sep = '')
+		system(command)
 		
 	}
 
 pdf_dir <- paste(opt$directory, sep = '')
-system(paste("rm ", pdf_dir, "/Rplots.pdf", sep = ''))
-system(paste("rm ", pdf_dir, "/texput.log", sep = ''))
+system(paste("rm -rf ", pdf_dir, "/Rplots.pdf", sep = ''))
+system(paste("rm -rf ", pdf_dir, "/texput.log", sep = ''))
 
 if (opt$aggregate) {
-	command <- paste("pdflatex -output-directory=", pdf_dir, ' ', pdf_dir, "/*.tex", sep = '')
-	system(command)
-	command <- paste("pdftk ", pdf_dir, "/*.pdf cat output ", pdf_dir, "/all_plots.pdf", sep = '')
+	
+	tex_files <- c(list.files(path = opt$directory, pattern = "tex", recursive = TRUE))
+	if (length(tex_files) > 1) {
+		command <- paste("pdflatex -output-directory=", pdf_dir, ' ', pdf_dir, "/*.tex", sep = '')
+		system(command)
+	}
+	
+	command <- paste("rm -rf ", pdf_dir, "all_plots.pdf; pdftk ", pdf_dir, "/*.pdf cat output ", pdf_dir, "/all_plots.pdf", sep = '')
+	print(command)
 	system(command)
 }
 

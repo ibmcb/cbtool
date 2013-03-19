@@ -29,7 +29,7 @@ if [ x"${fscreated}" == x0 ]; then
 	sudo mkdir -p /${STORAGE_PATH}
 	sudo mkfs.ext4 /dev/ram0
 	sudo mount /dev/ram0 /$STORAGE_PATH
-	sudo chown klabuser:klabuser /$STORAGE_PATH
+	sudo chown ${my_login_username}:${my_login_username} /$STORAGE_PATH
 fi
 
 sudo bash -c "echo \"/${STORAGE_PATH} *(rw,async)\" > /etc/exports"
