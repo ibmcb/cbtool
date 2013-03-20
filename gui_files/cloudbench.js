@@ -92,7 +92,7 @@ if ("liststate" in params)
         },
         success: function (response) {
             var data = "none";
-            if(response.indexOf("Exception:") != -1) {
+            if(response.indexOf("<h4>Exception:</h4>") != -1) {
                 $(id).html(response);
             } else {
 	            if(getSpecificContent != '') {
