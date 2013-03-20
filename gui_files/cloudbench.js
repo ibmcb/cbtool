@@ -92,21 +92,25 @@ if ("liststate" in params)
         },
         success: function (response) {
             var data = "none";
-            if(getSpecificContent != '') {
-                data = $(response).find(getSpecificContent).html();
-                if(write) {
-                    if(writeSubcontent)
-                        $(id).html(data);
-                    else
-                        $(id).html(response);
-                }
+            if(response.indexOf("<h4>Exception:</h4>") != -1) {
+                $(id).html(response);
             } else {
-                if(write)
-                    $(id).html(response);
-                data = response;
+	            if(getSpecificContent != '') {
+	                data = $(response).find(getSpecificContent).html();
+	                if(write) {
+	                    if(writeSubcontent)
+	                        $(id).html(data);
+	                    else
+	                        $(id).html(response);
+	                }
+	            } else {
+	                if(write)
+	                    $(id).html(response);
+	                data = response;
+	            }
+	            if(callback != false)
+	               callback(data);
             }
-            if(callback != false)
-               callback(data);
         }
       });
   }
