@@ -1841,7 +1841,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
         _fmsg = "An error has occurred, but no error message was captured"
         _curr_tries = 0
         _start = int(time())
-        _max_tries = int(obj_attr_list["update_attempts"])
+        _max_tries = int(obj_attr_list["attempts"])
         _output_list = []
         
         try :
@@ -1930,7 +1930,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _status, _xfmsg, _object = \
                         _proc_man.retriable_run_os_command(_cmdline, \
                                                            obj_attr_list["prov_cloud_ip"], \
-                                                           obj_attr_list["update_attempts"])
+                                                           obj_attr_list["attempts"])
                         if _status :
                             _fmsg = "Failure while executing generic VM "
                             _fmsg += "post_boot configuration on "

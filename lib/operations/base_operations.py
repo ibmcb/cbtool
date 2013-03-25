@@ -2024,7 +2024,7 @@ class BaseObjectOperations :
 
                     _status, _xfmsg = _proc_man.parallel_run_os_command(_vm_post_boot_commands, \
                                                                         _vm_ip_addrs, \
-                                                                        _ai_attr_list["update_attempts"], \
+                                                                        _ai_attr_list["attempts"], \
                                                                         _ai_attr_list["execute_parallelism"])
 
                     if _status :
@@ -2125,7 +2125,7 @@ class BaseObjectOperations :
 
                         _status, _xfmsg = _proc_man.parallel_run_os_command(_vm_command_list, \
                                                                             _vm_ip_addrs, \
-                                                                            _ai_attr_list["update_attempts"], \
+                                                                            _ai_attr_list["attempts"], \
                                                                             _ai_attr_list["execute_parallelism"])
 
                         if _status :

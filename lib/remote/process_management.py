@@ -125,7 +125,8 @@ class ProcessManagement :
         TBD
         '''
         _attempts = 0
-        while _attempts < total_attempts :
+
+        while _attempts < int(total_attempts) :
             _status, _result_stdout, _result_stderr = self.run_os_command(cmdline, override_hostname)
     
             if not _status and _result_stdout and not _result_stdout.count("NOK") :
@@ -134,17 +135,18 @@ class ProcessManagement :
                 _msg = "Command \"" + cmdline + "\" failed to execute on "
                 _msg += "hostname " + str(override_hostname) + " after attempt "
                 _msg += str(_attempts) + '.'
+                cbdebug(_msg, True)
                 _attempts += 1 
-                sleep(30)
+                sleep(3)
 
-        if _attempts >= total_attempts :
+        if _attempts >= int(total_attempts) :
             _status = 17368
             _fmsg = "Giving up on executing command \"" + cmdline + "\" on hostname "
             _fmsg += str(override_hostname) + ". Too many attempts (" + str(_attempts) + ").\n"
-            _fmsg += "STDOUT is :\n" + str(_result_stdout) + '\n'
-            _fmsg += "STDERR is :\n" + str(_result_stderr) + '\n'
+            #_fmsg += "STDOUT is :\n" + str(_result_stdout) + '\n'
+            #_fmsg += "STDERR is :\n" + str(_result_stderr) + '\n'
             cberr(_fmsg)
-            return _status, _fmsg
+            return _status, _fmsg, {"status" : _status, "msg" : _msg, "result" : _status}
         else :
             _status = 0
             _msg = "Command \"" + cmdline + "\" executed on hostname "
@@ -251,7 +253,7 @@ class ProcessManagement :
         '''
         TBD
         '''
-        _cmd = "sudo netstat -tulpn | grep '" + str(pid) + "/*'"
+        _cmd = "sudo netstat -tulpn | grep '" + str(pid) + "/*' | sort"
         _status, _result_stdout, _result_stderr = self.run_os_command(_cmd)
         if not _status :
             if len(_result_stdout) :

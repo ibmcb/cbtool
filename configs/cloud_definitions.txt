@@ -4,7 +4,7 @@ MANAGER_IP = $IP_AUTO
 MAIN_UPDATE_FREQUENCY = 5
 MAIN_UPDATE_ATTEMPTS = 36
 MAIN_NOTIFICATION = $False
-MAIN_ATTEMPTS = 2
+MAIN_ATTEMPTS = 3
 MAIN_TIMEOUT = 240
 # Variable $USER auto-selects current username
 MAIN_USERNAME = $USER_AUTO
@@ -28,7 +28,7 @@ CLOUDOPTION_MYPLM = cldattach plm, vmcattach all
 
 # Now, Specify the individual parameters for each cloud
 
-# OpenStack (OSK) requires the following parameters (replace everything between <>)
+# OpenStack (OSK) requires the following parameters (replace everything between <>, *including* the signs!)
 [USER-DEFINED : CLOUDOPTION_MYOPENSTACK]
 OSK_ACCESS = http://<address>:5000/v2.0/                   # Address of controlled node (where nova-api runs)
 OSK_CREDENTIALS =  <user>-<password>-<tenant>
