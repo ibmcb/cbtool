@@ -47,6 +47,7 @@ from datetime import datetime
 import copy
 import socket
 import inspect
+from threading import Lock
 
 class APIException(Exception) :
     def __init__(self, status, msg):
@@ -122,10 +123,19 @@ class APIVM():
     def system(self, key):
         return float(self.val(key, self.system_metrics)["val"])
     
+mutex = Lock()
+
 class APIClient(Server):
+    
     def api_error_check(self, func):
         def wrapped(*args, **kwargs):
-            resp = func(*args, **kwargs)
+            try :
+                mutex.acquire()
+                resp = func(*args, **kwargs)
+                mutex.release()
+            except Exception, e :
+                mutex.release()
+                raise e
             if int(resp["status"]) :
                 raise APIException(str(resp["status"]), resp["msg"])
             if self.print_message :
