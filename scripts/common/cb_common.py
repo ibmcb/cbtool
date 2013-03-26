@@ -43,7 +43,7 @@ import urllib
 #        path.append(_path.replace("/lib/auxiliary",''))
 #        break
 
-import scripts.common.et.ElementTree as ET
+#import scripts.common.et.ElementTree as ET
 
 from lib.auxiliary.code_instrumentation import VerbosityFilter, MsgFilter
 from lib.auxiliary.code_instrumentation import cbdebug, cberr, cbwarn, cbinfo, cbcrit
@@ -588,23 +588,23 @@ def report_app_metrics(metriclist) :
         else :
             return True
 
-def wget(url) :
-    '''
-    TBD
-    '''
-    try :
-        handle = urllib.urlopen(url)
-        if handle is None :
-            print("Url " + url + " seems unavailable")
-            return None
-        tree = ET.parse(handle)
-        if tree is None :
-            print("Tree could not be built from : " + url)
-            return None
-        return tree
-    except Exception, msg :
-        print(str(msg))
-        return None
+#def wget(url) :
+#    '''
+#    TBD
+#    '''
+#    try :
+#        handle = urllib.urlopen(url)
+#        if handle is None :
+#            print("Url " + url + " seems unavailable")
+#            return None
+#        tree = ET.parse(handle)
+#        if tree is None :
+#            print("Tree could not be built from : " + url)
+#            return None
+#        return tree
+#    except Exception, msg :
+#        print(str(msg))
+#        return None
 
 def collect_db_one(command) :
     '''
