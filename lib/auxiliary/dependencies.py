@@ -500,6 +500,14 @@ def check_mongo_python_bindings(hostname, username, trd_party_dir) :
         _msg = "Checking MongoDB python bindings version....."
         import pymongo
 
+        if pymongo.has_c() is False:
+            msg = "WARNING: You do not have the pymongo C extensions " + \
+                    "installed. Mongodb performance will be extermely slow. " + \
+                     "To resolve this, please make sure you have the " + \
+                     "'python-dev' or 'python-devel' development " + \
+                     "headers installed and then *remove* and *reinstall* " + \
+                     "the mongodb python bindings."
+            print(msg)
         _version = str(pymongo.version).strip().replace('+','')
         del pymongo
 
