@@ -25,6 +25,7 @@ CLOUDOPTION_MYSMARTCLOUD = cldattach scp, vmcattach all
 CLOUDOPTION_MYOPENSTACK = cldattach osk, vmcattach all
 CLOUDOPTION_MYAMAZON = cldattach ec2, vmcattach all
 CLOUDOPTION_MYPLM = cldattach plm, vmcattach all
+CLOUDOPTION_MYVCDCLOUD = cldattach vcd, vmcattach all
 
 # Now, Specify the individual parameters for each cloud
 
@@ -59,6 +60,29 @@ EC2_KEY_NAME = cloudbench                                  # Make sure that this
 EC2_INITIAL_VMCS = us-east-1:sut                           # Change "us-east-1" accordingly
 EC2_SSH_KEY_NAME = priv_key_filename                       # Name of the private key used to login on the VMs
 EC2_LOGIN = cbuser                                         # The username that logins on the VMs
+
+
+# vCloud Director requires the following parameters
+[USER-DEFINED : CLOUDOPTION_MYVCDCLOUD]
+VCD_ACCESS = 10.1.1.1
+VCD_CREDENTIALS = happyguy@DeployPlace
+VCD_EXTRA_INFO = xxxxx
+VCD_KEY_NAME = xxxxx
+VCD_SECURITY_GROUPS = none
+VCD_USERNAME = happyguy
+VCD_ORGNAME = DeployPlace
+VCD_PASSWORD = xxxxx
+VCD_HOSTNAME = 10.1.1.1
+VCD_VERSION = 1.5
+VCD_SSH_KEY_NAME = vcd-rsa
+VCD_LOGIN = root
+VCD_SSH_KEY_NAME = vcd-rsa
+VCD_LOGIN = root
+VCD_INITIAL_VMCS = DeployPlace
+VCD_SNMP_VERSION = 1
+VCD_SNMP_PASSWORD = dummy
+VCD_SNMP_COMMUNITY = cbtest
+VCD_SNMP_VARIABLE = SNMPv2-MIB::sysLocation
 
 # Parallel Libvirt Manager (PLM) requires the following parameters 
 [USER-DEFINED : CLOUDOPTION_MYPLM]

@@ -1,0 +1,136 @@
+[USER-DEFINED]
+VCD_USERNAME = need_to_be_configured_by_user 
+VCD_ORGNAME = need_to_be_configured_by_user 
+VCD_PASSWORD = need_to_be_configured_by_user 
+VCD_HOSTNAME = need_to_be_configured_by_user 
+VCD_VERSION = need_to_be_configured_by_user
+VCD_INITIAL_VMCS = need_to_be_configured_by_user 
+VCD_SSH_KEY_NAME = need_to_be_configured_by_user
+VCD_KEY_NAME = need_to_be_configured_by_user
+VCD_SECURITY_GROUP = need_to_be_configured_by_user
+VCD_LOGIN = need_to_be_configured_by_user
+VCD_EXTRA_INFO = need_to_be_configured_by_user
+VCD_SNMP_VERSION = need_to_be_configured_by_user 
+VCD_SNMP_PASSWORD = need_to_be_configured_by_user
+VCD_SNMP_COMMUNITY = need_to_be_configured_by_user
+VCD_SNMP_VARIABLE = need_to_be_configured_by_user
+
+# PEBCAK documentation for the Wizard and CLI
+VCD_USERNAME_DOC = Please enter the account name being used to access the vCloud Director REST interface
+VCD_USERNAME_DEFAULT = ABCDEFGHIJKLMNOPQRSTUVWXYZ 
+VCD_ORGNAME_DOC = Please enter the name of the Organization being used in the vCloud Director instance
+VCD_ORGNAME_DEFAULT = some_security_group
+VCD_PASSWORD_DOC = Please enter the password used with the vCloud Director REST interface
+VCD_PASSWORD_DEFAULT = XXXXX
+VCD_HOSTNAME_DOC = Please enter the host name or IP address of the vCloud Director REST interface server
+VCD_HOSTNAME_DEFAULT = 10.0.0.1
+VCD_VERSION_DOC = Please enter the vCloud Director version
+VCD_VERSION_DEFAULT = 1.5 
+VCD_LOGIN_DOC = $LOGIN_DOC
+VCD_LOGIN_DEFAULT = happyguy
+VCD_SSH_KEY_NAME_DOC = $SSH_KEY_NAME_DOC
+VCD_SSH_KEY_NAME_DEFAULT = path_to_some_private_ssh_key_location
+VCD_INITIAL_VMCS_DOC = Enter the organization (?) to be used for vCloud Director.
+VCD_INITIAL_VMCS_DEFAULT =
+VCD_EXTRA_INFO_DOC = Please enter the password used to connect to the Virtual Machine Container.
+VCD_EXTRA_INFO_DEFAULT = XXXXX
+VCD_SNMP_VERSION_DEFAULT = 1
+VCD_SNMP_VERSION_DOC = Please enter the SNMP version number to use.
+VCD_SNMP_PASSWORD_DEFAULT = XXXX
+VCD_SNMP_PASSWORD_DOC = Please enter the SNMP password. SNMP version 1 does not require a password.
+VCD_SNMP_COMMUNITY_DEFAULT = public
+VCD_SNMP_COMMUNITY_DOC = Please enter the SNMP community string.
+VCD_SNMP_VARIABLE_DEFAULT = SNMPv2-MIB::sysLocation
+VCD_SNMP_VARIABLE_DOC = Please enter an SNMP field to fetch from the target.
+
+[SPACE : VCD_CLOUDCONFIG ]
+SSH_KEY_NAME = $VCD_SSH_KEY_NAME
+
+[MON_DEFAULTS : VCD_CLOUDCONFIG ]
+COLLECT_FROM_HOST = $False
+COLLECT_FROM_GUEST = $True
+
+[VMC_DEFAULTS : VCD_CLOUDCONFIG ]
+ACCESS = $VCD_USERNAME
+CREDENTIALS = $VCD_PASSWORD
+INITIAL_VMCS = $VCD_INITIAL_VMCS
+EXTRA_INFO = $VCD_EXTRA_INFO
+SECURITY_GROUPS = $VCD_SECURITY_GROUP
+KEY_NAME = $VCD_SSH_KEY_NAME
+
+[VM_DEFAULTS : VCD_CLOUDCONFIG ]
+USERNAME = $VCD_USERNAME
+PASSWORD = $VCD_PASSWORD
+HOSTNAME = $VCD_HOSTNAME
+ORGNAME = $VCD_ORGNAME
+VERSION = $VCD_VERSION
+REAL_IP = $True
+CAPTURE_SUPPORTED = $True
+RUNSTATE_SUPPORTED = $True
+RESIZE_SUPPORTED = $False
+LOGIN = $VCD_LOGIN
+SSH_KEY_NAME = $VCD_SSH_KEY_NAME
+#REMOTE_DIR_NAME=cbtool
+CHECK_BOOT_STARTED = wait_for_0
+#CHECK_BOOT_COMPLETE = tcp_on_22
+CHECK_BOOT_COMPLETE = snmpget_poll
+#CHECK_BOOT_COMPLETE = subscribe_on_booting
+#CHECK_BOOT_COMPLETE = wait_for_90
+SNMP_VERSION = $VCD_SNMP_VERSION
+SNMP_PASSWORD = $VCD_SNMP_PASSWORD
+SNMP_COMMUNITY = $VCD_SNMP_COMMUNITY
+SNMP_VARIABLE = $VCD_SNMP_VARIABLE
+
+[SVM_DEFAULTS : VCD_CLOUDCONFIG]
+SSH_KEY_NAME = $VCD_SSH_KEY_NAME
+
+[AI_DEFAULTS : EC2_CLOUDCONFIG ]
+ATTACH_PARALLELISM = 10
+CAPTURE_SUPPORTED = $True
+RUNSTATE_SUPPORTED = $True
+RESIZE_SUPPORTED = $True
+LOGIN = $VCD_LOGIN
+SSH_KEY_NAME = $VCD_SSH_KEY_NAME
+
+[AIDRS_DEFAULTS : VCD_CLOUDCONFIG]
+LOGIN = $VCD_LOGIN
+SSH_KEY_NAME = $VCD_SSH_KEY_NAME
+
+[VMCRS_DEFAULTS : _CLOUDCONFIG]
+LOGIN = $VCD_LOGIN
+SSH_KEY_NAME = $VCD_SSH_KEY_NAME
+
+[FIRS_DEFAULTS : _CLOUDCONFIG]
+LOGIN = $VCD_LOGIN
+SSH_KEY_NAME = $VCD_SSH_KEY_NAME
+
+[VM_TEMPLATES : VCD_CLOUDCONFIG ]
+CLIENT_DAYTRADER = size:dummysize, imageid1:image-001
+DRIVER_DAYTRADER = size:dummysize, imageid1:image-001
+CLIENT_TRADELITE = size:dummysize, imageid1:image-001
+DRIVER_TRADELIE = size:dummysize, imageid1:image-001
+DB2 = size:dummysize2, imageid1:image-001
+WAS = size:dummysize2, imageid1:image-001
+CLIENT_SPECWEB = size:dummysize, imageid1:image-001
+SPECWEBFRONT = size:dummysize2, class:value, imageid:image-001
+SPECWEBBACK = size:dummysize2, class:value, imageid1:image-001
+CLIENT_LOST = size:dummysize, imageid1:image-001
+LOSTFRONT = size:dummysize2, class:value, imageid1:image-001
+LOSTBACK = size:dummysize2, class:value, imageid1:image-001
+DRIVER_HADOOP = size:dummysize, imageid1:image-001
+HADOOPMASTER = size:dummysize2, imageid1:image-001
+HADOOPSLAVE = size:dummysize2, imageid1:image-001
+DRIVER_NETPERF = size:dummysize, imageid1:image-001
+NETCLIENT = size:dummysize3, imageid1:image-001
+NETSERVER = size:dummysize3, imageid1:image-001
+DRIVER_COREMARK = size:dummysize, imageid1:image-001
+COREMARK = size:dummysize3, imageid1:image-001
+CLIENT_WINDOWS = size:dummysize, imageid1:image-001
+WINDOWS = size:dummysize2, imageid1:image-001
+DRIVER_FILEBENCH = size:dummysize, imageid1:image-001
+FILEBENCH = size:dummysize3, imageid1:image-001
+DRIVER_FBNFSRD = size:dummysize, imageid1:image-001
+STORAGECLIENT = size:dummysize3, imageid1:image-001
+STORAGESERVER = size:dummysize3, imageid1:image-001
+LB = size:dummysize, imageid1:image-001
+TINYVM = size:dummysize, imageid1:image-001
