@@ -25,6 +25,7 @@
 '''
 
 import os
+import pymongo
 
 from time import sleep, time
 from random import randint
@@ -63,6 +64,10 @@ class MongodbMgdConn :
         set_my_parameters(self, parameters)
         self.pid = "TEST_" + getpwuid(os.getuid())[0]
         self.mongodb_conn = False
+        if pymongo.has_c() is False:
+            msg = "WARNING: You do not have the pymongo C extensions installed. Data retrieval performance will be slow"
+            cberror(msg)
+            print(msg)
 
     class MetricStoreMgdConnException(Exception):
         '''
