@@ -66,7 +66,7 @@ class MongodbMgdConn :
         self.mongodb_conn = False
         if pymongo.has_c() is False:
             msg = "WARNING: You do not have the pymongo C extensions installed. Data retrieval performance will be slow"
-            cberror(msg)
+            cberr(msg)
             print(msg)
 
     class MetricStoreMgdConnException(Exception):

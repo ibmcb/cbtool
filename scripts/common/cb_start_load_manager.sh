@@ -21,8 +21,6 @@
 
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
-REMOTE_DIR=`get_my_vm_attribute remote_dir_name`
-
 operation="ai-execute"
 daemonize=" --daemon"
 options="$@"
@@ -51,7 +49,7 @@ if [ x"${load_manager_vm}" == x"${my_vm_uuid}" ] ; then
 	
 	if [ x"${running_load_managers}" == x ] ; then
 	    syslog_netcat "Starting Load Manager"
-            ~/${REMOTE_DIR}/cbact --procid=${osprocid} --uuid=${my_ai_uuid} --syslogp=${NC_PORT_SYSLOG} --syslogf=19 --syslogh=${NC_HOST_SYSLOG} --operation=$operation $daemonize $options
+            ~/${my_remote_dir}/cbact --procid=${osprocid} --uuid=${my_ai_uuid} --syslogp=${NC_PORT_SYSLOG} --syslogf=19 --syslogh=${NC_HOST_SYSLOG} --operation=$operation $daemonize $options
 	    exit 0
 	else
 	    syslog_netcat "A Load Manager is already running"

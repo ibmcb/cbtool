@@ -163,6 +163,7 @@ my_cloud_model=`get_my_vm_attribute model`
 my_ip_addr=`get_my_vm_attribute cloud_ip`
 my_type=`get_my_vm_attribute type`
 my_login_username=`get_my_vm_attribute login`
+my_remote_dir=`get_my_vm_attribute remote_dir_name`
 
 function put_hash {
 	object_type=$1

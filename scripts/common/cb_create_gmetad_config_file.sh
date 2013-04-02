@@ -26,7 +26,9 @@ COLLECTOR_AGGREGATOR_PORT=`get_global_sub_attribute mon_defaults collector_vm_ag
 COLLECTOR_SUMMARIZER_PORT=`get_global_sub_attribute mon_defaults collector_vm_summarizer_port`
 COLLECTOR_VM_PORT=`get_global_sub_attribute mon_defaults collector_vm_port`
 PLUGINS_DIR=~/monitor-core/gmetad-python/plugins
-MAIN_PATH=~/cloudbench
+eval PLUGINS_DIR=${PLUGINS_DIR}
+CB_MAIN_PATH=~/${my_remote_dir}
+eval CB_MAIN_PATH=${CB_MAIN_PATH}
 API_HOSTNAME=`get_global_sub_attribute api_defaults hostname`
 API_PORT=`get_global_sub_attribute api_defaults port` 
 
@@ -48,7 +50,7 @@ interactive_port ${COLLECTOR_SUMMARIZER_PORT}
 plugins_dir ${PLUGINS_DIR}
 data_source "127.0.0.1" 127.0.0.1:${COLLECTOR_VM_PORT}
 mongodb { 
-        path ${MAIN_PATH}
+        path ${CB_MAIN_PATH}
         api http://${API_HOSTNAME}:${API_PORT}
         cloud_name ${cloudname}
 }
