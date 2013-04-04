@@ -1,106 +1,221 @@
-                <div id='graph'></div>
+                <table>
+            	<tr><td><a class='btn' href="d3?clear=1">Clear all graphs</a></td></tr>
+            	<tr>
+            	<td>
+	                <div id='waiting1'><br><br><br>BOOTSPINNER Graph #1 Loading data....</div>
+            		<div id='graph1'></div>
+            	</td>
+            	<td>&nbsp;&nbsp;&nbsp;</td>
+            	<td>
+	                <div id='waiting2'><br><br><br>BOOTSPINNER Graph #2 Loading data....</div>
+            		<div id='graph2'></div>
+            	</td>
+            	</tr>
+            	<tr>
+            	<td>
+	                <div id='waiting3'><br><br><br>BOOTSPINNER Graph #3 Loading data....</div>
+            		<div id='graph3'></div>
+            	</td>
+            	<td>&nbsp;&nbsp;&nbsp;</td>
+            	<td>
+	                <div id='waiting4'><br><br><br>BOOTSPINNER Graph #4 Loading data....</div>
+            		<div id='graph4'></div>
+            	</td>
+            	</tr>
+                </table>
                 <script>
                 var fillcolor = "rgba(230, 230, 230, 230)";
                 
-                var margin = {top: 10, right: 10, bottom: 100, left: 40},
-                    margin2 = {top: 230, right: 10, bottom: 20, left: 40},
-                    width = 560 - margin.left - margin.right,
-                    height = 300 - margin.top - margin.bottom,
-                    height2 = 300 - margin2.top - margin2.bottom;
+                var margin = {top: 10, right: 10, bottom: 100, left: 80},
+                    margin2 = {top: 200, right: 10, bottom: 20, left: 80},
+                    width = 460 - margin.left - margin.right,
+                    height = 250 - margin.top - margin.bottom,
+                    height2 = 250 - margin2.top - margin2.bottom;
                 
-                var x = d3.time.scale().range([0, width]),
-                    x2 = d3.time.scale().range([0, width]),
-                    y = d3.scale.linear().range([height, 0]),
-                    y2 = d3.scale.linear().range([height2, 0]);
+                var dataurls = [D3DATA];
                 
-                var xAxis = d3.svg.axis().scale(x).orient("bottom"),
-                    xAxis2 = d3.svg.axis().scale(x2).orient("bottom"),
-                    yAxis = d3.svg.axis().scale(y).orient("left");
-                
-                var brush = d3.svg.brush().x(x2).on("brush", brush).on("brushend", remake_link);
-                
-                var area = d3.svg.area()
-                    .interpolate("monotone")
-                    .x(function(d) { return x(d.date); })
-                    .y0(height)
-                    .y1(function(d) { return y(d.value); });
-                
-                var area2 = d3.svg.area()
-                    .interpolate("monotone")
-                    .x(function(d) { return x2(d.date); })
-                    .y0(height2)
-                    .y1(function(d) { return y2(d.value); });
-                
-                var svg = d3.select("#graph").append("svg")
-                    .attr("version", 1.1)
-                    .attr("xmlns", "http://www.w3.org/2000/svg")
-                    .attr("width", width + margin.left + margin.right)
-                    .attr("height", height + margin.top + margin.bottom);
-                    
-                svg.style("font-family", "sans-serif").style("font-size", "10px");
-                
-                svg.append("defs").append("clipPath").attr("id", "clip").append("rect")
-                        .attr("width", width).attr("height", height);
-                
-                var focus = svg.append("g")
-                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-                
-                var context = svg.append("g")
-                    .attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
-                
-                d3.json("BOOTDEST/data", function(data) {
-                  data.forEach(function(d) {
-                    d.date = new Date(+d.mgt_001_provisioning_request_originated * 1000);
-                    if ("mgt_005_file_transfer" in d)
-                        d.value = +d.mgt_005_file_transfer;
-                    else 
-                        d.value = 0;
-                  });
-                
-                  x.domain(d3.extent(data.map(function(d) { return d.date; })));
-                  y.domain([0, d3.max(data.map(function(d) { return d.value; }))]);
-                  x2.domain(x.domain());
-                  y2.domain(y.domain());
-                  
-                  focus.append("path").style("fill", fillcolor).style("stroke", "black").data([data])
-                          .attr("clip-path", "url(#clip)").attr("d", area);
-                          
-                  focus.append("g").attr("id", "g-focus-xaxis-graph1").attr("transform", "translate(0," + height + ")").call(xAxis);
-                
-                  focus.append("g").attr("id", "g-focus-yaxis-graph1").call(yAxis);
-                
-                  context.append("path").style("fill", fillcolor).style("stroke", "black").data([data]).attr("d", area2);
-                
-                  context.append("g").attr("transform", "translate(0," + height2 + ")").call(xAxis2);
-                
-                  context.append("g").style("stroke", "#fff").style("fill-opacity", ".125").style("shape-rendering", "crispEdges").attr("class", "x brush").call(brush)
-                          .selectAll("rect").attr("y", -6).attr("height", height2 + 7);
-                      
-                  d3.selectAll("path.domain").style("fill", "none").style("stroke", "#000").style("shape-rendering", "crispEdges")
-                
-                  remake_link();
-                });
-                function remake_link() {
-                    var parent = $("<div>");
-                    var inner = $("#graph")[0].innerHTML;
-                    parent.html(inner);
-                    parent[0].children[0].removeChild(parent[0].children[0].lastChild);
-                    var html = parent[0].innerHTML;
-                    var ele = $("#download");
-                    if(ele.length != 0)
-                        ele.remove();
-                        
-                    d3.select("body").append("div")
-                        .attr("id", "download").append("a")
-                        .text("Download SVG => then save image as .svg to your computer")
-                        .attr("class", "btn btn-primary")
-                        .attr("href", "data:image/svg+xml;base64,"+ btoa(html));
+                for(graph = (dataurls.length + 1); graph <= 4; graph++) {	
+                    $("#waiting" + graph).html("");
                 }
+                var graph_inc = 0;
+                xAxis = new Array(4);
+                xAxis2 = new Array(4);
+                yAxis = new Array(4);
+                x = new Array(4);
+                x2 = new Array(4);
+                y = new Array(4);
+                y2 = new Array(4);
+                brush = new Array(4);
+                area = new Array(4);
+                area2 = new Array(4);
+                svg = new Array(4);
+                context = new Array(4);
+                local_data = new Array(4);
                 
-                function brush() {
-                  x.domain(brush.empty() ? x2.domain() : brush.extent());
-                  focus.select("path").attr("d", area);
-                  focus.select("#g-focus-xaxis-graph1").call(xAxis);
+                  function update(idx, category, label, avg, name, ip, host, role) {
+	                  $("#waiting" + idx).html("<h4>Graph #" + idx + ": " + (category == 'h' ? "HOST" : "VM") + ", " + label + ", Average: " + avg + "</h4>" +
+                  				"<h5>Name: " + name + " (" + ip + "), host: " + host + ", role: " + role + "</h5>");
+                  }
+	                  
+                for(graph_int = 0; graph_int < dataurls.length; graph_int++) {	
+	                d3.json("BOOTDEST/data?" + dataurls[graph_int], function(new_data) {
+	                	var graph = graph_inc++;
+	                    var idx = graph + 1;
+                        local_data[graph] = new_data;
+	                    
+		                x[graph] = d3.time.scale().range([0, width]);
+	                    x2[graph] = d3.time.scale().range([0, width]);
+	                    y[graph] = d3.scale.linear().range([height, 0]);
+	                    y2[graph] = d3.scale.linear().range([height2, 0]);
+		                
+		                xAxis[graph] = d3.svg.axis().scale(x[graph]).orient("bottom");
+		                xAxis2[graph] = d3.svg.axis().scale(x2[graph]).orient("bottom");
+		                yAxis[graph] = d3.svg.axis().scale(y[graph]).orient("left");
+		                
+		                brush[graph] = d3.svg.brush().x(x2[graph]);
+		                area[graph] = d3.svg.area()
+		                    .interpolate("monotone")
+		                    .x(function(d) { return x[graph](d.date); })
+		                    .y0(height)
+		                    .y1(function(d) { return y[graph](d.value); });
+		                
+						area2[graph] = d3.svg.area()
+		                    .interpolate("monotone")
+		                    .x(function(d) { return x2[graph](d.date); })
+		                    .y0(height2)
+		                    .y1(function(d) { return y2[graph](d.value); });
+		                
+		                svg[graph] = d3.select("#graph" + idx).append("svg")
+		                    .attr("version", 1.1)
+		                    .attr("xmlns", "http://www.w3.org/2000/svg")
+		                    .attr("width", width + margin.left + margin.right)
+		                    .attr("height", height + margin.top + margin.bottom);
+		                    
+		                svg[graph].style("font-family", "sans-serif").style("font-size", "9px");
+		                
+		                svg[graph].append("defs").append("clipPath").attr("id", "clip" + idx).append("rect")
+		                        .attr("width", width).attr("height", height);
+		                
+		                focus[graph] = svg[graph].append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+		                
+		                brush[graph].on("brush", 
+                                function() {
+                                  x[graph].domain(brush[graph].empty() ? x2[graph].domain() : brush[graph].extent());
+                                  focus[graph].select("path").attr("d", area[graph]);
+                                  focus[graph].select("#g-focus-xaxis-graph" + idx).call(xAxis[graph]);
+                                }).on("brushend", remake_link(idx, graph));
+		                
+		                context[graph] = svg[graph].append("g").attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
+		                total=0;
+		                count=0;
+		                
+		              var label = local_data[graph][0].d3_label;
+		              var category = local_data[graph][0].d3_category;
+		              var uuid = local_data[graph][0].d3_uuid;
+		              var role = local_data[graph][0].d3_role;
+		              var ip = local_data[graph][0].d3_ip;
+		              var name = local_data[graph][0].d3_name;
+		              var host = local_data[graph][0].d3_host;
+		              
+	                  local_data[graph].forEach(function(d) {
+	                    if (category == "p") {
+		                    d.date = new Date(+d.mgt_001_provisioning_request_originated * 1000);
+		                    value = d[label]
+		                    unit = "int"
+	                    } else {
+		                    d.date = new Date(+d.time * 1000);
+		                    value = d[label]["val"] 
+		                    unit = d[label]["unit"]
+	                   }
+	                    if (label in d && value != "-1") {
+	                    	if (unit == "float")
+		                        d.value = parseFloat(value);
+	                        else
+		                        d.value = parseInt(value);
+		                    total += d.value;
+		                    count++;
+	                    } else 
+	                        d.value = 0;
+   	                  });
+	                  
+	                  avg = total / count;
+	                  
+	                  update(idx, category, label, avg, name, ip, host, role); 
+	                  
+	                  if (category != "p") {
+		                  local_data[graph] = local_data[graph].sort(function(a,b){return a.time-b.time});
+	                  } else {
+		                  local_data[graph] = local_data[graph].sort(function(a,b){return a.mgt_001_provisioning_request_originated-b.mgt_001_provisioning_request_originated});
+	                  }
+	                  x[graph].domain(d3.extent(local_data[graph].map(function(d) { return d.date; })));
+	                  y[graph].domain([0, d3.max(local_data[graph].map(function(d) { return d.value; }))]);
+	                  x2[graph].domain(x[graph].domain());
+	                  y2[graph].domain(y[graph].domain());
+	                  
+	                  focus[graph].append("path").style("fill", fillcolor).style("stroke", "black").data([local_data[graph]])
+	                          .attr("clip-path", "url(#clip" + idx + ")").attr("d", area[graph]);
+	                          
+	                  focus[graph].append("g").attr("id", "g-focus-xaxis-graph" + idx).attr("transform", "translate(0," + height + ")").call(xAxis[graph]);
+	                
+	                  focus[graph].append("g").attr("id", "g-focus-yaxis-graph" + idx).call(yAxis[graph]);
+	                
+	                  context[graph].append("path").style("fill", fillcolor).style("stroke", "black").data([local_data[graph]]).attr("d", area2[graph]);
+	                
+	                  context[graph].append("g").attr("transform", "translate(0," + height2 + ")").call(xAxis2[graph]);
+	                
+	                  context[graph].append("g").style("stroke", "#fff").style("fill-opacity", ".125").style("shape-rendering", "crispEdges")
+	                  		.attr("class", "x[" + graph + "] brush[" + graph + "]")
+	                  		.call(brush[graph])
+	                          .selectAll("rect").attr("y", -6).attr("height", height2 + 7);
+	                      
+	                  d3.selectAll("path.domain").style("fill", "none").style("stroke", "#000").style("shape-rendering", "crispEdges")
+	                
+	                  remake_link(idx, graph)();
+	                });
+                }
+                function remake_link(idx, graph) {
+                    return function() {
+                        var parent = $("<div>");
+                        var inner = $("#graph" + idx)[0].innerHTML;
+                        parent.html(inner);
+                        parent[0].children[0].removeChild(parent[0].children[0].lastChild);
+                        var html = parent[0].innerHTML;
+                        var ele = $("#download" + idx);
+                        if(ele.length != 0)
+                            ele.remove();
+                        d3.select("body").append("div")
+                        d3.select("body").append("div")
+                            .attr("id", "download" + idx).append("a")
+                            .text("Download Graph #" + idx + " => then save image as *.svg")
+                            .attr("class", "btn btn-primary")
+                            .attr("href", "data:image/svg+xml;base64,"+ btoa(html))
+                            .attr("style", "margin-left: 90px");
+                        
+                        var indexes = brush[graph].extent();
+		                var total=0;
+		                var count=0;
+		                var label = local_data[graph][0].d3_label;
+                        var category = local_data[graph][0].d3_category;
+                        var uuid = local_data[graph][0].d3_uuid;
+
+                        local_data[graph].every(function(d) {
+                            if((d.date - indexes[1]) >= 0)
+                                return true;
+                            if((d.date - indexes[0]) >= 0) {
+                                total += d.value;
+                                count++;
+                            }
+                            return true; 
+                        });
+                        if(count > 0) {
+                          var avg = total / count;
+			              var role = local_data[graph][0].d3_role;
+			              var ip = local_data[graph][0].d3_ip;
+			              var name = local_data[graph][0].d3_name;
+			              var host = local_data[graph][0].d3_host;
+		                  update(idx, category, label, avg, name, ip, host, role); 
+                        }
+                    }
                 }
                 
                 </script>

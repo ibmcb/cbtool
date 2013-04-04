@@ -424,7 +424,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _msg += "detached from this experiment."
                 cbdebug(_msg)
 
-            return _status, _msg, False
+            return self.package(_status, _msg, False)
 
     def hostfail_repair(self, obj_attr_list, parameters, command) :
         '''

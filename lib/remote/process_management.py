@@ -285,13 +285,13 @@ class ProcessManagement :
         return str(_port)
 
     @trace
-    def get_pid_from_cmdline(self, cmdline) :
+    def get_pid_from_cmdline(self, cmdline, extra = False) :
         '''
         TBD
         '''
         _pid_list = []
         
-        _cmd = "sudo ps aux | tr '[:upper:]' '[:lower:]' | grep \"" + cmdline.replace("'", "").lower() + "\""
+        _cmd = "sudo ps aux | tr '[:upper:]' '[:lower:]' | grep \"" + cmdline.replace("'", "").lower() + "\" | grep -i \"" + (extra if extra else "") + "\""
         
         if self.cloud_name :
             _cmd = _cmd + " |  grep \"" + self.cloud_name.lower() + "\""
@@ -367,7 +367,7 @@ class ProcessManagement :
         return _pid
 
     @trace
-    def kill_process(self, cmdline, kill_options = "") :
+    def kill_process(self, cmdline, kill_options = False) :
         '''
         TBD
         '''
@@ -376,6 +376,7 @@ class ProcessManagement :
         while len(_pid) :
 
             _pid = self.get_pid_from_cmdline(cmdline)
+            _pid = self.get_pid_from_cmdline(cmdline, kill_options)
 
             if len(_pid) :
                 _pid = _pid[0]
@@ -385,7 +386,7 @@ class ProcessManagement :
                     # You need to hard-kill them.
 
                     _pid = _pid.replace(self.cloud_name,'')
-                    _cmd = "kill -9 " + kill_options + ' ' + str(_pid)
+                    _cmd = "kill -9 " + str(_pid)
 
                 self.run_os_command(_cmd)
 

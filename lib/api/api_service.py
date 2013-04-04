@@ -151,6 +151,9 @@ class API():
     def cldattach(self, model, name, cloud_definitions = None, temp_attr_list = "empty=empty") :
         result = self.active.cldattach({}, model + ' ' + name + ' ' + temp_attr_list, cloud_definitions, "cloud-attach")[2]
         return result
+    
+    def clddetach(self, name) :
+        return self.active.clddetach({}, name, "cloud-detach")[2]
 
     def cldlist(self, set_default_cloud = "false"):
         return self.passive.list_objects({}, set_default_cloud, "cloud-list")[2]

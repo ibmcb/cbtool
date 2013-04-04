@@ -1,0 +1,9 @@
+        <div id='cloud_detach'>
+    BOOTSPINNER&nbsp;Shutting down and cleaning up experiments for this cloud....
+        </div>
+    <script>
+    function detach_finished(data) {
+    	$('#connectpop').popover('show');	
+    }
+    go('#cloud_detach', 'BOOTDEST/detach_actual', '#detachresponse', "CloudBench is unreachable. Try again...", true, detach_finished, true);
+    </script>
