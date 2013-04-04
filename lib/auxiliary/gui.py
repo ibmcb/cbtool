@@ -32,6 +32,7 @@ import socket
 import errno
 import optparse
 import shutil
+import multiprocessing
 
 from pwd import getpwuid
 from time import time, sleep
@@ -75,6 +76,14 @@ class Dashboard () :
         self.latest_app_collection = {"VM" : "latest_runtime_app_VM_" + self.username}
         self.reported_app_metrics_collections = {"VM" : "reported_runtime_app_VM_metric_names_" + self.username}
 
+        
+        self.collections = {
+                            's' : "runtime_os_VM_" + self.username,
+                            'h' : "runtime_os_HOST_" + self.username,
+                            'p' : "management_VM_" + self.username,
+                            'a' : "runtime_app_VM_" + self.username,
+                            }
+
         self.destinations = {}
         self.user_generated_categories = { 'p' : "Provisioning", 'a' : "Application" }
         self.standard_categories = { 's' : "VM", 'h': "HOST" }
@@ -96,7 +105,7 @@ class Dashboard () :
         '''
         if "mgt_999_provisioning_request_failed" in attrs :
             return True
-        elif attrs["cloud_ip"] == "undefined" :
+        elif "cloud_ip" in attrs and attrs["cloud_ip"] == "undefined" :
             return False
         elif metrics is not None and "last_known_state" in metrics :
             if metrics["last_known_state"].count("with ip assigned") == 0 :
@@ -106,9 +115,10 @@ class Dashboard () :
         else :
             return False
 
-    def makeRow(self, category, row, bold = False, exclude = None) :
+    def makeRow(self, category, row, uuid, labels, name, ip, host, role, bold = False, exclude = None) :
         exclude = None
         result = "<tr>\n"
+        count = 0
         for cell in row :
             cell = str(cell)
             display = cell
@@ -121,7 +131,13 @@ class Dashboard () :
                 cell = "<b>" + display.replace("_", "<br/>") + "</b>"
             else :
                 cell =  display.replace("_", "<br/>")
-            result += "<td>" + str(cell) + "</td>"
+                
+            if uuid and count > 0:
+                result += "<td><a href='d3?uuid=" + uuid + "&category=" + category + "&label=" + labels[count] + "&name=" + name + "&ip=" + ip + "&host=" + host + "&role=" + role + "'>" + str(cell) + "</a></td>"
+            else :
+                result += "<td>" + str(cell) + "</td>"
+            first = False
+            count += 1
             
         result += "\n</tr>\n"
         return result
@@ -205,7 +221,10 @@ class Dashboard () :
             row_indexer = {}
             label_indexer = {}
             for dest in self.categories :
-                row_indexer[dest] = {}
+                if _obj_type == "VM" :
+                    row_indexer[dest] = {'d3_uuid' : str(attrs['uuid']), 'd3_name' : str(attrs['name']), 'd3_host' : attrs['host_name'], 'd3_role' : attrs['role'], 'd3_ip' : str(attrs['cloud_ip'])}
+                else :
+                    row_indexer[dest] = {'d3_uuid' : str(attrs['uuid']), 'd3_name' : str(attrs['name']), 'd3_host' : 'none', 'd3_role' : 'none', 'd3_ip' : str(attrs['cloud_ip'])}
                 label_indexer[dest] = {}
             
             for mkey, mvalue in metrics.iteritems() :
@@ -275,7 +294,9 @@ class Dashboard () :
                         print_labels[metric_type][label] = True
                     
             for metric_type in self.categories :
-                if len(row_indexer[metric_type]) > 0 :
+                # This number > 5 needs to be updated anytime the number of 'd3_*' values are
+                # added to the row_indexer array
+                if len(row_indexer[metric_type]) > 5 :
                     accumulate_rows[metric_type].append((label_indexer[metric_type], row_indexer[metric_type]))
                 
         body = """
@@ -312,11 +333,22 @@ class Dashboard () :
                 row2.append(accumulate_units[dest][unit]) 
                     
             # First print the units and their corresponding common labels 
-            self.destinations[dest] += self.makeRow(dest, prefix_rows1 + row1, bold = True, exclude = prefix_rows1)
-            self.destinations[dest] += self.makeRow(dest, prefix_rows2 + row2)
+            current_labels = prefix_rows1 + row1
+            self.destinations[dest] += self.makeRow(dest, current_labels, False, False, False, False, False, False, bold = True, exclude = prefix_rows1)
+            self.destinations[dest] += self.makeRow(dest, prefix_rows2 + row2, False, False, False, False, False, False)
             
             # Dump the master dictionary into HTML
             for (label_dict, obj_dict) in accumulate_rows[dest] :
+                uuid = obj_dict["d3_uuid"]
+                name = obj_dict["d3_name"]
+                ip = obj_dict["d3_ip"]
+                host = obj_dict["d3_host"]
+                role = obj_dict["d3_role"]
+                del obj_dict["d3_uuid"]
+                del obj_dict["d3_name"]
+                del obj_dict["d3_host"]
+                del obj_dict["d3_ip"]
+                del obj_dict["d3_role"]
                 row = []
                 for label in self.labels :
                     if label in label_dict :
@@ -329,7 +361,7 @@ class Dashboard () :
                         # if they are zero and only print integer to save
                         # screen space
                         try :
-                            if  str(val).count(":") == 0 :
+                            if isinstance(val, str) and str(val).count(":") == 0 :  
                                 try:
                                     val = str(float(val))
                                     if "." in val :
@@ -346,7 +378,7 @@ class Dashboard () :
                         except Exception, msg :
                             pass
 
-                self.destinations[dest] += self.makeRow(dest, row)
+                self.destinations[dest] += self.makeRow(dest, row, uuid, current_labels, name, ip, host, role)
             
             
         for dest in ['p', 'h', 's', 'a' ] :
@@ -557,10 +589,11 @@ class GUI(object):
             
         self.keys = [ "name", "size", "role", "type", "cloud_ip", "age", "state", "vmc_name", "host_name", "ai_name", "aidrs_name" ]
         self.menu = [ 
-             ("provision" , ("/provision", "<i class='icon-home'></i>&nbsp;Provisioning")), 
+             ("provision" , ("/provision", "<i class='icon-home'></i>Provisioning")), 
              ("monitor" , ("/monitor", "<i class='icon-heart'></i>&nbsp;Dashboard")),
              ("stats" , ("/stats", "<i class='icon-list-alt'></i>&nbsp;Statistics")),
              ("config" , ("/config", "<i class='icon-wrench'></i>&nbsp;Configure")),
+             ("d3" , ("/d3", "<i class='icon-picture'></i>&nbsp;Graphs")),
         ]
         
         # Replacements must be in this order
@@ -736,6 +769,23 @@ class GUI(object):
         session['views'] = self.api.viewlist(session['cloud_name'])
         session['views']['appdrs'] = session['views']['aidrs']
         session.save()
+        
+    def d3_process(self, mon, data, result, category, label):
+        print "There are " + str(data.count()) + " records"
+        fin = 0
+        for document in data:
+            if fin % 500 == 0 :
+                print "finished " + str(fin) + " records so far"
+            fin += 1
+            if(category == 'p' and mon.is_failed_vm(document)) :
+                continue
+            #del documents["_id"]
+            if category == 'p' :
+                record = {label : document[label], "mgt_001_provisioning_request_originated" : document["mgt_001_provisioning_request_originated"]}
+            else :
+                record = {label : document[label], "time" : document["time"]}
+
+            result.append(record)
 
     def common(self, req) :
         vmcattachallfound = False
@@ -982,6 +1032,13 @@ class GUI(object):
                 output_fd.close()
                 return self.bootstrap(req, output)
             elif req.action == "data" :
+                uuid = req.http.params.get("uuid")
+                category = req.http.params.get("category")
+                label = req.http.params.get("label")
+                name = req.http.params.get("name")
+                ip = req.http.params.get("ip")
+                host = req.http.params.get("host")
+                role = req.http.params.get("role")
                 self.api.dashboard_conn_check(req.cloud_name, req.session['msattrs'], req.session['time_vars']['username'])
                 try :
                     expid = self.api.cldshow(req.cloud_name, "time")["experiment_id"]
@@ -990,15 +1047,64 @@ class GUI(object):
                         
                 mon = Dashboard(self.api.msci, req.unparsed_uri, req.session['time_vars'], req.session['msattrs'], req.session['cloud_name'])
                 result = []
-                for record in mon.msci.find_document(mon.manage_collection["VM"], {"expid": expid}, True, [("mgt_001_provisioning_request_originated", 1)]) :
-                    if mon.is_failed_vm(record) :
-                        continue
-                    result.append(record)
-                return self.bootstrap(req, str(json.dumps(result)), now = True)
+                if category != 'p' :
+                    data = mon.msci.find_document(mon.collections[category], {"expid": expid, "uuid" : uuid, label : { "$exists" : True} }, True)
+                else :
+                    data = mon.msci.find_document(mon.collections[category], {"expid": expid}, True)
+                data.batch_size(100000)
+#                p = multiprocessing.Process(target = self.d3_process, args = (mon, data, result, category, label))
+#                p.start()
+#                p.join()
+                self.d3_process(mon, data, result, category, label)
+                result[0]["d3_label"] = label
+                result[0]["d3_category"] = category 
+                result[0]["d3_uuid"] = uuid 
+                result[0]["d3_name"] = name 
+                result[0]["d3_ip"] = ip 
+                result[0]["d3_host"] = host 
+                result[0]["d3_role"] = role 
+                return self.bootstrap(req, str(json.dumps(result, skipkeys=True)), now = True)
             elif req.action == "d3" :
+                if req.http.params.get("clear") :
+                    req.session["graphs"] = []
+                    req.session.save()
+                    return self.bootstrap(req, self.heromsg + "\n<h4>Graphs cleared.</h4></div>", error = True)
+                    
+                if "graphs" not in req.session :
+                    req.session["graphs"] = []
+                    
                 d3_fd = open(cwd + "/gui_files/d3_template.html", "r")
                 d3_html = d3_fd.read()
                 d3_fd.close()
+                uuid = req.http.params.get("uuid")
+                category = req.http.params.get("category")
+                label = req.http.params.get("label")
+                name = req.http.params.get("name")
+                ip = req.http.params.get("ip")
+                host = req.http.params.get("host")
+                role = req.http.params.get("role")
+               
+                graphs = len(req.session["graphs"]) 
+                
+                if uuid and category and label and name and ip and host and type:
+                    d3data = "uuid=" + str(uuid) + "&category=" + str(category) + "&label=" + str(label) + "&name=" + str(name) + "&ip=" + str(ip) + "&host=" + str(host) + "&role=" + str(role)
+                    if d3data not in req.session["graphs"] :
+                        if graphs == 4 :
+                            req.session["graphs"] = req.session["graphs"][1:]
+                            graphs -= 1
+                            
+                        req.session["graphs"].append(d3data)
+                        graphs += 1
+                     
+                if graphs:
+                    req.session.save()
+                    array_string = ""
+                    for x in range(0, int(graphs)) :
+                        array_string += "\"" + req.session["graphs"][x] + "\","
+                    array_string = array_string[:-1]
+                    d3_html = d3_html.replace("D3DATA", array_string)
+                else :
+                    return self.bootstrap(req, self.heromsg + "\n<h4>No graphs requests yet:<p>Add graphs to this screen by choosing a *specific* data cell from the dashboard! Do not click on the columns or you will accidentally filter that column from view. Click on a specific cell to graph that metric over time for a specific host or specific VM and it will be added here.</h4></div>", error = True)
                 return self.bootstrap(req, d3_html)
             elif req.action == "wizard" :
                 wizard_fd = open(cwd + "/gui_files/wizard_template.html", "r")
@@ -1091,6 +1197,24 @@ class GUI(object):
                 req.session.save()
                 return self.bootstrap(req, self.heromsg + "\n<h4>Disconnected from API @ " + self.api_access + "</h4></div>")
             
+            elif req.action == "detach" :
+                output = ""
+                output_fd = open(cwd + "/gui_files/detach_template.html", "r")
+                output += output_fd.read()
+                output_fd.close()
+                req.session['clouds'] = self.api.cldlist() 
+                req.session.save()
+                return self.bootstrap(req, self.heromsg + "\n<h4>" + output + "</h4></div>", pretend_disconnected = True)
+                
+            elif req.action == "detach_actual" :
+                cn = req.session['cloud_name']
+                req.session['connected'] = False
+                del req.session['cloud_name']
+                result = self.api.clddetach(req.cloud_name) 
+                req.session['clouds'] = self.api.cldlist() 
+                req.session.save()
+                return self.bootstrap(req, self.heromsg + "\n<div id='detachresponse'><h4>Detached from Cloud: " + cn + " successfully.</h4></div></div>")
+            
             return self.bootstrap(req, self.heromsg + "\n<h4>We do not understand you! Try again...</h4></div>", error = True)
     
         except APIException, obj :
@@ -1099,9 +1223,11 @@ class GUI(object):
             return self.bootstrap(req, self.heromsg + "\n<h4>Error: API Service (" + self.api_access + ") is not responding: " + str(msg) + "</h4></div>", error = True)
         except socket.error, v:
             return self.bootstrap(req, self.heromsg + "\n<h4>Error: API Service (" + self.api_access + ") is not responding: " + str(v) + "</h4></div>", error = True)
-#        DO NOT UNCOMMENT THIS!!!!!!!
-#        except Exception, msg:
-#            return self.bootstrap(req, self.heromsg + "\n<h4>Error: Something bad happened: " + str(msg) + "</h4></div>")
+        except exc.HTTPTemporaryRedirect, e :
+            raise e
+        except Exception, msg:
+            print "Exception: " + str(msg)
+            return self.bootstrap(req, self.heromsg + "\n<h4>Error: Something bad happened: " + str(msg) + "</h4></div>")
         
     def default(self, req, params, attach_params, views, operations, objects, liststates):
         if not req.active : 
@@ -1468,7 +1594,7 @@ class GUI(object):
         """
         return output 
     
-    def bootstrap(self, req, body, now = False, error = False) :
+    def bootstrap(self, req, body, now = False, error = False, pretend_disconnected = False) :
         replacements = []
         navcontents = ""
         cloudcontents = "None Available"
@@ -1495,24 +1621,27 @@ class GUI(object):
                     navcontents += " class='active'"
                 navcontents += "><a href=\"BOOTDEST" + value[0] + "\">" + value[1] + "</a></li>\n"
         
-            if req.session['connected'] :
+            if req.session['connected'] and not pretend_disconnected :
                 navcontents += "&nbsp;&nbsp;<a class='btn' href=\"BOOTDEST/disconnect\"><i class='icon-resize-small'></i>&nbsp;Disconnect</a>\n"
+                navcontents += "&nbsp;&nbsp;<a class='btn' href=\"BOOTDEST/detach\"><i class='icon-resize-small'></i>&nbsp;Detach</a>\n"
             else :
                 navcontents += """
                     &nbsp;&nbsp;<a href="#" id='connectpop' class="btn">Connect!</a>
                 """
     
-            if not req.session["connected"] :
+            if not req.session["connected"] or pretend_disconnected :
                 if "clouds" in req.session :
                     cloudcontents = "<select name='running'>"
                     for cloud in req.session["clouds"] :
+                        if pretend_disconnected and req.cloud_name.lower() == cloud["name"].lower() :
+                            continue
                         cloudcontents += "<option value='" + cloud["model"] + "," + cloud["name"] + "'>" + cloud["name"] + " (" + cloud["description"] + ")</option>"
                     cloudcontents += "</select>"
                 if "available_clouds" in req.session :
                     available_clouds = deepcopy(req.session['available_clouds'])
                     if "clouds" in req.session :
                         for cloud in req.session['clouds'] :
-                            if cloud['name'].lower() in available_clouds :
+                            if cloud['name'].lower() in available_clouds and not (pretend_disconnected and req.cloud_name.lower() == cloud['name'].lower()):
                                 del available_clouds[cloud['name'].lower()]
                     availablecontents = "<select name='available'>"
                     for cloud in available_clouds :

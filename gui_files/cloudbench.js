@@ -17,7 +17,7 @@
 var bootdest = "";
 //var bootdest = window.location.href.match(/[^/]*\/([^/]*)/g)[2];
 var last_data = '';
-var first_time = true; 
+var first_time = true;
 var debug = false;
 //var debug = true;
 var unavailable = "CloudBench is unreachable. Will try again later...";
@@ -92,7 +92,7 @@ if ("liststate" in params)
         },
         success: function (response) {
             var data = "none";
-            if(response.indexOf("<h4>Exception:</h4>") != -1) {
+            if(response.indexOf("<h4>Exception:</h4>") != -1 && response.indexOf("<h4>") != -1) {
                 $(id).html(response);
             } else {
 	            if(getSpecificContent != '') {
@@ -128,7 +128,7 @@ if ("liststate" in params)
               htmlobj = $(data);
               result = htmlobj.find("#monitor" + y);
               if((result.html() + "") == "null")
-                  $("#tab" + y).html("<h3>This performance category is not configured. Click 'Options' to activate.</h3>");
+                  $("#tab" + y).html("<h3>This performance category is not configured. <a href='monitordata'>Try loading the data directly</a> to see if there are any python errors. Click 'Options' to activate.</h3>");
               else
                   $("#tab" + y).html(result);
           }
