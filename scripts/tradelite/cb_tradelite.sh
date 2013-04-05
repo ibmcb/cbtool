@@ -73,6 +73,14 @@ fi
 
 WAS_IPS_CSV=`echo ${WAS_IPS} | sed ':a;N;$!ba;s/\n/, /g'`
 
+if [ x"${LOAD_PROFILE}" == "default" ]
+then
+	JXS_SCRIPT=~/iwl/bin/TradeApp.jxs
+else 
+	JXS_SCRIPT=~/iwl/bin/TradeApp.jxs
+fi
+eval JXS_SCRIPT=${JXS_SCRIPT}
+
 if [ x"${IS_LOAD_BALANCED}" == x"true" ]
 then
 	LOAD_BALANCER_IP=`get_ips_from_role lb`
@@ -81,7 +89,7 @@ else
 	syslog_netcat "Benchmarking tradelite SUT: WAS_SERVER=${WAS_IPS} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
 fi
 
-CMDLINE="iwlengine --enginename testit --define hostname=${LOAD_GENERATOR_TARGET_IP}:9080 --define botClient=0 --define topClient=${NR_USERS} --define stocks=${NR_QUOTES} -e 0 -s ~/iwl/bin/TradeApp.jxs --timelimit $LOAD_DURATION -c $LOAD_LEVEL"
+CMDLINE="iwlengine --enginename testit --define hostname=${LOAD_GENERATOR_TARGET_IP}:9080 --define botClient=0 --define topClient=${NR_USERS} --define stocks=${NR_QUOTES} -e 0 -s ${JXS_SCRIPT} --timelimit $LOAD_DURATION -c $LOAD_LEVEL"
 
 PERIODIC_MEASUREMENTS=`get_my_ai_attribute_with_default periodic_measurements false`
 PERIODIC_MEASUREMENTES=`echo ${PERIODIC_MEASUREMENTS} | tr '[:upper:]' '[:lower:]'`

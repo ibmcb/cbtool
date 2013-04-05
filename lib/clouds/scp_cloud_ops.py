@@ -164,7 +164,8 @@ class ScpCmds(CommonCloudFunctions) :
                 return _response
 
     @trace
-    def test_vmc_common(self, vmc_name, access, credentials, version) :
+    def test_vmc_common(self, vmc_name, access, credentials, key_name, \
+                            security_group_name, vm_templates, vm_defaults) :
         '''
         TBD
         '''
@@ -174,7 +175,7 @@ class ScpCmds(CommonCloudFunctions) :
         _access_url, _iaas_endpoint = access.split('-')            
         _target, _port_number = _access_url.split(':')
         _deploy_python_proxy_script = self.path + "/scripts/common/scp_python_proxy.sh"
-        _python_proxy_script = "scp2" + str(version) + "_python_proxy.rb"
+        _python_proxy_script = "scp2_python_proxy.rb"
         _iaas_access_id, _iaas_private_key, _iaas_service_public_key = credentials.split('-')
 
         _cmd = _deploy_python_proxy_script + ' ' + _target + ' ' + _port_number

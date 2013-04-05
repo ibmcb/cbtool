@@ -34,8 +34,12 @@ then
 	eval JAVA_HOME=${JAVA_HOME}
 	if [[ -f ~/.bashrc ]]
 	then
-		syslog_netcat "Adding JAVA_HOME to bashrc"
-		echo "export JAVA_HOME=${JAVA_HOME}" >> .bashrc
+		is_java_home_export=`grep -c "JAVA_HOME=${JAVA_HOME}" ~/.bashrc`
+		if [[ $is_java_home_export -eq 0 ]]
+		then
+			syslog_netcat "Adding JAVA_HOME to bashrc"
+			echo "export JAVA_HOME=${JAVA_HOME}" >> ~/.bashrc
+		fi
 	fi
 fi
 
@@ -48,9 +52,13 @@ then
 
 	if [[ -f ~/.bashrc ]]
 	then
-		syslog_netcat "Adding HADOOP_HOME to bashrc"
-		echo "export HADOOP_HOME=${HADOOP_HOME}" >> .bashrc
-		echo "export PATH=\$PATH:$HADOOP_HOME/bin" >> .bashrc
+		is_hadoop_home_export=`grep -c "HADOOP_HOME=${HADOOP_HOME}" ~/.bashrc`
+		if [[ $is_hadoop_home_export -eq 0 ]]
+		then
+			syslog_netcat "Adding HADOOP_HOME to bashrc"
+			echo "export HADOOP_HOME=${HADOOP_HOME}" >> ~/.bashrc
+			echo "export PATH=\$PATH:$HADOOP_HOME/bin" >> ~/.bashrc
+		fi
 	fi
 fi
 
@@ -62,8 +70,12 @@ then
 
 	if [[ -f ~/.bashrc ]]
 	then
-		syslog_netcat "Adding HIBENCH_HOME to bashrc"
-		echo "export HIBENCH_HOME=${HIBENCH_HOME}" >> .bashrc
+		is_hibench_home_export=`grep -c "HIBENCH_HOME=${HIBENCH_HOME}" ~/.bashrc`
+		if [[ $is_hibench_home_export -eq 0 ]]
+		then
+			syslog_netcat "Adding HIBENCH_HOME to bashrc"
+			echo "export HIBENCH_HOME=${HIBENCH_HOME}" >> ~/.bashrc
+		fi
 	fi
 fi
 

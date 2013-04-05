@@ -24,12 +24,11 @@ docs/*.graffle
 docs/*FTVM*
 docs/*STG*
 docs/*_metrics.ppt
-util/*.sh
 util/experimental
 util/graveyard
 util/pydevm/*
-util/*.sh
 util/*omapi
+util/cloud_definitions_autoconf.sh
 util/get_qemu*
 util/rc2.pl
 util/rc3.pl

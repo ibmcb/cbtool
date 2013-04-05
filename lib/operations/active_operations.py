@@ -179,7 +179,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                   cld_attr_lst["vmc_defaults"]["credentials"], \
                                                   cld_attr_lst["vmc_defaults"]["key_name"], \
                                                   cld_attr_lst["vmc_defaults"]["security_groups"], \
-                                                  cld_attr_lst["vm_templates"])
+                                                  cld_attr_lst["vm_templates"],
+                                                  cld_attr_lst["vm_defaults"])
 
     
                 _all_global_objects = cld_attr_lst.keys()

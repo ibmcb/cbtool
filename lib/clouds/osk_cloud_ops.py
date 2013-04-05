@@ -96,7 +96,7 @@ class OskCmds(CommonCloudFunctions) :
     
     @trace
     def test_vmc_connection(self, vmc_name, access, credentials, key_name, \
-                            security_group_name, vm_templates) :
+                            security_group_name, vm_templates, vm_defaults) :
         '''
         TBD
         '''
@@ -131,11 +131,39 @@ class OskCmds(CommonCloudFunctions) :
                     _security_group_found = True
 
             if not _security_group_found :
-                _msg = "Please create the security group \"" + security_group_name + "\" in "
+                _msg = "ERROR! Please create the security group \"" + security_group_name + "\" in "
                 _msg += "OpenStack before proceeding."
                 _fmsg = _msg 
-                cberr(_msg)
-                raise CldOpsException(_msg, _status)
+                cberr(_msg, True)
+            
+            if vm_defaults["prov_netname"] == vm_defaults["run_netname"] :
+                _net_str = "network \"" + vm_defaults["prov_netname"] + "\""
+            else :
+                _net_str = "networks \"" + vm_defaults["prov_netname"] + "\""
+                _net_str += " and " + "\"" + vm_defaults["run_netname"] + "\""
+
+            _msg = "Checking if the " + _net_str + " can be found on VMC " + vmc_name + "..."
+            cbdebug(_msg, True)
+            _prov_netname_found = False
+            _run_netname_found = False
+            
+            for _network in self.oskconn.networks.list() :
+                if _network.label == vm_defaults["prov_netname"] :
+                    _prov_netname_found = True
+                
+                if _network.label == vm_defaults["run_netname"] :
+                    _run_netname_found = True
+                
+                # Sometimes clouds have hundreds or thousands of networks
+                # just leave the loop early, if possible.    
+                if _run_netname_found and _prov_netname_found :
+                    break
+                
+            if not (_run_netname_found and _prov_netname_found) :
+                _msg = "ERROR! Please make sure that the " + _net_str + " can be found"
+                _msg += " VMC " + vmc_name
+                _fmsg = _msg 
+                cberr(_msg, True)
 
             _msg = "Checking if the imageids associated to each \"VM role\" are"
             _msg += " registered on VMC " + vmc_name + "...."
@@ -185,10 +213,10 @@ class OskCmds(CommonCloudFunctions) :
                     _msg += "(attaching VMs with any of these roles will result in error).\n"
 
             if not len(_detected_imageids) :
-                _msg = "None of the image ids used by any VM \"role\" were detected"
+                _msg = "ERROR! None of the image ids used by any VM \"role\" were detected"
                 _msg += " in this OpenStack cloud. Please register at least one "
                 _msg += "of the following images: " + ','.join(_undetected_imageids.keys())
-                cbdebug(_msg, True)
+                cberr(_msg, True)
             else :
                 _msg = _msg.replace("yx",'')
                 _msg = _msg.replace('x',"         ")
@@ -196,7 +224,8 @@ class OskCmds(CommonCloudFunctions) :
                 if len(_msg) :
                     cbdebug(_msg, True)
 
-            if not (_key_pair_found and _security_group_found and len(_detected_imageids)) :
+            if not (_run_netname_found and _prov_netname_found and \
+                    _key_pair_found and _security_group_found and len(_detected_imageids)) :
                 _msg = "Check the previous errors, fix it (using OpenStack's web"
                 _msg += " GUI (horizon) or nova CLI"
                 _status = 1178

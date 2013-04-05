@@ -106,7 +106,7 @@ class Ec2Cmds(CommonCloudFunctions) :
     
     @trace
     def test_vmc_connection(self, vmc_name, access, credentials, key_name, \
-                            security_group_name, vm_templates) :
+                            security_group_name, vm_templates, vm_defaults) :
         '''
         TBD
         '''
@@ -125,10 +125,10 @@ class Ec2Cmds(CommonCloudFunctions) :
                     _key_pair_found = True
 
             if not _key_pair_found :
-                _msg = "Please create the ssh key pair \"" + key_name + "\" in "
+                _msg = "ERROR! Please create the ssh key pair \"" + key_name + "\" in "
                 _msg += "Amazon EC2 before proceeding."
                 _fmsg = _msg
-                raise CldOpsException(_msg, _status)
+                cberr(_msg, True)
 
             _msg = "Checking if the security group \"" + security_group_name
             _msg += "\" is created on VMC " + vmc_name + "...."
@@ -140,11 +140,10 @@ class Ec2Cmds(CommonCloudFunctions) :
                     _security_group_found = True
 
             if not _security_group_found :
-                _msg = "Please create the security group \"" + security_group_name + "\" in "
+                _msg = "ERROR! Please create the security group \"" + security_group_name + "\" in "
                 _msg += "Amazon EC2 before proceeding."
                 _fmsg = _msg
-                cberr(_msg)
-                raise CldOpsException(_msg, _status)
+                cberr(_msg, True)
             
             _msg = "Checking if the imageids associated to each \"VM role\" are"
             _msg += " registered on VMC " + vmc_name + "...."
@@ -201,7 +200,7 @@ class Ec2Cmds(CommonCloudFunctions) :
                     _msg += "(attaching VMs with any of these roles will result in error).\n"
             
             if not len(_detected_imageids) :
-                _msg = "None of the image ids used by any VM \"role\" were detected"
+                _msg = "ERROR! None of the image ids used by any VM \"role\" were detected"
                 _msg += " in this EC2 cloud. Please register at least one "
                 _msg += "of the following images: " + ','.join(_undetected_imageids.keys())
                 _fmsg = _msg 

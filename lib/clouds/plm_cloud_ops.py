@@ -94,7 +94,7 @@ class PlmCmds(CommonCloudFunctions) :
 
     @trace
     def test_vmc_connection(self, vmc_name, access, credentials, key_name, \
-                            security_group_name, vm_templates) :
+                            security_group_name, vm_templates, vm_defaults) :
         '''
         TBD
         '''
