@@ -29,6 +29,7 @@ import re
 import os 
 import copy
 import json
+import netsnmp
 
 from lib.auxiliary.data_ops import str2dic, dic2str
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
@@ -247,6 +248,7 @@ class CommonCloudFunctions:
         '''
         TBD
         '''
+
         _max_tries = int(obj_attr_list["update_attempts"])
         _wait = int(obj_attr_list["update_frequency"])
 
@@ -258,6 +260,7 @@ class CommonCloudFunctions:
         _curr_tries = 0
 
         if not _network_reachable :
+
             _msg = "Trying to establish network connectivity to "
             _msg +=  obj_attr_list["name"] + " (cloud-assigned uuid "
             _msg += obj_attr_list["cloud_uuid"] + "), on IP address "
@@ -327,8 +330,42 @@ class CommonCloudFunctions:
                         sleep(_boot_wait_time)
                     _vm_is_booted = True                 
                 
+                elif obj_attr_list["check_boot_complete"].count("snmpget_poll") :
+                    # Send SNMP GET message.  Flag VM as booted if any response at all is recieved
+                    _vm_is_booted = False
+
+                    try : 
+                        _msg = "Opening SNMP session to " + obj_attr_list["cloud_ip"]
+                        cbdebug(_msg)
+
+                        _snmp_wait_time = _wait * 1000000
+                        _snmp_version = int(obj_attr_list["snmp_version"])
+                        _snmp_comm = str(obj_attr_list["snmp_community"])
+                        _snmp_session = netsnmp.Session(Version=_snmp_version, DestHost=obj_attr_list["cloud_ip"], \
+                                                        Community=_snmp_comm, \
+                                                        Timeout=_snmp_wait_time, Retries=0)
+
+                        _vars = netsnmp.VarList(netsnmp.Varbind(obj_attr_list["snmp_variable"], '0'))
+
+                        _snmp_response = _snmp_session.get(_vars)
+
+                    except :
+                        if _snmp_session.ErrorStr :
+                            _msg = "Error in SNMP handler : " + _snmp_session.ErrorStr
+                        else :
+                            _msg = "Unknown error in SNMP handler."
+                        cbdebug(_msg)
+                        _status = 200
+                        raise CldOpsException(_msg, _status)
+                    if (_snmp_response[0] != None ) :
+                        _vm_is_booted = True
+                        _msg = "SNMP Response: " + str(_snmp_response)
+                        cbdebug(_msg)
+
                 else :
-                    _vm_is_booted = False    
+                    _vm_is_booted = False
+                    _msg = "Warning: No valid method specified to determined if VM has booted."
+                    cbdebug(_msg, True)    
                     
                 if _vm_is_booted :
                     obj_attr_list["mgt_004_network_acessible"] = int(time()) - time_mark_prc 
