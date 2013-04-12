@@ -29,7 +29,6 @@ import re
 import os 
 import copy
 import json
-import netsnmp
 
 from lib.auxiliary.data_ops import str2dic, dic2str
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
@@ -331,6 +330,7 @@ class CommonCloudFunctions:
                     _vm_is_booted = True                 
                 
                 elif obj_attr_list["check_boot_complete"].count("snmpget_poll") :
+                    import netsnmp
                     # Send SNMP GET message.  Flag VM as booted if any response at all is recieved
                     _vm_is_booted = False
 
