@@ -4,6 +4,10 @@ Cloud Rapid Experimentation and Analysis Tool (aka CBTOOL) is a framework that a
 
 ## To get started:
 
+Subscribe to our mailing list:
+Users: https://groups.google.com/forum/#!forum/cbtool-users
+Development: https://groups.google.com/forum/#!forum/cbtool-devel
+
 1. [Learn more about the tool](https://github.com/ibmcb/cbtool/wiki/DOC:-Table-of-Contents)
 2. [Perform the initial installation](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Initial-Installation)
 3. [Run the tool for the first time](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Running-the-tool-for-the-first-time)
