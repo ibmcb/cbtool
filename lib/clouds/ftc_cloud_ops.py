@@ -16,13 +16,6 @@
 # limitations under the License.
 #/*******************************************************************************
 
-'''
-    Created on Aug 27, 2011
-
-    FT Cloud Object OperationsLibrary
-
-    @author: Michael R. Hines
-'''
 from time import time, sleep
 from socket import gethostbyname
 import threading, xmlrpclib, re
@@ -343,6 +336,7 @@ class FtcCmds(CommonCloudFunctions) :
                 cbdebug("VM " + obj_attr_list["name"] + " received IP: " + obj_attr_list["cloud_ip"])
                 obj_attr_list["cloud_hostname"] = "cb-" + obj_attr_list["cloud_ip"].replace('.', '-')
                 obj_attr_list["last_known_state"] = "running with ip assigned"
+                obj_attr_list["prov_cloud_ip"] = obj_attr_list["cloud_ip"]
                 return True
             else :
                 obj_attr_list["last_known_state"] = "running with ip unassigned"

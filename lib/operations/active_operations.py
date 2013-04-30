@@ -204,8 +204,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 cld_attr_lst["username"] = cld_attr_lst["time"]["username"]
                 cld_attr_lst["start_time"] = str(int(time()))
                 cld_attr_lst["client_should_refresh"] = "yes"
-                cld_attr_lst["time"]["hard_reset"] = uni_attr_lst["time"]["hard_reset"]
-                cld_attr_lst["space"]["tracefile"] = uni_attr_lst["space"]["tracefile"]
+                cld_attr_lst["time"]["hard_reset"] = uni_attr_lst["time"]["hard_reset"] if "hard_reset" in uni_attr_lst["time"] else False
+                cld_attr_lst["space"]["tracefile"] = uni_attr_lst["space"]["tracefile"] if "tracefile" in uni_attr_lst["space"] else "none"
 
                 # While setting up the Object Store, check for free ports for the 
                 # API, GUI, and Gmetad (Host OS performance data collection)
@@ -4109,7 +4109,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     cberr(_msg)
                     raise self.ObjectOperationException(_msg, _status)                    
 
-                serial_mode = True # only used for debugging
+                serial_mode = False # only used for debugging
 
                 _tmp_list = copy.deepcopy(obj_attr_list["parallel_operations"][_object])
                 
