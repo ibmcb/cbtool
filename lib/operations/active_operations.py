@@ -165,7 +165,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _initial_vmcs = str2dic(_vmcs)
                 else :
                     _initial_vmcs = []
-                    _cld_conn = _cld_ops_class(self.pid, None)
+                    _cld_conn = _cld_ops_class(self.pid, None, None)
     
                 _msg = "Attempting to connect to all VMCs described in the cloud "
                 _msg += "defaults file, in order to check the access parameters "
@@ -173,7 +173,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 cbdebug(_msg)
     
                 for _vmc_entry in _initial_vmcs :
-                    _cld_conn = _cld_ops_class(self.pid, None)
+                    _cld_conn = _cld_ops_class(self.pid, None, None)
                     _cld_conn.test_vmc_connection(_vmc_entry.split(':')[0], \
                                                   cld_attr_lst["vmc_defaults"]["access"], \
                                                   cld_attr_lst["vmc_defaults"]["credentials"], \
@@ -204,8 +204,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 cld_attr_lst["username"] = cld_attr_lst["time"]["username"]
                 cld_attr_lst["start_time"] = str(int(time()))
                 cld_attr_lst["client_should_refresh"] = "yes"
-                cld_attr_lst["time"]["hard_reset"] = uni_attr_lst["time"]["hard_reset"]
-                cld_attr_lst["space"]["tracefile"] = uni_attr_lst["space"]["tracefile"]
+                cld_attr_lst["time"]["hard_reset"] = uni_attr_lst["time"]["hard_reset"] if "hard_reset" in uni_attr_lst["time"] else False
+                cld_attr_lst["space"]["tracefile"] = uni_attr_lst["space"]["tracefile"] if "tracefile" in uni_attr_lst["space"] else "none"
 
                 # While setting up the Object Store, check for free ports for the 
                 # API, GUI, and Gmetad (Host OS performance data collection)
