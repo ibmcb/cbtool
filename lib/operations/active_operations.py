@@ -165,7 +165,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _initial_vmcs = str2dic(_vmcs)
                 else :
                     _initial_vmcs = []
-                    _cld_conn = _cld_ops_class(self.pid, None)
+                    _cld_conn = _cld_ops_class(self.pid, None, None)
     
                 _msg = "Attempting to connect to all VMCs described in the cloud "
                 _msg += "defaults file, in order to check the access parameters "
@@ -173,7 +173,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 cbdebug(_msg)
     
                 for _vmc_entry in _initial_vmcs :
-                    _cld_conn = _cld_ops_class(self.pid, None)
+                    _cld_conn = _cld_ops_class(self.pid, None, None)
                     _cld_conn.test_vmc_connection(_vmc_entry.split(':')[0], \
                                                   cld_attr_lst["vmc_defaults"]["access"], \
                                                   cld_attr_lst["vmc_defaults"]["credentials"], \
@@ -4109,7 +4109,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     cberr(_msg)
                     raise self.ObjectOperationException(_msg, _status)                    
 
-                serial_mode = False # only used for debugging
+                serial_mode = True # only used for debugging
 
                 _tmp_list = copy.deepcopy(obj_attr_list["parallel_operations"][_object])
                 
