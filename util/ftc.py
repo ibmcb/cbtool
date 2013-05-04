@@ -54,13 +54,6 @@ except ImportError:
 
 sysrand = random.SystemRandom()
 
-OMAPI_OP_OPEN    = 1
-OMAPI_OP_REFRESH = 2
-OMAPI_OP_UPDATE  = 3
-OMAPI_OP_NOTIFY  = 4
-OMAPI_OP_STATUS  = 5
-OMAPI_OP_DELETE  = 6
-
 try :
     # Provided by RHEL 6.2
     from libvirt_qemu import qemuMonitorCommand
@@ -373,10 +366,10 @@ class Ftc :
             _xml_templates["vm_template"] +=  "\t\t</input>\n"
             _xml_templates["vm_template"] += "\t\t<input type='mouse' bus='ps2'/>\n"
         
-        _xml_templates["vm_template"] += "\t\t<graphics type='vnc' port='-1' autoport='yes' listen='TMPLT_VMC_HOSTNAME' keymap='en-us'/>\n"
-        _xml_templates["vm_template"] += "\t\t<video>\n"
-        _xml_templates["vm_template"] += "\t\t\t<model type='cirrus' vram='9216' heads='1'/>\n"
-        _xml_templates["vm_template"] += "\t\t</video>\n"
+#        _xml_templates["vm_template"] += "\t\t<graphics type='vnc' port='-1' autoport='yes' listen='TMPLT_VMC_HOSTNAME' keymap='en-us'/>\n"
+#        _xml_templates["vm_template"] += "\t\t<video>\n"
+#        _xml_templates["vm_template"] += "\t\t\t<model type='cirrus' vram='9216' heads='1'/>\n"
+#        _xml_templates["vm_template"] += "\t\t</video>\n"
         if options.hypervisor == "xen" :
             _xml_templates["vm_template"] += "\t\t<memballoon model='xen'/>\n"
         else :
@@ -1317,7 +1310,29 @@ class Ftc :
         return self.success(_smsg, None)
     
     @trace
-    def restore(self, tag, hypervisor_ip, file = None) :
+    def migrate(self, tag, hypervisor_ip, destination_ip, protocol, interface):
+        lvt_cnt = self.conn_check(hypervisor_ip)
+        _imsg =  "Domain " + tag 
+        _smsg = _imsg + " was successfully migrated."
+        _fmsg = _imsg + " could not be saved: "
+        try :
+            if options.hypervisor in [ "xen", "pv" ] :
+                uri = "xen+tcp://" + destination_ip
+            elif options.hypervisor == "kvm" :
+                uri = "qemu+tcp://" + destination_ip + "/system"
+            dom = lvt_cnt.lookupByName(tag)
+            miguri = protocol + ":" + interface 
+            cbdebug("Opening connection to destination uri: " + uri)
+            dconn = open(uri)
+            cbdebug("Issuing Migrate on VM " + tag + " to " + uri + " with interface " + miguri + "...")
+            dom.migrate(dconn, VIR_MIGRATE_LIVE | VIR_MIGRATE_PERSIST_DEST | VIR_MIGRATE_UNDEFINE_SOURCE, None, miguri, 0)
+            dconn.close()
+        except libvirtError, msg :
+            self.ftcraise(lvt_cnt.host, 3, _fmsg + str(msg))
+        return self.success(_smsg, None)
+    
+    @trace
+    def restore(self, tag, hypervisor_ip, savefile = None) :
         lvt_cnt = self.conn_check(hypervisor_ip)
         _imsg =  "Domain " + tag 
         _smsg = _imsg + " was successfully restored."
@@ -1328,11 +1343,11 @@ class Ftc :
             if dom.hasManagedSaveImage(0) :
                 dom.create()
             else :
-                if file is None :
+                if savefile is None :
                     self.ftcraise(lvt_cnt.host, 7, "Must specify restore file " + \
                         "name for non-managed save domain: " + tag)
                     
-                dom.restore(file)
+                dom.restore(savefile)
         except libvirtError, msg :
             self.ftcraise(lvt_cnt.host, 4, _fmsg + str(msg))
         return self.success(_smsg, None)
@@ -1720,6 +1735,13 @@ class OmapiHMACMD5Authenticator(OmapiAuthenticatorBase):
 
     def sign(self, message):
         return hmac.HMAC(self.key, message).digest()
+
+OMAPI_OP_OPEN    = 1
+OMAPI_OP_REFRESH = 2
+OMAPI_OP_UPDATE  = 3
+OMAPI_OP_NOTIFY  = 4
+OMAPI_OP_STATUS  = 5
+OMAPI_OP_DELETE  = 6
 
 class OmapiMessage:
     def __init__(self):

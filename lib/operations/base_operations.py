@@ -383,6 +383,25 @@ class BaseObjectOperations :
             if _length < 2:
                 _status = 9
                 _msg = "Usage: vmcapture <cloud name> <vm name> [parent] [mode]"
+                
+        elif command == "vm-migrate" :
+            object_attribute_list["interface"] = "default" 
+            
+            if _length >= 3 :
+                object_attribute_list["name"] = _parameters[1]
+                object_attribute_list["destination"] = _parameters[2] 
+                object_attribute_list["protocol"] = "tcp"
+                
+                
+            if _length >= 4 :
+                object_attribute_list["protocol"] = _parameters[3]
+                
+            if _length >= 5 :
+                object_attribute_list["interface"] = _parameters[4]
+
+            if _length < 3:
+                _status = 9
+                _msg = "Usage: migrate <cloud name> <vm name> <destination> [protocol = tcp|rdma|mc] [alternate interface] [mode]"
 
         elif command == "vm-resize" :
             if _length >= 2 :
@@ -1070,7 +1089,8 @@ class BaseObjectOperations :
 
             elif cmd.count("detach") or cmd.count("capture") or \
                 cmd.count("runstate") or cmd.count("resize") or \
-                cmd.count("restore") or cmd.count("console") :
+                cmd.count("restore") or cmd.count("console") or \
+                cmd.count("migrate") :
                 
                 if "target_state" in obj_attr_list and obj_attr_list["target_state"] == "attached" and obj_attr_list["suspected_command"] == "run" :
                     obj_attr_list["uuid"] = obj_attr_list["name"]
@@ -1112,6 +1132,9 @@ class BaseObjectOperations :
                     elif cmd.count("resize") :
                         _fmsg += "Cannot resize object."
                         _status = 40
+                    elif cmd.count("migrate") :
+                        _fmsg += "Cannot migrate object."
+                        _status = 41
                 else :
                     _status = 0
                     _obj_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], _obj_type, \
@@ -1131,6 +1154,31 @@ class BaseObjectOperations :
                             _msg = "Capture operations are not supported on \"" + _cloud_parameters["description"] + "\" clouds." 
                             _status = 9000
                             raise self.ObjectOperationException(_msg, _status)
+                    elif cmd.count("migrate") :
+                        obj_attr_list["mgt_501_migrate_request_originated"] = obj_attr_list["command_originated"]
+                        dest_name = obj_attr_list["destination"]
+                        
+                        if not dest_name.count("_") :
+                            dest_name = "host_" + dest_name 
+                            
+                        obj_attr_list["destination_name"] = dest_name
+                        obj_attr_list["destination"] = dest_name.split("_")[1]
+                        if obj_attr_list["interface"] == "default" :
+                            obj_attr_list["interface"] = obj_attr_list["destination"]
+                            
+                        if not self.osci.object_exists(obj_attr_list["cloud_name"], "HOST", dest_name, True) :
+                            _msg = "Destination HOST object for migration does not exist: " + obj_attr_list["destination"]
+                            _status = 9001
+                            raise self.ObjectOperationException(_msg, _status)
+                        
+                        dest_attr = self.osci.get_object(obj_attr_list["cloud_name"], "HOST", True, dest_name, False)
+                        obj_attr_list["destination_ip"] = dest_attr["cloud_ip"]
+                        
+                        if obj_attr_list["migrate_supported"].lower() != "true" :
+                            _msg = "Migrate operations are not supported on \"" + _cloud_parameters["description"] + "\" clouds." 
+                            _status = 9000
+                            raise self.ObjectOperationException(_msg, _status)
+                        
                     elif cmd.count("runstate") :
                         obj_attr_list["mgt_201_runstate_request_originated"] = obj_attr_list["command_originated"]
                         if obj_attr_list["runstate_supported"].lower() != "true" :
@@ -2698,6 +2746,9 @@ class BaseObjectOperations :
             elif counter == "CAPTURING" :
                 _counter_value = str(self.get_process_object(cloud_name, obj_type, "capture"))
                 _status = 0
+            elif counter == "MIGRATING" :
+                _counter_value = str(self.get_process_object(cloud_name, obj_type, "migrate"))
+                _status = 0
             else :
                 _counter_value = str(self.osci.count_object(cloud_name, obj_type, counter))
                 _status = 0
@@ -3185,7 +3236,8 @@ class BaseObjectOperations :
                     elif command.count("runstate") or \
                     command.count("fail") or command.count("repair") or \
                     command.count("save") or command.count("restore") or \
-                    command.count("resize") or command.count("detachall") :
+                    command.count("resize") or command.count("detachall") or \
+                    command.count("migrate") :
     
                         if _obj_type != "HOST" and ("suspected_command" not in _obj_attr_list or _obj_attr_list["suspected_command"] != "run") :
                             _obj_uuid = self.osci.object_exists(_obj_attr_list["cloud_name"], _obj_type, \
@@ -3196,7 +3248,7 @@ class BaseObjectOperations :
     
                         if not _obj_uuid :
                             _fmsg = "Object is not instantiated on the object store."
-                            _fmsg += "It cannot be captured on this experiment."
+                            _fmsg += "It cannot be used on this experiment."
                             _status = 37
     
                         else :

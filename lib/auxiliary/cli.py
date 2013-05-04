@@ -181,7 +181,7 @@ class CBCLI(Cmd) :
              the same "parameters" argument. The decorator "unpack_arguments_for_api"
              then builds a list of python named arguments and passes it to the
              corresponding API function. In order to figure out which API function
-             to use, the API exposes a function to list those function, which
+             to use, the API exposes a function to list those functions, which
              in turn allows us to setup the appropriate function pointer.
             '''
              

@@ -3090,6 +3090,130 @@ class ActiveObjectOperations(BaseObjectOperations) :
             return _status, _msg, None
 
     @trace    
+    def migrate(self, obj_attr_list, parameters, command) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+            _result = None
+            migratable = False
+
+            obj_attr_list["uuid"] = "undefined"            
+            obj_attr_list["name"] = "undefined"
+
+            _obj_type = command.split('-')[0].upper()
+
+            _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
+
+            if not _status :
+                _status, _fmsg = self.initialize_object(obj_attr_list, command)
+
+                if not _status :
+                    _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
+                    _cld_conn = _cld_ops_class(self.pid, self.osci, obj_attr_list["experiment_id"])
+
+                    _current_state = self.osci.get_object_state(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"])
+                    
+                    if _current_state == "attached" :
+                        migratable = True
+                        self.osci.add_to_list(obj_attr_list["cloud_name"], "VM", "VMS_UNDERGOING_MIGRATE", obj_attr_list["uuid"], int(time()))
+                        self.osci.set_object_state(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "migrate")
+                        
+                        # Command line has provided us with the name of the destination hypervisor,
+                        # but not the IP address
+                        
+                        _status, _fmsg = _cld_conn.migrate(obj_attr_list)
+     
+                        if not _status :
+                            self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
+                                                              obj_attr_list["uuid"], \
+                                                              False, \
+                                                              "host_name", obj_attr_list["destination"])
+                            self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
+                                                              obj_attr_list["uuid"], \
+                                                              False, \
+                                                              "host_cloud_ip", obj_attr_list["destination_ip"])
+                            
+                        self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
+                                                          obj_attr_list["uuid"], \
+                                                          False, \
+                                                          "mgt_501_migrate_request_originated", \
+                                                          obj_attr_list["mgt_501_migrate_request_originated"])
+    
+                        self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
+                                                          obj_attr_list["uuid"], \
+                                                          False, \
+                                                          "mgt_502_migrate_request_sent", \
+                                                          obj_attr_list["mgt_502_migrate_request_sent"])
+
+                        if "mgt_503_migrate_request_completed" in obj_attr_list :
+                            self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
+                                                              obj_attr_list["uuid"], \
+                                                              False, \
+                                                              "mgt_503_migrate_request_completed", \
+                                                              obj_attr_list["mgt_503_migrate_request_completed"])
+
+                        else :
+                            self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
+                                                              obj_attr_list["uuid"], \
+                                                              False, \
+                                                              "mgt_999_migrate_request_failed", \
+                                                              obj_attr_list["mgt_999_migrate_request_failed"])
+                            
+                        if not _status :
+                            _result = obj_attr_list
+                    else :
+                        _fmsg = "VM object named \"" + obj_attr_list["name"] + "\" could "
+                        _fmsg += "not be migrated because it is on the "
+                        _fmsg += "\"" + _current_state + "\" state."
+                        _status = 78
+    
+
+        except self.ObjectOperationException, obj :
+            _status = obj.status
+            _fmsg = str(obj.msg)
+
+        except self.osci.ObjectStoreMgdConnException, obj :
+            _status = obj.status
+            _fmsg = str(obj.msg)
+
+        except ImportError, msg :
+            _status = 8
+            _fmsg = str(msg)
+
+        except AttributeError, msg :
+            _status = 8
+            _fmsg = str(msg)
+
+        except CldOpsException, obj :
+            _status = obj.status
+            _fmsg = str(obj.msg)
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+
+        finally:        
+            if migratable :
+                self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "VMS_UNDERGOING_MIGRATE", obj_attr_list["uuid"], True)
+                self.osci.set_object_state(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "attached")
+                
+            if _status :
+                _msg = _obj_type + " object " + obj_attr_list["uuid"] + " ("
+                _msg += "named \"" + obj_attr_list["name"] + "\") could not be "
+                _msg += "migrated on this experiment: " + _fmsg
+                cberr(_msg)
+            else :
+                _msg = _obj_type + " object " + obj_attr_list["uuid"] 
+                _msg += " (named \"" + obj_attr_list["name"] +  "\") successfully migrated "
+                _msg += "on this experiment."
+                cbdebug(_msg)
+
+            return self.package(_status, _msg, _result)
+        
+    @trace    
     def vmcapture(self, obj_attr_list, parameters, command) :
         '''
         TBD

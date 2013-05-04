@@ -149,8 +149,7 @@ class API():
         return {"msg" : "Success", "status" : 0, "result": { "clouds": clouds, "attributes" : attributes} }
 
     def cldattach(self, model, name, cloud_definitions = None, temp_attr_list = "empty=empty", uni_attrs = None) :
-        result = self.active.cldattach({}, model + ' ' + name + ' ' + temp_attr_list, cloud_definitions, "cloud-attach", uni_attrs)[2]
-        return result
+        return self.active.cldattach({}, model + ' ' + name + ' ' + temp_attr_list, cloud_definitions, "cloud-attach", uni_attrs)[2]
     
     def clddetach(self, name) :
         return self.active.clddetach({}, name, "cloud-detach")[2]
@@ -271,6 +270,12 @@ class API():
             return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + vmcrs + (' ' + async), "vm-capture")[2]
         else :
             return self.active.vmcapture({}, cloud_name + ' ' + identifier + ' ' + vmcrs, "vm-capture")[2]
+        
+    def migrate(self, cloud_name, identifier, destination, protocol = "tcp", interface = "default", async = False):
+        if async and str(async).count("async") :
+            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + destination + ' ' + protocol + ' ' + interface + (' ' + async), "vm-migrate")[2]
+        else :
+            return self.active.migrate({}, cloud_name + ' ' + identifier + ' ' + destination + ' ' + protocol + ' ' + interface, "vm-migrate")[2]
         
     def hostfail(self, cloud_name, identifier, firs = "none", async = False):
         parameters = cloud_name + ' ' + identifier + ' ' + firs

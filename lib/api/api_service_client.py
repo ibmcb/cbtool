@@ -199,7 +199,7 @@ class APIClient(Server):
         else :
             app = None
             
-        return APIVM(name, info, app)
+        return APIVM(identifier, info, app)
     
     def refresh_vms(self, cloud_name, force, state = "") :
         try :

@@ -468,7 +468,7 @@ class FtcCmds(CommonCloudFunctions) :
         _vg = ValueGeneration(self.pid)
         tag = obj_attr_list["cloud_uuid"]
         desc = obj_attr_list["resource_description"]
-        hypervisor_ip = obj_attr_list["vmc_cloud_ip"]
+        hypervisor_ip = obj_attr_list["host_cloud_ip"]
 
         if not self.is_vm_running(obj_attr_list) :
             return 0, "VM is not running"
@@ -581,12 +581,42 @@ class FtcCmds(CommonCloudFunctions) :
         _msg += "\"."
         cbdebug(_msg)
         return 0, _msg
+    
+    @trace        
+    def migrate(self, obj_attr_list) :
+        self.connect(obj_attr_list["access"])
+
+        _time_mark_crs = int(time())            
+        obj_attr_list["mgt_502_migrate_request_sent"] = _time_mark_crs - obj_attr_list["mgt_501_migrate_request_originated"]
+
+        _msg = "Sending a migrate request for "  + obj_attr_list["name"]
+        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ")"
+        _msg += "...."
+        cbdebug(_msg, True)
+
+        kwargs = self.dic_to_rpc_kwargs(self.ftcconn, "migrate", obj_attr_list)
+        _status, _msg, _result = self.ftcconn.migrate(**kwargs)
+#        _status = 0
+
+        # do nothing for now
+        #obj_attr_list.update(result)
+        
+        _time_mark_crc = int(time())
+        obj_attr_list["mgt_503_migrate_request_completed"] = _time_mark_crc - _time_mark_crs
+
+        cbdebug("VM " + obj_attr_list["name"] + " migrate request completed.")
+
+        if not _status :
+            _msg = "" + obj_attr_list["name"] + ""
+            _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+            _msg += "was successfully "
+            _msg += "migrated on FTCloud \"" + obj_attr_list["cloud_name"]
+            _msg += "\"."
+            cbdebug(_msg)
+        return _status, _msg
 
     @trace        
     def vmrunstate(self, obj_attr_list) :
-        '''
-        TBD
-        '''
         _ts = obj_attr_list["target_state"]
         _cs = obj_attr_list["current_state"]
 

@@ -554,7 +554,7 @@ class CommonCloudFunctions:
                 kwargs[var] = value 
 
         # Keys that are common inputs to most API functions
-        default_keys = {"cloud_uuid" : "tag", "vmc_cloud_ip" : "hypervisor_ip"}
+        default_keys = {"cloud_uuid" : "tag", "host_cloud_ip" : "hypervisor_ip"}
 
         for key in default_keys.keys() :
             if key in attrs :
