@@ -863,6 +863,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             obj_attr_list["discover_hosts"] = _vmc_attr_list["discover_hosts"]
             obj_attr_list["vmc_name"] = _vmc_attr_list["name"]
             obj_attr_list["vmc_cloud_ip"] = _vmc_attr_list["cloud_ip"]
+            obj_attr_list["migrate_supported"] = _vmc_attr_list["migrate_supported"]
 
             if "svm_destination" in _vmc_attr_list and "svm_stub_ip" in obj_attr_list :
                 obj_attr_list["svm_stub_ip"] = _vmc_attr_list["svm_destination"]
@@ -884,7 +885,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = 0
 
             if not _status :
-                _status, _fmsg = self.auto_allocate_vm_port("qemu_debug", obj_attr_list)
+                if "qemu_debug_port_base" in obj_attr_list :
+                    _status, _fmsg = self.auto_allocate_vm_port("qemu_debug", obj_attr_list)
                 
         except KeyError, msg :
             _status = 40
@@ -937,10 +939,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
             _status, _fmsg = self.auto_allocate_vm_port("replication", obj_attr_list)
-            if not _status :
+            if not _status and "svm_qemu_debug_port_base" in obj_attr_list :
                 _status, _fmsg = self.auto_allocate_vm_port("svm_qemu_debug", obj_attr_list)
                 
-            if not _status :
+            if not _status and "rdma_port_base" in obj_attr_list :
                 _status, _fmsg = self.auto_allocate_vm_port("rdma", obj_attr_list)
                 
         except self.osci.ObjectStoreMgdConnException, obj :
@@ -1648,13 +1650,17 @@ class ActiveObjectOperations(BaseObjectOperations) :
     
                     if _vmcreate :
                         _cld_conn.vmdestroy(obj_attr_list)
-                        self.auto_free_vm_port("qemu_debug", obj_attr_list)
+                        if "qemu_debug_port_base" in obj_attr_list :
+                            self.auto_free_vm_port("qemu_debug", obj_attr_list)
                         
                     if _svmcreate :
                         _cld_conn.vmdestroy(obj_attr_list)
-                        self.auto_free_vm_port("replication", obj_attr_list)
-                        self.auto_free_vm_port("svm_qemu_debug", obj_attr_list)
-                        self.auto_free_vm_port("rdma", obj_attr_list)
+                        if "replication_port_base" in obj_attr_list :
+                            self.auto_free_vm_port("replication", obj_attr_list)
+                        if "svm_qemu_debug_port_base" in obj_attr_list :
+                            self.auto_free_vm_port("svm_qemu_debug", obj_attr_list)
+                        if "rdma_port_base" in obj_attr_list :
+                            self.auto_free_vm_port("rdma", obj_attr_list)
     
                     if _aidefine :
                         _cld_conn.aiundefine(obj_attr_list)
@@ -2755,9 +2761,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
         TBD
         '''
         
-        self.auto_free_vm_port("replication", obj_attr_list)
-        self.auto_free_vm_port("svm_qemu_debug", obj_attr_list)
-        self.auto_free_vm_port("rdma", obj_attr_list)
+        if "replication_port_base" in obj_attr_list :
+            self.auto_free_vm_port("replication", obj_attr_list)
+        if "svm_qemu_debug_port_base" in obj_attr_list :
+            self.auto_free_vm_port("svm_qemu_debug", obj_attr_list)
+        if "rdma_port_base" in obj_attr_list :
+            self.auto_free_vm_port("rdma", obj_attr_list)
         
         try :
             _status = 100
@@ -2826,7 +2835,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
-            self.auto_free_vm_port("qemu_debug", obj_attr_list)
+            if "qemu_debug_port_base" in obj_attr_list :
+                self.auto_free_vm_port("qemu_debug", obj_attr_list)
 
             if obj_attr_list["current_state"] != "attached" :
 
@@ -3098,7 +3108,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
             _result = None
-            migratable = False
+            migrate_pending = False
 
             obj_attr_list["uuid"] = "undefined"            
             obj_attr_list["name"] = "undefined"
@@ -3117,14 +3127,20 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _current_state = self.osci.get_object_state(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"])
                     
                     if _current_state == "attached" :
-                        migratable = True
+                        migrate_pending = True
                         self.osci.add_to_list(obj_attr_list["cloud_name"], "VM", "VMS_UNDERGOING_MIGRATE", obj_attr_list["uuid"], int(time()))
                         self.osci.set_object_state(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "migrate")
                         
                         # Command line has provided us with the name of the destination hypervisor,
                         # but not the IP address
                         
-                        _status, _fmsg = _cld_conn.migrate(obj_attr_list)
+                        self.osci.add_to_list(obj_attr_list["cloud_name"], _obj_type, "PENDING", \
+                                  obj_attr_list["uuid"] + "|" + obj_attr_list["name"], int(time()))
+    
+                        self.osci.pending_object_set(obj_attr_list["cloud_name"], _obj_type, \
+                                            obj_attr_list["uuid"], "Migrating...")
+                        
+                        _status, _fmsg = _cld_conn.vmmigrate(obj_attr_list)
      
                         if not _status :
                             self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
@@ -3135,6 +3151,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                               obj_attr_list["uuid"], \
                                                               False, \
                                                               "host_cloud_ip", obj_attr_list["destination_ip"])
+                            
+                            self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
+                                                              obj_attr_list["uuid"], \
+                                                              False, \
+                                                              "host", obj_attr_list["destination_uuid"])
                             
                         self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
                                                           obj_attr_list["uuid"], \
@@ -3196,20 +3217,35 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _fmsg = str(e)
 
         finally:        
-            if migratable :
-                self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "VMS_UNDERGOING_MIGRATE", obj_attr_list["uuid"], True)
-                self.osci.set_object_state(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "attached")
-                
+            unique_state_key = "-migrate-" + str(time())
+            
             if _status :
                 _msg = _obj_type + " object " + obj_attr_list["uuid"] + " ("
                 _msg += "named \"" + obj_attr_list["name"] + "\") could not be "
                 _msg += "migrated on this experiment: " + _fmsg
                 cberr(_msg)
+                obj_attr_list["tracking"] = "Migrate: " + _fmsg 
             else :
                 _msg = _obj_type + " object " + obj_attr_list["uuid"] 
                 _msg += " (named \"" + obj_attr_list["name"] +  "\") successfully migrated "
                 _msg += "on this experiment."
                 cbdebug(_msg)
+                obj_attr_list["tracking"] =  "Migrate: success." 
+                
+            if migrate_pending :
+                self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "VMS_UNDERGOING_MIGRATE", obj_attr_list["uuid"], True)
+                self.osci.set_object_state(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "attached")
+                
+                self.osci.pending_object_remove(obj_attr_list["cloud_name"], _obj_type, obj_attr_list["uuid"])
+                self.osci.remove_from_list(obj_attr_list["cloud_name"], _obj_type, "PENDING",obj_attr_list["uuid"] + "|" + obj_attr_list["name"], True)
+                
+            self.osci.create_object(obj_attr_list["cloud_name"], \
+                                    "FINISHEDTRACKING" + _obj_type, \
+                                    obj_attr_list["uuid"] + unique_state_key, \
+                                    obj_attr_list, \
+                                    False, \
+                                    True, \
+                                    3600)
 
             return self.package(_status, _msg, _result)
         

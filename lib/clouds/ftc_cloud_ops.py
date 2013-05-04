@@ -17,7 +17,6 @@
 #/*******************************************************************************
 
 from time import time, sleep
-from socket import gethostbyname
 import threading, xmlrpclib, re
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
@@ -201,6 +200,8 @@ class FtcCmds(CommonCloudFunctions) :
         obj_attr_list["host_list"][_host_uuid]["cloud_hostname"] = obj_attr_list["cloud_hostname"]
         obj_attr_list["host_list"][_host_uuid]["name"] = "host_" + obj_attr_list["cloud_hostname"]
         obj_attr_list["host_list"][_host_uuid]["vmc_name"] = obj_attr_list["name"]
+        obj_attr_list["host_list"][_host_uuid]["vmc"] = obj_attr_list["uuid"]
+        obj_attr_list["host_list"][_host_uuid]["migrate_interface"] = "default"
         obj_attr_list["host_list"][_host_uuid]["cloud_uuid"] = obj_attr_list["cloud_uuid"]
         obj_attr_list["host_list"][_host_uuid]["uuid"] = obj_attr_list["cloud_uuid"]
         obj_attr_list["host_list"][_host_uuid]["model"] = obj_attr_list["model"]
@@ -211,6 +212,8 @@ class FtcCmds(CommonCloudFunctions) :
         obj_attr_list["host_list"][_host_uuid]["mgt_002_provisioning_request_sent"] = obj_attr_list["mgt_002_provisioning_request_sent"]
         _time_mark_prc = int(time())
         obj_attr_list["host_list"][_host_uuid]["mgt_003_provisioning_request_completed"] = _time_mark_prc - start
+        
+        self.populate_interface(obj_attr_list)
         return True
 
     @trace
@@ -247,21 +250,6 @@ class FtcCmds(CommonCloudFunctions) :
         obj_attr_list.update(info)
         obj_attr_list["arrival"] = int(time())
         
-        # A way to specify an alternative IP address for a hypervisor
-        # This alternative 'destination' represents a faster NIC
-        # (such as infiniband) to be used for other types of traffic
-        _replication_vmcs = obj_attr_list["replication_vmcs"]
-        if _replication_vmcs.strip() != "" :
-            _rvmcs = str2dic(_replication_vmcs)
-            if obj_attr_list["name"] in _rvmcs :
-                try :
-                    obj_attr_list["svm_destination"] = gethostbyname(_rvmcs[obj_attr_list["name"]])
-                except Exception, msg :
-                    _fmsg = "Could not lookup 'svm_destinations' " + _rvmcs[obj_attr_list["name"]] + " (probably bad /etc/hosts): " + str(msg)
-                    raise CldOpsException(_fmsg, 1295)
-            
-        if "svm_destination" not in obj_attr_list :
-            obj_attr_list["svm_destination"] = obj_attr_list["cloud_ip"]
 
         if obj_attr_list["discover_hosts"].lower() == "true" :
             self.discover_hosts(obj_attr_list, _time_mark_prs)
@@ -583,7 +571,7 @@ class FtcCmds(CommonCloudFunctions) :
         return 0, _msg
     
     @trace        
-    def migrate(self, obj_attr_list) :
+    def vmmigrate(self, obj_attr_list) :
         self.connect(obj_attr_list["access"])
 
         _time_mark_crs = int(time())            
@@ -596,11 +584,7 @@ class FtcCmds(CommonCloudFunctions) :
 
         kwargs = self.dic_to_rpc_kwargs(self.ftcconn, "migrate", obj_attr_list)
         _status, _msg, _result = self.ftcconn.migrate(**kwargs)
-#        _status = 0
 
-        # do nothing for now
-        #obj_attr_list.update(result)
-        
         _time_mark_crc = int(time())
         obj_attr_list["mgt_503_migrate_request_completed"] = _time_mark_crc - _time_mark_crs
 

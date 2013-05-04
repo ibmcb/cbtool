@@ -120,10 +120,15 @@ def actuator_cli_parsing() :
     (_options, _args) = parser.parse_args()
 
     if _options.debug_host is not None :
-        import debug
-        print str(sys.path)
-        import pydevd
-        pydevd.settrace(host=_options.debug_host)
+        try :
+            import debug
+            print str(sys.path)
+            import pydevd
+            pydevd.settrace(host=_options.debug_host)
+        except ImportError, msg :
+            cbwarn("Failed to import debug file for remote debugging: " + str(msg), True)
+            _options.debug_host = None
+            pass
         
     try :
         _fmsg = ""

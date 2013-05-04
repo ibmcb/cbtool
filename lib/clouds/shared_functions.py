@@ -29,6 +29,7 @@ import re
 import os 
 import copy
 import json
+from socket import gethostbyname
 
 from lib.auxiliary.data_ops import str2dic, dic2str
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
@@ -561,3 +562,25 @@ class CommonCloudFunctions:
                 kwargs[default_keys[key]] = attrs[key]
                 
         return kwargs
+    
+    @trace
+    def populate_interface(self, obj_attr_list):
+        # A way to specify an alternative IP address for a hypervisor
+        # This alternative 'interface' represents a faster NIC
+        # (such as RDMA) to be used for other types of traffic
+        
+        if obj_attr_list["migrate_supported"].lower() != "true" :
+            return
+        
+        interfaces = obj_attr_list["interfaces"]
+        if interfaces.strip() != "" :
+            _ivmcs = str2dic(interfaces)
+            for _host_uuid in obj_attr_list["hosts"].split(',') :
+                hostname = obj_attr_list["host_list"][_host_uuid]["cloud_hostname"]
+                if hostname in _ivmcs : 
+                    iface = _ivmcs[hostname]
+                    try :
+                        obj_attr_list["host_list"][_host_uuid]["migrate_interface"] = gethostbyname(iface)
+                    except Exception, msg :
+                        _fmsg = "Could not lookup interface " + iface + " for hostname " + hostname + " (probably bad /etc/hosts): " + str(msg)
+                        raise CldOpsException(_fmsg, 1295)

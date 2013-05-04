@@ -271,7 +271,7 @@ class API():
         else :
             return self.active.vmcapture({}, cloud_name + ' ' + identifier + ' ' + vmcrs, "vm-capture")[2]
         
-    def migrate(self, cloud_name, identifier, destination, protocol = "tcp", interface = "default", async = False):
+    def vmmigrate(self, cloud_name, identifier, destination, protocol = "tcp", interface = "default", async = False):
         if async and str(async).count("async") :
             return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + destination + ' ' + protocol + ' ' + interface + (' ' + async), "vm-migrate")[2]
         else :

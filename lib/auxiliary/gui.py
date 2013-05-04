@@ -24,30 +24,23 @@
     @author: Michael R. Hines
 '''
 
-import ast, json
+import json
 import traceback
 import os
 import re
-import socket
-import errno
-import optparse
 import shutil
-import multiprocessing
 
 from pwd import getpwuid
-from time import time, sleep
 from copy import deepcopy
-from operator import attrgetter, itemgetter
+from operator import itemgetter
 from sys import path
 from twisted.web.wsgi import WSGIResource
 from twisted.internet import reactor
 from twisted.web.static import File
 from twisted.web.resource import Resource
 from twisted.web.server import Site
-from twisted.web import wsgi
 from webob import Request, Response, exc
 from beaker.middleware import SessionMiddleware
-from optparse import OptionParser
 
 cwd = (re.compile(".*\/").search(os.path.realpath(__file__)).group(0)) + "/../../"
 path.append(cwd)
@@ -134,7 +127,6 @@ class Dashboard () :
                 result += "<td><a href='d3?uuid=" + uuid + "&category=" + category + "&label=" + labels[count] + "&name=" + name + "&ip=" + ip + "&host=" + host + "&role=" + role + "'>" + str(cell) + "</a></td>"
             else :
                 result += "<td>" + str(cell) + "</td>"
-            first = False
             count += 1
             
         result += "\n</tr>\n"
@@ -374,7 +366,7 @@ class Dashboard () :
                                 row.append("--")
                                 #row.append(val)
                         
-                        except Exception, msg :
+                        except Exception :
                             pass
 
                 self.destinations[dest] += self.makeRow(dest, row, uuid, current_labels, name, ip, host, role)
@@ -419,10 +411,10 @@ class Dashboard () :
         if len(self.filters) :
             url += "filter="
             for dest in ['p', 'h', 's', 'a' ] :
-                for filter in sorted(self.filters.keys()) :
-                    if not filter.count(dest + "-") :
+                for gfilter in sorted(self.filters.keys()) :
+                    if not gfilter.count(dest + "-") :
                         continue
-                    url += filter + "," 
+                    url += gfilter + "," 
 
         return url[:-1]
         
@@ -476,11 +468,11 @@ class Dashboard () :
             output += " <a class='btn' href='" + self.prefix() + "/monitor?removeall=1' target='_top'>Remove all filters</a>"
             for dest in ['p', 'h', 's', 'a' ] :
                 output += "<br/><b>" + self.categories[dest] + " Filters:</b><br/>"
-                for filter in sorted(self.filters.keys()) :
-                    if not filter.count(dest + "-") :
+                for gfilter in sorted(self.filters.keys()) :
+                    if not gfilter.count(dest + "-") :
                         continue
-                    output += "[<a href='" + self.prefix() + "/monitor?remove=" + filter + "' target='_top'>X</a>] " + \
-                        filter.split("-")[1].replace("_", " ") + "&nbsp;"
+                    output += "[<a href='" + self.prefix() + "/monitor?remove=" + gfilter + "' target='_top'>X</a>] " + \
+                        gfilter.split("-")[1].replace("_", " ") + "&nbsp;"
             
         output += """
                     </div>
@@ -535,8 +527,8 @@ class Dashboard () :
                     self.filters = {}
                 elif key == "filter" :
                     filters = value.split(",")
-                    for filter in filters :
-                        self.filters[filter] = True
+                    for gfilter in filters :
+                        self.filters[gfilter] = True
                 elif key in self.show :
                     self.show[key] = True if value == "yes" else False
                 else :
@@ -620,7 +612,7 @@ class GUI(object):
         except exc.HTTPException, e:
             resp = e
         except Exception, e :
-            exc_type, exc_value, exc_traceback = sys.exc_info()
+#            exc_type, exc_value, exc_traceback = sys.exc_info()
             resp = "<h4>Exception:</h4>"
             for line in traceback.format_exc().splitlines() :
                 resp += "<br>" + line
@@ -680,7 +672,7 @@ class GUI(object):
         output += "</table>"
         return output
         
-    def make_alter_form(self, req, uuid, object, key, value) :
+    def make_alter_form(self, req, uuid, obj, key, value) :
         output = ""
         output += "<form style='margin: 0' action='BOOTDEST/provision' method='get'>"
         output += """
@@ -691,7 +683,7 @@ class GUI(object):
         output += key + "</b></button></td><td>"
         output += "Value: <input style='margin-top: 9px' type='text' name='value' value='" + value + "'/>"
         output += "<input type='hidden' name='alter' value='1'/>"
-        output += "<input type='hidden' name='object' value='" + object  + "'/>"
+        output += "<input type='hidden' name='object' value='" + obj  + "'/>"
         output += "<input type='hidden' name='explode' value='" + uuid + "'/>"
         output += "<input type='hidden' name='key' value='" + key   + "'/></td></tr></table></form>"
         return output
@@ -787,8 +779,6 @@ class GUI(object):
             result.append(record)
 
     def common(self, req) :
-        vmcattachallfound = False
-    
         try :
             if req.http.params.get("connect") :
                 if req.http.params.get("available") or req.http.params.get("definition_contents") :
@@ -891,6 +881,7 @@ class GUI(object):
                     "unprotect" : [7, {"operations" : [ "vm" ], "icon" : "ok" , "ft" : "detach", "state" : "attached"} ], 
                     "fail" : [8, {"operations" : [ "vm" ], "icon" : "fire", "ft" : "fail", "state" : "attached" } ], 
                     "runstate" : [9, {"operations" : [ "vm", "app"], "icon" : "play", "state" : "any" } ],
+                    "migrate" : [10, {"operations" : [ "vm" ], "icon" : "share-alt" , "state" : "attached" } ], 
                 }
                 
                 for operation in req.session["operations"].keys() :
@@ -1238,7 +1229,6 @@ class GUI(object):
         active_list = getattr(self.api, req.active + "list")
         liststate = params.get("liststate", "all")
         view = params.get("view", "")
-        active_view = None
     
         output = """
             <script>active = 'BOOTACTIVE';</script>
@@ -1283,7 +1273,6 @@ class GUI(object):
     
                 if view == obj :
                         found_view = True
-                        active_view = attrs[1]
                         liclass += ' active'
     
                 if liclass.strip() != '' :
@@ -1349,7 +1338,14 @@ class GUI(object):
             attrs = getattr(self.api, req.active + "show")(req.cloud_name, uuid)
             output += "<h2>BOOTOBJECTNAME: " + attrs["name"] + "</h2>"
             
+            migrate_supported = False
             for operation, operation_attrs in sorted(operations.iteritems(), key=itemgetter(1)) :
+                if operation == "migrate" and req.active == "vm" :
+                    if attrs["migrate_supported"].lower() == "true" :
+                        migrate_supported = True
+                        output += "&nbsp;&nbsp;<a id='migratepop' class='btn btn-success' style='padding: 3px' href='#'><i class='icon-share-alt icon-white'></i>&nbsp;Migrate</a>"
+                    continue
+                        
                 keywords = {}
                 label = operation_attrs[1]["label"]
                 if "svm_stub_vmc" in attrs and attrs["svm_stub_vmc"] != "none" and operation in ["unprotect", "fail"] :
@@ -1400,6 +1396,45 @@ class GUI(object):
                     key = "keyword" + str(keyidx)
                     output += "&" + key + "=" + keywords[key]
                 output += "'><i class='icon-" + operation_attrs[1]["icon"] + " icon-white'></i>&nbsp;&nbsp;" + label + "&nbsp;&nbsp;</a>"
+            
+            if migrate_supported :
+                hosts =  self.api.hostlist(req.cloud_name)
+                dest_choices = "<input type='hidden' name='keyword1' value='" + attrs["uuid"] + "'>"
+
+                dest_choices += """
+                        <tr><td>Destination</td>
+                            <td><select name='keyword2'>
+                    """
+                    
+                for host in hosts :
+                    if host["uuid"] != attrs["host"] :
+                        dest_choices += "<option value='" + host["name"] + "'>" + host["cloud_hostname"] + " (Iface: " + host["migrate_interface"] + ")</option>"
+                    
+                dest_choices += """
+                                </select>
+                            </td>
+                        </tr>
+                       """
+                       
+                dest_choices += """
+                      <tr><td>Protocol: </td>
+                          <td><select name='keyword3'>
+                    """
+                for proto in ["tcp", "x-rdma", "rdma", "mc"] :
+                    dest_choices += "<option value='" + proto + "'"
+                    if attrs["migrate_protocol"].lower() == proto.lower() :
+                        dest_choices += "selected"
+                    dest_choices += ">" + proto.upper() + "</option>"
+                    
+                dest_choices += """
+                                </select>
+                            </td>
+                        </tr>
+                    """
+                    
+                migrate_fd = open(cwd + "/gui_files/migrate_template.html", "r")
+                output += migrate_fd.read().replace("BOOTMIGRATE", dest_choices)
+                migrate_fd.close()
                 
             if req.active in ["app", "vmc", "host"] :
                 output += """
@@ -1409,7 +1444,9 @@ class GUI(object):
     
                 if req.active == "app" :
                     for vm in attrs["vms"].split(",") :
-                        uuid, type, name = vm.split("|") 
+                        splitparts = vm.split("|")
+                        uuid = splitparts[0]
+                        name = splitparts[2]
                         objs.append({"name" : name, "uuid" : uuid}) 
                 elif req.active == "vmc" :
                     for host in self.api.viewshow(req.cloud_name, "HOST", "VMC", attrs["uuid"]) :
@@ -1597,7 +1634,6 @@ class GUI(object):
         return output 
     
     def bootstrap(self, req, body, now = False, error = False, pretend_disconnected = False) :
-        replacements = []
         navcontents = ""
         cloudcontents = "None Available"
         availablecontents = "None Available"

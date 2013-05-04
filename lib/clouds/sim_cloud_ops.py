@@ -166,6 +166,7 @@ class SimCmds(CommonCloudFunctions) :
             obj_attr_list["host_list"][_host_uuid]["name"] = "host_"  + obj_attr_list["host_list"][_host_uuid]["cloud_hostname"]
             obj_attr_list["host_list"][_host_uuid]["vmc_name"] = obj_attr_list["name"]
             obj_attr_list["host_list"][_host_uuid]["vmc"] = obj_attr_list["uuid"]
+            obj_attr_list["host_list"][_host_uuid]["migrate_interface"] = "default"
             obj_attr_list["host_list"][_host_uuid]["cloud_uuid"] = _host_uuid
             obj_attr_list["host_list"][_host_uuid]["uuid"] = _host_uuid
             obj_attr_list["host_list"][_host_uuid]["model"] = obj_attr_list["model"]
@@ -182,6 +183,7 @@ class SimCmds(CommonCloudFunctions) :
         obj_attr_list["hosts"] = obj_attr_list["hosts"][:-1]
 
         self.additional_host_discovery (obj_attr_list)
+        self.populate_interface(obj_attr_list)
 
         return True
 
@@ -604,6 +606,31 @@ class SimCmds(CommonCloudFunctions) :
                 _msg += "\"."
                 cbdebug(_msg)
                 return _status, _msg
+            
+    def vmmigrate(self, obj_attr_list) :
+        _time_mark_crs = int(time())            
+        obj_attr_list["mgt_502_migrate_request_sent"] = _time_mark_crs - obj_attr_list["mgt_501_migrate_request_originated"]
+
+        _msg = "Sending a migrate request for "  + obj_attr_list["name"]
+        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ")"
+        _msg += "...."
+        cbdebug(_msg, True)
+
+        sleep(2)
+        
+        _time_mark_crc = int(time())
+        obj_attr_list["mgt_503_migrate_request_completed"] = _time_mark_crc - _time_mark_crs
+
+        cbdebug("VM " + obj_attr_list["name"] + " migrate request completed.")
+
+        _msg = "" + obj_attr_list["name"] + ""
+        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+        _msg += "was successfully "
+        _msg += "migrated on FTCloud \"" + obj_attr_list["cloud_name"]
+        _msg += "\"."
+        cbdebug(_msg)
+            
+        return 0, _msg
 
     @trace        
     def aidefine(self, obj_attr_list) :

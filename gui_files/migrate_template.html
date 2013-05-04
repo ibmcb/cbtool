@@ -1,0 +1,56 @@
+    <div id="MigrateModal" style="display:none">
+    <div id="MigrateContents" width='300px'>
+        <form method='get' action='BOOTDEST/provision'>
+        <input type='hidden' name='object' value='BOOTACTIVE'/>
+        <input type='hidden' name='operation' value='migrate'/>
+        <input type='hidden' name='keywords' value='5'/>
+        <table>
+            BOOTMIGRATE
+            <tr><td>Interface:</td><td><input type='text' name='keyword4' value='default'/></td></tr>
+            <tr><td>Mode:</td><td><input type='text' name='keyword5' value='async'/></td></tr>
+            <tr><td>
+            &nbsp;<button type="submit" class="btn btn-primary">
+            <i class="icon-share-alt icon-white"></i>&nbsp;Migrate</button>
+            </td></tr>
+        </table>
+        </form>
+    </div>
+    </div>
+	<script>
+	var isMigrateVisible = false;
+	var isMigrateClickedAway = false;
+	var pop = $('#migratepop').popover({ 
+	    html : true,
+	    title: "Migrate BOOTOBJECTNAME:",
+	    placement : 'bottom',
+            trigger: 'manual',
+	    template: '<div id="migratepopover" class="popover"><div class="popover-inner"><h3 class="popover-title"></h3><div class="popover-content"><p></p></div></div></div>',
+	    content: function() {
+	      return $('#MigrateModal').html();
+	    }
+	  });
+	  /* Allow the popover to close when clicking somewhere else on the screen */
+	  pop.data('popover').tip().css('z-index', 1030).css('margin-left', '200px');
+	  pop.click(function(e) {
+	        $(this).popover('show');
+	        isMigrateClickedAway = false;
+	        isMigrateVisible = true;
+	        e.preventDefault();
+	    });
+
+		$(document).click(function(e) {
+	      if(findParentNode('MigrateContents', e.srcElement, 'cbody') == true)
+	      	return;
+	      if(findParentNode('migratepopover', e.srcElement, 'cbody') == true)
+	      	return;
+		  if(isMigrateVisible & isMigrateClickedAway)
+		  {
+		    $('#migratepop').popover('hide')
+		    isMigrateVisible = isMigrateClickedAway = false
+		  }
+		  else
+		  {
+		    isMigrateClickedAway = true
+		  }
+		});
+	</script>

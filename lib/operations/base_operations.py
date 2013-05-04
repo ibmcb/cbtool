@@ -390,7 +390,7 @@ class BaseObjectOperations :
             if _length >= 3 :
                 object_attribute_list["name"] = _parameters[1]
                 object_attribute_list["destination"] = _parameters[2] 
-                object_attribute_list["protocol"] = "tcp"
+                object_attribute_list["protocol"] = "default"
                 
                 
             if _length >= 4 :
@@ -401,7 +401,7 @@ class BaseObjectOperations :
 
             if _length < 3:
                 _status = 9
-                _msg = "Usage: migrate <cloud name> <vm name> <destination> [protocol = tcp|rdma|mc] [alternate interface] [mode]"
+                _msg = "Usage: vmmigrate <cloud name> <vm name> <destination> [protocol = tcp|rdma|mc] [alternate interface] [mode]"
 
         elif command == "vm-resize" :
             if _length >= 2 :
@@ -1156,29 +1156,47 @@ class BaseObjectOperations :
                             raise self.ObjectOperationException(_msg, _status)
                     elif cmd.count("migrate") :
                         obj_attr_list["mgt_501_migrate_request_originated"] = obj_attr_list["command_originated"]
+                        
+                        vmc_attr = self.osci.get_object(obj_attr_list["cloud_name"], "VMC", False, obj_attr_list["vmc"], False)
+                        
                         dest_name = obj_attr_list["destination"]
                         
-                        if not dest_name.count("_") :
+                        if not dest_name[:5] == "host_" :
                             dest_name = "host_" + dest_name 
-                            
-                        obj_attr_list["destination_name"] = dest_name
-                        obj_attr_list["destination"] = dest_name.split("_")[1]
-                        if obj_attr_list["interface"] == "default" :
-                            obj_attr_list["interface"] = obj_attr_list["destination"]
                             
                         if not self.osci.object_exists(obj_attr_list["cloud_name"], "HOST", dest_name, True) :
                             _msg = "Destination HOST object for migration does not exist: " + obj_attr_list["destination"]
                             _status = 9001
                             raise self.ObjectOperationException(_msg, _status)
                         
-                        dest_attr = self.osci.get_object(obj_attr_list["cloud_name"], "HOST", True, dest_name, False)
-                        obj_attr_list["destination_ip"] = dest_attr["cloud_ip"]
+                        dest_host_attr = self.osci.get_object(obj_attr_list["cloud_name"], "HOST", True, dest_name, False)
+                        dest_vmc_attr = self.osci.get_object(obj_attr_list["cloud_name"], "VMC", False, dest_host_attr["vmc"], False)
                         
-                        if obj_attr_list["migrate_supported"].lower() != "true" :
-                            _msg = "Migrate operations are not supported on \"" + _cloud_parameters["description"] + "\" clouds." 
-                            _status = 9000
+                        if vmc_attr["migrate_supported"].lower() != "true" :
+                            _msg = "Migrate operations are not supported on the source: " + vmc_attr["name"]
+                            _status = 9002
                             raise self.ObjectOperationException(_msg, _status)
                         
+                        if dest_vmc_attr["migrate_supported"].lower() != "true" :
+                            _msg = "Migrate operations are not supported on the destination: " + dest_name 
+                            _status = 9002
+                            raise self.ObjectOperationException(_msg, _status)
+                            
+                        obj_attr_list["destination_name"] = dest_name
+                        obj_attr_list["destination_uuid"] = dest_host_attr["uuid"]
+                        obj_attr_list["destination"] = dest_name.split("host_", 1)[1]
+                        
+                        if obj_attr_list["interface"] == "default" :
+                            if dest_host_attr["migrate_interface"] == "default" :
+                                obj_attr_list["interface"] = obj_attr_list["destination"]
+                            else :
+                                obj_attr_list["interface"] = dest_host_attr["migrate_interface"]
+                        
+                        obj_attr_list["destination_ip"] = dest_host_attr["cloud_ip"]
+                        
+                        if obj_attr_list["protocol"] == "default" :
+                            obj_attr_list["protocol"] = obj_attr_list["migrate_protocol"]
+                         
                     elif cmd.count("runstate") :
                         obj_attr_list["mgt_201_runstate_request_originated"] = obj_attr_list["command_originated"]
                         if obj_attr_list["runstate_supported"].lower() != "true" :
@@ -3178,6 +3196,10 @@ class BaseObjectOperations :
             _parameters = _parameters.replace("->","-+-+-+")
 
             if not _status :
+                if "name" in _obj_attr_list and not _obj_attr_list["name"].lower().count(_obj_type.lower() + "_")  \
+                    and not _obj_attr_list["name"].count("-") == 4 : # a UUID
+                    _obj_attr_list["name"] = _obj_type.lower() + "_" + _obj_attr_list["name"]
+                   
                 _cloud_parameters = self.get_cloud_parameters(_obj_attr_list["cloud_name"])
 
                 #if not command.count("detachall") :
