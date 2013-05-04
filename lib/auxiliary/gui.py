@@ -1420,7 +1420,7 @@ class GUI(object):
                       <tr><td>Protocol: </td>
                           <td><select name='keyword3'>
                     """
-                for proto in ["tcp", "x-rdma", "rdma", "mc"] :
+                for proto in ["tcp", "x-rdma", "rdma", "mc", "x-mc"] :
                     dest_choices += "<option value='" + proto + "'"
                     if attrs["migrate_protocol"].lower() == proto.lower() :
                         dest_choices += "selected"
