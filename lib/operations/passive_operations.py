@@ -101,16 +101,6 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _fields.append("|vmc_pool            ")
                         _fields.append("|ai      ")
                         _fields.append("|aidrs      ")                    
-                        _fields.append("|svm_stub_vmc     ")
-                        _fields.append("|uuid")
-            #            _fields.append("|uuid                                 ")
-                    elif _obj_type == "SVM" :
-                        _fields = []
-                        _fields.append("|name          ")
-                        _fields.append("|role                ")
-                        _fields.append("|primary_name     ")
-                        _fields.append("|vmc            ")
-                        _fields.append("|ai      ")
                         _fields.append("|uuid")
             #            _fields.append("|uuid                                 ")
                     elif _obj_type == "AI" :
@@ -173,7 +163,6 @@ class PassiveObjectOperations(BaseObjectOperations) :
                             for _field in _fields :
                                 _af = _field[1:].strip()
                                 if _af == "vmc" or \
-                                (_af == "svm_stub_vmc" and _obj_attrs[_af] != "none") or \
                                 (_af == "ai" and _obj_attrs[_af] != "none") or \
                                 (_af == "aidrs" and _obj_attrs[_af] != "none") :
                                     _obj_name = self.fast_uuid_to_name(obj_attr_list["cloud_name"], _af.split("_")[-1].upper(), \
@@ -325,7 +314,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                 _result = copy.deepcopy(_obj_attribs)
         
                     elif _obj_type == "VMC" or _obj_type == "VM" or _obj_type == "HOST" or \
-                        _obj_type == "AI" or _obj_type == "AIDRS" or _obj_type == "SVM" or \
+                        _obj_type == "AI" or _obj_type == "AIDRS" or \
                         _obj_type == "VMCRS" or _obj_type == "FIRS" :
                         _fields = []
                         _fields.append("|attribute (" + _obj_type + " object key)               ")
@@ -1188,8 +1177,6 @@ class PassiveObjectOperations(BaseObjectOperations) :
             if not _status :
                 if "qemu_debug" in obj_attr_list and obj_attr_list["qemu_debug"].lower() == "true" :
                     port = obj_attr_list["qemu_debug_port"]
-                elif "svm_qemu_debug" in obj_attr_list and obj_attr_list["svm_qemu_debug"].lower() == "true" :
-                    port = obj_attr_list["svm_qemu_debug_port"]
                 else :
                     return (443, "Debugging not enabled for this object.", None)
                 
@@ -1207,11 +1194,10 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _xmsg += " was successfully started. "
                     _smsg = _xmsg + " The process id is " + str(_proc_h.pid) + "."
                     
-                    if not cmd.count("svm") :
-                        _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
-                        _cld_conn = _cld_ops_class(self.pid, self.osci)
-                        sleep(2)
-                        unused, unused2 = _cld_conn.vm_fixpause(obj_attr_list)
+                    _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
+                    _cld_conn = _cld_ops_class(self.pid, self.osci)
+                    sleep(2)
+                    unused, unused2 = _cld_conn.vm_fixpause(obj_attr_list)
                     _status = 0
                         
         except self.osci.ObjectStoreMgdConnException, obj :

@@ -130,21 +130,6 @@ class CommonCloudFunctions:
                 return True
 
     @trace
-    def get_svm_stub(self, obj_attr_list) :
-        '''
-        TBD
-        '''
-        if "svm_stub_ip" in obj_attr_list :
-            if not obj_attr_list["svm_stub_ip"] :
-                return False
-            if not self.ft_supported :
-                _msg = "Fault-Tolerant Stub VMs are not implemented for " + self.get_description()
-                _status = 1024
-                raise CldOpsException(_msg, _status)
-            return True
-        return False
-
-    @trace
     def wait_for_instance_ready(self, obj_attr_list, time_mark_prs) :
         '''
         TBD
@@ -251,12 +236,7 @@ class CommonCloudFunctions:
 
         _max_tries = int(obj_attr_list["update_attempts"])
         _wait = int(obj_attr_list["update_frequency"])
-
-        if not self.get_svm_stub(obj_attr_list) :
-            _network_reachable = False 
-        else: 
-            _network_reachable = True
-
+        _network_reachable = False 
         _curr_tries = 0
 
         if not _network_reachable :

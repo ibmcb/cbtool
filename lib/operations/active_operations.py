@@ -331,7 +331,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 sleep (_update_frequency) 
 
                 _curr_tries = 0
-                for _object_typ in [ "VMCRS", "FIRS", "AI", "VM", "SVM", "VMC" ] :            
+                for _object_typ in [ "VMCRS", "FIRS", "AI", "VM", "VMC" ] :            
                     _msg = "Giving extra time for all " + _object_typ + "s to " 
                     _msg += "finish attachment/detachment gracefully......"
                     cbdebug(_msg)
@@ -863,9 +863,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
             obj_attr_list["vmc_name"] = _vmc_attr_list["name"]
             obj_attr_list["vmc_cloud_ip"] = _vmc_attr_list["cloud_ip"]
             obj_attr_list["migrate_supported"] = _vmc_attr_list["migrate_supported"]
-
-            if "svm_destination" in _vmc_attr_list and "svm_stub_ip" in obj_attr_list :
-                obj_attr_list["svm_stub_ip"] = _vmc_attr_list["svm_destination"]
             obj_attr_list["vmc_access"] = _vmc_attr_list["access"]
 
             _vm_templates = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, \
@@ -914,55 +911,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 raise self.ObjectOperationException(_msg, _status)
             else :
                 _msg = "VM pre-attachment operations success."
-                cbdebug(_msg)
-                return True
-
-    @trace
-    def pre_attach_svm(self, obj_attr_list) : 
-        '''
-        TBD
-        '''
-
-        #Don't want exceptions to be caught here. Let them propagate to
-        #upper-level handling code....
-        
-        obj_attr_list["vmc_pool_blacklist"] = obj_attr_list["primary_vmc_pool"]
-        if "primary_host_name" in obj_attr_list :
-            obj_attr_list["host_name_blacklist"] = obj_attr_list["primary_host_name"]
-        obj_attr_list["svm_stub_ip"] = "undefined" 
-        self.pre_attach_vm(obj_attr_list)
-        
-        #Now start the exceptions...
-        
-        try :
-            _status = 100
-            _fmsg = "An error has occurred, but no error message was captured"
-            _status, _fmsg = self.auto_allocate_vm_port("replication", obj_attr_list)
-            if not _status and "svm_qemu_debug_port_base" in obj_attr_list :
-                _status, _fmsg = self.auto_allocate_vm_port("svm_qemu_debug", obj_attr_list)
-                
-            if not _status and "rdma_port_base" in obj_attr_list :
-                _status, _fmsg = self.auto_allocate_vm_port("rdma", obj_attr_list)
-                
-        except self.osci.ObjectStoreMgdConnException, obj :
-            _status = 40
-            _fmsg = str(obj.msg)
-
-        except DataOpsException, obj :
-            _status = 40
-            _fmsg = str(obj.msg)
-
-        except Exception, e :
-            _status = 23
-            _fmsg = str(e)
-
-        finally :
-            if _status :
-                _msg = "SVM pre-attachment operations failure: " + _fmsg
-                cberr(_msg)
-                raise self.ObjectOperationException(_msg, _status)
-            else :
-                _msg = "SVM pre-attachment operations success."
                 cbdebug(_msg)
                 return True
 
@@ -1349,7 +1297,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
         _admission_control = False
         _vmcregister = False
         _vmcreate = False
-        _svmcreate = False
         _aidefine = False
         _created_object = False
         _created_pending = False
@@ -1453,9 +1400,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     elif _obj_type == "AIDRS" :
                         self.pre_attach_aidrs(obj_attr_list)
                         
-                    elif _obj_type == "SVM" :
-                        self.pre_attach_svm(obj_attr_list)
-    
                     elif _obj_type == "VMCRS" :
                         self.pre_attach_vmcrs(obj_attr_list)
 
@@ -1481,10 +1425,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _status, _fmsg = _cld_conn.vmcreate(obj_attr_list)
                         _vmcreate = True
                         
-                    elif _obj_type == "SVM" :
-                        _status, _fmsg = _cld_conn.vmcreate(obj_attr_list)
-                        _svmcreate = True
-    
                     elif _obj_type == "AI" :
                         _status, _fmsg = _cld_conn.aidefine(obj_attr_list)
                         self.assign_roles(obj_attr_list)
@@ -1509,7 +1449,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                 obj_attr_list["departure"] = obj_attr_list["lifetime"] +\
                                  obj_attr_list["arrival"]
                         
-                        if _obj_type in ["VM", "SVM"] and "host_name" in obj_attr_list and obj_attr_list["host_name"] != "unknown" :
+                        if _obj_type == "VM" and "host_name" in obj_attr_list and obj_attr_list["host_name"] != "unknown" :
                             if obj_attr_list["discover_hosts"].lower() == "true" :
                                 _host_attr_list = self.osci.get_object(_cloud_name, "HOST", True, "host_" + obj_attr_list["host_name"], False)
                                 obj_attr_list["host"] = _host_attr_list["uuid"]
@@ -1522,9 +1462,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         if _obj_type == "VMC" :
                             self.post_attach_vmc(obj_attr_list)
     
-                        elif _obj_type == "SVM" :
-                            self.post_attach_svm(_cld_conn, obj_attr_list)
-                            
                         elif _obj_type == "VM" :
                             self.post_attach_vm(obj_attr_list, _staging)
     
@@ -1580,7 +1517,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     if "cloud_name" in obj_attr_list :
                         self.osci.update_counter(_cloud_name, _obj_type, "FAILED", "increment")
     
-                    if _obj_type == "VM" or _obj_type == "SVM" :
+                    if _obj_type == "VM" :
                         if "mgt_001_provisioning_request_originated" in obj_attr_list :
                             obj_attr_list["mgt_999_provisioning_request_failed"] = \
                                 int(time()) - int(obj_attr_list["mgt_001_provisioning_request_originated"])
@@ -1652,15 +1589,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         if "qemu_debug_port_base" in obj_attr_list :
                             self.auto_free_vm_port("qemu_debug", obj_attr_list)
                         
-                    if _svmcreate :
-                        _cld_conn.vmdestroy(obj_attr_list)
-                        if "replication_port_base" in obj_attr_list :
-                            self.auto_free_vm_port("replication", obj_attr_list)
-                        if "svm_qemu_debug_port_base" in obj_attr_list :
-                            self.auto_free_vm_port("svm_qemu_debug", obj_attr_list)
-                        if "rdma_port_base" in obj_attr_list :
-                            self.auto_free_vm_port("rdma", obj_attr_list)
-    
                     if _aidefine :
                         _cld_conn.aiundefine(obj_attr_list)
     
@@ -1688,7 +1616,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _result = copy.deepcopy(obj_attr_list)
                     self.osci.update_counter(_cloud_name, _obj_type, "ARRIVED", "increment")
     
-                    if not "submitter" in obj_attr_list and _obj_type != "SVM":
+                    if not "submitter" in obj_attr_list :
                         _msg += " It is ssh-accessible at the IP address " + obj_attr_list["cloud_ip"]
                         _msg += " (" + obj_attr_list["cloud_hostname"] + ")."
                     obj_attr_list["tracking"] = "Attach: success." 
@@ -1764,72 +1692,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 raise self.ObjectOperationException(_msg, _status)
             else :
                 _msg = "VMC post-attachment operations success."
-                cbdebug(_msg)
-                return _status, _msg
-
-    @trace
-    def post_attach_svm(self, cld_conn, obj_attr_list) :
-        '''
-        TBD
-        '''
-        try :
-            _status = 100
-            _fmsg = "An error has occurred, but no error message was captured"
-            self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["primary_uuid"], \
-                                              False, "svm_stub_uuid", \
-                                              obj_attr_list["uuid"], False)
-            
-            self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["primary_uuid"], \
-                                              False, "svm_stub_name", \
-                                              obj_attr_list["name"], False)
-            
-            self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["primary_uuid"], \
-                                              False, "svm_stub_vmc", \
-                                              obj_attr_list["vmc"], False)
-
-            self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["primary_uuid"], \
-                                              False, "svm_stub_ip", \
-                                              obj_attr_list["svm_stub_ip"], False)
-
-            _msg = "SVM FT Stub created, starting replication..."
-            cbdebug(_msg, True)
-            
-            if obj_attr_list["model"].lower() != "sim" :
-                _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
-                _cld_conn = _cld_ops_class(self.pid, self.osci, obj_attr_list["experiment_id"])
-                _status, _fmsg = cld_conn.vmreplicate_start(obj_attr_list)
-            
-            _status = 100
-            
-            if obj_attr_list["ai"] != "none" :
-                _replicated_vms = int(self.get_object_attribute( \
-                        obj_attr_list["cloud_name"], "AI", obj_attr_list["ai"], \
-                            "replicated_vms"))
-            
-                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "AI", obj_attr_list["ai"], \
-                          False, "replicated_vms", _replicated_vms + 1, False)
-                
-            _status = 0
-            
-        except CldOpsException, obj :
-            _status = obj.status
-            _fmsg = str(obj.msg)
-            
-        except self.osci.ObjectStoreMgdConnException, obj :
-            _status = obj.status
-            _fmsg = str(obj.msg)
-
-        except Exception, e :
-            _status = 23
-            _fmsg = str(e)
-
-        finally :
-            if _status :
-                _msg = "SVM post-attachment operations failure: " + _fmsg
-                cberr(_msg)
-                raise self.ObjectOperationException(_msg, _status)
-            else :
-                _msg = "SVM post-attachment operations success."
                 cbdebug(_msg)
                 return _status, _msg
 
@@ -2320,18 +2182,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _fmsg = "This VM is part of the AI " + obj_attr_list["ai"] + '.'
                 _fmsg += "Please detach this AI instead."
                 
-            if not _status :
-                if obj_attr_list["svm_stub_vmc"].strip().lower() == "none" :
-                    _status = 0
-                elif obj_attr_list["force_detach"].lower() != "false" :
-                    _msg = "Will forcefully stop replication before destroying primary VM..."
-                    cbdebug(_msg, True)
-                    svm_obj_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "SVM", False, obj_attr_list["svm_stub_uuid"], False)
-                    _status, _fmsg, _unused = self.objdetach(svm_obj_attr_list, svm_obj_attr_list["name"], "svm-detach")
-                else :
-                    _status = 47
-                    _fmsg = "SVM FT Replication must be stopped before detachment."
-
         except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
@@ -2351,56 +2201,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 return True
 
     @trace
-    def pre_detach_svm(self, cld_conn, obj_attr_list) :
-        '''
-        TBD
-        '''
-        try :
-            _status = 100
-            _fmsg = "An error has occurred, but no error message was captured"            
-
-            _exists = self.osci.object_exists(obj_attr_list["cloud_name"], "VM", obj_attr_list["primary_uuid"], False) 
-            if not _exists :
-                _msg = "SVM FT stub's primary VM is gone. Just going to cleanup..."
-                cbwarn(_msg, True)
-                obj_attr_list["primary_uuid"] = "none"
-                _status = 0
-            elif obj_attr_list["failover"] != "false" :
-                _msg = "Going to kill primary and failover to stub..."
-                cbdebug(_msg, True)
-                _status = 0
-            else :
-                _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
-                _cld_conn = _cld_ops_class(self.pid, self.osci, obj_attr_list["experiment_id"])
-                _msg = "Going to disable replication to stub " + obj_attr_list["name"] + "..."
-                cbdebug(_msg, True)
-                # Put back when disabling works.....
-                #_status, _fmsg = cld_conn.vmreplicate_stop(obj_attr_list)
-                _status = 0
-
-        except CldOpsException, obj :
-            _status = obj.status
-            _fmsg = str(obj.msg)
-            
-        except self.osci.ObjectStoreMgdConnException, obj :
-            _status = obj.status
-            _fmsg = str(obj.msg)
-
-        except Exception, e :
-            _status = 23
-            _fmsg = str(e)
-
-        finally :
-            if _status :
-                _msg = "SVM pre-detachment operations failure: " + _fmsg
-                cberr(_msg)
-                raise self.ObjectOperationException(_msg, _status)
-            else :
-                _msg = "SVM pre-detachment operations success."
-                cbdebug(_msg)
-                return True
-
-    @trace
     def pre_detach_ai(self, obj_attr_list) :
         '''
         TBD
@@ -2409,12 +2209,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
-            '''
-            if int(obj_attr_list["replicated_vms"]) > 0 and obj_attr_list["force_detach"].lower() == "false" :
-                _msg = "Some VMs are FT replicated. Please deactivate replication first."
-                raise self.ObjectOperationException(_msg, 143)
-            '''
-            
             if obj_attr_list["aidrs"] == "none" or\
              obj_attr_list["force_detach"].lower() != "false" or \
              not self.osci.object_exists(obj_attr_list["cloud_name"], "AIDRS", obj_attr_list["aidrs"], False) :
@@ -2589,22 +2383,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     self.pre_detach_vm(obj_attr_list)
                     _status, _msg = _cld_conn.vmdestroy(obj_attr_list)
 
-                elif _obj_type == "SVM" :
-                    self.pre_detach_svm(_cld_conn, obj_attr_list)
-                    if obj_attr_list["failover"] == "false" :
-                        _status, _msg = _cld_conn.vmdestroy(obj_attr_list)
-                    else :
-                        _primary = self.osci.get_object(obj_attr_list["cloud_name"], "VM", False, obj_attr_list["primary_uuid"], False)
-                        _primary["svm_stub_ip"] = "undefined" 
-                        _primary["mgt_901_deprovisioning_request_originated"] = int(time())
-                        _status, _msg = _cld_conn.vmdestroy(_primary)
-                        if not _status :
-                            if obj_attr_list["model"].lower() != "sim" :
-                                _status, _msg = _cld_conn.vmreplicate_resume(obj_attr_list)
-                            else :
-                                _status = 0
-                                _msg = "FT Resume success"
-
                 elif _obj_type == "AI" :
                     self.pre_detach_ai(obj_attr_list)
 
@@ -2632,9 +2410,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                     elif _obj_type == "VM" :
                         self.post_detach_vm(obj_attr_list)
-
-                    elif _obj_type == "SVM" :
-                        self.post_detach_svm(_cld_conn, obj_attr_list)
 
                     elif _obj_type == "AI" :
                         self.post_detach_ai(obj_attr_list)
@@ -2751,77 +2526,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 raise self.ObjectOperationException(_msg, _status)
             else :
                 _msg = "VMC post-detachment operations success."
-                cbdebug(_msg)
-                return _status, _msg
-
-    @trace
-    def post_detach_svm(self, cld_conn, obj_attr_list) :
-        '''
-        TBD
-        '''
-        
-        if "replication_port_base" in obj_attr_list :
-            self.auto_free_vm_port("replication", obj_attr_list)
-        if "svm_qemu_debug_port_base" in obj_attr_list :
-            self.auto_free_vm_port("svm_qemu_debug", obj_attr_list)
-        if "rdma_port_base" in obj_attr_list :
-            self.auto_free_vm_port("rdma", obj_attr_list)
-        
-        try :
-            _status = 100
-            _fmsg = "An error has occurred, but no error message was captured"
-            
-            if obj_attr_list["primary_uuid"] != "none" :
-                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["primary_uuid"], \
-                                                  False, "svm_stub", "false", False)
-                
-                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["primary_uuid"], \
-                                                  False, "svm_stub_uuid", "", False)
-                
-                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["primary_uuid"], \
-                                                  False, "svm_stub_name", "", False)
-                
-                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["primary_uuid"], \
-                                                  False, "svm_stub_vmc", "none", False)
-                
-                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["primary_uuid"], \
-                                                  False, "svm_stub_ip", "none", False)
-                
-                if obj_attr_list["ai"] != "none" :
-                    _replicated_vms = int(self.get_object_attribute( \
-                            obj_attr_list["cloud_name"], "AI", obj_attr_list["ai"], \
-                                "replicated_vms"))
-                
-                    self.osci.update_object_attribute(obj_attr_list["cloud_name"], "AI", obj_attr_list["ai"], \
-                              False, "replicated_vms", _replicated_vms - 1, False)
-                
-            if obj_attr_list["failover"] != "false" :
-                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["primary_uuid"], \
-                                                  False, "vmc", obj_attr_list["vmc"], False)
-                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["primary_uuid"], \
-                                                  False, "vmc_name", obj_attr_list["vmc_name"], False)
-                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["primary_uuid"], \
-                                                  False, "vmc_cloud_ip", obj_attr_list["vmc_cloud_ip"], False)
-                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["primary_uuid"], \
-                                                  False, "vmc_pool", obj_attr_list["vmc_pool"], False)
-                
-            _status = 0
-
-        except self.osci.ObjectStoreMgdConnException, obj :
-            _status = obj.status
-            _fmsg =  str(obj.msg)
-
-        except Exception, e :
-            _status = 23
-            _fmsg = str(e)
-
-        finally :
-            if _status :
-                _msg = "VM post-detachment operations failure: " + _fmsg
-                cberr(_msg)
-                raise self.ObjectOperationException(_msg, _status)
-            else :
-                _msg = "VM post-detachment operations success."
                 cbdebug(_msg)
                 return _status, _msg
 

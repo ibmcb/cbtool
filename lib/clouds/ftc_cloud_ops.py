@@ -376,7 +376,7 @@ class FtcCmds(CommonCloudFunctions) :
             _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
             self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
             # Restore to configured size
-            if "configured_size" in obj_attr_list and not self.get_svm_stub(obj_attr_list) :
+            if "configured_size" in obj_attr_list :
                 self.resize_to_configured_default(obj_attr_list)
             status = 0
         except FTCException, obj :
@@ -428,8 +428,7 @@ class FtcCmds(CommonCloudFunctions) :
         for _idx in range(1, int(obj_attr_list["imageids"]) + 1) :
             _pool_key = "poolbase" + str(_idx)
             if _pool_key in obj_attr_list :
-                if not self.get_svm_stub(obj_attr_list) :
-                    storage_keys.append(obj_attr_list[_pool_key])
+                storage_keys.append(obj_attr_list[_pool_key])
 
         kwargs = self.dic_to_rpc_kwargs(self.ftcconn, "destroy_instances", obj_attr_list)
         self.ftcconn.destroy_instances(storage_keys, **kwargs)
@@ -642,27 +641,6 @@ class FtcCmds(CommonCloudFunctions) :
         cbdebug(_msg)
         return 0, _msg
 
-    @trace        
-    def vmreplicate_start(self, obj_attr_list) :
-        '''
-        TBD
-        '''
-        self.connect(obj_attr_list["access"])
-        kwargs = self.dic_to_rpc_kwargs(self.ftcconn, "ft_start", obj_attr_list)
-        self.ftcconn.ft_start(**kwargs)
-        _msg = "Replication for VM " + obj_attr_list["primary_name"] + " was successfully started."
-        cbdebug(_msg, True)
-        return 0, _msg
-    
-    @trace
-    def vmreplicate_status(self, obj_attr_list) :
-        '''
-        TBD
-        '''
-        self.connect(obj_attr_list["access"])
-        kwargs = self.dic_to_rpc_kwargs(self.ftcconn, "ft_status", obj_attr_list)
-        return 0, self.ftcconn.ft_status(**kwargs)
-            
     @trace
     def vm_fixpause(self, obj_attr_list) :
         '''
@@ -672,50 +650,6 @@ class FtcCmds(CommonCloudFunctions) :
         kwargs = self.dic_to_rpc_kwargs(self.ftcconn, "resume", obj_attr_list)
         self.ftcconn.resume(**kwargs)
         _msg = "VM " + obj_attr_list["name"] + " was resumed."
-        cbdebug(_msg, True)
-        return 0, _msg
-
-    @trace
-    def vmreplicate_resume(self, obj_attr_list) :
-        '''
-        TBD
-        '''
-        self.connect(obj_attr_list["access"])
-        kwargs = self.dic_to_rpc_kwargs(self.ftcconn, "ft_resume", obj_attr_list)
-        _status, _fmsg, unused = self.ftcconn.ft_resume(**kwargs)
-
-        _msg = "FT stub " + obj_attr_list["name"]
-        
-        if _status :
-            _msg += " could not take over for failed primary VM" + _fmsg
-            '''
-            Do not throw exception. Domain still exists, even if it failed to resume.
-            An exception will prevent it from getting logically re-located to the new
-            standby host and thus fail to get cleaned up from the 
-            data store properly.
-            raise CldOpsException(_msg, _status)
-            '''
-        else :
-            _msg += " has taken over for failed primary VM."
-            
-        cbdebug(_msg, True)
-        return 0, _msg
-
-    @trace
-    def vmreplicate_stop(self, obj_attr_list) :
-        '''
-        TBD
-        '''
-        self.connect(obj_attr_list["access"])
-        kwargs = self.dic_to_rpc_kwargs(self.ftcconn, "ft_stop", obj_attr_list)
-        _status, _fmsg, unused = self.ftcconn.ft_stop(**kwargs)
-        '''
-        A failure to stop replication is not fatal.
-        It should not prevent the stub from being destroyed....
-        '''
-        _msg = "FT replication for " + obj_attr_list["primary_name"]
-        _msg += (" could not be stopped: " + _fmsg) if _status else " was stopped."
-            
         cbdebug(_msg, True)
         return 0, _msg
 

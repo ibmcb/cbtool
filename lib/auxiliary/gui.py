@@ -758,7 +758,6 @@ class GUI(object):
                              "keyword2" : { "label" : "Temporary Attributes", "values" : "" },
                              "keyword3" : { "label" : "Mode", "values" : "async" },
                              }, 
-                    "svm" : { "keyword1" : { "label" : "Identifier", "values" : "vms" } },
                     "appdrs" : { "keyword1" : { "label" : "Pattern", "values" : [x.strip() for x in self.api.patternlist(session['cloud_name'])] },
                                 "keyword2" : { "label" : "Temporary Attributes", "values" : "" }
                             },
@@ -877,15 +876,15 @@ class GUI(object):
                 self.repopulate_views(req.session)
     
                 req.session["operations"] = {
-                    "attach" : [0, {"operations" : [ "vm", "vmc", "app", "svm", "appdrs"], "icon" : "play", "state" : "any" } ], 
-                    "detach" : [1, {"operations" : [ "vm", "vmc", "app", "svm", "appdrs"], "icon" : "trash", "state" : "any" } ], 
+                    "attach" : [0, {"operations" : [ "vm", "vmc", "app", "appdrs"], "icon" : "play", "state" : "any" } ], 
+                    "detach" : [1, {"operations" : [ "vm", "vmc", "app", "appdrs"], "icon" : "trash", "state" : "any" } ], 
                     "save" : [2, {"operations" : [ "vm", "vmc", "app"], "icon" : "stop", "state" : "attached" } ], 
                     "restore" : [3, {"operations" : [ "vm", "vmc", "app"], "icon" : "play", "state" : "save" } ], 
                     "suspend" : [4, {"operations" : [ "vm", "vmc", "app"], "icon" : "pause", "state" : "attached" } ], 
                     "resume" : [5, {"operations" : [ "vm", "vmc", "app"], "icon" : "play", "state" : "fail" } ], 
-                    "protect" : [6, {"operations" : [ "vm" ], "icon" : "star" , "ft" : "attach", "state" : "attached" } ], 
-                    "unprotect" : [7, {"operations" : [ "vm" ], "icon" : "ok" , "ft" : "detach", "state" : "attached"} ], 
-                    "fail" : [8, {"operations" : [ "vm" ], "icon" : "fire", "ft" : "fail", "state" : "attached" } ], 
+                    "protect" : [6, {"operations" : [ "vm" ], "icon" : "star" , "state" : "attached" } ], 
+                    "unprotect" : [7, {"operations" : [ "vm" ], "icon" : "ok" , "state" : "protected"} ], 
+                    "fail" : [8, {"operations" : [ "vm" ], "icon" : "fire", "state" : "protected" } ], 
                     "runstate" : [9, {"operations" : [ "vm", "app"], "icon" : "play", "state" : "any" } ],
                     "migrate" : [10, {"operations" : [ "vm" ], "icon" : "share-alt" , "state" : "attached" } ], 
                 }
@@ -899,7 +898,6 @@ class GUI(object):
                      "app": [ 2, "Virtual Applications" ],
                      "vm": [ 3, "Virtual Machines" ],
                      "appdrs": [ 4, "Application Submitters" ],
-                     "svm": [ 5, "FTVM Stubs" ],
                      #"vmcrs": [ 5, "Capture Submitters" ],
                 } 
     
@@ -1354,10 +1352,7 @@ class GUI(object):
                         
                 keywords = {}
                 label = operation_attrs[1]["label"]
-                if "svm_stub_vmc" in attrs and attrs["svm_stub_vmc"] != "none" and operation in ["unprotect", "fail"] :
-                    keywords["keyword" + str(len(keywords) + 1)] = attrs["svm_stub_uuid"]
-                else :
-                    keywords["keyword" + str(len(keywords) + 1)] = attrs["uuid"]
+                keywords["keyword" + str(len(keywords) + 1)] = attrs["uuid"]
                 
                 if operation == "attach" or req.active not in operation_attrs[1]["operations"] :
                     continue
@@ -1367,21 +1362,21 @@ class GUI(object):
                         force = True
                     elif "aidrs" in attrs and attrs["aidrs"] != "none" :
                         force = True
-                    elif "svm_stub_vmc" in attrs and attrs["svm_stub_vmc"] != "none" :
+                    elif "mc_supported" in attrs and attrs["mc_supported"].lower() == "true" :
                         force = True
                     if force :
                         label = "Force " + label
                     keywords["keyword" + str(len(keywords) + 1)] = str(force).lower() 
                 elif operation in [ "unprotect", "fail" ] :
-                    if "svm_stub_vmc" not in attrs or attrs["svm_stub_vmc"] == "none" :
+                    if "mc_supported" not in attrs or attrs["mc_supported"].lower() != "true" :
                         continue
                 elif operation in [ "runstate" ] :
                     continue
                 elif operation == "protect" :
-                    if "svm_stub_vmc" in attrs and attrs["svm_stub_vmc"] != "none" :
+                    if "mc_supported" in attrs and attrs["mc_supported"].lower() == "true" :
                         continue
                 elif operation  in [ "save", "suspend", "restore", "resume" ] :
-                    if "svm_stub_vmc" in attrs and attrs["svm_stub_vmc"] != "none" :
+                    if "mc_supported" in attrs and attrs["mc_supported"].lower() == "true" :
                         continue
                 required = operation_attrs[1]["state"]
                 if required != "any" and attrs["state"] != required  :
@@ -1389,12 +1384,7 @@ class GUI(object):
                     
                 keywords["keyword" + str(len(keywords) + 1)] = "async" 
                 
-                output += "&nbsp;&nbsp;<a Class='btn btn-danger btn-small' href='BOOTDEST/provision?object=" 
-                if "ft" in operation_attrs[1] :
-                    output += "svm"
-                else :
-                    output += req.active
-                    
+                output += "&nbsp;&nbsp;<a Class='btn btn-danger btn-small' href='BOOTDEST/provision?object=" + req.active
                 output += "&operation=" + operation
                 
                 output += "&keywords=" + str(len(keywords))
@@ -1463,7 +1453,7 @@ class GUI(object):
     
                 output += self.list_objects(req, "host" if req.active == "vmc" else "vm", objs) + "</h3>"
     
-            if req.active in ["vm", "svm"] :
+            if req.active == "vm":
                 output += "<h3>Region: <a class='btn btn-info' href='BOOTDEST/provision?object=vmc&explode=" + attrs["vmc"] + "'><i class='icon-info-sign icon-white'></i>&nbsp;" + attrs["vmc_name"] + "</a></h3>" 
                 if "host" in attrs :
                     output += "<h3>Hypervisor: <a class='btn btn-info' href='BOOTDEST/provision?object=host&explode=" + attrs["host"] + "'><i class='icon-info-sign icon-white'></i>&nbsp;" + attrs["host_name"] + "</a></h3>" 
@@ -1478,12 +1468,10 @@ class GUI(object):
             for key in self.keys :
                 if key in attrs :
                     output += self.make_alter_form(req, attrs["uuid"], req.active, key, attrs[key]) 
-                    #output += "<tr><td>" + key + "</td><td>" + str(attrs[key]) + "</td></tr>"
             output += "<p/></p><hr width='100%'>"
             for key in sorted(attrs.keys()) :
                 if key not in self.keys :
                     output += self.make_alter_form(req, attrs["uuid"], req.active, key, attrs[key]) 
-                    #output += "<tr><td>" + key + "</td><td>" + str(attrs[key]) + "</td></tr>"
     
         elif params.get("pending") :
             output += "<div id='pendingresult'>"
@@ -1506,8 +1494,7 @@ class GUI(object):
             success = True
             if params.get("operation") :
                 operation_attrs = operations[params.get("operation")][1]
-                funcname = req.active + (params.get("operation") if "ft" not in operation_attrs else operation_attrs["ft"])
-                func = getattr(self.api, funcname)
+                func = getattr(self.api, req.active + params.get("operation"))
                 args = []
                 keywords = int(params.get("keywords"))
                 for keyidx in range(1, keywords + 1) :

@@ -314,13 +314,6 @@ class BaseObjectOperations :
                 _status = 9
                 _msg = "Usage: vmdetach <cloud name> <vm name> [force] [mode]"
                 
-        elif command == "svm-stat" :
-            if _length >= 2 :
-                object_attribute_list["name"] = _parameters[1]
-            if _length < 2:
-                _status = 9
-                _msg = "Usage: svmstat <cloud name> <svm name> [mode]"
-
         elif command == "vm-debug" :
             if _length >= 2 :
                 object_attribute_list["name"] = _parameters[1]
@@ -328,13 +321,6 @@ class BaseObjectOperations :
                 _status = 9
                 _msg = "Usage: vmdebug <cloud name> <vm name>"
                 
-        elif command == "svm-debug" :
-            if _length >= 2 :
-                object_attribute_list["name"] = _parameters[1]
-            if _length < 2:
-                _status = 9
-                _msg = "Usage: svmdebug <cloud name> <vm name>"
-
         elif command == "vm-runstate" :
             object_attribute_list["suspected_command"] = "unknown" 
             object_attribute_list["firs"] = "none"
@@ -349,28 +335,6 @@ class BaseObjectOperations :
                 _status = 9
                 _msg = "Usage: vmrunstate <cloud name> <vm name> <runstate> [parent] [mode]"
 
-        elif command == "svm-attach" :
-            object_attribute_list["pool"] = "auto"
-            
-            if _length >= 2 :
-                object_attribute_list["name"] = _parameters[1]
-            if _length >= 3 :
-                object_attribute_list["pool"] = _parameters[2]
-            if _length < 2:
-                _status = 9
-                _msg = "Usage: svmattach <cloud name> <vm name> [vmc pool]"
-                
-        elif command == "svm-detach" :
-            object_attribute_list["failover"] = "false"
-            
-            if _length >= 2 :
-                object_attribute_list["name"] = _parameters[1]
-            if _length >= 3 :
-                object_attribute_list["failover"] = _parameters[2]
-            if _length < 2:
-                _status = 9
-                _msg = "Usage: svmdetach <cloud name> <vm name> [initiate failover?]"
-                
         elif command == "vm-capture" :
             if _length == 2 :
                 object_attribute_list["name"] = _parameters[1]
@@ -940,9 +904,6 @@ class BaseObjectOperations :
  
                 _cloud_parameters = self.get_cloud_parameters(obj_attr_list["cloud_name"])
 
-                if '_' not in obj_attr_list["name"] and '-' not in obj_attr_list["name"] and _obj_type.upper() == "SVM" :
-                    obj_attr_list["name"] = _obj_type.lower() + "_" + obj_attr_list["name"]
-
                 '''
                     Staging operations which contain the keyword 'prepare' indicate that this process
                     must fork a background process first to perform the actual object attachment.
@@ -961,11 +922,7 @@ class BaseObjectOperations :
                 # all other object names are generated on the fly, so they never
                 # "exist" before attachment (a new VM, AI or AIDRS will be created
                 # every time an "attach" command is run).
-                #
-                # SVM FT stubs also have predefined names (they use the same
-                # name ID as their corresponding VMs. Make sure the SVM 
-                # object does not already exist also
-                if _obj_type == "VMC" or _obj_type == "SVM":
+                if _obj_type == "VMC" :
                     _object_exists = self.osci.object_exists(obj_attr_list["cloud_name"], _obj_type, \
                                                              obj_attr_list["name"], \
                                                              True)
@@ -1034,50 +991,6 @@ class BaseObjectOperations :
                     obj_attr_list["base_dir"] = _dir_list["base_dir"]
                     obj_attr_list["identity"] = _dir_list["ssh_key_name"]
 
-                    if _obj_type == "SVM" :
-                        # Fake a "detach" so that we can populate the objects
-                        # of the original primary VM from which we are trying
-                        # to clone all of the VM's key/values (because after
-                        # a failover, all of the values of the SVM FT stub object
-                        # will be identical except for an eventual change
-                        # of VMC location......
-                        _orig_name = obj_attr_list["name"]
-                        _orig_uuid = obj_attr_list["uuid"]
-                        if not _orig_name.count("_") :
-                            obj_attr_list["name"] = _orig_name
-                        else :
-                            obj_attr_list["name"] = "vm_" + _orig_name.split("_")[1]
-                        _status, _fmsg = self.initialize_object(obj_attr_list, "vm-detach")
-                        
-                        if _status :
-                            raise self.ObjectOperationException( \
-                                 "No corresponding VM " + obj_attr_list["name"] + \
-                                 " exists for this SVM FT stub " + _orig_name + \
-                                 ".", _status) 
-                            
-                        if self.osci.get_object_state(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"]) != "attached" :
-                            raise self.ObjectOperationException( \
-                                 "VM " + obj_attr_list["name"] + \
-                                 " is not running. Please restore it first.", "300") 
-                        
-                        _orig_name = "svm_" + obj_attr_list["name"].split("_")[1]
-                            
-                        obj_attr_list["primary_name"] = obj_attr_list["name"]
-                        obj_attr_list["primary_uuid"] = obj_attr_list["uuid"]
-                        if "host_name" in obj_attr_list :
-                            obj_attr_list["primary_host_name"] = obj_attr_list["host_name"]
-                        obj_attr_list["primary_vmc_pool"] = obj_attr_list["vmc_pool"]
-                        obj_attr_list["primary_host_cloud_ip"] = obj_attr_list["host_cloud_ip"]
-                        del obj_attr_list["host"]
-                        del obj_attr_list["host_name"]
-                        del obj_attr_list["host_cloud_ip"]
-                        del obj_attr_list["vmc"]
-                        del obj_attr_list["vmc_cloud_ip"]
-                        obj_attr_list["qemu_debug"] = "false" 
-                        obj_attr_list["qemu_debug_port"] = "" 
-                        obj_attr_list["name"] = _orig_name
-                        obj_attr_list["uuid"] = _orig_uuid
-
                     if _obj_type == "VM" :
                         obj_attr_list["jars_dir"] = _dir_list["jars_dir"]
                         obj_attr_list["exclude_list"] = _dir_list["base_dir"] + "/exclude_list.txt"
@@ -1116,10 +1029,7 @@ class BaseObjectOperations :
                 if not _object_exists :
                     _fmsg = "Object is not instantiated on the object store."
 
-                    if cmd.count("svm-") :
-                        _fmsg += "Cannot manage fault tolerance for object."
-                        _status = 39
-                    elif cmd.count("detach") :
+                    if cmd.count("detach") :
                         _fmsg += "There is no need for explicitly detach it from "
                         _fmsg += "this experiment."
                         _status = 37
@@ -1338,7 +1248,7 @@ class BaseObjectOperations :
 
                     raise self.ObjectOperationException(_fmsg, 10)
                 
-                if obj_type == "VM" or obj_type == "SVM":
+                if obj_type == "VM" :
                     vmc = obj_attr_list["vmc"]
                         
                     _msg = "Increasing the \"number of VMs\" counter for the VMC: " + vmc 
@@ -1409,7 +1319,7 @@ class BaseObjectOperations :
                 _reservation = self.osci.update_counter(obj_attr_list["cloud_name"], obj_type, "RESERVATIONS", \
                                                             "decrement")
 
-                if obj_type == "VM" or obj_type == "SVM" :
+                if obj_type == "VM" :
 
                     _msg = "Decreasing the \"number of VMs\" counter for the "
                     _msg += "VMC " + obj_attr_list["vmc"]
@@ -1448,7 +1358,7 @@ class BaseObjectOperations :
                 self.osci.update_counter(obj_attr_list["cloud_name"], obj_type, "RESERVATIONS", \
                                          "increment")
 
-                if obj_type == "VM" or obj_type == "SVM" :
+                if obj_type == "VM" :
                     _msg = "Increasing the \"number of VMs\" counter for the "
                     _msg += "VMC " + obj_attr_list["vmc"] + " due to a "
                     _msg += "rollback."
@@ -1488,7 +1398,7 @@ class BaseObjectOperations :
                 self.osci.update_counter(obj_attr_list["cloud_name"], obj_type, "RESERVATIONS", \
                                          "decrement")
                 
-                if obj_type == "VM" or obj_type == "SVM" :
+                if obj_type == "VM" :
                     _msg = "Decreasing the \"number of VMs\" counter for the "
                     _msg += "VMC " + vmc + " due to a "
                     _msg += "rollback."
@@ -2904,7 +2814,7 @@ class BaseObjectOperations :
     def auto_allocate_vm_port(self, name, obj_attr_list):
         '''
         Generic function for reserving a port on a VM object basis.
-        Currently used by: FT replication *and* QEMU gdb debugger
+        Currently used by: QEMU gdb debugger
         '''
         throw = False
         _lock = False

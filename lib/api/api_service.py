@@ -163,9 +163,6 @@ class API():
     def vmlist(self, cloud_name, state = "default", limit = "none"):
         return self.passive.list_objects({}, cloud_name + ' ' + state + ' ' + str(limit), "vm-list")[2]
 
-    def svmlist(self, cloud_name, state = "default", limit = "none"):
-        return self.passive.list_objects({}, cloud_name + ' ' + state + ' ' + str(limit), "svm-list")[2]
-
     def vmclist(self, cloud_name, state = "default", limit = "none"):
         return self.passive.list_objects({}, cloud_name + ' ' + state + ' ' + str(limit), "vmc-list")[2]
 
@@ -216,9 +213,6 @@ class API():
     
     def vmshow(self, cloud_name, identifier, key = "all"):
         return self.passive.show_object({}, cloud_name + ' ' + identifier + ' ' + key, "vm-show")[2]
-    
-    def svmshow(self, cloud_name, identifier, key = "all"):
-        return self.passive.show_object({}, cloud_name + ' ' + identifier + ' ' + key, "svm-show")[2]
     
     def vmcshow(self, cloud_name, identifier, key = "all"):
         return self.passive.show_object({}, cloud_name + ' ' + identifier + ' ' + key, "vmc-show")[2]
@@ -432,12 +426,6 @@ class API():
         else :
             return self.active.objattach({}, parameters, "vm-attach")[2]
         
-    def svmattach(self, cloud_name, identifier, temp_attr_list = "empty=empty", async = False):
-        if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + temp_attr_list + (' ' + async), "svm-attach")[2]
-        else :
-            return self.active.objattach({}, cloud_name + ' ' + identifier + ' ' + temp_attr_list, "svm-attach")[2]
-    
     def vminit(self, cloud_name, role, vmc_pool = "auto", size = "default", pause_step = "prepare_provision_complete"):
         return self.vmattach(cloud_name, role, vmc_pool, size, pause_step)
     
@@ -450,22 +438,6 @@ class API():
             return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + force + (' ' + async), "vm-detach")[2]
         else :
             return self.active.objdetach({}, cloud_name + ' ' + identifier + ' ' + force, "vm-detach")[2]
-    
-    def svmdetach(self, cloud_name, identifier, force = False, async = False):
-        '''
-        force not currently used here...
-        '''
-        force = str(force).lower() if force else "false"
-        if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + identifier + (' ' + async), "svm-detach")[2]
-        else :
-            return self.active.objdetach({}, cloud_name + ' ' + identifier, "svm-detach")[2]
-        
-    def svmfail(self, cloud_name, identifier, async = False):
-        if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + identifier + " fail" + (' ' + async), "svm-detach")[2]
-        else :
-            return self.active.objdetach({}, cloud_name + ' ' + identifier + " fail", "svm-detach")[2]
     
     def vmcdetach(self, cloud_name, identifier, force = False, async = False):
         force = str(force).lower() if force else "false"

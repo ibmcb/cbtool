@@ -16,26 +16,23 @@
 # limitations under the License.
 #/*******************************************************************************
 
-import sys, os, tty, termios, atexit, threading, SocketServer, signal, inspect, xmlrpclib, resource, socket
+import sys, os, threading, SocketServer, signal, inspect, xmlrpclib
 from libvirt import *
 from logging import getLogger, StreamHandler, Formatter, Filter, DEBUG, ERROR, INFO, WARN, CRITICAL
-from logging.handlers import logging, SysLogHandler, RotatingFileHandler
+from logging.handlers import SysLogHandler
 from optparse import OptionParser
-from os import getuid, environ
+from os import getuid
 from pwd import getpwuid
 from platform import node
 from hashlib import sha256
 from sys import stdout, path
 from DocXMLRPCServer import DocXMLRPCServer
-from DocXMLRPCServer import DocXMLRPCRequestHandler
 from socket import gethostbyname
 from daemon import DaemonContext
-from re import split, sub, compile, MULTILINE
+from re import split, compile, MULTILINE
 from uuid import uuid5, NAMESPACE_DNS
-from random import uniform, choice, randint
+from random import randint
 from time import sleep
-from xml.etree import ElementTree
-from xdrlib import Packer, Unpacker
 path.append('/'.join(path[0].split('/')[0:-1]))
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 
@@ -44,7 +41,6 @@ __all__ = []
 import socket
 import struct
 import hmac
-import socket
 import random
 import operator
 try:
@@ -180,16 +176,16 @@ def unwrap_kwargs(func, spec):
 class Ftc :
     @trace
     def ftcraise(self, host, status, msg) :
-       # We try to keep connections open as long as possible, but if there is an
-       # error, make sure we close it and don't attempt to reused an old one
-       if host in self.lvt_cnt and self.lvt_cnt[host] :
-           try :
-               self.lvt_cnt[host].close()
-           except :
-               pass
-       self.lvt_cnt[host] = False
-       cberr(msg, True)
-       raise xmlrpclib.Fault(3, 'FTCException;%s;%s' % (msg, str(status)))
+        # We try to keep connections open as long as possible, but if there is an
+        # error, make sure we close it and don't attempt to reused an old one
+        if host in self.lvt_cnt and self.lvt_cnt[host] :
+            try :
+                self.lvt_cnt[host].close()
+            except :
+                pass
+        self.lvt_cnt[host] = False
+        cberr(msg, True)
+        raise xmlrpclib.Fault(3, 'FTCException;%s;%s' % (msg, str(status)))
 
     @trace    
     def global_error(self, ctx, error) :
@@ -255,7 +251,7 @@ class Ftc :
         self.counter = 0
 
     @trace
-    def get_libvirt_vm_templates(self, num_ids, disk_format, qemu_debug_port, svm_qemu_debug_port, replication_port, rdma_port) :
+    def get_libvirt_vm_templates(self, num_ids, disk_format, qemu_debug_port) :
 
         _xml_templates = {}
         if options.hypervisor in [ "xen", "pv" ] :
@@ -263,7 +259,7 @@ class Ftc :
         else :
             _xml_templates["vm_template"] = "<domain type='kvm' "
         
-        if options.hypervisor == "kvm" and (replication_port or qemu_debug_port or svm_qemu_debug_port or rdma_port):
+        if options.hypervisor == "kvm" and (qemu_debug_port):
             _xml_templates["vm_template"] += "xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'"
              
         _xml_templates["vm_template"] += ">\n"
@@ -273,7 +269,7 @@ class Ftc :
         _xml_templates["vm_template"] += "\t<vcpu>TMPLT_VCPUS</vcpu>\n"
 
         if options.hypervisor == "pv" :
-           _xml_templates["vm_template"] += "\t<bootloader></bootloader>\n"
+            _xml_templates["vm_template"] += "\t<bootloader></bootloader>\n"
 
         _xml_templates["vm_template"] += "\t<os>\n"
 
@@ -311,9 +307,9 @@ class Ftc :
                     _xml_templates["vm_template"] += "\t\t\t<source dev='/dev/" + options.lvm_storage + "/TMPLT_POOLBASE" + str(_idx) + "'/>\n"
                 
                 if options.hypervisor == "kvm" :
-                   _xml_templates["vm_template"] += "\t\t\t<driver name='qemu' type='raw' cache='" + options.cache_mode + "'/>\n"
+                    _xml_templates["vm_template"] += "\t\t\t<driver name='qemu' type='raw' cache='" + options.cache_mode + "'/>\n"
                 elif options.hypervisor == "pv" :
-                   _xml_templates["vm_template"] += "\t\t\t<driver name='tap2' type='aio'/>\n"
+                    _xml_templates["vm_template"] += "\t\t\t<driver name='tap2' type='aio'/>\n"
             else :
                 _xml_templates["vm_template"] += "\t\t<disk type='file' device='disk'>\n"
                 _xml_templates["vm_template"] += "\t\t\t<source file='" + options.snapshot_storage + "/cb/TMPLT_POOLBASE" + str(_idx) + "'/>\n"
@@ -376,37 +372,19 @@ class Ftc :
             _xml_templates["vm_template"] += "\t\t<memballoon model='virtio'/>\n"
         _xml_templates["vm_template"] += "\t</devices>\n"
         
-        if replication_port or qemu_debug_port or svm_qemu_debug_port or rdma_port :
+        if qemu_debug_port :
             _xml_templates["vm_template"] += "\t<qemu:commandline>\n"
             
-            # Primary to backup, parameters to listen on backup
-            if rdma_port : 
-                _xml_templates["vm_template"] += "\t\t<qemu:arg value='-rdmaport'/>\n"
-                _xml_templates["vm_template"] += "\t\t<qemu:arg value='" + str(rdma_port) + "'/>\n"
-                _xml_templates["vm_template"] += "\t\t<qemu:arg value='-rdmahost'/>\n"
-                _xml_templates["vm_template"] += "\t\t<qemu:arg value='TMPLT_SVM_STUB_IP'/>\n"
-                
-            # Primary to backup, parameters to listen on backup
-            if replication_port :
-                _xml_templates["vm_template"] += "\t\t<qemu:arg value='-incoming'/>\n"
-                _xml_templates["vm_template"] += "\t\t<qemu:arg value='mc:TMPLT_SVM_STUB_IP:" + str(replication_port) + "'/>\n"
-                
             # Primary gdb debugging port 
-            if qemu_debug_port and not replication_port :
+            if qemu_debug_port :
                 _xml_templates["vm_template"] += "\t\t<qemu:arg value='-gdb'/>\n"
                 _xml_templates["vm_template"] += "\t\t<qemu:arg value='tcp::" + str(qemu_debug_port) + "'/>\n"
-                
-            # Stub gdb debugging port
-            if svm_qemu_debug_port :
-                _xml_templates["vm_template"] += "\t\t<qemu:arg value='-gdb'/>\n"
-                _xml_templates["vm_template"] += "\t\t<qemu:arg value='tcp::" + str(svm_qemu_debug_port) + "'/>\n"
                 
             _xml_templates["vm_template"] += "\t</qemu:commandline>\n"
 
         _xml_templates["vm_template"] += "</domain>\n"
         
         for _idx in range(0, num_ids) :
-            disk_path = options.snapshot_storage + "/cb/TMPLT_POOLBASE" + str(_idx)
             xml_key = "disk_template" + str(_idx)
             _xml_templates[xml_key] = ""
             _xml_templates[xml_key] += "\t<volume>\n"
@@ -722,7 +700,7 @@ class Ftc :
             _msg = "ip found"
             ip = o.lookup_ip(mac)
             
-        except Exception, e :
+        except Exception:
             _msg = "ip not found"
             pass
         
@@ -732,22 +710,12 @@ class Ftc :
     def run_instances(self, imageids, tag, hypervisor_ip, \
             size = "micro32", vmclass = "standard", 
             eclipsed_size = None, eclipsed = False, \
-            qemu_debug_port = None, svm_qemu_debug_port = None, \
-            replication_port = None, svm_stub_ip = None, \
-            cloud_mac = None, rdma_port = None, disk_format = None) :
+            qemu_debug_port = None, \
+            cloud_mac = None, disk_format = None) :
 
         result = {}
 
         _num_ids = len(imageids)
-        # cpython thread is serial, so this is OK
-        if svm_stub_ip is not None:
-            try :
-                import libvirt_qemu
-            except ImportError:
-                self.ftcraise(hypervisor_ip, 100, \
-                     "The 'libvirt_qemu' python client-side bindings " + \
-                     "(RHEL 6.2 and higher) are not available. " + \
-                     "Cannot perform FT replication.")
 
         lvt_cnt = self.conn_check(hypervisor_ip)
         _graceful = False
@@ -768,12 +736,11 @@ class Ftc :
         result["size"] = size 
         result["class"] = vmclass
                 
-        if svm_stub_ip is None :
-            if eclipsed and eclipsed_size is not None :
-                result["size"] = eclipsed_size 
-                result["configured_size"] = size 
-                result["vcpus_configured"] = self.vhw_config[result[size]]["vcpus"]
-                result["vmemory_configured"] = self.vhw_config[result[size]]["vmemory"]
+        if eclipsed and eclipsed_size is not None :
+            result["size"] = eclipsed_size 
+            result["configured_size"] = size 
+            result["vcpus_configured"] = self.vhw_config[result[size]]["vcpus"]
+            result["vmemory_configured"] = self.vhw_config[result[size]]["vmemory"]
             
         result.update(self.vhw_config[result["size"]])
         result.update(self.vhw_config[result["class"]])
@@ -792,7 +759,7 @@ class Ftc :
             except libvirtError, msg:
                 self.ftcraise(lvt_cnt.host, 2, "Problem looking up pool information: " + str(msg))
                 
-        _xml_templates = self.get_libvirt_vm_templates(_num_ids, disk_format, qemu_debug_port, svm_qemu_debug_port, replication_port, rdma_port)
+        _xml_templates = self.get_libvirt_vm_templates(_num_ids, disk_format, qemu_debug_port)
 
         _tmplt_find = []
         _tmplt_replace = []
@@ -817,10 +784,6 @@ class Ftc :
         _tmplt_find.append(compile("TMPLT_VMC_HOSTNAME", MULTILINE))
         _tmplt_replace.append(hypervisor_ip)
 
-        if svm_stub_ip is not None :
-            _tmplt_find.append(compile("TMPLT_SVM_STUB_IP", MULTILINE))
-            _tmplt_replace.append(svm_stub_ip)
-
         cbdebug("Going to change newly created libvirt configuration templates...")
         
         for _template_name in _xml_templates.keys() :
@@ -832,29 +795,13 @@ class Ftc :
         
         cbdebug("libvirt configuration files successfully altered.")
         
-        if svm_stub_ip and disk_format != "lvm" :
-            poolname = "ftc-snapshots"
-            _imsg = poolname + " pool on libvirt host " + lvt_cnt.host
-            _smsg = _imsg + " was successfully restarted."
-            _fmsg = _imsg + " could not be restarted: "
-            
+        for _idx in range(0, _num_ids) :
             try : 
-                _pool = lvt_cnt.storagePoolLookupByName(poolname)
-                _pool.destroy()
-                _pool.create(0)
-            except libvirtError, msg :
-                self.ftcraise(lvt_cnt.host, 2, _fmsg + str(msg))
+                lvt_cnt.storagePoolLookupByName("ftc-snapshots" + ("-lvm" if disk_format == "lvm" else "")).createXML(_xml_templates["disk_template" +  str(_idx)], 0)
+            except libvirtError, msg:
+                self.ftcraise(lvt_cnt.host, 2, "Snapshot creation failed: " + str(msg))
                 
-            cbdebug(_smsg)
-        
-        else :
-            for _idx in range(0, _num_ids) :
-                try : 
-                    lvt_cnt.storagePoolLookupByName("ftc-snapshots" + ("-lvm" if disk_format == "lvm" else "")).createXML(_xml_templates["disk_template" +  str(_idx)], 0)
-                except libvirtError, msg:
-                    self.ftcraise(lvt_cnt.host, 2, "Snapshot creation failed: " + str(msg))
-                    
-                cbdebug("Volume snapshot #" + str(_idx) + " created for VM " + tag)
+            cbdebug("Volume snapshot #" + str(_idx) + " created for VM " + tag)
 
         _imsg = tag + " domain on libvirt host " + lvt_cnt.host
         _smsg = _imsg + " was successfully created."
@@ -863,12 +810,9 @@ class Ftc :
         try :
             print _xml_templates["vm_template"]
             _dom = lvt_cnt.defineXML(_xml_templates["vm_template"])
-            if svm_stub_ip is not None :
-                _dom.createWithFlags(VIR_DOMAIN_START_PAUSED)
-            else :
-                _dom.create()
+            _dom.create()
         except libvirtError, msg: 
-            if not svm_stub_ip or disk_format == "lvm" :
+            if disk_format == "lvm" :
                 try :
                     for _idx in range(0, _num_ids) :
                         self.snapshot_volume_destroy(lvt_cnt, tag, imageids[_idx], disk_format)
@@ -893,25 +837,25 @@ class Ftc :
         return self.success(_msg, None)
 
     @trace
-    def list_domains(self, lvt_cnt, all, filter) :
+    def list_domains(self, lvt_cnt, all_domains, gfilter) :
         _domains = {}
         _imsg = "Domain list for libvirt host " + lvt_cnt.host
         _smsg = _imsg + " was successfully obtained."
         _fmsg = _imsg + " could not be obtained: "
         
         try :
-            if all :
+            if all_domains :
                 for _tag in lvt_cnt.listDefinedDomains() :
-                    if filter is not None :
-                        if not _tag.count(filter) :
+                    if gfilter is not None :
+                        if not _tag.count(gfilter) :
                             continue
                     _dom = lvt_cnt.lookupByName(_tag)
                     _domains[_dom.name()] = _dom
             else :
                 for _dom_id in lvt_cnt.listDomainsID() :
                     _dom = lvt_cnt.lookupByID(_dom_id)
-                    if filter is not None :
-                        if not _dom.name().count(filter) :
+                    if gfilter is not None :
+                        if not _dom.name().count(gfilter) :
                             continue
                     _domains[_dom.name()] = _dom
         except libvirtError, msg : 
@@ -949,39 +893,6 @@ class Ftc :
             return self.error(2, _fmsg + str(msg), None)
         return self.success(_smsg, True)
         
-    @trace
-    def ft_resume(self, tag, hypervisor_ip) :
-        lvt_cnt = self.conn_check(hypervisor_ip)
-        _imsg = "Resume of FT stub " + tag + " for takeover on libvirt host " + lvt_cnt.host
-        _smsg = _imsg + " has succeeded."
-        _fmsg = _imsg + " could not be completed: "
-        
-        try :
-            _dom = lvt_cnt.lookupByName(tag)
-            qemuMonitorCommand(_dom, 'c', 1)
-            _dom.resume()
-        except libvirtError, msg: 
-            return self.error(3, _fmsg + str(msg), None)
-        return self.success(_smsg, True)
-        
-    @trace
-    def ft_start(self, tag, replication_port, svm_stub_ip, primary_host_cloud_ip, hypervisor_ip, rdma_port = False) :
-        lvt_cnt = self.conn_check(primary_host_cloud_ip)
-        _imsg = "Replication for " + tag + " domain on libvirt host " + lvt_cnt.host
-        _smsg = _imsg + " has started to destination VMC: " + svm_stub_ip + ":" + str(replication_port)
-        _fmsg = _imsg + " could not be created: "
-        
-        try :
-            _dom = lvt_cnt.lookupByName(tag)
-            if rdma_port :
-                qemuMonitorCommand(_dom, 'migrate_set_rdma_host ' + str(svm_stub_ip), 1)
-                qemuMonitorCommand(_dom, 'migrate_set_rdma_port ' + str(rdma_port), 1)
-            qemuMonitorCommand(_dom, 'migrate_set_speed 40g', 1)
-            command = 'migrate -d mc:' + svm_stub_ip + ':' + str(replication_port)
-            qemuMonitorCommand(_dom, command, 1)
-        except libvirtError, msg: 
-            self.ftcraise(lvt_cnt.host, 2, _fmsg + str(msg))
-        return self.success(_smsg, True)
     @trace    
     def get_domain_full_info(self, tag, hypervisor_ip) :
         lvt_cnt = self.conn_check(hypervisor_ip)
@@ -1064,7 +975,7 @@ class Ftc :
     def statically_balance_vcpu_domains(self, hypervisor_ip) :
         lvt_cnt = self.conn_check(hypervisor_ip)
         try :
-           pcpu_nr  = int(lvt_cnt.getInfo()[2])
+            pcpu_nr  = int(lvt_cnt.getInfo()[2])
         except libvirtError, msg : 
             self.ftcraise(lvt_cnt.host, 3, "Couldn't determine number of cores: " + str(msg))
                 
@@ -1189,7 +1100,7 @@ class Ftc :
             else :
                 _msg = " \"" + tag + "\" is not running.... continuing"
 
-        except libvirtError, msg:
+        except libvirtError:
             _msg = " \"" + tag + "\" is not defined... continuing"
             cbdebug(_msg)
             
@@ -1382,7 +1293,7 @@ class Ftc :
         return self.success(_smsg, None)
 
     @trace
-    def snapshot_volume_destroy(self, lvt_cnt, filter = None, vol_name = None, disk_format = None) :
+    def snapshot_volume_destroy(self, lvt_cnt, gfilter = None, vol_name = None, disk_format = None) :
         _imsg =  "old snapshots on " + lvt_cnt.host
         _smsg = _imsg + " were successfully destroyed."
         _fmsg = _imsg + " could not be destroyed: "
@@ -1390,7 +1301,7 @@ class Ftc :
         try :
             _pool = lvt_cnt.storagePoolLookupByName("ftc-snapshots" + ("-lvm" if disk_format == "lvm" else ""))
             self.activate_pool_if_inactive(lvt_cnt, _pool)
-            if vol_name and not filter:
+            if vol_name and not gfilter:
                 count = 1
                 # used during steady-state
                 _pool.storageVolLookupByName(vol_name).delete(0)
@@ -1399,7 +1310,7 @@ class Ftc :
                 # Used by vmccleanup()
                 _volumes = _pool.listVolumes()
                 for _volname in _volumes :
-                    if (filter and not _volname.count(filter)) or (vol_name and not _volname.count(vol_name)):
+                    if (gfilter and not _volname.count(gfilter)) or (vol_name and not _volname.count(vol_name)):
                         continue
                     v = _pool.storageVolLookupByName(_volname)
                     '''
