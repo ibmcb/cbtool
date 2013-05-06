@@ -206,7 +206,11 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     if not objs :
                         continue
                     for obj in objs :
-                        _result.append(self.osci.get_object(obj_attr_list["cloud_name"], state.upper() + "TRACKING" + _obj_type, False, obj, False)) 
+                        sub_attrs = self.osci.get_object(obj_attr_list["cloud_name"], state.upper() + "TRACKING" + _obj_type, False, obj, False)
+                        sub_attrs_split = obj.split("-")
+                        sub_attrs["operation"] = sub_attrs_split[5]
+                        sub_attrs["order"] = sub_attrs_split[6]
+                        _result.append(sub_attrs)
     
                 _status = 0
             

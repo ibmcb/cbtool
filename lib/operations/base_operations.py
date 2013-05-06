@@ -1172,6 +1172,11 @@ class BaseObjectOperations :
                         dest_host_attr = self.osci.get_object(obj_attr_list["cloud_name"], "HOST", True, dest_name, False)
                         dest_vmc_attr = self.osci.get_object(obj_attr_list["cloud_name"], "VMC", False, dest_host_attr["vmc"], False)
                         
+                        obj_attr_list["destination_vmc"] = dest_vmc_attr["uuid"]
+                        obj_attr_list["destination_vmc_cloud_ip"] = dest_vmc_attr["cloud_ip"]
+                        obj_attr_list["destination_vmc_name"] = dest_vmc_attr["name"]
+                        obj_attr_list["destination_vmc_pool"] = dest_vmc_attr["pool"]
+                        
                         if vmc_attr["migrate_supported"].lower() != "true" :
                             _msg = "Migrate operations are not supported on the source: " + vmc_attr["name"]
                             _status = 9002
@@ -1334,17 +1339,17 @@ class BaseObjectOperations :
                     raise self.ObjectOperationException(_fmsg, 10)
                 
                 if obj_type == "VM" or obj_type == "SVM":
-                    
-                    _msg = "Increasing the \"number of VMs\" counter for the "
-                    _msg += "VMC " + obj_attr_list["vmc"]
+                    vmc = obj_attr_list["vmc"]
+                        
+                    _msg = "Increasing the \"number of VMs\" counter for the VMC: " + vmc 
                     cbdebug(_msg)
                     _vmc_reservation = self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VMC", \
-                                                      obj_attr_list["vmc"], \
-                                                      False, "nr_vms", 1, True)
+                                                      vmc, False, "nr_vms", 1, True)
                     _msg = "New value is " + str(_vmc_reservation)
                     cbdebug(_msg)
 
-                    if int(_vmc_reservation) > int(obj_attr_list["vmc_max_vm_reservations"]) :
+                    _vmc_attrs = self.osci.get_object(obj_attr_list["cloud_name"], "VMC", False, vmc, False)
+                    if int(_vmc_reservation) > int(_vmc_attrs["max_vm_reservations"]) :
                         _status = 102
                         _fmsg ="VMC-wide reservations for VM objects exhausted."
                         raise self.ObjectOperationException(_fmsg, 10)
@@ -1352,11 +1357,52 @@ class BaseObjectOperations :
                     # This key can be safely deleted. It should not be written
                     # in the datastore as part of the "VM" object (it is already
                     # part of the "VMC" object.
-                    del obj_attr_list["vmc_max_vm_reservations"]
+                    if "vmc_max_vm_reservations" in obj_attr_list :
+                        del obj_attr_list["vmc_max_vm_reservations"]
                 
                 else :
 
                     True
+
+            elif transaction == "migrate" :
+                vmc = obj_attr_list["destination_vmc"]
+                    
+                _msg = "Increasing the \"number of VMs\" counter for the VMC: " + vmc 
+                cbdebug(_msg)
+                _vmc_reservation = self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VMC", \
+                                                  vmc, False, "nr_vms", 1, True)
+                _msg = "New value is " + str(_vmc_reservation)
+                cbdebug(_msg)
+
+                _vmc_attrs = self.osci.get_object(obj_attr_list["cloud_name"], "VMC", False, vmc, False)
+                if int(_vmc_reservation) > int(_vmc_attrs["max_vm_reservations"]) :
+                    _status = 102
+                    _fmsg ="VMC-wide reservations for VM objects exhausted."
+                    raise self.ObjectOperationException(_fmsg, 10)
+                    
+            elif transaction == "rollbackmigrate" :
+                vmc = obj_attr_list["destination_vmc"]
+                
+                _msg = "Decreasing the \"number of VMs\" counter for the "
+                _msg += "VMC " + vmc + " due to a rollback."
+                cbdebug(_msg)
+                _vmc_reservation = self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VMC", \
+                                                                 vmc, False, "nr_vms", -1, True)
+
+                _msg = "New value is " + str(_vmc_reservation)
+                cbdebug(_msg)
+                
+            elif transaction == "migratefinish" :
+                vmc = obj_attr_list["vmc"]
+                
+                _msg = "Decreasing the \"number of VMs\" counter for the "
+                _msg += "VMC " + vmc + " after migration finished."
+                cbdebug(_msg)
+                _vmc_reservation = self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VMC", \
+                                                                 vmc, False, "nr_vms", -1, True)
+
+                _msg = "New value is " + str(_vmc_reservation)
+                cbdebug(_msg)
 
             elif transaction == "detach" :
 
@@ -1436,19 +1482,19 @@ class BaseObjectOperations :
                 else :
                     True
 
-            elif transaction == "rollbackattach" :               
+            elif transaction == "rollbackattach" :
+                vmc = obj_attr_list["vmc"]
+                    
                 self.osci.update_counter(obj_attr_list["cloud_name"], obj_type, "RESERVATIONS", \
                                          "decrement")
+                
                 if obj_type == "VM" or obj_type == "SVM" :
                     _msg = "Decreasing the \"number of VMs\" counter for the "
-                    _msg += "VMC " + obj_attr_list["vmc"] + " due to a "
+                    _msg += "VMC " + vmc + " due to a "
                     _msg += "rollback."
                     cbdebug(_msg)
                     _vmc_reservation = self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VMC", \
-                                                                     obj_attr_list["vmc"], \
-                                                                     False, \
-                                                                     "nr_vms", \
-                                                                     -1, True)
+                                                                     vmc, False, "nr_vms", -1, True)
 
                     _msg = "New value is " + str(_vmc_reservation)
                     cbdebug(_msg)

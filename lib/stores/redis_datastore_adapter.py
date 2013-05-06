@@ -473,8 +473,8 @@ class RedisMgdConn :
                 self.redis_conn.expire(_obj_inst_fn + ':' + obj_uuid, int(expiration))
     
             if obj_type != "GLOBAL" and obj_type != "COLLECTOR" and \
-            not obj_type.count("TRACKING") and \
-            not obj_type.count("PENDING") :
+                not obj_type.count("TRACKING") and \
+                not obj_type.count("PENDING") :
 
                 _query_object = self.get_object(cloud_name, "GLOBAL", False, "query", False)
 
@@ -959,6 +959,62 @@ class RedisMgdConn :
             raise self.ObjectStoreMgdConnException(str(_msg), 2)
 
     @trace
+    def update_object_views(self, cloud_name, obj_type, obj_uuid, obj_attr_list, action, lock):
+        self.conn_check()
+        obj_inst = self.experiment_inst + ":" + cloud_name
+        self.signal_api_refresh(cloud_name)
+
+        _obj_inst_fn = obj_inst + ':' + obj_type
+        _obj_id_fn = _obj_inst_fn + ':' + obj_uuid
+
+        if lock :
+            _destroy_lock = self.acquire_lock(cloud_name, obj_type, obj_uuid, \
+                                            "remove_object_attribute", 1)
+
+        try :    
+            if not self.object_exists(cloud_name, obj_type, obj_uuid, False) :
+                _msg = obj_type + " object " + str(obj_uuid) + " could not be "
+                _msg += " retrieved from object list (FQIN: " + _obj_inst_fn
+                _msg += ").There is no need to explicitly destroy it."     
+                cbdebug(_msg)
+                return True
+            
+            if obj_type != "GLOBAL" and obj_type != "COLLECTOR" and \
+            not obj_type.count("TRACKING") and \
+            not obj_type.count("PENDING") and obj_attr_list is not None :
+            
+                _query_object = self.get_object(cloud_name, "GLOBAL", False, "query", False)
+                _mandatory_views = _query_object[obj_type.lower()].split(',')
+                for _criterion in _mandatory_views :
+                    if action == "remove" :
+                        self.remove_from_view(cloud_name, obj_type, obj_attr_list, _criterion)
+                    elif action == "add" :
+                        if "departure" in obj_attr_list :
+                            self.add_to_view(cloud_name, obj_type, obj_attr_list, _criterion, "departure")
+                        if "arrival" in obj_attr_list :
+                            self.add_to_view(cloud_name, obj_type, obj_attr_list, _criterion, "arrival")
+                        
+            if lock :
+                self.release_lock(cloud_name, obj_type, obj_uuid, _destroy_lock)
+            return True
+                    
+        except ConnectionError, msg :
+            _msg = "The connection to the data store seems to be "
+            _msg += "severed: " + str(msg)
+            cberr(_msg)
+            if lock :
+                self.release_lock(cloud_name, obj_type, obj_uuid, _destroy_lock)
+            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+
+        except ResponseError, msg :
+            _msg = obj_type + " object " + obj_uuid + " could not be destroyed:" 
+            _msg += ' ' + str(msg)
+            cberr(_msg)
+            if lock :
+                self.release_lock(cloud_name, obj_type, obj_uuid, _destroy_lock)
+            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+        
+    @trace
     def destroy_object(self, cloud_name, obj_type, obj_uuid, obj_attr_list, lock) :
         '''
         TBD
@@ -1009,6 +1065,7 @@ class RedisMgdConn :
                         self.untag_object(cloud_name, _tag.upper(), obj_attr_list[_tag], \
                                           obj_type, obj_uuid)
 
+                _query_object = self.get_object(cloud_name, "GLOBAL", False, "query", False)
                 _mandatory_views = _query_object[obj_type.lower()].split(',')
                 for _criterion in _mandatory_views :
                     self.remove_from_view(cloud_name, obj_type, obj_attr_list, _criterion)

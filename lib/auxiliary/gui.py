@@ -30,6 +30,7 @@ import os
 import re
 import shutil
 
+from datetime import datetime
 from pwd import getpwuid
 from copy import deepcopy
 from operator import itemgetter
@@ -596,6 +597,9 @@ class GUI(object):
         
     def keyfunc(self, x):
         return int(x["counter"])
+    
+    def trackingfunc(self, x):
+        return int(x["order"].split(".")[0])
 
     def __call__(self, environ, start_response):
         # Hack to make WebOb work with Twisted
@@ -665,7 +669,9 @@ class GUI(object):
                 if not link  :
                     if init_pending :
                         output += "<a class='btn btn-mini btn-info' href='BOOTDEST/provision?object=" + active + "&operation=runstate&keywords=4&keyword1=" + obj["uuid"] + "&keyword2=attached&keyword3=run&keyword4=async'><i class='icon-play icon-white'></i>&nbsp;" + obj["name"] + "</a>&nbsp;&nbsp;"
-                    act = obj["tracking"] if "tracking" in obj else None
+                    if "order" in obj :
+                        order = datetime.fromtimestamp(int(obj["order"].split(".")[0])).strftime('%m/%d %H:%M')
+                    act = ((("[" + order + "] ")) if "order" in obj else "") + obj["tracking"] if "tracking" in obj else None
                     output += (str(act) if (act is not None and act != "None") else "")
                 output += "</td>"
     
@@ -1550,7 +1556,9 @@ class GUI(object):
                         objs = []
     
                 finished = active_list(req.cloud_name, "finished")
+                finished.sort(key=self.trackingfunc, reverse = True)
                 failed = active_list(req.cloud_name, "failed")
+                failed.sort(key=self.trackingfunc, reverse = True)
     
                 if len(failed) > 0 :
                     output += "<h4>" + str(len(failed)) + " Failed Request(s):</h4>" + self.list_objects(req, req.active, failed, link = False, icon = 'icon-remove', label = 'label-important')

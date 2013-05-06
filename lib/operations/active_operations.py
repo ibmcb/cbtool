@@ -30,10 +30,9 @@ from subprocess import Popen, PIPE
 from re import sub
 from uuid import uuid5, NAMESPACE_DNS
 
-from lib.remote.ssh_ops import repeated_ssh
 from lib.remote.process_management import ProcessManagement
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from lib.auxiliary.data_ops import str2dic, dic2str, wait_on_process, DataOpsException
+from lib.auxiliary.data_ops import str2dic, dic2str, DataOpsException
 from lib.auxiliary.value_generation import ValueGeneration
 from lib.stores.stores_initial_setup import StoreSetupException
 from lib.auxiliary.thread_pool import ThreadPool
@@ -3109,6 +3108,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _fmsg = "An error has occurred, but no error message was captured"
             _result = None
             migrate_pending = False
+            admission_control_requested = False
 
             obj_attr_list["uuid"] = "undefined"            
             obj_attr_list["name"] = "undefined"
@@ -3140,46 +3140,53 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         self.osci.pending_object_set(obj_attr_list["cloud_name"], _obj_type, \
                                             obj_attr_list["uuid"], "Migrating...")
                         
+                        admission_control_requested = self.admission_control(_obj_type, \
+                                                                obj_attr_list, "migrate")
+                        
                         _status, _fmsg = _cld_conn.vmmigrate(obj_attr_list)
      
                         if not _status :
-                            self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
-                                                              obj_attr_list["uuid"], \
-                                                              False, \
-                                                              "host_name", obj_attr_list["destination"])
-                            self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
-                                                              obj_attr_list["uuid"], \
-                                                              False, \
-                                                              "host_cloud_ip", obj_attr_list["destination_ip"])
+                            self.admission_control(_obj_type, obj_attr_list, "migratefinish")
                             
-                            self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
-                                                              obj_attr_list["uuid"], \
-                                                              False, \
-                                                              "host", obj_attr_list["destination_uuid"])
+                            self.osci.update_object_views(obj_attr_list["cloud_name"], "VM", \
+                                                          obj_attr_list["uuid"], obj_attr_list, "remove", False)
+                            for (src, dest) in [ 
+                                                    ("host_name", "destination"),
+                                                    ("host_cloud_ip", "destination_ip"),
+                                                    ("host", "destination_uuid"),
+                                                    ("vmc", "destination_vmc"),
+                                                    ("vmc_name", "destination_vmc_name"),
+                                                    ("vmc_cloud_ip", "destination_vmc_cloud_ip"),
+                                                    ("vmc_pool", "destination_vmc_pool"),
+                                                ] :
+                                obj_attr_list[src] = obj_attr_list[dest]
+                            
+                                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
+                                                                  obj_attr_list["uuid"], False, 
+                                                                  src, obj_attr_list[src])
+                            
+                            self.osci.update_object_views(obj_attr_list["cloud_name"], "VM", \
+                                                          obj_attr_list["uuid"], obj_attr_list, "add", False)
                             
                         self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
-                                                          obj_attr_list["uuid"], \
-                                                          False, \
+                                                          obj_attr_list["uuid"], False, \
                                                           "mgt_501_migrate_request_originated", \
                                                           obj_attr_list["mgt_501_migrate_request_originated"])
     
                         self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
-                                                          obj_attr_list["uuid"], \
-                                                          False, \
+                                                          obj_attr_list["uuid"], False, \
                                                           "mgt_502_migrate_request_sent", \
                                                           obj_attr_list["mgt_502_migrate_request_sent"])
 
                         if "mgt_503_migrate_request_completed" in obj_attr_list :
                             self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
-                                                              obj_attr_list["uuid"], \
-                                                              False, \
+                                                              obj_attr_list["uuid"], False, \
                                                               "mgt_503_migrate_request_completed", \
                                                               obj_attr_list["mgt_503_migrate_request_completed"])
 
                         else :
                             self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
-                                                              obj_attr_list["uuid"], \
-                                                              False, \
+                                                              obj_attr_list["uuid"], False, \
                                                               "mgt_999_migrate_request_failed", \
                                                               obj_attr_list["mgt_999_migrate_request_failed"])
                             
@@ -3225,6 +3232,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _msg += "migrated on this experiment: " + _fmsg
                 cberr(_msg)
                 obj_attr_list["tracking"] = "Migrate: " + _fmsg 
+                
+                if admission_control_requested :
+                    self.admission_control(_obj_type, obj_attr_list, "rollbackmigrate")
             else :
                 _msg = _obj_type + " object " + obj_attr_list["uuid"] 
                 _msg += " (named \"" + obj_attr_list["name"] +  "\") successfully migrated "
@@ -3473,7 +3483,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                     _status, _fmsg = _cld_conn.vmresize(obj_attr_list)
                     
-                    update = {}
                     self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
                                                       obj_attr_list["uuid"], \
                                                       False, \
@@ -4879,8 +4888,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
                 _firs_overload = False
 
-            if "nr_total_faults" in _vmcrs_attr_list and \
-            int(_firs_attr_list["nr_total_faults"]) >= int(_vmcrs_attr_list["max_total_faults"]) :
+            if "nr_total_faults" in _firs_attr_list and \
+            int(_firs_attr_list["nr_total_faults"]) >= int(_firs_attr_list["max_total_faults"]) :
                 _firs_overload = True
             else :
                 _firs_overload = False
@@ -4890,7 +4899,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             if not _firs_overload :
 
                 _msg = "The selected inter-Fault Injection Request arrival time was "
-                _msg += str(_vmcr_inter_arrival_time) + " seconds."
+                _msg += str(_fault_inter_arrival_time) + " seconds."
                 cbdebug(_msg)
 
                 if _firs_state and _firs_state != "stopped" :
@@ -4971,7 +4980,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             _inter_arrival_time_start = time()
 
-            while _inter_arrival_time < _vmcr_inter_arrival_time :
+            while _inter_arrival_time < _fault_inter_arrival_time :
 
                 _firs_state = self.osci.get_object_state(cloud_name, "VMCRS", object_uuid)
                 
