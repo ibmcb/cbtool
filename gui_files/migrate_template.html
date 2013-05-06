@@ -19,7 +19,7 @@
 	<script>
 	var isMigrateVisible = false;
 	var isMigrateClickedAway = false;
-	var pop = $('#migratepop').popover({ 
+	var migratepop = $('#migratepop').popover({ 
 	    html : true,
 	    title: "Migrate BOOTOBJECTNAME:",
 	    placement : 'bottom',
@@ -30,8 +30,8 @@
 	    }
 	  });
 	  /* Allow the popover to close when clicking somewhere else on the screen */
-	  pop.data('popover').tip().css('z-index', 1030).css('margin-left', '200px');
-	  pop.click(function(e) {
+	  migratepop.data('popover').tip().css('z-index', 1030).css('margin-left', '200px');
+	  migratepop.click(function(e) {
 	        $(this).popover('show');
 	        isMigrateClickedAway = false;
 	        isMigrateVisible = true;

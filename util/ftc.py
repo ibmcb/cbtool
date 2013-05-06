@@ -184,6 +184,7 @@ class Ftc :
             except :
                 pass
         self.lvt_cnt[host] = False
+        msg = msg.replace(" __request failed:", "")
         cberr(msg, True)
         raise xmlrpclib.Fault(3, 'FTCException;%s;%s' % (msg, str(status)))
 
@@ -1221,10 +1222,10 @@ class Ftc :
         return self.success(_smsg, None)
     
     @trace
-    def migrate(self, tag, hypervisor_ip, destination_ip, protocol, interface):
+    def migrate(self, tag, hypervisor_ip, destination_ip, protocol, interface, operation):
         lvt_cnt = self.conn_check(hypervisor_ip)
         _imsg =  "Domain " + tag 
-        _smsg = _imsg + " was successfully migrated."
+        _smsg = _imsg + " was successfully " + operation + "ed."
         _fmsg = _imsg + " could not be saved: "
         try :
             if options.hypervisor in [ "xen", "pv" ] :
@@ -1235,11 +1236,12 @@ class Ftc :
             miguri = protocol + ":" + interface 
             cbdebug("Opening connection to destination uri: " + uri)
             dconn = open(uri)
-            cbdebug("Issuing Migrate on VM " + tag + " to " + uri + " with interface " + miguri + "...")
+            cbdebug("Issuing " + operation + " on VM " + tag + " to " + uri + " with interface " + miguri + "...")
             dom.migrate(dconn, VIR_MIGRATE_LIVE | VIR_MIGRATE_PERSIST_DEST | VIR_MIGRATE_UNDEFINE_SOURCE, None, miguri, 0)
             dconn.close()
         except libvirtError, msg :
-            self.ftcraise(lvt_cnt.host, 3, _fmsg + str(msg))
+            _msg = str(msg).replace("migration", operation)
+            self.ftcraise(lvt_cnt.host, 3, _fmsg + _msg)
         return self.success(_smsg, None)
     
     @trace

@@ -882,11 +882,11 @@ class GUI(object):
                     "restore" : [3, {"operations" : [ "vm", "vmc", "app"], "icon" : "play", "state" : "save" } ], 
                     "suspend" : [4, {"operations" : [ "vm", "vmc", "app"], "icon" : "pause", "state" : "attached" } ], 
                     "resume" : [5, {"operations" : [ "vm", "vmc", "app"], "icon" : "play", "state" : "fail" } ], 
-                    "protect" : [6, {"operations" : [ "vm" ], "icon" : "star" , "state" : "attached" } ], 
-                    "unprotect" : [7, {"operations" : [ "vm" ], "icon" : "ok" , "state" : "protected"} ], 
-                    "fail" : [8, {"operations" : [ "vm" ], "icon" : "fire", "state" : "protected" } ], 
-                    "runstate" : [9, {"operations" : [ "vm", "app"], "icon" : "play", "state" : "any" } ],
-                    "migrate" : [10, {"operations" : [ "vm" ], "icon" : "share-alt" , "state" : "attached" } ], 
+                    "runstate" : [6, {"operations" : [ "vm", "app"], "icon" : "play", "state" : "any" } ],
+                    "migrate" : [7, {"operations" : [ "vm" ], "icon" : "share-alt" , "state" : "attached" } ], 
+                    "protect" : [8, {"operations" : [ "vm" ], "icon" : "star" , "state" : "attached" } ], 
+                    "unprotect" : [9, {"operations" : [ "vm" ], "icon" : "ok" , "state" : "protected"} ], 
+                    "fail" : [10, {"operations" : [ "vm" ], "icon" : "fire", "state" : "protected" } ], 
                 }
                 
                 for operation in req.session["operations"].keys() :
@@ -1342,16 +1342,20 @@ class GUI(object):
             attrs = getattr(self.api, req.active + "show")(req.cloud_name, uuid)
             output += "<h2>BOOTOBJECTNAME: " + attrs["name"] + "</h2>"
             
-            migrate_supported = False
+            migrate_operations = []
             for operation, operation_attrs in sorted(operations.iteritems(), key=itemgetter(1)) :
-                if operation == "migrate" and req.active == "vm" :
-                    if attrs["migrate_supported"].lower() == "true" :
-                        migrate_supported = True
-                        output += "&nbsp;&nbsp;<a id='migratepop' class='btn btn-success' style='padding: 3px' href='#'><i class='icon-share-alt icon-white'></i>&nbsp;Migrate</a>"
-                    continue
                         
                 keywords = {}
                 label = operation_attrs[1]["label"]
+                icon = operation_attrs[1]["icon"]
+                
+                if operation in ["migrate", "protect" ] and req.active == "vm" :
+                    if attrs[operation + "_supported"].lower() == "true" :
+                        migrate_operations.append(operation)
+                        output += "&nbsp;&nbsp;<a id='" + operation + "pop' class='btn btn-success' style='padding: 3px' href='#'>"
+                        output += "<i class='icon-" + icon + " icon-white'></i>&nbsp;" + label + "</a>"
+                    continue
+                
                 keywords["keyword" + str(len(keywords) + 1)] = attrs["uuid"]
                 
                 if operation == "attach" or req.active not in operation_attrs[1]["operations"] :
@@ -1391,9 +1395,9 @@ class GUI(object):
                 for keyidx in range(1, len(keywords) + 1) :
                     key = "keyword" + str(keyidx)
                     output += "&" + key + "=" + keywords[key]
-                output += "'><i class='icon-" + operation_attrs[1]["icon"] + " icon-white'></i>&nbsp;&nbsp;" + label + "&nbsp;&nbsp;</a>"
+                output += "'><i class='icon-" + icon + " icon-white'></i>&nbsp;&nbsp;" + label + "&nbsp;&nbsp;</a>"
             
-            if migrate_supported :
+            for operation in migrate_operations :
                 hosts =  self.api.hostlist(req.cloud_name)
                 dest_choices = "<input type='hidden' name='keyword1' value='" + attrs["uuid"] + "'>"
 
@@ -1404,7 +1408,7 @@ class GUI(object):
                     
                 for host in hosts :
                     if host["uuid"] != attrs["host"] :
-                        dest_choices += "<option value='" + host["name"] + "'>" + host["cloud_hostname"] + " (Iface: " + host["migrate_interface"] + ")</option>"
+                        dest_choices += "<option value='" + host["name"] + "'>" + host["cloud_hostname"] + " (Iface: " + host[operation + "_interface"] + ")</option>"
                     
                 dest_choices += """
                                 </select>
@@ -1416,9 +1420,12 @@ class GUI(object):
                       <tr><td>Protocol: </td>
                           <td><select name='keyword3'>
                     """
-                for proto in ["tcp", "x-rdma", "rdma", "mc", "x-mc"] :
+                    
+                choices = attrs[operation + "_protocol_supported"].split(",")
+                    
+                for proto in choices :
                     dest_choices += "<option value='" + proto + "'"
-                    if attrs["migrate_protocol"].lower() == proto.lower() :
+                    if attrs[operation + "_protocol"].lower() == proto.lower() :
                         dest_choices += "selected"
                     dest_choices += ">" + proto.upper() + "</option>"
                     
@@ -1428,9 +1435,9 @@ class GUI(object):
                         </tr>
                     """
                     
-                migrate_fd = open(cwd + "/gui_files/migrate_template.html", "r")
-                output += migrate_fd.read().replace("BOOTMIGRATE", dest_choices)
-                migrate_fd.close()
+                operation_fd = open(cwd + "/gui_files/" + operation + "_template.html", "r")
+                output += operation_fd.read().replace("BOOT" + operation.upper(), dest_choices)
+                operation_fd.close()
                 
             if req.active in ["app", "vmc", "host"] :
                 output += """
@@ -1564,61 +1571,61 @@ class GUI(object):
                  
             output += "</div>"
     
-            if req.active != "host" :
-                attach_fd = open(cwd + "/gui_files/attach_template.html", "r")
-                output += attach_fd.read()
-                attach_fd.close()
-                attach = ""
-                keywords = attach_params[req.active] if req.active in attach_params else []
-        
-                for idx in range(1, len(keywords) + 1) :
-                    keyword = "keyword" + str(idx)
-                    options = keywords[keyword]
-                    values = options["values"]
+        if not params.get("pending") and req.active != "host" :
+            attach_fd = open(cwd + "/gui_files/attach_template.html", "r")
+            output += attach_fd.read()
+            attach_fd.close()
+            attach = ""
+            keywords = attach_params[req.active] if req.active in attach_params else []
+    
+            for idx in range(1, len(keywords) + 1) :
+                keyword = "keyword" + str(idx)
+                options = keywords[keyword]
+                values = options["values"]
+                attach += """
+                    <tr>
+                    <td>&nbsp;
+                """
+                attach += options["label"] + ": &nbsp;" 
+                attach += """
+                    </td>
+                    <td>
+                """
+                if values == "vmcpool" :
+                    values = ["auto"]
+                    for poolinfo in self.api.vmclist(req.cloud_name) :
+                        values.append(poolinfo["name"])
+                elif values == "vms" :
+                    values = []
+                    for vminfo in self.api.vmlist(req.cloud_name) :
+                        values.append(vminfo["name"])
+    
+                if values == "default" :
+                    # convert to list to use drop-down instead of textbox
+                    # append additional sizes here when available
+                    pass
+    
+                if isinstance(values, list) and len(values) > 0 :
+                    attach += "<select name='" + keyword + "'>"
+                        
+                    for option in values :
+                            if isinstance(option, list) and len(option) == 2 :
+                                name = option[0]
+                                value = option[1] 
+                                attach += "<option value='" + name + "'>" + value  + "</option>"
+                            else :
+                                attach += "<option>" + str(option) + "</option>"
+    
                     attach += """
-                        <tr>
-                        <td>&nbsp;
+                        </select>
                     """
-                    attach += options["label"] + ": &nbsp;" 
-                    attach += """
-                        </td>
-                        <td>
-                    """
-                    if values == "vmcpool" :
-                        values = ["auto"]
-                        for poolinfo in self.api.vmclist(req.cloud_name) :
-                            values.append(poolinfo["name"])
-                    elif values == "vms" :
-                        values = []
-                        for vminfo in self.api.vmlist(req.cloud_name) :
-                            values.append(vminfo["name"])
-        
-                    if values == "default" :
-                        # convert to list to use drop-down instead of textbox
-                        # append additional sizes here when available
-                        pass
-        
-                    if isinstance(values, list) and len(values) > 0 :
-                        attach += "<select name='" + keyword + "'>"
-                            
-                        for option in values :
-                                if isinstance(option, list) and len(option) == 2 :
-                                    name = option[0]
-                                    value = option[1] 
-                                    attach += "<option value='" + name + "'>" + value  + "</option>"
-                                else :
-                                    attach += "<option>" + str(option) + "</option>"
-        
-                        attach += """
-                            </select>
-                        """
-                    else :
-                        attach += "<input type='text' name='" + keyword + "' value='" + str(values) + "'/>"
-        
-                    attach += "</td></tr>"
-        
-                output = output.replace("BOOTATTACH", attach)
-                output = output.replace("BOOTKEYWORDS", str(len(keywords)))
+                else :
+                    attach += "<input type='text' name='" + keyword + "' value='" + str(values) + "'/>"
+    
+                attach += "</td></tr>"
+    
+            output = output.replace("BOOTATTACH", attach)
+            output = output.replace("BOOTKEYWORDS", str(len(keywords)))
         
         output += """
             </div>

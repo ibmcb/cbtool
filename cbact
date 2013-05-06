@@ -519,7 +519,7 @@ def main(options) :
             _status, _msg = _active_obj_command.aiexecute(options.cn, \
                                                           _obj_type, _uuid)
 
-        elif _operation.count("migrate") :
+        elif _operation.count("migrate") or _operation.count("protect") :
  
             _local_process = True
             _uuid = options.ouuid

@@ -348,7 +348,7 @@ class BaseObjectOperations :
                 _status = 9
                 _msg = "Usage: vmcapture <cloud name> <vm name> [parent] [mode]"
                 
-        elif command == "vm-migrate" :
+        elif command == "vm-migrate" or command == "vm-protect":
             object_attribute_list["interface"] = "default" 
             
             if _length >= 3 :
@@ -365,7 +365,7 @@ class BaseObjectOperations :
 
             if _length < 3:
                 _status = 9
-                _msg = "Usage: vmmigrate <cloud name> <vm name> <destination> [protocol = tcp|rdma|mc] [alternate interface] [mode]"
+                _msg = "Usage: vm" + command.split("-")[1] + " <cloud name> <vm name> <destination> [protocol] [interface] [mode]"
 
         elif command == "vm-resize" :
             if _length >= 2 :
@@ -1003,7 +1003,7 @@ class BaseObjectOperations :
             elif cmd.count("detach") or cmd.count("capture") or \
                 cmd.count("runstate") or cmd.count("resize") or \
                 cmd.count("restore") or cmd.count("console") or \
-                cmd.count("migrate") :
+                cmd.count("migrate") or cmd.count("protect") :
                 
                 if "target_state" in obj_attr_list and obj_attr_list["target_state"] == "attached" and obj_attr_list["suspected_command"] == "run" :
                     obj_attr_list["uuid"] = obj_attr_list["name"]
@@ -1045,6 +1045,9 @@ class BaseObjectOperations :
                     elif cmd.count("migrate") :
                         _fmsg += "Cannot migrate object."
                         _status = 41
+                    elif cmd.count("protect") :
+                        _fmsg += "Cannot protect object."
+                        _status = 41
                 else :
                     _status = 0
                     _obj_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], _obj_type, \
@@ -1064,8 +1067,9 @@ class BaseObjectOperations :
                             _msg = "Capture operations are not supported on \"" + _cloud_parameters["description"] + "\" clouds." 
                             _status = 9000
                             raise self.ObjectOperationException(_msg, _status)
-                    elif cmd.count("migrate") :
-                        obj_attr_list["mgt_501_migrate_request_originated"] = obj_attr_list["command_originated"]
+                    elif cmd.count("migrate") or cmd.count("protect") :
+                        op = cmd.split("-")[1]
+                        obj_attr_list["mgt_501_" + op + "_request_originated"] = obj_attr_list["command_originated"]
                         
                         vmc_attr = self.osci.get_object(obj_attr_list["cloud_name"], "VMC", False, obj_attr_list["vmc"], False)
                         
@@ -1087,13 +1091,13 @@ class BaseObjectOperations :
                         obj_attr_list["destination_vmc_name"] = dest_vmc_attr["name"]
                         obj_attr_list["destination_vmc_pool"] = dest_vmc_attr["pool"]
                         
-                        if vmc_attr["migrate_supported"].lower() != "true" :
-                            _msg = "Migrate operations are not supported on the source: " + vmc_attr["name"]
+                        if vmc_attr[op + "_supported"].lower() != "true" :
+                            _msg = op + " operations are not supported on the source: " + vmc_attr["name"]
                             _status = 9002
                             raise self.ObjectOperationException(_msg, _status)
                         
-                        if dest_vmc_attr["migrate_supported"].lower() != "true" :
-                            _msg = "Migrate operations are not supported on the destination: " + dest_name 
+                        if dest_vmc_attr[op + "_supported"].lower() != "true" :
+                            _msg = op  + " operations are not supported on the destination: " + dest_name 
                             _status = 9002
                             raise self.ObjectOperationException(_msg, _status)
                             
@@ -1102,15 +1106,31 @@ class BaseObjectOperations :
                         obj_attr_list["destination"] = dest_name.split("host_", 1)[1]
                         
                         if obj_attr_list["interface"] == "default" :
-                            if dest_host_attr["migrate_interface"] == "default" :
-                                obj_attr_list["interface"] = obj_attr_list["destination"]
+                            if dest_host_attr[op + "_interface"] != "default" :
+                                obj_attr_list["interface"] = dest_host_attr[op + "_interface"]
                             else :
-                                obj_attr_list["interface"] = dest_host_attr["migrate_interface"]
+                                obj_attr_list["interface"] = obj_attr_list["destination"]
                         
                         obj_attr_list["destination_ip"] = dest_host_attr["cloud_ip"]
                         
+                        choices = obj_attr_list[op + "_protocol_supported"].split(",")
+                            
+                        obj_attr_list["choices"] = ",".join(choices)
+                            
                         if obj_attr_list["protocol"] == "default" :
-                            obj_attr_list["protocol"] = obj_attr_list["migrate_protocol"]
+                                
+                            if (op + "_protocol") in obj_attr_list :
+                                obj_attr_list["protocol"] = obj_attr_list[op + "_protocol"]
+                            else :
+                                cbwarn("default " + op + "_protocol not specified for this cloud." \
+                                    " Will assume defaults.", True)
+                                obj_attr_list["protocol"] = choices[0]
+                                    
+                        if obj_attr_list["protocol"] not in choices :
+                            raise self.ObjectOperationException(op + " protocol " + obj_attr_list["protocol"] + \
+                                                                " not supported. Please choose one of: " + \
+                                                                    " ".join(choices), 9003)
+                                
                          
                     elif cmd.count("runstate") :
                         obj_attr_list["mgt_201_runstate_request_originated"] = obj_attr_list["command_originated"]
@@ -2723,6 +2743,9 @@ class BaseObjectOperations :
             elif counter == "MIGRATING" :
                 _counter_value = str(self.get_process_object(cloud_name, obj_type, "migrate"))
                 _status = 0
+            elif counter == "PROTECTING" :
+                _counter_value = str(self.get_process_object(cloud_name, obj_type, "protect"))
+                _status = 0
             else :
                 _counter_value = str(self.osci.count_object(cloud_name, obj_type, counter))
                 _status = 0
@@ -3215,7 +3238,7 @@ class BaseObjectOperations :
                     command.count("fail") or command.count("repair") or \
                     command.count("save") or command.count("restore") or \
                     command.count("resize") or command.count("detachall") or \
-                    command.count("migrate") :
+                    command.count("migrate") or command.count("protect"):
     
                         if _obj_type != "HOST" and ("suspected_command" not in _obj_attr_list or _obj_attr_list["suspected_command"] != "run") :
                             _obj_uuid = self.osci.object_exists(_obj_attr_list["cloud_name"], _obj_type, \

@@ -166,7 +166,6 @@ class SimCmds(CommonCloudFunctions) :
             obj_attr_list["host_list"][_host_uuid]["name"] = "host_"  + obj_attr_list["host_list"][_host_uuid]["cloud_hostname"]
             obj_attr_list["host_list"][_host_uuid]["vmc_name"] = obj_attr_list["name"]
             obj_attr_list["host_list"][_host_uuid]["vmc"] = obj_attr_list["uuid"]
-            obj_attr_list["host_list"][_host_uuid]["migrate_interface"] = "default"
             obj_attr_list["host_list"][_host_uuid]["cloud_uuid"] = _host_uuid
             obj_attr_list["host_list"][_host_uuid]["uuid"] = _host_uuid
             obj_attr_list["host_list"][_host_uuid]["model"] = obj_attr_list["model"]
@@ -609,9 +608,10 @@ class SimCmds(CommonCloudFunctions) :
             
     def vmmigrate(self, obj_attr_list) :
         _time_mark_crs = int(time())            
-        obj_attr_list["mgt_502_migrate_request_sent"] = _time_mark_crs - obj_attr_list["mgt_501_migrate_request_originated"]
+        operation = obj_attr_list["operation"]
+        obj_attr_list["mgt_502_" + operation + "_request_sent"] = _time_mark_crs - obj_attr_list["mgt_501_" + operation + "_request_originated"]
 
-        _msg = "Sending a migrate request for "  + obj_attr_list["name"]
+        _msg = "Sending a " + operation + " request for "  + obj_attr_list["name"]
         _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ")"
         _msg += "...."
         cbdebug(_msg, True)
@@ -619,14 +619,14 @@ class SimCmds(CommonCloudFunctions) :
         sleep(2)
         
         _time_mark_crc = int(time())
-        obj_attr_list["mgt_503_migrate_request_completed"] = _time_mark_crc - _time_mark_crs
+        obj_attr_list["mgt_503_" + operation + "_request_completed"] = _time_mark_crc - _time_mark_crs
 
-        cbdebug("VM " + obj_attr_list["name"] + " migrate request completed.")
+        cbdebug("VM " + obj_attr_list["name"] + " " + operation + " request completed.")
 
         _msg = "" + obj_attr_list["name"] + ""
         _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
         _msg += "was successfully "
-        _msg += "migrated on FTCloud \"" + obj_attr_list["cloud_name"]
+        _msg += operation + "ed on FTCloud \"" + obj_attr_list["cloud_name"]
         _msg += "\"."
         cbdebug(_msg)
             

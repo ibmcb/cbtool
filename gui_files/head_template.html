@@ -92,15 +92,15 @@
 BOOTBODY
      </div>
 	<script>
-	var isVisible = false;
-	var clickedAway = false;
+	var ConnectisVisible = false;
+	var ConnectclickedAway = false;
 	function getTemplate() {
 		if(window.innerWidth < 500)
 			return "<div style='margin-left: 150px; margin-top: -100px' id='connectpopover' class='popover'><div class='arrow'></div><div class='popover-inner'><h3 class='popover-title'></h3><div class='popover-content'><p></p></div></div></div>";
 		else
 			return "<div id='connectpopover' class='popover'><div class='arrow'></div><div class='popover-inner'><h3 class='popover-title'></h3><div class='popover-content'><p></p></div></div></div>";
 	}
-	var pop = $('#connectpop').popover({ 
+	var connectpop = $('#connectpop').popover({ 
 	    html : true,
 	    title: "Start or Re-Connect:",
 	    placement : 'bottom',
@@ -111,18 +111,18 @@ BOOTBODY
 	    }
 	  });
 	  /* Allow the popover to close when clicking somewhere else on the screen */
-	data = pop.data('popover');
+	Connectdata = connectpop.data('popover');
 
-	if(data != undefined) {
-	   clickedAway = true;
-	   isVisible = true;
-	   pop.data('popover').tip().css('z-index', 1030);
+	if(Connectdata != undefined) {
+	   ConnectclickedAway = true;
+	   ConnectisVisible = true;
+	   connectpop.data('popover').tip().css('z-index', 1030);
 	}
 
-	  pop.click(function(e) {
+	  connectpop.click(function(e) {
 		$(this).popover('show');
-		clickedAway = false;
-		isVisible = true;
+		ConnectclickedAway = false;
+		ConnectisVisible = true;
 		e.preventDefault();
 	    });
 
@@ -134,14 +134,14 @@ BOOTBODY
 		return;
 		}
 
-		  if(isVisible & clickedAway)
+		  if(ConnectisVisible & ConnectclickedAway)
 		  {
 		    $('#connectpop').popover('hide')
-		    isVisible = clickedAway = false
+		    ConnectisVisible = ConnectclickedAway = false
 		  }
 		  else
 		  {
-		    clickedAway = true
+		    ConnectclickedAway = true
 		  }
 	});
 	</script>

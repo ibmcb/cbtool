@@ -297,7 +297,6 @@ class OskCmds(CommonCloudFunctions) :
                     obj_attr_list["host_list"][_host_uuid]["model"] = obj_attr_list["model"]
                     obj_attr_list["host_list"][_host_uuid]["vmc_name"] = obj_attr_list["name"]
                     obj_attr_list["host_list"][_host_uuid]["vmc"] = obj_attr_list["uuid"]
-                    obj_attr_list["host_list"][_host_uuid]["migrate_interface"] = "default"
                     obj_attr_list["host_list"][_host_uuid]["uuid"] = _host_uuid
                     obj_attr_list["host_list"][_host_uuid]["arrival"] = int(time())
                     obj_attr_list["host_list"][_host_uuid]["counter"] = obj_attr_list["counter"]

@@ -863,6 +863,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             obj_attr_list["vmc_name"] = _vmc_attr_list["name"]
             obj_attr_list["vmc_cloud_ip"] = _vmc_attr_list["cloud_ip"]
             obj_attr_list["migrate_supported"] = _vmc_attr_list["migrate_supported"]
+            obj_attr_list["protect_supported"] = _vmc_attr_list["protect_supported"]
             obj_attr_list["vmc_access"] = _vmc_attr_list["access"]
 
             _vm_templates = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, \
@@ -2811,29 +2812,35 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
             _result = None
-            migrate_pending = False
+            pending = False
             admission_control_requested = False
 
             obj_attr_list["uuid"] = "undefined"            
             obj_attr_list["name"] = "undefined"
 
             _obj_type = command.split('-')[0].upper()
-
+            operation = command.split('-')[1].lower()
+            obj_attr_list["operation"] = operation
+            
             _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
 
             if not _status :
                 _status, _fmsg = self.initialize_object(obj_attr_list, command)
 
                 if not _status :
+                    self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
+                                                      obj_attr_list["uuid"], False, \
+                                                      operation + "_protocol_supported", obj_attr_list["choices"])
+                    
                     _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
                     _cld_conn = _cld_ops_class(self.pid, self.osci, obj_attr_list["experiment_id"])
 
                     _current_state = self.osci.get_object_state(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"])
                     
                     if _current_state == "attached" :
-                        migrate_pending = True
-                        self.osci.add_to_list(obj_attr_list["cloud_name"], "VM", "VMS_UNDERGOING_MIGRATE", obj_attr_list["uuid"], int(time()))
-                        self.osci.set_object_state(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "migrate")
+                        pending = True
+                        self.osci.add_to_list(obj_attr_list["cloud_name"], "VM", "VMS_UNDERGOING_" + operation.upper(), obj_attr_list["uuid"], int(time()))
+                        self.osci.set_object_state(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], operation)
                         
                         # Command line has provided us with the name of the destination hypervisor,
                         # but not the IP address
@@ -2842,10 +2849,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                   obj_attr_list["uuid"] + "|" + obj_attr_list["name"], int(time()))
     
                         self.osci.pending_object_set(obj_attr_list["cloud_name"], _obj_type, \
-                                            obj_attr_list["uuid"], "Migrating...")
+                                            obj_attr_list["uuid"], operation + "ing...")
                         
-                        admission_control_requested = self.admission_control(_obj_type, \
-                                                                obj_attr_list, "migrate")
+                        admission_control_requested = self.admission_control(_obj_type, obj_attr_list, "migrate")
                         
                         _status, _fmsg = _cld_conn.vmmigrate(obj_attr_list)
      
@@ -2874,31 +2880,31 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             
                         self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
                                                           obj_attr_list["uuid"], False, \
-                                                          "mgt_501_migrate_request_originated", \
-                                                          obj_attr_list["mgt_501_migrate_request_originated"])
+                                                          "mgt_501_" + operation + "_request_originated", \
+                                                          obj_attr_list["mgt_501_" + operation + "_request_originated"])
     
                         self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
                                                           obj_attr_list["uuid"], False, \
-                                                          "mgt_502_migrate_request_sent", \
-                                                          obj_attr_list["mgt_502_migrate_request_sent"])
+                                                          "mgt_502_" + operation + "_request_sent", \
+                                                          obj_attr_list["mgt_502_" + operation + "_request_sent"])
 
-                        if "mgt_503_migrate_request_completed" in obj_attr_list :
+                        if "mgt_503_" + operation + "_request_completed" in obj_attr_list :
                             self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
                                                               obj_attr_list["uuid"], False, \
-                                                              "mgt_503_migrate_request_completed", \
-                                                              obj_attr_list["mgt_503_migrate_request_completed"])
+                                                              "mgt_503_" + operation + "_request_completed", \
+                                                              obj_attr_list["mgt_503_" + operation + "_request_completed"])
 
                         else :
                             self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
                                                               obj_attr_list["uuid"], False, \
-                                                              "mgt_999_migrate_request_failed", \
-                                                              obj_attr_list["mgt_999_migrate_request_failed"])
+                                                              "mgt_999_" + operation + "_request_failed", \
+                                                              obj_attr_list["mgt_999_" + operation + "_request_failed"])
                             
                         if not _status :
                             _result = obj_attr_list
                     else :
                         _fmsg = "VM object named \"" + obj_attr_list["name"] + "\" could "
-                        _fmsg += "not be migrated because it is on the "
+                        _fmsg += "not be " + operation + "ed because it is on the "
                         _fmsg += "\"" + _current_state + "\" state."
                         _status = 78
     
@@ -2928,33 +2934,34 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _fmsg = str(e)
 
         finally:        
-            unique_state_key = "-migrate-" + str(time())
+            unique_state_key = "-" + operation + "-" + str(time())
             
             if _status :
                 _msg = _obj_type + " object " + obj_attr_list["uuid"] + " ("
                 _msg += "named \"" + obj_attr_list["name"] + "\") could not be "
-                _msg += "migrated on this experiment: " + _fmsg
+                _msg += operation + "ed on this experiment: " + _fmsg
                 cberr(_msg)
-                obj_attr_list["tracking"] = "Migrate: " + _fmsg 
+                obj_attr_list["tracking"] = operation + ": " + _fmsg 
                 
                 if admission_control_requested :
                     self.admission_control(_obj_type, obj_attr_list, "rollbackmigrate")
             else :
                 _msg = _obj_type + " object " + obj_attr_list["uuid"] 
-                _msg += " (named \"" + obj_attr_list["name"] +  "\") successfully migrated "
+                _msg += " (named \"" + obj_attr_list["name"] +  "\") successfully " + operation + "ed "
                 _msg += "on this experiment."
                 cbdebug(_msg)
-                obj_attr_list["tracking"] =  "Migrate: success." 
+                obj_attr_list["tracking"] =  operation + ": success." 
                 
-            if migrate_pending :
-                self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "VMS_UNDERGOING_MIGRATE", obj_attr_list["uuid"], True)
+            if pending :
+                self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "VMS_UNDERGOING_" + operation, obj_attr_list["uuid"], True)
                 self.osci.set_object_state(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "attached")
                 
                 self.osci.pending_object_remove(obj_attr_list["cloud_name"], _obj_type, obj_attr_list["uuid"])
-                self.osci.remove_from_list(obj_attr_list["cloud_name"], _obj_type, "PENDING",obj_attr_list["uuid"] + "|" + obj_attr_list["name"], True)
+                self.osci.remove_from_list(obj_attr_list["cloud_name"], _obj_type, "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], True)
                 
+            tracking = "FINISHED" if not _status else "FAILED"
             self.osci.create_object(obj_attr_list["cloud_name"], \
-                                    "FINISHEDTRACKING" + _obj_type, \
+                                    tracking + "TRACKING" + _obj_type, \
                                     obj_attr_list["uuid"] + unique_state_key, \
                                     obj_attr_list, \
                                     False, \

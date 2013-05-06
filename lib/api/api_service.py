@@ -20,25 +20,11 @@
     API Service RPC Relay
     @author: Michael R. Hines
 '''
-from os import chmod, makedirs
-from sys import path
-from os.path import isdir
-from time import asctime, localtime, sleep, time
-from fileinput import FileInput
-
-from lib.auxiliary.data_ops import str2dic, DataOpsException
 from lib.auxiliary.code_instrumentation import trace, cblog, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from lib.auxiliary.value_generation import ValueGeneration
-from lib.auxiliary.data_ops import dic2str, makeTimestamp
-from lib.auxiliary.config import parse_cld_defs_file, load_store_functions, get_available_clouds
-from lib.operations.base_operations import BaseObjectOperations
-from lib.operations.background_operations import BackgroundObjectOperations
+from lib.auxiliary.config import parse_cld_defs_file, get_available_clouds
 
 from DocXMLRPCServer import DocXMLRPCServer
-from DocXMLRPCServer import DocXMLRPCRequestHandler
-from sys import stdout, path
 import sys
-from functools import wraps
 import inspect
 import threading
 import SocketServer
@@ -96,7 +82,7 @@ class API():
                 try :
                     if help(func.__name__) :
                         func.__func__.__doc__ = fake_stdout.capture_msg 
-                except Exception, obj:
+                except Exception:
                     pass
                 fake_stdout.unswitch()
     @trace
@@ -265,11 +251,17 @@ class API():
         else :
             return self.active.vmcapture({}, cloud_name + ' ' + identifier + ' ' + vmcrs, "vm-capture")[2]
         
-    def vmmigrate(self, cloud_name, identifier, destination, protocol = "tcp", interface = "default", async = False):
+    def migrate(self, cloud_name, identifier, destination, operation = "migrate", protocol = "tcp", interface = "default", async = False):
         if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + destination + ' ' + protocol + ' ' + interface + (' ' + async), "vm-migrate")[2]
+            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + destination + ' ' + protocol + ' ' + interface + (' ' + async), "vm-" + operation)[2]
         else :
-            return self.active.migrate({}, cloud_name + ' ' + identifier + ' ' + destination + ' ' + protocol + ' ' + interface, "vm-migrate")[2]
+            return self.active.migrate({}, cloud_name + ' ' + identifier + ' ' + destination + ' ' + protocol + ' ' + interface, "vm-" + operation)[2]
+        
+    def vmmigrate(self, cloud_name, identifier, destination, protocol = "tcp", interface = "default", async = False):
+        return self.migrate(cloud_name, identifier, destination, "migrate", protocol, interface, async)
+    
+    def vmprotect(self, cloud_name, identifier, destination, protocol = "mc", interface = "default", async = False):
+        return self.migrate(cloud_name, identifier, destination, "protect", protocol, interface, async)
         
     def hostfail(self, cloud_name, identifier, firs = "none", async = False):
         parameters = cloud_name + ' ' + identifier + ' ' + firs
@@ -354,8 +346,8 @@ class API():
         else :
             return self.active.vmrunstate({}, cloud_name + ' ' + identifier + " fail" + ' ' + firs, "vm-runstate")[2]
         
-    def cldalter(self, cloud_name, object, attribute, value):
-        return self.passive.alter_object({"name": cloud_name}, cloud_name + ' ' + object + ' ' + attribute + "=" + str(value), "cloud-alter")[2]
+    def cldalter(self, cloud_name, gobject, attribute, value):
+        return self.passive.alter_object({"name": cloud_name}, cloud_name + ' ' + gobject + ' ' + attribute + "=" + str(value), "cloud-alter")[2]
     
     def appalter(self, cloud_name, identifier, attribute, value):
         return self.passive.alter_object({}, cloud_name + ' ' + identifier + ' ' + attribute + "=" + str(value), "ai-alter")[2]
@@ -399,15 +391,15 @@ class API():
         else :
             return self.active.objattach({}, cloud_name + ' ' + identifier + ' ' + scope + ' ' + max_simultaenous_faults + ' ' + max_total_faults + ' ' + ifat + ' ' + min_fault_age + ' ' + ftl + ' ' + temp_attr_list, "firs-attach")[2]
     
-    def appattach(self, cloud_name, type, load_level = "default", load_duration = "default", lifetime = "none", aidrs = "none", pause_step = "none", temp_attr_list = "empty=empty", async = False):
-        parameters = cloud_name + ' ' + type + ' ' + str(load_level) + ' ' + str(load_duration) + ' ' + str(lifetime) + ' ' + aidrs + ' ' + pause_step + ' ' + temp_attr_list
+    def appattach(self, cloud_name, gtype, load_level = "default", load_duration = "default", lifetime = "none", aidrs = "none", pause_step = "none", temp_attr_list = "empty=empty", async = False):
+        parameters = cloud_name + ' ' + gtype + ' ' + str(load_level) + ' ' + str(load_duration) + ' ' + str(lifetime) + ' ' + aidrs + ' ' + pause_step + ' ' + temp_attr_list
         if async and str(async).count("async") :
             return self.active.background_execute(parameters + (' ' + async), "ai-attach")[2]
         else :
             return self.active.objattach({}, parameters, "ai-attach")[2]
     
-    def appinit(self, cloud_name, type, load_level = "default", load_duration = "default", lifetime = "none", aidrs = "none", pause_step = "prepare_provision_complete"):
-        return self.appattach(cloud_name, type, str(load_level), str(load_duration), str(lifetime), aidrs, pause_step)
+    def appinit(self, cloud_name, gtype, load_level = "default", load_duration = "default", lifetime = "none", aidrs = "none", pause_step = "prepare_provision_complete"):
+        return self.appattach(cloud_name, gtype, str(load_level), str(load_duration), str(lifetime), aidrs, pause_step)
     
     def apprun(self, cloud_name, uuid) :
         return self.apprunstate(cloud_name, uuid, "attached", "run")
@@ -477,8 +469,8 @@ class API():
         else :
             return self.active.objdetach({}, cloud_name + ' ' + identifier + ' ' + force, "aidrs-detach")[2]
     
-    def viewshow(self, cloud_name, object, criterion, expression, sorting = "default", filter = "default"):
-        return self.passive.show_view({"name": cloud_name}, cloud_name + ' ' + object + ' ' + criterion + ' ' + expression + ' ' + sorting + ' ' + filter, "view-show")[2]
+    def viewshow(self, cloud_name, gobject, criterion, expression, sorting = "default", gfilter = "default"):
+        return self.passive.show_view({"name": cloud_name}, cloud_name + ' ' + gobject + ' ' + criterion + ' ' + expression + ' ' + sorting + ' ' + gfilter, "view-show")[2]
     
     def monlist(self, cloud_name, object_type):
         result = self.passive.monitoring_list(cloud_name + ' ' + object_type, "mon-list")[2]

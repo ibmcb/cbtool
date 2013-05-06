@@ -52,7 +52,7 @@ INITIAL_VMCS = $SCP_INITIAL_VMCS
 SECURITY_GROUPS = $Empty
 KEY_NAME = $Empty
 MIGRATE_SUPPORTED = $False
-MC_SUPPORTED = $False
+PROTECT_SUPPORTED = $False
 
 [VM_DEFAULTS : SCP_CLOUDCONFIG]
 # These need to be here for testing that
