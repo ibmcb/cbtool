@@ -379,7 +379,7 @@ def check_redis_binary(hostname, username, trd_party_dir) :
     finally :
         if _status or _msg.count("NOT OK"):
             _msg += " Please install Redis with: cd " + trd_party_dir
-            _msg += "; git clone https://github.com/ibmcb/redis.git; "
+            _msg += "; git clone https://github.com/hinesmr/redis.git; "
             _msg += "cd redis; git checkout 2.6; make; sudo make install\n"
         return _status, _msg
 
@@ -410,7 +410,7 @@ def check_redis_python_bindings(hostname, username, trd_party_dir) :
     finally :
         if _status or _msg.count("NOT OK"):
             _msg += " Please install Redis python bindings with: cd "
-            _msg += trd_party_dir + "; git clone https://github.com/ibmcb/redis-py.git;"
+            _msg += trd_party_dir + "; git clone https://github.com/hinesmr/redis-py.git;"
             _msg += "cd redis-py; sudo python setup.py install\n"           
         return _status, _msg
 
@@ -525,7 +525,7 @@ def check_mongo_python_bindings(hostname, username, trd_party_dir) :
     finally :
         if _status or _msg.count("NOT OK"):
             _msg += " Please install MongoDB python bindings with: cd "
-            _msg += trd_party_dir + "; git clone https://github.com/ibmcb/mongo-python-driver.git;"
+            _msg += trd_party_dir + "; git clone https://github.com/hinesmr/mongo-python-driver.git;"
             _msg += "cd mongo-python-driver; sudo python setup.py install\n"    
         return _status, _msg
 
@@ -654,7 +654,7 @@ def check_custom_gmetad(hostname, username, trd_party_dir) :
     finally :
         if _status or _msg.count("NOT OK"):
             _msg += " Please install the custom gmetad with: cd "
-            _msg += trd_party_dir + "; git clone https://github.com/ibmcb/monitor-core.git\n"    
+            _msg += trd_party_dir + "; git clone https://github.com/hinesmr/monitor-core.git\n"    
         return _status, _msg
 
 def check_wizard(hostname, username, trd_party_dir) :
@@ -683,7 +683,7 @@ def check_wizard(hostname, username, trd_party_dir) :
     finally :
         if _status or _msg.count("NOT OK"):
             _msg += " Please install Bootstrap-Wizard with: cd "
-            _msg += trd_party_dir + "; git clone https://github.com/ibmcb/Bootstrap-Wizard.git\n"
+            _msg += trd_party_dir + "; git clone https://github.com/hinesmr/Bootstrap-Wizard.git\n"
         return _status, _msg
 
 def check_d3(hostname, username, trd_party_dir) :
@@ -712,7 +712,7 @@ def check_d3(hostname, username, trd_party_dir) :
     finally :
         if _status or _msg.count("NOT OK"):
             _msg += " Please install d3 with: cd "
-            _msg += trd_party_dir + "; git clone https://github.com/ibmcb/d3.git\n"
+            _msg += trd_party_dir + "; git clone https://github.com/hinesmr/d3.git\n"
         return _status, _msg
 
 def check_bootstrap(hostname, username, trd_party_dir) :
@@ -741,7 +741,7 @@ def check_bootstrap(hostname, username, trd_party_dir) :
     finally :
         if _status or _msg.count("NOT OK"):
             _msg += " Please install bootstrap with: cd "
-            _msg += trd_party_dir + "; git clone https://github.com/ibmcb/bootstrap.git\n"          
+            _msg += trd_party_dir + "; git clone https://github.com/hinesmr/bootstrap.git\n"          
         return _status, _msg
 
 def check_openstack_python_bindings(hostname, username, trd_party_dir) :

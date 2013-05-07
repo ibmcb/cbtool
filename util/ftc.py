@@ -53,9 +53,6 @@ sysrand = random.SystemRandom()
 try :
     # Provided by RHEL 6.2
     from libvirt_qemu import qemuMonitorCommand
-    from libvirt import virEventRegisterDefaultImpl
-    from libvirt import virEventAddHandle
-    from libvirt import virEventRunDefaultImpl
 except ImportError:
     pass
 

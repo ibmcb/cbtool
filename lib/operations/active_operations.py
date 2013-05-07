@@ -2805,19 +2805,14 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
     @trace    
     def migrate(self, obj_attr_list, parameters, command) :
-        '''
-        TBD
-        '''
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
             _result = None
             pending = False
             admission_control_requested = False
-
             obj_attr_list["uuid"] = "undefined"            
             obj_attr_list["name"] = "undefined"
-
             _obj_type = command.split('-')[0].upper()
             operation = command.split('-')[1].lower()
             obj_attr_list["operation"] = operation
@@ -2878,27 +2873,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             self.osci.update_object_views(obj_attr_list["cloud_name"], "VM", \
                                                           obj_attr_list["uuid"], obj_attr_list, "add", False)
                             
-                        self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
-                                                          obj_attr_list["uuid"], False, \
-                                                          "mgt_501_" + operation + "_request_originated", \
-                                                          obj_attr_list["mgt_501_" + operation + "_request_originated"])
-    
-                        self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
-                                                          obj_attr_list["uuid"], False, \
-                                                          "mgt_502_" + operation + "_request_sent", \
-                                                          obj_attr_list["mgt_502_" + operation + "_request_sent"])
-
-                        if "mgt_503_" + operation + "_request_completed" in obj_attr_list :
-                            self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
-                                                              obj_attr_list["uuid"], False, \
-                                                              "mgt_503_" + operation + "_request_completed", \
-                                                              obj_attr_list["mgt_503_" + operation + "_request_completed"])
-
-                        else :
-                            self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
-                                                              obj_attr_list["uuid"], False, \
-                                                              "mgt_999_" + operation + "_request_failed", \
-                                                              obj_attr_list["mgt_999_" + operation + "_request_failed"])
+                        for mgt in [  "mgt_501_" + operation + "_request_originated",
+                                      "mgt_502_" + operation + "_request_sent", \
+                                      "mgt_503_" + operation + "_request_completed", \
+                                      "mgt_999_" + operation + "_request_failed" ] :
+                            if mgt in obj_attr_list :
+                                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
+                                                          obj_attr_list["uuid"], False, mgt, obj_attr_list[mgt])
                             
                         if not _status :
                             _result = obj_attr_list
@@ -2963,10 +2944,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             self.osci.create_object(obj_attr_list["cloud_name"], \
                                     tracking + "TRACKING" + _obj_type, \
                                     obj_attr_list["uuid"] + unique_state_key, \
-                                    obj_attr_list, \
-                                    False, \
-                                    True, \
-                                    3600)
+                                    obj_attr_list, False, True, 3600)
 
             return self.package(_status, _msg, _result)
         
