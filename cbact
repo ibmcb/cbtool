@@ -533,6 +533,19 @@ def main(options) :
                 _status, _fmsg, _object = _active_obj_command.migrate(_obj_attr_list, \
                                                                         _parameters, \
                                                                         options.operation)
+                
+        elif _operation.count("login") or _operation.count("display") :
+            _local_process = True
+            _uuid = options.ouuid
+
+            _obj_attr_list = {}
+
+            _obj_attr_list["async"] = "true"
+
+            if _obj_type.upper() == "VM" :
+                _obj_type = "VM"
+                _status, _fmsg, _object = _active_obj_command.gtk(_obj_attr_list, _parameters,  options.operation)
+                
         elif _operation.count("capture") :
  
             _local_process = True

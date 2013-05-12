@@ -251,17 +251,29 @@ class API():
         else :
             return self.active.vmcapture({}, cloud_name + ' ' + identifier + ' ' + vmcrs, "vm-capture")[2]
         
-    def migrate(self, cloud_name, identifier, destination, operation = "migrate", protocol = "tcp", interface = "default", async = False):
-        if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + destination + ' ' + protocol + ' ' + interface + (' ' + async), "vm-" + operation)[2]
-        else :
-            return self.active.migrate({}, cloud_name + ' ' + identifier + ' ' + destination + ' ' + protocol + ' ' + interface, "vm-" + operation)[2]
-        
     def vmmigrate(self, cloud_name, identifier, destination, protocol = "tcp", interface = "default", async = False):
-        return self.migrate(cloud_name, identifier, destination, "migrate", protocol, interface, async)
+        if async and str(async).count("async") :
+            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + destination + ' ' + protocol + ' ' + interface + (' ' + async), "vm-migrate")[2]
+        else :
+            return self.active.migrate({}, cloud_name + ' ' + identifier + ' ' + destination + ' ' + protocol + ' ' + interface, "vm-migrate")[2]
     
     def vmprotect(self, cloud_name, identifier, destination, protocol = "mc", interface = "default", async = False):
-        return self.migrate(cloud_name, identifier, destination, "protect", protocol, interface, async)
+        if async and str(async).count("async") :
+            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + destination + ' ' + protocol + ' ' + interface + (' ' + async), "vm-protect")[2]
+        else :
+            return self.active.migrate({}, cloud_name + ' ' + identifier + ' ' + destination + ' ' + protocol + ' ' + interface, "vm-protect")[2]
+        
+    def vmlogin(self, cloud_name, identifier, async = False):
+        if async and str(async).count("async") :
+            return self.active.background_execute(cloud_name + ' ' + identifier + (' ' + async), "vm-login")[2]
+        else :
+            return self.active.gtk({}, cloud_name + ' ' + identifier, "vm-login")[2]
+        
+    def vmdisplay(self, cloud_name, identifier, async = False):
+        if async and str(async).count("async") :
+            return self.active.background_execute(cloud_name + ' ' + identifier + (' ' + async), "vm-display")[2]
+        else :
+            return self.active.gtk({}, cloud_name + ' ' + identifier, "vm-display")[2]
         
     def hostfail(self, cloud_name, identifier, firs = "none", async = False):
         parameters = cloud_name + ' ' + identifier + ' ' + firs
@@ -521,7 +533,7 @@ class APIService ( threading.Thread ):
         self.api.signatures = {}
         for methodtuple in inspect.getmembers(self.api, predicate=inspect.ismethod) :
             name = methodtuple[0]
-            if name in ["__init__", "success", "error" ] :
+            if name in ["__init__", "success", "error", "migrate" ] :
                 continue
             func = getattr(self.api, name)
             argspec = inspect.getargspec(func) 

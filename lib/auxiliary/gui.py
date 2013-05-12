@@ -29,6 +29,7 @@ import traceback
 import os
 import re
 import shutil
+import urllib2
 
 from datetime import datetime
 from pwd import getpwuid
@@ -40,14 +41,20 @@ from twisted.internet import reactor
 from twisted.web.static import File
 from twisted.web.resource import Resource
 from twisted.web.server import Site
+from twisted.web import proxy, server
+from twisted.python import log
 from webob import Request, Response, exc
 from beaker.middleware import SessionMiddleware
 
+
 cwd = (re.compile(".*\/").search(os.path.realpath(__file__)).group(0)) + "/../../"
 path.append(cwd)
+path.append(cwd + "3rd_party/StreamProx/streamprox")
 
 from lib.api.api_service_client import *
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
+from proxy import BufferingProxyFactory
+from packet_buffer import PacketBuffer
 
 def prefix(uri) :
     return ""
@@ -1211,20 +1218,33 @@ class GUI(object):
                 req.session['clouds'] = self.api.cldlist() 
                 req.session.save()
                 return self.bootstrap(req, self.heromsg + "\n<div id='detachresponse'><h4>Detached from Cloud: " + cn + " successfully.</h4></div></div>")
+            elif req.action.count("broadway") :
+                return self.bootstrap(req, self.heromsg + "\n<h4>Broadway GTK request missing 'port' parameter in URL line. Try again.</h4></div>", error = True)
+            elif req.action.count("gtk") :
+                uuid = req.http.params.get("uuid")
+                operation = req.http.params.get("operation")
+                if uuid and operation :
+                    if operation == "login" :
+                        self.api.vmlogin(req.cloud_name, uuid)
+                    elif operation == "display" :
+                        self.api.vmdisplay(req.cloud_name, uuid)
+                    return self.bootstrap(req, self.heromsg + "\n<div id='gtkresponse'><h4>GTK broadway request success.</h4></div></div>")
+                else :
+                    return self.bootstrap(req, self.heromsg + "\n<h4>Broadway GTK request missing parameters. Try again.</h4></div>", error = True)
             
             return self.bootstrap(req, self.heromsg + "\n<h4>We do not understand you! Try again...</h4></div>", error = True)
     
         except APIException, obj :
-            return self.bootstrap(req, self.heromsg + "\n<h4>Error: API Service says:</h4>" + str(obj.status) + ": " + obj.msg.replace("<", "&lt;").replace(">", "&gt;").replace("\\n", "<br>").replace("\n", "<br>") + "</h4></div>", error = True)
+            return self.bootstrap(req, self.heromsg + "\n<h4 id='gerror'>Error: API Service says:" + str(obj.status) + ": " + obj.msg.replace("<", "&lt;").replace(">", "&gt;").replace("\\n", "<br>").replace("\n", "<br>") + "</h4></div>", error = True)
         except IOError, msg :
-            return self.bootstrap(req, self.heromsg + "\n<h4>Error: API Service (" + self.api_access + ") is not responding: " + str(msg) + "</h4></div>", error = True)
+            return self.bootstrap(req, self.heromsg + "\n<h4 id='gerror'>Error: API Service (" + self.api_access + ") is not responding: " + str(msg) + "</h4></div>", error = True)
         except socket.error, v:
-            return self.bootstrap(req, self.heromsg + "\n<h4>Error: API Service (" + self.api_access + ") is not responding: " + str(v) + "</h4></div>", error = True)
+            return self.bootstrap(req, self.heromsg + "\n<h4 id='gerror'>Error: API Service (" + self.api_access + ") is not responding: " + str(v) + "</h4></div>", error = True)
         except exc.HTTPTemporaryRedirect, e :
             raise e
         except Exception, msg:
             print "Exception: " + str(msg)
-            return self.bootstrap(req, self.heromsg + "\n<h4>Error: Something bad happened: " + str(msg) + "</h4></div>")
+            return self.bootstrap(req, self.heromsg + "\n<h4 id='gerror'>Error: Something bad happened: " + str(msg) + "</h4></div>")
         
     def default(self, req, params, attach_params, views, operations, objects, liststates):
         if not req.active : 
@@ -1396,6 +1416,12 @@ class GUI(object):
                     key = "keyword" + str(keyidx)
                     output += "&" + key + "=" + keywords[key]
                 output += "'><i class='icon-" + icon + " icon-white'></i>&nbsp;&nbsp;" + label + "&nbsp;&nbsp;</a>"
+                
+            if req.active == "vm" :
+                output += """
+                    <a id='loginClick' href="#loginModal" role="button" class="btn btn-success" data-toggle="modal"><i class="icon-white icon-hand-right"></i>&nbsp;&nbsp;Login</a>
+                    <a id='displayClick' href="#displayModal" role="button" class="btn btn-success" data-toggle="modal"><i class="icon-white icon-facetime-video"></i>&nbsp;&nbsp;Display</a>
+                    """
             
             for operation in migrate_operations :
                 hosts =  self.api.hostlist(req.cloud_name)
@@ -1438,6 +1464,18 @@ class GUI(object):
                 operation_fd = open(cwd + "/gui_files/" + operation + "_template.html", "r")
                 output += operation_fd.read().replace("BOOT" + operation.upper(), dest_choices)
                 operation_fd.close()
+                
+            if req.active == "vm" :
+                gtk_fd = open(cwd + "/gui_files/gtk_template.html", "r")
+                gtk = gtk_fd.read()
+                if "gtk_login_port" in attrs :
+                    gtk = gtk.replace("BOOTLOGINPORT", attrs["gtk_login_port"])
+                if "gtk_display_port" in attrs :
+                    gtk = gtk.replace("BOOTDISPLAYPORT", attrs["gtk_display_port"])
+                gtk = gtk.replace("BOOTID", attrs["uuid"])
+                    
+                gtk_fd.close()
+                output += gtk
                 
             if req.active in ["app", "vmc", "host"] :
                 output += """
@@ -1717,6 +1755,57 @@ class GUI(object):
     
         return contents
 
+def parse_bufdata(bufdata):
+    verb = ""
+    path = ""
+    version = ""
+    port = "0" 
+
+    import re
+
+    if bufdata == None:
+        raise "empty buffer data handed to parse_bufdata"
+
+    prefix, rest = "".join(bufdata).split('\r\n', 1)
+
+    # log.msg("dispatcher: prefix:%s" % prefix)
+
+    prefix = prefix.strip().rstrip()
+    if prefix != "":
+        verb, pathversion = prefix.split(" ", 1)
+        pathversion = pathversion.strip().rstrip()
+        if pathversion != "":
+            path, version = pathversion.split(" ", 1)
+    
+        if path.count("?") and path.count("=") == 1:
+            params = path.split("?")[1]
+            if params.count("=") :
+                port = params.split("=")[1]
+                
+        log.msg("dispatcher: verb/path/version::%s:%s:%s" % (verb, path, version))
+
+        return verb, path, version, port
+    
+class BroadwayRedirectResource(Resource):
+    def render_GET(self, request):
+        name = request.path[1:]
+        if "port" not in request.args :
+            return "Error: Port not listed in GTK broadway URL line! Try again"
+        port = int(request.args["port"][0])
+        
+        try :
+            if name == "broadway" :
+                return urllib2.urlopen("http://localhost:" + str(port)).read().replace("broadway.js", "broadway.js?port=" + str(port))
+            
+            elif name == "broadway.js" :
+                return urllib2.urlopen("http://localhost:" + str(port) + "/" + name).read().replace("/socket", "/socket?port=" + str(port))
+            
+            else :
+                return "Error: Unknown GTK broadway URL request! Try again"
+        except urllib2.URLError, msg :
+            return "Error: Display not available: " + request.uri + ": " + str(msg)
+
+        
 class GUIDispatcher(Resource) :
     def __init__(self, keepsession, apiport, apihost) :
 
@@ -1727,6 +1816,7 @@ class GUIDispatcher(Resource) :
         self.git = File(cwd + "/.git")
         self.git.indexNames = ["test.rpy"]
         self.dashboard = GUI(apiport, apihost)
+        self.broadway = BroadwayRedirectResource()
         
         session_opts = {
             'session.data_dir' : '/tmp/dashboard_sessions_' + getpwuid(os.getuid())[0] + 'data',
@@ -1746,15 +1836,84 @@ class GUIDispatcher(Resource) :
         request.content.seek(0,0)
 
         if name.count("3rd_party") :
-                return self.third_party
+            return self.third_party
         elif name.count("gui_files") :
-                return self.files
+            return self.files
         elif name.count("favicon.ico"):
-                return self.icon
+            return self.icon
         elif name.count("git"):
-                return self.git
+            return self.git
+        elif name.count("broadway"):
+            return self.broadway
+
         else :
             return self.app
+
+class WebsocketsDispatcher:
+    site = None
+
+    def __init__(self, bufdata):
+        self.bufdata = bufdata
+
+        # Parse the packet buffer and save the important components
+        verb, path, version, port = parse_bufdata(self.bufdata)
+        self.verb = verb
+        self.path = path
+        self.version = version
+        self.port = port
+
+    def isLocal(self):
+        if self.path.count("socket") :
+            return False
+        return True
+
+    def localFactory(self):
+        if self.path.count("socket") :
+            return None
+        else :
+            return self.site
+    
+    def connectClient(self, clientCreator):
+        log.msg("connectClient: %s/%s/%s" % (self.verb, self.path, self.version))
+        
+        # This URL is what the GTK3 broadway backend uses to transmit
+        # the actual display, which we passthrough to broadway.js
+        # which has already been fetched by the browser and issues
+        # the actual websocket traffic to draw the application
+        if self.path.count("/socket"):
+            reactor.connectTCP("localhost", int(self.port), clientCreator)
+            return True
+
+        return False
+
+    # We have to rewrite the Host: header to match what the GTK websocket expects
+
+    def outgoingData(self):
+
+        if self.path == "/":
+            # Replace the Host: header
+            x = re.sub(r'Host: (\S*)', 'Host: localhost', self.bufdata[0])
+            log.msg("replace:%s" % x)
+            self.bufdata[0] = x
+
+        return self.bufdata
+    
+'''
+ The GUI handles 3 different kinds of traffic using twisted:
+
+ 1. WSGI resources returns HTML for the main user interfaces
+ 2. FILE resoucres return static content
+ 3. Websocket traffic gets proxied through this process to other locations
+
+ In order to handle #3, we use 'StreamProx' to first examine (earlier than
+ twisted) what the is the requested URL.
+
+ If the URL refers to a websocket URL, then we proxy that traffic.
+
+ Otherwise, we return control to this process to handle the rest of the UI
+ events.
+
+'''
 
 def gui(options) :
     reactor._initThreadPool()
@@ -1762,8 +1921,14 @@ def gui(options) :
     cbdebug("Will use API Service @ http://" + options.apihost + ":" + str(options.apiport))
     cbdebug("Point your browser at port: " + str(options.guiport) + ". (Bound to interface: " + options.guihost + ")")
 
-    reactor.listenTCP(  int(options.guiport), \
-                        Site(GUIDispatcher(options.keepsession, options.apiport, options.apihost)), \
-                        interface = options.guihost)
+    site = Site(GUIDispatcher(options.keepsession, options.apiport, options.apihost))
 
+    PacketBuffer.delimiter = "\r\n\r\n"
+    factory = BufferingProxyFactory()
+    factory.buffer_factory = PacketBuffer
+    WebsocketsDispatcher.site = site
+    factory.dispatcher_factory = WebsocketsDispatcher
+
+    reactor.listenTCP(int(options.guiport), factory, interface = options.guihost)
     reactor.run()
+

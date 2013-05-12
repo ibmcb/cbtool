@@ -16,7 +16,7 @@
 # limitations under the License.
 #/*******************************************************************************
 
-import sys, os, threading, SocketServer, signal, inspect, xmlrpclib
+import sys, os, threading, SocketServer, signal, inspect, xmlrpclib, libxml2
 from libvirt import *
 from logging import getLogger, StreamHandler, Formatter, Filter, DEBUG, ERROR, INFO, WARN, CRITICAL
 from logging.handlers import SysLogHandler
@@ -72,6 +72,9 @@ def actuator_cli_parsing() :
                       help = "Point CloudBench to a remote debugger")
     
     # Process options
+    parser.add_option("--display", dest = "display", metavar = "display", \
+                      default = "vnc", help = "Set the remote display type, Options: (vnc|spice)")
+    
     parser.add_option("--hypervisor", dest = "hypervisor", metavar = "hypervisor", \
                       default = "kvm", help = "Set the hypervisor, Options: (kvm|xen|pv)")
     
@@ -238,7 +241,7 @@ class Ftc :
         self.vhw_config["gold32"] = { "vcpus" : "8", "vmemory" : "4096", "vstorage" : "358400", "vnics" : "1" }
         self.vhw_config["cooper64"] = { "vcpus" : "2", "vmemory" : "4096", "vstorage" : "61440", "vnics" : "1" }
         self.vhw_config["bronze64"]  = { "vcpus" : "2", "vmemory" : "4096", "vstorage" : "870400", "vnics" : "1" }
-        self.vhw_config["silver64"] = { "vcpus" : "4", "vmemory" : "8192", "vstorage" : "1048576", "vnics" : "1" }
+        self.vhw_config["silver64"] = { "vcpus" : "2", "vmemory" : "8192", "vstorage" : "1048576", "vnics" : "1" }
         self.vhw_config["gold64"] = { "vcpus" : "8", "vmemory" : "16384", "vstorage" : "1048576", "vnics" : "1" }
         self.vhw_config["platinum64"] = { "vcpus" : "16", "vmemory" : "16384", "vstorage" : "2097152", "vnics" : "1" }
 
@@ -360,10 +363,10 @@ class Ftc :
             _xml_templates["vm_template"] +=  "\t\t</input>\n"
             _xml_templates["vm_template"] += "\t\t<input type='mouse' bus='ps2'/>\n"
         
-#        _xml_templates["vm_template"] += "\t\t<graphics type='vnc' port='-1' autoport='yes' listen='TMPLT_VMC_HOSTNAME' keymap='en-us'/>\n"
-#        _xml_templates["vm_template"] += "\t\t<video>\n"
-#        _xml_templates["vm_template"] += "\t\t\t<model type='cirrus' vram='9216' heads='1'/>\n"
-#        _xml_templates["vm_template"] += "\t\t</video>\n"
+        _xml_templates["vm_template"] += "\t\t<graphics type='" + options.display + "' port='-1' autoport='yes' listen='0.0.0.0' keymap='en-us'/>\n"
+        _xml_templates["vm_template"] += "\t\t<video>\n"
+        _xml_templates["vm_template"] += "\t\t\t<model type='cirrus' vram='9216' heads='1'/>\n"
+        _xml_templates["vm_template"] += "\t\t</video>\n"
         if options.hypervisor == "xen" :
             _xml_templates["vm_template"] += "\t\t<memballoon model='xen'/>\n"
         else :
@@ -808,7 +811,20 @@ class Ftc :
         try :
             print _xml_templates["vm_template"]
             _dom = lvt_cnt.defineXML(_xml_templates["vm_template"])
+            
             _dom.create()
+            
+            xmlstr = _dom.XMLDesc(0)
+            doc = libxml2.parseDoc(xmlstr)
+            ctx = doc.xpathNewContext()
+            nodelist = ctx.xpathEval("/domain/devices/graphics[1]/@port")
+            result["display_port"] = nodelist and nodelist[0].content or None
+            nodelist = ctx.xpathEval("/domain/devices/graphics[1]/@type")
+            result["display_protocol"] = nodelist and nodelist[0].content or None          
+            if not result["display_protocol"] :
+                self.ftcraise(lvt_cnt.host, 4, _fmsg + "display is missing in XML!")
+            if not result["display_port"] :
+                self.ftcraise(lvt_cnt.host, 6, _fmsg + "port is missing in XML!")
         except libvirtError, msg: 
             if disk_format == "lvm" :
                 try :
@@ -1238,7 +1254,7 @@ class Ftc :
             dconn.close()
         except libvirtError, msg :
             _msg = str(msg).replace("migration", operation)
-            self.ftcraise(lvt_cnt.host, 3, _fmsg + _msg)
+            self.ftcraise(lvt_cnt.host, 3, _fmsg + msg)
         return self.success(_smsg, None)
     
     @trace

@@ -686,6 +686,34 @@ def check_wizard(hostname, username, trd_party_dir) :
             _msg += trd_party_dir + "; git clone https://github.com/hinesmr/Bootstrap-Wizard.git\n"
         return _status, _msg
 
+def check_streamprox(hostname, username, trd_party_dir) :
+    '''
+    TBD
+    '''
+    try:
+        _status = 100
+        _fmsg = "An error has occurred, but no error message was captured"
+
+        _proc_man =  ProcessManagement()
+        _msg = "Checking StreamProx version....."
+
+        if access(path[0] + "/3rd_party/StreamProx/README.md", F_OK) :
+            _version = "1.0.0"
+            _msg += compare_versions('1.0.0', _version)
+            _status = 0
+        else :
+            _status = 1728289
+
+    except Exception, e :
+        _status = 23
+#        _msg += str(e)
+
+    finally :
+        if _status or _msg.count("NOT OK"):
+            _msg += " Please install StreamProx with: cd "
+            _msg += trd_party_dir + "; git clone https://github.com/hinesmr/StreamProx.git\n"
+        return _status, _msg
+
 def check_d3(hostname, username, trd_party_dir) :
     '''
     TBD
@@ -996,6 +1024,7 @@ def dependency_checker(hostname, username, trd_party_dir) :
     _func_pointer["bootstrap"] = check_bootstrap
     _func_pointer["d3"] = check_d3
     _func_pointer["wizard"] = check_wizard
+    _func_pointer["streamprox"] = check_streamprox
     _func_pointer["novaclient"] = check_openstack_python_bindings
     _func_pointer["boto"] = check_ec2_python_bindings
     _func_pointer["rsync"] = check_rsync_version

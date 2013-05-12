@@ -319,7 +319,6 @@ class RedisMgdConn :
         '''
         self.conn_check()
 
-        obj_inst = self.experiment_inst + ":" + cloud_name
         try :
             for attr in cld_attrs.keys() :
                 self.redis_conn.hset(self.experiment_inst + ":CLOUD:" + \
@@ -347,7 +346,6 @@ class RedisMgdConn :
         TBD
         '''
         self.conn_check()
-        obj_inst = self.experiment_inst + ":" + cloud_name
         try :
             _cloud_parameters = self.get_object(cloud_name, "CLOUD", False, cloud_name, False)
             if _cloud_parameters["client_should_refresh"] != "yes" :

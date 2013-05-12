@@ -350,6 +350,7 @@ class BaseObjectOperations :
                 
         elif command == "vm-migrate" or command == "vm-protect":
             object_attribute_list["interface"] = "default" 
+            object_attribute_list["mtype"] = command.split("-")[1]
             
             if _length >= 3 :
                 object_attribute_list["name"] = _parameters[1]
@@ -363,9 +364,11 @@ class BaseObjectOperations :
             if _length >= 5 :
                 object_attribute_list["interface"] = _parameters[4]
 
-            if _length < 3:
-                _status = 9
-                _msg = "Usage: vm" + command.split("-")[1] + " <cloud name> <vm name> <destination> [protocol] [interface] [mode]"
+        elif command == "vm-login" or command == "vm-display":
+            object_attribute_list["mtype"] = command.split("-")[1]
+            
+            if _length >= 1 :
+                object_attribute_list["name"] = _parameters[1]
 
         elif command == "vm-resize" :
             if _length >= 2 :
@@ -1003,7 +1006,8 @@ class BaseObjectOperations :
             elif cmd.count("detach") or cmd.count("capture") or \
                 cmd.count("runstate") or cmd.count("resize") or \
                 cmd.count("restore") or cmd.count("console") or \
-                cmd.count("migrate") or cmd.count("protect") :
+                cmd.count("migrate") or cmd.count("protect") or \
+                cmd.count("login") or cmd.count("display") :
                 
                 if "target_state" in obj_attr_list and obj_attr_list["target_state"] == "attached" and obj_attr_list["suspected_command"] == "run" :
                     obj_attr_list["uuid"] = obj_attr_list["name"]
@@ -1048,6 +1052,12 @@ class BaseObjectOperations :
                     elif cmd.count("protect") :
                         _fmsg += "Cannot protect object."
                         _status = 41
+                    elif cmd.count("login") :
+                        _fmsg += "Cannot login to object."
+                        _status = 42
+                    elif cmd.count("display") :
+                        _fmsg += "Cannot display object."
+                        _status = 43
                 else :
                     _status = 0
                     _obj_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], _obj_type, \
@@ -1131,7 +1141,6 @@ class BaseObjectOperations :
                                                                 " not supported. Please choose one of: " + \
                                                                     " ".join(choices), 9003)
                                 
-                         
                     elif cmd.count("runstate") :
                         obj_attr_list["mgt_201_runstate_request_originated"] = obj_attr_list["command_originated"]
                         if obj_attr_list["runstate_supported"].lower() != "true" :
@@ -1146,6 +1155,8 @@ class BaseObjectOperations :
                             raise self.ObjectOperationException(_msg, _status)
                     elif cmd.count("detach") :
                         obj_attr_list["mgt_901_deprovisioning_request_originated"] = obj_attr_list["command_originated"]
+                    elif cmd.count("login") or cmd.count("display") :
+                        pass
                     else :
                         False
             ######### "ACTIVE" OPERATION OBJECT INITIALIZATION - END #########
@@ -2834,16 +2845,17 @@ class BaseObjectOperations :
         return True
 
     @trace
-    def auto_allocate_vm_port(self, name, obj_attr_list):
+    def auto_allocate_port(self, name, obj_attr_list, obj_type, obj_id, address):
         '''
         Generic function for reserving a port on a VM object basis.
         Currently used by: QEMU gdb debugger
+        Also used by UI to allocate gnome-terminal and spice ports for in-browser display.
         '''
         throw = False
         _lock = False
         base_name = name + "_port_base"
         max_name = name + "_port_max"
-        vmc_used_name = name + "_port_used"
+        used_name = name + "_port_used"
         
         if obj_attr_list[name].strip().lower() != "true" :
             return 0, "Not configured"
@@ -2852,25 +2864,21 @@ class BaseObjectOperations :
         _fmsg = "Could not find available port: " + base_name + "/" + max_name
             
         try :
-            _lock = self.osci.acquire_lock(obj_attr_list["cloud_name"], "VMC", obj_attr_list["vmc"], "allocate_port", 1)
+            _lock = self.osci.acquire_lock(obj_attr_list["cloud_name"], obj_type, obj_id, "allocate_port", 1)
+            used_ports = self.get_object_attribute(obj_attr_list["cloud_name"], obj_type, obj_id, used_name)
             
-            _vmc_used_ports = self.get_object_attribute(
-                    obj_attr_list["cloud_name"], "VMC", \
-                    obj_attr_list["vmc"], vmc_used_name)
-            
-            if _vmc_used_ports and _vmc_used_ports.strip() != "" :
-                _vmc_used_ports = str2dic(_vmc_used_ports)
+            if used_ports and used_ports.strip() != "" :
+                used_ports = str2dic(used_ports)
             else :
-                _vmc_used_ports = {}
-            _nh_conn = Nethashget(obj_attr_list["vmc_cloud_ip"])
+                used_ports = {}
+            _nh_conn = Nethashget(address)
             for _curr_port in range(int(obj_attr_list[base_name]), \
                                     int(obj_attr_list[max_name])) :
-                if str(_curr_port) not in _vmc_used_ports :
+                if str(_curr_port) not in used_ports :
                     if not _nh_conn.check_port(_curr_port, "TCP") :
-                        _vmc_used_ports[_curr_port] = obj_attr_list["uuid"]
-                        self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VMC", obj_attr_list["vmc"], \
-                                                          False, vmc_used_name, \
-                                                          dic2str(_vmc_used_ports), False)
+                        used_ports[_curr_port] = obj_attr_list["uuid"]
+                        self.osci.update_object_attribute(obj_attr_list["cloud_name"], obj_type, obj_id, \
+                              False, used_name, dic2str(used_ports), False)
                         obj_attr_list[name + "_port"] = _curr_port
                         _status = 0
                         break
@@ -2879,42 +2887,40 @@ class BaseObjectOperations :
             
         finally :
             if _lock :
-                self.osci.release_lock(obj_attr_list["cloud_name"], "VMC", obj_attr_list["vmc"], _lock)
+                self.osci.release_lock(obj_attr_list["cloud_name"], obj_type, obj_id, _lock)
             if throw :
                 raise throw
             
         return _status, _fmsg
-
+    
     @trace
-    def auto_free_vm_port(self, name, obj_attr_list) :
+    def auto_free_port(self, name, obj_attr_list, obj_type, obj_id, address) :
         '''
         TBD
         '''
         throw = False
         _lock = False
-        vmc_used_name = name + "_used"
+        used_name = name + "_used"
         
         if obj_attr_list[name].strip().lower() != "true" :
             return 0, "Not configured"
         
         try :
-            _lock = self.osci.acquire_lock(obj_attr_list["cloud_name"], "VMC", obj_attr_list["vmc"], "allocate_port", 1)
+            _lock = self.osci.acquire_lock(obj_attr_list["cloud_name"], obj_type, obj_id, "allocate_port", 1)
             
-            _vmc_used_ports = self.get_object_attribute(
-                    obj_attr_list["cloud_name"], "VMC", \
-                    obj_attr_list["vmc"], vmc_used_name)
+            used_ports = self.get_object_attribute(obj_attr_list["cloud_name"], obj_type, obj_id, used_name)
             
-            if _vmc_used_ports :
-                _vmc_used_ports = str2dic(_vmc_used_ports)
-                del _vmc_used_ports[str(obj_attr_list[name + "_port"])]
-                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VMC", obj_attr_list["vmc"], \
-                                  False, vmc_used_name, dic2str(_vmc_used_ports), False)
+            if used_ports :
+                used_ports = str2dic(used_ports)
+                del used_ports[str(obj_attr_list[name + "_port"])]
+                self.osci.update_object_attribute(obj_attr_list["cloud_name"], obj_type, obj_id, \
+                                  False, used_name, dic2str(used_ports), False)
         except Exception, e :
             throw = e 
             
         finally :
             if _lock :
-                self.osci.release_lock(obj_attr_list["cloud_name"], "VMC", obj_attr_list["vmc"], _lock)
+                self.osci.release_lock(obj_attr_list["cloud_name"], obj_type, obj_id, _lock)
             if throw :
                 raise throw
 
@@ -3238,7 +3244,8 @@ class BaseObjectOperations :
                     command.count("fail") or command.count("repair") or \
                     command.count("save") or command.count("restore") or \
                     command.count("resize") or command.count("detachall") or \
-                    command.count("migrate") or command.count("protect"):
+                    command.count("migrate") or command.count("protect") or \
+                    command.count("login") or command.count("display") :
     
                         if _obj_type != "HOST" and ("suspected_command" not in _obj_attr_list or _obj_attr_list["suspected_command"] != "run") :
                             _obj_uuid = self.osci.object_exists(_obj_attr_list["cloud_name"], _obj_type, \

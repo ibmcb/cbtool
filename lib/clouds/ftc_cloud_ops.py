@@ -572,7 +572,7 @@ class FtcCmds(CommonCloudFunctions) :
     @trace        
     def vmmigrate(self, obj_attr_list) :
         self.connect(obj_attr_list["access"])
-        operation = obj_attr_list["operation"]
+        operation = obj_attr_list["mtype"]
         _time_mark_crs = int(time())            
         obj_attr_list["mgt_502_" + operation + "_request_sent"] = _time_mark_crs - obj_attr_list["mgt_501_" + operation + "_request_originated"]
 

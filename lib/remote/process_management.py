@@ -367,18 +367,23 @@ class ProcessManagement :
         return _pid
 
     @trace
-    def kill_process(self, cmdline, kill_options = False) :
+    def kill_process(self, cmdline, kill_options = False, port = False) :
         '''
         TBD
         '''
         _pid = ['X']
 
-        while len(_pid) :
+        while len(_pid) and _pid[0] :
 
-            _pid = self.get_pid_from_cmdline(cmdline)
-            _pid = self.get_pid_from_cmdline(cmdline, kill_options)
+            if kill_options :
+                _pid = self.get_pid_from_cmdline(cmdline, kill_options)
+            elif port :
+                pid, username = self.get_pid_from_port(port)
+                _pid = [pid]
+            else :
+                _pid = self.get_pid_from_cmdline(cmdline)
 
-            if len(_pid) :
+            if len(_pid) and _pid[0] :
                 _pid = _pid[0]
 
                 if self.hostname == "127.0.0.1" :

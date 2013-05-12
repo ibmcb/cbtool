@@ -883,7 +883,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             if not _status :
                 if "qemu_debug_port_base" in obj_attr_list :
-                    _status, _fmsg = self.auto_allocate_vm_port("qemu_debug", obj_attr_list)
+                    _status, _fmsg = self.auto_allocate_port("qemu_debug", obj_attr_list, "VMC", obj_attr_list["vmc"], obj_attr_list["vmc_cloud_ip"])
                 
         except KeyError, msg :
             _status = 40
@@ -1588,7 +1588,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     if _vmcreate :
                         _cld_conn.vmdestroy(obj_attr_list)
                         if "qemu_debug_port_base" in obj_attr_list :
-                            self.auto_free_vm_port("qemu_debug", obj_attr_list)
+                            self.auto_free_port("qemu_debug", obj_attr_list, "VMC", obj_attr_list["vmc"], obj_attr_list["vmc_cloud_ip"])
                         
                     if _aidefine :
                         _cld_conn.aiundefine(obj_attr_list)
@@ -2540,7 +2540,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _fmsg = "An error has occurred, but no error message was captured"
 
             if "qemu_debug_port_base" in obj_attr_list :
-                self.auto_free_vm_port("qemu_debug", obj_attr_list)
+                self.auto_free_port("qemu_debug", obj_attr_list, "VMC", obj_attr_list["vmc"], obj_attr_list["vmc_cloud_ip"])
 
             if obj_attr_list["current_state"] != "attached" :
 
@@ -2803,6 +2803,110 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 cbdebug(_msg)
             return _status, _msg, None
 
+    @trace
+    def gtk(self, obj_attr_list, parameters, command):
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+            _result = None
+            obj_attr_list["uuid"] = "undefined"            
+            obj_attr_list["name"] = "undefined"
+            _obj_type = command.split('-')[0].upper()
+            operation = command.split('-')[1].lower()
+            obj_attr_list["operation"] = operation
+            name = "gtk_" + operation
+            portname = name + "_port"
+            
+            _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
+
+            if not _status :
+                _status, _fmsg = self.initialize_object(obj_attr_list, command)
+
+                if not _status :
+                    if portname not in obj_attr_list :
+                        gui = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "gui_defaults", False)
+                        gui["cloud_name"] = obj_attr_list["cloud_name"]
+                        gui["uuid"] = obj_attr_list["uuid"]
+                        _status, _fmsg = self.auto_allocate_port(name, gui, "GLOBAL", "gui_defaults", "localhost")
+                        if not _status :
+                            self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
+                                                              obj_attr_list["uuid"], False, \
+                                                              portname, gui[portname])
+                        obj_attr_list[portname] = gui[portname]
+                        cbwarn("Port " + str(obj_attr_list[portname]) + " allocated.", True)
+                    else :
+                        cbwarn("Port " + str(obj_attr_list[portname]) + " already allocated.", True)
+                        
+                    port = obj_attr_list[portname]
+                    
+                    if operation == "display" :
+                        uri = obj_attr_list["display_protocol"] + "://" + obj_attr_list["host_cloud_ip"] + ":" + obj_attr_list["display_port"]
+                        cmd = "GDK_BACKEND=broadway BROADWAY_DISPLAY=" + str(port) + " remote-viewer " + uri
+                    elif operation == "login" :
+                        cmd = "GDK_BACKEND=broadway BROADWAY_DISPLAY=" + str(port) + " gnome-terminal --maximize -e \\\"bash -c 'ssh " + \
+                                "-o StrictHostKeyChecking=no -l " + obj_attr_list["login"] + " -i " + obj_attr_list["identity"] + " " + \
+                                obj_attr_list["login"] + "@" + obj_attr_list["cloud_ip"] + "'\\\""
+                                
+                    cmd = "screen -d -m -S gtk" + str(port) + " bash -c \"" + cmd + "\""
+                    cbdebug("Will create GTK broadway backend with command: " + cmd, True)
+
+                    proc_man = ProcessManagement(username = obj_attr_list["username"], \
+                                                  cloud_name = obj_attr_list["cloud_name"])
+                    
+                    # For now, only allow one process at a time 
+                    pid, username = proc_man.get_pid_from_port(port)
+    
+                    if pid :
+                        cbdebug("Killing old GTK process: " + str(pid), True)
+                        proc_man.kill_process("GDK", port = port)
+    
+                    proc_man.run_os_command(cmd)
+                
+                    sleep(2)
+                    pid, username = proc_man.get_pid_from_port(port)
+                    
+                    if pid :
+                        self.update_process_list(obj_attr_list["cloud_name"], "GLOBAL", "gui_defaults", str(pid), "add")
+                    else :
+                        _status = 34095 
+                        _fmsg = "GTK process creation failed."
+                    
+        except self.ObjectOperationException, obj :
+            _status = obj.status
+            _fmsg = str(obj.msg)
+
+        except self.osci.ObjectStoreMgdConnException, obj :
+            _status = obj.status
+            _fmsg = str(obj.msg)
+
+        except ImportError, msg :
+            _status = 8
+            _fmsg = str(msg)
+
+        except AttributeError, msg :
+            _status = 8
+            _fmsg = str(msg)
+
+        except CldOpsException, obj :
+            _status = obj.status
+            _fmsg = str(obj.msg)
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+
+        finally:        
+            if _status :
+                _msg = "GTK broadway (" + operation + ") could not be created for " \
+                        + _obj_type + " object " + obj_attr_list["uuid"] + " ("
+                _msg += "named \"" + obj_attr_list["name"] + "\"): " + _fmsg
+                cberr(_msg)
+            else :
+                _msg = "GTK broadway (" + operation + ") successfully created for " \
+                        + _obj_type + " object " + obj_attr_list["uuid"] 
+                _msg += " (named \"" + obj_attr_list["name"] +  "\"): "
+                cbdebug(_msg)
+            return self.package(_status, _msg, _result)
     @trace    
     def migrate(self, obj_attr_list, parameters, command) :
         try :
@@ -2836,9 +2940,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         pending = True
                         self.osci.add_to_list(obj_attr_list["cloud_name"], "VM", "VMS_UNDERGOING_" + operation.upper(), obj_attr_list["uuid"], int(time()))
                         self.osci.set_object_state(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], operation)
-                        
-                        # Command line has provided us with the name of the destination hypervisor,
-                        # but not the IP address
                         
                         self.osci.add_to_list(obj_attr_list["cloud_name"], _obj_type, "PENDING", \
                                   obj_attr_list["uuid"] + "|" + obj_attr_list["name"], int(time()))
