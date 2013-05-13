@@ -21,13 +21,14 @@
                 </div>
             </div>
             <script>
-            function gtkload(gtype, port) {
+            function gtkload(gtype) {
                 $("#" + gtype + "load").html("BOOTSPINNER Creating GTK " + gtype + "...");
                 $("#gtk" + gtype).attr('src', null);
                 go("#" + gtype + "load", bootdest + "/gtk?uuid=BOOTID&operation=" + gtype, '', unavailable, false, 
                         function(data) {
                             if(data) {
                                 var reason = $(data).find("#gtkresponse").html();
+                                var port = $(data).find("#gtkport").html();
                                 if(reason) {
                                     $("#" + gtype + "load").html("");
                                     $('#gtk' + gtype).attr('src', bootdest + '/broadway?port=' + port);
@@ -42,9 +43,9 @@
             }
 
             $('#loginClick').on('click', function (e) {
-                gtkload("login", "BOOTLOGINPORT");
+                gtkload("login");
             });
             $('#displayClick').on('click', function (e) {
-                gtkload("display", "BOOTDISPLAYPORT");
+                gtkload("display");
             });
             </script>

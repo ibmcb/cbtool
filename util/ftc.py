@@ -706,6 +706,22 @@ class Ftc :
             pass
         
         return self.success(_msg, ip)
+    
+    @trace
+    def get_display_ports(self, lvt_cnt, dom):
+        xmlstr = dom.XMLDesc(0)
+        doc = libxml2.parseDoc(xmlstr)
+        ctx = doc.xpathNewContext()
+        nodelist = ctx.xpathEval("/domain/devices/graphics[1]/@port")
+        port = nodelist and nodelist[0].content or None
+        nodelist = ctx.xpathEval("/domain/devices/graphics[1]/@type")
+        protocol = nodelist and nodelist[0].content or None          
+        if not protocol :
+            self.ftcraise(lvt_cnt.host, 4, "CB internal error! display is missing in XML!")
+        if not port :
+            self.ftcraise(lvt_cnt.host, 6, "CB internal error! port is missing in XML!")
+        
+        return port, protocol
         
     @trace
     def run_instances(self, imageids, tag, hypervisor_ip, \
@@ -814,17 +830,7 @@ class Ftc :
             
             _dom.create()
             
-            xmlstr = _dom.XMLDesc(0)
-            doc = libxml2.parseDoc(xmlstr)
-            ctx = doc.xpathNewContext()
-            nodelist = ctx.xpathEval("/domain/devices/graphics[1]/@port")
-            result["display_port"] = nodelist and nodelist[0].content or None
-            nodelist = ctx.xpathEval("/domain/devices/graphics[1]/@type")
-            result["display_protocol"] = nodelist and nodelist[0].content or None          
-            if not result["display_protocol"] :
-                self.ftcraise(lvt_cnt.host, 4, _fmsg + "display is missing in XML!")
-            if not result["display_port"] :
-                self.ftcraise(lvt_cnt.host, 6, _fmsg + "port is missing in XML!")
+            result["display_port"], result["display_protocol"] = self.get_display_ports(lvt_cnt, _dom)
         except libvirtError, msg: 
             if disk_format == "lvm" :
                 try :
@@ -1263,6 +1269,7 @@ class Ftc :
         _imsg =  "Domain " + tag 
         _smsg = _imsg + " was successfully restored."
         _fmsg = _imsg + " could not be restored: "
+        result = {}
         try :
             cbdebug("Issuing Restore on VM " + tag + "...")
             dom = lvt_cnt.lookupByName(tag)
@@ -1276,7 +1283,10 @@ class Ftc :
                 dom.restore(savefile)
         except libvirtError, msg :
             self.ftcraise(lvt_cnt.host, 4, _fmsg + str(msg))
-        return self.success(_smsg, None)
+            
+        result["display_port"], result["display_protocol"] = self.get_display_ports(lvt_cnt, dom)
+        
+        return self.success(_smsg, result)
     
     @trace
     def suspend(self, tag, hypervisor_ip):
@@ -1382,7 +1392,7 @@ class FTCService ( threading.Thread ):
             #setattr(self.ftc, name, self.ftc.unwrap_kwargs(func))
             #self.server.register_function(func, name)
             if "lvt_cnt" not in spec and len(spec) > 1 and \
-                name not in ["__init__", "conn_check", "error", "success", "global_error", "ftcraise", "get_libvirt_vm_templates"]:
+                name not in ["__init__", "conn_check", "error", "success", "global_error", "ftcraise", "get_libvirt_vm_templates", "get_display_ports"]:
                 num_spec = len(spec)
                 num_defaults = len(defaults)
                 diff = num_spec - num_defaults

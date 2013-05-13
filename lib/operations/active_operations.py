@@ -2844,21 +2844,29 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         cmd = "GDK_BACKEND=broadway BROADWAY_DISPLAY=" + str(port) + " remote-viewer " + uri
                     elif operation == "login" :
                         cmd = "GDK_BACKEND=broadway BROADWAY_DISPLAY=" + str(port) + " gnome-terminal --maximize -e \\\"bash -c 'ssh " + \
-                                "-o StrictHostKeyChecking=no -l " + obj_attr_list["login"] + " -i " + obj_attr_list["identity"] + " " + \
-                                obj_attr_list["login"] + "@" + obj_attr_list["cloud_ip"] + "'\\\""
+                                "-o StrictHostKeyChecking=no -i " + obj_attr_list["identity"] + " " + \
+                                obj_attr_list["login"] + "@" + obj_attr_list["cloud_ip"] + "; echo connection closed; sleep 120d'\\\""
                                 
-                    cmd = "screen -d -m -S gtk" + str(port) + obj_attr_list["cloud_name"] + " bash -c \"" + cmd + "\""
-                    cbdebug("Will create GTK broadway backend with command: " + cmd, True)
+                    cmd = "screen -d -m -S gtk" + obj_attr_list["cloud_name"] + str(port) + " bash -c \"" + cmd + "\""
+                    cbdebug("Will create GTK broadway backend with command: " + cmd)
 
                     proc_man = ProcessManagement(username = obj_attr_list["username"], \
                                                   cloud_name = obj_attr_list["cloud_name"])
                     
-                    # For now, only allow one process at a time 
                     pid = proc_man.get_pid_from_cmdline("GDK_BACKEND=broadway")
     
                     if pid :
                         cbdebug("Killing old GTK process: " + str(pid), True)
-                        proc_man.kill_process("GDK_BACKEND=broadway")
+                        if operation == "login" :
+                            # GTK broadway segfaults with more than one gnome-terminal running at the same time
+                            # So, we can only allow one to run at once until this gets fixed. 
+                            proc_man.kill_process("GDK_BACKEND=broadway", kill_options = "gnome-terminal")
+                        else :
+                            # remote-viewer (spice/vnc), however has no problem running multiple broadway backends.
+                            # So, only kill the old one and restart
+                            proc_man.kill_process("", port = port)
+                            
+                        self.update_process_list(obj_attr_list["cloud_name"], "GLOBAL", "gui_defaults", str(pid), "remov")
     
                     proc_man.run_os_command(cmd)
                 
@@ -2867,6 +2875,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     
                     if pid :
                         self.update_process_list(obj_attr_list["cloud_name"], "GLOBAL", "gui_defaults", str(pid), "add")
+                        _result = obj_attr_list
                     else :
                         _status = 34095 
                         _fmsg = "GTK process creation failed."
@@ -4068,7 +4077,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     cberr(_msg)
                     raise self.ObjectOperationException(_msg, _status)                    
 
-                serial_mode = False # only used for debugging
+                serial_mode = True # only used for debugging
 
                 _tmp_list = copy.deepcopy(obj_attr_list["parallel_operations"][_object])
                 

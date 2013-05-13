@@ -633,11 +633,11 @@ class GUI(object):
         else :
             return resp(environ, start_response)
         
-    def list_objects(self, req, active, objs, link = True, icon = 'icon-refresh', label = 'label-info') :
-        output = "<table>"
+    def list_objects(self, req, active, objs, link = True, icon = 'icon-refresh', label = 'label-info', recursive = False) :
+        output = "\n<table>"
         mod = 10 if active not in ["vmc", "host"] else 1
         if len(objs) == 0 :
-            output += "<tr><td>No data.</td></tr>"
+            output += "\n<tr><td>No data.</td></tr>"
         else :
             if "counter" in objs[0] :
                 objs.sort(key=self.keyfunc)
@@ -648,12 +648,12 @@ class GUI(object):
                     
                 if link :
                     if idx != 0 and (idx % mod) == 0 :
-                        output += "<tr><td></td></tr>"
+                        output += "\n<tr><td></td></tr>"
                     if idx == 0 :
                             output += "<tr>"
                     output += "<td>"
                 else :
-                    output += "<tr><td>"
+                    output += "\n<tr><td>"
     
                 if link :
                     output += "<a class='btn btn-mini btn-info' href='BOOTDEST/provision?object=" + active + "&explode=" + obj["uuid"] + "'><i class='icon-info-sign icon-white'></i>&nbsp;"
@@ -681,7 +681,8 @@ class GUI(object):
                     act = ((("[" + order + "] ")) if "order" in obj else "") + obj["tracking"] if "tracking" in obj else None
                     output += (str(act) if (act is not None and act != "None") else "")
                 output += "</td>"
-    
+   
+        output += "</tr>\n"
         output += "</table>"
         return output
         
@@ -1225,10 +1226,11 @@ class GUI(object):
                 operation = req.http.params.get("operation")
                 if uuid and operation :
                     if operation == "login" :
-                        self.api.vmlogin(req.cloud_name, uuid)
+                        portinfo = self.api.vmlogin(req.cloud_name, uuid)
                     elif operation == "display" :
-                        self.api.vmdisplay(req.cloud_name, uuid)
-                    return self.bootstrap(req, self.heromsg + "\n<div id='gtkresponse'><h4>GTK broadway request success.</h4></div></div>")
+                        portinfo = self.api.vmdisplay(req.cloud_name, uuid)
+                    return self.bootstrap(req, self.heromsg + "\n<div id='gtkresponse'>" + \
+                                          "<h4>GTK broadway request success: Port</h4></div></div><div id='gtkport'>" + portinfo["gtk_" + operation + "_port"] + "</div>")
                 else :
                     return self.bootstrap(req, self.heromsg + "\n<h4>Broadway GTK request missing parameters. Try again.</h4></div>", error = True)
             
@@ -1468,12 +1470,7 @@ class GUI(object):
             if req.active == "vm" :
                 gtk_fd = open(cwd + "/gui_files/gtk_template.html", "r")
                 gtk = gtk_fd.read()
-                if "gtk_login_port" in attrs :
-                    gtk = gtk.replace("BOOTLOGINPORT", attrs["gtk_login_port"])
-                if "gtk_display_port" in attrs :
-                    gtk = gtk.replace("BOOTDISPLAYPORT", attrs["gtk_display_port"])
                 gtk = gtk.replace("BOOTID", attrs["uuid"])
-                    
                 gtk_fd.close()
                 output += gtk
                 
@@ -1527,7 +1524,7 @@ class GUI(object):
     
                 if len(objs) > 0 :
                     output += "<h4>" + str(len(objs)) + " Pending Request(s):</h4>"
-                    output += self.list_objects(req, req.active, objs, link = False, icon = False, label = 'label-warning')
+                    output += self.list_objects(req, req.active, objs, link = False, icon = False, label = 'label-warning', recursive = True)
                 else :
                     output += "No Pending Objects"
             else :
@@ -1789,11 +1786,13 @@ def parse_bufdata(bufdata):
 class BroadwayRedirectResource(Resource):
     def render_GET(self, request):
         name = request.path[1:]
+        
         if "port" not in request.args :
             return "Error: Port not listed in GTK broadway URL line! Try again"
-        port = int(request.args["port"][0])
         
         try :
+            port = int(request.args["port"][0])
+            
             if name == "broadway" :
                 return urllib2.urlopen("http://localhost:" + str(port)).read().replace("broadway.js", "broadway.js?port=" + str(port))
             
@@ -1803,6 +1802,8 @@ class BroadwayRedirectResource(Resource):
             else :
                 return "Error: Unknown GTK broadway URL request! Try again"
         except urllib2.URLError, msg :
+            return "Error: Display not available: " + request.uri + ": " + str(msg)
+        except ValueError, msg :
             return "Error: Display not available: " + request.uri + ": " + str(msg)
 
         

@@ -624,7 +624,9 @@ class FtcCmds(CommonCloudFunctions) :
         elif (_ts == "attached" or _ts == "resume") and _cs == "fail" :
             self.ftcconn.resume(**kwargs)
         elif (_ts == "attached" or _ts == "restore") and _cs == "save" :
-            self.ftcconn.restore(**kwargs)
+            status, fmsg, result = self.ftcconn.restore(**kwargs)
+            obj_attr_list.update(result)
+            self.update_libvirt_variables(obj_attr_list)
             if "configured_size" in obj_attr_list :
                 # For some reason, restored VMs don't maintain their previous
                 # size properties. Go figure.

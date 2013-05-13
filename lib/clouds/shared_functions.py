@@ -544,6 +544,19 @@ class CommonCloudFunctions:
         return kwargs
     
     @trace
+    def update_libvirt_variables(self, obj_attr_list):
+        '''
+        After restore from disk, the VM's parameters (such as VNC/Spice display
+        ports) may have changed. Other things may potentially change in the future. 
+        We need to re-update the data store to include any new pieces of information. 
+        '''
+        for var in ["display_port", "display_protocol" ] :
+            if var in obj_attr_list :
+                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
+                                                  obj_attr_list["uuid"], False, \
+                                                  var, obj_attr_list[var])
+    
+    @trace
     def populate_interface(self, obj_attr_list):
         # A way to specify an alternative IP address for a hypervisor
         # This alternative 'interface' represents a faster NIC
