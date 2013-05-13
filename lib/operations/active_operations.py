@@ -2847,18 +2847,18 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                 "-o StrictHostKeyChecking=no -l " + obj_attr_list["login"] + " -i " + obj_attr_list["identity"] + " " + \
                                 obj_attr_list["login"] + "@" + obj_attr_list["cloud_ip"] + "'\\\""
                                 
-                    cmd = "screen -d -m -S gtk" + str(port) + " bash -c \"" + cmd + "\""
+                    cmd = "screen -d -m -S gtk" + str(port) + obj_attr_list["cloud_name"] + " bash -c \"" + cmd + "\""
                     cbdebug("Will create GTK broadway backend with command: " + cmd, True)
 
                     proc_man = ProcessManagement(username = obj_attr_list["username"], \
                                                   cloud_name = obj_attr_list["cloud_name"])
                     
                     # For now, only allow one process at a time 
-                    pid, username = proc_man.get_pid_from_port(port)
+                    pid = proc_man.get_pid_from_cmdline("GDK_BACKEND=broadway")
     
                     if pid :
                         cbdebug("Killing old GTK process: " + str(pid), True)
-                        proc_man.kill_process("GDK", port = port)
+                        proc_man.kill_process("GDK_BACKEND=broadway")
     
                     proc_man.run_os_command(cmd)
                 
