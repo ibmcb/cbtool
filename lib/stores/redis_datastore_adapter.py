@@ -753,7 +753,7 @@ class RedisMgdConn :
 
 ################################################################################
     @trace        
-    def pending_object_set(self, cloud_name, obj_type, obj_uuid, obj_value, lock = False) :
+    def pending_object_set(self, cloud_name, obj_type, obj_uuid, obj_value, parent = None, parent_type = None, lock = False) :
         self.conn_check()
         obj_inst = self.experiment_inst + ":" + cloud_name
         self.signal_api_refresh(cloud_name)
@@ -764,6 +764,9 @@ class RedisMgdConn :
             _obj_id_fn = _obj_inst_fn + ':' + obj_uuid    
 
             _val = self.redis_conn.set(_obj_id_fn, obj_value)
+            
+            if parent and parent_type :
+                self.pending_object_get(cloud_name, parent_type, parent, obj_value)
 
             _msg =  obj_type + " object " + obj_uuid + " pending status " 
             _msg += " was updated with the value \""

@@ -1004,9 +1004,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _post_speculative_admission_control = True
 
             self.osci.pending_object_set(obj_attr_list["cloud_name"], \
-                                         "AI", \
-                                         obj_attr_list["uuid"], \
-                                         "Creating VMs: Switch tabs for tracking..." )
+                 "AI", obj_attr_list["uuid"], "Creating VMs: Switch tabs for tracking..." )
             
             if obj_attr_list["vm_creation"].lower() == "explicit" : 
                 _status, _fmsg = self.parallel_obj_operation("attach", obj_attr_list)
@@ -2847,7 +2845,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                 "-o StrictHostKeyChecking=no -i " + obj_attr_list["identity"] + " " + \
                                 obj_attr_list["login"] + "@" + obj_attr_list["cloud_ip"] + "; echo connection closed; sleep 120d'\\\""
                                 
-                    cmd = "screen -d -m -S gtk" + obj_attr_list["cloud_name"] + str(port) + " bash -c \"" + cmd + "\""
+                    cmd = "screen -d -m -S gtkCBUI_" + obj_attr_list["cloud_name"] + str(port) + " bash -c \"" + cmd + "\""
                     cbdebug("Will create GTK broadway backend with command: " + cmd)
 
                     proc_man = ProcessManagement(username = obj_attr_list["username"], \

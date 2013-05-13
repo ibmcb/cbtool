@@ -372,6 +372,8 @@ class ProcessManagement :
         TBD
         '''
         _pid = ['X']
+        _old_pid = False 
+        _msg = "none"
 
         while len(_pid) and _pid[0] :
 

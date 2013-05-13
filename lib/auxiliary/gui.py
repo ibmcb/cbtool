@@ -606,7 +606,7 @@ class GUI(object):
         return int(x["counter"])
     
     def trackingfunc(self, x):
-        return int(x["order"].split(".")[0])
+        return float(x["order"])
 
     def __call__(self, environ, start_response):
         # Hack to make WebOb work with Twisted
@@ -633,7 +633,7 @@ class GUI(object):
         else :
             return resp(environ, start_response)
         
-    def list_objects(self, req, active, objs, link = True, icon = 'icon-refresh', label = 'label-info', recursive = False) :
+    def list_objects(self, req, active, objs, link = True, icon = 'icon-refresh', label = 'label-info') :
         output = "\n<table>"
         mod = 10 if active not in ["vmc", "host"] else 1
         if len(objs) == 0 :
@@ -1230,7 +1230,7 @@ class GUI(object):
                     elif operation == "display" :
                         portinfo = self.api.vmdisplay(req.cloud_name, uuid)
                     return self.bootstrap(req, self.heromsg + "\n<div id='gtkresponse'>" + \
-                                          "<h4>GTK broadway request success: Port</h4></div></div><div id='gtkport'>" + portinfo["gtk_" + operation + "_port"] + "</div>")
+                                          "<h4>GTK broadway request success: Port</h4></div></div><div id='gtkport'>" + str(portinfo["gtk_" + operation + "_port"]) + "</div>")
                 else :
                     return self.bootstrap(req, self.heromsg + "\n<h4>Broadway GTK request missing parameters. Try again.</h4></div>", error = True)
             
@@ -1524,7 +1524,7 @@ class GUI(object):
     
                 if len(objs) > 0 :
                     output += "<h4>" + str(len(objs)) + " Pending Request(s):</h4>"
-                    output += self.list_objects(req, req.active, objs, link = False, icon = False, label = 'label-warning', recursive = True)
+                    output += self.list_objects(req, req.active, objs, link = False, icon = False, label = 'label-warning')
                 else :
                     output += "No Pending Objects"
             else :

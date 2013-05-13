@@ -136,7 +136,7 @@ class CommonCloudFunctions:
         '''
         _msg = "Waiting for " + obj_attr_list["name"] + ""
         _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") to start..."
-        self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], _msg)
+        self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], _msg, parent=obj_attr_list["ai"], parent_type="AI")
         cbdebug(_msg, True)
     
         _curr_tries = 0
@@ -201,7 +201,7 @@ class CommonCloudFunctions:
             if  _vm_started :
                 _time_mark_prc = int(time())
                 obj_attr_list["mgt_003_provisioning_request_completed"] = _time_mark_prc - time_mark_prs
-                self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "Booting...")
+                self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "Booting...", parent=obj_attr_list["ai"], parent_type="AI")
                 break
             else :
                 _msg = "(" + str(_curr_tries) + ") " + obj_attr_list["name"] + ""
@@ -217,7 +217,7 @@ class CommonCloudFunctions:
             _msg = "" + obj_attr_list["name"] + ""
             _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
             _msg += "started successfully, got IP address " + obj_attr_list["cloud_ip"]
-            self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], _msg)
+            self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], _msg, parent=obj_attr_list["ai"], parent_type="AI")
             cbdebug(_msg)
             return _time_mark_prc
         else :
@@ -246,7 +246,7 @@ class CommonCloudFunctions:
             _msg += obj_attr_list["cloud_uuid"] + "), on IP address "
             _msg += obj_attr_list["prov_cloud_ip"] + "..."
             cbdebug(_msg, True)
-            self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], _msg)
+            self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], _msg, parent=obj_attr_list["ai"], parent_type="AI")
 
             sleep(_wait)
 
@@ -352,7 +352,7 @@ class CommonCloudFunctions:
                     obj_attr_list["mgt_004_network_acessible"] = int(time()) - time_mark_prc 
                     self.osci.pending_object_set(obj_attr_list["cloud_name"], \
                                                  "VM", obj_attr_list["uuid"], \
-                                                 "Network accessible now. Continuing...")
+                                                 "Network accessible now. Continuing...", parent=obj_attr_list["ai"], parent_type="AI")
                     _network_reachable = True
                     break
 
@@ -380,7 +380,7 @@ class CommonCloudFunctions:
             obj_attr_list["mgt_006_application_start"] = "0"
             self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
                                          obj_attr_list["uuid"], \
-                                         "Application starting up...")
+                                         "Application starting up...", parent=obj_attr_list["ai"], parent_type="AI")
         else :
             _msg = "" + obj_attr_list["name"] + ""
             _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
