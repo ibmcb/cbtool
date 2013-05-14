@@ -575,6 +575,12 @@ function post_boot_steps {
 	export PATH=$PATH:/sbin
 	PIDOF_CMD=`which pidof`
 
+    # Our CB images are missing a getty on tty0
+    if [ x"$(lsb_release -d | grep -i ubuntu)" != x ] ; then
+        syslog_netcat "This machine is Ubuntu. Making sure there's a getty on tty0..."
+        (/sbin/getty -8 38400 tty0 &)
+    fi
+
 	if [ $standalone == online ] ; then
 		syslog_netcat "Killing previously running ganglia monitoring processes on $SHORT_HOSTNAME"
 		$SUDO_CMD $KILL_CMD SCREEN 
