@@ -118,6 +118,7 @@ class Dashboard () :
         exclude = None
         result = "<tr>\n"
         count = 0
+        first = True
         for cell in row :
             cell = str(cell)
             display = cell
@@ -134,8 +135,17 @@ class Dashboard () :
             if uuid and count > 0:
                 result += "<td><a href='d3?uuid=" + uuid + "&category=" + category + "&label=" + labels[count] + "&name=" + name + "&ip=" + ip + "&host=" + host + "&role=" + role + "'>" + str(cell) + "</a></td>"
             else :
-                result += "<td>" + str(cell) + "</td>"
+                result += "<td>"
+                if first and uuid:
+                    active = name.split("_")[0]
+                    result += "<a class='btn btn-mini btn-info' href='BOOTDEST/provision?object=" + \
+                                active + "&explode=" + uuid + "'>" + \
+                                "<i class='icon-info-sign icon-white'></i>&nbsp;" + str(name).replace(active + "_", "") + "</a>"
+                else :
+                    result += str(cell)
+                result += "</td>"
             count += 1
+            first = False
             
         result += "\n</tr>\n"
         return result
@@ -579,6 +589,7 @@ class GUI(object):
         self.apihost = apihost
         self.apiport = apiport
         self.pid = "none"
+        self.data_links = {'vm' : 's', 'vmc' : 'h', "host" : 'h', "app" : 'a', 'aidrs' : 'p'}
 
         if self.apihost == "0.0.0.0" :
                 self.apihost = "127.0.0.1"
@@ -1283,7 +1294,7 @@ class GUI(object):
                     <a id='attachpop' class='btn btn-success' style='padding: 3px' href='#'><i class='icon-play icon-white'></i>&nbsp;Create</a>
                     <p>
                 """
-            
+                
             output += """
                 <div class='tabbable tabs-left'>
                 <ul id='two' class="nav nav-tabs">
@@ -1339,6 +1350,11 @@ class GUI(object):
                 output += "><a href='BOOTDEST/provision?liststate=" + tempstate + "&object=BOOTACTIVE'>" + state_attrs[1] + "</a></li>" 
             output += """
                 </ul>
+                <p>
+            """
+            output +=  "<a id='showdata' class='btn btn-success' style='padding: 3px; align: center' href='BOOTDEST/monitor?show=" + self.data_links[req.active] + "'>"
+            output += """
+                <i class='icon-list-alt icon-white'></i>&nbsp;Data</a>
                 </div>
             """
         else :

@@ -1246,6 +1246,7 @@ class Ftc :
         _imsg =  "Domain " + tag 
         _smsg = _imsg + " was successfully " + operation + "ed."
         _fmsg = _imsg + " could not be saved: "
+        result = {}
         try :
             if options.hypervisor in [ "xen", "pv" ] :
                 uri = "xen+tcp://" + destination_ip
@@ -1257,11 +1258,13 @@ class Ftc :
             dconn = open(uri)
             cbdebug("Issuing " + operation + " on VM " + tag + " to " + uri + " with interface " + miguri + "...")
             dom.migrate(dconn, VIR_MIGRATE_LIVE | VIR_MIGRATE_PERSIST_DEST | VIR_MIGRATE_UNDEFINE_SOURCE, None, miguri, 0)
+            dom = dconn.lookupByName(tag)
+            result["display_port"], result["display_protocol"] = self.get_display_ports(lvt_cnt, dom)
             dconn.close()
         except libvirtError, msg :
             _msg = str(msg).replace("migration", operation)
             self.ftcraise(lvt_cnt.host, 3, _fmsg + msg)
-        return self.success(_smsg, None)
+        return self.success(_smsg, result)
     
     @trace
     def restore(self, tag, hypervisor_ip, savefile = None) :

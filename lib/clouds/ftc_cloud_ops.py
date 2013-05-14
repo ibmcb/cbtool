@@ -583,6 +583,9 @@ class FtcCmds(CommonCloudFunctions) :
 
         kwargs = self.dic_to_rpc_kwargs(self.ftcconn, "migrate", obj_attr_list)
         _status, _msg, _result = self.ftcconn.migrate(**kwargs)
+        obj_attr_list.update(_result)
+        self.update_libvirt_variables(obj_attr_list)
+        
 
         _time_mark_crc = int(time())
         obj_attr_list["mgt_503_" + operation + "_request_completed"] = _time_mark_crc - _time_mark_crs

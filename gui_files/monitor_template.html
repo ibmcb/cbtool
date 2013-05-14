@@ -37,4 +37,7 @@
                 $(".nav-tabs a[href=#taba]").tab('show');
                 $(".nav-tabs a[href=#taball]").tab('show');
                 $(".nav-tabs a[href=#tabp]").tab('show');
+                if("show" in params) {
+                    $(".nav-tabs a[href=#tab" + params["show"] + "]").tab('show');
+                }
             </script>
