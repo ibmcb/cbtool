@@ -589,7 +589,8 @@ class GUI(object):
         self.apihost = apihost
         self.apiport = apiport
         self.pid = "none"
-        self.data_links = {'vm' : 's', 'vmc' : 'h', "host" : 'h', "app" : 'a', 'aidrs' : 'p'}
+        self.data_links = {'vm' : 's', 'vmc' : 'h', "host" : 'h', "app" : 'a', 'appdrs' : 'p'}
+        self.data_names = {'vm' : 'System', 'vmc' : 'System', "host" : 'System', "app" : 'App', 'appdrs' : 'Provision'}
 
         if self.apihost == "0.0.0.0" :
                 self.apihost = "127.0.0.1"
@@ -923,6 +924,7 @@ class GUI(object):
                 req.action = "provision"
                 req.active = "vmc"
                 req.session['connected'] = True 
+                req.session['last_active'] = "app"
                 req.session.save()
     
             if req.session['connected'] :
@@ -1201,11 +1203,17 @@ class GUI(object):
                 output_fd = open(cwd + "/gui_files/cli_template.html", "r")
                 cli_html = output_fd.read()
                 output_fd.close()
-                return self.bootstrap(req, "<div class='span10'>" + self.default(req, req.http.params, req.session["attach_params"], \
-                                                           req.session['views'], \
-                                                           req.session["operations"], \
-                                                           req.session["objects"], \
-                                                           req.session["liststates"]) + cli_html)
+                tmp = self.default(req, \
+                                   req.http.params, \
+                                   req.session["attach_params"], \
+                                   req.session['views'], \
+                                   req.session["operations"], \
+                                   req.session["objects"], \
+                                   req.session["liststates"], \
+                                   req.session["last_active"])
+                                   
+                return self.bootstrap(req, "<div class='span10'>" + tmp + cli_html) 
+                                              
             elif req.action == "disconnect" :
                 req.session['connected'] = False
                 del req.session['cloud_name']
@@ -1259,9 +1267,12 @@ class GUI(object):
             print "Exception: " + str(msg)
             return self.bootstrap(req, self.heromsg + "\n<h4 id='gerror'>Error: Something bad happened: " + str(msg) + "</h4></div>")
         
-    def default(self, req, params, attach_params, views, operations, objects, liststates):
+    def default(self, req, params, attach_params, views, operations, objects, liststates, last_active):
         if not req.active : 
-            req.active = params.get("object", "app")
+            req.active = params.get("object", last_active)
+        if req.active != last_active :
+            req.session['last_active'] = req.active
+            req.session.save()
         req.active_obj = ""
         active_list = getattr(self.api, req.active + "list")
         liststate = params.get("liststate", "all")
@@ -1353,10 +1364,8 @@ class GUI(object):
                 <p>
             """
             output +=  "<a id='showdata' class='btn btn-success' style='padding: 3px; align: center' href='BOOTDEST/monitor?show=" + self.data_links[req.active] + "'>"
-            output += """
-                <i class='icon-list-alt icon-white'></i>&nbsp;Data</a>
-                </div>
-            """
+            output += "<i class='icon-list-alt icon-white'></i>&nbsp;" + self.data_names[req.active] + " Data</a>"
+            output += "</div>"
         else :
             output += "<h4>No Views Available</h4>"
     
@@ -1843,7 +1852,7 @@ class GUIDispatcher(Resource) :
         if not keepsession :
             try :
                 shutil.rmtree(session_opts['session.data_dir'])
-            except OSError, obj :
+            except OSError :
                 pass
             
         self.app = WSGIResource(reactor, reactor.threadpool, SessionMiddleware(self.dashboard, session_opts))
