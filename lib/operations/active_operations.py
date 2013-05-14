@@ -4075,7 +4075,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     cberr(_msg)
                     raise self.ObjectOperationException(_msg, _status)                    
 
-                serial_mode = True # only used for debugging
+                serial_mode = False # only used for debugging
 
                 _tmp_list = copy.deepcopy(obj_attr_list["parallel_operations"][_object])
                 

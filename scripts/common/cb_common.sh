@@ -578,7 +578,7 @@ function post_boot_steps {
     # Our CB images are missing a getty on tty0
     if [ x"$(lsb_release -d | grep -i ubuntu)" != x ] ; then
         syslog_netcat "This machine is Ubuntu. Making sure there's a getty on tty0..."
-        (/sbin/getty -8 38400 tty0 &)
+        (sudo /sbin/getty -8 38400 tty0 &)
     fi
 
 	if [ $standalone == online ] ; then
