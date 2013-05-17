@@ -29,6 +29,7 @@ from time import time, sleep
 from subprocess import Popen, PIPE
 from re import sub
 from uuid import uuid5, NAMESPACE_DNS
+from datetime import datetime
 
 from lib.remote.process_management import ProcessManagement
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
@@ -183,7 +184,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
     
                 _all_global_objects = cld_attr_lst.keys()
-                cld_attr_lst["client_should_refresh"] = "no"
+                cld_attr_lst["client_should_refresh"] = str(0.0)
     
                 _remove_from_global_objects = [ "name", "model", "user-defined", \
                                                "dependencies", "cloud_filename", \
@@ -202,7 +203,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 cld_attr_lst["description"] = _cld_conn.get_description()
                 cld_attr_lst["username"] = cld_attr_lst["time"]["username"]
                 cld_attr_lst["start_time"] = str(int(time()))
-                cld_attr_lst["client_should_refresh"] = "yes"
+                cld_attr_lst["client_should_refresh"] = str(0) 
                 cld_attr_lst["time"]["hard_reset"] = uni_attr_lst["time"]["hard_reset"] if "hard_reset" in uni_attr_lst["time"] else False
                 cld_attr_lst["space"]["tracefile"] = uni_attr_lst["space"]["tracefile"] if "tracefile" in uni_attr_lst["space"] else "none"
 
@@ -292,7 +293,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             if not _status :
                 _cld_attr_list = self.osci.get_object(cld_attr_list["name"], "CLOUD", False, cld_attr_list["name"], False)
 
-                self.update_cloud_attribute(cld_attr_list["name"], "client_should_refresh", "yes")
+                self.update_cloud_attribute(cld_attr_list["name"], "client_should_refresh", str(0))
 
                 _msg = "Waiting for all active AIDRS daemons to finish gracefully...." 
                 cbdebug(_msg, True)

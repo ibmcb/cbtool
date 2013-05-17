@@ -186,6 +186,7 @@ class APIClient(Server):
         self.msci = None
         self.username = None
         self.print_message = print_message
+        self.last_refresh = datetime.now()
         
     def check_for_new_vm(self, cloud_name, identifier):
         info = self.vmshow(cloud_name, identifier)
@@ -206,9 +207,11 @@ class APIClient(Server):
             self.expid = self.cldshow(cloud_name, "time")["experiment_id"]
 
             if not force :
-                if not self.should_refresh(cloud_name) : 
+                if not self.should_refresh(cloud_name, str(self.last_refresh)) :
                     #print "VM list unchanged (" + str(len(self.vms)) + " vms) ..."
                     return False
+                
+            self.last_refresh = time()
                 
             old_vms = copy.copy(self.vms)
             

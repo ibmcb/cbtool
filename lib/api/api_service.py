@@ -218,11 +218,8 @@ class API():
     def firsshow(self, cloud_name, identifier, key = "all"):
         return self.passive.show_object({}, cloud_name + ' ' + identifier + ' ' + key, "firs-show")[2]
 
-    def reset_refresh(self, cloud_name):
-        return self.passive.reset_refresh({}, cloud_name, "api-reset")[2]
-    
-    def should_refresh(self, cloud_name):
-        return self.passive.should_refresh({}, cloud_name, "api-check")[2]
+    def should_refresh(self, cloud_name, time):
+        return self.passive.should_refresh({}, cloud_name + " " + time, "api-check")[2]
     
     def vmresize(self, cloud_name, identifier, resource, value):
         return self.active.vmresize({}, cloud_name + ' ' + identifier + ' ' + resource + "=" + str(value), "vm-resize")[2]

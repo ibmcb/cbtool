@@ -80,9 +80,7 @@ class BaseObjectOperations :
         TBD
         '''
         try :
-            _cloud_parameters = self.osci.get_object(cloud_name, "CLOUD", False, cloud_name, False)
-
-            return _cloud_parameters
+            return self.osci.get_object(cloud_name, "CLOUD", False, cloud_name, False)
 
         except self.osci.ObjectStoreMgdConnException, obj :
             _msg = "Unable to get parameters for the cloud " + cloud_name
@@ -224,17 +222,6 @@ class BaseObjectOperations :
                 _status = 9
                 _msg = "Usage: hostfail <cloud name> <host name> [parent] [mode]"
                 
-        # These were delete erroneously. Please don't delete them.
-        elif command == "api-check" :
-            if _length < 1 :
-                _status = 9
-                _msg = "Usage: should_refresh <cloud name>"
-                 
-        elif command == "api-reset" :
-            if _length < 1 :
-                _status = 9
-                _msg = "Usage: reset_refresh <cloud name>"
-
         elif command == "host-repair" :
             if _length >= 2 :
                 object_attribute_list["name"] = _parameters[1]
@@ -347,6 +334,11 @@ class BaseObjectOperations :
             if _length < 2:
                 _status = 9
                 _msg = "Usage: vmcapture <cloud name> <vm name> [parent] [mode]"
+                
+        elif command == "api-check":
+            
+            if _length >= 1 :
+                object_attribute_list["time"] = _parameters[1]
                 
         elif command == "vm-migrate" or command == "vm-protect":
             object_attribute_list["interface"] = "default" 
@@ -1220,8 +1212,7 @@ class BaseObjectOperations :
 
             obj_attr_list["command"] = obj_attr_list["command"].replace("-", '').replace("cloud", "cld")
 
-            if _operation + "_parallel" not in obj_attr_list and not cmd.count("api-check") \
-                    and not cmd.count("api-reset") and not cmd.count("list") :
+            if _operation + "_parallel" not in obj_attr_list and not cmd.count("api-check") and not cmd.count("list") :
                 if self.msci :
                     self.get_counters(obj_attr_list["cloud_name"], obj_attr_list)
                     self.record_management_metrics(obj_attr_list["cloud_name"], _obj_type, obj_attr_list, "trace")
@@ -1258,8 +1249,7 @@ class BaseObjectOperations :
             _fmsg = "An error has occurred, but no error message was captured"
 
             _admission_control_limits = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, \
-                                                             "admission_control", \
-                                                             False)
+                                                             "admission_control", False)
             if transaction == "attach" :
                 if obj_type != "AI" :
                     _reservation = self.osci.update_counter(obj_attr_list["cloud_name"], obj_type, \
@@ -2117,7 +2107,16 @@ class BaseObjectOperations :
                     _msg = "Running application-specific \"" + operation + "\" "
                     _msg += "configuration on all VMs beloging to " + _ai_attr_list["name"] + "..."                
                     cbdebug(_msg, True)
-                    self.osci.pending_object_set(cloud_name, "AI", ai_uuid, _msg)
+                    notify_client_refresh = False
+                    if "first_app_run_finished" not in _ai_attr_list or \
+                        _ai_attr_list["first_app_run_finished"].lower() != "true" :
+                        notify_client_refresh = True
+                        self.osci.update_object_attribute(_ai_attr_list["cloud_name"], "AI", _ai_attr_list["uuid"], \
+                              False, "first_app_run_finished", "true")
+                        _ai_attr_list["first_app_run_finished"] = "true"
+                        
+                        
+                    self.osci.pending_object_set(cloud_name, "AI", ai_uuid, _msg, notify_client_refresh)
 
                     if "dont_start_load_manager" in _ai_attr_list and _ai_attr_list["dont_start_load_manager"].lower() == "true" :
                         _msg = "Load Manager will NOT be automatically"
@@ -2925,41 +2924,6 @@ class BaseObjectOperations :
                 raise throw
 
     @trace
-    def reset_refresh(self, obj_attr_list, parameters, command):
-        '''
-        TBD
-        '''
-        _result = False
-        
-        try :
-            _status = 100
-            _fmsg = "An error has occurred, but no error message was captured"
-            _obj_type = command.split('-')[0].upper()
-            _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
-
-            if not _status :
-                _status, _fmsg = self.initialize_object(obj_attr_list, command)
-
-            if not _status :
-                self.update_cloud_attribute(obj_attr_list["cloud_name"], "client_should_refresh", "no")
-                
-            _status = 0
-                
-        except BaseObjectOperations.ObjectOperationException, msg :
-            _status = 30
-            _fmsg = str(msg)
-            
-        finally :
-            if _status :
-                _msg = "Reset Refresh failure: " + _fmsg
-                cberr(_msg)
-            else :
-                _msg = "Reset refresh success."
-                cbdebug(_msg)
-                
-        return self.package(_status, _msg, _result)
-    
-    @trace
     def should_refresh(self, obj_attr_list, parameters, command) :
         '''
         TBD
@@ -2973,11 +2937,8 @@ class BaseObjectOperations :
             _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
 
             if not _status :
-                _status, _fmsg = self.initialize_object(obj_attr_list, command)
-
-            if not _status :
                 _cloud_parameters = self.get_cloud_parameters(obj_attr_list["cloud_name"])
-                if _cloud_parameters["client_should_refresh"] == "yes" :
+                if float(_cloud_parameters["client_should_refresh"]) > float(obj_attr_list["time"]) :
                     _result = True 
                     
             _status = 0

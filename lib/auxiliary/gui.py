@@ -114,11 +114,10 @@ class Dashboard () :
         else :
             return False
 
-    def makeRow(self, category, row, uuid, labels, name, ip, host, role, bold = False, exclude = None) :
+    def makeRow(self, category, row, uuid, labels, name, ip, host, role, current_labels, bold = False, exclude = None) :
         exclude = None
         result = "<tr>\n"
         count = 0
-        first = True
         for cell in row :
             cell = str(cell)
             display = cell
@@ -132,20 +131,23 @@ class Dashboard () :
             else :
                 cell =  display.replace("_", "<br/>")
                 
-            if uuid and count > 0:
+            title = current_labels[count]
+            if uuid and title not in self.labels :
                 result += "<td><a href='d3?uuid=" + uuid + "&category=" + category + "&label=" + labels[count] + "&name=" + name + "&ip=" + ip + "&host=" + host + "&role=" + role + "'>" + str(cell) + "</a></td>"
             else :
                 result += "<td>"
-                if first and uuid:
-                    active = name.split("_")[0]
+                if title == "name" and uuid :
+                    active = str(name).split("_")[0]
                     result += "<a class='btn btn-mini btn-info' href='BOOTDEST/provision?object=" + \
                                 active + "&explode=" + uuid + "'>" + \
                                 "<i class='icon-info-sign icon-white'></i>&nbsp;" + str(name).replace(active + "_", "") + "</a>"
+                elif title == "ai_name" and uuid:
+                    result += "<a class='btn btn-mini btn-info' href='BOOTDEST/provision?object=app&explode=" + str(display) + "'>" + \
+                                "<i class='icon-info-sign icon-white'></i>&nbsp;" + str(display).replace("ai_", "") + "</a>"
                 else :
                     result += str(cell)
                 result += "</td>"
             count += 1
-            first = False
             
         result += "\n</tr>\n"
         return result
@@ -173,7 +175,10 @@ class Dashboard () :
         # For later formatting into HTML
         _obj_list = []
         for _obj_type in self.manage_collection.keys() :
-            _obj_list += self.msci.find_document(self.manage_collection[_obj_type], {}, True, [("mgt_001_provisioning_request_originated", 1)])
+            _obj_list += self.msci.find_document(self.manage_collection[_obj_type], \
+                            {'mgt_901_deprovisioning_request_originated' : { "$exists" : False}, \
+                             'mgt_903_deprovisioning_request_completed' : { "$exists" : False}}, \
+                            True, [("mgt_001_provisioning_request_originated", 1)])
 
         for attrs in _obj_list :
             _obj_type = attrs["obj_type"]
@@ -342,8 +347,8 @@ class Dashboard () :
                     
             # First print the units and their corresponding common labels 
             current_labels = prefix_rows1 + row1
-            self.destinations[dest] += self.makeRow(dest, current_labels, False, False, False, False, False, False, bold = True, exclude = prefix_rows1)
-            self.destinations[dest] += self.makeRow(dest, prefix_rows2 + row2, False, False, False, False, False, False)
+            self.destinations[dest] += self.makeRow(dest, current_labels, False, False, False, False, False, False, current_labels, bold = True, exclude = prefix_rows1)
+            self.destinations[dest] += self.makeRow(dest, prefix_rows2 + row2, False, False, False, False, False, False, current_labels)
             
             # Dump the master dictionary into HTML
             for (label_dict, obj_dict) in accumulate_rows[dest] :
@@ -387,7 +392,7 @@ class Dashboard () :
                         except Exception :
                             pass
 
-                self.destinations[dest] += self.makeRow(dest, row, uuid, current_labels, name, ip, host, role)
+                self.destinations[dest] += self.makeRow(dest, row, uuid, current_labels, name, ip, host, role, current_labels)
             
             
         for dest in ['p', 'h', 's', 'a' ] :
@@ -925,6 +930,7 @@ class GUI(object):
                 req.active = "vmc"
                 req.session['connected'] = True 
                 req.session['last_active'] = "app"
+                req.session["last_refresh"] = str(time())
                 req.session.save()
     
             if req.session['connected'] :
@@ -1021,7 +1027,8 @@ class GUI(object):
                                     <div class="accordion-group">
                                         <div class="accordion-heading">
                             """
-                            output += "<a class='accordion-toggle' data-toggle='collapse' data-parent='#config" + category + "' href='#collapse" + category + subkey + "'>" + subkey  + "</a>"
+                            output += "<a class='accordion-toggle' data-toggle='collapse' data-parent='#config" + category + "' href='#collapse" + category + subkey + \
+                                        "'><i class='icon icon-arrow-down'></i>" + subkey  + "</a>"
                             output += "</div>\n"
                             output += "<div id='collapse" + category + subkey  + "' class='accordion-body collapse'>"
                             output += "<div class='accordion-inner'>"
@@ -1542,9 +1549,15 @@ class GUI(object):
     
         elif params.get("pending") :
             output += "<div id='pendingresult'>"
-            if params.get("force") or self.api.should_refresh(req.cloud_name) :
+            sr = False
+            
+            if not params.get("force") :
+                sr = self.api.should_refresh(req.cloud_name, req.session["last_refresh"])
+            
+            if params.get("force") or sr :
+                req.session["last_refresh"] = str(time())
+                req.session.save()
                 self.repopulate_views(req.session)
-                self.api.reset_refresh(req.cloud_name)
                 objs = active_list(req.cloud_name, "pending")
     
                 if len(objs) > 0 :
@@ -1625,7 +1638,7 @@ class GUI(object):
                     output += "BOOTOBJECTNAMEs:</h4>"
                     output += self.list_objects(req, req.active, objs, icon = False)
                 else :
-                    output += self.heromsg + "\n<h4>&nbsp;No Objects</h4>"
+                    output += self.heromsg + "\n<p><h4>&nbsp;No Objects</h4>"
             else :
                 output += "BOOTSPINNER&nbsp;Loading Object State..."
                  

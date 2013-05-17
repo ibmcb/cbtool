@@ -30,6 +30,7 @@ from time import sleep, time
 from random import randint
 from os import path
 from pwd import getpwuid
+from datetime import datetime
 
 from redis import Redis, ConnectionError, ResponseError
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
@@ -348,9 +349,8 @@ class RedisMgdConn :
         self.conn_check()
         try :
             _cloud_parameters = self.get_object(cloud_name, "CLOUD", False, cloud_name, False)
-            if _cloud_parameters["client_should_refresh"] != "yes" :
-                _cloud_parameters["client_should_refresh"] = "yes"
-                self.update_cloud(cloud_name, _cloud_parameters)
+            _cloud_parameters["client_should_refresh"] = str(time())
+            self.update_cloud(cloud_name, _cloud_parameters)
         except ConnectionError, msg :
             _msg = "The connection to the data store seems to be "
             _msg += "severed: " + str(msg)
@@ -753,10 +753,13 @@ class RedisMgdConn :
 
 ################################################################################
     @trace        
-    def pending_object_set(self, cloud_name, obj_type, obj_uuid, obj_value, parent = None, parent_type = None, lock = False) :
+    def pending_object_set(self, cloud_name, obj_type, obj_uuid, obj_value, \
+                           notify_client_refresh = True, parent = None, parent_type = None, lock = False) :
         self.conn_check()
         obj_inst = self.experiment_inst + ":" + cloud_name
-        self.signal_api_refresh(cloud_name)
+        
+        if notify_client_refresh :
+            self.signal_api_refresh(cloud_name)
 
         _obj_inst_fn = obj_inst + ':' + obj_type + ":PENDINGSTATUS"
 
