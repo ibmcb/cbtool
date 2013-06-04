@@ -174,8 +174,9 @@ def actuator_cli_parsing() :
         _fmsg = str(e)
         
     finally :
-        if _options.operation and _options.osp and (_options.operation == "cloud-api" or _options.operation == "cloud-gui" or _options.cn) :
-            if (_options.operation == "cloud-api" or _options.operation == "cloud-gui") and (not _options.apiport or not _options.apihost) :
+        if _options.operation and _options.osp and (_options.operation in ["cloud-api", "cloud-gui" ] or _options.cn) :
+            if (_options.operation in [ "cloud-api", "cloud-gui"]) and \
+                    (not _options.apiport or not _options.apihost) :
                 print "The following parameters are mandatory: --apiport, --apihost"
                 exit(19)
 
@@ -488,6 +489,14 @@ def main(options) :
             _local_process = True
             _obj_type = "GLOBAL"
             gui(options)
+            _status = 0
+            _msg = "Complete"
+
+        elif _operation.count("qemu") :
+            from lib.auxiliary.qemu_scraper import qemu_scraper
+            _local_process = True
+            _obj_type = "AI"
+            qemu_scraper(options)
             _status = 0
             _msg = "Complete"
 

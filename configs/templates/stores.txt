@@ -38,6 +38,7 @@ SUBMIT_FACILITY = 18
 REMOVE_FACILITY = 18
 # This facility is "local3"
 EXECUTE_FACILITY = 19
+QEMU_FACILITY = 19
 # This facility is "local4"
 GUI_FACILITY = 20
 # This facility is "local5" and severity is "7"
