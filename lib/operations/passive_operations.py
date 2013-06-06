@@ -25,11 +25,14 @@
 '''
 from os import makedirs, access, F_OK
 from time import asctime, localtime, sleep, time
+from redis import ConnectionError
 from subprocess import Popen, PIPE
 from xdrlib import Packer
 from sys import path
+from threading import Condition
 import copy, libvirt, json, re, socket, os
 import shutil
+import threading
 
 cwd = (re.compile(".*\/").search(os.path.realpath(__file__)).group(0)) + "/../../"
 path.append(cwd)
@@ -2278,6 +2281,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
         domains = {}
         ips = {}
         status = True
+        attrs = {}
     
         app = self.osci.get_object(cloud_name, "AI", False, uuid, False)
         metric_vm = self.osci.get_object(cloud_name, "VM", False, app["metric_aggregator_vm"], False)
@@ -2297,10 +2301,16 @@ class PassiveObjectOperations(BaseObjectOperations) :
             lvirt_conns[vm_uuid] = libvirt.open("qemu+tcp://" + host_ip + "/system")
             domains[vm_uuid] = lvirt_conns[vm_uuid].lookupByName(vm["cloud_uuid"])
             ips[vm_uuid] = vm["cloud_ip"]
+            attrs[vm_uuid] = vm
     
-        return status, domains, ips, metric_vm["cloud_ip"], metric_port
+        return status, domains, ips, metric_vm["cloud_ip"], metric_port, attrs
 
-    def deliver(self, g, freq_str, key, value, spoof) :
+    def qemu_send(self, g, key, val, typ, unit, direction, lifetime, category, spoof, attrs):
+        g.send(key, val, typ, unit, direction, self.freq_str, lifetime, category, spoof)
+        attrs["mgt_505_" + key] = val
+        
+        
+    def deliver(self, g, key, value, spoof, attrs) :
         unit = "n/a"
         num = False
         typ = "n/a"
@@ -2313,14 +2323,14 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 num = float(value)
                 unit = "mbps"
                 typ = "float"
-                g.send(key, str(value), "float", "mbps", "both", freq_str, "0", "mc", spoof)
+                self.qemu_send(g, key, str(value), "float", "mbps", "both", "0", "mc", spoof, attrs)
             except ValueError :
                 pass
     
         if num is not False :
-            g.send("qemu_" + key.replace("-", "_"), str(num), typ, unit, "both", freq_str, "0", "mc", spoof)
+            self.qemu_send(g, "qemu_" + key.replace("-", "_"), str(num), typ, unit, "both", "0", "mc", spoof, attrs)
 
-    def get_stats_all_domains(self, g, freq_str, ips, domains, agg_ip) :
+    def get_stats_all_domains(self, cloud_name, g, ips, domains, agg_ip, vms) :
         for name in domains :
             dom = domains[name]
             stats = qemuMonitorCommand(dom, "{\"execute\": \"query-status\"}", 0)
@@ -2330,57 +2340,123 @@ class PassiveObjectOperations(BaseObjectOperations) :
             stats.update(migrate)
             mem = dom.memoryStats()
             ip = ips[name]
+            attrs = vms[name]
             if not ip :
                 continue
     
             spoof = ip + ":" + ip
-            cbdebug("domain: " + str(name) + " ip " + str(ip) + " uuid: " + \
-                    str(dom.UUIDString()) + " stats: " + str(stats) + " qemu: " + str(mem) + "\n")
+            #cbdebug("domain: " + str(name) + " ip " + str(ip) + " uuid: " + \
+            #        str(dom.UUIDString()) + " stats: " + str(stats) + " qemu: " + str(mem) + "\n")
     
-            g.send("qemu_max", str(mem["actual"]), "int32", "KB", "both", freq_str, "0", "memory", spoof)
-            g.send("qemu_rss", str(mem["rss"]), "int32", "KB", "both", freq_str, "0", "memory", spoof)
+            if "actual" in mem :
+                g.send("qemu_max", str(mem["actual"]), "int32", "KB", "both", self.freq_str, "0", "memory", spoof)
+            else :
+                cbwarn("QEMU result is missing the 'actual' key. strange.")
+            
+            if "rss" in mem :
+                g.send("qemu_rss", str(mem["rss"]), "int32", "KB", "both", self.freq_str, "0", "memory", spoof)
+            else :
+                cbwarn("QEMU result is missing the 'rss' key. strange.")
     
             for key in stats["return"] :
                 value = stats["return"][key]
                 
                 if isinstance(value, str) :
-                    self.deliver(g, freq_str, key, value, spoof)
+                    self.deliver(g, key, value, spoof, attrs)
                 elif isinstance(value, int) :
-                    self.deliver(g, freq_str, key, str(value), spoof)
+                    self.deliver(g, key, str(value), spoof, attrs)
                 elif isinstance(value, float) :
-                    self.deliver(g, freq_str, key, str(value), spoof)
+                    self.deliver(g, key, str(value), spoof, attrs)
                 elif isinstance(value, dict) :
                     for subkey in stats["return"][key] :
                         value = stats["return"][key][subkey]
-                        self.deliver(g, freq_str, subkey, value, spoof)
+                        self.deliver(g, subkey, value, spoof, attrs)
                     
+            self.record_management_metrics(cloud_name, "VM", attrs, "runstate")
+    
+    def migration_checker(self, my_uuid, cv, cloud_name):
+        cbdebug("Migration checker started.")
+        
+        while self.check_for_migrate :
+            try :
+                sub_channel = self.osci.subscribe(cloud_name, "AI", "migrate_" + my_uuid)
+                
+                cbdebug("Migration subsribe channel created")
+                
+                while self.check_for_migrate :
+                    for message in sub_channel.listen() :
+                        val = str(message["data"])
+                        args = val.split(";")
+                        if len(args) != 3 :
+                            cbdebug("Not for me: " + val)
+                            continue
+        
+                        uuid, action, info = args
+                        if action == "error" :
+                            cberr("Migration checker breaking on error: " + info)
+                            break
+                        
+                        if action == "start" :
+                            self.qemu_check_freq = float(info)
+                            self.freq_str = str(self.qemu_check_freq)
+                            cbdebug("waking up scraper for: " + val + " " + self.freq_str + " intervals, VM: " + uuid)
+                        elif action == "stop" :
+                            self.qemu_check_freq = self.qemu_check_freq_default 
+                            self.freq_str = str(self.qemu_check_freq)
+                            cbdebug("migration complete: Setting qemu check frequency back to normal: " + \
+                                    self.freq_str + " secs.")
+                            
+                        cv.acquire()
+                        cv.notify()
+                        cv.release()
+                    
+            except self.osci.ObjectStoreMgdConnException, msg :
+                cberr("Migration checker subscription channel broken: " + str(msg) + ", trying again in 5 seconds...")
+                sleep(5)
+            except ConnectionError, msg :
+                cberr("Migration checker subscription channel broken: " + str(msg) + ", trying again in 5 seconds...")
+                sleep(5)
+                    
+        sub_channel.unsubscribe()
+        cbdebug("Migration checker exiting.")
 
     def qemu_scraper(self, cloud_name, uuid) :
         if not qemu_supported :
             cbwarn("Not starting scraper because associated libvirt bindings are not available.")
             return
         
+
         last_refresh = str(time())
     
         g = None
-        freq = 5
-        freq_str = str(freq)
+        self.qemu_check_freq_default = 15
+        self.qemu_check_freq = self.qemu_check_freq_default 
+        self.freq_str = str(self.qemu_check_freq)
         count = 0
         lvirt_conns = {}
-    
+        
+        cv = Condition()
+        cv.acquire()
+           
+        self.check_for_migrate = True
+        t = threading.Thread(target=self.migration_checker, args = [uuid, cv, cloud_name])
+        t.daemon = True
+        t.start()
+        
         while True :
             try :
-                if count == 0 or self.compare_refresh(cloud_name, last_refresh) :
+                if count == 0 or ((self.qemu_check_freq == self.qemu_check_freq_default) and \
+                                    self.compare_refresh(cloud_name, last_refresh)) :
                     last_refresh = str(time())
                     count = 10 
-                    (status, domains, ips, agg_ip, agg_port) = self.list_domains(cloud_name, lvirt_conns, uuid)
+                    (status, domains, ips, agg_ip, agg_port, vms) = self.list_domains(cloud_name, lvirt_conns, uuid)
                     g = Gmetric(agg_ip, str(agg_port), "udp")
                     cbdebug("Found " + str(len(domains)) + " domains")
     
                 if not status :
                     cbwarn("Listing domains failed! darn.")
                 else :
-                    self.get_stats_all_domains(g, freq_str, ips, domains, agg_ip)
+                    self.get_stats_all_domains(cloud_name, g, ips, domains, agg_ip, vms)
     
             except Exception, msg:
                 cberr("Failure: " + str(msg))
@@ -2392,8 +2468,11 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 
                 cberr("Failed to deliver metrics: " + str(msg))
     
-            sleep(freq)
+            ret = cv.wait(self.qemu_check_freq)
+            self.freq_str = str(self.qemu_check_freq)
             count -= 1
+        
+        self.check_for_migrate = False
             
     @trace
     def should_refresh(self, obj_attr_list, parameters, command) :

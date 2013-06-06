@@ -41,8 +41,8 @@ fi
 echo "cloudbench ID: $id => $host"
 
 DEST=$host
-pkill -9 -f lsync.config.$DEST
-pkill -9 -f lsync.config.p$DEST
+pkill -9 -f lsync.config.172
+pkill -9 -f lsync.config.p172
 
 echo "$DEST" > ~/lsync/debug.remote_host
 cp ~/lsync/lsync.config.orig.klabuser ~/lsync/lsync.config.$DEST

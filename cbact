@@ -354,6 +354,9 @@ def main(options) :
         if options.cn :
             _log_defaults = _osci.get_object(options.cn, "GLOBAL", False, "logstore", False)
             _dir_defaults = _osci.get_object(options.cn, "GLOBAL", False, "space", False)
+            if _msci is None :
+                _metricstore = _osci.get_object(options.cn, "GLOBAL", False, "metricstore", False)
+                _msci = MongodbMgdConn(_metricstore) 
             _base_dir = _dir_defaults["base_dir"]
         else :  
             _log_defaults = {
