@@ -149,6 +149,9 @@ SAVE_ON_ATTACH = $False
 SECONDS_BEFORE_SAVE = 0
 RUN_APPLICATION_SCRIPTS = $True
 DONT_START_LOAD_MANAGER = $False
+# Most clouds don't use (or allow access to) libvirt,
+# so, enable this only in the right clouds.
+DONT_START_QEMU_SCRAPER = $True
 REPLICATED_VMS = 0
 ATTACH_PARALLELISM = 1
 DETACH_PARALLELISM = 20

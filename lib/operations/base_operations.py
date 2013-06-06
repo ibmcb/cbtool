@@ -2123,6 +2123,12 @@ class BaseObjectOperations :
                         _msg += " started during the deployment of "
                         _msg += _ai_attr_list["name"] + "..."                
                         cbdebug(_msg, True)
+                        
+                    if "dont_start_qemu_scraper" in _ai_attr_list and _ai_attr_list["dont_start_qemu_scraper"].lower() == "true" :
+                        _msg = "QEMU Scraper will NOT be automatically"
+                        _msg += " started during the deployment of "
+                        _msg += _ai_attr_list["name"] + "..."                
+                        cbdebug(_msg, True)
 
                     _lmr = False
                     
@@ -2148,7 +2154,7 @@ class BaseObjectOperations :
                                 break
                             else :
                                 if "dont_start_load_manager" in _ai_attr_list \
-                                and _ai_attr_list["dont_start_load_manager"].lower() == "true" :
+                                        and _ai_attr_list["dont_start_load_manager"].lower() == "true" :
                                     _lmr = True
                                 else :
                                     # This needs to be done only once, at the AI's
@@ -2161,6 +2167,17 @@ class BaseObjectOperations :
                                     cbdebug(_msg)
                                     
                                     _ai_attr_list[_lmr + '_' + operation + str(_num + 1)] = "cb_start_load_manager.sh"
+                                    
+                                    # The scraper startup is conditional only upon
+                                    # enablement of the load manager as well.
+                                    if "dont_start_qemu_scraper" not in _ai_attr_list \
+                                           or _ai_attr_list["dont_start_qemu_scraper"].lower() != "true" :
+                                        _msg = "Adding the startup of the qemu scraper to the "
+                                        _msg += "list of commands. It will be executed on the "
+                                        _msg += "VM with the role \"" + _lmr + "\""
+                                        cbdebug(_msg)
+                                        
+                                        _ai_attr_list[_lmr + '_' + operation + str(_num + 2)] = "cb_start_qemu_scraper.sh"
         
                         _msg = "The following command list will be executed: "
                         _msg += ','.join(_vm_command_list)
@@ -2924,38 +2941,13 @@ class BaseObjectOperations :
                 raise throw
 
     @trace
-    def should_refresh(self, obj_attr_list, parameters, command) :
-        '''
-        TBD
-        '''
-        _result = False
+    def compare_refresh(self, cloud_name, last_refresh) :
+        _cloud_parameters = self.get_cloud_parameters(cloud_name)
         
-        try :
-            _status = 100
-            _fmsg = "An error has occurred, but no error message was captured"
-            _obj_type = command.split('-')[0].upper()
-            _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
-
-            if not _status :
-                _cloud_parameters = self.get_cloud_parameters(obj_attr_list["cloud_name"])
-                if float(_cloud_parameters["client_should_refresh"]) > float(obj_attr_list["time"]) :
-                    _result = True 
-                    
-            _status = 0
-            
-        except BaseObjectOperations.ObjectOperationException, msg :
-            _status = 30
-            _fmsg = str(msg)
-            
-        finally :
-            if _status :
-                _msg = "Refresh check failure: " + _fmsg
-                cberr(_msg)
-            else :
-                _msg = "Refresh check: " + str(_result)
-                cbdebug(_msg)
-                
-        return self.package(_status, _msg, _result)
+        if float(_cloud_parameters["client_should_refresh"]) > float(last_refresh) :
+            return True
+        
+        return False
 
     @trace
     def update_host_os_perfmon(self, obj_attr_list) :
