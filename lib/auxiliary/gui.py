@@ -400,6 +400,8 @@ class Dashboard () :
                         
                         except Exception :
                             pass
+                    else :
+                        row.append("--")
 
                 self.destinations[dest] += self.makeRow(dest, row, uuid, current_labels, name, ip, host, role, current_labels)
             
