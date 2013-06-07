@@ -137,7 +137,9 @@ class Dashboard () :
                 cell =  display.replace("_", "<br/>")
                 
             title = current_labels[count]
-            if uuid and title not in self.labels :
+            if cell == "--" : 
+                result += "<td>--</td>"
+            elif uuid and title not in self.labels :
                 result += "<td><a href='d3?uuid=" + uuid + "&category=" + category + "&label=" + labels[count] + "&name=" + name + "&ip=" + ip + "&host=" + host + "&role=" + role + "'>" + str(cell) + "</a></td>"
             else :
                 result += "<td>"
