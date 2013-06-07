@@ -88,7 +88,12 @@ class Dashboard () :
         self.standard_categories = { 's' : "VM", 'h': "HOST" }
         self.categories = dict(self.standard_categories.items() + self.user_generated_categories.items())
         self.owners = { "VM" : ['s', 'p', 'a'], "HOST" : ['h']}
-        self.summaries = {"Saved VMs" : [True, "savedvm"], "Failed VMs" : [True, "failedvm"], "KB => MB" : [False, "kb2mb"], "bytes/sec => Mbps" : [False, "b2mb"], "#4K pages => MB" : [False, "4k2mb"]}
+        self.summaries = {"Saved VMs" : [True, "savedvm"], 
+                          "Failed VMs" : [True, "failedvm"], 
+                          "KB => MB" : [False, "kb2mb"], 
+                          "Bytes => MB" : [False, "bytes2mb"], 
+                          "bytes/sec => Mbps" : [False, "b2mb"], 
+                          "#4K pages => MB" : [False, "4k2mb"]}
         self.labels = ['name', 'size', 'role', 'type', 'cloud_ip', 'age', 'vms', 'state', 'latest_update', 'vmc_name', 'host_name', 'ai_name', 'aidrs_name']
         self.separator = "<p/>\n"
         self.show = {}
@@ -279,6 +284,10 @@ class Dashboard () :
                 if self.summaries["KB => MB"][0] :
                     if unit == "KB" or unit == "KiB" :
                         value = "%.2f" % (float(value) / 1024)
+                        unit = "MB"
+                if self.summaries["Bytes => MB"][0] :
+                    if unit.lower() == "bytes" or unit == "b" :
+                        value = "%.2f" % (float(value) / 1024 / 1024)
                         unit = "MB"
                 if self.summaries["bytes/sec => Mbps"][0] :
                     if unit == "bytes/sec" :

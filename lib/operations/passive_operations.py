@@ -2306,6 +2306,11 @@ class PassiveObjectOperations(BaseObjectOperations) :
         return status, domains, ips, metric_vm["cloud_ip"], metric_port, attrs
 
     def qemu_send(self, g, key, val, typ, unit, direction, lifetime, category, spoof, attrs):
+        if key.count("mbps") :
+            unit = "mbps"
+        elif key.count("bytes") :
+            unit = "bytes"
+            
         g.send(key, val, typ, unit, direction, self.freq_str, lifetime, category, spoof)
         attrs["mgt_505_" + key] = val
         
