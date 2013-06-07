@@ -721,16 +721,34 @@ class GUI(object):
     
     def make_config_form(self, req, category, name, label, default) :
         output = ""
-        output += "<form style='margin: 0' action='BOOTDEST/config' method='get'>"
+        output += "<form id=\"config_form_" + label + "\" style='margin: 0' action='BOOTDEST/config' method='get'>"
         output += """
             <table><tr><td width='300px'>
                 <button type="submit" class="btn btn-default">
                   <i class="icon-arrow-right icon-black"></i>&nbsp;<b>
         """
         output += label + "</b></button></td><td>"
-        output += "Value: <input style='margin-top: 9px' type='text' name='value' value='" + default + "'/>"
+        
+        
+        output += "Value: <input id='config_" + label + "' style='margin-top: 9px' type='text' name='value' value='" + default + "'/>"
         output += "<input type='hidden' name='category' value='" + category + "'/>"
-        output += "<input type='hidden' name='name' value='" + name  + "'/></td></tr></table></form>"
+        output += "<input type='hidden' name='name' value='" + name  + "'/></td>"
+        
+        if default.lower() == "true" or default.lower() == "false" :
+            togg = "True"
+            if default.lower() == "true" :
+                togg = "False"
+            output += "<td><a id='config_toggle_" + label + "' class=\"btn btn-default\">"
+            output += "<script>\n"
+            output += "$(\"#config_toggle_" + label + "\").click(function() { \n$(\"#config_" + label + "\").val(\"" + togg + "\");\n\n"
+            output += "$(\"#config_form_" + label + "\").submit();\n"
+            output += " });</script>"
+            output += """
+                  <i class="icon-arrow-left icon-black"></i>&nbsp;<b>toggle</b></a></td>
+            """
+            
+        output += "</tr></table></form>"
+        
         return output
         
     def repopulate_views(self, session) :
