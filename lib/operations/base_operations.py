@@ -2057,7 +2057,7 @@ class BaseObjectOperations :
                     _vm_post_boot_commands.append("~/" + _obj_attr_list["remote_dir_name"] + "/scripts/common/cb_post_boot.sh")
 
                     _msg = "Performing generic application instance post_boot "
-                    _msg += "configuration on all VMs beloging to " + _ai_attr_list["name"] + "..."                
+                    _msg += "configuration on all VMs belonging to " + _ai_attr_list["name"] + "..."                
                     cbdebug(_msg, True)
                     self.osci.pending_object_set(cloud_name, "AI", ai_uuid, _msg)
                     
@@ -2074,13 +2074,13 @@ class BaseObjectOperations :
 
                         _status = 1495
                         _fmsg = "Failure while executing generic post_boot configuration on "
-                        _fmsg += "on all VMs beloging to " + _ai_attr_list["name"] + ": "
+                        _fmsg += "on all VMs belonging to " + _ai_attr_list["name"] + ": "
                         _fmsg += _xfmsg                
                     else :
                         _status = 0
                 else :
                     _msg = "Bypassing generic VM post_boot configuration on all "
-                    _msg += "VMs beloging to " + _ai_attr_list["name"] + "..."                
+                    _msg += "VMs belonging to " + _ai_attr_list["name"] + "..."                
                     cbdebug(_msg, True)
                     _status = 0                        
             else :
@@ -2105,7 +2105,7 @@ class BaseObjectOperations :
                 _ai_attr_list["run_application_scripts"].lower() != "false" :
                 
                     _msg = "Running application-specific \"" + operation + "\" "
-                    _msg += "configuration on all VMs beloging to " + _ai_attr_list["name"] + "..."                
+                    _msg += "configuration on all VMs belonging to " + _ai_attr_list["name"] + "..."                
                     cbdebug(_msg, True)
                     notify_client_refresh = False
                     if "first_app_run_finished" not in _ai_attr_list or \
@@ -2200,13 +2200,13 @@ class BaseObjectOperations :
                         if _status :
         
                             _fmsg = "Failure while executing application-specific configuration on "
-                            _fmsg += "on all VMs beloging to " + _ai_attr_list["name"] + ":\n "
+                            _fmsg += "on all VMs belonging to " + _ai_attr_list["name"] + ":\n "
                             _fmsg += _xfmsg   
                             break
 
                 else :
                     _msg = "Bypassing application-specific configuration on all "
-                    _msg += "VMs beloging to " + _ai_attr_list["name"] + "..."  
+                    _msg += "VMs belonging to " + _ai_attr_list["name"] + "..."  
                     cbdebug(_msg, True)
                     _status = 0
 
