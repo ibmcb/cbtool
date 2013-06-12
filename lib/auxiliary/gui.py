@@ -717,19 +717,32 @@ class GUI(object):
         return output
         
     def make_alter_form(self, req, uuid, obj, key, value) :
-        output = ""
-        output += "<form style='margin: 0' action='BOOTDEST/provision' method='get'>"
+        output = "<form id='alter_form_" + key + "' style='margin: 0' action='BOOTDEST/provision' method='get'>"
         output += """
             <table><tr><td width='300px'>
                 <button type="submit" class="btn btn-default">
                   <i class="icon-arrow-right icon-black"></i>&nbsp;<b>
         """
         output += key + "</b></button></td><td>"
-        output += "Value: <input style='margin-top: 9px' type='text' name='value' value='" + value + "'/>"
         output += "<input type='hidden' name='alter' value='1'/>"
         output += "<input type='hidden' name='object' value='" + obj  + "'/>"
         output += "<input type='hidden' name='explode' value='" + uuid + "'/>"
-        output += "<input type='hidden' name='key' value='" + key   + "'/></td></tr></table></form>"
+        output += "<input type='hidden' name='key' value='" + key   + "'/>"
+        output += "Value: <input id='alter_" + key + "' style='margin-top: 9px' type='text' name='value' value='" + value + "'/>"
+        
+        if value.lower() == "true" or value.lower() == "false" :
+            togg = "True"
+            if value.lower() == "true" :
+                togg = "False"
+            output += "<a id='alter_toggle_" + key + "' class=\"btn btn-default\">"
+            output += "\n<script>\n"
+            output += "$(\"#alter_toggle_" + key + "\").click(function() { \n$(\"#alter_" + key + "\").val(\"" + togg + "\");\n\n"
+            output += "$(\"#alter_form_" + key + "\").submit();\n"
+            output += " });\n</script>"
+            output += """
+                  <i class="icon-arrow-left icon-black"></i>&nbsp;<b>toggle</b></a>
+            """
+        output += "</td></tr></table></form>"
         return output
     
     def make_config_form(self, req, category, name, label, default) :
@@ -1341,10 +1354,14 @@ class GUI(object):
             if req.active != "host" :
                 output += """
                     <a id='attachpop' class='btn btn-success' style='padding: 3px' href='#'><i class='icon-play icon-white'></i>&nbsp;Create</a>
-                    <p>
+                    <p/>
+                    <p/>
                 """
+                output += "<a class='btn btn-danger' style='padding: 3px' href='BOOTDEST/provision?object=" + req.active \
+                    + "&operation=detach&keywords=3&keyword1=all&keyword2=true&keyword3=async'><i class='icon-trash icon-white'></i>&nbsp;Detach All</a>"
                 
             output += """
+                <p/>
                 <div class='tabbable tabs-left'>
                 <ul id='two' class="nav nav-tabs">
             """
