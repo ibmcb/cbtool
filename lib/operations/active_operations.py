@@ -2959,7 +2959,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         
                         ai = False
                         scrape_frequency = 0.5
-                        if "ai" in obj_attr_list and operation == "migrate":
+                        if "ai" in obj_attr_list and obj_attr_list["ai"] != "none" and operation == "migrate":
                             ai = self.osci.get_object(cn, "AI", False, obj_attr_list["ai"], False)
                             if "dont_start_qemu_scraper" not in ai or ai["dont_start_qemu_scraper"].lower() != "true" :
                                 self.osci.publish_message(cn, "AI", "migrate_" + ai["uuid"], \
