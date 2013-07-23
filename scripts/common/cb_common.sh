@@ -157,6 +157,7 @@ function get_my_vm_attribute {
 	get_hash VM ${my_vm_uuid} ${attribute} 0
 }
 my_role=`get_my_vm_attribute role`
+my_ai_name=`get_my_vm_attribute ai_name`
 my_ai_uuid=`get_my_vm_attribute ai`
 my_base_type=`get_my_vm_attribute base_type`
 my_cloud_model=`get_my_vm_attribute model`
@@ -577,7 +578,7 @@ function post_boot_steps {
 
 	if [ $standalone == online ] ; then
 		syslog_netcat "Killing previously running ganglia monitoring processes on $SHORT_HOSTNAME"
-		$SUDO_CMD $KILL_CMD SCREEN 
+		$SUDO_CMD $KILL_CMD screen 
 		$SUDO_CMD $KILL_CMD gmond 
 		sleep 3
 		result="$(ps aux | grep gmond | grep -v grep)"

@@ -272,15 +272,15 @@ class API():
         else :
             return self.active.vmcapture({}, cloud_name + ' ' + identifier + ' ' + vmcrs, "vm-capture")[2]
         
-    def hostfail(self, cloud_name, identifier, firs = "none", async = False):
-        parameters = cloud_name + ' ' + identifier + ' ' + firs
+    def hostfail(self, cloud_name, identifier, service, firs = "none", async = False):
+        parameters = cloud_name + ' ' + identifier + ' ' + service + ' ' + firs
         if async and str(async).count("async") :
             return self.active.background_execute(parameters + (' ' + async), "host-fail")[2]
         else :
             return self.active.hostfail_repair({}, parameters, "host-fail")[2]
         
-    def hostrepair(self, cloud_name, identifier, async = False):
-        parameters = cloud_name + ' ' + identifier
+    def hostrepair(self, cloud_name, identifier, service, firs = "none", async = False):
+        parameters = cloud_name + ' ' + identifier + ' ' + service + ' ' + firs
         if async and str(async).count("async") :
             return self.active.background_execute(parameters + (' ' + async), "host-repair")[2]
         else :

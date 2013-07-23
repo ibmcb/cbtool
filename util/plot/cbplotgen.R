@@ -16,12 +16,15 @@
 # limitations under the License.
 #/*****************************************************************************
 
-suppressPackageStartupMessages(library(optparse))
-suppressPackageStartupMessages(library(reshape2))
-suppressPackageStartupMessages(library(ggplot2))
-suppressPackageStartupMessages(library(hash))
-suppressPackageStartupMessages(library(data.table))
-suppressPackageStartupMessages(library(xtable))
+required_libraries <- c("optparse", "reshape2", "ggplot2", "hash", "data.table", "xtable", "sciplot")
+
+for (required_library in required_libraries) {
+	is_loaded <- suppressPackageStartupMessages(library(required_library, character.only=TRUE, logical.return=TRUE, quietly=TRUE))
+	if (!(is_loaded)) {
+		install.packages(required_library, repos = 'http://cran.us.r-project.org', dependencies = TRUE)
+		suppressPackageStartupMessages(library(required_library, character.only=TRUE, logical.return=TRUE, quietly=TRUE))
+	}
+}
 
 initial.options <- commandArgs(trailingOnly = FALSE)
 file.arg.name <- "--file="
@@ -311,13 +314,16 @@ for (experiment in experiment_list) {
 
 		pdf_dir <- paste(opt$directory, '/', experiment, sep = '')
 		
+                system(paste("rm -rf ", pdf_dir, "/Rplots.pdf", sep = ''))
 		tex_files <- c(list.files(path = opt$directory, pattern = "tex", recursive = TRUE))
 		if (length(tex_files) > 1) {
 			command <- paste("pdflatex -output-directory=", pdf_dir, ' ', pdf_dir, "/*.tex", sep = '')
+                        print(command)
 			system(command)
 		}
 		
 		command <- paste("rm -rf ", pdf_dir, "/all_plots.pdf; pdftk ", pdf_dir, "/*.pdf cat output ", pdf_dir, "/all_plots.pdf", sep = '')
+                print(command)
 		system(command)
 		
 	}
@@ -329,12 +335,14 @@ system(paste("rm -rf ", pdf_dir, "/texput.log", sep = ''))
 if (opt$aggregate) {
 	
 	tex_files <- c(list.files(path = opt$directory, pattern = "tex", recursive = TRUE))
+       
 	if (length(tex_files) > 1) {
 		command <- paste("pdflatex -output-directory=", pdf_dir, ' ', pdf_dir, "/*.tex", sep = '')
-		system(command)
+                print(command)
+                system(command)
 	}
 	
-	command <- paste("rm -rf ", pdf_dir, "all_plots.pdf; pdftk ", pdf_dir, "/*.pdf cat output ", pdf_dir, "/all_plots.pdf", sep = '')
+	command <- paste("rm -rf ", pdf_dir, "/all_plots.pdf; pdftk ", pdf_dir, "/*.pdf cat output ", pdf_dir, "/all_plots.pdf", sep = '')
 	print(command)
 	system(command)
 }

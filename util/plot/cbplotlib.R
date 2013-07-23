@@ -67,8 +67,17 @@ output_table <- function(ed, en, pd, pn = '', latexout = TRUE) {
 	if (latexout) {
 		sink(file_location_tex)
 		cat("\\documentclass{article}\n")
+
+                cat("\\usepackage{graphics}\n")
+                cat("\\usepackage[table]{xcolor}\n")
+                cat("\\definecolor{lightray}{gray}{0.9}\n")
 		cat("\\begin{document}\n")
+                cat("\\scalebox{0.45}{\n")
+
+                cat("\\rowcolors{1}{}{lightray}\n")
+
 		invisible(print(xtable(pd),floating="FALSE",latex.environments=NULL))
+                cat("}\n")
 		cat("\\end{document}\n")
 		sink()
 	}

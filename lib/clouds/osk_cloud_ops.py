@@ -48,7 +48,8 @@ class OskCmds(CommonCloudFunctions) :
         CommonCloudFunctions.__init__(self, pid, osci)
         self.pid = pid
         self.osci = osci
-        self.oskconn = False
+        self.oskconncompute = False
+        self.oskconnstorage = False
         self.expid = expid
         self.ft_supported = False
 
@@ -68,10 +69,22 @@ class OskCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
             _username, _password, _tenant = authentication_data.split('-')
-            self.oskconn = client.Client(_username, _password, _tenant, \
+            _username = _username.replace("_dash_",'-')
+            _password = _password.replace("_dash_",'-')
+            _tenant = _tenant.replace("_dash_",'-')
+
+            self.oskconncompute = client.Client(_username, _password, _tenant, \
                                          access_url, region_name=region, \
                                          service_type="compute")
-            self.oskconn.flavors.list()
+            self.oskconncompute.flavors.list()
+
+            self.oskconnstorage = client.Client(_username, _password, _tenant, \
+                                         access_url, region_name=region, \
+                                         service_type="volume")
+
+            self.oskconnstorage.volumes.list()
+
+
             _region = region
             _msg = "Selected region is " + str(region)
             _status = 0
@@ -105,36 +118,44 @@ class OskCmds(CommonCloudFunctions) :
             _fmsg = "An error has occurred, but no error message was captured"
             self.connect(access, credentials, vmc_name)
 
-            _msg = "Checking if the ssh key pair \"" + key_name + "\" is created"
-            _msg += " on VMC " + vmc_name + "...."
-            cbdebug(_msg, True)
-
-            _key_pair_found = False
-            for _key_pair in self.oskconn.keypairs.list() :
-                if _key_pair.name == key_name :
-                    _key_pair_found = True
-
-            if not _key_pair_found :
-                _msg = "Creating the ssh key pair \"" + key_name + "\""
+            if not key_name :
+                _key_pair_found = True
+            else :
+                _msg = "Checking if the ssh key pair \"" + key_name + "\" is created"
                 _msg += " on VMC " + vmc_name + "...."
                 cbdebug(_msg, True)
-                self.oskconn.keypairs.create(key_name)
-                _key_pair_found = True
+                
+                _key_pair_found = False
+                for _key_pair in self.oskconncompute.keypairs.list() :
+                    if _key_pair.name == key_name :
+                        _key_pair_found = True
 
-            _msg = "Checking if the security group \"" + security_group_name
-            _msg += "\" is created on VMC " + vmc_name + "...."
-            cbdebug(_msg, True)
+                if not _key_pair_found :
+                    _msg = "Creating the ssh key pair \"" + key_name + "\""
+                    _msg += " on VMC " + vmc_name + "...."
+                    cbdebug(_msg, True)
+                    self.oskconncompute.keypairs.create(key_name)
+                    _key_pair_found = True
 
-            _security_group_found = False
-            for security_group in self.oskconn.security_groups.list() :
-                if security_group.name == security_group_name :
-                    _security_group_found = True
+            if security_group_name :
 
-            if not _security_group_found :
-                _msg = "ERROR! Please create the security group \"" + security_group_name + "\" in "
-                _msg += "OpenStack before proceeding."
-                _fmsg = _msg 
-                cberr(_msg, True)
+                _msg = "Checking if the security group \"" + security_group_name
+                _msg += "\" is created on VMC " + vmc_name + "...."
+                cbdebug(_msg, True)
+
+                _security_group_found = False
+                for security_group in self.oskconncompute.security_groups.list() :
+                    if security_group.name == security_group_name :
+                        _security_group_found = True
+    
+                if not _security_group_found :
+                    _msg = "ERROR! Please create the security group \"" 
+                    _msg += security_group_name + "\" in "
+                    _msg += "OpenStack before proceeding."
+                    _fmsg = _msg 
+                    cberr(_msg, True)
+            else :
+                _security_group_found = True
             
             if vm_defaults["prov_netname"] == vm_defaults["run_netname"] :
                 _net_str = "network \"" + vm_defaults["prov_netname"] + "\""
@@ -147,7 +168,7 @@ class OskCmds(CommonCloudFunctions) :
             _prov_netname_found = False
             _run_netname_found = False
             
-            for _network in self.oskconn.networks.list() :
+            for _network in self.oskconncompute.networks.list() :
                 if _network.label == vm_defaults["prov_netname"] :
                     _prov_netname_found = True
                 
@@ -169,7 +190,7 @@ class OskCmds(CommonCloudFunctions) :
             _msg += " registered on VMC " + vmc_name + "...."
             cbdebug(_msg, True)
 
-            _registered_image_list = self.oskconn.images.list()
+            _registered_image_list = self.oskconncompute.images.list()
             _registered_imageid_list = []
 
             for _registered_image in _registered_image_list :
@@ -260,7 +281,7 @@ class OskCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
-            if not self.oskconn :
+            if not self.oskconncompute :
                 self.connect(obj_attr_list["access"], \
                              obj_attr_list["credentials"], \
                              obj_attr_list["name"])
@@ -268,22 +289,43 @@ class OskCmds(CommonCloudFunctions) :
             obj_attr_list["hosts"] = ''
             obj_attr_list["host_list"] = {}
     
-            _host_list = self.oskconn.hypervisors.list()
+            _host_list = self.oskconncompute.hypervisors.list()
 
             obj_attr_list["host_count"] = len(_host_list)
 
             _service_ids_found = {}
             for _host in _host_list :
+
                 # Sometimes, the same hypervisor is reported more than once,
                 # with slightly different names. We need to remove (in fact,
                 # avoid the insertion of) duplicates.
                 if not _host.service["id"] in _service_ids_found :
                     # Host UUID is artificially generated
-                    _host_uuid = str(uuid5(UUID('4f3f2898-69e3-5a0d-820a-c4e87987dbce'), obj_attr_list["cloud_name"] + str(_host.service["id"])))
+                    _host_uuid = str(uuid5(UUID('4f3f2898-69e3-5a0d-820a-c4e87987dbce'), \
+                                           obj_attr_list["cloud_name"] + str(_host.service["id"])))
                     obj_attr_list["host_list"][_host_uuid] = {}
                     obj_attr_list["hosts"] += _host_uuid + ','
-                    obj_attr_list["host_list"][_host_uuid]["cloud_hostname"], obj_attr_list["host_list"][_host_uuid]["cloud_ip"] = hostname2ip(_host.hypervisor_hostname)
-    
+                    
+                    _extended_info = _host._info
+                    
+                    if "service" in _extended_info :
+                        if "host" in _extended_info["service"] :
+                            _actual_host_name = _extended_info["service"]["host"]
+                    else :
+                        _actual_host_name = _host.hypervisor_hostname
+                        
+                    if "modify_host_names" in obj_attr_list and \
+                    obj_attr_list["modify_host_names"].lower() != "false" :
+                        _queried_host_name = _actual_host_name.split(".")[0] + '.' + obj_attr_list["modify_host_names"]
+                    else :
+                        _queried_host_name = _actual_host_name
+
+                    obj_attr_list["host_list"][_host_uuid]["cloud_hostname"], \
+                    obj_attr_list["host_list"][_host_uuid]["cloud_ip"] = hostname2ip(_queried_host_name)
+
+                    obj_attr_list["host_list"][_host_uuid]["cloud_hostname"] = \
+                    _actual_host_name
+
                     if obj_attr_list["host_list"][_host_uuid]["cloud_ip"] == obj_attr_list["cloud_ip"] :
                         obj_attr_list["host_list"][_host_uuid]["function"] = "controller"
                     else :
@@ -300,6 +342,12 @@ class OskCmds(CommonCloudFunctions) :
                     obj_attr_list["host_list"][_host_uuid]["uuid"] = _host_uuid
                     obj_attr_list["host_list"][_host_uuid]["arrival"] = int(time())
                     obj_attr_list["host_list"][_host_uuid]["counter"] = obj_attr_list["counter"]
+                    obj_attr_list["host_list"][_host_uuid]["simulated"] = "False"
+                    obj_attr_list["host_list"][_host_uuid]["identity"] = obj_attr_list["identity"]
+                    if "login" in obj_attr_list :
+                        obj_attr_list["host_list"][_host_uuid]["login"] = obj_attr_list["login"]
+                    else :
+                        obj_attr_list["host_list"][_host_uuid]["login"] = "root"                
                     obj_attr_list["host_list"][_host_uuid]["mgt_001_provisioning_request_originated"] = obj_attr_list["mgt_001_provisioning_request_originated"]
                     obj_attr_list["host_list"][_host_uuid]["mgt_002_provisioning_request_sent"] = obj_attr_list["mgt_002_provisioning_request_sent"]
                     _time_mark_prc = int(time())
@@ -348,7 +396,7 @@ class OskCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
-            if not self.oskconn :
+            if not self.oskconncompute :
                 self.connect(obj_attr_list["access"], \
                              obj_attr_list["credentials"], \
                              obj_attr_list["name"])
@@ -358,10 +406,15 @@ class OskCmds(CommonCloudFunctions) :
             _wait = int(obj_attr_list["update_frequency"])
             sleep(_wait)
 
+            _msg = "Removing all VMs previously created on VMC \""
+            _msg += obj_attr_list["name"] + "\" (only VM names starting with"
+            _msg += " \"" + "cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]
+            _msg += "\")....."
+            cbdebug(_msg, True)
             _running_instances = True
             while _running_instances and _curr_tries < _max_tries :
                 _running_instances = False
-                _instances = self.oskconn.servers.list()
+                _instances = self.oskconncompute.servers.list()
                 for _instance in _instances :
                     if _instance.name.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) :
                         _running_instances = True
@@ -389,6 +442,17 @@ class OskCmds(CommonCloudFunctions) :
                 cberr(_msg, True)
             else :
                 _status = 0
+
+            _msg = "Removing all VVs previously created on VMC \""
+            _msg += obj_attr_list["name"] + "\" (only VV names starting with"
+            _msg += " \"" + "cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]
+            _msg += "\")....."
+            cbdebug(_msg, True)
+            _volumes = self.oskconnstorage.volumes.list()
+            for _volume in _volumes :
+                if _volume.display_name :
+                    if _volume.display_name.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) :
+                        _volume.delete()
 
         except novaexceptions, obj:
             _status = int(obj.error_code)
@@ -428,11 +492,6 @@ class OskCmds(CommonCloudFunctions) :
             obj_attr_list["mgt_002_provisioning_request_sent"] = _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
             
             if "cleanup_on_attach" in obj_attr_list and obj_attr_list["cleanup_on_attach"] == "True" :
-                _msg = "Removing all VMs previously created on VMC \""
-                _msg += obj_attr_list["name"] + "\" (only VMs names starting with"
-                _msg += " \"" + "cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]
-                _msg += "\")....."
-                cbdebug(_msg, True)
                 _status, _fmsg = self.vmccleanup(obj_attr_list)
             else :
                 _status = 0
@@ -492,7 +551,7 @@ class OskCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
             
-            _flavor_list = self.oskconn.flavors.list()
+            _flavor_list = self.oskconncompute.flavors.list()
 
             _status = 168
             _fmsg = "Please check if the defined flavor is present on this "
@@ -529,7 +588,7 @@ class OskCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
-            _image_list = self.oskconn.images.list()
+            _image_list = self.oskconncompute.images.list()
 
             _fmsg += "Please check if the defined image name is present on this "
             _fmsg += "OpenStack Cloud"
@@ -578,7 +637,7 @@ class OskCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
             
-            _network_list = self.oskconn.networks.list()
+            _network_list = self.oskconncompute.networks.list()
 
             _status = 168
             _fmsg = "Please check if the defined network is present on this "
@@ -727,7 +786,7 @@ class OskCmds(CommonCloudFunctions) :
                 Nested 'try' is fine for now.
                 '''
                 try :
-                    _virtual_interfaces = self.oskconn.virtual_interfaces.list(instance.id)
+                    _virtual_interfaces = self.oskconncompute.virtual_interfaces.list(instance.id)
                     if _virtual_interfaces and len(_virtual_interfaces) :
                         obj_attr_list["cloud_mac"] = _virtual_interfaces[0].mac_address
                 except :
@@ -737,27 +796,36 @@ class OskCmds(CommonCloudFunctions) :
         return True
 
     @trace
-    def get_vm_instances(self, obj_attr_list, vmidentifier = "all") :
+    def get_instances(self, obj_attr_list, obj_type = "vm", identifier = "all") :
         '''
         TBD
         '''
         try :
             _search_opts = {}
 
-            if vmidentifier != "all" :
-                _search_opts["name"] = vmidentifier
+            if identifier != "all" :
+                if obj_type == "vm" :
+                    _search_opts["name"] = identifier
+                else :
+                    _search_opts["display_name"] = identifier
 
-            if not self.oskconn :
+            if not self.oskconncompute :
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
                              obj_attr_list["vmc_name"])
-            
-            _instances = self.oskconn.servers.list(search_opts = _search_opts)
 
+            if obj_type == "vm" :            
+                _instances = self.oskconncompute.servers.list(search_opts = _search_opts)
+            else :
+                _instances = self.oskconnstorage.volumes.list(search_opts = _search_opts)
+            
             if len(_instances) > 0 :
 
-                if vmidentifier == "all" :   
+                if identifier == "all" :   
                     return _instances
                 else :
+
+                    if obj_type == "vv" :
+                        return _instances[0]
 
                     for _instance in _instances :
 
@@ -786,7 +854,7 @@ class OskCmds(CommonCloudFunctions) :
         TBD
         '''
         try :
-            _instance = self.get_vm_instances(obj_attr_list, \
+            _instance = self.get_instances(obj_attr_list, "vm", \
                                            obj_attr_list["cloud_vm_name"])
             if _instance :
                 if _instance.status == "ACTIVE" :
@@ -856,6 +924,162 @@ class OskCmds(CommonCloudFunctions) :
         return True
 
     @trace
+    def vvcreate(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+
+
+            if "cloud_vv" in obj_attr_list :
+    
+                obj_attr_list["last_known_state"] = "about to send volume create request"
+    
+                obj_attr_list["cloud_vv_name"] = "cb-" + obj_attr_list["username"]
+                obj_attr_list["cloud_vv_name"] += '-' + obj_attr_list["cloud_name"]
+                obj_attr_list["cloud_vv_name"] += '-' + "vv"
+                obj_attr_list["cloud_vv_name"] += obj_attr_list["name"].split("_")[1]
+                obj_attr_list["cloud_vv_name"] += '-' + obj_attr_list["role"]            
+    
+                _msg = "Creating a volume, with size " 
+                _msg += obj_attr_list["cloud_vv"] + " GB, on VMC \"" 
+                _msg += obj_attr_list["vmc_name"] + "\""
+                cbdebug(_msg, True)
+    
+                _instance = self.oskconnstorage.volumes.create(obj_attr_list["cloud_vv"], \
+                                                               snapshot_id = None, \
+                                                               display_name = obj_attr_list["cloud_vv_name"], \
+                                                               display_description = None, \
+                                                               volume_type = None, \
+                                                               availability_zone = None, \
+                                                               imageRef = None)
+                
+                sleep(int(obj_attr_list["update_frequency"]))
+        
+                obj_attr_list["cloud_vv_uuid"] = '{0}'.format(_instance.id)
+    
+                _msg = "Attaching the newly created Volume \"" 
+                _msg += obj_attr_list["cloud_vv_name"] + "\" (cloud-assigned uuid \""
+                _msg += obj_attr_list["cloud_vv_uuid"] + "\") to instance \""
+                _msg += obj_attr_list["cloud_vm_name"] + "\" (cloud-assigned uuid \""
+                _msg += obj_attr_list["cloud_vm_uuid"] + "\")"
+                cbdebug(_msg)
+    
+                # There is weird bug on the python novaclient code. Don't change the
+                # following line, it is supposed to be "oskconncompute", even though
+                # is dealing with volumes. Will explain latter.
+                self.oskconncompute.volumes.create_server_volume(obj_attr_list["cloud_vm_uuid"], \
+                                                                 obj_attr_list["cloud_vv_uuid"], \
+                                                                 "/dev/vdd")
+
+            else :
+                obj_attr_list["cloud_vv_uuid"] = "none"
+
+            _status = 0
+
+        except CldOpsException, obj :
+            _status = obj.status
+            _fmsg = str(obj.msg)
+
+        except novaexceptions, obj:
+            _status = int(obj.error_code)
+            _fmsg = str(obj.error_message)
+
+        except KeyboardInterrupt :
+            _status = 42
+            _fmsg = "CTRL-C interrupt"
+            cbdebug("VM create keyboard interrupt...", True)
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+    
+        finally :
+            if _status :
+                _msg = "Volume to be attached to the " + obj_attr_list["name"] + ""
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vv_uuid"] + ") "
+                _msg += "could not be created"
+                _msg += " on OpenStack Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += _fmsg
+                cberr(_msg)
+                raise CldOpsException(_msg, _status)
+
+            else :
+                _msg = "Volume to be attached to the " + obj_attr_list["name"] + ""
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vv_uuid"] + ") "
+                _msg += "was successfully created"
+                _msg += " on OpenStack Cloud \"" + obj_attr_list["cloud_name"] + "\"."
+                cbdebug(_msg)
+                return _status, _msg
+
+    @trace
+    def vvdestroy(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+        
+            if "cloud_vv_uuid" in obj_attr_list and obj_attr_list["cloud_vv_uuid"].lower() != "none" :
+                
+                _instance = self.get_instances(obj_attr_list, "vv", obj_attr_list["cloud_vv_name"])
+    
+                if _instance :
+    
+                    _msg = "Sending a destruction request for the Volume" 
+                    _msg += " previously attached to \"" 
+                    _msg += obj_attr_list["name"] + "\""
+                    _msg += " (cloud-assigned uuid " 
+                    _msg += obj_attr_list["cloud_vv_uuid"] + ")...."
+                    cbdebug(_msg, True)
+    
+                    if len(_instance.attachments) :
+                        _server_id = _instance.attachments[0]["server_id"]
+                        _attachment_id = _instance.attachments[0]["id"]
+                        # There is weird bug on the python novaclient code. Don't change the
+                        # following line, it is supposed to be "oskconncompute", even though
+                        # is dealing with volumes. Will explain latter.
+                        self.oskconncompute.volumes.delete_server_volume(_server_id, _attachment_id)
+    
+                    self.oskconnstorage.volumes.delete(_instance)
+                    
+            _status =  0
+                    
+        except CldOpsException, obj :
+            _status = obj.status
+            _fmsg = str(obj.msg)
+
+        except novaexceptions, obj:
+            _status = int(obj.error_code)
+            _fmsg = str(obj.error_message)
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+    
+        finally :
+            if _status :
+                _msg = "Volume previously attached to the " + obj_attr_list["name"] + ""
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vv_uuid"] + ") "
+                _msg += "could not be destroyed "
+                _msg += " on OpenStack Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += _fmsg
+                cberr(_msg)
+                raise CldOpsException(_msg, _status)
+            else :
+                _msg = "Volume previously attached to the " + obj_attr_list["name"] + ""
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vv_uuid"] + ") "
+                _msg += "was successfully destroyed "
+                _msg += "on OpenStack Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "\"."
+                cbdebug(_msg)
+                return _status, _msg
+
+    @trace
     def vmcreate(self, obj_attr_list) :
         '''
         TBD
@@ -864,7 +1088,7 @@ class OskCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
             
-            obj_attr_list["cloud_uuid"] = "NA"
+            obj_attr_list["cloud_vm_uuid"] = "NA"
             _instance = False
             
             obj_attr_list["cloud_vm_name"] = "cb-" + obj_attr_list["username"]
@@ -875,7 +1099,7 @@ class OskCmds(CommonCloudFunctions) :
 
             obj_attr_list["last_known_state"] = "about to connect to openstack manager"
 
-            if not self.oskconn :
+            if not self.oskconncompute :
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
                              obj_attr_list["vmc_name"])
 
@@ -888,12 +1112,17 @@ class OskCmds(CommonCloudFunctions) :
 
             obj_attr_list["last_known_state"] = "about to get flavor and image list"
 
-            # "Security groups" must be a list
-            _security_groups = []
-            _security_groups.append(obj_attr_list["security_groups"])
+            if obj_attr_list["security_groups"].lower() == "false" :
+                _security_groups = None
+            else :
+                # "Security groups" must be a list
+                _security_groups = []
+                _security_groups.append(obj_attr_list["security_groups"])
 
-            _time_mark_prs = int(time())
-            obj_attr_list["mgt_002_provisioning_request_sent"] = _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
+            if obj_attr_list["key_name"].lower() == "false" :
+                _key_name = None
+            else :
+                _key_name = obj_attr_list["key_name"]
 
             obj_attr_list["last_known_state"] = "about to send create request"
 
@@ -901,10 +1130,13 @@ class OskCmds(CommonCloudFunctions) :
             _imageid = self.get_images(obj_attr_list)
 
             if "host_name" in obj_attr_list :
-                _scheduler_hints = { "force_hosts" : obj_attr_list["host_name"] }
+#                _scheduler_hints = { "force_hosts" : obj_attr_list["host_name"] }
+                _availability_zone = "nova:" + obj_attr_list["host_name"]
             else :
-                _scheduler_hints = None
-            
+#                _scheduler_hints = None
+                _availability_zone = None
+            _scheduler_hints = None
+
             _meta = {}
             if "meta_tags" in obj_attr_list :
                 if obj_attr_list["meta_tags"] != "empty" and \
@@ -917,22 +1149,31 @@ class OskCmds(CommonCloudFunctions) :
             _networkid = self.get_networks(obj_attr_list)
             _netid = [{"net-id" : _networkid.id}]
 
+            _time_mark_prs = int(time())
+            obj_attr_list["mgt_002_provisioning_request_sent"] = \
+            _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
+
             _msg = "Starting an instance on OpenStack, using the imageid \""
             _msg += obj_attr_list["imageid1"] + "\" (" + str(_imageid) + ") and "
             _msg += "size \"" + obj_attr_list["size"] + "\" (" + str(_flavor) + ")"
-            if _scheduler_hints :
-                _msg += ", with scheduler hints \"" + str(_scheduler_hints) + "\" "
+
+#            if _scheduler_hints :
+#                _msg += ", with scheduler hints \"" + str(_scheduler_hints) + "\" "
+
+            if _availability_zone :
+                _msg += ", on the availability zone \"" + str(_availability_zone) + "\" "
 
             _msg += ", network identifier \"" + str(_netid) + "\","
             _msg += " on VMC \"" + obj_attr_list["vmc_name"] + "\""
             cbdebug(_msg, True)
     
-            _instance = self.oskconn.servers.create(name = obj_attr_list["cloud_vm_name"], \
+            _instance = self.oskconncompute.servers.create(name = obj_attr_list["cloud_vm_name"], \
                                                     image = _imageid, \
                                                     flavor = _flavor, \
                                                     security_groups = _security_groups, \
-                                                    key_name = obj_attr_list["key_name"], \
+                                                    key_name = _key_name, \
                                                     scheduler_hints = _scheduler_hints, \
+                                                    availability_zone = _availability_zone, \
                                                     meta = _meta, \
                                                     nics = _netid)
 
@@ -940,7 +1181,9 @@ class OskCmds(CommonCloudFunctions) :
                 
                 sleep(int(obj_attr_list["update_frequency"]))
 
-                obj_attr_list["cloud_uuid"] = '{0}'.format(_instance.id)
+                obj_attr_list["cloud_vm_uuid"] = '{0}'.format(_instance.id)
+
+                _status, _fmsg = self.vvcreate(obj_attr_list)
 
                 self.take_action_if_requested("VM", obj_attr_list, "provision_started")
 
@@ -979,26 +1222,29 @@ class OskCmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "" + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "could not be created"
                 _msg += " on OpenStack Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg + " (The VM creation will be rolled back)"
                 cberr(_msg)
                 
-                _instance = self.get_vm_instances(obj_attr_list, \
+                _vminstance = self.get_instances(obj_attr_list, "vm", \
                                                obj_attr_list["cloud_vm_name"])
 
-                if _instance :
+                if _vminstance :
                     # Try to make a last attempt effort to get the hostname,
                     # even if the VM creation failed.
                     self.get_hostname(obj_attr_list)
 
-                    _instance.delete()
+                    _vminstance.delete()
+                    
+                    self.vvdestroy(obj_attr_list)
+
                 raise CldOpsException(_msg, _status)
 
             else :
                 _msg = "" + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "was successfully created"
                 _msg += " on OpenStack Cloud \"" + obj_attr_list["cloud_name"] + "\"."
                 cbdebug(_msg)
@@ -1020,18 +1266,17 @@ class OskCmds(CommonCloudFunctions) :
             obj_attr_list["mgt_902_deprovisioning_request_sent"] = \
                 _time_mark_drs - int(obj_attr_list["mgt_901_deprovisioning_request_originated"])
 
-            if not self.oskconn :
+            if not self.oskconncompute :
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
                              obj_attr_list["vmc_name"])
             
             _wait = int(obj_attr_list["update_frequency"])
 
-            _instance = self.get_vm_instances(obj_attr_list, \
-                                           obj_attr_list["cloud_vm_name"])
+            _instance = self.get_instances(obj_attr_list, "vm", obj_attr_list["cloud_vm_name"])
             
             if _instance :
-                _msg = "Sending a termination request for "  + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ")"
+                _msg = "Sending a termination request for Instance \""  + obj_attr_list["name"] + "\""
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
                 _msg += "...."
                 cbdebug(_msg, True)
             
@@ -1042,6 +1287,8 @@ class OskCmds(CommonCloudFunctions) :
                     sleep(_wait)
             else :
                 True
+
+            _status, _fmsg = self.vvdestroy(obj_attr_list)
 
             _time_mark_drc = int(time())
             obj_attr_list["mgt_903_deprovisioning_request_completed"] = \
@@ -1064,7 +1311,7 @@ class OskCmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "" + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "could not be destroyed "
                 _msg += " on OpenStack Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
@@ -1072,7 +1319,7 @@ class OskCmds(CommonCloudFunctions) :
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "" + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "was successfully destroyed "
                 _msg += "on OpenStack Cloud \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
@@ -1088,7 +1335,7 @@ class OskCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
-            if not self.oskconn :
+            if not self.oskconncompute :
                 self.connect(obj_attr_list["access"], \
                              obj_attr_list["credentials"], \
                              obj_attr_list["vmc_name"])
@@ -1097,8 +1344,7 @@ class OskCmds(CommonCloudFunctions) :
             _curr_tries = 0
             _max_tries = int(obj_attr_list["update_attempts"])
 
-            _instance = self.get_vm_instances(obj_attr_list, \
-                                           obj_attr_list["cloud_vm_name"])
+            _instance = self.get_instances(obj_attr_list, "vm", obj_attr_list["cloud_vm_name"])
 
             if _instance :
 
@@ -1120,14 +1366,14 @@ class OskCmds(CommonCloudFunctions) :
                 sleep(_wait)
 
                 _msg = "Waiting for " + obj_attr_list["name"]
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "to be captured with image name \"" + obj_attr_list["captured_image_name"]
                 _msg += "\"..."
                 cbdebug(_msg, True)
 
                 _vm_image_created = False
                 while not _vm_image_created and _curr_tries < _max_tries : 
-                    _vm_images = self.oskconn.images.list()
+                    _vm_images = self.oskconncompute.images.list()
                     for _vm_image in _vm_images :
                         if _vm_image.name == obj_attr_list["captured_image_name"] :
                             if _vm_image.status == "ACTIVE" :
@@ -1140,7 +1386,7 @@ class OskCmds(CommonCloudFunctions) :
                         obj_attr_list["mgt_999_capture_request_failed"] = int(time()) - _time_mark_crs
                         
                     _msg = "" + obj_attr_list["name"] + ""
-                    _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+                    _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                     _msg += "still undergoing. "
                     _msg += "Will wait " + obj_attr_list["update_frequency"]
                     _msg += " seconds and try again."
@@ -1156,7 +1402,7 @@ class OskCmds(CommonCloudFunctions) :
             if _curr_tries > _max_tries  :
                 _status = 1077
                 _fmsg = "" + obj_attr_list["name"] + ""
-                _fmsg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+                _fmsg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _fmsg +=  "could not be captured after " + str(_max_tries * _wait) + " seconds.... "
                 cberr(_msg)
             else :
@@ -1177,7 +1423,7 @@ class OskCmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "" + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "could not be captured "
                 _msg += " on OpenStack Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
@@ -1185,7 +1431,7 @@ class OskCmds(CommonCloudFunctions) :
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "" + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "was successfully captured "
                 _msg += " on OpenStack Cloud \"" + obj_attr_list["cloud_name"] + "\"."
                 cbdebug(_msg)
@@ -1201,7 +1447,7 @@ class OskCmds(CommonCloudFunctions) :
             _ts = obj_attr_list["target_state"]
             _cs = obj_attr_list["current_state"]
     
-            if not self.oskconn :
+            if not self.oskconncompute :
                 self.connect(obj_attr_list["access"], \
                              obj_attr_list["credentials"], \
                              obj_attr_list["vmc_name"])
@@ -1216,12 +1462,12 @@ class OskCmds(CommonCloudFunctions) :
                     _time_mark_rrs - obj_attr_list["mgt_201_runstate_request_originated"]
     
             _msg = "Sending a runstate change request (" + _ts + " for " + obj_attr_list["name"]
-            _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ")"
+            _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
             _msg += "...."
             cbdebug(_msg, True)
 
-            _instance = self.get_vm_instances(obj_attr_list, \
-                                           obj_attr_list["cloud_vm_name"])
+            _instance = self.get_instances(obj_attr_list, "vm", \
+                                              obj_attr_list["cloud_vm_name"])
 
             if _instance :
                 if _ts == "fail" :

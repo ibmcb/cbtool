@@ -117,6 +117,7 @@ NOTIFICATION = $MAIN_NOTIFICATION
 REMOTE_DIR_NAME = cbtool
 RUN_GENERIC_SCRIPTS = $True
 TRANSFER_FILES = $True
+DEBUG_REMOTE_COMMANDS = $False
 # Any VM which contains the string "client" on his role name will be created
 # on the "LG" pool, if this pools exists.
 CLIENT_PREF_POOL = lg
@@ -163,6 +164,7 @@ LOG_OUTPUT_COMMAND = $True
 SAVE_ON_ATTACH = $False
 SECONDS_BEFORE_SAVE = 0
 RUN_APPLICATION_SCRIPTS = $True
+DEBUG_REMOTE_COMMANDS = $False
 DONT_START_LOAD_MANAGER = $False
 REPLICATED_VMS = 0
 ATTACH_PARALLELISM = 1

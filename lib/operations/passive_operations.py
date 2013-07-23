@@ -101,7 +101,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _fields.append("|vmc_pool            ")
                         _fields.append("|ai      ")
                         _fields.append("|aidrs      ")                    
-                        _fields.append("|svm_stub_vmc     ")
+            #            _fields.append("|svm_stub_vmc     ")
                         _fields.append("|uuid")
             #            _fields.append("|uuid                                 ")
                     elif _obj_type == "SVM" :

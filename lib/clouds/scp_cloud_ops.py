@@ -119,9 +119,9 @@ class ScpCmds(CommonCloudFunctions) :
             elif query_type == "describe_all_instances" :
                 _response = self.scpconn.proxy.describe_instances()
             elif query_type == "terminate_instances" :
-                _response = self.scpconn.proxy.terminate_instances(obj_attr_list["cloud_uuid"])
+                _response = self.scpconn.proxy.terminate_instances(obj_attr_list["cloud_vm_uuid"])
             elif query_type == "capture_image" :
-                _response = self.scpconn.proxy.capture_image(obj_attr_list["cloud_uuid2"], obj_attr_list["captured_image_name"])
+                _response = self.scpconn.proxy.capture_image(obj_attr_list["cloud_vm_uuid2"], obj_attr_list["captured_image_name"])
             elif query_type == "describe_image" :
                 _response = self.scpconn.proxy.describe_images(obj_attr_list["captured_image_name"])
             else :
@@ -351,6 +351,12 @@ class ScpCmds(CommonCloudFunctions) :
                 obj_attr_list["host_list"][_host_uuid]["uuid"] = _host_uuid
                 obj_attr_list["host_list"][_host_uuid]["arrival"] = int(time())
                 obj_attr_list["host_list"][_host_uuid]["counter"] = obj_attr_list["counter"]
+                obj_attr_list["host_list"][_host_uuid]["simulated"] = "False"
+                obj_attr_list["host_list"][_host_uuid]["identity"] = obj_attr_list["identity"]
+                if "login" in obj_attr_list :
+                    obj_attr_list["host_list"][_host_uuid]["login"] = obj_attr_list["login"]
+                else :
+                    obj_attr_list["host_list"][_host_uuid]["login"] = "root"                
                 obj_attr_list["host_list"][_host_uuid]["mgt_001_provisioning_request_originated"] = obj_attr_list["mgt_001_provisioning_request_originated"]
                 obj_attr_list["host_list"][_host_uuid]["mgt_002_provisioning_request_sent"] = obj_attr_list["mgt_002_provisioning_request_sent"]
                 _time_mark_prc = int(time())
@@ -407,7 +413,7 @@ class ScpCmds(CommonCloudFunctions) :
                             _msg += _instance["instance_id"] + "\"" 
                             _msg += " (" + _instance["instance_tag"] + ")"
                             cbdebug(_msg, True)
-                            _instance["cloud_uuid"] = _instance["gid"]
+                            _instance["cloud_vm_uuid"] = _instance["gid"]
                             self.query("terminate_instances", _instance, False)
 
                         if _instance["state"] == "starting" :
@@ -654,7 +660,7 @@ class ScpCmds(CommonCloudFunctions) :
                 _fmsg = str(obj.msg)
                 _msg = "An exception was raised while trying to get information "
                 _msg += "about the " + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ")."
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")."
                 _msg += " Will wait for " + str(_wait) + " seconds and try again."
                 sleep(_wait)
                 _curr_tries += 1
@@ -664,7 +670,7 @@ class ScpCmds(CommonCloudFunctions) :
                 _fmsg = str(e)
                 _msg = "An exception was raised while trying to get information "
                 _msg += "about the " + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ")."
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")."
                 _msg += " Will wait for " + str(_wait) + " seconds and try again."
                 sleep(_wait)
                 _curr_tries += 1
@@ -716,7 +722,7 @@ class ScpCmds(CommonCloudFunctions) :
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
-            obj_attr_list["cloud_uuid"] = "NA"
+            obj_attr_list["cloud_vm_uuid"] = "NA"
 
             _instance = False
 
@@ -750,8 +756,8 @@ class ScpCmds(CommonCloudFunctions) :
             _instance = self.query("run_instance", obj_attr_list, True)[0]
 
             if _instance :
-                obj_attr_list["cloud_uuid"] = _instance["gid"]
-                obj_attr_list["cloud_uuid2"] = _instance["instance_id"]
+                obj_attr_list["cloud_vm_uuid"] = _instance["gid"]
+                obj_attr_list["cloud_vm_uuid2"] = _instance["instance_id"]
 
                 self.take_action_if_requested("VM", obj_attr_list, "provision_started")
 
@@ -784,7 +790,7 @@ class ScpCmds(CommonCloudFunctions) :
 
             if _status :               
                 _msg = "" + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "could not be created"
                 _msg += " on Smart Cloud Provisioning \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += str(_fmsg) + " (The VM creation will be rolled back)"
@@ -798,7 +804,7 @@ class ScpCmds(CommonCloudFunctions) :
 
             else :
                 _msg = "" + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "was successfully created"
                 _msg += " on Smart Cloud Provisioning \"" + obj_attr_list["cloud_name"] + "\"."
                 cbdebug(_msg)
@@ -826,13 +832,13 @@ class ScpCmds(CommonCloudFunctions) :
             _instance = self.get_vm_instance(obj_attr_list)
 
             if _instance :
-                if "cloud_uuid" in obj_attr_list and obj_attr_list["cloud_uuid"] != "NA" :
-                    _instance_id = obj_attr_list["cloud_uuid"]
+                if "cloud_vm_uuid" in obj_attr_list and obj_attr_list["cloud_vm_uuid"] != "NA" :
+                    _instance_id = obj_attr_list["cloud_vm_uuid"]
                 else :
                     _instance_id = _instance["gid"]
 
                 _msg = "Sending a termination request for "  + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ")"
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
                 _msg += "...."
                 cbdebug(_msg, True)
 
@@ -862,7 +868,7 @@ class ScpCmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "" + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "could not be destroyed "
                 _msg += " on Smart Cloud Provisioning \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
@@ -870,7 +876,7 @@ class ScpCmds(CommonCloudFunctions) :
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "" + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "was successfully destroyed "
                 _msg += "on Smart Cloud Provisioning \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
@@ -913,7 +919,7 @@ class ScpCmds(CommonCloudFunctions) :
                 _instance = self.query("capture_image", obj_attr_list, True)
 
                 _msg = "Waiting for " + obj_attr_list["name"]
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "to be captured with image name \"" + obj_attr_list["captured_image_name"]
                 _msg += "\"..."
                 cbdebug(_msg, True)
@@ -934,7 +940,7 @@ class ScpCmds(CommonCloudFunctions) :
                         obj_attr_list["mgt_999_capture_request_failed"] = int(time()) - _time_mark_crs
 
                     _msg = "" + obj_attr_list["name"] + ""
-                    _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+                    _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                     _msg += "still undergoing. "
                     _msg += "Will wait " + obj_attr_list["update_frequency"]
                     _msg += " seconds and try again."
@@ -950,7 +956,7 @@ class ScpCmds(CommonCloudFunctions) :
             if _curr_tries > _max_tries  :
                 _status = 1077
                 _fmsg = "" + obj_attr_list["name"] + ""
-                _fmsg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+                _fmsg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _fmsg +=  "could not be captured after " + str(_max_tries * _wait) + " seconds.... "
                 cberr(_msg)
             else :
@@ -967,7 +973,7 @@ class ScpCmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "" + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "could not be captured "
                 _msg += " on Smart Cloud Provisioning \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
@@ -975,7 +981,7 @@ class ScpCmds(CommonCloudFunctions) :
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "" + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "was successfully captured "
                 _msg += " on Smart Cloud Provisioning \"" + obj_attr_list["cloud_name"] + "\"."
                 cbdebug(_msg)

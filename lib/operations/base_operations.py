@@ -215,14 +215,15 @@ class BaseObjectOperations :
                 _msg = "Usage: monextract <cloud name> <object type> <metric type> [experiment id]"
                 
         elif command == "host-fail" :
-            if _length >= 2 :
-                object_attribute_list["name"] = _parameters[1]
-                object_attribute_list["firs"] = "none"
             if _length >= 3 :
-                object_attribute_list["firs"] = _parameters[2]
+                object_attribute_list["name"] = _parameters[1]
+                object_attribute_list["service"] = _parameters[2]                
+                object_attribute_list["firs"] = "none"
+            if _length >= 4 :
+                object_attribute_list["firs"] = _parameters[3]
             if _length < 2:
                 _status = 9
-                _msg = "Usage: hostfail <cloud name> <host name> [parent] [mode]"
+                _msg = "Usage: hostfail <cloud name> <host name> <service> [parent] [mode]"
                 
         # These were delete erroneously. Please don't delete them.
         elif command == "api-check" :
@@ -236,14 +237,15 @@ class BaseObjectOperations :
                 _msg = "Usage: reset_refresh <cloud name>"
 
         elif command == "host-repair" :
-            if _length >= 2 :
-                object_attribute_list["name"] = _parameters[1]
-                object_attribute_list["firs"] = "none"
             if _length >= 3 :
-                object_attribute_list["firs"] = _parameters[2]                
+                object_attribute_list["name"] = _parameters[1]
+                object_attribute_list["service"] = _parameters[2]                
+                object_attribute_list["firs"] = "none"
+            if _length >= 4 :
+                object_attribute_list["firs"] = _parameters[3]
             if _length < 2:
                 _status = 9
-                _msg = "Usage: hostrepair <cloud name> <host name> [parent] [mode]"
+                _msg = "Usage: hostfail <cloud name> <host name> <service> [parent] [mode]"
 
         elif command == "vmc-cleanup" :
             if _length >= 2 :
@@ -918,7 +920,12 @@ class BaseObjectOperations :
                 obj_attr_list["experiment_id"] = _time_parameters["experiment_id"]
 
                 obj_attr_list["mgt_001_provisioning_request_originated"] = obj_attr_list["command_originated"]
- 
+                obj_attr_list["mgt_002_provisioning_request_sent"] = "0"
+                obj_attr_list["mgt_003_provisioning_request_completed"] = "0"
+                if _obj_type == "VM" :
+                    obj_attr_list["mgt_005_file_transfer"] = "0"                                
+                    obj_attr_list["mgt_006_application_start"] = "0"
+                    
                 _cloud_parameters = self.get_cloud_parameters(obj_attr_list["cloud_name"])
 
                 if '_' not in obj_attr_list["name"] and '-' not in obj_attr_list["name"] and _obj_type.upper() == "SVM" :
@@ -1679,7 +1686,7 @@ class BaseObjectOperations :
 
             obj_attr_list["sut"] = obj_attr_list["sut"][:-2]
             _tiers = obj_attr_list["sut"].split("->")
-            
+
             '''
             Support load balancer configurations on-the-fly.
             '''
@@ -1695,10 +1702,12 @@ class BaseObjectOperations :
             else :
                 obj_attr_list["load_balancer_target_role"] = "none"
 
+            _vm_nr = 1
+            _cloud_ips = {}
             for _tier_nr in range(0, len(_tiers)) :
-                
+
                 _nr_vms, _vm_role = self.get_vms_and_role(_tiers[_tier_nr])
-                
+
                 if _vm_role == obj_attr_list["load_generator_role"] :
                     if len(_tiers) > 1 :
                         obj_attr_list["load_generator_target_role"] = _tiers[_tier_nr + 1].split("_x_")[1]
@@ -1726,16 +1735,34 @@ class BaseObjectOperations :
                 _extra_parms = ''
                 if _vm_role + "_netid" in obj_attr_list :
                     _extra_parms += "netid=" + obj_attr_list[_vm_role + "_netid"]
-                    
+
+                if _vm_role + "_cloud_vv" in obj_attr_list :
+                    if _extra_parms != '' :
+                        _extra_parms += ','
+                    _extra_parms += "cloud_vv=" + obj_attr_list[_vm_role + "_cloud_vv"]
+
+                if _vm_role + "_cloud_ips" in obj_attr_list :
+                    if not _vm_role in _cloud_ips :
+                        _cloud_ips[_vm_role] = obj_attr_list[_vm_role + "_cloud_ips"].split(';')
+
                 if obj_attr_list["load_balancer"].strip().lower() == "true" :
                     _size = 'load_balanced_default'
-                    
+
                 _attach_action = obj_attr_list["staging"]
- 
+
                 _vg = ValueGeneration(self.pid)
                 _nr_vms = int(_vg.get_value(_nr_vms, _nr_vms))
-                
+
                 for _idx in range(0, int(_nr_vms)) :
+                    if _vm_role in _cloud_ips :
+                        if _extra_parms != '' :
+                            _cloud_ip = ','
+                        else :
+                            _cloud_ip = ''
+                        _cloud_ip += "cloud_ip=" + _cloud_ips[_vm_role].pop()
+                    else :
+                        _cloud_ip = ''
+
                     obj_attr_list["parallel_operations"][_vm_counter] = {} 
                     _pobj_uuid = str(uuid5(NAMESPACE_DNS, str(randint(0,10000000000000000) + _vm_counter)))
                     _pobj_uuid = _pobj_uuid.upper()
@@ -1749,9 +1776,13 @@ class BaseObjectOperations :
                     obj_attr_list["parallel_operations"][_vm_counter]["type"] = obj_attr_list["type"]
                     obj_attr_list["parallel_operations"][_vm_counter]["base_type"] = obj_attr_list["base_type"]
                     obj_attr_list["parallel_operations"][_vm_counter]["mode"] = obj_attr_list["mode"]
-                    obj_attr_list["parallel_operations"][_vm_counter]["parameters"] = obj_attr_list["cloud_name"] + ' ' + _vm_role + ' ' + _pool + ' ' + _meta_tag + ' ' + _size + ' ' + _attach_action + ' ' + _extra_parms 
+                    obj_attr_list["parallel_operations"][_vm_counter]["parameters"] = obj_attr_list["cloud_name"] +\
+                     ' ' + _vm_role + ' ' + _pool + ' ' + _meta_tag + ' ' +\
+                      _size + ' ' + _attach_action + ' ' + _extra_parms + _cloud_ip
                     obj_attr_list["parallel_operations"][_vm_counter]["operation"] = "vm-attach"
-                    _vm_command_list += obj_attr_list["cloud_name"] + ' ' + _vm_role + ", " + _pool + ", " + _meta_tag + ", " + _size + ", " + _attach_action + ", " + _extra_parms + "; "
+                    _vm_command_list += obj_attr_list["cloud_name"] + ' ' +\
+                     _vm_role + ", " + _pool + ", " + _meta_tag + ", " +\
+                      _size + ", " + _attach_action + ", " + _extra_parms + _cloud_ip + "; "
                     _vm_counter += 1
 
             if not "drivers_per_sut" in obj_attr_list :
@@ -1764,7 +1795,7 @@ class BaseObjectOperations :
                 _nr_drivers = int(obj_attr_list["suts"])/int(obj_attr_list["drivers_per_sut"])
             else :
                 _nr_drivers = 0
-
+            # This section needs to be re-done (or maybe removed)
             for _idx in range(0, int(_nr_drivers)) :
                     obj_attr_list["parallel_operations"][_vm_counter] = {} 
                     _pobj_uuid = str(uuid5(NAMESPACE_DNS, str(randint(0,10000000000000000) + _vm_counter)))
@@ -1774,9 +1805,13 @@ class BaseObjectOperations :
                     obj_attr_list["parallel_operations"][_vm_counter]["ai"] = obj_attr_list["uuid"]
                     obj_attr_list["parallel_operations"][_vm_counter]["as"] = obj_attr_list["as"]
                     obj_attr_list["parallel_operations"][_vm_counter]["type"] = obj_attr_list["type"]
-                    obj_attr_list["parallel_operations"][_vm_counter]["parameters"] = obj_attr_list["cloud_name"] + " driver_" + _app_type + ' ' + _pool + ' ' + _meta_tag + ' ' + _size + ' ' + _attach_action
+                    obj_attr_list["parallel_operations"][_vm_counter]["parameters"] = obj_attr_list["cloud_name"] +\
+                     " driver_" + _app_type + ' ' + _pool + ' ' + _meta_tag +\
+                      ' ' + _size + ' ' + _attach_action
                     obj_attr_list["parallel_operations"][_vm_counter]["operation"] = "vm-attach"
-                    _vm_command_list += obj_attr_list["cloud_name"] + " driver_" + _app_type + ", " + ' ' + _pool + ' ' + _meta_tag + ' ' + _size + ' ' + _attach_action + "; "
+                    _vm_command_list += obj_attr_list["cloud_name"] + " driver_" +\
+                     _app_type + ", " + ' ' + _pool + ' ' + _meta_tag + ' ' +\
+                      _size + ' ' + _attach_action + "; "
                     _vm_counter += 1
 
             obj_attr_list["vms"] = obj_attr_list["vms"][:-1]
@@ -2002,44 +2037,41 @@ class BaseObjectOperations :
                     _obj_attr_list["identity"] = _obj_attr_list["identity"].replace(_obj_attr_list["username"], _obj_attr_list["login"])
                 _vm_priv_keys.append(_obj_attr_list["identity"])
 
-                if "run_generic_scripts" in _obj_attr_list and \
-                _obj_attr_list["run_generic_scripts"].lower() != "false" :
-                    _run_generic_scripts = True
-                    _vm_post_boot_commands.append("~/" + _obj_attr_list["remote_dir_name"] + "/scripts/common/cb_post_boot.sh")
+                _vm_post_boot_commands.append("~/" + _obj_attr_list["remote_dir_name"] + "/scripts/common/cb_post_boot.sh")
 
             if operation == "setup" or operation == "resize" :
 
-                if _run_generic_scripts :
-
-                    _vm_post_boot_commands.append("~/" + _obj_attr_list["remote_dir_name"] + "/scripts/common/cb_post_boot.sh")
+                if "run_generic_scripts" in _obj_attr_list and \
+                _obj_attr_list["run_generic_scripts"].lower() != "false" :
 
                     _msg = "Performing generic application instance post_boot "
                     _msg += "configuration on all VMs beloging to " + _ai_attr_list["name"] + "..."                
                     cbdebug(_msg, True)
                     self.osci.pending_object_set(cloud_name, "AI", ai_uuid, _msg)
-                    
-                    _proc_man = ProcessManagement(username = _vm_logins[0], \
-                              cloud_name = _ai_attr_list["cloud_name"], \
-                              priv_key = _vm_priv_keys[0])
 
-                    _status, _xfmsg = _proc_man.parallel_run_os_command(_vm_post_boot_commands, \
-                                                                        _vm_ip_addrs, \
-                                                                        _ai_attr_list["attempts"], \
-                                                                        _ai_attr_list["execute_parallelism"])
-
-                    if _status :
-
-                        _status = 1495
-                        _fmsg = "Failure while executing generic post_boot configuration on "
-                        _fmsg += "on all VMs beloging to " + _ai_attr_list["name"] + ": "
-                        _fmsg += _xfmsg                
-                    else :
-                        _status = 0
                 else :
                     _msg = "Bypassing generic VM post_boot configuration on all "
                     _msg += "VMs beloging to " + _ai_attr_list["name"] + "..."                
                     cbdebug(_msg, True)
-                    _status = 0                        
+
+                _proc_man = ProcessManagement(username = _vm_logins[0], \
+                          cloud_name = _ai_attr_list["cloud_name"], \
+                          priv_key = _vm_priv_keys[0])
+
+                _status, _xfmsg = _proc_man.parallel_run_os_command(_vm_post_boot_commands, \
+                                                                    _vm_ip_addrs, \
+                                                                    _ai_attr_list["attempts"], \
+                                                                    _ai_attr_list["execute_parallelism"], \
+                                                                    _obj_attr_list["run_generic_scripts"], \
+                                                                    _ai_attr_list["debug_remote_commands"])
+
+                if _status :
+
+                    _status = 1495
+                    _fmsg = "Failure while executing generic post_boot configuration on "
+                    _fmsg += "on all VMs beloging to " + _ai_attr_list["name"] + ": "
+                    _fmsg += _xfmsg
+
             else :
                 _status = 0
 
@@ -2066,50 +2098,61 @@ class BaseObjectOperations :
                     cbdebug(_msg, True)
                     self.osci.pending_object_set(cloud_name, "AI", ai_uuid, _msg)
 
-                    if "dont_start_load_manager" in _ai_attr_list and _ai_attr_list["dont_start_load_manager"].lower() == "true" :
-                        _msg = "Load Manager will NOT be automatically"
-                        _msg += " started during the deployment of "
-                        _msg += _ai_attr_list["name"] + "..."                
-                        cbdebug(_msg, True)
+                else :
+                    _msg = "Bypassing application-specific configuration on all "
+                    _msg += "VMs beloging to " + _ai_attr_list["name"] + "..."  
+                    cbdebug(_msg, True)
+                    _status = 0
 
-                    _lmr = False
-                    
-                    for _num in range(1, 100) :
-                        _found = False
-                        _vm_command_list = []
-                        for _idx in range(0, len(_vm_names)) :
-                            _command_key = _vm_roles[_idx] + '_' + operation + str(_num)
-        
-                            if _command_key in _ai_attr_list :
-                                if len(_ai_attr_list[_command_key]) > 1 :
-                                    _command = "~/" + _ai_attr_list[_command_key]
-                                    _found = True
-                                else :
-                                    _command = ""
+                if "dont_start_load_manager" in _ai_attr_list and \
+                _ai_attr_list["dont_start_load_manager"].lower() == "true" :
+                    _msg = "Load Manager will NOT be automatically"
+                    _msg += " started during the deployment of "
+                    _msg += _ai_attr_list["name"] + "..."                
+                    cbdebug(_msg, True)
+
+                _lmr = False
+                
+                for _num in range(1, 100) :
+                    _found = False
+                    _vm_command_list = []
+                    for _idx in range(0, len(_vm_names)) :
+                        _command_key = _vm_roles[_idx] + '_' + operation + str(_num)
+    
+                        if _command_key in _ai_attr_list :
+                            if len(_ai_attr_list[_command_key]) > 1 :
+                                _command = "~/" + _ai_attr_list[_command_key]
+                                _found = True
                             else :
                                 _command = ""
-        
-                            _vm_command_list.append(_command)
-        
-                        if not _found :
-                            if _lmr or operation != "setup" :
-                                break
+                        else :
+                            _command = ""
+    
+                        _vm_command_list.append(_command)
+    
+                    if not _found :
+
+                        if _lmr or operation != "setup" :
+                            break
+                        else :
+                            if "dont_start_load_manager" in _ai_attr_list \
+                            and _ai_attr_list["dont_start_load_manager"].lower() == "true" :
+                                _lmr = True
+
                             else :
-                                if "dont_start_load_manager" in _ai_attr_list \
-                                and _ai_attr_list["dont_start_load_manager"].lower() == "true" :
-                                    _lmr = True
-                                else :
-                                    # This needs to be done only once, at the AI's
-                                    # initial deployment.
-                                    _lmr = _ai_attr_list["load_manager_role"]
-                                    
-                                    _msg = "Adding the startup of the load manager to the "
-                                    _msg += "list of commands. It will be executed on the "
-                                    _msg += "VM with the role \"" + _lmr + "\""
-                                    cbdebug(_msg)
-                                    
-                                    _ai_attr_list[_lmr + '_' + operation + str(_num + 1)] = "cb_start_load_manager.sh"
-        
+                                # This needs to be done only once, at the AI's
+                                # initial deployment.
+                                _lmr = _ai_attr_list["load_manager_role"]
+                                
+                                _msg = "Adding the startup of the load manager to the "
+                                _msg += "list of commands. It will be executed on the "
+                                _msg += "VM with the role \"" + _lmr + "\""
+                                cbdebug(_msg)
+                                
+                                _ai_attr_list[_lmr + '_' + operation + str(_num + 1)] = "cb_start_load_manager.sh"
+
+                    if _ai_attr_list["run_application_scripts"].lower() != "false" :
+    
                         _msg = "The following command list will be executed: "
                         _msg += ','.join(_vm_command_list)
                         cbdebug(_msg)
@@ -2118,28 +2161,28 @@ class BaseObjectOperations :
                         _msg = "Executing command list described on " + operation
                         _msg += " step " + str(_num) + "..."
                         cbdebug(_msg)
+                    else :
+                        if _ai_attr_list["debug_remote_commands"].lower() != "false" :
+                            _msg = operation.upper() + str(_num)
+                            cbdebug(_msg, True)
 
-                        _proc_man = ProcessManagement(username = _vm_logins[0], \
-                                                      cloud_name = _ai_attr_list["cloud_name"], \
-                                                      priv_key = _vm_priv_keys[0])
+                    _proc_man = ProcessManagement(username = _vm_logins[0], \
+                                                  cloud_name = _ai_attr_list["cloud_name"], \
+                                                  priv_key = _vm_priv_keys[0])
 
-                        _status, _xfmsg = _proc_man.parallel_run_os_command(_vm_command_list, \
-                                                                            _vm_ip_addrs, \
-                                                                            _ai_attr_list["attempts"], \
-                                                                            _ai_attr_list["execute_parallelism"])
+                    _status, _xfmsg = _proc_man.parallel_run_os_command(_vm_command_list, \
+                                                                        _vm_ip_addrs, \
+                                                                        _ai_attr_list["attempts"], \
+                                                                        _ai_attr_list["execute_parallelism"], \
+                                                                        _ai_attr_list["run_application_scripts"], 
+                                                                        _ai_attr_list["debug_remote_commands"])
 
-                        if _status :
-        
-                            _fmsg = "Failure while executing application-specific configuration on "
-                            _fmsg += "on all VMs beloging to " + _ai_attr_list["name"] + ":\n "
-                            _fmsg += _xfmsg   
-                            break
-
-                else :
-                    _msg = "Bypassing application-specific configuration on all "
-                    _msg += "VMs beloging to " + _ai_attr_list["name"] + "..."  
-                    cbdebug(_msg, True)
-                    _status = 0
+                    if _status :
+    
+                        _fmsg = "Failure while executing application-specific configuration on "
+                        _fmsg += "on all VMs beloging to " + _ai_attr_list["name"] + ":\n "
+                        _fmsg += _xfmsg
+                        break
 
         except Exception, e :
             _status = 23
