@@ -1,0 +1,124 @@
+[USER-DEFINED]
+# Name of the ssh key pair 
+NOP_SSH_KEY_NAME = need_to_be_configured_by_user
+NOP_LOGIN = need_to_be_configured_by_user
+NOP_INITIAL_VMCS = need_to_be_configured_by_user
+
+# PEBCAK documentation for the Wizard and CLI
+NOP_LOGIN_DOC = $LOGIN_DOC
+NOP_LOGIN_DEFAULT = klabuser
+NOP_SSH_KEY_NAME_DOC = $SSH_KEY_NAME_DOC
+NOP_SSH_KEY_NAME_DEFAULT = id_rsa.private
+NOP_INITIAL_VMCS_DOC = $INITIAL_VMCS_DOC 
+NOP_INITIAL_VMCS_DEFAULT = HostGroup1:sut
+
+[SPACE : NOP_CLOUDCONFIG ]
+SSH_KEY_NAME = $NOP_SSH_KEY_NAME
+
+[MON_DEFAULTS : NOP_CLOUDCONFIG ]
+COLLECT_FROM_HOST = $False
+COLLECT_FROM_GUEST = $True
+
+[VMC_DEFAULTS : NOP_CLOUDCONFIG]
+INITIAL_VMCS = $NOP_INITIAL_VMCS
+DISCOVER_HOSTS = $False
+UPDATE_FREQUENCY = 1
+ACCESS = $Empty
+CREDENTIALS = $Empty
+SECURITY_GROUPS = $Empty
+KEY_NAME = $Empty
+ADDITIONAL_DISCOVERY = $Empty
+
+[VM_DEFAULTS : NOP_CLOUDCONFIG]
+TRANSFER_FILES = $True
+ACCESS = $Empty
+CREDENTIALS = $Empty
+EXTRA_INFO = $Empty
+RUN_GENERIC_SCRIPTS = $True
+HOSTS_PER_VMC = 5
+UPDATE_FREQUENCY = 1
+CAPTURE_SUPPORTED = $False
+RUNSTATE_SUPPORTED = $False
+RESIZE_SUPPORTED = $False
+LOGIN = $NOP_LOGIN
+SECURITY_GROUPS = $Empty
+KEY_NAME = $Empty
+SSH_KEY_NAME = $NOP_SSH_KEY_NAME
+CHECK_BOOT_STARTED = poll_cloud
+# Other methods could be used to check if a VM *STARTED* booting
+#CHECK_BOOT_STARTED = subscribe_on_starting
+CHECK_BOOT_COMPLETE = wait_for_0
+# Other methods could be used to check if a VM *FINISHED* booting
+#CHECK_BOOT_COMPLETE = subscribe_on_booting
+#CHECK_BOOT_COMPLETE = tcp_on_22
+NETID = vlan123
+
+[SVM_DEFAULTS : NOP_CLOUDCONFIG]
+SSH_KEY_NAME = $NOP_SSH_KEY_NAME
+
+[AI_DEFAULTS : NOP_CLOUDCONFIG]
+CAPTURE_SUPPORTED = $False
+RUNSTATE_SUPPORTED = $True
+RESIZE_SUPPORTED = $True
+RUN_APPLICATION_SCRIPTS = $True
+UPDATE_FREQUENCY = 1
+LOGIN = $NOP_LOGIN
+SSH_KEY_NAME = $NOP_SSH_KEY_NAME
+ATTACH_PARALLELISM = 5
+
+[AIDRS_DEFAULTS : NOP_CLOUDCONFIG]
+LOGIN = $NOP_LOGIN
+UPDATE_FREQUENCY = 1
+SSH_KEY_NAME = $NOP_SSH_KEY_NAME
+
+[VMCRS_DEFAULTS : NOP_CLOUDCONFIG]
+LOGIN = $NOP_LOGIN
+UPDATE_FREQUENCY = 1
+SSH_KEY_NAME = $NOP_SSH_KEY_NAME
+
+[FIRS_DEFAULTS : NOP_CLOUDCONFIG]
+LOGIN = $NOP_LOGIN
+UPDATE_FREQUENCY = 1
+SSH_KEY_NAME = $NOP_SSH_KEY_NAME
+
+[VM_TEMPLATES : NOP_CLOUDCONFIG]
+CLIENT_DAYTRADER = size:nano32,imageid1:cloudbench_root
+DRIVER_DAYTRADER = size:nano32,imageid1:cloudbench_root 
+CLIENT_TRADELITE = size:nano32,imageid1:cloudbench_root 
+DRIVER_TRADELITE = size:nano32,imageid1:cloudbench_root 
+DB2 = size:copper32, lb_size:gold32,imageid1:cloudbench_root 
+WAS = size:iron32,imageid1:cloudbench_root 
+CLIENT_SPECWEB = size:micro32,imageid1:cloudbench_root 
+SPECWEBFRONT = size:copper32,imageid1:cloudbench_specweb 
+SPECWEBBACK = size:nano32,imageid1:cloudbench_specweb 
+CLIENT_LOST = size:micro32,imageid1:cloudbench_root 
+LOSTFRONT = size:copper32,imageid1:cloudbench_root 
+LOSTBACK = size:copper32,imageid1:cloudbench_root 
+DRIVER_HADOOP = size:nano32,imageid1:cloudbench_root 
+HADOOPMASTER = size:copper32,imageid1:cloudbench_root 
+HADOOPSLAVE = size:iron32,imageid1:cloudbench_root 
+DRIVER_NETPERF = size:nano32,imageid1:cloudbench_root 
+NETCLIENT = size:iron32,imageid1:cloudbench_root 
+NETSERVER = size:iron32,imageid1:cloudbench_root 
+DRIVER_COREMARK = size:nano32,imageid1:cloudbench_root 
+COREMARK = size:iron32,imageid1:cloudbench_root 
+CLIENT_WINDOWS = size:nano32,imageid1:cloudbench_root 
+WILLFAIL = size:nano32,imageid1:doesnotmatter
+FAILDB2 = size:copper32,imageid1:cloudbench_root
+WINDOWS = size:iron32, imageids:1, imageid1:cloudbench_windows
+DRIVER_FILEBENCH = size:nano32,imageid1:cloudbench_root 
+FILEBENCH = size:iron32,imageid1:cloudbench_root 
+DRIVER_FBNFSRD = size:nano32,imageid1:cloudbench_root 
+STORAGECLIENT = size:iron32,imageid1:cloudbench_root 
+STORAGESERVER = size:iron32,imageid1:cloudbench_root 
+TINYVM = size:pico32, imageids:1, imageid1:cloudbench_tinyvm
+RUBIS_APPSRV = size:bronze32, imageids:1, imageid1:cloudbench_rubis_appsrv1
+RUBIS_LB = size:bronze32, imageids:1, imageid1:cloudbench_rubis_loadbalancer
+RUBIS_DRIVER = size:bronze32, imageids:1, imageid1:cloudbench_rubis_driver
+RUBIS_DATABASE = size:bronze32, imageids:1, imageid1:cloudbench_rubis_database
+FEN_HPC = size:bronze32, imageids:1, imageid1:cloudbench_hpc
+CN_HPC = size:bronze32, imageids:1, imageid1:cloudbench_hpc
+DDGEN = size:bronze32, imageids:1, imageid1:cloudbench_hpc
+SPECJBB = size:iron32,imageid1:cloudbench_root
+LB = size:iron32,imageid1:cloudbench_root
+PREDICTABLEVM = size:iron32, imageid1:cloudbench_root

@@ -99,28 +99,6 @@ LOAD_DURATION = uniformIXIXI90I120
 #SYNC_CHANNEL_NAME = synchronization_channel
 #RUN_COUNTER_NAME = experiment_id_counter
 
-[AI_TEMPLATES : LOST]
-SUT = client_lost->lostfront->lostback
-LOAD_GENERATOR_ROLE = client_lost
-LOAD_MANAGER_ROLE = client_lost
-METRIC_AGGREGATOR_ROLE = client_lost
-CAPTURE_ROLE = lostback
-LOAD_BALANCER = $False
-LOAD_BALANCER_TARGET_PORT = 80 
-LOAD_BALANCER_TARGET_URL = unknown 
-LOAD_BALANCER_TARGET_CHILDREN = 2
-CLIENT_LOST_SETUP1 = cb_setup_mysql.sh
-LOSTFRONT_SETUP1 = cb_setup_lostfront.sh
-LOSTBACK_SETUP1 = cb_setup_mysql.sh
-CLIENT_LOST_RESET1 = cb_restart_autobench.sh
-LOSTFRONT_RESET1 = cb_restart_autobench.sh
-LOSTBACK_RESET1 = cb_restart_autobench.sh
-START = cb_lostrun.sh
-LOAD_PROFILE = default
-LOAD_LEVEL = uniformIXIXI1I40
-# The load duration for lost should not be smaller than 240 seconds
-LOAD_DURATION = uniformIXIXI1000I3000
-
 [AI_TEMPLATES : HADOOP]
 SUT = hadoopmaster->3_x_hadoopslave
 LOAD_GENERATOR_ROLE = hadoopmaster
@@ -168,25 +146,6 @@ LOAD_DURATION = 60
 #CONCURRENT_AIS = 2
 #SYNC_CHANNEL_NAME = synchronization_channel
 #RUN_COUNTER_NAME = experiment_id_counter
-
-[AI_TEMPLATES : HDAUTOCONF]
-SUT = hadoopmaster->10_x_hadoopslave
-LOAD_GENERATOR_ROLE = hadoopmaster
-LOAD_MANAGER_ROLE = hadoopmaster
-METRIC_AGGREGATOR_ROLE = hadoopmaster
-CAPTURE_ROLE = hadoopslave
-LOAD_BALANCER = $False
-LOAD_BALANCER_TARGET_PORT = 80 
-LOAD_BALANCER_TARGET_URL = unknown 
-LOAD_BALANCER_TARGET_CHILDREN = 2
-HADOOPMASTER_SETUP1 = cb_config_hadoop_cluster.sh
-HADOOPSLAVE_SETUP1 = cb_config_hadoop_cluster.sh
-HADOOPMASTER_SETUP2 = cb_start_hadoop_cluster.sh
-START = cb_hadoop_job.sh
-LOAD_PROFILE = terasort
-LOAD_LEVEL = 1
-# The load duration is *not* respected for hadoop (task ends asynchronously).
-LOAD_DURATION = 300
 
 [AI_TEMPLATES : NETPERF]
 SUT = netclient->netserver
@@ -287,58 +246,6 @@ LOAD_DURATION = uniformIXIXI60I90
 #CONCURRENT_AIS = 2
 #SYNC_CHANNEL_NAME = synchronization_channel
 #RUN_COUNTER_NAME = experiment_id_counter
-
-[AI_TEMPLATES : FBNFSRD]
-SUT = storageclient->storageserver
-LOAD_GENERATOR_ROLE = storageclient
-LOAD_MANAGER_ROLE = storageclient
-METRIC_AGGREGATOR_ROLE = storageclient
-CAPTURE_ROLE = storageserver
-LOAD_BALANCER = $False
-LOAD_BALANCER_TARGET_PORT = 80 
-LOAD_BALANCER_TARGET_URL = unknown 
-LOAD_BALANCER_TARGET_CHILDREN = 2
-STORAGESERVER_SETUP1 = cb_setup_nfs_ramdisk.sh
-STORAGESERVER_SETUP2 = cb_setup_storage.sh
-START = cb_filebench.sh
-LOAD_PROFILE = fileserver
-LOAD_LEVEL = uniformIXIXI1I1
-# The load duration for FBNFSRD should not be smaller than 60 seconds
-LOAD_DURATION = uniformIXIXI60I90
-
-[AI_TEMPLATES : WINDESKTOP]
-SUT = client_windows->windows
-LOAD_GENERATOR_ROLE = client_windows 
-LOAD_MANAGER_ROLE = client_windows 
-METRIC_AGGREGATOR_ROLE = client_windows
-CAPTURE_ROLE = windows
-LOAD_BALANCER = $False
-LOAD_BALANCER_TARGET_PORT = 80 
-LOAD_BALANCER_TARGET_URL = unknown 
-LOAD_BALANCER_TARGET_CHILDREN = 2
-CLIENT_WINDOWS_SETUP1 = cb_windesktop_setup.sh
-START = cb_windesktop_run.sh
-LOAD_PROFILE = default
-LOAD_LEVEL = uniformIXIXI1I6
-LOAD_DURATION = 120
-
-[AI_TEMPLATES : SPECWEB]
-SUT = client_specweb->specwebfront->specwebback
-LOAD_GENERATOR_ROLE = client_specweb 
-LOAD_MANAGER_ROLE = client_specweb
-METRIC_AGGREGATOR_ROLE = client_specweb
-CAPTURE_ROLE = specwebfront
-LOAD_BALANCER = $False
-LOAD_BALANCER_TARGET_PORT = 80 
-LOAD_BALANCER_TARGET_URL = unknown 
-LOAD_BALANCER_TARGET_CHILDREN = 2
-CLIENT_SPECWEB_RESET1 = cb_reset_java_clients.sh
-SPECWEBFRONT_RESET1 = cb_restart_webserver.sh
-SPECWEBBACK_RESET1 = cb_restart_webserver.sh
-START = cb_specrun.sh
-LOAD_PROFILE = default
-LOAD_LEVEL = uniformIXIXI10I100
-LOAD_DURATION = uniformIXIXI1200I3600
 
 [AI_TEMPLATES : NULLWORKLOAD]
 SUT = tinyvm

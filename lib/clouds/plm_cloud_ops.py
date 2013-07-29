@@ -163,6 +163,12 @@ class PlmCmds(CommonCloudFunctions) :
                 obj_attr_list["host_list"][_host_uuid]["vmc"] = obj_attr_list["uuid"]
                 obj_attr_list["host_list"][_host_uuid]["arrival"] = int(time())
                 obj_attr_list["host_list"][_host_uuid]["counter"] = obj_attr_list["counter"]
+                obj_attr_list["host_list"][_host_uuid]["simulated"] = "False"
+                obj_attr_list["host_list"][_host_uuid]["identity"] = obj_attr_list["identity"]
+                if "login" in obj_attr_list :
+                    obj_attr_list["host_list"][_host_uuid]["login"] = obj_attr_list["login"]
+                else :
+                    obj_attr_list["host_list"][_host_uuid]["login"] = "root"            
                 obj_attr_list["host_list"][_host_uuid]["mgt_001_provisioning_request_originated"] = obj_attr_list["mgt_001_provisioning_request_originated"]
                 obj_attr_list["host_list"][_host_uuid]["mgt_002_provisioning_request_sent"] = obj_attr_list["mgt_002_provisioning_request_sent"]
                 _time_mark_prc = int(time())
@@ -439,7 +445,7 @@ class PlmCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
             
-            obj_attr_list["cloud_uuid"] = "NA"
+            obj_attr_list["cloud_vm_uuid"] = "NA"
             _instance = False
           
             obj_attr_list["tag"] = "cb-" + obj_attr_list["username"]
@@ -530,7 +536,7 @@ class PlmCmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "" + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "could not be created"
                 _msg += " on PLM cluster \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg + " (The VM creation will be rolled back)"
@@ -543,7 +549,7 @@ class PlmCmds(CommonCloudFunctions) :
 
             else :
                 _msg = "" + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "was successfully created"
                 _msg += " on PLM cluster \"" + obj_attr_list["cloud_name"] + "\"."
                 cbdebug(_msg)
@@ -574,7 +580,7 @@ class PlmCmds(CommonCloudFunctions) :
             
             if self.is_vm_running(obj_attr_list) :
                 _msg = "Sending a termination request for "  + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ")"
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
                 _msg += "...."
                 cbdebug(_msg, True)
             
@@ -609,7 +615,7 @@ class PlmCmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "" + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "could not be destroyed "
                 _msg += " on PLM cluster \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
@@ -617,7 +623,7 @@ class PlmCmds(CommonCloudFunctions) :
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "" + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "was successfully destroyed "
                 _msg += "on PLM cluster \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
@@ -649,7 +655,7 @@ class PlmCmds(CommonCloudFunctions) :
                     _time_mark_rrs - obj_attr_list["mgt_201_runstate_request_originated"]
     
             _msg = "Sending a runstate change request (" + _ts + " for " + obj_attr_list["name"]
-            _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ")"
+            _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
             _msg += "...."
             cbdebug(_msg, True)
             

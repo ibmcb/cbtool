@@ -31,13 +31,17 @@ rm -rf ~/cb_os_cache.txt
 
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
+sudo bash -c "echo \"${my_ip_addr}   $(hostname)\" >> /etc/hosts"
+
 syslog_netcat "Starting generic VM post_boot configuration"
 load_manager_vm_uuid=`get_my_ai_attribute load_manager_vm`
 
 if [[ x"${my_vm_uuid}" == x"${load_manager_vm_uuid}" || x"${my_type}" == x"none" ]]
 then
+	syslog_netcat "Starting (AI) Log store..."
 	start_syslog `get_global_sub_attribute logstore port`
 	syslog_netcat "Local (AI) Log store started"
+	syslog_netcat "Starting (AI) Object store..."
 	start_redis ${osportnumber}
 	syslog_netcat "Local (AI) Object store started"
 fi

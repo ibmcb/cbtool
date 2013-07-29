@@ -17,6 +17,7 @@
 __version__ = '2.0'
 
 __all__ = [ 'ec2_cloud_ops', \
+            'nop_cloud_ops', \
             'osk_cloud_ops', \
             'plm_cloud_ops', \
             'scp_cloud_ops', \

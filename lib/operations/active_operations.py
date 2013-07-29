@@ -143,7 +143,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _smsg = _idmsg + " was successfully attached to this "
                 _smsg += "experiment."
                 _fmsg = _idmsg + " could not be attached to this experiment: "
-        
+
                 _cld_ops = __import__("lib.clouds." + cld_attr_lst["model"] \
                                       + "_cloud_ops", fromlist = \
                                       [cld_attr_lst["model"].capitalize() + "Cmds"])
@@ -154,14 +154,16 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 # User may have an empty VMC list. Need to be able to handle that.
                 if cld_attr_lst["vmc_defaults"]["initial_vmcs"].strip() != "" :
                     _tmp_vmcs = cld_attr_lst["vmc_defaults"]["initial_vmcs"].split(",")
+
                     _vmcs = ""
                     for vmc in _tmp_vmcs :
                         _vmcs += vmc
                         if not vmc.count(":") :
                             _vmcs += ":sut"
                         _vmcs += ","
-                            
+
                     _vmcs = _vmcs[:-1]
+                    cld_attr_lst["vmc_defaults"]["initial_vmcs"] = _vmcs
                     _initial_vmcs = str2dic(_vmcs)
                 else :
                     _initial_vmcs = []
@@ -439,54 +441,88 @@ class ActiveObjectOperations(BaseObjectOperations) :
             obj_attr_list["name"] = "undefined"
             obj_attr_list["target_state"] = "undefined"
             _host_already_failed = False
-            
+            _host_repaired = False
             _obj_type, _target_state = command.upper().split('-')
             
             _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
 
             if not _status :
                 _status = 101
-                
-                _firs_defaults = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "firs_defaults", False)
-                _host_list = str2dic(_firs_defaults["hosts"])
-                obj_attr_list["switch_ip"] = _firs_defaults["switch_ip"]
 
-                if obj_attr_list["name"] in _host_list :
-                    obj_attr_list["port"] = _host_list[obj_attr_list["name"]]
-                    _status = 0
-                else :
-                    _fmsg = "Host \"" + obj_attr_list["name"] + "\" is not "
-                    _fmsg += "listed as a target for a failure request."
+                _host_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
+                                                       "HOST", \
+                                                       True, \
+                                                       obj_attr_list["name"], \
+                                                       False)
+ 
+ 
+                _proc_man = ProcessManagement(username = _host_attr_list["username"], \
+                                              cloud_name = obj_attr_list["cloud_name"], \
+                                              hostname = _host_attr_list["cloud_ip"], \
+                                              priv_key = _host_attr_list["identity"])
 
-            if not _status :
-                _status = 101
+    #                _firs_defaults = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "firs_defaults", False)
+    
                 _failed_hosts = self.osci.get_list(obj_attr_list["cloud_name"], _obj_type, "FAILED_HOSTS", True)
 
                 for _failed_host in _failed_hosts :
 
                     if _failed_host[0] == obj_attr_list["name"] :
                         if _target_state.lower() == "fail" :
-                            _fmsg = "Host \"" + obj_attr_list["name"] + "\" is "
-                            _fmsg += "already at the \"failed\" state"
-                            _host_already_failed = True
+                            _msg = "Host \"" + obj_attr_list["name"] + "\" is "
+                            _msg += "already at the \"failed\" state."
+                            cbdebug(_msg, True)
+                            _host_already_failed = True                            
+                            _status = 0
                         elif _target_state.lower() == "repair" :
-                            _msg = "Sending the startup command to port \""
-                            _msg += obj_attr_list["port"] + "\" on the switch at "
-                            _msg += obj_attr_list["switch_ip"] + " in order to "
-                            _msg += "repair HOST " + obj_attr_list["name"]
-                            cbdebug(_msg)
-                            self.osci.remove_from_list(obj_attr_list["cloud_name"], "HOST", "FAILED_HOSTS", obj_attr_list["name"], True)
+                            _cmd = "service " + obj_attr_list["service"] +  " restart" 
+            
+                            _msg = "Repairing a fault on host " + obj_attr_list["name"]
+                            _msg += " by executing the command \"" + _cmd + "\""
+                            cbdebug(_msg, True)
+
+                            _host_repaired = True
+
+                            if "simulated" in _host_attr_list and _host_attr_list["simulated"].lower() != "true" :
+                                _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_cmd)
+                            else :
+                                _status = 0
+                                
+                            if not _status :
+                                self.osci.remove_from_list(obj_attr_list["cloud_name"], \
+                                                           "HOST", \
+                                                           "FAILED_HOSTS", \
+                                                           obj_attr_list["name"], \
+                                                           True)
                         break
 
                 if _target_state.lower() == "fail" and not _host_already_failed :
-                    _msg = "Sending the shutdown command to port \"" + obj_attr_list["port"]
-                    _msg += "\" on the switch at " + obj_attr_list["switch_ip"]
-                    _msg += " in order to fail HOST " + obj_attr_list["name"]
-                    cbdebug(_msg)
-                    self.osci.add_to_list(obj_attr_list["cloud_name"], "HOST", "FAILED_HOSTS", obj_attr_list["name"], int(time()))            
+
+                    _cmd = "pkill -f " + obj_attr_list["service"] 
+    
+                    _msg = "Injecting a fault on host " + obj_attr_list["name"]
+                    _msg += " by executing the command \"" + _cmd + "\""
+                    cbdebug(_msg, True)
+
+                    if "simulated" in _host_attr_list and _host_attr_list["simulated"].lower() != "true" :
+                        _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_cmd)
+                    else :
+                        _status = 0
+
+                    if not _status :
+                        self.osci.add_to_list(obj_attr_list["cloud_name"], \
+                                              "HOST", "FAILED_HOSTS", \
+                                              obj_attr_list["name"], int(time()))            
+    
+                if _target_state.lower() == "repair" and \
+                not _host_already_failed and not _host_repaired :
+                    _msg = "Host \"" + obj_attr_list["name"] + "\" is "
+                    _msg += "not at the \"failed\" state. No need for repair."
+                    cbdebug(_msg, True)
+                    _host_already_failed = True                            
+                    _status = 0
     
                 _result = obj_attr_list
-                _status = 0
 
         except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
@@ -503,9 +539,15 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _msg += "experiment: " + _fmsg
                 cberr(_msg)
             else :
+                if _target_state.lower() == "repair" :
+                    _target_state = "attached"
+                else :
+                    _target_state = "fail"
+                self.osci.set_object_state(obj_attr_list["cloud_name"], "HOST", \
+                                           _host_attr_list["uuid"], _target_state)                
                 _msg = "HOST \"" + obj_attr_list["name"] + "\" was "
-                _msg += "successfully " + _target_state.lower() + "ed on this "
-                _msg += "experiment." 
+                _msg += "successfully " + _target_state.replace("ed",'') + "ed "
+                _msg += "on this experiment." 
                 cbdebug(_msg)
             return self.package(_status, _msg, _result)
 
@@ -1710,8 +1752,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
         _curr_tries = 0
         _start = int(time())
         _max_tries = int(obj_attr_list["attempts"])
-        _output_list = []
-        
+
+        _proc_man = ProcessManagement(username = obj_attr_list["login"], \
+                                      cloud_name = obj_attr_list["cloud_name"], \
+                                      priv_key = obj_attr_list["identity"])
+
         try :
 
             while _curr_tries < _max_tries :
@@ -1721,26 +1766,27 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _status = 12345
                         raise self.ObjectOperationException(_msg, _status)
 
+                _cmd = "ssh -i " + obj_attr_list["identity"]
+                _cmd += " -o StrictHostKeyChecking=no"
+                _cmd += " -o UserKnownHostsFile=/dev/null " 
+                _cmd += obj_attr_list["login"] + "@"
+                _cmd += obj_attr_list["prov_cloud_ip"] + " \"mkdir -p ~/" + obj_attr_list["remote_dir_name"] +  ';'
+                _cmd += "echo '#OSKN-redis' > ~/cb_os_parameters.txt;"
+                _cmd += "echo '#OSHN-" + self.osci.host + "' >> ~/cb_os_parameters.txt;"
+                _cmd += "echo '#OSPN-" + str(self.osci.port) + "' >> ~/cb_os_parameters.txt;"
+                _cmd += "echo '#OSDN-" + str(self.osci.dbid) + "' >> ~/cb_os_parameters.txt;"
+                _cmd += "echo '#OSTO-" + str(self.osci.timout) + "' >> ~/cb_os_parameters.txt;"
+                _cmd += "echo '#OSCN-" + obj_attr_list["cloud_name"] + "' >> ~/cb_os_parameters.txt;"
+                _cmd += "echo '#OSMO-" + obj_attr_list["mode"] + "' >> ~/cb_os_parameters.txt;"
+                _cmd += "echo '#OSOI-" + "TEST_" + obj_attr_list["username"] + ":" + obj_attr_list["cloud_name"] + "' >> ~/cb_os_parameters.txt;"
+                _cmd += "echo '#VMUUID-" + obj_attr_list["uuid"] + "' >> ~/cb_os_parameters.txt;"
+                _cmd += "sudo chown -R " +  obj_attr_list["login"] + " ~/" + obj_attr_list["remote_dir_name"] + "\";"
+                _cmd += "rsync -e \"ssh -o StrictHostKeyChecking=no -l " + obj_attr_list["login"] + " -i " 
+                _cmd += obj_attr_list["identity"] + "\" --exclude-from "
+                _cmd += "'" +  obj_attr_list["exclude_list"] + "' -az --delete --no-o --no-g --inplace -O " + obj_attr_list["base_dir"] + "/* " 
+                _cmd += obj_attr_list["prov_cloud_ip"] + ":~/" + obj_attr_list["remote_dir_name"] + '/'
+
                 if obj_attr_list["transfer_files"].lower() != "false" :
-                    _cmd = "ssh -i " + obj_attr_list["identity"]
-                    _cmd += " -o StrictHostKeyChecking=no"
-                    _cmd += " -o UserKnownHostsFile=/dev/null " 
-                    _cmd += obj_attr_list["login"] + "@"
-                    _cmd += obj_attr_list["prov_cloud_ip"] + " \"mkdir -p ~/" + obj_attr_list["remote_dir_name"] +  ';'
-                    _cmd += "echo '#OSKN-redis' > ~/cb_os_parameters.txt;"
-                    _cmd += "echo '#OSHN-" + self.osci.host + "' >> ~/cb_os_parameters.txt;"
-                    _cmd += "echo '#OSPN-" + str(self.osci.port) + "' >> ~/cb_os_parameters.txt;"
-                    _cmd += "echo '#OSDN-" + str(self.osci.dbid) + "' >> ~/cb_os_parameters.txt;"
-                    _cmd += "echo '#OSTO-" + str(self.osci.timout) + "' >> ~/cb_os_parameters.txt;"
-                    _cmd += "echo '#OSCN-" + obj_attr_list["cloud_name"] + "' >> ~/cb_os_parameters.txt;"
-                    _cmd += "echo '#OSMO-" + obj_attr_list["mode"] + "' >> ~/cb_os_parameters.txt;"
-                    _cmd += "echo '#OSOI-" + "TEST_" + obj_attr_list["username"] + ":" + obj_attr_list["cloud_name"] + "' >> ~/cb_os_parameters.txt;"
-                    _cmd += "echo '#VMUUID-" + obj_attr_list["uuid"] + "' >> ~/cb_os_parameters.txt;"
-                    _cmd += "sudo chown -R " +  obj_attr_list["login"] + " ~/" + obj_attr_list["remote_dir_name"] + "\";"
-                    _cmd += "rsync -e \"ssh -o StrictHostKeyChecking=no -l " + obj_attr_list["login"] + " -i " 
-                    _cmd += obj_attr_list["identity"] + "\" --exclude-from "
-                    _cmd += "'" +  obj_attr_list["exclude_list"] + "' -az --delete --no-o --no-g --inplace -O " + obj_attr_list["base_dir"] + "/* " 
-                    _cmd += obj_attr_list["prov_cloud_ip"] + ":~/" + obj_attr_list["remote_dir_name"] + '/'
 
                     _msg = "RSYNC: " + _cmd
                     cbdebug(_msg)
@@ -1749,24 +1795,22 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _msg += obj_attr_list["name"] + " ("+ obj_attr_list["prov_cloud_ip"] + ")..."
                     cbdebug(_msg, True)
 
-                    _proc_man = ProcessManagement(username = obj_attr_list["username"], \
-                                                  cloud_name = obj_attr_list["cloud_name"])
-
-                    _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_cmd)
-
-                    if not _status :
-                        break
-                    else :
-                        _curr_tries = _curr_tries + 1
-                        sleep(int(obj_attr_list["update_frequency"]))
-
                 else :
-                    _output_list = []
                     _msg = "Bypassing the sending of a copy of the code tree to "
-                    _msg += obj_attr_list["name"] + " ("+ obj_attr_list["prov_cloud_ip"] + ")..."           
+                    _msg += obj_attr_list["name"] 
+                    _msg += " ("+ obj_attr_list["prov_cloud_ip"] + ")..."
                     cbdebug(_msg, True)
-                    _status = 0
+
+                _status, _result_stdout, _result_stderr = \
+                _proc_man.run_os_command(_cmd, "127.0.0.1", \
+                                         obj_attr_list["transfer_files"], \
+                                         obj_attr_list["debug_remote_commands"])
+
+                if not _status :
                     break
+                else :
+                    _curr_tries = _curr_tries + 1
+                    sleep(int(obj_attr_list["update_frequency"]))
                 
             if _curr_tries >= _max_tries :
                 _fmsg = "Unable to connect to VM after " + str(_max_tries)
@@ -1788,27 +1832,25 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _msg = "Performing generic VM post_boot configuration on "
                         _msg += obj_attr_list["name"] + " ("+ obj_attr_list["prov_cloud_ip"] + ")..."     
                         cbdebug(_msg, True)
-                        
-                        _proc_man = ProcessManagement(username = obj_attr_list["login"], \
-                                                      cloud_name = obj_attr_list["cloud_name"], \
-                                                      priv_key = obj_attr_list["identity"])
 
-                        _cmdline = "~/" + obj_attr_list["remote_dir_name"] + "/scripts/common/cb_post_boot.sh"
-                        
-                        _status, _xfmsg, _object = \
-                        _proc_man.retriable_run_os_command(_cmdline, \
-                                                           obj_attr_list["prov_cloud_ip"], \
-                                                           obj_attr_list["attempts"])
-                        if _status :
-                            _fmsg = "Failure while executing generic VM "
-                            _fmsg += "post_boot configuration on "
-                            _fmsg += obj_attr_list["name"] + '.\n'
-#                            _fmsg += _xfmsg
                     else :
                         _msg = "Bypassing generic VM post_boot configuration on "
-                        _msg += obj_attr_list["name"] + " ("+ obj_attr_list["prov_cloud_ip"] + ")..."  
+                        _msg += obj_attr_list["name"] 
+                        _msg += " ("+ obj_attr_list["prov_cloud_ip"] + ")..." 
                         cbdebug(_msg, True)
-                        _status = 0
+
+                    _cmd = "~/" + obj_attr_list["remote_dir_name"] + "/scripts/common/cb_post_boot.sh"
+                    
+                    _status, _xfmsg, _object = \
+                    _proc_man.run_os_command(_cmd, obj_attr_list["prov_cloud_ip"], \
+                                             obj_attr_list["run_generic_scripts"], \
+                                             obj_attr_list["debug_remote_commands"])
+
+                    if _status :
+                        _fmsg = "Failure while executing generic VM "
+                        _fmsg += "post_boot configuration on "
+                        _fmsg += obj_attr_list["name"] + '.\n'
+#                            _fmsg += _xfmsg
 
                     self.record_management_metrics(obj_attr_list["cloud_name"], \
                                                    "VM", obj_attr_list, "attach")
@@ -3767,7 +3809,15 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _vg = ValueGeneration(self.pid)
                     _nr_vms = int(_vg.get_value(_nr_vms, 0))
 
+                    _attach_action = ''
+
                     if _delta == "+" :
+
+                        _cloud_ips = {}
+
+                        if _vm_role + "_cloud_ips" in obj_attr_list :
+                            if not _vm_role in _cloud_ips :
+                                _cloud_ips[_vm_role] = obj_attr_list[_vm_role + "_cloud_ips"].split(';')
 
                         for _idx in range(0, int(_nr_vms)) :
 
@@ -3789,9 +3839,18 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             else :
                                 _size = "default"
 
-                            _extra_parms = ''
+                            _extra_parms = "base_type=" + obj_attr_list["base_type"]
+
                             if _vm_role + "_netid" in obj_attr_list :
-                                _extra_parms += "netid=" + obj_attr_list[_vm_role + "_netid"]
+                                _extra_parms += ",netid=" + obj_attr_list[_vm_role + "_netid"]
+            
+                            if _vm_role + "_cloud_vv" in obj_attr_list :
+                                _extra_parms += ",cloud_vv=" + obj_attr_list[_vm_role + "_cloud_vv"]
+
+                            if _vm_role in _cloud_ips :
+                                _cloud_ip = ",cloud_ip=" + _cloud_ips[_vm_role].pop()
+                            else :
+                                _cloud_ip = ''
 
                             obj_attr_list["parallel_operations"][_vm_counter] = {} 
                             _pobj_uuid = str(uuid5(NAMESPACE_DNS, str(randint(0,10000000000000000) + _vm_counter)))
@@ -3802,9 +3861,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             obj_attr_list["parallel_operations"][_vm_counter]["ai"] = obj_attr_list["uuid"]
                             obj_attr_list["parallel_operations"][_vm_counter]["aidrs"] = obj_attr_list["aidrs"]
                             obj_attr_list["parallel_operations"][_vm_counter]["type"] = obj_attr_list["type"]
-                            obj_attr_list["parallel_operations"][_vm_counter]["parameters"] = obj_attr_list["cloud_name"] + ' ' + _vm_role + ' ' + _pool + ' ' + _meta_tag + ' ' + _size + ' ' + _extra_parms 
+                            obj_attr_list["parallel_operations"][_vm_counter]["parameters"] = obj_attr_list["cloud_name"] +\
+                             ' ' + _vm_role + ' ' + _pool + ' ' + _meta_tag + ' ' +\
+                              _size + ' ' + _attach_action + ' ' + _extra_parms + _cloud_ip
                             obj_attr_list["parallel_operations"][_vm_counter]["operation"] = "vm-attach"
-                            _vm_command_list += obj_attr_list["cloud_name"] + ' ' + _vm_role + ", " + _pool + ", " + _meta_tag + ", " + _size + ", " + _extra_parms + "; "
+                            _vm_command_list += obj_attr_list["cloud_name"] + ' ' +\
+                             _vm_role + ", " + _pool + ", " + _meta_tag + ", " +\
+                              _size + ", " + _attach_action + ", " + _extra_parms + _cloud_ip + "; "
                             _vm_counter += 1
 
                         obj_attr_list["temp_vms"] = obj_attr_list["temp_vms"][:-1]
@@ -4040,7 +4103,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
         _thread_pool = None
         _rollback = False
         _child_failure = False 
-            
+
         try :
                 
             for _object in obj_attr_list["parallel_operations"].keys() :
@@ -4051,7 +4114,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _obj_type = _operation.split('-')[0]
                 
                 if not _thread_pool :
-                    pool_key = operation_type + '_' + str(len(obj_attr_list["parallel_operations"])) + '_' + _obj_type + 's'
+                    pool_key = operation_type + '_' 
+                    pool_key += str(len(obj_attr_list["parallel_operations"]))
+                    pool_key += '_' + _obj_type + "s_with_parallelism_"
+                    pool_key += str(obj_attr_list[operation_type + "_parallelism"])
+
                     if pool_key not in self.thread_pools :
                         _thread_pool = ThreadPool(int(obj_attr_list[operation_type + "_parallelism"]))
                         self.thread_pools[pool_key] = _thread_pool
