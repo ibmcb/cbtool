@@ -154,7 +154,7 @@ class Ec2Cmds(CommonCloudFunctions) :
                 _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
                 if _imageid.count("ami-") and _imageid not in _wanted_images :
                     _wanted_images.append(_imageid)
-                
+
             _registered_image_list = self.ec2conn.get_all_images(image_ids=_wanted_images)
             _registered_imageid_list = []
 
@@ -475,8 +475,8 @@ class Ec2Cmds(CommonCloudFunctions) :
         TBD
         '''
         try :
-            if "cloud_uuid" in obj_attr_list and obj_attr_list["cloud_uuid"] != "NA" :
-                _reservations = self.ec2conn.get_all_instances(obj_attr_list["cloud_uuid"])
+            if "cloud_vm_uuid" in obj_attr_list and obj_attr_list["cloud_vm_uuid"] != "NA" :
+                _reservations = self.ec2conn.get_all_instances(obj_attr_list["cloud_vm_uuid"])
                 if _reservations :
                     _instance = _reservations[0].instances[0]
                     obj_attr_list["instance_obj"] = _instance
@@ -554,6 +554,173 @@ class Ec2Cmds(CommonCloudFunctions) :
         else :
             obj_attr_list["last_known_state"] = "not running"
             return False
+
+    @trace
+    def vvcreate(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+
+
+            if "cloud_vv" in obj_attr_list :
+    
+                obj_attr_list["last_known_state"] = "about to send volume create request"
+    
+                obj_attr_list["cloud_vv_name"] = "cb-" + obj_attr_list["username"]
+                obj_attr_list["cloud_vv_name"] += '-' + obj_attr_list["cloud_name"]
+                obj_attr_list["cloud_vv_name"] += '-' + "vv"
+                obj_attr_list["cloud_vv_name"] += obj_attr_list["name"].split("_")[1]
+                obj_attr_list["cloud_vv_name"] += '-' + obj_attr_list["role"]            
+
+                _msg = "Creating a volume, with size " 
+                _msg += obj_attr_list["cloud_vv"] + " GB, on VMC \"" 
+                _msg += obj_attr_list["vmc_name"] + "\""
+                cbdebug(_msg, True)
+
+                _instance =  self.ec2conn.create_volume(obj_attr_list["cloud_vv"], obj_attr_list["instance_obj"].placement)
+
+                sleep(int(obj_attr_list["update_frequency"]))
+
+                obj_attr_list["cloud_vv_uuid"] = '{0}'.format(_instance.id)
+
+                _msg = "Attaching the newly created Volume \"" 
+                _msg += obj_attr_list["cloud_vv_name"] + "\" (cloud-assigned uuid \""
+                _msg += obj_attr_list["cloud_vv_uuid"] + "\") to instance \""
+                _msg += obj_attr_list["cloud_vm_name"] + "\" (cloud-assigned uuid \""
+                _msg += obj_attr_list["cloud_vm_uuid"] + "\")"
+                cbdebug(_msg)
+
+                _instance.attach(obj_attr_list["cloud_vm_uuid"], "/dev/xvdb")
+
+            else :
+                obj_attr_list["cloud_vv_uuid"] = "none"
+
+            _status = 0
+
+        except CldOpsException, obj :
+            _status = obj.status
+            _fmsg = str(obj.msg)
+
+        except AWSException, obj :
+            _status = int(obj.error_code)
+            _fmsg = str(obj.error_message)
+
+        except KeyboardInterrupt :
+            _status = 42
+            _fmsg = "CTRL-C interrupt"
+            cbdebug("VM create keyboard interrupt...", True)
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+    
+        finally :
+            if _status :
+                _msg = "Volume to be attached to the " + obj_attr_list["name"] + ""
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vv_uuid"] + ") "
+                _msg += "could not be created"
+                _msg += " on Elastic Compute Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += _fmsg
+                cberr(_msg)
+                raise CldOpsException(_msg, _status)
+
+            else :
+                _msg = "Volume to be attached to the " + obj_attr_list["name"] + ""
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vv_uuid"] + ") "
+                _msg += "was successfully created"
+                _msg += " on Elastic Compute Cloud \"" + obj_attr_list["cloud_name"] + "\"."
+                cbdebug(_msg)
+                return _status, _msg
+
+    @trace
+    def vvdestroy(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+
+            _wait = int(obj_attr_list["update_frequency"])
+            _curr_tries = 0          
+            _max_tries = int(obj_attr_list["update_attempts"])
+        
+            if "cloud_vv_uuid" in obj_attr_list and obj_attr_list["cloud_vv_uuid"].lower() != "none" :
+                
+                _msg = "Sending a destruction request for the Volume" 
+                _msg += " previously attached to \"" 
+                _msg += obj_attr_list["name"] + "\""
+                _msg += " (cloud-assigned uuid " 
+                _msg += obj_attr_list["cloud_vv_uuid"] + ")...."
+                cbdebug(_msg, True)
+
+                _volume_detached = False
+                while not _volume_detached and _curr_tries < _max_tries :
+
+                    _instance = self.ec2conn.get_all_volumes(volume_ids = [obj_attr_list["cloud_vv_uuid"]])
+    
+                    _volume=_instance[0]
+
+                    _status = _volume.status
+                    if _status == 'available' :
+                        _volume_detached = True
+
+                    else :
+                        _msg = " Volume previously attached to \"" 
+                        _msg += obj_attr_list["name"] + "\""
+                        _msg += " (cloud-assigned uuid " 
+                        _msg += obj_attr_list["cloud_vv_uuid"] + ") status "
+                        _msg += "is still \"" + _status + "\". "
+                        _msg += "Will wait " + str(_wait)
+                        _msg += " seconds and try again."
+                        cbdebug(_msg)
+
+                        sleep(_wait)
+                        _curr_tries += 1                           
+
+            if _curr_tries > _max_tries  :
+                _status = 1077
+                _fmsg = obj_attr_list["name"] + "\""
+                _fmsg += " (cloud-assigned uuid " 
+                _fmsg += obj_attr_list["cloud_vv_uuid"] + ") "
+                _fmsg +=  "could not be destroyed after " + str(_max_tries * _wait) + " seconds.... "
+                cberr(_msg)
+            else :
+                _volume.delete()
+                _status = 0
+                    
+        except CldOpsException, obj :
+            _status = obj.status
+            _fmsg = str(obj.msg)
+
+        except AWSException, obj :
+            _status = int(obj.error_code)
+            _fmsg = str(obj.error_message)
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+    
+        finally :
+            if _status :
+                _msg = "Volume previously attached to the " + obj_attr_list["name"] + ""
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
+                _msg += "could not be destroyed "
+                _msg += " on Elastic Compute Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += _fmsg
+                cberr(_msg)
+                raise CldOpsException(_msg, _status)
+            else :
+                _msg = "Volume previously attached to the " + obj_attr_list["name"] + ""
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
+                _msg += "was successfully destroyed "
+                _msg += "on Elastic Compute Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "\"."
+                cbdebug(_msg)
+                return _status, _msg
         
     @trace
     def vmcreate(self, obj_attr_list) :
@@ -564,10 +731,12 @@ class Ec2Cmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
             
-            obj_attr_list["cloud_uuid"] = "NA"
+            obj_attr_list["cloud_vm_uuid"] = "NA"
             _instance = False
             
-            obj_attr_list["cloud_vm_name"] = "cb-" + obj_attr_list["username"] + '-' + "vm" + obj_attr_list["name"].split("_")[1] + '-' + obj_attr_list["role"]
+            obj_attr_list["cloud_vm_name"] = "cb-" + obj_attr_list["username"] 
+            obj_attr_list["cloud_vm_name"] += '-' + "vm" + obj_attr_list["name"].split("_")[1] 
+            obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["role"]
 
             obj_attr_list["last_known_state"] = "about to connect to ec2 manager"
 
@@ -609,12 +778,14 @@ class Ec2Cmds(CommonCloudFunctions) :
         
                 _instance.add_tag("Name", obj_attr_list["cloud_vm_name"])            
                 
-                obj_attr_list["cloud_uuid"] = '{0}'.format(_instance.id)
+                obj_attr_list["cloud_vm_uuid"] = '{0}'.format(_instance.id)
                 obj_attr_list["instance_obj"] = _instance
 
                 self.take_action_if_requested("VM", obj_attr_list, "provision_started")
 
                 _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
+
+                _status, _fmsg = self.vvcreate(obj_attr_list)
                           
                 self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
 
@@ -650,7 +821,7 @@ class Ec2Cmds(CommonCloudFunctions) :
                 _msg += "on Elastic Compute Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg + " (The VM creation will be rolled back)"
                 cberr(_msg)
-                if "cloud_uuid" in obj_attr_list :
+                if "cloud_vm_uuid" in obj_attr_list :
                     obj_attr_list["mgt_deprovisioning_request_originated"] = int(time())
                     self.vmdestroy(obj_attr_list)
                 else :
@@ -690,7 +861,7 @@ class Ec2Cmds(CommonCloudFunctions) :
             
             if _instance :
                 _msg = "Sending a termination request for "  + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ")"
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
                 _msg += "...."
                 cbdebug(_msg, True)
 
@@ -702,6 +873,8 @@ class Ec2Cmds(CommonCloudFunctions) :
                     sleep(_wait)
             else :
                 True
+
+            _status, _fmsg = self.vvdestroy(obj_attr_list)
 
             _time_mark_drc = int(time())
             obj_attr_list["mgt_903_deprovisioning_request_completed"] = \
@@ -790,10 +963,10 @@ class Ec2Cmds(CommonCloudFunctions) :
                 _msg += "Will capture with image name \"" + obj_attr_list["captured_image_name"] + "\"."                 
                 cbdebug(_msg)
 
-                _captured_imageid = self.ec2conn.create_image(obj_attr_list["cloud_uuid"] , obj_attr_list["captured_image_name"])
+                _captured_imageid = self.ec2conn.create_image(obj_attr_list["cloud_vm_uuid"] , obj_attr_list["captured_image_name"])
 
                 _msg = "Waiting for " + obj_attr_list["name"]
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "to be captured with image name \"" + obj_attr_list["captured_image_name"]
                 _msg += "\"..."
                 cbdebug(_msg, True)
@@ -810,14 +983,14 @@ class Ec2Cmds(CommonCloudFunctions) :
                             obj_attr_list["mgt_103_capture_request_completed"] = _time_mark_crc - _time_mark_crs
                             break
 
-                    _msg = "" + obj_attr_list["name"] + ""
-                    _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
-                    _msg += "still undergoing. "
-                    _msg += "Will wait " + obj_attr_list["update_frequency"]
+                    _msg = "\"" + obj_attr_list["name"] + "\""
+                    _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
+                    _msg += "still undergoing capture. "
+                    _msg += "Will wait " + str(_wait)
                     _msg += " seconds and try again."
                     cbdebug(_msg)
 
-                    sleep(int(obj_attr_list["update_frequency"]))             
+                    sleep(_wait)             
                     _curr_tries += 1
 
             else :
@@ -827,7 +1000,7 @@ class Ec2Cmds(CommonCloudFunctions) :
             if _curr_tries > _max_tries  :
                 _status = 1077
                 _fmsg = "" + obj_attr_list["name"] + ""
-                _fmsg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+                _fmsg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _fmsg +=  "could not be captured after " + str(_max_tries * _wait) + " seconds.... "
                 cberr(_msg)
             else :
@@ -874,7 +1047,7 @@ class Ec2Cmds(CommonCloudFunctions) :
                     _time_mark_rrs - obj_attr_list["mgt_201_runstate_request_originated"]
     
             _msg = "Sending a runstate change request (" + _ts + " for " + obj_attr_list["name"]
-            _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ")"
+            _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
             _msg += "...."
             cbdebug(_msg, True)
 

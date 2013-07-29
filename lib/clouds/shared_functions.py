@@ -135,8 +135,8 @@ class CommonCloudFunctions:
         TBD
         '''
         _msg = "Waiting for " + obj_attr_list["name"] + ""
-        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") to start..."
-        self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], _msg, parent=obj_attr_list["ai"], parent_type="AI")
+        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") to start..."
+        self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], _msg)
         cbdebug(_msg, True)
     
         _curr_tries = 0
@@ -153,25 +153,25 @@ class CommonCloudFunctions:
 
             if obj_attr_list["check_boot_started"].count("poll_cloud") :
                 _msg = "Check if the VM \"" + obj_attr_list["name"]
-                _msg += "\" (" + obj_attr_list["cloud_uuid"] + ") has started by "
+                _msg += "\" (" + obj_attr_list["cloud_vm_uuid"] + ") has started by "
                 _msg += "querying the cloud directly."
                 cbdebug(_msg)                
                 _vm_started = self.is_vm_ready(obj_attr_list) 
 
             elif obj_attr_list["check_boot_started"].count("subscribe_on_") :
 
-                _string_to_search = obj_attr_list["cloud_uuid"] + " has started"
+                _string_to_search = obj_attr_list["cloud_vm_uuid"] + " has started"
 
                 _channel_to_subscribe = obj_attr_list["check_boot_started"].replace("subscribe_on_",'')
 
                 _msg = "Check if the VM \"" + obj_attr_list["name"]
-                _msg += "\" (" + obj_attr_list["cloud_uuid"] + ") has started by "
+                _msg += "\" (" + obj_attr_list["cloud_vm_uuid"] + ") has started by "
                 _msg += "subscribing to channel \"" + str(_channel_to_subscribe)
                 _msg += "\" and waiting for the message \""
                 _msg += _string_to_search + "\"."
                 cbdebug(_msg)
 
-                self.osci.add_to_list(obj_attr_list["cloud_name"], "VM", "VMS_STARTING", obj_attr_list["cloud_uuid"])                 
+                self.osci.add_to_list(obj_attr_list["cloud_name"], "VM", "VMS_STARTING", obj_attr_list["cloud_vm_uuid"])                 
                 _sub_channel = self.osci.subscribe(obj_attr_list["cloud_name"], "VM", _channel_to_subscribe)
                 for _message in _sub_channel.listen() :
                     if str(_message["data"]).count(_string_to_search) :
@@ -179,7 +179,7 @@ class CommonCloudFunctions:
                         break
     
                 _sub_channel.unsubscribe()
-                self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "VMS_STARTING", obj_attr_list["cloud_uuid"])
+                self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "VMS_STARTING", obj_attr_list["cloud_vm_uuid"])
                 _vm_started = self.is_vm_ready(obj_attr_list) 
 
             elif obj_attr_list["check_boot_started"].count("wait_for_") :
@@ -205,7 +205,7 @@ class CommonCloudFunctions:
                 break
             else :
                 _msg = "(" + str(_curr_tries) + ") " + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "still not ready. Will wait for " + str(_wait)
                 _msg += " seconds and check again."
                 cbdebug(_msg)
@@ -215,14 +215,14 @@ class CommonCloudFunctions:
     
         if _curr_tries < _max_tries :
             _msg = "" + obj_attr_list["name"] + ""
-            _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+            _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
             _msg += "started successfully, got IP address " + obj_attr_list["cloud_ip"]
             self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], _msg, parent=obj_attr_list["ai"], parent_type="AI")
             cbdebug(_msg)
             return _time_mark_prc
         else :
             _msg = "" + obj_attr_list["name"] + ""
-            _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+            _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
             _msg += "is not ready after " + str(_max_tries * _wait) + " seconds.... "
             _msg += "Giving up."
             cberr(_msg, True)
@@ -243,7 +243,7 @@ class CommonCloudFunctions:
 
             _msg = "Trying to establish network connectivity to "
             _msg +=  obj_attr_list["name"] + " (cloud-assigned uuid "
-            _msg += obj_attr_list["cloud_uuid"] + "), on IP address "
+            _msg += obj_attr_list["cloud_vm_uuid"] + "), on IP address "
             _msg += obj_attr_list["prov_cloud_ip"] + "..."
             cbdebug(_msg, True)
             self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], _msg, parent=obj_attr_list["ai"], parent_type="AI")
@@ -280,7 +280,7 @@ class CommonCloudFunctions:
                     _channel_to_subscribe = obj_attr_list["check_boot_complete"].replace("subscribe_on_",'')
 
                     _msg = "Check if the VM \"" + obj_attr_list["name"]
-                    _msg += "\" (" + obj_attr_list["cloud_uuid"] + ") has started by "
+                    _msg += "\" (" + obj_attr_list["cloud_vm_uuid"] + ") has started by "
                     _msg += "subscribing to channel \"" + str(_channel_to_subscribe)
                     _msg += "\" and waiting for the message \""
                     _msg += _string_to_search + "\"."
@@ -358,7 +358,7 @@ class CommonCloudFunctions:
 
                 else :
                     _msg = "(" + str(_curr_tries) + ") " + obj_attr_list["name"]
-                    _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+                    _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                     _msg += "still not network reachable. Will wait for " + str(_wait)
                     _msg += " seconds and check again."
                     self.osci.pending_object_set(obj_attr_list["cloud_name"], \
@@ -371,7 +371,7 @@ class CommonCloudFunctions:
 
         if _curr_tries < _max_tries :
             _msg = "" + obj_attr_list["name"] + ""
-            _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+            _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
             _msg += "is network reachable (boot process finished successfully)"
             cbdebug(_msg)
             obj_attr_list["arrival"] = int(time())
@@ -383,7 +383,7 @@ class CommonCloudFunctions:
                                          "Application starting up...", parent=obj_attr_list["ai"], parent_type="AI")
         else :
             _msg = "" + obj_attr_list["name"] + ""
-            _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+            _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
             _msg += "is not network reachable after " + str(_max_tries * _wait) + " seconds.... "
             _msg += "Giving up."
             cberr(_msg, True)
@@ -412,11 +412,11 @@ class CommonCloudFunctions:
                 if obj_type == "VM" and obj_attr_list["ai"] != "none" :
                     _target_uuid = obj_attr_list["ai"]
                     _target_name = obj_attr_list["ai_name"]
-                    _cloud_uuid = obj_attr_list["cloud_uuid"] 
+                    _cloud_vm_uuid = obj_attr_list["cloud_vm_uuid"] 
                 else :
                     _target_uuid = obj_attr_list["uuid"]
                     _target_name = obj_attr_list["name"]
-                    _cloud_uuid = _target_uuid
+                    _cloud_vm_uuid = _target_uuid
 
                 self.osci.publish_message(obj_attr_list["cloud_name"], \
                                           obj_type, \
@@ -425,7 +425,7 @@ class CommonCloudFunctions:
                                            1, \
                                            3600)
 
-                _msg = obj_type + ' ' + _cloud_uuid + " ("
+                _msg = obj_type + ' ' + _cloud_vm_uuid + " ("
                 _msg += _target_name + ") pausing on attach for continue signal ...."
                 cbdebug(_msg, True)
 
@@ -535,7 +535,7 @@ class CommonCloudFunctions:
                 kwargs[var] = value 
 
         # Keys that are common inputs to most API functions
-        default_keys = {"cloud_uuid" : "tag", "host_cloud_ip" : "hypervisor_ip"}
+        default_keys = {"cloud_vm_uuid" : "tag", "vmc_cloud_ip" : "hypervisor_ip"}
 
         for key in default_keys.keys() :
             if key in attrs :

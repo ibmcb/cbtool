@@ -57,6 +57,7 @@ def redis_objectstore_setup(global_objects, operation, cloud_name = None) :
     _usage = global_objects["objectstore"]["usage"].lower()
 
     try :
+        _instance_dir = global_objects["space"]["instance_dir"]
 
         if operation == "check" :
 
@@ -150,8 +151,6 @@ def redis_objectstore_setup(global_objects, operation, cloud_name = None) :
                 global_objects["mon_defaults"][_collection_name][:-1].replace(",,",',')
 
             _rmc = RedisMgdConn(global_objects["objectstore"])
-
-            _instance_dir = global_objects["space"]["instance_dir"]
 
             # First we remove the leftovers from previous experiments.
             if _rmc.initialize_object_store(cloud_name, global_objects, True) :
@@ -467,7 +466,19 @@ def reset(global_objects, soft = True) :
             _msg = "Flushing Log Store..."
             print _msg,
             _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f rsyslogd")
-            _proc_man.run_os_command("rm " + global_objects["space"]["stores_working_dir"] + "/logs/*.log")
+            _file_list = []
+            _file_list.append("operations.log")
+            _file_list.append("report.log")
+            _file_list.append("submmiter.log")
+            _file_list.append("loadmanager.log")
+            _file_list.append("gui.log")
+            _file_list.append("remotescripts.log")
+            _file_list.append("monitor.log")
+            _file_list.append("subscribe.log")
+
+            for _fn in  _file_list :
+                _proc_man.run_os_command("rm " + global_objects["space"]["stores_working_dir"] + "/logs/" + _fn)                    
+
             _status, _msg = syslog_logstore_setup(global_objects, "check")
             print "done"
 

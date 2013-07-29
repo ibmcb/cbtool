@@ -395,7 +395,7 @@ class VcdCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
             
-            obj_attr_list["cloud_uuid"] = "NA"
+            obj_attr_list["cloud_vm_uuid"] = "NA"
             _instance = False
             
             obj_attr_list["cloud_vm_name"] = "cb-" + obj_attr_list["username"] + '-' + "vm" + obj_attr_list["name"].split("_")[1] + '-' + obj_attr_list["role"]
@@ -451,7 +451,7 @@ class VcdCmds(CommonCloudFunctions) :
         
                 #_instance.add_tag("Name", obj_attr_list["cloud_vm_name"])            
                 
-                obj_attr_list["cloud_uuid"] = _reservation.uuid
+                obj_attr_list["cloud_vm_uuid"] = _reservation.uuid
                 obj_attr_list["instance_obj"] = _reservation
 
                 _msg = "New instance UUID is " + _reservation.uuid
@@ -503,7 +503,7 @@ class VcdCmds(CommonCloudFunctions) :
                 cberr(_msg)
  
 
-                if "cloud_uuid" in obj_attr_list :
+                if "cloud_vm_uuid" in obj_attr_list :
                     obj_attr_list["mgt_deprovisioning_request_originated"] = int(time())
                     self.vmdestroy(obj_attr_list)
                 else :
@@ -545,7 +545,7 @@ class VcdCmds(CommonCloudFunctions) :
             
             if _instance :
                 _msg = "Sending a termination request for "  + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ")"
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
                 _msg += "...."
                 cbdebug(_msg, True)
 
@@ -625,10 +625,10 @@ class VcdCmds(CommonCloudFunctions) :
                 _msg += "Will capture with image name \"" + obj_attr_list["captured_image_name"] + "\"."                 
                 cbdebug(_msg)
 
-                _captured_imageid = self.vcdconn.create_image(obj_attr_list["cloud_uuid"] , obj_attr_list["captured_image_name"])
+                _captured_imageid = self.vcdconn.create_image(obj_attr_list["cloud_vm_uuid"] , obj_attr_list["captured_image_name"])
 
                 _msg = "Waiting for " + obj_attr_list["name"]
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "to be captured with image name \"" + obj_attr_list["captured_image_name"]
                 _msg += "\"..."
                 cbdebug(_msg, True)
@@ -646,7 +646,7 @@ class VcdCmds(CommonCloudFunctions) :
                             break
 
                     _msg = "" + obj_attr_list["name"] + ""
-                    _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+                    _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                     _msg += "still undergoing. "
                     _msg += "Will wait " + obj_attr_list["update_frequency"]
                     _msg += " seconds and try again."
@@ -662,7 +662,7 @@ class VcdCmds(CommonCloudFunctions) :
             if _curr_tries > _max_tries  :
                 _status = 1077
                 _fmsg = "" + obj_attr_list["name"] + ""
-                _fmsg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+                _fmsg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _fmsg +=  "could not be captured after " + str(_max_tries * _wait) + " seconds.... "
                 cberr(_msg)
             else :
@@ -711,7 +711,7 @@ class VcdCmds(CommonCloudFunctions) :
                     _time_mark_rrs - obj_attr_list["mgt_201_runstate_request_originated"]
     
             _msg = "Sending a runstate change request (" + _ts + " for " + obj_attr_list["name"]
-            _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ")"
+            _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
             _msg += "...."
             cbdebug(_msg, True)
 

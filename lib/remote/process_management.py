@@ -61,7 +61,8 @@ class ProcessManagement :
             return self.msg
 
     @trace
-    def run_os_command(self, cmdline, override_hostname = None) :
+    def run_os_command(self, cmdline, override_hostname = None, really_execute = True, \
+                       debug_cmd = False) :
         '''
         TBD
         '''
@@ -92,43 +93,63 @@ class ProcessManagement :
             _cmd += "-o UserKnownHostsFile=/dev/null " + _username
             _cmd += _hostname + " \"" + cmdline + "\""
 
-        _msg = "running os command: " + _cmd
-        cbdebug(_msg);
-        _proc_h = Popen(_cmd, shell=True, stdout=PIPE, stderr=PIPE)
-
-        if _proc_h.pid :
-            if not cmdline.count("--debug_host=localhost") :
-                _result = _proc_h.communicate()
-                if _proc_h.returncode and len(_result[1]) and _local :
-                    _msg = "Error while checking for a pid for a process with the "
-                    _msg += "command line \"" + cmdline + "\" (returncode = "
-                    _msg += str(_proc_h.pid) + ") :" + str(_result[1])
-                    raise self.ProcessManagementException(str(_msg), "81918")
+        if str(really_execute).lower() == "true" :
+            _msg = "running os command: " + _cmd
+            cbdebug(_msg);
+            _proc_h = Popen(_cmd, shell=True, stdout=PIPE, stderr=PIPE)
+    
+            if _proc_h.pid :
+                if not cmdline.count("--debug_host=localhost") :
+                    _result = _proc_h.communicate()
+                    if _proc_h.returncode and len(_result[1]) and _local :
+                        _msg = "Error while executing the command line "
+                        _msg += "\"" + cmdline + "\" (returncode = "
+                        _msg += str(_proc_h.pid) + ") :" + str(_result[1])
+                        cbdebug(_msg)
+                        raise self.ProcessManagementException(str(_msg), "81918")
+                    else :
+                        _status = 0
+                        _result_stdout = _result[0]
+                        _result_stderr = _result[1]
                 else :
                     _status = 0
-                    _result_stdout = _result[0]
-                    _result_stderr = _result[1]
+                    _result_stdout = " "
+                    _result_stderr = " "
             else :
-                _status = 0
+                _msg = "Error running the command \"" + cmdline + "\"."
+                _status = 81713
                 _result_stdout = ""
                 _result_stderr = ""
         else :
-            _msg = "Error running the command \"" + cmdline + "\"."
-            _status = 81713
-            _result_stdout = ""
-            _result_stderr = ""
+            _msg = "This is the command that would have been executed "
+            _msg += "from the orchestrator: \n"
+            _msg += _cmd
+            if str(debug_cmd).lower() == "true" :
+                cbdebug(_msg, True)
+            else :
+                cbdebug(_msg)
+
+            _status = 0
+            _result_stdout = " "
+            _result_stderr = " "
 
         return _status, _result_stdout, _result_stderr
 
-    def retriable_run_os_command(self, cmdline, override_hostname = None, total_attempts = 2) :
+    def retriable_run_os_command(self, cmdline, override_hostname = None, \
+                                 total_attempts = 2, really_execute = True, \
+                                 debug_cmd = False) :
         '''
         TBD
         '''
+
         _attempts = 0
 
         while _attempts < int(total_attempts) :
-            _status, _result_stdout, _result_stderr = self.run_os_command(cmdline, override_hostname)
-    
+            _status, _result_stdout, _result_stderr = self.run_os_command(cmdline, \
+                                                                          override_hostname, \
+                                                                          really_execute, \
+                                                                          debug_cmd)
+
             if not _status and _result_stdout and not _result_stdout.count("NOK") :
                 break
             else :
@@ -154,10 +175,13 @@ class ProcessManagement :
             cbdebug(_msg)
             return _status, _msg, {"status" : _status, "msg" : _msg, "result" : _status}
 
-    def parallel_run_os_command(self, cmdline_list, override_hostname_list, total_attempts, execute_parallelism) :
+    def parallel_run_os_command(self, cmdline_list, override_hostname_list, \
+                                total_attempts, execute_parallelism, \
+                                really_execute = True, debug_cmd = False) :
         '''
         TBD
         '''
+
         _status = 100
         _xfmsg = "An error has occurred, but no error message was captured"
         _thread_pool = None
@@ -180,7 +204,8 @@ class ProcessManagement :
                         _status, _fmsg, _object = \
                         self.retriable_run_os_command(cmdline_list[_index], \
                                                       override_hostname_list[_index], \
-                                                      total_attempts)
+                                                      total_attempts, \
+                                                      really_execute, debug_cmd)
                     else :
                         _status = 0
                         _xfmsg = "OK"
@@ -194,7 +219,8 @@ class ProcessManagement :
                         _thread_pool.add_task(self.retriable_run_os_command, \
                                               cmdline_list[_index], \
                                               override_hostname_list[_index], \
-                                              total_attempts)
+                                              total_attempts, really_execute, \
+                                              debug_cmd)
 
             if _thread_pool and not serial_mode:
                 _xfmsg = ''
