@@ -187,7 +187,7 @@ class FtcCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
-        _host_uuid = obj_attr_list["cloud_uuid"]
+        _host_uuid = obj_attr_list["cloud_vm_uuid"]
         obj_attr_list["hosts"] = _host_uuid
         obj_attr_list["host_count"] = 1
         obj_attr_list["host_list"] = {}
@@ -202,8 +202,8 @@ class FtcCmds(CommonCloudFunctions) :
         obj_attr_list["host_list"][_host_uuid]["vmc_name"] = obj_attr_list["name"]
         obj_attr_list["host_list"][_host_uuid]["vmc"] = obj_attr_list["uuid"]
         obj_attr_list["host_list"][_host_uuid]["alternate_interface"] = "default"
-        obj_attr_list["host_list"][_host_uuid]["cloud_uuid"] = obj_attr_list["cloud_uuid"]
-        obj_attr_list["host_list"][_host_uuid]["uuid"] = obj_attr_list["cloud_uuid"]
+        obj_attr_list["host_list"][_host_uuid]["cloud_vm_uuid"] = obj_attr_list["cloud_vm_uuid"]
+        obj_attr_list["host_list"][_host_uuid]["uuid"] = obj_attr_list["cloud_vm_uuid"]
         obj_attr_list["host_list"][_host_uuid]["model"] = obj_attr_list["model"]
         obj_attr_list["host_list"][_host_uuid]["function"] = "hypervisor"
         obj_attr_list["host_list"][_host_uuid]["arrival"] = int(time())
@@ -348,8 +348,8 @@ class FtcCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
-        obj_attr_list["cloud_uuid"] = "cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"] + '-' + "vm_" + obj_attr_list["name"].split("_")[1] + '-' + obj_attr_list["role"]
-        obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_uuid"]
+        obj_attr_list["cloud_vm_uuid"] = "cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"] + '-' + "vm_" + obj_attr_list["name"].split("_")[1] + '-' + obj_attr_list["role"]
+        obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_uuid"]
         obj_attr_list["host_name"] = obj_attr_list["vmc_name"]
         obj_attr_list["host_cloud_ip"] = obj_attr_list["vmc_cloud_ip"]
 
@@ -397,7 +397,7 @@ class FtcCmds(CommonCloudFunctions) :
                 raise CldOpsException("FTC Exception: " + _fmsg, status)
 
         _msg = "" + obj_attr_list["name"] + ""
-        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
         _msg += "was successfully created"
         _msg += " on FTCloud \"" + obj_attr_list["cloud_name"] + "\"."
         cbdebug(_msg)
@@ -420,7 +420,7 @@ class FtcCmds(CommonCloudFunctions) :
         self.connect(obj_attr_list["access"])
 
         _msg = "Sending a termination request for "  + obj_attr_list["name"] + ""
-        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ")"
+        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
         _msg += "...."
         cbdebug(_msg, True)
 
@@ -438,7 +438,7 @@ class FtcCmds(CommonCloudFunctions) :
             _time_mark_drc - _time_mark_drs
             
         _msg = "" + obj_attr_list["name"] + ""
-        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
         _msg += "was successfully "
         _msg += "destroyed on FTCloud \"" + obj_attr_list["cloud_name"]
         _msg += "\"."
@@ -453,7 +453,7 @@ class FtcCmds(CommonCloudFunctions) :
         cbdebug("VM " + obj_attr_list["name"] + " resize request sent.", True)
 
         _vg = ValueGeneration(self.pid)
-        tag = obj_attr_list["cloud_uuid"]
+        tag = obj_attr_list["cloud_vm_uuid"]
         desc = obj_attr_list["resource_description"]
         hypervisor_ip = obj_attr_list["host_cloud_ip"]
 
@@ -490,7 +490,7 @@ class FtcCmds(CommonCloudFunctions) :
                 _cpu_sl = _vg.value_suffix(desc["cpu_sl"], False)
                 
                 self.ftcconn.set_domain_cpu(tag, "cpu_shares", str(_cpu_sl), hypervisor_ip)
-                _msg = "CPU Soft Limit for Guest \"" + obj_attr_list["cloud_uuid"]
+                _msg = "CPU Soft Limit for Guest \"" + obj_attr_list["cloud_vm_uuid"]
                 _msg += "\" successfully set to " + str(_cpu_sl) + " from "
                 _msg += str(_guest_info["vcpus_soft_limit"]) + '.'
                 cbdebug(_msg, True)
@@ -498,7 +498,7 @@ class FtcCmds(CommonCloudFunctions) :
                     
 
             if "cpu_hl" in desc :
-                _msg = "Setting CPU Hard Limit for Guest \"" + obj_attr_list["cloud_uuid"]
+                _msg = "Setting CPU Hard Limit for Guest \"" + obj_attr_list["cloud_vm_uuid"]
                 _msg += "\"."
                 cbdebug(_msg)
                 
@@ -551,7 +551,7 @@ class FtcCmds(CommonCloudFunctions) :
         obj_attr_list["mgt_302_resize_request_sent"] = _time_mark_crs - obj_attr_list["mgt_301_resize_request_originated"]
 
         _msg = "Sending a resize request for "  + obj_attr_list["name"] + ""
-        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ")"
+        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
         _msg += "...."
         cbdebug(_msg, True)
 
@@ -562,7 +562,7 @@ class FtcCmds(CommonCloudFunctions) :
         cbdebug("VM " + obj_attr_list["name"] + " resize request completed.")
 
         _msg = "" + obj_attr_list["name"] + ""
-        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
         _msg += "was successfully "
         _msg += "resized on FTCloud \"" + obj_attr_list["cloud_name"]
         _msg += "\"."
@@ -577,7 +577,7 @@ class FtcCmds(CommonCloudFunctions) :
         obj_attr_list["mgt_502_" + operation + "_request_sent"] = _time_mark_crs - obj_attr_list["mgt_501_" + operation + "_request_originated"]
 
         _msg = "Sending a " + operation + " request for "  + obj_attr_list["name"]
-        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ")"
+        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
         _msg += "...."
         cbdebug(_msg, True)
 
@@ -594,7 +594,7 @@ class FtcCmds(CommonCloudFunctions) :
 
         if not _status :
             _msg = "" + obj_attr_list["name"] + ""
-            _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+            _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
             _msg += "was successfully "
             _msg += operation + "ed on FTCloud \"" + obj_attr_list["cloud_name"]
             _msg += "\"."
@@ -614,7 +614,7 @@ class FtcCmds(CommonCloudFunctions) :
                 _time_mark_rrs - obj_attr_list["mgt_201_runstate_request_originated"]
 
         _msg = "Sending a runstate change request (" + _ts + " for " + obj_attr_list["name"]
-        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ")"
+        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
         _msg += "...."
         cbdebug(_msg, True)
 
@@ -639,7 +639,7 @@ class FtcCmds(CommonCloudFunctions) :
         obj_attr_list["mgt_203_runstate_request_completed"] = _time_mark_rrc - _time_mark_rrs
             
         _msg = "" + obj_attr_list["name"] + ""
-        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
         _msg += "had its runstate successfully "
         _msg += "changed on FTCloud \"" + obj_attr_list["cloud_name"]
         _msg += "\"."

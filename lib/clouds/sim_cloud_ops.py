@@ -618,7 +618,7 @@ class SimCmds(CommonCloudFunctions) :
         obj_attr_list["mgt_502_" + operation + "_request_sent"] = _time_mark_crs - obj_attr_list["mgt_501_" + operation + "_request_originated"]
 
         _msg = "Sending a " + operation + " request for "  + obj_attr_list["name"]
-        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ")"
+        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
         _msg += "...."
         cbdebug(_msg, True)
 
@@ -630,7 +630,7 @@ class SimCmds(CommonCloudFunctions) :
         cbdebug("VM " + obj_attr_list["name"] + " " + operation + " request completed.")
 
         _msg = "" + obj_attr_list["name"] + ""
-        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
         _msg += "was successfully "
         _msg += operation + "ed on FTCloud \"" + obj_attr_list["cloud_name"]
         _msg += "\"."
