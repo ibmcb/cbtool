@@ -187,7 +187,7 @@ class FtcCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
-        _host_uuid = obj_attr_list["cloud_vm_uuid"]
+        _host_uuid = obj_attr_list["cloud_uuid"]
         obj_attr_list["hosts"] = _host_uuid
         obj_attr_list["host_count"] = 1
         obj_attr_list["host_list"] = {}
@@ -202,8 +202,8 @@ class FtcCmds(CommonCloudFunctions) :
         obj_attr_list["host_list"][_host_uuid]["vmc_name"] = obj_attr_list["name"]
         obj_attr_list["host_list"][_host_uuid]["vmc"] = obj_attr_list["uuid"]
         obj_attr_list["host_list"][_host_uuid]["alternate_interface"] = "default"
-        obj_attr_list["host_list"][_host_uuid]["cloud_vm_uuid"] = obj_attr_list["cloud_vm_uuid"]
-        obj_attr_list["host_list"][_host_uuid]["uuid"] = obj_attr_list["cloud_vm_uuid"]
+        obj_attr_list["host_list"][_host_uuid]["cloud_uuid"] = obj_attr_list["cloud_uuid"]
+        obj_attr_list["host_list"][_host_uuid]["uuid"] = obj_attr_list["cloud_uuid"]
         obj_attr_list["host_list"][_host_uuid]["model"] = obj_attr_list["model"]
         obj_attr_list["host_list"][_host_uuid]["function"] = "hypervisor"
         obj_attr_list["host_list"][_host_uuid]["arrival"] = int(time())
