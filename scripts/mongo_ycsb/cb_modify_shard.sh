@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 
 #/*******************************************************************************
-# Copyright (c) 2009 Standard Performance Evaluation Corporation (SPEC)
-#               All rights reserved.
-#
 # This source code is provided as is, without any express or implied warranty.
 # 
 # cb_modify_shard.sh -
