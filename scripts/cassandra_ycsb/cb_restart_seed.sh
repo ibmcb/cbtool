@@ -4,7 +4,7 @@
 #
 # This source code is provided as is, without any express or implied warranty.
 #
-# cb_restart_mongo.sh -
+# cb_restart_seed.sh -
 #
 #
 # @author Joe Talerico, jtaleric@redhat.com
@@ -39,8 +39,12 @@ if [ -z $seed ] ; then
         exit 1;
 fi
 
+#
+# Update /etc/hosts file
+#
 pos=1
 sudo sh -c "echo 127.0.0.1 localhost > /etc/hosts"
+sudo sh -c "echo $seed cassandra-seed >> /etc/hosts"
 for db in $cassandra
 do
         sudo sh -c "echo $db cassandra$pos cassandra-$pos >> /etc/hosts"
@@ -60,7 +64,6 @@ sudo sed -i 's/rpc_address: $/rpc_address: 0\.0\.0\.0/g' /etc/cassandra/conf/cas
 #
 rm -rf /var/lib/cassandra/saved_caches/*
 rm -rf /var/lib/cassandra/data/system/*
-
 
 #
 # Start the database

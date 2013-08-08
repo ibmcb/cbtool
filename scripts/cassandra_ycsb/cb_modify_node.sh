@@ -3,7 +3,7 @@
 #/*******************************************************************************
 # This source code is provided as is, without any express or implied warranty.
 # 
-# cb_modify_shard.sh -
+# cb_modify_node.sh -
 #
 #
 # @author: Joe Talerico - jtaleric@redhat.com
@@ -17,60 +17,49 @@ else
         source $dir/../common/cb_common.sh
 fi
 
-mongos=`get_ips_from_role mongos`
+cassandra=`get_ips_from_role cassandra`
 if [ -z $mongos ] ; then
-        syslog_netcat "mongos IP is null"
+        syslog_netcat "cassandra IP is null"
         exit 1;
 fi
 
-mongocfg=`get_ips_from_role mongo_cfg_server`
-if [ -z $mongocfg ] ; then
-        syslog_netcat "mongocfg IP is null"
-        exit 1;
-fi
-
-mongo=`get_ips_from_role mongodb`
 pos=1
 sudo sh -c "echo 127.0.0.1 localhost > /etc/hosts"
-sudo sh -c "echo $mongocfg mongo-cfg-server >> /etc/hosts"
-sudo sh -c "echo $mongos mongos >> /etc/hosts"
-for db in $mongo
+for db in $cassandra
 do
-        sudo sh -c "echo $db mongo$pos mongodb-$pos >> /etc/hosts"
+        sudo sh -c "echo $db cassandra$pos cassandra-$pos >> /etc/hosts"
         ((pos++))
 done
 
 #
 # Determine remove or add 
 #
-# old_dbs=`cat /etc/hosts | sed -n '/.*db.*/p' | wc -l`
-dbs=`echo $mongo | wc -w`
+dbs=`echo $cassandra | wc -w`
 
 #
-# Udpate Mongos sh.addShard 
+# Determine current nodes 
 #
-# Determine current shards
-#
-shards=`mongo --host mongos:27017 --eval "sh.status()" | sed -n '/.*"host" : "\(.*\)" }$/p' | sed -e 's/.*"host" : "\(.*\):[0-9]*" }$/\1/'`
+nodes=`nodetool ring | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}'`
 
 #
-# Modify Shards
+# Modify Nodes 
 #
-mongo=`get_ips_from_role mongodb`
-# This will only work for adding... Removing might be more involved.
 pos=$dbs
 
-for db in $mongo
+#
+# Still need to add the Remove node case, Cassandra should be easier to remove a node.
+# Since in theory, there is on SPF in Cassandra.
+#
+for db in $cassandra
 do
 	db_chk=`cat /etc/hosts | grep $db | awk '{ print $2 }'`
-	if [[ ! "$shards" =~ "$db_chk" ]]; then 
-             mongo --host mongos:27017 --eval "sh.addShard(\"mongo$pos:27017\")"
-             syslog_netcat " Adding the follow shard :mongo$pos:27017 "
+	if [[ ! "$nodes" =~ "$db_chk" ]]; then 
+             syslog_netcat " Adding the follow node : cassandra$pos"
              ((pos++))
 	fi
 done
 
 if [ $? -gt 0 ] ; then
-	syslog_netcat "problem running ycsb prime client on $(hostname)"
+	syslog_netcat "problem modifying nodes $(hostname)"
 	exit 1
 fi
