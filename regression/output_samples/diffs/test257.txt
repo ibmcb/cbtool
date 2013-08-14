@@ -1,0 +1,16 @@
+ status: vm_24 (cloud-assigned uuid 94FC97FB-7F00-5AAA-88D5-58E80810DBAE) could not be created on SimCloud "TESTCLOUD" : Failed to create VM image (The VM creation was rolled back)
+ status: Sending a termination request for vm_24 (cloud-assigned uuid 94FC97FB-7F00-5AAA-88D5-58E80810DBAE)....
+VM object AFBDA32A-3398-5549-9EA9-D872BA7D7FFE (named "vm_24") could not be attached to this experiment: vm_24 (cloud-assigned uuid 94FC97FB-7F00-5AAA-88D5-58E80810DBAE) could not be created on SimCloud "TESTCLOUD" : Failed to create VM image (The VM creation was rolled back)
+|Used Memory                                          |39.73M                        
+|Uptime (in seconds)                                  |13565158                      
+|Total Connections Received                           |6494895                       
+|Total Commands Processed                             |93794418                      
+|Storage Size                                         |16112459760.0                 
+|Data Size                                            |13823017360.0                 
+|Index Size                                           |550318384                     
+|Average Object Size                                  |6602.64046057                 
+|Collections                                          |60                            
+|59038ADB-0C9D-5DC8-8D0F-858C40A339D8 (simzone_b) VM RESERVATIONS|0                             
+|64F2E709-607C-5D1E-9ED5-402265D29FB4 (simzone_d) VM RESERVATIONS|0                             
+|538D06C6-8C24-51C6-AC34-D9ECDD4133D6 (simzone_c) VM RESERVATIONS|0                             
+|CA6252C4-6803-5C5C-BAA8-5BC509EE3CE0 (simzone_a) VM RESERVATIONS|0                             

@@ -1,0 +1,4 @@
+ status: VMC 59038ADB-0C9D-5DC8-8D0F-858C40A339D8 was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC 64F2E709-607C-5D1E-9ED5-402265D29FB4 was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC 538D06C6-8C24-51C6-AC34-D9ECDD4133D6 was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC CA6252C4-6803-5C5C-BAA8-5BC509EE3CE0 was successfully unregistered on SimCloud "TESTCLOUD".

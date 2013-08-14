@@ -1,0 +1,5 @@
+vmcapture TESTCLOUD vm_41 async
+waitfor TESTCLOUD 25s
+ailist TESTCLOUD
+vmlist TESTCLOUD
+stats TESTCLOUD

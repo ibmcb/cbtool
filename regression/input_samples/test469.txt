@@ -1,0 +1,2 @@
+vmcalter simzone_a replication_vmcs=TESTE
+vmcshow simzone_a replication_vmcs

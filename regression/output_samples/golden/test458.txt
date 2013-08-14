@@ -1,0 +1,100 @@
+ status: VMC 5FCC35BA-A520-50A4-853B-F526CA7F8D92 was successfully registered on SimCloud "TESTCLOUD".
+ status: Attribute "collect_from_host" was set to "false". Skipping Host OS performance monitor daemon startup
+VMC object 5FCC35BA-A520-50A4-853B-F526CA7F8D92 (named "simzone_c") sucessfully attached to this experiment. It is ssh-accessible at the IP address 122.121.18.51 (simzone_c).
+The following VMCs are attached to this experiment (Cloud TESTCLOUD) :
+|name                    |host_count      |pool                    |cloud_hostname                  |cloud_ip         
+|simzone_a               |5               |sut                     |simzone_a                       |254.15.171.63    
+|simzone_b               |5               |sut                     |simzone_b                       |83.135.210.136   
+|simzone_c               |5               |sut                     |simzone_c                       |122.121.18.51    
+
+The VMC object simzone_c, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
+|attribute (VMC object key)               |value                                
+|update_attempts                          |78                                   
+|update_frequency                         |3                                    
+
+The following statistics are available on this experiment (Cloud TESTCLOUD) :
+------------------------- OBJECT STORE -----------------------
+|Metric                                               |Value                         
+|Used Memory                                          |39.45M                        
+|Redis Version                                        |2.5.12                        
+|Uptime (in seconds)                                  |11740911                      
+|Total Connections Received                           |6492817                       
+|Total Commands Processed                             |92886797                      
+|Number of Keys                                       |222                           
+------------------------- METRIC STORE -----------------------
+|Metric                                               |Value                         
+|MongoDB Version                                      |2.0.6                         
+|Storage Size                                         |13967024128.0                 
+|Data Size                                            |12134661276.0                 
+|Index Size                                           |502922112                     
+|Average Object Size                                  |6345.25934246                 
+|Collections                                          |61                            
+--------------------- EXPERIMENT OBJECTS ---------------------
+|Object                                               |Count                         
+|VMCs                                                 |3                             
+|HOSTs                                                |15                            
+|VMs                                                  |0                             
+|SVMs                                                 |0                             
+|AIs                                                  |0                             
+|AIDRSs                                               |0                             
+|VMCRSs                                               |0                             
+|FIRSs                                                |0                             
+------------------ EXPERIMENT-WIDE COUNTERS ------------------
+|Counter                                              |Value                         
+|VMC RESERVATIONS                                     |3                             
+|VMCs ARRIVED                                         |3                             
+|VMCs ARRIVING                                        |0                             
+|VMCs DEPARTED                                        |0                             
+|VMCs DEPARTING                                       |0                             
+|VMCs FAILED                                          |0                             
+|HOST RESERVATIONS                                    |0                             
+|HOSTs ARRIVED                                        |0                             
+|HOSTs ARRIVING                                       |0                             
+|HOSTs DEPARTED                                       |0                             
+|HOSTs DEPARTING                                      |0                             
+|HOSTs FAILED                                         |0                             
+|VM RESERVATIONS                                      |0                             
+|VMs ARRIVED                                          |0                             
+|VMs ARRIVING                                         |0                             
+|VMs CAPTURING                                        |0                             
+|VMs DEPARTED                                         |0                             
+|VMs DEPARTING                                        |0                             
+|VMs FAILED                                           |0                             
+|SVM RESERVATIONS                                     |0                             
+|SVMs ARRIVED                                         |0                             
+|SVMs ARRIVING                                        |0                             
+|SVMs DEPARTED                                        |0                             
+|SVMs DEPARTING                                       |0                             
+|SVMs FAILED                                          |0                             
+|AI RESERVATIONS                                      |0                             
+|AIs ARRIVED                                          |0                             
+|AIs ARRIVING                                         |0                             
+|AIs CAPTURING                                        |0                             
+|AIs DEPARTED                                         |0                             
+|AIs DEPARTING                                        |0                             
+|AIs FAILED                                           |0                             
+|AIDRS RESERVATIONS                                   |0                             
+|AIDRSs ARRIVED                                       |0                             
+|AIDRSs ARRIVING                                      |0                             
+|AIDRSs DEPARTED                                      |0                             
+|AIDRSs DEPARTING                                     |0                             
+|AIDRSs FAILED                                        |0                             
+|VMCRS RESERVATIONS                                   |0                             
+|VMCRSs ARRIVED                                       |0                             
+|VMCRSs ARRIVING                                      |0                             
+|VMCRSs DEPARTED                                      |0                             
+|VMCRSs DEPARTING                                     |0                             
+|VMCRSs FAILED                                        |0                             
+|FIRS RESERVATIONS                                    |0                             
+|FIRSs ARRIVED                                        |0                             
+|FIRSs ARRIVING                                       |0                             
+|FIRSs DEPARTED                                       |0                             
+|FIRSs DEPARTING                                      |0                             
+|FIRSs FAILED                                         |0                             
+|EXPERIMENT COUNTER                                   |3                             
+
+ ---------------- VMC-WIDE COUNTERS ----------------
+|5FCC35BA-A520-50A4-853B-F526CA7F8D92 (simzone_c) VM RESERVATIONS|0                             
+|23ED7AC8-9C68-5593-89F5-3AB7270AB234 (simzone_a) VM RESERVATIONS|0                             
+|78A6425B-11BC-5140-921A-9537207B75FE (simzone_b) VM RESERVATIONS|0                             
+

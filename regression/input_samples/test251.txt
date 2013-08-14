@@ -1,0 +1,4 @@
+vmdetach TESTCLOUD vm_5 async
+waitfor TESTCLOUD 10s
+vmlist TESTCLOUD
+stats TESTCLOUD

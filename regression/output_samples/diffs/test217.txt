@@ -1,0 +1,20 @@
+ status: Waiting for vm_1 (cloud-assigned uuid 3814B750-188E-51A0-A67E-9E3B7C0E32B9) to start...
+ status: Trying to establish network connectivity to vm_1 (cloud-assigned uuid 3814B750-188E-51A0-A67E-9E3B7C0E32B9), on IP address 254.56.139.236...
+ status: Bypassing the sending of a copy of the code tree to vm_1 (254.56.139.236)...
+ status: Bypassing generic VM post_boot configuration on vm_1 (254.56.139.236)...
+VM object 64DD0F5F-27CF-50C8-AE2A-0930A713B586 (named "vm_1") sucessfully attached to this experiment. It is ssh-accessible at the IP address 254.56.139.236 (3814B750-188E-51A0-A67E-9E3B7C0E32B9.simcloud.com).
+|vm_1          |tinyvm              |pico32      |254.56.139.236  |simhosta0                  |SUT                 |none    |none       |64DD0F5F-27CF-50C8-AE2A-0930A713B586
+|host_name                               |simhosta0                            
+|Used Memory                                          |38.86M                        
+|Uptime (in seconds)                                  |13565005                      
+|Total Connections Received                           |6494861                       
+|Total Commands Processed                             |93766893                      
+|Storage Size                                         |16112275440.0                 
+|Data Size                                            |13822944420.0                 
+|Index Size                                           |550318384                     
+|Average Object Size                                  |6602.97463221                 
+|Collections                                          |60                            
+|59038ADB-0C9D-5DC8-8D0F-858C40A339D8 (simzone_b) VM RESERVATIONS|0                             
+|64F2E709-607C-5D1E-9ED5-402265D29FB4 (simzone_d) VM RESERVATIONS|0                             
+|538D06C6-8C24-51C6-AC34-D9ECDD4133D6 (simzone_c) VM RESERVATIONS|0                             
+|CA6252C4-6803-5C5C-BAA8-5BC509EE3CE0 (simzone_a) VM RESERVATIONS|1                             

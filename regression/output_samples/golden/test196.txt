@@ -1,0 +1,156 @@
+ status: VMC B223193C-AC14-56C1-973B-E77C8A3A1445 was successfully registered on SimCloud "TESTCLOUD".
+ status: Attribute "collect_from_host" was set to "false". Skipping Host OS performance monitor daemon startup
+VMC object B223193C-AC14-56C1-973B-E77C8A3A1445 (named "simzone_a") sucessfully attached to this experiment. It is ssh-accessible at the IP address 244.189.255.64 (simzone_a).
+The following VMCs are attached to this experiment (Cloud TESTCLOUD) :
+|name                    |host_count      |pool                    |cloud_hostname                  |cloud_ip         
+|simzone_a               |5               |sut                     |simzone_a                       |244.189.255.64   
+
+The VMC object simzone_a, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
+|attribute (VMC object key)               |value                                
+|access                                   |                                     
+|additional_discovery                     |                                     
+|ai_arrived                               |0                                    
+|ai_arriving                              |0                                    
+|ai_departed                              |0                                    
+|ai_failed                                |0                                    
+|ai_reservations                          |0                                    
+|arrival                                  |1372701419                           
+|attempts                                 |3                                    
+|base_dir                                 |/home/msilva/cloudbench/lib/auxiliary//../..
+|cleanup_on_attach                        |True                                 
+|cleanup_on_detach                        |True                                 
+|cloud_hostname                           |simzone_a                            
+|cloud_ip                                 |244.189.255.64                       
+|cloud_name                               |TESTCLOUD                            
+|cloud_uuid                               |9D359788-CDEB-57CF-AAAE-121EC809A37E 
+|collect_from_host                        |False                                
+|command                                  |vmcattach TESTCLOUD simzone_a empty=empty
+|command_originated                       |1372701419                           
+|counter                                  |1                                    
+|cpu_overcommit                           |1.0                                  
+|credentials                              |                                     
+|detach_parallelism                       |20                                   
+|discover_hosts                           |True                                 
+|experiment_id                            |REGRESSION_B                         
+|host_count                               |5                                    
+|host_list                                |{'D38A5379-C705-5ED9-AC2D-06595D0F6B00': {'function': 'hypervisor', 'vmc': 'B223193C-AC14-56C1-973B-E77C8A3A1445', 'vmc_name': 'simzone_a', 'uuid': 'D38A5379-C705-5ED9-AC2D-06595D0F6B00', 'notification': 'False', 'mgt_002_provisioning_request_sent': 0, 'cloud_uuid': 'D38A5379-C705-5ED9-AC2D-06595D0F6B00', 'cloud_ip': '210.134.149.154', 'pool': 'SUT', 'memory': 131072, 'cloud_hostname': 'simhosta1', 'username': 'msilva', 'mgt_003_provisioning_request_completed': 0, 'mgt_001_provisioning_request_originated': 1372701419, 'model': 'sim', 'identity': '/home/msilva/cloudbench/lib/auxiliary//../../credentials/bogus_id_rsa', 'name': 'host_simhosta1', 'counter': 1, 'arrival': 1372701419, 'simulated': 'True', 'cores': 16, 'login': 'root'}, '708B4E39-71ED-5EFE-995A-96D011E5ECFB': {'function': 'hypervisor', 'vmc': 'B223193C-AC14-56C1-973B-E77C8A3A1445', 'vmc_name': 'simzone_a', 'uuid': '708B4E39-71ED-5EFE-995A-96D011E5ECFB', 'notification': 'False', 'mgt_002_provisioning_request_sent': 0, 'cloud_uuid': '708B4E39-71ED-5EFE-995A-96D011E5ECFB', 'cloud_ip': '62.90.188.181', 'pool': 'SUT', 'memory': 131072, 'cloud_hostname': 'simhosta2', 'username': 'msilva', 'mgt_003_provisioning_request_completed': 0, 'mgt_001_provisioning_request_originated': 1372701419, 'model': 'sim', 'identity': '/home/msilva/cloudbench/lib/auxiliary//../../credentials/bogus_id_rsa', 'name': 'host_simhosta2', 'counter': 1, 'arrival': 1372701419, 'simulated': 'True', 'cores': 16, 'login': 'root'}, 'A03FC5D9-2C2F-5E97-BDF2-F38F7ABE35F1': {'function': 'hypervisor', 'vmc': 'B223193C-AC14-56C1-973B-E77C8A3A1445', 'vmc_name': 'simzone_a', 'uuid': 'A03FC5D9-2C2F-5E97-BDF2-F38F7ABE35F1', 'notification': 'False', 'mgt_002_provisioning_request_sent': 0, 'cloud_uuid': 'A03FC5D9-2C2F-5E97-BDF2-F38F7ABE35F1', 'cloud_ip': '92.37.220.26', 'pool': 'SUT', 'memory': 131072, 'cloud_hostname': 'simhosta3', 'username': 'msilva', 'mgt_003_provisioning_request_completed': 0, 'mgt_001_provisioning_request_originated': 1372701419, 'model': 'sim', 'identity': '/home/msilva/cloudbench/lib/auxiliary//../../credentials/bogus_id_rsa', 'name': 'host_simhosta3', 'counter': 1, 'arrival': 1372701419, 'simulated': 'True', 'cores': 16, 'login': 'root'}, '541A00D0-29C5-5BE8-ABDF-B91C81592FAF': {'function': 'hypervisor', 'vmc': 'B223193C-AC14-56C1-973B-E77C8A3A1445', 'vmc_name': 'simzone_a', 'uuid': '541A00D0-29C5-5BE8-ABDF-B91C81592FAF', 'notification': 'False', 'mgt_002_provisioning_request_sent': 0, 'cloud_uuid': '541A00D0-29C5-5BE8-ABDF-B91C81592FAF', 'cloud_ip': '116.217.3.170', 'pool': 'SUT', 'memory': 131072, 'cloud_hostname': 'simhosta4', 'username': 'msilva', 'mgt_003_provisioning_request_completed': 0, 'mgt_001_provisioning_request_originated': 1372701419, 'model': 'sim', 'identity': '/home/msilva/cloudbench/lib/auxiliary//../../credentials/bogus_id_rsa', 'name': 'host_simhosta4', 'counter': 1, 'arrival': 1372701419, 'simulated': 'True', 'cores': 16, 'login': 'root'}, 'E858C7EA-552A-51F5-A858-B90D20292D12': {'function': 'hypervisor', 'vmc': 'B223193C-AC14-56C1-973B-E77C8A3A1445', 'vmc_name': 'simzone_a', 'uuid': 'E858C7EA-552A-51F5-A858-B90D20292D12', 'notification': 'False', 'mgt_002_provisioning_request_sent': 0, 'cloud_uuid': 'E858C7EA-552A-51F5-A858-B90D20292D12', 'cloud_ip': '91.91.192.170', 'pool': 'SUT', 'memory': 131072, 'cloud_hostname': 'simhosta0', 'username': 'msilva', 'mgt_003_provisioning_request_completed': 0, 'mgt_001_provisioning_request_originated': 1372701419, 'model': 'sim', 'identity': '/home/msilva/cloudbench/lib/auxiliary//../../credentials/bogus_id_rsa', 'name': 'host_simhosta0', 'counter': 1, 'arrival': 1372701419, 'simulated': 'True', 'cores': 16, 'login': 'root'}}
+|hosts                                    |E858C7EA-552A-51F5-A858-B90D20292D12,D38A5379-C705-5ED9-AC2D-06595D0F6B00,708B4E39-71ED-5EFE-995A-96D011E5ECFB,A03FC5D9-2C2F-5E97-BDF2-F38F7ABE35F1,541A00D0-29C5-5BE8-ABDF-B91C81592FAF
+|hosts_per_vmc                            |5                                    
+|identity                                 |/home/msilva/cloudbench/lib/auxiliary//../../credentials/bogus_id_rsa
+|initial_hosts                            |                                     
+|key_name                                 |                                     
+|max_vm_reservations                      |100000                               
+|memory_overcommit                        |1.0                                  
+|mgt_001_provisioning_request_originated  |1372701419                           
+|mgt_002_provisioning_request_sent        |0                                    
+|mgt_003_provisioning_request_completed   |0                                    
+|model                                    |sim                                  
+|name                                     |simzone_a                            
+|network_overcommit                       |1.0                                  
+|notification                             |False                                
+|nr_vms                                   |0                                    
+|pool                                     |sut                                  
+|replication_vmcs                         |                                     
+|security_groups                          |                                     
+|state                                    |attached                             
+|storage_overcommit                       |1.0                                  
+|temp_attr_list                           |empty=empty                          
+|timeout                                  |240                                  
+|tracking                                 |none                                 
+|update_attempts                          |720                                  
+|update_frequency                         |1                                    
+|username                                 |msilva                               
+|uuid                                     |B223193C-AC14-56C1-973B-E77C8A3A1445 
+|vm_arrived                               |0                                    
+|vm_arriving                              |0                                    
+|vm_departed                              |0                                    
+|vm_failed                                |0                                    
+|vm_reservations                          |0                                    
+|vmc_arrived                              |0                                    
+|vmc_departed                             |0                                    
+|vmc_failed                               |0                                    
+
+The following statistics are available on this experiment (Cloud TESTCLOUD) :
+------------------------- OBJECT STORE -----------------------
+|Metric                                               |Value                         
+|Used Memory                                          |38.34M                        
+|Redis Version                                        |2.5.12                        
+|Uptime (in seconds)                                  |11740198                      
+|Total Connections Received                           |6492667                       
+|Total Commands Processed                             |92683428                      
+|Number of Keys                                       |137                           
+------------------------- METRIC STORE -----------------------
+|Metric                                               |Value                         
+|MongoDB Version                                      |2.0.6                         
+|Storage Size                                         |13965922304.0                 
+|Data Size                                            |12133364496.0                 
+|Index Size                                           |502873056                     
+|Average Object Size                                  |6346.85794513                 
+|Collections                                          |61                            
+--------------------- EXPERIMENT OBJECTS ---------------------
+|Object                                               |Count                         
+|VMCs                                                 |1                             
+|HOSTs                                                |5                             
+|VMs                                                  |0                             
+|SVMs                                                 |0                             
+|AIs                                                  |0                             
+|AIDRSs                                               |0                             
+|VMCRSs                                               |0                             
+|FIRSs                                                |0                             
+------------------ EXPERIMENT-WIDE COUNTERS ------------------
+|Counter                                              |Value                         
+|VMC RESERVATIONS                                     |1                             
+|VMCs ARRIVED                                         |1                             
+|VMCs ARRIVING                                        |0                             
+|VMCs DEPARTED                                        |0                             
+|VMCs DEPARTING                                       |0                             
+|VMCs FAILED                                          |0                             
+|HOST RESERVATIONS                                    |0                             
+|HOSTs ARRIVED                                        |0                             
+|HOSTs ARRIVING                                       |0                             
+|HOSTs DEPARTED                                       |0                             
+|HOSTs DEPARTING                                      |0                             
+|HOSTs FAILED                                         |0                             
+|VM RESERVATIONS                                      |0                             
+|VMs ARRIVED                                          |0                             
+|VMs ARRIVING                                         |0                             
+|VMs CAPTURING                                        |0                             
+|VMs DEPARTED                                         |0                             
+|VMs DEPARTING                                        |0                             
+|VMs FAILED                                           |0                             
+|SVM RESERVATIONS                                     |0                             
+|SVMs ARRIVED                                         |0                             
+|SVMs ARRIVING                                        |0                             
+|SVMs DEPARTED                                        |0                             
+|SVMs DEPARTING                                       |0                             
+|SVMs FAILED                                          |0                             
+|AI RESERVATIONS                                      |0                             
+|AIs ARRIVED                                          |0                             
+|AIs ARRIVING                                         |0                             
+|AIs CAPTURING                                        |0                             
+|AIs DEPARTED                                         |0                             
+|AIs DEPARTING                                        |0                             
+|AIs FAILED                                           |0                             
+|AIDRS RESERVATIONS                                   |0                             
+|AIDRSs ARRIVED                                       |0                             
+|AIDRSs ARRIVING                                      |0                             
+|AIDRSs DEPARTED                                      |0                             
+|AIDRSs DEPARTING                                     |0                             
+|AIDRSs FAILED                                        |0                             
+|VMCRS RESERVATIONS                                   |0                             
+|VMCRSs ARRIVED                                       |0                             
+|VMCRSs ARRIVING                                      |0                             
+|VMCRSs DEPARTED                                      |0                             
+|VMCRSs DEPARTING                                     |0                             
+|VMCRSs FAILED                                        |0                             
+|FIRS RESERVATIONS                                    |0                             
+|FIRSs ARRIVED                                        |0                             
+|FIRSs ARRIVING                                       |0                             
+|FIRSs DEPARTED                                       |0                             
+|FIRSs DEPARTING                                      |0                             
+|FIRSs FAILED                                         |0                             
+|EXPERIMENT COUNTER                                   |1                             
+
+ ---------------- VMC-WIDE COUNTERS ----------------
+|B223193C-AC14-56C1-973B-E77C8A3A1445 (simzone_a) VM RESERVATIONS|0                             
+

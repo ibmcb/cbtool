@@ -1,0 +1,1 @@
+Usage: clddetach <cloud name> 

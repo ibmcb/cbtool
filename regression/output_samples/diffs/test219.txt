@@ -1,0 +1,15 @@
+|arrival                                 |1374526226                           
+|cloud_hostname                          |3814B750-188E-51A0-A67E-9E3B7C0E32B9.simcloud.com
+|cloud_ip                                |254.56.139.236                       
+|cloud_mac                               |00:16:3e:23:dd:4e                    
+|cloud_vm_name                           |cb-msilva-vm_1-tinyvm                
+|cloud_vm_uuid                           |3814B750-188E-51A0-A67E-9E3B7C0E32B9 
+|command_originated                      |1374526224                           
+|host                                    |02A87729-F726-5F81-8D0D-7F3B61CF358F 
+|host_cloud_ip                           |24.169.15.34                         
+|host_name                               |simhosta0                            
+|mgt_001_provisioning_request_originated |1374526224                           
+|prov_cloud_ip                           |254.56.139.236                       
+|uuid                                    |64DD0F5F-27CF-50C8-AE2A-0930A713B586 
+|vmc                                     |CA6252C4-6803-5C5C-BAA8-5BC509EE3CE0 
+|vmc_cloud_ip                            |8.188.4.54                           

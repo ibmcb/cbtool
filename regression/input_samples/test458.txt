@@ -1,0 +1,4 @@
+vmcattach simzone_c update_attempts=78,update_frequency=3
+vmclist
+vmcshow simzone_c update_attempts,update_frequency
+stats

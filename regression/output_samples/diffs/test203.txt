@@ -1,0 +1,20 @@
+ status: VMC B6BFF335-FB25-5CDA-968F-77297C0D9579 was successfully registered on SimCloud "TESTCLOUD".
+ status: VMC F7D1AD21-C6B3-5FCD-8F20-5FC4CEA9D4E0 was successfully registered on SimCloud "TESTCLOUD".
+ status: VMC 00373061-46C7-53B1-BCB3-9CF1C2C40D2D was successfully registered on SimCloud "TESTCLOUD".
+ status: VMC 517A921A-02FA-53AE-B645-AE3BA304DCC3 was successfully registered on SimCloud "TESTCLOUD".
+|simzone_a               |5               |sut                     |simzone_a                       |138.65.149.179   
+|simzone_b               |5               |sut                     |simzone_b                       |25.248.171.134   
+|simzone_c               |5               |sut                     |simzone_c                       |182.93.204.238   
+|simzone_d               |5               |lg                      |simzone_d                       |136.130.255.142  
+|Uptime (in seconds)                                  |13564982                      
+|Total Connections Received                           |6494853                       
+|Total Commands Processed                             |93756175                      
+|Storage Size                                         |16112218096.0                 
+|Data Size                                            |13822917372.0                 
+|Index Size                                           |550310208                     
+|Average Object Size                                  |6603.17619881                 
+|Collections                                          |59                            
+|B6BFF335-FB25-5CDA-968F-77297C0D9579 (simzone_a) VM RESERVATIONS|0                             
+|517A921A-02FA-53AE-B645-AE3BA304DCC3 (simzone_d) VM RESERVATIONS|0                             
+|00373061-46C7-53B1-BCB3-9CF1C2C40D2D (simzone_c) VM RESERVATIONS|0                             
+|F7D1AD21-C6B3-5FCD-8F20-5FC4CEA9D4E0 (simzone_b) VM RESERVATIONS|0                             

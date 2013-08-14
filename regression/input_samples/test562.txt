@@ -1,0 +1,5 @@
+aicapture youngest async
+waituntil AI CAPTURING=0
+ailist
+vmlist
+stats

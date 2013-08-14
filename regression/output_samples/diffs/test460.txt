@@ -1,0 +1,17 @@
+ status: VMC 5C19A508-0A00-5A3E-843B-CC5D626AB823 was successfully unregistered on SimCloud "TESTCLOUD".
+VMC object 5C19A508-0A00-5A3E-843B-CC5D626AB823 (named "simzone_d") was sucessfully detached from this experiment.
+ status: VMC 610C9C91-C05C-5406-A422-11A24A8CA0A5 was successfully unregistered on SimCloud "TESTCLOUD".
+VMC object 610C9C91-C05C-5406-A422-11A24A8CA0A5 (named "simzone_c") was sucessfully detached from this experiment.
+ status: VMC 980E160D-EE10-52EA-9139-285BDE36654F was successfully unregistered on SimCloud "TESTCLOUD".
+VMC object 980E160D-EE10-52EA-9139-285BDE36654F (named "simzone_b") was sucessfully detached from this experiment.
+|simzone_a               |5               |sut                     |simzone_a                       |136.157.18.16    
+|Used Memory                                          |39.42M                        
+|Uptime (in seconds)                                  |13565718                      
+|Total Connections Received                           |6495001                       
+|Total Commands Processed                             |93954957                      
+|Storage Size                                         |16113287152.0                 
+|Data Size                                            |13823270676.0                 
+|Index Size                                           |550342912                     
+|Average Object Size                                  |6601.70193634                 
+|Collections                                          |59                            
+|1B79AE9F-80B7-52E3-AF89-CC44733E39C9 (simzone_a) VM RESERVATIONS|0                             

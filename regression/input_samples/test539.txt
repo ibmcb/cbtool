@@ -1,0 +1,5 @@
+vmcapture oldest async
+waitfor 25s
+ailist
+vmlist
+stats

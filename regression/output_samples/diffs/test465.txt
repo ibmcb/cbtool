@@ -1,0 +1,12 @@
+ status: VMC E142CEA7-5DBC-5A24-8465-B9EA6FA0C77A was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC 44F2B886-3711-50BF-A86F-5897C77ED973 was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC 1F85DD29-909C-5CF2-B9E9-405FFE355A97 was successfully unregistered on SimCloud "TESTCLOUD".
+|Used Memory                                          |39.49M                        
+|Uptime (in seconds)                                  |13565729                      
+|Total Connections Received                           |6495002                       
+|Total Commands Processed                             |93960427                      
+|Storage Size                                         |16113287152.0                 
+|Data Size                                            |13823280944.0                 
+|Index Size                                           |550342912                     
+|Average Object Size                                  |6601.62486741                 
+|Collections                                          |59                            

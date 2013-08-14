@@ -1,0 +1,3 @@
+vmdetach all
+vmlist
+stats

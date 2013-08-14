@@ -1,0 +1,1 @@
+|ai_1      |daytrader      |1_x_client_daytrader->1_x_was->1_x_db2            |35.5.238.230    |1374527130     |none                                    |004356A0-8948-5E67-8CCE-08EFE41FD80A

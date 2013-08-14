@@ -1,0 +1,4 @@
+aiattach TESTCLOUD filebench
+ailist TESTCLOUD
+vmlist TESTCLOUD
+stats TESTCLOUD

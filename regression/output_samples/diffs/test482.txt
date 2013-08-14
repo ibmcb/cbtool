@@ -1,0 +1,24 @@
+ status: Waiting for vm_4 (cloud-assigned uuid F358535F-8CDD-5372-BA8C-DFE0A3352A06) to start...
+ status: Trying to establish network connectivity to vm_4 (cloud-assigned uuid F358535F-8CDD-5372-BA8C-DFE0A3352A06), on IP address 203.87.210.63...
+ status: Bypassing the sending of a copy of the code tree to vm_4 (203.87.210.63)...
+ status: Bypassing generic VM post_boot configuration on vm_4 (203.87.210.63)...
+VM object B2B72794-2049-517B-A739-D8E9DDA7C2FA (named "vm_4") sucessfully attached to this experiment. It is ssh-accessible at the IP address 203.87.210.63 (F358535F-8CDD-5372-BA8C-DFE0A3352A06.simcloud.com).
+|vm_1          |tinyvm              |pico32      |150.236.130.83  |simhosta3                  |SUT                 |none    |none       |88688644-A3F7-5788-83E8-BC0D4176A31E
+|vm_2          |tinyvm              |pico32      |147.48.174.173  |simhostd4                  |LG                  |none    |none       |F2D53C9D-E253-562B-918D-C409FB066A38
+|vm_3          |tinyvm              |pico32      |154.11.42.39    |simhostb1                  |SUT                 |none    |none       |8EE69A5D-DBFE-5CA3-844C-650894B02A10
+|vm_4          |db2                 |copper32    |203.87.210.63   |simhosta1                  |SUT                 |none    |none       |B2B72794-2049-517B-A739-D8E9DDA7C2FA
+|host_name                               |simhosta1                            
+|vmc_name                                |simzone_a                            
+|Used Memory                                          |39.88M                        
+|Uptime (in seconds)                                  |13565757                      
+|Total Connections Received                           |6495010                       
+|Total Commands Processed                             |93971597                      
+|Storage Size                                         |16113344496.0                 
+|Data Size                                            |13823325288.0                 
+|Index Size                                           |550383792                     
+|Average Object Size                                  |6601.33078322                 
+|Collections                                          |60                            
+|D30F1B96-9225-51C9-95FF-3355AD659B11 (simzone_d) VM RESERVATIONS|1                             
+|3C091D65-A8D9-5ECF-9C95-36A39D5CAA39 (simzone_a) VM RESERVATIONS|2                             
+|671172C3-2E80-5782-AB0C-C348A586106A (simzone_c) VM RESERVATIONS|0                             
+|96342978-982B-5D60-9FF3-0C0B3F9C41A9 (simzone_b) VM RESERVATIONS|1                             

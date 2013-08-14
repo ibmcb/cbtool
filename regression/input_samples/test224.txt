@@ -1,0 +1,4 @@
+vmattach TESTCLOUD netclient auto a:b,x:y,r:2 size=platinum64,vmc_pool=SUT
+vmlist TESTCLOUD
+vmshow TESTCLOUD vm_5 vmc_name,vmc_pool,host_name,meta_tags,size
+stats TESTCLOUD

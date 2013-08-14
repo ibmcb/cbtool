@@ -1,0 +1,159 @@
+AIDRS object 86CFEE5E-2911-588B-BD22-2741F64C5DCA (named "aidrs_2") sucessfully attached to this experiment.
+The following attributes for the AIDRS object were changed (Cloud TESTCLOUD):
+|attribute                              |old value                          |new value                          
+|max_ais                                |8000                               |5                                  
+The following attributes for the AIDRS object were changed (Cloud TESTCLOUD):
+|attribute                              |old value                          |new value                          
+|iait                                   |10                                 |6                                  
+The AIDRS object aidrs_2, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
+|attribute (AIDRS object key)               |value                                
+|ai_arrived                                 |30                                   
+|ai_arriving                                |0                                    
+|ai_departed                                |30                                   
+|ai_failed                                  |2                                    
+|ai_reservations                            |0                                    
+|arrival                                    |1372702716                           
+|base_dir                                   |/home/msilva/cloudbench/lib/auxiliary//../..
+|cloud_hostname                             |undefined                            
+|cloud_ip                                   |undefined                            
+|cloud_name                                 |TESTCLOUD                            
+|command                                    |aidrsattach TESTCLOUD simplenw empty=empty
+|command_originated                         |1372702716                           
+|counter                                    |391                                  
+|daemon_parallelism                         |50                                   
+|detach_parallelism                         |20                                   
+|experiment_id                              |REGRESSION_B                         
+|iait                                       |6                                    
+|identity                                   |/home/msilva/cloudbench/lib/auxiliary//../../credentials/bogus_id_rsa
+|lifetime                                   |uniformIXIXI200I300                  
+|load_duration                              |uniformIXIXI40I60                    
+|load_level                                 |uniformIXIXI1I3                      
+|login                                      |klabuser                             
+|max_ais                                    |5                                    
+|mgt_001_provisioning_request_originated    |1372702716                           
+|model                                      |sim                                  
+|name                                       |aidrs_2                              
+|notification                               |False                                
+|nr_ais                                     |1                                    
+|pattern                                    |simplenw                             
+|ssh_key_name                               |bogus_id_rsa                         
+|state                                      |attached                             
+|submitter                                  |True                                 
+|temp_attr_list                             |empty=empty                          
+|tracking                                   |none                                 
+|type                                       |nullworkload                         
+|update_attempts                            |720                                  
+|update_frequency                           |1                                    
+|username                                   |msilva                               
+|uuid                                       |86CFEE5E-2911-588B-BD22-2741F64C5DCA 
+|vm_arrived                                 |117                                  
+|vm_arriving                                |0                                    
+|vm_departed                                |117                                  
+|vm_failed                                  |4                                    
+|vm_reservations                            |0                                    
+|vmc_arrived                                |16                                   
+|vmc_departed                               |12                                   
+|vmc_failed                                 |0                                    
+
+The following AIDRSs are attached to this experiment (Cloud TESTCLOUD) :
+|name                |pattern                |type              
+|aidrs_2             |simplenw               |nullworkload      
+
+The following AIs are attached to this experiment (Cloud TESTCLOUD) :
+|name      |type           |sut                                               |cloud_ip        |arrival        |aidrs                                   |uuid
+|ai_33     |nullworkload   |1_x_tinyvm                                        |104.185.137.150 |1372702719     |aidrs_2                                 |B15A7CF1-AE8A-5AC7-844A-9444624D8534
+
+The following VMs are attached to this experiment (Cloud TESTCLOUD) :
+|name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
+|vm_122        |tinyvm              |pico32      |104.185.137.150 |simhostb4                  |SUT                 |ai_33   |aidrs_2    |23B826E1-C849-5E1C-9FB7-5A567BCBB9E7
+
+The following statistics are available on this experiment (Cloud TESTCLOUD) :
+------------------------- OBJECT STORE -----------------------
+|Metric                                               |Value                         
+|Used Memory                                          |44.34M                        
+|Redis Version                                        |2.5.12                        
+|Uptime (in seconds)                                  |11741501                      
+|Total Connections Received                           |6492957                       
+|Total Commands Processed                             |93072683                      
+|Number of Keys                                       |678                           
+------------------------- METRIC STORE -----------------------
+|Metric                                               |Value                         
+|MongoDB Version                                      |2.0.6                         
+|Storage Size                                         |13967917056.0                 
+|Data Size                                            |12135754088.0                 
+|Index Size                                           |503093808                     
+|Average Object Size                                  |6343.89350658                 
+|Collections                                          |62                            
+--------------------- EXPERIMENT OBJECTS ---------------------
+|Object                                               |Count                         
+|VMCs                                                 |4                             
+|HOSTs                                                |20                            
+|VMs                                                  |1                             
+|SVMs                                                 |0                             
+|AIs                                                  |1                             
+|AIDRSs                                               |1                             
+|VMCRSs                                               |0                             
+|FIRSs                                                |0                             
+------------------ EXPERIMENT-WIDE COUNTERS ------------------
+|Counter                                              |Value                         
+|VMC RESERVATIONS                                     |4                             
+|VMCs ARRIVED                                         |16                            
+|VMCs ARRIVING                                        |0                             
+|VMCs DEPARTED                                        |12                            
+|VMCs DEPARTING                                       |0                             
+|VMCs FAILED                                          |0                             
+|HOST RESERVATIONS                                    |0                             
+|HOSTs ARRIVED                                        |0                             
+|HOSTs ARRIVING                                       |0                             
+|HOSTs DEPARTED                                       |0                             
+|HOSTs DEPARTING                                      |0                             
+|HOSTs FAILED                                         |0                             
+|VM RESERVATIONS                                      |1                             
+|VMs ARRIVED                                          |118                           
+|VMs ARRIVING                                         |0                             
+|VMs CAPTURING                                        |0                             
+|VMs DEPARTED                                         |117                           
+|VMs DEPARTING                                        |0                             
+|VMs FAILED                                           |4                             
+|SVM RESERVATIONS                                     |0                             
+|SVMs ARRIVED                                         |0                             
+|SVMs ARRIVING                                        |0                             
+|SVMs DEPARTED                                        |0                             
+|SVMs DEPARTING                                       |0                             
+|SVMs FAILED                                          |0                             
+|AI RESERVATIONS                                      |1                             
+|AIs ARRIVED                                          |31                            
+|AIs ARRIVING                                         |0                             
+|AIs CAPTURING                                        |0                             
+|AIs DEPARTED                                         |30                            
+|AIs DEPARTING                                        |0                             
+|AIs FAILED                                           |2                             
+|AIDRS RESERVATIONS                                   |1                             
+|AIDRSs ARRIVED                                       |2                             
+|AIDRSs ARRIVING                                      |0                             
+|AIDRSs DEPARTED                                      |1                             
+|AIDRSs DEPARTING                                     |0                             
+|AIDRSs FAILED                                        |0                             
+|VMCRS RESERVATIONS                                   |0                             
+|VMCRSs ARRIVED                                       |0                             
+|VMCRSs ARRIVING                                      |0                             
+|VMCRSs DEPARTED                                      |0                             
+|VMCRSs DEPARTING                                     |0                             
+|VMCRSs FAILED                                        |0                             
+|FIRS RESERVATIONS                                    |0                             
+|FIRSs ARRIVED                                        |0                             
+|FIRSs ARRIVING                                       |0                             
+|FIRSs DEPARTED                                       |0                             
+|FIRSs DEPARTING                                      |0                             
+|FIRSs FAILED                                         |0                             
+|EXPERIMENT COUNTER                                   |393                           
+
+ ---------------- VMC-WIDE COUNTERS ----------------
+|35310FEB-1E59-53F1-A37C-0E4387DFF893 (simzone_a) VM RESERVATIONS|0                             
+|DAEF899C-8C95-5B76-BE3F-58349C261E66 (simzone_d) VM RESERVATIONS|0                             
+|8E18B916-CC95-566E-887E-3032BA7F835A (simzone_c) VM RESERVATIONS|0                             
+|3076C295-3106-5ADC-8C71-D21083902D7A (simzone_b) VM RESERVATIONS|1                             
+
+ ---------------- AIDRS-WIDE COUNTERS ----------------
+|86CFEE5E-2911-588B-BD22-2741F64C5DCA (aidrs_2) AI RESERVATIONS|1                             
+

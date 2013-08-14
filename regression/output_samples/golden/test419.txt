@@ -1,0 +1,1 @@
+Usage: vmcrsshow <cloud_name> <identifier> [key = all] 

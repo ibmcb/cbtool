@@ -1,0 +1,23 @@
+The following HOSTs are attached to this experiment (Cloud TESTCLOUD) :
+|name                          |vmc_name            |function                                          |pool         |cloud_hostname              |cloud_ip        
+|host_simhostc0                |simzone_c           |hypervisor                                        |SUT          |simhostc0                   |65.252.3.173    
+|host_simhostc4                |simzone_c           |hypervisor                                        |SUT          |simhostc4                   |77.195.203.23   
+|host_simhostc1                |simzone_c           |hypervisor                                        |SUT          |simhostc1                   |207.69.243.181  
+|host_simhostc2                |simzone_c           |hypervisor                                        |SUT          |simhostc2                   |32.153.29.77    
+|host_simhostc3                |simzone_c           |hypervisor                                        |SUT          |simhostc3                   |215.174.116.17  
+|host_simhostb3                |simzone_b           |hypervisor                                        |SUT          |simhostb3                   |205.183.131.249 
+|host_simhostb0                |simzone_b           |hypervisor                                        |SUT          |simhostb0                   |117.61.50.19    
+|host_simhostb2                |simzone_b           |hypervisor                                        |SUT          |simhostb2                   |8.102.49.206    
+|host_simhostb1                |simzone_b           |hypervisor                                        |SUT          |simhostb1                   |78.128.52.46    
+|host_simhostb4                |simzone_b           |hypervisor                                        |SUT          |simhostb4                   |118.155.201.140 
+|host_simhosta0                |simzone_a           |hypervisor                                        |SUT          |simhosta0                   |47.148.171.251  
+|host_simhosta3                |simzone_a           |hypervisor                                        |SUT          |simhosta3                   |253.180.37.88   
+|host_simhosta1                |simzone_a           |hypervisor                                        |SUT          |simhosta1                   |49.94.134.207   
+|host_simhosta2                |simzone_a           |hypervisor                                        |SUT          |simhosta2                   |52.95.10.177    
+|host_simhosta4                |simzone_a           |hypervisor                                        |SUT          |simhosta4                   |208.22.231.83   
+|host_simhostd3                |simzone_d           |hypervisor                                        |LG           |simhostd3                   |117.156.2.100   
+|host_simhostd4                |simzone_d           |hypervisor                                        |LG           |simhostd4                   |105.45.9.49     
+|host_simhostd1                |simzone_d           |hypervisor                                        |LG           |simhostd1                   |70.231.74.140   
+|host_simhostd2                |simzone_d           |hypervisor                                        |LG           |simhostd2                   |78.10.175.205   
+|host_simhostd0                |simzone_d           |hypervisor                                        |LG           |simhostd0                   |247.200.238.107 
+

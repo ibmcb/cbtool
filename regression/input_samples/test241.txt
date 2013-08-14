@@ -1,0 +1,3 @@
+vmattach TESTCLOUD tinyvm
+vmlist TESTCLOUD
+stats TESTCLOUD

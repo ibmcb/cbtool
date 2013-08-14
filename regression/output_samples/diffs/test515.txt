@@ -1,0 +1,14 @@
+VM object EDDF822D-8A9B-54A0-9D98-760A99124C56 (named "vm_23") could not be attached to this experiment: VM pre-attachment operations failure: Unknown VM role: 'norole'
+|Used Memory                                          |39.79M                        
+|Uptime (in seconds)                                  |13565903                      
+|Total Connections Received                           |6495044                       
+|Total Commands Processed                             |93996474                      
+|Storage Size                                         |16113934320.0                 
+|Data Size                                            |13823377800.0                 
+|Index Size                                           |550432848                     
+|Average Object Size                                  |6601.05638847                 
+|Collections                                          |60                            
+|D30F1B96-9225-51C9-95FF-3355AD659B11 (simzone_d) VM RESERVATIONS|0                             
+|3C091D65-A8D9-5ECF-9C95-36A39D5CAA39 (simzone_a) VM RESERVATIONS|0                             
+|671172C3-2E80-5782-AB0C-C348A586106A (simzone_c) VM RESERVATIONS|0                             
+|96342978-982B-5D60-9FF3-0C0B3F9C41A9 (simzone_b) VM RESERVATIONS|0                             

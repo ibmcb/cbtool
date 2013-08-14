@@ -1,0 +1,1 @@
+Usage: patternshow <cloud_name> <pattern> 

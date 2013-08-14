@@ -1,0 +1,1 @@
+Usage: typealter <cloud_name> <type_name> <attribute> <value> 

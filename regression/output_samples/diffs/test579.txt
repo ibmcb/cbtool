@@ -1,0 +1,14 @@
+AIDRS object 9A5383E7-2829-576E-9AAC-B47A428B43D2 (named "aidrs_1") was sucessfully detached from this experiment.
+|Used Memory                                          |44.31M                        
+|Uptime (in seconds)                                  |13566336                      
+|Total Connections Received                           |6495143                       
+|Total Commands Processed                             |94137998                      
+|Storage Size                                         |16114180080.0                 
+|Data Size                                            |13823594800.0                 
+|Index Size                                           |550481904                     
+|Average Object Size                                  |6600.30586515                 
+|Collections                                          |60                            
+|D30F1B96-9225-51C9-95FF-3355AD659B11 (simzone_d) VM RESERVATIONS|0                             
+|3C091D65-A8D9-5ECF-9C95-36A39D5CAA39 (simzone_a) VM RESERVATIONS|0                             
+|671172C3-2E80-5782-AB0C-C348A586106A (simzone_c) VM RESERVATIONS|0                             
+|96342978-982B-5D60-9FF3-0C0B3F9C41A9 (simzone_b) VM RESERVATIONS|0                             

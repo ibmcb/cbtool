@@ -1,0 +1,2 @@
+typealter TESTCLOUD daytrader load_balancer=true
+typeshow TESTCLOUD daytrader

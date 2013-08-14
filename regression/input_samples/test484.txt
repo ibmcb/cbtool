@@ -1,0 +1,3 @@
+vmcapture vm_2
+vmlist
+stats

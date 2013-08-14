@@ -1,0 +1,1 @@
+Usage: aishow <cloud_name> <identifier> [key = all] 

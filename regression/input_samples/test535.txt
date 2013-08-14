@@ -1,0 +1,4 @@
+aiattach lost
+ailist
+vmlist
+stats

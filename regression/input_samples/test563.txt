@@ -1,0 +1,4 @@
+aidetach random
+ailist
+vmlist
+stats
