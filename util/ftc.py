@@ -259,6 +259,12 @@ class Ftc :
             _xml_templates["vm_template"] += "xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'"
              
         _xml_templates["vm_template"] += ">\n"
+        
+#        if options.hypervisor == "kvm" :
+#            _xml_templates["vm_template"] += "\t<memoryBacking>\n"
+#            _xml_templates["vm_template"] += "\t<locked/>\n"
+#            _xml_templates["vm_template"] += "\t</memoryBacking>\n"
+        
         _xml_templates["vm_template"] += "\t<name>TMPLT_LIBVIRTID</name>\n"
         _xml_templates["vm_template"] += "\t<memory>TMPLT_MEMORY</memory>\n"
         _xml_templates["vm_template"] += "\t<currentMemory>TMPLT_MEMORY</currentMemory>\n"
@@ -1236,7 +1242,7 @@ class Ftc :
         return self.success(_smsg, None)
     
     @trace
-    def migrate(self, tag, hypervisor_ip, destination_ip, protocol, interface, operation):
+    def migrate(self, tag, hypervisor_ip, destination_ip, protocol, interface, operation, mtype):
         lvt_cnt = self.conn_check(hypervisor_ip)
         _imsg =  "Domain " + tag 
         _smsg = _imsg + " was successfully " + operation + "ed."
@@ -1252,7 +1258,15 @@ class Ftc :
             cbdebug("Opening connection to destination uri: " + uri)
             dconn = open(uri)
             cbdebug("Issuing " + operation + " on VM " + tag + " to " + uri + " with interface " + miguri + "...")
-            mresult = dom.migrate(dconn, VIR_MIGRATE_LIVE | VIR_MIGRATE_PERSIST_DEST | VIR_MIGRATE_UNDEFINE_SOURCE, None, miguri, 0)
+            flags = VIR_MIGRATE_LIVE | VIR_MIGRATE_PERSIST_DEST | VIR_MIGRATE_UNDEFINE_SOURCE | VIR_MIGRATE_X_RDMA_PIN_ALL
+            
+            if protocol.lower().count("rdma") :
+                flags |= VIR_MIGRATE_X_RDMA_PIN_ALL
+                
+            if mtype.lower().count("protect") :
+                flags |= VIR_MIGRATE_MC
+                
+            dom.migrate(dconn, flags, None, miguri, 0)
             dom = dconn.lookupByName(tag)
             result["display_port"], result["display_protocol"] = self.get_display_ports(lvt_cnt, dom)
             dconn.close()

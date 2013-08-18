@@ -2299,7 +2299,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 lvirt_conns[vm_uuid].close()
     
             lvirt_conns[vm_uuid] = libvirt.open("qemu+tcp://" + host_ip + "/system")
-            domains[vm_uuid] = lvirt_conns[vm_uuid].lookupByName(vm["cloud_uuid"])
+            domains[vm_uuid] = lvirt_conns[vm_uuid].lookupByName(vm["cloud_vm_uuid"])
             ips[vm_uuid] = vm["cloud_ip"]
             attrs[vm_uuid] = vm
     

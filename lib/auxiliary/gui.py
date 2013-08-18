@@ -1675,11 +1675,6 @@ class GUI(object):
                 failed = active_list(req.cloud_name, "failed")
                 failed.sort(key=self.trackingfunc, reverse = True)
     
-                if len(failed) > 0 :
-                    output += "<h4>" + str(len(failed)) + " Failed Request(s):</h4>" + self.list_objects(req, req.active, failed, link = False, icon = 'icon-remove', label = 'label-important')
-                if len(finished) > 0 :
-                    output += "<h4>" + str(len(finished)) + " Finished Requests(s):</h4>" + self.list_objects(req, req.active, finished, link = False, icon = 'icon-ok', label = '')
-                
                 if len(objs) > 0 :
                     output += "<h4>" + str(len(objs))
                     output += (" Provisioned  " if liststate == "all" else " ")
@@ -1687,6 +1682,12 @@ class GUI(object):
                     output += self.list_objects(req, req.active, objs, icon = False)
                 else :
                     output += self.heromsg + "\n<p><h4>&nbsp;No Objects</h4>"
+                    
+                if len(failed) > 0 :
+                    output += "<h4>" + str(len(failed)) + " Failed Request(s):</h4>" + self.list_objects(req, req.active, failed, link = False, icon = 'icon-remove', label = 'label-important')
+                if len(finished) > 0 :
+                    output += "<h4>" + str(len(finished)) + " Finished Requests(s):</h4>" + self.list_objects(req, req.active, finished, link = False, icon = 'icon-ok', label = '')
+                
             else :
                 output += "BOOTSPINNER&nbsp;Loading Object State..."
                  
