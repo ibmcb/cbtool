@@ -1,0 +1,26 @@
+The following HOSTs reported management metrics:
+Name                        |Age (seconds)
+host_simhostd0              |618          
+host_simhostb0              |618          
+host_simhosta0              |618          
+host_simhostc0              |618          
+host_simhostc1              |618          
+host_simhostd1              |618          
+host_simhosta1              |618          
+host_simhostb1              |618          
+host_simhosta2              |618          
+host_simhostb2              |618          
+host_simhostc2              |618          
+host_simhostd2              |618          
+host_simhostb3              |618          
+host_simhosta3              |618          
+host_simhostd3              |618          
+host_simhostc3              |618          
+host_simhostc4              |618          
+host_simhosta4              |618          
+host_simhostb4              |618          
+host_simhostd4              |618          
+
+The following HOSTs reported runtime (OS) metrics:
+Name                        |Age (seconds)
+

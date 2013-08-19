@@ -1,0 +1,4 @@
+waituntil TESTCLOUD AI =0 decreasing 1
+ailist TESTCLOUD
+vmlist TESTCLOUD
+stats TESTCLOUD

@@ -1,0 +1,4 @@
+ status: Attribute "collect_from_host" was set to "false". Skipping Host OS performance monitor daemon startup
+The attribute "time" on Cloud TESTCLOUD was modified:
+|"sub-attribute" (key)                |old value                          |new value                          
+|experiment_id                        |EXP-01-22-2013-10-43-58-PM-EST     |REGRESSION_A                       

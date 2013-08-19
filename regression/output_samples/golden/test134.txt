@@ -1,0 +1,1 @@
+Usage: vmcapture <cloud_name> <identifier> [vmcrs = none] [mode] 

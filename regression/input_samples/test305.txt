@@ -1,0 +1,7 @@
+aiattach TESTCLOUD daytrader default default none none pause_all_vms_booted async
+waitfor TESTCLOUD 5s
+msgpub TESTCLOUD VM staging ai_26;continue;something
+waitfor TESTCLOUD 5s
+ailist TESTCLOUD
+vmlist TESTCLOUD
+stats TESTCLOUD

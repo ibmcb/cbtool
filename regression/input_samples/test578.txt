@@ -1,0 +1,4 @@
+waituntil AI =0 decreasing 1
+ailist
+vmlist
+stats

@@ -1,0 +1,4 @@
+aiattach coremark
+ailist
+vmlist
+stats

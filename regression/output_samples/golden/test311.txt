@@ -1,0 +1,113 @@
+The attribute "sut" on daytrader AI was modified:
+|attribute                              |old value                          |new value                          
+|daytrader_sut                          |client_daytrader->was->db2         |client_daytrader->was->willfail    
+ status: Waiting for vm_116 (cloud-assigned uuid B4CBF881-2748-5F46-9024-7ECE1F8DDC1C) to start...
+ status: Waiting for vm_115 (cloud-assigned uuid E8CD55FA-B204-56A9-922B-5315BE1D7765) to start...
+ status: Waiting for vm_117 (cloud-assigned uuid 7BBEFA38-93BB-5072-8C25-BDC6849C8592) to start...
+ status: Waiting for vm_118 (cloud-assigned uuid F7A85DB6-11DE-550A-871A-ECD899C11ED6) to start...
+ status: Trying to establish network connectivity to vm_115 (cloud-assigned uuid E8CD55FA-B204-56A9-922B-5315BE1D7765), on IP address 80.159.213.250...
+ status: Trying to establish network connectivity to vm_117 (cloud-assigned uuid 7BBEFA38-93BB-5072-8C25-BDC6849C8592), on IP address 12.178.234.160...
+ status: Trying to establish network connectivity to vm_116 (cloud-assigned uuid B4CBF881-2748-5F46-9024-7ECE1F8DDC1C), on IP address 126.9.62.219...
+ status: Trying to establish network connectivity to vm_118 (cloud-assigned uuid F7A85DB6-11DE-550A-871A-ECD899C11ED6), on IP address 120.39.39.70...
+ status: Bypassing the sending of a copy of the code tree to vm_117 (12.178.234.160)...
+ status: Bypassing the sending of a copy of the code tree to vm_116 (126.9.62.219)...
+ status: Bypassing the sending of a copy of the code tree to vm_118 (120.39.39.70)...
+ status: Bypassing the sending of a copy of the code tree to vm_115 (80.159.213.250)...
+ status: vm_119 (cloud-assigned uuid BF08F977-80B4-55BA-9D90-EAB49343B34A) could not be created on SimCloud "TESTCLOUD" : Failed to create VM image (The VM creation was rolled back)
+ status: Sending a termination request for vm_119 (cloud-assigned uuid BF08F977-80B4-55BA-9D90-EAB49343B34A)....
+ status: Sending a termination request for vm_116 (cloud-assigned uuid B4CBF881-2748-5F46-9024-7ECE1F8DDC1C)....
+ status: Sending a termination request for vm_117 (cloud-assigned uuid 7BBEFA38-93BB-5072-8C25-BDC6849C8592)....
+ status: Sending a termination request for vm_115 (cloud-assigned uuid E8CD55FA-B204-56A9-922B-5315BE1D7765)....
+ status: Sending a termination request for vm_118 (cloud-assigned uuid F7A85DB6-11DE-550A-871A-ECD899C11ED6)....
+AI object 55B5E67E-97D1-5750-B3F1-40C26A8532EB (named "ai_30") could not be attached to this experiment: AI pre-attachment operations failure: Parallel object operation failure: VM object 7C6BF430-A707-51EA-BB33-DBADC2635812 (named "vm_119") could not be attached to this experiment: vm_119 (cloud-assigned uuid BF08F977-80B4-55BA-9D90-EAB49343B34A) could not be created on SimCloud "TESTCLOUD" : Failed to create VM image (The VM creation was rolled back) A rollback might be needed (only for VMs).
+The following AIs are attached to this experiment (Cloud TESTCLOUD) :
+No objects available.
+The following VMs are attached to this experiment (Cloud TESTCLOUD) :
+No objects available.
+The following statistics are available on this experiment (Cloud TESTCLOUD) :
+------------------------- OBJECT STORE -----------------------
+|Metric                                               |Value                         
+|Used Memory                                          |5.67M                         
+|Redis Version                                        |2.6.7                         
+|Uptime (in seconds)                                  |459783                        
+|Total Connections Received                           |2877                          
+|Total Commands Processed                             |4394911                       
+|Number of Keys                                       |614                           
+------------------------- METRIC STORE -----------------------
+|Metric                                               |Value                         
+|MongoDB Version                                      |2.2.2                         
+|Storage Size                                         |1179648                       
+|Data Size                                            |309992                        
+|Index Size                                           |327040                        
+|Average Object Size                                  |495.9872                      
+|Collections                                          |14                            
+--------------------- EXPERIMENT OBJECTS ---------------------
+|Object                                               |Count                         
+|VMCs                                                 |4                             
+|HOSTs                                                |20                            
+|VMs                                                  |0                             
+|SVMs                                                 |0                             
+|AIs                                                  |0                             
+|AIDRSs                                               |0                             
+|VMCRSs                                               |0                             
+|FIRSs                                                |0                             
+------------------ EXPERIMENT-WIDE COUNTERS ------------------
+|Counter                                              |Value                         
+|VMC RESERVATIONS                                     |4                             
+|VMCs ARRIVED                                         |16                            
+|VMCs ARRIVING                                        |0                             
+|VMCs DEPARTED                                        |12                            
+|VMCs DEPARTING                                       |0                             
+|VMCs FAILED                                          |0                             
+|HOST RESERVATIONS                                    |0                             
+|HOSTs ARRIVED                                        |0                             
+|HOSTs ARRIVING                                       |0                             
+|HOSTs DEPARTED                                       |0                             
+|HOSTs DEPARTING                                      |0                             
+|HOSTs FAILED                                         |0                             
+|VM RESERVATIONS                                      |0                             
+|VMs ARRIVED                                          |115                           
+|VMs ARRIVING                                         |0                             
+|VMs CAPTURING                                        |0                             
+|VMs DEPARTED                                         |115                           
+|VMs DEPARTING                                        |0                             
+|VMs FAILED                                           |4                             
+|SVM RESERVATIONS                                     |0                             
+|SVMs ARRIVED                                         |0                             
+|SVMs ARRIVING                                        |0                             
+|SVMs DEPARTED                                        |0                             
+|SVMs DEPARTING                                       |0                             
+|SVMs FAILED                                          |0                             
+|AI RESERVATIONS                                      |0                             
+|AIs ARRIVED                                          |28                            
+|AIs ARRIVING                                         |0                             
+|AIs CAPTURING                                        |0                             
+|AIs DEPARTED                                         |28                            
+|AIs DEPARTING                                        |0                             
+|AIs FAILED                                           |2                             
+|AIDRS RESERVATIONS                                   |0                             
+|AIDRSs ARRIVED                                       |0                             
+|AIDRSs ARRIVING                                      |0                             
+|AIDRSs DEPARTED                                      |0                             
+|AIDRSs DEPARTING                                     |0                             
+|AIDRSs FAILED                                        |0                             
+|VMCRS RESERVATIONS                                   |0                             
+|VMCRSs ARRIVED                                       |0                             
+|VMCRSs ARRIVING                                      |0                             
+|VMCRSs DEPARTED                                      |0                             
+|VMCRSs DEPARTING                                     |0                             
+|VMCRSs FAILED                                        |0                             
+|FIRS RESERVATIONS                                    |0                             
+|FIRSs ARRIVED                                        |0                             
+|FIRSs ARRIVING                                       |0                             
+|FIRSs DEPARTED                                       |0                             
+|FIRSs DEPARTING                                      |0                             
+|FIRSs FAILED                                         |0                             
+|EXPERIMENT COUNTER                                   |380                           
+
+ ---------------- VMC-WIDE COUNTERS ----------------
+|66C80F72-DB30-5A63-B169-31C6A86D021F (simzone_c) VM RESERVATIONS|0                             
+|D3E36C93-1427-5D86-BC91-CB0FA4A8E918 (simzone_d) VM RESERVATIONS|0                             
+|FEBD66A7-E012-534C-A431-00CE123E50EF (simzone_a) VM RESERVATIONS|0                             
+|9859398A-822B-50DC-8C37-7E3C5CBAE602 (simzone_b) VM RESERVATIONS|0                             
+

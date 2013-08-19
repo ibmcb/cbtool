@@ -1,0 +1,2 @@
+monextract TESTCLOUD VM management
+shell TESTCLOUD cat ~/cloudbench/data/REGRESSION_B/VM*man*REGRESSION*

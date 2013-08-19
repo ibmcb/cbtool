@@ -1,0 +1,1 @@
+Usage: aidrsdetach <cloud_name> <identifier> [force = False] [mode] 

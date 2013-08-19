@@ -1,0 +1,131 @@
+ status: Going to change the state of all VMs for AI ai_3 to the "suspend" state.
+ status: All VMs on the AI to changed to the "suspend" state successfully.
+All VMs on the AI to changed to the "suspend" state successfully.
+The following state values are available for the objects on this experiment (Cloud TESTCLOUD) :
+------------------ PER-OBJECT STATE (CLOUD TESTCLOUD)  -----------------
+|Object Type    |Object Name    |Object UUID                             |State                     
+|VMC            |simzone_c      |66C80F72-DB30-5A63-B169-31C6A86D021F    |attached                  
+|VMC            |simzone_d      |D3E36C93-1427-5D86-BC91-CB0FA4A8E918    |attached                  
+|VMC            |simzone_a      |FEBD66A7-E012-534C-A431-00CE123E50EF    |attached                  
+|VMC            |simzone_b      |9859398A-822B-50DC-8C37-7E3C5CBAE602    |attached                  
+|HOST           |host_simhostd3 |1A4FE06F-2D64-50F8-9E44-767CB15DF9B8    |attached                  
+|HOST           |host_simhosta4 |9A471538-B917-5772-892A-553EF9BD1EBE    |attached                  
+|HOST           |host_simhostc1 |5884403C-7D7F-55A4-B3F1-A3B44814DE51    |attached                  
+|HOST           |host_simhostc0 |EFC3B1B9-78BA-5762-A9D8-2059948E605B    |attached                  
+|HOST           |host_simhostb0 |EB861758-B75B-5DAB-9B65-66358822FA77    |attached                  
+|HOST           |host_simhostb3 |46873162-FDC8-5B4E-8F2B-B00F914CDD3F    |attached                  
+|HOST           |host_simhostb1 |EBA7C915-A2C9-507E-AAE5-E19310A3A7BE    |attached                  
+|HOST           |host_simhostb2 |3D69070F-1927-5197-8CDF-5938FAE4FF6A    |attached                  
+|HOST           |host_simhosta0 |20DDC1CF-0179-558C-8979-0A950D3F939F    |attached                  
+|HOST           |host_simhostd1 |A03C5474-A879-5839-973F-DB17CC224BD1    |attached                  
+|HOST           |host_simhostd2 |EF5515B2-4727-563A-9429-8D14EE3427E4    |attached                  
+|HOST           |host_simhostd0 |96849757-4636-5236-8888-E184962B96D3    |attached                  
+|HOST           |host_simhosta3 |86D27E99-2BBC-5CD5-92CE-C55AFF94812F    |attached                  
+|HOST           |host_simhostc2 |C1FD2E87-BECB-594B-9B1C-1DF70820FF89    |attached                  
+|HOST           |host_simhostc4 |264F21BA-D01A-5303-BA54-83AC5777DE50    |attached                  
+|HOST           |host_simhostb4 |6B4624DB-BFCB-52B5-882D-8F335BB5AF36    |attached                  
+|HOST           |host_simhostc3 |20ACD221-936C-5DD4-84DC-4C426C7C0E6C    |attached                  
+|HOST           |host_simhostd4 |A16DAFCC-83E1-59F4-A02F-CAE95E402A03    |attached                  
+|HOST           |host_simhosta1 |1F04AB11-D4B1-56F7-BCFA-B930024F794B    |attached                  
+|HOST           |host_simhosta2 |85236339-29FD-523B-9FC6-411C32CA2D29    |attached                  
+|VM             |vm_35          |7EA11E39-05B7-55AC-9DCF-859A3ED6B774    |suspend                   
+|VM             |vm_33          |B3C70489-FAA9-51AC-93D3-4CD8824F4C4E    |suspend                   
+|VM             |vm_31          |021EE317-8126-559D-BAB9-508C8FCAA455    |attached                  
+|VM             |vm_26          |30997E1D-3C8F-591B-9600-D630EDEBB409    |attached                  
+|VM             |vm_27          |3496F51C-E28F-5CC4-AC3F-62F3E6B79806    |attached                  
+|VM             |vm_34          |C5A52973-885F-5E10-BB14-312B7C7A42EC    |suspend                   
+|VM             |vm_30          |7A82C32D-A37F-50C0-B152-C863B3610FC3    |attached                  
+|VM             |vm_32          |B4FE59B6-A264-5AF7-8329-3BBD4F61B272    |attached                  
+|VM             |vm_28          |EE031C01-DA7D-546F-BDCE-41B12E6574D2    |attached                  
+|VM             |vm_29          |C84596CB-4BFC-5D2C-8EBE-349DBB1461B5    |attached                  
+|AI             |ai_1           |DCCEDC62-D56F-5314-B057-4A7A21EF2EE0    |attached                  
+|AI             |ai_2           |DD24BFAF-E519-598C-BE0A-5441B4724171    |attached                  
+|AI             |ai_3           |CECA49F8-7F0A-5A2A-88AB-6FBD3C13A188    |suspend                   
+
+The following statistics are available on this experiment (Cloud TESTCLOUD) :
+------------------------- OBJECT STORE -----------------------
+|Metric                                               |Value                         
+|Used Memory                                          |2.31M                         
+|Redis Version                                        |2.6.7                         
+|Uptime (in seconds)                                  |459508                        
+|Total Connections Received                           |2812                          
+|Total Commands Processed                             |4274408                       
+|Number of Keys                                       |457                           
+------------------------- METRIC STORE -----------------------
+|Metric                                               |Value                         
+|MongoDB Version                                      |2.2.2                         
+|Storage Size                                         |720896                        
+|Data Size                                            |165236                        
+|Index Size                                           |294336                        
+|Average Object Size                                  |398.159036145                 
+|Collections                                          |14                            
+--------------------- EXPERIMENT OBJECTS ---------------------
+|Object                                               |Count                         
+|VMCs                                                 |4                             
+|HOSTs                                                |20                            
+|VMs                                                  |10                            
+|SVMs                                                 |0                             
+|AIs                                                  |3                             
+|AIDRSs                                               |0                             
+|VMCRSs                                               |0                             
+|FIRSs                                                |0                             
+------------------ EXPERIMENT-WIDE COUNTERS ------------------
+|Counter                                              |Value                         
+|VMC RESERVATIONS                                     |4                             
+|VMCs ARRIVED                                         |16                            
+|VMCs ARRIVING                                        |0                             
+|VMCs DEPARTED                                        |12                            
+|VMCs DEPARTING                                       |0                             
+|VMCs FAILED                                          |0                             
+|HOST RESERVATIONS                                    |0                             
+|HOSTs ARRIVED                                        |0                             
+|HOSTs ARRIVING                                       |0                             
+|HOSTs DEPARTED                                       |0                             
+|HOSTs DEPARTING                                      |0                             
+|HOSTs FAILED                                         |0                             
+|VM RESERVATIONS                                      |10                            
+|VMs ARRIVED                                          |32                            
+|VMs ARRIVING                                         |0                             
+|VMs CAPTURING                                        |0                             
+|VMs DEPARTED                                         |22                            
+|VMs DEPARTING                                        |0                             
+|VMs FAILED                                           |3                             
+|SVM RESERVATIONS                                     |0                             
+|SVMs ARRIVED                                         |0                             
+|SVMs ARRIVING                                        |0                             
+|SVMs DEPARTED                                        |0                             
+|SVMs DEPARTING                                       |0                             
+|SVMs FAILED                                          |0                             
+|AI RESERVATIONS                                      |3                             
+|AIs ARRIVED                                          |3                             
+|AIs ARRIVING                                         |0                             
+|AIs CAPTURING                                        |0                             
+|AIs DEPARTED                                         |0                             
+|AIs DEPARTING                                        |0                             
+|AIs FAILED                                           |0                             
+|AIDRS RESERVATIONS                                   |0                             
+|AIDRSs ARRIVED                                       |0                             
+|AIDRSs ARRIVING                                      |0                             
+|AIDRSs DEPARTED                                      |0                             
+|AIDRSs DEPARTING                                     |0                             
+|AIDRSs FAILED                                        |0                             
+|VMCRS RESERVATIONS                                   |0                             
+|VMCRSs ARRIVED                                       |0                             
+|VMCRSs ARRIVING                                      |0                             
+|VMCRSs DEPARTED                                      |0                             
+|VMCRSs DEPARTING                                     |0                             
+|VMCRSs FAILED                                        |0                             
+|FIRS RESERVATIONS                                    |0                             
+|FIRSs ARRIVED                                        |0                             
+|FIRSs ARRIVING                                       |0                             
+|FIRSs DEPARTED                                       |0                             
+|FIRSs DEPARTING                                      |0                             
+|FIRSs FAILED                                         |0                             
+|EXPERIMENT COUNTER                                   |148                           
+
+ ---------------- VMC-WIDE COUNTERS ----------------
+|66C80F72-DB30-5A63-B169-31C6A86D021F (simzone_c) VM RESERVATIONS|3                             
+|D3E36C93-1427-5D86-BC91-CB0FA4A8E918 (simzone_d) VM RESERVATIONS|2                             
+|FEBD66A7-E012-534C-A431-00CE123E50EF (simzone_a) VM RESERVATIONS|1                             
+|9859398A-822B-50DC-8C37-7E3C5CBAE602 (simzone_b) VM RESERVATIONS|4                             
+

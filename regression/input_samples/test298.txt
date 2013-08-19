@@ -1,0 +1,4 @@
+aidetach TESTCLOUD oldest
+ailist TESTCLOUD
+vmlist TESTCLOUD
+stats TESTCLOUD

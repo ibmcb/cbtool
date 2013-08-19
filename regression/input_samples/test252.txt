@@ -1,0 +1,3 @@
+vmdetach TESTCLOUD oldest
+vmlist TESTCLOUD
+stats TESTCLOUD

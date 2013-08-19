@@ -1,0 +1,49 @@
+ status: No samples of runtime_os metrics for all HOSTs were found (the file /home/cbuser/cloudbench/lib/auxiliary//../../data/REGRESSION_B/HOST_runtime_os_REGRESSION_B.csv will be empty).
+Monitor extraction success. HOST runtime OS performance data samples were written to the file /home/cbuser/cloudbench/lib/auxiliary//../../data/REGRESSION_B/HOST_runtime_os_REGRESSION_B.csv
+running shell command: "cat ~/cloudbench/data/REGRESSION_B/HOST_runtime_os_*REGRESSION*"....
+stdout:
+ #field:column #
+#time:1
+#time_h:2
+#uuid:3
+#name:4
+#cpu_speed:5
+#cores:6
+#cpu_num:7
+#proc_total:8
+#proc_run:9
+#cpu_idle:10
+#cpu_aidle:11
+#cpu_user:12
+#cpu_system:13
+#cpu_wio:14
+#cpu_nice:15
+#mem_total:16
+#mem_free:17
+#mem_cached:18
+#mem_buffers:19
+#mem_shared:20
+#swap_total:21
+#swap_free:22
+#swap_procs_running:23
+#swap_in_flight:24
+#swap_procs_blocked:25
+#swap_KB_read:26
+#swap_ios_read:27
+#swap_KB_write:28
+#swap_ios_write:29
+#pkts_in:30
+#bytes_in:31
+#pkts_out:32
+#bytes_out:33
+#disk_total:34
+#disk_free:35
+#ds_in_flight:36
+#ds_KB_read:37
+#ds_ios_read:38
+#ds_KB_write:39
+#ds_ios_write:40
+
+time,time_h,uuid,name,cpu_speed,cores,cpu_num,proc_total,proc_run,cpu_idle,cpu_aidle,cpu_user,cpu_system,cpu_wio,cpu_nice,mem_total,mem_free,mem_cached,mem_buffers,mem_shared,swap_total,swap_free,swap_procs_running,swap_in_flight,swap_procs_blocked,swap_KB_read,swap_ios_read,swap_KB_write,swap_ios_write,pkts_in,bytes_in,pkts_out,bytes_out,disk_total,disk_free,ds_in_flight,ds_KB_read,ds_ios_read,ds_KB_write,ds_ios_write
+
+

@@ -1,0 +1,2 @@
+monextract VM os
+shell cat ~/cloudbench/data/REGRESSION_B/VM_runtime_os_*REGRESSION*

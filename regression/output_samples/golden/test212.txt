@@ -1,0 +1,23 @@
+The HOST object host_simhosta3, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
+|attribute (HOST object key)               |value                                
+|arrival                                   |1358912009                           
+|cloud_hostname                            |simhosta3                            
+|cloud_ip                                  |80.213.204.205                       
+|cloud_uuid                                |86D27E99-2BBC-5CD5-92CE-C55AFF94812F 
+|cores                                     |16                                   
+|counter                                   |85                                   
+|function                                  |hypervisor                           
+|memory                                    |131072                               
+|mgt_001_provisioning_request_originated   |1358912008                           
+|mgt_002_provisioning_request_sent         |1                                    
+|mgt_003_provisioning_request_completed    |0                                    
+|model                                     |sim                                  
+|name                                      |host_simhosta3                       
+|notification                              |False                                
+|pool                                      |SUT                                  
+|state                                     |attached                             
+|username                                  |cbuser                               
+|uuid                                      |86D27E99-2BBC-5CD5-92CE-C55AFF94812F 
+|vmc                                       |FEBD66A7-E012-534C-A431-00CE123E50EF 
+|vmc_name                                  |simzone_a                            
+

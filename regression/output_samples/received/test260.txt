@@ -1,0 +1,4 @@
+The following AIs are attached to this experiment (Cloud TESTCLOUD) :
+|name      |type           |sut                                               |cloud_ip        |arrival        |aidrs                                   |uuid
+|ai_1      |daytrader      |1_x_client_daytrader->1_x_was->1_x_db2            |241.250.95.102  |1358912170     |none                                    |DCCEDC62-D56F-5314-B057-4A7A21EF2EE0
+

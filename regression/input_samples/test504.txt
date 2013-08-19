@@ -1,0 +1,3 @@
+vmrunstate vm_3 attached
+stateshow
+stats

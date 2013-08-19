@@ -1,0 +1,151 @@
+ status: Waiting for vm_61 (cloud-assigned uuid 084557AF-1886-5DE0-B60A-10BCA6AEC8A1) to start...
+ status: Waiting for vm_64 (cloud-assigned uuid C907C6DF-5430-5871-8868-17F4965B9867) to start...
+ status: Waiting for vm_62 (cloud-assigned uuid AAB1D975-D58A-52FB-B302-49994FD135D1) to start...
+ status: Waiting for vm_63 (cloud-assigned uuid FB0A7F33-A576-5983-B514-AE1F9F8514E4) to start...
+ status: Trying to establish network connectivity to vm_63 (cloud-assigned uuid FB0A7F33-A576-5983-B514-AE1F9F8514E4), on IP address 32.74.70.10...
+ status: Trying to establish network connectivity to vm_62 (cloud-assigned uuid AAB1D975-D58A-52FB-B302-49994FD135D1), on IP address 219.206.192.90...
+ status: Trying to establish network connectivity to vm_64 (cloud-assigned uuid C907C6DF-5430-5871-8868-17F4965B9867), on IP address 160.94.104.59...
+ status: Trying to establish network connectivity to vm_61 (cloud-assigned uuid 084557AF-1886-5DE0-B60A-10BCA6AEC8A1), on IP address 192.201.187.120...
+ status: Bypassing the sending of a copy of the code tree to vm_64 (160.94.104.59)...
+ status: Bypassing the sending of a copy of the code tree to vm_61 (192.201.187.120)...
+ status: Bypassing the sending of a copy of the code tree to vm_62 (219.206.192.90)...
+ status: Bypassing the sending of a copy of the code tree to vm_63 (32.74.70.10)...
+ status: Waiting for vm_65 (cloud-assigned uuid 616EDCFF-ABF9-5C3F-BDAB-24342C0304F8) to start...
+ status: Trying to establish network connectivity to vm_65 (cloud-assigned uuid 616EDCFF-ABF9-5C3F-BDAB-24342C0304F8), on IP address 29.22.190.28...
+ status: Bypassing the sending of a copy of the code tree to vm_65 (29.22.190.28)...
+ status: Bypassing generic VM post_boot configuration.
+ status: Bypassing application-specific "setup" operations
+AI object C536D81E-D85D-57E3-A40C-C6B2A7AD05C6 (named "ai_12") sucessfully attached to this experiment. It is ssh-accessible at the IP address 192.201.187.120 (084557AF-1886-5DE0-B60A-10BCA6AEC8A1.simcloud.com).
+The following AIs are attached to this experiment (Cloud TESTCLOUD) :
+|name      |type           |sut                                               |cloud_ip        |arrival        |aidrs                                   |uuid
+|ai_3      |daytrader      |1_x_client_daytrader->1_x_was->1_x_db2            |141.98.169.121  |1358912185     |none                                    |CECA49F8-7F0A-5A2A-88AB-6FBD3C13A188
+|ai_4      |daytrader      |1_x_client_daytrader->1_x_was->1_x_db2            |20.62.246.201   |1358912222     |none                                    |AA2AF411-5127-5D04-935C-861E9991D9CD
+|ai_5      |netperf        |1_x_netclient->1_x_netserver                      |88.182.228.241  |1358912240     |none                                    |22D578AD-237A-5FD0-BF2E-8526B27365A8
+|ai_8      |daytrader      |1_x_client_daytrader->1_x_lb->2_x_was->1_x_db2    |120.99.243.188  |1358912324     |none                                    |DA622B54-93C1-584C-A13C-A7741CB76ADD
+|ai_9      |daytrader      |1_x_client_daytrader->1_x_was->1_x_db2            |88.118.248.29   |1358912327     |none                                    |DA3C582D-82E4-5D44-87E8-6543B22AB272
+|ai_10     |daytrader      |1_x_client_daytrader->1_x_was->1_x_db2            |112.27.118.248  |1358912330     |none                                    |CEE9035A-0ECD-5ACA-AC70-99DCCEA9A76C
+|ai_11     |daytrader      |1_x_client_daytrader->1_x_was->1_x_db2            |127.64.103.51   |1358912333     |none                                    |E5875E74-EFDB-546D-80B6-D5BE50F7D53B
+|ai_12     |daytrader      |1_x_client_daytrader->1_x_lb->2_x_was->1_x_db2    |192.201.187.120 |1358912338     |none                                    |C536D81E-D85D-57E3-A40C-C6B2A7AD05C6
+
+The following VMs are attached to this experiment (Cloud TESTCLOUD) :
+|name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |svm_stub_vmc     |uuid
+|vm_33         |client_daytrader    |nano32      |141.98.169.121  |simhostd1                  |LG                  |ai_3    |none       |none             |B3C70489-FAA9-51AC-93D3-4CD8824F4C4E
+|vm_35         |db2                 |copper32    |6.33.25.203     |simhostc2                  |SUT                 |ai_3    |none       |none             |7EA11E39-05B7-55AC-9DCF-859A3ED6B774
+|vm_34         |was                 |iron32      |122.233.44.250  |simhostb1                  |SUT                 |ai_3    |none       |none             |C5A52973-885F-5E10-BB14-312B7C7A42EC
+|vm_36         |client_daytrader    |nano32      |20.62.246.201   |simhostd0                  |LG                  |ai_4    |none       |none             |5B0F2AA5-F9AD-59EA-BC73-1158F3CE045A
+|vm_38         |db2                 |copper32    |94.33.53.77     |simhostc0                  |SUT                 |ai_4    |none       |none             |1D4ACB1F-496B-5AD7-AC7B-F48747946C30
+|vm_37         |was                 |iron32      |209.154.30.29   |simhosta0                  |SUT                 |ai_4    |none       |none             |61D04C3E-05A5-58A9-90A7-0828A592F247
+|vm_39         |netclient           |platinum64  |88.182.228.241  |simhosta1                  |SUT                 |ai_5    |none       |none             |20413B55-E05D-5FE7-BE95-75BB5E3B3EAA
+|vm_40         |netserver           |iron32      |179.252.55.59   |simhostb4                  |SUT                 |ai_5    |none       |none             |E2836789-BFD8-56CC-89C2-515EDC558C26
+|vm_48         |lb                  |iron32      |10.177.191.53   |simhostb2                  |SUT                 |ai_8    |none       |none             |83D03AFF-D1C0-5B18-84FA-8AC0F0E4E141
+|vm_47         |client_daytrader    |nano32      |120.99.243.188  |simhostd3                  |LG                  |ai_8    |none       |none             |4ABA46E4-AA10-5094-BBA9-0F2D7DF457B0
+|vm_50         |was                 |iron32      |239.137.217.196 |simhostc1                  |SUT                 |ai_8    |none       |none             |A8F030D6-28EE-598F-920B-BFB308B2FFA4
+|vm_49         |was                 |iron32      |38.98.80.56     |simhostc0                  |SUT                 |ai_8    |none       |none             |AB15F359-12EB-529E-ABC2-5A1D520E4AA5
+|vm_51         |db2                 |gold32      |193.150.194.155 |simhosta3                  |SUT                 |ai_8    |none       |none             |9F49A85B-F382-56DD-8C4A-A9FF15894397
+|vm_52         |client_daytrader    |nano32      |88.118.248.29   |simhostd3                  |LG                  |ai_9    |none       |none             |68465B66-D241-5522-878F-F9C38DFDFBF2
+|vm_53         |was                 |iron32      |79.105.170.135  |simhostc0                  |SUT                 |ai_9    |none       |none             |7DDD2C72-498A-5216-9AFF-F46656E5DB8C
+|vm_54         |db2                 |copper32    |105.2.132.123   |simhostc4                  |SUT                 |ai_9    |none       |none             |870B0B43-85AC-5DEC-A725-5F057A1DF9F6
+|vm_55         |client_daytrader    |nano32      |112.27.118.248  |simhostd3                  |LG                  |ai_10   |none       |none             |B3147FAC-13F6-57E8-B1E3-8D6C2C9F6C71
+|vm_56         |was                 |iron32      |24.149.93.124   |simhostc0                  |SUT                 |ai_10   |none       |none             |457C0312-7579-52BF-A901-7349AE435981
+|vm_57         |db2                 |copper32    |44.239.140.109  |simhostb3                  |SUT                 |ai_10   |none       |none             |B563AF56-FD90-5545-AEE4-A1E42A62E40A
+|vm_58         |client_daytrader    |nano32      |127.64.103.51   |simhostd3                  |LG                  |ai_11   |none       |none             |6EC08E6D-952F-5A24-97AB-11CC49E55BFB
+|vm_59         |was                 |iron32      |118.3.19.218    |simhostc1                  |SUT                 |ai_11   |none       |none             |BD51BD8C-EDFC-5847-8357-85D22499CD94
+|vm_60         |db2                 |copper32    |198.69.239.253  |simhostc1                  |SUT                 |ai_11   |none       |none             |F6FD7741-9047-5CDF-870F-AAE9508CAEB4
+|vm_61         |client_daytrader    |nano32      |192.201.187.120 |simhostd0                  |LG                  |ai_12   |none       |none             |44380C9F-1399-55DD-954F-7CC55A49965C
+|vm_63         |was                 |iron32      |32.74.70.10     |simhostb4                  |SUT                 |ai_12   |none       |none             |83A272D4-B991-5B5C-8C63-D3F38CB7E013
+|vm_62         |lb                  |iron32      |219.206.192.90  |simhostc3                  |SUT                 |ai_12   |none       |none             |F799F109-87B5-508C-9CEC-29B6FF051041
+|vm_64         |was                 |iron32      |160.94.104.59   |simhosta0                  |SUT                 |ai_12   |none       |none             |1AD4E8D6-4012-5192-9EC2-1462A5E0F97F
+|vm_65         |db2                 |gold32      |29.22.190.28    |simhosta3                  |SUT                 |ai_12   |none       |none             |9B158893-FD0B-515E-B819-F7556B3BDD5C
+
+The AI object ai_12, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
+|attribute (AI object key)               |value                                
+|load_balancer                           |true                                 
+|sut                                     |1_x_client_daytrader->1_x_lb->2_x_was->1_x_db2
+
+The following statistics are available on this experiment (Cloud TESTCLOUD) :
+------------------------- OBJECT STORE -----------------------
+|Metric                                               |Value                         
+|Used Memory                                          |3.57M                         
+|Redis Version                                        |2.6.7                         
+|Uptime (in seconds)                                  |459656                        
+|Total Connections Received                           |2820                          
+|Total Commands Processed                             |4311906                       
+|Number of Keys                                       |654                           
+------------------------- METRIC STORE -----------------------
+|Metric                                               |Value                         
+|MongoDB Version                                      |2.2.2                         
+|Storage Size                                         |950272                        
+|Data Size                                            |238524                        
+|Index Size                                           |294336                        
+|Average Object Size                                  |450.045283019                 
+|Collections                                          |14                            
+--------------------- EXPERIMENT OBJECTS ---------------------
+|Object                                               |Count                         
+|VMCs                                                 |4                             
+|HOSTs                                                |20                            
+|VMs                                                  |27                            
+|SVMs                                                 |0                             
+|AIs                                                  |8                             
+|AIDRSs                                               |0                             
+|VMCRSs                                               |0                             
+|FIRSs                                                |0                             
+------------------ EXPERIMENT-WIDE COUNTERS ------------------
+|Counter                                              |Value                         
+|VMC RESERVATIONS                                     |4                             
+|VMCs ARRIVED                                         |16                            
+|VMCs ARRIVING                                        |0                             
+|VMCs DEPARTED                                        |12                            
+|VMCs DEPARTING                                       |0                             
+|VMCs FAILED                                          |0                             
+|HOST RESERVATIONS                                    |0                             
+|HOSTs ARRIVED                                        |0                             
+|HOSTs ARRIVING                                       |0                             
+|HOSTs DEPARTED                                       |0                             
+|HOSTs DEPARTING                                      |0                             
+|HOSTs FAILED                                         |0                             
+|VM RESERVATIONS                                      |27                            
+|VMs ARRIVED                                          |62                            
+|VMs ARRIVING                                         |0                             
+|VMs CAPTURING                                        |0                             
+|VMs DEPARTED                                         |35                            
+|VMs DEPARTING                                        |0                             
+|VMs FAILED                                           |3                             
+|SVM RESERVATIONS                                     |0                             
+|SVMs ARRIVED                                         |0                             
+|SVMs ARRIVING                                        |0                             
+|SVMs DEPARTED                                        |0                             
+|SVMs DEPARTING                                       |0                             
+|SVMs FAILED                                          |0                             
+|AI RESERVATIONS                                      |8                             
+|AIs ARRIVED                                          |12                            
+|AIs ARRIVING                                         |0                             
+|AIs CAPTURING                                        |0                             
+|AIs DEPARTED                                         |4                             
+|AIs DEPARTING                                        |0                             
+|AIs FAILED                                           |0                             
+|AIDRS RESERVATIONS                                   |0                             
+|AIDRSs ARRIVED                                       |0                             
+|AIDRSs ARRIVING                                      |0                             
+|AIDRSs DEPARTED                                      |0                             
+|AIDRSs DEPARTING                                     |0                             
+|AIDRSs FAILED                                        |0                             
+|VMCRS RESERVATIONS                                   |0                             
+|VMCRSs ARRIVED                                       |0                             
+|VMCRSs ARRIVING                                      |0                             
+|VMCRSs DEPARTED                                      |0                             
+|VMCRSs DEPARTING                                     |0                             
+|VMCRSs FAILED                                        |0                             
+|FIRS RESERVATIONS                                    |0                             
+|FIRSs ARRIVED                                        |0                             
+|FIRSs ARRIVING                                       |0                             
+|FIRSs DEPARTED                                       |0                             
+|FIRSs DEPARTING                                      |0                             
+|FIRSs FAILED                                         |0                             
+|EXPERIMENT COUNTER                                   |204                           
+
+ ---------------- VMC-WIDE COUNTERS ----------------
+|66C80F72-DB30-5A63-B169-31C6A86D021F (simzone_c) VM RESERVATIONS|10                            
+|D3E36C93-1427-5D86-BC91-CB0FA4A8E918 (simzone_d) VM RESERVATIONS|7                             
+|FEBD66A7-E012-534C-A431-00CE123E50EF (simzone_a) VM RESERVATIONS|5                             
+|9859398A-822B-50DC-8C37-7E3C5CBAE602 (simzone_b) VM RESERVATIONS|5                             
+

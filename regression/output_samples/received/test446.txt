@@ -1,0 +1,4 @@
+The VM with the role tinyvm has the following configuration on experiment (Cloud TESTCLOUD) :
+imageid1: cloudbench_tinyvm
+imageids: 1
+size: pico32

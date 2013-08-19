@@ -1,0 +1,17 @@
+ status: No samples of runtime_os metrics for all HOSTs were found (the file /home/cbuser/cloudbench/lib/auxiliary//../../data/REGRESSION_B/HOST_runtime_os_REGRESSION_B.csv will be empty).
+ status: No samples of runtime_os metrics for all VMs were found (the file /home/cbuser/cloudbench/lib/auxiliary//../../data/REGRESSION_B/VM_runtime_os_REGRESSION_B.csv will be empty).
+ status: No samples of runtime_app metrics for all VMs were found (the file /home/cbuser/cloudbench/lib/auxiliary//../../data/REGRESSION_B/VM_runtime_app_REGRESSION_B.csv will be empty).
+ status: Multiple samples of management metrics for all VMs were found (the file /home/cbuser/cloudbench/lib/auxiliary//../../data/REGRESSION_B/VM_management_REGRESSION_B.csv will *NOT* be empty).
+Monitor extraction success. All metrics written to csv files on the directory "/home/cbuser/cloudbench/lib/auxiliary//../../data".
+running shell command: "ls -la ~/cloudbench/data/REGRESSION_B"....
+stdout:
+ total 96
+drwxrwxr-x 2 cbuser cbuser  4096 Jan 22 22:43 .
+drwxrwxrwx 9 cbuser cbuser  4096 Jan 22 22:43 ..
+-rw-rw-r-- 1 cbuser cbuser  1014 Jan 22 22:43 HOST_runtime_os_REGRESSION_B.csv
+-rw-rw-r-- 1 cbuser cbuser 30316 Jan 22 22:43 trace_REGRESSION_B.csv
+-rw-rw-r-- 1 cbuser cbuser 44072 Jan 22 22:43 VM_management_REGRESSION_B.csv
+-rw-rw-r-- 1 cbuser cbuser   272 Jan 22 22:43 VM_runtime_app_REGRESSION_B.csv
+-rw-rw-r-- 1 cbuser cbuser  1062 Jan 22 22:43 VM_runtime_os_REGRESSION_B.csv
+
+

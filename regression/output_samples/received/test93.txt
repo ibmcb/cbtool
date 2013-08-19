@@ -1,0 +1,3 @@
+The "sim" cloud named "TESTCLOUD" was successfully attached to this experiment.
+The experiment identifier is EXP-01-22-2013-10-32-41-PM-EST
+

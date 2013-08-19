@@ -1,0 +1,3 @@
+aifail TESTCLOUD ai_3
+stateshow TESTCLOUD
+stats TESTCLOUD
