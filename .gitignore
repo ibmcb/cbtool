@@ -52,3 +52,4 @@ gmetad-hosts.conf
 configs/definitions.txt
 data
 pydevd
+libpeerconnection.log
