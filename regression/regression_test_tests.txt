@@ -73,11 +73,6 @@ firslist
 firsshow
 firsalter
 firsdetach
-svmattach
-svmdetach
-svmfail
-svmlist
-svmshow
 stats
 stateshow
 statealter
@@ -166,11 +161,6 @@ firslist
 firsshow
 firsalter
 firsdetach
-svmattach
-svmdetach
-svmfail
-svmlist
-svmshow
 stats
 stateshow
 statealter
@@ -218,7 +208,6 @@ viewshow TESTCLOUD VMC pool sut
 vmattach TESTCLOUD tinyvm\; vmlist TESTCLOUD\; vmshow TESTCLOUD vm_1 vmc_name,vmc_pool,host_name,meta_tags,size\; stats TESTCLOUD
 vmlist TESTCLOUD
 vmshow TESTCLOUD vm_1 all
-vmalter TESTCLOUD vm_1 svm_stub_name=TESTE\; vmshow TESTCLOUD vm_1 svm_stub_name
 vmattach TESTCLOUD tinyvm lg\; vmlist TESTCLOUD\; vmshow TESTCLOUD vm_2 vmc_name,vmc_pool,host_name,meta_tags,size\; stats TESTCLOUD
 vmattach TESTCLOUD tinyvm simhostb1\; vmlist TESTCLOUD\; vmshow TESTCLOUD vm_3 vmc_name,vmc_pool,host_name,meta_tags,size\; stats TESTCLOUD
 vmattach TESTCLOUD db2 auto a:b,x:y,r:2\; vmlist TESTCLOUD\; vmshow TESTCLOUD vm_4 vmc_name,vmc_pool,host_name,meta_tags,size\; stats TESTCLOUD
