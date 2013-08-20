@@ -455,7 +455,7 @@ def check_mongo_binary(hostname, username, trd_party_dir) :
                     _version = _word.replace('v','').replace(',','')
                     break
 
-            _msg += compare_versions('2.0.0', _version)
+            _msg += compare_versions('2.4.0', _version)
             _status = 0
         else :
             _status = 1728289
@@ -471,9 +471,9 @@ def check_mongo_binary(hostname, username, trd_party_dir) :
     finally :
         if _status or _msg.count("NOT OK"):
             if len('%x'%sys.maxint) == 8 :
-                _mongo_url = "http://fastdl.mongodb.org/linux/mongodb-linux-i686-2.2.2.tgz"
+                _mongo_url = "http://fastdl.mongodb.org/linux/mongodb-linux-i686-2.4.5.tgz"
             else :
-                _mongo_url = "http://fastdl.mongodb.org/linux/mongodb-linux-x86_64-2.2.2.tgz"
+                _mongo_url = "http://fastdl.mongodb.org/linux/mongodb-linux-x86_64-2.4.5.tgz"
 
             _msg += " Please install MongoDB with: cd " + trd_party_dir
             _msg += "; wget " + _mongo_url + "; tar -zxf mongodb-linux-*.tgz; cd mongodb-linux-*; sudo cp bin/* /usr/bin\n"

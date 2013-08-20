@@ -50,6 +50,7 @@ class BaseObjectOperations :
     TBD
     '''
     default_cloud = None
+    proc_man_os_command = ProcessManagement()
 
     @trace
     def __init__ (self, osci, msci, attached_clouds = []) :
@@ -2097,11 +2098,16 @@ class BaseObjectOperations :
                     _msg += "VMs belonging to " + _ai_attr_list["name"] + "..."                
                     cbdebug(_msg, True)
 
-                _proc_man = ProcessManagement(username = _vm_logins[0], \
-                          cloud_name = _ai_attr_list["cloud_name"], \
-                          priv_key = _vm_priv_keys[0])
+                # This variable is permanent, now (for as long as the daemon lives)
+                # but these parameters can still change across daemon invocations,
+                # so we need to be sure to update them in case they are changed
+                # by the user between one VApp to the next.
+                
+                self.proc_man_os_command.cloud_name =  _ai_attr_list["cloud_name"]
+                self.proc_man_os_command.username = _vm_logins[0]
+                self.proc_man_os_command.priv_key = _vm_priv_keys[0]
 
-                _status, _xfmsg = _proc_man.parallel_run_os_command(_vm_post_boot_commands, \
+                _status, _xfmsg = self.proc_man_os_command.parallel_run_os_command(_vm_post_boot_commands, \
                                                                     _vm_ip_addrs, \
                                                                     _ai_attr_list["attempts"], \
                                                                     _ai_attr_list["execute_parallelism"], \
@@ -2235,11 +2241,11 @@ class BaseObjectOperations :
                             _msg = operation.upper() + str(_num)
                             cbdebug(_msg, True)
 
-                    _proc_man = ProcessManagement(username = _vm_logins[0], \
-                                                  cloud_name = _ai_attr_list["cloud_name"], \
-                                                  priv_key = _vm_priv_keys[0])
+                    self.proc_man_os_command.cloud_name =  _ai_attr_list["cloud_name"]
+                    self.proc_man_os_command.username = _vm_logins[0]
+                    self.proc_man_os_command.priv_key = _vm_priv_keys[0]
 
-                    _status, _xfmsg = _proc_man.parallel_run_os_command(_vm_command_list, \
+                    _status, _xfmsg = self.proc_man_os_command.parallel_run_os_command(_vm_command_list, \
                                                                         _vm_ip_addrs, \
                                                                         _ai_attr_list["attempts"], \
                                                                         _ai_attr_list["execute_parallelism"], \
@@ -2540,7 +2546,7 @@ class BaseObjectOperations :
             if _status :
                 _msg = "Management (" + operation + ") metrics record failure: " + _fmsg
                 cberr(_msg)
-                raise self.ObjectOperationException(_msg, _status)
+#                raise self.ObjectOperationException(_msg, _status)
             else :
                 _msg = "Management (" + operation + ") metrics record success."
                 cbdebug(_msg)

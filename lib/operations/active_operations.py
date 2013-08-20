@@ -4126,8 +4126,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _obj_type = _operation.split('-')[0]
                 
                 if not _thread_pool :
-                    pool_key = operation_type + '_' 
-                    pool_key += str(len(obj_attr_list["parallel_operations"]))
+                    pool_key = operation_type
                     pool_key += '_' + _obj_type + "s_with_parallelism_"
                     pool_key += str(obj_attr_list[operation_type + "_parallelism"])
 

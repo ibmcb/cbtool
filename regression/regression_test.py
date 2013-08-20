@@ -46,6 +46,8 @@ def make_regression_test(reg_tst_f_contents, reg_tst_expl_fn) :
     for _nr in range(0,2) :
         for _line_number, _line_contents in enumerate(reg_tst_f_contents) :
             _line_contents = _line_contents.strip('\n')
+            _line_contents = _line_contents.replace("CB_DIRECTORY", 
+                                path[0] + "../")
     
             if _line_contents == "DNRTT" :
                 _line_contents = False
