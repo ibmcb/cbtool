@@ -315,10 +315,17 @@ def main() :
                 _msg = "Opening file \"" + _file + "\".........."
                 print _msg
         
-                _file_fh = open(path[0] + '/' + _file, 'r')
-                _file_contents[_file] = _file_fh.readlines()
-                _file_fh.close()
-
+                try : 
+                    with open(path[0] + '/' + _file, 'r'): pass
+                    _file_fh = open(path[0] + '/' + _file, 'r')
+                    _file_contents[_file] = _file_fh.readlines()
+                    _file_fh.close()
+                except IOError :
+                    if argv[1] == "make" and _file == _reg_tst_expl_fn :
+                        print "Will make " + _file + " from scratch..."
+                        _file_contents[_file] = ""
+                    else :
+                        raise IOError
             
             if argv[1] == "make" :
                 globals()[argv[1] + "_regression_test"](_file_contents[_reg_tst_fn], _reg_tst_expl_fn)
