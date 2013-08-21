@@ -394,8 +394,12 @@ class SimCmds(CommonCloudFunctions) :
                 raise CldOpsException(_msg, _status)
 
             if "host_name" not in obj_attr_list :
-                obj_attr_list["host_name"] = "simhost" + obj_attr_list["vmc_name"][-1]
-                obj_attr_list["host_name"] += str(randint(0, int(obj_attr_list["hosts_per_vmc"])-1))
+                _host_list = self.get_host_list(obj_attr_list)
+                (_host_name, _host_uuid) = _host_list[randint(0, (len(_host_list) - 1))]
+                if len(_host_name.split("host_")) == 2 :
+                    _host_name = _host_name.split("host_")[1]
+                obj_attr_list["host_name"] = _host_name
+                obj_attr_list["host"] = _host_uuid
 
             if "meta_tags" in obj_attr_list :
                 if obj_attr_list["meta_tags"] != "empty" and \
@@ -618,7 +622,7 @@ class SimCmds(CommonCloudFunctions) :
         obj_attr_list["mgt_502_" + operation + "_request_sent"] = _time_mark_crs - obj_attr_list["mgt_501_" + operation + "_request_originated"]
 
         _msg = "Sending a " + operation + " request for "  + obj_attr_list["name"]
-        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ")"
+        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
         _msg += "...."
         cbdebug(_msg, True)
 
@@ -630,7 +634,7 @@ class SimCmds(CommonCloudFunctions) :
         cbdebug("VM " + obj_attr_list["name"] + " " + operation + " request completed.")
 
         _msg = "" + obj_attr_list["name"] + ""
-        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_uuid"] + ") "
+        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
         _msg += "was successfully "
         _msg += operation + "ed on FTCloud \"" + obj_attr_list["cloud_name"]
         _msg += "\"."

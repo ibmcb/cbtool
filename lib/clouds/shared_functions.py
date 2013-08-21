@@ -130,6 +130,18 @@ class CommonCloudFunctions:
                 return True
 
     @trace
+    def get_host_list(self, obj_attr_list) :
+        _host_list = []
+        _vmc_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "VMC", 
+                                              False, obj_attr_list["vmc"], False)
+        for _uuid in _vmc_attr_list["hosts"].split(",") :
+            _host_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "HOST", 
+                                                  False, _uuid, False)
+            _host_list.append((_host_attr_list["name"], _uuid))
+        
+        return _host_list 
+        
+    @trace
     def wait_for_instance_ready(self, obj_attr_list, time_mark_prs) :
         '''
         TBD

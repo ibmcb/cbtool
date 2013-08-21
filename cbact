@@ -174,8 +174,9 @@ def actuator_cli_parsing() :
         _fmsg = str(e)
         
     finally :
-        if _options.operation and _options.osp and (_options.operation == "cloud-api" or _options.operation == "cloud-gui" or _options.cn) :
-            if (_options.operation == "cloud-api" or _options.operation == "cloud-gui") and (not _options.apiport or not _options.apihost) :
+        if _options.operation and _options.osp and (_options.operation in ["cloud-api", "cloud-gui" ] or _options.cn) :
+            if (_options.operation in [ "cloud-api", "cloud-gui"]) and \
+                    (not _options.apiport or not _options.apihost) :
                 print "The following parameters are mandatory: --apiport, --apihost"
                 exit(19)
 
@@ -353,6 +354,9 @@ def main(options) :
         if options.cn :
             _log_defaults = _osci.get_object(options.cn, "GLOBAL", False, "logstore", False)
             _dir_defaults = _osci.get_object(options.cn, "GLOBAL", False, "space", False)
+            if _msci is None :
+                _metricstore = _osci.get_object(options.cn, "GLOBAL", False, "metricstore", False)
+                _msci = MongodbMgdConn(_metricstore) 
             _base_dir = _dir_defaults["base_dir"]
         else :  
             _log_defaults = {
@@ -491,19 +495,11 @@ def main(options) :
             _status = 0
             _msg = "Complete"
 
-        elif _operation.count("monitor_host") :
+        elif _operation.count("qemu") :
             _local_process = True
-            _uuid = options.ouuid
-            _obj_type = "GLOBAL"
-            _status, _msg = _passive_obj_command.monitor_performance(options.cn, _uuid, host = True)
-            _status = 0
+            _obj_type = "AI"
+            _status, _msg = _passive_obj_command.qemu_scraper(options.cn, options.ouuid)
 
-        elif _operation.count("monitor_vm") :
-            _local_process = True
-            _obj_type = "GLOBAL"
-            _status, _msg = _passive_obj_command.monitor_performance(options.cn, None, vm = True)
-            _status = 0
-            
         elif _operation.count("watch") :
             _local_process = True
             _obj_type = "GLOBAL"

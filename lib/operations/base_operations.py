@@ -50,6 +50,7 @@ class BaseObjectOperations :
     TBD
     '''
     default_cloud = None
+    proc_man_os_command = ProcessManagement()
 
     @trace
     def __init__ (self, osci, msci, attached_clouds = []) :
@@ -1030,7 +1031,7 @@ class BaseObjectOperations :
                                                          True)
 
                 if not _object_exists :
-                    _fmsg = "Object is not instantiated on the object store."
+                    _fmsg = "Object " + obj_attr_list["name"] + " is not instantiated on the object store."
 
                     if cmd.count("detach") :
                         _fmsg += "There is no need for explicitly detach it from "
@@ -1081,11 +1082,17 @@ class BaseObjectOperations :
                         obj_attr_list["mgt_501_" + op + "_request_originated"] = obj_attr_list["command_originated"]
                         
                         vmc_attr = self.osci.get_object(obj_attr_list["cloud_name"], "VMC", False, obj_attr_list["vmc"], False)
+                        host_attr = self.osci.get_object(obj_attr_list["cloud_name"], "HOST", False, obj_attr_list["host"], False)
                         
                         dest_name = obj_attr_list["destination"]
                         
                         if not dest_name[:5] == "host_" :
                             dest_name = "host_" + dest_name 
+                            
+                        if host_attr["name"] == dest_name :
+                            _msg = "Source and destination hosts are the same. Try again."
+                            _status = 9421
+                            raise self.ObjectOperationException(_msg, _status) 
                             
                         if not self.osci.object_exists(obj_attr_list["cloud_name"], "HOST", dest_name, True) :
                             _msg = "Destination HOST object for migration does not exist: " + obj_attr_list["destination"]
@@ -1652,9 +1659,7 @@ class BaseObjectOperations :
         '''
         try :
             _status = 100
-            if obj_attr_list["name"] == "random" or \
-            obj_attr_list["name"] == "youngest" or \
-            obj_attr_list["name"] == "oldest" :
+            if obj_attr_list["name"] in ["random", "youngest", "oldest"] :
                 _obj_list = self.osci.query_by_view(obj_attr_list["cloud_name"], obj_type, "BYUSERNAME", username)
                 if _obj_list :
                     if obj_attr_list["name"] == "random" :
@@ -2088,20 +2093,25 @@ class BaseObjectOperations :
                 _obj_attr_list["run_generic_scripts"].lower() != "false" :
 
                     _msg = "Performing generic application instance post_boot "
-                    _msg += "configuration on all VMs beloging to " + _ai_attr_list["name"] + "..."                
+                    _msg += "configuration on all VMs belonging to " + _ai_attr_list["name"] + "..."                
                     cbdebug(_msg, True)
                     self.osci.pending_object_set(cloud_name, "AI", ai_uuid, _msg)
 
                 else :
                     _msg = "Bypassing generic VM post_boot configuration on all "
-                    _msg += "VMs beloging to " + _ai_attr_list["name"] + "..."                
+                    _msg += "VMs belonging to " + _ai_attr_list["name"] + "..."                
                     cbdebug(_msg, True)
 
-                _proc_man = ProcessManagement(username = _vm_logins[0], \
-                          cloud_name = _ai_attr_list["cloud_name"], \
-                          priv_key = _vm_priv_keys[0])
+                # This variable is permanent, now (for as long as the daemon lives)
+                # but these parameters can still change across daemon invocations,
+                # so we need to be sure to update them in case they are changed
+                # by the user between one VApp to the next.
+                
+                self.proc_man_os_command.cloud_name =  _ai_attr_list["cloud_name"]
+                self.proc_man_os_command.username = _vm_logins[0]
+                self.proc_man_os_command.priv_key = _vm_priv_keys[0]
 
-                _status, _xfmsg = _proc_man.parallel_run_os_command(_vm_post_boot_commands, \
+                _status, _xfmsg = self.proc_man_os_command.parallel_run_os_command(_vm_post_boot_commands, \
                                                                     _vm_ip_addrs, \
                                                                     _ai_attr_list["attempts"], \
                                                                     _ai_attr_list["execute_parallelism"], \
@@ -2137,7 +2147,7 @@ class BaseObjectOperations :
                 _ai_attr_list["run_application_scripts"].lower() != "false" :
                 
                     _msg = "Running application-specific \"" + operation + "\" "
-                    _msg += "configuration on all VMs beloging to " + _ai_attr_list["name"] + "..."                
+                    _msg += "configuration on all VMs belonging to " + _ai_attr_list["name"] + "..."                
                     cbdebug(_msg, True)
                     notify_client_refresh = False
                     if "first_app_run_finished" not in _ai_attr_list or \
@@ -2157,8 +2167,15 @@ class BaseObjectOperations :
                     _status = 0
 
                 if "dont_start_load_manager" in _ai_attr_list and \
-                _ai_attr_list["dont_start_load_manager"].lower() == "true" :
+                    _ai_attr_list["dont_start_load_manager"].lower() == "true" :
                     _msg = "Load Manager will NOT be automatically"
+                    _msg += " started during the deployment of "
+                    _msg += _ai_attr_list["name"] + "..."                
+                    cbdebug(_msg, True)
+
+                if "dont_start_qemu_scraper" in _ai_attr_list and \
+                    _ai_attr_list["dont_start_qemu_scraper"].lower() == "true" :
+                    _msg = "QEMU Scraper will NOT be automatically"
                     _msg += " started during the deployment of "
                     _msg += _ai_attr_list["name"] + "..."                
                     cbdebug(_msg, True)
@@ -2203,8 +2220,18 @@ class BaseObjectOperations :
                                 
                                 _ai_attr_list[_lmr + '_' + operation + str(_num + 1)] = "cb_start_load_manager.sh"
 
+                                # The scraper startup is conditional only upon
+                                # enablement of the load manager as well.
+                                if "dont_start_qemu_scraper" not in _ai_attr_list \
+                                       or _ai_attr_list["dont_start_qemu_scraper"].lower() != "true" :
+                                    _msg = "Adding the startup of the qemu scraper to the "
+                                    _msg += "list of commands. It will be executed on the "
+                                    _msg += "VM with the role \"" + _lmr + "\""
+                                    cbdebug(_msg)
+                                    
+                                    _ai_attr_list[_lmr + '_' + operation + str(_num + 2)] = "cb_start_qemu_scraper.sh"
+
                     if _ai_attr_list["run_application_scripts"].lower() != "false" :
-    
                         _msg = "The following command list will be executed: "
                         _msg += ','.join(_vm_command_list)
                         cbdebug(_msg)
@@ -2218,11 +2245,11 @@ class BaseObjectOperations :
                             _msg = operation.upper() + str(_num)
                             cbdebug(_msg, True)
 
-                    _proc_man = ProcessManagement(username = _vm_logins[0], \
-                                                  cloud_name = _ai_attr_list["cloud_name"], \
-                                                  priv_key = _vm_priv_keys[0])
+                    self.proc_man_os_command.cloud_name =  _ai_attr_list["cloud_name"]
+                    self.proc_man_os_command.username = _vm_logins[0]
+                    self.proc_man_os_command.priv_key = _vm_priv_keys[0]
 
-                    _status, _xfmsg = _proc_man.parallel_run_os_command(_vm_command_list, \
+                    _status, _xfmsg = self.proc_man_os_command.parallel_run_os_command(_vm_command_list, \
                                                                         _vm_ip_addrs, \
                                                                         _ai_attr_list["attempts"], \
                                                                         _ai_attr_list["execute_parallelism"], \
@@ -2523,7 +2550,7 @@ class BaseObjectOperations :
             if _status :
                 _msg = "Management (" + operation + ") metrics record failure: " + _fmsg
                 cberr(_msg)
-                raise self.ObjectOperationException(_msg, _status)
+#                raise self.ObjectOperationException(_msg, _status)
             else :
                 _msg = "Management (" + operation + ") metrics record success."
                 cbdebug(_msg)
@@ -2967,38 +2994,13 @@ class BaseObjectOperations :
                 raise throw
 
     @trace
-    def should_refresh(self, obj_attr_list, parameters, command) :
-        '''
-        TBD
-        '''
-        _result = False
+    def compare_refresh(self, cloud_name, last_refresh) :
+        _cloud_parameters = self.get_cloud_parameters(cloud_name)
         
-        try :
-            _status = 100
-            _fmsg = "An error has occurred, but no error message was captured"
-            _obj_type = command.split('-')[0].upper()
-            _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
-
-            if not _status :
-                _cloud_parameters = self.get_cloud_parameters(obj_attr_list["cloud_name"])
-                if float(_cloud_parameters["client_should_refresh"]) > float(obj_attr_list["time"]) :
-                    _result = True 
-                    
-            _status = 0
-            
-        except BaseObjectOperations.ObjectOperationException, msg :
-            _status = 30
-            _fmsg = str(msg)
-            
-        finally :
-            if _status :
-                _msg = "Refresh check failure: " + _fmsg
-                cberr(_msg)
-            else :
-                _msg = "Refresh check: " + str(_result)
-                cbdebug(_msg)
-                
-        return self.package(_status, _msg, _result)
+        if float(_cloud_parameters["client_should_refresh"]) > float(last_refresh) :
+            return True
+        
+        return False
 
     @trace
     def update_host_os_perfmon(self, obj_attr_list) :
@@ -3185,11 +3187,15 @@ class BaseObjectOperations :
             _parameters = _parameters.replace("->","-+-+-+")
 
             if not _status :
-                if "name" in _obj_attr_list and not _obj_attr_list["name"].lower().count(_obj_type.lower() + "_")  \
-                    and not _obj_attr_list["name"].count("-") == 4 : # a UUID
-                    _obj_attr_list["name"] = _obj_type.lower() + "_" + _obj_attr_list["name"]
-                   
                 _cloud_parameters = self.get_cloud_parameters(_obj_attr_list["cloud_name"])
+                
+                if not command.lower().count("all") and not parameters.count("all") :
+                    self.pre_select_object(_obj_attr_list, _obj_type, _cloud_parameters["username"])    
+                    
+                if "name" in _obj_attr_list and not _obj_attr_list["name"].lower().count(_obj_type.lower() + "_")  \
+                    and _obj_type != "HOST" and _obj_type != "VMC" \
+                    and (not _obj_attr_list["name"].count("-") == 4) :
+                    _obj_attr_list["name"] = _obj_type.lower() + "_" + _obj_attr_list["name"]
 
                 #if not command.count("detachall") :
                 #    _parallel_operations = 1
@@ -3218,16 +3224,12 @@ class BaseObjectOperations :
                         if parameters.count("all") :
                             _obj_uuid = "ALL"
                         else :
-                            self.pre_select_object(_obj_attr_list, \
-                                                   _obj_type, \
-                                                   _cloud_parameters["username"])    
-                            
                             _obj_uuid = self.osci.object_exists(_obj_attr_list["cloud_name"], _obj_type, \
                                                                 _obj_attr_list["name"], \
                                                                 True)
     
                         if not _obj_uuid :
-                            _fmsg = "Object is not instantiated on the object store."
+                            _fmsg = "Object " + _obj_attr_list["name"] + " is not instantiated on the object store."
                             _fmsg += "There is no need for explicitly detach it from "
                             _fmsg += "this experiment."
                             _status = 37
@@ -3259,7 +3261,7 @@ class BaseObjectOperations :
                             _obj_uuid = _obj_attr_list["name"]
     
                         if not _obj_uuid :
-                            _fmsg = "Object is not instantiated on the object store."
+                            _fmsg = "Object " + _obj_attr_list["name"] + " is not instantiated on the object store."
                             _fmsg += "It cannot be used on this experiment."
                             _status = 37
     

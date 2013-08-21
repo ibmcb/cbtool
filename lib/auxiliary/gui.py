@@ -88,7 +88,12 @@ class Dashboard () :
         self.standard_categories = { 's' : "VM", 'h': "HOST" }
         self.categories = dict(self.standard_categories.items() + self.user_generated_categories.items())
         self.owners = { "VM" : ['s', 'p', 'a'], "HOST" : ['h']}
-        self.summaries = {"Saved VMs" : [True, "savedvm"], "Failed VMs" : [True, "failedvm"], "KB => MB" : [False, "kb2mb"], "bytes/sec => Mbps" : [False, "b2mb"], "#4K pages => MB" : [False, "4k2mb"]}
+        self.summaries = {"Saved VMs" : [True, "savedvm"], 
+                          "Failed VMs" : [True, "failedvm"], 
+                          "KB => MB" : [False, "kb2mb"], 
+                          "Bytes => MB" : [False, "bytes2mb"], 
+                          "bytes/sec => Mbps" : [False, "b2mb"], 
+                          "#4K pages => MB" : [False, "4k2mb"]}
         self.labels = ['name', 'size', 'role', 'type', 'cloud_ip', 'age', 'vms', 'state', 'latest_update', 'vmc_name', 'host_name', 'ai_name', 'aidrs_name']
         self.separator = "<p/>\n"
         self.show = {}
@@ -132,7 +137,9 @@ class Dashboard () :
                 cell =  display.replace("_", "<br/>")
                 
             title = current_labels[count]
-            if uuid and title not in self.labels :
+            if cell == "--" : 
+                result += "<td>--</td>"
+            elif uuid and title not in self.labels :
                 result += "<td><a href='d3?uuid=" + uuid + "&category=" + category + "&label=" + labels[count] + "&name=" + name + "&ip=" + ip + "&host=" + host + "&role=" + role + "'>" + str(cell) + "</a></td>"
             else :
                 result += "<td>"
@@ -280,6 +287,10 @@ class Dashboard () :
                     if unit == "KB" or unit == "KiB" :
                         value = "%.2f" % (float(value) / 1024)
                         unit = "MB"
+                if self.summaries["Bytes => MB"][0] :
+                    if unit.lower() == "bytes" or unit == "b" :
+                        value = "%.2f" % (float(value) / 1024 / 1024)
+                        unit = "MB"
                 if self.summaries["bytes/sec => Mbps"][0] :
                     if unit == "bytes/sec" :
                         value = "%.2f" % (float(value) / 1024 / 1024 * 8)
@@ -391,6 +402,8 @@ class Dashboard () :
                         
                         except Exception :
                             pass
+                    else :
+                        row.append("--")
 
                 self.destinations[dest] += self.makeRow(dest, row, uuid, current_labels, name, ip, host, role, current_labels)
             
@@ -704,33 +717,64 @@ class GUI(object):
         return output
         
     def make_alter_form(self, req, uuid, obj, key, value) :
-        output = ""
-        output += "<form style='margin: 0' action='BOOTDEST/provision' method='get'>"
+        output = "<form id='alter_form_" + key + "' style='margin: 0' action='BOOTDEST/provision' method='get'>"
         output += """
             <table><tr><td width='300px'>
                 <button type="submit" class="btn btn-default">
                   <i class="icon-arrow-right icon-black"></i>&nbsp;<b>
         """
         output += key + "</b></button></td><td>"
-        output += "Value: <input style='margin-top: 9px' type='text' name='value' value='" + value + "'/>"
         output += "<input type='hidden' name='alter' value='1'/>"
         output += "<input type='hidden' name='object' value='" + obj  + "'/>"
         output += "<input type='hidden' name='explode' value='" + uuid + "'/>"
-        output += "<input type='hidden' name='key' value='" + key   + "'/></td></tr></table></form>"
+        output += "<input type='hidden' name='key' value='" + key   + "'/>"
+        output += "Value: <input id='alter_" + key + "' style='margin-top: 9px' type='text' name='value' value='" + value + "'/>"
+        
+        if value.lower() == "true" or value.lower() == "false" :
+            togg = "True"
+            if value.lower() == "true" :
+                togg = "False"
+            output += "<a id='alter_toggle_" + key + "' class=\"btn btn-default\">"
+            output += "\n<script>\n"
+            output += "$(\"#alter_toggle_" + key + "\").click(function() { \n$(\"#alter_" + key + "\").val(\"" + togg + "\");\n\n"
+            output += "$(\"#alter_form_" + key + "\").submit();\n"
+            output += " });\n</script>"
+            output += """
+                  <i class="icon-arrow-left icon-black"></i>&nbsp;<b>toggle</b></a>
+            """
+        output += "</td></tr></table></form>"
         return output
     
     def make_config_form(self, req, category, name, label, default) :
         output = ""
-        output += "<form style='margin: 0' action='BOOTDEST/config' method='get'>"
+        output += "<form id=\"config_form_" + label + "\" style='margin: 0' action='BOOTDEST/config' method='get'>"
         output += """
             <table><tr><td width='300px'>
                 <button type="submit" class="btn btn-default">
                   <i class="icon-arrow-right icon-black"></i>&nbsp;<b>
         """
         output += label + "</b></button></td><td>"
-        output += "Value: <input style='margin-top: 9px' type='text' name='value' value='" + default + "'/>"
+        
+        
+        output += "Value: <input id='config_" + label + "' style='margin-top: 9px' type='text' name='value' value='" + default + "'/>"
         output += "<input type='hidden' name='category' value='" + category + "'/>"
-        output += "<input type='hidden' name='name' value='" + name  + "'/></td></tr></table></form>"
+        output += "<input type='hidden' name='name' value='" + name  + "'/></td>"
+        
+        if default.lower() == "true" or default.lower() == "false" :
+            togg = "True"
+            if default.lower() == "true" :
+                togg = "False"
+            output += "<td><a id='config_toggle_" + label + "' class=\"btn btn-default\">"
+            output += "<script>\n"
+            output += "$(\"#config_toggle_" + label + "\").click(function() { \n$(\"#config_" + label + "\").val(\"" + togg + "\");\n\n"
+            output += "$(\"#config_form_" + label + "\").submit();\n"
+            output += " });</script>"
+            output += """
+                  <i class="icon-arrow-left icon-black"></i>&nbsp;<b>toggle</b></a></td>
+            """
+            
+        output += "</tr></table></form>"
+        
         return output
         
     def repopulate_views(self, session) :
@@ -1310,10 +1354,14 @@ class GUI(object):
             if req.active != "host" :
                 output += """
                     <a id='attachpop' class='btn btn-success' style='padding: 3px' href='#'><i class='icon-play icon-white'></i>&nbsp;Create</a>
-                    <p>
+                    <p/>
+                    <p/>
                 """
+                output += "<a class='btn btn-danger' style='padding: 3px' href='BOOTDEST/provision?object=" + req.active \
+                    + "&operation=detach&keywords=3&keyword1=all&keyword2=true&keyword3=async'><i class='icon-trash icon-white'></i>&nbsp;Detach All</a>"
                 
             output += """
+                <p/>
                 <div class='tabbable tabs-left'>
                 <ul id='two' class="nav nav-tabs">
             """
@@ -1627,11 +1675,6 @@ class GUI(object):
                 failed = active_list(req.cloud_name, "failed")
                 failed.sort(key=self.trackingfunc, reverse = True)
     
-                if len(failed) > 0 :
-                    output += "<h4>" + str(len(failed)) + " Failed Request(s):</h4>" + self.list_objects(req, req.active, failed, link = False, icon = 'icon-remove', label = 'label-important')
-                if len(finished) > 0 :
-                    output += "<h4>" + str(len(finished)) + " Finished Requests(s):</h4>" + self.list_objects(req, req.active, finished, link = False, icon = 'icon-ok', label = '')
-                
                 if len(objs) > 0 :
                     output += "<h4>" + str(len(objs))
                     output += (" Provisioned  " if liststate == "all" else " ")
@@ -1639,6 +1682,12 @@ class GUI(object):
                     output += self.list_objects(req, req.active, objs, icon = False)
                 else :
                     output += self.heromsg + "\n<p><h4>&nbsp;No Objects</h4>"
+                    
+                if len(failed) > 0 :
+                    output += "<h4>" + str(len(failed)) + " Failed Request(s):</h4>" + self.list_objects(req, req.active, failed, link = False, icon = 'icon-remove', label = 'label-important')
+                if len(finished) > 0 :
+                    output += "<h4>" + str(len(finished)) + " Finished Requests(s):</h4>" + self.list_objects(req, req.active, finished, link = False, icon = 'icon-ok', label = '')
+                
             else :
                 output += "BOOTSPINNER&nbsp;Loading Object State..."
                  

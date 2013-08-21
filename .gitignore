@@ -52,3 +52,9 @@ gmetad-hosts.conf
 configs/definitions.txt
 data
 pydevd
+libpeerconnection.log
+github.txt
+regression_test_experiment_plan.txt
+regression/output_samples/*/test*.txt
+regression/input_samples/test*.txt
+regression/main.html

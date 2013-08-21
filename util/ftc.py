@@ -16,7 +16,7 @@
 # limitations under the License.
 #/*******************************************************************************
 
-import sys, os, threading, SocketServer, signal, inspect, xmlrpclib, libxml2
+import sys, os, threading, SocketServer, signal, inspect, xmlrpclib, libxml2, re, json, socket
 from libvirt import *
 from logging import getLogger, StreamHandler, Formatter, Filter, DEBUG, ERROR, INFO, WARN, CRITICAL
 from logging.handlers import SysLogHandler
@@ -35,14 +35,9 @@ from random import randint
 from time import sleep
 path.append('/'.join(path[0].split('/')[0:-1]))
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-
 __all__ = []
 
-import socket
-import struct
-import hmac
-import random
-import operator
+import struct, hmac, random, operator
 try:
     from cStringIO import StringIO
 except ImportError:
@@ -50,6 +45,8 @@ except ImportError:
 
 sysrand = random.SystemRandom()
 
+dhcp_omap_pkey = "d+y8yPwtC0nJ0C0uRC5cxYREYGPBkJwhJYjHbb1LkoW0FF6gYr3SiVi6 HRQUcl4Y7gdzwvi0hgPV+Gdy1wX9vg==" 
+dhcp_omap_keyn = "omapi_key"
 try :
     # Provided by RHEL 6.2
     from libvirt_qemu import qemuMonitorCommand
@@ -228,8 +225,6 @@ class Ftc :
         self.pid = "" 
         self.hypervisors = hypervisors
         self.lvt_cnt = {}
-        self.dhcp_omap_pkey = "d+y8yPwtC0nJ0C0uRC5cxYREYGPBkJwhJYjHbb1LkoW0FF6gYr3SiVi6 HRQUcl4Y7gdzwvi0hgPV+Gdy1wX9vg==" 
-        self.dhcp_omap_keyn = "omapi_key"
         self.vhw_config = {}
         self.vhw_config["pico32"] = { "vcpus" : "1", "vmemory" : "192", "vstorage" : "2048", "vnics" : "1" }
         self.vhw_config["nano32"] = { "vcpus" : "1", "vmemory" : "512", "vstorage" : "61440", "vnics" : "1" }
@@ -264,6 +259,12 @@ class Ftc :
             _xml_templates["vm_template"] += "xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'"
              
         _xml_templates["vm_template"] += ">\n"
+        
+#        if options.hypervisor == "kvm" :
+#            _xml_templates["vm_template"] += "\t<memoryBacking>\n"
+#            _xml_templates["vm_template"] += "\t<locked/>\n"
+#            _xml_templates["vm_template"] += "\t</memoryBacking>\n"
+        
         _xml_templates["vm_template"] += "\t<name>TMPLT_LIBVIRTID</name>\n"
         _xml_templates["vm_template"] += "\t<memory>TMPLT_MEMORY</memory>\n"
         _xml_templates["vm_template"] += "\t<currentMemory>TMPLT_MEMORY</currentMemory>\n"
@@ -697,7 +698,7 @@ class Ftc :
         try:
             _status = 100
             o = Omapi(options.dhcp_omapi_server, int(options.dhcp_omapi_port), \
-                      self.dhcp_omap_keyn, self.dhcp_omap_pkey, debug=False)
+                      dhcp_omap_keyn, dhcp_omap_pkey, debug=False)
             _msg = "ip found"
             ip = o.lookup_ip(mac)
             
@@ -1241,7 +1242,7 @@ class Ftc :
         return self.success(_smsg, None)
     
     @trace
-    def migrate(self, tag, hypervisor_ip, destination_ip, protocol, interface, operation):
+    def migrate(self, tag, hypervisor_ip, destination_ip, protocol, interface, operation, mtype):
         lvt_cnt = self.conn_check(hypervisor_ip)
         _imsg =  "Domain " + tag 
         _smsg = _imsg + " was successfully " + operation + "ed."
@@ -1257,13 +1258,21 @@ class Ftc :
             cbdebug("Opening connection to destination uri: " + uri)
             dconn = open(uri)
             cbdebug("Issuing " + operation + " on VM " + tag + " to " + uri + " with interface " + miguri + "...")
-            dom.migrate(dconn, VIR_MIGRATE_LIVE | VIR_MIGRATE_PERSIST_DEST | VIR_MIGRATE_UNDEFINE_SOURCE, None, miguri, 0)
+            flags = VIR_MIGRATE_LIVE | VIR_MIGRATE_PERSIST_DEST | VIR_MIGRATE_UNDEFINE_SOURCE | VIR_MIGRATE_X_RDMA_PIN_ALL
+            
+            if protocol.lower().count("rdma") :
+                flags |= VIR_MIGRATE_X_RDMA_PIN_ALL
+                
+            if mtype.lower().count("protect") :
+                flags |= VIR_MIGRATE_MC
+                
+            dom.migrate(dconn, flags, None, miguri, 0)
             dom = dconn.lookupByName(tag)
             result["display_port"], result["display_protocol"] = self.get_display_ports(lvt_cnt, dom)
             dconn.close()
         except libvirtError, msg :
             _msg = str(msg).replace("migration", operation)
-            self.ftcraise(lvt_cnt.host, 3, _fmsg + msg)
+            self.ftcraise(lvt_cnt.host, 3, _fmsg + _msg)
         return self.success(_smsg, result)
     
     @trace
@@ -1374,10 +1383,11 @@ class FTCService ( threading.Thread ):
         self.port = port
         self.dhcp_omapi_server = dhcp_omapi_server
         self.dhcp_omapi_port = int(dhcp_omapi_port)
-        self.dhcp_omap_pkey = "d+y8yPwtC0nJ0C0uRC5cxYREYGPBkJwhJYjHbb1LkoW0FF6gYr3SiVi6 HRQUcl4Y7gdzwvi0hgPV+Gdy1wX9vg==" 
-        self.dhcp_omap_keyn = "omapi_key"
         self.ftc = Ftc(hypervisors)
-        cbdebug("Initializing API Service on port " + str(self.port))
+        self.api_location = None
+        self.api_location_changed = False
+        
+        cbdebug("Initializing FTC Service on port " + str(self.port))
         if debug is None :
             self.server = AsyncDocXMLRPCServer(("0.0.0.0", int(self.port)), allow_none = True)
         else :
@@ -1444,6 +1454,7 @@ def wait_for_port_ready(hostname, port) :
                 cberr("Could not test port " + str(port) + " liveness: " +  message)
                 raise
         
+        
 @trace
 def main(options) :
     try :
@@ -1480,12 +1491,16 @@ def main(options) :
 
         wait_for_port_ready("0.0.0.0", options.port)
         ftcservice = FTCService(options.port, options.hypervisors, options.dhcp_omapi_server, options.dhcp_omapi_port, options.debug_host)
+        
         if options.debug_host is None :
             ftcservice.start()
         else :
             ftcservice.run()
 
         while True :
+            if ftcservice.api_location_changed :
+                ftcservice.api_location_changed = False
+                cbdebug("API Service location changed to: " + ftcservice.api_location)
             sleep(10)
 
         _status = 0
@@ -1508,6 +1523,7 @@ def main(options) :
         else :
             cbdebug("FTC exiting.")
             os.kill(os.getpid(), signal.SIGKILL)
+
 
 def repr_opcode(opcode):
     """
