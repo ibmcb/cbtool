@@ -1,42 +1,24 @@
- status: Waiting for vm_43 (cloud-assigned uuid 4F89EEB6-0BB5-5530-B88F-7E50F5C051F4) to start...
- status: Trying to establish network connectivity to vm_43 (cloud-assigned uuid 4F89EEB6-0BB5-5530-B88F-7E50F5C051F4), on IP address 183.130.102.4...
- status: Bypassing the sending of a copy of the code tree to vm_43 (183.130.102.4)...
-AI object 004356A0-8948-5E67-8CCE-08EFE41FD80A (named "ai_1") successfully resized on this experiment.
-|ai_1      |daytrader      |1_x_client_daytrader->2_x_was->1_x_db2            |35.5.238.230    |1374527130     |none                                    |004356A0-8948-5E67-8CCE-08EFE41FD80A
-|ai_2      |hadoop         |1_x_hadoopmaster->3_x_hadoopslave                 |113.105.207.141 |1374527136     |none                                    |C25BF654-F016-5342-9070-719695D357C5
-|ai_3      |daytrader      |1_x_client_daytrader->1_x_was->1_x_db2            |16.174.212.90   |1374527148     |none                                    |FC7A6FC0-808A-55B4-A80F-E9F94F7EE53E
-|ai_4      |daytrader      |1_x_client_daytrader->1_x_was->1_x_db2            |166.31.137.41   |1374527189     |none                                    |FBE84899-B486-5087-8F5D-6F505D042585
-|ai_5      |netperf        |1_x_netclient->1_x_netserver                      |116.80.208.127  |1374527207     |none                                    |F7A40D5B-B8DF-503D-BFC2-6C58EDD596F2
-|ai_6      |hadoop         |1_x_hadoopmaster->1_x_hadoopslave                 |52.131.164.238  |1374527212     |none                                    |70831E45-7DF7-5A5F-AF2A-6C1E525CA829
-|vm_26         |client_daytrader    |nano32      |35.5.238.230    |simhostd3                  |LG                  |ai_1    |none       |569F463B-B08E-5390-BDE0-532F6EF4DA3D
-|vm_27         |was                 |iron32      |170.141.12.14   |simhostb2                  |SUT                 |ai_1    |none       |6F285050-1EE0-559F-8F86-5817D67B5ED9
-|vm_28         |db2                 |copper32    |37.84.2.103     |simhostb0                  |SUT                 |ai_1    |none       |7475CA10-DB49-544D-AFFF-B6936E87FF4D
-|vm_29         |hadoopmaster        |copper32    |113.105.207.141 |simhostc2                  |SUT                 |ai_2    |none       |056FD490-24E6-5841-9E71-FC03B45C3130
-|vm_30         |hadoopslave         |iron32      |123.214.45.162  |simhostb3                  |SUT                 |ai_2    |none       |3465F4F5-2704-50BF-89C8-AB81CAA49498
-|vm_31         |hadoopslave         |iron32      |99.16.185.87    |simhostc0                  |SUT                 |ai_2    |none       |2332BD25-153D-5446-A806-EB49BE56C8F2
-|vm_32         |hadoopslave         |iron32      |133.17.68.204   |simhosta4                  |SUT                 |ai_2    |none       |C4CE4B33-7CFD-50CB-BD26-645D431E236C
-|vm_33         |client_daytrader    |nano32      |16.174.212.90   |simhostd3                  |LG                  |ai_3    |none       |D6DEE6FD-5C09-5F1E-9F0F-8327CEBE7A47
-|vm_34         |db2                 |copper32    |19.206.141.143  |simhostb3                  |SUT                 |ai_3    |none       |2726062C-1A5E-504D-AAE6-A27DC8B77B31
-|vm_35         |was                 |iron32      |206.54.3.178    |simhostb3                  |SUT                 |ai_3    |none       |154EBE1E-6C2C-52AB-B17E-FDA0E360EDE3
-|vm_36         |was                 |iron32      |69.161.136.59   |simhostb0                  |SUT                 |ai_4    |none       |29235B2B-44B0-5233-8155-84A65D813CF7
-|vm_37         |client_daytrader    |nano32      |166.31.137.41   |simhostd3                  |LG                  |ai_4    |none       |E6421AAA-785B-5D3E-9327-C34590446358
-|vm_38         |db2                 |copper32    |3.141.157.45    |simhostc2                  |SUT                 |ai_4    |none       |852EF342-A897-5208-B040-B6BAA88EF671
-|vm_40         |netserver           |iron32      |10.50.107.94    |simhostc1                  |SUT                 |ai_5    |none       |3599B3EB-9B41-53FC-B468-846C40D223F3
-|vm_39         |netclient           |platinum64  |116.80.208.127  |simhostc1                  |SUT                 |ai_5    |none       |13A46737-D784-5408-928A-0BD421B69AB9
-|vm_41         |hadoopmaster        |copper32    |52.131.164.238  |simhostc4                  |SUT                 |ai_6    |none       |52A1CE1A-2D5C-52AE-AC7B-B2F0BC8AEEC6
-|vm_42         |hadoopslave         |platinum64  |228.40.180.105  |simhostc1                  |SUT                 |ai_6    |none       |67884834-2C03-5566-AC42-BDEC34543E4B
-|vm_43         |was                 |iron32      |183.130.102.4   |simhostb1                  |SUT                 |ai_1    |none       |084EE433-1A3B-584A-9640-29D19C000959
-|Used Memory                                          |40.79M                        
-|Uptime (in seconds)                                  |13566008                      
-|Total Connections Received                           |6495054                       
-|Total Commands Processed                             |94021076                      
-|Number of Keys                                       |557                           
-|Storage Size                                         |16113934320.0                 
-|Data Size                                            |13823442928.0                 
-|Index Size                                           |550481904                     
-|Average Object Size                                  |6600.82271416                 
-|Collections                                          |60                            
-|D30F1B96-9225-51C9-95FF-3355AD659B11 (simzone_d) VM RESERVATIONS|3                             
-|3C091D65-A8D9-5ECF-9C95-36A39D5CAA39 (simzone_a) VM RESERVATIONS|1                             
-|671172C3-2E80-5782-AB0C-C348A586106A (simzone_c) VM RESERVATIONS|7                             
-|96342978-982B-5D60-9FF3-0C0B3F9C41A9 (simzone_b) VM RESERVATIONS|7                             
+Background operation execution success. Operation "vm-capture" will be processed asynchronously, through the command "/home/mrhines/cbtool/lib/operations//../../cbact --procid=TEST_mrhines --osp=port:6379,experiment_inst:TEST_mrhines,host:172.16.1.222,pid:TEST_mrhines,dbid:0,timout:70,protocol:TCP,kind:redis,username:mrhines --msp=cloudoption_testcloud_host:172.16.0.254,timeout:240,cloudoption_testcloud_usage:shared,host:172.16.1.222,port:27017,pid:TEST_mrhines,database:metrics,protocol:TCP,kind:mongodb,username:mrhines --oop=TESTCLOUD,oldest,none --operation=vm-capture --cn=TESTCLOUD --uuid=159BEAA1-489F-56C7-91F9-D6A731CA1082 --daemon". The process id is 23352.
+|ai_3      |daytrader      |1_x_client_daytrader->1_x_was->1_x_db2            |27.101.211.133  |1377116174     |none                                    |7897B1D4-A980-5791-A49C-A53A93F9438D
+|ai_4      |daytrader      |1_x_client_daytrader->1_x_was->1_x_db2            |139.18.238.64   |1377116214     |none                                    |4A6B28C8-559F-5A45-AC3A-81B7EE2C5905
+|ai_5      |netperf        |1_x_netclient->1_x_netserver                      |42.48.247.97    |1377116232     |none                                    |2893F9D2-B2F4-5336-AACF-185CD051C7B4
+|vm_33         |client_daytrader    |nano32      |27.101.211.133  |simhosta3                  |SUT                 |ai_3    |none       |5A6D596F-9A37-559D-B963-C1A828DDA7D6
+|vm_35         |db2                 |platinum64  |5.246.211.39    |simhosta1                  |SUT                 |ai_3    |none       |C4F9C0A2-5790-5FB5-976E-BB476F5D0769
+|vm_34         |was                 |iron32      |214.114.210.208 |simhostb4                  |SUT                 |ai_3    |none       |19666E3F-3A5A-5D39-B082-1D0582C7520C
+|vm_36         |client_daytrader    |nano32      |139.18.238.64   |simhosta1                  |SUT                 |ai_4    |none       |7FAFE001-6508-515F-8E7F-178E5E1EE0A5
+|vm_37         |was                 |iron32      |163.226.165.2   |simhostb1                  |SUT                 |ai_4    |none       |23B6B396-25BE-5C09-8705-0965BF838239
+|vm_38         |db2                 |platinum64  |125.203.252.206 |simhostb4                  |SUT                 |ai_4    |none       |F36E3D37-2F2F-51FA-81F2-C3F8B060F369
+|vm_39         |netclient           |platinum64  |42.48.247.97    |simhostb1                  |SUT                 |ai_5    |none       |91F78A16-93D7-536B-A896-F9779639FA00
+|vm_40         |netserver           |iron32      |215.173.15.136  |simhostc1                  |SUT                 |ai_5    |none       |79E35CB0-A3FE-5151-A726-666E3270255E
+|Used Memory                                          |20.86M                        
+|Uptime (in seconds)                                  |2517436                       
+|Total Connections Received                           |185779                        
+|Total Commands Processed                             |11889153                      
+|Storage Size                                         |18350080                      
+|Data Size                                            |7026956                       
+|Index Size                                           |2199344                       
+|Average Object Size                                  |613.065433607                 
+|EDC9615C-DB1F-5769-9826-61B84283AFD7 (simzone_c) VM RESERVATIONS|1                             
+|702C293B-8403-5C96-B515-6AE61AE13658 (simzone_a) VM RESERVATIONS|3                             
+|34819FA6-FE78-5D1D-A68D-0E43FEBFD8A5 (simzone_b) VM RESERVATIONS|4                             
+|271ADA73-1C6A-581D-A1BA-730D86DF8704 (simzone_d) VM RESERVATIONS|0                             

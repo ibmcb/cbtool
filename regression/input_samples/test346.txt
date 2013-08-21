@@ -1,2 +1,2 @@
-monextract TESTCLOUD VM os
-shell TESTCLOUD cat ~/cloudbench/data/REGRESSION_B/VM_runtime_os_*REGRESSION*
+shell TESTCLOUD rm -rf /home/mrhines/cbtool/regression/..//data/REGRESSION_B
+shell TESTCLOUD ls -la /home/mrhines/cbtool/regression/..//data/REGRESSION_B/

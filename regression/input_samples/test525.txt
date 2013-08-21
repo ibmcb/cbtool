@@ -1,3 +1,5 @@
-airunstate ai_3 attached
-stateshow
+aiattach netperf netclient_pref_pool=SUT,netclient_size=platinum64
+ailist
+vmlist
+aishow ai_5 detach_parallelism,ssh_key_name,sut
 stats

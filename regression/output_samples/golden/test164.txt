@@ -1,2 +1,1 @@
-The following FIRSs are attached to this experiment (Cloud TESTCLOUD) :
-No objects available.
+Usage: firsalter <cloud_name> <identifier> <attribute> <value> 

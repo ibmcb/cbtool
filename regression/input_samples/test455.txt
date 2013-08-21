@@ -1,4 +1,5 @@
-vmcattach simzone_a
+vmcdetach simzone_d
+vmcdetach simzone_c
+vmcdetach simzone_b
 vmclist
-vmcshow simzone_a
 stats

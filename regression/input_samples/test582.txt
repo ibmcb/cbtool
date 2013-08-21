@@ -1,6 +1,4 @@
-aidrsdetach all
-aidetach all
-aidrslist
-ailist
-vmlist
+vmprotect youngest source async
+waitfor 10s
 stats
+vmlist

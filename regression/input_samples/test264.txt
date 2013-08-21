@@ -1,5 +1,5 @@
-aiattach TESTCLOUD daytrader detach_parallelism=9,ssh_key_name=AAAABBBBCCCCDDDDEEEE
+aiattach TESTCLOUD netperf netclient_pref_pool=SUT,netclient_size=platinum64
 ailist TESTCLOUD
 vmlist TESTCLOUD
-aishow TESTCLOUD ai_3 detach_parallelism,ssh_key_name,sut
+aishow TESTCLOUD ai_5 detach_parallelism,ssh_key_name,sut
 stats TESTCLOUD

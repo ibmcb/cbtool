@@ -1,1 +1,1 @@
-Current default cloud is "TESTCLOUD". Need cloud name to be set as default cloud or 'none' to unset.
+*** Unknown syntax: cldparse

@@ -1,1 +1,1 @@
-viewlist TESTCLOUD
+vmccleanup TESTCLOUD simzone_a

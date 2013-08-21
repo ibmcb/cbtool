@@ -1,1 +1,1 @@
-Usage: patternshow <cloud_name> <pattern> 
+Current experiment identifier is "EXP-08-21-2013-04-00-02-PM-EDT".

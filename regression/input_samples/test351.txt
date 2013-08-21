@@ -1,1 +1,1 @@
-clddetach TESTCLOUD
+cldattach

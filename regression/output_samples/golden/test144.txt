@@ -1,1 +1,1 @@
-Usage: airestore <cloud_name> <identifier> [mode] 
+Usage: airepair <cloud_name> <identifier> [firs = none] [mode] 

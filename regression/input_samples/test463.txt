@@ -1,3 +1,5 @@
-vmcattach all
+vmcattach all async
+waitfor 8s
 vmclist
+vmcshow simzone_c update_attempts,update_frequency
 stats

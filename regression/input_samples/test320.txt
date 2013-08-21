@@ -1,5 +1,3 @@
-aidrsdetach TESTCLOUD aidrs_1
-aidrslist TESTCLOUD
-ailist TESTCLOUD
-vmlist TESTCLOUD
+vmprotect TESTCLOUD youngest dest
 stats TESTCLOUD
+vmlist TESTCLOUD

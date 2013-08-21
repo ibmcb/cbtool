@@ -1,2 +1,12 @@
-VIEWs with the following criteria can be used onto this experiment (Cloud TESTCLOUD) :
-vmcrs:username or pattern or scope, svm:username or vmc or role or type or ai or aidrs, vmc:pool or username, firs:username or pattern or scope, vm:username or vmc or host or role or type or ai or aidrs, ai:username or type or aidrs, host:username or vmc, aidrs:username or pattern
+Going to unconditionally wait for 10s (10 seconds). The command line interface will be blocked during the waiting.
+Waited 1 seconds... (10.0%)
+Waited 2 seconds... (20.0%)
+Waited 3 seconds... (30.0%)
+Waited 4 seconds... (40.0%)
+Waited 5 seconds... (50.0%)
+Waited 6 seconds... (60.0%)
+Waited 7 seconds... (70.0%)
+Waited 8 seconds... (80.0%)
+Waited 9 seconds... (90.0%)
+Waited 10 seconds... (100.0%)
+Waited for 10 seconds.

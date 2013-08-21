@@ -1,1 +1,1 @@
-Usage: aidrsshow <cloud_name> <identifier> [key = all] 
+Usage: aidrslist <cloud_name> [state = default] [limit = none] 

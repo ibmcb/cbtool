@@ -1,4 +1,4 @@
-aidetach ai_12
+aicapture oldest
 ailist
 vmlist
 stats

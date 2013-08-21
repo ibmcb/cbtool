@@ -1,2 +1,2 @@
 monextract VM management
-shell cat ~/cloudbench/data/REGRESSION_B/VM*man*REGRESSION*
+shell cat /home/mrhines/cbtool/regression/..//data/REGRESSION_B/VM*man*REGRESSION*

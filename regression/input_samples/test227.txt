@@ -1,4 +1,3 @@
-vmattach TESTCLOUD tinyvm async=2
-waituntil TESTCLOUD VM ARRIVED=8 increasing 1
+vmattach TESTCLOUD tinyvm
 vmlist TESTCLOUD
 stats TESTCLOUD

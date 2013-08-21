@@ -1,2 +1,2 @@
 monextract all
-shell ls -la ~/cloudbench/data/REGRESSION_B
+shell ls -la /home/mrhines/cbtool/regression/..//data/REGRESSION_B

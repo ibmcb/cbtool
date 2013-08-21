@@ -1,1 +1,1 @@
-Usage: cldattach <cloud model> <cloud name> [definitions file] 
+Usage: cldalter <cloud_name> <gobject> <attribute> <value> 

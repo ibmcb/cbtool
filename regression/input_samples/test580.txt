@@ -1,8 +1,4 @@
-aidrsattach simplenw
-aidrsalter aidrs_2 max_ais=5
-aidrsalter aidrs_2 iait=6
-aidrsshow aidrs_2 all
-aidrslist
-ailist
-vmlist
+vmmigrate youngest source async
+waitfor 10s
 stats
+vmlist

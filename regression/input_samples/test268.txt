@@ -1,3 +1,4 @@
-airepair TESTCLOUD ai_3
-stateshow TESTCLOUD
+aiattach TESTCLOUD daytrader
+ailist TESTCLOUD
+vmlist TESTCLOUD
 stats TESTCLOUD

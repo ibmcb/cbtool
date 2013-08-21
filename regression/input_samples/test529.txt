@@ -1,3 +1,4 @@
-airestore ai_3
-stateshow
+aiattach daytrader
+ailist
+vmlist
 stats

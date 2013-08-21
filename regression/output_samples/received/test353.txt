@@ -1,1 +1,4 @@
-Usage: cldattach <cloud model> <cloud name> [definitions file] 
+The following CLOUDs are attached to this experiment (Cloud ) :
+|name                    |model                   |description             
+|TESTCLOUD               |sim                     |Cloudbench SimCloud.    
+

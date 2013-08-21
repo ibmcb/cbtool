@@ -1,16 +1,20 @@
-|arrival                                 |1374526971                           
-|cloud_hostname                          |F95E4236-9F20-5F50-B7E0-DF8E42D71FE4.simcloud.com
-|cloud_ip                                |150.236.130.83                       
-|cloud_mac                               |00:16:3e:6b:a7:61                    
-|cloud_vm_name                           |cb-msilva-vm_1-tinyvm                
-|cloud_vm_uuid                           |F95E4236-9F20-5F50-B7E0-DF8E42D71FE4 
-|command_originated                      |1374526969                           
-|host                                    |EF65B200-D686-58DD-A1F0-B92F184A3536 
-|host_cloud_ip                           |197.77.118.128                       
-|host_name                               |simhosta3                            
-|mgt_001_provisioning_request_originated |1374526969                           
-|prov_cloud_ip                           |150.236.130.83                       
-|uuid                                    |88688644-A3F7-5788-83E8-BC0D4176A31E 
-|vmc                                     |3C091D65-A8D9-5ECF-9C95-36A39D5CAA39 
-|vmc_cloud_ip                            |20.65.192.210                        
-|vmc_name                                |simzone_a                            
+ status: Waiting for vm_2 (cloud-assigned uuid 26FE1000-EB71-5C7B-B222-64A582245ECD) to be captured with image name "vm_2_at_1377116014"...
+ status: Sending a termination request for vm_2 (cloud-assigned uuid 26FE1000-EB71-5C7B-B222-64A582245ECD)....
+VM object 64875D1D-49B1-53A2-8716-F249454E3600 (named "vm_2") successfully captured on this experiment.
+|vm_1          |tinyvm              |pico32      |122.242.46.190  |simhosta3                  |SUT                 |none    |none       |AA8389FA-A2FB-597A-9378-2C4BE6BB64F1
+|vm_3          |tinyvm              |pico32      |45.179.75.33    |simhostb1                  |SUT                 |none    |none       |78A9B4EA-D27C-5C51-94BA-A2BF3D4BC172
+|vm_4          |db2                 |copper32    |24.154.132.165  |simhostb2                  |SUT                 |none    |none       |C4BEA5B7-0A8B-5924-B8C4-4ABDB8154E74
+|vm_5          |netclient           |platinum64  |82.96.17.5      |simhostb2                  |SUT                 |none    |none       |4F9B903A-54B2-5A82-B475-D8E773AC41B5
+|Used Memory                                          |19.46M                        
+|Uptime (in seconds)                                  |2517138                       
+|Total Connections Received                           |185732                        
+|Total Commands Processed                             |11820690                      
+|Number of Keys                                       |325                           
+|Storage Size                                         |18350080                      
+|Data Size                                            |6913196                       
+|Index Size                                           |2150288                       
+|Average Object Size                                  |613.306955287                 
+|EDC9615C-DB1F-5769-9826-61B84283AFD7 (simzone_c) VM RESERVATIONS|0                             
+|702C293B-8403-5C96-B515-6AE61AE13658 (simzone_a) VM RESERVATIONS|1                             
+|34819FA6-FE78-5D1D-A68D-0E43FEBFD8A5 (simzone_b) VM RESERVATIONS|3                             
+|271ADA73-1C6A-581D-A1BA-730D86DF8704 (simzone_d) VM RESERVATIONS|0                             

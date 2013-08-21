@@ -1,4 +1,1 @@
-vmcdetach all async
-waitfor 8s
-vmclist
-stats
+reserved for hostfail

@@ -1,1 +1,1 @@
-Usage: waitfor <cloud_name> <time> [update_interval = default] 
+Usage: Usage: shell <cloud name> <command name> 

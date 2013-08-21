@@ -1,1 +1,2 @@
-Usage: cldalter <cloud_name> <object> <attribute> <value> 
+VMCs with the following pools are attached to to this experiment (Cloud TESTCLOUD) :
+

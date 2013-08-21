@@ -1,1 +1,1 @@
-Usage: vmccleanup <cloud_name> <identifier> 
+Usage: vmcalter <cloud_name> <identifier> <attribute> <value> 

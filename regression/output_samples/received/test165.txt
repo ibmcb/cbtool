@@ -1,1 +1,1 @@
-Usage: firsshow <cloud_name> <identifier> [key = all] 
+Usage: firsdetach <cloud_name> <identifier> [force = False] [mode] 

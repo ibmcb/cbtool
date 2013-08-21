@@ -1,5 +1,3 @@
-vmcdetach simzone_d
-vmcdetach simzone_c
-vmcdetach simzone_b
+vmcdetach all
 vmclist
 stats

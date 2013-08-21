@@ -1,1 +1,1 @@
-shell
+viewlist TESTCLOUD

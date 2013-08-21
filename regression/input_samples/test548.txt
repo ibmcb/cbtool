@@ -1,1 +1,4 @@
-aiattach netperf async=4:2
+aiattach filebench
+ailist
+vmlist
+stats

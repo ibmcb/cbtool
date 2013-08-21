@@ -1,1 +1,1 @@
-Usage: typealter <cloud_name> <type_name> <attribute> <value> 
+Usage: patternlist <cloud_name> 

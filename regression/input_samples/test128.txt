@@ -1,1 +1,1 @@
-vmsave
+vmsuspend

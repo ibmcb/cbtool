@@ -1,1 +1,2 @@
-Usage: viewshow <cloud_name> <object> <criterion> <expression> [sorting = default] [filter = default] 
+The following VMCs are attached to this experiment (Cloud TESTCLOUD) :
+No objects available.

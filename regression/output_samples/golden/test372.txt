@@ -1,1 +1,2 @@
-Usage: vmccleanup <cloud_name> <identifier> 
+The following VMCs are attached to this experiment (Cloud TESTCLOUD) :
+No objects available.

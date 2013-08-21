@@ -1,16 +1,9 @@
- total 87044
-drwxrwxr-x  2 msilva msilva     4096 Jul 22 17:14 .
-drwxr-xr-x 26 msilva msilva     4096 Jul 22 17:14 ..
--rw-r--r--  1 msilva msilva      424 Jul 22 16:49 gui.log
--rw-rw-r--  1 msilva msilva     1014 Jul 22 17:14 HOST_runtime_os_REGRESSION_B.csv
--rw-r--r--  1 msilva msilva        0 Jul 22 16:49 loadmanager.log
--rw-r--r--  1 msilva msilva        0 Jul 22 16:49 monitor.log
--rw-r--r--  1 msilva msilva 88533656 Jul 22 17:14 operations.log
--rw-r--r--  1 msilva msilva        0 Jul 22 16:49 remotescripts.log
--rw-r--r--  1 msilva msilva        0 Jul 22 16:49 report.log
--rw-r--r--  1 msilva msilva   191077 Jul 22 17:14 submmiter.log
--rw-r--r--  1 msilva msilva        0 Jul 22 16:49 subscribe.log
--rw-rw-r--  1 msilva msilva    61378 Jul 22 17:14 trace_REGRESSION_B.csv
--rw-rw-r--  1 msilva msilva    84412 Jul 22 17:14 VM_management_REGRESSION_B.csv
--rw-rw-r--  1 msilva msilva      310 Jul 22 17:14 VM_runtime_app_REGRESSION_B.csv
--rw-rw-r--  1 msilva msilva     1062 Jul 22 17:14 VM_runtime_os_REGRESSION_B.csv
+ total 1532
+drwxrwxr-x 2 mrhines mrhines   4096 Aug 21 16:24 .
+drwxrwxr-x 3 mrhines mrhines   4096 Aug 21 16:24 ..
+-rw-rw-r-- 1 mrhines mrhines   1014 Aug 21 16:24 HOST_runtime_os_REGRESSION_B.csv
+-rw-rw-r-- 1 mrhines mrhines 233094 Aug 21 15:59 regression_test_experiment_plan.txt
+-rw-rw-r-- 1 mrhines mrhines 583352 Aug 21 16:24 trace_REGRESSION_B.csv
+-rw-rw-r-- 1 mrhines mrhines 725410 Aug 21 16:24 VM_management_REGRESSION_B.csv
+-rw-rw-r-- 1 mrhines mrhines    310 Aug 21 16:24 VM_runtime_app_REGRESSION_B.csv
+-rw-rw-r-- 1 mrhines mrhines   1062 Aug 21 16:24 VM_runtime_os_REGRESSION_B.csv

@@ -1,18 +1,16 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Background operation execution success. Operation "vm-migrate" will be processed asynchronously, through the command "/home/mrhines/cbtool/lib/operations//../../cbact --procid=TEST_mrhines --osp=port:6379,experiment_inst:TEST_mrhines,host:172.16.1.222,pid:TEST_mrhines,dbid:0,timout:70,protocol:TCP,kind:redis,username:mrhines --msp=cloudoption_testcloud_host:172.16.0.254,timeout:240,cloudoption_testcloud_usage:shared,host:172.16.1.222,port:27017,pid:TEST_mrhines,database:metrics,protocol:TCP,kind:mongodb,username:mrhines --oop=TESTCLOUD,youngest,source,tcp,default --operation=vm-migrate --cn=TESTCLOUD --uuid=D3CEE145-B588-52A5-AE5C-C586E06D1C41 --daemon". The process id is 18751.
+|Used Memory                                          |23.70M                        
+|Uptime (in seconds)                                  |2517042                       
+|Total Connections Received                           |185719                        
+|Total Commands Processed                             |11785326                      
+|Storage Size                                         |18579456                      
+|Data Size                                            |6833388                       
+|Index Size                                           |2142112                       
+|Average Object Size                                  |616.286796537                 
+|3ABC7124-2767-578E-8FA4-5BA4D7EF4E0D (simzone_dest) VM RESERVATIONS|0                             
+|AD93E38D-EAEC-5C15-BA20-7A27F63D13FF (simzone_b) VM RESERVATIONS|0                             
+|6CC3359A-51FD-5220-B2C1-AB24DFED5C89 (simzone_source) VM RESERVATIONS|1                             
+|E4B581D8-2DD3-5956-8196-B1B60C5DC5B0 (simzone_d) VM RESERVATIONS|0                             
+|AD29082C-1389-58A3-BE64-3784D075F191 (simzone_c) VM RESERVATIONS|0                             
+|75A875C6-F2C5-5C3D-BD34-051FBBE24C3A (simzone_a) VM RESERVATIONS|0                             
+|vm_129        |tinyvm              |pico32      |203.26.198.136  |source                     |sut                 |none    |none       |D3CEE145-B588-52A5-AE5C-C586E06D1C41

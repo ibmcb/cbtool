@@ -1,1 +1,1 @@
-Current experiment identifier is "EXP-07-01-2013-01-56-48-PM-EDT".
+Usage: vmcshow <cloud_name> <identifier> [key = all] 

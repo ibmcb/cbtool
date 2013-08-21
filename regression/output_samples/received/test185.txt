@@ -1,5 +1,4 @@
-running shell command: "date"....
-stdout:
- Mon Jul 22 16:49:26 EDT 2013
-
-
+ status: Attribute "collect_from_host" was set to "false". Skipping Host OS performance monitor daemon startup
+The global object "time" on Cloud TESTCLOUD was modified:
+|"sub-attribute" (key)                |old value                          |new value                          
+|experiment_id                        |EXP-08-21-2013-04-00-02-PM-EDT     |REGRESSION_A                       

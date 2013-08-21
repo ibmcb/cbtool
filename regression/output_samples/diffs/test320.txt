@@ -1,14 +1,17 @@
-AIDRS object F2E73819-2C8B-55DB-A8DD-C02AB4F6A443 (named "aidrs_1") was sucessfully detached from this experiment.
-|Used Memory                                          |44.18M                        
-|Uptime (in seconds)                                  |13565586                      
-|Total Connections Received                           |6494991                       
-|Total Commands Processed                             |93935348                      
-|Storage Size                                         |16113442800.0                 
-|Data Size                                            |13823238596.0                 
-|Index Size                                           |550351088                     
-|Average Object Size                                  |6601.90416778                 
-|Collections                                          |60                            
-|59038ADB-0C9D-5DC8-8D0F-858C40A339D8 (simzone_b) VM RESERVATIONS|0                             
-|64F2E709-607C-5D1E-9ED5-402265D29FB4 (simzone_d) VM RESERVATIONS|0                             
-|538D06C6-8C24-51C6-AC34-D9ECDD4133D6 (simzone_c) VM RESERVATIONS|0                             
-|CA6252C4-6803-5C5C-BAA8-5BC509EE3CE0 (simzone_a) VM RESERVATIONS|0                             
+ status: Sending a protect request for vm_129 (cloud-assigned uuid 89706B61-8F59-5FEF-9D80-2A0125CDFDC3)....
+VM object D3CEE145-B588-52A5-AE5C-C586E06D1C41 (named "vm_129") successfully protected on this experiment.
+|Used Memory                                          |23.72M                        
+|Uptime (in seconds)                                  |2517044                       
+|Total Connections Received                           |185719                        
+|Total Commands Processed                             |11785890                      
+|Storage Size                                         |18579456                      
+|Data Size                                            |6834220                       
+|Index Size                                           |2142112                       
+|Average Object Size                                  |616.250676285                 
+|3ABC7124-2767-578E-8FA4-5BA4D7EF4E0D (simzone_dest) VM RESERVATIONS|1                             
+|AD93E38D-EAEC-5C15-BA20-7A27F63D13FF (simzone_b) VM RESERVATIONS|0                             
+|6CC3359A-51FD-5220-B2C1-AB24DFED5C89 (simzone_source) VM RESERVATIONS|0                             
+|E4B581D8-2DD3-5956-8196-B1B60C5DC5B0 (simzone_d) VM RESERVATIONS|0                             
+|AD29082C-1389-58A3-BE64-3784D075F191 (simzone_c) VM RESERVATIONS|0                             
+|75A875C6-F2C5-5C3D-BD34-051FBBE24C3A (simzone_a) VM RESERVATIONS|0                             
+|vm_129        |tinyvm              |pico32      |203.26.198.136  |dest                       |sut                 |none    |none       |D3CEE145-B588-52A5-AE5C-C586E06D1C41

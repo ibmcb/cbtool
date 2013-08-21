@@ -1,1 +1,1 @@
-Usage: hostlist <cloud_name> [state = default] [limit = none] 
+Usage: vmprotect <cloud_name> <identifier> <destination> [protocol = tcp] [interface = default] [mode] 

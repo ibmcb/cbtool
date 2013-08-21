@@ -1,1 +1,1 @@
-Usage: svmfail <cloud_name> <identifier> [mode] 
+Usage: waituntil <cloud name> <object type> <counter>=<value> [direction] [update interval] 

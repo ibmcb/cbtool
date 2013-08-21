@@ -1,4 +1,4 @@
-aiattach hpcc
+aidetach youngest
 ailist
 vmlist
 stats

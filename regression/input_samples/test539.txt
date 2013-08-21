@@ -1,5 +1,2 @@
-vmcapture oldest async
-waitfor 25s
-ailist
-vmlist
-stats
+typealter daytrader load_balancer=true
+typeshow daytrader

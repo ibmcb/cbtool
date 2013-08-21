@@ -1,5 +1,1 @@
-airestore TESTCLOUD ai_28
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
-stateshow TESTCLOUD
+aidrsalter TESTCLOUD aidrs_1 max_ais=20

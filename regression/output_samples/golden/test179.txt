@@ -1,1 +1,5 @@
-Usage: monextract <cloud name> <object type> <metric type> [experiment id] 
+The following CLOUDs are attached to this experiment (Cloud ) :
+|name                    |model                   |description             
+|TESTCLOUD               |sim                     |Cloudbench SimCloud.    
+
+Current default cloud is "None". Need cloud name to be set as default cloud or 'none' to unset.

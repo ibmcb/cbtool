@@ -1,1 +1,1 @@
-Usage: aidrslist <cloud_name> [state = default] [limit = none] 
+Usage: aidrsattach <cloud_name> <pattern> [temp_attr_list = empty=empty] [mode] 

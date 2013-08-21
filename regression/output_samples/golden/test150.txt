@@ -1,1 +1,1 @@
-Usage: aicapture <cloud_name> <identifier> [vmcrs = none] [mode] 
+Usage: aidetach <cloud_name> <identifier> [force = False] [mode] 

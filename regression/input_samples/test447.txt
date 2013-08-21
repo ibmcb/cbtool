@@ -1,1 +1,1 @@
-typeshow daytrader
+expid REGRESSION_B

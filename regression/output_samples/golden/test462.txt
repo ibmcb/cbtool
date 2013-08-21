@@ -1,49 +1,49 @@
- status: VMC 266BCC38-8839-5831-AACB-F08BE351C381 was successfully registered on SimCloud "TESTCLOUD".
- status: VMC 891CD362-3D5C-5CA8-8335-2D490F237255 was successfully registered on SimCloud "TESTCLOUD".
- status: VMC 3B9AF108-88F9-5C02-8112-6DD5C1AA73BA was successfully registered on SimCloud "TESTCLOUD".
- status: VMC 47471919-D9F3-543E-A558-337D41D975D0 was successfully registered on SimCloud "TESTCLOUD".
- status: Attribute "collect_from_host" was set to "false". Skipping Host OS performance monitor daemon startup
-All VMCs successfully attached to this experiment.
-The following VMCs are attached to this experiment (Cloud TESTCLOUD) :
-|name                    |host_count      |pool                    |cloud_hostname                  |cloud_ip         
-|simzone_a               |5               |sut                     |simzone_a                       |125.120.154.99   
-|simzone_c               |5               |sut                     |simzone_c                       |87.220.99.66     
-|simzone_b               |5               |sut                     |simzone_b                       |146.35.147.3     
-|simzone_d               |5               |lg                      |simzone_d                       |199.187.194.85   
+Background operation execution success. Operation "vmc-detach" will be processed asynchronously, through the command "/home/mrhines/cbtool/lib/operations//../../cbact --procid=TEST_mrhines --osp=port:6379,experiment_inst:TEST_mrhines,host:172.16.1.222,pid:TEST_mrhines,dbid:0,timout:70,protocol:TCP,kind:redis,username:mrhines --msp=cloudoption_testcloud_host:172.16.0.254,timeout:240,cloudoption_testcloud_usage:shared,host:172.16.1.222,port:27017,pid:TEST_mrhines,database:metrics,protocol:TCP,kind:mongodb,username:mrhines --oop=TESTCLOUD,all,false --operation=vmc-detach --cn=TESTCLOUD --uuid=ALL --daemon". The process id is 3201.
 
+Going to unconditionally wait for 8s (8 seconds). The command line interface will be blocked during the waiting.
+Waited 1 seconds... (12.5%)
+Waited 2 seconds... (25.0%)
+Waited 3 seconds... (37.5%)
+Waited 4 seconds... (50.0%)
+Waited 5 seconds... (62.5%)
+Waited 6 seconds... (75.0%)
+Waited 7 seconds... (87.5%)
+Waited 8 seconds... (100.0%)
+Waited for 8 seconds.
+The following VMCs are attached to this experiment (Cloud TESTCLOUD) :
+No objects available.
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |39.59M                        
-|Redis Version                                        |2.5.12                        
-|Uptime (in seconds)                                  |11740930                      
-|Total Connections Received                           |6492819                       
-|Total Commands Processed                             |92892581                      
-|Number of Keys                                       |269                           
+|Used Memory                                          |19.29M                        
+|Redis Version                                        |2.6.2                         
+|Uptime (in seconds)                                  |2512405                       
+|Total Connections Received                           |185452                        
+|Total Commands Processed                             |11291660                      
+|Number of Keys                                       |114                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|MongoDB Version                                      |2.0.6                         
-|Storage Size                                         |13967024128.0                 
-|Data Size                                            |12134696528.0                 
-|Index Size                                           |502922112                     
-|Average Object Size                                  |6345.13178857                 
-|Collections                                          |61                            
+|MongoDB Version                                      |2.4.5                         
+|Storage Size                                         |18264064                      
+|Data Size                                            |6134324                       
+|Index Size                                           |1970416                       
+|Average Object Size                                  |619.753889675                 
+|Collections                                          |13                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
-|VMCs                                                 |4                             
-|HOSTs                                                |20                            
+|VMCs                                                 |0                             
+|HOSTs                                                |0                             
 |VMs                                                  |0                             
-|SVMs                                                 |0                             
 |AIs                                                  |0                             
 |AIDRSs                                               |0                             
 |VMCRSs                                               |0                             
 |FIRSs                                                |0                             
 ------------------ EXPERIMENT-WIDE COUNTERS ------------------
 |Counter                                              |Value                         
-|VMC RESERVATIONS                                     |4                             
-|VMCs ARRIVED                                         |8                             
+|VMC RESERVATIONS                                     |0                             
+|VMCs ARRIVED                                         |12                            
 |VMCs ARRIVING                                        |0                             
-|VMCs DEPARTED                                        |4                             
+|VMCs DEPARTED                                        |12                            
 |VMCs DEPARTING                                       |0                             
 |VMCs FAILED                                          |0                             
 |HOST RESERVATIONS                                    |0                             
@@ -59,12 +59,6 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |VMs DEPARTED                                         |0                             
 |VMs DEPARTING                                        |0                             
 |VMs FAILED                                           |0                             
-|SVM RESERVATIONS                                     |0                             
-|SVMs ARRIVED                                         |0                             
-|SVMs ARRIVING                                        |0                             
-|SVMs DEPARTED                                        |0                             
-|SVMs DEPARTING                                       |0                             
-|SVMs FAILED                                          |0                             
 |AI RESERVATIONS                                      |0                             
 |AIs ARRIVED                                          |0                             
 |AIs ARRIVING                                         |0                             
@@ -90,11 +84,5 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |FIRSs DEPARTED                                       |0                             
 |FIRSs DEPARTING                                      |0                             
 |FIRSs FAILED                                         |0                             
-|EXPERIMENT COUNTER                                   |32                            
-
- ---------------- VMC-WIDE COUNTERS ----------------
-|266BCC38-8839-5831-AACB-F08BE351C381 (simzone_a) VM RESERVATIONS|0                             
-|3B9AF108-88F9-5C02-8112-6DD5C1AA73BA (simzone_b) VM RESERVATIONS|0                             
-|891CD362-3D5C-5CA8-8335-2D490F237255 (simzone_c) VM RESERVATIONS|0                             
-|47471919-D9F3-543E-A558-337D41D975D0 (simzone_d) VM RESERVATIONS|0                             
+|EXPERIMENT COUNTER                                   |84                            
 

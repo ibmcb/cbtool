@@ -1,4 +1,5 @@
-aidetach TESTCLOUD youngest
+aiattach TESTCLOUD hadoop save_on_attach=true
 ailist TESTCLOUD
 vmlist TESTCLOUD
 stats TESTCLOUD
+stateshow TESTCLOUD

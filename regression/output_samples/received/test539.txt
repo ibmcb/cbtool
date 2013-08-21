@@ -1,111 +1,35 @@
-Background operation execution success. Operation "vm-capture" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.0.254,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,timeout:240,host:172.16.0.254,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,oldest,none --operation=vm-capture --cn=TESTCLOUD --uuid=110A5412-EE02-52B1-9F1D-62EF5B7AEDBA --daemon". The process id is 16384.
-
-Going to unconditionally wait for 25s (25 seconds). The command line interface will be blocked during the waiting.
-Waited 10 seconds... (40.0%)
-Waited 20 seconds... (80.0%)
-Waited 25 seconds... (100.0%)
-Waited for 25 seconds.
-The following AIs are attached to this experiment (Cloud TESTCLOUD) :
-|name      |type           |sut                                               |cloud_ip        |arrival        |aidrs                                   |uuid
-|ai_3      |daytrader      |1_x_client_daytrader->1_x_was->1_x_db2            |16.174.212.90   |1374527148     |none                                    |FC7A6FC0-808A-55B4-A80F-E9F94F7EE53E
-|ai_4      |daytrader      |1_x_client_daytrader->1_x_was->1_x_db2            |166.31.137.41   |1374527189     |none                                    |FBE84899-B486-5087-8F5D-6F505D042585
-|ai_5      |netperf        |1_x_netclient->1_x_netserver                      |116.80.208.127  |1374527207     |none                                    |F7A40D5B-B8DF-503D-BFC2-6C58EDD596F2
-
-The following VMs are attached to this experiment (Cloud TESTCLOUD) :
-|name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
-|vm_33         |client_daytrader    |nano32      |16.174.212.90   |simhostd3                  |LG                  |ai_3    |none       |D6DEE6FD-5C09-5F1E-9F0F-8327CEBE7A47
-|vm_34         |db2                 |copper32    |19.206.141.143  |simhostb3                  |SUT                 |ai_3    |none       |2726062C-1A5E-504D-AAE6-A27DC8B77B31
-|vm_35         |was                 |iron32      |206.54.3.178    |simhostb3                  |SUT                 |ai_3    |none       |154EBE1E-6C2C-52AB-B17E-FDA0E360EDE3
-|vm_36         |was                 |iron32      |69.161.136.59   |simhostb0                  |SUT                 |ai_4    |none       |29235B2B-44B0-5233-8155-84A65D813CF7
-|vm_37         |client_daytrader    |nano32      |166.31.137.41   |simhostd3                  |LG                  |ai_4    |none       |E6421AAA-785B-5D3E-9327-C34590446358
-|vm_38         |db2                 |copper32    |3.141.157.45    |simhostc2                  |SUT                 |ai_4    |none       |852EF342-A897-5208-B040-B6BAA88EF671
-|vm_40         |netserver           |iron32      |10.50.107.94    |simhostc1                  |SUT                 |ai_5    |none       |3599B3EB-9B41-53FC-B468-846C40D223F3
-|vm_39         |netclient           |platinum64  |116.80.208.127  |simhostc1                  |SUT                 |ai_5    |none       |13A46737-D784-5408-928A-0BD421B69AB9
-
-The following statistics are available on this experiment (Cloud TESTCLOUD) :
-------------------------- OBJECT STORE -----------------------
-|Metric                                               |Value                         
-|Used Memory                                          |40.89M                        
-|Redis Version                                        |2.5.12                        
-|Uptime (in seconds)                                  |13566069                      
-|Total Connections Received                           |6495057                       
-|Total Commands Processed                             |94030691                      
-|Number of Keys                                       |500                           
-------------------------- METRIC STORE -----------------------
-|Metric                                               |Value                         
-|MongoDB Version                                      |2.0.6                         
-|Storage Size                                         |16113934320.0                 
-|Data Size                                            |13823456332.0                 
-|Index Size                                           |550481904                     
-|Average Object Size                                  |6600.77237995                 
-|Collections                                          |60                            
---------------------- EXPERIMENT OBJECTS ---------------------
-|Object                                               |Count                         
-|VMCs                                                 |4                             
-|HOSTs                                                |20                            
-|VMs                                                  |8                             
-|SVMs                                                 |0                             
-|AIs                                                  |3                             
-|AIDRSs                                               |0                             
-|VMCRSs                                               |0                             
-|FIRSs                                                |0                             
------------------- EXPERIMENT-WIDE COUNTERS ------------------
-|Counter                                              |Value                         
-|VMC RESERVATIONS                                     |4                             
-|VMCs ARRIVED                                         |16                            
-|VMCs ARRIVING                                        |0                             
-|VMCs DEPARTED                                        |12                            
-|VMCs DEPARTING                                       |0                             
-|VMCs FAILED                                          |0                             
-|HOST RESERVATIONS                                    |0                             
-|HOSTs ARRIVED                                        |0                             
-|HOSTs ARRIVING                                       |0                             
-|HOSTs DEPARTED                                       |0                             
-|HOSTs DEPARTING                                      |0                             
-|HOSTs FAILED                                         |0                             
-|VM RESERVATIONS                                      |8                             
-|VMs ARRIVED                                          |43                            
-|VMs ARRIVING                                         |0                             
-|VMs CAPTURING                                        |0                             
-|VMs DEPARTED                                         |35                            
-|VMs DEPARTING                                        |0                             
-|VMs FAILED                                           |3                             
-|SVM RESERVATIONS                                     |0                             
-|SVMs ARRIVED                                         |0                             
-|SVMs ARRIVING                                        |0                             
-|SVMs DEPARTED                                        |0                             
-|SVMs DEPARTING                                       |0                             
-|SVMs FAILED                                          |0                             
-|AI RESERVATIONS                                      |3                             
-|AIs ARRIVED                                          |7                             
-|AIs ARRIVING                                         |0                             
-|AIs CAPTURING                                        |0                             
-|AIs DEPARTED                                         |4                             
-|AIs DEPARTING                                        |0                             
-|AIs FAILED                                           |0                             
-|AIDRS RESERVATIONS                                   |0                             
-|AIDRSs ARRIVED                                       |0                             
-|AIDRSs ARRIVING                                      |0                             
-|AIDRSs DEPARTED                                      |0                             
-|AIDRSs DEPARTING                                     |0                             
-|AIDRSs FAILED                                        |0                             
-|VMCRS RESERVATIONS                                   |0                             
-|VMCRSs ARRIVED                                       |0                             
-|VMCRSs ARRIVING                                      |0                             
-|VMCRSs DEPARTED                                      |0                             
-|VMCRSs DEPARTING                                     |0                             
-|VMCRSs FAILED                                        |0                             
-|FIRS RESERVATIONS                                    |0                             
-|FIRSs ARRIVED                                        |0                             
-|FIRSs ARRIVING                                       |0                             
-|FIRSs DEPARTED                                       |0                             
-|FIRSs DEPARTING                                      |0                             
-|FIRSs FAILED                                         |0                             
-|EXPERIMENT COUNTER                                   |180                           
-
- ---------------- VMC-WIDE COUNTERS ----------------
-|D30F1B96-9225-51C9-95FF-3355AD659B11 (simzone_d) VM RESERVATIONS|2                             
-|3C091D65-A8D9-5ECF-9C95-36A39D5CAA39 (simzone_a) VM RESERVATIONS|0                             
-|671172C3-2E80-5782-AB0C-C348A586106A (simzone_c) VM RESERVATIONS|3                             
-|96342978-982B-5D60-9FF3-0C0B3F9C41A9 (simzone_b) VM RESERVATIONS|3                             
-
+The attribute "load_balancer" on daytrader AI was modified:
+|attribute                              |old value                          |new value                          
+|daytrader_load_balancer                |False                              |true                               
+The AI with the type daytrader has the following configuration on experiment (Cloud TESTCLOUD) :
+sut: client_daytrader->was->db2
+load_manager_role: client_daytrader
+metric_aggregator_role: client_daytrader
+capture_role: db2
+db2_setup1: cb_setup_ramdisk.sh
+db2_setup2: cb_restart_db2.sh
+lb_setup1: cb_restart_loadbalancer.sh
+was_setup2: cb_restart_was.sh
+db2_reset1: cb_restart_db2.sh
+lb_reset1: cb_restart_loadbalancer.sh
+was_reset1: cb_restart_was.sh
+start: cb_daytrader.sh
+load_level: 10
+load_duration: 100
+app_collection: eager
+client_daytrader_pref_pool: sut
+db2_pref_pool: sut
+lb_pref_pool: sut
+load_balancer: true
+load_balancer_port: 9080
+load_balancer_target_children: 2
+load_balancer_target_port: 9080
+load_balancer_target_url: daytrader
+load_balancer_url: daytrader
+load_generator_role: client_daytrader
+load_profile: default
+max_load: 16
+min_load: 1
+periodic_measurements: True
+tradedb_size: large
+was_pref_pool: sut

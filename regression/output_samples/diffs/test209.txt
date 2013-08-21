@@ -1,17 +1,3 @@
-Background operation execution success. Operation "vmc-attachall" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.0.254,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,timeout:240,host:172.16.0.254,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,all,empty=empty --operation=vmc-attachall --cn=TESTCLOUD --uuid=2D5DBC99-4A5A-5427-B789-8FCF182C61F0 --daemon". The process id is 10211.
-|simzone_d               |5               |lg                      |simzone_d                       |223.244.200.19   
-|simzone_b               |5               |sut                     |simzone_b                       |235.146.127.112  
-|simzone_a               |5               |sut                     |simzone_a                       |8.188.4.54       
-|simzone_c               |5               |sut                     |simzone_c                       |119.92.31.62     
-|Uptime (in seconds)                                  |13565002                      
-|Total Connections Received                           |6494861                       
-|Total Commands Processed                             |93766010                      
-|Storage Size                                         |16112218096.0                 
-|Data Size                                            |13822939540.0                 
-|Index Size                                           |550310208                     
-|Average Object Size                                  |6603.01015081                 
-|Collections                                          |59                            
-|59038ADB-0C9D-5DC8-8D0F-858C40A339D8 (simzone_b) VM RESERVATIONS|0                             
-|64F2E709-607C-5D1E-9ED5-402265D29FB4 (simzone_d) VM RESERVATIONS|0                             
-|538D06C6-8C24-51C6-AC34-D9ECDD4133D6 (simzone_c) VM RESERVATIONS|0                             
-|CA6252C4-6803-5C5C-BAA8-5BC509EE3CE0 (simzone_a) VM RESERVATIONS|0                             
+|VMC                         |where BYPOOL = SUT               |75A875C6-F2C5-5C3D-BD34-051FBBE24C3A  |simzone_a              |Wed Aug 21 16:00:50 2013 (1377115250.0)
+|                            |                                 |AD29082C-1389-58A3-BE64-3784D075F191  |simzone_c              |Wed Aug 21 16:00:50 2013 (1377115250.0)
+|                            |                                 |AD93E38D-EAEC-5C15-BA20-7A27F63D13FF  |simzone_b              |Wed Aug 21 16:00:50 2013 (1377115250.0)

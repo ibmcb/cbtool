@@ -1,16 +1,23 @@
- status: vm_24 (cloud-assigned uuid D5AE972D-66F0-5294-BCC5-2F4B77A9A62B) could not be created on SimCloud "TESTCLOUD" : Failed to create VM image (The VM creation was rolled back)
- status: Sending a termination request for vm_24 (cloud-assigned uuid D5AE972D-66F0-5294-BCC5-2F4B77A9A62B)....
-VM object 3BE887A2-B9C6-5154-A808-75BB52E25716 (named "vm_24") could not be attached to this experiment: vm_24 (cloud-assigned uuid D5AE972D-66F0-5294-BCC5-2F4B77A9A62B) could not be created on SimCloud "TESTCLOUD" : Failed to create VM image (The VM creation was rolled back)
-|Used Memory                                          |39.80M                        
-|Uptime (in seconds)                                  |13565904                      
-|Total Connections Received                           |6495044                       
-|Total Commands Processed                             |93996867                      
-|Storage Size                                         |16113934320.0                 
-|Data Size                                            |13823380844.0                 
-|Index Size                                           |550432848                     
-|Average Object Size                                  |6601.04523332                 
-|Collections                                          |60                            
-|D30F1B96-9225-51C9-95FF-3355AD659B11 (simzone_d) VM RESERVATIONS|0                             
-|3C091D65-A8D9-5ECF-9C95-36A39D5CAA39 (simzone_a) VM RESERVATIONS|0                             
-|671172C3-2E80-5782-AB0C-C348A586106A (simzone_c) VM RESERVATIONS|0                             
-|96342978-982B-5D60-9FF3-0C0B3F9C41A9 (simzone_b) VM RESERVATIONS|0                             
+Background operation execution success. Operation "ai-attach" will be processed asynchronously, through the command "/home/mrhines/cbtool/lib/operations//../../cbact --procid=TEST_mrhines --osp=port:6379,experiment_inst:TEST_mrhines,host:172.16.1.222,pid:TEST_mrhines,dbid:0,timout:70,protocol:TCP,kind:redis,username:mrhines --msp=cloudoption_testcloud_host:172.16.0.254,timeout:240,cloudoption_testcloud_usage:shared,host:172.16.1.222,port:27017,pid:TEST_mrhines,database:metrics,protocol:TCP,kind:mongodb,username:mrhines --oop=TESTCLOUD,hadoop,default,default,none,none,none,empty=empty --operation=ai-attach --cn=TESTCLOUD --uuid=95E1D0AF-4135-54A5-9F2A-3D71CD08C0DB --daemon". The process id is 21859.
+|ai_1      |daytrader      |1_x_client_daytrader->1_x_was->1_x_db2            |89.63.19.230    |1377116157     |none                                    |ACD8D4AD-7977-5B0F-B8E6-9C84649C2A12
+|ai_2      |hadoop         |1_x_hadoopmaster->3_x_hadoopslave                 |97.92.53.231    |1377116163     |none                                    |95E1D0AF-4135-54A5-9F2A-3D71CD08C0DB
+|vm_27         |client_daytrader    |nano32      |89.63.19.230    |simhosta1                  |SUT                 |ai_1    |none       |8D27D028-CDA1-5B00-BBC4-044F02CFE603
+|vm_26         |was                 |iron32      |46.72.175.131   |simhosta0                  |SUT                 |ai_1    |none       |C300A153-DE0C-5E37-B111-64CD47DF8AF1
+|vm_28         |db2                 |platinum64  |194.122.30.177  |simhostb4                  |SUT                 |ai_1    |none       |A76FA65C-B48D-5D4A-B855-8F1B36C4D343
+|vm_31         |hadoopmaster        |copper32    |97.92.53.231    |simhostb3                  |SUT                 |ai_2    |none       |A88CAF97-B3BE-5B4D-9C67-DBD10BBB846E
+|vm_30         |hadoopslave         |iron32      |156.229.104.129 |simhostb0                  |SUT                 |ai_2    |none       |B7C9E985-579C-5A86-8890-B67A754A6797
+|vm_29         |hadoopslave         |iron32      |160.137.245.120 |simhostc4                  |SUT                 |ai_2    |none       |A731B844-0958-54C0-9C04-B8CC66B0B215
+|vm_32         |hadoopslave         |iron32      |69.201.147.218  |simhostc1                  |SUT                 |ai_2    |none       |E6CB6CD6-29E3-5739-8EC4-20293D8B23CE
+|Used Memory                                          |20.09M                        
+|Uptime (in seconds)                                  |2517295                       
+|Total Connections Received                           |185771                        
+|Total Commands Processed                             |11856192                      
+|Number of Keys                                       |426                           
+|Storage Size                                         |18350080                      
+|Data Size                                            |6983932                       
+|Index Size                                           |2158464                       
+|Average Object Size                                  |613.109647968                 
+|EDC9615C-DB1F-5769-9826-61B84283AFD7 (simzone_c) VM RESERVATIONS|2                             
+|702C293B-8403-5C96-B515-6AE61AE13658 (simzone_a) VM RESERVATIONS|2                             
+|34819FA6-FE78-5D1D-A68D-0E43FEBFD8A5 (simzone_b) VM RESERVATIONS|3                             
+|271ADA73-1C6A-581D-A1BA-730D86DF8704 (simzone_d) VM RESERVATIONS|0                             

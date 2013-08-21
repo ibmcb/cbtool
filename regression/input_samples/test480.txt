@@ -1,4 +1,4 @@
-vmattach tinyvm lg
+vmattach tinyvm async=2
+waituntil VM ARRIVED=8 increasing 1
 vmlist
-vmshow vm_2 vmc_name,vmc_pool,host_name,meta_tags,size
 stats

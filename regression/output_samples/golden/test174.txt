@@ -1,3 +1,1 @@
-The following state values are available for the objects on this experiment (Cloud TESTCLOUD) :
-No objects available.
-
+Usage: msgpub <cloud name> <object type> <channel> <message> 

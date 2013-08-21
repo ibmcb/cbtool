@@ -1,1 +1,2 @@
-*** Unknown syntax: cldparse
+VMs with the following roles can be attached to to this experiment (Cloud TESTCLOUD) :
+client_specweb, driver_filebench, driver_coremark, lostback, client_windows, coremark, rubis_driver, driver_tradelite, ddgen, lb, hadoopmaster, willfail, client_lost, client_daytrader, driver_daytrader, storageclient, specwebfront, was, netclient, storageserver, filebench, specjbb, predictablevm, rubis_lb, driver_fbnfsrd, rubis_database, fen_hpc, tinyvm, db2, rubis_appsrv, netserver, faildb2, windows, driver_netperf, client_tradelite, driver_hadoop, lostfront, cn_hpc, hadoopslave, specwebback

@@ -1,1 +1,1 @@
-Usage: vmrepair <cloud_name> <identifier> [firs = none] [mode] 
+Usage: vmresize <cloud_name> <identifier> <resource> <value> 

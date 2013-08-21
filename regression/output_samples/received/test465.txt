@@ -1,87 +1,23 @@
- status: VMC E142CEA7-5DBC-5A24-8465-B9EA6FA0C77A was successfully unregistered on SimCloud "TESTCLOUD".
- status: VMC 44F2B886-3711-50BF-A86F-5897C77ED973 was successfully unregistered on SimCloud "TESTCLOUD".
- status: VMC 1F85DD29-909C-5CF2-B9E9-405FFE355A97 was successfully unregistered on SimCloud "TESTCLOUD".
-VMC object undefined (named "all") was sucessfully detached from this experiment.
-The following VMCs are attached to this experiment (Cloud TESTCLOUD) :
-No objects available.
-The following statistics are available on this experiment (Cloud TESTCLOUD) :
-------------------------- OBJECT STORE -----------------------
-|Metric                                               |Value                         
-|Used Memory                                          |39.49M                        
-|Redis Version                                        |2.5.12                        
-|Uptime (in seconds)                                  |13565729                      
-|Total Connections Received                           |6495002                       
-|Total Commands Processed                             |93960427                      
-|Number of Keys                                       |111                           
-------------------------- METRIC STORE -----------------------
-|Metric                                               |Value                         
-|MongoDB Version                                      |2.0.6                         
-|Storage Size                                         |16113287152.0                 
-|Data Size                                            |13823280944.0                 
-|Index Size                                           |550342912                     
-|Average Object Size                                  |6601.62486741                 
-|Collections                                          |59                            
---------------------- EXPERIMENT OBJECTS ---------------------
-|Object                                               |Count                         
-|VMCs                                                 |0                             
-|HOSTs                                                |0                             
-|VMs                                                  |0                             
-|SVMs                                                 |0                             
-|AIs                                                  |0                             
-|AIDRSs                                               |0                             
-|VMCRSs                                               |0                             
-|FIRSs                                                |0                             
------------------- EXPERIMENT-WIDE COUNTERS ------------------
-|Counter                                              |Value                         
-|VMC RESERVATIONS                                     |0                             
-|VMCs ARRIVED                                         |8                             
-|VMCs ARRIVING                                        |0                             
-|VMCs DEPARTED                                        |8                             
-|VMCs DEPARTING                                       |0                             
-|VMCs FAILED                                          |0                             
-|HOST RESERVATIONS                                    |0                             
-|HOSTs ARRIVED                                        |0                             
-|HOSTs ARRIVING                                       |0                             
-|HOSTs DEPARTED                                       |0                             
-|HOSTs DEPARTING                                      |0                             
-|HOSTs FAILED                                         |0                             
-|VM RESERVATIONS                                      |0                             
-|VMs ARRIVED                                          |0                             
-|VMs ARRIVING                                         |0                             
-|VMs CAPTURING                                        |0                             
-|VMs DEPARTED                                         |0                             
-|VMs DEPARTING                                        |0                             
-|VMs FAILED                                           |0                             
-|SVM RESERVATIONS                                     |0                             
-|SVMs ARRIVED                                         |0                             
-|SVMs ARRIVING                                        |0                             
-|SVMs DEPARTED                                        |0                             
-|SVMs DEPARTING                                       |0                             
-|SVMs FAILED                                          |0                             
-|AI RESERVATIONS                                      |0                             
-|AIs ARRIVED                                          |0                             
-|AIs ARRIVING                                         |0                             
-|AIs CAPTURING                                        |0                             
-|AIs DEPARTED                                         |0                             
-|AIs DEPARTING                                        |0                             
-|AIs FAILED                                           |0                             
-|AIDRS RESERVATIONS                                   |0                             
-|AIDRSs ARRIVED                                       |0                             
-|AIDRSs ARRIVING                                      |0                             
-|AIDRSs DEPARTED                                      |0                             
-|AIDRSs DEPARTING                                     |0                             
-|AIDRSs FAILED                                        |0                             
-|VMCRS RESERVATIONS                                   |0                             
-|VMCRSs ARRIVED                                       |0                             
-|VMCRSs ARRIVING                                      |0                             
-|VMCRSs DEPARTED                                      |0                             
-|VMCRSs DEPARTING                                     |0                             
-|VMCRSs FAILED                                        |0                             
-|FIRS RESERVATIONS                                    |0                             
-|FIRSs ARRIVED                                        |0                             
-|FIRSs ARRIVING                                       |0                             
-|FIRSs DEPARTED                                       |0                             
-|FIRSs DEPARTING                                      |0                             
-|FIRSs FAILED                                         |0                             
-|EXPERIMENT COUNTER                                   |56                            
+The following HOSTs are attached to this experiment (Cloud TESTCLOUD) :
+|name                          |vmc_name            |function                                          |pool         |cloud_hostname              |cloud_ip        
+|host_simhosta3                |simzone_a           |hypervisor                                        |SUT          |simhosta3                   |111.76.33.194   
+|host_simhosta2                |simzone_a           |hypervisor                                        |SUT          |simhosta2                   |83.170.226.65   
+|host_simhosta1                |simzone_a           |hypervisor                                        |SUT          |simhosta1                   |196.182.45.216  
+|host_simhosta4                |simzone_a           |hypervisor                                        |SUT          |simhosta4                   |169.179.193.172 
+|host_simhosta0                |simzone_a           |hypervisor                                        |SUT          |simhosta0                   |190.23.16.213   
+|host_simhostb3                |simzone_b           |hypervisor                                        |SUT          |simhostb3                   |57.142.119.110  
+|host_simhostb0                |simzone_b           |hypervisor                                        |SUT          |simhostb0                   |254.61.187.13   
+|host_simhostb4                |simzone_b           |hypervisor                                        |SUT          |simhostb4                   |236.60.63.29    
+|host_simhostb1                |simzone_b           |hypervisor                                        |SUT          |simhostb1                   |105.230.118.221 
+|host_simhostb2                |simzone_b           |hypervisor                                        |SUT          |simhostb2                   |206.125.128.158 
+|host_simhostc2                |simzone_c           |hypervisor                                        |SUT          |simhostc2                   |100.251.16.165  
+|host_simhostc1                |simzone_c           |hypervisor                                        |SUT          |simhostc1                   |58.94.201.102   
+|host_simhostc3                |simzone_c           |hypervisor                                        |SUT          |simhostc3                   |234.85.89.121   
+|host_simhostc0                |simzone_c           |hypervisor                                        |SUT          |simhostc0                   |208.61.159.4    
+|host_simhostc4                |simzone_c           |hypervisor                                        |SUT          |simhostc4                   |69.172.205.125  
+|host_simhostd4                |simzone_d           |hypervisor                                        |LG           |simhostd4                   |192.245.55.75   
+|host_simhostd1                |simzone_d           |hypervisor                                        |LG           |simhostd1                   |131.172.214.105 
+|host_simhostd2                |simzone_d           |hypervisor                                        |LG           |simhostd2                   |139.166.83.218  
+|host_simhostd0                |simzone_d           |hypervisor                                        |LG           |simhostd0                   |120.203.82.116  
+|host_simhostd3                |simzone_d           |hypervisor                                        |LG           |simhostd3                   |163.211.44.73   
 

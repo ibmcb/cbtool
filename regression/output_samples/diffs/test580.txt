@@ -1,23 +1,16 @@
-AIDRS object 58506942-0CD8-5014-910F-5640CB874DEB (named "aidrs_2") sucessfully attached to this experiment.
-|arrival                                    |1374527558                           
-|command_originated                         |1374527558                           
-|mgt_001_provisioning_request_originated    |1374527558                           
-|mgt_002_provisioning_request_sent          |0                                    
-|mgt_003_provisioning_request_completed     |0                                    
-|uuid                                       |58506942-0CD8-5014-910F-5640CB874DEB 
-|ai_33     |nullworkload   |1_x_tinyvm                                        |169.41.211.179  |1374527561     |aidrs_2                                 |D62E8B9F-C83D-50E7-BE25-2C84354F31AA
-|vm_122        |tinyvm              |pico32      |169.41.211.179  |simhostb2                  |SUT                 |ai_33   |aidrs_2    |0066F0CD-1B80-53AD-9A99-6601368D1F8C
-|Used Memory                                          |44.38M                        
-|Uptime (in seconds)                                  |13566343                      
-|Total Connections Received                           |6495146                       
-|Total Commands Processed                             |94139695                      
-|Storage Size                                         |16114180080.0                 
-|Data Size                                            |13823600328.0                 
-|Index Size                                           |550481904                     
-|Average Object Size                                  |6600.28329327                 
-|Collections                                          |60                            
-|D30F1B96-9225-51C9-95FF-3355AD659B11 (simzone_d) VM RESERVATIONS|0                             
-|3C091D65-A8D9-5ECF-9C95-36A39D5CAA39 (simzone_a) VM RESERVATIONS|0                             
-|671172C3-2E80-5782-AB0C-C348A586106A (simzone_c) VM RESERVATIONS|0                             
-|96342978-982B-5D60-9FF3-0C0B3F9C41A9 (simzone_b) VM RESERVATIONS|1                             
-|58506942-0CD8-5014-910F-5640CB874DEB (aidrs_2) AI RESERVATIONS|1                             
+Background operation execution success. Operation "vm-migrate" will be processed asynchronously, through the command "/home/mrhines/cbtool/lib/operations//../../cbact --procid=TEST_mrhines --osp=port:6379,experiment_inst:TEST_mrhines,host:172.16.1.222,pid:TEST_mrhines,dbid:0,timout:70,protocol:TCP,kind:redis,username:mrhines --msp=cloudoption_testcloud_host:172.16.0.254,timeout:240,cloudoption_testcloud_usage:shared,host:172.16.1.222,port:27017,pid:TEST_mrhines,database:metrics,protocol:TCP,kind:mongodb,username:mrhines --oop=TESTCLOUD,youngest,source,tcp,default --operation=vm-migrate --cn=TESTCLOUD --uuid=B0E2F3AE-C287-5597-8451-0C920CAC1C95 --daemon". The process id is 27910.
+|Used Memory                                          |23.78M                        
+|Uptime (in seconds)                                  |2517791                       
+|Total Connections Received                           |185843                        
+|Total Commands Processed                             |12034145                      
+|Storage Size                                         |18579456                      
+|Data Size                                            |7172924                       
+|Index Size                                           |2248400                       
+|Average Object Size                                  |614.8044913                   
+|69B6EE37-7343-582F-AC8D-3A2B5F09A61A (simzone_dest) VM RESERVATIONS|0                             
+|702C293B-8403-5C96-B515-6AE61AE13658 (simzone_a) VM RESERVATIONS|0                             
+|271ADA73-1C6A-581D-A1BA-730D86DF8704 (simzone_d) VM RESERVATIONS|0                             
+|F993D8D5-82BA-59CB-970A-6B3F8CC6F222 (simzone_source) VM RESERVATIONS|1                             
+|EDC9615C-DB1F-5769-9826-61B84283AFD7 (simzone_c) VM RESERVATIONS|0                             
+|34819FA6-FE78-5D1D-A68D-0E43FEBFD8A5 (simzone_b) VM RESERVATIONS|0                             
+|vm_129        |tinyvm              |pico32      |232.107.45.11   |source                     |sut                 |none    |none       |B0E2F3AE-C287-5597-8451-0C920CAC1C95

@@ -1,1 +1,1 @@
-Usage: vmcdetach <cloud_name> <identifier> [force = False] [mode] 
+Usage: hostshow <cloud_name> <identifier> [key = all] 

@@ -1,3 +1,1 @@
-vmdetach all
-vmlist
-stats
+aishow ai_1 all

@@ -1,3 +1,4 @@
-vmrunstate vm_3 attached
-stateshow
+vmdetach vm_5 async
+waitfor 10s
+vmlist
 stats

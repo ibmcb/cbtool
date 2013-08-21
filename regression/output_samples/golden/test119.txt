@@ -1,2 +1,1 @@
-The following HOSTs are attached to this experiment (Cloud TESTCLOUD) :
-No objects available.
+Usage: hostfail <cloud_name> <identifier> <service> [firs = none] [mode] 

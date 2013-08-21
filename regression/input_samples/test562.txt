@@ -1,5 +1,4 @@
-aicapture youngest async
-waituntil AI CAPTURING=0
+aiattach notype
 ailist
 vmlist
 stats

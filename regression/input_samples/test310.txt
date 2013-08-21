@@ -1,4 +1,1 @@
-aidetach TESTCLOUD all
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
+statealter TESTCLOUD aidrs_1 stopped

@@ -1,1 +1,4 @@
-typeshow daytrader
+aiattach daytrader
+ailist
+vmlist
+stats

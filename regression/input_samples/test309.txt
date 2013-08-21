@@ -1,4 +1,5 @@
-aiattach TESTCLOUD notype
+waituntil TESTCLOUD AI ARRIVED=30 increasing 5
+aidrslist TESTCLOUD
 ailist TESTCLOUD
 vmlist TESTCLOUD
 stats TESTCLOUD

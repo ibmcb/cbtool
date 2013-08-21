@@ -1,1 +1,1 @@
-Usage: roleshow <cloud_name> <role> 
+Usage: typealter <cloud_name> <type_name> <attribute> <value> 

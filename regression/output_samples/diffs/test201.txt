@@ -1,16 +1,9 @@
- status: VMC 5E20966B-97B0-5D51-8D39-9E5AABF68BCC was successfully unregistered on SimCloud "TESTCLOUD".
-VMC object 5E20966B-97B0-5D51-8D39-9E5AABF68BCC (named "simzone_d") was sucessfully detached from this experiment.
- status: VMC F649438F-D82C-50AE-85F0-C6CBC4C2437B was successfully unregistered on SimCloud "TESTCLOUD".
-VMC object F649438F-D82C-50AE-85F0-C6CBC4C2437B (named "simzone_c") was sucessfully detached from this experiment.
- status: VMC 2C5C446B-D529-54BB-B402-FF9EF8BE10E7 was successfully unregistered on SimCloud "TESTCLOUD".
-VMC object 2C5C446B-D529-54BB-B402-FF9EF8BE10E7 (named "simzone_b") was sucessfully detached from this experiment.
-|simzone_a               |5               |sut                     |simzone_a                       |115.28.123.3     
-|Uptime (in seconds)                                  |13564973                      
-|Total Connections Received                           |6494849                       
-|Total Commands Processed                             |93752505                      
-|Storage Size                                         |16112218096.0                 
-|Data Size                                            |13822899224.0                 
-|Index Size                                           |550310208                     
-|Average Object Size                                  |6603.29370468                 
-|Collections                                          |59                            
-|542CF6C4-3E99-5568-BA10-176D59E50F74 (simzone_a) VM RESERVATIONS|0                             
+Background operation execution success. Operation "vmc-detach" will be processed asynchronously, through the command "/home/mrhines/cbtool/lib/operations//../../cbact --procid=TEST_mrhines --osp=port:6379,experiment_inst:TEST_mrhines,host:172.16.1.222,pid:TEST_mrhines,dbid:0,timout:70,protocol:TCP,kind:redis,username:mrhines --msp=cloudoption_testcloud_host:172.16.0.254,timeout:240,cloudoption_testcloud_usage:shared,host:172.16.1.222,port:27017,pid:TEST_mrhines,database:metrics,protocol:TCP,kind:mongodb,username:mrhines --oop=TESTCLOUD,all,false --operation=vmc-detach --cn=TESTCLOUD --uuid=ALL --daemon". The process id is 10692.
+|Used Memory                                          |18.79M                        
+|Uptime (in seconds)                                  |2516373                       
+|Total Connections Received                           |185605                        
+|Total Commands Processed                             |11562867                      
+|Storage Size                                         |18292736                      
+|Data Size                                            |6534468                       
+|Index Size                                           |2044000                       
+|Average Object Size                                  |615.646127756                 

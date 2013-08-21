@@ -1,4 +1,4 @@
-aidrsattach simplenw lifetime=40
-aidrslist
-aidrsshow aidrs_1 iait,lifetime,max_ais
+waituntil AI =0 decreasing 1
+ailist
+vmlist
 stats

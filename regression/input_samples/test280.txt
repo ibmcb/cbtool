@@ -1,5 +1,5 @@
-vmcapture TESTCLOUD oldest async
-waitfor TESTCLOUD 25s
+aiattach TESTCLOUD daytrader
 ailist TESTCLOUD
 vmlist TESTCLOUD
+aishow TESTCLOUD ai_13 load_balancer,sut
 stats TESTCLOUD

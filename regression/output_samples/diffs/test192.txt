@@ -1,1 +1,16 @@
-|experiment_id                        |EXP-07-22-2013-04-49-25-PM-EDT     |REGRESSION_A                       
+ status: VMC 554D576D-8116-5E8D-B6D5-AEFA6C4C8469 was successfully registered on SimCloud "TESTCLOUD".
+VMC object 554D576D-8116-5E8D-B6D5-AEFA6C4C8469 (named "simzone_c") sucessfully attached to this experiment. It is ssh-accessible at the IP address 200.51.186.156 (simzone_c).
+|simzone_a               |5               |sut                     |simzone_a                       |184.153.20.164   
+|simzone_b               |5               |sut                     |simzone_b                       |122.75.128.249   
+|simzone_c               |5               |sut                     |simzone_c                       |200.51.186.156   
+|Used Memory                                          |18.58M                        
+|Uptime (in seconds)                                  |2516345                       
+|Total Connections Received                           |185596                        
+|Total Commands Processed                             |11547832                      
+|Storage Size                                         |18292736                      
+|Data Size                                            |6512420                       
+|Index Size                                           |2027648                       
+|Average Object Size                                  |616.706439394                 
+|CB82AC01-D297-5670-8658-34447B4002D4 (simzone_a) VM RESERVATIONS|0                             
+|E6CE5882-73C8-5912-A1D2-D4818AE2334F (simzone_b) VM RESERVATIONS|0                             
+|554D576D-8116-5E8D-B6D5-AEFA6C4C8469 (simzone_c) VM RESERVATIONS|0                             

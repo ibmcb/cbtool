@@ -1,1 +1,1 @@
-hostlist
+viewshow VMC pool sut

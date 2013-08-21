@@ -1,1 +1,1 @@
-Usage: vmcshow <cloud_name> <identifier> [key = all] 
+Usage: vmprotect <cloud_name> <identifier> <destination> [protocol = tcp] [interface = default] [mode] 

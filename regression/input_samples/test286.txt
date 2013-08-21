@@ -1,2 +1,4 @@
-typealter TESTCLOUD daytrader load_balancer=true
-typeshow TESTCLOUD daytrader
+aiattach TESTCLOUD coremark
+ailist TESTCLOUD
+vmlist TESTCLOUD
+stats TESTCLOUD

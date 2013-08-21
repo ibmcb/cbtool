@@ -1,2 +1,3 @@
-aialter TESTCLOUD ai_1 mode=scalable
-aishow TESTCLOUD ai_1 mode
+airestore TESTCLOUD ai_3
+stateshow TESTCLOUD
+stats TESTCLOUD

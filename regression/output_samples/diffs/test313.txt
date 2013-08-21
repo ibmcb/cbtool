@@ -1,15 +1,20 @@
-AIDRS object F2E73819-2C8B-55DB-A8DD-C02AB4F6A443 (named "aidrs_1") sucessfully attached to this experiment.
-|Used Memory                                          |44.17M                        
-|Uptime (in seconds)                                  |13565519                      
-|Total Connections Received                           |6494988                       
-|Total Commands Processed                             |93931946                      
-|Storage Size                                         |16113442800.0                 
-|Data Size                                            |13823234480.0                 
-|Index Size                                           |550351088                     
-|Average Object Size                                  |6601.93373248                 
-|Collections                                          |60                            
-|59038ADB-0C9D-5DC8-8D0F-858C40A339D8 (simzone_b) VM RESERVATIONS|1                             
-|64F2E709-607C-5D1E-9ED5-402265D29FB4 (simzone_d) VM RESERVATIONS|0                             
-|538D06C6-8C24-51C6-AC34-D9ECDD4133D6 (simzone_c) VM RESERVATIONS|0                             
-|CA6252C4-6803-5C5C-BAA8-5BC509EE3CE0 (simzone_a) VM RESERVATIONS|0                             
-|F2E73819-2C8B-55DB-A8DD-C02AB4F6A443 (aidrs_1) AI RESERVATIONS|1                             
+AIDRS object E0D4140C-5A1C-5E7C-8E69-1AC266E3B5EA (named "aidrs_2") sucessfully attached to this experiment.
+|arrival                                    |1377115816                           
+|command_originated                         |1377115815                           
+|mgt_001_provisioning_request_originated    |1377115815                           
+|uuid                                       |E0D4140C-5A1C-5E7C-8E69-1AC266E3B5EA 
+|ai_33     |nullworkload   |1_x_tinyvm                                        |36.149.14.70    |1377115819     |aidrs_2                                 |D7797D44-F625-56A8-9939-5B3C9C385946
+|vm_124        |tinyvm              |pico32      |36.149.14.70    |simhosta2                  |SUT                 |ai_33   |aidrs_2    |D16A9088-FE96-5DA5-9771-19EC465F9538
+|Used Memory                                          |23.47M                        
+|Uptime (in seconds)                                  |2516946                       
+|Total Connections Received                           |185714                        
+|Total Commands Processed                             |11772336                      
+|Storage Size                                         |18579456                      
+|Data Size                                            |6818828                       
+|Index Size                                           |2133936                       
+|Average Object Size                                  |616.419092388                 
+|AD93E38D-EAEC-5C15-BA20-7A27F63D13FF (simzone_b) VM RESERVATIONS|0                             
+|E4B581D8-2DD3-5956-8196-B1B60C5DC5B0 (simzone_d) VM RESERVATIONS|0                             
+|AD29082C-1389-58A3-BE64-3784D075F191 (simzone_c) VM RESERVATIONS|0                             
+|75A875C6-F2C5-5C3D-BD34-051FBBE24C3A (simzone_a) VM RESERVATIONS|1                             
+|E0D4140C-5A1C-5E7C-8E69-1AC266E3B5EA (aidrs_2) AI RESERVATIONS|1                             

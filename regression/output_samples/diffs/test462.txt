@@ -1,21 +1,9 @@
- status: VMC E142CEA7-5DBC-5A24-8465-B9EA6FA0C77A was successfully registered on SimCloud "TESTCLOUD".
- status: VMC CDDF936F-6DBD-5D10-8A94-091C01FF6B10 was successfully registered on SimCloud "TESTCLOUD".
- status: VMC 1F85DD29-909C-5CF2-B9E9-405FFE355A97 was successfully registered on SimCloud "TESTCLOUD".
- status: VMC 44F2B886-3711-50BF-A86F-5897C77ED973 was successfully registered on SimCloud "TESTCLOUD".
-|simzone_c               |5               |sut                     |simzone_c                       |80.67.59.209     
-|simzone_b               |5               |sut                     |simzone_b                       |122.176.63.238   
-|simzone_a               |5               |sut                     |simzone_a                       |224.24.161.6     
-|simzone_d               |5               |lg                      |simzone_d                       |133.81.83.236    
-|Used Memory                                          |39.58M                        
-|Uptime (in seconds)                                  |13565728                      
-|Total Connections Received                           |6495002                       
-|Total Commands Processed                             |93958624                      
-|Storage Size                                         |16113287152.0                 
-|Data Size                                            |13823286336.0                 
-|Index Size                                           |550342912                     
-|Average Object Size                                  |6601.58330416                 
-|Collections                                          |59                            
-|CDDF936F-6DBD-5D10-8A94-091C01FF6B10 (simzone_a) VM RESERVATIONS|0                             
-|E142CEA7-5DBC-5A24-8465-B9EA6FA0C77A (simzone_b) VM RESERVATIONS|0                             
-|44F2B886-3711-50BF-A86F-5897C77ED973 (simzone_d) VM RESERVATIONS|0                             
-|1F85DD29-909C-5CF2-B9E9-405FFE355A97 (simzone_c) VM RESERVATIONS|0                             
+Background operation execution success. Operation "vmc-detach" will be processed asynchronously, through the command "/home/mrhines/cbtool/lib/operations//../../cbact --procid=TEST_mrhines --osp=port:6379,experiment_inst:TEST_mrhines,host:172.16.1.222,pid:TEST_mrhines,dbid:0,timout:70,protocol:TCP,kind:redis,username:mrhines --msp=cloudoption_testcloud_host:172.16.0.254,timeout:240,cloudoption_testcloud_usage:shared,host:172.16.1.222,port:27017,pid:TEST_mrhines,database:metrics,protocol:TCP,kind:mongodb,username:mrhines --oop=TESTCLOUD,all,false --operation=vmc-detach --cn=TESTCLOUD --uuid=ALL --daemon". The process id is 19755.
+|Used Memory                                          |19.17M                        
+|Uptime (in seconds)                                  |2517117                       
+|Total Connections Received                           |185728                        
+|Total Commands Processed                             |11811752                      
+|Storage Size                                         |18292736                      
+|Data Size                                            |6876436                       
+|Index Size                                           |2142112                       
+|Average Object Size                                  |614.351469669                 

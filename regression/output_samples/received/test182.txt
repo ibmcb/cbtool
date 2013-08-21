@@ -1,24 +1,7 @@
-
-Documented commands (type help <topic>):
-========================================
-EOF          airun       firslist      shell       vmattach     vmrepair  
-aialter      airunstate  firsshow      statealter  vmcalter     vmresize  
-aiattach     aisave      hostfail      stateshow   vmcapture    vmrestore 
-aicapture    aishow      hostlist      stats       vmcattach    vmresume  
-aidetach     aisuspend   hostrepair    svmattach   vmccleanup   vmrun     
-aidrsalter   cldalter    hostshow      svmdetach   vmcdetach    vmrunstate
-aidrsattach  cldattach   monextract    svmfail     vmclist      vmsave    
-aidrsdetach  clddefault  monlist       svmlist     vmcrsalter   vmshow    
-aidrslist    clddetach   msgpub        svmshow     vmcrsattach  vmsuspend 
-aidrsshow    cldlist     patternalter  trace       vmcrsdetach  waitfor   
-aifail       cldshow     patternlist   typealter   vmcrslist    waiton    
-ailist       echo        patternshow   typelist    vmcrsshow    waituntil 
-airepair     expid       poollist      typeshow    vmcshow    
-airesize     firsalter   rolealter     viewlist    vmdetach   
-airestore    firsattach  rolelist      viewshow    vmfail     
-airesume     firsdetach  roleshow      vmalter     vmlist     
-
-Undocumented commands:
-======================
-exit  help  pause  quit
-
+The AIDRS with the pattern simplehd has the following configuration on experiment (Cloud TESTCLOUD) :
+type: hadoop
+max_ais: 8000
+iait: uniformIXIXI120I180
+load_level: uniformIXIXI1I10
+load_duration: uniformIXIXI90I120
+lifetime: uniformIXIXI600I900

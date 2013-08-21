@@ -1,1 +1,1 @@
-Usage: vmfail <cloud_name> <identifier> [firs = none] [mode] 
+Usage: vmcapture <cloud_name> <identifier> [vmcrs = none] [mode] 

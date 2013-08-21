@@ -1,4 +1,5 @@
-vmattach willfail async
-waituntil VM ARRIVING=0 decreasing 1
+aiattach daytrader detach_parallelism=9,ssh_key_name=AAAABBBBCCCCDDDDEEEE
+ailist
 vmlist
+aishow ai_3 detach_parallelism,ssh_key_name,sut
 stats

@@ -1,4 +1,5 @@
-waituntil AI ARRIVED=30 increasing 5
+aidrsdetach all
+aidetach all
 aidrslist
 ailist
 vmlist

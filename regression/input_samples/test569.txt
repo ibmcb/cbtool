@@ -1,4 +1,1 @@
-aidetach all
-ailist
-vmlist
-stats
+aidrsalter aidrs_1 max_ais=20

@@ -1,4 +1,5 @@
-aicapture ai_10
+aiattach hadoop save_on_attach=true
 ailist
 vmlist
 stats
+stateshow

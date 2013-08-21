@@ -1,1 +1,3 @@
-Usage: msgpub <cloud name> <object type> <channel> <message> 
+The "sim" cloud named "TESTCLOUD" was successfully attached to this experiment.
+The experiment identifier is EXP-08-21-2013-04-00-02-PM-EDT
+

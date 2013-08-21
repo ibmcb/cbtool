@@ -1,20 +1,20 @@
- status: Waiting for vm_1 (cloud-assigned uuid 3814B750-188E-51A0-A67E-9E3B7C0E32B9) to start...
- status: Trying to establish network connectivity to vm_1 (cloud-assigned uuid 3814B750-188E-51A0-A67E-9E3B7C0E32B9), on IP address 254.56.139.236...
- status: Bypassing the sending of a copy of the code tree to vm_1 (254.56.139.236)...
- status: Bypassing generic VM post_boot configuration on vm_1 (254.56.139.236)...
-VM object 64DD0F5F-27CF-50C8-AE2A-0930A713B586 (named "vm_1") sucessfully attached to this experiment. It is ssh-accessible at the IP address 254.56.139.236 (3814B750-188E-51A0-A67E-9E3B7C0E32B9.simcloud.com).
-|vm_1          |tinyvm              |pico32      |254.56.139.236  |simhosta0                  |SUT                 |none    |none       |64DD0F5F-27CF-50C8-AE2A-0930A713B586
-|host_name                               |simhosta0                            
-|Used Memory                                          |38.86M                        
-|Uptime (in seconds)                                  |13565005                      
-|Total Connections Received                           |6494861                       
-|Total Commands Processed                             |93766893                      
-|Storage Size                                         |16112275440.0                 
-|Data Size                                            |13822944420.0                 
-|Index Size                                           |550318384                     
-|Average Object Size                                  |6602.97463221                 
-|Collections                                          |60                            
-|59038ADB-0C9D-5DC8-8D0F-858C40A339D8 (simzone_b) VM RESERVATIONS|0                             
-|64F2E709-607C-5D1E-9ED5-402265D29FB4 (simzone_d) VM RESERVATIONS|0                             
-|538D06C6-8C24-51C6-AC34-D9ECDD4133D6 (simzone_c) VM RESERVATIONS|0                             
-|CA6252C4-6803-5C5C-BAA8-5BC509EE3CE0 (simzone_a) VM RESERVATIONS|1                             
+ status: Waiting for vm_2 (cloud-assigned uuid C7EA3817-8424-58A7-9FDD-16EDB45608E0) to be captured with image name "vm_2_at_1377115269"...
+ status: Sending a termination request for vm_2 (cloud-assigned uuid C7EA3817-8424-58A7-9FDD-16EDB45608E0)....
+VM object 78DA3EBC-2340-555E-B102-0F1F2796FC6E (named "vm_2") successfully captured on this experiment.
+|vm_1          |tinyvm              |pico32      |223.57.181.60   |simhostb3                  |SUT                 |none    |none       |871DBCA3-6BD3-51CC-AD1C-EC170141AF08
+|vm_3          |tinyvm              |pico32      |212.135.120.189 |simhostb1                  |SUT                 |none    |none       |A2868A5A-49AD-5DD7-A350-BD5C2807154B
+|vm_4          |db2                 |copper32    |117.87.103.220  |simhostc0                  |SUT                 |none    |none       |F09577B3-3400-54A7-A520-21B2C188F40C
+|vm_5          |netclient           |platinum64  |93.46.102.110   |simhostc2                  |SUT                 |none    |none       |1068D03C-CADC-5037-ACC3-F16F38D68741
+|Used Memory                                          |19.08M                        
+|Uptime (in seconds)                                  |2516393                       
+|Total Connections Received                           |185609                        
+|Total Commands Processed                             |11571805                      
+|Number of Keys                                       |315                           
+|Storage Size                                         |18350080                      
+|Data Size                                            |6571228                       
+|Index Size                                           |2068528                       
+|Average Object Size                                  |614.535490508                 
+|AD93E38D-EAEC-5C15-BA20-7A27F63D13FF (simzone_b) VM RESERVATIONS|2                             
+|E4B581D8-2DD3-5956-8196-B1B60C5DC5B0 (simzone_d) VM RESERVATIONS|0                             
+|AD29082C-1389-58A3-BE64-3784D075F191 (simzone_c) VM RESERVATIONS|2                             
+|75A875C6-F2C5-5C3D-BD34-051FBBE24C3A (simzone_a) VM RESERVATIONS|0                             

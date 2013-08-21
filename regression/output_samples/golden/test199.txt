@@ -1,50 +1,41 @@
- status: VMC 8B9DC1B9-31E1-55FA-8344-9933030B0DD2 was successfully registered on SimCloud "TESTCLOUD".
- status: Attribute "collect_from_host" was set to "false". Skipping Host OS performance monitor daemon startup
-VMC object 8B9DC1B9-31E1-55FA-8344-9933030B0DD2 (named "simzone_c") sucessfully attached to this experiment. It is ssh-accessible at the IP address 67.66.179.222 (simzone_c).
+ status: VMC 93351DAA-8E49-5D20-82A9-BC03018F07AC was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC E9634CC0-EB9F-5759-B431-73355E69B372 was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC 4B5FCD7A-C907-5500-AC77-224E94C56739 was successfully unregistered on SimCloud "TESTCLOUD".
+VMC object undefined (named "all") was sucessfully detached from this experiment.
 The following VMCs are attached to this experiment (Cloud TESTCLOUD) :
-|name                    |host_count      |pool                    |cloud_hostname                  |cloud_ip         
-|simzone_a               |5               |sut                     |simzone_a                       |244.189.255.64   
-|simzone_b               |5               |sut                     |simzone_b                       |85.117.81.239    
-|simzone_c               |5               |sut                     |simzone_c                       |67.66.179.222    
-
-The VMC object simzone_c, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
-|attribute (VMC object key)               |value                                
-|update_attempts                          |78                                   
-|update_frequency                         |3                                    
-
+No objects available.
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |38.42M                        
-|Redis Version                                        |2.5.12                        
-|Uptime (in seconds)                                  |11740206                      
-|Total Connections Received                           |6492668                       
-|Total Commands Processed                             |92685275                      
-|Number of Keys                                       |213                           
+|Used Memory                                          |18.77M                        
+|Redis Version                                        |2.6.2                         
+|Uptime (in seconds)                                  |2511650                       
+|Total Connections Received                           |185323                        
+|Total Commands Processed                             |11037164                      
+|Number of Keys                                       |95                            
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|MongoDB Version                                      |2.0.6                         
-|Storage Size                                         |13965959168.0                 
-|Data Size                                            |12133375164.0                 
-|Index Size                                           |502873056                     
-|Average Object Size                                  |6346.77388702                 
-|Collections                                          |61                            
+|MongoDB Version                                      |2.4.5                         
+|Storage Size                                         |18264064                      
+|Data Size                                            |5783108                       
+|Index Size                                           |1872304                       
+|Average Object Size                                  |622.307973744                 
+|Collections                                          |13                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
-|VMCs                                                 |3                             
-|HOSTs                                                |15                            
+|VMCs                                                 |0                             
+|HOSTs                                                |0                             
 |VMs                                                  |0                             
-|SVMs                                                 |0                             
 |AIs                                                  |0                             
 |AIDRSs                                               |0                             
 |VMCRSs                                               |0                             
 |FIRSs                                                |0                             
 ------------------ EXPERIMENT-WIDE COUNTERS ------------------
 |Counter                                              |Value                         
-|VMC RESERVATIONS                                     |3                             
-|VMCs ARRIVED                                         |3                             
+|VMC RESERVATIONS                                     |0                             
+|VMCs ARRIVED                                         |8                             
 |VMCs ARRIVING                                        |0                             
-|VMCs DEPARTED                                        |0                             
+|VMCs DEPARTED                                        |8                             
 |VMCs DEPARTING                                       |0                             
 |VMCs FAILED                                          |0                             
 |HOST RESERVATIONS                                    |0                             
@@ -60,12 +51,6 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |VMs DEPARTED                                         |0                             
 |VMs DEPARTING                                        |0                             
 |VMs FAILED                                           |0                             
-|SVM RESERVATIONS                                     |0                             
-|SVMs ARRIVED                                         |0                             
-|SVMs ARRIVING                                        |0                             
-|SVMs DEPARTED                                        |0                             
-|SVMs DEPARTING                                       |0                             
-|SVMs FAILED                                          |0                             
 |AI RESERVATIONS                                      |0                             
 |AIs ARRIVED                                          |0                             
 |AIs ARRIVING                                         |0                             
@@ -91,10 +76,5 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |FIRSs DEPARTED                                       |0                             
 |FIRSs DEPARTING                                      |0                             
 |FIRSs FAILED                                         |0                             
-|EXPERIMENT COUNTER                                   |3                             
-
- ---------------- VMC-WIDE COUNTERS ----------------
-|B223193C-AC14-56C1-973B-E77C8A3A1445 (simzone_a) VM RESERVATIONS|0                             
-|8B9DC1B9-31E1-55FA-8344-9933030B0DD2 (simzone_c) VM RESERVATIONS|0                             
-|05C1AAC0-4313-5F7C-BE35-B0AEF642B8E7 (simzone_b) VM RESERVATIONS|0                             
+|EXPERIMENT COUNTER                                   |56                            
 

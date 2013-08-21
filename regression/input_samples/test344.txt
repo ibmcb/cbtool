@@ -1,2 +1,2 @@
-monextract TESTCLOUD HOST os
-shell TESTCLOUD cat ~/cloudbench/data/REGRESSION_B/HOST_runtime_os_*REGRESSION*
+monextract TESTCLOUD VM os
+shell TESTCLOUD cat /home/mrhines/cbtool/regression/..//data/REGRESSION_B/VM_runtime_os_*REGRESSION*

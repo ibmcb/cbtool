@@ -1,1 +1,1 @@
-hostshow TESTCLOUD simhosta3 all
+vmshow TESTCLOUD vm_1 all

@@ -1,2 +1,1 @@
-patternalter simplenw iait=10
-patternshow simplenw
+statealter aidrs_1 stopped

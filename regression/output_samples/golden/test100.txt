@@ -1,2 +1,2 @@
-VMCs with the following pools are attached to to this experiment (Cloud TESTCLOUD) :
-
+AIs with the following types can be attached to to this experiment (Cloud TESTCLOUD) :
+nullworkload, ddgen, mlg2, mlg, specjbb, coremark, netperf, hadoop, daytrader, hpcc, tradelite, filebench

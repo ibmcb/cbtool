@@ -1,94 +1,28 @@
- status: VMC B6BFF335-FB25-5CDA-968F-77297C0D9579 was successfully unregistered on SimCloud "TESTCLOUD".
-VMC object B6BFF335-FB25-5CDA-968F-77297C0D9579 (named "simzone_a") was sucessfully detached from this experiment.
-The following VMCs are attached to this experiment (Cloud TESTCLOUD) :
-|name                    |host_count      |pool                    |cloud_hostname                  |cloud_ip         
-|simzone_b               |5               |sut                     |simzone_b                       |25.248.171.134   
-|simzone_c               |5               |sut                     |simzone_c                       |182.93.204.238   
-|simzone_d               |5               |lg                      |simzone_d                       |136.130.255.142  
-
-The following statistics are available on this experiment (Cloud TESTCLOUD) :
-------------------------- OBJECT STORE -----------------------
-|Metric                                               |Value                         
-|Used Memory                                          |38.61M                        
-|Redis Version                                        |2.5.12                        
-|Uptime (in seconds)                                  |13564983                      
-|Total Connections Received                           |6494853                       
-|Total Commands Processed                             |93756781                      
-|Number of Keys                                       |224                           
-------------------------- METRIC STORE -----------------------
-|Metric                                               |Value                         
-|MongoDB Version                                      |2.0.6                         
-|Storage Size                                         |16112218096.0                 
-|Data Size                                            |13822917024.0                 
-|Index Size                                           |550310208                     
-|Average Object Size                                  |6603.17918689                 
-|Collections                                          |59                            
---------------------- EXPERIMENT OBJECTS ---------------------
-|Object                                               |Count                         
-|VMCs                                                 |3                             
-|HOSTs                                                |15                            
-|VMs                                                  |0                             
-|SVMs                                                 |0                             
-|AIs                                                  |0                             
-|AIDRSs                                               |0                             
-|VMCRSs                                               |0                             
-|FIRSs                                                |0                             
------------------- EXPERIMENT-WIDE COUNTERS ------------------
-|Counter                                              |Value                         
-|VMC RESERVATIONS                                     |3                             
-|VMCs ARRIVED                                         |8                             
-|VMCs ARRIVING                                        |0                             
-|VMCs DEPARTED                                        |5                             
-|VMCs DEPARTING                                       |0                             
-|VMCs FAILED                                          |0                             
-|HOST RESERVATIONS                                    |0                             
-|HOSTs ARRIVED                                        |0                             
-|HOSTs ARRIVING                                       |0                             
-|HOSTs DEPARTED                                       |0                             
-|HOSTs DEPARTING                                      |0                             
-|HOSTs FAILED                                         |0                             
-|VM RESERVATIONS                                      |0                             
-|VMs ARRIVED                                          |0                             
-|VMs ARRIVING                                         |0                             
-|VMs CAPTURING                                        |0                             
-|VMs DEPARTED                                         |0                             
-|VMs DEPARTING                                        |0                             
-|VMs FAILED                                           |0                             
-|SVM RESERVATIONS                                     |0                             
-|SVMs ARRIVED                                         |0                             
-|SVMs ARRIVING                                        |0                             
-|SVMs DEPARTED                                        |0                             
-|SVMs DEPARTING                                       |0                             
-|SVMs FAILED                                          |0                             
-|AI RESERVATIONS                                      |0                             
-|AIs ARRIVED                                          |0                             
-|AIs ARRIVING                                         |0                             
-|AIs CAPTURING                                        |0                             
-|AIs DEPARTED                                         |0                             
-|AIs DEPARTING                                        |0                             
-|AIs FAILED                                           |0                             
-|AIDRS RESERVATIONS                                   |0                             
-|AIDRSs ARRIVED                                       |0                             
-|AIDRSs ARRIVING                                      |0                             
-|AIDRSs DEPARTED                                      |0                             
-|AIDRSs DEPARTING                                     |0                             
-|AIDRSs FAILED                                        |0                             
-|VMCRS RESERVATIONS                                   |0                             
-|VMCRSs ARRIVED                                       |0                             
-|VMCRSs ARRIVING                                      |0                             
-|VMCRSs DEPARTED                                      |0                             
-|VMCRSs DEPARTING                                     |0                             
-|VMCRSs FAILED                                        |0                             
-|FIRS RESERVATIONS                                    |0                             
-|FIRSs ARRIVED                                        |0                             
-|FIRSs ARRIVING                                       |0                             
-|FIRSs DEPARTED                                       |0                             
-|FIRSs DEPARTING                                      |0                             
-|FIRSs FAILED                                         |0                             
-|EXPERIMENT COUNTER                                   |38                            
-
- ---------------- VMC-WIDE COUNTERS ----------------
-|517A921A-02FA-53AE-B645-AE3BA304DCC3 (simzone_d) VM RESERVATIONS|0                             
-|00373061-46C7-53B1-BCB3-9CF1C2C40D2D (simzone_c) VM RESERVATIONS|0                             
-|F7D1AD21-C6B3-5FCD-8F20-5FC4CEA9D4E0 (simzone_b) VM RESERVATIONS|0                             
+The HOST object host_simhosta3, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
+|attribute (HOST object key)               |value                                
+|arrival                                   |1377115250                           
+|cloud_hostname                            |simhosta3                            
+|cloud_ip                                  |58.164.112.40                        
+|cloud_vm_uuid                             |755AACCC-7A4D-5E09-807E-EA2F6FF44195 
+|cores                                     |16                                   
+|counter                                   |85                                   
+|function                                  |hypervisor                           
+|identity                                  |/home/mrhines/cbtool/lib/auxiliary//../../credentials/bogus_id_rsa
+|login                                     |root                                 
+|memory                                    |131072                               
+|mgt_001_provisioning_request_originated   |1377115250                           
+|mgt_002_provisioning_request_sent         |0                                    
+|mgt_003_provisioning_request_completed    |0                                    
+|migrate_interface                         |default                              
+|model                                     |sim                                  
+|name                                      |host_simhosta3                       
+|notification                              |False                                
+|pool                                      |SUT                                  
+|protect_interface                         |default                              
+|simulated                                 |True                                 
+|state                                     |attached                             
+|username                                  |mrhines                              
+|uuid                                      |755AACCC-7A4D-5E09-807E-EA2F6FF44195 
+|vmc                                       |75A875C6-F2C5-5C3D-BD34-051FBBE24C3A 
+|vmc_name                                  |simzone_a                            
 

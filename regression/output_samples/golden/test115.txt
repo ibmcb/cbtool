@@ -1,2 +1,1 @@
-The following VMCs are attached to this experiment (Cloud TESTCLOUD) :
-No objects available.
+Usage: vmmigrate <cloud_name> <identifier> <destination> [protocol = tcp] [interface = default] [mode] 

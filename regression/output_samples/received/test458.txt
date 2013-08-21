@@ -1,50 +1,43 @@
- status: VMC 610C9C91-C05C-5406-A422-11A24A8CA0A5 was successfully registered on SimCloud "TESTCLOUD".
- status: Attribute "collect_from_host" was set to "false". Skipping Host OS performance monitor daemon startup
-VMC object 610C9C91-C05C-5406-A422-11A24A8CA0A5 (named "simzone_c") sucessfully attached to this experiment. It is ssh-accessible at the IP address 83.7.116.16 (simzone_c).
+All VMCs successfully attached to this experiment. It looks like all VMCs were already attached.
 The following VMCs are attached to this experiment (Cloud TESTCLOUD) :
 |name                    |host_count      |pool                    |cloud_hostname                  |cloud_ip         
-|simzone_a               |5               |sut                     |simzone_a                       |136.157.18.16    
-|simzone_b               |5               |sut                     |simzone_b                       |18.150.85.100    
-|simzone_c               |5               |sut                     |simzone_c                       |83.7.116.16      
-
-The VMC object simzone_c, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
-|attribute (VMC object key)               |value                                
-|update_attempts                          |78                                   
-|update_frequency                         |3                                    
+|simzone_a               |5               |sut                     |simzone_a                       |178.25.91.237    
+|simzone_b               |5               |sut                     |simzone_b                       |40.229.214.80    
+|simzone_c               |5               |sut                     |simzone_c                       |153.54.87.220    
+|simzone_d               |5               |lg                      |simzone_d                       |119.221.73.6     
 
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |39.43M                        
-|Redis Version                                        |2.5.12                        
-|Uptime (in seconds)                                  |13565709                      
-|Total Connections Received                           |6495000                       
-|Total Commands Processed                             |93952840                      
-|Number of Keys                                       |222                           
+|Used Memory                                          |19.16M                        
+|Redis Version                                        |2.6.2                         
+|Uptime (in seconds)                                  |2517107                       
+|Total Connections Received                           |185724                        
+|Total Commands Processed                             |11803849                      
+|Number of Keys                                       |264                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|MongoDB Version                                      |2.0.6                         
-|Storage Size                                         |16113287152.0                 
-|Data Size                                            |13823269724.0                 
-|Index Size                                           |550342912                     
-|Average Object Size                                  |6601.70778736                 
-|Collections                                          |59                            
+|MongoDB Version                                      |2.4.5                         
+|Storage Size                                         |18292736                      
+|Data Size                                            |6872276                       
+|Index Size                                           |2142112                       
+|Average Object Size                                  |614.528838415                 
+|Collections                                          |13                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
-|VMCs                                                 |3                             
-|HOSTs                                                |15                            
+|VMCs                                                 |4                             
+|HOSTs                                                |20                            
 |VMs                                                  |0                             
-|SVMs                                                 |0                             
 |AIs                                                  |0                             
 |AIDRSs                                               |0                             
 |VMCRSs                                               |0                             
 |FIRSs                                                |0                             
 ------------------ EXPERIMENT-WIDE COUNTERS ------------------
 |Counter                                              |Value                         
-|VMC RESERVATIONS                                     |3                             
-|VMCs ARRIVED                                         |3                             
+|VMC RESERVATIONS                                     |4                             
+|VMCs ARRIVED                                         |8                             
 |VMCs ARRIVING                                        |0                             
-|VMCs DEPARTED                                        |0                             
+|VMCs DEPARTED                                        |4                             
 |VMCs DEPARTING                                       |0                             
 |VMCs FAILED                                          |0                             
 |HOST RESERVATIONS                                    |0                             
@@ -60,12 +53,6 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |VMs DEPARTED                                         |0                             
 |VMs DEPARTING                                        |0                             
 |VMs FAILED                                           |0                             
-|SVM RESERVATIONS                                     |0                             
-|SVMs ARRIVED                                         |0                             
-|SVMs ARRIVING                                        |0                             
-|SVMs DEPARTED                                        |0                             
-|SVMs DEPARTING                                       |0                             
-|SVMs FAILED                                          |0                             
 |AI RESERVATIONS                                      |0                             
 |AIs ARRIVED                                          |0                             
 |AIs ARRIVING                                         |0                             
@@ -91,10 +78,11 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |FIRSs DEPARTED                                       |0                             
 |FIRSs DEPARTING                                      |0                             
 |FIRSs FAILED                                         |0                             
-|EXPERIMENT COUNTER                                   |3                             
+|EXPERIMENT COUNTER                                   |32                            
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|1B79AE9F-80B7-52E3-AF89-CC44733E39C9 (simzone_a) VM RESERVATIONS|0                             
-|980E160D-EE10-52EA-9139-285BDE36654F (simzone_b) VM RESERVATIONS|0                             
-|610C9C91-C05C-5406-A422-11A24A8CA0A5 (simzone_c) VM RESERVATIONS|0                             
+|EC6B6956-3C90-5DA0-8471-C324CC2C3082 (simzone_a) VM RESERVATIONS|0                             
+|B972F197-3744-5062-BA16-CF2B84AB9B2F (simzone_b) VM RESERVATIONS|0                             
+|B0408679-2CA8-5CDF-9B52-E070C079FAF6 (simzone_d) VM RESERVATIONS|0                             
+|C38616E3-DE70-5D3C-9E58-6FDCDF42BC4F (simzone_c) VM RESERVATIONS|0                             
 

@@ -1,1 +1,1 @@
-Usage: hostshow <cloud_name> <identifier> [key = all] 
+Usage: hostrepair <cloud_name> <identifier> <service> [firs = none] [mode] 

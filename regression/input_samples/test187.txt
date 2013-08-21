@@ -1,1 +1,1 @@
-roleshow TESTCLOUD tinyvm
+stats TESTCLOUD

@@ -1,106 +1,123 @@
- status: Sending a termination request for vm_7 (cloud-assigned uuid AEECDC59-94E3-5CE0-91A0-BC7DA78F3AB2)....
- status: Sending a termination request for vm_8 (cloud-assigned uuid 45A76B55-E967-59ED-981F-63C5D9DCBDFF)....
- status: Sending a termination request for vm_15 (cloud-assigned uuid 9DDFB934-204B-5F53-967B-CCA7B6EEDF54)....
- status: Sending a termination request for vm_18 (cloud-assigned uuid E092DE1C-A4B9-59B7-867C-48C1EE331B9D)....
- status: Sending a termination request for vm_11 (cloud-assigned uuid 413D8FB3-B9BE-5525-AE10-0BB7E0B890B9)....
- status: Sending a termination request for vm_17 (cloud-assigned uuid AD49B096-C73F-5754-A7CA-B8FEB689F45F)....
- status: Sending a termination request for vm_20 (cloud-assigned uuid 3FC14156-D97B-525D-9C46-0ADB921A400F)....
- status: Sending a termination request for vm_6 (cloud-assigned uuid C3FF9346-87F9-550A-87C4-7BEFF2E1ACC4)....
- status: Sending a termination request for vm_14 (cloud-assigned uuid 11111111-1111-1111-1111-111111111111)....
- status: Sending a termination request for vm_16 (cloud-assigned uuid F168ADA9-F9B5-51F8-A155-2CFCECC5AB18)....
- status: Sending a termination request for vm_21 (cloud-assigned uuid CEF00553-7CC1-54E9-8C7C-A4258CECD8D0)....
- status: Sending a termination request for vm_19 (cloud-assigned uuid 47928A3C-0065-5647-9CC4-74A01BA8675A)....
- status: Sending a termination request for vm_10 (cloud-assigned uuid EF681549-FBBA-500B-BF74-C4DC7D48817A)....
- status: Sending a termination request for vm_3 (cloud-assigned uuid 0272F78C-B5D8-5868-82CF-479B77F3DCA0)....
- status: Sending a termination request for vm_12 (cloud-assigned uuid B36404F7-54BF-5924-8AEF-12CBDFD722FC)....
- status: Sending a termination request for vm_13 (cloud-assigned uuid 01B26CCA-83E0-52F6-9063-CCF790DED876)....
-VM object undefined (named "all") was sucessfully detached from this experiment.
-The following VMs are attached to this experiment (Cloud TESTCLOUD) :
-No objects available.
-The following statistics are available on this experiment (Cloud TESTCLOUD) :
-------------------------- OBJECT STORE -----------------------
-|Metric                                               |Value                         
-|Used Memory                                          |39.78M                        
-|Redis Version                                        |2.5.12                        
-|Uptime (in seconds)                                  |13565903                      
-|Total Connections Received                           |6495044                       
-|Total Commands Processed                             |93996124                      
-|Number of Keys                                       |337                           
-------------------------- METRIC STORE -----------------------
-|Metric                                               |Value                         
-|MongoDB Version                                      |2.0.6                         
-|Storage Size                                         |16113934320.0                 
-|Data Size                                            |13823375216.0                 
-|Index Size                                           |550432848                     
-|Average Object Size                                  |6601.06776333                 
-|Collections                                          |60                            
---------------------- EXPERIMENT OBJECTS ---------------------
-|Object                                               |Count                         
-|VMCs                                                 |4                             
-|HOSTs                                                |20                            
-|VMs                                                  |0                             
-|SVMs                                                 |0                             
-|AIs                                                  |0                             
-|AIDRSs                                               |0                             
-|VMCRSs                                               |0                             
-|FIRSs                                                |0                             
------------------- EXPERIMENT-WIDE COUNTERS ------------------
-|Counter                                              |Value                         
-|VMC RESERVATIONS                                     |4                             
-|VMCs ARRIVED                                         |16                            
-|VMCs ARRIVING                                        |0                             
-|VMCs DEPARTED                                        |12                            
-|VMCs DEPARTING                                       |0                             
-|VMCs FAILED                                          |0                             
-|HOST RESERVATIONS                                    |0                             
-|HOSTs ARRIVED                                        |0                             
-|HOSTs ARRIVING                                       |0                             
-|HOSTs DEPARTED                                       |0                             
-|HOSTs DEPARTING                                      |0                             
-|HOSTs FAILED                                         |0                             
-|VM RESERVATIONS                                      |0                             
-|VMs ARRIVED                                          |22                            
-|VMs ARRIVING                                         |0                             
-|VMs CAPTURING                                        |0                             
-|VMs DEPARTED                                         |22                            
-|VMs DEPARTING                                        |0                             
-|VMs FAILED                                           |0                             
-|SVM RESERVATIONS                                     |0                             
-|SVMs ARRIVED                                         |0                             
-|SVMs ARRIVING                                        |0                             
-|SVMs DEPARTED                                        |0                             
-|SVMs DEPARTING                                       |0                             
-|SVMs FAILED                                          |0                             
-|AI RESERVATIONS                                      |0                             
-|AIs ARRIVED                                          |0                             
-|AIs ARRIVING                                         |0                             
-|AIs CAPTURING                                        |0                             
-|AIs DEPARTED                                         |0                             
-|AIs DEPARTING                                        |0                             
-|AIs FAILED                                           |0                             
-|AIDRS RESERVATIONS                                   |0                             
-|AIDRSs ARRIVED                                       |0                             
-|AIDRSs ARRIVING                                      |0                             
-|AIDRSs DEPARTED                                      |0                             
-|AIDRSs DEPARTING                                     |0                             
-|AIDRSs FAILED                                        |0                             
-|VMCRS RESERVATIONS                                   |0                             
-|VMCRSs ARRIVED                                       |0                             
-|VMCRSs ARRIVING                                      |0                             
-|VMCRSs DEPARTED                                      |0                             
-|VMCRSs DEPARTING                                     |0                             
-|VMCRSs FAILED                                        |0                             
-|FIRS RESERVATIONS                                    |0                             
-|FIRSs ARRIVED                                        |0                             
-|FIRSs ARRIVING                                       |0                             
-|FIRSs DEPARTED                                       |0                             
-|FIRSs DEPARTING                                      |0                             
-|FIRSs FAILED                                         |0                             
-|EXPERIMENT COUNTER                                   |132                           
-
- ---------------- VMC-WIDE COUNTERS ----------------
-|D30F1B96-9225-51C9-95FF-3355AD659B11 (simzone_d) VM RESERVATIONS|0                             
-|3C091D65-A8D9-5ECF-9C95-36A39D5CAA39 (simzone_a) VM RESERVATIONS|0                             
-|671172C3-2E80-5782-AB0C-C348A586106A (simzone_c) VM RESERVATIONS|0                             
-|96342978-982B-5D60-9FF3-0C0B3F9C41A9 (simzone_b) VM RESERVATIONS|0                             
+The AI object ai_1, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
+|attribute (AI object key)               |value                                
+|ai_arrived                              |0                                    
+|ai_arriving                             |0                                    
+|ai_departed                             |0                                    
+|ai_failed                               |0                                    
+|ai_reservations                         |0                                    
+|aidrs                                   |none                                 
+|aidrs_name                              |none                                 
+|app_collection                          |eager                                
+|arrival                                 |1377116157                           
+|attach_parallelism                      |3                                    
+|attempts                                |3                                    
+|base_dir                                |/home/mrhines/cbtool/lib/auxiliary//../..
+|base_type                               |daytrader                            
+|capture_role                            |db2                                  
+|capture_supported                       |True                                 
+|client_daytrader_pref_pool              |sut                                  
+|cloud_hostname                          |3F871B4E-B72A-5B40-8D6A-F7ACE97DD4B3.simcloud.com
+|cloud_ip                                |89.63.19.230                         
+|cloud_name                              |TESTCLOUD                            
+|cloudoption_testcloud_attach_parallelism|5                                    
+|cloudoption_testcloud_execute_json_filename_prefix|cb                                   
+|cloudoption_testcloud_execute_script_name|/home/mrhines/cbtool/lib/auxiliary//../../regression/scripts/execute_on_staging.sh
+|cloudoption_testcloud_mode              |controllable                         
+|command                                 |aiattach TESTCLOUD daytrader default default none none none empty=empty
+|command_originated                      |1377116154                           
+|counter                                 |136                                  
+|db2_pref_pool                           |sut                                  
+|db2_reset1                              |cb_restart_db2.sh                    
+|db2_setup1                              |cb_setup_ramdisk.sh                  
+|db2_setup2                              |cb_restart_db2.sh                    
+|debug_remote_commands                   |False                                
+|detach_parallelism                      |20                                   
+|dont_start_load_manager                 |False                                
+|dont_start_qemu_scraper                 |True                                 
+|drivers_nr                              |0                                    
+|drivers_per_sut                         |0                                    
+|execute_json_filename_prefix            |cb                                   
+|execute_parallelism                     |6                                    
+|execute_script_name                     |execute_on_staging.sh                
+|experiment_id                           |REGRESSION_B                         
+|identity                                |/home/mrhines/cbtool/lib/auxiliary//../../credentials/bogus_id_rsa
+|lb_pref_pool                            |sut                                  
+|lb_reset1                               |cb_restart_loadbalancer.sh           
+|lb_setup1                               |cb_restart_loadbalancer.sh           
+|lifetime                                |none                                 
+|load_balancer                           |False                                
+|load_balancer_port                      |9080                                 
+|load_balancer_target_children           |2                                    
+|load_balancer_target_ip                 |none                                 
+|load_balancer_target_port               |9080                                 
+|load_balancer_target_role               |none                                 
+|load_balancer_target_url                |daytrader                            
+|load_balancer_target_vm                 |none                                 
+|load_balancer_url                       |daytrader                            
+|load_duration                           |100                                  
+|load_generator_ip                       |89.63.19.230                         
+|load_generator_role                     |client_daytrader                     
+|load_generator_target_ip                |46.72.175.131                        
+|load_generator_target_role              |was                                  
+|load_generator_target_vm                |C300A153-DE0C-5E37-B111-64CD47DF8AF1 
+|load_generator_vm                       |8D27D028-CDA1-5B00-BBC4-044F02CFE603 
+|load_level                              |10                                   
+|load_manager_ip                         |89.63.19.230                         
+|load_manager_role                       |client_daytrader                     
+|load_manager_vm                         |8D27D028-CDA1-5B00-BBC4-044F02CFE603 
+|load_profile                            |default                              
+|log_output_command                      |True                                 
+|login                                   |klabuser                             
+|max_ais                                 |1                                    
+|max_load                                |16                                   
+|metric_aggregator_ip                    |89.63.19.230                         
+|metric_aggregator_role                  |client_daytrader                     
+|metric_aggregator_vm                    |8D27D028-CDA1-5B00-BBC4-044F02CFE603 
+|mgt_001_provisioning_request_originated |1377116154                           
+|mgt_002_provisioning_request_sent       |0                                    
+|mgt_003_provisioning_request_completed  |0                                    
+|min_load                                |1                                    
+|mode                                    |controllable                         
+|model                                   |sim                                  
+|name                                    |ai_1                                 
+|notification                            |False                                
+|pattern                                 |none                                 
+|periodic_measurements                   |True                                 
+|replicated_vms                          |0                                    
+|resize_supported                        |True                                 
+|run_application_scripts                 |False                                
+|runstate_parallelism                    |5                                    
+|runstate_supported                      |True                                 
+|save_on_attach                          |False                                
+|seconds_before_save                     |0                                    
+|ssh_key_name                            |bogus_id_rsa                         
+|staging                                 |none                                 
+|start                                   |cb_daytrader.sh                      
+|state                                   |attached                             
+|sut                                     |1_x_client_daytrader->1_x_was->1_x_db2
+|suts                                    |1                                    
+|temp_attr_list                          |empty=empty                          
+|timeout                                 |240                                  
+|tracking                                |none                                 
+|tradedb_size                            |large                                
+|type                                    |daytrader                            
+|update_attempts                         |36                                   
+|update_frequency                        |1                                    
+|username                                |mrhines                              
+|uuid                                    |ACD8D4AD-7977-5B0F-B8E6-9C84649C2A12 
+|vm_arrived                              |22                                   
+|vm_arriving                             |0                                    
+|vm_creation                             |explicit                             
+|vm_departed                             |22                                   
+|vm_destruction                          |explicit                             
+|vm_failed                               |3                                    
+|vm_reservations                         |0                                    
+|vmc_arrived                             |16                                   
+|vmc_departed                            |12                                   
+|vmc_failed                              |0                                    
+|vms                                     |8D27D028-CDA1-5B00-BBC4-044F02CFE603|client_daytrader|vm_27,C300A153-DE0C-5E37-B111-64CD47DF8AF1|was|vm_26,A76FA65C-B48D-5D4A-B855-8F1B36C4D343|db2|vm_28
+|vms_nr                                  |3                                    
+|was_pref_pool                           |sut                                  
+|was_reset1                              |cb_restart_was.sh                    
+|was_setup2                              |cb_restart_was.sh                    
 

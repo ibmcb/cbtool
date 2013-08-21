@@ -1,15 +1,13 @@
-AIDRS object 9A5383E7-2829-576E-9AAC-B47A428B43D2 (named "aidrs_1") sucessfully attached to this experiment.
-|Used Memory                                          |44.27M                        
-|Uptime (in seconds)                                  |13566269                      
-|Total Connections Received                           |6495140                       
-|Total Commands Processed                             |94134596                      
-|Storage Size                                         |16114180080.0                 
-|Data Size                                            |13823589804.0                 
-|Index Size                                           |550481904                     
-|Average Object Size                                  |6600.33499413                 
-|Collections                                          |60                            
-|D30F1B96-9225-51C9-95FF-3355AD659B11 (simzone_d) VM RESERVATIONS|0                             
-|3C091D65-A8D9-5ECF-9C95-36A39D5CAA39 (simzone_a) VM RESERVATIONS|0                             
-|671172C3-2E80-5782-AB0C-C348A586106A (simzone_c) VM RESERVATIONS|0                             
-|96342978-982B-5D60-9FF3-0C0B3F9C41A9 (simzone_b) VM RESERVATIONS|1                             
-|9A5383E7-2829-576E-9AAC-B47A428B43D2 (aidrs_1) AI RESERVATIONS|1                             
+|Used Memory                                          |23.52M                        
+|Uptime (in seconds)                                  |2517667                       
+|Total Connections Received                           |185835                        
+|Total Commands Processed                             |12018726                      
+|Storage Size                                         |18579456                      
+|Data Size                                            |7152764                       
+|Index Size                                           |2248400                       
+|Average Object Size                                  |614.974120884                 
+|EDC9615C-DB1F-5769-9826-61B84283AFD7 (simzone_c) VM RESERVATIONS|0                             
+|702C293B-8403-5C96-B515-6AE61AE13658 (simzone_a) VM RESERVATIONS|0                             
+|34819FA6-FE78-5D1D-A68D-0E43FEBFD8A5 (simzone_b) VM RESERVATIONS|0                             
+|271ADA73-1C6A-581D-A1BA-730D86DF8704 (simzone_d) VM RESERVATIONS|0                             
+|055FE5FA-96E3-5D00-A3A4-12CBACA2BAAE (aidrs_1) AI RESERVATIONS|0                             

@@ -1,4 +1,3 @@
-vmdetach vm_5 async
-waitfor 10s
+vmattach willfail
 vmlist
 stats

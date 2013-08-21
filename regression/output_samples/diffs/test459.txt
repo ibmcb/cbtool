@@ -1,18 +1,16 @@
-Background operation execution success. Operation "vmc-attach" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.0.254,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,timeout:240,host:172.16.0.254,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,simzone_d,update_attempts=156+_*update_frequency=6 --operation=vmc-attach --cn=TESTCLOUD --uuid=5C19A508-0A00-5A3E-843B-CC5D626AB823 --daemon". The process id is 14591.
-|simzone_a               |5               |sut                     |simzone_a                       |136.157.18.16    
-|simzone_b               |5               |sut                     |simzone_b                       |18.150.85.100    
-|simzone_c               |5               |sut                     |simzone_c                       |83.7.116.16      
-|simzone_d               |5               |lg                      |simzone_d                       |123.136.2.142    
-|Used Memory                                          |39.48M                        
-|Uptime (in seconds)                                  |13565717                      
-|Total Connections Received                           |6495001                       
-|Total Commands Processed                             |93953766                      
-|Storage Size                                         |16113287152.0                 
-|Data Size                                            |13823274888.0                 
-|Index Size                                           |550342912                     
-|Average Object Size                                  |6601.66926691                 
-|Collections                                          |59                            
-|1B79AE9F-80B7-52E3-AF89-CC44733E39C9 (simzone_a) VM RESERVATIONS|0                             
-|980E160D-EE10-52EA-9139-285BDE36654F (simzone_b) VM RESERVATIONS|0                             
-|610C9C91-C05C-5406-A422-11A24A8CA0A5 (simzone_c) VM RESERVATIONS|0                             
-|5C19A508-0A00-5A3E-843B-CC5D626AB823 (simzone_d) VM RESERVATIONS|0                             
+ status: VMC EC6B6956-3C90-5DA0-8471-C324CC2C3082 was successfully unregistered on SimCloud "TESTCLOUD".
+VMC object EC6B6956-3C90-5DA0-8471-C324CC2C3082 (named "simzone_a") was sucessfully detached from this experiment.
+|simzone_b               |5               |sut                     |simzone_b                       |40.229.214.80    
+|simzone_c               |5               |sut                     |simzone_c                       |153.54.87.220    
+|simzone_d               |5               |lg                      |simzone_d                       |119.221.73.6     
+|Used Memory                                          |19.14M                        
+|Uptime (in seconds)                                  |2517107                       
+|Total Connections Received                           |185724                        
+|Total Commands Processed                             |11804415                      
+|Storage Size                                         |18292736                      
+|Data Size                                            |6871108                       
+|Index Size                                           |2142112                       
+|Average Object Size                                  |614.589266547                 
+|B972F197-3744-5062-BA16-CF2B84AB9B2F (simzone_b) VM RESERVATIONS|0                             
+|B0408679-2CA8-5CDF-9B52-E070C079FAF6 (simzone_d) VM RESERVATIONS|0                             
+|C38616E3-DE70-5D3C-9E58-6FDCDF42BC4F (simzone_c) VM RESERVATIONS|0                             

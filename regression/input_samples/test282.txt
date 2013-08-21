@@ -1,5 +1,4 @@
-aiattach TESTCLOUD daytrader
+waituntil TESTCLOUD AI ARRIVED=17 increasing 2
 ailist TESTCLOUD
 vmlist TESTCLOUD
-aishow TESTCLOUD ai_9 load_balancer,sut
 stats TESTCLOUD

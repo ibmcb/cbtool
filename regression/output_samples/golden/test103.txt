@@ -1,1 +1,2 @@
-Usage: rolealter <cloud_name> <role_name> <attribute> <value> 
+AIDRSs with the following patterns can be attached to to this experiment (Cloud TESTCLOUD) :
+simplemlg, simplehd, simplefb, simplenw, simplenp, simpledt, simplemlg2, simplecm

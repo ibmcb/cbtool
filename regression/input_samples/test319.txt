@@ -1,4 +1,4 @@
-waituntil TESTCLOUD AI =0 decreasing 1
-ailist TESTCLOUD
-vmlist TESTCLOUD
+vmmigrate TESTCLOUD youngest source async
+waitfor TESTCLOUD 10s
 stats TESTCLOUD
+vmlist TESTCLOUD

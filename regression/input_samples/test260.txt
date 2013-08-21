@@ -1,1 +1,3 @@
-ailist TESTCLOUD
+airepair TESTCLOUD ai_3
+stateshow TESTCLOUD
+stats TESTCLOUD

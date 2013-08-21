@@ -1,6 +1,3 @@
-aiattach hadoop async
-waitfor 12s
-ailist
-vmlist
-aishow ai_2 detach_parallelism,ssh_key_name,sut
+aisave ai_3
+stateshow
 stats

@@ -1,0 +1,15 @@
+|arrival                                 |1377116004                           
+|cloud_hostname                          |EC780171-BB38-57EA-9399-9E17C1905542.simcloud.com
+|cloud_ip                                |122.242.46.190                       
+|cloud_mac                               |00:16:3e:70:81:24                    
+|cloud_vm_uuid                           |EC780171-BB38-57EA-9399-9E17C1905542 
+|command_originated                      |1377116002                           
+|host                                    |195B8AF9-10A1-5D09-89D1-4C640E772DCE 
+|host_cloud_ip                           |111.76.33.194                        
+|host_name                               |simhosta3                            
+|mgt_001_provisioning_request_originated |1377116002                           
+|prov_cloud_ip                           |122.242.46.190                       
+|uuid                                    |AA8389FA-A2FB-597A-9378-2C4BE6BB64F1 
+|vmc                                     |702C293B-8403-5C96-B515-6AE61AE13658 
+|vmc_cloud_ip                            |183.64.75.232                        
+|vmc_name                                |simzone_a                            

@@ -1,1 +1,1 @@
-Usage: vmcdetach <cloud_name> <identifier> [force = False] [mode] 
+Usage: vmprotect <cloud_name> <identifier> <destination> [protocol = tcp] [interface = default] [mode] 

@@ -1,3 +1,5 @@
-vmcapture vm_2
+vmattach fen_hpc auto empty size=platinum64,vmc_pool=LG async
+waitfor 8s
 vmlist
+vmshow vm_11 vmc_name,vmc_pool,host_name,meta_tags,size
 stats

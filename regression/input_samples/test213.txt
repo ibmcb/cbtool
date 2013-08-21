@@ -1,1 +1,4 @@
-reserved for hostfail
+vmattach TESTCLOUD tinyvm lg
+vmlist TESTCLOUD
+vmshow TESTCLOUD vm_2 vmc_name,vmc_pool,host_name,meta_tags,size
+stats TESTCLOUD

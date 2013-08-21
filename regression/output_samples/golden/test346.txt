@@ -1,52 +1,7 @@
- status: No samples of runtime_os metrics for all VMs were found (the file /home/msilva/cloudbench/lib/auxiliary//../../data/REGRESSION_B/VM_runtime_os_REGRESSION_B.csv will be empty).
-Monitor extraction success. VM runtime OS performance data samples were written to the file /home/msilva/cloudbench/lib/auxiliary//../../data/REGRESSION_B/VM_runtime_os_REGRESSION_B.csv
-running shell command: "cat ~/cloudbench/data/REGRESSION_B/VM_runtime_os_*REGRESSION*"....
+running shell command: "rm -rf /home/mrhines/cbtool/regression/..//data/REGRESSION_B"....
 stdout:
- #field:column #
-#time:1
-#time_h:2
-#uuid:3
-#name:4
-#role:5
-#ai_name:6
-#type:7
-#cpu_speed:8
-#cores:9
-#cpu_num:10
-#proc_total:11
-#proc_run:12
-#cpu_idle:13
-#cpu_aidle:14
-#cpu_user:15
-#cpu_system:16
-#cpu_wio:17
-#cpu_nice:18
-#mem_total:19
-#mem_free:20
-#mem_cached:21
-#mem_buffers:22
-#mem_shared:23
-#swap_total:24
-#swap_free:25
-#swap_procs_running:26
-#swap_in_flight:27
-#swap_procs_blocked:28
-#swap_KB_read:29
-#swap_ios_read:30
-#swap_KB_write:31
-#swap_ios_write:32
-#pkts_in:33
-#bytes_in:34
-#pkts_out:35
-#bytes_out:36
-#disk_total:37
-#disk_free:38
-#ds_in_flight:39
-#ds_KB_read:40
-#ds_ios_read:41
-#ds_KB_write:42
-#ds_ios_write:43
+ 
 
-time,time_h,uuid,name,role,ai_name,type,cpu_speed,cores,cpu_num,proc_total,proc_run,cpu_idle,cpu_aidle,cpu_user,cpu_system,cpu_wio,cpu_nice,mem_total,mem_free,mem_cached,mem_buffers,mem_shared,swap_total,swap_free,swap_procs_running,swap_in_flight,swap_procs_blocked,swap_KB_read,swap_ios_read,swap_KB_write,swap_ios_write,pkts_in,bytes_in,pkts_out,bytes_out,disk_total,disk_free,ds_in_flight,ds_KB_read,ds_ios_read,ds_KB_write,ds_ios_write
-
+running shell command: "ls -la /home/mrhines/cbtool/regression/..//data/REGRESSION_B/"....
+Shell command execution failure: Error while executing the command line "ls -la /home/mrhines/cbtool/regression/..//data/REGRESSION_B/" (returncode = 2504) :ls: cannot access /home/mrhines/cbtool/regression/..//data/REGRESSION_B/: No such file or directory
 

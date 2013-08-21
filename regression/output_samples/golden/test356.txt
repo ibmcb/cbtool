@@ -1,1 +1,1 @@
-Usage: cldshow <cloud_name> <object_type> 
+*** Unknown syntax: cldparse

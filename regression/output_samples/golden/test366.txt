@@ -1,2 +1,1 @@
-AIDRSs with the following patterns can be attached to to this experiment (Cloud TESTCLOUD) :
-simplehd, simplefb, simplenw, simplenp, simpledt, simplecm
+Usage: patternalter <cloud_name> <pattern_name> <attribute> <value> 

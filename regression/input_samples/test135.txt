@@ -1,1 +1,1 @@
-vmresize
+vmdetach

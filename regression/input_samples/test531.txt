@@ -1,5 +1,5 @@
-aiattach netperf netclient_pref_pool=SUT,netclient_size=platinum64
+vmcapture youngest
+stats
 ailist
 vmlist
-aishow ai_5 detach_parallelism,ssh_key_name,sut
 stats

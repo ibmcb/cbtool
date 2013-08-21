@@ -1,1 +1,1 @@
-*** Unknown syntax: cldparse
+Usage: clddetach <cloud name> 

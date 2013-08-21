@@ -1,1 +1,1 @@
-Usage: vmcrsshow <cloud_name> <identifier> [key = all] 
+Usage: vmcrsdetach <cloud_name> <identifier> [force = False] [mode] 

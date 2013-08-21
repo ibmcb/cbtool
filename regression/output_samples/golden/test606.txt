@@ -1,6 +1,6 @@
- status: No samples of runtime_app metrics for all VMs were found (the file /home/msilva/cloudbench/lib/auxiliary//../../data/REGRESSION_B/VM_runtime_app_REGRESSION_B.csv will be empty).
-Monitor extraction success. VM runtime application performance data samples were written to the file /home/msilva/cloudbench/lib/auxiliary//../../data/REGRESSION_B/VM_runtime_app_REGRESSION_B.csv
-running shell command: "cat ~/cloudbench/data/REGRESSION_B/VM_runtime_app_*REGRESSION*"....
+ status: No samples of runtime_app metrics for all VMs were found (the file /home/mrhines/cbtool/lib/auxiliary//../../data/REGRESSION_B/VM_runtime_app_REGRESSION_B.csv will be empty).
+Monitor extraction success. VM runtime application performance data samples were written to the file /home/mrhines/cbtool/lib/auxiliary//../../data/REGRESSION_B/VM_runtime_app_REGRESSION_B.csv
+running shell command: "cat /home/mrhines/cbtool/regression/..//data/REGRESSION_B/VM_runtime_app_*REGRESSION*"....
 stdout:
  #field:column #
 #time:1

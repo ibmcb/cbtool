@@ -1,2 +1,1 @@
-The following SVMs are attached to this experiment (Cloud TESTCLOUD) :
-No objects available.
+Usage: waitfor <cloud_name> <time> [update_interval = default] 

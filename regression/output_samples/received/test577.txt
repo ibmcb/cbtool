@@ -1,2 +1,6 @@
-The AIDRS object aidrs_1 had its state altered from "attached" to "stopped" on this experiment (Cloud TESTCLOUD)
-
+ status: VMC F993D8D5-82BA-59CB-970A-6B3F8CC6F222 was successfully registered on SimCloud "TESTCLOUD".
+ status: Attribute "collect_from_host" was set to "false". Skipping Host OS performance monitor daemon startup
+VMC object F993D8D5-82BA-59CB-970A-6B3F8CC6F222 (named "simzone_source") sucessfully attached to this experiment. It is ssh-accessible at the IP address 88.180.78.215 (simzone_source).
+ status: VMC 69B6EE37-7343-582F-AC8D-3A2B5F09A61A was successfully registered on SimCloud "TESTCLOUD".
+ status: Attribute "collect_from_host" was set to "false". Skipping Host OS performance monitor daemon startup
+VMC object 69B6EE37-7343-582F-AC8D-3A2B5F09A61A (named "simzone_dest") sucessfully attached to this experiment. It is ssh-accessible at the IP address 128.193.23.196 (simzone_dest).

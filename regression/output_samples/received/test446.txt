@@ -1,4 +1,4 @@
-The VM with the role tinyvm has the following configuration on experiment (Cloud TESTCLOUD) :
-imageid1: cloudbench_tinyvm
-imageids: 1
-size: pico32
+ status: Attribute "collect_from_host" was set to "false". Skipping Host OS performance monitor daemon startup
+The global object "time" on Cloud TESTCLOUD was modified:
+|"sub-attribute" (key)                |old value                          |new value                          
+|experiment_id                        |EXP-08-21-2013-04-12-27-PM-EDT     |REGRESSION_A                       

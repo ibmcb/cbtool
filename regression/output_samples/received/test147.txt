@@ -1,1 +1,1 @@
-Usage: aisuspend <cloud_name> <identifier> [firs = none] [mode] 
+Usage: airesize <cloud_name> <identifier> <role> <delta> [mode] 

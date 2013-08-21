@@ -1,1 +1,1 @@
-Usage: airesume <cloud_name> <identifier> [firs = none] [mode] 
+Usage: aicapture <cloud_name> <identifier> [vmcrs = none] [mode] 

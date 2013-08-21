@@ -1,1 +1,4 @@
-vmshow TESTCLOUD vm_1 all
+vmattach TESTCLOUD tinyvm async=2
+waituntil TESTCLOUD VM ARRIVED=8 increasing 1
+vmlist TESTCLOUD
+stats TESTCLOUD

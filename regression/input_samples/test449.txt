@@ -1,1 +1,1 @@
-viewlist
+waitfor 10s

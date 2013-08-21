@@ -1,4 +1,3 @@
-waituntil AI =0 decreasing 1
-ailist
-vmlist
+vmattach tinyvm simzone_source
 stats
+vmlist

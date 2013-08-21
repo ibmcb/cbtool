@@ -1,5 +1,593 @@
-The following CLOUDs are attached to this experiment (Cloud ) :
-|name                    |model                   |description             
-|TESTCLOUD               |sim                     |Cloudbench SimCloud.    
+The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
+|attribute (GLOBAL object)        |"sub-attribute" (key)          |value                                
+|admission_control                |ai_max_reservations            |40                                   
+|admission_control                |aidrs_max_reservations         |100000                               
+|admission_control                |firs_max_reservations          |100000                               
+|admission_control                |vm_max_reservations            |180                                  
+|admission_control                |vmc_max_reservations           |100000                               
+|admission_control                |vmcrs_max_reservations         |100000                               
+|ai_defaults                      |attach_parallelism             |5                                    
+|ai_defaults                      |attempts                       |3                                    
+|ai_defaults                      |capture_supported              |True                                 
+|ai_defaults                      |cloudoption_testcloud_attach_parallelism|5                                    
+|ai_defaults                      |cloudoption_testcloud_execute_json_filename_prefix|cb                                   
+|ai_defaults                      |cloudoption_testcloud_execute_script_name|/home/mrhines/cbtool/lib/auxiliary//../../regression/scripts/execute_on_staging.sh
+|ai_defaults                      |cloudoption_testcloud_mode     |controllable                         
+|ai_defaults                      |debug_remote_commands          |False                                
+|ai_defaults                      |detach_parallelism             |20                                   
+|ai_defaults                      |dont_start_load_manager        |False                                
+|ai_defaults                      |dont_start_qemu_scraper        |True                                 
+|ai_defaults                      |execute_json_filename_prefix   |cb                                   
+|ai_defaults                      |execute_parallelism            |6                                    
+|ai_defaults                      |execute_script_name            |execute_on_staging.sh                
+|ai_defaults                      |log_output_command             |True                                 
+|ai_defaults                      |login                          |klabuser                             
+|ai_defaults                      |mode                           |controllable                         
+|ai_defaults                      |notification                   |False                                
+|ai_defaults                      |replicated_vms                 |0                                    
+|ai_defaults                      |resize_supported               |True                                 
+|ai_defaults                      |run_application_scripts        |False                                
+|ai_defaults                      |runstate_parallelism           |5                                    
+|ai_defaults                      |runstate_supported             |True                                 
+|ai_defaults                      |save_on_attach                 |False                                
+|ai_defaults                      |seconds_before_save            |0                                    
+|ai_defaults                      |ssh_key_name                   |bogus_id_rsa                         
+|ai_defaults                      |timeout                        |240                                  
+|ai_defaults                      |update_attempts                |36                                   
+|ai_defaults                      |update_frequency               |1                                    
+|ai_defaults                      |username                       |mrhines                              
+|ai_defaults                      |vm_creation                    |explicit                             
+|ai_defaults                      |vm_destruction                 |explicit                             
+|ai_templates                     |cloudoption_testcloud_hpcc_max_n_size_per_node|100                                  
+|ai_templates                     |cloudoption_testcloud_hpcc_nb_size|64                                   
+|ai_templates                     |cloudoption_testcloud_specjbb_balloon_delay1|300000                               
+|ai_templates                     |cloudoption_testcloud_specjbb_balloon_delay2|380000                               
+|ai_templates                     |cloudoption_testcloud_specjbb_balloon_delay3|460000                               
+|ai_templates                     |cloudoption_testcloud_specjbb_balloon_delay4|540000                               
+|ai_templates                     |cloudoption_testcloud_specjbb_balloon_size1|500                                  
+|ai_templates                     |cloudoption_testcloud_specjbb_balloon_size2|500                                  
+|ai_templates                     |cloudoption_testcloud_specjbb_balloon_size3|500                                  
+|ai_templates                     |cloudoption_testcloud_specjbb_balloon_size4|500                                  
+|ai_templates                     |cloudoption_testcloud_specjbb_concurrent_ais|2                                    
+|ai_templates                     |cloudoption_testcloud_specjbb_experiment_output_collection_dir|specjbb_balloon_experiment_results   
+|ai_templates                     |cloudoption_testcloud_specjbb_experiment_output_collection_host|172.16.0.1                           
+|ai_templates                     |cloudoption_testcloud_specjbb_java_home|j9vm_sdk                             
+|ai_templates                     |cloudoption_testcloud_specjbb_run_counter_name|experiment_id_counter                
+|ai_templates                     |cloudoption_testcloud_specjbb_specific_parameters|BALLOON_SIZE:BALLOON_DELAY           
+|ai_templates                     |cloudoption_testcloud_specjbb_specjbb_duration|120                                  
+|ai_templates                     |cloudoption_testcloud_specjbb_specjbb_rampup|20                                   
+|ai_templates                     |cloudoption_testcloud_specjbb_sync_channel_name|synchronization_channel              
+|ai_templates                     |cloudoption_testcloud_specjbb_sync_counter_name|synchronization_counter              
+|ai_templates                     |coremark_capture_role          |coremark                             
+|ai_templates                     |coremark_coremark_setup1       |cb_setup_cmk.sh                      
+|ai_templates                     |coremark_load_balancer         |False                                
+|ai_templates                     |coremark_load_balancer_target_children|2                                    
+|ai_templates                     |coremark_load_balancer_target_port|80                                   
+|ai_templates                     |coremark_load_balancer_target_url|unknown                              
+|ai_templates                     |coremark_load_duration         |uniformIXIXI40I60                    
+|ai_templates                     |coremark_load_generator_role   |coremark                             
+|ai_templates                     |coremark_load_level            |uniformIXIXI1I7                      
+|ai_templates                     |coremark_load_manager_role     |coremark                             
+|ai_templates                     |coremark_load_profile          |default                              
+|ai_templates                     |coremark_metric_aggregator_role|coremark                             
+|ai_templates                     |coremark_start                 |cb_coremark.sh                       
+|ai_templates                     |coremark_sut                   |coremark                             
+|ai_templates                     |daytrader_app_collection       |eager                                
+|ai_templates                     |daytrader_capture_role         |db2                                  
+|ai_templates                     |daytrader_client_daytrader_pref_pool|sut                                  
+|ai_templates                     |daytrader_db2_pref_pool        |sut                                  
+|ai_templates                     |daytrader_db2_reset1           |cb_restart_db2.sh                    
+|ai_templates                     |daytrader_db2_setup1           |cb_setup_ramdisk.sh                  
+|ai_templates                     |daytrader_db2_setup2           |cb_restart_db2.sh                    
+|ai_templates                     |daytrader_lb_pref_pool         |sut                                  
+|ai_templates                     |daytrader_lb_reset1            |cb_restart_loadbalancer.sh           
+|ai_templates                     |daytrader_lb_setup1            |cb_restart_loadbalancer.sh           
+|ai_templates                     |daytrader_load_balancer        |False                                
+|ai_templates                     |daytrader_load_balancer_port   |9080                                 
+|ai_templates                     |daytrader_load_balancer_target_children|2                                    
+|ai_templates                     |daytrader_load_balancer_target_port|9080                                 
+|ai_templates                     |daytrader_load_balancer_target_url|daytrader                            
+|ai_templates                     |daytrader_load_balancer_url    |daytrader                            
+|ai_templates                     |daytrader_load_duration        |100                                  
+|ai_templates                     |daytrader_load_generator_role  |client_daytrader                     
+|ai_templates                     |daytrader_load_level           |10                                   
+|ai_templates                     |daytrader_load_manager_role    |client_daytrader                     
+|ai_templates                     |daytrader_load_profile         |default                              
+|ai_templates                     |daytrader_max_load             |16                                   
+|ai_templates                     |daytrader_metric_aggregator_role|client_daytrader                     
+|ai_templates                     |daytrader_min_load             |1                                    
+|ai_templates                     |daytrader_periodic_measurements|True                                 
+|ai_templates                     |daytrader_start                |cb_daytrader.sh                      
+|ai_templates                     |daytrader_sut                  |client_daytrader->was->db2           
+|ai_templates                     |daytrader_tradedb_size         |large                                
+|ai_templates                     |daytrader_was_pref_pool        |sut                                  
+|ai_templates                     |daytrader_was_reset1           |cb_restart_was.sh                    
+|ai_templates                     |daytrader_was_setup2           |cb_restart_was.sh                    
+|ai_templates                     |ddgen_capture_role             |ddgen                                
+|ai_templates                     |ddgen_ddgen_setup1             |cb_check_dd_utility.sh               
+|ai_templates                     |ddgen_load_balancer            |False                                
+|ai_templates                     |ddgen_load_balancer_target_children|2                                    
+|ai_templates                     |ddgen_load_balancer_target_port|80                                   
+|ai_templates                     |ddgen_load_balancer_target_url |unknown                              
+|ai_templates                     |ddgen_load_duration            |180                                  
+|ai_templates                     |ddgen_load_generator_role      |ddgen                                
+|ai_templates                     |ddgen_load_level               |1024                                 
+|ai_templates                     |ddgen_load_manager_role        |ddgen                                
+|ai_templates                     |ddgen_load_profile             |default                              
+|ai_templates                     |ddgen_metric_aggregator_role   |ddgen                                
+|ai_templates                     |ddgen_start                    |cb_ddgen.sh                          
+|ai_templates                     |ddgen_sut                      |ddgen                                
+|ai_templates                     |filebench_capture_role         |filebench                            
+|ai_templates                     |filebench_filebench_setup1     |cb_setup_storage.sh                  
+|ai_templates                     |filebench_load_balancer        |False                                
+|ai_templates                     |filebench_load_balancer_target_children|2                                    
+|ai_templates                     |filebench_load_balancer_target_port|80                                   
+|ai_templates                     |filebench_load_balancer_target_url|unknown                              
+|ai_templates                     |filebench_load_duration        |uniformIXIXI60I90                    
+|ai_templates                     |filebench_load_generator_role  |filebench                            
+|ai_templates                     |filebench_load_level           |uniformIXIXI1I1                      
+|ai_templates                     |filebench_load_manager_role    |filebench                            
+|ai_templates                     |filebench_load_profile         |fileserver                           
+|ai_templates                     |filebench_metric_aggregator_role|filebench                            
+|ai_templates                     |filebench_start                |cb_filebench.sh                      
+|ai_templates                     |filebench_sut                  |filebench                            
+|ai_templates                     |hadoop_capture_role            |hadoopslave                          
+|ai_templates                     |hadoop_hadoopmaster_resize1    |cb_restart_hadoop_cluster.sh         
+|ai_templates                     |hadoop_hadoopmaster_setup1     |cb_config_hadoop_cluster.sh          
+|ai_templates                     |hadoop_hadoopmaster_setup2     |cb_start_hadoop_cluster.sh           
+|ai_templates                     |hadoop_hadoopslave_resize1     |cb_restart_hadoop_cluster.sh         
+|ai_templates                     |hadoop_hadoopslave_setup1      |cb_config_hadoop_cluster.sh          
+|ai_templates                     |hadoop_load_balancer           |False                                
+|ai_templates                     |hadoop_load_balancer_target_children|2                                    
+|ai_templates                     |hadoop_load_balancer_target_port|80                                   
+|ai_templates                     |hadoop_load_balancer_target_url|unknown                              
+|ai_templates                     |hadoop_load_duration           |60                                   
+|ai_templates                     |hadoop_load_generator_role     |hadoopmaster                         
+|ai_templates                     |hadoop_load_level              |uniformIXIXI1I3                      
+|ai_templates                     |hadoop_load_manager_role       |hadoopmaster                         
+|ai_templates                     |hadoop_load_profile            |terasort                             
+|ai_templates                     |hadoop_metric_aggregator_role  |hadoopmaster                         
+|ai_templates                     |hadoop_start                   |cb_hadoop_job.sh                     
+|ai_templates                     |hadoop_sut                     |hadoopmaster->3_x_hadoopslave        
+|ai_templates                     |hpcc_capture_role              |cn_hpc                               
+|ai_templates                     |hpcc_fen_hpc_setup1            |cb_config_fen_hpc.sh                 
+|ai_templates                     |hpcc_load_balancer             |False                                
+|ai_templates                     |hpcc_load_duration             |60                                   
+|ai_templates                     |hpcc_load_generator_role       |fen_hpc                              
+|ai_templates                     |hpcc_load_level                |uniformIXIXI1I6                      
+|ai_templates                     |hpcc_load_manager_role         |fen_hpc                              
+|ai_templates                     |hpcc_load_profile              |default                              
+|ai_templates                     |hpcc_metric_aggregator_role    |fen_hpc                              
+|ai_templates                     |hpcc_start                     |cb_hpcc.sh                           
+|ai_templates                     |hpcc_sut                       |fen_hpc->3_x_cn_hpc                  
+|ai_templates                     |mlg2_capture_role              |mlg2                                 
+|ai_templates                     |mlg2_load_balancer             |False                                
+|ai_templates                     |mlg2_load_balancer_target_children|2                                    
+|ai_templates                     |mlg2_load_balancer_target_port |80                                   
+|ai_templates                     |mlg2_load_balancer_target_url  |unknown                              
+|ai_templates                     |mlg2_load_duration             |30                                   
+|ai_templates                     |mlg2_load_generator_role       |mlg2                                 
+|ai_templates                     |mlg2_load_level                |1                                    
+|ai_templates                     |mlg2_load_manager_role         |mlg2                                 
+|ai_templates                     |mlg2_load_profile              |SEQ                                  
+|ai_templates                     |mlg2_metric_aggregator_role    |mlg2                                 
+|ai_templates                     |mlg2_mlg_setup1                |cb_setup_mlg.sh                      
+|ai_templates                     |mlg2_start                     |cb_mlg.sh                            
+|ai_templates                     |mlg2_sut                       |mlg2                                 
+|ai_templates                     |mlg_capture_role               |mlg                                  
+|ai_templates                     |mlg_load_balancer              |False                                
+|ai_templates                     |mlg_load_balancer_target_children|2                                    
+|ai_templates                     |mlg_load_balancer_target_port  |80                                   
+|ai_templates                     |mlg_load_balancer_target_url   |unknown                              
+|ai_templates                     |mlg_load_duration              |30                                   
+|ai_templates                     |mlg_load_generator_role        |mlg                                  
+|ai_templates                     |mlg_load_level                 |1                                    
+|ai_templates                     |mlg_load_manager_role          |mlg                                  
+|ai_templates                     |mlg_load_profile               |SEQ                                  
+|ai_templates                     |mlg_metric_aggregator_role     |mlg                                  
+|ai_templates                     |mlg_mlg_setup1                 |cb_setup_mlg.sh                      
+|ai_templates                     |mlg_start                      |cb_mlg.sh                            
+|ai_templates                     |mlg_sut                        |mlg                                  
+|ai_templates                     |netperf_capture_role           |netserver                            
+|ai_templates                     |netperf_load_balancer          |False                                
+|ai_templates                     |netperf_load_balancer_target_children|2                                    
+|ai_templates                     |netperf_load_balancer_target_port|80                                   
+|ai_templates                     |netperf_load_balancer_target_url|unknown                              
+|ai_templates                     |netperf_load_duration          |uniformIXIXI70I90                    
+|ai_templates                     |netperf_load_generator_role    |netclient                            
+|ai_templates                     |netperf_load_level             |1                                    
+|ai_templates                     |netperf_load_manager_role      |netclient                            
+|ai_templates                     |netperf_load_profile           |tcp_stream                           
+|ai_templates                     |netperf_metric_aggregator_role |netclient                            
+|ai_templates                     |netperf_netclient_setup1       |cb_check_netperf_client.sh           
+|ai_templates                     |netperf_netserver_setup1       |cb_check_netperf_server.sh           
+|ai_templates                     |netperf_start                  |cb_netperf.sh                        
+|ai_templates                     |netperf_sut                    |netclient->netserver                 
+|ai_templates                     |nullworkload_capture_role      |tinyvm                               
+|ai_templates                     |nullworkload_load_balancer     |False                                
+|ai_templates                     |nullworkload_load_balancer_target_children|2                                    
+|ai_templates                     |nullworkload_load_balancer_target_port|80                                   
+|ai_templates                     |nullworkload_load_balancer_target_url|unknown                              
+|ai_templates                     |nullworkload_load_duration     |30                                   
+|ai_templates                     |nullworkload_load_generator_role|tinyvm                               
+|ai_templates                     |nullworkload_load_level        |uniformIXIXI1I100                    
+|ai_templates                     |nullworkload_load_manager_role |tinyvm                               
+|ai_templates                     |nullworkload_load_profile      |default                              
+|ai_templates                     |nullworkload_metric_aggregator_role|tinyvm                               
+|ai_templates                     |nullworkload_start             |cb_run_nothing.sh                    
+|ai_templates                     |nullworkload_sut               |tinyvm                               
+|ai_templates                     |nullworkload_tinyvm_pref_pool  |sut                                  
+|ai_templates                     |nullworkload_tinyvm_setup1     |cb_start_nothing.sh                  
+|ai_templates                     |specjbb_capture_role           |specjbb                              
+|ai_templates                     |specjbb_load_balancer          |False                                
+|ai_templates                     |specjbb_load_balancer_target_port|80                                   
+|ai_templates                     |specjbb_load_balancer_target_url|unknown                              
+|ai_templates                     |specjbb_load_duration          |uniformIXIXI90I120                   
+|ai_templates                     |specjbb_load_generator_role    |specjbb                              
+|ai_templates                     |specjbb_load_level             |1                                    
+|ai_templates                     |specjbb_load_manager_role      |specjbb                              
+|ai_templates                     |specjbb_load_profile           |default                              
+|ai_templates                     |specjbb_metric_aggregator_role |specjbb                              
+|ai_templates                     |specjbb_specjbb_setup1         |cb_setup_specjbb.sh                  
+|ai_templates                     |specjbb_start                  |cb_specjbb.sh                        
+|ai_templates                     |specjbb_sut                    |specjbb                              
+|ai_templates                     |tradelite_db2_reset1           |cb_restart_db2.sh                    
+|ai_templates                     |tradelite_db2_setup1           |cb_restart_db2.sh                    
+|ai_templates                     |tradelite_lb_reset1            |cb_restart_loadbalancer.sh           
+|ai_templates                     |tradelite_lb_setup1            |cb_restart_loadbalancer.sh           
+|ai_templates                     |tradelite_load_balancer        |False                                
+|ai_templates                     |tradelite_load_balancer_target_children|2                                    
+|ai_templates                     |tradelite_load_balancer_target_port|9080                                 
+|ai_templates                     |tradelite_load_balancer_target_url|daytrader                            
+|ai_templates                     |tradelite_load_duration        |uniformIXIXI90I120                   
+|ai_templates                     |tradelite_load_generator_role  |client_tradelite                     
+|ai_templates                     |tradelite_load_level           |uniformIXIXI2I5                      
+|ai_templates                     |tradelite_load_manager_role    |client_tradelite                     
+|ai_templates                     |tradelite_load_profile         |default                              
+|ai_templates                     |tradelite_metric_aggregator_role|client_tradelite                     
+|ai_templates                     |tradelite_start                |cb_tradelite.sh                      
+|ai_templates                     |tradelite_sut                  |client_tradelite->was                
+|ai_templates                     |tradelite_was_reset1           |cb_restart_was.sh                    
+|ai_templates                     |tradelite_was_setup1           |cb_restart_was.sh                    
+|aidrs_defaults                   |daemon_parallelism             |40                                   
+|aidrs_defaults                   |detach_parallelism             |20                                   
+|aidrs_defaults                   |login                          |klabuser                             
+|aidrs_defaults                   |notification                   |False                                
+|aidrs_defaults                   |ssh_key_name                   |bogus_id_rsa                         
+|aidrs_defaults                   |submitter                      |True                                 
+|aidrs_defaults                   |update_attempts                |36                                   
+|aidrs_defaults                   |update_frequency               |1                                    
+|aidrs_defaults                   |username                       |mrhines                              
+|aidrs_templates                  |cloudoption_testcloud_simplenw_iait|30                                   
+|aidrs_templates                  |simplecm_iait                  |uniformIXIXI60I180                   
+|aidrs_templates                  |simplecm_lifetime              |uniformIXIXI500I600                  
+|aidrs_templates                  |simplecm_load_duration         |uniformIXIXI40I60                    
+|aidrs_templates                  |simplecm_load_level            |uniformIXIXI1I3                      
+|aidrs_templates                  |simplecm_max_ais               |8000                                 
+|aidrs_templates                  |simplecm_type                  |coremark                             
+|aidrs_templates                  |simpledt_iait                  |900                                  
+|aidrs_templates                  |simpledt_lifetime              |10000000                             
+|aidrs_templates                  |simpledt_load_duration         |100                                  
+|aidrs_templates                  |simpledt_load_level            |10                                   
+|aidrs_templates                  |simpledt_max_ais               |40                                   
+|aidrs_templates                  |simpledt_type                  |daytrader                            
+|aidrs_templates                  |simplefb_iait                  |uniformIXIXI60I180                   
+|aidrs_templates                  |simplefb_lifetime              |uniformIXIXI500I600                  
+|aidrs_templates                  |simplefb_load_duration         |uniformIXIXI90I120                   
+|aidrs_templates                  |simplefb_load_level            |1                                    
+|aidrs_templates                  |simplefb_max_ais               |8000                                 
+|aidrs_templates                  |simplefb_type                  |filebench                            
+|aidrs_templates                  |simplehd_iait                  |uniformIXIXI120I180                  
+|aidrs_templates                  |simplehd_lifetime              |uniformIXIXI600I900                  
+|aidrs_templates                  |simplehd_load_duration         |uniformIXIXI90I120                   
+|aidrs_templates                  |simplehd_load_level            |uniformIXIXI1I10                     
+|aidrs_templates                  |simplehd_max_ais               |8000                                 
+|aidrs_templates                  |simplehd_type                  |hadoop                               
+|aidrs_templates                  |simplemlg2_iait                |100                                  
+|aidrs_templates                  |simplemlg2_lifetime            |10000000                             
+|aidrs_templates                  |simplemlg2_load_duration       |200                                  
+|aidrs_templates                  |simplemlg2_load_level          |1                                    
+|aidrs_templates                  |simplemlg2_max_ais             |40                                   
+|aidrs_templates                  |simplemlg2_type                |mlg2                                 
+|aidrs_templates                  |simplemlg_iait                 |100                                  
+|aidrs_templates                  |simplemlg_lifetime             |10000000                             
+|aidrs_templates                  |simplemlg_load_duration        |200                                  
+|aidrs_templates                  |simplemlg_load_level           |1                                    
+|aidrs_templates                  |simplemlg_max_ais              |40                                   
+|aidrs_templates                  |simplemlg_type                 |mlg                                  
+|aidrs_templates                  |simplenp_iait                  |uniformIXIXI120I180                  
+|aidrs_templates                  |simplenp_lifetime              |uniformIXIXI500I600                  
+|aidrs_templates                  |simplenp_load_duration         |uniformIXIXI40I60                    
+|aidrs_templates                  |simplenp_load_level            |1                                    
+|aidrs_templates                  |simplenp_max_ais               |8000                                 
+|aidrs_templates                  |simplenp_type                  |netperf                              
+|aidrs_templates                  |simplenw_iait                  |100                                  
+|aidrs_templates                  |simplenw_lifetime              |10000000                             
+|aidrs_templates                  |simplenw_load_duration         |uniformIXIXI40I60                    
+|aidrs_templates                  |simplenw_load_level            |uniformIXIXI1I3                      
+|aidrs_templates                  |simplenw_max_ais               |10                                   
+|aidrs_templates                  |simplenw_type                  |nullworkload                         
+|api_defaults                     |hostname                       |172.16.1.222                         
+|api_defaults                     |parameters                     |                                     
+|api_defaults                     |port                           |7070                                 
+|api_defaults                     |protocol                       |TCP                                  
+|api_defaults                     |remote                         |False                                
+|dash_defaults                    |dashboard_hostname             |172.16.1.222                         
+|dash_defaults                    |dashboard_parameters           |monitor?bytes2mb=yes&kb2mb=yes&savedvm=no&failedvm=no&4k2mb=yes&b2mb=yes&p=yes&h=yes&s=yes&a=yes&filter=p-aidrs_name,p-latest_update,p-type,p-vmc_name,p-vms,s-qemu_migration-bitmap-time,h-age,h-ai_name,h-aidrs_name,h-boottime,h-cores,h-cpu_aidle,h-cpu_nice,h-cpu_num,h-cpu_speed,h-disk_free,h-disk_total,h-ds_KB_read,h-ds_KB_write,h-ds_in_flight,h-ds_ios_read,h-ds_ios_write,h-ds_procs_blocked,h-ds_procs_running,h-host_name,h-latest_update,h-load_fifteen,h-load_five,h-load_one,h-mem_shared,h-part_max_used,h-pkts_in,h-pkts_out,h-proc_run,h-proc_total,h-ready,h-role,h-size,h-state,h-swap_ios_read,h-swap_ios_write,h-swap_procs_blocked,h-swap_procs_running,h-tcp_closed,h-tcp_closewait,h-tcp_closing,h-tcp_established,h-tcp_finwait1,h-tcp_finwait2,h-tcp_lastack,h-tcp_listen,h-tcp_synrecv,h-tcp_synsent,h-tcp_synwait,h-tcp_timewait,h-tcp_unknown,h-type,h-vmc_name,s-age,s-ai_name,s-aidrs_name,s-boottime,s-bytes_in,s-bytes_out,s-cloud_ip,s-cores,s-cpu_aidle,s-cpu_intr,s-cpu_nice,s-cpu_sintr,s-cpu_speed,s-disk_free,s-disk_total,s-ds_KB_read,s-ds_KB_write,s-ds_in_flight,s-ds_ios_read,s-ds_ios_write,s-ds_procs_blocked,s-ds_procs_running,s-host_name,s-latest_update,s-load_fifteen,s-load_five,s-load_one,s-mem_shared,s-part_max_used,s-pkts_in,s-pkts_out,s-proc_run,s-proc_total,s-qemu_copy-mbps,s-qemu_dirty-pages-rate,s-qemu_dirty_pages_rate,s-qemu_expected_downtime,s-qemu_log-dirty-time,s-qemu_max,s-qemu_migration-bitmap-time,s-qemu_normal,s-qemu_normal-bytes,s-qemu_ram-copy-time,s-qemu_remaining,s-qemu_skipped,s-qemu_total,s-qemu_transferred,s-qemu_xmit-time,s-running,s-singlestep,s-size,s-state,s-swap_KB_read,s-swap_KB_write,s-swap_in_flight,s-swap_ios_read,s-swap_ios_write,s-swap_procs_blocked,s-swap_procs_running,s-swap_total,s-tcp_closed,s-tcp_closewait,s-tcp_closing,s-tcp_finwait1,s-tcp_finwait2,s-tcp_lastack,s-tcp_synrecv,s-tcp_synsent,s-tcp_synwait,s-tcp_timewait,s-tcp_unknown,s-time,s-type,s-vmc_name,s-vms,a-ai_name,a-aidrs_name,a-cloud_ip,a-host_name,a-latest_update,a-size,a-state,a-type,a-vmc_name,a-vms
+|dash_defaults                    |dashboard_port                 |8080                                 
+|firs_defaults                    |cloudoption_testcloud_switch_ip|1.2.3.4                              
+|firs_defaults                    |detach_parallelism             |20                                   
+|firs_defaults                    |login                          |klabuser                             
+|firs_defaults                    |notification                   |False                                
+|firs_defaults                    |ssh_key_name                   |bogus_id_rsa                         
+|firs_defaults                    |submitter                      |True                                 
+|firs_defaults                    |switch_ip                      |                                     
+|firs_defaults                    |update_attempts                |36                                   
+|firs_defaults                    |update_frequency               |1                                    
+|firs_defaults                    |username                       |mrhines                              
+|firs_templates                   |sfinw_ftl                      |100                                  
+|firs_templates                   |sfinw_ifat                     |20                                   
+|firs_templates                   |sfinw_max_simultaneous_faults  |3                                    
+|firs_templates                   |sfinw_max_total_faults         |5                                    
+|firs_templates                   |sfinw_min_fault_age            |20                                   
+|firs_templates                   |sfinw_scope                    |nullworkload                         
+|gui_defaults                     |gtk_display                    |True                                 
+|gui_defaults                     |gtk_display_port_base          |17000                                
+|gui_defaults                     |gtk_display_port_max           |18000                                
+|gui_defaults                     |gtk_login                      |True                                 
+|gui_defaults                     |gtk_login_port_base            |15000                                
+|gui_defaults                     |gtk_login_port_max             |16000                                
+|gui_defaults                     |hostname                       |0.0.0.0                              
+|gui_defaults                     |port                           |9090                                 
+|gui_defaults                     |protocol                       |TCP                                  
+|logstore                         |api_facility                   |16                                   
+|logstore                         |attach_facility                |16                                   
+|logstore                         |attachall_facility             |16                                   
+|logstore                         |capture_facility               |16                                   
+|logstore                         |cloudoption_testcloud_verbosity|3                                    
+|logstore                         |config_string                  |DOLLARModLoad_imudp.so;DOLLARUDPServerRun_REPLPORT;DOLLARActionFileDefaultTemplate_RSYSLOGTraditionalFileFormat;DOLLAREscapeControlCharactersOnReceive_off;*.info--mail.none--authpriv.none--cron.none________________REPLSTORESWORKINGDIR/logs/messages;authpriv.*______________________________________________REPLSTORESWORKINGDIR/logs/secure;mail.*__________________________________________________REPLSTORESWORKINGDIR/logs/maillog;cron.*__________________________________________________REPLSTORESWORKINGDIR/logs/cron;*.emerg_________________________________________________*;uucp,news.crit__________________________________________REPLSTORESWORKINGDIR/logs/spooler;local0.*________________________________________________REPLSTORESWORKINGDIR/logs/operations.log;local1.*________________________________________________REPLSTORESWORKINGDIR/logs/report.log;local2.*________________________________________________REPLSTORESWORKINGDIR/logs/submmiter.log;local3.*________________________________________________REPLSTORESWORKINGDIR/logs/loadmanager.log;local4.*________________________________________________REPLSTORESWORKINGDIR/logs/gui.log;local5.*________________________________________________REPLSTORESWORKINGDIR/logs/remotescripts.log;local6.*________________________________________________REPLSTORESWORKINGDIR/logs/monitor.log;local7.*________________________________________________REPLSTORESWORKINGDIR/logs/subscribe.log
+|logstore                         |console_facility               |16                                   
+|logstore                         |detach_facility                |16                                   
+|logstore                         |execute_facility               |19                                   
+|logstore                         |fail_facility                  |16                                   
+|logstore                         |gui_facility                   |20                                   
+|logstore                         |hostname                       |172.16.1.222                         
+|logstore                         |kind                           |syslog                               
+|logstore                         |migrate_facility               |16                                   
+|logstore                         |monitor_host_facility          |22                                   
+|logstore                         |monitor_vm_facility            |22                                   
+|logstore                         |port                           |5114                                 
+|logstore                         |protect_facility               |16                                   
+|logstore                         |protocol                       |UDP                                  
+|logstore                         |qemu_facility                  |19                                   
+|logstore                         |remove_facility                |18                                   
+|logstore                         |repair_facility                |16                                   
+|logstore                         |report_facility                |17                                   
+|logstore                         |runstate_facility              |16                                   
+|logstore                         |script_facility                |175                                  
+|logstore                         |show_cmd_status                |yes                                  
+|logstore                         |submit_facility                |18                                   
+|logstore                         |subscribe_facility             |23                                   
+|logstore                         |usage                          |private                              
+|logstore                         |username                       |mrhines                              
+|logstore                         |verbosity                      |3                                    
+|logstore                         |watch_facility                 |17                                   
+|metricstore                      |cloudoption_testcloud_host     |172.16.0.254                         
+|metricstore                      |cloudoption_testcloud_usage    |shared                               
+|metricstore                      |config_string                  |logpath--REPLSTORESWORKINGDIR/logs/mongod.log;logappend--true;fork--true;port--REPLPORT;dbpath--REPLSTORESWORKINGDIR
+|metricstore                      |database                       |metrics                              
+|metricstore                      |host                           |172.16.1.222                         
+|metricstore                      |kind                           |mongodb                              
+|metricstore                      |port                           |27017                                
+|metricstore                      |protocol                       |TCP                                  
+|metricstore                      |timeout                        |240                                  
+|metricstore                      |usage                          |private                              
+|metricstore                      |username                       |mrhines                              
+|mon_defaults                     |app_m                          |app_load_profile,app_load_id,app_load_level,app_throughput,app_latency,app_bandwidth
+|mon_defaults                     |cap_m                          |mgt_101_capture_request_originated,mgt_102_capture_request_sent,mgt_103_capture_request_completed
+|mon_defaults                     |collect_from_guest             |False                                
+|mon_defaults                     |collect_from_host              |False                                
+|mon_defaults                     |collector_aggregator_host_address|172.16.0.254                         
+|mon_defaults                     |collector_executable_path_suffix|3rd_party/monitor-core/gmetad-python/gmetad.py
+|mon_defaults                     |collector_host_aggregator_port |8651                                 
+|mon_defaults                     |collector_host_multicast_port  |8649                                 
+|mon_defaults                     |collector_host_port            |8649                                 
+|mon_defaults                     |collector_host_summarizer_port |8652                                 
+|mon_defaults                     |collector_kind                 |ganglia                              
+|mon_defaults                     |collector_multicast_ip         |239.2.11.71                          
+|mon_defaults                     |collector_plugins_dir_suffix   |3rd_party/monitor-core/gmetad-python/plugins
+|mon_defaults                     |collector_protocol             |UDP                                  
+|mon_defaults                     |collector_vm_aggregator_port   |8651                                 
+|mon_defaults                     |collector_vm_multicast_port    |8649                                 
+|mon_defaults                     |collector_vm_port              |8650                                 
+|mon_defaults                     |collector_vm_summarizer_port   |8652                                 
+|mon_defaults                     |cpu_m                          |cpu_speed,cores,cpu_num,proc_total,proc_run,cpu_idle,cpu_aidle,cpu_user,cpu_system,cpu_wio,cpu_nice
+|mon_defaults                     |crt_m                          |mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_application_start
+|mon_defaults                     |dsk_m                          |disk_total,disk_free,ds_in_flight,ds_KB_read,ds_ios_read,ds_KB_write,ds_ios_write
+|mon_defaults                     |dst_m                          |mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed
+|mon_defaults                     |filler_string                  |NA                                   
+|mon_defaults                     |flr_m                          |mgt_999_provisioning_request_failed  
+|mon_defaults                     |host_attributes                |uuid,name,cloud_ip,cloud_name,model,cloud_hostname,nr_vms
+|mon_defaults                     |host_management_metrics_header |uuid,name,cloud_ip,model,vmc_name,vmc_cloud_ip,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_application_start,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed
+|mon_defaults                     |host_runtime_os_metrics_header |time,time_h,uuid,name,cpu_speed,cores,cpu_num,proc_total,proc_run,cpu_idle,cpu_aidle,cpu_user,cpu_system,cpu_wio,cpu_nice,mem_total,mem_free,mem_cached,mem_buffers,mem_shared,swap_total,swap_free,swap_procs_running,swap_in_flight,swap_procs_blocked,swap_KB_read,swap_ios_read,swap_KB_write,swap_ios_write,pkts_in,bytes_in,pkts_out,bytes_out,disk_total,disk_free,ds_in_flight,ds_KB_read,ds_ios_read,ds_KB_write,ds_ios_write
+|mon_defaults                     |hostname                       |172.16.1.222                         
+|mon_defaults                     |hs_id1                         |uuid,name,cloud_ip,model,vmc_name,vmc_cloud_ip
+|mon_defaults                     |hs_id2                         |uuid,name                            
+|mon_defaults                     |mem_m                          |mem_total,mem_free,mem_cached,mem_buffers,mem_shared
+|mon_defaults                     |net_m                          |pkts_in,bytes_in,pkts_out,bytes_out  
+|mon_defaults                     |protocol                       |TCP                                  
+|mon_defaults                     |reported_management_vm_metric_names|uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_application_start,mgt_101_capture_request_originated,mgt_102_capture_request_sent,mgt_103_capture_request_completed,mgt_201_runstate_request_originated,mgt_202_runstate_request_sent,mgt_203_runstate_request_completed,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed,mgt_999_provisioning_request_failed
+|mon_defaults                     |reported_runtime_app_vm_metric_names|app_load_id,app_load_level,app_throughput,app_latency
+|mon_defaults                     |reported_runtime_os_host_metric_names|cpu_speed,cores,cpu_num,proc_total,proc_run,cpu_idle,cpu_aidle,cpu_user,cpu_system,cpu_wio,cpu_nice,mem_total,mem_free,mem_cached,mem_buffers,mem_shared,swap_total,swap_free,swap_procs_running,swap_in_flight,swap_procs_blocked,swap_KB_read,swap_ios_read,swap_KB_write,swap_ios_write,pkts_in,bytes_in,pkts_out,bytes_out,disk_total,disk_free,ds_in_flight,ds_KB_read,ds_ios_read,ds_KB_write,ds_ios_write
+|mon_defaults                     |reported_runtime_os_vm_metric_names|cpu_speed,cores,cpu_num,proc_total,proc_run,cpu_idle,cpu_aidle,cpu_user,cpu_system,cpu_wio,cpu_nice,mem_total,mem_free,mem_cached,mem_buffers,mem_shared,swap_total,swap_free,swap_procs_running,swap_in_flight,swap_procs_blocked,swap_KB_read,swap_ios_read,swap_KB_write,swap_ios_write,pkts_in,bytes_in,pkts_out,bytes_out,disk_total,disk_free,ds_in_flight,ds_KB_read,ds_ios_read,ds_KB_write,ds_ios_write
+|mon_defaults                     |rst_m                          |mgt_201_runstate_request_originated,mgt_202_runstate_request_sent,mgt_203_runstate_request_completed
+|mon_defaults                     |swap_m                         |swap_total,swap_free,swap_procs_running,swap_in_flight,swap_procs_blocked,swap_KB_read,swap_ios_read,swap_KB_write,swap_ios_write
+|mon_defaults                     |timeout                        |240                                  
+|mon_defaults                     |timeserver                     |172.16.1.222                         
+|mon_defaults                     |trace_attributes               |command_originated,command,name,vmc_arrived,vmc_departed,vmc_failed,vm_reservations,vm_arrived,vm_arriving,vm_departed,vm_failed,ai_reservations,ai_arrived,ai_arriving,ai_departed,ai_failed
+|mon_defaults                     |trace_header                   |command_originated,command,name,vmc_arrived,vmc_departed,vmc_failed,vm_reservations,vm_arrived,vm_arriving,vm_departed,vm_failed,ai_reservations,ai_arrived,ai_arriving,ai_departed,ai_failed
+|mon_defaults                     |tstamp                         |time,time_h                          
+|mon_defaults                     |username                       |mrhines                              
+|mon_defaults                     |vm_attributes                  |uuid,name,cloud_ip,last_known_state,cloud_name,model,cloud_hostname,vmc_name,vmc_cloud_ip,host_name,host_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern
+|mon_defaults                     |vm_id1                         |uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern
+|mon_defaults                     |vm_id2                         |uuid,name,role,ai_name,type          
+|mon_defaults                     |vm_management_metrics_header   |uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_application_start,mgt_101_capture_request_originated,mgt_102_capture_request_sent,mgt_103_capture_request_completed,mgt_201_runstate_request_originated,mgt_202_runstate_request_sent,mgt_203_runstate_request_completed,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed,mgt_999_provisioning_request_failed
+|mon_defaults                     |vm_runtime_app_metrics_header  |time,time_h,uuid,name,role,ai_name,type,app_load_profile,app_load_id,app_load_level,app_throughput,app_latency,app_bandwidth
+|mon_defaults                     |vm_runtime_os_metrics_header   |time,time_h,uuid,name,role,ai_name,type,cpu_speed,cores,cpu_num,proc_total,proc_run,cpu_idle,cpu_aidle,cpu_user,cpu_system,cpu_wio,cpu_nice,mem_total,mem_free,mem_cached,mem_buffers,mem_shared,swap_total,swap_free,swap_procs_running,swap_in_flight,swap_procs_blocked,swap_KB_read,swap_ios_read,swap_KB_write,swap_ios_write,pkts_in,bytes_in,pkts_out,bytes_out,disk_total,disk_free,ds_in_flight,ds_KB_read,ds_ios_read,ds_KB_write,ds_ios_write
+|query                            |ai                             |BYUSERNAME,BYTYPE,BYAIDRS            
+|query                            |aidrs                          |BYUSERNAME,BYPATTERN                 
+|query                            |cloud_attributes               |name,model,description,all,username,client_should_refresh,start_time,all_vmcs_attached
+|query                            |firs                           |BYUSERNAME,BYPATTERN,BYSCOPE         
+|query                            |host                           |BYUSERNAME,BYVMC                     
+|query                            |mandatory_tags                 |name,cloud_hostname,cloud_ip         
+|query                            |object_type_list               |VMC,HOST,VM,AI,AIDRS,VMCRS,FIRS      
+|query                            |username                       |mrhines                              
+|query                            |vm                             |BYUSERNAME,BYVMC,BYHOST,BYROLE,BYTYPE,BYAI,BYAIDRS
+|query                            |vmc                            |BYPOOL,BYUSERNAME                    
+|query                            |vmcrs                          |BYUSERNAME,BYPATTERN,BYSCOPE         
+|setup                            |global_object_list             |setup,logstore,metricstore,dash_defaults,mon_defaults,space,time,vmc_defaults,vm_defaults,ai_defaults,aidrs_defaults,vmcrs_defaults,firs_defaults,vm_templates,ai_templates,aidrs_templates,vmcrs_templates,firs_templates,query,admission_control,api_defaults,gui_defaults
+|space                            |base_dir                       |/home/mrhines/cbtool/lib/auxiliary//../..
+|space                            |binaries_dir                   |/home/mrhines/cbtool/lib/auxiliary//../../binaries
+|space                            |certificates_dir               |/home/mrhines/cbtool/lib/auxiliary//../../certificates
+|space                            |configuration_templates_dir    |/home/mrhines/cbtool/lib/auxiliary//../../configuration_templates
+|space                            |credentials_dir                |/home/mrhines/cbtool/lib/auxiliary//../../credentials
+|space                            |daemon_working_dir             |/tmp/mrhines                         
+|space                            |data_working_dir               |/home/mrhines/cbtool/lib/auxiliary//../../data
+|space                            |instance_dir                   |/tmp/mrhines                         
+|space                            |jars_dir                       |/home/klabuser/cloudbench/jar        
+|space                            |scripts_dir                    |/home/mrhines/cbtool/lib/auxiliary//../../scripts
+|space                            |ssh_key_name                   |/home/mrhines/cbtool/lib/auxiliary//../../credentials/bogus_id_rsa
+|space                            |stores_working_dir             |/home/mrhines/cbtool/lib/auxiliary//../../stores
+|space                            |tracefile                      |regression/regression_test_experiment_plan.txt
+|space                            |username                       |mrhines                              
+|space                            |vm_daemon_dir                  |/home/klabuser                       
+|time                             |experiment_id                  |EXP-08-21-2013-02-53-55-PM-EDT       
+|time                             |external_timeout               |30                                   
+|time                             |external_tries                 |2                                    
+|time                             |hard_reset                     |False                                
+|time                             |internal_tries                 |2                                    
+|time                             |start_time                     |1377111234                           
+|time                             |step_delay                     |5                                    
+|time                             |username                       |mrhines                              
+|vm_defaults                      |access                         |                                     
+|vm_defaults                      |attempts                       |3                                    
+|vm_defaults                      |capture_supported              |True                                 
+|vm_defaults                      |check_boot_complete            |wait_for_0                           
+|vm_defaults                      |check_boot_started             |poll_cloud                           
+|vm_defaults                      |client_pref_pool               |lg                                   
+|vm_defaults                      |cloudoption_testcloud_execute_json_filename_prefix|cb                                   
+|vm_defaults                      |cloudoption_testcloud_execute_script_name|/home/mrhines/cbtool/lib/auxiliary//../../regression/scripts/execute_on_staging.sh
+|vm_defaults                      |credentials                    |                                     
+|vm_defaults                      |debug_remote_commands          |False                                
+|vm_defaults                      |detach_parallelism             |20                                   
+|vm_defaults                      |driver_pref_pool               |lg                                   
+|vm_defaults                      |eclipsed                       |False                                
+|vm_defaults                      |execute_json_filename_prefix   |cb                                   
+|vm_defaults                      |execute_script_name            |execute_on_staging.sh                
+|vm_defaults                      |extra_info                     |                                     
+|vm_defaults                      |hosts_per_vmc                  |5                                    
+|vm_defaults                      |key_name                       |                                     
+|vm_defaults                      |login                          |klabuser                             
+|vm_defaults                      |migrate_protocol               |x-rdma                               
+|vm_defaults                      |migrate_protocol_supported     |tcp,rdma,x-rdma                      
+|vm_defaults                      |mode                           |controllable                         
+|vm_defaults                      |netid                          |vlan123                              
+|vm_defaults                      |notification                   |False                                
+|vm_defaults                      |protect_protocol               |x-rdma                               
+|vm_defaults                      |protect_protocol_supported     |tcp,rdma,x-rdma                      
+|vm_defaults                      |qemu_debug                     |True                                 
+|vm_defaults                      |randomize_image_name           |False                                
+|vm_defaults                      |remote_dir_name                |cbtool                               
+|vm_defaults                      |resize_supported               |False                                
+|vm_defaults                      |run_generic_scripts            |False                                
+|vm_defaults                      |runstate_parallelism           |5                                    
+|vm_defaults                      |runstate_supported             |True                                 
+|vm_defaults                      |security_groups                |                                     
+|vm_defaults                      |ssh_key_name                   |bogus_id_rsa                         
+|vm_defaults                      |timeout                        |240                                  
+|vm_defaults                      |transfer_files                 |False                                
+|vm_defaults                      |update_attempts                |36                                   
+|vm_defaults                      |update_frequency               |1                                    
+|vm_defaults                      |username                       |mrhines                              
+|vm_templates                     |client_daytrader               |size:nano32,imageid1:cloudbench_root 
+|vm_templates                     |client_lost                    |size:micro32,imageid1:cloudbench_root
+|vm_templates                     |client_specweb                 |size:micro32,imageid1:cloudbench_root
+|vm_templates                     |client_tradelite               |size:nano32,imageid1:cloudbench_root 
+|vm_templates                     |client_windows                 |size:nano32,imageid1:cloudbench_root 
+|vm_templates                     |cn_hpc                         |size:bronze32,imageids:1,imageid1:cloudbench_hpc
+|vm_templates                     |coremark                       |size:iron32,imageid1:cloudbench_root 
+|vm_templates                     |db2                            |size:copper32,lb_size:gold32,imageid1:cloudbench_root
+|vm_templates                     |ddgen                          |size:bronze32,imageids:1,imageid1:cloudbench_hpc
+|vm_templates                     |driver_coremark                |size:nano32,imageid1:cloudbench_root 
+|vm_templates                     |driver_daytrader               |size:nano32,imageid1:cloudbench_root 
+|vm_templates                     |driver_fbnfsrd                 |size:nano32,imageid1:cloudbench_root 
+|vm_templates                     |driver_filebench               |size:nano32,imageid1:cloudbench_root 
+|vm_templates                     |driver_hadoop                  |size:nano32,imageid1:cloudbench_root 
+|vm_templates                     |driver_netperf                 |size:nano32,imageid1:cloudbench_root 
+|vm_templates                     |driver_tradelite               |size:nano32,imageid1:cloudbench_root 
+|vm_templates                     |faildb2                        |size:copper32,imageid1:cloudbench_root
+|vm_templates                     |fen_hpc                        |size:bronze32,imageids:1,imageid1:cloudbench_hpc
+|vm_templates                     |filebench                      |size:iron32,imageid1:cloudbench_root 
+|vm_templates                     |hadoopmaster                   |size:copper32,imageid1:cloudbench_root
+|vm_templates                     |hadoopslave                    |size:iron32,imageid1:cloudbench_root 
+|vm_templates                     |lb                             |size:iron32,imageid1:cloudbench_root 
+|vm_templates                     |lostback                       |size:copper32,imageid1:cloudbench_root
+|vm_templates                     |lostfront                      |size:copper32,imageid1:cloudbench_root
+|vm_templates                     |netclient                      |size:iron32,imageid1:cloudbench_root 
+|vm_templates                     |netserver                      |size:iron32,imageid1:cloudbench_root 
+|vm_templates                     |predictablevm                  |size:iron32,imageid1:cloudbench_root 
+|vm_templates                     |rubis_appsrv                   |size:bronze32,imageids:1,imageid1:cloudbench_rubis_appsrv1
+|vm_templates                     |rubis_database                 |size:bronze32,imageids:1,imageid1:cloudbench_rubis_database
+|vm_templates                     |rubis_driver                   |size:bronze32,imageids:1,imageid1:cloudbench_rubis_driver
+|vm_templates                     |rubis_lb                       |size:bronze32,imageids:1,imageid1:cloudbench_rubis_loadbalancer
+|vm_templates                     |specjbb                        |size:iron32,imageid1:cloudbench_root 
+|vm_templates                     |specwebback                    |size:nano32,imageid1:cloudbench_specweb
+|vm_templates                     |specwebfront                   |size:copper32,imageid1:cloudbench_specweb
+|vm_templates                     |storageclient                  |size:iron32,imageid1:cloudbench_root 
+|vm_templates                     |storageserver                  |size:iron32,imageid1:cloudbench_root 
+|vm_templates                     |tinyvm                         |size:pico32,imageids:1,imageid1:cloudbench_tinyvm
+|vm_templates                     |was                            |size:iron32,imageid1:cloudbench_root 
+|vm_templates                     |willfail                       |size:nano32,imageid1:doesnotmatter   
+|vm_templates                     |windows                        |size:iron32,imageids:1,imageid1:cloudbench_windows
+|vmc_defaults                     |access                         |                                     
+|vmc_defaults                     |additional_discovery           |                                     
+|vmc_defaults                     |attempts                       |3                                    
+|vmc_defaults                     |cleanup_on_attach              |True                                 
+|vmc_defaults                     |cleanup_on_detach              |True                                 
+|vmc_defaults                     |cloudoption_testcloud_migrate_interfaces|source:0,dest:0                      
+|vmc_defaults                     |cloudoption_testcloud_protect_interfaces|source:0,dest:0                      
+|vmc_defaults                     |cpu_overcommit                 |1.0                                  
+|vmc_defaults                     |credentials                    |                                     
+|vmc_defaults                     |detach_parallelism             |20                                   
+|vmc_defaults                     |discover_hosts                 |True                                 
+|vmc_defaults                     |hosts_per_vmc                  |5                                    
+|vmc_defaults                     |initial_hosts                  |                                     
+|vmc_defaults                     |initial_vmcs                   |simzone_a:sut,simzone_b:sut,simzone_c:sut,simzone_d:lg
+|vmc_defaults                     |key_name                       |                                     
+|vmc_defaults                     |max_vm_reservations            |100000                               
+|vmc_defaults                     |memory_overcommit              |1.0                                  
+|vmc_defaults                     |migrate_supported              |True                                 
+|vmc_defaults                     |network_overcommit             |1.0                                  
+|vmc_defaults                     |notification                   |False                                
+|vmc_defaults                     |protect_supported              |True                                 
+|vmc_defaults                     |replication_vmcs               |                                     
+|vmc_defaults                     |security_groups                |                                     
+|vmc_defaults                     |storage_overcommit             |1.0                                  
+|vmc_defaults                     |timeout                        |240                                  
+|vmc_defaults                     |update_attempts                |36                                   
+|vmc_defaults                     |update_frequency               |1                                    
+|vmc_defaults                     |username                       |mrhines                              
+|vmcrs_defaults                   |detach_parallelism             |20                                   
+|vmcrs_defaults                   |login                          |klabuser                             
+|vmcrs_defaults                   |notification                   |False                                
+|vmcrs_defaults                   |ssh_key_name                   |bogus_id_rsa                         
+|vmcrs_defaults                   |submitter                      |True                                 
+|vmcrs_defaults                   |update_attempts                |36                                   
+|vmcrs_defaults                   |update_frequency               |1                                    
+|vmcrs_defaults                   |username                       |mrhines                              
+|vmcrs_templates                  |scapnw_ivmcat                  |20                                   
+|vmcrs_templates                  |scapnw_max_simultaneous_cap_reqs|3                                    
+|vmcrs_templates                  |scapnw_max_total_cap_reqs      |5                                    
+|vmcrs_templates                  |scapnw_min_cap_age             |20                                   
+|vmcrs_templates                  |scapnw_scope                   |nullworkload                         
 
-Current default cloud is "TESTCLOUD". Need cloud name to be set as default cloud or 'none' to unset.

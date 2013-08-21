@@ -1,76 +1,38 @@
-Going to wait until the value on counter "AI (Objects created on the Object Store)" is equal to 0 (currently it is equal to 2) waiting 1.0 seconds between samples. The counter is assumed to be decreasing.
- status: Counter "AI (Objects created on the Object Store)" equals 2 after 1 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 2 after 2 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 2 after 3 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 2 after 4 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 2 after 5 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 2 after 6 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 2 after 7 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 2 after 8 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 2 after 9 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 2 after 10 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 2 after 11 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 2 after 12 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 2 after 13 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 2 after 14 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 2 after 15 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 2 after 16 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 2 after 17 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 2 after 18 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 2 after 19 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 2 after 20 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 2 after 21 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 2 after 22 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 2 after 23 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 2 after 24 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 2 after 25 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 2 after 26 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 1 after 27 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 1 after 28 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 1 after 29 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 1 after 30 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 1 after 31 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 1 after 32 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 1 after 33 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 1 after 34 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 1 after 35 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 0 after 36 seconds (the counter is assumed to be decreasing).
-Waited 36 seconds until "AIs (Objects created on the Object Store)" was equal to 0.
-The following AIs are attached to this experiment (Cloud TESTCLOUD) :
-No objects available.
-The following VMs are attached to this experiment (Cloud TESTCLOUD) :
-No objects available.
+ status: Waiting for vm_129 (cloud-assigned uuid 788B23F0-C3F8-5091-B85A-7934BD2990CA) to start...
+ status: Trying to establish network connectivity to vm_129 (cloud-assigned uuid 788B23F0-C3F8-5091-B85A-7934BD2990CA), on IP address 232.107.45.11...
+ status: Bypassing the sending of a copy of the code tree to vm_129 (232.107.45.11)...
+ status: Bypassing generic VM post_boot configuration on vm_129 (232.107.45.11)...
+VM object B0E2F3AE-C287-5597-8451-0C920CAC1C95 (named "vm_129") sucessfully attached to this experiment. It is ssh-accessible at the IP address 232.107.45.11 (788B23F0-C3F8-5091-B85A-7934BD2990CA.simcloud.com).
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |44.31M                        
-|Redis Version                                        |2.5.12                        
-|Uptime (in seconds)                                  |13566315                      
-|Total Connections Received                           |6495143                       
-|Total Commands Processed                             |94137618                      
-|Number of Keys                                       |640                           
+|Used Memory                                          |23.75M                        
+|Redis Version                                        |2.6.2                         
+|Uptime (in seconds)                                  |2517779                       
+|Total Connections Received                           |185842                        
+|Total Commands Processed                             |12032990                      
+|Number of Keys                                       |699                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|MongoDB Version                                      |2.0.6                         
-|Storage Size                                         |16114180080.0                 
-|Data Size                                            |13823593988.0                 
-|Index Size                                           |550481904                     
-|Average Object Size                                  |6600.31178031                 
-|Collections                                          |60                            
+|MongoDB Version                                      |2.4.5                         
+|Storage Size                                         |18579456                      
+|Data Size                                            |7171260                       
+|Index Size                                           |2248400                       
+|Average Object Size                                  |614.872674269                 
+|Collections                                          |14                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
-|VMCs                                                 |4                             
-|HOSTs                                                |20                            
-|VMs                                                  |0                             
-|SVMs                                                 |0                             
+|VMCs                                                 |6                             
+|HOSTs                                                |22                            
+|VMs                                                  |1                             
 |AIs                                                  |0                             
-|AIDRSs                                               |1                             
+|AIDRSs                                               |0                             
 |VMCRSs                                               |0                             
 |FIRSs                                                |0                             
 ------------------ EXPERIMENT-WIDE COUNTERS ------------------
 |Counter                                              |Value                         
-|VMC RESERVATIONS                                     |4                             
-|VMCs ARRIVED                                         |16                            
+|VMC RESERVATIONS                                     |6                             
+|VMCs ARRIVED                                         |18                            
 |VMCs ARRIVING                                        |0                             
 |VMCs DEPARTED                                        |12                            
 |VMCs DEPARTING                                       |0                             
@@ -81,30 +43,24 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |HOSTs DEPARTED                                       |0                             
 |HOSTs DEPARTING                                      |0                             
 |HOSTs FAILED                                         |0                             
-|VM RESERVATIONS                                      |0                             
-|VMs ARRIVED                                          |117                           
+|VM RESERVATIONS                                      |1                             
+|VMs ARRIVED                                          |125                           
 |VMs ARRIVING                                         |0                             
 |VMs CAPTURING                                        |0                             
-|VMs DEPARTED                                         |117                           
+|VMs DEPARTED                                         |124                           
 |VMs DEPARTING                                        |0                             
 |VMs FAILED                                           |4                             
-|SVM RESERVATIONS                                     |0                             
-|SVMs ARRIVED                                         |0                             
-|SVMs ARRIVING                                        |0                             
-|SVMs DEPARTED                                        |0                             
-|SVMs DEPARTING                                       |0                             
-|SVMs FAILED                                          |0                             
-|AI RESERVATIONS                                      |0                             
-|AIs ARRIVED                                          |30                            
+|AI RESERVATIONS                                      |1                             
+|AIs ARRIVED                                          |35                            
 |AIs ARRIVING                                         |0                             
 |AIs CAPTURING                                        |0                             
-|AIs DEPARTED                                         |30                            
+|AIs DEPARTED                                         |35                            
 |AIs DEPARTING                                        |0                             
 |AIs FAILED                                           |2                             
-|AIDRS RESERVATIONS                                   |1                             
-|AIDRSs ARRIVED                                       |1                             
+|AIDRS RESERVATIONS                                   |0                             
+|AIDRSs ARRIVED                                       |2                             
 |AIDRSs ARRIVING                                      |0                             
-|AIDRSs DEPARTED                                      |0                             
+|AIDRSs DEPARTED                                      |2                             
 |AIDRSs DEPARTING                                     |0                             
 |AIDRSs FAILED                                        |0                             
 |VMCRS RESERVATIONS                                   |0                             
@@ -119,14 +75,17 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |FIRSs DEPARTED                                       |0                             
 |FIRSs DEPARTING                                      |0                             
 |FIRSs FAILED                                         |0                             
-|EXPERIMENT COUNTER                                   |389                           
+|EXPERIMENT COUNTER                                   |419                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|D30F1B96-9225-51C9-95FF-3355AD659B11 (simzone_d) VM RESERVATIONS|0                             
-|3C091D65-A8D9-5ECF-9C95-36A39D5CAA39 (simzone_a) VM RESERVATIONS|0                             
-|671172C3-2E80-5782-AB0C-C348A586106A (simzone_c) VM RESERVATIONS|0                             
-|96342978-982B-5D60-9FF3-0C0B3F9C41A9 (simzone_b) VM RESERVATIONS|0                             
+|69B6EE37-7343-582F-AC8D-3A2B5F09A61A (simzone_dest) VM RESERVATIONS|0                             
+|702C293B-8403-5C96-B515-6AE61AE13658 (simzone_a) VM RESERVATIONS|0                             
+|271ADA73-1C6A-581D-A1BA-730D86DF8704 (simzone_d) VM RESERVATIONS|0                             
+|F993D8D5-82BA-59CB-970A-6B3F8CC6F222 (simzone_source) VM RESERVATIONS|1                             
+|EDC9615C-DB1F-5769-9826-61B84283AFD7 (simzone_c) VM RESERVATIONS|0                             
+|34819FA6-FE78-5D1D-A68D-0E43FEBFD8A5 (simzone_b) VM RESERVATIONS|0                             
 
- ---------------- AIDRS-WIDE COUNTERS ----------------
-|9A5383E7-2829-576E-9AAC-B47A428B43D2 (aidrs_1) AI RESERVATIONS|0                             
+The following VMs are attached to this experiment (Cloud TESTCLOUD) :
+|name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
+|vm_129        |tinyvm              |pico32      |232.107.45.11   |source                     |SUT                 |none    |none       |B0E2F3AE-C287-5597-8451-0C920CAC1C95
 

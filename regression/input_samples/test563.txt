@@ -1,4 +1,4 @@
-aidetach random
+aidetach all
 ailist
 vmlist
 stats

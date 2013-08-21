@@ -1,1 +1,1 @@
-Usage: svmattach <cloud_name> <identifier> [temp_attr_list = empty=empty] [mode] 
+Usage: statealter <cloud_name> <identifier> <new_state> 

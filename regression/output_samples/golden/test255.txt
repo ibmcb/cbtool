@@ -1,46 +1,53 @@
- status: Sending a termination request for vm_7 (cloud-assigned uuid 9F47942E-EFAB-5579-A6E9-C90B91308DD2)....
- status: Sending a termination request for vm_15 (cloud-assigned uuid E0F292B0-F8C9-5A68-A370-5C1A495DDDB6)....
- status: Sending a termination request for vm_12 (cloud-assigned uuid 4E18029C-E2BB-5C8E-9D66-B7239CDC07BD)....
- status: Sending a termination request for vm_20 (cloud-assigned uuid F67D1FAB-B704-5302-90E7-C2883CC9870A)....
- status: Sending a termination request for vm_11 (cloud-assigned uuid 83696982-E427-5394-8009-8151AB18D415)....
- status: Sending a termination request for vm_13 (cloud-assigned uuid 2501B757-099F-53B3-A401-2A6C1D321146)....
- status: Sending a termination request for vm_8 (cloud-assigned uuid 9773349E-D4F6-5B51-9359-37F25FA074DE)....
- status: Sending a termination request for vm_6 (cloud-assigned uuid 977A3CAC-68AA-5DFB-A7DD-C1378E79D58B)....
- status: Sending a termination request for vm_14 (cloud-assigned uuid 11111111-1111-1111-1111-111111111111)....
- status: Sending a termination request for vm_3 (cloud-assigned uuid 172B1AC3-91F0-5034-8A40-9F5EC4A3166C)....
- status: Sending a termination request for vm_19 (cloud-assigned uuid 36CD805A-C98C-5F71-9FEE-7661352B709D)....
- status: Sending a termination request for vm_17 (cloud-assigned uuid E4830412-29A4-5F4E-9DF1-F021260389B1)....
- status: Sending a termination request for vm_10 (cloud-assigned uuid 5FA25201-861D-5F8F-8BBB-74F3E875F07A)....
- status: Sending a termination request for vm_18 (cloud-assigned uuid BCE8A011-2C86-5C5C-B579-6FE838AA5757)....
- status: Sending a termination request for vm_9 (cloud-assigned uuid 6DDD7281-42B0-5FEC-B1F9-F20E365167A1)....
- status: Sending a termination request for vm_16 (cloud-assigned uuid 3AA03C65-2DF4-57FB-90BE-727D3A065C8E)....
-VM object undefined (named "all") was sucessfully detached from this experiment.
+Background operation execution success. Operation "ai-attach" will be processed asynchronously, through the command "/home/mrhines/cbtool/lib/operations//../../cbact --procid=TEST_mrhines --osp=port:6379,experiment_inst:TEST_mrhines,host:172.16.1.222,pid:TEST_mrhines,dbid:0,timout:70,protocol:TCP,kind:redis,username:mrhines --msp=cloudoption_testcloud_host:172.16.0.254,timeout:240,cloudoption_testcloud_usage:shared,host:172.16.1.222,port:27017,pid:TEST_mrhines,database:metrics,protocol:TCP,kind:mongodb,username:mrhines --oop=TESTCLOUD,hadoop,default,default,none,none,none,empty=empty --operation=ai-attach --cn=TESTCLOUD --uuid=B27862ED-F2E1-515E-8964-BEF6E02E0B02 --daemon". The process id is 29087.
+
+Going to unconditionally wait for 12s (12 seconds). The command line interface will be blocked during the waiting.
+Waited 11 seconds... (91.6666666667%)
+Waited 12 seconds... (100.0%)
+Waited for 12 seconds.
+The following AIs are attached to this experiment (Cloud TESTCLOUD) :
+|name      |type           |sut                                               |cloud_ip        |arrival        |aidrs                                   |uuid
+|ai_1      |daytrader      |1_x_client_daytrader->1_x_was->1_x_db2            |125.192.55.53   |1377110699     |none                                    |BCA91A27-E54C-5FD4-B499-8573B6BA5D8E
+|ai_2      |hadoop         |1_x_hadoopmaster->3_x_hadoopslave                 |62.214.128.44   |1377110705     |none                                    |B27862ED-F2E1-515E-8964-BEF6E02E0B02
+
 The following VMs are attached to this experiment (Cloud TESTCLOUD) :
-No objects available.
+|name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
+|vm_26         |client_daytrader    |nano32      |125.192.55.53   |simhosta0                  |SUT                 |ai_1    |none       |D45B1477-E0BF-5ACD-8C10-3DB433AFD61B
+|vm_27         |was                 |iron32      |97.46.101.234   |simhostc0                  |SUT                 |ai_1    |none       |5E02F031-A0CB-5ACE-9FD5-8C491CBEC160
+|vm_28         |db2                 |platinum64  |171.207.12.207  |simhosta3                  |SUT                 |ai_1    |none       |29A6F4AB-EB2E-5627-ADF9-76A3C080E128
+|vm_29         |hadoopmaster        |copper32    |62.214.128.44   |simhosta1                  |SUT                 |ai_2    |none       |805A9BA0-76FB-5B11-91F3-E0431B6E8EE1
+|vm_30         |hadoopslave         |iron32      |199.242.45.54   |simhostc1                  |SUT                 |ai_2    |none       |BD816331-D09E-5D8B-A426-673C44CA57D7
+|vm_31         |hadoopslave         |iron32      |80.148.231.30   |simhosta2                  |SUT                 |ai_2    |none       |68060730-F133-51C2-BC92-F04535702FAE
+|vm_32         |hadoopslave         |iron32      |104.202.168.199 |simhosta3                  |SUT                 |ai_2    |none       |25F95FF5-EAC7-5385-BB76-9DC884F5909C
+
+The AI object ai_2, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
+|attribute (AI object key)               |value                                
+|detach_parallelism                      |20                                   
+|ssh_key_name                            |bogus_id_rsa                         
+|sut                                     |1_x_hadoopmaster->3_x_hadoopslave    
+
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |39.63M                        
-|Redis Version                                        |2.5.12                        
-|Uptime (in seconds)                                  |11740399                      
-|Total Connections Received                           |6492711                       
-|Total Commands Processed                             |92728514                      
-|Number of Keys                                       |328                           
+|Used Memory                                          |20.11M                        
+|Redis Version                                        |2.6.2                         
+|Uptime (in seconds)                                  |2511836                       
+|Total Connections Received                           |185370                        
+|Total Commands Processed                             |11087451                      
+|Number of Keys                                       |414                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|MongoDB Version                                      |2.0.6                         
-|Storage Size                                         |13966344192.0                 
-|Data Size                                            |12133751012.0                 
-|Index Size                                           |502881232                     
-|Average Object Size                                  |6346.1505534                  
-|Collections                                          |62                            
+|MongoDB Version                                      |2.4.5                         
+|Storage Size                                         |18321408                      
+|Data Size                                            |5900108                       
+|Index Size                                           |1937712                       
+|Average Object Size                                  |619.954607544                 
+|Collections                                          |14                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
 |VMCs                                                 |4                             
 |HOSTs                                                |20                            
-|VMs                                                  |0                             
-|SVMs                                                 |0                             
-|AIs                                                  |0                             
+|VMs                                                  |7                             
+|AIs                                                  |2                             
 |AIDRSs                                               |0                             
 |VMCRSs                                               |0                             
 |FIRSs                                                |0                             
@@ -58,21 +65,15 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |HOSTs DEPARTED                                       |0                             
 |HOSTs DEPARTING                                      |0                             
 |HOSTs FAILED                                         |0                             
-|VM RESERVATIONS                                      |0                             
-|VMs ARRIVED                                          |22                            
+|VM RESERVATIONS                                      |7                             
+|VMs ARRIVED                                          |29                            
 |VMs ARRIVING                                         |0                             
 |VMs CAPTURING                                        |0                             
 |VMs DEPARTED                                         |22                            
 |VMs DEPARTING                                        |0                             
-|VMs FAILED                                           |0                             
-|SVM RESERVATIONS                                     |0                             
-|SVMs ARRIVED                                         |0                             
-|SVMs ARRIVING                                        |0                             
-|SVMs DEPARTED                                        |0                             
-|SVMs DEPARTING                                       |0                             
-|SVMs FAILED                                          |0                             
-|AI RESERVATIONS                                      |0                             
-|AIs ARRIVED                                          |0                             
+|VMs FAILED                                           |3                             
+|AI RESERVATIONS                                      |2                             
+|AIs ARRIVED                                          |2                             
 |AIs ARRIVING                                         |0                             
 |AIs CAPTURING                                        |0                             
 |AIs DEPARTED                                         |0                             
@@ -96,11 +97,11 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |FIRSs DEPARTED                                       |0                             
 |FIRSs DEPARTING                                      |0                             
 |FIRSs FAILED                                         |0                             
-|EXPERIMENT COUNTER                                   |132                           
+|EXPERIMENT COUNTER                                   |144                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|CB27A579-597C-52AC-B148-644E81A7D93C (simzone_d) VM RESERVATIONS|0                             
-|D7D3EB8C-8813-524D-9C2D-7FD7626D4BCC (simzone_b) VM RESERVATIONS|0                             
-|97FF48D4-05C4-54D7-B1D8-828EED2A2B20 (simzone_a) VM RESERVATIONS|0                             
-|A708E2EA-221A-57ED-BAE8-15077C3E391A (simzone_c) VM RESERVATIONS|0                             
+|C4E90296-1043-55C8-8270-B5D7C3C38270 (simzone_b) VM RESERVATIONS|0                             
+|2AEE56D4-E6A4-5FB2-8D29-4268D4C22AD0 (simzone_a) VM RESERVATIONS|5                             
+|5F641DA9-DE4B-538C-B0CD-42A4F7D43E9E (simzone_d) VM RESERVATIONS|0                             
+|A796D59F-B618-5C91-8FC6-F6F093DE22C5 (simzone_c) VM RESERVATIONS|2                             
 

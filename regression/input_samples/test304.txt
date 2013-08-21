@@ -1,4 +1,2 @@
-aidetach TESTCLOUD random
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
+patternalter TESTCLOUD simplenw iait=10
+patternshow TESTCLOUD simplenw

@@ -1,1 +1,1 @@
-Usage: cldattach <cloud model> <cloud name> [definitions file] 
+Current default cloud is "None". Need cloud name to be set as default cloud or 'none' to unset.

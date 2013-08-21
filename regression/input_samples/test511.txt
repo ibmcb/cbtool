@@ -1,3 +1,4 @@
-vmdetach oldest
+vmattach willfail async
+waituntil VM ARRIVING=0 decreasing 1
 vmlist
 stats

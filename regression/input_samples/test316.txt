@@ -1,1 +1,2 @@
-aidrsalter TESTCLOUD aidrs_1 max_ais=20
+vmcattach TESTCLOUD simzone_source initial_hosts=source
+vmcattach TESTCLOUD simzone_dest initial_hosts=dest

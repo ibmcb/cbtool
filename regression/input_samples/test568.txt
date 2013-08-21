@@ -1,4 +1,1 @@
-aiattach notype
-ailist
-vmlist
-stats
+aidrsshow aidrs_1 all

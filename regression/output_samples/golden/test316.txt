@@ -1,3 +1,6 @@
-The following attributes for the AIDRS object were changed (Cloud TESTCLOUD):
-|attribute                              |old value                          |new value                          
-|max_ais                                |8000                               |20                                 
+ status: VMC 537C0BB8-CB81-5601-8041-0EE8183B22BF was successfully registered on SimCloud "TESTCLOUD".
+ status: Attribute "collect_from_host" was set to "false". Skipping Host OS performance monitor daemon startup
+VMC object 537C0BB8-CB81-5601-8041-0EE8183B22BF (named "simzone_source") sucessfully attached to this experiment. It is ssh-accessible at the IP address 138.139.178.161 (simzone_source).
+ status: VMC 2105141B-A7D9-5AF5-9754-8E2D3AC7F49C was successfully registered on SimCloud "TESTCLOUD".
+ status: Attribute "collect_from_host" was set to "false". Skipping Host OS performance monitor daemon startup
+VMC object 2105141B-A7D9-5AF5-9754-8E2D3AC7F49C (named "simzone_dest") sucessfully attached to this experiment. It is ssh-accessible at the IP address 154.207.110.25 (simzone_dest).

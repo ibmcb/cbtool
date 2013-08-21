@@ -1,4 +1,4 @@
-aiattach filebench
+aicapture ai_10
 ailist
 vmlist
 stats

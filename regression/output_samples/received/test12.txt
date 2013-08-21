@@ -1,1 +1,1 @@
-Usage: typelist <cloud_name> 
+Usage: typeshow <cloud_name> <vapp_type> 

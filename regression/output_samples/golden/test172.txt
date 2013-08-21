@@ -1,1 +1,1 @@
-Usage: svmshow <cloud_name> <identifier> [key = all] 
+Usage: monextract <cloud name> <object type> <metric type> [experiment id] 

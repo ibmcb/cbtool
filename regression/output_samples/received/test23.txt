@@ -1,1 +1,1 @@
-Usage: vmclist <cloud_name> [state = default] [limit = none] 
+Usage: vmcshow <cloud_name> <identifier> [key = all] 

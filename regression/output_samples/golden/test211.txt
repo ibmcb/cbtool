@@ -1,23 +1,4 @@
-The following HOSTs are attached to this experiment (Cloud TESTCLOUD) :
-|name                          |vmc_name            |function                                          |pool         |cloud_hostname              |cloud_ip        
-|host_simhostb4                |simzone_b           |hypervisor                                        |SUT          |simhostb4                   |26.245.59.172   
-|host_simhostb2                |simzone_b           |hypervisor                                        |SUT          |simhostb2                   |53.170.8.16     
-|host_simhostb3                |simzone_b           |hypervisor                                        |SUT          |simhostb3                   |76.13.160.104   
-|host_simhostb0                |simzone_b           |hypervisor                                        |SUT          |simhostb0                   |64.27.138.178   
-|host_simhostb1                |simzone_b           |hypervisor                                        |SUT          |simhostb1                   |121.63.29.216   
-|host_simhostc3                |simzone_c           |hypervisor                                        |SUT          |simhostc3                   |118.253.143.122 
-|host_simhostc4                |simzone_c           |hypervisor                                        |SUT          |simhostc4                   |180.175.140.246 
-|host_simhostc1                |simzone_c           |hypervisor                                        |SUT          |simhostc1                   |174.182.6.130   
-|host_simhostc0                |simzone_c           |hypervisor                                        |SUT          |simhostc0                   |217.37.153.191  
-|host_simhostc2                |simzone_c           |hypervisor                                        |SUT          |simhostc2                   |154.230.138.196 
-|host_simhosta2                |simzone_a           |hypervisor                                        |SUT          |simhosta2                   |250.167.11.199  
-|host_simhosta4                |simzone_a           |hypervisor                                        |SUT          |simhosta4                   |179.164.6.116   
-|host_simhosta0                |simzone_a           |hypervisor                                        |SUT          |simhosta0                   |215.99.128.185  
-|host_simhosta3                |simzone_a           |hypervisor                                        |SUT          |simhosta3                   |230.146.159.104 
-|host_simhosta1                |simzone_a           |hypervisor                                        |SUT          |simhosta1                   |86.116.69.246   
-|host_simhostd4                |simzone_d           |hypervisor                                        |LG           |simhostd4                   |118.105.212.224 
-|host_simhostd3                |simzone_d           |hypervisor                                        |LG           |simhostd3                   |214.64.204.230  
-|host_simhostd0                |simzone_d           |hypervisor                                        |LG           |simhostd0                   |194.184.30.95   
-|host_simhostd1                |simzone_d           |hypervisor                                        |LG           |simhostd1                   |230.35.175.46   
-|host_simhostd2                |simzone_d           |hypervisor                                        |LG           |simhostd2                   |8.72.196.162    
+The following VMs are attached to this experiment (Cloud TESTCLOUD) :
+|name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
+|vm_1          |tinyvm              |pico32      |113.203.60.155  |simhosta3                  |SUT                 |none    |none       |A71367A7-681B-5FEA-94C1-285EF7566DDD
 

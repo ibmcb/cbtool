@@ -1,1 +1,1 @@
-Usage: waiton <cloud name> <object type> <channel> <keyword> 
+Usage: Usage: shell <cloud name> <command name> 

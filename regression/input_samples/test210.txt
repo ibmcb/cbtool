@@ -1,2 +1,4 @@
-vmcalter TESTCLOUD simzone_a replication_vmcs=TESTE
-vmcshow TESTCLOUD simzone_a replication_vmcs
+vmattach TESTCLOUD tinyvm
+vmlist TESTCLOUD
+vmshow TESTCLOUD vm_1 vmc_name,vmc_pool,host_name,meta_tags,size
+stats TESTCLOUD

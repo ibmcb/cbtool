@@ -1,3 +1,1 @@
-The "sim" cloud named "TESTCLOUD" was successfully attached to this experiment.
-The experiment identifier is EXP-07-22-2013-05-01-51-PM-EDT
-
+Current default cloud is "TESTCLOUD". Need cloud name to be set as default cloud or 'none' to unset.

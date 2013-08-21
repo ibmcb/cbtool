@@ -1,14 +1,20 @@
-Background operation execution success. Operation "vmc-attach" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.0.254,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,timeout:240,host:172.16.0.254,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,simzone_b,empty=empty --operation=vmc-attach --cn=TESTCLOUD --uuid=980E160D-EE10-52EA-9139-285BDE36654F --daemon". The process id is 14547.
-|simzone_a               |5               |sut                     |simzone_a                       |136.157.18.16    
-|simzone_b               |5               |sut                     |simzone_b                       |18.150.85.100    
-|Used Memory                                          |39.39M                        
-|Uptime (in seconds)                                  |13565709                      
-|Total Connections Received                           |6495000                       
-|Total Commands Processed                             |93951937                      
-|Storage Size                                         |16113287152.0                 
-|Data Size                                            |13823264564.0                 
-|Index Size                                           |550342912                     
-|Average Object Size                                  |6601.7463102                  
-|Collections                                          |59                            
-|1B79AE9F-80B7-52E3-AF89-CC44733E39C9 (simzone_a) VM RESERVATIONS|0                             
-|980E160D-EE10-52EA-9139-285BDE36654F (simzone_b) VM RESERVATIONS|0                             
+ status: VMC EC6B6956-3C90-5DA0-8471-C324CC2C3082 was successfully registered on SimCloud "TESTCLOUD".
+ status: VMC B972F197-3744-5062-BA16-CF2B84AB9B2F was successfully registered on SimCloud "TESTCLOUD".
+ status: VMC C38616E3-DE70-5D3C-9E58-6FDCDF42BC4F was successfully registered on SimCloud "TESTCLOUD".
+ status: VMC B0408679-2CA8-5CDF-9B52-E070C079FAF6 was successfully registered on SimCloud "TESTCLOUD".
+|simzone_a               |5               |sut                     |simzone_a                       |178.25.91.237    
+|simzone_b               |5               |sut                     |simzone_b                       |40.229.214.80    
+|simzone_c               |5               |sut                     |simzone_c                       |153.54.87.220    
+|simzone_d               |5               |lg                      |simzone_d                       |119.221.73.6     
+|Used Memory                                          |19.16M                        
+|Uptime (in seconds)                                  |2517107                       
+|Total Connections Received                           |185724                        
+|Total Commands Processed                             |11803723                      
+|Storage Size                                         |18292736                      
+|Data Size                                            |6871444                       
+|Index Size                                           |2142112                       
+|Average Object Size                                  |614.564350237                 
+|EC6B6956-3C90-5DA0-8471-C324CC2C3082 (simzone_a) VM RESERVATIONS|0                             
+|B972F197-3744-5062-BA16-CF2B84AB9B2F (simzone_b) VM RESERVATIONS|0                             
+|B0408679-2CA8-5CDF-9B52-E070C079FAF6 (simzone_d) VM RESERVATIONS|0                             
+|C38616E3-DE70-5D3C-9E58-6FDCDF42BC4F (simzone_c) VM RESERVATIONS|0                             

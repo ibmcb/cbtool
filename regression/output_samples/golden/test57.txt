@@ -1,1 +1,1 @@
-Usage: airesize <cloud_name> <identifier> <role> <delta> [mode] 
+Usage: airesume <cloud_name> <identifier> [firs = none] [mode] 

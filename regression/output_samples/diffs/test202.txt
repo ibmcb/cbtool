@@ -1,10 +1,17 @@
-Background operation execution success. Operation "vmc-detach" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.0.254,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,timeout:240,host:172.16.0.254,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,simzone_a,false --operation=vmc-detach --cn=TESTCLOUD --uuid=542CF6C4-3E99-5568-BA10-176D59E50F74 --daemon". The process id is 10056.
-|Used Memory                                          |38.39M                        
-|Uptime (in seconds)                                  |13564981                      
-|Total Connections Received                           |6494850                       
-|Total Commands Processed                             |93752980                      
-|Storage Size                                         |16112218096.0                 
-|Data Size                                            |13822898252.0                 
-|Index Size                                           |550310208                     
-|Average Object Size                                  |6603.30270368                 
-|Collections                                          |59                            
+Background operation execution success. Operation "vmc-attachall" will be processed asynchronously, through the command "/home/mrhines/cbtool/lib/operations//../../cbact --procid=TEST_mrhines --osp=port:6379,experiment_inst:TEST_mrhines,host:172.16.1.222,pid:TEST_mrhines,dbid:0,timout:70,protocol:TCP,kind:redis,username:mrhines --msp=cloudoption_testcloud_host:172.16.0.254,timeout:240,cloudoption_testcloud_usage:shared,host:172.16.1.222,port:27017,pid:TEST_mrhines,database:metrics,protocol:TCP,kind:mongodb,username:mrhines --oop=TESTCLOUD,all,empty=empty --operation=vmc-attachall --cn=TESTCLOUD --uuid=E1AF6B4F-5E40-55CC-BEA5-02B0C79B99A4 --daemon". The process id is 10833.
+|simzone_a               |5               |sut                     |simzone_a                       |14.174.17.13     
+|simzone_b               |5               |sut                     |simzone_b                       |133.66.8.144     
+|simzone_d               |5               |lg                      |simzone_d                       |2.150.70.105     
+|simzone_c               |5               |sut                     |simzone_c                       |94.30.8.36       
+|Used Memory                                          |18.96M                        
+|Uptime (in seconds)                                  |2516381                       
+|Total Connections Received                           |185609                        
+|Total Commands Processed                             |11566767                      
+|Storage Size                                         |18292736                      
+|Data Size                                            |6552164                       
+|Index Size                                           |2044000                       
+|Average Object Size                                  |614.764871458                 
+|AD93E38D-EAEC-5C15-BA20-7A27F63D13FF (simzone_b) VM RESERVATIONS|0                             
+|E4B581D8-2DD3-5956-8196-B1B60C5DC5B0 (simzone_d) VM RESERVATIONS|0                             
+|AD29082C-1389-58A3-BE64-3784D075F191 (simzone_c) VM RESERVATIONS|0                             
+|75A875C6-F2C5-5C3D-BD34-051FBBE24C3A (simzone_a) VM RESERVATIONS|0                             

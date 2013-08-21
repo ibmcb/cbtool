@@ -1,1 +1,1 @@
-Usage: vmcrslist <cloud_name> [state = default] [limit = none] 
+Usage: vmcrsattach <cloud_name> <identifier> [scope = ] [max_simultaneous_cap_reqs = ] [max_total_cap_reqs = ] [ivmcat = ] [min_cap_age = ] [temp_attr_list = empty=empty] [mode] 

@@ -1,19 +1,18 @@
-|ai_31     |nullworkload   |1_x_tinyvm                                        |62.186.114.202  |1374527487     |aidrs_1                                 |31D48616-B02B-5245-AFD3-7958573C3CB0
-|ai_32     |nullworkload   |1_x_tinyvm                                        |177.139.66.62   |1374527496     |aidrs_1                                 |5AF90A3B-C4FF-5B25-8E7A-66079F4F95E4
-|vm_120        |tinyvm              |pico32      |62.186.114.202  |simhostb1                  |SUT                 |ai_31   |aidrs_1    |B5C2B723-FF25-57ED-9866-17D442719B50
-|vm_121        |tinyvm              |pico32      |177.139.66.62   |simhostb4                  |SUT                 |ai_32   |aidrs_1    |81AA9B38-C8C7-5DB6-8B27-0AB52B9D66CA
-|Used Memory                                          |44.32M                        
-|Uptime (in seconds)                                  |13566279                      
-|Total Connections Received                           |6495141                       
-|Total Commands Processed                             |94136002                      
-|Number of Keys                                       |683                           
-|Storage Size                                         |16114180080.0                 
-|Data Size                                            |13823593944.0                 
-|Index Size                                           |550481904                     
-|Average Object Size                                  |6600.31806217                 
-|Collections                                          |60                            
-|D30F1B96-9225-51C9-95FF-3355AD659B11 (simzone_d) VM RESERVATIONS|0                             
-|3C091D65-A8D9-5ECF-9C95-36A39D5CAA39 (simzone_a) VM RESERVATIONS|0                             
-|671172C3-2E80-5782-AB0C-C348A586106A (simzone_c) VM RESERVATIONS|0                             
-|96342978-982B-5D60-9FF3-0C0B3F9C41A9 (simzone_b) VM RESERVATIONS|2                             
-|9A5383E7-2829-576E-9AAC-B47A428B43D2 (aidrs_1) AI RESERVATIONS|2                             
+ status: Sending a termination request for vm_128 (cloud-assigned uuid 408E0EAD-ADBD-5296-9E46-29A35175DFE3)....
+ status: Sending a termination request for vm_126 (cloud-assigned uuid DD6EA4AB-7BB7-556D-B6AE-3643425E4FE4)....
+ status: Sending a termination request for vm_124 (cloud-assigned uuid 4BD4162B-4882-523A-B168-CD0220649806)....
+ status: Sending a termination request for vm_125 (cloud-assigned uuid 7BDB467C-6EEE-5775-8155-A063CF4359BB)....
+ status: Sending a termination request for vm_127 (cloud-assigned uuid 6D4801E9-3EDF-5297-BAEA-8C81DF1A5B54)....
+|Used Memory                                          |23.69M                        
+|Uptime (in seconds)                                  |2517776                       
+|Total Connections Received                           |185842                        
+|Total Commands Processed                             |12031118                      
+|Number of Keys                                       |653                           
+|Storage Size                                         |18579456                      
+|Data Size                                            |7165916                       
+|Index Size                                           |2248400                       
+|Average Object Size                                  |614.941731743                 
+|EDC9615C-DB1F-5769-9826-61B84283AFD7 (simzone_c) VM RESERVATIONS|0                             
+|702C293B-8403-5C96-B515-6AE61AE13658 (simzone_a) VM RESERVATIONS|0                             
+|34819FA6-FE78-5D1D-A68D-0E43FEBFD8A5 (simzone_b) VM RESERVATIONS|0                             
+|271ADA73-1C6A-581D-A1BA-730D86DF8704 (simzone_d) VM RESERVATIONS|0                             

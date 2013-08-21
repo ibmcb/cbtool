@@ -1,1 +1,1 @@
- Mon Jul 22 16:49:26 EDT 2013
+|experiment_id                        |EXP-08-21-2013-04-00-02-PM-EDT     |REGRESSION_A                       

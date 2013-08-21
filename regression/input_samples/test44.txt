@@ -1,1 +1,1 @@
-vmrun
+vmresize

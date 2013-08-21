@@ -1,1 +1,1 @@
-Usage: svmdetach <cloud_name> <identifier> [force = False] [mode] 
+Usage: waitfor <cloud_name> <time> [update_interval = default] 

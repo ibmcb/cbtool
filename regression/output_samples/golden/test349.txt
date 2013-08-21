@@ -1,28 +1,18 @@
- status: No samples of runtime_os metrics for all HOSTs were found (the file /home/msilva/cloudbench/lib/auxiliary//../../data/REGRESSION_B/HOST_runtime_os_REGRESSION_B.csv will be empty).
- status: No samples of runtime_os metrics for all VMs were found (the file /home/msilva/cloudbench/lib/auxiliary//../../data/REGRESSION_B/VM_runtime_os_REGRESSION_B.csv will be empty).
- status: No samples of runtime_app metrics for all VMs were found (the file /home/msilva/cloudbench/lib/auxiliary//../../data/REGRESSION_B/VM_runtime_app_REGRESSION_B.csv will be empty).
- status: Multiple samples of management metrics for all VMs were found (the file /home/msilva/cloudbench/lib/auxiliary//../../data/REGRESSION_B/VM_management_REGRESSION_B.csv will *NOT* be empty).
- status: This experiment was created with a trace file, which will also be included alongside the extracted metrics.
- status: This experiment was run right after a "hard reset".Will also include all logs files (from the Log Store) alongside the extracted metrics.
-Monitor extraction success. All metrics written to csv files on the directory "/home/msilva/cloudbench/lib/auxiliary//../../data".
-running shell command: "ls -la ~/cloudbench/data/REGRESSION_B"....
-stdout:
- total 42932
-drwxrwxr-x  2 msilva msilva     4096 Jul  1 14:08 .
-drwxr-xr-x 26 msilva msilva     4096 Jul  1 14:08 ..
--rw-r--r--  1 msilva msilva      424 Jul  1 13:56 gui.log
--rw-rw-r--  1 msilva msilva     1014 Jul  1 14:08 HOST_runtime_os_REGRESSION_B.csv
--rw-r--r--  1 msilva msilva        0 Jul  1 13:56 loadmanager.log
--rw-r--r--  1 msilva msilva        0 Jul  1 13:56 monitor.log
--rw-r--r--  1 msilva msilva 43524198 Jul  1 14:08 operations.log
--rwxrwxr-x  1 msilva msilva   231694 Mar 15 11:02 regression_test_experiment_plan.txt
--rw-r--r--  1 msilva msilva        0 Jul  1 13:56 remotescripts.log
--rw-r--r--  1 msilva msilva        0 Jul  1 13:56 report.log
--rw-r--r--  1 msilva msilva    95063 Jul  1 14:08 submmiter.log
--rw-r--r--  1 msilva msilva        0 Jul  1 13:56 subscribe.log
--rw-rw-r--  1 msilva msilva    30681 Jul  1 14:08 trace_REGRESSION_B.csv
--rw-rw-r--  1 msilva msilva    43092 Jul  1 14:08 VM_management_REGRESSION_B.csv
--rw-rw-r--  1 msilva msilva      310 Jul  1 14:08 VM_runtime_app_REGRESSION_B.csv
--rw-rw-r--  1 msilva msilva     1062 Jul  1 14:08 VM_runtime_os_REGRESSION_B.csv
-
-
+ status: Waiting for all active AIDRS daemons to finish gracefully....
+ status: All AIDRS (daemons and objects were removed).
+ status: Removing all VMCRS objects attached to this experiment.
+ status: Removing all FIRS objects attached to this experiment.
+ status: Removing all AI objects attached to this experiment.
+ status: Removing all VM objects attached to this experiment.
+ status: Sending a termination request for vm_129 (cloud-assigned uuid 4488CD09-244A-558F-9E4E-5F6A7D397C9B)....
+ status: Done
+ status: Removing all VMC objects attached to this experiment.
+ status: VMC C4E90296-1043-55C8-8270-B5D7C3C38270 was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC 2AEE56D4-E6A4-5FB2-8D29-4268D4C22AD0 was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC 537C0BB8-CB81-5601-8041-0EE8183B22BF was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC 2105141B-A7D9-5AF5-9754-8E2D3AC7F49C was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC 5F641DA9-DE4B-538C-B0CD-42A4F7D43E9E was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC A796D59F-B618-5C91-8FC6-F6F093DE22C5 was successfully unregistered on SimCloud "TESTCLOUD".
+ status: Done
+ status: Removing all contents from Object Store (GLOBAL objects,VIEWS, etc.)
+Cloud TESTCLOUD was successfully detached from this experiment.

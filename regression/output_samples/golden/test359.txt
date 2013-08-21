@@ -1,2 +1,1 @@
-VMCs with the following pools are attached to to this experiment (Cloud TESTCLOUD) :
-
+Usage: roleshow <cloud_name> <role> 

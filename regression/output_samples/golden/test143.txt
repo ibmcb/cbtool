@@ -1,1 +1,1 @@
-Usage: aisave <cloud_name> <identifier> [firs = none] [mode] 
+Usage: aifail <cloud_name> <identifier> [firs = none] [mode] 

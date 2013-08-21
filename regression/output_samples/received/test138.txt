@@ -1,1 +1,1 @@
-Usage: aiattach <cloud_name> <type> [load_level = default] [load_duration = default] [lifetime = none] [aidrs = none] [pause_step = none] [temp_attr_list = empty=empty] [mode] 
+Usage: aishow <cloud_name> <identifier> [key = all] 

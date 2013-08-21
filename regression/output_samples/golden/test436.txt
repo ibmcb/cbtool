@@ -1,1 +1,24 @@
-Usage: waituntil <cloud name> <object type> <counter>=<value> [direction] [update interval] 
+
+Documented commands (type help <topic>):
+========================================
+EOF          airun       firslist      shell       vmcdetach    vmresize  
+aialter      airunstate  firsshow      statealter  vmclist      vmrestore 
+aiattach     aisave      hostfail      stateshow   vmcrsalter   vmresume  
+aicapture    aishow      hostlist      stats       vmcrsattach  vmrun     
+aidetach     aisuspend   hostrepair    trace       vmcrsdetach  vmrunstate
+aidrsalter   cldalter    hostshow      typealter   vmcrslist    vmsave    
+aidrsattach  cldattach   monextract    typelist    vmcrsshow    vmshow    
+aidrsdetach  clddefault  monlist       typeshow    vmcshow      vmsuspend 
+aidrslist    clddetach   msgpub        viewlist    vmdetach     waitfor   
+aidrsshow    cldlist     patternalter  viewshow    vmdisplay    waiton    
+aifail       cldshow     patternlist   vmalter     vmfail       waituntil 
+ailist       echo        patternshow   vmattach    vmlist     
+airepair     expid       poollist      vmcalter    vmlogin    
+airesize     firsalter   rolealter     vmcapture   vmmigrate  
+airestore    firsattach  rolelist      vmcattach   vmprotect  
+airesume     firsdetach  roleshow      vmccleanup  vmrepair   
+
+Undocumented commands:
+======================
+exit  help  pause  quit
+

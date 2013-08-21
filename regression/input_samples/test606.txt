@@ -1,2 +1,2 @@
 monextract VM app
-shell cat ~/cloudbench/data/REGRESSION_B/VM_runtime_app_*REGRESSION*
+shell cat /home/mrhines/cbtool/regression/..//data/REGRESSION_B/VM_runtime_app_*REGRESSION*

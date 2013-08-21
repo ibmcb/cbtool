@@ -1,2 +1,1 @@
-shell TESTCLOUD rm -rf ~/cloudbench/data/REGRESSION_B
-shell TESTCLOUD ls -la ~/cloudbench/data/REGRESSION_B/
+monplot

@@ -1,17 +1,11 @@
- status: VMC F649438F-D82C-50AE-85F0-C6CBC4C2437B was successfully registered on SimCloud "TESTCLOUD".
-VMC object F649438F-D82C-50AE-85F0-C6CBC4C2437B (named "simzone_c") sucessfully attached to this experiment. It is ssh-accessible at the IP address 24.40.244.65 (simzone_c).
-|simzone_a               |5               |sut                     |simzone_a                       |115.28.123.3     
-|simzone_b               |5               |sut                     |simzone_b                       |86.60.174.59     
-|simzone_c               |5               |sut                     |simzone_c                       |24.40.244.65     
-|Used Memory                                          |38.43M                        
-|Uptime (in seconds)                                  |13564964                      
-|Total Connections Received                           |6494848                       
-|Total Commands Processed                             |93750388                      
-|Storage Size                                         |16112181232.0                 
-|Data Size                                            |13822896584.0                 
-|Index Size                                           |550310208                     
-|Average Object Size                                  |6603.29875242                 
-|Collections                                          |59                            
-|542CF6C4-3E99-5568-BA10-176D59E50F74 (simzone_a) VM RESERVATIONS|0                             
-|2C5C446B-D529-54BB-B402-FF9EF8BE10E7 (simzone_b) VM RESERVATIONS|0                             
-|F649438F-D82C-50AE-85F0-C6CBC4C2437B (simzone_c) VM RESERVATIONS|0                             
+ status: VMC B51F7CEF-5C65-5DA3-8615-189F9A43FE49 was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC 31457E2B-E8D1-576C-BCC3-92C6921AF426 was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC 45E02A96-FF96-5480-9FB3-3ECFDB55F348 was successfully unregistered on SimCloud "TESTCLOUD".
+|Used Memory                                          |18.70M                        
+|Uptime (in seconds)                                  |2516363                       
+|Total Connections Received                           |185601                        
+|Total Commands Processed                             |11557020                      
+|Storage Size                                         |18292736                      
+|Data Size                                            |6523940                       
+|Index Size                                           |2044000                       
+|Average Object Size                                  |616.163581413                 

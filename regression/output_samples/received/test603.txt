@@ -1,6 +1,6 @@
- status: No samples of runtime_os metrics for all HOSTs were found (the file /home/msilva/cloudbench/lib/auxiliary//../../data/REGRESSION_B/HOST_runtime_os_REGRESSION_B.csv will be empty).
-Monitor extraction success. HOST runtime OS performance data samples were written to the file /home/msilva/cloudbench/lib/auxiliary//../../data/REGRESSION_B/HOST_runtime_os_REGRESSION_B.csv
-running shell command: "cat ~/cloudbench/data/REGRESSION_B/HOST_runtime_os_*REGRESSION*"....
+ status: No samples of runtime_os metrics for all HOSTs were found (the file /home/mrhines/cbtool/lib/auxiliary//../../data/REGRESSION_B/HOST_runtime_os_REGRESSION_B.csv will be empty).
+Monitor extraction success. HOST runtime OS performance data samples were written to the file /home/mrhines/cbtool/lib/auxiliary//../../data/REGRESSION_B/HOST_runtime_os_REGRESSION_B.csv
+running shell command: "cat /home/mrhines/cbtool/regression/..//data/REGRESSION_B/HOST_runtime_os_*REGRESSION*"....
 stdout:
  #field:column #
 #time:1

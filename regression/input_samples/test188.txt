@@ -1,1 +1,1 @@
-typeshow TESTCLOUD daytrader
+waitfor TESTCLOUD 10s

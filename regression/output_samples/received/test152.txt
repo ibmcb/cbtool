@@ -1,1 +1,2 @@
-Usage: aidetach <cloud_name> <identifier> [force = False] [mode] 
+The following AIDRSs are attached to this experiment (Cloud TESTCLOUD) :
+No objects available.

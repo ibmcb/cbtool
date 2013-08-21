@@ -1,4 +1,2 @@
-The following CLOUDs are attached to this experiment (Cloud ) :
-|name                    |model                   |description             
-|TESTCLOUD               |sim                     |Cloudbench SimCloud.    
+VMCs with the following pools are attached to to this experiment (Cloud TESTCLOUD) :
 

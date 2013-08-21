@@ -1,7 +1,2 @@
-The following attributes for the VMC object were changed (Cloud TESTCLOUD):
-|attribute                              |old value                          |new value                          
-|replication_vmcs                       |                                   |TESTE                              
-The VMC object simzone_a, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
-|attribute (VMC object key)               |value                                
-|replication_vmcs                         |TESTE                                
-
+VMCs with the following pools are attached to to this experiment (Cloud TESTCLOUD) :
+LG, SUT

@@ -1,4 +1,4 @@
-waituntil AI ARRIVED=17 increasing 2
+aidetach ai_12
 ailist
 vmlist
 stats

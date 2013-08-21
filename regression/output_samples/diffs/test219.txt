@@ -1,15 +1,22 @@
-|arrival                                 |1374526226                           
-|cloud_hostname                          |3814B750-188E-51A0-A67E-9E3B7C0E32B9.simcloud.com
-|cloud_ip                                |254.56.139.236                       
-|cloud_mac                               |00:16:3e:23:dd:4e                    
-|cloud_vm_name                           |cb-msilva-vm_1-tinyvm                
-|cloud_vm_uuid                           |3814B750-188E-51A0-A67E-9E3B7C0E32B9 
-|command_originated                      |1374526224                           
-|host                                    |02A87729-F726-5F81-8D0D-7F3B61CF358F 
-|host_cloud_ip                           |24.169.15.34                         
-|host_name                               |simhosta0                            
-|mgt_001_provisioning_request_originated |1374526224                           
-|prov_cloud_ip                           |254.56.139.236                       
-|uuid                                    |64DD0F5F-27CF-50C8-AE2A-0930A713B586 
-|vmc                                     |CA6252C4-6803-5C5C-BAA8-5BC509EE3CE0 
-|vmc_cloud_ip                            |8.188.4.54                           
+Background operation execution success. Operation "vm-attach" will be processed asynchronously, through the command "/home/mrhines/cbtool/lib/operations//../../cbact --procid=TEST_mrhines --osp=port:6379,experiment_inst:TEST_mrhines,host:172.16.1.222,pid:TEST_mrhines,dbid:0,timout:70,protocol:TCP,kind:redis,username:mrhines --msp=cloudoption_testcloud_host:172.16.0.254,timeout:240,cloudoption_testcloud_usage:shared,host:172.16.1.222,port:27017,pid:TEST_mrhines,database:metrics,protocol:TCP,kind:mongodb,username:mrhines --oop=TESTCLOUD,tinyvm,auto,empty,default,none,empty=empty --operation=vm-attach --cn=TESTCLOUD --uuid=E7D70FED-B901-55A9-BC57-38367EC52251 --daemon". The process id is 11184.
+Operation "vm-attach" will be processed asynchronously, through the command "/home/mrhines/cbtool/lib/operations//../../cbact --procid=TEST_mrhines --osp=port:6379,experiment_inst:TEST_mrhines,host:172.16.1.222,pid:TEST_mrhines,dbid:0,timout:70,protocol:TCP,kind:redis,username:mrhines --msp=cloudoption_testcloud_host:172.16.0.254,timeout:240,cloudoption_testcloud_usage:shared,host:172.16.1.222,port:27017,pid:TEST_mrhines,database:metrics,protocol:TCP,kind:mongodb,username:mrhines --oop=TESTCLOUD,tinyvm,auto,empty,default,none,empty=empty --operation=vm-attach --cn=TESTCLOUD --uuid=EFC78A0B-A8E8-510E-9801-D8A8FD7ED833 --daemon". The process id is 11186.
+|vm_1          |tinyvm              |pico32      |223.57.181.60   |simhostb3                  |SUT                 |none    |none       |871DBCA3-6BD3-51CC-AD1C-EC170141AF08
+|vm_3          |tinyvm              |pico32      |212.135.120.189 |simhostb1                  |SUT                 |none    |none       |A2868A5A-49AD-5DD7-A350-BD5C2807154B
+|vm_4          |db2                 |copper32    |117.87.103.220  |simhostc0                  |SUT                 |none    |none       |F09577B3-3400-54A7-A520-21B2C188F40C
+|vm_5          |netclient           |platinum64  |93.46.102.110   |simhostc2                  |SUT                 |none    |none       |1068D03C-CADC-5037-ACC3-F16F38D68741
+|vm_6          |tinyvm              |pico32      |114.102.252.179 |simhostc2                  |SUT                 |none    |none       |15CF7334-5EF1-51DA-9728-C7248B685B15
+|vm_7          |tinyvm              |pico32      |81.3.134.125    |simhostb3                  |SUT                 |none    |none       |E7D70FED-B901-55A9-BC57-38367EC52251
+|vm_8          |tinyvm              |pico32      |173.186.14.30   |simhostc0                  |SUT                 |none    |none       |EFC78A0B-A8E8-510E-9801-D8A8FD7ED833
+|Used Memory                                          |19.15M                        
+|Uptime (in seconds)                                  |2516404                       
+|Total Connections Received                           |185612                        
+|Total Commands Processed                             |11574313                      
+|Number of Keys                                       |333                           
+|Storage Size                                         |18350080                      
+|Data Size                                            |6578988                       
+|Index Size                                           |2068528                       
+|Average Object Size                                  |614.628923767                 
+|AD93E38D-EAEC-5C15-BA20-7A27F63D13FF (simzone_b) VM RESERVATIONS|3                             
+|E4B581D8-2DD3-5956-8196-B1B60C5DC5B0 (simzone_d) VM RESERVATIONS|0                             
+|AD29082C-1389-58A3-BE64-3784D075F191 (simzone_c) VM RESERVATIONS|4                             
+|75A875C6-F2C5-5C3D-BD34-051FBBE24C3A (simzone_a) VM RESERVATIONS|0                             

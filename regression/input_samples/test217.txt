@@ -1,4 +1,3 @@
-vmattach TESTCLOUD tinyvm
+vmcapture TESTCLOUD vm_2
 vmlist TESTCLOUD
-vmshow TESTCLOUD vm_1 vmc_name,vmc_pool,host_name,meta_tags,size
 stats TESTCLOUD

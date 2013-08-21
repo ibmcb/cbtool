@@ -1,1 +1,4 @@
-*** Unknown syntax: reserved for hostfail
+The following VMs are attached to this experiment (Cloud TESTCLOUD) :
+|name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
+|vm_1          |tinyvm              |pico32      |53.39.186.139   |simhostb3                  |SUT                 |none    |none       |78A306FD-C19B-542E-97C0-61497C33541E
+

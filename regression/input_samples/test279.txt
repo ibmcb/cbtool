@@ -1,5 +1,5 @@
-vmcapture TESTCLOUD vm_41 async
-waitfor TESTCLOUD 25s
+aiattach TESTCLOUD daytrader
 ailist TESTCLOUD
 vmlist TESTCLOUD
+aishow TESTCLOUD ai_12 load_balancer,sut
 stats TESTCLOUD

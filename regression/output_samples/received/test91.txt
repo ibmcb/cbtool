@@ -1,1 +1,1 @@
-Usage: Usage: shell <cloud name> <command name> 
+Current default cloud is "TESTCLOUD". Need cloud name to be set as default cloud or 'none' to unset.

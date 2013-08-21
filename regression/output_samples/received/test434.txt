@@ -1,1 +1,1 @@
-Usage: statealter <cloud_name> <identifier> <new_state> 
+Usage: monlist <cloud_name> <object_type> 

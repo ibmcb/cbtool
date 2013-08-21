@@ -1,5 +1,3 @@
-aiattach TESTCLOUD daytrader
-ailist TESTCLOUD
-vmlist TESTCLOUD
-aishow TESTCLOUD ai_1 detach_parallelism,ssh_key_name,sut
+aifail TESTCLOUD ai_3
+stateshow TESTCLOUD
 stats TESTCLOUD

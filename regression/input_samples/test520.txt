@@ -1,1 +1,3 @@
-aishow ai_1 all
+aifail ai_3
+stateshow
+stats

@@ -1,29 +1,24 @@
- status: Sending a termination request for vm_17 (cloud-assigned uuid 416DEDE8-2CEF-5848-897F-581A2EA18AA2)....
- status: Sending a termination request for vm_20 (cloud-assigned uuid 461C8B4F-9F7E-52B8-A308-FDFDFD6028B4)....
- status: Sending a termination request for vm_10 (cloud-assigned uuid BC099465-0329-5CE0-A133-A647B549482A)....
- status: Sending a termination request for vm_9 (cloud-assigned uuid 82EE0CFD-6716-5985-81E9-3076C851E1B4)....
- status: Sending a termination request for vm_11 (cloud-assigned uuid 206E7375-C88D-5E80-80BA-6273AB00860A)....
- status: Sending a termination request for vm_6 (cloud-assigned uuid A61A4640-ED60-5E96-B451-287297081FD6)....
- status: Sending a termination request for vm_15 (cloud-assigned uuid 9BAC872D-9474-5525-B7CB-E10009E415E7)....
- status: Sending a termination request for vm_13 (cloud-assigned uuid B4155473-EB52-5809-AC2A-07A1B1EE6169)....
- status: Sending a termination request for vm_8 (cloud-assigned uuid D6AE8846-33BC-5ED6-81EB-A3BF9DEA0F0C)....
- status: Sending a termination request for vm_3 (cloud-assigned uuid 57436796-DB6A-5846-B0EB-035DDB597B7A)....
- status: Sending a termination request for vm_7 (cloud-assigned uuid CBCECCED-F330-535E-BE6A-E8ED1D090844)....
- status: Sending a termination request for vm_16 (cloud-assigned uuid 5D136542-69B9-5756-BD2F-CC9E51150EAE)....
- status: Sending a termination request for vm_21 (cloud-assigned uuid 7F757AAE-6546-5D8F-AD50-AD012D5C55DD)....
- status: Sending a termination request for vm_12 (cloud-assigned uuid 8BF6B4AA-4963-5A16-80E6-C330940E9EAB)....
- status: Sending a termination request for vm_14 (cloud-assigned uuid 11111111-1111-1111-1111-111111111111)....
- status: Sending a termination request for vm_18 (cloud-assigned uuid 15A794D7-3374-52E1-B01A-EFE0FF503639)....
-|Used Memory                                          |39.71M                        
-|Uptime (in seconds)                                  |13565157                      
-|Total Connections Received                           |6494895                       
-|Total Commands Processed                             |93793675                      
-|Storage Size                                         |16112459760.0                 
-|Data Size                                            |13823010680.0                 
-|Index Size                                           |550318384                     
-|Average Object Size                                  |6602.66250022                 
-|Collections                                          |60                            
-|59038ADB-0C9D-5DC8-8D0F-858C40A339D8 (simzone_b) VM RESERVATIONS|0                             
-|64F2E709-607C-5D1E-9ED5-402265D29FB4 (simzone_d) VM RESERVATIONS|0                             
-|538D06C6-8C24-51C6-AC34-D9ECDD4133D6 (simzone_c) VM RESERVATIONS|0                             
-|CA6252C4-6803-5C5C-BAA8-5BC509EE3CE0 (simzone_a) VM RESERVATIONS|0                             
+Background operation execution success. Operation "ai-attach" will be processed asynchronously, through the command "/home/mrhines/cbtool/lib/operations//../../cbact --procid=TEST_mrhines --osp=port:6379,experiment_inst:TEST_mrhines,host:172.16.1.222,pid:TEST_mrhines,dbid:0,timout:70,protocol:TCP,kind:redis,username:mrhines --msp=cloudoption_testcloud_host:172.16.0.254,timeout:240,cloudoption_testcloud_usage:shared,host:172.16.1.222,port:27017,pid:TEST_mrhines,database:metrics,protocol:TCP,kind:mongodb,username:mrhines --oop=TESTCLOUD,hadoop,default,default,none,none,none,empty=empty --operation=ai-attach --cn=TESTCLOUD --uuid=EBF906F9-D729-5A82-85E6-2AC61BEEBF49 --daemon". The process id is 12826.
+Waited 10 seconds... (83.3333333333%)
+|ai_1      |daytrader      |1_x_client_daytrader->1_x_was->1_x_db2            |42.121.131.154  |1377115411     |none                                    |8DD20872-5363-5B99-8770-FBF86161E63B
+|ai_2      |hadoop         |1_x_hadoopmaster->3_x_hadoopslave                 |137.91.159.164  |1377115417     |none                                    |EBF906F9-D729-5A82-85E6-2AC61BEEBF49
+|vm_26         |client_daytrader    |nano32      |42.121.131.154  |simhostb4                  |SUT                 |ai_1    |none       |20BAF244-B103-5DC6-B3CF-90B409EC85F4
+|vm_27         |was                 |iron32      |228.148.230.61  |simhosta0                  |SUT                 |ai_1    |none       |B268EA0F-A199-501F-8048-66D981C8E93F
+|vm_28         |db2                 |platinum64  |239.56.184.25   |simhostc4                  |SUT                 |ai_1    |none       |E8E37E2E-9496-5202-8135-2A5DD51474D2
+|vm_29         |hadoopmaster        |copper32    |137.91.159.164  |simhostc3                  |SUT                 |ai_2    |none       |F2F1E258-4D2D-5C71-874E-919400D959C4
+|vm_30         |hadoopslave         |iron32      |196.2.127.179   |simhosta2                  |SUT                 |ai_2    |none       |15562CB3-9E07-52BE-B797-FC6F2448721F
+|vm_31         |hadoopslave         |iron32      |29.160.213.168  |simhostb0                  |SUT                 |ai_2    |none       |4BD9BC22-BFE5-5DF8-AC5D-F66D6A423AAA
+|vm_32         |hadoopslave         |iron32      |105.111.87.246  |simhostc4                  |SUT                 |ai_2    |none       |87AE87EF-57DB-5451-8948-AEEADE344435
+|Used Memory                                          |20.03M                        
+|Uptime (in seconds)                                  |2516549                       
+|Total Connections Received                           |185648                        
+|Total Commands Processed                             |11607307                      
+|Number of Keys                                       |415                           
+|Storage Size                                         |18350080                      
+|Data Size                                            |6641708                       
+|Index Size                                           |2101232                       
+|Average Object Size                                  |614.290418054                 
+|AD93E38D-EAEC-5C15-BA20-7A27F63D13FF (simzone_b) VM RESERVATIONS|2                             
+|E4B581D8-2DD3-5956-8196-B1B60C5DC5B0 (simzone_d) VM RESERVATIONS|0                             
+|AD29082C-1389-58A3-BE64-3784D075F191 (simzone_c) VM RESERVATIONS|3                             
+|75A875C6-F2C5-5C3D-BD34-051FBBE24C3A (simzone_a) VM RESERVATIONS|2                             

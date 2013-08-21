@@ -1,1 +1,1 @@
-Usage: poollist <cloud_name> 
+Usage: rolelist <cloud_name> 

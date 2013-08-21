@@ -1,1 +1,3 @@
-aishow TESTCLOUD ai_1 all
+aisave TESTCLOUD ai_3
+stateshow TESTCLOUD
+stats TESTCLOUD

@@ -1,5 +1,4 @@
-vmcattach TESTCLOUD simzone_d update_attempts=156,update_frequency=6 async
-waitfor TESTCLOUD 8s
+vmcattach TESTCLOUD update_attempts=312,update_frequency=12 all
 vmclist TESTCLOUD
-vmcshow TESTCLOUD simzone_d update_attempts,update_frequency
+vmcshow TESTCLOUD simzone_c update_attempts,update_frequency
 stats TESTCLOUD

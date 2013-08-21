@@ -1,1 +1,1 @@
-Usage: airesize <cloud_name> <identifier> <role> <delta> [mode] 
+Usage: airun <cloud_name> <uuid> 

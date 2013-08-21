@@ -1,1 +1,1 @@
-Usage: vmcapture <cloud_name> <identifier> [vmcrs = none] [mode] 
+Usage: vmrun <cloud_name> <uuid> 

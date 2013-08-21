@@ -1,1 +1,3 @@
-statealter TESTCLOUD aidrs_1 stopped
+vmmigrate TESTCLOUD youngest dest
+stats TESTCLOUD
+vmlist TESTCLOUD

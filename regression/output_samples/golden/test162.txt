@@ -1,1 +1,2 @@
-Usage: vmcrsdetach <cloud_name> <identifier> [force = False] [mode] 
+The following FIRSs are attached to this experiment (Cloud TESTCLOUD) :
+No objects available.
