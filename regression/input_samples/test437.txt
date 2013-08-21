@@ -1,1 +1,1 @@
-waiton
+waitfor 10s

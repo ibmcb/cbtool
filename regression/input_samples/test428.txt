@@ -1,1 +1,2 @@
-svmdetach
+cldlist
+clddefault

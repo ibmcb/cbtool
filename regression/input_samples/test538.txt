@@ -1,5 +1,5 @@
-vmcapture vm_41 async
-waitfor 25s
+aidetach ai_13 async
+waituntil AI RESERVATIONS=16 decreasing 5
 ailist
 vmlist
 stats

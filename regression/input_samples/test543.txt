@@ -1,5 +1,4 @@
-aiattach daytrader
+aicapture oldest
 ailist
 vmlist
-aishow ai_11 load_balancer,sut
 stats

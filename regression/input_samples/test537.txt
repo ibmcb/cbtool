@@ -1,5 +1,4 @@
-vmcapture youngest
-stats
+aidetach ai_12
 ailist
 vmlist
 stats

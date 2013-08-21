@@ -1,4 +1,4 @@
-vmcattach TESTCLOUD simzone_a
+vmcattach TESTCLOUD update_attempts=312,update_frequency=12 all
 vmclist TESTCLOUD
-vmcshow TESTCLOUD simzone_a
+vmcshow TESTCLOUD simzone_c update_attempts,update_frequency
 stats TESTCLOUD

@@ -1,4 +1,1 @@
-aidetach all
-ailist
-vmlist
-stats
+reserved for vmcrs

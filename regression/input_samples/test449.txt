@@ -1,1 +1,4 @@
-viewlist
+vmcattach update_attempts=312,update_frequency=12 all
+vmclist
+vmcshow simzone_c update_attempts,update_frequency
+stats

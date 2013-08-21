@@ -47,7 +47,7 @@ def make_regression_test(reg_tst_f_contents, reg_tst_expl_fn) :
         for _line_number, _line_contents in enumerate(reg_tst_f_contents) :
             _line_contents = _line_contents.strip('\n')
             _line_contents = _line_contents.replace("CB_DIRECTORY", 
-                                path[0] + "../")
+                                path[0] + "/../")
     
             if _line_contents == "DNRTT" :
                 _line_contents = False
@@ -105,26 +105,31 @@ def validate_regression_test(reg_tst_expl_f_contents, reg_tst_gold_f_contents, r
     _received_output_results = {}
     
     _current_test = False
+    test_idx = 0
     for _line_number, _line_contents in enumerate(reg_tst_expl_f_contents) :
 
         if _line_contents.count("TEST") and _line_contents.count("START") and not _line_contents.count("exit") :
-            _current_test = _line_contents.split(':')[0].split()[-1]
+            #_current_test = _line_contents.split(':')[0].split()[-1]
+            _current_test = test_idx
             _test_list.append(str(_current_test))
             _regression_test_commands[str(_current_test)] = ""
 
         elif _line_contents.count("TEST") and _line_contents.count("END") and not _line_contents.count("exit") :
             _test_input_fh = open(path[0] + '/' + _inputs_directory + '/test' + str(_current_test) + ".txt", 'w', 0)
-            _test_input_fh.write(_regression_test_commands[_current_test])
+            _test_input_fh.write(_regression_test_commands[str(_current_test)])
             _test_input_fh.close()
             _current_test = False
+            test_idx += 1
 
         else :
             if _current_test :
-                _regression_test_commands[_current_test] += _line_contents
+                _regression_test_commands[str(_current_test)] += _line_contents
                     
+    test_idx = 0
     for _line_number, _line_contents in enumerate(reg_tst_gold_f_contents) :
         if _line_contents.count("TEST") and _line_contents.count("START") and not _line_contents.count("exit") :
-            _current_test = _line_contents.split(':')[0].split()[-1]            
+            #_current_test = _line_contents.split(':')[0].split()[-1]            
+            _current_test = test_idx
             _golden_output_results[str(_current_test)] = {}
             _golden_output_results[str(_current_test)]["contents"] = ""            
 
@@ -134,15 +139,18 @@ def validate_regression_test(reg_tst_expl_f_contents, reg_tst_gold_f_contents, r
             _golden_output_fh.write(_golden_output_results[str(_current_test)]["contents"])
             _golden_output_fh.close()
             _current_test = False
+            test_idx += 1
 
         else :
             if _current_test :
                 _golden_output_results[str(_current_test)]["contents"] += _line_contents
 
+    test_idx = 0
     for _line_number, _line_contents in enumerate(reg_tst_sup_out_fn) :
 
         if _line_contents.count("TEST") and _line_contents.count("START") and not _line_contents.count("exit") :
-            _current_test = _line_contents.split(':')[0].split()[-1]
+            #_current_test = _line_contents.split(':')[0].split()[-1]
+            _current_test = test_idx
             _received_output_results[str(_current_test)] = {}
             _received_output_results[str(_current_test)]["contents"] = ""
 
@@ -152,6 +160,7 @@ def validate_regression_test(reg_tst_expl_f_contents, reg_tst_gold_f_contents, r
             _test_output_fh.write(_received_output_results[str(_current_test)]["contents"])
             _test_output_fh.close()
             _current_test = False
+            test_idx += 1
 
         else :
             if _current_test :
@@ -225,6 +234,8 @@ def validate_regression_test(reg_tst_expl_f_contents, reg_tst_gold_f_contents, r
 
     for _test in _test_list :
 
+        if str(_test) not in _golden_output_results :
+            continue
         _test_number = HTML.TableCell("<a href=\"" + _inputs_directory + "/test" + str(_test) + ".txt\">" + str(_test) + "</a>", width='10')
         _golden_output = HTML.TableCell("<a href=\"" + _outputs_directory + "/golden/test" + str(_test) + ".txt\">" + _golden_output_results[str(_test)]["size"] + "</a>", width='10')
         _received_output =  HTML.TableCell("<a href=\"" + _outputs_directory + "/received/test" + str(_test) + ".txt\">" + _received_output_results[str(_test)]["size"] + "</a>", width='90')

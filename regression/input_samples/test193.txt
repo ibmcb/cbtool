@@ -1,1 +1,3 @@
-expid TESTCLOUD REGRESSION_B
+vmcattach TESTCLOUD all
+vmclist TESTCLOUD
+stats TESTCLOUD

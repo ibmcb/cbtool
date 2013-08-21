@@ -1,1 +1,1 @@
-vmrestore
+vmsuspend

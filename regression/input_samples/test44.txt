@@ -1,1 +1,1 @@
-vmrun
+vmdetach

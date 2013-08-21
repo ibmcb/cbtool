@@ -1,4 +1,3 @@
-vmattach db2 auto a:b,x:y,r:2
+vmattach tinyvm
 vmlist
-vmshow vm_4 vmc_name,vmc_pool,host_name,meta_tags,size
 stats

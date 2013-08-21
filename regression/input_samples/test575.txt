@@ -1,1 +1,1 @@
-aidrsalter aidrs_1 max_ais=20
+reserved for vmscrs

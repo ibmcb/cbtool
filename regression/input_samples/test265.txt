@@ -1,3 +1,5 @@
-airunstate TESTCLOUD ai_3 suspend
-stateshow TESTCLOUD
+vmcapture TESTCLOUD vm_29
+stats TESTCLOUD
+ailist TESTCLOUD
+vmlist TESTCLOUD
 stats TESTCLOUD

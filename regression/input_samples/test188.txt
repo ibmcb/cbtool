@@ -1,1 +1,4 @@
-typeshow TESTCLOUD daytrader
+vmcattach TESTCLOUD simzone_c update_attempts=78,update_frequency=3
+vmclist TESTCLOUD
+vmcshow TESTCLOUD simzone_c update_attempts,update_frequency
+stats TESTCLOUD

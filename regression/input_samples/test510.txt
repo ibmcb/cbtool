@@ -1,4 +1,3 @@
-vmdetach vm_5 async
-waitfor 10s
-vmlist
+aisave ai_3
+stateshow
 stats

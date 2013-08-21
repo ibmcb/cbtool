@@ -1,4 +1,4 @@
-aiattach lost
+aiattach coremark
 ailist
 vmlist
 stats

@@ -1,4 +1,3 @@
-vmattach tinyvm async=2
-waituntil VM ARRIVED=8 increasing 1
-vmlist
+vmrunstate vm_3 attached
+stateshow
 stats

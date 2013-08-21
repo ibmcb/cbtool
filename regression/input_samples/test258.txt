@@ -1,4 +1,3 @@
-vmattach TESTCLOUD willfail async
-waituntil TESTCLOUD VM ARRIVING=0 decreasing 1
-vmlist TESTCLOUD
+airestore TESTCLOUD ai_3
+stateshow TESTCLOUD
 stats TESTCLOUD

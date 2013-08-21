@@ -1,4 +1,5 @@
-aidetach youngest
+waituntil AI ARRIVED=30 increasing 5
+aidrslist
 ailist
 vmlist
 stats

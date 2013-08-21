@@ -1,2 +1,3 @@
-cldlist
-clddefault
+vmcattach all
+vmclist
+stats

@@ -1,1 +1,0 @@
-Usage: vmlist <cloud_name> [state = default] [limit = none] 

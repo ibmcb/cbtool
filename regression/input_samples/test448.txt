@@ -1,1 +1,3 @@
-patternshow simplehd
+vmcdetach all
+vmclist
+stats

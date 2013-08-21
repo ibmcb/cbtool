@@ -1,3 +1,5 @@
-airunstate TESTCLOUD ai_3 attached
-stateshow TESTCLOUD
+vmcapture TESTCLOUD youngest
+stats TESTCLOUD
+ailist TESTCLOUD
+vmlist TESTCLOUD
 stats TESTCLOUD

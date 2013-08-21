@@ -1,4 +1,4 @@
-aiattach specweb
+aiattach notype
 ailist
 vmlist
 stats

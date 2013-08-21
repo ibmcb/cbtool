@@ -1,5 +1,4 @@
-vmcapture oldest async
-waitfor 25s
+aidetach oldest
 ailist
 vmlist
 stats

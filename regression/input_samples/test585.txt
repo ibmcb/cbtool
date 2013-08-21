@@ -1,1 +1,2 @@
-reserved for vmcrs
+monextract HOST os
+shell cat /home/mrhines/cbtool/regression/..//data/REGRESSION_B/HOST_runtime_os_*REGRESSION*

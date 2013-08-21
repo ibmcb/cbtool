@@ -1,3 +1,5 @@
-airunstate ai_3 attached
-stateshow
+aiattach daytrader
+ailist
+vmlist
+aishow ai_11 load_balancer,sut
 stats

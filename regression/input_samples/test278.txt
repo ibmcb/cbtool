@@ -1,5 +1,4 @@
-vmcapture TESTCLOUD youngest
-stats TESTCLOUD
+waituntil TESTCLOUD AI ARRIVED=17 increasing 2
 ailist TESTCLOUD
 vmlist TESTCLOUD
 stats TESTCLOUD

@@ -1,1 +1,3 @@
-rolealter specwebback size=platinum64
+vmfail vm_3
+stateshow
+stats

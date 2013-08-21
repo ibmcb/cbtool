@@ -1,5 +1,8 @@
-aiattach daytrader
+shell rm /tmp/cb*_was_used_on_execution
+cldalter ai_defaults execute_script_name=/home/mrhines/cbtool/regression/..//regression/scripts/execute_on_staging.sh
+aiattach daytrader default default none none execute_all_vms_booted
+shell ls /tmp/cb*_was_used_on_execution
+waitfor 5s
 ailist
 vmlist
-aishow ai_13 load_balancer,sut
 stats

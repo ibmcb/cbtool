@@ -1,1 +1,1 @@
-viewshow TESTCLOUD VMC pool sut
+rolealter TESTCLOUD db2 size=platinum64

@@ -1,1 +1,4 @@
-vmccleanup TESTCLOUD simzone_a
+vmcdetach TESTCLOUD all async
+waitfor TESTCLOUD 8s
+vmclist TESTCLOUD
+stats TESTCLOUD

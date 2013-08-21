@@ -1,1 +1,3 @@
-roleshow tinyvm
+vmcattach all
+vmclist
+stats

@@ -1,1 +1,1 @@
-typelist
+typeshow

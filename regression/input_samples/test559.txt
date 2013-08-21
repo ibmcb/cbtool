@@ -1,6 +1,1 @@
-aiattach daytrader
-aiattach netperf
-aiattach hpcc
-ailist
-vmlist
-stats
+statealter aidrs_1 stopped

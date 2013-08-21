@@ -1,5 +1,4 @@
-aiattach TESTCLOUD daytrader load_balancer=true
+aiattach TESTCLOUD hpcc
 ailist TESTCLOUD
 vmlist TESTCLOUD
-aishow TESTCLOUD ai_8 load_balancer,sut
 stats TESTCLOUD

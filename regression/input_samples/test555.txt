@@ -1,4 +1,1 @@
-aidetach ai_12
-ailist
-vmlist
-stats
+aidrslist

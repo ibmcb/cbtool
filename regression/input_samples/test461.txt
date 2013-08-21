@@ -1,4 +1,1 @@
-vmcdetach simzone_a async
-waitfor 8s
-vmclist
-stats
+vmshow vm_1 all

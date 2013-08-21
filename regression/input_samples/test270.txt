@@ -1,3 +1,5 @@
-airestore TESTCLOUD ai_3
-stateshow TESTCLOUD
+aiattach TESTCLOUD daytrader
+ailist TESTCLOUD
+vmlist TESTCLOUD
+aishow TESTCLOUD ai_9 load_balancer,sut
 stats TESTCLOUD

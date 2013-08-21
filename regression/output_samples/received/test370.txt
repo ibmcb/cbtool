@@ -1,1 +1,0 @@
-Usage: viewshow <cloud_name> <object> <criterion> <expression> [sorting = default] [filter = default] 

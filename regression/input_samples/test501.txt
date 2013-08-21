@@ -1,3 +1,1 @@
-vmattach tinyvm
-vmlist
-stats
+ailist

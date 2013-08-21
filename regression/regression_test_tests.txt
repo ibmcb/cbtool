@@ -217,7 +217,6 @@ vmattach TESTCLOUD tinyvm async\; waitfor TESTCLOUD 8s\; vmlist TESTCLOUD\; stat
 vmattach TESTCLOUD tinyvm async=2\; waituntil TESTCLOUD VM ARRIVED=8 increasing 1\; vmlist TESTCLOUD\; stats TESTCLOUD
 rolealter TESTCLOUD db2 size=platinum64
 vmattach TESTCLOUD db2 SUT A:B,X:Y,R:2 async\; waitfor TESTCLOUD 8s\; vmlist TESTCLOUD\; vmshow TESTCLOUD vm_9 role,vmc_name,vmc_pool,host_name,meta_tags,size\; stats TESTCLOUD
-rolealter TESTCLOUD db2 size=copper32
 vmattach TESTCLOUD netclient simhosta2 A:B,X:Y,R:2 async\; waitfor TESTCLOUD 8s\; vmlist TESTCLOUD\; vmshow TESTCLOUD vm_10 role,vmc_name,vmc_pool,host_name,meta_tags,size\; stats TESTCLOUD
 vmattach TESTCLOUD fen_hpc auto empty size=platinum64,vmc_pool=LG async\; waitfor TESTCLOUD 8s\; vmlist TESTCLOUD\; vmshow TESTCLOUD vm_11 vmc_name,vmc_pool,host_name,meta_tags,size\; stats TESTCLOUD
 vmattach TESTCLOUD tinyvm auto empty iron32 pause_provision_complete async\; waitfor TESTCLOUD 8s\; msgpub TESTCLOUD VM staging vm_12;continue;something\; waituntil TESTCLOUD VM ARRIVING=0 decreasing 1\; vmlist TESTCLOUD\; stats TESTCLOUD

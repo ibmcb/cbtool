@@ -1,5 +1,4 @@
-vmcapture vm_29
-stats
+aiattach filebench
 ailist
 vmlist
 stats

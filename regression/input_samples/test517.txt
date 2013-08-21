@@ -1,4 +1,4 @@
-vmattach willfail async
-waituntil VM ARRIVING=0 decreasing 1
+aiattach daytrader
+ailist
 vmlist
 stats

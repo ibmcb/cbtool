@@ -1,1 +1,1 @@
-vmcdetach
+vmlist

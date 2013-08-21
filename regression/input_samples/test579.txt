@@ -1,5 +1,1 @@
-aidrsdetach aidrs_1
-aidrslist
-ailist
-vmlist
-stats
+reserved for firs

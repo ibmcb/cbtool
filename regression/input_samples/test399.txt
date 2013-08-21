@@ -1,1 +1,1 @@
-aishow
+aidetach

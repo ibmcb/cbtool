@@ -1,3 +1,3 @@
-vmdetach TESTCLOUD youngest
-vmlist TESTCLOUD
+airunstate TESTCLOUD ai_3 suspend
+stateshow TESTCLOUD
 stats TESTCLOUD

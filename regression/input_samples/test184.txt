@@ -1,1 +1,1 @@
-echo
+waitfor TESTCLOUD 10s

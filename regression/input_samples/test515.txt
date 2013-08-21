@@ -1,3 +1,5 @@
-vmattach norole
+airesize ai_1 was +1
+ailist
 vmlist
+aishow ai_1 detach_parallelism,ssh_key_name,sut
 stats

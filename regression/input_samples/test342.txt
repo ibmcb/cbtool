@@ -1,1 +1,1 @@
-monlist TESTCLOUD HOST
+clddefault

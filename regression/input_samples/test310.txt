@@ -1,4 +1,6 @@
-aidetach TESTCLOUD all
+waitfor TESTCLOUD 1m
+aidrsshow TESTCLOUD aidrs_2 all
+aidrslist TESTCLOUD
 ailist TESTCLOUD
 vmlist TESTCLOUD
 stats TESTCLOUD

@@ -1,2 +1,5 @@
-aialter ai_1 mode=scalable
-aishow ai_1 mode
+vmcapture oldest async
+waitfor 25s
+ailist
+vmlist
+stats

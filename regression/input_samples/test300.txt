@@ -1,6 +1,2 @@
-aiattach TESTCLOUD daytrader
-aiattach TESTCLOUD netperf
-aiattach TESTCLOUD hpcc
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD
+patternalter TESTCLOUD simplenw iait=10
+patternshow TESTCLOUD simplenw

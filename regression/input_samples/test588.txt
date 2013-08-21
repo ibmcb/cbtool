@@ -1,1 +1,2 @@
-reserved for vmcrs
+monextract VM app
+shell cat /home/mrhines/cbtool/regression/..//data/REGRESSION_B/VM_runtime_app_*REGRESSION*

@@ -1,4 +1,5 @@
-waituntil AI ARRIVED=17 increasing 2
+airestore ai_28
 ailist
 vmlist
 stats
+stateshow

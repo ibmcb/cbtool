@@ -1,5 +1,8 @@
-aicapture youngest async
-waituntil AI CAPTURING=0
+aidrsattach simplenw
+aidrsalter aidrs_2 max_ais=5
+aidrsalter aidrs_2 iait=6
+aidrsshow aidrs_2 all
+aidrslist
 ailist
 vmlist
 stats

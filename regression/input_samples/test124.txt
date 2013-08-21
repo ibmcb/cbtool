@@ -1,1 +1,1 @@
-vmlist
+vmsuspend

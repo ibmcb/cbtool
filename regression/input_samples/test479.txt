@@ -1,2 +1,3 @@
-vmalter vm_1 svm_stub_name=TESTE
-vmshow vm_1 svm_stub_name
+vmattach tinyvm
+vmlist
+stats

@@ -1,4 +1,0 @@
-The following VMs are attached to this experiment (Cloud TESTCLOUD) :
-|name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |svm_stub_vmc     |uuid
-|vm_1          |tinyvm              |pico32      |191.97.253.248  |simhostc1                  |SUT                 |none    |none       |none             |A4462A1D-6DDE-5587-9C12-EACD283DD224
-

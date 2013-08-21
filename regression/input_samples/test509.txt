@@ -1,3 +1,3 @@
-vmdetach vm_4
-vmlist
+airepair ai_3
+stateshow
 stats

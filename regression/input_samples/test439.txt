@@ -1,1 +1,1 @@
-monlist
+vmccleanup simzone_a

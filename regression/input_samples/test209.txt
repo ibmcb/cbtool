@@ -1,5 +1,4 @@
-vmcattach TESTCLOUD all async
-waitfor TESTCLOUD 8s
-vmclist TESTCLOUD
-vmcshow TESTCLOUD simzone_c update_attempts,update_frequency
+vmattach TESTCLOUD tinyvm lg
+vmlist TESTCLOUD
+vmshow TESTCLOUD vm_2 vmc_name,vmc_pool,host_name,meta_tags,size
 stats TESTCLOUD

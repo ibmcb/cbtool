@@ -1,4 +1,4 @@
-vmcdetach all async
+vmattach tinyvm async
 waitfor 8s
-vmclist
+vmlist
 stats

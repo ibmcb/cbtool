@@ -1,1 +1,4 @@
-monextract
+vmcattach simzone_a
+vmclist
+vmcshow simzone_a
+stats

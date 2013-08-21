@@ -1,1 +1,3 @@
-stateshow TESTCLOUD
+vmdetach TESTCLOUD all
+vmlist TESTCLOUD
+stats TESTCLOUD

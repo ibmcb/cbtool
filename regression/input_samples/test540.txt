@@ -1,5 +1,4 @@
-aiattach daytrader load_balancer=true
+aidetach youngest
 ailist
 vmlist
-aishow ai_8 load_balancer,sut
 stats

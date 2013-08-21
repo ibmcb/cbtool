@@ -1,1 +1,1 @@
-aidrsshow aidrs_1 all
+reserved for vmscrs

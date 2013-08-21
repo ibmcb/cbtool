@@ -1,3 +1,3 @@
-vmattach tinyvm
+vmdetach all
 vmlist
 stats

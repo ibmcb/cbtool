@@ -1,5 +1,5 @@
-vmcattach TESTCLOUD simzone_b async
+vmcattach TESTCLOUD all async
 waitfor TESTCLOUD 8s
 vmclist TESTCLOUD
-vmcshow TESTCLOUD simzone_b update_attempts,update_frequency
+vmcshow TESTCLOUD simzone_c update_attempts,update_frequency
 stats TESTCLOUD

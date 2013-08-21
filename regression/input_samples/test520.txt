@@ -1,1 +1,5 @@
-aishow ai_1 all
+vmcapture vm_41 async
+waitfor 25s
+ailist
+vmlist
+stats

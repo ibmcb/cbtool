@@ -1,5 +1,4 @@
-aiattach TESTCLOUD daytrader
+aidetach TESTCLOUD ai_12
 ailist TESTCLOUD
 vmlist TESTCLOUD
-aishow TESTCLOUD ai_11 load_balancer,sut
 stats TESTCLOUD

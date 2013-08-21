@@ -1031,7 +1031,7 @@ class BaseObjectOperations :
                                                          True)
 
                 if not _object_exists :
-                    _fmsg = "Object is not instantiated on the object store."
+                    _fmsg = "Object " + obj_attr_list["name"] + " is not instantiated on the object store."
 
                     if cmd.count("detach") :
                         _fmsg += "There is no need for explicitly detach it from "
@@ -3184,6 +3184,7 @@ class BaseObjectOperations :
 
             if not _status :
                 if "name" in _obj_attr_list and not _obj_attr_list["name"].lower().count(_obj_type.lower() + "_")  \
+                    and _obj_type != "HOST" and _obj_type != "VMC" \
                     and not _obj_attr_list["name"].count("-") == 4 : # a UUID
                     _obj_attr_list["name"] = _obj_type.lower() + "_" + _obj_attr_list["name"]
                    
@@ -3225,7 +3226,7 @@ class BaseObjectOperations :
                                                                 True)
     
                         if not _obj_uuid :
-                            _fmsg = "Object is not instantiated on the object store."
+                            _fmsg = "Object " + _obj_attr_list["name"] + " is not instantiated on the object store."
                             _fmsg += "There is no need for explicitly detach it from "
                             _fmsg += "this experiment."
                             _status = 37
@@ -3257,7 +3258,7 @@ class BaseObjectOperations :
                             _obj_uuid = _obj_attr_list["name"]
     
                         if not _obj_uuid :
-                            _fmsg = "Object is not instantiated on the object store."
+                            _fmsg = "Object " + _obj_attr_list["name"] + " is not instantiated on the object store."
                             _fmsg += "It cannot be used on this experiment."
                             _status = 37
     

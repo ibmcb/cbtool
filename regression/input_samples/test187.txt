@@ -1,1 +1,5 @@
-roleshow TESTCLOUD tinyvm
+vmcattach TESTCLOUD simzone_b async
+waitfor TESTCLOUD 8s
+vmclist TESTCLOUD
+vmcshow TESTCLOUD simzone_b update_attempts,update_frequency
+stats TESTCLOUD

@@ -1,3 +1,1 @@
-cldlist
-clddefault none
-clddefault
+vmccleanup TESTCLOUD simzone_a

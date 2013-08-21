@@ -1,5 +1,4 @@
-aiattach TESTCLOUD hadoop save_on_attach=true
+waituntil TESTCLOUD AI =0 decreasing 1
 ailist TESTCLOUD
 vmlist TESTCLOUD
 stats TESTCLOUD
-stateshow TESTCLOUD

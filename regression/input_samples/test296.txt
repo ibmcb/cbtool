@@ -1,4 +1,5 @@
-aidetach TESTCLOUD ai_12
+airestore TESTCLOUD ai_28
 ailist TESTCLOUD
 vmlist TESTCLOUD
 stats TESTCLOUD
+stateshow TESTCLOUD

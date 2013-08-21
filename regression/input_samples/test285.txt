@@ -1,1 +1,5 @@
-typeshow TESTCLOUD daytrader
+aidetach TESTCLOUD ai_13 async
+waituntil TESTCLOUD AI RESERVATIONS=16 decreasing 5
+ailist TESTCLOUD
+vmlist TESTCLOUD
+stats TESTCLOUD

@@ -1,4 +1,5 @@
-vmattach TESTCLOUD tinyvm
+vmattach TESTCLOUD db2 SUT A:B,X:Y,R:2 async
+waitfor TESTCLOUD 8s
 vmlist TESTCLOUD
-vmshow TESTCLOUD vm_1 vmc_name,vmc_pool,host_name,meta_tags,size
+vmshow TESTCLOUD vm_9 role,vmc_name,vmc_pool,host_name,meta_tags,size
 stats TESTCLOUD

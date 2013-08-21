@@ -1,3 +1,6 @@
-vmdetach youngest
+aiattach daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee async 
+waitfor 18s
+ailist
 vmlist
+aishow ai_4 detach_parallelism,ssh_key_name,sut
 stats

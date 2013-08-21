@@ -1,6 +1,5 @@
-aiattach hadoop async
-waitfor 12s
+aiattach daytrader load_balancer=true
 ailist
 vmlist
-aishow ai_2 detach_parallelism,ssh_key_name,sut
+aishow ai_8 load_balancer,sut
 stats

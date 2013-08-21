@@ -1,3 +1,1 @@
-vmrestore TESTCLOUD vm_3
-stateshow TESTCLOUD
-stats TESTCLOUD
+aishow TESTCLOUD ai_1 all

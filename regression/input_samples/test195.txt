@@ -1,1 +1,3 @@
-waitfor TESTCLOUD 10s
+vmcdetach TESTCLOUD all
+vmclist TESTCLOUD
+stats TESTCLOUD

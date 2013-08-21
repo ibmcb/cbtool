@@ -1,1 +1,1 @@
-vmattach
+vmlist

@@ -1,3 +1,5 @@
-vmrepair TESTCLOUD vm_3
-stateshow TESTCLOUD
+aiattach TESTCLOUD daytrader
+ailist TESTCLOUD
+vmlist TESTCLOUD
+aishow TESTCLOUD ai_1 detach_parallelism,ssh_key_name,sut
 stats TESTCLOUD

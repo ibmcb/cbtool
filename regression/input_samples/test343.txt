@@ -1,2 +1,1 @@
-monextract TESTCLOUD HOST management
-shell TESTCLOUD cat ~/cloudbench/data/REGRESSION_B/HOST*man*REGRESSION*
+cldlist

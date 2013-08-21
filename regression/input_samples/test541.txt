@@ -1,5 +1,6 @@
 aiattach daytrader
+aiattach netperf
+aiattach hpcc
 ailist
 vmlist
-aishow ai_9 load_balancer,sut
 stats

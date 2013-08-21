@@ -1,1 +1,3 @@
-typeshow daytrader
+vmcdetach simzone_a
+vmclist
+stats

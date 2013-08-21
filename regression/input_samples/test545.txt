@@ -1,2 +1,4 @@
-typealter daytrader load_balancer=true
-typeshow daytrader
+aidetach random
+ailist
+vmlist
+stats

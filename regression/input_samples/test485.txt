@@ -1,4 +1,3 @@
-vmattach tinyvm async
-waitfor 8s
-vmlist
+vmrunstate vm_3 suspend
+stateshow
 stats

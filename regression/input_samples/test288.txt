@@ -1,5 +1,6 @@
 aiattach TESTCLOUD daytrader
+aiattach TESTCLOUD netperf
+aiattach TESTCLOUD hpcc
 ailist TESTCLOUD
 vmlist TESTCLOUD
-aishow TESTCLOUD ai_13 load_balancer,sut
 stats TESTCLOUD

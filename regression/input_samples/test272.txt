@@ -1,5 +1,5 @@
-aiattach TESTCLOUD netperf netclient_pref_pool=SUT,netclient_size=platinum64
+aiattach TESTCLOUD daytrader
 ailist TESTCLOUD
 vmlist TESTCLOUD
-aishow TESTCLOUD ai_5 detach_parallelism,ssh_key_name,sut
+aishow TESTCLOUD ai_11 load_balancer,sut
 stats TESTCLOUD

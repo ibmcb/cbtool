@@ -1,1 +1,1 @@
-vmcapture
+vmresize

@@ -1,5 +1,4 @@
-vmcapture TESTCLOUD oldest async
-waitfor TESTCLOUD 25s
+aiattach TESTCLOUD tradelite
 ailist TESTCLOUD
 vmlist TESTCLOUD
 stats TESTCLOUD

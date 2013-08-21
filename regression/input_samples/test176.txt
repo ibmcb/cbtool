@@ -1,1 +1,1 @@
-waitfor
+roleshow TESTCLOUD tinyvm

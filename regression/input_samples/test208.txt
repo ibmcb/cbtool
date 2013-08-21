@@ -1,4 +1,1 @@
-vmcdetach TESTCLOUD all async
-waitfor TESTCLOUD 8s
-vmclist TESTCLOUD
-stats TESTCLOUD
+vmshow TESTCLOUD vm_1 all

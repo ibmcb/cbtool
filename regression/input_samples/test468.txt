@@ -1,5 +1,4 @@
-vmcattach all async
-waitfor 8s
-vmclist
-vmcshow simzone_c update_attempts,update_frequency
+vmattach tinyvm async=2
+waituntil VM ARRIVED=8 increasing 1
+vmlist
 stats

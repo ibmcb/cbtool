@@ -1,3 +1,2 @@
-vmdetach TESTCLOUD vm_4
-vmlist TESTCLOUD
-stats TESTCLOUD
+aialter TESTCLOUD ai_1 mode=scalable
+aishow TESTCLOUD ai_1 mode

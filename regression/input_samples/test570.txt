@@ -1,5 +1,1 @@
-typealter daytrader sut=client_daytrader->was->willfail
-aiattach daytrader
-ailist
-vmlist
-stats
+reserved for vmcrs

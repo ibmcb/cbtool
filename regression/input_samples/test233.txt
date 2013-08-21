@@ -1,7 +1,3 @@
-shell TESTCLOUD rm /tmp/cb*_was_used_on_execution
-cldalter TESTCLOUD vm_defaults execute_script_name=~/cloudbench/regression/scripts/execute_on_staging.sh
-vmattach TESTCLOUD tinyvm auto empty iron32 execute_provision_complete async
-waituntil TESTCLOUD VM ARRIVING=0 decreasing 1
-shell TESTCLOUD ls /tmp/cb*_was_used_on_execution
-vmlist TESTCLOUD
+vmrunstate TESTCLOUD vm_3 attached
+stateshow TESTCLOUD
 stats TESTCLOUD

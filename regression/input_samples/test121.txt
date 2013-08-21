@@ -1,1 +1,1 @@
-hostfail
+vmrunstate

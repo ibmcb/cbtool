@@ -1,4 +1,2 @@
-aiattach coremark
-ailist
-vmlist
-stats
+patternalter simplenw iait=10
+patternshow simplenw

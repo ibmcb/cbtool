@@ -1,1 +1,2 @@
-reserved for vmscrs
+shell rm -rf /home/mrhines/cbtool/regression/..//data/REGRESSION_B
+shell ls -la /home/mrhines/cbtool/regression/..//data/REGRESSION_B/

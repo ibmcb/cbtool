@@ -1,1 +1,1 @@
-reserved for vmscrs
+monlist TESTCLOUD HOST

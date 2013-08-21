@@ -1,4 +1,3 @@
-vmattach tinyvm lg
+vmattach tinyvm
 vmlist
-vmshow vm_2 vmc_name,vmc_pool,host_name,meta_tags,size
 stats
