@@ -24,6 +24,8 @@ vmclist
 vmcshow
 vmcalter
 vmcdetach
+vmmigrate
+vmprotect
 hostlist
 hostshow
 hostfail
@@ -112,6 +114,8 @@ vmclist
 vmcshow
 vmcalter
 vmcdetach
+vmmigrate
+vmprotect
 hostlist
 hostshow
 hostfail

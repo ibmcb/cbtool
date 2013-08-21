@@ -254,7 +254,7 @@ class API():
         else :
             return self.active.migrate({}, cloud_name + ' ' + identifier + ' ' + destination + ' ' + protocol + ' ' + interface, "vm-migrate")[2]
     
-    def vmprotect(self, cloud_name, identifier, destination, protocol = "mc", interface = "default", async = False):
+    def vmprotect(self, cloud_name, identifier, destination, protocol = "tcp", interface = "default", async = False):
         if async and str(async).count("async") :
             return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + destination + ' ' + protocol + ' ' + interface + (' ' + async), "vm-protect")[2]
         else :
