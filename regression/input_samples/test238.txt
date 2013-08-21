@@ -1,3 +1,0 @@
-vmdetach TESTCLOUD vm_4
-vmlist TESTCLOUD
-stats TESTCLOUD

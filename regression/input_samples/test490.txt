@@ -1,3 +1,0 @@
-vmrestore vm_3
-stateshow
-stats

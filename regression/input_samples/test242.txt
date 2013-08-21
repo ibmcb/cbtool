@@ -1,3 +1,0 @@
-vmdetach TESTCLOUD random
-vmlist TESTCLOUD
-stats TESTCLOUD

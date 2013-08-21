@@ -1,6 +1,0 @@
-aidrsdetach TESTCLOUD all
-aidetach TESTCLOUD all
-aidrslist TESTCLOUD
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD

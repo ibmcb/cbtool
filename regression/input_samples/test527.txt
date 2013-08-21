@@ -1,2 +1,0 @@
-typealter daytrader load_balancer=true
-typeshow daytrader

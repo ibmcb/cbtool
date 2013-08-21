@@ -1,3 +1,0 @@
-vmcattach all
-vmclist
-stats

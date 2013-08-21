@@ -1,2 +1,0 @@
-monextract all
-shell ls -la /home/mrhines/cbtool/regression/..//data/REGRESSION_B
