@@ -791,12 +791,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
         _status = 100
         _pool_selected = False
         _fmsg = "An error has occurred, but no error message was captured"
-        _vm_location = obj_attr_list["pool"].upper()
+        _vm_location = obj_attr_list["pool"]
+        _cn = obj_attr_list["cloud_name"]
         del obj_attr_list["pool"]
 
         try :
-            _vmc_pools = list(self.osci.get_list(obj_attr_list["cloud_name"], "GLOBAL", "vmc_pools"))
-            _hosts = list(self.osci.get_list(obj_attr_list["cloud_name"], "GLOBAL", "host_names"))
+            _vmc_pools = list(self.osci.get_list(_cn, "GLOBAL", "vmc_pools"))
+            _hosts = list(self.osci.get_list(_cn, "GLOBAL", "host_names"))
             
             '''
             Blacklists are for Anti-Colocation. Please don't break them. =) 
@@ -818,15 +819,15 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             break
 
             if "vmc_pool" in obj_attr_list :
-                _vm_location = obj_attr_list["vmc_pool"].upper()
+                _vm_location = obj_attr_list["vmc_pool"]
 
             if "host_name" in obj_attr_list :
                 _vm_location = obj_attr_list["host_name"]
 
-            if _vm_location != "AUTO"  :
+            if _vm_location.upper() != "AUTO"  :
                 
-                if _vm_location in _hosts :
-                    _host_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
+                if _vm_location.upper() in _hosts :
+                    _host_attr_list = self.osci.get_object(_cn, \
                                                            "HOST", \
                                                            True, \
                                                            "host_" + _vm_location.lower(), \
@@ -837,20 +838,15 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     obj_attr_list["vmc"] = _host_attr_list["vmc"]
                     _pool_selected = True
                 
+                elif _vm_location.upper() in _vmc_pools :
+                    obj_attr_list["vmc_pool"] = _vm_location.upper()
+                    _pool_selected = True
                 else :
-                    if not _vm_location in _vmc_pools :
-                        _msg = "The VMC pool selected (\"" + _vm_location + "\") is not attached"
-                        _msg += " to this experiment. Reverting to automatic VMC"
-                        _msg += " pool selection instead..."
-                        cbdebug(_msg, True)
-                        _vm_location = "AUTO"
-                    else :
-                        obj_attr_list["vmc_pool"] = _vm_location
-                        _pool_selected = True
+                    obj_attr_list["vmc"] = _vm_location
 
             # Do NOT use "else" here. _vm_location can have its value changed
             # in the previous if statement
-            if _vm_location == "AUTO"  :
+            if _vm_location.upper() == "AUTO"  :
 
                 if not len(_vmc_pools) :
                     _status = 181
@@ -875,10 +871,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     else :
                         obj_attr_list["vmc_pool"] = choice(_vmc_pools)
 
-            if not "vmc" in obj_attr_list :
-                _vmc_uuid_list = self.osci.query_by_view(obj_attr_list["cloud_name"], \
-                                                         "VMC", \
-                                                         "BYPOOL", \
+            if not "vmc" in obj_attr_list and "vmc_pool" in obj_attr_list :
+                _vmc_uuid_list = self.osci.query_by_view(_cn, "VMC", "BYPOOL", \
                                                          obj_attr_list["vmc_pool"])
     
                 if len(_vmc_uuid_list) :
@@ -888,29 +882,41 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _fmsg = "No VMCs on pool \"" +  obj_attr_list["vmc_pool"] + "\""
                         _fmsg += " are available for VM creation."
                         _status = 181                    
-                        raise self.osci.ObjectStoreMgdConnException(_msg, _status)
+                        raise self.osci.ObjectStoreMgdConnException(_fmsg, _status)
 
                 else :
-                    self.osci.remove_from_list(obj_attr_list["cloud_name"], "GLOBAL", "vmc_pools", obj_attr_list["vmc_pool"])
+                    self.osci.remove_from_list(_cn, "GLOBAL", "vmc_pools", obj_attr_list["vmc_pool"])
                     _fmsg = "An empty VMC pool was selected. This pool was already "
                     _fmsg += "removed from the list of pools."
                     cbdebug(_fmsg)
                     _status = 1819
-                    raise self.osci.ObjectStoreMgdConnException(_msg, _status)
+                    raise self.osci.ObjectStoreMgdConnException(_fmsg, _status)
 
-            _vmc_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "VMC", False, \
-                                                  obj_attr_list["vmc"], False)
+            _object_exists_uuid = self.osci.object_exists(_cn, "VMC", obj_attr_list["vmc"], True)
+            
+            if _object_exists_uuid :
+                _vmc_attr_list = self.osci.get_object(_cn, "VMC", False, _object_exists_uuid, False)
+            else :
+                if "vmc_pool" in obj_attr_list :
+                    _fmsg = "The VMC pool (" + obj_attr_list["vmc_pool"] + \
+                            ") you requested doesn't exist. Try again."
+                else :
+                    _fmsg = "The VMC name (" + obj_attr_list["vmc"] + \
+                            ") you requested doesn't exist. Try again."
+                _status = 5333
+                raise self.osci.ObjectStoreMgdConnException(_fmsg, _status)
 
             obj_attr_list["vmc_max_vm_reservations"] = _vmc_attr_list["max_vm_reservations"]
             obj_attr_list["discover_hosts"] = _vmc_attr_list["discover_hosts"]
             obj_attr_list["vmc_name"] = _vmc_attr_list["name"]
+            obj_attr_list["vmc_pool"] = _vmc_attr_list["pool"].upper()
+            obj_attr_list["vmc"] = _vmc_attr_list["uuid"]
             obj_attr_list["vmc_cloud_ip"] = _vmc_attr_list["cloud_ip"]
             obj_attr_list["migrate_supported"] = _vmc_attr_list["migrate_supported"]
             obj_attr_list["protect_supported"] = _vmc_attr_list["protect_supported"]
             obj_attr_list["vmc_access"] = _vmc_attr_list["access"]
 
-            _vm_templates = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, \
-                                                 "vm_templates", False)
+            _vm_templates = self.osci.get_object(_cn, "GLOBAL", False, "vm_templates", False)
 
             _vm_template_attr_list = str2dic(_vm_templates[obj_attr_list["role"]])
             

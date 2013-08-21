@@ -1082,11 +1082,17 @@ class BaseObjectOperations :
                         obj_attr_list["mgt_501_" + op + "_request_originated"] = obj_attr_list["command_originated"]
                         
                         vmc_attr = self.osci.get_object(obj_attr_list["cloud_name"], "VMC", False, obj_attr_list["vmc"], False)
+                        host_attr = self.osci.get_object(obj_attr_list["cloud_name"], "HOST", False, obj_attr_list["host"], False)
                         
                         dest_name = obj_attr_list["destination"]
                         
                         if not dest_name[:5] == "host_" :
                             dest_name = "host_" + dest_name 
+                            
+                        if host_attr["name"] == dest_name :
+                            _msg = "Source and destination hosts are the same. Try again."
+                            _status = 9421
+                            raise self.ObjectOperationException(_msg, _status) 
                             
                         if not self.osci.object_exists(obj_attr_list["cloud_name"], "HOST", dest_name, True) :
                             _msg = "Destination HOST object for migration does not exist: " + obj_attr_list["destination"]
@@ -1653,9 +1659,7 @@ class BaseObjectOperations :
         '''
         try :
             _status = 100
-            if obj_attr_list["name"] == "random" or \
-            obj_attr_list["name"] == "youngest" or \
-            obj_attr_list["name"] == "oldest" :
+            if obj_attr_list["name"] in ["random", "youngest", "oldest"] :
                 _obj_list = self.osci.query_by_view(obj_attr_list["cloud_name"], obj_type, "BYUSERNAME", username)
                 if _obj_list :
                     if obj_attr_list["name"] == "random" :
@@ -3183,12 +3187,15 @@ class BaseObjectOperations :
             _parameters = _parameters.replace("->","-+-+-+")
 
             if not _status :
+                _cloud_parameters = self.get_cloud_parameters(_obj_attr_list["cloud_name"])
+                
+                if not command.lower().count("all") and not parameters.count("all") :
+                    self.pre_select_object(_obj_attr_list, _obj_type, _cloud_parameters["username"])    
+                    
                 if "name" in _obj_attr_list and not _obj_attr_list["name"].lower().count(_obj_type.lower() + "_")  \
                     and _obj_type != "HOST" and _obj_type != "VMC" \
-                    and not _obj_attr_list["name"].count("-") == 4 : # a UUID
+                    and (not _obj_attr_list["name"].count("-") == 4) :
                     _obj_attr_list["name"] = _obj_type.lower() + "_" + _obj_attr_list["name"]
-                   
-                _cloud_parameters = self.get_cloud_parameters(_obj_attr_list["cloud_name"])
 
                 #if not command.count("detachall") :
                 #    _parallel_operations = 1
@@ -3217,10 +3224,6 @@ class BaseObjectOperations :
                         if parameters.count("all") :
                             _obj_uuid = "ALL"
                         else :
-                            self.pre_select_object(_obj_attr_list, \
-                                                   _obj_type, \
-                                                   _cloud_parameters["username"])    
-                            
                             _obj_uuid = self.osci.object_exists(_obj_attr_list["cloud_name"], _obj_type, \
                                                                 _obj_attr_list["name"], \
                                                                 True)
