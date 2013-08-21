@@ -1,0 +1,6 @@
+|arrival                                    |1374526735                           
+|command_originated                         |1374526735                           
+|mgt_001_provisioning_request_originated    |1374526735                           
+|mgt_002_provisioning_request_sent          |0                                    
+|mgt_003_provisioning_request_completed     |0                                    
+|uuid                                       |F2E73819-2C8B-55DB-A8DD-C02AB4F6A443 

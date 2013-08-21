@@ -1,0 +1,4 @@
+The following AIDRSs are attached to this experiment (Cloud TESTCLOUD) :
+|name                |pattern                |type              
+|aidrs_1             |simplenw               |nullworkload      
+

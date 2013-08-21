@@ -1,0 +1,6 @@
+waitfor 1m
+aidrsshow aidrs_2 all
+aidrslist
+ailist
+vmlist
+stats

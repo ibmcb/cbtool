@@ -1,0 +1,4 @@
+aiattach TESTCLOUD lost
+ailist TESTCLOUD
+vmlist TESTCLOUD
+stats TESTCLOUD

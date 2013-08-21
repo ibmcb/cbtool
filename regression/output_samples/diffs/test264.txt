@@ -1,0 +1,37 @@
+ status: Waiting for vm_33 (cloud-assigned uuid 27D2C07A-9BC8-50B3-A191-2E077797467D) to start...
+ status: Waiting for vm_35 (cloud-assigned uuid E2DD04C7-8E5D-551E-9A95-FB3E059CB54E) to start...
+ status: Waiting for vm_34 (cloud-assigned uuid B5BBB66C-7F19-5E1E-A209-69F7891ED5F7) to start...
+ status: Trying to establish network connectivity to vm_35 (cloud-assigned uuid E2DD04C7-8E5D-551E-9A95-FB3E059CB54E), on IP address 111.33.159.57...
+ status: Trying to establish network connectivity to vm_34 (cloud-assigned uuid B5BBB66C-7F19-5E1E-A209-69F7891ED5F7), on IP address 141.110.188.78...
+ status: Trying to establish network connectivity to vm_33 (cloud-assigned uuid 27D2C07A-9BC8-50B3-A191-2E077797467D), on IP address 83.212.20.114...
+ status: Bypassing the sending of a copy of the code tree to vm_34 (141.110.188.78)...
+ status: Bypassing the sending of a copy of the code tree to vm_33 (83.212.20.114)...
+ status: Bypassing the sending of a copy of the code tree to vm_35 (111.33.159.57)...
+AI object 3E0E082E-3CC9-58D2-96AF-2F6559324443 (named "ai_3") sucessfully attached to this experiment. It is ssh-accessible at the IP address 83.212.20.114 (27D2C07A-9BC8-50B3-A191-2E077797467D.simcloud.com).
+|ai_1      |daytrader      |1_x_client_daytrader->1_x_was->1_x_db2            |69.139.182.253  |1374526384     |none                                    |F4BAAE9B-7589-5CA4-8980-DCBDCA4102B2
+|ai_2      |hadoop         |1_x_hadoopmaster->3_x_hadoopslave                 |24.43.175.104   |1374526389     |none                                    |378CC1EF-83FD-5E5F-A3C0-3937704DD00D
+|ai_3      |daytrader      |1_x_client_daytrader->1_x_was->1_x_db2            |83.212.20.114   |1374526402     |none                                    |3E0E082E-3CC9-58D2-96AF-2F6559324443
+|vm_26         |db2                 |copper32    |58.121.101.94   |simhostc4                  |SUT                 |ai_1    |none       |1A394EC6-639B-5FBF-8C29-32A384143BB5
+|vm_27         |was                 |iron32      |74.61.124.18    |simhosta2                  |SUT                 |ai_1    |none       |88648AC9-A59C-5063-974E-DFAEB8758B76
+|vm_28         |client_daytrader    |nano32      |69.139.182.253  |simhostd4                  |LG                  |ai_1    |none       |5003ABCD-1E1C-5800-B6F0-8436DC8FBEAE
+|vm_31         |hadoopslave         |iron32      |214.78.134.21   |simhosta1                  |SUT                 |ai_2    |none       |291E1074-35FB-5064-B9CF-20102E6B6024
+|vm_32         |hadoopslave         |iron32      |19.111.171.6    |simhostb3                  |SUT                 |ai_2    |none       |4421279D-C1E8-53AC-BA4C-E5CBEC091209
+|vm_29         |hadoopmaster        |copper32    |24.43.175.104   |simhosta4                  |SUT                 |ai_2    |none       |88A53FAB-FC94-54A2-A2EB-E64CA9F31666
+|vm_30         |hadoopslave         |iron32      |233.133.113.76  |simhostc0                  |SUT                 |ai_2    |none       |940DD340-F601-5F0B-BAA1-1C065B2B0C4A
+|vm_33         |client_daytrader    |nano32      |83.212.20.114   |simhostd1                  |LG                  |ai_3    |none       |6FB95A0B-DC69-5BCA-83D4-EF6A5FDE7418
+|vm_34         |was                 |iron32      |141.110.188.78  |simhostb2                  |SUT                 |ai_3    |none       |E679191D-E766-5120-B1AC-B359C5F48C44
+|vm_35         |db2                 |copper32    |111.33.159.57   |simhostb4                  |SUT                 |ai_3    |none       |508E8790-2816-5B0E-B5EA-25A85B4E3E5B
+|Used Memory                                          |40.10M                        
+|Uptime (in seconds)                                  |13565182                      
+|Total Connections Received                           |6494900                       
+|Total Commands Processed                             |93802894                      
+|Number of Keys                                       |452                           
+|Storage Size                                         |16112607216.0                 
+|Data Size                                            |13823054824.0                 
+|Index Size                                           |550318384                     
+|Average Object Size                                  |6602.54482075                 
+|Collections                                          |60                            
+|59038ADB-0C9D-5DC8-8D0F-858C40A339D8 (simzone_b) VM RESERVATIONS|3                             
+|64F2E709-607C-5D1E-9ED5-402265D29FB4 (simzone_d) VM RESERVATIONS|2                             
+|538D06C6-8C24-51C6-AC34-D9ECDD4133D6 (simzone_c) VM RESERVATIONS|2                             
+|CA6252C4-6803-5C5C-BAA8-5BC509EE3CE0 (simzone_a) VM RESERVATIONS|3                             

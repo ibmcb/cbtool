@@ -1,0 +1,3 @@
+|ai_defaults                      |debug_remote_commands          |False                                
+|time                             |experiment_id                  |EXP-07-22-2013-05-01-51-PM-EDT       
+|time                             |start_time                     |1374526910                           

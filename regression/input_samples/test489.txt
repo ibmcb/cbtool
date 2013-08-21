@@ -1,0 +1,5 @@
+vmattach netclient simhosta2 A:B,X:Y,R:2 async
+waitfor 8s
+vmlist
+vmshow vm_10 role,vmc_name,vmc_pool,host_name,meta_tags,size
+stats

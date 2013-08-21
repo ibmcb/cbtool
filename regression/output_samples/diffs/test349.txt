@@ -1,0 +1,16 @@
+ total 43448
+drwxrwxr-x  2 msilva msilva     4096 Jul 22 17:01 .
+drwxr-xr-x 26 msilva msilva     4096 Jul 22 17:01 ..
+-rw-r--r--  1 msilva msilva      424 Jul 22 16:49 gui.log
+-rw-rw-r--  1 msilva msilva     1014 Jul 22 17:01 HOST_runtime_os_REGRESSION_B.csv
+-rw-r--r--  1 msilva msilva        0 Jul 22 16:49 loadmanager.log
+-rw-r--r--  1 msilva msilva        0 Jul 22 16:49 monitor.log
+-rw-r--r--  1 msilva msilva 44054088 Jul 22 17:01 operations.log
+-rw-r--r--  1 msilva msilva        0 Jul 22 16:49 remotescripts.log
+-rw-r--r--  1 msilva msilva        0 Jul 22 16:49 report.log
+-rw-r--r--  1 msilva msilva    95727 Jul 22 17:01 submmiter.log
+-rw-r--r--  1 msilva msilva        0 Jul 22 16:49 subscribe.log
+-rw-rw-r--  1 msilva msilva    30682 Jul 22 17:01 trace_REGRESSION_B.csv
+-rw-rw-r--  1 msilva msilva    42938 Jul 22 17:01 VM_management_REGRESSION_B.csv
+-rw-rw-r--  1 msilva msilva      310 Jul 22 17:01 VM_runtime_app_REGRESSION_B.csv
+-rw-rw-r--  1 msilva msilva     1062 Jul 22 17:01 VM_runtime_os_REGRESSION_B.csv

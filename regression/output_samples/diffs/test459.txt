@@ -1,0 +1,18 @@
+Background operation execution success. Operation "vmc-attach" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.0.254,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,timeout:240,host:172.16.0.254,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,simzone_d,update_attempts=156+_*update_frequency=6 --operation=vmc-attach --cn=TESTCLOUD --uuid=5C19A508-0A00-5A3E-843B-CC5D626AB823 --daemon". The process id is 14591.
+|simzone_a               |5               |sut                     |simzone_a                       |136.157.18.16    
+|simzone_b               |5               |sut                     |simzone_b                       |18.150.85.100    
+|simzone_c               |5               |sut                     |simzone_c                       |83.7.116.16      
+|simzone_d               |5               |lg                      |simzone_d                       |123.136.2.142    
+|Used Memory                                          |39.48M                        
+|Uptime (in seconds)                                  |13565717                      
+|Total Connections Received                           |6495001                       
+|Total Commands Processed                             |93953766                      
+|Storage Size                                         |16113287152.0                 
+|Data Size                                            |13823274888.0                 
+|Index Size                                           |550342912                     
+|Average Object Size                                  |6601.66926691                 
+|Collections                                          |59                            
+|1B79AE9F-80B7-52E3-AF89-CC44733E39C9 (simzone_a) VM RESERVATIONS|0                             
+|980E160D-EE10-52EA-9139-285BDE36654F (simzone_b) VM RESERVATIONS|0                             
+|610C9C91-C05C-5406-A422-11A24A8CA0A5 (simzone_c) VM RESERVATIONS|0                             
+|5C19A508-0A00-5A3E-843B-CC5D626AB823 (simzone_d) VM RESERVATIONS|0                             

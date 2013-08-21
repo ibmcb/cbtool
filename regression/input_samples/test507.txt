@@ -1,0 +1,3 @@
+vmsave vm_3
+stateshow
+stats

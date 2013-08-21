@@ -1,0 +1,4 @@
+aidetach TESTCLOUD random
+ailist TESTCLOUD
+vmlist TESTCLOUD
+stats TESTCLOUD

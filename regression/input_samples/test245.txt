@@ -1,0 +1,3 @@
+vmrunstate TESTCLOUD vm_3 attached
+stateshow TESTCLOUD
+stats TESTCLOUD

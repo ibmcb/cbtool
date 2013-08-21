@@ -1,0 +1,4 @@
+vmattach tinyvm async
+waitfor 8s
+vmlist
+stats

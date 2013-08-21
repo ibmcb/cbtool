@@ -1,0 +1,3 @@
+vmattach TESTCLOUD willfail
+vmlist TESTCLOUD
+stats TESTCLOUD

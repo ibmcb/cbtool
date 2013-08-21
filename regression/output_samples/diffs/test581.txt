@@ -1,0 +1,31 @@
+|arrival                                    |1374527558                           
+|command_originated                         |1374527558                           
+|mgt_001_provisioning_request_originated    |1374527558                           
+|mgt_002_provisioning_request_sent          |0                                    
+|mgt_003_provisioning_request_completed     |0                                    
+|uuid                                       |58506942-0CD8-5014-910F-5640CB874DEB 
+|ai_33     |nullworkload   |1_x_tinyvm                                        |169.41.211.179  |1374527561     |aidrs_2                                 |D62E8B9F-C83D-50E7-BE25-2C84354F31AA
+|ai_34     |nullworkload   |1_x_tinyvm                                        |208.172.172.58  |1374527570     |aidrs_2                                 |8F239CAD-53FB-5E02-A704-CC95EF6A6C3E
+|ai_35     |nullworkload   |1_x_tinyvm                                        |93.236.114.211  |1374527576     |aidrs_2                                 |A590BB1E-0A4E-58B7-AD03-C57A3A2DF290
+|ai_36     |nullworkload   |1_x_tinyvm                                        |41.53.125.77    |1374527582     |aidrs_2                                 |0ECD9E18-0CE2-5DC0-A28D-DB1D1BB1755F
+|ai_37     |nullworkload   |1_x_tinyvm                                        |47.43.132.91    |1374527588     |aidrs_2                                 |D0461107-3AB3-55C0-B98F-DBC788FE0FA9
+|vm_122        |tinyvm              |pico32      |169.41.211.179  |simhostb2                  |SUT                 |ai_33   |aidrs_2    |0066F0CD-1B80-53AD-9A99-6601368D1F8C
+|vm_123        |tinyvm              |pico32      |208.172.172.58  |simhostb3                  |SUT                 |ai_34   |aidrs_2    |8D7DA588-01C2-57E9-9E33-E96F7781D258
+|vm_124        |tinyvm              |pico32      |93.236.114.211  |simhostc3                  |SUT                 |ai_35   |aidrs_2    |00304FCB-DA7D-5CF5-9BBD-11C426610EB8
+|vm_125        |tinyvm              |pico32      |41.53.125.77    |simhostc4                  |SUT                 |ai_36   |aidrs_2    |A40D5A9B-1885-58CF-9632-81A6C8C8E75B
+|vm_126        |tinyvm              |pico32      |47.43.132.91    |simhosta4                  |SUT                 |ai_37   |aidrs_2    |A31AE3BC-98E8-5C2A-B620-0FE495650FEA
+|Used Memory                                          |44.59M                        
+|Uptime (in seconds)                                  |13566403                      
+|Total Connections Received                           |6495150                       
+|Total Commands Processed                             |94144720                      
+|Number of Keys                                       |740                           
+|Storage Size                                         |16114180080.0                 
+|Data Size                                            |13823614784.0                 
+|Index Size                                           |550481904                     
+|Average Object Size                                  |6600.2460761                  
+|Collections                                          |60                            
+|D30F1B96-9225-51C9-95FF-3355AD659B11 (simzone_d) VM RESERVATIONS|0                             
+|3C091D65-A8D9-5ECF-9C95-36A39D5CAA39 (simzone_a) VM RESERVATIONS|1                             
+|671172C3-2E80-5782-AB0C-C348A586106A (simzone_c) VM RESERVATIONS|2                             
+|96342978-982B-5D60-9FF3-0C0B3F9C41A9 (simzone_b) VM RESERVATIONS|2                             
+|58506942-0CD8-5014-910F-5640CB874DEB (aidrs_2) AI RESERVATIONS|5                             

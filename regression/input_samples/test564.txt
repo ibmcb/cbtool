@@ -1,0 +1,7 @@
+aiattach daytrader default default none none pause_all_vms_booted async
+waitfor 5s
+msgpub VM staging ai_26;continue;something
+waituntil AI ARRIVING=0 decreasing 1
+ailist
+vmlist
+stats

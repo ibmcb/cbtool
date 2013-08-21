@@ -1,0 +1,2 @@
+patternalter simplenw iait=10
+patternshow simplenw

@@ -1,0 +1,23 @@
+AIDRS object 29FF488C-9B1D-5094-B4C2-21B9A4C777CD (named "aidrs_2") sucessfully attached to this experiment.
+|arrival                                    |1374526808                           
+|command_originated                         |1374526808                           
+|mgt_001_provisioning_request_originated    |1374526808                           
+|mgt_002_provisioning_request_sent          |0                                    
+|mgt_003_provisioning_request_completed     |0                                    
+|uuid                                       |29FF488C-9B1D-5094-B4C2-21B9A4C777CD 
+|ai_33     |nullworkload   |1_x_tinyvm                                        |101.135.206.173 |1374526811     |aidrs_2                                 |7478B02B-0BF2-5DC9-878A-952397EED9CC
+|vm_122        |tinyvm              |pico32      |101.135.206.173 |simhostb4                  |SUT                 |ai_33   |aidrs_2    |BF7A2F0C-3D55-5E57-A837-2D63571F6C66
+|Used Memory                                          |44.25M                        
+|Uptime (in seconds)                                  |13565593                      
+|Total Connections Received                           |6494994                       
+|Total Commands Processed                             |93937045                      
+|Storage Size                                         |16113442800.0                 
+|Data Size                                            |13823244352.0                 
+|Index Size                                           |550351088                     
+|Average Object Size                                  |6601.88169263                 
+|Collections                                          |60                            
+|59038ADB-0C9D-5DC8-8D0F-858C40A339D8 (simzone_b) VM RESERVATIONS|1                             
+|64F2E709-607C-5D1E-9ED5-402265D29FB4 (simzone_d) VM RESERVATIONS|0                             
+|538D06C6-8C24-51C6-AC34-D9ECDD4133D6 (simzone_c) VM RESERVATIONS|0                             
+|CA6252C4-6803-5C5C-BAA8-5BC509EE3CE0 (simzone_a) VM RESERVATIONS|0                             
+|29FF488C-9B1D-5094-B4C2-21B9A4C777CD (aidrs_2) AI RESERVATIONS|1                             

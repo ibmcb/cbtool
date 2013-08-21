@@ -1,0 +1,10 @@
+Background operation execution success. Operation "vmc-detach" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.0.254,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,timeout:240,host:172.16.0.254,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,all,false --operation=vmc-detach --cn=TESTCLOUD --uuid=ALL --daemon". The process id is 14718.
+|Used Memory                                          |39.59M                        
+|Uptime (in seconds)                                  |13565739                      
+|Total Connections Received                           |6495006                       
+|Total Commands Processed                             |93965220                      
+|Storage Size                                         |16113287152.0                 
+|Data Size                                            |13823291236.0                 
+|Index Size                                           |550342912                     
+|Average Object Size                                  |6601.54781186                 
+|Collections                                          |59                            

@@ -1,0 +1,25 @@
+ status: Waiting for vm_5 (cloud-assigned uuid EBFA4F47-9B41-5129-B2E9-25FDCC7550F0) to start...
+ status: Trying to establish network connectivity to vm_5 (cloud-assigned uuid EBFA4F47-9B41-5129-B2E9-25FDCC7550F0), on IP address 15.46.154.151...
+ status: Bypassing the sending of a copy of the code tree to vm_5 (15.46.154.151)...
+ status: Bypassing generic VM post_boot configuration on vm_5 (15.46.154.151)...
+VM object 4342908A-B0DF-5AE5-A5FA-75EEA7F45F4A (named "vm_5") sucessfully attached to this experiment. It is ssh-accessible at the IP address 15.46.154.151 (EBFA4F47-9B41-5129-B2E9-25FDCC7550F0.simcloud.com).
+|vm_1          |tinyvm              |pico32      |254.56.139.236  |simhosta0                  |SUT                 |none    |none       |64DD0F5F-27CF-50C8-AE2A-0930A713B586
+|vm_2          |tinyvm              |pico32      |5.12.152.246    |simhostd4                  |LG                  |none    |none       |15706C7D-A99C-5D18-971F-C567342734B7
+|vm_3          |tinyvm              |pico32      |146.175.146.104 |simhostb1                  |SUT                 |none    |none       |D58FFD02-DE0C-5B99-8BC3-E0417C09EC0D
+|vm_4          |db2                 |copper32    |208.171.174.214 |simhosta3                  |SUT                 |none    |none       |B40767D7-C607-51C5-8D73-80D241B38A59
+|vm_5          |netclient           |platinum64  |15.46.154.151   |simhostb0                  |SUT                 |none    |none       |4342908A-B0DF-5AE5-A5FA-75EEA7F45F4A
+|host_name                               |simhostb0                            
+|vmc_name                                |simzone_b                            
+|Uptime (in seconds)                                  |13565014                      
+|Total Connections Received                           |6494861                       
+|Total Commands Processed                             |93769862                      
+|Number of Keys                                       |328                           
+|Storage Size                                         |16112275440.0                 
+|Data Size                                            |13822957604.0                 
+|Index Size                                           |550318384                     
+|Average Object Size                                  |6602.90838586                 
+|Collections                                          |60                            
+|59038ADB-0C9D-5DC8-8D0F-858C40A339D8 (simzone_b) VM RESERVATIONS|2                             
+|64F2E709-607C-5D1E-9ED5-402265D29FB4 (simzone_d) VM RESERVATIONS|1                             
+|538D06C6-8C24-51C6-AC34-D9ECDD4133D6 (simzone_c) VM RESERVATIONS|0                             
+|CA6252C4-6803-5C5C-BAA8-5BC509EE3CE0 (simzone_a) VM RESERVATIONS|2                             

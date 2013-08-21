@@ -1,0 +1,2 @@
+monextract TESTCLOUD VM os
+shell TESTCLOUD cat ~/cloudbench/data/REGRESSION_B/VM_runtime_os_*REGRESSION*
