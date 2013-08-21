@@ -1,3 +1,0 @@
-vmattach TESTCLOUD norole
-vmlist TESTCLOUD
-stats TESTCLOUD

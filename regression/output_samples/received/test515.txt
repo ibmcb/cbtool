@@ -1,7 +1,0 @@
-The following attributes for the AI object were changed (Cloud TESTCLOUD):
-|attribute                              |old value                          |new value                          
-|mode                                   |controllable                       |scalable                           
-The AI object ai_1, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
-|attribute (AI object key)               |value                                
-|mode                                    |scalable                             
-

@@ -1,7 +1,0 @@
-running shell command: "rm -rf /home/mrhines/cbtool/regression/..//data/REGRESSION_B"....
-stdout:
- 
-
-running shell command: "ls -la /home/mrhines/cbtool/regression/..//data/REGRESSION_B/"....
-Shell command execution failure: Error while executing the command line "ls -la /home/mrhines/cbtool/regression/..//data/REGRESSION_B/" (returncode = 19041) :ls: cannot access /home/mrhines/cbtool/regression/..//data/REGRESSION_B/: No such file or directory
-

@@ -1,1 +1,0 @@
-Usage: aiattach <cloud_name> <gtype> [load_level = default] [load_duration = default] [lifetime = none] [aidrs = none] [pause_step = none] [temp_attr_list = empty=empty] [mode] 

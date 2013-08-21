@@ -1,1 +1,0 @@
-Usage: viewlist <cloud_name> 

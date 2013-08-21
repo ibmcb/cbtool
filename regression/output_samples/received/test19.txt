@@ -1,1 +1,0 @@
-Usage: expid <cloud_name> [experiment_name = ] 

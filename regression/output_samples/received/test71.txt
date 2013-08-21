@@ -1,1 +1,0 @@
-Usage: vmcrsdetach <cloud_name> <identifier> [force = False] [mode] 

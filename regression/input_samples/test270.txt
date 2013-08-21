@@ -1,5 +1,0 @@
-vmcapture TESTCLOUD youngest
-stats TESTCLOUD
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD

@@ -1,5 +1,0 @@
-vmcapture TESTCLOUD oldest async
-waitfor TESTCLOUD 25s
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD

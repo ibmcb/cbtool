@@ -1,1 +1,0 @@
-nullworkload, ddgen, mlg2, mlg, specjbb, coremark, netperf, hadoop, mongo_ycsb, daytrader, hpcc, tradelite, filebench

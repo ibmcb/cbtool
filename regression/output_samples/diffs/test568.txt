@@ -1,4 +1,0 @@
-|arrival                                    |1377116491                           
-|command_originated                         |1377116491                           
-|mgt_001_provisioning_request_originated    |1377116491                           
-|uuid                                       |055FE5FA-96E3-5D00-A3A4-12CBACA2BAAE 

@@ -1,2 +1,0 @@
-monextract HOST management
-shell cat /home/mrhines/cbtool/regression/..//data/REGRESSION_B/HOST*man*REGRESSION*

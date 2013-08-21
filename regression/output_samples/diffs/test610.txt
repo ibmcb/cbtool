@@ -1,7 +1,0 @@
- status: Sending a termination request for vm_129 (cloud-assigned uuid 788B23F0-C3F8-5091-B85A-7934BD2990CA)....
- status: VMC 69B6EE37-7343-582F-AC8D-3A2B5F09A61A was successfully unregistered on SimCloud "TESTCLOUD".
- status: VMC 702C293B-8403-5C96-B515-6AE61AE13658 was successfully unregistered on SimCloud "TESTCLOUD".
- status: VMC 271ADA73-1C6A-581D-A1BA-730D86DF8704 was successfully unregistered on SimCloud "TESTCLOUD".
- status: VMC F993D8D5-82BA-59CB-970A-6B3F8CC6F222 was successfully unregistered on SimCloud "TESTCLOUD".
- status: VMC EDC9615C-DB1F-5769-9826-61B84283AFD7 was successfully unregistered on SimCloud "TESTCLOUD".
- status: VMC 34819FA6-FE78-5D1D-A68D-0E43FEBFD8A5 was successfully unregistered on SimCloud "TESTCLOUD".

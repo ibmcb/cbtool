@@ -1,2 +1,0 @@
-aialter TESTCLOUD ai_1 mode=scalable
-aishow TESTCLOUD ai_1 mode

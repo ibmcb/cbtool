@@ -1,3 +1,0 @@
-vmcattach TESTCLOUD all
-vmclist TESTCLOUD
-stats TESTCLOUD

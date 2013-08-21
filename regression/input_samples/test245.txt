@@ -1,3 +1,0 @@
-vmdetach TESTCLOUD youngest
-vmlist TESTCLOUD
-stats TESTCLOUD

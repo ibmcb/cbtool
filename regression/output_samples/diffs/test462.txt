@@ -1,9 +1,0 @@
-Background operation execution success. Operation "vmc-detach" will be processed asynchronously, through the command "/home/mrhines/cbtool/lib/operations//../../cbact --procid=TEST_mrhines --osp=port:6379,experiment_inst:TEST_mrhines,host:172.16.1.222,pid:TEST_mrhines,dbid:0,timout:70,protocol:TCP,kind:redis,username:mrhines --msp=cloudoption_testcloud_host:172.16.0.254,timeout:240,cloudoption_testcloud_usage:shared,host:172.16.1.222,port:27017,pid:TEST_mrhines,database:metrics,protocol:TCP,kind:mongodb,username:mrhines --oop=TESTCLOUD,all,false --operation=vmc-detach --cn=TESTCLOUD --uuid=ALL --daemon". The process id is 19755.
-|Used Memory                                          |19.17M                        
-|Uptime (in seconds)                                  |2517117                       
-|Total Connections Received                           |185728                        
-|Total Commands Processed                             |11811752                      
-|Storage Size                                         |18292736                      
-|Data Size                                            |6876436                       
-|Index Size                                           |2142112                       
-|Average Object Size                                  |614.351469669                 

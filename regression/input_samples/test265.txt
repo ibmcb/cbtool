@@ -1,6 +1,0 @@
-aiattach TESTCLOUD hadoop hadoopslave_size=platinum64,sut=hadoopmaster->1_x_hadoopslave async
-waitfor TESTCLOUD 18s
-ailist TESTCLOUD
-vmlist TESTCLOUD
-aishow TESTCLOUD ai_6 detach_parallelism,ssh_key_name,sut
-stats TESTCLOUD

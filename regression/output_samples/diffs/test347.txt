@@ -1,9 +1,0 @@
- total 1456
-drwxrwxr-x 2 mrhines mrhines   4096 Aug 21 16:12 .
-drwxrwxr-x 3 mrhines mrhines   4096 Aug 21 16:12 ..
--rw-rw-r-- 1 mrhines mrhines   1014 Aug 21 16:12 HOST_runtime_os_REGRESSION_B.csv
--rw-rw-r-- 1 mrhines mrhines 233094 Aug 21 15:59 regression_test_experiment_plan.txt
--rw-rw-r-- 1 mrhines mrhines 551249 Aug 21 16:12 trace_REGRESSION_B.csv
--rw-rw-r-- 1 mrhines mrhines 682215 Aug 21 16:12 VM_management_REGRESSION_B.csv
--rw-rw-r-- 1 mrhines mrhines    310 Aug 21 16:12 VM_runtime_app_REGRESSION_B.csv
--rw-rw-r-- 1 mrhines mrhines   1062 Aug 21 16:12 VM_runtime_os_REGRESSION_B.csv

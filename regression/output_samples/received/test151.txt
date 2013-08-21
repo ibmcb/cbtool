@@ -1,1 +1,0 @@
-Usage: aidrsattach <cloud_name> <pattern> [temp_attr_list = empty=empty] [mode] 

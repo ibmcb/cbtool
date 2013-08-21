@@ -1,3 +1,0 @@
-vmdetach oldest
-vmlist
-stats

@@ -1,7 +1,0 @@
-|arrival                                   |1377115994                           
-|cloud_ip                                  |111.76.33.194                        
-|cloud_vm_uuid                             |195B8AF9-10A1-5D09-89D1-4C640E772DCE 
-|counter                                   |85                                   
-|mgt_001_provisioning_request_originated   |1377115994                           
-|uuid                                      |195B8AF9-10A1-5D09-89D1-4C640E772DCE 
-|vmc                                       |702C293B-8403-5C96-B515-6AE61AE13658 

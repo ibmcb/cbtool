@@ -1,1 +1,0 @@
-|vm_1          |tinyvm              |pico32      |122.242.46.190  |simhosta3                  |SUT                 |none    |none       |AA8389FA-A2FB-597A-9378-2C4BE6BB64F1

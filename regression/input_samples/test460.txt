@@ -1,3 +1,0 @@
-vmcdetach all
-vmclist
-stats

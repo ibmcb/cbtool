@@ -1,1 +1,0 @@
-Usage: aidetach <cloud_name> <identifier> [force = False] [mode] 

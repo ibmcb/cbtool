@@ -1,2 +1,0 @@
-shell TESTCLOUD rm -rf /home/mrhines/cbtool/regression/..//data/REGRESSION_B
-shell TESTCLOUD ls -la /home/mrhines/cbtool/regression/..//data/REGRESSION_B/
