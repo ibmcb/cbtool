@@ -1176,6 +1176,8 @@ class OskCmds(CommonCloudFunctions) :
                                                     scheduler_hints = _scheduler_hints, \
                                                     availability_zone = _availability_zone, \
                                                     meta = _meta, \
+                                                    config_drive = True, \
+                                                    userdata = "foo-bar-cloudbench", \
                                                     nics = _netid)
 
             if _instance :
