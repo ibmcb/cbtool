@@ -1,0 +1,25 @@
+proto udp
+dev tun
+client
+remote DESTINATION 1194
+
+#log /var/log/openvpn-cb.log
+
+ca       [inline]
+cert     [inline]
+key      [inline]
+tls-auth [inline] 1
+
+nobind
+verb 3
+keepalive 10 60
+explicit-exit-notify 2
+
+<cert>
+CBCLIENTCRT
+</cert>
+
+<key>
+CBCLIENTKEY
+</key>
+

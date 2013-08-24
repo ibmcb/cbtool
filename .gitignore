@@ -60,7 +60,5 @@ regression/output_samples/diffs/test*.txt
 regression/input_samples/test*.txt
 regression/main.html
 regression/regression_test_experiment_plan.txt
-util/openvpn/*.key
-util/openvpn/*.crt
-util/openvpn/*.pem
+util/openvpn/*.conf
 util/openvpn/easy-rsa/keys/

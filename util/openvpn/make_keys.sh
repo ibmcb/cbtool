@@ -9,6 +9,8 @@ fi
 
 pushd $dir
 
+cp client.conf.template client.conf
+cp server.conf.template server.conf 
 cd easy-rsa
 source vars
 ./clean-all 
@@ -18,5 +20,37 @@ source vars
 KEY_CN=client ./pkitool client
 cd keys
 openvpn --genkey --secret ta.key
-cp server.crt server.key ca.crt dh1024.pem ta.key client.key client.crt $dir
+
+echo "<ca>" >> $dir/server.conf
+echo "<ca>" >> $dir/client.conf
+cat ca.crt >> $dir/client.conf
+cat ca.crt >> $dir/server.conf
+echo "</ca>" >> $dir/client.conf
+echo "</ca>" >> $dir/server.conf
+
+echo "<tls-auth>" >> $dir/client.conf
+echo "<tls-auth>" >> $dir/server.conf
+cat ta.key >> $dir/client.conf
+cat ta.key >> $dir/server.conf
+echo "</tls-auth>" >> $dir/server.conf
+echo "</tls-auth>" >> $dir/client.conf
+
+echo "<cert>" >> $dir/server.conf
+echo "<cert>" >> $dir/client.conf
+cat client.crt >> $dir/client.conf
+cat server.crt >> $dir/server.conf
+echo "</cert>" >> $dir/server.conf
+echo "</cert>" >> $dir/client.conf
+
+echo "<key>" >> $dir/server.conf
+echo "<key>" >> $dir/client.conf
+cat client.key >> $dir/client.conf
+cat server.key >> $dir/server.conf
+echo "</key>" >> $dir/server.conf
+echo "</key>" >> $dir/client.conf
+
+echo "<dh>" >> $dir/server.conf
+cat dh1024.pem >> $dir/server.conf
+echo "</dh>" >> $dir/server.conf
+
 popd
