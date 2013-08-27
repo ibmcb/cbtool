@@ -773,7 +773,7 @@ class RedisMgdConn :
             _val = self.redis_conn.hset(_obj_id_fn, obj_key, obj_value)
             
             if parent and parent_type :
-                self.pending_object_get(cloud_name, parent_type, parent, obj_value, obj_key)
+                self.pending_object_get(cloud_name, parent_type, parent, obj_key, failcheck = False)
 
             _msg =  obj_type + " object " + obj_uuid + " pending " + obj_key
             _msg += " was updated with the value \""
@@ -857,7 +857,7 @@ class RedisMgdConn :
             cberr(_msg)
             raise self.ObjectStoreMgdConnException(str(_msg), 2)
     @trace        
-    def pending_object_get(self, cloud_name, obj_type, obj_uuid, obj_key, lock = False) :
+    def pending_object_get(self, cloud_name, obj_type, obj_uuid, obj_key, failcheck = True, lock = False) :
         self.conn_check()
         obj_inst = self.experiment_inst + ":" + cloud_name
 
@@ -871,7 +871,9 @@ class RedisMgdConn :
                 _msg += "found in hash set (FQIN: " + _obj_inst_fn
                 _msg += ")."
                 cberr(_msg)
-                raise self.ObjectStoreMgdConnException(str(_msg), 2)
+                if failcheck :
+                    raise self.ObjectStoreMgdConnException(str(_msg), 2)
+                return False
             
             _val = self.redis_conn.hget(_obj_id_fn, obj_key)
 
