@@ -1440,12 +1440,11 @@ class BaseObjectOperations :
                     True
 
             elif transaction == "rollbackattach" :
-                vmc = obj_attr_list["vmc"]
-                    
                 self.osci.update_counter(obj_attr_list["cloud_name"], obj_type, "RESERVATIONS", \
                                          "decrement")
                 
                 if obj_type == "VM" :
+                    vmc = obj_attr_list["vmc"]
                     _msg = "Decreasing the \"number of VMs\" counter for the "
                     _msg += "VMC " + vmc + " due to a "
                     _msg += "rollback."
@@ -1488,6 +1487,10 @@ class BaseObjectOperations :
 
         except self.osci.ObjectStoreMgdConnException, obj :
             _fmsg = str(obj.msg)
+            
+        except KeyError, e :
+            _fmsg = str(e)
+            _status = 2341
         
         finally :
             

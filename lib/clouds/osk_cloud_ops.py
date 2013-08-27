@@ -27,6 +27,7 @@ from time import time, sleep
 from subprocess import Popen, PIPE
 from uuid import uuid5, UUID
 from random import choice
+import socket
 
 from novaclient.v1_1 import client
 from novaclient import exceptions as novaexceptions
@@ -369,6 +370,11 @@ class OskCmds(CommonCloudFunctions) :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
+        except socket.gaierror, e :
+            _status = 453
+            _fmsg = "While discovering hosts, CB needs to resolve one of the OpenStack host names: " \
+                    + _queried_host_name + ". Please make sure this name is resolvable either in /etc/hosts or DNS."
+                    
         except Exception, e :
             _status = 23
             _fmsg = str(e)
@@ -1253,7 +1259,7 @@ class OskCmds(CommonCloudFunctions) :
                 _msg += " on OpenStack Cloud \"" + obj_attr_list["cloud_name"] + "\"."
                 cbdebug(_msg)
                 return _status, _msg
-
+            
     @trace
     def vmdestroy(self, obj_attr_list) :
         '''
@@ -1438,6 +1444,95 @@ class OskCmds(CommonCloudFunctions) :
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "was successfully captured "
                 _msg += " on OpenStack Cloud \"" + obj_attr_list["cloud_name"] + "\"."
+                cbdebug(_msg)
+                return _status, _msg
+
+    @trace        
+    def vmmigrate(self, obj_attr_list) :
+        _status = 100
+        _fmsg = "An error has occurred, but no error message was captured"
+
+        operation = obj_attr_list["mtype"]
+
+        _msg = "Sending a " + operation + " request for "  + obj_attr_list["name"]
+        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
+        _msg += "...."
+        cbdebug(_msg, True)
+        
+        # This is a migration, so we need to poll very frequently
+        # If it is a micro-checkpointing operation, then poll normally
+        _orig_freq = int(obj_attr_list["update_frequency"])
+        _wait = 1 if operation == "migrate" else _orig_freq
+        _wait = min(_wait, _orig_freq)
+        _curr_tries = 0
+        _max_tries = int(obj_attr_list["update_attempts"])
+        if _wait < _orig_freq :
+            _max_tries = _max_tries * (_orig_freq / _wait) 
+        
+        try :
+            if not self.oskconncompute :
+                self.connect(obj_attr_list["access"], \
+                             obj_attr_list["credentials"], \
+                             obj_attr_list["vmc_name"])
+    
+            _instance = self.get_instances(obj_attr_list, "vm", obj_attr_list["cloud_vm_name"])
+            
+            if _instance :
+                _instance.live_migrate(obj_attr_list["destination_name"].replace("host_", ""))
+                
+                _time_mark_crs = int(time())            
+                obj_attr_list["mgt_502_" + operation + "_request_sent"] = _time_mark_crs - obj_attr_list["mgt_501_" + operation + "_request_originated"]
+                
+                while True and _curr_tries < _max_tries : 
+                    sleep(_wait)             
+                    _instance = self.get_instances(obj_attr_list, "vm", obj_attr_list["cloud_vm_name"])
+                    
+                    if _instance.status not in ["ACTIVE", "MIGRATING"] :
+                        _status = 4328
+                        _msg = "Migration of instance failed, OpenStack state is: " + _instance.status
+                        raise CldOpsException(_msg, _status)
+                    
+                    if _instance.status == "ACTIVE" :
+                        _time_mark_crc = int(time())
+                        obj_attr_list["mgt_503_" + operation + "_request_completed"] = _time_mark_crc - _time_mark_crs
+                        break
+
+                    _msg = "" + obj_attr_list["name"] + ""
+                    _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
+                    _msg += "still undergoing " + operation
+                    _msg += ". Will wait " + str(_wait)
+                    _msg += " seconds and try again."
+                    cbdebug(_msg)
+
+                    _curr_tries += 1
+            else :
+                _fmsg = "This instance does not exist"
+                _status = 1098
+            
+            _status = 0
+    
+        except novaexceptions, obj:
+            _status = int(obj.error_code)
+            _fmsg = str(obj.error_message)
+            
+        finally :
+            if "mgt_503_" + operation + "_request_completed" not in obj_attr_list :
+                obj_attr_list["mgt_999_" + operation + "_request_failed"] = int(time()) - _time_mark_crs
+                        
+            if _status :
+                _msg = "" + obj_attr_list["name"] + ""
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
+                _msg += "could not be " + operation + "ed "
+                _msg += " on OpenStack Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += _fmsg
+                cberr(_msg)
+                raise CldOpsException(_msg, _status)
+            else :
+                _msg = "" + obj_attr_list["name"] + ""
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
+                _msg += "was successfully " + operation + "ed "
+                _msg += "on OpenStack Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "\"."
                 cbdebug(_msg)
                 return _status, _msg
 

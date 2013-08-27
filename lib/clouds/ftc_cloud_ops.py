@@ -599,6 +599,10 @@ class FtcCmds(CommonCloudFunctions) :
             _msg += operation + "ed on FTCloud \"" + obj_attr_list["cloud_name"]
             _msg += "\"."
             cbdebug(_msg)
+            
+        if "mgt_503_" + operation + "_request_completed" not in obj_attr_list :
+            obj_attr_list["mgt_999_" + operation + "_request_failed"] = int(time()) - _time_mark_crs
+            
         return _status, _msg
 
     @trace        
