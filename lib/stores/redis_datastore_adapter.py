@@ -752,8 +752,12 @@ class RedisMgdConn :
             raise self.ObjectStoreMgdConnException(str(_msg), 5)
 
 ################################################################################
+    @trace
+    def pending_object_fn(self, cloud_name, obj_type, obj_uuid):
+        return self.experiment_inst + ":" + cloud_name + ':' + obj_type + ":PENDING:" + obj_uuid
+    
     @trace        
-    def pending_object_set(self, cloud_name, obj_type, obj_uuid, obj_value, \
+    def pending_object_set(self, cloud_name, obj_type, obj_uuid, obj_value, obj_key, \
                            notify_client_refresh = True, parent = None, parent_type = None, lock = False) :
         self.conn_check()
         obj_inst = self.experiment_inst + ":" + cloud_name
@@ -761,17 +765,17 @@ class RedisMgdConn :
         if notify_client_refresh :
             self.signal_api_refresh(cloud_name)
 
-        _obj_inst_fn = obj_inst + ':' + obj_type + ":PENDINGSTATUS"
+        _obj_inst_fn = obj_inst + ':' + obj_type + ":PENDING"
 
         try :
             _obj_id_fn = _obj_inst_fn + ':' + obj_uuid    
 
-            _val = self.redis_conn.set(_obj_id_fn, obj_value)
+            _val = self.redis_conn.hset(_obj_id_fn, obj_key, obj_value)
             
             if parent and parent_type :
-                self.pending_object_get(cloud_name, parent_type, parent, obj_value)
+                self.pending_object_get(cloud_name, parent_type, parent, obj_value, obj_key)
 
-            _msg =  obj_type + " object " + obj_uuid + " pending status " 
+            _msg =  obj_type + " object " + obj_uuid + " pending " + obj_key
             _msg += " was updated with the value \""
             _msg += str(obj_value) + "\" (FQON: " + _obj_id_fn + ")."
             cbdebug(_msg)
@@ -785,7 +789,7 @@ class RedisMgdConn :
             raise self.ObjectStoreMgdConnException(str(_msg), 2)
 
         except ResponseError, msg :
-            _msg =  obj_type + " FAILED object " + obj_uuid + " pending status " 
+            _msg =  obj_type + " FAILED object " + obj_uuid + " pending " + obj_key
             _msg += " was updated with the value \""
             _msg += str(obj_value) + "\" (FQON: " + _obj_id_fn + "): "
             _msg += str(msg)
@@ -793,19 +797,20 @@ class RedisMgdConn :
             raise self.ObjectStoreMgdConnException(str(_msg), 2)
         
     @trace        
-    def pending_object_remove(self, cloud_name, obj_type, obj_uuid, lock = False) :
+    def pending_object_remove(self, cloud_name, obj_type, obj_uuid, obj_key, lock = False) :
         self.conn_check()
         obj_inst = self.experiment_inst + ":" + cloud_name
 
-        _obj_inst_fn = obj_inst + ':' + obj_type + ":PENDINGSTATUS"
+        _obj_inst_fn = obj_inst + ':' + obj_type + ":PENDING"
+        
 
         try :
 
             _obj_id_fn = _obj_inst_fn + ':' + obj_uuid    
 
-            _val = self.redis_conn.delete(_obj_id_fn)
+            _val = self.redis_conn.hdel(_obj_id_fn, obj_key)
 
-            _msg =  obj_type + " object " + obj_uuid + " pending status " 
+            _msg =  obj_type + " object " + obj_uuid + " pending " + obj_key 
             _msg += " was deleted."
             _msg += " (FQON: " + _obj_id_fn + ")."
             cbdebug(_msg)
@@ -819,7 +824,7 @@ class RedisMgdConn :
             raise self.ObjectStoreMgdConnException(str(_msg), 2)
 
         except ResponseError, msg :
-            _msg =  obj_type + " FAILED object " + obj_uuid + " pending status " 
+            _msg =  obj_type + " FAILED object " + obj_uuid + " pending " + obj_key
             _msg += " delete  \""
             _msg += " (FQON: " + _obj_id_fn + "): "
             _msg += str(msg)
@@ -827,18 +832,50 @@ class RedisMgdConn :
             raise self.ObjectStoreMgdConnException(str(_msg), 2)
         
     @trace        
-    def pending_object_get(self, cloud_name, obj_type, obj_uuid, lock = False) :
+    def pending_object_exists(self, cloud_name, obj_type, obj_uuid, obj_key, lock = False) :
         self.conn_check()
         obj_inst = self.experiment_inst + ":" + cloud_name
 
-        _obj_inst_fn = obj_inst + ':' + obj_type + ":PENDINGSTATUS"
+        _obj_inst_fn = obj_inst + ':' + obj_type + ":PENDING"
 
         try :
             _obj_id_fn = _obj_inst_fn + ':' + obj_uuid    
 
-            _val = self.redis_conn.get(_obj_id_fn)
+            return self.redis_conn.hexists(_obj_id_fn, obj_key)
 
-            _msg =  obj_type + " object " + obj_uuid + " pending status " 
+        except ConnectionError, msg :
+            _msg = "The connection to the data store seems to be "
+            _msg += "severed: " + str(msg)
+            cberr(_msg)
+            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+
+        except ResponseError, msg :
+            _msg =  obj_type + " FAILED object " + obj_uuid + " pending status " 
+            _msg += " retrieved \""
+            _msg += " (FQON: " + _obj_id_fn + "): "
+            _msg += str(msg)
+            cberr(_msg)
+            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+    @trace        
+    def pending_object_get(self, cloud_name, obj_type, obj_uuid, obj_key, lock = False) :
+        self.conn_check()
+        obj_inst = self.experiment_inst + ":" + cloud_name
+
+        _obj_inst_fn = obj_inst + ':' + obj_type + ":PENDING"
+
+        try :
+            _obj_id_fn = _obj_inst_fn + ':' + obj_uuid    
+
+            if not self.pending_object_exists(cloud_name, obj_type, obj_uuid, obj_key) :
+                _msg = "Pending " + obj_type + " object key " + str(obj_key) + " could not be "
+                _msg += "found in hash set (FQIN: " + _obj_inst_fn
+                _msg += ")."
+                cberr(_msg)
+                raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            
+            _val = self.redis_conn.hget(_obj_id_fn, obj_key)
+
+            _msg =  obj_type + " object " + obj_uuid + " pending " + obj_key
             _msg += " was retrieved."
             _msg += " (FQON: " + _obj_id_fn + ")."
             cbdebug(_msg)

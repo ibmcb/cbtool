@@ -294,7 +294,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     for obj in self.osci.get_list(obj_attr_list["cloud_name"], _obj_type, "PENDING", True) :
                         _obj_uuid, _obj_name = obj[0].split("|")
                         _result.append({"uuid" : _obj_uuid, "name" : _obj_name, "status" : "pending", 
-                                        "tracking" : self.osci.pending_object_get(obj_attr_list["cloud_name"], _obj_type, _obj_uuid)})
+                                        "tracking" : self.osci.pending_object_get(obj_attr_list["cloud_name"], _obj_type, _obj_uuid, "status")})
                         
                 for state in ["failed", "finished" ] :
                     if obj_attr_list["state"] != state :

@@ -148,7 +148,7 @@ class CommonCloudFunctions:
         '''
         _msg = "Waiting for " + obj_attr_list["name"] + ""
         _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") to start..."
-        self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], _msg)
+        self.pending_set(obj_attr_list, _msg)
         cbdebug(_msg, True)
     
         _curr_tries = 0
@@ -213,7 +213,7 @@ class CommonCloudFunctions:
             if  _vm_started :
                 _time_mark_prc = int(time())
                 obj_attr_list["mgt_003_provisioning_request_completed"] = _time_mark_prc - time_mark_prs
-                self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "Booting...", parent=obj_attr_list["ai"], parent_type="AI")
+                self.pending_set(obj_attr_list, "Booting...")
                 break
             else :
                 _msg = "(" + str(_curr_tries) + ") " + obj_attr_list["name"] + ""
@@ -223,13 +223,13 @@ class CommonCloudFunctions:
                 cbdebug(_msg)
                 sleep(_wait)
                 _curr_tries += 1
-                self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], _msg)
+                self.pending_set(obj_attr_list, _msg)
     
         if _curr_tries < _max_tries :
             _msg = "" + obj_attr_list["name"] + ""
             _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
             _msg += "started successfully, got IP address " + obj_attr_list["cloud_ip"]
-            self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], _msg, parent=obj_attr_list["ai"], parent_type="AI")
+            self.pending_set(obj_attr_list, _msg)
             cbdebug(_msg)
             return _time_mark_prc
         else :
@@ -239,6 +239,23 @@ class CommonCloudFunctions:
             _msg += "Giving up."
             cberr(_msg, True)
             raise CldOpsException(_msg, 71)
+        
+    def get_openvpn_client_ip(self, obj_attr_list):
+        if "openvpn_ip" in obj_attr_list :
+            return True
+        elif self.osci.pending_object_exists(obj_attr_list["cloud_name"],  
+                                            "VM", obj_attr_list["uuid"], "openvpn_ip") :
+            
+            ip = self.osci.pending_object_get(obj_attr_list["cloud_name"], 
+                                              "VM", obj_attr_list["uuid"], "openvpn_ip")
+            
+            if ip :
+                cbdebug("Openvpn reported in from client with ip: " + ip)
+                obj_attr_list["openvpn_ip"] = ip
+                obj_attr_list["prov_cloud_ip"] = ip
+                return True
+            
+        return False
 
     @trace
     def wait_for_instance_boot(self, obj_attr_list, time_mark_prc) :
@@ -258,7 +275,7 @@ class CommonCloudFunctions:
             _msg += obj_attr_list["cloud_vm_uuid"] + "), on IP address "
             _msg += obj_attr_list["prov_cloud_ip"] + "..."
             cbdebug(_msg, True)
-            self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], _msg, parent=obj_attr_list["ai"], parent_type="AI")
+            self.pending_set(obj_attr_list, _msg)
 
             sleep(_wait)
 
@@ -362,9 +379,7 @@ class CommonCloudFunctions:
                     
                 if _vm_is_booted :
                     obj_attr_list["mgt_004_network_acessible"] = int(time()) - time_mark_prc 
-                    self.osci.pending_object_set(obj_attr_list["cloud_name"], \
-                                                 "VM", obj_attr_list["uuid"], \
-                                                 "Network accessible now. Continuing...", parent=obj_attr_list["ai"], parent_type="AI")
+                    self.pending_set(obj_attr_list, "Network accessible now. Continuing...") 
                     _network_reachable = True
                     break
 
@@ -373,10 +388,7 @@ class CommonCloudFunctions:
                     _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                     _msg += "still not network reachable. Will wait for " + str(_wait)
                     _msg += " seconds and check again."
-                    self.osci.pending_object_set(obj_attr_list["cloud_name"], \
-                                                 "VM", \
-                                                 obj_attr_list["uuid"], \
-                                                 _msg)
+                    self.pending_set(obj_attr_list, _msg)
                     cbdebug(_msg)
                     sleep(_wait)
                     _curr_tries += 1
@@ -390,9 +402,7 @@ class CommonCloudFunctions:
 
             # It should be mgt_006, NOT mgt_005
             obj_attr_list["mgt_006_application_start"] = "0"
-            self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
-                                         obj_attr_list["uuid"], \
-                                         "Application starting up...", parent=obj_attr_list["ai"], parent_type="AI")
+            self.pending_set(obj_attr_list, "Application starting up...")
         else :
             _msg = "" + obj_attr_list["name"] + ""
             _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
@@ -400,6 +410,15 @@ class CommonCloudFunctions:
             _msg += "Giving up."
             cberr(_msg, True)
             raise CldOpsException(_msg, 89)
+        
+    def pending_set(self, obj_attr_list, msg):
+        if obj_attr_list["ai"] != "none" :
+            self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
+                                         obj_attr_list["uuid"], "status", msg, \
+                                         parent=obj_attr_list["ai"], parent_type="AI")
+        else :
+            self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
+                                         obj_attr_list["uuid"], "status", msg) 
 
     @trace
     def take_action_if_requested(self, obj_type, obj_attr_list, current_step):

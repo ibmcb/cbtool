@@ -9,8 +9,14 @@ fi
 
 pushd $dir
 
-cp client.conf.template client.conf
-cp server.conf.template server.conf 
+path=$dir/../../configs
+client=client-cb-openvpn.conf
+server=server-cb-openvpn.conf
+cbpath=$(echo "$dir/../.." | sed -e "s/\(\/\)/(\\\)\1/g" | sed -e "s/\((\|)\)//g")
+
+cp client.conf.template $path/$client
+cp server.conf.template $path/$server 
+
 cd easy-rsa
 source vars
 ./clean-all 
@@ -21,36 +27,38 @@ KEY_CN=client ./pkitool client
 cd keys
 openvpn --genkey --secret ta.key
 
-echo "<ca>" >> $dir/server.conf
-echo "<ca>" >> $dir/client.conf
-cat ca.crt >> $dir/client.conf
-cat ca.crt >> $dir/server.conf
-echo "</ca>" >> $dir/client.conf
-echo "</ca>" >> $dir/server.conf
+echo "<ca>" >> $path/$server
+echo "<ca>" >> $path/$client
+cat ca.crt >> $path/$client
+cat ca.crt >> $path/$server
+echo "</ca>" >> $path/$client
+echo "</ca>" >> $path/$server
 
-echo "<tls-auth>" >> $dir/client.conf
-echo "<tls-auth>" >> $dir/server.conf
-cat ta.key >> $dir/client.conf
-cat ta.key >> $dir/server.conf
-echo "</tls-auth>" >> $dir/server.conf
-echo "</tls-auth>" >> $dir/client.conf
+echo "<tls-auth>" >> $path/$client
+echo "<tls-auth>" >> $path/$server
+cat ta.key >> $path/$client
+cat ta.key >> $path/$server
+echo "</tls-auth>" >> $path/$server
+echo "</tls-auth>" >> $path/$client
 
-echo "<cert>" >> $dir/server.conf
-echo "<cert>" >> $dir/client.conf
-cat client.crt >> $dir/client.conf
-cat server.crt >> $dir/server.conf
-echo "</cert>" >> $dir/server.conf
-echo "</cert>" >> $dir/client.conf
+echo "<cert>" >> $path/$server
+echo "<cert>" >> $path/$client
+cat client.crt >> $path/$client
+cat server.crt >> $path/$server
+echo "</cert>" >> $path/$server
+echo "</cert>" >> $path/$client
 
-echo "<key>" >> $dir/server.conf
-echo "<key>" >> $dir/client.conf
-cat client.key >> $dir/client.conf
-cat server.key >> $dir/server.conf
-echo "</key>" >> $dir/server.conf
-echo "</key>" >> $dir/client.conf
+echo "<key>" >> $path/$server
+echo "<key>" >> $path/$client
+cat client.key >> $path/$client
+cat server.key >> $path/$server
+echo "</key>" >> $path/$server
+echo "</key>" >> $path/$client
 
-echo "<dh>" >> $dir/server.conf
-cat dh1024.pem >> $dir/server.conf
-echo "</dh>" >> $dir/server.conf
+echo "<dh>" >> $path/$server
+cat dh1024.pem >> $path/$server
+echo "</dh>" >> $path/$server
+
+sed -ie "s/CBPATH/$cbpath/g" $path/$server 
 
 popd

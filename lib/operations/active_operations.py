@@ -1053,7 +1053,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _post_speculative_admission_control = True
 
             self.osci.pending_object_set(obj_attr_list["cloud_name"], \
-                 "AI", obj_attr_list["uuid"], "Creating VMs: Switch tabs for tracking..." )
+                 "AI", obj_attr_list["uuid"], "status", "Creating VMs: Switch tabs for tracking..." )
             
             if obj_attr_list["vm_creation"].lower() == "explicit" : 
                 _status, _fmsg = self.parallel_obj_operation("attach", obj_attr_list)
@@ -1428,7 +1428,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                           obj_attr_list["uuid"] + "|" + obj_attr_list["name"], int(time()))
 
                     self.osci.pending_object_set(_cloud_name, _obj_type, \
-                                        obj_attr_list["uuid"], "Initializing...")
+                                        obj_attr_list["uuid"], "status", "Initializing...")
                     
                     _created_pending = True
     
@@ -1469,7 +1469,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
     
                     elif _obj_type == "VM" :
                         self.osci.pending_object_set(_cloud_name, _obj_type, \
-                                            obj_attr_list["uuid"], "Sending create request to cloud ...")
+                                            obj_attr_list["uuid"], "status", "Sending create request to cloud ...")
                         _status, _fmsg = _cld_conn.vmcreate(obj_attr_list)
                         _vmcreate = True
                         
@@ -1554,6 +1554,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
         finally:
             unique_state_key = "-attach-" + str(time())
+            
+            if "userdata" in obj_attr_list :
+                del obj_attr_list["userdata"]
 
             if _status :
                 _msg = _obj_type + " object " + obj_attr_list["uuid"] + " ("
@@ -1680,7 +1683,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 cbdebug(_msg)
 
             if _created_pending :
-                self.osci.pending_object_remove(_cloud_name, _obj_type, obj_attr_list["uuid"])
+                self.osci.pending_object_remove(_cloud_name, _obj_type, obj_attr_list["uuid"], "status")
                 self.osci.remove_from_list(_cloud_name, _obj_type, "PENDING",obj_attr_list["uuid"] + "|" + obj_attr_list["name"], True)
                 
             return self.package(_status, _msg, _result)
@@ -1778,7 +1781,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _cmd += obj_attr_list["login"] + "@"
                 _cmd += obj_attr_list["prov_cloud_ip"] + " \"mkdir -p ~/" + obj_attr_list["remote_dir_name"] +  ';'
                 _cmd += "echo '#OSKN-redis' > ~/cb_os_parameters.txt;"
-                _cmd += "echo '#OSHN-" + self.osci.host + "' >> ~/cb_os_parameters.txt;"
+                if "openvpn_server_address" in obj_attr_list :
+                    _cmd += "echo '#OSHN-" + obj_attr_list["openvpn_server_address"] + "' >> ~/cb_os_parameters.txt;"
+                else :
+                    _cmd += "echo '#OSHN-" + self.osci.host + "' >> ~/cb_os_parameters.txt;"
                 _cmd += "echo '#OSPN-" + str(self.osci.port) + "' >> ~/cb_os_parameters.txt;"
                 _cmd += "echo '#OSDN-" + str(self.osci.dbid) + "' >> ~/cb_os_parameters.txt;"
                 _cmd += "echo '#OSTO-" + str(self.osci.timout) + "' >> ~/cb_os_parameters.txt;"
@@ -1823,7 +1829,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _fmsg += "tries. The VM seems unreachable."
             else :
                 _delay = int(time()) - _start
-                self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "Files transferred...")
+                self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "status", "Files transferred...")
                 obj_attr_list["mgt_005_file_transfer"] = _delay
                 self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], \
                                                   False, "mgt_005_file_transfer", \
@@ -1915,7 +1921,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _fmsg = "An error has occurred, but no error message was captured"
 
 
-            self.osci.pending_object_set(obj_attr_list["cloud_name"], "AI", obj_attr_list["uuid"], "Running VM Applications..." )
+            self.osci.pending_object_set(obj_attr_list["cloud_name"], "AI", obj_attr_list["uuid"], "status", "Running VM Applications..." )
             _status, _fmsg  = self.parallel_vm_config_for_ai(obj_attr_list["cloud_name"], \
                                                              obj_attr_list["uuid"], "setup")
 
@@ -1933,11 +1939,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         try :
                             _msg = "Will wait " + str(secs) + " seconds to reach steady state before saving..."
                             cbdebug(_msg, True)
-                            self.osci.pending_object_set(obj_attr_list["cloud_name"], "AI", obj_attr_list["uuid"], _msg)
+                            self.osci.pending_object_set(obj_attr_list["cloud_name"], "AI", obj_attr_list["uuid"], "status", _msg)
                             sleep(secs)
                             _msg = "Saving " + obj_attr_list["name"] + " now...."
                             cbdebug(_msg)
-                            self.osci.pending_object_set(obj_attr_list["cloud_name"], "AI", obj_attr_list["uuid"], _msg)
+                            self.osci.pending_object_set(obj_attr_list["cloud_name"], "AI", obj_attr_list["uuid"], "status", _msg)
                             
                         except KeyboardInterrupt :
                             _fmsg = "CTRL-C: Cancelled VM save..."
@@ -2410,7 +2416,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 
             elif not _status :
                 self.osci.add_to_list(obj_attr_list["cloud_name"], _obj_type, "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], int(time()))
-                self.osci.pending_object_set(obj_attr_list["cloud_name"], _obj_type, obj_attr_list["uuid"], "Detaching...")
+                self.osci.pending_object_set(obj_attr_list["cloud_name"], _obj_type, obj_attr_list["uuid"], "status", "Detaching...")
                 _detach_pending = True
                 
                 _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
@@ -2532,7 +2538,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 self.osci.create_object(obj_attr_list["cloud_name"], tracking + "TRACKING" + _obj_type, obj_attr_list["uuid"] + unique_state_key, \
                                         obj_attr_list, False, True, 3600)
                 if _detach_pending :
-                    self.osci.pending_object_remove(obj_attr_list["cloud_name"], _obj_type, obj_attr_list["uuid"])
+                    self.osci.pending_object_remove(obj_attr_list["cloud_name"], _obj_type, obj_attr_list["uuid"], "status")
                     self.osci.remove_from_list(obj_attr_list["cloud_name"], _obj_type, "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], True)
             
             return self.package(_status, _msg, _result)
@@ -3000,7 +3006,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         self.osci.add_to_list(cn, _obj_type, "PENDING", \
                                   obj_attr_list["uuid"] + "|" + obj_attr_list["name"], int(time()))
     
-                        self.osci.pending_object_set(cn, _obj_type, obj_attr_list["uuid"], 
+                        self.osci.pending_object_set(cn, _obj_type, obj_attr_list["uuid"], "status", 
                                             ("migrat" if operation == "migrate" else operation) + "ing..." )
                         
                         admission_control_requested = self.admission_control(_obj_type, obj_attr_list, "migrate")
@@ -3106,7 +3112,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 self.osci.remove_from_list(cn, "VM", "VMS_UNDERGOING_" + operation, obj_attr_list["uuid"], True)
                 self.osci.set_object_state(cn, "VM", obj_attr_list["uuid"], "attached")
                 
-                self.osci.pending_object_remove(cn, _obj_type, obj_attr_list["uuid"])
+                self.osci.pending_object_remove(cn, _obj_type, obj_attr_list["uuid"], "status")
                 self.osci.remove_from_list(cn, _obj_type, "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], True)
                 
             tracking = "FINISHED" if not _status else "FAILED"
@@ -3427,7 +3433,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 if _status in [0, 483920, 912543] :
                     if _status not in [483920] :
                         self.osci.add_to_list(_cloud_name, "VM", "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], int(time()))
-                        self.osci.pending_object_set(_cloud_name, "VM", obj_attr_list["uuid"], "Changing state to: " + obj_attr_list["target_state"] + "(" + obj_attr_list["suspected_command"] + ")")
+                        self.osci.pending_object_set(_cloud_name, "VM", obj_attr_list["uuid"], "status", "Changing state to: " + obj_attr_list["target_state"] + "(" + obj_attr_list["suspected_command"] + ")")
                         _runstate_pending = True
                     
                     if _status == 483920 :
@@ -3561,7 +3567,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                         obj_attr_list, False, True, 3600)
                 
             if _runstate_pending :
-                self.osci.pending_object_remove(_cloud_name, "VM", obj_attr_list["uuid"])
+                self.osci.pending_object_remove(_cloud_name, "VM", obj_attr_list["uuid"], "status")
                 self.osci.remove_from_list(_cloud_name, "VM", "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], True)
 
             return self.package(_status, _msg, _result)
@@ -3725,7 +3731,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 if _status in [0, 483920, 912543] :
                     if _status not in [483920] :
                         self.osci.add_to_list(_cloud_name, "AI", "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], int(time()))
-                        self.osci.pending_object_set(_cloud_name, "AI", obj_attr_list["uuid"], "Changing state to: " + obj_attr_list["target_state"] + "(" + obj_attr_list["suspected_command"] + ")")
+                        self.osci.pending_object_set(_cloud_name, "AI", obj_attr_list["uuid"], "status", "Changing state to: " + obj_attr_list["target_state"] + "(" + obj_attr_list["suspected_command"] + ")")
                         _runstate_pending = True
                 
                     if _status == 483920 :
@@ -3778,7 +3784,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 self.osci.create_object(_cloud_name, "FINISHEDTRACKINGAI", obj_attr_list["uuid"] + unique_state_key, \
                                         obj_attr_list, False, True, 3600)
                 if _runstate_pending :
-                    self.osci.pending_object_remove(_cloud_name, "AI", obj_attr_list["uuid"])
+                    self.osci.pending_object_remove(_cloud_name, "AI", obj_attr_list["uuid"], "status")
                     self.osci.remove_from_list(_cloud_name, "AI", "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], True)
                 
             return self.package(_status, _msg, _result)
@@ -4957,7 +4963,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             # If you change this message, change the GUI, because the GUI depends on it
             self.osci.pending_object_set(cloud_name, \
                                          "VM", \
-                                         vm["result"]["uuid"], \
+                                         vm["result"]["uuid"], "status", \
                                          "Paused waiting for run command from user [" + vm["result"]["uuid"] + "]...")
             sub_channel.unsubscribe()
 
@@ -5010,7 +5016,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             # If you change this message, change the GUI, because the GUI depends on it
             self.osci.pending_object_set(cloud_name, \
                                          "AI", \
-                                         app["result"]["uuid"], \
+                                         app["result"]["uuid"], "status", \
                                          "Paused waiting for run command from user [" + app["result"]["uuid"] + "]...")
             sub_channel.unsubscribe()
 

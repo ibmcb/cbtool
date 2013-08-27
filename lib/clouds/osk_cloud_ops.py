@@ -722,6 +722,7 @@ class OskCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
+        
         _networks = instance.addresses.keys()
 
         if len(_networks) :
@@ -890,18 +891,18 @@ class OskCmds(CommonCloudFunctions) :
         _instance = self.is_vm_running(obj_attr_list)
 
         if _instance :
+            obj_attr_list["last_known_state"] = "ACTIVE with ip unassigned"
 
             self.take_action_if_requested("VM", obj_attr_list, "provision_complete")
 
             if self.get_ip_address(obj_attr_list, _instance) :
-                obj_attr_list["last_known_state"] = "ACTIVE with ip assigned"
-                return True
-            else :
-                obj_attr_list["last_known_state"] = "ACTIVE with ip unassigned"
-                return False
+                if not obj_attr_list["userdata"] or self.get_openvpn_client_ip(obj_attr_list) :
+                    obj_attr_list["last_known_state"] = "ACTIVE with ip assigned"
+                    return True
         else :
             obj_attr_list["last_known_state"] = "not ACTIVE"
-            return False
+            
+        return False
 
     @trace
     def get_hostname(self, obj_attr_list) :
@@ -1177,7 +1178,7 @@ class OskCmds(CommonCloudFunctions) :
                                                     availability_zone = _availability_zone, \
                                                     meta = _meta, \
                                                     config_drive = True, \
-                                                    userdata = "foo-bar-cloudbench", \
+                                                    userdata = obj_attr_list["userdata"], \
                                                     nics = _netid)
 
             if _instance :

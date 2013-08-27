@@ -6,12 +6,13 @@ OSK_SECURITY_GROUPS = need_to_be_configured_by_user
 OSK_INITIAL_VMCS = need_to_be_configured_by_user
 OSK_SSH_KEY_NAME = need_to_be_configured_by_user
 OSK_LOGIN = need_to_be_configured_by_user
+OSK_OPENVPN_SERVER_ADDRESS = $False  # Assume no VPN. User must activate for use.
 
 # PEBCAK documentation for the Wizard and CLI
 OSK_ACCESS_DOC = Please enter the HTTP address of the nova API\nused for access through nova to interact with the cloud.\nThis is usually in the form of http://<address>:5000/v2.0/
 OSK_ACCESS_DEFAULT = http://<address>:5000/v2.0/
 OSK_CREDENTIALS_DOC = This option requires a specific syntax:\n<username>-<password>-<tenant>\n ... Please enter these parameters as you\nwould use them to login to the OpenStack\nuser interface.
-OSK_CREDENTIALS_DEFAULT = admin-passwrd-admin
+OSK_CREDENTIALS_DEFAULT = admin-password-admin
 OSK_KEY_NAME_DOC = Please enter the OpenStack key used to login\nto your VMs as root. This key needs to be generated in\nthe OpenStack user interface before starting the tool.
 OSK_KEY_NAME_DEFAULT = some_key_name 
 OSK_SECURITY_GROUPS_DOC = Please enter the security group used in\nyour OpenStack vms. This group needs to be created\nin the OpenStack user interface before\nstarting the tool.
@@ -23,9 +24,12 @@ OSK_SSH_KEY_NAME_DEFAULT = id_rsa.private
 OSK_INITIAL_VMCS_DOC = $INITIAL_VMCS_DOC 
 OSK_INITIAL_VMCS_DEFAULT = RegionOne,RegionTwo
 OSK_NETID = private
+OSK_OPENVPN_SERVER_ADDRESS_DOC = (Optional) If your cloud network is private,\n but your CB installation is on a different network,\n the tool has the ability to instruct\n the VMs to use an OpenVPN server\n to control the virtual machines.
+OSK_OPENVPN_SERVER_ADDRESS_DEFAULT = $MANAGER_IP
 
 [SPACE : OSK_CLOUDCONFIG ]
 SSH_KEY_NAME = $OSK_SSH_KEY_NAME
+OPENVPN_SERVER_ADDRESS = $OSK_OPENVPN_SERVER_ADDRESS
 
 [MON_DEFAULTS : OSK_CLOUDCONFIG ]
 COLLECT_FROM_HOST = $False # requires ganglia installation on hypervisor

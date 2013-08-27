@@ -155,8 +155,12 @@
             	var value = cld_attr_list["user-defined"][key];
                 if ((key.split(model).length - 1) == 0)
                     continue
-                if (value == "need_to_be_configured_by_user") {
-                    output += "<tr><td><h4>" + key.toUpperCase() + ":</h4><input type='text' id='" + key + "' value=\""
+                if ((key + "_doc") in cld_attr_list["user-defined"] &&
+                    (key + "_default") in cld_attr_list["user-defined"]) {
+                    output += "<tr><td><h4>" + key.toUpperCase().replace(model.toUpperCase() + "_", "")
+                    if (value == "need_to_be_configured_by_user")
+                        output += "<font color='red'> *</font>" 
+                    output += ":</h4><input type='text' id='" + key + "' value=\""
                     var userkey = "cloudoption_" + orig_name + "_" + key;
                     if (userkey in cld_attr_list["user-defined"]) {
                         output += cld_attr_list["user-defined"][userkey];

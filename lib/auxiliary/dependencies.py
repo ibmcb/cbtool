@@ -364,6 +364,54 @@ def check_python_daemon_version(hostname, username, trd_party_dir) :
             _msg += " The package is usually called \"python-daemon\"\n"
         return _status, _msg
 
+def check_openvpn_binary(hostname, username, trd_party_dir) :
+    '''
+    TBD
+    '''
+    try:
+        _status = 100
+        _fmsg = "An error has occurred, but no error message was captured"
+        
+        _proc_man =  ProcessManagement()
+        _msg = "Checking OpenVPN version....."
+        _status, _result_stdout, _result_stderr = _proc_man.run_os_command("openvpn --version")
+                
+        if not _status and _result_stdout.count("OpenVPN ") :
+            _version = "N/A"
+            for _word in _result_stdout.split() :
+                if _word.count('.') == 2 :
+                    _version = _word
+                    break
+            _msg += compare_versions('2.2.0', _version)
+            _status = 0
+        else :
+            _status = 1728289
+        
+    except ProcessManagement.ProcessManagementException, obj :
+        _status = str(obj.status)
+#        _msg += str(obj.msg)
+
+    except Exception, e :
+        _status = 23
+#        _msg += str(e)
+
+    finally :
+        if _status or _msg.count("NOT OK"):
+            _status = 432
+            _msg += " Please install openvpn, such as: sudo apt-get install openvpn\n"
+        else :
+            script = path[0] + "/util/openvpn/make_keys.sh"
+            print "===> creating openvpn unified CB configuration " + script + ", please wait ..."
+            _status, out, err =_proc_man.run_os_command(script)
+
+            if not _status :
+                print "===> success."
+            else :
+                print "====> failed: " + out + err
+                _status = 4923
+
+        return _status, _msg
+
 def check_redis_binary(hostname, username, trd_party_dir) :
     '''
     TBD
@@ -400,6 +448,7 @@ def check_redis_binary(hostname, username, trd_party_dir) :
 
     finally :
         if _status or _msg.count("NOT OK"):
+            _status = 349
             _msg += " Please install Redis with: cd " + trd_party_dir
             _msg += "; git clone " + gp + "redis.git; "
             _msg += "cd redis; git checkout 2.6; make; sudo make install\n"
@@ -1070,6 +1119,7 @@ def dependency_checker(hostname, username, trd_party_dir) :
     _func_pointer["python-beaker"] = check_python_beaker 
     _func_pointer["rsyslog"] = check_rsyslogd_version 
     _func_pointer["redis"] = check_redis_binary
+    _func_pointer["openvpn"] = check_openvpn_binary
     _func_pointer["redis-py"] = check_redis_python_bindings
     _func_pointer["mongo"] = check_mongo_binary
     _func_pointer["pymongo"] = check_mongo_python_bindings

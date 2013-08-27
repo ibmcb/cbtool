@@ -999,6 +999,18 @@ class BaseObjectOperations :
                         obj_attr_list["exclude_list"] = _dir_list["base_dir"] + "/exclude_list.txt"
                         obj_attr_list["daemon_dir"] = _dir_list["vm_daemon_dir"]
  
+                        if "openvpn_server_address" not in _dir_list or _dir_list["openvpn_server_address"].lower().strip() == "false" :
+                            obj_attr_list["userdata"] = None
+                        else :
+                            _pending_fn = self.osci.pending_object_fn(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"])
+                            openvpn_fh = open(_dir_list["openvpn_client_config"])
+                            _openvpn_contents = openvpn_fh.read()
+                            openvpn_fh.close()
+                            _openvpn_contents = _openvpn_contents.replace("DESTINATION", _dir_list["openvpn_server_address"])
+                            
+                            obj_attr_list["userdata"] = _pending_fn + "\n" + "10.5.0.1\n" + _openvpn_contents
+                            obj_attr_list["openvpn_server_address"] = _dir_list["openvpn_server_address"]
+            
                     self.get_counters(obj_attr_list["cloud_name"], obj_attr_list)
                        
                     _status = 0
@@ -2095,7 +2107,7 @@ class BaseObjectOperations :
                     _msg = "Performing generic application instance post_boot "
                     _msg += "configuration on all VMs belonging to " + _ai_attr_list["name"] + "..."                
                     cbdebug(_msg, True)
-                    self.osci.pending_object_set(cloud_name, "AI", ai_uuid, _msg)
+                    self.osci.pending_object_set(cloud_name, "AI", ai_uuid, "status", _msg)
 
                 else :
                     _msg = "Bypassing generic VM post_boot configuration on all "
@@ -2158,7 +2170,7 @@ class BaseObjectOperations :
                         _ai_attr_list["first_app_run_finished"] = "true"
                         
                         
-                    self.osci.pending_object_set(cloud_name, "AI", ai_uuid, _msg, notify_client_refresh)
+                    self.osci.pending_object_set(cloud_name, "AI", ai_uuid, "status", _msg, notify_client_refresh)
 
                 else :
                     _msg = "Bypassing application-specific configuration on all "
