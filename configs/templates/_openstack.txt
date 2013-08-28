@@ -6,7 +6,9 @@ OSK_SECURITY_GROUPS = need_to_be_configured_by_user
 OSK_INITIAL_VMCS = need_to_be_configured_by_user
 OSK_SSH_KEY_NAME = need_to_be_configured_by_user
 OSK_LOGIN = need_to_be_configured_by_user
-OSK_OPENVPN_SERVER_ADDRESS = $False  # Assume no VPN. User must activate for use.
+OSK_OPENVPN_SERVER_ADDRESS = $False
+OSK_OPENVPN_ADDRESS_RANGE = $OPENVPN_ADDRESS_RANGE_DEFAULT
+OSK_OPENVPN_BOOTSTRAP_ADDRESS = $OPENVPN_BOOTSTRAP_ADDRESS_DEFAULT
 
 # PEBCAK documentation for the Wizard and CLI
 OSK_ACCESS_DOC = Please enter the HTTP address of the nova API\nused for access through nova to interact with the cloud.\nThis is usually in the form of http://<address>:5000/v2.0/
@@ -24,12 +26,18 @@ OSK_SSH_KEY_NAME_DEFAULT = id_rsa.private
 OSK_INITIAL_VMCS_DOC = $INITIAL_VMCS_DOC 
 OSK_INITIAL_VMCS_DEFAULT = RegionOne,RegionTwo
 OSK_NETID = private
-OSK_OPENVPN_SERVER_ADDRESS_DOC = (Optional) If your cloud network is private,\n but your CB installation is on a different network,\n the tool has the ability to instruct\n the VMs to use an OpenVPN server\n to control the virtual machines.
+OSK_OPENVPN_SERVER_ADDRESS_DOC = $OPENVPN_SERVER_ADDRESS_DOC
 OSK_OPENVPN_SERVER_ADDRESS_DEFAULT = $MANAGER_IP
+OSK_OPENVPN_ADDRESS_RANGE_DEFAULT = $OPENVPN_ADDRESS_RANGE_DEFAULT
+OSK_OPENVPN_ADDRESS_RANGE_DOC = $OPENVPN_ADDRESS_RANGE_DOC
+OSK_OPENVPN_BOOTSTRAP_ADDRESS_DEFAULT = $OPENVPN_BOOTSTRAP_ADDRESS_DEFAULT
+OSK_OPENVPN_BOOTSTRAP_ADDRESS_DOC = $OPENVPN_BOOTSTRAP_ADDRESS_DOC
 
 [SPACE : OSK_CLOUDCONFIG ]
 SSH_KEY_NAME = $OSK_SSH_KEY_NAME
 OPENVPN_SERVER_ADDRESS = $OSK_OPENVPN_SERVER_ADDRESS
+OPENVPN_ADDRESS_RANGE = $OSK_OPENVPN_ADDRESS_RANGE
+OPENVPN_BOOTSTRAP_ADDRESS = $OSK_OPENVPN_BOOTSTRAP_ADDRESS
 
 [MON_DEFAULTS : OSK_CLOUDCONFIG ]
 COLLECT_FROM_HOST = $False # requires ganglia installation on hypervisor

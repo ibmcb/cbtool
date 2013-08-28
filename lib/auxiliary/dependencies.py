@@ -399,16 +399,6 @@ def check_openvpn_binary(hostname, username, trd_party_dir) :
         if _status or _msg.count("NOT OK"):
             _status = 432
             _msg += " Please install openvpn, such as: sudo apt-get install openvpn\n"
-        else :
-            script = path[0] + "/util/openvpn/make_keys.sh"
-            print "===> creating openvpn unified CB configuration " + script + ", please wait ..."
-            _status, out, err =_proc_man.run_os_command(script)
-
-            if not _status :
-                print "===> success."
-            else :
-                print "====> failed: " + out + err
-                _status = 4923
 
         return _status, _msg
 

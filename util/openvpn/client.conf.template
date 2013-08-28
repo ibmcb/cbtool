@@ -3,7 +3,7 @@ dev tun
 client
 remote DESTINATION 1194
 
-#log /var/log/openvpn-cb.log
+log /var/log/openvpn-cb.log
 up /tmp/cb_vm_ready.sh
 
 

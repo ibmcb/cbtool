@@ -574,6 +574,7 @@ class CBCLI(Cmd) :
         if options.quiet :
             logger.setLevel(ERROR)
 
+        
     @trace
     def start_api_and_gui(self) :
         '''

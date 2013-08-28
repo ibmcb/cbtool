@@ -34,14 +34,19 @@ MAIN_BASE_DIR = $PATH_TO_TOOL
 LOGIN_DOC = Please indicate the username that will be used for SSH inside your VMs.\nYou should have already created (or acquired access to) a pre-existing\nimage that exists in the cloud to which you are trying to connect\nas well as already have distributed a public/private key\npair for that image.
 SSH_KEY_NAME_DOC = Please indicate the location of the SSH private key that will\nallow the tool to login to your VMs over the network.\nIn order to use this, the tool *must* have direct SSH access to your\nvirtual machines in the cloud or the tool cannot function. \nThis key is used to bootstrap the application startup process as\nwell as test for network connectivity when the VMs are booting up in the Cloud.\nNote: You should have already uploaded an image which contains a matching public key\nfor the private key that you are using here, or the tool cannot login to the VMs.
 INITIAL_VMCS_DOC = Please specify a list of Regions\n(analagous to an EC2 or OpenStack region).\nThis name is arbitrary, and represents the point at\nwhich hypervisors are grouped together in a typical cloud.
+OPENVPN_SERVER_ADDRESS_DOC = (Optional) If your cloud network is private,\n but your CB installation is on a different network,\n the tool has the ability to instruct\n the VMs to use an OpenVPN server\n to control the virtual machines.\nThis address is the externally reachable address\nwhere the OpenVPN server will run
+OPENVPN_ADDRESS_RANGE_DOC = (Optional) Choose an address range for the OpenVPN\nnetwork to operate on.
+OPENVPN_BOOTSTRAP_ADDRESS_DOC = (Optional) We use your cloud's meta-data services\n to bootstrap client VPN connections,\n but sometimes it is necessary for the CB tool to\n be in a different location than the OpenVPN server\n in which case the client virtual machine will need to register itself using a different IP address.
+OPENVPN_ADDRESS_RANGE_DEFAULT = 10.5.0.0 255.255.0.0
+OPENVPN_BOOTSTRAP_ADDRESS_DEFAULT = 10.5.0.1 # Usually matches address range, but no gaurantee
 
 [SETUP]
 GLOBAL_OBJECT_LIST = setup,logstore,metricstore,dash_defaults,mon_defaults,space,time,vmc_defaults,vm_defaults,ai_defaults,aidrs_defaults,vmcrs_defaults,firs_defaults,vm_templates,ai_templates,aidrs_templates,vmcrs_templates,firs_templates,query,admission_control,api_defaults,gui_defaults
 
 [SPACE]
 BASE_DIR = $MAIN_BASE_DIR
-OPENVPN_SERVER_CONFIG = $MAIN_BASE_DIR/configs/server-cb-openvpn.conf
-OPENVPN_CLIENT_CONFIG = $MAIN_BASE_DIR/configs/client-cb-openvpn.conf
+OPENVPN_SERVER_CONFIG_PREFIX = $MAIN_BASE_DIR/configs/server-cb-openvpn
+OPENVPN_CLIENT_CONFIG_PREFIX = $MAIN_BASE_DIR/configs/client-cb-openvpn
 INSTANCE_DIR = /tmp/$PROCESSID
 BINARIES_DIR = $BASE_DIR/binaries
 CERTIFICATES_DIR = $BASE_DIR/certificates

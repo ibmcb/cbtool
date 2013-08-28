@@ -45,6 +45,7 @@ from base_operations import BaseObjectOperations
 import copy
 import threading
 import os
+import sys
 
 class ActiveObjectOperations(BaseObjectOperations) :
     '''
@@ -137,6 +138,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                         "\n   Please update your configuration and try again.\n");
                 else :
                     cld_attr_lst["space"]["ssh_key_name"] = ssh_filename 
+
+                self.start_openvpn(cld_attr_lst)
 
                 _idmsg = "The \"" + cld_attr_lst["model"] + "\" cloud named \""
                 _idmsg += cld_attr_lst["cloud_name"] + "\""
@@ -278,6 +281,74 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 cbdebug(_msg)
     
             return self.package(_status, _msg, cld_attr_lst)
+        
+    @trace
+    def start_openvpn(self, cld_attr_lst):
+        try : 
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+            
+            openvpn_config = cld_attr_lst["space"]["openvpn_server_config_prefix"] + "-" + cld_attr_lst["cloud_name"] + ".conf"
+            if not os.path.isfile(openvpn_config) :
+                _proc_man =  ProcessManagement()
+                script = self.path + "/util/openvpn/make_keys.sh"
+                address_range = cld_attr_lst["space"]["openvpn_address_range"]
+    
+                cmd = script + " " + address_range + " " + cld_attr_lst["cloud_name"]
+                cbinfo("Creating openvpn unified CB configuration: " + cmd + ", please wait ...", True)
+                _status, out, err =_proc_man.run_os_command(cmd)
+    
+                if not _status :
+                    cberr("openvpn configuration success: range: " + address_range, True)
+                else :
+                    raise Exception("openvpn configuration failed: " + out + err)
+            else :
+                cbinfo("OpenVPN configuration for this cloud already generated: " + openvpn_config, True)
+            
+            print "Checking for a running OpenVPN daemon.....", 
+            
+            _proc_man = ProcessManagement(username = "root")
+            _base_cmd = "sudo openvpn --config " + openvpn_config
+            _cmd = _base_cmd + " --daemon"
+            cbdebug(_cmd) 
+            _pid = _proc_man.start_daemon(_cmd, "1194", "udp", conditional = True, 
+                                  search_keywords = cld_attr_lst["space"]["openvpn_server_config_prefix"])
+
+            if len(_pid) :
+                if _pid[0].count("pnf") :
+                    _x, _p, _username = _pid[0].split('-') 
+                    _msg = "Unable to start OpenVPN service. Port 1194"
+                    _msg += " is already taken by process" + _p + "."
+                    _status = 8181
+
+                    raise ProcessManagement.ProcessManagementException(_status, _msg)
+                else :
+                    _p = _pid[0]
+                    _msg = "OpenVPN daemon was successfully started. "
+                    _msg += "The process id is " + str(_p) + ". "
+                    sys.stdout.write(_msg)
+            else :
+                _msg = "\nOpenVPN failed to start. To discover why, please run:\n\n" + _base_cmd + "\n\n ... and report the bug."
+                _status = 7161
+                raise ProcessManagement.ProcessManagementException(_status, _msg)
+            
+            _status = 0
+            
+        except ProcessManagement.ProcessManagementException, obj :
+            _status = str(obj.status)
+            _fmsg = str(obj.msg)
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+
+        finally :
+            if _status :
+                _msg = "Unable to start OpenVPN server: " + _fmsg
+                cberr(_msg)         
+                exit(_status)       
+            else :
+                cbdebug(_msg)
 
     @trace    
     def clddetach(self, cld_attr_list, parameters, command) :

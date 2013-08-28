@@ -3,9 +3,9 @@ dev tun
 port 1194
 management 0.0.0.0 1194
 
-server 10.5.0.0 255.255.0.0
+server ADDRESS_RANGE 
 
-#log CBPATH/stores/logs/openvpn.log
+log CBPATH/stores/logs/openvpn-server.log
 client-connect CBPATH/util/openvpn/client_connected.sh
 
 ca       [inline]

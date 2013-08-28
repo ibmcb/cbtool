@@ -1003,12 +1003,12 @@ class BaseObjectOperations :
                             obj_attr_list["userdata"] = None
                         else :
                             _pending_fn = self.osci.pending_object_fn(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"])
-                            openvpn_fh = open(_dir_list["openvpn_client_config"])
+                            openvpn_fh = open(_dir_list["openvpn_client_config_prefix"] + "-" + obj_attr_list["cloud_name"] + ".conf")
                             _openvpn_contents = openvpn_fh.read()
                             openvpn_fh.close()
                             _openvpn_contents = _openvpn_contents.replace("DESTINATION", _dir_list["openvpn_server_address"])
                             
-                            obj_attr_list["userdata"] = _pending_fn + "\n" + "10.5.0.1\n" + _openvpn_contents
+                            obj_attr_list["userdata"] = _pending_fn + "\n" + _dir_list["openvpn_bootstrap_address"] + "\n" + _openvpn_contents
                             obj_attr_list["openvpn_server_address"] = _dir_list["openvpn_server_address"]
             
                     self.get_counters(obj_attr_list["cloud_name"], obj_attr_list)
