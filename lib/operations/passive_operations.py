@@ -153,6 +153,9 @@ class PassiveObjectOperations(BaseObjectOperations) :
     def keyfunc(self, x):
         return x.split("|")[1]
     
+    def namefunc(self, x):
+        return x["name"]
+    
     @trace
     def list_objects(self, obj_attr_list, parameters, command) :
         '''
@@ -914,10 +917,14 @@ class PassiveObjectOperations(BaseObjectOperations) :
                             
                             _result.append({"type" : _obj_type, "name" : _obj_name, "uuid" : _obj_uuid, "state" : _obj_state})
                             
-                            _fmt_obj_list += ('|' + _obj_type).ljust(len(_fields[0]))
-                            _fmt_obj_list += ('|' + _obj_name).ljust(len(_fields[1]))
-                            _fmt_obj_list += ('|' + _obj_uuid).ljust(len(_fields[2]))
-                            _fmt_obj_list += ('|' + _obj_state).ljust(len(_fields[3]))
+                        if obj_attr_list["regression"] == "true" :
+                            _result.sort(key=self.namefunc)
+                            
+                        for res in _result :
+                            _fmt_obj_list += ('|' + res["type"]).ljust(len(_fields[0]))
+                            _fmt_obj_list += ('|' + res["name"]).ljust(len(_fields[1]))
+                            _fmt_obj_list += ('|' + res["uuid"]).ljust(len(_fields[2]))
+                            _fmt_obj_list += ('|' + res["state"]).ljust(len(_fields[3]))
                             _fmt_obj_list += '\n'
                             _count += 1
                             
