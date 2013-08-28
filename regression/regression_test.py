@@ -101,6 +101,13 @@ ignore_strings = [
                   "Index Size",
                   "Average Object Size",
                   "Collections",
+                  ") VM RESERVATIONS|",
+                  ") was sucessfully detached",
+                  " Sending a termination request for ",
+                  " Bypassing the sending of a copy of the code tree to ",
+                  "drwxrwxr-x",
+                  "-rw-rw-r--",
+                  " seconds... (",
                   ]                          
 
 def mask_contents(contents) :
@@ -116,7 +123,23 @@ def mask_contents(contents) :
         _line_contents = re.sub("\|13[0-9]+", "|xxxxxxxxxx", _line_contents)
         _line_contents = re.sub("port:[0-9]+", "port:xxxx", _line_contents)
         _line_contents = re.sub("simhost[a-z]+[0-9]+", "simhostX", _line_contents)
+        _line_contents = re.sub("vm_[0-9]+ \(cloud-assigned", "vm_XXX (cloud-assigned", _line_contents)
+        _line_contents = re.sub("simzone_[a-z]+", "simzone_X", _line_contents)
+        _line_contents = re.sub("after [0-9]+ seconds", "after X seconds", _line_contents)
         _line_contents = re.sub("The process id is [0-9]+", "The process id is xxxx", _line_contents)
+        _line_contents = re.sub("\|vm_[0-9]+ *\|[a-z_0-9]+ *\|[a-z]+(32|64) *", "|vm_XX |type |sizeXX ", _line_contents)
+        _line_contents = re.sub("\|(LG|SUT) *", "|POOL ", _line_contents)
+        _line_contents = re.sub("\|ai_[0-9]+ *", "|ai_XX ", _line_contents)
+        _line_contents = re.sub("vm_[0-9]+_at_[0-9]+", "vm_XX_at_XX", _line_contents)
+        _line_contents = re.sub("\"vm_[0-9]+\"\)", "\"vm_XX\")", _line_contents)
+        _line_contents = re.sub("\"ai_[0-9]+\"\)", "\"ai_XX\")", _line_contents)
+        _line_contents = re.sub("\|[0-9,A-Z,a-z]+:[0-9,A-Z,a-z]+:[0-9,A-Z,a-z]+:[0-9,A-Z,a-z]+:[0-9,A-Z,a-z]+:[0-9,A-Z,a-z]+", "|XX:XX:XX:XX:XX:XX", _line_contents)
+        _line_contents = re.sub("\|[a-z,A-Z]+ [a-z,A-Z]+ [0-9]+ [0-9]+:[0-9]+:[0-9]+ [0-9]+ \([0-9]+.[0-9]+\)", "DAY MONTH NUMDAY HH:MM:SS YEAR (EPOCH)", _line_contents)
+        _line_contents = re.sub("[a-z,A-Z]+ [a-z,A-Z]+ [0-9]+ [0-9]+:[0-9]+:[0-9]+ [A-Z]+ [0-9]+", "DAY MONTH NUMDAY HH:MM:SS TIMEZONE YEAR", _line_contents)
+        _line_contents = re.sub("\|[a-z,_,0-9]+\|vm_[0-9]+", "role|vm_XX", _line_contents)
+        _line_contents = re.sub("\|[0-9]+ +\|REGRESSION_B", "|AGE |REGRESSION_B", _line_contents)
+        _line_contents = re.sub("^ total [0-9]+", " total XXXX", _line_contents)
+        _line_contents = re.sub(" equals [0-9]+ after X seconds \(", " equals XX after X secdons (", _line_contents)
         contents[_line_number] = \
                 re.sub("[a-zA-Z0-9_]+-[a-zA-Z0-9_]+-[a-zA-Z0-9_]+-[a-zA-Z0-9_]+-[a-zA-Z0-9_]+", 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', _line_contents)
 
