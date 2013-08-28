@@ -139,7 +139,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 else :
                     cld_attr_lst["space"]["ssh_key_name"] = ssh_filename 
 
-                self.start_openvpn(cld_attr_lst)
+                if str(cld_attr_lst["space"]["openvpn_server_address"]).lower() != "false" :
+                    self.start_openvpn(cld_attr_lst)
 
                 _idmsg = "The \"" + cld_attr_lst["model"] + "\" cloud named \""
                 _idmsg += cld_attr_lst["cloud_name"] + "\""
@@ -325,7 +326,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 else :
                     _p = _pid[0]
                     _msg = "OpenVPN daemon was successfully started. "
-                    _msg += "The process id is " + str(_p) + ". "
+                    _msg += "The process id is " + str(_p) + ".\n"
                     sys.stdout.write(_msg)
             else :
                 _msg = "\nOpenVPN failed to start. To discover why, please run:\n\n" + _base_cmd + "\n\n ... and report the bug."

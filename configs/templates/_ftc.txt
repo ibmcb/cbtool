@@ -23,6 +23,7 @@ FTC_DISK_FORMAT_DOC = Specify which disk format to tell libvirt: Options are qco
 
 [SPACE : FTC_CLOUDCONFIG]
 SSH_KEY_NAME = $FTC_SSH_KEY_NAME
+OPENVPN_SERVER_ADDRESS = $False
 
 [MON_DEFAULTS : FTC_CLOUDCONFIG ]
 COLLECT_FROM_HOST = $True

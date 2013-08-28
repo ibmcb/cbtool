@@ -31,6 +31,7 @@ SCP_INITIAL_VMCS_DEFAULT = kvm_rack1
 
 [SPACE : SCP_CLOUDCONFIG ]
 SSH_KEY_NAME = $SCP_SSH_KEY_NAME
+OPENVPN_SERVER_ADDRESS = $False
 
 [MON_DEFAULTS : SCP_CLOUDCONFIG ]
 COLLECT_FROM_HOST = $False # requires ganglia installation on hypervisor 
