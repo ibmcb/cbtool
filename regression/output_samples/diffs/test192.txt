@@ -1,1 +1,0 @@
-|experiment_id                        |EXP-07-22-2013-04-49-25-PM-EDT     |REGRESSION_A                       

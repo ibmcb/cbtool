@@ -1,3 +1,0 @@
-vmdetach youngest
-vmlist
-stats

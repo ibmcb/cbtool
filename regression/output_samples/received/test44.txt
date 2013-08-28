@@ -1,1 +1,1 @@
-Usage: vmrun <cloud_name> <uuid> 
+Usage: vmresize <cloud_name> <identifier> <resource> <value> 

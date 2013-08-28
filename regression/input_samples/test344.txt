@@ -1,2 +1,0 @@
-monextract TESTCLOUD HOST os
-shell TESTCLOUD cat ~/cloudbench/data/REGRESSION_B/HOST_runtime_os_*REGRESSION*

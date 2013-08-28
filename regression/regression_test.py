@@ -31,6 +31,7 @@ from subprocess import Popen, PIPE
 
 import os
 import HTML
+import re
 
 def make_regression_test(reg_tst_f_contents, reg_tst_expl_fn) :
     '''
@@ -46,6 +47,8 @@ def make_regression_test(reg_tst_f_contents, reg_tst_expl_fn) :
     for _nr in range(0,2) :
         for _line_number, _line_contents in enumerate(reg_tst_f_contents) :
             _line_contents = _line_contents.strip('\n')
+            _line_contents = _line_contents.replace("CB_DIRECTORY", 
+                                path[0] + "/../")
     
             if _line_contents == "DNRTT" :
                 _line_contents = False
@@ -87,6 +90,59 @@ def make_regression_test(reg_tst_f_contents, reg_tst_expl_fn) :
     _msg += reg_tst_expl_fn + " 2>&1 > regression_test_output.txt\""
     print _msg
 
+ignore_strings = [
+                  "Used Memory", 
+                  "Uptime (in seconds)", 
+                  "Total Connections Received",
+                  "Total Commands Processed",
+                  "Number of Keys",
+                  "Storage Size",
+                  "Data Size",
+                  "Index Size",
+                  "Average Object Size",
+                  "Collections",
+                  ") VM RESERVATIONS|",
+                  ") was sucessfully detached",
+                  " Sending a termination request for ",
+                  " Bypassing the sending of a copy of the code tree to ",
+                  "drwxrwxr-x",
+                  "-rw-rw-r--",
+                  " seconds... (",
+                  ]                          
+
+def mask_contents(contents) :
+    for _line_number, _line_contents in enumerate(contents) :
+        for istring in ignore_strings :
+            if _line_contents.count(istring) :
+                _line_contents = "ignored"
+                break
+
+        _line_contents = re.sub("[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ *", 'xxx.xxx.xxx.xxx ', _line_contents)
+        _line_contents = re.sub("EXP-[0-9]+-[0-9]+-[0-9]+-[0-9]+-[0-9]+-[0-9]+-[A-Z]+-[A-Z]+", 'exp_identifier', _line_contents)
+        _line_contents = re.sub(": [0-9]+,", ": xxxxxxxxxx,", _line_contents)
+        _line_contents = re.sub("\|13[0-9]+", "|xxxxxxxxxx", _line_contents)
+        _line_contents = re.sub("port:[0-9]+", "port:xxxx", _line_contents)
+        _line_contents = re.sub("simhost[a-z]+[0-9]+", "simhostX", _line_contents)
+        _line_contents = re.sub("vm_[0-9]+ \(cloud-assigned", "vm_XXX (cloud-assigned", _line_contents)
+        _line_contents = re.sub("simzone_[a-z]+", "simzone_X", _line_contents)
+        _line_contents = re.sub("after [0-9]+ seconds", "after X seconds", _line_contents)
+        _line_contents = re.sub("The process id is [0-9]+", "The process id is xxxx", _line_contents)
+        _line_contents = re.sub("\|vm_[0-9]+ *\|[a-z_0-9]+ *\|[a-z]+(32|64) *", "|vm_XX |type |sizeXX ", _line_contents)
+        _line_contents = re.sub("\|(LG|SUT) *", "|POOL ", _line_contents)
+        _line_contents = re.sub("\|ai_[0-9]+ *", "|ai_XX ", _line_contents)
+        _line_contents = re.sub("vm_[0-9]+_at_[0-9]+", "vm_XX_at_XX", _line_contents)
+        _line_contents = re.sub("\"vm_[0-9]+\"\)", "\"vm_XX\")", _line_contents)
+        _line_contents = re.sub("\"ai_[0-9]+\"\)", "\"ai_XX\")", _line_contents)
+        _line_contents = re.sub("\|[0-9,A-Z,a-z]+:[0-9,A-Z,a-z]+:[0-9,A-Z,a-z]+:[0-9,A-Z,a-z]+:[0-9,A-Z,a-z]+:[0-9,A-Z,a-z]+", "|XX:XX:XX:XX:XX:XX", _line_contents)
+        _line_contents = re.sub("\|[a-z,A-Z]+ [a-z,A-Z]+ [0-9]+ [0-9]+:[0-9]+:[0-9]+ [0-9]+ \([0-9]+.[0-9]+\)", "DAY MONTH NUMDAY HH:MM:SS YEAR (EPOCH)", _line_contents)
+        _line_contents = re.sub("[a-z,A-Z]+ [a-z,A-Z]+ [0-9]+ [0-9]+:[0-9]+:[0-9]+ [A-Z]+ [0-9]+", "DAY MONTH NUMDAY HH:MM:SS TIMEZONE YEAR", _line_contents)
+        _line_contents = re.sub("\|[a-z,_,0-9]+\|vm_[0-9]+", "role|vm_XX", _line_contents)
+        _line_contents = re.sub("\|[0-9]+ +\|REGRESSION_B", "|AGE |REGRESSION_B", _line_contents)
+        _line_contents = re.sub("^ total [0-9]+", " total XXXX", _line_contents)
+        _line_contents = re.sub(" equals [0-9]+ after X seconds \(", " equals XX after X secdons (", _line_contents)
+        contents[_line_number] = \
+                re.sub("[a-zA-Z0-9_]+-[a-zA-Z0-9_]+-[a-zA-Z0-9_]+-[a-zA-Z0-9_]+-[a-zA-Z0-9_]+", 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', _line_contents)
+
 def validate_regression_test(reg_tst_expl_f_contents, reg_tst_gold_f_contents, reg_tst_sup_out_fn, reg_tst_val_fn) :
     '''
     TBD
@@ -103,26 +159,31 @@ def validate_regression_test(reg_tst_expl_f_contents, reg_tst_gold_f_contents, r
     _received_output_results = {}
     
     _current_test = False
+    test_idx = 0
     for _line_number, _line_contents in enumerate(reg_tst_expl_f_contents) :
 
         if _line_contents.count("TEST") and _line_contents.count("START") and not _line_contents.count("exit") :
-            _current_test = _line_contents.split(':')[0].split()[-1]
+            #_current_test = _line_contents.split(':')[0].split()[-1]
+            _current_test = test_idx
             _test_list.append(str(_current_test))
             _regression_test_commands[str(_current_test)] = ""
 
         elif _line_contents.count("TEST") and _line_contents.count("END") and not _line_contents.count("exit") :
             _test_input_fh = open(path[0] + '/' + _inputs_directory + '/test' + str(_current_test) + ".txt", 'w', 0)
-            _test_input_fh.write(_regression_test_commands[_current_test])
+            _test_input_fh.write(_regression_test_commands[str(_current_test)])
             _test_input_fh.close()
             _current_test = False
+            test_idx += 1
 
         else :
             if _current_test :
-                _regression_test_commands[_current_test] += _line_contents
+                _regression_test_commands[str(_current_test)] += _line_contents
                     
+    test_idx = 0
     for _line_number, _line_contents in enumerate(reg_tst_gold_f_contents) :
         if _line_contents.count("TEST") and _line_contents.count("START") and not _line_contents.count("exit") :
-            _current_test = _line_contents.split(':')[0].split()[-1]            
+            #_current_test = _line_contents.split(':')[0].split()[-1]            
+            _current_test = test_idx
             _golden_output_results[str(_current_test)] = {}
             _golden_output_results[str(_current_test)]["contents"] = ""            
 
@@ -132,15 +193,18 @@ def validate_regression_test(reg_tst_expl_f_contents, reg_tst_gold_f_contents, r
             _golden_output_fh.write(_golden_output_results[str(_current_test)]["contents"])
             _golden_output_fh.close()
             _current_test = False
+            test_idx += 1
 
         else :
             if _current_test :
                 _golden_output_results[str(_current_test)]["contents"] += _line_contents
 
+    test_idx = 0
     for _line_number, _line_contents in enumerate(reg_tst_sup_out_fn) :
 
         if _line_contents.count("TEST") and _line_contents.count("START") and not _line_contents.count("exit") :
-            _current_test = _line_contents.split(':')[0].split()[-1]
+            #_current_test = _line_contents.split(':')[0].split()[-1]
+            _current_test = test_idx
             _received_output_results[str(_current_test)] = {}
             _received_output_results[str(_current_test)]["contents"] = ""
 
@@ -150,6 +214,7 @@ def validate_regression_test(reg_tst_expl_f_contents, reg_tst_gold_f_contents, r
             _test_output_fh.write(_received_output_results[str(_current_test)]["contents"])
             _test_output_fh.close()
             _current_test = False
+            test_idx += 1
 
         else :
             if _current_test :
@@ -168,7 +233,10 @@ def validate_regression_test(reg_tst_expl_f_contents, reg_tst_gold_f_contents, r
         _test_output_fh = open(path[0] + '/' + _outputs_directory + '/received/test' + str(_test) + ".txt", 'r')
         _test_contents = _test_output_fh.readlines()
         _test_output_fh.close()
-        
+
+        mask_contents(_gold_contents)
+        mask_contents(_test_contents)
+
         _diff = ''
         _diff_size = 0
 
@@ -223,6 +291,10 @@ def validate_regression_test(reg_tst_expl_f_contents, reg_tst_gold_f_contents, r
 
     for _test in _test_list :
 
+        # Adding new tests is difficult, because the test #s do not match up
+        # We need a cleaner solution for adding new tests with old golden output
+        if str(_test) not in _golden_output_results :
+            continue
         _test_number = HTML.TableCell("<a href=\"" + _inputs_directory + "/test" + str(_test) + ".txt\">" + str(_test) + "</a>", width='10')
         _golden_output = HTML.TableCell("<a href=\"" + _outputs_directory + "/golden/test" + str(_test) + ".txt\">" + _golden_output_results[str(_test)]["size"] + "</a>", width='10')
         _received_output =  HTML.TableCell("<a href=\"" + _outputs_directory + "/received/test" + str(_test) + ".txt\">" + _received_output_results[str(_test)]["size"] + "</a>", width='90')
@@ -290,8 +362,7 @@ def validate_regression_test(reg_tst_expl_f_contents, reg_tst_gold_f_contents, r
             _cmd_binary = "meld "
 
         for _test in _check_list[0:-1].split(',') :
-
-            _cmd = _cmd_binary + path[0] + '/' + _outputs_directory + '/golden/test' + str(_test) + ".txt" + ' ' 
+            _cmd = "opendiff " + path[0] + '/' + _outputs_directory + '/golden/test' + str(_test) + ".txt" + ' ' 
             _cmd += path[0] + '/' + _outputs_directory + '/received/test' + str(_test) + ".txt"
             _proc_h = Popen(_cmd, shell=True, stdout=PIPE, stderr=PIPE)
 
@@ -318,10 +389,17 @@ def main() :
                 _msg = "Opening file \"" + _file + "\".........."
                 print _msg
         
-                _file_fh = open(path[0] + '/' + _file, 'r')
-                _file_contents[_file] = _file_fh.readlines()
-                _file_fh.close()
-
+                try : 
+                    with open(path[0] + '/' + _file, 'r'): pass
+                    _file_fh = open(path[0] + '/' + _file, 'r')
+                    _file_contents[_file] = _file_fh.readlines()
+                    _file_fh.close()
+                except IOError :
+                    if argv[1] == "make" and _file == _reg_tst_expl_fn :
+                        print "Will make " + _file + " from scratch..."
+                        _file_contents[_file] = ""
+                    else :
+                        raise IOError
             
             if argv[1] == "make" :
                 globals()[argv[1] + "_regression_test"](_file_contents[_reg_tst_fn], _reg_tst_expl_fn)

@@ -1,2 +1,0 @@
-shell rm -rf ~/cloudbench/data/REGRESSION_B
-shell ls -la ~/cloudbench/data/REGRESSION_B/

@@ -1,1 +1,0 @@
-Current default cloud is "None". Need cloud name to be set as default cloud or 'none' to unset.

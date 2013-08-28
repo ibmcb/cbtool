@@ -19,6 +19,8 @@ MAIN_USERNAME = $USER_AUTO
 # This is the username created inside the VMs
 # Variable $PATH_TO_TOOL attempts to auto-selects the appropriate path 
 MAIN_BASE_DIR = $PATH_TO_TOOL
+# Are we running under regression?
+# If so, instruct list_objects() to sort its output
 
 # The SSH key name and username keys are 
 # mandatory and is made mandatory
@@ -34,10 +36,12 @@ SSH_KEY_NAME_DOC = Please indicate the location of the SSH private key that will
 INITIAL_VMCS_DOC = Please specify a list of Regions\n(analagous to an EC2 or OpenStack region).\nThis name is arbitrary, and represents the point at\nwhich hypervisors are grouped together in a typical cloud.
 
 [SETUP]
-GLOBAL_OBJECT_LIST = setup,logstore,metricstore,dash_defaults,mon_defaults,space,time,vmc_defaults,vm_defaults,svm_defaults,ai_defaults,aidrs_defaults,vmcrs_defaults,firs_defaults,vm_templates,ai_templates,aidrs_templates,vmcrs_templates,firs_templates,query,admission_control,api_defaults,gui_defaults
+GLOBAL_OBJECT_LIST = setup,logstore,metricstore,dash_defaults,mon_defaults,space,time,vmc_defaults,vm_defaults,ai_defaults,aidrs_defaults,vmcrs_defaults,firs_defaults,vm_templates,ai_templates,aidrs_templates,vmcrs_templates,firs_templates,query,admission_control,api_defaults,gui_defaults
 
 [SPACE]
 BASE_DIR = $MAIN_BASE_DIR
+OPENVPN_SERVER_CONFIG = $MAIN_BASE_DIR/configs/server-cb-openvpn.conf
+OPENVPN_CLIENT_CONFIG = $MAIN_BASE_DIR/configs/client-cb-openvpn.conf
 INSTANCE_DIR = /tmp/$PROCESSID
 BINARIES_DIR = $BASE_DIR/binaries
 CERTIFICATES_DIR = $BASE_DIR/certificates
@@ -53,6 +57,7 @@ VM_DAEMON_DIR = /home/klabuser
 #  The "cloudbench/jar" part of the directory is hardcoded in lib/active_operations.py
 #  and the directory layout of the 'cloudbench.git' source distribution
 JARS_DIR = /home/klabuser/cloudbench/jar
+REGRESSION = $False
 
 [TIME]
 USERNAME = $MAIN_USERNAME
@@ -66,22 +71,20 @@ INTERNAL_TRIES = 2
 
 [QUERY]
 USERNAME = $MAIN_USERNAME
-OBJECT_TYPE_LIST = VMC, HOST, VM, SVM, AI, AIDRS, VMCRS, FIRS
+OBJECT_TYPE_LIST = VMC, HOST, VM, AI, AIDRS, VMCRS, FIRS
 HOST = BYUSERNAME, BYVMC
 VMC = BYPOOL, BYUSERNAME
 VM = BYUSERNAME, BYVMC, BYHOST, BYROLE, BYTYPE, BYAI, BYAIDRS
-SVM = BYUSERNAME, BYVMC, BYROLE, BYTYPE, BYAI, BYAIDRS
 AI = BYUSERNAME, BYTYPE, BYAIDRS
 AIDRS = BYUSERNAME, BYPATTERN
 VMCRS = BYUSERNAME, BYPATTERN, BYSCOPE
 FIRS = BYUSERNAME, BYPATTERN, BYSCOPE
 MANDATORY_TAGS = name, cloud_hostname, cloud_ip
-CLOUD_ATTRIBUTES = name, model, description, all, username, client_should_refresh, start_time, all_vmcs_attached
+CLOUD_ATTRIBUTES = name, model, description, all, username, client_should_refresh, start_time, all_vmcs_attached, regression
 
 [ADMISSION_CONTROL]
 VMC_MAX_RESERVATIONS = 100000
 VM_MAX_RESERVATIONS = 100000 
-SVM_MAX_RESERVATIONS = 100000
 AI_MAX_RESERVATIONS = 100000
 AIDRS_MAX_RESERVATIONS = 100000
 VMCRS_MAX_RESERVATIONS = 100000
@@ -132,23 +135,10 @@ RANDOMIZE_IMAGE_NAME = $False
 EXECUTE_SCRIPT_NAME = execute_on_staging.sh 
 EXECUTE_JSON_FILENAME_PREFIX = cb
 QEMU_DEBUG = $False
-SVM_STUB = $False
-SVM_STUB_VMC  = none
-
-[SVM_DEFAULTS]
-REPLICATION = $True
-REPLICATION_PORT_BASE = 4000
-REPLICATION_PORT_MAX  = 5000
-REPLICATION_PORT = $EMPTY
-SVM_QEMU_DEBUG = $False
-SVM_QEMU_DEBUG_PORT_BASE = 12300
-SVM_QEMU_DEBUG_PORT_MAX = 13300
-SVM_QEMU_DEBUG_PORT = $EMPTY
-RDMA = $False
-RDMA_PORT_BASE = 14300
-RDMA_PORT_MAX = 15300
-RDMA_PORT = $EMPTY
-DETACH_PARALLELISM = 20
+MIGRATE_PROTOCOL = tcp
+PROTECT_PROTOCOL = tcp 
+MIGRATE_PROTOCOL_SUPPORTED = tcp,rdma,x-rdma
+PROTECT_PROTOCOL_SUPPORTED = tcp,rdma,x-rdma
 
 [AI_DEFAULTS]
 USERNAME = $MAIN_USERNAME
@@ -166,6 +156,9 @@ SECONDS_BEFORE_SAVE = 0
 RUN_APPLICATION_SCRIPTS = $True
 DEBUG_REMOTE_COMMANDS = $False
 DONT_START_LOAD_MANAGER = $False
+# Most clouds don't use (or allow access to) libvirt,
+# so, enable this only in the right clouds.
+DONT_START_QEMU_SCRAPER = $True
 REPLICATED_VMS = 0
 ATTACH_PARALLELISM = 1
 DETACH_PARALLELISM = 20
@@ -295,3 +288,9 @@ REMOTE = $False
 PORT = 7080
 PROTOCOL = TCP
 HOSTNAME = 0.0.0.0
+GTK_LOGIN = $True
+GTK_LOGIN_PORT_BASE = 15000
+GTK_LOGIN_PORT_MAX = 16000
+GTK_DISPLAY = $True
+GTK_DISPLAY_PORT_BASE = 17000
+GTK_DISPLAY_PORT_MAX = 18000

@@ -29,6 +29,7 @@ import re
 import os 
 import copy
 import json
+from socket import gethostbyname
 
 from lib.auxiliary.data_ops import str2dic, dic2str
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
@@ -129,20 +130,17 @@ class CommonCloudFunctions:
                 return True
 
     @trace
-    def get_svm_stub(self, obj_attr_list) :
-        '''
-        TBD
-        '''
-        if "svm_stub_ip" in obj_attr_list :
-            if not obj_attr_list["svm_stub_ip"] :
-                return False
-            if not self.ft_supported :
-                _msg = "Fault-Tolerant Stub VMs are not implemented for " + self.get_description()
-                _status = 1024
-                raise CldOpsException(_msg, _status)
-            return True
-        return False
-
+    def get_host_list(self, obj_attr_list) :
+        _host_list = []
+        _vmc_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "VMC", 
+                                              False, obj_attr_list["vmc"], False)
+        for _uuid in _vmc_attr_list["hosts"].split(",") :
+            _host_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "HOST", 
+                                                  False, _uuid, False)
+            _host_list.append((_host_attr_list["name"], _uuid))
+        
+        return _host_list 
+        
     @trace
     def wait_for_instance_ready(self, obj_attr_list, time_mark_prs) :
         '''
@@ -150,7 +148,7 @@ class CommonCloudFunctions:
         '''
         _msg = "Waiting for " + obj_attr_list["name"] + ""
         _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") to start..."
-        self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], _msg)
+        self.pending_set(obj_attr_list, _msg)
         cbdebug(_msg, True)
     
         _curr_tries = 0
@@ -215,7 +213,7 @@ class CommonCloudFunctions:
             if  _vm_started :
                 _time_mark_prc = int(time())
                 obj_attr_list["mgt_003_provisioning_request_completed"] = _time_mark_prc - time_mark_prs
-                self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "Booting...")
+                self.pending_set(obj_attr_list, "Booting...")
                 break
             else :
                 _msg = "(" + str(_curr_tries) + ") " + obj_attr_list["name"] + ""
@@ -225,13 +223,13 @@ class CommonCloudFunctions:
                 cbdebug(_msg)
                 sleep(_wait)
                 _curr_tries += 1
-                self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], _msg)
+                self.pending_set(obj_attr_list, _msg)
     
         if _curr_tries < _max_tries :
             _msg = "" + obj_attr_list["name"] + ""
             _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
             _msg += "started successfully, got IP address " + obj_attr_list["cloud_ip"]
-            self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], _msg)
+            self.pending_set(obj_attr_list, _msg)
             cbdebug(_msg)
             return _time_mark_prc
         else :
@@ -241,6 +239,23 @@ class CommonCloudFunctions:
             _msg += "Giving up."
             cberr(_msg, True)
             raise CldOpsException(_msg, 71)
+        
+    def get_openvpn_client_ip(self, obj_attr_list):
+        if "openvpn_ip" in obj_attr_list :
+            return True
+        elif self.osci.pending_object_exists(obj_attr_list["cloud_name"],  
+                                            "VM", obj_attr_list["uuid"], "openvpn_ip") :
+            
+            ip = self.osci.pending_object_get(obj_attr_list["cloud_name"], 
+                                              "VM", obj_attr_list["uuid"], "openvpn_ip")
+            
+            if ip :
+                cbdebug("Openvpn reported in from client with ip: " + ip)
+                obj_attr_list["openvpn_ip"] = ip
+                obj_attr_list["prov_cloud_ip"] = ip
+                return True
+            
+        return False
 
     @trace
     def wait_for_instance_boot(self, obj_attr_list, time_mark_prc) :
@@ -250,12 +265,7 @@ class CommonCloudFunctions:
 
         _max_tries = int(obj_attr_list["update_attempts"])
         _wait = int(obj_attr_list["update_frequency"])
-
-        if not self.get_svm_stub(obj_attr_list) :
-            _network_reachable = False 
-        else: 
-            _network_reachable = True
-
+        _network_reachable = False 
         _curr_tries = 0
 
         if not _network_reachable :
@@ -265,7 +275,7 @@ class CommonCloudFunctions:
             _msg += obj_attr_list["cloud_vm_uuid"] + "), on IP address "
             _msg += obj_attr_list["prov_cloud_ip"] + "..."
             cbdebug(_msg, True)
-            self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], _msg)
+            self.pending_set(obj_attr_list, _msg)
 
             sleep(_wait)
 
@@ -369,9 +379,7 @@ class CommonCloudFunctions:
                     
                 if _vm_is_booted :
                     obj_attr_list["mgt_004_network_acessible"] = int(time()) - time_mark_prc 
-                    self.osci.pending_object_set(obj_attr_list["cloud_name"], \
-                                                 "VM", obj_attr_list["uuid"], \
-                                                 "Network accessible now. Continuing...")
+                    self.pending_set(obj_attr_list, "Network accessible now. Continuing...") 
                     _network_reachable = True
                     break
 
@@ -380,10 +388,7 @@ class CommonCloudFunctions:
                     _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                     _msg += "still not network reachable. Will wait for " + str(_wait)
                     _msg += " seconds and check again."
-                    self.osci.pending_object_set(obj_attr_list["cloud_name"], \
-                                                 "VM", \
-                                                 obj_attr_list["uuid"], \
-                                                 _msg)
+                    self.pending_set(obj_attr_list, _msg)
                     cbdebug(_msg)
                     sleep(_wait)
                     _curr_tries += 1
@@ -397,9 +402,7 @@ class CommonCloudFunctions:
 
             # It should be mgt_006, NOT mgt_005
             obj_attr_list["mgt_006_application_start"] = "0"
-            self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
-                                         obj_attr_list["uuid"], \
-                                         "Application starting up...")
+            self.pending_set(obj_attr_list, "Application starting up...")
         else :
             _msg = "" + obj_attr_list["name"] + ""
             _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
@@ -407,6 +410,15 @@ class CommonCloudFunctions:
             _msg += "Giving up."
             cberr(_msg, True)
             raise CldOpsException(_msg, 89)
+        
+    def pending_set(self, obj_attr_list, msg):
+        if obj_attr_list["ai"] != "none" :
+            self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
+                                         obj_attr_list["uuid"], "status", msg, \
+                                         parent=obj_attr_list["ai"], parent_type="AI")
+        else :
+            self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
+                                         obj_attr_list["uuid"], "status", msg) 
 
     @trace
     def take_action_if_requested(self, obj_type, obj_attr_list, current_step):
@@ -561,3 +573,48 @@ class CommonCloudFunctions:
                 kwargs[default_keys[key]] = attrs[key]
                 
         return kwargs
+    
+    @trace
+    def update_libvirt_variables(self, obj_attr_list):
+        '''
+        After restore from disk, the VM's parameters (such as VNC/Spice display
+        ports) may have changed. Other things may potentially change in the future. 
+        We need to re-update the data store to include any new pieces of information. 
+        '''
+        for var in ["display_port", "display_protocol" ] :
+            if var in obj_attr_list :
+                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
+                                                  obj_attr_list["uuid"], False, \
+                                                  var, obj_attr_list[var])
+    
+    @trace
+    def populate_interface(self, obj_attr_list):
+        # A way to specify an alternative IP address for a hypervisor
+        # This alternative 'interface' represents a faster NIC
+        # (such as RDMA) to be used for other types of traffic
+        
+        for op in ["migrate", "protect"] :
+            if obj_attr_list[op + "_supported"].lower() != "true" :
+                continue
+        
+            if op + "_interfaces" in obj_attr_list :
+                interfaces = obj_attr_list[op + "_interfaces"]
+                _ivmcs = str2dic(interfaces)
+            else :
+                interfaces = ""
+                _ivmcs = {}
+                
+            for _host_uuid in obj_attr_list["hosts"].split(',') :
+                obj_attr_list["host_list"][_host_uuid][op + "_interface"] = "default"
+                
+                if interfaces.strip() == "" :
+                    continue
+                
+                hostname = obj_attr_list["host_list"][_host_uuid]["cloud_hostname"]
+                if hostname in _ivmcs : 
+                    iface = _ivmcs[hostname]
+                    try :
+                        obj_attr_list["host_list"][_host_uuid][op + "_interface"] = gethostbyname(iface)
+                    except Exception, msg :
+                        _fmsg = "Could not lookup interface " + iface + " for hostname " + hostname + " (probably bad /etc/hosts): " + str(msg)
+                        raise CldOpsException(_fmsg, 1295)

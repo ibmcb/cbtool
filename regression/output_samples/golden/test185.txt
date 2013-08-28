@@ -1,5 +1,0 @@
-running shell command: "date"....
-stdout:
- Mon Jul  1 13:56:49 EDT 2013
-
-

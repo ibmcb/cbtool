@@ -1,0 +1,51 @@
+            <div class="modal hide" style='width: 930px; max-height: 750px; height: 750px; margin: -375px 0 0 -450px' id="loginModal" tabindex="-1" role="dialog" aria-labelledby="myLoginLabel" aria-hidden="true">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h3 id="myLoginLabel">Integrated Login Access</h3>
+                </div>
+                
+                <div class="modal-body" style='width: 900px; max-height: 640px; height: 640px'>
+                    <div id='loginload'></div>
+                    <iframe id='gtklogin' style='width: 95%; height: 84%' frameborder='0' scrolling='no'></iframe>
+                </div>
+            </div>
+
+            <div class="modal hide" style='width: 930px; max-height: 750px; height: 750px; margin: -375px 0 0 -450px' id="displayModal" tabindex="-1" role="dialog" aria-labelledby="myDisplayabel" aria-hidden="true">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h3 id="myDisplayLabel">Integrated VM Display Console</h3>
+                </div>
+                <div class="modal-body" style='width: 900px; max-height: 640px; height: 640px'>
+                    <div id='displayload'></div>
+                    <iframe id='gtkdisplay' style='width: 95%; height: 84%' frameborder='0' scrolling='no'></iframe>
+                </div>
+            </div>
+            <script>
+            function gtkload(gtype) {
+                $("#" + gtype + "load").html("BOOTSPINNER Creating GTK " + gtype + "...");
+                $("#gtk" + gtype).attr('src', null);
+                go("#" + gtype + "load", bootdest + "/gtk?uuid=BOOTID&operation=" + gtype, '', unavailable, false, 
+                        function(data) {
+                            if(data) {
+                                var reason = $(data).find("#gtkresponse").html();
+                                var port = $(data).find("#gtkport").html();
+                                if(reason) {
+                                    $("#" + gtype + "load").html("");
+                                    $('#gtk' + gtype).attr('src', bootdest + '/broadway?port=' + port);
+                                } else {
+                                    $("#" + gtype + "load").html($(data).find("#gerror").html());
+                                }
+                            } else {
+                                $("#" + gtype + "load").html("<h3>GTK request for the VM failed. Check your logs</h3>");
+                            }
+                        },
+                        false);
+            }
+
+            $('#loginClick').on('click', function (e) {
+                gtkload("login");
+            });
+            $('#displayClick').on('click', function (e) {
+                gtkload("display");
+            });
+            </script>

@@ -1,7 +1,0 @@
-The following attributes for the VM object were changed (Cloud TESTCLOUD):
-|attribute                              |old value                          |new value                          
-|svm_stub_name                          |non-existent                       |TESTE                              
-The VM object vm_1, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
-|attribute (VM object key)               |value                                
-|svm_stub_name                           |TESTE                                
-

@@ -1,5 +1,0 @@
-aicapture TESTCLOUD youngest async
-waituntil TESTCLOUD AI CAPTURING=0
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD

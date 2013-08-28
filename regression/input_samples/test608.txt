@@ -1,2 +1,0 @@
-monextract all
-shell ls -la ~/cloudbench/data/REGRESSION_B

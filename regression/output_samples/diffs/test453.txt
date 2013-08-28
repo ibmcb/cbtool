@@ -1,9 +1,0 @@
-|Used Memory                                          |39.29M                        
-|Uptime (in seconds)                                  |13565690                      
-|Total Connections Received                           |6494999                       
-|Total Commands Processed                             |93950098                      
-|Storage Size                                         |16113111024.0                 
-|Data Size                                            |13823253684.0                 
-|Index Size                                           |550334736                     
-|Average Object Size                                  |6601.8357017                  
-|Collections                                          |58                            

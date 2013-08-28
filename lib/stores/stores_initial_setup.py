@@ -445,6 +445,7 @@ def reset(global_objects, soft = True) :
         _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f submit-")
         _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f capture-")
         _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f gmetad.py")
+        _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f gtkCBUI_")
         print "done"
 
         _proc_man.run_os_command("screen -wipe")

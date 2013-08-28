@@ -50,6 +50,7 @@ class BaseObjectOperations :
     TBD
     '''
     default_cloud = None
+    proc_man_os_command = ProcessManagement()
 
     @trace
     def __init__ (self, osci, msci, attached_clouds = []) :
@@ -80,9 +81,7 @@ class BaseObjectOperations :
         TBD
         '''
         try :
-            _cloud_parameters = self.osci.get_object(cloud_name, "CLOUD", False, cloud_name, False)
-
-            return _cloud_parameters
+            return self.osci.get_object(cloud_name, "CLOUD", False, cloud_name, False)
 
         except self.osci.ObjectStoreMgdConnException, obj :
             _msg = "Unable to get parameters for the cloud " + cloud_name
@@ -225,17 +224,6 @@ class BaseObjectOperations :
                 _status = 9
                 _msg = "Usage: hostfail <cloud name> <host name> <service> [parent] [mode]"
                 
-        # These were delete erroneously. Please don't delete them.
-        elif command == "api-check" :
-            if _length < 1 :
-                _status = 9
-                _msg = "Usage: should_refresh <cloud name>"
-                 
-        elif command == "api-reset" :
-            if _length < 1 :
-                _status = 9
-                _msg = "Usage: reset_refresh <cloud name>"
-
         elif command == "host-repair" :
             if _length >= 3 :
                 object_attribute_list["name"] = _parameters[1]
@@ -316,13 +304,6 @@ class BaseObjectOperations :
                 _status = 9
                 _msg = "Usage: vmdetach <cloud name> <vm name> [force] [mode]"
                 
-        elif command == "svm-stat" :
-            if _length >= 2 :
-                object_attribute_list["name"] = _parameters[1]
-            if _length < 2:
-                _status = 9
-                _msg = "Usage: svmstat <cloud name> <svm name> [mode]"
-
         elif command == "vm-debug" :
             if _length >= 2 :
                 object_attribute_list["name"] = _parameters[1]
@@ -330,13 +311,6 @@ class BaseObjectOperations :
                 _status = 9
                 _msg = "Usage: vmdebug <cloud name> <vm name>"
                 
-        elif command == "svm-debug" :
-            if _length >= 2 :
-                object_attribute_list["name"] = _parameters[1]
-            if _length < 2:
-                _status = 9
-                _msg = "Usage: svmdebug <cloud name> <vm name>"
-
         elif command == "vm-runstate" :
             object_attribute_list["suspected_command"] = "unknown" 
             object_attribute_list["firs"] = "none"
@@ -351,28 +325,6 @@ class BaseObjectOperations :
                 _status = 9
                 _msg = "Usage: vmrunstate <cloud name> <vm name> <runstate> [parent] [mode]"
 
-        elif command == "svm-attach" :
-            object_attribute_list["pool"] = "auto"
-            
-            if _length >= 2 :
-                object_attribute_list["name"] = _parameters[1]
-            if _length >= 3 :
-                object_attribute_list["pool"] = _parameters[2]
-            if _length < 2:
-                _status = 9
-                _msg = "Usage: svmattach <cloud name> <vm name> [vmc pool]"
-                
-        elif command == "svm-detach" :
-            object_attribute_list["failover"] = "false"
-            
-            if _length >= 2 :
-                object_attribute_list["name"] = _parameters[1]
-            if _length >= 3 :
-                object_attribute_list["failover"] = _parameters[2]
-            if _length < 2:
-                _status = 9
-                _msg = "Usage: svmdetach <cloud name> <vm name> [initiate failover?]"
-                
         elif command == "vm-capture" :
             if _length == 2 :
                 object_attribute_list["name"] = _parameters[1]
@@ -385,6 +337,33 @@ class BaseObjectOperations :
             if _length < 2:
                 _status = 9
                 _msg = "Usage: vmcapture <cloud name> <vm name> [parent] [mode]"
+                
+        elif command == "api-check":
+            
+            if _length >= 1 :
+                object_attribute_list["time"] = _parameters[1]
+                
+        elif command == "vm-migrate" or command == "vm-protect":
+            object_attribute_list["interface"] = "default" 
+            object_attribute_list["mtype"] = command.split("-")[1]
+            
+            if _length >= 3 :
+                object_attribute_list["name"] = _parameters[1]
+                object_attribute_list["destination"] = _parameters[2] 
+                object_attribute_list["protocol"] = "default"
+                
+                
+            if _length >= 4 :
+                object_attribute_list["protocol"] = _parameters[3]
+                
+            if _length >= 5 :
+                object_attribute_list["interface"] = _parameters[4]
+
+        elif command == "vm-login" or command == "vm-display":
+            object_attribute_list["mtype"] = command.split("-")[1]
+            
+            if _length >= 1 :
+                object_attribute_list["name"] = _parameters[1]
 
         elif command == "vm-resize" :
             if _length >= 2 :
@@ -928,9 +907,6 @@ class BaseObjectOperations :
                     
                 _cloud_parameters = self.get_cloud_parameters(obj_attr_list["cloud_name"])
 
-                if '_' not in obj_attr_list["name"] and '-' not in obj_attr_list["name"] and _obj_type.upper() == "SVM" :
-                    obj_attr_list["name"] = _obj_type.lower() + "_" + obj_attr_list["name"]
-
                 '''
                     Staging operations which contain the keyword 'prepare' indicate that this process
                     must fork a background process first to perform the actual object attachment.
@@ -949,11 +925,7 @@ class BaseObjectOperations :
                 # all other object names are generated on the fly, so they never
                 # "exist" before attachment (a new VM, AI or AIDRS will be created
                 # every time an "attach" command is run).
-                #
-                # SVM FT stubs also have predefined names (they use the same
-                # name ID as their corresponding VMs. Make sure the SVM 
-                # object does not already exist also
-                if _obj_type == "VMC" or _obj_type == "SVM":
+                if _obj_type == "VMC" :
                     _object_exists = self.osci.object_exists(obj_attr_list["cloud_name"], _obj_type, \
                                                              obj_attr_list["name"], \
                                                              True)
@@ -1022,62 +994,32 @@ class BaseObjectOperations :
                     obj_attr_list["base_dir"] = _dir_list["base_dir"]
                     obj_attr_list["identity"] = _dir_list["ssh_key_name"]
 
-                    if _obj_type == "SVM" :
-                        # Fake a "detach" so that we can populate the objects
-                        # of the original primary VM from which we are trying
-                        # to clone all of the VM's key/values (because after
-                        # a failover, all of the values of the SVM FT stub object
-                        # will be identical except for an eventual change
-                        # of VMC location......
-                        _orig_name = obj_attr_list["name"]
-                        _orig_uuid = obj_attr_list["uuid"]
-                        if not _orig_name.count("_") :
-                            obj_attr_list["name"] = _orig_name
-                        else :
-                            obj_attr_list["name"] = "vm_" + _orig_name.split("_")[1]
-                        _status, _fmsg = self.initialize_object(obj_attr_list, "vm-detach")
-                        
-                        if _status :
-                            raise self.ObjectOperationException( \
-                                 "No corresponding VM " + obj_attr_list["name"] + \
-                                 " exists for this SVM FT stub " + _orig_name + \
-                                 ".", _status) 
-                            
-                        if self.osci.get_object_state(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"]) != "attached" :
-                            raise self.ObjectOperationException( \
-                                 "VM " + obj_attr_list["name"] + \
-                                 " is not running. Please restore it first.", "300") 
-                        
-                        _orig_name = "svm_" + obj_attr_list["name"].split("_")[1]
-                            
-                        obj_attr_list["primary_name"] = obj_attr_list["name"]
-                        obj_attr_list["primary_uuid"] = obj_attr_list["uuid"]
-                        if "host_name" in obj_attr_list :
-                            obj_attr_list["primary_host_name"] = obj_attr_list["host_name"]
-                        obj_attr_list["primary_vmc_pool"] = obj_attr_list["vmc_pool"]
-                        obj_attr_list["primary_host_cloud_ip"] = obj_attr_list["host_cloud_ip"]
-                        del obj_attr_list["host"]
-                        del obj_attr_list["host_name"]
-                        del obj_attr_list["host_cloud_ip"]
-                        del obj_attr_list["vmc"]
-                        del obj_attr_list["vmc_cloud_ip"]
-                        obj_attr_list["qemu_debug"] = "false" 
-                        obj_attr_list["qemu_debug_port"] = "" 
-                        obj_attr_list["name"] = _orig_name
-                        obj_attr_list["uuid"] = _orig_uuid
-
                     if _obj_type == "VM" :
                         obj_attr_list["jars_dir"] = _dir_list["jars_dir"]
                         obj_attr_list["exclude_list"] = _dir_list["base_dir"] + "/exclude_list.txt"
                         obj_attr_list["daemon_dir"] = _dir_list["vm_daemon_dir"]
  
+                        if "openvpn_server_address" not in _dir_list or _dir_list["openvpn_server_address"].lower().strip() == "false" :
+                            obj_attr_list["userdata"] = None
+                        else :
+                            _pending_fn = self.osci.pending_object_fn(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"])
+                            openvpn_fh = open(_dir_list["openvpn_client_config"])
+                            _openvpn_contents = openvpn_fh.read()
+                            openvpn_fh.close()
+                            _openvpn_contents = _openvpn_contents.replace("DESTINATION", _dir_list["openvpn_server_address"])
+                            
+                            obj_attr_list["userdata"] = _pending_fn + "\n" + "10.5.0.1\n" + _openvpn_contents
+                            obj_attr_list["openvpn_server_address"] = _dir_list["openvpn_server_address"]
+            
                     self.get_counters(obj_attr_list["cloud_name"], obj_attr_list)
                        
                     _status = 0
 
             elif cmd.count("detach") or cmd.count("capture") or \
                 cmd.count("runstate") or cmd.count("resize") or \
-                cmd.count("restore") or cmd.count("console") :
+                cmd.count("restore") or cmd.count("console") or \
+                cmd.count("migrate") or cmd.count("protect") or \
+                cmd.count("login") or cmd.count("display") :
                 
                 if "target_state" in obj_attr_list and obj_attr_list["target_state"] == "attached" and obj_attr_list["suspected_command"] == "run" :
                     obj_attr_list["uuid"] = obj_attr_list["name"]
@@ -1101,12 +1043,9 @@ class BaseObjectOperations :
                                                          True)
 
                 if not _object_exists :
-                    _fmsg = "Object is not instantiated on the object store."
+                    _fmsg = "Object " + obj_attr_list["name"] + " is not instantiated on the object store."
 
-                    if cmd.count("svm-") :
-                        _fmsg += "Cannot manage fault tolerance for object."
-                        _status = 39
-                    elif cmd.count("detach") :
+                    if cmd.count("detach") :
                         _fmsg += "There is no need for explicitly detach it from "
                         _fmsg += "this experiment."
                         _status = 37
@@ -1119,6 +1058,18 @@ class BaseObjectOperations :
                     elif cmd.count("resize") :
                         _fmsg += "Cannot resize object."
                         _status = 40
+                    elif cmd.count("migrate") :
+                        _fmsg += "Cannot migrate object."
+                        _status = 41
+                    elif cmd.count("protect") :
+                        _fmsg += "Cannot protect object."
+                        _status = 41
+                    elif cmd.count("login") :
+                        _fmsg += "Cannot login to object."
+                        _status = 42
+                    elif cmd.count("display") :
+                        _fmsg += "Cannot display object."
+                        _status = 43
                 else :
                     _status = 0
                     _obj_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], _obj_type, \
@@ -1138,6 +1089,76 @@ class BaseObjectOperations :
                             _msg = "Capture operations are not supported on \"" + _cloud_parameters["description"] + "\" clouds." 
                             _status = 9000
                             raise self.ObjectOperationException(_msg, _status)
+                    elif cmd.count("migrate") or cmd.count("protect") :
+                        op = cmd.split("-")[1]
+                        obj_attr_list["mgt_501_" + op + "_request_originated"] = obj_attr_list["command_originated"]
+                        
+                        vmc_attr = self.osci.get_object(obj_attr_list["cloud_name"], "VMC", False, obj_attr_list["vmc"], False)
+                        host_attr = self.osci.get_object(obj_attr_list["cloud_name"], "HOST", False, obj_attr_list["host"], False)
+                        
+                        dest_name = obj_attr_list["destination"]
+                        
+                        if not dest_name[:5] == "host_" :
+                            dest_name = "host_" + dest_name 
+                            
+                        if host_attr["name"] == dest_name :
+                            _msg = "Source and destination hosts are the same. Try again."
+                            _status = 9421
+                            raise self.ObjectOperationException(_msg, _status) 
+                            
+                        if not self.osci.object_exists(obj_attr_list["cloud_name"], "HOST", dest_name, True) :
+                            _msg = "Destination HOST object for migration does not exist: " + obj_attr_list["destination"]
+                            _status = 9001
+                            raise self.ObjectOperationException(_msg, _status)
+                        
+                        dest_host_attr = self.osci.get_object(obj_attr_list["cloud_name"], "HOST", True, dest_name, False)
+                        dest_vmc_attr = self.osci.get_object(obj_attr_list["cloud_name"], "VMC", False, dest_host_attr["vmc"], False)
+                        
+                        obj_attr_list["destination_vmc"] = dest_vmc_attr["uuid"]
+                        obj_attr_list["destination_vmc_cloud_ip"] = dest_vmc_attr["cloud_ip"]
+                        obj_attr_list["destination_vmc_name"] = dest_vmc_attr["name"]
+                        obj_attr_list["destination_vmc_pool"] = dest_vmc_attr["pool"]
+                        
+                        if vmc_attr[op + "_supported"].lower() != "true" :
+                            _msg = op + " operations are not supported on the source: " + vmc_attr["name"]
+                            _status = 9002
+                            raise self.ObjectOperationException(_msg, _status)
+                        
+                        if dest_vmc_attr[op + "_supported"].lower() != "true" :
+                            _msg = op  + " operations are not supported on the destination: " + dest_name 
+                            _status = 9002
+                            raise self.ObjectOperationException(_msg, _status)
+                            
+                        obj_attr_list["destination_name"] = dest_name
+                        obj_attr_list["destination_uuid"] = dest_host_attr["uuid"]
+                        obj_attr_list["destination"] = dest_name.split("host_", 1)[1]
+                        
+                        if obj_attr_list["interface"] == "default" :
+                            if dest_host_attr[op + "_interface"] != "default" :
+                                obj_attr_list["interface"] = dest_host_attr[op + "_interface"]
+                            else :
+                                obj_attr_list["interface"] = obj_attr_list["destination"]
+                        
+                        obj_attr_list["destination_ip"] = dest_host_attr["cloud_ip"]
+                        
+                        choices = obj_attr_list[op + "_protocol_supported"].split(",")
+                            
+                        obj_attr_list["choices"] = ",".join(choices)
+                            
+                        if obj_attr_list["protocol"] == "default" :
+                                
+                            if (op + "_protocol") in obj_attr_list :
+                                obj_attr_list["protocol"] = obj_attr_list[op + "_protocol"]
+                            else :
+                                cbwarn("default " + op + "_protocol not specified for this cloud." \
+                                    " Will assume defaults.", True)
+                                obj_attr_list["protocol"] = choices[0]
+                                    
+                        if obj_attr_list["protocol"] not in choices :
+                            raise self.ObjectOperationException(op + " protocol " + obj_attr_list["protocol"] + \
+                                                                " not supported. Please choose one of: " + \
+                                                                    " ".join(choices), 9003)
+                                
                     elif cmd.count("runstate") :
                         obj_attr_list["mgt_201_runstate_request_originated"] = obj_attr_list["command_originated"]
                         if obj_attr_list["runstate_supported"].lower() != "true" :
@@ -1152,6 +1173,8 @@ class BaseObjectOperations :
                             raise self.ObjectOperationException(_msg, _status)
                     elif cmd.count("detach") :
                         obj_attr_list["mgt_901_deprovisioning_request_originated"] = obj_attr_list["command_originated"]
+                    elif cmd.count("login") or cmd.count("display") :
+                        pass
                     else :
                         False
             ######### "ACTIVE" OPERATION OBJECT INITIALIZATION - END #########
@@ -1201,6 +1224,7 @@ class BaseObjectOperations :
                 if cmd.count("stats") :
                     obj_attr_list["command"] = obj_attr_list["command"].replace("stats-get", "stats")
      
+                obj_attr_list["regression"] = _cloud_parameters["regression"]
                 obj_attr_list["cloud_name"] = _cloud_parameters["name"]
                 obj_attr_list["cloud_model"] = _cloud_parameters["model"]
                 obj_attr_list["all"] = _cloud_parameters["all"]
@@ -1215,8 +1239,7 @@ class BaseObjectOperations :
 
             obj_attr_list["command"] = obj_attr_list["command"].replace("-", '').replace("cloud", "cld")
 
-            if _operation + "_parallel" not in obj_attr_list and not cmd.count("api-check") \
-                    and not cmd.count("api-reset") and not cmd.count("list") :
+            if _operation + "_parallel" not in obj_attr_list and not cmd.count("api-check") and not cmd.count("list") :
                 if self.msci :
                     self.get_counters(obj_attr_list["cloud_name"], obj_attr_list)
                     self.record_management_metrics(obj_attr_list["cloud_name"], _obj_type, obj_attr_list, "trace")
@@ -1253,8 +1276,7 @@ class BaseObjectOperations :
             _fmsg = "An error has occurred, but no error message was captured"
 
             _admission_control_limits = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, \
-                                                             "admission_control", \
-                                                             False)
+                                                             "admission_control", False)
             if transaction == "attach" :
                 if obj_type != "AI" :
                     _reservation = self.osci.update_counter(obj_attr_list["cloud_name"], obj_type, \
@@ -1274,18 +1296,18 @@ class BaseObjectOperations :
 
                     raise self.ObjectOperationException(_fmsg, 10)
                 
-                if obj_type == "VM" or obj_type == "SVM":
-                    
-                    _msg = "Increasing the \"number of VMs\" counter for the "
-                    _msg += "VMC " + obj_attr_list["vmc"]
+                if obj_type == "VM" :
+                    vmc = obj_attr_list["vmc"]
+                        
+                    _msg = "Increasing the \"number of VMs\" counter for the VMC: " + vmc 
                     cbdebug(_msg)
                     _vmc_reservation = self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VMC", \
-                                                      obj_attr_list["vmc"], \
-                                                      False, "nr_vms", 1, True)
+                                                      vmc, False, "nr_vms", 1, True)
                     _msg = "New value is " + str(_vmc_reservation)
                     cbdebug(_msg)
 
-                    if int(_vmc_reservation) > int(obj_attr_list["vmc_max_vm_reservations"]) :
+                    _vmc_attrs = self.osci.get_object(obj_attr_list["cloud_name"], "VMC", False, vmc, False)
+                    if int(_vmc_reservation) > int(_vmc_attrs["max_vm_reservations"]) :
                         _status = 102
                         _fmsg ="VMC-wide reservations for VM objects exhausted."
                         raise self.ObjectOperationException(_fmsg, 10)
@@ -1293,18 +1315,59 @@ class BaseObjectOperations :
                     # This key can be safely deleted. It should not be written
                     # in the datastore as part of the "VM" object (it is already
                     # part of the "VMC" object.
-                    del obj_attr_list["vmc_max_vm_reservations"]
+                    if "vmc_max_vm_reservations" in obj_attr_list :
+                        del obj_attr_list["vmc_max_vm_reservations"]
                 
                 else :
 
                     True
+
+            elif transaction == "migrate" :
+                vmc = obj_attr_list["destination_vmc"]
+                    
+                _msg = "Increasing the \"number of VMs\" counter for the VMC: " + vmc 
+                cbdebug(_msg)
+                _vmc_reservation = self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VMC", \
+                                                  vmc, False, "nr_vms", 1, True)
+                _msg = "New value is " + str(_vmc_reservation)
+                cbdebug(_msg)
+
+                _vmc_attrs = self.osci.get_object(obj_attr_list["cloud_name"], "VMC", False, vmc, False)
+                if int(_vmc_reservation) > int(_vmc_attrs["max_vm_reservations"]) :
+                    _status = 102
+                    _fmsg ="VMC-wide reservations for VM objects exhausted."
+                    raise self.ObjectOperationException(_fmsg, 10)
+                    
+            elif transaction == "rollbackmigrate" :
+                vmc = obj_attr_list["destination_vmc"]
+                
+                _msg = "Decreasing the \"number of VMs\" counter for the "
+                _msg += "VMC " + vmc + " due to a rollback."
+                cbdebug(_msg)
+                _vmc_reservation = self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VMC", \
+                                                                 vmc, False, "nr_vms", -1, True)
+
+                _msg = "New value is " + str(_vmc_reservation)
+                cbdebug(_msg)
+                
+            elif transaction == "migratefinish" :
+                vmc = obj_attr_list["vmc"]
+                
+                _msg = "Decreasing the \"number of VMs\" counter for the "
+                _msg += "VMC " + vmc + " after migration finished."
+                cbdebug(_msg)
+                _vmc_reservation = self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VMC", \
+                                                                 vmc, False, "nr_vms", -1, True)
+
+                _msg = "New value is " + str(_vmc_reservation)
+                cbdebug(_msg)
 
             elif transaction == "detach" :
 
                 _reservation = self.osci.update_counter(obj_attr_list["cloud_name"], obj_type, "RESERVATIONS", \
                                                             "decrement")
 
-                if obj_type == "VM" or obj_type == "SVM" :
+                if obj_type == "VM" :
 
                     _msg = "Decreasing the \"number of VMs\" counter for the "
                     _msg += "VMC " + obj_attr_list["vmc"]
@@ -1343,7 +1406,7 @@ class BaseObjectOperations :
                 self.osci.update_counter(obj_attr_list["cloud_name"], obj_type, "RESERVATIONS", \
                                          "increment")
 
-                if obj_type == "VM" or obj_type == "SVM" :
+                if obj_type == "VM" :
                     _msg = "Increasing the \"number of VMs\" counter for the "
                     _msg += "VMC " + obj_attr_list["vmc"] + " due to a "
                     _msg += "rollback."
@@ -1377,19 +1440,18 @@ class BaseObjectOperations :
                 else :
                     True
 
-            elif transaction == "rollbackattach" :               
+            elif transaction == "rollbackattach" :
                 self.osci.update_counter(obj_attr_list["cloud_name"], obj_type, "RESERVATIONS", \
                                          "decrement")
-                if obj_type == "VM" or obj_type == "SVM" :
+                
+                if obj_type == "VM" :
+                    vmc = obj_attr_list["vmc"]
                     _msg = "Decreasing the \"number of VMs\" counter for the "
-                    _msg += "VMC " + obj_attr_list["vmc"] + " due to a "
+                    _msg += "VMC " + vmc + " due to a "
                     _msg += "rollback."
                     cbdebug(_msg)
                     _vmc_reservation = self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VMC", \
-                                                                     obj_attr_list["vmc"], \
-                                                                     False, \
-                                                                     "nr_vms", \
-                                                                     -1, True)
+                                                                     vmc, False, "nr_vms", -1, True)
 
                     _msg = "New value is " + str(_vmc_reservation)
                     cbdebug(_msg)
@@ -1426,6 +1488,10 @@ class BaseObjectOperations :
 
         except self.osci.ObjectStoreMgdConnException, obj :
             _fmsg = str(obj.msg)
+            
+        except KeyError, e :
+            _fmsg = str(e)
+            _status = 2341
         
         finally :
             
@@ -1609,9 +1675,7 @@ class BaseObjectOperations :
         '''
         try :
             _status = 100
-            if obj_attr_list["name"] == "random" or \
-            obj_attr_list["name"] == "youngest" or \
-            obj_attr_list["name"] == "oldest" :
+            if obj_attr_list["name"] in ["random", "youngest", "oldest"] :
                 _obj_list = self.osci.query_by_view(obj_attr_list["cloud_name"], obj_type, "BYUSERNAME", username)
                 if _obj_list :
                     if obj_attr_list["name"] == "random" :
@@ -2045,20 +2109,25 @@ class BaseObjectOperations :
                 _obj_attr_list["run_generic_scripts"].lower() != "false" :
 
                     _msg = "Performing generic application instance post_boot "
-                    _msg += "configuration on all VMs beloging to " + _ai_attr_list["name"] + "..."                
+                    _msg += "configuration on all VMs belonging to " + _ai_attr_list["name"] + "..."                
                     cbdebug(_msg, True)
-                    self.osci.pending_object_set(cloud_name, "AI", ai_uuid, _msg)
+                    self.osci.pending_object_set(cloud_name, "AI", ai_uuid, "status", _msg)
 
                 else :
                     _msg = "Bypassing generic VM post_boot configuration on all "
-                    _msg += "VMs beloging to " + _ai_attr_list["name"] + "..."                
+                    _msg += "VMs belonging to " + _ai_attr_list["name"] + "..."                
                     cbdebug(_msg, True)
 
-                _proc_man = ProcessManagement(username = _vm_logins[0], \
-                          cloud_name = _ai_attr_list["cloud_name"], \
-                          priv_key = _vm_priv_keys[0])
+                # This variable is permanent, now (for as long as the daemon lives)
+                # but these parameters can still change across daemon invocations,
+                # so we need to be sure to update them in case they are changed
+                # by the user between one VApp to the next.
+                
+                self.proc_man_os_command.cloud_name =  _ai_attr_list["cloud_name"]
+                self.proc_man_os_command.username = _vm_logins[0]
+                self.proc_man_os_command.priv_key = _vm_priv_keys[0]
 
-                _status, _xfmsg = _proc_man.parallel_run_os_command(_vm_post_boot_commands, \
+                _status, _xfmsg = self.proc_man_os_command.parallel_run_os_command(_vm_post_boot_commands, \
                                                                     _vm_ip_addrs, \
                                                                     _ai_attr_list["attempts"], \
                                                                     _ai_attr_list["execute_parallelism"], \
@@ -2094,9 +2163,18 @@ class BaseObjectOperations :
                 _ai_attr_list["run_application_scripts"].lower() != "false" :
                 
                     _msg = "Running application-specific \"" + operation + "\" "
-                    _msg += "configuration on all VMs beloging to " + _ai_attr_list["name"] + "..."                
+                    _msg += "configuration on all VMs belonging to " + _ai_attr_list["name"] + "..."                
                     cbdebug(_msg, True)
-                    self.osci.pending_object_set(cloud_name, "AI", ai_uuid, _msg)
+                    notify_client_refresh = False
+                    if "first_app_run_finished" not in _ai_attr_list or \
+                        _ai_attr_list["first_app_run_finished"].lower() != "true" :
+                        notify_client_refresh = True
+                        self.osci.update_object_attribute(_ai_attr_list["cloud_name"], "AI", _ai_attr_list["uuid"], \
+                              False, "first_app_run_finished", "true")
+                        _ai_attr_list["first_app_run_finished"] = "true"
+                        
+                        
+                    self.osci.pending_object_set(cloud_name, "AI", ai_uuid, "status", _msg, notify_client_refresh)
 
                 else :
                     _msg = "Bypassing application-specific configuration on all "
@@ -2105,8 +2183,15 @@ class BaseObjectOperations :
                     _status = 0
 
                 if "dont_start_load_manager" in _ai_attr_list and \
-                _ai_attr_list["dont_start_load_manager"].lower() == "true" :
+                    _ai_attr_list["dont_start_load_manager"].lower() == "true" :
                     _msg = "Load Manager will NOT be automatically"
+                    _msg += " started during the deployment of "
+                    _msg += _ai_attr_list["name"] + "..."                
+                    cbdebug(_msg, True)
+
+                if "dont_start_qemu_scraper" in _ai_attr_list and \
+                    _ai_attr_list["dont_start_qemu_scraper"].lower() == "true" :
+                    _msg = "QEMU Scraper will NOT be automatically"
                     _msg += " started during the deployment of "
                     _msg += _ai_attr_list["name"] + "..."                
                     cbdebug(_msg, True)
@@ -2151,8 +2236,18 @@ class BaseObjectOperations :
                                 
                                 _ai_attr_list[_lmr + '_' + operation + str(_num + 1)] = "cb_start_load_manager.sh"
 
+                                # The scraper startup is conditional only upon
+                                # enablement of the load manager as well.
+                                if "dont_start_qemu_scraper" not in _ai_attr_list \
+                                       or _ai_attr_list["dont_start_qemu_scraper"].lower() != "true" :
+                                    _msg = "Adding the startup of the qemu scraper to the "
+                                    _msg += "list of commands. It will be executed on the "
+                                    _msg += "VM with the role \"" + _lmr + "\""
+                                    cbdebug(_msg)
+                                    
+                                    _ai_attr_list[_lmr + '_' + operation + str(_num + 2)] = "cb_start_qemu_scraper.sh"
+
                     if _ai_attr_list["run_application_scripts"].lower() != "false" :
-    
                         _msg = "The following command list will be executed: "
                         _msg += ','.join(_vm_command_list)
                         cbdebug(_msg)
@@ -2166,11 +2261,11 @@ class BaseObjectOperations :
                             _msg = operation.upper() + str(_num)
                             cbdebug(_msg, True)
 
-                    _proc_man = ProcessManagement(username = _vm_logins[0], \
-                                                  cloud_name = _ai_attr_list["cloud_name"], \
-                                                  priv_key = _vm_priv_keys[0])
+                    self.proc_man_os_command.cloud_name =  _ai_attr_list["cloud_name"]
+                    self.proc_man_os_command.username = _vm_logins[0]
+                    self.proc_man_os_command.priv_key = _vm_priv_keys[0]
 
-                    _status, _xfmsg = _proc_man.parallel_run_os_command(_vm_command_list, \
+                    _status, _xfmsg = self.proc_man_os_command.parallel_run_os_command(_vm_command_list, \
                                                                         _vm_ip_addrs, \
                                                                         _ai_attr_list["attempts"], \
                                                                         _ai_attr_list["execute_parallelism"], \
@@ -2471,7 +2566,7 @@ class BaseObjectOperations :
             if _status :
                 _msg = "Management (" + operation + ") metrics record failure: " + _fmsg
                 cberr(_msg)
-                raise self.ObjectOperationException(_msg, _status)
+#                raise self.ObjectOperationException(_msg, _status)
             else :
                 _msg = "Management (" + operation + ") metrics record success."
                 cbdebug(_msg)
@@ -2741,6 +2836,12 @@ class BaseObjectOperations :
             elif counter == "CAPTURING" :
                 _counter_value = str(self.get_process_object(cloud_name, obj_type, "capture"))
                 _status = 0
+            elif counter == "MIGRATING" :
+                _counter_value = str(self.get_process_object(cloud_name, obj_type, "migrate"))
+                _status = 0
+            elif counter == "PROTECTING" :
+                _counter_value = str(self.get_process_object(cloud_name, obj_type, "protect"))
+                _status = 0
             else :
                 _counter_value = str(self.osci.count_object(cloud_name, obj_type, counter))
                 _status = 0
@@ -2829,16 +2930,17 @@ class BaseObjectOperations :
         return True
 
     @trace
-    def auto_allocate_vm_port(self, name, obj_attr_list):
+    def auto_allocate_port(self, name, obj_attr_list, obj_type, obj_id, address):
         '''
         Generic function for reserving a port on a VM object basis.
-        Currently used by: FT replication *and* QEMU gdb debugger
+        Currently used by: QEMU gdb debugger
+        Also used by UI to allocate gnome-terminal and spice ports for in-browser display.
         '''
         throw = False
         _lock = False
         base_name = name + "_port_base"
         max_name = name + "_port_max"
-        vmc_used_name = name + "_port_used"
+        used_name = name + "_port_used"
         
         if obj_attr_list[name].strip().lower() != "true" :
             return 0, "Not configured"
@@ -2847,25 +2949,21 @@ class BaseObjectOperations :
         _fmsg = "Could not find available port: " + base_name + "/" + max_name
             
         try :
-            _lock = self.osci.acquire_lock(obj_attr_list["cloud_name"], "VMC", obj_attr_list["vmc"], "allocate_port", 1)
+            _lock = self.osci.acquire_lock(obj_attr_list["cloud_name"], obj_type, obj_id, "allocate_port", 1)
+            used_ports = self.get_object_attribute(obj_attr_list["cloud_name"], obj_type, obj_id, used_name)
             
-            _vmc_used_ports = self.get_object_attribute(
-                    obj_attr_list["cloud_name"], "VMC", \
-                    obj_attr_list["vmc"], vmc_used_name)
-            
-            if _vmc_used_ports and _vmc_used_ports.strip() != "" :
-                _vmc_used_ports = str2dic(_vmc_used_ports)
+            if used_ports and used_ports.strip() != "" :
+                used_ports = str2dic(used_ports)
             else :
-                _vmc_used_ports = {}
-            _nh_conn = Nethashget(obj_attr_list["vmc_cloud_ip"])
+                used_ports = {}
+            _nh_conn = Nethashget(address)
             for _curr_port in range(int(obj_attr_list[base_name]), \
                                     int(obj_attr_list[max_name])) :
-                if str(_curr_port) not in _vmc_used_ports :
+                if str(_curr_port) not in used_ports :
                     if not _nh_conn.check_port(_curr_port, "TCP") :
-                        _vmc_used_ports[_curr_port] = obj_attr_list["uuid"]
-                        self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VMC", obj_attr_list["vmc"], \
-                                                          False, vmc_used_name, \
-                                                          dic2str(_vmc_used_ports), False)
+                        used_ports[_curr_port] = obj_attr_list["uuid"]
+                        self.osci.update_object_attribute(obj_attr_list["cloud_name"], obj_type, obj_id, \
+                              False, used_name, dic2str(used_ports), False)
                         obj_attr_list[name + "_port"] = _curr_port
                         _status = 0
                         break
@@ -2874,116 +2972,51 @@ class BaseObjectOperations :
             
         finally :
             if _lock :
-                self.osci.release_lock(obj_attr_list["cloud_name"], "VMC", obj_attr_list["vmc"], _lock)
+                self.osci.release_lock(obj_attr_list["cloud_name"], obj_type, obj_id, _lock)
             if throw :
                 raise throw
             
         return _status, _fmsg
-
+    
     @trace
-    def auto_free_vm_port(self, name, obj_attr_list) :
+    def auto_free_port(self, name, obj_attr_list, obj_type, obj_id, address) :
         '''
         TBD
         '''
         throw = False
         _lock = False
-        vmc_used_name = name + "_used"
+        used_name = name + "_used"
         
         if obj_attr_list[name].strip().lower() != "true" :
             return 0, "Not configured"
         
         try :
-            _lock = self.osci.acquire_lock(obj_attr_list["cloud_name"], "VMC", obj_attr_list["vmc"], "allocate_port", 1)
+            _lock = self.osci.acquire_lock(obj_attr_list["cloud_name"], obj_type, obj_id, "allocate_port", 1)
             
-            _vmc_used_ports = self.get_object_attribute(
-                    obj_attr_list["cloud_name"], "VMC", \
-                    obj_attr_list["vmc"], vmc_used_name)
+            used_ports = self.get_object_attribute(obj_attr_list["cloud_name"], obj_type, obj_id, used_name)
             
-            if _vmc_used_ports :
-                _vmc_used_ports = str2dic(_vmc_used_ports)
-                del _vmc_used_ports[str(obj_attr_list[name + "_port"])]
-                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VMC", obj_attr_list["vmc"], \
-                                  False, vmc_used_name, dic2str(_vmc_used_ports), False)
+            if used_ports :
+                used_ports = str2dic(used_ports)
+                del used_ports[str(obj_attr_list[name + "_port"])]
+                self.osci.update_object_attribute(obj_attr_list["cloud_name"], obj_type, obj_id, \
+                                  False, used_name, dic2str(used_ports), False)
         except Exception, e :
             throw = e 
             
         finally :
             if _lock :
-                self.osci.release_lock(obj_attr_list["cloud_name"], "VMC", obj_attr_list["vmc"], _lock)
+                self.osci.release_lock(obj_attr_list["cloud_name"], obj_type, obj_id, _lock)
             if throw :
                 raise throw
 
     @trace
-    def reset_refresh(self, obj_attr_list, parameters, command):
-        '''
-        TBD
-        '''
-        _result = False
+    def compare_refresh(self, cloud_name, last_refresh) :
+        _cloud_parameters = self.get_cloud_parameters(cloud_name)
         
-        try :
-            _status = 100
-            _fmsg = "An error has occurred, but no error message was captured"
-            _obj_type = command.split('-')[0].upper()
-            _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
-
-            if not _status :
-                _status, _fmsg = self.initialize_object(obj_attr_list, command)
-
-            if not _status :
-                self.update_cloud_attribute(obj_attr_list["cloud_name"], "client_should_refresh", "no")
-                
-            _status = 0
-                
-        except BaseObjectOperations.ObjectOperationException, msg :
-            _status = 30
-            _fmsg = str(msg)
-            
-        finally :
-            if _status :
-                _msg = "Reset Refresh failure: " + _fmsg
-                cberr(_msg)
-            else :
-                _msg = "Reset refresh success."
-                cbdebug(_msg)
-                
-        return self.package(_status, _msg, _result)
-    
-    @trace
-    def should_refresh(self, obj_attr_list, parameters, command) :
-        '''
-        TBD
-        '''
-        _result = False
+        if float(_cloud_parameters["client_should_refresh"]) > float(last_refresh) :
+            return True
         
-        try :
-            _status = 100
-            _fmsg = "An error has occurred, but no error message was captured"
-            _obj_type = command.split('-')[0].upper()
-            _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
-
-            if not _status :
-                _status, _fmsg = self.initialize_object(obj_attr_list, command)
-
-            if not _status :
-                _cloud_parameters = self.get_cloud_parameters(obj_attr_list["cloud_name"])
-                if _cloud_parameters["client_should_refresh"] == "yes" :
-                    _result = True 
-                    
-            _status = 0
-            
-        except BaseObjectOperations.ObjectOperationException, msg :
-            _status = 30
-            _fmsg = str(msg)
-            
-        finally :
-            if _status :
-                _msg = "Refresh check failure: " + _fmsg
-                cberr(_msg)
-            else :
-                _msg = "Refresh check: " + str(_result)
-                cbdebug(_msg)
-                
-        return self.package(_status, _msg, _result)
+        return False
 
     @trace
     def update_host_os_perfmon(self, obj_attr_list) :
@@ -3171,6 +3204,14 @@ class BaseObjectOperations :
 
             if not _status :
                 _cloud_parameters = self.get_cloud_parameters(_obj_attr_list["cloud_name"])
+                
+                if not command.lower().count("all") and not parameters.count("all") :
+                    self.pre_select_object(_obj_attr_list, _obj_type, _cloud_parameters["username"])    
+                    
+                if "name" in _obj_attr_list and not _obj_attr_list["name"].lower().count(_obj_type.lower() + "_")  \
+                    and _obj_type != "HOST" and _obj_type != "VMC" \
+                    and (not _obj_attr_list["name"].count("-") == 4) :
+                    _obj_attr_list["name"] = _obj_type.lower() + "_" + _obj_attr_list["name"]
 
                 #if not command.count("detachall") :
                 #    _parallel_operations = 1
@@ -3199,16 +3240,12 @@ class BaseObjectOperations :
                         if parameters.count("all") :
                             _obj_uuid = "ALL"
                         else :
-                            self.pre_select_object(_obj_attr_list, \
-                                                   _obj_type, \
-                                                   _cloud_parameters["username"])    
-                            
                             _obj_uuid = self.osci.object_exists(_obj_attr_list["cloud_name"], _obj_type, \
                                                                 _obj_attr_list["name"], \
                                                                 True)
     
                         if not _obj_uuid :
-                            _fmsg = "Object is not instantiated on the object store."
+                            _fmsg = "Object " + _obj_attr_list["name"] + " is not instantiated on the object store."
                             _fmsg += "There is no need for explicitly detach it from "
                             _fmsg += "this experiment."
                             _status = 37
@@ -3228,7 +3265,9 @@ class BaseObjectOperations :
                     elif command.count("runstate") or \
                     command.count("fail") or command.count("repair") or \
                     command.count("save") or command.count("restore") or \
-                    command.count("resize") or command.count("detachall") :
+                    command.count("resize") or command.count("detachall") or \
+                    command.count("migrate") or command.count("protect") or \
+                    command.count("login") or command.count("display") :
     
                         if _obj_type != "HOST" and ("suspected_command" not in _obj_attr_list or _obj_attr_list["suspected_command"] != "run") :
                             _obj_uuid = self.osci.object_exists(_obj_attr_list["cloud_name"], _obj_type, \
@@ -3238,8 +3277,8 @@ class BaseObjectOperations :
                             _obj_uuid = _obj_attr_list["name"]
     
                         if not _obj_uuid :
-                            _fmsg = "Object is not instantiated on the object store."
-                            _fmsg += "It cannot be captured on this experiment."
+                            _fmsg = "Object " + _obj_attr_list["name"] + " is not instantiated on the object store."
+                            _fmsg += "It cannot be used on this experiment."
                             _status = 37
     
                         else :

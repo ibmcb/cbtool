@@ -1,1 +1,0 @@
-Usage: svmdetach <cloud_name> <identifier> [force = False] [mode] 

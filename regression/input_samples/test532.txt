@@ -1,6 +1,0 @@
-aiattach hadoop hadoopslave_size=platinum64,sut=hadoopmaster->1_x_hadoopslave async
-waitfor 18s
-ailist
-vmlist
-aishow ai_6 detach_parallelism,ssh_key_name,sut
-stats

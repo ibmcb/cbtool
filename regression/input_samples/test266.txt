@@ -1,3 +1,0 @@
-airunstate TESTCLOUD ai_3 attached
-stateshow TESTCLOUD
-stats TESTCLOUD

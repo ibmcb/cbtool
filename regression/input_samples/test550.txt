@@ -1,4 +1,0 @@
-aiattach specweb
-ailist
-vmlist
-stats

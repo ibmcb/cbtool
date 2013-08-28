@@ -1,2 +1,0 @@
-vmcalter TESTCLOUD simzone_a replication_vmcs=TESTE
-vmcshow TESTCLOUD simzone_a replication_vmcs

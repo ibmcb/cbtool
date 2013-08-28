@@ -1,3 +1,0 @@
-vmdetach random
-vmlist
-stats

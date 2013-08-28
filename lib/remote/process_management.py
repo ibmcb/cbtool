@@ -192,7 +192,7 @@ class ProcessManagement :
                 serial_mode = False # only used for debugging
 
                 if not _thread_pool and not serial_mode :
-                    pool_key = override_hostname_list[_index]
+                    pool_key = 'ai_execute_with_parallelism_' + str(execute_parallelism)
                     if pool_key not in self.thread_pools :
                         _thread_pool = ThreadPool(int(execute_parallelism))
                         self.thread_pools[pool_key] = _thread_pool
@@ -393,18 +393,25 @@ class ProcessManagement :
         return _pid
 
     @trace
-    def kill_process(self, cmdline, kill_options = False) :
+    def kill_process(self, cmdline, kill_options = False, port = False) :
         '''
         TBD
         '''
         _pid = ['X']
+        _old_pid = False 
+        _msg = "none"
 
-        while len(_pid) :
+        while len(_pid) and _pid[0] :
 
-            _pid = self.get_pid_from_cmdline(cmdline)
-            _pid = self.get_pid_from_cmdline(cmdline, kill_options)
+            if kill_options :
+                _pid = self.get_pid_from_cmdline(cmdline, kill_options)
+            elif port :
+                pid, username = self.get_pid_from_port(port)
+                _pid = [pid]
+            else :
+                _pid = self.get_pid_from_cmdline(cmdline)
 
-            if len(_pid) :
+            if len(_pid) and _pid[0] :
                 _pid = _pid[0]
 
                 if self.hostname == "127.0.0.1" :

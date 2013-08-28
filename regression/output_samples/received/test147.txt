@@ -1,1 +1,0 @@
-Usage: aisuspend <cloud_name> <identifier> [firs = none] [mode] 

@@ -365,6 +365,7 @@ class ScpCmds(CommonCloudFunctions) :
             obj_attr_list["hosts"] = obj_attr_list["hosts"][:-1]
 
             self.additional_host_discovery (obj_attr_list)
+            self.populate_interface(obj_attr_list)
 
             return True
 

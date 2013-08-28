@@ -1,0 +1,56 @@
+    <div id="ProtectModal" style="display:none">
+    <div id="ProtectContents" width='300px'>
+        <form method='get' action='BOOTDEST/provision'>
+        <input type='hidden' name='object' value='BOOTACTIVE'/>
+        <input type='hidden' name='operation' value='protect'/>
+        <input type='hidden' name='keywords' value='5'/>
+        <table>
+            BOOTPROTECT
+            <tr><td>Interface:</td><td><input type='text' name='keyword4' value='default'/></td></tr>
+            <tr><td>Mode:</td><td><input type='text' name='keyword5' value='async'/></td></tr>
+            <tr><td>
+            &nbsp;<button type="submit" class="btn btn-primary">
+            <i class="icon-star icon-white"></i>&nbsp;Protect</button>
+            </td></tr>
+        </table>
+        </form>
+    </div>
+    </div>
+	<script>
+	var isProtectVisible = false;
+	var isProtectClickedAway = false;
+	var protectpop = $('#protectpop').popover({ 
+	    html : true,
+	    title: "Protect BOOTOBJECTNAME:",
+	    placement : 'bottom',
+            trigger: 'manual',
+	    template: '<div id="protectpopover" class="popover"><div class="popover-inner"><h3 class="popover-title"></h3><div class="popover-content"><p></p></div></div></div>',
+	    content: function() {
+	      return $('#ProtectModal').html();
+	    }
+	  });
+	  /* Allow the popover to close when clicking somewhere else on the screen */
+	  protectpop.data('popover').tip().css('z-index', 1030).css('margin-left', '200px');
+	  protectpop.click(function(e) {
+	        $(this).popover('show');
+	        isProtectClickedAway = false;
+	        isProtectVisible = true;
+	        e.preventDefault();
+	    });
+
+		$(document).click(function(e) {
+	      if(findParentNode('ProtectContents', e.srcElement, 'cbody') == true)
+	      	return;
+	      if(findParentNode('protectpopover', e.srcElement, 'cbody') == true)
+	      	return;
+		  if(isProtectVisible & isProtectClickedAway)
+		  {
+		    $('#protectpop').popover('hide')
+		    isProtectVisible = isProtectClickedAway = false
+		  }
+		  else
+		  {
+		    isProtectClickedAway = true
+		  }
+		});
+	</script>

@@ -1,2 +1,0 @@
-vmalter TESTCLOUD vm_1 svm_stub_name=TESTE
-vmshow TESTCLOUD vm_1 svm_stub_name

@@ -1,4 +1,0 @@
-aiattach TESTCLOUD specweb
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD

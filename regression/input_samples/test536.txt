@@ -1,5 +1,0 @@
-vmcapture vm_29
-stats
-ailist
-vmlist
-stats
