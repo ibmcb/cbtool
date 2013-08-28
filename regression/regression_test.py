@@ -31,6 +31,7 @@ from subprocess import Popen, PIPE
 
 import os
 import HTML
+import re
 
 def make_regression_test(reg_tst_f_contents, reg_tst_expl_fn) :
     '''
@@ -88,6 +89,36 @@ def make_regression_test(reg_tst_f_contents, reg_tst_expl_fn) :
     _msg += " Now run it with the command \"./cloudbench/cloudbench.py --trace regression/"
     _msg += reg_tst_expl_fn + " 2>&1 > regression_test_output.txt\""
     print _msg
+
+ignore_strings = [
+                  "Used Memory", 
+                  "Uptime (in seconds)", 
+                  "Total Connections Received",
+                  "Total Commands Processed",
+                  "Number of Keys",
+                  "Storage Size",
+                  "Data Size",
+                  "Index Size",
+                  "Average Object Size",
+                  "Collections",
+                  ]                          
+
+def mask_contents(contents) :
+    for _line_number, _line_contents in enumerate(contents) :
+        for istring in ignore_strings :
+            if _line_contents.count(istring) :
+                _line_contents = "ignored"
+                break
+
+        _line_contents = re.sub("[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ *", 'xxx.xxx.xxx.xxx ', _line_contents)
+        _line_contents = re.sub("EXP-[0-9]+-[0-9]+-[0-9]+-[0-9]+-[0-9]+-[0-9]+-[A-Z]+-[A-Z]+", 'exp_identifier', _line_contents)
+        _line_contents = re.sub(": [0-9]+,", ": xxxxxxxxxx,", _line_contents)
+        _line_contents = re.sub("\|13[0-9]+", "|xxxxxxxxxx", _line_contents)
+        _line_contents = re.sub("port:[0-9]+", "port:xxxx", _line_contents)
+        _line_contents = re.sub("simhost[a-z]+[0-9]+", "simhostX", _line_contents)
+        _line_contents = re.sub("The process id is [0-9]+", "The process id is xxxx", _line_contents)
+        contents[_line_number] = \
+                re.sub("[a-zA-Z0-9_]+-[a-zA-Z0-9_]+-[a-zA-Z0-9_]+-[a-zA-Z0-9_]+-[a-zA-Z0-9_]+", 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', _line_contents)
 
 def validate_regression_test(reg_tst_expl_f_contents, reg_tst_gold_f_contents, reg_tst_sup_out_fn, reg_tst_val_fn) :
     '''
@@ -179,7 +210,10 @@ def validate_regression_test(reg_tst_expl_f_contents, reg_tst_gold_f_contents, r
         _test_output_fh = open(path[0] + '/' + _outputs_directory + '/received/test' + str(_test) + ".txt", 'r')
         _test_contents = _test_output_fh.readlines()
         _test_output_fh.close()
-        
+
+        mask_contents(_gold_contents)
+        mask_contents(_test_contents)
+
         _diff = ''
         _diff_size = 0
 

@@ -202,6 +202,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
     
                 cld_attr_lst["all"] = ','.join(_all_global_objects)
                 cld_attr_lst["all_vmcs_attached"] = "false"
+                cld_attr_lst["regression"] = str(cld_attr_lst["space"]["regression"]).strip().lower()
                 cld_attr_lst["description"] = _cld_conn.get_description()
                 cld_attr_lst["username"] = cld_attr_lst["time"]["username"]
                 cld_attr_lst["start_time"] = str(int(time()))

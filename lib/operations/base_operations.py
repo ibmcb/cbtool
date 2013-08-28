@@ -1224,6 +1224,7 @@ class BaseObjectOperations :
                 if cmd.count("stats") :
                     obj_attr_list["command"] = obj_attr_list["command"].replace("stats-get", "stats")
      
+                obj_attr_list["regression"] = _cloud_parameters["regression"]
                 obj_attr_list["cloud_name"] = _cloud_parameters["name"]
                 obj_attr_list["cloud_model"] = _cloud_parameters["model"]
                 obj_attr_list["all"] = _cloud_parameters["all"]

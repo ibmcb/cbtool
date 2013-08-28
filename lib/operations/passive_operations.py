@@ -150,6 +150,10 @@ def gmetric_write(NAME, VAL, TYPE, UNITS, SLOPE, TMAX, DMAX, GROUP, SPOOF):
 class PassiveObjectOperations(BaseObjectOperations) :
     
     @trace
+    def keyfunc(self, x):
+        return x.split("|")[1]
+    
+    @trace
     def list_objects(self, obj_attr_list, parameters, command) :
         '''
         TBD
@@ -247,6 +251,9 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _obj_list = self.osci.get_object_list(obj_attr_list["cloud_name"], _obj_type)
                     else :
                         _obj_list = self.osci.query_by_view(obj_attr_list["cloud_name"], _obj_type, "BYUSERNAME", obj_attr_list["username"], "name", "all", False)
+                        
+                        if obj_attr_list["regression"] == "true" :
+                            _obj_list.sort(key=self.keyfunc)
     
                     if _obj_list :
                         for _obj in _obj_list :

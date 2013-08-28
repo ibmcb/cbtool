@@ -19,6 +19,8 @@ MAIN_USERNAME = $USER_AUTO
 # This is the username created inside the VMs
 # Variable $PATH_TO_TOOL attempts to auto-selects the appropriate path 
 MAIN_BASE_DIR = $PATH_TO_TOOL
+# Are we running under regression?
+# If so, instruct list_objects() to sort its output
 
 # The SSH key name and username keys are 
 # mandatory and is made mandatory
@@ -55,6 +57,7 @@ VM_DAEMON_DIR = /home/klabuser
 #  The "cloudbench/jar" part of the directory is hardcoded in lib/active_operations.py
 #  and the directory layout of the 'cloudbench.git' source distribution
 JARS_DIR = /home/klabuser/cloudbench/jar
+REGRESSION = $False
 
 [TIME]
 USERNAME = $MAIN_USERNAME
@@ -77,7 +80,7 @@ AIDRS = BYUSERNAME, BYPATTERN
 VMCRS = BYUSERNAME, BYPATTERN, BYSCOPE
 FIRS = BYUSERNAME, BYPATTERN, BYSCOPE
 MANDATORY_TAGS = name, cloud_hostname, cloud_ip
-CLOUD_ATTRIBUTES = name, model, description, all, username, client_should_refresh, start_time, all_vmcs_attached
+CLOUD_ATTRIBUTES = name, model, description, all, username, client_should_refresh, start_time, all_vmcs_attached, regression
 
 [ADMISSION_CONTROL]
 VMC_MAX_RESERVATIONS = 100000

@@ -46,6 +46,7 @@ class SimCmds(CommonCloudFunctions) :
         self.osci = osci
         self.ft_supported = False
         self.expid = expid
+        self.last_round_robin_host_index = 0
 
     @trace
     def get_description(self) :
@@ -393,9 +394,13 @@ class SimCmds(CommonCloudFunctions) :
                 _msg = "Failed to create VM image"
                 raise CldOpsException(_msg, _status)
 
+            # Use round-robin instead of random to make the regression test more predictable
             if "host_name" not in obj_attr_list :
                 _host_list = self.get_host_list(obj_attr_list)
-                (_host_name, _host_uuid) = _host_list[randint(0, (len(_host_list) - 1))]
+                self.last_round_robin_host_index += 1
+                if self.last_round_robin_host_index == len(_host_list) :
+                    self.last_round_robin_host_index = 0
+                (_host_name, _host_uuid) = _host_list[self.last_round_robin_host_index]
                 if len(_host_name.split("host_")) == 2 :
                     _host_name = _host_name.split("host_")[1]
                 obj_attr_list["host_name"] = _host_name
