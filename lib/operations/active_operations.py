@@ -1855,7 +1855,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _cmd += obj_attr_list["prov_cloud_ip"] + " \"mkdir -p ~/" + obj_attr_list["remote_dir_name"] +  ';'
                 _cmd += "echo '#OSKN-redis' > ~/cb_os_parameters.txt;"
                 if "openvpn_server_address" in obj_attr_list :
-                    _cmd += "echo '#OSHN-" + obj_attr_list["openvpn_server_address"] + "' >> ~/cb_os_parameters.txt;"
+                    _cmd += "echo '#OSHN-" + obj_attr_list["openvpn_bootstrap_address"] + "' >> ~/cb_os_parameters.txt;"
                 else :
                     _cmd += "echo '#OSHN-" + self.osci.host + "' >> ~/cb_os_parameters.txt;"
                 _cmd += "echo '#OSPN-" + str(self.osci.port) + "' >> ~/cb_os_parameters.txt;"

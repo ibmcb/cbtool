@@ -757,7 +757,7 @@ class RedisMgdConn :
         return self.experiment_inst + ":" + cloud_name + ':' + obj_type + ":PENDING:" + obj_uuid
     
     @trace        
-    def pending_object_set(self, cloud_name, obj_type, obj_uuid, obj_value, obj_key, \
+    def pending_object_set(self, cloud_name, obj_type, obj_uuid, obj_key, obj_value, \
                            notify_client_refresh = True, parent = None, parent_type = None, lock = False) :
         self.conn_check()
         obj_inst = self.experiment_inst + ":" + cloud_name

@@ -517,7 +517,7 @@ class APIService ( threading.Thread ):
         self.port = port 
         self.hostname = hostname 
         self.api = API(pid, passive, active, background)
-        cbdebug("Initializing API Service on port " + str(self.port))
+        cbdebug("Initializing API Service on " + hostname + ":" + str(port))
         if debug is None :
             self.server = AsyncDocXMLRPCServer((self.hostname, int(self.port)), allow_none = True)
         else :

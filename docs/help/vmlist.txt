@@ -2,7 +2,7 @@ Lists all VMs currently attached to a CloudBench experiment.
 
 This command can only be executed after at least one cloud was attached.
 
-Usage: vmlist <cloud name>
+Usage: vmlist <cloud name> [state = all|pending|finished|failed]
 
 	<cloud name> is the arbitrary name used to identify this cloud within the experiment.
 		If a default cloud was set through the command "clddefault <cloud name>"

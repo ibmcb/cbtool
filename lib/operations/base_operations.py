@@ -1010,6 +1010,7 @@ class BaseObjectOperations :
                             
                             obj_attr_list["userdata"] = _pending_fn + "\n" + _dir_list["openvpn_bootstrap_address"] + "\n" + _openvpn_contents
                             obj_attr_list["openvpn_server_address"] = _dir_list["openvpn_server_address"]
+                            obj_attr_list["openvpn_bootstrap_address"] = _dir_list["openvpn_bootstrap_address"]
             
                     self.get_counters(obj_attr_list["cloud_name"], obj_attr_list)
                        

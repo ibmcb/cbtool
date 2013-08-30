@@ -1308,7 +1308,7 @@ class GUI(object):
     
         except APIException, obj :
             return self.bootstrap(req, self.heromsg + "\n<h4 id='gerror'>Error: API Service says:" + str(obj.status) + ": " + obj.msg.replace("<", "&lt;").replace(">", "&gt;").replace("\\n", "<br>").replace("\n", "<br>") + "</h4></div>", error = True)
-        except IOError, msg :
+        except IOError, msg : 
             return self.bootstrap(req, self.heromsg + "\n<h4 id='gerror'>Error: API Service (" + self.api_access + ") is not responding: " + str(msg) + "</h4></div>", error = True)
         except socket.error, v:
             return self.bootstrap(req, self.heromsg + "\n<h4 id='gerror'>Error: API Service (" + self.api_access + ") is not responding: " + str(v) + "</h4></div>", error = True)
@@ -1606,13 +1606,15 @@ class GUI(object):
                 req.session["last_refresh"] = str(time())
                 req.session.save()
                 self.repopulate_views(req.session)
-                objs = active_list(req.cloud_name, "pending")
-    
-                if len(objs) > 0 :
-                    output += "<h4>" + str(len(objs)) + " Pending Request(s):</h4>"
-                    output += self.list_objects(req, req.active, objs, link = False, icon = False, label = 'label-warning')
-                else :
-                    output += "No Pending Objects"
+                try :
+                    objs = active_list(req.cloud_name, "pending")
+                    if len(objs) > 0 :
+                        output += "<h4>" + str(len(objs)) + " Pending Request(s):</h4>"
+                        output += self.list_objects(req, req.active, objs, link = False, icon = False, label = 'label-warning')
+                    else :
+                        output += "No Pending Objects"
+                except APIException, obj :
+                    output += "Failed to list pending objects!: " + obj.msg
             else :
                 output += "unchanged"
     

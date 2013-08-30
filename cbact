@@ -485,7 +485,7 @@ def main(options) :
                                                                  _background_obj_command, \
                                                                  options.debug_host,
                                                                  options.apiport,
-                                                                 options.apihost)
+                                                                 options.apihost.split(","))
 
         elif _operation.count("gui") :
             from lib.auxiliary.gui import gui 

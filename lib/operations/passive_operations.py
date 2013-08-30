@@ -157,11 +157,104 @@ class PassiveObjectOperations(BaseObjectOperations) :
         return x["name"]
     
     @trace
+    def get_fields(self, obj_type):
+        if obj_type == "CLOUD" :
+            _obj_inst = self.pid
+            _fields = []
+            _fields.append("|name                    ")
+            _fields.append("|model                   ")
+            _fields.append("|description             ")
+        
+        elif obj_type == "VMC" :
+            _fields = []
+            _fields.append("|name                    ")
+            _fields.append("|host_count      ")
+            _fields.append("|pool                    ")
+            _fields.append("|cloud_hostname                  ")
+            _fields.append("|cloud_ip         ")        
+
+        elif obj_type == "HOST" :
+            _fields = []
+            _fields.append("|name                          ")
+            _fields.append("|vmc_name            ")
+            _fields.append("|function                                          ")
+            _fields.append("|pool         ")
+            _fields.append("|cloud_hostname              ")
+            _fields.append("|cloud_ip        ")      
+
+        elif obj_type == "VM" :
+            _fields = []
+            _fields.append("|name          ")
+            _fields.append("|role                ")
+            _fields.append("|size        ")
+            _fields.append("|cloud_ip        ")
+            _fields.append("|host_name                  ")
+            _fields.append("|vmc_pool            ")
+            _fields.append("|ai      ")
+            _fields.append("|aidrs      ")                    
+            _fields.append("|uuid")
+#            _fields.append("|uuid                                 ")
+        elif obj_type == "AI" :
+            _fields = []
+            _fields.append("|name      ")
+            _fields.append("|type           ")
+#            _fields.append("|uuid                                 ")
+            _fields.append("|sut                                               ")
+            _fields.append("|cloud_ip        ")
+            _fields.append("|arrival        ")
+            _fields.append("|aidrs                                   ")
+            _fields.append("|uuid")
+        elif obj_type == "AIDRS" :
+            _fields = []
+            _fields.append("|name                ")
+            _fields.append("|pattern                ")
+#            _fields.append("|uuid                                 ")
+            _fields.append("|type              ")
+        elif obj_type == "VMCRS" :
+            _fields = []
+            _fields.append("|name                ")
+            _fields.append("|scope                ")
+#            _fields.append("|uuid                                 ")
+        elif obj_type == "FIRS" :
+            _fields = []
+            _fields.append("|name                ")
+            _fields.append("|scope                ")
+#            _fields.append("|uuid                                 ")
+        else :
+            _msg = "Unknown object: " + obj_type
+            raise self.ObjectOperationException(_msg, 28)
+        
+        return _fields
+        
+    @trace
+    def get_display_value(self, obj_attrs, translation_cache, field, cloud_name) :
+        _af = field[1:].strip()
+        if _af == "vmc" or \
+        (_af == "ai" and "ai" in obj_attrs and obj_attrs[_af] != "none") or \
+        (_af == "aidrs" and "aidrs" in obj_attrs and obj_attrs[_af] != "none") :
+            _obj_name = self.fast_uuid_to_name(cloud_name, _af.split("_")[-1].upper(), \
+                                               obj_attrs[_af], \
+                                               translation_cache)
+            
+            #Screen is too small, just show names.
+            #User can then later type 'ailist' or 'aslist' or 'vmclist'
+            #to discover the UUID that they are interested in
+            #_display_value = _obj_attrs[_af] + ' (' + _obj_name + ')'
+            _display_value = _obj_name
+        else :
+            if _af in obj_attrs :
+                _display_value = str(obj_attrs[_af])
+            else :
+                _display_value = "unavailable" 
+            
+        return _display_value
+    @trace
     def list_objects(self, obj_attr_list, parameters, command) :
         '''
         TBD
         '''
         try :
+            _print_state = "attached"
             _status = 100
             _result = []
             _fmsg = "An error has occurred, but no error message was captured"
@@ -170,6 +263,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _obj_type = command.split('-')[0].upper()
             _obj_list = []
             _total = 0
+            _fields = self.get_fields(_obj_type)
 
             _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
 
@@ -182,72 +276,6 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     else:
                         _limit = 0
     
-                    if _obj_type == "CLOUD" :
-                        _obj_inst = self.pid
-                        _fields = []
-                        _fields.append("|name                    ")
-                        _fields.append("|model                   ")
-                        _fields.append("|description             ")
-                    
-                    elif _obj_type == "VMC" :
-                        _fields = []
-                        _fields.append("|name                    ")
-                        _fields.append("|host_count      ")
-                        _fields.append("|pool                    ")
-                        _fields.append("|cloud_hostname                  ")
-                        _fields.append("|cloud_ip         ")        
-    
-                    elif _obj_type == "HOST" :
-                        _fields = []
-                        _fields.append("|name                          ")
-                        _fields.append("|vmc_name            ")
-                        _fields.append("|function                                          ")
-                        _fields.append("|pool         ")
-                        _fields.append("|cloud_hostname              ")
-                        _fields.append("|cloud_ip        ")      
-    
-                    elif _obj_type == "VM" :
-                        _fields = []
-                        _fields.append("|name          ")
-                        _fields.append("|role                ")
-                        _fields.append("|size        ")
-                        _fields.append("|cloud_ip        ")
-                        _fields.append("|host_name                  ")
-                        _fields.append("|vmc_pool            ")
-                        _fields.append("|ai      ")
-                        _fields.append("|aidrs      ")                    
-                        _fields.append("|uuid")
-            #            _fields.append("|uuid                                 ")
-                    elif _obj_type == "AI" :
-                        _fields = []
-                        _fields.append("|name      ")
-                        _fields.append("|type           ")
-            #            _fields.append("|uuid                                 ")
-                        _fields.append("|sut                                               ")
-                        _fields.append("|cloud_ip        ")
-                        _fields.append("|arrival        ")
-                        _fields.append("|aidrs                                   ")
-                        _fields.append("|uuid")
-                    elif _obj_type == "AIDRS" :
-                        _fields = []
-                        _fields.append("|name                ")
-                        _fields.append("|pattern                ")
-            #            _fields.append("|uuid                                 ")
-                        _fields.append("|type              ")
-                    elif _obj_type == "VMCRS" :
-                        _fields = []
-                        _fields.append("|name                ")
-                        _fields.append("|scope                ")
-            #            _fields.append("|uuid                                 ")
-                    elif _obj_type == "FIRS" :
-                        _fields = []
-                        _fields.append("|name                ")
-                        _fields.append("|scope                ")
-            #            _fields.append("|uuid                                 ")
-                    else :
-                        _msg = "Unknown object: " + _obj_type
-                        raise self.ObjectOperationException(_msg, 28)
-            
                     _fmt_obj_list = ''.join(_fields) + '\n'
     
                     if _obj_type == "CLOUD" :
@@ -278,22 +306,9 @@ class PassiveObjectOperations(BaseObjectOperations) :
                             _total += 1
                             _result.append(_obj_attrs)
                                 
+                             
                             for _field in _fields :
-                                _af = _field[1:].strip()
-                                if _af == "vmc" or \
-                                (_af == "ai" and _obj_attrs[_af] != "none") or \
-                                (_af == "aidrs" and _obj_attrs[_af] != "none") :
-                                    _obj_name = self.fast_uuid_to_name(obj_attr_list["cloud_name"], _af.split("_")[-1].upper(), \
-                                                                       _obj_attrs[_af], \
-                                                                       _translation_cache)
-                                    
-                                    #Screen is too small, just show names.
-                                    #User can then later type 'ailist' or 'aslist' or 'vmclist'
-                                    #to discover the UUID that they are interested in
-                                    #_display_value = _obj_attrs[_af] + ' (' + _obj_name + ')'
-                                    _display_value = _obj_name
-                                else :
-                                    _display_value = str(_obj_attrs[_af])
+                                _display_value = self.get_display_value(_obj_attrs, _translation_cache, _field, obj_attr_list["cloud_name"])
                                 _fmt_obj_list += ('|' + _display_value).ljust(len(_field))
                             _fmt_obj_list += '\n'
     
@@ -301,23 +316,41 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _fmt_obj_list = "No objects available."
 
                 if obj_attr_list["state"] == "pending" :
-                    for obj in self.osci.get_list(obj_attr_list["cloud_name"], _obj_type, "PENDING", True) :
+                    objs = self.osci.get_list(obj_attr_list["cloud_name"], _obj_type, "PENDING", True)
+                    if len(objs) :
+                        _print_state = "pending"
+                        
+                    _fmt_obj_list = ''.join(_fields) + '\n'
+                    for obj in objs :
                         _obj_uuid, _obj_name = obj[0].split("|")
-                        _result.append({"uuid" : _obj_uuid, "name" : _obj_name, "status" : "pending", 
-                                        "tracking" : self.osci.pending_object_get(obj_attr_list["cloud_name"], _obj_type, _obj_uuid, "status")})
+                        _new_result = {"uuid" : _obj_uuid, "name" : _obj_name, "status" : "pending", 
+                                        "tracking" : self.osci.pending_object_get(obj_attr_list["cloud_name"], _obj_type, _obj_uuid, "status")}
+                        _result.append(_new_result)
+                        for _field in _fields :
+                            _display_value = self.get_display_value(_new_result, _translation_cache, _field, obj_attr_list["cloud_name"])
+                            _fmt_obj_list += ('|' + _display_value).ljust(len(_field))
+                        _fmt_obj_list += '\n'
                         
                 for state in ["failed", "finished" ] :
                     if obj_attr_list["state"] != state :
                         continue
+                    
+                    _print_state = state
                     objs = self.osci.get_object_list(obj_attr_list["cloud_name"], state.upper() + "TRACKING" + _obj_type, True)
                     if not objs :
                         continue
+                     
+                    _fmt_obj_list = ''.join(_fields) + '\n'
                     for obj in objs :
                         sub_attrs = self.osci.get_object(obj_attr_list["cloud_name"], state.upper() + "TRACKING" + _obj_type, False, obj, False)
                         sub_attrs_split = obj.split("-")
                         sub_attrs["operation"] = sub_attrs_split[5]
                         sub_attrs["order"] = sub_attrs_split[6]
                         _result.append(sub_attrs)
+                        for _field in _fields :
+                            _display_value = self.get_display_value(sub_attrs, _translation_cache, _field, obj_attr_list["cloud_name"])
+                            _fmt_obj_list += ('|' + _display_value).ljust(len(_field))
+                        _fmt_obj_list += '\n'
     
                 _status = 0
             
@@ -341,7 +374,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 _msg = "Unable to get object list: " + _fmsg
                 cberr(_msg)
             else : 
-                _msg = "The following " + _obj_type + "s are attached to this "
+                _msg = "The following " + _print_state.upper() + " " + _obj_type + "s are in this "
                 _msg += "experiment (Cloud "
                 _msg += obj_attr_list["cloud_name"]  + ") :\n" + _fmt_obj_list
                 cbdebug(_msg)
@@ -1781,30 +1814,44 @@ class PassiveObjectOperations(BaseObjectOperations) :
             return self.package(_status, _msg, _result)
             
     @trace
-    def run_api_service(self, passive, active, background, debug, port, hostname) :
+    def run_api_service(self, passive, active, background, debug, port, hostnames) :
         '''
         TBD
         '''
+        _status = 100
+        _fmsg = "An error has occurred, but no error message was captured"
+        apiservices = [] 
+        
         try :
-            _status = 100
-            _fmsg = "An error has occurred, but no error message was captured"
-            self.wait_for_port_ready(hostname, port)
-            from lib.api.api_service import APIService
-            apiservice = APIService(self.pid, \
-                                    passive, \
-                                    active, \
-                                    background, \
-                                    debug, \
-                                    port, \
-                                    hostname)
-            if debug :
-                apiservice.run()
-            else :
-                apiservice.start()
-            while True :
-                sleep(10)
-            apiservice.stop()
-            apiservice.join()
+            for hostname in hostnames  :
+                self.wait_for_port_ready(hostname, port)
+                from lib.api.api_service import APIService
+                apiservice = APIService(self.pid, \
+                                        passive, \
+                                        active, \
+                                        background, \
+                                        debug, \
+                                        port, \
+                                        hostname)
+                apiservices.append(apiservice)
+                apiservice.daemon = True
+                
+            for apiservice in apiservices :
+                if debug and not len(apiservices) > 1:
+                    apiservice.run()
+                    # only debug the first hostname
+                    break
+                else :
+                    apiservice.start()
+                        
+            if not debug or len(apiservices) > 1 :
+                while True :
+                    sleep(10)
+                    
+                for apiservice in apiservices :
+                        apiservice.stop()
+                        apiservice.join()
+                
             _status = 0
 
         except Exception, e :

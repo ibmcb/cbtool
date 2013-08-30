@@ -73,16 +73,16 @@ def make_regression_test(reg_tst_f_contents, reg_tst_expl_fn) :
                 for _subline_number, _subline_contents in enumerate(_sublines) :
                     if _subline_number == 0 :
                         _aux = _subline_contents
-                        _reg_tst_expl_fh.write("echo " + (" TEST " + str(_counter) + ": START " + _aux + ' ').center(160,"#") + '\n')
+                        _reg_tst_expl_fh.write("echo " + (" [TEST] " + str(_counter) + ": START " + _aux + ' ').center(160,"#") + '\n')
                     if len(_subline_contents) :
                         _reg_tst_expl_fh.write(_subline_contents.lstrip() + '\n')
                 if _counter > 100000 :
                     _reg_tst_expl_fh.write("pause " + '\n')                     
-                _reg_tst_expl_fh.write("echo " + (" TEST " + str(_counter) + ": END " + _aux + ' ').center(160,"#") + '\n')
+                _reg_tst_expl_fh.write("echo " + (" [TEST] " + str(_counter) + ": END " + _aux + ' ').center(160,"#") + '\n')
                 _reg_tst_expl_fh.write("echo " + '\n')
-    _reg_tst_expl_fh.write("echo " + (" TEST " + str(_counter + 1) + ": START exit ").center(80,"#") + '\n')
+    _reg_tst_expl_fh.write("echo " + (" [TEST] " + str(_counter + 1) + ": START exit ").center(80,"#") + '\n')
     _reg_tst_expl_fh.write("exit\n")
-    _reg_tst_expl_fh.write("echo " + (" TEST " + str(_counter + 1) + ": END exit ").center(80,"#") + '\n')
+    _reg_tst_expl_fh.write("echo " + (" [TEST] " + str(_counter + 1) + ": END exit ").center(80,"#") + '\n')
     _reg_tst_expl_fh.close()
     
     _msg = str(_counter) + " test cases written to the experiment plan file."
@@ -162,13 +162,13 @@ def validate_regression_test(reg_tst_expl_f_contents, reg_tst_gold_f_contents, r
     test_idx = 0
     for _line_number, _line_contents in enumerate(reg_tst_expl_f_contents) :
 
-        if _line_contents.count("TEST") and _line_contents.count("START") and not _line_contents.count("exit") :
+        if _line_contents.count("[TEST]") and _line_contents.count("START") and not _line_contents.count("exit") :
             #_current_test = _line_contents.split(':')[0].split()[-1]
             _current_test = test_idx
             _test_list.append(str(_current_test))
             _regression_test_commands[str(_current_test)] = ""
 
-        elif _line_contents.count("TEST") and _line_contents.count("END") and not _line_contents.count("exit") :
+        elif _line_contents.count("[TEST]") and _line_contents.count("END") and not _line_contents.count("exit") :
             _test_input_fh = open(path[0] + '/' + _inputs_directory + '/test' + str(_current_test) + ".txt", 'w', 0)
             _test_input_fh.write(_regression_test_commands[str(_current_test)])
             _test_input_fh.close()
@@ -181,14 +181,19 @@ def validate_regression_test(reg_tst_expl_f_contents, reg_tst_gold_f_contents, r
                     
     test_idx = 0
     for _line_number, _line_contents in enumerate(reg_tst_gold_f_contents) :
-        if _line_contents.count("TEST") and _line_contents.count("START") and not _line_contents.count("exit") :
+        if _line_contents.count("[TEST]") and _line_contents.count("START") and not _line_contents.count("exit") :
             #_current_test = _line_contents.split(':')[0].split()[-1]            
             _current_test = test_idx
             _golden_output_results[str(_current_test)] = {}
             _golden_output_results[str(_current_test)]["contents"] = ""            
 
-        elif _line_contents.count("TEST") and _line_contents.count("END") and not _line_contents.count("exit") :
-            _golden_output_results[str(_current_test)]["size"] = str(len(_golden_output_results[str(_current_test)]["contents"].split('\n')))
+        elif _line_contents.count("[TEST]") and _line_contents.count("END") and not _line_contents.count("exit") :
+            try :
+                _golden_output_results[str(_current_test)]["size"] = str(len(_golden_output_results[str(_current_test)]["contents"].split('\n')))
+            except KeyError, e:
+                print "Failed, current is false on test idx " + str(test_idx) + ": " + str(e) + " test: " + _line_contents
+                exit(1)
+
             _golden_output_fh = open(path[0] + '/' + _outputs_directory + '/golden/test' + str(_current_test) + ".txt", 'w', 0)
             _golden_output_fh.write(_golden_output_results[str(_current_test)]["contents"])
             _golden_output_fh.close()
@@ -202,13 +207,13 @@ def validate_regression_test(reg_tst_expl_f_contents, reg_tst_gold_f_contents, r
     test_idx = 0
     for _line_number, _line_contents in enumerate(reg_tst_sup_out_fn) :
 
-        if _line_contents.count("TEST") and _line_contents.count("START") and not _line_contents.count("exit") :
+        if _line_contents.count("[TEST]") and _line_contents.count("START") and not _line_contents.count("exit") :
             #_current_test = _line_contents.split(':')[0].split()[-1]
             _current_test = test_idx
             _received_output_results[str(_current_test)] = {}
             _received_output_results[str(_current_test)]["contents"] = ""
 
-        elif _line_contents.count("TEST") and _line_contents.count("END") and not _line_contents.count("exit") :
+        elif _line_contents.count("[TEST]") and _line_contents.count("END") and not _line_contents.count("exit") :
             _received_output_results[str(_current_test)]["size"] = str(len(_received_output_results[str(_current_test)]["contents"].split('\n')))
             _test_output_fh = open(path[0] + '/' + _outputs_directory + '/received/test' + str(_current_test) + ".txt", 'w', 0)
             _test_output_fh.write(_received_output_results[str(_current_test)]["contents"])

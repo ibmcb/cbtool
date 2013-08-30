@@ -217,11 +217,11 @@ vmattach TESTCLOUD tinyvm simhostb1\; vmlist TESTCLOUD\; vmshow TESTCLOUD vm_3 v
 vmattach TESTCLOUD db2 auto a:b,x:y,r:2\; vmlist TESTCLOUD\; vmshow TESTCLOUD vm_4 vmc_name,vmc_pool,host_name,meta_tags,size\; stats TESTCLOUD
 vmattach TESTCLOUD netclient auto a:b,x:y,r:2 size=platinum64,vmc_pool=SUT\; vmlist TESTCLOUD\; vmshow TESTCLOUD vm_5 vmc_name,vmc_pool,host_name,meta_tags,size\; stats TESTCLOUD
 vmcapture TESTCLOUD vm_2\; vmlist TESTCLOUD\; stats TESTCLOUD
-vmattach TESTCLOUD tinyvm async\; waitfor TESTCLOUD 8s\; vmlist TESTCLOUD\; stats TESTCLOUD
-vmattach TESTCLOUD tinyvm async=2\; waituntil TESTCLOUD VM ARRIVED=8 increasing 1\; vmlist TESTCLOUD\; stats TESTCLOUD
+vmattach TESTCLOUD tinyvm async\; waitfor TESTCLOUD 1s\; vmlist TESTCLOUD pending\; waitfor TESTCLOUD 8s\; vmlist TESTCLOUD\; stats TESTCLOUD
+vmattach TESTCLOUD tinyvm async=2\; waitfor TESTCLOUD 1s\; vmlist TESTCLOUD pending\; waituntil TESTCLOUD VM ARRIVED=8 increasing 1\; vmlist TESTCLOUD\; stats TESTCLOUD
 rolealter TESTCLOUD db2 size=platinum64
-vmattach TESTCLOUD db2 SUT A:B,X:Y,R:2 async\; waitfor TESTCLOUD 8s\; vmlist TESTCLOUD\; vmshow TESTCLOUD vm_9 role,vmc_name,vmc_pool,host_name,meta_tags,size\; stats TESTCLOUD
-vmattach TESTCLOUD netclient simhosta2 A:B,X:Y,R:2 async\; waitfor TESTCLOUD 8s\; vmlist TESTCLOUD\; vmshow TESTCLOUD vm_10 role,vmc_name,vmc_pool,host_name,meta_tags,size\; stats TESTCLOUD
+vmattach TESTCLOUD db2 SUT A:B,X:Y,R:2 async\; waitfor TESTCLOUD 1s\; vmlist TESTCLOUD pending\; waitfor TESTCLOUD 8s\; vmlist TESTCLOUD\; vmshow TESTCLOUD vm_9 role,vmc_name,vmc_pool,host_name,meta_tags,size\; stats TESTCLOUD
+vmattach TESTCLOUD netclient simhosta2 A:B,X:Y,R:2 async\; waitfor TESTCLOUD 1s\; vmlist TESTCLOUD pending\; waitfor TESTCLOUD 8s\; vmlist TESTCLOUD\; vmshow TESTCLOUD vm_10 role,vmc_name,vmc_pool,host_name,meta_tags,size\; stats TESTCLOUD
 vmattach TESTCLOUD fen_hpc auto empty size=platinum64,vmc_pool=LG async\; waitfor TESTCLOUD 8s\; vmlist TESTCLOUD\; vmshow TESTCLOUD vm_11 vmc_name,vmc_pool,host_name,meta_tags,size\; stats TESTCLOUD
 vmattach TESTCLOUD tinyvm auto empty iron32 pause_provision_complete async\; waitfor TESTCLOUD 8s\; msgpub TESTCLOUD VM staging vm_12;continue;something\; waituntil TESTCLOUD VM ARRIVING=0 decreasing 1\; vmlist TESTCLOUD\; stats TESTCLOUD
 shell TESTCLOUD rm /tmp/cb*_was_used_on_execution\; cldalter TESTCLOUD vm_defaults execute_script_name=CB_DIRECTORY/regression/scripts/execute_on_staging.sh\; vmattach TESTCLOUD tinyvm auto empty iron32 execute_provision_complete async\; waituntil TESTCLOUD VM ARRIVING=0 decreasing 1\; shell TESTCLOUD ls /tmp/cb*_was_used_on_execution\; vmlist TESTCLOUD\; stats TESTCLOUD
@@ -234,6 +234,8 @@ vmattach TESTCLOUD tinyvm\; vmlist TESTCLOUD\; stats TESTCLOUD
 vmattach TESTCLOUD tinyvm\; vmlist TESTCLOUD\; stats TESTCLOUD
 vmattach TESTCLOUD tinyvm\; vmlist TESTCLOUD\; stats TESTCLOUD
 vmattach TESTCLOUD tinyvm\; vmlist TESTCLOUD\; stats TESTCLOUD
+vmlist TESTCLOUD finished
+vmlist TESTCLOUD failed 
 stateshow TESTCLOUD
 vmrunstate TESTCLOUD vm_3 suspend\; stateshow TESTCLOUD\; stats TESTCLOUD
 vmrunstate TESTCLOUD vm_3 attached\; stateshow TESTCLOUD\; stats TESTCLOUD
@@ -250,6 +252,8 @@ vmdetach TESTCLOUD all\; vmlist TESTCLOUD\; stats TESTCLOUD
 vmattach TESTCLOUD norole\; vmlist TESTCLOUD\; stats TESTCLOUD
 vmattach TESTCLOUD willfail\; vmlist TESTCLOUD\; stats TESTCLOUD
 vmattach TESTCLOUD willfail async\; waituntil TESTCLOUD VM ARRIVING=0 decreasing 1\; vmlist TESTCLOUD\; stats TESTCLOUD
+vmlist TESTCLOUD finished
+vmlist TESTCLOUD failed 
 aiattach TESTCLOUD daytrader\; ailist TESTCLOUD\; vmlist TESTCLOUD\; aishow TESTCLOUD ai_1 detach_parallelism,ssh_key_name,sut\; stats TESTCLOUD
 ailist TESTCLOUD
 aishow TESTCLOUD ai_1 all
@@ -303,6 +307,8 @@ airestore TESTCLOUD ai_28\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOU
 aiattach TESTCLOUD notype\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
 aidetach TESTCLOUD all\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
 typealter TESTCLOUD daytrader sut=client_daytrader->was->willfail\; aiattach TESTCLOUD daytrader\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
+vmlist TESTCLOUD finished
+vmlist TESTCLOUD failed 
 patternalter TESTCLOUD simplenw iait=10\; patternshow TESTCLOUD simplenw
 aidrsattach TESTCLOUD simplenw lifetime=40\; aidrslist TESTCLOUD\; aidrsshow TESTCLOUD aidrs_1 iait,lifetime,max_ais\; stats TESTCLOUD
 aidrslist TESTCLOUD
