@@ -857,7 +857,7 @@ class OskCmds(CommonCloudFunctions) :
             raise CldOpsException(_fmsg, _status)
 
     @trace
-    def is_vm_running(self, obj_attr_list) :
+    def is_vm_running(self, obj_attr_list, fail = True) :
         '''
         TBD
         '''
@@ -872,7 +872,8 @@ class OskCmds(CommonCloudFunctions) :
                     _msg += " reported an error (from OpenStack)"
                     _status = 1870
                     cberr(_msg)
-                    raise CldOpsException(_msg, _status)                    
+                    if fail :
+                        raise CldOpsException(_msg, _status)                    
                 else :
                     return False
             else :
@@ -911,7 +912,7 @@ class OskCmds(CommonCloudFunctions) :
         return False
 
     @trace
-    def get_hostname(self, obj_attr_list) :
+    def get_hostname(self, obj_attr_list, fail = True) :
         '''
         TBD
         '''
@@ -920,7 +921,7 @@ class OskCmds(CommonCloudFunctions) :
         # the "_info" attribute. However, a new connection has to be 
         # established to access the most up-to-date data on this attribute
         # Not sure how stable it will be with newer versions of the API. 
-        _instance = self.is_vm_running(obj_attr_list)
+        _instance = self.is_vm_running(obj_attr_list, fail = fail)
         
         if _instance :
             if "OS-EXT-SRV-ATTR:host" in _instance._info :
@@ -1095,6 +1096,7 @@ class OskCmds(CommonCloudFunctions) :
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
+            _fault = "No info"
             
             obj_attr_list["cloud_vm_uuid"] = "NA"
             _instance = False
@@ -1231,25 +1233,30 @@ class OskCmds(CommonCloudFunctions) :
     
         finally :
             if _status :
+                _vminstance = self.get_instances(obj_attr_list, "vm", \
+                                               obj_attr_list["cloud_vm_name"])
+
                 _msg = "" + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "could not be created"
                 _msg += " on OpenStack Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
-                _msg += _fmsg + " (The VM creation will be rolled back)"
-                cberr(_msg)
                 
-                _vminstance = self.get_instances(obj_attr_list, "vm", \
-                                               obj_attr_list["cloud_vm_name"])
-
                 if _vminstance :
+                    if "message" in _vminstance.fault : 
+                        _msg += "\n\t" + _vminstance.fault["message"] + "\n: "
+                    #if "details" in _vminstance.fault : 
+                    #    _msg += _vminstance.fault["details"] + ":"
                     # Try to make a last attempt effort to get the hostname,
                     # even if the VM creation failed.
-                    self.get_hostname(obj_attr_list)
+                    self.get_hostname(obj_attr_list, fail = False)
 
                     _vminstance.delete()
                     
                     self.vvdestroy(obj_attr_list)
 
+                _msg += _fmsg + " (The VM creation will be rolled back)"
+                cberr(_msg)
+                
                 raise CldOpsException(_msg, _status)
 
             else :
