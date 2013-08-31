@@ -853,7 +853,11 @@ class CBCLI(Cmd) :
 
         if not self.options.remote :
             # Use a local copy of the API so that we can do local debugging
-            self.api = API(self.pid, self.passive_operations, self.active_operations, self.background_operations)
+            self.api = API(self.pid, self.passive_operations, 
+                           self.active_operations, self.background_operations,
+                           None,
+                           False
+                           )
             self.install_functions()
                 
         if print_message :

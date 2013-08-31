@@ -234,7 +234,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
     
                 _expid = cld_attr_lst["time"]["experiment_id"]
                 _cld_name = cld_attr_lst["name"]
-    
+     
             _status = 0
     
             _msg = _smsg + "\nThe experiment identifier is " + _expid + "\n"
@@ -352,7 +352,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 cbdebug(_msg)
 
     @trace    
-    def clddetach(self, cld_attr_list, parameters, command) :
+    def clddetach(self, cld_attr_list, parameters, command, api = False) :
         '''
         TBD
         '''
@@ -1576,6 +1576,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                 obj_attr_list["host"] = _host_attr_list["uuid"]
                                 obj_attr_list["host_cloud_ip"] = _host_attr_list["cloud_ip"]
 
+                        if "userdata" in obj_attr_list :
+                            del obj_attr_list["userdata"]
+                            
                         self.osci.create_object(_cloud_name, _obj_type, obj_attr_list["uuid"], \
                                                 obj_attr_list, False, True)
                         _created_object = True
@@ -1627,9 +1630,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
         finally:
             unique_state_key = "-attach-" + str(time())
-            
-            if "userdata" in obj_attr_list :
-                del obj_attr_list["userdata"]
 
             if _status :
                 _msg = _obj_type + " object " + obj_attr_list["uuid"] + " ("

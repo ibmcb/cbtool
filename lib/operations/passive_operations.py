@@ -1825,7 +1825,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
         try :
             for hostname in hostnames  :
                 self.wait_for_port_ready(hostname, port)
-                from lib.api.api_service import APIService
+                from lib.api.api_service import APIService, append_service, remove_service
                 apiservice = APIService(self.pid, \
                                         passive, \
                                         active, \
@@ -1842,15 +1842,57 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     # only debug the first hostname
                     break
                 else :
-                    apiservice.start()
+                    append_service(hostname, apiservice)
                         
             if not debug or len(apiservices) > 1 :
+                # The API service daemon needs to listen
+                # on an additional network interface.
+                # The API has a method called 'bind' which allows it to fork a new
+                # multi-threaded instance of itself on a new address
+                
+                from lib.api.api_service_client import APIClient, APIException
+                api = APIClient("http://" + hostname + ":" + port)
+                    
+                services = {}
+                
                 while True :
+                    clouds = api.cldlist()
+                    found = {} 
+                    for cloud in clouds :
+                        if cloud["name"] not in services :
+                            attrs = api.cldshow(cloud["name"], "space")
+                            if "openvpn_server_address" in attrs :
+                                address = attrs["openvpn_bootstrap_address"]
+                                result = False 
+                                msg = "Failed to register openvpn address " + address + ": "
+                                try :
+                                    result = api.register(address)
+                                    services[cloud["name"]] = address
+                                    found[cloud["name"]] = cloud
+                                    msg = "Success registring openvpn address: " + address
+                                except APIException, e :
+                                    msg += str(e)
+                                except Exception, e :
+                                    msg += str(e)
+                                finally :
+                                    if result :
+                                        cbdebug(msg)
+                                    else :
+                                        cberr(msg)
+                        else :
+                            found[cloud["name"]] = True 
+                                        
+                    for cloud_name in services.keys() :
+                        address = services[cloud_name]
+                        if cloud_name not in found :
+                            cbdebug("Cloud " + cloud_name + " has disappeared. Unregistering from " + address)
+                            del services[cloud_name]
+                            api.unregister(address)
+                        
                     sleep(10)
                     
                 for apiservice in apiservices :
-                        apiservice.stop()
-                        apiservice.join()
+                    remove_service(hostname)
                 
             _status = 0
 

@@ -64,11 +64,13 @@ def unwrap_kwargs(func, spec):
 
 class API():
     @trace
-    def __init__(self, pid, passive, active, background) :
+    def __init__(self, pid, passive, active, background, port, debug) :
         self.passive = passive
         self.active = active
         self.background = background
         self.pid = pid
+        self.port = port
+        self.debug = debug
 
         from lib.auxiliary.cli import help 
         '''
@@ -85,6 +87,38 @@ class API():
                 except Exception:
                     pass
                 fake_stdout.unswitch()
+                
+    @trace
+    def register(self, address) :
+        if address not in services :
+            service = APIService(self.pid, \
+                                    self.passive, \
+                                    self.active, \
+                                    self.background, \
+                                    self.debug, \
+                                    self.port, \
+                                    address)
+            append_service(address, service)
+            msg = "Success, bound to hostname: " + address
+            result = True
+        else :
+            msg = "Failed. already bound to hostname: " + address
+            result = False 
+        
+        return {"status" : 0, "msg" : msg, "result" : result}
+    
+    @trace
+    def unregister(self, address) :
+        service = remove_service(address)
+        if service : 
+            msg = "Success, unbound from hostname: " + address
+            result = True
+        else :
+            msg = "Failed. was never bound to hostname: " + address
+            result = False 
+        
+        return {"status" : 0, "msg" : msg, "result" : result}
+    
     @trace
     def success(self, msg, result) :
         cbdebug(msg)
@@ -135,7 +169,7 @@ class API():
         return {"msg" : "Success", "status" : 0, "result": { "clouds": clouds, "attributes" : attributes} }
 
     def cldattach(self, model, name, cloud_definitions = None, temp_attr_list = "empty=empty", uni_attrs = None) :
-        return self.active.cldattach({}, model + ' ' + name + ' ' + temp_attr_list, cloud_definitions, "cloud-attach", uni_attrs)[2]
+        return self.active.cldattach({}, model + ' ' + name + ' ' + temp_attr_list, cloud_definitions, "cloud-attach", uni_attrs, self)[2]
     
     def clddetach(self, name) :
         return self.active.clddetach({}, name, "cloud-detach")[2]
@@ -505,18 +539,40 @@ class API():
     
 class AsyncDocXMLRPCServer(SocketServer.ThreadingMixIn,DocXMLRPCServer): pass
 
+services = {}
+
+@trace
+def append_service(hostname, service) :
+    if hostname not in services :
+        services[hostname] = service
+        service.start()
+        return True
+    return False
+   
+@trace
+def remove_service(hostname):
+    if hostname in services :
+        service = services[hostname]
+        del services[hostname]
+        service.stop()
+        service.join()
+        return service
+    return False
+
 class APIService ( threading.Thread ):
+    
     
     @trace
     def __init__(self, pid, passive, active, background, debug, port, hostname) :
         super(APIService, self).__init__()
+        
         self._stop = threading.Event()
         self.pid = pid
         self.abort = False
         self.aborted = False
         self.port = port 
         self.hostname = hostname 
-        self.api = API(pid, passive, active, background)
+        self.api = API(pid, passive, active, background, port, debug)
         cbdebug("Initializing API Service on " + hostname + ":" + str(port))
         if debug is None :
             self.server = AsyncDocXMLRPCServer((self.hostname, int(self.port)), allow_none = True)
