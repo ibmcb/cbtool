@@ -461,9 +461,12 @@ function refresh_hosts_file {
 
 	if [ x"${my_ai_uuid}" != x"none" ]; then
 		build_ai_mapping
-	else
-		echo "${my_ip_addr} ${HOSTNAME}" > ${ai_mapping_file}
-	fi
+    fi
+
+    # Adding multiple names for the same IP in /etc/hosts
+    # is not a problem. We have no control over what name
+    # is handed out by DHCP, so just do it anyway
+    echo "${my_ip_addr} ${HOSTNAME}" >> ${ai_mapping_file}
 
 	syslog_netcat "Refreshing hosts file ... "
 	sudo bash -c "rm -f /etc/hosts; echo '127.0.0.1 localhost' >> /etc/hosts; cat ${ai_mapping_file} >> /etc/hosts"
