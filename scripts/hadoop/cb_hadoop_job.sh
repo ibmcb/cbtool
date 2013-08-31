@@ -159,16 +159,6 @@ case ${LOAD_PROFILE} in
     exit 1
 esac
 
-if [ x"${collect_from_guest}" == x"true" ]
-then
-	if [ x"${LOAD_ID}" == x"1" ]
-	then
-		syslog_netcat "Restarting gmetad for Hadoop's first load"
-		sudo su root -l -c "pkill -9 -f gmetad"
-		${dir}/monitor-core/gmetad-python/gmetad.py -c ~/gmetad-vms.conf -d 1
-	fi
-fi
-
 syslog_netcat "Benchmarking hadoop SUT: MASTER=${hadoop_master_ip} -> SLAVES=${slave_ips_csv} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
 
 source ~/cb_barrier.sh start

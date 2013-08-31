@@ -92,16 +92,6 @@ else
 fi
 eval JXS_SCRIPT=${JXS_SCRIPT}
 	
-if [ x"${collect_from_guest}" == x"true" ]
-then
-	if [ x"${LOAD_ID}" == x"1" ]
-	then
-		syslog_netcat "Restarting gmetad for DayTrader's first load"
-		sudo su root -l -c "pkill -9 -f gmetad"
-		${dir}/monitor-core/gmetad-python/gmetad.py -c ~/gmetad-vms.conf -d 1
-	fi
-fi
-
 if [ x"${IS_LOAD_BALANCED}" == x"true" ]
 then
 	LOAD_BALANCER_IP=`get_ips_from_role lb`
