@@ -2392,7 +2392,8 @@ class PassiveObjectOperations(BaseObjectOperations) :
         metric_port = metric_defaults["collector_vm_port"]
     
         for vm_parts in app["vms"].split(",") :
-            vm_uuid, role, vm_name = vm_parts.split("|")
+            parts = vm_parts.split("|")
+            vm_uuid = parts[0]
             vm = self.osci.get_object(cloud_name, "VM", False, vm_uuid, False)
             if "host_cloud_ip" not in vm :
                 continue
@@ -2576,7 +2577,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 
                 cberr("Failed to deliver metrics: " + str(msg))
     
-            ret = cv.wait(self.qemu_check_freq)
+            cv.wait(self.qemu_check_freq)
             self.freq_str = str(self.qemu_check_freq)
             count -= 1
         

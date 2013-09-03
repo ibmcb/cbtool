@@ -32,6 +32,7 @@ from subprocess import Popen, PIPE
 import os
 import HTML
 import re
+import sys
 
 def make_regression_test(reg_tst_f_contents, reg_tst_expl_fn) :
     '''
@@ -110,13 +111,29 @@ ignore_strings = [
                   " seconds... (",
                   ]                          
 
-def mask_contents(contents) :
+
+percent_inc = 1
+def show_percent(num, contents, phase) :
+    clen = len(contents)
+    percent = int((float(num) / float(clen)) * 100.0)
+    if int(num) == 0 :
+        print "Starting phase: " + phase
+    elif int(num) == (clen - 1) :
+        print "\r100%    "
+    elif (int(percent) % percent_inc) == 0 :
+        sys.stdout.write("\r" + str(percent) + "%...")
+        sys.stdout.flush()
+
+def mask_contents(contents, which) :
     for _line_number, _line_contents in enumerate(contents) :
+            
         for istring in ignore_strings :
             if _line_contents.count(istring) :
                 _line_contents = "ignored"
                 break
 
+        _line_contents = re.sub("\|counter +\|[0-9]+", "|counter |XX", _line_contents)
+        _line_contents = re.sub("cloudoption_[a-z]+_[a-z]+:[a-z,0-9,\.]+,", "", _line_contents)
         _line_contents = re.sub("[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ *", 'xxx.xxx.xxx.xxx ', _line_contents)
         _line_contents = re.sub("EXP-[0-9]+-[0-9]+-[0-9]+-[0-9]+-[0-9]+-[0-9]+-[A-Z]+-[A-Z]+", 'exp_identifier', _line_contents)
         _line_contents = re.sub(": [0-9]+,", ": xxxxxxxxxx,", _line_contents)
@@ -125,21 +142,31 @@ def mask_contents(contents) :
         _line_contents = re.sub("simhost[a-z]+[0-9]+", "simhostX", _line_contents)
         _line_contents = re.sub("vm_[0-9]+ \(cloud-assigned", "vm_XXX (cloud-assigned", _line_contents)
         _line_contents = re.sub("simzone_[a-z]+", "simzone_X", _line_contents)
+        _line_contents = re.sub("\|mgt_([0-9,_,a-z,A-Z])+ +\|[0-9]+", "\|mgt_\\1 \|X", _line_contents)
+        _line_contents = re.sub("is equal to [0-9]+ \(currently it is equal to [0-9]+\)", "is equal to XX (currently it is equal to XX)", _line_contents)
         _line_contents = re.sub("after [0-9]+ seconds", "after X seconds", _line_contents)
+        _line_contents = re.sub("Waited [0-9]+ seconds until ", "Waited X seconds until", _line_contents)
         _line_contents = re.sub("The process id is [0-9]+", "The process id is xxxx", _line_contents)
         _line_contents = re.sub("\|vm_[0-9]+ *\|[a-z_0-9]+ *\|[a-z]+(32|64) *", "|vm_XX |type |sizeXX ", _line_contents)
         _line_contents = re.sub("\|(LG|SUT) *", "|POOL ", _line_contents)
-        _line_contents = re.sub("\|ai_[0-9]+ *", "|ai_XX ", _line_contents)
+        _line_contents = re.sub("\|ai_[0-9]+ *\|[0-9,_,a-z,>,-]+ +\|[0-9,_,a-z,>,-]+ +", "|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar ", _line_contents)
         _line_contents = re.sub("vm_[0-9]+_at_[0-9]+", "vm_XX_at_XX", _line_contents)
         _line_contents = re.sub("\"vm_[0-9]+\"\)", "\"vm_XX\")", _line_contents)
         _line_contents = re.sub("\"ai_[0-9]+\"\)", "\"ai_XX\")", _line_contents)
         _line_contents = re.sub("\|[0-9,A-Z,a-z]+:[0-9,A-Z,a-z]+:[0-9,A-Z,a-z]+:[0-9,A-Z,a-z]+:[0-9,A-Z,a-z]+:[0-9,A-Z,a-z]+", "|XX:XX:XX:XX:XX:XX", _line_contents)
-        _line_contents = re.sub("\|[a-z,A-Z]+ [a-z,A-Z]+ [0-9]+ [0-9]+:[0-9]+:[0-9]+ [0-9]+ \([0-9]+.[0-9]+\)", "DAY MONTH NUMDAY HH:MM:SS YEAR (EPOCH)", _line_contents)
-        _line_contents = re.sub("[a-z,A-Z]+ [a-z,A-Z]+ [0-9]+ [0-9]+:[0-9]+:[0-9]+ [A-Z]+ [0-9]+", "DAY MONTH NUMDAY HH:MM:SS TIMEZONE YEAR", _line_contents)
+        _line_contents = re.sub("\|[a-z,A-Z]+ +[a-z,A-Z]+ +[0-9]+ +[0-9]+:[0-9]+:[0-9]+ +[0-9]+ +\([0-9]+.[0-9]+\)", "DAY MONTH NUMDAY HH:MM:SS YEAR (EPOCH)", _line_contents)
+        _line_contents = re.sub("[a-z,A-Z]+ +[a-z,A-Z]+ +[0-9]+ +[0-9]+:[0-9]+:[0-9]+ +[A-Z]+ +[0-9]+", "DAY MONTH NUMDAY HH:MM:SS TIMEZONE YEAR", _line_contents)
         _line_contents = re.sub("\|[a-z,_,0-9]+\|vm_[0-9]+", "role|vm_XX", _line_contents)
         _line_contents = re.sub("\|[0-9]+ +\|REGRESSION_B", "|AGE |REGRESSION_B", _line_contents)
         _line_contents = re.sub("^ total [0-9]+", " total XXXX", _line_contents)
         _line_contents = re.sub(" equals [0-9]+ after X seconds \(", " equals XX after X secdons (", _line_contents)
+        _line_contents = re.sub("--oop=[A-Za-z]+,vm_[0-9]+,none", "--oop=XXXCLOUD,vm_XX,none", _line_contents)
+        _line_contents = re.sub("\|ai_[0-9]+ +\|", "|ai_XX |", _line_contents)
+        _line_contents = re.sub("\|vm_[0-9]+ +\|", "|vm_XX |", _line_contents)
+        _line_contents = re.sub("\|POOL +\|\(orphan\)", "|POOL |none ", _line_contents)
+        _line_contents = re.sub("\|none *\|", "|none |", _line_contents)
+        _line_contents = re.sub("\|(norole|willfail) +\|", "|foorole |", _line_contents)
+        _line_contents = re.sub(" +", " ", _line_contents)
         contents[_line_number] = \
                 re.sub("[a-zA-Z0-9_]+-[a-zA-Z0-9_]+-[a-zA-Z0-9_]+-[a-zA-Z0-9_]+-[a-zA-Z0-9_]+", 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', _line_contents)
 
@@ -161,6 +188,7 @@ def validate_regression_test(reg_tst_expl_f_contents, reg_tst_gold_f_contents, r
     _current_test = False
     test_idx = 0
     for _line_number, _line_contents in enumerate(reg_tst_expl_f_contents) :
+        show_percent(_line_number, reg_tst_expl_f_contents, "loading experiment plan")
 
         if _line_contents.count("[TEST]") and _line_contents.count("START") and not _line_contents.count("exit") :
             #_current_test = _line_contents.split(':')[0].split()[-1]
@@ -181,6 +209,7 @@ def validate_regression_test(reg_tst_expl_f_contents, reg_tst_gold_f_contents, r
                     
     test_idx = 0
     for _line_number, _line_contents in enumerate(reg_tst_gold_f_contents) :
+        show_percent(_line_number, reg_tst_gold_f_contents, "loading golden output")
         if _line_contents.count("[TEST]") and _line_contents.count("START") and not _line_contents.count("exit") :
             #_current_test = _line_contents.split(':')[0].split()[-1]            
             _current_test = test_idx
@@ -206,6 +235,7 @@ def validate_regression_test(reg_tst_expl_f_contents, reg_tst_gold_f_contents, r
 
     test_idx = 0
     for _line_number, _line_contents in enumerate(reg_tst_sup_out_fn) :
+        show_percent(_line_number, reg_tst_sup_out_fn, "loading results")
 
         if _line_contents.count("[TEST]") and _line_contents.count("START") and not _line_contents.count("exit") :
             #_current_test = _line_contents.split(':')[0].split()[-1]
@@ -230,7 +260,7 @@ def validate_regression_test(reg_tst_expl_f_contents, reg_tst_gold_f_contents, r
     _diff_sizes_list = {}
     _actual_diff_size_list = {}
     
-    for _test in _test_list :
+    for _test_num, _test in enumerate(_test_list) :
         _gold_output_fh = open(path[0] + '/' + _outputs_directory + '/golden/test' + str(_test) + ".txt", 'r')
         _gold_contents = _gold_output_fh.readlines()
         _gold_output_fh.close()
@@ -239,8 +269,9 @@ def validate_regression_test(reg_tst_expl_f_contents, reg_tst_gold_f_contents, r
         _test_contents = _test_output_fh.readlines()
         _test_output_fh.close()
 
-        mask_contents(_gold_contents)
-        mask_contents(_test_contents)
+        show_percent(_test_num, _test_list, "masking output")
+        mask_contents(_gold_contents, "golden")
+        mask_contents(_test_contents, "results")
 
         _diff = ''
         _diff_size = 0

@@ -398,16 +398,20 @@ def get_my_parameters(me):
     Python rocks.
     '''
     params = {}
-    for var in me.__dict__ :
-        value = me.__dict__[var]
-        if not var.count("__") and (isinstance(value, str) or isinstance(value, int)) or isinstance(value, float) or isinstance(value, bool): 
-            params[var] = value 
+    for key in me.__dict__ :
+        if key.lower().count("cloudoption") :
+            continue
+        value = me.__dict__[key]
+        if not key.count("__") and (isinstance(value, str) or isinstance(value, int)) or isinstance(value, float) or isinstance(value, bool): 
+            params[key] = value 
 
     return params
 
 @trace
 def set_my_parameters(me, parameters):
     for key, value in parameters.iteritems() :
+        if key.lower().count("cloudoption") :
+            continue
         try:
             int(value)
             setattr(me, key, int(value))
