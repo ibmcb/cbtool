@@ -46,6 +46,7 @@ import copy
 import threading
 import os
 import sys
+import socket
 
 class ActiveObjectOperations(BaseObjectOperations) :
     '''
@@ -271,6 +272,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = str(obj.status)
             _msg = _fmsg + str(obj.msg)
 
+        except socket.gaierror, e :
+            _status = 24
+            _msg = _fmsg + " vmc: " + cld_attr_lst["vmc_defaults"]["access"] + str(e)
         except Exception, e :
             _status = 23
             _msg = _fmsg + str(e)

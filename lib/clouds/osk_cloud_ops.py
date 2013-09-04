@@ -1476,6 +1476,7 @@ class OskCmds(CommonCloudFunctions) :
         if _wait < _orig_freq :
             _max_tries = _max_tries * (_orig_freq / _wait) 
         
+        _time_mark_crs = int(time())            
         try :
             if not self.oskconncompute :
                 self.connect(obj_attr_list["access"], \
@@ -1487,7 +1488,6 @@ class OskCmds(CommonCloudFunctions) :
             if _instance :
                 _instance.live_migrate(obj_attr_list["destination_name"].replace("host_", ""))
                 
-                _time_mark_crs = int(time())            
                 obj_attr_list["mgt_502_" + operation + "_request_sent"] = _time_mark_crs - obj_attr_list["mgt_501_" + operation + "_request_originated"]
                 
                 while True and _curr_tries < _max_tries : 
@@ -1521,6 +1521,10 @@ class OskCmds(CommonCloudFunctions) :
         except novaexceptions, obj:
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
+        
+        except Exception, e :
+            _status = 349201
+            _fmsg = str(e)
             
         finally :
             if "mgt_503_" + operation + "_request_completed" not in obj_attr_list :
