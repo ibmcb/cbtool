@@ -25,7 +25,13 @@ if [ $standalone == offline ] ; then
 fi
 
 SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
-MY_IP=$(ifconfig eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1')
+MY_IP=`/sbin/ifconfig eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' | tr -d '\r\n'`
+
+while [ -z $MY_IP ] ; do
+        syslog_netcat "MY IP is null"
+	MY_IP=`/sbin/ifconfig eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' | tr -d '\r\n'`
+	sleep 1
+done
 
 cassandra=`get_ips_from_role cassandra`
 if [ -z $cassandra ] ; then
@@ -39,31 +45,39 @@ if [ -z $seed ] ; then
         exit 1;
 fi
 
-#
-# Update /etc/hosts file
-#
+sudo service cassandra stop 
+
 pos=1
+tk_pos=2
 sudo sh -c "echo 127.0.0.1 localhost > /etc/hosts"
 sudo sh -c "echo $seed cassandra-seed >> /etc/hosts"
+sudo sh -c "echo $MY_IP cassandra >> /etc/hosts"
 for db in $cassandra
 do
         sudo sh -c "echo $db cassandra$pos cassandra-$pos >> /etc/hosts"
+        if [ $MY_IP != $db ] ; then
+                ((tk_pos++));
+        fi
+        syslog_netcat $db
         ((pos++))
 done
+
+token=$(token-generator $pos | sed -n ${tk_pos}p)
 
 #
 # Update Cassandra Config
 #
-sudo sed -i 's/initial_token: $/initial_token: 0/g' /etc/cassandra/conf/cassandra.yaml
-sudo sed -i 's/- seeds: $/- seeds: $seed/g' /etc/cassandra/conf/cassandra.yaml
-sudo sed -i 's/listen_address: $/listen_address: $MY_IP/g' /etc/cassandra/conf/cassandra.yaml
-sudo sed -i 's/rpc_address: $/rpc_address: 0\.0\.0\.0/g' /etc/cassandra/conf/cassandra.yaml
+sudo sed -i "s/initial_token:$/initial_token: ${token:10}/g" /etc/cassandra/conf/cassandra.yaml
+sudo sed -i "s/- seeds:.*$/- seeds: $seed/g" /etc/cassandra/conf/cassandra.yaml
+sudo sed -i "s/listen_address:.*$/listen_address: ${MY_IP}/g" /etc/cassandra/conf/cassandra.yaml
+sudo sed -i 's/rpc_address:.*$/rpc_address: 0\.0\.0\.0/g' /etc/cassandra/conf/cassandra.yaml
 
 #
 # Remove possible old runs
 #
-rm -rf /var/lib/cassandra/saved_caches/*
-rm -rf /var/lib/cassandra/data/system/*
+sudo rm -rf /var/lib/cassandra/saved_caches/*
+sudo rm -rf /var/lib/cassandra/data/system/*
+sudo rm -rf /var/lib/cassandra/commitlog/*
 
 #
 # Start the database

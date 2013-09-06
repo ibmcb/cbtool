@@ -15,5 +15,5 @@ if num == 0 :
 #
 # Token Gen
 #
-for i in range(0, num):  
+for i in range(1,num):  
   print 'Token %d : %d' % (i, (i*(2**127)/num))  
