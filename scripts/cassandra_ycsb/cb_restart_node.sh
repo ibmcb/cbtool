@@ -48,21 +48,22 @@ fi
 sudo service cassandra stop 
 
 pos=1
-tk_pos=2
+tk_pos=0
 sudo sh -c "echo 127.0.0.1 localhost > /etc/hosts"
 sudo sh -c "echo $seed cassandra-seed >> /etc/hosts"
 sudo sh -c "echo $MY_IP cassandra >> /etc/hosts"
 for db in $cassandra
 do
         sudo sh -c "echo $db cassandra$pos cassandra-$pos >> /etc/hosts"
-        if [ $MY_IP != $db ] ; then
-                ((tk_pos++));
+        if [ $MY_IP = $db ] ; then
+                tk_pos=$pos
         fi
-        syslog_netcat $db
         ((pos++))
 done
 
-token=$(token-generator $pos | sed -n ${tk_pos}p)
+token_pos = $tk_pos+2
+token=$(token-generator $pos | sed -n ${token_pos}p)
+
 
 #
 # Update Cassandra Config
