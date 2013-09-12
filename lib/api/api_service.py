@@ -169,7 +169,7 @@ class API():
         return {"msg" : "Success", "status" : 0, "result": { "clouds": clouds, "attributes" : attributes} }
 
     def cldattach(self, model, name, cloud_definitions = None, temp_attr_list = "empty=empty", uni_attrs = None) :
-        return self.active.cldattach({}, model + ' ' + name + ' ' + temp_attr_list, cloud_definitions, "cloud-attach", uni_attrs, self)[2]
+        return self.active.cldattach({}, model + ' ' + name + ' ' + temp_attr_list, cloud_definitions, "cloud-attach", uni_attrs)[2]
     
     def clddetach(self, name) :
         return self.active.clddetach({}, name, "cloud-detach")[2]

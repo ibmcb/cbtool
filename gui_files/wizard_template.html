@@ -57,7 +57,7 @@
 				<input id='cloud_name' type='text' width='300' value='MYCLOUD' onchange="model = this.value; repopulate_options(cld_attr_list)"></input>
 				<h4>This name is arbitrary and will be used to identify the connection between the toolkit and your cloud while you are performing benchmarks.</h4>
 				<h3>Identify Your VM Base Image:</h3>
-				<h4><input id='image_id' type="text" value='image-xxxx, ami-xxxxx'/>&nbsp;&nbsp;What is the ID of your VM image as identified by the Cloud?</h4>
+				<h4><input id='image_id' type="text" value='image-xxxx'/>&nbsp;&nbsp;What is the ID of your VM image as identified by the Cloud?</h4>
 				<h5>This image ID will be used to test VM creation in your Cloud.</h5>
 				<p/><br/>
 				<h4><input id='image_name' type="text" value='testimage'/>&nbsp;&nbsp;Choose an easy-to-remember name for this image.</h4>
@@ -97,7 +97,7 @@
 			<h5>Leave this alone if you don't know what it means. (Requires toolkit restart)</h5>
 			<h4><input id='metricstore_usage' type="text"/>&nbsp;&nbsp;How is your Mongo server used?</h4>
 			<h5>Leave this alone if you don't know what it means. (Requires toolkit restart)</h5>
-			<h4><input id='metricstore_hostname' type="text"/>&nbsp;&nbsp;Where is your Mongo server located?</h4>
+			<h4><input id='metricstore_host' type="text"/>&nbsp;&nbsp;Where is your Mongo server located?</h4>
 			<h5>Leave this alone if you don't know what it means. (Requires toolkit restart)</h5>
 			<h4><input id='metricstore_port' type="text"/>&nbsp;&nbsp;Where port does your Mongo server use?</h4>
 			<h5>Leave this alone if you don't know what it means. (Requires toolkit restart)</h5>
@@ -223,7 +223,7 @@
 	   		d += "\nDBID = " + $("#objectstore_dbid").val();
 	   		d += "\n\n[METRICSTORE]"
 	   		d += "\nUSAGE = " + $("#metricstore_usage").val();
-	   		d += "\nHOSTNAME = " + $("#metricstore_hostname").val();
+	   		d += "\nHOST = " + $("#metricstore_host").val();
 	   		d += "\nPORT = " + $("#metricstore_port").val();
 	   		d += "\n\n[SPACE]"
 	   		d += "\nSTORES_WORKING_DIR = " + $("#space_stores_working_dir").val();
