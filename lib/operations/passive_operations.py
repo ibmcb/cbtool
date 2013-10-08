@@ -1861,7 +1861,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     for cloud in clouds :
                         if cloud["name"] not in services :
                             attrs = api.cldshow(cloud["name"], "space")
-                            if "openvpn_server_address" in attrs :
+                            if "openvpn_server_address" in attrs and "openvpn_bootstrap_address" in attrs :
                                 address = attrs["openvpn_bootstrap_address"]
                                 result = False 
                                 msg = "Failed to register openvpn address " + address + ": "

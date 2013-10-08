@@ -137,6 +137,9 @@ def actuator_cli_parsing() :
     parser.add_option("--disable_vhost_net", dest = "disable_vhost_net", metavar = "disable_vhost_net", default = False, \
               help = "Disable libvirt/qemu use of vhost network system")
     
+    parser.add_option("--nested", dest = "nested", metavar = "nested", default = False, \
+              help = "Enable nested virtualization")
+    
     parser.add_option("--cloud_name", dest = "cloud_name", metavar = "cloud_name", default = "ftc_default_name", \
               help = "Name this cloud...")
     
@@ -234,7 +237,7 @@ class Ftc :
         self.vhw_config["iron32"] = { "vcpus" : "2", "vmemory" : "2048", "vstorage" : "179200", "vnics" : "1" }
         self.vhw_config["silver32"] = { "vcpus" : "4", "vmemory" : "2048", "vstorage" : "358400", "vnics" : "1" }
         self.vhw_config["gold32"] = { "vcpus" : "8", "vmemory" : "4096", "vstorage" : "358400", "vnics" : "1" }
-        self.vhw_config["cooper64"] = { "vcpus" : "2", "vmemory" : "4096", "vstorage" : "61440", "vnics" : "1" }
+        self.vhw_config["copper64"] = { "vcpus" : "2", "vmemory" : "4096", "vstorage" : "61440", "vnics" : "1" }
         self.vhw_config["bronze64"]  = { "vcpus" : "2", "vmemory" : "4096", "vstorage" : "870400", "vnics" : "1" }
         self.vhw_config["silver64"] = { "vcpus" : "2", "vmemory" : "8192", "vstorage" : "1048576", "vnics" : "1" }
         self.vhw_config["gold64"] = { "vcpus" : "8", "vmemory" : "16384", "vstorage" : "1048576", "vnics" : "1" }
@@ -259,6 +262,13 @@ class Ftc :
             _xml_templates["vm_template"] += "xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'"
              
         _xml_templates["vm_template"] += ">\n"
+        
+        
+        if options.nested :
+            _xml_templates["vm_template"] += "<cpu match='exact'>"
+            _xml_templates["vm_template"] += "<model>Westmere</model>"
+            _xml_templates["vm_template"] += "<feature policy='require' name='vmx'/>"
+            _xml_templates["vm_template"] += "</cpu>"
         
 #        if options.hypervisor == "kvm" :
 #            _xml_templates["vm_template"] += "\t<memoryBacking>\n"

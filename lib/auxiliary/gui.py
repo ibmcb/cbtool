@@ -791,7 +791,7 @@ class GUI(object):
                     "vm" : { 
                               "keyword1" : { "label" : "Role", "values" : [x.strip() for x in self.api.rolelist(session['cloud_name'])] } ,
                               "keyword2" : { "label" : "Pool / Host", "values" : ["auto"] + [x.strip() for x in self.api.poollist(session['cloud_name'])] \
-                                                            + ([x["name"] for x in self.api.hostlist(session['cloud_name'])] if session["discover_hosts"] == "true" else [])},
+                                                            + ([x["name"].replace("host_", "") for x in self.api.hostlist(session['cloud_name'])] if session["discover_hosts"] == "true" else [])},
                               "keyword3" : { "label" : "Meta Tags", "values" : "empty" },
                               "keyword4" : { "label" : "Size", "values" : "default" } ,
                               "keyword5" : { "label" : "Pause Step", "values" : [["continue" , "None"], 
