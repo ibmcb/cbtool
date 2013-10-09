@@ -1268,7 +1268,7 @@ class Ftc :
             cbdebug("Opening connection to destination uri: " + uri)
             dconn = open(uri)
             cbdebug("Issuing " + operation + " on VM " + tag + " to " + uri + " with interface " + miguri + "...")
-            flags = VIR_MIGRATE_LIVE | VIR_MIGRATE_PERSIST_DEST | VIR_MIGRATE_UNDEFINE_SOURCE | VIR_MIGRATE_X_RDMA_PIN_ALL
+            flags = VIR_MIGRATE_LIVE | VIR_MIGRATE_PERSIST_DEST | VIR_MIGRATE_UNDEFINE_SOURCE
             
             if protocol.lower().count("rdma") :
                 flags |= VIR_MIGRATE_X_RDMA_PIN_ALL
