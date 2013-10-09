@@ -1,7 +1,4 @@
-aidrsattach TESTCLOUD simplenw
-aidrsalter TESTCLOUD aidrs_2 max_ais=5
-aidrsalter TESTCLOUD aidrs_2 iait=6
-aidrsshow TESTCLOUD aidrs_2 all
+aidrsdetach TESTCLOUD aidrs_1
 aidrslist TESTCLOUD
 ailist TESTCLOUD
 vmlist TESTCLOUD

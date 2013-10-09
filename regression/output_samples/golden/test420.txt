@@ -1,1 +1,1 @@
-Usage: vmcrsalter <cloud_name> <identifier> <attribute> <value> 
+Usage: aidetach <cloud_name> <identifier> [force = False] [mode] 

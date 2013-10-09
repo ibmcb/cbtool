@@ -1,1 +1,1 @@
-Usage: airestore <cloud_name> <identifier> [mode] 
+Usage: aisave <cloud_name> <identifier> [firs = none] [mode] 

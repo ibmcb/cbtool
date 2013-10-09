@@ -1,5 +1,4 @@
-airestore TESTCLOUD ai_28
+aiattach TESTCLOUD notype
 ailist TESTCLOUD
 vmlist TESTCLOUD
 stats TESTCLOUD
-stateshow TESTCLOUD

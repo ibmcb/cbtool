@@ -1,1 +1,1 @@
-Usage: waitfor <cloud_name> <time> [update_interval = default] 
+Usage: firsdetach <cloud_name> <identifier> [force = False] [mode] 

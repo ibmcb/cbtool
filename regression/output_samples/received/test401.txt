@@ -1,1 +1,1 @@
-Usage: airunstate <cloud_name> <identifier> <runstate> [command = unknown] [firs = none] [mode] 
+Usage: vmrepair <cloud_name> <identifier> [firs = none] [mode] 

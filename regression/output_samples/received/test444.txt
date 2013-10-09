@@ -1,5 +1,1 @@
-running shell command: "date"....
-stdout:
- Mon Jul 22 17:01:52 EDT 2013
-
-
+Usage: msgpub <cloud name> <object type> <channel> <message> 

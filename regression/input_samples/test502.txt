@@ -1,1 +1,3 @@
-stateshow
+vmattach tinyvm
+vmlist
+stats

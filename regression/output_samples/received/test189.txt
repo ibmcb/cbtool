@@ -1,7 +1,2 @@
-The AIDRS with the pattern simplehd has the following configuration on experiment (Cloud TESTCLOUD) :
-type: hadoop
-max_ais: 8000
-iait: uniformIXIXI120I180
-load_level: uniformIXIXI1I10
-load_duration: uniformIXIXI90I120
-lifetime: uniformIXIXI600I900
+ status: Attribute "collect_from_host" was set to "false". Skipping Host OS performance monitor daemon startup
+Experiment identifier was changed from "REGRESSION_A" to "REGRESSION_B". 

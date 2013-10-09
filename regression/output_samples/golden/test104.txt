@@ -1,2 +1,1 @@
-AIs with the following types can be attached to to this experiment (Cloud TESTCLOUD) :
-nullworkload, fbnfsrd, ddgen, specjbb, filebench, lost, windesktop, coremark, netperf, hadoop, daytrader, hpcc, tradelite, specweb
+Usage: typeshow <cloud_name> <vapp_type> 

@@ -1,2 +1,1 @@
-The following FIRSs are attached to this experiment (Cloud TESTCLOUD) :
-No objects available.
+Usage: firsattach <cloud_name> <identifier> [scope = ] [max_simultaenous_faults = ] [max_total_faults = ] [ifat = ] [min_fault_age = ] [ftl = ] [temp_attr_list = empty=empty] [mode] 

@@ -1,1 +1,2 @@
-Usage: vmcattach <cloud_name> <identifier> [temp_attr_list = empty=empty] [mode] 
+The following ATTACHED VMCs are in this experiment (Cloud TESTCLOUD) :
+No objects available.

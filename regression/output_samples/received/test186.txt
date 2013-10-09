@@ -1,5 +1,2 @@
-The following CLOUDs are attached to this experiment (Cloud ) :
-|name                    |model                   |description             
-|TESTCLOUD               |sim                     |Cloudbench SimCloud.    
-
-Current default cloud is "None". Need cloud name to be set as default cloud or 'none' to unset.
+VIEWs with the following criteria can be used onto this experiment (Cloud TESTCLOUD) :
+vmcrs:username or pattern or scope, vmc:pool or username, firs:username or pattern or scope, vm:username or vmc or host or role or type or ai or aidrs, ai:username or type or aidrs, host:username or vmc, aidrs:username or pattern

@@ -1,3 +1,1 @@
-vmrepair vm_3
-stateshow
-stats
+vmlist failed 

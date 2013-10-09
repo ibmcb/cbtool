@@ -1,1 +1,2 @@
-Usage: aishow <cloud_name> <identifier> [key = all] 
+The following ATTACHED AIs are in this experiment (Cloud TESTCLOUD) :
+No objects available.

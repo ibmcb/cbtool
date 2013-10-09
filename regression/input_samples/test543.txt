@@ -1,5 +1,5 @@
-aiattach daytrader
+vmcapture vm_29
+stats
 ailist
 vmlist
-aishow ai_11 load_balancer,sut
 stats

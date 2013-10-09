@@ -1,1 +1,1 @@
-roleshow TESTCLOUD tinyvm
+cldshow TESTCLOUD all

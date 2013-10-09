@@ -1,5 +1,4 @@
-aidrsdetach TESTCLOUD aidrs_1
-aidrslist TESTCLOUD
+waituntil TESTCLOUD AI =0 decreasing 1
 ailist TESTCLOUD
 vmlist TESTCLOUD
 stats TESTCLOUD

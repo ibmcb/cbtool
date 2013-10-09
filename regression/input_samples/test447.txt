@@ -1,1 +1,1 @@
-typeshow daytrader
+echo

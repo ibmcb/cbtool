@@ -1,1 +1,1 @@
-Usage: monextract <cloud name> <object type> <metric type> [experiment id] 
+Usage: monlist <cloud_name> <object_type> 

@@ -1,46 +1,84 @@
-Going to wait until the value on counter "AI ARRIVED" is equal to 30 (currently it is equal to 29) waiting 5.0 seconds between samples. The counter is assumed to be increasing.
- status: Counter "AI ARRIVED" equals 29 after 5 seconds (the counter is assumed to be increasing).
- status: Counter "AI ARRIVED" equals 30 after 10 seconds (the counter is assumed to be increasing).
-Waited 10 seconds until "AIs ARRIVED" was equal to 30.
-The following AIDRSs are attached to this experiment (Cloud TESTCLOUD) :
-|name                |pattern                |type              
-|aidrs_1             |simplenw               |nullworkload      
-
-The following AIs are attached to this experiment (Cloud TESTCLOUD) :
-|name      |type           |sut                                               |cloud_ip        |arrival        |aidrs                                   |uuid
-|ai_31     |nullworkload   |1_x_tinyvm                                        |68.204.84.85    |1372702646     |aidrs_1                                 |336C8994-1ACE-516F-9AA7-6B89D1CC5933
-|ai_32     |nullworkload   |1_x_tinyvm                                        |105.105.138.69  |1372702655     |aidrs_1                                 |E10ACE9D-73FB-52EB-939C-E7AA49DD5D5A
-
-The following VMs are attached to this experiment (Cloud TESTCLOUD) :
-|name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
-|vm_120        |tinyvm              |pico32      |68.204.84.85    |simhosta0                  |SUT                 |ai_31   |aidrs_1    |F05058DA-4DCE-5C3F-8FBE-03E5FE7CC012
-|vm_121        |tinyvm              |pico32      |105.105.138.69  |simhosta0                  |SUT                 |ai_32   |aidrs_1    |A8EEDBF4-016F-550E-9C56-3B48AAA04739
-
+ status: Sending a termination request for vm_73 (cloud-assigned uuid 29CD5888-A12E-518B-94B8-4CFA8B3B3614)....
+ status: Sending a termination request for vm_109 (cloud-assigned uuid 38F73BF3-E6D9-5B8E-95EE-81F6336597F6)....
+ status: Sending a termination request for vm_94 (cloud-assigned uuid D1806A8A-0E6A-5B16-BEA4-B891BB6BB040)....
+ status: Sending a termination request for vm_108 (cloud-assigned uuid 35E90159-2518-5F9E-AA50-72D711CCFB2E)....
+ status: Sending a termination request for vm_110 (cloud-assigned uuid 1C4A9880-E828-5725-BE91-8138AE52C52D)....
+ status: Sending a termination request for vm_54 (cloud-assigned uuid 1947A5DB-A855-55F0-B97F-357F339B69DF)....
+ status: Sending a termination request for vm_74 (cloud-assigned uuid EB26262A-9C51-5663-957A-F0E719E7CE91)....
+ status: Sending a termination request for vm_98 (cloud-assigned uuid 446FC10E-D344-5FB4-89AA-6F9FF5623C1D)....
+ status: Sending a termination request for vm_90 (cloud-assigned uuid 61B5EC9F-85E8-5CA1-968E-05AC0BD84A95)....
+ status: Sending a termination request for vm_92 (cloud-assigned uuid 0EE066DB-E6F6-5B26-B4B1-91A657ED83D5)....
+ status: Sending a termination request for vm_96 (cloud-assigned uuid 6AB2BF65-B76C-56C7-B6C8-FC291C4DE3A6)....
+ status: Sending a termination request for vm_112 (cloud-assigned uuid D666EB92-374A-5841-875A-E57332D92CA2)....
+ status: Sending a termination request for vm_95 (cloud-assigned uuid EFE82D82-D4D1-5B44-8B43-7D747CFFF14E)....
+ status: Sending a termination request for vm_39 (cloud-assigned uuid 6E9E5869-D4CA-5850-AD89-E4CD36641999)....
+ status: Sending a termination request for vm_97 (cloud-assigned uuid CB2D60C5-E188-583D-94E4-0E697FC2619A)....
+ status: Sending a termination request for vm_93 (cloud-assigned uuid 0618D360-C583-5BDF-9CDE-91078F645356)....
+ status: Sending a termination request for vm_40 (cloud-assigned uuid A0CFA13E-89FF-5F9C-A2D9-CAB647B7FA23)....
+ status: Sending a termination request for vm_111 (cloud-assigned uuid 90CC8C84-2368-5BA9-9933-51FCF26D88B8)....
+ status: Sending a termination request for vm_52 (cloud-assigned uuid F754D0BE-6459-5D12-A759-857B1364F923)....
+ status: Sending a termination request for vm_53 (cloud-assigned uuid FE9B30D9-9989-5F2C-868D-401B0C8294F8)....
+ status: Sending a termination request for vm_77 (cloud-assigned uuid 59991DED-15C6-57ED-B642-9C4747B6814C)....
+ status: Sending a termination request for vm_47 (cloud-assigned uuid 832616A0-38AC-529E-A8DC-49EBFFC8E417)....
+ status: Sending a termination request for vm_78 (cloud-assigned uuid B0073AB9-3B24-5F96-8343-26BF7A3D4240)....
+ status: Sending a termination request for vm_49 (cloud-assigned uuid CCC2B9B3-ED59-5412-8362-AAFC15EC37D3)....
+ status: Sending a termination request for vm_50 (cloud-assigned uuid 3ADB3003-55E0-5250-9584-2655BE617A04)....
+ status: Sending a termination request for vm_48 (cloud-assigned uuid A61103D7-080A-5B64-A78F-8F01743E619E)....
+ status: Sending a termination request for vm_114 (cloud-assigned uuid E62D6B51-9B80-5B94-A79A-08CE01773876)....
+ status: Sending a termination request for vm_51 (cloud-assigned uuid 308E89B0-C0B8-5F6A-B5DF-62F8662BE928)....
+ status: Sending a termination request for vm_115 (cloud-assigned uuid C824F323-7425-5877-89EE-2D265998286F)....
+ status: Sending a termination request for vm_116 (cloud-assigned uuid 2D9BB30D-1BB9-5723-8F86-3E6CC202659A)....
+ status: Sending a termination request for vm_84 (cloud-assigned uuid D74D8515-69E1-54C8-9600-1C8717216BE0)....
+ status: Sending a termination request for vm_113 (cloud-assigned uuid 1D897C5E-DC1D-522A-9D63-080ADE1E272E)....
+ status: Sending a termination request for vm_104 (cloud-assigned uuid 5A02EC0B-5E4C-595C-B147-7325DE892EBE)....
+ status: Sending a termination request for vm_107 (cloud-assigned uuid DC5612CA-669F-51F2-AA67-6D9F888687FF)....
+ status: Sending a termination request for vm_85 (cloud-assigned uuid 47898705-F8F9-560A-BF81-039047C81FB3)....
+ status: Sending a termination request for vm_105 (cloud-assigned uuid 76940388-A0A7-5E70-9FCA-0993BBCFD42E)....
+ status: Sending a termination request for vm_106 (cloud-assigned uuid 409C87F4-2678-5FFA-9342-740FD63A45A8)....
+ status: Sending a termination request for vm_103 (cloud-assigned uuid 4E19FE29-37B0-55BF-B355-D474490B42B9)....
+ status: Sending a termination request for vm_71 (cloud-assigned uuid E9F5A2E9-4FFD-5650-845F-D06B745B6403)....
+ status: Sending a termination request for vm_72 (cloud-assigned uuid FC642DF6-7D3B-5614-873F-56589600CF2C)....
+ status: Sending a termination request for vm_86 (cloud-assigned uuid 71392D93-E451-5A43-9E42-857875F27D0E)....
+ status: Sending a termination request for vm_79 (cloud-assigned uuid 4FBB0997-3BED-5B61-8538-3B5A1DDB6ADC)....
+ status: Sending a termination request for vm_59 (cloud-assigned uuid 39623EDE-2180-5D66-82D6-6122F3B6058F)....
+ status: Sending a termination request for vm_58 (cloud-assigned uuid F5778787-03F9-5B27-8C65-D824F7491A58)....
+ status: Sending a termination request for vm_87 (cloud-assigned uuid 3363D85C-A408-53F5-9322-7E4C88E2E37C)....
+ status: Sending a termination request for vm_82 (cloud-assigned uuid 54FC09A9-B986-5412-A218-9F856EDFCEE6)....
+ status: Sending a termination request for vm_80 (cloud-assigned uuid E773867B-9EBC-5EE0-868B-247B3C434D37)....
+ status: Sending a termination request for vm_60 (cloud-assigned uuid 6A1AE68E-39AD-5EEE-8F04-7C207BD12C51)....
+ status: Sending a termination request for vm_88 (cloud-assigned uuid 9999D30E-DCC5-59DF-93A3-4E7942451F19)....
+ status: Sending a termination request for vm_89 (cloud-assigned uuid 48A3E948-BFBA-5AC5-9C2B-A1BF1C921969)....
+ status: Sending a termination request for vm_83 (cloud-assigned uuid 9808795A-0FA3-5892-AFCE-FE8B568F2417)....
+ status: Sending a termination request for vm_81 (cloud-assigned uuid 7424D399-91D2-59D3-94E1-F991FF6C61C0)....
+AI object undefined (named "all") was sucessfully detached from this experiment.
+The following ATTACHED AIs are in this experiment (Cloud TESTCLOUD) :
+No objects available.
+The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
+No objects available.
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |44.28M                        
+|Used Memory                                          |6.62M                         
 |Redis Version                                        |2.5.12                        
-|Uptime (in seconds)                                  |11741438                      
-|Total Connections Received                           |6492952                       
-|Total Commands Processed                             |93069028                      
-|Number of Keys                                       |682                           
+|Uptime (in seconds)                                  |2417806                       
+|Total Connections Received                           |4640                          
+|Total Commands Processed                             |4078379                       
+|Number of Keys                                       |612                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|MongoDB Version                                      |2.0.6                         
-|Storage Size                                         |13967917056.0                 
-|Data Size                                            |12135654604.0                 
-|Index Size                                           |503093808                     
-|Average Object Size                                  |6343.91445927                 
-|Collections                                          |62                            
+|MongoDB Version                                      |2.4.5                         
+|Storage Size                                         |5449940992.0                  
+|Data Size                                            |4962913880.0                  
+|Index Size                                           |133832944                     
+|Average Object Size                                  |8099.46352975                 
+|Collections                                          |40                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
 |VMCs                                                 |4                             
 |HOSTs                                                |20                            
-|VMs                                                  |2                             
-|SVMs                                                 |0                             
-|AIs                                                  |2                             
-|AIDRSs                                               |1                             
+|VMs                                                  |0                             
+|AIs                                                  |0                             
+|AIDRSs                                               |0                             
 |VMCRSs                                               |0                             
 |FIRSs                                                |0                             
 ------------------ EXPERIMENT-WIDE COUNTERS ------------------
@@ -57,28 +95,22 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |HOSTs DEPARTED                                       |0                             
 |HOSTs DEPARTING                                      |0                             
 |HOSTs FAILED                                         |0                             
-|VM RESERVATIONS                                      |2                             
-|VMs ARRIVED                                          |117                           
+|VM RESERVATIONS                                      |0                             
+|VMs ARRIVED                                          |113                           
 |VMs ARRIVING                                         |0                             
 |VMs CAPTURING                                        |0                             
-|VMs DEPARTED                                         |115                           
+|VMs DEPARTED                                         |113                           
 |VMs DEPARTING                                        |0                             
-|VMs FAILED                                           |4                             
-|SVM RESERVATIONS                                     |0                             
-|SVMs ARRIVED                                         |0                             
-|SVMs ARRIVING                                        |0                             
-|SVMs DEPARTED                                        |0                             
-|SVMs DEPARTING                                       |0                             
-|SVMs FAILED                                          |0                             
-|AI RESERVATIONS                                      |2                             
-|AIs ARRIVED                                          |30                            
+|VMs FAILED                                           |3                             
+|AI RESERVATIONS                                      |0                             
+|AIs ARRIVED                                          |28                            
 |AIs ARRIVING                                         |0                             
 |AIs CAPTURING                                        |0                             
 |AIs DEPARTED                                         |28                            
 |AIs DEPARTING                                        |0                             
-|AIs FAILED                                           |2                             
-|AIDRS RESERVATIONS                                   |1                             
-|AIDRSs ARRIVED                                       |1                             
+|AIs FAILED                                           |1                             
+|AIDRS RESERVATIONS                                   |0                             
+|AIDRSs ARRIVED                                       |0                             
 |AIDRSs ARRIVING                                      |0                             
 |AIDRSs DEPARTED                                      |0                             
 |AIDRSs DEPARTING                                     |0                             
@@ -95,14 +127,11 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |FIRSs DEPARTED                                       |0                             
 |FIRSs DEPARTING                                      |0                             
 |FIRSs FAILED                                         |0                             
-|EXPERIMENT COUNTER                                   |385                           
+|EXPERIMENT COUNTER                                   |374                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|35310FEB-1E59-53F1-A37C-0E4387DFF893 (simzone_a) VM RESERVATIONS|2                             
-|DAEF899C-8C95-5B76-BE3F-58349C261E66 (simzone_d) VM RESERVATIONS|0                             
-|8E18B916-CC95-566E-887E-3032BA7F835A (simzone_c) VM RESERVATIONS|0                             
-|3076C295-3106-5ADC-8C71-D21083902D7A (simzone_b) VM RESERVATIONS|0                             
-
- ---------------- AIDRS-WIDE COUNTERS ----------------
-|033779F0-1E69-5DEA-8D15-A82CDEFAEF7C (aidrs_1) AI RESERVATIONS|2                             
+|CEA17C37-820A-507F-9356-90956267A568 (simzone_a) VM RESERVATIONS|0                             
+|966D86CB-90BB-553D-A06A-0FFA0818D568 (simzone_d) VM RESERVATIONS|0                             
+|C41BC369-F411-5382-B95F-70C31BD20E23 (simzone_c) VM RESERVATIONS|0                             
+|2FF9728E-95B3-5EE9-A0A4-61875B507FA8 (simzone_b) VM RESERVATIONS|0                             
 

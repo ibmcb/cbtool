@@ -1,1 +1,2 @@
-monplot
+monextract TESTCLOUD HOST management
+shell TESTCLOUD cat /home/msilva/cloudbench/regression/..//data/REGRESSION_B/HOST*man*REGRESSION*

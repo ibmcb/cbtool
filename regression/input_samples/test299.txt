@@ -1,4 +1,6 @@
-aidetach TESTCLOUD youngest
+aiattach TESTCLOUD daytrader
+aiattach TESTCLOUD netperf
+aiattach TESTCLOUD hpcc
 ailist TESTCLOUD
 vmlist TESTCLOUD
 stats TESTCLOUD

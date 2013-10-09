@@ -1,1 +1,1 @@
-cldshow TESTCLOUD all
+waitfor TESTCLOUD 10s

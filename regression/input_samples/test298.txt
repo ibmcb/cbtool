@@ -1,4 +1,4 @@
-aidetach TESTCLOUD oldest
+aidetach TESTCLOUD youngest
 ailist TESTCLOUD
 vmlist TESTCLOUD
 stats TESTCLOUD

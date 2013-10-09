@@ -1,4 +1,2 @@
-The following VMs are attached to this experiment (Cloud TESTCLOUD) :
-|name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
-|vm_1          |tinyvm              |pico32      |175.58.241.182  |simhostb0                  |SUT                 |none    |none       |ADA59FDC-537B-5D15-92EE-F47450275C5F
-
+ status: Repairing a fault on host simhostc2 by executing the command "sudo  "
+HOST "simhostc2" was successfully attached on this experiment.

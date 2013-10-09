@@ -1,4 +1,4 @@
-aicapture TESTCLOUD ai_10
+aicapture TESTCLOUD oldest
 ailist TESTCLOUD
 vmlist TESTCLOUD
 stats TESTCLOUD

@@ -19,5 +19,5 @@
 __version__ = '2.0'
 
 __all__ = [ 'mongodb_datastore_adapter', \
-           'redis_datastore_ops', \
+           'redis_datastore_adapter', \
            'stores_initial_setup']

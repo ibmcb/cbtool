@@ -1,1 +1,1 @@
-Usage: vmfail <cloud_name> <identifier> [firs = none] [mode] 
+Usage: vmresume <cloud_name> <identifier> [firs = none] [mode] 

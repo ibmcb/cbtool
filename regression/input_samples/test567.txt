@@ -1,5 +1,4 @@
-airestore ai_28
+aicapture ai_10
 ailist
 vmlist
 stats
-stateshow

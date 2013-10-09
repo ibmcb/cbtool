@@ -1,6 +1,7 @@
-vmattach tinyvm auto empty iron32 pause_provision_complete async
+vmattach db2 SUT A:B,X:Y,R:2 async
+waitfor 1s
+vmlist pending
 waitfor 8s
-msgpub VM staging vm_12;continue;something
-waituntil VM ARRIVING=0 decreasing 1
 vmlist
+vmshow vm_9 role,vmc_name,vmc_pool,host_name,meta_tags,size
 stats

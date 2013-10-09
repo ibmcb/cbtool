@@ -1,1 +1,1 @@
-Usage: waitfor <cloud_name> <time> [update_interval = default] 
+Usage: monlist <cloud_name> <object_type> 

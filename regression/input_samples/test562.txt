@@ -1,5 +1,4 @@
-aicapture youngest async
-waituntil AI CAPTURING=0
+aidetach ai_12
 ailist
 vmlist
 stats

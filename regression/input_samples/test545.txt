@@ -1,2 +1,5 @@
-typealter daytrader load_balancer=true
-typeshow daytrader
+vmcapture vm_41 async
+waitfor 25s
+ailist
+vmlist
+stats

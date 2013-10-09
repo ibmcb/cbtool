@@ -1,2 +1,1 @@
-The following VMs are attached to this experiment (Cloud TESTCLOUD) :
-No objects available.
+Usage: vmattach <cloud_name> <role> [vm_location = auto] [meta_tags = empty] [size = default] [pause_step = none] [temp_attr_list = empty=empty] [mode] 

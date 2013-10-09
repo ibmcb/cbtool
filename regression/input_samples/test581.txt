@@ -1,6 +1,4 @@
-waitfor 1m
-aidrsshow aidrs_2 all
+aidrsattach simplenw lifetime=40
 aidrslist
-ailist
-vmlist
+aidrsshow aidrs_1 iait,lifetime,max_ais
 stats

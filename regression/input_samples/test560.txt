@@ -1,4 +1,4 @@
-aicapture ai_10
+aiattach coremark
 ailist
 vmlist
 stats

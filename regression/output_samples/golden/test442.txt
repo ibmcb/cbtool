@@ -1,1 +1,1 @@
-Usage: Usage: shell <cloud name> <command name> 
+Usage: monextract <cloud name> <object type> <metric type> [experiment id] 

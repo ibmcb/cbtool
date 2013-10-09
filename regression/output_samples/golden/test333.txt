@@ -1,1 +1,1 @@
-*** Unknown syntax: reserved for vmscrs
+*** Unknown syntax: reserved for vmcrs

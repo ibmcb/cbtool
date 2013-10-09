@@ -1,2 +1,2 @@
-VMCs with the following pools are attached to to this experiment (Cloud TESTCLOUD) :
-
+VMs with the following roles can be attached to to this experiment (Cloud TESTCLOUD) :
+client_specweb, driver_filebench, driver_coremark, lostback, client_windows, coremark, driver_hadoop, rubis_driver, predictablevm, ddgen, lb, hadoopmaster, willfail, client_lost, client_daytrader, driver_daytrader, storageclient, specwebfront, was, netclient, storageserver, filebench, specjbb, driver_tradelite, rubis_lb, driver_fbnfsrd, cn_hpc, fen_hpc, db2, rubis_appsrv, netserver, faildb2, windows, driver_netperf, client_tradelite, rubis_database, lostfront, tinyvm, hadoopslave, specwebback

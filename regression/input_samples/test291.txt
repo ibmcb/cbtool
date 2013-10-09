@@ -1,4 +1,4 @@
-aiattach TESTCLOUD specweb
+aiattach TESTCLOUD tradelite
 ailist TESTCLOUD
 vmlist TESTCLOUD
 stats TESTCLOUD

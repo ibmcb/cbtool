@@ -1,5 +1,4 @@
-waituntil AI ARRIVED=30 increasing 5
-aidrslist
+aidetach all
 ailist
 vmlist
 stats

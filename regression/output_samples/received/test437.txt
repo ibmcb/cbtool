@@ -1,1 +1,3 @@
-Usage: waiton <cloud name> <object type> <channel> <keyword> 
+The following state values are available for the objects on this experiment (Cloud TESTCLOUD) :
+No objects available.
+

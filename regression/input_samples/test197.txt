@@ -1,1 +1,5 @@
-vmccleanup TESTCLOUD simzone_a
+vmcdetach TESTCLOUD simzone_d
+vmcdetach TESTCLOUD simzone_c
+vmcdetach TESTCLOUD simzone_b
+vmclist TESTCLOUD
+stats TESTCLOUD

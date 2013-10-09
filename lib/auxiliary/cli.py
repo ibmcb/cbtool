@@ -181,7 +181,7 @@ class CBCLI(Cmd) :
              the same "parameters" argument. The decorator "unpack_arguments_for_api"
              then builds a list of python named arguments and passes it to the
              corresponding API function. In order to figure out which API function
-             to use, the API exposes a function to list those function, which
+             to use, the API exposes a function to list those functions, which
              in turn allows us to setup the appropriate function pointer.
             '''
              
@@ -574,6 +574,7 @@ class CBCLI(Cmd) :
         if options.quiet :
             logger.setLevel(ERROR)
 
+        
     @trace
     def start_api_and_gui(self) :
         '''
@@ -852,7 +853,11 @@ class CBCLI(Cmd) :
 
         if not self.options.remote :
             # Use a local copy of the API so that we can do local debugging
-            self.api = API(self.pid, self.passive_operations, self.active_operations, self.background_operations)
+            self.api = API(self.pid, self.passive_operations, 
+                           self.active_operations, self.background_operations,
+                           None,
+                           False
+                           )
             self.install_functions()
                 
         if print_message :

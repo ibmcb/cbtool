@@ -1,1 +1,1 @@
-Usage: aifail <cloud_name> <identifier> [firs = none] [mode] 
+Usage: airestore <cloud_name> <identifier> [mode] 

@@ -1,5 +1,6 @@
-aiattach hadoop save_on_attach=true
+aiattach daytrader
+aiattach netperf
+aiattach hpcc
 ailist
 vmlist
 stats
-stateshow

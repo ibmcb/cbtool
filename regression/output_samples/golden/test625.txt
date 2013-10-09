@@ -1,0 +1,19 @@
+ status: Waiting for all active AIDRS daemons to finish gracefully....
+ status: All AIDRS (daemons and objects were removed).
+ status: Removing all VMCRS objects attached to this experiment.
+ status: Removing all FIRS objects attached to this experiment.
+ status: Removing all AI objects attached to this experiment.
+ status: Removing all VM objects attached to this experiment.
+ status: Sending a termination request for vm_129 (cloud-assigned uuid A68EF1D6-C0C6-51DB-8D39-321065B4BE5B)....
+ status: Done
+ status: Removing all VMC objects attached to this experiment.
+ status: VMC CEA17C37-820A-507F-9356-90956267A568 was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC 966D86CB-90BB-553D-A06A-0FFA0818D568 was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC BE03B636-352A-55D9-83EE-A6E863233E00 was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC 2FF9728E-95B3-5EE9-A0A4-61875B507FA8 was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC 36FB7090-0472-5A58-8489-821C791FAF42 was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC C41BC369-F411-5382-B95F-70C31BD20E23 was successfully unregistered on SimCloud "TESTCLOUD".
+ status: Done
+ status: Removing all contents from Object Store (GLOBAL objects,VIEWS, etc.)
+Disassociating default cloud: TESTCLOUD
+Cloud TESTCLOUD was successfully detached from this experiment.

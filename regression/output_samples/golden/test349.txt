@@ -1,28 +1,28 @@
- status: No samples of runtime_os metrics for all HOSTs were found (the file /home/msilva/cloudbench/lib/auxiliary//../../data/REGRESSION_B/HOST_runtime_os_REGRESSION_B.csv will be empty).
- status: No samples of runtime_os metrics for all VMs were found (the file /home/msilva/cloudbench/lib/auxiliary//../../data/REGRESSION_B/VM_runtime_os_REGRESSION_B.csv will be empty).
- status: No samples of runtime_app metrics for all VMs were found (the file /home/msilva/cloudbench/lib/auxiliary//../../data/REGRESSION_B/VM_runtime_app_REGRESSION_B.csv will be empty).
- status: Multiple samples of management metrics for all VMs were found (the file /home/msilva/cloudbench/lib/auxiliary//../../data/REGRESSION_B/VM_management_REGRESSION_B.csv will *NOT* be empty).
- status: This experiment was created with a trace file, which will also be included alongside the extracted metrics.
- status: This experiment was run right after a "hard reset".Will also include all logs files (from the Log Store) alongside the extracted metrics.
-Monitor extraction success. All metrics written to csv files on the directory "/home/msilva/cloudbench/lib/auxiliary//../../data".
-running shell command: "ls -la ~/cloudbench/data/REGRESSION_B"....
-stdout:
- total 42932
-drwxrwxr-x  2 msilva msilva     4096 Jul  1 14:08 .
-drwxr-xr-x 26 msilva msilva     4096 Jul  1 14:08 ..
--rw-r--r--  1 msilva msilva      424 Jul  1 13:56 gui.log
--rw-rw-r--  1 msilva msilva     1014 Jul  1 14:08 HOST_runtime_os_REGRESSION_B.csv
--rw-r--r--  1 msilva msilva        0 Jul  1 13:56 loadmanager.log
--rw-r--r--  1 msilva msilva        0 Jul  1 13:56 monitor.log
--rw-r--r--  1 msilva msilva 43524198 Jul  1 14:08 operations.log
--rwxrwxr-x  1 msilva msilva   231694 Mar 15 11:02 regression_test_experiment_plan.txt
--rw-r--r--  1 msilva msilva        0 Jul  1 13:56 remotescripts.log
--rw-r--r--  1 msilva msilva        0 Jul  1 13:56 report.log
--rw-r--r--  1 msilva msilva    95063 Jul  1 14:08 submmiter.log
--rw-r--r--  1 msilva msilva        0 Jul  1 13:56 subscribe.log
--rw-rw-r--  1 msilva msilva    30681 Jul  1 14:08 trace_REGRESSION_B.csv
--rw-rw-r--  1 msilva msilva    43092 Jul  1 14:08 VM_management_REGRESSION_B.csv
--rw-rw-r--  1 msilva msilva      310 Jul  1 14:08 VM_runtime_app_REGRESSION_B.csv
--rw-rw-r--  1 msilva msilva     1062 Jul  1 14:08 VM_runtime_os_REGRESSION_B.csv
+The following HOSTs reported management metrics:
+Name                        |Age (seconds)     |Experiment id                  |Number of samples
+host_simhostc0              |741               |REGRESSION_B                   |1                
+host_simhosta0              |741               |REGRESSION_B                   |1                
+host_simhostd0              |741               |REGRESSION_B                   |1                
+host_simhosta1              |741               |REGRESSION_B                   |1                
+host_simhostc1              |741               |REGRESSION_B                   |1                
+host_simhostb0              |741               |REGRESSION_B                   |1                
+host_simhostd1              |741               |REGRESSION_B                   |1                
+host_simhostc2              |741               |REGRESSION_B                   |1                
+host_simhostb1              |741               |REGRESSION_B                   |1                
+host_simhostd2              |741               |REGRESSION_B                   |1                
+host_simhosta2              |741               |REGRESSION_B                   |1                
+host_simhostc3              |741               |REGRESSION_B                   |1                
+host_simhostb2              |741               |REGRESSION_B                   |1                
+host_simhostd3              |741               |REGRESSION_B                   |1                
+host_simhostb3              |741               |REGRESSION_B                   |1                
+host_simhosta3              |741               |REGRESSION_B                   |1                
+host_simhostd4              |741               |REGRESSION_B                   |1                
+host_simhostc4              |741               |REGRESSION_B                   |1                
+host_simhosta4              |741               |REGRESSION_B                   |1                
+host_simhostb4              |741               |REGRESSION_B                   |1                
+host_source                 |28                |REGRESSION_B                   |1                
+host_dest                   |28                |REGRESSION_B                   |1                
 
+The following HOSTs reported runtime (OS) metrics:
+Name                        |Age (seconds)     |Experiment id                  |Number of samples
 

@@ -1,1 +1,1 @@
-Usage: vmcapture <cloud_name> <identifier> [vmcrs = none] [mode] 
+Usage: vmrepair <cloud_name> <identifier> [firs = none] [mode] 

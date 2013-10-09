@@ -1,4 +1,3 @@
-vmdetach TESTCLOUD vm_5 async
-waitfor TESTCLOUD 10s
+vmdetach TESTCLOUD random
 vmlist TESTCLOUD
 stats TESTCLOUD

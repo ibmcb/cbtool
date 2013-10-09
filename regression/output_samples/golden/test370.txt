@@ -1,1 +1,2 @@
-Usage: viewshow <cloud_name> <object> <criterion> <expression> [sorting = default] [filter = default] 
+AIs with the following types can be attached to to this experiment (Cloud TESTCLOUD) :
+nullworkload, fbnfsrd, ddgen, mlg2, filebench, lost, windesktop, netperf, hadoop, hpcc, mongo_ycsb, daytrader, coremark, tradelite, specimap, mweb, specweb, specjbb, mlg

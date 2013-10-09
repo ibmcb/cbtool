@@ -1,3 +1,1 @@
-The "sim" cloud named "TESTCLOUD" was successfully attached to this experiment.
-The experiment identifier is EXP-07-01-2013-01-56-48-PM-EDT
-
+Usage: cldattach <cloud model> <cloud name> [definitions file] 

@@ -1,1 +1,1 @@
-Usage: vmresize <cloud_name> <identifier> <resource> <value> 
+Usage: vmcapture <cloud_name> <identifier> [vmcrs = none] [mode] 

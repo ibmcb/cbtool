@@ -1,2 +1,1 @@
-The following AIs are attached to this experiment (Cloud TESTCLOUD) :
-No objects available.
+Usage: vmsuspend <cloud_name> <identifier> [firs = none] [mode] 

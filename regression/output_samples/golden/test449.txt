@@ -1,2 +1,5 @@
-VIEWs with the following criteria can be used onto this experiment (Cloud TESTCLOUD) :
-aidrs:username or pattern, svm:username or vmc or role or type or ai or aidrs, vmc:pool or username, firs:username or pattern or scope, vm:username or vmc or host or role or type or ai or aidrs, ai:username or type or aidrs, host:username or vmc, vmcrs:username or pattern or scope
+The following ATTACHED CLOUDs are in this experiment (Cloud ) :
+|name                    |model                   |description             
+|TESTCLOUD               |sim                     |Cloudbench SimCloud.    
+
+Current default cloud is "TESTCLOUD". Need cloud name to be set as default cloud or 'none' to unset.

@@ -1,1 +1,1 @@
-Usage: airun <cloud_name> <uuid> 
+Usage: airunstate <cloud_name> <identifier> <runstate> [command = unknown] [firs = none] [mode] 

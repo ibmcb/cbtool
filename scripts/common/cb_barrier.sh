@@ -73,3 +73,14 @@ else :
 		y=`publish_msg AI ${barrier_channel} go`
 	fi
 fi
+
+if [ x"${collect_from_guest}" == x"true" ]
+then
+	if [ x"${LOAD_ID}" == x"1" ]
+	then
+		syslog_netcat "Restarting gmetad for first load"
+		sudo su root -l -c "pkill -9 -f gmetad"
+		${dir}/monitor-core/gmetad-python/gmetad.py -c ~/gmetad-vms.conf -d 1
+	fi
+fi
+

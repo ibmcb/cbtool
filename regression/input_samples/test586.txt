@@ -1,1 +1,1 @@
-reserved for vmcrs
+statealter aidrs_1 stopped

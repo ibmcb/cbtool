@@ -1,1 +1,1 @@
-Usage: aisave <cloud_name> <identifier> [firs = none] [mode] 
+Usage: airunstate <cloud_name> <identifier> <runstate> [command = unknown] [firs = none] [mode] 

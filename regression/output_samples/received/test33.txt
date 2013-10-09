@@ -1,1 +1,1 @@
-Usage: vmshow <cloud_name> <identifier> [key = all] 
+Usage: vmlist <cloud_name> [state = default] [limit = none] 

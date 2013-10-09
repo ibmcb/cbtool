@@ -1,34 +1,55 @@
-Background operation execution success. Operation "vm-attach" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.0.254,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,timeout:240,host:172.16.0.254,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,willfail,auto,empty,default,none,empty=empty --operation=vm-attach --cn=TESTCLOUD --uuid=B6D6CE6A-9863-5B17-B0F3-C2A9A017A6FC --daemon". The process id is 10949.
+ status: Waiting for vm_27 (cloud-assigned uuid F0A01154-27EA-58F2-94A3-C4C303E8FD57) to start...
+ status: Waiting for vm_26 (cloud-assigned uuid 9C75B848-282E-5FA9-9402-42347ECC3CE4) to start...
+ status: Waiting for vm_28 (cloud-assigned uuid 4B4F3AEE-5814-5932-840F-524EAAA975FD) to start...
+ status: Trying to establish network connectivity to vm_27 (cloud-assigned uuid F0A01154-27EA-58F2-94A3-C4C303E8FD57), on IP address 90.99.223.193...
+ status: Trying to establish network connectivity to vm_26 (cloud-assigned uuid 9C75B848-282E-5FA9-9402-42347ECC3CE4), on IP address 187.120.44.184...
+ status: Trying to establish network connectivity to vm_28 (cloud-assigned uuid 4B4F3AEE-5814-5932-840F-524EAAA975FD), on IP address 42.106.77.119...
+ status: Bypassing the sending of a copy of the code tree to vm_26 (187.120.44.184)...
+ status: Bypassing the sending of a copy of the code tree to vm_28 (42.106.77.119)...
+ status: Bypassing the sending of a copy of the code tree to vm_27 (90.99.223.193)...
+ status: Bypassing generic VM post_boot configuration on all VMs belonging to ai_1...
+ status: Bypassing application-specific configuration on all VMs beloging to ai_1...
+ status: QEMU Scraper will NOT be automatically started during the deployment of ai_1...
+AI object A68BAF4C-0C9F-5366-9FDF-EA4E801058C0 (named "ai_1") sucessfully attached to this experiment. It is ssh-accessible at the IP address 90.99.223.193 (F0A01154-27EA-58F2-94A3-C4C303E8FD57.simcloud.com).
+The following ATTACHED AIs are in this experiment (Cloud TESTCLOUD) :
+|name      |type           |sut                                               |cloud_ip        |arrival        |aidrs                                   |uuid
+|ai_1      |daytrader      |1_x_client_daytrader->1_x_was->1_x_db2            |90.99.223.193   |1381326036     |none                                    |A68BAF4C-0C9F-5366-9FDF-EA4E801058C0
 
-Going to wait until the value on counter "VM ARRIVING" is equal to 0 (currently it is equal to 1) waiting 1.0 seconds between samples. The counter is assumed to be decreasing.
- status: Counter "VM ARRIVING" equals 0 after 1 seconds (the counter is assumed to be decreasing).
-Waited 1 seconds until "VMs ARRIVING" was equal to 0.
-The following VMs are attached to this experiment (Cloud TESTCLOUD) :
-No objects available.
+The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
+|name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
+|vm_28         |db2                 |platinum64  |42.106.77.119   |simhostb1                  |SUT                 |ai_1    |none       |A46F3904-D014-59FD-9411-B9C653311E10
+|vm_27         |client_daytrader    |nano32      |90.99.223.193   |simhostd1                  |LG                  |ai_1    |none       |DE1CB216-AE7F-544F-901E-A14C0534998B
+|vm_26         |was                 |iron32      |187.120.44.184  |simhostb1                  |SUT                 |ai_1    |none       |991766DA-6AB6-54F7-A303-3464B8BE07D6
+
+The AI object ai_1, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
+|attribute (AI object key)               |value                                
+|detach_parallelism                      |20                                   
+|ssh_key_name                            |bogus_id_rsa                         
+|sut                                     |1_x_client_daytrader->1_x_was->1_x_db2
+
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |39.74M                        
+|Used Memory                                          |2.89M                         
 |Redis Version                                        |2.5.12                        
-|Uptime (in seconds)                                  |13565159                      
-|Total Connections Received                           |6494896                       
-|Total Commands Processed                             |93794830                      
-|Number of Keys                                       |332                           
+|Uptime (in seconds)                                  |2416644                       
+|Total Connections Received                           |4456                          
+|Total Commands Processed                             |3669545                       
+|Number of Keys                                       |378                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|MongoDB Version                                      |2.0.6                         
-|Storage Size                                         |16112459760.0                 
-|Data Size                                            |13823020948.0                 
-|Index Size                                           |550318384                     
-|Average Object Size                                  |6602.62955927                 
-|Collections                                          |60                            
+|MongoDB Version                                      |2.4.5                         
+|Storage Size                                         |5447958528.0                  
+|Data Size                                            |4960737688.0                  
+|Index Size                                           |133620368                     
+|Average Object Size                                  |8110.23321301                 
+|Collections                                          |40                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
 |VMCs                                                 |4                             
 |HOSTs                                                |20                            
-|VMs                                                  |0                             
-|SVMs                                                 |0                             
-|AIs                                                  |0                             
+|VMs                                                  |3                             
+|AIs                                                  |1                             
 |AIDRSs                                               |0                             
 |VMCRSs                                               |0                             
 |FIRSs                                                |0                             
@@ -46,21 +67,15 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |HOSTs DEPARTED                                       |0                             
 |HOSTs DEPARTING                                      |0                             
 |HOSTs FAILED                                         |0                             
-|VM RESERVATIONS                                      |0                             
-|VMs ARRIVED                                          |22                            
+|VM RESERVATIONS                                      |3                             
+|VMs ARRIVED                                          |25                            
 |VMs ARRIVING                                         |0                             
 |VMs CAPTURING                                        |0                             
 |VMs DEPARTED                                         |22                            
 |VMs DEPARTING                                        |0                             
 |VMs FAILED                                           |3                             
-|SVM RESERVATIONS                                     |0                             
-|SVMs ARRIVED                                         |0                             
-|SVMs ARRIVING                                        |0                             
-|SVMs DEPARTED                                        |0                             
-|SVMs DEPARTING                                       |0                             
-|SVMs FAILED                                          |0                             
-|AI RESERVATIONS                                      |0                             
-|AIs ARRIVED                                          |0                             
+|AI RESERVATIONS                                      |1                             
+|AIs ARRIVED                                          |1                             
 |AIs ARRIVING                                         |0                             
 |AIs CAPTURING                                        |0                             
 |AIs DEPARTED                                         |0                             
@@ -84,11 +99,11 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |FIRSs DEPARTED                                       |0                             
 |FIRSs DEPARTING                                      |0                             
 |FIRSs FAILED                                         |0                             
-|EXPERIMENT COUNTER                                   |135                           
+|EXPERIMENT COUNTER                                   |139                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|59038ADB-0C9D-5DC8-8D0F-858C40A339D8 (simzone_b) VM RESERVATIONS|0                             
-|64F2E709-607C-5D1E-9ED5-402265D29FB4 (simzone_d) VM RESERVATIONS|0                             
-|538D06C6-8C24-51C6-AC34-D9ECDD4133D6 (simzone_c) VM RESERVATIONS|0                             
-|CA6252C4-6803-5C5C-BAA8-5BC509EE3CE0 (simzone_a) VM RESERVATIONS|0                             
+|2A3C7A6F-F507-5C26-894B-CA777DA4A067 (simzone_a) VM RESERVATIONS|0                             
+|841649F1-B9B9-5F66-BF08-8188BB2F57BF (simzone_c) VM RESERVATIONS|0                             
+|290AA171-A379-5C01-9211-06AFF9C329FA (simzone_d) VM RESERVATIONS|1                             
+|DDE459C8-87C4-5C23-B346-48A22B829E97 (simzone_b) VM RESERVATIONS|2                             
 

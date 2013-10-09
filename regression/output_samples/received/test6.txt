@@ -1,1 +1,15 @@
-*** Unknown syntax: cldparse
+ status: Waiting for all active AIDRS daemons to finish gracefully....
+ status: All AIDRS (daemons and objects were removed).
+ status: Removing all VMCRS objects attached to this experiment.
+ status: Removing all FIRS objects attached to this experiment.
+ status: Removing all AI objects attached to this experiment.
+ status: Removing all VM objects attached to this experiment.
+ status: Removing all VMC objects attached to this experiment.
+ status: VMC A3A1D5C8-EF1B-51A8-AA4B-373B743BAD91 was successfully unregistered on SimCloud "TESTSIMCLOUD".
+ status: VMC FB7B6269-0ADD-5470-A293-6998FA9C0C6D was successfully unregistered on SimCloud "TESTSIMCLOUD".
+ status: VMC C4B3C1A7-8F1A-5A1D-92C6-1F0C0C01BA15 was successfully unregistered on SimCloud "TESTSIMCLOUD".
+ status: VMC 1DCE293A-A852-501B-8783-AC9E4DAE3E4C was successfully unregistered on SimCloud "TESTSIMCLOUD".
+ status: Done
+ status: Removing all contents from Object Store (GLOBAL objects,VIEWS, etc.)
+Disassociating default cloud: TESTSIMCLOUD
+Cloud TESTSIMCLOUD was successfully detached from this experiment.

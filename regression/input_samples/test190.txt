@@ -1,1 +1,1 @@
-viewlist TESTCLOUD
+stats TESTCLOUD

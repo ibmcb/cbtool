@@ -1,1 +1,1 @@
-Usage: airun <cloud_name> <uuid> 
+Usage: aicapture <cloud_name> <identifier> [vmcrs = none] [mode] 

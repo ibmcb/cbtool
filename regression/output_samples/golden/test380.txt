@@ -1,1 +1,1 @@
-Usage: hostfail <cloud_name> <identifier> <service> [firs = none] [mode] 
+Usage: vmcattach <cloud_name> <identifier> [temp_attr_list = empty=empty] [mode] 

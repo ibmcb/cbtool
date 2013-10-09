@@ -1,1 +1,1 @@
-Usage: airunstate <cloud_name> <identifier> <runstate> [command = unknown] [firs = none] [mode] 
+Usage: aialter <cloud_name> <identifier> <attribute> <value> 

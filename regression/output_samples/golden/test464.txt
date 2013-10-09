@@ -1,44 +1,45 @@
- status: VMC 266BCC38-8839-5831-AACB-F08BE351C381 was successfully unregistered on SimCloud "TESTCLOUD".
-VMC object 266BCC38-8839-5831-AACB-F08BE351C381 (named "simzone_a") was sucessfully detached from this experiment.
-The following VMCs are attached to this experiment (Cloud TESTCLOUD) :
+ status: VMC 4FCBA6B3-9BCC-5CB0-B0D9-F0DE78E4C268 was successfully unregistered on SimCloud "TESTCLOUD".
+VMC object 4FCBA6B3-9BCC-5CB0-B0D9-F0DE78E4C268 (named "simzone_d") was sucessfully detached from this experiment.
+ status: VMC 6417BDBE-3782-5513-88F5-D13BF3634AA1 was successfully unregistered on SimCloud "TESTCLOUD".
+VMC object 6417BDBE-3782-5513-88F5-D13BF3634AA1 (named "simzone_c") was sucessfully detached from this experiment.
+ status: VMC 5C46CE08-93AA-57D0-ADF3-BA13C0F8703A was successfully unregistered on SimCloud "TESTCLOUD".
+VMC object 5C46CE08-93AA-57D0-ADF3-BA13C0F8703A (named "simzone_b") was sucessfully detached from this experiment.
+The following ATTACHED VMCs are in this experiment (Cloud TESTCLOUD) :
 |name                    |host_count      |pool                    |cloud_hostname                  |cloud_ip         
-|simzone_c               |5               |sut                     |simzone_c                       |87.220.99.66     
-|simzone_b               |5               |sut                     |simzone_b                       |146.35.147.3     
-|simzone_d               |5               |lg                      |simzone_d                       |199.187.194.85   
+|simzone_a               |5               |sut                     |simzone_a                       |140.111.106.34   
 
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |39.57M                        
+|Used Memory                                          |1.84M                         
 |Redis Version                                        |2.5.12                        
-|Uptime (in seconds)                                  |11740930                      
-|Total Connections Received                           |6492819                       
-|Total Commands Processed                             |92893187                      
-|Number of Keys                                       |233                           
+|Uptime (in seconds)                                  |2417249                       
+|Total Connections Received                           |4536                          
+|Total Commands Processed                             |3868670                       
+|Number of Keys                                       |150                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|MongoDB Version                                      |2.0.6                         
-|Storage Size                                         |13967024128.0                 
-|Data Size                                            |12134696180.0                 
-|Index Size                                           |502922112                     
-|Average Object Size                                  |6345.13492442                 
-|Collections                                          |61                            
+|MongoDB Version                                      |2.4.5                         
+|Storage Size                                         |5448130560.0                  
+|Data Size                                            |4961829808.0                  
+|Index Size                                           |133669424                     
+|Average Object Size                                  |8105.59162557                 
+|Collections                                          |39                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
-|VMCs                                                 |3                             
-|HOSTs                                                |15                            
+|VMCs                                                 |1                             
+|HOSTs                                                |5                             
 |VMs                                                  |0                             
-|SVMs                                                 |0                             
 |AIs                                                  |0                             
 |AIDRSs                                               |0                             
 |VMCRSs                                               |0                             
 |FIRSs                                                |0                             
 ------------------ EXPERIMENT-WIDE COUNTERS ------------------
 |Counter                                              |Value                         
-|VMC RESERVATIONS                                     |3                             
-|VMCs ARRIVED                                         |8                             
+|VMC RESERVATIONS                                     |1                             
+|VMCs ARRIVED                                         |4                             
 |VMCs ARRIVING                                        |0                             
-|VMCs DEPARTED                                        |5                             
+|VMCs DEPARTED                                        |3                             
 |VMCs DEPARTING                                       |0                             
 |VMCs FAILED                                          |0                             
 |HOST RESERVATIONS                                    |0                             
@@ -54,12 +55,6 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |VMs DEPARTED                                         |0                             
 |VMs DEPARTING                                        |0                             
 |VMs FAILED                                           |0                             
-|SVM RESERVATIONS                                     |0                             
-|SVMs ARRIVED                                         |0                             
-|SVMs ARRIVING                                        |0                             
-|SVMs DEPARTED                                        |0                             
-|SVMs DEPARTING                                       |0                             
-|SVMs FAILED                                          |0                             
 |AI RESERVATIONS                                      |0                             
 |AIs ARRIVED                                          |0                             
 |AIs ARRIVING                                         |0                             
@@ -85,10 +80,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |FIRSs DEPARTED                                       |0                             
 |FIRSs DEPARTING                                      |0                             
 |FIRSs FAILED                                         |0                             
-|EXPERIMENT COUNTER                                   |38                            
+|EXPERIMENT COUNTER                                   |22                            
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|3B9AF108-88F9-5C02-8112-6DD5C1AA73BA (simzone_b) VM RESERVATIONS|0                             
-|891CD362-3D5C-5CA8-8335-2D490F237255 (simzone_c) VM RESERVATIONS|0                             
-|47471919-D9F3-543E-A558-337D41D975D0 (simzone_d) VM RESERVATIONS|0                             
+|EDD914B7-85D1-5BD5-B077-3CF720266386 (simzone_a) VM RESERVATIONS|0                             
 

@@ -1,5 +1,3 @@
-vmcdetach TESTCLOUD simzone_d
-vmcdetach TESTCLOUD simzone_c
-vmcdetach TESTCLOUD simzone_b
+vmcdetach TESTCLOUD simzone_a
 vmclist TESTCLOUD
 stats TESTCLOUD

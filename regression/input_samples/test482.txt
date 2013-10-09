@@ -1,4 +1,1 @@
-vmattach db2 auto a:b,x:y,r:2
-vmlist
-vmshow vm_4 vmc_name,vmc_pool,host_name,meta_tags,size
-stats
+vmshow vm_1 all

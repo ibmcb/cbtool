@@ -1,4 +1,5 @@
-waituntil AI ARRIVED=17 increasing 2
+aiattach daytrader
 ailist
 vmlist
+aishow ai_10 load_balancer,sut
 stats

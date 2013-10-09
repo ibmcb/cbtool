@@ -1,1 +1,1 @@
-vmdetach
+vmsave

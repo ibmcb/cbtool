@@ -1,1 +1,2 @@
-Usage: hostshow <cloud_name> <identifier> [key = all] 
+The following ATTACHED HOSTs are in this experiment (Cloud TESTCLOUD) :
+No objects available.

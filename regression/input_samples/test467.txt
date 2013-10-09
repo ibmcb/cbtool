@@ -1,4 +1,3 @@
-vmcdetach all async
-waitfor 8s
+vmcattach all
 vmclist
 stats

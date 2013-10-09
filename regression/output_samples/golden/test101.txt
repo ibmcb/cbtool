@@ -1,2 +1,1 @@
-VMs with the following roles can be attached to to this experiment (Cloud TESTCLOUD) :
-client_specweb, driver_filebench, driver_coremark, lostback, client_windows, coremark, rubis_driver, predictablevm, ddgen, lb, driver_daytrader, willfail, client_lost, client_daytrader, hadoopmaster, storageclient, specwebfront, was, netclient, storageserver, filebench, specjbb, driver_tradelite, rubis_lb, driver_fbnfsrd, cn_hpc, fen_hpc, db2, rubis_appsrv, faildb2, netserver, rubis_database, windows, driver_netperf, client_tradelite, driver_hadoop, lostfront, tinyvm, hadoopslave, specwebback
+Usage: roleshow <cloud_name> <role> 

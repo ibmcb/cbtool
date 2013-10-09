@@ -1,1 +1,2 @@
-Usage: airesume <cloud_name> <identifier> [firs = none] [mode] 
+The following ATTACHED AIs are in this experiment (Cloud TESTCLOUD) :
+No objects available.

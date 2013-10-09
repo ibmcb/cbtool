@@ -1,2 +1,6 @@
-aialter TESTCLOUD ai_1 mode=scalable
-aishow TESTCLOUD ai_1 mode
+aiattach TESTCLOUD hadoop async
+waitfor TESTCLOUD 12s
+ailist TESTCLOUD
+vmlist TESTCLOUD
+aishow TESTCLOUD ai_2 detach_parallelism,ssh_key_name,sut
+stats TESTCLOUD

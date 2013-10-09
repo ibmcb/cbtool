@@ -1,1 +1,5 @@
-statealter aidrs_1 stopped
+typealter daytrader sut=client_daytrader->was->willfail
+aiattach daytrader
+ailist
+vmlist
+stats

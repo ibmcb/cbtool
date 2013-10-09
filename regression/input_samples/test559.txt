@@ -1,5 +1,3 @@
-aiattach daytrader
-aiattach netperf
 aiattach hpcc
 ailist
 vmlist

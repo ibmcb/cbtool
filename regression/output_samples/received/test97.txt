@@ -1,1 +1,1 @@
-Usage: cldshow <cloud_name> <object_type> 
+Usage: cldalter <cloud_name> <gobject> <attribute> <value> 

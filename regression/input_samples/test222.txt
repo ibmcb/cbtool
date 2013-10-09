@@ -1,4 +1,6 @@
-vmattach TESTCLOUD tinyvm simhostb1
+vmattach TESTCLOUD tinyvm async=2
+waitfor TESTCLOUD 1s
+vmlist TESTCLOUD pending
+waituntil TESTCLOUD VM ARRIVED=8 increasing 1
 vmlist TESTCLOUD
-vmshow TESTCLOUD vm_3 vmc_name,vmc_pool,host_name,meta_tags,size
 stats TESTCLOUD

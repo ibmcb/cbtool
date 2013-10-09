@@ -1,1 +1,5 @@
-typeshow daytrader
+vmcapture youngest
+stats
+ailist
+vmlist
+stats

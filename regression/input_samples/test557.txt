@@ -1,4 +1,4 @@
-aidetach oldest
+aiattach daytrader
 ailist
 vmlist
 stats

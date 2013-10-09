@@ -1,1 +1,2 @@
-Usage: aidrsshow <cloud_name> <identifier> [key = all] 
+The following ATTACHED AIDRSs are in this experiment (Cloud TESTCLOUD) :
+No objects available.

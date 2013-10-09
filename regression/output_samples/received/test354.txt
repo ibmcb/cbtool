@@ -1,1 +1,22 @@
-Current default cloud is "TESTCLOUD". Need cloud name to be set as default cloud or 'none' to unset.
+ status: No samples of runtime_app metrics for all VMs were found (the file /home/msilva/cloudbench/lib/auxiliary//../../data/REGRESSION_B/VM_runtime_app_REGRESSION_B.csv will be empty).
+Monitor extraction success. VM runtime application performance data samples were written to the file /home/msilva/cloudbench/lib/auxiliary//../../data/REGRESSION_B/VM_runtime_app_REGRESSION_B.csv
+running shell command: "cat /home/msilva/cloudbench/regression/..//data/REGRESSION_B/VM_runtime_app_*REGRESSION*"....
+stdout:
+ #field:column #
+#time:1
+#time_h:2
+#uuid:3
+#name:4
+#role:5
+#ai_name:6
+#type:7
+#app_load_profile:8
+#app_load_id:9
+#app_load_level:10
+#app_throughput:11
+#app_latency:12
+#app_bandwidth:13
+
+time,time_h,uuid,name,role,ai_name,type,app_load_profile,app_load_id,app_load_level,app_throughput,app_latency,app_bandwidth
+
+

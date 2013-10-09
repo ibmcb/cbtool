@@ -1,49 +1,44 @@
- status: Sending a termination request for vm_1 (cloud-assigned uuid 82920618-E014-51AB-AC29-5BE1C078BB9B)....
-VM object E68D0F85-F4DE-52F9-909E-D7A869F3B6C6 (named "vm_1") was sucessfully detached from this experiment.
-The following VMs are attached to this experiment (Cloud TESTCLOUD) :
-|name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
-|vm_3          |tinyvm              |pico32      |241.236.113.152 |simhostb1                  |SUT                 |none    |none       |C4DD0678-86B9-58ED-B134-B489F2B9A132
-|vm_6          |tinyvm              |pico32      |251.198.138.95  |simhostb1                  |SUT                 |none    |none       |13A850FF-0AB2-5050-8CB6-DE2A7F5B3E5E
-|vm_7          |tinyvm              |pico32      |248.59.200.74   |simhostb4                  |SUT                 |none    |none       |81CDD30C-1F26-56CB-91BB-162E303AEBDD
-|vm_8          |tinyvm              |pico32      |198.86.182.120  |simhostc3                  |SUT                 |none    |none       |2B26A6D6-CADD-5407-A88B-D2773B422FEB
-|vm_9          |specwebback         |platinum64  |118.46.138.250  |simhosta1                  |SUT                 |none    |none       |2075DB98-7AAD-5959-9AF5-566F5290D3C8
-|vm_10         |netclient           |iron32      |108.246.190.94  |simhosta2                  |SUT                 |none    |none       |6829742F-96D7-5A2D-8AEE-1F5847245CAE
-|vm_11         |fen_hpc             |platinum64  |209.138.22.231  |simhostd4                  |LG                  |none    |none       |6E0E1CD6-9B96-58BC-B8DC-D573711D9E8F
-|vm_12         |tinyvm              |iron32      |168.186.253.154 |simhostc3                  |SUT                 |none    |none       |4BB8209A-78C9-59E0-83FA-831A6B5A9220
-|vm_13         |tinyvm              |iron32      |100.182.247.179 |simhostc3                  |SUT                 |none    |none       |4AD539BF-0983-5CEF-AFDB-4AD95A046646
-|vm_14         |predictablevm       |iron32      |1.2.3.4         |simhosta1                  |SUT                 |none    |none       |0740BF0D-6D48-58D2-999C-1CF68702E92D
-|vm_15         |tinyvm              |pico32      |93.59.57.86     |simhosta0                  |SUT                 |none    |none       |DD46A85B-15E8-52C8-A6C5-3B680C3AB49A
-|vm_16         |tinyvm              |pico32      |254.61.201.209  |simhostc2                  |SUT                 |none    |none       |65D62C0A-D530-532B-8118-8EED63D3A0DA
-|vm_17         |tinyvm              |pico32      |208.34.13.241   |simhostb3                  |SUT                 |none    |none       |00690014-BDFB-5A92-B286-091201515C1A
-|vm_18         |tinyvm              |pico32      |175.98.243.43   |simhostb2                  |SUT                 |none    |none       |5DA1A92D-E50F-5CA5-8774-3214457B4638
-|vm_19         |tinyvm              |pico32      |66.36.30.195    |simhostc1                  |SUT                 |none    |none       |B857B500-698D-52B2-BE97-13ED0D6CFCAD
-|vm_20         |tinyvm              |pico32      |251.151.76.61   |simhostb0                  |SUT                 |none    |none       |644E585D-6850-52B0-864F-7AB19182322D
-|vm_21         |tinyvm              |pico32      |68.190.105.233  |simhostb3                  |SUT                 |none    |none       |F9FF586C-EB6F-5CF3-89F5-65C368D516D2
-|vm_22         |tinyvm              |pico32      |59.21.40.165    |simhostc4                  |SUT                 |none    |none       |30C23617-54AF-5399-A33A-D453F5E0464F
-
+ status: Sending a termination request for vm_3 (cloud-assigned uuid 68F9CCCC-8F12-556D-B8FE-33B12798A737)....
+ status: Sending a termination request for vm_9 (cloud-assigned uuid A7DA1ADE-A671-5BB4-8F83-75AC7177D26C)....
+ status: Sending a termination request for vm_20 (cloud-assigned uuid 1443F7DD-3509-562E-A2B1-84C12797BF25)....
+ status: Sending a termination request for vm_8 (cloud-assigned uuid F6FF7D5E-FD5A-5157-8E4B-740759F2F596)....
+ status: Sending a termination request for vm_6 (cloud-assigned uuid 2EF34503-8ED7-5E34-A8D6-4A02070B7976)....
+ status: Sending a termination request for vm_7 (cloud-assigned uuid EF8D9B2F-99D0-5C9D-9207-E33B1C27A13E)....
+ status: Sending a termination request for vm_13 (cloud-assigned uuid 654BAD35-65E1-5A9E-87D8-7F84DCC1F47B)....
+ status: Sending a termination request for vm_14 (cloud-assigned uuid 11111111-1111-1111-1111-111111111111)....
+ status: Sending a termination request for vm_18 (cloud-assigned uuid A7640197-72D4-54B8-A063-8CFE0BDB9421)....
+ status: Sending a termination request for vm_17 (cloud-assigned uuid DF47EA94-677F-5178-9E35-531A1EF41B8C)....
+ status: Sending a termination request for vm_21 (cloud-assigned uuid 43CE0E93-F8B2-543B-9866-26D928430322)....
+ status: Sending a termination request for vm_11 (cloud-assigned uuid D06136C0-FC4A-5C33-A387-318E3FA5B525)....
+ status: Sending a termination request for vm_15 (cloud-assigned uuid FD16BEB3-7F3B-50F0-8BA1-3C7962E51F06)....
+ status: Sending a termination request for vm_10 (cloud-assigned uuid 4AAF73D7-B95D-5A25-BF15-B0EC538B2655)....
+ status: Sending a termination request for vm_16 (cloud-assigned uuid 4F88EF1E-8B53-561D-A634-05A072ECB438)....
+ status: Sending a termination request for vm_19 (cloud-assigned uuid 554CF820-6D4D-5353-9E42-81B2D1654B75)....
+VM object undefined (named "all") was sucessfully detached from this experiment.
+The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
+No objects available.
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |39.42M                        
+|Used Memory                                          |2.73M                         
 |Redis Version                                        |2.5.12                        
-|Uptime (in seconds)                                  |11740396                      
-|Total Connections Received                           |6492700                       
-|Total Commands Processed                             |92722567                      
-|Number of Keys                                       |431                           
+|Uptime (in seconds)                                  |2416636                       
+|Total Connections Received                           |4455                          
+|Total Commands Processed                             |3665075                       
+|Number of Keys                                       |324                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|MongoDB Version                                      |2.0.6                         
-|Storage Size                                         |13966344192.0                 
-|Data Size                                            |12133764928.0                 
-|Index Size                                           |502881232                     
-|Average Object Size                                  |6346.11800222                 
-|Collections                                          |62                            
+|MongoDB Version                                      |2.4.5                         
+|Storage Size                                         |5447958528.0                  
+|Data Size                                            |4960722792.0                  
+|Index Size                                           |133620368                     
+|Average Object Size                                  |8110.48731368                 
+|Collections                                          |40                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
 |VMCs                                                 |4                             
 |HOSTs                                                |20                            
-|VMs                                                  |18                            
-|SVMs                                                 |0                             
+|VMs                                                  |0                             
 |AIs                                                  |0                             
 |AIDRSs                                               |0                             
 |VMCRSs                                               |0                             
@@ -62,19 +57,13 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |HOSTs DEPARTED                                       |0                             
 |HOSTs DEPARTING                                      |0                             
 |HOSTs FAILED                                         |0                             
-|VM RESERVATIONS                                      |18                            
+|VM RESERVATIONS                                      |0                             
 |VMs ARRIVED                                          |22                            
 |VMs ARRIVING                                         |0                             
 |VMs CAPTURING                                        |0                             
-|VMs DEPARTED                                         |4                             
+|VMs DEPARTED                                         |22                            
 |VMs DEPARTING                                        |0                             
 |VMs FAILED                                           |0                             
-|SVM RESERVATIONS                                     |0                             
-|SVMs ARRIVED                                         |0                             
-|SVMs ARRIVING                                        |0                             
-|SVMs DEPARTED                                        |0                             
-|SVMs DEPARTING                                       |0                             
-|SVMs FAILED                                          |0                             
 |AI RESERVATIONS                                      |0                             
 |AIs ARRIVED                                          |0                             
 |AIs ARRIVING                                         |0                             
@@ -100,11 +89,11 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |FIRSs DEPARTED                                       |0                             
 |FIRSs DEPARTING                                      |0                             
 |FIRSs FAILED                                         |0                             
-|EXPERIMENT COUNTER                                   |114                           
+|EXPERIMENT COUNTER                                   |132                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|CB27A579-597C-52AC-B148-644E81A7D93C (simzone_d) VM RESERVATIONS|1                             
-|D7D3EB8C-8813-524D-9C2D-7FD7626D4BCC (simzone_b) VM RESERVATIONS|7                             
-|97FF48D4-05C4-54D7-B1D8-828EED2A2B20 (simzone_a) VM RESERVATIONS|4                             
-|A708E2EA-221A-57ED-BAE8-15077C3E391A (simzone_c) VM RESERVATIONS|6                             
+|2A3C7A6F-F507-5C26-894B-CA777DA4A067 (simzone_a) VM RESERVATIONS|0                             
+|841649F1-B9B9-5F66-BF08-8188BB2F57BF (simzone_c) VM RESERVATIONS|0                             
+|290AA171-A379-5C01-9211-06AFF9C329FA (simzone_d) VM RESERVATIONS|0                             
+|DDE459C8-87C4-5C23-B346-48A22B829E97 (simzone_b) VM RESERVATIONS|0                             
 

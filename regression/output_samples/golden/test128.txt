@@ -1,1 +1,1 @@
-Usage: vmsave <cloud_name> <identifier> [firs = none] [mode] 
+Usage: vmrunstate <cloud_name> <identifier> <runstate> [command = unknown] [firs = none] [mode] 

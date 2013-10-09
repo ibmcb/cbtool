@@ -1,1 +1,4 @@
+aidrsattach TESTCLOUD simplenw lifetime=40
 aidrslist TESTCLOUD
+aidrsshow TESTCLOUD aidrs_1 iait,lifetime,max_ais
+stats TESTCLOUD

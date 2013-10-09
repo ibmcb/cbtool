@@ -1,2 +1,1 @@
-The following VMCRSs are attached to this experiment (Cloud TESTCLOUD) :
-No objects available.
+Usage: aicapture <cloud_name> <identifier> [vmcrs = none] [mode] 

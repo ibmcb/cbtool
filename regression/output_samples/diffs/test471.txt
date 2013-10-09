@@ -1,6 +1,0 @@
-|arrival                                   |1374526961                           
-|cloud_ip                                  |197.77.118.128                       
-|cloud_vm_uuid                             |EF65B200-D686-58DD-A1F0-B92F184A3536 
-|mgt_001_provisioning_request_originated   |1374526961                           
-|uuid                                      |EF65B200-D686-58DD-A1F0-B92F184A3536 
-|vmc                                       |3C091D65-A8D9-5ECF-9C95-36A39D5CAA39 

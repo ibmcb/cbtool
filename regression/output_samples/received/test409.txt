@@ -1,1 +1,1 @@
-Usage: aicapture <cloud_name> <identifier> [vmcrs = none] [mode] 
+Usage: aialter <cloud_name> <identifier> <attribute> <value> 

@@ -1,4 +1,5 @@
-aiattach coremark
+aiattach daytrader
 ailist
 vmlist
+aishow ai_12 load_balancer,sut
 stats

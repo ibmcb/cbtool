@@ -46,6 +46,7 @@ class SimCmds(CommonCloudFunctions) :
         self.osci = osci
         self.ft_supported = False
         self.expid = expid
+        self.last_round_robin_host_index = 0
 
     @trace
     def get_description(self) :
@@ -188,6 +189,7 @@ class SimCmds(CommonCloudFunctions) :
         obj_attr_list["hosts"] = obj_attr_list["hosts"][:-1]
 
         self.additional_host_discovery (obj_attr_list)
+        self.populate_interface(obj_attr_list)
 
         return True
 
@@ -392,9 +394,17 @@ class SimCmds(CommonCloudFunctions) :
                 _msg = "Failed to create VM image"
                 raise CldOpsException(_msg, _status)
 
+            # Use round-robin instead of random to make the regression test more predictable
             if "host_name" not in obj_attr_list :
-                obj_attr_list["host_name"] = "simhost" + obj_attr_list["vmc_name"][-1]
-                obj_attr_list["host_name"] += str(randint(0, int(obj_attr_list["hosts_per_vmc"])-1))
+                _host_list = self.get_host_list(obj_attr_list)
+                self.last_round_robin_host_index += 1
+                if self.last_round_robin_host_index == len(_host_list) :
+                    self.last_round_robin_host_index = 0
+                (_host_name, _host_uuid) = _host_list[self.last_round_robin_host_index]
+                if len(_host_name.split("host_")) == 2 :
+                    _host_name = _host_name.split("host_")[1]
+                obj_attr_list["host_name"] = _host_name
+                obj_attr_list["host"] = _host_uuid
 
             if "meta_tags" in obj_attr_list :
                 if obj_attr_list["meta_tags"] != "empty" and \
@@ -610,6 +620,32 @@ class SimCmds(CommonCloudFunctions) :
                 _msg += "\"."
                 cbdebug(_msg)
                 return _status, _msg
+            
+    def vmmigrate(self, obj_attr_list) :
+        _time_mark_crs = int(time())            
+        operation = obj_attr_list["mtype"]
+        obj_attr_list["mgt_502_" + operation + "_request_sent"] = _time_mark_crs - obj_attr_list["mgt_501_" + operation + "_request_originated"]
+
+        _msg = "Sending a " + operation + " request for "  + obj_attr_list["name"]
+        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
+        _msg += "...."
+        cbdebug(_msg, True)
+
+        sleep(2)
+        
+        _time_mark_crc = int(time())
+        obj_attr_list["mgt_503_" + operation + "_request_completed"] = _time_mark_crc - _time_mark_crs
+
+        cbdebug("VM " + obj_attr_list["name"] + " " + operation + " request completed.")
+
+        _msg = "" + obj_attr_list["name"] + ""
+        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
+        _msg += "was successfully "
+        _msg += operation + "ed on FTCloud \"" + obj_attr_list["cloud_name"]
+        _msg += "\"."
+        cbdebug(_msg)
+            
+        return 0, _msg
 
     @trace        
     def aidefine(self, obj_attr_list) :

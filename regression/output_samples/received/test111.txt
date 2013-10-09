@@ -1,1 +1,1 @@
-Usage: viewshow <cloud_name> <object> <criterion> <expression> [sorting = default] [filter = default] 
+Current experiment identifier is "EXP-10-09-2013-09-36-39-AM-EDT".

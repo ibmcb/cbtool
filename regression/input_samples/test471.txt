@@ -1,1 +1,4 @@
-hostshow simhosta3 all
+vmcdetach all async
+waitfor 8s
+vmclist
+stats

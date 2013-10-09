@@ -1,1 +1,1 @@
-Usage: firsalter <cloud_name> <identifier> <attribute> <value> 
+Usage: aidrsdetach <cloud_name> <identifier> [force = False] [mode] 

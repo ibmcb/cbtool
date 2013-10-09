@@ -1,1 +1,3 @@
-aishow ai_1 all
+vmattach norole
+vmlist
+stats

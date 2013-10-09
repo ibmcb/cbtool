@@ -1,1 +1,1 @@
-Usage: patternlist <cloud_name> 
+Usage: patternshow <cloud_name> <pattern> 

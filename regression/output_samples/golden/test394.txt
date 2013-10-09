@@ -1,1 +1,1 @@
-Usage: vmresize <cloud_name> <identifier> <resource> <value> 
+Usage: vmalter <cloud_name> <identifier> <attribute> <value> 

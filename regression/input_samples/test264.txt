@@ -1,5 +1,3 @@
-aiattach TESTCLOUD daytrader detach_parallelism=9,ssh_key_name=AAAABBBBCCCCDDDDEEEE
-ailist TESTCLOUD
-vmlist TESTCLOUD
-aishow TESTCLOUD ai_3 detach_parallelism,ssh_key_name,sut
+airunstate TESTCLOUD ai_3 suspend
+stateshow TESTCLOUD
 stats TESTCLOUD

@@ -1,1 +1,4 @@
-aidrsalter aidrs_1 max_ais=20
+aiattach notype
+ailist
+vmlist
+stats

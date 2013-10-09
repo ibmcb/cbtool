@@ -1,1 +1,1 @@
-Usage: monextract <cloud name> <object type> <metric type> [experiment id] 
+Usage: statealter <cloud_name> <identifier> <new_state> 

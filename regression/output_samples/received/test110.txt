@@ -1,2 +1,1 @@
-VIEWs with the following criteria can be used onto this experiment (Cloud TESTCLOUD) :
-vmcrs:username or pattern or scope, svm:username or vmc or role or type or ai or aidrs, vmc:pool or username, firs:username or pattern or scope, vm:username or vmc or host or role or type or ai or aidrs, ai:username or type or aidrs, host:username or vmc, aidrs:username or pattern
+Usage: viewshow <cloud_name> <gobject> <criterion> <expression> [sorting = default] [gfilter = default] 

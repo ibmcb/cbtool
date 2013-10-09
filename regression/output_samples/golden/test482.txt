@@ -1,107 +1,116 @@
- status: Waiting for vm_4 (cloud-assigned uuid 323037B5-4340-50E1-AB0A-83AD11B269B9) to start...
- status: Trying to establish network connectivity to vm_4 (cloud-assigned uuid 323037B5-4340-50E1-AB0A-83AD11B269B9), on IP address 132.242.162.234...
- status: Bypassing the sending of a copy of the code tree to vm_4 (132.242.162.234)...
- status: Bypassing generic VM post_boot configuration on vm_4 (132.242.162.234)...
-VM object 91CBF7AB-2395-5B02-9D0F-A0779233415D (named "vm_4") sucessfully attached to this experiment. It is ssh-accessible at the IP address 132.242.162.234 (323037B5-4340-50E1-AB0A-83AD11B269B9.simcloud.com).
-The following VMs are attached to this experiment (Cloud TESTCLOUD) :
-|name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
-|vm_1          |tinyvm              |pico32      |175.58.241.182  |simhostb0                  |SUT                 |none    |none       |ADA59FDC-537B-5D15-92EE-F47450275C5F
-|vm_2          |tinyvm              |pico32      |181.21.165.95   |simhostd3                  |LG                  |none    |none       |7986ECEE-F3FA-5725-A75C-DAF97720C425
-|vm_3          |tinyvm              |pico32      |183.61.231.199  |simhostb1                  |SUT                 |none    |none       |43CB6C82-35D0-59D7-93D8-7CC9976794F3
-|vm_4          |db2                 |copper32    |132.242.162.234 |simhostc3                  |SUT                 |none    |none       |91CBF7AB-2395-5B02-9D0F-A0779233415D
-
-The VM object vm_4, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
+The VM object vm_1, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
 |attribute (VM object key)               |value                                
-|host_name                               |simhostc3                            
-|meta_tags                               |{'a': 'b', 'x': 'y', 'r': '2'}       
-|size                                    |copper32                             
-|vmc_name                                |simzone_c                            
+|access                                  |                                     
+|ai                                      |none                                 
+|ai_arrived                              |0                                    
+|ai_arriving                             |0                                    
+|ai_departed                             |0                                    
+|ai_failed                               |0                                    
+|ai_name                                 |none                                 
+|ai_reservations                         |0                                    
+|aidrs                                   |none                                 
+|aidrs_name                              |none                                 
+|arrival                                 |1381326675                           
+|attempts                                |3                                    
+|base_dir                                |/home/msilva/cloudbench/lib/auxiliary//../..
+|capture_supported                       |True                                 
+|check_boot_complete                     |wait_for_0                           
+|check_boot_started                      |poll_cloud                           
+|class                                   |standard                             
+|client_pref_pool                        |lg                                   
+|cloud_hostname                          |603B83FA-12C2-516B-9017-CE8D936711AC.simcloud.com
+|cloud_ip                                |236.168.198.133                      
+|cloud_mac                               |00:16:3e:11:d7:f2                    
+|cloud_name                              |TESTCLOUD                            
+|cloud_vm_name                           |cb-msilva-vm_1-tinyvm                
+|cloud_vm_uuid                           |603B83FA-12C2-516B-9017-CE8D936711AC 
+|command                                 |vmattach TESTCLOUD tinyvm auto empty default none empty=empty
+|command_originated                      |1381326673                           
+|counter                                 |89                                   
+|cpu_lower                               |500                                  
+|cpu_upper                               |1000                                 
+|credentials                             |                                     
+|daemon_dir                              |/home/klabuser                       
+|debug_remote_commands                   |False                                
+|detach_parallelism                      |20                                   
+|discover_hosts                          |True                                 
+|driver_pref_pool                        |lg                                   
+|eclipsed                                |False                                
+|exclude_list                            |/home/msilva/cloudbench/lib/auxiliary//../../exclude_list.txt
+|execute_json_filename_prefix            |cb                                   
+|execute_script_name                     |execute_on_staging.sh                
+|experiment_id                           |REGRESSION_B                         
+|extra_info                              |                                     
+|host                                    |BD237F06-DFFC-5967-AA8A-E22C568334B0 
+|host_cloud_ip                           |159.53.223.178                       
+|host_name                               |simhostb1                            
+|hosts_per_vmc                           |5                                    
+|identity                                |/home/msilva/cloudbench/lib/auxiliary//../../credentials/bogus_id_rsa
+|imageid1                                |cloudbench_tinyvm                    
+|imageids                                |1                                    
+|jars_dir                                |/home/klabuser/cloudbench/jar        
+|key_name                                |                                     
+|last_known_state                        |running with ip assigned             
+|login                                   |klabuser                             
+|memory_lower                            |50                                   
+|memory_upper                            |100                                  
+|meta_tags                               |empty                                
+|mgt_001_provisioning_request_originated |1381326673                           
+|mgt_002_provisioning_request_sent       |0                                    
+|mgt_003_provisioning_request_completed  |1                                    
+|mgt_004_network_acessible               |1                                    
+|mgt_005_file_transfer                   |0                                    
+|mgt_006_application_start               |0                                    
+|migrate_protocol                        |tcp                                  
+|migrate_protocol_supported              |tcp,rdma,x-rdma                      
+|migrate_supported                       |True                                 
+|mode                                    |controllable                         
+|model                                   |sim                                  
+|name                                    |vm_1                                 
+|netid                                   |vlan123                              
+|notification                            |False                                
+|pattern                                 |none                                 
+|protect_protocol                        |tcp                                  
+|protect_protocol_supported              |tcp,rdma,x-rdma                      
+|protect_supported                       |True                                 
+|prov_cloud_ip                           |236.168.198.133                      
+|qemu_debug                              |False                                
+|randomize_image_name                    |False                                
+|remote_dir_name                         |cloudbench                           
+|resize_supported                        |False                                
+|role                                    |tinyvm                               
+|run_generic_scripts                     |False                                
+|runstate_parallelism                    |5                                    
+|runstate_supported                      |True                                 
+|security_groups                         |                                     
+|size                                    |pico32                               
+|ssh_key_name                            |bogus_id_rsa                         
+|staging                                 |none                                 
+|state                                   |attached                             
+|temp_attr_list                          |empty=empty                          
+|timeout                                 |240                                  
+|tracking                                |none                                 
+|transfer_files                          |False                                
+|type                                    |none                                 
+|update_attempts                         |720                                  
+|update_frequency                        |1                                    
+|username                                |msilva                               
+|uuid                                    |F2DE6C84-C41F-54D4-A409-1BE7003DCF5D 
+|vcpus                                   |1                                    
+|vm_arrived                              |0                                    
+|vm_arriving                             |0                                    
+|vm_departed                             |0                                    
+|vm_failed                               |0                                    
+|vm_reservations                         |0                                    
+|vmc                                     |2FF9728E-95B3-5EE9-A0A4-61875B507FA8 
+|vmc_access                              |                                     
+|vmc_arrived                             |16                                   
+|vmc_cloud_ip                            |187.119.212.78                       
+|vmc_departed                            |12                                   
+|vmc_failed                              |0                                    
+|vmc_name                                |simzone_b                            
 |vmc_pool                                |SUT                                  
-
-The following statistics are available on this experiment (Cloud TESTCLOUD) :
-------------------------- OBJECT STORE -----------------------
-|Metric                                               |Value                         
-|Used Memory                                          |39.90M                        
-|Redis Version                                        |2.5.12                        
-|Uptime (in seconds)                                  |11740959                      
-|Total Connections Received                           |6492827                       
-|Total Commands Processed                             |92905546                      
-|Number of Keys                                       |329                           
-------------------------- METRIC STORE -----------------------
-|Metric                                               |Value                         
-|MongoDB Version                                      |2.0.6                         
-|Storage Size                                         |13967081472.0                 
-|Data Size                                            |12134791352.0                 
-|Index Size                                           |502962992                     
-|Average Object Size                                  |6344.87614442                 
-|Collections                                          |62                            
---------------------- EXPERIMENT OBJECTS ---------------------
-|Object                                               |Count                         
-|VMCs                                                 |4                             
-|HOSTs                                                |20                            
-|VMs                                                  |4                             
-|SVMs                                                 |0                             
-|AIs                                                  |0                             
-|AIDRSs                                               |0                             
-|VMCRSs                                               |0                             
-|FIRSs                                                |0                             
------------------- EXPERIMENT-WIDE COUNTERS ------------------
-|Counter                                              |Value                         
-|VMC RESERVATIONS                                     |4                             
-|VMCs ARRIVED                                         |16                            
-|VMCs ARRIVING                                        |0                             
-|VMCs DEPARTED                                        |12                            
-|VMCs DEPARTING                                       |0                             
-|VMCs FAILED                                          |0                             
-|HOST RESERVATIONS                                    |0                             
-|HOSTs ARRIVED                                        |0                             
-|HOSTs ARRIVING                                       |0                             
-|HOSTs DEPARTED                                       |0                             
-|HOSTs DEPARTING                                      |0                             
-|HOSTs FAILED                                         |0                             
-|VM RESERVATIONS                                      |4                             
-|VMs ARRIVED                                          |4                             
-|VMs ARRIVING                                         |0                             
-|VMs CAPTURING                                        |0                             
-|VMs DEPARTED                                         |0                             
-|VMs DEPARTING                                        |0                             
-|VMs FAILED                                           |0                             
-|SVM RESERVATIONS                                     |0                             
-|SVMs ARRIVED                                         |0                             
-|SVMs ARRIVING                                        |0                             
-|SVMs DEPARTED                                        |0                             
-|SVMs DEPARTING                                       |0                             
-|SVMs FAILED                                          |0                             
-|AI RESERVATIONS                                      |0                             
-|AIs ARRIVED                                          |0                             
-|AIs ARRIVING                                         |0                             
-|AIs CAPTURING                                        |0                             
-|AIs DEPARTED                                         |0                             
-|AIs DEPARTING                                        |0                             
-|AIs FAILED                                           |0                             
-|AIDRS RESERVATIONS                                   |0                             
-|AIDRSs ARRIVED                                       |0                             
-|AIDRSs ARRIVING                                      |0                             
-|AIDRSs DEPARTED                                      |0                             
-|AIDRSs DEPARTING                                     |0                             
-|AIDRSs FAILED                                        |0                             
-|VMCRS RESERVATIONS                                   |0                             
-|VMCRSs ARRIVED                                       |0                             
-|VMCRSs ARRIVING                                      |0                             
-|VMCRSs DEPARTED                                      |0                             
-|VMCRSs DEPARTING                                     |0                             
-|VMCRSs FAILED                                        |0                             
-|FIRS RESERVATIONS                                    |0                             
-|FIRSs ARRIVED                                        |0                             
-|FIRSs ARRIVING                                       |0                             
-|FIRSs DEPARTED                                       |0                             
-|FIRSs DEPARTING                                      |0                             
-|FIRSs FAILED                                         |0                             
-|EXPERIMENT COUNTER                                   |92                            
-
- ---------------- VMC-WIDE COUNTERS ----------------
-|35310FEB-1E59-53F1-A37C-0E4387DFF893 (simzone_a) VM RESERVATIONS|0                             
-|DAEF899C-8C95-5B76-BE3F-58349C261E66 (simzone_d) VM RESERVATIONS|1                             
-|8E18B916-CC95-566E-887E-3032BA7F835A (simzone_c) VM RESERVATIONS|1                             
-|3076C295-3106-5ADC-8C71-D21083902D7A (simzone_b) VM RESERVATIONS|2                             
+|vmemory                                 |192                                  
+|vnics                                   |1                                    
+|vstorage                                |2048                                 
 

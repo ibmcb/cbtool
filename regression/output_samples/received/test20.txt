@@ -1,1 +1,1 @@
-Usage: expid <cloud_name> [experiment_name = ] 
+Usage: vmccleanup <cloud_name> <identifier> 

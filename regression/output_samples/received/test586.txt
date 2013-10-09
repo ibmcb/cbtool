@@ -1,1 +1,2 @@
-*** Unknown syntax: reserved for vmcrs
+The AIDRS object aidrs_1 had its state altered from "attached" to "stopped" on this experiment (Cloud TESTCLOUD)
+

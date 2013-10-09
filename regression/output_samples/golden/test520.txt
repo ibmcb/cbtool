@@ -1,106 +1,83 @@
-The AI object ai_1, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
-|attribute (AI object key)               |value                                
-|ai_arrived                              |0                                    
-|ai_arriving                             |0                                    
-|ai_departed                             |0                                    
-|ai_failed                               |0                                    
-|ai_reservations                         |0                                    
-|aidrs                                   |none                                 
-|aidrs_name                              |none                                 
-|arrival                                 |1372702331                           
-|attach_parallelism                      |3                                    
-|attempts                                |3                                    
-|base_dir                                |/home/msilva/cloudbench/lib/auxiliary//../..
-|base_type                               |daytrader                            
-|capture_role                            |db2                                  
-|capture_supported                       |True                                 
-|cloud_hostname                          |6B5D59B3-284E-5E88-8D35-239D50485AA5.simcloud.com
-|cloud_ip                                |129.205.53.142                       
-|cloud_name                              |TESTCLOUD                            
-|command                                 |aiattach TESTCLOUD daytrader default default none none none empty=empty
-|command_originated                      |1372702328                           
-|counter                                 |136                                  
-|db2_reset1                              |cb_restart_db2.sh                    
-|db2_setup1                              |cb_setup_ramdisk.sh                  
-|db2_setup2                              |cb_restart_db2.sh                    
-|detach_parallelism                      |20                                   
-|dont_start_load_manager                 |False                                
-|drivers_nr                              |0                                    
-|drivers_per_sut                         |0                                    
-|execute_json_filename_prefix            |cb                                   
-|execute_parallelism                     |6                                    
-|execute_script_name                     |execute_on_staging.sh                
-|experiment_id                           |REGRESSION_B                         
-|identity                                |/home/msilva/cloudbench/lib/auxiliary//../../credentials/bogus_id_rsa
-|lb_reset1                               |cb_restart_loadbalancer.sh           
-|lb_setup1                               |cb_restart_loadbalancer.sh           
-|lifetime                                |none                                 
-|load_balancer                           |False                                
-|load_balancer_port                      |9080                                 
-|load_balancer_target_children           |2                                    
-|load_balancer_target_ip                 |none                                 
-|load_balancer_target_port               |9080                                 
-|load_balancer_target_role               |none                                 
-|load_balancer_target_url                |daytrader                            
-|load_balancer_target_vm                 |none                                 
-|load_balancer_url                       |daytrader                            
-|load_duration                           |uniformIXIXI90I120                   
-|load_generator_ip                       |129.205.53.142                       
-|load_generator_role                     |client_daytrader                     
-|load_generator_target_ip                |81.76.155.204                        
-|load_generator_target_role              |was                                  
-|load_generator_target_vm                |8B38AE3A-CADC-51B7-B527-36E6C6721147 
-|load_generator_vm                       |8FD79BC5-2A2E-56CF-89B6-81C7F9929370 
-|load_level                              |uniformIXIXI1I10                     
-|load_manager_ip                         |129.205.53.142                       
-|load_manager_role                       |client_daytrader                     
-|load_manager_vm                         |8FD79BC5-2A2E-56CF-89B6-81C7F9929370 
-|load_profile                            |default                              
-|log_output_command                      |True                                 
-|login                                   |klabuser                             
-|max_ais                                 |1                                    
-|metric_aggregator_ip                    |129.205.53.142                       
-|metric_aggregator_role                  |client_daytrader                     
-|metric_aggregator_vm                    |8FD79BC5-2A2E-56CF-89B6-81C7F9929370 
-|mgt_001_provisioning_request_originated |1372702328                           
-|mode                                    |controllable                         
-|model                                   |sim                                  
-|name                                    |ai_1                                 
-|notification                            |False                                
-|pattern                                 |none                                 
-|replicated_vms                          |0                                    
-|resize_supported                        |True                                 
-|run_application_scripts                 |False                                
-|runstate_parallelism                    |5                                    
-|runstate_supported                      |True                                 
-|save_on_attach                          |False                                
-|seconds_before_save                     |0                                    
-|ssh_key_name                            |bogus_id_rsa                         
-|staging                                 |none                                 
-|start                                   |cb_daytrader.sh                      
-|state                                   |attached                             
-|sut                                     |1_x_client_daytrader->1_x_was->1_x_db2
-|suts                                    |1                                    
-|temp_attr_list                          |empty=empty                          
-|timeout                                 |240                                  
-|tracking                                |none                                 
-|type                                    |daytrader                            
-|update_attempts                         |720                                  
-|update_frequency                        |1                                    
-|username                                |msilva                               
-|uuid                                    |A80C966E-97B4-5888-9A4D-B8E90579B61F 
-|vm_arrived                              |22                                   
-|vm_arriving                             |0                                    
-|vm_creation                             |explicit                             
-|vm_departed                             |22                                   
-|vm_destruction                          |explicit                             
-|vm_failed                               |3                                    
-|vm_reservations                         |0                                    
-|vmc_arrived                             |16                                   
-|vmc_departed                            |12                                   
-|vmc_failed                              |0                                    
-|vms                                     |8FD79BC5-2A2E-56CF-89B6-81C7F9929370|client_daytrader|vm_27,8B38AE3A-CADC-51B7-B527-36E6C6721147|was|vm_26,946A0B62-46BC-5F30-A73E-E04E3574145D|db2|vm_28
-|vms_nr                                  |3                                    
-|was_reset1                              |cb_restart_was.sh                    
-|was_setup2                              |cb_restart_was.sh                    
+VM object 538C206C-D573-5883-8DD2-A6F859F7D9EF (named "vm_23") could not be attached to this experiment: VM pre-attachment operations failure: Unknown VM role: 'norole'
+The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
+No objects available.
+The following statistics are available on this experiment (Cloud TESTCLOUD) :
+------------------------- OBJECT STORE -----------------------
+|Metric                                               |Value                         
+|Used Memory                                          |2.80M                         
+|Redis Version                                        |2.5.12                        
+|Uptime (in seconds)                                  |2417443                       
+|Total Connections Received                           |4578                          
+|Total Commands Processed                             |3918239                       
+|Number of Keys                                       |336                           
+------------------------- METRIC STORE -----------------------
+|Metric                                               |Value                         
+|MongoDB Version                                      |2.4.5                         
+|Storage Size                                         |5448777728.0                  
+|Data Size                                            |4962231448.0                  
+|Index Size                                           |133816592                     
+|Average Object Size                                  |8102.71359337                 
+|Collections                                          |40                            
+--------------------- EXPERIMENT OBJECTS ---------------------
+|Object                                               |Count                         
+|VMCs                                                 |4                             
+|HOSTs                                                |20                            
+|VMs                                                  |0                             
+|AIs                                                  |0                             
+|AIDRSs                                               |0                             
+|VMCRSs                                               |0                             
+|FIRSs                                                |0                             
+------------------ EXPERIMENT-WIDE COUNTERS ------------------
+|Counter                                              |Value                         
+|VMC RESERVATIONS                                     |4                             
+|VMCs ARRIVED                                         |16                            
+|VMCs ARRIVING                                        |0                             
+|VMCs DEPARTED                                        |12                            
+|VMCs DEPARTING                                       |0                             
+|VMCs FAILED                                          |0                             
+|HOST RESERVATIONS                                    |0                             
+|HOSTs ARRIVED                                        |0                             
+|HOSTs ARRIVING                                       |0                             
+|HOSTs DEPARTED                                       |0                             
+|HOSTs DEPARTING                                      |0                             
+|HOSTs FAILED                                         |0                             
+|VM RESERVATIONS                                      |0                             
+|VMs ARRIVED                                          |22                            
+|VMs ARRIVING                                         |0                             
+|VMs CAPTURING                                        |0                             
+|VMs DEPARTED                                         |22                            
+|VMs DEPARTING                                        |0                             
+|VMs FAILED                                           |1                             
+|AI RESERVATIONS                                      |0                             
+|AIs ARRIVED                                          |0                             
+|AIs ARRIVING                                         |0                             
+|AIs CAPTURING                                        |0                             
+|AIs DEPARTED                                         |0                             
+|AIs DEPARTING                                        |0                             
+|AIs FAILED                                           |0                             
+|AIDRS RESERVATIONS                                   |0                             
+|AIDRSs ARRIVED                                       |0                             
+|AIDRSs ARRIVING                                      |0                             
+|AIDRSs DEPARTED                                      |0                             
+|AIDRSs DEPARTING                                     |0                             
+|AIDRSs FAILED                                        |0                             
+|VMCRS RESERVATIONS                                   |0                             
+|VMCRSs ARRIVED                                       |0                             
+|VMCRSs ARRIVING                                      |0                             
+|VMCRSs DEPARTED                                      |0                             
+|VMCRSs DEPARTING                                     |0                             
+|VMCRSs FAILED                                        |0                             
+|FIRS RESERVATIONS                                    |0                             
+|FIRSs ARRIVED                                        |0                             
+|FIRSs ARRIVING                                       |0                             
+|FIRSs DEPARTED                                       |0                             
+|FIRSs DEPARTING                                      |0                             
+|FIRSs FAILED                                         |0                             
+|EXPERIMENT COUNTER                                   |133                           
+
+ ---------------- VMC-WIDE COUNTERS ----------------
+|CEA17C37-820A-507F-9356-90956267A568 (simzone_a) VM RESERVATIONS|0                             
+|966D86CB-90BB-553D-A06A-0FFA0818D568 (simzone_d) VM RESERVATIONS|0                             
+|C41BC369-F411-5382-B95F-70C31BD20E23 (simzone_c) VM RESERVATIONS|0                             
+|2FF9728E-95B3-5EE9-A0A4-61875B507FA8 (simzone_b) VM RESERVATIONS|0                             
 

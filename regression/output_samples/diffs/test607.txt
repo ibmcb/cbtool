@@ -1,1 +1,0 @@
-Shell command execution failure: Error while executing the command line "ls -la ~/cloudbench/data/REGRESSION_B/" (returncode = 19208) :ls: cannot access /home/msilva/cloudbench/data/REGRESSION_B/: No such file or directory

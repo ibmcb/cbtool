@@ -1,1 +1,1 @@
-Usage: aialter <cloud_name> <identifier> <attribute> <value> 
+Usage: vmfail <cloud_name> <identifier> [firs = none] [mode] 

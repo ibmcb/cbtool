@@ -1,1 +1,1 @@
-Usage: vmresume <cloud_name> <identifier> [firs = none] [mode] 
+Usage: vmsuspend <cloud_name> <identifier> [firs = none] [mode] 

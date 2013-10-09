@@ -1,4 +1,5 @@
-vmattach TESTCLOUD tinyvm async
+vmattach TESTCLOUD fen_hpc auto empty size=platinum64,vmc_pool=LG async
 waitfor TESTCLOUD 8s
 vmlist TESTCLOUD
+vmshow TESTCLOUD vm_11 vmc_name,vmc_pool,host_name,meta_tags,size
 stats TESTCLOUD

@@ -1,4 +1,5 @@
-aidetach TESTCLOUD all
+typealter TESTCLOUD daytrader sut=client_daytrader->was->willfail
+aiattach TESTCLOUD daytrader
 ailist TESTCLOUD
 vmlist TESTCLOUD
 stats TESTCLOUD

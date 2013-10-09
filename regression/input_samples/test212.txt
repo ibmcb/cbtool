@@ -1,1 +1,1 @@
-hostshow TESTCLOUD simhosta3 all
+viewshow TESTCLOUD VMC pool sut

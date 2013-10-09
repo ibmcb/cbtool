@@ -1,3 +1,4 @@
-vmdetach TESTCLOUD all
+vmattach TESTCLOUD willfail async
+waituntil TESTCLOUD VM ARRIVING=0 decreasing 1
 vmlist TESTCLOUD
 stats TESTCLOUD

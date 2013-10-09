@@ -1,1 +1,1 @@
-Usage: clddetach <cloud name> 
+Usage: poollist <cloud_name> 

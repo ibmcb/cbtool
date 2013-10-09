@@ -1,1 +1,1 @@
-Usage: cldalter <cloud_name> <object> <attribute> <value> 
+*** Unknown syntax: cldparse

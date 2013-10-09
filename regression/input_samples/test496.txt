@@ -1,3 +1,6 @@
-vmattach tinyvm
+vmattach predictablevm auto empty check_boot_started=subscribe_on_starting async
+waitfor 8s
+msgpub VM starting 11111111-1111-1111-1111-111111111111 has started
+waitfor 8s
 vmlist
 stats

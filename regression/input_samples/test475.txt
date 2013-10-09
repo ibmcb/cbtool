@@ -1,1 +1,1 @@
-viewshow VMC pool sut
+hostshow simhosta3 all

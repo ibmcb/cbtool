@@ -1,8 +1,5 @@
-shell TESTCLOUD rm /tmp/cb*_was_used_on_execution
-cldalter TESTCLOUD ai_defaults execute_script_name=~/cloudbench/regression/scripts/execute_on_staging.sh
-aiattach TESTCLOUD daytrader default default none none execute_all_vms_booted
-shell TESTCLOUD ls /tmp/cb*_was_used_on_execution
-waitfor TESTCLOUD 5s
+aiattach TESTCLOUD hadoop save_on_attach=true
 ailist TESTCLOUD
 vmlist TESTCLOUD
 stats TESTCLOUD
+stateshow TESTCLOUD

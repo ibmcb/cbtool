@@ -1,1 +1,2 @@
-Usage: rolealter <cloud_name> <role_name> <attribute> <value> 
+AIs with the following types can be attached to to this experiment (Cloud TESTCLOUD) :
+nullworkload, fbnfsrd, ddgen, mlg2, filebench, lost, windesktop, netperf, hadoop, hpcc, mongo_ycsb, daytrader, coremark, tradelite, specimap, mweb, specweb, specjbb, mlg

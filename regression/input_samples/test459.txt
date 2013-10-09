@@ -1,5 +1,4 @@
-vmcattach simzone_d update_attempts=156,update_frequency=6 async
-waitfor 8s
+vmcattach simzone_a
 vmclist
-vmcshow simzone_d update_attempts,update_frequency
+vmcshow simzone_a
 stats

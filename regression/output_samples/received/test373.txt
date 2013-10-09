@@ -1,1 +1,2 @@
-Usage: vmcattach <cloud_name> <identifier> [temp_attr_list = empty=empty] [mode] 
+AIDRSs with the following patterns can be attached to to this experiment (Cloud TESTCLOUD) :
+simplemlg, simplehd, simplefb, simplenw, simplenp, simpledt, simplemlg2, simplecm

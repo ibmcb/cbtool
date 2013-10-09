@@ -1,1 +1,3 @@
-reserved for vmcrs
+vmattach TESTCLOUD tinyvm simzone_source
+stats TESTCLOUD
+vmlist TESTCLOUD

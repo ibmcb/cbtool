@@ -1,1 +1,1 @@
-Usage: waituntil <cloud name> <object type> <counter>=<value> [direction] [update interval] 
+Usage: faultalter <cloud_name> <pattern_name> <attribute> <value> 

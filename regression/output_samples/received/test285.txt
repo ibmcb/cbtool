@@ -1,3 +1,6 @@
+The attribute "load_balancer" on daytrader AI was modified:
+|attribute                              |old value                          |new value                          
+|daytrader_load_balancer                |False                              |true                               
 The AI with the type daytrader has the following configuration on experiment (Cloud TESTCLOUD) :
 sut: client_daytrader->was->db2
 load_manager_role: client_daytrader
@@ -13,7 +16,7 @@ was_reset1: cb_restart_was.sh
 start: cb_daytrader.sh
 load_level: uniformIXIXI1I10
 load_duration: uniformIXIXI90I120
-load_balancer: False
+load_balancer: true
 load_balancer_port: 9080
 load_balancer_target_children: 2
 load_balancer_target_port: 9080

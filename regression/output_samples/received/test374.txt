@@ -1,2 +1,1 @@
-The following VMCs are attached to this experiment (Cloud TESTCLOUD) :
-No objects available.
+Usage: patternshow <cloud_name> <pattern> 

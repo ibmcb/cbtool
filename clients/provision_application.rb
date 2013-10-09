@@ -36,7 +36,7 @@ begin
         uuid, role, name = vm.split("|") 
         for data in api.get_latest_data("SIM1", uuid, "runtime_app_VM") do
             print data
-	end
+        end
     end
 
     # 'app' is a dicitionary containing all the details of the VM
@@ -70,7 +70,7 @@ ensure
       if error
         begin
          print "Destroying Application...\n"
-	 api.appdetach("SIM1", app["uuid"])
+         api.appdetach("SIM1", app["uuid"])
         rescue APIException => obj
             print "Error finishing up: (#{obj})\n"
         end

@@ -1,2 +1,1 @@
-vmcalter TESTCLOUD simzone_a replication_vmcs=TESTE
-vmcshow TESTCLOUD simzone_a replication_vmcs
+hostrepair TESTCLOUD simhostc2 stonith

@@ -1,1 +1,1 @@
-vmcalter
+vmcdetach

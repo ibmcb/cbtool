@@ -1,1 +1,5 @@
-aidrsshow aidrs_1 all
+airestore ai_28
+ailist
+vmlist
+stats
+stateshow

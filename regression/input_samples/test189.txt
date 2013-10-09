@@ -1,1 +1,1 @@
-patternshow TESTCLOUD simplehd
+expid TESTCLOUD REGRESSION_B

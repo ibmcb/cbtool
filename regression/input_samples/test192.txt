@@ -1,1 +1,4 @@
-cldalter TESTCLOUD time experiment_id=REGRESSION_A
+vmcattach TESTCLOUD simzone_a
+vmclist TESTCLOUD
+vmcshow TESTCLOUD simzone_a
+stats TESTCLOUD

@@ -1,4 +1,4 @@
-vmcapture TESTCLOUD vm_29
+vmcapture TESTCLOUD youngest
 stats TESTCLOUD
 ailist TESTCLOUD
 vmlist TESTCLOUD

@@ -1,1 +1,1 @@
-Usage: svmfail <cloud_name> <identifier> [mode] 
+Usage: vmcrsalter <cloud_name> <identifier> <attribute> <value> 

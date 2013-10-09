@@ -1,1 +1,1 @@
-Usage: vmcrsshow <cloud_name> <identifier> [key = all] 
+Usage: vmcrslist <cloud_name> [state = default] [limit = none] 

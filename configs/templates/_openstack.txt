@@ -6,26 +6,38 @@ OSK_SECURITY_GROUPS = need_to_be_configured_by_user
 OSK_INITIAL_VMCS = need_to_be_configured_by_user
 OSK_SSH_KEY_NAME = need_to_be_configured_by_user
 OSK_LOGIN = need_to_be_configured_by_user
+OSK_OPENVPN_SERVER_ADDRESS = $False
+OSK_OPENVPN_ADDRESS_RANGE = $OPENVPN_ADDRESS_RANGE_DEFAULT
+OSK_OPENVPN_BOOTSTRAP_ADDRESS = $OPENVPN_BOOTSTRAP_ADDRESS_DEFAULT
 
 # PEBCAK documentation for the Wizard and CLI
 OSK_ACCESS_DOC = Please enter the HTTP address of the nova API\nused for access through nova to interact with the cloud.\nThis is usually in the form of http://<address>:5000/v2.0/
 OSK_ACCESS_DEFAULT = http://<address>:5000/v2.0/
 OSK_CREDENTIALS_DOC = This option requires a specific syntax:\n<username>-<password>-<tenant>\n ... Please enter these parameters as you\nwould use them to login to the OpenStack\nuser interface.
-OSK_CREDENTIALS_DEFAULT = admin-passwrd-admin
+OSK_CREDENTIALS_DEFAULT = admin-password-admin
 OSK_KEY_NAME_DOC = Please enter the OpenStack key used to login\nto your VMs as root. This key needs to be generated in\nthe OpenStack user interface before starting the tool.
 OSK_KEY_NAME_DEFAULT = some_key_name 
 OSK_SECURITY_GROUPS_DOC = Please enter the security group used in\nyour OpenStack vms. This group needs to be created\nin the OpenStack user interface before\nstarting the tool.
-OSK_SECURITY_GROUPS_DEFAULT = some_security_group
+OSK_SECURITY_GROUPS_DEFAULT = default 
 OSK_LOGIN_DOC = $LOGIN_DOC
 OSK_LOGIN_DEFAULT = klabuser
 OSK_SSH_KEY_NAME_DOC = $SSH_KEY_NAME_DOC
 OSK_SSH_KEY_NAME_DEFAULT = id_rsa.private
 OSK_INITIAL_VMCS_DOC = $INITIAL_VMCS_DOC 
-OSK_INITIAL_VMCS_DEFAULT = RegionOne,RegionTwo
+OSK_INITIAL_VMCS_DEFAULT = RegionOne
 OSK_NETID = private
+OSK_OPENVPN_SERVER_ADDRESS_DOC = $OPENVPN_SERVER_ADDRESS_DOC
+OSK_OPENVPN_SERVER_ADDRESS_DEFAULT = $MANAGER_IP
+OSK_OPENVPN_ADDRESS_RANGE_DEFAULT = $OPENVPN_ADDRESS_RANGE_DEFAULT
+OSK_OPENVPN_ADDRESS_RANGE_DOC = $OPENVPN_ADDRESS_RANGE_DOC
+OSK_OPENVPN_BOOTSTRAP_ADDRESS_DEFAULT = $OPENVPN_BOOTSTRAP_ADDRESS_DEFAULT
+OSK_OPENVPN_BOOTSTRAP_ADDRESS_DOC = $OPENVPN_BOOTSTRAP_ADDRESS_DOC
 
 [SPACE : OSK_CLOUDCONFIG ]
 SSH_KEY_NAME = $OSK_SSH_KEY_NAME
+OPENVPN_SERVER_ADDRESS = $OSK_OPENVPN_SERVER_ADDRESS
+OPENVPN_ADDRESS_RANGE = $OSK_OPENVPN_ADDRESS_RANGE
+OPENVPN_BOOTSTRAP_ADDRESS = $OSK_OPENVPN_BOOTSTRAP_ADDRESS
 
 [MON_DEFAULTS : OSK_CLOUDCONFIG ]
 COLLECT_FROM_HOST = $False # requires ganglia installation on hypervisor
@@ -39,6 +51,8 @@ KEY_NAME = $OSK_KEY_NAME
 INITIAL_VMCS = $OSK_INITIAL_VMCS
 ADDITIONAL_DISCOVERY = $Empty
 MODIFY_HOST_NAMES = $False
+MIGRATE_SUPPORTED = $True
+PROTECT_SUPPORTED = $True
 
 [VM_DEFAULTS : OSK_CLOUDCONFIG]
 ACCESS = $OSK_ACCESS
@@ -62,9 +76,6 @@ RUN_NETNAME = private
 PROV_NETNAME = private
 VM_HOSTNAME_KEY = cloud_vm_name
 
-[SVM_DEFAULTS : OSK_CLOUDCONFIG]
-SSH_KEY_NAME = $OSK_SSH_KEY_NAME
-
 [AI_DEFAULTS : OSK_CLOUDCONFIG]
 ATTACH_PARALLELISM = 5
 CAPTURE_SUPPORTED = $True
@@ -72,6 +83,7 @@ RUNSTATE_SUPPORTED = $True
 RESIZE_SUPPORTED = $True
 LOGIN = $OSK_LOGIN
 SSH_KEY_NAME = $OSK_SSH_KEY_NAME
+DONT_START_QEMU_SCRAPER = $False
 
 [AIDRS_DEFAULTS : OSK_CLOUDCONFIG]
 LOGIN = $OSK_LOGIN
@@ -86,32 +98,32 @@ LOGIN = $OSK_LOGIN
 SSH_KEY_NAME = $OSK_SSH_KEY_NAME
 
 [VM_TEMPLATES : OSK_CLOUDCONFIG]
-CLIENT_DAYTRADER = size:m1.small, imageid1:cloudbench_hibench_daytrader
-DRIVER_DAYTRADER = size:m1.tiny, imageid1:cloudbench_hibench_daytrader
-CLIENT_TRADELITE = size:m1.small, imageid1:cloudbench_hibench_daytrader
-DRIVER_TRADELITE = size:m1.tiny, imageid1:cloudbench_hibench_daytrader
+CLIENT_DAYTRADER = size:m1.medium, imageid1:cloudbench_hibench_daytrader
+DRIVER_DAYTRADER = size:m1.medium, imageid1:cloudbench_hibench_daytrader
+CLIENT_TRADELITE = size:m1.medium, imageid1:cloudbench_hibench_daytrader
+DRIVER_TRADELITE = size:m1.medum, imageid1:cloudbench_hibench_daytrader
 DB2 = size:m1.medium, lb_size:m1.large, imageid1:cloudbench_hibench_daytrader
 WAS = size:m1.medium, imageid1:cloudbench_hibench_daytrader
 CLIENT_SPECWEB = size:m1.small, imageid1:cloudbench_specweb
 SPECWEBFRONT = size:m1.medium, imageid1:cloudbench_specweb
 SPECWEBBACK = size:m1.medium, imageid1:cloudbench_specweb
-CLIENT_LOST = size:m1.small, imageid1:cloudbench_hibench_daytrader
+CLIENT_LOST = size:m1.medium, imageid1:cloudbench_hibench_daytrader
 LOSTFRONT = size:m1.medium, imageid1:cloudbench_hibench_daytrader
 LOSTBACK = size:m1.medium, imageid1:cloudbench_hibench_daytrader
 DRIVER_HADOOP = size:m1.tiny, imageid1:cloudbench_hibench_daytrader
 HADOOPMASTER = size:m1.small, imageid1:cloudbench_hibench_daytrader
 HADOOPSLAVE = size:m1.medium, imageid1:cloudbench_hibench_daytrader
 DRIVER_NETPERF = size:m1.tiny, imageid1:cloudbench_hibench_daytrader
-NETCLIENT = size:m1.tiny, imageid1:cloudbench_hibench_daytrader
+NETCLIENT = size:m1.medium, imageid1:cloudbench_hibench_daytrader
 NETSERVER = size:m1.tiny, imageid1:cloudbench_hibench_daytrader
 DRIVER_COREMARK = size:m1.tiny, imageid1:cloudbench_hibench_daytrader
 COREMARK = size:m1.tiny, imageid1:cloudbench_hibench_daytrader
-CLIENT_WINDOWS = size:m1.small, imageid1:cloudbench_hibench_daytrader
+CLIENT_WINDOWS = size:m1.medium, imageid1:cloudbench_hibench_daytrader
 WINDOWS = size:m1.medium, imageid1:cloudbench_windows
-DRIVER_FILEBENCH = size:m1.tiny, imageid1:cloudbench_hibench_daytrader
+DRIVER_FILEBENCH = size:m1.medium, imageid1:cloudbench_hibench_daytrader
 FILEBENCH = size:m1.small, imageid1:cloudbench_hibench_daytrader
-DRIVER_FBNFSRD = size:m1.tiny, imageid1:cloudbench_hibench_daytrader
-STORAGECLIENT = size:m1.small, imageid1:cloudbench_hibench_daytrader
+DRIVER_FBNFSRD = size:m1.medium, imageid1:cloudbench_hibench_daytrader
+STORAGECLIENT = size:m1.medium, imageid1:cloudbench_hibench_daytrader
 STORAGESERVER = size:m1.medium, imageid1:cloudbench_hibench_daytrader
 TINYVM = size:m1.tiny, imageid1:cloudbench_tinyvm
 FEN_HPC = size:m1.medium, imageid1:cloudbench_hpcc

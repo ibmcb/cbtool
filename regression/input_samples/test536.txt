@@ -1,5 +1,3 @@
-vmcapture vm_29
-stats
-ailist
-vmlist
+airestore ai_3
+stateshow
 stats

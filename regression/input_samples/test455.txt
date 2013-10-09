@@ -1,4 +1,1 @@
-vmcattach simzone_a
-vmclist
-vmcshow simzone_a
-stats
+cldalter time experiment_id=REGRESSION_A

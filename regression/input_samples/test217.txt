@@ -1,4 +1,4 @@
-vmattach TESTCLOUD tinyvm
+vmattach TESTCLOUD tinyvm simhostb1
 vmlist TESTCLOUD
-vmshow TESTCLOUD vm_1 vmc_name,vmc_pool,host_name,meta_tags,size
+vmshow TESTCLOUD vm_3 vmc_name,vmc_pool,host_name,meta_tags,size
 stats TESTCLOUD

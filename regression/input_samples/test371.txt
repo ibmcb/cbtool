@@ -1,1 +1,1 @@
-expid
+typeshow

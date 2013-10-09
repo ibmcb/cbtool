@@ -1,2 +1,1 @@
-monextract HOST os
-shell cat ~/cloudbench/data/REGRESSION_B/HOST_runtime_os_*REGRESSION*
+reserved for vmcrs

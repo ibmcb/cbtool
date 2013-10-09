@@ -1,1 +1,2 @@
-clddetach TESTCLOUD
+monextract TESTCLOUD HOST os
+shell TESTCLOUD cat /home/msilva/cloudbench/regression/..//data/REGRESSION_B/HOST_runtime_os_*REGRESSION*

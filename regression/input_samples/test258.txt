@@ -1,4 +1,5 @@
-vmattach TESTCLOUD willfail async
-waituntil TESTCLOUD VM ARRIVING=0 decreasing 1
+aiattach TESTCLOUD daytrader
+ailist TESTCLOUD
 vmlist TESTCLOUD
+aishow TESTCLOUD ai_1 detach_parallelism,ssh_key_name,sut
 stats TESTCLOUD

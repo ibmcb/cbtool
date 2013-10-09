@@ -1,2 +1,1 @@
-The following VMs are attached to this experiment (Cloud TESTCLOUD) :
-No objects available.
+Usage: vmcalter <cloud_name> <identifier> <attribute> <value> 

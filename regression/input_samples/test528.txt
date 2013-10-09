@@ -1,3 +1,2 @@
-aisave ai_3
-stateshow
-stats
+aialter ai_1 mode=scalable
+aishow ai_1 mode

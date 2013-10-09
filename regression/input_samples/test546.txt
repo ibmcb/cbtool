@@ -1,5 +1,5 @@
-aiattach daytrader
+vmcapture oldest async
+waitfor 25s
 ailist
 vmlist
-aishow ai_12 load_balancer,sut
 stats

@@ -1,1 +1,1 @@
-Usage: aialter <cloud_name> <identifier> <attribute> <value> 
+Usage: aishow <cloud_name> <identifier> [key = all] 

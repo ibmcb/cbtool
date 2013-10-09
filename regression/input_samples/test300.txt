@@ -1,6 +1,4 @@
-aiattach TESTCLOUD daytrader
-aiattach TESTCLOUD netperf
-aiattach TESTCLOUD hpcc
+aicapture TESTCLOUD ai_10
 ailist TESTCLOUD
 vmlist TESTCLOUD
 stats TESTCLOUD

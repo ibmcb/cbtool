@@ -1,1 +1,2 @@
-Usage: firsshow <cloud_name> <identifier> [key = all] 
+The following ATTACHED FIRSs are in this experiment (Cloud TESTCLOUD) :
+No objects available.

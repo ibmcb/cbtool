@@ -1,1 +1,1 @@
-Usage: hostshow <cloud_name> <identifier> [key = all] 
+Usage: vmccleanup <cloud_name> <identifier> 

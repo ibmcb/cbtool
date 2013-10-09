@@ -1,2 +1,1 @@
-The following HOSTs are attached to this experiment (Cloud TESTCLOUD) :
-No objects available.
+Usage: vmprotect <cloud_name> <identifier> <destination> [protocol = tcp] [interface = default] [mode] 

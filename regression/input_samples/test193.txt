@@ -1,1 +1,1 @@
-expid TESTCLOUD REGRESSION_B
+vmccleanup TESTCLOUD simzone_a

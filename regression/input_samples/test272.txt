@@ -1,5 +1,6 @@
-aiattach TESTCLOUD netperf netclient_pref_pool=SUT,netclient_size=platinum64
+aiattach TESTCLOUD hadoop hadoopslave_size=platinum64,sut=hadoopmaster->1_x_hadoopslave async
+waitfor TESTCLOUD 18s
 ailist TESTCLOUD
 vmlist TESTCLOUD
-aishow TESTCLOUD ai_5 detach_parallelism,ssh_key_name,sut
+aishow TESTCLOUD ai_6 detach_parallelism,ssh_key_name,sut
 stats TESTCLOUD

@@ -20,25 +20,11 @@
     API Service RPC Relay
     @author: Michael R. Hines
 '''
-from os import chmod, makedirs
-from sys import path
-from os.path import isdir
-from time import asctime, localtime, sleep, time
-from fileinput import FileInput
-
-from lib.auxiliary.data_ops import str2dic, DataOpsException
 from lib.auxiliary.code_instrumentation import trace, cblog, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from lib.auxiliary.value_generation import ValueGeneration
-from lib.auxiliary.data_ops import dic2str, makeTimestamp
-from lib.auxiliary.config import parse_cld_defs_file, load_store_functions, get_available_clouds
-from lib.operations.base_operations import BaseObjectOperations
-from lib.operations.background_operations import BackgroundObjectOperations
+from lib.auxiliary.config import parse_cld_defs_file, get_available_clouds
 
 from DocXMLRPCServer import DocXMLRPCServer
-from DocXMLRPCServer import DocXMLRPCRequestHandler
-from sys import stdout, path
 import sys
-from functools import wraps
 import inspect
 import threading
 import SocketServer
@@ -78,11 +64,13 @@ def unwrap_kwargs(func, spec):
 
 class API():
     @trace
-    def __init__(self, pid, passive, active, background) :
+    def __init__(self, pid, passive, active, background, port, debug) :
         self.passive = passive
         self.active = active
         self.background = background
         self.pid = pid
+        self.port = port
+        self.debug = debug
 
         from lib.auxiliary.cli import help 
         '''
@@ -96,9 +84,41 @@ class API():
                 try :
                     if help(func.__name__) :
                         func.__func__.__doc__ = fake_stdout.capture_msg 
-                except Exception, obj:
+                except Exception:
                     pass
                 fake_stdout.unswitch()
+                
+    @trace
+    def register(self, address) :
+        if address not in services :
+            service = APIService(self.pid, \
+                                    self.passive, \
+                                    self.active, \
+                                    self.background, \
+                                    self.debug, \
+                                    self.port, \
+                                    address)
+            append_service(address, service)
+            msg = "Success, bound to hostname: " + address
+            result = True
+        else :
+            msg = "Failed. already bound to hostname: " + address
+            result = False 
+        
+        return {"status" : 0, "msg" : msg, "result" : result}
+    
+    @trace
+    def unregister(self, address) :
+        service = remove_service(address)
+        if service : 
+            msg = "Success, unbound from hostname: " + address
+            result = True
+        else :
+            msg = "Failed. was never bound to hostname: " + address
+            result = False 
+        
+        return {"status" : 0, "msg" : msg, "result" : result}
+    
     @trace
     def success(self, msg, result) :
         cbdebug(msg)
@@ -148,9 +168,8 @@ class API():
         clouds = get_available_clouds(attributes, return_all_options = True)
         return {"msg" : "Success", "status" : 0, "result": { "clouds": clouds, "attributes" : attributes} }
 
-    def cldattach(self, model, name, cloud_definitions = None, temp_attr_list = "empty=empty") :
-        result = self.active.cldattach({}, model + ' ' + name + ' ' + temp_attr_list, cloud_definitions, "cloud-attach")[2]
-        return result
+    def cldattach(self, model, name, cloud_definitions = None, temp_attr_list = "empty=empty", uni_attrs = None) :
+        return self.active.cldattach({}, model + ' ' + name + ' ' + temp_attr_list, cloud_definitions, "cloud-attach", uni_attrs)[2]
     
     def clddetach(self, name) :
         return self.active.clddetach({}, name, "cloud-detach")[2]
@@ -163,9 +182,6 @@ class API():
 
     def vmlist(self, cloud_name, state = "default", limit = "none"):
         return self.passive.list_objects({}, cloud_name + ' ' + state + ' ' + str(limit), "vm-list")[2]
-
-    def svmlist(self, cloud_name, state = "default", limit = "none"):
-        return self.passive.list_objects({}, cloud_name + ' ' + state + ' ' + str(limit), "svm-list")[2]
 
     def vmclist(self, cloud_name, state = "default", limit = "none"):
         return self.passive.list_objects({}, cloud_name + ' ' + state + ' ' + str(limit), "vmc-list")[2]
@@ -203,8 +219,14 @@ class API():
     def patternshow(self, cloud_name, pattern) :
         return self.passive.globalshow({}, cloud_name + ' ' + pattern + " aidrs_templates pattern", "global-show")[2]
 
+    def faultshow(self, cloud_name, pattern) :
+        return self.passive.globalshow({}, cloud_name + ' ' + pattern + " fi_templates situation", "global-show")[2]
+
     def patternalter(self, cloud_name, pattern_name, attribute, value):
         return self.passive.globalalter({}, cloud_name + ' ' + pattern_name + ' ' + attribute + "=" + value + " aidrs_templates pattern", "global-alter")[2]
+
+    def faultalter(self, cloud_name, pattern_name, attribute, value):
+        return self.passive.globalalter({}, cloud_name + ' ' + pattern_name + ' ' + attribute + "=" + value + " fi_templates situation", "global-alter")[2]
 
     def typealter(self, cloud_name, type_name, attribute, value):
         return self.passive.globalalter({}, cloud_name + ' ' + type_name + ' ' + attribute + "=" + value + " ai_templates type", "global-alter")[2]
@@ -217,9 +239,6 @@ class API():
     
     def vmshow(self, cloud_name, identifier, key = "all"):
         return self.passive.show_object({}, cloud_name + ' ' + identifier + ' ' + key, "vm-show")[2]
-    
-    def svmshow(self, cloud_name, identifier, key = "all"):
-        return self.passive.show_object({}, cloud_name + ' ' + identifier + ' ' + key, "svm-show")[2]
     
     def vmcshow(self, cloud_name, identifier, key = "all"):
         return self.passive.show_object({}, cloud_name + ' ' + identifier + ' ' + key, "vmc-show")[2]
@@ -239,11 +258,8 @@ class API():
     def firsshow(self, cloud_name, identifier, key = "all"):
         return self.passive.show_object({}, cloud_name + ' ' + identifier + ' ' + key, "firs-show")[2]
 
-    def reset_refresh(self, cloud_name):
-        return self.passive.reset_refresh({}, cloud_name, "api-reset")[2]
-    
-    def should_refresh(self, cloud_name):
-        return self.passive.should_refresh({}, cloud_name, "api-check")[2]
+    def should_refresh(self, cloud_name, time):
+        return self.passive.should_refresh({}, cloud_name + " " + time, "api-check")[2]
     
     def vmresize(self, cloud_name, identifier, resource, value):
         return self.active.vmresize({}, cloud_name + ' ' + identifier + ' ' + resource + "=" + str(value), "vm-resize")[2]
@@ -272,8 +288,32 @@ class API():
         else :
             return self.active.vmcapture({}, cloud_name + ' ' + identifier + ' ' + vmcrs, "vm-capture")[2]
         
-    def hostfail(self, cloud_name, identifier, service, firs = "none", async = False):
-        parameters = cloud_name + ' ' + identifier + ' ' + service + ' ' + firs
+    def vmmigrate(self, cloud_name, identifier, destination, protocol = "tcp", interface = "default", async = False):
+        if async and str(async).count("async") :
+            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + destination + ' ' + protocol + ' ' + interface + (' ' + async), "vm-migrate")[2]
+        else :
+            return self.active.migrate({}, cloud_name + ' ' + identifier + ' ' + destination + ' ' + protocol + ' ' + interface, "vm-migrate")[2]
+    
+    def vmprotect(self, cloud_name, identifier, destination, protocol = "tcp", interface = "default", async = False):
+        if async and str(async).count("async") :
+            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + destination + ' ' + protocol + ' ' + interface + (' ' + async), "vm-protect")[2]
+        else :
+            return self.active.migrate({}, cloud_name + ' ' + identifier + ' ' + destination + ' ' + protocol + ' ' + interface, "vm-protect")[2]
+        
+    def vmlogin(self, cloud_name, identifier, async = False):
+        if async and str(async).count("async") :
+            return self.active.background_execute(cloud_name + ' ' + identifier + (' ' + async), "vm-login")[2]
+        else :
+            return self.active.gtk({}, cloud_name + ' ' + identifier, "vm-login")[2]
+        
+    def vmdisplay(self, cloud_name, identifier, async = False):
+        if async and str(async).count("async") :
+            return self.active.background_execute(cloud_name + ' ' + identifier + (' ' + async), "vm-display")[2]
+        else :
+            return self.active.gtk({}, cloud_name + ' ' + identifier, "vm-display")[2]
+        
+    def hostfail(self, cloud_name, identifier, fault, firs = "none", async = False):
+        parameters = cloud_name + ' ' + identifier + ' ' + fault + ' ' + firs
         if async and str(async).count("async") :
             return self.active.background_execute(parameters + (' ' + async), "host-fail")[2]
         else :
@@ -355,8 +395,8 @@ class API():
         else :
             return self.active.vmrunstate({}, cloud_name + ' ' + identifier + " fail" + ' ' + firs, "vm-runstate")[2]
         
-    def cldalter(self, cloud_name, object, attribute, value):
-        return self.passive.alter_object({"name": cloud_name}, cloud_name + ' ' + object + ' ' + attribute + "=" + str(value), "cloud-alter")[2]
+    def cldalter(self, cloud_name, gobject, attribute, value):
+        return self.passive.alter_object({"name": cloud_name}, cloud_name + ' ' + gobject + ' ' + attribute + "=" + str(value), "cloud-alter")[2]
     
     def appalter(self, cloud_name, identifier, attribute, value):
         return self.passive.alter_object({}, cloud_name + ' ' + identifier + ' ' + attribute + "=" + str(value), "ai-alter")[2]
@@ -400,15 +440,15 @@ class API():
         else :
             return self.active.objattach({}, cloud_name + ' ' + identifier + ' ' + scope + ' ' + max_simultaenous_faults + ' ' + max_total_faults + ' ' + ifat + ' ' + min_fault_age + ' ' + ftl + ' ' + temp_attr_list, "firs-attach")[2]
     
-    def appattach(self, cloud_name, type, load_level = "default", load_duration = "default", lifetime = "none", aidrs = "none", pause_step = "none", temp_attr_list = "empty=empty", async = False):
-        parameters = cloud_name + ' ' + type + ' ' + str(load_level) + ' ' + str(load_duration) + ' ' + str(lifetime) + ' ' + aidrs + ' ' + pause_step + ' ' + temp_attr_list
+    def appattach(self, cloud_name, gtype, load_level = "default", load_duration = "default", lifetime = "none", aidrs = "none", pause_step = "none", temp_attr_list = "empty=empty", async = False):
+        parameters = cloud_name + ' ' + gtype + ' ' + str(load_level) + ' ' + str(load_duration) + ' ' + str(lifetime) + ' ' + aidrs + ' ' + pause_step + ' ' + temp_attr_list
         if async and str(async).count("async") :
             return self.active.background_execute(parameters + (' ' + async), "ai-attach")[2]
         else :
             return self.active.objattach({}, parameters, "ai-attach")[2]
     
-    def appinit(self, cloud_name, type, load_level = "default", load_duration = "default", lifetime = "none", aidrs = "none", pause_step = "prepare_provision_complete"):
-        return self.appattach(cloud_name, type, str(load_level), str(load_duration), str(lifetime), aidrs, pause_step)
+    def appinit(self, cloud_name, gtype, load_level = "default", load_duration = "default", lifetime = "none", aidrs = "none", pause_step = "prepare_provision_complete"):
+        return self.appattach(cloud_name, gtype, str(load_level), str(load_duration), str(lifetime), aidrs, pause_step)
     
     def apprun(self, cloud_name, uuid) :
         return self.apprunstate(cloud_name, uuid, "attached", "run")
@@ -427,12 +467,6 @@ class API():
         else :
             return self.active.objattach({}, parameters, "vm-attach")[2]
         
-    def svmattach(self, cloud_name, identifier, temp_attr_list = "empty=empty", async = False):
-        if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + temp_attr_list + (' ' + async), "svm-attach")[2]
-        else :
-            return self.active.objattach({}, cloud_name + ' ' + identifier + ' ' + temp_attr_list, "svm-attach")[2]
-    
     def vminit(self, cloud_name, role, vmc_pool = "auto", size = "default", pause_step = "prepare_provision_complete"):
         return self.vmattach(cloud_name, role, vmc_pool, size, pause_step)
     
@@ -445,22 +479,6 @@ class API():
             return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + force + (' ' + async), "vm-detach")[2]
         else :
             return self.active.objdetach({}, cloud_name + ' ' + identifier + ' ' + force, "vm-detach")[2]
-    
-    def svmdetach(self, cloud_name, identifier, force = False, async = False):
-        '''
-        force not currently used here...
-        '''
-        force = str(force).lower() if force else "false"
-        if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + identifier + (' ' + async), "svm-detach")[2]
-        else :
-            return self.active.objdetach({}, cloud_name + ' ' + identifier, "svm-detach")[2]
-        
-    def svmfail(self, cloud_name, identifier, async = False):
-        if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + identifier + " fail" + (' ' + async), "svm-detach")[2]
-        else :
-            return self.active.objdetach({}, cloud_name + ' ' + identifier + " fail", "svm-detach")[2]
     
     def vmcdetach(self, cloud_name, identifier, force = False, async = False):
         force = str(force).lower() if force else "false"
@@ -500,8 +518,8 @@ class API():
         else :
             return self.active.objdetach({}, cloud_name + ' ' + identifier + ' ' + force, "aidrs-detach")[2]
     
-    def viewshow(self, cloud_name, object, criterion, expression, sorting = "default", filter = "default"):
-        return self.passive.show_view({"name": cloud_name}, cloud_name + ' ' + object + ' ' + criterion + ' ' + expression + ' ' + sorting + ' ' + filter, "view-show")[2]
+    def viewshow(self, cloud_name, gobject, criterion, expression, sorting = "default", gfilter = "default"):
+        return self.passive.show_view({"name": cloud_name}, cloud_name + ' ' + gobject + ' ' + criterion + ' ' + expression + ' ' + sorting + ' ' + gfilter, "view-show")[2]
     
     def monlist(self, cloud_name, object_type):
         result = self.passive.monitoring_list(cloud_name + ' ' + object_type, "mon-list")[2]
@@ -521,25 +539,50 @@ class API():
     
     def patternlist(self, cloud_name):
         return self.passive.globallist({}, cloud_name + " aidrs_templates+patterns+AIDRSs", "global-list" )[2]
+
+    def faultlist(self, cloud_name):
+        return self.passive.globallist({}, cloud_name + " fi_templates+situations+FIs", "global-list" )[2]
     
     def viewlist(self, cloud_name):
         return self.passive.globallist({}, cloud_name + " query+criteria+VIEWs", "global-list")[2]
     
 class AsyncDocXMLRPCServer(SocketServer.ThreadingMixIn,DocXMLRPCServer): pass
 
+services = {}
+
+@trace
+def append_service(hostname, service) :
+    if hostname not in services :
+        services[hostname] = service
+        service.start()
+        return True
+    return False
+   
+@trace
+def remove_service(hostname):
+    if hostname in services :
+        service = services[hostname]
+        del services[hostname]
+        service.stop()
+        service.join()
+        return service
+    return False
+
 class APIService ( threading.Thread ):
+    
     
     @trace
     def __init__(self, pid, passive, active, background, debug, port, hostname) :
         super(APIService, self).__init__()
+        
         self._stop = threading.Event()
         self.pid = pid
         self.abort = False
         self.aborted = False
         self.port = port 
         self.hostname = hostname 
-        self.api = API(pid, passive, active, background)
-        cbdebug("Initializing API Service on port " + str(self.port))
+        self.api = API(pid, passive, active, background, port, debug)
+        cbdebug("Initializing API Service on " + hostname + ":" + str(port))
         if debug is None :
             self.server = AsyncDocXMLRPCServer((self.hostname, int(self.port)), allow_none = True)
         else :
@@ -552,7 +595,7 @@ class APIService ( threading.Thread ):
         self.api.signatures = {}
         for methodtuple in inspect.getmembers(self.api, predicate=inspect.ismethod) :
             name = methodtuple[0]
-            if name in ["__init__", "success", "error" ] :
+            if name in ["__init__", "success", "error", "migrate" ] :
                 continue
             func = getattr(self.api, name)
             argspec = inspect.getargspec(func) 

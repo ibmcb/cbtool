@@ -1,1 +1,1 @@
-Usage: vmrunstate <cloud_name> <identifier> <runstate> [command = unknown] [firs = none] [mode] 
+Usage: vmalter <cloud_name> <identifier> <attribute> <value> 

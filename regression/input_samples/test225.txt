@@ -1,3 +1,7 @@
-vmcapture TESTCLOUD vm_2
+vmattach TESTCLOUD netclient simhosta2 A:B,X:Y,R:2 async
+waitfor TESTCLOUD 1s
+vmlist TESTCLOUD pending
+waitfor TESTCLOUD 8s
 vmlist TESTCLOUD
+vmshow TESTCLOUD vm_10 role,vmc_name,vmc_pool,host_name,meta_tags,size
 stats TESTCLOUD

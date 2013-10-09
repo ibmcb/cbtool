@@ -1,1 +1,1 @@
-monlist HOST
+reserved for vmcrs

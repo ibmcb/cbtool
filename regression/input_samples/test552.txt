@@ -1,4 +1,2 @@
-aiattach hpcc
-ailist
-vmlist
-stats
+typealter daytrader load_balancer=true
+typeshow daytrader

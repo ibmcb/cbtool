@@ -1,1 +1,1 @@
-Usage: vmcrsshow <cloud_name> <identifier> [key = all] 
+Usage: airun <cloud_name> <uuid> 

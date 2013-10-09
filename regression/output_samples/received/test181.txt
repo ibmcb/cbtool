@@ -1,1 +1,5 @@
-Usage: msgpub <cloud name> <object type> <channel> <message> 
+running shell command: "date"....
+stdout:
+ Wed Oct  9 09:36:41 EDT 2013
+
+

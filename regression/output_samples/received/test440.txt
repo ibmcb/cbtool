@@ -1,1 +1,1 @@
-Usage: msgpub <cloud name> <object type> <channel> <message> 
+Usage: waituntil <cloud name> <object type> <counter>=<value> [direction] [update interval] 

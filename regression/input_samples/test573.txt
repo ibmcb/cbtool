@@ -1,1 +1,5 @@
-aidrslist
+aiattach hadoop save_on_attach=true
+ailist
+vmlist
+stats
+stateshow

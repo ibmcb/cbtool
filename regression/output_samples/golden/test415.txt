@@ -1,1 +1,1 @@
-Usage: aidrsalter <cloud_name> <identifier> <attribute> <value> 
+Usage: aisuspend <cloud_name> <identifier> [firs = none] [mode] 

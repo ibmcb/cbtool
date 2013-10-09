@@ -1,2 +1,3 @@
-aialter ai_1 mode=scalable
-aishow ai_1 mode
+vmattach willfail
+vmlist
+stats

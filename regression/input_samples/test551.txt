@@ -1,4 +1,1 @@
-aiattach tradelite
-ailist
-vmlist
-stats
+typeshow daytrader

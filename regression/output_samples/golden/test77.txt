@@ -1,1 +1,1 @@
-Usage: svmdetach <cloud_name> <identifier> [force = False] [mode] 
+Usage: stats <cloud_name> 

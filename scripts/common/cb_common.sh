@@ -461,9 +461,12 @@ function refresh_hosts_file {
 
 	if [ x"${my_ai_uuid}" != x"none" ]; then
 		build_ai_mapping
-	else
-		echo "${my_ip_addr} ${HOSTNAME}" > ${ai_mapping_file}
-	fi
+    fi
+
+    # Adding multiple names for the same IP in /etc/hosts
+    # is not a problem. We have no control over what name
+    # is handed out by DHCP, so just do it anyway
+    echo "${my_ip_addr} ${HOSTNAME}" >> ${ai_mapping_file}
 
 	syslog_netcat "Refreshing hosts file ... "
 	sudo bash -c "rm -f /etc/hosts; echo '127.0.0.1 localhost' >> /etc/hosts; cat ${ai_mapping_file} >> /etc/hosts"
@@ -575,6 +578,12 @@ function post_boot_steps {
 	SUDO_CMD=`which sudo`
 	export PATH=$PATH:/sbin
 	PIDOF_CMD=`which pidof`
+
+    # Our CB images are missing a getty on tty0
+    if [ x"$(lsb_release -d | grep -i ubuntu)" != x ] ; then
+        syslog_netcat "This machine is Ubuntu. Making sure there's a getty on tty0..."
+        sudo screen -d -m -S getty bash -c "sudo /sbin/getty -8 38400 tty0"
+    fi
 
 	if [ $standalone == online ] ; then
 		syslog_netcat "Killing previously running ganglia monitoring processes on $SHORT_HOSTNAME"

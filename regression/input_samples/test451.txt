@@ -1,1 +1,1 @@
-cldalter time experiment_id=REGRESSION_A
+typeshow daytrader

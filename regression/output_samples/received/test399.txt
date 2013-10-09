@@ -1,1 +1,1 @@
-Usage: aishow <cloud_name> <identifier> [key = all] 
+Usage: vmresume <cloud_name> <identifier> [firs = none] [mode] 

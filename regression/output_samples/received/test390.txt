@@ -1,1 +1,1 @@
-Usage: vmresume <cloud_name> <identifier> [firs = none] [mode] 
+Usage: hostrepair <cloud_name> <identifier> <service> [firs = none] [mode] 

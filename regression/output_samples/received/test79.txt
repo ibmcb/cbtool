@@ -1,1 +1,1 @@
-Usage: svmlist <cloud_name> [state = default] [limit = none] 
+Usage: statealter <cloud_name> <identifier> <new_state> 

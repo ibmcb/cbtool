@@ -1,4 +1,4 @@
-aidetach youngest
+aiattach tradelite
 ailist
 vmlist
 stats

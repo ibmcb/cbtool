@@ -100,7 +100,7 @@ class VcdCmds(CommonCloudFunctions) :
                 return _status, _msg
     
     @trace
-    def test_vmc_connection(self, vmc_name, access, credentials, extra_info, dummy1, dummy2) :
+    def test_vmc_connection(self, vmc_name, access, credentials, extra_info, dummy1, dummy2, dummy3) :
         '''
         TBD
         '''
@@ -126,7 +126,7 @@ class VcdCmds(CommonCloudFunctions) :
                 _msg = "Cleaning up VMC. Making connection to vCloud Director host..."
                 cbdebug(_msg)
                 self.connect(obj_attr_list["credentials"], obj_attr_list["access"], \
-                             obj_attr_list["extra_info"], '1.5')
+                             obj_attr_list["password"], '1.5')
 
             _pre_existing_instances = False
 
@@ -402,10 +402,15 @@ class VcdCmds(CommonCloudFunctions) :
 
             obj_attr_list["last_known_state"] = "about to connect to vCloud Director manager"
          
-            credential_name = obj_attr_list["username"] + "@" + obj_attr_list["orgname"]
+            credential_name = obj_attr_list["credentials"]
+
             if not self.vcdconn :
-                self.connect(credential_name, obj_attr_list["hostname"], \
+                _msg = "Connecting to VCD with credentials " + credential_name + " at address " + obj_attr_list["access"]
+                cbdebug(_msg)
+
+                self.connect(credential_name, obj_attr_list["access"], \
                              obj_attr_list["password"], obj_attr_list["version"])
+
 
             # Removing check of run state until basic launch / shutdown functionality working
             if self.is_vm_running(obj_attr_list) :
@@ -434,6 +439,8 @@ class VcdCmds(CommonCloudFunctions) :
             cbdebug(_msg, True)
 
             image_to_clone = self.vcdconn.ex_find_node(node_name = obj_attr_list["imageid1"])
+            # DRB 9/6/2013 Need to error check the response to ex_find_node and throw exception if no image found
+ 
             _msg = "Launching new VM..."
             cbdebug(_msg)
             _reservation = self.vcdconn.create_node(name = obj_attr_list["cloud_vm_name"], image = image_to_clone)
@@ -468,11 +475,7 @@ class VcdCmds(CommonCloudFunctions) :
                 cbdebug(_msg)
 
                 self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
-
                 obj_attr_list["host_name"] = "unknown"
-
-                _msg = "Test Point Gamma"
-                cbdebug(_msg)
 
                 if "instance_obj" in obj_attr_list : 
                     del obj_attr_list["instance_obj"]
@@ -534,9 +537,9 @@ class VcdCmds(CommonCloudFunctions) :
                 _time_mark_drs - int(obj_attr_list["mgt_901_deprovisioning_request_originated"])
 
 
-            credential_name = obj_attr_list["username"] + "@" + obj_attr_list["orgname"]
+            credential_name = obj_attr_list["credentials"]
             if not self.vcdconn :
-                self.connect(credential_name, obj_attr_list["hostname"], \
+                self.connect(credential_name, obj_attr_list["access"], \
                              obj_attr_list["password"], obj_attr_list["version"])
 
             _wait = int(obj_attr_list["update_frequency"])
@@ -602,9 +605,9 @@ class VcdCmds(CommonCloudFunctions) :
             _curr_tries = 0
             _max_tries = int(obj_attr_list["update_attempts"])
 
-            credential_name = obj_attr_list["username"] + "@" + obj_attr_list["orgname"]
+            credential_name = obj_attr_list["credentials"]
             if not self.vcdconn :
-                self.connect(credential_name, obj_attr_list["hostname"], \
+                self.connect(credential_name, obj_attr_list["access"], \
                              obj_attr_list["password"], obj_attr_list["version"])
 
             _instance = self.get_vm_instance(obj_attr_list)
@@ -700,9 +703,9 @@ class VcdCmds(CommonCloudFunctions) :
             _ts = obj_attr_list["target_state"]
             _cs = obj_attr_list["current_state"]
     
-            credential_name = obj_attr_list["username"] + "@" + obj_attr_list["orgname"]
+            credential_name = obj_attr_list["credentials"]
             if not self.vcdconn :
-                self.connect(credential_name, obj_attr_list["hostname"], \
+                self.connect(credential_name, obj_attr_list["access"], \
                              obj_attr_list["password"], obj_attr_list["version"])
 
             if "mgt_201_runstate_request_originated" in obj_attr_list :

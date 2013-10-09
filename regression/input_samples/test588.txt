@@ -1,1 +1,5 @@
-reserved for vmcrs
+aidrsdetach aidrs_1
+aidrslist
+ailist
+vmlist
+stats

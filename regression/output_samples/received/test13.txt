@@ -1,1 +1,1 @@
-Usage: typeshow <cloud_name> <vapp_type> 
+Usage: typealter <cloud_name> <type_name> <attribute> <value> 

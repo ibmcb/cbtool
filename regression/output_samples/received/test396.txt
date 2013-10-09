@@ -1,1 +1,1 @@
-Usage: vmdetach <cloud_name> <identifier> [force = False] [mode] 
+Usage: vmsave <cloud_name> <identifier> [firs = none] [mode] 

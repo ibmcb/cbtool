@@ -1,7 +1,5 @@
-The AIDRS with the pattern simplehd has the following configuration on experiment (Cloud TESTCLOUD) :
-type: hadoop
-max_ais: 8000
-iait: uniformIXIXI120I180
-load_level: uniformIXIXI1I10
-load_duration: uniformIXIXI90I120
-lifetime: uniformIXIXI600I900
+running shell command: "date"....
+stdout:
+ Wed Oct  9 09:50:14 EDT 2013
+
+

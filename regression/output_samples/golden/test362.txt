@@ -1,1 +1,4 @@
-Usage: rolealter <cloud_name> <role_name> <attribute> <value> 
+The following ATTACHED CLOUDs are in this experiment (Cloud ) :
+|name                    |model                   |description             
+|TESTCLOUD               |sim                     |Cloudbench SimCloud.    
+

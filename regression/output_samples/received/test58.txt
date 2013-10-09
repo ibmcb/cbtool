@@ -1,1 +1,1 @@
-Usage: aicapture <cloud_name> <identifier> [vmcrs = none] [mode] 
+Usage: airesize <cloud_name> <identifier> <role> <delta> [mode] 

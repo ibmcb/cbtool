@@ -1,4 +1,1 @@
-The following CLOUDs are attached to this experiment (Cloud ) :
-|name                    |model                   |description             
-|TESTCLOUD               |sim                     |Cloudbench SimCloud.    
-
+Usage: cldshow <cloud_name> <object_type> 

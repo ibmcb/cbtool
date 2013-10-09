@@ -1,1 +1,1 @@
-Usage: hostfail <cloud_name> <identifier> <service> [firs = none] [mode] 
+Usage: hostshow <cloud_name> <identifier> [key = all] 

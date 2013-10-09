@@ -1,5 +1,4 @@
-typealter daytrader sut=client_daytrader->was->willfail
-aiattach daytrader
+aidetach random
 ailist
 vmlist
 stats

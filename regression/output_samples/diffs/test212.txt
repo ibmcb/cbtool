@@ -1,6 +1,0 @@
-|arrival                                   |1374526216                           
-|cloud_ip                                  |144.137.200.103                      
-|cloud_vm_uuid                             |0C9011CF-9CD2-58AC-A77E-756A7DDDA45B 
-|mgt_001_provisioning_request_originated   |1374526216                           
-|uuid                                      |0C9011CF-9CD2-58AC-A77E-756A7DDDA45B 
-|vmc                                       |CA6252C4-6803-5C5C-BAA8-5BC509EE3CE0 

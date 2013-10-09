@@ -1,1 +1,24 @@
-Usage: msgpub <cloud name> <object type> <channel> <message> 
+
+Documented commands (type help <topic>):
+========================================
+EOF          airun       firsalter     register    vmattach     vmlist    
+aialter      airunstate  firsattach    rolealter   vmcalter     vmlogin   
+aiattach     aisave      firsdetach    rolelist    vmcapture    vmmigrate 
+aicapture    aishow      firslist      roleshow    vmcattach    vmprotect 
+aidetach     aisuspend   firsshow      shell       vmccleanup   vmrepair  
+aidrsalter   cldalter    hostfail      statealter  vmcdetach    vmresize  
+aidrsattach  cldattach   hostlist      stateshow   vmclist      vmrestore 
+aidrsdetach  clddefault  hostrepair    stats       vmcrsalter   vmresume  
+aidrslist    clddetach   hostshow      trace       vmcrsattach  vmrun     
+aidrsshow    cldlist     monextract    typealter   vmcrsdetach  vmrunstate
+aifail       cldshow     monlist       typelist    vmcrslist    vmsave    
+ailist       echo        msgpub        typeshow    vmcrsshow    vmshow    
+airepair     expid       patternalter  unregister  vmcshow      vmsuspend 
+airesize     faultalter  patternlist   viewlist    vmdetach     waitfor   
+airestore    faultlist   patternshow   viewshow    vmdisplay    waiton    
+airesume     faultshow   poollist      vmalter     vmfail       waituntil 
+
+Undocumented commands:
+======================
+exit  help  pause  quit
+

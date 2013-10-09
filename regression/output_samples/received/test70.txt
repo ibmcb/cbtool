@@ -1,1 +1,1 @@
-Usage: vmcrsdetach <cloud_name> <identifier> [force = False] [mode] 
+Usage: vmcrsalter <cloud_name> <identifier> <attribute> <value> 

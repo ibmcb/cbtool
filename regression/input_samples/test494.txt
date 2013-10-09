@@ -1,3 +1,6 @@
-vmattach tinyvm
+vmattach tinyvm auto empty iron32 pause_provision_complete async
+waitfor 8s
+msgpub VM staging vm_12;continue;something
+waituntil VM ARRIVING=0 decreasing 1
 vmlist
 stats

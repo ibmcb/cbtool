@@ -1,1 +1,1 @@
-Usage: aidrsshow <cloud_name> <identifier> [key = all] 
+Usage: airepair <cloud_name> <identifier> [firs = none] [mode] 

@@ -1,1 +1,1 @@
-aidrsshow TESTCLOUD aidrs_1 all
+aidrslist TESTCLOUD

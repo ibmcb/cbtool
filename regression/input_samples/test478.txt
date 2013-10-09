@@ -1,1 +1,1 @@
-vmshow vm_1 all
+poollist

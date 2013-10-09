@@ -1,6 +1,5 @@
-aiattach TESTCLOUD hadoop async
-waitfor TESTCLOUD 12s
+aiattach TESTCLOUD daytrader detach_parallelism=9,ssh_key_name=AAAABBBBCCCCDDDDEEEE
 ailist TESTCLOUD
 vmlist TESTCLOUD
-aishow TESTCLOUD ai_2 detach_parallelism,ssh_key_name,sut
+aishow TESTCLOUD ai_3 detach_parallelism,ssh_key_name,sut
 stats TESTCLOUD

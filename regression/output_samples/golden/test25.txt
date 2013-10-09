@@ -1,1 +1,1 @@
-Usage: vmcalter <cloud_name> <identifier> <attribute> <value> 
+Usage: vmcdetach <cloud_name> <identifier> [force = False] [mode] 

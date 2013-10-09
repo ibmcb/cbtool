@@ -1,4 +1,4 @@
-aiattach TESTCLOUD hadoop save_on_attach=true
+airestore TESTCLOUD ai_28
 ailist TESTCLOUD
 vmlist TESTCLOUD
 stats TESTCLOUD

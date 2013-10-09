@@ -1,137 +1,77 @@
-VM object 43CB6C82-35D0-59D7-93D8-7CC9976794F3 (named "vm_3") had its run state successfully changed to "save" on this experiment.
 The following state values are available for the objects on this experiment (Cloud TESTCLOUD) :
 ------------------ PER-OBJECT STATE (CLOUD TESTCLOUD)  -----------------
 |Object Type    |Object Name    |Object UUID                             |State                     
-|VMC            |simzone_a      |35310FEB-1E59-53F1-A37C-0E4387DFF893    |attached                  
-|VMC            |simzone_d      |DAEF899C-8C95-5B76-BE3F-58349C261E66    |attached                  
-|VMC            |simzone_c      |8E18B916-CC95-566E-887E-3032BA7F835A    |attached                  
-|VMC            |simzone_b      |3076C295-3106-5ADC-8C71-D21083902D7A    |attached                  
-|HOST           |host_simhostc2 |AB8CF87C-D387-5C16-95D0-27FA3EEEAE8E    |attached                  
-|HOST           |host_simhostd2 |C3640A03-6BFC-5F8C-8B7A-D9D44C3EA0DA    |attached                  
-|HOST           |host_simhostc1 |780BAF8A-E7E8-5426-9EC8-4B9A7C22D37F    |attached                  
-|HOST           |host_simhostb4 |A3E45F8D-34E0-596B-BC55-39A2136CDF56    |attached                  
-|HOST           |host_simhosta0 |3B28EBEF-C65F-571C-A715-6796EB47C12D    |attached                  
-|HOST           |host_simhostb1 |853D1FA9-680D-5737-BFE2-317DD20161CA    |attached                  
-|HOST           |host_simhostd1 |921D61C3-DE6D-53FC-B133-56E18D1FB808    |attached                  
-|HOST           |host_simhostd3 |101CBD7F-896C-5E21-9725-B17E1F4D6684    |attached                  
-|HOST           |host_simhostb3 |1B6279DA-8AC3-514E-A277-6B386F3A601F    |attached                  
-|HOST           |host_simhosta2 |AC8B47EB-4DED-5FE8-9C2F-BE7BE2738184    |attached                  
-|HOST           |host_simhostc3 |D06655C6-EEE9-583E-B6AC-19D9392F2170    |attached                  
-|HOST           |host_simhostd0 |F1E141D0-9E3F-5AA7-87FE-12A703B412F0    |attached                  
-|HOST           |host_simhostc0 |188812F8-0224-5575-96E2-BA02A988476F    |attached                  
-|HOST           |host_simhostd4 |59EB7F14-BC9A-5753-8295-63B2AFBDF2F2    |attached                  
-|HOST           |host_simhostb2 |4ACE79A8-53E7-5F10-B72C-10DC66BB98F8    |attached                  
-|HOST           |host_simhostc4 |24C16887-53C4-5C29-A04D-2BF5850BB005    |attached                  
-|HOST           |host_simhosta1 |93962999-452B-57B0-BB8D-C5C6FD3067E5    |attached                  
-|HOST           |host_simhosta3 |47E50B58-A51E-565A-8D2D-9F87410E09EF    |attached                  
-|HOST           |host_simhosta4 |C707F0A9-CC4C-53E1-A0FB-938D60C9517A    |attached                  
-|HOST           |host_simhostb0 |21B47907-5C97-5C05-81B5-EDC2CDF1BEFA    |attached                  
-|VM             |vm_11          |B86E9084-4132-531E-A25C-D221BD8D7E55    |attached                  
-|VM             |vm_21          |67151505-FBF9-526B-9F98-54996C343335    |attached                  
-|VM             |vm_10          |3F704FF7-F9EF-5CAE-8B46-4FE897EB8D64    |attached                  
-|VM             |vm_18          |058FD878-43B3-52E7-A6FD-30D74C248A19    |attached                  
-|VM             |vm_17          |0DE53D2B-15BB-54C3-8C9C-0DECD8EC1C75    |attached                  
-|VM             |vm_22          |30C13752-FB8D-5CA8-A326-17156C574D3D    |attached                  
-|VM             |vm_4           |91CBF7AB-2395-5B02-9D0F-A0779233415D    |attached                  
-|VM             |vm_8           |50C66AE0-80B5-58A0-A59E-755517DDC54A    |attached                  
-|VM             |vm_13          |4FEC9B0A-6C01-58CE-8BB7-784174107FFD    |attached                  
-|VM             |vm_20          |5C5D3902-EFD3-5991-A06B-5871C2683526    |attached                  
-|VM             |vm_12          |89CFAAAF-0824-58A6-918A-F36529D1A6EC    |attached                  
-|VM             |vm_3           |43CB6C82-35D0-59D7-93D8-7CC9976794F3    |save                      
-|VM             |vm_5           |028070F6-8B5D-5777-9381-761BD9149FB3    |attached                  
-|VM             |vm_16          |F4524558-E1F9-5DD3-8708-BF639C6A4ABA    |attached                  
-|VM             |vm_19          |3319E060-D53C-5F47-BC08-FBD3053B3475    |attached                  
-|VM             |vm_15          |EF7C2CD8-C080-5B46-B776-EB458142D842    |attached                  
-|VM             |vm_1           |ADA59FDC-537B-5D15-92EE-F47450275C5F    |attached                  
-|VM             |vm_14          |B49A87F9-0393-5A9C-B7F5-DFC40559513E    |attached                  
-|VM             |vm_7           |54E552D6-E456-5643-8D76-7E78AB14BF57    |attached                  
-|VM             |vm_6           |1E59F851-EA2A-583A-9BA0-17503BD3CADB    |attached                  
-|VM             |vm_9           |FF7885D0-9DAB-5BB1-8E98-F7239A703A64    |attached                  
-
-The following statistics are available on this experiment (Cloud TESTCLOUD) :
-------------------------- OBJECT STORE -----------------------
-|Metric                                               |Value                         
-|Used Memory                                          |39.48M                        
-|Redis Version                                        |2.5.12                        
-|Uptime (in seconds)                                  |11741085                      
-|Total Connections Received                           |6492845                       
-|Total Commands Processed                             |92922095                      
-|Number of Keys                                       |451                           
-------------------------- METRIC STORE -----------------------
-|Metric                                               |Value                         
-|MongoDB Version                                      |2.0.6                         
-|Storage Size                                         |13967671296.0                 
-|Data Size                                            |12135021800.0                 
-|Index Size                                           |503020224                     
-|Average Object Size                                  |6344.61513848                 
-|Collections                                          |62                            
---------------------- EXPERIMENT OBJECTS ---------------------
-|Object                                               |Count                         
-|VMCs                                                 |4                             
-|HOSTs                                                |20                            
-|VMs                                                  |21                            
-|SVMs                                                 |0                             
-|AIs                                                  |0                             
-|AIDRSs                                               |0                             
-|VMCRSs                                               |0                             
-|FIRSs                                                |0                             
------------------- EXPERIMENT-WIDE COUNTERS ------------------
-|Counter                                              |Value                         
-|VMC RESERVATIONS                                     |4                             
-|VMCs ARRIVED                                         |16                            
-|VMCs ARRIVING                                        |0                             
-|VMCs DEPARTED                                        |12                            
-|VMCs DEPARTING                                       |0                             
-|VMCs FAILED                                          |0                             
-|HOST RESERVATIONS                                    |0                             
-|HOSTs ARRIVED                                        |0                             
-|HOSTs ARRIVING                                       |0                             
-|HOSTs DEPARTED                                       |0                             
-|HOSTs DEPARTING                                      |0                             
-|HOSTs FAILED                                         |0                             
-|VM RESERVATIONS                                      |21                            
-|VMs ARRIVED                                          |22                            
-|VMs ARRIVING                                         |0                             
-|VMs CAPTURING                                        |0                             
-|VMs DEPARTED                                         |1                             
-|VMs DEPARTING                                        |0                             
-|VMs FAILED                                           |0                             
-|SVM RESERVATIONS                                     |0                             
-|SVMs ARRIVED                                         |0                             
-|SVMs ARRIVING                                        |0                             
-|SVMs DEPARTED                                        |0                             
-|SVMs DEPARTING                                       |0                             
-|SVMs FAILED                                          |0                             
-|AI RESERVATIONS                                      |0                             
-|AIs ARRIVED                                          |0                             
-|AIs ARRIVING                                         |0                             
-|AIs CAPTURING                                        |0                             
-|AIs DEPARTED                                         |0                             
-|AIs DEPARTING                                        |0                             
-|AIs FAILED                                           |0                             
-|AIDRS RESERVATIONS                                   |0                             
-|AIDRSs ARRIVED                                       |0                             
-|AIDRSs ARRIVING                                      |0                             
-|AIDRSs DEPARTED                                      |0                             
-|AIDRSs DEPARTING                                     |0                             
-|AIDRSs FAILED                                        |0                             
-|VMCRS RESERVATIONS                                   |0                             
-|VMCRSs ARRIVED                                       |0                             
-|VMCRSs ARRIVING                                      |0                             
-|VMCRSs DEPARTED                                      |0                             
-|VMCRSs DEPARTING                                     |0                             
-|VMCRSs FAILED                                        |0                             
-|FIRS RESERVATIONS                                    |0                             
-|FIRSs ARRIVED                                        |0                             
-|FIRSs ARRIVING                                       |0                             
-|FIRSs DEPARTED                                       |0                             
-|FIRSs DEPARTING                                      |0                             
-|FIRSs FAILED                                         |0                             
-|EXPERIMENT COUNTER                                   |111                           
-
- ---------------- VMC-WIDE COUNTERS ----------------
-|35310FEB-1E59-53F1-A37C-0E4387DFF893 (simzone_a) VM RESERVATIONS|6                             
-|DAEF899C-8C95-5B76-BE3F-58349C261E66 (simzone_d) VM RESERVATIONS|1                             
-|8E18B916-CC95-566E-887E-3032BA7F835A (simzone_c) VM RESERVATIONS|6                             
-|3076C295-3106-5ADC-8C71-D21083902D7A (simzone_b) VM RESERVATIONS|8                             
+|VMC            |simzone_a      |CEA17C37-820A-507F-9356-90956267A568    |attached                  
+|VMC            |simzone_d      |966D86CB-90BB-553D-A06A-0FFA0818D568    |attached                  
+|VMC            |simzone_c      |C41BC369-F411-5382-B95F-70C31BD20E23    |attached                  
+|VMC            |simzone_b      |2FF9728E-95B3-5EE9-A0A4-61875B507FA8    |attached                  
+|VMC            |simzone_a      |CEA17C37-820A-507F-9356-90956267A568    |attached                  
+|VMC            |simzone_d      |966D86CB-90BB-553D-A06A-0FFA0818D568    |attached                  
+|VMC            |simzone_c      |C41BC369-F411-5382-B95F-70C31BD20E23    |attached                  
+|VMC            |simzone_b      |2FF9728E-95B3-5EE9-A0A4-61875B507FA8    |attached                  
+|HOST           |host_simhosta2 |B73669D1-9060-5FAC-9F47-05D382D6CF63    |attached                  
+|HOST           |host_simhostb0 |254FF1FD-F9E0-5B42-8E65-A8C3938C49C2    |attached                  
+|HOST           |host_simhosta1 |4A53898F-8489-5222-8C55-DB7778AA5192    |attached                  
+|HOST           |host_simhosta0 |D088196B-423E-5677-A52C-D31C2EF8BD49    |attached                  
+|HOST           |host_simhostd2 |45329B2F-A03E-5BD8-81D8-54E30B470263    |attached                  
+|HOST           |host_simhostb1 |BD237F06-DFFC-5967-AA8A-E22C568334B0    |attached                  
+|HOST           |host_simhostd0 |546F235F-880B-5CCF-B394-424ECF2CE699    |attached                  
+|HOST           |host_simhostb2 |7EF09949-366C-54E7-B825-CF71F5CFBB49    |attached                  
+|HOST           |host_simhostd1 |0DF46749-2932-5B84-8D57-00FFE9DB8251    |attached                  
+|HOST           |host_simhosta4 |A290C5B1-769D-55BD-8A1F-869FBB867544    |attached                  
+|HOST           |host_simhosta3 |EC537041-F829-5D6A-A981-E65E2B046B48    |attached                  
+|HOST           |host_simhostd3 |D9786432-934B-5642-B439-55B2C1EF6D98    |attached                  
+|HOST           |host_simhostb3 |F70B4B44-9838-5AEB-841E-A9D467D14B04    |attached                  
+|HOST           |host_simhostc1 |D68027A6-73D5-56BB-9A6B-D610055E049C    |attached                  
+|HOST           |host_simhostc3 |B92793DA-E1C7-5CB0-88C6-A34EC6C995A0    |attached                  
+|HOST           |host_simhostc0 |4EE1583A-DBBF-59DF-A9C9-C4A18E969FF8    |attached                  
+|HOST           |host_simhostc2 |F3623070-812F-5C0B-B932-FE88D2F1EA07    |attached                  
+|HOST           |host_simhostb4 |D074ED59-901A-52B1-B2FD-B8E41F04AB95    |attached                  
+|HOST           |host_simhostd4 |27973756-7C92-50DB-91BA-9C25F2D64A72    |attached                  
+|HOST           |host_simhostc4 |7173CC44-A917-5E94-9FED-CC9EB7118B64    |attached                  
+|VMC            |simzone_a      |CEA17C37-820A-507F-9356-90956267A568    |attached                  
+|VMC            |simzone_d      |966D86CB-90BB-553D-A06A-0FFA0818D568    |attached                  
+|VMC            |simzone_c      |C41BC369-F411-5382-B95F-70C31BD20E23    |attached                  
+|VMC            |simzone_b      |2FF9728E-95B3-5EE9-A0A4-61875B507FA8    |attached                  
+|HOST           |host_simhosta2 |B73669D1-9060-5FAC-9F47-05D382D6CF63    |attached                  
+|HOST           |host_simhostb0 |254FF1FD-F9E0-5B42-8E65-A8C3938C49C2    |attached                  
+|HOST           |host_simhosta1 |4A53898F-8489-5222-8C55-DB7778AA5192    |attached                  
+|HOST           |host_simhosta0 |D088196B-423E-5677-A52C-D31C2EF8BD49    |attached                  
+|HOST           |host_simhostd2 |45329B2F-A03E-5BD8-81D8-54E30B470263    |attached                  
+|HOST           |host_simhostb1 |BD237F06-DFFC-5967-AA8A-E22C568334B0    |attached                  
+|HOST           |host_simhostd0 |546F235F-880B-5CCF-B394-424ECF2CE699    |attached                  
+|HOST           |host_simhostb2 |7EF09949-366C-54E7-B825-CF71F5CFBB49    |attached                  
+|HOST           |host_simhostd1 |0DF46749-2932-5B84-8D57-00FFE9DB8251    |attached                  
+|HOST           |host_simhosta4 |A290C5B1-769D-55BD-8A1F-869FBB867544    |attached                  
+|HOST           |host_simhosta3 |EC537041-F829-5D6A-A981-E65E2B046B48    |attached                  
+|HOST           |host_simhostd3 |D9786432-934B-5642-B439-55B2C1EF6D98    |attached                  
+|HOST           |host_simhostb3 |F70B4B44-9838-5AEB-841E-A9D467D14B04    |attached                  
+|HOST           |host_simhostc1 |D68027A6-73D5-56BB-9A6B-D610055E049C    |attached                  
+|HOST           |host_simhostc3 |B92793DA-E1C7-5CB0-88C6-A34EC6C995A0    |attached                  
+|HOST           |host_simhostc0 |4EE1583A-DBBF-59DF-A9C9-C4A18E969FF8    |attached                  
+|HOST           |host_simhostc2 |F3623070-812F-5C0B-B932-FE88D2F1EA07    |attached                  
+|HOST           |host_simhostb4 |D074ED59-901A-52B1-B2FD-B8E41F04AB95    |attached                  
+|HOST           |host_simhostd4 |27973756-7C92-50DB-91BA-9C25F2D64A72    |attached                  
+|HOST           |host_simhostc4 |7173CC44-A917-5E94-9FED-CC9EB7118B64    |attached                  
+|VM             |vm_1           |F2DE6C84-C41F-54D4-A409-1BE7003DCF5D    |attached                  
+|VM             |vm_14          |FE42C92E-79A5-5716-8B8C-F3AA4EA27024    |attached                  
+|VM             |vm_18          |A012DC77-B102-522C-8A81-B802E5746B89    |attached                  
+|VM             |vm_9           |E1FAD711-2416-5BED-AECC-4722F45047EA    |attached                  
+|VM             |vm_3           |06DDC610-2A19-59CD-91EE-8FE70AA0F412    |attached                  
+|VM             |vm_15          |1CE1B9EC-221B-54BB-9082-F19DC9E7F430    |attached                  
+|VM             |vm_7           |7F3D1DA3-84B6-5EC7-B15E-1183C8F194F0    |attached                  
+|VM             |vm_6           |FBC08A73-B541-58B5-9458-5E9C2C25AF84    |attached                  
+|VM             |vm_22          |8413EFBF-C617-5254-BF0E-69D8F4949938    |attached                  
+|VM             |vm_4           |0D535CBB-6E66-5F28-BDAE-28CF512F3907    |attached                  
+|VM             |vm_13          |A2019B8E-657C-5C00-B00B-CD694E918A19    |attached                  
+|VM             |vm_16          |18532C1F-0B2C-55E3-97E6-19E42CA20D1E    |attached                  
+|VM             |vm_19          |46B3BCB4-02A0-53E7-B126-C41957B8006F    |attached                  
+|VM             |vm_21          |3DA7CCD3-A621-53FC-89F3-4220B63A2034    |attached                  
+|VM             |vm_5           |058C61FC-03C5-5763-82DE-3E6F0C66A8B9    |attached                  
+|VM             |vm_12          |DAF5DF3C-7901-5C98-B47D-66D658A41EB2    |attached                  
+|VM             |vm_10          |1427454D-B21C-5935-9C1A-CEDBB9D34477    |attached                  
+|VM             |vm_17          |E5E97C36-B9BE-5D9C-BF83-38E72C3A1369    |attached                  
+|VM             |vm_8           |6191F3B1-E574-5AA1-89D0-6A63D7FB432D    |attached                  
+|VM             |vm_11          |A520DCCA-A3D9-5516-A6C8-41DE043E2140    |attached                  
+|VM             |vm_20          |37300792-1106-55E1-B84F-496CE25F9996    |attached                  
 

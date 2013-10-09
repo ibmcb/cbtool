@@ -1,1 +1,2 @@
-cldattach sim TESTCLOUD
+monextract TESTCLOUD VM management
+shell TESTCLOUD cat /home/msilva/cloudbench/regression/..//data/REGRESSION_B/VM*man*REGRESSION*

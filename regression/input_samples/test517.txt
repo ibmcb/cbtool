@@ -1,4 +1,3 @@
-vmattach willfail async
-waituntil VM ARRIVING=0 decreasing 1
+vmdetach youngest
 vmlist
 stats

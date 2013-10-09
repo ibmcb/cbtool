@@ -1,1 +1,1 @@
-waitfor 10s
+cldshow all

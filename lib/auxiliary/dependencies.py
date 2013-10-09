@@ -27,12 +27,97 @@ from sys import path
 from os import access, F_OK
 import re
 import sys
+import platform
+
 from lib.remote.process_management import ProcessManagement
 
-def compare_versions(version_a, version_b) :
+def deps_file_parser(depsdict, username) :
     '''
     TBD
     '''
+    
+    _fn = path[0] + "/configs/" + username + "_dependencies.txt"
+    
+    if not access(_fn, F_OK) :
+        _fn = path[0] + "/configs/dependencies.txt"
+
+    try:
+        _fd = open(_fn, 'r')
+        _fc = _fd.readlines()
+        _fd.close()
+        
+        for _line in _fc :
+            _line = _line.strip()
+
+            if _line.count("#",0,2) :
+                _sstr = None
+            elif len(_line) < 3 :
+                _sstr = None
+            elif _line.count(" = ") :
+                _sstr = " = "
+            elif _line.count(" =") :
+                _sstr = " ="
+            elif _line.count("= ") :
+                _sstr = "= "
+            elif _line.count("=") :
+                _sstr = "="
+            else :
+                _sstr = None
+
+            if _sstr :
+                _key, _value = _line.split(_sstr)
+                _key = _key.strip()
+                depsdict[_key] = _value
+
+    except Exception :
+        _msg = "###### Error reading file \"" + _fn  + "\""
+        print _msg
+        exit(4)
+    
+    return True
+ 
+def get_linux_distro() :
+    '''
+    TBD
+    '''
+    _linux_distro_name, _linux_distro_ver, _x = platform.linux_distribution()
+    if _linux_distro_name.count("Red Hat") :
+        _distro = "rhel"
+    elif _linux_distro_name.count("Ubuntu") :
+        _distro = "ubuntu"
+    else :
+        print "Unsupported distribution (" + _linux_distro_name + ")"
+        exit(191)
+
+    if len('%x'%sys.maxint) == 8 :
+        _arch = "i686"
+    else :
+        _arch = "x86_64"
+        
+    return _distro, _arch
+
+def inst_conf_msg(depkey, depsdict) :
+    '''
+    TBD
+    '''
+    commandline_key = depsdict["cdist"] + '-' + depkey + '-' + depsdict[depkey + "-inst"]
+    commandline = depsdict[commandline_key]
+    commandline = commandline.replace("3RPARTYDIR", depsdict["3rdpartydir"].strip().replace("//",'/'))
+    commandline = commandline.replace("GITURL", depsdict["giturl"].strip())
+    commandline = commandline.replace("RSYNCURL", depsdict["rsyncurl"].strip())
+    commandline = commandline.replace("ARCH", depsdict["carch"].strip())
+    commandline = commandline.replace("DISTRO", depsdict["cdist"].strip())
+    
+    msg = " Please install/configure \"" + depkey + "\" by issuing the following command: \""
+    msg += commandline + "\"\n"
+    
+    return msg
+
+def compare_versions(depkey, depsdict, version_b) :
+    '''
+    TBD
+    '''
+    version_a = depsdict[depkey + "-ver"]
     _non_decimal = re.compile(r'[^\d.]+')
     version_a = _non_decimal.sub('', version_a)
     version_b = _non_decimal.sub('', version_b)
@@ -44,7 +129,7 @@ def compare_versions(version_a, version_b) :
     else :
         return str(version_b) + " >= " + str(version_a) + " OK"
 
-def check_passwordless_sudo(hostname, username, trd_party_dir) :
+def check_passwordless_sudo(hostname, username, proc_man, depsdict) :
     '''
     TBD
     '''
@@ -52,9 +137,8 @@ def check_passwordless_sudo(hostname, username, trd_party_dir) :
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
         
-        _proc_man =  ProcessManagement()
         _msg = "Checking passwordless sudo for the user \"" + username + "\" ....."
-        _status, _result_stdout, _result_stderr = _proc_man.run_os_command("sudo -S ls < /dev/null")
+        _status, _result_stdout, _result_stderr = proc_man.run_os_command("sudo -S ls < /dev/null")
                 
         if not _status :
             _msg += "Passwordless sudo checked OK"
@@ -62,192 +146,181 @@ def check_passwordless_sudo(hostname, username, trd_party_dir) :
         else :
             _status = 1728289
 
-        
     except ProcessManagement.ProcessManagementException, obj :
         _status = str(obj.status)
-#        _msg += str(obj.msg)
 
     except Exception, e :
         _status = 23
-#        _msg += str(e)
 
-    finally :
+    finally :        
+        _cmd = "echo \"" + username + "  ALL=(ALL:ALL) NOPASSWD:ALL\" >> /etc/sudoers;"
+        _cmd += "sed -i s/\"Defaults requiretty\"/\"#Defaults requiretty\"/g /etc/sudoers"
         if _status :
             _msg += "This user does not have passwordless sudo capabilities.\n"
-            _msg += "Please add the line \"" + username + "           ALL=(ALL)       NOPASSWD: ALL\" "
-            _msg += "to the sudoers file. \nAlso comment out the line \""
-            _msg += "Defaults    requiretty\""
+            _msg += "Please executed the following commands (as root) \"" + _cmd + "\""
         return _status, _msg
 
-def check_git_version(hostname, username, trd_party_dir) :
+def check_git_version(hostname, username, proc_man, depsdict) :
     '''
     TBD
     '''
     try:
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
-        
-        _proc_man =  ProcessManagement()
-        _msg = "Checking git version....."
-        _status, _result_stdout, _result_stderr = _proc_man.run_os_command("git --version")
+
+        _depkey = "git"
+
+        _msg = "Checking \"" + _depkey + "\" version....."
+        _status, _result_stdout, _result_stderr = proc_man.run_os_command("git --version")
 
         if not _status and _result_stdout.count("git version") :
             _version = _result_stdout.replace("git version ",'').strip()
-            _msg += compare_versions('1.6.0', _version)
+            _msg += compare_versions(_depkey, depsdict, _version)
             _status = 0
         else :
             _status = 1728289
-        
+
     except ProcessManagement.ProcessManagementException, obj :
         _status = str(obj.status)
-#        _msg += str(obj.msg)
 
     except Exception, e :
         _status = 23
-#        _msg += str(e)
 
     finally :
-        if _status :
-            _msg += "Please install git using you package management system (yum or apt-get)."
-            _msg += " The package is usually called \"git-core\"\n"
+        if _status or _msg.count("NOT OK"):
+            _msg += inst_conf_msg(_depkey, depsdict)
         return _status, _msg
 
-def check_ip_utility(hostname, username, trd_party_dir) :
+def check_ip_utility(hostname, username, proc_man, depsdict) :
     '''
     TBD
     '''
     try:
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
-        
-        _proc_man =  ProcessManagement()
-        _msg = "Checking \"ip\" utility....."
-        _status, _result_stdout, _result_stderr = _proc_man.run_os_command("ip -V")
+
+        _depkey = "ip"
+
+        _msg = "Checking \"" + _depkey + "\" utility....."
+        _status, _result_stdout, _result_stderr = proc_man.run_os_command("ip -V")
         if not _status :
             _msg += "OK"
         
     except ProcessManagement.ProcessManagementException, obj :
         _status = str(obj.status)
-#        _msg += str(obj.msg)
 
     except Exception, e :
         _status = 23
-#        _msg += str(e)
 
     finally :
-        if _status :
-            _msg += "Please make sure that the \"ip\" utility can be executed (i.e., is the PATH correct?)\n"
+        if _status or _msg.count("NOT OK"):
+            _msg += inst_conf_msg(_depkey, depsdict)
         return _status, _msg
 
-def check_ifconfig_utility(hostname, username, trd_party_dir) :
+def check_ifconfig_utility(hostname, username, proc_man, depsdict) :
     '''
     TBD
     '''
     try:
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
-        
-        _proc_man =  ProcessManagement()
-        _msg = "Checking \"ifconfig\" utility....."
-        _status, _result_stdout, _result_stderr = _proc_man.run_os_command("ifconfig")
+
+        _depkey = "ifconfig"
+
+        _msg = "Checking \"" + _depkey + "\" utility....."
+        _status, _result_stdout, _result_stderr = proc_man.run_os_command("ifconfig")
         if not _status :
             _msg += "OK"
 
     except ProcessManagement.ProcessManagementException, obj :
         _status = str(obj.status)
-#        _msg += str(obj.msg)
 
     except Exception, e :
         _status = 23
-#        _msg += str(e)
 
     finally :
-        if _status :
-            _msg += "Please make sure that the \"ifconfig\" utility can be executed (i.e., is the PATH correct?)\n"
+        if _status or _msg.count("NOT OK"):
+            _msg += inst_conf_msg(_depkey, depsdict)
         return _status, _msg
 
-def check_screen_version(hostname, username, trd_party_dir) :
+def check_screen_version(hostname, username, proc_man, depsdict) :
     '''
     TBD
     '''
     try:
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
-        
-        _proc_man =  ProcessManagement()
-        _msg = "Checking GNU screen version....."
-        _status, _result_stdout, _result_stderr = _proc_man.run_os_command("screen -v")
+
+        _depkey = "screen"
+
+        _msg = "Checking \"" + _depkey + "\" version....."
+        _status, _result_stdout, _result_stderr = proc_man.run_os_command("screen -v")
 
         if not _status and _result_stdout.count("Screen version") :
             _version = _result_stdout.replace("Screen version",'').strip()
             _version = _version.split()[0]
-            _msg += compare_versions('4.0', _version)
+            _msg += compare_versions(_depkey, depsdict, _version)
             _status = 0
         else :
             _status = 1728289
         
     except ProcessManagement.ProcessManagementException, obj :
         _status = str(obj.status)
-#        _msg = str(obj.msg)
 
     except Exception, e :
         _status = 23
-#        _msg = str(e)
 
     finally :
         if _status or _msg.count("NOT OK"):
-            _msg += " Please install screen using you package management system (yum or apt-get)."
-            _msg += " The package is usually called \"screen\"\n"
+            _msg += inst_conf_msg(_depkey, depsdict)
         return _status, _msg
 
-def check_rsync_version(hostname, username, trd_party_dir) :
+def check_rsync_version(hostname, username, proc_man, depsdict) :
     '''
     TBD
     '''
     try:
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
-        
-        _proc_man =  ProcessManagement()
-        _msg = "Checking rsync version....."
-        _status, _result_stdout, _result_stderr = _proc_man.run_os_command("rsync --version | grep version")
+
+        _depkey = "rsync"
+
+        _msg = "Checking \"" + _depkey + "\" version....."
+        _status, _result_stdout, _result_stderr = proc_man.run_os_command("rsync --version | grep version")
 
         if not _status and _result_stdout.count("protocol") :
             for _word in _result_stdout.split() :
                 if _word.count('.') == 2 :
                     _version = _word
                     break
-            _msg += compare_versions('2.6', _version)
+            _msg += compare_versions(_depkey, depsdict, _version)
             _status = 0
         else :
             _status = 1728289
         
     except ProcessManagement.ProcessManagementException, obj :
         _status = str(obj.status)
-#        _msg = str(obj.msg)
 
     except Exception, e :
         _status = 23
-#        _msg = str(e)
 
     finally :
         if _status or _msg.count("NOT OK"):
-            _msg += " Please install rsync using you package management system (yum or apt-get)."
-            _msg += " The package is usually called \"rsync\"\n"
+            _msg += inst_conf_msg(_depkey, depsdict)
         return _status, _msg
 
-def check_gmond_version(hostname, username, trd_party_dir) :
+def check_gmond_version(hostname, username, proc_man, depsdict) :
     '''
     TBD
     '''
     try:
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
-        
-        _proc_man =  ProcessManagement()
-        _msg = "Checking gmond version....."
-        _status, _result_stdout, _result_stderr = _proc_man.run_os_command("gmond --version")
 
+        _depkey = "gmond"
+
+        _msg = "Checking \"" + _depkey + "\" version....."
+        _status, _result_stdout, _result_stderr = proc_man.run_os_command("gmond --version")
 
         if not _status and _result_stdout.count("gmond") :
             for _word in _result_stdout.split() :
@@ -255,36 +328,34 @@ def check_gmond_version(hostname, username, trd_party_dir) :
                     _parts = _word.split(".")
                     _version = _parts[0] + "." + _parts[1]
                     break
-            _msg += compare_versions('3.0', _version)
+            _msg += compare_versions(_depkey, depsdict, _version)
             _status = 0
         else :
             _status = 1728289
         
     except ProcessManagement.ProcessManagementException, obj :
         _status = str(obj.status)
-#        _msg = str(obj.msg)
 
     except Exception, e :
         _status = 23
-#        _msg = str(e)
 
     finally :
         if _status or _msg.count("NOT OK"):
-            _msg += " Please install gmond using you package management system (yum or apt-get)."
-            _msg += " The package is usually called \"ganglia-monitor\"\n"
+            _msg += inst_conf_msg(_depkey, depsdict)
         return _status, _msg
 
-def check_rsyslogd_version(hostname, username, trd_party_dir) :
+def check_rsyslogd_version(hostname, username, proc_man, depsdict) :
     '''
     TBD
     '''
     try:
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
-        
-        _proc_man =  ProcessManagement()
-        _msg = "Checking rsyslog version....."
-        _status, _result_stdout, _result_stderr = _proc_man.run_os_command("rsyslogd -v")
+
+        _depkey = "rsyslog"
+
+        _msg = "Checking \"" + _depkey + "\" version....."
+        _status, _result_stdout, _result_stderr = proc_man.run_os_command("rsyslogd -v")
                 
         if not _status and _result_stdout.count("compiled with") :
             _version = "N/A"
@@ -292,26 +363,23 @@ def check_rsyslogd_version(hostname, username, trd_party_dir) :
                 if _word.count(".") and not _word.count("//") :
                     _version = _word.replace(',','')
                     break
-            _msg += compare_versions('4.6.0', _version)
+            _msg += compare_versions(_depkey, depsdict, _version)
             _status = 0
         else :
             _status = 1728289
         
     except ProcessManagement.ProcessManagementException, obj :
         _status = str(obj.status)
-#        _msg += str(obj.msg)
 
     except Exception, e :
         _status = 23
-#        _msg += str(e)
 
     finally :
         if _status or _msg.count("NOT OK"):
-            _msg += " Please install rsyslogd using you package management system (yum or apt-get)."
-            _msg += " The package is usually called \"rsyslog\"\n"
+            _msg += inst_conf_msg(_depkey, depsdict)
         return _status, _msg
 
-def check_python_daemon_version(hostname, username, trd_party_dir) :
+def check_python_daemon_version(hostname, username, proc_man, depsdict) :
     '''
     TBD
     '''
@@ -319,40 +387,75 @@ def check_python_daemon_version(hostname, username, trd_party_dir) :
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
 
-        _msg = "Checking python-daemon library version....."
+        _depkey = "python-daemon"
+
+        _msg = "Checking \"" + _depkey + "\" version....."
         import daemon
 
         _version = str(daemon._version).strip()
         del daemon
 
-        _msg += compare_versions('1.5.1', _version)
+        _msg += compare_versions(_depkey, depsdict, _version)
         _status = 0
 
     except ImportError, e:
         _status = 7282
-#        _msg += str(e)
 
     except Exception, e :
         _status = 23
-#        _msg += str(e)
 
     finally :
         if _status or _msg.count("NOT OK"):
-            _msg += " Please install python-daemon using you package management system (yum or apt-get)."
-            _msg += " The package is usually called \"python-daemon\"\n"
+            _msg += inst_conf_msg(_depkey, depsdict)
         return _status, _msg
 
-def check_redis_binary(hostname, username, trd_party_dir) :
+def check_openvpn_binary(hostname, username, proc_man, depsdict) :
     '''
     TBD
     '''
     try:
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
+
+        _depkey = "openvpn"
+
+        _msg = "Checking \"" + _depkey + "\" version....."
+        _status, _result_stdout, _result_stderr = proc_man.run_os_command("openvpn --version")
+                
+        if not _status and _result_stdout.count("OpenVPN ") :
+            _version = "N/A"
+            for _word in _result_stdout.split() :
+                if _word.count('.') == 2 :
+                    _version = _word
+                    break
+            _msg += compare_versions(_depkey, depsdict, _version)
+            _status = 0
+        else :
+            _status = 1728289
         
-        _proc_man =  ProcessManagement()
-        _msg = "Checking Redis version....."
-        _status, _result_stdout, _result_stderr = _proc_man.run_os_command("redis-server -v")
+    except ProcessManagement.ProcessManagementException, obj :
+        _status = str(obj.status)
+
+    except Exception, e :
+        _status = 23
+
+    finally :
+        if _status or _msg.count("NOT OK"):
+            _msg += inst_conf_msg(_depkey, depsdict)
+        return _status, _msg
+
+def check_redis_binary(hostname, username, proc_man, depsdict) :
+    '''
+    TBD
+    '''
+    try:
+        _status = 100
+        _fmsg = "An error has occurred, but no error message was captured"
+
+        _depkey = "redis"
+
+        _msg = "Checking \"" + _depkey + "\" version....."
+        _status, _result_stdout, _result_stderr = proc_man.run_os_command("redis-server -v")
                 
         if not _status and _result_stdout.count("Redis server") :
             _version = "N/A"
@@ -363,68 +466,63 @@ def check_redis_binary(hostname, username, trd_party_dir) :
                 elif _word.count('.') == 2 :
                     _version = _word
                     break
-            _msg += compare_versions('2.5.0', _version)
+            _msg += compare_versions(_depkey, depsdict, _version)
             _status = 0
         else :
             _status = 1728289
         
     except ProcessManagement.ProcessManagementException, obj :
         _status = str(obj.status)
-#        _msg += str(obj.msg)
 
     except Exception, e :
         _status = 23
-#        _msg += str(e)
 
     finally :
         if _status or _msg.count("NOT OK"):
-            _msg += " Please install Redis with: cd " + trd_party_dir
-            _msg += "; git clone https://github.com/ibmcb/redis.git; "
-            _msg += "cd redis; git checkout 2.6; make; sudo make install\n"
+            _msg += inst_conf_msg(_depkey, depsdict)
         return _status, _msg
 
-def check_redis_python_bindings(hostname, username, trd_party_dir) :
+def check_redis_python_bindings(hostname, username, proc_man, depsdict) :
     '''
     TBD
     '''
     try:
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
+
+        _depkey = "pyredis"
         
-        _msg = "Checking Redis python bindings version....."
+        _msg = "Checking \"" + _depkey + "\" version....."
         import redis
         
         _version = str(redis.VERSION).replace('(','').replace(')','').replace(", ",'.').strip()
         del redis
-        _msg += compare_versions('2.6.0', _version)
+        _msg += compare_versions(_depkey, depsdict, _version)
         _status = 0
         
     except ImportError, e:
         _status = 7282
-#        _msg += str(e)
 
     except Exception, e :
         _status = 23
-#        _msg += str(e)
 
     finally :
         if _status or _msg.count("NOT OK"):
-            _msg += " Please install Redis python bindings with: cd "
-            _msg += trd_party_dir + "; git clone https://github.com/ibmcb/redis-py.git;"
-            _msg += "cd redis-py; sudo python setup.py install\n"           
+            _msg += inst_conf_msg(_depkey, depsdict)
         return _status, _msg
 
-def check_mongo_binary(hostname, username, trd_party_dir) :
+def check_mongo_binary(hostname, username, proc_man, depsdict) :
     '''
     TBD
     '''
     try:
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
-        
-        _proc_man =  ProcessManagement()
-        _msg = "Checking MongoDB version....."
-        _status, _result_stdout, _result_stderr = _proc_man.run_os_command("mongod --version")
+
+        _depkey = "mongodb"
+
+        _msg = "Checking \"" + _depkey + "\" version....."
+        _status, _result_stdout, _result_stderr = proc_man.run_os_command("mongod --version")
         
         if not _status and _result_stdout.count("db version") :
             _version = "N/A"
@@ -433,14 +531,13 @@ def check_mongo_binary(hostname, username, trd_party_dir) :
                     _version = _word.replace('v','').replace(',','')
                     break
 
-            _msg += compare_versions('2.0.0', _version)
+            _msg += compare_versions(_depkey, depsdict, _version)
             _status = 0
         else :
             _status = 1728289
         
     except ProcessManagement.ProcessManagementException, obj :
         _status = str(obj.status)
-#        _msg += str(obj.msg)"
 
     except Exception, e :
         _status = 23
@@ -448,18 +545,10 @@ def check_mongo_binary(hostname, username, trd_party_dir) :
 
     finally :
         if _status or _msg.count("NOT OK"):
-            if len('%x'%sys.maxint) == 8 :
-                _mongo_url = "http://fastdl.mongodb.org/linux/mongodb-linux-i686-2.2.2.tgz"
-            else :
-                _mongo_url = "http://fastdl.mongodb.org/linux/mongodb-linux-x86_64-2.2.2.tgz"
-
-            _msg += " Please install MongoDB with: cd " + trd_party_dir
-            _msg += "; wget " + _mongo_url + "; tar -zxf mongodb-linux-*.tgz; cd mongodb-linux-*; sudo cp bin/* /usr/bin\n"
-            _msg += "If you have a different machine architecture, you will have to download the binaries from http://www.mongodb.org/downloads\n"
-
+            _msg += inst_conf_msg(_depkey, depsdict)
         return _status, _msg
 
-def check_python_setuptools(hostname, username, trd_party_dir) :
+def check_python_setuptools(hostname, username, proc_man, depsdict) :
     '''
     TBD
     '''
@@ -467,7 +556,10 @@ def check_python_setuptools(hostname, username, trd_party_dir) :
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
         
-        _msg = "Checking for python-setuptools....."
+        _depkey = "python-setuptools"
+
+        _msg = "Checking \"" + _depkey + "\" library....."
+
         import setuptools 
         from setuptools import sandbox 
         
@@ -478,18 +570,16 @@ def check_python_setuptools(hostname, username, trd_party_dir) :
         
     except ImportError, e:
         _status = 7282
-#        _msg += str(e)
         
     except Exception, e :
         _status = 23
-#        _msg += str(e)
 
     finally :
         if _status or _msg.count("NOT OK"):
-            _msg += " Please install setuptools with: This is usually under the package name 'python-setuptools' (yum or apt-get)\n"
+            _msg += inst_conf_msg(_depkey, depsdict)
         return _status, _msg
 
-def check_mongo_python_bindings(hostname, username, trd_party_dir) :
+def check_mongo_python_bindings(hostname, username, proc_man, depsdict) :
     '''
     TBD
     '''
@@ -497,7 +587,9 @@ def check_mongo_python_bindings(hostname, username, trd_party_dir) :
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
         
-        _msg = "Checking MongoDB python bindings version....."
+        _depkey = "pymongo"
+
+        _msg = "Checking \"" + _depkey + "\" version....."
         import pymongo
 
         if pymongo.has_c() is False:
@@ -511,25 +603,21 @@ def check_mongo_python_bindings(hostname, username, trd_party_dir) :
         _version = str(pymongo.version).strip().replace('+','')
         del pymongo
 
-        _msg += compare_versions('2.1.1', _version)
+        _msg += compare_versions(_depkey, depsdict, _version)
         _status = 0
         
     except ImportError, e:
         _status = 7282
-#        _msg += str(e)
         
     except Exception, e :
         _status = 23
-#        _msg += str(e)
 
     finally :
         if _status or _msg.count("NOT OK"):
-            _msg += " Please install MongoDB python bindings with: cd "
-            _msg += trd_party_dir + "; git clone https://github.com/ibmcb/mongo-python-driver.git;"
-            _msg += "cd mongo-python-driver; sudo python setup.py install\n"    
+            _msg += inst_conf_msg(_depkey, depsdict)
         return _status, _msg
 
-def check_python_twisted_version(hostname, username, trd_party_dir) :
+def check_python_twisted_version(hostname, username, proc_man, depsdict) :
     '''
     TBD
     '''
@@ -537,7 +625,9 @@ def check_python_twisted_version(hostname, username, trd_party_dir) :
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
         
-        _msg = "Checking python-twisted library version....."
+        _depkey = "python-twisted"
+
+        _msg = "Checking \"" + _depkey + "\" library....."
         import twisted
         from twisted.web.wsgi import WSGIResource
         from twisted.internet import reactor
@@ -548,32 +638,33 @@ def check_python_twisted_version(hostname, username, trd_party_dir) :
         
         _version = str(twisted.__version__).strip()
         del twisted
-        _msg += compare_versions('8.0.0', _version)
+        _msg += compare_versions(_depkey, depsdict, _version)
         _status = 0
         
     except ImportError, e:
         _status = 7282
-#        _msg += str(e)
+
 
     except Exception, e :
         _status = 23
-#        _msg += str(e)
+
 
     finally :
         if _status or _msg.count("NOT OK"):
-            _msg += " Please install twisted using you package management system (yum or apt-get)."
-            _msg += " The packages are usually called \"python-twisted-web\"\n"       
+            _msg += inst_conf_msg(_depkey, depsdict)
         return _status, _msg
 
-def check_python_webob(hostname, username, trd_party_dir) :
+def check_python_webob(hostname, username, proc_man, depsdict) :
     '''
     TBD
     '''
     try:
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
-        
-        _msg = "Checking python-webob library....."
+
+        _depkey = "python-webob"
+
+        _msg = "Checking \"" + _depkey + "\" library....."
         import webob
         from webob import Request, Response, exc
         _msg += "OK"
@@ -584,19 +675,16 @@ def check_python_webob(hostname, username, trd_party_dir) :
         
     except ImportError, e:
         _status = 7282
-#        _msg += str(e)
 
     except Exception, e :
         _status = 23
-#        _msg += str(e)
 
     finally :
         if _status or _msg.count("NOT OK"):
-            _msg += " Please install python-webob using you package management system (yum or apt-get)."
-            _msg += " The packages are usually called \"python-webob\"\n"       
+            _msg += inst_conf_msg(_depkey, depsdict)
         return _status, _msg
 
-def check_python_beaker(hostname, username, trd_party_dir) :
+def check_python_beaker(hostname, username, proc_man, depsdict) :
     '''
     TBD
     '''
@@ -604,7 +692,9 @@ def check_python_beaker(hostname, username, trd_party_dir) :
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
         
-        _msg = "Checking python-beaker library..... "
+        _depkey = "python-beaker"
+
+        _msg = "Checking \"" + _depkey + "\" library....."
         import beaker 
         from beaker.middleware import SessionMiddleware
         _msg += "OK"
@@ -616,19 +706,16 @@ def check_python_beaker(hostname, username, trd_party_dir) :
         
     except ImportError, e:
         _status = 7282
-#        _msg += str(e)
 
     except Exception, e :
         _status = 23
-#        _msg += str(e)
 
     finally :
         if _status or _msg.count("NOT OK"):
-            _msg += " Please install python-beaker using you package management system (yum or apt-get)."
-            _msg += " The packages are usually called \"python-beaker\"\n"       
+            _msg += inst_conf_msg(_depkey, depsdict)
         return _status, _msg
 
-def check_custom_gmetad(hostname, username, trd_party_dir) :
+def check_custom_gmetad(hostname, username, proc_man, depsdict) :
     '''
     TBD
     '''
@@ -636,28 +723,27 @@ def check_custom_gmetad(hostname, username, trd_party_dir) :
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
 
-        _proc_man =  ProcessManagement()
-        _msg = "Checking custom gmetad version....."
+        _depkey = "gmetad-python"
+
+        _msg = "Checking \"" + _depkey + "\" library....."
 
         if access(path[0] + "/3rd_party/monitor-core/gmetad-python/gmetad.py", F_OK) :
             _version = "1.0.0"
 
-            _msg += compare_versions('1.0.0', _version)
+            _msg += compare_versions(_depkey, depsdict, _version)
             _status = 0
         else :
             _status = 1728289
 
     except Exception, e :
         _status = 23
-#        _msg += str(e)
 
     finally :
         if _status or _msg.count("NOT OK"):
-            _msg += " Please install the custom gmetad with: cd "
-            _msg += trd_party_dir + "; git clone https://github.com/ibmcb/monitor-core.git\n"    
+            _msg += inst_conf_msg(_depkey, depsdict)
         return _status, _msg
 
-def check_wizard(hostname, username, trd_party_dir) :
+def check_wizard(hostname, username, proc_man, depsdict) :
     '''
     TBD
     '''
@@ -665,28 +751,27 @@ def check_wizard(hostname, username, trd_party_dir) :
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
 
-        _proc_man =  ProcessManagement()
-        _msg = "Checking wizard version....."
+        _depkey = "bootstrap-wizard"
+
+        _msg = "Checking \"" + _depkey + "\" library....."
 
         if access(path[0] + "/3rd_party/Bootstrap-Wizard/README.md", F_OK) :
             _version = "1.0.0"
 
-            _msg += compare_versions('1.0.0', _version)
+            _msg += compare_versions(_depkey, depsdict, _version)
             _status = 0
         else :
             _status = 1728289
 
     except Exception, e :
         _status = 23
-#        _msg += str(e)
 
     finally :
         if _status or _msg.count("NOT OK"):
-            _msg += " Please install Bootstrap-Wizard with: cd "
-            _msg += trd_party_dir + "; git clone https://github.com/ibmcb/Bootstrap-Wizard.git\n"
+            _msg += inst_conf_msg(_depkey, depsdict)
         return _status, _msg
 
-def check_d3(hostname, username, trd_party_dir) :
+def check_streamprox(hostname, username, proc_man, depsdict) :
     '''
     TBD
     '''
@@ -694,28 +779,53 @@ def check_d3(hostname, username, trd_party_dir) :
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
 
-        _proc_man =  ProcessManagement()
-        _msg = "Checking d3 version....."
+        _depkey = "streamprox"
 
+        _msg = "Checking \"" + _depkey + "\" library....."
+
+        if access(path[0] + "/3rd_party/StreamProx/README.md", F_OK) :
+            _version = "1.0.0"
+            _msg += compare_versions(_depkey, depsdict, _version)
+            _status = 0
+        else :
+            _status = 1728289
+
+    except Exception, e :
+        _status = 23
+
+    finally :
+        if _status or _msg.count("NOT OK"):
+            _msg += inst_conf_msg(_depkey, depsdict)
+        return _status, _msg
+
+def check_d3(hostname, username, proc_man, depsdict) :
+    '''
+    TBD
+    '''
+    try:
+        _status = 100
+        _fmsg = "An error has occurred, but no error message was captured"
+
+        _depkey = "d3"
+
+        _msg = "Checking \"" + _depkey + "\" library....."
         if access(path[0] + "/3rd_party/d3/component.json", F_OK) :
             _version = "1.0.0"
 
-            _msg += compare_versions('1.0.0', _version)
+            _msg += compare_versions(_depkey, depsdict, _version)
             _status = 0
         else :
             _status = 1728289
 
     except Exception, e :
         _status = 23
-#        _msg += str(e)
 
     finally :
         if _status or _msg.count("NOT OK"):
-            _msg += " Please install d3 with: cd "
-            _msg += trd_party_dir + "; git clone https://github.com/ibmcb/d3.git\n"
+            _msg += inst_conf_msg(_depkey, depsdict)
         return _status, _msg
 
-def check_bootstrap(hostname, username, trd_party_dir) :
+def check_bootstrap(hostname, username, proc_man, depsdict) :
     '''
     TBD
     '''
@@ -723,28 +833,27 @@ def check_bootstrap(hostname, username, trd_party_dir) :
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
 
-        _proc_man =  ProcessManagement()
-        _msg = "Checking bootstrap version....."
+        _depkey = "bootstrap"
+
+        _msg = "Checking \"" + _depkey + "\" library....."
 
         if access(path[0] + "/3rd_party/bootstrap/package.json", F_OK) :
             _version = "1.0.0"
 
-            _msg += compare_versions('1.0.0', _version)
+            _msg += compare_versions(_depkey, depsdict, _version)
             _status = 0
         else :
             _status = 1728289
 
     except Exception, e :
         _status = 23
-#        _msg += str(e)
 
     finally :
         if _status or _msg.count("NOT OK"):
-            _msg += " Please install bootstrap with: cd "
-            _msg += trd_party_dir + "; git clone https://github.com/ibmcb/bootstrap.git\n"          
+            _msg += inst_conf_msg(_depkey, depsdict)
         return _status, _msg
 
-def check_openstack_python_bindings(hostname, username, trd_party_dir) :
+def check_html_dot_py(hostname, username, proc_man, depsdict) :
     '''
     TBD
     '''
@@ -752,31 +861,59 @@ def check_openstack_python_bindings(hostname, username, trd_party_dir) :
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
         
-        _msg = "Checking OpenStack python bindings (novaclient) version....."
+        _depkey = "pyhtml"
+
+        _msg = "Checking \"" + _depkey + "\" library....."
+        import HTML
+        
+        _version = str(HTML.__version__).strip()
+        del HTML 
+
+        _msg += compare_versions(_depkey, depsdict, _version)
+        _status = 0
+        
+    except ImportError, e:
+        _status = 7288
+
+    except Exception, e :
+        _status = 23
+
+    finally :
+        if _status or _msg.count("NOT OK"):
+            _msg += inst_conf_msg(_depkey, depsdict)
+        return _status, _msg
+
+def check_openstack_python_bindings(hostname, username, proc_man, depsdict) :
+    '''
+    TBD
+    '''
+    try:
+        _status = 100
+        _fmsg = "An error has occurred, but no error message was captured"
+        
+        _depkey = "novaclient"
+
+        _msg = "Checking \"" + _depkey + "\" library....."
         import novaclient
         
         _version = str(novaclient.__version__).strip() + ".g7ddc2fd"
         del novaclient
 
-        _msg += compare_versions('2.2.5', _version)
+        _msg += compare_versions(_depkey, depsdict, _version)
         _status = 0
         
     except ImportError, e:
         _status = 7282
-#        _msg += str(e)
 
     except Exception, e :
         _status = 23
-#        _msg += str(e)
 
     finally :
         if _status or _msg.count("NOT OK"):
-            _msg += " Please install OpenStack python bindings with: cd "
-            _msg += trd_party_dir + "; git clone https://github.com/openstack/python-novaclient.git;"
-            _msg += "cd python-novaclient; sudo python setup.py install\n"    
+            _msg += inst_conf_msg(_depkey, depsdict)
         return _status, _msg
 
-def check_ec2_python_bindings(hostname, username, trd_party_dir) :
+def check_ec2_python_bindings(hostname, username, proc_man, depsdict) :
     '''
     TBD
     '''
@@ -784,31 +921,29 @@ def check_ec2_python_bindings(hostname, username, trd_party_dir) :
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
         
-        _msg = "Checking EC2 python bindings (boto) version....."
+        _depkey = "boto"
+
+        _msg = "Checking \"" + _depkey + "\" library....."
         import boto
         
         _version = str(boto.__version__).strip().replace("-dev",'')
         del boto
 
-        _msg += compare_versions('2.1.8', _version)
+        _msg += compare_versions(_depkey, depsdict, _version)
         _status = 0
         
     except ImportError, e:
         _status = 7282
-#        _msg += str(e)
 
     except Exception, e :
         _status = 23
-#        _msg += str(e)
 
     finally :
         if _status or _msg.count("NOT OK"):
-            _msg += " Please install EC2 python bindings with: cd "
-            _msg += trd_party_dir + "; git clone https://github.com/boto/boto.git;"
-            _msg += "cd boto; sudo python setup.py install\n"
+            _msg += inst_conf_msg(_depkey, depsdict)
         return _status, _msg
 
-def check_omapi_python_bindings(hostname, username, trd_party_dir) :
+def check_omapi_python_bindings(hostname, username, proc_man, depsdict) :
     '''
     TBD
     '''
@@ -816,32 +951,29 @@ def check_omapi_python_bindings(hostname, username, trd_party_dir) :
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
         
-        _msg = "Checking OMAPI python bindings version....."
+        _depkey = "pypureomapi"
+
+        _msg = "Checking \"" + _depkey + "\" library....."
         import pypureomapi
         
         _version = str(pypureomapi.__version__).strip()
         del pypureomapi
 
-        _msg += compare_versions('0.2', _version)
+        _msg += compare_versions(_depkey, depsdict, _version)
         _status = 0
         
     except ImportError, e:
         _status = 7282
-#        _msg += str(e)
 
     except Exception, e :
         _status = 23
-#        _msg += str(e)
 
     finally :
         if _status or _msg.count("NOT OK"):
-            _msg += " Please install OMAPI python bindings with: cd "
-            _msg += trd_party_dir + "; wget http://pypureomapi.googlecode.com/files/pypureomapi-0.3.tar.gz;"
-            _msg += " tar -xzvf pypureomapi-0.3.tar.gz; cd pypureomapi-0.3; "
-            _msg += "sudo python setup.py install\n"
+            _msg += inst_conf_msg(_depkey, depsdict)
         return _status, _msg
 
-def check_libvirt_python_bindings(hostname, username, trd_party_dir) :
+def check_libvirt_python_bindings(hostname, username, proc_man, depsdict) :
     '''
     TBD
     '''
@@ -849,128 +981,120 @@ def check_libvirt_python_bindings(hostname, username, trd_party_dir) :
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
         
-        _msg = "Checking libvirt python bindings version....."
+        _depkey = "pylibvirt"
+
+        _msg = "Checking \"" + _depkey + "\" library....."
         import libvirt
         
         _version = str(libvirt.getVersion()).strip()
         del libvirt
 
-        _msg += compare_versions('9003', _version)
+        _msg += compare_versions(_depkey, depsdict, _version)
         _status = 0
         
     except ImportError, e:
         _status = 7282
-#        _msg += str(e)
 
     except Exception, e :
         _status = 23
-#        _msg += str(e)
 
     finally :
         if _status or _msg.count("NOT OK"):
-            _msg += " Please install libvirt python bindings using you package management system (yum or apt-get)."
-            _msg += " The packages are usually called \"libvirt-python\" or \"python-libvirt\"\n"       
+            _msg += inst_conf_msg(_depkey, depsdict)
         return _status, _msg
 
-def check_netcat(hostname, username, trd_party_dir) :
+def check_netcat(hostname, username, proc_man, depsdict) :
     '''
     TBD
     '''
     try:
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
-        
-        _proc_man =  ProcessManagement()
-        _msg = "Checking netcat (openbsd) version....."
-        _status, _result_stdout, _result_stderr = _proc_man.run_os_command("nc -v -w 1 localhost -z 22")
+
+        _depkey = "netcat"
+
+        _msg = "Checking \"" + _depkey + "\" version....."
+        _status, _result_stdout, _result_stderr = proc_man.run_os_command("nc -v -w 1 localhost -z 22")
 
         if not _status :
             _version = "1.9"
-            _msg += compare_versions('1.6', _version)
+            _msg += compare_versions(_depkey, depsdict, _version)
             _status = 0
         else :
             _status = 1728289
         
     except ProcessManagement.ProcessManagementException, obj :
         _status = str(obj.status)
-#        _msg = str(obj.msg)
 
     except Exception, e :
         _status = 23
-#        _msg = str(e)
 
     finally :
         if _status or _msg.count("NOT OK"):
-            _msg += " Please install nc using you package management system (yum or apt-get)."
-            _msg += " The package is usually called \"netcat-openbsd\", \" netcat \""
-            _msg += " or simply \"nc\".\n"
+            _msg += inst_conf_msg(_depkey, depsdict)
         return _status, _msg
 
-def check_libcloud_python_bindings(hostname, username, trd_party_dir) :
+def check_libcloud_python_bindings(hostname, username, proc_man, depsdict) :
     '''
     TBD
     '''
     try:
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
-        
-        _msg = "Checking libcloud python bindings version....."
+
+        _depkey = "libcloud"
+
+        _msg = "Checking \"" + _depkey + "\" library....."
         import libcloud
         
         _version = str(libcloud.__version__).replace("-dev",'').strip()
         del libcloud
-        _msg += compare_versions('0.11.0', _version)
+        _msg += compare_versions(_depkey, depsdict, _version)
         _status = 0
         
     except ImportError, e:
         _status = 7282
-#        _msg += str(e)
 
     except Exception, e :
         _status = 23
-#        _msg += str(e)
 
     finally :
         if _status or _msg.count("NOT OK"):
-            _msg += " Please install LibCloud python bindings with: cd "
-            _msg += trd_party_dir + "; git clone https://github.com/apache/libcloud.git;"
-            _msg += "cd libcloud; sudo python setup.py install\n"           
+            _msg += inst_conf_msg(_depkey, depsdict)
         return _status, _msg
 
-def check_R_version(hostname, username, trd_party_dir) :
+def check_R_version(hostname, username, proc_man, depsdict) :
     '''
     TBD
     '''
     try:
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
-        
-        _proc_man =  ProcessManagement()
-        _msg = "Checking R version....."
-        _status, _result_stdout, _result_stderr = _proc_man.run_os_command("R --version | grep version | grep -v GNU")
+
+        _depkey = "R"
+
+        _msg = "Checking \"" + _depkey + "\" version....."
+        _status, _result_stdout, _result_stderr = proc_man.run_os_command("R --version | grep version | grep -v GNU")
 
         if not _status and _result_stdout.count("version") :
             for _word in _result_stdout.split() :
                 if _word.count('.') == 2 :
                     _version = _word
                     break
-            _msg += compare_versions('2.1', _version)
+            _msg += compare_versions(_depkey, depsdict, _version)
             _status = 0
         else :
             _status = 1728289
         
     except ProcessManagement.ProcessManagementException, obj :
         _status = str(obj.status)
-#        _msg = str(obj.msg)
 
     except Exception, e :
         _status = 23
-#        _msg = str(e)
 
     finally :
         if _status or _msg.count("NOT OK"):
-            _msg += " Please install R using you package management system (yum or apt-get)."
-            _msg += " The package is usually called \"R\" or \"r-base\"\n"
+            _msg += inst_conf_msg(_depkey, depsdict)
         return _status, _msg
 
 def dependency_checker(hostname, username, trd_party_dir) :
@@ -988,28 +1112,40 @@ def dependency_checker(hostname, username, trd_party_dir) :
     _func_pointer["python-beaker"] = check_python_beaker 
     _func_pointer["rsyslog"] = check_rsyslogd_version 
     _func_pointer["redis"] = check_redis_binary
-    _func_pointer["redis-py"] = check_redis_python_bindings
-    _func_pointer["mongo"] = check_mongo_binary
+    _func_pointer["openvpn"] = check_openvpn_binary
+    _func_pointer["pyredis"] = check_redis_python_bindings
+    _func_pointer["mongodb"] = check_mongo_binary
     _func_pointer["pymongo"] = check_mongo_python_bindings
     _func_pointer["python-setuptools"] = check_python_setuptools
-    _func_pointer["monitor-core"] = check_custom_gmetad
+    _func_pointer["gmetad-python"] = check_custom_gmetad
     _func_pointer["bootstrap"] = check_bootstrap
     _func_pointer["d3"] = check_d3
-    _func_pointer["wizard"] = check_wizard
+    _func_pointer["bootstrap-wizard"] = check_wizard
+    _func_pointer["streamprox"] = check_streamprox
     _func_pointer["novaclient"] = check_openstack_python_bindings
+    _func_pointer["pyhtml"] = check_html_dot_py
     _func_pointer["boto"] = check_ec2_python_bindings
     _func_pointer["rsync"] = check_rsync_version
-    _func_pointer["ganglia"] = check_gmond_version
+    _func_pointer["gmond"] = check_gmond_version
     _func_pointer["pypureomapi"] = check_omapi_python_bindings
     _func_pointer["netcat"] = check_netcat
     _func_pointer["libcloud"] = check_libcloud_python_bindings
     _func_pointer["R"] = check_R_version
-    _func_pointer["libvirt"] = check_libvirt_python_bindings
+    _func_pointer["pylibvirt"] = check_libvirt_python_bindings
     _func_pointer["ip"] = check_ip_utility
     _func_pointer["ifconfig"] = check_ifconfig_utility
-                
+    
+    _depsdict = {}
+    
+    deps_file_parser(_depsdict, username)
+    
+    _depsdict["cdist"], _depsdict["carch"] = get_linux_distro()
+    _depsdict["3rdpartydir"] = trd_party_dir
+
+    _proc_man =  ProcessManagement()
+
     for _dep in [ "sudo", "git" ]:
-        _status, _msg = _func_pointer[_dep](hostname, username, trd_party_dir)
+        _status, _msg = _func_pointer[_dep](hostname, username, _proc_man, _depsdict)
         print _msg
         if _status :
             _fmsg = _dep
@@ -1029,7 +1165,7 @@ def dependency_checker(hostname, username, trd_party_dir) :
     
             _dep_missing = 0
             for _dep in _dep_list :
-                _status, _msg = _func_pointer[_dep](hostname, username, trd_party_dir)
+                _status, _msg = _func_pointer[_dep](hostname, username, _proc_man, _depsdict)
                 print _msg
             
                 if _status :

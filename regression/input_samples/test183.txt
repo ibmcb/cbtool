@@ -1,1 +1,1 @@
-shell
+roleshow TESTCLOUD tinyvm

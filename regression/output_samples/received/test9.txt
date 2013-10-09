@@ -1,1 +1,1 @@
-Usage: rolelist <cloud_name> 
+Usage: roleshow <cloud_name> <role> 

@@ -1,1 +1,1 @@
-vmlist
+hostrepair simhostc2 stonith

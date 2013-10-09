@@ -1,1 +1,1 @@
-Usage: firsshow <cloud_name> <identifier> [key = all] 
+Usage: aidrsalter <cloud_name> <identifier> <attribute> <value> 
