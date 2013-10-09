@@ -2447,7 +2447,10 @@ class PassiveObjectOperations(BaseObjectOperations) :
             stats = json.loads(stats)
             migrate = json.loads(migrate)
             stats.update(migrate)
+            
+            # If your libvirt is too old (< 0.10), then memoryStats() will not return anything useful
             mem = dom.memoryStats()
+            
             ip = ips[name]
             attrs = vms[name]
             if not ip :
