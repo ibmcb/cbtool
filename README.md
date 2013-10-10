@@ -1,5 +1,5 @@
 # Welcome to the Cloud Rapid Experimentation and Analysis Toolkit
-#cloud
+
 
 Cloud Rapid Experimentation and Analysis Tool (aka CBTOOL) is a framework that automates IaaS cloud benchmarking through the running of controlled experiments.
 
@@ -38,3 +38,5 @@ Contacts:
 
 Marcio Silva marcios@us.ibm.com
 Michael R. Hines mrhines@us.ibm.com
+
+#cloud
