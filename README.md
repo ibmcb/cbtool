@@ -37,6 +37,6 @@ Each individual application can have a specific load profile using probability d
 Contacts:
 
 Marcio Silva marcios@us.ibm.com
+
 Michael R. Hines mrhines@us.ibm.com
 
-#cloud
