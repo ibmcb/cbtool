@@ -43,6 +43,6 @@ rm ~/ntp.conf
 rm ~/rsyslog.pid
 rm -rf ~/logs
 rm ~/et*
-#rm ~/cb_*
+rm ~/cb_*
 
 syslog_netcat "Done"

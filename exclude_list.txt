@@ -24,8 +24,9 @@ cbls
 images
 regression/*
 configs/*.txt
-configs/templates/*
+#configs/templates/*
 configs/cloud_ports.sh
+configs/mrhines
 stores/*.rdb
 stores/metrics.*
 stores/*.conf

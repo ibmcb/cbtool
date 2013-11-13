@@ -572,8 +572,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                 _status = 0
     
                             elif _target_state.lower() == "repair" :
-                                _cmd = "sudo " + _cmd_repair
-                
+
+                                _cmd = ''
+                                for _sub_cmd in _cmd_repair.split(';') :                                    
+                                    _cmd += "sudo " + _sub_cmd + "; "
+   
                                 _msg = "Repairing a fault on host " + obj_attr_list["name"]
                                 _msg += " by executing the command \"" + _cmd + "\""
                                 cbdebug(_msg, True)
@@ -597,7 +600,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
     
                     if _target_state.lower() == "fail" and not _host_already_failed :
     
-                        _cmd = "sudo " + _cmd_fault 
+                        _cmd = ''
+                        for _sub_cmd in _cmd_fault.split(';') :                                    
+                            _cmd += "sudo " + _sub_cmd + "; "
         
                         _msg = "Injecting a fault on host " + obj_attr_list["name"]
                         _msg += " by executing the command \"" + _cmd + "\""

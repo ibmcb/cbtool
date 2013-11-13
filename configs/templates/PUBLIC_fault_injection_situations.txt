@@ -11,6 +11,10 @@ REPAIR = service___keystone___start
 FAULT = pkill___-9___-f___keystone
 REPAIR = $EMPTY
 
+[FI_TEMPLATES : KEYSTONE-EC]
+FAULT = cp___-f___/usr/bin/keystone-all___/usr/bin/keystone-all-backup;___cp___-f___/usr/bin/corrupt_executable___/usr/bin/keystone-all;___ pkill___-9___-f___keystone-all
+REPAIR = cp___-f___/usr/bin/keystone-all-backup___/usr/bin/keystone-all
+
 [FI_TEMPLATES : GLANCE-API-SS]
 FAULT = service___glance-api___stop
 REPAIR = service___glance-api___start
@@ -130,6 +134,10 @@ REPAIR = service___nova-scheduler___start
 [FI_TEMPLATES : NOVA-SCHEDULER-KP]
 FAULT = pkill___-9___-f___nova-scheduler
 REPAIR = $EMPTY
+
+[FI_TEMPLATES : NOVA-SCHEDULER-EC]
+FAULT = cp___-f___/usr/bin/nova-scheduler___/usr/bin/nova-scheduler-backup;___cp___-f___/usr/bin/corrupt_executable___/usr/bin/nova-scheduler;___ pkill___-9___-f___nova-scheduler
+REPAIR = cp___-f___/usr/bin/nova-scheduler-backup___/usr/bin/nova-scheduler
 
 [FI_TEMPLATES : LIBVIRT-SS]
 FAULT = service___libvirt-bin___stop

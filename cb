@@ -59,11 +59,11 @@ def main() :
         os.mkdir(_3rd_party)
 
     if not os.path.exists(_history) :
-        from lib.auxiliary.dependencies import dependency_checker
+        from lib.auxiliary.dependencies import dependency_checker_installer
         _msg = "Looks like this is the first time that CloudBench is executed"
         _msg += " on this node. Will check for dependencies..."
         print _msg
-        _status, _msg = dependency_checker("127.0.0.1", getpwuid(os.getuid())[0], _3rd_party)
+        _status, _msg = dependency_checker_installer("127.0.0.1", getpwuid(os.getuid())[0], _3rd_party, "test")
         if _status :
             print _msg
             print "\n Please add the missing dependency(ies) and re-run configure again."
