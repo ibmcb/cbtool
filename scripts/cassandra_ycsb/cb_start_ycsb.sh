@@ -5,10 +5,10 @@
 #
 # @author Joe Talerico, jtaleric@redhat.com
 #/*******************************************************************************
+#
+#
 
-#
-#
-#exit 1;
+cd ~
 
 source ~/.bashrc
 dir=$(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")
@@ -26,11 +26,7 @@ if [ $standalone == online ] ; then
     LOAD_ID=$4
 fi
 
-cassandra=`get_ips_from_role cassandra`
-if [ -z $mongo ] ; then
-	syslog_netcat "cassandra IP is null"
-	exit 1;
-fi
+seed=`get_ips_from_role seed`
 
 ops=0
 latency=0
@@ -54,9 +50,7 @@ while read line ; do
 		fi
 	fi
 
-	# Check for New Shard
-
-done < <(sudo /root/YCSB/bin/ycsb run cassandra10 -s -P /root/YCSB/workloads/workloadc -P /root/YCSB/1instance.dat 2>&1 | tee YCSB-CBTOOL-RUN)
+done < <(sudo /root/YCSB/bin/ycsb run cassandra-10 -s -P /root/YCSB/workloads/workloadc -P /root/YCSB/1instance.dat -p hosts="$seed" 2>&1 )
 
 ~/cb_report_app_metrics.py throughput:$(expr $ops):tps latency:$(expr $latency):ms
 

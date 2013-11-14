@@ -80,9 +80,12 @@ syslog_netcat "my ip : $MY_IP"
 syslog_netcat "Starting cassandra on ${SHORT_HOSTNAME}" 
 sudo service cassandra start 
 
+# Give all the Java services time to start
+sleep 5
+
 #
 # Init database
 #
-cassandra-cli -h $MY_IP -f cassandra-init.cassandra
+cassandra-cli -f cassandra-init.cassandra
 
 provision_application_stop $START

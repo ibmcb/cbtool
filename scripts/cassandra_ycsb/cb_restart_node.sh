@@ -61,9 +61,8 @@ do
         ((pos++))
 done
 
-token_pos = $tk_pos+2
+token_pos=$(($tk_pos+2))
 token=$(token-generator $pos | sed -n ${token_pos}p)
-
 
 #
 # Update Cassandra Config
