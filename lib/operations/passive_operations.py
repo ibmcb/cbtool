@@ -288,7 +288,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     else :
                         _obj_list = self.osci.query_by_view(obj_attr_list["cloud_name"], _obj_type, "BYUSERNAME", obj_attr_list["username"], "name", "all", False)
                         
-                        if obj_attr_list["regression"] == "true" :
+                        if "regression" in obj_attr_list and obj_attr_list["regression"] == "true" :
                             _obj_list.sort(key=self.keyfunc)
     
                     if _obj_list :
@@ -955,7 +955,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                             
                             _result.append({"type" : _obj_type, "name" : _obj_name, "uuid" : _obj_uuid, "state" : _obj_state})
                             
-                        if obj_attr_list["regression"] == "true" :
+                        if "regression" in obj_attr_list and obj_attr_list["regression"] == "true" :
                             _result.sort(key=self.namefunc)
                             
                         for res in _result :

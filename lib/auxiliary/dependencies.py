@@ -155,7 +155,7 @@ def execute_command(operation, depkey, depsdict, hostname = "127.0.0.1", usernam
 
         if not _status :
             if operation == "inst" :
-                 _msg += "DONE OK."
+                _msg += "DONE OK."
             else :
                 _msg += compare_versions(depkey, depsdict, _result_stdout.strip())
         else :

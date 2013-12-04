@@ -207,7 +207,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
     
                 cld_attr_lst["all"] = ','.join(_all_global_objects)
                 cld_attr_lst["all_vmcs_attached"] = "false"
-                cld_attr_lst["regression"] = str(cld_attr_lst["space"]["regression"]).strip().lower()
+                
+                if "regression" in cld_attr_lst["space"] :
+                    cld_attr_lst["regression"] = str(cld_attr_lst["space"]["regression"]).strip().lower()
+                else :
+                    cld_attr_lst["regression"] = "false"
+
                 cld_attr_lst["description"] = _cld_conn.get_description()
                 cld_attr_lst["username"] = cld_attr_lst["time"]["username"]
                 cld_attr_lst["start_time"] = str(int(time()))
@@ -4078,8 +4083,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _status = 0
 
                     if not _status :
-                        self.osci.remove_from_list(obj_attr_list["cloud_name"], "AI", "AIS_UNDERGOING_RESIZE", obj_attr_list["name"])
-                        self.osci.set_object_state(obj_attr_list["cloud_name"], "AI", obj_attr_list["uuid"], "attached")
 
                         _aux_dict = {}
                         for _vm in obj_attr_list["vms"].split(',') :
@@ -4145,6 +4148,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _fmsg = str(e)
 
         finally:        
+    
+            self.osci.remove_from_list(obj_attr_list["cloud_name"], "AI", "AIS_UNDERGOING_RESIZE", obj_attr_list["name"])
+            self.osci.set_object_state(obj_attr_list["cloud_name"], "AI", obj_attr_list["uuid"], "attached")
+
             if _status :
                 _msg = _obj_type + " object " + obj_attr_list["uuid"] + " ("
                 _msg += "named \"" + obj_attr_list["name"] + "\") could not be "
