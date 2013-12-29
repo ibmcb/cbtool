@@ -52,12 +52,15 @@ scripts/specweb/reporter.jar
 scripts/specweb/jfreechart-1.0.12.jar
 scripts/windesktop
 3rd_party/bootstrap
-3rd_party/mongo
+3rd_party/mongo*
 3rd_party/redis
 3rd_party/d3
 3rd_party/python-novaclient
+3rd_party/HTML.py
 3rd_party/libcloud
 3rd_party/boto
 3rd_party/pypureomapi*
 3rd_party/*.jar
 3rd_party/Bootstrap-Wizard
+3rd_party/websockify
+3rd_party/StreamProx

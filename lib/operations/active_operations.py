@@ -316,7 +316,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _base_cmd = "sudo openvpn --config " + openvpn_config
             _cmd = _base_cmd + " --daemon"
             cbdebug(_cmd) 
-            _pid = _proc_man.start_daemon(_cmd, "1194", "udp", conditional = True, 
+            _pid = _proc_man.start_daemon(_cmd, "1194", "tcp", conditional = True, 
                                   search_keywords = cld_attr_lst["space"]["openvpn_server_config_prefix"])
 
             if len(_pid) :
@@ -334,6 +334,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     sys.stdout.write(_msg)
             else :
                 _msg = "\nOpenVPN failed to start. To discover why, please run:\n\n" + _base_cmd + "\n\n ... and report the bug."
+                cberr(_msg, True)
                 _status = 7161
                 raise ProcessManagement.ProcessManagementException(_status, _msg)
             

@@ -16,7 +16,8 @@
 # limitations under the License.
 #/*******************************************************************************
 
-import sys, os, threading, SocketServer, signal, inspect, xmlrpclib, libxml2, re, json, socket
+import sys, os, threading, SocketServer, signal, inspect, xmlrpclib, libxml2, re, json, socket, shutil, subprocess
+file_open = open
 from libvirt import *
 from logging import getLogger, StreamHandler, Formatter, Filter, DEBUG, ERROR, INFO, WARN, CRITICAL
 from logging.handlers import SysLogHandler
@@ -140,6 +141,12 @@ def actuator_cli_parsing() :
     parser.add_option("--nested", dest = "nested", metavar = "nested", default = False, \
               help = "Enable nested virtualization")
     
+    parser.add_option("--config_drive", dest = "config_drive", metavar = "config_drive", default = False, \
+              help = "Enable libvirt-only config drive (like openstack)")
+    
+    parser.add_option("--qemutransport", dest = "qemutransport", metavar = "qemutransport", default = "tcp", \
+              help = "How to reach libvirt? tcp? ssh?")
+    
     parser.add_option("--cloud_name", dest = "cloud_name", metavar = "cloud_name", default = "ftc_default_name", \
               help = "Name this cloud...")
     
@@ -173,6 +180,52 @@ def unwrap_kwargs(func, spec):
         wrapper.__doc__ +=  "\n\n" + func.__doc__
     return wrapper
 
+import os
+import shutil
+import subprocess
+
+source = "/tmp/cd2/"
+
+def cleanup_configdrive (source) :
+    if os.path.exists(source) :
+        print "cleaning up old source " + source
+        shutil.rmtree(source)
+
+def make_configdrive (source, userdata) :
+    iso = source + "result.iso"
+    path = "iso/cloudbench/latest"
+    success = False
+    cmd = ""
+
+    try :
+        dest = source + path
+        print "Making path: " + dest
+        os.makedirs(dest)
+
+        print "making user_data file... "
+        fh = file_open(dest + "/user_data", 'w')
+        fh.write(userdata)
+        fh.close()
+
+        cmd="genisoimage -input-charset utf-8 -o " + iso + " -ldots -allow-lowercase " + \
+            "-allow-multidot -l -publisher 'cloudbench' -J -r -V 'config-2' -quiet " \
+            + source + "iso"
+
+        print "generation iso with: " + cmd
+
+        if subprocess.call(cmd, shell=True) :
+            print "Failure in iso generation. Please debug.\n"
+
+        success = True
+
+    except Exception, e :
+        print "Failure setting up config_drive: " + str(e)
+    finally :
+        print "Finished with config_drive."
+
+    return success, iso
+
+
 class Ftc :
     @trace
     def ftcraise(self, host, status, msg) :
@@ -202,14 +255,26 @@ class Ftc :
         cberr(msg)
         return {"status" : status, "msg" : msg, "result" : result }
 
+
+    def get_login_and_transport(self, host):
+        transport = options.qemutransport
+        if transport not in ['ssh', 'tcp'] :
+            self.ftcraise(host, 395, "option qemutransport is wrong. should be either tcp or ssh.")
+            
+        login = "root@" if transport == "ssh" else ""
+        
+        return transport, login
+    
     @trace
     def conn_check(self, host) :
         if host not in self.lvt_cnt or not self.lvt_cnt[host] :
             try :
+                transport, login = self.get_login_and_transport(host)
+                
                 if options.hypervisor in [ "xen", "pv" ] :
-                    self.lvt_cnt[host] = open("xen+tcp://" + host)
+                    self.lvt_cnt[host] = open("xen+" + transport + "://" + login + host)
                 elif options.hypervisor == "kvm" :
-                    self.lvt_cnt[host] = open("qemu+tcp://" + host + "/system")
+                    self.lvt_cnt[host] = open("qemu+" + transport + "://" + login + host + "/system")
                 cbdebug("Libvirt connection to " + host + " successfully established.")
                 #registerErrorHandler(self.global_error, "blah")
                 self.lvt_cnt[host].host = host
@@ -250,7 +315,7 @@ class Ftc :
         self.counter = 0
 
     @trace
-    def get_libvirt_vm_templates(self, num_ids, disk_format, qemu_debug_port) :
+    def get_libvirt_vm_templates(self, num_ids, disk_format, qemu_debug_port, imageids) :
 
         _xml_templates = {}
         if options.hypervisor in [ "xen", "pv" ] :
@@ -326,7 +391,10 @@ class Ftc :
                 _xml_templates["vm_template"] += "\t\t<disk type='file' device='disk'>\n"
                 _xml_templates["vm_template"] += "\t\t\t<source file='" + options.snapshot_storage + "/cb/TMPLT_POOLBASE" + str(_idx) + "'/>\n"
                 if options.hypervisor == "kvm" :
-                    _xml_templates["vm_template"] += "\t\t\t<driver name='qemu' type='" + disk_format + "' cache='" + options.cache_mode + "'/>\n"
+                    if imageids[_idx].count("config_drive") :
+                        _xml_templates["vm_template"] += "\t\t\t<driver name='qemu' type='raw' cache='" + options.cache_mode + "'/>\n"
+                    else :
+                        _xml_templates["vm_template"] += "\t\t\t<driver name='qemu' type='" + disk_format + "' cache='" + options.cache_mode + "'/>\n"
 
             _xml_templates["vm_template"] += "\t\t\t<target dev='"
             if options.hypervisor in [ "xen", "pv" ] :
@@ -613,7 +681,7 @@ class Ftc :
                         try :
                             self.activate_pool_if_inactive(lvt_cnt, _pool)
                             if disk_format == "lvm" :
-                                recreate_pool = False
+                                returncreate_pool = False
                                 break
                             _pool.destroy()
                         except libvirtError, err :
@@ -712,8 +780,8 @@ class Ftc :
             _msg = "ip found"
             ip = o.lookup_ip(mac)
             
-        except Exception:
-            _msg = "ip not found"
+        except Exception, msg:
+            _msg = "ip not found: " + str(msg)
             pass
         
         return self.success(_msg, ip)
@@ -739,7 +807,8 @@ class Ftc :
             size = "micro32", vmclass = "standard", 
             eclipsed_size = None, eclipsed = False, \
             qemu_debug_port = None, \
-            cloud_mac = None, disk_format = None) :
+            cloud_mac = None, disk_format = None,
+            userdata = None) :
 
         result = {}
 
@@ -787,7 +856,7 @@ class Ftc :
             except libvirtError, msg:
                 self.ftcraise(lvt_cnt.host, 2, "Problem looking up pool information: " + str(msg))
                 
-        _xml_templates = self.get_libvirt_vm_templates(_num_ids, disk_format, qemu_debug_port)
+        _xml_templates = self.get_libvirt_vm_templates(_num_ids, disk_format, qemu_debug_port, imageids)
 
         _tmplt_find = []
         _tmplt_replace = []
@@ -825,7 +894,30 @@ class Ftc :
         
         for _idx in range(0, _num_ids) :
             try : 
-                lvt_cnt.storagePoolLookupByName("ftc-snapshots" + ("-lvm" if disk_format == "lvm" else "")).createXML(_xml_templates["disk_template" +  str(_idx)], 0)
+                tvol = lvt_cnt.storagePoolLookupByName("ftc-snapshots" + ("-lvm" if disk_format == "lvm" else "")).createXML(_xml_templates["disk_template" +  str(_idx)], 0)
+                
+                if imageids[_idx].count("config_drive") :
+                    source = "/tmp/cb_config_drive_" + tag + "/"
+                    cleanup_configdrive(source)
+    
+                    cdresult, iso = make_configdrive(source, userdata)
+                    
+                    if cdresult :
+                        print "Success: " + iso + ". uploading..."
+                        
+                        def handler(stream, nbytes, opaque) :
+                            fd = opaque
+                            return os.read(fd, nbytes)
+
+                        stream = lvt_cnt.newStream(0)
+                        tvol.upload(stream, 0, 0, 0)
+                        fd = os.open(iso, os.O_RDONLY)
+                        stream.sendAll(handler, fd)
+                        stream.finish()
+                        os.close(fd)
+
+                        cleanup_configdrive(source)
+
             except libvirtError, msg:
                 self.ftcraise(lvt_cnt.host, 2, "Snapshot creation failed: " + str(msg))
                 
@@ -1259,10 +1351,13 @@ class Ftc :
         _fmsg = _imsg + " could not be saved: "
         result = {}
         try :
+            transport, login = self.get_login_and_transport(destination_ip)
+            
             if options.hypervisor in [ "xen", "pv" ] :
-                uri = "xen+tcp://" + destination_ip
+                uri = "xen+" + transport + "://" + login + destination_ip
             elif options.hypervisor == "kvm" :
-                uri = "qemu+tcp://" + destination_ip + "/system"
+                uri = "qemu+" + transport + "://" + login + destination_ip + "/system"
+                
             dom = lvt_cnt.lookupByName(tag)
             miguri = protocol + ":" + interface 
             cbdebug("Opening connection to destination uri: " + uri)
@@ -1271,10 +1366,10 @@ class Ftc :
             flags = VIR_MIGRATE_LIVE | VIR_MIGRATE_PERSIST_DEST | VIR_MIGRATE_UNDEFINE_SOURCE
             
             if protocol.lower().count("rdma") :
-                flags |= VIR_MIGRATE_X_RDMA_PIN_ALL
+                flags |= VIR_MIGRATE_RDMA_PIN_ALL
                 
             if mtype.lower().count("protect") :
-                flags |= VIR_MIGRATE_MC
+                flags |= VIR_MIGRATE_MC | VIR_MIGRATE_MC_NET_DISABLE
                 
             dom.migrate(dconn, flags, None, miguri, 0)
             dom = dconn.lookupByName(tag)
