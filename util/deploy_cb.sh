@@ -43,14 +43,17 @@ echo "cloudbench ID: $id => $host"
 DEST=$host
 pkill -9 -f lsync.config.172
 pkill -9 -f lsync.config.p172
+pkill -9 -f lsync.config.10
+pkill -9 -f lsync.config.p10
 
 echo "$DEST" > ~/lsync/debug.remote_host
-cp ~/lsync/lsync.config.orig.klabuser ~/lsync/lsync.config.$DEST
-sed -ie "s/DESTINATION/$DEST/g" ~/lsync/lsync.config.$DEST
-lsyncd -nodaemon -delay 0 ~/lsync/lsync.config.$DEST &
-cp ~/lsync/lsync.config.orig.pydev ~/lsync/lsync.config.p$DEST
-sed -ie "s/DESTINATION/$DEST/g" ~/lsync/lsync.config.p$DEST
-lsyncd -nodaemon -delay 0 ~/lsync/lsync.config.p$DEST &
+cp ~/lsync/config.orig ~/lsync/config.$DEST
+sed -ie "s/DESTINATION/$DEST/g" ~/lsync/config.$DEST
+#sed -ie "s/DESTINATION/$DEST/g" ~/lsync/config.$DEST
+lsyncd -nodaemon -delay 0 ~/lsync/config.$DEST &
+cp ~/lsync/config.orig ~/lsync/config.p$DEST
+sed -ie "s/DESTINATION/$DEST/g" ~/lsync/config.p$DEST
+lsyncd -nodaemon -delay 0 ~/lsync/config.p$DEST &
 sleep 2
 
 ssh -o StrictHostKeyChecking=no -t -t $user@$host "for pid in \$(pgrep -f \"$program\") ; do if [ \$pid == \$\$ ] ; then echo skipping \$pid; continue; fi; if [ \$PPID == \$pid ] ; then echo skipping parent ssh process \$pid; continue; fi; echo killing process pid \$pid; kill -9 \$pid; done"

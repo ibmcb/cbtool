@@ -267,6 +267,19 @@ class Ftc :
     
     @trace
     def conn_check(self, host) :
+        if host in self.lvt_cnt and self.lvt_cnt[host] :
+            try : 
+                self.lvt_cnt[host].getCapabilities()
+            except libvirtError, e :
+                # Try to reconnect across libvirt outages
+                if e.err[0] == VIR_ERR_SYSTEM_ERROR :
+                    cberr("Connection check failed: " + str(e))
+                    self.lvt_cnt[host].close()
+                    del self.lvt_cnt[host]
+                else :
+                    cberr("Fatal connection check error: " + str(e))
+                    self.ftcraise(host, 334, "Host " + host + " fatal connection libvirt checK: " + str(e))
+                
         if host not in self.lvt_cnt or not self.lvt_cnt[host] :
             try :
                 transport, login = self.get_login_and_transport(host)

@@ -252,7 +252,6 @@ class CommonCloudFunctions:
             if ip :
                 cbdebug("Openvpn reported in from client with ip: " + ip)
                 obj_attr_list["openvpn_ip"] = ip
-                obj_attr_list["cloud_ip"] = ip
                 obj_attr_list["prov_cloud_ip"] = ip
                 return True
             
