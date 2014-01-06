@@ -1,1 +1,0 @@
-aidrsalter TESTCLOUD aidrs_1 max_ais=20

@@ -1,2 +1,0 @@
-monextract all
-shell ls -la /home/msilva/cloudbench/regression/..//data/REGRESSION_B

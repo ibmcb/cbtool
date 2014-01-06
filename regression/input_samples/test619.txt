@@ -1,2 +1,0 @@
-monextract VM management
-shell cat /home/msilva/cloudbench/regression/..//data/REGRESSION_B/VM*man*REGRESSION*

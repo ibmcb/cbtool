@@ -1,1 +1,0 @@
-Usage: aidrslist <cloud_name> [state = default] [limit = none] 

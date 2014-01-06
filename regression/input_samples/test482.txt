@@ -1,1 +1,0 @@
-vmshow vm_1 all

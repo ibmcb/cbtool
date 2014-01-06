@@ -1,1 +1,0 @@
-VMC object named "simzone_a" was sucessfully cleaned up on this experiment.
