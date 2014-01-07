@@ -216,24 +216,24 @@ class BaseObjectOperations :
         elif command == "host-fail" :
             if _length >= 3 :
                 object_attribute_list["name"] = _parameters[1]
-                object_attribute_list["service"] = _parameters[2]                
+                object_attribute_list["situation"] = _parameters[2]                
                 object_attribute_list["firs"] = "none"
             if _length >= 4 :
                 object_attribute_list["firs"] = _parameters[3]
             if _length < 2:
                 _status = 9
-                _msg = "Usage: hostfail <cloud name> <host name> <service> [parent] [mode]"
+                _msg = "Usage: hostfail <cloud name> <host name> <situation> [parent] [mode]"
                 
         elif command == "host-repair" :
             if _length >= 3 :
                 object_attribute_list["name"] = _parameters[1]
-                object_attribute_list["service"] = _parameters[2]                
+                object_attribute_list["situation"] = _parameters[2]                
                 object_attribute_list["firs"] = "none"
             if _length >= 4 :
                 object_attribute_list["firs"] = _parameters[3]
             if _length < 2:
                 _status = 9
-                _msg = "Usage: hostfail <cloud name> <host name> <service> [parent] [mode]"
+                _msg = "Usage: hostfail <cloud name> <host name> <situation> [parent] [mode]"
 
         elif command == "vmc-cleanup" :
             if _length >= 2 :

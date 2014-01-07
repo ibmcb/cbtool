@@ -152,7 +152,8 @@ def parse_cld_defs_file(cloud_definitions, print_message = False, \
 
             _lines = ''
             for _template_file_name in  os.listdir(path + "configs/templates/") :
-                _lines += "INCLUDE configs/templates/" + _template_file_name + '\n'
+                if not _template_file_name.count("dependencies.txt") : 
+                    _lines += "INCLUDE configs/templates/" + _template_file_name + '\n'
 
             _lines += cloud_definitions
             _lines = _lines.split("\n")

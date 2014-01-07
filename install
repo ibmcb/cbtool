@@ -41,10 +41,10 @@ def main() :
         os.mkdir(_3rd_party)
 
     from lib.auxiliary.dependencies import dependency_checker_installer
-    _msg = "Checking for Cloud Rapid Experimentation Analysis and Toolkit"
-    _msg +=  " dependencies on this node........."
+    _msg = "Automatically installing dependencies for Cloud Rapid Experimentation"
+    _msg += " Analysis and Toolkit dependencies on this node........."
     print _msg
-    _status, _msg = dependency_checker_installer("127.0.0.1", getpwuid(os.getuid())[0], _3rd_party, "test")
+    _status, _msg = dependency_checker_installer("127.0.0.1", getpwuid(os.getuid())[0], _3rd_party, "inst")
     if _status :
         print _msg
         print "Please add the missing dependency(ies) and re-run configure again."

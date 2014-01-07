@@ -183,12 +183,17 @@ class RedisMgdConn :
             _global_objects_list = cloud_kv_list["setup"]["global_object_list"].split(',')
 
             for _global_object in _global_objects_list :
+
                 if _global_object.upper() == "TIME" :
                     cloud_kv_list[_global_object]["experiment_id"] = \
                     ((cloud_kv_list[_global_object]["experiment_id"] + \
                       '-' + makeTimestamp().replace(' ', '-')).replace('/',\
                                                                        '-')).replace(':',\
                                                                                      '-')
+                if _global_object == "fi_templates" :
+                    for _key in cloud_kv_list[_global_object].keys() :
+                        cloud_kv_list[_global_object][_key] = \
+                        cloud_kv_list[_global_object][_key].replace("___", ' ')
 
                 self.create_object(cloud_name, "GLOBAL", _global_object, \
                                    cloud_kv_list[_global_object], False, False)
@@ -203,7 +208,17 @@ class RedisMgdConn :
                     _actual_ai_type_name = _key.replace("_sut", '')
                     if path.exists(cloud_kv_list["space"]["scripts_dir"] + '/' + _actual_ai_type_name) :
                         self.add_to_list(cloud_name, "GLOBAL", "ai_types", _actual_ai_type_name)
-
+                    for _key_suffix in ["load_profile", "sut", \
+                                        "load_generator_role", "load_manager_role",\
+                                        "metric_aggregator_role", "capture_role",\
+                                        "start", "load_profile", "load_level",\
+                                        "load_duration" ]:
+                        if _actual_ai_type_name + '_' + _key_suffix not in cloud_kv_list["ai_templates"] :
+                            _msg = "The AI type \"" + _actual_ai_type_name + "\""
+                            _msg += " is missing the mandatory parameter \"" 
+                            _msg += _key_suffix + "\"." 
+                            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+                            
             for _key in cloud_kv_list["aidrs_templates"].keys() :
                 if _key.count("_type") :
                     self.add_to_list(cloud_name, "GLOBAL", "aidrs_patterns", _key.replace("_type", ''))
@@ -215,6 +230,10 @@ class RedisMgdConn :
             for _key in cloud_kv_list["firs_templates"].keys() :
                 if _key.count("_scope") :
                     self.add_to_list(cloud_name, "GLOBAL", "firs_patterns", _key.replace("_scope", ''))
+
+            for _key in cloud_kv_list["fi_templates"].keys() :
+                if _key.count("_fault") :
+                    self.add_to_list(cloud_name, "GLOBAL", "fi_situations", _key.replace("_fault", ''))
 
             for _key in cloud_kv_list["vm_templates"].keys() :
                 self.add_to_list(cloud_name, "GLOBAL", "vm_roles", _key)
@@ -1172,7 +1191,7 @@ class RedisMgdConn :
 
             if _obj_exists :
                 _msg = "The tag \"" + tag_type + "\" with value \"" + tag_value
-                _msg += " is already part of the tag list (i.e., it is applied"
+                _msg += "\" is already part of the tag list (i.e., it is applied"
                 _msg += " to an object already)."
                 cberr(_msg)
                 raise self.ObjectStoreMgdConnException(str(_msg), "2")

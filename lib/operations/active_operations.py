@@ -207,7 +207,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
     
                 cld_attr_lst["all"] = ','.join(_all_global_objects)
                 cld_attr_lst["all_vmcs_attached"] = "false"
-                cld_attr_lst["regression"] = str(cld_attr_lst["space"]["regression"]).strip().lower()
+                
+                if "regression" in cld_attr_lst["space"] :
+                    cld_attr_lst["regression"] = str(cld_attr_lst["space"]["regression"]).strip().lower()
+                else :
+                    cld_attr_lst["regression"] = "false"
+
                 cld_attr_lst["description"] = _cld_conn.get_description()
                 cld_attr_lst["username"] = cld_attr_lst["time"]["username"]
                 cld_attr_lst["start_time"] = str(int(time()))
@@ -527,80 +532,109 @@ class ActiveObjectOperations(BaseObjectOperations) :
             if not _status :
                 _status = 101
 
-                _host_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
-                                                       "HOST", \
-                                                       True, \
-                                                       obj_attr_list["name"], \
-                                                       False)
- 
- 
-                _proc_man = ProcessManagement(username = _host_attr_list["username"], \
-                                              cloud_name = obj_attr_list["cloud_name"], \
-                                              hostname = _host_attr_list["cloud_ip"], \
-                                              priv_key = _host_attr_list["identity"])
-
-    #                _firs_defaults = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "firs_defaults", False)
-    
-                _failed_hosts = self.osci.get_list(obj_attr_list["cloud_name"], _obj_type, "FAILED_HOSTS", True)
-
-                for _failed_host in _failed_hosts :
-
-                    if _failed_host[0] == obj_attr_list["name"] :
-                        if _target_state.lower() == "fail" :
-                            _msg = "Host \"" + obj_attr_list["name"] + "\" is "
-                            _msg += "already at the \"failed\" state."
-                            cbdebug(_msg, True)
-                            _host_already_failed = True                            
-                            _status = 0
-                        elif _target_state.lower() == "repair" :
-                            _cmd = "service " + obj_attr_list["service"] +  " restart" 
-            
-                            _msg = "Repairing a fault on host " + obj_attr_list["name"]
-                            _msg += " by executing the command \"" + _cmd + "\""
-                            cbdebug(_msg, True)
-
-                            _host_repaired = True
-
-                            if "simulated" in _host_attr_list and _host_attr_list["simulated"].lower() != "true" :
-                                _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_cmd)
-                            else :
-                                _status = 0
-                                
-                            if not _status :
-                                self.osci.remove_from_list(obj_attr_list["cloud_name"], \
-                                                           "HOST", \
-                                                           "FAILED_HOSTS", \
-                                                           obj_attr_list["name"], \
-                                                           True)
-                        break
-
-                if _target_state.lower() == "fail" and not _host_already_failed :
-
-                    _cmd = "pkill -f " + obj_attr_list["service"] 
-    
-                    _msg = "Injecting a fault on host " + obj_attr_list["name"]
-                    _msg += " by executing the command \"" + _cmd + "\""
-                    cbdebug(_msg, True)
-
-                    if "simulated" in _host_attr_list and _host_attr_list["simulated"].lower() != "true" :
-                        _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_cmd)
-                    else :
-                        _status = 0
-
-                    if not _status :
-                        self.osci.add_to_list(obj_attr_list["cloud_name"], \
-                                              "HOST", "FAILED_HOSTS", \
-                                              obj_attr_list["name"], int(time()))            
-    
-                if _target_state.lower() == "repair" and \
-                not _host_already_failed and not _host_repaired :
-                    _msg = "Host \"" + obj_attr_list["name"] + "\" is "
-                    _msg += "not at the \"failed\" state. No need for repair."
-                    cbdebug(_msg, True)
-                    _host_already_failed = True                            
+                _fault_situations_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
+                                                                  "GLOBAL", \
+                                                                  False, \
+                                                                  "fi_templates", \
+                                                                  False)
+                
+                if not obj_attr_list["situation"] + "_fault" in _fault_situations_attr_list :
+                    _fmsg = "Fault Injection situation \"" + obj_attr_list["situation"]
+                    _fmsg += "\" is not defined."
+                    _status = 102
+                else :
                     _status = 0
+
+                if not _status :
+                    _status = 103
+
+                    _cmd_fault = _fault_situations_attr_list[obj_attr_list["situation"] + "_fault"]
+                    _cmd_repair = _fault_situations_attr_list[obj_attr_list["situation"] + "_repair"]
+
+                    _host_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
+                                                           "HOST", \
+                                                           True, \
+                                                           obj_attr_list["name"], \
+                                                           False)
+     
+     
+                    _proc_man = ProcessManagement(username = _host_attr_list["username"], \
+                                                  cloud_name = obj_attr_list["cloud_name"], \
+                                                  hostname = _host_attr_list["cloud_ip"], \
+                                                  priv_key = _host_attr_list["identity"])
     
-                _result = obj_attr_list
+        #                _firs_defaults = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "firs_defaults", False)
+        
+                    _failed_hosts = self.osci.get_list(obj_attr_list["cloud_name"], _obj_type, "FAILED_HOSTS", True)
+    
+                    for _failed_host in _failed_hosts :
+    
+                        if _failed_host[0] == obj_attr_list["name"] :
+                            if _target_state.lower() == "fail" :
+                                _msg = "Host \"" + obj_attr_list["name"] + "\" is "
+                                _msg += "already at the \"failed\" state."
+                                cbdebug(_msg, True)
+                                _host_already_failed = True                            
+                                _status = 0
+    
+                            elif _target_state.lower() == "repair" :
+
+                                _cmd = ''
+                                for _sub_cmd in _cmd_repair.split(';') :                                    
+                                    _cmd += "sudo " + _sub_cmd + "; "
+   
+                                _msg = "Repairing a fault on host " + obj_attr_list["name"]
+                                _msg += " by executing the command \"" + _cmd + "\""
+                                cbdebug(_msg, True)
+    
+                                _host_repaired = True
+    
+                                if ("simulated" in _host_attr_list and \
+                                _host_attr_list["simulated"].lower() == "true") or\
+                                 len(_cmd) <= 5 :
+                                    _status = 0
+                                else :
+                                    _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_cmd)
+                                    
+                                if not _status :
+                                    self.osci.remove_from_list(obj_attr_list["cloud_name"], \
+                                                               "HOST", \
+                                                               "FAILED_HOSTS", \
+                                                               obj_attr_list["name"], \
+                                                               True)
+                            break
+    
+                    if _target_state.lower() == "fail" and not _host_already_failed :
+    
+                        _cmd = ''
+                        for _sub_cmd in _cmd_fault.split(';') :                                    
+                            _cmd += "sudo " + _sub_cmd + "; "
+        
+                        _msg = "Injecting a fault on host " + obj_attr_list["name"]
+                        _msg += " by executing the command \"" + _cmd + "\""
+                        cbdebug(_msg, True)
+    
+                        if ("simulated" in _host_attr_list and \
+                            _host_attr_list["simulated"].lower() == "true") or \
+                            len(_cmd) <= 5 :
+                            _status = 0
+                        else :
+                            _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_cmd)
+    
+                        if not _status :
+                            self.osci.add_to_list(obj_attr_list["cloud_name"], \
+                                                  "HOST", "FAILED_HOSTS", \
+                                                  obj_attr_list["name"], int(time()))            
+        
+                    if _target_state.lower() == "repair" and \
+                    not _host_already_failed and not _host_repaired :
+                        _msg = "Host \"" + obj_attr_list["name"] + "\" is "
+                        _msg += "not at the \"failed\" state. No need for repair."
+                        cbdebug(_msg, True)
+                        _host_already_failed = True                            
+                        _status = 0
+        
+                    _result = obj_attr_list
 
         except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
@@ -4050,8 +4084,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _status = 0
 
                     if not _status :
-                        self.osci.remove_from_list(obj_attr_list["cloud_name"], "AI", "AIS_UNDERGOING_RESIZE", obj_attr_list["name"])
-                        self.osci.set_object_state(obj_attr_list["cloud_name"], "AI", obj_attr_list["uuid"], "attached")
 
                         _aux_dict = {}
                         for _vm in obj_attr_list["vms"].split(',') :
@@ -4117,6 +4149,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _fmsg = str(e)
 
         finally:        
+    
+            self.osci.remove_from_list(obj_attr_list["cloud_name"], "AI", "AIS_UNDERGOING_RESIZE", obj_attr_list["name"])
+            self.osci.set_object_state(obj_attr_list["cloud_name"], "AI", obj_attr_list["uuid"], "attached")
+
             if _status :
                 _msg = _obj_type + " object " + obj_attr_list["uuid"] + " ("
                 _msg += "named \"" + obj_attr_list["name"] + "\") could not be "

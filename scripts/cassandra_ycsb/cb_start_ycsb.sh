@@ -3,13 +3,20 @@
 #/*******************************************************************************
 # This source code is provided as is, without any express or implied warranty.
 #
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#     http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 # @author Joe Talerico, jtaleric@redhat.com
 #/*******************************************************************************
 
-#
-#
-#exit 1;
-
+cd ~
 source ~/.bashrc
 dir=$(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")
 if [ -e $dir/cb_common.sh ] ; then
@@ -17,7 +24,6 @@ if [ -e $dir/cb_common.sh ] ; then
 else
         source $dir/../common/cb_common.sh
 fi
-
 if [ $standalone == online ] ; then
     # retrieve online values from API
     LOAD_PROFILE=$1
@@ -25,17 +31,10 @@ if [ $standalone == online ] ; then
     LOAD_DURATION=$3
     LOAD_ID=$4
 fi
-
-cassandra=`get_ips_from_role cassandra`
-if [ -z $mongo ] ; then
-	syslog_netcat "cassandra IP is null"
-	exit 1;
-fi
-
+seed=`get_ips_from_role seed`
 ops=0
 latency=0
 syslog_netcat "YCSB Workload starting...."
-
 while read line ; do
 	IFS=',' read -a array <<< "$line"
 	if [[ ${array[0]} == *OVERALL* ]] ; then
@@ -53,13 +52,8 @@ while read line ; do
 			latency=${array[2]}
 		fi
 	fi
-
-	# Check for New Shard
-
-done < <(sudo /root/YCSB/bin/ycsb run cassandra10 -s -P /root/YCSB/workloads/workloadc -P /root/YCSB/1instance.dat 2>&1 | tee YCSB-CBTOOL-RUN)
-
+done < <(sudo /root/YCSB/bin/ycsb run cassandra-10 -s -P /root/YCSB/workloads/workloadc -P /root/YCSB/1instance.dat -p hosts="$seed" 2>&1 )
 ~/cb_report_app_metrics.py throughput:$(expr $ops):tps latency:$(expr $latency):ms
-
 if [ $? -gt 0 ] ; then
 	syslog_netcat "problem running ycsb prime client on $(hostname)"
 	exit 1

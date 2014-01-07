@@ -81,6 +81,9 @@ statealter
 waitfor
 waituntil
 waiton
+faultlist
+faultshow
+faultalter
 monextract
 monlist
 msgpub
@@ -205,8 +208,8 @@ vmcattach TESTCLOUD all async\; waitfor TESTCLOUD 8s\; vmclist TESTCLOUD\; vmcsh
 vmcalter TESTCLOUD simzone_a replication_vmcs=TESTE\; vmcshow TESTCLOUD simzone_a replication_vmcs
 hostlist TESTCLOUD
 hostshow TESTCLOUD simhosta3 all
-reserved for hostfail
-reserved for hostrepair
+hostfail TESTCLOUD simhostc2 stonith
+hostrepair TESTCLOUD simhostc2 stonith
 poollist TESTCLOUD
 viewshow TESTCLOUD VMC pool sut
 vmattach TESTCLOUD tinyvm\; vmlist TESTCLOUD\; vmshow TESTCLOUD vm_1 vmc_name,vmc_pool,host_name,meta_tags,size\; stats TESTCLOUD
@@ -351,7 +354,7 @@ monextract TESTCLOUD HOST os\; shell TESTCLOUD cat CB_DIRECTORY/data/REGRESSION_
 monextract TESTCLOUD VM management\; shell TESTCLOUD cat CB_DIRECTORY/data/REGRESSION_B/VM*man*REGRESSION*
 monextract TESTCLOUD VM os\; shell TESTCLOUD cat CB_DIRECTORY/data/REGRESSION_B/VM_runtime_os_*REGRESSION*
 monextract TESTCLOUD VM app\; shell TESTCLOUD cat CB_DIRECTORY/data/REGRESSION_B/VM_runtime_app_*REGRESSION*
-shell TESTCLOUD rm -rf CB_DIRECTORY/data/REGRESSION_B\; shell TESTCLOUD ls -la CB_DIRECTORY/data/REGRESSION_B/
+shell TESTCLOUD rm -rf CB_DIRECTORY/data/REGRESSION_B/*\; shell TESTCLOUD find CB_DIRECTORY/data/REGRESSION_B/
 monextract TESTCLOUD all\; shell TESTCLOUD ls -la CB_DIRECTORY/data/REGRESSION_B
-monplot
+reserved for monplot
 clddetach TESTCLOUD

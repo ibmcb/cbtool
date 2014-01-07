@@ -219,8 +219,14 @@ class API():
     def patternshow(self, cloud_name, pattern) :
         return self.passive.globalshow({}, cloud_name + ' ' + pattern + " aidrs_templates pattern", "global-show")[2]
 
+    def faultshow(self, cloud_name, pattern) :
+        return self.passive.globalshow({}, cloud_name + ' ' + pattern + " fi_templates situation", "global-show")[2]
+
     def patternalter(self, cloud_name, pattern_name, attribute, value):
         return self.passive.globalalter({}, cloud_name + ' ' + pattern_name + ' ' + attribute + "=" + value + " aidrs_templates pattern", "global-alter")[2]
+
+    def faultalter(self, cloud_name, pattern_name, attribute, value):
+        return self.passive.globalalter({}, cloud_name + ' ' + pattern_name + ' ' + attribute + "=" + value + " fi_templates situation", "global-alter")[2]
 
     def typealter(self, cloud_name, type_name, attribute, value):
         return self.passive.globalalter({}, cloud_name + ' ' + type_name + ' ' + attribute + "=" + value + " ai_templates type", "global-alter")[2]
@@ -306,8 +312,8 @@ class API():
         else :
             return self.active.gtk({}, cloud_name + ' ' + identifier, "vm-display")[2]
         
-    def hostfail(self, cloud_name, identifier, service, firs = "none", async = False):
-        parameters = cloud_name + ' ' + identifier + ' ' + service + ' ' + firs
+    def hostfail(self, cloud_name, identifier, fault, firs = "none", async = False):
+        parameters = cloud_name + ' ' + identifier + ' ' + fault + ' ' + firs
         if async and str(async).count("async") :
             return self.active.background_execute(parameters + (' ' + async), "host-fail")[2]
         else :
@@ -533,6 +539,9 @@ class API():
     
     def patternlist(self, cloud_name):
         return self.passive.globallist({}, cloud_name + " aidrs_templates+patterns+AIDRSs", "global-list" )[2]
+
+    def faultlist(self, cloud_name):
+        return self.passive.globallist({}, cloud_name + " fi_templates+situations+FIs", "global-list" )[2]
     
     def viewlist(self, cloud_name):
         return self.passive.globallist({}, cloud_name + " query+criteria+VIEWs", "global-list")[2]

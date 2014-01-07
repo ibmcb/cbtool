@@ -114,6 +114,9 @@ ignore_strings = [
 
 percent_inc = 1
 def show_percent(num, contents, phase) :
+    '''
+    TBD
+    '''
     clen = len(contents)
     percent = int((float(num) / float(clen)) * 100.0)
     if int(num) == 0 :
@@ -125,6 +128,9 @@ def show_percent(num, contents, phase) :
         sys.stdout.flush()
 
 def mask_contents(contents, which) :
+    '''
+    TBD
+    '''
     for _line_number, _line_contents in enumerate(contents) :
             
         for istring in ignore_strings :

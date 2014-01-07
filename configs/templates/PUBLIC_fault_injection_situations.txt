@@ -1,0 +1,176 @@
+# Cloud-agnostic Fault Injection templates
+
+#FAULT : Command___or___sequence___of___commands___used___to___inject___a___fault
+#REPAIR : Command___or___sequence___of___commands___used___to___repair___the___fault
+
+[FI_TEMPLATES : KEYSTONE-SS]
+FAULT = service___keystone___stop
+REPAIR = service___keystone___start
+
+[FI_TEMPLATES : KEYSTONE-KP]
+FAULT = pkill___-9___-f___keystone
+REPAIR = $EMPTY
+
+[FI_TEMPLATES : KEYSTONE-EC]
+FAULT = cp___-f___/usr/bin/keystone-all___/usr/bin/keystone-all-backup;___cp___-f___/usr/bin/corrupt_executable___/usr/bin/keystone-all;___ pkill___-9___-f___keystone-all
+REPAIR = cp___-f___/usr/bin/keystone-all-backup___/usr/bin/keystone-all
+
+[FI_TEMPLATES : GLANCE-API-SS]
+FAULT = service___glance-api___stop
+REPAIR = service___glance-api___start
+
+[FI_TEMPLATES : GLANCE-API-KP]
+FAULT = pkill___-9___-f___glance-api
+REPAIR = $EMPTY
+
+[FI_TEMPLATES : GLANCE-REGISTRY-SS]
+FAULT = service___glance-registry___stop
+REPAIR = service___glance-registry___start
+
+[FI_TEMPLATES : GLANCE-REGISTRY-KP]
+FAULT = pkill___-9___-f___glance-registry
+REPAIR = $EMPTY
+
+[FI_TEMPLATES : QUANTUM-SERVER-SS]
+FAULT = service___quantum-server___stop
+REPAIR = service___quantum-server___start
+
+[FI_TEMPLATES : QUANTUM-SERVER-KP]
+FAULT = pkill___-9___-f___quantum-server
+REPAIR = $EMPTY
+
+[FI_TEMPLATES : QUANTUM-METADATA-AGENT-SS]
+FAULT = service___quantum-metadata-agent___stop
+REPAIR = service___quantum-metadata-agent___start
+
+[FI_TEMPLATES : QUANTUM-METADATA-AGENT-KP]
+FAULT = pkill___-9___-f___quantum-metadata-agent
+REPAIR = $EMPTY
+
+[FI_TEMPLATES : QUANTUM-DHCP-AGENT-SS]
+FAULT = service___quantum-dhcp-agent___stop
+REPAIR = service___quantum-dhcp-agent___start
+
+[FI_TEMPLATES : QUANTUM-DHCP-AGENT-KP]
+FAULT = pkill___-9___-f___quantum-dhcp-agent
+REPAIR = $EMPTY
+
+[FI_TEMPLATES : QUANTUM-L3-AGENT-SS]
+FAULT = service___quantum-l3-agent___stop
+REPAIR = service___quantum-l3-agent___start
+
+[FI_TEMPLATES : QUANTUM-L3-AGENT-KP]
+FAULT = pkill___-9___-f___quantum-l3-agent
+REPAIR = $EMPTY
+
+[FI_TEMPLATES : QUANTUM-PLUGIN-OPENVSWITCH-AGENT-SS]
+FAULT = service___quantum-plugin-openvswitch-agent___stop
+REPAIR = service___quantum-plugin-openvswitch-agent___start
+
+[FI_TEMPLATES : QUANTUM-PLUGIN-OPENVSWITCH-AGENT-KP]
+FAULT = pkill___-9___-f___quantum-plugin-openvswitch-agent
+REPAIR = $EMPTY
+
+[FI_TEMPLATES : OPENVSWITCH-SS]
+FAULT = service___openvswitch-switch___stop
+REPAIR = service___openvswitch-switch___start
+
+[FI_TEMPLATES : OPENVSWITCH-KP]
+FAULT = pkill___-9___-f___openvswitch
+REPAIR = $EMPTY
+
+[FI_TEMPLATES : NOVA-API-SS]
+FAULT = service___nova-api___stop
+REPAIR = service___nova-api___start
+
+[FI_TEMPLATES : NOVA-API-KP]
+FAULT = pkill___-9___-f___nova-api
+REPAIR = $EMPTY
+
+[FI_TEMPLATES : NOVA-CERT-SS]
+FAULT = service___nova-cert___stop
+REPAIR = service___nova-cert___start
+
+[FI_TEMPLATES : NOVA-CERT-KP]
+FAULT = pkill___-9___-f___nova-cert
+REPAIR = $EMPTY
+
+[FI_TEMPLATES : NOVA-COMPUTE-SS]
+FAULT = service___nova-compute___stop
+REPAIR = service___nova-compute___start
+
+[FI_TEMPLATES : NOVA-COMPUTE-KP]
+FAULT = pkill___-9___-f___nova-compute
+REPAIR = $EMPTY
+
+[FI_TEMPLATES : NOVA-CONDUCTOR-SS]
+FAULT = service___nova-conductor___stop
+REPAIR = service___nova-conductor___start
+
+[FI_TEMPLATES : NOVA-CONDUCTOR-KP]
+FAULT = pkill___-9___-f___nova-conductor
+REPAIR = $EMPTY
+
+[FI_TEMPLATES : NOVA-CONSOLEAUTH-SS]
+FAULT = service___nova-consoleauth___stop
+REPAIR = service___nova-consoleauth___start
+
+[FI_TEMPLATES : NOVA-CONSOLEAUTH-KP]
+FAULT = pkill___-9___-f___nova-consoleauth
+REPAIR = $EMPTY
+
+[FI_TEMPLATES : NOVA-NOVNCPROXY-SS]
+FAULT = service___nova-novncproxy___stop
+REPAIR = service___nova-novncproxy___start
+
+[FI_TEMPLATES : NOVA-NOVNCPROXY-KP]
+FAULT = pkill___-9___-f___nova-novncproxy
+REPAIR = $EMPTY
+
+[FI_TEMPLATES : NOVA-SCHEDULER-SS]
+FAULT = service___nova-scheduler___stop
+REPAIR = service___nova-scheduler___start
+
+[FI_TEMPLATES : NOVA-SCHEDULER-KP]
+FAULT = pkill___-9___-f___nova-scheduler
+REPAIR = $EMPTY
+
+[FI_TEMPLATES : NOVA-SCHEDULER-EC]
+FAULT = cp___-f___/usr/bin/nova-scheduler___/usr/bin/nova-scheduler-backup;___cp___-f___/usr/bin/corrupt_executable___/usr/bin/nova-scheduler;___ pkill___-9___-f___nova-scheduler
+REPAIR = cp___-f___/usr/bin/nova-scheduler-backup___/usr/bin/nova-scheduler
+
+[FI_TEMPLATES : LIBVIRT-SS]
+FAULT = service___libvirt-bin___stop
+REPAIR = service___libvirt-bin___start
+
+[FI_TEMPLATES : LIBVIRT-KP]
+FAULT = pkill___-9___-f___libvirt
+REPAIR = $EMPTY
+
+[FI_TEMPLATES : CINDER-API-SS]
+FAULT = service___cinder-api___stop
+REPAIR = service___cinder-api___start
+
+[FI_TEMPLATES : CINDER-API-KP]
+FAULT = pkill___-9___-f___cinder-api
+REPAIR = $EMPTY
+
+[FI_TEMPLATES : CINDER-SCHEDULER-SS]
+FAULT = service___cinder-scheduler___stop
+REPAIR = service___cinder-scheduler___start
+
+[FI_TEMPLATES : CINDER-SCHEDULER-KP]
+FAULT = pkill___-9___-f___cinder-scheduler
+REPAIR = $EMPTY
+
+[FI_TEMPLATES : CINDER-VOLUME-SS]
+FAULT = service___cinder-volume___stop
+REPAIR = service___cinder-volume___start
+
+[FI_TEMPLATES : CINDER-VOLUME-KP]
+FAULT = pkill___-9___-f___cinder-volume
+REPAIR = $EMPTY
+
+[FI_TEMPLATES : STONITH]
+FAULT = echo___b___>___/proc/sysrq-trigger
+REPAIR = $EMPTY

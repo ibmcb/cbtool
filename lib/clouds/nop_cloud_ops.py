@@ -319,6 +319,8 @@ class NopCmds(CommonCloudFunctions) :
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
 
+            obj_attr_list["cloud_hostname"] = "vm_" + obj_attr_list["cloud_ip"].replace('.','_')
+
             if "meta_tags" in obj_attr_list :
                 if obj_attr_list["meta_tags"] != "empty" and \
                 obj_attr_list["meta_tags"].count(':') and \
@@ -402,15 +404,14 @@ class NopCmds(CommonCloudFunctions) :
                                           hostname = obj_attr_list["cloud_ip"], \
                                           priv_key = obj_attr_list["identity"])
 
-            _cmd= "pkill -f cloudbench; pkill -f gmetad.py" 
+            _cmd = "~/cb_cleanup.sh; rm ~/cb_*"  
 
-            #_msg = "Shutting down CloudBench Load Manager/Metric Aggregator on "
-            #_msg += "VM \"" + obj_attr_list["name"] + "\" by executing the " 
-            #_msg += "command \"" + _cmd + "\""
-            #cbdebug(_msg, True)
+            _msg = "Shutting down CloudBench Load Manager/Metric Aggregator on "
+            _msg += "VM \"" + obj_attr_list["name"] + "\" by executing the " 
+            _msg += "command \"" + _cmd + "\""
+            cbdebug(_msg, True)
 
             _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_cmd)
-            _status = 0
 
             _time_mark_drc = int(time())
             obj_attr_list["mgt_903_deprovisioning_request_completed"] = \
@@ -500,3 +501,4 @@ class NopCmds(CommonCloudFunctions) :
                 _msg += "\"."
                 cbdebug(_msg, True)
                 return _status, _msg
+

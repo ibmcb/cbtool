@@ -147,6 +147,7 @@ def gmetric_write(NAME, VAL, TYPE, UNITS, SLOPE, TMAX, DMAX, GROUP, SPOOF):
     data.pack_string(str(VAL))
 
     return ( packer.get_buffer() ,  data.get_buffer() )
+
 class PassiveObjectOperations(BaseObjectOperations) :
     
     @trace
@@ -228,6 +229,9 @@ class PassiveObjectOperations(BaseObjectOperations) :
         
     @trace
     def get_display_value(self, obj_attrs, translation_cache, field, cloud_name) :
+        '''
+        TBD
+        '''
         _af = field[1:].strip()
         if _af == "vmc" or \
         (_af == "ai" and "ai" in obj_attrs and obj_attrs[_af] != "none") or \
@@ -248,6 +252,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 _display_value = "unavailable" 
             
         return _display_value
+
     @trace
     def list_objects(self, obj_attr_list, parameters, command) :
         '''
@@ -283,7 +288,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     else :
                         _obj_list = self.osci.query_by_view(obj_attr_list["cloud_name"], _obj_type, "BYUSERNAME", obj_attr_list["username"], "name", "all", False)
                         
-                        if obj_attr_list["regression"] == "true" :
+                        if "regression" in obj_attr_list and obj_attr_list["regression"] == "true" :
                             _obj_list.sort(key=self.keyfunc)
     
                     if _obj_list :
@@ -950,7 +955,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                             
                             _result.append({"type" : _obj_type, "name" : _obj_name, "uuid" : _obj_uuid, "state" : _obj_state})
                             
-                        if obj_attr_list["regression"] == "true" :
+                        if "regression" in obj_attr_list and obj_attr_list["regression"] == "true" :
                             _result.sort(key=self.namefunc)
                             
                         for res in _result :
@@ -2027,18 +2032,21 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _msg_string["aidrs_patterns"] = " can be attached to "
             _msg_string["vmc_pools"] = " are attached to "
             _msg_string["view_criteria"] = " can be used on"
-            
+            _msg_string["fi_situations"] = " can be executed on "
+
             _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
 
             if not _status :
                 _status, _fmsg = self.initialize_object(obj_attr_list, command)
 
                 if not _status :
+                    # IMPORTANT: Rememeber that the list is created at cloud
+                    # attachment time by the "initialize_object_store" method
+                    # in the datastore adapter
                     _list_name = obj_attr_list["object_type"][:-1].lower() + '_' + obj_attr_list["object_attribute"]
                     _result = list(self.osci.get_list(obj_attr_list["cloud_name"], "GLOBAL", _list_name))
-        
-                    _list = ", ".join(_result)
 
+                    _list = ", ".join(_result)
                     _vmc_list = self.osci.get_object_list(obj_attr_list["cloud_name"], "VMC")
 
                     if not _vmc_list :
@@ -2135,7 +2143,10 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                 for _key,_value in _result.items() :
                                     _formatted_result.append(_key + ": " + _value)
     
-                        elif obj_attr_list["global_object"] == "ai_templates" or obj_attr_list["global_object"] == "aidrs_templates" :
+                        elif obj_attr_list["global_object"] == "ai_templates" or \
+                        obj_attr_list["global_object"] == "aidrs_templates" or \
+                        obj_attr_list["global_object"] == "fi_templates" :
+
                             for _key, _value in _object_contents.items() :
                                 if _key.count(obj_attr_list["attribute_name"]) :
                                     if not (_key.count("_pref_host") or \
@@ -2381,6 +2392,9 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
 
     def list_domains(self, cloud_name, lvirt_conns,  uuid) :
+        '''
+        TBD
+        '''
         domains = {}
         ips = {}
         status = True
@@ -2409,7 +2423,10 @@ class PassiveObjectOperations(BaseObjectOperations) :
     
         return status, domains, ips, metric_vm["cloud_ip"], metric_port, attrs
 
-    def qemu_send(self, g, key, val, typ, unit, direction, lifetime, category, spoof, attrs):
+    def qemu_send(self, g, key, val, typ, unit, direction, lifetime, category, spoof, attrs) :
+        '''
+        TBD
+        '''
         if key.count("mbps") :
             unit = "mbps"
         elif key.count("bytes") :
@@ -2420,6 +2437,9 @@ class PassiveObjectOperations(BaseObjectOperations) :
         
         
     def deliver(self, g, key, value, spoof, attrs) :
+        '''
+        TBD
+        '''
         unit = "n/a"
         num = False
         typ = "n/a"
@@ -2440,13 +2460,15 @@ class PassiveObjectOperations(BaseObjectOperations) :
             self.qemu_send(g, "qemu_" + key.replace("-", "_"), str(num), typ, unit, "both", "0", "mc", spoof, attrs)
 
     def get_stats_all_domains(self, cloud_name, g, ips, domains, agg_ip, vms) :
+        '''
+        TBD
+        '''
         for name in domains :
             dom = domains[name]
             stats = dom.jobStats()
             
             # If your libvirt is too old (< 0.10), then memoryStats() will not return anything useful
             mem = dom.memoryStats()
-            
             ip = ips[name]
             attrs = vms[name]
             if not ip :
@@ -2484,7 +2506,10 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     
             self.record_management_metrics(cloud_name, "VM", attrs, "runstate")
     
-    def migration_checker(self, my_uuid, cv, cloud_name):
+    def migration_checker(self, my_uuid, cv, cloud_name) :
+        '''
+        TBD
+        '''
         cbdebug("Migration checker started.")
         
         while self.check_for_migrate :
@@ -2531,6 +2556,9 @@ class PassiveObjectOperations(BaseObjectOperations) :
         cbdebug("Migration checker exiting.")
 
     def qemu_scraper(self, cloud_name, uuid) :
+        '''
+        TBD
+        '''
         if not qemu_supported :
             cbwarn("Not starting scraper because associated libvirt bindings are not available.")
             return

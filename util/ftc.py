@@ -694,7 +694,7 @@ class Ftc :
                         try :
                             self.activate_pool_if_inactive(lvt_cnt, _pool)
                             if disk_format == "lvm" :
-                                returncreate_pool = False
+                                recreate_pool = False
                                 break
                             _pool.destroy()
                         except libvirtError, err :
@@ -793,8 +793,8 @@ class Ftc :
             _msg = "ip found"
             ip = o.lookup_ip(mac)
             
-        except Exception, msg:
-            _msg = "ip not found: " + str(msg)
+        except Exception:
+            _msg = "ip not found"
             pass
         
         return self.success(_msg, ip)

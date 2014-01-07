@@ -54,13 +54,11 @@ data
 pydevd
 libpeerconnection.log
 github.txt
-regression/output_samples/received/test*.txt
-regression/output_samples/golden/test*.txt
-regression/output_samples/diffs/test*.txt
-regression/input_samples/test*.txt
 regression/main.html
 regression/regression_test_experiment_plan.txt
 util/openvpn/*.conf
 util/openvpn/easy-rsa/keys/
 configs/client-cb-openvpn-*.conf
 configs/server-cb-openvpn-*.conf
+regression/output_samples/*/test*.txt
+regression/input_samples/test*.txt

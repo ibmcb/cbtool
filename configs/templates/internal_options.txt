@@ -41,7 +41,7 @@ OPENVPN_ADDRESS_RANGE_DEFAULT = 10.5.0.0 255.255.0.0
 OPENVPN_BOOTSTRAP_ADDRESS_DEFAULT = 10.5.0.1
 
 [SETUP]
-GLOBAL_OBJECT_LIST = setup,logstore,metricstore,dash_defaults,mon_defaults,space,time,vmc_defaults,vm_defaults,ai_defaults,aidrs_defaults,vmcrs_defaults,firs_defaults,vm_templates,ai_templates,aidrs_templates,vmcrs_templates,firs_templates,query,admission_control,api_defaults,gui_defaults
+GLOBAL_OBJECT_LIST = setup,logstore,metricstore,dash_defaults,mon_defaults,space,time,vmc_defaults,vm_defaults,ai_defaults,aidrs_defaults,vmcrs_defaults,firs_defaults,vm_templates,ai_templates,aidrs_templates,vmcrs_templates,fi_templates,firs_templates,query,admission_control,api_defaults,gui_defaults
 
 [SPACE]
 BASE_DIR = $MAIN_BASE_DIR
