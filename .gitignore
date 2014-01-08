@@ -62,3 +62,4 @@ configs/client-cb-openvpn-*.conf
 configs/server-cb-openvpn-*.conf
 regression/output_samples/*/test*.txt
 regression/input_samples/test*.txt
+regression/main.html
