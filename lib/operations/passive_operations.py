@@ -30,7 +30,7 @@ from subprocess import Popen, PIPE
 from xdrlib import Packer
 from sys import path
 from threading import Condition
-import copy, libvirt, json, re, socket, os
+import copy, libvirt, re, socket, os
 import shutil
 import threading
 
@@ -1866,7 +1866,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     for cloud in clouds :
                         if cloud["name"] not in services :
                             attrs = api.cldshow(cloud["name"], "space")
-                            if "openvpn_server_address" in attrs :
+                            if "openvpn_server_address" in attrs and "openvpn_bootstrap_address" in attrs :
                                 address = attrs["openvpn_bootstrap_address"]
                                 result = False 
                                 msg = "Failed to register openvpn address " + address + ": "
@@ -2431,7 +2431,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             unit = "mbps"
         elif key.count("bytes") :
             unit = "bytes"
-            
+
         g.send(key, val, typ, unit, direction, self.freq_str, lifetime, category, spoof)
         attrs["mgt_505_" + key] = val
         
