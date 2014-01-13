@@ -171,15 +171,15 @@ function pending_callback(data) {
             if(debug)
                 $('#pendingcount2').html('result: unchanged ' + last_data);
             if(last_data == 'No Pending Objects') {
-		go('#allstate', bootdest + '/provision?allstate=1&liststate=' + liststate + '&object=' + active, '#allstate', unavailable, true, false, true);
+				go('#allstate', bootdest + '/provision?allstate=1&liststate=' + liststate + '&object=' + active, '#allstate', unavailable, true, false, true);
                 poll(30, check_nodraw);
             } else {
                 poll(3, check_nodraw);
             }
         } else if(data == 'error' || data == 'none' || data == 'No Pending Objects') {
             last_data = '';
-            //$('#pendingtest').html('');
-            $('#pendingstatus').html('');
+            $('#pendingtest').html('');
+            //$('#pendingstatus').html('');
             if("operation" in params) {
                $('#pendingtest').html(heromsg + "<h4>&nbsp;&nbsp;Request(s) Complete.</h4></div>");
             }
@@ -187,10 +187,10 @@ function pending_callback(data) {
                 first_time = true;
                 poll(1, check_pending);
             } else if (data == 'No Pending Objects') {
-		go('#allstate', bootdest + '/provision?allstate=1&liststate=' + liststate + '&object=' + active, '#allstate', unavailable, true, false, true);
+		        go('#allstate', bootdest + '/provision?allstate=1&liststate=' + liststate + '&object=' + active, '#allstate', unavailable, true, false, true);
                 last_data = data;
                 poll(30, check_pending);
-	    } else {
+		    } else {
                 last_data = data;
                 poll(30, check_pending);
             }
