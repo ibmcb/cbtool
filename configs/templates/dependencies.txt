@@ -1,0 +1,208 @@
+### START - URLs ###
+giturl = https://github.com/ibmcb
+rsyncurl = 127.0.0.1
+### END - URLs ###
+
+### START - Dependency-specific installation method ###
+# pm = "package manager" (yum or apt-get)
+# sl = "soft link" (assume that the dependency is already installed, just has to
+# be properly exposed to the user's path.
+# git = git clone using above giturl
+# rsync = rsync from the above url
+# ei = python easy_install utility
+# man = "manual"
+sudo-inst = man
+git-inst = pm
+screen-inst = pm
+rsync-inst = pm
+ifconfig-inst = sl
+ip-inst = sl
+gmond-inst = pm
+rsyslog-inst = pm
+python-daemon-inst = pm
+openvpn-inst = pm
+redis-inst = git
+pyredis-inst = ei
+mongodb-inst = man
+python-setuptools-inst = pm
+pymongo-inst = ei
+python-twisted-inst = pm
+python-webob-inst = pm
+python-beaker-inst = pm
+gmetad-python-inst = git
+bootstrap-wizard-inst = git
+streamprox-inst = git
+d3-inst = git
+bootstrap-inst = git
+pyhtml-inst = git
+novaclient-inst = git
+boto-inst = git
+pypureomapi-inst = man
+pylibvirt-inst = pm
+netcat-inst = pm
+libcloud-inst = git
+R-inst = pm
+### END - Dependency-specific installation method ###
+
+### START - Tests ###
+sudo-test = sudo -S ls < /dev/null
+git-test = git --version | cut -d ' ' -f 3
+ip-test = ip -V
+ifconfig-test = ifconfig
+screen-test = screen -v
+rsync-test = rsync --version | grep version
+gmond-test = gmond --version | cut -d ' ' -f 2
+rsyslog-test = rsyslogd -v | grep compiled | cut -d ' ' -f 2 | sed 's/,//g'
+python-daemon-test = python -c "import daemon; print str(daemon._version).strip()"
+openvpn-test = openvpn --version | grep built | cut -d ' ' -f 2
+redis-test = redis-server -v
+pyredis-test = python -c "import redis; print str(redis.VERSION).replace('(','').replace(')','').replace(', ','.').strip()"
+mongodb-test =  mongod --version
+python-setuptools-test = python -c "import setuptools; from setuptools import sandbox"
+pymongo-test = python -c "import pymongo; print str(pymongo.version).strip().replace('+','')"
+python-twisted-test = python -c "import twisted; from twisted.web.wsgi import WSGIResource; from twisted.internet import reactor; from twisted.web.static import File; from twisted.web.resource import Resource; from twisted.web.server import Site; from twisted.web import wsgi; print str(twisted.__version__).strip()"
+python-webob-test = python -c "import webob; from webob import Request, Response, exc"
+python-beaker-test = python -c "import beaker; from beaker.middleware import SessionMiddleware"
+gmetad-python-test = ls -la 3RPARTYDIR/monitor-core/gmetad-python/gmetad.py
+bootstrap-wizard-test = ls -la 3RPARTYDIR/Bootstrap-Wizard/README.md
+streamprox-test = ls -la 3RPARTYDIR/StreamProx/README.md
+d3-test = ls -la 3RPARTYDIR/d3/component.json
+bootstrap-test = ls -la 3RPARTYDIR/bootstrap/package.json
+pyhtml-test = python -c "import HTML; print str(HTML.__version__).strip()"
+novaclient-test = python -c "import novaclient; from novaclient.v1_1 import client"
+boto-test = python -c "import boto; print str(boto.__version__).strip().replace('-dev','')"
+pypureomapi-test = python -c "import pypureomapi; print str(pypureomapi.__version__).strip()"
+pylibvirt-test = python -c "import libvirt; print str(libvirt.getVersion()).strip()"
+netcat-test = nc -v -w 1 localhost -z 22
+libcloud-test = python -c "import libcloud; print str(libcloud.__version__).replace('-dev','').strip()"
+R-test = R --version | grep version | grep -v GNU
+### END - Tests ###
+
+### START - Dependency versions ###
+sudo-ver = ANY
+git-ver = 1.6.0
+ip-ver = ANY
+ifconfig-ver = ANY
+screen-ver = 4.0
+rsync-ver = 2.6
+gmond-ver = 3.0
+rsyslog-ver = 4.6.0
+python-daemon-ver = 1.5.1
+openvpn-ver = 2.2.0
+redis-ver = 2.5.0
+pyredis-ver = 2.6.0
+mongodb-ver = 2.4.0
+python-setuptools-ver = ANY
+pymongo-ver = 2.1.1
+python-twisted-ver = 8.0.0
+python-webob-ver = ANY
+python-beaker-ver = ANY
+gmetad-python-ver = ANY
+bootstrap-wizard-ver = ANY
+streamprox-ver = ANY
+d3-ver = ANY
+bootstrap-ver = ANY
+pyhtml-ver = 0.04
+novaclient-ver = ANY
+boto-ver = 2.1.8
+pypureomapi-ver = 0.2
+pylibvirt-ver = 9003
+netcat-ver = ANY
+libcloud-ver = 0.11.0
+R-ver = 2.1
+### END - Dependency versions ###
+
+### START -  Dependency and method-specific command lines ###
+rhel-sudo-man = echo "USERNAME  ALL=(ALL:ALL) NOPASSWD:ALL\" >> /etc/sudoers; sed -i s/\"Defaults requiretty\"/\"#Defaults requiretty\"/g /etc/sudoers"
+ubuntu-sudo-man = echo "USERNAME  ALL=(ALL:ALL) NOPASSWD:ALL\" >> /etc/sudoers; sed -i s/\"Defaults requiretty\"/\"#Defaults requiretty\"/g /etc/sudoers"
+
+rhel-git-pm = sudo yum -y install git
+ubuntu-git-pm = sudo apt-get -y install git
+
+rhel-screen-pm = sudo yum -y install screen
+ubuntu-screen-pm = sudo apt-get -y install screen
+
+rhel-rsync-pm = sudo yum -y install rsync
+ubuntu-rsync-pm = sudo apt-get -y install rsync
+
+ubuntu-ifconfig-sl = sudo ln -s /sbin/ifconfig /usr/local/bin/ifconfig
+rhel-ifconfig-sl = sudo ln -s /sbin/ifconfig /usr/local/bin/ifconfig
+
+ubuntu-ip-sl = sudo ln -s /sbin/ip /usr/local/bin/ifconfig
+rhel-ip-sl = sudo ln -s /sbin/ip /usr/local/bin/ifconfig
+
+rhel-gmond-pm = sudo yum -y install ganglia-gmond-python ganglia; sudo ln -s /usr/sbin/gmond /usr/local/bin/gmond
+ubuntu-gmond-pm = sudo apt-get -y install ganglia-monitor; sudo ln -s /usr/sbin/gmond /usr/local/bin/gmond
+
+rhel-rsyslog-pm = sudo yum -y install rsyslog; sudo ln -s /usr/sbin/rsyslogd /usr/local/bin/rsyslogd
+ubuntu-rsyslog-pm = sudo apt-get -y install rsyslog; sudo ln -s /usr/sbin/rsyslogd /usr/local/bin/rsyslogd
+
+rhel-python-daemon-pm = sudo yum -y install python-daemon
+ubuntu-python-daemon-pm = sudo apt-get -y install python-daemon
+
+rhel-openvpn-pm = sudo yum -y install openvpn; sudo ln -s /usr/sbin/openvpn /usr/local/bin/openvpn
+ubuntu-openvpn-pm = sudo apt-get -y install openvpn; sudo ln -s /usr/sbin/openvpn /usr/local/bin/openvpn
+
+rhel-redis-git = cd 3RPARTYDIR; git clone GITURL/redis.git; cd redis; make; sudo make install
+ubuntu-redis-git = cd 3RPARTYDIR; git clone GITURL/redis.git; cd redis; make; sudo make install
+
+rhel-pyredis-ei = sudo easy_install redis
+ubuntu-pyredis-ei = sudo easy_install redis
+
+rhel-mongodb-man = cd 3RPARTYDIR; wget http://fastdl.mongodb.org/linux/mongodb-linux-ARCH-2.4.5.tgz; tar -zxf mongodb-linux-*.tgz; cd mongodb-linux-*; sudo cp bin/* /usr/bin
+ubuntu-mongodb-man = cd 3RPARTYDIR; wget http://fastdl.mongodb.org/linux/mongodb-linux-ARCH-2.4.5.tgz; tar -zxf mongodb-linux-*.tgz; cd mongodb-linux-*; sudo cp bin/* /usr/bin
+
+rhel-pymongo-ei = sudo easy_install pymongo
+ubuntu-pymongo-ei = sudo easy_install pymongo
+
+rhel-python-setuptools-pm = sudo yum -y install python-setuptools
+ubuntu-python-setuptools-pm = sudo apt-get -y install python-setuptools
+
+rhel-python-twisted-pm = sudo yum -y install python-twisted-web
+ubuntu-python-twisted-pm = sudo apt-get -y install python-twisted-web
+
+rhel-python-webob-pm = sudo yum -y install python-webob
+ubuntu-python-webob-pm = sudo apt-get -y install python-webob
+
+rhel-python-beaker-pm = sudo yum -y install python-beaker
+ubuntu-python-beaker-pm = sudo apt-get -y install python-beaker
+
+rhel-gmetad-python-git = cd 3RPARTYDIR; git clone GITURL/monitor-core.git
+ubuntu-gmetad-python-git = cd 3RPARTYDIR; git clone GITURL/monitor-core.git
+
+rhel-bootstrap-wizard-git = cd 3RPARTYDIR; git clone GITURL/Bootstrap-Wizard.git
+ubuntu-bootstrap-wizard-git = cd 3RPARTYDIR; git clone GITURL/Bootstrap-Wizard.git
+
+rhel-streamprox-git = cd 3RPARTYDIR; git clone GITURL/StreamProx.git
+ubuntu-streamprox-git = cd 3RPARTYDIR; git clone GITURL/StreamProx.git
+
+rhel-d3-git = cd 3RPARTYDIR; git clone GITURL/d3.git
+ubuntu-d3-git = cd 3RPARTYDIR; git clone GITURL/d3.git
+
+rhel-bootstrap-git = cd 3RPARTYDIR; git clone GITURL/bootstrap.git
+ubuntu-bootstrap-git = cd 3RPARTYDIR; git clone GITURL/bootstrap.git
+
+rhel-pyhtml-git = cd 3RPARTYDIR; git clone GITURL/HTML.py; cd HTML; sudo python setup.py install
+ubuntu-pyhtml-git = cd 3RPARTYDIR; git clone GITURL/HTML.py; cd HTML; sudo python setup.py install
+
+rhel-novaclient-git = cd 3RPARTYDIR; git clone https://github.com/openstack/python-novaclient.git; cd python-novaclient; sudo python setup.py install
+ubuntu-novaclient-git = cd 3RPARTYDIR; git clone https://github.com/openstack/python-novaclient.git; cd python-novaclient; sudo python setup.py install
+
+rhel-boto-git = cd 3RPARTYDIR; git clone https://github.com/boto/boto.git; cd boto; sudo python setup.py install
+ubuntu-boto-git = cd 3RPARTYDIR; git clone https://github.com/boto/boto.git; cd boto; sudo python setup.py install
+
+rhel-pypureomapi-man = cd 3RPARTYDIR; wget http://pypureomapi.googlecode.com/files/pypureomapi-0.3.tar.gz; tar -xzvf pypureomapi-0.3.tar.gz; cd pypureomapi-0.3; sudo python setup.py install
+ubuntu-pypureomapi-man = cd 3RPARTYDIR; wget http://pypureomapi.googlecode.com/files/pypureomapi-0.3.tar.gz; tar -xzvf pypureomapi-0.3.tar.gz; cd pypureomapi-0.3; sudo python setup.py install
+
+rhel-pylibvirt-pm = sudo yum -y install libvirt-python
+ubuntu-pylibvirt-pm = sudo apt-get -y install python-libvirt
+
+rhel-netcat-pm = sudo yum -y install nc
+ubuntu-netcat-pm = sudo apt-get -y install netcat-openbsd
+
+rhel-libcloud-git = cd 3RPARTYDIR; git clone https://github.com/apache/libcloud.git; cd libcloud; sudo python setup.py install
+ubuntu-libcloud-git = cd 3RPARTYDIR; git clonehttps://github.com/apache/libcloud.git; cd libcloud; sudo python setup.py install
+
+rhel-R-pm = sudo yum -y install R
+ubuntu-R-pm = sudo apt-get -y install r-base-core
+### END -  Dependency and method-specific command lines ###

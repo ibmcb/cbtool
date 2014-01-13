@@ -64,3 +64,4 @@ regression/output_samples/*/test*.txt
 regression/input_samples/test*.txt
 regression/main.html
 configs/depenencies.txt
+lib/debug
