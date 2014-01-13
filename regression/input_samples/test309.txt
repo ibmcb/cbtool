@@ -1,4 +1,0 @@
-aidetach TESTCLOUD all
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD

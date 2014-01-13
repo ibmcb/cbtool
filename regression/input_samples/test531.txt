@@ -1,3 +1,0 @@
-airunstate ai_3 suspend
-stateshow
-stats

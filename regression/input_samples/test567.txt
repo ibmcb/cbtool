@@ -1,4 +1,0 @@
-aicapture ai_10
-ailist
-vmlist
-stats

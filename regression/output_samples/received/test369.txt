@@ -1,1 +1,0 @@
-Usage: rolealter <cloud_name> <role_name> <attribute> <value> 

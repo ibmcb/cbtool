@@ -1,2 +1,0 @@
-shell TESTCLOUD rm -rf /home/msilva/cloudbench/regression/..//data/REGRESSION_B/*
-shell TESTCLOUD find /home/msilva/cloudbench/regression/..//data/REGRESSION_B/

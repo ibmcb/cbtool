@@ -1,1 +1,0 @@
-Usage: vmrestore <cloud_name> <identifier> [firs = none] [mode] 

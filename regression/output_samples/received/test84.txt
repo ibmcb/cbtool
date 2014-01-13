@@ -1,1 +1,0 @@
-Usage: faultshow <cloud_name> <pattern> 

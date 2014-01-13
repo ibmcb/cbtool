@@ -1,4 +1,0 @@
-aiattach hpcc
-ailist
-vmlist
-stats

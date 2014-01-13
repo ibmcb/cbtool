@@ -1,1 +1,0 @@
-Usage: vmcattach <cloud_name> <identifier> [temp_attr_list = empty=empty] [mode] 

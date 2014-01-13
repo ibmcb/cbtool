@@ -1,6 +1,0 @@
-vmattach tinyvm async
-waitfor 1s
-vmlist pending
-waitfor 8s
-vmlist
-stats

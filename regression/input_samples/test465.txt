@@ -1,4 +1,0 @@
-vmcdetach simzone_a async
-waitfor 8s
-vmclist
-stats

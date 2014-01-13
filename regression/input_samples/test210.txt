@@ -1,1 +1,0 @@
-hostrepair TESTCLOUD simhostc2 stonith

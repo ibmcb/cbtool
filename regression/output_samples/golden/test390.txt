@@ -1,1 +1,0 @@
-Usage: hostrepair <cloud_name> <identifier> <service> [firs = none] [mode] 

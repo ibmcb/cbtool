@@ -1,1 +1,0 @@
-Usage: patternalter <cloud_name> <pattern_name> <attribute> <value> 

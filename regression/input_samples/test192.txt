@@ -1,4 +1,0 @@
-vmcattach TESTCLOUD simzone_a
-vmclist TESTCLOUD
-vmcshow TESTCLOUD simzone_a
-stats TESTCLOUD

@@ -1,1 +1,0 @@
-waitfor TESTCLOUD 10s

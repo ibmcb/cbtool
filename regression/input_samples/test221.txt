@@ -1,6 +1,0 @@
-vmattach TESTCLOUD tinyvm async
-waitfor TESTCLOUD 1s
-vmlist TESTCLOUD pending
-waitfor TESTCLOUD 8s
-vmlist TESTCLOUD
-stats TESTCLOUD

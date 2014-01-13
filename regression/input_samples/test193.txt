@@ -1,1 +1,0 @@
-vmccleanup TESTCLOUD simzone_a
