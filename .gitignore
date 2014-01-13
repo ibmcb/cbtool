@@ -51,3 +51,4 @@ gmetad-hosts.conf
 *hosts.conf
 configs/definitions.txt
 data
+configs/dependencies.txt
