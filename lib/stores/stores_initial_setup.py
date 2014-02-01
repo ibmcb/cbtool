@@ -204,7 +204,8 @@ def redis_objectstore_setup(global_objects, operation, cloud_name = None) :
     except OSError :
         _status = 10
         _msg = "Experiment directory " + _instance_dir
-        _msg += " could not be removed. "
+        _msg += " could not be removed, "
+        _msg += " or stores directory " + _stores_path + " could not be created."
         raise StoreSetupException(_msg, 9)
 
     except Exception, e :
