@@ -303,15 +303,18 @@ class VcdCmds(CommonCloudFunctions) :
         try :
             _msg = "Looking of IP address for something."
             cbdebug(_msg)
-            obj_attr_list["cloud_hostname"] = obj_attr_list["instance_obj"]._get_public_ips()[0]
-            obj_attr_list["cloud_ip"] = obj_attr_list["instance_obj"]._get_private_ips()[0]
+            obj_attr_list["cloud_hostname"] = obj_attr_list["instance_obj"].public_ips[0]
+            obj_attr_list["cloud_ip"] = obj_attr_list["instance_obj"].private_ips[0]
             obj_attr_list["prov_cloud_ip"] = obj_attr_list["cloud_ip"]
             _msg = "Public IP = " + obj_attr_list["cloud_hostname"]
             _msg += " Private IP = " + obj_attr_list["cloud_ip"]
             cbdebug(_msg)
             return True
         except :
-            return False
+            _msg = "Could not retrieve IP addresses for object " + obj_attr_list["uuid"]
+            _msg += "from vCloud Director \"" + obj_attr_list["cloud_name"]
+            cberr(_msg)
+            raise CldOpsException(_msg, _status)
 
     @trace
     def get_vm_instance(self, obj_attr_list) :
