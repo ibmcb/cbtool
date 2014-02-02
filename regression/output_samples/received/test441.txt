@@ -1,1 +1,0 @@
-Usage: waiton <cloud name> <object type> <channel> <keyword> 

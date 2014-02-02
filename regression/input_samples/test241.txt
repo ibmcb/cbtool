@@ -1,3 +1,0 @@
-vmrunstate TESTCLOUD vm_3 suspend
-stateshow TESTCLOUD
-stats TESTCLOUD

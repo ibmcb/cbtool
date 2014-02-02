@@ -8,7 +8,7 @@ if [ x"$1" == x ] ; then
     exit 1
 fi
 id=$1
-host=$($dir/../cb vmshow $id | grep "|cloud_ip" | sed -e "s/|//g" | sed -e "s/ \+/ /g" | cut -d " " -f 2)
+host=$($dir/../cb vmshow $id | grep "|prov_cloud_ip" | sed -e "s/|//g" | sed -e "s/ \+/ /g" | cut -d " " -f 2)
 if [ $? -gt 0 ] ; then
     echo "failed to retrieve IP address for cloudbench identifier: $id"
     exit 1

@@ -1,2 +1,0 @@
-patternalter TESTCLOUD simplenw iait=10
-patternshow TESTCLOUD simplenw

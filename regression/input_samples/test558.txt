@@ -1,4 +1,0 @@
-aiattach tradelite
-ailist
-vmlist
-stats

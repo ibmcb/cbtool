@@ -51,3 +51,15 @@ gmetad-hosts.conf
 *hosts.conf
 configs/definitions.txt
 data
+pydevd
+libpeerconnection.log
+github.txt
+regression/main.html
+regression/regression_test_experiment_plan.txt
+util/openvpn/*.conf
+util/openvpn/easy-rsa/keys/
+configs/client-cb-openvpn-*.conf
+configs/server-cb-openvpn-*.conf
+regression/output_samples/*/test*.txt
+regression/input_samples/test*.txt
+regression/main.html

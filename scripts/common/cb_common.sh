@@ -657,7 +657,7 @@ function post_boot_steps {
 				syslog_netcat "Restarting ganglia meta process (gmetad) on $SHORT_HOSTNAME"
 				sudo pkill -9 -f gmetad
 
-				$GMETAD_PATH/gmetad.py -c ~/gmetad-vms.conf -d 1
+				screen -d -m -S gmetad $GMETAD_PATH/gmetad.py -c ~/gmetad-vms.conf -d 5
 #				$GMETAD_PATH/gmetad.py -c ~/gmetad-vms.conf --syslogn 127.0.0.1 --syslogp 6379 --syslogf 22 -d 4
 
 				result="$(ps aux | grep gmeta | grep -v grep)"

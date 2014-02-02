@@ -1,1 +1,0 @@
-statealter TESTCLOUD aidrs_1 stopped

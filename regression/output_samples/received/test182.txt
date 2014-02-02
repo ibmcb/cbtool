@@ -1,5 +1,0 @@
-The following ATTACHED CLOUDs are in this experiment (Cloud ) :
-|name                    |model                   |description             
-|TESTCLOUD               |sim                     |Cloudbench SimCloud.    
-
-Current default cloud is "None". Need cloud name to be set as default cloud or 'none' to unset.

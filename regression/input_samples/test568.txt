@@ -1,4 +1,0 @@
-aicapture oldest
-ailist
-vmlist
-stats

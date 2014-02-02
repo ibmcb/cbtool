@@ -1,4 +1,0 @@
-vmattach netclient auto a:b,x:y,r:2 size=platinum64,vmc_pool=SUT
-vmlist
-vmshow vm_5 vmc_name,vmc_pool,host_name,meta_tags,size
-stats

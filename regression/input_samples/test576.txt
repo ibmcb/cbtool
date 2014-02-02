@@ -1,4 +1,0 @@
-aidetach all
-ailist
-vmlist
-stats

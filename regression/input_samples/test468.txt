@@ -1,3 +1,0 @@
-vmcdetach simzone_a
-vmclist
-stats

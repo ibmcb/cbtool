@@ -1,1 +1,0 @@
-Usage: hostlist <cloud_name> [state = default] [limit = none] 

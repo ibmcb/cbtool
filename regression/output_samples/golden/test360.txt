@@ -1,1 +1,0 @@
-Usage: cldattach <cloud model> <cloud name> [definitions file] 
