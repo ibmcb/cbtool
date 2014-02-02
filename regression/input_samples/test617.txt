@@ -1,2 +1,0 @@
-monextract HOST management
-shell cat /home/msilva/cloudbench/regression/..//data/REGRESSION_B/HOST*man*REGRESSION*

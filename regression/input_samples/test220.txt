@@ -1,3 +1,0 @@
-vmcapture TESTCLOUD vm_2
-vmlist TESTCLOUD
-stats TESTCLOUD

@@ -1,1 +1,0 @@
-Usage: vmcalter <cloud_name> <identifier> <attribute> <value> 

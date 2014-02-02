@@ -1,5 +1,0 @@
-vmcapture TESTCLOUD vm_29
-stats TESTCLOUD
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD

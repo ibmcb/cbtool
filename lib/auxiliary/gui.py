@@ -130,7 +130,7 @@ class Dashboard () :
                 display = "Step " + str(int(display[4:7])) + ": " + display[8:]
                     
             if bold and (exclude is None or cell not in exclude) :
-                cell = "<a href='" + self.prefix() + "/monitor?filter=" + category + "-" + cell + "' target='_top'>" + display.replace("_", "<br/>") + "</a>"
+                cell = "<a href='" + self.prefix() + "/monitor?show=" + category + "&filter=" + category + "-" + cell + "' target='_top'>" + display.replace("_", "<br/>") + "</a>"
             elif bold :
                 cell = "<b>" + display.replace("_", "<br/>") + "</b>"
             else :
@@ -524,12 +524,13 @@ class Dashboard () :
                   </div>
                   <div id="collapseThree" class="accordion-body collapse">
                     <div class="accordion-inner">
-                    <b>Save Configuration URL</b>:
+                    <b>Save Configuration URL</b>:<div style="font-size: xx-small">
         """
 
         output += self.make_url()
 
         output += """
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -791,7 +792,7 @@ class GUI(object):
                     "vm" : { 
                               "keyword1" : { "label" : "Role", "values" : [x.strip() for x in self.api.rolelist(session['cloud_name'])] } ,
                               "keyword2" : { "label" : "Pool / Host", "values" : ["auto"] + [x.strip() for x in self.api.poollist(session['cloud_name'])] \
-                                                            + ([x["name"] for x in self.api.hostlist(session['cloud_name'])] if session["discover_hosts"] == "true" else [])},
+                                                            + ([x["name"].replace("host_", "") for x in self.api.hostlist(session['cloud_name'])] if session["discover_hosts"] == "true" else [])},
                               "keyword3" : { "label" : "Meta Tags", "values" : "empty" },
                               "keyword4" : { "label" : "Size", "values" : "default" } ,
                               "keyword5" : { "label" : "Pause Step", "values" : [["continue" , "None"], 
@@ -974,6 +975,7 @@ class GUI(object):
                 req.active = "vmc"
                 req.session['connected'] = True 
                 req.session['last_active'] = "app"
+                req.session['dash_active'] = "a"
                 req.session["last_refresh"] = str(time())
                 req.session.save()
     
@@ -987,7 +989,11 @@ class GUI(object):
                     return self.bootstrap(req, self.heromsg + "\n<h4>You need to connect, first.</h4></div>")
                 
             if req.action == "monitor" : 
+                if req.http.params.get("show") is not None :
+                    req.session['dash_active'] = req.http.params.get("show")
+                    req.session.save()
                 self.api.dashboard_conn_check(req.cloud_name, req.session['msattrs'], req.session['time_vars']['username'])
+                
                 mon = Dashboard(self.api.msci, req.unparsed_uri, req.session['time_vars'], req.session['msattrs'], req.cloud_name)
                 orig_url = req.session["dashboard_parameters"]
                 success, msg = mon.parse_url(orig_url)
@@ -1019,6 +1025,7 @@ class GUI(object):
                 for category in mon.categories :
                     tabs += "<div class='tab-pane' id='tab" + category + "'>BOOTSPINNER&nbsp;Loading...</div>"
                 output = output.replace("BOOTTABS", tabs)
+                output = output.replace("BOOTSHOW", req.session["dash_active"])
                 
                 return self.bootstrap(req, output if (success or success is None) else msg)
     

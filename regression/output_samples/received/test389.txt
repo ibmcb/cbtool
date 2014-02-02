@@ -1,1 +1,0 @@
-Usage: hostfail <cloud_name> <identifier> <fault> [firs = none] [mode] 

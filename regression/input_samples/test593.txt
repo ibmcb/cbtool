@@ -1,3 +1,0 @@
-vmattach tinyvm simzone_source
-stats
-vmlist

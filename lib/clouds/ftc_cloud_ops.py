@@ -321,14 +321,14 @@ class FtcCmds(CommonCloudFunctions) :
             self.take_action_if_requested("VM", obj_attr_list, "provision_complete")
 
             if self.get_ip_address(obj_attr_list) :
-                cbdebug("VM " + obj_attr_list["name"] + " received IP: " + obj_attr_list["cloud_ip"])
-                obj_attr_list["cloud_hostname"] = "cb-" + obj_attr_list["cloud_ip"].replace('.', '-')
-                obj_attr_list["last_known_state"] = "running with ip assigned"
-                obj_attr_list["prov_cloud_ip"] = obj_attr_list["cloud_ip"]
-                return True
+                if not obj_attr_list["userdata"] or self.get_openvpn_client_ip(obj_attr_list) :
+                    obj_attr_list["cloud_hostname"] = "cb-" + obj_attr_list["cloud_ip"].replace('.', '-')
+                    cbdebug("VM " + obj_attr_list["name"] + " received IP: " + obj_attr_list["cloud_ip"])
+                    obj_attr_list["last_known_state"] = "running with ip assigned"
+                    return True
             else :
                 obj_attr_list["last_known_state"] = "running with ip unassigned"
-                return False
+                
         else :
             obj_attr_list["last_known_state"] = "not running"
         return False

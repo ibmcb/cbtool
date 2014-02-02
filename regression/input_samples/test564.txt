@@ -1,4 +1,0 @@
-aidetach oldest
-ailist
-vmlist
-stats

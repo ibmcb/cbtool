@@ -1,1 +1,0 @@
-Usage: vmccleanup <cloud_name> <identifier> 

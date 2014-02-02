@@ -1,1 +1,0 @@
-Usage: vmfail <cloud_name> <identifier> [firs = none] [mode] 

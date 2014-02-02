@@ -1,4 +1,0 @@
-aiattach TESTCLOUD hpcc
-ailist TESTCLOUD
-vmlist TESTCLOUD
-stats TESTCLOUD

@@ -1,1 +1,0 @@
-hostshow simhosta3 all

@@ -1,5 +1,0 @@
-aiattach daytrader load_balancer=true
-ailist
-vmlist
-aishow ai_8 load_balancer,sut
-stats
