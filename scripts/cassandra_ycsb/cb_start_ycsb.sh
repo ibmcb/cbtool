@@ -26,14 +26,16 @@ else
 fi
 if [ $standalone == online ] ; then
     # retrieve online values from API
-    LOAD_PROFILE=$1
+    #LOAD_PROFILE=$1
     LOAD_LEVEL=$2
-    LOAD_DURATION=$3
+    #LOAD_DURATION=$3
     LOAD_ID=$4
 fi
 seed=`get_ips_from_role seed`
 ops=0
 latency=0
+syslog_netcat "Current LOAD_LEVEL: ${LOAD_LEVEL}"
+sudo sed -i "s/operationcount=.*$/operationcount=${LOAD_LEVEL}/g" /root/YCSB/custom_workload.dat 
 syslog_netcat "YCSB Workload starting...."
 while read line ; do
 	IFS=',' read -a array <<< "$line"
@@ -52,8 +54,9 @@ while read line ; do
 			latency=${array[2]}
 		fi
 	fi
-done < <(sudo /root/YCSB/bin/ycsb run cassandra-10 -s -P /root/YCSB/workloads/workloadc -P /root/YCSB/1instance.dat -p hosts="$seed" 2>&1 )
+done < <(sudo /root/YCSB/bin/ycsb run cassandra-10 -s -P /root/YCSB/workloads/workloada -P /root/YCSB/custom_workload.dat -p hosts="$seed" 2>&1 )
 ~/cb_report_app_metrics.py throughput:$(expr $ops):tps latency:$(expr $latency):ms
+
 if [ $? -gt 0 ] ; then
 	syslog_netcat "problem running ycsb prime client on $(hostname)"
 	exit 1

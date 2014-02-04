@@ -25,9 +25,7 @@ if [ -e $dir/cb_common.sh ] ; then
 else
 	source $dir/../common/cb_common.sh
 fi
-
 standalone=`online_or_offline "$1"`
-
 if [ $standalone == offline ] ; then
 	post_boot_steps offline 
 fi
@@ -43,7 +41,6 @@ done
 cassandra=`get_ips_from_role cassandra`
 if [ -z $cassandra ] ; then
         syslog_netcat "cassandra IP is null"
-        exit 1;
 fi
 
 seed=`get_ips_from_role seed`
@@ -51,6 +48,34 @@ if [ -z $seed ] ; then
         syslog_netcat "seed IP is null"
         exit 1;
 fi
+
+CINDER=true
+#
+# Check if CBTool attached the Block storage volume.
+# !! Script assumes /dev/vdb !!
+#
+sudo mkfs.ext4 /dev/vdb
+if [ $? -ne 0 ] ; then
+  syslog_netcat "Cinder did not attach the volume, or the guest does not see it."
+  CINDER=false
+fi
+sudo mkdir /dbstore
+if $CINDER ; then
+  sudo mount /dev/vdb /dbstore  
+fi
+
+#
+# Update the cassandra config
+#
+sudo sed -i "s/\/var\/lib\//\/dbstore\//g" /etc/cassandra/conf/cassandra.yaml
+
+#
+# Cassandra directory structure
+#
+sudo mkdir -p /dbstore/store/cassandra/data
+sudo mkdir -p /dbstore/cassandra/commitlog 
+sudo mkdir -p /dbstore/cassandra/saved_caches
+sudo chown -R cassandra:cassandra /dbstore
 
 #
 # Update /etc/hosts file
