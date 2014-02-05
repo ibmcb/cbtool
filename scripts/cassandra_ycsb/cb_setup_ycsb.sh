@@ -26,9 +26,9 @@ fi
 
 if [ $standalone == online ] ; then
     # retrieve online values from API
-    LOAD_PROFILE=$1
+    #LOAD_PROFILE=$1
     LOAD_LEVEL=$2
-    LOAD_DURATION=$3
+    #LOAD_DURATION=$3
     LOAD_ID=$4
 fi
 
