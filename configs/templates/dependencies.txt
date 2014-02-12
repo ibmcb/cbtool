@@ -182,8 +182,8 @@ ubuntu-d3-git = cd 3RPARTYDIR; git clone GITURL/d3.git
 rhel-bootstrap-git = cd 3RPARTYDIR; git clone GITURL/bootstrap.git
 ubuntu-bootstrap-git = cd 3RPARTYDIR; git clone GITURL/bootstrap.git
 
-rhel-pyhtml-git = cd 3RPARTYDIR; git clone GITURL/HTML.git; cd HTML; sudo python setup.py install
-ubuntu-pyhtml-git = cd 3RPARTYDIR; git clone GITURL/HTML.git; cd HTML; sudo python setup.py install
+rhel-pyhtml-git = cd 3RPARTYDIR; git clone GITURL/HTML.py; cd HTML.py; sudo python setup.py install
+ubuntu-pyhtml-git = cd 3RPARTYDIR; git clone GITURL/HTML.py; cd HTML.py; sudo python setup.py install
 
 rhel-novaclient-git = cd 3RPARTYDIR; git clone https://github.com/openstack/python-novaclient.git; cd python-novaclient; sudo python setup.py install
 ubuntu-novaclient-git = cd 3RPARTYDIR; git clone https://github.com/openstack/python-novaclient.git; cd python-novaclient; sudo python setup.py install
