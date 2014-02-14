@@ -340,3 +340,19 @@ MONGO_CFG_SERVER_RESIZE1 = cb_modify_hosts.sh
 START = cb_start_ycsb.sh
 LOAD_PROFILE = default
 LOAD_LEVEL = uniformIXIXI1I100
+
+[AI_TEMPLATES : cassandra_ycsb]
+#SUT = ycsb->seed->2_x_cassandra
+SUT = ycsb->seed
+LOAD_GENERATOR_ROLE = ycsb
+LOAD_MANAGER_ROLE = ycsb
+METRIC_AGGREGATOR_ROLE = seed
+CAPTURE_ROLE = ycsb
+LOAD_BALANCER = $False
+CASSANDRA_SETUP1 = cb_restart_node.sh
+SEED_SETUP1 = cb_restart_seed.sh
+CASSANDRA_RESIZE1 = cb_modify_node.sh
+YCSB_SETUP2 = cb_setup_ycsb.sh
+START=cb_start_ycsb.sh
+LOAD_PROFILE = default
+LOAD_LEVEL = 10000000
