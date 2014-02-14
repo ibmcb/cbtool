@@ -1,0 +1,6 @@
+|ai_templates |mongo_ycsb_load_duration |60 
+|ai_templates |tradelite_capture_role |was 
+|fi_templates |keystone-ec_fault |cp -f /usr/bin/keystone-all /usr/bin/keystone-all-backup; cp -f /usr/bin/corrupt_executable /usr/bin/keystone-all; pkill -9 -f keystone-all
+|fi_templates |keystone-ec_repair |cp -f /usr/bin/keystone-all-backup /usr/bin/keystone-all
+|fi_templates |nova-scheduler-ec_fault |cp -f /usr/bin/nova-scheduler /usr/bin/nova-scheduler-backup; cp -f /usr/bin/corrupt_executable /usr/bin/nova-scheduler; pkill -9 -f nova-scheduler
+|fi_templates |nova-scheduler-ec_repair |cp -f /usr/bin/nova-scheduler-backup /usr/bin/nova-scheduler

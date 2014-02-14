@@ -1,2 +1,2 @@
 AIs with the following types can be attached to to this experiment (Cloud TESTCLOUD) :
-nullworkload, fbnfsrd, ddgen, mlg2, filebench, lost, windesktop, netperf, hadoop, hpcc, mongo_ycsb, daytrader, coremark, tradelite, specimap, mweb, specweb, specjbb, mlg
+nullworkload, specjbb, ddgen, mlg2, fbnfsrd, lost, mlg, windesktop, netperf, hadoop, hpcc, mongo_ycsb, daytrader, coremark, tradelite, specimap, mweb, specweb, filebench

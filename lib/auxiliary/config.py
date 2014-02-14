@@ -30,6 +30,7 @@ import re
 from time import time
 from re import sub, compile
 from pwd import getpwuid
+from subprocess import PIPE,Popen
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.remote.network_functions import get_ip_address, NetworkException
@@ -534,3 +535,14 @@ def rewrite_cloudoptions(cld_attr_lst, available_clouds, user_defined_only = Tru
                 for  _attribute in cld_attr_lst[_category].keys() :
                     if _attribute.count(searchkey) :
                         del cld_attr_lst[_category][_attribute]
+
+def get_version(path) :
+    '''
+    TBD
+    '''
+    _proc_h = Popen("cd " + path + "; git log --pretty=format:'%h' -n 1", shell=True, stdout=PIPE, stderr=PIPE)
+
+    (_output_stdout, _output_stderr) = _proc_h.communicate()
+    _proc_h.wait()
+    
+    return _output_stdout

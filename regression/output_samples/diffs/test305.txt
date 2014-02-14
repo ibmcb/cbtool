@@ -1,0 +1,6 @@
+|Redis Version |2.6.16 
+|MongoDB Version |2.4.6 
+|VMs |48 
+|VM RESERVATIONS |48 
+|VMs DEPARTED |61 
+|EXPERIMENT COUNTER |300 

@@ -225,7 +225,7 @@ def main() :
 
         for _imageid in options.imageids.split(',') :
             if "root_disk_format" not in _coal :
-                if _imageid.count(".raw") :
+                if _imageid.count(".raw") or _imageid.count(".qcow2") :
                     _coal["root_disk_format"] = "qcow2"
                 else :
                     _coal["root_disk_format"] = "raw"

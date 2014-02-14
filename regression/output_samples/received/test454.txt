@@ -191,6 +191,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |ai_templates                     |mlg_sut                        |mlg                                  
 |ai_templates                     |mongo_ycsb_capture_role        |mongodb                              
 |ai_templates                     |mongo_ycsb_load_balancer       |False                                
+|ai_templates                     |mongo_ycsb_load_duration       |60                                   
 |ai_templates                     |mongo_ycsb_load_generator_role |mongos                               
 |ai_templates                     |mongo_ycsb_load_level          |uniformIXIXI1I100                    
 |ai_templates                     |mongo_ycsb_load_manager_role   |mongos                               
@@ -291,6 +292,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |ai_templates                     |specweb_specwebfront_reset1    |cb_restart_webserver.sh              
 |ai_templates                     |specweb_start                  |cb_specrun.sh                        
 |ai_templates                     |specweb_sut                    |client_specweb->specwebfront->specwebback
+|ai_templates                     |tradelite_capture_role         |was                                  
 |ai_templates                     |tradelite_db2_reset1           |cb_restart_db2.sh                    
 |ai_templates                     |tradelite_db2_setup1           |cb_restart_db2.sh                    
 |ai_templates                     |tradelite_lb_reset1            |cb_restart_loadbalancer.sh           
@@ -406,6 +408,8 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |fi_templates                     |glance-registry-kp_repair      |                                     
 |fi_templates                     |glance-registry-ss_fault       |service glance-registry stop         
 |fi_templates                     |glance-registry-ss_repair      |service glance-registry start        
+|fi_templates                     |keystone-ec_fault              |cp -f /usr/bin/keystone-all /usr/bin/keystone-all-backup; cp -f /usr/bin/corrupt_executable /usr/bin/keystone-all; pkill -9 -f keystone-all
+|fi_templates                     |keystone-ec_repair             |cp -f /usr/bin/keystone-all-backup /usr/bin/keystone-all
 |fi_templates                     |keystone-kp_fault              |pkill -9 -f keystone                 
 |fi_templates                     |keystone-kp_repair             |                                     
 |fi_templates                     |keystone-ss_fault              |service keystone stop                
@@ -438,6 +442,8 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |fi_templates                     |nova-novncproxy-kp_repair      |                                     
 |fi_templates                     |nova-novncproxy-ss_fault       |service nova-novncproxy stop         
 |fi_templates                     |nova-novncproxy-ss_repair      |service nova-novncproxy start        
+|fi_templates                     |nova-scheduler-ec_fault        |cp -f /usr/bin/nova-scheduler /usr/bin/nova-scheduler-backup; cp -f /usr/bin/corrupt_executable /usr/bin/nova-scheduler; pkill -9 -f nova-scheduler
+|fi_templates                     |nova-scheduler-ec_repair       |cp -f /usr/bin/nova-scheduler-backup /usr/bin/nova-scheduler
 |fi_templates                     |nova-scheduler-kp_fault        |pkill -9 -f nova-scheduler           
 |fi_templates                     |nova-scheduler-kp_repair       |                                     
 |fi_templates                     |nova-scheduler-ss_fault        |service nova-scheduler stop          
@@ -526,7 +532,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |logstore                         |watch_facility                 |17                                   
 |metricstore                      |config_string                  |logpath--REPLSTORESWORKINGDIR/logs/mongod.log;logappend--true;fork--true;port--REPLPORT;dbpath--REPLSTORESWORKINGDIR
 |metricstore                      |database                       |metrics                              
-|metricstore                      |host                           |172.16.0.254                         
+|metricstore                      |host                           |172.16.1.250                         
 |metricstore                      |kind                           |mongodb                              
 |metricstore                      |port                           |27017                                
 |metricstore                      |protocol                       |TCP                                  
@@ -615,12 +621,12 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |space                            |tracefile                      |regression/regression_test_experiment_plan.txt
 |space                            |username                       |msilva                               
 |space                            |vm_daemon_dir                  |/home/klabuser                       
-|time                             |experiment_id                  |EXP-10-09-2013-09-50-12-AM-EDT       
+|time                             |experiment_id                  |EXP-02-13-2014-02-54-16-PM-EST       
 |time                             |external_timeout               |30                                   
 |time                             |external_tries                 |2                                    
 |time                             |hard_reset                     |True                                 
 |time                             |internal_tries                 |2                                    
-|time                             |start_time                     |1381326612                           
+|time                             |start_time                     |1392321255                           
 |time                             |step_delay                     |5                                    
 |time                             |username                       |msilva                               
 |vm_defaults                      |access                         |                                     

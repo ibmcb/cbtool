@@ -7,6 +7,12 @@ then
     IMAGE_STORAGE_DIR=/kvm_repo
 fi
 
+if [ -d ${IMAGE_STORAGE_DIR} ]
+then
+    echo "Image directory ${IMAGE_STORAGE_DIR} does not exist."
+    exit 2
+fi
+
 PLMFBASEDIR=${IMAGE_STORAGE_DIR}/plmfbase
 
 PLMBASEVG=$2
@@ -24,12 +30,12 @@ VOLUME_GROUP_LIST=`vgdisplay`
 IS_VOLUME_GROUP_CREATED=`echo $VOLUME_GROUP_LIST | grep -c ${PLMBASEVG}`
 if [ ${IS_VOLUME_GROUP_CREATED} -eq 0 ]
 then
-    echo "Please create the Volume Group ${PLMBASEVG} before proceeding"
-    exit 1
+    echo "Volume Group ${PLMBASEVG} not created. Bypassing LVM-based VMs."
+    exit 0
 fi
 VGPESIZE=`vgdisplay -c | grep ${PLMBASEVG} | cut -d ':' -f 13`
 VGPESIZE=`echo "${VGPESIZE} * 1024" | bc`
- 
+
 echo "Volume Group exists (Physical Extent size is ${VGPESIZE} bytes"
 VOLUME_LIST=`lvdisplay -c`
 

@@ -1,20 +1,20 @@
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |1.72M                         
-|Redis Version                                        |2.5.12                        
-|Uptime (in seconds)                                  |2417220                       
-|Total Connections Received                           |4534                          
-|Total Commands Processed                             |3862804                       
+|Used Memory                                          |1.05M                         
+|Redis Version                                        |2.6.16                        
+|Uptime (in seconds)                                  |1792937                       
+|Total Connections Received                           |5105                          
+|Total Commands Processed                             |785996                        
 |Number of Keys                                       |88                            
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|MongoDB Version                                      |2.4.5                         
-|Storage Size                                         |5448105984.0                  
-|Data Size                                            |4961770584.0                  
-|Index Size                                           |133661248                     
-|Average Object Size                                  |8106.17022764                 
-|Collections                                          |38                            
+|MongoDB Version                                      |2.4.6                         
+|Storage Size                                         |1425408                       
+|Data Size                                            |376592                        
+|Index Size                                           |318864                        
+|Average Object Size                                  |533.416430595                 
+|Collections                                          |12                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
 |VMCs                                                 |0                             

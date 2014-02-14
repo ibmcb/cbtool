@@ -1,0 +1,1 @@
+nullworkload, specjbb, ddgen, mlg2, fbnfsrd, lost, mlg, windesktop, netperf, hadoop, hpcc, mongo_ycsb, daytrader, coremark, tradelite, specimap, mweb, specweb, filebench

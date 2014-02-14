@@ -1,11 +1,11 @@
- status: VMC 6417BDBE-3782-5513-88F5-D13BF3634AA1 was successfully registered on SimCloud "TESTCLOUD".
+ status: VMC 819EB99B-CBF2-5139-A64C-0FA4DA159362 was successfully registered on SimCloud "TESTCLOUD".
  status: Attribute "collect_from_host" was set to "false". Skipping Host OS performance monitor daemon startup
-VMC object 6417BDBE-3782-5513-88F5-D13BF3634AA1 (named "simzone_c") sucessfully attached to this experiment. It is ssh-accessible at the IP address 134.104.50.34 (simzone_c).
+VMC object 819EB99B-CBF2-5139-A64C-0FA4DA159362 (named "simzone_c") sucessfully attached to this experiment. It is ssh-accessible at the IP address 251.79.40.55 (simzone_c).
 The following ATTACHED VMCs are in this experiment (Cloud TESTCLOUD) :
 |name                    |host_count      |pool                    |cloud_hostname                  |cloud_ip         
-|simzone_a               |5               |sut                     |simzone_a                       |140.111.106.34   
-|simzone_b               |5               |sut                     |simzone_b                       |169.214.221.42   
-|simzone_c               |5               |sut                     |simzone_c                       |134.104.50.34    
+|simzone_a               |5               |sut                     |simzone_a                       |145.168.57.184   
+|simzone_b               |5               |sut                     |simzone_b                       |255.194.78.67    
+|simzone_c               |5               |sut                     |simzone_c                       |251.79.40.55     
 
 The VMC object simzone_c, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
 |attribute (VMC object key)               |value                                
@@ -15,20 +15,20 @@ The VMC object simzone_c, attached to this experiment, has the following attribu
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |1.86M                         
-|Redis Version                                        |2.5.12                        
-|Uptime (in seconds)                                  |2417239                       
-|Total Connections Received                           |4535                          
-|Total Commands Processed                             |3866059                       
+|Used Memory                                          |1.19M                         
+|Redis Version                                        |2.6.16                        
+|Uptime (in seconds)                                  |1792956                       
+|Total Connections Received                           |5106                          
+|Total Commands Processed                             |789251                        
 |Number of Keys                                       |220                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|MongoDB Version                                      |2.4.5                         
-|Storage Size                                         |5448130560.0                  
-|Data Size                                            |4961828816.0                  
-|Index Size                                           |133669424                     
-|Average Object Size                                  |8105.61648754                 
-|Collections                                          |39                            
+|MongoDB Version                                      |2.4.6                         
+|Storage Size                                         |1454080                       
+|Data Size                                            |393064                        
+|Index Size                                           |327040                        
+|Average Object Size                                  |524.785046729                 
+|Collections                                          |13                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
 |VMCs                                                 |3                             
@@ -87,7 +87,7 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |3                             
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|6417BDBE-3782-5513-88F5-D13BF3634AA1 (simzone_c) VM RESERVATIONS|0                             
-|EDD914B7-85D1-5BD5-B077-3CF720266386 (simzone_a) VM RESERVATIONS|0                             
-|5C46CE08-93AA-57D0-ADF3-BA13C0F8703A (simzone_b) VM RESERVATIONS|0                             
+|819EB99B-CBF2-5139-A64C-0FA4DA159362 (simzone_c) VM RESERVATIONS|0                             
+|E295D856-13AE-5733-8733-8F6A1D9439D3 (simzone_a) VM RESERVATIONS|0                             
+|6CAC7D17-46D6-59EF-ABC5-FDDC884714A8 (simzone_b) VM RESERVATIONS|0                             
 

@@ -1,4 +1,4 @@
-AIDRS object D7CD548A-C195-57C5-894C-2DE06DF2A88F (named "aidrs_1") was sucessfully detached from this experiment.
+AIDRS object 281282CD-B041-52FE-881C-046B6AA05007 (named "aidrs_1") was sucessfully detached from this experiment.
 The following ATTACHED AIDRSs are in this experiment (Cloud TESTCLOUD) :
 No objects available.
 The following ATTACHED AIs are in this experiment (Cloud TESTCLOUD) :
@@ -8,20 +8,20 @@ No objects available.
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |6.91M                         
-|Redis Version                                        |2.5.12                        
-|Uptime (in seconds)                                  |2417887                       
-|Total Connections Received                           |4646                          
-|Total Commands Processed                             |4091480                       
+|Used Memory                                          |6.25M                         
+|Redis Version                                        |2.6.16                        
+|Uptime (in seconds)                                  |1793563                       
+|Total Connections Received                           |5216                          
+|Total Commands Processed                             |1014678                       
 |Number of Keys                                       |635                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|MongoDB Version                                      |2.4.5                         
-|Storage Size                                         |5449940992.0                  
-|Data Size                                            |4963057512.0                  
-|Index Size                                           |133832944                     
-|Average Object Size                                  |8099.07670616                 
-|Collections                                          |40                            
+|MongoDB Version                                      |2.4.6                         
+|Storage Size                                         |2674688                       
+|Data Size                                            |694640                        
+|Index Size                                           |482384                        
+|Average Object Size                                  |558.84151247                  
+|Collections                                          |14                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
 |VMCs                                                 |4                             
@@ -80,8 +80,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |394                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|CEA17C37-820A-507F-9356-90956267A568 (simzone_a) VM RESERVATIONS|0                             
-|966D86CB-90BB-553D-A06A-0FFA0818D568 (simzone_d) VM RESERVATIONS|0                             
-|C41BC369-F411-5382-B95F-70C31BD20E23 (simzone_c) VM RESERVATIONS|0                             
-|2FF9728E-95B3-5EE9-A0A4-61875B507FA8 (simzone_b) VM RESERVATIONS|0                             
+|C3B836AF-6AAE-5401-84E8-B00701C39D77 (simzone_d) VM RESERVATIONS|0                             
+|2F03C41C-37EA-529D-873F-A59AD9D097ED (simzone_b) VM RESERVATIONS|0                             
+|85B1573F-AFCB-5D91-861C-A9290E0BC814 (simzone_a) VM RESERVATIONS|0                             
+|9EA9AC96-B5DE-50B4-93B7-F0933B0AEB65 (simzone_c) VM RESERVATIONS|0                             
 

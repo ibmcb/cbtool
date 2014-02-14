@@ -1,4 +1,4 @@
-Background operation execution success. Operation "vm-protect" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.0.254,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,timeout:240,host:172.16.0.254,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,youngest,source,tcp,default --operation=vm-protect --cn=TESTCLOUD --uuid=EAB6E030-24F3-5A7C-9702-1348E53A3551 --daemon". The process id is 24675.
+Background operation execution success. Operation "vm-protect" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.1.250,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,timeout:240,host:172.16.1.250,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,youngest,source,tcp,default --operation=vm-protect --cn=TESTCLOUD --uuid=962BB1E7-F776-5307-91F9-1BBABFC31ABF --daemon". The process id is 2474.
 
 Going to unconditionally wait for 10s (10 seconds). The command line interface will be blocked during the waiting.
 Waited 1 seconds... (10.0%)
@@ -15,20 +15,20 @@ Waited for 10 seconds.
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |7.23M                         
-|Redis Version                                        |2.5.12                        
-|Uptime (in seconds)                                  |2417205                       
-|Total Connections Received                           |4533                          
-|Total Commands Processed                             |3854799                       
+|Used Memory                                          |6.53M                         
+|Redis Version                                        |2.6.16                        
+|Uptime (in seconds)                                  |1792924                       
+|Total Connections Received                           |5104                          
+|Total Commands Processed                             |777955                        
 |Number of Keys                                       |700                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|MongoDB Version                                      |2.4.5                         
-|Storage Size                                         |5448433664.0                  
-|Data Size                                            |4961746536.0                  
-|Index Size                                           |133677600                     
-|Average Object Size                                  |8106.23688673                 
-|Collections                                          |40                            
+|MongoDB Version                                      |2.4.6                         
+|Storage Size                                         |1757184                       
+|Data Size                                            |373856                        
+|Index Size                                           |327040                        
+|Average Object Size                                  |532.558404558                 
+|Collections                                          |14                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
 |VMCs                                                 |6                             
@@ -87,14 +87,14 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |419                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|2A3C7A6F-F507-5C26-894B-CA777DA4A067 (simzone_a) VM RESERVATIONS|0                             
-|DDE459C8-87C4-5C23-B346-48A22B829E97 (simzone_b) VM RESERVATIONS|0                             
-|841649F1-B9B9-5F66-BF08-8188BB2F57BF (simzone_c) VM RESERVATIONS|0                             
-|9EBF0FA2-134B-5E3A-95D5-44DF7534E3FA (simzone_source) VM RESERVATIONS|1                             
-|6B0F67F7-125D-5C72-ABE0-4C4FDED0303A (simzone_dest) VM RESERVATIONS|0                             
-|290AA171-A379-5C01-9211-06AFF9C329FA (simzone_d) VM RESERVATIONS|0                             
+|66E103E1-611D-56B3-8B27-1EBC8751A933 (simzone_dest) VM RESERVATIONS|0                             
+|D5F67A24-626A-527C-B73E-9316D166072B (simzone_a) VM RESERVATIONS|0                             
+|EA214CDC-1030-5492-A6AA-60EAAADC4E63 (simzone_c) VM RESERVATIONS|0                             
+|A414E772-9250-5F2D-A837-3D8359E84A0D (simzone_source) VM RESERVATIONS|1                             
+|972DF8A7-3176-530C-B808-C3DAA249DC9A (simzone_b) VM RESERVATIONS|0                             
+|967F09B5-EB3E-5608-B643-DD6884132C4F (simzone_d) VM RESERVATIONS|0                             
 
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 |name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
-|vm_129        |tinyvm              |pico32      |84.184.194.225  |source                     |sut                 |none    |none       |EAB6E030-24F3-5A7C-9702-1348E53A3551
+|vm_129        |tinyvm              |pico32      |85.82.35.239    |source                     |sut                 |none    |none       |962BB1E7-F776-5307-91F9-1BBABFC31ABF
 

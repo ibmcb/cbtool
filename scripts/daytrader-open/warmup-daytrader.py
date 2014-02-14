@@ -11,7 +11,7 @@ parser.add_option("-u", "--maxuser", dest="user",
 parser.add_option("-q", "--maxquote", dest="quote",
         help="Max user value")
 parser.add_option("-t", "--threads", dest="threads",
-        help="Number of warmup threads to run agasint the server")
+        help="Number of warmup threads to run against the server")
 (options, args) = parser.parse_args()
 
 #----------------------- Set DayTrader Max Users -------------------------------

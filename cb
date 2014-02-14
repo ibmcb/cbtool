@@ -28,7 +28,7 @@ from sys import stdout, path, argv
 from subprocess import Popen, PIPE
 from pwd import getpwuid
 
-from lib.auxiliary.config import get_available_clouds
+from lib.auxiliary.config import get_available_clouds, get_version
 
 import os
 import re
@@ -54,6 +54,11 @@ def main() :
     _path = re.compile(".*\/").search(os.path.realpath(__file__)).group(0)
     _history = _path + "/.cb_history"
     _3rd_party = _path + "/3rd_party"
+
+    _version = get_version(_path)
+
+    _name = _path.split('/')[-2].capitalize()
+    print _name + " version is \"" + _version + "\""
 
     if not os.path.exists(_3rd_party) :
         os.mkdir(_3rd_party)

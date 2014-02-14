@@ -218,25 +218,30 @@ class RedisMgdConn :
                             _msg += " is missing the mandatory parameter \"" 
                             _msg += _key_suffix + "\"." 
                             raise self.ObjectStoreMgdConnException(str(_msg), 2)
-                            
-            for _key in cloud_kv_list["aidrs_templates"].keys() :
-                if _key.count("_type") :
-                    self.add_to_list(cloud_name, "GLOBAL", "aidrs_patterns", _key.replace("_type", ''))
 
-            for _key in cloud_kv_list["vmcrs_templates"].keys() :
-                if _key.count("_scope") :
-                    self.add_to_list(cloud_name, "GLOBAL", "vmcrs_patterns", _key.replace("_scope", ''))
+            if "aidrs_templates" in cloud_kv_list :
+                for _key in cloud_kv_list["aidrs_templates"].keys() :
+                    if _key.count("_type") :
+                        self.add_to_list(cloud_name, "GLOBAL", "aidrs_patterns", _key.replace("_type", ''))
 
-            for _key in cloud_kv_list["firs_templates"].keys() :
-                if _key.count("_scope") :
-                    self.add_to_list(cloud_name, "GLOBAL", "firs_patterns", _key.replace("_scope", ''))
+            if "vmcrs_templates" in cloud_kv_list :
+                for _key in cloud_kv_list["vmcrs_templates"].keys() :
+                    if _key.count("_scope") :
+                        self.add_to_list(cloud_name, "GLOBAL", "vmcrs_patterns", _key.replace("_scope", ''))
 
-            for _key in cloud_kv_list["fi_templates"].keys() :
-                if _key.count("_fault") :
-                    self.add_to_list(cloud_name, "GLOBAL", "fi_situations", _key.replace("_fault", ''))
+            if "firs_templates" in cloud_kv_list :
+                for _key in cloud_kv_list["firs_templates"].keys() :
+                    if _key.count("_scope") :
+                        self.add_to_list(cloud_name, "GLOBAL", "firs_patterns", _key.replace("_scope", ''))
+            
+            if "fi_templates" in cloud_kv_list :
+                for _key in cloud_kv_list["fi_templates"].keys() :
+                    if _key.count("_fault") :
+                        self.add_to_list(cloud_name, "GLOBAL", "fi_situations", _key.replace("_fault", ''))
 
-            for _key in cloud_kv_list["vm_templates"].keys() :
-                self.add_to_list(cloud_name, "GLOBAL", "vm_roles", _key)
+            if "vm_templates" in cloud_kv_list :
+                for _key in cloud_kv_list["vm_templates"].keys() :
+                    self.add_to_list(cloud_name, "GLOBAL", "vm_roles", _key)
 
             self.redis_conn.set(obj_inst + ":GLOBAL:experiment_counter", "0")
 
@@ -456,7 +461,9 @@ class RedisMgdConn :
         '''
         TBD
         '''
+
         self.conn_check()
+
         obj_inst = self.experiment_inst + ":" + cloud_name
         self.signal_api_refresh(cloud_name)
 
@@ -467,8 +474,8 @@ class RedisMgdConn :
         try :
 
             if lock :
-                _create_lock = self.acquire_lock(cloud_name, obj_type, obj_uuid, \
-                                                 "create_object", 1)    
+                _create_lock = self.acquire_lock(cloud_name, obj_type, \
+                                                 obj_uuid, "create_object", 1)    
             if cond :
                 if self.object_exists(cloud_name, obj_type, obj_uuid, False) :
                     _msg = obj_type + " object " + obj_uuid + " could not be "
@@ -476,19 +483,19 @@ class RedisMgdConn :
                     _msg += "there (FQIN: " + _obj_inst_fn + ")." 
                     cberr(_msg)
                     raise self.ObjectStoreMgdConnException(str(_msg), 2)
-                
+
             self.redis_conn.sadd(_obj_inst_fn, obj_uuid)
             _msg = obj_type + " object " + obj_uuid + " added to object list "
             _msg += "(FQIN " + _obj_inst_fn + ")."
             cbdebug(_msg)
 
             for _key, _value in obj_attr_list.iteritems() :
-                self.update_object_attribute(cloud_name, obj_type, obj_uuid, False, _key,\
-                                              _value, False)
+                self.update_object_attribute(cloud_name, obj_type, obj_uuid, \
+                                             False, _key, _value, False)
 
             if expiration :
                 self.redis_conn.expire(_obj_inst_fn + ':' + obj_uuid, int(expiration))
-    
+
             if obj_type != "GLOBAL" and obj_type != "COLLECTOR" and \
                 not obj_type.count("TRACKING") and \
                 not obj_type.count("PENDING") :

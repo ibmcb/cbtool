@@ -24,58 +24,73 @@
     @author: Marcio A. Silva, Michael R. Hines
 '''
 from sys import path
-from os import access, F_OK
+import os
 import re
-import sys
+import urllib2
 import platform
 
 from lib.remote.process_management import ProcessManagement
 
-def deps_file_parser(depsdict, username, file_name = None) :
+def deps_file_parser(depsdict, username, sub_paths, cli_args) :
     '''
     TBD
     '''
-    
-    if not file_name :
-        _fn = path[0] + "/configs/" + username + "_dependencies.txt"
-    
-        if not access(_fn, F_OK) :
-            _fn = path[0] + "/configs/templates/dependencies.txt"
-    else :
-        _fn = file_name
 
-    try:
-        _fd = open(_fn, 'r')
-        _fc = _fd.readlines()
-        _fd.close()
+    _path = re.compile(".*\/").search(os.path.realpath(__file__)).group(0) + "/../../"
+
+    _file_name_list = []
+
+    _file_name_list.append(_path + sub_paths["defaults"] + "dependencies.txt")
+
+    if len(cli_args) > 1 :
+        if not (cli_args[1].lower().count("none") or cli_args[1].lower().count("empty")) :
+            _file_name_list.append(_path + sub_paths["custom"] + cli_args[1])
+
+    if len(cli_args) >= 2 :
+        for _name in cli_args[2:] :
+            _file_name_list.append(_path + sub_paths["specific"] + _name)
+
+    for _file in _file_name_list :
+        if os.access(_file, os.F_OK) :
+
+            try:
+                _fd = open(_file, 'r')
+                _fc = _fd.readlines()
+                _fd.close()
+                
+                for _line in _fc :
+                    _line = _line.strip()
         
-        for _line in _fc :
-            _line = _line.strip()
+                    if _line.count("#",0,2) :
+                        _sstr = None
+                    elif len(_line) < 3 :
+                        _sstr = None
+                    elif _line.count(" = ") :
+                        _sstr = " = "
+                    elif _line.count(" =") :
+                        _sstr = " ="
+                    elif _line.count("= ") :
+                        _sstr = "= "
+                    elif _line.count("=") :
+                        _sstr = "="
+                    else :
+                        _sstr = None
+        
+                    if _sstr :
+                        _key, _value = _line.split(_sstr)
+                        _key = _key.strip()
+                        depsdict[_key] = _value
+        
+            except Exception, e :
+                _msg = "###### Error reading file \"" + _file  + "\":" + str(e)
+                print _msg
+                exit(4)
 
-            if _line.count("#",0,2) :
-                _sstr = None
-            elif len(_line) < 3 :
-                _sstr = None
-            elif _line.count(" = ") :
-                _sstr = " = "
-            elif _line.count(" =") :
-                _sstr = " ="
-            elif _line.count("= ") :
-                _sstr = "= "
-            elif _line.count("=") :
-                _sstr = "="
-            else :
-                _sstr = None
-
-            if _sstr :
-                _key, _value = _line.split(_sstr)
-                _key = _key.strip()
-                depsdict[_key] = _value
-
-    except Exception, e :
-        _msg = "###### Error reading file \"" + _fn  + "\":" + str(e)
+    if not len(depsdict) :
+        _msg = "Error: None of the files on the list \"" + str(_file_name_list)
+        _msg += "\" contained configuration statements"
         print _msg
-        exit(4)
+        exit(9)
     
     return True
  
@@ -86,80 +101,310 @@ def get_linux_distro() :
     _linux_distro_name, _linux_distro_ver, _x = platform.linux_distribution()
     if _linux_distro_name.count("Red Hat") :
         _distro = "rhel"
+    elif _linux_distro_name.count("CentOS") :
+        _distro = "rhel"        
     elif _linux_distro_name.count("Ubuntu") :
         _distro = "ubuntu"
     else :
         print "Unsupported distribution (" + _linux_distro_name + ")"
         exit(191)
 
-    if len('%x'%sys.maxint) == 8 :
-        _arch = "i686"
-    else :
-        _arch = "x86_64"
+    _arch = platform.processor()
+
+    if _distro == "ubuntu" and _arch == "x86_64" :
+        _arch = "amd64"
         
-    return _distro, _arch
+    return _distro, _linux_distro_ver,_arch
 
 def get_cmdline(depkey, depsdict, operation) :
     '''
     TBD
     '''
-    if operation == "inst" :
-        commandline_key = depsdict["cdist"] + '-' + depkey + '-' + depsdict[depkey + '-' + operation]
-    else :
-        commandline_key = depkey + '-' + operation
 
-    commandline = depsdict[commandline_key]
-    commandline = commandline.replace("3RPARTYDIR", depsdict["3rdpartydir"].strip().replace("//",'/'))
-    commandline = commandline.replace("GITURL", depsdict["giturl"].strip())
-    commandline = commandline.replace("RSYNCURL", depsdict["rsyncurl"].strip())
-    commandline = commandline.replace("ARCH", depsdict["carch"].strip())
-    commandline = commandline.replace("DISTRO", depsdict["cdist"].strip())
-    commandline = commandline.replace("USERNAME", depsdict["username"].strip())
-    return commandline
+    if depsdict[depkey + '-' + operation] == "man" :        
+        _urls_key = depsdict["cdist"] + '-' + depkey + '-' + depsdict["carch"] + "-urls-" + depsdict[depkey + '-' + operation]
+    else :
+        _urls_key = depsdict["cdist"] + '-' + depkey + "-urls-" + depsdict[depkey + '-' + operation]
+
+    if _urls_key in depsdict :
+        
+        _actual_url = False
+        for _url in depsdict[_urls_key].split(',') :
+            if check_url(_url, depsdict) :
+                _actual_url = _url
+                break
+
+        if not _actual_url :
+            _msg = "None of the urls indicated to install \"" + depkey + "\" (" 
+            _msg += depsdict[_urls_key] + ") seem to be functional."
+            print _msg
+            exit(36)
+    else :
+        _actual_url = False
+
+    _actual_cmdline = ""
+
+    if operation == "install" :
+        for _sub_step in [ "preinstall", "install", "postinstall"] :
+            _commandline_key = depsdict["cdist"] + '-' + depkey + '-' + _sub_step + '-' + depsdict[depkey + '-' + operation]
+
+            _actual_cmdline += get_actual_cmdline(_commandline_key, depsdict, _actual_url) + ';'
+
+        if depkey == "repo" :
+            build_repository_files(depsdict) 
+
+        if depsdict["cdist"] == "ubuntu" and _actual_cmdline.count("apt-get install") :
+            _actual_cmdline += "sudo apt-get -f install"
+            
+    else :
+        _commandline_key = depkey + '-' + operation
+        _actual_cmdline += get_actual_cmdline(_commandline_key, depsdict, _actual_url)
+
+    if _actual_cmdline[0] == ';' :
+        _actual_cmdline = _actual_cmdline[1:]
+
+    if _actual_cmdline[-1] == ';' :
+        _actual_cmdline = _actual_cmdline[0:-1]
+        
+    _actual_cmdline = _actual_cmdline.replace(";;",';')
+    
+    return _actual_cmdline
+
+def check_url(url, depsdict) :
+    '''
+    TBD
+    '''
+    try:
+        if len(url) :
+            _url = url.replace("ARCH", depsdict["carch"].strip())
+            urllib2.urlopen(urllib2.Request(_url), timeout = 3)
+        return True
+        
+    except:
+        return False
+
+def get_actual_cmdline(commandline_key, depsdict, _actual_url) :
+    '''
+    TBD
+    '''
+    _commandline = ''
+    if commandline_key in depsdict :
+        _commandline = depsdict[commandline_key]
+        _commandline = _commandline.replace("3RPARTYDIR", depsdict["3rdpartydir"].strip().replace("//",'/'))
+        if _actual_url :
+            _commandline = _commandline.replace("URL", _actual_url.strip())
+        _commandline = _commandline.replace("ARCH", depsdict["carch"].strip())
+        _commandline = _commandline.replace("DISTRO", depsdict["cdist"].strip())
+        _commandline = _commandline.replace("USERNAME", depsdict["username"].strip())    
+
+    return _commandline
+
+def select_repository_url(depsdict) :
+    '''
+    TBD
+    '''
+    depsdict["repo_addr_list"] = []
+
+    depsdict["repo_addr"] = False
+
+    _msg = "Selecting package repository address...." 
+    print _msg
+    
+    for _key in sorted(depsdict.keys()) :
+        if _key.count("repo-addr") :
+            _index = int(_key.replace("repo-addr",''))
+            depsdict["repo_addr_list"].insert(_index, depsdict[_key])
+ 
+    for _repo_addr in depsdict["repo_addr_list"] :
+        if check_url("http://" + _repo_addr, depsdict) :
+            depsdict["repo_addr"] = _repo_addr
+    
+    if len(depsdict["repo_addr_list"]) :
+        if depsdict["repo_addr"] :
+            _msg = "A package repository in \"" + depsdict["repo_addr"] + "\" seems to be up"
+            depsdict["repo_dropbox"] = "http://" + depsdict["repo_addr"] + "/dropbox"
+            depsdict["repo_credentials_url"] = "http://" + depsdict["repo_addr"] + "/dropbox/ssh_keys"
+        else :
+            _msg = "None of the selected repositories was available. Will ignore"
+            _msg += " any repository URL that has the keyword REPO_ADDR..."
+    else :
+        _msg = "No package repository specified. Will ignore any repository URL"
+        _msg += " that has the keyword REPO_ADDR..."
+
+    print _msg
+    
+    return True
+
+def build_repository_file_conents(depsdict, repo_name) :
+    '''
+    TBD
+    '''
+    
+    _file_contents = ""
+
+    if "local_url" in depsdict["repo_contents"][repo_name] :
+        if len(depsdict["repo_contents"][repo_name]["local-url"]) :
+            if not depsdict["repo_addr"] and \
+            depsdict["repo_contents"][repo_name]["local-url"].count("REPO_ADDR") :
+                _actual_url = depsdict["repo_contents"][repo_name]["original-url"]
+            else :
+                _actual_url = depsdict["repo_contents"][repo_name]["local-url"]
+        _actual_url = depsdict["repo_contents"][repo_name]["original-url"]
+    else :
+        _actual_url = depsdict["repo_contents"][repo_name]["original-url"]
+
+    if depsdict["repo_addr"] :
+        _actual_url = _actual_url.replace("REPO_ADDR", depsdict["repo_addr"])
+
+    if not check_url(_actual_url, depsdict) :
+        _actual_url = depsdict["repo_contents"][repo_name]["original-url"]
+        if not check_url(_actual_url, depsdict) :
+            _msg = "Error: No URLs available for repository \"" + repo_name + "\""
+            print _msg
+            exit(178)
+            
+    if depsdict["cdist"] == "ubuntu" :
+        for _dist in depsdict["repo_contents"][repo_name]["dists"].split(',') :
+            for _component in depsdict["repo_contents"][repo_name]["dists"].split(',') :
+                _file_contents += "deb " + _actual_url + ' ' + _dist + ' ' + _component + "\n"
+    else :
+        _file_contents += "[" + repo_name + "]\n"
+        _file_contents += "name = " + repo_name + "\n"        
+        _file_contents += "baseurl = " + _actual_url + "\n"
+
+        for _attr in [ "enabled", "skip_if_unavailable", "priority", "gpgcheck" ] :
+            _file_contents += _attr + " = " + depsdict["repo_contents"][repo_name][_attr] + "\n"
+
+        if  depsdict["repo_contents"][repo_name]["gpgcheck"] == "0" :
+            True
+        else :
+            _file_contents += "gpgkey = " + depsdict["repo_contents"][repo_name]["gpgkey"] + "\n"
+
+
+    return _file_contents
+
+def build_repository_files(depsdict) :
+    '''
+    TBD
+    '''
+    build_repository_contents(depsdict)
+
+    if depsdict["cdist"] == "ubuntu" :
+        _file_extension = ".list"
+        _repo_dir = "/etc/apt/sources.list.d/"
+        _file_lines = []
+    else :
+        _file_extension = ".repo"
+        _repo_dir = "/etc/yum.repos.d/"
+    
+    for _repo in depsdict["repos_" + depsdict["cdist"]] :
+        
+        _file_contents = build_repository_file_conents(depsdict, _repo)
+        
+        try:
+            _file_name = "/tmp/" + _repo + _file_extension
+            _file_descriptor = file(_file_name, 'w')
+            _file_descriptor.write(_file_contents)
+            _file_descriptor.close()
+            os.chmod(_file_name, 0755)
+
+        except IOError, msg :
+            _msg = "######## Error writing file \"" + _file_name  + "\":" + str(msg)
+            print _msg
+            exit(4)
+
+        except OSError, msg :
+            _msg = "######## Error writing file \"" + _file_name  + "\":" + str(msg)
+            print _msg
+            exit(4)
+
+        except Exception, e :
+            _msg = "######## Error writing file \"" + _file_name  + "\":" + str(e)
+            print _msg
+            exit(4)
+         
+    return True
+        
+def build_repository_contents(depsdict) :
+    '''
+    TBD
+    '''
+
+    depsdict["repo_contents"] = {}
+    depsdict["repos_ubuntu"] = []
+    depsdict["repos_rhel"] = []
+
+    _tmp_list = []
+    for _key in depsdict.keys() :
+        if _key.count("name") and not _key.count("username") :
+            _distro, _repo_name, _x = _key.split('-')
+            _tmp_list.append(_distro + '-' + _repo_name)
+            depsdict["repo_contents"][_distro + '-' + _repo_name] = {}
+            depsdict["repo_contents"][_distro + '-' + _repo_name] = {}
+            depsdict["repos_" + _distro].append(_distro + '-' + _repo_name)
+
+    for _key in depsdict.keys() :
+        for _repo_name in _tmp_list :
+            for _repo_attr in [ "local-url", "original-url", "enabled", \
+                               "skip_if_unavailable", "priority", "gpgcheck", \
+                               "gpgkey", "dists", "components"] :
+                if _key.count(_repo_name + '-' + _repo_attr) :
+                    depsdict["repo_contents"][_repo_name][_repo_attr] = \
+                    depsdict[_key].replace("REPO_ARCH", depsdict["carch"]).replace("REPO_RELEASE", depsdict["cdistver"])
+
+    return True
 
 def inst_conf_msg(depkey, depsdict) :
     '''
     TBD
     '''
-    
     msg = " Please install/configure \"" + depkey + "\" by issuing the following command: \""
-    msg += get_cmdline(depkey, depsdict, "inst") + "\"\n"
-    
+    msg += get_cmdline(depkey, depsdict, "install") + "\"\n"
+
     return msg
 
-def execute_command(operation, depkey, depsdict, hostname = "127.0.0.1", username = None, process_manager = None) :
+def execute_command(operation, depkey, depsdict, hostname = "127.0.0.1", username = None, process_manager = None):
     '''
     TBD
     '''
     try :
+        _status = 100        
+        _msg = "Obtaining command to be executed...."
+
         _cmd = {}
-        _cmd["test"] = get_cmdline(depkey, depsdict, "test")
-        _cmd["inst"] = get_cmdline(depkey, depsdict, "inst")
+        _cmd["configure"] = get_cmdline(depkey, depsdict, "configure")
+        _cmd["install"] = get_cmdline(depkey, depsdict, "install")
 
         if not process_manager :
             process_manager = ProcessManagement(hostname)
 
-        if depkey != "sudo" and operation == "test" :
-            _msg = "Checking \"" + depkey + "\" version by executing the command \""
+        _order = depsdict[depkey + "-order"]
+
+        if depkey != "sudo" and operation == "configure" :
+            _msg = "(" + _order + ") Checking \"" + depkey + "\" version by executing the command \""
             _msg += _cmd[operation] + "\"..."
         
-        elif depkey == "sudo" and operation == "test" :
-            _msg = "Checking passwordless sudo for the user \"" + username + "\" "
+        elif depkey == "sudo" and operation == "configure" :
+            _msg = "(" + _order + ") Checking passwordless sudo for the user \"" + username + "\" "
             _msg += "by executing the command \"" + _cmd[operation] + "\"..."
 
         else :
-            _msg = "    Installing \"" + depkey + "\" by executing the command \""
+            _msg = "(" + _order + ") Installing \"" + depkey + "\" by executing the command \""
             _msg += _cmd[operation] + "\"..."
 
-        _status, _result_stdout, _result_stderr = process_manager.run_os_command(_cmd[operation])
+        print _msg
+
+        _msg = "RESULT: "
+
+        _status, _result_stdout, _result_stderr = process_manager.run_os_command(_cmd[operation], False)
 
         if not _status :
-            if operation == "inst" :
-                _msg += "DONE OK."
+            if operation == "install" :
+                _msg += "DONE OK.\n"
             else :
                 _msg += compare_versions(depkey, depsdict, _result_stdout.strip())
         else :
-            _msg += "NOT OK."
+            _msg += "NOT OK. "
 
         if _msg.count("NOT OK") :
             _status = 701
@@ -175,10 +420,15 @@ def execute_command(operation, depkey, depsdict, hostname = "127.0.0.1", usernam
     finally :
         if _status :
 
-            if operation == "inst" :
+            if operation == "install" :
                 _msg += "There was an error while installing \"" + depkey + "\"."
             else :
-                _msg += inst_conf_msg(depkey, depsdict)
+                _msg += "\nACTION: " + inst_conf_msg(depkey, depsdict)
+                if depkey == "sudo" :
+                    _msg = "Before proceeding further: " + inst_conf_msg("sudo", depsdict)
+                    _msg += " *AS ROOT*"
+                    print _msg
+                    exit(20)
 
         return _status, _msg        
 
@@ -209,77 +459,71 @@ def compare_versions(depkey, depsdict, version_b) :
         elif _result <= -1000000 :
             return " NOT OK."
         else :
-            return str(version_b) + " >= " + str(version_a) + " OK."
+            return str(version_b) + " >= " + str(version_a) + " OK.\n"
 
-def dependency_checker_installer(hostname, username, trd_party_dir, operation) :
+def dependency_checker_installer(hostname, username, trd_party_dir, operation, sub_paths, cli_args) :
     '''
     TBD
     '''
     _depsdict = {}
     
-    deps_file_parser(_depsdict, username)
+    deps_file_parser(_depsdict, username, sub_paths, cli_args)
     
-    _depsdict["cdist"], _depsdict["carch"] = get_linux_distro()
+    _depsdict["cdist"], _depsdict["cdistver"], _depsdict["carch"] = get_linux_distro()
     _depsdict["3rdpartydir"] = trd_party_dir
     _depsdict["username"] = username
 
-    _proc_man =  ProcessManagement()
-
-    for _dep in [ "sudo" ]:
-        _status, _msg = execute_command("test", _dep, _depsdict, hostname = "127.0.0.1", username = username, process_manager = _proc_man)
-        print _msg
-        if _status :
-            _dep_missing = 1
-            _fmsg = _dep
-            break
-
     try :
-        if not _status :
-            _status = 100
-            _fmsg = "An error has occurred, but no error message was captured"
-    
-            _fmsg = ": "
-            _missing_dep = []
-            _dep_list = []
- 
-            for _key in _depsdict.keys() :
-                if _key.count("-test") and not _key.count("sudo") :
-                    _dep_list.append(_key.replace("-test",''))
-            _dep_list.remove("git")
-            _dep_list.sort()
-            _dep_list.insert(0, "git")
+        _status = 100
+        _fmsg = "An error has occurred, but no error message was captured"
 
-            _dep_missing = 0
-            for _dep in _dep_list :
-                _status, _msg = execute_command("test", _dep, _depsdict, hostname = "127.0.0.1", username = username, process_manager = _proc_man)
-                print _msg
+        _missing_dep = []
+        _dep_list = [0] * 5000
 
-                if _status :
-                    _dep_missing += 1
-                    _missing_dep.append(_dep)
-    
-                    if operation == "inst" :
-                        _status, _msg = execute_command("inst", _dep, _depsdict, hostname = "127.0.0.1", username = username, process_manager = _proc_man)
-                        print _msg
-                        if not _status :
-                            _dep_missing -= 1
-                            _missing_dep.remove(_dep)
+        select_repository_url(_depsdict)       
 
-            _status = _dep_missing
-            _fmsg += ','.join(_missing_dep)
+        for _key in _depsdict.keys() :
+            if _key.count("-order")  :
+                _dependency = _key.replace("-order",'')
+                _order = int(_depsdict[_key]) * 20
+                _dep_list.insert(_order, _dependency)
 
-    except ProcessManagement.ProcessManagementException, obj :
-        _status = str(obj.status)
-        _fmsg = str(obj.msg)
+        _dep_list = [x for x in _dep_list if x != 0]
+
+        _fmsg = ""
+        _dep_missing = 0
+        
+        for _dep in _dep_list :
+
+            _status, _msg = execute_command("configure", _dep, _depsdict, hostname = "127.0.0.1", username = username)
+            print _msg
+
+            if _status :
+                _dep_missing += 1
+                _missing_dep.append(_dep)
+
+                if operation == "install" :
+
+                    _status, _msg = execute_command("install", _dep, _depsdict, hostname = "127.0.0.1", username = username)
+                    print _msg
+                    if not _status :
+                        _dep_missing -= 1
+                        _missing_dep.remove(_dep)
+
+        _status = _dep_missing
+        _fmsg += ','.join(_missing_dep)
 
     except Exception, e :
         _status = 23
         _fmsg = str(e)
     
     finally :
-        if _status :
-            _msg = "There are " + str(_dep_missing) + " dependencies missing " + _fmsg
 
+        if _status :
+            if _dep_missing :
+                _msg = "There are " + str(_dep_missing) + " dependencies missing " + _fmsg
+            else :
+                _msg = ""
         else :
             _msg = "All dependencies are in place"
         return _status, _msg

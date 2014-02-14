@@ -27,6 +27,7 @@
 from pwd import getpwuid
 from shutil import copyfile
 
+from sys import path, argv
 import os
 import re
 
@@ -41,10 +42,23 @@ def main() :
         os.mkdir(_3rd_party)
 
     from lib.auxiliary.dependencies import dependency_checker_installer
-    _msg = "Checking for Cloud Rapid Experimentation Analysis and Toolkit"
-    _msg +=  " dependencies on this node........."
-    print _msg
-    _status, _msg = dependency_checker_installer("127.0.0.1", getpwuid(os.getuid())[0], _3rd_party, "test")
+
+    _tool = "Cloud Rapid Experimentation Analysis and Toolkit (cbtool)"
+    _bname = os.path.basename(argv[0])
+
+    _sub_paths = {}
+    _sub_paths["defaults"] = "/configs/templates/"
+    _sub_paths["custom"] = "/configs/"
+    _sub_paths["specific"] = "/scripts/"
+
+    if _bname == "configure" :    
+        _msg = "Checking for " + _tool + " dependencies on this node........."
+        print _msg
+    else :
+        _msg = "Installing dependencies for " + _tool + " on this node........."
+        print _msg
+
+    _status, _msg = dependency_checker_installer("127.0.0.1", getpwuid(os.getuid())[0], _3rd_party, _bname, _sub_paths, argv)
     if _status :
         print _msg
         print "Please add the missing dependency(ies) and re-run configure again."
@@ -53,16 +67,5 @@ def main() :
         print _msg
 
     _username = getpwuid(os.getuid())[0]
-    
-    _msg = "Checking for a \"private\" configuration file for user \"" + _username
-    _msg += "\" in " + _path + "/configs/" + _username + "_cloud_definitions.txt)"
-    print _msg
-    if not os.path.exists(_path + "/configs/" + _username + "_cloud_definitions.txt") :
-        _msg = "Copying " + _path + "/configs/cloud_definitions.txt to "
-        _msg += _path + "/configs/" + _username + "_cloud_definitions.txt..."
-        print _msg
-        copyfile(_path + "/configs/cloud_definitions.txt", _path + "/configs/" + _username + "_cloud_definitions.txt")
-        print "Please re-run configure again"
-    else :
-        print "File already exists, tool is ready to be used."
+
 main()
