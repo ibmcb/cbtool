@@ -85,6 +85,12 @@ PLM_INITIAL_VMCS = grouptwo:sut
 PLM_SSH_KEY_NAME = path_to_local_private_key_file
 PLM_LOGIN = cbuser
 
+[OBJECTSTORE]
+USAGE = shared
+
+[METRICSTORE]
+USAGE = shared
+
 [API_DEFAULTS]
 PORT = 7070
 

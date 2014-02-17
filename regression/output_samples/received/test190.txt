@@ -1,19 +1,19 @@
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |675.70K                       
+|Used Memory                                          |675.78K                       
 |Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |1792177                       
-|Total Connections Received                           |4982                          
-|Total Commands Processed                             |533137                        
+|Uptime (in seconds)                                  |1881330                       
+|Total Connections Received                           |6022                          
+|Total Commands Processed                             |1607450                       
 |Number of Keys                                       |77                            
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
 |MongoDB Version                                      |2.4.6                         
 |Storage Size                                         |413696                        
-|Data Size                                            |25888                         
+|Data Size                                            |25872                         
 |Index Size                                           |277984                        
-|Average Object Size                                  |210.471544715                 
+|Average Object Size                                  |210.341463415                 
 |Collections                                          |12                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         

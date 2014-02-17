@@ -34,6 +34,20 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |ai_defaults                      |username                       |msilva                               
 |ai_defaults                      |vm_creation                    |explicit                             
 |ai_defaults                      |vm_destruction                 |explicit                             
+|ai_templates                     |cassandra_ycsb_capture_role    |ycsb                                 
+|ai_templates                     |cassandra_ycsb_cassandra_resize1|cb_modify_node.sh                    
+|ai_templates                     |cassandra_ycsb_cassandra_setup1|cb_restart_node.sh                   
+|ai_templates                     |cassandra_ycsb_load_balancer   |False                                
+|ai_templates                     |cassandra_ycsb_load_duration   |60                                   
+|ai_templates                     |cassandra_ycsb_load_generator_role|ycsb                                 
+|ai_templates                     |cassandra_ycsb_load_level      |10000000                             
+|ai_templates                     |cassandra_ycsb_load_manager_role|ycsb                                 
+|ai_templates                     |cassandra_ycsb_load_profile    |default                              
+|ai_templates                     |cassandra_ycsb_metric_aggregator_role|seed                                 
+|ai_templates                     |cassandra_ycsb_seed_setup1     |cb_restart_seed.sh                   
+|ai_templates                     |cassandra_ycsb_start           |cb_start_ycsb.sh                     
+|ai_templates                     |cassandra_ycsb_sut             |ycsb->seed                           
+|ai_templates                     |cassandra_ycsb_ycsb_setup2     |cb_setup_ycsb.sh                     
 |ai_templates                     |coremark_capture_role          |coremark                             
 |ai_templates                     |coremark_coremark_setup1       |cb_setup_cmk.sh                      
 |ai_templates                     |coremark_load_balancer         |False                                
@@ -621,12 +635,12 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |space                            |tracefile                      |regression/regression_test_experiment_plan.txt
 |space                            |username                       |msilva                               
 |space                            |vm_daemon_dir                  |/home/klabuser                       
-|time                             |experiment_id                  |EXP-02-13-2014-02-54-16-PM-EST       
+|time                             |experiment_id                  |EXP-02-14-2014-03-40-18-PM-EST       
 |time                             |external_timeout               |30                                   
 |time                             |external_tries                 |2                                    
 |time                             |hard_reset                     |True                                 
 |time                             |internal_tries                 |2                                    
-|time                             |start_time                     |1392321255                           
+|time                             |start_time                     |1392410417                           
 |time                             |step_delay                     |5                                    
 |time                             |username                       |msilva                               
 |vm_defaults                      |access                         |                                     

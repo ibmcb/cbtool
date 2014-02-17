@@ -1,4 +1,4 @@
-Background operation execution success. Operation "vmc-detach" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.1.250,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,timeout:240,host:172.16.1.250,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,all,false --operation=vmc-detach --cn=TESTCLOUD --uuid=ALL --daemon". The process id is 2834.
+Background operation execution success. Operation "vmc-detach" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.1.250,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,timeout:240,host:172.16.1.250,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,all,false --operation=vmc-detach --cn=TESTCLOUD --uuid=ALL --daemon". The process id is 9475.
 
 Going to unconditionally wait for 8s (8 seconds). The command line interface will be blocked during the waiting.
 Waited 1 seconds... (12.5%)
@@ -17,17 +17,17 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |Metric                                               |Value                         
 |Used Memory                                          |1.36M                         
 |Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |1792985                       
-|Total Connections Received                           |5112                          
-|Total Commands Processed                             |804446                        
+|Uptime (in seconds)                                  |1882148                       
+|Total Connections Received                           |6152                          
+|Total Commands Processed                             |1878667                       
 |Number of Keys                                       |117                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
 |MongoDB Version                                      |2.4.6                         
-|Storage Size                                         |1454080                       
-|Data Size                                            |415112                        
-|Index Size                                           |359744                        
-|Average Object Size                                  |516.95143213                  
+|Storage Size                                         |1585152                       
+|Data Size                                            |415096                        
+|Index Size                                           |351568                        
+|Average Object Size                                  |516.931506849                 
 |Collections                                          |13                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         

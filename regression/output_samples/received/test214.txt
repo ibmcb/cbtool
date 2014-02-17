@@ -1,4 +1,4 @@
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 |name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
-|vm_1          |tinyvm              |pico32      |154.64.52.108   |simhostc1                  |SUT                 |none    |none       |9E31F99F-CD3C-5BB5-95D1-8BE89E1F26CC
+|vm_1          |tinyvm              |pico32      |120.219.63.216  |simhosta1                  |SUT                 |none    |none       |81BB9405-5DBF-5DFF-B84E-C810935D0894
 

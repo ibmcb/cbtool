@@ -358,3 +358,4 @@ YCSB_SETUP2 = cb_setup_ycsb.sh
 START=cb_start_ycsb.sh
 LOAD_PROFILE = default
 LOAD_LEVEL = 10000000
+LOAD_DURATION = 60

@@ -1,4 +1,4 @@
-AIDRS object 281282CD-B041-52FE-881C-046B6AA05007 (named "aidrs_1") was sucessfully detached from this experiment.
+AIDRS object D1D64608-A4BB-5420-BE14-3429E41E0B0D (named "aidrs_1") was sucessfully detached from this experiment.
 The following ATTACHED AIDRSs are in this experiment (Cloud TESTCLOUD) :
 No objects available.
 The following ATTACHED AIs are in this experiment (Cloud TESTCLOUD) :
@@ -8,19 +8,19 @@ No objects available.
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |6.25M                         
+|Used Memory                                          |6.24M                         
 |Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |1793563                       
-|Total Connections Received                           |5216                          
-|Total Commands Processed                             |1014678                       
+|Uptime (in seconds)                                  |1882738                       
+|Total Connections Received                           |6258                          
+|Total Commands Processed                             |2088896                       
 |Number of Keys                                       |635                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
 |MongoDB Version                                      |2.4.6                         
-|Storage Size                                         |2674688                       
-|Data Size                                            |694640                        
-|Index Size                                           |482384                        
-|Average Object Size                                  |558.84151247                  
+|Storage Size                                         |2805760                       
+|Data Size                                            |694704                        
+|Index Size                                           |457856                        
+|Average Object Size                                  |558.893000805                 
 |Collections                                          |14                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
@@ -80,8 +80,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |394                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|C3B836AF-6AAE-5401-84E8-B00701C39D77 (simzone_d) VM RESERVATIONS|0                             
-|2F03C41C-37EA-529D-873F-A59AD9D097ED (simzone_b) VM RESERVATIONS|0                             
-|85B1573F-AFCB-5D91-861C-A9290E0BC814 (simzone_a) VM RESERVATIONS|0                             
-|9EA9AC96-B5DE-50B4-93B7-F0933B0AEB65 (simzone_c) VM RESERVATIONS|0                             
+|383602BF-27FC-542A-B537-6A4A58844260 (simzone_a) VM RESERVATIONS|0                             
+|584A58C5-7A36-52ED-8040-423C8D700E29 (simzone_b) VM RESERVATIONS|0                             
+|863DDED0-9FB6-5070-9AC8-FCF03E03B672 (simzone_c) VM RESERVATIONS|0                             
+|2462767E-73BC-530A-A92C-CBED38E01A6A (simzone_d) VM RESERVATIONS|0                             
 

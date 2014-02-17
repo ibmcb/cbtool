@@ -1,25 +1,25 @@
- status: Waiting for vm_28 (cloud-assigned uuid 981F6D5B-5383-5F69-808B-32F46BEB596A) to start...
- status: Waiting for vm_26 (cloud-assigned uuid EF11DF3F-2129-5C14-BD62-1853F7983CCA) to start...
- status: Waiting for vm_27 (cloud-assigned uuid 1BBE4C49-092E-5D34-BFB4-BDA0E5FC9879) to start...
- status: Trying to establish network connectivity to vm_26 (cloud-assigned uuid EF11DF3F-2129-5C14-BD62-1853F7983CCA), on IP address 38.11.223.76...
- status: Trying to establish network connectivity to vm_28 (cloud-assigned uuid 981F6D5B-5383-5F69-808B-32F46BEB596A), on IP address 118.116.192.142...
- status: Trying to establish network connectivity to vm_27 (cloud-assigned uuid 1BBE4C49-092E-5D34-BFB4-BDA0E5FC9879), on IP address 196.147.245.77...
- status: Bypassing the sending of a copy of the code tree to vm_27 (196.147.245.77)...
- status: Bypassing the sending of a copy of the code tree to vm_28 (118.116.192.142)...
- status: Bypassing the sending of a copy of the code tree to vm_26 (38.11.223.76)...
+ status: Waiting for vm_27 (cloud-assigned uuid 9EAA5580-873A-519C-87F7-B2AE31F64370) to start...
+ status: Waiting for vm_26 (cloud-assigned uuid CA8CBF05-BEAC-52DD-B160-509AC1AED8F6) to start...
+ status: Waiting for vm_28 (cloud-assigned uuid 57C7A985-651E-59B2-A3E8-3D2D5DEE5DEB) to start...
+ status: Trying to establish network connectivity to vm_27 (cloud-assigned uuid 9EAA5580-873A-519C-87F7-B2AE31F64370), on IP address 19.171.57.58...
+ status: Trying to establish network connectivity to vm_26 (cloud-assigned uuid CA8CBF05-BEAC-52DD-B160-509AC1AED8F6), on IP address 22.17.233.19...
+ status: Trying to establish network connectivity to vm_28 (cloud-assigned uuid 57C7A985-651E-59B2-A3E8-3D2D5DEE5DEB), on IP address 102.142.24.235...
+ status: Bypassing the sending of a copy of the code tree to vm_28 (102.142.24.235)...
+ status: Bypassing the sending of a copy of the code tree to vm_27 (19.171.57.58)...
+ status: Bypassing the sending of a copy of the code tree to vm_26 (22.17.233.19)...
  status: Bypassing generic VM post_boot configuration on all VMs belonging to ai_1...
  status: Bypassing application-specific configuration on all VMs beloging to ai_1...
  status: QEMU Scraper will NOT be automatically started during the deployment of ai_1...
-AI object C2035EE1-3B3D-5760-80D0-7530650FB750 (named "ai_1") sucessfully attached to this experiment. It is ssh-accessible at the IP address 196.147.245.77 (1BBE4C49-092E-5D34-BFB4-BDA0E5FC9879.simcloud.com).
+AI object 6443665D-20F9-5426-BE46-4264C8DDF367 (named "ai_1") sucessfully attached to this experiment. It is ssh-accessible at the IP address 19.171.57.58 (9EAA5580-873A-519C-87F7-B2AE31F64370.simcloud.com).
 The following ATTACHED AIs are in this experiment (Cloud TESTCLOUD) :
 |name      |type           |sut                                               |cloud_ip        |arrival        |aidrs                                   |uuid
-|ai_1      |daytrader      |1_x_client_daytrader->1_x_was->1_x_db2            |196.147.245.77  |1392321469     |none                                    |C2035EE1-3B3D-5760-80D0-7530650FB750
+|ai_1      |daytrader      |1_x_client_daytrader->1_x_was->1_x_db2            |19.171.57.58    |1392410635     |none                                    |6443665D-20F9-5426-BE46-4264C8DDF367
 
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 |name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
-|vm_26         |was                 |iron32      |38.11.223.76    |simhostb1                  |SUT                 |ai_1    |none       |378D96EF-2880-5E28-A1A9-2534E5DEA017
-|vm_27         |client_daytrader    |nano32      |196.147.245.77  |simhostd1                  |LG                  |ai_1    |none       |91556C3A-A09F-5F89-9BEB-892094701DED
-|vm_28         |db2                 |platinum64  |118.116.192.142 |simhosta1                  |SUT                 |ai_1    |none       |20F9DB9D-9FC3-5E3C-A384-1C366EA4B937
+|vm_26         |was                 |iron32      |22.17.233.19    |simhostc1                  |SUT                 |ai_1    |none       |9176C5E3-EF95-5B71-94F3-2CF9E6864D9D
+|vm_27         |client_daytrader    |nano32      |19.171.57.58    |simhostd1                  |LG                  |ai_1    |none       |CB51D894-2075-552A-81EB-D2513B65EFD0
+|vm_28         |db2                 |platinum64  |102.142.24.235  |simhostc1                  |SUT                 |ai_1    |none       |2A7AA310-9A19-5D98-A706-B09736FA8A97
 
 The AI object ai_1, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
 |attribute (AI object key)               |value                                
@@ -30,19 +30,19 @@ The AI object ai_1, attached to this experiment, has the following attributes (C
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |2.25M                         
+|Used Memory                                          |2.29M                         
 |Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |1793152                       
-|Total Connections Received                           |5149                          
-|Total Commands Processed                             |845523                        
-|Number of Keys                                       |390                           
+|Uptime (in seconds)                                  |1882318                       
+|Total Connections Received                           |6191                          
+|Total Commands Processed                             |1919746                       
+|Number of Keys                                       |388                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
 |MongoDB Version                                      |2.4.6                         
-|Storage Size                                         |1511424                       
-|Data Size                                            |513872                        
-|Index Size                                           |466032                        
-|Average Object Size                                  |520.640324215                 
+|Storage Size                                         |1642496                       
+|Data Size                                            |513856                        
+|Index Size                                           |449680                        
+|Average Object Size                                  |520.624113475                 
 |Collections                                          |14                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
@@ -102,8 +102,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |139                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|C3B836AF-6AAE-5401-84E8-B00701C39D77 (simzone_d) VM RESERVATIONS|1                             
-|2F03C41C-37EA-529D-873F-A59AD9D097ED (simzone_b) VM RESERVATIONS|1                             
-|85B1573F-AFCB-5D91-861C-A9290E0BC814 (simzone_a) VM RESERVATIONS|1                             
-|9EA9AC96-B5DE-50B4-93B7-F0933B0AEB65 (simzone_c) VM RESERVATIONS|0                             
+|383602BF-27FC-542A-B537-6A4A58844260 (simzone_a) VM RESERVATIONS|0                             
+|584A58C5-7A36-52ED-8040-423C8D700E29 (simzone_b) VM RESERVATIONS|0                             
+|863DDED0-9FB6-5070-9AC8-FCF03E03B672 (simzone_c) VM RESERVATIONS|2                             
+|2462767E-73BC-530A-A92C-CBED38E01A6A (simzone_d) VM RESERVATIONS|1                             
 

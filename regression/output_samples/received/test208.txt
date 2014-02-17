@@ -1,17 +1,17 @@
 The HOST object host_simhosta3, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
 |attribute (HOST object key)               |value                                
-|arrival                                   |1392320544                           
+|arrival                                   |1392409698                           
 |cloud_hostname                            |simhosta3                            
-|cloud_ip                                  |29.211.80.55                         
-|cloud_vm_uuid                             |FA1C7F96-3B2F-54AD-9891-3B12AC415182 
+|cloud_ip                                  |48.160.169.26                        
+|cloud_vm_uuid                             |88F33F59-C0A9-5EBA-A02C-033ADE1FFBDF 
 |cores                                     |16                                   
-|counter                                   |85                                   
+|counter                                   |86                                   
 |function                                  |hypervisor                           
 |identity                                  |/home/msilva/cloudbench/lib/auxiliary//../../credentials/bogus_id_rsa
 |login                                     |root                                 
 |memory                                    |131072                               
-|mgt_001_provisioning_request_originated   |1392320544                           
-|mgt_002_provisioning_request_sent         |0                                    
+|mgt_001_provisioning_request_originated   |1392409697                           
+|mgt_002_provisioning_request_sent         |1                                    
 |mgt_003_provisioning_request_completed    |0                                    
 |migrate_interface                         |default                              
 |model                                     |sim                                  
@@ -22,7 +22,7 @@ The HOST object host_simhosta3, attached to this experiment, has the following a
 |simulated                                 |True                                 
 |state                                     |attached                             
 |username                                  |msilva                               
-|uuid                                      |FA1C7F96-3B2F-54AD-9891-3B12AC415182 
-|vmc                                       |D5F67A24-626A-527C-B73E-9316D166072B 
+|uuid                                      |88F33F59-C0A9-5EBA-A02C-033ADE1FFBDF 
+|vmc                                       |2B8B3052-BD8E-5E84-8885-8B75FD72F9AB 
 |vmc_name                                  |simzone_a                            
 

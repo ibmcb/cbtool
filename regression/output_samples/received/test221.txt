@@ -1,11 +1,11 @@
-Background operation execution success. Operation "vm-attach" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.1.250,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,timeout:240,host:172.16.1.250,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,tinyvm,auto,empty,default,none,empty=empty --operation=vm-attach --cn=TESTCLOUD --uuid=CCD88F1B-DDB0-5185-BC5A-4D76EE628BD5 --daemon". The process id is 31265.
+Background operation execution success. Operation "vm-attach" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.1.250,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,timeout:240,host:172.16.1.250,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,tinyvm,auto,empty,default,none,empty=empty --operation=vm-attach --cn=TESTCLOUD --uuid=BB5DC2DB-59C9-5FEF-8077-E8D5BBE51C21 --daemon". The process id is 5760.
 
 Going to unconditionally wait for 1s (1 seconds). The command line interface will be blocked during the waiting.
 Waited 1 seconds... (100.0%)
 Waited for 1 seconds.
 The following PENDING VMs are in this experiment (Cloud TESTCLOUD) :
 |name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
-|vm_6          |unavailable         |unavailable |unavailable     |unavailable                |unavailable         |unavailable|unavailable|CCD88F1B-DDB0-5185-BC5A-4D76EE628BD5
+|vm_6          |unavailable         |unavailable |unavailable     |unavailable                |unavailable         |unavailable|unavailable|BB5DC2DB-59C9-5FEF-8077-E8D5BBE51C21
 
 Going to unconditionally wait for 8s (8 seconds). The command line interface will be blocked during the waiting.
 Waited 1 seconds... (12.5%)
@@ -19,28 +19,28 @@ Waited 8 seconds... (100.0%)
 Waited for 8 seconds.
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 |name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
-|vm_1          |tinyvm              |pico32      |154.64.52.108   |simhostc1                  |SUT                 |none    |none       |9E31F99F-CD3C-5BB5-95D1-8BE89E1F26CC
-|vm_3          |tinyvm              |pico32      |228.40.244.228  |simhostb1                  |SUT                 |none    |none       |E9776713-CB3F-5BD2-87D0-CF455216115A
-|vm_4          |db2                 |copper32    |2.85.77.47      |simhostc1                  |SUT                 |none    |none       |934E6A39-8052-52FD-9D92-E193380DDECD
-|vm_5          |netclient           |platinum64  |236.42.107.80   |simhostb1                  |SUT                 |none    |none       |F702D8A3-6401-53FD-A7C6-F321F566E5DE
-|vm_6          |tinyvm              |pico32      |6.107.165.76    |simhostb1                  |SUT                 |none    |none       |CCD88F1B-DDB0-5185-BC5A-4D76EE628BD5
+|vm_1          |tinyvm              |pico32      |120.219.63.216  |simhosta1                  |SUT                 |none    |none       |81BB9405-5DBF-5DFF-B84E-C810935D0894
+|vm_3          |tinyvm              |pico32      |61.157.202.128  |simhostb1                  |SUT                 |none    |none       |2BBC237E-44D6-54BE-AB93-96AA851AE246
+|vm_4          |db2                 |copper32    |193.234.172.147 |simhosta1                  |SUT                 |none    |none       |B10813E9-9FFD-5E46-B99A-7AC624FFAB7B
+|vm_5          |netclient           |platinum64  |254.53.118.87   |simhostb1                  |SUT                 |none    |none       |AA96CAD4-1E7E-59C1-8F8A-7C42BDD9D040
+|vm_6          |tinyvm              |pico32      |218.167.151.222 |simhosta1                  |SUT                 |none    |none       |BB5DC2DB-59C9-5FEF-8077-E8D5BBE51C21
 
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |1.32M                         
+|Used Memory                                          |1.33M                         
 |Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |1792254                       
-|Total Connections Received                           |4994                          
-|Total Commands Processed                             |561491                        
+|Uptime (in seconds)                                  |1881408                       
+|Total Connections Received                           |6034                          
+|Total Commands Processed                             |1635804                       
 |Number of Keys                                       |322                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
 |MongoDB Version                                      |2.4.6                         
 |Storage Size                                         |761856                        
-|Data Size                                            |105792                        
+|Data Size                                            |105904                        
 |Index Size                                           |294336                        
-|Average Object Size                                  |344.599348534                 
+|Average Object Size                                  |344.964169381                 
 |Collections                                          |14                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
@@ -100,8 +100,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |95                            
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|D5F67A24-626A-527C-B73E-9316D166072B (simzone_a) VM RESERVATIONS|0                             
-|972DF8A7-3176-530C-B808-C3DAA249DC9A (simzone_b) VM RESERVATIONS|3                             
-|EA214CDC-1030-5492-A6AA-60EAAADC4E63 (simzone_c) VM RESERVATIONS|2                             
-|967F09B5-EB3E-5608-B643-DD6884132C4F (simzone_d) VM RESERVATIONS|0                             
+|B25B0238-8257-5847-B4B0-AE0622BDBB60 (simzone_d) VM RESERVATIONS|0                             
+|A7ADD8B8-3B77-5C04-A200-4E10FD89DD12 (simzone_b) VM RESERVATIONS|2                             
+|21F066AD-6280-52AA-956C-847B043FD63E (simzone_c) VM RESERVATIONS|0                             
+|2B8B3052-BD8E-5E84-8885-8B75FD72F9AB (simzone_a) VM RESERVATIONS|3                             
 

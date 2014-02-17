@@ -273,9 +273,9 @@ R-ver = 2.1
 
 ### START - Dependency URLs ###
 rhel-redis-ppc64-urls-man = ftp://rpmfind.net/linux/fedora-secondary/development/rawhide/ppc64/os/Packages/r/redis-2.6.16-1.fc21.ppc64.rpm
-rhel-redis-x86_64-urls-man = ftp://rpmfind.net/linux/remi/enterprise/6/remi/x86_64/
+rhel-redis-x86_64-urls-man = ftp://rpmfind.net/linux/remi/enterprise/6/remi/x86_64
 rhel-redis-urls-git = https://github.com/antirez
-ubuntu-redis-amd64-urls-man = http://ppa.launchpad.net/rwky/redis/ubuntu/pool/main
+ubuntu-redis-amd64-urls-man = http://ppa.launchpad.net/rwky/redis/ubuntu/pool/main/r/redis
 ubuntu-redis-ppc64-urls-man = http://ppa.launchpad.net/chris-lea/redis-server/ubuntu/pool/main
 ubuntu-redis-urls-git = https://github.com/antirez
 
@@ -303,7 +303,7 @@ rhel-streamprox-urls-git = https://github.com/ibmcb
 ubuntu-streamprox-urls-git = https://github.com/ibmcb
 
 rhel-d3-urls-git = https://github.com/ibmcb
-ubuntu-d3-git = https://github.com/ibmcb
+ubuntu-d3-urls-git = https://github.com/ibmcb
 
 rhel-softlayer-vpn-x86_64-urls-man = http://mdo.watson.ibm.com/repo/dropbox/softlayer/array_vpn
 ubuntu-softlayer-vpn-urls-man = http://mdo.watson.ibm.com/repo/dropbox/softlayer/array_vpn
@@ -368,7 +368,7 @@ ubuntu-nmap-install-pm = sudo apt-get -y install nmap
 rhel-openvpn-install-pm = sudo yum -y install openvpn
 rhel-openvpn-postinstall-pm = sudo ln -s /usr/sbin/openvpn /usr/local/bin/openvpn
 ubuntu-openvpn-install-pm = sudo apt-get -y install openvpn
-ubuntu-openvpn-install-pm = sudo ln -s /usr/sbin/openvpn /usr/local/bin/openvpn
+ubuntu-openvpn-postinstall-pm = sudo ln -s /usr/sbin/openvpn /usr/local/bin/openvpn
 
 rhel-gmond-install-pm = sudo yum -y install ganglia-gmond-python ganglia
 rhel-gmond-postinstall-pm = sudo ln -s /usr/sbin/gmond /usr/local/bin/gmond
@@ -396,8 +396,8 @@ ubuntu-apache-install-pm = sudo apt-get -y install apache2
 rhel-redis-preinstall-man = lftp -c 'open -e "mget redis*" URL'
 rhel-redis-install-man = sudo yum -y install gperftools-libs && rpm -Uvh $(ls -t | grep redis | head -n 1)
 rhel-redis-postinstall-man = sudo sed -i "s/^bind .*/bind 0.0.0.0/" /etc/redis.conf; sudo /etc/init.d/redis restart; sudo chkconfig --add redis
-ubuntu-redis-preinstall-man = wget -N -P 3RPARTYDIR URL/r/redis/redis-server_2.8.5-rwky1~precise_ARCH.deb
-ubuntu-redis-install-man = sudo dpkg -i 3RPARTYDIR/redis-server_2.8.5-rwky1~precise_ARCH.deb
+ubuntu-redis-preinstall-man = lftp -c 'open -e "mget redis-server_2.8*precise_ARCH.deb" URL' 
+ubuntu-redis-install-man = sudo dpkg -i $(ls -t | grep redis-server | head -n 1)
 ubuntu-redis-postinstall-man = sudo sed -i "s/^bind .*/bind 0.0.0.0/" /etc/redis/redis.conf; sudo service redis-server restart
 
 rhel-redis-preinstall-git = cd 3RPARTYDIR; git clone URL/redis.git
@@ -442,7 +442,9 @@ ubuntu-python-beaker-install-pm = sudo apt-get -y install python-beaker
 rhel-pyredis-install-pip = sudo pip install redis
 ubuntu-pyredis-install-pip = sudo pip install redis
 
+rhel-pymongo-preinstall-pip = sudo yum -y install python-devel
 rhel-pymongo-install-pip = sudo pip install pymongo
+ubuntu-pymongo-preinstall-pip = sudo apt-get -y install python-dev
 ubuntu-pymongo-install-pip = sudo pip install pymongo
 
 rhel-pylibvirt-install-pm = sudo yum -y install libvirt-python
