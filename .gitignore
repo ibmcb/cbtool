@@ -51,3 +51,5 @@ gmetad-hosts.conf
 *hosts.conf
 configs/definitions.txt
 data
+configs/root_cloud_definitions.txt
+
