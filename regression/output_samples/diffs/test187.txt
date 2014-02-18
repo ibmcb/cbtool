@@ -18,3 +18,6 @@
 |fi_templates |keystone-ec_repair |cp -f /usr/bin/keystone-all-backup /usr/bin/keystone-all
 |fi_templates |nova-scheduler-ec_fault |cp -f /usr/bin/nova-scheduler /usr/bin/nova-scheduler-backup; cp -f /usr/bin/corrupt_executable /usr/bin/nova-scheduler; pkill -9 -f nova-scheduler
 |fi_templates |nova-scheduler-ec_repair |cp -f /usr/bin/nova-scheduler-backup /usr/bin/nova-scheduler
+|vm_templates |cassandra |size:gold64,imageid1:cassandra_instance
+|vm_templates |seed |size:iron32,imageid1:cassandra_instance
+|vm_templates |ycsb |size:bronze32,imageid1:mongo_instance

@@ -1867,23 +1867,26 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         if cloud["name"] not in services :
                             attrs = api.cldshow(cloud["name"], "space")
                             if "openvpn_server_address" in attrs :
-                                address = attrs["openvpn_bootstrap_address"]
-                                result = False 
-                                msg = "Failed to register openvpn address " + address + ": "
-                                try :
-                                    result = api.register(address)
-                                    services[cloud["name"]] = address
-                                    found[cloud["name"]] = cloud
-                                    msg = "Success registring openvpn address: " + address
-                                except APIException, e :
-                                    msg += str(e)
-                                except Exception, e :
-                                    msg += str(e)
-                                finally :
-                                    if result :
-                                        cbdebug(msg)
-                                    else :
-                                        cberr(msg)
+                                if attrs["openvpn_server_address"].lower() != "false" :
+                                    address = attrs["openvpn_bootstrap_address"]
+                                    result = False 
+                                    msg = "Failed to register openvpn address " + address + ": "
+                                    try :
+                                        result = api.register(address)
+                                        services[cloud["name"]] = address
+                                        found[cloud["name"]] = cloud
+                                        msg = "Success registring openvpn address: " + address
+                                    except APIException, e :
+                                        msg += str(e)
+                                    except Exception, e :
+                                        msg += str(e)
+                                    finally :
+                                        if result :
+                                            cbdebug(msg)
+                                        else :
+                                            cberr(msg)
+                                else :
+                                    found[cloud["name"]] = True 
                         else :
                             found[cloud["name"]] = True 
                                         

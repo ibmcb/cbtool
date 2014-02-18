@@ -635,12 +635,12 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |space                            |tracefile                      |regression/regression_test_experiment_plan.txt
 |space                            |username                       |msilva                               
 |space                            |vm_daemon_dir                  |/home/klabuser                       
-|time                             |experiment_id                  |EXP-02-14-2014-03-40-18-PM-EST       
+|time                             |experiment_id                  |EXP-02-18-2014-01-00-34-PM-EST       
 |time                             |external_timeout               |30                                   
 |time                             |external_tries                 |2                                    
 |time                             |hard_reset                     |True                                 
 |time                             |internal_tries                 |2                                    
-|time                             |start_time                     |1392410417                           
+|time                             |start_time                     |1392746434                           
 |time                             |step_delay                     |5                                    
 |time                             |username                       |msilva                               
 |vm_defaults                      |access                         |                                     
@@ -681,6 +681,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |vm_defaults                      |update_attempts                |720                                  
 |vm_defaults                      |update_frequency               |1                                    
 |vm_defaults                      |username                       |msilva                               
+|vm_templates                     |cassandra                      |size:gold64,imageid1:cassandra_instance
 |vm_templates                     |client_daytrader               |size:nano32,imageid1:cloudbench_root 
 |vm_templates                     |client_lost                    |size:micro32,imageid1:cloudbench_root
 |vm_templates                     |client_specweb                 |size:micro32,imageid1:cloudbench_root
@@ -712,6 +713,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |vm_templates                     |rubis_database                 |size:bronze32,imageids:1,imageid1:cloudbench_rubis_database
 |vm_templates                     |rubis_driver                   |size:bronze32,imageids:1,imageid1:cloudbench_rubis_driver
 |vm_templates                     |rubis_lb                       |size:bronze32,imageids:1,imageid1:cloudbench_rubis_loadbalancer
+|vm_templates                     |seed                           |size:iron32,imageid1:cassandra_instance
 |vm_templates                     |specjbb                        |size:iron32,imageid1:cloudbench_root 
 |vm_templates                     |specwebback                    |size:nano32,imageid1:cloudbench_specweb
 |vm_templates                     |specwebfront                   |size:copper32,imageid1:cloudbench_specweb
@@ -721,6 +723,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |vm_templates                     |was                            |size:iron32,imageid1:cloudbench_root 
 |vm_templates                     |willfail                       |size:nano32,imageid1:doesnotmatter   
 |vm_templates                     |windows                        |size:iron32,imageids:1,imageid1:cloudbench_windows
+|vm_templates                     |ycsb                           |size:bronze32,imageid1:mongo_instance
 |vmc_defaults                     |access                         |                                     
 |vmc_defaults                     |additional_discovery           |                                     
 |vmc_defaults                     |attempts                       |3                                    

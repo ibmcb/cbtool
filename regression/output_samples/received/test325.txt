@@ -1,6 +1,6 @@
- status: VMC 839882CD-6F26-5FF0-8B36-5B2F31F5E7EB was successfully registered on SimCloud "TESTCLOUD".
+ status: VMC 51667618-4C81-5D57-B65F-85940141D438 was successfully registered on SimCloud "TESTCLOUD".
  status: Attribute "collect_from_host" was set to "false". Skipping Host OS performance monitor daemon startup
-VMC object 839882CD-6F26-5FF0-8B36-5B2F31F5E7EB (named "simzone_source") sucessfully attached to this experiment. It is ssh-accessible at the IP address 156.191.100.29 (simzone_source).
- status: VMC A2313224-33E3-5AE2-AA67-ABD9F9E116A2 was successfully registered on SimCloud "TESTCLOUD".
+VMC object 51667618-4C81-5D57-B65F-85940141D438 (named "simzone_source") sucessfully attached to this experiment. It is ssh-accessible at the IP address 110.180.208.159 (simzone_source).
+ status: VMC 768508E6-6CCE-51D6-BB27-D5E7290D81B5 was successfully registered on SimCloud "TESTCLOUD".
  status: Attribute "collect_from_host" was set to "false". Skipping Host OS performance monitor daemon startup
-VMC object A2313224-33E3-5AE2-AA67-ABD9F9E116A2 (named "simzone_dest") sucessfully attached to this experiment. It is ssh-accessible at the IP address 210.249.107.30 (simzone_dest).
+VMC object 768508E6-6CCE-51D6-BB27-D5E7290D81B5 (named "simzone_dest") sucessfully attached to this experiment. It is ssh-accessible at the IP address 192.215.167.137 (simzone_dest).

@@ -1,12 +1,2 @@
-ignoredThe following ATTACHED AIs are in this experiment (Cloud TESTCLOUD) :
-|name |type |sut |cloud_ip |arrival |aidrs |uuid
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |xxxxxxxxxx |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-
-The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
-|name |role |size |cloud_ip |host_name |vmc_pool |ai |aidrs |uuid
 |Redis Version |2.6.16 
 |MongoDB Version |2.4.6 
-|VMs |36 
-|VM RESERVATIONS |36 
-|VMs DEPARTED |63 
-|EXPERIMENT COUNTER |290 

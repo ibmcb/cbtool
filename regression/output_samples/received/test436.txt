@@ -1,19 +1,19 @@
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |1.05M                         
+|Used Memory                                          |1.15M                         
 |Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |1882099                       
-|Total Connections Received                           |6145                          
-|Total Commands Processed                             |1859813                       
+|Uptime (in seconds)                                  |2218116                       
+|Total Connections Received                           |8098                          
+|Total Commands Processed                             |2481589                       
 |Number of Keys                                       |88                            
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
 |MongoDB Version                                      |2.4.6                         
-|Storage Size                                         |966656                        
-|Data Size                                            |372384                        
-|Index Size                                           |310688                        
-|Average Object Size                                  |535.034482759                 
+|Storage Size                                         |1556480                       
+|Data Size                                            |404976                        
+|Index Size                                           |318864                        
+|Average Object Size                                  |524.580310881                 
 |Collections                                          |12                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         

@@ -27,6 +27,9 @@ import os
 import fnmatch
 
 _home = os.environ["HOME"]
+_api_endpoint = "172.16.1.250"
+_cloud_name = "TESTSIMCLOUD"
+_vm_role = "tinyvm"
 
 for _path, _dirs, _files in os.walk(os.path.abspath(_home)):
     for _filename in fnmatch.filter(_files, "code_instrumentation.py") :
@@ -35,20 +38,32 @@ for _path, _dirs, _files in os.walk(os.path.abspath(_home)):
 
 from lib.api.api_service_client import *
 
-api = APIClient("http://172.16.1.222:7070")
+api = APIClient("http://" + _api_endpoint + ":7070")
 
 try :
     error = False
     vm = None
 
+    _cloud_attached = False
+    for _cloud in api.cldlist() :
+        if _cloud["name"] == _cloud_name :
+            _cloud_attached = True
+            _cloud_model = _cloud["model"]
+            break
+
+    if not _cloud_attached :
+        print "Cloud " + _cloud_name + " not attached"
+        exit(1)
+
     print "creating new VM..."
-    vm = api.vmattach("SIM1", "tinyvm")
+    vm = api.vmattach(_cloud_name, _vm_role)
 
     print vm["name"]
 
-    # Get some data from the monitoring system
-    for data in api.get_latest_data("SIM1", vm["uuid"], "runtime_os_VM") :
-        print data
+    if _cloud_model != "sim" :
+        # Get some data from the monitoring system
+        for data in api.get_latest_data(_cloud_name, vm["uuid"], "runtime_os_VM") :
+            print data
 
     # 'vm' is a dicitionary containing all the details of the VM
 
@@ -58,7 +73,7 @@ try :
 
     print "destroying VM..."
 
-    api.vmdetach("SIM1", vm["uuid"])
+    api.vmdetach(_cloud_name, vm["uuid"])
 
 except APIException, obj :
     error = True
@@ -80,6 +95,6 @@ finally :
         try :
             if error :
                 print "Destroying VM..."
-                api.vmdetach("SIM1", vm["uuid"])
+                api.vmdetach(_cloud_name, vm["uuid"])
         except APIException, obj :
             print "Error finishing up: (" + str(obj.status) + "): " + obj.msg

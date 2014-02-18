@@ -1,9 +1,9 @@
 AIDRS object undefined (named "all") was sucessfully detached from this experiment.
- status: Sending a termination request for vm_128 (cloud-assigned uuid 1E194A26-95BD-5AD2-96A3-D5AC699F0F2D)....
- status: Sending a termination request for vm_125 (cloud-assigned uuid 8140A6C5-E1D9-503E-8ED8-8B68E94773F5)....
- status: Sending a termination request for vm_124 (cloud-assigned uuid E5799810-BFD5-575F-87AD-C1E501463FED)....
- status: Sending a termination request for vm_127 (cloud-assigned uuid 60548FD3-4083-5A05-9106-FD4134E02F8D)....
- status: Sending a termination request for vm_126 (cloud-assigned uuid 9CF65C78-54A3-5F49-A44A-3E432C3EDB01)....
+ status: Sending a termination request for vm_128 (cloud-assigned uuid 63015A05-D9DB-5A4D-9D60-1C6573B7CAA2)....
+ status: Sending a termination request for vm_125 (cloud-assigned uuid 9A59B857-2C4E-5725-ACB4-EADAE12EF2D4)....
+ status: Sending a termination request for vm_124 (cloud-assigned uuid 6B26B317-5DE6-5C35-B520-568FED88FBCE)....
+ status: Sending a termination request for vm_126 (cloud-assigned uuid 2C5C2321-2A79-595C-A3F2-6EE588B4F898)....
+ status: Sending a termination request for vm_127 (cloud-assigned uuid 6CDD6FAD-54B7-5BFD-AE80-5D00662D7C34)....
 AI object undefined (named "all") was sucessfully detached from this experiment.
 The following ATTACHED AIDRSs are in this experiment (Cloud TESTCLOUD) :
 No objects available.
@@ -14,19 +14,19 @@ No objects available.
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |6.47M                         
+|Used Memory                                          |6.57M                         
 |Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |1882828                       
-|Total Connections Received                           |6265                          
-|Total Commands Processed                             |2100873                       
+|Uptime (in seconds)                                  |2218843                       
+|Total Connections Received                           |8217                          
+|Total Commands Processed                             |2724669                       
 |Number of Keys                                       |656                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
 |MongoDB Version                                      |2.4.6                         
 |Storage Size                                         |2805760                       
-|Data Size                                            |707024                        
-|Index Size                                           |457856                        
-|Average Object Size                                  |559.797307997                 
+|Data Size                                            |770640                        
+|Index Size                                           |482384                        
+|Average Object Size                                  |546.16583983                  
 |Collections                                          |14                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
@@ -86,8 +86,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |416                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|383602BF-27FC-542A-B537-6A4A58844260 (simzone_a) VM RESERVATIONS|0                             
-|584A58C5-7A36-52ED-8040-423C8D700E29 (simzone_b) VM RESERVATIONS|0                             
-|863DDED0-9FB6-5070-9AC8-FCF03E03B672 (simzone_c) VM RESERVATIONS|0                             
-|2462767E-73BC-530A-A92C-CBED38E01A6A (simzone_d) VM RESERVATIONS|0                             
+|845D544A-3F3E-5433-BD75-03F09FBB3BE7 (simzone_c) VM RESERVATIONS|0                             
+|F1774E78-5022-5568-80E1-9A3EFC329DB1 (simzone_b) VM RESERVATIONS|0                             
+|6B2CF2C9-7ECD-535A-9836-6D30EBA8F83F (simzone_d) VM RESERVATIONS|0                             
+|A3B38AF9-68E8-5E7C-8050-66F6D9681E02 (simzone_a) VM RESERVATIONS|0                             
 

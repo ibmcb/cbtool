@@ -1,21 +1,21 @@
- status: Sending a migrate request for vm_129 (cloud-assigned uuid 10179C84-70C5-576C-834F-FD65C67E2B48)....
-VM object C392C8FB-4ADF-54B7-8AE5-D7BAD408720F (named "vm_129") successfully migrateed on this experiment.
+ status: Sending a migrate request for vm_129 (cloud-assigned uuid DE5431EE-9BE2-5074-90D6-594F4673EB25)....
+VM object E4A91F80-817B-5448-8C16-13055FAB38B3 (named "vm_129") successfully migrateed on this experiment.
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |6.48M                         
+|Used Memory                                          |6.58M                         
 |Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |1882064                       
-|Total Connections Received                           |6142                          
-|Total Commands Processed                             |1850354                       
+|Uptime (in seconds)                                  |2218080                       
+|Total Connections Received                           |8095                          
+|Total Commands Processed                             |2471976                       
 |Number of Keys                                       |696                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
 |MongoDB Version                                      |2.4.6                         
-|Storage Size                                         |1298432                       
-|Data Size                                            |371344                        
-|Index Size                                           |327040                        
-|Average Object Size                                  |533.540229885                 
+|Storage Size                                         |1888256                       
+|Data Size                                            |402208                        
+|Index Size                                           |335216                        
+|Average Object Size                                  |523.708333333                 
 |Collections                                          |14                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
@@ -75,14 +75,14 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |419                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|A7ADD8B8-3B77-5C04-A200-4E10FD89DD12 (simzone_b) VM RESERVATIONS|0                             
-|839882CD-6F26-5FF0-8B36-5B2F31F5E7EB (simzone_source) VM RESERVATIONS|0                             
-|B25B0238-8257-5847-B4B0-AE0622BDBB60 (simzone_d) VM RESERVATIONS|0                             
-|A2313224-33E3-5AE2-AA67-ABD9F9E116A2 (simzone_dest) VM RESERVATIONS|1                             
-|21F066AD-6280-52AA-956C-847B043FD63E (simzone_c) VM RESERVATIONS|0                             
-|2B8B3052-BD8E-5E84-8885-8B75FD72F9AB (simzone_a) VM RESERVATIONS|0                             
+|F4EFA288-1B39-5FEC-883B-F5916C3B88F5 (simzone_d) VM RESERVATIONS|0                             
+|4BA37B19-A0AD-5C8D-8729-3A3BBECF078F (simzone_c) VM RESERVATIONS|0                             
+|F704CB6A-D182-5724-9A14-FF4845DBBE38 (simzone_a) VM RESERVATIONS|0                             
+|768508E6-6CCE-51D6-BB27-D5E7290D81B5 (simzone_dest) VM RESERVATIONS|1                             
+|51667618-4C81-5D57-B65F-85940141D438 (simzone_source) VM RESERVATIONS|0                             
+|370C6FA9-8AB9-577B-B4F7-F4F71A06D56B (simzone_b) VM RESERVATIONS|0                             
 
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 |name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
-|vm_129        |tinyvm              |pico32      |180.188.197.22  |dest                       |sut                 |none    |none       |C392C8FB-4ADF-54B7-8AE5-D7BAD408720F
+|vm_129        |tinyvm              |pico32      |244.60.14.209   |dest                       |sut                 |none    |none       |E4A91F80-817B-5448-8C16-13055FAB38B3
 
