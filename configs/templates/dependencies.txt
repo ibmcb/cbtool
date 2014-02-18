@@ -394,7 +394,7 @@ rhel-apache-install-pm = sudo yum -y install httpd
 ubuntu-apache-install-pm = sudo apt-get -y install apache2
 
 rhel-redis-preinstall-man = lftp -c 'open -e "mget redis*" URL'
-rhel-redis-install-man = sudo yum -y install gperftools-libs && rpm -Uvh $(ls -t | grep redis | head -n 1)
+rhel-redis-install-man = sudo yum -y install gperftools-libs && sudo rpm -Uvh $(ls -t | grep redis | head -n 1)
 rhel-redis-postinstall-man = sudo sed -i "s/^bind .*/bind 0.0.0.0/" /etc/redis.conf; sudo /etc/init.d/redis restart; sudo chkconfig --add redis
 ubuntu-redis-preinstall-man = lftp -c 'open -e "mget redis-server_2.8*precise_ARCH.deb" URL' 
 ubuntu-redis-install-man = sudo dpkg -i $(ls -t | grep redis-server | head -n 1)
@@ -405,7 +405,7 @@ rhel-redis-install-git = cd 3RPARTYDIR;redis; make; sudo make install
 ubuntu-redis-preinstall-git = cd 3RPARTYDIR; git clone URL/redis.git
 ubuntu-redis-install-git = cd 3RPARTYDIR;redis; make; sudo make install
 
-rhel-mongodb-install-man = rpm -Uvh URL/mongo-10gen-2.4.9-mongodb_1.ARCH.rpm; rpm -Uvh URL/mongo-10gen-server-2.4.9-mongodb_1.ARCH.rpm 
+rhel-mongodb-install-man = sudo rpm -Uvh URL/mongo-10gen-2.4.9-mongodb_1.ARCH.rpm; sudo rpm -Uvh URL/mongo-10gen-server-2.4.9-mongodb_1.ARCH.rpm 
 rhel-mongodb-postinstall-man = sudo sed -i "s/^bind_ip.*/bind_ip=0.0.0.0/" /etc/mongod.conf; sudo /etc/init.d/mongod restart; sudo chkconfig --add mongod
 ubuntu-mongodb-preinstall-man = wget -N -P 3RPARTYDIR URL/mongodb-10gen_2.4.9_amd64.deb
 ubuntu-mongodb-install-man = sudo dpkg -i 3RPARTYDIR/mongodb-10gen_2.4.9_amd64.deb
@@ -480,9 +480,9 @@ rhel-softlayer-install-pip = sudo pip install softlayer
 ubuntu-softlayer-install-pip = sudo pip install softlayer
 
 rhel-softlayer-vpn-preinstall-man = sudo wget -N -P /usr/local/bin URL/array_vpnc && sudo wget -P /usr/local/bin URL/array_loader 
-rhel-softlayer-vpn-install-man = chmod 755 /usr/local/bin/array_*
+rhel-softlayer-vpn-install-man = sudo chmod 755 /usr/local/bin/array_*
 ubuntu-softlayer-vpn-preinstall-man = sudo wget -N -P /usr/local/bin URL/array_vpnc && sudo wget -P /usr/local/bin URL/array_loader
-ubuntu-softlayer-vpn-install-man = chmod 755 /usr/local/bin/array_*
+ubuntu-softlayer-vpn-install-man = sudo chmod 755 /usr/local/bin/array_*
 
 rhel-boto-install-pip = sudo pip install boto
 ubuntu-boto-install-pip = sudo pip install boto
