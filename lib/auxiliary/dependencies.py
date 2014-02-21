@@ -31,28 +31,30 @@ import platform
 
 from lib.remote.process_management import ProcessManagement
 
-def deps_file_parser(depsdict, username, sub_paths, cli_args) :
+def deps_file_parser(depsdict, username, options, hostname, process_manager = None) :
     '''
     TBD
     '''
 
-    _path = re.compile(".*\/").search(os.path.realpath(__file__)).group(0) + "/../../"
+    _path = re.compile(".*\/").search(os.path.realpath(__file__)).group(0) + "/../"
 
     _file_name_list = []
 
-    _file_name_list.append(_path + sub_paths["defaults"] + "dependencies.txt")
+    _file_name_list.append(options.defdir + "/dependencies.txt")
 
-    if len(cli_args) > 1 :
-        if not (cli_args[1].lower().count("none") or cli_args[1].lower().count("empty")) :
-            _file_name_list.append(_path + sub_paths["custom"] + cli_args[1])
+    _workloads_list = options.wks.split(',')
 
-    if len(cli_args) >= 2 :
-        for _name in cli_args[2:] :
-            _file_name_list.append(_path + sub_paths["specific"] + _name)
+    _cleanup_repos = False
+    if len(_workloads_list) :
+        for _workload in _workloads_list :
+            _file_name_list.append(options.wksdir + '/'  + _workload + "/dependencies.txt")
+        _cleanup_repos = True
+        
+    if len(options.custom) :
+        _file_name_list.append(options.cusdir + '/' + options.custom)
 
     for _file in _file_name_list :
         if os.access(_file, os.F_OK) :
-
             try:
                 _fd = open(_file, 'r')
                 _fc = _fd.readlines()
@@ -91,7 +93,13 @@ def deps_file_parser(depsdict, username, sub_paths, cli_args) :
         _msg += "\" contained configuration statements"
         print _msg
         exit(9)
-    
+
+    if _cleanup_repos :
+        if not process_manager :
+            process_manager = ProcessManagement(hostname)
+        
+        process_manager.run_os_command("rm -rf /tmp/repoupdated", False)
+
     return True
  
 def get_linux_distro() :
@@ -106,8 +114,8 @@ def get_linux_distro() :
     elif _linux_distro_name.count("Ubuntu") :
         _distro = "ubuntu"
     else :
-        print "Unsupported distribution (" + _linux_distro_name + ")"
-        exit(191)
+        _msg = "Unsupported distribution (" + _linux_distro_name + ")"
+        raise Exception(_msg)
 
     _arch = platform.processor()
 
@@ -137,8 +145,7 @@ def get_cmdline(depkey, depsdict, operation) :
         if not _actual_url :
             _msg = "None of the urls indicated to install \"" + depkey + "\" (" 
             _msg += depsdict[_urls_key] + ") seem to be functional."
-            print _msg
-            exit(36)
+            raise Exception(_msg)
     else :
         _actual_url = False
 
@@ -235,7 +242,7 @@ def select_repository_url(depsdict) :
     
     return True
 
-def build_repository_file_conents(depsdict, repo_name) :
+def build_repository_file_contents(depsdict, repo_name) :
     '''
     TBD
     '''
@@ -260,8 +267,7 @@ def build_repository_file_conents(depsdict, repo_name) :
         _actual_url = depsdict["repo_contents"][repo_name]["original-url"]
         if not check_url(_actual_url, depsdict) :
             _msg = "Error: No URLs available for repository \"" + repo_name + "\""
-            print _msg
-            exit(178)
+            raise Exception(_msg)
             
     if depsdict["cdist"] == "ubuntu" :
         for _dist in depsdict["repo_contents"][repo_name]["dists"].split(',') :
@@ -299,7 +305,7 @@ def build_repository_files(depsdict) :
     
     for _repo in depsdict["repos_" + depsdict["cdist"]] :
         
-        _file_contents = build_repository_file_conents(depsdict, _repo)
+        _file_contents = build_repository_file_contents(depsdict, _repo)
         
         try:
             _file_name = "/tmp/" + _repo + _file_extension
@@ -461,16 +467,16 @@ def compare_versions(depkey, depsdict, version_b) :
         else :
             return str(version_b) + " >= " + str(version_a) + " OK.\n"
 
-def dependency_checker_installer(hostname, username, trd_party_dir, operation, sub_paths, cli_args) :
+def dependency_checker_installer(hostname, username, operation, options) :
     '''
     TBD
     '''
     _depsdict = {}
     
-    deps_file_parser(_depsdict, username, sub_paths, cli_args)
+    deps_file_parser(_depsdict, username, options, "127.0.0.1")
     
     _depsdict["cdist"], _depsdict["cdistver"], _depsdict["carch"] = get_linux_distro()
-    _depsdict["3rdpartydir"] = trd_party_dir
+    _depsdict["3rdpartydir"] = options.tpdir
     _depsdict["username"] = username
 
     try :
@@ -513,6 +519,10 @@ def dependency_checker_installer(hostname, username, trd_party_dir, operation, s
         _status = _dep_missing
         _fmsg += ','.join(_missing_dep)
 
+    except KeyError, e:
+        _status = 22
+        _fmsg = "Unable to find entry " + str(e) + " in dependencies dictionary. Check you dependencies configuration file(s)"
+
     except Exception, e :
         _status = 23
         _fmsg = str(e)
@@ -521,9 +531,11 @@ def dependency_checker_installer(hostname, username, trd_party_dir, operation, s
 
         if _status :
             if _dep_missing :
-                _msg = "There are " + str(_dep_missing) + " dependencies missing " + _fmsg
+                _msg = "There are " + str(_dep_missing) + " dependencies missing: " + _fmsg + '\n'
+                _msg += "Please add the missing dependency(ies) and re-run " + operation +  " again."
             else :
-                _msg = ""
+                _msg = _fmsg + '\n'
+                _msg += "Please fix the reported problems re-run " + operation +  " again."                
         else :
             _msg = "All dependencies are in place"
         return _status, _msg
