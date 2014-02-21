@@ -262,11 +262,16 @@ def build_repository_file_contents(depsdict, repo_name) :
 
     if depsdict["repo_addr"] :
         _actual_url = _actual_url.replace("REPO_ADDR", depsdict["repo_addr"])
-
+        _actual_url = _actual_url.replace("REPO_RELEASE", depsdict["cdistver"])
+        _actual_url = _actual_url.replace("REPO_ARCH", depsdict["carch"])
+        
     if not check_url(_actual_url, depsdict) :
+        _tested_urls = _actual_url
         _actual_url = depsdict["repo_contents"][repo_name]["original-url"]
         if not check_url(_actual_url, depsdict) :
-            _msg = "Error: No URLs available for repository \"" + repo_name + "\""
+            if _actual_url != _tested_urls :                    
+                _tested_urls += ',' + _actual_url
+            _msg = "Error: No URLs available for repository \"" + repo_name + "\" (" + _tested_urls + ")."
             raise Exception(_msg)
             
     if depsdict["cdist"] == "ubuntu" :
