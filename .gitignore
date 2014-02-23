@@ -46,7 +46,8 @@ scripts/hadoop/HiBench
 hadoop-1.0.4-bin.tar.gz
 bin
 .externalToolBuilders/
-3rd_party
+3rd_party/*
+stores/*
 gmetad-hosts.conf
 *hosts.conf
 configs/definitions.txt
