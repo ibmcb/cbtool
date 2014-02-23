@@ -514,8 +514,10 @@ def dependency_checker_installer(hostname, username, operation, options) :
     _depsdict = {}
     
     deps_file_parser(_depsdict, username, options, "127.0.0.1")
-    
+
     _depsdict["cdist"], _depsdict["cdistver"], _depsdict["carch"] = get_linux_distro()
+    
+    _depsdict["3rdpartydir"] = options.tpdir
     _depsdict["3rdpartydir"] = options.tpdir
     _depsdict["username"] = username
 
