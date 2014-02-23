@@ -1,9 +1,9 @@
--rw-r--r-- 1 msilva msilva 424 Feb 18 12:47 gui.log
--rw-r--r-- 1 msilva msilva 0 Feb 18 12:47 loadmanager.log
--rw-r--r-- 1 msilva msilva 0 Feb 18 12:47 monitor.log
--rw-r--r-- 1 msilva msilva 91801726 Feb 18 13:13 operations.log
+-rw-r--r-- 1 msilva msilva 424 Feb 22 22:04 gui.log
+-rw-r--r-- 1 msilva msilva 0 Feb 22 22:03 loadmanager.log
+-rw-r--r-- 1 msilva msilva 0 Feb 22 22:03 monitor.log
+-rw-r--r-- 1 msilva msilva 93231813 Feb 22 22:29 operations.log
 -rwxrwxr-x 1 msilva msilva 238855 Feb 13 14:09 regression_test_experiment_plan.txt
--rw-r--r-- 1 msilva msilva 0 Feb 18 12:47 remotescripts.log
--rw-r--r-- 1 msilva msilva 0 Feb 18 12:47 report.log
--rw-r--r-- 1 msilva msilva 189738 Feb 18 13:12 submmiter.log
--rw-r--r-- 1 msilva msilva 0 Feb 18 12:47 subscribe.log
+-rw-r--r-- 1 msilva msilva 0 Feb 22 22:03 remotescripts.log
+-rw-r--r-- 1 msilva msilva 0 Feb 22 22:03 report.log
+-rw-r--r-- 1 msilva msilva 189738 Feb 22 22:29 submmiter.log
+-rw-r--r-- 1 msilva msilva 0 Feb 22 22:03 subscribe.log

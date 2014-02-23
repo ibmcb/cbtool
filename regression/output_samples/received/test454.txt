@@ -635,12 +635,12 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |space                            |tracefile                      |regression/regression_test_experiment_plan.txt
 |space                            |username                       |msilva                               
 |space                            |vm_daemon_dir                  |/home/klabuser                       
-|time                             |experiment_id                  |EXP-02-18-2014-01-00-34-PM-EST       
+|time                             |experiment_id                  |EXP-02-22-2014-10-17-02-PM-EST       
 |time                             |external_timeout               |30                                   
 |time                             |external_tries                 |2                                    
 |time                             |hard_reset                     |True                                 
 |time                             |internal_tries                 |2                                    
-|time                             |start_time                     |1392746434                           
+|time                             |start_time                     |1393125422                           
 |time                             |step_delay                     |5                                    
 |time                             |username                       |msilva                               
 |vm_defaults                      |access                         |                                     

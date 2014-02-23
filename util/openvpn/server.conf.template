@@ -1,7 +1,7 @@
-proto udp
+proto tcp
 dev tun
 port 1194
-management 0.0.0.0 1194
+#management 0.0.0.0 1194
 
 server ADDRESS_RANGE 
 

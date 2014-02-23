@@ -1,68 +1,68 @@
- status: Waiting for vm_67 (cloud-assigned uuid 53A9A17A-3E42-593D-B3CE-D87D6726B60A) to start...
- status: Waiting for vm_66 (cloud-assigned uuid 0A18C74D-B799-58C8-910B-E57B5BE3F6D3) to start...
- status: Waiting for vm_70 (cloud-assigned uuid 0BC00C08-95CD-5BAE-B354-0B7B905B5DD0) to start...
- status: Waiting for vm_68 (cloud-assigned uuid 7EA9805B-D222-507F-A06C-B29687825BEB) to start...
- status: Waiting for vm_69 (cloud-assigned uuid 29BD13A4-DE15-50DB-8754-9BD7240F4644) to start...
- status: Trying to establish network connectivity to vm_67 (cloud-assigned uuid 53A9A17A-3E42-593D-B3CE-D87D6726B60A), on IP address 30.106.187.36...
- status: Trying to establish network connectivity to vm_66 (cloud-assigned uuid 0A18C74D-B799-58C8-910B-E57B5BE3F6D3), on IP address 225.123.13.107...
- status: Trying to establish network connectivity to vm_70 (cloud-assigned uuid 0BC00C08-95CD-5BAE-B354-0B7B905B5DD0), on IP address 226.38.129.70...
- status: Trying to establish network connectivity to vm_68 (cloud-assigned uuid 7EA9805B-D222-507F-A06C-B29687825BEB), on IP address 137.2.2.195...
- status: Trying to establish network connectivity to vm_69 (cloud-assigned uuid 29BD13A4-DE15-50DB-8754-9BD7240F4644), on IP address 145.171.46.171...
- status: Bypassing the sending of a copy of the code tree to vm_67 (30.106.187.36)...
- status: Bypassing the sending of a copy of the code tree to vm_66 (225.123.13.107)...
- status: Bypassing the sending of a copy of the code tree to vm_70 (226.38.129.70)...
- status: Bypassing the sending of a copy of the code tree to vm_68 (137.2.2.195)...
- status: Bypassing the sending of a copy of the code tree to vm_69 (145.171.46.171)...
+ status: Waiting for vm_66 (cloud-assigned uuid 3E1F23DA-5159-5457-BC0C-EB84D0DD1280) to start...
+ status: Waiting for vm_69 (cloud-assigned uuid 7B1A1730-40C2-5E2E-9084-37ABB9C4EDA6) to start...
+ status: Waiting for vm_67 (cloud-assigned uuid E2F0DEAF-06FC-5FDB-8BE9-B4E0CA6814BF) to start...
+ status: Waiting for vm_70 (cloud-assigned uuid 4B589CC0-7AFB-50D9-97A9-BB3F07103B3F) to start...
+ status: Waiting for vm_68 (cloud-assigned uuid CB1E9195-97E3-50AA-AB38-2B7849AA1CE4) to start...
+ status: Trying to establish network connectivity to vm_66 (cloud-assigned uuid 3E1F23DA-5159-5457-BC0C-EB84D0DD1280), on IP address 41.213.168.118...
+ status: Trying to establish network connectivity to vm_69 (cloud-assigned uuid 7B1A1730-40C2-5E2E-9084-37ABB9C4EDA6), on IP address 45.3.23.90...
+ status: Trying to establish network connectivity to vm_67 (cloud-assigned uuid E2F0DEAF-06FC-5FDB-8BE9-B4E0CA6814BF), on IP address 202.225.139.147...
+ status: Trying to establish network connectivity to vm_70 (cloud-assigned uuid 4B589CC0-7AFB-50D9-97A9-BB3F07103B3F), on IP address 112.36.87.191...
+ status: Trying to establish network connectivity to vm_68 (cloud-assigned uuid CB1E9195-97E3-50AA-AB38-2B7849AA1CE4), on IP address 5.239.132.109...
+ status: Bypassing the sending of a copy of the code tree to vm_66 (41.213.168.118)...
+ status: Bypassing the sending of a copy of the code tree to vm_67 (202.225.139.147)...
+ status: Bypassing the sending of a copy of the code tree to vm_69 (45.3.23.90)...
+ status: Bypassing the sending of a copy of the code tree to vm_68 (5.239.132.109)...
+ status: Bypassing the sending of a copy of the code tree to vm_70 (112.36.87.191)...
  status: Bypassing generic VM post_boot configuration on all VMs belonging to ai_13...
  status: Bypassing application-specific configuration on all VMs beloging to ai_13...
  status: QEMU Scraper will NOT be automatically started during the deployment of ai_13...
-AI object 03C3E3E9-8506-5769-9487-1480FB20808E (named "ai_13") sucessfully attached to this experiment. It is ssh-accessible at the IP address 225.123.13.107 (0A18C74D-B799-58C8-910B-E57B5BE3F6D3.simcloud.com).
+AI object 81A5316B-9DE1-585B-8FB9-E24D37F6E0BD (named "ai_13") sucessfully attached to this experiment. It is ssh-accessible at the IP address 41.213.168.118 (3E1F23DA-5159-5457-BC0C-EB84D0DD1280.simcloud.com).
 The following ATTACHED AIs are in this experiment (Cloud TESTCLOUD) :
 |name      |type           |sut                                               |cloud_ip        |arrival        |aidrs                                   |uuid
-|ai_3      |daytrader      |1_x_client_daytrader->1_x_was->1_x_db2            |221.140.216.72  |1392745903     |none                                    |CEA58C52-16B1-577E-BF45-0A4F21CE5897
-|ai_4      |daytrader      |1_x_client_daytrader->1_x_was->1_x_db2            |189.169.150.214 |1392745942     |none                                    |09688FB4-65F3-5C19-8FC0-5F0EAB8B7B65
-|ai_5      |netperf        |1_x_netclient->1_x_netserver                      |115.11.34.245   |1392745960     |none                                    |44CEE4EC-07EB-5AD4-A373-262AC6BC396E
-|ai_8      |daytrader      |1_x_client_daytrader->1_x_lb->2_x_was->1_x_db2    |237.126.170.154 |1392746048     |none                                    |DD171E6D-3445-5FB9-AEE3-4FAE85E28E0A
-|ai_9      |daytrader      |1_x_client_daytrader->1_x_was->1_x_db2            |126.202.255.223 |1392746053     |none                                    |40944710-DBE1-5769-9463-9FD3871F78CF
-|ai_10     |daytrader      |1_x_client_daytrader->1_x_was->1_x_db2            |204.114.71.100  |1392746059     |none                                    |30B7CFA5-0B4E-523C-A29A-C622CDD48BCE
-|ai_11     |daytrader      |1_x_client_daytrader->1_x_was->1_x_db2            |109.230.26.99   |1392746064     |none                                    |F0AFCE7D-1DF9-5688-B995-06479463D207
-|ai_12     |daytrader      |1_x_client_daytrader->1_x_lb->2_x_was->1_x_db2    |68.138.184.152  |1392746070     |none                                    |2EE9AFBD-2428-5869-B2A3-03FF27AA5207
-|ai_13     |daytrader      |1_x_client_daytrader->1_x_lb->2_x_was->1_x_db2    |225.123.13.107  |1392746076     |none                                    |03C3E3E9-8506-5769-9487-1480FB20808E
+|ai_3      |daytrader      |1_x_client_daytrader->1_x_was->1_x_db2            |125.17.6.90     |1393124890     |none                                    |AC29FFC5-D7A9-5BF1-93FD-FD1467C1F205
+|ai_4      |daytrader      |1_x_client_daytrader->1_x_was->1_x_db2            |194.225.60.112  |1393124929     |none                                    |BC3B82D0-6F9E-5445-9DA0-91909B234277
+|ai_5      |netperf        |1_x_netclient->1_x_netserver                      |223.105.142.143 |1393124948     |none                                    |412A8D60-2511-5B4C-85AD-3509B1E250FA
+|ai_8      |daytrader      |1_x_client_daytrader->1_x_lb->2_x_was->1_x_db2    |104.18.243.238  |1393125035     |none                                    |5947F386-05C1-5D0D-9E30-6211AAD40FD9
+|ai_9      |daytrader      |1_x_client_daytrader->1_x_was->1_x_db2            |59.249.193.231  |1393125040     |none                                    |4AE72D4B-DFF0-5BA2-81CB-10AABA92136B
+|ai_10     |daytrader      |1_x_client_daytrader->1_x_was->1_x_db2            |27.67.101.250   |1393125046     |none                                    |4555383D-399A-5FF4-8E05-C79784F49533
+|ai_11     |daytrader      |1_x_client_daytrader->1_x_was->1_x_db2            |65.178.95.175   |1393125051     |none                                    |DABAAEAA-A64F-5896-8D45-C6DA7D487F7C
+|ai_12     |daytrader      |1_x_client_daytrader->1_x_lb->2_x_was->1_x_db2    |238.109.146.10  |1393125057     |none                                    |332637D0-5518-54C0-8056-36448C848D24
+|ai_13     |daytrader      |1_x_client_daytrader->1_x_lb->2_x_was->1_x_db2    |41.213.168.118  |1393125063     |none                                    |81A5316B-9DE1-585B-8FB9-E24D37F6E0BD
 
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 |name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
-|vm_34         |was                 |iron32      |19.234.117.102  |simhostb1                  |SUT                 |ai_3    |none       |52CC0979-7B82-5C17-8967-B3AC6CF9D715
-|vm_33         |client_daytrader    |nano32      |221.140.216.72  |simhostd1                  |LG                  |ai_3    |none       |AE11BACC-C7FC-58A6-89D8-B72F20EA9476
-|vm_35         |db2                 |platinum64  |243.173.154.148 |simhostb1                  |SUT                 |ai_3    |none       |46418EDF-E89F-5F18-B796-C7BED9BA5A2A
-|vm_36         |client_daytrader    |nano32      |189.169.150.214 |simhostd1                  |LG                  |ai_4    |none       |17FAC30F-7350-5814-86D4-4B2FF6256AEE
-|vm_37         |was                 |iron32      |230.42.107.79   |simhosta1                  |SUT                 |ai_4    |none       |77A8F628-8590-5C41-9758-495AAC65466B
-|vm_38         |db2                 |platinum64  |40.187.119.10   |simhostb1                  |SUT                 |ai_4    |none       |FE2CA52A-C0A4-5890-B90A-CDEFCA810398
-|vm_39         |netclient           |platinum64  |115.11.34.245   |simhosta1                  |SUT                 |ai_5    |none       |8FCAF956-5C2E-5C9E-9E27-571BC2EE8721
-|vm_40         |netserver           |iron32      |205.87.99.214   |simhostc1                  |SUT                 |ai_5    |none       |8EEA285B-4ADF-5988-AFE9-F997E3E262AC
-|vm_47         |client_daytrader    |nano32      |237.126.170.154 |simhostd1                  |LG                  |ai_8    |none       |7949E6A4-B8EA-54E9-A8F9-B81536A36693
-|vm_49         |db2                 |gold32      |190.6.235.72    |simhostb1                  |SUT                 |ai_8    |none       |16D13E07-9585-5C5B-AB7E-EDE6639E31E7
-|vm_48         |lb                  |iron32      |125.85.89.135   |simhostc1                  |SUT                 |ai_8    |none       |43B4E0EE-42A0-573B-9A28-1C5B1574EBEA
-|vm_50         |was                 |iron32      |230.117.115.248 |simhostc1                  |SUT                 |ai_8    |none       |ED5E55BB-A608-56AF-B7FF-36D14D41B442
-|vm_51         |was                 |iron32      |128.214.160.100 |simhosta1                  |SUT                 |ai_8    |none       |AFB85D66-373C-508D-B66B-96A9BF832A62
-|vm_52         |client_daytrader    |nano32      |126.202.255.223 |simhostd1                  |LG                  |ai_9    |none       |A9B8B69D-D04C-5291-A112-AA23452C2123
-|vm_53         |was                 |iron32      |47.99.43.95     |simhosta1                  |SUT                 |ai_9    |none       |E3948DD8-73A7-566D-854B-68CE72EDF23E
-|vm_54         |db2                 |platinum64  |151.137.32.30   |simhostb1                  |SUT                 |ai_9    |none       |A1F11C27-30D6-5166-BC89-7AB27D810CC4
-|vm_57         |db2                 |platinum64  |128.87.17.140   |simhostb1                  |SUT                 |ai_10   |none       |8D463CB6-40C9-51B5-8FC3-3897F5A522A6
-|vm_56         |was                 |iron32      |235.80.1.241    |simhosta1                  |SUT                 |ai_10   |none       |8A09793E-EB83-5BA0-9F03-2E10FD85005A
-|vm_55         |client_daytrader    |nano32      |204.114.71.100  |simhostd1                  |LG                  |ai_10   |none       |4F9C939A-217C-593C-AFC6-A1B8AEE86299
-|vm_58         |client_daytrader    |nano32      |109.230.26.99   |simhostd1                  |LG                  |ai_11   |none       |DFAF5A9D-60A6-52FA-9D19-A619420A7D3F
-|vm_59         |was                 |iron32      |216.207.234.157 |simhostb1                  |SUT                 |ai_11   |none       |D9D0DBDE-9A4A-5887-A847-1CD8662EDB24
-|vm_60         |db2                 |platinum64  |39.8.222.173    |simhostb1                  |SUT                 |ai_11   |none       |E5700713-072D-5525-BD8F-60AF308B5781
-|vm_61         |client_daytrader    |nano32      |68.138.184.152  |simhostd1                  |LG                  |ai_12   |none       |2400CC6C-2FDB-5168-B5D0-1E84CC0977E1
-|vm_62         |was                 |iron32      |201.137.248.3   |simhostb1                  |SUT                 |ai_12   |none       |55F94701-8893-55B6-AC32-1641737CEEB4
-|vm_63         |lb                  |iron32      |51.191.95.146   |simhosta1                  |SUT                 |ai_12   |none       |B8A4C70D-C830-55FC-8B3B-2B80D96523B9
-|vm_65         |db2                 |gold32      |21.13.245.8     |simhostb1                  |SUT                 |ai_12   |none       |81455528-C5C9-55A0-8082-2A3883AF4B56
-|vm_64         |was                 |iron32      |83.90.127.76    |simhostc1                  |SUT                 |ai_12   |none       |518BFFD7-BB04-5F89-9A5D-73492F6D8D73
-|vm_66         |client_daytrader    |nano32      |225.123.13.107  |simhostd1                  |LG                  |ai_13   |none       |FE87A6F3-11FA-5909-A323-098B7C667E1C
-|vm_67         |lb                  |iron32      |30.106.187.36   |simhostb1                  |SUT                 |ai_13   |none       |1A01C51C-D5A0-5018-BC0A-3793836C872E
-|vm_68         |was                 |iron32      |137.2.2.195     |simhostc1                  |SUT                 |ai_13   |none       |C12CC0CB-5CDC-5BC9-8574-1CED8E321E5A
-|vm_69         |was                 |iron32      |145.171.46.171  |simhostc1                  |SUT                 |ai_13   |none       |7F5B0C5B-F1FD-55A3-A81B-9673A6FF8972
-|vm_70         |db2                 |gold32      |226.38.129.70   |simhosta1                  |SUT                 |ai_13   |none       |A48BCF69-70D3-5A87-B832-4CA909AE1A08
+|vm_33         |client_daytrader    |nano32      |125.17.6.90     |simhostd1                  |LG                  |ai_3    |none       |8D564DC6-176A-558C-9155-0630A407AAA8
+|vm_34         |was                 |iron32      |63.165.77.128   |simhosta1                  |SUT                 |ai_3    |none       |F5182F61-3F48-584A-B715-0CA355955B88
+|vm_35         |db2                 |platinum64  |35.103.12.254   |simhostc1                  |SUT                 |ai_3    |none       |360C9599-01A2-5E2F-AC24-987E72876F08
+|vm_36         |client_daytrader    |nano32      |194.225.60.112  |simhostd1                  |LG                  |ai_4    |none       |E6416204-62A7-5E49-899A-44754CAA60D4
+|vm_37         |db2                 |platinum64  |255.26.37.153   |simhosta1                  |SUT                 |ai_4    |none       |EC1B89BE-9CE2-57A1-A83A-651C867A2AEF
+|vm_38         |was                 |iron32      |178.107.164.12  |simhostc1                  |SUT                 |ai_4    |none       |A9FF8BD4-7478-5970-AF44-1535E2A8AC9B
+|vm_40         |netserver           |iron32      |199.131.167.35  |simhostb1                  |SUT                 |ai_5    |none       |EB71256E-ADC0-5DAC-8758-7AF3DEA9959C
+|vm_39         |netclient           |platinum64  |223.105.142.143 |simhosta1                  |SUT                 |ai_5    |none       |F7AEB549-739F-5638-AE3D-447A7D4937B6
+|vm_50         |lb                  |iron32      |174.214.176.138 |simhosta1                  |SUT                 |ai_8    |none       |90B2E56A-042A-517A-984E-3D9F3FA69E09
+|vm_48         |was                 |iron32      |78.240.157.139  |simhostb1                  |SUT                 |ai_8    |none       |30989EEC-1133-5BF3-84B9-DEE906EFE34C
+|vm_49         |client_daytrader    |nano32      |104.18.243.238  |simhostd1                  |LG                  |ai_8    |none       |A4F6BE9B-5E2E-5A8C-B4E3-8D11FDEDABFF
+|vm_47         |was                 |iron32      |164.229.223.22  |simhostc1                  |SUT                 |ai_8    |none       |91A96069-3BD8-5D37-80C4-A9FB2437E2C5
+|vm_51         |db2                 |gold32      |219.113.206.128 |simhostc1                  |SUT                 |ai_8    |none       |64E48C9E-63CF-58AE-8703-963202D6FDDA
+|vm_52         |client_daytrader    |nano32      |59.249.193.231  |simhostd1                  |LG                  |ai_9    |none       |7B306783-226F-540B-B48F-232FEC631822
+|vm_54         |was                 |iron32      |195.210.59.126  |simhostb1                  |SUT                 |ai_9    |none       |E9ED7FF0-6317-545C-A8B4-BE414776E861
+|vm_53         |db2                 |platinum64  |44.181.16.60    |simhostb1                  |SUT                 |ai_9    |none       |E4C611DB-98E0-5C10-B5E4-B348851CE536
+|vm_55         |client_daytrader    |nano32      |27.67.101.250   |simhostd1                  |LG                  |ai_10   |none       |CA40FCD0-935D-5656-9BC5-44FD88CF3AF8
+|vm_56         |was                 |iron32      |21.197.65.25    |simhostc1                  |SUT                 |ai_10   |none       |B79FD1CA-E6A8-536D-8369-4628EDE932BA
+|vm_57         |db2                 |platinum64  |208.118.253.11  |simhostc1                  |SUT                 |ai_10   |none       |BBFB2943-C481-537E-B226-E6BCBD6564DA
+|vm_58         |db2                 |platinum64  |111.220.246.41  |simhostb1                  |SUT                 |ai_11   |none       |CB4FD045-6E16-5490-9AE4-21CB368EBA66
+|vm_59         |client_daytrader    |nano32      |65.178.95.175   |simhostd1                  |LG                  |ai_11   |none       |2DDE5FBB-0F6E-518D-AD68-CA2BAE7EDF08
+|vm_60         |was                 |iron32      |17.171.70.39    |simhostb1                  |SUT                 |ai_11   |none       |B20B017F-795D-5F43-99F3-8545C8F89FF9
+|vm_61         |client_daytrader    |nano32      |238.109.146.10  |simhostd1                  |LG                  |ai_12   |none       |48CF16C6-A25D-5A0B-A0BF-7597FA3AAD8D
+|vm_64         |lb                  |iron32      |131.43.119.200  |simhosta1                  |SUT                 |ai_12   |none       |BCAD54D8-D77E-547F-B512-A39EC56695D2
+|vm_63         |was                 |iron32      |94.43.37.134    |simhostb1                  |SUT                 |ai_12   |none       |5F6A1CE9-005B-53F2-A4EF-4F9AD584F8F4
+|vm_62         |was                 |iron32      |35.11.196.115   |simhostb1                  |SUT                 |ai_12   |none       |7D0E970E-FBA4-5051-A48B-E09D6CC08511
+|vm_65         |db2                 |gold32      |36.47.164.88    |simhostb1                  |SUT                 |ai_12   |none       |31079606-D485-5BD5-A90F-17F854A53178
+|vm_66         |client_daytrader    |nano32      |41.213.168.118  |simhostd1                  |LG                  |ai_13   |none       |3A9C6B2B-42BE-5DED-BBD2-0D842DBB0BC1
+|vm_67         |lb                  |iron32      |202.225.139.147 |simhostb1                  |SUT                 |ai_13   |none       |E06A28FA-2EDB-5F0E-8D9A-5A67F843C605
+|vm_68         |was                 |iron32      |5.239.132.109   |simhostc1                  |SUT                 |ai_13   |none       |925F6D23-FC81-527D-AE7D-81F06D62D982
+|vm_69         |was                 |iron32      |45.3.23.90      |simhostc1                  |SUT                 |ai_13   |none       |3C8E4C64-B493-5C49-BF9F-D66B99E726A5
+|vm_70         |db2                 |gold32      |112.36.87.191   |simhostc1                  |SUT                 |ai_13   |none       |0402640F-5F7D-518F-A79D-62BECED06A93
 
 The AI object ai_13, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
 |attribute (AI object key)               |value                                
@@ -72,19 +72,19 @@ The AI object ai_13, attached to this experiment, has the following attributes (
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |4.15M                         
+|Used Memory                                          |4.07M                         
 |Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |2217759                       
-|Total Connections Received                           |8033                          
-|Total Commands Processed                             |2347913                       
+|Uptime (in seconds)                                  |2596746                       
+|Total Connections Received                           |9882                          
+|Total Commands Processed                             |5250991                       
 |Number of Keys                                       |676                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
 |MongoDB Version                                      |2.4.6                         
 |Storage Size                                         |1052672                       
-|Data Size                                            |291120                        
+|Data Size                                            |290992                        
 |Index Size                                           |327040                        
-|Average Object Size                                  |483.588039867                 
+|Average Object Size                                  |483.375415282                 
 |Collections                                          |14                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
@@ -144,8 +144,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |210                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|F4EFA288-1B39-5FEC-883B-F5916C3B88F5 (simzone_d) VM RESERVATIONS|8                             
-|F704CB6A-D182-5724-9A14-FF4845DBBE38 (simzone_a) VM RESERVATIONS|7                             
-|370C6FA9-8AB9-577B-B4F7-F4F71A06D56B (simzone_b) VM RESERVATIONS|11                            
-|4BA37B19-A0AD-5C8D-8729-3A3BBECF078F (simzone_c) VM RESERVATIONS|6                             
+|779BB4DB-9E97-5A09-B92C-8062AFC748B5 (simzone_c) VM RESERVATIONS|9                             
+|E85824AF-FEF4-5B15-97FE-C631A8545B63 (simzone_a) VM RESERVATIONS|5                             
+|65263578-EC1B-5267-BD62-29CADC410A84 (simzone_d) VM RESERVATIONS|8                             
+|F5AFBECF-5F73-55FC-B9F3-B6682E53C1B7 (simzone_b) VM RESERVATIONS|10                            
 

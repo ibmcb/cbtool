@@ -1,0 +1,500 @@
+### START - Repos ###
+#repo-addr1 = <IP ADDRESS OF A *LOCAL* REPO>
+#repo-addr2 = <IP ADDRESS OF ANOTHER *LOCAL* REPO>
+
+#### UBUNTU repos - START
+### Ubuntu Base OS packages
+#ubuntu-baseos-original-url = http://us.archive.ubuntu.com/ubuntu/
+#ubuntu-baseos-dists = precise,precise-updates,precise-backports
+#ubuntu-baseos-components= main,universe,multiverse,restricted
+#ubuntu-baseos-local-url = http://REPO_ADDR/repo/ubuntu_repos/ubuntu_precise/
+#ubuntu-baseos-gpgkey = 
+#ubuntu-baseos-name= ubuntu-precise
+#### UBUNTU repos - END
+
+#### RHEL repos - START
+### Red Hat Base OS packages
+#rhel-baseos-original-url = http://<POINT TO A URL CONTAINING THE BASE OS PACKAGES>/rhel_repos/RHEL_REPO_RELEASE_REPO_ARCH/
+#rhel-baseos-local-url = http://REPO_ADDR/repo/rhel_repos/RHEL_REPO_RELEASE_REPO_ARCH/
+#rhel-baseos-name= rhel-REPO_RELEASE-REPO_ARCH
+#rhel-baseos-enabled = 1
+#rhel-baseos-skip_if_unavailable= 1
+#rhel-baseos-priority = 6
+#rhel-baseos-gpgcheckK = 0
+#rhel-baseos-gpgkey = 
+### Packages from CentOS
+rhel-centos-original-url = http://mirror.net.cen.ct.gov/centos/REPO_RELEASE/os/REPO_ARCH/
+rhel-centos-local-url = http://REPO_ADDR/repo/rhel_repos/centos-6/REPO_ARCH/
+rhel-centos-name= centos-6
+rhel-centos-enabled = 1
+rhel-centos-skip_if_unavailable= 1
+rhel-centos-priority = 6
+rhel-centos-gpgcheckK = 0
+rhel-centos-gpgkey =
+### Packages from RPMForge
+rhel-rpmforge-original-url = http://apt.sw.be/redhat/el6/en/REPO_ARCH/rpmforge/
+rhel-rpmforge-local-url = http://REPO_ADDR/repo/rhel_repos/rpmforge-el6/REPO_ARCH/
+rhel-rpmforge-name= rpmforge
+rhel-rpmforge-enabled = 1
+rhel-rpmforge-skip_if_unavailable= 1
+rhel-rpmforge-priority = 6
+rhel-rpmforge-gpgcheckK = 0
+rhel-rpmforge-gpgkey =
+### Extra Packages for Enterprise Linux
+rhel-epel-original-url = http://mirror.itc.virginia.edu/fedora-epel/6/REPO_ARCH/
+rhel-epel-local-url = http://REPO_ADDR/repo/rhel_repos/epel6/REPO_ARCH/
+rhel-epel-name= epel6
+rhel-epel-enabled = 1
+rhel-epel-skip_if_unavailable= 1
+rhel-epel-priority = 6
+rhel-epel-gpgcheckK = 0
+rhel-epel-gpgkey =
+#### RHEL repos - END
+### END - Repos ###
+
+### START - PIP ###
+#pip-addr1 = <IP ADDRESS OF A *LOCAL* PIP SOURCE>
+#pip-addr2 = <IP ADDRESS OF ANOTHER *LOCAL* PIP SOURCE>
+### END - PIP ### 
+
+### START - Dependency installation order ###
+sudo-order = 0
+repo-order = 1
+ifconfig-order = 2
+ip-order = 3
+git-order = 4
+wget-order = 5
+pip-order = 6
+gcc-order = 7
+make-order = 8
+#emacs-order = 9
+sshpass-order = 10
+curl-order = 11
+screen-order = 12
+rsync-order = 13
+ncftp-order = 14
+lftp-order = 15
+netcat-order = 16
+nmap-order = 17
+openvpn-order = 18
+gmond-order = 19
+chef-client-order = 20
+rsyslog-order = 21
+#rsyslog-filter-order = 22
+apache-order = 23
+redis-order = 24
+mongodb-order = 25
+#chef-server-order = 26
+python-devel-order = 27
+python-setuptools-order = 28
+python-prettytable-order = 29 
+python-daemon-order = 30
+python-twisted-order = 31
+python-webob-order = 32
+python-beaker-order = 33
+pyredis-order = 34
+pymongo-order = 35
+pylibvirt-order = 36
+pypureomapi-order = 37
+pyhtml-order = 38
+gmetad-python-order = 39
+bootstrap-order = 40
+bootstrap-wizard-order = 41
+streamprox-order = 42
+d3-order = 43
+novaclient-order = 44
+softlayer-order = 45
+#softlayer-vpn-order = 46
+boto-order = 47
+libcloud-order = 48
+R-order = 49
+### END - Dependency installation order ###
+
+### START - Dependency-specific installation method ###
+# pm = "package manager" (yum or apt-get)
+# sl = "soft link" (assume that the dependency is already installed, just has to
+# be properly exposed to the user's path.
+# git = git clone using above giturl
+# pip = python pip utility
+# man = "manual"
+sudo-install = man
+repo-install = man
+ifconfig-install = sl
+ip-install = sl
+git-install = pm
+wget-install = pm
+pip-install = pm
+gcc-install = pm
+make-install = pm
+emacs-install = pm 
+sshpass-install = pm
+curl-install = pm
+screen-install = pm
+rsync-install = pm
+ncftp-install = pm
+lftp-install = pm
+netcat-install = pm
+nmap-install = pm
+openvpn-install = pm
+gmond-install = pm
+chef-client-install = man
+rsyslog-install = pm
+rsyslog-filter-install = man
+apache-install = pm
+redis-install = man
+mongodb-install = man
+chef-server-install = man
+python-devel-install = pm
+python-setuptools-install = pm
+python-prettytable-install = pip 
+python-daemon-install = pm
+python-twisted-install = pm
+python-webob-install = pm
+python-beaker-install = pm
+gmetad-python-install = git
+pyredis-install = pip
+pymongo-install = pip
+pylibvirt-install = pm
+pypureomapi-install = pip
+pyhtml-install = git
+bootstrap-install = git
+bootstrap-wizard-install = git
+streamprox-install = git
+d3-install = git
+bootstrap-install = git
+novaclient-install = pip
+softlayer-install = pip
+softlayer-vpn-install = man
+boto-install = pip
+libcloud-install = pip
+R-install = pm
+### END - Dependency-specific installation method ###
+
+### START - Tests ###
+sudo-configure = sudo -S ls < /dev/null
+repo-configure = ls -la /tmp/repoupdated
+ifconfig-configure = ifconfig
+ip-configure = ip -V
+git-configure = git --version | cut -d ' ' -f 3
+wget-configure = wget -V | head -n 1 | cut -d ' ' -f 3
+pip-configure = pip --version | cut -d ' ' -f 2
+gcc-configure = gcc -v 2>&1 | grep -v Configured | grep version | cut -d ' ' -f 3
+make-configure = make -v | head -n1 | cut -d ' ' -f 3
+emacs-configure = emacs --version | head -n 1 
+sshpass-configure = sshpass -V | grep sshpass | head -n 1 | cut -d ' ' -f 2
+curl-configure = curl -V | head -n 1 | cut -d ' ' -f 2
+screen-configure = screen -v | grep version
+rsync-configure = rsync --version | grep version
+ncftp-configure = ncftp -h 2>&1 | grep Program | cut -d ' ' -f 5 | sed -e 's/\//./g'
+lftp-configure = lftp --version | grep Version | cut -d " " -f 4
+netcat-configure = nc -v -w 1 localhost -z 22
+nmap-configure = nmap -V | grep version | cut -d ' ' -f 3
+openvpn-configure = openvpn --version | grep built | cut -d ' ' -f 2
+gmond-configure = gmond --version | cut -d ' ' -f 2
+chef-client-configure = knife -v | cut -d ' ' -f 2
+rsyslog-configure = rsyslogd -v | grep compiled | cut -d ' ' -f 2 | sed 's/,//g'
+rsyslog-filter-configure = nmap -P0 -sU -p514 localhost 2>&1 | grep open && ls /var/log/devops
+apache-configure = apachectl -v | grep version | cut -d '/' -f 2 | cut -d ' ' -f 1
+redis-configure = redis-server -v
+mongodb-configure =  mongod --version
+chef-server-configure = sudo chef-server-ctl status
+python-devel-configure = python -c "from distutils import sysconfig as s; print s.get_config_vars()['INCLUDEPY']"
+python-setuptools-configure = python -c "import setuptools; from setuptools import sandbox"
+python-prettytable-configure = python -c "import prettytable; print str(prettytable.__version__).strip()"
+python-daemon-configure = python -c "import daemon; print str(daemon._version).strip()"
+python-twisted-configure = python -c "import twisted; from twisted.web.wsgi import WSGIResource; from twisted.internet import reactor; from twisted.web.static import File; from twisted.web.resource import Resource; from twisted.web.server import Site; from twisted.web import wsgi; print str(twisted.__version__).strip()"
+python-webob-configure = python -c "import webob; from webob import Request, Response, exc"
+python-beaker-configure = python -c "import beaker; from beaker.middleware import SessionMiddleware"
+gmetad-python-configure = ls -la 3RPARTYDIR/monitor-core/gmetad-python/gmetad.py
+pyredis-configure = python -c "import redis; print str(redis.VERSION).replace('(','').replace(')','').replace(', ','.').strip()"
+pymongo-configure = python -c "import pymongo; print str(pymongo.version).strip().replace('+','')"
+pylibvirt-configure = python -c "import libvirt; print str(libvirt.getVersion()).strip()"
+pypureomapi-configure = python -c "import pypureomapi; print str(pypureomapi.__version__).strip()"
+pyhtml-configure = python -c "import HTML; print str(HTML.__version__).strip()"
+bootstrap-configure = ls -la 3RPARTYDIR/bootstrap/package.json
+bootstrap-wizard-configure = ls -la 3RPARTYDIR/Bootstrap-Wizard/README.md
+streamprox-configure = ls -la 3RPARTYDIR/StreamProx/README.md
+d3-configure = ls -la 3RPARTYDIR/d3/component.json
+novaclient-configure = python -c "import novaclient; from novaclient.v1_1 import client"
+softlayer-configure = sl help bmc
+softlayer-vpn-configure = sudo /usr/local/bin/array_vpnc -version | sed -e 's/VPNC_//g' | sed -e 's/_/./g'
+boto-configure = python -c "import boto; print str(boto.__version__).strip().replace('-dev','')"
+libcloud-configure = python -c "import libcloud; print str(libcloud.__version__).replace('-dev','').strip()"
+R-configure = R --version | grep version | grep -v GNU
+### END - Tests ###
+
+### START - Dependency versions ###
+sudo-ver = ANY
+repo-ver = ANY
+ifconfig-ver = ANY
+ip-ver = ANY
+git-ver = 1.6.0
+wget-ver = 1.00
+pip-ver = 1.0
+gcc-ver = 4.0
+make-ver = 3.5
+emacs-ver = 20.0.0
+sshpass-ver = 1.0
+curl-ver = 7.0
+screen-ver = 4.0
+rsync-ver = 2.6
+ncftp-ver = 3.2.3
+lftp-ver = 4.0
+netcat-ver = ANY
+nmap-ver = 4.0
+openvpn-ver = 2.2.0
+gmond-ver = 3.0
+chef-client-ver = 11.4.0
+rsyslog-ver = 4.6.0
+rsyslog-filter-ver = ANY
+apache-ver = 2.0
+redis-ver = 2.5.0
+mongodb-ver = 2.4.0
+chef-server-ver = ANY
+python-devel-ver = ANY
+python-setuptools-ver = ANY
+python-prettytable-ver = 0.6
+python-daemon-ver = 1.5.1
+python-twisted-ver = 8.0.0
+python-webob-ver = ANY
+python-beaker-ver = ANY
+gmetad-python-ver = ANY
+pyredis-ver = 2.6.0
+pymongo-ver = 2.1.1
+pylibvirt-ver = 9003
+pypureomapi-ver = 0.3
+pyhtml-ver = 0.04
+bootstrap-ver = ANY
+bootstrap-wizard-ver = ANY
+streamprox-ver = ANY
+d3-ver = ANY
+novaclient-ver = ANY
+softlayer-ver = ANY
+softlayer-vpn-ver = 8.4
+boto-ver = 2.1.8
+libcloud-ver = 0.11.0
+R-ver = 2.1
+### END - Dependency versions ###
+
+### START - Dependency URLs ###
+rhel-redis-ppc64-urls-man = ftp://rpmfind.net/linux/fedora-secondary/development/rawhide/ppc64/os/Packages/r/redis-2.6.16-1.fc21.ppc64.rpm
+rhel-redis-x86_64-urls-man = ftp://rpmfind.net/linux/remi/enterprise/6/remi/x86_64
+rhel-redis-urls-git = https://github.com/antirez
+ubuntu-redis-amd64-urls-man = http://ppa.launchpad.net/rwky/redis/ubuntu/pool/main/r/redis
+ubuntu-redis-ppc64-urls-man = http://ppa.launchpad.net/chris-lea/redis-server/ubuntu/pool/main
+ubuntu-redis-urls-git = https://github.com/antirez
+
+rhel-chef-server-x86_64-urls-man = https://opscode-omnibus-packages.s3.amazonaws.com/el/6/x86_64/chef-server-11.0.10-1.el6.x86_64.rpm
+ubuntu-chef-server-amd64-urls-man = https://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/12.04/x86_64/chef-server_11.0.10-1.ubuntu.12.04_amd64.deb
+
+rhel-mongodb-x86_64-urls-man = http://downloads-distro.mongodb.org/repo/redhat/os/ARCH/RPMS
+rhel-mongodb-urls-git = https://github.com/mongodb/mongo.git
+ubuntu-mongodb-amd64-urls-man = http://downloads-distro.mongodb.org/repo/ubuntu-upstart/dists/dist/10gen/binary-ARCH
+ubuntu-mongodb-urls-git = https://github.com/mongodb/mongo.git
+
+rhel-gmetad-python-urls-git = https://github.com/ibmcb
+ubuntu-gmetad-python-urls-git = https://github.com/ibmcb
+
+rhel-pyhtml-urls-git = https://github.com/ibmcb
+ubuntu-pyhtml-urls-git = https://github.com/ibmcb
+
+rhel-bootstrap-urls-git = https://github.com/ibmcb
+ubuntu-bootstrap-urls-git = https://github.com/ibmcb
+
+rhel-bootstrap-wizard-urls-git = https://github.com/ibmcb
+ubuntu-bootstrap-wizard-urls-git = https://github.com/ibmcb
+
+rhel-streamprox-urls-git = https://github.com/ibmcb
+ubuntu-streamprox-urls-git = https://github.com/ibmcb
+
+rhel-d3-urls-git = https://github.com/ibmcb
+ubuntu-d3-urls-git = https://github.com/ibmcb
+
+rhel-softlayer-vpn-x86_64-urls-man = http://mdo.watson.ibm.com/repo/dropbox/softlayer/array_vpn
+ubuntu-softlayer-vpn-urls-man = http://mdo.watson.ibm.com/repo/dropbox/softlayer/array_vpn
+
+### END - Dependency URLs ###
+
+### START -  Dependency and method-specific command lines ###
+rhel-sudo-install-man = echo "USERNAME  ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers; sed -i s/"Defaults requiretty"/"#Defaults requiretty"/g /etc/sudoers
+ubuntu-sudo-install-man = echo "USERNAME  ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers; sed -i s/"Defaults requiretty"/"#Defaults requiretty"/g /etc/sudoers; sudo apt-get update
+
+rhel-repo-install-man = sudo mv -f /tmp/*.repo /etc/yum.repos.d; touch /tmp/repoupdated
+ubuntu-repo-install-man = sudo mv -f /tmp/*.list /etc/apt/sources.list.d/; sudo apt-get update; touch /tmp/repoupdated
+
+ubuntu-ifconfig-install-sl = sudo ln -s /sbin/ifconfig /usr/local/bin/ifconfig
+rhel-ifconfig-install-sl = sudo ln -s /sbin/ifconfig /usr/local/bin/ifconfig
+
+ubuntu-ip-install-sl = sudo ln -s /sbin/ip /usr/local/bin/ifconfig
+rhel-ip-install-sl = sudo ln -s /sbin/ip /usr/local/bin/ifconfig
+
+rhel-git-install-pm = sudo yum -y install git
+ubuntu-git-install-pm = sudo apt-get -y install git
+
+rhel-wget-install-pm = sudo yum -y install wget
+ubuntu-wget-install-pm = sudo apt-get -y install wget
+
+rhel-pip-install-pm = sudo yum -y install python-pip
+ubuntu-pip-install-pm = sudo apt-get -y install python-pip
+
+rhel-gcc-install-pm = sudo yum -y install gcc
+ubuntu-gcc-install-pm = sudo apt-get -y install gcc
+
+rhel-make-install-pm = sudo yum -y install make
+ubuntu-make-install-pm = sudo apt-get -y install make
+
+rhel-emacs-install-pm = sudo yum -y install emacs
+ubuntu-emacs-install-pm = sudo apt-get -y install emacs
+
+rhel-sshpass-install-pm = sudo yum -y install sshpass
+ubuntu-sshpass-install-pm = sudo apt-get -y install sshpass
+
+rhel-curl-install-pm = sudo yum -y install curl
+ubuntu-curl-install-pm = sudo apt-get -y install curl
+
+rhel-screen-install-pm = sudo yum -y install screen
+ubuntu-screen-install-pm = sudo apt-get -y install screen
+
+rhel-rsync-install-pm = sudo yum -y install rsync
+ubuntu-rsync-install-pm = sudo apt-get -y install rsync
+
+rhel-ncftp-install-pm = sudo yum -y install ncftp
+ubuntu-ncftp-install-pm = sudo apt-get -y install ncftp
+
+rhel-lftp-install-pm = sudo yum -y install lftp
+ubuntu-lftp-install-pm = sudo apt-get -y install lftp
+
+rhel-netcat-install-pm = sudo yum -y install nc
+ubuntu-netcat-install-pm = sudo apt-get -y install netcat-openbsd
+
+rhel-nmap-install-pm = sudo yum -y install nmap
+ubuntu-nmap-install-pm = sudo apt-get -y install nmap
+
+rhel-openvpn-install-pm = sudo yum -y install openvpn
+rhel-openvpn-postinstall-pm = sudo ln -s /usr/sbin/openvpn /usr/local/bin/openvpn
+ubuntu-openvpn-install-pm = sudo apt-get -y install openvpn
+ubuntu-openvpn-postinstall-pm = sudo ln -s /usr/sbin/openvpn /usr/local/bin/openvpn
+
+rhel-gmond-install-pm = sudo yum -y install ganglia-gmond-python ganglia
+rhel-gmond-postinstall-pm = sudo ln -s /usr/sbin/gmond /usr/local/bin/gmond
+ubuntu-gmond-install-pm = sudo apt-get -y install ganglia-monitor
+ubuntu-gmond-postinstall-pm = sudo ln -s /usr/sbin/gmond /usr/local/bin/gmond
+
+rhel-chef-client-install-man = curl -L https://www.opscode.com/chef/install.sh | sudo bash
+ubuntu-chef-client-install-man = curl -L https://www.opscode.com/chef/install.sh | sudo bash
+
+rhel-rsyslog-install-pm = sudo yum -y install rsyslog
+rhel-rsyslog-postinstall-pm = sudo ln -s /usr/sbin/rsyslogd /usr/local/bin/rsyslogd
+ubuntu-rsyslog-install-pm = sudo apt-get -y install rsyslog
+ubuntu-rsyslog-postinstall-pm = sudo ln -s /usr/sbin/rsyslogd /usr/local/bin/rsyslogd
+
+rhel-rsyslog-filter-preinstall-man =  sudo mkdir -p /var/log/devops
+rhel-rsyslog-filter-install-man = sudo sed -i -e "s/#\$ModLoad imudp/\$ModLoad imudp/g" /etc/rsyslog.conf; sudo sed -i -e "s/#\$UDPServerRun 514/\$UDPServerRun 514/g" /etc/rsyslog.conf
+rhel-rsyslog-filter-postinstall-man = sudo bash -c "echo -e \"local5.*  \t\t\t\t /var/log/devops/remote.log\" >> /etc/rsyslog.conf"; sudo bash -c "echo -e \"local6.* \t\t\t\t /var/log/devops/local.log\" >> /etc/rsyslog.conf"; service rsyslog restart
+ubuntu-rsyslog-filter-preinstall-man =  sudo mkdir -p /var/log/devops
+ubuntu-rsyslog-filter-install-man = sudo sed -i -e "s/#\$ModLoad imudp/\$ModLoad imudp/g" /etc/rsyslog.conf; sudo sed -i -e "s/#\$UDPServerRun 514/\$UDPServerRun 514/g" /etc/rsyslog.conf
+ubuntu-rsyslog-filter-postinstall-man = sudo bash -c "echo -e \"local5.*  \t\t\t\t /var/log/devops/remote.log\" >> /etc/rsyslog.conf"; sudo bash -c "echo -e \"local6.* \t\t\t\t /var/log/devops/local.log\" >> /etc/rsyslog.conf"; service rsyslogd restart
+
+rhel-apache-install-pm = sudo yum -y install httpd
+ubuntu-apache-install-pm = sudo apt-get -y install apache2
+
+rhel-redis-preinstall-man = lftp -c 'open -e "mget redis*" URL'
+rhel-redis-install-man = sudo yum -y install gperftools-libs && sudo rpm -Uvh $(ls -t | grep redis | head -n 1)
+rhel-redis-postinstall-man = sudo sed -i "s/^bind .*/bind 0.0.0.0/" /etc/redis.conf; sudo /etc/init.d/redis restart; sudo chkconfig --add redis
+ubuntu-redis-preinstall-man = lftp -c 'open -e "mget redis-server_2.8*precise_ARCH.deb" URL' 
+ubuntu-redis-install-man = sudo dpkg -i $(ls -t | grep redis-server | head -n 1)
+ubuntu-redis-postinstall-man = sudo sed -i "s/^bind .*/bind 0.0.0.0/" /etc/redis/redis.conf; sudo service redis-server restart
+
+rhel-redis-preinstall-git = cd 3RPARTYDIR; git clone URL/redis.git
+rhel-redis-install-git = cd 3RPARTYDIR;redis; make; sudo make install
+ubuntu-redis-preinstall-git = cd 3RPARTYDIR; git clone URL/redis.git
+ubuntu-redis-install-git = cd 3RPARTYDIR;redis; make; sudo make install
+
+rhel-mongodb-install-man = sudo rpm -Uvh URL/mongo-10gen-2.4.9-mongodb_1.ARCH.rpm; sudo rpm -Uvh URL/mongo-10gen-server-2.4.9-mongodb_1.ARCH.rpm 
+rhel-mongodb-postinstall-man = sudo sed -i "s/^bind_ip.*/bind_ip=0.0.0.0/" /etc/mongod.conf; sudo /etc/init.d/mongod restart; sudo chkconfig --add mongod
+ubuntu-mongodb-preinstall-man = wget -N -P 3RPARTYDIR URL/mongodb-10gen_2.4.9_amd64.deb
+ubuntu-mongodb-install-man = sudo dpkg -i 3RPARTYDIR/mongodb-10gen_2.4.9_amd64.deb
+ubuntu-mongodb-postinstall-man = sudo sed -i "s/^bind_ip.*/bind_ip=0.0.0.0/" /etc/mongodb.conf; sudo service mongodb restart
+
+rhel-chef-server-install-man = sudo rpm -Uvh URL 
+ubuntu-chef-server-preinstall-man =  wget -N -P 3RPARTYDIR URL
+ubuntu-chef-server-install-man = sudo dpkg -i chef-server_11.0.10-1.ubuntu.12.04_amd64.deb
+
+rhel-python-devel-install-pm = sudo yum -y install python-devel
+ubuntu-python-devel-install-pm = sudo apt-get -y install python-dev
+
+rhel-python-setuptools-install-pm = sudo yum -y install python-setuptools
+ubuntu-python-setuptools-install-pm = sudo apt-get -y install python-setuptools
+
+rhel-python-prettytable-install-pm = sudo yum -y install python-prettytable
+ubuntu-python-prettytable-install-pm = sudo apt-get -y install python-prettytable
+
+rhel-python-prettytable-install-pip = sudo pip install INDEXURL prettytable
+ubuntu-python-prettytable-install-pip = sudo pip install INDEXURL prettytable
+
+rhel-python-daemon-install-pm = sudo yum -y install python-daemon
+ubuntu-python-daemon-install-pm = sudo apt-get -y install python-daemon
+
+rhel-python-twisted-install-pm = sudo yum -y install python-twisted-web
+ubuntu-python-twisted-install-pm = sudo apt-get -y install python-twisted-web
+
+rhel-python-webob-install-pm = sudo yum -y install python-webob
+ubuntu-python-webob-install-pm = sudo apt-get -y install python-webob
+
+rhel-python-beaker-install-pm = sudo yum -y install python-beaker
+ubuntu-python-beaker-install-pm = sudo apt-get -y install python-beaker
+
+rhel-pyredis-install-pip = sudo pip install INDEXURL redis
+ubuntu-pyredis-install-pip = sudo pip install INDEXURL redis
+
+rhel-pymongo-preinstall-pip = sudo yum -y install python-devel
+rhel-pymongo-install-pip = sudo pip install INDEXURL pymongo
+ubuntu-pymongo-preinstall-pip = sudo apt-get -y install python-dev
+ubuntu-pymongo-install-pip = sudo pip install INDEXURL pymongo
+
+rhel-pylibvirt-install-pm = sudo yum -y install libvirt-python
+ubuntu-pylibvirt-install-pm = sudo apt-get -y install python-libvirt
+
+rhel-pypureomapi-install-pip = sudo pip install INDEXURL pypureomapi
+ubuntu-pypureomapi-install-pip = sudo pip install INDEXURL pypureomapi
+
+rhel-pyhtml-preinstall-git = cd 3RPARTYDIR; git clone URL/HTML.py
+rhel-pyhtml-install-git = cd HTML.py; sudo python setup.py install
+ubuntu-pyhtml-preinstall-git = cd 3RPARTYDIR; git clone URL/HTML.py
+ubuntu-pyhtml-install-git = cd HTML.py; sudo python setup.py install
+
+rhel-gmetad-python-preinstall-git = cd 3RPARTYDIR; git clone URL/monitor-core.git
+ubuntu-gmetad-python-preinstall-git = cd 3RPARTYDIR; git clone URL/monitor-core.git
+
+rhel-bootstrap-preinstall-git = cd 3RPARTYDIR; git clone URL/bootstrap.git
+ubuntu-bootstrap-preinstall-git = cd 3RPARTYDIR; git clone URL/bootstrap.git
+
+rhel-bootstrap-wizard-preinstall-git = cd 3RPARTYDIR; git clone URL/Bootstrap-Wizard.git
+ubuntu-bootstrap-wizard-preinstall-git = cd 3RPARTYDIR; git clone URL/Bootstrap-Wizard.git
+
+rhel-streamprox-preinstall-git = cd 3RPARTYDIR; git clone URL/StreamProx.git
+ubuntu-streamprox-preinstall-git = cd 3RPARTYDIR; git clone URL/StreamProx.git
+
+rhel-d3-preinstall-git = cd 3RPARTYDIR; git clone URL/d3.git
+ubuntu-d3-preinstall-git = cd 3RPARTYDIR; git clone URL/d3.git
+
+rhel-novaclient-install-pip = sudo pip install INDEXURL python-novaclient
+ubuntu-novaclient-install-pip = sudo pip install INDEXURL python-novaclient
+
+rhel-softlayer-install-pip = sudo pip install INDEXURL softlayer
+ubuntu-softlayer-install-pip = sudo pip install INDEXURL softlayer
+
+rhel-softlayer-vpn-preinstall-man = sudo wget -N -P /usr/local/bin URL/array_vpnc && sudo wget -P /usr/local/bin URL/array_loader 
+rhel-softlayer-vpn-install-man = sudo chmod 755 /usr/local/bin/array_*
+ubuntu-softlayer-vpn-preinstall-man = sudo wget -N -P /usr/local/bin URL/array_vpnc && sudo wget -P /usr/local/bin URL/array_loader
+ubuntu-softlayer-vpn-install-man = sudo chmod 755 /usr/local/bin/array_*
+
+rhel-boto-install-pip = sudo pip install INDEXURL boto
+ubuntu-boto-install-pip = sudo pip install INDEXURL boto
+
+rhel-libcloud-install-pip = sudo pip install INDEXURL apache-libcloud
+ubuntu-libcloud-install-pip = sudo pip install INDEXURL apache-libcloud
+
+rhel-R-install-pm = sudo yum -y install R
+ubuntu-R-install-pm = sudo apt-get -y install r-base-core
+### END -  Dependency and method-specific command lines ###

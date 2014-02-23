@@ -1,12 +1,12 @@
- status: Waiting for vm_2 (cloud-assigned uuid 9DDFC0D2-C0AD-5B63-B525-DD2E9BFCF4D4) to start...
- status: Trying to establish network connectivity to vm_2 (cloud-assigned uuid 9DDFC0D2-C0AD-5B63-B525-DD2E9BFCF4D4), on IP address 19.142.65.55...
- status: Bypassing the sending of a copy of the code tree to vm_2 (19.142.65.55)...
- status: Bypassing generic VM post_boot configuration on vm_2 (19.142.65.55)...
-VM object 9006236B-6529-5BCB-9DF2-6CE03B0A38E2 (named "vm_2") sucessfully attached to this experiment. It is ssh-accessible at the IP address 19.142.65.55 (9DDFC0D2-C0AD-5B63-B525-DD2E9BFCF4D4.simcloud.com).
+ status: Waiting for vm_2 (cloud-assigned uuid A7919E4A-11B7-5BA0-87A3-5AF41AC0236B) to start...
+ status: Trying to establish network connectivity to vm_2 (cloud-assigned uuid A7919E4A-11B7-5BA0-87A3-5AF41AC0236B), on IP address 84.244.229.178...
+ status: Bypassing the sending of a copy of the code tree to vm_2 (84.244.229.178)...
+ status: Bypassing generic VM post_boot configuration on vm_2 (84.244.229.178)...
+VM object 5C1E679C-DAF9-57ED-8D73-F63B5E78CB4F (named "vm_2") sucessfully attached to this experiment. It is ssh-accessible at the IP address 84.244.229.178 (A7919E4A-11B7-5BA0-87A3-5AF41AC0236B.simcloud.com).
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 |name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
-|vm_1          |tinyvm              |pico32      |232.200.73.10   |simhosta1                  |SUT                 |none    |none       |2FBCB7CD-9DCF-5EFD-BA07-5AE378159AD7
-|vm_2          |tinyvm              |pico32      |19.142.65.55    |simhostd1                  |LG                  |none    |none       |9006236B-6529-5BCB-9DF2-6CE03B0A38E2
+|vm_1          |tinyvm              |pico32      |78.209.16.222   |simhostb1                  |SUT                 |none    |none       |8BFCE8D4-25F8-549F-A48D-4B8C2653087E
+|vm_2          |tinyvm              |pico32      |84.244.229.178  |simhostd1                  |LG                  |none    |none       |5C1E679C-DAF9-57ED-8D73-F63B5E78CB4F
 
 The VM object vm_2, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
 |attribute (VM object key)               |value                                
@@ -19,11 +19,11 @@ The VM object vm_2, attached to this experiment, has the following attributes (C
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |1.32M                         
+|Used Memory                                          |1.24M                         
 |Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |2217411                       
-|Total Connections Received                           |7986                          
-|Total Commands Processed                             |2251513                       
+|Uptime (in seconds)                                  |2596399                       
+|Total Connections Received                           |9835                          
+|Total Commands Processed                             |5154591                       
 |Number of Keys                                       |300                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
@@ -91,8 +91,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |90                            
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|F4EFA288-1B39-5FEC-883B-F5916C3B88F5 (simzone_d) VM RESERVATIONS|1                             
-|F704CB6A-D182-5724-9A14-FF4845DBBE38 (simzone_a) VM RESERVATIONS|1                             
-|370C6FA9-8AB9-577B-B4F7-F4F71A06D56B (simzone_b) VM RESERVATIONS|0                             
-|4BA37B19-A0AD-5C8D-8729-3A3BBECF078F (simzone_c) VM RESERVATIONS|0                             
+|779BB4DB-9E97-5A09-B92C-8062AFC748B5 (simzone_c) VM RESERVATIONS|0                             
+|E85824AF-FEF4-5B15-97FE-C631A8545B63 (simzone_a) VM RESERVATIONS|0                             
+|65263578-EC1B-5267-BD62-29CADC410A84 (simzone_d) VM RESERVATIONS|1                             
+|F5AFBECF-5F73-55FC-B9F3-B6682E53C1B7 (simzone_b) VM RESERVATIONS|1                             
 

@@ -1,29 +1,29 @@
- status: Waiting for vm_2 (cloud-assigned uuid 9DDFC0D2-C0AD-5B63-B525-DD2E9BFCF4D4) to be captured with image name "vm_2_at_1392745737"...
- status: Sending a termination request for vm_2 (cloud-assigned uuid 9DDFC0D2-C0AD-5B63-B525-DD2E9BFCF4D4)....
-VM object 9006236B-6529-5BCB-9DF2-6CE03B0A38E2 (named "vm_2") successfully captured on this experiment.
+ status: Waiting for vm_2 (cloud-assigned uuid A7919E4A-11B7-5BA0-87A3-5AF41AC0236B) to be captured with image name "vm_2_at_1393124725"...
+ status: Sending a termination request for vm_2 (cloud-assigned uuid A7919E4A-11B7-5BA0-87A3-5AF41AC0236B)....
+VM object 5C1E679C-DAF9-57ED-8D73-F63B5E78CB4F (named "vm_2") successfully captured on this experiment.
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 |name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
-|vm_1          |tinyvm              |pico32      |232.200.73.10   |simhosta1                  |SUT                 |none    |none       |2FBCB7CD-9DCF-5EFD-BA07-5AE378159AD7
-|vm_3          |tinyvm              |pico32      |60.65.190.226   |simhostb1                  |SUT                 |none    |none       |5AAEE516-630E-5A11-A842-A823C68273F7
-|vm_4          |db2                 |copper32    |27.238.82.127   |simhostc1                  |SUT                 |none    |none       |3635982E-82C7-5FAB-91FA-EBCA81E74D64
-|vm_5          |netclient           |platinum64  |26.116.51.164   |simhosta1                  |SUT                 |none    |none       |495061FD-8328-5EAE-93F1-903544920215
+|vm_1          |tinyvm              |pico32      |78.209.16.222   |simhostb1                  |SUT                 |none    |none       |8BFCE8D4-25F8-549F-A48D-4B8C2653087E
+|vm_3          |tinyvm              |pico32      |131.251.69.113  |simhostb1                  |SUT                 |none    |none       |653AFD50-BAE7-55D8-90C9-F36206B740CD
+|vm_4          |db2                 |copper32    |56.152.225.239  |simhostb1                  |SUT                 |none    |none       |441E1247-E386-50FC-8C5E-2FDBDF23B511
+|vm_5          |netclient           |platinum64  |161.243.219.36  |simhosta1                  |SUT                 |none    |none       |4F30DAAB-20B9-5B23-ACDE-520AD53C0194
 
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |1.43M                         
+|Used Memory                                          |1.32M                         
 |Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |2217419                       
-|Total Connections Received                           |7986                          
-|Total Commands Processed                             |2254662                       
-|Number of Keys                                       |318                           
+|Uptime (in seconds)                                  |2596407                       
+|Total Connections Received                           |9835                          
+|Total Commands Processed                             |5157712                       
+|Number of Keys                                       |316                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
 |MongoDB Version                                      |2.4.6                         
 |Storage Size                                         |761856                        
-|Data Size                                            |106224                        
+|Data Size                                            |105792                        
 |Index Size                                           |294336                        
-|Average Object Size                                  |342.658064516                 
+|Average Object Size                                  |342.368932039                 
 |Collections                                          |14                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
@@ -83,8 +83,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |94                            
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|F4EFA288-1B39-5FEC-883B-F5916C3B88F5 (simzone_d) VM RESERVATIONS|0                             
-|F704CB6A-D182-5724-9A14-FF4845DBBE38 (simzone_a) VM RESERVATIONS|2                             
-|370C6FA9-8AB9-577B-B4F7-F4F71A06D56B (simzone_b) VM RESERVATIONS|1                             
-|4BA37B19-A0AD-5C8D-8729-3A3BBECF078F (simzone_c) VM RESERVATIONS|1                             
+|779BB4DB-9E97-5A09-B92C-8062AFC748B5 (simzone_c) VM RESERVATIONS|0                             
+|E85824AF-FEF4-5B15-97FE-C631A8545B63 (simzone_a) VM RESERVATIONS|1                             
+|65263578-EC1B-5267-BD62-29CADC410A84 (simzone_d) VM RESERVATIONS|0                             
+|F5AFBECF-5F73-55FC-B9F3-B6682E53C1B7 (simzone_b) VM RESERVATIONS|3                             
 

@@ -26,12 +26,13 @@
 from sys import path
 import os
 import re
-import urllib2
 import platform
+import urllib2
 
+from json import dumps
 from lib.remote.process_management import ProcessManagement
 
-def deps_file_parser(depsdict, username, options, hostname, process_manager = None) :
+def deps_file_parser(depsdict, username, options, hostname, process_manager = False) :
     '''
     TBD
     '''
@@ -40,7 +41,7 @@ def deps_file_parser(depsdict, username, options, hostname, process_manager = No
 
     _file_name_list = []
 
-    _file_name_list.append(options.defdir + "/dependencies.txt")
+    _file_name_list.append(options.defdir + "/PUBLIC_dependencies.txt")
 
     _workloads_list = options.wks.split(',')
 
@@ -49,12 +50,15 @@ def deps_file_parser(depsdict, username, options, hostname, process_manager = No
         for _workload in _workloads_list :
             _file_name_list.append(options.wksdir + '/'  + _workload + "/dependencies.txt")
         _cleanup_repos = True
-        
+
+    _file_name_list.append(options.defdir + "/IBM_dependencies.txt")
+    
     if len(options.custom) :
         _file_name_list.append(options.cusdir + '/' + options.custom)
 
     for _file in _file_name_list :
         if os.access(_file, os.F_OK) :
+
             try:
                 _fd = open(_file, 'r')
                 _fc = _fd.readlines()
@@ -157,12 +161,9 @@ def get_cmdline(depkey, depsdict, operation) :
 
             _actual_cmdline += get_actual_cmdline(_commandline_key, depsdict, _actual_url) + ';'
 
-        if depkey == "repo" :
-            build_repository_files(depsdict) 
-
         if depsdict["cdist"] == "ubuntu" and _actual_cmdline.count("apt-get install") :
             _actual_cmdline += "sudo apt-get -f install"
-            
+
     else :
         _commandline_key = depkey + '-' + operation
         _actual_cmdline += get_actual_cmdline(_commandline_key, depsdict, _actual_url)
@@ -202,41 +203,52 @@ def get_actual_cmdline(commandline_key, depsdict, _actual_url) :
             _commandline = _commandline.replace("URL", _actual_url.strip())
         _commandline = _commandline.replace("ARCH", depsdict["carch"].strip())
         _commandline = _commandline.replace("DISTRO", depsdict["cdist"].strip())
-        _commandline = _commandline.replace("USERNAME", depsdict["username"].strip())    
+        _commandline = _commandline.replace("USERNAME", depsdict["username"].strip())
+
+        if depsdict["pip_addr"] :
+            _commandline = _commandline.replace("INDEXURL", "--index-url=http://" + depsdict["pip_addr"])            
+        else :
+            _commandline = _commandline.replace("INDEXURL", '')
 
     return _commandline
 
-def select_repository_url(depsdict) :
+def select_url(source, depsdict) :
     '''
     TBD
     '''
-    depsdict["repo_addr_list"] = []
+    depsdict[source + "_addr_list"] = []
 
-    depsdict["repo_addr"] = False
+    depsdict[source + "_addr"] = False
 
-    _msg = "Selecting package repository address...." 
-    print _msg
-    
-    for _key in sorted(depsdict.keys()) :
-        if _key.count("repo-addr") :
-            _index = int(_key.replace("repo-addr",''))
-            depsdict["repo_addr_list"].insert(_index, depsdict[_key])
- 
-    for _repo_addr in depsdict["repo_addr_list"] :
-        if check_url("http://" + _repo_addr, depsdict) :
-            depsdict["repo_addr"] = _repo_addr
-    
-    if len(depsdict["repo_addr_list"]) :
-        if depsdict["repo_addr"] :
-            _msg = "A package repository in \"" + depsdict["repo_addr"] + "\" seems to be up"
-            depsdict["repo_dropbox"] = "http://" + depsdict["repo_addr"] + "/dropbox"
-            depsdict["repo_credentials_url"] = "http://" + depsdict["repo_addr"] + "/dropbox/ssh_keys"
-        else :
-            _msg = "None of the selected repositories was available. Will ignore"
-            _msg += " any repository URL that has the keyword REPO_ADDR..."
+    if source == "repo" :
+        _element = "package repository"
     else :
-        _msg = "No package repository specified. Will ignore any repository URL"
-        _msg += " that has the keyword REPO_ADDR..."
+        _element = "python pip"
+
+    _msg = "Selecting " + _element + " address...." 
+
+    for _key in sorted(depsdict.keys()) :
+        if _key.count(source + "-addr") :
+            _index = int(_key.replace(source + "-addr",''))
+            depsdict[source + "_addr_list"].insert(_index, depsdict[_key])
+
+    for _repo_addr in depsdict[source + "_addr_list"] :
+        if check_url("http://" + _repo_addr, depsdict) :
+            depsdict[source + "_addr"] = _repo_addr
+    
+    if len(depsdict[source + "_addr_list"]) :
+        if depsdict[source + "_addr"] :
+            _msg = "A " + _element + " in \"" + depsdict[source + "_addr"] + "\" seems to be up"
+            depsdict[source + "_dropbox"] = "http://" + depsdict[source + "_addr"] + "/dropbox"
+            depsdict[source + "_credentials_url"] = "http://" + depsdict[source + "_addr"] + "/dropbox/ssh_keys"
+        else :
+            _msg = "None of the indicated " + _element + " was available."
+            if source == "repo" :
+                _msg = "Will ignore any repository URL that has the keyword REPO_ADDR..."
+    else :
+        _msg = "No " + _element + " specified. "
+        if source == "repo" :
+            _msg = "Will ignore any repository URL that has the keyword REPO_ADDR..."
 
     print _msg
     
@@ -246,17 +258,23 @@ def build_repository_file_contents(depsdict, repo_name) :
     '''
     TBD
     '''
+    _msg = "Configuring repository \"" + repo_name +"\"..."
+    print _msg,
     
     _file_contents = ""
 
-    if "local_url" in depsdict["repo_contents"][repo_name] :
+    if "local-url" in depsdict["repo_contents"][repo_name] :
+        
         if len(depsdict["repo_contents"][repo_name]["local-url"]) :
+            
             if not depsdict["repo_addr"] and \
             depsdict["repo_contents"][repo_name]["local-url"].count("REPO_ADDR") :
+
                 _actual_url = depsdict["repo_contents"][repo_name]["original-url"]
+
             else :
+
                 _actual_url = depsdict["repo_contents"][repo_name]["local-url"]
-        _actual_url = depsdict["repo_contents"][repo_name]["original-url"]
     else :
         _actual_url = depsdict["repo_contents"][repo_name]["original-url"]
 
@@ -267,13 +285,24 @@ def build_repository_file_contents(depsdict, repo_name) :
         
     if not check_url(_actual_url, depsdict) :
         _tested_urls = _actual_url
+
         _actual_url = depsdict["repo_contents"][repo_name]["original-url"]
+
         if not check_url(_actual_url, depsdict) :
-            if _actual_url != _tested_urls :                    
+            if not _tested_urls.count(_actual_url) :
                 _tested_urls += ',' + _actual_url
-            _msg = "Error: No URLs available for repository \"" + repo_name + "\" (" + _tested_urls + ")."
-            raise Exception(_msg)
-            
+            _actual_url = False
+
+    if _actual_url :            
+        _msg = "Valid URL found: " + _actual_url + "."
+        print _msg
+    else :
+        _msg = "\nWarning: No URLs available for repository \"" + repo_name 
+        _msg += "\" (" + _tested_urls + ")." + " Will ignore this repository"
+        _msg += ", but this might cause installation errors due to a lacking on certain dependencies"        
+        print _msg
+        return False
+
     if depsdict["cdist"] == "ubuntu" :
         for _dist in depsdict["repo_contents"][repo_name]["dists"].split(',') :
             for _component in depsdict["repo_contents"][repo_name]["dists"].split(',') :
@@ -308,31 +337,34 @@ def build_repository_files(depsdict) :
         _file_extension = ".repo"
         _repo_dir = "/etc/yum.repos.d/"
     
-    for _repo in depsdict["repos_" + depsdict["cdist"]] :
+    _repo_list = depsdict["repos_" + depsdict["cdist"]]
+    
+    for _repo in _repo_list :
         
         _file_contents = build_repository_file_contents(depsdict, _repo)
         
-        try:
-            _file_name = "/tmp/" + _repo + _file_extension
-            _file_descriptor = file(_file_name, 'w')
-            _file_descriptor.write(_file_contents)
-            _file_descriptor.close()
-            os.chmod(_file_name, 0755)
+        if _file_contents :
+            try:
+                _file_name = "/tmp/" + _repo + _file_extension
+                _file_descriptor = file(_file_name, 'w')
+                _file_descriptor.write(_file_contents)
+                _file_descriptor.close()
+                os.chmod(_file_name, 0755)
 
-        except IOError, msg :
-            _msg = "######## Error writing file \"" + _file_name  + "\":" + str(msg)
-            print _msg
-            exit(4)
+            except IOError, msg :
+                _msg = "######## Error writing file \"" + _file_name  + "\":" + str(msg)
+                print _msg
+                exit(4)
 
-        except OSError, msg :
-            _msg = "######## Error writing file \"" + _file_name  + "\":" + str(msg)
-            print _msg
-            exit(4)
+            except OSError, msg :
+                _msg = "######## Error writing file \"" + _file_name  + "\":" + str(msg)
+                print _msg
+                exit(4)
 
-        except Exception, e :
-            _msg = "######## Error writing file \"" + _file_name  + "\":" + str(e)
-            print _msg
-            exit(4)
+            except Exception, e :
+                _msg = "######## Error writing file \"" + _file_name  + "\":" + str(e)
+                print _msg
+                exit(4)
          
     return True
         
@@ -406,6 +438,9 @@ def execute_command(operation, depkey, depsdict, hostname = "127.0.0.1", usernam
         print _msg
 
         _msg = "RESULT: "
+
+        if depkey == "repo" and operation == "install" :
+            build_repository_files(depsdict)
 
         _status, _result_stdout, _result_stderr = process_manager.run_os_command(_cmd[operation], False)
 
@@ -486,12 +521,14 @@ def dependency_checker_installer(hostname, username, operation, options) :
 
     try :
         _status = 100
+        _dep_missing = -1        
         _fmsg = "An error has occurred, but no error message was captured"
 
         _missing_dep = []
         _dep_list = [0] * 5000
 
-        select_repository_url(_depsdict)       
+        select_url("repo", _depsdict)
+        select_url("pip", _depsdict)
 
         for _key in _depsdict.keys() :
             if _key.count("-order")  :
@@ -503,10 +540,12 @@ def dependency_checker_installer(hostname, username, operation, options) :
 
         _fmsg = ""
         _dep_missing = 0
-        
+
         for _dep in _dep_list :
 
-            _status, _msg = execute_command("configure", _dep, _depsdict, hostname = "127.0.0.1", username = username)
+            _status, _msg = execute_command("configure", _dep, _depsdict, \
+                                            hostname = "127.0.0.1", \
+                                            username = username)
             print _msg
 
             if _status :
@@ -515,7 +554,9 @@ def dependency_checker_installer(hostname, username, operation, options) :
 
                 if operation == "install" :
 
-                    _status, _msg = execute_command("install", _dep, _depsdict, hostname = "127.0.0.1", username = username)
+                    _status, _msg = execute_command("install", _dep, _depsdict, \
+                                                    hostname = "127.0.0.1", \
+                                                    username = username)
                     print _msg
                     if not _status :
                         _dep_missing -= 1
@@ -540,7 +581,7 @@ def dependency_checker_installer(hostname, username, operation, options) :
                 _msg += "Please add the missing dependency(ies) and re-run " + operation +  " again."
             else :
                 _msg = _fmsg + '\n'
-                _msg += "Please fix the reported problems re-run " + operation +  " again."                
+                _msg += "Please fix the reported problems re-run " + operation +  " again."               
         else :
             _msg = "All dependencies are in place"
         return _status, _msg

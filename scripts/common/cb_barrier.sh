@@ -19,7 +19,7 @@
 #source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
 #####################################################
-# barrier to ensure all AIs start/stop at roughtly the
+# barrier to ensure all AIs start/stop at roughly the
 # same time
 #####################################################
 operation=$1

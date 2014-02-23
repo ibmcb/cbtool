@@ -321,7 +321,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _base_cmd = "sudo openvpn --config " + openvpn_config
             _cmd = _base_cmd + " --daemon"
             cbdebug(_cmd) 
-            _pid = _proc_man.start_daemon(_cmd, "1194", "udp", conditional = True, 
+            _pid = _proc_man.start_daemon(_cmd, "1194", "tcp", conditional = True, 
                                   search_keywords = cld_attr_lst["space"]["openvpn_server_config_prefix"])
 
             if len(_pid) :
@@ -339,6 +339,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     sys.stdout.write(_msg)
             else :
                 _msg = "\nOpenVPN failed to start. To discover why, please run:\n\n" + _base_cmd + "\n\n ... and report the bug."
+                cberr(_msg, True)
                 _status = 7161
                 raise ProcessManagement.ProcessManagementException(_status, _msg)
             
@@ -491,7 +492,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _fmsg =  str(obj.msg)
 
         except ProcessManagement.ProcessManagementException, obj :
-            print("AQUI")
             _status = str(obj.status)
             _msg = _fmsg + str(obj.msg)
 
@@ -1030,13 +1030,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _vm_templates = self.osci.get_object(_cn, "GLOBAL", False, "vm_templates", False)
 
             _vm_template_attr_list = str2dic(_vm_templates[obj_attr_list["role"]])
-            
+
             if obj_attr_list["size"] == "load_balanced_default" :
                 if "lb_size" in _vm_template_attr_list :
                     obj_attr_list["size"] = _vm_template_attr_list["lb_size"]
                 else :
                     obj_attr_list["size"] = "default"
-                
+
             selective_dict_update(obj_attr_list, _vm_template_attr_list)
 
             _status = 0
@@ -2565,6 +2565,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     raise self.ObjectOperationException(_msg, 28)
 
                 if not _status :
+
                     self.osci.destroy_object(obj_attr_list["cloud_name"], _obj_type, obj_attr_list["uuid"], \
                                              obj_attr_list, False)
 
@@ -2712,7 +2713,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _scores = True
                 else :
                     _scores = False
+
                 self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "VMS_UNDERGOING_" + obj_attr_list["current_state"].upper(), obj_attr_list["uuid"], _scores)
+
 
             self.record_management_metrics(obj_attr_list["cloud_name"], "VM", \
                                            obj_attr_list, "detach")
@@ -4690,7 +4693,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _aidrs_state = self.osci.get_object_state(cloud_name, "AIDRS", object_uuid)
 
             if not _aidrs_state  :
-                print "X"
                 _msg = "AIDRS object " + object_uuid 
                 _msg += " state could not be obtained. This process "
                 _msg += " will exit, leaving all the AIs behind."

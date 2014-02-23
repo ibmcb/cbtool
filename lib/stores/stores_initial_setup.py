@@ -440,7 +440,8 @@ def reset(global_objects, soft = True) :
         print _msg,
         _proc_man =  ProcessManagement()
         _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f cbact")
-        _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f cloud-")
+        _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f cloud-api")
+        _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f cloud-gui")        
         _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f ai-")
         _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f vm-")
         _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f submit-")

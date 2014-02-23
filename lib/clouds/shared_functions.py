@@ -555,12 +555,11 @@ class CommonCloudFunctions:
             if var in attrs and var != "self" and attrs[var] != None : 
                 value = attrs[var]
                 if isinstance(value, str) :
-                    value = value.strip().lower()
-                    if value == "" :
+                    if value.strip() == "" :
                         continue
-                    if value == "true" :
+                    if value.lower().strip() == "true" :
                         value = True
-                    elif value == "false" :
+                    elif value.lower().strip() == "false" :
                         value = False
 
                 kwargs[var] = value 
