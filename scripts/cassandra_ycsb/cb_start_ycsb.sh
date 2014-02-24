@@ -32,26 +32,95 @@ if [ $standalone == online ] ; then
     LOAD_ID=$4
 fi
 seed=`get_ips_from_role seed`
+
+#----------------------- Track all YCSB results  -------------------------------
+
+#----------------------- Total op/sec ------------------------------------------
 ops=0
+
+#----------------------- Current op/sec for this client ------------------------
+write_current_ops=0
+read_current_ops=0
+update_current_ops=0
+
+#----------------------- Tracking Latency --------------------------------------
+# <operation>_latency=average,min,max,95,99
+#-------------------------------------------------------------------------------
+write_latency=0
+read_latency=0
+update_latency=0
+
+#----------------------- Old tracking ------------------------------------------
 latency=0
 syslog_netcat "Current LOAD_LEVEL: ${LOAD_LEVEL}"
 sudo sed -i "s/operationcount=.*$/operationcount=${LOAD_LEVEL}/g" /root/YCSB/custom_workload.dat 
 syslog_netcat "YCSB Workload starting...."
 while read line ; do
+#-------------------------------------------------------------------------------
+# Need to track each YCSB Clients current operation count.
+# NEED TO:
+#       Create a variable that reports to CBTool the current operation
+#-------------------------------------------------------------------------------
+        if [[ "$line" ~= "[0-9]+\s sec:" ]] ; then
+          CURRENT_OPS=$()
+        fi
+
 	IFS=',' read -a array <<< "$line"
 	if [[ ${array[0]} == *OVERALL* ]] ; then
 		if [[ ${array[1]} == *Throughput* ]] ; then
 			ops=${array[2]}
 		fi
 	fi
+#----------------------- Track Latency -----------------------------------------
 	if [[ ${array[0]} == *UPDATE* ]] ; then
 		if [[ ${array[1]} == *AverageLatency* ]] ; then
-			latency=${array[2]}
+			update_latency=${array[2]}
+		fi
+		if [[ ${array[1]} == *MinLatency* ]] ; then
+			update_latency="$update_latency,${array[2]}"
+		fi
+		if [[ ${array[1]} == *MaxLatency* ]] ; then
+			update_latency="$update_latency,${array[2]}"
+		fi
+		if [[ ${array[1]} == *95thPercent* ]] ; then
+			update_latency="$update_latency,${array[2]}"
+		fi
+		if [[ ${array[1]} == *99thPercent* ]] ; then
+			update_latency="$upate_latency,${array[2]}"
 		fi
 	fi
 	if [[ ${array[0]} == *READ* ]] ; then
 		if [[ ${array[1]} == *AverageLatency* ]] ; then
-			latency=${array[2]}
+			read_latency=${array[2]}
+		fi
+		if [[ ${array[1]} == *MinLatency* ]] ; then
+			read_latency="$update_latency,${array[2]}"
+		fi
+		if [[ ${array[1]} == *MaxLatency* ]] ; then
+			read_latency="$update_latency,${array[2]}"
+		fi
+		if [[ ${array[1]} == *95thPercent* ]] ; then
+			read_latency="$update_latency,${array[2]}"
+		fi
+		if [[ ${array[1]} == *99thPercent* ]] ; then
+			read_latency="$upate_latency,${array[2]}"
+		fi
+	fi
+	if [[ ${array[0]} == *WRITE* ]] ; then
+		if [[ ${array[1]} == *AverageLatency* ]] ; then
+			write_latency=${array[2]}
+		fi
+		if [[ ${array[1]} == *MinLatency* ]] ; then
+			write_latency="$update_latency,${array[2]}"
+		fi
+		if [[ ${array[1]} == *MaxLatency* ]] ; then
+			write_latency="$update_latency,${array[2]}"
+		fi
+		if [[ ${array[1]} == *95thPercent* ]] ; then
+			write_latency="$update_latency,${array[2]}"
+		fi
+		if [[ ${array[1]} == *99thPercent* ]] ; then
+			write_latency="$upate_latency,${array[2]}"
 		fi
 	fi
 done < <(sudo /root/YCSB/bin/ycsb run cassandra-10 -s -P /root/YCSB/workloads/workloada -P /root/YCSB/custom_workload.dat -p hosts="$seed" 2>&1 )
