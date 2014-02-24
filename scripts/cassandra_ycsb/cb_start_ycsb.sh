@@ -62,7 +62,7 @@ while read line ; do
 #       Create a variable that reports to CBTool the current operation
 #-------------------------------------------------------------------------------
         if [[ "$line" ~= "[0-9]+\s sec:" ]] ; then
-          CURRENT_OPS=$()
+          CURRENT_OPS=$(echo $line | awk '{print $3}')
         fi
 
 	IFS=',' read -a array <<< "$line"
