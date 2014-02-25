@@ -124,7 +124,7 @@ while read line ; do
 		fi
 	fi
 done < <(sudo /root/YCSB/bin/ycsb run cassandra-10 -s -P /root/YCSB/workloads/workloada -P /root/YCSB/custom_workload.dat -p hosts="$seed" 2>&1 )
-~/cb_report_app_metrics.py throughput:$(expr $ops):tps latency:$(expr $latency):ms
+~/cb_report_app_metrics.py throughput:$(expr $ops):tps write_latency:$(expr $write_latency):us read_latency:$(expr $read_latency):us update_latency:$(expr $update_latency):us
 
 if [ $? -gt 0 ] ; then
 	syslog_netcat "problem running ycsb prime client on $(hostname)"
