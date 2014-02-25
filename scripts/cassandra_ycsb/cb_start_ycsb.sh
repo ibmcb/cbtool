@@ -52,8 +52,8 @@ update_latency=0
 
 #----------------------- Old tracking ------------------------------------------
 latency=0
-syslog_netcat "Current LOAD_LEVEL: ${LOAD_LEVEL}"
-sudo sed -i "s/operationcount=.*$/operationcount=${LOAD_LEVEL}/g" /root/YCSB/custom_workload.dat 
+#syslog_netcat "Current LOAD_LEVEL: ${LOAD_LEVEL}"
+#sudo sed -i "s/operationcount=.*$/operationcount=${LOAD_LEVEL}/g" /root/YCSB/custom_workload.dat 
 syslog_netcat "YCSB Workload starting...."
 while read line ; do
 #-------------------------------------------------------------------------------
@@ -72,59 +72,89 @@ while read line ; do
 		fi
 	fi
 #----------------------- Track Latency -----------------------------------------
-	if [[ ${array[0]} == *UPDATE* ]] ; then
-		if [[ ${array[1]} == *AverageLatency* ]] ; then
-			update_latency=${array[2]}
-		fi
-		if [[ ${array[1]} == *MinLatency* ]] ; then
-			update_latency="$update_latency,${array[2]}"
-		fi
-		if [[ ${array[1]} == *MaxLatency* ]] ; then
-			update_latency="$update_latency,${array[2]}"
-		fi
-		if [[ ${array[1]} == *95thPercent* ]] ; then
-			update_latency="$update_latency,${array[2]}"
-		fi
-		if [[ ${array[1]} == *99thPercent* ]] ; then
-			update_latency="$upate_latency,${array[2]}"
-		fi
-	fi
-	if [[ ${array[0]} == *READ* ]] ; then
-		if [[ ${array[1]} == *AverageLatency* ]] ; then
-			read_latency=${array[2]}
-		fi
-		if [[ ${array[1]} == *MinLatency* ]] ; then
-			read_latency="$update_latency,${array[2]}"
-		fi
-		if [[ ${array[1]} == *MaxLatency* ]] ; then
-			read_latency="$update_latency,${array[2]}"
-		fi
-		if [[ ${array[1]} == *95thPercent* ]] ; then
-			read_latency="$update_latency,${array[2]}"
-		fi
-		if [[ ${array[1]} == *99thPercent* ]] ; then
-			read_latency="$upate_latency,${array[2]}"
-		fi
-	fi
-	if [[ ${array[0]} == *WRITE* ]] ; then
-		if [[ ${array[1]} == *AverageLatency* ]] ; then
-			write_latency=${array[2]}
-		fi
-		if [[ ${array[1]} == *MinLatency* ]] ; then
-			write_latency="$update_latency,${array[2]}"
-		fi
-		if [[ ${array[1]} == *MaxLatency* ]] ; then
-			write_latency="$update_latency,${array[2]}"
-		fi
-		if [[ ${array[1]} == *95thPercent* ]] ; then
-			write_latency="$update_latency,${array[2]}"
-		fi
-		if [[ ${array[1]} == *99thPercent* ]] ; then
-			write_latency="$upate_latency,${array[2]}"
-		fi
-	fi
+        if [[ ${array[0]} == *UPDATE* ]] ; then
+                if [[ ${array[1]} == *AverageLatency* ]] ; then
+                        update_avg_latency=${array[2]}
+                fi
+                if [[ ${array[1]} == *MinLatency* ]] ; then
+                        update_min_latency="${array[2]}"
+                fi
+                if [[ ${array[1]} == *MaxLatency* ]] ; then
+                        update_max_latency="${array[2]}"
+                fi
+                if [[ ${array[1]} == *95thPercent* ]] ; then
+                        update_95_latency="${array[2]}"
+                fi
+                if [[ ${array[1]} == *99thPercent* ]] ; then
+                        update_99_latency="${array[2]}"
+                fi
+        fi
+        if [[ ${array[0]} == *READ* ]] ; then
+                if [[ ${array[1]} == *AverageLatency* ]] ; then
+                        read_avg_latency=${array[2]}
+                fi
+                if [[ ${array[1]} == *MinLatency* ]] ; then
+                        read_min_latency="${array[2]}"
+                fi
+                if [[ ${array[1]} == *MaxLatency* ]] ; then
+                        read_max_latency="${array[2]}"
+                fi
+                if [[ ${array[1]} == *95thPercent* ]] ; then
+                        read_95_latency="${array[2]}"
+                fi
+                if [[ ${array[1]} == *99thPercent* ]] ; then
+                        read_99_latency="${array[2]}"
+                fi
+        fi
+        if [[ ${array[0]} == *WRITE* ]] ; then
+                if [[ ${array[1]} == *AverageLatency* ]] ; then
+                        write_avg_latency=${array[2]}
+                fi
+                if [[ ${array[1]} == *MinLatency* ]] ; then
+                        write_min_latency="${array[2]}"
+                fi
+                if [[ ${array[1]} == *MaxLatency* ]] ; then
+                        write_max_latency="${array[2]}"
+                fi
+                if [[ ${array[1]} == *95thPercent* ]] ; then
+                        write_95_latency="${array[2]}"
+                fi
+                if [[ ${array[1]} == *99thPercent* ]] ; then
+                        write_99_latency="${array[2]}"
+                fi
+        fi
 done < <(sudo /root/YCSB/bin/ycsb run cassandra-10 -s -P /root/YCSB/workloads/workloada -P /root/YCSB/custom_workload.dat -p hosts="$seed" 2>&1 )
-~/cb_report_app_metrics.py throughput:$(expr $ops):tps write_latency:$(expr $write_latency):us read_latency:$(expr $read_latency):us update_latency:$(expr $update_latency):us
+
+if [[ $write_avg_latency -ne 0 ]] ; then
+ ~/cb_report_app_metrics.py throughput:$(expr $ops):tps \
+ write_avg_latency:$(expr $write_avg_latency):us \
+ write_min_latency:$(expr $write_min_latency):us \
+ write_max_latency:$(expr $write_max_latency):us \
+ write_95_latency:$(expr $write_95_latency):us \
+ write_99_latency:$(expr $write_99_latency):us \
+ read_avg_latency:$(expr $read_avg_latency):us \
+ read_min_latency:$(expr $read_min_latency):us \
+ read_max_latency:$(expr $read_max_latency):us \
+ read_95_latency:$(expr $read_95_latency):us \
+ read_99_latency:$(expr $read_99_latency):us \
+ update_avg_latency:$(expr $update_avg_latency):us \
+ update_min_latency:$(expr $update_min_latency):us \
+ update_max_latency:$(expr $update_max_latency):us \
+ update_95_latency:$(expr $update_95_latency):us \
+ update_99_latency:$(expr $update_99_latency):us
+fi
+if [[ $write_avg_latency -eq 0 ]] ; then
+ ~/cb_report_app_metrics.py throughput:$(expr $ops):tps read_avg_latency:$(expr $read_avg_latency):us\
+ read_min_latency:$(expr $read_min_latency):us\
+ read_max_latency:$(expr $read_max_latency):us\
+ read_95_latency:$(expr $read_95_latency):us\
+ read_99_latency:$(expr $read_99_latency):us\
+ update_avg_latency:$(expr $update_avg_latency):us\
+ update_min_latency:$(expr $update_min_latency):us\
+ update_max_latency:$(expr $update_max_latency):us\
+ update_95_latency:$(expr $update_95_latency):us\
+ update_99_latency:$(expr $update_99_latency):us
+fi
 
 if [ $? -gt 0 ] ; then
 	syslog_netcat "problem running ycsb prime client on $(hostname)"
