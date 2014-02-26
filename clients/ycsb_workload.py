@@ -17,6 +17,10 @@ import fnmatch
 import os
 
 _home = os.environ["HOME"]
+_api_endpoint = "10.16.31.203"
+_api_port = "9090"
+_cloud_name = "myopenstackcloud"
+_app_name = "cassandra_ycsb"
 
 for _path, _dirs, _files in os.walk(os.path.abspath(_home)):
     for _filename in fnmatch.filter(_files, "code_instrumentation.py") :
@@ -24,12 +28,30 @@ for _path, _dirs, _files in os.walk(os.path.abspath(_home)):
             break
 
 from lib.api.api_service_client import *
-api = APIClient("http://172.16.1.222:7070")
+
+#----------------------- CloudBench API ----------------------------------------
+api = APIClient("http://" + _api_endpoint + ":%s" % _api_port)
 expid = "CASSANDRA_YCSB" + makeTimestamp().replace(" ", "_")
+
 try : 
     error = False
     app = None
-    app = api.appattach("myopenstack", "cassandra_ycsb")
+    
+    _cloud_attached = False
+    for _cloud in api.cldlist() :
+        if _cloud["name"] == _cloud_name :
+            _cloud_attached = True
+            _cloud_model = _cloud["model"]
+            break
+
+    if not _cloud_attached :
+        print "Cloud " + _cloud_name + " not attached"
+        exit(1)    
+
+    app = api.appattach(_cloud_name, _app_name)
+
+    api.appalter(app["uuid"], "LOAD_LEVEL", "")
+    
 except APIException, obj:
     error = True
     print "API Problem (" + str(obj.status) + "): " + obj.msg
@@ -37,4 +59,4 @@ except Exception, msg:
     error = True
     print "Problem during experiment: " + str(msg)
 finally:
-    print "Destroying APP.."
+    print "App.. Launched"
