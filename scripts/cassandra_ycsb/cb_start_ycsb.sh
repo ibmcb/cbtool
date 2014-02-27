@@ -63,6 +63,19 @@ while read line ; do
 #-------------------------------------------------------------------------------
         if [[ "$line" =~ "[0-9]+\s sec:" ]] ; then
           CURRENT_OPS=$(echo $line | awk '{print $3}')
+          syslog_netcat "Current Ops : $CURRENT_OPS"
+          if [[ "$line" == *READ* ]] ; then
+            AVG_READ_LATENCY=$(echo $line | awk '{print $11}' | sed 's/^.*[^0-9]\([0-9]*\.[0-9]*\)/\1/' | rev | cut -c 2- | rev)
+            syslog_netncat "Current Avg. Read Latency : $AVG_READ_LATENCY"
+          fi
+          if [[ "$line" == *WRITE* ]] ; then
+            AVG_WRITE_LATENCY=$(echo $line | awk '{print $9}' | sed 's/^.*[^0-9]\([0-9]*\.[0-9]*\)/\1/' | rev | cut -c 2- | rev)
+            syslog_netncat "Current Avg. Write Latency : $AVG_WRITE_LATENCY"
+          fi
+          if [[ "$line" == *UPDATE* ]] ; then
+            AVG_UPDATE_LATENCY=$(echo $line | awk '{print $9}' | sed 's/^.*[^0-9]\([0-9]*\.[0-9]*\)/\1/' | rev | cut -c 2- | rev)
+            syslog_netncat "Current Avg. Update Latency : $AVG_UPDATE_LATENCY"
+          fi
         fi
 
 	IFS=',' read -a array <<< "$line"
