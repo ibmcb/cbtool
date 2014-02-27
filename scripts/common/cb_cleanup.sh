@@ -63,9 +63,9 @@ else
 
 fi
 
-syslog_netcat "Removing /etc/udev/rules.d/70-persistent-net-rules"
-sudo mv /etc/udev/rules.d/70-persistent-net-rules ~
-sudo touch /etc/udev/rules.d/70-persistent-net-rules
+syslog_netcat "Removing /etc/udev/rules.d/70-persistent-net.rules"
+sudo mv /etc/udev/rules.d/70-persistent-net.rules ~
+sudo touch /etc/udev/rules.d/70-persistent-net.rules
 
 syslog_netcat "Disabling services..."
 SERVICES[1]="mongodb mysql redis-server"

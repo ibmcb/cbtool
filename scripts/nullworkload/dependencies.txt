@@ -23,7 +23,7 @@ sshconfig-ver = ANY
 
 ### START -  Dependency and method-specific command lines ###
 rhel-sshconfig-preinstall-man = mkdir -p ~/.ssh; chmod 700 ~/.ssh
-rhel-sshconfig-install-man = echo -e "StrictHostKeyChecking=no" >> ~/.ssh/config && echo -e "UserKnownHostsFile=/dev/null" >> ~/.ssh/config && chmod 600 ~/.ssh/config
+rhel-sshconfig-install-man = echo "StrictHostKeyChecking=no" >> ~/.ssh/config && echo -e "UserKnownHostsFile=/dev/null" >> ~/.ssh/config && chmod 600 ~/.ssh/config
 ubuntu-sshconfig-preinstall-man = mkdir -p ~/.ssh; chmod 700 ~/.ssh
-ubuntu-sshconfig-install-man = echo -e "StrictHostKeyChecking=no" >> ~/.ssh/config && echo -e "UserKnownHostsFile=/dev/null" >> ~/.ssh/config && chmod 600 ~/.ssh/config
+ubuntu-sshconfig-install-man = echo "StrictHostKeyChecking=no" >> ~/.ssh/config && echo -e "UserKnownHostsFile=/dev/null" >> ~/.ssh/config && chmod 600 ~/.ssh/config
 ### END -  Dependency and method-specific command lines ###
