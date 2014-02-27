@@ -128,15 +128,18 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 rewrite_cloudconfig(cld_attr_lst)
                 
                 rewrite_cloudoptions(cld_attr_lst, available_clouds, False)
-    
-                ssh_filename = cld_attr_lst["space"]["credentials_dir"] + '/' + cld_attr_lst["space"]["ssh_key_name"]
+                
+                if "ssh_key_name" in cld_attr_lst["space"] :
+                    ssh_filename = cld_attr_lst["space"]["credentials_dir"] + '/' + cld_attr_lst["space"]["ssh_key_name"]
+                else :
+                    raise Exception("\n   The parameter " + cld_attr_lst["model"].upper() + "_SSH_KEY_NAME is not configured:\n")
 
                 if not os.path.isfile(ssh_filename) :
                     if not os.path.isfile(cld_attr_lst["space"]["ssh_key_name"]) :
                         _fmsg = "Error: "
                         raise Exception("\n   Your " + cld_attr_lst["model"].upper() + "_SSH_KEY_NAME parameter is wrong:\n" + \
                                         "\n   Neither files exists: " + cld_attr_lst["space"]["ssh_key_name"] + " nor " + ssh_filename + \
-                                        "\n   Please update your configuration and try again.\n");
+                                        "\n   Please update your configuration and try again.\n")
                 else :
                     cld_attr_lst["space"]["ssh_key_name"] = ssh_filename 
 
@@ -1583,7 +1586,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                             obj_attr_list["uuid"], "status", "Sending create request to cloud ...")
                         _status, _fmsg = _cld_conn.vmcreate(obj_attr_list)
                         _vmcreate = True
-                        
+
                     elif _obj_type == "AI" :
                         _status, _fmsg = _cld_conn.aidefine(obj_attr_list)
                         self.assign_roles(obj_attr_list)
@@ -1602,12 +1605,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         False
     
                     if not _status :
-    
+
                         if "lifetime" in obj_attr_list and not "submitter" in obj_attr_list :
                             if obj_attr_list["lifetime"] != "none" :
                                 obj_attr_list["departure"] = obj_attr_list["lifetime"] +\
                                  obj_attr_list["arrival"]
-                        
+
                         if _obj_type == "VM" and "host_name" in obj_attr_list and obj_attr_list["host_name"] != "unknown" :
                             if obj_attr_list["discover_hosts"].lower() == "true" :
                                 _host_attr_list = self.osci.get_object(_cloud_name, "HOST", True, "host_" + obj_attr_list["host_name"], False)
@@ -1616,17 +1619,17 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                         if "userdata" in obj_attr_list :
                             del obj_attr_list["userdata"]
-                            
+
                         self.osci.create_object(_cloud_name, _obj_type, obj_attr_list["uuid"], \
                                                 obj_attr_list, False, True)
                         _created_object = True
-    
+
                         if _obj_type == "VMC" :
                             self.post_attach_vmc(obj_attr_list)
     
                         elif _obj_type == "VM" :
                             self.post_attach_vm(obj_attr_list, _staging)
-    
+
                         elif _obj_type == "AI" :
                             self.post_attach_ai(obj_attr_list, _staging)
     

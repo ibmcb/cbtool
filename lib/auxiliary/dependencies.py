@@ -118,8 +118,23 @@ def get_linux_distro() :
     elif _linux_distro_name.count("Ubuntu") :
         _distro = "ubuntu"
     else :
-        _msg = "Unsupported distribution (" + _linux_distro_name + ")"
-        raise Exception(_msg)
+        if not len(_linux_distro_name) :
+            try:
+                _fd = open("/etc/system-release", 'r')
+                _fc = _fd.readlines()
+                _fd.close()
+                    
+                for _line in _fc :
+                    if _line.count("Amazon Linux AMI") :
+                        _distro = "AMI"
+                                
+            except Exception, e :
+                _msg = "\nUnable to determine Linux Distribution!\n"
+                raise Exception(_msg)
+
+        else :
+            _msg = "\nUnsupported distribution (" + _linux_distro_name + ")\n"
+            raise Exception(_msg)
 
     _arch = platform.processor()
 
@@ -137,18 +152,31 @@ def get_cmdline(depkey, depsdict, operation) :
         _urls_key = depsdict["cdist"] + '-' + depkey + '-' + depsdict["carch"] + "-urls-" + depsdict[depkey + '-' + operation]
     else :
         _urls_key = depsdict["cdist"] + '-' + depkey + "-urls-" + depsdict[depkey + '-' + operation]
-
+    
     if _urls_key in depsdict :
-        
+        _tested_urls = ''
         _actual_url = False
         for _url in depsdict[_urls_key].split(',') :
+
+            if depsdict["repo_addr"] :
+                _url = _url.replace("REPO_ADDR", depsdict["repo_addr"])
+
+            _url = _url.replace("REPO_RELEASE", depsdict["cdistver"])
+            _url = _url.replace("REPO_ARCH", depsdict["carch"])            
+            _url = _url.replace("ARCH", depsdict["carch"].strip())
+            _url = _url.replace("DISTRO", depsdict["cdist"].strip())
+            _url = _url.replace("USERNAME", depsdict["username"].strip())
+
             if check_url(_url, depsdict) :
                 _actual_url = _url
                 break
+            else :
+                if not _tested_urls.count(_url) :
+                    _tested_urls += _url + ','
 
         if not _actual_url :
             _msg = "None of the urls indicated to install \"" + depkey + "\" (" 
-            _msg += depsdict[_urls_key] + ") seem to be functional."
+            _msg += _tested_urls + ") seem to be functional."
             raise Exception(_msg)
     else :
         _actual_url = False
@@ -223,7 +251,7 @@ def select_url(source, depsdict) :
     if source == "repo" :
         _element = "package repository"
     else :
-        _element = "python pip"
+        _element = "python pip repository"
 
     _msg = "Selecting " + _element + " address...." 
 
@@ -242,13 +270,13 @@ def select_url(source, depsdict) :
             depsdict[source + "_dropbox"] = "http://" + depsdict[source + "_addr"] + "/dropbox"
             depsdict[source + "_credentials_url"] = "http://" + depsdict[source + "_addr"] + "/dropbox/ssh_keys"
         else :
-            _msg = "None of the indicated " + _element + " was available."
+            _msg = "None of the indicated " + _element + " was available. ".replace("repository","repositories")
             if source == "repo" :
-                _msg = "Will ignore any repository URL that has the keyword REPO_ADDR..."
+                _msg += "Will ignore any repository URL that has the keyword REPO_ADDR..."
     else :
-        _msg = "No " + _element + " specified. "
+        _msg = "No " + _element + " specified. ".replace("repository","repositories")
         if source == "repo" :
-            _msg = "Will ignore any repository URL that has the keyword REPO_ADDR..."
+            _msg += "Will ignore any repository URL that has the keyword REPO_ADDR..."
 
     print _msg
     
@@ -516,8 +544,6 @@ def dependency_checker_installer(hostname, username, operation, options) :
     deps_file_parser(_depsdict, username, options, "127.0.0.1")
 
     _depsdict["cdist"], _depsdict["cdistver"], _depsdict["carch"] = get_linux_distro()
-    
-    _depsdict["3rdpartydir"] = options.tpdir
     _depsdict["3rdpartydir"] = options.tpdir
     _depsdict["username"] = username
 
@@ -539,6 +565,20 @@ def dependency_checker_installer(hostname, username, operation, options) :
                 _dep_list.insert(_order, _dependency)
 
         _dep_list = [x for x in _dep_list if x != 0]
+
+        if operation == "configure" :
+            if "repo" in _dep_list :
+                _dep_list.remove("repo")
+
+        if _depsdict["cdist"] == "AMI" :
+            _msg = "This node runs the \"" + _depsdict["cdist"] + "\" Linux "
+            _msg += "distribution. Will treat it as \"rhel\", but will disable"
+            _msg += "  the repository manipulation."
+            print _msg
+            
+            _depsdict["cdist"] = "rhel"
+            if "repo" in _dep_list :
+                _dep_list.remove("repo")
 
         _fmsg = ""
         _dep_missing = 0

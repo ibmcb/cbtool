@@ -131,6 +131,9 @@ class CommonCloudFunctions:
 
     @trace
     def get_host_list(self, obj_attr_list) :
+        '''
+        TBD
+        '''
         _host_list = []
         _vmc_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "VMC", 
                                               False, obj_attr_list["vmc"], False)
@@ -240,7 +243,10 @@ class CommonCloudFunctions:
             cberr(_msg, True)
             raise CldOpsException(_msg, 71)
         
-    def get_openvpn_client_ip(self, obj_attr_list):
+    def get_openvpn_client_ip(self, obj_attr_list) :
+        '''
+        TBD
+        '''
         if "openvpn_ip" in obj_attr_list :
             return True
         elif self.osci.pending_object_exists(obj_attr_list["cloud_name"],  
@@ -288,7 +294,6 @@ class CommonCloudFunctions:
                         raise CldOpsException(_msg, _status)
 
                 if obj_attr_list["check_boot_complete"].count("tcp_on_") :
-                    
                     _nh_conn = Nethashget(obj_attr_list["prov_cloud_ip"])
                     _port_to_check = obj_attr_list["check_boot_complete"].replace("tcp_on_",'')
                     
@@ -298,7 +303,7 @@ class CommonCloudFunctions:
                     _msg += str(_port_to_check) + " on address "
                     _msg += obj_attr_list["prov_cloud_ip"]
                     cbdebug(_msg)
-                    
+
                     _vm_is_booted = _nh_conn.check_port(int(_port_to_check), "TCP")
 
                 elif obj_attr_list["check_boot_complete"].count("subscribe_on_") :
@@ -378,8 +383,8 @@ class CommonCloudFunctions:
                     cbdebug(_msg, True)    
                     
                 if _vm_is_booted :
-                    obj_attr_list["mgt_004_network_acessible"] = int(time()) - time_mark_prc 
-                    self.pending_set(obj_attr_list, "Network accessible now. Continuing...") 
+                    obj_attr_list["mgt_004_network_acessible"] = int(time()) - time_mark_prc
+                    self.pending_set(obj_attr_list, "Network accessible now. Continuing...")
                     _network_reachable = True
                     break
 
@@ -393,7 +398,9 @@ class CommonCloudFunctions:
                     sleep(_wait)
                     _curr_tries += 1
 
+
         if _curr_tries < _max_tries :
+
             _msg = "" + obj_attr_list["name"] + ""
             _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
             _msg += "is network reachable (boot process finished successfully)"
@@ -403,6 +410,7 @@ class CommonCloudFunctions:
             # It should be mgt_006, NOT mgt_005
             obj_attr_list["mgt_006_application_start"] = "0"
             self.pending_set(obj_attr_list, "Application starting up...")
+
         else :
             _msg = "" + obj_attr_list["name"] + ""
             _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
@@ -411,7 +419,10 @@ class CommonCloudFunctions:
             cberr(_msg, True)
             raise CldOpsException(_msg, 89)
         
-    def pending_set(self, obj_attr_list, msg):
+    def pending_set(self, obj_attr_list, msg) :
+        '''
+        TBD
+        '''
         if obj_attr_list["ai"] != "none" :
             self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
                                          obj_attr_list["uuid"], "status", msg, \
@@ -587,11 +598,13 @@ class CommonCloudFunctions:
                                                   var, obj_attr_list[var])
     
     @trace
-    def populate_interface(self, obj_attr_list):
-        # A way to specify an alternative IP address for a hypervisor
-        # This alternative 'interface' represents a faster NIC
-        # (such as RDMA) to be used for other types of traffic
-        
+    def populate_interface(self, obj_attr_list) :
+        '''
+        A way to specify an alternative IP address for a hypervisor
+        This alternative 'interface' represents a faster NIC
+        (such as RDMA) to be used for other types of traffic
+        '''
+
         for op in ["migrate", "protect"] :
             if obj_attr_list[op + "_supported"].lower() != "true" :
                 continue

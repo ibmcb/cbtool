@@ -1,0 +1,35 @@
+### START - Dependency installation order ###
+coremark-order = 50
+### END - Dependency installation order ###
+
+### START - Dependency-specific installation method ###
+# pm = "package manager" (yum or apt-get)
+# sl = "soft link" (assume that the dependency is already installed, just has to
+# be properly exposed to the user's path.
+# git = git clone using above giturl
+# pip = python pip utility
+# man = "manual"
+coremark-install = man
+### END - Dependency-specific installation method ###
+
+### START - Tests ###
+coremark-configure = ls -la ~/3rd_party/_coremark-1.0
+### END - Tests ###
+
+### START - Dependency versions ###
+coremark-ver = ANY
+### END - Dependency versions ###
+
+### START - Dependency URLs ###
+rhel-coremark-x86_64-urls-man = http://REPO_ADDR/coremark
+ubuntu-coremark-x86_64-urls-man = http://REPO_ADDR/coremark
+### END - Dependency URLs ###
+
+### START -  Dependency and method-specific command lines ###
+rhel-coremark-preinstall-man = mkdir -p ~/3rd_party/; wget -N -P ~/3rd_party/ URL/coremark_v1.0.tar; cd ~/3rd_party/; tar -xf ~/3rd_party/coremark_v1.0.tar
+rhel-coremark-install-man = sudo make
+rhel-coremark-postinstall-man = mv ~/3rd_party/coremark_v1.0 ~/3rd_party/_coremark-1.0; rm ~/3rd_party/coremark_v1.0.tar
+ubuntu-coremark-preinstall-man = mkdir -p ~/3rd_party/; wget -N -P ~/3rd_party/ URL/coremark_v1.0.tar; cd ~/3rd_party/; tar -xf ~/3rd_party/coremark_v1.0.tar
+ubuntu-coremark-install-man = sudo make
+ubuntu-coremark-postinstall-man = mv ~/3rd_party/coremark_v1.0 ~/3rd_party/_coremark-1.0; rm ~/3rd_party/coremark_v1.0.tar
+### END -  Dependency and method-specific command lines ###

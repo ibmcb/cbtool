@@ -372,8 +372,9 @@ class OskCmds(CommonCloudFunctions) :
 
         except socket.gaierror, e :
             _status = 453
-            _fmsg = "While discovering hosts, CB needs to resolve one of the OpenStack host names: " \
-                    + _queried_host_name + ". Please make sure this name is resolvable either in /etc/hosts or DNS."
+            _fmsg = "While discovering hosts, CB needs to resolve one of the "
+            _fmsg += "OpenStack host names: " + _queried_host_name + ". "
+            _fmsg += "Please make sure this name is resolvable either in /etc/hosts or DNS."
                     
         except Exception, e :
             _status = 23
@@ -509,10 +510,11 @@ class OskCmds(CommonCloudFunctions) :
                                                  obj_attr_list["name"])
     
                 obj_attr_list["cloud_hostname"] = _hostname
-                _x, obj_attr_list["cloud_ip"] = hostname2ip(obj_attr_list["access"].split(':')[1].replace('//',''))
+                _resolve = obj_attr_list["access"].split(':')[1].replace('//','')
+                _x, obj_attr_list["cloud_ip"] = hostname2ip(_resolve)
                 obj_attr_list["arrival"] = int(time())
     
-                if obj_attr_list["discover_hosts"].lower() == "true" :
+                if obj_attr_list["discover_hosts"].lower() == "true" :                   
                     _msg = "Discovering hosts on VMC \"" + obj_attr_list["name"] + "\"....."
                     cbdebug(_msg, True)
                     _status, _fmsg = self.discover_hosts(obj_attr_list, _time_mark_prs)
@@ -532,6 +534,18 @@ class OskCmds(CommonCloudFunctions) :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
+        except socket.herror:
+            _status = 1200
+            _fmsg = "The IP address \"" + _resolve + "\" - used by the OpenSTack"
+            _fmsg += " Controller - is not mapped to a Hostname. "
+            _fmsg += "Please make sure this name is resolvable either in /etc/hosts or DNS."
+
+        except socket.gaierror:
+            _status = 1200
+            _fmsg = "The Hostname \"" + _resolve + "\" - used by the OpenSTack"
+            _fmsg += " Controller - is not mapped to an IP. "
+            _fmsg += "Please make sure this name is resolvable either in /etc/hosts or DNS."
+                        
         except Exception, e :
             _status = 23
             _fmsg = str(e)

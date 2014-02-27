@@ -284,6 +284,9 @@ ubuntu-redis-amd64-urls-man = http://ppa.launchpad.net/rwky/redis/ubuntu/pool/ma
 ubuntu-redis-ppc64-urls-man = http://ppa.launchpad.net/chris-lea/redis-server/ubuntu/pool/main
 ubuntu-redis-urls-git = https://github.com/antirez
 
+rhel-chef-client-x86_64-urls-man = https://opscode-omnibus-packages.s3.amazonaws.com/el/6/x86_64/chef-11.10.4-1.el6.x86_64.rpm
+ubuntu-chef-client-amd64-urls-man = https://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/12.04/x86_64/chef_11.10.4-1.ubuntu.12.04_amd64.deb
+
 rhel-chef-server-x86_64-urls-man = https://opscode-omnibus-packages.s3.amazonaws.com/el/6/x86_64/chef-server-11.0.10-1.el6.x86_64.rpm
 ubuntu-chef-server-amd64-urls-man = https://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/12.04/x86_64/chef-server_11.0.10-1.ubuntu.12.04_amd64.deb
 
@@ -380,8 +383,9 @@ rhel-gmond-postinstall-pm = sudo ln -s /usr/sbin/gmond /usr/local/bin/gmond
 ubuntu-gmond-install-pm = sudo apt-get -y install ganglia-monitor
 ubuntu-gmond-postinstall-pm = sudo ln -s /usr/sbin/gmond /usr/local/bin/gmond
 
-rhel-chef-client-install-man = curl -L https://www.opscode.com/chef/install.sh | sudo bash
-ubuntu-chef-client-install-man = curl -L https://www.opscode.com/chef/install.sh | sudo bash
+rhel-chef-client-install-man = sudo rpm -Uvh URL 
+ubuntu-chef-client-preinstall-man =  wget -N -P 3RPARTYDIR URL
+ubuntu-chef-client-install-man = sudo dpkg -i 3RPARTYDIR/chef_*.deb
 
 rhel-rsyslog-install-pm = sudo yum -y install rsyslog
 rhel-rsyslog-postinstall-pm = sudo ln -s /usr/sbin/rsyslogd /usr/local/bin/rsyslogd
@@ -398,9 +402,9 @@ ubuntu-rsyslog-filter-postinstall-man = sudo bash -c "echo -e \"local5.*  \t\t\t
 rhel-apache-install-pm = sudo yum -y install httpd
 ubuntu-apache-install-pm = sudo apt-get -y install apache2
 
-rhel-redis-preinstall-man = lftp -c 'open -e "mget redis*" URL'
+rhel-redis-preinstall-man = lftp -c 'open -e "mget redis*remi*.rpm" URL'
 rhel-redis-install-man = sudo yum -y install gperftools-libs && sudo rpm -Uvh $(ls -t | grep redis | head -n 1)
-rhel-redis-postinstall-man = sudo sed -i "s/^bind .*/bind 0.0.0.0/" /etc/redis.conf; sudo /etc/init.d/redis restart; sudo chkconfig --add redis
+rhel-redis-postinstall-man = sudo sed -i "s/^bind .*/bind 0.0.0.0/" /etc/redis.conf; sudo /etc/init.d/redis restart; sudo chkconfig redis on
 ubuntu-redis-preinstall-man = lftp -c 'open -e "mget redis-server_2.8*precise_ARCH.deb" URL' 
 ubuntu-redis-install-man = sudo dpkg -i $(ls -t | grep redis-server | head -n 1)
 ubuntu-redis-postinstall-man = sudo sed -i "s/^bind .*/bind 0.0.0.0/" /etc/redis/redis.conf; sudo service redis-server restart
@@ -411,7 +415,7 @@ ubuntu-redis-preinstall-git = cd 3RPARTYDIR; git clone URL/redis.git
 ubuntu-redis-install-git = cd 3RPARTYDIR;redis; make; sudo make install
 
 rhel-mongodb-install-man = sudo rpm -Uvh URL/mongo-10gen-2.4.9-mongodb_1.ARCH.rpm; sudo rpm -Uvh URL/mongo-10gen-server-2.4.9-mongodb_1.ARCH.rpm 
-rhel-mongodb-postinstall-man = sudo sed -i "s/^bind_ip.*/bind_ip=0.0.0.0/" /etc/mongod.conf; sudo /etc/init.d/mongod restart; sudo chkconfig --add mongod
+rhel-mongodb-postinstall-man = sudo sed -i "s/^bind_ip.*/bind_ip=0.0.0.0/" /etc/mongod.conf; sudo /etc/init.d/mongod restart; sudo chkconfig mongod on
 ubuntu-mongodb-preinstall-man = wget -N -P 3RPARTYDIR URL/mongodb-10gen_2.4.9_amd64.deb
 ubuntu-mongodb-install-man = sudo dpkg -i 3RPARTYDIR/mongodb-10gen_2.4.9_amd64.deb
 ubuntu-mongodb-postinstall-man = sudo sed -i "s/^bind_ip.*/bind_ip=0.0.0.0/" /etc/mongodb.conf; sudo service mongodb restart
@@ -478,7 +482,9 @@ ubuntu-streamprox-preinstall-git = cd 3RPARTYDIR; git clone URL/StreamProx.git
 rhel-d3-preinstall-git = cd 3RPARTYDIR; git clone URL/d3.git
 ubuntu-d3-preinstall-git = cd 3RPARTYDIR; git clone URL/d3.git
 
+rhel-novaclient-preinstall-pip = sudo pip install INDEXURL pbr
 rhel-novaclient-install-pip = sudo pip install INDEXURL python-novaclient
+ubuntu-novaclient-preinstall-pip = sudo pip install INDEXURL pbr
 ubuntu-novaclient-install-pip = sudo pip install INDEXURL python-novaclient
 
 rhel-softlayer-install-pip = sudo pip install INDEXURL softlayer

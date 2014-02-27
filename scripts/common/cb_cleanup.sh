@@ -73,8 +73,13 @@ SERVICES[2]="mongod mysqld redis"
 service_stop_disable ${SERVICES[${LINUX_DISTRO}]}
 
 syslog_netcat "Killing all CB-related processes"
-sudo pkill -9 -f cloudbenc
-sudo pkill -9 -f cbtool    
+sudo pkill -9 -f cloud-api
+sudo pkill -9 -f cloud-gui        
+sudo pkill -9 -f ai-
+sudo pkill -9 -f vm-
+sudo pkill -9 -f submit-
+sudo pkill -9 -f capture-
+sudo pkill -9 -f -f gtkCBUI
 sudo pkill -9 -f gmetad.py
 sudo pkill -9 -f gmond
 sudo pkill -9 -f rsyslog
@@ -82,22 +87,29 @@ sudo pkill -9 -f ntp
 sudo pkill -9 -f redis
 
 syslog_netcat "Removing all CB-related files"
-rm ~/redis*
-rm ~/__init__.py 
-rm ~/barrier.py
-rm ~/scp2_python_proxy.rb
-rm ~/rsyslog.conf
-rm ~/scp_python_proxy.sh
-rm ~/monitor-core
-rm ~/util
-rm ~/standalone.sh; 
-rm ~/ai_mapping_file.txt
-rm ~/gmetad-vms.conf
-rm ~/gmond-vms.conf
-rm ~/ntp.conf
-rm ~/rsyslog.pid
+rm -rf ~/redis*
+rm -rf ~/__init__.py 
+rm -rf ~/barrier.py
+rm -rf ~/scp2_python_proxy.rb
+rm -rf ~/rsyslog.conf
+rm -rf ~/scp_python_proxy.sh
+rm -rf ~/monitor-core
+rm -rf ~/util
+rm -rf ~/standalone.sh; 
+rm -rf ~/ai_mapping_file.txt
+rm -rf ~/gmetad-vms.conf
+rm -rf ~/gmond-vms.conf
+rm -rf ~/ntp.conf
+rm -rf ~/rsyslog.pid
 rm -rf ~/logs
-rm ~/et*
-rm ~/cb_*
+rm -rf ~/et*
+rm -rf ~/cb_*
+
+syslog_netcat "Adding all injected public ssh keys to $(whoami)'s autorized_keys file"
+mkdir -p ~/.ssh
+chmod 700 ~/.ssh
+touch ~/.ssh/authorized_keys
+sudo bash -c "cat /root/.ssh/authorized_keys >> /home/$(whoami)/.ssh/authorized_keys"
+chmod 600 ~/.ssh/authorized_keys
 
 syslog_netcat "Done"
