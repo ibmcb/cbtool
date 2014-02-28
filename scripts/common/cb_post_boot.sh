@@ -31,6 +31,8 @@ rm -rf ~/cb_os_cache.txt
 
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
+syslog_netcat "Running cb_post_boot on ${my_ip_addr}  .. about to write to /etc/hosts"
+
 sudo bash -c "echo \"${my_ip_addr}   $(hostname)\" >> /etc/hosts"
 
 syslog_netcat "Starting generic VM post_boot configuration"

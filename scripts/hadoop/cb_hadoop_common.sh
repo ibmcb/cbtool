@@ -22,6 +22,7 @@
 # - getting the hadoop master ip
 # - hadoop paths
 # - LOAD_LEVEL definitions
+# - Determine whether to use original map-reduce or YARN
 #####################################################################################
 
 source ~/.bashrc
@@ -62,7 +63,20 @@ then
 	fi
 fi
 
-HADOOP_CONF_DIR=$HADOOP_HOME/conf
+if [[ -z ${HADOOP_CONF_DIR} ]]
+then
+	if [[ -d $HADOOP_HOME/conf ]]; then
+		HADOOP_CONF_DIR=$HADOOP_HOME/conf
+		syslog_netcat "Setting HADOOP_CONF_DIR to $HADOOP_CONF_DIR"
+	else
+		if [[ -d $HADOOP_HOME/etc/hadoop ]]; then
+			HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
+			syslog_netcat "Setting HADOOP_CONF_DIR to $HADOOP_CONF_DIR"
+		else
+			syslog_netcat "Error - Cannot find hadoop configuration directory."
+		fi
+	fi
+fi
 
 if [[ -z ${HIBENCH_HOME} ]]
 then
@@ -84,7 +98,21 @@ hadoop_master_ip=`get_ips_from_role hadoopmaster`
 slave_ips=`get_ips_from_role hadoopslave`
 
 slave_ips_csv=`echo ${slave_ips} | sed ':a;N;$!ba;s/\n/, /g'`
-	
+
+# Determine whether to use YARN aka MRv2
+hadoop_version=`$HADOOP_HOME/bin/hadoop version | sed '1!d'`
+hadoop_version_major=`echo ${hadoop_version} | sed 's/Hadoop \([0-9]*\)\..*/\1/'`
+hadoop_version_minor=`echo ${hadoop_version} | sed 's/Hadoop [0-9]*\.\([0-9]*\).*/\1/'`
+
+hadoop_use_yarn=0
+if [ $hadoop_version_major -gt 2 ]; then
+   hadoop_use_yarn=1
+else
+   if [[ $hadoop_version_major -eq 2  &&  $hadoop_version_minor -gt 1 ]]; then
+      hadoop_use_yarn=1
+   fi
+fi
+
 #######################################################################################
 # Result log destinations 
 #

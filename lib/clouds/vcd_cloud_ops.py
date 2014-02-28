@@ -301,9 +301,7 @@ class VcdCmds(CommonCloudFunctions) :
         TBD
         '''
         try :
-            _msg = "Looking of IP address for something."
-            cbdebug(_msg)
-            obj_attr_list["cloud_hostname"] = obj_attr_list["instance_obj"].public_ips[0]
+            obj_attr_list["cloud_hostname"] = "vm" + obj_attr_list["name"].split("_")[1]
             obj_attr_list["cloud_ip"] = obj_attr_list["instance_obj"].private_ips[0]
             obj_attr_list["prov_cloud_ip"] = obj_attr_list["cloud_ip"]
             _msg = "Public IP = " + obj_attr_list["cloud_hostname"]
@@ -437,20 +435,21 @@ class VcdCmds(CommonCloudFunctions) :
             # I can't get libcloud's driver.list_images() function to work, so I'm not sure how to create a new image object
             # based on an image.  The vCloud Director system I use doesn't have an appropriate stock image that will work with
             # cloudbench.  So, I'll instead clone an instantiated image that I've created.
-            _msg = "Looking for image named "
+            _msg = "Looking for an existing vApp named "
             _msg += obj_attr_list["imageid1"]
             cbdebug(_msg, True)
 
             image_to_clone = self.vcdconn.ex_find_node(node_name = obj_attr_list["imageid1"])
-            # DRB 9/6/2013 Need to error check the response to ex_find_node and throw exception if no image found
+            # Daniel 9/6/2013 Need to error check the response to ex_find_node and throw exception if no image found
  
-            _msg = "Launching new VM..."
+            vm_computername = "vm" + obj_attr_list["name"].split("_")[1]
+            _msg = "Launching new VM with hostname " + vm_computername
             cbdebug(_msg)
-            _reservation = self.vcdconn.create_node(name = obj_attr_list["cloud_vm_name"], image = image_to_clone)
-    
+            _reservation = self.vcdconn.create_node(name = obj_attr_list["cloud_vm_name"], image = image_to_clone, ex_vm_names = [vm_computername])
+
             obj_attr_list["last_known_state"] = "sent create request to vCloud Director, parsing response"
 
-            _msg = "Sent command to create node"
+            _msg = "Sent command to create node, waiting for creation..."
             cbdebug(_msg)
 
             if _reservation :
@@ -469,13 +468,7 @@ class VcdCmds(CommonCloudFunctions) :
 
                 self.take_action_if_requested("VM", obj_attr_list, "provision_started")
 
-                _msg = "Test Point Alpha"
-                cbdebug(_msg)
-
                 _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
-
-                _msg = "Test Point Beta"
-                cbdebug(_msg)
 
                 self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
                 obj_attr_list["host_name"] = "unknown"
