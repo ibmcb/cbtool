@@ -30,7 +30,7 @@ from subprocess import Popen, PIPE
 from xdrlib import Packer
 from sys import path
 from threading import Condition
-import copy, libvirt, json, re, socket, os
+import copy, libvirt, re, socket, os
 import shutil
 import threading
 
@@ -1867,23 +1867,26 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         if cloud["name"] not in services :
                             attrs = api.cldshow(cloud["name"], "space")
                             if "openvpn_server_address" in attrs :
-                                address = attrs["openvpn_bootstrap_address"]
-                                result = False 
-                                msg = "Failed to register openvpn address " + address + ": "
-                                try :
-                                    result = api.register(address)
-                                    services[cloud["name"]] = address
-                                    found[cloud["name"]] = cloud
-                                    msg = "Success registring openvpn address: " + address
-                                except APIException, e :
-                                    msg += str(e)
-                                except Exception, e :
-                                    msg += str(e)
-                                finally :
-                                    if result :
-                                        cbdebug(msg)
-                                    else :
-                                        cberr(msg)
+                                if attrs["openvpn_server_address"].lower() != "false" :
+                                    address = attrs["openvpn_bootstrap_address"]
+                                    result = False 
+                                    msg = "Failed to register openvpn address " + address + ": "
+                                    try :
+                                        result = api.register(address)
+                                        services[cloud["name"]] = address
+                                        found[cloud["name"]] = cloud
+                                        msg = "Success registring openvpn address: " + address
+                                    except APIException, e :
+                                        msg += str(e)
+                                    except Exception, e :
+                                        msg += str(e)
+                                    finally :
+                                        if result :
+                                            cbdebug(msg)
+                                        else :
+                                            cberr(msg)
+                                else :
+                                    found[cloud["name"]] = True 
                         else :
                             found[cloud["name"]] = True 
                                         
@@ -2431,7 +2434,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             unit = "mbps"
         elif key.count("bytes") :
             unit = "bytes"
-            
+
         g.send(key, val, typ, unit, direction, self.freq_str, lifetime, category, spoof)
         attrs["mgt_505_" + key] = val
         
@@ -2465,11 +2468,9 @@ class PassiveObjectOperations(BaseObjectOperations) :
         '''
         for name in domains :
             dom = domains[name]
-            stats = qemuMonitorCommand(dom, "{\"execute\": \"query-status\"}", 0)
-            migrate = qemuMonitorCommand(dom, "{\"execute\": \"query-migrate\"}", 0)
-            stats = json.loads(stats)
-            migrate = json.loads(migrate)
-            stats.update(migrate)
+            stats = dom.jobStats()
+            
+            # If your libvirt is too old (< 0.10), then memoryStats() will not return anything useful
             mem = dom.memoryStats()
             ip = ips[name]
             attrs = vms[name]
@@ -2490,19 +2491,21 @@ class PassiveObjectOperations(BaseObjectOperations) :
             else :
                 cbwarn("QEMU result is missing the 'rss' key. strange.")
     
-            for key in stats["return"] :
-                value = stats["return"][key]
+            for key in stats :
+                value = stats[key]
                 
                 if isinstance(value, str) :
                     self.deliver(g, key, value, spoof, attrs)
-                elif isinstance(value, int) :
+                elif isinstance(value, int) or isinstance(value, long) :
                     self.deliver(g, key, str(value), spoof, attrs)
                 elif isinstance(value, float) :
                     self.deliver(g, key, str(value), spoof, attrs)
                 elif isinstance(value, dict) :
-                    for subkey in stats["return"][key] :
-                        value = stats["return"][key][subkey]
+                    for subkey in stats[key] :
+                        value = stats[key][subkey]
                         self.deliver(g, subkey, value, spoof, attrs)
+            else :
+                cbwarn("skipping key! " + str(key) + " " + str(value) + " type : " + str(type(value)))
                     
             self.record_management_metrics(cloud_name, "VM", attrs, "runstate")
     

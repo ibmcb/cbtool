@@ -1,9 +1,9 @@
- status: VMC E295D856-13AE-5733-8733-8F6A1D9439D3 was successfully registered on SimCloud "TESTCLOUD".
+ status: VMC F048BD7F-0B65-51BC-9487-80E33121A548 was successfully registered on SimCloud "TESTCLOUD".
  status: Attribute "collect_from_host" was set to "false". Skipping Host OS performance monitor daemon startup
-VMC object E295D856-13AE-5733-8733-8F6A1D9439D3 (named "simzone_a") sucessfully attached to this experiment. It is ssh-accessible at the IP address 145.168.57.184 (simzone_a).
+VMC object F048BD7F-0B65-51BC-9487-80E33121A548 (named "simzone_a") sucessfully attached to this experiment. It is ssh-accessible at the IP address 215.137.200.74 (simzone_a).
 The following ATTACHED VMCs are in this experiment (Cloud TESTCLOUD) :
 |name                    |host_count      |pool                    |cloud_hostname                  |cloud_ip         
-|simzone_a               |5               |sut                     |simzone_a                       |145.168.57.184   
+|simzone_a               |5               |sut                     |simzone_a                       |215.137.200.74   
 
 The VMC object simzone_a, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
 |attribute (VMC object key)               |value                                
@@ -14,18 +14,18 @@ The VMC object simzone_a, attached to this experiment, has the following attribu
 |ai_departed                              |0                                    
 |ai_failed                                |0                                    
 |ai_reservations                          |0                                    
-|arrival                                  |1392321266                           
+|arrival                                  |1393125433                           
 |attempts                                 |3                                    
 |base_dir                                 |/home/msilva/cloudbench/lib/auxiliary//../..
 |cleanup_on_attach                        |True                                 
 |cleanup_on_detach                        |True                                 
 |cloud_hostname                           |simzone_a                            
-|cloud_ip                                 |145.168.57.184                       
+|cloud_ip                                 |215.137.200.74                       
 |cloud_name                               |TESTCLOUD                            
-|cloud_vm_uuid                            |F890F638-06FA-588A-832B-C431EB645CB4 
+|cloud_vm_uuid                            |93772720-8883-5194-824E-1D6B30C840F8 
 |collect_from_host                        |False                                
 |command                                  |vmcattach TESTCLOUD simzone_a empty=empty
-|command_originated                       |1392321266                           
+|command_originated                       |1393125433                           
 |counter                                  |1                                    
 |cpu_overcommit                           |1.0                                  
 |credentials                              |                                     
@@ -33,15 +33,15 @@ The VMC object simzone_a, attached to this experiment, has the following attribu
 |discover_hosts                           |True                                 
 |experiment_id                            |REGRESSION_B                         
 |host_count                               |5                                    
-|host_list                                |{'9CCFF76E-03D5-579F-B35B-42D9DA67EC1F': {'function': 'hypervisor', 'vmc': 'E295D856-13AE-5733-8733-8F6A1D9439D3', 'vmc_name': 'simzone_a', 'protect_interface': 'default', 'uuid': '9CCFF76E-03D5-579F-B35B-42D9DA67EC1F', 'notification': 'False', 'mgt_002_provisioning_request_sent': 0, 'cloud_ip': '77.44.185.218', 'pool': 'SUT', 'memory': 131072, 'cloud_hostname': 'simhosta4', 'username': 'msilva', 'mgt_003_provisioning_request_completed': 0, 'mgt_001_provisioning_request_originated': 1392321266, 'login': 'root', 'identity': '/home/msilva/cloudbench/lib/auxiliary//../../credentials/bogus_id_rsa', 'cloud_vm_uuid': '9CCFF76E-03D5-579F-B35B-42D9DA67EC1F', 'name': 'host_simhosta4', 'counter': 1, 'arrival': 1392321266, 'migrate_interface': 'default', 'simulated': 'True', 'cores': 16, 'model': 'sim'}, '8D04C859-BE23-503D-8C69-23746124EFB6': {'function': 'hypervisor', 'vmc': 'E295D856-13AE-5733-8733-8F6A1D9439D3', 'vmc_name': 'simzone_a', 'protect_interface': 'default', 'uuid': '8D04C859-BE23-503D-8C69-23746124EFB6', 'notification': 'False', 'mgt_002_provisioning_request_sent': 0, 'cloud_ip': '225.140.134.172', 'pool': 'SUT', 'memory': 131072, 'cloud_hostname': 'simhosta0', 'username': 'msilva', 'mgt_003_provisioning_request_completed': 0, 'mgt_001_provisioning_request_originated': 1392321266, 'login': 'root', 'identity': '/home/msilva/cloudbench/lib/auxiliary//../../credentials/bogus_id_rsa', 'cloud_vm_uuid': '8D04C859-BE23-503D-8C69-23746124EFB6', 'name': 'host_simhosta0', 'counter': 1, 'arrival': 1392321266, 'migrate_interface': 'default', 'simulated': 'True', 'cores': 16, 'model': 'sim'}, '8385AFE4-494C-5C03-897D-2337B6014D14': {'function': 'hypervisor', 'vmc': 'E295D856-13AE-5733-8733-8F6A1D9439D3', 'vmc_name': 'simzone_a', 'protect_interface': 'default', 'uuid': '8385AFE4-494C-5C03-897D-2337B6014D14', 'notification': 'False', 'mgt_002_provisioning_request_sent': 0, 'cloud_ip': '44.166.211.185', 'pool': 'SUT', 'memory': 131072, 'cloud_hostname': 'simhosta3', 'username': 'msilva', 'mgt_003_provisioning_request_completed': 0, 'mgt_001_provisioning_request_originated': 1392321266, 'login': 'root', 'identity': '/home/msilva/cloudbench/lib/auxiliary//../../credentials/bogus_id_rsa', 'cloud_vm_uuid': '8385AFE4-494C-5C03-897D-2337B6014D14', 'name': 'host_simhosta3', 'counter': 1, 'arrival': 1392321266, 'migrate_interface': 'default', 'simulated': 'True', 'cores': 16, 'model': 'sim'}, 'EAC99230-92B1-517A-B134-7F31F976280D': {'function': 'hypervisor', 'vmc': 'E295D856-13AE-5733-8733-8F6A1D9439D3', 'vmc_name': 'simzone_a', 'protect_interface': 'default', 'uuid': 'EAC99230-92B1-517A-B134-7F31F976280D', 'notification': 'False', 'mgt_002_provisioning_request_sent': 0, 'cloud_ip': '176.125.169.222', 'pool': 'SUT', 'memory': 131072, 'cloud_hostname': 'simhosta2', 'username': 'msilva', 'mgt_003_provisioning_request_completed': 0, 'mgt_001_provisioning_request_originated': 1392321266, 'login': 'root', 'identity': '/home/msilva/cloudbench/lib/auxiliary//../../credentials/bogus_id_rsa', 'cloud_vm_uuid': 'EAC99230-92B1-517A-B134-7F31F976280D', 'name': 'host_simhosta2', 'counter': 1, 'arrival': 1392321266, 'migrate_interface': 'default', 'simulated': 'True', 'cores': 16, 'model': 'sim'}, '2A11FEC8-34CB-5BFA-BD6A-1CC0900CA08D': {'function': 'hypervisor', 'vmc': 'E295D856-13AE-5733-8733-8F6A1D9439D3', 'vmc_name': 'simzone_a', 'protect_interface': 'default', 'uuid': '2A11FEC8-34CB-5BFA-BD6A-1CC0900CA08D', 'notification': 'False', 'mgt_002_provisioning_request_sent': 0, 'cloud_ip': '88.36.166.18', 'pool': 'SUT', 'memory': 131072, 'cloud_hostname': 'simhosta1', 'username': 'msilva', 'mgt_003_provisioning_request_completed': 0, 'mgt_001_provisioning_request_originated': 1392321266, 'login': 'root', 'identity': '/home/msilva/cloudbench/lib/auxiliary//../../credentials/bogus_id_rsa', 'cloud_vm_uuid': '2A11FEC8-34CB-5BFA-BD6A-1CC0900CA08D', 'name': 'host_simhosta1', 'counter': 1, 'arrival': 1392321266, 'migrate_interface': 'default', 'simulated': 'True', 'cores': 16, 'model': 'sim'}}
-|hosts                                    |8D04C859-BE23-503D-8C69-23746124EFB6,2A11FEC8-34CB-5BFA-BD6A-1CC0900CA08D,EAC99230-92B1-517A-B134-7F31F976280D,8385AFE4-494C-5C03-897D-2337B6014D14,9CCFF76E-03D5-579F-B35B-42D9DA67EC1F
+|host_list                                |{'3F07DB26-BBC1-5507-BD94-C0A5AFA0B944': {'function': 'hypervisor', 'vmc': 'F048BD7F-0B65-51BC-9487-80E33121A548', 'vmc_name': 'simzone_a', 'protect_interface': 'default', 'uuid': '3F07DB26-BBC1-5507-BD94-C0A5AFA0B944', 'notification': 'False', 'mgt_002_provisioning_request_sent': 0, 'cloud_ip': '172.80.226.43', 'pool': 'SUT', 'memory': 131072, 'cloud_hostname': 'simhosta1', 'username': 'msilva', 'mgt_003_provisioning_request_completed': 0, 'mgt_001_provisioning_request_originated': 1393125433, 'login': 'root', 'identity': '/home/msilva/cloudbench/lib/auxiliary//../../credentials/bogus_id_rsa', 'cloud_vm_uuid': '3F07DB26-BBC1-5507-BD94-C0A5AFA0B944', 'name': 'host_simhosta1', 'counter': 1, 'arrival': 1393125433, 'migrate_interface': 'default', 'simulated': 'True', 'cores': 16, 'model': 'sim'}, 'C5409096-EAF6-5F6A-B355-36DF5A37E954': {'function': 'hypervisor', 'vmc': 'F048BD7F-0B65-51BC-9487-80E33121A548', 'vmc_name': 'simzone_a', 'protect_interface': 'default', 'uuid': 'C5409096-EAF6-5F6A-B355-36DF5A37E954', 'notification': 'False', 'mgt_002_provisioning_request_sent': 0, 'cloud_ip': '169.191.151.105', 'pool': 'SUT', 'memory': 131072, 'cloud_hostname': 'simhosta2', 'username': 'msilva', 'mgt_003_provisioning_request_completed': 0, 'mgt_001_provisioning_request_originated': 1393125433, 'login': 'root', 'identity': '/home/msilva/cloudbench/lib/auxiliary//../../credentials/bogus_id_rsa', 'cloud_vm_uuid': 'C5409096-EAF6-5F6A-B355-36DF5A37E954', 'name': 'host_simhosta2', 'counter': 1, 'arrival': 1393125433, 'migrate_interface': 'default', 'simulated': 'True', 'cores': 16, 'model': 'sim'}, '3AED438F-3E39-5D47-B949-2DA9C09263CE': {'function': 'hypervisor', 'vmc': 'F048BD7F-0B65-51BC-9487-80E33121A548', 'vmc_name': 'simzone_a', 'protect_interface': 'default', 'uuid': '3AED438F-3E39-5D47-B949-2DA9C09263CE', 'notification': 'False', 'mgt_002_provisioning_request_sent': 0, 'cloud_ip': '224.91.87.246', 'pool': 'SUT', 'memory': 131072, 'cloud_hostname': 'simhosta0', 'username': 'msilva', 'mgt_003_provisioning_request_completed': 0, 'mgt_001_provisioning_request_originated': 1393125433, 'login': 'root', 'identity': '/home/msilva/cloudbench/lib/auxiliary//../../credentials/bogus_id_rsa', 'cloud_vm_uuid': '3AED438F-3E39-5D47-B949-2DA9C09263CE', 'name': 'host_simhosta0', 'counter': 1, 'arrival': 1393125433, 'migrate_interface': 'default', 'simulated': 'True', 'cores': 16, 'model': 'sim'}, '725A8813-DC94-5D8C-B791-55854405EA7B': {'function': 'hypervisor', 'vmc': 'F048BD7F-0B65-51BC-9487-80E33121A548', 'vmc_name': 'simzone_a', 'protect_interface': 'default', 'uuid': '725A8813-DC94-5D8C-B791-55854405EA7B', 'notification': 'False', 'mgt_002_provisioning_request_sent': 0, 'cloud_ip': '136.172.205.181', 'pool': 'SUT', 'memory': 131072, 'cloud_hostname': 'simhosta3', 'username': 'msilva', 'mgt_003_provisioning_request_completed': 0, 'mgt_001_provisioning_request_originated': 1393125433, 'login': 'root', 'identity': '/home/msilva/cloudbench/lib/auxiliary//../../credentials/bogus_id_rsa', 'cloud_vm_uuid': '725A8813-DC94-5D8C-B791-55854405EA7B', 'name': 'host_simhosta3', 'counter': 1, 'arrival': 1393125433, 'migrate_interface': 'default', 'simulated': 'True', 'cores': 16, 'model': 'sim'}, '2E4E5E7E-55B5-557A-921B-CB85ACA95320': {'function': 'hypervisor', 'vmc': 'F048BD7F-0B65-51BC-9487-80E33121A548', 'vmc_name': 'simzone_a', 'protect_interface': 'default', 'uuid': '2E4E5E7E-55B5-557A-921B-CB85ACA95320', 'notification': 'False', 'mgt_002_provisioning_request_sent': 0, 'cloud_ip': '167.255.246.188', 'pool': 'SUT', 'memory': 131072, 'cloud_hostname': 'simhosta4', 'username': 'msilva', 'mgt_003_provisioning_request_completed': 0, 'mgt_001_provisioning_request_originated': 1393125433, 'login': 'root', 'identity': '/home/msilva/cloudbench/lib/auxiliary//../../credentials/bogus_id_rsa', 'cloud_vm_uuid': '2E4E5E7E-55B5-557A-921B-CB85ACA95320', 'name': 'host_simhosta4', 'counter': 1, 'arrival': 1393125433, 'migrate_interface': 'default', 'simulated': 'True', 'cores': 16, 'model': 'sim'}}
+|hosts                                    |3AED438F-3E39-5D47-B949-2DA9C09263CE,3F07DB26-BBC1-5507-BD94-C0A5AFA0B944,C5409096-EAF6-5F6A-B355-36DF5A37E954,725A8813-DC94-5D8C-B791-55854405EA7B,2E4E5E7E-55B5-557A-921B-CB85ACA95320
 |hosts_per_vmc                            |5                                    
 |identity                                 |/home/msilva/cloudbench/lib/auxiliary//../../credentials/bogus_id_rsa
 |initial_hosts                            |                                     
 |key_name                                 |                                     
 |max_vm_reservations                      |100000                               
 |memory_overcommit                        |1.0                                  
-|mgt_001_provisioning_request_originated  |1392321266                           
+|mgt_001_provisioning_request_originated  |1393125433                           
 |mgt_002_provisioning_request_sent        |0                                    
 |mgt_003_provisioning_request_completed   |0                                    
 |migrate_supported                        |True                                 
@@ -62,7 +62,7 @@ The VMC object simzone_a, attached to this experiment, has the following attribu
 |update_attempts                          |720                                  
 |update_frequency                         |1                                    
 |username                                 |msilva                               
-|uuid                                     |E295D856-13AE-5733-8733-8F6A1D9439D3 
+|uuid                                     |F048BD7F-0B65-51BC-9487-80E33121A548 
 |vm_arrived                               |0                                    
 |vm_arriving                              |0                                    
 |vm_departed                              |0                                    
@@ -77,17 +77,17 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |Metric                                               |Value                         
 |Used Memory                                          |1.10M                         
 |Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |1792948                       
-|Total Connections Received                           |5105                          
-|Total Commands Processed                             |787056                        
+|Uptime (in seconds)                                  |2597114                       
+|Total Connections Received                           |9946                          
+|Total Commands Processed                             |5386224                       
 |Number of Keys                                       |144                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
 |MongoDB Version                                      |2.4.6                         
-|Storage Size                                         |1454080                       
-|Data Size                                            |382072                        
-|Index Size                                           |327040                        
-|Average Object Size                                  |529.185595568                 
+|Storage Size                                         |1585152                       
+|Data Size                                            |414952                        
+|Index Size                                           |318864                        
+|Average Object Size                                  |519.339173967                 
 |Collections                                          |13                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
@@ -147,5 +147,5 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |1                             
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|E295D856-13AE-5733-8733-8F6A1D9439D3 (simzone_a) VM RESERVATIONS|0                             
+|F048BD7F-0B65-51BC-9487-80E33121A548 (simzone_a) VM RESERVATIONS|0                             
 

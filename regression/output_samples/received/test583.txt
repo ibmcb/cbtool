@@ -5,13 +5,13 @@ The AIDRS object aidrs_1, attached to this experiment, has the following attribu
 |ai_departed                                |28                                   
 |ai_failed                                  |2                                    
 |ai_reservations                            |0                                    
-|arrival                                    |1392321808                           
+|arrival                                    |1393125987                           
 |base_dir                                   |/home/msilva/cloudbench/lib/auxiliary//../..
 |cloud_hostname                             |undefined                            
 |cloud_ip                                   |undefined                            
 |cloud_name                                 |TESTCLOUD                            
 |command                                    |aidrsattach TESTCLOUD simplenw lifetime=40
-|command_originated                         |1392321808                           
+|command_originated                         |1393125987                           
 |counter                                    |385                                  
 |daemon_parallelism                         |50                                   
 |detach_parallelism                         |20                                   
@@ -23,7 +23,7 @@ The AIDRS object aidrs_1, attached to this experiment, has the following attribu
 |load_level                                 |uniformIXIXI1I3                      
 |login                                      |klabuser                             
 |max_ais                                    |8000                                 
-|mgt_001_provisioning_request_originated    |1392321808                           
+|mgt_001_provisioning_request_originated    |1393125987                           
 |mgt_002_provisioning_request_sent          |0                                    
 |mgt_003_provisioning_request_completed     |0                                    
 |model                                      |sim                                  
@@ -40,7 +40,7 @@ The AIDRS object aidrs_1, attached to this experiment, has the following attribu
 |update_attempts                            |720                                  
 |update_frequency                           |1                                    
 |username                                   |msilva                               
-|uuid                                       |281282CD-B041-52FE-881C-046B6AA05007 
+|uuid                                       |1A7CA93F-282A-51EF-B60F-E166672E758C 
 |vm_arrived                                 |117                                  
 |vm_arriving                                |0                                    
 |vm_departed                                |117                                  

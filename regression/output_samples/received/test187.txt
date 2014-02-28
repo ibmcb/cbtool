@@ -34,6 +34,20 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |ai_defaults                      |username                       |msilva                               
 |ai_defaults                      |vm_creation                    |explicit                             
 |ai_defaults                      |vm_destruction                 |explicit                             
+|ai_templates                     |cassandra_ycsb_capture_role    |ycsb                                 
+|ai_templates                     |cassandra_ycsb_cassandra_resize1|cb_modify_node.sh                    
+|ai_templates                     |cassandra_ycsb_cassandra_setup1|cb_restart_node.sh                   
+|ai_templates                     |cassandra_ycsb_load_balancer   |False                                
+|ai_templates                     |cassandra_ycsb_load_duration   |60                                   
+|ai_templates                     |cassandra_ycsb_load_generator_role|ycsb                                 
+|ai_templates                     |cassandra_ycsb_load_level      |10000000                             
+|ai_templates                     |cassandra_ycsb_load_manager_role|ycsb                                 
+|ai_templates                     |cassandra_ycsb_load_profile    |default                              
+|ai_templates                     |cassandra_ycsb_metric_aggregator_role|seed                                 
+|ai_templates                     |cassandra_ycsb_seed_setup1     |cb_restart_seed.sh                   
+|ai_templates                     |cassandra_ycsb_start           |cb_start_ycsb.sh                     
+|ai_templates                     |cassandra_ycsb_sut             |ycsb->seed                           
+|ai_templates                     |cassandra_ycsb_ycsb_setup2     |cb_setup_ycsb.sh                     
 |ai_templates                     |coremark_capture_role          |coremark                             
 |ai_templates                     |coremark_coremark_setup1       |cb_setup_cmk.sh                      
 |ai_templates                     |coremark_load_balancer         |False                                
@@ -621,12 +635,12 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |space                            |tracefile                      |regression/regression_test_experiment_plan.txt
 |space                            |username                       |msilva                               
 |space                            |vm_daemon_dir                  |/home/klabuser                       
-|time                             |experiment_id                  |EXP-02-13-2014-02-41-35-PM-EST       
+|time                             |experiment_id                  |EXP-02-22-2014-10-04-17-PM-EST       
 |time                             |external_timeout               |30                                   
 |time                             |external_tries                 |2                                    
 |time                             |hard_reset                     |True                                 
 |time                             |internal_tries                 |2                                    
-|time                             |start_time                     |1392320495                           
+|time                             |start_time                     |1393124656                           
 |time                             |step_delay                     |5                                    
 |time                             |username                       |msilva                               
 |vm_defaults                      |access                         |                                     
@@ -667,6 +681,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |vm_defaults                      |update_attempts                |720                                  
 |vm_defaults                      |update_frequency               |1                                    
 |vm_defaults                      |username                       |msilva                               
+|vm_templates                     |cassandra                      |size:gold64,imageid1:cassandra_instance
 |vm_templates                     |client_daytrader               |size:nano32,imageid1:cloudbench_root 
 |vm_templates                     |client_lost                    |size:micro32,imageid1:cloudbench_root
 |vm_templates                     |client_specweb                 |size:micro32,imageid1:cloudbench_root
@@ -698,6 +713,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |vm_templates                     |rubis_database                 |size:bronze32,imageids:1,imageid1:cloudbench_rubis_database
 |vm_templates                     |rubis_driver                   |size:bronze32,imageids:1,imageid1:cloudbench_rubis_driver
 |vm_templates                     |rubis_lb                       |size:bronze32,imageids:1,imageid1:cloudbench_rubis_loadbalancer
+|vm_templates                     |seed                           |size:iron32,imageid1:cassandra_instance
 |vm_templates                     |specjbb                        |size:iron32,imageid1:cloudbench_root 
 |vm_templates                     |specwebback                    |size:nano32,imageid1:cloudbench_specweb
 |vm_templates                     |specwebfront                   |size:copper32,imageid1:cloudbench_specweb
@@ -707,6 +723,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |vm_templates                     |was                            |size:iron32,imageid1:cloudbench_root 
 |vm_templates                     |willfail                       |size:nano32,imageid1:doesnotmatter   
 |vm_templates                     |windows                        |size:iron32,imageids:1,imageid1:cloudbench_windows
+|vm_templates                     |ycsb                           |size:bronze32,imageid1:mongo_instance
 |vmc_defaults                     |access                         |                                     
 |vmc_defaults                     |additional_discovery           |                                     
 |vmc_defaults                     |attempts                       |3                                    

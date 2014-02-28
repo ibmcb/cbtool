@@ -29,7 +29,7 @@ import os
 
 from os import chmod, access, F_OK
 from time import time, sleep
-from random import randint, choice
+from random import randint, choice, uniform
 from uuid import uuid5, NAMESPACE_DNS
 from hashlib import sha1
 from base64 import b64encode
@@ -2481,12 +2481,14 @@ class BaseObjectOperations :
                 self.msci.add_document(_trace_key, _trace_attr_list)            
 
                 _status = 0
+
             else :
+
                 _mgt_attr_list = {}
                 _mgt_attr_list["expid"] = _time_defaults["experiment_id"]            
     
                 if obj_type.upper() == "VM" or obj_type.upper() == "HOST" :
-                    
+
                     _management_key = "management_" + obj_type.upper() + '_' + _mon_defaults["username"]
                     _latest_key = "latest_management_" + obj_type.upper() + '_' + _mon_defaults["username"]
     
@@ -2499,7 +2501,7 @@ class BaseObjectOperations :
                     _mgt_attr_list["_id"] = obj_attr_list["uuid"]
                     _mgt_attr_list["obj_type"] = obj_type
                     _mgt_attr_list["state"] = self.osci.get_object_state(cloud_name, obj_type, obj_attr_list["uuid"])
-    
+
                     if operation == "attach" :
                         self.msci.add_document(_management_key, _mgt_attr_list)
                         self.msci.add_document(_latest_key, _mgt_attr_list)
@@ -2507,20 +2509,24 @@ class BaseObjectOperations :
                     elif operation == "runstate" :
                         self.msci.update_document(_management_key, _mgt_attr_list)
                         self.msci.update_document(_latest_key, _mgt_attr_list)
-        
+
                     elif operation == "detach" :
+
                         _criteria = { "_id" : obj_attr_list["uuid"] }
+
                         self.msci.update_document(_management_key, _mgt_attr_list)
+
                         self.msci.delete_document(_latest_key, _criteria)
 
                         # This was added directly by the VM, but it has to be
                         # deleted by us.
                         self.msci.delete_document("latest_runtime_app_" + obj_type.upper() + '_' + _mon_defaults["username"], _criteria) 
- 
+
                         # This was added directly by gmetad, but it has to be
                         # deleted by us.
                         self.msci.delete_document("latest_runtime_os_" + obj_type.upper() + '_' + _mon_defaults["username"], _criteria) 
-    
+
+
                 elif obj_type.upper() == "AI" and operation == "attach" :
                     
                     _management_key = "management_VM_" + _mon_defaults["username"]
@@ -2564,6 +2570,7 @@ class BaseObjectOperations :
             _fmsg = str(e)
 
         finally :
+
             if _status :
                 _msg = "Management (" + operation + ") metrics record failure: " + _fmsg
                 cberr(_msg)

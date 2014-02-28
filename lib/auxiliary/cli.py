@@ -377,6 +377,9 @@ class CBCLI(Cmd) :
         '''
         Do command line parsing
         '''
+
+        _path = re.compile(".*\/").search(os.path.realpath(__file__)).group(0)
+            
         usage = '''usage: %prog [options] [command]
         '''
         self.parser = OptionParser(usage)
@@ -405,6 +408,36 @@ class CBCLI(Cmd) :
                             else self.cld_attr_lst["user-defined"]["trace"], \
                           help = "Points to a trace file to be loaded at the " + \
                           "beginning of execution")
+
+        self.parser.add_option("--tpdir", \
+                           dest="tpdir", \
+                           default= _path + "/3rd_party", \
+                           help="Name of the third-party directory")
+    
+        self.parser.add_option("--defdir", \
+                           dest="defdir", \
+                           default=_path + "/configs/templates/", \
+                           help="Dependencies configuration file defaults dir")
+    
+        self.parser.add_option("--cusdir", \
+                           dest="cusdir", \
+                           default=_path + "/configs/", \
+                           help="Dependencies configuration file customizations dir")
+    
+        self.parser.add_option("--wksdir", \
+                           dest = "wksdir", \
+                           default = _path + "/scripts/", \
+                           help = "Workload dependencies configuration file dir")
+    
+        self.parser.add_option("-w","--wks", \
+                           dest = "wks", \
+                           default = "", \
+                           help = "Comma-separated workload list")
+    
+        self.parser.add_option("--custom", \
+                           dest = "custom", \
+                           default = "", \
+                           help = "Dependencies customization file name")
         
         # API options
         self.parser.add_option("--apiport", dest = "apiport", metavar = "APIP", \

@@ -128,15 +128,18 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 rewrite_cloudconfig(cld_attr_lst)
                 
                 rewrite_cloudoptions(cld_attr_lst, available_clouds, False)
-    
-                ssh_filename = cld_attr_lst["space"]["credentials_dir"] + '/' + cld_attr_lst["space"]["ssh_key_name"]
+                
+                if "ssh_key_name" in cld_attr_lst["space"] :
+                    ssh_filename = cld_attr_lst["space"]["credentials_dir"] + '/' + cld_attr_lst["space"]["ssh_key_name"]
+                else :
+                    raise Exception("\n   The parameter " + cld_attr_lst["model"].upper() + "_SSH_KEY_NAME is not configured:\n")
 
                 if not os.path.isfile(ssh_filename) :
                     if not os.path.isfile(cld_attr_lst["space"]["ssh_key_name"]) :
                         _fmsg = "Error: "
                         raise Exception("\n   Your " + cld_attr_lst["model"].upper() + "_SSH_KEY_NAME parameter is wrong:\n" + \
                                         "\n   Neither files exists: " + cld_attr_lst["space"]["ssh_key_name"] + " nor " + ssh_filename + \
-                                        "\n   Please update your configuration and try again.\n");
+                                        "\n   Please update your configuration and try again.\n")
                 else :
                     cld_attr_lst["space"]["ssh_key_name"] = ssh_filename 
 
@@ -321,7 +324,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _base_cmd = "sudo openvpn --config " + openvpn_config
             _cmd = _base_cmd + " --daemon"
             cbdebug(_cmd) 
-            _pid = _proc_man.start_daemon(_cmd, "1194", "udp", conditional = True, 
+            _pid = _proc_man.start_daemon(_cmd, "1194", "tcp", conditional = True, 
                                   search_keywords = cld_attr_lst["space"]["openvpn_server_config_prefix"])
 
             if len(_pid) :
@@ -339,6 +342,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     sys.stdout.write(_msg)
             else :
                 _msg = "\nOpenVPN failed to start. To discover why, please run:\n\n" + _base_cmd + "\n\n ... and report the bug."
+                cberr(_msg, True)
                 _status = 7161
                 raise ProcessManagement.ProcessManagementException(_status, _msg)
             
@@ -491,7 +495,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _fmsg =  str(obj.msg)
 
         except ProcessManagement.ProcessManagementException, obj :
-            print("AQUI")
             _status = str(obj.status)
             _msg = _fmsg + str(obj.msg)
 
@@ -1030,13 +1033,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _vm_templates = self.osci.get_object(_cn, "GLOBAL", False, "vm_templates", False)
 
             _vm_template_attr_list = str2dic(_vm_templates[obj_attr_list["role"]])
-            
+
             if obj_attr_list["size"] == "load_balanced_default" :
                 if "lb_size" in _vm_template_attr_list :
                     obj_attr_list["size"] = _vm_template_attr_list["lb_size"]
                 else :
                     obj_attr_list["size"] = "default"
-                
+
             selective_dict_update(obj_attr_list, _vm_template_attr_list)
 
             _status = 0
@@ -1583,7 +1586,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                             obj_attr_list["uuid"], "status", "Sending create request to cloud ...")
                         _status, _fmsg = _cld_conn.vmcreate(obj_attr_list)
                         _vmcreate = True
-                        
+
                     elif _obj_type == "AI" :
                         _status, _fmsg = _cld_conn.aidefine(obj_attr_list)
                         self.assign_roles(obj_attr_list)
@@ -1602,12 +1605,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         False
     
                     if not _status :
-    
+
                         if "lifetime" in obj_attr_list and not "submitter" in obj_attr_list :
                             if obj_attr_list["lifetime"] != "none" :
                                 obj_attr_list["departure"] = obj_attr_list["lifetime"] +\
                                  obj_attr_list["arrival"]
-                        
+
                         if _obj_type == "VM" and "host_name" in obj_attr_list and obj_attr_list["host_name"] != "unknown" :
                             if obj_attr_list["discover_hosts"].lower() == "true" :
                                 _host_attr_list = self.osci.get_object(_cloud_name, "HOST", True, "host_" + obj_attr_list["host_name"], False)
@@ -1616,17 +1619,17 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                         if "userdata" in obj_attr_list :
                             del obj_attr_list["userdata"]
-                            
+
                         self.osci.create_object(_cloud_name, _obj_type, obj_attr_list["uuid"], \
                                                 obj_attr_list, False, True)
                         _created_object = True
-    
+
                         if _obj_type == "VMC" :
                             self.post_attach_vmc(obj_attr_list)
     
                         elif _obj_type == "VM" :
                             self.post_attach_vm(obj_attr_list, _staging)
-    
+
                         elif _obj_type == "AI" :
                             self.post_attach_ai(obj_attr_list, _staging)
     
@@ -2565,6 +2568,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     raise self.ObjectOperationException(_msg, 28)
 
                 if not _status :
+
                     self.osci.destroy_object(obj_attr_list["cloud_name"], _obj_type, obj_attr_list["uuid"], \
                                              obj_attr_list, False)
 
@@ -2712,7 +2716,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _scores = True
                 else :
                     _scores = False
+
                 self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "VMS_UNDERGOING_" + obj_attr_list["current_state"].upper(), obj_attr_list["uuid"], _scores)
+
 
             self.record_management_metrics(obj_attr_list["cloud_name"], "VM", \
                                            obj_attr_list, "detach")
@@ -4690,7 +4696,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _aidrs_state = self.osci.get_object_state(cloud_name, "AIDRS", object_uuid)
 
             if not _aidrs_state  :
-                print "X"
                 _msg = "AIDRS object " + object_uuid 
                 _msg += " state could not be obtained. This process "
                 _msg += " will exit, leaving all the AIs behind."

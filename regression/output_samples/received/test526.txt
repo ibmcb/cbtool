@@ -1,4 +1,4 @@
 The following ATTACHED AIs are in this experiment (Cloud TESTCLOUD) :
 |name      |type           |sut                                               |cloud_ip        |arrival        |aidrs                                   |uuid
-|ai_1      |daytrader      |1_x_client_daytrader->1_x_was->1_x_db2            |196.147.245.77  |1392321469     |none                                    |C2035EE1-3B3D-5760-80D0-7530650FB750
+|ai_1      |daytrader      |1_x_client_daytrader->1_x_was->1_x_db2            |38.180.67.203   |1393125639     |none                                    |6A82AC1B-7407-5C24-A34E-909EBF747D35
 

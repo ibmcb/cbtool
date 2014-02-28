@@ -1,0 +1,8 @@
+Examine a configuration file and determine what the
+default cloud will be from the startup command list.
+
+This is provided for users that have one-cloud-per-file
+configuration setups which eliminates the need for the
+user to explicitly type the cloud parameters when
+attaching to a cloud for the first time through
+the GUI.

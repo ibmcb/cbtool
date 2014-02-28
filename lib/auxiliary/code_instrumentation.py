@@ -21,7 +21,7 @@
 
     Tracing and Debugging
 
-    @author: Marcio A. Silva
+    @author: Marcio A. Silva, Michael R. Hines
 '''
 
 from logging.handlers import logging

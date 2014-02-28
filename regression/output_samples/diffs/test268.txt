@@ -1,7 +1,11 @@
-|VM |vm_XX |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx |save 
+|VM |vm_XX |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx |attached 
 |VM |vm_XX |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx |attached 
 |VM |vm_XX |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx |save 
+|VM |vm_XX |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx |save 
 |VM |vm_XX |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx |attached 
+|VM |vm_XX |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx |attached 
+|VM |vm_XX |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx |save 
+|VM |vm_XX |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx |save 
 |AI |ai_XX |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx |save 
 |AI |ai_XX |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx |attached 
 |Redis Version |2.6.16 

@@ -1,6 +1,6 @@
- status: VMC 1C765118-D6F2-5479-88B9-052DF61DE4CF was successfully unregistered on SimCloud "TESTCLOUD".
- status: VMC 8555DAED-63E8-5E14-B644-23CF9517D4C7 was successfully unregistered on SimCloud "TESTCLOUD".
- status: VMC F193B2A2-A5E9-5A48-A69A-81F62B1AD2BF was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC FDC91080-E851-5A39-9D29-A8FA34574469 was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC DD46A47F-DCC8-545E-8979-48E1D95BACBF was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC F1ED60F9-22FA-5739-9BC4-B83AF87304E1 was successfully unregistered on SimCloud "TESTCLOUD".
 VMC object undefined (named "all") was sucessfully detached from this experiment.
 The following ATTACHED VMCs are in this experiment (Cloud TESTCLOUD) :
 No objects available.
@@ -9,17 +9,17 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |Metric                                               |Value                         
 |Used Memory                                          |1.26M                         
 |Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |1792975                       
-|Total Connections Received                           |5108                          
-|Total Commands Processed                             |798535                        
+|Uptime (in seconds)                                  |2597142                       
+|Total Connections Received                           |9949                          
+|Total Commands Processed                             |5397787                       
 |Number of Keys                                       |109                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
 |MongoDB Version                                      |2.4.6                         
-|Storage Size                                         |1454080                       
-|Data Size                                            |404584                        
-|Index Size                                           |327040                        
-|Average Object Size                                  |520.7001287                   
+|Storage Size                                         |1585152                       
+|Data Size                                            |438760                        
+|Index Size                                           |367920                        
+|Average Object Size                                  |511.971995333                 
 |Collections                                          |13                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
