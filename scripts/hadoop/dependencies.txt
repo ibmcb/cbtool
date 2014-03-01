@@ -1,0 +1,55 @@
+### START - Dependency installation order ###
+java-order = 50
+hadoop-order = 51
+hibench-order = 52
+### END - Dependency installation order ###
+
+### START - Dependency-specific installation method ###
+# pm = "package manager" (yum or apt-get)
+# sl = "soft link" (assume that the dependency is already installed, just has to
+# be properly exposed to the user's path.
+# git = git clone using above giturl
+# pip = python pip utility
+# man = "manual"
+java-install = pm
+hadoop-install = man
+hibench-install = git
+### END - Dependency-specific installation method ###
+
+### START - Tests ###
+java-configure = java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g'
+hadoop-configure = . .bashrc; ~/hadoop-1.2.1/bin/hadoop version | head -n 1 | cut -d ' ' -f 2
+hibench-configure = ls -la ~/HiBench
+### END - Tests ###
+
+### START - Dependency versions ###
+java-ver = 1.6
+hadoop-ver = 1.0
+hibench-ver = ANY
+### END - Dependency versions ###
+
+### START - Dependency URLs ###
+rhel-pyhtml-x86_64-urls-man = http://www.carfab.com/apachesoftware/hadoop/common/hadoop-1.2.1/hadoop-1.2.1.tar.gz
+ubuntu-pyhtml-amd64-urls-man = http://www.carfab.com/apachesoftware/hadoop/common/hadoop-1.2.1/hadoop-1.2.1.tar.gz
+
+#rhel-pyhtml-x86_64-urls-man = http://www.carfab.com/apachesoftware/hadoop/common/hadoop-2.3.0/hadoop-2.3.0.tar.gz
+#ubuntu-pyhtml-amd64-urls-man = http://www.carfab.com/apachesoftware/hadoop/common/hadoop-2.3.0/hadoop-2.3.0.tar.gz
+
+rhel-pyhtml-x86_64-urls-git = https://github.com/ibmcb/HiBench.git
+ubuntu-pyhtml-amd64-urls-git = https://github.com/ibmcb/HiBench.git
+### END - Dependency URLs ###
+
+### START -  Dependency and method-specific command lines ###
+rhel-java-install-pm = sudo yum -y install java
+rhel-java-postinstall-pm = echo "JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre" >> ~/.bashrc
+ubuntu-java-install-pm = sudo apt-get -y install java
+ubuntu-java-postinstall-pm = echo "JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre" >> ~/.bashrc
+
+rhel-hadoop-preinstall-man = wget -N -P ~ URL
+rhel-hadoop-install-man = tar -xzf hadoop*.gz
+ubuntu-hadoop-preinstall-man = wget -N -P ~ URL
+ubuntu-hadoop-install-man = tar -xzf hadoop*.gz
+
+rhel-hibench-preinstall-git = cd ~; git clone URL/HiBench.git
+ubuntu-hibench-preinstall-git = cd ~; git clone URL/HiBench.git
+### END -  Dependency and method-specific command lines ###

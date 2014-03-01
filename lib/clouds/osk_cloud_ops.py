@@ -1159,6 +1159,7 @@ class OskCmds(CommonCloudFunctions) :
             else :
 #                _scheduler_hints = None
                 _availability_zone = None
+                
             _scheduler_hints = None
 
             _meta = {}

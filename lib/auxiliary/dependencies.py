@@ -102,7 +102,7 @@ def deps_file_parser(depsdict, username, options, hostname, process_manager = Fa
         if not process_manager :
             process_manager = ProcessManagement(hostname)
         
-        process_manager.run_os_command("rm -rf /tmp/repoupdated", False)
+        process_manager.run_os_command("sudo rm -rf /tmp/repoupdated", False)
 
     return True
  
@@ -333,7 +333,7 @@ def build_repository_file_contents(depsdict, repo_name) :
 
     if depsdict["cdist"] == "ubuntu" :
         for _dist in depsdict["repo_contents"][repo_name]["dists"].split(',') :
-            for _component in depsdict["repo_contents"][repo_name]["dists"].split(',') :
+            for _component in depsdict["repo_contents"][repo_name]["components"].split(',') :
                 _file_contents += "deb " + _actual_url + ' ' + _dist + ' ' + _component + "\n"
     else :
         _file_contents += "[" + repo_name + "]\n"
