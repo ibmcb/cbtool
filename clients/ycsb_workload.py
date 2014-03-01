@@ -17,8 +17,9 @@ import fnmatch
 import os
 
 _home = os.environ["HOME"]
-_api_endpoint = "172.16.1.250"
-_cloud_name = "TESTSIMCLOUD"
+_api_endpoint = "10.16.31.203"
+_api_port = "9090"
+_cloud_name = "myopenstackcloud"
 _app_name = "cassandra_ycsb"
 
 for _path, _dirs, _files in os.walk(os.path.abspath(_home)):
@@ -26,10 +27,10 @@ for _path, _dirs, _files in os.walk(os.path.abspath(_home)):
             path.append(_path.replace("/lib/auxiliary",''))
             break
 
-
-
 from lib.api.api_service_client import *
-api = APIClient("http://" + _api_endpoint + ":7070")
+
+#----------------------- CloudBench API ----------------------------------------
+api = APIClient("http://" + _api_endpoint + ":%s" % _api_port)
 expid = "CASSANDRA_YCSB" + makeTimestamp().replace(" ", "_")
 
 try : 
@@ -48,6 +49,8 @@ try :
         exit(1)    
 
     app = api.appattach(_cloud_name, _app_name)
+
+    api.appalter(app["uuid"], "LOAD_LEVEL", "")
     
 except APIException, obj:
     error = True
@@ -56,4 +59,4 @@ except Exception, msg:
     error = True
     print "Problem during experiment: " + str(msg)
 finally:
-    print "Destroying APP.."
+    print "App.. Launched"
