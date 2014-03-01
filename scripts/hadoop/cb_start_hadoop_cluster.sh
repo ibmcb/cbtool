@@ -23,33 +23,73 @@ syslog_netcat "Starting Hadoop cluster on master ${hadoop_master_ip} with slaves
 
 #start mapreduce
 if [ x"$my_role" == x"hadoopmaster" ]; then
-	syslog_netcat "....Formating namenode...."
-	${HADOOP_HOME}/bin/hadoop namenode -format
+	if [ ${hadoop_use_yarn} -eq 1 ] ; then
+		syslog_netcat "...Formatting Namenode..."
+		${HADOOP_HOME}/bin/hadoop namenode -format -force
 
-	syslog_netcat "....starting hadoop services...."
-	syslog_netcat "....starting primary NameNode...."
-	${HADOOP_HOME}/bin/start-dfs.sh
-	syslog_netcat "....starting JobTracker...."
-	${HADOOP_HOME}/bin/start-mapred.sh
-#	${HADOOP_HOME}/bin/start-all.sh
+		syslog_netcat "...Starting Namenode daemon..."
+		${HADOOP_HOME}/sbin/hadoop-daemon.sh start namenode
+
+		syslog_netcat "...Starting YARN Resource Manager daemon..."
+		${HADOOP_HOME}/sbin/yarn-daemon.sh start resourcemanager
+		syslog_netcat "...Starting Job History daemon..."
+		${HADOOP_HOME}/sbin/mr-jobhistory-daemon.sh start historyserver
+
+	else
+		syslog_netcat "....Formating namenode...."
+		${HADOOP_HOME}/bin/hadoop namenode -format
+
+		syslog_netcat "....starting hadoop services...."
+		syslog_netcat "....starting primary NameNode...."
+		${HADOOP_HOME}/bin/start-dfs.sh
+		syslog_netcat "....starting JobTracker...."
+		${HADOOP_HOME}/bin/start-mapred.sh
+	#	${HADOOP_HOME}/bin/start-all.sh
+	fi
+else
+	if [ ${hadoop_use_yarn} -eq 1 ] ; then
+		syslog_netcat "....starting datanode on ${my_ip_addr} ..."
+		${HADOOP_HOME}/sbin/hadoop-daemon.sh start datanode
+		datanode_error=`grep FATAL ${HADOOP_HOME}/logs/hadoop*.log`
+		if [ x"$datanode_error" != x ] ; then
+		        syslog_netcat "Error starting datanode on ${my_ip_addr}: ${datanode_error} "
+		        exit 1
+		fi
+		syslog_netcat "....starting nodemanager on ${my_ip_addr} ..."
+		${HADOOP_HOME}/sbin/yarn-daemon.sh start nodemanager
+	fi
 fi
 
-syslog_netcat "Waiting for all Datanodes to become available....."
-syslog_netcat "`${HADOOP_HOME}/bin/hadoop dfsadmin -report`"
-while [ z${DATANODES_AVAILABLE} != z"true" ]
-do
-    DFSADMINOUTPUT=`${HADOOP_HOME}/bin/hadoop dfsadmin -report | grep "Datanodes available"`
-    AVAILABLE_NODES=`echo ${DFSADMINOUTPUT} | cut -d ":" -f 2 | cut -d " " -f 2`
-    TOTAL_NODES=`echo ${DFSADMINOUTPUT} | cut -d ":" -f 2 | cut -d " " -f 3 | sed 's/(//g'`
-	if [[ ${AVAILABLE_NODES} -ne 0 && z${AVAILABLE_NODES} == z${TOTAL_NODES} ]]
-    then
-        DATANODES_AVAILABLE="true"
-    else
-        DATANODES_AVAILABLE="false"
-    fi
-    sleep 1
-done
-syslog_netcat "All Datanodes (${TOTAL_NODES}) available now"
+if [ x"$my_role" == x"hadoopmaster" ]; then
+	syslog_netcat "Waiting for all Datanodes to become available....."
+	syslog_netcat "`${HADOOP_HOME}/bin/hadoop dfsadmin -report`"
+	while [ z${DATANODES_AVAILABLE} != z"true" ]
+	do
+	    DFSADMINOUTPUT=`${HADOOP_HOME}/bin/hadoop dfsadmin -report | grep "Datanodes available"`
+	    AVAILABLE_NODES=`echo ${DFSADMINOUTPUT} | cut -d ":" -f 2 | cut -d " " -f 2`
+	    TOTAL_NODES=`echo ${DFSADMINOUTPUT} | cut -d ":" -f 2 | cut -d " " -f 3 | sed 's/(//g'`
+		if [[ ${AVAILABLE_NODES} -ne 0 && z${AVAILABLE_NODES} == z${TOTAL_NODES} ]]
+	    then
+	        DATANODES_AVAILABLE="true"
+	    else
+	        DATANODES_AVAILABLE="false"
+	    fi
+	    sleep 1
+	done
+	syslog_netcat "All Datanodes (${TOTAL_NODES}) available now"
+
+	if [ ${hadoop_use_yarn} -eq 1 ] ; then
+
+		syslog_netcat "Creating map-reduce history directory on HDFS filesystem..."
+		hadoop dfs -mkdir /mr-history
+		hadoop dfs -mkdir /mr-history/done
+		hadoop dfs -mkdir /mr-history/tmp
+		hadoop dfs -chmod -R 777 /mr-history/done
+		hadoop dfs -chmod -R 777 /mr-history/tmp
+	fi
+
+fi
+
 
 if [ x"$my_role" == x"hadoopmaster" ]; then
 	if [ -f ~/mm.tar ]; then 

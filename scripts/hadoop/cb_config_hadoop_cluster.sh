@@ -34,6 +34,8 @@ source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_hadoop_common.sh
 
 syslog_netcat "hadoop_master_ip: $hadoop_master_ip"
 syslog_netcat "..my_ip=$my_ip_addr .."
+hadoop_version_string=`$HADOOP_HOME/bin/hadoop version | sed '1!d'`
+syslog_netcat "..Hadoop Version is $hadoop_version_string .."
 
 is_preferIPv4Stack=`cat ${HADOOP_CONF_DIR}/hadoop-env.sh | grep -c "preferIPv4Stack=true"`
 if [ ${is_preferIPv4Stack} -eq 0 ]
@@ -77,7 +79,30 @@ literal string "local" or a host:port for NDFS.
 </configuration>
 EOF
 
-cat << EOF > $HADOOP_CONF_DIR/mapred-site.xml
+if [ ${hadoop_use_yarn} -eq 1 ] ; then
+	cat << EOF > $HADOOP_CONF_DIR/mapred-site.xml
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<!-- Put site-specific property overrides in this file. -->
+
+<configuration>
+<property>
+<name>mapreduce.framework.name</name>
+<value>yarn</value>
+<final>true</final>
+</property>
+
+<property>
+<name>mapreduce.jobhistory.address</name>
+<value>HADOOP_JOBTRACKER_IP:10020</value>
+<final>true</final>
+</property>
+</configuration>
+EOF
+
+else
+	cat << EOF > $HADOOP_CONF_DIR/mapred-site.xml
 <?xml version="1.0"?>
 <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
 
@@ -91,8 +116,36 @@ cat << EOF > $HADOOP_CONF_DIR/mapred-site.xml
 </property>
 </configuration>
 EOF
+fi
 
-cat << EOF > $HADOOP_CONF_DIR/hdfs-site.xml
+
+if [ ${hadoop_use_yarn} -eq 1 ] ; then
+	cat << EOF > $HADOOP_CONF_DIR/hdfs-site.xml
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<!-- Put site-specific property overrides in this file. -->
+
+<configuration>
+<property>
+<name>dfs.replication</name>
+<value>3</value>
+</property>
+
+<property>
+<name>dfs.namenode.name.dir</name>
+<value>DFS_NAME_DIR</value>
+</property>
+
+<property>
+<name>dfs.datanode.data.dir</name>
+<value>DFS_DATA_DIR</value>
+</property>
+</configuration>
+EOF
+
+else
+	cat << EOF > $HADOOP_CONF_DIR/hdfs-site.xml
 <?xml version="1.0"?>
 <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
 
@@ -121,6 +174,52 @@ Directories that do not exist are ignored.
 </property>
 </configuration>
 EOF
+fi
+
+if [ ${hadoop_use_yarn} -eq 1 ] ; then
+	syslog_netcat "..Creating file yarn-site.xml in ${HADOOP_CONF_DIR}..."
+
+	cat << EOF > $HADOOP_CONF_DIR/yarn-site.xml
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<!-- Put site-specific property overrides in this file. -->
+
+<configuration>
+<property>
+<name>yarn.nodemanager.aux-services</name>
+<value>mapreduce_shuffle</value>
+<final>true</final>
+</property>
+
+<property>
+<name>yarn.nodemanager.aux-services.mapreduce.shuffle.class</name>
+<value>org.apache.hadoop.mapred.ShuffleHandler</value>
+<final>true</final>
+</property>
+
+<property>
+<name>yarn.resourcemanager.address</name>
+<value>HADOOP_JOBTRACKER_IP:8032</value>
+<final>true</final>
+</property>
+
+<property>
+<name>yarn.resourcemanager.scheduler.address</name>
+<value>HADOOP_JOBTRACKER_IP:8030</value>
+<final>true</final>
+</property>
+
+<property>
+<name>yarn.resourcemanager.resource-tracker.address</name>
+<value>HADOOP_JOBTRACKER_IP:8031</value>
+<final>true</final>
+</property>
+</configuration>
+EOF
+
+fi
+
 syslog_netcat "....Done...."
 
 ###################################################################
@@ -139,6 +238,11 @@ syslog_netcat "..Editing hadoop conf files"
 sed -i -e "s/HADOOP_NAMENODE_IP/${hadoop_master_ip}/g" $HADOOP_CONF_DIR/core-site.xml
 sed -i -e "s/HADOOP_JOBTRACKER_IP/${hadoop_master_ip}/g" $HADOOP_CONF_DIR/mapred-site.xml
 sed -i -e "s/NUM_REPLICA/1/g" $HADOOP_CONF_DIR/hdfs-site.xml #3 is default. 1 is given for sort's performance
+
+if [ ${hadoop_use_yarn} -eq 1 ] ; then
+	sed -i -e "s/HADOOP_JOBTRACKER_IP/${hadoop_master_ip}/g" $HADOOP_CONF_DIR/yarn-site.xml
+fi
+
 
 TEMP_DFS_NAME_DIR=`echo ${DFS_NAME_DIR} | sed -e "s/\//-__-__/g"`
 TEMP_DFS_DATA_DIR=`echo ${DFS_DATA_DIR} | sed -e "s/\//-__-__/g"`
@@ -218,6 +322,9 @@ then
 	fi
 	sudo cp $HADOOP_CONF_DIR/mapred-site.xml /etc/hadop
 	sudo cp $HADOOP_CONF_DIR/hdfs-site.xml /etc/hadoop
+	if [ ${hadoop_use_yarn} -eq 1 ] ; then
+		sudo cp $HADOOP_CONF_DIR/yarn-site.xml /etc/hadop
+	fi
 fi
 
 syslog_netcat "....Done...."
