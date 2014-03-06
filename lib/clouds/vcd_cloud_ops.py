@@ -394,7 +394,7 @@ class VcdCmds(CommonCloudFunctions) :
         '''
         try :
             _status = 100
-            _fmsg = "An error has occurred, but no error message was captured"
+            _fmsg = "An error has occurred when creating new vApp, but no error message was captured"
             
             obj_attr_list["cloud_vm_uuid"] = "NA"
             _instance = False
@@ -426,7 +426,7 @@ class VcdCmds(CommonCloudFunctions) :
 
             obj_attr_list["last_known_state"] = "about to send create request"
 
-            _msg = "Starting an instance of image "
+            _msg = "Attempting to clone an instance of vApp "
             _msg += obj_attr_list["imageid1"]
             _msg += " on vCloud Director, creating a vm named "
             _msg += obj_attr_list["cloud_vm_name"]
@@ -435,7 +435,7 @@ class VcdCmds(CommonCloudFunctions) :
             # I can't get libcloud's driver.list_images() function to work, so I'm not sure how to create a new image object
             # based on an image.  The vCloud Director system I use doesn't have an appropriate stock image that will work with
             # cloudbench.  So, I'll instead clone an instantiated image that I've created.
-            _msg = "Looking for an existing vApp named "
+            _msg = "...Looking for an existing vApp named "
             _msg += obj_attr_list["imageid1"]
             cbdebug(_msg, True)
 
@@ -443,13 +443,13 @@ class VcdCmds(CommonCloudFunctions) :
             # Daniel 9/6/2013 Need to error check the response to ex_find_node and throw exception if no image found
  
             vm_computername = "vm" + obj_attr_list["name"].split("_")[1]
-            _msg = "Launching new VM with hostname " + vm_computername
-            cbdebug(_msg)
+            _msg = "...Launching new vApp containing VM with hostname " + vm_computername
+            cbdebug(_msg,True)
             _reservation = self.vcdconn.create_node(name = obj_attr_list["cloud_vm_name"], image = image_to_clone, ex_vm_names = [vm_computername])
 
             obj_attr_list["last_known_state"] = "sent create request to vCloud Director, parsing response"
 
-            _msg = "Sent command to create node, waiting for creation..."
+            _msg = "...Sent command to create node, waiting for creation..."
             cbdebug(_msg)
 
             if _reservation :
@@ -463,8 +463,8 @@ class VcdCmds(CommonCloudFunctions) :
                 obj_attr_list["cloud_vm_uuid"] = _reservation.uuid
                 obj_attr_list["instance_obj"] = _reservation
 
-                _msg = "New instance UUID is " + _reservation.uuid
-                cbdebug(_msg)
+                _msg = "...Success. New instance UUID is " + _reservation.uuid
+                cbdebug(_msg,True)
 
                 self.take_action_if_requested("VM", obj_attr_list, "provision_started")
 
@@ -478,7 +478,7 @@ class VcdCmds(CommonCloudFunctions) :
                 _status = 0
 
             else :
-                _fmsg = "Failed to obtain instance's (cloud-assigned) uuid. The "
+                _fmsg = "...Failed to obtain instance's (cloud-assigned) uuid. The "
                 _fmsg += "instance creation failed for some unknown reason."
                 cberr(_fmsg)
                 _status = 100
