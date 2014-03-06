@@ -35,7 +35,11 @@ export COMPRESS_GLOBAL=0
 export HADOOP_EXECUTABLE=${HADOOP_HOME}/bin/hadoop
 export MAPRED_EXECUTABLE=${HADOOP_HOME}/bin/mapred
 export HADOOP_EXAMPLES_JAR=${HADOOP_HOME}/hadoop-examples.jar
-export HADOOP_VERSION=hadoop2
+if [[ x${hadoop_version} == *cdh4* ]] ; then
+	export HADOOP_VERSION="cdh4"
+else
+	export HADOOP_VERSION="hadoop2"
+fi
 export HIBENCH_VERSION="2.2"
 export HIBENCH_CONF=${HIBENCH_HOME}/conf
 export HIBENCH_REPORT=${HIBENCH_HOME}/hibench.report
@@ -114,8 +118,8 @@ gen_report "KMEANS" ${START_TIME} ${END_TIME} ${SIZE}
 
 syslog_netcat "Parsing Hadoop config files and HiBench report file for test results..."
 slavecount=`wc -l "${HADOOP_CONF_DIR}/slaves" | awk '{print $1'}`
-lat=`cat ${HIBENCH_REPORT} | grep -v Type | tr -s ' ' | cut -d ' ' -f 5`
-tput=`cat ${HIBENCH_REPORT} | grep -v Type | tr -s ' ' | cut -d ' ' -f 6`
+lat=`cat ${HIBENCH_REPORT} | grep -v Type | tail -1 | tr -s ' ' | cut -d ' ' -f 5`
+tput=`cat ${HIBENCH_REPORT} | grep -v Type | tail -1 | tr -s ' ' | cut -d ' ' -f 6`
 
 syslog_netcat "Reporting results to CloudBench..."
 syslog_netcat "KMEANS results: slaves=${slavecount},samples=${NUM_OF_SAMPLES},clusters=${NUM_OF_CLUSTERS},dimensions=${DIMENSIONS},db_size=${SIZE},db_load_time=${KMEANS_LOAD_TIME},throughput=$tput,run_time=$lat"
