@@ -20,28 +20,30 @@ source ~/.bashrc
 
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
-START=`provision_application_start`
+START=$(provision_application_start)
 
 SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
 
-no_netserver=`which netserver | grep no`
+no_netserver=$(which netserver | grep no)
 if [ x"${no_netserver}" != x ]; then
-	syslog_netcat "Netperf server not installed on ${SHORT_HOSTNAME} - NOK"
-	exit 2
+    syslog_netcat "Netperf server not installed on ${SHORT_HOSTNAME} - NOK"
+    exit 2
 fi
 
-is_netserver_configured=`cat /etc/services | grep netperf`
-if [ x"${is_netserver_configured}" == x ]; then
-	syslog_netcat "Netperf server is not configured on ${SHORT_HOSTNAME} - NOK"
-	exit 2
+is_netserver_running=$(sudo ps aux | grep netserver)
+if [[ x"${is_netserver_running}" == x ]]
+then
+    syslog_netcat "Starting Netperf server on ${SHORT_HOSTNAME}"
+    sudo netserver
 fi
 
-is_netserver_listening=`netstat -a | grep LISTEN | grep netperf`
-if [ x"${is_netserver_listening}" == x ]; then
-	syslog_netcat "Netperf server is not listening on ${SHORT_HOSTNAME} - NOK"
-	exit 2
+is_netserver_listening=$(netstat -a | grep LISTEN | grep netperf)
+if [[ x"${is_netserver_listening}" == x ]]
+then
+    syslog_netcat "Netperf server is not listening on ${SHORT_HOSTNAME} - NOK"
+    exit 2
 else
-	syslog_netcat "Netperf server is listening on ${SHORT_HOSTNAME} - OK"
-	provision_application_stop $START
-	exit 0
+    syslog_netcat "Netperf server is listening on ${SHORT_HOSTNAME} - OK"
+    provision_application_stop $START
+    exit 0
 fi

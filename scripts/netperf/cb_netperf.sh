@@ -29,12 +29,12 @@ then
 	exit 1
 fi
 
-LOAD_GENERATOR_IP=`get_my_ai_attribute load_generator_ip`
-LOAD_GENERATOR_TARGET_IP=`get_my_ai_attribute load_generator_target_ip`
+LOAD_GENERATOR_IP=$(get_my_ai_attribute load_generator_ip)
+LOAD_GENERATOR_TARGET_IP=$(get_my_ai_attribute load_generator_target_ip)
 
-netperf=`which netperf`
+netperf=$(which netperf)
 
-LOAD_PROFILE=`echo ${LOAD_PROFILE} | tr '[:upper:]' '[:lower:]'`
+LOAD_PROFILE=$(echo ${LOAD_PROFILE} | tr '[:upper:]' '[:lower:]')
 
 declare -A CMDLINE_START
 
@@ -48,7 +48,8 @@ CMDLINE_START["udp_rr"]="-t UDP_RR"
 
 CMDLINE_END="-D 10 -H ${LOAD_GENERATOR_TARGET_IP} -l ${LOAD_DURATION}"
 
-if [ x"${CMDLINE_START[${LOAD_PROFILE}]}" == x ]; then
+if [[ x"${CMDLINE_START[${LOAD_PROFILE}]}" == x ]]
+then
 	CMDLINE="$netperf ${CMDLINE_START["tcp_stream"]} $CMDLINE_END"
 else 
 	CMDLINE="$netperf ${CMDLINE_START[${LOAD_PROFILE}]} $CMDLINE_END"
@@ -56,12 +57,13 @@ fi
 
 syslog_netcat "Benchmarking netperf SUT: NET_CLIENT=${LOAD_GENERATOR_IP} -> NET_SERVER=${LOAD_GENERATOR_TARGET_IP} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
 
-OUTPUT_FILE=`mktemp`
+OUTPUT_FILE=$(mktemp)
 
 source ~/cb_barrier.sh start
 
 syslog_netcat "Command line is: ${CMDLINE}. Output file is ${OUTPUT_FILE}"
-if [ x"${log_output_command}" == x"true" ]; then
+if [[ x"${log_output_command}" == x"true" ]]
+then
 	syslog_netcat "Command output will be shown"
 	$CMDLINE 2>&1 | while read line ; do
 		syslog_netcat "$line"
@@ -74,12 +76,14 @@ fi
 
 syslog_netcat "netperf run complete. Will collect and report the results"
 
-if [ ${LOAD_LEVEL} -le 2 ]; then
-	bw=`tail -1 ${OUTPUT_FILE} | awk '{ print $5 }' | tr -d ' '`
-elif [  ${LOAD_LEVEL} -eq 3 ]; then
-	bw=`tail -2 ${OUTPUT_FILE} | head -1 | awk '{ print $4 }' | tr -d ' '`
+if [[ ${LOAD_LEVEL} -le 2 ]]
+then
+	bw=$(tail -1 ${OUTPUT_FILE} | awk '{ print $5 }' | tr -d ' ')
+elif [[ ${LOAD_LEVEL} -eq 3 ]]
+then
+	bw=$(tail -2 ${OUTPUT_FILE} | head -1 | awk '{ print $4 }' | tr -d ' ')
 else
-	tp=`tail -2 ${OUTPUT_FILE} | head -1 | awk '{ print $6 }' | tr -d ' '`
+	tp=$(tail -2 ${OUTPUT_FILE} | head -1 | awk '{ print $6 }' | tr -d ' ')
 fi
 
 ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec throughput:$tp:tps bandwidth:$bw:MBps

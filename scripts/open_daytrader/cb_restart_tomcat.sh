@@ -92,7 +92,7 @@ sleep 5
 while [ "$ATTEMPTS" -ge  0 ] ; do 
     
     syslog_netcat "Checking for a Geronimo running on $SHORT_HOSTNAME...."
-    result="$(sudo /home/cbtool/daytrader/geronimo-tomcat7-javaee6-3.0.0/bin/deploy --user system --password manager list-modules | grep -Fxq "+ org.apache.geronimo.daytrader/daytrader/3.0.0/car")"
+    result="$(sudo /home/cbtool/daytrader/geronimo-tomcat7-javaee6-3.0.0/bin/deploy --user system --password manager list-modules | grep -Fxq \"+ org.apache.geronimo.daytrader/daytrader/3.0.0/car\")"
     sslog_netcat "Done checking for a Geronimo server running on $SHORT_HOSTNAME with DayTrader"
     
     if [ x"$result" == x ] ; then        

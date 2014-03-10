@@ -63,7 +63,9 @@ def deps_file_parser(depsdict, username, options, hostname, process_manager = Fa
                 _fd = open(_file, 'r')
                 _fc = _fd.readlines()
                 _fd.close()
-                
+                _msg = "File \"" + _file + "\" opened and loaded...."
+                print _msg
+
                 for _line in _fc :
                     _line = _line.strip()
         
@@ -92,6 +94,10 @@ def deps_file_parser(depsdict, username, options, hostname, process_manager = Fa
                 print _msg
                 exit(4)
 
+        else :
+            _msg = "File \"" + _file + "\" IGNORED...."
+            print _msg
+
     if not len(depsdict) :
         _msg = "Error: None of the files on the list \"" + str(_file_name_list)
         _msg += "\" contained configuration statements"
@@ -117,6 +123,8 @@ def get_linux_distro() :
         _distro = "rhel"        
     elif _linux_distro_name.count("Ubuntu") :
         _distro = "ubuntu"
+    elif _linux_distro_name.count("Fedora") :
+        _distro = "fedora"        
     else :
         if not len(_linux_distro_name) :
             try:
@@ -148,36 +156,45 @@ def get_cmdline(depkey, depsdict, operation) :
     TBD
     '''
 
-    if depsdict[depkey + '-' + operation] == "man" :        
-        _urls_key = depsdict["cdist"] + '-' + depkey + '-' + depsdict["carch"] + "-urls-" + depsdict[depkey + '-' + operation]
+    if operation != "configure" :
+        if depsdict[depkey + '-' + operation] == "man" :        
+            _urls_key = depsdict["cdist"] + '-' + depkey + '-' + depsdict["carch"] + "-urls-" + depsdict[depkey + '-' + operation]
+        else :
+            _urls_key = depsdict["cdist"] + '-' + depkey + "-urls-" + depsdict[depkey + '-' + operation]
     else :
-        _urls_key = depsdict["cdist"] + '-' + depkey + "-urls-" + depsdict[depkey + '-' + operation]
-    
-    if _urls_key in depsdict :
-        _tested_urls = ''
-        _actual_url = False
-        for _url in depsdict[_urls_key].split(',') :
+        _urls_key = False
 
-            if depsdict["repo_addr"] :
-                _url = _url.replace("REPO_ADDR", depsdict["repo_addr"])
-
-            _url = _url.replace("REPO_RELEASE", depsdict["cdistver"])
-            _url = _url.replace("REPO_ARCH", depsdict["carch"])            
-            _url = _url.replace("ARCH", depsdict["carch"].strip())
-            _url = _url.replace("DISTRO", depsdict["cdist"].strip())
-            _url = _url.replace("USERNAME", depsdict["username"].strip())
-
-            if check_url(_url, depsdict) :
-                _actual_url = _url
-                break
+    if _urls_key :
+        if _urls_key in depsdict :
+            if len(depsdict[_urls_key]) > 7 :
+                _tested_urls = ''
+                _actual_url = False
+                for _url in depsdict[_urls_key].split(',') :
+        
+                    if depsdict["repo_addr"] :
+                        _url = _url.replace("REPO_ADDR", depsdict["repo_addr"])
+        
+                    _url = _url.replace("REPO_RELEASE", depsdict["cdistver"])
+                    _url = _url.replace("REPO_ARCH", depsdict["carch"])            
+                    _url = _url.replace("ARCH", depsdict["carch"].strip())
+                    _url = _url.replace("DISTRO", depsdict["cdist"].strip())
+                    _url = _url.replace("USERNAME", depsdict["username"].strip())
+        
+                    if check_url(_url, depsdict) :
+                        _actual_url = _url
+                        break
+                    else :
+                        if not _tested_urls.count(_url) :
+                            _tested_urls += _url + ','
+        
+                if not _actual_url :
+                    _msg = "None of the urls indicated to install \"" + depkey + "\" (" 
+                    _msg += _tested_urls + ") seem to be functional."
+                    raise Exception(_msg)
             else :
-                if not _tested_urls.count(_url) :
-                    _tested_urls += _url + ','
-
-        if not _actual_url :
-            _msg = "None of the urls indicated to install \"" + depkey + "\" (" 
-            _msg += _tested_urls + ") seem to be functional."
-            raise Exception(_msg)
+                _actual_url = False                
+        else :
+            _actual_url = False
     else :
         _actual_url = False
 
@@ -203,6 +220,7 @@ def get_cmdline(depkey, depsdict, operation) :
         _actual_cmdline = _actual_cmdline[0:-1]
         
     _actual_cmdline = _actual_cmdline.replace(";;",';')
+    _actual_cmdline = _actual_cmdline.replace("_equal_",'=')
     
     return _actual_cmdline
 
@@ -539,18 +557,18 @@ def dependency_checker_installer(hostname, username, operation, options) :
     '''
     TBD
     '''
-    _depsdict = {}
-    
-    deps_file_parser(_depsdict, username, options, "127.0.0.1")
-
-    _depsdict["cdist"], _depsdict["cdistver"], _depsdict["carch"] = get_linux_distro()
-    _depsdict["3rdpartydir"] = options.tpdir
-    _depsdict["username"] = username
-
-    try :
+    try :    
         _status = 100
         _dep_missing = -1        
         _fmsg = "An error has occurred, but no error message was captured"
+        
+        _depsdict = {}
+        
+        deps_file_parser(_depsdict, username, options, "127.0.0.1")
+    
+        _depsdict["cdist"], _depsdict["cdistver"], _depsdict["carch"] = get_linux_distro()
+        _depsdict["3rdpartydir"] = options.tpdir
+        _depsdict["username"] = username
 
         _missing_dep = []
         _dep_list = [0] * 5000
@@ -570,7 +588,7 @@ def dependency_checker_installer(hostname, username, operation, options) :
             if "repo" in _dep_list :
                 _dep_list.remove("repo")
 
-        if _depsdict["cdist"] == "AMI" :
+        if _depsdict["cdist"] == "AMI" or _depsdict["cdist"] == "fedora" :
             _msg = "This node runs the \"" + _depsdict["cdist"] + "\" Linux "
             _msg += "distribution. Will treat it as \"rhel\", but will disable"
             _msg += "  the repository manipulation."
@@ -579,6 +597,42 @@ def dependency_checker_installer(hostname, username, operation, options) :
             _depsdict["cdist"] = "rhel"
             if "repo" in _dep_list :
                 _dep_list.remove("repo")
+
+        _workloads_list = options.wks.split(',')
+        if len(_workloads_list) :
+            _msg = "#####\n"
+            _msg += "This node will be used to play a role in the Virtual Applications"
+            _msg += " (AIs) \"" + str(options.wks) + "\". Only a subset of the depedencies"
+            _msg += " will be " + operation + "ed. This node cannot be used as an Orchestrator Node\n"
+            _msg += "#####\n"
+            print _msg
+            
+            _unneeded_dep_list = [ "mongodb", \
+                              "python-twisted", \
+                              "python-webob", \
+                              "python-beaker", \
+                              "pylibvirt", \
+                              "pypureomapi", \
+                              "pyhtml", \
+                              "bootstrap", \
+                              "bootstrap-wizard", \
+                              "streamprox", \
+                              "d3", \
+                              "novaclient", \
+                              "softlayer", \
+                              "boto", \
+                              "libcloud", \
+                              "R"]
+            for _unneeded_dep in _unneeded_dep_list :
+                if _unneeded_dep in _dep_list :
+                    _dep_list.remove(_unneeded_dep)
+        else :
+            _msg = "#####"            
+            _msg = "Since no Virtual Application types were specified (option "
+            _msg += "-w/--wks), this node will be prepared as an Orchestration Node."
+            _msg += "The full set of dependencies will be " + operation + "ed. "
+            _msg += "#####"            
+            print _msg
 
         _fmsg = ""
         _dep_missing = 0
@@ -626,4 +680,5 @@ def dependency_checker_installer(hostname, username, operation, options) :
                 _msg += "Please fix the reported problems re-run " + operation +  " again."               
         else :
             _msg = "All dependencies are in place"
+
         return _status, _msg

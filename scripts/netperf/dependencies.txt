@@ -17,7 +17,7 @@ netperf-configure = netperf -V | cut -d ' ' -f 3
 ### END - Tests ###
 
 ### START - Dependency versions ###
-netperf-ver = ANY
+netperf-ver = 2.4
 ### END - Dependency versions ###
 
 ### START -  Dependency and method-specific command lines ###

@@ -322,7 +322,7 @@ ubuntu-softlayer-vpn-urls-man = http://mdo.watson.ibm.com/repo/dropbox/softlayer
 rhel-sudo-install-man = echo "USERNAME  ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers; sed -i s/"Defaults requiretty"/"#Defaults requiretty"/g /etc/sudoers
 ubuntu-sudo-install-man = echo "USERNAME  ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers; sed -i s/"Defaults requiretty"/"#Defaults requiretty"/g /etc/sudoers; sudo apt-get update
 
-rhel-repo-install-man = sudo mv -f /tmp/*.repo /etc/yum.repos.d; touch /tmp/repoupdated
+rhel-repo-install-man = sudo mv -f /tmp/*.repo /etc/yum.repos.d; touch /tmp/repoupdated; sudo service iptables stop; sudo chkconfig iptables off
 ubuntu-repo-install-man = sudo mv -f /tmp/*.list /etc/apt/sources.list.d/; sudo apt-get update; touch /tmp/repoupdated
 
 ubuntu-ifconfig-install-sl = sudo ln -s /sbin/ifconfig /usr/local/bin/ifconfig
@@ -379,9 +379,9 @@ ubuntu-openvpn-install-pm = sudo apt-get -y install openvpn
 ubuntu-openvpn-postinstall-pm = sudo ln -s /usr/sbin/openvpn /usr/local/bin/openvpn
 
 rhel-gmond-install-pm = sudo yum -y install ganglia-gmond-python ganglia
-rhel-gmond-postinstall-pm = sudo ln -s /usr/sbin/gmond /usr/local/bin/gmond
+rhel-gmond-postinstall-pm = sudo ln -s /usr/sbin/gmond /usr/local/bin/gmond; sudo chkconfig gmond off
 ubuntu-gmond-install-pm = sudo apt-get -y install ganglia-monitor
-ubuntu-gmond-postinstall-pm = sudo ln -s /usr/sbin/gmond /usr/local/bin/gmond
+ubuntu-gmond-postinstall-pm = sudo ln -s /usr/sbin/gmond /usr/local/bin/gmond; sudo bash -c "echo 'manual' > /etc/init/ganglia-monitor.override"
 
 rhel-chef-client-install-man = sudo rpm -Uvh URL 
 ubuntu-chef-client-preinstall-man =  wget -N -P 3RPARTYDIR URL
