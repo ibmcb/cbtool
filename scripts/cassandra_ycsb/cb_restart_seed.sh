@@ -25,9 +25,9 @@ if [ -e $dir/cb_common.sh ] ; then
 else
 	source $dir/../common/cb_common.sh
 fi
-standalone=`online_or_offline "$1"`
-if [ $standalone == offline ] ; then
-	post_boot_steps offline 
+standalone=`online_or_offline "$4"`
+if [ $standalone == online ] ; then
+          YCSB_PATH=`get_my_ai_attribute YCSB_PATH`
 fi
 
 SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
