@@ -30,7 +30,7 @@ from subprocess import Popen, PIPE
 from xdrlib import Packer
 from sys import path
 from threading import Condition
-import copy, libvirt, re, socket, os
+import copy, re, socket, os
 import shutil
 import threading
 
@@ -44,6 +44,12 @@ from lib.auxiliary.data_ops import str2dic, dic2str, makeTimestamp
 from lib.operations.base_operations import BaseObjectOperations
 
 qemu_supported = False
+
+try :
+    import libvirt
+except ImportError:
+    cberr("Libvirt cannot be imported on this VM", True)
+    pass    
 
 try :
     # Provided by RHEL 6.2+

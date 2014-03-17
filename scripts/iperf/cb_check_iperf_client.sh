@@ -17,33 +17,18 @@
 #/*******************************************************************************
 
 source ~/.bashrc
-
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
 START=$(provision_application_start)
 
 SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
 
-no_netserver=$(which netserver | grep no)
-if [ x"${no_netserver}" != x ]; then
-    syslog_netcat "Netperf server not installed on ${SHORT_HOSTNAME} - NOK"
-    exit 2
-fi
-
-is_netserver_running=$(sudo ps aux | grep netserver | grep -v grep)
-if [[ x"${is_netserver_running}" == x ]]
-then
-    syslog_netcat "Starting Netperf server on ${SHORT_HOSTNAME}"
-    sudo netserver
-fi
-
-is_netserver_listening=$(sudo netstat -tunlp | grep LISTEN | grep netserver)
-if [[ x"${is_netserver_listening}" == x ]]
-then
-    syslog_netcat "Netperf server is not listening on ${SHORT_HOSTNAME} - NOK"
-    exit 2
-else
-    syslog_netcat "Netperf server is listening on ${SHORT_HOSTNAME} - OK"
-    provision_application_stop $START
-    exit 0
+which iperf
+if [ $? -gt 0 ] ; then
+	syslog_netcat "iperf client/server not installed on ${SHORT_HOSTNAME} - NOK"
+	exit 2
+else :
+	syslog_netcat "iperf client/server installed on ${SHORT_HOSTNAME} - OK"
+	provision_application_stop $START
+	exit 0
 fi

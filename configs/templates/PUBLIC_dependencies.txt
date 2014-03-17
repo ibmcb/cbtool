@@ -133,7 +133,7 @@ screen-install = pm
 rsync-install = pm
 ncftp-install = pm
 lftp-install = pm
-netcat-install = pm
+netcat-install = man
 nmap-install = pm
 openvpn-install = pm
 gmond-install = pm
@@ -187,7 +187,7 @@ screen-configure = screen -v | grep version
 rsync-configure = rsync --version | grep version
 ncftp-configure = ncftp -h 2>&1 | grep Program | cut -d ' ' -f 5 | sed -e 's/\//./g'
 lftp-configure = lftp --version | grep Version | cut -d " " -f 4
-netcat-configure = nc -v -w 1 localhost -z 22
+netcat-configure = netcat -v -w 1 localhost -z 22
 nmap-configure = nmap -V | grep version | cut -d ' ' -f 3
 openvpn-configure = openvpn --version | grep built | cut -d ' ' -f 2
 gmond-configure = gmond --version | cut -d ' ' -f 2
@@ -277,6 +277,8 @@ R-ver = 2.1
 ### END - Dependency versions ###
 
 ### START - Dependency URLs ###
+rhel-netcat-x86_64-urls-man = ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home:/rusjako/Fedora_19/x86_64/netcat-openbsd-1.89-119.1.x86_64.rpm
+
 rhel-redis-ppc64-urls-man = ftp://rpmfind.net/linux/fedora-secondary/development/rawhide/ppc64/os/Packages/r/redis-2.6.16-1.fc21.ppc64.rpm
 rhel-redis-x86_64-urls-man = ftp://rpmfind.net/linux/remi/enterprise/6/remi/x86_64
 rhel-redis-urls-git = https://github.com/antirez
@@ -331,25 +333,25 @@ rhel-ifconfig-install-sl = sudo ln -s /sbin/ifconfig /usr/local/bin/ifconfig
 ubuntu-ip-install-sl = sudo ln -s /sbin/ip /usr/local/bin/ifconfig
 rhel-ip-install-sl = sudo ln -s /sbin/ip /usr/local/bin/ifconfig
 
-rhel-git-install-pm = sudo yum -y install git
+rhel-git-install-pm = sudo yum -y install git which psmisc redhat-lsb-core ntp
 ubuntu-git-install-pm = sudo apt-get -y install git
 
-rhel-wget-install-pm = sudo yum -y install wget
+rhel-wget-install-pm = sudo yum -y install wget which psmisc redhat-lsb-core ntp
 ubuntu-wget-install-pm = sudo apt-get -y install wget
 
 rhel-pip-install-pm = sudo yum -y install python-pip
 ubuntu-pip-install-pm = sudo apt-get -y install python-pip
 
-rhel-gcc-install-pm = sudo yum -y install gcc
+rhel-gcc-install-pm = sudo yum -y install gcc which psmisc redhat-lsb-core ntp
 ubuntu-gcc-install-pm = sudo apt-get -y install gcc
 
-rhel-make-install-pm = sudo yum -y install make
+rhel-make-install-pm = sudo yum -y install make which psmisc redhat-lsb-core ntp
 ubuntu-make-install-pm = sudo apt-get -y install make
 
-rhel-emacs-install-pm = sudo yum -y install emacs
+rhel-emacs-install-pm = sudo yum -y install emacs which psmisc redhat-lsb-core ntp
 ubuntu-emacs-install-pm = sudo apt-get -y install emacs
 
-rhel-sshpass-install-pm = sudo yum -y install sshpass
+rhel-sshpass-install-pm = sudo yum -y install sshpass which psmisc redhat-lsb-core ntp
 ubuntu-sshpass-install-pm = sudo apt-get -y install sshpass
 
 rhel-curl-install-pm = sudo yum -y install curl
@@ -367,8 +369,8 @@ ubuntu-ncftp-install-pm = sudo apt-get -y install ncftp
 rhel-lftp-install-pm = sudo yum -y install lftp
 ubuntu-lftp-install-pm = sudo apt-get -y install lftp
 
-rhel-netcat-install-pm = sudo yum -y install nc
-ubuntu-netcat-install-pm = sudo apt-get -y install netcat-openbsd
+rhel-netcat-install-man = sudo rpm -Uvh URL
+ubuntu-netcat-install-man = sudo apt-get -y install netcat-openbsd; sudo ln -s /bin/nc /usr/local/bin/netcat
 
 rhel-nmap-install-pm = sudo yum -y install nmap
 ubuntu-nmap-install-pm = sudo apt-get -y install nmap
@@ -405,7 +407,7 @@ ubuntu-apache-install-pm = sudo apt-get -y install apache2
 rhel-redis-preinstall-man = lftp -c 'open -e "mget redis*remi*.rpm" URL'
 rhel-redis-install-man = sudo yum -y install gperftools-libs && sudo rpm -Uvh $(ls -t | grep redis | head -n 1)
 rhel-redis-postinstall-man = sudo sed -i "s/^bind .*/bind 0.0.0.0/" /etc/redis.conf; sudo /etc/init.d/redis restart; sudo chkconfig redis on
-ubuntu-redis-preinstall-man = lftp -c 'open -e "mget redis-server_2.8*precise_ARCH.deb" URL' 
+ubuntu-redis-preinstall-man = lftp -c 'open -e "mget redis-server_2.8*precise_ARCH.deb" URL'
 ubuntu-redis-install-man = sudo dpkg -i $(ls -t | grep redis-server | head -n 1)
 ubuntu-redis-postinstall-man = sudo sed -i "s/^bind .*/bind 0.0.0.0/" /etc/redis/redis.conf; sudo service redis-server restart
 

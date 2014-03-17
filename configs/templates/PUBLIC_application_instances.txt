@@ -255,6 +255,30 @@ LOAD_DURATION = uniformIXIXI70I90
 #SYNC_CHANNEL_NAME = synchronization_channel
 #RUN_COUNTER_NAME = experiment_id_counter
 
+[AI_TEMPLATES : IPERF]
+SUT = iperfclient->iperfserver
+LOAD_GENERATOR_ROLE = iperfclient
+LOAD_MANAGER_ROLE = iperfclient
+METRIC_AGGREGATOR_ROLE = iperfclient
+CAPTURE_ROLE = iperfserver
+LOAD_BALANCER = $False
+LOAD_BALANCER_TARGET_PORT = 80 
+LOAD_BALANCER_TARGET_URL = unknown 
+LOAD_BALANCER_TARGET_CHILDREN = 2
+IPERFCLIENT_SETUP1 = cb_check_iperf_client.sh
+IPERFSERVER_SETUP1 = cb_check_iperf_server.sh
+START = cb_iperf.sh
+LOAD_PROFILE = tcp
+LOAD_LEVEL = 1
+LOAD_DURATION = uniformIXIXI70I90
+# "Special" modifier parameters for the AI NETPERF. These should be set on
+# YOUR configuration file, not on this template! Please DO NOT uncomment them 
+# here.
+#SYNC_COUNTER_NAME = synchronization_counter
+#CONCURRENT_AIS = 2
+#SYNC_CHANNEL_NAME = synchronization_channel
+#RUN_COUNTER_NAME = experiment_id_counter
+
 [AI_TEMPLATES : COREMARK]
 SUT = coremark
 LOAD_GENERATOR_ROLE = coremark

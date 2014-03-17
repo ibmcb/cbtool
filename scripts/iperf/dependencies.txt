@@ -1,5 +1,5 @@
 ### START - Dependency installation order ###
-netperf-order = 50
+iperf-order = 50
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -9,22 +9,18 @@ netperf-order = 50
 # git = git clone using above giturl
 # pip = python pip utility
 # man = "manual"
-netperf-install = man
+iperf-install = pm
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
-netperf-configure = netperf -V | cut -d ' ' -f 3
+iperf-configure = iperf -v 2>&1 | cut -d ' ' -f 3
 ### END - Tests ###
 
 ### START - Dependency versions ###
-netperf-ver = 2.4
+iperf-ver = 2.0
 ### END - Dependency versions ###
 
-### START - Dependency URLs ###
-rhel-netperf-x86_64-urls-man = ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home:/assmannst/RedHat_RHEL-6/x86_64/netperf-2.6.0-9.1.x86_64.rpm 
-### END - Dependency URLs ###
-
 ### START -  Dependency and method-specific command lines ###
-rhel-netperf-install-man = sudo sudo rpm -Uvh --replacefiles URL
-ubuntu-netperf-install-man = sudo apt-get -y install netperf
+rhel-iperf-install-pm = sudo yum -y install iperf
+ubuntu-iperf-install-pm = sudo apt-get -y install iperf
 ### END -  Dependency and method-specific command lines ###

@@ -1,3 +1,4 @@
+
 #!/usr/bin/env bash
 
 #/*******************************************************************************
@@ -38,7 +39,15 @@ let NR_THREADS=${NR_CPUS}*${THREADS_PER_CPU}
 
 syslog_netcat "Configuring coremark to run with ${NR_THREADS} threads (${THREADS_PER_CPU} threads per CPU)"
 cd ${COREMARK_HOME}
-make XCFLAGS="-DMULTITHREAD=${NR_THREADS} -DUSE_PTHREAD" ITERATIONS=100 REBUILD=1
+rm -rf ${COREMARK_HOME}/coremark.exe
+make "LDFLAGS=-L /lib64 -l pthread XCFLAGS=-DMULTITHREAD=${NR_THREADS} -DUSE_PTHREAD" ITERATIONS=100 REBUILD=1
+if [[ ! -f ${COREMARK_HOME}/coremark.exe ]]
+then
+    syslog_netcat "Coremark configuration (compilation) failed - NOK"
+    exit 1
+fi
+
+sudo ln -s ${COREMARK_HOME}/coremark.exe /usr/local/bin/coremark
 syslog_netcat "Coremark configured - OK"
 provision_application_stop $START
 exit 0

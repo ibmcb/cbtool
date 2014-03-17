@@ -49,7 +49,11 @@ PKILL_CMD=`which pkill`
 SUBSCRIBE_CMD=~/cb_subscribe.py
 RSYSLOGD_CMD=/sbin/rsyslogd
 
-NC=`which nc`
+NC=`which netcat` 
+if [[ $? -ne 0 ]]
+then
+    NC=`which nc`
+fi
 
 if [ x"$PGREP_CMD" == x ] ; then
     echo "please install pgrep"
@@ -93,16 +97,27 @@ function linux_distribution {
 
     if [[ ${IS_UBUNTU} -eq 1 ]]
     then
-        export LINUX_DISTRO=1
+        echo 1
+        return 1
     fi
 
     IS_REDHAT=$(cat /etc/*release | grep -c "Red Hat")    
     if [[ ${IS_REDHAT} -ge 1 ]]
     then
-        export LINUX_DISTRO=2
+        echo 2
+        return 2
     fi
-    
-    return ${LINUX_DISTRO}
+
+    IS_REDHAT=$(cat /etc/*release | grep -c "Fedora")    
+    if [[ ${IS_REDHAT} -ge 1 ]]
+    then
+        echo 2
+        return 2
+    fi
+
+    echo 0
+    return 0    
+
 }
 
 function service_stop_disable {
@@ -124,6 +139,45 @@ function service_stop_disable {
     done
     /bin/true
 }
+
+
+function service_restart_enable {
+    #1 - service list (space-separated list)
+
+    for s in $* ; do
+        counter=1
+        ATTEMPTS=3
+        while [ "$counter" -le "$ATTEMPTS" ]
+        do
+            syslog_netcat "Restarting service \"${s}\", attempt ${counter} of ${ATTEMPTS}..."            
+            sudo service $s restart
+            if [[ $? -eq 0 ]]
+            then
+                syslog_netcat "Service \"$s\" was successfully restarted"
+                if [[ ${LINUX_DISTRO} -eq 1 ]]
+                then
+                    sudo rm -rf /etc/init/$s.override
+                fi
+                
+                if [[ ${LINUX_DISTRO} -eq 2 ]]
+                then
+                    sudo chkconfig $s on >/dev/null 2>&1
+                fi
+                break
+            else
+                sleep 5
+                counter="$(( $counter + 1 ))"
+            fi
+        done
+        
+        if [[ "${counter}" -ge "$ATTEMPTS" ]]
+        then
+            syslog_netcat "Service \"${s}\" failed to restart after ${ATTEMPTS} attempts"
+        fi
+    done    
+    /bin/true
+}    
+export -f service_restart_enable
 
 function retriable_execution {
         COMMAND=$1
@@ -531,22 +585,48 @@ function provision_application_stop {
     fi
 }
 
-function start_redis {
+function security_configuration {
 
-    sudo service redis-server status
+    LINUX_DISTRO=$(linux_distribution)
+                
+    FW_SERVICE[1]="ufw"
+    FW_SERVICE[2]="iptables"
 
-    is_redis_running=`ps aux | grep -v grep | grep -c redis.conf`
-    if [ ${is_redis_running} -eq 0 ]
+    service_stop_disable ${FW_SERVICE[${LINUX_DISTRO}]}
+
+    if [[ ${LINUX_DISTRO} -eq 1 ]]
     then
-        rm -rf ~/dump.rdb
-        TMPLT_OBJSTORE_PORT=$1
-        syslog_netcat "Updating object store configuration template"
-        sed -i s/"TMPLT_PORT"/"${TMPLT_OBJSTORE_PORT}"/g ~/redis.conf
-        sed -i s/"TMPLT_USERNAME"/"${LOGNAME}"/g ~/redis.conf
-        syslog_netcat "Starting object store"
-        REDIS_SERVER=`which redis-server`
-        ${REDIS_SERVER} ~/redis.conf
+        syslog_netcat "Disabling Apparmor..."
+        sudo service apparmor stop
+        sudo service apparmor teardown
     fi
+            
+    if [[ ${LINUX_DISTRO} -eq 2 ]]
+    then 
+        syslog_netcat "Disabling SElinux..."        
+        sudo sed -i "s/^SELINUX=.*/SELINUX=disabled/" /etc/selinux/config
+        sudo setenforce 0
+    fi
+    syslog_netcat "Done"
+}
+
+function start_redis {
+    
+    LINUX_DISTRO=$(linux_distribution)
+
+    REDIS_SERVICE[1]="redis-server"
+    REDIS_SERVICE[2]="redis"
+
+    REDIS_CONFIG[1]="/etc/redis/redis.conf"
+    REDIS_CONFIG[2]="/etc/redis.conf"
+
+    service_stop_disable ${REDIS_SERVICE[${LINUX_DISTRO}]}    
+
+    TMPLT_OBJSTORE_PORT=$1
+    syslog_netcat "Updating object store configuration template"
+    sudo cp ${REDIS_CONFIG[${LINUX_DISTRO}]} ${REDIS_CONFIG[${LINUX_DISTRO}]}.old                
+    sudo sed -i s/"port 6379"/"port ${TMPLT_OBJSTORE_PORT}"/g ${REDIS_CONFIG[${LINUX_DISTRO}]}
+    service_restart_enable ${REDIS_SERVICE[${LINUX_DISTRO}]}
 }
 
 function start_syslog {
@@ -619,12 +699,6 @@ function post_boot_steps {
     SUDO_CMD=`which sudo`
     export PATH=$PATH:/sbin
     PIDOF_CMD=`which pidof`
-
-    # Our CB images are missing a getty on tty0
-    if [ x"$(lsb_release -d | grep -i ubuntu)" != x ] ; then
-        syslog_netcat "This machine is Ubuntu. Making sure there's a getty on tty0..."
-        sudo screen -d -m -S getty bash -c "sudo /sbin/getty -8 38400 tty0"
-    fi
 
     if [ $standalone == online ] ; then
         syslog_netcat "Killing previously running ganglia monitoring processes on $SHORT_HOSTNAME"

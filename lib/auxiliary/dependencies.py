@@ -43,10 +43,9 @@ def deps_file_parser(depsdict, username, options, hostname, process_manager = Fa
 
     _file_name_list.append(options.defdir + "/PUBLIC_dependencies.txt")
 
-    _workloads_list = options.wks.split(',')
-
     _cleanup_repos = False
-    if len(_workloads_list) :
+    if len(options.wks) > 1 :
+        _workloads_list = options.wks.split(',')        
         for _workload in _workloads_list :
             _file_name_list.append(options.wksdir + '/'  + _workload + "/dependencies.txt")
         _cleanup_repos = True
@@ -598,8 +597,7 @@ def dependency_checker_installer(hostname, username, operation, options) :
             if "repo" in _dep_list :
                 _dep_list.remove("repo")
 
-        _workloads_list = options.wks.split(',')
-        if len(_workloads_list) :
+        if len(options.wks) > 1 :
             _msg = "#####\n"
             _msg += "This node will be used to play a role in the Virtual Applications"
             _msg += " (AIs) \"" + str(options.wks) + "\". Only a subset of the depedencies"
@@ -630,7 +628,7 @@ def dependency_checker_installer(hostname, username, operation, options) :
             _msg = "#####"            
             _msg = "Since no Virtual Application types were specified (option "
             _msg += "-w/--wks), this node will be prepared as an Orchestration Node."
-            _msg += "The full set of dependencies will be " + operation + "ed. "
+            _msg += " The full set of dependencies will be " + operation + "ed. "
             _msg += "#####"            
             print _msg
 

@@ -24,26 +24,29 @@ START=$(provision_application_start)
 
 SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
 
-no_netserver=$(which netserver | grep no)
-if [ x"${no_netserver}" != x ]; then
-    syslog_netcat "Netperf server not installed on ${SHORT_HOSTNAME} - NOK"
+which iperf
+if [ $? -gt 0 ] ; then
+    syslog_netcat "iperf client/server not installed on ${SHORT_HOSTNAME} - NOK"
     exit 2
+else :
+    syslog_netcat "iperf client/server installed on ${SHORT_HOSTNAME} - OK"
+    provision_application_stop $START
 fi
 
-is_netserver_running=$(sudo ps aux | grep netserver | grep -v grep)
-if [[ x"${is_netserver_running}" == x ]]
+is_iperfserver_running=$(sudo ps aux | grep iperf | grep -v grep | grep D)
+if [[ x"${is_iperfserver_running}" == x ]]
 then
-    syslog_netcat "Starting Netperf server on ${SHORT_HOSTNAME}"
-    sudo netserver
+    syslog_netcat "Starting iperf server on ${SHORT_HOSTNAME}"
+    sudo screen -d -m -S IPERFSERVER bash -c "iperf -s"
 fi
 
-is_netserver_listening=$(sudo netstat -tunlp | grep LISTEN | grep netserver)
-if [[ x"${is_netserver_listening}" == x ]]
+is_iperfserver_listening=$(sudo netstat -tunlp | grep LISTEN | grep iperf)
+if [[ x"${is_iperfserver_listening}" == x ]]
 then
-    syslog_netcat "Netperf server is not listening on ${SHORT_HOSTNAME} - NOK"
+    syslog_netcat "iperf server is not listening on ${SHORT_HOSTNAME} - NOK"
     exit 2
 else
-    syslog_netcat "Netperf server is listening on ${SHORT_HOSTNAME} - OK"
+    syslog_netcat "iperf server is listening on ${SHORT_HOSTNAME} - OK"
     provision_application_stop $START
     exit 0
 fi
