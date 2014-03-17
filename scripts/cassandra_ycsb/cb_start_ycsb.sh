@@ -30,6 +30,7 @@ if [ $standalone == online ] ; then
     LOAD_LEVEL=$2
     #LOAD_DURATION=$3
     LOAD_ID=$4
+    YCSB_PATH=`get_my_ai_attribute YCSB_PATH`
 fi
 seed=`get_ips_from_role seed`
 
@@ -52,8 +53,6 @@ update_latency=0
 
 #----------------------- Old tracking ------------------------------------------
 latency=0
-#syslog_netcat "Current LOAD_LEVEL: ${LOAD_LEVEL}"
-#sudo sed -i "s/operationcount=.*$/operationcount=${LOAD_LEVEL}/g" /root/YCSB/custom_workload.dat 
 syslog_netcat "YCSB Workload starting...."
 while read line ; do
 #-------------------------------------------------------------------------------
@@ -136,7 +135,7 @@ while read line ; do
                         write_99_latency="${array[2]}"
                 fi
         fi
-done < <(sudo /root/YCSB/bin/ycsb run cassandra-10 -s -P /root/YCSB/workloads/workloada -P /root/YCSB/custom_workload.dat -p hosts="$seed" 2>&1 )
+done < <(sudo $YCSB_PATH/bin/ycsb run cassandra-10 -s -P $YCSB_PATH/workloads/workloada -P $YCSB_PATH/custom_workload.dat -p hosts="$seed" 2>&1 )
 
 if [[ $write_avg_latency -ne 0 ]] ; then
  ~/cb_report_app_metrics.py throughput:$(expr $ops):tps \

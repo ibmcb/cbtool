@@ -24,35 +24,42 @@ else
         source $dir/../common/cb_common.sh
 fi
 
+standalone=`online_or_offline "$4"`
+
 if [ $standalone == online ] ; then
     # retrieve online values from API
-    #LOAD_PROFILE=$1
-    LOAD_LEVEL=$2
-    #LOAD_DURATION=$3
-    LOAD_ID=$4
+    LOAD_LEVEL=$1
+    LOAD_ID=$2
+    OPERATION_COUNT=`get_my_ai_attribute OPERATION_COUNT`
+    READ_RATIO=`get_my_ai_attribute READ_RATIO`
+    UPDATE_RATIO=`get_my_ai_attribute UPDATE_RATIO`
+    YCSB_PATH=`get_my_ai_attribute YCSB_PATH`
+    INPUT_RECORDS=`get_my_ai_attribute INPUT_RECORDS`
 fi
 
 seed=`get_ips_from_role seed`
 
-# Update workload A to have the 70/30 mix.
-sudo sed -i 's/^readproportion=.*$/readproportion=0\.7/g' /root/YCSB/workloads/workloada
-sudo sed -i 's/^updateproportion=.*$/updateproportion=0\.3/g' /root/YCSB/workloads/workloada
+sudo sed -i "s/^readproportion=.*$/readproportion=0\.$READ_RATIO/g" $YCSB_PATH/workloads/workloada
+sudo sed -i "s/^updateproportion=.*$/updateproportion=0\.$UPDATE_RATIO/g" $YCSB_PATH/workloads/workloada
 
 # Determine memory size
 MEM=`cat /proc/meminfo | grep MemTotal: | awk '{print $2}'`
 RECORDS=$(python -c 'from __future__ import division; print ((('"${MEM}"'/1024)/1024)*10)*1000000')
-syslog_netcat "Number of records to be inserted : $RECORDS million"
+if [ $INPUT_RECORDS -ne 0 ]; then
+ RECORDS=$INPUT_RECORDS
+fi
+syslog_netcat "Number of records to be inserted : $RECORDS"
 
 # Update the Record Count new dat file
-sudo touch /root/YCSB/custom_workload.dat
-sudo sh -c "echo "recordcount=${RECORDS%.*}" > /root/YCSB/custom_workload.dat"
-sudo sh -c "echo "operationcount=10000000" >> /root/YCSB/custom_workload.dat"
+sudo touch $YCSB_PATH/custom_workload.dat
+sudo sh -c "echo "recordcount=${RECORDS%.*}" > $YCSB_PATH/custom_workload.dat"
+sudo sh -c "echo "operationcount=$OPERATION_COUNT" >> $YCSB_PATH/custom_workload.dat"
 # Need to determine # of threads to start with in the baseload.
 
 # Load the Database
 start_time=$(date)
 syslog_netcat "Start of YCSB Loading: $start_time"
-sudo /root/YCSB/bin/ycsb load cassandra-10 -s -P /root/YCSB/workloads/workloada -P /root/YCSB/custom_workload.dat -p hosts="$seed" 2>&1 | tee YCSB-CBTOOL-RUN
+sudo $YCSB_PATH/bin/ycsb load cassandra-10 -s -P $YCSB_PATH/workloads/workloada -P $YCSB_PATH/custom_workload.dat -p hosts="$seed" 2>&1 | tee YCSB-CBTOOL-RUN
 end_time=$(date)
 syslog_netcat "End of YCSB Loading: $end_time"
 

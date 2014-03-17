@@ -19,7 +19,7 @@ import os
 _home = os.environ["HOME"]
 _api_endpoint = "10.16.31.203"
 _api_port = "9090"
-_cloud_name = "myopenstackcloud"
+_cloud_name = "myopenstack"
 _app_name = "cassandra_ycsb"
 
 for _path, _dirs, _files in os.walk(os.path.abspath(_home)):
@@ -28,6 +28,18 @@ for _path, _dirs, _files in os.walk(os.path.abspath(_home)):
             break
 
 from lib.api.api_service_client import *
+
+#----------------------- TO DO -------------------------------------------------
+#
+# Add shards every 10 minutes... Need to update to RHEL6.5 on my client
+# Add clinet as well, determine delta.
+# Make time configurable. / Randomize  
+# Number of shards configurable
+# Time it takes to load the data in the 3 shards.
+# Have Block Storage be a config option : path to device. | and commit log.
+# Check centos machines..
+#
+#-------------------------------------------------------------------------------
 
 #----------------------- CloudBench API ----------------------------------------
 api = APIClient("http://" + _api_endpoint + ":%s" % _api_port)
