@@ -25,6 +25,6 @@ rhel-netperf-x86_64-urls-man = ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opens
 ### END - Dependency URLs ###
 
 ### START -  Dependency and method-specific command lines ###
-rhel-netperf-install-man = sudo sudo rpm -Uvh --replacefiles URL
+rhel-netperf-install-man = sudo rpm -Uvh --replacefiles URL
 ubuntu-netperf-install-man = sudo apt-get -y install netperf
 ### END -  Dependency and method-specific command lines ###

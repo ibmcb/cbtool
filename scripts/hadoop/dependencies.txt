@@ -44,7 +44,7 @@ ubuntu-pyhtml-amd64-urls-git = https://github.com/ibmcb/HiBench.git
 ### END - Dependency URLs ###
 
 ### START -  Dependency and method-specific command lines ###
-rhel-java-install-pm = sudo yum -y install java
+rhel-java-install-pm = sudo yum -y install java-1.7.0-openjdk
 ubuntu-java-install-pm = sudo apt-get -y install openjdk-6-jdk; sudo apt-get -y install openjdk-7-jdk
 ubuntu-java-postinstall-pm = export JAVAALT=$(sudo update-java-alternatives -l 2>&1 | grep java | sort -r | head -n 1 | cut -d ' ' -f 1); sudo update-java-alternatives -s $JAVAALT
 

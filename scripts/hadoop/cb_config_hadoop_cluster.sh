@@ -23,6 +23,13 @@ source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_hadoop_common.sh
 # - Editing configuration files
 #####################################################################################
 
+SSH_KEY_NAME=$(get_my_vm_attribute identity)
+REMOTE_DIR_NAME=$(get_my_vm_attribute remote_dir_name)
+SSH_KEY_NAME=$(echo ${SSH_KEY_NAME} | rev | cut -d '/' -f 1 | rev)
+syslog_netcat "VMs need to be able to perform passwordless SSH between each other. Updating ~/.ssh/id_rsa to be the same on all VMs.."
+sudo cat ~/${REMOTE_DIR_NAME}/credentials/$SSH_KEY_NAME > ~/.ssh/id_rsa
+sudo chmod 0600 ~/.ssh/id_rsa
+	
 #####################################################################################
 # Assumptions: 
 #   1. There is only one master VM which serves as a NameNode and a 

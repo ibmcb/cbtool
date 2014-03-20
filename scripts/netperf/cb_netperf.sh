@@ -46,7 +46,7 @@ CMDLINE_START["tcp_cc"]="-t TCP_CC"
 CMDLINE_START["tcp_crr"]="-t TCP_CRR"
 CMDLINE_START["udp_rr"]="-t UDP_RR"
 
-CMDLINE_END="-D 10 -H ${LOAD_GENERATOR_TARGET_IP} -l ${LOAD_DURATION}"
+CMDLINE_END="-D 10 -f m -H ${LOAD_GENERATOR_TARGET_IP} -l ${LOAD_DURATION}"
 
 if [[ x"${CMDLINE_START[${LOAD_PROFILE}]}" == x ]]
 then
@@ -86,7 +86,7 @@ else
 	tp=$(tail -2 ${OUTPUT_FILE} | head -1 | awk '{ print $6 }' | tr -d ' ')
 fi
 
-~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec throughput:$tp:tps bandwidth:$bw:MBps
+~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec throughput:$tp:tps bandwidth:$bw:Mbps
 
 rm ${OUTPUT_FILE}
 

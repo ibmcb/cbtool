@@ -46,7 +46,7 @@ fi
 
 if [[ -z ${HADOOP_HOME} ]]
 then
-	HADOOP_HOME=`get_my_ai_attribute_with_default hadoop_home ~/hadoop-1.0.4`
+	HADOOP_HOME=`get_my_ai_attribute_with_default hadoop_home ~/hadoop-1.2.1`
 	
 	HADOOP_VERSION=`echo ${HADOOP_HOME} | sed 's/hadoop-//g' | sed 's/-bin//g'` 
 	eval HADOOP_HOME=${HADOOP_HOME}

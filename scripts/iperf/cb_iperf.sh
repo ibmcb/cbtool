@@ -66,9 +66,14 @@ fi
 
 syslog_netcat "iperf run complete. Will collect and report the results"
 
-bw=$(cat ${OUTPUT_FILE} | grep Mbits | awk '{ print $7 }' | tr -d ' ')
+if [[ $(cat ${OUTPUT_FILE} | grep -c "\[SUM\]") -ne 0 ]]
+then
+	bw=$(cat ${OUTPUT_FILE} | grep SUM | awk '{ print $6 }' | tr -d ' ')
+else
+	bw=$(cat ${OUTPUT_FILE} | grep Mbits | awk '{ print $7 }' | tr -d ' ')
+fi
 
-~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec throughput:$tp:tps bandwidth:$bw:MBps
+~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec throughput:$tp:tps bandwidth:$bw:Mbps
 
 rm ${OUTPUT_FILE}
 

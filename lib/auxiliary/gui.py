@@ -242,7 +242,11 @@ class Dashboard () :
             label_indexer = {}
             for dest in self.categories :
                 if _obj_type == "VM" :
-                    row_indexer[dest] = {'d3_uuid' : str(attrs['uuid']), 'd3_name' : str(attrs['name']), 'd3_host' : attrs['host_name'], 'd3_role' : attrs['role'], 'd3_ip' : str(attrs['cloud_ip'])}
+                    if "host_name" in attrs :
+                        _hn = attrs['host_name']
+                    else :
+                        _hn = "none"
+                    row_indexer[dest] = {'d3_uuid' : str(attrs['uuid']), 'd3_name' : str(attrs['name']), 'd3_host' : _hn, 'd3_role' : attrs['role'], 'd3_ip' : str(attrs['cloud_ip'])}
                 else :
                     row_indexer[dest] = {'d3_uuid' : str(attrs['uuid']), 'd3_name' : str(attrs['name']), 'd3_host' : 'none', 'd3_role' : 'none', 'd3_ip' : str(attrs['cloud_ip'])}
                 label_indexer[dest] = {}
@@ -1584,7 +1588,7 @@ class GUI(object):
     
             if req.active == "vm":
                 output += "<h3>Region: <a class='btn btn-info' href='BOOTDEST/provision?object=vmc&explode=" + attrs["vmc"] + "'><i class='icon-info-sign icon-white'></i>&nbsp;" + attrs["vmc_name"] + "</a></h3>" 
-                if "host" in attrs :
+                if "host" in attrs and "host_name" in attrs :
                     output += "<h3>Hypervisor: <a class='btn btn-info' href='BOOTDEST/provision?object=host&explode=" + attrs["host"] + "'><i class='icon-info-sign icon-white'></i>&nbsp;" + attrs["host_name"] + "</a></h3>" 
     
                 if attrs["ai"] != "none" :

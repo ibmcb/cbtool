@@ -26,34 +26,38 @@ daemonize=" --daemon"
 options="$@"
 
 if [ x"$options" != x ] ; then
-	daemonize=""
-	for pid in $(pgrep -f $operation) ; do 
-		if [ $pid == $$ ] ; then 
-			echo skipping $pid
-			continue
-		fi
-		if [ $PPID == $pid ] ; then 
-			echo skipping parent ssh process $pid
-			continue
-		fi
-		kill -9 $pid
-	done
+    daemonize=""
+    for pid in $(pgrep -f $operation) ; do 
+        if [ $pid == $$ ] ; then 
+            echo skipping $pid
+            continue
+        fi
+        if [ $PPID == $pid ] ; then 
+            echo skipping parent ssh process $pid
+            continue
+        fi
+        kill -9 $pid
+    done
 fi
 
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
 load_manager_vm=`get_my_ai_attribute load_manager_vm`
 
-if [ x"${load_manager_vm}" == x"${my_vm_uuid}" ] ; then
-	running_load_managers=`pgrep -f $operation`
-	
-	if [ x"${running_load_managers}" == x ] ; then
-	    syslog_netcat "Starting Load Manager"
-            ~/${my_remote_dir}/cbact --procid=${osprocid} --uuid=${my_ai_uuid} --syslogp=${NC_PORT_SYSLOG} --syslogf=19 --syslogh=${NC_HOST_SYSLOG} --operation=$operation $daemonize $options
-	    exit 0
-	else
-	    syslog_netcat "A Load Manager is already running"
-	    exit 2
-	fi
+if [[ x"${load_manager_vm}" == x"${my_vm_uuid}" ]]
+then
+    running_load_managers=`pgrep -f $operation`
+
+    if [[ x"${running_load_managers}" == x ]]
+    then
+        syslog_netcat "Starting Load Manager"
+        ~/${my_remote_dir}/cbact --procid=${osprocid} --uuid=${my_ai_uuid} --syslogp=${NC_PORT_SYSLOG} --syslogf=19 --syslogh=${NC_HOST_SYSLOG} --operation=$operation $daemonize $options
+        exit 0
+    else
+        syslog_netcat "A Load Manager is already running"
+        exit 2
+    fi
 fi
+syslog_netcat "This VM is not designated as Load Manager"
+exit 0
 exit 0

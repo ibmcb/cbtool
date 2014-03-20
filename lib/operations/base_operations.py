@@ -998,7 +998,7 @@ class BaseObjectOperations :
                         obj_attr_list["jars_dir"] = _dir_list["jars_dir"]
                         obj_attr_list["exclude_list"] = _dir_list["base_dir"] + "/exclude_list.txt"
                         obj_attr_list["daemon_dir"] = _dir_list["vm_daemon_dir"]
- 
+
                         if "openvpn_server_address" not in _dir_list or _dir_list["openvpn_server_address"].lower().strip() == "false" :
                             obj_attr_list["userdata"] = None
                         else :

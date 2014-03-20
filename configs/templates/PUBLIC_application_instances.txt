@@ -207,7 +207,7 @@ LOAD_DURATION = 60
 # YOUR configuration file, not on this template! Please DO NOT uncomment them 
 # here.
 #JAVA_HOME = ~/jdk1.6.0_21
-#HADOOP_HOME = ~/hadoop-1.0.4
+#HADOOP_HOME = ~/hadoop-1.2.1
 #HIBENCH_HOME = ~/HiBench
 #DFS_NAME_DIR = /tmp/cbhadoopname
 #DFS_DATA_DIR = /tmp/cbhadoopdata
@@ -269,7 +269,7 @@ IPERFCLIENT_SETUP1 = cb_check_iperf_client.sh
 IPERFSERVER_SETUP1 = cb_check_iperf_server.sh
 START = cb_iperf.sh
 LOAD_PROFILE = tcp
-LOAD_LEVEL = 1
+LOAD_LEVEL = uniformIXIXI1I5
 LOAD_DURATION = uniformIXIXI70I90
 # "Special" modifier parameters for the AI NETPERF. These should be set on
 # YOUR configuration file, not on this template! Please DO NOT uncomment them 

@@ -168,5 +168,9 @@ sudo bash -c "cat /root/.ssh/authorized_keys >> /home/$(whoami)/.ssh/authorized_
 chmod 600 ~/.ssh/authorized_keys
 syslog_netcat "Done"
 
+sync
+sync
+sync
+sync
 syslog_netcat "SUCCESS"
 exit 0
