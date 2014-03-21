@@ -369,7 +369,7 @@ ubuntu-ncftp-install-pm = sudo apt-get -y install ncftp
 rhel-lftp-install-pm = sudo yum -y install lftp
 ubuntu-lftp-install-pm = sudo apt-get -y install lftp
 
-rhel-netcat-install-man = sudo rpm -Uvh URL
+rhel-netcat-install-man = sudo rpm -Uvh URL; sudo ln -s /usr/bin/nc /usr/local/bin/netcat
 ubuntu-netcat-install-man = sudo apt-get -y install netcat-openbsd; sudo ln -s /bin/nc /usr/local/bin/netcat
 
 rhel-nmap-install-pm = sudo yum -y install nmap
