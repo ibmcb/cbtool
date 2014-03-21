@@ -1,4 +1,4 @@
-aiattach TESTCLOUD daytrader
+aiattach TESTCLOUD ibm_daytrader
 ailist TESTCLOUD
 vmlist TESTCLOUD
 stats TESTCLOUD

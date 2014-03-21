@@ -1,2 +1,2 @@
-typealter daytrader load_balancer=true
-typeshow daytrader
+typealter ibm_daytrader load_balancer=true
+typeshow ibm_daytrader

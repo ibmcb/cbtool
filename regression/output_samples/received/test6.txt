@@ -5,10 +5,10 @@
  status: Removing all AI objects attached to this experiment.
  status: Removing all VM objects attached to this experiment.
  status: Removing all VMC objects attached to this experiment.
- status: VMC C52DE4C3-C183-506C-876F-30916C9CD553 was successfully unregistered on SimCloud "TESTSIMCLOUD".
- status: VMC 3A9E0DB0-AF05-5D9F-BFA7-C16C6BD1AD71 was successfully unregistered on SimCloud "TESTSIMCLOUD".
- status: VMC 31299EA2-EBD0-5F35-BFA8-4659604D8E96 was successfully unregistered on SimCloud "TESTSIMCLOUD".
- status: VMC EE7B4C8F-7FD4-5D91-BD65-EE7853A9A5C8 was successfully unregistered on SimCloud "TESTSIMCLOUD".
+ status: VMC 805228D5-1274-51DF-A081-ECDF44078373 was successfully unregistered on SimCloud "TESTSIMCLOUD".
+ status: VMC 575E956E-3EA8-5AE6-B6EC-30AAC5A9BF4A was successfully unregistered on SimCloud "TESTSIMCLOUD".
+ status: VMC 283F1B03-0BFC-564C-BB67-D2D026BF0CD6 was successfully unregistered on SimCloud "TESTSIMCLOUD".
+ status: VMC 17657835-0882-5440-84D2-5634DF38479E was successfully unregistered on SimCloud "TESTSIMCLOUD".
  status: Done
  status: Removing all contents from Object Store (GLOBAL objects,VIEWS, etc.)
 Disassociating default cloud: TESTSIMCLOUD

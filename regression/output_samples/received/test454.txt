@@ -62,28 +62,6 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |ai_templates                     |coremark_metric_aggregator_role|coremark                             
 |ai_templates                     |coremark_start                 |cb_coremark.sh                       
 |ai_templates                     |coremark_sut                   |coremark                             
-|ai_templates                     |daytrader_capture_role         |db2                                  
-|ai_templates                     |daytrader_db2_reset1           |cb_restart_db2.sh                    
-|ai_templates                     |daytrader_db2_setup1           |cb_setup_ramdisk.sh                  
-|ai_templates                     |daytrader_db2_setup2           |cb_restart_db2.sh                    
-|ai_templates                     |daytrader_lb_reset1            |cb_restart_loadbalancer.sh           
-|ai_templates                     |daytrader_lb_setup1            |cb_restart_loadbalancer.sh           
-|ai_templates                     |daytrader_load_balancer        |False                                
-|ai_templates                     |daytrader_load_balancer_port   |9080                                 
-|ai_templates                     |daytrader_load_balancer_target_children|2                                    
-|ai_templates                     |daytrader_load_balancer_target_port|9080                                 
-|ai_templates                     |daytrader_load_balancer_target_url|daytrader                            
-|ai_templates                     |daytrader_load_balancer_url    |daytrader                            
-|ai_templates                     |daytrader_load_duration        |uniformIXIXI90I120                   
-|ai_templates                     |daytrader_load_generator_role  |client_daytrader                     
-|ai_templates                     |daytrader_load_level           |uniformIXIXI1I10                     
-|ai_templates                     |daytrader_load_manager_role    |client_daytrader                     
-|ai_templates                     |daytrader_load_profile         |default                              
-|ai_templates                     |daytrader_metric_aggregator_role|client_daytrader                     
-|ai_templates                     |daytrader_start                |cb_daytrader.sh                      
-|ai_templates                     |daytrader_sut                  |client_daytrader->was->db2           
-|ai_templates                     |daytrader_was_reset1           |cb_restart_was.sh                    
-|ai_templates                     |daytrader_was_setup2           |cb_restart_was.sh                    
 |ai_templates                     |ddgen_capture_role             |ddgen                                
 |ai_templates                     |ddgen_ddgen_setup1             |cb_check_dd_utility.sh               
 |ai_templates                     |ddgen_load_balancer            |False                                
@@ -133,6 +111,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |ai_templates                     |hadoop_hadoopmaster_setup2     |cb_start_hadoop_cluster.sh           
 |ai_templates                     |hadoop_hadoopslave_resize1     |cb_restart_hadoop_cluster.sh         
 |ai_templates                     |hadoop_hadoopslave_setup1      |cb_config_hadoop_cluster.sh          
+|ai_templates                     |hadoop_hadoopslave_setup2      |cb_start_hadoop_cluster.sh           
 |ai_templates                     |hadoop_load_balancer           |False                                
 |ai_templates                     |hadoop_load_balancer_target_children|2                                    
 |ai_templates                     |hadoop_load_balancer_target_port|80                                   
@@ -156,6 +135,82 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |ai_templates                     |hpcc_metric_aggregator_role    |fen_hpc                              
 |ai_templates                     |hpcc_start                     |cb_hpcc.sh                           
 |ai_templates                     |hpcc_sut                       |fen_hpc->3_x_cn_hpc                  
+|ai_templates                     |ibm_daytrader_capture_role     |db2                                  
+|ai_templates                     |ibm_daytrader_db2_reset1       |cb_restart_db2.sh                    
+|ai_templates                     |ibm_daytrader_db2_setup1       |cb_setup_ramdisk.sh                  
+|ai_templates                     |ibm_daytrader_db2_setup2       |cb_restart_db2.sh                    
+|ai_templates                     |ibm_daytrader_lb_reset1        |cb_restart_loadbalancer.sh           
+|ai_templates                     |ibm_daytrader_lb_setup1        |cb_restart_loadbalancer.sh           
+|ai_templates                     |ibm_daytrader_load_balancer    |False                                
+|ai_templates                     |ibm_daytrader_load_balancer_port|9080                                 
+|ai_templates                     |ibm_daytrader_load_balancer_target_children|2                                    
+|ai_templates                     |ibm_daytrader_load_balancer_target_port|9080                                 
+|ai_templates                     |ibm_daytrader_load_balancer_target_url|daytrader                            
+|ai_templates                     |ibm_daytrader_load_balancer_url|daytrader                            
+|ai_templates                     |ibm_daytrader_load_duration    |uniformIXIXI90I120                   
+|ai_templates                     |ibm_daytrader_load_generator_role|client_daytrader                     
+|ai_templates                     |ibm_daytrader_load_level       |uniformIXIXI1I10                     
+|ai_templates                     |ibm_daytrader_load_manager_role|client_daytrader                     
+|ai_templates                     |ibm_daytrader_load_profile     |default                              
+|ai_templates                     |ibm_daytrader_metric_aggregator_role|client_daytrader                     
+|ai_templates                     |ibm_daytrader_start            |cb_daytrader.sh                      
+|ai_templates                     |ibm_daytrader_sut              |client_daytrader->was->db2           
+|ai_templates                     |ibm_daytrader_was_reset1       |cb_restart_was.sh                    
+|ai_templates                     |ibm_daytrader_was_setup2       |cb_restart_was.sh                    
+|ai_templates                     |ibmdb2_tradelite_capture_role  |db2                                  
+|ai_templates                     |ibmdb2_tradelite_db2_reset1    |cb_restart_db2.sh                    
+|ai_templates                     |ibmdb2_tradelite_db2_setup1    |cb_setup_ramdisk.sh                  
+|ai_templates                     |ibmdb2_tradelite_db2_setup2    |cb_restart_db2.sh                    
+|ai_templates                     |ibmdb2_tradelite_lb_reset1     |cb_restart_loadbalancer.sh           
+|ai_templates                     |ibmdb2_tradelite_lb_setup1     |cb_restart_loadbalancer.sh           
+|ai_templates                     |ibmdb2_tradelite_load_balancer |False                                
+|ai_templates                     |ibmdb2_tradelite_load_balancer_port|9080                                 
+|ai_templates                     |ibmdb2_tradelite_load_balancer_target_children|2                                    
+|ai_templates                     |ibmdb2_tradelite_load_balancer_target_port|9080                                 
+|ai_templates                     |ibmdb2_tradelite_load_balancer_target_url|daytrader                            
+|ai_templates                     |ibmdb2_tradelite_load_balancer_url|daytrader                            
+|ai_templates                     |ibmdb2_tradelite_load_duration |uniformIXIXI90I120                   
+|ai_templates                     |ibmdb2_tradelite_load_generator_role|client_daytrader                     
+|ai_templates                     |ibmdb2_tradelite_load_level    |uniformIXIXI1I10                     
+|ai_templates                     |ibmdb2_tradelite_load_manager_role|client_daytrader                     
+|ai_templates                     |ibmdb2_tradelite_load_profile  |default                              
+|ai_templates                     |ibmdb2_tradelite_metric_aggregator_role|client_daytrader                     
+|ai_templates                     |ibmdb2_tradelite_start         |cb_daytrader.sh                      
+|ai_templates                     |ibmdb2_tradelite_sut           |client_daytrader->was->db2           
+|ai_templates                     |ibmdb2_tradelite_was_reset1    |cb_restart_was.sh                    
+|ai_templates                     |ibmdb2_tradelite_was_setup2    |cb_restart_was.sh                    
+|ai_templates                     |ibmderby_tradelite_capture_role|was                                  
+|ai_templates                     |ibmderby_tradelite_lb_reset1   |cb_restart_loadbalancer.sh           
+|ai_templates                     |ibmderby_tradelite_lb_setup1   |cb_restart_loadbalancer.sh           
+|ai_templates                     |ibmderby_tradelite_load_balancer|False                                
+|ai_templates                     |ibmderby_tradelite_load_balancer_target_children|2                                    
+|ai_templates                     |ibmderby_tradelite_load_balancer_target_port|9080                                 
+|ai_templates                     |ibmderby_tradelite_load_balancer_target_url|daytrader                            
+|ai_templates                     |ibmderby_tradelite_load_duration|uniformIXIXI90I120                   
+|ai_templates                     |ibmderby_tradelite_load_generator_role|client_tradelite                     
+|ai_templates                     |ibmderby_tradelite_load_level  |uniformIXIXI2I5                      
+|ai_templates                     |ibmderby_tradelite_load_manager_role|client_tradelite                     
+|ai_templates                     |ibmderby_tradelite_load_profile|default                              
+|ai_templates                     |ibmderby_tradelite_metric_aggregator_role|client_tradelite                     
+|ai_templates                     |ibmderby_tradelite_start       |cb_tradelite.sh                      
+|ai_templates                     |ibmderby_tradelite_sut         |client_tradelite->was                
+|ai_templates                     |ibmderby_tradelite_was_reset1  |cb_restart_was.sh                    
+|ai_templates                     |ibmderby_tradelite_was_setup1  |cb_restart_was.sh                    
+|ai_templates                     |iperf_capture_role             |iperfserver                          
+|ai_templates                     |iperf_iperfclient_setup1       |cb_check_iperf_client.sh             
+|ai_templates                     |iperf_iperfserver_setup1       |cb_check_iperf_server.sh             
+|ai_templates                     |iperf_load_balancer            |False                                
+|ai_templates                     |iperf_load_balancer_target_children|2                                    
+|ai_templates                     |iperf_load_balancer_target_port|80                                   
+|ai_templates                     |iperf_load_balancer_target_url |unknown                              
+|ai_templates                     |iperf_load_duration            |uniformIXIXI70I90                    
+|ai_templates                     |iperf_load_generator_role      |iperfclient                          
+|ai_templates                     |iperf_load_level               |uniformIXIXI1I5                      
+|ai_templates                     |iperf_load_manager_role        |iperfclient                          
+|ai_templates                     |iperf_load_profile             |tcp                                  
+|ai_templates                     |iperf_metric_aggregator_role   |iperfclient                          
+|ai_templates                     |iperf_start                    |cb_iperf.sh                          
+|ai_templates                     |iperf_sut                      |iperfclient->iperfserver             
 |ai_templates                     |lost_capture_role              |lostback                             
 |ai_templates                     |lost_client_lost_reset1        |cb_restart_autobench.sh              
 |ai_templates                     |lost_client_lost_setup1        |cb_setup_mysql.sh                    
@@ -266,6 +321,28 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |ai_templates                     |nullworkload_start             |cb_run_nothing.sh                    
 |ai_templates                     |nullworkload_sut               |tinyvm                               
 |ai_templates                     |nullworkload_tinyvm_setup1     |cb_start_nothing.sh                  
+|ai_templates                     |open_daytrader_capture_role    |mysql                                
+|ai_templates                     |open_daytrader_geronimo_reset1 |cb_restart_geronimo.sh               
+|ai_templates                     |open_daytrader_geronimo_setup2 |cb_restart_geronimo.sh               
+|ai_templates                     |open_daytrader_lb_reset1       |cb_restart_loadbalancer.sh           
+|ai_templates                     |open_daytrader_lb_setup1       |cb_restart_loadbalancer.sh           
+|ai_templates                     |open_daytrader_load_balancer   |False                                
+|ai_templates                     |open_daytrader_load_balancer_port|9080                                 
+|ai_templates                     |open_daytrader_load_balancer_target_children|2                                    
+|ai_templates                     |open_daytrader_load_balancer_target_port|9080                                 
+|ai_templates                     |open_daytrader_load_balancer_target_url|daytrader                            
+|ai_templates                     |open_daytrader_load_balancer_url|daytrader                            
+|ai_templates                     |open_daytrader_load_duration   |uniformIXIXI90I120                   
+|ai_templates                     |open_daytrader_load_generator_role|client_daytrader                     
+|ai_templates                     |open_daytrader_load_level      |uniformIXIXI1I10                     
+|ai_templates                     |open_daytrader_load_manager_role|client_daytrader                     
+|ai_templates                     |open_daytrader_load_profile    |default                              
+|ai_templates                     |open_daytrader_metric_aggregator_role|client_daytrader                     
+|ai_templates                     |open_daytrader_mysql_reset1    |cb_restart_mysql.sh                  
+|ai_templates                     |open_daytrader_mysql_setup1    |cb_setup_ramdisk.sh                  
+|ai_templates                     |open_daytrader_mysql_setup2    |cb_restart_mysql.sh                  
+|ai_templates                     |open_daytrader_start           |cb_daytrader.sh                      
+|ai_templates                     |open_daytrader_sut             |client_daytrader->geronimo->mysql    
 |ai_templates                     |specimap_capture_role          |mailsut                              
 |ai_templates                     |specimap_load_balancer         |False                                
 |ai_templates                     |specimap_load_duration         |uniformIXIXI90I120                   
@@ -306,25 +383,6 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |ai_templates                     |specweb_specwebfront_reset1    |cb_restart_webserver.sh              
 |ai_templates                     |specweb_start                  |cb_specrun.sh                        
 |ai_templates                     |specweb_sut                    |client_specweb->specwebfront->specwebback
-|ai_templates                     |tradelite_capture_role         |was                                  
-|ai_templates                     |tradelite_db2_reset1           |cb_restart_db2.sh                    
-|ai_templates                     |tradelite_db2_setup1           |cb_restart_db2.sh                    
-|ai_templates                     |tradelite_lb_reset1            |cb_restart_loadbalancer.sh           
-|ai_templates                     |tradelite_lb_setup1            |cb_restart_loadbalancer.sh           
-|ai_templates                     |tradelite_load_balancer        |False                                
-|ai_templates                     |tradelite_load_balancer_target_children|2                                    
-|ai_templates                     |tradelite_load_balancer_target_port|9080                                 
-|ai_templates                     |tradelite_load_balancer_target_url|daytrader                            
-|ai_templates                     |tradelite_load_duration        |uniformIXIXI90I120                   
-|ai_templates                     |tradelite_load_generator_role  |client_tradelite                     
-|ai_templates                     |tradelite_load_level           |uniformIXIXI2I5                      
-|ai_templates                     |tradelite_load_manager_role    |client_tradelite                     
-|ai_templates                     |tradelite_load_profile         |default                              
-|ai_templates                     |tradelite_metric_aggregator_role|client_tradelite                     
-|ai_templates                     |tradelite_start                |cb_tradelite.sh                      
-|ai_templates                     |tradelite_sut                  |client_tradelite->was                
-|ai_templates                     |tradelite_was_reset1           |cb_restart_was.sh                    
-|ai_templates                     |tradelite_was_setup1           |cb_restart_was.sh                    
 |ai_templates                     |windesktop_capture_role        |windows                              
 |ai_templates                     |windesktop_client_windows_setup1|cb_windesktop_setup.sh               
 |ai_templates                     |windesktop_load_balancer       |False                                
@@ -359,7 +417,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |aidrs_templates                  |simpledt_load_duration         |uniformIXIXI90I120                   
 |aidrs_templates                  |simpledt_load_level            |uniformIXIXI1I30                     
 |aidrs_templates                  |simpledt_max_ais               |8000                                 
-|aidrs_templates                  |simpledt_type                  |daytrader                            
+|aidrs_templates                  |simpledt_type                  |ibm_daytrader                        
 |aidrs_templates                  |simplefb_iait                  |uniformIXIXI60I180                   
 |aidrs_templates                  |simplefb_lifetime              |uniformIXIXI500I600                  
 |aidrs_templates                  |simplefb_load_duration         |uniformIXIXI90I120                   
@@ -635,12 +693,12 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |space                            |tracefile                      |regression/regression_test_experiment_plan.txt
 |space                            |username                       |msilva                               
 |space                            |vm_daemon_dir                  |/home/klabuser                       
-|time                             |experiment_id                  |EXP-02-22-2014-10-17-02-PM-EST       
+|time                             |experiment_id                  |EXP-03-20-2014-06-08-19-PM-EDT       
 |time                             |external_timeout               |30                                   
 |time                             |external_tries                 |2                                    
 |time                             |hard_reset                     |True                                 
 |time                             |internal_tries                 |2                                    
-|time                             |start_time                     |1393125422                           
+|time                             |start_time                     |1395353298                           
 |time                             |step_delay                     |5                                    
 |time                             |username                       |msilva                               
 |vm_defaults                      |access                         |                                     
@@ -681,49 +739,44 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |vm_defaults                      |update_attempts                |720                                  
 |vm_defaults                      |update_frequency               |1                                    
 |vm_defaults                      |username                       |msilva                               
-|vm_templates                     |cassandra                      |size:gold64,imageid1:cassandra_instance
-|vm_templates                     |client_daytrader               |size:nano32,imageid1:cloudbench_root 
-|vm_templates                     |client_lost                    |size:micro32,imageid1:cloudbench_root
-|vm_templates                     |client_specweb                 |size:micro32,imageid1:cloudbench_root
-|vm_templates                     |client_tradelite               |size:nano32,imageid1:cloudbench_root 
-|vm_templates                     |client_windows                 |size:nano32,imageid1:cloudbench_root 
-|vm_templates                     |cn_hpc                         |size:bronze32,imageids:1,imageid1:cloudbench_hpc
-|vm_templates                     |coremark                       |size:iron32,imageid1:cloudbench_root 
-|vm_templates                     |db2                            |size:copper32,lb_size:gold32,imageid1:cloudbench_root
-|vm_templates                     |ddgen                          |size:bronze32,imageids:1,imageid1:cloudbench_hpc
-|vm_templates                     |driver_coremark                |size:nano32,imageid1:cloudbench_root 
-|vm_templates                     |driver_daytrader               |size:nano32,imageid1:cloudbench_root 
-|vm_templates                     |driver_fbnfsrd                 |size:nano32,imageid1:cloudbench_root 
-|vm_templates                     |driver_filebench               |size:nano32,imageid1:cloudbench_root 
-|vm_templates                     |driver_hadoop                  |size:nano32,imageid1:cloudbench_root 
-|vm_templates                     |driver_netperf                 |size:nano32,imageid1:cloudbench_root 
-|vm_templates                     |driver_tradelite               |size:nano32,imageid1:cloudbench_root 
+|vm_templates                     |cassandra                      |size:silver32,eclipsed_size:gold32,imageid1:cb_ycsb
+|vm_templates                     |client_daytrader               |size:micro32,imageids:1,imageid1:cb_daytrader
+|vm_templates                     |client_tradelite               |size:micro32,imageids:1,imageid1:cb_tradelite
+|vm_templates                     |client_windows                 |size:nano32,imageids:1,imageid1:cb_windows
+|vm_templates                     |cn_hpc                         |size:bronze32,imageids:1,imageid1:cb_hpc
+|vm_templates                     |coremark                       |size:iron32,eclipsed_size:gold32,imageids:1,imageid1:cb_netperf
+|vm_templates                     |db2                            |size:copper32,lb_size:gold32,eclipsed_size:gold32,imageids:1,imageid1:cb_daytrader
+|vm_templates                     |ddgen                          |size:bronze32,imageids:1,imageid1:cb_ddgen
+|vm_templates                     |driver_coremark                |size:nano32,imageids:1,imageid1:cb_coremark
+|vm_templates                     |driver_daytrader               |size:micro32,imageids:1,imageid1:cb_daytrader
+|vm_templates                     |driver_filebench               |size:nano32,imageids:1,imageid1:cb_filebench
+|vm_templates                     |driver_fio                     |size:nano32,imageids:1,imageid1:cb_fio
+|vm_templates                     |driver_hadoop                  |size:nano32,imageids:1,imageid1:cb_hadoop
+|vm_templates                     |driver_netperf                 |size:nano32,imageids:1,imageid1:cb_netperf
+|vm_templates                     |driver_tradelite               |size:micro32,imageids:1,imageid1:cb_tradelite
 |vm_templates                     |faildb2                        |size:copper32,imageid1:cloudbench_root
-|vm_templates                     |fen_hpc                        |size:bronze32,imageids:1,imageid1:cloudbench_hpc
-|vm_templates                     |filebench                      |size:iron32,imageid1:cloudbench_root 
-|vm_templates                     |hadoopmaster                   |size:copper32,imageid1:cloudbench_root
-|vm_templates                     |hadoopslave                    |size:iron32,imageid1:cloudbench_root 
-|vm_templates                     |lb                             |size:iron32,imageid1:cloudbench_root 
-|vm_templates                     |lostback                       |size:copper32,imageid1:cloudbench_root
-|vm_templates                     |lostfront                      |size:copper32,imageid1:cloudbench_root
-|vm_templates                     |netclient                      |size:iron32,imageid1:cloudbench_root 
-|vm_templates                     |netserver                      |size:iron32,imageid1:cloudbench_root 
+|vm_templates                     |fen_hpc                        |size:bronze32,imageids:1,imageid1:cb_hpc
+|vm_templates                     |filebench                      |size:iron32,eclipsed_size:gold32,imageids:1,imageid1:cb_filebench
+|vm_templates                     |fioclient                      |size:iron32,imageids:1,imageid1:cb_fio
+|vm_templates                     |fioserver                      |size:iron32,eclipsed_size:gold32,imageids:1,imageid1:cb_fio
+|vm_templates                     |geronimo                       |size:iron32,eclipsed_size:gold32,imageids:1,imageid1:cb_daytrader
+|vm_templates                     |hadoopmaster                   |size:copper32,eclipsed_size:gold32,imageids:1,imageid1:cb_hadoop
+|vm_templates                     |hadoopslave                    |size:iron32,eclipsed_size:gold32,imageids:1,imageid1:cb_hadoop
+|vm_templates                     |lb                             |size:iron32,eclipsed_size:gold32,imageids:1,imageid1:cb_daytrader
+|vm_templates                     |mongo_cfg_server               |size:copper32,imageid1:cb_ycsb       
+|vm_templates                     |mongodb                        |size:silver32,eclipsed_size:gold32,imageid1:cb_ycsb
+|vm_templates                     |mongos                         |size:silver32,eclipsed_size:gold32,imageid1:cb_ycsb
+|vm_templates                     |mysql                          |size:copper32,lb_size:gold32,eclipsed_size:gold32,imageids:1,imageid1:cb_daytrader
+|vm_templates                     |netclient                      |size:iron32,imageids:1,imageid1:cb_netperf
+|vm_templates                     |netserver                      |size:iron32,imageids:1,imageid1:cb_netperf
 |vm_templates                     |predictablevm                  |size:iron32,imageid1:cloudbench_root 
-|vm_templates                     |rubis_appsrv                   |size:bronze32,imageids:1,imageid1:cloudbench_rubis_appsrv1
-|vm_templates                     |rubis_database                 |size:bronze32,imageids:1,imageid1:cloudbench_rubis_database
-|vm_templates                     |rubis_driver                   |size:bronze32,imageids:1,imageid1:cloudbench_rubis_driver
-|vm_templates                     |rubis_lb                       |size:bronze32,imageids:1,imageid1:cloudbench_rubis_loadbalancer
-|vm_templates                     |seed                           |size:iron32,imageid1:cassandra_instance
-|vm_templates                     |specjbb                        |size:iron32,imageid1:cloudbench_root 
-|vm_templates                     |specwebback                    |size:nano32,imageid1:cloudbench_specweb
-|vm_templates                     |specwebfront                   |size:copper32,imageid1:cloudbench_specweb
-|vm_templates                     |storageclient                  |size:iron32,imageid1:cloudbench_root 
-|vm_templates                     |storageserver                  |size:iron32,imageid1:cloudbench_root 
-|vm_templates                     |tinyvm                         |size:pico32,imageids:1,imageid1:cloudbench_tinyvm
-|vm_templates                     |was                            |size:iron32,imageid1:cloudbench_root 
+|vm_templates                     |seed                           |size:silver32,eclipsed_size:gold32,imageid1:cb_ycsb
+|vm_templates                     |specjbb                        |size:iron32,eclipsed_size:gold32,imageids:1,imageid1:cb_specjbb
+|vm_templates                     |tinyvm                         |size:pico32,imageids:1,imageid1:cb_nullworkload
+|vm_templates                     |was                            |size:iron32,eclipsed_size:gold32,imageids:1,imageid1:cb_daytrader
 |vm_templates                     |willfail                       |size:nano32,imageid1:doesnotmatter   
-|vm_templates                     |windows                        |size:iron32,imageids:1,imageid1:cloudbench_windows
-|vm_templates                     |ycsb                           |size:bronze32,imageid1:mongo_instance
+|vm_templates                     |windows                        |size:iron32,imageids:1,imageid1:cb_windows
+|vm_templates                     |ycsb                           |size:silver32,eclipsed_size:gold32,imageid1:cb_ycsb
 |vmc_defaults                     |access                         |                                     
 |vmc_defaults                     |additional_discovery           |                                     
 |vmc_defaults                     |attempts                       |3                                    

@@ -1,5 +1,5 @@
-typealter TESTCLOUD daytrader sut=client_daytrader->was->willfail
-aiattach TESTCLOUD daytrader
+typealter TESTCLOUD ibm_daytrader sut=client_daytrader->was->willfail
+aiattach TESTCLOUD ibm_daytrader
 ailist TESTCLOUD
 vmlist TESTCLOUD
 stats TESTCLOUD

@@ -1,4 +1,4 @@
-aiattach TESTCLOUD daytrader
+aiattach TESTCLOUD ibm_daytrader
 aiattach TESTCLOUD netperf
 aiattach TESTCLOUD hpcc
 ailist TESTCLOUD

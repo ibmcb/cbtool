@@ -1,4 +1,4 @@
-aiattach TESTCLOUD daytrader
+aiattach TESTCLOUD ibm_daytrader
 ailist TESTCLOUD
 vmlist TESTCLOUD
 aishow TESTCLOUD ai_13 load_balancer,sut

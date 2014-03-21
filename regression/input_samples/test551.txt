@@ -1,1 +1,1 @@
-typeshow daytrader
+typeshow ibm_daytrader

@@ -123,7 +123,7 @@ def get_linux_distro() :
     elif _linux_distro_name.count("Ubuntu") :
         _distro = "ubuntu"
     elif _linux_distro_name.count("Fedora") :
-        _distro = "fedora"        
+        _distro = "fedora"
     else :
         if not len(_linux_distro_name) :
             try:
@@ -178,7 +178,7 @@ def get_cmdline(depkey, depsdict, operation) :
                     _url = _url.replace("ARCH", depsdict["carch"].strip())
                     _url = _url.replace("DISTRO", depsdict["cdist"].strip())
                     _url = _url.replace("USERNAME", depsdict["username"].strip())
-        
+                    
                     if check_url(_url, depsdict) :
                         _actual_url = _url
                         break

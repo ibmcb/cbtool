@@ -27,8 +27,8 @@ import os
 import fnmatch
 
 _home = os.environ["HOME"]
-_api_endpoint = "172.16.1.250"
-_cloud_name = "TESTSIMCLOUD"
+_api_endpoint = "10.10.0.3"
+_cloud_name = "TESTOPENSTACK"
 _vm_role = "tinyvm"
 
 for _path, _dirs, _files in os.walk(os.path.abspath(_home)):

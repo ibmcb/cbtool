@@ -1,4 +1,4 @@
-aiattach daytrader
+aiattach ibm_daytrader
 ailist
 vmlist
 aishow ai_1 detach_parallelism,ssh_key_name,sut

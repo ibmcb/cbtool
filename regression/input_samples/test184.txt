@@ -1,1 +1,1 @@
-typeshow TESTCLOUD daytrader
+typeshow TESTCLOUD ibm_daytrader

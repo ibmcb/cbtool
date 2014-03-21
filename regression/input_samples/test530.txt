@@ -1,4 +1,4 @@
-aiattach daytrader detach_parallelism=9,ssh_key_name=AAAABBBBCCCCDDDDEEEE
+aiattach ibm_daytrader detach_parallelism=9,ssh_key_name=AAAABBBBCCCCDDDDEEEE
 ailist
 vmlist
 aishow ai_3 detach_parallelism,ssh_key_name,sut

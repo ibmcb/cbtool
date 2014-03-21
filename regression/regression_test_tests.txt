@@ -183,7 +183,7 @@ echo
 shell TESTCLOUD date
 cldlist\; clddefault none\; clddefault
 roleshow TESTCLOUD tinyvm
-typeshow TESTCLOUD daytrader
+typeshow TESTCLOUD ibm_daytrader
 patternshow TESTCLOUD simplehd
 viewlist TESTCLOUD
 cldshow TESTCLOUD all
@@ -257,40 +257,40 @@ vmattach TESTCLOUD willfail\; vmlist TESTCLOUD\; stats TESTCLOUD
 vmattach TESTCLOUD willfail async\; waituntil TESTCLOUD VM ARRIVING=0 decreasing 1\; vmlist TESTCLOUD\; stats TESTCLOUD
 vmlist TESTCLOUD finished
 vmlist TESTCLOUD failed 
-aiattach TESTCLOUD daytrader\; ailist TESTCLOUD\; vmlist TESTCLOUD\; aishow TESTCLOUD ai_1 detach_parallelism,ssh_key_name,sut\; stats TESTCLOUD
+aiattach TESTCLOUD ibm_daytrader\; ailist TESTCLOUD\; vmlist TESTCLOUD\; aishow TESTCLOUD ai_1 detach_parallelism,ssh_key_name,sut\; stats TESTCLOUD
 ailist TESTCLOUD
 aishow TESTCLOUD ai_1 all
 aialter TESTCLOUD ai_1 mode=scalable\; aishow TESTCLOUD ai_1 mode
 aiattach TESTCLOUD hadoop async\; waitfor TESTCLOUD 12s\; ailist TESTCLOUD\; vmlist TESTCLOUD\; aishow TESTCLOUD ai_2 detach_parallelism,ssh_key_name,sut\; stats TESTCLOUD
-aiattach TESTCLOUD daytrader detach_parallelism=9,ssh_key_name=AAAABBBBCCCCDDDDEEEE\; ailist TESTCLOUD\; vmlist TESTCLOUD\; aishow TESTCLOUD ai_3 detach_parallelism,ssh_key_name,sut\; stats TESTCLOUD
+aiattach TESTCLOUD ibm_daytrader detach_parallelism=9,ssh_key_name=AAAABBBBCCCCDDDDEEEE\; ailist TESTCLOUD\; vmlist TESTCLOUD\; aishow TESTCLOUD ai_3 detach_parallelism,ssh_key_name,sut\; stats TESTCLOUD
 airunstate TESTCLOUD ai_3 suspend\; stateshow TESTCLOUD\; stats TESTCLOUD
 airunstate TESTCLOUD ai_3 attached\; stateshow TESTCLOUD\; stats TESTCLOUD
 aifail TESTCLOUD ai_3\; stateshow TESTCLOUD\; stats TESTCLOUD
 airepair TESTCLOUD ai_3\; stateshow TESTCLOUD\; stats TESTCLOUD
 aisave TESTCLOUD ai_3\; stateshow TESTCLOUD\; stats TESTCLOUD
 airestore TESTCLOUD ai_3\; stateshow TESTCLOUD\; stats TESTCLOUD
-aiattach TESTCLOUD daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee async \; waitfor TESTCLOUD 18s\; ailist TESTCLOUD\; vmlist TESTCLOUD\; aishow TESTCLOUD ai_4 detach_parallelism,ssh_key_name,sut\; stats TESTCLOUD
+aiattach TESTCLOUD ibm_daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee async \; waitfor TESTCLOUD 18s\; ailist TESTCLOUD\; vmlist TESTCLOUD\; aishow TESTCLOUD ai_4 detach_parallelism,ssh_key_name,sut\; stats TESTCLOUD
 aiattach TESTCLOUD netperf netclient_pref_pool=SUT,netclient_size=platinum64\; ailist TESTCLOUD\; vmlist TESTCLOUD\; aishow TESTCLOUD ai_5 detach_parallelism,ssh_key_name,sut\; stats TESTCLOUD
 aiattach TESTCLOUD hadoop hadoopslave_size=platinum64,sut=hadoopmaster->1_x_hadoopslave async\; waitfor TESTCLOUD 18s\; ailist TESTCLOUD\; vmlist TESTCLOUD\; aishow TESTCLOUD ai_6 detach_parallelism,ssh_key_name,sut\; stats TESTCLOUD
 airesize TESTCLOUD ai_1 was +1\; ailist TESTCLOUD\; vmlist TESTCLOUD\; aishow TESTCLOUD ai_1 detach_parallelism,ssh_key_name,sut\; stats TESTCLOUD
 airesize TESTCLOUD ai_1 was -1\; ailist TESTCLOUD\; vmlist TESTCLOUD\; aishow TESTCLOUD ai_1 detach_parallelism,ssh_key_name,sut\; stats TESTCLOUD
-aiattach TESTCLOUD daytrader\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
+aiattach TESTCLOUD ibm_daytrader\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
 vmcapture TESTCLOUD vm_29\; stats TESTCLOUD\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
 vmcapture TESTCLOUD youngest\; stats TESTCLOUD\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
 vmcapture TESTCLOUD vm_41 async\; waitfor TESTCLOUD 25s\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
 vmcapture TESTCLOUD oldest async\; waitfor TESTCLOUD 25s\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
-aiattach TESTCLOUD daytrader load_balancer=true\; ailist TESTCLOUD\; vmlist TESTCLOUD\; aishow TESTCLOUD ai_8 load_balancer,sut\; stats TESTCLOUD
-aiattach TESTCLOUD daytrader\; ailist TESTCLOUD\; vmlist TESTCLOUD\; aishow TESTCLOUD ai_9 load_balancer,sut\; stats TESTCLOUD
-aiattach TESTCLOUD daytrader\; ailist TESTCLOUD\; vmlist TESTCLOUD\; aishow TESTCLOUD ai_10 load_balancer,sut\; stats TESTCLOUD
-aiattach TESTCLOUD daytrader\; ailist TESTCLOUD\; vmlist TESTCLOUD\; aishow TESTCLOUD ai_11 load_balancer,sut\; stats TESTCLOUD
-typeshow TESTCLOUD daytrader
-typealter TESTCLOUD daytrader load_balancer=true\; typeshow TESTCLOUD daytrader
-aiattach TESTCLOUD daytrader\; ailist TESTCLOUD\; vmlist TESTCLOUD\; aishow TESTCLOUD ai_12 load_balancer,sut\; stats TESTCLOUD
-aiattach TESTCLOUD daytrader\; ailist TESTCLOUD\; vmlist TESTCLOUD\; aishow TESTCLOUD ai_13 load_balancer,sut\; stats TESTCLOUD
+aiattach TESTCLOUD ibm_daytrader load_balancer=true\; ailist TESTCLOUD\; vmlist TESTCLOUD\; aishow TESTCLOUD ai_8 load_balancer,sut\; stats TESTCLOUD
+aiattach TESTCLOUD ibm_daytrader\; ailist TESTCLOUD\; vmlist TESTCLOUD\; aishow TESTCLOUD ai_9 load_balancer,sut\; stats TESTCLOUD
+aiattach TESTCLOUD ibm_daytrader\; ailist TESTCLOUD\; vmlist TESTCLOUD\; aishow TESTCLOUD ai_10 load_balancer,sut\; stats TESTCLOUD
+aiattach TESTCLOUD ibm_daytrader\; ailist TESTCLOUD\; vmlist TESTCLOUD\; aishow TESTCLOUD ai_11 load_balancer,sut\; stats TESTCLOUD
+typeshow TESTCLOUD ibm_daytrader
+typealter TESTCLOUD ibm_daytrader load_balancer=true\; typeshow TESTCLOUD ibm_daytrader
+aiattach TESTCLOUD ibm_daytrader\; ailist TESTCLOUD\; vmlist TESTCLOUD\; aishow TESTCLOUD ai_12 load_balancer,sut\; stats TESTCLOUD
+aiattach TESTCLOUD ibm_daytrader\; ailist TESTCLOUD\; vmlist TESTCLOUD\; aishow TESTCLOUD ai_13 load_balancer,sut\; stats TESTCLOUD
 aiattach TESTCLOUD netperf async=4:2
 waituntil TESTCLOUD AI ARRIVED=17 increasing 2\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
-aiattach TESTCLOUD daytrader\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
-aiattach TESTCLOUD tradelite\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
+aiattach TESTCLOUD ibm_daytrader\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
+aiattach TESTCLOUD ibmderby_tradelite\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
 aiattach TESTCLOUD hpcc\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
 aiattach TESTCLOUD coremark\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
 aiattach TESTCLOUD filebench\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
@@ -298,18 +298,18 @@ aidetach TESTCLOUD ai_12\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
 aidetach TESTCLOUD ai_13 async\; waituntil TESTCLOUD AI RESERVATIONS=16 decreasing 5\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
 aidetach TESTCLOUD oldest\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
 aidetach TESTCLOUD youngest\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
-aiattach TESTCLOUD daytrader\; aiattach TESTCLOUD netperf\; aiattach TESTCLOUD hpcc\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
+aiattach TESTCLOUD ibm_daytrader\; aiattach TESTCLOUD netperf\; aiattach TESTCLOUD hpcc\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
 aicapture TESTCLOUD ai_10\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
 aicapture TESTCLOUD oldest\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
 aicapture TESTCLOUD youngest async\; waituntil TESTCLOUD AI CAPTURING=0\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
 aidetach TESTCLOUD random\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
-aiattach TESTCLOUD daytrader default default none none pause_all_vms_booted async\; waitfor TESTCLOUD 5s\; msgpub TESTCLOUD VM staging ai_26;continue;something\; waituntil TESTCLOUD AI ARRIVING=0 decreasing 1\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
-shell TESTCLOUD rm /tmp/cb*_was_used_on_execution\; cldalter TESTCLOUD ai_defaults execute_script_name=CB_DIRECTORY/regression/scripts/execute_on_staging.sh\; aiattach TESTCLOUD daytrader default default none none execute_all_vms_booted\; shell TESTCLOUD ls /tmp/cb*_was_used_on_execution\; waitfor TESTCLOUD 5s\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
+aiattach TESTCLOUD ibm_daytrader default default none none pause_all_vms_booted async\; waitfor TESTCLOUD 5s\; msgpub TESTCLOUD VM staging ai_26;continue;something\; waituntil TESTCLOUD AI ARRIVING=0 decreasing 1\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
+shell TESTCLOUD rm /tmp/cb*_was_used_on_execution\; cldalter TESTCLOUD ai_defaults execute_script_name=CB_DIRECTORY/regression/scripts/execute_on_staging.sh\; aiattach TESTCLOUD ibm_daytrader default default none none execute_all_vms_booted\; shell TESTCLOUD ls /tmp/cb*_was_used_on_execution\; waitfor TESTCLOUD 5s\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
 aiattach TESTCLOUD hadoop save_on_attach=true\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD\; stateshow TESTCLOUD
 airestore TESTCLOUD ai_28\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD\; stateshow TESTCLOUD
 aiattach TESTCLOUD notype\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
 aidetach TESTCLOUD all\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
-typealter TESTCLOUD daytrader sut=client_daytrader->was->willfail\; aiattach TESTCLOUD daytrader\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
+typealter TESTCLOUD ibm_daytrader sut=client_daytrader->was->willfail\; aiattach TESTCLOUD ibm_daytrader\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
 vmlist TESTCLOUD finished
 vmlist TESTCLOUD failed 
 patternalter TESTCLOUD simplenw iait=10\; patternshow TESTCLOUD simplenw

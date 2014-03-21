@@ -277,7 +277,7 @@ R-ver = 2.1
 ### END - Dependency versions ###
 
 ### START - Dependency URLs ###
-rhel-netcat-x86_64-urls-man = ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home:/rusjako/Fedora_19/x86_64/netcat-openbsd-1.89-119.1.x86_64.rpm
+rhel-netcat-x86_64-urls-man = ftp://ftp.pbone.net/mirror/ftp.opensuse.org/distribution/11.4/repo/oss/suse/x86_64/netcat-openbsd-1.89-74.1.x86_64.rpm
 
 rhel-redis-ppc64-urls-man = ftp://rpmfind.net/linux/fedora-secondary/development/rawhide/ppc64/os/Packages/r/redis-2.6.16-1.fc21.ppc64.rpm
 rhel-redis-x86_64-urls-man = ftp://rpmfind.net/linux/remi/enterprise/6/remi/x86_64

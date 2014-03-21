@@ -736,9 +736,9 @@ echo ######################################################### [TEST] 184: START
 roleshow TESTCLOUD tinyvm
 echo ########################################################## [TEST] 184: END roleshow TESTCLOUD tinyvm ###########################################################
 echo 
-echo ######################################################## [TEST] 185: START typeshow TESTCLOUD daytrader ########################################################
-typeshow TESTCLOUD daytrader
-echo ######################################################### [TEST] 185: END typeshow TESTCLOUD daytrader #########################################################
+echo ######################################################## [TEST] 185: START typeshow TESTCLOUD ibm_daytrader ########################################################
+typeshow TESTCLOUD ibm_daytrader
+echo ######################################################### [TEST] 185: END typeshow TESTCLOUD ibm_daytrader #########################################################
 echo 
 echo ####################################################### [TEST] 186: START patternshow TESTCLOUD simplehd #######################################################
 patternshow TESTCLOUD simplehd
@@ -1179,13 +1179,13 @@ echo ########################################################## [TEST] 258: STAR
 vmlist TESTCLOUD failed 
 echo ########################################################### [TEST] 258: END vmlist TESTCLOUD failed  ###########################################################
 echo 
-echo ######################################################## [TEST] 259: START aiattach TESTCLOUD daytrader ########################################################
-aiattach TESTCLOUD daytrader
+echo ######################################################## [TEST] 259: START aiattach TESTCLOUD ibm_daytrader ########################################################
+aiattach TESTCLOUD ibm_daytrader
 ailist TESTCLOUD
 vmlist TESTCLOUD
 aishow TESTCLOUD ai_1 detach_parallelism,ssh_key_name,sut
 stats TESTCLOUD
-echo ######################################################### [TEST] 259: END aiattach TESTCLOUD daytrader #########################################################
+echo ######################################################### [TEST] 259: END aiattach TESTCLOUD ibm_daytrader #########################################################
 echo 
 echo ############################################################## [TEST] 260: START ailist TESTCLOUD ##############################################################
 ailist TESTCLOUD
@@ -1209,13 +1209,13 @@ aishow TESTCLOUD ai_2 detach_parallelism,ssh_key_name,sut
 stats TESTCLOUD
 echo ####################################################### [TEST] 263: END aiattach TESTCLOUD hadoop async ########################################################
 echo 
-echo ############################ [TEST] 264: START aiattach TESTCLOUD daytrader detach_parallelism=9,ssh_key_name=AAAABBBBCCCCDDDDEEEE #############################
-aiattach TESTCLOUD daytrader detach_parallelism=9,ssh_key_name=AAAABBBBCCCCDDDDEEEE
+echo ############################ [TEST] 264: START aiattach TESTCLOUD ibm_daytrader detach_parallelism=9,ssh_key_name=AAAABBBBCCCCDDDDEEEE #############################
+aiattach TESTCLOUD ibm_daytrader detach_parallelism=9,ssh_key_name=AAAABBBBCCCCDDDDEEEE
 ailist TESTCLOUD
 vmlist TESTCLOUD
 aishow TESTCLOUD ai_3 detach_parallelism,ssh_key_name,sut
 stats TESTCLOUD
-echo ############################# [TEST] 264: END aiattach TESTCLOUD daytrader detach_parallelism=9,ssh_key_name=AAAABBBBCCCCDDDDEEEE ##############################
+echo ############################# [TEST] 264: END aiattach TESTCLOUD ibm_daytrader detach_parallelism=9,ssh_key_name=AAAABBBBCCCCDDDDEEEE ##############################
 echo 
 echo ##################################################### [TEST] 265: START airunstate TESTCLOUD ai_3 suspend ######################################################
 airunstate TESTCLOUD ai_3 suspend
@@ -1253,14 +1253,14 @@ stateshow TESTCLOUD
 stats TESTCLOUD
 echo ########################################################### [TEST] 270: END airestore TESTCLOUD ai_3 ###########################################################
 echo 
-echo ######################## [TEST] 271: START aiattach TESTCLOUD daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee async  #########################
-aiattach TESTCLOUD daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee async 
+echo ######################## [TEST] 271: START aiattach TESTCLOUD ibm_daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee async  #########################
+aiattach TESTCLOUD ibm_daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee async 
 waitfor TESTCLOUD 18s
 ailist TESTCLOUD
 vmlist TESTCLOUD
 aishow TESTCLOUD ai_4 detach_parallelism,ssh_key_name,sut
 stats TESTCLOUD
-echo ######################### [TEST] 271: END aiattach TESTCLOUD daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee async  ##########################
+echo ######################### [TEST] 271: END aiattach TESTCLOUD ibm_daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee async  ##########################
 echo 
 echo ################################ [TEST] 272: START aiattach TESTCLOUD netperf netclient_pref_pool=SUT,netclient_size=platinum64 ################################
 aiattach TESTCLOUD netperf netclient_pref_pool=SUT,netclient_size=platinum64
@@ -1295,12 +1295,12 @@ aishow TESTCLOUD ai_1 detach_parallelism,ssh_key_name,sut
 stats TESTCLOUD
 echo ######################################################## [TEST] 275: END airesize TESTCLOUD ai_1 was -1 ########################################################
 echo 
-echo ######################################################## [TEST] 276: START aiattach TESTCLOUD daytrader ########################################################
-aiattach TESTCLOUD daytrader
+echo ######################################################## [TEST] 276: START aiattach TESTCLOUD ibm_daytrader ########################################################
+aiattach TESTCLOUD ibm_daytrader
 ailist TESTCLOUD
 vmlist TESTCLOUD
 stats TESTCLOUD
-echo ######################################################### [TEST] 276: END aiattach TESTCLOUD daytrader #########################################################
+echo ######################################################### [TEST] 276: END aiattach TESTCLOUD ibm_daytrader #########################################################
 echo 
 echo ######################################################### [TEST] 277: START vmcapture TESTCLOUD vm_29 ##########################################################
 vmcapture TESTCLOUD vm_29
@@ -1334,62 +1334,62 @@ vmlist TESTCLOUD
 stats TESTCLOUD
 echo ####################################################### [TEST] 280: END vmcapture TESTCLOUD oldest async #######################################################
 echo 
-echo ############################################## [TEST] 281: START aiattach TESTCLOUD daytrader load_balancer=true ###############################################
-aiattach TESTCLOUD daytrader load_balancer=true
+echo ############################################## [TEST] 281: START aiattach TESTCLOUD ibm_daytrader load_balancer=true ###############################################
+aiattach TESTCLOUD ibm_daytrader load_balancer=true
 ailist TESTCLOUD
 vmlist TESTCLOUD
 aishow TESTCLOUD ai_8 load_balancer,sut
 stats TESTCLOUD
-echo ############################################### [TEST] 281: END aiattach TESTCLOUD daytrader load_balancer=true ################################################
+echo ############################################### [TEST] 281: END aiattach TESTCLOUD ibm_daytrader load_balancer=true ################################################
 echo 
-echo ######################################################## [TEST] 282: START aiattach TESTCLOUD daytrader ########################################################
-aiattach TESTCLOUD daytrader
+echo ######################################################## [TEST] 282: START aiattach TESTCLOUD ibm_daytrader ########################################################
+aiattach TESTCLOUD ibm_daytrader
 ailist TESTCLOUD
 vmlist TESTCLOUD
 aishow TESTCLOUD ai_9 load_balancer,sut
 stats TESTCLOUD
-echo ######################################################### [TEST] 282: END aiattach TESTCLOUD daytrader #########################################################
+echo ######################################################### [TEST] 282: END aiattach TESTCLOUD ibm_daytrader #########################################################
 echo 
-echo ######################################################## [TEST] 283: START aiattach TESTCLOUD daytrader ########################################################
-aiattach TESTCLOUD daytrader
+echo ######################################################## [TEST] 283: START aiattach TESTCLOUD ibm_daytrader ########################################################
+aiattach TESTCLOUD ibm_daytrader
 ailist TESTCLOUD
 vmlist TESTCLOUD
 aishow TESTCLOUD ai_10 load_balancer,sut
 stats TESTCLOUD
-echo ######################################################### [TEST] 283: END aiattach TESTCLOUD daytrader #########################################################
+echo ######################################################### [TEST] 283: END aiattach TESTCLOUD ibm_daytrader #########################################################
 echo 
-echo ######################################################## [TEST] 284: START aiattach TESTCLOUD daytrader ########################################################
-aiattach TESTCLOUD daytrader
+echo ######################################################## [TEST] 284: START aiattach TESTCLOUD ibm_daytrader ########################################################
+aiattach TESTCLOUD ibm_daytrader
 ailist TESTCLOUD
 vmlist TESTCLOUD
 aishow TESTCLOUD ai_11 load_balancer,sut
 stats TESTCLOUD
-echo ######################################################### [TEST] 284: END aiattach TESTCLOUD daytrader #########################################################
+echo ######################################################### [TEST] 284: END aiattach TESTCLOUD ibm_daytrader #########################################################
 echo 
-echo ######################################################## [TEST] 285: START typeshow TESTCLOUD daytrader ########################################################
-typeshow TESTCLOUD daytrader
-echo ######################################################### [TEST] 285: END typeshow TESTCLOUD daytrader #########################################################
+echo ######################################################## [TEST] 285: START typeshow TESTCLOUD ibm_daytrader ########################################################
+typeshow TESTCLOUD ibm_daytrader
+echo ######################################################### [TEST] 285: END typeshow TESTCLOUD ibm_daytrader #########################################################
 echo 
-echo ############################################## [TEST] 286: START typealter TESTCLOUD daytrader load_balancer=true ##############################################
-typealter TESTCLOUD daytrader load_balancer=true
-typeshow TESTCLOUD daytrader
-echo ############################################### [TEST] 286: END typealter TESTCLOUD daytrader load_balancer=true ###############################################
+echo ############################################## [TEST] 286: START typealter TESTCLOUD ibm_daytrader load_balancer=true ##############################################
+typealter TESTCLOUD ibm_daytrader load_balancer=true
+typeshow TESTCLOUD ibm_daytrader
+echo ############################################### [TEST] 286: END typealter TESTCLOUD ibm_daytrader load_balancer=true ###############################################
 echo 
-echo ######################################################## [TEST] 287: START aiattach TESTCLOUD daytrader ########################################################
-aiattach TESTCLOUD daytrader
+echo ######################################################## [TEST] 287: START aiattach TESTCLOUD ibm_daytrader ########################################################
+aiattach TESTCLOUD ibm_daytrader
 ailist TESTCLOUD
 vmlist TESTCLOUD
 aishow TESTCLOUD ai_12 load_balancer,sut
 stats TESTCLOUD
-echo ######################################################### [TEST] 287: END aiattach TESTCLOUD daytrader #########################################################
+echo ######################################################### [TEST] 287: END aiattach TESTCLOUD ibm_daytrader #########################################################
 echo 
-echo ######################################################## [TEST] 288: START aiattach TESTCLOUD daytrader ########################################################
-aiattach TESTCLOUD daytrader
+echo ######################################################## [TEST] 288: START aiattach TESTCLOUD ibm_daytrader ########################################################
+aiattach TESTCLOUD ibm_daytrader
 ailist TESTCLOUD
 vmlist TESTCLOUD
 aishow TESTCLOUD ai_13 load_balancer,sut
 stats TESTCLOUD
-echo ######################################################### [TEST] 288: END aiattach TESTCLOUD daytrader #########################################################
+echo ######################################################### [TEST] 288: END aiattach TESTCLOUD ibm_daytrader #########################################################
 echo 
 echo #################################################### [TEST] 289: START aiattach TESTCLOUD netperf async=4:2 ####################################################
 aiattach TESTCLOUD netperf async=4:2
@@ -1402,19 +1402,19 @@ vmlist TESTCLOUD
 stats TESTCLOUD
 echo ################################################ [TEST] 290: END waituntil TESTCLOUD AI ARRIVED=17 increasing 2 ################################################
 echo 
-echo ######################################################## [TEST] 291: START aiattach TESTCLOUD daytrader ########################################################
-aiattach TESTCLOUD daytrader
+echo ######################################################## [TEST] 291: START aiattach TESTCLOUD ibm_daytrader ########################################################
+aiattach TESTCLOUD ibm_daytrader
 ailist TESTCLOUD
 vmlist TESTCLOUD
 stats TESTCLOUD
-echo ######################################################### [TEST] 291: END aiattach TESTCLOUD daytrader #########################################################
+echo ######################################################### [TEST] 291: END aiattach TESTCLOUD ibm_daytrader #########################################################
 echo 
-echo ######################################################## [TEST] 292: START aiattach TESTCLOUD tradelite ########################################################
-aiattach TESTCLOUD tradelite
+echo ######################################################## [TEST] 292: START aiattach TESTCLOUD ibmderby_tradelite ########################################################
+aiattach TESTCLOUD ibmderby_tradelite
 ailist TESTCLOUD
 vmlist TESTCLOUD
 stats TESTCLOUD
-echo ######################################################### [TEST] 292: END aiattach TESTCLOUD tradelite #########################################################
+echo ######################################################### [TEST] 292: END aiattach TESTCLOUD ibmderby_tradelite #########################################################
 echo 
 echo ########################################################## [TEST] 293: START aiattach TESTCLOUD hpcc ###########################################################
 aiattach TESTCLOUD hpcc
@@ -1466,14 +1466,14 @@ vmlist TESTCLOUD
 stats TESTCLOUD
 echo ######################################################### [TEST] 299: END aidetach TESTCLOUD youngest ##########################################################
 echo 
-echo ######################################################## [TEST] 300: START aiattach TESTCLOUD daytrader ########################################################
-aiattach TESTCLOUD daytrader
+echo ######################################################## [TEST] 300: START aiattach TESTCLOUD ibm_daytrader ########################################################
+aiattach TESTCLOUD ibm_daytrader
 aiattach TESTCLOUD netperf
 aiattach TESTCLOUD hpcc
 ailist TESTCLOUD
 vmlist TESTCLOUD
 stats TESTCLOUD
-echo ######################################################### [TEST] 300: END aiattach TESTCLOUD daytrader #########################################################
+echo ######################################################### [TEST] 300: END aiattach TESTCLOUD ibm_daytrader #########################################################
 echo 
 echo ######################################################### [TEST] 301: START aicapture TESTCLOUD ai_10 ##########################################################
 aicapture TESTCLOUD ai_10
@@ -1504,20 +1504,20 @@ vmlist TESTCLOUD
 stats TESTCLOUD
 echo ########################################################## [TEST] 304: END aidetach TESTCLOUD random ###########################################################
 echo 
-echo ############################# [TEST] 305: START aiattach TESTCLOUD daytrader default default none none pause_all_vms_booted async ##############################
-aiattach TESTCLOUD daytrader default default none none pause_all_vms_booted async
+echo ############################# [TEST] 305: START aiattach TESTCLOUD ibm_daytrader default default none none pause_all_vms_booted async ##############################
+aiattach TESTCLOUD ibm_daytrader default default none none pause_all_vms_booted async
 waitfor TESTCLOUD 5s
 msgpub TESTCLOUD VM staging ai_26;continue;something
 waituntil TESTCLOUD AI ARRIVING=0 decreasing 1
 ailist TESTCLOUD
 vmlist TESTCLOUD
 stats TESTCLOUD
-echo ############################## [TEST] 305: END aiattach TESTCLOUD daytrader default default none none pause_all_vms_booted async ###############################
+echo ############################## [TEST] 305: END aiattach TESTCLOUD ibm_daytrader default default none none pause_all_vms_booted async ###############################
 echo 
 echo ############################################# [TEST] 306: START shell TESTCLOUD rm /tmp/cb*_was_used_on_execution ##############################################
 shell TESTCLOUD rm /tmp/cb*_was_used_on_execution
 cldalter TESTCLOUD ai_defaults execute_script_name=/home/msilva/cloudbench/regression/..//regression/scripts/execute_on_staging.sh
-aiattach TESTCLOUD daytrader default default none none execute_all_vms_booted
+aiattach TESTCLOUD ibm_daytrader default default none none execute_all_vms_booted
 shell TESTCLOUD ls /tmp/cb*_was_used_on_execution
 waitfor TESTCLOUD 5s
 ailist TESTCLOUD
@@ -1555,13 +1555,13 @@ vmlist TESTCLOUD
 stats TESTCLOUD
 echo ############################################################ [TEST] 310: END aidetach TESTCLOUD all ############################################################
 echo 
-echo ##################################### [TEST] 311: START typealter TESTCLOUD daytrader sut=client_daytrader->was->willfail ######################################
-typealter TESTCLOUD daytrader sut=client_daytrader->was->willfail
-aiattach TESTCLOUD daytrader
+echo ##################################### [TEST] 311: START typealter TESTCLOUD ibm_daytrader sut=client_daytrader->was->willfail ######################################
+typealter TESTCLOUD ibm_daytrader sut=client_daytrader->was->willfail
+aiattach TESTCLOUD ibm_daytrader
 ailist TESTCLOUD
 vmlist TESTCLOUD
 stats TESTCLOUD
-echo ###################################### [TEST] 311: END typealter TESTCLOUD daytrader sut=client_daytrader->was->willfail #######################################
+echo ###################################### [TEST] 311: END typealter TESTCLOUD ibm_daytrader sut=client_daytrader->was->willfail #######################################
 echo 
 echo ######################################################### [TEST] 312: START vmlist TESTCLOUD finished ##########################################################
 vmlist TESTCLOUD finished
@@ -2176,9 +2176,9 @@ echo ############################################################## [TEST] 451: 
 roleshow tinyvm
 echo ############################################################### [TEST] 451: END roleshow tinyvm ################################################################
 echo 
-echo ############################################################# [TEST] 452: START typeshow daytrader #############################################################
-typeshow daytrader
-echo ############################################################## [TEST] 452: END typeshow daytrader ##############################################################
+echo ############################################################# [TEST] 452: START typeshow ibm_daytrader #############################################################
+typeshow ibm_daytrader
+echo ############################################################## [TEST] 452: END typeshow ibm_daytrader ##############################################################
 echo 
 echo ############################################################ [TEST] 453: START patternshow simplehd ############################################################
 patternshow simplehd
@@ -2619,13 +2619,13 @@ echo ############################################################### [TEST] 525:
 vmlist failed 
 echo ################################################################ [TEST] 525: END vmlist failed  ################################################################
 echo 
-echo ############################################################# [TEST] 526: START aiattach daytrader #############################################################
-aiattach daytrader
+echo ############################################################# [TEST] 526: START aiattach ibm_daytrader #############################################################
+aiattach ibm_daytrader
 ailist
 vmlist
 aishow ai_1 detach_parallelism,ssh_key_name,sut
 stats
-echo ############################################################## [TEST] 526: END aiattach daytrader ##############################################################
+echo ############################################################## [TEST] 526: END aiattach ibm_daytrader ##############################################################
 echo 
 echo ################################################################### [TEST] 527: START ailist ###################################################################
 ailist
@@ -2649,13 +2649,13 @@ aishow ai_2 detach_parallelism,ssh_key_name,sut
 stats
 echo ############################################################ [TEST] 530: END aiattach hadoop async #############################################################
 echo 
-echo ################################# [TEST] 531: START aiattach daytrader detach_parallelism=9,ssh_key_name=AAAABBBBCCCCDDDDEEEE ##################################
-aiattach daytrader detach_parallelism=9,ssh_key_name=AAAABBBBCCCCDDDDEEEE
+echo ################################# [TEST] 531: START aiattach ibm_daytrader detach_parallelism=9,ssh_key_name=AAAABBBBCCCCDDDDEEEE ##################################
+aiattach ibm_daytrader detach_parallelism=9,ssh_key_name=AAAABBBBCCCCDDDDEEEE
 ailist
 vmlist
 aishow ai_3 detach_parallelism,ssh_key_name,sut
 stats
-echo ################################## [TEST] 531: END aiattach daytrader detach_parallelism=9,ssh_key_name=AAAABBBBCCCCDDDDEEEE ###################################
+echo ################################## [TEST] 531: END aiattach ibm_daytrader detach_parallelism=9,ssh_key_name=AAAABBBBCCCCDDDDEEEE ###################################
 echo 
 echo ########################################################## [TEST] 532: START airunstate ai_3 suspend ###########################################################
 airunstate ai_3 suspend
@@ -2693,14 +2693,14 @@ stateshow
 stats
 echo ################################################################ [TEST] 537: END airestore ai_3 ################################################################
 echo 
-echo ############################# [TEST] 538: START aiattach daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee async  ##############################
-aiattach daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee async 
+echo ############################# [TEST] 538: START aiattach ibm_daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee async  ##############################
+aiattach ibm_daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee async 
 waitfor 18s
 ailist
 vmlist
 aishow ai_4 detach_parallelism,ssh_key_name,sut
 stats
-echo ############################## [TEST] 538: END aiattach daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee async  ###############################
+echo ############################## [TEST] 538: END aiattach ibm_daytrader detach_parallelism=10,ssh_key_name=aaaabbbbccccddddeeee async  ###############################
 echo 
 echo ##################################### [TEST] 539: START aiattach netperf netclient_pref_pool=SUT,netclient_size=platinum64 #####################################
 aiattach netperf netclient_pref_pool=SUT,netclient_size=platinum64
@@ -2735,12 +2735,12 @@ aishow ai_1 detach_parallelism,ssh_key_name,sut
 stats
 echo ############################################################# [TEST] 542: END airesize ai_1 was -1 #############################################################
 echo 
-echo ############################################################# [TEST] 543: START aiattach daytrader #############################################################
-aiattach daytrader
+echo ############################################################# [TEST] 543: START aiattach ibm_daytrader #############################################################
+aiattach ibm_daytrader
 ailist
 vmlist
 stats
-echo ############################################################## [TEST] 543: END aiattach daytrader ##############################################################
+echo ############################################################## [TEST] 543: END aiattach ibm_daytrader ##############################################################
 echo 
 echo ############################################################## [TEST] 544: START vmcapture vm_29 ###############################################################
 vmcapture vm_29
@@ -2774,62 +2774,62 @@ vmlist
 stats
 echo ############################################################ [TEST] 547: END vmcapture oldest async ############################################################
 echo 
-echo ################################################### [TEST] 548: START aiattach daytrader load_balancer=true ####################################################
-aiattach daytrader load_balancer=true
+echo ################################################### [TEST] 548: START aiattach ibm_daytrader load_balancer=true ####################################################
+aiattach ibm_daytrader load_balancer=true
 ailist
 vmlist
 aishow ai_8 load_balancer,sut
 stats
-echo #################################################### [TEST] 548: END aiattach daytrader load_balancer=true #####################################################
+echo #################################################### [TEST] 548: END aiattach ibm_daytrader load_balancer=true #####################################################
 echo 
-echo ############################################################# [TEST] 549: START aiattach daytrader #############################################################
-aiattach daytrader
+echo ############################################################# [TEST] 549: START aiattach ibm_daytrader #############################################################
+aiattach ibm_daytrader
 ailist
 vmlist
 aishow ai_9 load_balancer,sut
 stats
-echo ############################################################## [TEST] 549: END aiattach daytrader ##############################################################
+echo ############################################################## [TEST] 549: END aiattach ibm_daytrader ##############################################################
 echo 
-echo ############################################################# [TEST] 550: START aiattach daytrader #############################################################
-aiattach daytrader
+echo ############################################################# [TEST] 550: START aiattach ibm_daytrader #############################################################
+aiattach ibm_daytrader
 ailist
 vmlist
 aishow ai_10 load_balancer,sut
 stats
-echo ############################################################## [TEST] 550: END aiattach daytrader ##############################################################
+echo ############################################################## [TEST] 550: END aiattach ibm_daytrader ##############################################################
 echo 
-echo ############################################################# [TEST] 551: START aiattach daytrader #############################################################
-aiattach daytrader
+echo ############################################################# [TEST] 551: START aiattach ibm_daytrader #############################################################
+aiattach ibm_daytrader
 ailist
 vmlist
 aishow ai_11 load_balancer,sut
 stats
-echo ############################################################## [TEST] 551: END aiattach daytrader ##############################################################
+echo ############################################################## [TEST] 551: END aiattach ibm_daytrader ##############################################################
 echo 
-echo ############################################################# [TEST] 552: START typeshow daytrader #############################################################
-typeshow daytrader
-echo ############################################################## [TEST] 552: END typeshow daytrader ##############################################################
+echo ############################################################# [TEST] 552: START typeshow ibm_daytrader #############################################################
+typeshow ibm_daytrader
+echo ############################################################## [TEST] 552: END typeshow ibm_daytrader ##############################################################
 echo 
-echo ################################################### [TEST] 553: START typealter daytrader load_balancer=true ###################################################
-typealter daytrader load_balancer=true
-typeshow daytrader
-echo #################################################### [TEST] 553: END typealter daytrader load_balancer=true ####################################################
+echo ################################################### [TEST] 553: START typealter ibm_daytrader load_balancer=true ###################################################
+typealter ibm_daytrader load_balancer=true
+typeshow ibm_daytrader
+echo #################################################### [TEST] 553: END typealter ibm_daytrader load_balancer=true ####################################################
 echo 
-echo ############################################################# [TEST] 554: START aiattach daytrader #############################################################
-aiattach daytrader
+echo ############################################################# [TEST] 554: START aiattach ibm_daytrader #############################################################
+aiattach ibm_daytrader
 ailist
 vmlist
 aishow ai_12 load_balancer,sut
 stats
-echo ############################################################## [TEST] 554: END aiattach daytrader ##############################################################
+echo ############################################################## [TEST] 554: END aiattach ibm_daytrader ##############################################################
 echo 
-echo ############################################################# [TEST] 555: START aiattach daytrader #############################################################
-aiattach daytrader
+echo ############################################################# [TEST] 555: START aiattach ibm_daytrader #############################################################
+aiattach ibm_daytrader
 ailist
 vmlist
 aishow ai_13 load_balancer,sut
 stats
-echo ############################################################## [TEST] 555: END aiattach daytrader ##############################################################
+echo ############################################################## [TEST] 555: END aiattach ibm_daytrader ##############################################################
 echo 
 echo ######################################################### [TEST] 556: START aiattach netperf async=4:2 #########################################################
 aiattach netperf async=4:2
@@ -2842,19 +2842,19 @@ vmlist
 stats
 echo ##################################################### [TEST] 557: END waituntil AI ARRIVED=17 increasing 2 #####################################################
 echo 
-echo ############################################################# [TEST] 558: START aiattach daytrader #############################################################
-aiattach daytrader
+echo ############################################################# [TEST] 558: START aiattach ibm_daytrader #############################################################
+aiattach ibm_daytrader
 ailist
 vmlist
 stats
-echo ############################################################## [TEST] 558: END aiattach daytrader ##############################################################
+echo ############################################################## [TEST] 558: END aiattach ibm_daytrader ##############################################################
 echo 
-echo ############################################################# [TEST] 559: START aiattach tradelite #############################################################
-aiattach tradelite
+echo ############################################################# [TEST] 559: START aiattach ibmderby_tradelite #############################################################
+aiattach ibmderby_tradelite
 ailist
 vmlist
 stats
-echo ############################################################## [TEST] 559: END aiattach tradelite ##############################################################
+echo ############################################################## [TEST] 559: END aiattach ibmderby_tradelite ##############################################################
 echo 
 echo ############################################################### [TEST] 560: START aiattach hpcc ################################################################
 aiattach hpcc
@@ -2906,14 +2906,14 @@ vmlist
 stats
 echo ############################################################## [TEST] 566: END aidetach youngest ###############################################################
 echo 
-echo ############################################################# [TEST] 567: START aiattach daytrader #############################################################
-aiattach daytrader
+echo ############################################################# [TEST] 567: START aiattach ibm_daytrader #############################################################
+aiattach ibm_daytrader
 aiattach netperf
 aiattach hpcc
 ailist
 vmlist
 stats
-echo ############################################################## [TEST] 567: END aiattach daytrader ##############################################################
+echo ############################################################## [TEST] 567: END aiattach ibm_daytrader ##############################################################
 echo 
 echo ############################################################## [TEST] 568: START aicapture ai_10 ###############################################################
 aicapture ai_10
@@ -2944,20 +2944,20 @@ vmlist
 stats
 echo ############################################################### [TEST] 571: END aidetach random ################################################################
 echo 
-echo ################################## [TEST] 572: START aiattach daytrader default default none none pause_all_vms_booted async ###################################
-aiattach daytrader default default none none pause_all_vms_booted async
+echo ################################## [TEST] 572: START aiattach ibm_daytrader default default none none pause_all_vms_booted async ###################################
+aiattach ibm_daytrader default default none none pause_all_vms_booted async
 waitfor 5s
 msgpub VM staging ai_26;continue;something
 waituntil AI ARRIVING=0 decreasing 1
 ailist
 vmlist
 stats
-echo ################################### [TEST] 572: END aiattach daytrader default default none none pause_all_vms_booted async ####################################
+echo ################################### [TEST] 572: END aiattach ibm_daytrader default default none none pause_all_vms_booted async ####################################
 echo 
 echo ################################################## [TEST] 573: START shell rm /tmp/cb*_was_used_on_execution ###################################################
 shell rm /tmp/cb*_was_used_on_execution
 cldalter ai_defaults execute_script_name=/home/msilva/cloudbench/regression/..//regression/scripts/execute_on_staging.sh
-aiattach daytrader default default none none execute_all_vms_booted
+aiattach ibm_daytrader default default none none execute_all_vms_booted
 shell ls /tmp/cb*_was_used_on_execution
 waitfor 5s
 ailist
@@ -2995,13 +2995,13 @@ vmlist
 stats
 echo ################################################################# [TEST] 577: END aidetach all #################################################################
 echo 
-echo ########################################## [TEST] 578: START typealter daytrader sut=client_daytrader->was->willfail ###########################################
-typealter daytrader sut=client_daytrader->was->willfail
-aiattach daytrader
+echo ########################################## [TEST] 578: START typealter ibm_daytrader sut=client_daytrader->was->willfail ###########################################
+typealter ibm_daytrader sut=client_daytrader->was->willfail
+aiattach ibm_daytrader
 ailist
 vmlist
 stats
-echo ########################################### [TEST] 578: END typealter daytrader sut=client_daytrader->was->willfail ############################################
+echo ########################################### [TEST] 578: END typealter ibm_daytrader sut=client_daytrader->was->willfail ############################################
 echo 
 echo ############################################################## [TEST] 579: START vmlist finished ###############################################################
 vmlist finished

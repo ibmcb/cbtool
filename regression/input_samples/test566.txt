@@ -1,4 +1,4 @@
-aiattach daytrader
+aiattach ibm_daytrader
 aiattach netperf
 aiattach hpcc
 ailist

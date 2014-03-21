@@ -159,10 +159,6 @@ LOAD_BALANCER_TARGET_CHILDREN = 2
 LB_SETUP1 = cb_restart_loadbalancer.sh
 LB_RESET1 = cb_restart_loadbalancer.sh
 WAS_SETUP1 = cb_restart_was.sh
-# This only has effect if the SUT is equal "client_tradelite->was->db2"
-DB2_SETUP1 = cb_restart_db2.sh
-# This only has effect if the SUT is equal "client_tradelite->was->db2"
-DB2_RESET1 = cb_restart_db2.sh
 # This is always executed
 WAS_RESET1 = cb_restart_was.sh
 START = cb_tradelite.sh

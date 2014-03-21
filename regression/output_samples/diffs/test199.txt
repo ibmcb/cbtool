@@ -1,4 +1,4 @@
 |simzone_X |5 |sut |simzone_X |xxx.xxx.xxx.xxx 
 |simzone_X |5 |lg |simzone_X |xxx.xxx.xxx.xxx 
 |Redis Version |2.6.16 
-|MongoDB Version |2.4.6 
+|MongoDB Version |2.4.9 

@@ -1,4 +1,4 @@
-Background operation execution success. Operation "vmc-attach" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.1.250,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,timeout:240,host:172.16.1.250,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,simzone_d,update_attempts=156+_*update_frequency=6 --operation=vmc-attach --cn=TESTCLOUD --uuid=13A8C570-5957-5469-849D-4AE572DA12FC --daemon". The process id is 8357.
+Background operation execution success. Operation "vmc-attach" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.1.250,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,timeout:240,host:172.16.1.250,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,simzone_d,update_attempts=156+_*update_frequency=6 --operation=vmc-attach --cn=TESTCLOUD --uuid=F15CFEE0-820B-502A-B4AD-54BF3CC57526 --daemon". The process id is 22063.
 
 Going to unconditionally wait for 8s (8 seconds). The command line interface will be blocked during the waiting.
 Waited 1 seconds... (12.5%)
@@ -12,10 +12,10 @@ Waited 8 seconds... (100.0%)
 Waited for 8 seconds.
 The following ATTACHED VMCs are in this experiment (Cloud TESTCLOUD) :
 |name                    |host_count      |pool                    |cloud_hostname                  |cloud_ip         
-|simzone_a               |5               |sut                     |simzone_a                       |215.137.200.74   
-|simzone_b               |5               |sut                     |simzone_b                       |156.218.212.49   
-|simzone_c               |5               |sut                     |simzone_c                       |201.113.162.198  
-|simzone_d               |5               |lg                      |simzone_d                       |186.150.25.179   
+|simzone_a               |5               |sut                     |simzone_a                       |71.81.153.168    
+|simzone_b               |5               |sut                     |simzone_b                       |122.221.193.100  
+|simzone_c               |5               |sut                     |simzone_c                       |129.35.224.66    
+|simzone_d               |5               |lg                      |simzone_d                       |135.150.254.42   
 
 The VMC object simzone_d, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
 |attribute (VMC object key)               |value                                
@@ -25,19 +25,19 @@ The VMC object simzone_d, attached to this experiment, has the following attribu
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |1.24M                         
+|Used Memory                                          |1.29M                         
 |Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |2597131                       
-|Total Connections Received                           |9948                          
-|Total Commands Processed                             |5389584                       
+|Uptime (in seconds)                                  |30041                         
+|Total Connections Received                           |1573                          
+|Total Commands Processed                             |1736893                       
 |Number of Keys                                       |259                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|MongoDB Version                                      |2.4.6                         
-|Storage Size                                         |1585152                       
-|Data Size                                            |432104                        
+|MongoDB Version                                      |2.4.9                         
+|Storage Size                                         |2043904                       
+|Data Size                                            |433464                        
 |Index Size                                           |367920                        
-|Average Object Size                                  |513.797859691                 
+|Average Object Size                                  |513.582938389                 
 |Collections                                          |13                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
@@ -97,8 +97,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |4                             
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|13A8C570-5957-5469-849D-4AE572DA12FC (simzone_d) VM RESERVATIONS|0                             
-|09732889-E00B-5FF1-AB83-AEBDDF618729 (simzone_b) VM RESERVATIONS|0                             
-|F048BD7F-0B65-51BC-9487-80E33121A548 (simzone_a) VM RESERVATIONS|0                             
-|3894B90B-D759-50EC-985C-2E8B5E3239A6 (simzone_c) VM RESERVATIONS|0                             
+|4030CB22-DCB8-5E3C-A89D-140ED4AA5B40 (simzone_a) VM RESERVATIONS|0                             
+|20DAD493-45B8-5029-A53C-AC697B9E9679 (simzone_b) VM RESERVATIONS|0                             
+|F15CFEE0-820B-502A-B4AD-54BF3CC57526 (simzone_d) VM RESERVATIONS|0                             
+|7CE8E2D3-945A-5A44-B18A-06897CE23E69 (simzone_c) VM RESERVATIONS|0                             
 

@@ -1,5 +1,5 @@
-typealter daytrader sut=client_daytrader->was->willfail
-aiattach daytrader
+typealter ibm_daytrader sut=client_daytrader->was->willfail
+aiattach ibm_daytrader
 ailist
 vmlist
 stats

@@ -1,10 +1,10 @@
 The following FAILED VMs are in this experiment (Cloud TESTCLOUD) :
 |name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
-|vm_25         |willfail            |nano32      |undefined       |unavailable                |SUT                 |none    |none       |FC470456-9574-510F-A57C-F95156A2C931
-|vm_25         |willfail            |nano32      |undefined       |unavailable                |SUT                 |none    |none       |17214717-D0E2-5F5F-9E29-F851AD531E43
-|vm_24         |willfail            |nano32      |undefined       |unavailable                |SUT                 |none    |none       |30C30A4C-D0AE-53E1-A429-596E49E30B44
-|vm_23         |norole              |default     |undefined       |unavailable                |SUT                 |none    |none       |ADC910C4-F0CE-54D7-8C27-0E9C019E86C3
-|vm_24         |willfail            |nano32      |undefined       |unavailable                |SUT                 |none    |none       |1F3BAE3C-B06E-5BB9-93A0-A1119D6E2D2B
-|vm_121        |willfail            |nano32      |undefined       |unavailable                |SUT                 |(orphan)|none       |F65F5C66-65AC-5A87-8978-B8E09C4B7A4A
-|vm_23         |norole              |default     |undefined       |unavailable                |SUT                 |none    |none       |8380DEF2-6DFA-51A7-9043-CE7C5401FE2C
+|vm_121        |willfail            |nano32      |undefined       |unavailable                |SUT                 |(orphan)|none       |ADA7B2BE-9670-5840-A0D2-CC8EECF74379
+|vm_23         |norole              |default     |undefined       |unavailable                |SUT                 |none    |none       |0E77C138-75E6-5971-927F-197A1A7FA5E5
+|vm_24         |willfail            |nano32      |undefined       |unavailable                |SUT                 |none    |none       |C4009443-201C-515D-9C92-ED1B2180C185
+|vm_25         |willfail            |nano32      |undefined       |unavailable                |SUT                 |none    |none       |82CB1F89-BAEA-559B-914A-0E29B2EC99B4
+|vm_25         |willfail            |nano32      |undefined       |unavailable                |SUT                 |none    |none       |FD9A5271-C9BA-5838-88CA-002B066E6AD2
+|vm_23         |norole              |default     |undefined       |unavailable                |SUT                 |none    |none       |3DA24DFD-1C3F-5E4C-9B37-8F51E0DCC926
+|vm_24         |willfail            |nano32      |undefined       |unavailable                |SUT                 |none    |none       |FC9700C6-2064-520F-A0B8-897179046327
 
