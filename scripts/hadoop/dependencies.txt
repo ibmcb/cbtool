@@ -33,14 +33,14 @@ hibench-ver = ANY
 ### END - Dependency versions ###
 
 ### START - Dependency URLs ###
-rhel-pyhtml-x86_64-urls-man = http://www.carfab.com/apachesoftware/hadoop/common/hadoop-1.2.1/hadoop-1.2.1.tar.gz
-ubuntu-pyhtml-amd64-urls-man = http://www.carfab.com/apachesoftware/hadoop/common/hadoop-1.2.1/hadoop-1.2.1.tar.gz
+rhel-hadoop-urls-man = http://www.carfab.com/apachesoftware/hadoop/common/hadoop-1.2.1/hadoop-1.2.1.tar.gz
+ubuntu-hadoop-amd64-urls-man = http://www.carfab.com/apachesoftware/hadoop/common/hadoop-1.2.1/hadoop-1.2.1.tar.gz
 
-#rhel-pyhtml-x86_64-urls-man = http://www.carfab.com/apachesoftware/hadoop/common/hadoop-2.3.0/hadoop-2.3.0.tar.gz
-#ubuntu-pyhtml-amd64-urls-man = http://www.carfab.com/apachesoftware/hadoop/common/hadoop-2.3.0/hadoop-2.3.0.tar.gz
+#rhel-hadoop-x86_64-urls-man = http://www.carfab.com/apachesoftware/hadoop/common/hadoop-2.3.0/hadoop-2.3.0.tar.gz
+#ubuntu-hadoop-amd64-urls-man = http://www.carfab.com/apachesoftware/hadoop/common/hadoop-2.3.0/hadoop-2.3.0.tar.gz
 
-rhel-pyhtml-x86_64-urls-git = https://github.com/ibmcb/HiBench.git
-ubuntu-pyhtml-amd64-urls-git = https://github.com/ibmcb/HiBench.git
+rhel-hibench-urls-git = https://github.com/ibmcb
+ubuntu-hibench-urls-git = https://github.com/ibmcb
 ### END - Dependency URLs ###
 
 ### START -  Dependency and method-specific command lines ###
