@@ -18,7 +18,6 @@
 
 # This script runs kmeans from a CloudBench-created hadoopmaster instance
 # Assumines CloudBench has already executed cb_start_hadoop_cluster scripts, and thus Hadoop daemons are already running
-# Probably assumes lots of other things too, like that you know what the heck you're doing
 
 dir=$(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")
 if [ -e $dir/cb_common.sh ] ; then
@@ -30,6 +29,9 @@ fi
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_hadoop_common.sh
 
 syslog_netcat "Starting script to generate kmeans data and run kmeans."
+
+
+_sizefile="$PWD/kmeans_size.txt"
 
 export COMPRESS_GLOBAL=0
 export HADOOP_EXECUTABLE=${HADOOP_HOME}/bin/hadoop
@@ -58,51 +60,80 @@ NUM_OF_SAMPLES=`get_my_ai_attribute_with_default num_of_samples "3000000"`
 DIMENSIONS=`get_my_ai_attribute_with_default dimensions "20"`
 NUM_OF_CLUSTERS=`get_my_ai_attribute_with_default num_of_clusters "5"`
 MAX_ITERATION=`get_my_ai_attribute_with_default max_iteration "5"`
+KMEANS_GENERATE_DATA=`get_my_ai_attribute_with_default kmeans_generate_data "1"`
 export NUM_OF_SAMPLES
 export DIMENSIONS
 export NUM_OF_CLUSTERS
 export MAX_ITERATION
+export KMEANS_GENERATE_DATA
 
 syslog_netcat "Reading kmeans parameters from HiBench kmeans configuration file..."
 cd ${HIBENCH_HOME}/kmeans/conf
 source ${HIBENCH_HOME}/kmeans/conf/configure.sh
 
-syslog_netcat "Removing any old kmeans input data files from HDFS..."
-$HADOOP_EXECUTABLE dfs -rm -r ${INPUT_HDFS}
-COMPRESS_OPT="-compress false"
+# ****************************************************************
+# Generate kmeans dataset 
+# ****************************************************************
+if [ "x"${KMEANS_GENERATE_DATA} == "x1" ]; then
 
-cd ${HIBENCH_HOME}/kmeans/bin
-rm -rf $TMPLOGFILE
+	syslog_netcat "Removing any old kmeans input data files from HDFS..."
+	$HADOOP_EXECUTABLE dfs -rm -r ${INPUT_HDFS}
+	COMPRESS_OPT="-compress false"
 
-START_TIME_GENERATOR=`date +%s`
+	cd ${HIBENCH_HOME}/kmeans/bin
+	rm -rf $TMPLOGFILE
 
-syslog_netcat "Generating kmeans data: CLUSTERS=${NUM_OF_CLUSTERS} SAMPLES=${NUM_OF_SAMPLES} SAMPLES_PER_FILE=${SAMPLES_PER_INPUTFILE} DIMENSIONS=${DIMENSIONS}"
-OPTION="-sampleDir ${INPUT_SAMPLE} -clusterDir ${INPUT_CLUSTER} -numClusters ${NUM_OF_CLUSTERS} -numSamples ${NUM_OF_SAMPLES} -samplesPerFile ${SAMPLES_PER_INPUTFILE} -sampleDimension ${DIMENSIONS}"
-export HADOOP_CLASSPATH=`${MAHOUT_HOME}/bin/mahout classpath | tail -1`
-$HADOOP_EXECUTABLE --config $HADOOP_CONF_DIR jar ${DATATOOLS} org.apache.mahout.clustering.kmeans.GenKMeansDataset -libjars $MAHOUT_HOME/examples/target/mahout-examples-0.7-job.jar ${COMPRESS_OPT} ${OPTION} 2>&1 | tee $TMPLOGFILE
+	START_TIME_GENERATOR=`date +%s`
 
-STOP_TIME_GENERATOR=`date +%s`
-syslog_netcat "Finished kmeans data generation."
-KMEANS_LOAD_TIME=$(($STOP_TIME_GENERATOR - $START_TIME_GENERATOR))
+	syslog_netcat "Generating kmeans data: CLUSTERS=${NUM_OF_CLUSTERS} SAMPLES=${NUM_OF_SAMPLES} SAMPLES_PER_FILE=${SAMPLES_PER_INPUTFILE} DIMENSIONS=${DIMENSIONS}"
+	OPTION="-sampleDir ${INPUT_SAMPLE} -clusterDir ${INPUT_CLUSTER} -numClusters ${NUM_OF_CLUSTERS} -numSamples ${NUM_OF_SAMPLES} -samplesPerFile ${SAMPLES_PER_INPUTFILE} -sampleDimension ${DIMENSIONS}"
+	export HADOOP_CLASSPATH=`${MAHOUT_HOME}/bin/mahout classpath | tail -1`
+	$HADOOP_EXECUTABLE --config $HADOOP_CONF_DIR jar ${DATATOOLS} org.apache.mahout.clustering.kmeans.GenKMeansDataset -libjars $MAHOUT_HOME/examples/target/mahout-examples-0.7-job.jar ${COMPRESS_OPT} ${OPTION} 2>&1 | tee $TMPLOGFILE
 
-COMPRESS_OPT="-Dmapred.output.compress=false"
+	STOP_TIME_GENERATOR=`date +%s`
+	syslog_netcat "Finished kmeans data generation."
+	KMEANS_LOAD_TIME=$(($STOP_TIME_GENERATOR - $START_TIME_GENERATOR))
 
-syslog_netcat "Removing any old kmeans output data files from HDFS..."
-$HADOOP_EXECUTABLE dfs -rmr ${OUTPUT_HDFS}
+	if [ "x"$HADOOP_VERSION == "xhadoop2" ]; then
+	  SSIZE=`grep "BYTES_DATA_GENERATED=" $TMPLOGFILE | sed 's/BYTES_DATA_GENERATED=//'`
+	else
+	  SSIZE=$($HADOOP_EXECUTABLE job -history $INPUT_SAMPLE | grep 'HiBench.Counters.*|BYTES_DATA_GENERATED')
+	  SSIZE=${SSIZE##*|}
+	  SSIZE=${SSIZE//,/}
+	fi
+	echo ${SSIZE} > ${_sizefile}
 
-if [ "x"$HADOOP_VERSION == "xhadoop2" ]; then
-  SSIZE=`grep "BYTES_DATA_GENERATED=" $TMPLOGFILE | sed 's/BYTES_DATA_GENERATED=//'`
 else
-  SSIZE=$($HADOOP_EXECUTABLE job -history $INPUT_SAMPLE | grep 'HiBench.Counters.*|BYTES_DATA_GENERATED')
-  SSIZE=${SSIZE##*|}
-  SSIZE=${SSIZE//,/}
+	syslog_netcat "Skipping data generation step."
+        if [ -e ${_sizefile} ] ; then
+	  KMEANS_LOAD_TIME="NA"
+	  SSIZE=$(cat ${_sizefile})
+	else
+	  syslog_netcat "Error - Unable to determine existing kmeans database size - NOK"
+	  KMEANS_LOAD_TIME="NA"
+	  SSIZE=0
+	fi
+
 fi
+
+# ****************************************************************
+# Calculate kmeans dataset size 
+# ****************************************************************
 CSIZE=`dir_size $INPUT_CLUSTER`
 SIZE=$(($SSIZE+$CSIZE))
 syslog_netcat "kmeans database size: ${SIZE} bytes"
 
-OPTION="$COMPRESS_OPT -i ${INPUT_SAMPLE} -c ${INPUT_CLUSTER} -o ${OUTPUT_HDFS} -x ${MAX_ITERATION} -ow -cl -cd 0.5 -dm org.apache.mahout.common.distance.EuclideanDistanceMeasure -xm mapreduce"
+# ****************************************************************
+# Delete any old output files that are in Hadoop file system
+# ****************************************************************
+COMPRESS_OPT="-Dmapred.output.compress=false"
+syslog_netcat "Removing any old kmeans output data files from HDFS..."
+$HADOOP_EXECUTABLE dfs -rmr ${OUTPUT_HDFS}
 
+# ****************************************************************
+# Run kmeans job
+# ****************************************************************
+OPTION="$COMPRESS_OPT -i ${INPUT_SAMPLE} -c ${INPUT_CLUSTER} -o ${OUTPUT_HDFS} -x ${MAX_ITERATION} -ow -cl -cd 0.5 -dm org.apache.mahout.common.distance.EuclideanDistanceMeasure -xm mapreduce"
 syslog_netcat "Launching kmeans mahout job with options {$OPTION}"
 
 START_TIME=`timestamp`
@@ -112,7 +143,9 @@ ${HIBENCH_HOME}/common/mahout-distribution-0.7-$HADOOP_VERSION/bin/mahout kmeans
 done
 END_TIME=`timestamp`
 
-# post-running
+# ****************************************************************
+# Calculate and report results
+# ****************************************************************
 syslog_netcat "kmeans mahout job complete. Generating HiBench report..."
 gen_report "KMEANS" ${START_TIME} ${END_TIME} ${SIZE}
 
