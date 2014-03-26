@@ -95,20 +95,13 @@ SCRIPT_NAME=$0
 function linux_distribution {
     IS_UBUNTU=$(cat /etc/*release | grep -c "Ubuntu")
 
-    if [[ ${IS_UBUNTU} -eq 1 ]]
+    if [[ ${IS_UBUNTU} -ge 1 ]]
     then
         echo 1
         return 1
     fi
 
-    IS_REDHAT=$(cat /etc/*release | grep -c "Red Hat")    
-    if [[ ${IS_REDHAT} -ge 1 ]]
-    then
-        echo 2
-        return 2
-    fi
-
-    IS_REDHAT=$(cat /etc/*release | grep -c "Fedora")    
+    IS_REDHAT=$(cat /etc/*release | grep -c "Red Hat\|CentOS\|Fedora")    
     if [[ ${IS_REDHAT} -ge 1 ]]
     then
         echo 2

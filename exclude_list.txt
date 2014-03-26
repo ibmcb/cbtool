@@ -34,6 +34,8 @@ stores/*.pid
 stores/_tmp
 stores/journal
 stores/*.lock
+stores/local.*
+stores/*.pid
 gui_files/*
 jar/*
 plm/*
