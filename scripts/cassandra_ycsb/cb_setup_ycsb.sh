@@ -37,6 +37,10 @@ if [ $standalone == online ] ; then
     INPUT_RECORDS=`get_my_ai_attribute INPUT_RECORDS`
 fi
 
+syslog_netcat "INPUT_RECORDS: $INPUT_RECORDS"
+syslog_netcat "YCSB: $YCSB_PATH"
+syslog_netcat "READ_RATIO: $READ_RATIO"
+
 seed=`get_ips_from_role seed`
 
 sudo sed -i "s/^readproportion=.*$/readproportion=0\.$READ_RATIO/g" $YCSB_PATH/workloads/workloada

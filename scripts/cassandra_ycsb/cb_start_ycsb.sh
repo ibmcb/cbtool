@@ -40,9 +40,9 @@ seed=`get_ips_from_role seed`
 ops=0
 
 #----------------------- Current op/sec for this client ------------------------
-write_current_ops=0
-read_current_ops=0
-update_current_ops=0
+write_current_ops=`get_my_ai_attribute write_current_ops`
+read_current_ops=`get_my_ai_attribute read_current_ops`
+update_current_ops=`get_my_ai_attribute update_current_ops`
 
 #----------------------- Tracking Latency --------------------------------------
 # <operation>_latency=average,min,max,95,99
