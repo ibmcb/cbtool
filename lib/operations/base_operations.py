@@ -2130,7 +2130,8 @@ class BaseObjectOperations :
 
                 _status, _xfmsg = self.proc_man_os_command.parallel_run_os_command(_vm_post_boot_commands, \
                                                                     _vm_ip_addrs, \
-                                                                    _ai_attr_list["attempts"], \
+                                                                    int(_ai_attr_list["attempts"]), \
+                                                                    int(_ai_attr_list["update_frequency"]), \
                                                                     _ai_attr_list["execute_parallelism"], \
                                                                     _obj_attr_list["run_generic_scripts"], \
                                                                     _ai_attr_list["debug_remote_commands"])
@@ -2268,7 +2269,8 @@ class BaseObjectOperations :
 
                     _status, _xfmsg = self.proc_man_os_command.parallel_run_os_command(_vm_command_list, \
                                                                         _vm_ip_addrs, \
-                                                                        _ai_attr_list["attempts"], \
+                                                                        int(_ai_attr_list["attempts"]), \
+                                                                        int(_ai_attr_list["update_frequency"]), \
                                                                         _ai_attr_list["execute_parallelism"], \
                                                                         _ai_attr_list["run_application_scripts"], 
                                                                         _ai_attr_list["debug_remote_commands"])

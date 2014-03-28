@@ -63,29 +63,9 @@ CMDLINE="${filebench} -f ${PERSONALITY_FILE}"
 
 syslog_netcat "Benchmarking filebench SUT: FILEBENCH=${FILEBENCH_IP} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
 
-OUTPUT_FILE=`mktemp`
+OUTPUT_FILE=$(mktemp)
 
-source ~/cb_barrier.sh start
-
-syslog_netcat "Command line is: ${CMDLINE}"
-if [ x"${log_output_command}" == x"true" ]; then
-	syslog_netcat "Command output will be shown"
-	$CMDLINE | while read line ; do
-		syslog_netcat "$line"
-		echo $line >> $OUTPUT_FILE
-	done
-else
-	syslog_netcat "Command output will NOT be shown"
-	$CMDLINE 2>&1 >> $OUTPUT_FILE
-fi
-
-#is_filebench_running="true"
-
-#while [ x"${is_filebench_running}" != x ]
-#do
-#	is_filebench_running=`pgrep -f "${CMDLINE}"`
-#	sleep 5
-#done
+execute_load_generator "${CMDLINE}" ${OUTPUT_FILE} ${LOAD_DURATION}
  
 syslog_netcat "filebench run complete. Will collect and report the results"
 

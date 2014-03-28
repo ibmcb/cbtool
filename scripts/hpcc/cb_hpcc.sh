@@ -78,39 +78,40 @@ sed -i s/"<Qs>"/"$NUM_PROCESSES"/g $infile
 #FIXME: Remove this, just for testing...
 #mpirun -np 4 --machinefile $cluster_hosts_file uname -a | while read line ; do
 #	syslog_netcat "$line"
-#	echo $line >> $outfile
+#	echo $line >> ${OUTPUT_FILE}
 #done
 
 CMDLINE="mpirun -np $NUM_PROCESSES --machinefile $cluster_hosts_file $bench_app_bin"
 
-source ~/cb_barrier.sh start
+OUTPUT_FILE=$(mktemp)
 
-syslog_netcat "Command line is: ${CMDLINE}. Output file is ${outfile}"
-if [ x"${log_output_command}" == x"true" ]; then
-	syslog_netcat "Command output will be shown"
-	$CMDLINE 2>&1 | while read line ; do
-		syslog_netcat "$line"
-		echo $line >> $outfile
-	done
-else
-	syslog_netcat "Command output will NOT be shown"
-	$CMDLINE 2>&1 >> $outfile
-fi
+execute_load_generator "${CMDLINE}" ${OUTPUT_FILE} ${LOAD_DURATION}
 
 syslog_netcat "HPCC benchmark run complete. Will collect and report the results"
 
-tp1=`cat $outfile | grep -a HPL_Tflops | cut -d "=" -f 2`
-tp2=`cat $outfile | grep -a PTRANS_GBs | cut -d "=" -f 2`
-tp3=`cat $outfile | grep -a MPIRandomAccess_GUPs | cut -d "=" -f 2`
-tp4=`cat $outfile | grep -a MPIFFT_Gflops | cut -d "=" -f 2`
-tp5=`cat $outfile | grep -a StarSTREAM_Triad | cut -d "=" -f 2`
-tp6=`cat $outfile | grep -a StarDGEMM_Gflops | cut -d "=" -f 2`
-tp7=`cat $outfile | grep -a RandomlyOrderedRingBandwidth_GBytes | cut -d "=" -f 2`
-lat=`cat $outfile | grep -a RandomlyOrderedRingLatency_usec | cut -d "=" -f 2`
+tp1=`cat ${OUTPUT_FILE} | grep -a HPL_Tflops | cut -d "=" -f 2`
+tp2=`cat ${OUTPUT_FILE} | grep -a PTRANS_GBs | cut -d "=" -f 2`
+tp3=`cat ${OUTPUT_FILE} | grep -a MPIRandomAccess_GUPs | cut -d "=" -f 2`
+tp4=`cat ${OUTPUT_FILE} | grep -a MPIFFT_Gflops | cut -d "=" -f 2`
+tp5=`cat ${OUTPUT_FILE} | grep -a StarSTREAM_Triad | cut -d "=" -f 2`
+tp6=`cat ${OUTPUT_FILE} | grep -a StarDGEMM_Gflops | cut -d "=" -f 2`
+tp7=`cat ${OUTPUT_FILE} | grep -a RandomlyOrderedRingBandwidth_GBytes | cut -d "=" -f 2`
+lat=`cat ${OUTPUT_FILE} | grep -a RandomlyOrderedRingLatency_usec | cut -d "=" -f 2`
 lat=`echo "scale=8;  ${lat} / 1000" | bc`
 
-~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec throughput_G_HPL:$tp1:Tflops throughput_G_PTRANS:$tp2:GBps throughput_G_RandomAccess:$tp3:Gupps throughput_G_FFTE:$tp4:Gflops throughput_EP_STREAM_Triad:$tp5:GBps throughput_EP_DGEMM:$tp6:Gflops throughput_RandomRing:$tp7:GBps lat_RandomRing:$lat:usec
+~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
+load_level:${LOAD_LEVEL}:load \
+load_profile:${LOAD_PROFILE}:name \
+load_duration:${LOAD_DURATION}:sec \
+throughput_G_HPL:$tp1:Tflops \
+throughput_G_PTRANS:$tp2:GBps \
+throughput_G_RandomAccess:$tp3:Gupps \
+throughput_G_FFTE:$tp4:Gflops \
+throughput_EP_STREAM_Triad:$tp5:GBps \
+throughput_EP_DGEMM:$tp6:Gflops \
+throughput_RandomRing:$tp7:GBps \
+lat_RandomRing:$lat:usec
 
-rm $outfile
+rm ${OUTPUT_FILE}
 
 exit 0

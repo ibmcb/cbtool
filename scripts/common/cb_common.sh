@@ -250,12 +250,22 @@ my_type=`get_my_vm_attribute type`
 my_login_username=`get_my_vm_attribute login`
 my_remote_dir=`get_my_vm_attribute remote_dir_name`
 
-function put_hash {
+function counter_hash {
     object_type=$1
     key_name=$2
     attribute_name=`echo $3 | tr '[:upper:]' '[:lower:]'`
     attribute_value=$4
-    retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber hset ${osinstance}:${object_type}:${key_name} ${attribute_name} ${attribute_value}" 1
+    retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber hincrby ${osinstance}:${object_type}:${key_name} ${attribute_name} ${attribute_value}" 1
+}
+
+function increment_my_ai_attribute {
+    attribute_name=`echo $1 | tr '[:upper:]' '[:lower:]'`
+    counter_hash AI ${my_ai_uuid} ${attribute_name} 1
+}
+
+function decrement_my_ai_attribute {
+    attribute_name=`echo $1 | tr '[:upper:]' '[:lower:]'`
+    counter_hash AI ${my_ai_uuid} ${attribute_name} -1
 }
 
 function put_my_vm_attribute {
@@ -296,6 +306,14 @@ function put_my_ai_attribute {
     attribute_name=`echo $1 | tr '[:upper:]' '[:lower:]'`
     attribute_value=$2
     put_hash AI ${my_ai_uuid} ${attribute_name} ${attribute_value}
+}
+
+function put_hash {
+    object_type=$1
+    key_name=$2
+    attribute_name=`echo $3 | tr '[:upper:]' '[:lower:]'`
+    attribute_value=$4
+    retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber hset ${osinstance}:${object_type}:${key_name} ${attribute_name} ${attribute_value}" 1
 }
 
 function get_vm_uuid_from_hostname {
@@ -432,7 +450,7 @@ function increment_counter {
     retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber incr ${osinstance}:${object_type}:${counter_name}" 1
 }
 
-function ai_increment_counter {
+function inter_ai_increment_counter {
     counter_name=`echo $1 | tr '[:upper:]' '[:lower:]'`
     increment_counter AI ${counter_name}
 }
@@ -443,7 +461,7 @@ function get_counter {
     retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber get ${osinstance}:${object_type}:${counter_name}" 1
 }
 
-function ai_get_counter {
+function inter_ai_get_counter {
     counter_name=`echo $1 | tr '[:upper:]' '[:lower:]'`
     get_counter AI ${counter_name}
 }
@@ -454,7 +472,7 @@ function reset_counter {
     retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber set ${osinstance}:${object_type}:${counter_name} 0" 1
 }
 
-function ai_reset_counter {
+function inter_ai_reset_counter {
     counter_name=`echo $1 | tr '[:upper:]' '[:lower:]'`
     reset_counter AI ${counter_name}
 }
@@ -465,7 +483,7 @@ function decrement_counter {
     retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber decr ${osinstance}:${object_type}:${counter_name}" 1
 }
 
-function ai_decrement_counter {
+function inter_ai_decrement_counter {
     counter_name=`echo $1 | tr '[:upper:]' '[:lower:]'`
     decrement_counter AI ${counter_name}
 }
@@ -508,8 +526,6 @@ function subscribeai {
     ${SUBSCRIBE_CMD} AI ${channel} $message
 }
 
-log_output_command=`get_my_ai_attribute log_output_command`
-log_output_command=`echo ${log_output_command} | tr '[:upper:]' '[:lower:]'`
 load_manager_ip=`get_my_ai_attribute load_manager_ip`
 
 if [ x"${NC_HOST_SYSLOG}" == x ]; then
@@ -549,12 +565,14 @@ function refresh_hosts_file {
     fi
 
     # Adding multiple names for the same IP in /etc/hosts
-    # is not a problem. We have no control over what name
-    # is handed out by DHCP, so just do it anyway
-    echo "${my_ip_addr} ${HOSTNAME}" >> ${ai_mapping_file}
-
+    # is not a problem.
+    if [[ $(cat ${ai_mapping_file} | grep -c ${HOSTNAME}) -eq 0 ]]
+    then
+        echo "${my_ip_addr}    ${HOSTNAME}" >> ${ai_mapping_file}
+    fi
+    
     syslog_netcat "Refreshing hosts file ... "
-    sudo bash -c "rm -f /etc/hosts; echo '127.0.0.1 localhost' >> /etc/hosts; cat ${ai_mapping_file} >> /etc/hosts"
+    sudo bash -c "rm -f /etc/hosts; echo '127.0.0.1    localhost' >> /etc/hosts; cat ${ai_mapping_file} >> /etc/hosts"
 }
 
 function provision_application_start {
@@ -677,7 +695,8 @@ function post_boot_steps {
     fi
 
     # Do specific things for windows and exit
-    if [ x"$(uname -a | grep CYGWIN)" != x ] ; then
+    if [[ x"$(uname -a | grep CYGWIN)" != x ]]
+    then
         syslog_netcat "This machine is windows. Performing windows-only setup"
         syslog_netcat "Removing log files to prepare for renaming..."
         rm -f ~/*.log
@@ -693,13 +712,23 @@ function post_boot_steps {
     export PATH=$PATH:/sbin
     PIDOF_CMD=`which pidof`
 
-    if [ $standalone == online ] ; then
+    if [[ $standalone == online ]]
+    then
+
+        LINUX_DISTRO=$(linux_distribution)
+
+        GANGLIA_SERVICE[1]="ganglia-monitor gmetad"
+        GANGLIA_SERVICE[2]="gmond gmetad"
+    
+        service_stop_disable ${GANGLIA_SERVICE[${LINUX_DISTRO}]}          
+        
         syslog_netcat "Killing previously running ganglia monitoring processes on $SHORT_HOSTNAME"
         $SUDO_CMD $KILL_CMD screen 
         $SUDO_CMD $KILL_CMD gmond 
         sleep 3
         result="$(ps aux | grep gmond | grep -v grep)"
-        if [ x"$result" == x ] ; then
+        if [[ x"$result" == x ]]
+        then
             syslog_netcat "Ganglia monitoring processes killed successfully on $SHORT_HOSTNAME"
         else
             syslog_netcat "Ganglia monitoring processes could not be killed on $SHORT_HOSTNAME - NOK"
@@ -709,7 +738,8 @@ function post_boot_steps {
     fi
 
     # fix the db2 data authentication permissions first
-    if [ x"$(echo $0 | grep cb_restart_db2)" != x ] || [ x"${my_role}" == x"db2" ] ; then
+    if [[ x"$(echo $0 | grep cb_restart_db2)" != x ]] || [[ x"${my_role}" == x"db2" ]]
+    then
         syslog_netcat "Fixing up DB2 authentication permissions"
         sudo chmod u+s ~/sqllib/security/db2aud
         sudo rm -f ~/sqllib/security/db2chkau
@@ -723,7 +753,8 @@ function post_boot_steps {
         sudo chmod g+s ~/sqllib/security/db2flacc
     fi
 
-    if [ $standalone == online ] ; then
+    if [[ $standalone == online ]]
+    then
         sleep 1
 
         sudo bash -c "chmod 777 /dev/pts/*"
@@ -731,17 +762,20 @@ function post_boot_steps {
         sudo ln -sf ${dir}/../../3rd_party/monitor-core ~
         sudo ln -sf ${dir}/../../util ~
 
-        # specweb VMs are 32-bit
-        if [ ! -e /usr/lib64/ganglia ] && [ -e /usr/lib/ganglia ] ; then
+        # for 32-bit VMs
+        if [[ ! -e /usr/lib64/ganglia && -e /usr/lib/ganglia ]]
+        then
             sudo ln -sf /usr/lib/ganglia/ /usr/lib64/ganglia
         fi
 
-        if [ x"${my_ai_uuid}" != x"none" ]; then
+        if [[ x"${my_ai_uuid}" != x"none" ]]
+        then
             syslog_netcat "Copying application-specific scripts to the home directory"
             ln -sf "${dir}/../${my_base_type}/"* ~
         fi
 
-        if [ x"${collect_from_guest}" == x"true" ]; then
+        if [[ x"${collect_from_guest}" == x"true" ]]
+        then
             syslog_netcat "Collect from Guest is ${collect_from_guest}"
             syslog_netcat "Creating ganglia (gmond) file"
             ~/cb_create_gmond_config_file.sh
@@ -751,7 +785,8 @@ function post_boot_steps {
             sudo pkill -9 -f gmond
             sudo screen -d -m -S gmond bash -c "while true ; do sleep 10; if [ x\`$PIDOF_CMD gmond\` == x ] ; then gmond -c ${GANGLIA_FILE_LOCATION}/gmond-vms.conf; fi; done"
             result="$(ps aux | grep gmond | grep -v grep)"
-            if [ x"$result" == x ] ; then
+            if [[ x"$result" == x ]]
+            then
                 syslog_netcat "Ganglia monitoring processes (gmond) could not be restarted on $SHORT_HOSTNAME - NOK"
                 exit 2
             else
@@ -769,7 +804,8 @@ function post_boot_steps {
 #                $GMETAD_PATH/gmetad.py -c ~/gmetad-vms.conf --syslogn 127.0.0.1 --syslogp 6379 --syslogf 22 -d 4
 
                 result="$(ps aux | grep gmeta | grep -v grep)"
-                if [ x"$result" == x ] ; then
+                if [[ x"$result" == x ]]
+                then
                     syslog_netcat "Ganglia meta process (gmetad) could not be restarted on $SHORT_HOSTNAME - NOK"
                     exit 2
                 else
@@ -782,6 +818,62 @@ function post_boot_steps {
             syslog_netcat "Bypassing the gmond and gmetad restart"
         fi
     fi
+}
+
+function execute_load_generator {
+
+    CMDLINE=$1
+    OUTPUT_FILE=$2
+    LOAD_DURATION=$3
+
+    source ~/cb_barrier.sh start
+
+    log_output_command=$(get_my_ai_attribute log_output_command)
+    log_output_command=$(echo ${log_output_command} | tr '[:upper:]' '[:lower:]')
+
+    run_limit=`decrement_my_ai_attribute run_limit`
+
+    if [[ ${run_limit} -ge 0 ]]
+    then
+        syslog_netcat "This AI will execute the load_generating process ${run_limit} more times" 
+        syslog_netcat "Command line is: ${CMDLINE}. Output file is ${OUTPUT_FILE}"
+        if [[ x"${log_output_command}" == x"true" ]]
+        then
+            syslog_netcat "Command output will be shown"
+            $CMDLINE 2>&1 | while read line ; do
+                syslog_netcat "$line"
+                echo $line >> $OUTPUT_FILE
+            done
+        else
+            syslog_netcat "Command output will NOT be shown"
+            $CMDLINE 2>&1 >> $OUTPUT_FILE
+        fi
+    else
+        syslog_netcat "This AI reached the limit of load generation process executions. If you want this AI to continue to execute the load generator, reset the \"run_limit\" counter"
+        sleep ${LOAD_DURATION}
+    fi
+}
+
+function wait_until_port_open {
+    #1 - host name
+    #2 - port number
+    #3 - number of attempts
+    #4 - time between attempts
+    counter=1
+    ATTEMPTS=${3}
+    while [ "$counter" -le "$ATTEMPTS" ]
+    do
+        ${NC} -z -w 3 ${1} ${2}
+        if [[ $? -eq 0 ]]
+        then
+            syslog_netcat "Port ${2} on host ${1} was found open after ${counter} attempts"
+            return 0
+        fi
+        sleep ${4}
+        counter="$(( $counter + 1 ))"
+    done
+    syslog_netcat "Port ${2} on host ${1} was NOT found open after ${counter} attempts!"
+    return 1
 }
 
 function get_offline_ip {

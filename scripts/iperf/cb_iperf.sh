@@ -49,20 +49,7 @@ syslog_netcat "Benchmarking iperf SUT: NET_CLIENT=${LOAD_GENERATOR_IP} -> NET_SE
 
 OUTPUT_FILE=$(mktemp)
 
-source ~/cb_barrier.sh start
-
-syslog_netcat "Command line is: ${CMDLINE}. Output file is ${OUTPUT_FILE}"
-if [[ x"${log_output_command}" == x"true" ]]
-then
-	syslog_netcat "Command output will be shown"
-	$CMDLINE 2>&1 | while read line ; do
-		syslog_netcat "$line"
-		echo $line >> $OUTPUT_FILE
-	done
-else
-	syslog_netcat "Command output will NOT be shown"
-	$CMDLINE 2>&1 >> $OUTPUT_FILE
-fi
+execute_load_generator "${CMDLINE}" ${OUTPUT_FILE} ${LOAD_DURATION}
 
 syslog_netcat "iperf run complete. Will collect and report the results"
 

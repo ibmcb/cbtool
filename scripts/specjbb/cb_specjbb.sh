@@ -85,7 +85,7 @@ fi
 syslog_netcat "Assigning identifier \"${counter_value}\" to this JVM"
 export JVM=jvm${counter_value}
 
-export EXPERIMENT_RUN_ID=${EXPERIMENT_RUN_ID}`ai_get_counter ${run_counter}`
+export EXPERIMENT_RUN_ID=${EXPERIMENT_RUN_ID}`inter_ai_get_counter ${run_counter}`
 syslog_netcat "Experiment ID is ${EXPERIMENT_RUN_ID}"
 
 #####################################################
@@ -121,13 +121,9 @@ else
 fi
 
 syslog_netcat "Benchmarking SPECjbb SUT: WAS=${SPECJBB_IP} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
-OUTPUT_FILE=`mktemp`
+OUTPUT_FILE=$(mktemp)
 
-syslog_netcat "Command line is: ${CMDLINE}"
-$CMDLINE 2>&1 | while read line ; do
-	syslog_netcat "$line"
-	echo $line >> $OUTPUT_FILE
-done
+execute_load_generator "${CMDLINE}" ${OUTPUT_FILE} ${LOAD_DURATION}
 
 #####################################################
 # extract and publish result
@@ -152,7 +148,11 @@ else
 			app_metric_string+=" latency_${TEST}_${TYPE}:"${RESPONSE_TIME}":msec"
 		done
 	done
-	~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec ${app_metric_string}
+	~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
+	load_level:${LOAD_LEVEL}:load \
+	load_profile:${LOAD_PROFILE}:name \
+	load_duration:${LOAD_DURATION}:sec \
+	${app_metric_string}
 
 	if [ x"${EXPOUTCOLDIR}" == x ]; then
 		true

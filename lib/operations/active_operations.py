@@ -1872,114 +1872,128 @@ class ActiveObjectOperations(BaseObjectOperations) :
         
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
-        _curr_tries = 0
-        _start = int(time())
-        _max_tries = int(obj_attr_list["attempts"])
 
+        _start = int(time())
+
+        _max_tries = int(obj_attr_list["attempts"])
+        _retry_interval = int(obj_attr_list["update_frequency"])
+        
         _proc_man = ProcessManagement(username = obj_attr_list["login"], \
                                       cloud_name = obj_attr_list["cloud_name"], \
                                       priv_key = obj_attr_list["identity"])
 
         try :
 
-            while _curr_tries < _max_tries :
-                if "async" not in obj_attr_list or obj_attr_list["async"].lower() == "false" :
-                    if threading.current_thread().abort :
-                        _msg = "VM creation aborted during transfer file step..."
-                        _status = 12345
-                        raise self.ObjectOperationException(_msg, _status)
+            if "async" not in obj_attr_list or obj_attr_list["async"].lower() == "false" :
+                if threading.current_thread().abort :
+                    _msg = "VM creation aborted during transfer file step..."
+                    _status = 12345
+                    raise self.ObjectOperationException(_msg, _status)
 
-                _cmd = "ssh -i " + obj_attr_list["identity"]
-                _cmd += " -o StrictHostKeyChecking=no"
-                _cmd += " -o UserKnownHostsFile=/dev/null " 
-                _cmd += obj_attr_list["login"] + "@"
-                _cmd += obj_attr_list["prov_cloud_ip"] + " \"mkdir -p ~/" + obj_attr_list["remote_dir_name"] +  ';'
-                _cmd += "echo '#OSKN-redis' > ~/cb_os_parameters.txt;"
+            if obj_attr_list["transfer_files"].lower() != "false" :
+
+                _bcmd = "ssh -i " + obj_attr_list["identity"]
+                _bcmd += " -o StrictHostKeyChecking=no"
+                _bcmd += " -o UserKnownHostsFile=/dev/null " 
+                _bcmd += obj_attr_list["login"] + "@"
+                _bcmd += obj_attr_list["prov_cloud_ip"] + " \"mkdir -p ~/" + obj_attr_list["remote_dir_name"] +  ';'
+                _bcmd += "echo '#OSKN-redis' > ~/cb_os_parameters.txt;"
                 if "openvpn_server_address" in obj_attr_list :
-                    _cmd += "echo '#OSHN-" + obj_attr_list["openvpn_bootstrap_address"] + "' >> ~/cb_os_parameters.txt;"
+                    _bcmd += "echo '#OSHN-" + obj_attr_list["openvpn_bootstrap_address"] + "' >> ~/cb_os_parameters.txt;"
                 else :
-                    _cmd += "echo '#OSHN-" + self.osci.host + "' >> ~/cb_os_parameters.txt;"
-                _cmd += "echo '#OSPN-" + str(self.osci.port) + "' >> ~/cb_os_parameters.txt;"
-                _cmd += "echo '#OSDN-" + str(self.osci.dbid) + "' >> ~/cb_os_parameters.txt;"
-                _cmd += "echo '#OSTO-" + str(self.osci.timout) + "' >> ~/cb_os_parameters.txt;"
-                _cmd += "echo '#OSCN-" + obj_attr_list["cloud_name"] + "' >> ~/cb_os_parameters.txt;"
-                _cmd += "echo '#OSMO-" + obj_attr_list["mode"] + "' >> ~/cb_os_parameters.txt;"
-                _cmd += "echo '#OSOI-" + "TEST_" + obj_attr_list["username"] + ":" + obj_attr_list["cloud_name"] + "' >> ~/cb_os_parameters.txt;"
-                _cmd += "echo '#VMUUID-" + obj_attr_list["uuid"] + "' >> ~/cb_os_parameters.txt;"
-                _cmd += "sudo chown -R " +  obj_attr_list["login"] + " ~/" + obj_attr_list["remote_dir_name"] + "\";"
-                _cmd += "rsync -e \"ssh -o StrictHostKeyChecking=no -l " + obj_attr_list["login"] + " -i " 
-                _cmd += obj_attr_list["identity"] + "\" --exclude-from "
-                _cmd += "'" +  obj_attr_list["exclude_list"] + "' -az --delete --no-o --no-g --inplace -O " + obj_attr_list["base_dir"] + "/* " 
-                _cmd += obj_attr_list["prov_cloud_ip"] + ":~/" + obj_attr_list["remote_dir_name"] + '/'
+                    _bcmd += "echo '#OSHN-" + self.osci.host + "' >> ~/cb_os_parameters.txt;"
+                _bcmd += "echo '#OSPN-" + str(self.osci.port) + "' >> ~/cb_os_parameters.txt;"
+                _bcmd += "echo '#OSDN-" + str(self.osci.dbid) + "' >> ~/cb_os_parameters.txt;"
+                _bcmd += "echo '#OSTO-" + str(self.osci.timout) + "' >> ~/cb_os_parameters.txt;"
+                _bcmd += "echo '#OSCN-" + obj_attr_list["cloud_name"] + "' >> ~/cb_os_parameters.txt;"
+                _bcmd += "echo '#OSMO-" + obj_attr_list["mode"] + "' >> ~/cb_os_parameters.txt;"
+                _bcmd += "echo '#OSOI-" + "TEST_" + obj_attr_list["username"] + ":" + obj_attr_list["cloud_name"] + "' >> ~/cb_os_parameters.txt;"
+                _bcmd += "echo '#VMUUID-" + obj_attr_list["uuid"] + "' >> ~/cb_os_parameters.txt;"
+                _bcmd += "sudo chown -R " +  obj_attr_list["login"] + " ~/" + obj_attr_list["remote_dir_name"] + "\""
 
-                if obj_attr_list["transfer_files"].lower() != "false" :
+                _msg = "BOOTSTRAP: " + _bcmd
+                cbdebug(_msg)
 
-                    _msg = "RSYNC: " + _cmd
-                    cbdebug(_msg)
+                _msg = "Boostrapping " + obj_attr_list["name"] + " (creating file"
+                _msg += " cb_os_paramaters.txt in \"" + obj_attr_list["login"] 
+                _msg += "\" user's home dir on " + obj_attr_list["prov_cloud_ip"] + ")..."
+                cbdebug(_msg, True)
 
-                    _msg = "Sending a copy of the code tree to "
-                    _msg += obj_attr_list["name"] + " ("+ obj_attr_list["prov_cloud_ip"] + ")..."
+                _proc_man.retriable_run_os_command(_bcmd, \
+                                                   "127.0.0.1", \
+                                                   _max_tries, \
+                                                   _retry_interval, \
+                                                   obj_attr_list["transfer_files"], \
+                                                   obj_attr_list["debug_remote_commands"], \
+                                                   True)
+
+                _rcmd = "rsync -e \"ssh -o StrictHostKeyChecking=no -l " + obj_attr_list["login"] + " -i " 
+                _rcmd += obj_attr_list["identity"] + "\" --exclude-from "
+                _rcmd += "'" +  obj_attr_list["exclude_list"] + "' -az --delete --no-o --no-g --inplace -O " + obj_attr_list["base_dir"] + "/* " 
+                _rcmd += obj_attr_list["prov_cloud_ip"] + ":~/" + obj_attr_list["remote_dir_name"] + '/'
+
+                _msg = "Sending  a copy of the code tree to "
+                _msg += obj_attr_list["name"] + " ("+ obj_attr_list["prov_cloud_ip"] + ")..."
+                cbdebug(_msg, True)
+
+                _msg = "RSYNC: " + _rcmd
+                cbdebug(_msg)
+
+                _proc_man.retriable_run_os_command(_rcmd, \
+                                                   "127.0.0.1", \
+                                                   _max_tries, \
+                                                   _retry_interval, \
+                                                   obj_attr_list["transfer_files"], \
+                                                   obj_attr_list["debug_remote_commands"], \
+                                                   True)                
+            else :
+                _msg = "Bypassing the bootstrapping and the sending of a copy of"
+                _msg += " the code tree to " + obj_attr_list["name"] 
+                _msg += " ("+ obj_attr_list["prov_cloud_ip"] + ")..."
+                cbdebug(_msg, True)
+
+
+            _delay = int(time()) - _start
+            self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "status", "Files transferred...")
+            obj_attr_list["mgt_005_file_transfer"] = _delay
+            self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], \
+                                              False, "mgt_005_file_transfer", \
+                                              _delay)
+
+            if "ai" in obj_attr_list and obj_attr_list["ai"] == "none" :
+
+                if not access(obj_attr_list["identity"], F_OK) :
+                    obj_attr_list["identity"] = obj_attr_list["identity"].replace(obj_attr_list["username"], \
+                                                                                  obj_attr_list["login"])
+
+                if "run_generic_scripts" in obj_attr_list and obj_attr_list["run_generic_scripts"].lower() != "false" :
+                    _msg = "Performing generic VM post_boot configuration on "
+                    _msg += obj_attr_list["name"] + " ("+ obj_attr_list["prov_cloud_ip"] + ")..."     
                     cbdebug(_msg, True)
 
                 else :
-                    _msg = "Bypassing the sending of a copy of the code tree to "
+                    _msg = "Bypassing generic VM post_boot configuration on "
                     _msg += obj_attr_list["name"] 
-                    _msg += " ("+ obj_attr_list["prov_cloud_ip"] + ")..."
+                    _msg += " ("+ obj_attr_list["prov_cloud_ip"] + ")..." 
                     cbdebug(_msg, True)
 
-                _status, _result_stdout, _result_stderr = \
-                _proc_man.run_os_command(_cmd, "127.0.0.1", \
-                                         obj_attr_list["transfer_files"], \
+                _cmd = "~/" + obj_attr_list["remote_dir_name"] + "/scripts/common/cb_post_boot.sh"
+                
+                _status, _xfmsg, _object = \
+                _proc_man.run_os_command(_cmd, obj_attr_list["prov_cloud_ip"], \
+                                         obj_attr_list["run_generic_scripts"], \
                                          obj_attr_list["debug_remote_commands"])
 
-                if not _status :
-                    break
-                else :
-                    _curr_tries = _curr_tries + 1
-                    sleep(int(obj_attr_list["update_frequency"]))
-                
-            if _curr_tries >= _max_tries :
-                _fmsg = "Unable to connect to VM after " + str(_max_tries)
-                _fmsg += "tries. The VM seems unreachable."
-            else :
-                _delay = int(time()) - _start
-                self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "status", "Files transferred...")
-                obj_attr_list["mgt_005_file_transfer"] = _delay
-                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], \
-                                                  False, "mgt_005_file_transfer", \
-                                                  _delay)
-
-                if "ai" in obj_attr_list and obj_attr_list["ai"] == "none" :
-                    if not access(obj_attr_list["identity"], F_OK) :
-                        obj_attr_list["identity"] = obj_attr_list["identity"].replace(obj_attr_list["username"], \
-                                                                                      obj_attr_list["login"])
-
-                    if "run_generic_scripts" in obj_attr_list and obj_attr_list["run_generic_scripts"].lower() != "false" :
-                        _msg = "Performing generic VM post_boot configuration on "
-                        _msg += obj_attr_list["name"] + " ("+ obj_attr_list["prov_cloud_ip"] + ")..."     
-                        cbdebug(_msg, True)
-
-                    else :
-                        _msg = "Bypassing generic VM post_boot configuration on "
-                        _msg += obj_attr_list["name"] 
-                        _msg += " ("+ obj_attr_list["prov_cloud_ip"] + ")..." 
-                        cbdebug(_msg, True)
-
-                    _cmd = "~/" + obj_attr_list["remote_dir_name"] + "/scripts/common/cb_post_boot.sh"
-                    
-                    _status, _xfmsg, _object = \
-                    _proc_man.run_os_command(_cmd, obj_attr_list["prov_cloud_ip"], \
-                                             obj_attr_list["run_generic_scripts"], \
-                                             obj_attr_list["debug_remote_commands"])
-
-                    if _status :
-                        _fmsg = "Failure while executing generic VM "
-                        _fmsg += "post_boot configuration on "
-                        _fmsg += obj_attr_list["name"] + '.\n'
+                if _status :
+                    _fmsg = "Failure while executing generic VM "
+                    _fmsg += "post_boot configuration on "
+                    _fmsg += obj_attr_list["name"] + '.\n'
 #                            _fmsg += _xfmsg
 
-                    self.record_management_metrics(obj_attr_list["cloud_name"], \
-                                                   "VM", obj_attr_list, "attach")
+                self.record_management_metrics(obj_attr_list["cloud_name"], \
+                                               "VM", obj_attr_list, "attach")
+            else :
+                _status = 0
 
             '''
             Whenever the staging action (be it pause or execute) is completed 
@@ -2010,7 +2024,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
         except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
-            
+
+        except ProcessManagement.ProcessManagementException, obj :
+            _status = str(obj.status)
+            _fmsg = str(obj.msg)
+
         except Exception, e :
             _status = 23
             _fmsg = str(e)

@@ -32,46 +32,26 @@ fi
 BLOCK_SIZE=`get_my_ai_attribute_with_default block_size 64k`
 DATA_SOURCE=`get_my_ai_attribute_with_default data_source /dev/urandom`
 DATA_DESTINATION=`get_my_ai_attribute_with_default data_destination /root`
-RUN_JUST_ONCE=`get_my_ai_attribute_with_default run_just_once false`
-RUN_COUNTER_NAME=`get_my_ai_attribute_with_default run_counter_name none`
 
 CMDLINE="sudo dd if=${DATA_SOURCE} of=${DATA_DESTINATION}/testfile.bin oflag=direct bs=${BLOCK_SIZE} count=${LOAD_LEVEL}"
 
 syslog_netcat "Benchmarking ddgen SUT: HPCVM=${my_ip_addr} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
 
-OUTPUT_FILE=`mktemp`
-source ~/cb_barrier.sh start
+OUTPUT_FILE=$(mktemp)
 
-if [[ -f ~/.ranonce && "$RUN_JUST_ONCE" = "true" ]]
-then
-	syslog_netcat "Already run ddgen once, and \"RUN_JUST_ONCE\" parameter is set to \"true\". Will not run it again"
-	sleep ${LOAD_DURATION}
-else
-	syslog_netcat "Command line is: ${CMDLINE}. Output file is ${OUTPUT_FILE}"
-	if [ x"${log_output_command}" == x"true" ]; then
-		syslog_netcat "Command output will be shown"
-		$CMDLINE 2>&1 | while read line ; do
-			syslog_netcat "$line"
-			echo $line >> $OUTPUT_FILE
-		done
-		touch ~/.ranonce
-		if [ "$RUN_COUNTER_NAME" != "none" ]
-		then
-			syslog_netcat "A \"run_counter_name\" (${RUN_COUNTER_NAME}) was defined for this AI. Will update its value by +1"
-			ai_increment_counter ${RUN_COUNTER_NAME}
-		fi
-	else
-		syslog_netcat "Command output will NOT be shown"
-		$CMDLINE 2>&1 >> $OUTPUT_FILE
-	fi
+execute_load_generator "${CMDLINE}" ${OUTPUT_FILE} ${LOAD_DURATION}
 	
-	syslog_netcat "ddgen run complete. Will collect and report the results"
+syslog_netcat "ddgen run complete. Will collect and report the results"
 
-	bw=`cat ${OUTPUT_FILE} | grep copied | awk '{ print $8 }'`
-	unbw=`cat ${OUTPUT_FILE} | grep copied | awk '{ print $9 }'`
+bw=`cat ${OUTPUT_FILE} | grep copied | awk '{ print $8 }'`
+unbw=`cat ${OUTPUT_FILE} | grep copied | awk '{ print $9 }'`
 	
-	~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec bandwidth:${bw}:${unbw}
-	
-	rm ${OUTPUT_FILE}
-fi
+~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
+load_level:${LOAD_LEVEL}:load \
+load_profile:${LOAD_PROFILE}:name \
+load_duration:${LOAD_DURATION}:sec \
+bandwidth:${bw}:${unbw}
+
+rm ${OUTPUT_FILE}
+
 exit 0

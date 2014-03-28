@@ -164,6 +164,7 @@ DONT_START_LOAD_MANAGER = $False
 # Most clouds don't use (or allow access to) libvirt,
 # so, enable this only in the right clouds.
 DONT_START_QEMU_SCRAPER = $True
+RUN_LIMIT = 100000
 REPLICATED_VMS = 0
 ATTACH_PARALLELISM = 1
 DETACH_PARALLELISM = 20
@@ -281,7 +282,7 @@ HOST_RUNTIME_OS_METRICS_HEADER = TSTAMP, HS_ID2, CPU_M, MEM_M, SWAP_M, NET_M, DS
 REPORTED_MANAGEMENT_VM_METRIC_NAMES = VM_ID1, CRT_M, CAP_M, RST_M, DST_M, FLR_M 
 REPORTED_RUNTIME_OS_HOST_METRIC_NAMES = CPU_M, MEM_M, SWAP_M, NET_M, DSK_M
 REPORTED_RUNTIME_OS_VM_METRIC_NAMES = CPU_M, MEM_M, SWAP_M, NET_M, DSK_M
-REPORTED_RUNTIME_APP_VM_METRIC_NAMES = app_load_id, app_load_level, app_throughput, app_latency
+REPORTED_RUNTIME_APP_VM_METRIC_NAMES = app_load_id, app_load_level, app_throughput, app_latency, app_datagen_time, app_datagen_size
 
 [API_DEFAULTS]
 PORT = 7070

@@ -53,10 +53,19 @@ DFS_DATA_DIR=`get_my_ai_attribute_with_default dfs_data_dir /tmp/cbhadoopdata`
 eval DFS_DATA_DIR=${DFS_DATA_DIR}
 syslog_netcat "Local directory for Hadoop datanode is ${DFS_NAME_DIR}"
 
-if [ ${hadoop_use_yarn} -eq 1 ] ; then
+if [[ ${hadoop_use_yarn} -eq 1 ]]
+then
 	syslog_netcat "Hadoop will be configured to use MRv2 (YARN)"
+	syslog_netcat "Switching to the \"yarn\" branch in Hibench on ${HIBENCH_HOME}"
+	cd ${HIBENCH_HOME}
+	git checkout yarn
+	cd ~
 else
 	syslog_netcat "Hadoop will be configured to use MRv1"
+	syslog_netcat "Switching to the \"dev\" branch in Hibench on ${HIBENCH_HOME}"
+	cd ${HIBENCH_HOME}
+	git checkout dev
+	cd ~	
 fi
 
 ###################################################################
@@ -64,20 +73,24 @@ fi
 ###################################################################
 
 echo "Test" > $HADOOP_CONF_DIR/test
-if [ $? -eq 0 ]; then
+if [[ $? -eq 0 ]]
+then
+	syslog_netcat "User $(whoami) is able to write to Hadoop configuration directory ${HADOOP_CONF_DIR}"
 	rm $HADOOP_CONF_DIR/test
 else
 	syslog_netcat "Error: User $(whoami) unable to write to Hadoop configuration directory ${HADOOP_CONF_DIR} - NOK"
-        exit 1
+    exit 1
 fi
 
 ###################################################################
 # Disable IPv6 use by Hadoop
 ###################################################################
 
-if [ -e ${HADOOP_CONF_DIR}/hadoop-env.sh ]; then
+if [[ -e ${HADOOP_CONF_DIR}/hadoop-env.sh ]]
+then
 	is_preferIPv4Stack=`cat ${HADOOP_CONF_DIR}/hadoop-env.sh | grep -c "preferIPv4Stack=true"`
-	if [ ${is_preferIPv4Stack} -eq 0 ]; then
+	if [[ ${is_preferIPv4Stack} -eq 0 ]]
+	then
 		syslog_netcat "Adding extra options to existing hadoop-env.sh to ignore IPv6 addresses"
 		echo "export HADOOP_OPTS=-Djava.net.preferIPv4Stack=true" >> $HADOOP_CONF_DIR/hadoop-env.sh
 		echo "export JAVA_HOME=${JAVA_HOME}" >> $HADOOP_CONF_DIR/hadoop-env.sh
@@ -94,13 +107,15 @@ fi
 
 syslog_netcat "Updating masters, slaves files in ${HADOOP_CONF_DIR}..."
 echo "${hadoop_master_ip}" > $HADOOP_CONF_DIR/masters
-if [ $? -ne 0 ]; then
+if [ $? -ne 0 ]]
+then
    syslog_netcat "Error creating $HADOOP_CONF_DIR/masters - NOK"
    exit 1
 fi
 
 echo "${slave_ips}" > $HADOOP_CONF_DIR/slaves
-if [ $? -ne 0 ]; then
+if [[ $? -ne 0 ]]
+then
    syslog_netcat "Error creating $HADOOP_CONF_DIR/slavess - NOK"
    exit 1
 fi
@@ -125,7 +140,8 @@ cat << EOF > $HADOOP_CONF_DIR/core-site.xml
 </property>
 </configuration>
 EOF
-if [ $? -ne 0 ]; then
+if [[ $? -ne 0 ]]
+then
    syslog_netcat "Error creating core-site.xml - NOK"
    exit 1
 else

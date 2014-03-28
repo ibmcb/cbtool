@@ -33,21 +33,9 @@ CMDLINE="sleep ${LOAD_DURATION}"
 
 syslog_netcat "Benchmarking nullworkload SUT: TINYVM=${my_ip_addr} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
 
-OUTPUT_FILE=`mktemp`
+OUTPUT_FILE=$(mktemp)
 
-source ~/cb_barrier.sh start
-
-syslog_netcat "Command line is: ${CMDLINE}. Output file is ${OUTPUT_FILE}"
-if [ x"${log_output_command}" == x"true" ]; then
-	syslog_netcat "Command output will be shown"
-	$CMDLINE | while read line ; do
-		syslog_netcat "$line"
-		echo $line >> $OUTPUT_FILE
-	done
-else
-	syslog_netcat "Command output will NOT be shown"
-	$CMDLINE 2>&1 >> $OUTPUT_FILE
-fi
+execute_load_generator "${CMDLINE}" ${OUTPUT_FILE} ${LOAD_DURATION}
 
 syslog_netcat "nullworkload run complete. Will collect and report the results"
 
@@ -55,7 +43,13 @@ bw=`echo "$LOAD_ID*3.14 + 3.14" | bc`
 tp=`echo "$LOAD_ID*2.78 + 2.78" | bc`
 lat=`echo "$LOAD_ID*0.577 + 0.577" | bc`
 
-~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum load_profile:${LOAD_PROFILE}:name load_level:${LOAD_LEVEL}:load load_duration:${LOAD_DURATION}:sec bandwidth:${bw}:mbps throughput:${tp}:tps latency:${lat}:msec
+~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
+load_profile:${LOAD_PROFILE}:name \
+load_level:${LOAD_LEVEL}:load \
+load_duration:${LOAD_DURATION}:sec \
+bandwidth:${bw}:mbps \
+throughput:${tp}:tps \
+latency:${lat}:msec
 
 rm ${OUTPUT_FILE}
 

@@ -495,6 +495,7 @@ def execute_command(operation, depkey, depsdict, hostname = "127.0.0.1", usernam
             else :
                 _msg += compare_versions(depkey, depsdict, _result_stdout.strip())
         else :
+            print _result_stderr
             _msg += "NOT OK. "
 
         if _msg.count("NOT OK") :
@@ -502,6 +503,7 @@ def execute_command(operation, depkey, depsdict, hostname = "127.0.0.1", usernam
 
     except ProcessManagement.ProcessManagementException, obj :
         _status = str(obj.status)
+        _result_stderr = str(obj.msg)
         _msg += "NOT OK. "
 
     except Exception, e :
@@ -512,7 +514,8 @@ def execute_command(operation, depkey, depsdict, hostname = "127.0.0.1", usernam
         if _status :
 
             if operation == "install" :
-                _msg += "There was an error while installing \"" + depkey + "\"."
+                _msg += "There was an error while installing \"" + depkey + "\".: "
+                _msg += _result_stderr + "\n"
             else :
                 _msg += "\nACTION: " + inst_conf_msg(depkey, depsdict)
                 if depkey == "sudo" :
@@ -597,6 +600,12 @@ def dependency_checker_installer(hostname, username, operation, options) :
             if "repo" in _dep_list :
                 _dep_list.remove("repo")
 
+        if _depsdict["carch"].count("ppc") and "mongdob" in _dep_list :
+            _msg = "This processors on this node have a \"Power\" architecture."
+            _msg += "Removing MongoDB from the dependency list"
+            print _msg
+            _dep_list.remove("mongodb")
+            
         if len(options.wks) > 1 :
             _msg = "#####\n"
             _msg += "This node will be used to play a role in the Virtual Applications"
@@ -631,6 +640,13 @@ def dependency_checker_installer(hostname, username, operation, options) :
             _msg += " The full set of dependencies will be " + operation + "ed. "
             _msg += "#####"            
             print _msg
+
+        if "java" in _dep_list and "oraclejava" in _dep_list :
+            _msg = "Since both \"java\" and \"oraclejava\" are listed as dependencies"
+            _msg += ", only \"oraclejava\" will be used"
+            print _msg
+            _dep_list.remove("java")
+            _dep_list.remove("java-home")
 
         _fmsg = ""
         _dep_missing = 0

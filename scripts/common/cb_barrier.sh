@@ -33,7 +33,7 @@ if [[ x"${sync_counter}" == x || x"${sync_counter}" == x"false" ]]; then
 else :
 	syslog_netcat "Synchronization counter specified (${sync_counter}), will ${operation} load synchronously"
 	barrier_channel=`get_my_ai_attribute sync_channel_name`
-	counter_value=`ai_increment_counter ${sync_counter}`
+	counter_value=`inter_ai_increment_counter ${sync_counter}`
 	if [ x"${operation}" == x"start" ]; then
 		specific_parameters=`get_my_ai_attribute specific_parameters`
 		if [ x"$specific_parameters" == x ]; then
@@ -61,7 +61,7 @@ else :
 			if [ x"${run_counter}" == x ]; then
 				true
 			else :
-				run_id=`ai_increment_counter ${run_counter}`
+				run_id=`inter_ai_increment_counter ${run_counter}`
 				syslog_netcat "Experiment run counter specified (${run_counter}). The current run id is ${run_id}" 
 			fi
 		fi
@@ -69,7 +69,7 @@ else :
 		#####################################################
         # very important: reset the sync counter
         #####################################################
-        x=`ai_reset_counter ${sync_counter}`
+        x=`inter_ai_reset_counter ${sync_counter}`
 		y=`publish_msg AI ${barrier_channel} go`
 	fi
 fi
