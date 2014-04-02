@@ -33,7 +33,7 @@ hibench-ver = ANY
 ### END - Dependency versions ###
 
 ### START - Dependency URLs ###
-rhel-hadoop-urls-man = http://www.carfab.com/apachesoftware/hadoop/common/hadoop-1.2.1/hadoop-1.2.1.tar.gz
+rhel-hadoop-x86_64-urls-man = http://www.carfab.com/apachesoftware/hadoop/common/hadoop-1.2.1/hadoop-1.2.1.tar.gz
 ubuntu-hadoop-amd64-urls-man = http://www.carfab.com/apachesoftware/hadoop/common/hadoop-1.2.1/hadoop-1.2.1.tar.gz
 
 #rhel-hadoop-x86_64-urls-man = http://www.carfab.com/apachesoftware/hadoop/common/hadoop-2.3.0/hadoop-2.3.0.tar.gz
@@ -52,9 +52,9 @@ rhel-java-home-install-man = echo "export JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/li
 ubuntu-java-home-install-man = echo "export JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre" >> ~/.bashrc
 
 rhel-hadoop-preinstall-man = wget -N -P ~ URL
-rhel-hadoop-install-man = tar -xzf hadoop*.gz
+rhel-hadoop-install-man = cd ~; tar -xzf ~/hadoop*.gz
 ubuntu-hadoop-preinstall-man = wget -N -P ~ URL
-ubuntu-hadoop-install-man = tar -xzf hadoop*.gz
+ubuntu-hadoop-install-man = cd ~; tar -xzf ~/hadoop*.gz
 
 rhel-hibench-preinstall-git = cd ~; git clone URL/HiBench.git; cd ~/HiBench; git checkout dev
 ubuntu-hibench-preinstall-git = cd ~; git clone URL/HiBench.git; cd ~/HiBench; git checkout dev
