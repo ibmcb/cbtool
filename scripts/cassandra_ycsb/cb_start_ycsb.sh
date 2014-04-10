@@ -37,17 +37,6 @@ then
 else
     GENERATE_DATA=`get_my_ai_attribute_with_default generate_data false`
 fi
-<<<<<<< HEAD
-if [ $standalone == online ] ; then
-    # retrieve online values from API
-    #LOAD_PROFILE=$1
-    LOAD_LEVEL=$2
-    #LOAD_DURATION=$3
-    LOAD_ID=$4
-    YCSB_PATH=`get_my_ai_attribute YCSB_PATH`
-fi
-seed=`get_ips_from_role seed`
-=======
 
 OPERATION_COUNT=`get_my_ai_attribute_with_default operation_count 100000`
 READ_RATIO=`get_my_ai_attribute_with_default read_ratio workloaddefault`
@@ -111,7 +100,6 @@ then
 else
     syslog_netcat "The value of the parameter \"GENERATE_DATA\" is \"false\". Will bypass data generation for the hadoop load profile \"${LOAD_PROFILE}\""     
 fi
->>>>>>> upstream/master
 
 #----------------------- Track all YCSB results  -------------------------------
 
@@ -119,15 +107,9 @@ fi
 ops=0
 
 #----------------------- Current op/sec for this client ------------------------
-<<<<<<< HEAD
-write_current_ops=`get_my_ai_attribute write_current_ops`
-read_current_ops=`get_my_ai_attribute read_current_ops`
-update_current_ops=`get_my_ai_attribute update_current_ops`
-=======
 write_current_ops=0
 read_current_ops=0
 update_current_ops=0
->>>>>>> upstream/master
 
 #----------------------- Tracking Latency --------------------------------------
 # <operation>_latency=average,min,max,95,99
@@ -138,10 +120,6 @@ update_latency=0
 
 #----------------------- Old tracking ------------------------------------------
 latency=0
-<<<<<<< HEAD
-syslog_netcat "YCSB Workload starting...."
-while read line ; do
-=======
 
 CMDLINE="sudo $YCSB_PATH/bin/ycsb run cassandra-10 -s -threads ${LOAD_LEVEL} -P $YCSB_PATH/workloads/${LOAD_PROFILE} -P $YCSB_PATH/custom_workload.dat -p hosts=$seed_ip"
 
@@ -160,125 +138,11 @@ then
     syslog_netcat "Command line is: ${CMDLINE}. Output file is ${OUTPUT_FILE}"
 
     while read line ; do
->>>>>>> upstream/master
 #-------------------------------------------------------------------------------
 # Need to track each YCSB Clients current operation count.
 # NEED TO:
 #       Create a variable that reports to CBTool the current operation
 #-------------------------------------------------------------------------------
-<<<<<<< HEAD
-        if [[ "$line" =~ "[0-9]+\s sec:" ]] ; then
-          CURRENT_OPS=$(echo $line | awk '{print $3}')
-          syslog_netcat "Current Ops : $CURRENT_OPS"
-          if [[ "$line" == *READ* ]] ; then
-            AVG_READ_LATENCY=$(echo $line | awk '{print $11}' | sed 's/^.*[^0-9]\([0-9]*\.[0-9]*\)/\1/' | rev | cut -c 2- | rev)
-            syslog_netncat "Current Avg. Read Latency : $AVG_READ_LATENCY"
-          fi
-          if [[ "$line" == *WRITE* ]] ; then
-            AVG_WRITE_LATENCY=$(echo $line | awk '{print $9}' | sed 's/^.*[^0-9]\([0-9]*\.[0-9]*\)/\1/' | rev | cut -c 2- | rev)
-            syslog_netncat "Current Avg. Write Latency : $AVG_WRITE_LATENCY"
-          fi
-          if [[ "$line" == *UPDATE* ]] ; then
-            AVG_UPDATE_LATENCY=$(echo $line | awk '{print $9}' | sed 's/^.*[^0-9]\([0-9]*\.[0-9]*\)/\1/' | rev | cut -c 2- | rev)
-            syslog_netncat "Current Avg. Update Latency : $AVG_UPDATE_LATENCY"
-          fi
-        fi
-
-	IFS=',' read -a array <<< "$line"
-	if [[ ${array[0]} == *OVERALL* ]] ; then
-		if [[ ${array[1]} == *Throughput* ]] ; then
-			ops=${array[2]}
-		fi
-	fi
-#----------------------- Track Latency -----------------------------------------
-        if [[ ${array[0]} == *UPDATE* ]] ; then
-                if [[ ${array[1]} == *AverageLatency* ]] ; then
-                        update_avg_latency=${array[2]}
-                fi
-                if [[ ${array[1]} == *MinLatency* ]] ; then
-                        update_min_latency="${array[2]}"
-                fi
-                if [[ ${array[1]} == *MaxLatency* ]] ; then
-                        update_max_latency="${array[2]}"
-                fi
-                if [[ ${array[1]} == *95thPercent* ]] ; then
-                        update_95_latency="${array[2]}"
-                fi
-                if [[ ${array[1]} == *99thPercent* ]] ; then
-                        update_99_latency="${array[2]}"
-                fi
-        fi
-        if [[ ${array[0]} == *READ* ]] ; then
-                if [[ ${array[1]} == *AverageLatency* ]] ; then
-                        read_avg_latency=${array[2]}
-                fi
-                if [[ ${array[1]} == *MinLatency* ]] ; then
-                        read_min_latency="${array[2]}"
-                fi
-                if [[ ${array[1]} == *MaxLatency* ]] ; then
-                        read_max_latency="${array[2]}"
-                fi
-                if [[ ${array[1]} == *95thPercent* ]] ; then
-                        read_95_latency="${array[2]}"
-                fi
-                if [[ ${array[1]} == *99thPercent* ]] ; then
-                        read_99_latency="${array[2]}"
-                fi
-        fi
-        if [[ ${array[0]} == *WRITE* ]] ; then
-                if [[ ${array[1]} == *AverageLatency* ]] ; then
-                        write_avg_latency=${array[2]}
-                fi
-                if [[ ${array[1]} == *MinLatency* ]] ; then
-                        write_min_latency="${array[2]}"
-                fi
-                if [[ ${array[1]} == *MaxLatency* ]] ; then
-                        write_max_latency="${array[2]}"
-                fi
-                if [[ ${array[1]} == *95thPercent* ]] ; then
-                        write_95_latency="${array[2]}"
-                fi
-                if [[ ${array[1]} == *99thPercent* ]] ; then
-                        write_99_latency="${array[2]}"
-                fi
-        fi
-done < <(sudo $YCSB_PATH/bin/ycsb run cassandra-10 -s -P $YCSB_PATH/workloads/workloada -P $YCSB_PATH/custom_workload.dat -p hosts="$seed" 2>&1 )
-
-if [[ $write_avg_latency -ne 0 ]] ; then
- ~/cb_report_app_metrics.py throughput:$(expr $ops):tps \
- write_avg_latency:$(expr $write_avg_latency):us \
- write_min_latency:$(expr $write_min_latency):us \
- write_max_latency:$(expr $write_max_latency):us \
- write_95_latency:$(expr $write_95_latency):us \
- write_99_latency:$(expr $write_99_latency):us \
- read_avg_latency:$(expr $read_avg_latency):us \
- read_min_latency:$(expr $read_min_latency):us \
- read_max_latency:$(expr $read_max_latency):us \
- read_95_latency:$(expr $read_95_latency):us \
- read_99_latency:$(expr $read_99_latency):us \
- update_avg_latency:$(expr $update_avg_latency):us \
- update_min_latency:$(expr $update_min_latency):us \
- update_max_latency:$(expr $update_max_latency):us \
- update_95_latency:$(expr $update_95_latency):us \
- update_99_latency:$(expr $update_99_latency):us
-fi
-if [[ $write_avg_latency -eq 0 ]] ; then
- ~/cb_report_app_metrics.py throughput:$(expr $ops):tps read_avg_latency:$(expr $read_avg_latency):us\
- read_min_latency:$(expr $read_min_latency):us\
- read_max_latency:$(expr $read_max_latency):us\
- read_95_latency:$(expr $read_95_latency):us\
- read_99_latency:$(expr $read_99_latency):us\
- update_avg_latency:$(expr $update_avg_latency):us\
- update_min_latency:$(expr $update_min_latency):us\
- update_max_latency:$(expr $update_max_latency):us\
- update_95_latency:$(expr $update_95_latency):us\
- update_99_latency:$(expr $update_99_latency):us
-fi
-
-if [ $? -gt 0 ] ; then
-	syslog_netcat "problem running ycsb prime client on $(hostname)"
-	exit 1
-=======
         if [[ "$line" =~ "[0-9]+\s sec:" ]]
         then
             CURRENT_OPS=$(echo $line | awk '{print $3}')
@@ -395,7 +259,6 @@ if [ $? -gt 0 ] ; then
 else
     syslog_netcat "This AI reached the limit of load generation process executions. If you want this AI to continue to execute the load generator, reset the \"run_limit\" counter"
     sleep ${LOAD_DURATION}
->>>>>>> upstream/master
 fi
     
 # Collect data generation time, taking care of reporting the time

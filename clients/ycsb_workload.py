@@ -18,7 +18,7 @@ import os
 
 _home = os.environ["HOME"]
 _api_endpoint = "10.16.31.203"
-_api_port = "9090"
+_api_port = "7070"
 _cloud_name = "myopenstack"
 _app_name = "cassandra_ycsb"
 
@@ -62,8 +62,26 @@ try :
 
     app = api.appattach(_cloud_name, _app_name)
 
-    api.appalter(app["uuid"], "LOAD_LEVEL", "")
-    
+ 
+#-------------------------------------------------------------------------------
+# Run this loop 7 times.
+#
+#
+#
+#-------------------------------------------------------------------------------
+    for i in range(7,0,-1):
+        print "Current Load : %s " % current_load 
+        time.sleep(300)
+        current_load=app["load_level"]
+        print "Changing Load Level"
+        api.appalter(_cloud_name, app["uuid"], "load_level", "800000")
+        print "Adding new Client"
+        api.appresize(_cloud_name, app["uuid"], "ycsb", "+1")
+        time.sleep(300)
+        print "Adding new Cassandra Instance"
+        api.appresize(_cloud_name, app["uuid"], "cassandra", "+1")
+        app = api.appshow(_cloud_name,app["uuid"])
+
 except APIException, obj:
     error = True
     print "API Problem (" + str(obj.status) + "): " + obj.msg

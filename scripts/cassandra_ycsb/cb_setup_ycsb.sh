@@ -19,7 +19,6 @@
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_ycsb_common.sh
 
 standalone=`online_or_offline "$4"`
-<<<<<<< HEAD
 
 if [ $standalone == online ] ; then
     # retrieve online values from API
@@ -62,14 +61,7 @@ sudo $YCSB_PATH/bin/ycsb load cassandra-10 -s -P $YCSB_PATH/workloads/workloada 
 end_time=$(date)
 syslog_netcat "End of YCSB Loading: $end_time"
 
-if [ $? -gt 0 ] ; then
-	syslog_netcat "problem running ycsb prime client on $(hostname)"
-	exit 1
-fi
-=======
-
 START=`provision_application_start`
 
->>>>>>> upstream/master
 provision_application_stop $START
 exit 0
