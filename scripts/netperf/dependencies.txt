@@ -1,0 +1,30 @@
+### START - Dependency installation order ###
+netperf-order = 50
+### END - Dependency installation order ###
+
+### START - Dependency-specific installation method ###
+# pm = "package manager" (yum or apt-get)
+# sl = "soft link" (assume that the dependency is already installed, just has to
+# be properly exposed to the user's path.
+# git = git clone using above giturl
+# pip = python pip utility
+# man = "manual"
+netperf-install = man
+### END - Dependency-specific installation method ###
+
+### START - Tests ###
+netperf-configure = netperf -V | cut -d ' ' -f 3
+### END - Tests ###
+
+### START - Dependency versions ###
+netperf-ver = 2.4
+### END - Dependency versions ###
+
+### START - Dependency URLs ###
+rhel-netperf-x86_64-urls-man = ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home:/assmannst/RedHat_RHEL-6/x86_64/netperf-2.6.0-9.1.x86_64.rpm 
+### END - Dependency URLs ###
+
+### START -  Dependency and method-specific command lines ###
+rhel-netperf-install-man = sudo rpm -Uvh --replacefiles URL
+ubuntu-netperf-install-man = sudo apt-get -y install netperf
+### END -  Dependency and method-specific command lines ###

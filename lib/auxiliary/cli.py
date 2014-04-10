@@ -181,7 +181,7 @@ class CBCLI(Cmd) :
              the same "parameters" argument. The decorator "unpack_arguments_for_api"
              then builds a list of python named arguments and passes it to the
              corresponding API function. In order to figure out which API function
-             to use, the API exposes a function to list those function, which
+             to use, the API exposes a function to list those functions, which
              in turn allows us to setup the appropriate function pointer.
             '''
              
@@ -377,6 +377,9 @@ class CBCLI(Cmd) :
         '''
         Do command line parsing
         '''
+
+        _path = re.compile(".*\/").search(os.path.realpath(__file__)).group(0)
+            
         usage = '''usage: %prog [options] [command]
         '''
         self.parser = OptionParser(usage)
@@ -405,6 +408,36 @@ class CBCLI(Cmd) :
                             else self.cld_attr_lst["user-defined"]["trace"], \
                           help = "Points to a trace file to be loaded at the " + \
                           "beginning of execution")
+
+        self.parser.add_option("--tpdir", \
+                           dest="tpdir", \
+                           default= _path + "/3rd_party", \
+                           help="Name of the third-party directory")
+    
+        self.parser.add_option("--defdir", \
+                           dest="defdir", \
+                           default=_path + "/configs/templates/", \
+                           help="Dependencies configuration file defaults dir")
+    
+        self.parser.add_option("--cusdir", \
+                           dest="cusdir", \
+                           default=_path + "/configs/", \
+                           help="Dependencies configuration file customizations dir")
+    
+        self.parser.add_option("--wksdir", \
+                           dest = "wksdir", \
+                           default = _path + "/scripts/", \
+                           help = "Workload dependencies configuration file dir")
+    
+        self.parser.add_option("-w","--wks", \
+                           dest = "wks", \
+                           default = "", \
+                           help = "Comma-separated workload list")
+    
+        self.parser.add_option("--custom", \
+                           dest = "custom", \
+                           default = "", \
+                           help = "Dependencies customization file name")
         
         # API options
         self.parser.add_option("--apiport", dest = "apiport", metavar = "APIP", \
@@ -574,6 +607,7 @@ class CBCLI(Cmd) :
         if options.quiet :
             logger.setLevel(ERROR)
 
+        
     @trace
     def start_api_and_gui(self) :
         '''
@@ -852,7 +886,11 @@ class CBCLI(Cmd) :
 
         if not self.options.remote :
             # Use a local copy of the API so that we can do local debugging
-            self.api = API(self.pid, self.passive_operations, self.active_operations, self.background_operations)
+            self.api = API(self.pid, self.passive_operations, 
+                           self.active_operations, self.background_operations,
+                           None,
+                           False
+                           )
             self.install_functions()
                 
         if print_message :

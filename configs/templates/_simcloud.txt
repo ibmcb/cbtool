@@ -10,6 +10,7 @@ SIM_SSH_KEY_NAME_DOC = $SSH_KEY_NAME_DOC
 
 [SPACE : SIM_CLOUDCONFIG ]
 SSH_KEY_NAME = $SIM_SSH_KEY_NAME
+OPENVPN_SERVER_ADDRESS = $False
 
 [MON_DEFAULTS : SIM_CLOUDCONFIG ]
 COLLECT_FROM_HOST = $False # simulated, nothing to monitor 
@@ -26,6 +27,8 @@ CREDENTIALS = $Empty
 SECURITY_GROUPS = $Empty
 KEY_NAME = $Empty
 ADDITIONAL_DISCOVERY = $Empty
+MIGRATE_SUPPORTED = $True
+PROTECT_SUPPORTED = $True
 
 [VM_DEFAULTS : SIM_CLOUDCONFIG]
 TRANSFER_FILES = $False
@@ -50,9 +53,6 @@ CHECK_BOOT_COMPLETE = wait_for_0
 #CHECK_BOOT_COMPLETE = subscribe_on_booting
 #CHECK_BOOT_COMPLETE = tcp_on_22
 NETID = vlan123
-
-[SVM_DEFAULTS : SIM_CLOUDCONFIG]
-SSH_KEY_NAME = $SIM_SSH_KEY_NAME
 
 [AI_DEFAULTS : SIM_CLOUDCONFIG]
 CAPTURE_SUPPORTED = $True
@@ -80,43 +80,41 @@ UPDATE_FREQUENCY = 1
 SSH_KEY_NAME = $SIM_SSH_KEY_NAME
 
 [VM_TEMPLATES : SIM_CLOUDCONFIG]
-CLIENT_DAYTRADER = size:nano32,imageid1:cloudbench_root
-DRIVER_DAYTRADER = size:nano32,imageid1:cloudbench_root 
-CLIENT_TRADELITE = size:nano32,imageid1:cloudbench_root 
-DRIVER_TRADELITE = size:nano32,imageid1:cloudbench_root 
-DB2 = size:copper32, lb_size:gold32,imageid1:cloudbench_root 
-WAS = size:iron32,imageid1:cloudbench_root 
-CLIENT_SPECWEB = size:micro32,imageid1:cloudbench_root 
-SPECWEBFRONT = size:copper32,imageid1:cloudbench_specweb 
-SPECWEBBACK = size:nano32,imageid1:cloudbench_specweb 
-CLIENT_LOST = size:micro32,imageid1:cloudbench_root 
-LOSTFRONT = size:copper32,imageid1:cloudbench_root 
-LOSTBACK = size:copper32,imageid1:cloudbench_root 
-DRIVER_HADOOP = size:nano32,imageid1:cloudbench_root 
-HADOOPMASTER = size:copper32,imageid1:cloudbench_root 
-HADOOPSLAVE = size:iron32,imageid1:cloudbench_root 
-DRIVER_NETPERF = size:nano32,imageid1:cloudbench_root 
-NETCLIENT = size:iron32,imageid1:cloudbench_root 
-NETSERVER = size:iron32,imageid1:cloudbench_root 
-DRIVER_COREMARK = size:nano32,imageid1:cloudbench_root 
-COREMARK = size:iron32,imageid1:cloudbench_root 
-CLIENT_WINDOWS = size:nano32,imageid1:cloudbench_root 
-WILLFAIL = size:nano32,imageid1:doesnotmatter
+CLIENT_DAYTRADER = size:micro32, imageids:1, imageid1:cb_daytrader
+DRIVER_DAYTRADER = size:micro32, imageids:1, imageid1:cb_daytrader
+CLIENT_TRADELITE = size:micro32, imageids:1, imageid1:cb_tradelite
+DRIVER_TRADELITE = size:micro32, imageids:1, imageid1:cb_tradelite
+MYSQL = size:copper32, lb_size:gold32, eclipsed_size:gold32, imageids:1, imageid1:cb_daytrader
+GERONIMO = size:iron32, eclipsed_size:gold32, imageids:1, imageid1:cb_daytrader
+DB2 = size:copper32, lb_size:gold32, eclipsed_size:gold32, imageids:1, imageid1:cb_daytrader
+WAS = size:iron32, eclipsed_size:gold32, imageids:1, imageid1:cb_daytrader
+DRIVER_HADOOP = size:nano32, imageids:1, imageid1:cb_hadoop
+HADOOPMASTER = size:copper32, eclipsed_size:gold32, imageids:1, imageid1:cb_hadoop
+HADOOPSLAVE = size:iron32, eclipsed_size:gold32, imageids:1, imageid1:cb_hadoop
+DRIVER_NETPERF = size:nano32, imageids:1, imageid1:cb_netperf
+NETCLIENT = size:iron32, imageids:1, imageid1:cb_netperf
+NETSERVER = size:iron32, imageids:1, imageid1:cb_netperf
+DRIVER_COREMARK = size:nano32, imageids:1, imageid1:cb_coremark
+COREMARK = size:iron32, eclipsed_size:gold32, imageids:1, imageid1:cb_netperf
+CLIENT_WINDOWS = size:nano32, imageids:1, imageid1:cb_windows
+WINDOWS = size:iron32, imageids:1, imageid1:cb_windows
+DRIVER_FILEBENCH = size:nano32, imageids:1, imageid1:cb_filebench
+FILEBENCH = size:iron32, eclipsed_size:gold32, imageids:1, imageid1:cb_filebench
+DRIVER_FIO = size:nano32, imageids:1, imageid1:cb_fio
+FIOCLIENT = size:iron32, imageids:1, imageid1:cb_fio
+FIOSERVER = size:iron32, eclipsed_size:gold32, imageids:1, imageid1:cb_fio
+TINYVM = size:pico32, imageids:1, imageid1:cb_nullworkload
+FEN_HPC = size:bronze32, imageids:1, imageid1:cb_hpc
+CN_HPC = size:bronze32, imageids:1, imageid1:cb_hpc
+DDGEN = size:bronze32, imageids:1, imageid1:cb_ddgen
+SPECJBB = size:iron32, eclipsed_size:gold32, imageids:1, imageid1:cb_specjbb
+LB = size:iron32, eclipsed_size:gold32, imageids:1, imageid1:cb_daytrader
+MONGOS = size:silver32, eclipsed_size:gold32, imageid1:cb_ycsb
+MONGO_CFG_SERVER = size:copper32, imageid1:cb_ycsb
+MONGODB = size:silver32, eclipsed_size:gold32, imageid1:cb_ycsb
+CASSANDRA = size:silver32, eclipsed_size:gold32, imageid1:cb_ycsb
+SEED = size:silver32, eclipsed_size:gold32, imageid1:cb_ycsb
+YCSB = size:silver32, eclipsed_size:gold32, imageid1:cb_ycsb
 FAILDB2 = size:copper32,imageid1:cloudbench_root
-WINDOWS = size:iron32, imageids:1, imageid1:cloudbench_windows
-DRIVER_FILEBENCH = size:nano32,imageid1:cloudbench_root 
-FILEBENCH = size:iron32,imageid1:cloudbench_root 
-DRIVER_FBNFSRD = size:nano32,imageid1:cloudbench_root 
-STORAGECLIENT = size:iron32,imageid1:cloudbench_root 
-STORAGESERVER = size:iron32,imageid1:cloudbench_root 
-TINYVM = size:pico32, imageids:1, imageid1:cloudbench_tinyvm
-RUBIS_APPSRV = size:bronze32, imageids:1, imageid1:cloudbench_rubis_appsrv1
-RUBIS_LB = size:bronze32, imageids:1, imageid1:cloudbench_rubis_loadbalancer
-RUBIS_DRIVER = size:bronze32, imageids:1, imageid1:cloudbench_rubis_driver
-RUBIS_DATABASE = size:bronze32, imageids:1, imageid1:cloudbench_rubis_database
-FEN_HPC = size:bronze32, imageids:1, imageid1:cloudbench_hpc
-CN_HPC = size:bronze32, imageids:1, imageid1:cloudbench_hpc
-DDGEN = size:bronze32, imageids:1, imageid1:cloudbench_hpc
-SPECJBB = size:iron32,imageid1:cloudbench_root
-LB = size:iron32,imageid1:cloudbench_root
+WILLFAIL = size:nano32,imageid1:doesnotmatter
 PREDICTABLEVM = size:iron32, imageid1:cloudbench_root

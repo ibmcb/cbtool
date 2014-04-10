@@ -36,13 +36,13 @@ declare -A CMDLINE_START
 
 CMDLINE_PARAMS_SEEDS="0x3415 0x3415 0x66"
 
-CMDLINE_PARAMS_ITERATIONS[1]="1000"
-CMDLINE_PARAMS_ITERATIONS[2]="2000"
-CMDLINE_PARAMS_ITERATIONS[3]="5000"
-CMDLINE_PARAMS_ITERATIONS[4]="10000"
-CMDLINE_PARAMS_ITERATIONS[5]="20000"
-CMDLINE_PARAMS_ITERATIONS[6]="50000"
-CMDLINE_PARAMS_ITERATIONS[7]="100000"
+CMDLINE_PARAMS_ITERATIONS[1]="100000"
+CMDLINE_PARAMS_ITERATIONS[2]="200000"
+CMDLINE_PARAMS_ITERATIONS[3]="500000"
+CMDLINE_PARAMS_ITERATIONS[4]="1000000"
+CMDLINE_PARAMS_ITERATIONS[5]="2000000"
+CMDLINE_PARAMS_ITERATIONS[6]="5000000"
+CMDLINE_PARAMS_ITERATIONS[7]="10000000"
 
 CMDLINE_PARAMS_INTERNAL="7 1 2000"
 
@@ -57,28 +57,20 @@ fi
 
 syslog_netcat "Benchmarking coremark SUT: COREMARK=${LOAD_GENERATOR_TARGET_IP} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
 
-OUTPUT_FILE=`mktemp`
+OUTPUT_FILE=$(mktemp)
 
-source ~/cb_barrier.sh start
-
-syslog_netcat "Command line is: ${CMDLINE}. Output file is ${OUTPUT_FILE}"
-if [ x"${log_output_command}" == x"true" ]; then
-	syslog_netcat "Command output will be shown"
-	$CMDLINE 2>&1 | while read line ; do
-		syslog_netcat "$line"
-		echo $line >> $OUTPUT_FILE
-	done
-else
-	syslog_netcat "Command output will NOT be shown"
-	$CMDLINE 2>&1 >> $OUTPUT_FILE
-fi
+execute_load_generator "${CMDLINE}" ${OUTPUT_FILE} ${LOAD_DURATION}
 
 syslog_netcat "coremark run complete. Will collect and report the results"
 
 tp=`cat ${OUTPUT_FILE} | grep Sec | cut -d ":" -f 2 | tr -d ' '`
 lat=`echo "\`cat ${OUTPUT_FILE} | grep time | cut -d ":" -f 2 | tr -d ' '\` * 1000 " | bc`
 
-~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec throughput:$tp:tps latency:$lat:msec
+~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
+load_level:${LOAD_LEVEL}:load \
+load_profile:${LOAD_PROFILE}:name \
+load_duration:${LOAD_DURATION}:sec \
+throughput:$tp:tps latency:$lat:msec
 
 rm ${OUTPUT_FILE}
 

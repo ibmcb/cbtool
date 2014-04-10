@@ -1,0 +1,2 @@
+monextract HOST os
+shell cat /home/msilva/cloudbench/regression/..//data/REGRESSION_B/HOST_runtime_os_*REGRESSION*

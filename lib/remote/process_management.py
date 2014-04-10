@@ -124,6 +124,7 @@ class ProcessManagement :
             _msg = "This is the command that would have been executed "
             _msg += "from the orchestrator: \n"
             _msg += _cmd
+
             if str(debug_cmd).lower() == "true" :
                 cbdebug(_msg, True)
             else :
@@ -136,8 +137,10 @@ class ProcessManagement :
         return _status, _result_stdout, _result_stderr
 
     def retriable_run_os_command(self, cmdline, override_hostname = None, \
-                                 total_attempts = 2, really_execute = True, \
-                                 debug_cmd = False) :
+                                 total_attempts = 2, retry_interval = 3,
+                                 really_execute = True, \
+                                 debug_cmd = False, \
+                                 raise_exception_on_error = False) :
         '''
         TBD
         '''
@@ -145,20 +148,27 @@ class ProcessManagement :
         _attempts = 0
 
         while _attempts < int(total_attempts) :
-            _status, _result_stdout, _result_stderr = self.run_os_command(cmdline, \
-                                                                          override_hostname, \
-                                                                          really_execute, \
-                                                                          debug_cmd)
+            try :
+                _status, _result_stdout, _result_stderr = self.run_os_command(cmdline, \
+                                                                              override_hostname, \
+                                                                              really_execute, \
+                                                                              debug_cmd)
 
-            if not _status and _result_stdout and not _result_stdout.count("NOK") :
-                break
-            else :
+            except ProcessManagement.ProcessManagementException, obj :
+                _status = obj.status
+                _result_stdout = "NOK"
+                _result_stderr = obj.msg
+
+            if _status and len(_result_stderr) :
                 _msg = "Command \"" + cmdline + "\" failed to execute on "
                 _msg += "hostname " + str(override_hostname) + " after attempt "
-                _msg += str(_attempts) + '.'
+                _msg += str(_attempts) + ". Will try " + str(total_attempts - _attempts)
+                _msg += " more times."
                 cbdebug(_msg, True)
-                _attempts += 1 
-                sleep(3)
+                _attempts += 1
+                sleep(retry_interval)
+            else :
+                break
 
         if _attempts >= int(total_attempts) :
             _status = 17368
@@ -167,7 +177,11 @@ class ProcessManagement :
             #_fmsg += "STDOUT is :\n" + str(_result_stdout) + '\n'
             #_fmsg += "STDERR is :\n" + str(_result_stderr) + '\n'
             cberr(_fmsg)
-            return _status, _fmsg, {"status" : _status, "msg" : _msg, "result" : _status}
+            if raise_exception_on_error :
+                raise self.ProcessManagementException(str(_fmsg), _status)
+
+            return _status, _msg, {"status" : _status, "msg" : _msg, "result" : _status}
+        
         else :
             _status = 0
             _msg = "Command \"" + cmdline + "\" executed on hostname "
@@ -176,8 +190,9 @@ class ProcessManagement :
             return _status, _msg, {"status" : _status, "msg" : _msg, "result" : _status}
 
     def parallel_run_os_command(self, cmdline_list, override_hostname_list, \
-                                total_attempts, execute_parallelism, \
-                                really_execute = True, debug_cmd = False) :
+                                total_attempts, retry_interval, \
+                                execute_parallelism, really_execute = True, \
+                                debug_cmd = False) :
         '''
         TBD
         '''
@@ -192,7 +207,7 @@ class ProcessManagement :
                 serial_mode = False # only used for debugging
 
                 if not _thread_pool and not serial_mode :
-                    pool_key = override_hostname_list[_index]
+                    pool_key = 'ai_execute_with_parallelism_' + str(execute_parallelism)
                     if pool_key not in self.thread_pools :
                         _thread_pool = ThreadPool(int(execute_parallelism))
                         self.thread_pools[pool_key] = _thread_pool
@@ -205,7 +220,9 @@ class ProcessManagement :
                         self.retriable_run_os_command(cmdline_list[_index], \
                                                       override_hostname_list[_index], \
                                                       total_attempts, \
-                                                      really_execute, debug_cmd)
+                                                      retry_interval, \
+                                                      really_execute, \
+                                                      debug_cmd, False)
                     else :
                         _status = 0
                         _xfmsg = "OK"
@@ -219,8 +236,8 @@ class ProcessManagement :
                         _thread_pool.add_task(self.retriable_run_os_command, \
                                               cmdline_list[_index], \
                                               override_hostname_list[_index], \
-                                              total_attempts, really_execute, \
-                                              debug_cmd)
+                                              total_attempts, retry_interval, \
+                                              really_execute, debug_cmd)
 
             if _thread_pool and not serial_mode:
                 _xfmsg = ''
@@ -393,18 +410,25 @@ class ProcessManagement :
         return _pid
 
     @trace
-    def kill_process(self, cmdline, kill_options = False) :
+    def kill_process(self, cmdline, kill_options = False, port = False) :
         '''
         TBD
         '''
         _pid = ['X']
+        _old_pid = False 
+        _msg = "none"
 
-        while len(_pid) :
+        while len(_pid) and _pid[0] :
 
-            _pid = self.get_pid_from_cmdline(cmdline)
-            _pid = self.get_pid_from_cmdline(cmdline, kill_options)
+            if kill_options :
+                _pid = self.get_pid_from_cmdline(cmdline, kill_options)
+            elif port :
+                pid, username = self.get_pid_from_port(port)
+                _pid = [pid]
+            else :
+                _pid = self.get_pid_from_cmdline(cmdline)
 
-            if len(_pid) :
+            if len(_pid) and _pid[0] :
                 _pid = _pid[0]
 
                 if self.hostname == "127.0.0.1" :

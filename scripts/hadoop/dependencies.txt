@@ -1,0 +1,61 @@
+### START - Dependency installation order ###
+java-order = 50
+java-home-order = 51
+hadoop-order = 52
+hibench-order = 53
+### END - Dependency installation order ###
+
+### START - Dependency-specific installation method ###
+# pm = "package manager" (yum or apt-get)
+# sl = "soft link" (assume that the dependency is already installed, just has to
+# be properly exposed to the user's path.
+# git = git clone using above giturl
+# pip = python pip utility
+# man = "manual"
+java-install = pm
+java-home-install = man
+hadoop-install = man
+hibench-install = git
+### END - Dependency-specific installation method ###
+
+### START - Tests ###
+java-configure = java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g'
+java-home-configure = cat ~/.bashrc | grep -c openjdk
+hadoop-configure = . .bashrc; ~/hadoop-1.2.1/bin/hadoop version | head -n 1 | cut -d ' ' -f 2
+hibench-configure = ls -la ~/HiBench
+### END - Tests ###
+
+### START - Dependency versions ###
+java-ver = 1.6
+java-home-ver = 1.0
+hadoop-ver = 1.0
+hibench-ver = ANY
+### END - Dependency versions ###
+
+### START - Dependency URLs ###
+rhel-hadoop-urls-man = http://www.carfab.com/apachesoftware/hadoop/common/hadoop-1.2.1/hadoop-1.2.1.tar.gz
+ubuntu-hadoop-amd64-urls-man = http://www.carfab.com/apachesoftware/hadoop/common/hadoop-1.2.1/hadoop-1.2.1.tar.gz
+
+#rhel-hadoop-x86_64-urls-man = http://www.carfab.com/apachesoftware/hadoop/common/hadoop-2.3.0/hadoop-2.3.0.tar.gz
+#ubuntu-hadoop-amd64-urls-man = http://www.carfab.com/apachesoftware/hadoop/common/hadoop-2.3.0/hadoop-2.3.0.tar.gz
+
+rhel-hibench-urls-git = https://github.com/ibmcb
+ubuntu-hibench-urls-git = https://github.com/ibmcb
+### END - Dependency URLs ###
+
+### START -  Dependency and method-specific command lines ###
+rhel-java-install-pm = sudo yum -y install java-1.7.0-openjdk
+ubuntu-java-install-pm = sudo apt-get -y install openjdk-6-jdk; sudo apt-get -y install openjdk-7-jdk
+ubuntu-java-postinstall-pm = export JAVAALT=$(sudo update-java-alternatives -l 2>&1 | grep java | sort -r | head -n 1 | cut -d ' ' -f 1); sudo update-java-alternatives -s $JAVAALT
+
+rhel-java-home-install-man = echo "export JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre" >> ~/.bashrc
+ubuntu-java-home-install-man = echo "export JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre" >> ~/.bashrc
+
+rhel-hadoop-preinstall-man = wget -N -P ~ URL
+rhel-hadoop-install-man = tar -xzf hadoop*.gz
+ubuntu-hadoop-preinstall-man = wget -N -P ~ URL
+ubuntu-hadoop-install-man = tar -xzf hadoop*.gz
+
+rhel-hibench-preinstall-git = cd ~; git clone URL/HiBench.git; cd ~/HiBench; git checkout dev
+ubuntu-hibench-preinstall-git = cd ~; git clone URL/HiBench.git; cd ~/HiBench; git checkout dev
+### END -  Dependency and method-specific command lines ###

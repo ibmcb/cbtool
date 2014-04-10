@@ -1,0 +1,67 @@
+### START - Dependency installation order ###
+java-order = 50
+java-home-order = 51
+mongo-order = 52
+maven-order = 53
+ycsb-order = 54
+### END - Dependency installation order ###
+ 
+### START - Dependency-specific installation method ###
+# pm = "package manager" (yum or apt-get)
+# sl = "soft link" (assume that the dependency is already installed, just has to
+# be properly exposed to the user's path.
+# git = git clone using above giturl
+# pip = python pip utility
+# man = "manual"
+java-install = pm
+java-home-install = man
+mongo-install = man
+maven-install = man
+ycsb-install = git
+### END - Dependency-specific installation method ###
+
+### START - Tests ###
+java-configure = . ~/.bashrc; java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g'
+java-home-configure = cat .bashrc | grep -c openjdk
+mongo-configure =  mongod --version
+maven-configure = mvn --version | head -n 1 | cut -d ' ' -f 3
+ycsb-configure = ls -la ~/YCSB
+### END - Tests ###
+
+### START - Dependency versions ###
+java-ver = 1.7
+java-home-ver = 1.0
+mongo-ver = 2.4.0
+maven-ver = 2
+ycsb-ver = ANY
+### END - Dependency versions ###
+
+### START - Dependency URLs ###
+rhel-mongo-x86_64-urls-man = http://downloads-distro.mongodb.org/repo/redhat/os/ARCH/RPMS
+ubuntu-mongo-amd64-urls-man = http://downloads-distro.mongodb.org/repo/ubuntu-upstart/dists/dist/10gen/binary-ARCH
+
+rhel-ycsb-urls-git = https://github.com/brianfrankcooper
+ubuntu-ycsb-urls-git = https://github.com/brianfrankcooper
+### END - Dependency URLs ###
+
+### START -  Dependency and method-specific command lines ###
+rhel-java-install-pm = sudo yum -y install java-1.7.0-openjdk
+ubuntu-java-install-pm = sudo apt-get -y install openjdk-6-jdk; sudo apt-get -y install openjdk-7-jdk
+ubuntu-java-postinstall-pm = export JAVAALT=$(sudo update-java-alternatives -l 2>&1 | grep java | sort -r | head -n 1 | cut -d ' ' -f 1); sudo update-java-alternatives -s $JAVAALT
+
+rhel-java-home-install-man = echo "export JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre" >> ~/.bashrc
+ubuntu-java-home-install-man = echo "export JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre" >> ~/.bashrc
+
+rhel-mongo-install-man = sudo rpm -Uvh URL/mongo-10gen-2.4.9-mongodb_1.ARCH.rpm; sudo rpm -Uvh URL/mongo-10gen-server-2.4.9-mongodb_1.ARCH.rpm 
+rhel-mongo-postinstall-man = sudo sed -i "s/^bind_ip.*/bind_ip=0.0.0.0/" /etc/mongod.conf; sudo /etc/init.d/mongod restart; sudo chkconfig mongod off
+ubuntu-mongo-preinstall-man = wget -N -P 3RPARTYDIR URL/mongodb-10gen_2.4.9_amd64.deb
+ubuntu-mongo-install-man = sudo dpkg -i 3RPARTYDIR/mongodb-10gen_2.4.9_amd64.deb
+ubuntu-mongo-postinstall-man = sudo sed -i "s/^bind_ip.*/bind_ip=0.0.0.0/" /etc/mongodb.conf; sudo bash -c "echo 'manual' > /etc/init/mongodb.override"
+
+rhel-ycsb-preinstall-git = cd ~
+rhel-ycsb-install-git = git clone URL/YCSB.git
+rhel-ycsb-postinstall-git = cd ~/YCSB/; mvn clean package
+ubuntu-ycsb-preinstall-git = cd ~
+ubuntu-ycsb-install-git = git clone URL/YCSB.git
+ubuntu-ycsb-postinstall-git = cd ~/YCSB/; mvn clean package
+### END -  Dependency and method-specific command lines ###

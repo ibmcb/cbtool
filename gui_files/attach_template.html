@@ -17,7 +17,7 @@
 	<script>
 	var isAttachVisible = false;
 	var isAttachClickedAway = false;
-	var pop = $('#attachpop').popover({ 
+	var attachpop = $('#attachpop').popover({ 
 	    html : true,
 	    title: "New BOOTOBJECTNAME:",
 	    placement : 'bottom',
@@ -28,8 +28,8 @@
 	    }
 	  });
 	  /* Allow the popover to close when clicking somewhere else on the screen */
-	  pop.data('popover').tip().css('z-index', 1030).css('margin-left', '200px');
-	  pop.click(function(e) {
+	  attachpop.data('popover').tip().css('z-index', 1030).css('margin-left', '200px');
+	  attachpop.click(function(e) {
 	        $(this).popover('show');
 	        isAttachClickedAway = false;
 	        isAttachVisible = true;

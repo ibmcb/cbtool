@@ -30,6 +30,7 @@ import re
 from time import time
 from re import sub, compile
 from pwd import getpwuid
+from subprocess import PIPE,Popen
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.remote.network_functions import get_ip_address, NetworkException
@@ -95,7 +96,7 @@ def parse_evaluate_variable(_variable, _orig_string, \
     return _value
 
 @trace
-def parse_cld_defs_file(cloud_definitions = None, print_message = False, \
+def parse_cld_defs_file(cloud_definitions, print_message = False, \
                         extra_file = False) :
     '''
     TBD
@@ -152,7 +153,8 @@ def parse_cld_defs_file(cloud_definitions = None, print_message = False, \
 
             _lines = ''
             for _template_file_name in  os.listdir(path + "configs/templates/") :
-                _lines += "INCLUDE configs/templates/" + _template_file_name + '\n'
+                if not _template_file_name.count("dependencies.txt") : 
+                    _lines += "INCLUDE configs/templates/" + _template_file_name + '\n'
 
             _lines += cloud_definitions
             _lines = _lines.split("\n")
@@ -398,16 +400,20 @@ def get_my_parameters(me):
     Python rocks.
     '''
     params = {}
-    for var in me.__dict__ :
-        value = me.__dict__[var]
-        if not var.count("__") and (isinstance(value, str) or isinstance(value, int)) or isinstance(value, float) or isinstance(value, bool): 
-            params[var] = value 
+    for key in me.__dict__ :
+        if key.lower().count("cloudoption") :
+            continue
+        value = me.__dict__[key]
+        if not key.count("__") and (isinstance(value, str) or isinstance(value, int)) or isinstance(value, float) or isinstance(value, bool): 
+            params[key] = value 
 
     return params
 
 @trace
 def set_my_parameters(me, parameters):
     for key, value in parameters.iteritems() :
+        if key.lower().count("cloudoption") :
+            continue
         try:
             int(value)
             setattr(me, key, int(value))
@@ -448,10 +454,12 @@ def rewrite_cloudconfig(cld_attr_lst) :
     for _category in cld_attr_lst :
         if isinstance(cld_attr_lst[_category], dict) and _category != "user-defined" :
             for  _attribute in cld_attr_lst[_category] :
-                if cld_attr_lst[_category][_attribute] == "need_to_be_configured_by_user" :
+                template_key = cld_attr_lst["model"] + "_" + _attribute
+                if cld_attr_lst[_category][_attribute] == "need_to_be_configured_by_user" or \
+                    ((template_key + "_doc") in cld_attr_lst["user-defined"] \
+                        and (template_key + "_default") in cld_attr_lst["user-defined"]) :
                     # Fixup custom multi-cloud options that 
                     # are pulled in from the templates
-                    template_key = cld_attr_lst["model"] + "_" + _attribute
                     if template_key in cld_attr_lst["user-defined"] :
                         cld_attr_lst[_category][_attribute] = cld_attr_lst["user-defined"][template_key]
                         '''
@@ -527,3 +535,14 @@ def rewrite_cloudoptions(cld_attr_lst, available_clouds, user_defined_only = Tru
                 for  _attribute in cld_attr_lst[_category].keys() :
                     if _attribute.count(searchkey) :
                         del cld_attr_lst[_category][_attribute]
+
+def get_version(path) :
+    '''
+    TBD
+    '''
+    _proc_h = Popen("cd " + path + "; git log --pretty=format:'%h' -n 1", shell=True, stdout=PIPE, stderr=PIPE)
+
+    (_output_stdout, _output_stderr) = _proc_h.communicate()
+    _proc_h.wait()
+    
+    return _output_stdout

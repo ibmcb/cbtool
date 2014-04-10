@@ -1,0 +1,4 @@
+aiattach TESTCLOUD ibmderby_tradelite
+ailist TESTCLOUD
+vmlist TESTCLOUD
+stats TESTCLOUD

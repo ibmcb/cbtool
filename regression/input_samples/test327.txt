@@ -1,0 +1,3 @@
+vmmigrate TESTCLOUD youngest dest
+stats TESTCLOUD
+vmlist TESTCLOUD

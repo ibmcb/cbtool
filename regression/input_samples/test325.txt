@@ -1,0 +1,2 @@
+vmcattach TESTCLOUD simzone_source initial_hosts=source
+vmcattach TESTCLOUD simzone_dest initial_hosts=dest

@@ -1,0 +1,2 @@
+vmcattach simzone_source initial_hosts=source
+vmcattach simzone_dest initial_hosts=dest

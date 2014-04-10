@@ -1,0 +1,5 @@
+aiattach ibm_daytrader
+ailist
+vmlist
+aishow ai_10 load_balancer,sut
+stats

@@ -1,0 +1,1 @@
+hostfail simhostc2 stonith

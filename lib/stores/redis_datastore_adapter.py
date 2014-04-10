@@ -30,6 +30,7 @@ from time import sleep, time
 from random import randint
 from os import path
 from pwd import getpwuid
+from datetime import datetime
 
 from redis import Redis, ConnectionError, ResponseError
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
@@ -182,12 +183,17 @@ class RedisMgdConn :
             _global_objects_list = cloud_kv_list["setup"]["global_object_list"].split(',')
 
             for _global_object in _global_objects_list :
+
                 if _global_object.upper() == "TIME" :
                     cloud_kv_list[_global_object]["experiment_id"] = \
                     ((cloud_kv_list[_global_object]["experiment_id"] + \
                       '-' + makeTimestamp().replace(' ', '-')).replace('/',\
                                                                        '-')).replace(':',\
                                                                                      '-')
+                if _global_object == "fi_templates" :
+                    for _key in cloud_kv_list[_global_object].keys() :
+                        cloud_kv_list[_global_object][_key] = \
+                        cloud_kv_list[_global_object][_key].replace("___", ' ')
 
                 self.create_object(cloud_name, "GLOBAL", _global_object, \
                                    cloud_kv_list[_global_object], False, False)
@@ -202,21 +208,40 @@ class RedisMgdConn :
                     _actual_ai_type_name = _key.replace("_sut", '')
                     if path.exists(cloud_kv_list["space"]["scripts_dir"] + '/' + _actual_ai_type_name) :
                         self.add_to_list(cloud_name, "GLOBAL", "ai_types", _actual_ai_type_name)
+                    for _key_suffix in ["load_profile", "sut", \
+                                        "load_generator_role", "load_manager_role",\
+                                        "metric_aggregator_role", "capture_role",\
+                                        "start", "load_profile", "load_level",\
+                                        "load_duration" ]:
+                        if _actual_ai_type_name + '_' + _key_suffix not in cloud_kv_list["ai_templates"] :
+                            _msg = "The AI type \"" + _actual_ai_type_name + "\""
+                            _msg += " is missing the mandatory parameter \"" 
+                            _msg += _key_suffix + "\"." 
+                            raise self.ObjectStoreMgdConnException(str(_msg), 2)
 
-            for _key in cloud_kv_list["aidrs_templates"].keys() :
-                if _key.count("_type") :
-                    self.add_to_list(cloud_name, "GLOBAL", "aidrs_patterns", _key.replace("_type", ''))
+            if "aidrs_templates" in cloud_kv_list :
+                for _key in cloud_kv_list["aidrs_templates"].keys() :
+                    if _key.count("_type") :
+                        self.add_to_list(cloud_name, "GLOBAL", "aidrs_patterns", _key.replace("_type", ''))
 
-            for _key in cloud_kv_list["vmcrs_templates"].keys() :
-                if _key.count("_scope") :
-                    self.add_to_list(cloud_name, "GLOBAL", "vmcrs_patterns", _key.replace("_scope", ''))
+            if "vmcrs_templates" in cloud_kv_list :
+                for _key in cloud_kv_list["vmcrs_templates"].keys() :
+                    if _key.count("_scope") :
+                        self.add_to_list(cloud_name, "GLOBAL", "vmcrs_patterns", _key.replace("_scope", ''))
 
-            for _key in cloud_kv_list["firs_templates"].keys() :
-                if _key.count("_scope") :
-                    self.add_to_list(cloud_name, "GLOBAL", "firs_patterns", _key.replace("_scope", ''))
+            if "firs_templates" in cloud_kv_list :
+                for _key in cloud_kv_list["firs_templates"].keys() :
+                    if _key.count("_scope") :
+                        self.add_to_list(cloud_name, "GLOBAL", "firs_patterns", _key.replace("_scope", ''))
+            
+            if "fi_templates" in cloud_kv_list :
+                for _key in cloud_kv_list["fi_templates"].keys() :
+                    if _key.count("_fault") :
+                        self.add_to_list(cloud_name, "GLOBAL", "fi_situations", _key.replace("_fault", ''))
 
-            for _key in cloud_kv_list["vm_templates"].keys() :
-                self.add_to_list(cloud_name, "GLOBAL", "vm_roles", _key)
+            if "vm_templates" in cloud_kv_list :
+                for _key in cloud_kv_list["vm_templates"].keys() :
+                    self.add_to_list(cloud_name, "GLOBAL", "vm_roles", _key)
 
             self.redis_conn.set(obj_inst + ":GLOBAL:experiment_counter", "0")
 
@@ -319,7 +344,6 @@ class RedisMgdConn :
         '''
         self.conn_check()
 
-        obj_inst = self.experiment_inst + ":" + cloud_name
         try :
             for attr in cld_attrs.keys() :
                 self.redis_conn.hset(self.experiment_inst + ":CLOUD:" + \
@@ -347,12 +371,10 @@ class RedisMgdConn :
         TBD
         '''
         self.conn_check()
-        obj_inst = self.experiment_inst + ":" + cloud_name
         try :
             _cloud_parameters = self.get_object(cloud_name, "CLOUD", False, cloud_name, False)
-            if _cloud_parameters["client_should_refresh"] != "yes" :
-                _cloud_parameters["client_should_refresh"] = "yes"
-                self.update_cloud(cloud_name, _cloud_parameters)
+            _cloud_parameters["client_should_refresh"] = str(time())
+            self.update_cloud(cloud_name, _cloud_parameters)
         except ConnectionError, msg :
             _msg = "The connection to the data store seems to be "
             _msg += "severed: " + str(msg)
@@ -439,7 +461,9 @@ class RedisMgdConn :
         '''
         TBD
         '''
+
         self.conn_check()
+
         obj_inst = self.experiment_inst + ":" + cloud_name
         self.signal_api_refresh(cloud_name)
 
@@ -450,8 +474,8 @@ class RedisMgdConn :
         try :
 
             if lock :
-                _create_lock = self.acquire_lock(cloud_name, obj_type, obj_uuid, \
-                                                 "create_object", 1)    
+                _create_lock = self.acquire_lock(cloud_name, obj_type, \
+                                                 obj_uuid, "create_object", 1)    
             if cond :
                 if self.object_exists(cloud_name, obj_type, obj_uuid, False) :
                     _msg = obj_type + " object " + obj_uuid + " could not be "
@@ -459,22 +483,22 @@ class RedisMgdConn :
                     _msg += "there (FQIN: " + _obj_inst_fn + ")." 
                     cberr(_msg)
                     raise self.ObjectStoreMgdConnException(str(_msg), 2)
-                
+
             self.redis_conn.sadd(_obj_inst_fn, obj_uuid)
             _msg = obj_type + " object " + obj_uuid + " added to object list "
             _msg += "(FQIN " + _obj_inst_fn + ")."
             cbdebug(_msg)
 
             for _key, _value in obj_attr_list.iteritems() :
-                self.update_object_attribute(cloud_name, obj_type, obj_uuid, False, _key,\
-                                              _value, False)
+                self.update_object_attribute(cloud_name, obj_type, obj_uuid, \
+                                             False, _key, _value, False)
 
             if expiration :
                 self.redis_conn.expire(_obj_inst_fn + ':' + obj_uuid, int(expiration))
-    
+
             if obj_type != "GLOBAL" and obj_type != "COLLECTOR" and \
-            not obj_type.count("TRACKING") and \
-            not obj_type.count("PENDING") :
+                not obj_type.count("TRACKING") and \
+                not obj_type.count("PENDING") :
 
                 _query_object = self.get_object(cloud_name, "GLOBAL", False, "query", False)
 
@@ -754,20 +778,30 @@ class RedisMgdConn :
             raise self.ObjectStoreMgdConnException(str(_msg), 5)
 
 ################################################################################
+    @trace
+    def pending_object_fn(self, cloud_name, obj_type, obj_uuid):
+        return self.experiment_inst + ":" + cloud_name + ':' + obj_type + ":PENDING:" + obj_uuid
+    
     @trace        
-    def pending_object_set(self, cloud_name, obj_type, obj_uuid, obj_value, lock = False) :
+    def pending_object_set(self, cloud_name, obj_type, obj_uuid, obj_key, obj_value, \
+                           notify_client_refresh = True, parent = None, parent_type = None, lock = False) :
         self.conn_check()
         obj_inst = self.experiment_inst + ":" + cloud_name
-        self.signal_api_refresh(cloud_name)
+        
+        if notify_client_refresh :
+            self.signal_api_refresh(cloud_name)
 
-        _obj_inst_fn = obj_inst + ':' + obj_type + ":PENDINGSTATUS"
+        _obj_inst_fn = obj_inst + ':' + obj_type + ":PENDING"
 
         try :
             _obj_id_fn = _obj_inst_fn + ':' + obj_uuid    
 
-            _val = self.redis_conn.set(_obj_id_fn, obj_value)
+            _val = self.redis_conn.hset(_obj_id_fn, obj_key, obj_value)
+            
+            if parent and parent_type :
+                self.pending_object_get(cloud_name, parent_type, parent, obj_key, failcheck = False)
 
-            _msg =  obj_type + " object " + obj_uuid + " pending status " 
+            _msg =  obj_type + " object " + obj_uuid + " pending " + obj_key
             _msg += " was updated with the value \""
             _msg += str(obj_value) + "\" (FQON: " + _obj_id_fn + ")."
             cbdebug(_msg)
@@ -781,7 +815,7 @@ class RedisMgdConn :
             raise self.ObjectStoreMgdConnException(str(_msg), 2)
 
         except ResponseError, msg :
-            _msg =  obj_type + " FAILED object " + obj_uuid + " pending status " 
+            _msg =  obj_type + " FAILED object " + obj_uuid + " pending " + obj_key
             _msg += " was updated with the value \""
             _msg += str(obj_value) + "\" (FQON: " + _obj_id_fn + "): "
             _msg += str(msg)
@@ -789,19 +823,20 @@ class RedisMgdConn :
             raise self.ObjectStoreMgdConnException(str(_msg), 2)
         
     @trace        
-    def pending_object_remove(self, cloud_name, obj_type, obj_uuid, lock = False) :
+    def pending_object_remove(self, cloud_name, obj_type, obj_uuid, obj_key, lock = False) :
         self.conn_check()
         obj_inst = self.experiment_inst + ":" + cloud_name
 
-        _obj_inst_fn = obj_inst + ':' + obj_type + ":PENDINGSTATUS"
+        _obj_inst_fn = obj_inst + ':' + obj_type + ":PENDING"
+        
 
         try :
 
             _obj_id_fn = _obj_inst_fn + ':' + obj_uuid    
 
-            _val = self.redis_conn.delete(_obj_id_fn)
+            _val = self.redis_conn.hdel(_obj_id_fn, obj_key)
 
-            _msg =  obj_type + " object " + obj_uuid + " pending status " 
+            _msg =  obj_type + " object " + obj_uuid + " pending " + obj_key 
             _msg += " was deleted."
             _msg += " (FQON: " + _obj_id_fn + ")."
             cbdebug(_msg)
@@ -815,7 +850,7 @@ class RedisMgdConn :
             raise self.ObjectStoreMgdConnException(str(_msg), 2)
 
         except ResponseError, msg :
-            _msg =  obj_type + " FAILED object " + obj_uuid + " pending status " 
+            _msg =  obj_type + " FAILED object " + obj_uuid + " pending " + obj_key
             _msg += " delete  \""
             _msg += " (FQON: " + _obj_id_fn + "): "
             _msg += str(msg)
@@ -823,18 +858,52 @@ class RedisMgdConn :
             raise self.ObjectStoreMgdConnException(str(_msg), 2)
         
     @trace        
-    def pending_object_get(self, cloud_name, obj_type, obj_uuid, lock = False) :
+    def pending_object_exists(self, cloud_name, obj_type, obj_uuid, obj_key, lock = False) :
         self.conn_check()
         obj_inst = self.experiment_inst + ":" + cloud_name
 
-        _obj_inst_fn = obj_inst + ':' + obj_type + ":PENDINGSTATUS"
+        _obj_inst_fn = obj_inst + ':' + obj_type + ":PENDING"
 
         try :
             _obj_id_fn = _obj_inst_fn + ':' + obj_uuid    
 
-            _val = self.redis_conn.get(_obj_id_fn)
+            return self.redis_conn.hexists(_obj_id_fn, obj_key)
 
-            _msg =  obj_type + " object " + obj_uuid + " pending status " 
+        except ConnectionError, msg :
+            _msg = "The connection to the data store seems to be "
+            _msg += "severed: " + str(msg)
+            cberr(_msg)
+            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+
+        except ResponseError, msg :
+            _msg =  obj_type + " FAILED object " + obj_uuid + " pending status " 
+            _msg += " retrieved \""
+            _msg += " (FQON: " + _obj_id_fn + "): "
+            _msg += str(msg)
+            cberr(_msg)
+            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+    @trace        
+    def pending_object_get(self, cloud_name, obj_type, obj_uuid, obj_key, failcheck = True, lock = False) :
+        self.conn_check()
+        obj_inst = self.experiment_inst + ":" + cloud_name
+
+        _obj_inst_fn = obj_inst + ':' + obj_type + ":PENDING"
+
+        try :
+            _obj_id_fn = _obj_inst_fn + ':' + obj_uuid    
+
+            if not self.pending_object_exists(cloud_name, obj_type, obj_uuid, obj_key) :
+                _msg = "Pending " + obj_type + " object key " + str(obj_key) + " could not be "
+                _msg += "found in hash set (FQIN: " + _obj_inst_fn
+                _msg += ")."
+                cberr(_msg)
+                if failcheck :
+                    raise self.ObjectStoreMgdConnException(str(_msg), 2)
+                return False
+            
+            _val = self.redis_conn.hget(_obj_id_fn, obj_key)
+
+            _msg =  obj_type + " object " + obj_uuid + " pending " + obj_key
             _msg += " was retrieved."
             _msg += " (FQON: " + _obj_id_fn + ")."
             cbdebug(_msg)
@@ -959,6 +1028,62 @@ class RedisMgdConn :
             raise self.ObjectStoreMgdConnException(str(_msg), 2)
 
     @trace
+    def update_object_views(self, cloud_name, obj_type, obj_uuid, obj_attr_list, action, lock):
+        self.conn_check()
+        obj_inst = self.experiment_inst + ":" + cloud_name
+        self.signal_api_refresh(cloud_name)
+
+        _obj_inst_fn = obj_inst + ':' + obj_type
+        _obj_id_fn = _obj_inst_fn + ':' + obj_uuid
+
+        if lock :
+            _destroy_lock = self.acquire_lock(cloud_name, obj_type, obj_uuid, \
+                                            "remove_object_attribute", 1)
+
+        try :    
+            if not self.object_exists(cloud_name, obj_type, obj_uuid, False) :
+                _msg = obj_type + " object " + str(obj_uuid) + " could not be "
+                _msg += " retrieved from object list (FQIN: " + _obj_inst_fn
+                _msg += ").There is no need to explicitly destroy it."     
+                cbdebug(_msg)
+                return True
+            
+            if obj_type != "GLOBAL" and obj_type != "COLLECTOR" and \
+            not obj_type.count("TRACKING") and \
+            not obj_type.count("PENDING") and obj_attr_list is not None :
+            
+                _query_object = self.get_object(cloud_name, "GLOBAL", False, "query", False)
+                _mandatory_views = _query_object[obj_type.lower()].split(',')
+                for _criterion in _mandatory_views :
+                    if action == "remove" :
+                        self.remove_from_view(cloud_name, obj_type, obj_attr_list, _criterion)
+                    elif action == "add" :
+                        if "departure" in obj_attr_list :
+                            self.add_to_view(cloud_name, obj_type, obj_attr_list, _criterion, "departure")
+                        if "arrival" in obj_attr_list :
+                            self.add_to_view(cloud_name, obj_type, obj_attr_list, _criterion, "arrival")
+                        
+            if lock :
+                self.release_lock(cloud_name, obj_type, obj_uuid, _destroy_lock)
+            return True
+                    
+        except ConnectionError, msg :
+            _msg = "The connection to the data store seems to be "
+            _msg += "severed: " + str(msg)
+            cberr(_msg)
+            if lock :
+                self.release_lock(cloud_name, obj_type, obj_uuid, _destroy_lock)
+            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+
+        except ResponseError, msg :
+            _msg = obj_type + " object " + obj_uuid + " could not be destroyed:" 
+            _msg += ' ' + str(msg)
+            cberr(_msg)
+            if lock :
+                self.release_lock(cloud_name, obj_type, obj_uuid, _destroy_lock)
+            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+        
+    @trace
     def destroy_object(self, cloud_name, obj_type, obj_uuid, obj_attr_list, lock) :
         '''
         TBD
@@ -1009,6 +1134,7 @@ class RedisMgdConn :
                         self.untag_object(cloud_name, _tag.upper(), obj_attr_list[_tag], \
                                           obj_type, obj_uuid)
 
+                _query_object = self.get_object(cloud_name, "GLOBAL", False, "query", False)
                 _mandatory_views = _query_object[obj_type.lower()].split(',')
                 for _criterion in _mandatory_views :
                     self.remove_from_view(cloud_name, obj_type, obj_attr_list, _criterion)
@@ -1072,7 +1198,7 @@ class RedisMgdConn :
 
             if _obj_exists :
                 _msg = "The tag \"" + tag_type + "\" with value \"" + tag_value
-                _msg += " is already part of the tag list (i.e., it is applied"
+                _msg += "\" is already part of the tag list (i.e., it is applied"
                 _msg += " to an object already)."
                 cberr(_msg)
                 raise self.ObjectStoreMgdConnException(str(_msg), "2")

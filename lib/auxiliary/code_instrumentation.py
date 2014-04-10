@@ -21,12 +21,15 @@
 
     Tracing and Debugging
 
-    @author: Marcio A. Silva
+    @author: Marcio A. Silva, Michael R. Hines
 '''
 
 from logging.handlers import logging
 from logging import getLogger, StreamHandler, Formatter, Filter, DEBUG, ERROR, INFO
 from sys import _getframe
+import __builtin__
+
+bins = dir(__builtin__)
 
 DEBUG = logging.DEBUG
 INFO = logging.INFO
@@ -39,20 +42,22 @@ def trace_nothing(aFunc):
     return aFunc
 
 def trace_actual(aFunc):
+    
     '''
     Trace entry, exit and exceptions.
     '''
-    def loggedFunc(self, *args, **kwargs ):
+    def loggedFunc(*args, **kwargs ):
         _log_suffix = ""
         try :
-            _log_prefix = self.__module__ + ".py/"  + self.__class__.__name__
+            _log_prefix = aFunc.__module__ + ".py/"  + aFunc.__class__.__name__
             _log_prefix += '.' + aFunc.__name__
         except AttributeError :
             _log_prefix = aFunc.__module__ + ".py/" + aFunc.__name__
         _msg = _log_prefix + " - Entry point " + _log_suffix
         logging.debug( _msg)
+        
         try:
-            result= aFunc(self, *args, **kwargs )
+            result = aFunc(*args, **kwargs )
         except Exception, e:
             _msg = _log_prefix + " - Exit point (Exception \"" + str(e) + "\") "
             _msg += _log_suffix
@@ -63,6 +68,8 @@ def trace_actual(aFunc):
         return result
     loggedFunc.__name__= aFunc.__name__
     loggedFunc.__doc__= aFunc.__doc__
+    
+        
     return loggedFunc
 
 #trace = trace_actual

@@ -18,6 +18,7 @@
 # @author Joe Talerico, jtaleric@redhat.com
 #/*******************************************************************************
 
+<<<<<<< HEAD
 source ~/.bashrc
 dir=$(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")
 if [ -e $dir/cb_common.sh ] ; then
@@ -29,25 +30,13 @@ standalone=`online_or_offline "$4"`
 if [ $standalone == online ] ; then
           YCSB_PATH=`get_my_ai_attribute YCSB_PATH`
 fi
+=======
+source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_ycsb_common.sh
+>>>>>>> upstream/master
+
+START=`provision_application_start`
 
 SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
-MY_IP=`/sbin/ifconfig eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' | tr -d '\r\n'`
-while [ -z $MY_IP ] ; do 
-        syslog_netcat "MY IP is null"
-	MY_IP=`/sbin/ifconfig eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' | tr -d '\r\n'`
-	sleep 1
-done 
-
-cassandra=`get_ips_from_role cassandra`
-if [ -z $cassandra ] ; then
-        syslog_netcat "cassandra IP is null"
-fi
-
-seed=`get_ips_from_role seed`
-if [ -z $seed ] ; then
-        syslog_netcat "seed IP is null"
-        exit 1;
-fi
 
 CINDER=true
 #
@@ -59,51 +48,52 @@ if [ $? -ne 0 ] ; then
   syslog_netcat "Cinder did not attach the volume, or the guest does not see it."
   CINDER=false
 fi
-sudo mkdir /dbstore
+
+sudo mkdir -p ${CASSANDRA_DATA_DIR}
+
 if $CINDER ; then
-  sudo mount /dev/vdb /dbstore  
+  sudo mount /dev/vdb ${CASSANDRA_DATA_DIR}
 fi
 
 #
 # Update the cassandra config
 #
-sudo sed -i "s/\/var\/lib\//\/dbstore\//g" /etc/cassandra/conf/cassandra.yaml
+TEMP_CASSANDRA_DATA_DIR=$(echo ${CASSANDRA_DATA_DIR} | sed 's/\//_+-_-+/g')
+sudo sed -i "s/\/var\/lib\//${TEMP_CASSANDRA_DATA_DIR}\//g" /etc/cassandra/conf/cassandra.yaml
+sudo sed -i "s/_+-_-+/\//g" /etc/cassandra/conf/cassandra.yaml
+sudo sed -i "s/'Test Cluster'/'${my_ai_name}'/g" /etc/cassandra/conf/cassandra.yaml
 
 #
 # Cassandra directory structure
 #
-sudo mkdir -p /dbstore/store/cassandra/data
-sudo mkdir -p /dbstore/cassandra/commitlog 
-sudo mkdir -p /dbstore/cassandra/saved_caches
-sudo chown -R cassandra:cassandra /dbstore
+sudo mkdir -p ${CASSANDRA_DATA_DIR}/store/cassandra/data
+sudo mkdir -p ${CASSANDRA_DATA_DIR}/cassandra/commitlog 
+sudo mkdir -p ${CASSANDRA_DATA_DIR}/cassandra/saved_caches
+sudo chown -R cassandra:cassandra ${CASSANDRA_DATA_DIR}
 
-#
-# Update /etc/hosts file
-#
-pos=1
-sudo sh -c "echo 127.0.0.1 localhost > /etc/hosts"
-sudo sh -c "echo $seed cassandra-seed >> /etc/hosts"
-sudo sh -c "echo ${MY_IP} cassandra >> /etc/hosts"
-for db in $cassandra
+for db in $cassandra_ips
 do
+    if [[ $(cat /etc/hosts | grep -c cassandra$pos) -eq 0 ]]
+    then
         sudo sh -c "echo $db cassandra$pos cassandra-$pos >> /etc/hosts"
-        ((pos++))
+    fi
+    ((pos++))
 done
 
 #
 # Update Cassandra Config
 #
 sudo sed -i 's/initial_token:$/initial_token: 0/g' /etc/cassandra/conf/cassandra.yaml
-sudo sed -i "s/- seeds:.*$/- seeds: $seed/g" /etc/cassandra/conf/cassandra.yaml
+sudo sed -i "s/- seeds:.*$/- seeds: $seed_ip/g" /etc/cassandra/conf/cassandra.yaml
 sudo sed -i "s/listen_address:.*$/listen_address: $MY_IP/g" /etc/cassandra/conf/cassandra.yaml
 sudo sed -i 's/rpc_address:.*$/rpc_address: 0\.0\.0\.0/g' /etc/cassandra/conf/cassandra.yaml
 
 #
 # Remove possible old runs
 #
-sudo rm -rf /var/lib/cassandra/saved_caches/*
-sudo rm -rf /var/lib/cassandra/data/system/*
-sudo rm -rf /var/lib/cassandra/commitlog/*
+sudo rm -rf ${CASSANDRA_DATA_DIR}/cassandra/saved_caches/*
+sudo rm -rf ${CASSANDRA_DATA_DIR}/cassandra/data/system/*
+sudo rm -rf ${CASSANDRA_DATA_DIR}/cassandra/commitlog/*
 
 syslog_netcat "my ip : $MY_IP"
 
@@ -114,7 +104,7 @@ syslog_netcat "Starting cassandra on ${SHORT_HOSTNAME}"
 sudo service cassandra start 
 
 # Give all the Java services time to start
-sleep 5
+wait_until_port_open 127.0.0.1 9160 20 5
 
 #
 # Init database
@@ -122,3 +112,4 @@ sleep 5
 cassandra-cli -f cassandra-init.cassandra
 
 provision_application_stop $START
+exit 0

@@ -1,0 +1,1 @@
+hostfail TESTCLOUD simhostc2 stonith

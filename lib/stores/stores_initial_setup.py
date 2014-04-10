@@ -24,13 +24,15 @@
     @author: Marcio Silva
 '''
 
+import socket
+
 from os import mkdir, listdir, path
 from shutil import rmtree
 from time import sleep
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.remote.process_management import ProcessManagement
-from lib.remote.network_functions import Nethashget, NetworkException 
+from lib.remote.network_functions import Nethashget, hostname2ip, NetworkException
 from redis_datastore_adapter import RedisMgdConn
 from mongodb_datastore_adapter import MongodbMgdConn
 
@@ -204,7 +206,8 @@ def redis_objectstore_setup(global_objects, operation, cloud_name = None) :
     except OSError :
         _status = 10
         _msg = "Experiment directory " + _instance_dir
-        _msg += " could not be removed. "
+        _msg += " could not be removed, "
+        _msg += " or stores directory " + _stores_path + " could not be created."
         raise StoreSetupException(_msg, 9)
 
     except Exception, e :
@@ -222,6 +225,8 @@ def syslog_logstore_setup(global_objects, operation = "check") :
     _usage = global_objects["logstore"]["usage"].lower()
 
     try :
+        _name, _ip = hostname2ip(_hostname)        
+        
         if operation == "check" :
 
             if _usage == "shared" :
@@ -294,6 +299,21 @@ def syslog_logstore_setup(global_objects, operation = "check") :
         _status = 0
         return _status, _msg
 
+    except socket.herror:
+        _status = 1200
+        _msg = "The IP address \"" + _hostname + "\" - used by the rsyslog "
+        _msg += " daemon - is not mapped to a Hostname. "
+        _msg += "Please make sure this name is resolvable either in /etc/hosts or DNS."
+        raise StoreSetupException(_msg, 9)
+
+
+    except socket.gaierror:
+        _status = 1200
+        _msg = "The Hostname \"" + _hostname + "\" - used by the rsyslog"
+        _msg += " daemon - is not mapped to an IP. "
+        _msg += "Please make sure this name is resolvable either in /etc/hosts or DNS."
+        raise StoreSetupException(_msg, 9)
+    
     except ProcessManagement.ProcessManagementException, obj :
         _status = str(obj.status)
         _msg = str(obj.msg)
@@ -439,12 +459,14 @@ def reset(global_objects, soft = True) :
         print _msg,
         _proc_man =  ProcessManagement()
         _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f cbact")
-        _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f cloud-")
+        _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f cloud-api")
+        _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f cloud-gui")        
         _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f ai-")
         _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f vm-")
         _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f submit-")
         _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f capture-")
         _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f gmetad.py")
+        _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f gtkCBUI_")
         print "done"
 
         _proc_man.run_os_command("screen -wipe")

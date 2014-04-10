@@ -1,0 +1,2 @@
+typealter TESTCLOUD ibm_daytrader load_balancer=true
+typeshow TESTCLOUD ibm_daytrader

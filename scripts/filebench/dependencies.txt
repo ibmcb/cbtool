@@ -1,0 +1,35 @@
+### START - Dependency installation order ###
+filebench-order = 50
+### END - Dependency installation order ###
+
+### START - Dependency-specific installation method ###
+# pm = "package manager" (yum or apt-get)
+# sl = "soft link" (assume that the dependency is already installed, just has to
+# be properly exposed to the user's path.
+# git = git clone using above giturl
+# pip = python pip utility
+# man = "manual"
+filebench-install = man
+### END - Dependency-specific installation method ###
+
+### START - Tests ###
+filebench-configure = which filebench
+### END - Tests ###
+
+### START - Dependency versions ###
+filebench-ver = ANY
+### END - Dependency versions ###
+
+### START - Dependency URLs ###
+rhel-filebench-x86_64-urls-man = http://REPO_ADDR/filebench
+ubuntu-filebench-x86_64-urls-man = http://REPO_ADDR/filebench
+### END - Dependency URLs ###
+
+### START -  Dependency and method-specific command lines ###
+rhel-filebench-preinstall-man = sudo yum install which; mkdir -p ~/3rd_party/; wget -N -P ~/3rd_party/ URL/filebench.tar; cd ~/3rd_party/; tar -xf ~/3rd_party/filebench.tar
+rhel-filebench-install-man = cd filebench; ./configure; sudo make install
+rhel-filebench-postinstall-man = mv ~/3rd_party/filebench ~/3rd_party/_filebench
+ubuntu-filebench-preinstall-man = mkdir -p ~/3rd_party/; wget -N -P ~/3rd_party/ URL/filebench.tar; cd ~/3rd_party/; tar -xf ~/3rd_party/filebench.tar
+ubuntu-filebench-install-man = cd filebench; ./configure; sudo make install
+ubuntu-filebench-postinstall-man = mv ~/3rd_party/filebench ~/3rd_party/_filebench
+### END -  Dependency and method-specific command lines ###

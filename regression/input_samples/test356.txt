@@ -1,0 +1,2 @@
+monextract TESTCLOUD all
+shell TESTCLOUD ls -la /home/msilva/cloudbench/regression/..//data/REGRESSION_B

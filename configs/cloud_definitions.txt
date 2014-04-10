@@ -64,21 +64,15 @@ EC2_LOGIN = cbuser                                         # The username that l
 
 # vCloud Director requires the following parameters
 [USER-DEFINED : CLOUDOPTION_MYVCDCLOUD]
-VCD_ACCESS = 10.1.1.1
-VCD_CREDENTIALS = happyguy@DeployPlace
-VCD_EXTRA_INFO = xxxxx
-VCD_KEY_NAME = xxxxx
-VCD_SECURITY_GROUPS = none
-VCD_USERNAME = happyguy
-VCD_ORGNAME = DeployPlace
-VCD_PASSWORD = xxxxx
-VCD_HOSTNAME = 10.1.1.1
-VCD_VERSION = 1.5
-VCD_SSH_KEY_NAME = vcd-rsa
-VCD_LOGIN = root
-VCD_SSH_KEY_NAME = vcd-rsa
-VCD_LOGIN = root
-VCD_INITIAL_VMCS = DeployPlace
+VCD_ACCESS = 10.1.1.1                                      # IP address or host name for vCloud Director API
+VCD_CREDENTIALS = happyguy@DeployPlace                     # username to log into vCloud Director API
+VCD_PASSWORD = xxxxx                                       # password to log into vCloud Director API
+VCD_KEY_NAME = xxxxx                                       # password to log into vCloud Director API (same as above)
+VCD_SECURITY_GROUPS = none                                 # Not used in vCloud Director, but required by CloudBench
+VCD_VERSION = 1.5                                          # VCD version. Only tested with 1.5.
+VCD_INITIAL_VMCS = DeployPlace                             # vCloud Director instance name
+VCD_SSH_KEY_NAME = dummy_id_rsa                            # Private key used to SSH into VMs
+VCD_LOGIN = cbuser                                         # Username associated with the private key above
 VCD_SNMP_VERSION = 1
 VCD_SNMP_PASSWORD = dummy
 VCD_SNMP_COMMUNITY = cbtest
@@ -90,6 +84,12 @@ PLM_ACCESS = <address>:6060
 PLM_INITIAL_VMCS = grouptwo:sut
 PLM_SSH_KEY_NAME = path_to_local_private_key_file
 PLM_LOGIN = cbuser
+
+[OBJECTSTORE]
+USAGE = shared
+
+[METRICSTORE]
+USAGE = shared
 
 [API_DEFAULTS]
 PORT = 7070

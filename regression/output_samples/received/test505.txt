@@ -1,0 +1,26 @@
+The following FINISHED VMs are in this experiment (Cloud TESTCLOUD) :
+|name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
+|vm_14         |predictablevm       |iron32      |1.2.3.4         |simhostc1                  |SUT                 |none    |none       |C8062FD2-2B54-51FA-BE3F-1D3A0FA9A49C
+|vm_13         |tinyvm              |iron32      |110.223.175.212 |simhosta1                  |SUT                 |none    |none       |3C8219FE-D5EF-5204-927F-C0DF112CB514
+|vm_12         |tinyvm              |iron32      |96.227.221.210  |simhosta1                  |SUT                 |none    |none       |157B6870-7AAF-523B-8A07-E9AD7EA81903
+|vm_6          |tinyvm              |pico32      |213.45.169.147  |simhostb1                  |SUT                 |none    |none       |9940E299-9E55-59A2-824C-59590E4FCD49
+|vm_22         |tinyvm              |pico32      |151.18.161.245  |simhosta1                  |SUT                 |none    |none       |2A1EEC07-9090-5CFD-885A-1535F43A76B7
+|vm_8          |tinyvm              |pico32      |223.216.210.232 |simhosta1                  |SUT                 |none    |none       |CB847F14-66A3-5A5C-B1A2-6742B32211CE
+|vm_2          |tinyvm              |pico32      |182.11.73.13    |simhostd1                  |LG                  |none    |none       |9810DDED-3DCC-5754-980C-265B2AA51CCF
+|vm_17         |tinyvm              |pico32      |238.28.139.53   |simhosta1                  |SUT                 |none    |none       |D9B121D1-E590-5275-BAE4-1DF7580D3B73
+|vm_18         |tinyvm              |pico32      |91.222.210.60   |simhosta1                  |SUT                 |none    |none       |A772846F-27EC-57B4-99B5-CC76142C242F
+|vm_15         |tinyvm              |pico32      |183.42.147.40   |simhostb1                  |SUT                 |none    |none       |46044965-678D-51D3-89C8-BBA55483418B
+|vm_1          |tinyvm              |pico32      |7.24.186.13     |simhostb1                  |SUT                 |none    |none       |ED910590-49B3-50B1-9F71-40144098CEA9
+|vm_4          |db2                 |copper32    |136.139.182.207 |simhostc1                  |SUT                 |none    |none       |14CB8897-FAA3-5BA4-B6A9-6F17F319042D
+|vm_2          |tinyvm              |pico32      |182.11.73.13    |simhostd1                  |LG                  |none    |none       |9810DDED-3DCC-5754-980C-265B2AA51CCF
+|vm_19         |tinyvm              |pico32      |137.49.93.4     |simhosta1                  |SUT                 |none    |none       |58AE38A1-ECDB-51B4-9FCF-5510BF329743
+|vm_16         |tinyvm              |pico32      |158.234.121.165 |simhosta1                  |SUT                 |none    |none       |815FA836-6EBC-5291-9031-436FC4B592FC
+|vm_7          |tinyvm              |pico32      |68.57.166.79    |simhosta1                  |SUT                 |none    |none       |62A5D46C-44AD-51AD-98C3-9EEF2F52852B
+|vm_5          |netclient           |platinum64  |29.138.134.8    |simhosta1                  |SUT                 |none    |none       |43E47A08-0197-5081-B5E9-0C236076BB1E
+|vm_11         |fen_hpc             |platinum64  |149.105.2.109   |simhostd1                  |LG                  |none    |none       |1201CE93-8B96-567D-B09D-AB1511521335
+|vm_21         |tinyvm              |pico32      |244.230.206.250 |simhostb1                  |SUT                 |none    |none       |E2F800B9-DC96-5838-9327-11E6F1452E3D
+|vm_10         |netclient           |iron32      |153.79.70.252   |simhosta2                  |SUT                 |none    |none       |13E891C0-C98E-58C3-AB24-E52B5C4C8F1B
+|vm_9          |db2                 |platinum64  |149.203.197.120 |simhostc1                  |SUT                 |none    |none       |A96E726F-A1D0-5188-A16B-4E77F3CED3A0
+|vm_20         |tinyvm              |pico32      |220.66.30.3     |simhostb1                  |SUT                 |none    |none       |5706014A-F6C8-5D06-93BF-84F91E9EDBFC
+|vm_3          |tinyvm              |pico32      |241.232.197.225 |simhostb1                  |SUT                 |none    |none       |47E04C53-CF83-5337-93E1-C4400A47CDC0
+

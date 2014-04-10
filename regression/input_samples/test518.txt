@@ -1,0 +1,3 @@
+vmdetach random
+vmlist
+stats

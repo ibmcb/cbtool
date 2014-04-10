@@ -1,0 +1,2 @@
+typealter ibm_daytrader load_balancer=true
+typeshow ibm_daytrader

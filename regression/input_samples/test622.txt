@@ -1,0 +1,2 @@
+shell rm -rf /home/msilva/cloudbench/regression/..//data/REGRESSION_B/*
+shell find /home/msilva/cloudbench/regression/..//data/REGRESSION_B/

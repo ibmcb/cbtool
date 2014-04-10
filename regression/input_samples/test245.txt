@@ -1,0 +1,3 @@
+vmsave TESTCLOUD vm_3
+stateshow TESTCLOUD
+stats TESTCLOUD

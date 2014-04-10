@@ -1,0 +1,29 @@
+### START - Dependency installation order ###
+sshconfig-order = 50
+### END - Dependency installation order ###
+
+### START - Dependency-specific installation method ###
+# pm = "package manager" (yum or apt-get)
+# sl = "soft link" (assume that the dependency is already installed, just has to
+# be properly exposed to the user's path.
+# git = git clone using above giturl
+# pip = python pip utility
+# man = "manual"
+sshconfig-install = man
+### END - Dependency-specific installation method ###
+
+### START - Tests ###
+sshconfig-configure = cat ~/.ssh/config | grep StrictHostKeyChecking && cat ~/.ssh/config | grep UserKnownHostsFile 
+
+### END - Tests ###
+
+### START - Dependency versions ###
+sshconfig-ver = ANY
+### END - Dependency versions ###
+
+### START -  Dependency and method-specific command lines ###
+rhel-sshconfig-preinstall-man = mkdir -p ~/.ssh; chmod 700 ~/.ssh
+rhel-sshconfig-install-man = echo "StrictHostKeyChecking=no" >> ~/.ssh/config && echo -e "UserKnownHostsFile=/dev/null" >> ~/.ssh/config && chmod 600 ~/.ssh/config
+ubuntu-sshconfig-preinstall-man = mkdir -p ~/.ssh; chmod 700 ~/.ssh
+ubuntu-sshconfig-install-man = echo "StrictHostKeyChecking=no" >> ~/.ssh/config && echo -e "UserKnownHostsFile=/dev/null" >> ~/.ssh/config && chmod 600 ~/.ssh/config
+### END -  Dependency and method-specific command lines ###

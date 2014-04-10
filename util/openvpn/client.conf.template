@@ -1,0 +1,18 @@
+proto tcp
+dev tun
+client
+remote DESTINATION 1194
+
+log /var/log/openvpn-cb.log
+up /tmp/cb_vm_ready.sh
+
+
+ca       [inline]
+cert     [inline]
+key      [inline]
+tls-auth [inline] 1
+
+nobind
+verb 3
+keepalive 10 60
+script-security 2

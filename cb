@@ -28,7 +28,7 @@ from sys import stdout, path, argv
 from subprocess import Popen, PIPE
 from pwd import getpwuid
 
-from lib.auxiliary.config import get_available_clouds
+from lib.auxiliary.config import get_available_clouds, get_version
 
 import os
 import re
@@ -55,23 +55,31 @@ def main() :
     _history = _path + "/.cb_history"
     _3rd_party = _path + "/3rd_party"
 
+    _version = get_version(_path)
+
+    _name = _path.split('/')[-2].capitalize()
+    print _name + " version is \"" + _version + "\""
+
     if not os.path.exists(_3rd_party) :
         os.mkdir(_3rd_party)
 
+    from lib.auxiliary.cli import CBCLI
+    _cmd_processor = CBCLI()
+    options = _cmd_processor.options
+
     if not os.path.exists(_history) :
-        from lib.auxiliary.dependencies import dependency_checker
+        from lib.auxiliary.dependencies import dependency_checker_installer
         _msg = "Looks like this is the first time that CloudBench is executed"
         _msg += " on this node. Will check for dependencies..."
         print _msg
-        _status, _msg = dependency_checker("127.0.0.1", getpwuid(os.getuid())[0], _3rd_party)
+
+        _status, _msg = dependency_checker_installer("127.0.0.1", getpwuid(os.getuid())[0], "configure", options)
         if _status :
             print _msg
             print "\n Please add the missing dependency(ies) and re-run configure again."
             exit(_status)
 
-    from lib.auxiliary.cli import CBCLI
-    _cmd_processor = CBCLI()
-    options = _cmd_processor.options
+    
     _args = _cmd_processor.args
 
     _initial_command = ""

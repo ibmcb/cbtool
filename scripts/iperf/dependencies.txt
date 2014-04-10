@@ -1,0 +1,26 @@
+### START - Dependency installation order ###
+iperf-order = 50
+### END - Dependency installation order ###
+
+### START - Dependency-specific installation method ###
+# pm = "package manager" (yum or apt-get)
+# sl = "soft link" (assume that the dependency is already installed, just has to
+# be properly exposed to the user's path.
+# git = git clone using above giturl
+# pip = python pip utility
+# man = "manual"
+iperf-install = pm
+### END - Dependency-specific installation method ###
+
+### START - Tests ###
+iperf-configure = iperf -v 2>&1 | cut -d ' ' -f 3
+### END - Tests ###
+
+### START - Dependency versions ###
+iperf-ver = 2.0
+### END - Dependency versions ###
+
+### START -  Dependency and method-specific command lines ###
+rhel-iperf-install-pm = sudo yum -y install iperf
+ubuntu-iperf-install-pm = sudo apt-get -y install iperf
+### END -  Dependency and method-specific command lines ###

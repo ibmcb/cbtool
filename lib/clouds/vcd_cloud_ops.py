@@ -75,23 +75,29 @@ class VcdCmds(CommonCloudFunctions) :
             cbdebug(_msg)
 
             vcloud = get_driver(Provider.VCLOUD)
-        
+            _status = 110    
+    
             # Assign login credentials and host information to libcloud handler
             self.vcdconn = vcloud(name, password, host=host, api_version = version)
             # should the above be self.vcdconn ???
+            _status = 120
 
             # Attempt to a connection using those login credentials
-            nodes = self.vcdconn.list_nodes()
-
+            # nodes = self.vcdconn.list_nodes()
+          
             _status = 0
              
         except :
+            _msg = "Error connecting to vCloud Director.  Status = " + str(_status) 
+            cbdebug(_msg, True)
+            cberr(_msg)
+
             _status = 23
 
         finally :
             if _status :
                 _msg = "vCloud Director connection failure.  Failed to connect to host " + host + " using credentials " + name + password + " with API version " + version
-                cbdebug(_msg)
+                cbdebug(_msg, True)
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
             else :
@@ -100,7 +106,7 @@ class VcdCmds(CommonCloudFunctions) :
                 return _status, _msg
     
     @trace
-    def test_vmc_connection(self, vmc_name, access, credentials, extra_info, dummy1, dummy2) :
+    def test_vmc_connection(self, vmc_name, access, credentials, extra_info, dummy1, dummy2, dummy3) :
         '''
         TBD
         '''
@@ -126,7 +132,7 @@ class VcdCmds(CommonCloudFunctions) :
                 _msg = "Cleaning up VMC. Making connection to vCloud Director host..."
                 cbdebug(_msg)
                 self.connect(obj_attr_list["credentials"], obj_attr_list["access"], \
-                             obj_attr_list["extra_info"], '1.5')
+                             obj_attr_list["password"], '1.5')
 
             _pre_existing_instances = False
 
@@ -301,17 +307,18 @@ class VcdCmds(CommonCloudFunctions) :
         TBD
         '''
         try :
-            _msg = "Looking of IP address for something."
-            cbdebug(_msg)
-            obj_attr_list["cloud_hostname"] = obj_attr_list["instance_obj"]._get_public_ips()[0]
-            obj_attr_list["cloud_ip"] = obj_attr_list["instance_obj"]._get_private_ips()[0]
+            obj_attr_list["cloud_hostname"] = "vm" + obj_attr_list["name"].split("_")[1]
+            obj_attr_list["cloud_ip"] = obj_attr_list["instance_obj"].private_ips[0]
             obj_attr_list["prov_cloud_ip"] = obj_attr_list["cloud_ip"]
             _msg = "Public IP = " + obj_attr_list["cloud_hostname"]
             _msg += " Private IP = " + obj_attr_list["cloud_ip"]
             cbdebug(_msg)
             return True
         except :
-            return False
+            _msg = "Could not retrieve IP addresses for object " + obj_attr_list["uuid"]
+            _msg += "from vCloud Director \"" + obj_attr_list["cloud_name"]
+            cberr(_msg)
+            raise CldOpsException(_msg, _status)
 
     @trace
     def get_vm_instance(self, obj_attr_list) :
@@ -393,7 +400,7 @@ class VcdCmds(CommonCloudFunctions) :
         '''
         try :
             _status = 100
-            _fmsg = "An error has occurred, but no error message was captured"
+            _fmsg = "An error has occurred when creating new vApp, but no error message was captured"
             
             obj_attr_list["cloud_vm_uuid"] = "NA"
             _instance = False
@@ -402,10 +409,15 @@ class VcdCmds(CommonCloudFunctions) :
 
             obj_attr_list["last_known_state"] = "about to connect to vCloud Director manager"
          
-            credential_name = obj_attr_list["username"] + "@" + obj_attr_list["orgname"]
+            credential_name = obj_attr_list["credentials"]
+
             if not self.vcdconn :
-                self.connect(credential_name, obj_attr_list["hostname"], \
+                _msg = "Connecting to VCD with credentials " + credential_name + " at address " + obj_attr_list["access"]
+                cbdebug(_msg)
+
+                self.connect(credential_name, obj_attr_list["access"], \
                              obj_attr_list["password"], obj_attr_list["version"])
+
 
             # Removing check of run state until basic launch / shutdown functionality working
             if self.is_vm_running(obj_attr_list) :
@@ -420,7 +432,7 @@ class VcdCmds(CommonCloudFunctions) :
 
             obj_attr_list["last_known_state"] = "about to send create request"
 
-            _msg = "Starting an instance of image "
+            _msg = "Attempting to clone an instance of vApp "
             _msg += obj_attr_list["imageid1"]
             _msg += " on vCloud Director, creating a vm named "
             _msg += obj_attr_list["cloud_vm_name"]
@@ -429,18 +441,26 @@ class VcdCmds(CommonCloudFunctions) :
             # I can't get libcloud's driver.list_images() function to work, so I'm not sure how to create a new image object
             # based on an image.  The vCloud Director system I use doesn't have an appropriate stock image that will work with
             # cloudbench.  So, I'll instead clone an instantiated image that I've created.
-            _msg = "Looking for image named "
+            _msg = "...Looking for an existing vApp named "
             _msg += obj_attr_list["imageid1"]
             cbdebug(_msg, True)
 
             image_to_clone = self.vcdconn.ex_find_node(node_name = obj_attr_list["imageid1"])
-            _msg = "Launching new VM..."
+            # Daniel 9/6/2013 Need to error check the response to ex_find_node and throw exception if no image found
+ 
+            vm_computername = "vm" + obj_attr_list["name"].split("_")[1]
+            _msg = "...Launching new vApp containing VM with hostname " + vm_computername
+            cbdebug(_msg,True)
+
+            _timeout = obj_attr_list["clone_timeout"]
+            _msg = "...libcloud clone_timeout is " + _timeout
             cbdebug(_msg)
-            _reservation = self.vcdconn.create_node(name = obj_attr_list["cloud_vm_name"], image = image_to_clone)
-    
+
+            _reservation = self.vcdconn.create_node(name = obj_attr_list["cloud_vm_name"], image = image_to_clone, ex_vm_names = [vm_computername], ex_clone_timeout = int(obj_attr_list["clone_timeout"]))
+
             obj_attr_list["last_known_state"] = "sent create request to vCloud Director, parsing response"
 
-            _msg = "Sent command to create node"
+            _msg = "...Sent command to create node, waiting for creation..."
             cbdebug(_msg)
 
             if _reservation :
@@ -454,32 +474,22 @@ class VcdCmds(CommonCloudFunctions) :
                 obj_attr_list["cloud_vm_uuid"] = _reservation.uuid
                 obj_attr_list["instance_obj"] = _reservation
 
-                _msg = "New instance UUID is " + _reservation.uuid
-                cbdebug(_msg)
+                _msg = "...Success. New instance UUID is " + _reservation.uuid
+                cbdebug(_msg,True)
 
                 self.take_action_if_requested("VM", obj_attr_list, "provision_started")
 
-                _msg = "Test Point Alpha"
-                cbdebug(_msg)
-
                 _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
 
-                _msg = "Test Point Beta"
-                cbdebug(_msg)
-
                 self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
-
                 obj_attr_list["host_name"] = "unknown"
-
-                _msg = "Test Point Gamma"
-                cbdebug(_msg)
 
                 if "instance_obj" in obj_attr_list : 
                     del obj_attr_list["instance_obj"]
                 _status = 0
 
             else :
-                _fmsg = "Failed to obtain instance's (cloud-assigned) uuid. The "
+                _fmsg = "...Failed to obtain instance's (cloud-assigned) uuid. The "
                 _fmsg += "instance creation failed for some unknown reason."
                 cberr(_fmsg)
                 _status = 100
@@ -527,37 +537,63 @@ class VcdCmds(CommonCloudFunctions) :
             _fmsg = "An error has occurred, but no error message was captured"
 
             _time_mark_drs = int(time())
+            _wait = int(obj_attr_list["update_frequency"])
+
             if "mgt_901_deprovisioning_request_originated" not in obj_attr_list :
                 obj_attr_list["mgt_901_deprovisioning_request_originated"] = _time_mark_drs
                 
             obj_attr_list["mgt_902_deprovisioning_request_sent"] = \
                 _time_mark_drs - int(obj_attr_list["mgt_901_deprovisioning_request_originated"])
 
-
-            credential_name = obj_attr_list["username"] + "@" + obj_attr_list["orgname"]
-            if not self.vcdconn :
-                self.connect(credential_name, obj_attr_list["hostname"], \
-                             obj_attr_list["password"], obj_attr_list["version"])
-
-            _wait = int(obj_attr_list["update_frequency"])
-
-            _instance = self.get_vm_instance(obj_attr_list)
+            credential_name = obj_attr_list["credentials"]
+	    while True :
+		try :
+	            if not self.vcdconn :
+        	        self.connect(credential_name, obj_attr_list["access"], \
+                	             obj_attr_list["password"], obj_attr_list["version"])
+	            _instance = self.get_vm_instance(obj_attr_list)
+                    break
+	        except :
+                    _msg = "Inside destroy.  Connect or get_vm_instance failed.  Retry in 30 seconds."
+                    cbdebug(_msg, True)
+                    sleep(30)
             
             if _instance :
+
                 _msg = "Sending a termination request for "  + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
                 _msg += "...."
                 cbdebug(_msg, True)
 
-                #_instance.destroy_node()
-                _instance.destroy()
+                #_instance.destroy()
+                #sleep(_wait)
 
-                sleep(_wait)
-
-                _msg = "Not checking to see if vm is still running.  Daniel can't get this working."
-                cbdebug(_msg)
+                # Code to check if vm running isn't working yet, so won't wait for VM to be marked as not running
                 #while self.is_vm_running(obj_attr_list) :
                 #    sleep(_wait)
+
+                # Multiple simultaneous API calls to destroy a VM on my VCD often fail, so adding retries
+                _destroy_max_tries = 5
+                _destroy_curr_tries = 0
+                while _destroy_curr_tries < _destroy_max_tries :
+
+                    try :
+                        _status = _instance.destroy()
+			sleep(_wait)
+                        break
+
+                    except :
+                        _destroy_curr_tries = _destroy_curr_tries + 1
+                        _msg = "VM destroy call to vCloud Director has failed for "  + obj_attr_list["name"]
+                        cbdebug(_msg, True)
+
+                        if _destroy_curr_tries >= _destroy_max_tries :
+                            _msg = "Aborting VM destroy call for "  + obj_attr_list["name"]
+			    _msg += " after " + str(_destroy_curr_tries) + " attempts."
+                            cberr(_msg)
+                            raise self.ObjectOperationException(_msg, _status)
+                    sleep(60)
+
             else :
                 True
 
@@ -602,9 +638,9 @@ class VcdCmds(CommonCloudFunctions) :
             _curr_tries = 0
             _max_tries = int(obj_attr_list["update_attempts"])
 
-            credential_name = obj_attr_list["username"] + "@" + obj_attr_list["orgname"]
+            credential_name = obj_attr_list["credentials"]
             if not self.vcdconn :
-                self.connect(credential_name, obj_attr_list["hostname"], \
+                self.connect(credential_name, obj_attr_list["access"], \
                              obj_attr_list["password"], obj_attr_list["version"])
 
             _instance = self.get_vm_instance(obj_attr_list)
@@ -700,9 +736,9 @@ class VcdCmds(CommonCloudFunctions) :
             _ts = obj_attr_list["target_state"]
             _cs = obj_attr_list["current_state"]
     
-            credential_name = obj_attr_list["username"] + "@" + obj_attr_list["orgname"]
+            credential_name = obj_attr_list["credentials"]
             if not self.vcdconn :
-                self.connect(credential_name, obj_attr_list["hostname"], \
+                self.connect(credential_name, obj_attr_list["access"], \
                              obj_attr_list["password"], obj_attr_list["version"])
 
             if "mgt_201_runstate_request_originated" in obj_attr_list :

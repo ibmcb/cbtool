@@ -1,0 +1,5 @@
+vmcdetach simzone_d
+vmcdetach simzone_c
+vmcdetach simzone_b
+vmclist
+stats

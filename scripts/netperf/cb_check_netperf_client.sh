@@ -19,11 +19,11 @@
 source ~/.bashrc
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
-START=`provision_application_start`
+START=$(provision_application_start)
 
 SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
 
-netperf=`which netperf`
+netperf=$(which netperf)
 $netperf -V > /dev/null 2>&1
 if [ $? -gt 0 ] ; then
 	syslog_netcat "Netperf client not installed on ${SHORT_HOSTNAME} - NOK"

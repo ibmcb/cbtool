@@ -1,0 +1,2 @@
+|vm_XX |foorole |default |undefined |unavailable |POOL |none |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |undefined |unavailable |POOL |none |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx

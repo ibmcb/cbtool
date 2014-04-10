@@ -1,0 +1,2 @@
+monextract TESTCLOUD VM app
+shell TESTCLOUD cat /home/msilva/cloudbench/regression/..//data/REGRESSION_B/VM_runtime_app_*REGRESSION*

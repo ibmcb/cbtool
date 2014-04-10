@@ -1,0 +1,28 @@
+The HOST object host_simhosta3, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
+|attribute (HOST object key)               |value                                
+|arrival                                   |1395352561                           
+|cloud_hostname                            |simhosta3                            
+|cloud_ip                                  |220.87.169.52                        
+|cloud_vm_uuid                             |17EFF28E-B78A-5F40-92ED-AA6E04C0F42F 
+|cores                                     |16                                   
+|counter                                   |85                                   
+|function                                  |hypervisor                           
+|identity                                  |/home/msilva/cloudbench/lib/auxiliary//../../credentials/bogus_id_rsa
+|login                                     |root                                 
+|memory                                    |131072                               
+|mgt_001_provisioning_request_originated   |1395352561                           
+|mgt_002_provisioning_request_sent         |0                                    
+|mgt_003_provisioning_request_completed    |0                                    
+|migrate_interface                         |default                              
+|model                                     |sim                                  
+|name                                      |host_simhosta3                       
+|notification                              |False                                
+|pool                                      |SUT                                  
+|protect_interface                         |default                              
+|simulated                                 |True                                 
+|state                                     |attached                             
+|username                                  |msilva                               
+|uuid                                      |17EFF28E-B78A-5F40-92ED-AA6E04C0F42F 
+|vmc                                       |D6527383-EEEF-5F20-AFDD-FD9F013A7407 
+|vmc_name                                  |simzone_a                            
+

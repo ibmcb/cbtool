@@ -1,0 +1,5 @@
+vmcattach simzone_b async
+waitfor 8s
+vmclist
+vmcshow simzone_b update_attempts,update_frequency
+stats

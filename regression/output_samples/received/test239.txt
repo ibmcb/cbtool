@@ -1,0 +1,2 @@
+The following FAILED VMs are in this experiment (Cloud TESTCLOUD) :
+No objects available.

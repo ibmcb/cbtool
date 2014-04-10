@@ -1,0 +1,6 @@
+aiattach TESTCLOUD ibm_daytrader
+aiattach TESTCLOUD netperf
+aiattach TESTCLOUD hpcc
+ailist TESTCLOUD
+vmlist TESTCLOUD
+stats TESTCLOUD

@@ -1,0 +1,4 @@
+aiattach ibmderby_tradelite
+ailist
+vmlist
+stats

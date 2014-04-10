@@ -1,0 +1,4 @@
+aiattach TESTCLOUD notype
+ailist TESTCLOUD
+vmlist TESTCLOUD
+stats TESTCLOUD

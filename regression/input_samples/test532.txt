@@ -1,0 +1,3 @@
+airunstate ai_3 attached
+stateshow
+stats

@@ -1,0 +1,4 @@
+aiattach TESTCLOUD coremark
+ailist TESTCLOUD
+vmlist TESTCLOUD
+stats TESTCLOUD

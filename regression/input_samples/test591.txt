@@ -1,0 +1,6 @@
+aidrsdetach all
+aidetach all
+aidrslist
+ailist
+vmlist
+stats

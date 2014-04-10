@@ -1,0 +1,101 @@
+Going to wait until the value on counter "AI ARRIVED" is equal to 30 (currently it is equal to 29) waiting 5.0 seconds between samples. The counter is assumed to be increasing.
+ status: Counter "AI ARRIVED" equals 29 after 5 seconds (the counter is assumed to be increasing).
+ status: Counter "AI ARRIVED" equals 30 after 10 seconds (the counter is assumed to be increasing).
+Waited 10 seconds until "AIs ARRIVED" was equal to 30.
+The following ATTACHED AIDRSs are in this experiment (Cloud TESTCLOUD) :
+|name                |pattern                |type              
+|aidrs_1             |simplenw               |nullworkload      
+
+The following ATTACHED AIs are in this experiment (Cloud TESTCLOUD) :
+|name      |type           |sut                                               |cloud_ip        |arrival        |aidrs                                   |uuid
+|ai_31     |nullworkload   |1_x_tinyvm                                        |119.229.63.225  |1395353095     |aidrs_1                                 |FE1DAE71-E3C7-5573-95AC-D6CA72BCFBC1
+|ai_32     |nullworkload   |1_x_tinyvm                                        |4.79.52.219     |1395353104     |aidrs_1                                 |CC783894-5231-5318-9CEA-6F52953E5A2B
+
+The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
+|name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
+|vm_122        |tinyvm              |pico32      |119.229.63.225  |simhostc1                  |SUT                 |ai_31   |aidrs_1    |ABA52350-735A-5E68-8CE7-AEF8FD5FF749
+|vm_123        |tinyvm              |pico32      |4.79.52.219     |simhostb1                  |SUT                 |ai_32   |aidrs_1    |9F381B53-8A3F-504E-AFAB-1D1CA29BFA88
+
+The following statistics are available on this experiment (Cloud TESTCLOUD) :
+------------------------- OBJECT STORE -----------------------
+|Metric                                               |Value                         
+|Used Memory                                          |6.27M                         
+|Redis Version                                        |2.6.16                        
+|Uptime (in seconds)                                  |29822                         
+|Total Connections Received                           |1372                          
+|Total Commands Processed                             |1705076                       
+|Number of Keys                                       |678                           
+------------------------- METRIC STORE -----------------------
+|Metric                                               |Value                         
+|MongoDB Version                                      |2.4.9                         
+|Storage Size                                         |1757184                       
+|Data Size                                            |377168                        
+|Index Size                                           |327040                        
+|Average Object Size                                  |523.844444444                 
+|Collections                                          |14                            
+--------------------- EXPERIMENT OBJECTS ---------------------
+|Object                                               |Count                         
+|VMCs                                                 |4                             
+|HOSTs                                                |20                            
+|VMs                                                  |2                             
+|AIs                                                  |2                             
+|AIDRSs                                               |1                             
+|VMCRSs                                               |0                             
+|FIRSs                                                |0                             
+------------------ EXPERIMENT-WIDE COUNTERS ------------------
+|Counter                                              |Value                         
+|VMC RESERVATIONS                                     |4                             
+|VMCs ARRIVED                                         |16                            
+|VMCs ARRIVING                                        |0                             
+|VMCs DEPARTED                                        |12                            
+|VMCs DEPARTING                                       |0                             
+|VMCs FAILED                                          |0                             
+|HOST RESERVATIONS                                    |0                             
+|HOSTs ARRIVED                                        |0                             
+|HOSTs ARRIVING                                       |0                             
+|HOSTs DEPARTED                                       |0                             
+|HOSTs DEPARTING                                      |0                             
+|HOSTs FAILED                                         |0                             
+|VM RESERVATIONS                                      |2                             
+|VMs ARRIVED                                          |119                           
+|VMs ARRIVING                                         |0                             
+|VMs CAPTURING                                        |0                             
+|VMs DEPARTED                                         |117                           
+|VMs DEPARTING                                        |0                             
+|VMs FAILED                                           |4                             
+|AI RESERVATIONS                                      |2                             
+|AIs ARRIVED                                          |30                            
+|AIs ARRIVING                                         |0                             
+|AIs CAPTURING                                        |0                             
+|AIs DEPARTED                                         |28                            
+|AIs DEPARTING                                        |0                             
+|AIs FAILED                                           |2                             
+|AIDRS RESERVATIONS                                   |1                             
+|AIDRSs ARRIVED                                       |1                             
+|AIDRSs ARRIVING                                      |0                             
+|AIDRSs DEPARTED                                      |0                             
+|AIDRSs DEPARTING                                     |0                             
+|AIDRSs FAILED                                        |0                             
+|VMCRS RESERVATIONS                                   |0                             
+|VMCRSs ARRIVED                                       |0                             
+|VMCRSs ARRIVING                                      |0                             
+|VMCRSs DEPARTED                                      |0                             
+|VMCRSs DEPARTING                                     |0                             
+|VMCRSs FAILED                                        |0                             
+|FIRS RESERVATIONS                                    |0                             
+|FIRSs ARRIVED                                        |0                             
+|FIRSs ARRIVING                                       |0                             
+|FIRSs DEPARTED                                       |0                             
+|FIRSs DEPARTING                                      |0                             
+|FIRSs FAILED                                         |0                             
+|EXPERIMENT COUNTER                                   |389                           
+
+ ---------------- VMC-WIDE COUNTERS ----------------
+|46D4622A-F4FA-5954-A362-7BB01336493E (simzone_b) VM RESERVATIONS|1                             
+|A01EE257-BEE4-5C25-A4B0-57EA67D25FB3 (simzone_c) VM RESERVATIONS|1                             
+|98E867EB-38E0-596F-B000-DDE51A5C4BA9 (simzone_d) VM RESERVATIONS|0                             
+|D6527383-EEEF-5F20-AFDD-FD9F013A7407 (simzone_a) VM RESERVATIONS|0                             
+
+ ---------------- AIDRS-WIDE COUNTERS ----------------
+|B620408A-4C2F-500F-ADB8-E53AF6AADA40 (aidrs_1) AI RESERVATIONS|2                             
+

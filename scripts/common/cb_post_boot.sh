@@ -18,11 +18,11 @@
 
 # Better way of getting absolute path instead of relative path
 if [ $0 != "-bash" ] ; then
-	pushd `dirname "$0"` 2>&1 > /dev/null
+    pushd `dirname "$0"` 2>&1 > /dev/null
 fi
 dir=$(pwd)
 if [ $0 != "-bash" ] ; then
-	popd 2>&1 > /dev/null
+    popd 2>&1 > /dev/null
 fi
 
 ln -sf $dir/* ~
@@ -34,28 +34,31 @@ source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 sudo bash -c "echo \"${my_ip_addr}   $(hostname)\" >> /etc/hosts"
 
 syslog_netcat "Starting generic VM post_boot configuration"
+linux_distribution
 load_manager_vm_uuid=`get_my_ai_attribute load_manager_vm`
 
 if [[ x"${my_vm_uuid}" == x"${load_manager_vm_uuid}" || x"${my_type}" == x"none" ]]
 then
-	syslog_netcat "Starting (AI) Log store..."
-	start_syslog `get_global_sub_attribute logstore port`
-	syslog_netcat "Local (AI) Log store started"
-	syslog_netcat "Starting (AI) Object store..."
-	start_redis ${osportnumber}
-	syslog_netcat "Local (AI) Object store started"
+    syslog_netcat "Relaxing all security configurations"
+    security_configuration
+    syslog_netcat "Starting (AI) Log store..."
+    start_syslog `get_global_sub_attribute logstore port`
+    syslog_netcat "Local (AI) Log store started"
+    syslog_netcat "Starting (AI) Object store..."
+    start_redis ${osportnumber}
+    syslog_netcat "Local (AI) Object store started"
 fi
 
 refresh_hosts_file
 post_boot_executed=`get_my_vm_attribute post_boot_executed`
 
 if [ x"${post_boot_executed}" == x"true" ]; then
-	syslog_netcat "cb_post_boot.sh already executed on this VM"
+    syslog_netcat "cb_post_boot.sh already executed on this VM"
 else
-	syslog_netcat "Executing \"post_boot_steps\" function"
-	post_boot_steps online
-	syslog_netcat "Updating \"post_boot_executed\" to \"true\""
-	put_my_vm_attribute post_boot_executed true
+    syslog_netcat "Executing \"post_boot_steps\" function"
+    post_boot_steps online
+    syslog_netcat "Updating \"post_boot_executed\" to \"true\""
+    put_my_vm_attribute post_boot_executed true
 fi
 syslog_netcat "Ended generic VM post_boot configuration - OK"
 exit 0

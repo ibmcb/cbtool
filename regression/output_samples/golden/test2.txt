@@ -1,0 +1,4 @@
+The following ATTACHED CLOUDs are in this experiment (Cloud ) :
+|name                    |model                   |description             
+|TESTSIMCLOUD            |sim                     |Cloudbench SimCloud.    
+

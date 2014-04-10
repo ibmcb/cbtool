@@ -1,0 +1,1 @@
+rolealter db2 size=platinum64

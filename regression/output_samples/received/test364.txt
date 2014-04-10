@@ -1,0 +1,1 @@
+Usage: cldalter <cloud_name> <gobject> <attribute> <value> 

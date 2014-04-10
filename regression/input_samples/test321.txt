@@ -1,0 +1,5 @@
+aidrsdetach TESTCLOUD aidrs_1
+aidrslist TESTCLOUD
+ailist TESTCLOUD
+vmlist TESTCLOUD
+stats TESTCLOUD

@@ -1,40 +1,45 @@
             <div class="modal hide" id="optionsModal" tabindex="-1" role="dialog" aria-labelledby="myOptionsLabel" aria-hidden="true">
-            <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-            <h3 id="myOptionsLabel">Monitoring Settings:</h3>
-            </div>
-            BOOTMONITOR
-            <div class="modal-body">
-            </div>
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h3 id="myOptionsLabel">Monitoring Settings:</h3>
+                </div>
+                BOOTMONITOR
+                <div class="modal-body">
+                </div>
             </div>
             <table>
-            <tr>
-            <td>
-            <a href="#optionsModal" role="button" class="btn" data-toggle="modal"><i class="icon-wrench"></i>&nbsp;Options</a>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button id='refreshButton' class="btn btn-info" type="button"
-            data-enable-text="Enable Auto Poll"
-            data-disable-text="Disable Auto Poll"
-            data-toggle='button'><i class='icon-refresh'></i>...</button> 
-            </td>
-            <td>&nbsp;&nbsp;Change Poll: &nbsp;&nbsp;<select onchange='doNewRefresh()' input type='button' id='changerefresh'></select></td>
-            <td>&nbsp;&nbsp;</td>
-            <td><div id='count' style='display: inline'>
-            BOOTSPINNER&nbsp;Loading...</div>
-            <br/><div class="progress progress-success"><div id='countbar' class="bar"></div></div></td>
-            </tr>
+                <tr>
+                    <td>
+                    <a href="#optionsModal" role="button" class="btn" data-toggle="modal"><i class="icon-wrench"></i>&nbsp;Options</a>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button id='refreshButton' class="btn btn-info" type="button"
+                    data-enable-text="Enable Auto Poll"
+                    data-disable-text="Disable Auto Poll"
+                    data-toggle='button'><i class='icon-refresh'></i>...</button> 
+                    </td>
+                    <td>&nbsp;&nbsp;Change Poll: &nbsp;&nbsp;<select onchange='doNewRefresh()' input type='button' id='changerefresh'></select></td>
+                    <td>&nbsp;&nbsp;</td>
+                    <td><div id='count' style='display: inline'>
+                    BOOTSPINNER&nbsp;Loading...</div>
+                    <br/><div class="progress progress-success"><div id='countbar' class="bar"></div></div></td>
+                </tr>
             </table>
             <div id='summary'></div>
-            <ul class="nav nav-tabs" id='monitortabs'>
-            <li class='active'><a data-toggle='tab' href="#taball">Everything</a></li>
-            BOOTTABS
+                <ul class="nav nav-tabs" id='monitortabs'>
+                <li class='active'><a data-toggle='tab' href="#taball">Everything</a></li>
+                BOOTTABS
             </div>
             <script>
-            populateRefreshChoices();
-            $('#refreshButton').button('toggle')
-            startRefresh();
-            $(".nav-tabs a[href=#tabh]").tab('show');
-            $(".nav-tabs a[href=#tabs]").tab('show');
-            $(".nav-tabs a[href=#taba]").tab('show');
-            $(".nav-tabs a[href=#taball]").tab('show');
-            $(".nav-tabs a[href=#tabp]").tab('show');
+                populateRefreshChoices();
+                $('#refreshButton').button('toggle')
+                startRefresh();
+                $(".nav-tabs a[href=#tabh]").tab('show');
+                $(".nav-tabs a[href=#tabs]").tab('show');
+                $(".nav-tabs a[href=#taba]").tab('show');
+                $(".nav-tabs a[href=#taball]").tab('show');
+                $(".nav-tabs a[href=#tabp]").tab('show');
+                if("show" in params) {
+                    $(".nav-tabs a[href=#tab" + params["show"] + "]").tab('show');
+                } else {
+                    $(".nav-tabs a[href=#tabBOOTSHOW]").tab('show');
+                }
             </script>

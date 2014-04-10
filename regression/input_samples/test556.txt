@@ -1,0 +1,4 @@
+waituntil AI ARRIVED=17 increasing 2
+ailist
+vmlist
+stats

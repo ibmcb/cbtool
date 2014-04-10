@@ -1,0 +1,3 @@
+The attribute "size" on db2 VM was modified:
+|attribute                              |old value                          |new value                          
+|size                                   |copper32                           |platinum64                         

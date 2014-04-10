@@ -1,0 +1,7 @@
+shell rm /tmp/cb*_was_used_on_execution
+cldalter vm_defaults execute_script_name=/home/msilva/cloudbench/regression/..//regression/scripts/execute_on_staging.sh
+vmattach tinyvm auto empty iron32 execute_provision_complete async
+waituntil VM ARRIVING=0 decreasing 1
+shell ls /tmp/cb*_was_used_on_execution
+vmlist
+stats

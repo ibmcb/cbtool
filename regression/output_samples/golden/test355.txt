@@ -1,0 +1,9 @@
+running shell command: "rm -rf /home/msilva/cloudbench/regression/..//data/REGRESSION_B/*"....
+stdout:
+ 
+
+running shell command: "find /home/msilva/cloudbench/regression/..//data/REGRESSION_B/"....
+stdout:
+ /home/msilva/cloudbench/regression/..//data/REGRESSION_B/
+
+

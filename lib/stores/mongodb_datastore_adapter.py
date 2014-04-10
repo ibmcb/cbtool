@@ -32,7 +32,7 @@ from random import randint
 from pwd import getpwuid
 from lib.auxiliary.config import get_my_parameters, set_my_parameters 
 
-from pymongo import Connection
+from pymongo import MongoClient
 from pymongo import errors as PymongoException
 
 def print_standalone(str) :
@@ -91,10 +91,10 @@ class MongodbMgdConn :
         try:
 
             if tout > 0:
-                _conn = Connection(host = self.host, port = self.port, \
-                                    max_pool_size=10, network_timeout = tout)
+                _conn = MongoClient(host = self.host, port = self.port, \
+                                    max_pool_size=10)
             else :
-                _conn = Connection(host = self.host, port = self.port, \
+                _conn = MongoClient(host = self.host, port = self.port, \
                                     max_pool_size=10)
 
             self.mongodb_conn = _conn
@@ -114,10 +114,9 @@ class MongodbMgdConn :
         try:
 
             if tout > 0:
-                _conn = Connection(host = self.host, port = self.port, \
-                                   network_timeout = tout)
+                _conn = MongoClient(host = self.host, port = self.port)
             else :
-                _conn = Connection(host = self.host, port = self.port)
+                _conn = MongoClient(host = self.host, port = self.port)
 
             self.mongodb_conn = _conn
             

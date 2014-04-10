@@ -22,7 +22,7 @@
 #       monotonically growing/decreasing values <initial value>(+,-,*,/)<factor>
 #           example: LOAD_DURATION = 0+10
 
-[AI_TEMPLATES : DAYTRADER]
+[AI_TEMPLATES : IBM_DAYTRADER]
 SUT = client_daytrader->was->db2
 LOAD_GENERATOR_ROLE = client_daytrader
 LOAD_MANAGER_ROLE = client_daytrader
@@ -63,11 +63,94 @@ LOAD_DURATION = uniformIXIXI90I120
 #SYNC_CHANNEL_NAME = synchronization_channel
 #RUN_COUNTER_NAME = experiment_id_counter
 
-[AI_TEMPLATES : TRADELITE]
+[AI_TEMPLATES : OPEN_DAYTRADER]
+SUT = client_daytrader->geronimo->mysql
+LOAD_GENERATOR_ROLE = client_daytrader
+LOAD_MANAGER_ROLE = client_daytrader
+METRIC_AGGREGATOR_ROLE = client_daytrader
+CAPTURE_ROLE = mysql
+LOAD_BALANCER = $False
+LOAD_BALANCER_TARGET_PORT = 9080
+LOAD_BALANCER_TARGET_URL = daytrader
+LOAD_BALANCER_TARGET_CHILDREN = 2
+LOAD_BALANCER_PORT = 9080
+LOAD_BALANCER_URL = daytrader
+# This only has effect if the parameter LOAD_BALANCER is set to "$True"
+LB_SETUP1 = cb_restart_loadbalancer.sh
+LB_RESET1 = cb_restart_loadbalancer.sh
+# This only has effect if the parameter DB2_ON_RAMDISK is set to "$True"
+MYSQL_SETUP1 = cb_setup_ramdisk.sh
+# These are always executed
+GERONIMO_SETUP2 = cb_restart_geronimo.sh
+MYSQL_SETUP2 = cb_restart_mysql.sh
+GERONIMO_RESET1 = cb_restart_geronimo.sh
+MYSQL_RESET1 = cb_restart_mysql.sh
+START = cb_daytrader.sh
+LOAD_PROFILE = default
+LOAD_LEVEL = uniformIXIXI1I10
+# The load duration for daytrader should not be smaller than 90 seconds
+LOAD_DURATION = uniformIXIXI90I120
+# "Special" modifier parameters for the AI DAYTRADER. These should be set on
+# YOUR configuration file, not on this template! Please DO NOT uncomment them 
+# here.
+#TRADEDB_SIZE = small
+#NR_QUOTES=40000
+#NR_USERS=15000
+#DB2_ON_RAMDISK = $False
+#PERIODIC_MEASUREMENTS = $False
+#APP_COLLECTION = lazy
+#SYNC_COUNTER_NAME = synchronization_counter
+#CONCURRENT_AIS = 2
+#SYNC_CHANNEL_NAME = synchronization_channel
+#RUN_COUNTER_NAME = experiment_id_counter
+
+[AI_TEMPLATES : IBMDB2_TRADELITE]
+SUT = client_daytrader->was->db2
+LOAD_GENERATOR_ROLE = client_daytrader
+LOAD_MANAGER_ROLE = client_daytrader
+METRIC_AGGREGATOR_ROLE = client_daytrader
+CAPTURE_ROLE = db2
+LOAD_BALANCER = $False
+LOAD_BALANCER_TARGET_PORT = 9080
+LOAD_BALANCER_TARGET_URL = daytrader
+LOAD_BALANCER_TARGET_CHILDREN = 2
+LOAD_BALANCER_PORT = 9080
+LOAD_BALANCER_URL = daytrader
+# This only has effect if the parameter LOAD_BALANCER is set to "$True"
+LB_SETUP1 = cb_restart_loadbalancer.sh
+LB_RESET1 = cb_restart_loadbalancer.sh
+# This only has effect if the parameter DB2_ON_RAMDISK is set to "$True"
+DB2_SETUP1 = cb_setup_ramdisk.sh
+# These are always executed
+WAS_SETUP2 = cb_restart_was.sh
+DB2_SETUP2 = cb_restart_db2.sh
+WAS_RESET1 = cb_restart_was.sh
+DB2_RESET1 = cb_restart_db2.sh
+START = cb_daytrader.sh
+LOAD_PROFILE = default
+LOAD_LEVEL = uniformIXIXI1I10
+# The load duration for daytrader should not be smaller than 90 seconds
+LOAD_DURATION = uniformIXIXI90I120
+# "Special" modifier parameters for the AI DAYTRADER. These should be set on
+# YOUR configuration file, not on this template! Please DO NOT uncomment them 
+# here.
+#TRADEDB_SIZE = small
+#NR_QUOTES=40000
+#NR_USERS=15000
+#DB2_ON_RAMDISK = $False
+#PERIODIC_MEASUREMENTS = $False
+#APP_COLLECTION = lazy
+#SYNC_COUNTER_NAME = synchronization_counter
+#CONCURRENT_AIS = 2
+#SYNC_CHANNEL_NAME = synchronization_channel
+#RUN_COUNTER_NAME = experiment_id_counter
+
+[AI_TEMPLATES : IBMDERBY_TRADELITE]
 SUT = client_tradelite->was
 LOAD_GENERATOR_ROLE = client_tradelite
 LOAD_MANAGER_ROLE = client_tradelite
 METRIC_AGGREGATOR_ROLE = client_tradelite
+CAPTURE_ROLE = was
 LOAD_BALANCER = $False
 LOAD_BALANCER_TARGET_PORT = 9080
 LOAD_BALANCER_TARGET_URL = daytrader
@@ -76,10 +159,6 @@ LOAD_BALANCER_TARGET_CHILDREN = 2
 LB_SETUP1 = cb_restart_loadbalancer.sh
 LB_RESET1 = cb_restart_loadbalancer.sh
 WAS_SETUP1 = cb_restart_was.sh
-# This only has effect if the SUT is equal "client_tradelite->was->db2"
-DB2_SETUP1 = cb_restart_db2.sh
-# This only has effect if the SUT is equal "client_tradelite->was->db2"
-DB2_RESET1 = cb_restart_db2.sh
 # This is always executed
 WAS_RESET1 = cb_restart_was.sh
 START = cb_tradelite.sh
@@ -112,6 +191,7 @@ CAPTURE_ROLE = hadoopslave
 HADOOPMASTER_SETUP1 = cb_config_hadoop_cluster.sh
 HADOOPSLAVE_SETUP1 = cb_config_hadoop_cluster.sh
 HADOOPMASTER_SETUP2 = cb_start_hadoop_cluster.sh
+HADOOPSLAVE_SETUP2 = cb_start_hadoop_cluster.sh
 HADOOPMASTER_RESIZE1 = cb_restart_hadoop_cluster.sh
 HADOOPSLAVE_RESIZE1 = cb_restart_hadoop_cluster.sh
 START = cb_hadoop_job.sh
@@ -123,20 +203,22 @@ LOAD_DURATION = 60
 # YOUR configuration file, not on this template! Please DO NOT uncomment them 
 # here.
 #JAVA_HOME = ~/jdk1.6.0_21
-#HADOOP_HOME = ~/hadoop-1.0.4
+#HADOOP_HOME = ~/hadoop-1.2.1
 #HIBENCH_HOME = ~/HiBench
 #DFS_NAME_DIR = /tmp/cbhadoopname
 #DFS_DATA_DIR = /tmp/cbhadoopdata
-#LOAD_FACTOR = 1000
+#LOAD_FACTOR = 10000
 #CLASSES = 20
 #NUM_MAPS = 2
 #NUM_REDS = 2
 #NGRAMS = 3
 #RD_FILE_SIZE = 20
 #WT_FILE_SIZE = 10
+#NUM_OF_SAMPLES = 3000000
 #NUM_CLUSTERS = 5
 #DIMENSIONS = 20
 #MAX_ITERATION = 5
+#KMEANS_GENERATE_DATA = 1
 #BLOCK = 0
 #BLOCK_WIDTH = 16
 #ROWS_OF_BLOCKS=2
@@ -162,6 +244,30 @@ NETSERVER_SETUP1 = cb_check_netperf_server.sh
 START = cb_netperf.sh
 LOAD_PROFILE = tcp_stream
 LOAD_LEVEL = 1
+LOAD_DURATION = uniformIXIXI70I90
+# "Special" modifier parameters for the AI NETPERF. These should be set on
+# YOUR configuration file, not on this template! Please DO NOT uncomment them 
+# here.
+#SYNC_COUNTER_NAME = synchronization_counter
+#CONCURRENT_AIS = 2
+#SYNC_CHANNEL_NAME = synchronization_channel
+#RUN_COUNTER_NAME = experiment_id_counter
+
+[AI_TEMPLATES : IPERF]
+SUT = iperfclient->iperfserver
+LOAD_GENERATOR_ROLE = iperfclient
+LOAD_MANAGER_ROLE = iperfclient
+METRIC_AGGREGATOR_ROLE = iperfclient
+CAPTURE_ROLE = iperfserver
+LOAD_BALANCER = $False
+LOAD_BALANCER_TARGET_PORT = 80 
+LOAD_BALANCER_TARGET_URL = unknown 
+LOAD_BALANCER_TARGET_CHILDREN = 2
+IPERFCLIENT_SETUP1 = cb_check_iperf_client.sh
+IPERFSERVER_SETUP1 = cb_check_iperf_server.sh
+START = cb_iperf.sh
+LOAD_PROFILE = tcp
+LOAD_LEVEL = uniformIXIXI1I5
 LOAD_DURATION = uniformIXIXI70I90
 # "Special" modifier parameters for the AI NETPERF. These should be set on
 # YOUR configuration file, not on this template! Please DO NOT uncomment them 
@@ -322,7 +428,7 @@ LOAD_DURATION = 60
 #NB_SIZE = 4
 #PROCESSES_PER_NODE = 3
 
-[AI_TEMPLATES : mongo_ycsb]
+[AI_TEMPLATES : MONGO_YCSB]
 SUT = mongos->mongo_cfg_server->3_x_mongodb
 LOAD_GENERATOR_ROLE = mongos
 LOAD_MANAGER_ROLE = mongos
@@ -340,19 +446,31 @@ MONGO_CFG_SERVER_RESIZE1 = cb_modify_hosts.sh
 START = cb_start_ycsb.sh
 LOAD_PROFILE = default
 LOAD_LEVEL = uniformIXIXI1I100
+LOAD_DURATION = 60
 
-[AI_TEMPLATES : cassandra_ycsb]
-#SUT = ycsb->seed->2_x_cassandra
-SUT = ycsb->seed
+[AI_TEMPLATES : CASSANDRA_YCSB]
+SUT = ycsb->seed->2_x_cassandra
 LOAD_GENERATOR_ROLE = ycsb
 LOAD_MANAGER_ROLE = ycsb
-METRIC_AGGREGATOR_ROLE = seed
+METRIC_AGGREGATOR_ROLE = ycsb
 CAPTURE_ROLE = ycsb
 LOAD_BALANCER = $False
 CASSANDRA_SETUP1 = cb_restart_node.sh
 SEED_SETUP1 = cb_restart_seed.sh
-CASSANDRA_RESIZE1 = cb_modify_node.sh
 YCSB_SETUP2 = cb_setup_ycsb.sh
+CASSANDRA_RESIZE1 = cb_modify_node.sh
 START=cb_start_ycsb.sh
-LOAD_PROFILE = default
-LOAD_LEVEL = 10000000
+LOAD_PROFILE = workloada
+LOAD_LEVEL = 1
+LOAD_DURATION = 60
+#SYNC_COUNTER_NAME = synchronization_counter
+#CONCURRENT_AIS = 2
+#SYNC_CHANNEL_NAME = synchronization_channel
+#RUN_COUNTER_NAME = experiment_id_counter
+#CASSANDRA_DATA_DIR = /dbstore
+#OPERATION_COUNT = 100000
+#READ_RATIO = workloaddefault
+#UPDATE_RATIO = workloaddefault
+#INPUT_RECORDS = memory
+#INPUT_RECORDS_FACTOR = 10000
+#DATABASE_SIZE_VERSUS_MEMORY = 0.5
