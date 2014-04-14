@@ -76,5 +76,5 @@ fi
 pos=1
 if [[ $(cat /etc/hosts | grep -c cassandra-seed) -eq 0 ]]
 then
-    sudo sh -c "echo $seed_ip cassandra-seed >> /etc/hosts"
+    sudo sh -c "echo $seed_ip cassandra cassandra-seed >> /etc/hosts"
 fi
