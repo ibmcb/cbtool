@@ -40,7 +40,7 @@ for db in $cassandra_ips
 do
     if [[ $(cat /etc/hosts | grep -c cassandra${pos}) -eq 0 ]]
     then    
-        sudo sh -c "echo $db cassandra$pos cassandra-$pos >> /etc/hosts"
+        sudo sh -c "echo $db cassandra cassandra$pos cassandra-$pos >> /etc/hosts"
     fi
     
     if [[ $MY_IP = $db ]]

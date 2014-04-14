@@ -18,6 +18,18 @@
 # @author Joe Talerico, jtaleric@redhat.com
 #/*******************************************************************************
 
+source ~/.bashrc
+dir=$(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")
+if [ -e $dir/cb_common.sh ] ; then
+	source $dir/cb_common.sh
+else
+	source $dir/../common/cb_common.sh
+fi
+standalone=`online_or_offline "$4"`
+if [ $standalone == online ] ; then
+          YCSB_PATH=`get_my_ai_attribute YCSB_PATH`
+fi
+
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_ycsb_common.sh
 
 START=`provision_application_start`
@@ -80,8 +92,6 @@ sudo sed -i 's/rpc_address:.*$/rpc_address: 0\.0\.0\.0/g' /etc/cassandra/conf/ca
 sudo rm -rf ${CASSANDRA_DATA_DIR}/cassandra/saved_caches/*
 sudo rm -rf ${CASSANDRA_DATA_DIR}/cassandra/data/system/*
 sudo rm -rf ${CASSANDRA_DATA_DIR}/cassandra/commitlog/*
-
-syslog_netcat "my ip : $MY_IP"
 
 #
 # Start the database
