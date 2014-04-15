@@ -34,6 +34,8 @@ else
     source $dir/../common/cb_common.sh
 fi
 
+declare -A token
+
 MY_IP=`/sbin/ifconfig eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' | tr -d '\r\n'`
 
 while [[ -z $MY_IP ]] 
@@ -65,6 +67,8 @@ while read line ; do
   fi
   pos=$((pos+1))
 done < <(token-generator $total_nodes|grep Node)
+
+my_token=${token[$MY_IP]}
 
 cassandra_ips_csv=`echo ${cassandra_ips} | sed ':a;N;$!ba;s/\n/, /g'`
 
