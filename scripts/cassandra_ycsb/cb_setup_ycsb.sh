@@ -61,7 +61,4 @@ sudo $YCSB_PATH/bin/ycsb load cassandra-10 -s -P $YCSB_PATH/workloads/workloada 
 end_time=$(date)
 syslog_netcat "End of YCSB Loading: $end_time"
 
-START=`provision_application_start`
-
-provision_application_stop $START
 exit 0

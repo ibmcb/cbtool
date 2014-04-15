@@ -45,8 +45,12 @@ from lib.api.api_service_client import *
 api = APIClient("http://" + _api_endpoint + ":%s" % _api_port)
 expid = "CASSANDRA_YCSB" + makeTimestamp().replace(" ", "_")
 
-base_phase = True
-run_phase = True
+load_phase = True 
+client_phase =  False 
+base_phase = False 
+run_phase = False 
+
+base_runtime = 180 
 
 try : 
     error = False
@@ -63,14 +67,48 @@ try :
         print "Cloud " + _cloud_name + " not attached"
         exit(1)    
 
+#-------------------------------------------------------------------------------
+#
+# Launch 1x YCSB, 1x Cassandra_Seed, 2x Cassandra Nodes
+#
+#-------------------------------------------------------------------------------
     app = api.appattach(_cloud_name, _app_name)
+
+    api.appalter(_cloud_name, app["uuid"], "load_db_phase", "false")
+    api.appalter(_cloud_name, app["uuid"], "run_base_phase", "false")
+    api.appalter(_cloud_name, app["uuid"], "run_client_phase", "false")
+    api.appalter(_cloud_name, app["uuid"], "run_load_phase", "false")
+
+#-------------------------------------------------------------------------------
+#
+# Load DB Phase
+#
+#-------------------------------------------------------------------------------
+    if load_phase : 
+        print "Loading Database Phase"
+        api.appalter(_cloud_name, app["uuid"], "load_db_phase", "false")
+
+#-------------------------------------------------------------------------------
+#
+# Base Clinet Load
+#
+#-------------------------------------------------------------------------------
+    if client_phase :
+        api.appalter(_cloud_name, app["uuid"], "run_client_phase", "true") 
+
+#-------------------------------------------------------------------------------
+#   Once client_phase completes, move to base_load phase.
+#-------------------------------------------------------------------------------
+        base_phase = True
 
 #-------------------------------------------------------------------------------
 #
 # Base Load
 #
 #-------------------------------------------------------------------------------
-    if base_phase:
+    if base_phase :
+        api.appalter(_cloud_name, app["uuid"], "run_client_phase", "false") 
+        api.appalter(_cloud_name, app["uuid"], "run_base_phase", "true")
 
  
 #-------------------------------------------------------------------------------

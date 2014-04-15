@@ -71,6 +71,16 @@ sudo touch $YCSB_PATH/custom_workload.dat
 sudo sh -c "echo "recordcount=${RECORDS%.*}" > $YCSB_PATH/custom_workload.dat"
 sudo sh -c "echo "operationcount=$OPERATION_COUNT" >> $YCSB_PATH/custom_workload.dat"
 
+run_client_phase=`get_my_ai_attribute run_client_phase`
+syslog_netcat "Run client phase? $run_client_phase"
+run_base_phase=`get_my_ai_attribute run_base_phase`
+syslog_netcat "Run base phase? $run_base_phase"
+load_phase=`get_my_ai_attribute run_load_phase` 
+syslog_netcat "Run load phase? $load_phase"
+db_load_phase=`get_my_ai_attribute load_db_phase` 
+syslog_netcat "DB load phase? $db_load_phase"
+
+if [[ $db_load_phase ]] ; then
 if [[ ${GENERATE_DATA} == "true" ]]
 then
     OUTPUT_FILE=$(mktemp)
@@ -100,6 +110,9 @@ then
 else
     syslog_netcat "The value of the parameter \"GENERATE_DATA\" is \"false\". Will bypass data generation for the hadoop load profile \"${LOAD_PROFILE}\""     
 fi
+fi
+
+if [[ $load_phase ]] ; then
 
 #----------------------- Track all YCSB results  -------------------------------
 
@@ -325,3 +338,6 @@ then
 fi
 
 exit 0
+
+fi
+
