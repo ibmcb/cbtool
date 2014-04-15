@@ -50,8 +50,25 @@ CASSANDRA_DATA_DIR=$(get_my_ai_attribute_with_default cassandra_data_dir /dbstor
 eval CASSANDRA_DATA_DIR=${CASSANDRA_DATA_DIR}
 
 cassandra_ips=`get_ips_from_role cassandra`
+seed_ip=`get_ips_from_role seed`
+
+db_nodes=`echo "${cassandra_ips}" | wc -w`
+seed_nodes=`echo "${seed_ip}" | wc -w`
+total_nodes=`expr $db_nodes + $seed_nodes`
+pos=0
+while read line ; do
+  if [[ $pos -lt $total_nodes ]]
+  then
+    arr=(`echo ${seed_ip} ${cassandra_ips}`)
+    ip=${arr[$pos]}
+    token[$ip]=${line:10}
+  fi
+  pos=$((pos+1))
+done < <(token-generator $total_nodes|grep Node)
 
 cassandra_ips_csv=`echo ${cassandra_ips} | sed ':a;N;$!ba;s/\n/, /g'`
+
+seeds_ips_csv=`echo ${seed_ip} | sed 's/ /,/g'`
 
 if [[ -z $cassandra_ips ]]
 then
@@ -61,13 +78,12 @@ else
     syslog_netcat "The VMs with the \"cassandra\" role on this AI have the following IPs: ${cassandra_ips_csv}"
 fi
 
-seed_ip=`get_ips_from_role seed`
 if [[ -z $seed_ip ]]
 then
     syslog_netcat "No VMs with the \"seed\" role have been found on this AI"
     exit 1;
 else
-    syslog_netcat "The VM with the \"seed\" role on this AI has the following IP: ${seed_ip}"
+    syslog_netcat "The VM with the \"seed\" role on this AI has the following IP: ${seeds_ips_csv}"
 fi
 
 #
@@ -76,5 +92,8 @@ fi
 pos=1
 if [[ $(cat /etc/hosts | grep -c cassandra-seed) -eq 0 ]]
 then
-    sudo sh -c "echo $seed_ip cassandra cassandra-seed >> /etc/hosts"
+    arr=(`echo ${seed_ip}`)
+    for ip in ${arr[@]} ; do
+      sudo sh -c "echo $ip cassandra cassandra-seed >> /etc/hosts"
+    done
 fi

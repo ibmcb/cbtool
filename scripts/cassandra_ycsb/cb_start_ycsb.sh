@@ -91,7 +91,7 @@ then
     START_GENERATION=$(get_time)
     
     syslog_netcat "The value of the parameter \"GENERATE_DATA\" is \"true\". Will generate data for the YCSB load profile \"${LOAD_PROFILE}\"" 
-    command_line="sudo $YCSB_PATH/bin/ycsb load cassandra-10 -s -P $YCSB_PATH/workloads/${LOAD_PROFILE} -P $YCSB_PATH/custom_workload.dat -p hosts=$seed_ip"
+    command_line="sudo $YCSB_PATH/bin/ycsb load cassandra-10 -s -P $YCSB_PATH/workloads/${LOAD_PROFILE} -P $YCSB_PATH/custom_workload.dat -p hosts=$seeds_ips_csv"
     syslog_netcat "Command line is: ${command_line}"
     if [[ x"${log_output_command}" == x"true" ]]
     then
@@ -134,9 +134,9 @@ update_latency=0
 #----------------------- Old tracking ------------------------------------------
 latency=0
 
-CMDLINE="sudo $YCSB_PATH/bin/ycsb run cassandra-10 -s -threads ${LOAD_LEVEL} -P $YCSB_PATH/workloads/${LOAD_PROFILE} -P $YCSB_PATH/custom_workload.dat -p hosts=$seed_ip"
+CMDLINE="sudo $YCSB_PATH/bin/ycsb run cassandra-10 -s -threads ${LOAD_LEVEL} -P $YCSB_PATH/workloads/${LOAD_PROFILE} -P $YCSB_PATH/custom_workload.dat -p hosts=$seeds_ips_csv"
 
-syslog_netcat "Benchmarking YCSB SUT: SEED=${seed_ip} -> CASSANDRAS=${cassandra_ips_csv} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
+syslog_netcat "Benchmarking YCSB SUT: SEED=${seeds_ips_csv} -> CASSANDRAS=${cassandra_ips_csv} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
 
 source ~/cb_barrier.sh start
 
