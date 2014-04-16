@@ -95,7 +95,31 @@ try :
 #-------------------------------------------------------------------------------
     if client_phase :
         api.appalter(_cloud_name, app["uuid"], "run_client_phase", "true") 
-
+        # Start Client at small load
+        # Run for 100M Operations
+        # Start a second Client ?
+        
+        # Monitor throughput / latency 
+        #   + Witness Drops in throughput and/or increase in latency
+        #       - Reactive : Add new shard
+        
+        #
+        # 5 Clients -> 99% Latency is increase -> add 6th client, add a new shard 
+        #
+        
+        #
+        # Define Load : 
+        #
+        
+        
+        # Do we have a fixed load per client?
+        #   Fixed ops / but increase # of threads? Load is the # of threads
+        #   As soon as a clinet becomes the bottleneck add more clients
+        
+        # Number of ops / client
+        # Number of clients are fixed
+        # 10k ops / client, 
+        
 #-------------------------------------------------------------------------------
 #   Once client_phase completes, move to base_load phase.
 #-------------------------------------------------------------------------------
