@@ -1,4 +1,0 @@
-|Redis Version |2.6.16 
-|MongoDB Version |2.4.9 
-|Redis Version |2.6.16 
-|MongoDB Version |2.4.9 

@@ -1,15 +1,15 @@
- status: VMC 221C6FA7-66D9-5F97-976D-9258757FDADB was successfully registered on SimCloud "TESTCLOUD".
- status: VMC 5041E962-47B1-550B-A0C8-D5C48368402E was successfully registered on SimCloud "TESTCLOUD".
- status: VMC EDAA4078-51DE-55D8-89CE-E6A6906B18FA was successfully registered on SimCloud "TESTCLOUD".
- status: VMC 8C34CDD2-9788-56F3-88D3-4878D4A9E650 was successfully registered on SimCloud "TESTCLOUD".
+ status: VMC 3FEB6707-63A7-5378-9826-DDD648107F96 was successfully registered on SimCloud "TESTCLOUD".
+ status: VMC 32EEED48-FC7A-5A76-9363-B49D615A8D6B was successfully registered on SimCloud "TESTCLOUD".
+ status: VMC B2CE5F96-AF68-5851-8367-F86B4601F6B9 was successfully registered on SimCloud "TESTCLOUD".
+ status: VMC 87B966EB-755A-51F4-BF4F-30B166E0389E was successfully registered on SimCloud "TESTCLOUD".
  status: Attribute "collect_from_host" was set to "false". Skipping Host OS performance monitor daemon startup
 All VMCs successfully attached to this experiment.
 The following ATTACHED VMCs are in this experiment (Cloud TESTCLOUD) :
 |name                    |host_count      |pool                    |cloud_hostname                  |cloud_ip         
-|simzone_b               |5               |sut                     |simzone_b                       |36.242.223.190   
-|simzone_a               |5               |sut                     |simzone_a                       |1.52.159.17      
-|simzone_d               |5               |lg                      |simzone_d                       |242.71.54.83     
-|simzone_c               |5               |sut                     |simzone_c                       |101.31.91.130    
+|simzone_b               |5               |sut                     |simzone_b                       |94.149.35.158    
+|simzone_c               |5               |sut                     |simzone_c                       |55.149.182.155   
+|simzone_a               |5               |sut                     |simzone_a                       |239.171.75.10    
+|simzone_d               |5               |lg                      |simzone_d                       |206.241.165.84   
 
 The VMC object simzone_c, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
 |attribute (VMC object key)               |value                                
@@ -19,20 +19,20 @@ The VMC object simzone_c, attached to this experiment, has the following attribu
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |2.12M                         
-|Redis Version                                        |2.5.12                        
-|Uptime (in seconds)                                  |2417263                       
-|Total Connections Received                           |4537                          
-|Total Commands Processed                             |3879246                       
+|Used Memory                                          |1.50M                         
+|Redis Version                                        |2.6.16                        
+|Uptime (in seconds)                                  |30056                         
+|Total Connections Received                           |1592                          
+|Total Commands Processed                             |1749045                       
 |Number of Keys                                       |275                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|MongoDB Version                                      |2.4.5                         
-|Storage Size                                         |5448130560.0                  
-|Data Size                                            |4961879376.0                  
-|Index Size                                           |133702128                     
-|Average Object Size                                  |8104.69285865                 
-|Collections                                          |39                            
+|MongoDB Version                                      |2.4.9                         
+|Storage Size                                         |2043904                       
+|Data Size                                            |458280                        
+|Index Size                                           |400624                        
+|Average Object Size                                  |506.386740331                 
+|Collections                                          |13                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
 |VMCs                                                 |4                             
@@ -91,8 +91,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |60                            
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|EDAA4078-51DE-55D8-89CE-E6A6906B18FA (simzone_b) VM RESERVATIONS|0                             
-|5041E962-47B1-550B-A0C8-D5C48368402E (simzone_d) VM RESERVATIONS|0                             
-|8C34CDD2-9788-56F3-88D3-4878D4A9E650 (simzone_c) VM RESERVATIONS|0                             
-|221C6FA7-66D9-5F97-976D-9258757FDADB (simzone_a) VM RESERVATIONS|0                             
+|B2CE5F96-AF68-5851-8367-F86B4601F6B9 (simzone_d) VM RESERVATIONS|0                             
+|87B966EB-755A-51F4-BF4F-30B166E0389E (simzone_a) VM RESERVATIONS|0                             
+|3FEB6707-63A7-5378-9826-DDD648107F96 (simzone_c) VM RESERVATIONS|0                             
+|32EEED48-FC7A-5A76-9363-B49D615A8D6B (simzone_b) VM RESERVATIONS|0                             
 

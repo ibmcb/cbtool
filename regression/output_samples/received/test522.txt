@@ -1,4 +1,4 @@
-Background operation execution success. Operation "vm-attach" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.1.250,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,timeout:240,host:172.16.1.250,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,willfail,auto,empty,default,none,empty=empty --operation=vm-attach --cn=TESTCLOUD --uuid=82CB1F89-BAEA-559B-914A-0E29B2EC99B4 --daemon". The process id is 23188.
+Background operation execution success. Operation "vm-attach" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.1.250,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,timeout:240,host:172.16.1.250,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,willfail,auto,empty,default,none,empty=empty --operation=vm-attach --cn=TESTCLOUD --uuid=71A4093F-63B7-5D1E-81EF-5872C2A928FA --daemon". The process id is 23075.
 
 Going to wait until the value on counter "VM ARRIVING" is equal to 0 (currently it is equal to 1) waiting 1.0 seconds between samples. The counter is assumed to be decreasing.
  status: Counter "VM ARRIVING" equals 0 after 1 seconds (the counter is assumed to be decreasing).
@@ -10,17 +10,17 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |Metric                                               |Value                         
 |Used Memory                                          |2.21M                         
 |Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |30233                         
-|Total Connections Received                           |1768                          
-|Total Commands Processed                             |1789619                       
+|Uptime (in seconds)                                  |508468                        
+|Total Connections Received                           |10622                         
+|Total Commands Processed                             |859753                        
 |Number of Keys                                       |338                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
 |MongoDB Version                                      |2.4.9                         
 |Storage Size                                         |2101248                       
-|Data Size                                            |549584                        
+|Data Size                                            |546608                        
 |Index Size                                           |457856                        
-|Average Object Size                                  |509.345690454                 
+|Average Object Size                                  |508.0                         
 |Collections                                          |14                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
@@ -80,8 +80,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |135                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|F92423FA-5397-5C85-83AE-F1E571E97C48 (simzone_b) VM RESERVATIONS|0                             
-|FF5DC0D8-1378-5755-B3BF-ACC9801512A9 (simzone_d) VM RESERVATIONS|0                             
-|C2B34105-CEB6-53D4-9B01-6045EEB54595 (simzone_c) VM RESERVATIONS|0                             
-|EC14CE9C-63F5-5D72-8982-32C59FE8ACE7 (simzone_a) VM RESERVATIONS|0                             
+|80A79D6D-26D1-50E5-9134-8523D863E6F6 (simzone_d) VM RESERVATIONS|0                             
+|3C93B192-9C64-519E-937D-672B65A2A1A6 (simzone_c) VM RESERVATIONS|0                             
+|2B445F8B-78AD-5C1C-8132-71756390FACA (simzone_a) VM RESERVATIONS|0                             
+|3586523C-1A3C-5964-9DF2-DF21617ED6B9 (simzone_b) VM RESERVATIONS|0                             
 

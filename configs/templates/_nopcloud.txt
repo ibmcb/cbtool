@@ -118,4 +118,5 @@ MONGO_CFG_SERVER = size:NA, imageid1:NA
 MONGODB = size:NA, imageid1:NA
 CASSANDRA = size:NA, imageid1:NA
 SEED = size:NA, imageid1:NA
+REDIS = size:NA, imageid1:NA
 YCSB = size:NA, imageid1:NA

@@ -1,3 +1,3 @@
 The "sim" cloud named "TESTCLOUD" was successfully attached to this experiment.
-The experiment identifier is EXP-10-09-2013-09-36-39-AM-EDT
+The experiment identifier is EXP-03-20-2014-05-55-09-PM-EDT
 

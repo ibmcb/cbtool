@@ -1,3 +1,1 @@
-|base_type |ibm_daytrader 
-|command |aiattach TESTCLOUD ibm_daytrader default default none none none empty=empty
-|type |ibm_daytrader 
+|run_limit |100000 

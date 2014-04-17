@@ -1,4 +1,4 @@
-The AI with the type daytrader has the following configuration on experiment (Cloud TESTCLOUD) :
+The AI with the type ibm_daytrader has the following configuration on experiment (Cloud TESTCLOUD) :
 sut: client_daytrader->was->db2
 load_manager_role: client_daytrader
 metric_aggregator_role: client_daytrader

@@ -1,3 +1,0 @@
-The attribute "load_balancer" on ibm_daytrader AI was modified:
-|ibm_daytrader_load_balancer |False |true 
-The AI with the type ibm_daytrader has the following configuration on experiment (Cloud TESTCLOUD) :

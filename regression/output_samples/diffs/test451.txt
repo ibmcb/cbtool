@@ -1,1 +1,0 @@
-The AI with the type ibm_daytrader has the following configuration on experiment (Cloud TESTCLOUD) :

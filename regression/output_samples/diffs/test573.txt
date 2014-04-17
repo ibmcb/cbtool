@@ -1,6 +1,8 @@
-
-
-
-
-
-
+ status: Bypassing the bootstrapping and the sending of a copy of the code tree to vm_116 (xxx.xxx.xxx.xxx )...
+ status: Bypassing the bootstrapping and the sending of a copy of the code tree to vm_113 (xxx.xxx.xxx.xxx )...
+ status: Bypassing the bootstrapping and the sending of a copy of the code tree to vm_115 (xxx.xxx.xxx.xxx )...
+ status: Bypassing the bootstrapping and the sending of a copy of the code tree to vm_114 (xxx.xxx.xxx.xxx )...
+|VMs |53 
+|VM RESERVATIONS |53 
+|VMs DEPARTED |60 
+|EXPERIMENT COUNTER |304 

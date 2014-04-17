@@ -1,6 +1,6 @@
 The following VMC objects are part of the view "BYPOOL" where "BYPOOL = SUT" on this experiment (Cloud TESTCLOUD), sorted by arrival) :
 |Object Type                 |Predicate                        |Object UUID                           |Object Name            |Arrival Time                       
-|VMC                         |where BYPOOL = SUT               |C2B34105-CEB6-53D4-9B01-6045EEB54595  |simzone_c              |Thu Mar 20 18:09:11 2014 (1395353351.0)
-|                            |                                 |EC14CE9C-63F5-5D72-8982-32C59FE8ACE7  |simzone_a              |Thu Mar 20 18:09:11 2014 (1395353351.0)
-|                            |                                 |F92423FA-5397-5C85-83AE-F1E571E97C48  |simzone_b              |Thu Mar 20 18:09:11 2014 (1395353351.0)
+|VMC                         |where BYPOOL = SUT               |2B445F8B-78AD-5C1C-8132-71756390FACA  |simzone_a              |Sat Apr  5 11:29:34 2014 (1396711774.0)
+|                            |                                 |3586523C-1A3C-5964-9DF2-DF21617ED6B9  |simzone_b              |Sat Apr  5 11:29:34 2014 (1396711774.0)
+|                            |                                 |3C93B192-9C64-519E-937D-672B65A2A1A6  |simzone_c              |Sat Apr  5 11:29:34 2014 (1396711774.0)
 

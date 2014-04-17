@@ -112,30 +112,43 @@ function linux_distribution {
     return 0    
 
 }
+export -f linux_distribution
 
 function service_stop_disable {
     #1 - service list (space-separated list)
 
+	if [[ -z ${LINUX_DISTRO} ]]
+	then
+		LINUX_DISTRO=$(linux_distribution)
+	fi
+
     for s in $* ; do
-        syslog_netcat "Stopping service \"${s}\"..."       
-        sudo service $s stop 
         
         if [[ ${LINUX_DISTRO} -eq 1 ]]
         then
+        	syslog_netcat "Stopping service \"${s}\" on Ubuntu..."
+        	sudo service $s stop         	
             sudo bash -c "echo 'manual' > /etc/init/$s.override" 
         fi
 
         if [[ ${LINUX_DISTRO} -eq 2 ]]
         then
+        	syslog_netcat "Stopping service \"${s}\" on Fedora/RHEL/CentOS..."
+        	sudo service $s stop         	        	
             sudo chkconfig $s off >/dev/null 2>&1
         fi
     done
     /bin/true
 }
-
+export -f service_stop_disable
 
 function service_restart_enable {
     #1 - service list (space-separated list)
+
+	if [[ -z ${LINUX_DISTRO} ]]
+	then
+		LINUX_DISTRO=$(linux_distribution)
+	fi
 
     for s in $* ; do
         counter=1
@@ -859,6 +872,7 @@ function wait_until_port_open {
     #2 - port number
     #3 - number of attempts
     #4 - time between attempts
+
     counter=1
     ATTEMPTS=${3}
     while [ "$counter" -le "$ATTEMPTS" ]

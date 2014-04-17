@@ -10,50 +10,62 @@
 # @author Joe Talerico, jtaleric@redhat.com
 #/*******************************************************************************
 
-source ~/.bashrc
-dir=$(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")
-if [ -e $dir/cb_common.sh ] ; then
-	source $dir/cb_common.sh
-else
-	source $dir/../common/cb_common.sh
-fi
+source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_ycsb_common.sh
 
-standalone=`online_or_offline "$1"`
-
-if [ $standalone == offline ] ; then
-	post_boot_steps offline 
-fi
+START=`provision_application_start`
 
 SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
 
-mongos=`get_ips_from_role mongos`
-if [ -z $mongos ] ; then
-        syslog_netcat "mongos IP is null"
-        exit 1;
-fi
-
-mongocfg=`get_ips_from_role mongo_cfg_server`
-if [ -z $mongocfg ] ; then
-        syslog_netcat "mongocfg IP is null"
-        exit 1;
-fi
-
-mongo=`get_ips_from_role mongodb`
 pos=1
-sudo sh -c "echo 127.0.0.1 localhost > /etc/hosts"
-sudo sh -c "echo $mongocfg mongo-cfg-server >> /etc/hosts"
-sudo sh -c "echo $mongos mongos >> /etc/hosts"
-for db in $mongo
+
+for db in $mongo_ips
 do
+    if [[ $(cat /etc/hosts | grep -c "mongo$pos ") -eq 0 ]]
+    then
         sudo sh -c "echo $db mongo$pos mongodb-$pos >> /etc/hosts"
-        ((pos++))
+    fi
+    ((pos++))
 done
 
+SERVICES[1]="mongodb"
+SERVICES[2]="mongod"
+service_stop_disable ${SERVICES[${LINUX_DISTRO}]}
+
+MONGODB_CONF_FILE[1]=/etc/mongodb.conf
+MONGODB_CONF_FILE[2]=/etc/mongod.conf
+
 # Update Mongo Config
-sudo sed -i 's/dbpath=.*$/dbpath=\/var\/lib\/mongo/g' /etc/mongod.conf
-sudo sed -i 's/port=.*$/port = 27017/g' /etc/mongod.conf
+
+if [[ -f ${MONGODB_DATA_DIR} ]]
+then
+    TEMP_MONGODB_DATA_DIR=$(echo ${MONGODB_DATA_DIR} | sed 's/\//_+-_-+/g')
+    sudo sed -i "s/dbpath=.*$/dbpath=${TEMP_MONGODB_DATA_DIR}\//g" ${MONGODB_CONF_FILE[${LINUX_DISTRO}]}
+    sudo sed -i "s/_+-_-+/\//g" ${MONGODB_CONF_FILE[${LINUX_DISTRO}]}
+fi
+sudo sed -i "s/port=.*$/port = 27017/g" ${MONGODB_CONF_FILE[${LINUX_DISTRO}]}
 
 syslog_netcat "Starting mongod on ${SHORT_HOSTNAME}" 
-sudo service mongod start 
+if [[ $(cat /etc/redhat-release | grep -c Fedora) -eq 0 ]]
+then
+    service_restart_enable ${SERVICES[${LINUX_DISTRO}]}
+else
+    sudo pkill -9 -f /usr/bin/mongod
+    sudo screen -S MGS -X quit
+    sudo screen -d -m -S MGS
+    sudo screen -p 0 -S MGS -X stuff "sudo rm /var/lib/mongo/mongod.lock$(printf \\r)"
+    sudo screen -p 0 -S MGS -X stuff "service mongod restart$(printf \\r)"
+fi
+
+wait_until_port_open 127.0.0.1 27017 20 5
+
+STATUS=$?
+
+if [[ ${STATUS} -eq 0 ]]
+then
+        syslog_netcat "MongoDB server running - OK"
+else
+        syslog_netcat "MongoDB server failed to start - NOK"
+fi
 
 provision_application_stop $START
+exit ${STATUS}

@@ -404,6 +404,7 @@ class RedisMgdConn :
         try :
             if can_be_tag :
                 _obj_uuid = False
+
                 _query_object = self.get_object(cloud_name, "GLOBAL", False, "query", False)
 
                 _mandatory_tags = _query_object["mandatory_tags"].split(',')
@@ -412,13 +413,14 @@ class RedisMgdConn :
                     _tag = _tag.upper()
                     _tag_inst_fn = obj_inst + ':' + obj_type + ':TAG:' + _tag
                     _obj_tag_fn = _tag_inst_fn + ':' + obj_id
+
                     _obj_exists = self.redis_conn.sismember(_tag_inst_fn, \
                                                             obj_id)
                     if _obj_exists :
                         _msg = obj_type + " object with the tag \"" + _tag
                         _msg += "\" = \"" + obj_id + "\" was retrieved from the"
                         _msg += " tag list (FQTN:" + _tag_inst_fn + ")."
-                        cbdebug(_msg) 
+                        cbdebug(_msg)
                         _obj_id_fn = self.redis_conn.get(_obj_tag_fn)
                         _obj_uuid = _obj_id_fn.split(':')[3]
                         break
@@ -435,7 +437,7 @@ class RedisMgdConn :
                         _obj_exists = False
 
             if _obj_exists :
-                _msg = obj_type + " object " + obj_id + " exists."
+                _msg = obj_type + " object " + obj_id + " exists (UUID: " + _obj_uuid + "). "
                 cbdebug(_msg)
                 return _obj_uuid
             else :

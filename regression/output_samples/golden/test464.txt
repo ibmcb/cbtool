@@ -1,30 +1,30 @@
- status: VMC 4FCBA6B3-9BCC-5CB0-B0D9-F0DE78E4C268 was successfully unregistered on SimCloud "TESTCLOUD".
-VMC object 4FCBA6B3-9BCC-5CB0-B0D9-F0DE78E4C268 (named "simzone_d") was sucessfully detached from this experiment.
- status: VMC 6417BDBE-3782-5513-88F5-D13BF3634AA1 was successfully unregistered on SimCloud "TESTCLOUD".
-VMC object 6417BDBE-3782-5513-88F5-D13BF3634AA1 (named "simzone_c") was sucessfully detached from this experiment.
- status: VMC 5C46CE08-93AA-57D0-ADF3-BA13C0F8703A was successfully unregistered on SimCloud "TESTCLOUD".
-VMC object 5C46CE08-93AA-57D0-ADF3-BA13C0F8703A (named "simzone_b") was sucessfully detached from this experiment.
+ status: VMC F15CFEE0-820B-502A-B4AD-54BF3CC57526 was successfully unregistered on SimCloud "TESTCLOUD".
+VMC object F15CFEE0-820B-502A-B4AD-54BF3CC57526 (named "simzone_d") was sucessfully detached from this experiment.
+ status: VMC 7CE8E2D3-945A-5A44-B18A-06897CE23E69 was successfully unregistered on SimCloud "TESTCLOUD".
+VMC object 7CE8E2D3-945A-5A44-B18A-06897CE23E69 (named "simzone_c") was sucessfully detached from this experiment.
+ status: VMC 20DAD493-45B8-5029-A53C-AC697B9E9679 was successfully unregistered on SimCloud "TESTCLOUD".
+VMC object 20DAD493-45B8-5029-A53C-AC697B9E9679 (named "simzone_b") was sucessfully detached from this experiment.
 The following ATTACHED VMCs are in this experiment (Cloud TESTCLOUD) :
 |name                    |host_count      |pool                    |cloud_hostname                  |cloud_ip         
-|simzone_a               |5               |sut                     |simzone_a                       |140.111.106.34   
+|simzone_a               |5               |sut                     |simzone_a                       |71.81.153.168    
 
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |1.84M                         
-|Redis Version                                        |2.5.12                        
-|Uptime (in seconds)                                  |2417249                       
-|Total Connections Received                           |4536                          
-|Total Commands Processed                             |3868670                       
+|Used Memory                                          |1.23M                         
+|Redis Version                                        |2.6.16                        
+|Uptime (in seconds)                                  |30042                         
+|Total Connections Received                           |1573                          
+|Total Commands Processed                             |1738395                       
 |Number of Keys                                       |150                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|MongoDB Version                                      |2.4.5                         
-|Storage Size                                         |5448130560.0                  
-|Data Size                                            |4961829808.0                  
-|Index Size                                           |133669424                     
-|Average Object Size                                  |8105.59162557                 
-|Collections                                          |39                            
+|MongoDB Version                                      |2.4.9                         
+|Storage Size                                         |2043904                       
+|Data Size                                            |429160                        
+|Index Size                                           |367920                        
+|Average Object Size                                  |515.198079232                 
+|Collections                                          |13                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
 |VMCs                                                 |1                             
@@ -83,5 +83,5 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |22                            
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|EDD914B7-85D1-5BD5-B077-3CF720266386 (simzone_a) VM RESERVATIONS|0                             
+|4030CB22-DCB8-5E3C-A89D-140ED4AA5B40 (simzone_a) VM RESERVATIONS|0                             
 

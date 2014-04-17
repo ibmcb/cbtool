@@ -3106,6 +3106,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
             return self.package(_status, _msg, _result)
     @trace    
     def migrate(self, obj_attr_list, parameters, command) :
+        '''
+        TBD
+        '''
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
@@ -3153,7 +3156,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             if "dont_start_qemu_scraper" not in ai or ai["dont_start_qemu_scraper"].lower() != "true" :
                                 self.osci.publish_message(cn, "AI", "migrate_" + ai["uuid"], \
                                         obj_attr_list["uuid"] + ";start;" + str(scrape_frequency), 1, 3600)
-                                
+
                         _status, _fmsg = _cld_conn.vmmigrate(obj_attr_list)
                         
                         if ai :
@@ -3161,6 +3164,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                     obj_attr_list["uuid"] + ";stop;none", 1, 3600)
      
                         if not _status :
+
                             self.admission_control(_obj_type, obj_attr_list, "migratefinish")
                             
                             self.osci.update_object_views(cn, "VM", \

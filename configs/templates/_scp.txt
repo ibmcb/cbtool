@@ -145,4 +145,5 @@ MONGO_CFG_SERVER = size:small, imageid1:cb_ycsb
 MONGODB = size:medium, imageid1:cb_ycsb
 CASSANDRA = size:medium, imageid1:cb_ycsb
 SEED = size:medium, imageid1:cb_ycsb
+REDIS = size:medium, imageid1:cb_ycsb
 YCSB = size:medium, imageid1:cb_ycsb

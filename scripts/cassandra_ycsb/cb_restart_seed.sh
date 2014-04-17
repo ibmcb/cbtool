@@ -18,18 +18,6 @@
 # @author Joe Talerico, jtaleric@redhat.com
 #/*******************************************************************************
 
-source ~/.bashrc
-dir=$(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")
-if [ -e $dir/cb_common.sh ] ; then
-	source $dir/cb_common.sh
-else
-	source $dir/../common/cb_common.sh
-fi
-standalone=`online_or_offline "$4"`
-if [ $standalone == online ] ; then
-          YCSB_PATH=`get_my_ai_attribute YCSB_PATH`
-fi
-
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_ycsb_common.sh
 
 START=`provision_application_start`
@@ -69,9 +57,10 @@ sudo mkdir -p ${CASSANDRA_DATA_DIR}/cassandra/commitlog
 sudo mkdir -p ${CASSANDRA_DATA_DIR}/cassandra/saved_caches
 sudo chown -R cassandra:cassandra ${CASSANDRA_DATA_DIR}
 
+pos=1
 for db in $cassandra_ips
 do
-    if [[ $(cat /etc/hosts | grep -c cassandra$pos) -eq 0 ]]
+    if [[ $(cat /etc/hosts | grep -c "cassandra$pos ") -eq 0 ]]
     then
         sudo sh -c "echo $db cassandra$pos cassandra-$pos >> /etc/hosts"
     fi
@@ -93,6 +82,8 @@ sudo rm -rf ${CASSANDRA_DATA_DIR}/cassandra/saved_caches/*
 sudo rm -rf ${CASSANDRA_DATA_DIR}/cassandra/data/system/*
 sudo rm -rf ${CASSANDRA_DATA_DIR}/cassandra/commitlog/*
 
+syslog_netcat "my ip : $MY_IP"
+
 #
 # Start the database
 #
@@ -102,10 +93,20 @@ sudo service cassandra start
 # Give all the Java services time to start
 wait_until_port_open 127.0.0.1 9160 20 5
 
+STATUS=$?
+
+if [[ ${STATUS} -eq 0 ]]
+then
+        syslog_netcat "Cassandra seed server running"
+else
+        syslog_netcat "Cassandra seed server failed to start"
+fi
+
 #
 # Init database
 #
 cassandra-cli -f cassandra-init.cassandra
 
 provision_application_stop $START
-exit 0
+
+exit ${STATUS}

@@ -107,4 +107,5 @@ MONGO_CFG_SERVER = size:copper32, imageid1:cb_ycsb
 MONGODB = size:silver32, eclipsed_size:gold32, imageid1:cb_ycsb
 CASSANDRA = size:silver32, eclipsed_size:gold32, imageid1:cb_ycsb
 SEED = size:silver32, eclipsed_size:gold32, imageid1:cb_ycsb
+REDIS = size:silver32, eclipsed_size:gold32, imageid1:cb_ycsb
 YCSB = size:silver32, eclipsed_size:gold32, imageid1:cb_ycsb
