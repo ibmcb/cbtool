@@ -1,2 +1,2 @@
-|VM |vm_XX |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx |save 
 |VM |vm_XX |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx |attached 
+|VM |vm_XX |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx |save 

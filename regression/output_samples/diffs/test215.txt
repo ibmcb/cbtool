@@ -1,0 +1,26 @@
+|identity |/home/msilva/cloudbench/lib/auxiliary//../../credentials/bogus_id_rsa
+|imageid1 |cb_nullworkload 
+|imageids |1 
+|jars_dir |/home/klabuser/cloudbench/jar 
+|key_name | 
+|last_known_state |running with ip assigned 
+|login |klabuser 
+|memory_lower |50 
+|memory_upper |100 
+|meta_tags |empty 
+|mgt_001_provisioning_request_originated |xxxxxxxxxx 
+\|mgt_t \|X 
+\|mgt_d \|X 
+\|mgt_e \|X 
+\|mgt_r \|X 
+\|mgt_t \|X 
+|migrate_protocol |tcp 
+|migrate_protocol_supported |tcp,rdma,x-rdma 
+|migrate_supported |True 
+|mode |controllable 
+|model |sim 
+|name |vm_1 
+|netid |vlan123 
+|notification |False 
+|pattern |none 
+|placement |random 

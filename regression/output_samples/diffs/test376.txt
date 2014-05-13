@@ -1,1 +1,0 @@
-aidrs:username or pattern, vmc:pool or username, firs:username or pattern or scope, vm:username or vmc or host or role or type or ai or aidrs, ai:username or type or aidrs, host:username or vmc, vmcrs:username or pattern or scope

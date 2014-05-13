@@ -6,7 +6,7 @@ ignoredThe following ATTACHED AIs are in this experiment (Cloud TESTCLOUD) :
 
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 |name |role |size |cloud_ip |host_name |vmc_pool |ai |aidrs |uuid
-|VMs |37 
-|VM RESERVATIONS |37 
-|VMs DEPARTED |62 
-|EXPERIMENT COUNTER |289 
+|VMs |36 
+|VM RESERVATIONS |36 
+|VMs DEPARTED |63 
+|EXPERIMENT COUNTER |290 

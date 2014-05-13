@@ -25,7 +25,7 @@ Going to wait until the value on counter "AI (Objects created on the Object Stor
  status: Counter "AI (Objects created on the Object Store)" equals 2 after 24 seconds (the counter is assumed to be decreasing).
  status: Counter "AI (Objects created on the Object Store)" equals 2 after 25 seconds (the counter is assumed to be decreasing).
  status: Counter "AI (Objects created on the Object Store)" equals 2 after 26 seconds (the counter is assumed to be decreasing).
- status: Counter "AI (Objects created on the Object Store)" equals 1 after 27 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 2 after 27 seconds (the counter is assumed to be decreasing).
  status: Counter "AI (Objects created on the Object Store)" equals 1 after 28 seconds (the counter is assumed to be decreasing).
  status: Counter "AI (Objects created on the Object Store)" equals 1 after 29 seconds (the counter is assumed to be decreasing).
  status: Counter "AI (Objects created on the Object Store)" equals 1 after 30 seconds (the counter is assumed to be decreasing).
@@ -44,19 +44,19 @@ No objects available.
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |6.32M                         
+|Used Memory                                          |6.49M                         
 |Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |508876                        
-|Total Connections Received                           |10689                         
-|Total Commands Processed                             |1034034                       
+|Uptime (in seconds)                                  |3793650                       
+|Total Connections Received                           |81396                         
+|Total Commands Processed                             |6226245                       
 |Number of Keys                                       |642                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
 |MongoDB Version                                      |2.4.9                         
-|Storage Size                                         |3264512                       
-|Data Size                                            |751728                        
+|Storage Size                                         |3321856                       
+|Data Size                                            |753168                        
 |Index Size                                           |474208                        
-|Average Object Size                                  |544.730434783                 
+|Average Object Size                                  |544.984081042                 
 |Collections                                          |14                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
@@ -116,11 +116,11 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |393                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|80A79D6D-26D1-50E5-9134-8523D863E6F6 (simzone_d) VM RESERVATIONS|0                             
-|3C93B192-9C64-519E-937D-672B65A2A1A6 (simzone_c) VM RESERVATIONS|0                             
-|2B445F8B-78AD-5C1C-8132-71756390FACA (simzone_a) VM RESERVATIONS|0                             
-|3586523C-1A3C-5964-9DF2-DF21617ED6B9 (simzone_b) VM RESERVATIONS|0                             
+|516A5A15-B093-5B5F-B171-EE9AA82AAEF0 (simzone_c) VM RESERVATIONS|0                             
+|8D79A9F1-34B8-5D1A-A903-082245CE052C (simzone_d) VM RESERVATIONS|0                             
+|B0B6FF0A-FAE8-5217-A335-C0F1B0BEA0D6 (simzone_b) VM RESERVATIONS|0                             
+|D5506DC9-493A-57EE-86F6-0B96CB07D162 (simzone_a) VM RESERVATIONS|0                             
 
  ---------------- AIDRS-WIDE COUNTERS ----------------
-|4AAD46C8-F101-5501-9959-6CC43C3F0843 (aidrs_1) AI RESERVATIONS|0                             
+|29F990ED-8ACE-5A84-8BD1-9AEFA11930C1 (aidrs_1) AI RESERVATIONS|0                             
 

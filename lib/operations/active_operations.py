@@ -1932,7 +1932,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _rcmd += "'" +  obj_attr_list["exclude_list"] + "' -az --delete --no-o --no-g --inplace -O " + obj_attr_list["base_dir"] + "/* " 
                 _rcmd += obj_attr_list["prov_cloud_ip"] + ":~/" + obj_attr_list["remote_dir_name"] + '/'
 
-                _msg = "Sending  a copy of the code tree to "
+                _msg = "Sending a copy of the code tree to "
                 _msg += obj_attr_list["name"] + " ("+ obj_attr_list["prov_cloud_ip"] + ")..."
                 cbdebug(_msg, True)
 

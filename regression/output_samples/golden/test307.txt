@@ -3,100 +3,99 @@
 All VMs on the AI to changed to the "attached" state successfully.
 The following ATTACHED AIs are in this experiment (Cloud TESTCLOUD) :
 |name      |type           |sut                                               |cloud_ip        |arrival        |aidrs                                   |uuid
-|ai_5      |netperf        |1_x_netclient->1_x_netserver                      |46.120.12.78    |1395352810     |none                                    |0AC8E248-AA9D-5133-B466-18B2D3E818AD
-|ai_8      |ibm_daytrader  |1_x_client_daytrader->1_x_lb->2_x_was->1_x_db2    |23.30.205.12    |1395352897     |none                                    |DE09BBD1-9C5C-580E-A91E-E1DCE80D3CEF
-|ai_9      |ibm_daytrader  |1_x_client_daytrader->1_x_was->1_x_db2            |18.68.195.97    |1395352903     |none                                    |5E6EC969-A650-5479-99FC-E03F2DDE678F
-|ai_11     |ibm_daytrader  |1_x_client_daytrader->1_x_was->1_x_db2            |5.145.59.26     |1395352915     |none                                    |601116EF-7B45-5810-B62C-B5D06E574605
-|ai_14     |netperf        |1_x_netclient->1_x_netserver                      |142.54.234.79   |1395352934     |none                                    |5099C6AE-F3B3-5D16-BB68-97976CF567F5
-|ai_15     |netperf        |1_x_netclient->1_x_netserver                      |14.132.113.232  |1395352936     |none                                    |A508768D-D400-5CDA-A2E3-007F4FAEF676
-|ai_16     |netperf        |1_x_netclient->1_x_netserver                      |23.137.125.124  |1395352938     |none                                    |2369AA9C-735D-5F73-B2AA-36A5394878AC
-|ai_18     |ibm_daytrader  |1_x_client_daytrader->1_x_lb->2_x_was->1_x_db2    |144.143.148.90  |1395352947     |none                                    |3DFCA273-1406-5965-BD8F-C8BC7B56C574
-|ai_19     |ibmderby_tradelite|1_x_client_tradelite->1_x_was                     |71.1.40.165     |1395352953     |none                                    |4B0C15D6-758C-5561-85C6-ECE0F130298D
-|ai_20     |hpcc           |1_x_fen_hpc->3_x_cn_hpc                           |252.29.156.124  |1395352959     |none                                    |B92303BE-28A6-5EDC-9D3A-596064C7A772
-|ai_21     |coremark       |1_x_coremark                                      |60.127.77.199   |1395352964     |none                                    |E643E1A3-2EEC-5556-BD40-F57A674F38B8
-|ai_23     |ibm_daytrader  |1_x_client_daytrader->1_x_lb->2_x_was->1_x_db2    |27.108.196.60   |1395352984     |none                                    |248E7C30-3D7D-555F-B0E3-6D9DBDEC4738
-|ai_24     |netperf        |1_x_netclient->1_x_netserver                      |243.180.58.250  |1395352989     |none                                    |1A72A83F-27BC-5197-896C-F81B7DA6BB0B
-|ai_26     |ibm_daytrader  |1_x_client_daytrader->1_x_lb->2_x_was->1_x_db2    |233.171.185.49  |1395353026     |none                                    |F9C38E69-FC5D-56C0-BFBA-6DA684A17969
-|ai_27     |ibm_daytrader  |1_x_client_daytrader->1_x_lb->2_x_was->1_x_db2    |69.86.227.131   |1395353044     |none                                    |9E5F5D52-FFAC-5B04-A618-9FE445119FE6
-|ai_28     |hadoop         |1_x_hadoopmaster->3_x_hadoopslave                 |200.182.165.224 |1395353060     |none                                    |EFE2CBEF-C229-584F-8210-DA0FFA6D58B2
+|ai_5      |netperf        |1_x_netclient->1_x_netserver                      |73.250.19.169   |1396711245     |none                                    |79085F3C-99A6-5807-9376-0F23C78DAC03
+|ai_8      |ibm_daytrader  |1_x_client_daytrader->1_x_lb->2_x_was->1_x_db2    |53.216.249.203  |1396711333     |none                                    |F074D904-2FA1-5A07-9673-EC04DF649F30
+|ai_11     |ibm_daytrader  |1_x_client_daytrader->1_x_was->1_x_db2            |192.85.86.18    |1396711349     |none                                    |CC79F6CD-C5F9-537A-81AC-A1A302832C05
+|ai_14     |netperf        |1_x_netclient->1_x_netserver                      |3.218.245.213   |1396711366     |none                                    |C9C5DE26-129C-5E43-8D0C-BC6E4B9A7B8F
+|ai_15     |netperf        |1_x_netclient->1_x_netserver                      |211.26.31.144   |1396711368     |none                                    |5413D5C7-4FFD-5F64-8379-BA858A0CA354
+|ai_16     |netperf        |1_x_netclient->1_x_netserver                      |136.50.211.253  |1396711370     |none                                    |E4EF65C7-D1B4-5881-B410-83514258FDCE
+|ai_17     |netperf        |1_x_netclient->1_x_netserver                      |123.96.168.190  |1396711372     |none                                    |9B095E62-03AA-5053-887C-56EE1166FB7E
+|ai_18     |ibm_daytrader  |1_x_client_daytrader->1_x_lb->2_x_was->1_x_db2    |168.75.204.134  |1396711380     |none                                    |7E4D15EA-8055-5D9B-9325-8FA32A7A02B2
+|ai_19     |ibmderby_tradelite|1_x_client_tradelite->1_x_was                     |58.80.114.162   |1396711385     |none                                    |B6116F3B-1579-54DD-BB68-A96A287A0554
+|ai_20     |hpcc           |1_x_fen_hpc->3_x_cn_hpc                           |114.255.168.130 |1396711390     |none                                    |9602F7F8-64AF-598B-834D-34E9591E8D0A
+|ai_21     |coremark       |1_x_coremark                                      |47.35.208.198   |1396711394     |none                                    |072FCA1D-8A55-5937-B422-2D8A937094CA
+|ai_23     |ibm_daytrader  |1_x_client_daytrader->1_x_lb->2_x_was->1_x_db2    |33.221.75.57    |1396711414     |none                                    |D5A4281A-6048-507C-BCC4-759D16287F55
+|ai_24     |netperf        |1_x_netclient->1_x_netserver                      |68.31.63.145    |1396711418     |none                                    |A880DD86-4D2B-5B40-8157-B300FF5DD636
+|ai_26     |ibm_daytrader  |1_x_client_daytrader->1_x_lb->2_x_was->1_x_db2    |128.23.233.250  |1396711455     |none                                    |EA7D106E-2FC7-5307-A139-2AB8BA867A2D
+|ai_27     |ibm_daytrader  |1_x_client_daytrader->1_x_lb->2_x_was->1_x_db2    |116.49.185.207  |1396711472     |none                                    |159FBCC0-CFFC-5B31-8277-649027F728CF
+|ai_28     |hadoop         |1_x_hadoopmaster->3_x_hadoopslave                 |89.147.235.174  |1396711489     |none                                    |94342746-58F1-51C5-A695-555C47E80278
 
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 |name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
-|vm_39         |netclient           |platinum64  |46.120.12.78    |simhostc1                  |SUT                 |ai_5    |none       |1C7167A9-B3FE-50FE-B1CC-3BF761DFDAF3
-|vm_40         |netserver           |iron32      |36.111.14.206   |simhostc1                  |SUT                 |ai_5    |none       |435B009E-54BF-578D-8755-E0F8471826C9
-|vm_47         |lb                  |iron32      |80.21.168.8     |simhostc1                  |SUT                 |ai_8    |none       |782FEB94-27F7-593F-9FB3-A52FF38F18A5
-|vm_49         |client_daytrader    |micro32     |23.30.205.12    |simhostd1                  |LG                  |ai_8    |none       |46938D3C-81A0-5D63-8A81-7FB4923AA279
-|vm_48         |was                 |iron32      |59.126.203.46   |simhostc1                  |SUT                 |ai_8    |none       |55AE598F-7328-5370-9994-04A268FED528
-|vm_50         |was                 |iron32      |106.64.30.81    |simhosta1                  |SUT                 |ai_8    |none       |CEF215C1-5184-52E7-8FF3-6DB8BD8D9705
-|vm_51         |db2                 |gold32      |215.243.38.206  |simhostb1                  |SUT                 |ai_8    |none       |95176214-2E38-5FA2-A5B2-F8AB46CBEEC7
-|vm_54         |client_daytrader    |micro32     |18.68.195.97    |simhostd1                  |LG                  |ai_9    |none       |36FD0D15-4376-5EFC-885C-187EE0ED24D4
-|vm_52         |was                 |iron32      |50.159.181.245  |simhostc1                  |SUT                 |ai_9    |none       |77A7B5E9-FA03-5868-A094-7557559BEF40
-|vm_53         |db2                 |platinum64  |6.163.120.119   |simhostc1                  |SUT                 |ai_9    |none       |26EBC941-0AE8-5059-8A95-B04B06BA4357
-|vm_58         |client_daytrader    |micro32     |5.145.59.26     |simhostd1                  |LG                  |ai_11   |none       |EC863077-D5DC-5CBE-B6C2-EF9F51C2759A
-|vm_59         |was                 |iron32      |252.7.136.6     |simhostc1                  |SUT                 |ai_11   |none       |93F361E0-BF5D-5FA6-B610-75C56D09AE4C
-|vm_60         |db2                 |platinum64  |132.240.230.189 |simhosta1                  |SUT                 |ai_11   |none       |9A8547A1-A950-50B9-B4FE-593D5EA19BA5
-|vm_71         |netclient           |iron32      |142.54.234.79   |simhostd1                  |LG                  |ai_14   |none       |AF53B9E3-2C65-5EF5-942D-476A8F849921
-|vm_72         |netserver           |iron32      |189.56.243.86   |simhostb1                  |SUT                 |ai_14   |none       |F05E85A4-DB8A-53CF-9120-497FA6D686F0
-|vm_73         |netclient           |iron32      |14.132.113.232  |simhostd1                  |LG                  |ai_15   |none       |2CE84E89-CF6F-5E97-889D-EAFE3070C5B0
-|vm_74         |netserver           |iron32      |27.232.154.6    |simhostb1                  |SUT                 |ai_15   |none       |CBBAAAD9-416D-558C-A47E-B4462F461596
-|vm_75         |netclient           |iron32      |23.137.125.124  |simhostd1                  |LG                  |ai_16   |none       |93B10A7B-3EC0-5420-A6E0-B437CB1784E7
-|vm_76         |netserver           |iron32      |144.45.27.192   |simhostb1                  |SUT                 |ai_16   |none       |ED327DB5-A77C-5332-983F-F1C52E854F63
-|vm_79         |client_daytrader    |micro32     |144.143.148.90  |simhostd1                  |LG                  |ai_18   |none       |89C6BE8E-C01F-5401-974C-5380DBD993EA
-|vm_80         |lb                  |iron32      |54.170.34.105   |simhostc1                  |SUT                 |ai_18   |none       |4BF9FC26-744E-508F-9F7D-AF44F7323B96
-|vm_81         |was                 |iron32      |184.147.194.139 |simhostb1                  |SUT                 |ai_18   |none       |D2E2C35D-961C-5813-A436-9A3971AD489B
-|vm_82         |was                 |iron32      |155.116.251.20  |simhosta1                  |SUT                 |ai_18   |none       |676D2DA1-68F2-5B91-A05F-5FDD59C41B79
-|vm_83         |db2                 |gold32      |218.227.48.230  |simhostb1                  |SUT                 |ai_18   |none       |99C61714-98F2-581D-B33D-8520F32155AE
-|vm_84         |client_tradelite    |micro32     |71.1.40.165     |simhostd1                  |LG                  |ai_19   |none       |7AF50E64-7748-5030-A1E4-45B9C7F3EE9A
-|vm_85         |was                 |iron32      |100.49.37.249   |simhostb1                  |SUT                 |ai_19   |none       |96162486-3353-53DD-8D37-53152CC22DF3
-|vm_87         |cn_hpc              |bronze32    |132.163.91.54   |simhosta1                  |SUT                 |ai_20   |none       |255DB3A7-83B0-5F95-817F-E42866C7AC7D
-|vm_86         |fen_hpc             |bronze32    |252.29.156.124  |simhosta1                  |SUT                 |ai_20   |none       |E247C4AC-EB61-5ED7-82C7-BA098D0304D1
-|vm_88         |cn_hpc              |bronze32    |24.153.30.135   |simhostb1                  |SUT                 |ai_20   |none       |DAFDA0D3-CA58-5D9C-ADBA-A7D090C86472
-|vm_89         |cn_hpc              |bronze32    |18.60.14.246    |simhosta1                  |SUT                 |ai_20   |none       |0F76F28C-51B4-5764-AF48-214CA783AC50
-|vm_90         |coremark            |iron32      |60.127.77.199   |simhosta1                  |SUT                 |ai_21   |none       |8A437AD9-7E88-5716-A829-7D3928673106
-|vm_92         |client_daytrader    |micro32     |27.108.196.60   |simhostd1                  |LG                  |ai_23   |none       |D31EDD20-00F9-518B-B751-C91E0281A3D6
-|vm_93         |lb                  |iron32      |216.182.246.4   |simhosta1                  |SUT                 |ai_23   |none       |764526F5-F928-5686-9295-013F981DC1A6
-|vm_94         |was                 |iron32      |160.142.15.157  |simhostc1                  |SUT                 |ai_23   |none       |341B2084-ED62-5919-A4B0-BD6F7743DBD9
-|vm_95         |was                 |iron32      |107.225.251.159 |simhosta1                  |SUT                 |ai_23   |none       |D8D9323C-D044-5737-9BB2-4C085CA4EE83
-|vm_96         |db2                 |gold32      |122.106.71.224  |simhostb1                  |SUT                 |ai_23   |none       |3781C9A1-5284-5474-A449-68BD18B75FB1
-|vm_97         |netclient           |iron32      |243.180.58.250  |simhostd1                  |LG                  |ai_24   |none       |D6AE4AEA-FDD2-57E3-83FB-1B2784DCEE76
-|vm_98         |netserver           |iron32      |253.158.102.167 |simhostb1                  |SUT                 |ai_24   |none       |3ABC9BAB-04F6-5390-AA4B-2E17D48AA357
-|vm_103        |client_daytrader    |micro32     |233.171.185.49  |simhostd1                  |LG                  |ai_26   |none       |E55A290A-2407-59F6-B26E-BD49DFF30773
-|vm_105        |lb                  |iron32      |47.226.104.23   |simhostb1                  |SUT                 |ai_26   |none       |D21702E6-E287-59F3-B18A-7A304EC273FB
-|vm_104        |was                 |iron32      |46.212.7.102    |simhosta1                  |SUT                 |ai_26   |none       |35F93600-EDF3-5A8B-876E-9613D05E140D
-|vm_106        |db2                 |gold32      |119.70.207.102  |simhosta1                  |SUT                 |ai_26   |none       |C6AE0023-F43F-510F-A5EB-47C354DBA2F1
-|vm_107        |was                 |iron32      |127.146.2.161   |simhostc1                  |SUT                 |ai_26   |none       |62717880-6386-5A7D-9750-4EA96C74A3EE
-|vm_110        |was                 |iron32      |233.26.213.203  |simhosta1                  |SUT                 |ai_27   |none       |4F9EEB01-1B46-57C1-B47A-4A22227FAF1C
-|vm_112        |db2                 |gold32      |58.194.228.177  |simhostc1                  |SUT                 |ai_27   |none       |A9567676-A51B-5C1E-8A4E-0CBDFACC7A23
-|vm_111        |was                 |iron32      |243.154.132.104 |simhostc1                  |SUT                 |ai_27   |none       |C0BFBF94-7ACB-51FF-81D4-26C7465F7F28
-|vm_108        |lb                  |iron32      |89.106.8.80     |simhostb1                  |SUT                 |ai_27   |none       |BDDA01AC-7CEA-51CD-8444-2832BBA7F0ED
-|vm_109        |client_daytrader    |micro32     |69.86.227.131   |simhostd1                  |LG                  |ai_27   |none       |9D1A3583-D0F5-56D5-9E05-C33023BE360D
-|vm_113        |hadoopmaster        |copper32    |200.182.165.224 |simhosta1                  |SUT                 |ai_28   |none       |59F0B919-3669-5B12-8544-20C119E5D4F3
-|vm_114        |hadoopslave         |iron32      |96.170.78.89    |simhostc1                  |SUT                 |ai_28   |none       |429BB9C8-E0DB-5ECD-AD7D-212D43CD49D7
-|vm_115        |hadoopslave         |iron32      |146.66.112.186  |simhostb1                  |SUT                 |ai_28   |none       |9930B5BC-C36C-5BDD-9C97-C13E46B21235
-|vm_116        |hadoopslave         |iron32      |69.126.58.53    |simhostc1                  |SUT                 |ai_28   |none       |C741384F-FA6A-52BD-86E6-97C8A9B3109F
+|vm_39         |netclient           |platinum64  |73.250.19.169   |simhostb1                  |SUT                 |ai_5    |none       |99A818AE-CEF7-5CF3-B380-B83789A60F58
+|vm_40         |netserver           |iron32      |92.138.222.180  |simhostc1                  |SUT                 |ai_5    |none       |5320C000-9824-5408-9205-436B6B3ACFA4
+|vm_49         |was                 |iron32      |191.80.60.83    |simhosta1                  |SUT                 |ai_8    |none       |555D56D4-8E3B-5525-921A-745D5D7D8214
+|vm_50         |lb                  |iron32      |50.225.240.14   |simhostc1                  |SUT                 |ai_8    |none       |4F2C45DE-2E63-5278-9C9F-C2E6BEBCCCFC
+|vm_47         |client_daytrader    |micro32     |53.216.249.203  |simhostd1                  |LG                  |ai_8    |none       |455414AF-3EE4-5D2C-AE20-671CA9575F92
+|vm_48         |was                 |iron32      |167.66.20.92    |simhostb1                  |SUT                 |ai_8    |none       |BFEB6E69-1142-5A2E-AEA6-99064BF0742F
+|vm_51         |db2                 |gold32      |96.245.146.30   |simhostb1                  |SUT                 |ai_8    |none       |45DBE9B7-DC0D-5046-9466-2C233801702B
+|vm_58         |was                 |iron32      |47.228.23.244   |simhostb1                  |SUT                 |ai_11   |none       |B3CED484-761D-5D01-A7D7-549426F7A747
+|vm_59         |client_daytrader    |micro32     |192.85.86.18    |simhostd1                  |LG                  |ai_11   |none       |03C5AFA5-E53B-5937-808C-2FDFD9CF0832
+|vm_60         |db2                 |platinum64  |168.241.184.111 |simhostb1                  |SUT                 |ai_11   |none       |363E6FCA-BEC1-5C15-98D1-BAD1E02FE28E
+|vm_71         |netclient           |iron32      |3.218.245.213   |simhostd1                  |LG                  |ai_14   |none       |BA9C7801-0792-53D3-A6E8-87F9C6001928
+|vm_72         |netserver           |iron32      |222.72.254.64   |simhostc1                  |SUT                 |ai_14   |none       |CF19163D-552C-5EBF-B845-BD2B859DBA8B
+|vm_73         |netserver           |iron32      |176.35.190.188  |simhosta1                  |SUT                 |ai_15   |none       |743CF73A-F216-5B91-B9B0-B0CE79F5F139
+|vm_74         |netclient           |iron32      |211.26.31.144   |simhostd1                  |LG                  |ai_15   |none       |B81A2835-BEDF-5666-8592-1D1DD4069C2C
+|vm_75         |netclient           |iron32      |136.50.211.253  |simhostd1                  |LG                  |ai_16   |none       |5FE57208-5650-50AB-928D-42D13D32D423
+|vm_76         |netserver           |iron32      |237.178.118.210 |simhostc1                  |SUT                 |ai_16   |none       |B8277BE0-7B17-512D-B8BC-674FA304AC68
+|vm_77         |netclient           |iron32      |123.96.168.190  |simhostd1                  |LG                  |ai_17   |none       |44AA143D-8E62-5723-9E0C-A7560DFB5A31
+|vm_78         |netserver           |iron32      |10.141.138.81   |simhostc1                  |SUT                 |ai_17   |none       |BE1940A4-B2C3-51DE-BB84-B4DA71C20E12
+|vm_82         |was                 |iron32      |213.8.99.191    |simhostb1                  |SUT                 |ai_18   |none       |A71D3640-13AB-50DA-A744-616895C5E750
+|vm_81         |was                 |iron32      |105.71.133.41   |simhosta1                  |SUT                 |ai_18   |none       |410E49E0-A32D-569E-924C-0718076D4006
+|vm_80         |db2                 |gold32      |88.27.65.157    |simhostb1                  |SUT                 |ai_18   |none       |06CB5FC6-454C-582B-887B-478EA46FCA63
+|vm_83         |lb                  |iron32      |139.185.177.98  |simhosta1                  |SUT                 |ai_18   |none       |2990293E-1B6E-510D-9146-98772DC61415
+|vm_79         |client_daytrader    |micro32     |168.75.204.134  |simhostd1                  |LG                  |ai_18   |none       |7D3C138B-9CBE-52EE-BBA1-E81C7C0CEB1E
+|vm_84         |client_tradelite    |micro32     |58.80.114.162   |simhostd1                  |LG                  |ai_19   |none       |ABBE4D39-6BC5-5656-939A-97629E515FC7
+|vm_85         |was                 |iron32      |160.190.34.120  |simhosta1                  |SUT                 |ai_19   |none       |45FEA27C-0A2A-5B7A-AA0E-2E10179B8582
+|vm_86         |cn_hpc              |bronze32    |172.20.168.129  |simhostb1                  |SUT                 |ai_20   |none       |93CEC8ED-5591-5346-AC2A-0C8165E9E148
+|vm_89         |cn_hpc              |bronze32    |86.236.207.105  |simhostb1                  |SUT                 |ai_20   |none       |D8A837B2-C9B2-5473-B2D0-6FF1817C18A7
+|vm_87         |cn_hpc              |bronze32    |93.202.64.99    |simhostc1                  |SUT                 |ai_20   |none       |AE711C86-DD03-5DB1-94B7-F1E4BDF07482
+|vm_88         |fen_hpc             |bronze32    |114.255.168.130 |simhosta1                  |SUT                 |ai_20   |none       |A30E7D2E-B0DF-536A-A5D0-826B49B3CDAD
+|vm_90         |coremark            |iron32      |47.35.208.198   |simhostb1                  |SUT                 |ai_21   |none       |0289EFAA-68C1-5A27-958C-6D57E798530A
+|vm_92         |was                 |iron32      |230.217.254.51  |simhosta1                  |SUT                 |ai_23   |none       |6335E797-3DF3-51A8-91D5-38C99A3607B3
+|vm_93         |was                 |iron32      |64.237.56.208   |simhostc1                  |SUT                 |ai_23   |none       |0E43D8F5-2D93-5870-B55B-638F8FD840DD
+|vm_95         |lb                  |iron32      |112.251.89.108  |simhostc1                  |SUT                 |ai_23   |none       |39E3CEB0-D53B-5655-A4A9-0C6F14869597
+|vm_96         |client_daytrader    |micro32     |33.221.75.57    |simhostd1                  |LG                  |ai_23   |none       |7CC4132B-01C2-5ED3-B914-87F8C7E851D1
+|vm_94         |db2                 |gold32      |62.206.216.9    |simhostb1                  |SUT                 |ai_23   |none       |E03BEFC3-9280-5BB8-BE19-FC7646B56650
+|vm_97         |netclient           |iron32      |68.31.63.145    |simhostd1                  |LG                  |ai_24   |none       |336984B5-2BBF-5523-B4BA-AA428210776C
+|vm_98         |netserver           |iron32      |87.186.25.249   |simhosta1                  |SUT                 |ai_24   |none       |8551B6EC-EE3B-55A9-B871-EB96744335F8
+|vm_104        |was                 |iron32      |72.18.183.235   |simhostb1                  |SUT                 |ai_26   |none       |39AD1CF1-D0D1-5852-888C-1A8A7A6E42E4
+|vm_103        |was                 |iron32      |155.238.208.112 |simhostb1                  |SUT                 |ai_26   |none       |4EB4149E-77BF-5BF7-8C05-95FE4248B468
+|vm_105        |lb                  |iron32      |103.77.69.21    |simhosta1                  |SUT                 |ai_26   |none       |AB192B22-C9E2-5AF2-930D-93C7E2E3F0CC
+|vm_106        |client_daytrader    |micro32     |128.23.233.250  |simhostd1                  |LG                  |ai_26   |none       |31B96638-7640-5F3B-8E79-E7D00AECA641
+|vm_107        |db2                 |gold32      |176.143.106.185 |simhostc1                  |SUT                 |ai_26   |none       |B839EC0D-A8AD-503D-AA74-35613DD55098
+|vm_109        |was                 |iron32      |161.139.37.129  |simhosta1                  |SUT                 |ai_27   |none       |5431BB5F-67C8-5D9C-AEB0-4C70BC917514
+|vm_108        |client_daytrader    |micro32     |116.49.185.207  |simhostd1                  |LG                  |ai_27   |none       |448D5042-3437-50EC-BE99-A8F5B355176B
+|vm_110        |lb                  |iron32      |188.129.200.30  |simhostc1                  |SUT                 |ai_27   |none       |A713949F-D3EA-5A0A-A796-EEF7778E750C
+|vm_111        |was                 |iron32      |80.27.169.67    |simhostb1                  |SUT                 |ai_27   |none       |8E203F0D-49AE-5543-B5D7-EFFBF43994EB
+|vm_112        |db2                 |gold32      |188.36.244.74   |simhostb1                  |SUT                 |ai_27   |none       |3B421120-92BC-5D2B-A772-67C71F49CDCB
+|vm_113        |hadoopslave         |iron32      |187.95.250.39   |simhostc1                  |SUT                 |ai_28   |none       |73306169-F98A-5E5F-8913-63450E253BD0
+|vm_114        |hadoopslave         |iron32      |161.19.94.11    |simhosta1                  |SUT                 |ai_28   |none       |0540C721-8946-5A70-99FE-15637AD06E91
+|vm_115        |hadoopmaster        |copper32    |89.147.235.174  |simhostc1                  |SUT                 |ai_28   |none       |C5BEE3EE-9865-5819-ADB9-F175D0CC9BA5
+|vm_116        |hadoopslave         |iron32      |130.224.179.138 |simhostb1                  |SUT                 |ai_28   |none       |D9DE33AE-2EF9-5CC8-B114-98DFCE605C2F
 
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
 |Used Memory                                          |5.67M                         
 |Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |29789                         
-|Total Connections Received                           |1315                          
-|Total Commands Processed                             |1668638                       
-|Number of Keys                                       |936                           
+|Uptime (in seconds)                                  |508032                        
+|Total Connections Received                           |10542                         
+|Total Commands Processed                             |739532                        
+|Number of Keys                                       |932                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
 |MongoDB Version                                      |2.4.9                         
 |Storage Size                                         |1757184                       
-|Data Size                                            |395648                        
+|Data Size                                            |392720                        
 |Index Size                                           |327040                        
-|Average Object Size                                  |533.937921727                 
+|Average Object Size                                  |531.420838972                 
 |Collections                                          |14                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
 |VMCs                                                 |4                             
 |HOSTs                                                |20                            
-|VMs                                                  |52                            
+|VMs                                                  |51                            
 |AIs                                                  |16                            
 |AIDRSs                                               |0                             
 |VMCRSs                                               |0                             
@@ -115,11 +114,11 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |HOSTs DEPARTED                                       |0                             
 |HOSTs DEPARTING                                      |0                             
 |HOSTs FAILED                                         |0                             
-|VM RESERVATIONS                                      |52                            
+|VM RESERVATIONS                                      |51                            
 |VMs ARRIVED                                          |113                           
 |VMs ARRIVING                                         |0                             
 |VMs CAPTURING                                        |0                             
-|VMs DEPARTED                                         |61                            
+|VMs DEPARTED                                         |62                            
 |VMs DEPARTING                                        |0                             
 |VMs FAILED                                           |3                             
 |AI RESERVATIONS                                      |16                            
@@ -147,211 +146,209 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |FIRSs DEPARTED                                       |0                             
 |FIRSs DEPARTING                                      |0                             
 |FIRSs FAILED                                         |0                             
-|EXPERIMENT COUNTER                                   |305                           
+|EXPERIMENT COUNTER                                   |306                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|46D4622A-F4FA-5954-A362-7BB01336493E (simzone_b) VM RESERVATIONS|13                            
-|A01EE257-BEE4-5C25-A4B0-57EA67D25FB3 (simzone_c) VM RESERVATIONS|14                            
-|98E867EB-38E0-596F-B000-DDE51A5C4BA9 (simzone_d) VM RESERVATIONS|12                            
-|D6527383-EEEF-5F20-AFDD-FD9F013A7407 (simzone_a) VM RESERVATIONS|13                            
+|49282BA1-6D05-5C43-9AF0-FFE568AFD5F9 (simzone_b) VM RESERVATIONS|16                            
+|F04BDEFB-2E30-560C-802C-A1FABC5D8D0C (simzone_a) VM RESERVATIONS|11                            
+|9C8B8765-2143-577F-9E2E-DEDF96009D33 (simzone_d) VM RESERVATIONS|12                            
+|68F26DD5-96FF-5310-9ED9-3568A17CBF4A (simzone_c) VM RESERVATIONS|12                            
 
 The following state values are available for the objects on this experiment (Cloud TESTCLOUD) :
 ------------------ PER-OBJECT STATE (CLOUD TESTCLOUD)  -----------------
 |Object Type    |Object Name    |Object UUID                             |State                     
-|VMC            |simzone_b      |46D4622A-F4FA-5954-A362-7BB01336493E    |attached                  
-|VMC            |simzone_c      |A01EE257-BEE4-5C25-A4B0-57EA67D25FB3    |attached                  
-|VMC            |simzone_d      |98E867EB-38E0-596F-B000-DDE51A5C4BA9    |attached                  
-|VMC            |simzone_a      |D6527383-EEEF-5F20-AFDD-FD9F013A7407    |attached                  
-|VMC            |simzone_b      |46D4622A-F4FA-5954-A362-7BB01336493E    |attached                  
-|VMC            |simzone_c      |A01EE257-BEE4-5C25-A4B0-57EA67D25FB3    |attached                  
-|VMC            |simzone_d      |98E867EB-38E0-596F-B000-DDE51A5C4BA9    |attached                  
-|VMC            |simzone_a      |D6527383-EEEF-5F20-AFDD-FD9F013A7407    |attached                  
-|HOST           |host_simhostb3 |85258DE1-0DBE-57CC-981A-2D5BB42737DC    |attached                  
-|HOST           |host_simhosta2 |88A6BB68-B47E-5713-8732-EBD31E6314CF    |attached                  
-|HOST           |host_simhostc0 |4E825FBB-FC37-5241-BA89-9A92F3A56D0F    |attached                  
-|HOST           |host_simhostc3 |AA38C61A-8DE1-537A-A85A-F2AE16113BD6    |attached                  
-|HOST           |host_simhostd0 |F16F302D-DFC1-5E95-BBBE-FB457A5B4148    |attached                  
-|HOST           |host_simhostb1 |FB675252-D72B-50A5-80FA-06F777D37A05    |attached                  
-|HOST           |host_simhostc4 |FB3B1C4C-95B7-5BA1-8788-5019411F4715    |attached                  
-|HOST           |host_simhostb0 |2CFB1E65-3596-5E66-8626-32ED679498C5    |attached                  
-|HOST           |host_simhostd4 |229689D8-8D42-5FDF-A3B3-7FA6104BA17E    |attached                  
-|HOST           |host_simhostc1 |3835B3C7-569B-5AC6-917A-51DE1D4A03FE    |attached                  
-|HOST           |host_simhosta3 |17EFF28E-B78A-5F40-92ED-AA6E04C0F42F    |attached                  
-|HOST           |host_simhostb2 |7AEAEFC8-A879-5237-A848-26367166FB74    |attached                  
-|HOST           |host_simhostd3 |B9D1A31F-4A60-5A07-AD06-44EEA2C1AC65    |attached                  
-|HOST           |host_simhostb4 |EB2A82AB-79F0-5752-9550-E9701FB7D3CF    |attached                  
-|HOST           |host_simhosta4 |5CB85015-8A28-51BF-9C3B-70C9EAA7F8C6    |attached                  
-|HOST           |host_simhostc2 |3C5E2BB8-742C-5C9A-867F-59AF48FD55CD    |attached                  
-|HOST           |host_simhostd1 |F4DDA343-7EF0-5167-8EBF-80D33556B9AB    |attached                  
-|HOST           |host_simhosta0 |D2C5DEBA-75C9-58B5-8DFB-E4F8F8BD6C79    |attached                  
-|HOST           |host_simhosta1 |842AA546-DA22-5A23-84CF-2F7954406C9E    |attached                  
-|HOST           |host_simhostd2 |D8FFC0FF-86EA-54A2-97FB-BB8640A011F9    |attached                  
-|VMC            |simzone_b      |46D4622A-F4FA-5954-A362-7BB01336493E    |attached                  
-|VMC            |simzone_c      |A01EE257-BEE4-5C25-A4B0-57EA67D25FB3    |attached                  
-|VMC            |simzone_d      |98E867EB-38E0-596F-B000-DDE51A5C4BA9    |attached                  
-|VMC            |simzone_a      |D6527383-EEEF-5F20-AFDD-FD9F013A7407    |attached                  
-|HOST           |host_simhostb3 |85258DE1-0DBE-57CC-981A-2D5BB42737DC    |attached                  
-|HOST           |host_simhosta2 |88A6BB68-B47E-5713-8732-EBD31E6314CF    |attached                  
-|HOST           |host_simhostc0 |4E825FBB-FC37-5241-BA89-9A92F3A56D0F    |attached                  
-|HOST           |host_simhostc3 |AA38C61A-8DE1-537A-A85A-F2AE16113BD6    |attached                  
-|HOST           |host_simhostd0 |F16F302D-DFC1-5E95-BBBE-FB457A5B4148    |attached                  
-|HOST           |host_simhostb1 |FB675252-D72B-50A5-80FA-06F777D37A05    |attached                  
-|HOST           |host_simhostc4 |FB3B1C4C-95B7-5BA1-8788-5019411F4715    |attached                  
-|HOST           |host_simhostb0 |2CFB1E65-3596-5E66-8626-32ED679498C5    |attached                  
-|HOST           |host_simhostd4 |229689D8-8D42-5FDF-A3B3-7FA6104BA17E    |attached                  
-|HOST           |host_simhostc1 |3835B3C7-569B-5AC6-917A-51DE1D4A03FE    |attached                  
-|HOST           |host_simhosta3 |17EFF28E-B78A-5F40-92ED-AA6E04C0F42F    |attached                  
-|HOST           |host_simhostb2 |7AEAEFC8-A879-5237-A848-26367166FB74    |attached                  
-|HOST           |host_simhostd3 |B9D1A31F-4A60-5A07-AD06-44EEA2C1AC65    |attached                  
-|HOST           |host_simhostb4 |EB2A82AB-79F0-5752-9550-E9701FB7D3CF    |attached                  
-|HOST           |host_simhosta4 |5CB85015-8A28-51BF-9C3B-70C9EAA7F8C6    |attached                  
-|HOST           |host_simhostc2 |3C5E2BB8-742C-5C9A-867F-59AF48FD55CD    |attached                  
-|HOST           |host_simhostd1 |F4DDA343-7EF0-5167-8EBF-80D33556B9AB    |attached                  
-|HOST           |host_simhosta0 |D2C5DEBA-75C9-58B5-8DFB-E4F8F8BD6C79    |attached                  
-|HOST           |host_simhosta1 |842AA546-DA22-5A23-84CF-2F7954406C9E    |attached                  
-|HOST           |host_simhostd2 |D8FFC0FF-86EA-54A2-97FB-BB8640A011F9    |attached                  
-|VM             |vm_71          |AF53B9E3-2C65-5EF5-942D-476A8F849921    |attached                  
-|VM             |vm_48          |55AE598F-7328-5370-9994-04A268FED528    |attached                  
-|VM             |vm_79          |89C6BE8E-C01F-5401-974C-5380DBD993EA    |attached                  
-|VM             |vm_83          |99C61714-98F2-581D-B33D-8520F32155AE    |attached                  
-|VM             |vm_98          |3ABC9BAB-04F6-5390-AA4B-2E17D48AA357    |attached                  
-|VM             |vm_97          |D6AE4AEA-FDD2-57E3-83FB-1B2784DCEE76    |attached                  
-|VM             |vm_76          |ED327DB5-A77C-5332-983F-F1C52E854F63    |attached                  
-|VM             |vm_87          |255DB3A7-83B0-5F95-817F-E42866C7AC7D    |attached                  
-|VM             |vm_59          |93F361E0-BF5D-5FA6-B610-75C56D09AE4C    |attached                  
-|VM             |vm_96          |3781C9A1-5284-5474-A449-68BD18B75FB1    |attached                  
-|VM             |vm_80          |4BF9FC26-744E-508F-9F7D-AF44F7323B96    |attached                  
-|VM             |vm_88          |DAFDA0D3-CA58-5D9C-ADBA-A7D090C86472    |attached                  
-|VM             |vm_103         |E55A290A-2407-59F6-B26E-BD49DFF30773    |attached                  
-|VM             |vm_111         |C0BFBF94-7ACB-51FF-81D4-26C7465F7F28    |attached                  
-|VM             |vm_74          |CBBAAAD9-416D-558C-A47E-B4462F461596    |attached                  
-|VM             |vm_52          |77A7B5E9-FA03-5868-A094-7557559BEF40    |attached                  
-|VM             |vm_58          |EC863077-D5DC-5CBE-B6C2-EF9F51C2759A    |attached                  
-|VM             |vm_84          |7AF50E64-7748-5030-A1E4-45B9C7F3EE9A    |attached                  
-|VM             |vm_110         |4F9EEB01-1B46-57C1-B47A-4A22227FAF1C    |attached                  
-|VM             |vm_108         |BDDA01AC-7CEA-51CD-8444-2832BBA7F0ED    |attached                  
-|VM             |vm_90          |8A437AD9-7E88-5716-A829-7D3928673106    |attached                  
-|VM             |vm_85          |96162486-3353-53DD-8D37-53152CC22DF3    |attached                  
-|VM             |vm_106         |C6AE0023-F43F-510F-A5EB-47C354DBA2F1    |attached                  
-|VM             |vm_54          |36FD0D15-4376-5EFC-885C-187EE0ED24D4    |attached                  
-|VM             |vm_50          |CEF215C1-5184-52E7-8FF3-6DB8BD8D9705    |attached                  
-|VM             |vm_49          |46938D3C-81A0-5D63-8A81-7FB4923AA279    |attached                  
-|VM             |vm_47          |782FEB94-27F7-593F-9FB3-A52FF38F18A5    |attached                  
-|VM             |vm_39          |1C7167A9-B3FE-50FE-B1CC-3BF761DFDAF3    |attached                  
-|VM             |vm_93          |764526F5-F928-5686-9295-013F981DC1A6    |attached                  
-|VM             |vm_94          |341B2084-ED62-5919-A4B0-BD6F7743DBD9    |attached                  
-|VM             |vm_112         |A9567676-A51B-5C1E-8A4E-0CBDFACC7A23    |attached                  
-|VM             |vm_72          |F05E85A4-DB8A-53CF-9120-497FA6D686F0    |attached                  
-|VM             |vm_109         |9D1A3583-D0F5-56D5-9E05-C33023BE360D    |attached                  
-|VM             |vm_104         |35F93600-EDF3-5A8B-876E-9613D05E140D    |attached                  
-|VM             |vm_116         |C741384F-FA6A-52BD-86E6-97C8A9B3109F    |attached                  
-|VM             |vm_60          |9A8547A1-A950-50B9-B4FE-593D5EA19BA5    |attached                  
-|VM             |vm_81          |D2E2C35D-961C-5813-A436-9A3971AD489B    |attached                  
-|VM             |vm_73          |2CE84E89-CF6F-5E97-889D-EAFE3070C5B0    |attached                  
-|VM             |vm_92          |D31EDD20-00F9-518B-B751-C91E0281A3D6    |attached                  
-|VM             |vm_113         |59F0B919-3669-5B12-8544-20C119E5D4F3    |attached                  
-|VM             |vm_115         |9930B5BC-C36C-5BDD-9C97-C13E46B21235    |attached                  
-|VM             |vm_105         |D21702E6-E287-59F3-B18A-7A304EC273FB    |attached                  
-|VM             |vm_114         |429BB9C8-E0DB-5ECD-AD7D-212D43CD49D7    |attached                  
-|VM             |vm_75          |93B10A7B-3EC0-5420-A6E0-B437CB1784E7    |attached                  
-|VM             |vm_95          |D8D9323C-D044-5737-9BB2-4C085CA4EE83    |attached                  
-|VM             |vm_51          |95176214-2E38-5FA2-A5B2-F8AB46CBEEC7    |attached                  
-|VM             |vm_40          |435B009E-54BF-578D-8755-E0F8471826C9    |attached                  
-|VM             |vm_82          |676D2DA1-68F2-5B91-A05F-5FDD59C41B79    |attached                  
-|VM             |vm_86          |E247C4AC-EB61-5ED7-82C7-BA098D0304D1    |attached                  
-|VM             |vm_89          |0F76F28C-51B4-5764-AF48-214CA783AC50    |attached                  
-|VM             |vm_53          |26EBC941-0AE8-5059-8A95-B04B06BA4357    |attached                  
-|VM             |vm_107         |62717880-6386-5A7D-9750-4EA96C74A3EE    |attached                  
-|VMC            |simzone_b      |46D4622A-F4FA-5954-A362-7BB01336493E    |attached                  
-|VMC            |simzone_c      |A01EE257-BEE4-5C25-A4B0-57EA67D25FB3    |attached                  
-|VMC            |simzone_d      |98E867EB-38E0-596F-B000-DDE51A5C4BA9    |attached                  
-|VMC            |simzone_a      |D6527383-EEEF-5F20-AFDD-FD9F013A7407    |attached                  
-|HOST           |host_simhostb3 |85258DE1-0DBE-57CC-981A-2D5BB42737DC    |attached                  
-|HOST           |host_simhosta2 |88A6BB68-B47E-5713-8732-EBD31E6314CF    |attached                  
-|HOST           |host_simhostc0 |4E825FBB-FC37-5241-BA89-9A92F3A56D0F    |attached                  
-|HOST           |host_simhostc3 |AA38C61A-8DE1-537A-A85A-F2AE16113BD6    |attached                  
-|HOST           |host_simhostd0 |F16F302D-DFC1-5E95-BBBE-FB457A5B4148    |attached                  
-|HOST           |host_simhostb1 |FB675252-D72B-50A5-80FA-06F777D37A05    |attached                  
-|HOST           |host_simhostc4 |FB3B1C4C-95B7-5BA1-8788-5019411F4715    |attached                  
-|HOST           |host_simhostb0 |2CFB1E65-3596-5E66-8626-32ED679498C5    |attached                  
-|HOST           |host_simhostd4 |229689D8-8D42-5FDF-A3B3-7FA6104BA17E    |attached                  
-|HOST           |host_simhostc1 |3835B3C7-569B-5AC6-917A-51DE1D4A03FE    |attached                  
-|HOST           |host_simhosta3 |17EFF28E-B78A-5F40-92ED-AA6E04C0F42F    |attached                  
-|HOST           |host_simhostb2 |7AEAEFC8-A879-5237-A848-26367166FB74    |attached                  
-|HOST           |host_simhostd3 |B9D1A31F-4A60-5A07-AD06-44EEA2C1AC65    |attached                  
-|HOST           |host_simhostb4 |EB2A82AB-79F0-5752-9550-E9701FB7D3CF    |attached                  
-|HOST           |host_simhosta4 |5CB85015-8A28-51BF-9C3B-70C9EAA7F8C6    |attached                  
-|HOST           |host_simhostc2 |3C5E2BB8-742C-5C9A-867F-59AF48FD55CD    |attached                  
-|HOST           |host_simhostd1 |F4DDA343-7EF0-5167-8EBF-80D33556B9AB    |attached                  
-|HOST           |host_simhosta0 |D2C5DEBA-75C9-58B5-8DFB-E4F8F8BD6C79    |attached                  
-|HOST           |host_simhosta1 |842AA546-DA22-5A23-84CF-2F7954406C9E    |attached                  
-|HOST           |host_simhostd2 |D8FFC0FF-86EA-54A2-97FB-BB8640A011F9    |attached                  
-|VM             |vm_71          |AF53B9E3-2C65-5EF5-942D-476A8F849921    |attached                  
-|VM             |vm_48          |55AE598F-7328-5370-9994-04A268FED528    |attached                  
-|VM             |vm_79          |89C6BE8E-C01F-5401-974C-5380DBD993EA    |attached                  
-|VM             |vm_83          |99C61714-98F2-581D-B33D-8520F32155AE    |attached                  
-|VM             |vm_98          |3ABC9BAB-04F6-5390-AA4B-2E17D48AA357    |attached                  
-|VM             |vm_97          |D6AE4AEA-FDD2-57E3-83FB-1B2784DCEE76    |attached                  
-|VM             |vm_76          |ED327DB5-A77C-5332-983F-F1C52E854F63    |attached                  
-|VM             |vm_87          |255DB3A7-83B0-5F95-817F-E42866C7AC7D    |attached                  
-|VM             |vm_59          |93F361E0-BF5D-5FA6-B610-75C56D09AE4C    |attached                  
-|VM             |vm_96          |3781C9A1-5284-5474-A449-68BD18B75FB1    |attached                  
-|VM             |vm_80          |4BF9FC26-744E-508F-9F7D-AF44F7323B96    |attached                  
-|VM             |vm_88          |DAFDA0D3-CA58-5D9C-ADBA-A7D090C86472    |attached                  
-|VM             |vm_103         |E55A290A-2407-59F6-B26E-BD49DFF30773    |attached                  
-|VM             |vm_111         |C0BFBF94-7ACB-51FF-81D4-26C7465F7F28    |attached                  
-|VM             |vm_74          |CBBAAAD9-416D-558C-A47E-B4462F461596    |attached                  
-|VM             |vm_52          |77A7B5E9-FA03-5868-A094-7557559BEF40    |attached                  
-|VM             |vm_58          |EC863077-D5DC-5CBE-B6C2-EF9F51C2759A    |attached                  
-|VM             |vm_84          |7AF50E64-7748-5030-A1E4-45B9C7F3EE9A    |attached                  
-|VM             |vm_110         |4F9EEB01-1B46-57C1-B47A-4A22227FAF1C    |attached                  
-|VM             |vm_108         |BDDA01AC-7CEA-51CD-8444-2832BBA7F0ED    |attached                  
-|VM             |vm_90          |8A437AD9-7E88-5716-A829-7D3928673106    |attached                  
-|VM             |vm_85          |96162486-3353-53DD-8D37-53152CC22DF3    |attached                  
-|VM             |vm_106         |C6AE0023-F43F-510F-A5EB-47C354DBA2F1    |attached                  
-|VM             |vm_54          |36FD0D15-4376-5EFC-885C-187EE0ED24D4    |attached                  
-|VM             |vm_50          |CEF215C1-5184-52E7-8FF3-6DB8BD8D9705    |attached                  
-|VM             |vm_49          |46938D3C-81A0-5D63-8A81-7FB4923AA279    |attached                  
-|VM             |vm_47          |782FEB94-27F7-593F-9FB3-A52FF38F18A5    |attached                  
-|VM             |vm_39          |1C7167A9-B3FE-50FE-B1CC-3BF761DFDAF3    |attached                  
-|VM             |vm_93          |764526F5-F928-5686-9295-013F981DC1A6    |attached                  
-|VM             |vm_94          |341B2084-ED62-5919-A4B0-BD6F7743DBD9    |attached                  
-|VM             |vm_112         |A9567676-A51B-5C1E-8A4E-0CBDFACC7A23    |attached                  
-|VM             |vm_72          |F05E85A4-DB8A-53CF-9120-497FA6D686F0    |attached                  
-|VM             |vm_109         |9D1A3583-D0F5-56D5-9E05-C33023BE360D    |attached                  
-|VM             |vm_104         |35F93600-EDF3-5A8B-876E-9613D05E140D    |attached                  
-|VM             |vm_116         |C741384F-FA6A-52BD-86E6-97C8A9B3109F    |attached                  
-|VM             |vm_60          |9A8547A1-A950-50B9-B4FE-593D5EA19BA5    |attached                  
-|VM             |vm_81          |D2E2C35D-961C-5813-A436-9A3971AD489B    |attached                  
-|VM             |vm_73          |2CE84E89-CF6F-5E97-889D-EAFE3070C5B0    |attached                  
-|VM             |vm_92          |D31EDD20-00F9-518B-B751-C91E0281A3D6    |attached                  
-|VM             |vm_113         |59F0B919-3669-5B12-8544-20C119E5D4F3    |attached                  
-|VM             |vm_115         |9930B5BC-C36C-5BDD-9C97-C13E46B21235    |attached                  
-|VM             |vm_105         |D21702E6-E287-59F3-B18A-7A304EC273FB    |attached                  
-|VM             |vm_114         |429BB9C8-E0DB-5ECD-AD7D-212D43CD49D7    |attached                  
-|VM             |vm_75          |93B10A7B-3EC0-5420-A6E0-B437CB1784E7    |attached                  
-|VM             |vm_95          |D8D9323C-D044-5737-9BB2-4C085CA4EE83    |attached                  
-|VM             |vm_51          |95176214-2E38-5FA2-A5B2-F8AB46CBEEC7    |attached                  
-|VM             |vm_40          |435B009E-54BF-578D-8755-E0F8471826C9    |attached                  
-|VM             |vm_82          |676D2DA1-68F2-5B91-A05F-5FDD59C41B79    |attached                  
-|VM             |vm_86          |E247C4AC-EB61-5ED7-82C7-BA098D0304D1    |attached                  
-|VM             |vm_89          |0F76F28C-51B4-5764-AF48-214CA783AC50    |attached                  
-|VM             |vm_53          |26EBC941-0AE8-5059-8A95-B04B06BA4357    |attached                  
-|VM             |vm_107         |62717880-6386-5A7D-9750-4EA96C74A3EE    |attached                  
-|AI             |ai_20          |B92303BE-28A6-5EDC-9D3A-596064C7A772    |attached                  
-|AI             |ai_16          |2369AA9C-735D-5F73-B2AA-36A5394878AC    |attached                  
-|AI             |ai_14          |5099C6AE-F3B3-5D16-BB68-97976CF567F5    |attached                  
-|AI             |ai_11          |601116EF-7B45-5810-B62C-B5D06E574605    |attached                  
-|AI             |ai_28          |EFE2CBEF-C229-584F-8210-DA0FFA6D58B2    |attached                  
-|AI             |ai_24          |1A72A83F-27BC-5197-896C-F81B7DA6BB0B    |attached                  
-|AI             |ai_5           |0AC8E248-AA9D-5133-B466-18B2D3E818AD    |attached                  
-|AI             |ai_19          |4B0C15D6-758C-5561-85C6-ECE0F130298D    |attached                  
-|AI             |ai_18          |3DFCA273-1406-5965-BD8F-C8BC7B56C574    |attached                  
-|AI             |ai_26          |F9C38E69-FC5D-56C0-BFBA-6DA684A17969    |attached                  
-|AI             |ai_8           |DE09BBD1-9C5C-580E-A91E-E1DCE80D3CEF    |attached                  
-|AI             |ai_15          |A508768D-D400-5CDA-A2E3-007F4FAEF676    |attached                  
-|AI             |ai_9           |5E6EC969-A650-5479-99FC-E03F2DDE678F    |attached                  
-|AI             |ai_21          |E643E1A3-2EEC-5556-BD40-F57A674F38B8    |attached                  
-|AI             |ai_23          |248E7C30-3D7D-555F-B0E3-6D9DBDEC4738    |attached                  
-|AI             |ai_27          |9E5F5D52-FFAC-5B04-A618-9FE445119FE6    |attached                  
+|VMC            |simzone_b      |49282BA1-6D05-5C43-9AF0-FFE568AFD5F9    |attached                  
+|VMC            |simzone_a      |F04BDEFB-2E30-560C-802C-A1FABC5D8D0C    |attached                  
+|VMC            |simzone_d      |9C8B8765-2143-577F-9E2E-DEDF96009D33    |attached                  
+|VMC            |simzone_c      |68F26DD5-96FF-5310-9ED9-3568A17CBF4A    |attached                  
+|VMC            |simzone_b      |49282BA1-6D05-5C43-9AF0-FFE568AFD5F9    |attached                  
+|VMC            |simzone_a      |F04BDEFB-2E30-560C-802C-A1FABC5D8D0C    |attached                  
+|VMC            |simzone_d      |9C8B8765-2143-577F-9E2E-DEDF96009D33    |attached                  
+|VMC            |simzone_c      |68F26DD5-96FF-5310-9ED9-3568A17CBF4A    |attached                  
+|HOST           |host_simhostb4 |000DDB49-8618-55C0-9D8D-FDF5956DE270    |attached                  
+|HOST           |host_simhostc4 |7BDABEFB-8C06-587A-AADF-9267A04EA683    |attached                  
+|HOST           |host_simhostb0 |D30E646F-CD41-56BC-92B9-945251F61D20    |attached                  
+|HOST           |host_simhostc2 |2FEFED3D-66EA-5AA2-ADB5-87DB7F60F87A    |attached                  
+|HOST           |host_simhostd1 |9E9AD6B1-0FAC-540A-B9F4-3111F83AD0FC    |attached                  
+|HOST           |host_simhostb1 |5DB9BC6C-1A82-5493-90A5-F9B5E7DDC279    |attached                  
+|HOST           |host_simhostc0 |21CFA660-9E7F-5DAC-83E7-93EE3497463F    |attached                  
+|HOST           |host_simhostc1 |32FE9370-67B2-57D7-88F0-A51B02CE22D7    |attached                  
+|HOST           |host_simhosta1 |0A64BD54-9DEC-5F8A-BEB0-16D8FF787363    |attached                  
+|HOST           |host_simhosta4 |A544E0A7-5991-5B7C-A698-A4CDE09ECF49    |attached                  
+|HOST           |host_simhosta2 |068C8C7E-A166-5FCF-B9CD-615F964FC172    |attached                  
+|HOST           |host_simhosta0 |257E4891-BCEB-554D-A9AA-714703241467    |attached                  
+|HOST           |host_simhostc3 |2F3DE71E-672D-5BF3-A759-B248D26AD0F7    |attached                  
+|HOST           |host_simhosta3 |9E9B48DC-2C08-5970-AD0E-8300B19153B9    |attached                  
+|HOST           |host_simhostb3 |EC11C436-1219-5628-8BA8-A4310470DBDA    |attached                  
+|HOST           |host_simhostd4 |71C8BA33-79AE-5D40-8141-CF3155CC5B22    |attached                  
+|HOST           |host_simhostd2 |DBFA9943-E424-5278-81AA-EF48AF3B49C9    |attached                  
+|HOST           |host_simhostd3 |D441925C-2230-5FD9-A6D5-055362AE5A2E    |attached                  
+|HOST           |host_simhostb2 |1D443863-3DE2-5F73-A9F9-F2A156F9DB2D    |attached                  
+|HOST           |host_simhostd0 |337028CC-52ED-5FF3-8AEC-22C3E740DF5B    |attached                  
+|VMC            |simzone_b      |49282BA1-6D05-5C43-9AF0-FFE568AFD5F9    |attached                  
+|VMC            |simzone_a      |F04BDEFB-2E30-560C-802C-A1FABC5D8D0C    |attached                  
+|VMC            |simzone_d      |9C8B8765-2143-577F-9E2E-DEDF96009D33    |attached                  
+|VMC            |simzone_c      |68F26DD5-96FF-5310-9ED9-3568A17CBF4A    |attached                  
+|HOST           |host_simhostb4 |000DDB49-8618-55C0-9D8D-FDF5956DE270    |attached                  
+|HOST           |host_simhostc4 |7BDABEFB-8C06-587A-AADF-9267A04EA683    |attached                  
+|HOST           |host_simhostb0 |D30E646F-CD41-56BC-92B9-945251F61D20    |attached                  
+|HOST           |host_simhostc2 |2FEFED3D-66EA-5AA2-ADB5-87DB7F60F87A    |attached                  
+|HOST           |host_simhostd1 |9E9AD6B1-0FAC-540A-B9F4-3111F83AD0FC    |attached                  
+|HOST           |host_simhostb1 |5DB9BC6C-1A82-5493-90A5-F9B5E7DDC279    |attached                  
+|HOST           |host_simhostc0 |21CFA660-9E7F-5DAC-83E7-93EE3497463F    |attached                  
+|HOST           |host_simhostc1 |32FE9370-67B2-57D7-88F0-A51B02CE22D7    |attached                  
+|HOST           |host_simhosta1 |0A64BD54-9DEC-5F8A-BEB0-16D8FF787363    |attached                  
+|HOST           |host_simhosta4 |A544E0A7-5991-5B7C-A698-A4CDE09ECF49    |attached                  
+|HOST           |host_simhosta2 |068C8C7E-A166-5FCF-B9CD-615F964FC172    |attached                  
+|HOST           |host_simhosta0 |257E4891-BCEB-554D-A9AA-714703241467    |attached                  
+|HOST           |host_simhostc3 |2F3DE71E-672D-5BF3-A759-B248D26AD0F7    |attached                  
+|HOST           |host_simhosta3 |9E9B48DC-2C08-5970-AD0E-8300B19153B9    |attached                  
+|HOST           |host_simhostb3 |EC11C436-1219-5628-8BA8-A4310470DBDA    |attached                  
+|HOST           |host_simhostd4 |71C8BA33-79AE-5D40-8141-CF3155CC5B22    |attached                  
+|HOST           |host_simhostd2 |DBFA9943-E424-5278-81AA-EF48AF3B49C9    |attached                  
+|HOST           |host_simhostd3 |D441925C-2230-5FD9-A6D5-055362AE5A2E    |attached                  
+|HOST           |host_simhostb2 |1D443863-3DE2-5F73-A9F9-F2A156F9DB2D    |attached                  
+|HOST           |host_simhostd0 |337028CC-52ED-5FF3-8AEC-22C3E740DF5B    |attached                  
+|VM             |vm_48          |BFEB6E69-1142-5A2E-AEA6-99064BF0742F    |attached                  
+|VM             |vm_106         |31B96638-7640-5F3B-8E79-E7D00AECA641    |attached                  
+|VM             |vm_58          |B3CED484-761D-5D01-A7D7-549426F7A747    |attached                  
+|VM             |vm_111         |8E203F0D-49AE-5543-B5D7-EFFBF43994EB    |attached                  
+|VM             |vm_90          |0289EFAA-68C1-5A27-958C-6D57E798530A    |attached                  
+|VM             |vm_47          |455414AF-3EE4-5D2C-AE20-671CA9575F92    |attached                  
+|VM             |vm_115         |C5BEE3EE-9865-5819-ADB9-F175D0CC9BA5    |attached                  
+|VM             |vm_83          |2990293E-1B6E-510D-9146-98772DC61415    |attached                  
+|VM             |vm_96          |7CC4132B-01C2-5ED3-B914-87F8C7E851D1    |attached                  
+|VM             |vm_87          |AE711C86-DD03-5DB1-94B7-F1E4BDF07482    |attached                  
+|VM             |vm_107         |B839EC0D-A8AD-503D-AA74-35613DD55098    |attached                  
+|VM             |vm_114         |0540C721-8946-5A70-99FE-15637AD06E91    |attached                  
+|VM             |vm_109         |5431BB5F-67C8-5D9C-AEB0-4C70BC917514    |attached                  
+|VM             |vm_110         |A713949F-D3EA-5A0A-A796-EEF7778E750C    |attached                  
+|VM             |vm_75          |5FE57208-5650-50AB-928D-42D13D32D423    |attached                  
+|VM             |vm_79          |7D3C138B-9CBE-52EE-BBA1-E81C7C0CEB1E    |attached                  
+|VM             |vm_82          |A71D3640-13AB-50DA-A744-616895C5E750    |attached                  
+|VM             |vm_39          |99A818AE-CEF7-5CF3-B380-B83789A60F58    |attached                  
+|VM             |vm_72          |CF19163D-552C-5EBF-B845-BD2B859DBA8B    |attached                  
+|VM             |vm_80          |06CB5FC6-454C-582B-887B-478EA46FCA63    |attached                  
+|VM             |vm_108         |448D5042-3437-50EC-BE99-A8F5B355176B    |attached                  
+|VM             |vm_74          |B81A2835-BEDF-5666-8592-1D1DD4069C2C    |attached                  
+|VM             |vm_97          |336984B5-2BBF-5523-B4BA-AA428210776C    |attached                  
+|VM             |vm_104         |39AD1CF1-D0D1-5852-888C-1A8A7A6E42E4    |attached                  
+|VM             |vm_84          |ABBE4D39-6BC5-5656-939A-97629E515FC7    |attached                  
+|VM             |vm_81          |410E49E0-A32D-569E-924C-0718076D4006    |attached                  
+|VM             |vm_89          |D8A837B2-C9B2-5473-B2D0-6FF1817C18A7    |attached                  
+|VM             |vm_88          |A30E7D2E-B0DF-536A-A5D0-826B49B3CDAD    |attached                  
+|VM             |vm_51          |45DBE9B7-DC0D-5046-9466-2C233801702B    |attached                  
+|VM             |vm_116         |D9DE33AE-2EF9-5CC8-B114-98DFCE605C2F    |attached                  
+|VM             |vm_78          |BE1940A4-B2C3-51DE-BB84-B4DA71C20E12    |attached                  
+|VM             |vm_86          |93CEC8ED-5591-5346-AC2A-0C8165E9E148    |attached                  
+|VM             |vm_98          |8551B6EC-EE3B-55A9-B871-EB96744335F8    |attached                  
+|VM             |vm_40          |5320C000-9824-5408-9205-436B6B3ACFA4    |attached                  
+|VM             |vm_77          |44AA143D-8E62-5723-9E0C-A7560DFB5A31    |attached                  
+|VM             |vm_59          |03C5AFA5-E53B-5937-808C-2FDFD9CF0832    |attached                  
+|VM             |vm_103         |4EB4149E-77BF-5BF7-8C05-95FE4248B468    |attached                  
+|VM             |vm_93          |0E43D8F5-2D93-5870-B55B-638F8FD840DD    |attached                  
+|VM             |vm_92          |6335E797-3DF3-51A8-91D5-38C99A3607B3    |attached                  
+|VM             |vm_50          |4F2C45DE-2E63-5278-9C9F-C2E6BEBCCCFC    |attached                  
+|VM             |vm_76          |B8277BE0-7B17-512D-B8BC-674FA304AC68    |attached                  
+|VM             |vm_71          |BA9C7801-0792-53D3-A6E8-87F9C6001928    |attached                  
+|VM             |vm_94          |E03BEFC3-9280-5BB8-BE19-FC7646B56650    |attached                  
+|VM             |vm_85          |45FEA27C-0A2A-5B7A-AA0E-2E10179B8582    |attached                  
+|VM             |vm_73          |743CF73A-F216-5B91-B9B0-B0CE79F5F139    |attached                  
+|VM             |vm_60          |363E6FCA-BEC1-5C15-98D1-BAD1E02FE28E    |attached                  
+|VM             |vm_95          |39E3CEB0-D53B-5655-A4A9-0C6F14869597    |attached                  
+|VM             |vm_113         |73306169-F98A-5E5F-8913-63450E253BD0    |attached                  
+|VM             |vm_49          |555D56D4-8E3B-5525-921A-745D5D7D8214    |attached                  
+|VM             |vm_105         |AB192B22-C9E2-5AF2-930D-93C7E2E3F0CC    |attached                  
+|VM             |vm_112         |3B421120-92BC-5D2B-A772-67C71F49CDCB    |attached                  
+|VMC            |simzone_b      |49282BA1-6D05-5C43-9AF0-FFE568AFD5F9    |attached                  
+|VMC            |simzone_a      |F04BDEFB-2E30-560C-802C-A1FABC5D8D0C    |attached                  
+|VMC            |simzone_d      |9C8B8765-2143-577F-9E2E-DEDF96009D33    |attached                  
+|VMC            |simzone_c      |68F26DD5-96FF-5310-9ED9-3568A17CBF4A    |attached                  
+|HOST           |host_simhostb4 |000DDB49-8618-55C0-9D8D-FDF5956DE270    |attached                  
+|HOST           |host_simhostc4 |7BDABEFB-8C06-587A-AADF-9267A04EA683    |attached                  
+|HOST           |host_simhostb0 |D30E646F-CD41-56BC-92B9-945251F61D20    |attached                  
+|HOST           |host_simhostc2 |2FEFED3D-66EA-5AA2-ADB5-87DB7F60F87A    |attached                  
+|HOST           |host_simhostd1 |9E9AD6B1-0FAC-540A-B9F4-3111F83AD0FC    |attached                  
+|HOST           |host_simhostb1 |5DB9BC6C-1A82-5493-90A5-F9B5E7DDC279    |attached                  
+|HOST           |host_simhostc0 |21CFA660-9E7F-5DAC-83E7-93EE3497463F    |attached                  
+|HOST           |host_simhostc1 |32FE9370-67B2-57D7-88F0-A51B02CE22D7    |attached                  
+|HOST           |host_simhosta1 |0A64BD54-9DEC-5F8A-BEB0-16D8FF787363    |attached                  
+|HOST           |host_simhosta4 |A544E0A7-5991-5B7C-A698-A4CDE09ECF49    |attached                  
+|HOST           |host_simhosta2 |068C8C7E-A166-5FCF-B9CD-615F964FC172    |attached                  
+|HOST           |host_simhosta0 |257E4891-BCEB-554D-A9AA-714703241467    |attached                  
+|HOST           |host_simhostc3 |2F3DE71E-672D-5BF3-A759-B248D26AD0F7    |attached                  
+|HOST           |host_simhosta3 |9E9B48DC-2C08-5970-AD0E-8300B19153B9    |attached                  
+|HOST           |host_simhostb3 |EC11C436-1219-5628-8BA8-A4310470DBDA    |attached                  
+|HOST           |host_simhostd4 |71C8BA33-79AE-5D40-8141-CF3155CC5B22    |attached                  
+|HOST           |host_simhostd2 |DBFA9943-E424-5278-81AA-EF48AF3B49C9    |attached                  
+|HOST           |host_simhostd3 |D441925C-2230-5FD9-A6D5-055362AE5A2E    |attached                  
+|HOST           |host_simhostb2 |1D443863-3DE2-5F73-A9F9-F2A156F9DB2D    |attached                  
+|HOST           |host_simhostd0 |337028CC-52ED-5FF3-8AEC-22C3E740DF5B    |attached                  
+|VM             |vm_48          |BFEB6E69-1142-5A2E-AEA6-99064BF0742F    |attached                  
+|VM             |vm_106         |31B96638-7640-5F3B-8E79-E7D00AECA641    |attached                  
+|VM             |vm_58          |B3CED484-761D-5D01-A7D7-549426F7A747    |attached                  
+|VM             |vm_111         |8E203F0D-49AE-5543-B5D7-EFFBF43994EB    |attached                  
+|VM             |vm_90          |0289EFAA-68C1-5A27-958C-6D57E798530A    |attached                  
+|VM             |vm_47          |455414AF-3EE4-5D2C-AE20-671CA9575F92    |attached                  
+|VM             |vm_115         |C5BEE3EE-9865-5819-ADB9-F175D0CC9BA5    |attached                  
+|VM             |vm_83          |2990293E-1B6E-510D-9146-98772DC61415    |attached                  
+|VM             |vm_96          |7CC4132B-01C2-5ED3-B914-87F8C7E851D1    |attached                  
+|VM             |vm_87          |AE711C86-DD03-5DB1-94B7-F1E4BDF07482    |attached                  
+|VM             |vm_107         |B839EC0D-A8AD-503D-AA74-35613DD55098    |attached                  
+|VM             |vm_114         |0540C721-8946-5A70-99FE-15637AD06E91    |attached                  
+|VM             |vm_109         |5431BB5F-67C8-5D9C-AEB0-4C70BC917514    |attached                  
+|VM             |vm_110         |A713949F-D3EA-5A0A-A796-EEF7778E750C    |attached                  
+|VM             |vm_75          |5FE57208-5650-50AB-928D-42D13D32D423    |attached                  
+|VM             |vm_79          |7D3C138B-9CBE-52EE-BBA1-E81C7C0CEB1E    |attached                  
+|VM             |vm_82          |A71D3640-13AB-50DA-A744-616895C5E750    |attached                  
+|VM             |vm_39          |99A818AE-CEF7-5CF3-B380-B83789A60F58    |attached                  
+|VM             |vm_72          |CF19163D-552C-5EBF-B845-BD2B859DBA8B    |attached                  
+|VM             |vm_80          |06CB5FC6-454C-582B-887B-478EA46FCA63    |attached                  
+|VM             |vm_108         |448D5042-3437-50EC-BE99-A8F5B355176B    |attached                  
+|VM             |vm_74          |B81A2835-BEDF-5666-8592-1D1DD4069C2C    |attached                  
+|VM             |vm_97          |336984B5-2BBF-5523-B4BA-AA428210776C    |attached                  
+|VM             |vm_104         |39AD1CF1-D0D1-5852-888C-1A8A7A6E42E4    |attached                  
+|VM             |vm_84          |ABBE4D39-6BC5-5656-939A-97629E515FC7    |attached                  
+|VM             |vm_81          |410E49E0-A32D-569E-924C-0718076D4006    |attached                  
+|VM             |vm_89          |D8A837B2-C9B2-5473-B2D0-6FF1817C18A7    |attached                  
+|VM             |vm_88          |A30E7D2E-B0DF-536A-A5D0-826B49B3CDAD    |attached                  
+|VM             |vm_51          |45DBE9B7-DC0D-5046-9466-2C233801702B    |attached                  
+|VM             |vm_116         |D9DE33AE-2EF9-5CC8-B114-98DFCE605C2F    |attached                  
+|VM             |vm_78          |BE1940A4-B2C3-51DE-BB84-B4DA71C20E12    |attached                  
+|VM             |vm_86          |93CEC8ED-5591-5346-AC2A-0C8165E9E148    |attached                  
+|VM             |vm_98          |8551B6EC-EE3B-55A9-B871-EB96744335F8    |attached                  
+|VM             |vm_40          |5320C000-9824-5408-9205-436B6B3ACFA4    |attached                  
+|VM             |vm_77          |44AA143D-8E62-5723-9E0C-A7560DFB5A31    |attached                  
+|VM             |vm_59          |03C5AFA5-E53B-5937-808C-2FDFD9CF0832    |attached                  
+|VM             |vm_103         |4EB4149E-77BF-5BF7-8C05-95FE4248B468    |attached                  
+|VM             |vm_93          |0E43D8F5-2D93-5870-B55B-638F8FD840DD    |attached                  
+|VM             |vm_92          |6335E797-3DF3-51A8-91D5-38C99A3607B3    |attached                  
+|VM             |vm_50          |4F2C45DE-2E63-5278-9C9F-C2E6BEBCCCFC    |attached                  
+|VM             |vm_76          |B8277BE0-7B17-512D-B8BC-674FA304AC68    |attached                  
+|VM             |vm_71          |BA9C7801-0792-53D3-A6E8-87F9C6001928    |attached                  
+|VM             |vm_94          |E03BEFC3-9280-5BB8-BE19-FC7646B56650    |attached                  
+|VM             |vm_85          |45FEA27C-0A2A-5B7A-AA0E-2E10179B8582    |attached                  
+|VM             |vm_73          |743CF73A-F216-5B91-B9B0-B0CE79F5F139    |attached                  
+|VM             |vm_60          |363E6FCA-BEC1-5C15-98D1-BAD1E02FE28E    |attached                  
+|VM             |vm_95          |39E3CEB0-D53B-5655-A4A9-0C6F14869597    |attached                  
+|VM             |vm_113         |73306169-F98A-5E5F-8913-63450E253BD0    |attached                  
+|VM             |vm_49          |555D56D4-8E3B-5525-921A-745D5D7D8214    |attached                  
+|VM             |vm_105         |AB192B22-C9E2-5AF2-930D-93C7E2E3F0CC    |attached                  
+|VM             |vm_112         |3B421120-92BC-5D2B-A772-67C71F49CDCB    |attached                  
+|AI             |ai_24          |A880DD86-4D2B-5B40-8157-B300FF5DD636    |attached                  
+|AI             |ai_18          |7E4D15EA-8055-5D9B-9325-8FA32A7A02B2    |attached                  
+|AI             |ai_8           |F074D904-2FA1-5A07-9673-EC04DF649F30    |attached                  
+|AI             |ai_14          |C9C5DE26-129C-5E43-8D0C-BC6E4B9A7B8F    |attached                  
+|AI             |ai_23          |D5A4281A-6048-507C-BCC4-759D16287F55    |attached                  
+|AI             |ai_5           |79085F3C-99A6-5807-9376-0F23C78DAC03    |attached                  
+|AI             |ai_11          |CC79F6CD-C5F9-537A-81AC-A1A302832C05    |attached                  
+|AI             |ai_20          |9602F7F8-64AF-598B-834D-34E9591E8D0A    |attached                  
+|AI             |ai_19          |B6116F3B-1579-54DD-BB68-A96A287A0554    |attached                  
+|AI             |ai_27          |159FBCC0-CFFC-5B31-8277-649027F728CF    |attached                  
+|AI             |ai_21          |072FCA1D-8A55-5937-B422-2D8A937094CA    |attached                  
+|AI             |ai_16          |E4EF65C7-D1B4-5881-B410-83514258FDCE    |attached                  
+|AI             |ai_17          |9B095E62-03AA-5053-887C-56EE1166FB7E    |attached                  
+|AI             |ai_28          |94342746-58F1-51C5-A695-555C47E80278    |attached                  
+|AI             |ai_15          |5413D5C7-4FFD-5F64-8379-BA858A0CA354    |attached                  
+|AI             |ai_26          |EA7D106E-2FC7-5307-A139-2AB8BA867A2D    |attached                  
 

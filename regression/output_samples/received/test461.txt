@@ -1,4 +1,4 @@
-Background operation execution success. Operation "vmc-attach" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.1.250,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,timeout:240,host:172.16.1.250,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,simzone_b,empty=empty --operation=vmc-attach --cn=TESTCLOUD --uuid=DF33BB01-3A2D-5662-B438-4B5F6A9151E1 --daemon". The process id is 21699.
+Background operation execution success. Operation "vmc-attach" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.1.250,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,timeout:240,host:172.16.1.250,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,simzone_b,empty=empty --operation=vmc-attach --cn=TESTCLOUD --uuid=0C1182BD-9DDA-5F68-8C41-DD7526500CC8 --daemon". The process id is 26435.
 
 Going to unconditionally wait for 8s (8 seconds). The command line interface will be blocked during the waiting.
 Waited 1 seconds... (12.5%)
@@ -12,8 +12,8 @@ Waited 8 seconds... (100.0%)
 Waited for 8 seconds.
 The following ATTACHED VMCs are in this experiment (Cloud TESTCLOUD) :
 |name                    |host_count      |pool                    |cloud_hostname                  |cloud_ip         
-|simzone_a               |5               |sut                     |simzone_a                       |10.132.176.143   
-|simzone_b               |5               |sut                     |simzone_b                       |156.48.14.137    
+|simzone_a               |5               |sut                     |simzone_a                       |33.160.120.90    
+|simzone_b               |5               |sut                     |simzone_b                       |99.224.125.159   
 
 The VMC object simzone_b, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
 |attribute (VMC object key)               |value                                
@@ -23,19 +23,19 @@ The VMC object simzone_b, attached to this experiment, has the following attribu
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |1.22M                         
+|Used Memory                                          |1.28M                         
 |Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |508272                        
-|Total Connections Received                           |10577                         
-|Total Commands Processed                             |804973                        
+|Uptime (in seconds)                                  |3793036                       
+|Total Connections Received                           |81284                         
+|Total Commands Processed                             |5995612                       
 |Number of Keys                                       |182                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
 |MongoDB Version                                      |2.4.9                         
-|Storage Size                                         |2043904                       
-|Data Size                                            |419464                        
+|Storage Size                                         |2101248                       
+|Data Size                                            |420952                        
 |Index Size                                           |318864                        
-|Average Object Size                                  |515.312039312                 
+|Average Object Size                                  |515.87254902                  
 |Collections                                          |13                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
@@ -95,6 +95,6 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |2                             
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|DF33BB01-3A2D-5662-B438-4B5F6A9151E1 (simzone_b) VM RESERVATIONS|0                             
-|8ADE158F-8DE0-5788-88EA-DDF0A869C48E (simzone_a) VM RESERVATIONS|0                             
+|0C1182BD-9DDA-5F68-8C41-DD7526500CC8 (simzone_b) VM RESERVATIONS|0                             
+|ABD1795B-79AB-57E5-A8AB-290EA3293F8B (simzone_a) VM RESERVATIONS|0                             
 

@@ -1,6 +1,26 @@
-|ai_defaults |run_limit |100000 
-|ai_templates |cassandra_ycsb_load_level |1 
-|ai_templates |cassandra_ycsb_load_profile |workloada 
-|ai_templates |cassandra_ycsb_metric_aggregator_role|ycsb 
-|ai_templates |cassandra_ycsb_sut |ycsb->seed->2_x_cassandra 
-|mon_defaults |reported_runtime_app_vm_metric_names|app_load_id,app_load_level,app_throughput,app_latency,app_datagen_time,app_datagen_size
+|ai_templates |cassandra_ycsb_start |cb_ycsb.sh 
+|ai_templates |mongo_ycsb_load_generator_role |ycsb 
+|ai_templates |mongo_ycsb_load_level |1 
+|ai_templates |mongo_ycsb_load_manager_role |ycsb 
+|ai_templates |mongo_ycsb_load_profile |workloada 
+|ai_templates |mongo_ycsb_metric_aggregator_role|ycsb 
+|ai_templates |mongo_ycsb_start |cb_ycsb.sh 
+|ai_templates |mongo_ycsb_sut |ycsb->mongos->mongo_cfg_server->3_x_mongodb
+|ai_templates |mongo_ycsb_ycsb_setup2 |cb_setup_ycsb.sh 
+|ai_templates |redis_ycsb_capture_role |ycsb 
+|ai_templates |redis_ycsb_load_balancer |False 
+|ai_templates |redis_ycsb_load_duration |60 
+|ai_templates |redis_ycsb_load_generator_role |ycsb 
+|ai_templates |redis_ycsb_load_level |1 
+|ai_templates |redis_ycsb_load_manager_role |ycsb 
+|ai_templates |redis_ycsb_load_profile |workloada 
+|ai_templates |redis_ycsb_metric_aggregator_role|ycsb 
+|ai_templates |redis_ycsb_redis_setup1 |cb_restart_redis.sh 
+|ai_templates |redis_ycsb_start |cb_ycsb.sh 
+|ai_templates |redis_ycsb_sut |ycsb->redis 
+|ai_templates |redis_ycsb_ycsb_setup2 |cb_setup_ycsb.sh 
+|vm_defaults |placement |random 
+|vm_templates |redis |size:silver32,eclipsed_size:gold32,imageid1:cb_ycsb
+|vmc_defaults |hosts_cpu |2000 
+|vmc_defaults |hosts_gpu |0,1,2 
+|vmc_defaults |hosts_mem_per_core |10000 

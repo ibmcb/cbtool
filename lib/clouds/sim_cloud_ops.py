@@ -24,7 +24,7 @@
     @author: Marcio A. Silva
 '''
 from time import time, sleep
-from random import randint, choice
+from random import randint, choice, shuffle
 from uuid import uuid5, NAMESPACE_DNS
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
@@ -98,7 +98,7 @@ class SimCmds(CommonCloudFunctions) :
             _vhw_config["iron32"] = "vcpus:2,vmemory:2048,vstorage:179200,vnics:1"
             _vhw_config["silver32"] = "vcpus:4,vmemory:2048,vstorage:358400,vnics:1"
             _vhw_config["gold32"] = "vcpus:8,vmemory:4096,vstorage:358400,vnics:1"
-            _vhw_config["cooper64"] = "vcpus:2,vmemory:4096,vstorage:61440,vnics:1"
+            _vhw_config["copper64"] = "vcpus:2,vmemory:4096,vstorage:61440,vnics:1"
             _vhw_config["bronze64"]  = "vcpus:2,vmemory:4096,vstorage:870400,vnics:1"
             _vhw_config["silver64"] = "vcpus:4,vmemory:8192,vstorage:1048576,vnics:1"
             _vhw_config["gold64"] = "vcpus:8,vmemory:16384,vstorage:1048576,vnics:1"
@@ -396,50 +396,43 @@ class SimCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
-        # Use round-robin instead of random to make the regression test more predictable
         if "host_name" not in obj_attr_list :
-                        
-            if obj_attr_list["placement"] == "random" :
-                _host_core_found = True
-                _host_mem_found = True
 
-                _host_list = self.get_host_list(obj_attr_list)
-                self.last_round_robin_host_index += 1
-                if self.last_round_robin_host_index == len(_host_list) :
-                    self.last_round_robin_host_index = 0
-                (_host_name, _host_uuid) = _host_list[self.last_round_robin_host_index]
-                if len(_host_name.split("host_")) == 2 :
-                    _host_name = _host_name.split("host_")[1]
-                obj_attr_list["host_name"] = _host_name
-                obj_attr_list["host"] = _host_uuid
+            if obj_attr_list["placement"] == "first-fit" or obj_attr_list["placement"] == "random" :
 
-            elif obj_attr_list["placement"] == "first_fit" :
                 _vmc_list = list(self.osci.get_object_list(obj_attr_list["cloud_name"], "VMC"))
     
+                if obj_attr_list["placement"] == "random" :
+                    shuffle(_vmc_list)
+    
                 for _vmc_uuid in _vmc_list :
-                    _lock = self.lock(obj_attr_list["cloud_name"], "VMC", _vmc_uuid, obj_attr_list["vmc_name"])
+
                     _vmc_host_list = self.osci.get_object(obj_attr_list["cloud_name"], "VMC", False, _vmc_uuid, False)["hosts"]
                     
                     _host_list = _vmc_host_list.split(',')
-                    for _host_uuid in  _host_list :
-    
-                        _host_core_found = False
-                        _host_mem_found = False
+                    
+                    if obj_attr_list["placement"] == "random" :
+                        shuffle(_host_list)                    
+                    
+                    for _host_uuid in _host_list :
+                        _lock = self.lock(obj_attr_list["cloud_name"], "HOST", _host_uuid, "hostlock")
+                        _host_core_found, _host_mem_found = self.check_host_capacity(obj_attr_list, _host_uuid)
+
+                        if _host_core_found and _host_mem_found :
+                            self.host_resource_update(obj_attr_list, "create")
+                            self.unlock(obj_attr_list["cloud_name"], "HOST", _host_uuid, _lock)
+                            break
+                        else :
+                            self.unlock(obj_attr_list["cloud_name"], "HOST", _host_uuid, _lock)
+
+                    if _host_core_found and _host_mem_found :
+                        break
                         
-                        _host = self.osci.get_object(obj_attr_list["cloud_name"], "HOST", False, _host_uuid, False)
-                        
-                        if int(_host["available_cores"]) >= int(obj_attr_list["vcpus"]) :
-                            _host_core_found = True
-                            
-                            if int(_host["available_memory"]) >= int(obj_attr_list["vmemory"]) :
-                                _host_mem_found = True
-                                obj_attr_list["host_name"] = _host["name"][5:]
-                                obj_attr_list["host"] = _host_uuid
-                                self.host_resource_update(obj_attr_list, "create")
-                                self.unlock(obj_attr_list["cloud_name"], "VMC", _vmc_uuid, _lock)                            
-                                break
-    
-                    self.unlock(obj_attr_list["cloud_name"], "VMC", _vmc_uuid, _lock)        
+            else :
+                _status = 7776
+                obj_attr_list["host"] = "NA"
+                _msg = "Unknown placement algorithm (" + obj_attr_list["placement"] + ")"
+                raise CldOpsException(_msg, _status)
         else :
             _host_core_found = True
             _host_mem_found = True            
@@ -462,6 +455,25 @@ class SimCmds(CommonCloudFunctions) :
             raise CldOpsException(_msg, _status)            
 
         return True
+
+    def check_host_capacity(self, obj_attr_list, host_uuid) :
+        '''
+        TBD
+        '''
+        _host_core_found = False
+        _host_mem_found = False        
+        
+        _host = self.osci.get_object(obj_attr_list["cloud_name"], "HOST", False, host_uuid, False)
+        
+        if int(_host["available_cores"]) >= int(obj_attr_list["vcpus"]) :
+            _host_core_found = True
+            
+            if int(_host["available_memory"]) >= int(obj_attr_list["vmemory"]) :
+                _host_mem_found = True
+                obj_attr_list["host_name"] = _host["name"][5:]
+                obj_attr_list["host"] = host_uuid
+
+        return _host_core_found, _host_mem_found
 
     def host_resource_update(self, obj_attr_list, operation) :
         '''
@@ -674,7 +686,7 @@ class SimCmds(CommonCloudFunctions) :
             _msg += "...."
             cbdebug(_msg, True)
 
-            if obj_attr_list["placement"] != "random" :
+            if obj_attr_list["host"] != "NA" :
                 self.host_resource_update(obj_attr_list, "destroy")
 
             _time_mark_drc = int(time())

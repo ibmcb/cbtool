@@ -1,25 +1,25 @@
- status: Waiting for vm_26 (cloud-assigned uuid A650DD57-B760-50EA-8467-2FC703BA1F88) to start...
- status: Waiting for vm_27 (cloud-assigned uuid B505425B-1046-54CB-95BD-9B9DB87B15A0) to start...
- status: Waiting for vm_28 (cloud-assigned uuid E57B22B1-E50C-5CEE-BBF5-B864025792CC) to start...
- status: Trying to establish network connectivity to vm_26 (cloud-assigned uuid A650DD57-B760-50EA-8467-2FC703BA1F88), on IP address 253.205.77.148...
- status: Trying to establish network connectivity to vm_27 (cloud-assigned uuid B505425B-1046-54CB-95BD-9B9DB87B15A0), on IP address 207.2.53.38...
- status: Trying to establish network connectivity to vm_28 (cloud-assigned uuid E57B22B1-E50C-5CEE-BBF5-B864025792CC), on IP address 20.182.23.38...
- status: Bypassing the sending of a copy of the code tree to vm_26 (253.205.77.148)...
- status: Bypassing the sending of a copy of the code tree to vm_27 (207.2.53.38)...
- status: Bypassing the sending of a copy of the code tree to vm_28 (20.182.23.38)...
+ status: Waiting for vm_27 (cloud-assigned uuid 80A06A31-360C-5234-BFD9-5FAE8B07E29A) to start...
+ status: Waiting for vm_26 (cloud-assigned uuid E78B3361-BF79-5847-B2D4-F83A5BCCAC19) to start...
+ status: Waiting for vm_28 (cloud-assigned uuid DBB2FBB5-BED8-554E-ACA4-F1BFEABC7D37) to start...
+ status: Trying to establish network connectivity to vm_27 (cloud-assigned uuid 80A06A31-360C-5234-BFD9-5FAE8B07E29A), on IP address 139.246.107.97...
+ status: Trying to establish network connectivity to vm_26 (cloud-assigned uuid E78B3361-BF79-5847-B2D4-F83A5BCCAC19), on IP address 111.212.72.115...
+ status: Trying to establish network connectivity to vm_28 (cloud-assigned uuid DBB2FBB5-BED8-554E-ACA4-F1BFEABC7D37), on IP address 227.87.209.4...
+ status: Bypassing the bootstrapping and the sending of a copy of the code tree to vm_26 (111.212.72.115)...
+ status: Bypassing the bootstrapping and the sending of a copy of the code tree to vm_27 (139.246.107.97)...
+ status: Bypassing the bootstrapping and the sending of a copy of the code tree to vm_28 (227.87.209.4)...
  status: Bypassing generic VM post_boot configuration on all VMs belonging to ai_1...
  status: Bypassing application-specific configuration on all VMs beloging to ai_1...
  status: QEMU Scraper will NOT be automatically started during the deployment of ai_1...
-AI object 1AADB16A-B41A-52F5-B30D-CBF359AA9610 (named "ai_1") sucessfully attached to this experiment. It is ssh-accessible at the IP address 207.2.53.38 (B505425B-1046-54CB-95BD-9B9DB87B15A0.simcloud.com).
+AI object 34241E8D-7268-5ED7-B2BE-323231C23459 (named "ai_1") sucessfully attached to this experiment. It is ssh-accessible at the IP address 139.246.107.97 (80A06A31-360C-5234-BFD9-5FAE8B07E29A.simcloud.com).
 The following ATTACHED AIs are in this experiment (Cloud TESTCLOUD) :
 |name      |type           |sut                                               |cloud_ip        |arrival        |aidrs                                   |uuid
-|ai_1      |ibm_daytrader  |1_x_client_daytrader->1_x_was->1_x_db2            |207.2.53.38     |1395353523     |none                                    |1AADB16A-B41A-52F5-B30D-CBF359AA9610
+|ai_1      |ibm_daytrader  |1_x_client_daytrader->1_x_was->1_x_db2            |139.246.107.97  |1396711943     |none                                    |34241E8D-7268-5ED7-B2BE-323231C23459
 
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 |name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
-|vm_26         |was                 |iron32      |253.205.77.148  |simhostb1                  |SUT                 |ai_1    |none       |539DFE00-C755-525C-90F3-86539ED3F5E4
-|vm_27         |client_daytrader    |micro32     |207.2.53.38     |simhostd1                  |LG                  |ai_1    |none       |5E21D89A-A8CD-54D8-BD18-6AA9D8CF2321
-|vm_28         |db2                 |platinum64  |20.182.23.38    |simhosta1                  |SUT                 |ai_1    |none       |76608BF1-A049-5947-909A-F11544DAFB5E
+|vm_27         |client_daytrader    |micro32     |139.246.107.97  |simhostd1                  |LG                  |ai_1    |none       |1D914F06-AA55-5EB6-9C0A-D4459D283129
+|vm_26         |was                 |iron32      |111.212.72.115  |simhosta1                  |SUT                 |ai_1    |none       |A7BC0C49-308A-5440-9F37-95A72996F8B5
+|vm_28         |db2                 |platinum64  |227.87.209.4    |simhostb1                  |SUT                 |ai_1    |none       |0173346F-2AA7-50F1-9580-E53E9EA17F59
 
 The AI object ai_1, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
 |attribute (AI object key)               |value                                
@@ -30,19 +30,19 @@ The AI object ai_1, attached to this experiment, has the following attributes (C
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |2.32M                         
+|Used Memory                                          |2.33M                         
 |Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |30239                         
-|Total Connections Received                           |1768                          
-|Total Commands Processed                             |1792825                       
+|Uptime (in seconds)                                  |508474                        
+|Total Connections Received                           |10622                         
+|Total Commands Processed                             |862963                        
 |Number of Keys                                       |390                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
 |MongoDB Version                                      |2.4.9                         
 |Storage Size                                         |2101248                       
-|Data Size                                            |557616                        
+|Data Size                                            |554640                        
 |Index Size                                           |457856                        
-|Average Object Size                                  |512.044077135                 
+|Average Object Size                                  |510.718232044                 
 |Collections                                          |14                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
@@ -102,8 +102,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |139                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|F92423FA-5397-5C85-83AE-F1E571E97C48 (simzone_b) VM RESERVATIONS|1                             
-|FF5DC0D8-1378-5755-B3BF-ACC9801512A9 (simzone_d) VM RESERVATIONS|1                             
-|C2B34105-CEB6-53D4-9B01-6045EEB54595 (simzone_c) VM RESERVATIONS|0                             
-|EC14CE9C-63F5-5D72-8982-32C59FE8ACE7 (simzone_a) VM RESERVATIONS|1                             
+|80A79D6D-26D1-50E5-9134-8523D863E6F6 (simzone_d) VM RESERVATIONS|1                             
+|3C93B192-9C64-519E-937D-672B65A2A1A6 (simzone_c) VM RESERVATIONS|0                             
+|2B445F8B-78AD-5C1C-8132-71756390FACA (simzone_a) VM RESERVATIONS|1                             
+|3586523C-1A3C-5964-9DF2-DF21617ED6B9 (simzone_b) VM RESERVATIONS|1                             
 

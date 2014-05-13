@@ -4,15 +4,15 @@
  status: Removing all FIRS objects attached to this experiment.
  status: Removing all AI objects attached to this experiment.
  status: Removing all VM objects attached to this experiment.
- status: Sending a termination request for vm_129 (cloud-assigned uuid FE9F73D2-76E8-55A9-8F6E-48876C6651DA)....
+ status: Sending a termination request for vm_129 (cloud-assigned uuid A7A80F5B-E289-5F68-800F-44F5C14EC54F)....
  status: Done
  status: Removing all VMC objects attached to this experiment.
- status: VMC 9C8B8765-2143-577F-9E2E-DEDF96009D33 was successfully unregistered on SimCloud "TESTCLOUD".
- status: VMC D1E37FEB-A3DD-5FEA-92FE-8F15F4EA4856 was successfully unregistered on SimCloud "TESTCLOUD".
- status: VMC 872185E8-AC05-56CF-9306-66CC42989957 was successfully unregistered on SimCloud "TESTCLOUD".
- status: VMC 68F26DD5-96FF-5310-9ED9-3568A17CBF4A was successfully unregistered on SimCloud "TESTCLOUD".
- status: VMC 49282BA1-6D05-5C43-9AF0-FFE568AFD5F9 was successfully unregistered on SimCloud "TESTCLOUD".
- status: VMC F04BDEFB-2E30-560C-802C-A1FABC5D8D0C was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC 2ABD9FED-F107-5F0D-B2C2-8CFE38293D7B was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC 81DD579A-52A0-5854-827F-2305A0FF3E96 was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC 76A8BFA3-0C2E-5D7E-A667-254C804D93C2 was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC DE75759E-CFAB-53C8-A062-05C5AB16764D was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC 706D24CD-9D55-592D-915D-7D4D41F35312 was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC 785C590F-E88D-5ABB-9A6F-08292348ADB9 was successfully unregistered on SimCloud "TESTCLOUD".
  status: Done
  status: Removing all contents from Object Store (GLOBAL objects,VIEWS, etc.)
 Cloud TESTCLOUD was successfully detached from this experiment.

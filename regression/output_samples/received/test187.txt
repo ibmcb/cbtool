@@ -46,7 +46,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |ai_templates                     |cassandra_ycsb_load_profile    |workloada                            
 |ai_templates                     |cassandra_ycsb_metric_aggregator_role|ycsb                                 
 |ai_templates                     |cassandra_ycsb_seed_setup1     |cb_restart_seed.sh                   
-|ai_templates                     |cassandra_ycsb_start           |cb_start_ycsb.sh                     
+|ai_templates                     |cassandra_ycsb_start           |cb_ycsb.sh                           
 |ai_templates                     |cassandra_ycsb_sut             |ycsb->seed->2_x_cassandra            
 |ai_templates                     |cassandra_ycsb_ycsb_setup2     |cb_setup_ycsb.sh                     
 |ai_templates                     |coremark_capture_role          |coremark                             
@@ -262,20 +262,20 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |ai_templates                     |mongo_ycsb_capture_role        |mongodb                              
 |ai_templates                     |mongo_ycsb_load_balancer       |False                                
 |ai_templates                     |mongo_ycsb_load_duration       |60                                   
-|ai_templates                     |mongo_ycsb_load_generator_role |mongos                               
-|ai_templates                     |mongo_ycsb_load_level          |uniformIXIXI1I100                    
-|ai_templates                     |mongo_ycsb_load_manager_role   |mongos                               
-|ai_templates                     |mongo_ycsb_load_profile        |default                              
-|ai_templates                     |mongo_ycsb_metric_aggregator_role|mongodb                              
+|ai_templates                     |mongo_ycsb_load_generator_role |ycsb                                 
+|ai_templates                     |mongo_ycsb_load_level          |1                                    
+|ai_templates                     |mongo_ycsb_load_manager_role   |ycsb                                 
+|ai_templates                     |mongo_ycsb_load_profile        |workloada                            
+|ai_templates                     |mongo_ycsb_metric_aggregator_role|ycsb                                 
 |ai_templates                     |mongo_ycsb_mongo_cfg_server_resize1|cb_modify_hosts.sh                   
 |ai_templates                     |mongo_ycsb_mongo_cfg_server_setup1|cb_restart_mongo_cfg.sh              
 |ai_templates                     |mongo_ycsb_mongodb_resize1     |cb_restart_mongo.sh                  
 |ai_templates                     |mongo_ycsb_mongodb_setup1      |cb_restart_mongo.sh                  
 |ai_templates                     |mongo_ycsb_mongos_resize2      |cb_modify_shard.sh                   
 |ai_templates                     |mongo_ycsb_mongos_setup2       |cb_restart_mongos.sh                 
-|ai_templates                     |mongo_ycsb_start               |cb_start_ycsb.sh                     
-|ai_templates                     |mongo_ycsb_sut                 |mongos->mongo_cfg_server->3_x_mongodb
-|ai_templates                     |mongo_ycsb_ycsb_setup1         |cb_restart_ycsb.sh                   
+|ai_templates                     |mongo_ycsb_start               |cb_ycsb.sh                           
+|ai_templates                     |mongo_ycsb_sut                 |ycsb->mongos->mongo_cfg_server->3_x_mongodb
+|ai_templates                     |mongo_ycsb_ycsb_setup2         |cb_setup_ycsb.sh                     
 |ai_templates                     |mweb_capture_role              |mwebfront                            
 |ai_templates                     |mweb_client_mweb_setup1        |cb_mweb_start_client.sh              
 |ai_templates                     |mweb_load_balancer             |False                                
@@ -344,6 +344,18 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |ai_templates                     |open_daytrader_mysql_setup2    |cb_restart_mysql.sh                  
 |ai_templates                     |open_daytrader_start           |cb_daytrader.sh                      
 |ai_templates                     |open_daytrader_sut             |client_daytrader->geronimo->mysql    
+|ai_templates                     |redis_ycsb_capture_role        |ycsb                                 
+|ai_templates                     |redis_ycsb_load_balancer       |False                                
+|ai_templates                     |redis_ycsb_load_duration       |60                                   
+|ai_templates                     |redis_ycsb_load_generator_role |ycsb                                 
+|ai_templates                     |redis_ycsb_load_level          |1                                    
+|ai_templates                     |redis_ycsb_load_manager_role   |ycsb                                 
+|ai_templates                     |redis_ycsb_load_profile        |workloada                            
+|ai_templates                     |redis_ycsb_metric_aggregator_role|ycsb                                 
+|ai_templates                     |redis_ycsb_redis_setup1        |cb_restart_redis.sh                  
+|ai_templates                     |redis_ycsb_start               |cb_ycsb.sh                           
+|ai_templates                     |redis_ycsb_sut                 |ycsb->redis                          
+|ai_templates                     |redis_ycsb_ycsb_setup2         |cb_setup_ycsb.sh                     
 |ai_templates                     |specimap_capture_role          |mailsut                              
 |ai_templates                     |specimap_load_balancer         |False                                
 |ai_templates                     |specimap_load_duration         |uniformIXIXI90I120                   
@@ -694,12 +706,12 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |space                            |tracefile                      |regression/regression_test_experiment_plan.txt
 |space                            |username                       |msilva                               
 |space                            |vm_daemon_dir                  |/home/klabuser                       
-|time                             |experiment_id                  |EXP-04-05-2014-11-15-52-AM-EDT       
+|time                             |experiment_id                  |EXP-05-13-2014-11-41-49-AM-EDT       
 |time                             |external_timeout               |30                                   
 |time                             |external_tries                 |2                                    
 |time                             |hard_reset                     |True                                 
 |time                             |internal_tries                 |2                                    
-|time                             |start_time                     |1396710951                           
+|time                             |start_time                     |1399995708                           
 |time                             |step_delay                     |5                                    
 |time                             |username                       |msilva                               
 |vm_defaults                      |access                         |                                     
@@ -716,7 +728,6 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |vm_defaults                      |execute_json_filename_prefix   |cb                                   
 |vm_defaults                      |execute_script_name            |execute_on_staging.sh                
 |vm_defaults                      |extra_info                     |                                     
-|vm_defaults                      |hosts_per_vmc                  |5                                    
 |vm_defaults                      |key_name                       |                                     
 |vm_defaults                      |login                          |klabuser                             
 |vm_defaults                      |migrate_protocol               |tcp                                  
@@ -724,6 +735,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |vm_defaults                      |mode                           |controllable                         
 |vm_defaults                      |netid                          |vlan123                              
 |vm_defaults                      |notification                   |False                                
+|vm_defaults                      |placement                      |random                               
 |vm_defaults                      |protect_protocol               |tcp                                  
 |vm_defaults                      |protect_protocol_supported     |tcp,rdma,x-rdma                      
 |vm_defaults                      |qemu_debug                     |False                                
@@ -771,6 +783,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |vm_templates                     |netclient                      |size:iron32,imageids:1,imageid1:cb_netperf
 |vm_templates                     |netserver                      |size:iron32,imageids:1,imageid1:cb_netperf
 |vm_templates                     |predictablevm                  |size:iron32,imageid1:cloudbench_root 
+|vm_templates                     |redis                          |size:silver32,eclipsed_size:gold32,imageid1:cb_ycsb
 |vm_templates                     |seed                           |size:silver32,eclipsed_size:gold32,imageid1:cb_ycsb
 |vm_templates                     |specjbb                        |size:iron32,eclipsed_size:gold32,imageids:1,imageid1:cb_specjbb
 |vm_templates                     |tinyvm                         |size:pico32,imageids:1,imageid1:cb_nullworkload
@@ -787,6 +800,9 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |vmc_defaults                     |credentials                    |                                     
 |vmc_defaults                     |detach_parallelism             |20                                   
 |vmc_defaults                     |discover_hosts                 |True                                 
+|vmc_defaults                     |hosts_cpu                      |2000                                 
+|vmc_defaults                     |hosts_gpu                      |0,1,2                                
+|vmc_defaults                     |hosts_mem_per_core             |10000                                
 |vmc_defaults                     |hosts_per_vmc                  |5                                    
 |vmc_defaults                     |initial_hosts                  |                                     
 |vmc_defaults                     |initial_vmcs                   |simzone_a:sut,simzone_b:sut,simzone_c:sut,simzone_d:lg

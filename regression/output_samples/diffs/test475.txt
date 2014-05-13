@@ -1,0 +1,6 @@
+|available_cores |2000 
+|available_gpus |2 
+|available_memory |20480000000 
+|cores |2000 
+|gpus |2 
+|memory |20480000000 

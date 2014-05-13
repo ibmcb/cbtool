@@ -1,19 +1,10 @@
-The following ATTACHED AIs are in this experiment (Cloud TESTCLOUD) :
+ignoredThe following ATTACHED AIs are in this experiment (Cloud TESTCLOUD) :
 |name |type |sut |cloud_ip |arrival |aidrs |uuid
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |xxxxxxxxxx |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |xxxxxxxxxx |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |xxxxxxxxxx |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |xxxxxxxxxx |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |ibmderby_tradelite|1_x_client_tradelite->1_x_was |xxx.xxx.xxx.xxx |xxxxxxxxxx |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 |ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |xxxxxxxxxx |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 |name |role |size |cloud_ip |host_name |vmc_pool |ai |aidrs |uuid
-|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|VMs |39 
-|VM RESERVATIONS |39 
-|VMs DEPARTED |60 
-|EXPERIMENT COUNTER |287 
+|VMs |38 
+|VM RESERVATIONS |38 
+|VMs DEPARTED |61 
+|EXPERIMENT COUNTER |288 

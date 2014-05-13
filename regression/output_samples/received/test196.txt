@@ -1,4 +1,4 @@
-Background operation execution success. Operation "vmc-attach" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.1.250,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,timeout:240,host:172.16.1.250,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,simzone_d,update_attempts=156+_*update_frequency=6 --operation=vmc-attach --cn=TESTCLOUD --uuid=E892BC71-19C9-5E39-A8F7-66DBF44F9A9D --daemon". The process id is 16851.
+Background operation execution success. Operation "vmc-attach" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.1.250,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,timeout:240,host:172.16.1.250,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,simzone_d,update_attempts=156+_*update_frequency=6 --operation=vmc-attach --cn=TESTCLOUD --uuid=F2E15C73-C033-52F7-8B4B-B05280B175C7 --daemon". The process id is 22202.
 
 Going to unconditionally wait for 8s (8 seconds). The command line interface will be blocked during the waiting.
 Waited 1 seconds... (12.5%)
@@ -12,10 +12,10 @@ Waited 8 seconds... (100.0%)
 Waited for 8 seconds.
 The following ATTACHED VMCs are in this experiment (Cloud TESTCLOUD) :
 |name                    |host_count      |pool                    |cloud_hostname                  |cloud_ip         
-|simzone_a               |5               |sut                     |simzone_a                       |207.188.243.222  
-|simzone_b               |5               |sut                     |simzone_b                       |26.134.147.100   
-|simzone_c               |5               |sut                     |simzone_c                       |193.191.214.113  
-|simzone_d               |5               |lg                      |simzone_d                       |246.52.177.209   
+|simzone_a               |5               |sut                     |simzone_a                       |117.209.220.211  
+|simzone_b               |5               |sut                     |simzone_b                       |51.159.58.18     
+|simzone_c               |5               |sut                     |simzone_c                       |199.183.149.109  
+|simzone_d               |5               |lg                      |simzone_d                       |38.12.22.235     
 
 The VMC object simzone_d, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
 |attribute (VMC object key)               |value                                
@@ -25,19 +25,19 @@ The VMC object simzone_d, attached to this experiment, has the following attribu
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |899.39K                       
+|Used Memory                                          |967.70K                       
 |Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |507509                        
-|Total Connections Received                           |10453                         
-|Total Commands Processed                             |550883                        
+|Uptime (in seconds)                                  |3792266                       
+|Total Connections Received                           |81159                         
+|Total Commands Processed                             |5739712                       
 |Number of Keys                                       |248                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
 |MongoDB Version                                      |2.4.9                         
-|Storage Size                                         |901120                        
-|Data Size                                            |51896                         
+|Storage Size                                         |962560                        
+|Data Size                                            |51880                         
 |Index Size                                           |286160                        
-|Average Object Size                                  |279.010752688                 
+|Average Object Size                                  |278.924731183                 
 |Collections                                          |13                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
@@ -97,8 +97,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |4                             
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|C12E45CE-E70B-5E86-87B3-B62F2065249D (simzone_a) VM RESERVATIONS|0                             
-|A72CFE30-51B1-5E47-8946-DB6C27CEC348 (simzone_c) VM RESERVATIONS|0                             
-|C3D5A4E1-0EA5-5C90-8168-3073101564B5 (simzone_b) VM RESERVATIONS|0                             
-|E892BC71-19C9-5E39-A8F7-66DBF44F9A9D (simzone_d) VM RESERVATIONS|0                             
+|6CCA8016-E152-513A-B999-C8968A3AF85D (simzone_c) VM RESERVATIONS|0                             
+|360EB0D9-1F42-532B-94B7-061B7EEBD938 (simzone_a) VM RESERVATIONS|0                             
+|E9CEC841-9E01-5BDF-915F-0C5CDFC18D26 (simzone_b) VM RESERVATIONS|0                             
+|F2E15C73-C033-52F7-8B4B-B05280B175C7 (simzone_d) VM RESERVATIONS|0                             
 
