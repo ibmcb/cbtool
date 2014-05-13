@@ -2372,6 +2372,8 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                                                    parameters, \
                                                                    "cloud-alter")
 
+                        self.initialize_metric_name_list(obj_attr_list)
+
                         if not _status :
                             _msg = "Experiment identifier was changed from \""
                             _msg += _object["result"]["old_experiment_id"] + "\" to \""

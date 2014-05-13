@@ -1801,6 +1801,11 @@ class BaseObjectOperations :
                 if _vm_role + "_netid" in obj_attr_list :
                     _extra_parms += "netid=" + obj_attr_list[_vm_role + "_netid"]
 
+                if _vm_role + "_login" in obj_attr_list :
+                    if _extra_parms != '' :
+                        _extra_parms += ','                    
+                    _extra_parms += "login=" + obj_attr_list[_vm_role + "_login"]
+
                 if _vm_role + "_cloud_vv" in obj_attr_list :
                     if _extra_parms != '' :
                         _extra_parms += ','
@@ -1848,6 +1853,7 @@ class BaseObjectOperations :
                     _vm_command_list += obj_attr_list["cloud_name"] + ' ' +\
                      _vm_role + ", " + _pool + ", " + _meta_tag + ", " +\
                       _size + ", " + _attach_action + ", " + _extra_parms + _cloud_ip + "; "
+                      
                     _vm_counter += 1
 
             if not "drivers_per_sut" in obj_attr_list :
@@ -1860,24 +1866,25 @@ class BaseObjectOperations :
                 _nr_drivers = int(obj_attr_list["suts"])/int(obj_attr_list["drivers_per_sut"])
             else :
                 _nr_drivers = 0
+                
             # This section needs to be re-done (or maybe removed)
             for _idx in range(0, int(_nr_drivers)) :
-                    obj_attr_list["parallel_operations"][_vm_counter] = {} 
-                    _pobj_uuid = str(uuid5(NAMESPACE_DNS, str(randint(0,10000000000000000) + _vm_counter)))
-                    _pobj_uuid = _pobj_uuid.upper()
-                    obj_attr_list["vms"] += _pobj_uuid + ','
-                    obj_attr_list["parallel_operations"][_vm_counter]["uuid"] = _pobj_uuid
-                    obj_attr_list["parallel_operations"][_vm_counter]["ai"] = obj_attr_list["uuid"]
-                    obj_attr_list["parallel_operations"][_vm_counter]["as"] = obj_attr_list["as"]
-                    obj_attr_list["parallel_operations"][_vm_counter]["type"] = obj_attr_list["type"]
-                    obj_attr_list["parallel_operations"][_vm_counter]["parameters"] = obj_attr_list["cloud_name"] +\
-                     " driver_" + _app_type + ' ' + _pool + ' ' + _meta_tag +\
-                      ' ' + _size + ' ' + _attach_action
-                    obj_attr_list["parallel_operations"][_vm_counter]["operation"] = "vm-attach"
-                    _vm_command_list += obj_attr_list["cloud_name"] + " driver_" +\
-                     _app_type + ", " + ' ' + _pool + ' ' + _meta_tag + ' ' +\
-                      _size + ' ' + _attach_action + "; "
-                    _vm_counter += 1
+                obj_attr_list["parallel_operations"][_vm_counter] = {} 
+                _pobj_uuid = str(uuid5(NAMESPACE_DNS, str(randint(0,10000000000000000) + _vm_counter)))
+                _pobj_uuid = _pobj_uuid.upper()
+                obj_attr_list["vms"] += _pobj_uuid + ','
+                obj_attr_list["parallel_operations"][_vm_counter]["uuid"] = _pobj_uuid
+                obj_attr_list["parallel_operations"][_vm_counter]["ai"] = obj_attr_list["uuid"]
+                obj_attr_list["parallel_operations"][_vm_counter]["as"] = obj_attr_list["as"]
+                obj_attr_list["parallel_operations"][_vm_counter]["type"] = obj_attr_list["type"]
+                obj_attr_list["parallel_operations"][_vm_counter]["parameters"] = obj_attr_list["cloud_name"] +\
+                 " driver_" + _app_type + ' ' + _pool + ' ' + _meta_tag +\
+                  ' ' + _size + ' ' + _attach_action
+                obj_attr_list["parallel_operations"][_vm_counter]["operation"] = "vm-attach"
+                _vm_command_list += obj_attr_list["cloud_name"] + " driver_" +\
+                 _app_type + ", " + ' ' + _pool + ' ' + _meta_tag + ' ' +\
+                  _size + ' ' + _attach_action + "; "
+                _vm_counter += 1
 
             obj_attr_list["vms"] = obj_attr_list["vms"][:-1]
             obj_attr_list["vms_nr"] = _vm_counter
