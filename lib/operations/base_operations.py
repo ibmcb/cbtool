@@ -1806,6 +1806,11 @@ class BaseObjectOperations :
                         _extra_parms += ','                    
                     _extra_parms += "login=" + obj_attr_list[_vm_role + "_login"]
 
+                if _vm_role + "_resource_limits" in obj_attr_list :
+                    if _extra_parms != '' :
+                        _extra_parms += ','                                        
+                    _extra_parms += "resource_limits=" + obj_attr_list[_vm_role + "_resource_limits"]
+
                 if _vm_role + "_cloud_vv" in obj_attr_list :
                     if _extra_parms != '' :
                         _extra_parms += ','

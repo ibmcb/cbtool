@@ -42,7 +42,7 @@ OPERATION_COUNT=`get_my_ai_attribute_with_default operation_count 100000`
 READ_RATIO=`get_my_ai_attribute_with_default read_ratio workloaddefault`
 UPDATE_RATIO=`get_my_ai_attribute_with_default update_ratio workloaddefault`
 INPUT_RECORDS=`get_my_ai_attribute_with_default input_records memory`
-INPUT_RECORDS_FACTOR=`get_my_ai_attribute_with_default input_records_factor 10000`
+INPUT_RECORDS_FACTOR=`get_my_ai_attribute_with_default input_records_factor 300000`
 APP_COLLECTION=`get_my_ai_attribute_with_default app_collection lazy`
 DATABASE_SIZE_VERSUS_MEMORY=`get_my_ai_attribute_with_default database_size_versus_memory 0.5`
 

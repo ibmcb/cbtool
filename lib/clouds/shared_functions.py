@@ -314,7 +314,7 @@ class CommonCloudFunctions:
                     _channel_to_subscribe = obj_attr_list["check_boot_complete"].replace("subscribe_on_",'')
 
                     _msg = "Check if the VM \"" + obj_attr_list["name"]
-                    _msg += "\" (" + obj_attr_list["cloud_vm_uuid"] + ") has started by "
+                    _msg += "\" (" + obj_attr_list["cloud_vm_uuid"] + ") has booted by "
                     _msg += "subscribing to channel \"" + str(_channel_to_subscribe)
                     _msg += "\" and waiting for the message \""
                     _msg += _string_to_search + "\"."
@@ -343,6 +343,20 @@ class CommonCloudFunctions:
                     if _boot_wait_time :
                         sleep(_boot_wait_time)
                     _vm_is_booted = True                 
+
+                elif obj_attr_list["check_boot_complete"].count("run_command_") :
+                    _command_to_run = int(obj_attr_list["check_boot_complete"].replace("run_command_",''))
+                    _command_to_run = _command_to_run.replace("____",' ')
+
+                    _msg = "Check if the VM \"" + obj_attr_list["name"]
+                    _msg += "\" (" + obj_attr_list["cloud_vm_uuid"] + ") has booted by "
+                    _msg += "running the command \"" + str(_command_to_run)
+
+                    _proc_man = ProcessManagement(username = obj_attr_list["login"], \
+                                                  cloud_name = obj_attr_list["cloud_name"], \
+                                                  hostname = obj_attr_list["cloud_ip"])
+
+                    _vm_is_booted, _result_stdout, _result_stderr = _proc_man.run_os_command(_command_to_run)
                 
                 elif obj_attr_list["check_boot_complete"].count("snmpget_poll") :
                     import netsnmp

@@ -4006,14 +4006,25 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                             if _vm_role + "_netid" in obj_attr_list :
                                 _extra_parms += ",netid=" + obj_attr_list[_vm_role + "_netid"]
+
+                            if _vm_role + "_login" in obj_attr_list :
+                                if _extra_parms != '' :
+                                    _extra_parms += ','                    
+                                _extra_parms += "login=" + obj_attr_list[_vm_role + "_login"]
+            
+                            if _vm_role + "_resource_limits" in obj_attr_list :
+                                if _extra_parms != '' :
+                                    _extra_parms += ','                                 
+                                _extra_parms += "resource_limits=" + obj_attr_list[_vm_role + "_resource_limits"]            
             
                             if _vm_role + "_cloud_vv" in obj_attr_list :
+                                if _extra_parms != '' :
+                                    _extra_parms += ','
                                 _extra_parms += ",cloud_vv=" + obj_attr_list[_vm_role + "_cloud_vv"]
 
-                            if _vm_role in _cloud_ips :
-                                _cloud_ip = ",cloud_ip=" + _cloud_ips[_vm_role].pop()
-                            else :
-                                _cloud_ip = ''
+                            if _vm_role + "_cloud_ips" in obj_attr_list :
+                                if not _vm_role in _cloud_ips :
+                                    _cloud_ips[_vm_role] = obj_attr_list[_vm_role + "_cloud_ips"].split(';')
 
                             obj_attr_list["parallel_operations"][_vm_counter] = {} 
                             _pobj_uuid = str(uuid5(NAMESPACE_DNS, str(randint(0,10000000000000000) + _vm_counter)))

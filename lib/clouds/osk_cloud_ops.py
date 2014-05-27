@@ -33,8 +33,9 @@ from novaclient.v1_1 import client
 from novaclient import exceptions as novaexceptions
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from lib.auxiliary.data_ops import str2dic
+from lib.auxiliary.data_ops import str2dic, value_suffix
 from lib.remote.network_functions import hostname2ip
+from lib.remote.process_management import ProcessManagement
 from shared_functions import CldOpsException, CommonCloudFunctions 
 
 class OskCmds(CommonCloudFunctions) :
@@ -53,7 +54,8 @@ class OskCmds(CommonCloudFunctions) :
         self.oskconnstorage = False
         self.expid = expid
         self.ft_supported = False
-
+        self.lvirt_conn = {}
+    
     @trace
     def get_description(self) :
         '''
@@ -157,7 +159,7 @@ class OskCmds(CommonCloudFunctions) :
                     cberr(_msg, True)
             else :
                 _security_group_found = True
-            
+
             if vm_defaults["prov_netname"] == vm_defaults["run_netname"] :
                 _net_str = "network \"" + vm_defaults["prov_netname"] + "\""
             else :
@@ -334,6 +336,7 @@ class OskCmds(CommonCloudFunctions) :
                     obj_attr_list["host_list"][_host_uuid]["name"] = "host_" + obj_attr_list["host_list"][_host_uuid]["cloud_hostname"]
                     obj_attr_list["host_list"][_host_uuid]["memory_size"] = _host.memory_mb
                     obj_attr_list["host_list"][_host_uuid]["cores"] = _host.vcpus
+                    obj_attr_list["host_list"][_host_uuid]["hypervisor_type"] = _host.hypervisor_type                    
                     obj_attr_list["host_list"][_host_uuid]["pool"] = obj_attr_list["pool"]
                     obj_attr_list["host_list"][_host_uuid]["username"] = obj_attr_list["username"]
                     obj_attr_list["host_list"][_host_uuid]["notification"] = "False"
@@ -762,9 +765,9 @@ class OskCmds(CommonCloudFunctions) :
             if len(_address_list) :
                 obj_attr_list["cloud_ip"] = '{0}'.format(_address_list[0]["addr"])
 
-                if obj_attr_list["vm_hostname_key"] == "cloud_vm_name" :
+                if obj_attr_list["hostname_key"] == "cloud_vm_name" :
                     obj_attr_list["cloud_hostname"] = obj_attr_list["cloud_vm_name"]
-                elif obj_attr_list["vm_hostname_key"] == "cloud_ip" :
+                elif obj_attr_list["hostname_key"] == "cloud_ip" :
                     obj_attr_list["cloud_hostname"] = obj_attr_list["cloud_ip"].replace('.','-')
 
                 if obj_attr_list["prov_netname"] == obj_attr_list["run_netname"] :
@@ -926,7 +929,7 @@ class OskCmds(CommonCloudFunctions) :
         return False
 
     @trace
-    def get_hostname(self, obj_attr_list, fail = True) :
+    def get_host_and_instance_name(self, obj_attr_list, fail = True) :
         '''
         TBD
         '''
@@ -942,7 +945,13 @@ class OskCmds(CommonCloudFunctions) :
                 obj_attr_list["host_name"] = _instance._info['OS-EXT-SRV-ATTR:host']
             else :
                 obj_attr_list["host_name"] = "unknown"
+
+            if "OS-EXT-SRV-ATTR:instance_name" in _instance._info :
+                obj_attr_list["instance_name"] = _instance._info['OS-EXT-SRV-ATTR:instance_name']
+            else :
+                obj_attr_list["instance_name"] = "unknown"
         else :
+            obj_attr_list["instance_name"] = "unknown"            
             obj_attr_list["host_name"] = "unknown"
         return True
 
@@ -1102,6 +1111,184 @@ class OskCmds(CommonCloudFunctions) :
                 cbdebug(_msg)
                 return _status, _msg
 
+    def set_cgroup(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+
+        _status = 189
+        _fmsg = "About to import libvirt...."
+
+        _state_code2value = {}
+        _state_code2value["1"] = "running"
+        _state_code2value["2"] = "blocked"
+        _state_code2value["3"] = "paused"
+        _state_code2value["4"] = "shutdown"
+        # Temporarily renaming "shutoff" to "save"
+        _state_code2value["5"] = "save"
+        _state_code2value["6"] = "crashed"
+
+
+        _cgroups_mapping = {}
+        _cgroups_mapping["mem_hard_limit"] = "memory.limit_in_bytes"
+        _cgroups_mapping["mem_soft_limit"] = "memory.soft_limit_in_bytes"
+        
+        try :        
+
+            import libvirt
+
+            _host_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
+                                                    "HOST", \
+                                                    True, \
+                                                    obj_attr_list["host_name"], \
+                                                    False)
+
+            _hypervisor_type = _host_attr_list["hypervisor_type"].lower()
+
+            if _hypervisor_type == "qemu" :
+                _astr = "/system"
+            else :
+                _astr = ""
+
+            _host_name = _host_attr_list["cloud_hostname"]
+
+            _host_ip = _host_attr_list["cloud_ip"]
+
+
+            obj_attr_list["resource_limits"] = str2dic(obj_attr_list["resource_limits"].replace(';',',').replace('-',':'))
+
+            _proc_man = ProcessManagement(username = "root", \
+                                          hostname = _host_ip, \
+                                          cloud_name = obj_attr_list["cloud_name"])
+
+            for _key in obj_attr_list["resource_limits"] :
+
+                _base_dir = obj_attr_list["cgroups_base_dir"]
+                if _key.count("mem") :
+                    _subsystem = "memory"
+
+                # The cgroups/libvirt interface is currently broken (for memory limit
+                # control). Will have to ssh into the node and set cgroup limits 
+                # manually.
+                
+                #instance_data.setMemoryParameters(params={'swap_hard_limit': 9007199254740991L, 'hard_limit': 3631000L}, flags=libvirt.VIR_DOMAIN_AFFECT_LIVE)
+
+                _value = str(value_suffix(obj_attr_list["resource_limits"][_key]))
+
+                _cmd = "echo " + _value + " > " + _base_dir + _subsystem +"/machine/"
+                _cmd += obj_attr_list["instance_name"] + ".libvirt-" + _hypervisor_type
+                _cmd += "/" + _cgroups_mapping[_key]
+
+                _msg = "Altering the \"" + _cgroups_mapping[_key] + "\" parameter"
+                _msg += " on the \"" +_subsystem + "\" subsystem on cgroups for"
+                _msg += " instance \"" + obj_attr_list["instance_name"] + "\" with "
+                _msg += " the value \"" + _value + "\"..."
+                cbdebug(_msg, True)
+
+                _status, _result_stdout, _fmsg = _proc_man.run_os_command(_cmd)
+
+            if not _status :
+                
+                if _host_name not in self.lvirt_conn or not self.lvirt_conn[_host_name] :        
+                    _msg = "Attempting to connect to libvirt daemon running on "
+                    _msg += "hypervisor (" + _hypervisor_type + ") \"" + _host_ip + "\"...."
+                    cbdebug(_msg)
+    
+                    self.lvirt_conn[_host_name] = libvirt.open( _hypervisor_type + "+tcp://" + _host_ip + _astr)
+                    
+                    _msg = "Connection to libvirt daemon running on hypervisor ("
+                    _msg += _hypervisor_type + ") \"" + _host_ip + "\" successfully established."
+                    cbdebug(_msg)
+    
+                    instance_data = self.lvirt_conn[_host_name].lookupByName(obj_attr_list["instance_name"])
+    
+                    obj_attr_list["lvirt_os_type"] = instance_data.OSType()
+    
+                    obj_attr_list["lvirt_scheduler_type"] = instance_data.schedulerType()[0]
+        
+                # All object uuids on state store are case-sensitive, so will
+                # try to just capitalize the UUID reported by libvirt
+    #                obj_attr_list["cloud_uuid"] = instance_data.UUIDString().upper()
+    #                obj_attr_list["uuid"] = obj_attr_list["cloud_uuid"]
+    #                obj_attr_list["cloud_lvid"] = instance_data.name()
+    
+                _gobj_attr_list = instance_data.info()
+    
+                obj_attr_list["lvirt_vmem"] = str(_gobj_attr_list[1])
+                obj_attr_list["lvirt_vmem_current"] = str(_gobj_attr_list[2])
+                obj_attr_list["lvirt_vcpus"] = str(_gobj_attr_list[3])
+    
+                _state_code = str(_gobj_attr_list[0])
+                if _state_code in _state_code2value :
+                    obj_attr_list["lvirt_state"] = _state_code2value[_state_code]
+                else :
+                    obj_attr_list["lvirt_state"] = "unknown"
+    
+                if _state_code == "1" :
+    
+                    _vcpu_info = instance_data.vcpus()
+    
+                    for _vcpu_nr in range(0, int(obj_attr_list["lvirt_vcpus"])) :
+                        obj_attr_list["lvirt_vcpu_" + str(_vcpu_nr) + "_pcpu"] = str(_vcpu_info[0][_vcpu_nr][3])
+                        obj_attr_list["lvirt_vcpu_" + str(_vcpu_nr) + "_time"] =  str(_vcpu_info[0][_vcpu_nr][2])
+                        obj_attr_list["lvirt_vcpu_" + str(_vcpu_nr) + "_state"] =  str(_vcpu_info[0][_vcpu_nr][1])
+                        obj_attr_list["lvirt_vcpu_" + str(_vcpu_nr) + "_map"] = str(_vcpu_info[1][_vcpu_nr])
+    
+                    _sched_info = instance_data.schedulerParameters()
+    
+                    obj_attr_list["lvirt_vcpus_soft_limit"] = str(_sched_info["cpu_shares"])
+    
+                    if "vcpu_period" in _sched_info :
+                        obj_attr_list["lvirt_vcpus_period"] = str(float(_sched_info["vcpu_period"]))
+                        obj_attr_list["lvirt_vcpus_quota"] = str(float(_sched_info["vcpu_quota"]))
+                        obj_attr_list["lvirt_vcpus_hard_limit"] = str(float(obj_attr_list["lvirt_vcpus_quota"]) / float(obj_attr_list["lvirt_vcpus_period"]))
+    
+                    if "memoryParameters" in dir(instance_data) :    
+                        _mem_info = instance_data.memoryParameters(0)
+    
+                        obj_attr_list["lvirt_mem_hard_limit"] = str(_mem_info["hard_limit"])
+                        obj_attr_list["lvirt_mem_soft_limit"] = str(_mem_info["soft_limit"])
+                        obj_attr_list["lvirt_mem_swap_hard_limit"] = str(_mem_info["swap_hard_limit"])
+    
+                    if "blkioParameters" in dir(instance_data) :
+                        _diskio_info = instance_data.blkioParameters(0)
+                        obj_attr_list["lvirt_diskio_soft_limit"] = "unknown"
+                        if _diskio_info :
+                            if "weight" in _diskio_info :
+                                obj_attr_list["lvirt_diskio_soft_limit"] = str(_diskio_info["weight"])
+    
+    
+                _status = 0
+
+        except libvirt.libvirtError, msg :
+            _fmsg = "Error while attempting to connect to libvirt daemon running on "
+            _fmsg += "hypervisor (" + _hypervisor_type + ") \"" + _host_ip + "\":"
+            _fmsg += msg
+            cberr(_fmsg)
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+
+        finally :
+            if _status :
+                _msg = "Error while attempting to set resource limits for VM " + obj_attr_list["name"] + ""
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
+                _msg += "running on hypervisor \"" + _host_name + "\""
+                _msg += " in OpenStack Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += _fmsg
+                cberr(_msg)
+
+            else :
+                _msg = "Successfully set resource limits for VM " + obj_attr_list["name"] + ""
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
+                _msg += "running on hypervisor \"" + _host_name + "\""
+                _msg += " in OpenStack Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "\"."
+                cbdebug(_msg)
+
+            return _status, _msg
+
     @trace
     def vmcreate(self, obj_attr_list) :
         '''
@@ -1111,10 +1298,10 @@ class OskCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
             _fault = "No info"
-            
+
             obj_attr_list["cloud_vm_uuid"] = "NA"
             _instance = False
-            
+
             obj_attr_list["cloud_vm_name"] = "cb-" + obj_attr_list["username"]
             obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["cloud_name"]
             obj_attr_list["cloud_vm_name"] += '-' + "vm"
@@ -1162,6 +1349,13 @@ class OskCmds(CommonCloudFunctions) :
                 
             _scheduler_hints = None
 
+            if "userdata" in obj_attr_list :
+                _userdata = obj_attr_list["userdata"]
+                _config_drive = True
+            else :
+                _config_drive = False                
+                _userdata = None
+
             _meta = {}
             if "meta_tags" in obj_attr_list :
                 if obj_attr_list["meta_tags"] != "empty" and \
@@ -1191,7 +1385,7 @@ class OskCmds(CommonCloudFunctions) :
             _msg += ", network identifier \"" + str(_netid) + "\","
             _msg += " on VMC \"" + obj_attr_list["vmc_name"] + "\""
             cbdebug(_msg, True)
-    
+            
             _instance = self.oskconncompute.servers.create(name = obj_attr_list["cloud_vm_name"], \
                                                     image = _imageid, \
                                                     flavor = _flavor, \
@@ -1201,7 +1395,7 @@ class OskCmds(CommonCloudFunctions) :
                                                     availability_zone = _availability_zone, \
                                                     meta = _meta, \
                                                     config_drive = True, \
-                                                    userdata = obj_attr_list["userdata"], \
+                                                    userdata = _userdata, \
                                                     nics = _netid)
 
             if _instance :
@@ -1220,9 +1414,13 @@ class OskCmds(CommonCloudFunctions) :
                             
                 self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
 
-                self.get_hostname(obj_attr_list)
+                self.get_host_and_instance_name(obj_attr_list)
 
-                _status = 0
+                if "resource_limits" in obj_attr_list :
+                    _status, _fmsg = self.set_cgroup(obj_attr_list)
+                else :
+                    _status = 0
+
             else :
                 _fmsg = "Failed to obtain instance's (cloud assigned) uuid. The "
                 _fmsg += "instance creation failed for some unknown reason."
@@ -1248,6 +1446,7 @@ class OskCmds(CommonCloudFunctions) :
     
         finally :
             if _status :
+
                 _vminstance = self.get_instances(obj_attr_list, "vm", \
                                                obj_attr_list["cloud_vm_name"])
 
@@ -1255,19 +1454,26 @@ class OskCmds(CommonCloudFunctions) :
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "could not be created"
                 _msg += " on OpenStack Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
-                
+
                 if _vminstance :
-                    if "message" in _vminstance.fault : 
-                        _msg += "\n\t" + _vminstance.fault["message"] + "\n: "
-                    #if "details" in _vminstance.fault : 
-                    #    _msg += _vminstance.fault["details"] + ":"
+                    # Not the best way to solve this problem. Will improve later.
+                    
+                    if not self.is_vm_running(obj_attr_list) :
+                        if "fault" in dir(_vminstance) :
+                            if "message" in _vminstance.fault : 
+                                print _vminstance.fault
+                                _msg += "\n\t" + _vminstance.fault["message"] + "\n: "
+                            #if "details" in _vminstance.fault : 
+                            #    _msg += _vminstance.fault["details"] + ":"
                     # Try to make a last attempt effort to get the hostname,
                     # even if the VM creation failed.
-                    self.get_hostname(obj_attr_list, fail = False)
+
+                    self.get_host_and_instance_name(obj_attr_list, fail = False)
 
                     _vminstance.delete()
-                    
-                    self.vvdestroy(obj_attr_list)
+
+                    if "cloud_vv" in obj_attr_list :
+                        self.vvdestroy(obj_attr_list)
 
                 _msg += _fmsg + " (The VM creation will be rolled back)"
                 cberr(_msg)
