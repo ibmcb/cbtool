@@ -191,6 +191,7 @@ function lazy_collection {
     ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
     load_level:${LOAD_LEVEL}:load \
     load_profile:${LOAD_PROFILE}:name \
+    load_duration:${LOAD_DURATION}:sec \
     throughput:$(expr $ops):tps \
     latency:$(expr $latency):ms \
     datagen_time:${datagentime}:sec        
@@ -366,6 +367,7 @@ function eager_collection {
         ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
         load_level:${LOAD_LEVEL}:load \
         load_profile:${LOAD_PROFILE}:name \
+        load_duration:${LOAD_DURATION}:sec \
         throughput:$(expr $ops):tps \
         write_avg_latency:$(expr $write_avg_latency):us \
         write_min_latency:$(expr $write_min_latency):us \
@@ -390,6 +392,7 @@ function eager_collection {
         ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
         load_level:${LOAD_LEVEL}:load \
         load_profile:${LOAD_PROFILE}:name \
+        load_duration:${LOAD_DURATION}:sec \
         throughput:$(expr $ops):tps \
         read_avg_latency:$(expr $read_avg_latency):us \
         read_min_latency:$(expr $read_min_latency):us \

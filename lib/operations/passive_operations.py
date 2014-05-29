@@ -1320,10 +1320,10 @@ class PassiveObjectOperations(BaseObjectOperations) :
             else :
                 _msg = "Message \"" + obj_attr_list["message"] + "\""
                 _msg += " published on channel \"" + obj_attr_list["channel"] 
-                _msg += "\" (object \"" + _obj_type + "\" )."
+                _msg += "\" (object \"" + _obj_type + "\")."
                 cbdebug(_msg)
 
-            return _status, _msg, None
+            return self.package(_status, _msg, None)
 
     @trace
     def debug_startup(self, obj_attr_list, params, cmd) :

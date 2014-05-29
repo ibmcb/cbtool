@@ -606,6 +606,8 @@ class SimCmds(CommonCloudFunctions) :
                 _msg = "Failed to create VM image"
                 raise CldOpsException(_msg, _status)
 
+            self.take_action_if_requested("VM", obj_attr_list, "provision_started")
+
             self.vm_placement(obj_attr_list)
 
             if "meta_tags" in obj_attr_list :
@@ -617,9 +619,7 @@ class SimCmds(CommonCloudFunctions) :
                     obj_attr_list["meta_tags"] = "empty"
             else :
                 obj_attr_list["meta_tags"] = "empty"
- 
-            self.take_action_if_requested("VM", obj_attr_list, "provision_started")
- 
+  
             _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
 
             self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)

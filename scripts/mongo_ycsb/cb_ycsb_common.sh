@@ -1,8 +1,26 @@
 #!/usr/bin/env bash
 
+#/*******************************************************************************
+#
 # This source code is provided as is, without any express or implied warranty.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#     http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+#
+# @author Joe Talerico, jtaleric@redhat.com
+#/*******************************************************************************
 
+#####################################################################################
 # Common routines for YCSB 
+#####################################################################################
 
 source ~/.bashrc
 
@@ -56,7 +74,9 @@ then
         syslog_netcat "The VM with the \"seed\" role on this AI has the following IP: ${seed_ip}"
     fi
 
+    #
     # Update /etc/hosts file
+    #
     if [[ $(cat /etc/hosts | grep -c cassandra-seed) -eq 0 ]]
     then
         sudo sh -c "echo $seed_ip cassandra-seed >> /etc/hosts"
@@ -155,6 +175,8 @@ function lazy_collection {
     fi
     
     # Collect data generation time, taking care of reporting the time
+    # with a minus sign in case data was not generated on this 
+    # run
     if [[ -f /tmp/old_data_generation_time ]]
     then
         datagentime=-$(cat /tmp/old_data_generation_time)
@@ -169,6 +191,7 @@ function lazy_collection {
     ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
     load_level:${LOAD_LEVEL}:load \
     load_profile:${LOAD_PROFILE}:name \
+    load_duration:${LOAD_DURATION}:sec \
     throughput:$(expr $ops):tps \
     latency:$(expr $latency):ms \
     datagen_time:${datagentime}:sec        
@@ -188,6 +211,8 @@ function eager_collection {
     update_current_ops=0
 
     #----------------------- Tracking Latency --------------------------------------
+    # <operation>_latency=average,min,max,95,99
+    #-------------------------------------------------------------------------------
     write_latency=0
     read_latency=0
     update_latency=0
@@ -197,7 +222,11 @@ function eager_collection {
     
     while read line
     do
+    #-------------------------------------------------------------------------------
     # Need to track each YCSB Clients current operation count.
+    # NEED TO:
+    #       Create a variable that reports to CBTool the current operation
+    #-------------------------------------------------------------------------------
         if [[ "$line" =~ "[0-9]+\s sec:" ]]
         then
             CURRENT_OPS=$(echo $line | awk '{print $3}')
@@ -320,6 +349,8 @@ function eager_collection {
     fi
     
     # Collect data generation time, taking care of reporting the time
+    # with a minus sign in case data was not generated on this 
+    # run
     if [[ -f /tmp/old_data_generation_time ]]
     then
         datagentime=-$(cat /tmp/old_data_generation_time)
@@ -336,6 +367,7 @@ function eager_collection {
         ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
         load_level:${LOAD_LEVEL}:load \
         load_profile:${LOAD_PROFILE}:name \
+        load_duration:${LOAD_DURATION}:sec \
         throughput:$(expr $ops):tps \
         write_avg_latency:$(expr $write_avg_latency):us \
         write_min_latency:$(expr $write_min_latency):us \
@@ -360,6 +392,7 @@ function eager_collection {
         ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
         load_level:${LOAD_LEVEL}:load \
         load_profile:${LOAD_PROFILE}:name \
+        load_duration:${LOAD_DURATION}:sec \
         throughput:$(expr $ops):tps \
         read_avg_latency:$(expr $read_avg_latency):us \
         read_min_latency:$(expr $read_min_latency):us \

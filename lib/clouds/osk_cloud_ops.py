@@ -1349,11 +1349,11 @@ class OskCmds(CommonCloudFunctions) :
                 
             _scheduler_hints = None
 
-            if "userdata" in obj_attr_list :
+            if "userdata" in obj_attr_list and obj_attr_list["userdata"] :
                 _userdata = obj_attr_list["userdata"]
                 _config_drive = True
             else :
-                _config_drive = False                
+                _config_drive = None                
                 _userdata = None
 
             _meta = {}
@@ -1394,7 +1394,7 @@ class OskCmds(CommonCloudFunctions) :
                                                     scheduler_hints = _scheduler_hints, \
                                                     availability_zone = _availability_zone, \
                                                     meta = _meta, \
-                                                    config_drive = True, \
+                                                    config_drive = _config_drive, \
                                                     userdata = _userdata, \
                                                     nics = _netid)
 
@@ -1521,7 +1521,9 @@ class OskCmds(CommonCloudFunctions) :
                 _instance.delete()
                 sleep(_wait)
 
-                while self.is_vm_running(obj_attr_list) :
+                while not _instance :
+                    _instance = self.get_instances(obj_attr_list, "vm", \
+                                           obj_attr_list["cloud_vm_name"])
                     sleep(_wait)
             else :
                 True

@@ -42,7 +42,7 @@ OPERATION_COUNT=`get_my_ai_attribute_with_default operation_count 100000`
 READ_RATIO=`get_my_ai_attribute_with_default read_ratio workloaddefault`
 UPDATE_RATIO=`get_my_ai_attribute_with_default update_ratio workloaddefault`
 INPUT_RECORDS=`get_my_ai_attribute_with_default input_records memory`
-INPUT_RECORDS_FACTOR=`get_my_ai_attribute_with_default input_records_factor 300000`
+RECORD_SIZE=`get_my_ai_attribute_with_default record_size 2.35`
 APP_COLLECTION=`get_my_ai_attribute_with_default app_collection lazy`
 DATABASE_SIZE_VERSUS_MEMORY=`get_my_ai_attribute_with_default database_size_versus_memory 0.5`
 
@@ -61,8 +61,8 @@ MEM=`cat /proc/meminfo | grep MemTotal: | awk '{print $2}'`
 
 if [[ $INPUT_RECORDS == "memory" ]]
 then
-    RECORDS=$(python -c 'from __future__ import division; print ((('"${MEM}"'/1024)/1024)*'"${DATABASE_SIZE_VERSUS_MEMORY}"')*'"${INPUT_RECORDS_FACTOR}"'')
-else 
+    RECORDS=$(echo "${MEM} * ${DATABASE_SIZE_VERSUS_MEMORY} / ${RECORD_SIZE}" | bc)
+else
     RECORDS=$INPUT_RECORDS
 fi
 
@@ -71,10 +71,10 @@ sudo touch $YCSB_PATH/custom_workload.dat
 sudo sh -c "echo "recordcount=${RECORDS%.*}" > $YCSB_PATH/custom_workload.dat"
 sudo sh -c "echo "operationcount=$OPERATION_COUNT" >> $YCSB_PATH/custom_workload.dat"
 
+OUTPUT_FILE=$(mktemp)
 if [[ ${GENERATE_DATA} == "true" ]]
 then
     syslog_netcat "Number of records to be inserted : $RECORDS"
-    OUTPUT_FILE=$(mktemp)
 
     log_output_command=$(get_my_ai_attribute log_output_command)
     log_output_command=$(echo ${log_output_command} | tr '[:upper:]' '[:lower:]')

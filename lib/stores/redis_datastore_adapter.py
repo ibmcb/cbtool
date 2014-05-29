@@ -1562,7 +1562,7 @@ class RedisMgdConn :
         _redis_conn = self.connect(tout)
 
         _comm_chn = obj_inst + ':' + obj_type + ':' + channel
-        _msg = " - Attempting the publish message \"" + message + "\""
+        _msg = "Attempting the publish message \"" + message + "\""
         _msg += " on the command channel " + _comm_chn
         cbdebug(_msg)
 
@@ -1575,14 +1575,14 @@ class RedisMgdConn :
                 _nr_recv = _redis_conn.publish(_comm_chn, message)
 
                 if _nr_recv :
-                    _msg = " - Message: " + message + " was successfully"
+                    _msg = "Message: " + message + " was successfully"
                     _msg += " published on the channel " + _comm_chn
                     _msg += ", and received by " + str(_nr_recv)
                     _msg += " clients."
                     cbdebug(_msg)
                     return True
                 else :
-                    _msg = " - Message: " + message + " was successfully"
+                    _msg = "Message: " + message + " was successfully"
                     _msg += " published on the channel " + _comm_chn
                     _msg += ", but wasn't received by anyone. Will try "
                     _msg += str(_max_tries) + " more times."

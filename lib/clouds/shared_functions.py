@@ -465,7 +465,7 @@ class CommonCloudFunctions:
                 # Always subscribe for the VM channel, no matter the object
                 _sub_channel = self.osci.subscribe(obj_attr_list["cloud_name"], "VM", "staging")
     
-                if obj_type == "VM" and obj_attr_list["ai"] != "none" :
+                if obj_type == "VM" and obj_attr_list["ai"] != "none" and current_step.count("all_vms") :
                     _target_uuid = obj_attr_list["ai"]
                     _target_name = obj_attr_list["ai_name"]
                     _cloud_vm_uuid = obj_attr_list["cloud_vm_uuid"] 
@@ -496,9 +496,16 @@ class CommonCloudFunctions:
     
                     if (_id == _target_uuid or _id == _target_name) and _status == "continue" :
                         obj_attr_list[obj_attr_list["staging"] + "_complete"] = int(time())
+
+                        if _info.count(":") :
+
+                            _add_obj_attr_list = str2dic(_info) 
+                            obj_attr_list.update(_add_obj_attr_list)
+                            
                         _status = 0
                         break
-    
+
+
                 _sub_channel.unsubscribe()
 
                 _status = 0
