@@ -1797,24 +1797,19 @@ class BaseObjectOperations :
                 else :
                     _size = 'default'
 
-                _extra_parms = ''
+                _extra_parms = "sut=" + obj_attr_list["sut"]
+                
                 if _vm_role + "_netid" in obj_attr_list :
-                    _extra_parms += "netid=" + obj_attr_list[_vm_role + "_netid"]
+                    _extra_parms += ",netid=" + obj_attr_list[_vm_role + "_netid"]
 
                 if _vm_role + "_login" in obj_attr_list :
-                    if _extra_parms != '' :
-                        _extra_parms += ','                    
-                    _extra_parms += "login=" + obj_attr_list[_vm_role + "_login"]
+                    _extra_parms += ",login=" + obj_attr_list[_vm_role + "_login"]
 
                 if _vm_role + "_resource_limits" in obj_attr_list :
-                    if _extra_parms != '' :
-                        _extra_parms += ','                                        
-                    _extra_parms += "resource_limits=" + obj_attr_list[_vm_role + "_resource_limits"]
+                    _extra_parms += ",resource_limits=" + obj_attr_list[_vm_role + "_resource_limits"]
 
                 if _vm_role + "_cloud_vv" in obj_attr_list :
-                    if _extra_parms != '' :
-                        _extra_parms += ','
-                    _extra_parms += "cloud_vv=" + obj_attr_list[_vm_role + "_cloud_vv"]
+                    _extra_parms += ",cloud_vv=" + obj_attr_list[_vm_role + "_cloud_vv"]
 
                 if _vm_role + "_cloud_ips" in obj_attr_list :
                     if not _vm_role in _cloud_ips :

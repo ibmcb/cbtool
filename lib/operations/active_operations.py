@@ -4026,6 +4026,15 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                 if not _vm_role in _cloud_ips :
                                     _cloud_ips[_vm_role] = obj_attr_list[_vm_role + "_cloud_ips"].split(';')
 
+                            if _vm_role in _cloud_ips :
+                                if _extra_parms != '' :
+                                    _cloud_ip = ','
+                                else :
+                                    _cloud_ip = ''
+                                _cloud_ip += "cloud_ip=" + _cloud_ips[_vm_role].pop()
+                            else :
+                                _cloud_ip = ''
+
                             obj_attr_list["parallel_operations"][_vm_counter] = {} 
                             _pobj_uuid = str(uuid5(NAMESPACE_DNS, str(randint(0,10000000000000000) + _vm_counter)))
                             _pobj_uuid = _pobj_uuid.upper()
@@ -4162,7 +4171,21 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                         obj_attr_list["sut"] = obj_attr_list["sut"][:-2]
                         
-                        self.osci.update_object_attribute(obj_attr_list["cloud_name"], "AI", obj_attr_list["uuid"], False, "sut", obj_attr_list["sut"])
+                        self.osci.update_object_attribute(obj_attr_list["cloud_name"],\
+                                                           "AI", \
+                                                           obj_attr_list["uuid"],\
+                                                            False,\
+                                                             "sut",\
+                                                              obj_attr_list["sut"])
+
+                        for _vm in obj_attr_list["vms"].split(',') :
+                            _vm_uuid, _vm_role, _vm_name = _vm.split('|')
+                            self.osci.update_object_attribute(obj_attr_list["cloud_name"],\
+                                                               "VM",\
+                                                                _vm_uuid,\
+                                                                 False,\
+                                                                  "sut",\
+                                                                   obj_attr_list["sut"])
 
                         _status = 0
                         _result = obj_attr_list

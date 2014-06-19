@@ -1,25 +1,25 @@
- status: Sending a termination request for vm_31 (cloud-assigned uuid A9E253AC-B4DF-5031-8B7E-CE23B410FFCB)....
- status: Sending a termination request for vm_30 (cloud-assigned uuid 020CD359-1CC3-55FE-82AF-36ECB6306FCD)....
- status: Sending a termination request for vm_32 (cloud-assigned uuid 1EAE3A2B-9A1E-5EE7-B45B-27602291D6E0)....
- status: Waiting for vm_29 (cloud-assigned uuid 5911E2AC-5AE0-5C53-B191-75677788F84D) to be captured with image name "vm_29_at_1396712048"...
- status: Sending a termination request for vm_29 (cloud-assigned uuid 5911E2AC-5AE0-5C53-B191-75677788F84D)....
-VM object FA498678-4E42-5747-A779-87546B385D2E (named "vm_29") successfully captured on this experiment.
+ status: Sending a termination request for vm_30 (cloud-assigned uuid C4DEF8BD-C48E-5264-89C3-B9EF23309BB2)....
+ status: Sending a termination request for vm_32 (cloud-assigned uuid 5538084B-27B0-5E3B-B05A-51D3299894DA)....
+ status: Sending a termination request for vm_31 (cloud-assigned uuid 45659D6C-487E-5740-94D5-912408E1F0A4)....
+ status: Waiting for vm_29 (cloud-assigned uuid CC86B9A7-9620-5F92-B90F-11AEFD8219E6) to be captured with image name "vm_29_at_1399996816"...
+ status: Sending a termination request for vm_29 (cloud-assigned uuid CC86B9A7-9620-5F92-B90F-11AEFD8219E6)....
+VM object 3273A542-20E7-569B-8B9D-AEDCEBE21224 (named "vm_29") successfully captured on this experiment.
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |3.34M                         
+|Used Memory                                          |3.51M                         
 |Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |508578                        
-|Total Connections Received                           |10631                         
-|Total Commands Processed                             |894883                        
-|Number of Keys                                       |549                           
+|Uptime (in seconds)                                  |3793346                       
+|Total Connections Received                           |81338                         
+|Total Commands Processed                             |6086562                       
+|Number of Keys                                       |557                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
 |MongoDB Version                                      |2.4.9                         
-|Storage Size                                         |2101248                       
-|Data Size                                            |611168                        
+|Storage Size                                         |2158592                       
+|Data Size                                            |612656                        
 |Index Size                                           |457856                        
-|Average Object Size                                  |521.029838022                 
+|Average Object Size                                  |521.409361702                 
 |Collections                                          |14                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
@@ -79,55 +79,55 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |169                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|80A79D6D-26D1-50E5-9134-8523D863E6F6 (simzone_d) VM RESERVATIONS|4                             
-|3C93B192-9C64-519E-937D-672B65A2A1A6 (simzone_c) VM RESERVATIONS|1                             
-|2B445F8B-78AD-5C1C-8132-71756390FACA (simzone_a) VM RESERVATIONS|5                             
-|3586523C-1A3C-5964-9DF2-DF21617ED6B9 (simzone_b) VM RESERVATIONS|6                             
+|516A5A15-B093-5B5F-B171-EE9AA82AAEF0 (simzone_c) VM RESERVATIONS|4                             
+|8D79A9F1-34B8-5D1A-A903-082245CE052C (simzone_d) VM RESERVATIONS|4                             
+|B0B6FF0A-FAE8-5217-A335-C0F1B0BEA0D6 (simzone_b) VM RESERVATIONS|6                             
+|D5506DC9-493A-57EE-86F6-0B96CB07D162 (simzone_a) VM RESERVATIONS|2                             
 
 The following ATTACHED AIs are in this experiment (Cloud TESTCLOUD) :
 |name      |type           |sut                                               |cloud_ip        |arrival        |aidrs                                   |uuid
-|ai_1      |ibm_daytrader  |1_x_client_daytrader->1_x_was->1_x_db2            |139.246.107.97  |1396711943     |none                                    |34241E8D-7268-5ED7-B2BE-323231C23459
-|ai_3      |ibm_daytrader  |1_x_client_daytrader->1_x_was->1_x_db2            |172.166.176.170 |1396711960     |none                                    |9ED5AAE1-AC57-5DA8-BF6E-26F9359F35E7
-|ai_4      |ibm_daytrader  |1_x_client_daytrader->1_x_was->1_x_db2            |12.240.239.49   |1396712000     |none                                    |12308EA9-1B1E-5B99-958B-07288A89A09B
-|ai_5      |netperf        |1_x_netclient->1_x_netserver                      |37.158.14.165   |1396712018     |none                                    |20B1E58E-B53F-5A1D-8927-BFCD7FAE5ED2
-|ai_6      |hadoop         |1_x_hadoopmaster->1_x_hadoopslave                 |135.132.192.9   |1396712022     |none                                    |A15F03D2-92E7-5746-B1F7-E8115BD032D0
-|ai_7      |ibm_daytrader  |1_x_client_daytrader->1_x_was->1_x_db2            |82.109.63.42    |1396712045     |none                                    |2E3944A9-990A-574C-82A5-36582BE4DC20
+|ai_1      |ibm_daytrader  |1_x_client_daytrader->1_x_was->1_x_db2            |155.224.91.209  |1399996708     |none                                    |98B86D5A-7910-5D31-83FC-749B386BDBF0
+|ai_3      |ibm_daytrader  |1_x_client_daytrader->1_x_was->1_x_db2            |5.63.8.207      |1399996726     |none                                    |EA4DACC9-4C89-55C8-92BA-7BADF79753D8
+|ai_4      |ibm_daytrader  |1_x_client_daytrader->1_x_was->1_x_db2            |42.106.201.48   |1399996765     |none                                    |D2AD4C36-E24C-5084-B7AA-38D6E40ED9B7
+|ai_5      |netperf        |1_x_netclient->1_x_netserver                      |230.121.157.104 |1399996784     |none                                    |6D10147F-0BB2-5DEE-9849-1AF44506C501
+|ai_6      |hadoop         |1_x_hadoopmaster->1_x_hadoopslave                 |91.239.57.51    |1399996789     |none                                    |381217E9-5946-5761-94AA-76B91E41965E
+|ai_7      |ibm_daytrader  |1_x_client_daytrader->1_x_was->1_x_db2            |222.89.149.97   |1399996812     |none                                    |3F291E64-8BB0-56D6-A4CC-DEB5C00DCA12
 
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 |name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
-|vm_27         |client_daytrader    |micro32     |139.246.107.97  |simhostd1                  |LG                  |ai_1    |none       |1D914F06-AA55-5EB6-9C0A-D4459D283129
-|vm_28         |db2                 |platinum64  |227.87.209.4    |simhostb1                  |SUT                 |ai_1    |none       |0173346F-2AA7-50F1-9580-E53E9EA17F59
-|vm_34         |client_daytrader    |micro32     |172.166.176.170 |simhostd1                  |LG                  |ai_3    |none       |BA1DF577-8181-5B3C-A5B9-264FA2A9245F
-|vm_33         |was                 |iron32      |61.91.38.20     |simhostb1                  |SUT                 |ai_3    |none       |038F0102-EC86-55A8-9209-4FAA5E49CAE0
-|vm_35         |db2                 |platinum64  |211.59.225.181  |simhosta1                  |SUT                 |ai_3    |none       |DC5E7AB0-7775-5044-8F43-AAD2D23CBF17
-|vm_36         |db2                 |platinum64  |130.216.86.98   |simhostc1                  |SUT                 |ai_4    |none       |6B77848C-0054-528D-99BF-081AAB22FA55
-|vm_37         |client_daytrader    |micro32     |12.240.239.49   |simhostd1                  |LG                  |ai_4    |none       |AFC88439-01FF-56CB-92EC-2829DB81A110
-|vm_38         |was                 |iron32      |145.98.181.54   |simhosta1                  |SUT                 |ai_4    |none       |F74DAA45-D310-532C-B381-A07993F20CC0
-|vm_39         |netclient           |platinum64  |37.158.14.165   |simhostb1                  |SUT                 |ai_5    |none       |D720DCA0-E070-5542-AE33-20766BF1EFF1
-|vm_40         |netserver           |iron32      |74.126.54.136   |simhosta1                  |SUT                 |ai_5    |none       |6E684E61-8F2F-5D20-8ABE-8D2352F050F2
-|vm_41         |hadoopmaster        |copper32    |135.132.192.9   |simhosta1                  |SUT                 |ai_6    |none       |82F64A1F-89EC-508E-BB1F-142E73C2C036
-|vm_42         |hadoopslave         |platinum64  |180.148.139.5   |simhosta1                  |SUT                 |ai_6    |none       |7C8453D9-68E0-52DC-8931-7530BBADD6DA
-|vm_43         |was                 |iron32      |29.18.11.74     |simhostb1                  |SUT                 |ai_1    |none       |A8D84777-1106-5407-B882-538A376EF215
-|vm_44         |was                 |iron32      |4.106.210.191   |simhostb1                  |SUT                 |ai_7    |none       |E3BE6B38-E1D5-52D9-98D9-6222EA55FFF3
-|vm_46         |client_daytrader    |micro32     |82.109.63.42    |simhostd1                  |LG                  |ai_7    |none       |C927403F-CC8C-56F3-B440-D09AB6ADAB5C
-|vm_45         |db2                 |platinum64  |20.213.38.66    |simhostb1                  |SUT                 |ai_7    |none       |166DC619-8F23-5513-8F7B-C02F443F3DDB
+|vm_26         |client_daytrader    |micro32     |155.224.91.209  |simhostb2                  |LG                  |ai_1    |none       |BD695E57-E34F-5617-A755-3EDFF0BDAEAC
+|vm_28         |db2                 |platinum64  |225.124.169.215 |simhostc1                  |SUT                 |ai_1    |none       |9F6561D1-8EF0-5675-B7AC-146F4B7552A2
+|vm_33         |client_daytrader    |micro32     |5.63.8.207      |simhostc0                  |LG                  |ai_3    |none       |CF7D1E24-C7DF-5748-BEB4-42DED33FC38C
+|vm_35         |db2                 |platinum64  |129.42.189.39   |simhosta1                  |SUT                 |ai_3    |none       |D7D3812D-6357-5BF6-9E02-0691B88B7827
+|vm_34         |was                 |iron32      |125.217.216.224 |simhosta3                  |SUT                 |ai_3    |none       |5B0D99B7-08AB-565F-AC22-D9F49230D624
+|vm_36         |client_daytrader    |micro32     |42.106.201.48   |simhostc2                  |LG                  |ai_4    |none       |B9C6F7C8-93DD-539E-AF51-DF7F5374702C
+|vm_38         |db2                 |platinum64  |174.69.72.162   |simhostb0                  |SUT                 |ai_4    |none       |C650DDC3-BCF5-5EBA-887E-8CCD387E3B1B
+|vm_37         |was                 |iron32      |24.77.4.207     |simhostd4                  |SUT                 |ai_4    |none       |811D2492-EC9C-5BB1-BEB4-C57E50551C30
+|vm_39         |netclient           |platinum64  |230.121.157.104 |simhosta0                  |SUT                 |ai_5    |none       |B38CA59D-17FD-5263-BDB3-8F35D4BD2B9D
+|vm_40         |netserver           |iron32      |225.1.162.64    |simhosta3                  |SUT                 |ai_5    |none       |E25FF02C-8BB2-52EB-8F99-C43E02DF751C
+|vm_41         |hadoopmaster        |copper32    |91.239.57.51    |simhostb1                  |SUT                 |ai_6    |none       |E9DEBF96-6A58-5026-B961-D4A83A55EEC4
+|vm_42         |hadoopslave         |platinum64  |254.26.15.180   |simhosta1                  |SUT                 |ai_6    |none       |A9128D32-E4C1-57F1-94A0-1E9B6BDBFB2A
+|vm_43         |was                 |iron32      |181.92.47.136   |simhostb4                  |SUT                 |ai_1    |none       |D797A16E-27E5-5694-B8FD-8ED3AB8F2DA8
+|vm_44         |client_daytrader    |micro32     |222.89.149.97   |simhostd2                  |LG                  |ai_7    |none       |3E157FE3-7A06-5EF2-8D62-D451951CBB52
+|vm_46         |db2                 |platinum64  |114.96.230.146  |simhostb0                  |SUT                 |ai_7    |none       |BB3D5D20-B153-59CC-98C9-99774272A690
+|vm_45         |was                 |iron32      |132.122.28.221  |simhostb0                  |SUT                 |ai_7    |none       |1FF03E74-F0C4-538C-A025-9C4519FC7AD3
 
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |3.34M                         
+|Used Memory                                          |3.51M                         
 |Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |508578                        
-|Total Connections Received                           |10631                         
-|Total Commands Processed                             |895157                        
-|Number of Keys                                       |549                           
+|Uptime (in seconds)                                  |3793346                       
+|Total Connections Received                           |81338                         
+|Total Commands Processed                             |6086836                       
+|Number of Keys                                       |557                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
 |MongoDB Version                                      |2.4.9                         
-|Storage Size                                         |2101248                       
-|Data Size                                            |611568                        
+|Storage Size                                         |2158592                       
+|Data Size                                            |613056                        
 |Index Size                                           |457856                        
-|Average Object Size                                  |520.926746167                 
+|Average Object Size                                  |521.306122449                 
 |Collections                                          |14                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
@@ -187,8 +187,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |169                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|80A79D6D-26D1-50E5-9134-8523D863E6F6 (simzone_d) VM RESERVATIONS|4                             
-|3C93B192-9C64-519E-937D-672B65A2A1A6 (simzone_c) VM RESERVATIONS|1                             
-|2B445F8B-78AD-5C1C-8132-71756390FACA (simzone_a) VM RESERVATIONS|5                             
-|3586523C-1A3C-5964-9DF2-DF21617ED6B9 (simzone_b) VM RESERVATIONS|6                             
+|516A5A15-B093-5B5F-B171-EE9AA82AAEF0 (simzone_c) VM RESERVATIONS|4                             
+|8D79A9F1-34B8-5D1A-A903-082245CE052C (simzone_d) VM RESERVATIONS|4                             
+|B0B6FF0A-FAE8-5217-A335-C0F1B0BEA0D6 (simzone_b) VM RESERVATIONS|6                             
+|D5506DC9-493A-57EE-86F6-0B96CB07D162 (simzone_a) VM RESERVATIONS|2                             
 

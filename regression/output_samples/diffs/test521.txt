@@ -1,2 +1,0 @@
- status: vm_XXX (cloud-assigned uuid xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx) could not be destroyed on SimCloud "TESTCLOUD" : 'host'
-VM object xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx (named "vm_XX") could not be attached to this experiment: vm_XXX (cloud-assigned uuid xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx) could not be destroyed on SimCloud "TESTCLOUD" : 'host'

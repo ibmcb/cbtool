@@ -1,6 +1,6 @@
 The following FAILED VMs are in this experiment (Cloud TESTCLOUD) :
 |name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
-|vm_23         |norole              |default     |undefined       |unavailable                |SUT                 |none    |none       |CAE47627-34FE-5E8F-9DA3-2ADF4EB0D27E
-|vm_24         |willfail            |nano32      |undefined       |unavailable                |SUT                 |none    |none       |5D4F4D2F-3B0E-5650-9F60-03D3D47AC723
-|vm_25         |willfail            |nano32      |undefined       |unavailable                |SUT                 |none    |none       |49293408-A185-53DD-90DA-07CBE476E986
+|vm_25         |willfail            |nano32      |undefined       |unavailable                |SUT                 |none    |none       |D8509180-11D4-54DE-AE43-5862F4C30E43
+|vm_24         |willfail            |nano32      |undefined       |unavailable                |SUT                 |none    |none       |EB14F84D-2211-5D7C-B348-AAE471E36870
+|vm_23         |norole              |default     |undefined       |unavailable                |SUT                 |none    |none       |29FF3807-0D76-5067-AE46-F1ED4C749104
 

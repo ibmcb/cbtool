@@ -435,8 +435,9 @@ class SimCmds(CommonCloudFunctions) :
                 raise CldOpsException(_msg, _status)
         else :
             _host_core_found = True
-            _host_mem_found = True            
+            _host_mem_found = True
             obj_attr_list["host"] = self.osci.object_exists(obj_attr_list["cloud_name"], "HOST", obj_attr_list["host_name"], True, False)
+            self.host_resource_update(obj_attr_list, "create")
 
         if not _host_core_found :
             _status = 7777

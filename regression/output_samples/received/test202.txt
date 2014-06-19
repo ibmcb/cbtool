@@ -1,25 +1,25 @@
- status: VMC E1D66391-97AB-5327-92B2-ACA092E788F9 was successfully unregistered on SimCloud "TESTCLOUD".
- status: VMC ED25CD8F-4C46-5C31-9E71-8D5912BF063B was successfully unregistered on SimCloud "TESTCLOUD".
- status: VMC 85797781-81C3-5C1F-8F9B-D80C6824F566 was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC C03473E7-5302-5CF1-A578-FB64FC32CAD6 was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC 12D8D25C-FF51-5AF0-A3F1-81C6D3147BEF was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC C46F56FA-AD31-59A9-87EB-1F3CF201083A was successfully unregistered on SimCloud "TESTCLOUD".
 VMC object undefined (named "all") was sucessfully detached from this experiment.
 The following ATTACHED VMCs are in this experiment (Cloud TESTCLOUD) :
 No objects available.
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |1008.05K                      
+|Used Memory                                          |991.83K                       
 |Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |3792278                       
-|Total Connections Received                           |81160                         
-|Total Commands Processed                             |5748199                       
+|Uptime (in seconds)                                  |5709844                       
+|Total Connections Received                           |106052                        
+|Total Commands Processed                             |13613906                      
 |Number of Keys                                       |98                            
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
 |MongoDB Version                                      |2.4.9                         
-|Storage Size                                         |962560                        
-|Data Size                                            |58968                         
+|Storage Size                                         |2797568                       
+|Data Size                                            |58984                         
 |Index Size                                           |286160                        
-|Average Object Size                                  |290.482758621                 
+|Average Object Size                                  |290.561576355                 
 |Collections                                          |13                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         

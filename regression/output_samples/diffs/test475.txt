@@ -1,6 +1,4 @@
-|available_cores |2000 
-|available_gpus |2 
-|available_memory |20480000000 
-|cores |2000 
-|gpus |2 
-|memory |20480000000 
+|arrival |1401914105 
+|available_gpus |1 
+|gpus |1 
+\|mgt_d \|X 

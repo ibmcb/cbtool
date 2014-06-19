@@ -1,27 +1,27 @@
 All VMCs successfully attached to this experiment. It looks like all VMCs were already attached.
 The following ATTACHED VMCs are in this experiment (Cloud TESTCLOUD) :
 |name                    |host_count      |pool                    |cloud_hostname                  |cloud_ip         
-|simzone_b               |5               |sut                     |simzone_b                       |233.70.214.7     
-|simzone_c               |5               |sut                     |simzone_c                       |241.228.86.173   
-|simzone_d               |5               |lg                      |simzone_d                       |136.93.186.199   
-|simzone_a               |5               |sut                     |simzone_a                       |48.127.52.134    
+|simzone_a               |5               |sut                     |simzone_a                       |114.226.207.234  
+|simzone_b               |5               |sut                     |simzone_b                       |42.30.254.124    
+|simzone_c               |5               |sut                     |simzone_c                       |95.78.73.136     
+|simzone_d               |5               |lg                      |simzone_d                       |244.224.196.16   
 
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |1.53M                         
+|Used Memory                                          |1.56M                         
 |Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |3793055                       
-|Total Connections Received                           |81286                         
-|Total Commands Processed                             |6004275                       
+|Uptime (in seconds)                                  |5710622                       
+|Total Connections Received                           |106180                        
+|Total Commands Processed                             |13870910                      
 |Number of Keys                                       |267                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
 |MongoDB Version                                      |2.4.9                         
-|Storage Size                                         |2101248                       
-|Data Size                                            |445000                        
+|Storage Size                                         |3952640                       
+|Data Size                                            |446296                        
 |Index Size                                           |367920                        
-|Average Object Size                                  |508.571428571                 
+|Average Object Size                                  |510.052571429                 
 |Collections                                          |13                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
@@ -81,8 +81,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |32                            
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|EDACAFB6-061C-53E3-897D-2A9D117B0D9F (simzone_a) VM RESERVATIONS|0                             
-|E9673EB2-77F5-513D-AB51-FEB07E0244D3 (simzone_b) VM RESERVATIONS|0                             
-|B86E56E5-38C5-5AA6-8E43-15D48B34485E (simzone_d) VM RESERVATIONS|0                             
-|B61D2893-48E1-5F4A-828E-38EFBCF878C2 (simzone_c) VM RESERVATIONS|0                             
+|62DCCD67-071C-53CA-938A-0FB9BF6E085D (simzone_d) VM RESERVATIONS|0                             
+|7A349B68-8A2D-5C07-BFF0-ACC9F8E4CA1A (simzone_c) VM RESERVATIONS|0                             
+|60475E8E-04D1-5ACF-9CF0-F6D5BE72E911 (simzone_b) VM RESERVATIONS|0                             
+|94F4D447-4D7F-5783-A0B7-B9B5E52DF7CC (simzone_a) VM RESERVATIONS|0                             
 

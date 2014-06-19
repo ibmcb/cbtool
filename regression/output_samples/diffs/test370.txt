@@ -1,1 +1,0 @@
-nullworkload, ibmderby_tradelite, fbnfsrd, ddgen, specjbb, filebench, hpcc, ibm_daytrader, netperf, hadoop, open_daytrader, windesktop, mongo_ycsb, cassandra_ycsb, ibmdb2_tradelite, coremark, iperf, specimap, mweb, redis_ycsb, mlg

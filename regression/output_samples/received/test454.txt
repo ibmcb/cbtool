@@ -651,7 +651,6 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |mon_defaults                     |host_attributes                |uuid,name,cloud_ip,cloud_name,model,cloud_hostname,nr_vms
 |mon_defaults                     |host_management_metrics_header |uuid,name,cloud_ip,model,vmc_name,vmc_cloud_ip,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_application_start,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed
 |mon_defaults                     |host_runtime_os_metrics_header |time,time_h,uuid,name,cpu_speed,cores,cpu_num,proc_total,proc_run,cpu_idle,cpu_aidle,cpu_user,cpu_system,cpu_wio,cpu_nice,mem_total,mem_free,mem_cached,mem_buffers,mem_shared,swap_total,swap_free,swap_procs_running,swap_in_flight,swap_procs_blocked,swap_KB_read,swap_ios_read,swap_KB_write,swap_ios_write,pkts_in,bytes_in,pkts_out,bytes_out,disk_total,disk_free,ds_in_flight,ds_KB_read,ds_ios_read,ds_KB_write,ds_ios_write
-|mon_defaults                     |hostname                       |172.16.1.250                         
 |mon_defaults                     |hs_id1                         |uuid,name,cloud_ip,model,vmc_name,vmc_cloud_ip
 |mon_defaults                     |hs_id2                         |uuid,name                            
 |mon_defaults                     |mem_m                          |mem_total,mem_free,mem_cached,mem_buffers,mem_shared
@@ -706,12 +705,12 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |space                            |tracefile                      |regression/regression_test_experiment_plan.txt
 |space                            |username                       |msilva                               
 |space                            |vm_daemon_dir                  |/home/klabuser                       
-|time                             |experiment_id                  |EXP-05-13-2014-11-54-47-AM-EDT       
+|time                             |experiment_id                  |EXP-06-04-2014-04-34-15-PM-EDT       
 |time                             |external_timeout               |30                                   
 |time                             |external_tries                 |2                                    
 |time                             |hard_reset                     |True                                 
 |time                             |internal_tries                 |2                                    
-|time                             |start_time                     |1399996486                           
+|time                             |start_time                     |1401914054                           
 |time                             |step_delay                     |5                                    
 |time                             |username                       |msilva                               
 |vm_defaults                      |access                         |                                     
@@ -810,6 +809,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |vmc_defaults                     |max_vm_reservations            |100000                               
 |vmc_defaults                     |memory_overcommit              |1.0                                  
 |vmc_defaults                     |migrate_supported              |True                                 
+|vmc_defaults                     |mynewattr                      |xyz                                  
 |vmc_defaults                     |network_overcommit             |1.0                                  
 |vmc_defaults                     |notification                   |False                                
 |vmc_defaults                     |protect_supported              |True                                 

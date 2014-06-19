@@ -1,0 +1,1 @@
+Message "vm_12;continue;something" published on channel "staging" (object "VM").
