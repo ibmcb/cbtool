@@ -613,8 +613,17 @@ class PassiveObjectOperations(BaseObjectOperations) :
                             self.osci.remove_object_attribute(obj_attr_list["cloud_name"], _obj_type, _obj_uuid, \
                                                               _can_be_tag, _key)
                         else :
+                            if _value.count("C+") :
+                                _counter = True
+                                _value = _value.replace("C+",'+')
+                            elif _value.count("C-") :
+                                _value = _value.replace("C-",'-')
+                                _counter = True
+                            else :
+                                _counter = False
+                                
                             self.osci.update_object_attribute(obj_attr_list["cloud_name"], _obj_type, _obj_uuid, \
-                                                              _can_be_tag, _key, _value)
+                                                              _can_be_tag, _key, _value, _counter)
                             
     
                         _fmt_obj_chg_attr += '|' + _key.ljust(len(_fields[0]) - 1)
