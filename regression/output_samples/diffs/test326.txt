@@ -1,0 +1,1 @@
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |source |POOL |none |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx

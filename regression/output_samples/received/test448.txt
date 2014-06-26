@@ -1,5 +1,5 @@
 running shell command: "date"....
 stdout:
- Wed Jun  4 16:34:16 EDT 2014
+ Mon Jun 23 15:23:22 EDT 2014
 
 

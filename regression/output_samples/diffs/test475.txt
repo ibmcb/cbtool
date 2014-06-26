@@ -1,4 +1,2 @@
-|arrival |1401914105 
-|available_gpus |1 
-|gpus |1 
+|arrival |1403551454 
 \|mgt_d \|X 

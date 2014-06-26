@@ -1,19 +1,19 @@
 All VMCs successfully attached to this experiment. It looks like all VMCs were already attached.
 The following ATTACHED VMCs are in this experiment (Cloud TESTCLOUD) :
 |name                    |host_count      |pool                    |cloud_hostname                  |cloud_ip         
-|simzone_a               |5               |sut                     |simzone_a                       |92.21.187.16     
-|simzone_b               |5               |sut                     |simzone_b                       |51.173.144.153   
-|simzone_c               |5               |sut                     |simzone_c                       |213.112.61.159   
-|simzone_d               |5               |lg                      |simzone_d                       |91.167.236.161   
+|simzone_a               |5               |sut                     |simzone_a                       |74.88.152.193    
+|simzone_b               |5               |sut                     |simzone_b                       |171.250.251.153  
+|simzone_c               |5               |sut                     |simzone_c                       |50.181.97.224    
+|simzone_d               |5               |lg                      |simzone_d                       |32.201.166.130   
 
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |1.07M                         
+|Used Memory                                          |1.10M                         
 |Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |5709843                       
-|Total Connections Received                           |106052                        
-|Total Commands Processed                             |13611793                      
+|Uptime (in seconds)                                  |7347172                       
+|Total Connections Received                           |129490                        
+|Total Commands Processed                             |19120052                      
 |Number of Keys                                       |256                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
@@ -81,8 +81,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |32                            
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|12D8D25C-FF51-5AF0-A3F1-81C6D3147BEF (simzone_b) VM RESERVATIONS|0                             
-|C03473E7-5302-5CF1-A578-FB64FC32CAD6 (simzone_c) VM RESERVATIONS|0                             
-|C46F56FA-AD31-59A9-87EB-1F3CF201083A (simzone_d) VM RESERVATIONS|0                             
-|AA3BD2C6-8F7B-56A1-8BC1-40B879C0D6F7 (simzone_a) VM RESERVATIONS|0                             
+|5409CDD4-26A2-580A-9607-DF6E1CF8E7A5 (simzone_c) VM RESERVATIONS|0                             
+|98D57A87-F80B-5FFF-90E3-51C9139EFE5B (simzone_b) VM RESERVATIONS|0                             
+|FAD9F883-2F5C-515B-A76C-77D88D552377 (simzone_d) VM RESERVATIONS|0                             
+|D8698C85-D4E6-587B-AAF5-699C7FD910A5 (simzone_a) VM RESERVATIONS|0                             
 

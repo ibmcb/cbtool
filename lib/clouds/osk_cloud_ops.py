@@ -109,6 +109,42 @@ class OskCmds(CommonCloudFunctions) :
                 _msg = "OpenStack connection successful."
                 cbdebug(_msg)
                 return _status, _msg, _region
+
+    @trace
+    def disconnect(self) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+
+            if self.oskconncompute :
+                self.oskconncompute.client.http.close()
+
+
+            if self.oskconnstorage :
+                self.oskconnstorage.client.http.close()
+
+            _status = 0
+
+        except novaexceptions, obj:
+            _status = int(obj.error_code)
+            _fmsg = str(obj.error_message)
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+
+        finally :
+            if _status :
+                _msg = "OpenStack disconnection failure: " + _fmsg
+                cberr(_msg)
+                raise CldOpsException(_msg, _status)
+            else :
+                _msg = "OpenStack disconnection successful."
+                cbdebug(_msg)
+                return _status, _msg, ''
     
     @trace
     def test_vmc_connection(self, vmc_name, access, credentials, key_name, \
@@ -266,6 +302,7 @@ class OskCmds(CommonCloudFunctions) :
             _status = 23
 
         finally :
+            self.disconnect()
             if _status :
                 _msg = "VMC \"" + vmc_name + "\" did not pass the connection test."
                 _msg += "\" : " + _fmsg
@@ -384,6 +421,7 @@ class OskCmds(CommonCloudFunctions) :
             _fmsg = str(e)
     
         finally :
+            self.disconnect()            
             if _status :
                 _msg = "HOSTS belonging to VMC " + obj_attr_list["name"] + " could not be "
                 _msg += "discovered on OpenStack Cloud \"" + obj_attr_list["cloud_name"]
@@ -478,6 +516,7 @@ class OskCmds(CommonCloudFunctions) :
             _fmsg = str(e)
     
         finally :
+            self.disconnect()            
             if _status :
                 _msg = "VMC " + obj_attr_list["name"] + " could not be cleaned "
                 _msg += "on OpenStack Cloud \"" + obj_attr_list["cloud_name"]
@@ -554,6 +593,7 @@ class OskCmds(CommonCloudFunctions) :
             _fmsg = str(e)
     
         finally :
+            self.disconnect()
             if _status :
                 _msg = "VMC " + obj_attr_list["uuid"] + " could not be registered "
                 _msg += "on OpenStack Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
@@ -964,6 +1004,10 @@ class OskCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
+            if not self.oskconncompute :
+                self.connect(obj_attr_list["access"], \
+                             obj_attr_list["credentials"], \
+                             obj_attr_list["name"])
 
             if "cloud_vv" in obj_attr_list :
     
@@ -1029,6 +1073,7 @@ class OskCmds(CommonCloudFunctions) :
             _fmsg = str(e)
     
         finally :
+            self.disconnect()
             if _status :
                 _msg = "Volume to be attached to the " + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vv_uuid"] + ") "
@@ -1055,6 +1100,11 @@ class OskCmds(CommonCloudFunctions) :
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
+
+            if not self.oskconncompute :
+                self.connect(obj_attr_list["access"], \
+                             obj_attr_list["credentials"], \
+                             obj_attr_list["name"])
         
             if "cloud_vv_uuid" in obj_attr_list and obj_attr_list["cloud_vv_uuid"].lower() != "none" :
                 
@@ -1094,6 +1144,7 @@ class OskCmds(CommonCloudFunctions) :
             _fmsg = str(e)
     
         finally :
+            self.disconnect()
             if _status :
                 _msg = "Volume previously attached to the " + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vv_uuid"] + ") "
@@ -1445,6 +1496,7 @@ class OskCmds(CommonCloudFunctions) :
             _fmsg = str(e)
     
         finally :
+            self.disconnect()            
             if _status :
 
                 _vminstance = self.get_instances(obj_attr_list, "vm", \
@@ -1549,6 +1601,7 @@ class OskCmds(CommonCloudFunctions) :
             _fmsg = str(e)
     
         finally :
+            self.disconnect()
             if _status :
                 _msg = "" + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
@@ -1661,6 +1714,7 @@ class OskCmds(CommonCloudFunctions) :
             _fmsg = str(e)
     
         finally :
+            self.disconnect()   
             if _status :
                 _msg = "" + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
@@ -1679,8 +1733,16 @@ class OskCmds(CommonCloudFunctions) :
 
     @trace        
     def vmmigrate(self, obj_attr_list) :
+        '''
+        TBD
+        '''
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
+
+        if not self.oskconncompute :
+            self.connect(obj_attr_list["access"], \
+                         obj_attr_list["credentials"], \
+                         obj_attr_list["name"])
 
         operation = obj_attr_list["mtype"]
 
@@ -1750,6 +1812,7 @@ class OskCmds(CommonCloudFunctions) :
             _fmsg = str(e)
             
         finally :
+            self.disconnect()            
             if "mgt_503_" + operation + "_request_completed" not in obj_attr_list :
                 obj_attr_list["mgt_999_" + operation + "_request_failed"] = int(time()) - _time_mark_crs
                         
@@ -1833,6 +1896,7 @@ class OskCmds(CommonCloudFunctions) :
             _fmsg = str(e)
     
         finally :
+            self.disconnect()            
             if _status :
                 _msg = "VM " + obj_attr_list["uuid"] + " could not have its "
                 _msg += "run state changed on OpenStack Cloud"

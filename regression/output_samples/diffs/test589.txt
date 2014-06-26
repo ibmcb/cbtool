@@ -1,4 +1,4 @@
-|arrival |1401914705 
-|command_originated |1401914705 
+|arrival |1403552071 
+|command_originated |1403552071 
 \|mgt_d \|X 
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1401914708 |aidrs_2 |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1403552074 |aidrs_2 |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
