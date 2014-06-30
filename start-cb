@@ -1,0 +1,4 @@
+cldattach myopentstack
+vmcattach all
+typealter myopenstack cassandra_ycsb seed_cloud_vv=<10xramsize+5>
+typealter myopenstack cassandra_ycsb cassandra_cloud_vv=<10xramsize+5>
