@@ -32,6 +32,8 @@ else
     source $dir/../common/cb_common.sh
 fi
 
+declare -A token
+
 LINUX_DISTRO=$(linux_distribution)
 
 MY_IP=`/sbin/ifconfig eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' | tr -d '\r\n'`
@@ -54,8 +56,28 @@ then
     eval CASSANDRA_DATA_DIR=${CASSANDRA_DATA_DIR}
 
     cassandra_ips=`get_ips_from_role cassandra`
+    seed_ips=`get_ips_from_role seed`
+    
+    db_nodes=`echo "${cassandra_ips}" | wc -w`
+    seed_nodes=`echo "${seed_ips}" | wc -w`
+    total_nodes=`expr $db_nodes + $seed_nodes`
+    pos=0
+    while read line
+    do
+        if [[ $pos -lt $total_nodes ]]
+        then
+            arr=(`echo ${seed_ips} ${cassandra_ips}`)
+            ip=${arr[$pos]}
+            token[$ip]=${line:10}
+       fi
+       pos=$((pos+1))
+    done < <(token-generator $total_nodes|grep Node)
 
+    my_token=${token[$MY_IP]}
+    
     cassandra_ips_csv=`echo ${cassandra_ips} | sed ':a;N;$!ba;s/\n/, /g'`
+
+    seeds_ips_csv=`echo ${seed_ip} | sed 's/ /,/g'`
 
     if [[ -z $cassandra_ips ]]
     then
@@ -65,13 +87,12 @@ then
         syslog_netcat "The VMs with the \"cassandra\" role on this AI have the following IPs: ${cassandra_ips_csv}"
     fi
 
-    seed_ip=`get_ips_from_role seed`
-    if [[ -z $seed_ip ]]
+    if [[ -z $seed_ips ]]
     then
         syslog_netcat "No VMs with the \"seed\" role have been found on this AI"
         exit 1;
     else
-        syslog_netcat "The VM with the \"seed\" role on this AI has the following IP: ${seed_ip}"
+        syslog_netcat "The VM with the \"seed\" role on this AI has the following IP: ${seed_ip_csv}"
     fi
 
     #

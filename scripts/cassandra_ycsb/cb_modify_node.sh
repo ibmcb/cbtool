@@ -59,14 +59,11 @@ then
         ((pos++))
     done
 
-    token_pos=$(($tk_pos+2))
-    token=$(token-generator $pos | sed -n ${token_pos}p)
-
 #
 # Update Cassandra Config
 #
-    sudo sed -i "s/initial_token:$/initial_token: ${token:10}/g" /etc/cassandra/conf/cassandra.yaml
-    sudo sed -i "s/- seeds:.*$/- seeds: $seed_ip/g" /etc/cassandra/conf/cassandra.yaml
+    sudo sed -i "s/initial_token:$/initial_token: ${my_token//[[:blank:]]/}/g" /etc/cassandra/conf/cassandra.yaml
+    sudo sed -i "s/- seeds:.*$/- seeds: $seeds_ips_csv/g" /etc/cassandra/conf/cassandra.yaml
     sudo sed -i "s/listen_address:.*$/listen_address: ${MY_IP}/g" /etc/cassandra/conf/cassandra.yaml
     sudo sed -i 's/rpc_address:.*$/rpc_address: 0\.0\.0\.0/g' /etc/cassandra/conf/cassandra.yaml
         
