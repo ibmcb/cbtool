@@ -32,11 +32,9 @@ else
     source $dir/../common/cb_common.sh
 fi
 
-<<<<<<< HEAD
-LINUX_DISTRO=$(linux_distribution)
-=======
 declare -A token
->>>>>>> 70caec64b1b3a59e00c46ddac1fdcf88dc6142ca
+
+LINUX_DISTRO=$(linux_distribution)
 
 MY_IP=`/sbin/ifconfig eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' | tr -d '\r\n'`
 
@@ -52,36 +50,34 @@ eval YCSB_PATH=${YCSB_PATH}
 
 BACKEND_TYPE=$(get_my_ai_attribute type | sed 's/_ycsb//g')
 
-<<<<<<< HEAD
 if [[ $BACKEND_TYPE == "cassandra" ]]
 then 
     CASSANDRA_DATA_DIR=$(get_my_ai_attribute_with_default cassandra_data_dir /dbstore)
     eval CASSANDRA_DATA_DIR=${CASSANDRA_DATA_DIR}
-=======
-cassandra_ips=`get_ips_from_role cassandra`
-seed_ip=`get_ips_from_role seed`
-
-db_nodes=`echo "${cassandra_ips}" | wc -w`
-seed_nodes=`echo "${seed_ip}" | wc -w`
-total_nodes=`expr $db_nodes + $seed_nodes`
-pos=0
-while read line ; do
-  if [[ $pos -lt $total_nodes ]]
-  then
-    arr=(`echo ${seed_ip} ${cassandra_ips}`)
-    ip=${arr[$pos]}
-    token[$ip]=${line:10}
-  fi
-  pos=$((pos+1))
-done < <(token-generator $total_nodes|grep Node)
-
-my_token=${token[$MY_IP]}
->>>>>>> 70caec64b1b3a59e00c46ddac1fdcf88dc6142ca
 
     cassandra_ips=`get_ips_from_role cassandra`
+    seed_ips=`get_ips_from_role seed`
+    
+    db_nodes=`echo "${cassandra_ips}" | wc -w`
+    seed_nodes=`echo "${seed_ips}" | wc -w`
+    total_nodes=`expr $db_nodes + $seed_nodes`
+    pos=0
+    while read line
+    do
+        if [[ $pos -lt $total_nodes ]]
+        then
+            arr=(`echo ${seed_ips} ${cassandra_ips}`)
+            ip=${arr[$pos]}
+            token[$ip]=${line:10}
+       fi
+       pos=$((pos+1))
+    done < <(token-generator $total_nodes|grep Node)
 
-<<<<<<< HEAD
+    my_token=${token[$MY_IP]}
+    
     cassandra_ips_csv=`echo ${cassandra_ips} | sed ':a;N;$!ba;s/\n/, /g'`
+
+    seeds_ips_csv=`echo ${seed_ip} | sed 's/ /,/g'`
 
     if [[ -z $cassandra_ips ]]
     then
@@ -91,13 +87,12 @@ my_token=${token[$MY_IP]}
         syslog_netcat "The VMs with the \"cassandra\" role on this AI have the following IPs: ${cassandra_ips_csv}"
     fi
 
-    seed_ip=`get_ips_from_role seed`
-    if [[ -z $seed_ip ]]
+    if [[ -z $seed_ips ]]
     then
         syslog_netcat "No VMs with the \"seed\" role have been found on this AI"
         exit 1;
     else
-        syslog_netcat "The VM with the \"seed\" role on this AI has the following IP: ${seed_ip}"
+        syslog_netcat "The VM with the \"seed\" role on this AI has the following IP: ${seed_ip_csv}"
     fi
 
     #
@@ -156,36 +151,6 @@ then
 else 
     syslog_netcat "Unsupported backend type ($BACKEND_TYPE). Exiting with error"
     exit 1
-=======
-seeds_ips_csv=`echo ${seed_ip} | sed 's/ /,/g'`
-
-if [[ -z $cassandra_ips ]]
-then
-    syslog_netcat "No VMs with the \"cassandra\" role have been found on this AI"
-    exit 1;
-else
-    syslog_netcat "The VMs with the \"cassandra\" role on this AI have the following IPs: ${cassandra_ips_csv}"
-fi
-
-if [[ -z $seed_ip ]]
-then
-    syslog_netcat "No VMs with the \"seed\" role have been found on this AI"
-    exit 1;
-else
-    syslog_netcat "The VM with the \"seed\" role on this AI has the following IP: ${seeds_ips_csv}"
-fi
-
-#
-# Update /etc/hosts file
-#
-pos=1
-if [[ $(cat /etc/hosts | grep -c cassandra-seed) -eq 0 ]]
-then
-    arr=(`echo ${seed_ip}`)
-    for ip in ${arr[@]} ; do
-      sudo sh -c "echo $ip cassandra cassandra-seed >> /etc/hosts"
-    done
->>>>>>> 70caec64b1b3a59e00c46ddac1fdcf88dc6142ca
 fi
 
 function lazy_collection {
