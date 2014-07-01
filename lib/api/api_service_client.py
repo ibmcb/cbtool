@@ -182,6 +182,7 @@ class APIClient(Server):
         
         setattr(self, "_ServerProxy__request", self.api_error_check(self._ServerProxy__request))
         self.vms = {}
+        self.hosts = {}
         self.msattrs = None
         self.msci = None
         self.username = None
@@ -245,24 +246,27 @@ class APIClient(Server):
         
             self.reset_refresh(cloud_name)
             return True
+
         except APIException, obj :
             print "Check VM API Problem (" + str(obj.status) + "): " + obj.msg
             return False
+
         except socket.error, obj :
             print "API not available: " + str(obj)
             return False
-        
-    def get_latest_data(self, cloud_name, uuid, type):
+
+    def get_latest_data(self, cloud_name, uuid, object_type = "VM", metric_type = "os"):
         self.dashboard_conn_check(cloud_name)
-        metrics = self.msci.find_document("latest_" + type + "_" + self.username, {"uuid" : uuid})
+        _object_type = "runtime_" + metric_type + '_' + object_type
+        metrics = self.msci.find_document("latest_" + _object_type + "_" + self.username, {"uuid" : uuid})
         
         if metrics is None :
-            raise APINoSuchMetricException(1, "No " + type + " data available.")
+            raise APINoSuchMetricException(1, "No " + _object_type + " data available.")
         
         return metrics
     
-    def get_latest_app_data(self, uuid):
-        self.vms[uuid].app_metrics = self.get_latest_data(uuid, "runtime_app_VM") 
+    def get_latest_app_data(self, cloud_name, uuid):
+        self.vms[uuid].app_metrics = self.get_latest_data(cloud_name, uuid, "runtime_app_VM") 
         
-    def get_latest_system_data(self, uuid):
-        self.vms[uuid].system_metrics = self.get_latest_data(uuid, "runtime_os_VM") 
+    def get_latest_system_data(self, cloud_name, uuid) :
+        self.vms[uuid].system_metrics = self.get_latest_data(cloud_name, uuid, "runtime_os_VM") 

@@ -35,6 +35,8 @@ fi
 declare -A token
 
 LINUX_DISTRO=$(linux_distribution)
+sudo mkdir -p /var/run/cassandra/
+sudo chmod 777 /var/run/cassandra
 
 MY_IP=`/sbin/ifconfig eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' | tr -d '\r\n'`
 
@@ -74,10 +76,11 @@ then
     done < <(token-generator $total_nodes|grep Node)
 
     my_token=${token[$MY_IP]}
-    
+	syslog_netcat "Cassandra token is \"${my_token}\""
+        
     cassandra_ips_csv=`echo ${cassandra_ips} | sed ':a;N;$!ba;s/\n/, /g'`
 
-    seeds_ips_csv=`echo ${seed_ip} | sed 's/ /,/g'`
+    seed_ips_csv=`echo ${seed_ips} | sed 's/ /,/g'`
 
     if [[ -z $cassandra_ips ]]
     then
@@ -92,7 +95,7 @@ then
         syslog_netcat "No VMs with the \"seed\" role have been found on this AI"
         exit 1;
     else
-        syslog_netcat "The VMs with the \"seed\" role on this AI has the following IPs: ${seed_ip_csv}"
+        syslog_netcat "The VMs with the \"seed\" role on this AI has the following IPs: ${seed_ips_csv}"
     fi
 
     #
@@ -100,7 +103,7 @@ then
     #
     if [[ $(cat /etc/hosts | grep -c cassandra-seed) -eq 0 ]]
     then
-        sudo sh -c "echo $seed_ip cassandra-seed >> /etc/hosts"
+        sudo sh -c "echo $seed_ips cassandra-seed >> /etc/hosts"
     fi
 
 elif [[ $BACKEND_TYPE == "mongo" ]]
