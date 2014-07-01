@@ -128,10 +128,16 @@ class OskCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except novaexceptions, obj:
+        except novaexceptions, obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
+        except AttributeError :
+            # If the "close" method does not exist, proceed normally.
+            _msg = "The \"close\" method does not exist or is not callable" 
+            cbwarn(_msg)
+            _status = 0
+            
         except Exception, e :
             _status = 23
             _fmsg = str(e)
@@ -196,6 +202,36 @@ class OskCmds(CommonCloudFunctions) :
             else :
                 _security_group_found = True
 
+            if vm_defaults["floating_ip"] :
+
+                _floating_pool_list = self.oskconncompute.floating_ip_pools.list()
+
+                if len(_floating_pool_list) == 1 :
+                    vm_defaults["floating_pool"] = _floating_pool_list[0].name
+                    
+                    _msg = "A single floating IP pool (\"" 
+                    _msg += vm_defaults["floating_pool"] + "\") was found on this"
+                    _msg += " VMC. Will use this as the floating pool."
+                    cbdebug(_msg, True)
+
+                _msg = "Checking if the floating pool \""
+                _msg += vm_defaults["floating_pool"] + "\" can be found on VMC "
+                _msg += vmc_name + "..."
+                cbdebug(_msg, True)
+                
+                _floating_pool_found = False
+
+                for _floating_pool in _floating_pool_list :
+                    if _floating_pool.name == vm_defaults["floating_pool"] :
+                        _floating_pool_found = True
+                                
+                if not (_floating_pool_found) :
+                    _msg = "ERROR! Please make sure that the floating IP pool "
+                    _msg += vm_defaults["floating_pool"] + "\" can be found"
+                    _msg += " VMC " + vmc_name
+                    _fmsg = _msg 
+                    cberr(_msg, True)
+
             if vm_defaults["prov_netname"] == vm_defaults["run_netname"] :
                 _net_str = "network \"" + vm_defaults["prov_netname"] + "\""
             else :
@@ -206,7 +242,7 @@ class OskCmds(CommonCloudFunctions) :
             cbdebug(_msg, True)
             _prov_netname_found = False
             _run_netname_found = False
-            
+
             for _network in self.oskconncompute.networks.list() :
                 if _network.label == vm_defaults["prov_netname"] :
                     _prov_netname_found = True
@@ -799,11 +835,15 @@ class OskCmds(CommonCloudFunctions) :
                 cbdebug(_msg)
                 _run_network = _networks[0]
 
-
             _address_list = instance.addresses[_run_network]
 
             if len(_address_list) :
-                obj_attr_list["cloud_ip"] = '{0}'.format(_address_list[0]["addr"])
+                
+                for _address in _address_list :
+
+                    if _address["OS-EXT-IPS:type"] == obj_attr_list["address_type"] :
+                        obj_attr_list["cloud_ip"] = '{0}'.format(_address["addr"])
+                        break
 
                 if obj_attr_list["hostname_key"] == "cloud_vm_name" :
                     obj_attr_list["cloud_hostname"] = obj_attr_list["cloud_vm_name"]
@@ -811,8 +851,11 @@ class OskCmds(CommonCloudFunctions) :
                     obj_attr_list["cloud_hostname"] = obj_attr_list["cloud_ip"].replace('.','-')
 
                 if obj_attr_list["prov_netname"] == obj_attr_list["run_netname"] :
-                    obj_attr_list["prov_cloud_ip"] = '{0}'.format(_address_list[0]["addr"])
-                    return True
+                    if obj_attr_list["cloud_ip"] != "undefined" :
+                        obj_attr_list["prov_cloud_ip"] = obj_attr_list["cloud_ip"]
+                        return True
+                    else :
+                        return False
                 else :
                     if _networks.count(obj_attr_list["prov_netname"]) :
                         _msg = "Network \"" + obj_attr_list["prov_netname"] + "\" found."
@@ -824,11 +867,15 @@ class OskCmds(CommonCloudFunctions) :
                         cbdebug(_msg)
                         _prov_network = _networks[0]
 
-                    _address_list = instance.addresses[_run_network]
+                    _address_list = instance.addresses[_prov_network]
         
                     if len(_address_list) :
-                        obj_attr_list["prov_cloud_ip"] = '{0}'.format(_address_list[0]["addr"])
-                        return True
+        
+                        for _address in _address_list :
+        
+                            if _address["OS-EXT-IPS:type"] == obj_attr_list["address_type"] :
+                                obj_attr_list["cloud_ip"] = obj_attr_list["cloud_ip"]
+                                return True
 
             else :
                 _status = 1181
@@ -846,10 +893,8 @@ class OskCmds(CommonCloudFunctions) :
 
         if "cloud_mac" in obj_attr_list : 
             if obj_attr_list["cloud_mac"] == "True" :
-                '''
-                If the MAC retrieval fails, just ignore it.
-                Nested 'try' is fine for now.
-                '''
+                #If the MAC retrieval fails, just ignore it.
+                #Nested 'try' is fine for now.
                 try :
                     _virtual_interfaces = self.oskconncompute.virtual_interfaces.list(instance.id)
                     if _virtual_interfaces and len(_virtual_interfaces) :
@@ -1383,6 +1428,11 @@ class OskCmds(CommonCloudFunctions) :
 
             obj_attr_list["last_known_state"] = "about to connect to openstack manager"
 
+            if obj_attr_list["floating_ip"].lower() == "true" :
+                obj_attr_list["address_type"] = "floating"
+            else :
+                obj_attr_list["address_type"] = "fixed"
+
             if not self.oskconncompute :
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
                              obj_attr_list["vmc_name"])
@@ -1481,16 +1531,20 @@ class OskCmds(CommonCloudFunctions) :
 
                 self.take_action_if_requested("VM", obj_attr_list, "provision_started")
 
+                if "floating_ip" in obj_attr_list :
+
+                    if obj_attr_list["floating_ip"].lower() == "true" :
+                        _msg = "Adding a floating IP to VM " + obj_attr_list["name"] + "..."
+                        cbdebug(_msg, True)
+                        _instance.add_floating_ip(self.floating_ip_allocate(obj_attr_list))
+
                 _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
 
                 self.get_mac_address(obj_attr_list, _instance)
-                            
+
                 self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
 
                 self.get_host_and_instance_name(obj_attr_list)
-
-                if obj_attr_list["floating_pool"] :
-                  _instance.add_floating_ip(self.floating_ip_allocate(obj_attr_list))
 
                 if "resource_limits" in obj_attr_list :
                     _status, _fmsg = self.set_cgroup(obj_attr_list)
@@ -1521,9 +1575,11 @@ class OskCmds(CommonCloudFunctions) :
             _fmsg = str(e)
     
         finally :
-            self.disconnect()            
-            if _status :
 
+            self.disconnect()
+
+            if _status :
+                
                 _vminstance = self.get_instances(obj_attr_list, "vm", \
                                                obj_attr_list["cloud_vm_name"])
 

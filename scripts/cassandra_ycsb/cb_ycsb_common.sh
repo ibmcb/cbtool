@@ -92,7 +92,7 @@ then
         syslog_netcat "No VMs with the \"seed\" role have been found on this AI"
         exit 1;
     else
-        syslog_netcat "The VM with the \"seed\" role on this AI has the following IP: ${seed_ip_csv}"
+        syslog_netcat "The VMs with the \"seed\" role on this AI has the following IPs: ${seed_ip_csv}"
     fi
 
     #

@@ -294,16 +294,17 @@ class CommonCloudFunctions:
                         raise CldOpsException(_msg, _status)
 
                 if obj_attr_list["check_boot_complete"].count("tcp_on_") :
+
                     _nh_conn = Nethashget(obj_attr_list["prov_cloud_ip"])
                     _port_to_check = obj_attr_list["check_boot_complete"].replace("tcp_on_",'')
-                    
+
                     _msg = "Check if the VM \"" + obj_attr_list["cloud_name"]
                     _msg += "\" (" + obj_attr_list["name"] + ") is booted by "
                     _msg += "attempting to establish a TCP connection to port "
                     _msg += str(_port_to_check) + " on address "
                     _msg += obj_attr_list["prov_cloud_ip"]
                     cbdebug(_msg)
-
+                    
                     _vm_is_booted = _nh_conn.check_port(int(_port_to_check), "TCP")
 
                 elif obj_attr_list["check_boot_complete"].count("subscribe_on_") :
@@ -395,7 +396,7 @@ class CommonCloudFunctions:
                     _vm_is_booted = False
                     _msg = "Warning: No valid method specified to determined if VM has booted."
                     cbdebug(_msg, True)    
-                    
+
                 if _vm_is_booted :
                     obj_attr_list["mgt_004_network_acessible"] = int(time()) - time_mark_prc
                     self.pending_set(obj_attr_list, "Network accessible now. Continuing...")
@@ -414,7 +415,6 @@ class CommonCloudFunctions:
 
 
         if _curr_tries < _max_tries :
-
             _msg = "" + obj_attr_list["name"] + ""
             _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
             _msg += "is network reachable (boot process finished successfully)"
