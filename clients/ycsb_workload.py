@@ -18,7 +18,7 @@ import os
 
 _home = os.environ["HOME"]
 _api_endpoint = "10.16.31.203"
-_api_port = "9090"
+_api_port = "7070"
 _cloud_name = "myopenstack"
 _app_name = "cassandra_ycsb"
 
@@ -45,6 +45,13 @@ from lib.api.api_service_client import *
 api = APIClient("http://" + _api_endpoint + ":%s" % _api_port)
 expid = "CASSANDRA_YCSB" + makeTimestamp().replace(" ", "_")
 
+load_phase = True 
+client_phase =  False 
+base_phase = False 
+run_phase = False 
+
+base_runtime = 180 
+
 try : 
     error = False
     app = None
@@ -60,10 +67,94 @@ try :
         print "Cloud " + _cloud_name + " not attached"
         exit(1)    
 
+#-------------------------------------------------------------------------------
+#
+# Launch 1x YCSB, 1x Cassandra_Seed, 2x Cassandra Nodes
+#
+#-------------------------------------------------------------------------------
     app = api.appattach(_cloud_name, _app_name)
 
-    api.appalter(app["uuid"], "LOAD_LEVEL", "")
-    
+    api.appalter(_cloud_name, app["uuid"], "load_db_phase", "false")
+    api.appalter(_cloud_name, app["uuid"], "run_base_phase", "false")
+    api.appalter(_cloud_name, app["uuid"], "run_client_phase", "false")
+    api.appalter(_cloud_name, app["uuid"], "run_load_phase", "false")
+
+#-------------------------------------------------------------------------------
+#
+# Load DB Phase
+#
+#-------------------------------------------------------------------------------
+    if load_phase : 
+        print "Loading Database Phase"
+        api.appalter(_cloud_name, app["uuid"], "load_db_phase", "false")
+
+#-------------------------------------------------------------------------------
+#
+# Base Clinet Load
+#
+#-------------------------------------------------------------------------------
+    if client_phase :
+        api.appalter(_cloud_name, app["uuid"], "run_client_phase", "true") 
+        # Start Client at small load
+        # Run for 100M Operations
+        # Start a second Client ?
+        
+        # Monitor throughput / latency 
+        #   + Witness Drops in throughput and/or increase in latency
+        #       - Reactive : Add new shard
+        
+        #
+        # 5 Clients -> 99% Latency is increase -> add 6th client, add a new shard 
+        #
+        
+        #
+        # Define Load : 
+        #
+        
+        
+        # Do we have a fixed load per client?
+        #   Fixed ops / but increase # of threads? Load is the # of threads
+        #   As soon as a clinet becomes the bottleneck add more clients
+        
+        # Number of ops / client
+        # Number of clients are fixed
+        # 10k ops / client, 
+        
+#-------------------------------------------------------------------------------
+#   Once client_phase completes, move to base_load phase.
+#-------------------------------------------------------------------------------
+        base_phase = True
+
+#-------------------------------------------------------------------------------
+#
+# Base Load
+#
+#-------------------------------------------------------------------------------
+    if base_phase :
+        api.appalter(_cloud_name, app["uuid"], "run_client_phase", "false") 
+        api.appalter(_cloud_name, app["uuid"], "run_base_phase", "true")
+
+ 
+#-------------------------------------------------------------------------------
+# Run this loop 7 times.
+#
+# Run Phase
+#
+#-------------------------------------------------------------------------------
+    if run_phase :
+        for i in range(7,0,-1):
+            print "Current Load : %s " % current_load 
+            time.sleep(300)
+            current_load=app["load_level"]
+            print "Changing Load Level"
+            api.appalter(_cloud_name, app["uuid"], "load_level", "800000")
+            print "Adding new Client"
+            api.appresize(_cloud_name, app["uuid"], "ycsb", "+1")
+            time.sleep(300)
+            print "Adding new Cassandra Instance"
+            api.appresize(_cloud_name, app["uuid"], "cassandra", "+1")
+            app = api.appshow(_cloud_name,app["uuid"])
+
 except APIException, obj:
     error = True
     print "API Problem (" + str(obj.status) + "): " + obj.msg

@@ -996,6 +996,28 @@ class OskCmds(CommonCloudFunctions) :
         return True
 
     @trace
+    def floating_ip_allocate(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            
+            if not self.oskconncompute :
+                self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
+                             obj_attr_list["vmc_name"])
+
+            return self.oskconncompute.floating_ips.create(obj_attr_list["floating_pool"]).ip
+
+        except novaexceptions, obj:
+            _status = int(obj.error_code)
+            _fmsg = str(obj.error_message)
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+
+    @trace
     def vvcreate(self, obj_attr_list) :
         '''
         TBD
@@ -1466,6 +1488,9 @@ class OskCmds(CommonCloudFunctions) :
                 self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
 
                 self.get_host_and_instance_name(obj_attr_list)
+
+                if obj_attr_list["floating_pool"] :
+                  _instance.add_floating_ip(self.floating_ip_allocate(obj_attr_list))
 
                 if "resource_limits" in obj_attr_list :
                     _status, _fmsg = self.set_cgroup(obj_attr_list)
