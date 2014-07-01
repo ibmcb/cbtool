@@ -739,9 +739,9 @@ class OskCmds(CommonCloudFunctions) :
             if len(_address_list) :
                 obj_attr_list["cloud_ip"] = '{0}'.format(_address_list[0]["addr"])
 
-                if obj_attr_list["vm_hostname_key"] == "cloud_vm_name" :
+                if obj_attr_list["hostname_key"] == "cloud_vm_name" :
                     obj_attr_list["cloud_hostname"] = obj_attr_list["cloud_vm_name"]
-                elif obj_attr_list["vm_hostname_key"] == "cloud_ip" :
+                elif obj_attr_list["hostname_key"] == "cloud_ip" :
                     obj_attr_list["cloud_hostname"] = obj_attr_list["cloud_ip"].replace('.','-')
 
                 if obj_attr_list["prov_netname"] == obj_attr_list["run_netname"] :
