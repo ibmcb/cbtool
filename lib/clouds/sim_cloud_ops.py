@@ -186,6 +186,7 @@ class SimCmds(CommonCloudFunctions) :
             obj_attr_list["host_list"][_host_uuid]["pool"] = obj_attr_list["pool"].upper()
             obj_attr_list["host_list"][_host_uuid]["username"] = obj_attr_list["username"]
             obj_attr_list["host_list"][_host_uuid]["cloud_ip"] = self.generate_random_ip_address()
+            obj_attr_list["host_list"][_host_uuid]["cloud_pip"] = self.generate_random_ip_address()            
             obj_attr_list["host_list"][_host_uuid]["notification"] = "False"
             if _auto_name :
                 obj_attr_list["host_list"][_host_uuid]["cloud_hostname"] = "simhost" + obj_attr_list["name"][-1] + str(_host_n)

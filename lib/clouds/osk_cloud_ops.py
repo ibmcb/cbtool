@@ -843,8 +843,9 @@ class OskCmds(CommonCloudFunctions) :
 
                     if _address["OS-EXT-IPS:type"] == obj_attr_list["address_type"] :
                         obj_attr_list["cloud_ip"] = '{0}'.format(_address["addr"])
-                        break
-                        
+
+                    if _address["OS-EXT-IPS:type"] == "fixed" :
+                        obj_attr_list["cloud_pip"] = '{0}'.format(_address["addr"])
 
                 if obj_attr_list["hostname_key"] == "cloud_vm_name" :
                     obj_attr_list["cloud_hostname"] = obj_attr_list["cloud_vm_name"]

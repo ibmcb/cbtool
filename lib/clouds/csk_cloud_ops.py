@@ -283,10 +283,6 @@ class CskCmds(CommonCloudFunctions) :
             self.additional_host_discovery (obj_attr_list)
             
             _status = 0
-
-        except novaexceptions, obj:
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
             
         except CldOpsException, obj :
             _status = int(obj.error_code)
@@ -580,7 +576,8 @@ class CskCmds(CommonCloudFunctions) :
                 for _nic in _instance[u'nic'] :
                     if _nic[u'isdefault'] == True :
                         obj_attr_list["cloud_ip"] = _nic[u'ipaddress']
-			obj_attr_list["prov_cloud_ip"] = obj_attr_list["cloud_ip"]
+                        obj_attr_list["prov_cloud_ip"] = obj_attr_list["cloud_ip"]
+                        obj_attr_list["cloud_pip"] = obj_attr_list["cloud_ip"]
                         return True
         except :
             return False
@@ -609,10 +606,6 @@ class CskCmds(CommonCloudFunctions) :
                     _sizeid = _size[u'id']
                     _status = 0
                     break
-
-        except novaexceptions, obj:
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
 
         except Exception, e :
             _status = 23

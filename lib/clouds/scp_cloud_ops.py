@@ -629,7 +629,9 @@ class ScpCmds(CommonCloudFunctions) :
             obj_attr_list["vmc_name"], obj_attr_list["host_name"], _x, _y =  instance["instance_id"].split('.')
             obj_attr_list["cloud_hostname"] = _x + '.' + _y
             obj_attr_list["cloud_ip"] = instance["private_ip"]
+            obj_attr_list["cloud_ip"] = instance["private_pip"]            
             obj_attr_list["prov_cloud_ip"] = obj_attr_list["cloud_ip"]
+            
             return True
         else :
             return False

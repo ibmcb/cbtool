@@ -258,7 +258,16 @@ my_ai_name=`get_my_vm_attribute ai_name`
 my_ai_uuid=`get_my_vm_attribute ai`
 my_base_type=`get_my_vm_attribute base_type`
 my_cloud_model=`get_my_vm_attribute model`
-my_ip_addr=`get_my_vm_attribute cloud_ip`
+my_ip_addr=`get_my_vm_attribute cloud_pip`
+
+# If we are using floating IPs, then the VM will might not even know about it.
+# We will
+#if [[ $(sudo ifconfig -a | grep ${my_ip_addr}) -eq 0 ]]
+#then
+	#	my_if=$(netstat -rn | grep UG | awk '{ print $8 }')
+	#my_ip_addr=$(ip addr | grep eth0 | grep inet | awk '{ print $2 }' | cut -d '/' -f 1)
+#fi
+
 my_type=`get_my_vm_attribute type`
 my_login_username=`get_my_vm_attribute login`
 my_remote_dir=`get_my_vm_attribute remote_dir_name`
@@ -384,11 +393,11 @@ function get_vm_hostnames_from_ai {
 
 function build_ai_mapping {
     vmlist=`retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber zrange ${osinstance}:VM:VIEW:BYAI:${my_ai_uuid}_A 0 -1" 1`
-    rm -rf ${ai_mapping_file}
+    sudo rm -rf ${ai_mapping_file}
     for vm in $vmlist
     do
         vmuuid=`echo $vm | cut -d "|" -f 1`
-        vmip=`get_vm_attribute ${vmuuid} cloud_ip`
+        vmip=`get_vm_attribute ${vmuuid} cloud_pip`
         vmhn=`get_vm_attribute ${vmuuid} cloud_hostname`
         vmrole=`get_vm_attribute ${vmuuid} role`
         vmclouduuid=`get_vm_attribute ${vmuuid} cloud_uuid`
@@ -404,7 +413,7 @@ function get_ips_from_role {
     vmuuidlist=`get_vm_uuids_from_role ${urole}`
     for vmuuid in $vmuuidlist
     do
-        get_vm_attribute ${vmuuid} cloud_ip
+    get_vm_attribute ${vmuuid} cloud_pip
     done
 }
 

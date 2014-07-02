@@ -282,7 +282,7 @@ class PlmCmds(CommonCloudFunctions) :
                 _status, _msg, _info = self.plmconn.group_register(obj_attr_list["name"])
                 _network_address = _info["computenodes"].split(',')[0]
                 obj_attr_list["cloud_hostname"], obj_attr_list["cloud_ip"] = hostname2ip(_network_address)
-                 
+                obj_attr_list["cloud_pip"] = obj_attr_list["cloud_ip"]
                 obj_attr_list["arrival"] = int(time())
     
                 if obj_attr_list["discover_hosts"].lower() == "true" :

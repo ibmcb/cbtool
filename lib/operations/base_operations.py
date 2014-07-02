@@ -2506,6 +2506,12 @@ class BaseObjectOperations :
                     for _key in obj_attr_list.keys() :
                         if _key in _key_list or _key.count("mgt"):
                             _mgt_attr_list[_key] = obj_attr_list[_key]
+
+                    # This is needed for the case of a cloud that uses "floating"
+                    # IPs. Then IP address assigned to the "cloud_ip" attribute
+                    # will not be known by the VM.
+                    if "cloud_pip" in obj_attr_list :
+                        _mgt_attr_list["cloud_pip"] = obj_attr_list["cloud_pip"]
                             
                     _mgt_attr_list["_id"] = obj_attr_list["uuid"]
                     _mgt_attr_list["obj_type"] = obj_type

@@ -465,6 +465,8 @@ class Ec2Cmds(CommonCloudFunctions) :
             else :
                 obj_attr_list["prov_cloud_ip"]  = _public_ip_address
 
+            obj_attr_list["cloud_pip"] = _private_ip_address
+            
             return True
         except :
             return False

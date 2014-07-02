@@ -60,6 +60,7 @@ else
     syslog_netcat "Updating \"post_boot_executed\" to \"true\""
     put_my_vm_attribute post_boot_executed true
 fi
+
 syslog_netcat "Ended generic VM post_boot configuration - OK"
 exit 0
 exit 0

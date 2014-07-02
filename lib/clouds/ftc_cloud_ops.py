@@ -302,6 +302,8 @@ class FtcCmds(CommonCloudFunctions) :
             return False
 
         obj_attr_list["cloud_ip"] = ip
+        obj_attr_list["cloud_pip"] = ip
+
         return True
         
     @trace

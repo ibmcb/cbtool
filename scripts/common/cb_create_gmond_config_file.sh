@@ -28,6 +28,11 @@ COLLECTOR_MULTICAST_IP=`get_global_sub_attribute mon_defaults collector_multicas
 COLLECTOR_MULTICAST_PORT=`get_global_sub_attribute mon_defaults collector_vm_multicast_port`
 COLLECTOR_VM_PORT=`get_global_sub_attribute mon_defaults collector_vm_port`
 
+if [[ $(sudo ifconfig -a | grep -c $COLLECTOR_UNICAST_IP) -eq 0 ]]
+then
+	$COLLECTOR_UNICAST_IP=${my_ip_addr}
+fi
+
 cat << EOF > $GMOND_VMS
 globals {
   daemonize = yes

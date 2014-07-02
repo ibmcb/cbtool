@@ -1465,6 +1465,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
         obj_attr_list["name"] = "undefined"
         obj_attr_list["cloud_ip"] = "undefined"
+        obj_attr_list["cloud_pip"] = "undefined"
         obj_attr_list["cloud_hostname"] = "undefined"
             
         try :
