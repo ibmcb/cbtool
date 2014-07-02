@@ -73,6 +73,11 @@ def main() :
                        default = "", \
                        help = "Dependencies customization file name")
 
+    _parser.add_option("-a","--addr", \
+                       dest = "addr", \
+                       default = None, \
+                       help = "Package (and pip) repository address")
+
     _parser.set_defaults()
     (options, _args) = _parser.parse_args()
 

@@ -1932,7 +1932,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _rcmd += "'" +  obj_attr_list["exclude_list"] + "' -az --delete --no-o --no-g --inplace -O " + obj_attr_list["base_dir"] + "/* " 
                 _rcmd += obj_attr_list["prov_cloud_ip"] + ":~/" + obj_attr_list["remote_dir_name"] + '/'
 
-                _msg = "Sending  a copy of the code tree to "
+                _msg = "Sending a copy of the code tree to "
                 _msg += obj_attr_list["name"] + " ("+ obj_attr_list["prov_cloud_ip"] + ")..."
                 cbdebug(_msg, True)
 
@@ -3106,6 +3106,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
             return self.package(_status, _msg, _result)
     @trace    
     def migrate(self, obj_attr_list, parameters, command) :
+        '''
+        TBD
+        '''
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
@@ -3153,7 +3156,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             if "dont_start_qemu_scraper" not in ai or ai["dont_start_qemu_scraper"].lower() != "true" :
                                 self.osci.publish_message(cn, "AI", "migrate_" + ai["uuid"], \
                                         obj_attr_list["uuid"] + ";start;" + str(scrape_frequency), 1, 3600)
-                                
+
                         _status, _fmsg = _cld_conn.vmmigrate(obj_attr_list)
                         
                         if ai :
@@ -3161,6 +3164,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                     obj_attr_list["uuid"] + ";stop;none", 1, 3600)
      
                         if not _status :
+
                             self.admission_control(_obj_type, obj_attr_list, "migratefinish")
                             
                             self.osci.update_object_views(cn, "VM", \
@@ -4002,12 +4006,32 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                             if _vm_role + "_netid" in obj_attr_list :
                                 _extra_parms += ",netid=" + obj_attr_list[_vm_role + "_netid"]
+
+                            if _vm_role + "_login" in obj_attr_list :
+                                if _extra_parms != '' :
+                                    _extra_parms += ','                    
+                                _extra_parms += "login=" + obj_attr_list[_vm_role + "_login"]
+            
+                            if _vm_role + "_resource_limits" in obj_attr_list :
+                                if _extra_parms != '' :
+                                    _extra_parms += ','                                 
+                                _extra_parms += "resource_limits=" + obj_attr_list[_vm_role + "_resource_limits"]            
             
                             if _vm_role + "_cloud_vv" in obj_attr_list :
+                                if _extra_parms != '' :
+                                    _extra_parms += ','
                                 _extra_parms += ",cloud_vv=" + obj_attr_list[_vm_role + "_cloud_vv"]
 
+                            if _vm_role + "_cloud_ips" in obj_attr_list :
+                                if not _vm_role in _cloud_ips :
+                                    _cloud_ips[_vm_role] = obj_attr_list[_vm_role + "_cloud_ips"].split(';')
+
                             if _vm_role in _cloud_ips :
-                                _cloud_ip = ",cloud_ip=" + _cloud_ips[_vm_role].pop()
+                                if _extra_parms != '' :
+                                    _cloud_ip = ','
+                                else :
+                                    _cloud_ip = ''
+                                _cloud_ip += "cloud_ip=" + _cloud_ips[_vm_role].pop()
                             else :
                                 _cloud_ip = ''
 
@@ -4147,7 +4171,21 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                         obj_attr_list["sut"] = obj_attr_list["sut"][:-2]
                         
-                        self.osci.update_object_attribute(obj_attr_list["cloud_name"], "AI", obj_attr_list["uuid"], False, "sut", obj_attr_list["sut"])
+                        self.osci.update_object_attribute(obj_attr_list["cloud_name"],\
+                                                           "AI", \
+                                                           obj_attr_list["uuid"],\
+                                                            False,\
+                                                             "sut",\
+                                                              obj_attr_list["sut"])
+
+                        for _vm in obj_attr_list["vms"].split(',') :
+                            _vm_uuid, _vm_role, _vm_name = _vm.split('|')
+                            self.osci.update_object_attribute(obj_attr_list["cloud_name"],\
+                                                               "VM",\
+                                                                _vm_uuid,\
+                                                                 False,\
+                                                                  "sut",\
+                                                                   obj_attr_list["sut"])
 
                         _status = 0
                         _result = obj_attr_list

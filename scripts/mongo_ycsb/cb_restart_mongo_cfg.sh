@@ -9,50 +9,54 @@
 # @author Joe Talerico, jtaleric@redhat.com
 #/*******************************************************************************
 
-source ~/.bashrc
-dir=$(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")
-if [ -e $dir/cb_common.sh ] ; then
-	source $dir/cb_common.sh
-else
-	source $dir/../common/cb_common.sh
-fi
+source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_ycsb_common.sh
 
-standalone=`online_or_offline "$1"`
-
-if [ $standalone == offline ] ; then
-	post_boot_steps offline 
-fi
+START=`provision_application_start`
 
 SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
 
-mongos=`get_ips_from_role mongos`
-if [ -z $mongos ] ; then
-        syslog_netcat "mongos IP is null"
-        exit 1;
-fi
-
-mongocfg=`get_ips_from_role mongo_cfg_server`
-if [ -z $mongocfg ] ; then
-        syslog_netcat "mongocfg IP is null"
-        exit 1;
-fi
-
 # Remove all previous configurations
-sudo rm -rf /data/configdb/*
+sudo rm -rf ${MONGODB_DATA_DIR}/configdb/*
 
-mongo=`get_ips_from_role mongodb`
 pos=1
-sudo sh -c "echo 127.0.0.1 localhost > /etc/hosts"
-sudo sh -c "echo $mongocfg mongo-cfg-server >> /etc/hosts"
-sudo sh -c "echo $mongos mongos >> /etc/hosts"
-for db in $mongo
+
+for db in $mongo_ips
 do
+    if [[ $(cat /etc/hosts | grep -c "mongo$pos ") -eq 0 ]]
+    then    
         sudo sh -c "echo $db mongo$pos mongodb-$pos >> /etc/hosts"
-        ((pos++))
+    fi
+    ((pos++))
 done
 
-# Start Mongo Config-Server
-sudo mongod --configsvr > mongod.out 2>&1& 
-syslog_netcat "MongoDB Config-Server started"
+# Start Mongo Config-Serverv
+
+SERVICES[1]="mongodb"
+SERVICES[2]="mongod"
+
+if [[ ! -f ${MONGODB_DATA_DIR} ]]
+then
+    MONGODB_DATA_DIR=/var/lib/mongo
+fi
+
+sudo pkill -9 -f ${SERVICES[${LINUX_DISTRO}]}
+
+sudo screen -S MGCS -X quit
+sudo screen -d -m -S MGCS
+sudo screen -p 0 -S MGCS -X stuff "sudo rm /var/lib/mongo/mongod.lock$(printf \\r)"
+sudo screen -p 0 -S MGCS -X stuff "sudo ${SERVICES[${LINUX_DISTRO}]} --configsvr --dbpath ${MONGODB_DATA_DIR}$(printf \\r)"
+
+wait_until_port_open 127.0.0.1 27019 20 5
+
+STATUS=$?
+
+if [[ ${STATUS} -eq 0 ]]
+then
+        syslog_netcat "MongoDB Configuration server running - OK"
+else
+        syslog_netcat "MongoS Configuration server failed to start - NOK"
+fi
 
 provision_application_stop $START
+
+exit ${STATUS}

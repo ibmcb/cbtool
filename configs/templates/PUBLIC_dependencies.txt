@@ -216,7 +216,7 @@ bootstrap-wizard-configure = ls -la 3RPARTYDIR/Bootstrap-Wizard/README.md
 streamprox-configure = ls -la 3RPARTYDIR/StreamProx/README.md
 d3-configure = ls -la 3RPARTYDIR/d3/component.json
 novaclient-configure = python -c "import novaclient; from novaclient.v1_1 import client"
-softlayer-configure = sl help bmc
+softlayer-configure = sl help cci
 softlayer-vpn-configure = sudo /usr/local/bin/array_vpnc -version | sed -e 's/VPNC_//g' | sed -e 's/_/./g'
 boto-configure = python -c "import boto; print str(boto.__version__).strip().replace('-dev','')"
 libcloud-configure = python -c "import libcloud; print str(libcloud.__version__).replace('-dev','').strip()"
@@ -330,8 +330,8 @@ ubuntu-repo-install-man = sudo mv -f /tmp/*.list /etc/apt/sources.list.d/; sudo 
 ubuntu-ifconfig-install-sl = sudo ln -s /sbin/ifconfig /usr/local/bin/ifconfig
 rhel-ifconfig-install-sl = sudo ln -s /sbin/ifconfig /usr/local/bin/ifconfig
 
-ubuntu-ip-install-sl = sudo ln -s /sbin/ip /usr/local/bin/ifconfig
-rhel-ip-install-sl = sudo ln -s /sbin/ip /usr/local/bin/ifconfig
+ubuntu-ip-install-sl = sudo ln -s /sbin/ip /usr/local/bin/ip
+rhel-ip-install-sl = sudo ln -s /sbin/ip /usr/local/bin/ip
 
 rhel-git-install-pm = sudo yum -y install git which psmisc redhat-lsb-core ntp
 ubuntu-git-install-pm = sudo apt-get -y install git
@@ -391,7 +391,7 @@ ubuntu-chef-client-preinstall-man =  wget -N -P 3RPARTYDIR URL
 ubuntu-chef-client-install-man = sudo dpkg -i 3RPARTYDIR/chef_*.deb
 
 rhel-rsyslog-install-pm = sudo yum -y install rsyslog
-rhel-rsyslog-postinstall-pm = sudo ln -s /usr/sbin/rsyslogd /usr/local/bin/rsyslogd
+rhel-rsyslog-postinstall-pm = sudo ln -s /sbin/rsyslogd /usr/local/bin/rsyslogd
 ubuntu-rsyslog-install-pm = sudo apt-get -y install rsyslog
 ubuntu-rsyslog-postinstall-pm = sudo ln -s /usr/sbin/rsyslogd /usr/local/bin/rsyslogd
 

@@ -312,3 +312,20 @@ def plm_parse_host_groups(processid, group_string) :
     _msg += ','.join(_groups_list.keys())
     cbdebug(_msg)
     return _groups_list
+
+def value_suffix(value, in_kilobytes = False) :
+    '''
+    TBD
+    '''
+    _units = {}
+    _units['K'] = 1024
+    _units['M'] = 1024*1024
+    _units['G'] = 1024*1024*1024
+
+    if value[-1] in _units :
+        _value = int(value[:-1]) * _units[value[-1]]
+        if in_kilobytes :
+            _value = _value/1024
+    else :
+        _value = int(value)
+    return _value

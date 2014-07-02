@@ -118,6 +118,8 @@ def get_linux_distro() :
     _linux_distro_name, _linux_distro_ver, _x = platform.linux_distribution()
     if _linux_distro_name.count("Red Hat") :
         _distro = "rhel"
+    elif _linux_distro_name.count("Scientific Linux") :
+        _distro = "rhel"        
     elif _linux_distro_name.count("CentOS") :
         _distro = "rhel"        
     elif _linux_distro_name.count("Ubuntu") :
@@ -572,6 +574,10 @@ def dependency_checker_installer(hostname, username, operation, options) :
         _depsdict["3rdpartydir"] = options.tpdir
         _depsdict["username"] = username
 
+        if options.addr :
+            _depsdict["repo-addr1"] = options.addr
+            _depsdict["pip-addr1"] = options.addr
+                        
         _missing_dep = []
         _dep_list = [0] * 5000
 

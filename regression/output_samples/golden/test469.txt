@@ -1,26 +1,26 @@
- status: VMC BDEF1BDD-FF65-58F0-BAC9-26D21728F092 was successfully unregistered on SimCloud "TESTCLOUD".
- status: VMC 2905F1A8-EC2A-5B51-A60B-F22EA13FA5E3 was successfully unregistered on SimCloud "TESTCLOUD".
- status: VMC 80FAE389-CBF7-5975-94FD-8D5CD85D723E was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC B86E56E5-38C5-5AA6-8E43-15D48B34485E was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC B61D2893-48E1-5F4A-828E-38EFBCF878C2 was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC E9673EB2-77F5-513D-AB51-FEB07E0244D3 was successfully unregistered on SimCloud "TESTCLOUD".
 VMC object undefined (named "all") was sucessfully detached from this experiment.
 The following ATTACHED VMCs are in this experiment (Cloud TESTCLOUD) :
 No objects available.
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |1.92M                         
-|Redis Version                                        |2.5.12                        
-|Uptime (in seconds)                                  |2417261                       
-|Total Connections Received                           |4537                          
-|Total Commands Processed                             |3875343                       
+|Used Memory                                          |1.43M                         
+|Redis Version                                        |2.6.16                        
+|Uptime (in seconds)                                  |3793057                       
+|Total Connections Received                           |81286                         
+|Total Commands Processed                             |6006380                       
 |Number of Keys                                       |109                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|MongoDB Version                                      |2.4.5                         
-|Storage Size                                         |5448130560.0                  
-|Data Size                                            |4961861648.0                  
-|Index Size                                           |133669424                     
-|Average Object Size                                  |8105.24641976                 
-|Collections                                          |39                            
+|MongoDB Version                                      |2.4.9                         
+|Storage Size                                         |2101248                       
+|Data Size                                            |438632                        
+|Index Size                                           |367920                        
+|Average Object Size                                  |510.63096624                  
+|Collections                                          |13                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
 |VMCs                                                 |0                             

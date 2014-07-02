@@ -1,1 +1,0 @@
- status: Repairing a fault on host simhostX by executing the command "sudo ; "

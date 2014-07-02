@@ -34,13 +34,12 @@ sudo service cassandra stop
 
 pos=1
 tk_pos=0
-
 #sudo sh -c "echo $MY_IP cassandra >> /etc/hosts"
 for db in $cassandra_ips
 do
-    if [[ $(cat /etc/hosts | grep -c cassandra${pos}) -eq 0 ]]
+    if [[ $(cat /etc/hosts | grep -c "cassandra${pos} ") -eq 0 ]]
     then    
-        sudo sh -c "echo $db cassandra cassandra$pos cassandra-$pos >> /etc/hosts"
+        sudo sh -c "echo $db cassandra$pos cassandra-$pos >> /etc/hosts"
     fi
     
     if [[ $MY_IP = $db ]]
@@ -57,6 +56,7 @@ sudo sed -i "s/initial_token:$/initial_token: ${my_token//[[:blank:]]/}/g" /etc/
 sudo sed -i "s/- seeds:.*$/- seeds: $seeds_ips_csv/g" /etc/cassandra/conf/cassandra.yaml
 sudo sed -i "s/listen_address:.*$/listen_address: ${MY_IP}/g" /etc/cassandra/conf/cassandra.yaml
 sudo sed -i 's/rpc_address:.*$/rpc_address: 0\.0\.0\.0/g' /etc/cassandra/conf/cassandra.yaml
+sudo sed -i "s/partitioner:.*$/partitioner: org.apache.cassandra.dht.RandomPartitioner/g" /etc/cassandra/conf/cassandra.yaml	
 TEMP_CASSANDRA_DATA_DIR=$(echo ${CASSANDRA_DATA_DIR} | sed 's/\//_+-_-+/g')
 sudo sed -i "s/\/var\/lib\//${TEMP_CASSANDRA_DATA_DIR}\//g" /etc/cassandra/conf/cassandra.yaml
 sudo sed -i "s/_+-_-+/\//g" /etc/cassandra/conf/cassandra.yaml

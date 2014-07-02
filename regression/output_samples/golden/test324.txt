@@ -1,9 +1,9 @@
 AIDRS object undefined (named "all") was sucessfully detached from this experiment.
- status: Sending a termination request for vm_126 (cloud-assigned uuid C6009EE2-4641-5C7B-B2EE-429A5C47C229)....
- status: Sending a termination request for vm_127 (cloud-assigned uuid 505F5D75-80FD-5FE6-8CF6-5DBB4DA4B8C8)....
- status: Sending a termination request for vm_124 (cloud-assigned uuid F97E5B16-7F3B-5391-A1D8-B4B18E04CA3F)....
- status: Sending a termination request for vm_125 (cloud-assigned uuid 984B40EF-9B61-5E73-9DC5-0E7910E2E5DE)....
- status: Sending a termination request for vm_128 (cloud-assigned uuid AA5B7B93-938F-599F-BCF0-65A8724896EA)....
+ status: Sending a termination request for vm_127 (cloud-assigned uuid 26763DC3-C740-54D0-854E-6251DF9AEB0A)....
+ status: Sending a termination request for vm_124 (cloud-assigned uuid 3FB54C40-D75F-567E-B66D-52DD72B0B57C)....
+ status: Sending a termination request for vm_128 (cloud-assigned uuid E81D4D85-A1F4-5E8B-B18A-7B9735F4A51A)....
+ status: Sending a termination request for vm_125 (cloud-assigned uuid 0943B07A-E88D-5BE9-A5ED-4908F4C4AC1C)....
+ status: Sending a termination request for vm_126 (cloud-assigned uuid 0E021DA7-ECA7-5FF4-9F19-DE943D77FF4B)....
 AI object undefined (named "all") was sucessfully detached from this experiment.
 The following ATTACHED AIDRSs are in this experiment (Cloud TESTCLOUD) :
 No objects available.
@@ -14,20 +14,20 @@ No objects available.
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |7.09M                         
-|Redis Version                                        |2.5.12                        
-|Uptime (in seconds)                                  |2417177                       
-|Total Connections Received                           |4531                          
-|Total Commands Processed                             |3850583                       
+|Used Memory                                          |6.72M                         
+|Redis Version                                        |2.6.16                        
+|Uptime (in seconds)                                  |3792978                       
+|Total Connections Received                           |81280                         
+|Total Commands Processed                             |5980619                       
 |Number of Keys                                       |648                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|MongoDB Version                                      |2.4.5                         
-|Storage Size                                         |5448433664.0                  
-|Data Size                                            |4961716008.0                  
-|Index Size                                           |133677600                     
-|Average Object Size                                  |8106.49162265                 
-|Collections                                          |40                            
+|MongoDB Version                                      |2.4.9                         
+|Storage Size                                         |2404352                       
+|Data Size                                            |395632                        
+|Index Size                                           |327040                        
+|Average Object Size                                  |521.941952507                 
+|Collections                                          |14                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
 |VMCs                                                 |4                             
@@ -86,8 +86,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |416                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|2A3C7A6F-F507-5C26-894B-CA777DA4A067 (simzone_a) VM RESERVATIONS|0                             
-|841649F1-B9B9-5F66-BF08-8188BB2F57BF (simzone_c) VM RESERVATIONS|0                             
-|290AA171-A379-5C01-9211-06AFF9C329FA (simzone_d) VM RESERVATIONS|0                             
-|DDE459C8-87C4-5C23-B346-48A22B829E97 (simzone_b) VM RESERVATIONS|0                             
+|76A8BFA3-0C2E-5D7E-A667-254C804D93C2 (simzone_b) VM RESERVATIONS|0                             
+|785C590F-E88D-5ABB-9A6F-08292348ADB9 (simzone_c) VM RESERVATIONS|0                             
+|DE75759E-CFAB-53C8-A062-05C5AB16764D (simzone_a) VM RESERVATIONS|0                             
+|706D24CD-9D55-592D-915D-7D4D41F35312 (simzone_d) VM RESERVATIONS|0                             
 

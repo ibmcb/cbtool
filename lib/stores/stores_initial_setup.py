@@ -498,7 +498,7 @@ def reset(global_objects, soft = True) :
             _file_list.append("subscribe.log")
 
             for _fn in  _file_list :
-                _proc_man.run_os_command("rm " + global_objects["space"]["stores_working_dir"] + "/logs/" + _fn)                    
+                _proc_man.run_os_command("rm -rf " + global_objects["space"]["stores_working_dir"] + "/logs/" + _fn)                    
 
             _status, _msg = syslog_logstore_setup(global_objects, "check")
             print "done"

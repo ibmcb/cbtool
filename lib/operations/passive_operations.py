@@ -613,8 +613,17 @@ class PassiveObjectOperations(BaseObjectOperations) :
                             self.osci.remove_object_attribute(obj_attr_list["cloud_name"], _obj_type, _obj_uuid, \
                                                               _can_be_tag, _key)
                         else :
+                            if _value.count("C+") :
+                                _counter = True
+                                _value = _value.replace("C+",'+')
+                            elif _value.count("C-") :
+                                _value = _value.replace("C-",'-')
+                                _counter = True
+                            else :
+                                _counter = False
+                                
                             self.osci.update_object_attribute(obj_attr_list["cloud_name"], _obj_type, _obj_uuid, \
-                                                              _can_be_tag, _key, _value)
+                                                              _can_be_tag, _key, _value, _counter)
                             
     
                         _fmt_obj_chg_attr += '|' + _key.ljust(len(_fields[0]) - 1)
@@ -1320,10 +1329,10 @@ class PassiveObjectOperations(BaseObjectOperations) :
             else :
                 _msg = "Message \"" + obj_attr_list["message"] + "\""
                 _msg += " published on channel \"" + obj_attr_list["channel"] 
-                _msg += "\" (object \"" + _obj_type + "\" )."
+                _msg += "\" (object \"" + _obj_type + "\")."
                 cbdebug(_msg)
 
-            return _status, _msg, None
+            return self.package(_status, _msg, None)
 
     @trace
     def debug_startup(self, obj_attr_list, params, cmd) :
@@ -2371,6 +2380,8 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _status, _msg, _object = self.alter_object(obj_attr_list, \
                                                                    parameters, \
                                                                    "cloud-alter")
+
+                        self.initialize_metric_name_list(obj_attr_list)
 
                         if not _status :
                             _msg = "Experiment identifier was changed from \""

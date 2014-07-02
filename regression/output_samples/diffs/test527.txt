@@ -1,3 +1,3 @@
-|base_type |ibm_daytrader 
-|command |aiattach TESTCLOUD ibm_daytrader default default none none none empty=empty
-|type |ibm_daytrader 
+|arrival |1403551627 
+|command_originated |1403551624 
+\|mgt_d \|X 

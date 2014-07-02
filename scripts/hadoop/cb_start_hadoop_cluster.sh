@@ -35,9 +35,9 @@ syslog_netcat "Starting Hadoop services..."
 
 if [[ x"$my_role" == x"hadoopmaster" ]]
 then
-	
-	if [[ ${hadoop_use_yarn} -eq 1 ]]
-	then
+    
+    if [[ ${hadoop_use_yarn} -eq 1 ]]
+    then
         syslog_netcat "...Formatting Namenode..."
         ${HADOOP_HOME}/bin/hadoop namenode -format -force
         if [[ $? -ne 0 ]]
@@ -64,10 +64,10 @@ then
 
         DFS_NAME_DIR=`get_my_ai_attribute_with_default dfs_name_dir /tmp/cbhadoopname`
         
-		if [[ ! -d ${DFS_NAME_DIR} ]]
-		then
-			sudo mkdir ${DFS_NAME_DIR}
-		fi
+        if [[ ! -d ${DFS_NAME_DIR} ]]
+        then
+            sudo mkdir ${DFS_NAME_DIR}
+        fi
 
         set -- `sudo ls -l ${DFS_NAME_DIR}`
         dfs_name_dir_owner=$5
@@ -99,7 +99,7 @@ then
                 syslog_netcat "Error - Namenode service did not start - NOK"
                 exit 1
             else
-            	syslog_netcat "...Namenode process appears to be running."
+                syslog_netcat "...Namenode process appears to be running."
                 fi
 
         else
@@ -157,20 +157,20 @@ then
     fi
 
 else
-	
-	if [[ ${hadoop_use_yarn} -eq 1 ]]
-	then
+    
+    if [[ ${hadoop_use_yarn} -eq 1 ]]
+    then
         syslog_netcat "...Starting datanode..."
         ${HADOOP_HOME}/sbin/hadoop-daemon.sh start datanode
         datanode_error=`grep FATAL ${HADOOP_HOME}/logs/hadoop*.log`
         if [[ x"$datanode_error" != x ]]
         then
-        	syslog_netcat "Error starting datanode on ${my_ip_addr}: ${datanode_error} - NOK"
+            syslog_netcat "Error starting datanode on ${my_ip_addr}: ${datanode_error} - NOK"
             exit 1
         fi
         syslog_netcat "....starting nodemanager on ${my_ip_addr} ..."
         ${HADOOP_HOME}/sbin/yarn-daemon.sh start nodemanager
-	else
+    else
         for x in `cd /etc/init.d ; ls *datanode*`
         do 
             syslog_netcat "...Starting service ${x} ..."
@@ -178,7 +178,7 @@ else
             datanode_running=`ps aux | grep -e [d]atanode`
             if [[ x"$datanode_running" == x ]]
             then
-            	errorstring=`grep "FATAL\|Exception" /var/log/hadoop-hdfs/*.log`
+                errorstring=`grep "FATAL\|Exception" /var/log/hadoop-hdfs/*.log`
                 syslog_netcat "Error starting ${x} on ${my_ip_addr}. ${errorstring} - NOK"
                 exit 1
             else
@@ -193,12 +193,12 @@ else
             tasktracker_running=`ps aux | grep -e [t]asktracker`
             if [[ x"$tasktracker_running" == x ]]
             then
-            	syslog_netcat "Error starting ${x} on ${my_ip_addr} - NOK"
+                syslog_netcat "Error starting ${x} on ${my_ip_addr} - NOK"
                 exit 1
             else
                 syslog_netcat "...Tasktracker process appears to be running."
 
-	        fi
+            fi
         done
 
     fi
@@ -215,7 +215,7 @@ then
     ATTEMPTS=30
     # Will wait 5 minutes for datanodes to start; else throw error
 
-	while [[ z${DATANODES_AVAILABLE} != z"true" ]]
+    while [[ z${DATANODES_AVAILABLE} != z"true" ]]
     do
         DFSADMINOUTPUT=`${HADOOP_HOME}/bin/hadoop dfsadmin -report | grep "Datanodes available"`
         AVAILABLE_NODES=`echo ${DFSADMINOUTPUT} | cut -d ":" -f 2 | cut -d " " -f 2`
@@ -228,19 +228,20 @@ then
         fi
 
         ((ATTEMPTS=ATTEMPTS-1))
-        if [ "$ATTEMPTS" -eq 0 ] ; then
-                  syslog_netcat "Timeout Error waiting for datanodes to start. - NOK"
-        syslog_netcat "`${HADOOP_HOME}/bin/hadoop dfsadmin -report`"
-        exit 1
-            fi
+        if [ "$ATTEMPTS" -eq 0 ]
+        then
+            syslog_netcat "Timeout Error waiting for datanodes to start. - NOK"
+            syslog_netcat "`${HADOOP_HOME}/bin/hadoop dfsadmin -report`"
+            exit 1
+        fi
 
         sleep 10
     done
 
     syslog_netcat "...All Datanodes (${TOTAL_NODES}) available."
 
-	if [[ ${hadoop_use_yarn} -eq 1 ]]
-	then
+    if [[ ${hadoop_use_yarn} -eq 1 ]]
+    then
         syslog_netcat "Creating map-reduce history directory on HDFS filesystem..."
         hadoop dfs -mkdir /mr-history
         hadoop dfs -mkdir /mr-history/done

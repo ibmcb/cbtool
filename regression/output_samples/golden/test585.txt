@@ -1,38 +1,38 @@
 Going to wait until the value on counter "AI ARRIVED" is equal to 30 (currently it is equal to 29) waiting 5.0 seconds between samples. The counter is assumed to be increasing.
  status: Counter "AI ARRIVED" equals 29 after 5 seconds (the counter is assumed to be increasing).
- status: Counter "AI ARRIVED" equals 30 after 10 seconds (the counter is assumed to be increasing).
-Waited 10 seconds until "AIs ARRIVED" was equal to 30.
+ status: Counter "AI ARRIVED" equals 30 after 11 seconds (the counter is assumed to be increasing).
+Waited 11 seconds until "AIs ARRIVED" was equal to 30.
 The following ATTACHED AIDRSs are in this experiment (Cloud TESTCLOUD) :
 |name                |pattern                |type              
 |aidrs_1             |simplenw               |nullworkload      
 
 The following ATTACHED AIs are in this experiment (Cloud TESTCLOUD) :
 |name      |type           |sut                                               |cloud_ip        |arrival        |aidrs                                   |uuid
-|ai_31     |nullworkload   |1_x_tinyvm                                        |72.192.9.250    |1381327210     |aidrs_1                                 |F605F0E5-7BFE-50B0-81FD-06927A7C579A
-|ai_32     |nullworkload   |1_x_tinyvm                                        |252.141.152.197 |1381327219     |aidrs_1                                 |1E9E60E0-8BF3-5397-AC62-A7AEF5FE31F0
+|ai_31     |nullworkload   |1_x_tinyvm                                        |111.18.225.214  |1399997070     |aidrs_1                                 |B394DA85-0F1F-5506-BD08-D324DC101960
+|ai_32     |nullworkload   |1_x_tinyvm                                        |216.145.26.176  |1399997079     |aidrs_1                                 |A2EF3E0F-CAC0-59CA-8925-F9A9985BC28C
 
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 |name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
-|vm_122        |tinyvm              |pico32      |72.192.9.250    |simhostb1                  |SUT                 |ai_31   |aidrs_1    |FC5C043A-B842-5577-9499-2CAE8513FDAD
-|vm_123        |tinyvm              |pico32      |252.141.152.197 |simhosta1                  |SUT                 |ai_32   |aidrs_1    |79D6CEC7-E415-57D8-A8C6-3F21C05F08C3
+|vm_122        |tinyvm              |pico32      |111.18.225.214  |simhostd0                  |SUT                 |ai_31   |aidrs_1    |D0F115FB-E8F7-5CB7-B376-C63B073F6407
+|vm_123        |tinyvm              |pico32      |216.145.26.176  |simhostc4                  |SUT                 |ai_32   |aidrs_1    |6CD7B17A-6073-5464-843E-B76982650170
 
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |6.92M                         
-|Redis Version                                        |2.5.12                        
-|Uptime (in seconds)                                  |2417830                       
-|Total Connections Received                           |4644                          
-|Total Commands Processed                             |4089208                       
+|Used Memory                                          |6.50M                         
+|Redis Version                                        |2.6.16                        
+|Uptime (in seconds)                                  |3793613                       
+|Total Connections Received                           |81394                         
+|Total Commands Processed                             |6224297                       
 |Number of Keys                                       |686                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|MongoDB Version                                      |2.4.5                         
-|Storage Size                                         |5449940992.0                  
-|Data Size                                            |4962952168.0                  
-|Index Size                                           |133832944                     
-|Average Object Size                                  |8099.16913441                 
-|Collections                                          |40                            
+|MongoDB Version                                      |2.4.9                         
+|Storage Size                                         |3321856                       
+|Data Size                                            |752192                        
+|Index Size                                           |474208                        
+|Average Object Size                                  |546.254175744                 
+|Collections                                          |14                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
 |VMCs                                                 |4                             
@@ -91,11 +91,11 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |389                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|CEA17C37-820A-507F-9356-90956267A568 (simzone_a) VM RESERVATIONS|1                             
-|966D86CB-90BB-553D-A06A-0FFA0818D568 (simzone_d) VM RESERVATIONS|0                             
-|C41BC369-F411-5382-B95F-70C31BD20E23 (simzone_c) VM RESERVATIONS|0                             
-|2FF9728E-95B3-5EE9-A0A4-61875B507FA8 (simzone_b) VM RESERVATIONS|1                             
+|516A5A15-B093-5B5F-B171-EE9AA82AAEF0 (simzone_c) VM RESERVATIONS|1                             
+|8D79A9F1-34B8-5D1A-A903-082245CE052C (simzone_d) VM RESERVATIONS|0                             
+|B0B6FF0A-FAE8-5217-A335-C0F1B0BEA0D6 (simzone_b) VM RESERVATIONS|0                             
+|D5506DC9-493A-57EE-86F6-0B96CB07D162 (simzone_a) VM RESERVATIONS|1                             
 
  ---------------- AIDRS-WIDE COUNTERS ----------------
-|D7CD548A-C195-57C5-894C-2DE06DF2A88F (aidrs_1) AI RESERVATIONS|2                             
+|29F990ED-8ACE-5A84-8BD1-9AEFA11930C1 (aidrs_1) AI RESERVATIONS|2                             
 

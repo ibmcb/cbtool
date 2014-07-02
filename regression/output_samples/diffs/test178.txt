@@ -1,0 +1,17 @@
+EOF airunstate firsdetach rolelist vmcattach vmrepair 
+aialter aisave firslist roleshow vmccleanup vmresize 
+aiattach aishow firsshow shell vmcdetach vmrestore 
+aicapture aisuspend hostalter statealter vmclist vmresume 
+aidetach cldalter hostfail stateshow vmcrsalter vmrun 
+aidrsalter cldattach hostlist stats vmcrsattach vmrunstate
+aidrsattach clddefault hostrepair trace vmcrsdetach vmsave 
+aidrsdetach clddetach hostshow typealter vmcrslist vmshow 
+aidrslist cldlist monextract typelist vmcrsshow vmsuspend 
+aidrsshow cldshow monlist typeshow vmcshow waitfor 
+aifail echo msgpub unregister vmdetach waiton 
+ailist expid patternalter viewlist vmdisplay waituntil 
+airepair faultalter patternlist viewshow vmfail 
+airesize faultlist patternshow vmalter vmlist 
+airestore faultshow poollist vmattach vmlogin 
+airesume firsalter register vmcalter vmmigrate 
+airun firsattach rolealter vmcapture vmprotect 

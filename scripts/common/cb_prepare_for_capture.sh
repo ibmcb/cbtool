@@ -50,24 +50,31 @@ else
     function service_stop_disable {
         #1 - service list (space-separated list)
 
+        if [[ -z ${LINUX_DISTRO} ]]
+        then
+            LINUX_DISTRO=$(linux_distribution)
+        fi
+    
         for s in $* ; do
-            syslog_netcat "Stopping service \"${s}\"..."       
-            sudo service $s stop 
-        
+            
             if [[ ${LINUX_DISTRO} -eq 1 ]]
             then
+                syslog_netcat "Stopping service \"${s}\" on Ubuntu..."
+                sudo service $s stop             
                 sudo bash -c "echo 'manual' > /etc/init/$s.override" 
             fi
-
+    
             if [[ ${LINUX_DISTRO} -eq 2 ]]
             then
+                syslog_netcat "Stopping service \"${s}\" on Fedora/RHEL/CentOS..."
+                sudo service $s stop                         
                 sudo chkconfig $s off >/dev/null 2>&1
             fi
         done
         /bin/true
     }
-
 fi
+
 syslog_netcat "Checking connectivity between this VM and the orchestration node..."
 if [[ -z ${CBONIP} ]]
 then

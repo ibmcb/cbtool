@@ -80,11 +80,11 @@
 
 input.jvm_instances=1
 
-input.starting_number_warehouses=3
+input.starting_number_warehouses=STARTING_WAREHOUSES
 
 input.increment_number_warehouses=1
 
-input.ending_number_warehouses=4
+input.ending_number_warehouses=ENDING_WAREHOUSES
 
 #input.expected_peak_warehouse =4
 

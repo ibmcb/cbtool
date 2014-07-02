@@ -13,13 +13,13 @@ The AIDRS object aidrs_2, attached to this experiment, has the following attribu
 |ai_departed                                |30                                   
 |ai_failed                                  |2                                    
 |ai_reservations                            |0                                    
-|arrival                                    |1381327281                           
+|arrival                                    |1399997141                           
 |base_dir                                   |/home/msilva/cloudbench/lib/auxiliary//../..
 |cloud_hostname                             |undefined                            
 |cloud_ip                                   |undefined                            
 |cloud_name                                 |TESTCLOUD                            
 |command                                    |aidrsattach TESTCLOUD simplenw empty=empty
-|command_originated                         |1381327281                           
+|command_originated                         |1399997141                           
 |counter                                    |395                                  
 |daemon_parallelism                         |50                                   
 |detach_parallelism                         |20                                   
@@ -31,7 +31,7 @@ The AIDRS object aidrs_2, attached to this experiment, has the following attribu
 |load_level                                 |uniformIXIXI1I3                      
 |login                                      |klabuser                             
 |max_ais                                    |5                                    
-|mgt_001_provisioning_request_originated    |1381327281                           
+|mgt_001_provisioning_request_originated    |1399997141                           
 |mgt_002_provisioning_request_sent          |0                                    
 |mgt_003_provisioning_request_completed     |0                                    
 |model                                      |sim                                  
@@ -48,7 +48,7 @@ The AIDRS object aidrs_2, attached to this experiment, has the following attribu
 |update_attempts                            |720                                  
 |update_frequency                           |1                                    
 |username                                   |msilva                               
-|uuid                                       |098092C1-1602-53DB-9DFB-3E1735505678 
+|uuid                                       |4317A2E4-D502-5451-8006-A246BA446899 
 |vm_arrived                                 |119                                  
 |vm_arriving                                |0                                    
 |vm_departed                                |119                                  
@@ -64,37 +64,37 @@ The following ATTACHED AIDRSs are in this experiment (Cloud TESTCLOUD) :
 
 The following ATTACHED AIs are in this experiment (Cloud TESTCLOUD) :
 |name      |type           |sut                                               |cloud_ip        |arrival        |aidrs                                   |uuid
-|ai_33     |nullworkload   |1_x_tinyvm                                        |94.217.195.215  |1381327284     |aidrs_2                                 |F829847B-AA6A-54CF-90D3-EBFB78DB23DE
-|ai_34     |nullworkload   |1_x_tinyvm                                        |124.244.44.104  |1381327293     |aidrs_2                                 |9062FC2E-11C1-58FE-AFCB-BF8FE6B8E30A
-|ai_35     |nullworkload   |1_x_tinyvm                                        |167.126.247.150 |1381327299     |aidrs_2                                 |9BBD03B5-BF85-5DE4-AD96-017F9E9CFB90
-|ai_36     |nullworkload   |1_x_tinyvm                                        |20.133.14.122   |1381327305     |aidrs_2                                 |0B8F25F5-21AC-5360-B3F6-2BDA4FA59202
-|ai_37     |nullworkload   |1_x_tinyvm                                        |125.233.187.31  |1381327311     |aidrs_2                                 |FBB840B1-9A69-5429-A09A-DC90DFE012DB
+|ai_33     |nullworkload   |1_x_tinyvm                                        |54.184.157.113  |1399997144     |aidrs_2                                 |1CFAF581-558F-5CC9-BC07-64D1963A9A93
+|ai_34     |nullworkload   |1_x_tinyvm                                        |201.132.215.229 |1399997154     |aidrs_2                                 |D0D15BD0-B0FA-53ED-B6A6-191DC9ED9D43
+|ai_35     |nullworkload   |1_x_tinyvm                                        |1.65.142.245    |1399997160     |aidrs_2                                 |6C090188-E539-5BF4-B06F-2131109D15D1
+|ai_36     |nullworkload   |1_x_tinyvm                                        |111.205.142.70  |1399997166     |aidrs_2                                 |8B831C2D-B426-5647-9C4D-26C2C1B6314F
+|ai_37     |nullworkload   |1_x_tinyvm                                        |101.140.1.254   |1399997172     |aidrs_2                                 |7EF6D3F3-C2C2-594B-BFF0-B5AB15D25071
 
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 |name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
-|vm_124        |tinyvm              |pico32      |94.217.195.215  |simhostb1                  |SUT                 |ai_33   |aidrs_2    |1A288B92-A43E-5FA7-A567-A78D534CC271
-|vm_125        |tinyvm              |pico32      |124.244.44.104  |simhostb1                  |SUT                 |ai_34   |aidrs_2    |FD0281CE-9541-5BCA-B126-E433C9FAC928
-|vm_126        |tinyvm              |pico32      |167.126.247.150 |simhostb1                  |SUT                 |ai_35   |aidrs_2    |8A3650D0-378D-554D-9144-2C9E6764C619
-|vm_127        |tinyvm              |pico32      |20.133.14.122   |simhostc1                  |SUT                 |ai_36   |aidrs_2    |453CF726-F832-5A48-BB24-5F578EEA501B
-|vm_128        |tinyvm              |pico32      |125.233.187.31  |simhosta1                  |SUT                 |ai_37   |aidrs_2    |AA72DF67-ACC7-58C6-920D-7B5662852A7F
+|vm_124        |tinyvm              |pico32      |54.184.157.113  |simhosta2                  |SUT                 |ai_33   |aidrs_2    |FD4E4EB5-480B-5D5D-A7CC-18A2FEE67E60
+|vm_125        |tinyvm              |pico32      |201.132.215.229 |simhostc3                  |SUT                 |ai_34   |aidrs_2    |C982325D-E3F8-5311-A31B-8CD80E88C6F9
+|vm_126        |tinyvm              |pico32      |1.65.142.245    |simhostc1                  |SUT                 |ai_35   |aidrs_2    |24CFAAF8-8CF3-550F-AE85-6EAF0CC819FE
+|vm_127        |tinyvm              |pico32      |111.205.142.70  |simhostc0                  |SUT                 |ai_36   |aidrs_2    |354BEA20-89E6-501B-9E7B-F71EE682E15F
+|vm_128        |tinyvm              |pico32      |101.140.1.254   |simhostc1                  |SUT                 |ai_37   |aidrs_2    |99E0F691-DA4B-5B59-B3A2-28FEAA95B887
 
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |7.20M                         
-|Redis Version                                        |2.5.12                        
-|Uptime (in seconds)                                  |2417955                       
-|Total Connections Received                           |4653                          
-|Total Commands Processed                             |4099519                       
-|Number of Keys                                       |740                           
+|Used Memory                                          |6.78M                         
+|Redis Version                                        |2.6.16                        
+|Uptime (in seconds)                                  |3793738                       
+|Total Connections Received                           |81403                         
+|Total Commands Processed                             |6234991                       
+|Number of Keys                                       |741                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|MongoDB Version                                      |2.4.5                         
-|Storage Size                                         |5449940992.0                  
-|Data Size                                            |4963178936.0                  
-|Index Size                                           |133832944                     
-|Average Object Size                                  |8098.7594251                  
-|Collections                                          |40                            
+|MongoDB Version                                      |2.4.9                         
+|Storage Size                                         |3321856                       
+|Data Size                                            |774048                        
+|Index Size                                           |474208                        
+|Average Object Size                                  |547.030388693                 
+|Collections                                          |14                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
 |VMCs                                                 |4                             
@@ -153,11 +153,11 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |405                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|CEA17C37-820A-507F-9356-90956267A568 (simzone_a) VM RESERVATIONS|1                             
-|966D86CB-90BB-553D-A06A-0FFA0818D568 (simzone_d) VM RESERVATIONS|0                             
-|C41BC369-F411-5382-B95F-70C31BD20E23 (simzone_c) VM RESERVATIONS|1                             
-|2FF9728E-95B3-5EE9-A0A4-61875B507FA8 (simzone_b) VM RESERVATIONS|3                             
+|516A5A15-B093-5B5F-B171-EE9AA82AAEF0 (simzone_c) VM RESERVATIONS|2                             
+|8D79A9F1-34B8-5D1A-A903-082245CE052C (simzone_d) VM RESERVATIONS|0                             
+|B0B6FF0A-FAE8-5217-A335-C0F1B0BEA0D6 (simzone_b) VM RESERVATIONS|1                             
+|D5506DC9-493A-57EE-86F6-0B96CB07D162 (simzone_a) VM RESERVATIONS|2                             
 
  ---------------- AIDRS-WIDE COUNTERS ----------------
-|098092C1-1602-53DB-9DFB-3E1735505678 (aidrs_2) AI RESERVATIONS|5                             
+|4317A2E4-D502-5451-8006-A246BA446899 (aidrs_2) AI RESERVATIONS|5                             
 

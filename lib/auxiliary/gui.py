@@ -163,7 +163,11 @@ class Dashboard () :
     Generate a visualization of the latest metrics only and write
     the visualization out in HTML format
     """
-    def gather_contents(self):
+    def gather_contents(self) :
+        '''
+        TBD
+        '''
+
         curr_time = int(time())
         #Collections.sort(states);
         reporting = 0
@@ -206,16 +210,18 @@ class Dashboard () :
 
                 if _app_metrics :
                     _reported_app_metrics = self.msci.find_document(self.reported_app_metrics_collections[_obj_type], {"expid" : _app_metrics["expid"]})
-                    del _reported_app_metrics["_id"]
-                    del _reported_app_metrics["expid"]
 
-                    for _metric_name in _reported_app_metrics.keys() :
-                        if _metric_name not in _app_metrics :
-                            _app_metrics[_metric_name] = {}
-                            _app_metrics[_metric_name]["val"] = "NA"
-                            _app_metrics[_metric_name]["units"] = " "
+                    if _reported_app_metrics :
+                        del _reported_app_metrics["_id"]
+                        del _reported_app_metrics["expid"]
 
-                    metrics.update(_app_metrics)
+                        for _metric_name in _reported_app_metrics.keys() :
+                            if _metric_name not in _app_metrics :
+                                _app_metrics[_metric_name] = {}
+                                _app_metrics[_metric_name]["val"] = "NA"
+                                _app_metrics[_metric_name]["units"] = " "
+
+                        metrics.update(_app_metrics)
 
             if _obj_type == "VM" :
                 bad = self.is_failed_vm(attrs, metrics)
@@ -338,7 +344,7 @@ class Dashboard () :
                 </div>
                 <div id='monitordata'>
         """
-        
+
         # Now, dump the master dictionary according to category
         
         for dest in self.categories :
@@ -1199,15 +1205,20 @@ class GUI(object):
                 return self.bootstrap(req, json.dumps(self.api.cldparse('')['attributes'], sort_keys = True, indent = 4), now = True)
     
             elif req.action == "monitordata" :
+
                 self.api.dashboard_conn_check(req.cloud_name, req.session['msattrs'], req.session['time_vars']['username'])
+
                 mon = Dashboard(self.api.msci, req.unparsed_uri, req.session['time_vars'], req.session['msattrs'], req.session['cloud_name'])
+
                 mon.parse_url(req.session["dashboard_parameters"])
+
                 mon.gather_contents()
-    
+
                 output_fd = open(cwd + "/gui_files/cli_template.html", "r")
                 cli_html = output_fd.read()
                 output_fd.close()
                 return self.bootstrap(req, "<div class='span10'>" + mon.body + cli_html)
+
             elif req.action == "stats" :
                 stats = self.api.stats(req.cloud_name)
                 output = "<div class='span10'>"
@@ -1327,7 +1338,9 @@ class GUI(object):
             raise e
         except Exception, msg:
             print "Exception: " + str(msg)
-            return self.bootstrap(req, self.heromsg + "\n<h4 id='gerror'>Error: Something bad happened: " + str(msg) + "</h4></div>")
+            _msg = self.heromsg + "\n<h4 id='gerror'>Error: Something bad "
+            _msg += "happened while executing the action " + str(req.action) + ": " + str(msg) + "</h4></div>"
+            return self.bootstrap(req, _msg)
         
     def default(self, req, params, attach_params, views, operations, objects, liststates, last_active):
         if not req.active : 

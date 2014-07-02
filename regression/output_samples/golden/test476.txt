@@ -1,2 +1,2 @@
- status: Injecting a fault on host simhostc2 by executing the command "sudo echo b > /proc/sysrq-trigger"
+ status: Injecting a fault on host simhostc2 by executing the command "sudo echo b > /proc/sysrq-trigger; "
 HOST "simhostc2" was successfully failed on this experiment.

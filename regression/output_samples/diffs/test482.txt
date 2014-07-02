@@ -1,1 +1,3 @@
-|imageid1 |cb_nullworkload 
+|arrival |1403551464 
+|command_originated |1403551462 
+\|mgt_d \|X 

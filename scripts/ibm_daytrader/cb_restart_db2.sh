@@ -30,7 +30,8 @@ if [ $standalone == offline ] ; then
 	post_boot_steps offline 
 fi
 
-INSTANCE_PATH=~
+DB2_INSTANCE_NAME=`get_my_ai_attribute_with_default db2_instance_name klabuser`
+INSTANCE_PATH=/home/${DB2_INSTANCE_NAME}
 SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
 NETSTAT_CMD=`which netstat`
 SUDO_CMD=`which sudo`
@@ -47,7 +48,8 @@ sudo chmod 666 $INSTANCE_PATH/sqllib/db2nodes.cfg
 chmod u+wx $INSTANCE_PATH/sqllib/db2nodes.cfg
 echo "0 $SHORT_HOSTNAME 0" > $INSTANCE_PATH/sqllib/db2nodes.cfg
 sudo rm -rf $INSTANCE_PATH/sqllib/spmlog/*
-db2 update dbm cfg using spm_name NULL
+sudo -u ${DB2_INSTANCE_NAME} -H sh -c "cd ~; . ~/.bashrc; db2 update dbm cfg using spm_name NULL"
+
 syslog_netcat "Done setting DB2 for the new hostname ($SHORT_HOSTNAME)"
 
 while [ "$ATTEMPTS" -ge  0 ]
@@ -61,19 +63,19 @@ do
 		syslog_netcat "DB2 being restarted on $SHORT_HOSTNAME"
 		let ATTEMPTS=ATTEMPTS-1
 		syslog_netcat "Running db2stop...."
-		$INSTANCE_PATH/sqllib/adm/db2stop force | while read line ; do syslog_netcat "$line" ; done
+		sudo -u ${DB2_INSTANCE_NAME} -H sh -c "cd ~; . ~/.bashrc; $INSTANCE_PATH/sqllib/adm/db2stop force"
 		syslog_netcat "Done running db2stop...."
 		sleep 2
 		syslog_netcat "Running db2_kill..."
-		/opt/ibm/db2/V9.7/bin/db2_kill
+		sudo -u ${DB2_INSTANCE_NAME} -H sh -c "cd ~; . ~/.bashrc; /opt/ibm/db2/V9.7/bin/db2_kill"
 		syslog_netcat "Done running db2_kill"
 		sleep 2
 		syslog_netcat "Running db2ftok..."
-		/opt/ibm/db2/V9.7/bin/db2ftok
+		sudo -u ${DB2_INSTANCE_NAME} -H sh -c "cd ~; . ~/.bashrc; /opt/ibm/db2/V9.7/bin/db2ftok"
 		syslog_netcat "Done running db2ftok"
 		sleep 2
 		syslog_netcat "Running db2start once...."
-		$INSTANCE_PATH/sqllib/adm/db2start | while read line ; do syslog_netcat "$line" ; done
+		sudo -u ${DB2_INSTANCE_NAME} -H sh -c "cd ~; . ~/.bashrc; $INSTANCE_PATH/sqllib/adm/db2start"
 		syslog_netcat "Done. Let's wait 5 seconds and check for running DB2 instances again..."
 		sleep 5
 		#db2 connect to tradedb

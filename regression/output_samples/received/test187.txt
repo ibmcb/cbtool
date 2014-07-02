@@ -23,6 +23,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |ai_defaults                      |replicated_vms                 |0                                    
 |ai_defaults                      |resize_supported               |True                                 
 |ai_defaults                      |run_application_scripts        |False                                
+|ai_defaults                      |run_limit                      |100000                               
 |ai_defaults                      |runstate_parallelism           |5                                    
 |ai_defaults                      |runstate_supported             |True                                 
 |ai_defaults                      |save_on_attach                 |False                                
@@ -40,13 +41,13 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |ai_templates                     |cassandra_ycsb_load_balancer   |False                                
 |ai_templates                     |cassandra_ycsb_load_duration   |60                                   
 |ai_templates                     |cassandra_ycsb_load_generator_role|ycsb                                 
-|ai_templates                     |cassandra_ycsb_load_level      |10000000                             
+|ai_templates                     |cassandra_ycsb_load_level      |1                                    
 |ai_templates                     |cassandra_ycsb_load_manager_role|ycsb                                 
-|ai_templates                     |cassandra_ycsb_load_profile    |default                              
-|ai_templates                     |cassandra_ycsb_metric_aggregator_role|seed                                 
+|ai_templates                     |cassandra_ycsb_load_profile    |workloada                            
+|ai_templates                     |cassandra_ycsb_metric_aggregator_role|ycsb                                 
 |ai_templates                     |cassandra_ycsb_seed_setup1     |cb_restart_seed.sh                   
-|ai_templates                     |cassandra_ycsb_start           |cb_start_ycsb.sh                     
-|ai_templates                     |cassandra_ycsb_sut             |ycsb->seed                           
+|ai_templates                     |cassandra_ycsb_start           |cb_ycsb.sh                           
+|ai_templates                     |cassandra_ycsb_sut             |ycsb->seed->2_x_cassandra            
 |ai_templates                     |cassandra_ycsb_ycsb_setup2     |cb_setup_ycsb.sh                     
 |ai_templates                     |coremark_capture_role          |coremark                             
 |ai_templates                     |coremark_coremark_setup1       |cb_setup_cmk.sh                      
@@ -261,20 +262,20 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |ai_templates                     |mongo_ycsb_capture_role        |mongodb                              
 |ai_templates                     |mongo_ycsb_load_balancer       |False                                
 |ai_templates                     |mongo_ycsb_load_duration       |60                                   
-|ai_templates                     |mongo_ycsb_load_generator_role |mongos                               
-|ai_templates                     |mongo_ycsb_load_level          |uniformIXIXI1I100                    
-|ai_templates                     |mongo_ycsb_load_manager_role   |mongos                               
-|ai_templates                     |mongo_ycsb_load_profile        |default                              
-|ai_templates                     |mongo_ycsb_metric_aggregator_role|mongodb                              
+|ai_templates                     |mongo_ycsb_load_generator_role |ycsb                                 
+|ai_templates                     |mongo_ycsb_load_level          |1                                    
+|ai_templates                     |mongo_ycsb_load_manager_role   |ycsb                                 
+|ai_templates                     |mongo_ycsb_load_profile        |workloada                            
+|ai_templates                     |mongo_ycsb_metric_aggregator_role|ycsb                                 
 |ai_templates                     |mongo_ycsb_mongo_cfg_server_resize1|cb_modify_hosts.sh                   
 |ai_templates                     |mongo_ycsb_mongo_cfg_server_setup1|cb_restart_mongo_cfg.sh              
 |ai_templates                     |mongo_ycsb_mongodb_resize1     |cb_restart_mongo.sh                  
 |ai_templates                     |mongo_ycsb_mongodb_setup1      |cb_restart_mongo.sh                  
 |ai_templates                     |mongo_ycsb_mongos_resize2      |cb_modify_shard.sh                   
 |ai_templates                     |mongo_ycsb_mongos_setup2       |cb_restart_mongos.sh                 
-|ai_templates                     |mongo_ycsb_start               |cb_start_ycsb.sh                     
-|ai_templates                     |mongo_ycsb_sut                 |mongos->mongo_cfg_server->3_x_mongodb
-|ai_templates                     |mongo_ycsb_ycsb_setup1         |cb_restart_ycsb.sh                   
+|ai_templates                     |mongo_ycsb_start               |cb_ycsb.sh                           
+|ai_templates                     |mongo_ycsb_sut                 |ycsb->mongos->mongo_cfg_server->3_x_mongodb
+|ai_templates                     |mongo_ycsb_ycsb_setup2         |cb_setup_ycsb.sh                     
 |ai_templates                     |mweb_capture_role              |mwebfront                            
 |ai_templates                     |mweb_client_mweb_setup1        |cb_mweb_start_client.sh              
 |ai_templates                     |mweb_load_balancer             |False                                
@@ -343,6 +344,18 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |ai_templates                     |open_daytrader_mysql_setup2    |cb_restart_mysql.sh                  
 |ai_templates                     |open_daytrader_start           |cb_daytrader.sh                      
 |ai_templates                     |open_daytrader_sut             |client_daytrader->geronimo->mysql    
+|ai_templates                     |redis_ycsb_capture_role        |ycsb                                 
+|ai_templates                     |redis_ycsb_load_balancer       |False                                
+|ai_templates                     |redis_ycsb_load_duration       |60                                   
+|ai_templates                     |redis_ycsb_load_generator_role |ycsb                                 
+|ai_templates                     |redis_ycsb_load_level          |1                                    
+|ai_templates                     |redis_ycsb_load_manager_role   |ycsb                                 
+|ai_templates                     |redis_ycsb_load_profile        |workloada                            
+|ai_templates                     |redis_ycsb_metric_aggregator_role|ycsb                                 
+|ai_templates                     |redis_ycsb_redis_setup1        |cb_restart_redis.sh                  
+|ai_templates                     |redis_ycsb_start               |cb_ycsb.sh                           
+|ai_templates                     |redis_ycsb_sut                 |ycsb->redis                          
+|ai_templates                     |redis_ycsb_ycsb_setup2         |cb_setup_ycsb.sh                     
 |ai_templates                     |specimap_capture_role          |mailsut                              
 |ai_templates                     |specimap_load_balancer         |False                                
 |ai_templates                     |specimap_load_duration         |uniformIXIXI90I120                   
@@ -638,14 +651,13 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |mon_defaults                     |host_attributes                |uuid,name,cloud_ip,cloud_name,model,cloud_hostname,nr_vms
 |mon_defaults                     |host_management_metrics_header |uuid,name,cloud_ip,model,vmc_name,vmc_cloud_ip,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_application_start,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed
 |mon_defaults                     |host_runtime_os_metrics_header |time,time_h,uuid,name,cpu_speed,cores,cpu_num,proc_total,proc_run,cpu_idle,cpu_aidle,cpu_user,cpu_system,cpu_wio,cpu_nice,mem_total,mem_free,mem_cached,mem_buffers,mem_shared,swap_total,swap_free,swap_procs_running,swap_in_flight,swap_procs_blocked,swap_KB_read,swap_ios_read,swap_KB_write,swap_ios_write,pkts_in,bytes_in,pkts_out,bytes_out,disk_total,disk_free,ds_in_flight,ds_KB_read,ds_ios_read,ds_KB_write,ds_ios_write
-|mon_defaults                     |hostname                       |172.16.1.250                         
 |mon_defaults                     |hs_id1                         |uuid,name,cloud_ip,model,vmc_name,vmc_cloud_ip
 |mon_defaults                     |hs_id2                         |uuid,name                            
 |mon_defaults                     |mem_m                          |mem_total,mem_free,mem_cached,mem_buffers,mem_shared
 |mon_defaults                     |net_m                          |pkts_in,bytes_in,pkts_out,bytes_out  
 |mon_defaults                     |protocol                       |TCP                                  
 |mon_defaults                     |reported_management_vm_metric_names|uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_application_start,mgt_101_capture_request_originated,mgt_102_capture_request_sent,mgt_103_capture_request_completed,mgt_201_runstate_request_originated,mgt_202_runstate_request_sent,mgt_203_runstate_request_completed,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed,mgt_999_provisioning_request_failed
-|mon_defaults                     |reported_runtime_app_vm_metric_names|app_load_id,app_load_level,app_throughput,app_latency
+|mon_defaults                     |reported_runtime_app_vm_metric_names|app_load_id,app_load_level,app_throughput,app_latency,app_datagen_time,app_datagen_size
 |mon_defaults                     |reported_runtime_os_host_metric_names|cpu_speed,cores,cpu_num,proc_total,proc_run,cpu_idle,cpu_aidle,cpu_user,cpu_system,cpu_wio,cpu_nice,mem_total,mem_free,mem_cached,mem_buffers,mem_shared,swap_total,swap_free,swap_procs_running,swap_in_flight,swap_procs_blocked,swap_KB_read,swap_ios_read,swap_KB_write,swap_ios_write,pkts_in,bytes_in,pkts_out,bytes_out,disk_total,disk_free,ds_in_flight,ds_KB_read,ds_ios_read,ds_KB_write,ds_ios_write
 |mon_defaults                     |reported_runtime_os_vm_metric_names|cpu_speed,cores,cpu_num,proc_total,proc_run,cpu_idle,cpu_aidle,cpu_user,cpu_system,cpu_wio,cpu_nice,mem_total,mem_free,mem_cached,mem_buffers,mem_shared,swap_total,swap_free,swap_procs_running,swap_in_flight,swap_procs_blocked,swap_KB_read,swap_ios_read,swap_KB_write,swap_ios_write,pkts_in,bytes_in,pkts_out,bytes_out,disk_total,disk_free,ds_in_flight,ds_KB_read,ds_ios_read,ds_KB_write,ds_ios_write
 |mon_defaults                     |rst_m                          |mgt_201_runstate_request_originated,mgt_202_runstate_request_sent,mgt_203_runstate_request_completed
@@ -693,12 +705,12 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |space                            |tracefile                      |regression/regression_test_experiment_plan.txt
 |space                            |username                       |msilva                               
 |space                            |vm_daemon_dir                  |/home/klabuser                       
-|time                             |experiment_id                  |EXP-03-20-2014-05-55-09-PM-EDT       
+|time                             |experiment_id                  |EXP-06-23-2014-03-10-04-PM-EDT       
 |time                             |external_timeout               |30                                   
 |time                             |external_tries                 |2                                    
 |time                             |hard_reset                     |True                                 
 |time                             |internal_tries                 |2                                    
-|time                             |start_time                     |1395352509                           
+|time                             |start_time                     |1403550603                           
 |time                             |step_delay                     |5                                    
 |time                             |username                       |msilva                               
 |vm_defaults                      |access                         |                                     
@@ -715,7 +727,6 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |vm_defaults                      |execute_json_filename_prefix   |cb                                   
 |vm_defaults                      |execute_script_name            |execute_on_staging.sh                
 |vm_defaults                      |extra_info                     |                                     
-|vm_defaults                      |hosts_per_vmc                  |5                                    
 |vm_defaults                      |key_name                       |                                     
 |vm_defaults                      |login                          |klabuser                             
 |vm_defaults                      |migrate_protocol               |tcp                                  
@@ -723,6 +734,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |vm_defaults                      |mode                           |controllable                         
 |vm_defaults                      |netid                          |vlan123                              
 |vm_defaults                      |notification                   |False                                
+|vm_defaults                      |placement                      |random                               
 |vm_defaults                      |protect_protocol               |tcp                                  
 |vm_defaults                      |protect_protocol_supported     |tcp,rdma,x-rdma                      
 |vm_defaults                      |qemu_debug                     |False                                
@@ -770,6 +782,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |vm_templates                     |netclient                      |size:iron32,imageids:1,imageid1:cb_netperf
 |vm_templates                     |netserver                      |size:iron32,imageids:1,imageid1:cb_netperf
 |vm_templates                     |predictablevm                  |size:iron32,imageid1:cloudbench_root 
+|vm_templates                     |redis                          |size:silver32,eclipsed_size:gold32,imageid1:cb_ycsb
 |vm_templates                     |seed                           |size:silver32,eclipsed_size:gold32,imageid1:cb_ycsb
 |vm_templates                     |specjbb                        |size:iron32,eclipsed_size:gold32,imageids:1,imageid1:cb_specjbb
 |vm_templates                     |tinyvm                         |size:pico32,imageids:1,imageid1:cb_nullworkload
@@ -786,6 +799,9 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |vmc_defaults                     |credentials                    |                                     
 |vmc_defaults                     |detach_parallelism             |20                                   
 |vmc_defaults                     |discover_hosts                 |True                                 
+|vmc_defaults                     |hosts_cpu                      |2000                                 
+|vmc_defaults                     |hosts_gpu                      |0,1,2                                
+|vmc_defaults                     |hosts_mem_per_core             |10000                                
 |vmc_defaults                     |hosts_per_vmc                  |5                                    
 |vmc_defaults                     |initial_hosts                  |                                     
 |vmc_defaults                     |initial_vmcs                   |simzone_a:sut,simzone_b:sut,simzone_c:sut,simzone_d:lg
@@ -793,6 +809,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |vmc_defaults                     |max_vm_reservations            |100000                               
 |vmc_defaults                     |memory_overcommit              |1.0                                  
 |vmc_defaults                     |migrate_supported              |True                                 
+|vmc_defaults                     |mynewattr                      |xyz                                  
 |vmc_defaults                     |network_overcommit             |1.0                                  
 |vmc_defaults                     |notification                   |False                                
 |vmc_defaults                     |protect_supported              |True                                 

@@ -294,16 +294,17 @@ class CommonCloudFunctions:
                         raise CldOpsException(_msg, _status)
 
                 if obj_attr_list["check_boot_complete"].count("tcp_on_") :
+
                     _nh_conn = Nethashget(obj_attr_list["prov_cloud_ip"])
                     _port_to_check = obj_attr_list["check_boot_complete"].replace("tcp_on_",'')
-                    
+
                     _msg = "Check if the VM \"" + obj_attr_list["cloud_name"]
                     _msg += "\" (" + obj_attr_list["name"] + ") is booted by "
                     _msg += "attempting to establish a TCP connection to port "
                     _msg += str(_port_to_check) + " on address "
                     _msg += obj_attr_list["prov_cloud_ip"]
                     cbdebug(_msg)
-
+                    
                     _vm_is_booted = _nh_conn.check_port(int(_port_to_check), "TCP")
 
                 elif obj_attr_list["check_boot_complete"].count("subscribe_on_") :
@@ -314,7 +315,7 @@ class CommonCloudFunctions:
                     _channel_to_subscribe = obj_attr_list["check_boot_complete"].replace("subscribe_on_",'')
 
                     _msg = "Check if the VM \"" + obj_attr_list["name"]
-                    _msg += "\" (" + obj_attr_list["cloud_vm_uuid"] + ") has started by "
+                    _msg += "\" (" + obj_attr_list["cloud_vm_uuid"] + ") has booted by "
                     _msg += "subscribing to channel \"" + str(_channel_to_subscribe)
                     _msg += "\" and waiting for the message \""
                     _msg += _string_to_search + "\"."
@@ -343,6 +344,20 @@ class CommonCloudFunctions:
                     if _boot_wait_time :
                         sleep(_boot_wait_time)
                     _vm_is_booted = True                 
+
+                elif obj_attr_list["check_boot_complete"].count("run_command_") :
+                    _command_to_run = int(obj_attr_list["check_boot_complete"].replace("run_command_",''))
+                    _command_to_run = _command_to_run.replace("____",' ')
+
+                    _msg = "Check if the VM \"" + obj_attr_list["name"]
+                    _msg += "\" (" + obj_attr_list["cloud_vm_uuid"] + ") has booted by "
+                    _msg += "running the command \"" + str(_command_to_run)
+
+                    _proc_man = ProcessManagement(username = obj_attr_list["login"], \
+                                                  cloud_name = obj_attr_list["cloud_name"], \
+                                                  hostname = obj_attr_list["cloud_ip"])
+
+                    _vm_is_booted, _result_stdout, _result_stderr = _proc_man.run_os_command(_command_to_run)
                 
                 elif obj_attr_list["check_boot_complete"].count("snmpget_poll") :
                     import netsnmp
@@ -381,7 +396,7 @@ class CommonCloudFunctions:
                     _vm_is_booted = False
                     _msg = "Warning: No valid method specified to determined if VM has booted."
                     cbdebug(_msg, True)    
-                    
+
                 if _vm_is_booted :
                     obj_attr_list["mgt_004_network_acessible"] = int(time()) - time_mark_prc
                     self.pending_set(obj_attr_list, "Network accessible now. Continuing...")
@@ -400,7 +415,6 @@ class CommonCloudFunctions:
 
 
         if _curr_tries < _max_tries :
-
             _msg = "" + obj_attr_list["name"] + ""
             _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
             _msg += "is network reachable (boot process finished successfully)"
@@ -451,7 +465,7 @@ class CommonCloudFunctions:
                 # Always subscribe for the VM channel, no matter the object
                 _sub_channel = self.osci.subscribe(obj_attr_list["cloud_name"], "VM", "staging")
     
-                if obj_type == "VM" and obj_attr_list["ai"] != "none" :
+                if obj_type == "VM" and obj_attr_list["ai"] != "none" and current_step.count("all_vms") :
                     _target_uuid = obj_attr_list["ai"]
                     _target_name = obj_attr_list["ai_name"]
                     _cloud_vm_uuid = obj_attr_list["cloud_vm_uuid"] 
@@ -482,9 +496,16 @@ class CommonCloudFunctions:
     
                     if (_id == _target_uuid or _id == _target_name) and _status == "continue" :
                         obj_attr_list[obj_attr_list["staging"] + "_complete"] = int(time())
+
+                        if _info.count(":") :
+
+                            _add_obj_attr_list = str2dic(_info) 
+                            obj_attr_list.update(_add_obj_attr_list)
+                            
                         _status = 0
                         break
-    
+
+
                 _sub_channel.unsubscribe()
 
                 _status = 0

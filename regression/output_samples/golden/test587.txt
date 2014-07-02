@@ -44,20 +44,20 @@ No objects available.
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |6.91M                         
-|Redis Version                                        |2.5.12                        
-|Uptime (in seconds)                                  |2417867                       
-|Total Connections Received                           |4646                          
-|Total Commands Processed                             |4091060                       
+|Used Memory                                          |6.49M                         
+|Redis Version                                        |2.6.16                        
+|Uptime (in seconds)                                  |3793650                       
+|Total Connections Received                           |81396                         
+|Total Commands Processed                             |6226245                       
 |Number of Keys                                       |642                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|MongoDB Version                                      |2.4.5                         
-|Storage Size                                         |5449940992.0                  
-|Data Size                                            |4963035368.0                  
-|Index Size                                           |133832944                     
-|Average Object Size                                  |8099.11987036                 
-|Collections                                          |40                            
+|MongoDB Version                                      |2.4.9                         
+|Storage Size                                         |3321856                       
+|Data Size                                            |753168                        
+|Index Size                                           |474208                        
+|Average Object Size                                  |544.984081042                 
+|Collections                                          |14                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
 |VMCs                                                 |4                             
@@ -116,11 +116,11 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |393                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|CEA17C37-820A-507F-9356-90956267A568 (simzone_a) VM RESERVATIONS|0                             
-|966D86CB-90BB-553D-A06A-0FFA0818D568 (simzone_d) VM RESERVATIONS|0                             
-|C41BC369-F411-5382-B95F-70C31BD20E23 (simzone_c) VM RESERVATIONS|0                             
-|2FF9728E-95B3-5EE9-A0A4-61875B507FA8 (simzone_b) VM RESERVATIONS|0                             
+|516A5A15-B093-5B5F-B171-EE9AA82AAEF0 (simzone_c) VM RESERVATIONS|0                             
+|8D79A9F1-34B8-5D1A-A903-082245CE052C (simzone_d) VM RESERVATIONS|0                             
+|B0B6FF0A-FAE8-5217-A335-C0F1B0BEA0D6 (simzone_b) VM RESERVATIONS|0                             
+|D5506DC9-493A-57EE-86F6-0B96CB07D162 (simzone_a) VM RESERVATIONS|0                             
 
  ---------------- AIDRS-WIDE COUNTERS ----------------
-|D7CD548A-C195-57C5-894C-2DE06DF2A88F (aidrs_1) AI RESERVATIONS|0                             
+|29F990ED-8ACE-5A84-8BD1-9AEFA11930C1 (aidrs_1) AI RESERVATIONS|0                             
 

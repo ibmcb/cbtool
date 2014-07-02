@@ -1,4 +1,4 @@
-AIDRS object 4013408A-F78F-57E1-8DA0-A297B6AA8CD3 (named "aidrs_1") sucessfully attached to this experiment.
+AIDRS object 3E45A164-4ED6-599D-B7BC-D69F4350C0C8 (named "aidrs_1") sucessfully attached to this experiment.
 The following ATTACHED AIDRSs are in this experiment (Cloud TESTCLOUD) :
 |name                |pattern                |type              
 |aidrs_1             |simplenw               |nullworkload      
@@ -12,20 +12,20 @@ The AIDRS object aidrs_1, attached to this experiment, has the following attribu
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |6.81M                         
-|Redis Version                                        |2.5.12                        
-|Uptime (in seconds)                                  |2417019                       
-|Total Connections Received                           |4521                          
-|Total Commands Processed                             |3834690                       
+|Used Memory                                          |6.44M                         
+|Redis Version                                        |2.6.16                        
+|Uptime (in seconds)                                  |3792821                       
+|Total Connections Received                           |81270                         
+|Total Commands Processed                             |5964222                       
 |Number of Keys                                       |662                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|MongoDB Version                                      |2.4.5                         
-|Storage Size                                         |5448433664.0                  
-|Data Size                                            |4961467096.0                  
-|Index Size                                           |133677600                     
-|Average Object Size                                  |8106.97237908                 
-|Collections                                          |40                            
+|MongoDB Version                                      |2.4.9                         
+|Storage Size                                         |1814528                       
+|Data Size                                            |371648                        
+|Index Size                                           |327040                        
+|Average Object Size                                  |521.245441795                 
+|Collections                                          |14                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
 |VMCs                                                 |4                             
@@ -84,11 +84,11 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |387                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|2A3C7A6F-F507-5C26-894B-CA777DA4A067 (simzone_a) VM RESERVATIONS|0                             
-|841649F1-B9B9-5F66-BF08-8188BB2F57BF (simzone_c) VM RESERVATIONS|0                             
-|290AA171-A379-5C01-9211-06AFF9C329FA (simzone_d) VM RESERVATIONS|0                             
-|DDE459C8-87C4-5C23-B346-48A22B829E97 (simzone_b) VM RESERVATIONS|1                             
+|76A8BFA3-0C2E-5D7E-A667-254C804D93C2 (simzone_b) VM RESERVATIONS|1                             
+|785C590F-E88D-5ABB-9A6F-08292348ADB9 (simzone_c) VM RESERVATIONS|0                             
+|DE75759E-CFAB-53C8-A062-05C5AB16764D (simzone_a) VM RESERVATIONS|0                             
+|706D24CD-9D55-592D-915D-7D4D41F35312 (simzone_d) VM RESERVATIONS|0                             
 
  ---------------- AIDRS-WIDE COUNTERS ----------------
-|4013408A-F78F-57E1-8DA0-A297B6AA8CD3 (aidrs_1) AI RESERVATIONS|1                             
+|3E45A164-4ED6-599D-B7BC-D69F4350C0C8 (aidrs_1) AI RESERVATIONS|1                             
 

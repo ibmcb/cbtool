@@ -1,7 +1,7 @@
 The following FAILED VMs are in this experiment (Cloud TESTCLOUD) :
 |name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
-|vm_121        |willfail            |nano32      |undefined       |unavailable                |SUT                 |(orphan)|none       |ADA7B2BE-9670-5840-A0D2-CC8EECF74379
-|vm_23         |norole              |default     |undefined       |unavailable                |SUT                 |none    |none       |0E77C138-75E6-5971-927F-197A1A7FA5E5
-|vm_25         |willfail            |nano32      |undefined       |unavailable                |SUT                 |none    |none       |FD9A5271-C9BA-5838-88CA-002B066E6AD2
-|vm_24         |willfail            |nano32      |undefined       |unavailable                |SUT                 |none    |none       |FC9700C6-2064-520F-A0B8-897179046327
+|vm_25         |willfail            |nano32      |undefined       |unavailable                |SUT                 |none    |none       |E81F49F4-0FC8-56BA-8334-6E22E24DFE0B
+|vm_119        |willfail            |nano32      |undefined       |unavailable                |SUT                 |(orphan)|none       |CCBE2992-FB91-5A1C-B095-628292394A51
+|vm_24         |willfail            |nano32      |undefined       |unavailable                |SUT                 |none    |none       |0C26845B-A8FC-5776-B19D-1FD5FFE8A508
+|vm_23         |norole              |default     |undefined       |unavailable                |SUT                 |none    |none       |96693CF0-3A14-545E-AB7C-8D9CC4937172
 

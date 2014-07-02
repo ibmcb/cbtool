@@ -409,6 +409,9 @@ class API():
     
     def vmcalter(self, cloud_name, identifier, attribute, value) :
         return self.passive.alter_object({}, cloud_name + ' ' + identifier + ' ' + attribute + "=" + str(value), "vmc-alter")[2]
+
+    def hostalter(self, cloud_name, identifier, attribute, value):
+        return self.passive.alter_object({}, cloud_name + ' ' + identifier + ' ' + attribute + "=" + str(value), "host-alter")[2]
     
     def vmcrsalter(self, cloud_name, identifier, attribute, value):
         return self.passive.alter_object({}, cloud_name + ' ' + identifier + ' ' + attribute + "=" + str(value), "vmcrs-alter")[2]
@@ -525,25 +528,28 @@ class API():
         result = self.passive.monitoring_list(cloud_name + ' ' + object_type, "mon-list")[2]
         return result
     
-    def waitfor(self, cloud_name, time, update_interval = "default"):
-        return self.passive.wait_for({}, cloud_name + ' ' + time + ' ' + str(update_interval), "wait-for")[2]
+    def waitfor(self, cloud_name, time, update_interval = "default") :
+        return self.passive.wait_for({}, cloud_name + ' ' + str(time) + ' ' + str(update_interval), "wait-for")[2]
+
+    def msgpub(self, cloud_name, object_type, channel, message) :
+        return self.passive.msgpub({}, cloud_name + ' ' + object_type + ' ' + channel + ' ' + message, "msg-pub")[2]
     
-    def stats(self, cloud_name):
+    def stats(self, cloud_name) :
         return self.passive.stats({"name": cloud_name}, cloud_name, "stats-get")[2]
     
-    def typelist(self, cloud_name):
+    def typelist(self, cloud_name) :
         return self.passive.globallist({}, cloud_name + " ai_templates+types+AIs", "global-list")[2]
     
-    def rolelist(self, cloud_name):
+    def rolelist(self, cloud_name) :
         return self.passive.globallist({}, cloud_name + " vm_templates+roles+VMs", "global-list")[2]
     
-    def patternlist(self, cloud_name):
+    def patternlist(self, cloud_name) :
         return self.passive.globallist({}, cloud_name + " aidrs_templates+patterns+AIDRSs", "global-list" )[2]
 
-    def faultlist(self, cloud_name):
+    def faultlist(self, cloud_name) :
         return self.passive.globallist({}, cloud_name + " fi_templates+situations+FIs", "global-list" )[2]
     
-    def viewlist(self, cloud_name):
+    def viewlist(self, cloud_name) :
         return self.passive.globallist({}, cloud_name + " query+criteria+VIEWs", "global-list")[2]
     
 class AsyncDocXMLRPCServer(SocketServer.ThreadingMixIn,DocXMLRPCServer): pass

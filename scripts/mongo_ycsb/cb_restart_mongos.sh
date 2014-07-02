@@ -9,89 +9,56 @@
 # @author Joe Talerico, jtaleric@redhat.com
 #/*******************************************************************************
 
-source ~/.bashrc
-dir=$(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")
-if [ -e $dir/cb_common.sh ] ; then
-	source $dir/cb_common.sh
-else
-	source $dir/../common/cb_common.sh
-fi
+source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_ycsb_common.sh
 
-standalone=`online_or_offline "$1"`
-
-if [ $standalone == offline ] ; then
-	post_boot_steps offline 
-fi
+START=`provision_application_start`
 
 SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
 
 # Remove all previous configurations
-sudo rm -rf /data/configdb/*
+sudo rm -rf ${MONGODB_DATA_DIR}/configdb/*
 
-mongos=`get_ips_from_role mongos`
-if [ -z $mongos ] ; then
-        syslog_netcat "mongos IP is null"
-        exit 1;
-fi
-
-mongocfg=`get_ips_from_role mongo_cfg_server`
-if [ -z $mongocfg ] ; then
-        syslog_netcat "mongocfg IP is null"
-        exit 1;
-fi
-
-mongo=`get_ips_from_role mongodb`
 pos=1
-sudo sh -c "echo 127.0.0.1 localhost > /etc/hosts"
-sudo sh -c "echo $mongocfg mongo-cfg-server >> /etc/hosts"
-sudo sh -c "echo $mongos mongos >> /etc/hosts"
-#
-# Add MongoDB Servers to /etc/hosts
-#
-for db in $mongo
+
+for db in $mongo_ips
 do
+    if [[ $(cat /etc/hosts | grep -c "mongo$pos ") -eq 0 ]]
+    then    
         sudo sh -c "echo $db mongo$pos mongodb-$pos >> /etc/hosts"
-        ((pos++))
+    fi
+    ((pos++))
 done
 
 #
 # Start Mongos 
 #
-sudo mongos --configdb mongo-cfg-server:27019 > mongos.out 2>&1&
-syslog_netcat "Mongos Service started"
+sudo pkill -9 -f configdb
+sudo screen -S MGSS -X quit
+sudo screen -d -m -S MGSS
+sudo screen -p 0 -S MGSS -X stuff "sudo mongos --configdb ${mongocfg_ip}:27019$(printf \\r)"
 
-#
-# Needed to wait for mongos to fully start before adding shards.
-#
-sleep 2
+wait_until_port_open 127.0.0.1 27017 20 5
+
+STATUS=$?
+
+if [[ ${STATUS} -eq 0 ]]
+then
+        syslog_netcat "MongoDB Sharding server running"
+else
+        syslog_netcat "MongoS Sharding server failed to start"
+fi
 
 #
 # Add Shards
 #
-mongo=`get_ips_from_role mongodb`
 pos=1
-for db in $mongo
+for db in $mongo_ips
 do
-	mongo --host mongos:27017 --eval "sh.addShard(\"mongo$pos:27017\")"
-	syslog_netcat " Adding the follow shard :mongo$pos:27017 "
-        ((pos++))
+    mongo --host ${mongos_ip}:27017 --eval "sh.addShard(\"mongo$pos:27017\")"
+    syslog_netcat " Adding the following shard: mongo$pos:27017 "
+    ((pos++))
 done
 
-#
-# Build YCSB Database
-#
-sudo /root/YCSB/bin/ycsb load mongodb -s -P /root/YCSB/workloads/workloada -p recordcount=1000000
-
-#
-# Enable Sharding for YCSB
-#
-mongo --host mongos:27017 --eval "sh.enableSharding(\"ycsb\")"
-mongo mongos:27017/ycsb --eval "db.usertable.ensureIndex( { _id: \"hashed\" } )"
-mongo mongos:27017/ycsb --eval "sh.shardCollection(\"ycsb.usertable\", { _id: \"hashed\" } )"
-
-#
-# Change chunk size to 32MB (optiona?) 
-#
-mongo --host mongos:27017/ycsb --eval "db.settings.save( { _id:\"chunksize\", value: 32 } )"
-
 provision_application_stop $START
+
+exit 0

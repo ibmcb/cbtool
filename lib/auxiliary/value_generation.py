@@ -58,6 +58,7 @@ class ValueGeneration :
         '''
         try :
             _status = 100
+            _fmsg = "Failure while trying to generate value."
             if parameters.count('I') :
                 _value = self.rand_dist_gen(parameters)
             elif parameters.count('+') or parameters.count('-') or parameters.count('*') :
@@ -90,6 +91,7 @@ class ValueGeneration :
         try :
             _status = 100
             _max_tries = 10000
+            _fmsg = "Failure while parsing the distribution parameters"            
             parameters = parameters.split('I')
 
             if len(parameters) == 5 :
@@ -128,8 +130,13 @@ class ValueGeneration :
             if _max <= _mean:
                 _mean = _max/2
 
+            _fmsg = "Failure while generating values according to the distribution"
+            _fmsg += " \"" + _distribution + "\" with parameters " + str(_mean)
+            _fmsg += " (mean) " + str(_stdev) + " (stdev) " + str(_min) + " (min)"
+            _fmsg += str(_max) + " (max)"
+
             _distributions = {}
-            _distributions["exponential"] = expovariate(_mean)
+            _distributions["exponential"] = expovariate(1/_mean)
             _distributions["uniform"] = uniform(_min, _max)
             _distributions["gamma"] = gammavariate((_mean * _mean) / (_stdev * _stdev), (_stdev * _stdev) / _mean)
             _distributions["normal"] = gauss(_mean, _stdev)
@@ -137,10 +144,15 @@ class ValueGeneration :
             if _distribution in _distributions :        
                 _tries = 0
                 _value = _min - 1.0
+
                 while _value < _min or _value > _max or _tries < _max_tries :
+
                     _value = _distributions[_distribution]
+
                     _tries += 1
+
                 _status = 0
+
             else :
                 _fmsg = _distribution + " distribution generators are not supported."
                 _fmsg += "Supported random distribution generators are: \n"

@@ -1,0 +1,3 @@
+|arrival |1403551996 
+|command_originated |1403551996 
+\|mgt_d \|X 

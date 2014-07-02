@@ -7,22 +7,22 @@
 Monitor extraction success. All metrics written to csv files on the directory "/home/msilva/cloudbench/lib/auxiliary//../../data".
 running shell command: "ls -la /home/msilva/cloudbench/regression/..//data/REGRESSION_B"....
 stdout:
- total 94788
-drwxrwxr-x  2 msilva msilva     4096 Oct  9 10:03 .
-drwxrwxr-x 34 msilva msilva     4096 Oct  9 09:03 ..
--rw-r--r--  1 msilva msilva      424 Oct  9 09:36 gui.log
--rw-rw-r--  1 msilva msilva     1014 Oct  9 10:03 HOST_runtime_os_REGRESSION_B.csv
--rw-r--r--  1 msilva msilva        0 Oct  9 09:36 loadmanager.log
--rw-r--r--  1 msilva msilva        0 Oct  9 09:36 monitor.log
--rw-r--r--  1 msilva msilva 96445335 Oct  9 10:03 operations.log
--rwxrwxr-x  1 msilva msilva   238855 Oct  9 09:00 regression_test_experiment_plan.txt
--rw-r--r--  1 msilva msilva        0 Oct  9 09:36 remotescripts.log
--rw-r--r--  1 msilva msilva        0 Oct  9 09:36 report.log
--rw-r--r--  1 msilva msilva   191465 Oct  9 10:02 submmiter.log
--rw-r--r--  1 msilva msilva        0 Oct  9 09:36 subscribe.log
--rw-rw-r--  1 msilva msilva    64020 Oct  9 10:03 trace_REGRESSION_B.csv
--rw-rw-r--  1 msilva msilva    86533 Oct  9 10:03 VM_management_REGRESSION_B.csv
--rw-rw-r--  1 msilva msilva      310 Oct  9 10:03 VM_runtime_app_REGRESSION_B.csv
--rw-rw-r--  1 msilva msilva     1062 Oct  9 10:03 VM_runtime_os_REGRESSION_B.csv
+ total 106000
+drwxrwxr-x 2 msilva msilva      4096 May 13 12:07 .
+drwxrwxr-x 3 msilva msilva      4096 Mar 10 16:41 ..
+-rw-r--r-- 1 msilva msilva      1014 May 13 12:07 HOST_runtime_os_REGRESSION_B.csv
+-rw-r--r-- 1 msilva msilva     86143 May 13 12:07 VM_management_REGRESSION_B.csv
+-rw-r--r-- 1 msilva msilva       310 May 13 12:07 VM_runtime_app_REGRESSION_B.csv
+-rw-r--r-- 1 msilva msilva      1062 May 13 12:07 VM_runtime_os_REGRESSION_B.csv
+-rw-r--r-- 1 msilva msilva       442 May 13 11:41 gui.log
+-rw-r--r-- 1 msilva msilva         0 May 13 11:41 loadmanager.log
+-rw-r--r-- 1 msilva msilva         0 May 13 11:41 monitor.log
+-rw-r--r-- 1 msilva msilva 107911406 May 13 12:07 operations.log
+-rwxrwxr-x 1 msilva msilva    239341 Mar 20 17:54 regression_test_experiment_plan.txt
+-rw-r--r-- 1 msilva msilva         0 May 13 11:41 remotescripts.log
+-rw-r--r-- 1 msilva msilva         0 May 13 11:41 report.log
+-rw-r--r-- 1 msilva msilva    195162 May 13 12:07 submmiter.log
+-rw-r--r-- 1 msilva msilva         0 May 13 11:41 subscribe.log
+-rw-r--r-- 1 msilva msilva     76922 May 13 12:07 trace_REGRESSION_B.csv
 
 
