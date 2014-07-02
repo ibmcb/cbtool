@@ -1062,7 +1062,6 @@ class OskCmds(CommonCloudFunctions) :
                     if fip.instance_id == None :
                         return fip.ip
 
-            print "A"
             return self.oskconncompute.floating_ips.create(obj_attr_list["floating_pool"]).ip
 
         except novaexceptions, obj:
