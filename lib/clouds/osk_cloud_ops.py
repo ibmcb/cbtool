@@ -24,7 +24,6 @@
     @author: Marcio A. Silva
 '''
 from time import time, sleep
-from subprocess import Popen, PIPE
 from uuid import uuid5, UUID
 from random import choice
 import socket
@@ -844,7 +843,7 @@ class OskCmds(CommonCloudFunctions) :
 
                     if _address["OS-EXT-IPS:type"] == obj_attr_list["address_type"] :
                         obj_attr_list["cloud_ip"] = '{0}'.format(_address["addr"])
-			break
+                        break
                         
 
                 if obj_attr_list["hostname_key"] == "cloud_vm_name" :
@@ -1054,24 +1053,27 @@ class OskCmds(CommonCloudFunctions) :
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
                              obj_attr_list["vmc_name"])
 
-	    fips = self.oskconncompute.floating_ips.list()
+            fips = self.oskconncompute.floating_ips.list()
 
-        if len(fips) < 1 :
-            return self.oskconncompute.floating_ips.create(obj_attr_list["floating_pool"]).ip
-        else :
-            for fip in fips :
-                if fip.instance_id == None :
-                    return fip.ip
+            if len(fips) < 1 :
+                return self.oskconncompute.floating_ips.create(obj_attr_list["floating_pool"]).ip
+            else :
+                for fip in fips :
+                    if fip.instance_id == None :
+                        return fip.ip
 
+            print "A"
             return self.oskconncompute.floating_ips.create(obj_attr_list["floating_pool"]).ip
 
         except novaexceptions, obj:
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
+            raise CldOpsException(_fmsg, _status)
 
         except Exception, e :
             _status = 23
             _fmsg = str(e)
+            raise CldOpsException(_fmsg, _status)
 
     @trace
     def vvcreate(self, obj_attr_list) :
@@ -1545,7 +1547,7 @@ class OskCmds(CommonCloudFunctions) :
                 if "floating_ip" in obj_attr_list :
 
                     if obj_attr_list["floating_ip"].lower() == "true" :
-                        _msg = "Adding a floating IP to VM " + obj_attr_list["name"] + "..."
+                        _msg = "Adding a floating IP to " + obj_attr_list["name"] + "..."
                         cbdebug(_msg, True)
                         _instance.add_floating_ip(self.floating_ip_allocate(obj_attr_list))
 
