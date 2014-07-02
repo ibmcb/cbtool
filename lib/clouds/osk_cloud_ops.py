@@ -1056,9 +1056,9 @@ class OskCmds(CommonCloudFunctions) :
 
 	    fips = self.oskconncompute.floating_ips.list()
 
-	    if len(fips) < 1 :
-            	return self.oskconncompute.floating_ips.create(obj_attr_list["floating_pool"]).ip
-	    else :
+        if len(fips) < 1 :
+            return self.oskconncompute.floating_ips.create(obj_attr_list["floating_pool"]).ip
+        else :
             for fip in fips :
                 if fip.instance_id == None :
                     return fip.ip
