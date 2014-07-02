@@ -840,10 +840,12 @@ class OskCmds(CommonCloudFunctions) :
             if len(_address_list) :
                 
                 for _address in _address_list :
+                    cbdebug(_address["OS-EXT-IPS:type"])
 
                     if _address["OS-EXT-IPS:type"] == obj_attr_list["address_type"] :
                         obj_attr_list["cloud_ip"] = '{0}'.format(_address["addr"])
-                        break
+			break
+                        
 
                 if obj_attr_list["hostname_key"] == "cloud_vm_name" :
                     obj_attr_list["cloud_hostname"] = obj_attr_list["cloud_vm_name"]
@@ -1051,6 +1053,15 @@ class OskCmds(CommonCloudFunctions) :
             if not self.oskconncompute :
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
                              obj_attr_list["vmc_name"])
+
+	    fips = self.oskconncompute.floating_ips.list()
+
+        if len(fips) < 1 :
+            return self.oskconncompute.floating_ips.create(obj_attr_list["floating_pool"]).ip
+        else :
+            for fip in fips :
+                if fip.instance_id == None :
+                    return fip.ip
 
             return self.oskconncompute.floating_ips.create(obj_attr_list["floating_pool"]).ip
 
