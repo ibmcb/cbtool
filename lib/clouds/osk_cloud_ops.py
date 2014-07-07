@@ -841,11 +841,14 @@ class OskCmds(CommonCloudFunctions) :
                 for _address in _address_list :
                     cbdebug(_address["OS-EXT-IPS:type"])
 
-                    if _address["OS-EXT-IPS:type"] == obj_attr_list["address_type"] :
-                        obj_attr_list["cloud_ip"] = '{0}'.format(_address["addr"])
-
                     if _address["OS-EXT-IPS:type"] == "fixed" :
-                        obj_attr_list["cloud_pip"] = '{0}'.format(_address["addr"])
+                        obj_attr_list["run_cloud_ip"] = '{0}'.format(_address["addr"])
+
+                # NOTE: "cloud_ip" is always equal to "run_cloud_ip"
+                if "run_cloud_ip" in obj_attr_list :
+                    obj_attr_list["cloud_ip"] = obj_attr_list["run_cloud_ip"]
+                else :
+                    return False
 
                 if obj_attr_list["hostname_key"] == "cloud_vm_name" :
                     obj_attr_list["cloud_hostname"] = obj_attr_list["cloud_vm_name"]
@@ -853,11 +856,8 @@ class OskCmds(CommonCloudFunctions) :
                     obj_attr_list["cloud_hostname"] = obj_attr_list["cloud_ip"].replace('.','-')
 
                 if obj_attr_list["prov_netname"] == obj_attr_list["run_netname"] :
-                    if obj_attr_list["cloud_ip"] != "undefined" :
-                        obj_attr_list["prov_cloud_ip"] = obj_attr_list["cloud_ip"]
-                        return True
-                    else :
-                        return False
+                    obj_attr_list["prov_cloud_ip"] = obj_attr_list["run_cloud_ip"]
+                    return True
                 else :
                     if _networks.count(obj_attr_list["prov_netname"]) :
                         _msg = "Network \"" + obj_attr_list["prov_netname"] + "\" found."
@@ -876,7 +876,7 @@ class OskCmds(CommonCloudFunctions) :
                         for _address in _address_list :
         
                             if _address["OS-EXT-IPS:type"] == obj_attr_list["address_type"] :
-                                obj_attr_list["cloud_ip"] = obj_attr_list["cloud_ip"]
+                                obj_attr_list["prov_cloud_ip"] = '{0}'.format(_address["addr"])
                                 return True
 
             else :

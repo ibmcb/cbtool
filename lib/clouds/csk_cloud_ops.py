@@ -371,7 +371,7 @@ class CskCmds(CommonCloudFunctions) :
 
 #            sleep(int(obj_attr_list["update_frequency"])*5)
 
-            _msg = "Now all EBS volumes belonging to the just terminated "
+            _msg = "Now all volumes belonging to the just terminated "
             _msg += "instances on the VMC " + obj_attr_list["name"] + " will "
             _msg += "also be removed."
             cbdebug(_msg)
@@ -575,9 +575,11 @@ class CskCmds(CommonCloudFunctions) :
             if len(_instance[u'nic']) : 
                 for _nic in _instance[u'nic'] :
                     if _nic[u'isdefault'] == True :
-                        obj_attr_list["cloud_ip"] = _nic[u'ipaddress']
+                        obj_attr_list["run_cloud_ip"] = _nic[u'ipaddress']
+                        # NOTE: "cloud_ip" is always equal to "run_cloud_ip"
+                        obj_attr_list["cloud_ip"] = obj_attr_list["run_cloud_ip"] 
                         obj_attr_list["prov_cloud_ip"] = obj_attr_list["cloud_ip"]
-                        obj_attr_list["cloud_pip"] = obj_attr_list["cloud_ip"]
+
                         return True
         except :
             return False

@@ -258,7 +258,7 @@ my_ai_name=`get_my_vm_attribute ai_name`
 my_ai_uuid=`get_my_vm_attribute ai`
 my_base_type=`get_my_vm_attribute base_type`
 my_cloud_model=`get_my_vm_attribute model`
-my_ip_addr=`get_my_vm_attribute cloud_pip`
+my_ip_addr=`get_my_vm_attribute cloud_ip`
 
 # If we are using floating IPs, then the VM will might not even know about it.
 # We will
@@ -397,7 +397,7 @@ function build_ai_mapping {
     for vm in $vmlist
     do
         vmuuid=`echo $vm | cut -d "|" -f 1`
-        vmip=`get_vm_attribute ${vmuuid} cloud_pip`
+        vmip=`get_vm_attribute ${vmuuid} cloud_ip`
         vmhn=`get_vm_attribute ${vmuuid} cloud_hostname`
         vmrole=`get_vm_attribute ${vmuuid} role`
         vmclouduuid=`get_vm_attribute ${vmuuid} cloud_uuid`
@@ -413,7 +413,7 @@ function get_ips_from_role {
     vmuuidlist=`get_vm_uuids_from_role ${urole}`
     for vmuuid in $vmuuidlist
     do
-    get_vm_attribute ${vmuuid} cloud_pip
+    get_vm_attribute ${vmuuid} cloud_ip
     done
 }
 

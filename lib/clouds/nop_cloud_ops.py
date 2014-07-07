@@ -311,7 +311,7 @@ class NopCmds(CommonCloudFunctions) :
 
             if "cloud_ip" in obj_attr_list and obj_attr_list["cloud_ip"] != "undefined" :
                 obj_attr_list["prov_cloud_ip"] = obj_attr_list["cloud_ip"]
-                obj_attr_list["cloud_pip"] = obj_attr_list["cloud_ip"]
+                obj_attr_list["run_cloud_ip"] = obj_attr_list["cloud_ip"]
             else :
                 _status = 1181
                 _msg = "For NullOp Clouds, the IP address of each VM has to be" 

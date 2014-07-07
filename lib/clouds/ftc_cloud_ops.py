@@ -301,8 +301,10 @@ class FtcCmds(CommonCloudFunctions) :
             cbdebug("ip address not ready for mac " + obj_attr_list["cloud_mac"])
             return False
 
-        obj_attr_list["cloud_ip"] = ip
-        obj_attr_list["cloud_pip"] = ip
+        obj_attr_list["prov_cloud_ip"] = ip
+        obj_attr_list["run_cloud_ip"] = ip
+        # NOTE: "cloud_ip" is always equal to "run_cloud_ip"
+        obj_attr_list["cloud_ip"] = obj_attr_list["run_cloud_ip"] 
 
         return True
         

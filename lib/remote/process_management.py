@@ -36,7 +36,7 @@ class ProcessManagement :
     '''
     @trace
     def __init__(self, hostname = "127.0.0.1", port = "22", username = None, \
-                 cloud_name = None, priv_key = None) :
+                 cloud_name = None, priv_key = None, config_file = None) :
         '''
         TBD
         '''
@@ -46,6 +46,7 @@ class ProcessManagement :
         self.username = username
         self.cloud_name = cloud_name
         self.priv_key = priv_key
+        self.config_file = config_file
         self.thread_pools = {}
 
     @trace
@@ -89,7 +90,12 @@ class ProcessManagement :
             else :
                 _priv_key = ''
 
-            _cmd = "ssh " + _priv_key + " -o StrictHostKeyChecking=no "
+            if self.config_file :
+                _config_file = " -F " + self.config_file
+            else:
+                _config_file = ''
+
+            _cmd = "ssh " + _priv_key + _config_file + " -o StrictHostKeyChecking=no "
             _cmd += "-o UserKnownHostsFile=/dev/null " + _username
             _cmd += _hostname + " \"" + cmdline + "\""
 

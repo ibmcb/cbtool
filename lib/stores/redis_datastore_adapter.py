@@ -934,6 +934,7 @@ class RedisMgdConn :
         TBD
         '''
         self.conn_check()
+
         obj_inst = self.experiment_inst + ":" + cloud_name
 
         _obj_inst_fn = obj_inst + ':' + obj_type

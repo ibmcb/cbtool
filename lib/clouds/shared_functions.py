@@ -346,7 +346,7 @@ class CommonCloudFunctions:
                     _vm_is_booted = True                 
 
                 elif obj_attr_list["check_boot_complete"].count("run_command_") :
-                    _command_to_run = int(obj_attr_list["check_boot_complete"].replace("run_command_",''))
+                    _command_to_run = obj_attr_list["check_boot_complete"].replace("run_command_",'')
                     _command_to_run = _command_to_run.replace("____",' ')
 
                     _msg = "Check if the VM \"" + obj_attr_list["name"]
@@ -355,9 +355,15 @@ class CommonCloudFunctions:
 
                     _proc_man = ProcessManagement(username = obj_attr_list["login"], \
                                                   cloud_name = obj_attr_list["cloud_name"], \
-                                                  hostname = obj_attr_list["cloud_ip"])
+                                                  hostname = obj_attr_list["prov_cloud_ip"], \
+                                                  priv_key = obj_attr_list["identity"])
 
-                    _vm_is_booted, _result_stdout, _result_stderr = _proc_man.run_os_command(_command_to_run)
+                    _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_command_to_run)
+
+                    if not _status :
+                        _vm_is_booted = True
+                    else :
+                        _vm_is_booted = False
                 
                 elif obj_attr_list["check_boot_complete"].count("snmpget_poll") :
                     import netsnmp
@@ -487,9 +493,9 @@ class CommonCloudFunctions:
 
                 for _message in _sub_channel.listen() :
                     _args = str(_message["data"]).split(";")
-    
+                    
                     if len(_args) != 3 :
-                        #cbdebug("Message is not for me: " + str(_args))
+#                        cbdebug("Message is not for me: " + str(_args))
                         continue
 
                     _id, _status, _info = _args
@@ -504,7 +510,6 @@ class CommonCloudFunctions:
                             
                         _status = 0
                         break
-
 
                 _sub_channel.unsubscribe()
 

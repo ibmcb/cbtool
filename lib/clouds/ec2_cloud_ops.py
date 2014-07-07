@@ -455,17 +455,18 @@ class Ec2Cmds(CommonCloudFunctions) :
             _public_hostname, _public_ip_address = hostname2ip(_public_hostname)
             if obj_attr_list["run_netname"] == "private" :
                 obj_attr_list["cloud_hostname"] = _private_hostname
-                obj_attr_list["cloud_ip"] = _private_ip_address
+                obj_attr_list["run_cloud_ip"] = _private_ip_address
             else :
                 obj_attr_list["cloud_hostname"] = _public_hostname
-                obj_attr_list["cloud_ip"] = _public_ip_address
+                obj_attr_list["run_cloud_ip"] = _public_ip_address
 
             if obj_attr_list["prov_netname"] == "private" :
                 obj_attr_list["prov_cloud_ip"] = _private_ip_address
             else :
                 obj_attr_list["prov_cloud_ip"]  = _public_ip_address
 
-            obj_attr_list["cloud_pip"] = _private_ip_address
+            # NOTE: "cloud_ip" is always equal to "run_cloud_ip"
+            obj_attr_list["cloud_ip"] = obj_attr_list["run_cloud_ip"]
             
             return True
         except :

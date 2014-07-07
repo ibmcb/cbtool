@@ -30,6 +30,7 @@ from subprocess import Popen, PIPE
 from re import sub
 from uuid import uuid5, NAMESPACE_DNS
 from datetime import datetime
+from json import dumps
 
 from lib.remote.process_management import ProcessManagement
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
@@ -143,6 +144,46 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 else :
                     cld_attr_lst["space"]["ssh_key_name"] = ssh_filename 
 
+                _proc_man =  ProcessManagement(username = cld_attr_lst["time"]["username"], cloud_name = cld_attr_lst["cloud_name"])
+
+                if "jump_host" in cld_attr_lst["vm_defaults"] :
+                    if len(cld_attr_lst["vm_defaults"]["jump_host"]) > 1 :
+                        _msg = "The attribute \"jump_host\" in VM_DEFAULTS is set. "
+                        _msg += "Will attempt to connect (ssh) to the host \"" 
+                        _msg += cld_attr_lst["vm_defaults"]["jump_host"] + "\""
+                        _msg += " to confirm that this host can be used as a \""
+                        _msg += "jump box\"."
+                        cbdebug(_msg, True)
+
+                        _jump_box_host_fn = cld_attr_lst["space"]["base_dir"] 
+                        _jump_box_host_fn += "/" + cld_attr_lst["name"]
+                        _jump_box_host_fn += "_jump_box.conf"
+
+                        # Just re-using the already existing ProcessManagement
+                        # instance. That is why all ssh parameters are being 
+                        # specified here instead of there.
+
+                        _command = "ssh -i " +  cld_attr_lst["space"]["credentials_dir"]
+                        _command += '/' + cld_attr_lst["vm_defaults"]["key_name"] 
+                        _command += ' ' + cld_attr_lst["vm_defaults"]["login"] 
+                        _command += '@' + cld_attr_lst["vm_defaults"]["jump_host"]
+                        _command += " \"which nc\""
+
+                        _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_command)
+
+                        if not _status :
+                            _jump_box_host_contents = "Host *\n"
+                            _jump_box_host_contents += "  ProxyCommand "
+                            _jump_box_host_contents += _command.replace('"', '').replace("which",'').replace(" nc", "nc %h 22")
+
+                            _jump_box_host_fd = open(_jump_box_host_fn, 'w')
+
+                            _jump_box_host_fd.write(_jump_box_host_contents)
+                            _jump_box_host_fd.close()
+
+                            cld_attr_lst["vm_defaults"]["ssh_config_file"] = _jump_box_host_fn
+
+
                 if str(cld_attr_lst["space"]["openvpn_server_address"]).lower() != "false" :
                     self.start_openvpn(cld_attr_lst)
 
@@ -226,7 +267,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 # While setting up the Object Store, check for free ports for the 
                 # API, GUI, and Gmetad (Host OS performance data collection)
                 # daemons, using their indicated ports as the base port
-                _proc_man =  ProcessManagement(username = cld_attr_lst["username"] , cloud_name = cld_attr_lst["cloud_name"])
                 cld_attr_lst["mon_defaults"]["collector_host_multicast_port"] = _proc_man.get_free_port(cld_attr_lst["mon_defaults"]["collector_host_multicast_port"], protocol = "tcp")
                 cld_attr_lst["mon_defaults"]["collector_host_aggregator_port"] = _proc_man.get_free_port(cld_attr_lst["mon_defaults"]["collector_host_aggregator_port"], protocol = "tcp")
                 cld_attr_lst["mon_defaults"]["collector_host_summarizer_port"] = _proc_man.get_free_port(cld_attr_lst["mon_defaults"]["collector_host_summarizer_port"], protocol = "tcp")
@@ -240,12 +280,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 # the problems caused by the fact that git keeps resetting RSA's private key
                 # back to 644 (which are too open).
                 chmod(cld_attr_lst["space"]["ssh_key_name"], 0600)
-    
+
+                _status = 0
+
                 _expid = cld_attr_lst["time"]["experiment_id"]
                 _cld_name = cld_attr_lst["name"]
-     
-            _status = 0
-    
+         
             _msg = _smsg + "\nThe experiment identifier is " + _expid + "\n"
             cld_attr_lst["cloud_name"] = _cld_name
 
@@ -296,7 +336,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
             return self.package(_status, _msg, cld_attr_lst)
         
     @trace
-    def start_openvpn(self, cld_attr_lst):
+    def start_openvpn(self, cld_attr_lst) :
+        '''
+        TBD
+        '''
         try : 
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
@@ -1440,7 +1483,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
         _fmsg = "An error has occurred, but no error message was captured"
         threading.current_thread().abort = False 
         threading.current_thread().aborted = False
-            
+
         if "uuid" not in obj_attr_list :
             obj_attr_list["uuid"] = str(uuid5(NAMESPACE_DNS, \
                                str(randint(0,1000000000000000000)))).upper()
@@ -1465,7 +1508,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
         obj_attr_list["name"] = "undefined"
         obj_attr_list["cloud_ip"] = "undefined"
-        obj_attr_list["cloud_pip"] = "undefined"
         obj_attr_list["cloud_hostname"] = "undefined"
             
         try :
@@ -1867,7 +1909,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
         TBD
         '''
         if obj_attr_list["cloud_ip"] == "undefined" :
-            _msg = "VM creation previously failed. Will not send files"
+            _msg = "VM creation previously failed (no Cloud-assigned IP address). Will not send files"
             _status = 452
             raise self.ObjectOperationException(_msg, _status)
         
@@ -1878,10 +1920,16 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
         _max_tries = int(obj_attr_list["attempts"])
         _retry_interval = int(obj_attr_list["update_frequency"])
-        
+
+        if "ssh_config_file" in obj_attr_list :
+            _config_file = obj_attr_list["ssh_config_file"]
+        else :
+            _config_file = None
+
         _proc_man = ProcessManagement(username = obj_attr_list["login"], \
                                       cloud_name = obj_attr_list["cloud_name"], \
-                                      priv_key = obj_attr_list["identity"])
+                                      priv_key = obj_attr_list["identity"], \
+                                      config_file = _config_file)
 
         try :
 
@@ -1893,16 +1941,26 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             if obj_attr_list["transfer_files"].lower() != "false" :
 
-                _bcmd = "ssh -i " + obj_attr_list["identity"]
-                _bcmd += " -o StrictHostKeyChecking=no"
-                _bcmd += " -o UserKnownHostsFile=/dev/null " 
-                _bcmd += obj_attr_list["login"] + "@"
-                _bcmd += obj_attr_list["prov_cloud_ip"] + " \"mkdir -p ~/" + obj_attr_list["remote_dir_name"] +  ';'
+                _ssh_cmd = "ssh -i " + obj_attr_list["identity"]
+
+                if "ssh_config_file" in obj_attr_list :
+                    _ssh_cmd += " -F " + obj_attr_list["ssh_config_file"]
+
+                _ssh_cmd += " -o StrictHostKeyChecking=no"
+                _ssh_cmd += " -o UserKnownHostsFile=/dev/null" 
+                _ssh_cmd += " -l " + obj_attr_list["login"] + ' '
+
+                _bcmd = _ssh_cmd                 
+                _bcmd += obj_attr_list["prov_cloud_ip"] 
+                _bcmd += " \"mkdir -p ~/" + obj_attr_list["remote_dir_name"] +  ';'
+
                 _bcmd += "echo '#OSKN-redis' > ~/cb_os_parameters.txt;"
+                
                 if "openvpn_server_address" in obj_attr_list :
                     _bcmd += "echo '#OSHN-" + obj_attr_list["openvpn_bootstrap_address"] + "' >> ~/cb_os_parameters.txt;"
                 else :
                     _bcmd += "echo '#OSHN-" + self.osci.host + "' >> ~/cb_os_parameters.txt;"
+
                 _bcmd += "echo '#OSPN-" + str(self.osci.port) + "' >> ~/cb_os_parameters.txt;"
                 _bcmd += "echo '#OSDN-" + str(self.osci.dbid) + "' >> ~/cb_os_parameters.txt;"
                 _bcmd += "echo '#OSTO-" + str(self.osci.timout) + "' >> ~/cb_os_parameters.txt;"
@@ -1928,8 +1986,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                    obj_attr_list["debug_remote_commands"], \
                                                    True)
 
-                _rcmd = "rsync -e \"ssh -o StrictHostKeyChecking=no -l " + obj_attr_list["login"] + " -i " 
-                _rcmd += obj_attr_list["identity"] + "\" --exclude-from "
+                _rcmd = "rsync -e \"" + _ssh_cmd + "\""
+                _rcmd += " --exclude-from "
                 _rcmd += "'" +  obj_attr_list["exclude_list"] + "' -az --delete --no-o --no-g --inplace -O " + obj_attr_list["base_dir"] + "/* " 
                 _rcmd += obj_attr_list["prov_cloud_ip"] + ":~/" + obj_attr_list["remote_dir_name"] + '/'
 

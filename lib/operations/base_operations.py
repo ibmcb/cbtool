@@ -2084,6 +2084,7 @@ class BaseObjectOperations :
             _vm_logins = []
             _vm_passwds = []
             _vm_priv_keys = []
+            _vm_config_files = []
             _vm_post_boot_commands = []
             
             _vm_list = _ai_attr_list["vms"].split(',')
@@ -2104,6 +2105,11 @@ class BaseObjectOperations :
                 _vm_ip_addrs.append(_obj_attr_list["prov_cloud_ip"])
                 _vm_logins.append(_obj_attr_list["login"])
                 _vm_passwds.append(None)
+
+                if "ssh_config_file" in _obj_attr_list :
+                    _vm_config_files.append(_obj_attr_list["ssh_config_file"])
+                else :
+                    _vm_config_files.append(None)
 
                 if not access(_obj_attr_list["identity"], F_OK) :
                     _obj_attr_list["identity"] = _obj_attr_list["identity"].replace(_obj_attr_list["username"], _obj_attr_list["login"])
@@ -2134,6 +2140,7 @@ class BaseObjectOperations :
                 self.proc_man_os_command.cloud_name =  _ai_attr_list["cloud_name"]
                 self.proc_man_os_command.username = _vm_logins[0]
                 self.proc_man_os_command.priv_key = _vm_priv_keys[0]
+                self.proc_man_os_command.config_file = _vm_config_files[0]
 
                 _status, _xfmsg = self.proc_man_os_command.parallel_run_os_command(_vm_post_boot_commands, \
                                                                     _vm_ip_addrs, \
@@ -2506,12 +2513,6 @@ class BaseObjectOperations :
                     for _key in obj_attr_list.keys() :
                         if _key in _key_list or _key.count("mgt"):
                             _mgt_attr_list[_key] = obj_attr_list[_key]
-
-                    # This is needed for the case of a cloud that uses "floating"
-                    # IPs. Then IP address assigned to the "cloud_ip" attribute
-                    # will not be known by the VM.
-                    if "cloud_pip" in obj_attr_list :
-                        _mgt_attr_list["cloud_pip"] = obj_attr_list["cloud_pip"]
                             
                     _mgt_attr_list["_id"] = obj_attr_list["uuid"]
                     _mgt_attr_list["obj_type"] = obj_type

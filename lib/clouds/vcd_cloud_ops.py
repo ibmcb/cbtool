@@ -212,7 +212,9 @@ class VcdCmds(CommonCloudFunctions) :
             #obj_attr_list["cloud_hostname"] = _hostname
             #obj_attr_list["cloud_ip"] = gethostbyname(_hostname)
             obj_attr_list["cloud_hostname"] = obj_attr_list["access"]
+            
             obj_attr_list["cloud_ip"] = obj_attr_list["access"]
+            
             obj_attr_list["arrival"] = int(time())
 
             if obj_attr_list["discover_hosts"].lower() == "true" :
@@ -308,9 +310,12 @@ class VcdCmds(CommonCloudFunctions) :
         '''
         try :
             obj_attr_list["cloud_hostname"] = "vm" + obj_attr_list["name"].split("_")[1]
-            obj_attr_list["cloud_ip"] = obj_attr_list["instance_obj"].private_ips[0]
-            obj_attr_list["cloud_pip"] = obj_attr_list["instance_obj"].private_ips[0]            
-            obj_attr_list["prov_cloud_ip"] = obj_attr_list["cloud_ip"]
+            
+            obj_attr_list["prov_cloud_ip"] = obj_attr_list["instance_obj"].private_ips[0]
+            obj_attr_list["run_cloud_ip"] =  obj_attr_list["instance_obj"].private_ips[0]
+            # NOTE: "cloud_ip" is always equal to "run_cloud_ip"
+            obj_attr_list["cloud_ip"] = obj_attr_list["run_cloud_ip"]            
+            
             _msg = "Public IP = " + obj_attr_list["cloud_hostname"]
             _msg += " Private IP = " + obj_attr_list["cloud_ip"]
             cbdebug(_msg)

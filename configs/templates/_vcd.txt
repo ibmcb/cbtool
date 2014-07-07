@@ -85,6 +85,9 @@ SNMP_COMMUNITY = $VCD_SNMP_COMMUNITY
 SNMP_VARIABLE = $VCD_SNMP_VARIABLE
 # CLONE_TIMEOUT is number of seconds libcloud should poll VCD after issuing clone command before timing out
 CLONE_TIMEOUT = 600
+RUN_NETNAME = private
+PROV_NETNAME = private
+JUMP_HOST = $Empty
 
 [AI_DEFAULTS : EC2_CLOUDCONFIG ]
 ATTACH_PARALLELISM = 10
