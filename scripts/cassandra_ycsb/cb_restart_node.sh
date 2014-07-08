@@ -50,10 +50,15 @@ do
 done
 
 #
+# Cassandra will not properly start if the hostname is not in DNS or /etc/hosts
+#
+sudo sh -c "echo ${MY_IP} ${SHORT_HOSTNAME} >> /etc/hosts"
+
+#
 # Update Cassandra Config
 #
 sudo sed -i "s/initial_token:$/initial_token: ${my_token//[[:blank:]]/}/g" /etc/cassandra/conf/cassandra.yaml
-sudo sed -i "s/- seeds:.*$/- seeds: $seeds_ips_csv/g" /etc/cassandra/conf/cassandra.yaml
+sudo sed -i "s/- seeds:.*$/- seeds: $seed_ips_csv/g" /etc/cassandra/conf/cassandra.yaml
 sudo sed -i "s/listen_address:.*$/listen_address: ${MY_IP}/g" /etc/cassandra/conf/cassandra.yaml
 sudo sed -i 's/rpc_address:.*$/rpc_address: 0\.0\.0\.0/g' /etc/cassandra/conf/cassandra.yaml
 sudo sed -i "s/partitioner:.*$/partitioner: org.apache.cassandra.dht.RandomPartitioner/g" /etc/cassandra/conf/cassandra.yaml	
