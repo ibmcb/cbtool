@@ -68,6 +68,11 @@ do
 done
 
 #
+# Cassandra will not properly start if the hostname is not in DNS or /etc/hosts
+#
+sudo sh -c "echo ${MY_IP} ${SHORT_HOSTNAME} >> /etc/hosts"
+
+#
 # Update Cassandra Config
 #
 sudo sed -i "s/initial_token:$/initial_token: ${my_token//[[:blank:]]/}/g" /etc/cassandra/conf/cassandra.yaml
