@@ -1122,7 +1122,7 @@ class OskCmds(CommonCloudFunctions) :
                 _msg += obj_attr_list["cloud_vm_name"] + "\" (cloud-assigned uuid \""
                 _msg += obj_attr_list["cloud_vm_uuid"] + "\")"
                 cbdebug(_msg)
-    
+
                 # There is weird bug on the python novaclient code. Don't change the
                 # following line, it is supposed to be "oskconncompute", even though
                 # is dealing with volumes. Will explain latter.
@@ -1540,8 +1540,6 @@ class OskCmds(CommonCloudFunctions) :
 
                 obj_attr_list["cloud_vm_uuid"] = '{0}'.format(_instance.id)
 
-                _status, _fmsg = self.vvcreate(obj_attr_list)
-
                 self.take_action_if_requested("VM", obj_attr_list, "provision_started")
 
                 if "floating_ip" in obj_attr_list :
@@ -1553,6 +1551,8 @@ class OskCmds(CommonCloudFunctions) :
 
                 _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
 
+                _status, _fmsg = self.vvcreate(obj_attr_list)
+                
                 self.get_mac_address(obj_attr_list, _instance)
 
                 self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
@@ -1667,7 +1667,7 @@ class OskCmds(CommonCloudFunctions) :
                 _instance.delete()
                 sleep(_wait)
 
-                while not _instance :
+                while _instance :
                     _instance = self.get_instances(obj_attr_list, "vm", \
                                            obj_attr_list["cloud_vm_name"])
                     sleep(_wait)
