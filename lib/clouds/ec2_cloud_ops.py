@@ -125,10 +125,21 @@ class Ec2Cmds(CommonCloudFunctions) :
                     _key_pair_found = True
 
             if not _key_pair_found :
-                _msg = "ERROR! Please create the ssh key pair \"" + key_name + "\" in "
-                _msg += "Amazon EC2 before proceeding."
-                _fmsg = _msg
-                cberr(_msg, True)
+
+                _pub_key_fn = vm_defaults["credentials_dir"] + '/'
+                _pub_key_fn += vm_defaults["ssh_key_name"] + ".pub"
+
+                _msg = "Creating the ssh key pair \"" + key_name + "\""
+                _msg += " on VMC " + vmc_name + ", using the public key \""
+                _msg += _pub_key_fn + "\"..."
+                cbdebug(_msg, True)
+                
+                _fh = open(_pub_key_fn, 'r')
+                _pub_key = _fh.read()
+                _fh.close()
+
+                self.ec2conn.import_key_pair(key_name, _pub_key)
+                _key_pair_found = True
 
             _msg = "Checking if the security group \"" + security_group_name
             _msg += "\" is created on VMC " + vmc_name + "...."

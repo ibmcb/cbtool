@@ -128,6 +128,9 @@ mutex = Lock()
 class APIClient(Server):
     
     def api_error_check(self, func):
+        '''
+        TBD
+        '''       
         def wrapped(*args, **kwargs):
             try :
                 mutex.acquire()
@@ -144,6 +147,9 @@ class APIClient(Server):
         return wrapped
     
     def dashboard_conn_check(self, cloud_name, msattrs = None, username = None):
+        '''
+        TBD
+        '''        
         if not self.msattrs :
             """
             Open a connection to the metric store
@@ -190,6 +196,9 @@ class APIClient(Server):
         self.last_refresh = datetime.now()
         
     def check_for_new_vm(self, cloud_name, identifier):
+        '''
+        TBD
+        '''
         info = self.vmshow(cloud_name, identifier)
         print identifier + " configured: (" + info["vcpus"] + ", " + info["vmemory"] + ")" 
             
@@ -204,6 +213,9 @@ class APIClient(Server):
         return APIVM(identifier, info, app)
     
     def refresh_vms(self, cloud_name, force, state = "") :
+        '''
+        TBD
+        '''        
         try :
             self.expid = self.cldshow(cloud_name, "time")["experiment_id"]
 
