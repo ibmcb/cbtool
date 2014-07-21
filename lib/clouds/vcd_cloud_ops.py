@@ -454,8 +454,16 @@ class VcdCmds(CommonCloudFunctions) :
             cbdebug(_msg, True)
 
             image_to_clone = self.vcdconn.ex_find_node(node_name = obj_attr_list["imageid1"])
-            # Daniel 9/6/2013 Need to error check the response to ex_find_node and throw exception if no image found
- 
+
+            if image_to_clone == None :
+               _msg = "Error : Cannot find a vApp named "
+               _msg += obj_attr_list["imageid1"]
+               _msg += " on vCloud Director. Aborting."
+               cbdebug(_msg, True)
+               _status = 188
+               cberr(_msg)
+               raise CldOpsException(_msg, _status) 
+
             vm_computername = "vm" + obj_attr_list["name"].split("_")[1]
             _msg = "...Launching new vApp containing VM with hostname " + vm_computername
             cbdebug(_msg,True)
