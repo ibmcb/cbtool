@@ -255,9 +255,17 @@ class APIClient(Server):
             print "API not available: " + str(obj)
             return False
 
-    def get_latest_data(self, cloud_name, uuid, object_type = "VM", metric_type = "os"):
+    def get_latest_data(self, cloud_name, uuid, metric_class = "runtime", object_type = "VM", metric_type = "os"):
+        '''
+        TBD
+        '''
         self.dashboard_conn_check(cloud_name)
-        _object_type = "runtime_" + metric_type + '_' + object_type
+        
+        if metric_class == "runtime" :
+            _object_type = metric_class + '_' + metric_type + '_' + object_type
+        else :
+            _object_type = metric_class + '_' + object_type
+
         metrics = self.msci.find_document("latest_" + _object_type + "_" + self.username, {"uuid" : uuid})
         
         if metrics is None :
@@ -265,8 +273,30 @@ class APIClient(Server):
         
         return metrics
     
-    def get_latest_app_data(self, cloud_name, uuid):
-        self.vms[uuid].app_metrics = self.get_latest_data(cloud_name, uuid, "runtime_app_VM") 
+    def get_latest_app_data(self, cloud_name, uuid) :
+        '''
+        TBD
+        '''        
+        _metrics = self.get_latest_data(cloud_name, uuid, metric_class = "runtime", object_type = "VM", metric_type = "app") 
+        if uuid in self.vms :
+            self.vms[uuid].app_metrics = _metrics
+
+        return _metrics
         
     def get_latest_system_data(self, cloud_name, uuid) :
-        self.vms[uuid].system_metrics = self.get_latest_data(cloud_name, uuid, "runtime_os_VM") 
+        '''
+        TBD
+        '''
+        _metrics = self.get_latest_data(cloud_name, uuid, metric_class = "runtime", object_type = "VM", metric_type = "os")
+        if uuid in self.vms :
+            self.vms[uuid].system_metrics = _metrics
+            
+        return _metrics
+    
+    def get_latest_management_data(self, cloud_name, uuid) :
+        '''
+        TBD
+        '''
+        _metrics = self.get_latest_data(cloud_name, uuid, metric_class = "management", object_type = "VM")
+            
+        return _metrics

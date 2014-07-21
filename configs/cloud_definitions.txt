@@ -21,47 +21,33 @@ STARTUP_CLOUD = MYSIMCLOUD
 
 # List the clouds you want to define
 CLOUDOPTION_MYSIMCLOUD = cldattach sim, vmcattach all
-CLOUDOPTION_MYSMARTCLOUD = cldattach scp, vmcattach all
 CLOUDOPTION_MYOPENSTACK = cldattach osk, vmcattach all
 CLOUDOPTION_MYAMAZON = cldattach ec2, vmcattach all
-CLOUDOPTION_MYPLM = cldattach plm, vmcattach all
 CLOUDOPTION_MYVCDCLOUD = cldattach vcd, vmcattach all
+CLOUDOPTION_MYPLM = cldattach plm, vmcattach all
+CLOUDOPTION_MYSMARTCLOUD = cldattach scp, vmcattach all
 
 # Now, Specify the individual parameters for each cloud
 
+#-------------------------------------------------------------------------------
 # OpenStack (OSK) requires the following parameters (replace everything between <>, *including* the signs!)
 [USER-DEFINED : CLOUDOPTION_MYOPENSTACK]
 OSK_ACCESS = http://<address>:5000/v2.0/                   # Address of controlled node (where nova-api runs)
 OSK_CREDENTIALS =  <user>-<password>-<tenant>
-OSK_KEY_NAME = <key name>                                  # Create the key on OpenStack first
 OSK_SECURITY_GROUPS = default	                           # Make sure that this group exists first
 OSK_INITIAL_VMCS = RegionOne:sut                           # Change "RegionOne" accordingly
-OSK_SSH_KEY_NAME = priv_key_filename                       # Name of the private key used to login on the VMs
 OSK_LOGIN = cbuser                                         # The username that logins on the VMs
-
-# Smart Cloud Provisioning (SCP) requires the following parameters
-[USER-DEFINED : CLOUDOPTION_MYSMARTCLOUD]
-SCP_IAAS_ACCESS_ID = <user>
-SCP_IAAS_PRIVATE_KEY = /iaas/cli/adminkey/admin.key
-SCP_IAAS_SERVICE_PUBLIC_KEY = /iaas/cli/adminkey/vm_service.key
-SCP_IAAS_PROXY_PORT = 9090
-SCP_IAAS_WEBSERVICE_PORT = 5678/query/
-SCP_IAAS_CLI_LOCATION = <hostname>                         # Address of the webservice VM for SCP
-SCP_INITIAL_VMCS = kvm_rack1:sut                           # Change "kvm_rack1" accordingly
-SCP_SSH_KEY_NAME = priv_key_filename                       # Name of the private key used to login on the VMs
-SCP_LOGIN = cbuser                                         # The username that logins on the VMs
-
+#-------------------------------------------------------------------------------
 # Elastic Compute Cloud (EC2) requires the following parameters 
 [USER-DEFINED : CLOUDOPTION_MYAMAZON]
 EC2_ACCESS = ABCDEFGHIJKLMNOPQRST                          # This is the AWS access key id
 EC2_SECURITY_GROUPS = cloudbench                           # Make sure that this group exists first 
 EC2_CREDENTIALS = ABCDEFGHIJKLMNOPQRSTUVXYWZ01234567890-+* # This is the AWS secret access key 
-EC2_KEY_NAME = cloudbench                                  # Make sure that this key exists first 
+EC2_KEY_NAME = cbtool_rsa                                  # Make sure that this key exists first 
 EC2_INITIAL_VMCS = us-east-1:sut                           # Change "us-east-1" accordingly
-EC2_SSH_KEY_NAME = priv_key_filename                       # Name of the private key used to login on the VMs
+EC2_SSH_KEY_NAME = cbtool_rsa                              # Name of the private key used to login on the VMs
 EC2_LOGIN = cbuser                                         # The username that logins on the VMs
-
-
+#-------------------------------------------------------------------------------
 # vCloud Director requires the following parameters
 [USER-DEFINED : CLOUDOPTION_MYVCDCLOUD]
 VCD_ACCESS = 10.1.1.1                                      # IP address or host name for vCloud Director API
@@ -71,20 +57,32 @@ VCD_KEY_NAME = xxxxx                                       # password to log int
 VCD_SECURITY_GROUPS = none                                 # Not used in vCloud Director, but required by CloudBench
 VCD_VERSION = 1.5                                          # VCD version. Only tested with 1.5.
 VCD_INITIAL_VMCS = DeployPlace                             # vCloud Director instance name
-VCD_SSH_KEY_NAME = dummy_id_rsa                            # Private key used to SSH into VMs
+VCD_SSH_KEY_NAME = cbtool_rsa                              # Private key used to SSH into VMs
 VCD_LOGIN = cbuser                                         # Username associated with the private key above
 VCD_SNMP_VERSION = 1
 VCD_SNMP_PASSWORD = dummy
 VCD_SNMP_COMMUNITY = cbtest
 VCD_SNMP_VARIABLE = SNMPv2-MIB::sysLocation
-
+#-------------------------------------------------------------------------------
 # Parallel Libvirt Manager (PLM) requires the following parameters 
 [USER-DEFINED : CLOUDOPTION_MYPLM]
 PLM_ACCESS = <address>:6060
 PLM_INITIAL_VMCS = grouptwo:sut
-PLM_SSH_KEY_NAME = path_to_local_private_key_file
+PLM_SSH_KEY_NAME = cbtool_rsa
 PLM_LOGIN = cbuser
-
+#-------------------------------------------------------------------------------
+# Smart Cloud Provisioning (SCP) requires the following parameters
+[USER-DEFINED : CLOUDOPTION_MYSMARTCLOUD]
+SCP_IAAS_ACCESS_ID = <user>
+SCP_IAAS_PRIVATE_KEY = /iaas/cli/adminkey/admin.key
+SCP_IAAS_SERVICE_PUBLIC_KEY = /iaas/cli/adminkey/vm_service.key
+SCP_IAAS_PROXY_PORT = 9090
+SCP_IAAS_WEBSERVICE_PORT = 5678/query/
+SCP_IAAS_CLI_LOCATION = <hostname>                         # Address of the webservice VM for SCP
+SCP_INITIAL_VMCS = kvm_rack1:sut                           # Change "kvm_rack1" accordingly
+SCP_SSH_KEY_NAME = cbtool_rsa                              # Name of the private key used to login on the VMs
+SCP_LOGIN = cbuser                                         # The username that logins on the VMs
+#-------------------------------------------------------------------------------
 [OBJECTSTORE]
 USAGE = shared
 

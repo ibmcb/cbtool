@@ -1,6 +1,7 @@
+drop keyspace usertable;
 create keyspace usertable  
 with placement_strategy = 'org.apache.cassandra.locator.SimpleStrategy'  
-and strategy_options = {replication_factor:3}; 
+and strategy_options = {replication_factor:REPLF}; 
 use usertable;  
 create column family data;  
 exit;

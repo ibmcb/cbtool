@@ -70,19 +70,32 @@ class OskCmds(CommonCloudFunctions) :
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
-            _username, _password, _tenant = authentication_data.split('-')
+
+            if len(authentication_data.split('-')) == 3 :
+                _username, _password, _tenant = authentication_data.split('-')
+                _cacert = None
+
+            elif len(authentication_data.split('-')) == 4 :
+                _username, _password, _tenant, _cacert = authentication_data.split('-')
+                _cacert = _cacert.replace("_dash_",'-')
+            else :
+                _username = ''
+                _password = ''
+                _tenant = ''
+ 
             _username = _username.replace("_dash_",'-')
             _password = _password.replace("_dash_",'-')
             _tenant = _tenant.replace("_dash_",'-')
 
+            _fmsg = "About to attempt a connection to OpenStack"
             self.oskconncompute = client.Client(_username, _password, _tenant, \
-                                         access_url, region_name=region, \
-                                         service_type="compute")
+                                         access_url, region_name = region, \
+                                         service_type="compute", cacert = _cacert)
             self.oskconncompute.flavors.list()
 
             self.oskconnstorage = client.Client(_username, _password, _tenant, \
                                          access_url, region_name=region, \
-                                         service_type="volume")
+                                         service_type="volume", cacert = _cacert)
 
             self.oskconnstorage.volumes.list()
 
@@ -170,15 +183,27 @@ class OskCmds(CommonCloudFunctions) :
                 cbdebug(_msg, True)
                 
                 _key_pair_found = False
+
                 for _key_pair in self.oskconncompute.keypairs.list() :
                     if _key_pair.name == key_name :
                         _key_pair_found = True
 
                 if not _key_pair_found :
+
+                    _pub_key_fn = vm_defaults["credentials_dir"] + '/'
+                    _pub_key_fn += vm_defaults["ssh_key_name"] + ".pub"
+
                     _msg = "Creating the ssh key pair \"" + key_name + "\""
-                    _msg += " on VMC " + vmc_name + "...."
+                    _msg += " on VMC " + vmc_name + ", using the public key \""
+                    _msg += _pub_key_fn + "\"..."
                     cbdebug(_msg, True)
-                    self.oskconncompute.keypairs.create(key_name)
+                    
+                    _fh = open(_pub_key_fn, 'r')
+                    _pub_key = _fh.read()
+                    _fh.close()
+                                        
+                    self.oskconncompute.keypairs.create(key_name, \
+                                                        public_key = _pub_key)
                     _key_pair_found = True
 
             if security_group_name :
@@ -1532,7 +1557,8 @@ class OskCmds(CommonCloudFunctions) :
                                                     meta = _meta, \
                                                     config_drive = _config_drive, \
                                                     userdata = _userdata, \
-                                                    nics = _netid)
+                                                    nics = _netid, \
+                                                    disk_config = "AUTO")
 
             if _instance :
                 

@@ -1,7 +1,7 @@
 [USER-DEFINED]
 PLM_ACCESS = need_to_be_configured_by_user
 PLM_INITIAL_VMCS = need_to_be_configured_by_user 
-PLM_SSH_KEY_NAME = need_to_be_configured_by_user
+PLM_SSH_KEY_NAME = cbtool_rsa
 PLM_LOGIN = need_to_be_configured_by_user
 
 # PEBCAK documentation for the Wizard and CLI

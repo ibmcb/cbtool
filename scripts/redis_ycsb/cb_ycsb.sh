@@ -35,13 +35,13 @@ if [[ ${LOAD_ID} == "1" ]]
 then
     GENERATE_DATA="true"
 else
-    GENERATE_DATA=`get_my_ai_attribute_with_default generate_data false`
+    GENERATE_DATA=`get_my_ai_attribute_with_default generate_data true`
 fi
 
 OPERATION_COUNT=`get_my_ai_attribute_with_default operation_count 100000`
 READ_RATIO=`get_my_ai_attribute_with_default read_ratio workloaddefault`
 UPDATE_RATIO=`get_my_ai_attribute_with_default update_ratio workloaddefault`
-INPUT_RECORDS=`get_my_ai_attribute_with_default input_records memory`
+INPUT_RECORDS=`get_my_ai_attribute_with_default input_records 100000`
 RECORD_SIZE=`get_my_ai_attribute_with_default record_size 2.35`
 APP_COLLECTION=`get_my_ai_attribute_with_default app_collection lazy`
 DATABASE_SIZE_VERSUS_MEMORY=`get_my_ai_attribute_with_default database_size_versus_memory 0.5`

@@ -97,7 +97,7 @@ class CBCLI(Cmd) :
              the '-c' option, in which case the user-specified definitions
              have to be passed to the cldattach() command manually.
             '''
-            
+
             self.cld_attr_lst, self.definitions = parse_cld_defs_file(None, True, self.options.config)
 
             if self.options.hard_reset :
@@ -653,7 +653,7 @@ class CBCLI(Cmd) :
                     _msg += "the port number in API_DEFAULTS and try again."
                     _status = 8181
 
-                    raise ProcessManagement.ProcessManagementException(_status, _msg)
+                    raise ProcessManagement.ProcessManagementException(_msg, _status)
                 else :
                     _api_pid = _api_pid[0]
                     _msg = "API Service daemon was successfully started. "
@@ -663,7 +663,7 @@ class CBCLI(Cmd) :
             else :
                 _msg = "\nAPI failed to start. To discover why, please run:\n\n" + _base_cmd + " --logdest=console\n\n ... and report the bug."
                 _status = 7161
-                raise ProcessManagement.ProcessManagementException(_status, _msg)
+                raise ProcessManagement.ProcessManagementException(_msg, _status)
 
             print "Checking for a running GUI service daemon.....",
             _base_cmd = self.path + "/cbact"
@@ -701,9 +701,9 @@ class CBCLI(Cmd) :
                     _msg += self.cld_attr_lst["gui_defaults"]["port"] + " is "
                     _msg += "already taken by process" + _pid + " (username "
                     _msg += _username + "). Please change "
-                    _msg += "the port number in GUI_DEFAULTS and try again."
+                    _msg += "the port number in [GUI_DEFAULTS] and try again."
                     _status = 8181
-                    raise ProcessManagement.ProcessManagementException(_status, _msg)
+                    raise ProcessManagement.ProcessManagementException(_msg, _status)
                 else :
                     _gui_pid = _gui_pid[0]
                     _msg = "GUI Service daemon was successfully started. "
@@ -713,7 +713,7 @@ class CBCLI(Cmd) :
             else :
                 _msg = "\nGUI failed to start. To discover why, please run:\n\n" + _base_cmd + " --logdest=console\n\n ... and report the bug."
                 _status = 7161
-                raise ProcessManagement.ProcessManagementException(_status, _msg)
+                raise ProcessManagement.ProcessManagementException(_msg, _status)
 
             _status = 0
             _msg = "All processes started successfully"
@@ -729,7 +729,7 @@ class CBCLI(Cmd) :
         finally :
             if _status :
                 _msg = "Unable to start API and/or GUI daemons: " + _fmsg
-                cberr(_msg)         
+                cberr(_msg, True)         
                 exit(_status)       
             else :
                 cbdebug(_msg)

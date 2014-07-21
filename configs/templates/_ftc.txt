@@ -5,7 +5,7 @@
 [USER-DEFINED]
 FTC_ACCESS = need_to_be_configured_by_user
 FTC_INITIAL_VMCS = need_to_be_configured_by_user 
-FTC_SSH_KEY_NAME = need_to_be_configured_by_user
+FTC_SSH_KEY_NAME = cbtool_rsa
 FTC_LOGIN = need_to_be_configured_by_user
 FTC_DISK_FORMAT = need_to_be_configured_by_user 
 FTC_OPENVPN_SERVER_ADDRESS = $False

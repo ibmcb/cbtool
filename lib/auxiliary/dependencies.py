@@ -246,6 +246,7 @@ def get_actual_cmdline(commandline_key, depsdict, _actual_url) :
     if commandline_key in depsdict :
         _commandline = depsdict[commandline_key]
         _commandline = _commandline.replace("3RPARTYDIR", depsdict["3rdpartydir"].strip().replace("//",'/'))
+        _commandline = _commandline.replace("CREDENTIALSDIR", depsdict["credentialsdir"].strip().replace("//",'/'))
         if _actual_url :
             _commandline = _commandline.replace("URL", _actual_url.strip())
         _commandline = _commandline.replace("ARCH", depsdict["carch"].strip())
@@ -572,6 +573,7 @@ def dependency_checker_installer(hostname, username, operation, options) :
     
         _depsdict["cdist"], _depsdict["cdistver"], _depsdict["carch"] = get_linux_distro()
         _depsdict["3rdpartydir"] = options.tpdir
+        _depsdict["credentialsdir"] = options.creddir
         _depsdict["username"] = username
 
         if options.addr :

@@ -104,10 +104,10 @@ streamprox-order = 42
 d3-order = 43
 novaclient-order = 44
 softlayer-order = 45
-#softlayer-vpn-order = 46
 boto-order = 47
 libcloud-order = 48
 R-order = 49
+sshkey-order = 50
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -164,10 +164,10 @@ d3-install = git
 bootstrap-install = git
 novaclient-install = pip
 softlayer-install = pip
-softlayer-vpn-install = man
 boto-install = pip
 libcloud-install = pip
 R-install = pm
+sshkey-install = man
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
@@ -217,10 +217,10 @@ streamprox-configure = ls -la 3RPARTYDIR/StreamProx/README.md
 d3-configure = ls -la 3RPARTYDIR/d3/component.json
 novaclient-configure = python -c "import novaclient; from novaclient.v1_1 import client"
 softlayer-configure = sl help cci
-softlayer-vpn-configure = sudo /usr/local/bin/array_vpnc -version | sed -e 's/VPNC_//g' | sed -e 's/_/./g'
 boto-configure = python -c "import boto; print str(boto.__version__).strip().replace('-dev','')"
 libcloud-configure = python -c "import libcloud; print str(libcloud.__version__).replace('-dev','').strip()"
 R-configure = R --version | grep version | grep -v GNU
+sshkey-configure = ls CREDENTIALSDIR/cbtool_rsa
 ### END - Tests ###
 
 ### START - Dependency versions ###
@@ -260,7 +260,7 @@ python-webob-ver = ANY
 python-beaker-ver = ANY
 gmetad-python-ver = ANY
 pyredis-ver = 2.6.0
-pymongo-ver = 2.1.1
+pymongo-ver = 2.5
 pylibvirt-ver = 9003
 pypureomapi-ver = 0.3
 pyhtml-ver = 0.04
@@ -270,10 +270,10 @@ streamprox-ver = ANY
 d3-ver = ANY
 novaclient-ver = ANY
 softlayer-ver = ANY
-softlayer-vpn-ver = 8.4
 boto-ver = 2.1.8
 libcloud-ver = 0.11.0
 R-ver = 2.1
+sshkey-ver = ANY
 ### END - Dependency versions ###
 
 ### START - Dependency URLs ###
@@ -314,10 +314,6 @@ ubuntu-streamprox-urls-git = https://github.com/ibmcb
 
 rhel-d3-urls-git = https://github.com/ibmcb
 ubuntu-d3-urls-git = https://github.com/ibmcb
-
-rhel-softlayer-vpn-x86_64-urls-man = http://mdo.watson.ibm.com/repo/dropbox/softlayer/array_vpn
-ubuntu-softlayer-vpn-urls-man = http://mdo.watson.ibm.com/repo/dropbox/softlayer/array_vpn
-
 ### END - Dependency URLs ###
 
 ### START -  Dependency and method-specific command lines ###
@@ -493,11 +489,6 @@ ubuntu-novaclient-install-pip = sudo pip install INDEXURL python-novaclient
 rhel-softlayer-install-pip = sudo pip install INDEXURL softlayer
 ubuntu-softlayer-install-pip = sudo pip install INDEXURL softlayer
 
-rhel-softlayer-vpn-preinstall-man = sudo wget -N -P /usr/local/bin URL/array_vpnc && sudo wget -P /usr/local/bin URL/array_loader 
-rhel-softlayer-vpn-install-man = sudo chmod 755 /usr/local/bin/array_*
-ubuntu-softlayer-vpn-preinstall-man = sudo wget -N -P /usr/local/bin URL/array_vpnc && sudo wget -P /usr/local/bin URL/array_loader
-ubuntu-softlayer-vpn-install-man = sudo chmod 755 /usr/local/bin/array_*
-
 rhel-boto-install-pip = sudo pip install INDEXURL boto
 ubuntu-boto-install-pip = sudo pip install INDEXURL boto
 
@@ -506,4 +497,7 @@ ubuntu-libcloud-install-pip = sudo pip install INDEXURL apache-libcloud
 
 rhel-R-install-pm = sudo yum -y install R
 ubuntu-R-install-pm = sudo apt-get -y install r-base-core
+
+rhel-sshkey-install-man = ssh-keygen -f CREDENTIALSDIR/cbtool_rsa -t rsa -N ''
+ubuntu-sshkey-install-man = ssh-keygen -f CREDENTIALSDIR/cbtool_rsa -t rsa -N ''
 ### END -  Dependency and method-specific command lines ###

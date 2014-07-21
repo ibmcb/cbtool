@@ -238,6 +238,7 @@ def syslog_logstore_setup(global_objects, operation = "check") :
                     _rsyslog_pid = _proc_man.get_pid_from_cmdline("rsyslogd")
     
                     _cmd = "/sbin/rsyslogd -i /var/run/syslogd.pid -c 5"
+
                     if not _rsyslog_pid :
                         _msg = "Unable to detect a shared rsyslog server daemon running. "
                         _msg += "Please try to start one (e.g., " + _cmd + ")"                    

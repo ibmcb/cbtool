@@ -2,9 +2,9 @@
 EC2_ACCESS = need_to_be_configured_by_user 
 EC2_SECURITY_GROUP = need_to_be_configured_by_user 
 EC2_CREDENTIALS = need_to_be_configured_by_user 
-EC2_KEY_NAME = need_to_be_configured_by_user 
+EC2_KEY_NAME = cbtool_rsa 
 EC2_INITIAL_VMCS = need_to_be_configured_by_user 
-EC2_SSH_KEY_NAME = need_to_be_configured_by_user
+EC2_SSH_KEY_NAME = cbtool_rsa
 EC2_LOGIN = need_to_be_configured_by_user
 
 # PEBCAK documentation for the Wizard and CLI

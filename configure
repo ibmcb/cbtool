@@ -49,6 +49,11 @@ def main() :
                        default= _path + "/3rd_party", \
                        help="Name of the third-party directory")
 
+    _parser.add_option("--creddir", \
+                       dest="creddir", \
+                       default=_path + "/credentials/", \
+                       help="Credentials configuration file defaults dir")
+
     _parser.add_option("--defdir", \
                        dest="defdir", \
                        default=_path + "/configs/templates/", \

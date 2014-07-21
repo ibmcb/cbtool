@@ -6,7 +6,7 @@ SCP_IAAS_SERVICE_PUBLIC_KEY = need_to_be_configured_by_user
 SCP_IAAS_PRIVATE_KEY = need_to_be_configured_by_user 
 SCP_IAAS_ACCESS_ID = need_to_be_configured_by_user 
 SCP_INITIAL_VMCS = need_to_be_configured_by_user 
-SCP_SSH_KEY_NAME = need_to_be_configured_by_user
+SCP_SSH_KEY_NAME = cbtool_rsa
 SCP_LOGIN = need_to_be_configured_by_user
 
 # PEBCAK documentation for the Wizard and CLI

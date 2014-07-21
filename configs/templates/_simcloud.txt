@@ -1,7 +1,7 @@
 [USER-DEFINED]
 SIM_INITIAL_VMCS = simzone_a:sut,simzone_b:sut,simzone_c:sut,simzone_d:lg
 # Name of the ssh key pair
-SIM_SSH_KEY_NAME = bogus_id_rsa 
+SIM_SSH_KEY_NAME = cbtool_rsa 
 SIM_LOGIN = klabuser
 
 # PEBCAK documentation for the Wizard and CLI

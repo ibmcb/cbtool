@@ -33,7 +33,7 @@ if [[ ${LOAD_ID} == "1" ]]
 then
     GENERATE_DATA="true"
 else
-    GENERATE_DATA=`get_my_ai_attribute_with_default generate_data false`
+    GENERATE_DATA=`get_my_ai_attribute_with_default generate_data true`
 fi
 
 DATA_HDFS=`get_my_ai_attribute_with_default dfs_data_dir /tmp/cbhadoopdata`

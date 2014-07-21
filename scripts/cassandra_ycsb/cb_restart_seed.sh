@@ -41,6 +41,9 @@ if $CINDER ; then
   sudo mount /dev/vdb ${CASSANDRA_DATA_DIR}
 fi
 
+CASSANDRA_REPLICATION_FACTOR=$(get_my_ai_attribute_with_default replication_factor 4)
+sudo sed -i "s/REPLF/${CASSANDRA_REPLICATION_FACTOR}/g" cassandra-init.cassandra
+
 #
 # Update the cassandra config
 #

@@ -361,8 +361,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
                 cbinfo("OpenVPN configuration for this cloud already generated: " + openvpn_config, True)
             
-            print "Checking for a running OpenVPN daemon.....", 
-            
+            _msg = "Checking for a running OpenVPN daemon.....", 
+            cbdebug(_msg, True)
+
             _proc_man = ProcessManagement(username = "root")
             _base_cmd = "sudo openvpn --config " + openvpn_config
             _cmd = _base_cmd + " --daemon"

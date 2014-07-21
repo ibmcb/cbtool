@@ -1,6 +1,6 @@
 [USER-DEFINED]
 # Name of the ssh key pair 
-NOP_SSH_KEY_NAME = need_to_be_configured_by_user
+NOP_SSH_KEY_NAME = cbtool_rsa
 NOP_LOGIN = need_to_be_configured_by_user
 NOP_INITIAL_VMCS = need_to_be_configured_by_user
 

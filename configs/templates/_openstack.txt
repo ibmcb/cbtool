@@ -1,10 +1,10 @@
 [USER-DEFINED]
 OSK_ACCESS = need_to_be_configured_by_user
 OSK_CREDENTIALS = need_to_be_configured_by_user
-OSK_KEY_NAME = need_to_be_configured_by_user
+OSK_KEY_NAME = cbtool_rsa
 OSK_SECURITY_GROUPS = need_to_be_configured_by_user
 OSK_INITIAL_VMCS = need_to_be_configured_by_user
-OSK_SSH_KEY_NAME = need_to_be_configured_by_user
+OSK_SSH_KEY_NAME = cbtool_rsa
 OSK_LOGIN = need_to_be_configured_by_user
 OSK_NETNAME = need_to_be_configured_by_user
 OSK_OPENVPN_SERVER_ADDRESS = $False

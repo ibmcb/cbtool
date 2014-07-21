@@ -97,15 +97,7 @@ then
     else
         syslog_netcat "The VMs with the \"seed\" role on this AI has the following IPs: ${seed_ips_csv}"
     fi
-
-    #
-    # Update /etc/hosts file
-    #
-    if [[ $(cat /etc/hosts | grep -c cassandra-seed) -eq 0 ]]
-    then
-        sudo sh -c "echo $seed_ips cassandra-seed >> /etc/hosts"
-    fi
-
+	
 elif [[ $BACKEND_TYPE == "mongo" ]]
 then 
 
