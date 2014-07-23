@@ -25,6 +25,7 @@ CLOUDOPTION_MYOPENSTACK = cldattach osk, vmcattach all
 CLOUDOPTION_MYAMAZON = cldattach ec2, vmcattach all
 CLOUDOPTION_MYVCDCLOUD = cldattach vcd, vmcattach all
 CLOUDOPTION_MYPLM = cldattach plm, vmcattach all
+CLOUDOPTION_MYSLR = cldattach slr, vmcattach all
 CLOUDOPTION_MYSMARTCLOUD = cldattach scp, vmcattach all
 
 # Now, Specify the individual parameters for each cloud
@@ -70,6 +71,13 @@ PLM_ACCESS = <address>:6060
 PLM_INITIAL_VMCS = grouptwo:sut
 PLM_SSH_KEY_NAME = cbtool_rsa
 PLM_LOGIN = cbuser
+#-------------------------------------------------------------------------------
+# SoftLayer (SLR) requires the following parameters 
+[USER-DEFINED : CLOUDOPTION_MYSLR ]
+SLR_ACCESS = private                                                                            # Leave "private" if you are running inside SoftLayer
+SLR_CREDENTIALS = <username>-ABCDEFGHIJKLMNOPQRSTUVXYWZ01234567890-+*0123456789001234567890-cci # User and API access key can be obtained from https://manage.softlayer.com/Administrative/apiKeychain
+SLR_LOGIN = cbuser                                                                              # The username that logins on the VMs
+SLR_INITIAL_VMCS = dal05                                                                        # Select the appropriate SoftLayer datacenter
 #-------------------------------------------------------------------------------
 # Smart Cloud Provisioning (SCP) requires the following parameters
 [USER-DEFINED : CLOUDOPTION_MYSMARTCLOUD]
