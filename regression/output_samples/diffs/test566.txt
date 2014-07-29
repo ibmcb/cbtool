@@ -1,22 +1,29 @@
+ status: Trying to establish network connectivity to vm_XXX (cloud-assigned uuid xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx), on IP address xxx.xxx.xxx.xxx ...
+ status: Waiting for vm_XXX (cloud-assigned uuid xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx) to start...
+ status: Bypassing the bootstrapping and the sending of a copy of the code tree to vm_92 (xxx.xxx.xxx.xxx )...
+ status: Bypassing the bootstrapping and the sending of a copy of the code tree to vm_96 (xxx.xxx.xxx.xxx )...
+ status: Bypassing the bootstrapping and the sending of a copy of the code tree to vm_94 (xxx.xxx.xxx.xxx )...
+ status: Bypassing the bootstrapping and the sending of a copy of the code tree to vm_93 (xxx.xxx.xxx.xxx )...
+ status: Trying to establish network connectivity to vm_XXX (cloud-assigned uuid xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx), on IP address xxx.xxx.xxx.xxx ...
  status: Bypassing the bootstrapping and the sending of a copy of the code tree to vm_98 (xxx.xxx.xxx.xxx )...
  status: Bypassing the bootstrapping and the sending of a copy of the code tree to vm_97 (xxx.xxx.xxx.xxx )...
- status: Bypassing the bootstrapping and the sending of a copy of the code tree to vm_101 (xxx.xxx.xxx.xxx )...
  status: Bypassing the bootstrapping and the sending of a copy of the code tree to vm_99 (xxx.xxx.xxx.xxx )...
  status: Bypassing the bootstrapping and the sending of a copy of the code tree to vm_100 (xxx.xxx.xxx.xxx )...
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1403551690 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1403551706 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1403551794 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1403551800 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1403551805 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1403551811 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1403551830 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1403551832 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1403551834 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1403551836 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1403551845 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |ibmderby_tradelite|1_x_client_tradelite->1_x_was |xxx.xxx.xxx.xxx |1403551851 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1403551858 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1403551863 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1403551883 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1403551888 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1403551894 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+ status: Bypassing the bootstrapping and the sending of a copy of the code tree to vm_101 (xxx.xxx.xxx.xxx )...
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1406645277 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1406645295 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1406645384 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1406645390 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1406645395 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1406645402 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1406645420 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1406645422 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1406645424 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1406645426 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1406645436 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |ibmderby_tradelite|1_x_client_tradelite->1_x_was |xxx.xxx.xxx.xxx |1406645442 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1406645448 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1406645453 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1406645474 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1406645479 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1406645485 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx

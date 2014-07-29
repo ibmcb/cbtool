@@ -1,17 +1,17 @@
- status: VMC 98D57A87-F80B-5FFF-90E3-51C9139EFE5B was successfully unregistered on SimCloud "TESTCLOUD".
- status: VMC 5409CDD4-26A2-580A-9607-DF6E1CF8E7A5 was successfully unregistered on SimCloud "TESTCLOUD".
- status: VMC FAD9F883-2F5C-515B-A76C-77D88D552377 was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC 7A4643E3-A0E0-5AB5-BBA3-6D34EEBD5D4F was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC F2C4765B-D66C-5E88-84DA-E830C4699905 was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC 1F80AB6A-8E7A-59E2-9D5D-AAAAFC6FD33C was successfully unregistered on SimCloud "TESTCLOUD".
 VMC object undefined (named "all") was sucessfully detached from this experiment.
 The following ATTACHED VMCs are in this experiment (Cloud TESTCLOUD) :
 No objects available.
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |1021.94K                      
+|Used Memory                                          |1004.01K                      
 |Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |7347174                       
-|Total Connections Received                           |129490                        
-|Total Commands Processed                             |19122165                      
+|Uptime (in seconds)                                  |10440779                      
+|Total Connections Received                           |230784                        
+|Total Commands Processed                             |26095217                      
 |Number of Keys                                       |98                            
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         

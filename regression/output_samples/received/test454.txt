@@ -28,7 +28,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |ai_defaults                      |runstate_supported             |True                                 
 |ai_defaults                      |save_on_attach                 |False                                
 |ai_defaults                      |seconds_before_save            |0                                    
-|ai_defaults                      |ssh_key_name                   |bogus_id_rsa                         
+|ai_defaults                      |ssh_key_name                   |cbtool_rsa                           
 |ai_defaults                      |timeout                        |240                                  
 |ai_defaults                      |update_attempts                |720                                  
 |ai_defaults                      |update_frequency               |1                                    
@@ -43,11 +43,13 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |ai_templates                     |cassandra_ycsb_load_generator_role|ycsb                                 
 |ai_templates                     |cassandra_ycsb_load_level      |1                                    
 |ai_templates                     |cassandra_ycsb_load_manager_role|ycsb                                 
-|ai_templates                     |cassandra_ycsb_load_profile    |workloada                            
+|ai_templates                     |cassandra_ycsb_load_profile    |workloadd                            
 |ai_templates                     |cassandra_ycsb_metric_aggregator_role|ycsb                                 
+|ai_templates                     |cassandra_ycsb_read_ratio      |workloaddefault                      
 |ai_templates                     |cassandra_ycsb_seed_setup1     |cb_restart_seed.sh                   
 |ai_templates                     |cassandra_ycsb_start           |cb_ycsb.sh                           
-|ai_templates                     |cassandra_ycsb_sut             |ycsb->seed->2_x_cassandra            
+|ai_templates                     |cassandra_ycsb_sut             |ycsb->1_x_seed->1_x_cassandra        
+|ai_templates                     |cassandra_ycsb_update_ratio    |workloaddefault                      
 |ai_templates                     |cassandra_ycsb_ycsb_setup2     |cb_setup_ycsb.sh                     
 |ai_templates                     |coremark_capture_role          |coremark                             
 |ai_templates                     |coremark_coremark_setup1       |cb_setup_cmk.sh                      
@@ -414,7 +416,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |aidrs_defaults                   |detach_parallelism             |20                                   
 |aidrs_defaults                   |login                          |klabuser                             
 |aidrs_defaults                   |notification                   |False                                
-|aidrs_defaults                   |ssh_key_name                   |bogus_id_rsa                         
+|aidrs_defaults                   |ssh_key_name                   |cbtool_rsa                           
 |aidrs_defaults                   |submitter                      |True                                 
 |aidrs_defaults                   |update_attempts                |720                                  
 |aidrs_defaults                   |update_frequency               |1                                    
@@ -563,7 +565,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |firs_defaults                    |login                          |klabuser                             
 |firs_defaults                    |notification                   |False                                
 |firs_defaults                    |specjbb_rampup                 |20                                   
-|firs_defaults                    |ssh_key_name                   |bogus_id_rsa                         
+|firs_defaults                    |ssh_key_name                   |cbtool_rsa                           
 |firs_defaults                    |submitter                      |True                                 
 |firs_defaults                    |switch_ip                      |1.2.3.4                              
 |firs_defaults                    |update_attempts                |720                                  
@@ -700,17 +702,17 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |space                            |openvpn_server_config_prefix   |/home/msilva/cloudbench/lib/auxiliary//../../configs/server-cb-openvpn
 |space                            |regression                     |False                                
 |space                            |scripts_dir                    |/home/msilva/cloudbench/lib/auxiliary//../../scripts
-|space                            |ssh_key_name                   |/home/msilva/cloudbench/lib/auxiliary//../../credentials/bogus_id_rsa
+|space                            |ssh_key_name                   |/home/msilva/cloudbench/lib/auxiliary//../../credentials/cbtool_rsa
 |space                            |stores_working_dir             |/home/msilva/stores                  
 |space                            |tracefile                      |regression/regression_test_experiment_plan.txt
 |space                            |username                       |msilva                               
 |space                            |vm_daemon_dir                  |/home/klabuser                       
-|time                             |experiment_id                  |EXP-06-23-2014-03-23-21-PM-EDT       
+|time                             |experiment_id                  |EXP-07-29-2014-10-43-15-AM-EDT       
 |time                             |external_timeout               |30                                   
 |time                             |external_tries                 |2                                    
 |time                             |hard_reset                     |True                                 
 |time                             |internal_tries                 |2                                    
-|time                             |start_time                     |1403551400                           
+|time                             |start_time                     |1406644994                           
 |time                             |step_delay                     |5                                    
 |time                             |username                       |msilva                               
 |vm_defaults                      |access                         |                                     
@@ -720,6 +722,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |vm_defaults                      |check_boot_started             |poll_cloud                           
 |vm_defaults                      |client_pref_pool               |lg                                   
 |vm_defaults                      |credentials                    |                                     
+|vm_defaults                      |credentials_dir                |/home/msilva/cloudbench/lib/auxiliary//../../credentials
 |vm_defaults                      |debug_remote_commands          |False                                
 |vm_defaults                      |detach_parallelism             |20                                   
 |vm_defaults                      |driver_pref_pool               |lg                                   
@@ -727,6 +730,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |vm_defaults                      |execute_json_filename_prefix   |cb                                   
 |vm_defaults                      |execute_script_name            |execute_on_staging.sh                
 |vm_defaults                      |extra_info                     |                                     
+|vm_defaults                      |jump_host                      |                                     
 |vm_defaults                      |key_name                       |                                     
 |vm_defaults                      |login                          |klabuser                             
 |vm_defaults                      |migrate_protocol               |tcp                                  
@@ -737,15 +741,17 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |vm_defaults                      |placement                      |random                               
 |vm_defaults                      |protect_protocol               |tcp                                  
 |vm_defaults                      |protect_protocol_supported     |tcp,rdma,x-rdma                      
+|vm_defaults                      |prov_netname                   |private                              
 |vm_defaults                      |qemu_debug                     |False                                
 |vm_defaults                      |randomize_image_name           |False                                
 |vm_defaults                      |remote_dir_name                |cloudbench                           
 |vm_defaults                      |resize_supported               |False                                
 |vm_defaults                      |run_generic_scripts            |False                                
+|vm_defaults                      |run_netname                    |private                              
 |vm_defaults                      |runstate_parallelism           |5                                    
 |vm_defaults                      |runstate_supported             |True                                 
 |vm_defaults                      |security_groups                |                                     
-|vm_defaults                      |ssh_key_name                   |bogus_id_rsa                         
+|vm_defaults                      |ssh_key_name                   |cbtool_rsa                           
 |vm_defaults                      |timeout                        |240                                  
 |vm_defaults                      |transfer_files                 |False                                
 |vm_defaults                      |update_attempts                |720                                  
@@ -823,7 +829,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |vmcrs_defaults                   |detach_parallelism             |20                                   
 |vmcrs_defaults                   |login                          |klabuser                             
 |vmcrs_defaults                   |notification                   |False                                
-|vmcrs_defaults                   |ssh_key_name                   |bogus_id_rsa                         
+|vmcrs_defaults                   |ssh_key_name                   |cbtool_rsa                           
 |vmcrs_defaults                   |submitter                      |True                                 
 |vmcrs_defaults                   |update_attempts                |720                                  
 |vmcrs_defaults                   |update_frequency               |1                                    

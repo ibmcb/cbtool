@@ -1,8 +1,10 @@
-|arrival |1403552071 
-|command_originated |1403552071 
+|arrival |1406645658 
+|command_originated |1406645657 
+|identity |/home/msilva/cloudbench/lib/auxiliary//../../credentials/cbtool_rsa
 \|mgt_d \|X 
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1403552074 |aidrs_2 |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1403552084 |aidrs_2 |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1403552090 |aidrs_2 |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1403552096 |aidrs_2 |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1403552102 |aidrs_2 |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ssh_key_name |cbtool_rsa 
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1406645661 |aidrs_2 |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1406645670 |aidrs_2 |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1406645676 |aidrs_2 |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1406645682 |aidrs_2 |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1406645688 |aidrs_2 |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx

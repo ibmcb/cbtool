@@ -1,13 +1,13 @@
- status: Waiting for vm_3 (cloud-assigned uuid 5D87AC25-57F2-54F7-BE79-BE566E3A0D20) to start...
- status: Trying to establish network connectivity to vm_3 (cloud-assigned uuid 5D87AC25-57F2-54F7-BE79-BE566E3A0D20), on IP address 197.77.188.90...
- status: Bypassing the bootstrapping and the sending of a copy of the code tree to vm_3 (197.77.188.90)...
- status: Bypassing generic VM post_boot configuration on vm_3 (197.77.188.90)...
-VM object 44DCD991-1EEC-562D-869C-594E5CE474F5 (named "vm_3") sucessfully attached to this experiment. It is ssh-accessible at the IP address 197.77.188.90 (5D87AC25-57F2-54F7-BE79-BE566E3A0D20.simcloud.com).
+ status: Waiting for vm_3 (cloud-assigned uuid D3D24C9D-B79F-5744-BB85-C87A6B0208D7) to start...
+ status: Trying to establish network connectivity to vm_3 (cloud-assigned uuid D3D24C9D-B79F-5744-BB85-C87A6B0208D7), on IP address 114.60.210.249...
+ status: Bypassing the bootstrapping and the sending of a copy of the code tree to vm_3 (114.60.210.249)...
+ status: Bypassing generic VM post_boot configuration on vm_3 (114.60.210.249)...
+VM object 05C79B87-C3F0-583E-9422-A94AB53F62A4 (named "vm_3") sucessfully attached to this experiment. It is ssh-accessible at the IP address 197.67.223.180 (D3D24C9D-B79F-5744-BB85-C87A6B0208D7.simcloud.com).
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 |name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
-|vm_1          |tinyvm              |pico32      |33.1.160.141    |simhostb2                  |SUT                 |none    |none       |FDEAFBAB-B8CD-5E08-9D4B-D3D59B79092D
-|vm_2          |tinyvm              |pico32      |240.112.234.127 |simhosta2                  |LG                  |none    |none       |D664FADE-A0E5-5EA8-8682-C182D3F1DC28
-|vm_3          |tinyvm              |pico32      |197.77.188.90   |simhostb1                  |SUT                 |none    |none       |44DCD991-1EEC-562D-869C-594E5CE474F5
+|vm_1          |tinyvm              |pico32      |63.163.249.6    |simhostc0                  |SUT                 |none    |none       |6C4682F1-118C-5A7F-ACE7-7B4FEBA5B194
+|vm_2          |tinyvm              |pico32      |34.126.204.243  |simhostb4                  |LG                  |none    |none       |703D3346-D704-5DF7-BAD3-14D933E0A656
+|vm_3          |tinyvm              |pico32      |197.67.223.180  |simhostb1                  |SUT                 |none    |none       |05C79B87-C3F0-583E-9422-A94AB53F62A4
 
 The VM object vm_3, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
 |attribute (VM object key)               |value                                
@@ -20,19 +20,19 @@ The VM object vm_3, attached to this experiment, has the following attributes (C
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |1.91M                         
+|Used Memory                                          |1.92M                         
 |Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |7347998                       
-|Total Connections Received                           |130021                        
-|Total Commands Processed                             |19394854                      
-|Number of Keys                                       |318                           
+|Uptime (in seconds)                                  |10441591                      
+|Total Connections Received                           |230919                        
+|Total Commands Processed                             |26371827                      
+|Number of Keys                                       |319                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
 |MongoDB Version                                      |2.4.9                         
-|Storage Size                                         |4009984                       
-|Data Size                                            |482624                        
+|Storage Size                                         |3993600                       
+|Data Size                                            |482064                        
 |Index Size                                           |416976                        
-|Average Object Size                                  |504.309299896                 
+|Average Object Size                                  |504.251046025                 
 |Collections                                          |14                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
@@ -92,8 +92,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |91                            
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|B38BD30A-106B-5E07-AF62-5A50D1487A59 (simzone_a) VM RESERVATIONS|0                             
-|8C53307C-358D-5770-8D49-330785035C79 (simzone_b) VM RESERVATIONS|2                             
-|483B001F-9E38-501E-A417-6478C51606D0 (simzone_d) VM RESERVATIONS|1                             
-|6A3616D0-5253-554E-87DE-E1BA460362BF (simzone_c) VM RESERVATIONS|0                             
+|CB88853E-58E0-55D5-921E-242951F8AB02 (simzone_a) VM RESERVATIONS|0                             
+|ADA16D86-396B-5799-9B25-DD264BAE818D (simzone_c) VM RESERVATIONS|1                             
+|6CAA8F08-DFCB-53EB-840C-954BF8EF0DE0 (simzone_d) VM RESERVATIONS|1                             
+|521FDEB9-99F6-5AF6-86FE-EAEBBAC024E3 (simzone_b) VM RESERVATIONS|1                             
 

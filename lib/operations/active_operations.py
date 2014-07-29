@@ -4044,47 +4044,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                         for _idx in range(0, int(_nr_vms)) :
 
-                            if _vm_role + "_pref_host" in obj_attr_list :
-                                _pool = obj_attr_list[_vm_role + "_pref_host"]
-                            else :
-                                if _vm_role + "_pref_pool" in obj_attr_list :
-                                    _pool = obj_attr_list[_vm_role + "_pref_pool"]
-                                else :
-                                    _pool = "auto"
-
-                            if _vm_role + "_meta_tag" in obj_attr_list :
-                                _meta_tag = obj_attr_list[_vm_role + "_meta_tag"]
-                            else :
-                                _meta_tag = "empty"
-            
-                            if _vm_role + "_size" in obj_attr_list :
-                                _size = obj_attr_list[_vm_role + "_size"]
-                            else :
-                                _size = "default"
-
-                            _extra_parms = "base_type=" + obj_attr_list["base_type"]
-
-                            if _vm_role + "_netid" in obj_attr_list :
-                                _extra_parms += ",netid=" + obj_attr_list[_vm_role + "_netid"]
-
-                            if _vm_role + "_login" in obj_attr_list :
-                                if _extra_parms != '' :
-                                    _extra_parms += ','                    
-                                _extra_parms += "login=" + obj_attr_list[_vm_role + "_login"]
-            
-                            if _vm_role + "_resource_limits" in obj_attr_list :
-                                if _extra_parms != '' :
-                                    _extra_parms += ','                                 
-                                _extra_parms += "resource_limits=" + obj_attr_list[_vm_role + "_resource_limits"]            
-            
-                            if _vm_role + "_cloud_vv" in obj_attr_list :
-                                if _extra_parms != '' :
-                                    _extra_parms += ','
-                                _extra_parms += ",cloud_vv=" + obj_attr_list[_vm_role + "_cloud_vv"]
-
-                            if _vm_role + "_cloud_ips" in obj_attr_list :
-                                if not _vm_role in _cloud_ips :
-                                    _cloud_ips[_vm_role] = obj_attr_list[_vm_role + "_cloud_ips"].split(';')
+                            _pool, _meta_tag, _size, _extra_parms = \
+                            self.propagate_ai_attributes_to_vm(_vm_role, _cloud_ips, obj_attr_list)
 
                             if _vm_role in _cloud_ips :
                                 if _extra_parms != '' :

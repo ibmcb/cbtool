@@ -1725,6 +1725,58 @@ class BaseObjectOperations :
         return _nr_vms, _vm_role
 
     @trace
+    def propagate_ai_attributes_to_vm(self, vm_role, cloud_ips, obj_attr_list) :
+        '''
+        TBD
+        '''
+        if vm_role + "_pref_host" in obj_attr_list :
+            _pool = obj_attr_list[vm_role + "_pref_host"]
+        else :
+            if vm_role + "_pref_pool" in obj_attr_list :
+                _pool = obj_attr_list[vm_role + "_pref_pool"]
+            else :
+                _pool = "auto"
+
+        if vm_role + "_meta_tag" in obj_attr_list :
+            _meta_tag = obj_attr_list[vm_role + "_meta_tag"]
+        else :
+            _meta_tag = "empty"
+
+        if vm_role + "_size" in obj_attr_list :
+            _size = obj_attr_list[vm_role + "_size"]
+        else :
+            _size = 'default'
+
+        _extra_parms = "sut=" + obj_attr_list["sut"]
+
+        if "credentials" in obj_attr_list :
+            _extra_parms += ",credentials=" + obj_attr_list["credentials"]
+
+        if "access" in obj_attr_list :
+            _extra_parms += ",access=" + obj_attr_list["access"]
+        
+        if vm_role + "_netid" in obj_attr_list :
+            _extra_parms += ",netid=" + obj_attr_list[vm_role + "_netid"]
+
+        if vm_role + "_login" in obj_attr_list :
+            _extra_parms += ",login=" + obj_attr_list[vm_role + "_login"]
+
+        if vm_role + "_resource_limits" in obj_attr_list :
+            _extra_parms += ",resource_limits=" + obj_attr_list[vm_role + "_resource_limits"]
+
+        if vm_role + "_cloud_vv" in obj_attr_list :
+            _extra_parms += ",cloud_vv=" + obj_attr_list[vm_role + "_cloud_vv"]
+
+        if vm_role + "_cloud_ips" in obj_attr_list :
+            if not vm_role in cloud_ips :
+                cloud_ips[vm_role] = obj_attr_list[vm_role + "_cloud_ips"].split(';')
+
+        if obj_attr_list["load_balancer"].strip().lower() == "true" :
+            _size = 'load_balanced_default'        
+
+        return _pool, _meta_tag, _size, _extra_parms
+
+    @trace
     def create_vm_list_for_ai(self, obj_attr_list) :
         '''
         TBD
@@ -1779,44 +1831,8 @@ class BaseObjectOperations :
                     else :
                         obj_attr_list["load_generator_target_role"] = _tiers[_tier_nr].split("_x_")[1]
 
-                if _vm_role + "_pref_host" in obj_attr_list :
-                    _pool = obj_attr_list[_vm_role + "_pref_host"]
-                else :
-                    if _vm_role + "_pref_pool" in obj_attr_list :
-                        _pool = obj_attr_list[_vm_role + "_pref_pool"]
-                    else :
-                        _pool = "auto"
-
-                if _vm_role + "_meta_tag" in obj_attr_list :
-                    _meta_tag = obj_attr_list[_vm_role + "_meta_tag"]
-                else :
-                    _meta_tag = "empty"
-
-                if _vm_role + "_size" in obj_attr_list :
-                    _size = obj_attr_list[_vm_role + "_size"]
-                else :
-                    _size = 'default'
-
-                _extra_parms = "sut=" + obj_attr_list["sut"]
-                
-                if _vm_role + "_netid" in obj_attr_list :
-                    _extra_parms += ",netid=" + obj_attr_list[_vm_role + "_netid"]
-
-                if _vm_role + "_login" in obj_attr_list :
-                    _extra_parms += ",login=" + obj_attr_list[_vm_role + "_login"]
-
-                if _vm_role + "_resource_limits" in obj_attr_list :
-                    _extra_parms += ",resource_limits=" + obj_attr_list[_vm_role + "_resource_limits"]
-
-                if _vm_role + "_cloud_vv" in obj_attr_list :
-                    _extra_parms += ",cloud_vv=" + obj_attr_list[_vm_role + "_cloud_vv"]
-
-                if _vm_role + "_cloud_ips" in obj_attr_list :
-                    if not _vm_role in _cloud_ips :
-                        _cloud_ips[_vm_role] = obj_attr_list[_vm_role + "_cloud_ips"].split(';')
-
-                if obj_attr_list["load_balancer"].strip().lower() == "true" :
-                    _size = 'load_balanced_default'
+                _pool, _meta_tag, _size, _extra_parms = \
+                self.propagate_ai_attributes_to_vm(_vm_role, _cloud_ips, obj_attr_list) 
 
                 _attach_action = obj_attr_list["staging"]
 

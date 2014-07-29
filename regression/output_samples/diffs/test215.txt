@@ -1,3 +1,9 @@
-|arrival |1403550666 
-|command_originated |1403550663 
-\|mgt_d \|X 
+|arrival |1406644270 
+|command_originated |1406644268 
+|credentials_dir |/home/msilva/cloudbench/lib/auxiliary//../../credentials
+|identity |/home/msilva/cloudbench/lib/auxiliary//../../credentials/cbtool_rsa
+|jump_host | 
+|prov_netname |private 
+|run_cloud_ip |xxx.xxx.xxx.xxx 
+|run_netname |private 
+|ssh_key_name |cbtool_rsa 

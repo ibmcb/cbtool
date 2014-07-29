@@ -1,2 +1,0 @@
-|simzone_X |5 |sut |simzone_X |xxx.xxx.xxx.xxx 
-|simzone_X |5 |lg |simzone_X |xxx.xxx.xxx.xxx 

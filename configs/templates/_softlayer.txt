@@ -1,0 +1,129 @@
+[USER-DEFINED]
+SLR_ACCESS = need_to_be_configured_by_user
+SLR_CREDENTIALS = need_to_be_configured_by_user
+SLR_KEY_NAME = cbtool_rsa
+SLR_INITIAL_VMCS = need_to_be_configured_by_user
+SLR_SSH_KEY_NAME = cbtool_rsa
+SLR_LOGIN = need_to_be_configured_by_user
+
+# PEBCAK documentation for the Wizard and CLI
+SLR_ACCESS_DOC = API Endpoint (possible values are: private | public)
+SLR_ACCESS_DEFAULT = private
+SLR_CREDENTIALS_DOC = This option requires a specific syntax:\n<username>-<api_key>-<api_type>\n ... The "api_type" indicates if Bare-Metal (bm) or Virtualized (cci) nodes will be used.
+SLR_CREDENTIALS_DEFAULT = admin-apikey-cci
+SLR_KEY_NAME_DOC = Please enter the Softlayer key used to login\nto your VMs as root. This key needs to be generated in\nthe Softlayer portal before starting the tool.
+SLR_KEY_NAME_DEFAULT = some_key_name 
+SLR_LOGIN_DOC = $LOGIN_DOC
+SLR_LOGIN_DEFAULT = klabuser
+SLR_SSH_KEY_NAME_DOC = $SSH_KEY_NAME_DOC
+SLR_SSH_KEY_NAME_DEFAULT = id_rsa.private
+SLR_INITIAL_VMCS_DOC = $INITIAL_VMCS_DOC 
+SLR_INITIAL_VMCS_DEFAULT = RegionOne
+
+[SPACE : SLR_CLOUDCONFIG ]
+SSH_KEY_NAME = $SLR_SSH_KEY_NAME
+OPENVPN_SERVER_ADDRESS = $False
+
+[MON_DEFAULTS : SLR_CLOUDCONFIG ]
+COLLECT_FROM_HOST = $False # requires ganglia installation on hypervisor
+COLLECT_FROM_GUEST = $True
+
+[VMC_DEFAULTS : SLR_CLOUDCONFIG]
+ACCESS = $SLR_ACCESS
+CREDENTIALS = $SLR_CREDENTIALS
+SECURITY_GROUPS = $Empty
+KEY_NAME = $SLR_KEY_NAME
+INITIAL_VMCS = $SLR_INITIAL_VMCS
+ADDITIONAL_DISCOVERY = $Empty
+MIGRATE_SUPPORTED = $False
+PROTECT_SUPPORTED = $False
+
+[VM_DEFAULTS : SLR_CLOUDCONFIG]
+ACCESS = $SLR_ACCESS
+CREDENTIALS = $SLR_CREDENTIALS
+KEY_NAME = $SLR_KEY_NAME
+SECURITY_GROUPS = $Empty
+CLOUD_MAC = $True
+CAPTURE_SUPPORTED = $False
+RUNSTATE_SUPPORTED = $False
+RESIZE_SUPPORTED = $False
+LOGIN = $SLR_LOGIN
+SSH_KEY_NAME = $SLR_SSH_KEY_NAME
+IMAGES_ACCESS = private
+PRIVATE_VLAN = $Empty
+NIC_SPEED = 1000
+PRIVATE_NETWORK_ONLY = $True
+CHECK_BOOT_STARTED = poll_cloud
+# Other methods could be used to check if a VM *STARTED* booting
+#CHECK_BOOT_STARTED = subscribe_on_starting
+CHECK_BOOT_COMPLETE = tcp_on_22
+# Other methods could be used to check if a VM *FINISHED* booting
+#CHECK_BOOT_COMPLETE = subscribe_on_booting
+#CHECK_BOOT_COMPLETE = wait_for_0
+RUN_NETNAME = private
+PROV_NETNAME = private
+VM_HOSTNAME_KEY = cloud_vm_name
+RUN_NETNAME = private
+PROV_NETNAME = private
+JUMP_HOST = $Empty
+
+[AI_DEFAULTS : SLR_CLOUDCONFIG]
+ATTACH_PARALLELISM = 5
+CAPTURE_SUPPORTED = $True
+RUNSTATE_SUPPORTED = $True
+RESIZE_SUPPORTED = $True
+LOGIN = $SLR_LOGIN
+SSH_KEY_NAME = $SLR_SSH_KEY_NAME
+DONT_START_QEMU_SCRAPER = $False
+
+[AIDRS_DEFAULTS : SLR_CLOUDCONFIG]
+LOGIN = $SLR_LOGIN
+SSH_KEY_NAME = $SLR_SSH_KEY_NAME
+
+[VMCRS_DEFAULTS : SLR_CLOUDCONFIG]
+LOGIN = $SLR_LOGIN
+SSH_KEY_NAME = $SLR_SSH_KEY_NAME
+
+[FIRS_DEFAULTS : SLR_CLOUDCONFIG]
+LOGIN = $SLR_LOGIN
+SSH_KEY_NAME = $SLR_SSH_KEY_NAME
+
+[VM_TEMPLATES : SLR_CLOUDCONFIG]
+CLIENT_DAYTRADER = size:2-4096, imageids:1, imageid1:cb_daytrader
+DRIVER_DAYTRADER = size:2-4096, imageids:1, imageid1:cb_daytrader
+CLIENT_TRADELITE = size:2-4096, imageids:1, imageid1:cb_tradelite
+DRIVER_TRADELITE = size:2-4096, imageids:1, imageid1:cb_tradelite
+MYSQL = size:2-4096, lb_size:gold32, eclipsed_size:gold32, imageids:1, imageid1:cb_daytrader
+GERONIMO = size:2-4096, eclipsed_size:gold32, imageids:1, imageid1:cb_daytrader
+DB2 = size:2-4096, lb_size:gold32, eclipsed_size:gold32, imageids:1, imageid1:cb_daytrader
+WAS = size:2-4096, eclipsed_size:gold32, imageids:1, imageid1:cb_daytrader
+DRIVER_HADOOP = size:1-1024, imageids:1, imageid1:cb_hadoop
+HADOOPMASTER = size:1-2048, eclipsed_size:gold32, imageids:1, imageid1:cb_hadoop
+HADOOPSLAVE = size:2-4096, eclipsed_size:gold32, imageids:1, imageid1:cb_hadoop
+DRIVER_NETPERF = size:1-1024, imageids:1, imageid1:cb_netperf
+NETCLIENT = size:2-4096, imageids:1, imageid1:cb_netperf
+NETSERVER = size:1-1024, imageids:1, imageid1:cb_netperf
+IPERFCLIENT = size:1-2048, imageid1:cb_iperf
+IPERFSERVER = size:1-2048, imageid1:cb_iperf
+DRIVER_COREMARK = size:1-1024, imageids:1, imageid1:cb_coremark
+COREMARK = size:1-1024, eclipsed_size:gold32, imageids:1, imageid1:cb_netperf
+CLIENT_WINDOWS = size:2-4096, imageids:1, imageid1:cb_windows
+WINDOWS = size:2-4096 imageids:1, imageid1:cb_windows
+DRIVER_FILEBENCH = size:2-4096, imageids:1, imageid1:cb_filebench
+FILEBENCH = size:1-2048, eclipsed_size:gold32, imageids:1, imageid1:cb_filebench
+DRIVER_FIO = size:2-4096, imageids:1, imageid1:cb_fio
+FIOCLIENT = size:2-4096, imageids:1, imageid1:cb_fio
+FIOSERVER = size:2-4096, eclipsed_size:gold32, imageids:1, imageid1:cb_fio
+TINYVM = size:1-1024, imageids:1, imageid1:cb_nullworkload
+FEN_HPC = size:2-4096, imageids:1, imageid1:cb_hpc
+CN_HPC = size:2-4096, imageids:1, imageid1:cb_hpc
+DDGEN = size:2-4096, imageids:1, imageid1:cb_ddgen
+SPECJBB = size:2-4096, eclipsed_size:gold32, imageids:1, imageid1:cb_specjbb
+LB = size:2-4096, eclipsed_size:gold32, imageids:1, imageid1:cb_daytrader
+MONGOS = size:4-8192, eclipsed_size:gold32, imageid1:cb_ycsb
+MONGO_CFG_SERVER = size:1-2048, imageid1:cb_ycsb
+MONGODB = size:2-4096, eclipsed_size:gold32, imageid1:cb_ycsb
+CASSANDRA = size:2-4096, eclipsed_size:gold32, imageid1:cb_ycsb
+SEED = size:2-4096, imageid1:cb_ycsb
+REDIS = size:2-4096, imageid1:cb_ycsb
+YCSB = size:2-4096, imageid1:cb_ycsb

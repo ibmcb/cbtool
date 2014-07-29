@@ -1,4 +1,4 @@
-Background operation execution success. Operation "vmc-attachall" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.1.250,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,timeout:240,host:172.16.1.250,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,all,empty=empty --operation=vmc-attachall --cn=TESTCLOUD --uuid=FD0132D9-15A6-51BD-A271-A08D481671E7 --daemon". The process id is 15185.
+Background operation execution success. Operation "vmc-attachall" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.1.250,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,timeout:240,host:172.16.1.250,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,all,empty=empty --operation=vmc-attachall --cn=TESTCLOUD --uuid=277ACA28-E7DF-52F8-BEFF-8C8361DB49F3 --daemon". The process id is 977.
 
 Going to unconditionally wait for 8s (8 seconds). The command line interface will be blocked during the waiting.
 Waited 1 seconds... (12.5%)
@@ -12,10 +12,10 @@ Waited 8 seconds... (100.0%)
 Waited for 8 seconds.
 The following ATTACHED VMCs are in this experiment (Cloud TESTCLOUD) :
 |name                    |host_count      |pool                    |cloud_hostname                  |cloud_ip         
-|simzone_a               |5               |sut                     |simzone_a                       |169.199.55.184   
-|simzone_b               |5               |sut                     |simzone_b                       |32.126.180.227   
-|simzone_c               |5               |sut                     |simzone_c                       |67.232.45.33     
-|simzone_d               |5               |lg                      |simzone_d                       |28.99.28.178     
+|simzone_a               |5               |sut                     |simzone_a                       |212.252.3.143    
+|simzone_b               |5               |sut                     |simzone_b                       |87.13.163.137    
+|simzone_c               |5               |sut                     |simzone_c                       |113.148.28.68    
+|simzone_d               |5               |lg                      |simzone_d                       |16.77.89.130     
 
 The VMC object simzone_c, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
 |attribute (VMC object key)               |value                                
@@ -25,19 +25,19 @@ The VMC object simzone_c, attached to this experiment, has the following attribu
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |1.82M                         
+|Used Memory                                          |1.83M                         
 |Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |7347991                       
-|Total Connections Received                           |130021                        
-|Total Commands Processed                             |19391993                      
+|Uptime (in seconds)                                  |10441584                      
+|Total Connections Received                           |230919                        
+|Total Commands Processed                             |26368906                      
 |Number of Keys                                       |283                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
 |MongoDB Version                                      |2.4.9                         
-|Storage Size                                         |3952640                       
-|Data Size                                            |469880                        
-|Index Size                                           |408800                        
-|Average Object Size                                  |503.622722401                 
+|Storage Size                                         |3936256                       
+|Data Size                                            |469320                        
+|Index Size                                           |400624                        
+|Average Object Size                                  |503.56223176                  
 |Collections                                          |13                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
@@ -97,8 +97,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |88                            
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|B38BD30A-106B-5E07-AF62-5A50D1487A59 (simzone_a) VM RESERVATIONS|0                             
-|8C53307C-358D-5770-8D49-330785035C79 (simzone_b) VM RESERVATIONS|0                             
-|483B001F-9E38-501E-A417-6478C51606D0 (simzone_d) VM RESERVATIONS|0                             
-|6A3616D0-5253-554E-87DE-E1BA460362BF (simzone_c) VM RESERVATIONS|0                             
+|CB88853E-58E0-55D5-921E-242951F8AB02 (simzone_a) VM RESERVATIONS|0                             
+|ADA16D86-396B-5799-9B25-DD264BAE818D (simzone_c) VM RESERVATIONS|0                             
+|6CAA8F08-DFCB-53EB-840C-954BF8EF0DE0 (simzone_d) VM RESERVATIONS|0                             
+|521FDEB9-99F6-5AF6-86FE-EAEBBAC024E3 (simzone_b) VM RESERVATIONS|0                             
 
