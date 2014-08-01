@@ -26,7 +26,8 @@
 
 import socket
 
-from os import mkdir, listdir, path
+from os import mkdir, listdir, path, access, F_OK, W_OK
+
 from shutil import rmtree
 from time import sleep
 
@@ -223,6 +224,8 @@ def syslog_logstore_setup(global_objects, operation = "check") :
     _protocol = global_objects["logstore"]["protocol"]
     _username = global_objects["logstore"]["username"]
     _usage = global_objects["logstore"]["usage"].lower()
+    _stores_wk_dir = global_objects["space"]["stores_working_dir"]
+    _log_dir = global_objects["space"]["log_dir"]
 
     try :
         _name, _ip = hostname2ip(_hostname)        
@@ -248,25 +251,37 @@ def syslog_logstore_setup(global_objects, operation = "check") :
             else :
                 _usage = "private"
 
-                _config_file_fn = global_objects["space"]["stores_working_dir"] + '/' + _username + "_rsyslog.conf"
-                _cmd = "rsyslogd -f " + _config_file_fn + " -c 4 " + "-i " + global_objects["space"]["stores_working_dir"] + "/rsyslog.pid"
-
                 _proc_man =  ProcessManagement(username = _username)
+
+                _config_file_fn = _stores_wk_dir + '/' + _username + "_rsyslog.conf"
+                _cmd = "rsyslogd -f " + _config_file_fn + " -c 4 " + "-i " + _stores_wk_dir + "/rsyslog.pid"
+
+                if not access(_config_file_fn, F_OK) :
+                    # File was deleted, but the rsyslog process is still dangling
+                    _proc_man.run_os_command("sudo pkill -9 -f " + _config_file_fn)
+
+
+                if not access(_log_dir, W_OK) :
+                    # The directory does not even exist, kill any rsyslog processes still dangling
+                    _proc_man.run_os_command("sudo pkill -9 -f " + _config_file_fn)                    
+                    _proc_man.run_os_command("sudo mkdir -p " + _log_dir + " && sudo chmod 777 " + _log_dir)
+
                 _rsyslog_pid = _proc_man.get_pid_from_cmdline(_cmd)     
 
                 if not _rsyslog_pid :
                     global_objects["logstore"]["port"] = _proc_man.get_free_port(global_objects["logstore"]["port"], protocol = "udp")
                     _hostport = int(global_objects["logstore"]["port"])
-                    
+
                     _config_file_contents = global_objects["logstore"]["config_string"].replace('_', ' ')
                     _config_file_contents = _config_file_contents.replace("DOLLAR", '$')
                     _config_file_contents = _config_file_contents.replace("RSYSLOG", "RSYSLOG_")
                     _config_file_contents = _config_file_contents.replace("REPLPORT", str(_hostport))
-                    _config_file_contents = _config_file_contents.replace("REPLSTORESWORKINGDIR", global_objects["space"]["stores_working_dir"])
+                    _config_file_contents = _config_file_contents.replace("REPLLOGDIR", _log_dir)
+                    _config_file_contents = _config_file_contents.replace("REPLUSER", _username + '_')                    
                     _config_file_contents = _config_file_contents.replace(';','\n')
                     _config_file_contents = _config_file_contents.replace("--", ';')
 
-                    _config_file_fn = global_objects["space"]["stores_working_dir"] + '/' + _username + "_rsyslog.conf"
+                    _config_file_fn = _stores_wk_dir + '/' + _username + "_rsyslog.conf"
                     _config_file_fd = open(_config_file_fn, 'w')
                     _config_file_fd.write(_config_file_contents)
                     _config_file_fd.close()
@@ -456,18 +471,23 @@ def reset(global_objects, soft = True) :
     TBD
     '''
     try :
+
+        _stores_wk_dir = global_objects["space"]["stores_working_dir"]
+        _log_dir = global_objects["space"]["log_dir"]
+        _username = global_objects["logstore"]["username"]
+            
         _msg = "Killing all processes..."
         print _msg,
         _proc_man =  ProcessManagement()
-        _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f cbact")
-        _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f cloud-api")
-        _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f cloud-gui")        
-        _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f ai-")
-        _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f vm-")
-        _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f submit-")
-        _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f capture-")
-        _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f gmetad.py")
-        _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f gtkCBUI_")
+        _proc_man.run_os_command("pkill -9 -u " + _username + " -f cbact")
+        _proc_man.run_os_command("pkill -9 -u " + _username + " -f cloud-api")
+        _proc_man.run_os_command("pkill -9 -u " + _username + " -f cloud-gui")        
+        _proc_man.run_os_command("pkill -9 -u " + _username + " -f ai-")
+        _proc_man.run_os_command("pkill -9 -u " + _username + " -f vm-")
+        _proc_man.run_os_command("pkill -9 -u " + _username + " -f submit-")
+        _proc_man.run_os_command("pkill -9 -u " + _username + " -f capture-")
+        _proc_man.run_os_command("pkill -9 -u " + _username + " -f gmetad.py")
+        _proc_man.run_os_command("pkill -9 -u " + _username + " -f gtkCBUI_")
         print "done"
 
         _proc_man.run_os_command("screen -wipe")
@@ -499,7 +519,7 @@ def reset(global_objects, soft = True) :
             _file_list.append("subscribe.log")
 
             for _fn in  _file_list :
-                _proc_man.run_os_command("rm -rf " + global_objects["space"]["stores_working_dir"] + "/logs/" + _fn)                    
+                _proc_man.run_os_command("rm -rf " + _log_dir + '/' + _username + '_' + _fn)                    
 
             _status, _msg = syslog_logstore_setup(global_objects, "check")
             print "done"

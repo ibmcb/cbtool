@@ -279,7 +279,7 @@ class APIClient(Server):
             _object_type = metric_class + '_' + object_type
 
         metrics = self.msci.find_document("latest_" + _object_type + "_" + self.username, {"uuid" : uuid})
-        
+
         if metrics is None :
             raise APINoSuchMetricException(1, "No " + _object_type + " data available.")
         

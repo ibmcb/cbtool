@@ -352,6 +352,7 @@ class CommonCloudFunctions:
                     _msg = "Check if the VM \"" + obj_attr_list["name"]
                     _msg += "\" (" + obj_attr_list["cloud_vm_uuid"] + ") has booted by "
                     _msg += "running the command \"" + str(_command_to_run)
+                    cbdebug(_msg)
 
                     _proc_man = ProcessManagement(username = obj_attr_list["login"], \
                                                   cloud_name = obj_attr_list["cloud_name"], \

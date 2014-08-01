@@ -104,7 +104,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     fh = open(self.path + "/" + cld_attr_lst["cloud_filename"], 'r')
                     definitions = fh.read()
                     fh.close()
-                    
+
                 _attributes, _unused_definitions = parse_cld_defs_file(definitions)
                 cld_attr_lst.update(_attributes)
 
@@ -127,9 +127,22 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     cld_attr_lst["metricstore"].update(uni_attr_lst["metricstore"])
 
                 rewrite_cloudconfig(cld_attr_lst)
-                
+
                 rewrite_cloudoptions(cld_attr_lst, available_clouds, False)
-                
+
+                _idmsg = "The \"" + cld_attr_lst["model"] + "\" cloud named \""
+                _idmsg += cld_attr_lst["cloud_name"] + "\""
+                _smsg = _idmsg + " was successfully attached to this "
+                _smsg += "experiment."
+                _fmsg = _idmsg + " could not be attached to this experiment: "
+
+                _cld_ops = __import__("lib.clouds." + cld_attr_lst["model"] \
+                                      + "_cloud_ops", fromlist = \
+                                      [cld_attr_lst["model"].capitalize() + "Cmds"])
+    
+                _cld_ops_class = getattr(_cld_ops, \
+                                         cld_attr_lst["model"].capitalize() + "Cmds")
+
                 if "ssh_key_name" in cld_attr_lst["space"] :
                     ssh_filename = cld_attr_lst["space"]["credentials_dir"] + '/' + cld_attr_lst["space"]["ssh_key_name"]
                 else :
@@ -146,59 +159,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 _proc_man =  ProcessManagement(username = cld_attr_lst["time"]["username"], cloud_name = cld_attr_lst["cloud_name"])
 
-                if "jump_host" in cld_attr_lst["vm_defaults"] :
-                    if len(cld_attr_lst["vm_defaults"]["jump_host"]) > 1 :
-                        _msg = "The attribute \"jump_host\" in VM_DEFAULTS is set. "
-                        _msg += "Will attempt to connect (ssh) to the host \"" 
-                        _msg += cld_attr_lst["vm_defaults"]["jump_host"] + "\""
-                        _msg += " to confirm that this host can be used as a \""
-                        _msg += "jump box\"."
-                        cbdebug(_msg, True)
-
-                        _jump_box_host_fn = cld_attr_lst["space"]["base_dir"] 
-                        _jump_box_host_fn += "/" + cld_attr_lst["name"]
-                        _jump_box_host_fn += "_jump_box.conf"
-
-                        # Just re-using the already existing ProcessManagement
-                        # instance. That is why all ssh parameters are being 
-                        # specified here instead of there.
-
-                        _command = "ssh -i " +  cld_attr_lst["space"]["credentials_dir"]
-                        _command += '/' + cld_attr_lst["vm_defaults"]["key_name"] 
-                        _command += ' ' + cld_attr_lst["vm_defaults"]["login"] 
-                        _command += '@' + cld_attr_lst["vm_defaults"]["jump_host"]
-                        _command += " \"which nc\""
-
-                        _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_command)
-
-                        if not _status :
-                            _jump_box_host_contents = "Host *\n"
-                            _jump_box_host_contents += "  ProxyCommand "
-                            _jump_box_host_contents += _command.replace('"', '').replace("which",'').replace(" nc", "nc %h 22")
-
-                            _jump_box_host_fd = open(_jump_box_host_fn, 'w')
-
-                            _jump_box_host_fd.write(_jump_box_host_contents)
-                            _jump_box_host_fd.close()
-
-                            cld_attr_lst["vm_defaults"]["ssh_config_file"] = _jump_box_host_fn
-
-
                 if str(cld_attr_lst["space"]["openvpn_server_address"]).lower() != "false" :
                     self.start_openvpn(cld_attr_lst)
-
-                _idmsg = "The \"" + cld_attr_lst["model"] + "\" cloud named \""
-                _idmsg += cld_attr_lst["cloud_name"] + "\""
-                _smsg = _idmsg + " was successfully attached to this "
-                _smsg += "experiment."
-                _fmsg = _idmsg + " could not be attached to this experiment: "
-
-                _cld_ops = __import__("lib.clouds." + cld_attr_lst["model"] \
-                                      + "_cloud_ops", fromlist = \
-                                      [cld_attr_lst["model"].capitalize() + "Cmds"])
-    
-                _cld_ops_class = getattr(_cld_ops, \
-                                         cld_attr_lst["model"].capitalize() + "Cmds")
     
                 # User may have an empty VMC list. Need to be able to handle that.
                 if cld_attr_lst["vmc_defaults"]["initial_vmcs"].strip() != "" :
@@ -233,10 +195,48 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                   cld_attr_lst["vm_templates"],
                                                   cld_attr_lst["vm_defaults"])
 
+                if "jump_host" in cld_attr_lst["vm_defaults"] :
+                    if len(cld_attr_lst["vm_defaults"]["jump_host"]) > 1 :
+                        _msg = "The attribute \"jump_host\" in VM_DEFAULTS is set. "
+                        _msg += "Will attempt to connect (ssh) to the host \"" 
+                        _msg += cld_attr_lst["vm_defaults"]["jump_host"] + "\""
+                        _msg += " to confirm that this host can be used as a \""
+                        _msg += "jump box\"."
+                        cbdebug(_msg, True)
+
+                        _jump_box_host_fn = cld_attr_lst["space"]["base_dir"] 
+                        _jump_box_host_fn += "/" + cld_attr_lst["name"]
+                        _jump_box_host_fn += "_jump_box.conf"
+
+                        # Just re-using the already existing ProcessManagement
+                        # instance. That is why all ssh parameters are being 
+                        # specified here instead of there.
+
+                        _command = "ssh -i " +  cld_attr_lst["space"]["credentials_dir"]
+                        _command += '/' + cld_attr_lst["vm_defaults"]["key_name"] 
+                        _command += " -o StrictHostKeyChecking=no"
+                        _command += " -o UserKnownHostsFile=/dev/null"                         
+                        _command += ' ' + cld_attr_lst["vm_defaults"]["login"] 
+                        _command += '@' + cld_attr_lst["vm_defaults"]["jump_host"]
+                        _command += " \"which nc\""
+
+                        _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_command)
+
+                        if not _status :
+                            _jump_box_host_contents = "Host *\n"
+                            _jump_box_host_contents += "  ProxyCommand "
+                            _jump_box_host_contents += _command.replace('"', '').replace("which",'').replace(" nc", "nc %h 22")
+
+                            _jump_box_host_fd = open(_jump_box_host_fn, 'w')
+
+                            _jump_box_host_fd.write(_jump_box_host_contents)
+                            _jump_box_host_fd.close()
+
+                            cld_attr_lst["vm_defaults"]["ssh_config_file"] = _jump_box_host_fn
     
                 _all_global_objects = cld_attr_lst.keys()
                 cld_attr_lst["client_should_refresh"] = str(0.0)
-    
+
                 _remove_from_global_objects = [ "name", "model", "user-defined", \
                                                "dependencies", "cloud_filename", \
                                                "cloud_name", "objectstore", \
@@ -1951,8 +1951,19 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _ssh_cmd += " -o UserKnownHostsFile=/dev/null" 
                 _ssh_cmd += " -l " + obj_attr_list["login"] + ' '
 
-                _bcmd = _ssh_cmd                 
-                _bcmd += obj_attr_list["prov_cloud_ip"] 
+                _bcmd = _ssh_cmd + ' ' + obj_attr_list["prov_cloud_ip"] 
+                
+                _msg = "Checking ssh accessibility on " + obj_attr_list["name"]
+                _msg += " (" + obj_attr_list["login"] + "@" + obj_attr_list["prov_cloud_ip"] + ")..."
+                cbdebug(_msg, True)
+                _proc_man.retriable_run_os_command(_bcmd + " \"/bin/true\"", \
+                                                   "127.0.0.1", \
+                                                   _max_tries, \
+                                                   _retry_interval, \
+                                                   obj_attr_list["transfer_files"], \
+                                                   obj_attr_list["debug_remote_commands"], \
+                                                   True)
+
                 _bcmd += " \"mkdir -p ~/" + obj_attr_list["remote_dir_name"] +  ';'
 
                 _bcmd += "echo '#OSKN-redis' > ~/cb_os_parameters.txt;"

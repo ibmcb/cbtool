@@ -1454,7 +1454,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 _file_list.append("subscribe.log")
 
                 for _fn in  _file_list :
-                    _source = _space_attr_list["stores_working_dir"] + "/logs/" + _fn                    
+                    _source = _space_attr_list["log_dir"] + '/' + _space_attr_list["username"] + '_' + _fn                    
                     shutil.copy2(_source, _destination)
 
                 self.osci.update_object_attribute(_cn, "GLOBAL", "time", False, "hard_reset", "False")

@@ -55,6 +55,7 @@ SCRIPTS_DIR = $BASE_DIR/scripts
 CREDENTIALS_DIR = $BASE_DIR/credentials
 DAEMON_WORKING_DIR = $INSTANCE_DIR
 STORES_WORKING_DIR = $BASE_DIR/stores
+LOG_DIR = /var/log/cloudbench
 DATA_WORKING_DIR = $BASE_DIR/data
 USERNAME = $MAIN_USERNAME
 # This variable should match what the layout of the VM image uses (user name and directory)

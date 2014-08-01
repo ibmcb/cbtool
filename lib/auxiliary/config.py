@@ -29,6 +29,7 @@ import re
 
 from time import time
 from re import sub, compile
+from copy import deepcopy
 from pwd import getpwuid
 from subprocess import PIPE,Popen
 
@@ -123,6 +124,16 @@ def parse_cld_defs_file(cloud_definitions, print_message = False, \
         try :
             # contents might already be provided
             if not cloud_definitions :
+
+                # The user-specific configuration file might be buried under a 
+                # subdir
+                if _file_name.count(_username) :
+                    if not os.access(_file_name, os.F_OK) : 
+                        for _dirName, _subdirList, _fileList in os.walk(loc + "configs/"):
+                            for _fname in _fileList:
+                                if _fname == _username + "_cloud_definitions.txt" :
+                                    _file_name = _dirName + '/' + _fname                
+                
                 fh = open(_file_name, 'r')
                 cloud_definitions = fh.read()
                 fh.close()
@@ -161,24 +172,38 @@ def parse_cld_defs_file(cloud_definitions, print_message = False, \
 
             # First we pre-process all "INCLUDE" statements on the file
 
-            for _line in _lines :
-                comment = r.search(_line)
-                if comment is not None :
-                    _line = _line.replace(comment.group(0), "").strip()
-                    
-                if _line.count("INCLUDE") and not _line.count("#"):
-                    _include_tmp = _line.split("INCLUDE")
-                    if len(_include_tmp) != 2 :
-                        raise Exception("configuration error: " + _line)
-                        exit(1)
+            _include_found = True
+            _temp_cloud_definitions_fc = _lines
 
-                    _include_fn = _include_tmp[1].strip()
-                    _include_fh = open(loc + _include_fn, 'r')
-                    _include_fc = _include_fh.readlines()
-                    _include_fh.close()
-                    _cloud_definitions_fc.extend(_include_fc)
-                else :
-                    _cloud_definitions_fc.append(_line)
+            while _include_found :
+
+                _include_found = False
+                for _line in _temp_cloud_definitions_fc :
+
+                    comment = r.search(_line)
+                    if comment is not None :
+                        _line = _line.replace(comment.group(0), "").strip()
+                        
+                    if _line.count("INCLUDE") and not _line.count("#"):
+                        _include_tmp = _line.split("INCLUDE")
+                        if len(_include_tmp) != 2 :
+                            raise Exception("configuration error: " + _line)
+                            exit(1)
+    
+                        _include_fn = _include_tmp[1].strip()
+                        _include_fh = open(loc + _include_fn, 'r')
+                        _include_fc = _include_fh.readlines()
+                        _include_fh.close()
+                        _cloud_definitions_fc.extend(_include_fc)
+                        
+                        if _line in _cloud_definitions_fc :                            
+                            _cloud_definitions_fc.remove(_line)
+
+                    else :
+                        _cloud_definitions_fc.append(_line)
+
+
+                _temp_cloud_definitions_fc = deepcopy(_cloud_definitions_fc)
 
             _cld_attr_lst["cloud_filename"] = _file_name
 
