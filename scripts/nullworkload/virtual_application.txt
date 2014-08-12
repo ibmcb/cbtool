@@ -1,0 +1,39 @@
+# Parameters for this Virtual Application (Application Instance - AI) type should
+# be set on YOUR private configuration configuration file, including the ones 
+# commented.
+
+[AI_TEMPLATES : NULLWORKLOAD]
+DESCRIPTION = Deploys one or more VMs, and then continuously executes
+DESCRIPTION += a variable-length sleep, followed by the reporting of fake 
+DESCRIPTION += performance numbers at the end.\n
+DESCRIPTION +=- LOAD_PROFILE possible values: "default" (since this is just
+DESCRIPTION += sleep call, multiple profiles don't make any sense)\n
+DESCRIPTION +=- LOAD_LEVEL meaning: does not matter/do not care\n 
+DESCRIPTION +=- LOAD_DURATION meaning: the length of the sleep call\n 
+DESCRIPTION += This a very useful workload to test a Cloud's management/
+DESCRIPTION +=infrastructure in an "ideal" or "baseline" scenario (without
+DESCRIPTION += any resource starvation from workloads on compute nodes).\n
+DESCRIPTION += The fact that, despite not executing any actual meaningful 
+DESCRIPTION += workload on the VM, both Guest OS (actual) and Application
+DESCRIPTION += metrics are reported back to CB's Metric Store, makes it
+DESCRIPTION += also an interesting "sanity check" workload. 
+SUT = tinyvm
+LOAD_GENERATOR_ROLE = tinyvm
+LOAD_MANAGER_ROLE = tinyvm
+METRIC_AGGREGATOR_ROLE = tinyvm
+CAPTURE_ROLE = tinyvm
+LOAD_BALANCER = $False
+LOAD_BALANCER_TARGET_PORT = 80 
+LOAD_BALANCER_TARGET_URL = unknown 
+LOAD_BALANCER_TARGET_CHILDREN = 2
+TINYVM_SETUP1 = cb_start_nothing.sh
+START = cb_run_nothing.sh
+LOAD_PROFILE = default
+LOAD_LEVEL = uniformIXIXI1I100
+LOAD_DURATION = 30
+
+# Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
+#SYNC_COUNTER_NAME = synchronization_counter
+#CONCURRENT_AIS = 2
+#SYNC_CHANNEL_NAME = synchronization_channel
+#RUN_COUNTER_NAME = experiment_id_counter

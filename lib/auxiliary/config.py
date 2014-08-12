@@ -167,6 +167,12 @@ def parse_cld_defs_file(cloud_definitions, print_message = False, \
                 if not _template_file_name.count("dependencies.txt") : 
                     _lines += "INCLUDE configs/templates/" + _template_file_name + '\n'
 
+            for _dirName, _subdirList, _fileList in os.walk(path + "scripts"):
+                for _fname in _fileList:
+                    if _fname.count("virtual_application.txt") :
+                        _shortened_dir_name = _dirName.split("scripts")[1]
+                        _lines += "INCLUDE scripts" + _shortened_dir_name + '/' + _fname + '\n'         
+            
             _lines += cloud_definitions
             _lines = _lines.split("\n")
 
@@ -201,7 +207,6 @@ def parse_cld_defs_file(cloud_definitions, print_message = False, \
 
                     else :
                         _cloud_definitions_fc.append(_line)
-
 
                 _temp_cloud_definitions_fc = deepcopy(_cloud_definitions_fc)
 
@@ -288,30 +293,45 @@ def parse_cld_defs_file(cloud_definitions, print_message = False, \
                         _value = _tmp[1]
                         
                     _key = _key.strip().lower()
-                    if _key.count('+=') and _previous_key :
+
+                    if _key.count('+') and _previous_key :
                         # The pattern "+=" is used when the value of a
                         # particular key needs to continue on the next
-                        # line. THIS IS BROKEN!!!!!
-                        _key = _previous_key
+                        # line.
+
+                        if _key.replace('+','').strip() == _previous_key :
+                            _key = _previous_key
+    
+                            _multiline = True
+                            if _key.count("enema") :
+                                print '\n' + _key
+                        else :
+                            _msg = "configuration error: variable " + _key.upper()
+                            _msg += "= has to be preceded by one occurrence of "
+                            _msg += _previous_key.upper() + " = "
+                            raise Exception(_msg)
+                       
                     else :
                         _previous_key = _key
+                        _multiline = False
                     
                     if _global_subsection is not None :
                         if _key == "config" :
                             _key = _global_subsection
                         else :
                             _key = _global_subsection + "_" + _key
-                        
-                    _value = _value.strip()
                     
-                    if _curr_global_object != "user-defined" and\
-                     _key != "startup_command_list" :
-                        _value = _value.replace(' ', '')
+                    if not _key.count("description") : 
+                        _value = _value.strip()
 
-#                            if _key in _cld_attr_lst[_curr_global_object] :
-#                                _cld_attr_lst[_curr_global_object][_key] += _value
-#                            else :
-                    _cld_attr_lst[_curr_global_object][_key] = _value
+                    if _curr_global_object != "user-defined" :
+                        if _key != "startup_command_list" and not _key.count("description") :
+                            _value = _value.replace(' ', '')
+
+                    if _key in _cld_attr_lst[_curr_global_object] and _multiline :
+                        _cld_attr_lst[_curr_global_object][_key] += _value
+                    else :
+                        _cld_attr_lst[_curr_global_object][_key] = _value
                 else :
                     True
 

@@ -1454,8 +1454,9 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 _file_list.append("subscribe.log")
 
                 for _fn in  _file_list :
-                    _source = _space_attr_list["log_dir"] + '/' + _space_attr_list["username"] + '_' + _fn                    
-                    shutil.copy2(_source, _destination)
+                    _source = _space_attr_list["log_dir"] + '/' + _space_attr_list["username"] + '_' + _fn
+                    if access(_source, F_OK) :
+                        shutil.copy2(_source, _destination)
 
                 self.osci.update_object_attribute(_cn, "GLOBAL", "time", False, "hard_reset", "False")
 
@@ -1660,7 +1661,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                             if not _current_uuid in _last_unchanged_metric :
                                 # This is another dictionary, used to 
                                 # "carry over" runtime metrics that are not reported
-                                # frequently, because they change infrequently. For
+                                # frequently, because they seldom change. For
                                 # instance "cpu_freq" is reported with a very low
                                 # frequency. To save memory and storage, the gmetad
                                 # DOES NOT write "old" values to the Metric Store.
@@ -2178,24 +2179,26 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                     # A trick to display the AI definition
                                     # in a specific order. It is ugly and not
                                     # efficient, but it will do for now.
-                                    if _key == "sut" :
+                                    if _key == "description" :
                                         _key = _key.replace(_key, "00___" + _key)
-                                    elif _key == "load_manager_role" :
+                                    elif _key == "sut" :
                                         _key = _key.replace(_key, "01___" + _key)
-                                    elif _key == "metric_aggregator_role" :
+                                    elif _key == "load_manager_role" :
                                         _key = _key.replace(_key, "02___" + _key)
-                                    elif _key == "capture_role" :
+                                    elif _key == "metric_aggregator_role" :
                                         _key = _key.replace(_key, "03___" + _key)
-                                    elif _key.count("setup") :
+                                    elif _key == "capture_role" :
                                         _key = _key.replace(_key, "04___" + _key)
-                                    elif _key.count("reset") :
+                                    elif _key.count("setup") :
                                         _key = _key.replace(_key, "05___" + _key)
-                                    elif _key.count("start") :
+                                    elif _key.count("reset") :
                                         _key = _key.replace(_key, "06___" + _key)
-                                    elif _key == "load_level" :
+                                    elif _key.count("start") :
                                         _key = _key.replace(_key, "07___" + _key)
-                                    elif _key == "load_duration" :
+                                    elif _key == "load_level" :
                                         _key = _key.replace(_key, "08___" + _key)
+                                    elif _key == "load_duration" :
+                                        _key = _key.replace(_key, "09___" + _key)
 
                                     elif _key == "type" :
                                         _key = _key.replace(_key, "00___" + _key)
@@ -2205,7 +2208,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                         _key = _key.replace(_key, "02___" + _key)
                                     elif _key == "lifetime" :
                                         _key = _key.replace(_key, "09___" + _key)
-                                                                                                                                                                                                                                                                                                                                
+
                                     _formatted_result.append(_key + ": " + _value)
 
                         _formatted_result.sort()
@@ -2214,6 +2217,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                             for _line_number in range(0, len(_formatted_result)) :
                                 if _formatted_result[_line_number].count("___") :
                                     _formatted_result[_line_number] = _formatted_result[_line_number][5:]
+                                _formatted_result[_line_number] = _formatted_result[_line_number].replace('\\n','\n')
 
                         _status = 0
                     else :

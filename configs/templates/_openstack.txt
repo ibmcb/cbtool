@@ -21,7 +21,7 @@ OSK_KEY_NAME_DEFAULT = some_key_name
 OSK_SECURITY_GROUPS_DOC = Please enter the security group used in\nyour OpenStack vms. This group needs to be created\nin the OpenStack user interface before\nstarting the tool.
 OSK_SECURITY_GROUPS_DEFAULT = default 
 OSK_LOGIN_DOC = $LOGIN_DOC
-OSK_LOGIN_DEFAULT = klabuser
+OSK_LOGIN_DEFAULT = some_login_name
 OSK_SSH_KEY_NAME_DOC = $SSH_KEY_NAME_DOC
 OSK_SSH_KEY_NAME_DEFAULT = id_rsa.private
 OSK_INITIAL_VMCS_DOC = $INITIAL_VMCS_DOC 
@@ -74,8 +74,7 @@ CHECK_BOOT_COMPLETE = tcp_on_22
 # Other methods could be used to check if a VM *FINISHED* booting
 #CHECK_BOOT_COMPLETE = subscribe_on_booting
 #CHECK_BOOT_COMPLETE = wait_for_0
-RUN_NETNAME = private
-PROV_NETNAME = private
+NETNAME = $OSK_NETNAME
 CGROUPS_BASE_DIR = /sys/fs/cgroup/
 HOSTNAME_KEY = cloud_vm_name
 #USERDATA = $Empty
@@ -84,7 +83,7 @@ FLOATING_POOL = $Empty
 JUMP_HOST = $Empty
 
 [AI_DEFAULTS : OSK_CLOUDCONFIG]
-ATTACH_PARALLELISM = 5
+ATTACH_PARALLELISM = 10
 CAPTURE_SUPPORTED = $True
 RUNSTATE_SUPPORTED = $True
 RESIZE_SUPPORTED = $True

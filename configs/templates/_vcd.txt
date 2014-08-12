@@ -27,7 +27,7 @@ VCD_SECURITY_GROUPS_DEFAULT = none
 VCD_KEY_NAME_DOC = Password used by the vCloud Director REST interface. (Again)
 VCD_KEY_NAME_DEFAULT = XXXXX
 VCD_VERSION_DOC = Please enter the vCloud Director version
-VCD_VERSION_DEFAULT = 1.5 
+VCD_VERSION_DEFAULT = 1.5
 VCD_SSH_KEY_NAME_DOC = $SSH_KEY_NAME_DOC
 VCD_SSH_KEY_NAME_DEFAULT = path_to_some_private_ssh_key_location
 VCD_INITIAL_VMCS_DOC = Enter the organization to be used for vCloud Director.
@@ -85,8 +85,7 @@ SNMP_COMMUNITY = $VCD_SNMP_COMMUNITY
 SNMP_VARIABLE = $VCD_SNMP_VARIABLE
 # CLONE_TIMEOUT is number of seconds libcloud should poll VCD after issuing clone command before timing out
 CLONE_TIMEOUT = 600
-RUN_NETNAME = private
-PROV_NETNAME = private
+NETNAME = private
 JUMP_HOST = $Empty
 
 [AI_DEFAULTS : EC2_CLOUDCONFIG ]

@@ -1,0 +1,44 @@
+# Parameters for this Virtual Application (Application Instance - AI) type should
+# be set on YOUR private configuration configuration file, including the ones 
+# commented.
+[AI_TEMPLATES : IBMDB2_TRADELITE]
+DESCRIPTION = TBD
+SUT = client_daytrader->was->db2
+LOAD_GENERATOR_ROLE = client_daytrader
+LOAD_MANAGER_ROLE = client_daytrader
+METRIC_AGGREGATOR_ROLE = client_daytrader
+CAPTURE_ROLE = db2
+LOAD_BALANCER = $False
+LOAD_BALANCER_TARGET_PORT = 9080
+LOAD_BALANCER_TARGET_URL = daytrader
+LOAD_BALANCER_TARGET_CHILDREN = 2
+LOAD_BALANCER_PORT = 9080
+LOAD_BALANCER_URL = daytrader
+# This only has effect if the parameter LOAD_BALANCER is set to "$True"
+LB_SETUP1 = cb_restart_loadbalancer.sh
+LB_RESET1 = cb_restart_loadbalancer.sh
+# This only has effect if the parameter DB2_ON_RAMDISK is set to "$True"
+DB2_SETUP1 = cb_setup_ramdisk.sh
+# These are always executed
+WAS_SETUP2 = cb_restart_was.sh
+DB2_SETUP2 = cb_restart_db2.sh
+WAS_RESET1 = cb_restart_was.sh
+DB2_RESET1 = cb_restart_db2.sh
+START = cb_daytrader.sh
+LOAD_PROFILE = default
+LOAD_LEVEL = uniformIXIXI1I10
+LOAD_DURATION = uniformIXIXI90I120
+
+# VApp-specific modifier parameters. Commented attributes imply default values assumed
+#TRADEDB_SIZE = small
+#NR_QUOTES=40000
+#NR_USERS=15000
+#DB2_ON_RAMDISK = $False
+#PERIODIC_MEASUREMENTS = $False
+#APP_COLLECTION = lazy
+
+# Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
+#SYNC_COUNTER_NAME = synchronization_counter
+#CONCURRENT_AIS = 2
+#SYNC_CHANNEL_NAME = synchronization_channel
+#RUN_COUNTER_NAME = experiment_id_counter

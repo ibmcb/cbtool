@@ -1,0 +1,27 @@
+# Parameters for this Virtual Application (Application Instance - AI) type should
+# be set on YOUR private configuration configuration file, including the ones 
+# commented.
+
+[AI_TEMPLATES : NETPERF]
+DESCRIPTION = TBD
+SUT = netclient->netserver
+LOAD_GENERATOR_ROLE = netclient
+LOAD_MANAGER_ROLE = netclient
+METRIC_AGGREGATOR_ROLE = netclient
+CAPTURE_ROLE = netserver
+LOAD_BALANCER = $False
+LOAD_BALANCER_TARGET_PORT = 80 
+LOAD_BALANCER_TARGET_URL = unknown 
+LOAD_BALANCER_TARGET_CHILDREN = 2
+NETCLIENT_SETUP1 = cb_check_netperf_client.sh
+NETSERVER_SETUP1 = cb_check_netperf_server.sh
+START = cb_netperf.sh
+LOAD_PROFILE = tcp_stream
+LOAD_LEVEL = 1
+LOAD_DURATION = uniformIXIXI70I90
+
+# Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
+#SYNC_COUNTER_NAME = synchronization_counter
+#CONCURRENT_AIS = 2
+#SYNC_CHANNEL_NAME = synchronization_channel
+#RUN_COUNTER_NAME = experiment_id_counter

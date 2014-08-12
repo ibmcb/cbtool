@@ -50,8 +50,7 @@ CHECK_BOOT_COMPLETE = tcp_on_22
 # Other methods could be used to check if a VM *FINISHED* booting
 #CHECK_BOOT_COMPLETE = subscribe_on_booting
 #CHECK_BOOT_COMPLETE = wait_for_0
-RUN_NETNAME = private
-PROV_NETNAME = private
+NETNAME = private
 JUMP_HOST = $Empty
 
 [AI_DEFAULTS : PLM_CLOUDCONFIG]

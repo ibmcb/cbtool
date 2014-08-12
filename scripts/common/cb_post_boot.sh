@@ -57,6 +57,8 @@ if [ x"${post_boot_executed}" == x"true" ]; then
 else
     syslog_netcat "Executing \"post_boot_steps\" function"
     post_boot_steps online
+    UTC_LOCAL_OFFSET=$(python -c "from time import timezone, localtime, altzone; _ulo = timezone * -1 if (localtime().tm_isdst == 0) else altzone * -1; print _ulo")
+    put_my_vm_attribute utc_offset_on_vm $UTC_LOCAL_OFFSET
     syslog_netcat "Updating \"post_boot_executed\" to \"true\""
     put_my_vm_attribute post_boot_executed true
 fi

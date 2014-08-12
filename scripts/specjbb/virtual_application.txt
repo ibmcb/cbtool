@@ -1,0 +1,35 @@
+# Parameters for this Virtual Application (Application Instance - AI) type should
+# be set on YOUR private configuration configuration file, including the ones 
+# commented.
+
+[AI_TEMPLATES : SPECJBB]
+DESCRIPTION = TBD
+SUT = specjbb
+LOAD_GENERATOR_ROLE = specjbb
+LOAD_MANAGER_ROLE = specjbb
+METRIC_AGGREGATOR_ROLE = specjbb
+CAPTURE_ROLE = specjbb
+LOAD_BALANCER = $False
+LOAD_BALANCER_TARGET_PORT = 80 
+LOAD_BALANCER_TARGET_URL = unknown 
+SPECJBB_SETUP1 = cb_setup_specjbb.sh
+START = cb_specjbb.sh
+LOAD_PROFILE = default
+LOAD_LEVEL = 1
+LOAD_DURATION = uniformIXIXI90I120
+
+# VApp-specific modifier parameters. Commented attributes imply default values assumed
+#JAVA_HOME = j9vm_sdk
+#RUN_COUNTER_NAME = experiment_id_counter
+#EXPERIMENT_OUTPUT_COLLECTION_DIR = specjbb_balloon_experiment_results
+#EXPERIMENT_OUTPUT_COLLECTION_HOST = 172.16.0.1
+#SPECJBB_RAMPUP=20
+#SPECIFIC_PARAMETERS = BALLOON_SIZE:BALLOON_DELAY
+#BALLOON_SIZE = 500
+#BALLOON_DELAY = 300
+
+# Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
+#SYNC_COUNTER_NAME = synchronization_counter
+#CONCURRENT_AIS = 2
+#SYNC_CHANNEL_NAME = synchronization_channel
+#RUN_COUNTER_NAME = experiment_id_counter

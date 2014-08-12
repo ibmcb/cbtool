@@ -1,0 +1,31 @@
+# Parameters for this Virtual Application (Application Instance - AI) type should
+# be set on YOUR private configuration configuration file, including the ones 
+# commented.
+[AI_TEMPLATES : DDGEN]
+DESCRIPTION = TBD
+SUT = ddgen
+LOAD_GENERATOR_ROLE = ddgen
+LOAD_MANAGER_ROLE = ddgen
+METRIC_AGGREGATOR_ROLE = ddgen
+CAPTURE_ROLE=ddgen
+LOAD_BALANCER = $False
+LOAD_BALANCER_TARGET_PORT = 80 
+LOAD_BALANCER_TARGET_URL = unknown 
+LOAD_BALANCER_TARGET_CHILDREN = 2
+DDGEN_SETUP1 = cb_check_dd_utility.sh
+START = cb_ddgen.sh
+LOAD_PROFILE = default
+LOAD_LEVEL = 1024
+LOAD_DURATION = 180
+
+# VApp-specific modifier parameters. Commented attributes imply default values assumed
+#BLOCK_SIZE=64K
+#DATA_SOURCE=/dev/urandom
+#DATA_DESTINATION=/root
+#RUN_JUST_ONCE=false
+
+# Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
+#SYNC_COUNTER_NAME = synchronization_counter
+#CONCURRENT_AIS = 2
+#SYNC_CHANNEL_NAME = synchronization_channel
+#RUN_COUNTER_NAME = none

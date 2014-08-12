@@ -2535,6 +2535,25 @@ class BaseObjectOperations :
                     _mgt_attr_list["state"] = self.osci.get_object_state(cloud_name, obj_type, obj_attr_list["uuid"])
 
                     if operation == "attach" :
+
+                        if obj_type.upper() == "VM" :
+
+                            _updated_obj_attr_list = self.osci.get_object(cloud_name, obj_type, False, obj_attr_list["uuid"], False)
+
+                            if "utc_offset_on_vm" not in _updated_obj_attr_list :
+                                _updated_obj_attr_list["utc_offset_on_vm"] = 0
+
+                            _mgt_attr_list["utc_offset_delta"] = \
+                            int(_updated_obj_attr_list["utc_offset_on_orchestrator"]) \
+                            - int(_updated_obj_attr_list["utc_offset_on_vm"])
+
+                            self.osci.update_object_attribute(cloud_name, \
+                                                              obj_type, \
+                                                              obj_attr_list["uuid"], \
+                                                              False, \
+                                                              "utc_offset_delta", \
+                                                              _mgt_attr_list["utc_offset_delta"]) 
+                        
                         self.msci.add_document(_management_key, _mgt_attr_list)
                         self.msci.add_document(_latest_key, _mgt_attr_list)
                         
@@ -2579,6 +2598,22 @@ class BaseObjectOperations :
     
                         _mgt_attr_list["_id"] = _vm_uuid
                         _mgt_attr_list["state"] = self.osci.get_object_state(cloud_name, "VM", _vm_attr_list["uuid"])
+
+                        _updated_obj_attr_list = self.osci.get_object(cloud_name, "VM", False, _vm_attr_list["uuid"], False)
+
+                        if "utc_offset_on_vm" not in _updated_obj_attr_list :
+                            _updated_obj_attr_list["utc_offset_on_vm"] = 0
+
+                        _mgt_attr_list["utc_offset_delta"] = \
+                        int(_updated_obj_attr_list["utc_offset_on_orchestrator"]) \
+                        - int(_updated_obj_attr_list["utc_offset_on_vm"])
+
+                        self.osci.update_object_attribute(cloud_name, \
+                                                          "VM", \
+                                                          _vm_attr_list["uuid"], \
+                                                          False, \
+                                                          "utc_offset_delta", \
+                                                          _mgt_attr_list["utc_offset_delta"]) 
                         
                         self.msci.add_document(_management_key, _mgt_attr_list)
                         self.msci.add_document(_latest_key, _mgt_attr_list) 

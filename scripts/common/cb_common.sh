@@ -39,7 +39,6 @@ RANGE=60
 ATTEMPTS=3
 
 SETUP_TIME=20
-GMETAD_PATH=$dir/../../3rd_party/monitor-core/gmetad-python
 
 ai_mapping_file=~/ai_mapping_file.txt
 standalone="online"
@@ -117,24 +116,24 @@ export -f linux_distribution
 function service_stop_disable {
     #1 - service list (space-separated list)
 
-	if [[ -z ${LINUX_DISTRO} ]]
-	then
-		LINUX_DISTRO=$(linux_distribution)
-	fi
+    if [[ -z ${LINUX_DISTRO} ]]
+    then
+        LINUX_DISTRO=$(linux_distribution)
+    fi
 
     for s in $* ; do
         
         if [[ ${LINUX_DISTRO} -eq 1 ]]
         then
-        	syslog_netcat "Stopping service \"${s}\" on Ubuntu..."
-        	sudo service $s stop         	
+            syslog_netcat "Stopping service \"${s}\" on Ubuntu..."
+            sudo service $s stop             
             sudo bash -c "echo 'manual' > /etc/init/$s.override" 
         fi
 
         if [[ ${LINUX_DISTRO} -eq 2 ]]
         then
-        	syslog_netcat "Stopping service \"${s}\" on Fedora/RHEL/CentOS..."
-        	sudo service $s stop         	        	
+            syslog_netcat "Stopping service \"${s}\" on Fedora/RHEL/CentOS..."
+            sudo service $s stop                         
             sudo chkconfig $s off >/dev/null 2>&1
         fi
     done
@@ -145,10 +144,10 @@ export -f service_stop_disable
 function service_restart_enable {
     #1 - service list (space-separated list)
 
-	if [[ -z ${LINUX_DISTRO} ]]
-	then
-		LINUX_DISTRO=$(linux_distribution)
-	fi
+    if [[ -z ${LINUX_DISTRO} ]]
+    then
+        LINUX_DISTRO=$(linux_distribution)
+    fi
 
     for s in $* ; do
         counter=1
@@ -264,8 +263,8 @@ my_ip_addr=`get_my_vm_attribute cloud_ip`
 # We will
 #if [[ $(sudo ifconfig -a | grep ${my_ip_addr}) -eq 0 ]]
 #then
-	#	my_if=$(netstat -rn | grep UG | awk '{ print $8 }')
-	#my_ip_addr=$(ip addr | grep eth0 | grep inet | awk '{ print $2 }' | cut -d '/' -f 1)
+    #    my_if=$(netstat -rn | grep UG | awk '{ print $8 }')
+    #my_ip_addr=$(ip addr | grep eth0 | grep inet | awk '{ print $2 }' | cut -d '/' -f 1)
 #fi
 
 my_type=`get_my_vm_attribute type`
@@ -736,27 +735,7 @@ function post_boot_steps {
 
     if [[ $standalone == online ]]
     then
-
-        LINUX_DISTRO=$(linux_distribution)
-
-        GANGLIA_SERVICE[1]="ganglia-monitor gmetad"
-        GANGLIA_SERVICE[2]="gmond gmetad"
-    
-        service_stop_disable ${GANGLIA_SERVICE[${LINUX_DISTRO}]}          
-        
-        syslog_netcat "Killing previously running ganglia monitoring processes on $SHORT_HOSTNAME"
-        $SUDO_CMD $KILL_CMD screen 
-        $SUDO_CMD $KILL_CMD gmond 
-        sleep 3
-        result="$(ps aux | grep gmond | grep -v grep)"
-        if [[ x"$result" == x ]]
-        then
-            syslog_netcat "Ganglia monitoring processes killed successfully on $SHORT_HOSTNAME"
-        else
-            syslog_netcat "Ganglia monitoring processes could not be killed on $SHORT_HOSTNAME - NOK"
-            exit 2
-        fi
-        syslog_netcat "Previously running ganglia monitoring processes killed $SHORT_HOSTNAME"
+        stop_ganglia
     fi
 
     # fix the db2 data authentication permissions first
@@ -799,45 +778,76 @@ function post_boot_steps {
         if [[ x"${collect_from_guest}" == x"true" ]]
         then
             syslog_netcat "Collect from Guest is ${collect_from_guest}"
-            syslog_netcat "Creating ganglia (gmond) file"
-            ~/cb_create_gmond_config_file.sh
-            syslog_netcat "Restarting ganglia monitoring processes (gmond) on $SHORT_HOSTNAME"
-            GANGLIA_FILE_LOCATION=~
-            eval GANGLIA_FILE_LOCATION=${GANGLIA_FILE_LOCATION}
-            sudo pkill -9 -f gmond
-            sudo screen -d -m -S gmond bash -c "while true ; do sleep 10; if [ x\`$PIDOF_CMD gmond\` == x ] ; then gmond -c ${GANGLIA_FILE_LOCATION}/gmond-vms.conf; fi; done"
-            result="$(ps aux | grep gmond | grep -v grep)"
-            if [[ x"$result" == x ]]
-            then
-                syslog_netcat "Ganglia monitoring processes (gmond) could not be restarted on $SHORT_HOSTNAME - NOK"
-                exit 2
-            else
-                syslog_netcat "Ganglia monitoring processes (gmond) restarted successfully on $SHORT_HOSTNAME"
-            fi
-
-            if [[ x"${my_vm_uuid}" == x"${metric_aggregator_vm_uuid}" || x"${my_type}" == x"none" ]]
-            then
-                syslog_netcat "Starting Gmetad"
-                ~/cb_create_gmetad_config_file.sh
-                syslog_netcat "Restarting ganglia meta process (gmetad) on $SHORT_HOSTNAME"
-                sudo pkill -9 -f gmetad
-
-                $GMETAD_PATH/gmetad.py -c ~/gmetad-vms.conf -d 1
-#                $GMETAD_PATH/gmetad.py -c ~/gmetad-vms.conf --syslogn 127.0.0.1 --syslogp 6379 --syslogf 22 -d 4
-
-                result="$(ps aux | grep gmeta | grep -v grep)"
-                if [[ x"$result" == x ]]
-                then
-                    syslog_netcat "Ganglia meta process (gmetad) could not be restarted on $SHORT_HOSTNAME - NOK"
-                    exit 2
-                else
-                    syslog_netcat "Ganglia meta process (gmetad) restarted successfully on $SHORT_HOSTNAME"
-                fi
-            fi
+            start_ganglia
         else
             syslog_netcat "Collect from Guest is ${collect_from_guest}"
             sleep 2
             syslog_netcat "Bypassing the gmond and gmetad restart"
+        fi
+    fi
+}
+    
+function stop_ganglia {
+            
+    LINUX_DISTRO=$(linux_distribution)
+
+    GANGLIA_SERVICE[1]="ganglia-monitor gmetad"
+    GANGLIA_SERVICE[2]="gmond gmetad"
+        
+    service_stop_disable ${GANGLIA_SERVICE[${LINUX_DISTRO}]}          
+    
+    syslog_netcat "Killing previously running ganglia monitoring processes on $SHORT_HOSTNAME"
+    sudo pkill -9 -f gmond 
+    sleep 3
+    result="$(ps aux | grep gmond | grep -v grep)"
+    if [[ x"$result" == x ]]
+    then
+        syslog_netcat "Ganglia monitoring processes killed successfully on $SHORT_HOSTNAME"
+    else
+        syslog_netcat "Ganglia monitoring processes could not be killed on $SHORT_HOSTNAME - NOK"
+        exit 2
+    fi
+    syslog_netcat "Previously running ganglia monitoring processes killed $SHORT_HOSTNAME"
+}
+
+function start_ganglia {
+
+    syslog_netcat "Creating ganglia (gmond) file"
+    ~/cb_create_gmond_config_file.sh
+    syslog_netcat "Restarting ganglia monitoring processes (gmond) on $SHORT_HOSTNAME"
+    GANGLIA_FILE_LOCATION=~
+    eval GANGLIA_FILE_LOCATION=${GANGLIA_FILE_LOCATION}
+    sudo pkill -9 -f gmond
+    sudo screen -d -m -S gmond bash -c "while true ; do sleep 10; if [ x\`$PIDOF_CMD gmond\` == x ] ; then gmond -c ${GANGLIA_FILE_LOCATION}/gmond-vms.conf; fi; done"
+    result="$(ps aux | grep gmond | grep -v grep)"
+    if [[ x"$result" == x ]]
+    then
+        syslog_netcat "Ganglia monitoring processes (gmond) could not be restarted on $SHORT_HOSTNAME - NOK"
+        exit 2
+    else
+        syslog_netcat "Ganglia monitoring processes (gmond) restarted successfully on $SHORT_HOSTNAME"
+    fi
+    
+    if [[ x"${my_vm_uuid}" == x"${metric_aggregator_vm_uuid}" || x"${my_type}" == x"none" ]]
+    then
+        syslog_netcat "Starting Gmetad"
+        ~/cb_create_gmetad_config_file.sh
+        syslog_netcat "Restarting ganglia meta process (gmetad) on $SHORT_HOSTNAME"
+        sudo pkill -9 -f gmetad
+
+		GMETAD_PATH=~/${my_remote_dir}/3rd_party/monitor-core/gmetad-python
+		
+		eval GMETAD_PATH=${GMETAD_PATH}
+        $GMETAD_PATH/gmetad.py -c ~/gmetad-vms.conf -d 1
+#       $GMETAD_PATH/gmetad.py -c ~/gmetad-vms.conf --syslogn 127.0.0.1 --syslogp 6379 --syslogf 22 -d 4
+
+        result="$(ps aux | grep gmeta | grep -v grep)"
+        if [[ x"$result" == x ]]
+        then
+            syslog_netcat "Ganglia meta process (gmetad) could not be restarted on $SHORT_HOSTNAME - NOK"
+            exit 2
+        else
+            syslog_netcat "Ganglia meta process (gmetad) restarted successfully on $SHORT_HOSTNAME"
         fi
     fi
 }

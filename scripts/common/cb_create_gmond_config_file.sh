@@ -23,14 +23,14 @@ GMOND_VMS=~/gmond-vms.conf
 python_module_path=~/util/python_ganglia_modules
 python_modules=~/util/ganglia_conf.d
 
-COLLECTOR_UNICAST_IP=`get_ai_attribute ${my_ai_uuid} metric_aggregator_ip`
+COLLECTOR_UNICAST_IP=`get_my_ai_attribute_with_default ${my_ai_uuid} metric_aggregator_ip none`
 COLLECTOR_MULTICAST_IP=`get_global_sub_attribute mon_defaults collector_multicast_ip`
 COLLECTOR_MULTICAST_PORT=`get_global_sub_attribute mon_defaults collector_vm_multicast_port`
 COLLECTOR_VM_PORT=`get_global_sub_attribute mon_defaults collector_vm_port`
 
 if [[ $(sudo ifconfig -a | grep -c $COLLECTOR_UNICAST_IP) -eq 0 ]]
 then
-	$COLLECTOR_UNICAST_IP=${my_ip_addr}
+	COLLECTOR_UNICAST_IP=${my_ip_addr}
 fi
 
 cat << EOF > $GMOND_VMS
@@ -58,7 +58,8 @@ cluster {
 
 EOF
 
-if [ x"$my_ai_uuid" != x"none" ] ; then
+if [[ x"$my_ai_uuid" != x"none" ]]
+then
 cat << EOF >> $GMOND_VMS
 udp_send_channel {
  host = ${COLLECTOR_UNICAST_IP}

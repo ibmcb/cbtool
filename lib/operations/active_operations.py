@@ -25,7 +25,7 @@
 '''
 from os import chmod, access, F_OK
 from random import choice, randint
-from time import time, sleep
+from time import time, sleep, timezone, localtime, altzone
 from subprocess import Popen, PIPE
 from re import sub
 from uuid import uuid5, NAMESPACE_DNS
@@ -142,6 +142,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
     
                 _cld_ops_class = getattr(_cld_ops, \
                                          cld_attr_lst["model"].capitalize() + "Cmds")
+
+                if "prov_netname" not in cld_attr_lst["vm_defaults"] :
+                    cld_attr_lst["vm_defaults"]["prov_netname"] = cld_attr_lst["vm_defaults"]["netname"]
+                if "run_netname" not in cld_attr_lst["vm_defaults"] :
+                    cld_attr_lst["vm_defaults"]["run_netname"] = cld_attr_lst["vm_defaults"]["netname"]
 
                 if "ssh_key_name" in cld_attr_lst["space"] :
                     ssh_filename = cld_attr_lst["space"]["credentials_dir"] + '/' + cld_attr_lst["space"]["ssh_key_name"]
@@ -946,6 +951,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
     @trace
     def pre_attach_vm(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+
         _status = 100
         _pool_selected = False
         _fmsg = "An error has occurred, but no error message was captured"
@@ -968,6 +977,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         if _bad_pool.upper() == _vmc_pools[_idx] :
                             del _vmc_pools[_idx]
                             break
+
             elif "host_name_blacklist" in obj_attr_list.keys() :
                 _blacklist = obj_attr_list["host_name_blacklist"].split(",")
                 for _bad_host in _blacklist :
@@ -1086,6 +1096,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             selective_dict_update(obj_attr_list, _vm_template_attr_list)
 
+            obj_attr_list["utc_offset_on_orchestrator"] = timezone * -1 if (localtime().tm_isdst == 0) else altzone * -1
+
             _status = 0
 
             if not _status :
@@ -1186,7 +1198,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             # start of the AI attributes on the template. 
             # For instance, instead of adding the key  "hadoop_driver_hadoop_setup1"
             # to the list of attributes of the AI we want the key to be in fact 
-            # only "hadoop_driver_hadoop_setup1"
+            # only "driver_hadoop_setup1"
             _x = len(_app_type) + 1
 
             for _key, _value in _ai_template_attr_list.iteritems() :
@@ -1196,7 +1208,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             obj_attr_list[_key[_x:]] = _value
                     else :
                         obj_attr_list[_key[_x:]] = _value
-                    
+
+            if "description" in obj_attr_list :
+                del(obj_attr_list["description"])
+                   
             if "lifetime" in obj_attr_list and obj_attr_list["lifetime"] != "none" :
                 _value_generation = ValueGeneration(self.pid)
                 obj_attr_list["lifetime"] = int(_value_generation.get_value(obj_attr_list["lifetime"]))

@@ -1,0 +1,46 @@
+# Parameters for this Virtual Application (Application Instance - AI) type should
+# be set on YOUR private configuration configuration file, including the ones 
+# commented.
+
+[AI_TEMPLATES : MONGO_YCSB]
+DESCRIPTION = TBD
+SUT = ycsb->mongos->mongo_cfg_server->3_x_mongodb
+LOAD_GENERATOR_ROLE = ycsb
+LOAD_MANAGER_ROLE = ycsb
+METRIC_AGGREGATOR_ROLE = ycsb
+CAPTURE_ROLE = mongodb
+LOAD_BALANCER = $False
+MONGO_CFG_SERVER_SETUP1 = cb_restart_mongo_cfg.sh
+MONGODB_SETUP1 = cb_restart_mongo.sh
+MONGOS_SETUP2 = cb_restart_mongos.sh
+YCSB_SETUP2 = cb_setup_ycsb.sh
+MONGODB_RESIZE1 = cb_modify_hosts.sh
+MONGOS_RESIZE2 = cb_modify_shard.sh
+MONGODB_RESIZE1 = cb_restart_mongo.sh
+MONGO_CFG_SERVER_RESIZE1 = cb_modify_hosts.sh
+START = cb_ycsb.sh
+LOAD_PROFILE = default
+LOAD_LEVEL = 1
+LOAD_DURATION = 60
+START=cb_ycsb.sh
+LOAD_PROFILE = workloada
+LOAD_LEVEL = 1
+LOAD_DURATION = 60
+
+# VApp-specific modifier parameters. Commented attributes imply default values assumed
+#APP_COLLECTION = lazy
+#RUN_COUNTER_NAME = experiment_id_counter
+#MONGODB_DATA_DIR = /dbstore
+#OPERATION_COUNT = 100000
+#READ_RATIO = workloaddefault
+#UPDATE_RATIO = workloaddefault
+#INPUT_RECORDS = memory
+#RECORD_SIZE = 2.35
+#DATABASE_SIZE_VERSUS_MEMORY = 0.5
+#REPLICATION_FACTOR = 4
+
+# Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
+#SYNC_COUNTER_NAME = synchronization_counter
+#CONCURRENT_AIS = 2
+#SYNC_CHANNEL_NAME = synchronization_channel
+#RUN_COUNTER_NAME = experiment_id_counter

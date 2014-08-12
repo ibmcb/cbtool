@@ -1,0 +1,28 @@
+# Parameters for this Virtual Application (Application Instance - AI) type should
+# be set on YOUR private configuration configuration file, including the ones 
+# commented.
+[AI_TEMPLATES : HPCC]
+DESCRIPTION = TBD
+SUT = fen_hpc->3_x_cn_hpc
+LOAD_GENERATOR_ROLE = fen_hpc
+LOAD_MANAGER_ROLE = fen_hpc
+METRIC_AGGREGATOR_ROLE = fen_hpc
+CAPTURE_ROLE = cn_hpc
+LOAD_BALANCER = $False
+FEN_HPC_SETUP1 = cb_config_fen_hpc.sh
+START = cb_hpcc.sh
+LOAD_PROFILE = default
+LOAD_LEVEL = uniformIXIXI1I6
+LOAD_DURATION = 60
+
+# VApp-specific modifier parameters. Commented attributes imply default values assumed
+#MAX_N_SIZE_PER_NODE = 5
+#NB_SIZE = 4
+#PROCESSES_PER_NODE = 3
+
+# Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
+#SYNC_COUNTER_NAME = synchronization_counter
+#CONCURRENT_AIS = 2
+#SYNC_CHANNEL_NAME = synchronization_channel
+#RUN_COUNTER_NAME = experiment_id_counter
+
