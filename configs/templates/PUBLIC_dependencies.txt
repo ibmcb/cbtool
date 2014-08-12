@@ -406,7 +406,7 @@ rhel-redis-install-man = sudo yum -y install gperftools-libs && sudo rpm -Uvh $(
 rhel-redis-postinstall-man = sudo sed -i "s/^bind .*/bind 0.0.0.0/" /etc/redis.conf; sudo /etc/init.d/redis restart; sudo chkconfig redis on
 #ubuntu-redis-preinstall-man = lftp -c 'open -e "mget redis-server_2.8*precise_ARCH.deb" URL'
 #ubuntu-redis-install-man = sudo dpkg -i $(ls -t | grep redis-server | head -n 1)
-ubuntu-redis-install-man = sudo apt-get install redis-server
+ubuntu-redis-install-man = sudo apt-get -y install redis-server
 ubuntu-redis-postinstall-man = sudo sed -i "s/^bind .*/bind 0.0.0.0/" /etc/redis/redis.conf; sudo service redis-server restart
 
 rhel-redis-preinstall-git = cd 3RPARTYDIR; git clone URL/redis.git
