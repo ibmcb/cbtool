@@ -24,17 +24,9 @@ from time import sleep
 from sys import path
 import os
 import fnmatch
+import yaml
 
 _home = "/home/cbtool" 
-_api_endpoint = "20.0.0.20"
-_cloud_name = "myopenstack"
-_workload = "cassandra_ycsb"
-
-#
-# 
-#
-def checking_sla (self, _yaml) :
-    return true;
 
 for _path, _dirs, _files in os.walk(os.path.abspath(_home)):
     for _filename in fnmatch.filter(_files, "code_instrumentation.py") :
@@ -43,9 +35,40 @@ for _path, _dirs, _files in os.walk(os.path.abspath(_home)):
 
 from lib.api.api_service_client import *
 
+_api_endpoint = "20.0.0.20"
+_cloud_name = "myopenstack"
+_workload = "cassandra_ycsb"
+_retrun_msg = ""
+
+#
+# 
+#
+def _check_sla(_yaml, _api,uuid, _current_ai, _all_ai) :
+    _check_data = 0 
+    print _yaml
+    print uuid
+    while True :
+       _check_data+=1
+       print "Waiting for Application Data from AI: %s, attempt %s" % (_current_ai['uuid'], _check_data)
+       try : 
+           if _check_data > 50 : 
+               _return_msg = "Failed to retrieve Application Metrics"
+               return False
+           _data = _api.get_latest_app_data(_cloud_name,uuid)
+           print _data 
+           break
+       except APINoSuchMetricException, obj :
+           sleep(10)
+           continue
+
+    return False 
+
 api = APIClient("http://" + _api_endpoint + ":7070")
 
 _launched_ais = []
+_sla = open('./SPEC_SLA.yaml')
+_yaml = yaml.safe_load(_sla)
+_sla.close()
 
 try :
     error = False
@@ -70,14 +93,17 @@ try :
 #----------------------- Create Apps over time ----------------------------------
         app = api.appattach(_cloud_name, _workload)
 	vms = [ val.split("|")[0] for val in app["vms"].split(",")]
+        _data_uuid = ""
         for vm in vms :
 	    _guest_data = api.get_latest_management_data(_cloud_name,vm)
+	    if _guest_data["cloud_hostname"].find("ycsb") != -1 :
+                _data_uuid = _guest_data["uuid"]
 	    print "%s ,%s, %s, %s" % (_guest_data["cloud_hostname"], 
 							_guest_data["mgt_003_provisioning_request_completed"],
 							_guest_data["mgt_004_network_acessible"],
 							_guest_data["last_known_state"])
         _launched_ais.append(app)
-        ai_return_state=check_sla(app)
+        ai_return_state=_check_sla(_yaml,api,_data_uuid,app,_launched_ais)
 
     print "Removing all AIs"
     api.appdetach(_cloud_name, app["uuid"])
