@@ -22,6 +22,7 @@ LOAD_PROFILE=$1
 LOAD_LEVEL=$2
 LOAD_DURATION=$3
 LOAD_ID=$4
+SLA_RUNTIME_TARGETS=$5
 
 if [[ -z "$LOAD_PROFILE" || -z "$LOAD_LEVEL" || -z "$LOAD_DURATION" || -z "$LOAD_ID" ]]
 then
@@ -70,7 +71,13 @@ tp=`cat ${OUTPUT_FILE} | grep "1:" |  sed -e "s/\t/ /g" | sed -e "s/ \+/ /g" | c
 ((lat=stop-start))
 yslog_netcat "tp: $tp lat: $lat"
 
-~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec throughput:$tp:tps latency:$lat:sec
+~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
+load_level:${LOAD_LEVEL}:load \
+load_profile:${LOAD_PROFILE}:name \
+load_duration:${LOAD_DURATION}:sec \
+throughput:$tp:tps \
+latency:$lat:sec \
+${SLA_RUNTIME_TARGETS}
 
 rm ${OUTPUT_FILE}
 

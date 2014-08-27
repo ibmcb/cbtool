@@ -22,6 +22,7 @@ LOAD_PROFILE=$1
 LOAD_LEVEL=$2
 LOAD_DURATION=$3
 LOAD_ID=$4
+SLA_RUNTIME_TARGETS=$5
 
 if [[ -z "$LOAD_PROFILE" || -z "$LOAD_LEVEL" || -z "$LOAD_DURATION" || -z "$LOAD_ID" ]]
 then
@@ -60,7 +61,13 @@ else
 	bw=$(cat ${OUTPUT_FILE} | grep Mbits | awk '{ print $7 }' | tr -d ' ')
 fi
 
-~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec throughput:$tp:tps bandwidth:$bw:Mbps
+~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
+load_level:${LOAD_LEVEL}:load \
+load_profile:${LOAD_PROFILE}:name \
+load_duration:${LOAD_DURATION}:sec \
+throughput:$tp:tps \
+bandwidth:$bw:Mbps \
+${SLA_RUNTIME_TARGETS}
 
 rm ${OUTPUT_FILE}
 

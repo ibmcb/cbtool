@@ -230,7 +230,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         if not _status :
                             _jump_box_host_contents = "Host *\n"
                             _jump_box_host_contents += "  ProxyCommand "
-                            _jump_box_host_contents += _command.replace('"', '').replace("which",'').replace(" nc", "nc %h 22")
+                            _jump_box_host_contents += _command.replace('"', '').replace("which",'').replace(" nc", "nc -w 2 %h 22")
 
                             _jump_box_host_fd = open(_jump_box_host_fn, 'w')
 
@@ -2857,13 +2857,19 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _fmsg = "An error has occurred, but no error message was captured"
 
             if obj_attr_list["current_state"] != "attached" :
+
                 if "pre_capture" in obj_attr_list and obj_attr_list["pre_capture"] == "true" :
                     _scores = True
                 else :
                     _scores = False
+
                 self.osci.remove_from_list(obj_attr_list["cloud_name"], "AI", "AIS_UNDERGOING_" + \
                                            obj_attr_list["current_state"].upper(), \
                                            obj_attr_list["uuid"], _scores)
+
+            self.record_management_metrics(obj_attr_list["cloud_name"], \
+                                           "AI", obj_attr_list, "detach")
+
 
             _status = 0
 
@@ -4517,6 +4523,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
                 _ai_state = "attached"
                 _ai_attr_list = _initial_ai_attr_list
+
+            _sla_runtime_targets = ''
+            for _key in _ai_attr_list :
+                if _key.count("sla_runtime_target") :
+                    _sla_runtime_targets += _key + ':' + _ai_attr_list[_key]
                 
             if _ai_state and _ai_state == "attached" :
                 _load = self.get_load(cloud_name, _ai_attr_list, False, \
@@ -4568,7 +4579,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _cmd += str(_ai_attr_list["current_load_profile"]) + ' '                    
                     _cmd += str(_ai_attr_list["current_load_level"]) + ' '
                     _cmd += str(_ai_attr_list["current_load_duration"]) + ' '
-                    _cmd += str(_ai_attr_list["current_load_id"])
+                    _cmd += str(_ai_attr_list["current_load_id"]) + ' '
+                    _cmd += str(_sla_runtime_targets)
     
                     _load_level_time = 0
     
@@ -4587,7 +4599,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _msg = "Waiting for the load generating process to "
                         _msg += "terminate."
                         cbdebug(_msg)
-                        
+
                         #waitpid(-1, 0)
                         _proc_h.wait()
                 else :

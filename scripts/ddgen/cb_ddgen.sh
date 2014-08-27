@@ -22,6 +22,7 @@ LOAD_PROFILE=$1
 LOAD_LEVEL=$2
 LOAD_DURATION=$3
 LOAD_ID=$4
+SLA_RUNTIME_TARGETS=$5
 
 if [[ -z "$LOAD_PROFILE" || -z "$LOAD_LEVEL" || -z "$LOAD_DURATION" || -z "$LOAD_ID" ]]
 then
@@ -50,7 +51,8 @@ unbw=`cat ${OUTPUT_FILE} | grep copied | awk '{ print $9 }'`
 load_level:${LOAD_LEVEL}:load \
 load_profile:${LOAD_PROFILE}:name \
 load_duration:${LOAD_DURATION}:sec \
-bandwidth:${bw}:${unbw}
+bandwidth:${bw}:${unbw} \
+${SLA_RUNTIME_TARGETS}
 
 rm ${OUTPUT_FILE}
 

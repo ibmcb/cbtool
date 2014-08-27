@@ -22,6 +22,7 @@ LOAD_PROFILE=$1
 LOAD_LEVEL=$2
 LOAD_DURATION=$3
 LOAD_ID=$4
+SLA_RUNTIME_TARGETS=$5
 
 if [[ -z "$LOAD_PROFILE" || -z "$LOAD_LEVEL" || -z "$LOAD_DURATION" || -z "$LOAD_ID" ]]
 then
@@ -110,7 +111,8 @@ throughput_G_FFTE:$tp4:Gflops \
 throughput_EP_STREAM_Triad:$tp5:GBps \
 throughput_EP_DGEMM:$tp6:Gflops \
 throughput_RandomRing:$tp7:GBps \
-lat_RandomRing:$lat:usec
+lat_RandomRing:$lat:usec \
+${SLA_RUNTIME_TARGETS}
 
 rm ${OUTPUT_FILE}
 

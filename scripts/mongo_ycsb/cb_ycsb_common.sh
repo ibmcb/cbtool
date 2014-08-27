@@ -151,7 +151,8 @@ fi
 function lazy_collection {
 
     CMDLINE=$1
-    
+    SLA_RUNTIME_TARGETS=$2
+        
     ops=0
     latency=0
     
@@ -210,11 +211,13 @@ function lazy_collection {
     load_duration:${LOAD_DURATION}:sec \
     throughput:$(expr $ops):tps \
     latency:$(expr $latency):ms \
-    datagen_time:${datagentime}:sec        
+    datagen_time:${datagentime}:sec \
+    ${SLA_RUNTIME_TARGETS}
 }
 
 function eager_collection {
     CMDLINE=$1
+    SLA_RUNTIME_TARGETS=$2
     
     #----------------------- Track all YCSB results  -------------------------------
 
@@ -400,7 +403,8 @@ function eager_collection {
         update_max_latency:$(expr $update_max_latency):us \
         update_95_latency:$(expr $update_95_latency):us \
         update_99_latency:$(expr $update_99_latency):us \
-        datagen_time:${datagentime}:sec
+        datagen_time:${datagentime}:sec \
+    	${SLA_RUNTIME_TARGETS}
     fi
 
     if [[ $write_avg_latency -eq 0 ]]
@@ -420,6 +424,7 @@ function eager_collection {
         update_max_latency:$(expr $update_max_latency):us \
         update_95_latency:$(expr $update_95_latency):us \
         update_99_latency:$(expr $update_99_latency):us \
-        datagen_time:${datagentime}:sec
+        datagen_time:${datagentime}:sec \
+    	${SLA_RUNTIME_TARGETS}        
     fi
 }

@@ -22,6 +22,7 @@ LOAD_PROFILE=$1
 LOAD_LEVEL=$2
 LOAD_DURATION=$3
 LOAD_ID=$4
+SLA_RUNTIME_TARGETS=$5
 
 if [[ -z "$LOAD_PROFILE" || -z "$LOAD_LEVEL" || -z "$LOAD_DURATION" || -z "$LOAD_ID" ]]
 then
@@ -249,7 +250,8 @@ load_profile:${LOAD_PROFILE}:name \
 load_duration:${LOAD_DURATION}:sec \
 throughput:$tput:tps latency:$lat:msec \
 datagen_time:${datagentime}:sec \
-datagen_size:${datagensize}:MB
+datagen_size:${datagensize}:MB \
+${SLA_RUNTIME_TARGETS}
 
 rm ${OUTPUT_FILE}
 

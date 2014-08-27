@@ -1767,6 +1767,9 @@ class BaseObjectOperations :
         if vm_role + "_cloud_vv" in obj_attr_list :
             _extra_parms += ",cloud_vv=" + obj_attr_list[vm_role + "_cloud_vv"]
 
+        if vm_role + "_sla_provisioning_target" in obj_attr_list :
+            _extra_parms += ",sla_provisioning_target=" + obj_attr_list[vm_role + "_sla_provisioning_target"]            
+
         if vm_role + "_cloud_ips" in obj_attr_list :
             if not vm_role in cloud_ips :
                 cloud_ips[vm_role] = obj_attr_list[vm_role + "_cloud_ips"].split(';')
@@ -2518,42 +2521,31 @@ class BaseObjectOperations :
 
                 _mgt_attr_list = {}
                 _mgt_attr_list["expid"] = _time_defaults["experiment_id"]            
-    
+
                 if obj_type.upper() == "VM" or obj_type.upper() == "HOST" :
 
                     _management_key = "management_" + obj_type.upper() + '_' + _mon_defaults["username"]
                     _latest_key = "latest_management_" + obj_type.upper() + '_' + _mon_defaults["username"]
-    
+
                     _key_list = _mon_defaults[obj_type.lower() + "_attributes"].split(',')
-                    
+
                     for _key in obj_attr_list.keys() :
                         if _key in _key_list or _key.count("mgt"):
                             _mgt_attr_list[_key] = obj_attr_list[_key]
-                            
+
                     _mgt_attr_list["_id"] = obj_attr_list["uuid"]
                     _mgt_attr_list["obj_type"] = obj_type
                     _mgt_attr_list["state"] = self.osci.get_object_state(cloud_name, obj_type, obj_attr_list["uuid"])
 
                     if operation == "attach" :
 
+                        self.compute_sla(cloud_name, obj_type, obj_attr_list, operation, _mgt_attr_list)
+
                         if obj_type.upper() == "VM" :
 
-                            _updated_obj_attr_list = self.osci.get_object(cloud_name, obj_type, False, obj_attr_list["uuid"], False)
-
-                            if "utc_offset_on_vm" not in _updated_obj_attr_list :
-                                _updated_obj_attr_list["utc_offset_on_vm"] = 0
-
                             _mgt_attr_list["utc_offset_delta"] = \
-                            int(_updated_obj_attr_list["utc_offset_on_orchestrator"]) \
-                            - int(_updated_obj_attr_list["utc_offset_on_vm"])
+                            self.compute_utc_offset(cloud_name, obj_type, obj_attr_list)
 
-                            self.osci.update_object_attribute(cloud_name, \
-                                                              obj_type, \
-                                                              obj_attr_list["uuid"], \
-                                                              False, \
-                                                              "utc_offset_delta", \
-                                                              _mgt_attr_list["utc_offset_delta"]) 
-                        
                         self.msci.add_document(_management_key, _mgt_attr_list)
                         self.msci.add_document(_latest_key, _mgt_attr_list)
                         
@@ -2577,46 +2569,36 @@ class BaseObjectOperations :
                         # deleted by us.
                         self.msci.delete_document("latest_runtime_os_" + obj_type.upper() + '_' + _mon_defaults["username"], _criteria) 
 
+                elif obj_type.upper() == "AI" :
 
-                elif obj_type.upper() == "AI" and operation == "attach" :
-                    
                     _management_key = "management_VM_" + _mon_defaults["username"]
                     _latest_key = "latest_management_VM_" + _mon_defaults["username"]
-                    
+
                     _key_list = _mon_defaults["vm_attributes"].split(',')
                     
                     _vm_list = obj_attr_list["vms"].split(',')
+
+                    if operation == "attach" :
+        
+                        for _vm in _vm_list :
+                            _vm_uuid, _vm_role, _vm_name = _vm.split('|')
+                            _vm_attr_list = self.osci.get_object(cloud_name, "VM", False, _vm_uuid, False)
+
+                            _mgt_attr_list["obj_type"] = "VM"
+                            for _key in _vm_attr_list.keys() :
+                                if _key in _key_list or _key.count("mgt"):
+                                    _mgt_attr_list[_key] = _vm_attr_list[_key]
+        
+                            _mgt_attr_list["_id"] = _vm_uuid
+                            _mgt_attr_list["state"] = self.osci.get_object_state(cloud_name, "VM", _vm_attr_list["uuid"])
     
-                    for _vm in _vm_list :
-                        _vm_uuid, _vm_role, _vm_name = _vm.split('|')
-                        _vm_attr_list = self.osci.get_object(cloud_name, "VM", False, _vm_uuid, False)
-                        
-                        _mgt_attr_list["obj_type"] = "VM"
-                        for _key in _vm_attr_list.keys() :
-                            if _key in _key_list or _key.count("mgt"):
-                                _mgt_attr_list[_key] = _vm_attr_list[_key]
-    
-                        _mgt_attr_list["_id"] = _vm_uuid
-                        _mgt_attr_list["state"] = self.osci.get_object_state(cloud_name, "VM", _vm_attr_list["uuid"])
+                            _mgt_attr_list["utc_offset_delta"] = \
+                            self.compute_utc_offset(cloud_name, "VM", _vm_attr_list)
 
-                        _updated_obj_attr_list = self.osci.get_object(cloud_name, "VM", False, _vm_attr_list["uuid"], False)
-
-                        if "utc_offset_on_vm" not in _updated_obj_attr_list :
-                            _updated_obj_attr_list["utc_offset_on_vm"] = 0
-
-                        _mgt_attr_list["utc_offset_delta"] = \
-                        int(_updated_obj_attr_list["utc_offset_on_orchestrator"]) \
-                        - int(_updated_obj_attr_list["utc_offset_on_vm"])
-
-                        self.osci.update_object_attribute(cloud_name, \
-                                                          "VM", \
-                                                          _vm_attr_list["uuid"], \
-                                                          False, \
-                                                          "utc_offset_delta", \
-                                                          _mgt_attr_list["utc_offset_delta"]) 
-                        
-                        self.msci.add_document(_management_key, _mgt_attr_list)
-                        self.msci.add_document(_latest_key, _mgt_attr_list) 
+                            self.compute_sla(cloud_name, "VM", _vm_attr_list, operation, _mgt_attr_list)
+                            
+                            self.msci.add_document(_management_key, _mgt_attr_list)
+                            self.msci.add_document(_latest_key, _mgt_attr_list)
             
                 _status = 0
 
@@ -2646,6 +2628,60 @@ class BaseObjectOperations :
                 _msg = "Management (" + operation + ") metrics record success."
                 cbdebug(_msg)
                 return True
+
+    @trace
+    def compute_utc_offset(self, cloud_name, obj_type, obj_attr_list) :
+        '''
+        TBD
+        '''
+        
+        if "utc_offset_on_vm" not in obj_attr_list :
+            obj_attr_list["utc_offset_on_vm"] = 0
+
+        _utc_offset_delta = int(obj_attr_list["utc_offset_on_orchestrator"]) \
+            - int(obj_attr_list["utc_offset_on_vm"])
+
+        self.osci.update_object_attribute(cloud_name, \
+                                          obj_type, \
+                                          obj_attr_list["uuid"], \
+                                          False, \
+                                          "utc_offset_delta", \
+                                          _utc_offset_delta)
+
+        return _utc_offset_delta
+
+    def compute_sla(self, cloud_name, obj_type, obj_attr_list, operation, mgt_attr_list) :
+        '''
+        TBD
+        '''
+        
+        _total_provisioning_time = 0
+        
+        if "sla_provisioning_target" in obj_attr_list :
+            for _key in obj_attr_list.keys() :
+                if _key.count("mgt") :
+                    if _key.count("provisioning") :
+                        if not _key.count("originated") and not _key.count("sla") :
+                            _total_provisioning_time += int(obj_attr_list[_key])
+
+            if _total_provisioning_time > int(obj_attr_list["sla_provisioning_target"]) :
+                _sla_provisioning = "violated"
+            else :
+                _sla_provisioning = "ok"
+    
+            self.osci.update_object_attribute(cloud_name, \
+                                              obj_type, \
+                                              obj_attr_list["uuid"], \
+                                              False, \
+                                              "sla_provisioning", \
+                                              _sla_provisioning)
+
+            obj_attr_list["sla_provisioning"] = _sla_provisioning
+
+            self.osci.add_to_view(cloud_name, obj_type, obj_attr_list, "BYSLA_PROVISIONING", "arrival")
+
+            mgt_attr_list["mgt_sla_provisioning"] = _sla_provisioning
+        return True
 
     @trace
     def get_load(self, cloud_name, obj_attr_list, raw = False, \

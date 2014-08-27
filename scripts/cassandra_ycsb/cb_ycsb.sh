@@ -24,10 +24,11 @@ LOAD_PROFILE=$1
 LOAD_LEVEL=$2
 LOAD_DURATION=$3
 LOAD_ID=$4
+SLA_RUNTIME_TARGETS=$5
 
 if [[ -z "$LOAD_PROFILE" || -z "$LOAD_LEVEL" || -z "$LOAD_DURATION" || -z "$LOAD_ID" ]]
 then
-    syslog_netcat "Usage: cb_start_ycsb.sh <load_profile> <load level> <load duration> <load_id>"
+    syslog_netcat "Usage: cb_ycsb.sh <load_profile> <load level> <load duration> <load_id>"
     exit 1
 fi
 

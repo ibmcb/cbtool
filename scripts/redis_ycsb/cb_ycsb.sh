@@ -24,10 +24,11 @@ LOAD_PROFILE=$1
 LOAD_LEVEL=$2
 LOAD_DURATION=$3
 LOAD_ID=$4
-
+SLA_RUNTIME_TARGETS=$5 
+	
 if [[ -z "$LOAD_PROFILE" || -z "$LOAD_LEVEL" || -z "$LOAD_DURATION" || -z "$LOAD_ID" ]]
 then
-    syslog_netcat "Usage: cb_start_ycsb.sh <load_profile> <load level> <load duration> <load_id>"
+    syslog_netcat "Usage: cb_ycsb.sh <load_profile> <load level> <load duration> <load_id>"
     exit 1
 fi
 
@@ -119,9 +120,9 @@ then
     syslog_netcat "Command line is: ${CMDLINE}. Output file is ${OUTPUT_FILE}"
     if [[ $APP_COLLECTION == "lazy" ]]
     then
-        lazy_collection "$CMDLINE"
+        lazy_collection "$CMDLINE" ${SLA_RUNTIME_TARGETS}
     else
-        eager_collection "$CMDLINE"
+        eager_collection "$CMDLINE" ${SLA_RUNTIME_TARGETS}
     fi
 else
     syslog_netcat "This AI reached the limit of load generation process executions. If you want this AI to continue to execute the load generator, reset the \"run_limit\" counter"

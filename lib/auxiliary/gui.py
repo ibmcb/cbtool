@@ -94,7 +94,7 @@ class Dashboard () :
                           "Bytes => MB" : [False, "bytes2mb"], 
                           "bytes/sec => Mbps" : [False, "b2mb"], 
                           "#4K pages => MB" : [False, "4k2mb"]}
-        self.labels = ['name', 'size', 'role', 'type', 'cloud_ip', 'age', 'vms', 'state', 'latest_update', 'vmc_name', 'host_name', 'ai_name', 'aidrs_name']
+        self.labels = ['name', 'size', 'role', 'type', 'cloud_ip', 'age', 'vms', 'state', 'latest_update', 'vmc_name', 'host_name', 'ai_name', 'aidrs_name' ]
         self.separator = "<p/>\n"
         self.show = {}
         self.base_dict = {}
@@ -126,8 +126,12 @@ class Dashboard () :
         for cell in row :
             cell = str(cell)
             display = cell
-            if category == "p" and display.count("mgt_") :
-                display = "Step " + str(int(display[4:7])) + ": " + display[8:]
+            if category == "p":
+                if  display.count("sla_provisioning") :
+                    display = "SLA Provisioning?"
+                else :
+                    if display.count("mgt_") :
+                        display = "Step " + str(int(display[4:7])) + ": " + display[8:]
                     
             if bold and (exclude is None or cell not in exclude) :
                 cell = "<a href='" + self.prefix() + "/monitor?show=" + category + "&filter=" + category + "-" + cell + "' target='_top'>" + display.replace("_", "<br/>") + "</a>"
@@ -256,9 +260,11 @@ class Dashboard () :
                 else :
                     row_indexer[dest] = {'d3_uuid' : str(attrs['uuid']), 'd3_name' : str(attrs['name']), 'd3_host' : 'none', 'd3_role' : 'none', 'd3_ip' : str(attrs['cloud_ip'])}
                 label_indexer[dest] = {}
-            
+                       
             for mkey, mvalue in metrics.iteritems() :
+                
                 if not isinstance(mvalue, dict):
+                    # This path gathers metrics to display on the "Provisioning Performance" Tab                    
                     if not mkey.count("mgt_") and mkey not in ["time", "latest_update"] :
                         continue
                     
@@ -266,9 +272,28 @@ class Dashboard () :
                         continue
                     key = mkey
                     value = mvalue
-                    metric_type = 'p' if key.count("mgt_") else 's'
-                    unit = "epoch" if key.count("originated") else ("secs" if key.count("mgt_") else 's')
+
+                    if key.count("mgt") :
+                        metric_type = 'p'
+
+                        if key.count("originated") :
+                            unit = "epoch"
+                        elif key.count("sla_provisioning") :
+                            unit = ' '
+                        else :
+                            if key.count("mgt_") :
+                                unit = "secs"
+
+                    elif key.count("sla_provisioning") :
+                        metric_type = 'p'
+                        unit = 'secs'
+                        
+                    else: 
+                        metric_type = 's'
+                        unit = 's'
+
                 else :
+                    # This path gathers metrics to display on the "* Performance" Tab
                     key = mkey
                     value = mvalue['val']
                     unit = mvalue['units']
@@ -276,7 +301,7 @@ class Dashboard () :
                         metric_type = 'h'
                     else :
                         if key.count("app_") :
-                            metric_type = 'a'
+                            metric_type = 'a'                         
                         else :
                             metric_type = 's'
                 
@@ -316,7 +341,7 @@ class Dashboard () :
             # We also want some "common" columns to be at the front of 
             # every category, like name and IP address to make the dashboard
             # easier to follow
-            for label in self.labels :
+            for label in (self.labels) :
                 for metric_type in self.owners[_obj_type] :
                     if (metric_type + "-" + label) in self.filters :
                         continue
@@ -354,7 +379,7 @@ class Dashboard () :
             prefix_rows2 = []
             row1 = []
             row2 = []
-            for label in self.labels :
+            for label in (self.labels) :
                 if label in print_labels[dest] :
                     prefix_rows1.append(label)
                     prefix_rows2.append("")
@@ -384,7 +409,7 @@ class Dashboard () :
                 del obj_dict["d3_ip"]
                 del obj_dict["d3_role"]
                 row = []
-                for label in self.labels :
+                for label in (self.labels) :
                     if label in label_dict :
                         row.append(label_dict[label])
                 for unit in unitkeys :

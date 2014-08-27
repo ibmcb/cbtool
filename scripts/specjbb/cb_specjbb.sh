@@ -22,6 +22,7 @@ LOAD_PROFILE=$1
 LOAD_LEVEL=$2
 LOAD_DURATION=$3
 LOAD_ID=$4
+SLA_RUNTIME_TARGETS=$5 
 
 if [[ -z "$LOAD_PROFILE" || -z "$LOAD_LEVEL" || -z "$LOAD_DURATION" || -z "$LOAD_ID" ]]
 then
@@ -147,26 +148,26 @@ else
     syslog_netcat "SPECjbb benchmark run complete. Will collect and report the results. Output file name is ${RESULTS_FILE}"
 
     app_metric_string=""
-	THROUGHPUT=`cat ${RESULTS_FILE} | grep score | tail -1 | cut -d "=" -f 2 | tr -d " "`
+    THROUGHPUT=`cat ${RESULTS_FILE} | grep score | tail -1 | cut -d "=" -f 2 | tr -d " "`
 
     app_metric_string+=" throughput:"${THROUGHPUT}":tps"    
 
-	for TYPE in new_order payment order_status delivery stock_level cust_report
-	do
-	    X=`cat ${RESULTS_FILE} | grep ${TYPE} | grep averagetime | tail -1 | cut -d "=" -f 2 | tr -d " "`
-	    RESPONSE_TIME=`echo ${X} | awk -F"E" 'BEGIN{OFMT="%10.10f"} {print $1 * (10 ^ $2) * 1000}'`
-		if [[ ${TYPE} == "new_order" ]]
-		then
-		    app_metric_string+=" latency:"${RESPONSE_TIME}":msec"
-		fi
-	    app_metric_string+=" latency_${TYPE}:"${RESPONSE_TIME}":msec"
-	done
+    for TYPE in new_order payment order_status delivery stock_level cust_report
+    do
+        X=`cat ${RESULTS_FILE} | grep ${TYPE} | grep averagetime | tail -1 | cut -d "=" -f 2 | tr -d " "`
+        RESPONSE_TIME=`echo ${X} | awk -F"E" 'BEGIN{OFMT="%10.10f"} {print $1 * (10 ^ $2) * 1000}'`
+        if [[ ${TYPE} == "new_order" ]]
+        then
+            app_metric_string+=" latency:"${RESPONSE_TIME}":msec"
+        fi
+        app_metric_string+=" latency_${TYPE}:"${RESPONSE_TIME}":msec"
+    done
 
     ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
     load_level:${LOAD_LEVEL}:load \
     load_profile:${LOAD_PROFILE}:name \
     load_duration:${LOAD_DURATION}:sec \
-    ${app_metric_string}
+    ${app_metric_string} ${SLA_RUNTIME_TARGETS}
 
     if [ x"${EXPOUTCOLDIR}" == x ]; then
         true

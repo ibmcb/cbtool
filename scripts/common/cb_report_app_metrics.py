@@ -25,9 +25,13 @@ path.append(re.compile(".*\/").search(os.path.realpath(__file__)).group(0) + "/.
 from scripts.common.cb_common import report_app_metrics                                                               
             
 _metric_list = ''                                                                                                     
-    
+_sla_target_list = ''
+
 for _arg in argv :
-    if _arg.count(":") == 2 :                                                                                         
-        _metric_list += _arg + ' '                                                                                    
-                                                                                                                      
-report_app_metrics(_metric_list)
+    if _arg.count("sla_runtime_target") :
+        _sla_target_list = _arg.replace(',',' ')
+    else :
+        if _arg.count(":") == 2 :                                                                                                 
+            _metric_list += _arg + ' '                                                                                    
+
+report_app_metrics(_metric_list, _sla_target_list)

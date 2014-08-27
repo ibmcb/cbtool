@@ -494,6 +494,8 @@ def get_os_conn(oscp = None) :
 
         _os_conn_class = getattr(_os_adapter, _oscp["kind"].capitalize() + "MgdConn")
         
+        _cloud_name = _oscp["cloud_name"]
+
         _osci = _os_conn_class(_oscp)
         
         _status = 0
@@ -517,29 +519,94 @@ def get_os_conn(oscp = None) :
             exit(2)
         else :
             _msg = "Object store adapter set up successfully."
-            return _osci, _my_uuid
+            return _osci, _my_uuid, _cloud_name
             
-def report_app_metrics(metriclist) :
+def report_app_metrics(metriclist, sla_targets_list) :
 
     _msci, _my_uuid, _expid, _username = get_ms_conn()
+    _osci, _my_uuid, _cloud_name = get_os_conn()
+
     setup_syslog(1)
     
     try :
 
         _metrics_dict = {}
+        _sla_targets_dict = {}
         _reported_metrics_dict = {}
-    
+
+        for _sla_target in sla_targets_list.split() :
+            _sla_target = _sla_target.split(':')
+            if len(_sla_target) == 2 :
+                if len(_sla_target[1]) :
+                    _key = _sla_target[0].replace('sla_runtime_target_','')                
+                    _sla_targets_dict[_key] = _sla_target[1]
+
         for _metric in metriclist.split() :
             _metric = _metric.split(':')
             if len(_metric[1]) :
                 _metrics_dict["app_"  + _metric[0]] = {}
                 _metrics_dict["app_"  + _metric[0]]["val"] = _metric[1]
                 _metrics_dict["app_"  + _metric[0]]["units"] = _metric[2]
+
+                if _metric[0] in _sla_targets_dict :
+
+                    _sla_target, _condition = _sla_targets_dict[_metric[0]].split('-')
+
+                    if len(_metric[1]) :
+
+                        _metrics_dict["app_sla_runtime"] = {}
+                        _metrics_dict["app_sla_runtime"]["units"] = ' '
+
+                        if _condition == "gt" :
+                            if float(_metric[1]) >= float(_sla_target) :
+                                _metrics_dict["app_sla_runtime"]["val"] = "ok"
+                            else :
+                                _metrics_dict["app_sla_runtime"]["val"] = "violated"
+
+                        if _condition == "lt" :
+                            if float(_metric[1]) <= float(_sla_target) :
+                                _metrics_dict["app_sla_runtime"]["val"] = "ok"
+                            else :
+                                _metrics_dict["app_sla_runtime"]["val"] = "violated"
     
         _metrics_dict["time"] = int(time())
         _metrics_dict["time_h"] = strftime("%a %b %d %X %Z %Y")
         _metrics_dict["expid"] = _expid
         _metrics_dict["uuid"] = _my_uuid
+
+        if "app_sla_runtime" in _metrics_dict :
+            
+            obj_attr_list = _osci.get_object(_cloud_name, "VM", False, _my_uuid, False)
+
+            if "sla_runtime" in obj_attr_list :
+                _previous_sla_runtime = obj_attr_list["sla_runtime"]
+            else :
+                _previous_sla_runtime = "NA"
+
+            _current_sla_runtime = _metrics_dict["app_sla_runtime"]["val"]
+
+            if _previous_sla_runtime == _current_sla_runtime :
+                _msg = "Previous SLA runtime status (\"" + _previous_sla_runtime
+                _msg += "\") and New (\"" + _current_sla_runtime + "\")"
+                _msg += " are the same. No updates needed."
+                cbdebug(_msg)
+            else :
+                _msg = "Previous SLA runtime status (\"" + _previous_sla_runtime
+                _msg += "\") and New (\"" + _current_sla_runtime + "\")"
+                _msg += " are different. Updating attributes and views on the"
+                _msg += " Metric Store"
+                cbdebug(_msg)
+                _osci.update_object_attribute(_cloud_name, \
+                                              "VM", \
+                                              _my_uuid, \
+                                              False, \
+                                              "sla_runtime", \
+                                              _current_sla_runtime)
+
+                obj_attr_list["sla_runtime"] = _previous_sla_runtime
+                _osci.remove_from_view(_cloud_name, "VM", obj_attr_list, "BYSLA_RUNTIME")
+                obj_attr_list["sla_runtime"] = _current_sla_runtime
+                _osci.add_to_view(_cloud_name, "VM", obj_attr_list, "BYSLA_RUNTIME", "arrival")
 
         if "app_load_id" in _metrics_dict and _metrics_dict["app_load_id"]["val"] == "1" :
             _new_reported_metrics_dict = {}

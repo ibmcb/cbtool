@@ -37,6 +37,7 @@ if [ $standalone == online ] ; then
     LOAD_LEVEL=$2
     LOAD_DURATION=$3
     LOAD_ID=$4
+	SLA_RUNTIME_TARGETS=$5    
 	WAS_IPS=`get_ips_from_role was`
 	DB2_IP=`get_ips_from_role db2`
 	IS_LOAD_BALANCED=`get_my_ai_attribute load_balancer`
@@ -125,7 +126,12 @@ if [ $standalone == online ]; then
 					lat=$(echo "$lat * 1000" | bc)
 				fi
 		
-				~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_duration:${LOAD_DURATION}:sec throughput:$tp:tps latency:$lat:msec
+				~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
+				load_level:${LOAD_LEVEL}:load \
+				load_duration:${LOAD_DURATION}:sec \
+				throughput:$tp:tps \
+				latency:$lat:msec \
+				${SLA_RUNTIME_TARGETS}
 			fi
 		fi
 	done
@@ -133,7 +139,12 @@ if [ $standalone == online ]; then
 	syslog_netcat "daytrader-run complete. Will collect and report the results"
 	tp=`cat ${OUTPUT_FILE} | grep throughput | grep Page | grep -v element | cut -d " " -f 5 | tr -d ' '`
 	lat=`echo "\`cat ${OUTPUT_FILE} | grep response | grep -v all | cut -d " " -f 9 | tr -d ' '\` * 1000" | bc`
-	~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec throughput:$tp:tps latency:$lat:msec
+	~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
+	load_level:${LOAD_LEVEL}:load \
+	load_profile:${LOAD_PROFILE}:name \
+	load_duration:${LOAD_DURATION}:sec \
+	throughput:$tp:tps latency:$lat:msec \
+	${SLA_RUNTIME_TARGETS}
 	
 	rm ${OUTPUT_FILE}
 

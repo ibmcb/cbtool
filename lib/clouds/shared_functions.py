@@ -160,6 +160,8 @@ class CommonCloudFunctions:
         sleep(_wait)
         
         while _curr_tries < _max_tries :
+            _start_pooling = int(time())
+
             if "async" not in obj_attr_list or obj_attr_list["async"].lower() == "false" :
                 if threading.current_thread().abort :
                     _msg = "VM Create Aborting..."
@@ -212,6 +214,16 @@ class CommonCloudFunctions:
             else :
                 _vm_started = False
 
+            _pooling_time = int(time()) - _start_pooling
+
+            if _pooling_time < _wait :
+                _actual_wait = _wait - _pooling_time
+            else :
+                _msg = "The time spent on pooling for \"ready\" status (" + str(_pooling_time) 
+                _msg += " s) is actually longer than the "
+                _msg += "interval between pooling attempts( " + str(_wait) + " s)."
+                cbdebug(_msg, True)
+                _actual_wait = 0
                 
             if  _vm_started :
                 _time_mark_prc = int(time())
@@ -221,10 +233,10 @@ class CommonCloudFunctions:
             else :
                 _msg = "(" + str(_curr_tries) + ") " + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
-                _msg += "still not ready. Will wait for " + str(_wait)
+                _msg += "still not ready. Will wait for " + str(_actual_wait)
                 _msg += " seconds and check again."
                 cbdebug(_msg)
-                sleep(_wait)
+                sleep(_actual_wait)
                 _curr_tries += 1
                 self.pending_set(obj_attr_list, _msg)
     
@@ -286,6 +298,7 @@ class CommonCloudFunctions:
             sleep(_wait)
 
             while not _network_reachable and _curr_tries < _max_tries :
+                _start_pooling = int(time())
 
                 if "async" not in obj_attr_list or obj_attr_list["async"].lower() == "false" :
                     if threading.current_thread().abort :
@@ -354,17 +367,25 @@ class CommonCloudFunctions:
                     _msg += "running the command \"" + str(_command_to_run)
                     cbdebug(_msg)
 
+                    _connection_timeout = int(obj_attr_list["update_frequency"])/2
+
                     _proc_man = ProcessManagement(username = obj_attr_list["login"], \
                                                   cloud_name = obj_attr_list["cloud_name"], \
                                                   hostname = obj_attr_list["prov_cloud_ip"], \
-                                                  priv_key = obj_attr_list["identity"])
+                                                  priv_key = obj_attr_list["identity"], \
+                                                  config_file = obj_attr_list["ssh_config_file"], \
+                                                  connection_timeout = _connection_timeout)
 
-                    _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_command_to_run)
+                    try :
+                        _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_command_to_run)
 
-                    if not _status :
-                        _vm_is_booted = True
-                    else :
+                        if not _status :
+                            _vm_is_booted = True
+                        else :
+                            _vm_is_booted = False
+                    except :
                         _vm_is_booted = False
+
                 
                 elif obj_attr_list["check_boot_complete"].count("snmpget_poll") :
                     import netsnmp
@@ -394,6 +415,7 @@ class CommonCloudFunctions:
                         cbdebug(_msg)
                         _status = 200
                         raise CldOpsException(_msg, _status)
+                    
                     if (_snmp_response[0] != None ) :
                         _vm_is_booted = True
                         _msg = "SNMP Response: " + str(_snmp_response)
@@ -404,6 +426,17 @@ class CommonCloudFunctions:
                     _msg = "Warning: No valid method specified to determined if VM has booted."
                     cbdebug(_msg, True)    
 
+                _pooling_time = int(time()) - _start_pooling
+    
+                if _pooling_time < _wait :
+                    _actual_wait = _wait - _pooling_time
+                else :
+                    _msg = "The time spent on pooling for \"booted\" status (" + str(_pooling_time) 
+                    _msg += " s) is actually longer than the "
+                    _msg += "interval between pooling attempts( " + str(_wait) + " s)."
+                    cbdebug(_msg, True)
+                    _actual_wait = 0
+
                 if _vm_is_booted :
                     obj_attr_list["mgt_004_network_acessible"] = int(time()) - time_mark_prc
                     self.pending_set(obj_attr_list, "Network accessible now. Continuing...")
@@ -413,11 +446,11 @@ class CommonCloudFunctions:
                 else :
                     _msg = "(" + str(_curr_tries) + ") " + obj_attr_list["name"]
                     _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
-                    _msg += "still not network reachable. Will wait for " + str(_wait)
+                    _msg += "still not network reachable. Will wait for " + str(_actual_wait)
                     _msg += " seconds and check again."
                     self.pending_set(obj_attr_list, _msg)
                     cbdebug(_msg)
-                    sleep(_wait)
+                    sleep(_actual_wait)
                     _curr_tries += 1
 
 

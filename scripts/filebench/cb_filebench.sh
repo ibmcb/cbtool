@@ -22,6 +22,7 @@ LOAD_PROFILE=$1
 LOAD_LEVEL=$2
 LOAD_DURATION=$3
 LOAD_ID=$4
+SLA_RUNTIME_TARGETS=$5
 
 if [[ -z "$LOAD_PROFILE" || -z "$LOAD_LEVEL" || -z "$LOAD_DURATION" || -z "$LOAD_ID" ]]
 then
@@ -73,7 +74,14 @@ tp=`cat ${OUTPUT_FILE} | grep Summary | cut -d "," -f 2 | tr -d ' ' | sed 's/\(.
 lat=`cat ${OUTPUT_FILE} | grep Summary | cut -d "," -f 6 | tr -d ' ' | sed 's/\(.*\)........./\1/'`
 bw=`cat ${OUTPUT_FILE} | grep Summary | cut -d "," -f 4 | tr -d ' ' | sed 's/\(.*\)..../\1/'`
 
-~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum load_level:${LOAD_LEVEL}:load load_profile:${LOAD_PROFILE}:name load_duration:${LOAD_DURATION}:sec latency:$lat:msec throughput:$tp:tps bandwidth:$bw:MBps
+~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
+load_level:${LOAD_LEVEL}:load \
+load_profile:${LOAD_PROFILE}:name \
+load_duration:${LOAD_DURATION}:sec \
+latency:$lat:msec \
+throughput:$tp:tps \
+bandwidth:$bw:MBps \
+${SLA_RUNTIME_TARGETS}
 
 rm ${OUTPUT_FILE}
 rm ${PERSONALITY_FILE}

@@ -36,7 +36,8 @@ class ProcessManagement :
     '''
     @trace
     def __init__(self, hostname = "127.0.0.1", port = "22", username = None, \
-                 cloud_name = None, priv_key = None, config_file = None) :
+                 cloud_name = None, priv_key = None, config_file = None, \
+                 connection_timeout = None) :
         '''
         TBD
         '''
@@ -47,6 +48,7 @@ class ProcessManagement :
         self.cloud_name = cloud_name
         self.priv_key = priv_key
         self.config_file = config_file
+        self.connection_timeout = connection_timeout
         self.thread_pools = {}
 
     @trace
@@ -91,12 +93,21 @@ class ProcessManagement :
                 _priv_key = ''
 
             if self.config_file :
-                _config_file = " -F " + self.config_file
+                _config_file = " -F " + self.config_file + ' '
             else:
                 _config_file = ''
 
-            _cmd = "ssh " + _priv_key + _config_file + " -o StrictHostKeyChecking=no "
-            _cmd += "-o UserKnownHostsFile=/dev/null " + _username
+            if self.connection_timeout :
+                _connection_timeout = " -o ConnectTimeout=" + str(self.connection_timeout) + ' '
+            else :
+                _connection_timeout = ''
+
+            _cmd = "ssh " 
+            _cmd += _priv_key 
+            _cmd += _config_file 
+            _cmd += _connection_timeout            
+            _cmd += " -o StrictHostKeyChecking=no"
+            _cmd += " -o UserKnownHostsFile=/dev/null " + _username
             _cmd += _hostname + " \"" + cmdline + "\""
 
         if str(really_execute).lower() == "true" :
@@ -107,7 +118,8 @@ class ProcessManagement :
             if _proc_h.pid :
                 if not cmdline.count("--debug_host=localhost") :
                     _result = _proc_h.communicate()
-                    if _proc_h.returncode and len(_result[1]) and _local :
+
+                    if _proc_h.returncode and len(_result[1]) :
                         _msg = "Error while executing the command line "
                         _msg += "\"" + cmdline + "\" (returncode = "
                         _msg += str(_proc_h.pid) + ") :" + str(_result[1])
