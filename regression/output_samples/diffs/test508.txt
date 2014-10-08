@@ -1,2 +1,3 @@
-|VM |vm_XX |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx |suspend 
 |VM |vm_XX |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx |attached 
+|VM |vm_XX |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx |suspend 
+|Redis Version |2.8.4 

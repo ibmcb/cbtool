@@ -38,7 +38,7 @@ if [[ ${LOAD_ID} == "1" ]]
 then
     GENERATE_DATA="true"
 else
-    GENERATE_DATA=`get_my_ai_attribute_with_default generate_data true`
+    GENERATE_DATA=`get_my_ai_attribute_with_default regenerate_data true`
 fi
 
 OPERATION_COUNT=`get_my_ai_attribute_with_default operation_count 100000`

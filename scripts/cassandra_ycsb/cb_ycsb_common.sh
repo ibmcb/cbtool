@@ -76,7 +76,7 @@ then
     done < <(token-generator $total_nodes|grep Node)
 
     my_token=${token[$MY_IP]}
-	syslog_netcat "Cassandra token is \"${my_token}\""
+    syslog_netcat "Cassandra token is \"${my_token}\""
         
     cassandra_ips_csv=`echo ${cassandra_ips} | sed ':a;N;$!ba;s/\n/, /g'`
 
@@ -97,7 +97,7 @@ then
     else
         syslog_netcat "The VMs with the \"seed\" role on this AI has the following IPs: ${seed_ips_csv}"
     fi
-	
+    
 elif [[ $BACKEND_TYPE == "mongo" ]]
 then 
 
@@ -204,7 +204,18 @@ function lazy_collection {
         datagentime=$(cat /tmp/data_generation_time)
         mv /tmp/data_generation_time /tmp/old_data_generation_time
     fi
-    
+
+    if [[ -f /tmp/old_data_generation_size ]]
+    then
+        datagensize=-$(cat /tmp/old_data_generation_size)
+    fi
+
+    if [[ -f /tmp/data_generation_size ]]
+    then
+        datagensize=$(cat /tmp/data_generation_size)
+        mv /tmp/data_generation_size /tmp/old_data_generation_size        
+    fi  
+
     ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
     load_level:${LOAD_LEVEL}:load \
     load_profile:${LOAD_PROFILE}:name \
@@ -212,6 +223,7 @@ function lazy_collection {
     throughput:$(expr $ops):tps \
     latency:$(expr $latency):ms \
     datagen_time:${datagentime}:sec \
+    datagen_size:${datagensize}:records \
     ${SLA_RUNTIME_TARGETS}
 }
 
@@ -381,6 +393,17 @@ function eager_collection {
         mv /tmp/data_generation_time /tmp/old_data_generation_time
     fi
 
+    if [[ -f /tmp/old_data_generation_size ]]
+    then
+        datagensize=-$(cat /tmp/old_data_generation_size)
+    fi
+
+    if [[ -f /tmp/data_generation_size ]]
+    then
+        datagensize=$(cat /tmp/data_generation_size)
+        mv /tmp/data_generation_size /tmp/old_data_generation_size        
+    fi
+
     if [[ $write_avg_latency -ne 0 ]]
     then
         ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
@@ -404,7 +427,8 @@ function eager_collection {
         update_95_latency:$(expr $update_95_latency):us \
         update_99_latency:$(expr $update_99_latency):us \
         datagen_time:${datagentime}:sec \
-    	${SLA_RUNTIME_TARGETS}
+        datagen_size:${datagensize}:records \      
+        ${SLA_RUNTIME_TARGETS}
     fi
 
     if [[ $write_avg_latency -eq 0 ]]
@@ -425,6 +449,8 @@ function eager_collection {
         update_95_latency:$(expr $update_95_latency):us \
         update_99_latency:$(expr $update_99_latency):us \
         datagen_time:${datagentime}:sec \
-    	${SLA_RUNTIME_TARGETS}        
+        datagen_size:${datagensize}:records \      
+        ${SLA_RUNTIME_TARGETS}        
     fi
 }
+     

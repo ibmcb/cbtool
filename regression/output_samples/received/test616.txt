@@ -1,26 +1,26 @@
 The following HOSTs reported management metrics:
 Name                        |Age (seconds)     |Experiment id                  |Number of samples
-host_simhostb0              |726               |REGRESSION_B                   |1                
-host_simhosta0              |726               |REGRESSION_B                   |1                
-host_simhostc0              |726               |REGRESSION_B                   |1                
-host_simhostd0              |726               |REGRESSION_B                   |1                
-host_simhosta1              |726               |REGRESSION_B                   |1                
-host_simhostc1              |726               |REGRESSION_B                   |1                
-host_simhostb1              |726               |REGRESSION_B                   |1                
-host_simhostd1              |726               |REGRESSION_B                   |1                
-host_simhosta2              |726               |REGRESSION_B                   |1                
-host_simhostc2              |726               |REGRESSION_B                   |1                
-host_simhostb2              |726               |REGRESSION_B                   |1                
-host_simhostd2              |726               |REGRESSION_B                   |1                
-host_simhostc3              |726               |REGRESSION_B                   |1                
-host_simhosta3              |726               |REGRESSION_B                   |1                
-host_simhostb3              |726               |REGRESSION_B                   |1                
-host_simhostd3              |726               |REGRESSION_B                   |1                
-host_simhosta4              |726               |REGRESSION_B                   |1                
-host_simhostc4              |726               |REGRESSION_B                   |1                
-host_simhostb4              |726               |REGRESSION_B                   |1                
-host_simhostd4              |726               |REGRESSION_B                   |1                
-host_source                 |24                |REGRESSION_B                   |1                
+host_simhostc0              |710               |REGRESSION_B                   |1                
+host_simhosta0              |710               |REGRESSION_B                   |1                
+host_simhostb0              |710               |REGRESSION_B                   |1                
+host_simhostd0              |710               |REGRESSION_B                   |1                
+host_simhostc1              |710               |REGRESSION_B                   |1                
+host_simhosta1              |710               |REGRESSION_B                   |1                
+host_simhostb1              |710               |REGRESSION_B                   |1                
+host_simhostd1              |710               |REGRESSION_B                   |1                
+host_simhostb2              |710               |REGRESSION_B                   |1                
+host_simhostc2              |710               |REGRESSION_B                   |1                
+host_simhosta2              |710               |REGRESSION_B                   |1                
+host_simhostd2              |710               |REGRESSION_B                   |1                
+host_simhostb3              |710               |REGRESSION_B                   |1                
+host_simhostc3              |710               |REGRESSION_B                   |1                
+host_simhostd3              |710               |REGRESSION_B                   |1                
+host_simhosta3              |710               |REGRESSION_B                   |1                
+host_simhostb4              |710               |REGRESSION_B                   |1                
+host_simhostc4              |710               |REGRESSION_B                   |1                
+host_simhostd4              |710               |REGRESSION_B                   |1                
+host_simhosta4              |710               |REGRESSION_B                   |1                
+host_source                 |23                |REGRESSION_B                   |1                
 host_dest                   |23                |REGRESSION_B                   |1                
 
 The following HOSTs reported runtime (OS) metrics:

@@ -36,13 +36,14 @@ if [[ ${LOAD_ID} == "1" ]]
 then
     GENERATE_DATA="true"
 else
-    GENERATE_DATA=`get_my_ai_attribute_with_default generate_data true`
+    GENERATE_DATA=`get_my_ai_attribute_with_default regenerate_data true`
+    GENERATE_DATA=$(echo ${GENERATE_DATA} | tr '[:upper:]' '[:lower:]')
 fi
 
-OPERATION_COUNT=`get_my_ai_attribute_with_default operation_count 100000`
+OPERATION_COUNT=`get_my_ai_attribute_with_default operation_count 10000`
 READ_RATIO=`get_my_ai_attribute_with_default read_ratio workloaddefault`
 UPDATE_RATIO=`get_my_ai_attribute_with_default update_ratio workloaddefault`
-INPUT_RECORDS=`get_my_ai_attribute_with_default input_records 100000`
+INPUT_RECORDS=`get_my_ai_attribute_with_default input_records 10000`
 RECORD_SIZE=`get_my_ai_attribute_with_default record_size 2.35`
 APP_COLLECTION=`get_my_ai_attribute_with_default app_collection lazy`
 DATABASE_SIZE_VERSUS_MEMORY=`get_my_ai_attribute_with_default database_size_versus_memory 0.5`
@@ -72,8 +73,17 @@ sudo touch $YCSB_PATH/custom_workload.dat
 sudo sh -c "echo "recordcount=${RECORDS%.*}" > $YCSB_PATH/custom_workload.dat"
 sudo sh -c "echo "operationcount=$OPERATION_COUNT" >> $YCSB_PATH/custom_workload.dat"
 
+source ~/cb_barrier.sh start
+
 if [[ ${GENERATE_DATA} == "true" ]]
 then
+	FIRST_SEED=$(echo $seed_ips_csv | cut -d ',' -f 1)
+	syslog_netcat "Dropping keyspace usertable by executing cassandra-cli against seed node ${FIRST_SEED}"
+	cassandra-cli -h ${FIRST_SEED} -f remove_keyspace.cassandra
+	
+	syslog_netcat "Creating keyspace usertable by executing cassandra-cli against seed node ${FIRST_SEED}"
+	cassandra-cli -h ${FIRST_SEED} -f create_keyspace.cassandra
+				
     syslog_netcat "Number of records to be inserted : $RECORDS"
     OUTPUT_FILE=$(mktemp)
 
@@ -99,6 +109,7 @@ then
     END_GENERATION=$(get_time)
     DATA_GENERATION_TIME=$(expr ${END_GENERATION} - ${START_GENERATION})
     echo ${DATA_GENERATION_TIME} > /tmp/data_generation_time
+	echo ${RECORDS} > /tmp/data_generation_size
 else
     syslog_netcat "The value of the parameter \"GENERATE_DATA\" is \"false\". Will bypass data generation for the hadoop load profile \"${LOAD_PROFILE}\""     
 fi
@@ -106,8 +117,6 @@ fi
 CMDLINE="sudo $YCSB_PATH/bin/ycsb run cassandra-10 -s -threads ${LOAD_LEVEL} -P $YCSB_PATH/workloads/${LOAD_PROFILE} -P $YCSB_PATH/custom_workload.dat -p hosts=$seed_ips_csv"
 
 syslog_netcat "Benchmarking YCSB SUT: SEED=${seed_ips_csv} -> CASSANDRAS=${cassandra_ips_csv} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
-
-source ~/cb_barrier.sh start
 
 log_output_command=$(get_my_ai_attribute log_output_command)
 log_output_command=$(echo ${log_output_command} | tr '[:upper:]' '[:lower:]')

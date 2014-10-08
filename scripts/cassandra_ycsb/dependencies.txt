@@ -46,6 +46,8 @@ ubuntu-cassandra-amd64-urls-man = http://www.apache.org/dist/cassandra/debian/po
 #rhel-cassandra-x86_64-urls-man = http://rpm.datastax.com/community/noarch/cassandra20-2.0.5-1.noarch.rpm
 #ubuntu-cassandra-amd64-urls-man = http://www.apache.org/dist/cassandra/debian/pool/main/c/cassandra/cassandra_2.0.5_all.deb
 
+rhel-maven-x86_64-urls-man = https://repos.fedorapeople.org/repos/dchen/apache-maven/epel-6/x86_64/apache-maven-3.2.1-2.el6.noarch.rpm
+
 rhel-ycsb-urls-git = https://github.com/brianfrankcooper
 ubuntu-ycsb-urls-git = https://github.com/brianfrankcooper
 ### END - Dependency URLs ###

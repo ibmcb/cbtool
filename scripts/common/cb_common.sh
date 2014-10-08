@@ -24,7 +24,7 @@ dir=$(pwd)
 if [ $0 != "-bash" ] ; then
     popd 2>&1 > /dev/null
 fi
-
+    
 # Get all parameters to connect to the datastore
 cloudname=`cat ~/cb_os_parameters.txt | grep "#OSCN" | cut -d "-" -f 2`
 oshostname=`cat ~/cb_os_parameters.txt | grep "#OSHN" | cut -d "-" -f 2`
@@ -41,7 +41,6 @@ ATTEMPTS=3
 SETUP_TIME=20
 
 ai_mapping_file=~/ai_mapping_file.txt
-standalone="online"
 
 PGREP_CMD=`which pgrep`
 PKILL_CMD=`which pkill`
@@ -570,7 +569,7 @@ fi
 NC_CMD=${NC}" "${NC_OPTIONS}" "${NC_HOST_SYSLOG}" "${NC_PORT_SYSLOG}
 
 function syslog_netcat {
-    if [ $standalone == online ]
+    if [[ $osmode == "controllable" ]]
     then 
         echo "${NC_FACILITY_SYSLOG} - $SCRIPT_NAME: ${1}"
         echo "${NC_FACILITY_SYSLOG} - $SCRIPT_NAME: ${1}" | $NC_CMD &
@@ -581,7 +580,8 @@ function syslog_netcat {
 
 function refresh_hosts_file {
 
-    if [ x"${my_ai_uuid}" != x"none" ]; then
+    if [[ x"${my_ai_uuid}" != x"none" ]] 
+    then
         build_ai_mapping
     fi
 
@@ -602,11 +602,8 @@ function provision_application_start {
 
 function provision_application_stop {
     START=$1
-    if [ "$standalone" = "offline" ] ; then
-        syslog_netcat "Application Instance executed in \"standalone\" mode. Will not report application startup time"
-        return
-    fi
-    if [ ! -e .appfirstrun ] ; then
+    if [[ ! -e .appfirstrun ]]
+    then
         touch .appfirstrun
         END=$(date +%s)
         DIFF=$(( $END - $START ))
@@ -698,17 +695,7 @@ function online_or_offline {
     fi
 }
 
-function standalone_verify {
-    param=$1
-    msg=$2
-    if [ x"$param" == x ] ; then
-        echo "$msg"
-        exit 1
-    fi
-}
-
 function post_boot_steps {
-    standalone=$1
 
     if [ ! -e /usr/lib64 ]; then
         syslog_netcat "Creating symbolic link /usr/lib64 -> /usr/lib"
@@ -733,10 +720,7 @@ function post_boot_steps {
     export PATH=$PATH:/sbin
     PIDOF_CMD=`which pidof`
 
-    if [[ $standalone == online ]]
-    then
-        stop_ganglia
-    fi
+    stop_ganglia
 
     # fix the db2 data authentication permissions first
     if [[ x"$(echo $0 | grep cb_restart_db2)" != x ]] || [[ x"${my_role}" == x"db2" ]]
@@ -754,37 +738,35 @@ function post_boot_steps {
         sudo chmod g+s ~/sqllib/security/db2flacc
     fi
 
-    if [[ $standalone == online ]]
+    sleep 1
+
+    sudo bash -c "chmod 777 /dev/pts/*"
+    restart_ntp
+    sudo ln -sf ${dir}/../../3rd_party/monitor-core ~
+    sudo ln -sf ${dir}/../../util ~
+
+    # for 32-bit VMs
+    if [[ ! -e /usr/lib64/ganglia && -e /usr/lib/ganglia ]]
     then
-        sleep 1
-
-        sudo bash -c "chmod 777 /dev/pts/*"
-        restart_ntp
-        sudo ln -sf ${dir}/../../3rd_party/monitor-core ~
-        sudo ln -sf ${dir}/../../util ~
-
-        # for 32-bit VMs
-        if [[ ! -e /usr/lib64/ganglia && -e /usr/lib/ganglia ]]
-        then
-            sudo ln -sf /usr/lib/ganglia/ /usr/lib64/ganglia
-        fi
-
-        if [[ x"${my_ai_uuid}" != x"none" ]]
-        then
-            syslog_netcat "Copying application-specific scripts to the home directory"
-            ln -sf "${dir}/../${my_base_type}/"* ~
-        fi
-
-        if [[ x"${collect_from_guest}" == x"true" ]]
-        then
-            syslog_netcat "Collect from Guest is ${collect_from_guest}"
-            start_ganglia
-        else
-            syslog_netcat "Collect from Guest is ${collect_from_guest}"
-            sleep 2
-            syslog_netcat "Bypassing the gmond and gmetad restart"
-        fi
+        sudo ln -sf /usr/lib/ganglia/ /usr/lib64/ganglia
     fi
+
+    if [[ x"${my_ai_uuid}" != x"none" ]]
+    then
+        syslog_netcat "Copying application-specific scripts to the home directory"
+        ln -sf "${dir}/../${my_base_type}/"* ~
+    fi
+
+    if [[ x"${collect_from_guest}" == x"true" ]]
+    then
+        syslog_netcat "Collect from Guest is ${collect_from_guest}"
+        start_ganglia
+    else
+        syslog_netcat "Collect from Guest is ${collect_from_guest}"
+        sleep 2
+        syslog_netcat "Bypassing the gmond and gmetad restart"
+    fi
+
 }
     
 function stop_ganglia {
@@ -835,9 +817,9 @@ function start_ganglia {
         syslog_netcat "Restarting ganglia meta process (gmetad) on $SHORT_HOSTNAME"
         sudo pkill -9 -f gmetad
 
-		GMETAD_PATH=~/${my_remote_dir}/3rd_party/monitor-core/gmetad-python
-		
-		eval GMETAD_PATH=${GMETAD_PATH}
+        GMETAD_PATH=~/${my_remote_dir}/3rd_party/monitor-core/gmetad-python
+        
+        eval GMETAD_PATH=${GMETAD_PATH}
         $GMETAD_PATH/gmetad.py -c ~/gmetad-vms.conf -d 1
 #       $GMETAD_PATH/gmetad.py -c ~/gmetad-vms.conf --syslogn 127.0.0.1 --syslogp 6379 --syslogf 22 -d 4
 
@@ -851,7 +833,7 @@ function start_ganglia {
         fi
     fi
 }
-
+    
 function execute_load_generator {
 
     CMDLINE=$1

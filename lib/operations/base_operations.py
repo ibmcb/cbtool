@@ -1810,6 +1810,10 @@ class BaseObjectOperations :
             '''
             Support load balancer configurations on-the-fly.
             '''
+            
+            if "load_balancer" not in obj_attr_list :
+                obj_attr_list["load_balancer"] = "false"
+            
             if obj_attr_list["load_balancer"].strip().lower() == "true" :
                 for _tier_nr in range(0, len(_tiers)) :
                     if _tiers[_tier_nr].split("_x_")[1] == obj_attr_list["load_generator_role"] :

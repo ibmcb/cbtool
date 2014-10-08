@@ -7,22 +7,17 @@
 Monitor extraction success. All metrics written to csv files on the directory "/home/msilva/cloudbench/lib/auxiliary//../../data".
 running shell command: "ls -la /home/msilva/cloudbench/regression/..//data/REGRESSION_B"....
 stdout:
- total 54996
-drwxrwxr-x 2 msilva msilva     4096 Jul 29 10:43 .
-drwxrwxr-x 4 msilva msilva     4096 May 15 11:12 ..
--rw-r--r-- 1 msilva msilva     1014 Jul 29 10:43 HOST_runtime_os_REGRESSION_B.csv
--rw-r--r-- 1 msilva msilva    43791 Jul 29 10:43 VM_management_REGRESSION_B.csv
--rw-r--r-- 1 msilva msilva      310 Jul 29 10:43 VM_runtime_app_REGRESSION_B.csv
--rw-r--r-- 1 msilva msilva     1062 Jul 29 10:43 VM_runtime_os_REGRESSION_B.csv
--rw-r--r-- 1 msilva msilva      442 Jul 29 10:29 gui.log
--rw-r--r-- 1 msilva msilva        0 Jul 29 10:29 loadmanager.log
--rw-r--r-- 1 msilva msilva        0 Jul 29 10:29 monitor.log
--rw-r--r-- 1 msilva msilva 55859120 Jul 29 10:43 operations.log
+ total 57672
+drwxrwxr-x 2 msilva msilva     4096 Oct  7 19:34 .
+drwxrwxr-x 3 msilva msilva     4096 Aug 12 08:47 ..
+-rw-r--r-- 1 msilva msilva     1014 Oct  7 19:34 HOST_runtime_os_REGRESSION_B.csv
+-rw-r--r-- 1 msilva msilva      458 Oct  7 19:21 msilva_gui.log
+-rw-r--r-- 1 msilva msilva 58600391 Oct  7 19:34 msilva_operations.log
+-rw-r--r-- 1 msilva msilva   100015 Oct  7 19:33 msilva_submmiter.log
 -rwxr-xr-x 1 msilva msilva   239341 Jul  1 19:43 regression_test_experiment_plan.txt
--rw-r--r-- 1 msilva msilva        0 Jul 29 10:29 remotescripts.log
--rw-r--r-- 1 msilva msilva        0 Jul 29 10:29 report.log
--rw-r--r-- 1 msilva msilva    99347 Jul 29 10:42 submmiter.log
--rw-r--r-- 1 msilva msilva        0 Jul 29 10:29 subscribe.log
--rw-r--r-- 1 msilva msilva    38303 Jul 29 10:43 trace_REGRESSION_B.csv
+-rw-r--r-- 1 msilva msilva    38038 Oct  7 19:34 trace_REGRESSION_B.csv
+-rw-r--r-- 1 msilva msilva    43701 Oct  7 19:34 VM_management_REGRESSION_B.csv
+-rw-r--r-- 1 msilva msilva      348 Oct  7 19:34 VM_runtime_app_REGRESSION_B.csv
+-rw-r--r-- 1 msilva msilva     1100 Oct  7 19:34 VM_runtime_os_REGRESSION_B.csv
 
 

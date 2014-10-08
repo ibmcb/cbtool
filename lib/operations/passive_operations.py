@@ -32,6 +32,7 @@ from sys import path
 from threading import Condition
 import copy, re, socket, os
 import shutil
+import textwrap
 import threading
 
 cwd = (re.compile(".*\/").search(os.path.realpath(__file__)).group(0)) + "/../../"
@@ -2166,8 +2167,11 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         obj_attr_list["global_object"] == "aidrs_templates" or \
                         obj_attr_list["global_object"] == "fi_templates" :
 
+                            _result = {}
                             for _key, _value in _object_contents.items() :
+
                                 if _key.count(obj_attr_list["attribute_name"]) :
+
                                     if not (_key.count("_pref_host") or \
                                             _key.count("_pref_pool") or \
                                             _key.count("_meta_tag") or \
@@ -2176,29 +2180,50 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                         _key = _key.replace(obj_attr_list["attribute_name"] + '_', '')
                                     else :
                                         _key = _key.replace(obj_attr_list["attribute_name"] + '_', '',1)
+                                    _result[_key] = _value                                        
                                     # A trick to display the AI definition
                                     # in a specific order. It is ugly and not
                                     # efficient, but it will do for now.
+                                    _load_balancer_supported = False
+                                    
                                     if _key == "description" :
                                         _key = _key.replace(_key, "00___" + _key)
+                                        _ww_value = ''
+                                        for _line in _value.split('\\n') :
+                                            _line = textwrap.fill(_line, 80) + "\n"
+                                            _ww_value += _line
+                                        _value = _ww_value
+
                                     elif _key == "sut" :
                                         _key = _key.replace(_key, "01___" + _key)
-                                    elif _key == "load_manager_role" :
-                                        _key = _key.replace(_key, "02___" + _key)
-                                    elif _key == "metric_aggregator_role" :
+                                    elif _key == "reported_metrics" :
+                                        _key = _key.replace(_key, "02___" + _key)                                        
+                                    elif _key == "load_balancer_supported" :
                                         _key = _key.replace(_key, "03___" + _key)
-                                    elif _key == "capture_role" :
+                                        if _value.lower() == "true" :
+                                            _load_balancer_supported = True
+                                    elif _key == "resize_supported" :
                                         _key = _key.replace(_key, "04___" + _key)
-                                    elif _key.count("setup") :
+                                    elif _key == "regenerate_data" :
                                         _key = _key.replace(_key, "05___" + _key)
-                                    elif _key.count("reset") :
+                                    elif _key == "load_profile" :
                                         _key = _key.replace(_key, "06___" + _key)
-                                    elif _key.count("start") :
-                                        _key = _key.replace(_key, "07___" + _key)
                                     elif _key == "load_level" :
-                                        _key = _key.replace(_key, "08___" + _key)
+                                        _key = _key.replace(_key, "07___" + _key)
                                     elif _key == "load_duration" :
+                                        _key = _key.replace(_key, "08___" + _key)                                                                                
+                                    elif _key == "load_manager_role" :
                                         _key = _key.replace(_key, "09___" + _key)
+                                    elif _key == "metric_aggregator_role" :
+                                        _key = _key.replace(_key, "10___" + _key)
+                                    elif _key == "capture_role" :
+                                        _key = _key.replace(_key, "11___" + _key)
+                                    elif _key.count("setup") :
+                                        _key = _key.replace(_key, "12___" + _key)
+                                    elif _key.count("reset") :
+                                        _key = _key.replace(_key, "13___" + _key)
+                                    elif _key.count("start") :
+                                        _key = _key.replace(_key, "14___" + _key)
 
                                     elif _key == "type" :
                                         _key = _key.replace(_key, "00___" + _key)
@@ -2209,7 +2234,11 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                     elif _key == "lifetime" :
                                         _key = _key.replace(_key, "09___" + _key)
 
-                                    _formatted_result.append(_key + ": " + _value)
+                                    if not _key.count("load_balancer_supported") and _key.count("load_balancer") :
+                                        if _load_balancer_supported :
+                                            _formatted_result.append(_key + ": " + _value)
+                                    else :
+                                        _formatted_result.append(_key + ": " + _value)
 
                         _formatted_result.sort()
 

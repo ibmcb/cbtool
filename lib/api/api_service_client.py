@@ -267,7 +267,7 @@ class APIClient(Server):
             print "API not available: " + str(obj)
             return False
 
-    def get_latest_data(self, cloud_name, uuid, metric_class = "runtime", object_type = "VM", metric_type = "os"):
+    def get_performance_data(self, cloud_name, uuid, metric_class = "runtime", object_type = "VM", metric_type = "os", latest = False):
         '''
         TBD
         '''
@@ -278,7 +278,12 @@ class APIClient(Server):
         else :
             _object_type = metric_class + '_' + object_type
 
-        metrics = self.msci.find_document("latest_" + _object_type + "_" + self.username, {"uuid" : uuid})
+        if latest :
+            _collection_name = "latest_" + _object_type + "_" + self.username
+        else :
+            _collection_name = _object_type + "_" + self.username
+            
+        metrics = self.msci.find_document(_collection_name, {"uuid" : uuid})
 
         if metrics is None :
             raise APINoSuchMetricException(1, "No " + _object_type + " data available.")
@@ -289,7 +294,7 @@ class APIClient(Server):
         '''
         TBD
         '''        
-        _metrics = self.get_latest_data(cloud_name, uuid, metric_class = "runtime", object_type = "VM", metric_type = "app") 
+        _metrics = self.get_performance_data(cloud_name, uuid, metric_class = "runtime", object_type = "VM", metric_type = "app", latest = True) 
         if uuid in self.vms :
             self.vms[uuid].app_metrics = _metrics
 
@@ -299,7 +304,7 @@ class APIClient(Server):
         '''
         TBD
         '''
-        _metrics = self.get_latest_data(cloud_name, uuid, metric_class = "runtime", object_type = "VM", metric_type = "os")
+        _metrics = self.get_performance_data(cloud_name, uuid, metric_class = "runtime", object_type = "VM", metric_type = "os", latest = True)
         if uuid in self.vms :
             self.vms[uuid].system_metrics = _metrics
             
@@ -309,6 +314,36 @@ class APIClient(Server):
         '''
         TBD
         '''
-        _metrics = self.get_latest_data(cloud_name, uuid, metric_class = "management", object_type = "VM")
+        _metrics = self.get_performance_data(cloud_name, uuid, metric_class = "management", object_type = "VM", latest = True)
             
         return _metrics
+
+    def get_app_data(self, cloud_name, uuid) :
+        '''
+        TBD
+        '''        
+        _metrics = self.get_performance_data(cloud_name, uuid, metric_class = "runtime", object_type = "VM", metric_type = "app", latest = False) 
+        if uuid in self.vms :
+            self.vms[uuid].app_metrics = _metrics
+
+        return _metrics
+        
+    def get_system_data(self, cloud_name, uuid) :
+        '''
+        TBD
+        '''
+        _metrics = self.get_performance_data(cloud_name, uuid, metric_class = "runtime", object_type = "VM", metric_type = "os", latest = False)
+        if uuid in self.vms :
+            self.vms[uuid].system_metrics = _metrics
+            
+        return _metrics
+    
+    def get_management_data(self, cloud_name, uuid) :
+        '''
+        TBD
+        '''
+        _metrics = self.get_performance_data(cloud_name, uuid, metric_class = "management", object_type = "VM", latest = False)
+            
+        return _metrics
+    
+    

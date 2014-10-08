@@ -1,4 +1,4 @@
-Background operation execution success. Operation "vmc-detach" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.1.250,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,timeout:240,host:172.16.1.250,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,simzone_a,false --operation=vmc-detach --cn=TESTCLOUD --uuid=FA102F45-75BA-5DDF-B542-125B3CC5A220 --daemon". The process id is 28902.
+Background operation execution success. Operation "vmc-detach" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:9.2.212.23,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,timeout:240,host:9.2.212.23,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,simzone_a,false --operation=vmc-detach --cn=TESTCLOUD --uuid=A13810B2-C7D8-5060-B119-F95CDAB6045A --daemon". The process id is 22095.
 
 Going to unconditionally wait for 8s (8 seconds). The command line interface will be blocked during the waiting.
 Waited 1 seconds... (12.5%)
@@ -15,19 +15,19 @@ No objects available.
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |861.74K                       
-|Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |10440776                      
-|Total Connections Received                           |230784                        
-|Total Commands Processed                             |26088852                      
+|Used Memory                                          |1.60M                         
+|Redis Version                                        |2.8.4                         
+|Uptime (in seconds)                                  |3057608                       
+|Total Connections Received                           |128107                        
+|Total Commands Processed                             |9399574                       
 |Number of Keys                                       |90                            
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
 |MongoDB Version                                      |2.4.9                         
-|Storage Size                                         |2797568                       
-|Data Size                                            |46856                         
+|Storage Size                                         |3022848                       
+|Data Size                                            |46840                         
 |Index Size                                           |286160                        
-|Average Object Size                                  |270.843930636                 
+|Average Object Size                                  |270.751445087                 
 |Collections                                          |13                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         

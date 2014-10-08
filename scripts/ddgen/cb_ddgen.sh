@@ -34,6 +34,8 @@ BLOCK_SIZE=`get_my_ai_attribute_with_default block_size 64k`
 DATA_SOURCE=`get_my_ai_attribute_with_default data_source /dev/urandom`
 DATA_DESTINATION=`get_my_ai_attribute_with_default data_destination /root`
 
+source ~/cb_barrier.sh start
+
 CMDLINE="sudo dd if=${DATA_SOURCE} of=${DATA_DESTINATION}/testfile.bin oflag=direct bs=${BLOCK_SIZE} count=${LOAD_LEVEL}"
 
 syslog_netcat "Benchmarking ddgen SUT: HPCVM=${my_ip_addr} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"

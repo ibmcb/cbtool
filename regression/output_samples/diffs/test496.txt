@@ -1,1 +1,2 @@
 Message "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx has started" published on channel "starting" (object "VM").
+|Redis Version |2.8.4 

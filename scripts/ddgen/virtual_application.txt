@@ -1,22 +1,38 @@
 # Parameters for this Virtual Application (Application Instance - AI) type should
 # be set on YOUR private configuration configuration file, including the ones 
 # commented.
+
 [AI_TEMPLATES : DDGEN]
-DESCRIPTION = TBD
+
+# Attributes MANDATORY for all Virtual Applications
 SUT = ddgen
+LOAD_BALANCER_SUPPORTED = $False
+RESIZE_SUPPORTED = $False
+REGENERATE_DATA = $True
 LOAD_GENERATOR_ROLE = ddgen
 LOAD_MANAGER_ROLE = ddgen
 METRIC_AGGREGATOR_ROLE = ddgen
 CAPTURE_ROLE=ddgen
-LOAD_BALANCER = $False
-LOAD_BALANCER_TARGET_PORT = 80 
-LOAD_BALANCER_TARGET_URL = unknown 
-LOAD_BALANCER_TARGET_CHILDREN = 2
-DDGEN_SETUP1 = cb_check_dd_utility.sh
-START = cb_ddgen.sh
 LOAD_PROFILE = default
 LOAD_LEVEL = 1024
 LOAD_DURATION = 180
+REPORTED_METRICS = bandwidth
+
+# VApp-specific MANDATORY attributes
+DESCRIPTION = Deploys a single VM, which will use the "dd" to write a variable 
+DESCRIPTION += amount of data (by default from /dev/random) to one of its local file systems.\n
+DESCRIPTION +=- LOAD_PROFILE possible values: "default" (just run a single instance
+DESCRIPTION += of the dd process and write data to disk).\n
+DESCRIPTION +=- LOAD_LEVEL meaning: number of blocks written to disk.\n 
+DESCRIPTION +=- LOAD_DURATION meaning: not used, a run ends when all data (defined
+DESCRIPTION += by BLOCK_SIZE * LOAD_LEVEL) is written.\n
+DESCRIPTION +=- COMMENT: One of the "Synthetic" Workloads.
+DESCRIPTION += The main use case of this Virtual Application type is the
+DESCRIPTION += testing of "cloud image capture". By writing a specific amount of
+DESCRIPTION += data to an instance's disk, and then capturing the instance onto a
+DESCRIPTION += new image, cloud "capture" performance can be measured.
+DDGEN_SETUP1 = cb_check_dd_utility.sh
+START = cb_ddgen.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 #BLOCK_SIZE=64K

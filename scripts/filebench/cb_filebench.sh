@@ -36,29 +36,15 @@ filebench=`which ${FB_BINARY_NAME}`
 
 cd ~
 
-declare -A PERSONALITY
-
-PERSONALITY[1]="cb_fileserver.f"
-PERSONALITY[2]="cb_oltp_noism.f"
-PERSONALITY[3]="cb_varmail.f"
-PERSONALITY[4]="cb_videoserver.f"
-PERSONALITY[5]="cb_webproxy.f"
-
-ARRAY_SIZE=${#PERSONALITY[*]}
-if [ ${LOAD_LEVEL} -gt $ARRAY_SIZE ]; then
-	PERSONALITY_TEMPLATE=${PERSONALITY[${ARRAY_SIZE}]}
-elif [ ${LOAD_LEVEL} -lt 1 ]; then
-	PERSONALITY_TEMPLATE=${PERSONALITY[1]}
-else
-    PERSONALITY_TEMPLATE=${PERSONALITY[${LOAD_LEVEL}]}
-fi
-
+PERSONALITY_TEMPLATE="cb_"${LOAD_PROFILE}".f"
 PERSONALITY_FILE=`mktemp`
 
 cat ${PERSONALITY_TEMPLATE} > ${PERSONALITY_FILE}
 
 sed -i "s/STORAGE_PATH/$STORAGE_PATH/g" ${PERSONALITY_FILE}
 sed -i "s/LOAD_DURATION/$LOAD_DURATION/g" ${PERSONALITY_FILE}
+
+source ~/cb_barrier.sh start
 
 CMDLINE="${filebench} -f ${PERSONALITY_FILE}"
 

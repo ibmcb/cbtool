@@ -1,0 +1,6 @@
+load_generator_role: client_daytrader
+load_generator_role: client_daytrader
+load_generator_role: client_daytrader
+load_generator_role: client_daytrader
+load_generator_role: client_daytrader
+load_generator_role: client_daytrader

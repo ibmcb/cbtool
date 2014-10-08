@@ -214,14 +214,14 @@ class CommonCloudFunctions:
             else :
                 _vm_started = False
 
-            _pooling_time = int(time()) - _start_pooling
+            _pooling_time = int(time() - _start_pooling)
 
-            if _pooling_time < _wait :
+            if _pooling_time <= _wait :
                 _actual_wait = _wait - _pooling_time
             else :
                 _msg = "The time spent on pooling for \"ready\" status (" + str(_pooling_time) 
                 _msg += " s) is actually longer than the "
-                _msg += "interval between pooling attempts( " + str(_wait) + " s)."
+                _msg += "interval between pooling attempts (" + str(_wait) + " s)."
                 cbdebug(_msg, True)
                 _actual_wait = 0
                 
@@ -320,6 +320,16 @@ class CommonCloudFunctions:
                     
                     _vm_is_booted = _nh_conn.check_port(int(_port_to_check), "TCP")
 
+                elif obj_attr_list["check_boot_complete"].count("cloud_ping") :
+
+                    _msg = "Check if the VM \"" + obj_attr_list["cloud_name"]
+                    _msg += "\" (" + obj_attr_list["name"] + ") is booted by "
+                    _msg += "attempting to establish network connectivity "
+                    _msg += "through the cloud's API"
+                    cbdebug(_msg)
+                    
+                    _vm_is_booted = self.is_vm_alive(obj_attr_list)
+
                 elif obj_attr_list["check_boot_complete"].count("subscribe_on_") :
 
                     _string_to_search = obj_attr_list["prov_cloud_ip"] + " is "
@@ -366,14 +376,19 @@ class CommonCloudFunctions:
                     _msg += "\" (" + obj_attr_list["cloud_vm_uuid"] + ") has booted by "
                     _msg += "running the command \"" + str(_command_to_run)
                     cbdebug(_msg)
-
+                        
                     _connection_timeout = int(obj_attr_list["update_frequency"])/2
+
+                    if "ssh_config_file" in obj_attr_list:
+                        _ssh_conf_file = obj_attr_list["ssh_config_file"]
+                    else:
+                        _ssh_conf_file = None
 
                     _proc_man = ProcessManagement(username = obj_attr_list["login"], \
                                                   cloud_name = obj_attr_list["cloud_name"], \
                                                   hostname = obj_attr_list["prov_cloud_ip"], \
                                                   priv_key = obj_attr_list["identity"], \
-                                                  config_file = obj_attr_list["ssh_config_file"], \
+                                                  config_file = _ssh_conf_file,
                                                   connection_timeout = _connection_timeout)
 
                     try :
@@ -482,14 +497,19 @@ class CommonCloudFunctions:
                                          obj_attr_list["uuid"], "status", msg, \
                                          parent=obj_attr_list["ai"], parent_type="AI")
         else :
-            self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
-                                         obj_attr_list["uuid"], "status", msg) 
+            if not obj_attr_list["cloud_vm_name"].count("cb_jumphost") :
+                self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
+                                             obj_attr_list["uuid"], "status", msg) 
 
     @trace
     def take_action_if_requested(self, obj_type, obj_attr_list, current_step):
         '''
         TBD
         '''
+
+        if "staging" not in obj_attr_list :
+            return
+                
         if not obj_attr_list["staging"].count(current_step) :
             return
 

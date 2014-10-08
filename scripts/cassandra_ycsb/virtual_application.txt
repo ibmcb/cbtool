@@ -1,28 +1,49 @@
 # Parameters for this Virtual Application (Application Instance - AI) type should
 # be set on YOUR private configuration configuration file, including the ones 
 # commented.
+
 [AI_TEMPLATES : CASSANDRA_YCSB]
-DESCRIPTION = TBD
+
+# Attributes MANDATORY for all Virtual Applications
 SUT = ycsb->1_x_seed->1_x_cassandra
+LOAD_BALANCER_SUPPORTED = $False
+RESIZE_SUPPORTED = $True
+REGENERATE_DATA = $True
 LOAD_GENERATOR_ROLE = ycsb
 LOAD_MANAGER_ROLE = ycsb
 METRIC_AGGREGATOR_ROLE = ycsb
 CAPTURE_ROLE = ycsb
 LOAD_BALANCER = $False
+LOAD_PROFILE = workloadd
+LOAD_LEVEL = 1
+LOAD_DURATION = 60
+REPORTED_METRICS = bandwidth,throughput,latency,datagen_time,datagen_size
+
+# VApp-specific MANDATORY attributes
+DESCRIPTION = Deploys a Cassandra cluster (N seed nodes and M data nodes), plus
+DESCRIPTION += one VM running the YCSB benchmark. This single VM sends requests
+DESCRIPTION += to all seed node VMs simultaneously.\n
+DESCRIPTION +=- LOAD_PROFILE possible values: "workload"{a-f} (for a proper
+DESCRIPTION += description, consult the section "Core Workloads" on the YCSB documentation)\n
+DESCRIPTION +=- LOAD_LEVEL meaning: number of threads on YCSB (parameter -threads).\n 
+DESCRIPTION +=- LOAD_DURATION meaning: not used, a run ends when all YCSB operations
+DESCRIPTION += (default is 10000) are finished.\n
+DESCRIPTION +=- COMMENT: One of the "Big Data" Workloads. One of the two 
+DESCRIPTION += Virtual Applications types selected for the SPECCloud 2014 v1.0 
+DESCRIPTION += benchmark. When new seed nodes are added (after an "airesize")
+DESCRIPTION += the VM running YCSB will automatically direct requests to these
+DESCRIPTION += new seed nodes.
 CASSANDRA_SETUP1 = cb_restart_node.sh
 SEED_SETUP1 = cb_restart_seed.sh
 YCSB_SETUP2 = cb_setup_ycsb.sh
 CASSANDRA_RESIZE1 = cb_modify_node.sh
 START=cb_ycsb.sh
-LOAD_PROFILE = workloadd
-LOAD_LEVEL = 1
-LOAD_DURATION = 60
 
-# VApp-specific modifier parameters. Commented attributes imply default values assumed
+# VApp-specific OPTIONAL modifier parameters. Commented attributes imply default values assumed
 READ_RATIO = workloaddefault
 UPDATE_RATIO = workloaddefault
+
 #APP_COLLECTION = lazy
-#RUN_COUNTER_NAME = experiment_id_counter
 #CASSANDRA_DATA_DIR = /dbstore
 #OPERATION_COUNT = 10000
 #INPUT_RECORDS = 10000
@@ -34,3 +55,4 @@ UPDATE_RATIO = workloaddefault
 #SYNC_COUNTER_NAME = synchronization_counter
 #CONCURRENT_AIS = 2
 #SYNC_CHANNEL_NAME = synchronization_channel
+#RUN_COUNTER_NAME = experiment_id_counter

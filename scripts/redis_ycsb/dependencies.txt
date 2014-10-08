@@ -47,6 +47,8 @@ ubuntu-redis-amd64-urls-man = http://ppa.launchpad.net/rwky/redis/ubuntu/pool/ma
 ubuntu-redis-ppc64-urls-man = http://ppa.launchpad.net/chris-lea/redis-server/ubuntu/pool/main
 ubuntu-redis-urls-git = https://github.com/antirez
 
+rhel-maven-x86_64-urls-man = https://repos.fedorapeople.org/repos/dchen/apache-maven/epel-6/x86_64/apache-maven-3.2.1-2.el6.noarch.rpm
+
 rhel-ycsb-urls-git = https://github.com/brianfrankcooper
 ubuntu-ycsb-urls-git = https://github.com/brianfrankcooper
 ### END - Dependency URLs ###

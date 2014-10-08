@@ -445,8 +445,15 @@ class API():
     
     def appattach(self, cloud_name, gtype, load_level = "default", load_duration = "default", lifetime = "none", aidrs = "none", pause_step = "none", temp_attr_list = "empty=empty", async = False):
         parameters = cloud_name + ' ' + gtype + ' ' + str(load_level) + ' ' + str(load_duration) + ' ' + str(lifetime) + ' ' + aidrs + ' ' + pause_step + ' ' + temp_attr_list
-        if async and str(async).count("async") :
-            return self.active.background_execute(parameters + (' ' + async), "ai-attach")[2]
+
+        if async :
+            async=async.replace("async",'')
+            async=async.replace('=','')            
+
+            if str(async.split(':')[0]).isdigit() :
+                return self.active.background_execute(parameters + (" async=" + str(async)), "ai-attach")[2]
+            else :
+                return self.active.background_execute(parameters + (" async"), "ai-attach")[2]
         else :
             return self.active.objattach({}, parameters, "ai-attach")[2]
     

@@ -1,24 +1,24 @@
- status: Waiting for vm_129 (cloud-assigned uuid 1C58F3FF-D9FB-5333-B909-8C7426DD29AB) to start...
- status: Trying to establish network connectivity to vm_129 (cloud-assigned uuid 1C58F3FF-D9FB-5333-B909-8C7426DD29AB), on IP address 132.127.68.171...
- status: Bypassing the bootstrapping and the sending of a copy of the code tree to vm_129 (132.127.68.171)...
- status: Bypassing generic VM post_boot configuration on vm_129 (132.127.68.171)...
-VM object 4CB3014D-FDD0-5621-AA36-DF05ABE1A68D (named "vm_129") sucessfully attached to this experiment. It is ssh-accessible at the IP address 177.214.57.165 (1C58F3FF-D9FB-5333-B909-8C7426DD29AB.simcloud.com).
+ status: Waiting for vm_129 (cloud-assigned uuid 236F886A-7D2C-5144-A816-B1FE31A1E46C) to start...
+ status: Trying to establish network connectivity to vm_129 (cloud-assigned uuid 236F886A-7D2C-5144-A816-B1FE31A1E46C), on IP address 133.56.149.25...
+ status: Bypassing the bootstrapping and the sending of a copy of the code tree to vm_129 (133.56.149.25)...
+ status: Bypassing generic VM post_boot configuration on vm_129 (133.56.149.25)...
+VM object C8CB0338-DFED-5FAF-A9CA-27E687301082 (named "vm_129") sucessfully attached to this experiment. It is ssh-accessible at the IP address 86.85.248.254 (236F886A-7D2C-5144-A816-B1FE31A1E46C.simcloud.com).
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |7.33M                         
-|Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |10442281                      
-|Total Connections Received                           |231035                        
-|Total Commands Processed                             |26597946                      
-|Number of Keys                                       |702                           
+|Used Memory                                          |8.24M                         
+|Redis Version                                        |2.8.4                         
+|Uptime (in seconds)                                  |3059083                       
+|Total Connections Received                           |128354                        
+|Total Commands Processed                             |9912814                       
+|Number of Keys                                       |703                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
 |MongoDB Version                                      |2.4.9                         
-|Storage Size                                         |5156864                       
-|Data Size                                            |778496                        
+|Storage Size                                         |5382144                       
+|Data Size                                            |768064                        
 |Index Size                                           |474208                        
-|Average Object Size                                  |545.547302032                 
+|Average Object Size                                  |544.726241135                 
 |Collections                                          |14                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
@@ -78,14 +78,14 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |419                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|77263C3D-3820-5BC8-928C-2B7F91E0B449 (simzone_source) VM RESERVATIONS|1                             
-|6CAA8F08-DFCB-53EB-840C-954BF8EF0DE0 (simzone_d) VM RESERVATIONS|0                             
-|ADA16D86-396B-5799-9B25-DD264BAE818D (simzone_c) VM RESERVATIONS|0                             
-|F4A94069-95CF-534D-ACDA-6BDE36DAD09A (simzone_dest) VM RESERVATIONS|0                             
-|521FDEB9-99F6-5AF6-86FE-EAEBBAC024E3 (simzone_b) VM RESERVATIONS|0                             
-|CB88853E-58E0-55D5-921E-242951F8AB02 (simzone_a) VM RESERVATIONS|0                             
+|384EEBE0-D848-5762-935C-9520C11D9FAE (simzone_d) VM RESERVATIONS|0                             
+|69EF34D7-993D-5334-898D-36395E7707CF (simzone_source) VM RESERVATIONS|1                             
+|9364851B-CB30-5FE0-8585-ECF778A6D916 (simzone_b) VM RESERVATIONS|0                             
+|34B27D60-C308-5AC5-A5D4-547EFEE3C1A6 (simzone_a) VM RESERVATIONS|0                             
+|BBD15F80-89CD-5BC9-BF40-3FC552EFF3EF (simzone_c) VM RESERVATIONS|0                             
+|217A1FDE-9E77-54DF-89D0-75D1486DDBB1 (simzone_dest) VM RESERVATIONS|0                             
 
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 |name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
-|vm_129        |tinyvm              |pico32      |177.214.57.165  |simhostd4                  |SUT                 |none    |none       |4CB3014D-FDD0-5621-AA36-DF05ABE1A68D
+|vm_129        |tinyvm              |pico32      |86.85.248.254   |simhostc3                  |SUT                 |none    |none       |C8CB0338-DFED-5FAF-A9CA-27E687301082
 

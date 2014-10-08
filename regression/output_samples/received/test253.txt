@@ -1,22 +1,22 @@
-VM object A18365AD-3498-5CD6-8DA9-1CCACC2DBB7F (named "vm_23") could not be attached to this experiment: VM pre-attachment operations failure: Unknown VM role: 'norole'
+VM object AC4DD78A-03C0-581C-A048-1F6043509F83 (named "vm_23") could not be attached to this experiment: VM pre-attachment operations failure: Unknown VM role: 'norole'
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 No objects available.
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |2.31M                         
-|Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |10440954                      
-|Total Connections Received                           |230826                        
-|Total Commands Processed                             |26139984                      
+|Used Memory                                          |3.09M                         
+|Redis Version                                        |2.8.4                         
+|Uptime (in seconds)                                  |3057785                       
+|Total Connections Received                           |128149                        
+|Total Commands Processed                             |9451078                       
 |Number of Keys                                       |326                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
 |MongoDB Version                                      |2.4.9                         
-|Storage Size                                         |3174400                       
-|Data Size                                            |162384                        
+|Storage Size                                         |3399680                       
+|Data Size                                            |161168                        
 |Index Size                                           |294336                        
-|Average Object Size                                  |393.181598063                 
+|Average Object Size                                  |392.136253041                 
 |Collections                                          |14                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
@@ -76,8 +76,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |133                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|1F0B23EE-BB0D-57FD-B5B4-D820D078C304 (simzone_b) VM RESERVATIONS|0                             
-|32D4246C-C5C1-5DFE-85F8-F67B9AE3EA0C (simzone_c) VM RESERVATIONS|0                             
-|B58CF5E1-C22D-5ED4-A662-066D7A339552 (simzone_d) VM RESERVATIONS|0                             
-|21B1FEE8-D194-57D3-BDA4-8685A6396122 (simzone_a) VM RESERVATIONS|0                             
+|99276BDE-868D-5D11-B20B-7B4C612399A6 (simzone_a) VM RESERVATIONS|0                             
+|5C042653-2D38-5F10-A536-C55369206416 (simzone_d) VM RESERVATIONS|0                             
+|713BD5E0-ED22-5D4E-8F20-3D89CCAAC261 (simzone_c) VM RESERVATIONS|0                             
+|8DFE4032-A15D-5738-9009-1509A57A849C (simzone_b) VM RESERVATIONS|0                             
 

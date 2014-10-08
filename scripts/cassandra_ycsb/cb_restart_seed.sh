@@ -42,7 +42,7 @@ if $CINDER ; then
 fi
 
 CASSANDRA_REPLICATION_FACTOR=$(get_my_ai_attribute_with_default replication_factor 4)
-sudo sed -i "s/REPLF/${CASSANDRA_REPLICATION_FACTOR}/g" cassandra-init.cassandra
+sudo sed -i "s/REPLF/${CASSANDRA_REPLICATION_FACTOR}/g" create_keyspace.cassandra
 
 #
 # Update the cassandra config
@@ -106,15 +106,15 @@ STATUS=$?
 
 if [[ ${STATUS} -eq 0 ]]
 then
-        syslog_netcat "Cassandra seed server running"
+	syslog_netcat "Cassandra seed server running"
 else
-        syslog_netcat "Cassandra seed server failed to start"
+    syslog_netcat "Cassandra seed server failed to start"
 fi
 
 #
 # Init database
 #
-cassandra-cli -f cassandra-init.cassandra
+cassandra-cli -f create_keyspace.cassandra
 
 provision_application_stop $START
 

@@ -3,34 +3,39 @@
 # commented.
 
 [AI_TEMPLATES : NULLWORKLOAD]
-DESCRIPTION = Deploys one or more VMs, and then continuously executes
-DESCRIPTION += a variable-length sleep, followed by the reporting of fake 
-DESCRIPTION += performance numbers at the end.\n
-DESCRIPTION +=- LOAD_PROFILE possible values: "default" (since this is just
-DESCRIPTION += sleep call, multiple profiles don't make any sense)\n
-DESCRIPTION +=- LOAD_LEVEL meaning: does not matter/do not care\n 
-DESCRIPTION +=- LOAD_DURATION meaning: the length of the sleep call\n 
-DESCRIPTION += This a very useful workload to test a Cloud's management/
-DESCRIPTION +=infrastructure in an "ideal" or "baseline" scenario (without
-DESCRIPTION += any resource starvation from workloads on compute nodes).\n
-DESCRIPTION += The fact that, despite not executing any actual meaningful 
-DESCRIPTION += workload on the VM, both Guest OS (actual) and Application
-DESCRIPTION += metrics are reported back to CB's Metric Store, makes it
-DESCRIPTION += also an interesting "sanity check" workload. 
+
+# Attributes MANDATORY for all Virtual Applications
 SUT = tinyvm
+LOAD_BALANCER_SUPPORTED = $False
+RESIZE_SUPPORTED = $True
+REGENERATE_DATA = $False
 LOAD_GENERATOR_ROLE = tinyvm
 LOAD_MANAGER_ROLE = tinyvm
 METRIC_AGGREGATOR_ROLE = tinyvm
 CAPTURE_ROLE = tinyvm
-LOAD_BALANCER = $False
-LOAD_BALANCER_TARGET_PORT = 80 
-LOAD_BALANCER_TARGET_URL = unknown 
-LOAD_BALANCER_TARGET_CHILDREN = 2
-TINYVM_SETUP1 = cb_start_nothing.sh
-START = cb_run_nothing.sh
 LOAD_PROFILE = default
 LOAD_LEVEL = uniformIXIXI1I100
 LOAD_DURATION = 30
+REPORTED_METRICS = bandwidth,throughput,latency
+
+# VApp-specific MANDATORY attributes
+DESCRIPTION = Deploys one or more VMs, and then continuously executes
+DESCRIPTION += a variable-length sleep, followed by the reporting of fake 
+DESCRIPTION += performance numbers at the end.\n
+DESCRIPTION +=- LOAD_PROFILE possible values: "default" (since this is just
+DESCRIPTION += sleep call, multiple profiles don't make any sense).\n
+DESCRIPTION +=- LOAD_LEVEL meaning: does not matter/do not care.\n 
+DESCRIPTION +=- LOAD_DURATION meaning: the length of the sleep call.\n
+DESCRIPTION +=- COMMENT: One of the "Synthetic" Workloads. 
+DESCRIPTION += This a very useful workload to test a Cloud's management/
+DESCRIPTION +=infrastructure in an "ideal" or "baseline" scenario (without
+DESCRIPTION += any resource starvation from workloads on compute nodes). 
+DESCRIPTION += The fact that, despite not executing any actual meaningful 
+DESCRIPTION += workload on the VM, both Guest OS (actual) and Application
+DESCRIPTION += metrics are reported back to CB's Metric Store, makes it
+DESCRIPTION += also an interesting "sanity check" workload.
+TINYVM_SETUP1 = cb_start_nothing.sh
+START = cb_run_nothing.sh
 
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
 #SYNC_COUNTER_NAME = synchronization_counter

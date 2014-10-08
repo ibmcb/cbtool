@@ -34,13 +34,21 @@ sudo touch $COREMARK_HOME/run2.log
 sudo chown ${CBUSERLOGIN}:${CBUSERLOGIN} $COREMARK_HOME/run2.log
 
 NR_CPUS=`cat /proc/cpuinfo | grep processor | wc -l`
-THREADS_PER_CPU=2
+THREADS_PER_CPU=`get_my_ai_attribute_with_default threads_per_cpu 2`
 let NR_THREADS=${NR_CPUS}*${THREADS_PER_CPU}
 
 syslog_netcat "Configuring coremark to run with ${NR_THREADS} threads (${THREADS_PER_CPU} threads per CPU)"
 cd ${COREMARK_HOME}
 rm -rf ${COREMARK_HOME}/coremark.exe
-make "LDFLAGS=-L /lib64 -l pthread XCFLAGS=-DMULTITHREAD=${NR_THREADS} -DUSE_PTHREAD" ITERATIONS=100 REBUILD=1
+
+if [[ $(cat Makefile | grep -c lpthread) -eq 0 ]]
+then
+	sed -i 's/CFLAGS +=/CFLAGS += -lpthread/g' Makefile
+fi
+
+#make "LDFLAGS=-L /lib64 -l pthread XCFLAGS=-DMULTITHREAD=${NR_THREADS} -DUSE_PTHREAD" ITERATIONS=100 REBUILD=1
+make XCFLAGS="-DMULTITHREAD=${NR_THREADS} -DUSE_PTHREAD" ITERATIONS=100 REBUILD=1
+
 if [[ ! -f ${COREMARK_HOME}/coremark.exe ]]
 then
     syslog_netcat "Coremark configuration (compilation) failed - NOK"

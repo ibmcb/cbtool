@@ -55,7 +55,7 @@ done
 sudo sh -c "echo ${MY_IP} ${SHORT_HOSTNAME} >> /etc/hosts"
 
 CASSANDRA_REPLICATION_FACTOR=$(get_my_ai_attribute_with_default replication_factor 4)
-sudo sed -i "s/REPLF/${CASSANDRA_REPLICATION_FACTOR}/g" cassandra-init.cassandra
+sudo sed -i "s/REPLF/${CASSANDRA_REPLICATION_FACTOR}/g" create_keyspace.cassandra
 
 #
 # Update Cassandra Config

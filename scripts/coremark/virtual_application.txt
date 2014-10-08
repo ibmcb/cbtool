@@ -1,25 +1,42 @@
 # Parameters for this Virtual Application (Application Instance - AI) type should
 # be set on YOUR private configuration configuration file, including the ones 
 # commented.
+
 [AI_TEMPLATES : COREMARK]
-DESCRIPTION = TBD
+
+# Attributes MANDATORY for all Virtual Applications
 SUT = coremark
+LOAD_BALANCER_SUPPORTED = $False
+RESIZE_SUPPORTED = $False
+REGENERATE_DATA = $False
 LOAD_GENERATOR_ROLE = coremark
 LOAD_MANAGER_ROLE = coremark
 METRIC_AGGREGATOR_ROLE = coremark
 CAPTURE_ROLE = coremark
-LOAD_BALANCER = $False
-LOAD_BALANCER_TARGET_PORT = 80 
-LOAD_BALANCER_TARGET_URL = unknown 
-LOAD_BALANCER_TARGET_CHILDREN = 2
-COREMARK_SETUP1 = cb_setup_cmk.sh
-START = cb_coremark.sh
 LOAD_PROFILE = default
 LOAD_LEVEL = uniformIXIXI1I7
 LOAD_DURATION = uniformIXIXI40I60
+REPORTED_METRICS = throughput,latency
+
+# VApp-specific MANDATORY attributes
+DESCRIPTION = Deploys a single VM running the coremark benchmark.\n
+DESCRIPTION +=- LOAD_PROFILE possible values: "default" (the benchmark is always
+DESCRIPTION +=run with the following parameters "7 1 2000").\n
+DESCRIPTION +=- LOAD_LEVEL meaning: number of benchmark iterations, multiplied
+DESCRIPTION +=by a "load factor" (default 1000).\n 
+DESCRIPTION +=- LOAD_DURATION meaning: not used, a run ends when all iterations
+DESCRIPTION += are finished.\n
+DESCRIPTION +=- COMMENT: One of the "Synthetic" Workloads. The coremark benchmark
+DESCRIPTION += is CPU (core)-centric and deliberately tries to ignore
+DESCRIPTION += I/O and memory effects. During initial setup, the benchmark is compiled 
+DESCRIPTION += to run in a specific number of CPUs (this number may vary, since 
+DESCRIPTION += VMs can be resized by the cloud).\n
+COREMARK_SETUP1 = cb_setup_cmk.sh
+START = cb_coremark.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 #LOAD_FACTOR = 10000
+#THREADS_PER_CPU = 2
 
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
 #SYNC_COUNTER_NAME = synchronization_counter

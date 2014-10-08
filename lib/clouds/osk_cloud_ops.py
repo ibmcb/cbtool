@@ -27,6 +27,7 @@ from time import time, sleep
 from uuid import uuid5, UUID
 from random import choice
 import socket
+import copy
 
 from novaclient.v1_1 import client
 from novaclient import exceptions as novaexceptions
@@ -78,11 +79,12 @@ class OskCmds(CommonCloudFunctions) :
             elif len(authentication_data.split('-')) == 4 :
                 _username, _password, _tenant, _cacert = authentication_data.split('-')
                 _cacert = _cacert.replace("_dash_",'-')
+
             else :
                 _username = ''
                 _password = ''
                 _tenant = ''
- 
+
             _username = _username.replace("_dash_",'-')
             _password = _password.replace("_dash_",'-')
             _tenant = _tenant.replace("_dash_",'-')
@@ -164,6 +166,297 @@ class OskCmds(CommonCloudFunctions) :
                 cbdebug(_msg)
                 return _status, _msg, ''
     
+    def check_ssh_key(self, vmc_name, key_name, vm_defaults) :
+        '''
+        TBD
+        '''
+
+        _key_pair_found = False      
+        
+        if not key_name :
+            _key_pair_found = True
+        else :
+            _msg = "Checking if the ssh key pair \"" + key_name + "\" is created"
+            _msg += " on VMC " + vmc_name + "...."
+            cbdebug(_msg, True)
+            
+            _key_pair_found = False
+
+            _pub_key_fn = vm_defaults["credentials_dir"] + '/'
+            _pub_key_fn += vm_defaults["ssh_key_name"] + ".pub"
+
+            _fh = open(_pub_key_fn, 'r')
+            _pub_key = _fh.read()
+            _fh.close()
+
+            for _key_pair in self.oskconncompute.keypairs.list() :
+                if _key_pair.name == key_name :
+                    _msg = "A key named \"" + key_name + "\" was found in "
+                    _msg += "on VMC " + vmc_name + ". Checking if the key"
+                    _msg += " contents are correct."
+                    cbdebug(_msg)
+                    _key1 = _pub_key.split()
+                    _key2 = _key_pair.public_key.split()
+                    if len(_key1) > 1 and len(_key2) > 1 :
+                        if _key1 == _key2 :
+                            _msg = "The contents of the key \"" + key_name
+                            _msg += "\" on the VMC " + vmc_name + " and the"
+                            _msg += " one present on directory \"" 
+                            _msg += vm_defaults["credentials_dir"] + "\" ("
+                            _msg += vm_defaults["ssh_key_name"] + ") are the same."
+                            cbdebug(_msg)
+                            _key_pair_found = True
+                            break
+                        else :
+                            _msg = "The contents of the key \"" + key_name
+                            _msg += "\" on the VMC " + vmc_name + " and the"
+                            _msg += " one present on directory \"" 
+                            _msg += vm_defaults["credentials_dir"] + "\" ("
+                            _msg += vm_defaults["ssh_key_name"] + ") differ."
+                            _msg += "Will delete the key on OpenStack"
+                            _msg += " and re-created it"
+                            cbdebug(_msg)
+                            self.oskconncompute.keypairs.delete(_key_pair)
+                            break
+
+            if not _key_pair_found :
+
+                _msg = "Creating the ssh key pair \"" + key_name + "\""
+                _msg += " on VMC " + vmc_name + ", using the public key \""
+                _msg += _pub_key_fn + "\"..."
+                cbdebug(_msg, True)
+                                    
+                self.oskconncompute.keypairs.create(key_name, \
+                                                    public_key = _pub_key)
+                _key_pair_found = True
+
+            return _key_pair_found
+
+    def check_security_group(self,vmc_name, security_group_name) :
+        '''
+        TBD
+        '''
+
+        _security_group_name = False
+        
+        if security_group_name :
+
+            _msg = "Checking if the security group \"" + security_group_name
+            _msg += "\" is created on VMC " + vmc_name + "...."
+            cbdebug(_msg, True)
+
+            _security_group_found = False
+            for security_group in self.oskconncompute.security_groups.list() :
+                if security_group.name == security_group_name :
+                    _security_group_found = True
+
+            if not _security_group_found :
+                _msg = "ERROR! Please create the security group \"" 
+                _msg += security_group_name + "\" in "
+                _msg += "OpenStack before proceeding."
+                _fmsg = _msg 
+                cberr(_msg, True)
+        else :
+            _security_group_found = True
+
+        return _security_group_found
+
+    def check_floating_pool(self, vmc_name, vm_defaults) :
+        '''
+        TBD
+        '''
+        _floating_pool_found = True
+
+        _floating_pool_list = self.oskconncompute.floating_ip_pools.list()
+
+        if len(_floating_pool_list) == 1 :
+            vm_defaults["floating_pool"] = _floating_pool_list[0].name
+            
+            _msg = "A single floating IP pool (\"" 
+            _msg += vm_defaults["floating_pool"] + "\") was found on this"
+            _msg += " VMC. Will use this as the floating pool."
+            cbdebug(_msg)
+
+        _msg = "Checking if the floating pool \""
+        _msg += vm_defaults["floating_pool"] + "\" can be found on VMC "
+        _msg += vmc_name + "..."
+        cbdebug(_msg, True)
+        
+        _floating_pool_found = False
+
+        for _floating_pool in _floating_pool_list :
+            if _floating_pool.name == vm_defaults["floating_pool"] :
+                _floating_pool_found = True
+                        
+        if not (_floating_pool_found) :
+            _msg = "ERROR! Please make sure that the floating IP pool "
+            _msg += vm_defaults["floating_pool"] + "\" can be found"
+            _msg += " VMC " + vmc_name
+            _fmsg = _msg 
+            cberr(_msg, True)
+
+        return _floating_pool_found
+
+    def check_networks(self, vmc_name, vm_defaults) :
+        '''
+        TBD
+        '''
+        if vm_defaults["prov_netname"] == vm_defaults["run_netname"] :
+            _net_str = "network \"" + vm_defaults["prov_netname"] + "\""
+        else :
+            _net_str = "networks \"" + vm_defaults["prov_netname"] + "\""
+            _net_str += " and " + "\"" + vm_defaults["run_netname"] + "\""
+
+        _msg = "Checking if the " + _net_str + " can be found on VMC " + vmc_name + "..."
+        cbdebug(_msg, True)
+        _prov_netname_found = False
+        _run_netname_found = False
+
+        for _network in self.oskconncompute.networks.list() :
+            if _network.label == vm_defaults["prov_netname"] :
+                _prov_netname_found = True
+            
+            if _network.label == vm_defaults["run_netname"] :
+                _run_netname_found = True
+            
+            # Sometimes clouds have hundreds or thousands of networks
+            # just leave the loop early, if possible.    
+            if _run_netname_found and _prov_netname_found :
+                break
+            
+        if not (_run_netname_found and _prov_netname_found) :
+            _msg = "ERROR! Please make sure that the " + _net_str + " can be found"
+            _msg += " VMC " + vmc_name
+            _fmsg = _msg 
+            cberr(_msg, True)
+
+        return _prov_netname_found, _run_netname_found
+
+    def check_images(self, vmc_name, vm_templates) :
+        '''
+        TBD
+        '''
+        _msg = "Checking if the imageids associated to each \"VM role\" are"
+        _msg += " registered on VMC " + vmc_name + "...."
+        cbdebug(_msg, True)
+
+        _registered_image_list = self.oskconncompute.images.list()
+        _registered_imageid_list = []
+
+        for _registered_image in _registered_image_list :
+            _registered_imageid_list.append(_registered_image.name)
+
+        _required_imageid_list = {}
+
+        for _vm_role in vm_templates.keys() :
+            _imageid = str2dic(vm_templates[_vm_role])["imageid1"]                
+            if _imageid not in _required_imageid_list :
+                _required_imageid_list[_imageid] = []
+            _required_imageid_list[_imageid].append(_vm_role)
+
+        _msg = 'y'
+
+        _detected_imageids = {}
+        _undetected_imageids = {}
+
+        for _imageid in _required_imageid_list.keys() :
+
+            # Unfortunately we have to check image names one by one,
+            # because they might be appended by a generic suffix for
+            # image randomization (i.e., deploying the same image multiple
+            # times as if it were different images.
+            _image_detected = False
+            for _registered_imageid in _registered_imageid_list :
+                if str(_registered_imageid).count(_imageid) :
+                    _image_detected = True
+                    _detected_imageids[_imageid] = "detected"
+                else :
+                    _undetected_imageids[_imageid] = "undetected"
+
+            if _image_detected :
+                True
+#                    _msg += "xImage id for VM roles \"" + ','.join(_required_imageid_list[_imageid]) + "\" is \""
+#                    _msg += _imageid + "\" and it is already registered.\n"
+            else :
+                _msg += "xWARNING Image id for VM roles \""
+                _msg += ','.join(_required_imageid_list[_imageid]) + "\": \""
+                _msg += _imageid + "\" is NOT registered "
+                _msg += "(attaching VMs with any of these roles will result in error).\n"
+
+        if not len(_detected_imageids) :
+            _msg = "ERROR! None of the image ids used by any VM \"role\" were detected"
+            _msg += " in this OpenStack cloud. Please register at least one "
+            _msg += "of the following images: " + ','.join(_undetected_imageids.keys())
+            cberr(_msg, True)
+        else :
+            _msg = _msg.replace("yx",'')
+            _msg = _msg.replace('x',"         ")
+            _msg = _msg[:-2]
+            if len(_msg) :
+                cbdebug(_msg, True)        
+
+        return _detected_imageids
+
+    def check_jumphost(self, vmc_name, vm_defaults, vm_templates, detected_imageids) :
+        '''
+        TBD
+        '''
+        _can_create_jumphost = False
+        
+        if "floating_pool" in vm_defaults and "cb_nullworkload" in detected_imageids :
+            _can_create_jumphost = True
+
+        if "jump_host" in vm_defaults :
+
+            _jh = str(vm_defaults["jump_host"]).lower()
+            if _jh == "true" :
+                _msg = "Checking if a \"cb_jumphost\" VM is already present on"
+                _msg += " VMC " + vmc_name + "...."
+                cbdebug(_msg, True)
+
+                _obj_attr_list = copy.deepcopy(vm_defaults)
+
+                _obj_attr_list.update(str2dic(vm_templates["tinyvm"]))
+                _obj_attr_list["cloud_vm_name"] = "cb_jumphost"
+                _obj_attr_list["cloud_name"] = ""
+                _obj_attr_list["role"] = "nullworkload"                        
+                _obj_attr_list["name"] = "vm_0"
+                _obj_attr_list["size"] = "m1.tiny"                                         
+                _obj_attr_list["floating_ip"] = "true"
+                _obj_attr_list["randomize_image_name"] = "false"
+                _obj_attr_list["experiment_id"] = ""
+                _obj_attr_list["mgt_001_provisioning_request_originated"] = int(time())
+                _obj_attr_list["vmc_name"] = vmc_name
+                _obj_attr_list["ai"] = "none"
+                _obj_attr_list["check_boot_complete"] = "tcp_on_22"
+                _obj_attr_list["userdata"] = None
+                
+                if not self.is_vm_running(_obj_attr_list) :
+                    if _can_create_jumphost :
+                        _msg = "Creating a \"cb_jumphost\" VM on VMC " + vmc_name
+                        _msg += ", on the network \"" + vm_defaults["prov_netname"] + "\","
+                        _msg += " and attaching a floating IP from pool \""
+                        _msg += vm_defaults["floating_pool"] + "\"."
+                        cbdebug(_msg, True)
+                        
+                        if "jump_host" in _obj_attr_list :
+                            del _obj_attr_list["jump_host"]
+
+                        self.vmcreate(_obj_attr_list)
+
+                else :
+                    _obj_attr_list["address_type"] = "floating"
+                    _instance = self.get_instances(_obj_attr_list, "vm", "cb_jumphost")
+                    self.get_ip_address(_obj_attr_list, _instance)
+ 
+                    _msg = "A \"cb_jumphost\" VM was found, with the floating IP"
+                    _msg += " address \"" + _obj_attr_list["run_cloud_ip"] + "\""
+                    _msg += " already assigned to it"
+                    cbdebug(_msg, True)
+                    vm_defaults["jump_host"] = _obj_attr_list["run_cloud_ip"]
+                    
+        return True
+    
     @trace
     def test_vmc_connection(self, vmc_name, access, credentials, key_name, \
                             security_group_name, vm_templates, vm_defaults) :
@@ -173,177 +466,21 @@ class OskCmds(CommonCloudFunctions) :
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
+
             self.connect(access, credentials, vmc_name)
 
-            if not key_name :
-                _key_pair_found = True
-            else :
-                _msg = "Checking if the ssh key pair \"" + key_name + "\" is created"
-                _msg += " on VMC " + vmc_name + "...."
-                cbdebug(_msg, True)
-                
-                _key_pair_found = False
+            _key_pair_found = self.check_ssh_key(vmc_name, key_name, vm_defaults)
 
-                for _key_pair in self.oskconncompute.keypairs.list() :
-                    if _key_pair.name == key_name :
-                        _key_pair_found = True
+            _security_group_found = self.check_security_group(vmc_name, security_group_name)
 
-                if not _key_pair_found :
+            _floating_pool_found = self.check_floating_pool(vmc_name, vm_defaults)
 
-                    _pub_key_fn = vm_defaults["credentials_dir"] + '/'
-                    _pub_key_fn += vm_defaults["ssh_key_name"] + ".pub"
+            _prov_netname_found, _run_netname_found = self.check_networks(vmc_name, vm_defaults)
 
-                    _msg = "Creating the ssh key pair \"" + key_name + "\""
-                    _msg += " on VMC " + vmc_name + ", using the public key \""
-                    _msg += _pub_key_fn + "\"..."
-                    cbdebug(_msg, True)
-                    
-                    _fh = open(_pub_key_fn, 'r')
-                    _pub_key = _fh.read()
-                    _fh.close()
-                                        
-                    self.oskconncompute.keypairs.create(key_name, \
-                                                        public_key = _pub_key)
-                    _key_pair_found = True
+            _detected_imageids = self.check_images(vmc_name, vm_templates)
 
-            if security_group_name :
-
-                _msg = "Checking if the security group \"" + security_group_name
-                _msg += "\" is created on VMC " + vmc_name + "...."
-                cbdebug(_msg, True)
-
-                _security_group_found = False
-                for security_group in self.oskconncompute.security_groups.list() :
-                    if security_group.name == security_group_name :
-                        _security_group_found = True
-    
-                if not _security_group_found :
-                    _msg = "ERROR! Please create the security group \"" 
-                    _msg += security_group_name + "\" in "
-                    _msg += "OpenStack before proceeding."
-                    _fmsg = _msg 
-                    cberr(_msg, True)
-            else :
-                _security_group_found = True
-
-            if vm_defaults["floating_ip"] :
-
-                _floating_pool_list = self.oskconncompute.floating_ip_pools.list()
-
-                if len(_floating_pool_list) == 1 :
-                    vm_defaults["floating_pool"] = _floating_pool_list[0].name
-                    
-                    _msg = "A single floating IP pool (\"" 
-                    _msg += vm_defaults["floating_pool"] + "\") was found on this"
-                    _msg += " VMC. Will use this as the floating pool."
-                    cbdebug(_msg, True)
-
-                _msg = "Checking if the floating pool \""
-                _msg += vm_defaults["floating_pool"] + "\" can be found on VMC "
-                _msg += vmc_name + "..."
-                cbdebug(_msg, True)
-                
-                _floating_pool_found = False
-
-                for _floating_pool in _floating_pool_list :
-                    if _floating_pool.name == vm_defaults["floating_pool"] :
-                        _floating_pool_found = True
-                                
-                if not (_floating_pool_found) :
-                    _msg = "ERROR! Please make sure that the floating IP pool "
-                    _msg += vm_defaults["floating_pool"] + "\" can be found"
-                    _msg += " VMC " + vmc_name
-                    _fmsg = _msg 
-                    cberr(_msg, True)
-
-            if vm_defaults["prov_netname"] == vm_defaults["run_netname"] :
-                _net_str = "network \"" + vm_defaults["prov_netname"] + "\""
-            else :
-                _net_str = "networks \"" + vm_defaults["prov_netname"] + "\""
-                _net_str += " and " + "\"" + vm_defaults["run_netname"] + "\""
-
-            _msg = "Checking if the " + _net_str + " can be found on VMC " + vmc_name + "..."
-            cbdebug(_msg, True)
-            _prov_netname_found = False
-            _run_netname_found = False
-
-            for _network in self.oskconncompute.networks.list() :
-                if _network.label == vm_defaults["prov_netname"] :
-                    _prov_netname_found = True
-                
-                if _network.label == vm_defaults["run_netname"] :
-                    _run_netname_found = True
-                
-                # Sometimes clouds have hundreds or thousands of networks
-                # just leave the loop early, if possible.    
-                if _run_netname_found and _prov_netname_found :
-                    break
-                
-            if not (_run_netname_found and _prov_netname_found) :
-                _msg = "ERROR! Please make sure that the " + _net_str + " can be found"
-                _msg += " VMC " + vmc_name
-                _fmsg = _msg 
-                cberr(_msg, True)
-
-            _msg = "Checking if the imageids associated to each \"VM role\" are"
-            _msg += " registered on VMC " + vmc_name + "...."
-            cbdebug(_msg, True)
-
-            _registered_image_list = self.oskconncompute.images.list()
-            _registered_imageid_list = []
-
-            for _registered_image in _registered_image_list :
-                _registered_imageid_list.append(_registered_image.name)
-
-            _required_imageid_list = {}
-
-            for _vm_role in vm_templates.keys() :
-                _imageid = str2dic(vm_templates[_vm_role])["imageid1"]                
-                if _imageid not in _required_imageid_list :
-                    _required_imageid_list[_imageid] = []
-                _required_imageid_list[_imageid].append(_vm_role)
-
-            _msg = 'y'
-
-            _detected_imageids = {}
-            _undetected_imageids = {}
-
-            for _imageid in _required_imageid_list.keys() :
-
-                # Unfortunately we have to check image names one by one,
-                # because they might be appended by a generic suffix for
-                # image randomization (i.e., deploying the same image multiple
-                # times as if it were different images.
-                _image_detected = False
-                for _registered_imageid in _registered_imageid_list :
-                    if str(_registered_imageid).count(_imageid) :
-                        _image_detected = True
-                        _detected_imageids[_imageid] = "detected"
-                    else :
-                        _undetected_imageids[_imageid] = "undetected"
-
-                if _image_detected :
-                    True
-#                    _msg += "xImage id for VM roles \"" + ','.join(_required_imageid_list[_imageid]) + "\" is \""
-#                    _msg += _imageid + "\" and it is already registered.\n"
-                else :
-                    _msg += "xWARNING Image id for VM roles \""
-                    _msg += ','.join(_required_imageid_list[_imageid]) + "\": \""
-                    _msg += _imageid + "\" is NOT registered "
-                    _msg += "(attaching VMs with any of these roles will result in error).\n"
-
-            if not len(_detected_imageids) :
-                _msg = "ERROR! None of the image ids used by any VM \"role\" were detected"
-                _msg += " in this OpenStack cloud. Please register at least one "
-                _msg += "of the following images: " + ','.join(_undetected_imageids.keys())
-                cberr(_msg, True)
-            else :
-                _msg = _msg.replace("yx",'')
-                _msg = _msg.replace('x',"         ")
-                _msg = _msg[:-2]
-                if len(_msg) :
-                    cbdebug(_msg, True)
-
+            self.check_jumphost(vmc_name, vm_defaults, vm_templates, _detected_imageids)
+            
             if not (_run_netname_found and _prov_netname_found and \
                     _key_pair_found and _security_group_found and len(_detected_imageids)) :
                 _msg = "Check the previous errors, fix it (using OpenStack's web"
@@ -864,9 +1001,8 @@ class OskCmds(CommonCloudFunctions) :
             if len(_address_list) :
                 
                 for _address in _address_list :
-                    cbdebug(_address["OS-EXT-IPS:type"])
 
-                    if _address["OS-EXT-IPS:type"] == "fixed" :
+                    if _address["OS-EXT-IPS:type"] == obj_attr_list["address_type"] :
                         obj_attr_list["run_cloud_ip"] = '{0}'.format(_address["addr"])
 
                 # NOTE: "cloud_ip" is always equal to "run_cloud_ip"
@@ -966,11 +1102,14 @@ class OskCmds(CommonCloudFunctions) :
 
                     for _instance in _instances :
 
-                        _metadata = _instance.metadata
-
-                        if "experiment_id" in _metadata :
-                            if _metadata["experiment_id"] == self.expid :
-                                return _instance
+                        if identifier.count("cb_jumphost") :
+                            return _instance
+                        else :
+                            _metadata = _instance.metadata
+    
+                            if "experiment_id" in _metadata :
+                                if _metadata["experiment_id"] == self.expid :
+                                    return _instance
                     return False
             else :
                 return False
@@ -991,13 +1130,16 @@ class OskCmds(CommonCloudFunctions) :
         TBD
         '''
         try :
+            
+            _cloud_vm_name = obj_attr_list["cloud_vm_name"]
+            
             _instance = self.get_instances(obj_attr_list, "vm", \
-                                           obj_attr_list["cloud_vm_name"])
+                                           _cloud_vm_name)
             if _instance :
                 if _instance.status == "ACTIVE" :
                     return _instance
                 elif _instance.status == "ERROR" :
-                    _msg = "Instance \"" + obj_attr_list["cloud_vm_name"] + "\"" 
+                    _msg = "Instance \"" + _cloud_vm_name + "\"" 
                     _msg += " reported an error (from OpenStack)"
                     _status = 1870
                     cberr(_msg)
@@ -1023,7 +1165,6 @@ class OskCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
-
         _instance = self.is_vm_running(obj_attr_list)
 
         if _instance :
@@ -1039,6 +1180,22 @@ class OskCmds(CommonCloudFunctions) :
             obj_attr_list["last_known_state"] = "not ACTIVE"
             
         return False
+
+    @trace
+    def is_vm_alive(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        _vm_alive = False
+        
+        _vm_alive = self.oskconncompute.fping.get(obj_attr_list["cloud_vm_uuid"]).alive
+
+        if _vm_alive :
+            # Since ssh will take some extra time to start after the VM is
+            # pingable, we wait one period before returning
+            sleep(int(obj_attr_list["update_frequency"]))
+            
+        return _vm_alive
 
     @trace
     def get_host_and_instance_name(self, obj_attr_list, fail = True) :
@@ -1327,8 +1484,6 @@ class OskCmds(CommonCloudFunctions) :
                 # control). Will have to ssh into the node and set cgroup limits 
                 # manually.
                 
-                #instance_data.setMemoryParameters(params={'swap_hard_limit': 9007199254740991L, 'hard_limit': 3631000L}, flags=libvirt.VIR_DOMAIN_AFFECT_LIVE)
-
                 _value = str(value_suffix(obj_attr_list["resource_limits"][_key]))
 
                 _cmd = "echo " + _value + " > " + _base_dir + _subsystem +"/machine/"
@@ -1458,11 +1613,12 @@ class OskCmds(CommonCloudFunctions) :
             obj_attr_list["cloud_vm_uuid"] = "NA"
             _instance = False
 
-            obj_attr_list["cloud_vm_name"] = "cb-" + obj_attr_list["username"]
-            obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["cloud_name"]
-            obj_attr_list["cloud_vm_name"] += '-' + "vm"
-            obj_attr_list["cloud_vm_name"] += obj_attr_list["name"].split("_")[1]
-            obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["role"]
+            if "cloud_vm_name" not in obj_attr_list :
+                obj_attr_list["cloud_vm_name"] = "cb-" + obj_attr_list["username"]
+                obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["cloud_name"]
+                obj_attr_list["cloud_vm_name"] += '-' + "vm"
+                obj_attr_list["cloud_vm_name"] += obj_attr_list["name"].split("_")[1]
+                obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["role"]
 
             obj_attr_list["last_known_state"] = "about to connect to openstack manager"
 
@@ -1498,7 +1654,8 @@ class OskCmds(CommonCloudFunctions) :
 
             obj_attr_list["last_known_state"] = "about to send create request"
 
-            _flavor = self.get_flavors(obj_attr_list)            
+            _flavor = self.get_flavors(obj_attr_list)
+
             _imageid = self.get_images(obj_attr_list)
 
             if "host_name" in obj_attr_list :
@@ -1523,7 +1680,7 @@ class OskCmds(CommonCloudFunctions) :
                 obj_attr_list["meta_tags"].count(':') and \
                 obj_attr_list["meta_tags"].count(',') :
                     _meta = str2dic(obj_attr_list["meta_tags"])
-            
+
             _meta["experiment_id"] = obj_attr_list["experiment_id"]
 
             _networkid = self.get_networks(obj_attr_list)

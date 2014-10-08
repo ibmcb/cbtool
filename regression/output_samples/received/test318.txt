@@ -8,30 +8,30 @@ The following ATTACHED AIDRSs are in this experiment (Cloud TESTCLOUD) :
 
 The following ATTACHED AIs are in this experiment (Cloud TESTCLOUD) :
 |name      |type           |sut                                               |cloud_ip        |arrival        |aidrs                                   |uuid
-|ai_31     |nullworkload   |1_x_tinyvm                                        |88.162.3.232    |1406644794     |aidrs_1                                 |B645310F-CDAA-59AB-8FF6-253DAE0C4962
-|ai_32     |nullworkload   |1_x_tinyvm                                        |131.79.23.179   |1406644804     |aidrs_1                                 |AAF30ECB-B67E-519E-B1A0-378F0FF04BFA
+|ai_31     |nullworkload   |1_x_tinyvm                                        |52.5.191.184    |1412724679     |aidrs_1                                 |A8FC0E24-00EC-57F4-9B8D-BF04A74D2885
+|ai_32     |nullworkload   |1_x_tinyvm                                        |152.128.139.119 |1412724688     |aidrs_1                                 |D49B71BF-0CF7-593D-87DD-932553AC4440
 
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 |name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
-|vm_122        |tinyvm              |pico32      |88.162.3.232    |simhosta1                  |SUT                 |ai_31   |aidrs_1    |FD940F34-8F10-59FB-8323-5A23CC24AD4E
-|vm_123        |tinyvm              |pico32      |131.79.23.179   |simhostd2                  |SUT                 |ai_32   |aidrs_1    |E8D0738A-B571-5854-9B1C-E61C295592FF
+|vm_122        |tinyvm              |pico32      |52.5.191.184    |simhostc3                  |SUT                 |ai_31   |aidrs_1    |33476ED4-E2F7-559F-A94D-1863067F2489
+|vm_123        |tinyvm              |pico32      |152.128.139.119 |simhostd4                  |SUT                 |ai_32   |aidrs_1    |08B74686-A6D8-5303-9928-14F71D558518
 
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |6.88M                         
-|Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |10441338                      
-|Total Connections Received                           |230896                        
-|Total Commands Processed                             |26317647                      
+|Used Memory                                          |7.73M                         
+|Redis Version                                        |2.8.4                         
+|Uptime (in seconds)                                  |3058161                       
+|Total Connections Received                           |128216                        
+|Total Commands Processed                             |9630385                       
 |Number of Keys                                       |677                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
 |MongoDB Version                                      |2.4.9                         
-|Storage Size                                         |3649536                       
-|Data Size                                            |377280                        
+|Storage Size                                         |3874816                       
+|Data Size                                            |367728                        
 |Index Size                                           |327040                        
-|Average Object Size                                  |524.0                         
+|Average Object Size                                  |517.198312236                 
 |Collections                                          |14                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
@@ -91,11 +91,11 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |389                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|1F0B23EE-BB0D-57FD-B5B4-D820D078C304 (simzone_b) VM RESERVATIONS|0                             
-|32D4246C-C5C1-5DFE-85F8-F67B9AE3EA0C (simzone_c) VM RESERVATIONS|2                             
-|B58CF5E1-C22D-5ED4-A662-066D7A339552 (simzone_d) VM RESERVATIONS|0                             
-|21B1FEE8-D194-57D3-BDA4-8685A6396122 (simzone_a) VM RESERVATIONS|0                             
+|99276BDE-868D-5D11-B20B-7B4C612399A6 (simzone_a) VM RESERVATIONS|0                             
+|5C042653-2D38-5F10-A536-C55369206416 (simzone_d) VM RESERVATIONS|0                             
+|713BD5E0-ED22-5D4E-8F20-3D89CCAAC261 (simzone_c) VM RESERVATIONS|2                             
+|8DFE4032-A15D-5738-9009-1509A57A849C (simzone_b) VM RESERVATIONS|0                             
 
  ---------------- AIDRS-WIDE COUNTERS ----------------
-|B704B8AF-7AEC-5A0F-9415-0E94A3EADDA5 (aidrs_1) AI RESERVATIONS|2                             
+|5E23030A-838F-5372-AC50-6746214B62D8 (aidrs_1) AI RESERVATIONS|2                             
 

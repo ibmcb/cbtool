@@ -18,8 +18,9 @@
 
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_ycsb_common.sh
 
-standalone=`online_or_offline "$4"`
-
+CASSANDRA_REPLICATION_FACTOR=$(get_my_ai_attribute_with_default replication_factor 4)
+sudo sed -i "s/REPLF/${CASSANDRA_REPLICATION_FACTOR}/g" create_keyspace.cassandra
+	
 START=`provision_application_start`
 
 provision_application_stop $START

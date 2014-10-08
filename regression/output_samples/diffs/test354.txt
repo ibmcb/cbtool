@@ -1,0 +1,8 @@
+#utc_offset_delta:8
+#app_load_profile:9
+#app_load_id:10
+#app_load_level:11
+#app_throughput:12
+#app_latency:13
+#app_bandwidth:14
+time,time_h,uuid,name,role,ai_name,type,utc_offset_delta,app_load_profile,app_load_id,app_load_level,app_throughput,app_latency,app_bandwidth
