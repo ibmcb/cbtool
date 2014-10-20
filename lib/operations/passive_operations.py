@@ -873,6 +873,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                             self.set_cloud_operations_instance(obj_attr_list["cloud_model"])      
                             _cld_conn = self.coi[obj_attr_list["cloud_model"]][self.pid + '-' + self.expid]
                             _stats["experiment_counters"][_obj_type]["reported"] = _cld_conn.vmcount(_vm_defaults)
+                            _obj_count = str(_stats["experiment_counters"][_obj_type]["reported"])
 
                             if obj_attr_list["output"] == "print" :                                
                                 _fmt_obj_list += ('|' + _obj_type + "s REPORTED").ljust(len(_fields[0]))

@@ -1152,12 +1152,18 @@ class OskCmds(CommonCloudFunctions) :
         '''
         try :
 
-            if not self.oskconncompute :
-                self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
-                             obj_attr_list["vmc_name"])
+            _nr_instances = 0
+            for _vmc_uuid in self.osci.get_object_list(obj_attr_list["cloud_name"], "VMC") :
+                _vmc_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
+                                                      "VMC", False, _vmc_uuid, \
+                                                      False)
 
-            _nr_instances = len(self.oskconncompute.servers.list())
-            
+                if not self.oskconncompute :
+                    self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
+                                 _vmc_attr_list["name"])
+
+                _nr_instances += len(self.oskconncompute.servers.list())
+
             return _nr_instances
 
         except novaexceptions, obj:
