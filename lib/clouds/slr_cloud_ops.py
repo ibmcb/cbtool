@@ -571,6 +571,13 @@ class SlrCmds(CommonCloudFunctions) :
             raise CldOpsException(_fmsg, _status)
 
     @trace
+    def vmcount(self, obj_attr_list):
+        '''
+        TBD
+        '''
+        return "NA"
+
+    @trace
     def is_vm_running(self, obj_attr_list, fail = True) :
         '''
         TBD

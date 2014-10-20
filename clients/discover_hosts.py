@@ -14,13 +14,40 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #/*******************************************************************************
+'''
+This is a Python example of how to discover Hosts through CloudBench
 
-from sys import path
+This assumes you have already attached to a cloud through the GUI or CLI.
+'''
+
+#--------------------------------- START CB API --------------------------------
+
+from sys import path, argv
+from time import sleep
 
 import fnmatch
 import os
+import pwd
 
-_home = os.environ["HOME"]
+home = os.environ["HOME"]
+username = pwd.getpwuid(os.getuid())[0]
+
+api_file_name = "/tmp/cb_api_" + username
+if os.access(api_file_name, os.F_OK) :    
+    try :
+        _fd = open(api_file_name, 'r')
+        _api_conn_info = _fd.read()
+        _fd.close()
+    except :
+        _msg = "Unable to open file containing API connection information "
+        _msg += "(" + api_file_name + ")."
+        print _msg
+        exit(4)
+else :
+    _msg = "Unable to locate file containing API connection information "
+    _msg += "(" + api_file_name + ")."
+    print _msg
+    exit(4)
 
 _path_set = False
 
@@ -35,23 +62,28 @@ for _path, _dirs, _files in os.walk(os.path.abspath(path[0] + "/../")):
 
 from lib.api.api_service_client import *
 
-'''
-This is a Python example of how to discover Hosts through CloudBench
+_msg = "Connecting to API daemon (" + _api_conn_info + ")..."
+print _msg
+api = APIClient(_api_conn_info)
 
-This assumes you have already attached to a cloud through the GUI or CLI.
-'''
+#---------------------------------- END CB API ---------------------------------
 
-api = APIClient("http://172.16.1.250:7070")
+if len(argv) < 2 :
+        print "./" + argv[0] + " <cloud_name>"
+        exit(1)
+
+cloud_name = argv[1]
 
 try :
     error = False
     hosts = None
 
-    print "Getting hostlist....."
-    _hosts = api.hostlist("TESTOPENSTACK")
+    print "Getting hostlist on cloud \"" + cloud_name + "\"....."
+    _hosts = api.hostlist(cloud_name)
+    print _hosts
 
     for _host in _hosts :
-        _host_data = api.hostshow("TESTOPENSTACK", _host["name"])
+        _host_data = api.hostshow(cloud_name, _host["name"])
         print _host_data
 
 except APIException, obj :

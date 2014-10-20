@@ -1,4 +1,4 @@
-AIDRS object F50DBB77-9102-5F89-879B-D164D7FB343B (named "aidrs_1") was sucessfully detached from this experiment.
+AIDRS object 5E946709-5E93-5ED1-98AE-AFF3FA383C4F (named "aidrs_1") was sucessfully detached from this experiment.
 The following ATTACHED AIDRSs are in this experiment (Cloud TESTCLOUD) :
 No objects available.
 The following ATTACHED AIs are in this experiment (Cloud TESTCLOUD) :
@@ -8,19 +8,14 @@ No objects available.
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |7.90M                         
+|Used Memory                                          |7.99M                         
 |Redis Version                                        |2.8.4                         
-|Uptime (in seconds)                                  |3058991                       
-|Total Connections Received                           |128347                        
-|Total Commands Processed                             |9898285                       
-|Number of Keys                                       |636                           
+|Uptime (in seconds)                                  |4162562                       
+|Total Connections Received                           |152836                        
+|Total Commands Processed                             |16862264                      
+|Number of Keys                                       |635                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|MongoDB Version                                      |2.4.9                         
-|Storage Size                                         |5382144                       
-|Data Size                                            |746016                        
-|Index Size                                           |474208                        
-|Average Object Size                                  |544.140043764                 
 |Collections                                          |14                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
@@ -46,6 +41,7 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |HOSTs DEPARTING                                      |0                             
 |HOSTs FAILED                                         |0                             
 |VM RESERVATIONS                                      |0                             
+|VMs REPORTED                                         |0                             
 |VMs ARRIVED                                          |119                           
 |VMs ARRIVING                                         |0                             
 |VMs CAPTURING                                        |0                             
@@ -80,8 +76,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |394                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|34B27D60-C308-5AC5-A5D4-547EFEE3C1A6 (simzone_a) VM RESERVATIONS|0                             
-|BBD15F80-89CD-5BC9-BF40-3FC552EFF3EF (simzone_c) VM RESERVATIONS|0                             
-|384EEBE0-D848-5762-935C-9520C11D9FAE (simzone_d) VM RESERVATIONS|0                             
-|9364851B-CB30-5FE0-8585-ECF778A6D916 (simzone_b) VM RESERVATIONS|0                             
+|705F5EB2-0B93-5D6B-BD27-826010AF7814 (simzone_a) VM RESERVATIONS|0                             
+|620676DB-C9FC-5D5A-978C-8AEBECE97E27 (simzone_b) VM RESERVATIONS|0                             
+|8DF2EF36-7448-5148-AD1A-F835627AC672 (simzone_d) VM RESERVATIONS|0                             
+|4F9D017D-1712-5FB2-8CEB-61527E065DC8 (simzone_c) VM RESERVATIONS|0                             
 

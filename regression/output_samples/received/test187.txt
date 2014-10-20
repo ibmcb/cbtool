@@ -38,7 +38,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |ai_templates                     |cassandra_ycsb_capture_role    |ycsb                                 
 |ai_templates                     |cassandra_ycsb_cassandra_resize1|cb_modify_node.sh                    
 |ai_templates                     |cassandra_ycsb_cassandra_setup1|cb_restart_node.sh                   
-|ai_templates                     |cassandra_ycsb_description     | Deploys a Cassandra cluster (N seed nodes and M data nodes), plus one VM running the YCSB benchmark. This single VM sends requests to all seed node VMs simultaneously.\n- LOAD_PROFILE possible values: "workload"{a-f} (for a proper description, consult the section "Core Workloads" on the YCSB documentation)\n- LOAD_LEVEL meaning: number of threads on YCSB (parameter -threads).\n- LOAD_DURATION meaning: not used, a run ends when all YCSB operations (default is 10000) are finished.\n- COMMENT: One of the "Big Data" Workloads. One of the two Virtual Applications types selected for the SPECCloud 2014 v1.0 benchmark. When new seed nodes are added (after an "airesize") the VM running YCSB will automatically direct requests to these new seed nodes.
+|ai_templates                     |cassandra_ycsb_description     | Deploys a Cassandra cluster (N seed nodes and M data nodes), plus one VM running the YCSB benchmark. This single VM sends requests to all seed node VMs simultaneously.\n- LOAD_PROFILE possible values: "workload"{a-f} (for a proper description, consult the section "Core Workloads" on the YCSB documentation)\n- LOAD_LEVEL meaning: number of threads on YCSB (parameter -threads).\n- LOAD_DURATION meaning: not used, a run ends when all YCSB operations (default is 1000) are finished.\n- COMMENT: One of the "Big Data" Workloads. One of the two Virtual Applications types selected for the SPECCloud 2014 v1.0 benchmark. When new seed nodes are added (after an "airesize") the VM running YCSB will automatically direct requests to these new seed nodes.
 |ai_templates                     |cassandra_ycsb_load_balancer   |False                                
 |ai_templates                     |cassandra_ycsb_load_balancer_supported|False                                
 |ai_templates                     |cassandra_ycsb_load_duration   |60                                   
@@ -158,15 +158,19 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |ai_templates                     |hadoop_start                   |cb_hadoop_job.sh                     
 |ai_templates                     |hadoop_sut                     |hadoopmaster->3_x_hadoopslave        
 |ai_templates                     |hpcc_capture_role              |cn_hpc                               
-|ai_templates                     |hpcc_description               | TBD                                 
+|ai_templates                     |hpcc_cn_hpc_setup1             |cb_config_cn_hpc.sh                  
+|ai_templates                     |hpcc_description               | Deploys an HPC cluster formed by N "compute node" VMs and one one "frontend node" VM, and then runs the HPC Challenge benchmark on the cluster.\n- LOAD_PROFILE possible values: "default", consisting of 7 individual tests: HPL (Linpack TPP benchmark), DGEMM (measures the floating point rate of execution of double precision real matrix-matrix multiplication), STREAM (synthetic benchmark that measures sustainable memory bandwidth), PTRANS (parallel matrix transpose), RandomAccess (measures the rate of integer random updates of memory), FFT (measures the floating point rate of execution of Discrete Fourier Transform, Communication bandwidth and latency (effective bandwidth benchmark).\n- LOAD_LEVEL meaning: multiplier for the size of computational problem.\n- LOAD_DURATION meaning: not used, a run ends when the problem is solved.\n- COMMENT: One of the "High Performance Computing" Workloads.
 |ai_templates                     |hpcc_fen_hpc_setup1            |cb_config_fen_hpc.sh                 
-|ai_templates                     |hpcc_load_balancer             |False                                
+|ai_templates                     |hpcc_load_balancer_supported   |False                                
 |ai_templates                     |hpcc_load_duration             |60                                   
 |ai_templates                     |hpcc_load_generator_role       |fen_hpc                              
 |ai_templates                     |hpcc_load_level                |uniformIXIXI1I6                      
 |ai_templates                     |hpcc_load_manager_role         |fen_hpc                              
 |ai_templates                     |hpcc_load_profile              |default                              
 |ai_templates                     |hpcc_metric_aggregator_role    |fen_hpc                              
+|ai_templates                     |hpcc_regenerate_data           |True                                 
+|ai_templates                     |hpcc_reported_metrics          |throughput_G_HPL,throughput_G_PTRANS,throughput_G_RandomAccess,throughput_G_FFTE,throughput_EP_STREAM_Triad,throughput_EP_DGEMM,throughput_RandomRing,lat_RandomRing
+|ai_templates                     |hpcc_resize_supported          |True                                 
 |ai_templates                     |hpcc_start                     |cb_hpcc.sh                           
 |ai_templates                     |hpcc_sut                       |fen_hpc->3_x_cn_hpc                  
 |ai_templates                     |ibm_daytrader_capture_role     |db2                                  
@@ -234,19 +238,19 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |ai_templates                     |ibmderby_tradelite_was_reset1  |cb_restart_was.sh                    
 |ai_templates                     |ibmderby_tradelite_was_setup1  |cb_restart_was.sh                    
 |ai_templates                     |iperf_capture_role             |iperfserver                          
-|ai_templates                     |iperf_description              | TBD                                 
+|ai_templates                     |iperf_description              | Deploys a pair of VMs (client and server) and then runs the iperf network benchmark, sending an unidirectional stream of packets between these.\n- LOAD_PROFILE possible values: "tcp" or "udp".\n- LOAD_LEVEL meaning: number of parallel client threads.\n- LOAD_DURATION meaning: maximum length of time to run.\n- COMMENT: One of the "Synthetic" Workloads.
 |ai_templates                     |iperf_iperfclient_setup1       |cb_check_iperf_client.sh             
 |ai_templates                     |iperf_iperfserver_setup1       |cb_check_iperf_server.sh             
-|ai_templates                     |iperf_load_balancer            |False                                
-|ai_templates                     |iperf_load_balancer_target_children|2                                    
-|ai_templates                     |iperf_load_balancer_target_port|80                                   
-|ai_templates                     |iperf_load_balancer_target_url |unknown                              
+|ai_templates                     |iperf_load_balancer_supported  |False                                
 |ai_templates                     |iperf_load_duration            |uniformIXIXI70I90                    
 |ai_templates                     |iperf_load_generator_role      |iperfclient                          
 |ai_templates                     |iperf_load_level               |uniformIXIXI1I5                      
 |ai_templates                     |iperf_load_manager_role        |iperfclient                          
 |ai_templates                     |iperf_load_profile             |tcp                                  
 |ai_templates                     |iperf_metric_aggregator_role   |iperfclient                          
+|ai_templates                     |iperf_regenerate_data          |False                                
+|ai_templates                     |iperf_reported_metrics         |bandwidth                            
+|ai_templates                     |iperf_resize_supported         |False                                
 |ai_templates                     |iperf_start                    |cb_iperf.sh                          
 |ai_templates                     |iperf_sut                      |iperfclient->iperfserver             
 |ai_templates                     |mlg_capture_role               |mlg                                  
@@ -301,11 +305,8 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |ai_templates                     |mweb_start                     |cb_mweb_start_run.sh                 
 |ai_templates                     |mweb_sut                       |client_mweb->mwebfront->mwebback     
 |ai_templates                     |netperf_capture_role           |netserver                            
-|ai_templates                     |netperf_description            | TBD                                 
-|ai_templates                     |netperf_load_balancer          |False                                
-|ai_templates                     |netperf_load_balancer_target_children|2                                    
-|ai_templates                     |netperf_load_balancer_target_port|80                                   
-|ai_templates                     |netperf_load_balancer_target_url|unknown                              
+|ai_templates                     |netperf_description            | Deploys a pair of VMs (client and server) and then runs the netperf network benchmark, sending packets (stream or request/response) between these.\n- LOAD_PROFILE possible values: "tcp_stream", "tcp_maerts", "udp_stream" "tcp_rr", "tcp_cc", "tcp_crr", "udp_rr".\n- LOAD_LEVEL meaning: not applicatble/not used.\n- LOAD_DURATION meaning: maximum length of time to run.\n- COMMENT: One of the "Synthetic" Workloads.
+|ai_templates                     |netperf_load_balancer_supported|False                                
 |ai_templates                     |netperf_load_duration          |uniformIXIXI70I90                    
 |ai_templates                     |netperf_load_generator_role    |netclient                            
 |ai_templates                     |netperf_load_level             |1                                    
@@ -314,6 +315,8 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |ai_templates                     |netperf_metric_aggregator_role |netclient                            
 |ai_templates                     |netperf_netclient_setup1       |cb_check_netperf_client.sh           
 |ai_templates                     |netperf_netserver_setup1       |cb_check_netperf_server.sh           
+|ai_templates                     |netperf_regenerate_data        |False                                
+|ai_templates                     |netperf_resize_supported       |False                                
 |ai_templates                     |netperf_start                  |cb_netperf.sh                        
 |ai_templates                     |netperf_sut                    |netclient->netserver                 
 |ai_templates                     |nullworkload_capture_role      |tinyvm                               
@@ -355,17 +358,23 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |ai_templates                     |open_daytrader_start           |cb_daytrader.sh                      
 |ai_templates                     |open_daytrader_sut             |client_daytrader->geronimo->mysql    
 |ai_templates                     |redis_ycsb_capture_role        |ycsb                                 
-|ai_templates                     |redis_ycsb_description         | TBD                                 
+|ai_templates                     |redis_ycsb_description         | Deploys one or more VMs running standalone Redis server(s), plus one VM running the YCSB benchmark. This single VM sends requests to all seed Redis VMs simultaneously.\n- LOAD_PROFILE possible values: "workload"{a-f} (for a proper description, consult the section "Core Workloads" on the YCSB documentation)\n- LOAD_LEVEL meaning: number of threads on YCSB (parameter -threads).\n- LOAD_DURATION meaning: not used, a run ends when all YCSB operations (default is 1000) are finished.\n- COMMENT: One of the "Big Data" Workloads. One of the two Virtual Applications types selected for the SPECCloud 2014 v1.0 benchmark. When new Redis nodes are added (after an "airesize") the VM running YCSB will automatically direct requests to these new nodes.
 |ai_templates                     |redis_ycsb_load_balancer       |False                                
+|ai_templates                     |redis_ycsb_load_balancer_supported|False                                
 |ai_templates                     |redis_ycsb_load_duration       |60                                   
 |ai_templates                     |redis_ycsb_load_generator_role |ycsb                                 
 |ai_templates                     |redis_ycsb_load_level          |1                                    
 |ai_templates                     |redis_ycsb_load_manager_role   |ycsb                                 
-|ai_templates                     |redis_ycsb_load_profile        |workloada                            
+|ai_templates                     |redis_ycsb_load_profile        |workloadd                            
 |ai_templates                     |redis_ycsb_metric_aggregator_role|ycsb                                 
+|ai_templates                     |redis_ycsb_read_ratio          |workloaddefault                      
 |ai_templates                     |redis_ycsb_redis_setup1        |cb_restart_redis.sh                  
+|ai_templates                     |redis_ycsb_regenerate_data     |True                                 
+|ai_templates                     |redis_ycsb_reported_metrics    |bandwidth,throughput,latency,datagen_time,datagen_size
+|ai_templates                     |redis_ycsb_resize_supported    |True                                 
 |ai_templates                     |redis_ycsb_start               |cb_ycsb.sh                           
 |ai_templates                     |redis_ycsb_sut                 |ycsb->redis                          
+|ai_templates                     |redis_ycsb_update_ratio        |workloaddefault                      
 |ai_templates                     |redis_ycsb_ycsb_setup2         |cb_setup_ycsb.sh                     
 |ai_templates                     |specimap_capture_role          |mailsut                              
 |ai_templates                     |specimap_description           | TBD                                 
@@ -470,6 +479,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |api_defaults                     |port                           |7070                                 
 |api_defaults                     |protocol                       |TCP                                  
 |api_defaults                     |remote                         |False                                
+|api_defaults                     |username                       |msilva                               
 |dash_defaults                    |dashboard_parameters           |dashboard?kb2mb=no&failedvm=yes&4k2mb=no&b2mb=no&p=yes&h=yes&s=yes&a=yes&filter=s-vmc_name,s-vms,h-type,h-vmc_name,a-vmc_name,h-aidrs_name,h-size,h-age,h-host_name,h-ai_name,h-role,p-vms,a-vms,p-latest_update
 |fi_templates                     |cinder-api-kp_fault            |pkill -9 -f cinder-api               
 |fi_templates                     |cinder-api-kp_repair           |                                     
@@ -654,7 +664,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |mon_defaults                     |mem_m                          |mem_total,mem_free,mem_cached,mem_buffers,mem_shared
 |mon_defaults                     |net_m                          |pkts_in,bytes_in,pkts_out,bytes_out  
 |mon_defaults                     |protocol                       |TCP                                  
-|mon_defaults                     |reported_management_vm_metric_names|uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,utc_offset_delta,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_application_start,mgt_101_capture_request_originated,mgt_102_capture_request_sent,mgt_103_capture_request_completed,mgt_201_runstate_request_originated,mgt_202_runstate_request_sent,mgt_203_runstate_request_completed,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed,mgt_999_provisioning_request_failed
+|mon_defaults                     |reported_management_vm_metric_names|uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,utc_offset_delta,comments,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_application_start,mgt_101_capture_request_originated,mgt_102_capture_request_sent,mgt_103_capture_request_completed,mgt_201_runstate_request_originated,mgt_202_runstate_request_sent,mgt_203_runstate_request_completed,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed,mgt_999_provisioning_request_failed
 |mon_defaults                     |reported_runtime_app_vm_metric_names|app_load_id,app_load_level,app_throughput,app_latency,app_datagen_time,app_datagen_size
 |mon_defaults                     |reported_runtime_os_host_metric_names|cpu_speed,cores,cpu_num,proc_total,proc_run,cpu_idle,cpu_aidle,cpu_user,cpu_system,cpu_wio,cpu_nice,mem_total,mem_free,mem_cached,mem_buffers,mem_shared,swap_total,swap_free,swap_procs_running,swap_in_flight,swap_procs_blocked,swap_KB_read,swap_ios_read,swap_KB_write,swap_ios_write,pkts_in,bytes_in,pkts_out,bytes_out,disk_total,disk_free,ds_in_flight,ds_KB_read,ds_ios_read,ds_KB_write,ds_ios_write
 |mon_defaults                     |reported_runtime_os_vm_metric_names|cpu_speed,cores,cpu_num,proc_total,proc_run,cpu_idle,cpu_aidle,cpu_user,cpu_system,cpu_wio,cpu_nice,mem_total,mem_free,mem_cached,mem_buffers,mem_shared,swap_total,swap_free,swap_procs_running,swap_in_flight,swap_procs_blocked,swap_KB_read,swap_ios_read,swap_KB_write,swap_ios_write,pkts_in,bytes_in,pkts_out,bytes_out,disk_total,disk_free,ds_in_flight,ds_KB_read,ds_ios_read,ds_KB_write,ds_ios_write
@@ -667,9 +677,9 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |mon_defaults                     |tstamp                         |time,time_h                          
 |mon_defaults                     |username                       |msilva                               
 |mon_defaults                     |vm_attributes                  |uuid,name,cloud_ip,last_known_state,cloud_name,model,cloud_hostname,vmc_name,vmc_cloud_ip,host_name,host_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,utc_offset_delta
-|mon_defaults                     |vm_id1                         |uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,utc_offset_delta
+|mon_defaults                     |vm_id1                         |uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,utc_offset_delta,comments
 |mon_defaults                     |vm_id2                         |uuid,name,role,ai_name,type,utc_offset_delta
-|mon_defaults                     |vm_management_metrics_header   |uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,utc_offset_delta,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_application_start,mgt_101_capture_request_originated,mgt_102_capture_request_sent,mgt_103_capture_request_completed,mgt_201_runstate_request_originated,mgt_202_runstate_request_sent,mgt_203_runstate_request_completed,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed,mgt_999_provisioning_request_failed
+|mon_defaults                     |vm_management_metrics_header   |uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,utc_offset_delta,comments,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_application_start,mgt_101_capture_request_originated,mgt_102_capture_request_sent,mgt_103_capture_request_completed,mgt_201_runstate_request_originated,mgt_202_runstate_request_sent,mgt_203_runstate_request_completed,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed,mgt_999_provisioning_request_failed
 |mon_defaults                     |vm_runtime_app_metrics_header  |time,time_h,uuid,name,role,ai_name,type,utc_offset_delta,app_load_profile,app_load_id,app_load_level,app_throughput,app_latency,app_bandwidth
 |mon_defaults                     |vm_runtime_os_metrics_header   |time,time_h,uuid,name,role,ai_name,type,utc_offset_delta,cpu_speed,cores,cpu_num,proc_total,proc_run,cpu_idle,cpu_aidle,cpu_user,cpu_system,cpu_wio,cpu_nice,mem_total,mem_free,mem_cached,mem_buffers,mem_shared,swap_total,swap_free,swap_procs_running,swap_in_flight,swap_procs_blocked,swap_KB_read,swap_ios_read,swap_KB_write,swap_ios_write,pkts_in,bytes_in,pkts_out,bytes_out,disk_total,disk_free,ds_in_flight,ds_KB_read,ds_ios_read,ds_KB_write,ds_ios_write
 |query                            |ai                             |BYUSERNAME,BYTYPE,BYAIDRS            
@@ -680,7 +690,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |query                            |mandatory_tags                 |name,cloud_hostname,cloud_ip         
 |query                            |object_type_list               |VMC,HOST,VM,AI,AIDRS,VMCRS,FIRS      
 |query                            |username                       |msilva                               
-|query                            |vm                             |BYUSERNAME,BYVMC,BYHOST,BYROLE,BYTYPE,BYAI,BYAIDRS,BYSLA_PROVISIONING,BYSLA_RUNTIME
+|query                            |vm                             |BYUSERNAME,BYVMC,BYHOST,BYROLE,BYTYPE,BYAI,BYAIDRS,BYBATCH,BYSLA_PROVISIONING,BYSLA_RUNTIME
 |query                            |vmc                            |BYPOOL,BYUSERNAME                    
 |query                            |vmcrs                          |BYUSERNAME,BYPATTERN,BYSCOPE         
 |setup                            |global_object_list             |setup,logstore,metricstore,dash_defaults,mon_defaults,space,time,vmc_defaults,vm_defaults,ai_defaults,aidrs_defaults,vmcrs_defaults,firs_defaults,vm_templates,ai_templates,aidrs_templates,vmcrs_templates,fi_templates,firs_templates,query,admission_control,api_defaults,gui_defaults
@@ -704,12 +714,12 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |space                            |tracefile                      |regression/regression_test_experiment_plan.txt
 |space                            |username                       |msilva                               
 |space                            |vm_daemon_dir                  |/home/klabuser                       
-|time                             |experiment_id                  |EXP-10-07-2014-07-21-43-PM-EDT       
+|time                             |experiment_id                  |EXP-10-20-2014-01-54-20-PM-EDT       
 |time                             |external_timeout               |30                                   
 |time                             |external_tries                 |2                                    
 |time                             |hard_reset                     |True                                 
 |time                             |internal_tries                 |2                                    
-|time                             |start_time                     |1412724103                           
+|time                             |start_time                     |1413827659                           
 |time                             |step_delay                     |5                                    
 |time                             |username                       |msilva                               
 |vm_defaults                      |access                         |                                     

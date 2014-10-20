@@ -11,23 +11,59 @@
 # limitations under the License.
 #/*******************************************************************************
 
-from sys import path
+#--------------------------------- START CB API --------------------------------
+
+from sys import path, argv
+from time import sleep
 
 import fnmatch
 import os
+import pwd
 
-_home = os.environ["HOME"]
-_api_endpoint = "10.16.31.203"
-_api_port = "7070"
-_cloud_name = "myopenstack"
-_app_name = "cassandra_ycsb"
+home = os.environ["HOME"]
+username = pwd.getpwuid(os.getuid())[0]
 
-for _path, _dirs, _files in os.walk(os.path.abspath(_home)):
+api_file_name = "/tmp/cb_api_" + username
+if os.access(api_file_name, os.F_OK) :    
+    try :
+        _fd = open(api_file_name, 'r')
+        _api_conn_info = _fd.read()
+        _fd.close()
+    except :
+        _msg = "Unable to open file containing API connection information "
+        _msg += "(" + api_file_name + ")."
+        print _msg
+        exit(4)
+else :
+    _msg = "Unable to locate file containing API connection information "
+    _msg += "(" + api_file_name + ")."
+    print _msg
+    exit(4)
+
+_path_set = False
+
+for _path, _dirs, _files in os.walk(os.path.abspath(path[0] + "/../")):
     for _filename in fnmatch.filter(_files, "code_instrumentation.py") :
+        if _path.count("/lib/auxiliary") :
             path.append(_path.replace("/lib/auxiliary",''))
+            _path_set = True
             break
+    if _path_set :
+        break
 
 from lib.api.api_service_client import *
+
+_msg = "Connecting to API daemon (" + _api_conn_info + ")..."
+print _msg
+api = APIClient(_api_conn_info)
+
+#---------------------------------- END CB API ---------------------------------
+
+if len(argv) < 2 :
+        print "./" + argv[0] + " <cloud_name>"
+        exit(1)
+
+cloud_name = argv[1]
 
 #----------------------- TO DO -------------------------------------------------
 #
@@ -42,9 +78,10 @@ from lib.api.api_service_client import *
 #-------------------------------------------------------------------------------
 
 #----------------------- CloudBench API ----------------------------------------
-api = APIClient("http://" + _api_endpoint + ":%s" % _api_port)
 expid = "CASSANDRA_YCSB" + makeTimestamp().replace(" ", "_")
 
+_app_name = "cassandra_ycsb"
+current_load = "NA"
 load_phase = True 
 client_phase =  False 
 base_phase = False 
@@ -58,13 +95,13 @@ try :
     
     _cloud_attached = False
     for _cloud in api.cldlist() :
-        if _cloud["name"] == _cloud_name :
+        if _cloud["name"] == cloud_name :
             _cloud_attached = True
             _cloud_model = _cloud["model"]
             break
 
     if not _cloud_attached :
-        print "Cloud " + _cloud_name + " not attached"
+        print "Cloud " + cloud_name + " not attached"
         exit(1)    
 
 #-------------------------------------------------------------------------------
@@ -72,12 +109,12 @@ try :
 # Launch 1x YCSB, 1x Cassandra_Seed, 2x Cassandra Nodes
 #
 #-------------------------------------------------------------------------------
-    app = api.appattach(_cloud_name, _app_name)
+    app = api.appattach(cloud_name, _app_name)
 
-    api.appalter(_cloud_name, app["uuid"], "load_db_phase", "false")
-    api.appalter(_cloud_name, app["uuid"], "run_base_phase", "false")
-    api.appalter(_cloud_name, app["uuid"], "run_client_phase", "false")
-    api.appalter(_cloud_name, app["uuid"], "run_load_phase", "false")
+    api.appalter(cloud_name, app["uuid"], "load_db_phase", "false")
+    api.appalter(cloud_name, app["uuid"], "run_base_phase", "false")
+    api.appalter(cloud_name, app["uuid"], "run_client_phase", "false")
+    api.appalter(cloud_name, app["uuid"], "run_load_phase", "false")
 
 #-------------------------------------------------------------------------------
 #
@@ -86,7 +123,7 @@ try :
 #-------------------------------------------------------------------------------
     if load_phase : 
         print "Loading Database Phase"
-        api.appalter(_cloud_name, app["uuid"], "load_db_phase", "false")
+        api.appalter(cloud_name, app["uuid"], "load_db_phase", "false")
 
 #-------------------------------------------------------------------------------
 #
@@ -94,7 +131,7 @@ try :
 #
 #-------------------------------------------------------------------------------
     if client_phase :
-        api.appalter(_cloud_name, app["uuid"], "run_client_phase", "true") 
+        api.appalter(cloud_name, app["uuid"], "run_client_phase", "true") 
         # Start Client at small load
         # Run for 100M Operations
         # Start a second Client ?
@@ -131,8 +168,8 @@ try :
 #
 #-------------------------------------------------------------------------------
     if base_phase :
-        api.appalter(_cloud_name, app["uuid"], "run_client_phase", "false") 
-        api.appalter(_cloud_name, app["uuid"], "run_base_phase", "true")
+        api.appalter(cloud_name, app["uuid"], "run_client_phase", "false") 
+        api.appalter(cloud_name, app["uuid"], "run_base_phase", "true")
 
  
 #-------------------------------------------------------------------------------
@@ -147,13 +184,13 @@ try :
             time.sleep(300)
             current_load=app["load_level"]
             print "Changing Load Level"
-            api.appalter(_cloud_name, app["uuid"], "load_level", "800000")
+            api.appalter(cloud_name, app["uuid"], "load_level", "800000")
             print "Adding new Client"
-            api.appresize(_cloud_name, app["uuid"], "ycsb", "+1")
+            api.appresize(cloud_name, app["uuid"], "ycsb", "+1")
             time.sleep(300)
             print "Adding new Cassandra Instance"
-            api.appresize(_cloud_name, app["uuid"], "cassandra", "+1")
-            app = api.appshow(_cloud_name,app["uuid"])
+            api.appresize(cloud_name, app["uuid"], "cassandra", "+1")
+            app = api.appshow(cloud_name,app["uuid"])
 
 except APIException, obj:
     error = True

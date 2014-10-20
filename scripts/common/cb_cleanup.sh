@@ -20,55 +20,9 @@ if [[ -f /home/cloud-user/cb_os_parameters.txt ]]
 then
     source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 else
-    NC=`which netcat` 
-    if [[ $? -ne 0 ]]
-    then
-        NC=`which nc`
-    fi
-
-    function syslog_netcat {
-        echo "$1"
-    }
-        
-    function linux_distribution {
-        IS_UBUNTU=$(cat /etc/*release | grep -c "Ubuntu")
-
-        if [[ ${IS_UBUNTU} -ge 1 ]]
-        then
-            export LINUX_DISTRO=1
-        fi
-
-        IS_REDHAT=$(cat /etc/*release | grep -c "Red Hat\|CentOS\|Fedora")
-        if [[ ${IS_REDHAT} -ge 1 ]]
-        then
-            export LINUX_DISTRO=2
-        fi
-    
-        return ${LINUX_DISTRO}
-    }
-
-    function service_stop_disable {
-        #1 - service list (space-separated list)
-
-        for s in $* ; do
-            syslog_netcat "Stopping service \"${s}\"..."       
-            sudo service $s stop 
-        
-            if [[ ${LINUX_DISTRO} -eq 1 ]]
-            then
-                sudo bash -c "echo 'manual' > /etc/init/$s.override" 
-            fi
-
-            if [[ ${LINUX_DISTRO} -eq 2 ]]
-            then
-                sudo chkconfig $s off >/dev/null 2>&1
-            fi
-        done
-        /bin/true
-    }
-
+    source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_bootstrap.sh
 fi
-
+    
 syslog_netcat "Killing all CB-related processes..."
 sudo pkill -9 -f cloud-api
 sudo pkill -9 -f cloud-gui        

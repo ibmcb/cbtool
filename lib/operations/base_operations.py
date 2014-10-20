@@ -44,7 +44,6 @@ from lib.remote.network_functions import Nethashget
 from lib.remote.ssh_ops import repeated_ssh
 from lib.remote.process_management import ProcessManagement
 
-
 class BaseObjectOperations :
     '''
     TBD
@@ -64,6 +63,8 @@ class BaseObjectOperations :
         self.path = re.compile(".*\/").search(os.path.realpath(__file__)).group(0) + "/../.."
         self.attached_clouds = attached_clouds
         self.thread_pools = {}
+        self.coi = {}
+        self.expid = None
 
     class ObjectOperationException(Exception) :
         @trace
@@ -91,20 +92,30 @@ class BaseObjectOperations :
             raise self.ObjectOperationException(_msg, obj.status)
 
     @trace
-    def get_cloud_class(self, cloud_model) :
+    def set_cloud_operations_instance(self, cloud_model) :
         '''
         TBD
         '''
         try :
+            
+            if cloud_model not in self.coi :
+                self.coi[cloud_model] = {}
 
-            _cld_ops = __import__("lib.clouds." + cloud_model + "_cloud_ops",\
-                                   fromlist = [cloud_model.capitalize() +\
-                                                "Cmds"])
+            if "ops_module" not in self.coi[cloud_model] :
+                self.coi[cloud_model]["ops_module"] = \
+                __import__("lib.clouds." + cloud_model + "_cloud_ops", \
+                           fromlist = [cloud_model.capitalize() + "Cmds"])
+            
+            if "ops_class" not in self.coi[cloud_model] :
+                self.coi[cloud_model]["ops_class"] = \
+                getattr(self.coi[cloud_model]["ops_module"], \
+                        cloud_model.capitalize() + "Cmds")
+            
+            if self.pid + '-' + self.expid not in self.coi[cloud_model] :
+                self.coi[cloud_model][self.pid + '-' + self.expid] = \
+                self.coi[cloud_model]["ops_class"](self.pid, self.osci, self.expid) 
 
-            _cld_ops_class = getattr(_cld_ops, \
-                                     cloud_model.capitalize() + "Cmds")
-
-            return _cld_ops_class
+            return True
 
         except ImportError, msg :
             _msg = str(msg)
@@ -738,7 +749,7 @@ class BaseObjectOperations :
 
         elif command == "wait-until" :
             if parameters.count('=') :
-                if _length == 3 : 
+                if _length == 3 :
                     object_attribute_list["type"] = _parameters[1]
                     object_attribute_list["counter"] = _parameters[2].split('=')[0]
                     object_attribute_list["value"] = _parameters[2].split('=')[1]
@@ -767,13 +778,17 @@ class BaseObjectOperations :
                 _msg = "Usage: waituntil <cloud name> <object type> <counter>=<value> [direction] [update interval]"
 
         elif command == "wait-on" :
-            if _length == 4 :
+            if _length >= 4 :
                 object_attribute_list["type"] = _parameters[1]
                 object_attribute_list["channel"] = _parameters[2]
                 object_attribute_list["keyword"] = _parameters[3]
+                object_attribute_list["timeout"] = 86400   
             else :
                 _status =  9
                 _msg = "Usage: waiton <cloud name> <object type> <channel> <keyword>"
+
+            if _length == 5 :
+                object_attribute_list["timeout"] = _parameters[4]
 
         elif command == "msg-pub" :
             if _length >= 4 :
@@ -785,9 +800,14 @@ class BaseObjectOperations :
                 _msg = "Usage: msgpub <cloud name> <object type> <channel> <message>"
 
         elif command == "stats-get" :
+            if _length >= 2 :
+                object_attribute_list["type"] = _parameters[1]
+            if _length >= 3 :
+                object_attribute_list["output"] = _parameters[2]
+                                
             if not _length :
                 _status =  9
-                _msg = "Usage: stats <cloud name>"
+                _msg = "Usage: stats <cloud name> [object type] [output]"
 
         elif command == "shell-execute" :
             if _length >= 2 :
@@ -839,6 +859,12 @@ class BaseObjectOperations :
             else :
                 _cloud_list = []
 
+            if not self.expid :
+
+                if len(obj_attr_list["cloud_name"],) :
+                    _time_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "time", False)
+                    self.expid = _time_attr_list["experiment_id"]
+            
             if not cmd.count("cloud-list") :
                 if obj_attr_list["cloud_name"] in _cloud_list :
                     # Cloud is attached, we can proceed
@@ -854,8 +880,7 @@ class BaseObjectOperations :
 
             ######### "ACTIVE" OPERATION OBJECT INITIALIZATION - BEGIN #########
             if cmd.count("cleanup") :
-                _time_parameters = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "time", False)
-                obj_attr_list["experiment_id"] = _time_parameters["experiment_id"]
+                obj_attr_list["experiment_id"] = self.expid
 
                 _cloud_parameters = self.get_cloud_parameters(obj_attr_list["cloud_name"])
                 
@@ -874,9 +899,8 @@ class BaseObjectOperations :
                 _status = 0
                 
             elif cmd == "mon-extract" :
-                _time_parameters = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "time", False)
                 _mon_parameters = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "mon_defaults", False)
-                obj_attr_list["current_experiment_id"] = _time_parameters["experiment_id"]
+                obj_attr_list["current_experiment_id"] = self.expid
                 
                 selective_dict_update(obj_attr_list, _mon_parameters)
 
@@ -895,8 +919,7 @@ class BaseObjectOperations :
 
                 _postpone_counter = False
 
-                _time_parameters = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "time", False)
-                obj_attr_list["experiment_id"] = _time_parameters["experiment_id"]
+                obj_attr_list["experiment_id"] = self.expid
 
                 obj_attr_list["mgt_001_provisioning_request_originated"] = obj_attr_list["command_originated"]
                 obj_attr_list["mgt_002_provisioning_request_sent"] = "0"
@@ -987,7 +1010,7 @@ class BaseObjectOperations :
                     obj_attr_list["counter"] = self.osci.update_counter(obj_attr_list["cloud_name"], "GLOBAL", \
                                                                         "experiment_counter", \
                                                                         "increment")
-
+                    obj_attr_list["comments"] = ''
                     _dir_list = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "space", \
                                                      False)
                         
@@ -1364,7 +1387,6 @@ class BaseObjectOperations :
                 cbdebug(_msg)
 
             elif transaction == "detach" :
-
                 _reservation = self.osci.update_counter(obj_attr_list["cloud_name"], obj_type, "RESERVATIONS", \
                                                             "decrement")
 
@@ -1658,16 +1680,15 @@ class BaseObjectOperations :
                              "reported_runtime_os_VM_metric_names", \
                              "reported_runtime_app_VM_metric_names" ]
 
-        _time_parameters = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "time", False)
         _mon_parameters = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "mon_defaults", False)
 
         for _collection_name in _collection_names :
             _document = {}
-            _document["expid"] = _time_parameters["experiment_id"]
+            _document["expid"] = self.expid
             _document["_id"] = b64encode(sha1(_document["expid"]).digest())
             for _metric_name in _mon_parameters[_collection_name.lower()].split(',') :
                 _document[_metric_name] = "1"
-            self.msci.update_document(_collection_name + '_' + _time_parameters["username"], _document)
+            self.msci.update_document(_collection_name + '_' + _mon_parameters["username"], _document)
 
     @trace
     def pre_select_object(self, obj_attr_list, obj_type, username) :
@@ -2503,14 +2524,13 @@ class BaseObjectOperations :
             _fmsg = "An error has occurred, but no error message was captured"
 
             _mon_defaults = self.osci.get_object(cloud_name, "GLOBAL", False, "mon_defaults", False)
-            _time_defaults = self.osci.get_object(cloud_name, "GLOBAL", False, "time", False)
 
             if operation == "trace" :
 
                 _trace_key = "trace_" + _mon_defaults["username"]
                 _trace_key_list = _mon_defaults["trace_attributes"].split(',')
                 _trace_attr_list = {}
-                _trace_attr_list["expid"] = _time_defaults["experiment_id"]
+                _trace_attr_list["expid"] = self.expid
                 _trace_attr_list["dashboard_polled"] = False
                 
                 for _key in obj_attr_list.keys() :
@@ -2524,7 +2544,7 @@ class BaseObjectOperations :
             else :
 
                 _mgt_attr_list = {}
-                _mgt_attr_list["expid"] = _time_defaults["experiment_id"]            
+                _mgt_attr_list["expid"] = self.expid 
 
                 if obj_type.upper() == "VM" or obj_type.upper() == "HOST" :
 
@@ -2685,6 +2705,7 @@ class BaseObjectOperations :
             self.osci.add_to_view(cloud_name, obj_type, obj_attr_list, "BYSLA_PROVISIONING", "arrival")
 
             mgt_attr_list["mgt_sla_provisioning"] = _sla_provisioning
+
         return True
 
     @trace

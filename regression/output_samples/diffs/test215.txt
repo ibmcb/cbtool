@@ -1,6 +1,7 @@
-|arrival |1412724163 
+|arrival |1413827721 
 |attempts |24 
-|command_originated |1412724161 
+|command_originated |1413827718 
+|comments | 
 |credentials_dir |/home/msilva/cloudbench/lib/auxiliary//../../credentials
 |identity |/home/msilva/cloudbench/lib/auxiliary//../../credentials/cbtool_rsa
 |jump_host | 

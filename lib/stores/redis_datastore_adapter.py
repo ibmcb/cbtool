@@ -787,6 +787,9 @@ class RedisMgdConn :
     @trace        
     def pending_object_set(self, cloud_name, obj_type, obj_uuid, obj_key, obj_value, \
                            notify_client_refresh = True, parent = None, parent_type = None, lock = False) :
+        '''
+        TBD
+        '''
         self.conn_check()
         obj_inst = self.experiment_inst + ":" + cloud_name
         
@@ -826,12 +829,14 @@ class RedisMgdConn :
         
     @trace        
     def pending_object_remove(self, cloud_name, obj_type, obj_uuid, obj_key, lock = False) :
+        '''
+        TBD
+        '''
         self.conn_check()
         obj_inst = self.experiment_inst + ":" + cloud_name
 
         _obj_inst_fn = obj_inst + ':' + obj_type + ":PENDING"
         
-
         try :
 
             _obj_id_fn = _obj_inst_fn + ':' + obj_uuid    
@@ -861,6 +866,9 @@ class RedisMgdConn :
         
     @trace        
     def pending_object_exists(self, cloud_name, obj_type, obj_uuid, obj_key, lock = False) :
+        '''
+        TBD
+        '''
         self.conn_check()
         obj_inst = self.experiment_inst + ":" + cloud_name
 
@@ -886,6 +894,9 @@ class RedisMgdConn :
             raise self.ObjectStoreMgdConnException(str(_msg), 2)
     @trace        
     def pending_object_get(self, cloud_name, obj_type, obj_uuid, obj_key, failcheck = True, lock = False) :
+        '''
+        TBD
+        '''
         self.conn_check()
         obj_inst = self.experiment_inst + ":" + cloud_name
 
@@ -1605,7 +1616,7 @@ class RedisMgdConn :
                 raise self.ObjectStoreMgdConnException(str(_msg), 2)
 
     @trace    
-    def subscribe(self, cloud_name, obj_type, channel) :
+    def subscribe(self, cloud_name, obj_type, channel, timeout = 86500) :
         '''
         TBD
         '''
@@ -1614,7 +1625,7 @@ class RedisMgdConn :
 
         while not _unsubscribe :
 
-            _redis_conn = self.connect(864000)
+            _redis_conn = self.connect(timeout)
             _redis_conn_pubsub = _redis_conn.pubsub()
 
             _comm_chn = obj_inst + ':' + obj_type + ':' + channel
@@ -1628,7 +1639,6 @@ class RedisMgdConn :
                 _msg = "Subscribed on channel " + channel + " successful."
                 cbdebug(_msg)
                 return _redis_conn_pubsub
-
                             
             except ConnectionError, msg :
                 _msg = "The connection to the data store seems to be "

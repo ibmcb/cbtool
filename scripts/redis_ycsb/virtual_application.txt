@@ -3,28 +3,48 @@
 # commented.
 
 [AI_TEMPLATES : REDIS_YCSB]
-DESCRIPTION = TBD
+
+# Attributes MANDATORY for all Virtual Applications
 SUT = ycsb->redis
+LOAD_BALANCER_SUPPORTED = $False
+RESIZE_SUPPORTED = $True
+REGENERATE_DATA = $True
 LOAD_GENERATOR_ROLE = ycsb
 LOAD_MANAGER_ROLE = ycsb
 METRIC_AGGREGATOR_ROLE = ycsb
 CAPTURE_ROLE = ycsb
 LOAD_BALANCER = $False
+LOAD_PROFILE = workloadd
+LOAD_LEVEL = 1
+LOAD_DURATION = 60
+REPORTED_METRICS = bandwidth,throughput,latency,datagen_time,datagen_size
+
+# VApp-specific MANDATORY attributes
+DESCRIPTION = Deploys one or more VMs running standalone Redis server(s), plus
+DESCRIPTION += one VM running the YCSB benchmark. This single VM sends requests
+DESCRIPTION += to all seed Redis VMs simultaneously.\n
+DESCRIPTION +=- LOAD_PROFILE possible values: "workload"{a-f} (for a proper
+DESCRIPTION += description, consult the section "Core Workloads" on the YCSB documentation)\n
+DESCRIPTION +=- LOAD_LEVEL meaning: number of threads on YCSB (parameter -threads).\n 
+DESCRIPTION +=- LOAD_DURATION meaning: not used, a run ends when all YCSB operations
+DESCRIPTION += (default is 1000) are finished.\n
+DESCRIPTION +=- COMMENT: One of the "Big Data" Workloads. One of the two 
+DESCRIPTION += Virtual Applications types selected for the SPECCloud 2014 v1.0 
+DESCRIPTION += benchmark. When new Redis nodes are added (after an "airesize")
+DESCRIPTION += the VM running YCSB will automatically direct requests to these
+DESCRIPTION += new nodes.
 REDIS_SETUP1 = cb_restart_redis.sh
 YCSB_SETUP2 = cb_setup_ycsb.sh
 START = cb_ycsb.sh
-LOAD_PROFILE = workloada
-LOAD_LEVEL = 1
-LOAD_DURATION = 60
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
+READ_RATIO = workloaddefault
+UPDATE_RATIO = workloaddefault
 #APP_COLLECTION = lazy
 #RUN_COUNTER_NAME = experiment_id_counter
 #REDIS_DATA_DIR = /dbstore
-#OPERATION_COUNT = 100000
-#READ_RATIO = workloaddefault
-#UPDATE_RATIO = workloaddefault
-#INPUT_RECORDS = memory
+#OPERATION_COUNT = 10000
+#INPUT_RECORDS = 10000
 #RECORD_SIZE = 2.35
 #DATABASE_SIZE_VERSUS_MEMORY = 0.5
 #REPLICATION_FACTOR = 4

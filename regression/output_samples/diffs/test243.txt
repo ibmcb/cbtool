@@ -1,3 +1,2 @@
-|VM |vm_XX |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx |fail 
-|VM |vm_XX |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx |attached 
-|Redis Version |2.8.4 
+
+

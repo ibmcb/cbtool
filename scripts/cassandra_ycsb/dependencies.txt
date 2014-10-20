@@ -64,7 +64,7 @@ ubuntu-oracle-java-home-install-man = echo "export JAVA_HOME=/usr/java/latest/jr
 
 rhel-cassandra-preinstall-man = sudo yum -y install jna which
 rhel-cassandra-install-man = sudo rpm -Uvh URL
-rhel-cassandra-postinstall-man = sudo sed -i 's/Xss180k/Xss512k/g' /etc/cassandra/conf/cassandra-env.sh; sudo chkconfig cassandra off
+rhel-cassandra-postinstall-man = sudo sed -i 's/Xss180k/Xss512k/g' /etc/cassandra/conf/cassandra-env.sh; source SCRIPTSDIR/common/cb_bootstrap.sh; service_restart_enable cassandra
 ubuntu-cassandra-preinstall-man = wget -N -P ~ URL
 ubuntu-cassandra-install-man = tar -xzf cassandra*.gz
 

@@ -18,7 +18,7 @@
 
 '''
     API Service RPC Relay
-    @author: Michael R. Hines
+    @author: Michael R. Hines, Marcio A. Silva
 '''
 from lib.auxiliary.code_instrumentation import trace, cblog, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.config import parse_cld_defs_file, get_available_clouds
@@ -178,7 +178,7 @@ class API():
         return self.passive.list_objects({}, set_default_cloud, "cloud-list")[2]
 
     def expid(self, cloud_name, experiment_name = ''):
-        return self.passive.expid({"name" : cloud_name}, cloud_name + ' ' + experiment_name, "expid-manage")[2]
+        return self.passive.expidmanage({"name" : cloud_name}, cloud_name + ' ' + experiment_name, "expid-manage")[2]
 
     def vmlist(self, cloud_name, state = "default", limit = "none"):
         return self.passive.list_objects({}, cloud_name + ' ' + state + ' ' + str(limit), "vm-list")[2]
@@ -447,6 +447,7 @@ class API():
         parameters = cloud_name + ' ' + gtype + ' ' + str(load_level) + ' ' + str(load_duration) + ' ' + str(lifetime) + ' ' + aidrs + ' ' + pause_step + ' ' + temp_attr_list
 
         if async :
+            async=str(async)            
             async=async.replace("async",'')
             async=async.replace('=','')            
 
@@ -472,8 +473,15 @@ class API():
     def vmattach(self, cloud_name, role, vm_location = "auto", meta_tags = "empty", size = "default", pause_step = "none", temp_attr_list = "empty=empty", async = False):
         parameters = cloud_name + ' ' + role + ' ' + vm_location + ' ' + meta_tags + ' ' + size + ' ' + pause_step + ' ' + temp_attr_list
 
-        if async and str(async).count("async") :
-            return self.active.background_execute(parameters + (' ' + async), "vm-attach")[2]
+        if async :
+            async=str(async)
+            async=async.replace("async",'')
+            async=async.replace('=','')            
+
+            if str(async.split(':')[0]).isdigit() :
+                return self.active.background_execute(parameters + (" async=" + str(async)), "vm-attach")[2]
+            else :
+                return self.active.background_execute(parameters + (" async"), "vm-attach")[2]
         else :
             return self.active.objattach({}, parameters, "vm-attach")[2]
         
@@ -528,9 +536,6 @@ class API():
         else :
             return self.active.objdetach({}, cloud_name + ' ' + identifier + ' ' + force, "aidrs-detach")[2]
     
-    def viewshow(self, cloud_name, gobject, criterion, expression, sorting = "default", gfilter = "default"):
-        return self.passive.show_view({"name": cloud_name}, cloud_name + ' ' + gobject + ' ' + criterion + ' ' + expression + ' ' + sorting + ' ' + gfilter, "view-show")[2]
-    
     def monlist(self, cloud_name, object_type):
         result = self.passive.monitoring_list(cloud_name + ' ' + object_type, "mon-list")[2]
         return result
@@ -538,11 +543,17 @@ class API():
     def waitfor(self, cloud_name, time, update_interval = "default") :
         return self.passive.wait_for({}, cloud_name + ' ' + str(time) + ' ' + str(update_interval), "wait-for")[2]
 
+    def waiton(self, cloud_name, object_type, channel, keyword, timeout = 86400) :
+        return self.passive.wait_on({}, cloud_name + ' ' + object_type + ' ' + channel + ' ' + keyword + ' ' + str(timeout), "wait-on")[2]
+
+    def waituntil(self, cloud_name, object_type, counter, value, direction, interval = 20) :
+        return self.passive.wait_until({}, cloud_name + ' ' + object_type + ' ' + str(counter) + '=' + str(value) + ' ' + direction +' ' + str(interval), "wait-until")[2]
+
     def msgpub(self, cloud_name, object_type, channel, message) :
         return self.passive.msgpub({}, cloud_name + ' ' + object_type + ' ' + channel + ' ' + message, "msg-pub")[2]
     
-    def stats(self, cloud_name) :
-        return self.passive.stats({"name": cloud_name}, cloud_name, "stats-get")[2]
+    def stats(self, cloud_name, object_type = "all", output = "print") :
+        return self.passive.stats({"name": cloud_name}, cloud_name + ' ' + object_type + ' ' + output, "stats-get")[2]
     
     def typelist(self, cloud_name) :
         return self.passive.globallist({}, cloud_name + " ai_templates+types+AIs", "global-list")[2]
@@ -558,6 +569,10 @@ class API():
     
     def viewlist(self, cloud_name) :
         return self.passive.globallist({}, cloud_name + " query+criteria+VIEWs", "global-list")[2]
+
+    def viewshow(self, cloud_name, gobject, criterion, expression, sorting = "default", gfilter = "default"):
+        return self.passive.show_view({"name": cloud_name}, cloud_name + ' ' + gobject + ' ' + criterion + ' ' + expression + ' ' + sorting + ' ' + gfilter, "view-show")[2]
+
     
 class AsyncDocXMLRPCServer(SocketServer.ThreadingMixIn,DocXMLRPCServer): pass
 

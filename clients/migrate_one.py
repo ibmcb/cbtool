@@ -14,28 +14,64 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #/*******************************************************************************
+#--------------------------------- START CB API --------------------------------
+
+from sys import path, argv
 from time import sleep
-from sys import path
 
+import fnmatch
 import os
-import re
+import pwd
 
-path.append(re.compile(".*\/").search(os.path.realpath(__file__)).group(0) + "/..")
+home = os.environ["HOME"]
+username = pwd.getpwuid(os.getuid())[0]
+
+api_file_name = "/tmp/cb_api_" + username
+if os.access(api_file_name, os.F_OK) :    
+    try :
+        _fd = open(api_file_name, 'r')
+        _api_conn_info = _fd.read()
+        _fd.close()
+    except :
+        _msg = "Unable to open file containing API connection information "
+        _msg += "(" + api_file_name + ")."
+        print _msg
+        exit(4)
+else :
+    _msg = "Unable to locate file containing API connection information "
+    _msg += "(" + api_file_name + ")."
+    print _msg
+    exit(4)
+
+_path_set = False
+
+for _path, _dirs, _files in os.walk(os.path.abspath(path[0] + "/../")):
+    for _filename in fnmatch.filter(_files, "code_instrumentation.py") :
+        if _path.count("/lib/auxiliary") :
+            path.append(_path.replace("/lib/auxiliary",''))
+            _path_set = True
+            break
+    if _path_set :
+        break
 
 from lib.api.api_service_client import *
 
-api = APIClient("http://172.16.1.222:7070")
+_msg = "Connecting to API daemon (" + _api_conn_info + ")..."
+print _msg
+api = APIClient(_api_conn_info)
+
+#---------------------------------- END CB API ---------------------------------
 
 expid = "ft_" + makeTimestamp().replace(" ", "_")
 
-if len(sys.argv) != 5 :
-        print "./" + sys.argv[0] + " [cloud_name] [type] [role] [migrate|protect]"
+if len(argv) != 5 :
+        print "./" + argv[0] + " [cloud_name] [type] [role] [migrate|protect]"
         exit(1)
 
-needed_cloud_name = sys.argv[1]
-needed_type = sys.argv[2]
-needed_role = sys.argv[3]
-action = sys.argv[4]
+needed_cloud_name = argv[1]
+needed_type = argv[2]
+needed_role = argv[3]
+action = argv[4]
 
 print "Going to resume VM role " + needed_role + " from first saved App of type " + needed_type + "..."
 

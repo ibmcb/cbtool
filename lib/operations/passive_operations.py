@@ -31,6 +31,7 @@ from xdrlib import Packer
 from sys import path
 from threading import Condition
 import copy, re, socket, os
+import json
 import shutil
 import textwrap
 import threading
@@ -698,7 +699,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 _fields = []
     
                 _fields.append("|Object Type                 ")
-                _fields.append("|Predicate                        ")
+                _fields.append("|Predicate                                                ")
 
                 _expression_list = self.osci.query_by_view(obj_attr_list["cloud_name"], _obj_type, _criterion, _expression, _sorting, _filter, True)
                 _fields.append("|Object UUID                           ")
@@ -766,133 +767,217 @@ class PassiveObjectOperations(BaseObjectOperations) :
         '''
         try :
             _status = 100
-            _result = []
-            result_idx = 0
+            _stats = {}
             
             obj_attr_list["cloud_name"] = "undefined"
             _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
-
+            
             if not _status :
                 _status, _fmsg = self.initialize_object(obj_attr_list, command)
 
                 if not _status :
+                    _stats["object_store"] = {}
+                    _stats["metric_store"] = {}                    
+                    _stats["experiment_objects"] = {}
+                    _stats["experiment_counters"] = {}
+                    _stats["vmc-wide_counters"] = {}
+                    _stats["aidrs-wide_counters"] = {}
+
                     _query_object = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "query", False)
+
+                    if obj_attr_list["type"] == "all" :
+                        _obj_list = _query_object["object_type_list"].split(',')
+                    else :
+                        _obj_list = obj_attr_list["type"].upper().split(',')
+
+                    _fmt_obj_list = "\n"
+
+                    if obj_attr_list["type"] == "all" :
+
+                        _info = self.osci.get_info()
+                        _fields = []
+
+                        if obj_attr_list["output"] == "print" :  
+                            _fmt_obj_list = "------------------------- OBJECT STORE -----------------------\n"
+        
+                            _fields.append("|Metric                                               ")
+                            _fields.append("|Value                         ")
+                            _fmt_obj_list += ''.join(_fields) + '\n'
+                        
+                        for _line in _info :
+                            _stats["object_store"][_line[0]] = str(_line[1])
+                            if obj_attr_list["output"] == "print" :                              
+                                _fmt_obj_list += ('|' + _line[0]).ljust(len(_fields[0]))
+                                _fmt_obj_list += ('|' + _line[1]).ljust(len(_fields[1]))
+                                _fmt_obj_list += '\n'
+
+                        _info = self.msci.get_info()
+                        
+                        if obj_attr_list["output"] == "print" :  
+                            _fmt_obj_list += "------------------------- METRIC STORE -----------------------\n"
+                            
+                            _fields = []
+                            
+                            _fields.append("|Metric                                               ")
+                            _fields.append("|Value                         ")
+                            _fmt_obj_list += ''.join(_fields) + '\n'
+                            
+                        for _line in _info :
+                            _stats["metric_store"][_line[0]] = str(_line[1])
+
+                        if obj_attr_list["output"] == "print" :                              
+                            _fmt_obj_list += ('|' + _line[0]).ljust(len(_fields[0]))
+                            _fmt_obj_list += ('|' + _line[1]).ljust(len(_fields[1]))
+                            _fmt_obj_list += '\n'
+
+                    if obj_attr_list["output"] == "print" :  
+                        _fmt_obj_list += "--------------------- EXPERIMENT OBJECTS ---------------------\n" 
     
-                    _fmt_obj_list = "------------------------- OBJECT STORE -----------------------\n"
-                    _result.append(["Object Store", "Metric", "Value", []])
+                        _fields = []    
+                        _fields.append("|Object                                               ")
+                        _fields.append("|Count                         ")
+                        _fmt_obj_list += ''.join(_fields) + '\n'
     
-                    _info = self.osci.get_info()
-                    _fields = []
+                    for _obj_type in _obj_list :
+                        _obj_count = str(self.get_object_count(obj_attr_list["cloud_name"], _obj_type))
+                        _stats["experiment_objects"][_obj_type] = _obj_count
+                        
+                        if obj_attr_list["output"] == "print" :                          
+                            _fmt_obj_list += ('|' + _obj_type + 's').ljust(len(_fields[0]))
+                            _fmt_obj_list += ('|' + _obj_count ).ljust(len(_fields[1]))
+                            _fmt_obj_list += '\n'
+
+                    if obj_attr_list["output"] == "print" :                                              
+                        _fmt_obj_list += "------------------ EXPERIMENT-WIDE COUNTERS ------------------\n" 
+                        _fields = []
+        
+                        _fields.append("|Counter                                              ")
+                        _fields.append("|Value                         ")
+                        _fmt_obj_list += ''.join(_fields) + '\n'
     
-                    _fields.append("|Metric                                               ")
-                    _fields.append("|Value                         ")
-                    _fmt_obj_list += ''.join(_fields) + '\n'
-                    for _line in _info :
-                        _result[result_idx][3].append((_line[0], str(_line[1])))
-                        _fmt_obj_list += ('|' + _line[0]).ljust(len(_fields[0]))
-                        _fmt_obj_list += ('|' + _line[1]).ljust(len(_fields[1]))
-                        _fmt_obj_list += '\n'
+                    for _obj_type in _obj_list :
+                        if _obj_type not in _stats["experiment_counters"] :
+                            _stats["experiment_counters"][_obj_type] = {}
+                            
+                        _obj_count = str(self.get_object_count(obj_attr_list["cloud_name"], _obj_type, "RESERVATIONS"))
+                        _stats["experiment_counters"][_obj_type]["reservations"] = _obj_count
+
+                        if obj_attr_list["output"] == "print" :                                
+                            _fmt_obj_list += ('|' + _obj_type + " RESERVATIONS").ljust(len(_fields[0]))
+                            _fmt_obj_list += ('|' + _obj_count).ljust(len(_fields[1]))
+                            _fmt_obj_list += '\n'
+
+                        if _obj_type == "VM" :
+                            _vm_defaults = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "vm_defaults", False)
+                            _vm_defaults["cloud_name"] = obj_attr_list["cloud_name"]
+                            self.set_cloud_operations_instance(obj_attr_list["cloud_model"])      
+                            _cld_conn = self.coi[obj_attr_list["cloud_model"]][self.pid + '-' + self.expid]
+                            _stats["experiment_counters"][_obj_type]["reported"] = _cld_conn.vmcount(_vm_defaults)
+
+                            if obj_attr_list["output"] == "print" :                                
+                                _fmt_obj_list += ('|' + _obj_type + "s REPORTED").ljust(len(_fields[0]))
+                                _fmt_obj_list += ('|' + _obj_count).ljust(len(_fields[1]))
+                                _fmt_obj_list += '\n'
+                        
+                        _obj_count = str(self.get_object_count(obj_attr_list["cloud_name"], _obj_type, "ARRIVED"))
+                        _stats["experiment_counters"][_obj_type]["arrived"] = _obj_count
+
+                        if obj_attr_list["output"] == "print" :
+                            _fmt_obj_list += ('|' + _obj_type + "s ARRIVED").ljust(len(_fields[0]))
+                            _fmt_obj_list += ('|' + _obj_count).ljust(len(_fields[1]))
+                            _fmt_obj_list += '\n'
+                        
+                        _obj_count = str(self.get_object_count(obj_attr_list["cloud_name"], _obj_type, "ARRIVING"))
+                        _stats["experiment_counters"][_obj_type]["arriving"] = _obj_count
+
+                        if obj_attr_list["output"] == "print" :                                                  
+                            _fmt_obj_list += ('|' + _obj_type + "s ARRIVING").ljust(len(_fields[0]))
+                            _fmt_obj_list += ('|' + _obj_count).ljust(len(_fields[1]))
+                            _fmt_obj_list += '\n'
+
+                        if _obj_type == "VM" or _obj_type == "AI" :                            
+                            _obj_count = str(self.get_object_count(obj_attr_list["cloud_name"], _obj_type, "CAPTURING"))
+                            _stats["experiment_counters"][_obj_type]["capturing"] = _obj_count
+                            
+                            if obj_attr_list["output"] == "print" :                                                      
+                                _fmt_obj_list += ('|' + _obj_type + "s CAPTURING").ljust(len(_fields[0]))
+                                _fmt_obj_list += ('|' + _obj_count).ljust(len(_fields[1]))
+                                _fmt_obj_list += '\n'
+
+                        _obj_count = str(self.get_object_count(obj_attr_list["cloud_name"], _obj_type, "DEPARTED"))
+                        _stats["experiment_counters"][_obj_type]["departed"] = _obj_count
+                        
+                        if obj_attr_list["output"] == "print" :                                                  
+                            _fmt_obj_list += ('|' + _obj_type + "s DEPARTED").ljust(len(_fields[0]))
+                            _fmt_obj_list += ('|' + _obj_count).ljust(len(_fields[1]))
+                            _fmt_obj_list += '\n'
+
+                        _obj_count = str(self.get_object_count(obj_attr_list["cloud_name"], _obj_type, "DEPARTING"))
+                        _stats["experiment_counters"][_obj_type]["departing"] = _obj_count
+                        
+                        if obj_attr_list["output"] == "print" :                                                  
+                            _fmt_obj_list += ('|' + _obj_type + "s DEPARTING").ljust(len(_fields[0]))
+                            _fmt_obj_list += ('|' + _obj_count).ljust(len(_fields[1]))
+                            _fmt_obj_list += '\n'
+                        
+                        _obj_count = str(self.get_object_count(obj_attr_list["cloud_name"], _obj_type, "FAILED"))
+                        _stats["experiment_counters"][_obj_type]["failed"] = _obj_count
+
+                        if obj_attr_list["output"] == "print" :                                                  
+                            _fmt_obj_list += ('|' + _obj_type + "s FAILED").ljust(len(_fields[0]))
+                            _fmt_obj_list += ('|' + _obj_count).ljust(len(_fields[1]))
+                            _fmt_obj_list += '\n'
     
-                    _fmt_obj_list += "------------------------- METRIC STORE -----------------------\n"
-                    result_idx += 1
-                    _result.append(["Metric Store", "Metric", "Value", []])
-    
-                    _info = self.msci.get_info()
-                    _fields = []
-    
-                    _fields.append("|Metric                                               ")
-                    _fields.append("|Value                         ")
-                    _fmt_obj_list += ''.join(_fields) + '\n'
-                    for _line in _info :
-                        _result[result_idx][3].append((_line[0], str(_line[1])))
-                        _fmt_obj_list += ('|' + _line[0]).ljust(len(_fields[0]))
-                        _fmt_obj_list += ('|' + _line[1]).ljust(len(_fields[1]))
-                        _fmt_obj_list += '\n'
-    
-                    _fmt_obj_list += "--------------------- EXPERIMENT OBJECTS ---------------------\n" 
-                    result_idx += 1
-                    _result.append(["Experiment Objects", "Object", "Count", []])
-                    _fields = []
-    
-                    _fields.append("|Object                                               ")
-                    _fields.append("|Count                         ")
-                    _fmt_obj_list += ''.join(_fields) + '\n'
-    
-                    for _obj_type in _query_object["object_type_list"].split(',') :
-                        _obj_count = self.get_object_count(obj_attr_list["cloud_name"], _obj_type)
-                        _result[result_idx][3].append((_obj_type + 's', str(_obj_count)))
-                        _fmt_obj_list += ('|' + _obj_type + 's').ljust(len(_fields[0]))
-                        _fmt_obj_list += ('|' + _obj_count ).ljust(len(_fields[1]))
-                        _fmt_obj_list += '\n'
+                    _obj_count = str(self.osci.count_object(obj_attr_list["cloud_name"], "GLOBAL", "experiment_counter"))
+                    _stats["experiment_counters"]["Experiment Counter"] = _obj_count
                     
-                    _fmt_obj_list += "------------------ EXPERIMENT-WIDE COUNTERS ------------------\n" 
-                    result_idx += 1
-                    _result.append(["Experiment-Wide Counters", "Counter", "Value", []])
-                    _fields = []
+                    if obj_attr_list["output"] == "print" :                                              
+                        _fmt_obj_list += "|EXPERIMENT COUNTER".ljust(len(_fields[0]))
+                        _fmt_obj_list += ('|' + _obj_count).ljust(len(_fields[1]))
+                        _fmt_obj_list += '\n'
+
+                    if "VMC" in _obj_list :
+                        _vmc_uuid_list = self.osci.get_object_list(obj_attr_list["cloud_name"], "VMC")                        
+
+                        if _vmc_uuid_list :
+                            if obj_attr_list["output"] == "print" :                                                      
+                                _fmt_obj_list += "\n ---------------- VMC-WIDE COUNTERS ----------------\n"
     
-                    _fields.append("|Counter                                              ")
-                    _fields.append("|Value                         ")
-                    _fmt_obj_list += ''.join(_fields) + '\n'
+                            for _vmc_uuid in _vmc_uuid_list :
+                                if _vmc_uuid not in _stats["vmc-wide_counters"] :
+                                    _stats["vmc-wide_counters"][_vmc_uuid] = {}
+                                    _stats["vmc-wide_counters"][_vmc_uuid]["VM"] = {}
+                                    
+                                _vmc_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "VMC", False, _vmc_uuid, False)
+                                _nr_vms = str(_vmc_attr_list["nr_vms"])
+                                _stats["vmc-wide_counters"][_vmc_uuid]["VM"]["reservations"] =  _nr_vms
+
+                                if obj_attr_list["output"] == "print" :                                                          
+                                    _fmt_obj_list += ('|' + _vmc_uuid + " (" + _vmc_attr_list["name"] + ") VM RESERVATIONS").ljust(len(_fields[0]))
+                                    _fmt_obj_list += ('|' + _nr_vms).ljust(len(_fields[1]))
+                                    _fmt_obj_list += '\n'
+
+                    if "AIDRS" in _obj_list :
+                        _aidrs_uuid_list = self.osci.get_object_list(obj_attr_list["cloud_name"], "AIDRS")
+                        
+                        if _aidrs_uuid_list :
+                            if obj_attr_list["output"] == "print" :                                                      
+                                _fmt_obj_list += "\n ---------------- AIDRS-WIDE COUNTERS ----------------\n"
+                            
+                            for _aidrs_uuid in _aidrs_uuid_list :
+                                
+                                if _aidrs_uuid not in _stats["aidrs-wide_counters"] :
+                                    _stats["aidrs-wide_counters"][_aidrs_uuid] = {}
+                                    _stats["aidrs-wide_counters"][_aidrs_uuid]["AI"] = {}
     
-                    for _obj_type in _query_object["object_type_list"].split(',') :
-                        _result[result_idx][3].append((_obj_type + ' Reservations', str(self.get_object_count(obj_attr_list["cloud_name"], _obj_type, "RESERVATIONS"))))
-                        _fmt_obj_list += ('|' + _obj_type + " RESERVATIONS").ljust(len(_fields[0]))
-                        _fmt_obj_list += ('|' + _result[result_idx][3][-1][1]).ljust(len(_fields[1]))
-                        _fmt_obj_list += '\n'
-                        _result[result_idx][3].append((_obj_type + 's Arrived', str(self.get_object_count(obj_attr_list["cloud_name"], _obj_type, "ARRIVED"))))
-                        _fmt_obj_list += ('|' + _obj_type + "s ARRIVED").ljust(len(_fields[0]))
-                        _fmt_obj_list += ('|' + _result[result_idx][3][-1][1]).ljust(len(_fields[1]))
-                        _fmt_obj_list += '\n'
-                        _result[result_idx][3].append((_obj_type + 's Arriving', str(self.get_object_count(obj_attr_list["cloud_name"], _obj_type, "ARRIVING"))))
-                        _fmt_obj_list += ('|' + _obj_type + "s ARRIVING").ljust(len(_fields[0]))
-                        _fmt_obj_list += ('|' + _result[result_idx][3][-1][1]).ljust(len(_fields[1]))
-                        _fmt_obj_list += '\n'
-                        if _obj_type == "VM" or _obj_type == "AI" :
-                            _result[result_idx][3].append((_obj_type + 's Capturing', str(self.get_object_count(obj_attr_list["cloud_name"], _obj_type, "CAPTURING"))))
-                            _fmt_obj_list += ('|' + _obj_type + "s CAPTURING").ljust(len(_fields[0]))
-                            _fmt_obj_list += ('|' + _result[result_idx][3][-1][1]).ljust(len(_fields[1]))
-                            _fmt_obj_list += '\n'
-                        _result[result_idx][3].append((_obj_type + 's Departed', str(self.get_object_count(obj_attr_list["cloud_name"], _obj_type, "DEPARTED"))))
-                        _fmt_obj_list += ('|' + _obj_type + "s DEPARTED").ljust(len(_fields[0]))
-                        _fmt_obj_list += ('|' + _result[result_idx][3][-1][1]).ljust(len(_fields[1]))
-                        _fmt_obj_list += '\n'
-                        _result[result_idx][3].append((_obj_type + 's Departing', str(self.get_object_count(obj_attr_list["cloud_name"], _obj_type, "DEPARTING"))))
-                        _fmt_obj_list += ('|' + _obj_type + "s DEPARTING").ljust(len(_fields[0]))
-                        _fmt_obj_list += ('|' + _result[result_idx][3][-1][1]).ljust(len(_fields[1]))
-                        _fmt_obj_list += '\n'
-                        _result[result_idx][3].append((_obj_type + 's Failed', str(self.get_object_count(obj_attr_list["cloud_name"], _obj_type, "FAILED"))))
-                        _fmt_obj_list += ('|' + _obj_type + "s FAILED").ljust(len(_fields[0]))
-                        _fmt_obj_list += ('|' + _result[result_idx][3][-1][1]).ljust(len(_fields[1]))
-                        _fmt_obj_list += '\n'
-    
-                    _result[result_idx][3].append(("Experiment Counter", str(self.osci.count_object(obj_attr_list["cloud_name"], "GLOBAL", "experiment_counter"))))
-                    _fmt_obj_list += "|EXPERIMENT COUNTER".ljust(len(_fields[0]))
-                    _fmt_obj_list += ('|' + _result[result_idx][3][-1][1]).ljust(len(_fields[1]))
-                    _fmt_obj_list += '\n'
-    
-                    _vmc_uuid_list = self.osci.get_object_list(obj_attr_list["cloud_name"], "VMC")
-                    if _vmc_uuid_list :
-                        result_idx += 1
-                        _result.append(["VMC-Wide Counters", "Hypervisor / Region", "Virtual Machines", []])
-                        _fmt_obj_list += "\n ---------------- VMC-WIDE COUNTERS ----------------\n"
-                        for _vmc_uuid in _vmc_uuid_list :
-                            _vmc_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "VMC", False, _vmc_uuid, False)
-                            _result[result_idx][3].append((_vmc_attr_list["name"] + " VM Reservations", str(_vmc_attr_list["nr_vms"])))
-                            _fmt_obj_list += ('|' + _vmc_uuid + " (" + _vmc_attr_list["name"] + ") VM RESERVATIONS").ljust(len(_fields[0]))
-                            _fmt_obj_list += ('|' + _result[result_idx][3][-1][1]).ljust(len(_fields[1]))
-                            _fmt_obj_list += '\n'
-    
-                    _aidrs_uuid_list = self.osci.get_object_list(obj_attr_list["cloud_name"], "AIDRS")
-                    if _aidrs_uuid_list :
-                        result_idx += 1
-                        _result.append(["AIDRS-Wide Counters", "Submitter", "Virtual Applications", []])
-                        _fmt_obj_list += "\n ---------------- AIDRS-WIDE COUNTERS ----------------\n"
-                        for _aidrs_uuid in _aidrs_uuid_list :
-                            _aidrs_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "AIDRS", False, _aidrs_uuid, False)
-                            _result[result_idx][3].append((_aidrs_attr_list["name"] + " AI Reservations", str(_aidrs_attr_list["nr_ais"])))
-                            _fmt_obj_list += ('|' + _aidrs_uuid + " (" + _aidrs_attr_list["name"] + ") AI RESERVATIONS").ljust(len(_fields[0]))
-                            _fmt_obj_list += ('|' + _result[result_idx][3][-1][1]).ljust(len(_fields[1]))
-                            _fmt_obj_list += '\n'
+                                _aidrs_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "AIDRS", False, _aidrs_uuid, False)
+                                _nr_ais = str(_aidrs_attr_list["nr_ais"])
+                                _stats["aidrs-wide_counters"][_aidrs_uuid]["AI"]["reservations"] = str(_aidrs_attr_list["nr_ais"])
+
+                                if obj_attr_list["output"] == "print" :                                                          
+                                    _fmt_obj_list += ('|' + _aidrs_uuid + " (" + _aidrs_attr_list["name"] + ") AI RESERVATIONS").ljust(len(_fields[0]))
+                                    _fmt_obj_list += ('|' + _nr_ais).ljust(len(_fields[1]))
+                                    _fmt_obj_list += '\n'
 
                     _status = 0
 
@@ -909,17 +994,23 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _fmsg = str(e)
 
         finally :
+             
             if _status :
                 _msg = "Unable to get the values of the counters available on "
                 _msg += "this experiment (Cloud "
                 _msg += obj_attr_list["cloud_name"] + "): " + _fmsg
                 cberr(_msg)
             else :
-                _msg = "The following statistics are available on this "
-                _msg += "experiment (Cloud " + obj_attr_list["cloud_name"]
-                _msg += ") :\n" + _fmt_obj_list
-                cbdebug(_msg)
-            return self.package(_status, _msg, _result)
+                if len(_fmt_obj_list) > 5 :
+                    _msg = "The following statistics are available on this "
+                    _msg += "experiment (Cloud " + obj_attr_list["cloud_name"]
+                    _msg += ") :\n" + _fmt_obj_list
+                    cbdebug(_msg)
+                else :
+                    _msg = "Success (data returned on a JSON object)"
+                    cbdebug(_msg)
+
+            return self.package(_status, _msg, _stats)
 
     @trace
     def show_state(self, obj_attr_list, parameters, command) :
@@ -1140,6 +1231,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
         '''
         try :
             _status = 100
+            _start_time = int(time())
             _obj_type = "undefined"
 
             obj_attr_list["cloud_name"] = "undefined"
@@ -1223,16 +1315,17 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _fmsg = str(e)
 
         finally :
+            _total_time = int(time()) - _start_time
+            
             if _status :
                 _msg = "Error while \"waiting until\": " + _fmsg
                 cberr(_msg)
             else :
-                _current_time = int(time())
-                _msg = "Waited " + str(_current_time - _start_time) + " seconds"
+                _msg = "Waited " + str(_total_time) + " seconds"
                 _msg += " until \"" + _obj_type + "s " + _counter_name
                 _msg += "\" was equal to " + str(obj_attr_list["value"]) + '.'
                 cbdebug(_msg)
-            return _status, _msg, None
+            return self.package(_status, _msg, _total_time)
 
     @trace
     def wait_on(self, obj_attr_list, parameters, command) :
@@ -1245,16 +1338,21 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
             obj_attr_list["cloud_name"] = "undefined"
             obj_attr_list["channel"] = "undefined"
-
+            _start = time()
+            
             _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
             
             if not _status :
 
                 _obj_type = obj_attr_list["type"].upper()                
-                _sub_channel = self.osci.subscribe(obj_attr_list["cloud_name"], _obj_type, obj_attr_list["channel"])
+                _sub_channel = self.osci.subscribe(obj_attr_list["cloud_name"], \
+                                                   _obj_type, \
+                                                   obj_attr_list["channel"], \
+                                                   int(obj_attr_list["timeout"]))
 
                 _msg = "Subscribed to channel \"" + obj_attr_list["channel"] + "\""
-                _msg += " (object \"" + _obj_type + "\" listening for messages with"
+                _msg += " with a timeout of " + str(obj_attr_list["timeout"]) + " seconds "
+                _msg += "(object \"" + _obj_type + "\" listening for messages with"
                 _msg += " the keyword \"" + obj_attr_list["keyword"] + "\")"
                 print _msg
 
@@ -1283,16 +1381,19 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _fmsg = str(e)
 
         finally :
+            
+            _end = time() - _start
+
             if _status :
-                _msg = "Error while \"waiting on channel\": " + _fmsg
+                _msg = "Error while \"waiting on channel\" after " + str(_end) + " seconds : " + _fmsg
                 cberr(_msg)
             else :
-                _msg = "Waited until a message containing the keyword \"" + obj_attr_list["keyword"]
+                _msg = "Waited " + str(_end) + " seconds until a message containing the keyword \"" + obj_attr_list["keyword"]
                 _msg += "\" was received on the channel \"" + obj_attr_list["channel"]
-                _msg += "\" ( " + _obj_type + ")."
+                _msg += "\" (" + _obj_type + ")."
                 cbdebug(_msg)
 
-            return _status, _msg, None
+            return self.package(_status, _msg, _end)
 
     @trace
     def msgpub(self, obj_attr_list, parameters, command) :
@@ -2383,7 +2484,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             return self.package(_status, _msg, _result)
 
     @trace
-    def expid(self, obj_attr_list, parameters, command) :
+    def expidmanage(self, obj_attr_list, parameters, command) :
         '''
         TBD
         '''
@@ -2396,31 +2497,41 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
 
             if not _status :
+
                 _status, _fmsg = self.initialize_object(obj_attr_list, command)
 
                 if not _status :
-                    if len(obj_attr_list["command"].split()) == 2 :
-                        parameters = obj_attr_list["cloud_name"] + " time"
-                        _status, _msg, _object = self.show_object({}, parameters, "cloud-show")
-            
-                        if not _status :
-                            _msg = "Current experiment identifier is \"" 
-                            _msg += _object["result"]["experiment_id"] + "\"."
-                            _result = _object["result"]["experiment_id"]
+                    _time_obj_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
+                                                               "GLOBAL", False, \
+                                                               "time", False)
+
+                    _curr_expid = _time_obj_attr_list["experiment_id"]
+
+                    self.expid = _curr_expid
+                    
+                    _parameters = obj_attr_list["command"].split()
+                    
+                    if len(_parameters) == 2 :
+                                    
+                        _msg = "Current experiment identifier is \"" + _curr_expid + "\"."
+                        _result = _time_obj_attr_list["experiment_id"]
             
                     else :
-                        parameters = obj_attr_list["cloud_name"] + " time experiment_id=" + obj_attr_list["command"].split()[2]
-                        _status, _msg, _object = self.alter_object(obj_attr_list, \
-                                                                   parameters, \
-                                                                   "cloud-alter")
+                        
+                        _new_expid = _parameters[2]
+                        self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
+                                                          "GLOBAL", "time", False,\
+                                                           "experiment_id", \
+                                                           _new_expid, False)
 
+                        self.expid = _new_expid
+                        
                         self.initialize_metric_name_list(obj_attr_list)
 
                         if not _status :
-                            _msg = "Experiment identifier was changed from \""
-                            _msg += _object["result"]["old_experiment_id"] + "\" to \""
-                            _msg += _object["result"]["experiment_id"] + "\". " 
-                            _result = _object["result"]["experiment_id"]
+                            _msg = "Experiment identifier was changed from \"" + _curr_expid + "\""
+                            _msg += " to \"" + _new_expid + "\". " 
+                            _result = _new_expid
         
                     _status = 0
 

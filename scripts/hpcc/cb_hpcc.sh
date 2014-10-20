@@ -37,7 +37,9 @@ CN_HPC_IPS_CSV=`echo ${CN_HPC_IPS} | sed ':a;N;$!ba;s/\n/, /g'`
 syslog_netcat "Benchmarking HPCC SUT: FEN_HPC=${FEN_HPC_IP} -> CEN_HPC=${CN_HPC_IPS_CSV} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
 
 cluster_hosts_file=~/cluster.hosts
+eval cluster_hosts_file=${cluster_hosts_file}
 bench_app_dir=~/hpc_files/hpcc-1.4.1
+eval bench_app_dir=${bench_app_dir}
 bench_app_bin=hpcc
 infile=hpccinf.txt
 outfile=hpccoutf.txt
@@ -54,7 +56,7 @@ PROCESSES_PER_NODE=`get_my_ai_attribute_with_default processes_per_node 3`
 let NUM_PROCESSES=$NUM_NODES*$PROCESSES_PER_NODE
 
 #Calculate the problem size as a function of the load level (and the maximum size per node and number of nodes)
-MAX_N_SIZE_PER_NODE=`get_my_ai_attribute_with_default max_n_size_per_node 5`
+MAX_N_SIZE_PER_NODE=`get_my_ai_attribute_with_default max_n_size_per_node 40`
 
 LOAD_LEVEL_FUNCTION=`get_my_ai_attribute load_level`
 MAX_LOAD_LEVEL=`echo $LOAD_LEVEL_FUNCTION | cut -d "I" -f 5`
@@ -82,9 +84,11 @@ sed -i s/"<Qs>"/"$NUM_PROCESSES"/g $infile
 #	echo $line >> ${OUTPUT_FILE}
 #done
 
+source ~/cb_barrier.sh start
+
 CMDLINE="mpirun -np $NUM_PROCESSES --machinefile $cluster_hosts_file $bench_app_bin"
 
-OUTPUT_FILE=$(mktemp)
+OUTPUT_FILE=$bench_app_dir/hpccoutf.txt
 
 execute_load_generator "${CMDLINE}" ${OUTPUT_FILE} ${LOAD_DURATION}
 

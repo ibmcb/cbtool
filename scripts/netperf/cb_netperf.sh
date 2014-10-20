@@ -47,7 +47,12 @@ CMDLINE_START["tcp_cc"]="-t TCP_CC"
 CMDLINE_START["tcp_crr"]="-t TCP_CRR"
 CMDLINE_START["udp_rr"]="-t UDP_RR"
 
-CMDLINE_END="-D 10 -f m -H ${LOAD_GENERATOR_TARGET_IP} -l ${LOAD_DURATION}"
+if [[ $(echo $LOAD_PROFILE | grep -c rr) -ne 0 ]]
+then
+	CMDLINE_END="-D 10 -f m -H ${LOAD_GENERATOR_TARGET_IP} -l ${LOAD_DURATION}"
+else
+	CMDLINE_END="-D 10 -H ${LOAD_GENERATOR_TARGET_IP} -l ${LOAD_DURATION}"
+fi
 
 if [[ x"${CMDLINE_START[${LOAD_PROFILE}]}" == x ]]
 then
@@ -55,6 +60,8 @@ then
 else 
 	CMDLINE="$netperf ${CMDLINE_START[${LOAD_PROFILE}]} $CMDLINE_END"
 fi
+
+source ~/cb_barrier.sh start
 
 syslog_netcat "Benchmarking netperf SUT: NET_CLIENT=${LOAD_GENERATOR_IP} -> NET_SERVER=${LOAD_GENERATOR_TARGET_IP} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
 
@@ -64,10 +71,10 @@ execute_load_generator "${CMDLINE}" ${OUTPUT_FILE} ${LOAD_DURATION}
 
 syslog_netcat "netperf run complete. Will collect and report the results"
 
-if [[ ${LOAD_LEVEL} -le 2 ]]
+if [[ $LOAD_PROFILE == "tcp_stream" || $LOAD_PROFILE == "tcp_maerts" ]]
 then
 	bw=$(tail -1 ${OUTPUT_FILE} | awk '{ print $5 }' | tr -d ' ')
-elif [[ ${LOAD_LEVEL} -eq 3 ]]
+elif [[ $LOAD_PROFILE == "udp_stream" ]]
 then
 	bw=$(tail -2 ${OUTPUT_FILE} | head -1 | awk '{ print $4 }' | tr -d ' ')
 else

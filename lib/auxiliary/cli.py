@@ -655,13 +655,27 @@ class CBCLI(Cmd) :
 
                     raise ProcessManagement.ProcessManagementException(_msg, _status)
                 else :
+                    _api_conn_string = "http://" + str(self.cld_attr_lst["api_defaults"]["hostname"])
+                    _api_conn_string += ":" + str(self.cld_attr_lst["api_defaults"]["port"]) 
                     _api_pid = _api_pid[0]
                     _msg = "API Service daemon was successfully started. "
-                    _msg += "The process id is " + str(_api_pid) + ". "
-                    _msg += "Port " + str(self.cld_attr_lst["api_defaults"]["port"]) + '.\n'
+                    _msg += "The process id is " + str(_api_pid) + " (" + _api_conn_string + ").\n"
                     sys.stdout.write(_msg)
+                    
+                    try :
+                        _fn = "/tmp/cb_api_" + self.cld_attr_lst["api_defaults"]["username"]
+                        _fd = open(_fn, 'w')
+                        _fd.write(_api_conn_string)
+                        _fd.close()
+                    
+                    except Exception, e :
+                        _msg = "    Error writing file \"" + _fn  + "\":" + str(e)
+                        print _msg
+                        exit(4)
+                    
             else :
-                _msg = "\nAPI failed to start. To discover why, please run:\n\n" + _base_cmd + " --logdest=console\n\n ... and report the bug."
+                _msg = "\nAPI failed to start. To discover why, please run:\n\n"
+                _msg += _base_cmd + " --logdest=console\n\n ... and report the bug."
                 _status = 7161
                 raise ProcessManagement.ProcessManagementException(_msg, _status)
 

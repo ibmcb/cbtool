@@ -65,10 +65,10 @@ ubuntu-oracle-java-home-install-man = echo "export JAVA_HOME=/usr/java/latest/jr
 
 rhel-redis-preinstall-man = lftp -c 'open -e "mget redis*remi*.rpm" URL'
 rhel-redis-install-man = sudo yum -y install gperftools-libs && sudo rpm -Uvh $(ls -t | grep redis | head -n 1)
-rhel-redis-postinstall-man = sudo sed -i "s/^bind .*/bind 0.0.0.0/" /etc/redis.conf; sudo /etc/init.d/redis restart; sudo chkconfig redis on
+rhel-redis-postinstall-man = sudo sed -i "s/^bind .*/bind 0.0.0.0/" /etc/redis.conf; source SCRIPTSDIR/common/cb_bootstrap.sh; service_stop_disable redis
 ubuntu-redis-preinstall-man = lftp -c 'open -e "mget redis-server_2.8*precise_ARCH.deb" URL'
 ubuntu-redis-install-man = sudo dpkg -i $(ls -t | grep redis-server | head -n 1)
-ubuntu-redis-postinstall-man = sudo sed -i "s/^bind .*/bind 0.0.0.0/" /etc/redis/redis.conf; sudo service redis-server restart
+ubuntu-redis-postinstall-man = sudo sed -i "s/^bind .*/bind 0.0.0.0/" /etc/redis/redis.conf; source SCRIPTSDIR/common/cb_bootstrap.sh; service_stop_disable redis-server
 
 rhel-maven-preinstall-man = sudo yum -y install java-devel
 rhel-maven-install-man = sudo rpm -Uvh URL

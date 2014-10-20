@@ -1,2 +1,2 @@
-|Redis Version |2.8.4 
-|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |dest |POOL |none |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+
+

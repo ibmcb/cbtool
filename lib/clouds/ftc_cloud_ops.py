@@ -307,7 +307,14 @@ class FtcCmds(CommonCloudFunctions) :
         obj_attr_list["cloud_ip"] = obj_attr_list["run_cloud_ip"] 
 
         return True
-        
+
+    @trace
+    def vmcount(self, obj_attr_list):
+        '''
+        TBD
+        '''
+        return "NA"
+
     @trace
     def is_vm_running(self, obj_attr_list) :
         '''

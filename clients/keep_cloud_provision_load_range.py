@@ -14,33 +14,63 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #/*******************************************************************************
-'''
-This is a Python example of how to provision a virtual machine through CloudBench
+#--------------------------------- START CB API --------------------------------
 
-This assumes you have already attached to a cloud through the GUI or CLI.
-'''
+from sys import path, argv
+from time import sleep
 
-from time import sleep, time
-from sys import path
-
-import os
 import fnmatch
+import os
+import pwd
 
-_home = os.environ["HOME"]
+home = os.environ["HOME"]
+username = pwd.getpwuid(os.getuid())[0]
 
-for _path, _dirs, _files in os.walk(os.path.abspath(_home)):
+api_file_name = "/tmp/cb_api_" + username
+if os.access(api_file_name, os.F_OK) :    
+    try :
+        _fd = open(api_file_name, 'r')
+        _api_conn_info = _fd.read()
+        _fd.close()
+    except :
+        _msg = "Unable to open file containing API connection information "
+        _msg += "(" + api_file_name + ")."
+        print _msg
+        exit(4)
+else :
+    _msg = "Unable to locate file containing API connection information "
+    _msg += "(" + api_file_name + ")."
+    print _msg
+    exit(4)
+
+_path_set = False
+
+for _path, _dirs, _files in os.walk(os.path.abspath(path[0] + "/../")):
     for _filename in fnmatch.filter(_files, "code_instrumentation.py") :
-        path.append(_path.replace("/lib/auxiliary",''))
+        if _path.count("/lib/auxiliary") :
+            path.append(_path.replace("/lib/auxiliary",''))
+            _path_set = True
+            break
+    if _path_set :
         break
 
 from lib.api.api_service_client import *
 
-api = APIClient("http://172.16.1.250:7070")
+_msg = "Connecting to API daemon (" + _api_conn_info + ")..."
+print _msg
+api = APIClient(_api_conn_info)
+
+#---------------------------------- END CB API ---------------------------------
+
+if len(argv) < 2 :
+        print "./" + argv[0] + " <cloud_name>"
+        exit(1)
+
+cloud_name = argv[1]
 
 try :
     _error = False
 
-    _cloud_name = "TESTSIMCLOUD"
     _update_interval = 5
     
     _total_vms_on_the_cloud = 10
@@ -54,11 +84,11 @@ try :
     _msg = "Attaching all VMCs...."
     print _msg
     _key = "all_vmcs_attached"
-    print _key + '=' + api.vmcattach(_cloud_name, "all")["all_vmcs_attached"]
+    print _key + '=' + api.vmcattach(cloud_name, "all")["all_vmcs_attached"]
     
     _msg = "Changing the experiment identifier..."
     print _msg
-    print api.expid(_cloud_name, "loadrange")
+    print api.expid(cloud_name, "loadrange")
 
     _msg = "Deploying the initial Vapp Submitter that will be used to take the"
     _msg += " to a predefined minimum provision load level..."
@@ -67,19 +97,20 @@ try :
     _actual_initial_provision_load = int(_total_vms_on_the_cloud * _initial_provision_load)
     _actual_variable_provision_load  = int(_total_vms_on_the_cloud * _variable_provision_load)
 
-    api.patternalter(_cloud_name, "simplenw", "max_ais", str(_actual_initial_provision_load))
-    api.patternalter(_cloud_name, "simplenw", "iait", "10")
-    # These VMs are "immortal" :-)
-    api.patternalter(_cloud_name, "simplenw", "lifetime", "100000")    
+    api.patternalter(cloud_name, "simplenw", "max_ais", str(_actual_initial_provision_load))
+    api.patternalter(cloud_name, "simplenw", "iait", "10")
 
-    _vapps_name = api.appdrsattach(_cloud_name, "simplenw")["name"]
+    # These VMs are "immortal" :-)
+    api.patternalter(cloud_name, "simplenw", "lifetime", "100000")    
+
+    _vapps_name = api.appdrsattach(cloud_name, "simplenw")["name"]
 
     _msg = "VApp Submitter \"" + _vapps_name + "\" deployed. Will now wait until"
     _msg += " the number of VMs provisioned reaches "
     _msg += str(int(_total_vms_on_the_cloud * _initial_provision_load)) + "...."
     print _msg
 
-    _provisioned_vms = int(api.stats(_cloud_name)[2][3][2][1])
+    _provisioned_vms = int(api.stats(cloud_name)[2][3][2][1])
 
     while _provisioned_vms < int(_actual_initial_provision_load) :
         _current_time = int(time() - _start_time)
@@ -87,7 +118,7 @@ try :
         _msg += " after " + str(_current_time) + " seconds"
         print _msg
         sleep(_update_interval)
-        _provisioned_vms = int(api.stats(_cloud_name)[2][3][2][1])
+        _provisioned_vms = int(api.stats(cloud_name)[2][3][2][1])
 
     _msg = "Number of VMs deployed is equal the minimum provision load ("
     _msg += str(_actual_initial_provision_load) + ")."
@@ -95,17 +126,17 @@ try :
     _msg += "deploying a second to implement a variable provisioning load..."
     print _msg
 
-    api.appdrsdetach(_cloud_name, _vapps_name)
+    api.appdrsdetach(cloud_name, _vapps_name)
 
-    api.patternalter(_cloud_name, "simplenw", "max_ais", str(_actual_variable_provision_load - _actual_initial_provision_load))
+    api.patternalter(cloud_name, "simplenw", "max_ais", str(_actual_variable_provision_load - _actual_initial_provision_load))
     # Here we want a burst of long-lived (but not "immortal" VMs
-    api.patternalter(_cloud_name, "simplenw", "iait", "5")
-    api.patternalter(_cloud_name, "simplenw", "lifetime", "80")
+    api.patternalter(cloud_name, "simplenw", "iait", "5")
+    api.patternalter(cloud_name, "simplenw", "lifetime", "80")
 
-    _vapps_name = api.appdrsattach(_cloud_name, "simplenw")["name"]
+    _vapps_name = api.appdrsattach(cloud_name, "simplenw")["name"]
 
     while _current_time < _total_run_time :
-        _provisioned_vms = int(api.stats(_cloud_name)[2][3][2][1])
+        _provisioned_vms = int(api.stats(cloud_name)[2][3][2][1])
 
         while _provisioned_vms < int(_actual_variable_provision_load) :
             _current_time = int(time() - _start_time)
@@ -113,7 +144,7 @@ try :
             _msg += " after " + str(_current_time) + " seconds"
             print _msg
             sleep(_update_interval)
-            _provisioned_vms = int(api.stats(_cloud_name)[2][3][2][1])    
+            _provisioned_vms = int(api.stats(cloud_name)[2][3][2][1])    
 
         _msg = "Number of VMs deployed is equal the maximum provision load ("
         _msg += str(_actual_variable_provision_load) + ")."
@@ -121,9 +152,9 @@ try :
         _msg += "waiting for some VMs to be naturally removed..."
         print _msg
         
-        api.statealter(_cloud_name, _vapps_name, "stopped")
+        api.statealter(cloud_name, _vapps_name, "stopped")
 
-        for _obj in api.stateshow(_cloud_name) :
+        for _obj in api.stateshow(cloud_name) :
             if _obj["name"] == _vapps_name :
                 print _obj["name"] + " is " + _obj["state"]
     
@@ -133,7 +164,7 @@ try :
             _msg += " after " + str(_current_time) + " seconds"
             print _msg
             sleep(_update_interval)
-            _provisioned_vms = int(api.stats(_cloud_name)[2][3][2][1])
+            _provisioned_vms = int(api.stats(cloud_name)[2][3][2][1])
     
         _msg = "Number of VMs deployed is equal the minimum provision load ("
         _msg += str(_actual_initial_provision_load) + ") again."
@@ -141,9 +172,9 @@ try :
         _msg += "waiting for some VMs to be provisioned again..."
         print _msg
 
-        api.statealter(_cloud_name, _vapps_name, "attached")
+        api.statealter(cloud_name, _vapps_name, "attached")
 
-        for _obj in api.stateshow(_cloud_name) :
+        for _obj in api.stateshow(cloud_name) :
             if _obj["name"] == _vapps_name :
                 print _obj["name"] + " is " + _obj["state"]
 

@@ -16,63 +16,11 @@
 # limitations under the License.
 #/*******************************************************************************
 
-if [[ -f /home/cloud-user/cb_os_parameters.txt ]]
+if [[ -f ~/cb_os_parameters.txt ]]
 then
     source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 else
-    NC=`which netcat` 
-    if [[ $? -ne 0 ]]
-    then
-        NC=`which nc`
-    fi
-
-    function syslog_netcat {
-        echo "$1"
-    }
-        
-    function linux_distribution {
-        IS_UBUNTU=$(cat /etc/*release | grep -c "Ubuntu")
-
-        if [[ ${IS_UBUNTU} -ge 1 ]]
-        then
-            export LINUX_DISTRO=1
-        fi
-
-        IS_REDHAT=$(cat /etc/*release | grep -c "Red Hat\|CentOS\|Fedora")    
-        if [[ ${IS_REDHAT} -ge 1 ]]
-        then
-            export LINUX_DISTRO=2
-        fi
-    
-        return ${LINUX_DISTRO}
-    }
-
-    function service_stop_disable {
-        #1 - service list (space-separated list)
-
-        if [[ -z ${LINUX_DISTRO} ]]
-        then
-            LINUX_DISTRO=$(linux_distribution)
-        fi
-    
-        for s in $* ; do
-            
-            if [[ ${LINUX_DISTRO} -eq 1 ]]
-            then
-                syslog_netcat "Stopping service \"${s}\" on Ubuntu..."
-                sudo service $s stop             
-                sudo bash -c "echo 'manual' > /etc/init/$s.override" 
-            fi
-    
-            if [[ ${LINUX_DISTRO} -eq 2 ]]
-            then
-                syslog_netcat "Stopping service \"${s}\" on Fedora/RHEL/CentOS..."
-                sudo service $s stop                         
-                sudo chkconfig $s off >/dev/null 2>&1
-            fi
-        done
-        /bin/true
-    }
+    source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_bootstrap.sh
 fi
 
 syslog_netcat "Checking connectivity between this VM and the orchestration node..."

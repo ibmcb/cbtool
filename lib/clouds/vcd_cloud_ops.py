@@ -353,6 +353,13 @@ class VcdCmds(CommonCloudFunctions) :
             _fmsg = str(e)
             raise CldOpsException(_fmsg, _status)
 
+    @trace
+    def vmcount(self, obj_attr_list):
+        '''
+        TBD
+        '''
+        return "NA"
+    
     def is_vm_running(self, obj_attr_list):
         '''
         TBD

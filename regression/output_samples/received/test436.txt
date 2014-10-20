@@ -1,19 +1,14 @@
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |1.89M                         
+|Used Memory                                          |1.99M                         
 |Redis Version                                        |2.8.4                         
-|Uptime (in seconds)                                  |3058344                       
-|Total Connections Received                           |128228                        
-|Total Commands Processed                             |9657606                       
-|Number of Keys                                       |89                            
+|Uptime (in seconds)                                  |4161913                       
+|Total Connections Received                           |152722                        
+|Total Commands Processed                             |16622085                      
+|Number of Keys                                       |88                            
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|MongoDB Version                                      |2.4.9                         
-|Storage Size                                         |4149248                       
-|Data Size                                            |398656                        
-|Index Size                                           |310688                        
-|Average Object Size                                  |519.083333333                 
 |Collections                                          |12                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
@@ -39,6 +34,7 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |HOSTs DEPARTING                                      |0                             
 |HOSTs FAILED                                         |0                             
 |VM RESERVATIONS                                      |0                             
+|VMs REPORTED                                         |0                             
 |VMs ARRIVED                                          |0                             
 |VMs ARRIVING                                         |0                             
 |VMs CAPTURING                                        |0                             

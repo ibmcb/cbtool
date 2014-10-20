@@ -37,12 +37,13 @@ then
     GENERATE_DATA="true"
 else
     GENERATE_DATA=`get_my_ai_attribute_with_default regenerate_data true`
+    GENERATE_DATA=$(echo ${GENERATE_DATA} | tr '[:upper:]' '[:lower:]')
 fi
 
-OPERATION_COUNT=`get_my_ai_attribute_with_default operation_count 100000`
+OPERATION_COUNT=`get_my_ai_attribute_with_default operation_count 10000`
 READ_RATIO=`get_my_ai_attribute_with_default read_ratio workloaddefault`
 UPDATE_RATIO=`get_my_ai_attribute_with_default update_ratio workloaddefault`
-INPUT_RECORDS=`get_my_ai_attribute_with_default input_records 100000`
+INPUT_RECORDS=`get_my_ai_attribute_with_default input_records 10000`
 RECORD_SIZE=`get_my_ai_attribute_with_default record_size 2.35`
 APP_COLLECTION=`get_my_ai_attribute_with_default app_collection lazy`
 DATABASE_SIZE_VERSUS_MEMORY=`get_my_ai_attribute_with_default database_size_versus_memory 0.5`
@@ -72,10 +73,19 @@ sudo touch $YCSB_PATH/custom_workload.dat
 sudo sh -c "echo "recordcount=${RECORDS%.*}" > $YCSB_PATH/custom_workload.dat"
 sudo sh -c "echo "operationcount=$OPERATION_COUNT" >> $YCSB_PATH/custom_workload.dat"
 
-OUTPUT_FILE=$(mktemp)
+source ~/cb_barrier.sh start
+
 if [[ ${GENERATE_DATA} == "true" ]]
 then
+
+	for REDIS_NODE in ${redis_ips}
+	do
+		syslog_netcat "Flushing database by executing redis-cli against node ${REDIS_NODE}"
+		redis-cli -h ${REDIS_NODE} "FLUSHDB"
+	done
+	
     syslog_netcat "Number of records to be inserted : $RECORDS"
+    OUTPUT_FILE=$(mktemp)
 
     log_output_command=$(get_my_ai_attribute log_output_command)
     log_output_command=$(echo ${log_output_command} | tr '[:upper:]' '[:lower:]')
@@ -83,7 +93,7 @@ then
     START_GENERATION=$(get_time)
     
     syslog_netcat "The value of the parameter \"GENERATE_DATA\" is \"true\". Will generate data for the YCSB load profile \"${LOAD_PROFILE}\"" 
-    command_line="sudo $YCSB_PATH/bin/ycsb load redis -s -P $YCSB_PATH/workloads/${LOAD_PROFILE} -P $YCSB_PATH/custom_workload.dat -p redis.host=$redis_ip"
+    command_line="sudo $YCSB_PATH/bin/ycsb load redis -s -P $YCSB_PATH/workloads/${LOAD_PROFILE} -P $YCSB_PATH/custom_workload.dat -p redis.host=$redis_ips_csv"
     syslog_netcat "Command line is: ${command_line}"
     if [[ x"${log_output_command}" == x"true" ]]
     then
@@ -99,15 +109,14 @@ then
     END_GENERATION=$(get_time)
     DATA_GENERATION_TIME=$(expr ${END_GENERATION} - ${START_GENERATION})
     echo ${DATA_GENERATION_TIME} > /tmp/data_generation_time
+    echo ${RECORDS} > /tmp/data_generation_size
 else
     syslog_netcat "The value of the parameter \"GENERATE_DATA\" is \"false\". Will bypass data generation for the hadoop load profile \"${LOAD_PROFILE}\""     
 fi
 
-CMDLINE="sudo $YCSB_PATH/bin/ycsb run redis -s -threads ${LOAD_LEVEL} -P $YCSB_PATH/workloads/${LOAD_PROFILE} -P $YCSB_PATH/custom_workload.dat -p redis.host=$redis_ip"
+CMDLINE="sudo $YCSB_PATH/bin/ycsb run redis -s -threads ${LOAD_LEVEL} -P $YCSB_PATH/workloads/${LOAD_PROFILE} -P $YCSB_PATH/custom_workload.dat -p redis.host=$redis_ips_csv"
 
-syslog_netcat "Benchmarking YCSB SUT: REDIS=${redis_ip} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
-
-source ~/cb_barrier.sh start
+syslog_netcat "Benchmarking YCSB SUT: REDIS=${redis_ips_csv} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
 
 log_output_command=$(get_my_ai_attribute log_output_command)
 log_output_command=$(echo ${log_output_command} | tr '[:upper:]' '[:lower:]')

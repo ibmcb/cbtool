@@ -95,20 +95,15 @@ function linux_distribution {
 
     if [[ ${IS_UBUNTU} -ge 1 ]]
     then
-        echo 1
-        return 1
+        export LINUX_DISTRO=1
     fi
-
+    
     IS_REDHAT=$(cat /etc/*release | grep -c "Red Hat\|CentOS\|Fedora")    
     if [[ ${IS_REDHAT} -ge 1 ]]
     then
-        echo 2
-        return 2
+        export LINUX_DISTRO=2
     fi
-
-    echo 0
-    return 0    
-
+    
 }
 export -f linux_distribution
 
@@ -117,70 +112,97 @@ function service_stop_disable {
 
     if [[ -z ${LINUX_DISTRO} ]]
     then
-        LINUX_DISTRO=$(linux_distribution)
+        linux_distribution
     fi
-
-    for s in $* ; do
-        
-        if [[ ${LINUX_DISTRO} -eq 1 ]]
-        then
-            syslog_netcat "Stopping service \"${s}\" on Ubuntu..."
-            sudo service $s stop             
-            sudo bash -c "echo 'manual' > /etc/init/$s.override" 
-        fi
-
+    
+    for s in $*
+    do
         if [[ ${LINUX_DISTRO} -eq 2 ]]
         then
-            syslog_netcat "Stopping service \"${s}\" on Fedora/RHEL/CentOS..."
-            sudo service $s stop                         
-            sudo chkconfig $s off >/dev/null 2>&1
+            if [[ $(sudo systemctl | grep -c $s) -ne 0 ]]
+            then
+                STOP_COMMAND="sudo systemctl stop $s"
+                DISABLE_COMMAND="sudo systemctl disable $s"
+            else
+                STOP_COMMAND="sudo service $s stop"
+                DISABLE_COMMAND="sudo chkconfig $s off >/dev/null 2>&1"
+            fi
+        else
+            STOP_COMMAND="sudo service $s stop"
+            if [[ -f /etc/init/$s.conf ]]
+            then
+                DISABLE_COMMAND="sudo sh -c 'echo manual > /etc/init/$s.override'"
+            else
+                DISABLE_COMMAND="sudo update-rc.d -f $s remove"
+            fi
         fi
+
+        syslog_netcat "Stopping service \"${s}\" with command \"$STOP_COMMAND\"..."       
+        bash -c "$STOP_COMMAND"
+
+        syslog_netcat "Disabling service \"${s}\" with command \"$DISABLE_COMMAND\"..."               
+        bash -c "$DISABLE_COMMAND"
     done
     /bin/true
 }
 export -f service_stop_disable
-
+    
 function service_restart_enable {
     #1 - service list (space-separated list)
-
     if [[ -z ${LINUX_DISTRO} ]]
     then
-        LINUX_DISTRO=$(linux_distribution)
+        linux_distribution
     fi
-
-    for s in $* ; do
+    
+    for s in $*
+    do            
+        if [[ ${LINUX_DISTRO} -eq 2 ]]
+        then
+            if [[ $(sudo systemctl | grep -c $s) -ne 0 ]]
+            then
+                START_COMMAND="sudo systemctl restart $s"
+                ENABLE_COMMAND="sudo systemctl enable $s"
+            else
+                START_COMMAND="sudo service $s restart"
+                ENABLE_COMMAND="sudo chkconfig $s on >/dev/null 2>&1"
+            fi
+        else
+            START_COMMAND="sudo service $s restart"
+            if [[ -f /etc/init/$s.conf ]]
+            then
+                ENABLE_COMMAND="sudo rm -rf /etc/init/$s.override"            
+            else
+                ENABLE_COMMAND="sudo update-rc.d -f $s defaults"
+            fi
+        fi
+    
         counter=1
-        ATTEMPTS=3
+        ATTEMPTS=7
         while [ "$counter" -le "$ATTEMPTS" ]
         do
-            syslog_netcat "Restarting service \"${s}\", attempt ${counter} of ${ATTEMPTS}..."            
-            sudo service $s restart
+            syslog_netcat "Restarting service \"${s}\", with command \"$START_COMMAND\", attempt ${counter} of ${ATTEMPTS}..."            
+            bash -c "$START_COMMAND"
             if [[ $? -eq 0 ]]
             then
                 syslog_netcat "Service \"$s\" was successfully restarted"
-                if [[ ${LINUX_DISTRO} -eq 1 ]]
-                then
-                    sudo rm -rf /etc/init/$s.override
-                fi
-                
-                if [[ ${LINUX_DISTRO} -eq 2 ]]
-                then
-                    sudo chkconfig $s on >/dev/null 2>&1
-                fi
+                syslog_netcat "Enabling service \"${s}\", with command \"$ENABLE_COMMAND\"..."   
+                bash -c "$ENABLE_COMMAND"
                 break
             else
                 sleep 5
                 counter="$(( $counter + 1 ))"
             fi
         done
-        
+    
         if [[ "${counter}" -ge "$ATTEMPTS" ]]
         then
             syslog_netcat "Service \"${s}\" failed to restart after ${ATTEMPTS} attempts"
+            exit 1
         fi
-    done    
+    done
+    
     /bin/true
-}    
+}
 export -f service_restart_enable
 
 function retriable_execution {

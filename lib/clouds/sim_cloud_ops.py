@@ -375,6 +375,13 @@ class SimCmds(CommonCloudFunctions) :
         return True        
 
     @trace
+    def vmcount(self, obj_attr_list):
+        '''
+        TBD
+        '''
+        return self.osci.count_object(obj_attr_list["cloud_name"], "VM", "ARRIVED")
+
+    @trace
     def is_vm_running(self, obj_attr_list):
         '''
         TBD

@@ -1,5 +1,5 @@
-|arrival |1412725450 
-|command_originated |1412725450 
+|arrival |1413829021 
+|command_originated |1413829021 
+|comments | 
 |identity |/home/msilva/cloudbench/lib/auxiliary//../../credentials/cbtool_rsa
-\|mgt_d \|X 
 |ssh_key_name |cbtool_rsa 

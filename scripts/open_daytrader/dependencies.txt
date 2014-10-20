@@ -92,10 +92,10 @@ rhel-maven-postinstall-man = sudo ln -s /usr/share/apache-maven/bin/mvn /usr/loc
 ubuntu-maven-install-man = sudo apt-get -y install maven2
 
 rhel-mysql-install-pm = sudo yum -y install mysql-server mysql
-rhel-mysql-postinstall-pm = sudo chkconfig mysqld off; sudo service mysqld restart; sudo mysqladmin password temp4now
+rhel-mysql-postinstall-pm = source SCRIPTSDIR/common/cb_bootstrap.sh; service_restart_enable mysqld; sudo mysqladmin password temp4now; service_stop_disable mysqld
 ubuntu-mysql-preinstall-pm = echo "mysql-server-5.5 mysql-server/root_password password temp4now" | sudo debconf-set-selections; echo "mysql-server-5.5 mysql-server/root_password_again password temp4now" | sudo debconf-set-selections
 ubuntu-mysql-install-pm = sudo DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install mysql-server; sudo apt-get -f install -y
-ubuntu-mysql-postinstall-pm = sudo bash -c "echo 'manual' > /etc/init/mysql.override"; sudo service mysql restart;
+ubuntu-mysql-postinstall-pm = source SCRIPTSDIR/common/cb_bootstrap.sh; service_stop_disable mysqld
 
 rhel-mysql-db-install-man = sudo mysql --user=root --password=temp4now -e "CREATE DATABASE tradedb;"
 rhel-mysql-db-postinstall-man = sudo mysql --user=root --password=temp4now -e "GRANT ALL ON tradedb.* TO 'trade'@'%' IDENTIFIED BY 'trade'; DELETE from mysql.user where user _equal_ ''; FLUSH PRIVILEGES;"

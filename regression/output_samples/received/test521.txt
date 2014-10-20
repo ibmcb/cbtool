@@ -1,25 +1,20 @@
- status: vm_24 (cloud-assigned uuid 7CA2A34C-E4C1-56B6-846C-B9F24C9DDDD7) could not be created on SimCloud "TESTCLOUD" : Failed to create VM image (The VM creation was rolled back)
- status: Sending a termination request for vm_24 (cloud-assigned uuid 7CA2A34C-E4C1-56B6-846C-B9F24C9DDDD7)....
- status: vm_24 (cloud-assigned uuid 7CA2A34C-E4C1-56B6-846C-B9F24C9DDDD7) could not be destroyed  on SimCloud "TESTCLOUD" : 'host'
-VM object D15712A3-43F7-5C0F-991E-E0235630C904 (named "vm_24") could not be attached to this experiment: vm_24 (cloud-assigned uuid 7CA2A34C-E4C1-56B6-846C-B9F24C9DDDD7) could not be destroyed  on SimCloud "TESTCLOUD" : 'host'
+ status: vm_24 (cloud-assigned uuid CE2C282D-07DB-59D9-B83D-0432832658E0) could not be created on SimCloud "TESTCLOUD" : Failed to create VM image (The VM creation was rolled back)
+ status: Sending a termination request for vm_24 (cloud-assigned uuid CE2C282D-07DB-59D9-B83D-0432832658E0)....
+ status: vm_24 (cloud-assigned uuid CE2C282D-07DB-59D9-B83D-0432832658E0) could not be destroyed  on SimCloud "TESTCLOUD" : 'host'
+VM object 2D742017-1C11-56B0-8138-BAF8963397F0 (named "vm_24") could not be attached to this experiment: vm_24 (cloud-assigned uuid CE2C282D-07DB-59D9-B83D-0432832658E0) could not be destroyed  on SimCloud "TESTCLOUD" : 'host'
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 No objects available.
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |3.18M                         
+|Used Memory                                          |3.34M                         
 |Redis Version                                        |2.8.4                         
-|Uptime (in seconds)                                  |3058559                       
-|Total Connections Received                           |128273                        
-|Total Commands Processed                             |9716775                       
-|Number of Keys                                       |338                           
+|Uptime (in seconds)                                  |4162128                       
+|Total Connections Received                           |152767                        
+|Total Commands Processed                             |16680736                      
+|Number of Keys                                       |337                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|MongoDB Version                                      |2.4.9                         
-|Storage Size                                         |4235264                       
-|Data Size                                            |538368                        
-|Index Size                                           |425152                        
-|Average Object Size                                  |506.460959548                 
 |Collections                                          |14                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
@@ -45,6 +40,7 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |HOSTs DEPARTING                                      |0                             
 |HOSTs FAILED                                         |0                             
 |VM RESERVATIONS                                      |0                             
+|VMs REPORTED                                         |0                             
 |VMs ARRIVED                                          |22                            
 |VMs ARRIVING                                         |0                             
 |VMs CAPTURING                                        |0                             
@@ -79,8 +75,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |134                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|34B27D60-C308-5AC5-A5D4-547EFEE3C1A6 (simzone_a) VM RESERVATIONS|0                             
-|BBD15F80-89CD-5BC9-BF40-3FC552EFF3EF (simzone_c) VM RESERVATIONS|0                             
-|384EEBE0-D848-5762-935C-9520C11D9FAE (simzone_d) VM RESERVATIONS|0                             
-|9364851B-CB30-5FE0-8585-ECF778A6D916 (simzone_b) VM RESERVATIONS|0                             
+|705F5EB2-0B93-5D6B-BD27-826010AF7814 (simzone_a) VM RESERVATIONS|0                             
+|620676DB-C9FC-5D5A-978C-8AEBECE97E27 (simzone_b) VM RESERVATIONS|0                             
+|8DF2EF36-7448-5148-AD1A-F835627AC672 (simzone_d) VM RESERVATIONS|0                             
+|4F9D017D-1712-5FB2-8CEB-61527E065DC8 (simzone_c) VM RESERVATIONS|0                             
 

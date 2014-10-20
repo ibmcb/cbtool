@@ -27,7 +27,7 @@ DESCRIPTION +=- LOAD_PROFILE possible values: "workload"{a-f} (for a proper
 DESCRIPTION += description, consult the section "Core Workloads" on the YCSB documentation)\n
 DESCRIPTION +=- LOAD_LEVEL meaning: number of threads on YCSB (parameter -threads).\n 
 DESCRIPTION +=- LOAD_DURATION meaning: not used, a run ends when all YCSB operations
-DESCRIPTION += (default is 10000) are finished.\n
+DESCRIPTION += (default is 1000) are finished.\n
 DESCRIPTION +=- COMMENT: One of the "Big Data" Workloads. One of the two 
 DESCRIPTION += Virtual Applications types selected for the SPECCloud 2014 v1.0 
 DESCRIPTION += benchmark. When new seed nodes are added (after an "airesize")
@@ -42,7 +42,6 @@ START=cb_ycsb.sh
 # VApp-specific OPTIONAL modifier parameters. Commented attributes imply default values assumed
 READ_RATIO = workloaddefault
 UPDATE_RATIO = workloaddefault
-
 #APP_COLLECTION = lazy
 #CASSANDRA_DATA_DIR = /dbstore
 #OPERATION_COUNT = 10000

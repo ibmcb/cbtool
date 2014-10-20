@@ -1,2 +1,3 @@
-Message "vm_12;continue;something" published on channel "staging" (object "VM").
-|Redis Version |2.8.4 
+
+
+

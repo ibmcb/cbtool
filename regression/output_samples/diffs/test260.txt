@@ -1,6 +1,6 @@
-|arrival |1412724321 
+|arrival |1413827880 
 |attempts |24 
-|command_originated |1412724318 
+|command_originated |1413827877 
+|comments | 
 |identity |/home/msilva/cloudbench/lib/auxiliary//../../credentials/cbtool_rsa
-\|mgt_d \|X 
 |ssh_key_name |cbtool_rsa 

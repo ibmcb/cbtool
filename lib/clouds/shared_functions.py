@@ -189,7 +189,7 @@ class CommonCloudFunctions:
                 cbdebug(_msg)
 
                 self.osci.add_to_list(obj_attr_list["cloud_name"], "VM", "VMS_STARTING", obj_attr_list["cloud_vm_uuid"])                 
-                _sub_channel = self.osci.subscribe(obj_attr_list["cloud_name"], "VM", _channel_to_subscribe)
+                _sub_channel = self.osci.subscribe(obj_attr_list["cloud_name"], "VM", _channel_to_subscribe, _max_tries * _wait)
                 for _message in _sub_channel.listen() :
                     if str(_message["data"]).count(_string_to_search) :
                         _vm_started = True
@@ -261,6 +261,7 @@ class CommonCloudFunctions:
         '''
         if "openvpn_ip" in obj_attr_list :
             return True
+        
         elif self.osci.pending_object_exists(obj_attr_list["cloud_name"],  
                                             "VM", obj_attr_list["uuid"], "openvpn_ip") :
             
@@ -346,7 +347,7 @@ class CommonCloudFunctions:
 
                     self.osci.add_to_list(obj_attr_list["cloud_name"], "VM", "VMS_BOOTING", obj_attr_list["prov_cloud_ip"])
                     
-                    _sub_channel = self.osci.subscribe(obj_attr_list["cloud_name"], "VM", _channel_to_subscribe)
+                    _sub_channel = self.osci.subscribe(obj_attr_list["cloud_name"], "VM", _channel_to_subscribe, _max_tries * _wait)
                     for _message in _sub_channel.listen() :
 
                         if str(_message["data"]).count(_string_to_search) :
@@ -376,8 +377,15 @@ class CommonCloudFunctions:
                     _msg += "\" (" + obj_attr_list["cloud_vm_uuid"] + ") has booted by "
                     _msg += "running the command \"" + str(_command_to_run)
                     cbdebug(_msg)
-                        
-                    _connection_timeout = int(obj_attr_list["update_frequency"])/2
+
+                    if _curr_tries <= _max_tries/3 :                        
+                        _connection_timeout = int(obj_attr_list["update_frequency"])/2
+                    elif _curr_tries > _max_tries/3 and _curr_tries < 2*_max_tries/3 :
+                        _connection_timeout = int(obj_attr_list["update_frequency"])
+                        obj_attr_list["comments"] += "Had to increase ssh timeout. "
+                    else :
+                        _connection_timeout = int(obj_attr_list["update_frequency"])*2
+                        obj_attr_list["comments"] += "Had to increase ssh timeout one more time. "
 
                     if "ssh_config_file" in obj_attr_list:
                         _ssh_conf_file = obj_attr_list["ssh_config_file"]
@@ -414,7 +422,8 @@ class CommonCloudFunctions:
                         _snmp_wait_time = _wait * 1000000
                         _snmp_version = int(obj_attr_list["snmp_version"])
                         _snmp_comm = str(obj_attr_list["snmp_community"])
-                        _snmp_session = netsnmp.Session(Version=_snmp_version, DestHost=obj_attr_list["cloud_ip"], \
+                        _snmp_session = netsnmp.Session(Version=_snmp_version, \
+                                                        DestHost=obj_attr_list["cloud_ip"], \
                                                         Community=_snmp_comm, \
                                                         Timeout=_snmp_wait_time, Retries=0)
 
@@ -467,7 +476,6 @@ class CommonCloudFunctions:
                     cbdebug(_msg)
                     sleep(_actual_wait)
                     _curr_tries += 1
-
 
         if _curr_tries < _max_tries :
             _msg = "" + obj_attr_list["name"] + ""
@@ -522,8 +530,11 @@ class CommonCloudFunctions:
 
             if obj_attr_list["staging"] == "pause_" + current_step :
 
+                _max_tries = int(obj_attr_list["update_attempts"])
+                _wait = int(obj_attr_list["update_frequency"])
+
                 # Always subscribe for the VM channel, no matter the object
-                _sub_channel = self.osci.subscribe(obj_attr_list["cloud_name"], "VM", "staging")
+                _sub_channel = self.osci.subscribe(obj_attr_list["cloud_name"], "VM", "staging", _max_tries * _wait)
     
                 if obj_type == "VM" and obj_attr_list["ai"] != "none" and current_step.count("all_vms") :
                     _target_uuid = obj_attr_list["ai"]

@@ -106,8 +106,9 @@ novaclient-order = 44
 softlayer-order = 45
 boto-order = 47
 libcloud-order = 48
-R-order = 49
-sshkey-order = 50
+iptables-order = 49
+R-order = 50
+sshkey-order = 51
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -166,6 +167,7 @@ novaclient-install = pip
 softlayer-install = pip
 boto-install = pip
 libcloud-install = pip
+iptables-install = pm
 R-install = pm
 sshkey-install = man
 ### END - Dependency-specific installation method ###
@@ -219,6 +221,7 @@ novaclient-configure = python -c "import novaclient; from novaclient.v1_1 import
 softlayer-configure = python -c "import SoftLayer; print "SoftLayer.__version__".replace('v','')"
 boto-configure = python -c "import boto; print str(boto.__version__).strip().replace('-dev','')"
 libcloud-configure = python -c "import libcloud; print str(libcloud.__version__).replace('-dev','').strip()"
+iptables-configure = iptables -v 2>&1 | grep v | cut -d ' ' -f 2 | sed 's/v//g' | sed 's/://g'
 R-configure = R --version | grep version | grep -v GNU
 sshkey-configure = ls CREDENTIALSDIR/cbtool_rsa
 ### END - Tests ###
@@ -272,6 +275,7 @@ novaclient-ver = ANY
 softlayer-ver = 3.1
 boto-ver = 2.1.8
 libcloud-ver = 0.11.0
+iptables-ver = 1.2
 R-ver = 2.1
 sshkey-ver = ANY
 ### END - Dependency versions ###
@@ -320,8 +324,8 @@ ubuntu-d3-urls-git = https://github.com/ibmcb
 rhel-sudo-install-man = echo "USERNAME  ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers; sed -i s/"Defaults requiretty"/"#Defaults requiretty"/g /etc/sudoers
 ubuntu-sudo-install-man = echo "USERNAME  ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers; sed -i s/"Defaults requiretty"/"#Defaults requiretty"/g /etc/sudoers; sudo apt-get update
 
-rhel-repo-install-man = sudo mv -f /tmp/*.repo /etc/yum.repos.d; touch /tmp/repoupdated; sudo service iptables stop; sudo chkconfig iptables off
-ubuntu-repo-install-man = sudo mv -f /tmp/*.list /etc/apt/sources.list.d/; sudo apt-get update; touch /tmp/repoupdated
+rhel-repo-install-man = sudo mv -f /tmp/*.repo /etc/yum.repos.d; touch /tmp/repoupdated; source SCRIPTSDIR/common/cb_bootstrap.sh; service_stop_disable iptables; service_stop_disable firewalld
+ubuntu-repo-install-man = sudo mv -f /tmp/*.list /etc/apt/sources.list.d/; sudo apt-get update; touch /tmp/repoupdated; source SCRIPTSDIR/common/cb_bootstrap.sh; service_stop_disable iptables; service_stop_disable ipfw 
 
 ubuntu-ifconfig-install-sl = sudo ln -s /sbin/ifconfig /usr/local/bin/ifconfig
 rhel-ifconfig-install-sl = sudo ln -s /sbin/ifconfig /usr/local/bin/ifconfig
@@ -393,21 +397,21 @@ ubuntu-rsyslog-postinstall-pm = sudo ln -s /usr/sbin/rsyslogd /usr/local/bin/rsy
 
 rhel-rsyslog-filter-preinstall-man =  sudo mkdir -p /var/log/devops
 rhel-rsyslog-filter-install-man = sudo sed -i -e "s/#\$ModLoad imudp/\$ModLoad imudp/g" /etc/rsyslog.conf; sudo sed -i -e "s/#\$UDPServerRun 514/\$UDPServerRun 514/g" /etc/rsyslog.conf
-rhel-rsyslog-filter-postinstall-man = sudo bash -c "echo -e \"local5.*  \t\t\t\t /var/log/devops/remote.log\" >> /etc/rsyslog.conf"; sudo bash -c "echo -e \"local6.* \t\t\t\t /var/log/devops/local.log\" >> /etc/rsyslog.conf"; service rsyslog restart
+rhel-rsyslog-filter-postinstall-man = sudo bash -c "echo -e \"local5.*  \t\t\t\t /var/log/devops/remote.log\" >> /etc/rsyslog.conf"; sudo bash -c "echo -e \"local6.* \t\t\t\t /var/log/devops/local.log\" >> /etc/rsyslog.conf"; source SCRIPTSDIR/common/cb_bootstrap.sh; service_restart_enable rsyslog
 ubuntu-rsyslog-filter-preinstall-man =  sudo mkdir -p /var/log/devops
 ubuntu-rsyslog-filter-install-man = sudo sed -i -e "s/#\$ModLoad imudp/\$ModLoad imudp/g" /etc/rsyslog.conf; sudo sed -i -e "s/#\$UDPServerRun 514/\$UDPServerRun 514/g" /etc/rsyslog.conf
-ubuntu-rsyslog-filter-postinstall-man = sudo bash -c "echo -e \"local5.*  \t\t\t\t /var/log/devops/remote.log\" >> /etc/rsyslog.conf"; sudo bash -c "echo -e \"local6.* \t\t\t\t /var/log/devops/local.log\" >> /etc/rsyslog.conf"; service rsyslogd restart
+ubuntu-rsyslog-filter-postinstall-man = sudo bash -c "echo -e \"local5.*  \t\t\t\t /var/log/devops/remote.log\" >> /etc/rsyslog.conf"; sudo bash -c "echo -e \"local6.* \t\t\t\t /var/log/devops/local.log\" >> /etc/rsyslog.conf"; source SCRIPTSDIR/common/cb_bootstrap.sh; service_restart_enable rsyslogd
 
 rhel-apache-install-pm = sudo yum -y install httpd
 ubuntu-apache-install-pm = sudo apt-get -y install apache2
 
 rhel-redis-preinstall-man = lftp -c 'open -e "mget redis*remi*.rpm" URL'
 rhel-redis-install-man = sudo yum -y install gperftools-libs && sudo rpm -Uvh $(ls -t | grep redis | head -n 1)
-rhel-redis-postinstall-man = sudo sed -i "s/^bind .*/bind 0.0.0.0/" /etc/redis.conf; sudo /etc/init.d/redis restart; sudo chkconfig redis on
+rhel-redis-postinstall-man = sudo sed -i "s/^bind .*/bind 0.0.0.0/" /etc/redis.conf; source SCRIPTSDIR/common/cb_bootstrap.sh; service_restart_enable redis
 #ubuntu-redis-preinstall-man = lftp -c 'open -e "mget redis-server_2.8*precise_ARCH.deb" URL'
 #ubuntu-redis-install-man = sudo dpkg -i $(ls -t | grep redis-server | head -n 1)
 ubuntu-redis-install-man = sudo apt-get -y install redis-server
-ubuntu-redis-postinstall-man = sudo sed -i "s/^bind .*/bind 0.0.0.0/" /etc/redis/redis.conf; sudo service redis-server restart
+ubuntu-redis-postinstall-man = sudo sed -i "s/^bind .*/bind 0.0.0.0/" /etc/redis/redis.conf; source SCRIPTSDIR/common/cb_bootstrap.sh; service_restart_enable redis-server
 
 rhel-redis-preinstall-git = cd 3RPARTYDIR; git clone URL/redis.git
 rhel-redis-install-git = cd 3RPARTYDIR;redis; make; sudo make install
@@ -415,10 +419,10 @@ ubuntu-redis-preinstall-git = cd 3RPARTYDIR; git clone URL/redis.git
 ubuntu-redis-install-git = cd 3RPARTYDIR;redis; make; sudo make install
 
 rhel-mongodb-install-man = sudo rpm -Uvh URL/mongo-10gen-2.4.9-mongodb_1.ARCH.rpm; sudo rpm -Uvh URL/mongo-10gen-server-2.4.9-mongodb_1.ARCH.rpm 
-rhel-mongodb-postinstall-man = sudo sed -i "s/^bind_ip.*/bind_ip=0.0.0.0/" /etc/mongod.conf; sudo /etc/init.d/mongod restart; sudo chkconfig mongod on
+rhel-mongodb-postinstall-man = sudo sed -i "s/^bind_ip.*/bind_ip=0.0.0.0/" /etc/mongod.conf; source SCRIPTSDIR/common/cb_bootstrap.sh; service_restart_enable mongod
 ubuntu-mongodb-preinstall-man = wget -N -P 3RPARTYDIR URL/mongodb-10gen_2.4.9_amd64.deb
 ubuntu-mongodb-install-man = sudo dpkg -i 3RPARTYDIR/mongodb-10gen_2.4.9_amd64.deb
-ubuntu-mongodb-postinstall-man = sudo sed -i "s/^bind_ip.*/bind_ip=0.0.0.0/" /etc/mongodb.conf; sudo service mongodb restart
+ubuntu-mongodb-postinstall-man = sudo sed -i "s/^bind_ip.*/bind_ip=0.0.0.0/" /etc/mongodb.conf; source SCRIPTSDIR/common/cb_bootstrap.sh; service_restart_enable mongodb
 
 rhel-chef-server-install-man = sudo rpm -Uvh URL 
 ubuntu-chef-server-preinstall-man =  wget -N -P 3RPARTYDIR URL
@@ -495,6 +499,10 @@ ubuntu-boto-install-pip = sudo pip install INDEXURL boto
 
 rhel-libcloud-install-pip = sudo pip install INDEXURL apache-libcloud
 ubuntu-libcloud-install-pip = sudo pip install INDEXURL apache-libcloud
+
+rhel-iptables-install-pm = sudo yum -y install iptables-services iptables
+rhel-iptables-postinstall-pm = sudo  touch /etc/sysconfig/iptables; sudo touch /etc/sysconfig/ip6table; source SCRIPTSDIR/common/cb_bootstrap.sh; service_stop_disable iptables
+ubuntu-iptables-install-pm = sudo apt-get -y install iptables
 
 rhel-R-install-pm = sudo yum -y install R
 ubuntu-R-install-pm = sudo apt-get -y install r-base-core

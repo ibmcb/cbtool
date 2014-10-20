@@ -44,6 +44,8 @@ else :
 	ADDITIONAL_CLI_OPT=""
 fi
 
+source ~/cb_barrier.sh start
+
 CMDLINE="$iperf -c ${LOAD_GENERATOR_TARGET_IP} -t ${LOAD_DURATION} -P ${LOAD_LEVEL} -f m ${ADDITIONAL_CLI_OPT}"
 
 syslog_netcat "Benchmarking iperf SUT: NET_CLIENT=${LOAD_GENERATOR_IP} -> NET_SERVER=${LOAD_GENERATOR_TARGET_IP} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
@@ -65,7 +67,6 @@ fi
 load_level:${LOAD_LEVEL}:load \
 load_profile:${LOAD_PROFILE}:name \
 load_duration:${LOAD_DURATION}:sec \
-throughput:$tp:tps \
 bandwidth:$bw:Mbps \
 ${SLA_RUNTIME_TARGETS}
 

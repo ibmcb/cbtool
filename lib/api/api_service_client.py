@@ -286,8 +286,8 @@ class APIClient(Server):
         metrics = self.msci.find_document(_collection_name, {"uuid" : uuid})
 
         if metrics is None :
-            raise APINoSuchMetricException(1, "No " + _object_type + " data available.")
-        
+            _msg = "No " + metric_class + ' ' + _object_type + '(' + metric_type + ") data available."
+#            raise APINoSuchMetricException(1, _msg")
         return metrics
     
     def get_latest_app_data(self, cloud_name, uuid) :

@@ -1,3 +1,5 @@
-|arrival |1412724153 
+|arrival |1413827710 
+|available_gpus |2 
+|gpus |2 
 |identity |/home/msilva/cloudbench/lib/auxiliary//../../credentials/cbtool_rsa
 \|mgt_d \|X 

@@ -7,17 +7,17 @@
 Monitor extraction success. All metrics written to csv files on the directory "/home/msilva/cloudbench/lib/auxiliary//../../data".
 running shell command: "ls -la /home/msilva/cloudbench/regression/..//data/REGRESSION_B"....
 stdout:
- total 57672
-drwxrwxr-x 2 msilva msilva     4096 Oct  7 19:34 .
-drwxrwxr-x 3 msilva msilva     4096 Aug 12 08:47 ..
--rw-r--r-- 1 msilva msilva     1014 Oct  7 19:34 HOST_runtime_os_REGRESSION_B.csv
--rw-r--r-- 1 msilva msilva      458 Oct  7 19:21 msilva_gui.log
--rw-r--r-- 1 msilva msilva 58600391 Oct  7 19:34 msilva_operations.log
--rw-r--r-- 1 msilva msilva   100015 Oct  7 19:33 msilva_submmiter.log
+ total 57768
+drwxrwxr-x 2 msilva msilva     4096 Oct 20 14:07 .
+drwxrwxr-x 9 msilva msilva     4096 Oct 17 19:29 ..
+-rw-r--r-- 1 msilva msilva     1014 Oct 20 14:07 HOST_runtime_os_REGRESSION_B.csv
+-rw-r--r-- 1 msilva msilva      458 Oct 20 13:54 msilva_gui.log
+-rw-r--r-- 1 msilva msilva 58701261 Oct 20 14:07 msilva_operations.log
+-rw-r--r-- 1 msilva msilva   101820 Oct 20 14:06 msilva_submmiter.log
 -rwxr-xr-x 1 msilva msilva   239341 Jul  1 19:43 regression_test_experiment_plan.txt
--rw-r--r-- 1 msilva msilva    38038 Oct  7 19:34 trace_REGRESSION_B.csv
--rw-r--r-- 1 msilva msilva    43701 Oct  7 19:34 VM_management_REGRESSION_B.csv
--rw-r--r-- 1 msilva msilva      348 Oct  7 19:34 VM_runtime_app_REGRESSION_B.csv
--rw-r--r-- 1 msilva msilva     1100 Oct  7 19:34 VM_runtime_os_REGRESSION_B.csv
+-rw-r--r-- 1 msilva msilva    33054 Oct 20 14:07 trace_REGRESSION_B.csv
+-rw-r--r-- 1 msilva msilva    44304 Oct 20 14:07 VM_management_REGRESSION_B.csv
+-rw-r--r-- 1 msilva msilva      348 Oct 20 14:07 VM_runtime_app_REGRESSION_B.csv
+-rw-r--r-- 1 msilva msilva     1100 Oct 20 14:07 VM_runtime_os_REGRESSION_B.csv
 
 

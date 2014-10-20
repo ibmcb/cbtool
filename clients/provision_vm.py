@@ -14,31 +14,60 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #/*******************************************************************************
-'''
-This is a Python example of how to provision a virtual machine through CloudBench
+#--------------------------------- START CB API --------------------------------
 
-This assumes you have already attached to a cloud through the GUI or CLI.
-'''
-
+from sys import path, argv
 from time import sleep
-from sys import path
 
-import os
 import fnmatch
+import os
+import pwd
 
-_home = os.environ["HOME"]
-_api_endpoint = "10.10.0.3"
-_cloud_name = "TESTOPENSTACK"
-_vm_role = "tinyvm"
+home = os.environ["HOME"]
+username = pwd.getpwuid(os.getuid())[0]
 
-for _path, _dirs, _files in os.walk(os.path.abspath(_home)):
+api_file_name = "/tmp/cb_api_" + username
+if os.access(api_file_name, os.F_OK) :    
+    try :
+        _fd = open(api_file_name, 'r')
+        _api_conn_info = _fd.read()
+        _fd.close()
+    except :
+        _msg = "Unable to open file containing API connection information "
+        _msg += "(" + api_file_name + ")."
+        print _msg
+        exit(4)
+else :
+    _msg = "Unable to locate file containing API connection information "
+    _msg += "(" + api_file_name + ")."
+    print _msg
+    exit(4)
+
+_path_set = False
+
+for _path, _dirs, _files in os.walk(os.path.abspath(path[0] + "/../")):
     for _filename in fnmatch.filter(_files, "code_instrumentation.py") :
-        path.append(_path.replace("/lib/auxiliary",''))
+        if _path.count("/lib/auxiliary") :
+            path.append(_path.replace("/lib/auxiliary",''))
+            _path_set = True
+            break
+    if _path_set :
         break
 
 from lib.api.api_service_client import *
 
-api = APIClient("http://" + _api_endpoint + ":7070")
+_msg = "Connecting to API daemon (" + _api_conn_info + ")..."
+print _msg
+api = APIClient(_api_conn_info)
+
+#---------------------------------- END CB API ---------------------------------
+
+if len(argv) < 3 :
+        print "./" + argv[0] + " <cloud_name> <vm role>"
+        exit(1)
+
+_cloud_name = argv[1]
+_vm_role = argv[2]
 
 try :
     error = False
@@ -55,20 +84,27 @@ try :
         print "Cloud " + _cloud_name + " not attached"
         exit(1)
 
+    print "Setting new expid" 
+    api.expid(_cloud_name, "NEWEXPID")
+    
     print "creating new VM..."
     vm = api.vmattach(_cloud_name, _vm_role)
 
     print vm["name"]
 
-    if _cloud_model != "sim" :
-        # Get some data from the monitoring system
-        for data in api.get_latest_data(_cloud_name, vm["uuid"], "runtime_os_VM") :
-            print data
+    print "Management performance metrics for VM \"" + vm["name"] + "...."
+    _mgt_metric = api.get_latest_management_data(_cloud_name, vm["uuid"])
+    print _mgt_metric
 
-    # 'vm' is a dicitionary containing all the details of the VM
+    # 'app' is a dicitionary containing all the details of the VMs and
+    # applications the were created in the cloud
 
     print "CTRL-C to unpause..."
     while True :
+        # Get some data from the monitoring system
+        print "System (OS resource usage) performance metrics for VM \"" + vm["name"] + "...."
+        _system_metric = api.get_latest_system_data(_cloud_name, vm["uuid"])
+        print _system_metric     
         sleep(10)
 
     print "destroying VM..."

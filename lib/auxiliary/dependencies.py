@@ -246,6 +246,7 @@ def get_actual_cmdline(commandline_key, depsdict, _actual_url) :
     if commandline_key in depsdict :
         _commandline = depsdict[commandline_key]
         _commandline = _commandline.replace("3RPARTYDIR", depsdict["3rdpartydir"].strip().replace("//",'/'))
+        _commandline = _commandline.replace("SCRIPTSDIR", depsdict["scriptsdir"].strip().replace("//",'/'))        
         _commandline = _commandline.replace("CREDENTIALSDIR", depsdict["credentialsdir"].strip().replace("//",'/'))
         if _actual_url :
             _commandline = _commandline.replace("URL", _actual_url.strip())
@@ -573,6 +574,7 @@ def dependency_checker_installer(hostname, username, operation, options) :
     
         _depsdict["cdist"], _depsdict["cdistver"], _depsdict["carch"] = get_linux_distro()
         _depsdict["3rdpartydir"] = options.tpdir
+        _depsdict["scriptsdir"] = options.wksdir
         _depsdict["credentialsdir"] = options.creddir
         _depsdict["username"] = username
 
@@ -614,7 +616,7 @@ def dependency_checker_installer(hostname, username, operation, options) :
             print _msg
             _dep_list.remove("mongodb")
             
-        if len(options.wks) > 1 :
+        if options.role.count("workload") :
             _msg = "#####\n"
             _msg += "This node will be used to play a role in the Virtual Applications"
             _msg += " (AIs) \"" + str(options.wks) + "\". Only a subset of the depedencies"
@@ -643,8 +645,7 @@ def dependency_checker_installer(hostname, username, operation, options) :
                     _dep_list.remove(_unneeded_dep)
         else :
             _msg = "#####"            
-            _msg = "Since no Virtual Application types were specified (option "
-            _msg += "-w/--wks), this node will be prepared as an Orchestration Node."
+            _msg += "This node will be prepared as an Orchestration Node."
             _msg += " The full set of dependencies will be " + operation + "ed. "
             _msg += "#####"            
             print _msg

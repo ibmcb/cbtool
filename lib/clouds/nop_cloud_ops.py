@@ -269,6 +269,13 @@ class NopCmds(CommonCloudFunctions) :
                 return _status, _msg
 
     @trace
+    def vmcount(self, obj_attr_list):
+        '''
+        TBD
+        '''
+        return "NA"
+
+    @trace
     def is_vm_running(self, obj_attr_list):
         '''
         TBD

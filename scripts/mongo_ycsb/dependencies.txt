@@ -55,10 +55,10 @@ rhel-java-home-install-man = echo "export JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/li
 ubuntu-java-home-install-man = echo "export JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre" >> ~/.bashrc
 
 rhel-mongo-install-man = sudo rpm -Uvh URL/mongo-10gen-2.4.9-mongodb_1.ARCH.rpm; sudo rpm -Uvh URL/mongo-10gen-server-2.4.9-mongodb_1.ARCH.rpm 
-rhel-mongo-postinstall-man = sudo sed -i "s/^bind_ip.*/bind_ip=0.0.0.0/" /etc/mongod.conf; sudo /etc/init.d/mongod restart; sudo chkconfig mongod off
+rhel-mongo-postinstall-man = sudo sed -i "s/^bind_ip.*/bind_ip=0.0.0.0/" /etc/mongod.conf; source SCRIPTSDIR/common/cb_bootstrap.sh; service_stop_disable mongod
 ubuntu-mongo-preinstall-man = wget -N -P 3RPARTYDIR URL/mongodb-10gen_2.4.9_amd64.deb
 ubuntu-mongo-install-man = sudo dpkg -i 3RPARTYDIR/mongodb-10gen_2.4.9_amd64.deb
-ubuntu-mongo-postinstall-man = sudo sed -i "s/^bind_ip.*/bind_ip=0.0.0.0/" /etc/mongodb.conf; sudo bash -c "echo 'manual' > /etc/init/mongodb.override"
+ubuntu-mongo-postinstall-man = sudo sed -i "s/^bind_ip.*/bind_ip=0.0.0.0/" /etc/mongodb.conf; source SCRIPTSDIR/common/cb_bootstrap.sh; service_stop_disable mongodb
 
 rhel-ycsb-preinstall-git = cd ~
 rhel-ycsb-install-git = git clone URL/YCSB.git

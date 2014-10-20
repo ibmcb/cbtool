@@ -81,10 +81,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _idmsg += cld_attr_lst["name"] + "\""
                 _smsg = _idmsg + " was already attached to this experiment."
                 _fmsg = _idmsg + " could not be attached to this experiment: "
-                
-                _time_attr_list = self.osci.get_object(cld_attr_lst["name"], "GLOBAL", False, "time", False)
-                _expid = _time_attr_list["experiment_id"]
+
+                if not self.expid :                
+                    _time_attr_list = self.osci.get_object(cld_attr_lst["name"], "GLOBAL", False, "time", False)
+                    self.expid = _time_attr_list["experiment_id"]
+                    
                 _cld_name = cld_attr_lst["name"]
+
             else :
                 '''
                  Three possibilities:
@@ -201,43 +204,44 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                   cld_attr_lst["vm_defaults"])
 
                 if "jump_host" in cld_attr_lst["vm_defaults"] :
-                    if len(cld_attr_lst["vm_defaults"]["jump_host"]) > 1 :
-                        _msg = "The attribute \"jump_host\" in VM_DEFAULTS is set. "
-                        _msg += "Will attempt to connect (ssh) to the host \"" 
-                        _msg += cld_attr_lst["vm_defaults"]["jump_host"] + "\""
-                        _msg += " to confirm that this host can be used as a \""
-                        _msg += "jump box\"."
-                        cbdebug(_msg, True)
-
-                        _jump_box_host_fn = cld_attr_lst["space"]["base_dir"] 
-                        _jump_box_host_fn += "/" + cld_attr_lst["name"]
-                        _jump_box_host_fn += "_jump_box.conf"
-
-                        # Just re-using the already existing ProcessManagement
-                        # instance. That is why all ssh parameters are being 
-                        # specified here instead of there.
-
-                        _command = "ssh -i " +  cld_attr_lst["space"]["credentials_dir"]
-                        _command += '/' + cld_attr_lst["vm_defaults"]["key_name"] 
-                        _command += " -o StrictHostKeyChecking=no"
-                        _command += " -o UserKnownHostsFile=/dev/null"                         
-                        _command += ' ' + cld_attr_lst["vm_defaults"]["login"] 
-                        _command += '@' + cld_attr_lst["vm_defaults"]["jump_host"]
-                        _command += " \"which nc\""
-
-                        _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_command)
-
-                        if not _status :
-                            _jump_box_host_contents = "Host *\n"
-                            _jump_box_host_contents += "  ProxyCommand "
-                            _jump_box_host_contents += _command.replace('"', '').replace("which",'').replace(" nc", "nc -w 2 %h 22")
-
-                            _jump_box_host_fd = open(_jump_box_host_fn, 'w')
-
-                            _jump_box_host_fd.write(_jump_box_host_contents)
-                            _jump_box_host_fd.close()
-
-                            cld_attr_lst["vm_defaults"]["ssh_config_file"] = _jump_box_host_fn
+                    if str(cld_attr_lst["vm_defaults"]["jump_host"]).lower() != "false" :
+                        if len(str(cld_attr_lst["vm_defaults"]["jump_host"])) > 1 :
+                            _msg = "The attribute \"jump_host\" in VM_DEFAULTS is set. "
+                            _msg += "Will attempt to connect (ssh) to the host \"" 
+                            _msg += cld_attr_lst["vm_defaults"]["jump_host"] + "\""
+                            _msg += " to confirm that this host can be used as a \""
+                            _msg += "jump box\"."
+                            cbdebug(_msg, True)
+    
+                            _jump_box_host_fn = cld_attr_lst["space"]["base_dir"] 
+                            _jump_box_host_fn += "/" + cld_attr_lst["name"]
+                            _jump_box_host_fn += "_jump_box.conf"
+    
+                            # Just re-using the already existing ProcessManagement
+                            # instance. That is why all ssh parameters are being 
+                            # specified here instead of there.
+    
+                            _command = "ssh -i " +  cld_attr_lst["space"]["credentials_dir"]
+                            _command += '/' + cld_attr_lst["vm_defaults"]["key_name"] 
+                            _command += " -o StrictHostKeyChecking=no"
+                            _command += " -o UserKnownHostsFile=/dev/null"                         
+                            _command += ' ' + cld_attr_lst["vm_defaults"]["login"] 
+                            _command += '@' + cld_attr_lst["vm_defaults"]["jump_host"]
+                            _command += " \"which nc\""
+    
+                            _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_command)
+    
+                            if not _status :
+                                _jump_box_host_contents = "Host *\n"
+                                _jump_box_host_contents += "  ProxyCommand "
+                                _jump_box_host_contents += _command.replace('"', '').replace("which",'').replace(" nc", "nc -w 2 %h 22")
+    
+                                _jump_box_host_fd = open(_jump_box_host_fn, 'w')
+    
+                                _jump_box_host_fd.write(_jump_box_host_contents)
+                                _jump_box_host_fd.close()
+    
+                                cld_attr_lst["vm_defaults"]["ssh_config_file"] = _jump_box_host_fn
     
                 _all_global_objects = cld_attr_lst.keys()
                 cld_attr_lst["client_should_refresh"] = str(0.0)
@@ -730,9 +734,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
             if not _status :
                 _status, _fmsg = self.initialize_object(obj_attr_list, command)
 
-                if not _status :                    
-                    _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])            
-                    _cld_conn = _cld_ops_class(self.pid, self.osci, obj_attr_list["experiment_id"])
+                if not _status :
+                    self.set_cloud_operations_instance(obj_attr_list["model"])       
+                    _cld_conn = self.coi[obj_attr_list["model"]][self.pid + '-' + obj_attr_list["experiment_id"]]
     
                     _status, _fmsg = _cld_conn.vmccleanup(obj_attr_list)
                     _result = obj_attr_list
@@ -1604,10 +1608,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                         obj_attr_list["uuid"], "status", "Initializing...")
                     
                     _created_pending = True
-    
-                    _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
-                        
-                    _cld_conn = _cld_ops_class(self.pid, self.osci, obj_attr_list["experiment_id"])
+
+                    self.set_cloud_operations_instance(obj_attr_list["model"])            
+                    _cld_conn = self.coi[obj_attr_list["model"]][self.pid + '-' + obj_attr_list["experiment_id"]]
     
                     if _obj_type == "VMC" :
                         self.pre_attach_vmc(obj_attr_list)
@@ -2075,7 +2078,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _fmsg += "post_boot configuration on "
                     _fmsg += obj_attr_list["name"] + '.\n'
 #                            _fmsg += _xfmsg
-
+            
                 self.record_management_metrics(obj_attr_list["cloud_name"], \
                                                "VM", obj_attr_list, "attach")
             else :
@@ -2636,9 +2639,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 self.osci.add_to_list(obj_attr_list["cloud_name"], _obj_type, "PENDING", obj_attr_list["uuid"] + "|" + obj_attr_list["name"], int(time()))
                 self.osci.pending_object_set(obj_attr_list["cloud_name"], _obj_type, obj_attr_list["uuid"], "status", "Detaching...")
                 _detach_pending = True
-                
-                _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
-                _cld_conn = _cld_ops_class(self.pid, self.osci, obj_attr_list["experiment_id"])
+
+                self.set_cloud_operations_instance(obj_attr_list["model"])            
+                _cld_conn = self.coi[obj_attr_list["model"]][self.pid + '-' + obj_attr_list["experiment_id"]]
 
                 obj_attr_list["current_state"] = \
                 self.osci.get_object_state(obj_attr_list["cloud_name"], _obj_type, obj_attr_list["uuid"])
@@ -3222,9 +3225,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 if not _status :
                     self.osci.update_object_attribute(cn, "VM", obj_attr_list["uuid"], False, \
                                           operation + "_protocol_supported", obj_attr_list["choices"])
-                    
-                    _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
-                    _cld_conn = _cld_ops_class(self.pid, self.osci, obj_attr_list["experiment_id"])
+
+                    self.set_cloud_operations_instance(obj_attr_list["model"])            
+                    _cld_conn = self.coi[obj_attr_list["model"]][self.pid + '-' + obj_attr_list["experiment_id"]]                                        
 
                     _current_state = self.osci.get_object_state(cn, "VM", obj_attr_list["uuid"])
                     
@@ -3376,8 +3379,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _status, _fmsg = self.initialize_object(obj_attr_list, command)
 
                 if not _status :
-                    _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
-                    _cld_conn = _cld_ops_class(self.pid, self.osci, obj_attr_list["experiment_id"])
+                    self.set_cloud_operations_instance(obj_attr_list["model"])            
+                    _cld_conn = self.coi[obj_attr_list["model"]][self.pid + '-' + obj_attr_list["experiment_id"]]                                        
 
                     if "vmcrs" in obj_attr_list and obj_attr_list["vmcrs"] != "none" :
                         self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VMCRS", \
@@ -3533,8 +3536,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _status, _fmsg = self.initialize_object(obj_attr_list, command)
                 
             if not _status :
-                _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
-                _cld_conn = _cld_ops_class(self.pid, self.osci, obj_attr_list["experiment_id"])
+                self.set_cloud_operations_instance(obj_attr_list["model"])         
+                _cld_conn = self.coi[obj_attr_list["model"]][self.pid + '-' + obj_attr_list["experiment_id"]]                
 
                 if "ai" in obj_attr_list and obj_attr_list["ai"].lower() != "none" :
                     _ai_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "AI", False, obj_attr_list["ai"], False)
@@ -3696,8 +3699,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         if not _status :
                             if _target_state != _current_state :
                                 obj_attr_list["current_state"] = _current_state
-                                _cld_ops_class = self.get_cloud_class(obj_attr_list["model"])
-                                _cld_conn = _cld_ops_class(self.pid, self.osci, obj_attr_list["experiment_id"])
+                                self.set_cloud_operations_instance(obj_attr_list["model"])            
+                                _cld_conn = self.coi[obj_attr_list["model"]][self.pid + '-' + obj_attr_list["experiment_id"]]
                                          
                                 # TAC looks up libvirt function based on target state
                                 # Do not remove this

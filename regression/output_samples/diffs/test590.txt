@@ -1,11 +1,12 @@
-|arrival |1412725523 
-|command_originated |1412725523 
-|identity |/home/msilva/cloudbench/lib/auxiliary//../../credentials/cbtool_rsa
-\|mgt_d \|X 
-|ssh_key_name |cbtool_rsa 
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1412725526 |aidrs_2 |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1412725535 |aidrs_2 |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1412725541 |aidrs_2 |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1412725547 |aidrs_2 |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1412725553 |aidrs_2 |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|Redis Version |2.8.4 
+
+
+
+
+
+
+
+
+
+
+
+

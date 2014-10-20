@@ -137,12 +137,13 @@ then
     REDIS_DATA_DIR=$(get_my_ai_attribute_with_default redis_data_dir /dbstore)
     eval REDIS_DATA_DIR=${REDIS_DATA_DIR}
 
-    redis_ip=`get_ips_from_role redis`
-    if [ -z $redis_ip ]
+    redis_ips=`get_ips_from_role redis`
+    if [ -z $redis_ips ]
     then
         syslog_netcat "redis IP is null"
         exit 1
-    fi    
+    fi
+    redis_ips_csv=`echo ${redis_ips} | sed 's/ /,/g'`
 else 
     syslog_netcat "Unsupported backend type ($BACKEND_TYPE). Exiting with error"
     exit 1

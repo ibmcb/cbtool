@@ -3,22 +3,31 @@
 # commented.
 
 [AI_TEMPLATES : IPERF]
-DESCRIPTION = TBD
+
+# Attributes MANDATORY for all Virtual Applications
 SUT = iperfclient->iperfserver
+LOAD_BALANCER_SUPPORTED = $False
+RESIZE_SUPPORTED = $False
+REGENERATE_DATA = $False
 LOAD_GENERATOR_ROLE = iperfclient
 LOAD_MANAGER_ROLE = iperfclient
 METRIC_AGGREGATOR_ROLE = iperfclient
 CAPTURE_ROLE = iperfserver
-LOAD_BALANCER = $False
-LOAD_BALANCER_TARGET_PORT = 80 
-LOAD_BALANCER_TARGET_URL = unknown 
-LOAD_BALANCER_TARGET_CHILDREN = 2
-IPERFCLIENT_SETUP1 = cb_check_iperf_client.sh
-IPERFSERVER_SETUP1 = cb_check_iperf_server.sh
-START = cb_iperf.sh
 LOAD_PROFILE = tcp
 LOAD_LEVEL = uniformIXIXI1I5
 LOAD_DURATION = uniformIXIXI70I90
+REPORTED_METRICS = bandwidth
+
+# VApp-specific MANDATORY attributes
+DESCRIPTION = Deploys a pair of VMs (client and server) and then runs the iperf
+DESCRIPTION += network benchmark, sending an unidirectional stream of packets between these.\n 
+DESCRIPTION +=- LOAD_PROFILE possible values: "tcp" or "udp".\n
+DESCRIPTION +=- LOAD_LEVEL meaning: number of parallel client threads.\n 
+DESCRIPTION +=- LOAD_DURATION meaning: maximum length of time to run.\n
+DESCRIPTION +=- COMMENT: One of the "Synthetic" Workloads.
+IPERFCLIENT_SETUP1 = cb_check_iperf_client.sh
+IPERFSERVER_SETUP1 = cb_check_iperf_server.sh
+START = cb_iperf.sh
 
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
 #SYNC_COUNTER_NAME = synchronization_counter

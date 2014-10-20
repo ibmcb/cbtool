@@ -1,28 +1,53 @@
 # Parameters for this Virtual Application (Application Instance - AI) type should
 # be set on YOUR private configuration configuration file, including the ones 
 # commented.
+
 [AI_TEMPLATES : HPCC]
-DESCRIPTION = TBD
+
+# Attributes MANDATORY for all Virtual Applications
 SUT = fen_hpc->3_x_cn_hpc
+LOAD_BALANCER_SUPPORTED = $False
+RESIZE_SUPPORTED = $True
+REGENERATE_DATA = $True
 LOAD_GENERATOR_ROLE = fen_hpc
 LOAD_MANAGER_ROLE = fen_hpc
 METRIC_AGGREGATOR_ROLE = fen_hpc
 CAPTURE_ROLE = cn_hpc
-LOAD_BALANCER = $False
-FEN_HPC_SETUP1 = cb_config_fen_hpc.sh
-START = cb_hpcc.sh
 LOAD_PROFILE = default
 LOAD_LEVEL = uniformIXIXI1I6
 LOAD_DURATION = 60
+REPORTED_METRICS = throughput_G_HPL, throughput_G_PTRANS, throughput_G_RandomAccess,
+REPORTED_METRICS += throughput_G_FFTE, throughput_EP_STREAM_Triad, throughput_EP_DGEMM,
+REPORTED_METRICS += throughput_RandomRing, lat_RandomRing
+
+# VApp-specific MANDATORY attributes
+DESCRIPTION = Deploys an HPC cluster formed by N "compute node" VMs and one
+DESCRIPTION += one "frontend node" VM, and then runs the HPC Challenge benchmark
+DESCRIPTION += on the cluster.\n
+DESCRIPTION +=- LOAD_PROFILE possible values: "default", consisting of 7 individual
+DESCRIPTION += tests: HPL (Linpack TPP benchmark), DGEMM (measures the floating point
+DESCRIPTION += rate of execution of double precision real matrix-matrix multiplication),
+DESCRIPTION += STREAM (synthetic benchmark that measures sustainable memory bandwidth),
+DESCRIPTION += PTRANS (parallel matrix transpose), RandomAccess (measures the rate
+DESCRIPTION += of integer random updates of memory), FFT (measures the floating point 
+DESCRIPTION += rate of execution of Discrete Fourier Transform, Communication bandwidth
+DESCRIPTION += and latency (effective bandwidth benchmark).\n
+DESCRIPTION +=- LOAD_LEVEL meaning: multiplier for the size of computational problem.\n 
+DESCRIPTION +=- LOAD_DURATION meaning: not used, a run ends when the problem is solved.\n
+DESCRIPTION +=- COMMENT: One of the "High Performance Computing" Workloads.
+FEN_HPC_SETUP1 = cb_config_fen_hpc.sh
+CN_HPC_SETUP1 = cb_config_cn_hpc.sh
+START = cb_hpcc.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
-#MAX_N_SIZE_PER_NODE = 5
+#MAX_N_SIZE_PER_NODE = 40
 #NB_SIZE = 4
 #PROCESSES_PER_NODE = 3
+#MPIEXECUTABLE_PATH=/usr/lib64/openmpi/bin/
+#MPILIBRARY_PATH=/usr/lib64/openmpi/lib/
 
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
 #SYNC_COUNTER_NAME = synchronization_counter
 #CONCURRENT_AIS = 2
 #SYNC_CHANNEL_NAME = synchronization_channel
 #RUN_COUNTER_NAME = experiment_id_counter
-

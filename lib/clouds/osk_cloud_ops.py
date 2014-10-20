@@ -28,6 +28,7 @@ from uuid import uuid5, UUID
 from random import choice
 import socket
 import copy
+import iso8601
 
 from novaclient.v1_1 import client
 from novaclient import exceptions as novaexceptions
@@ -443,7 +444,14 @@ class OskCmds(CommonCloudFunctions) :
                             del _obj_attr_list["jump_host"]
 
                         self.vmcreate(_obj_attr_list)
-
+                    else :
+                        _msg = "The jump_host address was set to \"$True\", meaning"
+                        _msg += " that a \"cb_jumphost\" VM should be automatically"
+                        _msg += " created. However, the \"cb_nullworkload\" is not"
+                        _msg += " present on this cloud, and thus the \"cb_jumphost\""
+                        _msg += " cannot be created."
+                        cberr(_msg, True)
+                        return False
                 else :
                     _obj_attr_list["address_type"] = "floating"
                     _instance = self.get_instances(_obj_attr_list, "vm", "cb_jumphost")
@@ -454,7 +462,7 @@ class OskCmds(CommonCloudFunctions) :
                     _msg += " already assigned to it"
                     cbdebug(_msg, True)
                     vm_defaults["jump_host"] = _obj_attr_list["run_cloud_ip"]
-                    
+
         return True
     
     @trace
@@ -479,10 +487,11 @@ class OskCmds(CommonCloudFunctions) :
 
             _detected_imageids = self.check_images(vmc_name, vm_templates)
 
-            self.check_jumphost(vmc_name, vm_defaults, vm_templates, _detected_imageids)
+            _check_jumphost = self.check_jumphost(vmc_name, vm_defaults, vm_templates, _detected_imageids)
             
             if not (_run_netname_found and _prov_netname_found and \
-                    _key_pair_found and _security_group_found and len(_detected_imageids)) :
+                    _key_pair_found and _security_group_found and \
+                    len(_detected_imageids) and _check_jumphost) :
                 _msg = "Check the previous errors, fix it (using OpenStack's web"
                 _msg += " GUI (horizon) or nova CLI"
                 _status = 1178
@@ -1069,7 +1078,7 @@ class OskCmds(CommonCloudFunctions) :
         return True
 
     @trace
-    def get_instances(self, obj_attr_list, obj_type = "vm", identifier = "all") :
+    def get_instances(self, obj_attr_list, obj_type = "vm", identifier = "all", force_list = False) :
         '''
         TBD
         '''
@@ -1086,10 +1095,22 @@ class OskCmds(CommonCloudFunctions) :
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
                              obj_attr_list["vmc_name"])
 
-            if obj_type == "vm" :            
-                _instances = self.oskconncompute.servers.list(search_opts = _search_opts)
+            if obj_type == "vm" :
+                                
+                if "cloud_vm_uuid" in obj_attr_list and len(obj_attr_list["cloud_vm_uuid"]) >= 36 and not force_list :
+                    _call = "get"
+                    _instances = [ self.oskconncompute.servers.get(obj_attr_list["cloud_vm_uuid"]) ]
+
+                else :
+                    _call = "list"
+                    _instances = self.oskconncompute.servers.list(search_opts = _search_opts)
             else :
-                _instances = self.oskconnstorage.volumes.list(search_opts = _search_opts)
+                if "cloud_vv_uuid" in obj_attr_list and len(obj_attr_list["cloud_vv_uuid"]) >= 36 :
+                    _call = "get"
+                    _instances = [ self.oskconnstorage.volumes.get(obj_attr_list["cloud_vv_uuid"]) ]
+                else :
+                    _call = "list"
+                    _instances = self.oskconnstorage.volumes.list(search_opts = _search_opts)
             
             if len(_instances) > 0 :
 
@@ -1116,12 +1137,37 @@ class OskCmds(CommonCloudFunctions) :
 
         except novaexceptions, obj:
             _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
+            _fmsg = "(While getting instance(s) through API call \"" + _call + "\") " + str(obj.error_message)
             raise CldOpsException(_fmsg, _status)
 
         except Exception, e :
             _status = 23
-            _fmsg = str(e)
+            _fmsg = "(While getting instance(s) through API call \"" + _call + "\") " + str(e)
+            raise CldOpsException(_fmsg, _status)
+
+    @trace
+    def vmcount(self, obj_attr_list):
+        '''
+        TBD
+        '''
+        try :
+
+            if not self.oskconncompute :
+                self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
+                             obj_attr_list["vmc_name"])
+
+            _nr_instances = len(self.oskconncompute.servers.list())
+            
+            return _nr_instances
+
+        except novaexceptions, obj:
+            _status = int(obj.error_code)
+            _fmsg = "(While counting instance(s) through API call \"list\") " + str(obj.error_message)
+            raise CldOpsException(_fmsg, _status)
+
+        except Exception, e :
+            _status = 23
+            _fmsg = "(While counting instance(s) through API call \"list\") " + str(e)
             raise CldOpsException(_fmsg, _status)
 
     @trace
@@ -1222,6 +1268,35 @@ class OskCmds(CommonCloudFunctions) :
         else :
             obj_attr_list["instance_name"] = "unknown"            
             obj_attr_list["host_name"] = "unknown"
+        return True
+
+    def get_instance_deployment_time(self, obj_attr_list, fail = True) :
+        '''
+        TBD
+        '''
+        _instance = self.is_vm_running(obj_attr_list, fail)
+
+        _created = False
+        _launched = False
+              
+        if _instance :
+
+            if "created" in _instance._info :
+                _created = iso8601.parse_date(_instance._info["created"])
+                
+            if "S-SRV-USG:launched_at" in _instance._info :
+                _launched = iso8601.parse_date(_instance._info["OS-SRV-USG:launched_at"])
+
+            if _created and _launched :
+
+                _mgt_003 = (_launched - _created).total_seconds()
+            
+                obj_attr_list["comments"] += " Actual time spent waiting for instance"
+                obj_attr_list["comments"] += " to become active was "
+                obj_attr_list["comments"] += str(obj_attr_list["mgt_003_provisioning_request_completed"])
+                obj_attr_list["comments"] += ". "
+                obj_attr_list["mgt_003_provisioning_request_completed"] = int(_mgt_003)
+            
         return True
 
     @trace
@@ -1742,6 +1817,8 @@ class OskCmds(CommonCloudFunctions) :
 
                 self.get_host_and_instance_name(obj_attr_list)
 
+                self.get_instance_deployment_time(obj_attr_list)
+
                 if "resource_limits" in obj_attr_list :
                     _status, _fmsg = self.set_cgroup(obj_attr_list)
                 else :
@@ -1852,7 +1929,7 @@ class OskCmds(CommonCloudFunctions) :
 
                 while _instance :
                     _instance = self.get_instances(obj_attr_list, "vm", \
-                                           obj_attr_list["cloud_vm_name"])
+                                           obj_attr_list["cloud_vm_name"], True)
                     sleep(_wait)
             else :
                 True
