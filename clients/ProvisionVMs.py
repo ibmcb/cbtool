@@ -69,6 +69,10 @@ class theThread (threading.Thread):
 def _sampling(_api, _ai) :
     _check_data = 0
     _check_time = None
+    
+    #
+    # Chagne to bool, switch to false when outside of QoS
+    #
     _samples = 5
     file = open("%s-workload-data"%(_write_file), "w")
     while _samples > 0  :
@@ -116,10 +120,18 @@ try :
     for ai in api.applist(_cloud_name,state="failed") :
        _prev_failed.append([val.split("|")[0] for val in ai["vms"].split(",")][0])
 
+#
+# Determine Baseline For YCSB And Kmeans.
+#
+
+
     _ai_list = []
     _current_ai = []
     _file = open("%s-launch-data"%(_write_file), "w")
     while ai_return_state :
+        
+        # Rand function to determine when to launch the next AI set.
+        
         _current_ai = []
         for ai in api.applist(_cloud_name) :
            if not [val.split("|")[0] for val in ai["vms"].split(",")][0] in _ignore_ai :
