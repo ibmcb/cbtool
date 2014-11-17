@@ -679,6 +679,13 @@ class CBCLI(Cmd) :
                 _status = 7161
                 raise ProcessManagement.ProcessManagementException(_msg, _status)
 
+            use_ssl = False
+            cert = self.cld_attr_lst["gui_defaults"]["sslcert"]
+            key = self.cld_attr_lst["gui_defaults"]["sslkey"]
+
+            if cert and key :
+                use_ssl = True
+
             print "Checking for a running GUI service daemon.....",
             _base_cmd = self.path + "/cbact"
             _base_cmd += " --procid=" + self.pid
@@ -689,6 +696,12 @@ class CBCLI(Cmd) :
             _base_cmd += " --apihost=" + self.cld_attr_lst["api_defaults"]["hostname"]
             _base_cmd += " --guiport=" + str(self.cld_attr_lst["gui_defaults"]["port"])
             _base_cmd += " --guihost=" + self.cld_attr_lst["gui_defaults"]["hostname"]
+            _base_cmd += " --guibranding=" + self.cld_attr_lst["gui_defaults"]["branding"]
+
+            if use_ssl :
+                _base_cmd += " --guisslcert=" + cert 
+                _base_cmd += " --guisslkey=" + key 
+
             _base_cmd += " --syslogp=" + self.cld_attr_lst["logstore"]["port"]
             _base_cmd += " --syslogf=" + self.cld_attr_lst["logstore"]["gui_facility"]
             _base_cmd += " --syslogh=" + self.cld_attr_lst["logstore"]["hostname"]
@@ -721,11 +734,22 @@ class CBCLI(Cmd) :
                 else :
                     _gui_pid = _gui_pid[0]
                     _msg = "GUI Service daemon was successfully started. "
+                    url = "http"
+                    if use_ssl :
+                        url += "s"
+                    url += "://" + self.cld_attr_lst["api_defaults"]["hostname"]
+                    url += ":" + str(self.cld_attr_lst["gui_defaults"]["port"])
                     _msg += "The process id is " + str(_gui_pid) + ". "
-                    _msg += "Port " + str(self.cld_attr_lst["gui_defaults"]["port"]) + '.\n'
+                    _msg += "(" + url + ")."
+                    if not use_ssl :
+                        _msg += " Not using SSL. You have been warned."
+                    _msg += "\n"
                     sys.stdout.write(_msg)  
             else :
                 _msg = "\nGUI failed to start. To discover why, please run:\n\n" + _base_cmd + " --logdest=console\n\n ... and report the bug."
+                _msg += "\n\nAlternatively, if the problem is with 'screen', which"
+                _msg += " daemonizes the above command, try this:\n\n"
+                _msg += _cmd + "\n\n ... and report the bug."
                 _status = 7161
                 raise ProcessManagement.ProcessManagementException(_msg, _status)
 
