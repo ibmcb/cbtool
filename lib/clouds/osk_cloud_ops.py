@@ -1237,13 +1237,11 @@ class OskCmds(CommonCloudFunctions) :
             if _instance :
                 if _instance.status == "ACTIVE" :
                     return _instance
+
                 elif _instance.status == "ERROR" :
-                    _msg = "Instance \"" + _cloud_vm_name + "\"" 
-                    _msg += " reported an error (from OpenStack)"
-                    _status = 1870
-                    cberr(_msg)
-                    if fail :
-                        raise CldOpsException(_msg, _status)                    
+                    obj_attr_list["last_known_state"] = "ERROR while checking for ACTIVE state"
+                    return True
+
                 else :
                     return False
             else :
@@ -1264,9 +1262,14 @@ class OskCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
+
         _instance = self.is_vm_running(obj_attr_list)
 
         if _instance :
+
+            if obj_attr_list["last_known_state"].count("ERROR") :
+                return True            
+            
             obj_attr_list["last_known_state"] = "ACTIVE with ip unassigned"
 
             self.take_action_if_requested("VM", obj_attr_list, "provision_complete")
@@ -1736,7 +1739,6 @@ class OskCmds(CommonCloudFunctions) :
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
-            _oskfmsg = ''
             _vvfmsg = ''
             _vvstatus = 0
             
@@ -1863,24 +1865,32 @@ class OskCmds(CommonCloudFunctions) :
                         _instance.add_floating_ip(self.floating_ip_allocate(obj_attr_list))
 
                 _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
-
-                _vvstatus, _vvfmsg = self.vvcreate(obj_attr_list)
-
-                if _vvstatus :
-                    _status = _vvstatus
-                
-                self.get_mac_address(obj_attr_list, _instance)
-
-                self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
-
-                self.get_host_and_instance_name(obj_attr_list)
-
-                self.get_instance_deployment_time(obj_attr_list)
-
-                if "resource_limits" in obj_attr_list :
-                    _status, _fmsg = self.set_cgroup(obj_attr_list)
+  
+                if obj_attr_list["last_known_state"].count("ERROR") :
+                    _fmsg = obj_attr_list["last_known_state"]
+                    _status = 189
                 else :
-                    _status = 0
+                    _vvstatus, _vvfmsg = self.vvcreate(obj_attr_list)
+    
+                    if _vvstatus :
+                        _status = _vvstatus
+                    
+                    self.get_mac_address(obj_attr_list, _instance)
+    
+                    self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
+    
+                    self.get_host_and_instance_name(obj_attr_list)
+    
+                    self.get_instance_deployment_time(obj_attr_list)
+    
+                    if "resource_limits" in obj_attr_list :
+                        _status, _fmsg = self.set_cgroup(obj_attr_list)
+                    else :
+                        _status = 0
+
+                    if obj_attr_list["force_failure"].lower() == "true" :
+                        _fmsg = "Forced failure (option FORCE_FAILURE set \"true\")"
+                        _status = 916
 
             else :
                 _fmsg = "Failed to obtain instance's (cloud assigned) uuid. The "
@@ -1908,56 +1918,10 @@ class OskCmds(CommonCloudFunctions) :
         finally :
 
             self.disconnect()
-            
+
             if _status :
-                             
-                _vminstance = self.get_instances(obj_attr_list, "vm", \
-                                               obj_attr_list["cloud_vm_name"])
 
-                _msg = "" + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
-                _msg += "could not be created"
-                _msg += " on OpenStack Cloud \"" + obj_attr_list["cloud_name"] + "\""
-
-                if _vminstance :
-                    # Not the best way to solve this problem. Will improve later.
-                    
-                    if not self.is_vm_running(obj_attr_list) :
-                        if "fault" in dir(_vminstance) :
-                            if "message" in _vminstance.fault : 
-                                _oskfmsg = "\nINSTANCE ERROR MESSAGE:" + str(_vminstance.fault["message"]) + ".\n"
-
-                    # Try to make a last attempt effort to get the hostname,
-                    # even if the VM creation failed.
-
-                    self.get_host_and_instance_name(obj_attr_list, fail = False)
-
-                    if "host_name" in obj_attr_list :
-                        _msg += " (Host \"" + obj_attr_list["host_name"] + "\")"
-
-                    if obj_attr_list["leave_instance_on_failure"].lower() == "true" :
-                        _liof_msg = " (Will leave the VM running due to experimenter's request)"
-                    else :
-                        _liof_msg = " (The VM creation will be rolled back)"
-                        _vminstance.delete()
-
-                        if "cloud_vv" in obj_attr_list :
-                            self.vvdestroy(obj_attr_list)
-
-                    _msg += ": " 
-
-                _msg += _fmsg + ".\n"
-                
-                if _vvstatus :
-                    _msg += "VOLUME ERROR MESSAGE:" + _vvfmsg + ".\n"
-
-                if len(_oskfmsg) :
-                    _msg += _oskfmsg
-
-                _msg += _liof_msg
-                cberr(_msg)
-                
-                raise CldOpsException(_msg, _status)
+                self.instance_cleanup_on_failure(obj_attr_list, _status, _fmsg, _vvstatus, _vvfmsg)
 
             else :
                 _msg = "" + obj_attr_list["name"] + ""
@@ -1966,7 +1930,62 @@ class OskCmds(CommonCloudFunctions) :
                 _msg += " on OpenStack Cloud \"" + obj_attr_list["cloud_name"] + "\"."
                 cbdebug(_msg)
                 return _status, _msg
+
+    def instance_cleanup_on_failure(self, obj_attr_list, _status, _fmsg, _vvstatus, _vvfmsg) :
+        '''
+        TBD
+        '''
+
+        _oskfmsg = ''
+        
+        _vminstance = self.get_instances(obj_attr_list, "vm", \
+                                                       obj_attr_list["cloud_vm_name"])
             
+        _msg = "" + obj_attr_list["name"] + ""
+        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
+        _msg += "could not be created"
+        _msg += " on OpenStack Cloud \"" + obj_attr_list["cloud_name"] + "\""
+
+        if _vminstance :
+            # Not the best way to solve this problem. Will improve later.
+            
+            if not self.is_vm_running(obj_attr_list) :
+                if "fault" in dir(_vminstance) :
+                    if "message" in _vminstance.fault : 
+                        _oskfmsg = "\nINSTANCE ERROR MESSAGE:" + str(_vminstance.fault["message"]) + ".\n"
+
+            # Try and make a last attempt effort to get the hostname,
+            # even if the VM creation failed.
+
+            self.get_host_and_instance_name(obj_attr_list, fail = False)
+
+            if "host_name" in obj_attr_list :
+                _msg += " (Host \"" + obj_attr_list["host_name"] + "\")"
+
+            if obj_attr_list["leave_instance_on_failure"].lower() == "true" :
+                _liof_msg = " (Will leave the VM running due to experimenter's request)"
+            else :
+                _liof_msg = " (The VM creation will be rolled back)"
+                _vminstance.delete()
+
+                if "cloud_vv" in obj_attr_list :
+                    self.vvdestroy(obj_attr_list)
+
+            _msg += ": " 
+
+        _msg += _fmsg + ".\n"
+        
+        if _vvstatus :
+            _msg += "VOLUME ERROR MESSAGE:" + _vvfmsg + ".\n"
+
+        if len(_oskfmsg) :
+            _msg += _oskfmsg
+
+        _msg += _liof_msg
+        cberr(_msg)
+        
+        raise CldOpsException(_msg, _status)
+        
     @trace
     def vmdestroy(self, obj_attr_list) :
         '''

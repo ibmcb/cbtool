@@ -730,6 +730,10 @@ class SlrCmds(CommonCloudFunctions) :
                 
                 _status = 0
 
+                if obj_attr_list["force_failure"].lower() == "true" :
+                    _fmsg = "Forced failure (option FORCE_FAILURE set \"true\")"                    
+                    _status = 916
+
             else :
                 _fmsg = "Failed to obtain instance's (cloud assigned) uuid. The "
                 _fmsg += "instance creation failed for some unknown reason."

@@ -349,6 +349,10 @@ class NopCmds(CommonCloudFunctions) :
 
             _status = 0
 
+            if obj_attr_list["force_failure"].lower() == "true" :
+                _fmsg = "Forced failure (option FORCE_FAILURE set \"true\")"                
+                _status = 916
+
         except CldOpsException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)

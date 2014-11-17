@@ -846,8 +846,13 @@ class CskCmds(CommonCloudFunctions) :
                 obj_attr_list["host_name"] = "unknown"
 
                 if "instance_obj" in obj_attr_list : 
-                    del obj_attr_list["instance_obj"]
+                    del obj_attr_list["instance_obj"]                    
                 _status = 0
+
+                if obj_attr_list["force_failure"].lower() == "true" :
+                    _fmsg = "Forced failure (option FORCE_FAILURE set \"true\")"                    
+                    _status = 916
+                
             else :
                 _fmsg = "Failed to obtain instance's (cloud-assigned) uuid. The "
                 _fmsg += "instance creation failed for some unknown reason."

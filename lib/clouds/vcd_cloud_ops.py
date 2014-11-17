@@ -463,13 +463,13 @@ class VcdCmds(CommonCloudFunctions) :
             image_to_clone = self.vcdconn.ex_find_node(node_name = obj_attr_list["imageid1"])
 
             if image_to_clone == None :
-               _msg = "Error : Cannot find a vApp named "
-               _msg += obj_attr_list["imageid1"]
-               _msg += " on vCloud Director. Aborting."
-               cbdebug(_msg, True)
-               _status = 188
-               cberr(_msg)
-               raise CldOpsException(_msg, _status) 
+                _msg = "Error : Cannot find a vApp named "
+                _msg += obj_attr_list["imageid1"]
+                _msg += " on vCloud Director. Aborting."
+                cbdebug(_msg, True)
+                _status = 188
+                cberr(_msg)
+                raise CldOpsException(_msg, _status) 
 
             vm_computername = "vm" + obj_attr_list["name"].split("_")[1]
             _msg = "...Launching new vApp containing VM with hostname " + vm_computername
@@ -511,6 +511,10 @@ class VcdCmds(CommonCloudFunctions) :
                     del obj_attr_list["instance_obj"]
                 _status = 0
 
+                if obj_attr_list["force_failure"].lower() == "true" :
+                    _fmsg = "Forced failure (option FORCE_FAILURE set \"true\")"                    
+                    _status = 916
+
             else :
                 _fmsg = "...Failed to obtain instance's (cloud-assigned) uuid. The "
                 _fmsg += "instance creation failed for some unknown reason."
@@ -521,7 +525,7 @@ class VcdCmds(CommonCloudFunctions) :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except :
+        except Exception, e :
             _status = 23
             _fmsg = str(e)
     

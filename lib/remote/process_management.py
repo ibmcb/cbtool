@@ -107,7 +107,9 @@ class ProcessManagement :
             _cmd += _config_file 
             _cmd += _connection_timeout            
             _cmd += " -o StrictHostKeyChecking=no"
-            _cmd += " -o UserKnownHostsFile=/dev/null " + _username
+            _cmd += " -o UserKnownHostsFile=/dev/null "
+            _cmd += " -o BatchMode=yes " 
+            _cmd += _username
             _cmd += _hostname + " \"" + cmdline + "\""
 
         if str(really_execute).lower() == "true" :
