@@ -16,7 +16,7 @@
 # limitations under the License.
 #/*******************************************************************************
 
-source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_hadoop_common.sh
+source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_giraph_common.sh
 
 #####################################################################################
 # Hadoop cluster preparation
@@ -64,6 +64,10 @@ syslog_netcat "Local directory for Hadoop namenode is ${DFS_NAME_DIR}"
 DFS_DATA_DIR=`get_my_ai_attribute_with_default dfs_data_dir /tmp/cbhadoopdata`
 eval DFS_DATA_DIR=${DFS_DATA_DIR}
 syslog_netcat "Local directory for Hadoop datanode is ${DFS_NAME_DIR}"
+
+JVM_HEAP_MEM_MB=`get_my_ai_attribute_with_default jvm_heap_mem_mb 200`
+eval JVM_HEAP_MEM_MB=${JVM_HEAP_MEM_MB}
+syslog_netcat "JVM heap size in MB is ${JVM_HEAP_MEM_MB}"
 
 if [[ ${hadoop_use_yarn} -eq 1 ]]
 then
@@ -203,6 +207,12 @@ else
 <value>HADOOP_JOBTRACKER_IP:9001</value>
 <final>true</final>
 </property>
+
+<property>
+<name>mapred.child.java.opts</name>
+<value>JVM_HEAP_VALUE</value>
+</property>
+
 </configuration>
 EOF
 
@@ -335,6 +345,8 @@ sudo sed -i -e "s/HADOOP_NAMENODE_IP/${hadoop_master_ip}/g" $HADOOP_CONF_DIR/cor
 sudo sed -i -e "s/HADOOP_JOBTRACKER_IP/${hadoop_master_ip}/g" $HADOOP_CONF_DIR/mapred-site.xml
 sudo sed -i -e "s/NUM_REPLICA/1/g" $HADOOP_CONF_DIR/hdfs-site.xml #3 is default. 1 is given for sort's performance
 
+sudo sed -i -e "s/JVM_HEAP_VALUE/-Xmx${JVM_HEAP_MEM_MB}m/g" $HADOOP_CONF_DIR/mapred-site.xml
+
 if [ ${hadoop_use_yarn} -eq 1 ] ; then
 	sudo sed -i -e "s/HADOOP_JOBTRACKER_IP/${hadoop_master_ip}/g" $HADOOP_CONF_DIR/yarn-site.xml
 fi
@@ -442,30 +454,65 @@ GANGLIA_COLLECTOR_VM_PORT=`get_global_sub_attribute mon_defaults collector_vm_po
 
 cat <<EOF >> $HADOOP_CONF_DIR/hadoop-metrics2.properties
 namenode.sink.ganglia.class=org.apache.hadoop.metrics2.sink.ganglia.GangliaSink31
-namenode.sink.ganglia.period=10
+namenode.sink.ganglia.period=20
 namenode.sink.ganglia.servers=${hadoop_master_ip}:${GANGLIA_COLLECTOR_VM_PORT}
 
 datanode.sink.ganglia.class=org.apache.hadoop.metrics2.sink.ganglia.GangliaSink31
-datanode.sink.ganglia.period=10
+datanode.sink.ganglia.period=20
 datanode.sink.ganglia.servers=${hadoop_master_ip}:${GANGLIA_COLLECTOR_VM_PORT}
 
 jobtracker.sink.ganglia.class=org.apache.hadoop.metrics2.sink.ganglia.GangliaSink31
-jobtracker.sink.ganglia.period=10
+jobtracker.sink.ganglia.period=20
 jobtracker.sink.ganglia.servers=${hadoop_master_ip}:${GANGLIA_COLLECTOR_VM_PORT}
 
 tasktracker.sink.ganglia.class=org.apache.hadoop.metrics2.sink.ganglia.GangliaSink31
-tasktracker.sink.ganglia.period=10
+tasktracker.sink.ganglia.period=20
 tasktracker.sink.ganglia.servers=${hadoop_master_ip}:${GANGLIA_COLLECTOR_VM_PORT}
 
 maptask.sink.ganglia.class=org.apache.hadoop.metrics2.sink.ganglia.GangliaSink31
-maptask.sink.ganglia.period=10
+maptask.sink.ganglia.period=20
 maptask.sink.ganglia.servers=${hadoop_master_ip}:${GANGLIA_COLLECTOR_VM_PORT}
 
 reducetask.sink.ganglia.class=org.apache.hadoop.metrics2.sink.ganglia.GangliaSink31
-reducetask.sink.ganglia.period=10
+reducetask.sink.ganglia.period=20
 reducetask.sink.ganglia.servers=${hadoop_master_ip}:${GANGLIA_COLLECTOR_VM_PORT}
 
 EOF
+
+
+#####################################################################################
+# If there is an updated example benchmarks jar, put it in its right place.
+#####################################################################################
+
+if [[ -f ~/${REMOTE_DIR_NAME}/scripts/giraph/giraph-examples-1.1.0-SNAPSHOT-for-hadoop-1.2.1-jar-with-dependencies.jar ]]
+then 
+    mv ~/${REMOTE_DIR_NAME}/scripts/giraph/giraph-examples-1.1.0-SNAPSHOT-for-hadoop-1.2.1-jar-with-dependencies.jar ${GIRAPH_HOME}/giraph-examples/target/
+    rm -f ~/giraph-examples-1.1.0-SNAPSHOT-for-hadoop-1.2.1-jar-with-dependencies.jar
+fi
+
+#####################################################################################
+# Create Ramdisk backing for out-of-core giraph if required.
+#####################################################################################
+
+USE_OUT_OF_CORE=`get_my_ai_attribute_with_default use_out_of_core false`
+OUT_OF_CORE_BASE_DIRECTORY=`get_my_ai_attribute_with_default out_of_core_base_directory /tmp`
+USE_RAMDISK=`get_my_ai_attribute_with_default use_ramdisk false`
+RAMDISK_SIZE_MB=`get_my_ai_attribute_with_default ramdisk_size_mb 100`
+
+if [[ ${USE_OUT_OF_CORE} == "True" ]]
+then
+    sudo mkdir -p $OUT_OF_CORE_BASE_DIRECTORY 2> /dev/null
+    if [[ ${USE_RAMDISK} == "True" ]]
+    then
+	syslog_netcat "Creating ramdisk at ${OUT_OF_CORE_BASE_DIRECTORY} of size ${RAMDISK_SIZE_MB}MB"
+	sudo mount -t tmpfs -o size=${RAMDISK_SIZE_MB}m tmpfs $OUT_OF_CORE_BASE_DIRECTORY
+    fi
+    sudo mkdir $OUT_OF_CORE_BASE_DIRECTORY/partitions 2> /dev/null
+    sudo mkdir $OUT_OF_CORE_BASE_DIRECTORY/messages 2> /dev/null
+    sudo rm -rf $OUT_OF_CORE_BASE_DIRECTORY/partitions/* 2> /dev/null
+    sudo rm -rf $OUT_OF_CORE_BASE_DIRECTORY/messages/* 2> /dev/null
+    sudo chmod -R a+rw $OUT_OF_CORE_BASE_DIRECTORY 2> /dev/null
+fi
 
 ###
 

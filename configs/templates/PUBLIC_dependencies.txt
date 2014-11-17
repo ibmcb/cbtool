@@ -109,6 +109,7 @@ libcloud-order = 48
 iptables-order = 49
 R-order = 50
 sshkey-order = 51
+sshd-order = 52
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -170,6 +171,7 @@ libcloud-install = pip
 iptables-install = pm
 R-install = pm
 sshkey-install = man
+sshd-install = man
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
@@ -224,6 +226,7 @@ libcloud-configure = python -c "import libcloud; print str(libcloud.__version__)
 iptables-configure = iptables -v 2>&1 | grep v | cut -d ' ' -f 2 | sed 's/v//g' | sed 's/://g'
 R-configure = R --version | grep version | grep -v GNU
 sshkey-configure = ls CREDENTIALSDIR/cbtool_rsa
+sshd-configure = sudo cat /etc/ssh/sshd_config | grep -v ^# | grep UseDNS | grep no
 ### END - Tests ###
 
 ### START - Dependency versions ###
@@ -509,4 +512,7 @@ ubuntu-R-install-pm = sudo apt-get -y install r-base-core
 
 rhel-sshkey-install-man = ssh-keygen -f CREDENTIALSDIR/cbtool_rsa -t rsa -N ''
 ubuntu-sshkey-install-man = ssh-keygen -f CREDENTIALSDIR/cbtool_rsa -t rsa -N ''
+
+rhel-sshd-install-man = sed -i 's/.*UseDNS.*/UseDNS no/g' /etc/ssh/sshd_config; sed -i 's/.*GSSAPIAuthentication.*/GSSAPIAuthentication no/g' /etc/ssh/sshd_config
+ubuntu-sshd-install-man = sed -i 's/.*UseDNS.*/UseDNS no/g' /etc/ssh/sshd_config; sed -i 's/.*GSSAPIAuthentication.*/GSSAPIAuthentication no/g' /etc/ssh/sshd_config
 ### END -  Dependency and method-specific command lines ###

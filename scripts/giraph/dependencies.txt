@@ -24,7 +24,7 @@ maven-install = man
 java-configure = java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g'
 java-home-configure = cat ~/.bashrc | grep -c openjdk
 hadoop-configure = . .bashrc; ~/hadoop-1.2.1/bin/hadoop version | head -n 1 | cut -d ' ' -f 2
-giraph-configure = ls -la ~/HiBench
+giraph-configure = find ~ | grep giraph-examples | grep dependencies | grep jar
 maven-configure = mvn --version | head -n 1 | cut -d ' ' -f 3
 ### END - Tests ###
 
@@ -60,6 +60,11 @@ rhel-hadoop-install-man = cd ~; tar -xzf ~/hadoop*.gz
 ubuntu-hadoop-preinstall-man = wget -N -P ~ URL
 ubuntu-hadoop-install-man = cd ~; tar -xzf ~/hadoop*.gz
 
-rhel-giraph-preinstall-git = cd ~; git clone URL
-ubuntu-giraph-preinstall-git = cd ~; git clone URL
+rhel-maven-preinstall-man = sudo yum -y install java-devel
+rhel-maven-install-man = sudo rpm -Uvh URL
+rhel-maven-postinstall-man = sudo ln -s /usr/share/apache-maven/bin/mvn /usr/local/bin/; sudo mkdir /usr/share/apache-maven/conf/logging
+ubuntu-maven-install-man = sudo apt-get -y install maven2
+
+rhel-giraph-preinstall-git = cd ~; git clone URL; cd ~/giraph; mvn package -DskipTests
+ubuntu-giraph-preinstall-git = cd ~; git clone URL; mvn package -DskipTests
 ### END -  Dependency and method-specific command lines ###

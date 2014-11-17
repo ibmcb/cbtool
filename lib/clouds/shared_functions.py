@@ -452,12 +452,12 @@ class CommonCloudFunctions:
 
                 _pooling_time = int(time()) - _start_pooling
     
-                if _pooling_time < _wait :
+                if _pooling_time <= _wait :
                     _actual_wait = _wait - _pooling_time
                 else :
                     _msg = "The time spent on pooling for \"booted\" status (" + str(_pooling_time) 
                     _msg += " s) is actually longer than the "
-                    _msg += "interval between pooling attempts( " + str(_wait) + " s)."
+                    _msg += "interval between pooling attempts (" + str(_wait) + " s)."
                     cbdebug(_msg, True)
                     _actual_wait = 0
 

@@ -31,17 +31,46 @@ MAIN_BASE_DIR = $PATH_TO_TOOL
 # Only simcloud has the correct defaults.
 # All other clouds need to specify the key and username
 # explicitly and will be warned by the tool.
-LOGIN_DOC = Please indicate the username that will be used for SSH inside your VMs.\nYou should have already created (or acquired access to) a pre-existing\nimage that exists in the cloud to which you are trying to connect\nas well as already have distributed a public/private key\npair for that image.
-SSH_KEY_NAME_DOC = Please indicate the location of the SSH private key that will\nallow the tool to login to your VMs over the network.\nIn order to use this, the tool *must* have direct SSH access to your\nvirtual machines in the cloud or the tool cannot function. \nThis key is used to bootstrap the application startup process as\nwell as test for network connectivity when the VMs are booting up in the Cloud.\nNote: You should have already uploaded an image which contains a matching public key\nfor the private key that you are using here, or the tool cannot login to the VMs.
-INITIAL_VMCS_DOC = Please specify a list of Regions\n(analagous to an EC2 or OpenStack region).\nThis name is arbitrary, and represents the point at\nwhich hypervisors are grouped together in a typical cloud.
-OPENVPN_SERVER_ADDRESS_DOC = (Optional) If your cloud network is private,\n but your CB installation is on a different network,\n the tool has the ability to instruct\n the VMs to use an OpenVPN server\n to control the virtual machines.\nThis address is the externally reachable address\nwhere the OpenVPN server will run
+LOGIN_DOC = Please indicate the username that will be used for SSH inside your VMs.\n
+LOGIN_DOC += You should have already created (or acquired access to) a pre-existing\n
+LOGIN_DOC += image that exists in the cloud to which you are trying to connect\n
+LOGIN_DOC += as well as already have distributed a public/private key\npair for that image.
+SSH_KEY_NAME_DOC = Please indicate the location of the SSH private key that will\n
+SSH_KEY_NAME_DOC += allow the tool to login to your VMs over the network.\n
+SSH_KEY_NAME_DOC += In order to use this, the tool *must* have direct SSH access to your\n
+SSH_KEY_NAME_DOC += virtual machines in the cloud or the tool cannot function. \n
+SSH_KEY_NAME_DOC += This key is used to bootstrap the application startup process as\n
+SSH_KEY_NAME_DOC += well as test for network connectivity when the VMs are booting up
+SSH_KEY_NAME_DOC += in the Cloud.\nNote: You should have already uploaded an image 
+SSH_KEY_NAME_DOC += which contains a matching public key\nfor the private key that 
+SSH_KEY_NAME_DOC += you are using here, or the tool cannot login to the VMs.
+INITIAL_VMCS_DOC = Please specify a list of Regions\n(analagous to an EC2 or 
+INITIAL_VMCS_DOC += OpenStack region).\nThis name is arbitrary, and represents 
+INITIAL_VMCS_DOC += the point at\nwhich hypervisors are grouped together in a typical cloud.
+OPENVPN_SERVER_ADDRESS_DOC = (Optional) If your cloud network is private,\n but 
+OPENVPN_SERVER_ADDRESS_DOC += your CB installation is on a different network,\n 
+OPENVPN_SERVER_ADDRESS_DOC += the tool has the ability to instruct\n the VMs to 
+OPENVPN_SERVER_ADDRESS_DOC += use an OpenVPN server\n to control the virtual 
+OPENVPN_SERVER_ADDRESS_DOC += machines.\nThis address is the externally reachable
+OPENVPN_SERVER_ADDRESS_DOC +=  address\nwhere the OpenVPN server will run
 OPENVPN_ADDRESS_RANGE_DOC = (Optional) Choose an address range for the OpenVPN\nnetwork to operate on.
-OPENVPN_BOOTSTRAP_ADDRESS_DOC = (Optional) We use your cloud's meta-data services\n to bootstrap client VPN connections,\n but sometimes it is necessary for the CB tool to\n be in a different location than the OpenVPN server\n in which case the client virtual machine will need to register itself using a different IP address.
+OPENVPN_BOOTSTRAP_ADDRESS_DOC = (Optional) We use your cloud's meta-data services\n 
+OPENVPN_BOOTSTRAP_ADDRESS_DOC += to bootstrap client VPN connections,\n but 
+OPENVPN_BOOTSTRAP_ADDRESS_DOC += sometimes it is necessary for the CB tool to\n 
+OPENVPN_BOOTSTRAP_ADDRESS_DOC += be in a different location than the OpenVPN 
+OPENVPN_BOOTSTRAP_ADDRESS_DOC += server\n in which case the client virtual machine
+OPENVPN_BOOTSTRAP_ADDRESS_DOC += will need to register itself using a different IP address.
+
 OPENVPN_ADDRESS_RANGE_DEFAULT = 10.5.0.0 255.255.0.0
 OPENVPN_BOOTSTRAP_ADDRESS_DEFAULT = 10.5.0.1
 
 [SETUP]
-GLOBAL_OBJECT_LIST = setup,logstore,metricstore,dash_defaults,mon_defaults,space,time,vmc_defaults,vm_defaults,ai_defaults,aidrs_defaults,vmcrs_defaults,firs_defaults,vm_templates,ai_templates,aidrs_templates,vmcrs_templates,fi_templates,firs_templates,query,admission_control,api_defaults,gui_defaults
+GLOBAL_OBJECT_LIST = setup,logstore,metricstore,dash_defaults,mon_defaults,
+GLOBAL_OBJECT_LIST += space,time,vmc_defaults,vm_defaults,ai_defaults,
+GLOBAL_OBJECT_LIST += aidrs_defaults,vmcrs_defaults,firs_defaults,vm_templates,
+GLOBAL_OBJECT_LIST += ai_templates,aidrs_templates,vmcrs_templates,fi_templates,
+GLOBAL_OBJECT_LIST += firs_templates,query,admission_control,api_defaults,gui_defaults
+
 
 [SPACE]
 BASE_DIR = $MAIN_BASE_DIR
@@ -212,7 +241,9 @@ DETACH_PARALLELISM = 20
 # for objects that don't make sense. Additional filters can be
 # added by clicking on the dashboard and saving the configuration URL
 # in the user's own configuration file
-DASHBOARD_PARAMETERS = dashboard?kb2mb=no&failedvm=yes&4k2mb=no&b2mb=no&p=yes&h=yes&s=yes&a=yes&filter=s-vmc_name,s-vms,h-type,h-vmc_name,a-vmc_name,h-aidrs_name,h-size,h-age,h-host_name,h-ai_name,h-role,p-vms,a-vms,p-latest_update
+DASHBOARD_PARAMETERS = dashboard?kb2mb=no&failedvm=yes&4k2mb=no&b2mb=no&p=yes
+DASHBOARD_PARAMETERS += &h=yes&s=yes&a=yes&filter=s-vmc_name,s-vms,h-type,
+DASHBOARD_PARAMETERS +=h-vmc_name,a-vmc_name,h-aidrs_name,h-size,h-age,h-host_name,h-ai_name,h-role,p-vms,a-vms,p-latest_update
 
 [MON_DEFAULTS]
 USERNAME = $MAIN_USERNAME

@@ -551,15 +551,45 @@ class CBCLI(Cmd) :
         logger.addHandler(status_handler)
     
         if options.verbosity :
-            if int(options.verbosity) >= 5 :
+            if int(options.verbosity) >= 8 :
                 logger.setLevel(DEBUG)
+            elif int(options.verbosity) >= 7 :
+                # Used to filter out all function calls from all modules in the
+                # "stores" subdirectory.
+                hdlr.addFilter(VerbosityFilter("datastore"))
+                logger.setLevel(DEBUG)
+            elif int(options.verbosity) >= 6 :
+                hdlr.addFilter(VerbosityFilter("PassiveObjectOperations"))
+                hdlr.addFilter(VerbosityFilter("data_ops"))
+                # Used to filter out all function calls from all modules in the
+                # "stores" subdirectory.
+                hdlr.addFilter(VerbosityFilter("datastore"))
+                logger.setLevel(DEBUG)
+            elif int(options.verbosity) >= 5 :
+                hdlr.addFilter(VerbosityFilter("PassiveObjectOperations"))
+                hdlr.addFilter(VerbosityFilter("get_object_count"))
+                hdlr.addFilter(VerbosityFilter("get_counters"))
+                hdlr.addFilter(VerbosityFilter("get_process_object"))
+                hdlr.addFilter(VerbosityFilter("data_ops"))             
+                hdlr.addFilter(VerbosityFilter("datastore"))                
+                logger.setLevel(DEBUG)                
             elif int(options.verbosity) >= 4 :
+                hdlr.addFilter(VerbosityFilter("PassiveObjectOperations"))
+                hdlr.addFilter(VerbosityFilter("get_object_count"))
+                hdlr.addFilter(VerbosityFilter("get_counters"))
+                hdlr.addFilter(VerbosityFilter("get_process_object"))
+                hdlr.addFilter(VerbosityFilter("data_ops"))              
                 # Used to filter out all function calls from all modules in the
                 # "stores" subdirectory.
                 hdlr.addFilter(VerbosityFilter("stores"))
                 hdlr.addFilter(VerbosityFilter("datastore"))
                 logger.setLevel(DEBUG)
             elif int(options.verbosity) >= 3 :
+                hdlr.addFilter(VerbosityFilter("PassiveObjectOperations"))
+                hdlr.addFilter(VerbosityFilter("get_object_count"))
+                hdlr.addFilter(VerbosityFilter("get_counters"))
+                hdlr.addFilter(VerbosityFilter("get_process_object"))
+                hdlr.addFilter(VerbosityFilter("data_ops"))                
                 # Used to filter out all function calls from the "auxiliary"
                 # subdirectory.
                 hdlr.addFilter(VerbosityFilter("auxiliary"))
@@ -569,6 +599,11 @@ class CBCLI(Cmd) :
                 hdlr.addFilter(VerbosityFilter("datastore"))
                 logger.setLevel(DEBUG)
             elif int(options.verbosity) >= 2 :
+                hdlr.addFilter(VerbosityFilter("PassiveObjectOperations"))
+                hdlr.addFilter(VerbosityFilter("get_object_count"))
+                hdlr.addFilter(VerbosityFilter("get_counters"))
+                hdlr.addFilter(VerbosityFilter("get_process_object"))
+                hdlr.addFilter(VerbosityFilter("data_ops"))                
                 # Used to filter out all function calls from the "auxiliary"
                 # subdirectory.
                 hdlr.addFilter(VerbosityFilter("auxiliary"))
@@ -584,6 +619,11 @@ class CBCLI(Cmd) :
                 hdlr.addFilter(VerbosityFilter("datastore"))
                 logger.setLevel(DEBUG)
             elif int(options.verbosity) == 1 :
+                hdlr.addFilter(VerbosityFilter("PassiveObjectOperations"))
+                hdlr.addFilter(VerbosityFilter("get_object_count"))
+                hdlr.addFilter(VerbosityFilter("get_counters"))
+                hdlr.addFilter(VerbosityFilter("get_process_object"))
+                hdlr.addFilter(VerbosityFilter("data_ops"))
                 # Used to filter out all function calls from the "auxiliary"
                 # subdirectory.
                 hdlr.addFilter(VerbosityFilter("auxiliary"))

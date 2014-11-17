@@ -57,7 +57,9 @@ CHECK_BOOT_COMPLETE = wait_for_0
 #CHECK_BOOT_COMPLETE = tcp_on_22
 NETID = vlan123
 NETNAME = private
-JUMP_HOST = $Empty
+JUMP_HOST = $False
+LEAVE_INSTANCE_ON_FAILURE = $False
+HOST_USER_ROOT = $False
 
 [AI_DEFAULTS : SIM_CLOUDCONFIG]
 CAPTURE_SUPPORTED = $True
@@ -96,6 +98,8 @@ WAS = size:iron32, eclipsed_size:gold32, imageids:1, imageid1:cb_daytrader
 DRIVER_HADOOP = size:nano32, imageids:1, imageid1:cb_hadoop
 HADOOPMASTER = size:copper32, eclipsed_size:gold32, imageids:1, imageid1:cb_hadoop
 HADOOPSLAVE = size:iron32, eclipsed_size:gold32, imageids:1, imageid1:cb_hadoop
+GIRAPHPMASTER = size:copper32, eclipsed_size:gold32, imageids:1, imageid1:cb_giraph
+GIRAPHSLAVE = size:iron32, eclipsed_size:gold32, imageids:1, imageid1:cb_giraph
 DRIVER_NETPERF = size:nano32, imageids:1, imageid1:cb_netperf
 NETCLIENT = size:iron32, imageids:1, imageid1:cb_netperf
 NETSERVER = size:iron32, imageids:1, imageid1:cb_netperf

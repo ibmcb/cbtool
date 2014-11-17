@@ -59,6 +59,7 @@ INITIAL_VMCS = $VCD_INITIAL_VMCS
 KEY_NAME = $VCD_KEY_NAME
 MIGRATE_SUPPORTED = $False
 PROTECT_SUPPORTED = $False
+HOST_USER_ROOT = $False
 
 [VM_DEFAULTS : VCD_CLOUDCONFIG ]
 ACCESS = $VCD_ACCESS
@@ -86,7 +87,8 @@ SNMP_VARIABLE = $VCD_SNMP_VARIABLE
 # CLONE_TIMEOUT is number of seconds libcloud should poll VCD after issuing clone command before timing out
 CLONE_TIMEOUT = 600
 NETNAME = private
-JUMP_HOST = $Empty
+JUMP_HOST = $False
+LEAVE_INSTANCE_ON_FAILURE = $False
 
 [AI_DEFAULTS : EC2_CLOUDCONFIG ]
 ATTACH_PARALLELISM = 10
@@ -124,6 +126,8 @@ LOSTBACK = size:dummysize, class:value, imageid1:image-001
 DRIVER_HADOOP = size:dummysize, imageid1:image-001
 HADOOPMASTER = size:dummysiz2, imageid1:image-001
 HADOOPSLAVE = size:dummysize,  imageid1:image-001
+GIRAPHMASTER = size:dummysiz2, imageid1:image-001
+GIRAPHSLAVE = size:dummysize,  imageid1:image-001
 DRIVER_NETPERF = size:dummysize, imageid1:image-001
 NETCLIENT = size:dummysize, imageid1:image-001
 NETSERVER = size:dummysize, imageid1:image-001

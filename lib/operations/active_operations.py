@@ -205,10 +205,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 if "jump_host" in cld_attr_lst["vm_defaults"] :
                     if str(cld_attr_lst["vm_defaults"]["jump_host"]).lower() != "false" :
-                        if len(str(cld_attr_lst["vm_defaults"]["jump_host"])) > 1 :
+                        if str(cld_attr_lst["vm_defaults"]["jump_host"]).lower() != "true" :
                             _msg = "The attribute \"jump_host\" in VM_DEFAULTS is set. "
                             _msg += "Will attempt to connect (ssh) to the host \"" 
-                            _msg += cld_attr_lst["vm_defaults"]["jump_host"] + "\""
+                            _msg += str(cld_attr_lst["vm_defaults"]["jump_host"]) + "\""
                             _msg += " to confirm that this host can be used as a \""
                             _msg += "jump box\"."
                             cbdebug(_msg, True)
@@ -229,7 +229,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             _command += '@' + cld_attr_lst["vm_defaults"]["jump_host"]
                             _command += " \"which nc\""
     
-                            _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_command)
+                            _status, _result_stdout, _result_stderr = \
+                            _proc_man.retriable_run_os_command(_command, \
+                                                               total_attempts = int(cld_attr_lst["vm_defaults"]["update_attempts"]),\
+                                                               retry_interval = int(cld_attr_lst["vm_defaults"]["update_frequency"]), \
+                                                               raise_exception_on_error = False)
     
                             if not _status :
                                 _jump_box_host_contents = "Host *\n"
@@ -242,7 +246,14 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                 _jump_box_host_fd.close()
     
                                 cld_attr_lst["vm_defaults"]["ssh_config_file"] = _jump_box_host_fn
-    
+                        else :
+                            _msg = "The attribute \"jump_host\" in VM_DEFAULTS"
+                            _msg += " is set to \"$True\", but the actual IP address"
+                            _msg += " of the jump_host VM could not be determined."
+                            _msg += " Please try to re-run the tool."
+                            cberr(_msg, True)
+                            exit(1)
+                              
                 _all_global_objects = cld_attr_lst.keys()
                 cld_attr_lst["client_should_refresh"] = str(0.0)
 
