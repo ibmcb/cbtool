@@ -1,139 +1,198 @@
 #!/usr/bin/env python
 #/*******************************************************************************
-# Copyright (c) 2012 IBM Corp.
-
+# Copyright (c) 2012 Red Hat.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-
 #     http://www.apache.org/licenses/LICENSE-2.0
-
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #/*******************************************************************************
-#--------------------------------- START CB API --------------------------------
+'''
+This script will launch X guests at Y rate, once all guests are launched 
+this script will change a field, to start load on all the guests.
 
-from sys import path, argv
+Please review the cbtool/scripts/linpack/cb_linpack.sh for an example
+@author Joe Talerico
+'''
 from time import sleep
-
-import fnmatch
+from sys import path
+from time import strftime
 import os
-import pwd
+import logging
+import fnmatch
+import yaml
+import threading
+import sys
 
-home = os.environ["HOME"]
-username = pwd.getpwuid(os.getuid())[0]
+_home = "/home/cloud/cbtool"
 
-api_file_name = "/tmp/cb_api_" + username
-if os.access(api_file_name, os.F_OK) :    
-    try :
-        _fd = open(api_file_name, 'r')
-        _api_conn_info = _fd.read()
-        _fd.close()
-    except :
-        _msg = "Unable to open file containing API connection information "
-        _msg += "(" + api_file_name + ")."
-        print _msg
-        exit(4)
-else :
-    _msg = "Unable to locate file containing API connection information "
-    _msg += "(" + api_file_name + ")."
-    print _msg
-    exit(4)
-
-_path_set = False
-
-for _path, _dirs, _files in os.walk(os.path.abspath(path[0] + "/../")):
+for _path, _dirs, _files in os.walk(os.path.abspath(_home)):
     for _filename in fnmatch.filter(_files, "code_instrumentation.py") :
-        if _path.count("/lib/auxiliary") :
-            path.append(_path.replace("/lib/auxiliary",''))
-            _path_set = True
-            break
-    if _path_set :
+        path.append(_path.replace("/lib/auxiliary",''))
         break
 
 from lib.api.api_service_client import *
 
-_msg = "Connecting to API daemon (" + _api_conn_info + ")..."
-print _msg
-api = APIClient(_api_conn_info)
-
-#---------------------------------- END CB API ---------------------------------
-
-if len(argv) < 3 :
-        print "./" + argv[0] + " <cloud_name> <vapp type>"
-        exit(1)
-
-_cloud_name = argv[1]
-_workload = argv[2]
-
-import yaml
+_api_endpoint = "20.0.0.108"
+_cloud_name = "MYOPENSTACK"
+_workload = "linpack"
+_launch_rate = 25
+_write_file = "%s" % strftime("%m%d%Y-%H:%M:%S")
+_launch_until = int(sys.argv[1])
 _retrun_msg = ""
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-def _check_sla(_yaml, _api,uuid, _current_ai, _all_ai) :
-    _check_data = 0 
-    print _yaml
-    print uuid
-    while True :
-        _check_data+=1
-        print "Waiting for Application Data from AI: %s, attempt %s" % (_current_ai['uuid'], _check_data)
-        try : 
-            if _check_data > 50 : 
-                _return_msg = "Failed to retrieve Application Metrics"
-                return False
-            _data = _api.get_latest_app_data(_cloud_name,uuid)
-            print _data 
-            break
-        except APINoSuchMetricException, obj :
-            sleep(10)
-            continue
+#----------------------- theThread ---------------------------------------------
+#
+#
+#
+#-------------------------------------------------------------------------------
+class theThread (threading.Thread):
+    def __init__(self, api, ai):
+        threading.Thread.__init__(self)
+        self.api = api
+        self.ai = ai
+    def run(self):
+        _sampling(self.api,self.ai)
+#----------------------- end theThread -----------------------------------------
 
-    return False 
+#----------------------- _sampling ---------------------------------------------
+#
+#
+#
+#-------------------------------------------------------------------------------
+def _sampling(_api, _ai) :
+    _check_data = 0
+    _check_time = None
+    _samples = 5
+    file = open("%s-workload-data"%(_write_file), "w")
+    while _samples > 0  :
+       try :
+          _data = _api.get_latest_app_data(_cloud_name,_ai)
+          if _data['time'] != _check_time :
+             _check_time = _data['time']
+             file.write("%s, %s, %s, %s" % (_ai, _data['time'],
+                _data['app_throughput_average']['val'],
+                _data['app_throughput_max']['val']))
+             _samples-=1
+       except APINoSuchMetricException, obj :
+          continue
 
+    file.close()
+    return True
+#----------------------- End _sampling -----------------------------------------
+
+#----------------------- CloudBench API ----------------------------------------
+api = APIClient("http://" + _api_endpoint + ":7070")
 _launched_ais = []
-_sla = open('./SPEC_SLA.yaml')
-_yaml = yaml.safe_load(_sla)
-_sla.close()
-
+app = None
 try :
     error = False
     vm = None
-
     _cloud_attached = False
     for _cloud in api.cldlist() :
         if _cloud["name"] == _cloud_name :
             _cloud_attached = True
             _cloud_model = _cloud["model"]
             break
-
     if not _cloud_attached :
         print "Cloud " + _cloud_name + " not attached"
         exit(1)
-
     ai_return_state=True
-
     print "Launching AI %s" % _workload
-    print "Guest, Provison complete, Network accessible, Last Known state"
-    while ai_return_state :
-#----------------------- Create Apps over time ----------------------------------
-        app = api.appattach(_cloud_name, _workload)
-        vms = [ val.split("|")[0] for val in app["vms"].split(",")]
-        _data_uuid = ""
-        for vm in vms :
-            _guest_data = api.get_latest_management_data(_cloud_name,vm)
-            if _guest_data["cloud_hostname"].find("ycsb") != -1 :
-                _data_uuid = _guest_data["uuid"]
-                print "%s ,%s, %s, %s" % (_guest_data["cloud_hostname"], \
-                                          _guest_data["mgt_003_provisioning_request_completed"], \
-                                          _guest_data["mgt_004_network_acessible"], \
-                                          _guest_data["last_known_state"])
-        _launched_ais.append(app)
-        ai_return_state=_check_sla(_yaml,api,_data_uuid,app,_launched_ais)
+    vms=[]
+    _launch = None
+    _ignore_ai = []
+    _prev_failed = []
+#----------------------- AIs to ignore... since this is a new run. -------------
+    for ai in api.applist(_cloud_name) :
+       _ignore_ai.append([val.split("|")[0] for val in ai["vms"].split(",")][0])
+#----------------------- AIs failed before our run -----------------------------
+    for ai in api.applist(_cloud_name,state="failed") :
+       _prev_failed.append([val.split("|")[0] for val in ai["vms"].split(",")][0])
 
+    _ai_list = []
+    _current_ai = []
+    _file = open("%s-launch-data"%(_write_file), "w")
+    while ai_return_state :
+        _current_ai = []
+        for ai in api.applist(_cloud_name) :
+           if not [val.split("|")[0] for val in ai["vms"].split(",")][0] in _ignore_ai :
+              _current_ai.append([val.split("|")[0] for val in ai["vms"].split(",")][0])
+#----------------------- Create Apps over time ----------------------------------
+        if _launch_rate > _launch_until :
+           _launch = _launch_until
+        else :
+           _launch = _launch_rate
+        logger.info("Launching : %s guests" % _launch)
+        api.appattach(_cloud_name,_workload,async=_launch)
+#----------------------- Wait for the AIs to be launched -----------------------
+        while True :
+            _ai_list = []
+            for ai in api.applist(_cloud_name) :
+               if not [val.split("|")[0] for val in ai["vms"].split(",")][0] in _ignore_ai :
+                  if not [val.split("|")[0] for val in ai["vms"].split(",")][0] in _current_ai :
+                     _ai_list.append([val.split("|")[0] for val in ai["vms"].split(",")][0])
+            if len(_ai_list) != _launch :
+               for ai in api.applist(_cloud_name,state="failed") :
+                  if not [val.split("|")[0] for val in ai["vms"].split(",")][0] in _prev_failed :
+#----------------------- Failed AI ---------------------------------------------
+                      logger.info("Failed to launch a AI")
+               sleep(20)
+            else :
+               break
+#----------------------- Waiting for AIs to have management data. --------------
+        for vm in _ai_list :
+            while True :
+                try :
+                    _guest_data = api.get_latest_management_data(_cloud_name,vm)
+                    break
+                except APINoSuchMetricException, obj :
+                    sleep(5)
+                    continue
+                except APIException, obj :
+                    sleep(5)
+                    continue
+#----------------------- Build a list of Guest UUIDs ---------------------------
+        for vm in _ai_list :
+            _guest_data = api.get_latest_management_data(_cloud_name,vm)
+            if _guest_data["cloud_hostname"].find(_workload) != -1 :
+                _data_uuid = _guest_data["uuid"]
+            _file.write("%s ,%s, %s, %s" % (_guest_data["cloud_hostname"],
+                            _guest_data["mgt_003_provisioning_request_completed"],
+                            _guest_data["mgt_004_network_acessible"],
+                            _guest_data["last_known_state"]))
+
+        _launch_until = _launch_until - _launch_rate
+        if _launch_until > 0 :
+            sleep(20)
+            ai_return_state = True
+        else :
+            _ai_list = _current_ai + _ai_list
+            ai_return_state = False
+
+    for app in api.applist(_cloud_name):
+        if not [val.split("|")[0] for val in ai["vms"].split(",")][0] in _ignore_ai :
+            api.appalter(_cloud_name, app['uuid'], 'wait_for', 1)
+
+#----------------------- Sampling will being the workload, and begin sampling th
+    threads = []
+    _file.close()
+    for ai in _ai_list :
+        threads.append( theThread(api,ai) )
+    [x.start() for x in threads]
+    [x.join() for x in threads]
+#----------------------- Remove existing VMs. ----------------------------------
     print "Removing all AIs"
-    api.appdetach(_cloud_name, app["uuid"])
+    for apps in api.applist(_cloud_name) :
+#        if type(_ignore_ai) is dict :
+#           if not [val.split("|")[0] for val in ai["vms"].split(",")][0] in _ignore_ai :
+           api.appdetach(_cloud_name,apps['uuid'])
 
 except APIException, obj :
     error = True
@@ -146,9 +205,9 @@ except APINoSuchMetricException, obj :
 except KeyboardInterrupt :
     print "Aborting this VM."
 
-except Exception, msg :
-    error = True
-    print "Problem during experiment: " + str(msg)
+#except Exception, msg :
+#    error = True
+#    print "Problem during experiment: " + str(msg)
 
 finally :
     if app is not None :
