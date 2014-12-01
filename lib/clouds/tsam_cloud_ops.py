@@ -68,7 +68,7 @@ class TsamCmds(CommonCloudFunctions) :
         proc_h = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
         
         output = []
-        if not wait_on_process(self.pid, proc_h, output) :
+        if not self.wait_on_process(self.pid, proc_h, output) :
             _msg = "ERROR trying to " + operation + " TSAM vm: " + str(output)
             cberr(_msg)
             return 10, _msg
@@ -109,7 +109,7 @@ class TsamCmds(CommonCloudFunctions) :
         cbdebug(_msg)        
 
         sleep(float(obj_attr_list["boot_time"]))
-        wait_for_network_ready(obj_attr_list, None)
+        self.wait_for_network_ready(obj_attr_list, None)
         _status = 0
         return 0, str(output)
 

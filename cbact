@@ -97,8 +97,16 @@ def actuator_cli_parsing() :
     parser.add_option('--guiport', default='8080', dest='guiport', \
                       help='GUI Port to serve on (default 8080)')
     
+    parser.add_option('--guisslcert', default=False, dest='guisslcert', \
+                      help='GUI Certificate for HTTPS (default none)')
+
+    parser.add_option('--guisslkey', default=False, dest='guisslkey', \
+                      help='GUI Private key for HTTPS (default none)')
+
     parser.add_option('--guihost', default='0.0.0.0', dest='guihost', \
                       help='GUI hostname to which to bind (default 0.0.0.0)')
+
+    parser.add_option('--guibranding', default='favicon.ico,20,http://localhost', dest='guibranding', help='What icon to use in the UI for company branding relative to the gui_files source directory')
 
     parser.add_option('--apiport', default='7070', dest='apiport', \
                       help='GUI Port to serve on (default 7070)')

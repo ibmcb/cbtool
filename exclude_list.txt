@@ -7,6 +7,7 @@
 .project
 .pydevproject
 .settings
+.cb_history
 *.pyc
 debug.py
 *gmetad-hosts.conf

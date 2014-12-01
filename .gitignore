@@ -52,3 +52,13 @@ gmetad-hosts.conf
 *hosts.conf
 configs/definitions.txt
 data
+util/openvpn/easy-rsa/keys/
+configs/client-cb-openvpn-*.conf
+configs/server-cb-openvpn-*.conf
+configs/mongo-cb-openvpn-*.conf
+configs/*_cloud_definitions.txt
+configs/*_dependencies.txt
+credentials/cbtool.crt
+credentials/cbtool.key
+libpeerconnection.log
+util/pydevd
