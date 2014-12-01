@@ -217,9 +217,20 @@ then
 
     while [[ z${DATANODES_AVAILABLE} != z"true" ]]
     do
+        # CDH format: Datanodes available: 4 (5 total, 1 dead)
+        # Apache format: Live datanodes (4):
+        #                Dead datanodes (1):
         DFSADMINOUTPUT=`${HADOOP_HOME}/bin/hadoop dfsadmin -report | grep "Datanodes available"`
-        AVAILABLE_NODES=`echo ${DFSADMINOUTPUT} | cut -d ":" -f 2 | cut -d " " -f 2`
-        TOTAL_NODES=`echo ${DFSADMINOUTPUT} | cut -d ":" -f 2 | cut -d " " -f 3 | sed 's/(//g'`
+        if [ -z "$DFSADMINOUTPUT" ]
+        then
+             # Format: Live datanodes (4):
+             AVAILABLE_NODES=`${HADOOP_HOME}/bin/hadoop dfsadmin -report | grep "Live datanodes" | awk -F"[()]" '{print $2}'`
+             DEAD_NODES=`${HADOOP_HOME}/bin/hadoop dfsadmin -report | grep "Dead datanodes" | awk -F"[()]" '{print $2}'`
+             TOTAL_NODES=$((AVAILABLE_NODES+DEAD_NODES))
+        else
+             AVAILABLE_NODES=`echo ${DFSADMINOUTPUT} | cut -d ":" -f 2 | cut -d " " -f 2`
+             TOTAL_NODES=`echo ${DFSADMINOUTPUT} | cut -d ":" -f 2 | cut -d " " -f 3 | sed 's/(//g'`
+        fi
         if [[ ${AVAILABLE_NODES} -ne 0 && z${AVAILABLE_NODES} == z${TOTAL_NODES} ]]
         then
             DATANODES_AVAILABLE="true"
@@ -230,7 +241,7 @@ then
         ((ATTEMPTS=ATTEMPTS-1))
         if [ "$ATTEMPTS" -eq 0 ]
         then
-            syslog_netcat "Timeout Error waiting for datanodes to start. - NOK"
+            syslog_netcat "Timeout Error waiting for datanodes to start. ${AVAILABLE_NODES} of ${TOTAL_NODES} are live. - NOK"
             syslog_netcat "`${HADOOP_HOME}/bin/hadoop dfsadmin -report`"
             exit 1
         fi
