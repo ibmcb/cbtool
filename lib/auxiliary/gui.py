@@ -637,9 +637,13 @@ class Params(object) :
         cbdebug("Request: " + self.unparsed_uri + " action: " + self.action)
 
 class GUI(object):
-    def __init__(self, apiport, apihost):
+    def __init__(self, apiport, apihost, branding):
         self.heromsg = "<div class='hero-unit' style='padding: 5px'>"
         self.spinner = "<img src='CBSTRAP/spinner.gif' width='15px'/>&nbsp;"
+        brandparts = branding.split(",")
+        self.branding = brandparts[0]
+        self.brandurl = brandparts[2]
+        self.brandiconsize = brandparts[1]
         self.apihost = apihost
         self.apiport = apiport
         self.pid = "none"
@@ -665,7 +669,8 @@ class GUI(object):
         
         self.replacement_keys = [ 
                 "BOOTNAV", "BOOTCLOUDNAME", "BOOTCLOUDS", "BOOTAVAILABLECLOUDS", "BOOTBODY", "BOOTSHOWPOPOVER", \
-                "BOOTSPINNER", "BOOTDEST", "BOOTACTIVE", "BOOTOBJECTNAME", "BOOTSTRAP", "CBSTRAP" \
+                "BOOTSPINNER", "BOOTDEST", "BOOTACTIVE", "BOOTOBJECTNAME", \
+                "BOOTSTRAP", "CBSTRAP", "BOOTBRAND", "BOOTICON", "BOOTCOMPANY" \
         ]
         
     def keyfunc(self, x):
@@ -1870,7 +1875,7 @@ class GUI(object):
     
         replacements = [    
                          navcontents, 
-                         (req.cloud_name + "[" + req.model + "]") if req.session['connected'] else "Disconnected",
+                         ("CB: [" + req.cloud_name + "," + req.model + "]") if req.session['connected'] else "Disconnected",
                          cloudcontents,
                          availablecontents,
                          body,
@@ -1881,6 +1886,9 @@ class GUI(object):
                          req.active_obj[:-1] if req.active_obj else "",
                          bootstrappath,
                          cbpath,
+                         self.branding,
+                         self.brandiconsize,
+                         self.brandurl,
                       ]
     
         for idx in range(0, len(self.replacement_keys)) :
@@ -1946,7 +1954,7 @@ class BroadwayRedirectResource(Resource):
 
         
 class GUIDispatcher(Resource) :
-    def __init__(self, keepsession, apiport, apihost) :
+    def __init__(self, keepsession, apiport, apihost, branding) :
 
         Resource.__init__(self)
         self.third_party = File(cwd + "/3rd_party")
@@ -1954,7 +1962,7 @@ class GUIDispatcher(Resource) :
         self.icon = File(cwd + "/gui_files/favicon.ico")
         self.git = File(cwd + "/.git")
         self.git.indexNames = ["test.rpy"]
-        self.dashboard = GUI(apiport, apihost)
+        self.dashboard = GUI(apiport, apihost, branding)
         self.broadway = BroadwayRedirectResource()
         
         session_opts = {
@@ -2062,10 +2070,17 @@ class WebsocketsDispatcher:
 def gui(options) :
     reactor._initThreadPool()
 
-    cbdebug("Will use API Service @ http://" + options.apihost + ":" + str(options.apiport))
-    cbdebug("Point your browser at port: " + str(options.guiport) + ". (Bound to interface: " + options.guihost + ")")
+    use_ssl = False
+    if options.guisslcert and options.guisslcert.lower() != "false" and options.guisslkey and options.guisslkey != "false" :
+        use_ssl = True
 
-    site = Site(GUIDispatcher(options.keepsession, options.apiport, options.apihost))
+    cbdebug("Will use API Service @ http://" + options.apihost + ":" + str(options.apiport))
+
+    cbdebug("Point your browser to: http", True)
+    cbdebug("https" if use_ssl else "http", True)
+    cbdebug(" port: " + str(options.guiport) + ". (Bound to interface: " + options.guihost + ")", True)
+
+    site = Site(GUIDispatcher(options.keepsession, options.apiport, options.apihost, options.guibranding))
 
     PacketBuffer.delimiter = "\r\n\r\n"
     factory = BufferingProxyFactory()
@@ -2073,6 +2088,32 @@ def gui(options) :
     WebsocketsDispatcher.site = site
     factory.dispatcher_factory = WebsocketsDispatcher
 
-    reactor.listenTCP(int(options.guiport), factory, interface = options.guihost)
+    if use_ssl : 
+        from twisted.internet import ssl
+        from OpenSSL import SSL
+
+        class ChainedOpenSSLContextFactory(ssl.DefaultOpenSSLContextFactory):
+            def __init__(self, privateKeyFileName, certificateChainFileName, sslmethod=SSL.SSLv23_METHOD):
+                self.privateKeyFileName = privateKeyFileName
+                self.certificateChainFileName = certificateChainFileName
+                self.sslmethod = sslmethod
+                self.cacheContext()
+            
+            def cacheContext(self):
+                ctx = SSL.Context(self.sslmethod)
+                ctx.use_certificate_chain_file(self.certificateChainFileName)
+                ctx.use_privatekey_file(self.privateKeyFileName)
+                self._context = ctx
+
+        # If your certificate is actually trusted and signed by a real CA
+        # (as it should be), your certificate file should have the full
+        # certificate chain included in the file, not only yours.
+
+        reactor.listenSSL(int(options.guiport), factory, ChainedOpenSSLContextFactory(privateKeyFileName=options.guisslkey, certificateChainFileName=options.guisslcert, sslmethod = SSL.SSLv3_METHOD), interface = options.guihost)
+
+        #reactor.listenSSL(int(options.guiport), factory, ssl.DefaultOpenSSLContextFactory(options.guisslkey, options.guisslcert), interface = options.guihost)
+    else :
+        cbdebug("Your dashboard does not use SSL. You are warned.", True)
+        reactor.listenTCP(int(options.guiport), factory, interface = options.guihost)
     reactor.run()
 

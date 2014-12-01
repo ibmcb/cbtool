@@ -1031,7 +1031,8 @@ class BaseObjectOperations :
                             openvpn_fh.close()
                             _openvpn_contents = _openvpn_contents.replace("DESTINATION", _dir_list["openvpn_server_address"])
                             
-                            obj_attr_list["userdata"] = _pending_fn + "\n" + _dir_list["openvpn_bootstrap_address"] + "\n" + _openvpn_contents
+                            openvpn_server_and_port = _dir_list["openvpn_bootstrap_address"] + " -p " + str(self.osci.port)
+                            obj_attr_list["userdata"] = _pending_fn + "\n" + openvpn_server_and_port + "\n" + _openvpn_contents
                             obj_attr_list["openvpn_server_address"] = _dir_list["openvpn_server_address"]
                             obj_attr_list["openvpn_bootstrap_address"] = _dir_list["openvpn_bootstrap_address"]
             

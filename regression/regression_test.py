@@ -172,6 +172,7 @@ def mask_contents(contents, which) :
         _line_contents = re.sub("\|POOL +\|\(orphan\)", "|POOL |none ", _line_contents)
         _line_contents = re.sub("\|none *\|", "|none |", _line_contents)
         _line_contents = re.sub("\|(norole|willfail) +\|", "|foorole |", _line_contents)
+        _line_contents = re.sub("/home/[^/]+/[^/]+", "/path/to/tool", _line_contents)
         _line_contents = re.sub(" +", " ", _line_contents)
         contents[_line_number] = \
                 re.sub("[a-zA-Z0-9_]+-[a-zA-Z0-9_]+-[a-zA-Z0-9_]+-[a-zA-Z0-9_]+-[a-zA-Z0-9_]+", 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', _line_contents)
