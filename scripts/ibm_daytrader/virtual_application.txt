@@ -1,19 +1,42 @@
 # Parameters for this Virtual Application (Application Instance - AI) type should
 # be set on YOUR private configuration configuration file, including the ones 
 # commented.
+
 [AI_TEMPLATES : IBM_DAYTRADER]
-DESCRIPTION = TBD
+
+# Attributes MANDATORY for all Virtual Applications
 SUT = client_daytrader->was->db2
-LOAD_GENERATOR_ROLE = client_daytrader
-LOAD_MANAGER_ROLE = client_daytrader
-METRIC_AGGREGATOR_ROLE = client_daytrader
-CAPTURE_ROLE = db2
+LOAD_BALANCER_SUPPORTED = $True
 LOAD_BALANCER = $False
 LOAD_BALANCER_TARGET_PORT = 9080
 LOAD_BALANCER_TARGET_URL = daytrader
 LOAD_BALANCER_TARGET_CHILDREN = 2
 LOAD_BALANCER_PORT = 9080
 LOAD_BALANCER_URL = daytrader
+RESIZE_SUPPORTED = $True
+REGENERATE_DATA = $False
+LOAD_GENERATOR_ROLE = client_daytrader
+LOAD_MANAGER_ROLE = client_daytrader
+METRIC_AGGREGATOR_ROLE = client_daytrader
+CAPTURE_ROLE = db2
+REPORTED_METRICS = throughput,latency,datagen_time,datagen_size
+LOAD_PROFILE = default
+LOAD_LEVEL = uniformIXIXI1I10
+# The load duration for daytrader should not be smaller than 90 seconds
+LOAD_DURATION = uniformIXIXI90I120
+
+# VApp-specific MANDATORY attributes
+DESCRIPTION = Deploys an 2-tier stack, formed by N "application (Websphere) nodes"
+DESCRIPTION += VMs \n - if N > 1, then a "load balancer (IHS) node" VM is also deployed -\n
+DESCRIPTION +=  and one "database (DB2) node" VM, and then runs the DayTrader benchmark
+DESCRIPTION += on the stack. The actual load is performed by an additional VM,
+DESCRIPTION += running the WebSphere Studio Workload Simulator (iwlengine).\n
+DESCRIPTION +=- LOAD_PROFILE possible values: "default" (the only profile that we
+DESCRIPTION += have registered in the iwlengine).
+DESCRIPTION +=- LOAD_LEVEL meaning: number of clients simultaneously performing
+DESCRIPTION += transactions (parameter "-c" on iwlengine).\n 
+DESCRIPTION +=- LOAD_DURATION meaning: total transaction time for all clients.\n
+DESCRIPTION +=- COMMENT: None.
 # This only has effect if the parameter LOAD_BALANCER is set to "$True"
 LB_SETUP1 = cb_restart_loadbalancer.sh
 LB_RESET1 = cb_restart_loadbalancer.sh
@@ -25,10 +48,6 @@ DB2_SETUP2 = cb_restart_db2.sh
 WAS_RESET1 = cb_restart_was.sh
 DB2_RESET1 = cb_restart_db2.sh
 START = cb_daytrader.sh
-LOAD_PROFILE = default
-LOAD_LEVEL = uniformIXIXI1I10
-# The load duration for daytrader should not be smaller than 90 seconds
-LOAD_DURATION = uniformIXIXI90I120
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 #TRADEDB_SIZE = small

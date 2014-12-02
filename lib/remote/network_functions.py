@@ -34,7 +34,6 @@ from fcntl import ioctl
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 
-
 class NetworkException(Exception):
     '''
     TBD
@@ -215,7 +214,10 @@ def hostname2ip(hostname) :
 SIOCGIFMTU = 0x8921
 SIOCSIFMTU = 0x8922
 
-def get_mtu(ifname):
+def get_mtu(ifname) :
+    '''
+    TBD
+    '''
     s = socket.socket(type=socket.SOCK_DGRAM)
     
     ifr = ifname + '\x00'*(32-len(ifname))
@@ -227,6 +229,7 @@ def get_mtu(ifname):
         raise
  
     return mtu
+
 @trace
 class Nethashget :
     '''

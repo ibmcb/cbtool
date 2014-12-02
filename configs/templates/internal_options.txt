@@ -176,29 +176,9 @@ MIGRATE_PROTOCOL = tcp
 PROTECT_PROTOCOL = tcp 
 MIGRATE_PROTOCOL_SUPPORTED = tcp,rdma,x-rdma
 PROTECT_PROTOCOL_SUPPORTED = tcp,rdma,x-rdma
-
-# On some clouds with VLANs, GRE tunnels, or VPNs, the MTU often does not get respected and a misconfigured network 
-# can create a situation can be worked around by lowering the MTU before CB performs the initial 'rsync'. 
-# This works because SSH commands do not usually produce packets large enough to fragmented by IP, so
-# this is lucky enough to login to the new instances and change the MTU in a timely manner before the
-# rsync or any of the benchmarks begin execution. This command will perform UDP path MTU discovery
-# with a default 1500 bytes. If this fails, then we will remotely set the MTU inside the VM to the desired
-# number below. If it succeeds, we will not alter the remote VM's MTU.
 ALTERNATIVE_REMOTE_MTU = $False
-
-# We will run MTU discovery even if the above value is false, in which case we will choose a default MTU
-# to which lower the remote interface's MTU. If the user does not specify an alternative, we have chosen
-# 1200 totally as an empirical observation. VPN connections really enjoy choosing MTU's in the 1300-byte range, so
-# let's be conservative and choose a default that is less than that. If this is not what you want, then make sure
-# you set the above value in case you get a warning from CB that your packets are not going through.
 ALTERNATIVE_REMOTE_MTU_DEFAULT = 1200
-
-# What is the *expected* MTU we expect to find with path discovery?
 EXPECTED_MTU = 1500
-
-# If path MTU discovery reveals that packets are not getting through, then we need to know which remote
-# network interface on which to lower the MTU. We will discover the interface by running 'ip route'
-# inside the VM. 
 ALTERNATIVE_REMOTE_MTU_INTERFACE = default
 
 [AI_DEFAULTS]
@@ -375,7 +355,6 @@ GTK_LOGIN_PORT_MAX = 16000
 GTK_DISPLAY = $True
 GTK_DISPLAY_PORT_BASE = 17000
 GTK_DISPLAY_PORT_MAX = 18000
-# You can pick your own favicon.ico,pixelsize,webURL that you want for your company
 BRANDING = favicon.ico,20,http://localhost
 SSLCERT = $False
 SSLKEY = $False

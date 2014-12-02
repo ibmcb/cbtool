@@ -185,6 +185,11 @@ class SimCmds(CommonCloudFunctions) :
             obj_attr_list["host_list"][_host_uuid] = {}
             obj_attr_list["host_list"][_host_uuid]["pool"] = obj_attr_list["pool"].upper()
             obj_attr_list["host_list"][_host_uuid]["username"] = obj_attr_list["username"]
+                                
+            if obj_attr_list["host_user_root"].lower() == "true" :
+                obj_attr_list["host_list"][_host_uuid]["login"] = "root"                        
+            else :
+                obj_attr_list["host_list"][_host_uuid]["login"] = obj_attr_list["host_list"][_host_uuid]["username"]
             obj_attr_list["host_list"][_host_uuid]["cloud_ip"] = self.generate_random_ip_address()
             obj_attr_list["host_list"][_host_uuid]["notification"] = "False"
             if _auto_name :

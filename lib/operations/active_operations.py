@@ -625,7 +625,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                            False)
      
      
-                    _proc_man = ProcessManagement(username = _host_attr_list["username"], \
+                    _proc_man = ProcessManagement(username = _host_attr_list["login"], \
                                                   cloud_name = obj_attr_list["cloud_name"], \
                                                   hostname = _host_attr_list["cloud_ip"], \
                                                   priv_key = _host_attr_list["identity"])
@@ -1014,11 +1014,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _host_attr_list = self.osci.get_object(_cn, \
                                                            "HOST", \
                                                            True, \
-                                                           "host_" + _vm_location, \
+                                                           "host_" + _vm_location.lower(), \
                                                            False)
                     
                     obj_attr_list["vmc_pool"] = _host_attr_list["pool"]
-                    obj_attr_list["host_name"] = _vm_location
+                    obj_attr_list["host_name"] = _vm_location.lower()
                     obj_attr_list["vmc"] = _host_attr_list["vmc"]
                     _pool_selected = True
                 
@@ -1962,51 +1962,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                       priv_key = obj_attr_list["identity"], \
                                       config_file = _config_file)
 
-        _alt_mtu = obj_attr_list["alternative_remote_mtu"].lower()
-        _alt_mtu_default = obj_attr_list["alternative_remote_mtu_default"].lower()
-        _alt_mtu_remote_interface = obj_attr_list["alternative_remote_mtu_interface"].lower()
-
-        try :
-            _alt_mtu_default = int(_alt_mtu_default)
-            if _alt_mtu == "false" :
-                _alt_mtu = _alt_mtu_default
-            else :
-                _alt_mtu = int(_alt_mtu)
-        except ValueError, msg :
-            raise self.ObjectOperationException("The configuration variables ALTERNATIVE_REMOTE_MTU " + \
-                    " and ALTERNATIVE_REMOTE_MTU_DEFAULT must be numbers.  You provided : " + \
-                     str(_alt_mtu) + " and " + _alt_mtu_default + " instead.", 453)
-
-        _mtu_command = ""
-
-        _nh_conn = Nethashget(obj_attr_list["prov_cloud_ip"]) 
-        _discovered_mtu = _nh_conn.path_mtu_discover()
-
-        if str(_discovered_mtu) != str(obj_attr_list["expected_mtu"]) :
-            cbwarn("Expected mtu (" + obj_attr_list["expected_mtu"] + \
-                  ") != discovered MTU (" + str(_discovered_mtu) + ")", True)
-
-            if obj_attr_list["alternative_remote_mtu"].lower() != "false" :
-                cbwarn("Will set alternative MTU in remote VM of: " + \
-                    str(_alt_mtu) + " before performing further remote commands.", True)
-            else :
-                cbwarn("We recommend setting ALTERNATIVE_REMOTE_MTU == value" + \
-                      " in your configuration file under VM_DEFAULTS. Default of " + \
-                      str(obj_attr_list["alternative_remote_mtu_default"]) + \
-                      " will be used to correct the problem before performing" + \
-                      " further remote commands.", True)
-
-            if _alt_mtu_remote_interface == "default" :
-                cbwarn("Will auto-detect remote interface to be used for MTU workaround." + \
-                      "If this is not what you want, then please set " + \
-                      "ALTERNATIVE_REMOTE_MTU_INTERFACE in your configuration.")
-                _mtu_command += "interface=\$(ip route | grep default | sed -e 's/ \+/ /g' | cut -d ' ' -f 5);"
-            else :
-                _mtu_command += "interface=" + _alt_mtu_remote_interface + ";"
-                cbwarn("Will use remote MTU interface supplied by user: " + _alt_mtu_remote_interface)
-
-            _mtu_command += "sudo ifconfig \$interface mtu " + str(_alt_mtu) + ";"
-
         try :
 
             if "async" not in obj_attr_list or obj_attr_list["async"].lower() == "false" :
@@ -2043,8 +1998,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 _bcmd += "echo '#OSKN-redis' > ~/cb_os_parameters.txt;"
                 
-                _bcmd += _mtu_command
-
                 if "openvpn_server_address" in obj_attr_list :
                     _bcmd += "echo '#OSHN-" + obj_attr_list["openvpn_bootstrap_address"] + "' >> ~/cb_os_parameters.txt;"
                 else :
@@ -4456,7 +4409,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     cberr(_msg)
                     raise self.ObjectOperationException(_msg, _status)                    
 
-                serial_mode = True # only used for debugging
+                serial_mode = False # only used for debugging
 
                 _tmp_list = copy.deepcopy(obj_attr_list["parallel_operations"][_object])
                 

@@ -621,11 +621,12 @@ class OskCmds(CommonCloudFunctions) :
                     obj_attr_list["host_list"][_host_uuid]["cores"] = _host.vcpus
                     obj_attr_list["host_list"][_host_uuid]["hypervisor_type"] = _host.hypervisor_type                    
                     obj_attr_list["host_list"][_host_uuid]["pool"] = obj_attr_list["pool"]
-                    
+                    obj_attr_list["host_list"][_host_uuid]["username"] = obj_attr_list["username"]
+                                        
                     if obj_attr_list["host_user_root"].lower() == "true" :
-                        obj_attr_list["host_list"][_host_uuid]["username"] = "root"                        
+                        obj_attr_list["host_list"][_host_uuid]["login"] = "root"                        
                     else :
-                        obj_attr_list["host_list"][_host_uuid]["username"] = obj_attr_list["username"]
+                        obj_attr_list["host_list"][_host_uuid]["login"] = obj_attr_list["host_list"][_host_uuid]["username"]
                         
                     obj_attr_list["host_list"][_host_uuid]["notification"] = "False"
                     obj_attr_list["host_list"][_host_uuid]["model"] = obj_attr_list["model"]
@@ -803,7 +804,10 @@ class OskCmds(CommonCloudFunctions) :
                                                  obj_attr_list["name"])
     
                 obj_attr_list["cloud_hostname"] = _hostname
+
                 _resolve = obj_attr_list["access"].split(':')[1].replace('//','')
+                _resolve = _resolve.split('/')[0]
+
                 _x, obj_attr_list["cloud_ip"] = hostname2ip(_resolve)
                 obj_attr_list["arrival"] = int(time())
     
@@ -1937,7 +1941,7 @@ class OskCmds(CommonCloudFunctions) :
         '''
 
         _oskfmsg = ''
-        
+        _liof_msg = ''
         _vminstance = self.get_instances(obj_attr_list, "vm", \
                                                        obj_attr_list["cloud_vm_name"])
             

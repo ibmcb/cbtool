@@ -611,11 +611,12 @@ def dependency_checker_installer(hostname, username, operation, options) :
                 _dep_list.remove("repo")
 
         if _depsdict["carch"].count("ppc") and "mongdob" in _dep_list :
-            _msg = "This processors on this node have a \"Power\" architecture."
-            _msg += "Removing MongoDB from the dependency list"
+            _msg = "The processors on this node have a \"Power\" architecture."
+            _msg += "Removing MongoDB and Chef (client) from the dependency list"
             print _msg
             _dep_list.remove("mongodb")
-            
+            _dep_list.remove("chef-client")
+                        
         if options.role.count("workload") :
             _msg = "#####\n"
             _msg += "This node will be used to play a role in the Virtual Applications"

@@ -18,8 +18,6 @@
 
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_ycsb_common.sh
 
-standalone=`online_or_offline "$4"`
-
 START=`provision_application_start`
 
 provision_application_stop $START

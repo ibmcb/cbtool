@@ -254,7 +254,7 @@ chef-client-ver = 11.4.0
 rsyslog-ver = 4.6.0
 rsyslog-filter-ver = ANY
 apache-ver = 2.0
-redis-ver = 2.5.0
+redis-ver = 2.6.0
 mongodb-ver = 2.4.0
 chef-server-ver = ANY
 python-devel-ver = ANY
@@ -281,6 +281,7 @@ libcloud-ver = 0.11.0
 iptables-ver = 1.2
 R-ver = 2.1
 sshkey-ver = ANY
+sshd-ver = ANY
 ### END - Dependency versions ###
 
 ### START - Dependency URLs ###

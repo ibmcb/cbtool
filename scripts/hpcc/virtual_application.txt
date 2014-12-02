@@ -21,7 +21,7 @@ REPORTED_METRICS += throughput_G_FFTE, throughput_EP_STREAM_Triad, throughput_EP
 REPORTED_METRICS += throughput_RandomRing, lat_RandomRing
 
 # VApp-specific MANDATORY attributes
-DESCRIPTION = Deploys an HPC cluster formed by N "compute node" VMs and one
+DESCRIPTION = Deploys an HPC cluster formed by N "compute node" VMs and
 DESCRIPTION += one "frontend node" VM, and then runs the HPC Challenge benchmark
 DESCRIPTION += on the cluster.\n
 DESCRIPTION +=- LOAD_PROFILE possible values: "default", consisting of 7 individual

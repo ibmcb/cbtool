@@ -779,11 +779,9 @@ class CBCLI(Cmd) :
                         url += "s"
                     url += "://" + self.cld_attr_lst["api_defaults"]["hostname"]
                     url += ":" + str(self.cld_attr_lst["gui_defaults"]["port"])
-                    _msg += "The process id is " + str(_gui_pid) + ". "
-                    _msg += "(" + url + ")."
-                    if not use_ssl :
-                        _msg += " Not using SSL. You have been warned."
-                    _msg += "\n"
+                    _msg += "The process id is " + str(_gui_pid) + ", "
+                    _msg += "listening on port " + str(self.cld_attr_lst["gui_defaults"]["port"]) + '.'
+                    _msg += " Full url is \"" + url + "\".\n"
                     sys.stdout.write(_msg)  
             else :
                 _msg = "\nGUI failed to start. To discover why, please run:\n\n" + _base_cmd + " --logdest=console\n\n ... and report the bug."

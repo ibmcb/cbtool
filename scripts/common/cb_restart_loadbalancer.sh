@@ -24,31 +24,14 @@ else
 	source $dir/../common/cb_common.sh
 fi
 
-standalone=`online_or_offline "$1"`
+DB_IP=`get_ips_from_role db2`
+START=`provision_application_start`
+LOAD_BALANCER_TARGET=`get_my_ai_attribute load_balancer_target_role`
+LOAD_BALANCER_TARGET_PORT=`get_my_ai_attribute load_balancer_target_port`
+LOAD_BALANCER_TARGET_URL=`get_my_ai_attribute load_balancer_target_url`
+LOAD_BALANCER_TARGET_IPS=`get_my_ai_attribute load_balancer_target_ip`
+START=`provision_application_start`
 
-if [ $standalone == online ] ; then
-	DB_IP=`get_ips_from_role db2`
-	START=`provision_application_start`
-	LOAD_BALANCER_TARGET=`get_my_ai_attribute load_balancer_target_role`
-	LOAD_BALANCER_TARGET_PORT=`get_my_ai_attribute load_balancer_target_port`
-	LOAD_BALANCER_TARGET_URL=`get_my_ai_attribute load_balancer_target_url`
-	LOAD_BALANCER_TARGET_IPS=`get_my_ai_attribute load_balancer_target_ip`
-	START=`provision_application_start`
-else
-	standalone_verify "$2" "Need at least 2 or more websphere ip addresses."
-	standalone_verify "$3" "Need at least 2 or more websphere ip addresses."
-	LOAD_BALANCER_TARGET_IPS="$2 $3"
-	shift
-	shift
-	while [ x"$1" != x ] ; do
-		LOAD_BALANCER_TARGET_IPS="$LOAD_BALANCER_TARGET_IPS $1"
-		shift
-	done
-	LOAD_BALANCER_TARGET=was
-	LOAD_BALANCER_TARGET_URL=daytrader
-	LOAD_BALANCER_TARGET_PORT=9080
-	post_boot_steps offline 
-fi
 
 LOAD_BALANCER_TARGET_IPS_CSV=`echo ${LOAD_BALANCER_TARGET_IPS} | sed ':a;N;$!ba;s/\n/, /g'`
 LOAD_BALANCER_TARGET_IPS=`echo ${LOAD_BALANCER_TARGET_IPS} | sed -e 's/, */ /g'`
@@ -63,7 +46,8 @@ syslog_netcat "Fixing up httpd.conf..... to point to IPs ${LOAD_BALANCER_TARGET_
 conf_file=/opt/IBM/HTTPServer/conf/httpd.conf
 tmp_file=/tmp/http.conf.tmp
 
-if [ x"$(grep "balancer\://$LOAD_BALANCER_TARGET" $conf_file)" == x ] ; then
+if [[ x"$(grep "balancer\://$LOAD_BALANCER_TARGET" $conf_file)" == x ]]
+then
 	sudo cp $conf_file $tmp_file
 	sudo chmod 777 $tmp_file
 
@@ -86,28 +70,29 @@ else
 fi
 
 
-while [ "$ATTEMPTS" -ge  0 ] ; do 
+while [[ "$ATTEMPTS" -ge  0 ]]
+do 
     syslog_netcat "Checking for a http load balancer running on $SHORT_HOSTNAME...."
     result="$(ps -ef | grep httpd | grep -v grep)"
     syslog_netcat "Done checking for a WAS server running on $SHORT_HOSTNAME"
     
-    if [ x"$result" == x ] ; then        
-	((ATTEMPTS=ATTEMPTS-1))
-	syslog_netcat "There is no load balancer running on $SHORT_HOSTNAME... will try to start it $ATTEMPTS more times"
+    if [[ x"$result" == x ]]
+    then 
+		((ATTEMPTS=ATTEMPTS-1))
+		syslog_netcat "There is no load balancer running on $SHORT_HOSTNAME... will try to start it $ATTEMPTS more times"
 
-	sudo /opt/IBM/HTTPServer/bin/apachectl restart
-	sudo /opt/IBM/HTTPServer/bin/adminctl restart
-	syslog_netcat "Apache started on $SHORT_HOSTNAME ( pointing to target service running on $LOAD_BALANCER_TARGET_IPS )."
-	syslog_netcat "Will wait 5 seconds and check for httpd processes...."
-	sleep 5
+		sudo /opt/IBM/HTTPServer/bin/apachectl restart
+		sudo /opt/IBM/HTTPServer/bin/adminctl restart
+		syslog_netcat "Apache started on $SHORT_HOSTNAME ( pointing to target service running on $LOAD_BALANCER_TARGET_IPS )."
+		syslog_netcat "Will wait 5 seconds and check for httpd processes...."
+		sleep 5
     else 
-	syslog_netcat "Load balancer restarted successfully on $SHORT_HOSTNAME ( pointing to target service running on $LOAD_BALANCER_TARGET_IPS ) - OK";
-	if [ $standalone == online ] ; then
+		syslog_netcat "Load balancer restarted successfully on $SHORT_HOSTNAME ( pointing to target service running on $LOAD_BALANCER_TARGET_IPS ) - OK";
+
 		provision_application_stop $START
-	fi
-	
+	fi	
 	exit 0
-    fi
+
 done
 syslog_netcat "Load Balancer could not be restarted on $SHORT_HOSTNAME - NOK"
 exit 2
