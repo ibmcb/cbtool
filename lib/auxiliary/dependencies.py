@@ -51,6 +51,7 @@ def deps_file_parser(depsdict, username, options, hostname, process_manager = Fa
         _cleanup_repos = True
 
     _file_name_list.append(options.defdir + "/IBM_dependencies.txt")
+    _file_name_list.append(options.defdir + "/SPEC_dependencies.txt")
     
     if len(options.custom) :
         _file_name_list.append(options.cusdir + '/' + options.custom)
