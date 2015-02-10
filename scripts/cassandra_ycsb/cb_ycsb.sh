@@ -75,6 +75,7 @@ sudo sh -c "echo "operationcount=$OPERATION_COUNT" >> $YCSB_PATH/custom_workload
 
 source ~/cb_barrier.sh start
 
+OUTPUT_FILE=$(mktemp)
 if [[ ${GENERATE_DATA} == "true" ]]
 then
 	FIRST_SEED=$(echo $seed_ips_csv | cut -d ',' -f 1)
@@ -85,7 +86,6 @@ then
 	cassandra-cli -h ${FIRST_SEED} -f create_keyspace.cassandra
 				
     syslog_netcat "Number of records to be inserted : $RECORDS"
-    OUTPUT_FILE=$(mktemp)
 
     log_output_command=$(get_my_ai_attribute log_output_command)
     log_output_command=$(echo ${log_output_command} | tr '[:upper:]' '[:lower:]')
@@ -129,9 +129,9 @@ then
     syslog_netcat "Command line is: ${CMDLINE}. Output file is ${OUTPUT_FILE}"
     if [[ $APP_COLLECTION == "lazy" ]]
     then
-        lazy_collection "$CMDLINE" ${SLA_RUNTIME_TARGETS}
+        lazy_collection "$CMDLINE" ${OUTPUT_FILE} ${SLA_RUNTIME_TARGETS}
     else
-        eager_collection "$CMDLINE" ${SLA_RUNTIME_TARGETS}
+        eager_collection "$CMDLINE" ${OUTPUT_FILE} ${SLA_RUNTIME_TARGETS}
     fi
 else
     syslog_netcat "This AI reached the limit of load generation process executions. If you want this AI to continue to execute the load generator, reset the \"run_limit\" counter"
