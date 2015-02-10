@@ -51,6 +51,50 @@ function linux_distribution {
     
 }
 
+# ################################################################
+# Install a list of packages. Support multiple formats and multiple
+# packages managers/formats.
+# ################################################################
+function package_install {
+   # 1+ - package names (space-separated list)
+
+
+    PACKAGE_LIST=$*
+
+
+    if [[ $PACKAGE_LIST == "" ]]
+    then
+        return 0
+    fi
+
+    if [[ ${LINUX_DISTRO} -eq 1 ]]
+    then
+        if [[ $(echo "$PACKAGE_LIST" | grep -c ".deb") -eq 0 ]]
+        then
+            syslog_netcat "Installing packages \"$PACKAGE_LIST\" using \"apt-get\""
+            sudo apt-get -q -y --force-yes --allow-unauthenticated -o Dpkg::Options::="--force-confnew" install $PACKAGE_LIST
+        else
+            syslog_netcat "Installing packages \"$PACKAGE_LIST\" using \"dpkg\""
+            sudo dpkg -i $PACKAGE_LIST; sudo apt-get -f install -y --force-yes  --allow-unauthenticated
+        fi
+    elif [[ ${LINUX_DISTRO} -eq 2 ]]
+    then
+        if [[ $(echo "$PACKAGE_LIST" | grep -c ".rpm") -eq 0 ]]
+        then
+            syslog_netcat "Installing packages \"$PACKAGE_LIST\" using \"yum\""        
+            sudo yum -y install $PACKAGE_LIST
+        else
+            syslog_netcat "Installing packages \"$PACKAGE_LIST\" using \"rpm\""
+            # Unfortunately, the error codes produced by rpm are not informative.
+            # For instance, if all packages are already installed, we will see
+            # a non-zero exit code
+            #sudo rpm -i $* 2>&1 >${INSTALL_LOG} || error_quit "Package install failed"    
+            sudo rpm -i $PACKAGE_LIST 
+        fi
+    fi
+}
+export -f package_install
+
 function service_stop_disable {
     #1 - service list (space-separated list)
 

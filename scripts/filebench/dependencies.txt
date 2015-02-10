@@ -21,15 +21,11 @@ filebench-ver = ANY
 ### END - Dependency versions ###
 
 ### START - Dependency URLs ###
-rhel-filebench-x86_64-urls-man = http://REPO_ADDR/filebench
-ubuntu-filebench-x86_64-urls-man = http://REPO_ADDR/filebench
+common-filebench-x86_64-urls-man = http://REPO_ADDR/filebench
 ### END - Dependency URLs ###
 
 ### START -  Dependency and method-specific command lines ###
-rhel-filebench-preinstall-man = sudo yum install which; mkdir -p ~/3rd_party/; wget -N -P ~/3rd_party/ URL/filebench.tar; cd ~/3rd_party/; tar -xf ~/3rd_party/filebench.tar
-rhel-filebench-install-man = cd filebench; ./configure; sudo make install
-rhel-filebench-postinstall-man = mv ~/3rd_party/filebench ~/3rd_party/_filebench
-ubuntu-filebench-preinstall-man = mkdir -p ~/3rd_party/; wget -N -P ~/3rd_party/ URL/filebench.tar; cd ~/3rd_party/; tar -xf ~/3rd_party/filebench.tar
-ubuntu-filebench-install-man = cd filebench; ./configure; sudo make install
-ubuntu-filebench-postinstall-man = mv ~/3rd_party/filebench ~/3rd_party/_filebench
+common-filebench-preinstall-man = package_install which; mkdir -p ~/3rd_party/; wget -N -P ~/3rd_party/ URL/filebench.tar; cd ~/3rd_party/; tar -xf ~/3rd_party/filebench.tar
+common-filebench-install-man = cd filebench; ./configure; sudo make install
+common-filebench-postinstall-man = mv ~/3rd_party/filebench ~/3rd_party/_filebench
 ### END -  Dependency and method-specific command lines ###

@@ -45,7 +45,7 @@ REDIS_CONF_FILE[2]=/etc/redis.conf
 if [[ -f ${REDIS_DATA_DIR} ]]
 then
     TEMP_REDIS_DATA_DIR=$(echo ${REDIS_DATA_DIR} | sed 's/\//_+-_-+/g')
-    sudo sed -i "s/dir *$/dir ${TEMP_MONGODB_DATA_DIR}\//g" ${REDIS_CONF_FILE[${LINUX_DISTRO}]}
+    sudo sed -i "s/dir *$/dir ${TEMP_REDIS_DATA_DIR}\//g" ${REDIS_CONF_FILE[${LINUX_DISTRO}]}
     sudo sed -i "s/_+-_-+/\//g" ${REDIS_CONF_FILE[${LINUX_DISTRO}]}
 fi
 sudo sed -i "s/port *$/port 6379/g" ${REDIS_CONF_FILE[${LINUX_DISTRO}]}

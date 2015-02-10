@@ -57,6 +57,9 @@ then
     CASSANDRA_DATA_DIR=$(get_my_ai_attribute_with_default cassandra_data_dir /dbstore)
     eval CASSANDRA_DATA_DIR=${CASSANDRA_DATA_DIR}
 
+    CASSANDRA_DATA_FSTYP=$(get_my_ai_attribute_with_default cassandra_data_fstyp ext4)
+    eval CASSANDRA_DATA_FSTYP=${CASSANDRA_DATA_FSTYP}
+
     cassandra_ips=`get_ips_from_role cassandra`
     seed_ips=`get_ips_from_role seed`
     
@@ -104,6 +107,9 @@ then
     MONGODB_DATA_DIR=$(get_my_ai_attribute_with_default mongodb_data_dir /dbstore)
     eval MONGODB_DATA_DIR=${MONGODB_DATA_DIR}
 
+    MONGODB_DATA_FSTYP=$(get_my_ai_attribute_with_default mongodb_data_fstyp ext4)
+    eval MONGODB_DATA_FSTYP=${MONGODB_DATA_FSTYP}
+
     mongos_ip=`get_ips_from_role mongos`
     if [ -z $mongos_ip ]
     then
@@ -137,13 +143,12 @@ then
     REDIS_DATA_DIR=$(get_my_ai_attribute_with_default redis_data_dir /dbstore)
     eval REDIS_DATA_DIR=${REDIS_DATA_DIR}
 
-    redis_ips=`get_ips_from_role redis`
-    if [ -z $redis_ips ]
+    redis_ip=`get_ips_from_role redis`
+    if [ -z $redis_ip ]
     then
         syslog_netcat "redis IP is null"
         exit 1
-    fi
-    redis_ips_csv=`echo ${redis_ips} | sed 's/ /,/g'`
+    fi    
 else 
     syslog_netcat "Unsupported backend type ($BACKEND_TYPE). Exiting with error"
     exit 1
@@ -152,13 +157,15 @@ fi
 function lazy_collection {
 
     CMDLINE=$1
-    SLA_RUNTIME_TARGETS=$2
+    OUTPUT_FILE=$2.run
+    SLA_RUNTIME_TARGETS=$3
         
     ops=0
     latency=0
     
     while read line
     do
+        echo $line >> $OUTPUT_FILE
         IFS=',' read -a array <<< "$line"
         if [[ ${array[0]} == *OVERALL* ]]
         then
@@ -222,7 +229,7 @@ function lazy_collection {
     load_profile:${LOAD_PROFILE}:name \
     load_duration:${LOAD_DURATION}:sec \
     throughput:$(expr $ops):tps \
-    latency:$(expr $latency):ms \
+    latency:$(expr $latency):us \
     datagen_time:${datagentime}:sec \
     datagen_size:${datagensize}:records \
     ${SLA_RUNTIME_TARGETS}
@@ -230,7 +237,8 @@ function lazy_collection {
 
 function eager_collection {
     CMDLINE=$1
-    SLA_RUNTIME_TARGETS=$2
+    OUTPUT_FILE=$2.run
+    SLA_RUNTIME_TARGETS=$3
     
     #----------------------- Track all YCSB results  -------------------------------
 
@@ -254,6 +262,7 @@ function eager_collection {
     
     while read line
     do
+        echo $line >> $OUTPUT_FILE
     #-------------------------------------------------------------------------------
     # Need to track each YCSB Clients current operation count.
     # NEED TO:

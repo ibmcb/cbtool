@@ -38,32 +38,28 @@ ycsb-ver = ANY
 
 ### START - Dependency URLs ###
 rhel-mongo-x86_64-urls-man = http://downloads-distro.mongodb.org/repo/redhat/os/ARCH/RPMS
-ubuntu-mongo-amd64-urls-man = http://downloads-distro.mongodb.org/repo/ubuntu-upstart/dists/dist/10gen/binary-ARCH
 
 rhel-maven-x86_64-urls-man = https://repos.fedorapeople.org/repos/dchen/apache-maven/epel-6/x86_64/apache-maven-3.2.1-2.el6.noarch.rpm
 
-rhel-ycsb-urls-git = https://github.com/brianfrankcooper
-ubuntu-ycsb-urls-git = https://github.com/brianfrankcooper
+common-ycsb-urls-git = https://github.com/brianfrankcooper
 ### END - Dependency URLs ###
 
 ### START -  Dependency and method-specific command lines ###
-rhel-java-install-pm = sudo yum -y install java-1.7.0-openjdk
-ubuntu-java-install-pm = sudo apt-get -y install openjdk-6-jdk; sudo apt-get -y install openjdk-7-jdk
+rhel-java-install-pm = package_install java-1.7.0-openjdk
+fedora-java-install-pm = package_install java-1.7.0-openjdk
+ubuntu-java-install-pm = package_install openjdk-6-jdk; package_install openjdk-7-jdk
 ubuntu-java-postinstall-pm = export JAVAALT=$(sudo update-java-alternatives -l 2>&1 | grep java | sort -r | head -n 1 | cut -d ' ' -f 1); sudo update-java-alternatives -s $JAVAALT
 
-rhel-java-home-install-man = echo "export JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre" >> ~/.bashrc
-ubuntu-java-home-install-man = echo "export JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre" >> ~/.bashrc
+common-java-home-install-man = echo "export JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre" >> ~/.bashrc
 
 rhel-mongo-install-man = sudo rpm -Uvh URL/mongo-10gen-2.4.9-mongodb_1.ARCH.rpm; sudo rpm -Uvh URL/mongo-10gen-server-2.4.9-mongodb_1.ARCH.rpm 
 rhel-mongo-postinstall-man = sudo sed -i "s/^bind_ip.*/bind_ip=0.0.0.0/" /etc/mongod.conf; source SCRIPTSDIR/common/cb_bootstrap.sh; service_stop_disable mongod
-ubuntu-mongo-preinstall-man = wget -N -P 3RPARTYDIR URL/mongodb-10gen_2.4.9_amd64.deb
-ubuntu-mongo-install-man = sudo dpkg -i 3RPARTYDIR/mongodb-10gen_2.4.9_amd64.deb
-ubuntu-mongo-postinstall-man = sudo sed -i "s/^bind_ip.*/bind_ip=0.0.0.0/" /etc/mongodb.conf; source SCRIPTSDIR/common/cb_bootstrap.sh; service_stop_disable mongodb
+fedora-mongodb-install-man = package_install mongodb mongodb-server
+fedora-mongodb-postinstall-man = sudo sed -i "s/^bind_ip.*/bind_ip=0.0.0.0/" /etc/mongod.conf; service_stop_disable mongod
+ubuntu-mongodb-install-man = package_install mongodb
+ubuntu-mongodb-postinstall-man = sudo sed -i "s/^bind_ip.*/bind_ip=0.0.0.0/" /etc/mongodb.conf; service_stop_disable mongodb
 
-rhel-ycsb-preinstall-git = cd ~
-rhel-ycsb-install-git = git clone URL/YCSB.git
-rhel-ycsb-postinstall-git = cd ~/YCSB/; mvn clean package
-ubuntu-ycsb-preinstall-git = cd ~
-ubuntu-ycsb-install-git = git clone URL/YCSB.git
-ubuntu-ycsb-postinstall-git = cd ~/YCSB/; mvn clean package
+common-ycsb-preinstall-git = cd ~
+common-ycsb-install-git = git clone URL/YCSB.git
+common-ycsb-postinstall-git = cd ~/YCSB/; mvn clean package
 ### END -  Dependency and method-specific command lines ###

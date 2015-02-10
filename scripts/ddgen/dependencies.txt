@@ -21,6 +21,5 @@ dd-ver = ANY
 ### END - Dependency versions ###
 
 ### START -  Dependency and method-specific compmd lines ###
-rhel-dd-install-pm = sudo yum -y install coreutuils
-ubuntu-dd-install-pm = sudo apt-get -y install coreutuils
+common-dd-install-pm = package_install coreutuils
 ### END -  Dependency and method-specific compmd lines ###

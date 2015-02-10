@@ -601,7 +601,7 @@ class OskCmds(CommonCloudFunctions) :
                         _actual_host_name = _host.hypervisor_hostname
                         
                     if "modify_host_names" in obj_attr_list and \
-                    obj_attr_list["modify_host_names"].lower() != "false" :
+                    str(obj_attr_list["modify_host_names"]).lower() != "false" :
                         _queried_host_name = _actual_host_name.split(".")[0] + '.' + obj_attr_list["modify_host_names"]
                     else :
                         _queried_host_name = _actual_host_name
@@ -623,7 +623,7 @@ class OskCmds(CommonCloudFunctions) :
                     obj_attr_list["host_list"][_host_uuid]["pool"] = obj_attr_list["pool"]
                     obj_attr_list["host_list"][_host_uuid]["username"] = obj_attr_list["username"]
                                         
-                    if obj_attr_list["host_user_root"].lower() == "true" :
+                    if str(obj_attr_list["host_user_root"]).lower() == "true" :
                         obj_attr_list["host_list"][_host_uuid]["login"] = "root"                        
                     else :
                         obj_attr_list["host_list"][_host_uuid]["login"] = obj_attr_list["host_list"][_host_uuid]["username"]
@@ -750,9 +750,15 @@ class OskCmds(CommonCloudFunctions) :
             _msg += "\")....."
             cbdebug(_msg, True)
             _volumes = self.oskconnstorage.volumes.list()
+
             for _volume in _volumes :
-                if _volume.display_name :
-                    if _volume.display_name.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) :
+                if "display_name" in dir(_volume) :
+                    _volume_name = _volume.display_name
+                else :
+                    _volume_name = _volume.name
+                    
+                if _volume_name :
+                    if _volume_name.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) :
                         _volume.delete()
 
         except novaexceptions, obj:
@@ -811,7 +817,7 @@ class OskCmds(CommonCloudFunctions) :
                 _x, obj_attr_list["cloud_ip"] = hostname2ip(_resolve)
                 obj_attr_list["arrival"] = int(time())
     
-                if obj_attr_list["discover_hosts"].lower() == "true" :                   
+                if str(obj_attr_list["discover_hosts"]).lower() == "true" :                   
                     _msg = "Discovering hosts on VMC \"" + obj_attr_list["name"] + "\"....."
                     cbdebug(_msg, True)
                     _status, _fmsg = self.discover_hosts(obj_attr_list, _time_mark_prs)
@@ -917,11 +923,11 @@ class OskCmds(CommonCloudFunctions) :
             _candidate_images = []
 
             for _idx in range(0,len(_image_list)) :
-                if obj_attr_list["randomize_image_name"].lower() == "false" and \
+                if str(obj_attr_list["randomize_image_name"]).lower() == "false" and \
                 _image_list[_idx].name == obj_attr_list["imageid1"] :
                     _imageid = _image_list[_idx]
                     break
-                elif obj_attr_list["randomize_image_name"].lower() == "true" and \
+                elif str(obj_attr_list["randomize_image_name"]).lower() == "true" and \
                 _image_list[_idx].name.count(obj_attr_list["imageid1"]) :
                     _candidate_images.append(_image_list[_idx])
                 else :                     
@@ -1503,7 +1509,7 @@ class OskCmds(CommonCloudFunctions) :
                              obj_attr_list["credentials"], \
                              obj_attr_list["name"])
         
-            if "cloud_vv_uuid" in obj_attr_list and obj_attr_list["cloud_vv_uuid"].lower() != "none" :
+            if "cloud_vv_uuid" in obj_attr_list and str(obj_attr_list["cloud_vv_uuid"]).lower() != "none" :
                 
                 _instance = self.get_instances(obj_attr_list, "vv", obj_attr_list["cloud_vv_name"])
     
@@ -1591,7 +1597,7 @@ class OskCmds(CommonCloudFunctions) :
                                                     obj_attr_list["host_name"], \
                                                     False)
 
-            _hypervisor_type = _host_attr_list["hypervisor_type"].lower()
+            _hypervisor_type = str(_host_attr_list["hypervisor_type"]).lower()
 
             if _hypervisor_type == "qemu" :
                 _astr = "/system"
@@ -1758,7 +1764,7 @@ class OskCmds(CommonCloudFunctions) :
 
             obj_attr_list["last_known_state"] = "about to connect to openstack manager"
 
-            if obj_attr_list["floating_ip"].lower() == "true" :
+            if str(obj_attr_list["floating_ip"]).lower() == "true" :
                 obj_attr_list["address_type"] = "floating"
             else :
                 obj_attr_list["address_type"] = "fixed"
@@ -1776,14 +1782,14 @@ class OskCmds(CommonCloudFunctions) :
 
             obj_attr_list["last_known_state"] = "about to get flavor and image list"
 
-            if obj_attr_list["security_groups"].lower() == "false" :
+            if str(obj_attr_list["security_groups"]).lower() == "false" :
                 _security_groups = None
             else :
                 # "Security groups" must be a list
                 _security_groups = []
                 _security_groups.append(obj_attr_list["security_groups"])
 
-            if obj_attr_list["key_name"].lower() == "false" :
+            if str(obj_attr_list["key_name"]).lower() == "false" :
                 _key_name = None
             else :
                 _key_name = obj_attr_list["key_name"]
@@ -1863,7 +1869,7 @@ class OskCmds(CommonCloudFunctions) :
 
                 if "floating_ip" in obj_attr_list :
 
-                    if obj_attr_list["floating_ip"].lower() == "true" :
+                    if str(obj_attr_list["floating_ip"]).lower() == "true" :
                         _msg = "Adding a floating IP to " + obj_attr_list["name"] + "..."
                         cbdebug(_msg, True)
                         _instance.add_floating_ip(self.floating_ip_allocate(obj_attr_list))
@@ -1892,7 +1898,7 @@ class OskCmds(CommonCloudFunctions) :
                     else :
                         _status = 0
 
-                    if obj_attr_list["force_failure"].lower() == "true" :
+                    if str(obj_attr_list["force_failure"]).lower() == "true" :
                         _fmsg = "Forced failure (option FORCE_FAILURE set \"true\")"
                         _status = 916
 
@@ -1966,7 +1972,7 @@ class OskCmds(CommonCloudFunctions) :
             if "host_name" in obj_attr_list :
                 _msg += " (Host \"" + obj_attr_list["host_name"] + "\")"
 
-            if obj_attr_list["leave_instance_on_failure"].lower() == "true" :
+            if str(obj_attr_list["leave_instance_on_failure"]).lower() == "true" :
                 _liof_msg = " (Will leave the VM running due to experimenter's request)"
             else :
                 _liof_msg = " (The VM creation will be rolled back)"

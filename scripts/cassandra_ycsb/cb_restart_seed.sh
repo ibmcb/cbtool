@@ -24,21 +24,18 @@ START=`provision_application_start`
 
 SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
 
-CINDER=true
-#
-# Check if CBTool attached the Block storage volume.
-# !! Script assumes /dev/vdb !!
-#
-sudo mkfs.ext4 /dev/vdb
-if [ $? -ne 0 ] ; then
-  syslog_netcat "Cinder did not attach the volume, or the guest does not see it."
-  CINDER=false
-fi
-
 sudo mkdir -p ${CASSANDRA_DATA_DIR}
 
-if $CINDER ; then
-  sudo mount /dev/vdb ${CASSANDRA_DATA_DIR}
+VOLUME=$(get_attached_volumes)
+if [[ $VOLUME != "NONE" ]]
+then
+    if [[ $(check_filesystem $VOLUME) == "none" ]]
+    then
+        syslog_netcat "Creating $MONGODB_DATA_FSTYP filesystem on volume $VOLUME"
+        sudo mkfs.$MONGODB_DATA_FSTYP $VOLUME
+    fi
+    syslog_netcat "Making $FSTYP filesystem on volume $VOLUME accessible through the mountpoint ${CASSANDRA_DATA_DIR}"
+    sudo mount $VOLUME ${CASSANDRA_DATA_DIR}
 fi
 
 CASSANDRA_REPLICATION_FACTOR=$(get_my_ai_attribute_with_default replication_factor 4)
@@ -106,7 +103,7 @@ STATUS=$?
 
 if [[ ${STATUS} -eq 0 ]]
 then
-	syslog_netcat "Cassandra seed server running"
+    syslog_netcat "Cassandra seed server running"
 else
     syslog_netcat "Cassandra seed server failed to start"
 fi

@@ -469,7 +469,7 @@ class VcdCmds(CommonCloudFunctions) :
                cbdebug(_msg, True)
                _status = 188
                cberr(_msg)
-               raise CldOpsException(_msg, _status) 
+               raise CldOpsException(_msg, _status)
 
             vm_computername = "vm" + obj_attr_list["name"].split("_")[1]
             _msg = "...Launching new vApp containing VM with hostname " + vm_computername
@@ -487,7 +487,7 @@ class VcdCmds(CommonCloudFunctions) :
             cbdebug(_msg)
 
             if _reservation :
-           
+
                 obj_attr_list["last_known_state"] = "vm created"
                 sleep(int(obj_attr_list["update_frequency"]))
                 
@@ -523,7 +523,7 @@ class VcdCmds(CommonCloudFunctions) :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except :
+        except Exception, e :
             _status = 23
             _fmsg = str(e)
     

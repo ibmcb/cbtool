@@ -162,7 +162,7 @@ class CommonCloudFunctions:
         while _curr_tries < _max_tries :
             _start_pooling = int(time())
 
-            if "async" not in obj_attr_list or obj_attr_list["async"].lower() == "false" :
+            if "async" not in obj_attr_list or str(obj_attr_list["async"]).lower() == "false" :
                 if threading.current_thread().abort :
                     _msg = "VM Create Aborting..."
                     _status = 123
@@ -301,7 +301,7 @@ class CommonCloudFunctions:
             while not _network_reachable and _curr_tries < _max_tries :
                 _start_pooling = int(time())
 
-                if "async" not in obj_attr_list or obj_attr_list["async"].lower() == "false" :
+                if "async" not in obj_attr_list or str(obj_attr_list["async"]).lower() == "false" :
                     if threading.current_thread().abort :
                         _msg = "VM Create Aborting..."
                         _status = 123
@@ -697,7 +697,7 @@ class CommonCloudFunctions:
         '''
 
         for op in ["migrate", "protect"] :
-            if obj_attr_list[op + "_supported"].lower() != "true" :
+            if str(obj_attr_list[op + "_supported"]).lower() != "true" :
                 continue
         
             if op + "_interfaces" in obj_attr_list :

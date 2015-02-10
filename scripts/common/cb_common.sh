@@ -107,6 +107,32 @@ function linux_distribution {
 }
 export -f linux_distribution
 
+function get_attached_volumes {
+    ROOT_VOLUME=$(sudo mount | grep "/ " | cut -d ' ' -f 1 | tr -d 0-9)
+    SWAP_VOLUME=$(sudo swapon -s | grep dev | cut -d ' ' -f 1 | tr -d 0-9)
+    if [[ -z ${SWAP_VOLUME} ]]
+    then
+        SWAP_VOLUME="NONE"
+    fi
+    VOLUME_LIST=$(sudo fdisk -l 2>&1 | grep Disk | grep bytes | grep -v ${ROOT_VOLUME} | grep -v ${SWAP_VOLUME} | awk '{if($5>1073741824)print $2, $5}' | head -n1 | cut -d ':' -f 1)
+    if [[ -z ${VOLUME_LIST} ]]
+    then
+        VOLUME_LIST="NONE"
+    fi
+    echo $VOLUME_LIST
+}
+export -f get_attached_volumes
+
+function check_filesystem {
+    if [[ $(sudo blkid ${1} | grep -c TYPE) -eq 0 ]]
+    then
+        echo "none"
+    else
+        echo $(sudo blkid ${1} | grep TYPE | cut -d ' ' -f 3 | sed 's/TYPE=//g' | sed 's/"//g' | tr -d '\040\011\012\015')
+    fi
+}
+export -f check_filesystem
+
 function service_stop_disable {
     #1 - service list (space-separated list)
 

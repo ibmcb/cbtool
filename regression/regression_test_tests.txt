@@ -227,7 +227,7 @@ vmattach TESTCLOUD db2 SUT A:B,X:Y,R:2 async\; waitfor TESTCLOUD 1s\; vmlist TES
 vmattach TESTCLOUD netclient simhosta2 A:B,X:Y,R:2 async\; waitfor TESTCLOUD 1s\; vmlist TESTCLOUD pending\; waitfor TESTCLOUD 8s\; vmlist TESTCLOUD\; vmshow TESTCLOUD vm_10 role,vmc_name,vmc_pool,host_name,meta_tags,size\; stats TESTCLOUD
 vmattach TESTCLOUD fen_hpc auto empty size=platinum64,vmc_pool=LG async\; waitfor TESTCLOUD 8s\; vmlist TESTCLOUD\; vmshow TESTCLOUD vm_11 vmc_name,vmc_pool,host_name,meta_tags,size\; stats TESTCLOUD
 vmattach TESTCLOUD tinyvm auto empty iron32 pause_provision_complete async\; waitfor TESTCLOUD 8s\; msgpub TESTCLOUD VM staging vm_12;continue;something\; waituntil TESTCLOUD VM ARRIVING=0 decreasing 1\; vmlist TESTCLOUD\; stats TESTCLOUD
-shell TESTCLOUD rm /tmp/cb*_was_used_on_execution\; cldalter TESTCLOUD vm_defaults execute_script_name=CB_DIRECTORY/regression/scripts/execute_on_staging.sh\; vmattach TESTCLOUD tinyvm auto empty iron32 execute_provision_complete async\; waituntil TESTCLOUD VM ARRIVING=0 decreasing 1\; shell TESTCLOUD ls /tmp/cb*_was_used_on_execution\; vmlist TESTCLOUD\; stats TESTCLOUD
+shell TESTCLOUD rm -rf /tmp/cb*_was_used_on_execution\; cldalter TESTCLOUD vm_defaults execute_script_name=CB_DIRECTORY/regression/scripts/execute_on_staging.sh\; vmattach TESTCLOUD tinyvm auto empty iron32 execute_provision_complete async\; waituntil TESTCLOUD VM ARRIVING=0 decreasing 1\; shell TESTCLOUD ls /tmp/cb*_was_used_on_execution\; vmlist TESTCLOUD\; stats TESTCLOUD
 vmattach TESTCLOUD predictablevm auto empty check_boot_started=subscribe_on_starting async\; waitfor TESTCLOUD 8s\; msgpub TESTCLOUD VM starting 11111111-1111-1111-1111-111111111111 has started\; waitfor TESTCLOUD 8s\; vmlist TESTCLOUD\; stats TESTCLOUD
 vmattach TESTCLOUD tinyvm\; vmlist TESTCLOUD\; stats TESTCLOUD
 vmattach TESTCLOUD tinyvm\; vmlist TESTCLOUD\; stats TESTCLOUD
@@ -304,7 +304,7 @@ aicapture TESTCLOUD oldest\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLO
 aicapture TESTCLOUD youngest async\; waituntil TESTCLOUD AI CAPTURING=0\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
 aidetach TESTCLOUD random\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
 aiattach TESTCLOUD ibm_daytrader default default none none pause_all_vms_booted async\; waitfor TESTCLOUD 5s\; msgpub TESTCLOUD VM staging ai_26;continue;something\; waituntil TESTCLOUD AI ARRIVING=0 decreasing 1\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
-shell TESTCLOUD rm /tmp/cb*_was_used_on_execution\; cldalter TESTCLOUD ai_defaults execute_script_name=CB_DIRECTORY/regression/scripts/execute_on_staging.sh\; aiattach TESTCLOUD ibm_daytrader default default none none execute_all_vms_booted\; shell TESTCLOUD ls /tmp/cb*_was_used_on_execution\; waitfor TESTCLOUD 5s\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
+shell TESTCLOUD rm -rf /tmp/cb*_was_used_on_execution\; cldalter TESTCLOUD ai_defaults execute_script_name=CB_DIRECTORY/regression/scripts/execute_on_staging.sh\; aiattach TESTCLOUD ibm_daytrader default default none none execute_all_vms_booted\; shell TESTCLOUD ls /tmp/cb*_was_used_on_execution\; waitfor TESTCLOUD 5s\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
 aiattach TESTCLOUD hadoop save_on_attach=true\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD\; stateshow TESTCLOUD
 airestore TESTCLOUD ai_28\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD\; stateshow TESTCLOUD
 aiattach TESTCLOUD notype\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD

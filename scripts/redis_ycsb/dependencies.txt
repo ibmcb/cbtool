@@ -43,42 +43,42 @@ ubuntu-oraclejava-x86_64-urls-man = http://ppa.launchpad.net/webupd8team/oraclej
 rhel-redis-ppc64-urls-man = ftp://rpmfind.net/linux/fedora-secondary/development/rawhide/ppc64/os/Packages/r/redis-2.6.16-1.fc21.ppc64.rpm
 rhel-redis-x86_64-urls-man = ftp://rpmfind.net/linux/remi/enterprise/6/remi/x86_64
 rhel-redis-urls-git = https://github.com/antirez
-ubuntu-redis-amd64-urls-man = http://ppa.launchpad.net/rwky/redis/ubuntu/pool/main/r/redis
+
 ubuntu-redis-ppc64-urls-man = http://ppa.launchpad.net/chris-lea/redis-server/ubuntu/pool/main
-ubuntu-redis-urls-git = https://github.com/antirez
+common-redis-urls-git = https://github.com/antirez
 
 rhel-maven-x86_64-urls-man = https://repos.fedorapeople.org/repos/dchen/apache-maven/epel-6/x86_64/apache-maven-3.2.1-2.el6.noarch.rpm
 
-rhel-ycsb-urls-git = https://github.com/brianfrankcooper
-ubuntu-ycsb-urls-git = https://github.com/brianfrankcooper
+common-ycsb-urls-git = https://github.com/brianfrankcooper
+
 ### END - Dependency URLs ###
 
 ### START -  Dependency and method-specific command lines ###
-rhel-oraclejava-preinstall-man = sudo yum -y install java-1.7.0-openjdk
+rhel-oraclejava-preinstall-man = package_install java-1.7.0-openjdk
 rhel-oraclejava-install-man = sudo rpm -Uvh URL; sudo alternatives --install /usr/bin/java java /usr/java/latest/jre/bin/java 200000
+fedora-oraclejava-preinstall-man = package_install java-1.7.0-openjdk
+fedora-oraclejava-install-man = sudo rpm -Uvh URL; sudo alternatives --install /usr/bin/java java /usr/java/latest/jre/bin/java 200000
 ubuntu-oraclejava-preinstall-man = wget -N -P ~ URL
 ubuntu-oraclejava-install-man = tar -xvf jdk-7u51-linux-x64.tar.gz; sudo mkdir -p /usr/lib/jvm; sudo mv ./jdk1.7.0_51/ /usr/lib/jvm/jdk1.7.0_51/; sudo ln -s /usr/lib/jvm/jdk1.7.0_51 /usr/lib/jvm/latest
 ubuntu-oraclejava-postinstall-man = sudo update-alternatives --install "/usr/bin/java" "java" "/usr/lib/jvm/jdk1.7.0_51/bin/java" 1; sudo update-alternatives --install "/usr/bin/javac" "javac" "/usr/lib/jvm/jdk1.7.0_51/bin/javac" 1; sudo update-alternatives --install "/usr/bin/javaws" "javaws" "/usr/lib/jvm/jdk1.7.0_51/bin/javaws" 1
 
-rhel-oracle-java-home-install-man = echo "export JAVA_HOME=/usr/java/latest/jre" >> ~/.bashrc
-ubuntu-oracle-java-home-install-man = echo "export JAVA_HOME=/usr/java/latest/jre" >> ~/.bashrc
+common-oracle-java-home-install-man = echo "export JAVA_HOME=/usr/java/latest/jre" >> ~/.bashrc
 
 rhel-redis-preinstall-man = lftp -c 'open -e "mget redis*remi*.rpm" URL'
-rhel-redis-install-man = sudo yum -y install gperftools-libs && sudo rpm -Uvh $(ls -t | grep redis | head -n 1)
+rhel-redis-install-man = package_install gperftools-libs && sudo rpm -Uvh $(ls -t | grep redis | head -n 1)
 rhel-redis-postinstall-man = sudo sed -i "s/^bind .*/bind 0.0.0.0/" /etc/redis.conf; source SCRIPTSDIR/common/cb_bootstrap.sh; service_stop_disable redis
-ubuntu-redis-preinstall-man = lftp -c 'open -e "mget redis-server_2.8*precise_ARCH.deb" URL'
-ubuntu-redis-install-man = sudo dpkg -i $(ls -t | grep redis-server | head -n 1)
-ubuntu-redis-postinstall-man = sudo sed -i "s/^bind .*/bind 0.0.0.0/" /etc/redis/redis.conf; source SCRIPTSDIR/common/cb_bootstrap.sh; service_stop_disable redis-server
+fedora-redis-install-man = package_install redis
+fedora-redis-postinstall-man = sudo sed -i "s/^bind .*/bind 0.0.0.0/" /etc/redis.conf; service_stop_disable redis
+ubuntu-redis-install-man = package_install redis-server
+ubuntu-redis-postinstall-man = sudo sed -i "s/^bind .*/bind 0.0.0.0/" /etc/redis/redis.conf; service_stop_disable redis-server
 
 rhel-maven-preinstall-man = sudo yum -y install java-devel
 rhel-maven-install-man = sudo rpm -Uvh URL
 rhel-maven-postinstall-man = sudo ln -s /usr/share/apache-maven/bin/mvn /usr/local/bin/; sudo mkdir /usr/share/apache-maven/conf/logging
-ubuntu-maven-install-man = sudo apt-get -y install maven2
+fedora-maven-install-man = package_install install maven2
+ubuntu-maven-install-man = package_install install maven2
 
-rhel-ycsb-preinstall-git = cd ~
-rhel-ycsb-install-git = git clone URL/YCSB.git
-rhel-ycsb-postinstall-git = cd ~/YCSB/; mvn clean package
-ubuntu-ycsb-preinstall-git = cd ~
-ubuntu-ycsb-install-git = git clone URL/YCSB.git
-ubuntu-ycsb-postinstall-git = cd ~/YCSB/; mvn clean package
+common-ycsb-preinstall-git = cd ~
+common-ycsb-install-git = git clone URL/YCSB.git
+common-ycsb-postinstall-git = cd ~/YCSB/; mvn clean package
 ### END -  Dependency and method-specific command lines ###

@@ -57,6 +57,9 @@ then
     CASSANDRA_DATA_DIR=$(get_my_ai_attribute_with_default cassandra_data_dir /dbstore)
     eval CASSANDRA_DATA_DIR=${CASSANDRA_DATA_DIR}
 
+    CASSANDRA_DATA_FSTYP=$(get_my_ai_attribute_with_default cassandra_data_fstyp ext4)
+    eval CASSANDRA_DATA_FSTYP=${CASSANDRA_DATA_FSTYP}
+
     cassandra_ips=`get_ips_from_role cassandra`
     seed_ips=`get_ips_from_role seed`
     
@@ -103,6 +106,9 @@ then
 
     MONGODB_DATA_DIR=$(get_my_ai_attribute_with_default mongodb_data_dir /dbstore)
     eval MONGODB_DATA_DIR=${MONGODB_DATA_DIR}
+
+    MONGODB_DATA_FSTYP=$(get_my_ai_attribute_with_default mongodb_data_fstyp ext4)
+    eval MONGODB_DATA_FSTYP=${MONGODB_DATA_FSTYP}
 
     mongos_ip=`get_ips_from_role mongos`
     if [ -z $mongos_ip ]
