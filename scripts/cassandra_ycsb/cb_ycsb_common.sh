@@ -151,13 +151,15 @@ fi
 function lazy_collection {
 
     CMDLINE=$1
-    SLA_RUNTIME_TARGETS=$2
+    OUTPUT_FILE=$2.run
+    SLA_RUNTIME_TARGETS=$3
         
     ops=0
     latency=0
     
     while read line
     do
+        echo $line >> $OUTPUT_FILE
         IFS=',' read -a array <<< "$line"
         if [[ ${array[0]} == *OVERALL* ]]
         then
@@ -221,7 +223,7 @@ function lazy_collection {
     load_profile:${LOAD_PROFILE}:name \
     load_duration:${LOAD_DURATION}:sec \
     throughput:$(expr $ops):tps \
-    latency:$(expr $latency):ms \
+    latency:$(expr $latency):us \
     datagen_time:${datagentime}:sec \
     datagen_size:${datagensize}:records \
     ${SLA_RUNTIME_TARGETS}
@@ -229,7 +231,8 @@ function lazy_collection {
 
 function eager_collection {
     CMDLINE=$1
-    SLA_RUNTIME_TARGETS=$2
+    OUTPUT_FILE=$2.run
+    SLA_RUNTIME_TARGETS=$3
     
     #----------------------- Track all YCSB results  -------------------------------
 
@@ -253,6 +256,7 @@ function eager_collection {
     
     while read line
     do
+        echo $line >> $OUTPUT_FILE
     #-------------------------------------------------------------------------------
     # Need to track each YCSB Clients current operation count.
     # NEED TO:
