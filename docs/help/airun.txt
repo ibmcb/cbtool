@@ -1,0 +1,2 @@
+Start the running of an application on a previously created skeleton 
+appinit() call.
