@@ -139,8 +139,8 @@ def get_linux_distro() :
        
     _arch = platform.processor()
 
-    if _linux_distro_kind == "ubuntu" and _arch == "x86_64" :
-        _arch = "amd64"
+#    if _linux_distro_kind == "ubuntu" and _arch == "x86_64" :
+#        _arch = "amd64"
         
     return _linux_distro_kind, _linux_distro_ver, _linux_major_ver, _linux_distro_name, _arch
 

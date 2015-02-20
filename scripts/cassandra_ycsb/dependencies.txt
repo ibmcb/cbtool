@@ -2,8 +2,9 @@
 oraclejava-order = 50
 oracle-java-home-order = 51
 cassandra-order = 52
-maven-order = 53
-ycsb-order = 54
+cassandra-tools-order = 53
+maven-order = 54
+ycsb-order = 55
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -16,6 +17,7 @@ ycsb-order = 54
 oraclejava-install = man
 oracle-java-home-install = man
 cassandra-install = man
+cassandra-tools-install = man
 maven-install = man
 ycsb-install = git
 ### END - Dependency-specific installation method ###
@@ -24,6 +26,7 @@ ycsb-install = git
 oraclejava-configure = java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g'
 oracle-java-home-configure = cat .bashrc | grep -c latest
 cassandra-configure = which cassandra
+cassandra-tools = which token-generator
 maven-configure = mvn --version | head -n 1 | cut -d ' ' -f 3
 ycsb-configure = ls -la ~/YCSB
 ### END - Tests ###
@@ -32,6 +35,7 @@ ycsb-configure = ls -la ~/YCSB
 oraclejava-ver = 1.7
 oracle-java-home-ver = 1.0
 cassandra-ver = ANY
+cassandra-tools-ver = ANY
 maven-ver = 2
 ycsb-ver = ANY
 ### END - Dependency versions ###
@@ -41,13 +45,17 @@ rhel-oraclejava-x86_64-urls-man = http://REPO_ADDR/oracle_oraclejava/jdk-7u51-li
 fedora-oraclejava-x86_64-urls-man = http://REPO_ADDR/oracle_oraclejava/jdk-7u51-linux-x64.rpm
 ubuntu-oraclejava-x86_64-urls-man = http://ppa.launchpad.net/webupd8team/oraclejava/ubuntu/pool/main/o/oracle-oraclejava7-installer/oracle-jdk7-installer_7u51-0~webupd8~3_all.deb
 
-rhel-cassandra-x86_64-urls-man = http://rpm.datastax.com/community/noarch/cassandra12-1.2.9-1.noarch.rpm
-fedora-cassandra-x86_64-urls-man = http://rpm.datastax.com/community/noarch/cassandra12-1.2.9-1.noarch.rpm
-ubuntu-cassandra-amd64-urls-man = http://www.apache.org/dist/cassandra/debian/pool/main/c/cassandra/cassandra_1.2.12_all.deb
+#rhel-cassandra-x86_64-urls-man = http://rpm.datastax.com/community/noarch/cassandra12-1.2.9-1.noarch.rpm
+#fedora-cassandra-x86_64-urls-man = http://rpm.datastax.com/community/noarch/cassandra12-1.2.9-1.noarch.rpm
+#ubuntu-cassandra-x86_64-urls-man = http://www.apache.org/dist/cassandra/debian/pool/main/c/cassandra/cassandra_1.2.12_all.deb
 
-#rhel-cassandra-x86_64-urls-man = http://rpm.datastax.com/community/noarch/cassandra21-2.1.2-1.noarch.rpm
-#fedora-cassandra-x86_64-urls-man = http://rpm.datastax.com/community/noarch/cassandra21-2.1.2-1.noarch.rpm
-#ubuntu-cassandra-amd64-urls-man = http://www.apache.org/dist/cassandra/debian/pool/main/c/cassandra/cassandra_2.1.2_all.deb
+rhel-cassandra-x86_64-urls-man = http://rpm.datastax.com/community/noarch/cassandra21-2.1.2-1.noarch.rpm
+fedora-cassandra-x86_64-urls-man = http://rpm.datastax.com/community/noarch/cassandra21-2.1.2-1.noarch.rpm
+ubuntu-cassandra-x86_64-urls-man = http://www.apache.org/dist/cassandra/debian/pool/main/c/cassandra/cassandra_2.1.2_all.deb
+
+rhel-cassandra-tools-x86_64-urls-man = http://rpm.datastax.com/community/noarch/cassandra21-tools-2.1.2-1.noarch.rpm
+fedora-cassandra-tools-x86_64-urls-man = http://rpm.datastax.com/community/noarch/cassandra21-tools-2.1.2-1.noarch.rpm
+ubuntu-cassandra-tools-x86_64-urls-man = http://www.apache.org/dist/cassandra/debian/pool/main/c/cassandra/cassandra-tools_2.1.2_all.deb
 
 rhel-maven-x86_64-urls-man = https://repos.fedorapeople.org/repos/dchen/apache-maven/epel-6/x86_64/apache-maven-3.2.1-2.el6.noarch.rpm
 fedora-maven-x86_64-urls-man = https://repos.fedorapeople.org/repos/dchen/apache-maven/epel-6/x86_64/apache-maven-3.2.1-2.el6.noarch.rpm
@@ -73,7 +81,14 @@ fedora-cassandra-preinstall-man = package_install jna which
 fedora-cassandra-install-man = sudo rpm -Uvh URL
 fedora-cassandra-postinstall-man = sudo sed -i 's/Xss180k/Xss512k/g' /etc/cassandra/conf/cassandra-env.sh; source SCRIPTSDIR/common/cb_bootstrap.sh; service_restart_enable cassandra
 ubuntu-cassandra-preinstall-man = wget -N -P ~ URL
-ubuntu-cassandra-install-man = tar -xzf cassandra*.gz
+ubuntu-cassandra-install-man = sudo dpkg -i cassandra*.deb
+ubuntu-cassandra-postinstall-man = sudo rm -rf cassandra*.deb
+
+rhel-cassandra-tools-install-man = sudo rpm -Uvh URL
+fedora-cassandra-tools-install-man = sudo rpm -Uvh URL
+ubuntu-cassandra-tools-preinstall-man = wget -N -P ~ URL
+ubuntu-cassandra-tools-install-man = sudo dpkg -i cassandra*.deb
+ubuntu-cassandra-tools-postinstall-man = sudo rm -rf cassandra*.deb
 
 rhel-maven-preinstall-man = package_install java-devel
 rhel-maven-install-man = sudo rpm -Uvh URL

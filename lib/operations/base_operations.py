@@ -1934,7 +1934,10 @@ class BaseObjectOperations :
             obj_attr_list["vms"] = obj_attr_list["vms"][:-1]
             obj_attr_list["vms_nr"] = _vm_counter
             obj_attr_list["drivers_nr"] = _nr_drivers
-            
+
+            obj_attr_list["osp"] = dic2str(self.osci.oscp())
+            obj_attr_list["msp"] = dic2str(self.msci.mscp())
+                        
             if obj_attr_list["staging"] + "_complete" in obj_attr_list :
                 self.osci.publish_message(obj_attr_list["cloud_name"], \
                                           "VM", \

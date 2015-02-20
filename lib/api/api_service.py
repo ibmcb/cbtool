@@ -177,6 +177,9 @@ class API():
     def cldlist(self, set_default_cloud = "false"):
         return self.passive.list_objects({}, set_default_cloud, "cloud-list")[2]
 
+    def shell(self, cloud_name, scmd):
+        return self.passive.execute_shell(cloud_name + ' ' + scmd, "shell-execute")[2]
+
     def expid(self, cloud_name, experiment_name = ''):
         return self.passive.expidmanage({"name" : cloud_name}, cloud_name + ' ' + experiment_name, "expid-manage")[2]
 
