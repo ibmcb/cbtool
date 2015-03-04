@@ -86,6 +86,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 if not self.expid :                
                     _time_attr_list = self.osci.get_object(cld_attr_lst["name"], "GLOBAL", False, "time", False)
                     self.expid = _time_attr_list["experiment_id"]
+                    _expid = self.expid
                     
                 _cld_name = cld_attr_lst["name"]
 

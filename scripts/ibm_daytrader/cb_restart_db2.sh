@@ -35,6 +35,8 @@ SIZE=`get_my_ai_attribute_with_default tradedb_size small`
 
 syslog_netcat "Moving /tradedb_${SIZE} to /tradedb"
 sudo mv /tradedb_${SIZE} /tradedb
+syslog_netcat "Changing ownership of /tradedb to ${DB2_INSTANCE_NAME}:${DB2_INSTANCE_NAME}"
+sudo chown -R ${DB2_INSTANCE_NAME}:${DB2_INSTANCE_NAME} /tradedb
 
 syslog_netcat "Setting DB2 for the new hostname ($SHORT_HOSTNAME)"
 sudo chmod 666 $INSTANCE_PATH/sqllib/db2nodes.cfg

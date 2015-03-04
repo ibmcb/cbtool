@@ -235,6 +235,42 @@ function lazy_collection {
     ${SLA_RUNTIME_TARGETS}
 }
 
+function check_cluster_state {
+
+    syslog_netcat "Waiting for all nodes to become available..."
+
+    NODETOOLHN=$1
+    ATTEMPTS=$2
+    INTERVAL=$3
+
+    counter=0
+    
+    while [[ $NODES_REGISTERED -ne $total_nodes && "$counter" -le "$ATTEMPTS" ]]
+    do
+        NODES_REGISTERED=0    
+        syslog_netcat "Obtaining the node list for this Cassandra cluster..."            
+        for NODEIP in $(nodetool -h ${NODETOOLHN} status | tail -n +6 | grep -v "Non-system" | awk '{ print $2 }')
+        do
+            if [[ $(sudo cat /etc/hosts | grep -c $NODEIP) -ne 0 ]]
+            then
+                NODES_REGISTERED="$(( $NODES_REGISTERED + 1 ))"
+            fi            
+        done
+
+        syslog_netcat "Nodes registered on the cluster: $NODES_REGISTERED out of $total_nodes"        
+        counter="$(( $counter + 1 ))"
+        sleep $INTERVAL
+    done
+    
+    if [[ $counter -gt $ATTEMPTS ]]
+    then
+        return 1
+    else
+        return 0
+    fi
+}
+export -f check_cluster_state
+
 function eager_collection {
     CMDLINE=$1
     OUTPUT_FILE=$2.run
@@ -463,4 +499,3 @@ function eager_collection {
         ${SLA_RUNTIME_TARGETS}        
     fi
 }
-     

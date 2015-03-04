@@ -26,6 +26,9 @@
 from time import time, sleep
 from uuid import uuid5, UUID
 from random import choice
+from os import access, F_OK
+from os.path import expanduser
+
 import socket
 import copy
 import iso8601
@@ -56,7 +59,9 @@ class OskCmds(CommonCloudFunctions) :
         self.expid = expid
         self.ft_supported = False
         self.lvirt_conn = {}
-    
+        self.api_error_counter = {}
+        self.max_api_errors = 10
+        
     @trace
     def get_description(self) :
         '''
@@ -116,6 +121,21 @@ class OskCmds(CommonCloudFunctions) :
 
             _region = region
             _msg = "Selected region is " + str(region)
+            cbdebug(_msg)
+
+            _file = expanduser("~") + "/adminrc"
+
+            if not access(_file, F_OK) :
+                _file_fd = open(_file, 'w')
+                        
+                _file_fd.write("export OS_TENANT_NAME=" + _tenant + "\n")
+                _file_fd.write("export OS_USERNAME=" + _username + "\n")
+                _file_fd.write("export OS_PASSWORD=" + _password + "\n")                    
+                _file_fd.write("export OS_AUTH_URL=\"" + access_url + "\"\n")
+                _file_fd.write("export OS_NO_CACHE=1\n")
+                _file_fd.write("export OS_REGION_NAME=" + region + "\n")                    
+                _file_fd.close()
+            
             _status = 0
 
         except novaexceptions, obj:
@@ -1193,12 +1213,31 @@ class OskCmds(CommonCloudFunctions) :
         except novaexceptions, obj:
             _status = int(obj.error_code)
             _fmsg = "(While getting instance(s) through API call \"" + _call + "\") " + str(obj.error_message)
-            raise CldOpsException(_fmsg, _status)
+
+            if identifier not in self.api_error_counter :
+                self.api_error_counter[identifier] = 0
+            
+            self.api_error_counter[identifier] += 1
+            
+            if self.api_error_counter[identifier] > self.max_api_errors :            
+                raise CldOpsException(_fmsg, _status)
+            else :
+                cbwarn(_fmsg)
+                return False
 
         except Exception, e :
             _status = 23
             _fmsg = "(While getting instance(s) through API call \"" + _call + "\") " + str(e)
-            raise CldOpsException(_fmsg, _status)
+            if identifier not in self.api_error_counter :
+                self.api_error_counter[identifier] = 0
+            
+            self.api_error_counter[identifier] += 1
+            
+            if self.api_error_counter[identifier] > self.max_api_errors :            
+                raise CldOpsException(_fmsg, _status)
+            else :
+                cbwarn(_fmsg)
+                return False
 
     @trace
     def vmcount(self, obj_attr_list):
@@ -1421,8 +1460,17 @@ class OskCmds(CommonCloudFunctions) :
                 obj_attr_list["cloud_vv_name"] += '-' + "vv"
                 obj_attr_list["cloud_vv_name"] += obj_attr_list["name"].split("_")[1]
                 obj_attr_list["cloud_vv_name"] += '-' + obj_attr_list["role"]            
-    
-                _msg = "Creating a volume, with size " 
+
+                if "cloud_vv_type" in obj_attr_list :
+                    _volume_type = obj_attr_list["cloud_vv_type"]
+                else :
+                    _volume_type = None
+
+                if not _volume_type :                    
+                    _msg = "Creating a volume, with size " 
+                else :
+                    _msg = "Creating a " + _volume_type + " volume, with size " 
+
                 _msg += obj_attr_list["cloud_vv"] + " GB, on VMC \"" 
                 _msg += obj_attr_list["vmc_name"] + "\""
                 cbdebug(_msg, True)
@@ -1431,7 +1479,7 @@ class OskCmds(CommonCloudFunctions) :
                                                                snapshot_id = None, \
                                                                display_name = obj_attr_list["cloud_vv_name"], \
                                                                display_description = None, \
-                                                               volume_type = None, \
+                                                               volume_type = _volume_type, \
                                                                availability_zone = None, \
                                                                imageRef = None)
                 

@@ -859,12 +859,10 @@ class BaseObjectOperations :
             else :
                 _cloud_list = []
 
-            if not self.expid :
+            if len(obj_attr_list["cloud_name"],) :
+                _time_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "time", False)
+                self.expid = _time_attr_list["experiment_id"]
 
-                if len(obj_attr_list["cloud_name"],) :
-                    _time_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "time", False)
-                    self.expid = _time_attr_list["experiment_id"]
-            
             if not cmd.count("cloud-list") :
                 if obj_attr_list["cloud_name"] in _cloud_list :
                     # Cloud is attached, we can proceed
@@ -1780,6 +1778,9 @@ class BaseObjectOperations :
         if vm_role + "_netid" in obj_attr_list :
             _extra_parms += ",netid=" + obj_attr_list[vm_role + "_netid"]
 
+        if vm_role + "_imageid1" in obj_attr_list :
+            _extra_parms += ",imageid1=" + obj_attr_list[vm_role + "_imageid1"]
+
         if vm_role + "_login" in obj_attr_list :
             _extra_parms += ",login=" + obj_attr_list[vm_role + "_login"]
 
@@ -1788,6 +1789,9 @@ class BaseObjectOperations :
 
         if vm_role + "_cloud_vv" in obj_attr_list :
             _extra_parms += ",cloud_vv=" + obj_attr_list[vm_role + "_cloud_vv"]
+
+        if vm_role + "_cloud_vv_type" in obj_attr_list :
+            _extra_parms += ",cloud_vv_type=" + obj_attr_list[vm_role + "_cloud_vv_type"]
 
         if vm_role + "_sla_provisioning_target" in obj_attr_list :
             _extra_parms += ",sla_provisioning_target=" + obj_attr_list[vm_role + "_sla_provisioning_target"]            
@@ -2273,9 +2277,9 @@ class BaseObjectOperations :
                                 _command = "~/" + _ai_attr_list[_command_key]
                                 _found = True
                             else :
-                                _command = ""
+                                _command = "/bin/true"
                         else :
-                            _command = ""
+                            _command = "/bin/true"
     
                         _vm_command_list.append(_command)
     

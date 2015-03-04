@@ -19,14 +19,14 @@ LOAD_LEVEL = 1
 LOAD_DURATION = uniformIXIXI90I120
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
-#JAVA_HOME = j9vm_sdk
-#RUN_COUNTER_NAME = experiment_id_counter
-#EXPERIMENT_OUTPUT_COLLECTION_DIR = specjbb_balloon_experiment_results
-#EXPERIMENT_OUTPUT_COLLECTION_HOST = 172.16.0.1
-#SPECJBB_RAMPUP=20
-#SPECIFIC_PARAMETERS = BALLOON_SIZE:BALLOON_DELAY
-#BALLOON_SIZE = 500
-#BALLOON_DELAY = 300
+JAVA_HOME = j9vm_sdk
+RUN_COUNTER_NAME = experiment_id_counter
+EXPERIMENT_OUTPUT_COLLECTION_DIR = specjbb_balloon_experiment_results
+EXPERIMENT_OUTPUT_COLLECTION_HOST = 172.16.0.1
+SPECJBB_RAMPUP=20
+SPECIFIC_PARAMETERS = BALLOON_SIZE:BALLOON_DELAY
+BALLOON_SIZE = 500
+BALLOON_DELAY = 300
 
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
 #SYNC_COUNTER_NAME = synchronization_counter
