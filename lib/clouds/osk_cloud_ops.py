@@ -78,6 +78,7 @@ class OskCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
+
             if len(access_url.split('-')) == 1 :
                 _endpoint_type = "publicURL"
             if len(access_url.split('-')) == 2 :
@@ -104,11 +105,13 @@ class OskCmds(CommonCloudFunctions) :
             _tenant = _tenant.replace("_dash_",'-')
 
             _fmsg = "About to attempt a connection to OpenStack"
+
             self.oskconncompute = client.Client(_username, _password, _tenant, \
                                          access_url, region_name = region, \
                                          service_type="compute", \
                                          endpoint_type = _endpoint_type, \
                                          cacert = _cacert)
+
             self.oskconncompute.flavors.list()
 
             self.oskconnstorage = client.Client(_username, _password, _tenant, \

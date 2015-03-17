@@ -902,18 +902,29 @@ function execute_load_generator {
         if [[ x"${log_output_command}" == x"true" ]]
         then
             syslog_netcat "Command output will be shown"
+        	LOAD_GENERATOR_START=$(date +%s)
             $CMDLINE 2>&1 | while read line ; do
                 syslog_netcat "$line"
                 echo $line >> $OUTPUT_FILE
             done
+            LOAD_GENERATOR_END=$(date +%s)
+            APP_COMPLETION_TIME=$(( $LOAD_GENERATOR_END - $LOAD_GENERATOR_START )) 
         else
             syslog_netcat "Command output will NOT be shown"
+        	LOAD_GENERATOR_START=$(date +%s)            
             $CMDLINE 2>&1 >> $OUTPUT_FILE
+            LOAD_GENERATOR_END=$(date +%s)
+            APP_COMPLETION_TIME=$(( $LOAD_GENERATOR_END - $LOAD_GENERATOR_START ))            
         fi
     else
+        LOAD_GENERATOR_START=$(date +%s)    	
         syslog_netcat "This AI reached the limit of load generation process executions. If you want this AI to continue to execute the load generator, reset the \"run_limit\" counter"
         sleep ${LOAD_DURATION}
+	    LOAD_GENERATOR_END=$(date +%s)
+	    APP_COMPLETION_TIME=$(( $LOAD_GENERATOR_END - $LOAD_GENERATOR_START ))       
     fi
+    
+    return $APP_COMPLETION_TIME
 }
 
 function wait_until_port_open {
@@ -937,6 +948,31 @@ function wait_until_port_open {
     done
     syslog_netcat "Port ${2} on host ${1} was NOT found open after ${counter} attempts!"
     return 1
+}
+
+function setup_passwordless_ssh {
+
+    SSH_KEY_NAME=$(get_my_vm_attribute identity)
+    REMOTE_DIR_NAME=$(get_my_vm_attribute remote_dir_name)
+    SSH_KEY_NAME=$(echo ${SSH_KEY_NAME} | rev | cut -d '/' -f 1 | rev)
+
+    syslog_netcat "VMs need to be able to perform passwordless SSH between each other. Updating ~/.ssh/id_rsa to be the same on all VMs.."
+    sudo chmod 600 ~/${REMOTE_DIR_NAME}/credentials/$SSH_KEY_NAME
+    sudo cat ~/${REMOTE_DIR_NAME}/credentials/$SSH_KEY_NAME > ~/.ssh/id_rsa
+    sudo chmod 0600 ~/.ssh/id_rsa
+    sudo cat ~/${REMOTE_DIR_NAME}/credentials/$SSH_KEY_NAME.pub > ~/.ssh/id_rsa.pub
+    sudo chmod 0600 ~/.ssh/id_rsa.pub
+
+    if [[ $(cat ~/.ssh/config | grep -c StrictHostKeyChecking) -eq 0 ]]
+    then
+        echo "StrictHostKeyChecking no" >> ~/.ssh/config
+    fi
+
+    if [[ $(cat ~/.ssh/config | grep -c UserKnownHostsFile) -eq 0 ]]
+    then
+        echo "UserKnownHostsFile /dev/null" >> ~/.ssh/config
+    fi
+    chmod 0644 ~/.ssh/config
 }
 
 function get_offline_ip {

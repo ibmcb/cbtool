@@ -106,6 +106,8 @@ OUTPUT_FILE=$(mktemp)
 
 execute_load_generator "${CMDLINE}" ${OUTPUT_FILE} ${LOAD_DURATION}
 
+COMPLETION_TIME=$?
+
 syslog_netcat "..giraph job is done. Ready to do a summary..."
 
 #Parse and report the performace
@@ -117,6 +119,7 @@ lat=$(cat ${OUTPUT_FILE} | grep "Total (ms)" | cut -d '=' -f 2)
 load_level:${LOAD_LEVEL}:load \
 load_profile:${LOAD_PROFILE}:name \
 load_duration:${LOAD_DURATION}:sec \
+completion_time:${COMPLETION_TIME}:sec \
 latency:$lat:msec \
 ${SLA_RUNTIME_TARGETS}
 

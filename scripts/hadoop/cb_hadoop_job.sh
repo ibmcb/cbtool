@@ -209,6 +209,8 @@ OUTPUT_FILE=$(mktemp)
 
 execute_load_generator "${CMDLINE}" ${OUTPUT_FILE} ${LOAD_DURATION}
 
+COMPLETION_TIME=$?
+
 syslog_netcat "..hadoop job is done. Ready to do a summary..."
 
 # Collect data generation time, taking care of reporting the time
@@ -251,6 +253,7 @@ tput=`cat ${HIBENCH_HOME}/hibench.report | grep -v Type | tr -s ' ' | cut -d ' '
 load_level:${LOAD_LEVEL}:load \
 load_profile:${LOAD_PROFILE}:name \
 load_duration:${LOAD_DURATION}:sec \
+completion_time:${COMPLETION_TIME}:sec \
 throughput:$tput:tps latency:$lat:msec \
 datagen_time:${datagentime}:sec \
 datagen_size:${datagensize}:MB \

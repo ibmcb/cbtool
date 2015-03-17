@@ -53,6 +53,8 @@ syslog_netcat "Benchmarking filebench SUT: FILEBENCH=${FILEBENCH_IP} with LOAD_L
 OUTPUT_FILE=$(mktemp)
 
 execute_load_generator "${CMDLINE}" ${OUTPUT_FILE} ${LOAD_DURATION}
+
+COMPLETION_TIME=$?
  
 syslog_netcat "filebench run complete. Will collect and report the results"
 
@@ -64,6 +66,7 @@ bw=`cat ${OUTPUT_FILE} | grep Summary | cut -d "," -f 4 | tr -d ' ' | sed 's/\(.
 load_level:${LOAD_LEVEL}:load \
 load_profile:${LOAD_PROFILE}:name \
 load_duration:${LOAD_DURATION}:sec \
+completion_time:${COMPLETION_TIME}:sec \
 latency:$lat:msec \
 throughput:$tp:tps \
 bandwidth:$bw:MBps \

@@ -51,6 +51,8 @@ OUTPUT_FILE=$(mktemp)
 
 execute_load_generator "${CMDLINE}" ${OUTPUT_FILE} ${LOAD_DURATION}
 
+COMPLETION_TIME=$?
+
 syslog_netcat "coremark run complete. Will collect and report the results"
 
 tp=`cat ${OUTPUT_FILE} | grep Sec | cut -d ":" -f 2 | tr -d ' '`
@@ -60,6 +62,7 @@ lat=`echo "\`cat ${OUTPUT_FILE} | grep time | cut -d ":" -f 2 | tr -d ' '\` * 10
 load_level:${LOAD_LEVEL}:load \
 load_profile:${LOAD_PROFILE}:name \
 load_duration:${LOAD_DURATION}:sec \
+completion_time:${COMPLETION_TIME}:sec \
 throughput:$tp:tps latency:$lat:msec \
 ${SLA_RUNTIME_TARGETS}
 

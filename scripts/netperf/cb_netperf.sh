@@ -69,6 +69,8 @@ OUTPUT_FILE=$(mktemp)
 
 execute_load_generator "${CMDLINE}" ${OUTPUT_FILE} ${LOAD_DURATION}
 
+COMPLETION_TIME=$?
+
 syslog_netcat "netperf run complete. Will collect and report the results"
 
 if [[ $LOAD_PROFILE == "tcp_stream" || $LOAD_PROFILE == "tcp_maerts" ]]
@@ -85,6 +87,7 @@ fi
 load_level:${LOAD_LEVEL}:load \
 load_profile:${LOAD_PROFILE}:name \
 load_duration:${LOAD_DURATION}:sec \
+completion_time:${COMPLETION_TIME}:sec \
 throughput:$tp:tps \
 bandwidth:$bw:Mbps \
 ${SLA_RUNTIME_TARGETS}
