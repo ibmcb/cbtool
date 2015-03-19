@@ -41,6 +41,7 @@ from lib.auxiliary.thread_pool import ThreadPool
 from lib.auxiliary.data_ops import selective_dict_update
 from lib.auxiliary.config import parse_cld_defs_file, load_store_functions, get_available_clouds, rewrite_cloudconfig, rewrite_cloudoptions
 from lib.clouds.shared_functions import CldOpsException
+from lib.remote.network_functions import Nethashget
 from base_operations import BaseObjectOperations
 
 import copy
@@ -85,6 +86,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 if not self.expid :                
                     _time_attr_list = self.osci.get_object(cld_attr_lst["name"], "GLOBAL", False, "time", False)
                     self.expid = _time_attr_list["experiment_id"]
+                    _expid = self.expid
                     
                 _cld_name = cld_attr_lst["name"]
 
@@ -205,10 +207,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 if "jump_host" in cld_attr_lst["vm_defaults"] :
                     if str(cld_attr_lst["vm_defaults"]["jump_host"]).lower() != "false" :
-                        if len(str(cld_attr_lst["vm_defaults"]["jump_host"])) > 1 :
+                        if str(cld_attr_lst["vm_defaults"]["jump_host"]).lower() != "true" :
                             _msg = "The attribute \"jump_host\" in VM_DEFAULTS is set. "
                             _msg += "Will attempt to connect (ssh) to the host \"" 
-                            _msg += cld_attr_lst["vm_defaults"]["jump_host"] + "\""
+                            _msg += str(cld_attr_lst["vm_defaults"]["jump_host"]) + "\""
                             _msg += " to confirm that this host can be used as a \""
                             _msg += "jump box\"."
                             cbdebug(_msg, True)
@@ -229,7 +231,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             _command += '@' + cld_attr_lst["vm_defaults"]["jump_host"]
                             _command += " \"which nc\""
     
-                            _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_command)
+                            _status, _result_stdout, _result_stderr = \
+                            _proc_man.retriable_run_os_command(_command, \
+                                                               total_attempts = int(cld_attr_lst["vm_defaults"]["update_attempts"]),\
+                                                               retry_interval = int(cld_attr_lst["vm_defaults"]["update_frequency"]), \
+                                                               raise_exception_on_error = False)
     
                             if not _status :
                                 _jump_box_host_contents = "Host *\n"
@@ -242,7 +248,14 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                 _jump_box_host_fd.close()
     
                                 cld_attr_lst["vm_defaults"]["ssh_config_file"] = _jump_box_host_fn
-    
+                        else :
+                            _msg = "The attribute \"jump_host\" in VM_DEFAULTS"
+                            _msg += " is set to \"$True\", but the actual IP address"
+                            _msg += " of the jump_host VM could not be determined."
+                            _msg += " Please try to re-run the tool."
+                            cberr(_msg, True)
+                            exit(1)
+                              
                 _all_global_objects = cld_attr_lst.keys()
                 cld_attr_lst["client_should_refresh"] = str(0.0)
 
@@ -354,12 +367,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _fmsg = "An error has occurred, but no error message was captured"
             
             openvpn_config = cld_attr_lst["space"]["openvpn_server_config_prefix"] + "-" + cld_attr_lst["cloud_name"] + ".conf"
+            openvpn_server_address = cld_attr_lst["space"]["openvpn_server_address"]
             if not os.path.isfile(openvpn_config) :
                 _proc_man =  ProcessManagement()
                 script = self.path + "/util/openvpn/make_keys.sh"
                 address_range = cld_attr_lst["space"]["openvpn_address_range"]
-    
-                cmd = script + " " + address_range + " " + cld_attr_lst["cloud_name"]
+                cmd = script + " " + address_range + " " + cld_attr_lst["cloud_name"] + " " + openvpn_server_address
                 cbinfo("Creating openvpn unified CB configuration: " + cmd + ", please wait ...", True)
                 _status, out, err =_proc_man.run_os_command(cmd)
     
@@ -613,7 +626,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                            False)
      
      
-                    _proc_man = ProcessManagement(username = _host_attr_list["username"], \
+                    _proc_man = ProcessManagement(username = _host_attr_list["login"], \
                                                   cloud_name = obj_attr_list["cloud_name"], \
                                                   hostname = _host_attr_list["cloud_ip"], \
                                                   priv_key = _host_attr_list["identity"])
@@ -4531,7 +4544,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             for _key in _ai_attr_list :
                 if _key.count("sla_runtime_target") :
                     _sla_runtime_targets += _key + ':' + _ai_attr_list[_key]
-                
+
             if _ai_state and _ai_state == "attached" :
                 _load = self.get_load(cloud_name, _ai_attr_list, False, \
                                       _prev_load_level, _prev_load_duration, \

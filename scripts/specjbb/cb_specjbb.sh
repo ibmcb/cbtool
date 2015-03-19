@@ -136,6 +136,8 @@ OUTPUT_FILE=$(mktemp)
 
 execute_load_generator "${CMDLINE}" ${OUTPUT_FILE} ${LOAD_DURATION}
 
+COMPLETION_TIME=$?
+
 #####################################################
 # extract and publish result
 #####################################################
@@ -167,6 +169,7 @@ else
     load_level:${LOAD_LEVEL}:load \
     load_profile:${LOAD_PROFILE}:name \
     load_duration:${LOAD_DURATION}:sec \
+    completion_time:${COMPLETION_TIME}:sec \
     ${app_metric_string} ${SLA_RUNTIME_TARGETS}
 
     if [ x"${EXPOUTCOLDIR}" == x ]; then

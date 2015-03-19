@@ -1,35 +1,68 @@
 # Parameters for this Virtual Application (Application Instance - AI) type should
 # be set on YOUR private configuration configuration file, including the ones 
 # commented.
+
 [AI_TEMPLATES : GIRAPH]
-DESCRIPTION = TBD
-SUT = hadoopmaster->3_x_hadoopslave
-LOAD_GENERATOR_ROLE = hadoopmaster
-LOAD_MANAGER_ROLE = hadoopmaster
-METRIC_AGGREGATOR_ROLE = hadoopmaster
-LOAD_BALANCER = $False
-LOAD_BALANCER_TARGET_PORT = 80 
-LOAD_BALANCER_TARGET_URL = unknown 
-LOAD_BALANCER_TARGET_CHILDREN = 2
-CAPTURE_ROLE = hadoopslave
-HADOOPMASTER_SETUP1 = cb_config_hadoop_cluster.sh
-HADOOPSLAVE_SETUP1 = cb_config_hadoop_cluster.sh
-HADOOPMASTER_SETUP2 = cb_start_hadoop_cluster.sh
-HADOOPSLAVE_SETUP2 = cb_start_hadoop_cluster.sh
-HADOOPMASTER_RESIZE1 = cb_restart_hadoop_cluster.sh
-HADOOPSLAVE_RESIZE1 = cb_restart_hadoop_cluster.sh
-START = cb_hadoop_job.sh
-LOAD_PROFILE = terasort
+
+# Attributes MANDATORY for all Virtual Applications
+SUT = giraphmaster->3_x_giraphslave
+LOAD_BALANCER_SUPPORTED = $False
+RESIZE_SUPPORTED = $True
+REGENERATE_DATA = $True
+LOAD_GENERATOR_ROLE = giraphmaster
+LOAD_MANAGER_ROLE = giraphmaster
+METRIC_AGGREGATOR_ROLE = giraphmaster
+CAPTURE_ROLE = giraphslave
+LOAD_PROFILE = pagerank
 LOAD_LEVEL = uniformIXIXI1I3
 LOAD_DURATION = 60
+REPORTED_METRICS = latency
+
+# VApp-specific MANDATORY attributes
+DESCRIPTION = Deploys a Hadoop/Giraph cluster (1 master and N slave nodes). The master
+DESCRIPTION += node submits giraph jobs jobs to the cluster.\n
+DESCRIPTION +=- LOAD_PROFILE possible values: "pagerank", "topkpagerank" (for a proper
+DESCRIPTION += description, consult the section "Page Rank Example" on the Giraph documentation)\n
+DESCRIPTION +=- LOAD_LEVEL meaning: number of vertices on the graph (multiplied by
+DESCRIPTION += a NUM_VERTICES_FACTOR, with default "100").\n 
+DESCRIPTION +=- LOAD_DURATION meaning: not used, a run ends when the giraph job
+DESCRIPTION += is completed.\n
+DESCRIPTION +=- COMMENT: One of the "Big Data" Workloads. When new slave nodes 
+DESCRIPTION += are added (after an "airesize") the Hadoop/Giraph cluster is reconfigured to include these nodes.
+GIRAPHMASTER_SETUP1 = cb_config_giraph_cluster.sh
+GIRAPHSLAVE_SETUP1 = cb_config_giraph_cluster.sh
+GIRAPHMASTER_SETUP2 = cb_start_giraph_cluster.sh
+GIRAPHSLAVE_SETUP2 = cb_start_giraph_cluster.sh
+GIRAPHMASTER_RESIZE1 = cb_giraph_hadoop_cluster.sh
+GIRAPHSLAVE_RESIZE1 = cb_giraph_hadoop_cluster.sh
+START = cb_giraph_job.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
-#JAVA_HOME = ~/jdk1.6.0_21
-#HADOOP_HOME = ~/hadoop-1.2.1
-#HIBENCH_HOME = ~/HiBench
-#DFS_NAME_DIR = /tmp/cbhadoopname
-#DFS_DATA_DIR = /tmp/cbhadoopdata
-#LOAD_FACTOR = 10000
+JAVA_HOME = ~/jdk1.6.0_21
+HADOOP_HOME = ~/hadoop-1.2.1
+DFS_NAME_DIR = /tmp/cbhadoopname
+DFS_DATA_DIR = /tmp/cbhadoopdata
+GIRAPH_HOME = ~/giraph/giraph/
+ZOOKEEPER_HOME=~/giraph/zookeeper/zookeeper-3.4.6/
+EDGES_PER_VERTEX = 3
+NUM_SUPERSTEPS = 3
+NUM_WORKERS_FACTOR = 1
+NUM_VERTICES_FACTOR = 100
+
+### Out of core parameters
+USE_OUT_OF_CORE = $False
+USER_PARTITION_COUNT = 1000 #Implicit at the moment
+### Dgiraph.messageStoreFactoryClass=org.apache.giraph.comm.messages.out_of_core.DiskBackedMessageStoreFactory #Implicit at the moment
+IS_STATIC_GRAPH = $True
+OUT_OF_CORE_BASE_DIRECTORY = /home/fedora/ooc
+MAX_PARTITIONS_IN_MEMORY = 10
+MAX_MESSAGES_IN_MEMORY = 1000
+## If this parameter is set, it will supersede max_partitions_in_memory
+## and max_messages_in_memory. Be careful, if you set this too low your
+## application will become immortal.
+MAX_HEAP_USAGE_BYTES = 1000000000
+USE_RAMDISK = $True
+RAMDISK_SIZE_MB = 1024
 
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
 #SYNC_COUNTER_NAME = synchronization_counter

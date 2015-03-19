@@ -43,7 +43,9 @@ syslog_netcat "Benchmarking ddgen SUT: HPCVM=${my_ip_addr} with LOAD_LEVEL=${LOA
 OUTPUT_FILE=$(mktemp)
 
 execute_load_generator "${CMDLINE}" ${OUTPUT_FILE} ${LOAD_DURATION}
-	
+
+COMPLETION_TIME=$?	
+			
 syslog_netcat "ddgen run complete. Will collect and report the results"
 
 bw=`cat ${OUTPUT_FILE} | grep copied | awk '{ print $8 }'`
@@ -53,6 +55,7 @@ unbw=`cat ${OUTPUT_FILE} | grep copied | awk '{ print $9 }'`
 load_level:${LOAD_LEVEL}:load \
 load_profile:${LOAD_PROFILE}:name \
 load_duration:${LOAD_DURATION}:sec \
+completion_time:${COMPLETION_TIME}:sec \
 bandwidth:${bw}:${unbw} \
 ${SLA_RUNTIME_TARGETS}
 

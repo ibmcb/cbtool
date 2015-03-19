@@ -32,6 +32,7 @@ KEY_NAME = $Empty
 ADDITIONAL_DISCOVERY = $Empty
 MIGRATE_SUPPORTED = $True
 PROTECT_SUPPORTED = $True
+HOST_USER_ROOT = $False
 
 [VM_DEFAULTS : SIM_CLOUDCONFIG]
 TRANSFER_FILES = $False
@@ -57,7 +58,9 @@ CHECK_BOOT_COMPLETE = wait_for_0
 #CHECK_BOOT_COMPLETE = tcp_on_22
 NETID = vlan123
 NETNAME = private
-JUMP_HOST = $Empty
+JUMP_HOST = $False
+LEAVE_INSTANCE_ON_FAILURE = $False
+FORCE_FAILURE = $False
 
 [AI_DEFAULTS : SIM_CLOUDCONFIG]
 CAPTURE_SUPPORTED = $True
@@ -68,6 +71,7 @@ UPDATE_FREQUENCY = 1
 LOGIN = $SIM_LOGIN
 SSH_KEY_NAME = $SIM_SSH_KEY_NAME
 ATTACH_PARALLELISM = 5
+CREATE_PERFORMANCE_EMITTER = $False
 
 [AIDRS_DEFAULTS : SIM_CLOUDCONFIG]
 LOGIN = $SIM_LOGIN
@@ -96,6 +100,8 @@ WAS = size:iron32, eclipsed_size:gold32, imageids:1, imageid1:cb_daytrader
 DRIVER_HADOOP = size:nano32, imageids:1, imageid1:cb_hadoop
 HADOOPMASTER = size:copper32, eclipsed_size:gold32, imageids:1, imageid1:cb_hadoop
 HADOOPSLAVE = size:iron32, eclipsed_size:gold32, imageids:1, imageid1:cb_hadoop
+GIRAPHPMASTER = size:copper32, eclipsed_size:gold32, imageids:1, imageid1:cb_giraph
+GIRAPHSLAVE = size:iron32, eclipsed_size:gold32, imageids:1, imageid1:cb_giraph
 DRIVER_NETPERF = size:nano32, imageids:1, imageid1:cb_netperf
 NETCLIENT = size:iron32, imageids:1, imageid1:cb_netperf
 NETSERVER = size:iron32, imageids:1, imageid1:cb_netperf

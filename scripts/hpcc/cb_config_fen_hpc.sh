@@ -20,35 +20,6 @@ source ~/.bashrc
 
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
-SSH_KEY_NAME=$(get_my_vm_attribute identity)
-REMOTE_DIR_NAME=$(get_my_vm_attribute remote_dir_name)
-SSH_KEY_NAME=$(echo ${SSH_KEY_NAME} | rev | cut -d '/' -f 1 | rev)
-
-syslog_netcat "VMs need to be able to perform passwordless SSH between each other. Updating ~/.ssh/id_rsa to be the same on all VMs.."
-if [[ ! -f ~/.ssh/id_rsa.old ]]
-then
-    sudo cp -f ~/.ssh/id_rsa ~/.ssh/id_rsa.old
-fi
-sudo cat ~/${REMOTE_DIR_NAME}/credentials/$SSH_KEY_NAME > ~/.ssh/id_rsa
-sudo chmod 0600 ~/.ssh/id_rsa
-
-if [[ ! -f ~/.ssh/id_rsa.pub.old ]]
-then
-    sudo cp -f ~/.ssh/id_rsa.pub ~/.ssh/id_rsa.pub.old
-fi
-sudo cat ~/${REMOTE_DIR_NAME}/credentials/$SSH_KEY_NAME.pub > ~/.ssh/id_rsa.pub
-    
-if [[ $(cat ~/.ssh/config | grep -c StrictHostKeyChecking) -eq 0 ]]
-then
-    echo "StrictHostKeyChecking no" >> ~/.ssh/config
-fi
-
-if [[ $(cat ~/.ssh/config | grep -c UserKnownHostsFile) -eq 0 ]]
-then
-    echo "UserKnownHostsFile /dev/null" >> ~/.ssh/config
-fi
-chmod 0600 ~/.ssh/config
-
 MPIEXECUTABLE_PATH=$(get_my_ai_attribute_with_default mpiexecutable_path /usr/lib64/openmpi/bin/)
 MPILIBRARY_PATH=$(get_my_ai_attribute_with_default mpilibrary_path /usr/lib64/openmpi/lib/)
 

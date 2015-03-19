@@ -57,6 +57,9 @@ then
     CASSANDRA_DATA_DIR=$(get_my_ai_attribute_with_default cassandra_data_dir /dbstore)
     eval CASSANDRA_DATA_DIR=${CASSANDRA_DATA_DIR}
 
+    CASSANDRA_DATA_FSTYP=$(get_my_ai_attribute_with_default cassandra_data_fstyp ext4)
+    eval CASSANDRA_DATA_FSTYP=${CASSANDRA_DATA_FSTYP}
+
     cassandra_ips=`get_ips_from_role cassandra`
     seed_ips=`get_ips_from_role seed`
     
@@ -103,6 +106,9 @@ then
 
     MONGODB_DATA_DIR=$(get_my_ai_attribute_with_default mongodb_data_dir /dbstore)
     eval MONGODB_DATA_DIR=${MONGODB_DATA_DIR}
+
+    MONGODB_DATA_FSTYP=$(get_my_ai_attribute_with_default mongodb_data_fstyp ext4)
+    eval MONGODB_DATA_FSTYP=${MONGODB_DATA_FSTYP}
 
     mongos_ip=`get_ips_from_role mongos`
     if [ -z $mongos_ip ]
@@ -151,13 +157,16 @@ fi
 function lazy_collection {
 
     CMDLINE=$1
-    SLA_RUNTIME_TARGETS=$2
+    OUTPUT_FILE=$2.run
+    SLA_RUNTIME_TARGETS=$3
         
     ops=0
     latency=0
-    
+
+    LOAD_GENERATOR_START=$(date +%s)    
     while read line
     do
+        echo $line >> $OUTPUT_FILE
         IFS=',' read -a array <<< "$line"
         if [[ ${array[0]} == *OVERALL* ]]
         then
@@ -184,7 +193,10 @@ function lazy_collection {
     # Check for New Shard
     
     done < <($CMDLINE 2>&1)
-    
+
+    LOAD_GENERATOR_END=$(date +%s)
+    COMPLETION_TIME=$(( $LOAD_GENERATOR_END - $LOAD_GENERATOR_START ))       
+
     if [[ $? -gt 0 ]]
     then
         syslog_netcat "problem running ycsb prime client on $(hostname)"
@@ -216,12 +228,31 @@ function lazy_collection {
         mv /tmp/data_generation_size /tmp/old_data_generation_size        
     fi  
 
+    if [[ -f /tmp/cassandra_cluster_errors ]]
+    then
+        echo "0" > /tmp/cassandra_cluster_errors
+    fi
+
+    FIRST_SEED=$(echo $seed_ips_csv | cut -d ',' -f 1)
+
+    cassandra_errors=0
+    check_cluster_state ${FIRST_SEED} 1 1
+
+    if [[ $? -ne 0 ]]
+    then
+        curr_err=$(cat /tmp/cassandra_cluster_errors)
+        cassandra_errors="$(( $curr_err + 1 ))"
+        echo $cassandra_errors > /tmp/cassandra_cluster_errors
+    fi
+
     ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
     load_level:${LOAD_LEVEL}:load \
     load_profile:${LOAD_PROFILE}:name \
     load_duration:${LOAD_DURATION}:sec \
+    completion_time:${COMPLETION_TIME}:sec \
+    errors:${cassandra_errors}:num \
     throughput:$(expr $ops):tps \
-    latency:$(expr $latency):ms \
+    latency:$(expr $latency):us \
     datagen_time:${datagentime}:sec \
     datagen_size:${datagensize}:records \
     ${SLA_RUNTIME_TARGETS}
@@ -229,7 +260,8 @@ function lazy_collection {
 
 function eager_collection {
     CMDLINE=$1
-    SLA_RUNTIME_TARGETS=$2
+    OUTPUT_FILE=$2.run
+    SLA_RUNTIME_TARGETS=$3
     
     #----------------------- Track all YCSB results  -------------------------------
 
@@ -250,9 +282,11 @@ function eager_collection {
 
     #----------------------- Old tracking ------------------------------------------
     latency=0    
-    
+
+    LOAD_GENERATOR_START=$(date +%s)      
     while read line
     do
+        echo $line >> $OUTPUT_FILE
     #-------------------------------------------------------------------------------
     # Need to track each YCSB Clients current operation count.
     # NEED TO:
@@ -372,7 +406,10 @@ function eager_collection {
             fi
         fi
     done < <($CMDLINE 2>&1)
-    
+
+    LOAD_GENERATOR_END=$(date +%s)
+    COMPLETION_TIME=$(( $LOAD_GENERATOR_END - $LOAD_GENERATOR_START ))  
+            
     if [[ $? -gt 0 ]]
     then
         syslog_netcat "problem running ycsb prime client on $(hostname)"
@@ -404,13 +441,32 @@ function eager_collection {
         mv /tmp/data_generation_size /tmp/old_data_generation_size        
     fi
 
+    if [[ -f /tmp/cassandra_cluster_errors ]]
+    then
+        echo "0" > /tmp/cassandra_cluster_errors
+    fi
+
+    FIRST_SEED=$(echo $seed_ips_csv | cut -d ',' -f 1)
+
+    cassandra_errors=0
+    check_cluster_state ${FIRST_SEED} 1 1
+
+    if [[ $? -ne 0 ]]
+    then
+        curr_err=$(cat /tmp/cassandra_cluster_errors)
+        cassandra_errors="$(( $curr_err + 1 ))"
+        echo $cassandra_errors > /tmp/cassandra_cluster_errors
+    fi
+
     if [[ $write_avg_latency -ne 0 ]]
     then
         ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
         load_level:${LOAD_LEVEL}:load \
         load_profile:${LOAD_PROFILE}:name \
         load_duration:${LOAD_DURATION}:sec \
+        completion_time:${COMPLETION_TIME}:sec \
         throughput:$(expr $ops):tps \
+        errors:${cassandra_errors}:num \
         write_avg_latency:$(expr $write_avg_latency):us \
         write_min_latency:$(expr $write_min_latency):us \
         write_max_latency:$(expr $write_max_latency):us \
@@ -437,7 +493,9 @@ function eager_collection {
         load_level:${LOAD_LEVEL}:load \
         load_profile:${LOAD_PROFILE}:name \
         load_duration:${LOAD_DURATION}:sec \
+        completion_time:${COMPLETION_TIME}:sec \
         throughput:$(expr $ops):tps \
+        errors:${cassandra_errors}:num \
         read_avg_latency:$(expr $read_avg_latency):us \
         read_min_latency:$(expr $read_min_latency):us \
         read_max_latency:$(expr $read_max_latency):us \
@@ -452,5 +510,4 @@ function eager_collection {
         datagen_size:${datagensize}:records \      
         ${SLA_RUNTIME_TARGETS}        
     fi
-}
-     
+}    

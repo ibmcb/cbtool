@@ -58,69 +58,58 @@ iwlengine-ver = ANY
 
 ### START - Dependency URLs ###
 rhel-maven-x86_64-urls-man = http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-6/x86_64/apache-maven-3.1.1-1.el6.noarch.rpm
-ubuntu-maven-amd64-urls-man = ''
 
-rhel-geronimo-x86_64-urls-man = http://apache.mirrors.hoobly.com/geronimo/3.0.1/geronimo-tomcat7-javaee6-3.0.1-bin.tar.gz
-ubuntu-geronimo-amd64-urls-man = http://apache.mirrors.hoobly.com/geronimo/3.0.1/geronimo-tomcat7-javaee6-3.0.1-bin.tar.gz
+common-geronimo-x86_64-urls-man = http://apache.mirrors.hoobly.com/geronimo/3.0.1/geronimo-tomcat7-javaee6-3.0.1-bin.tar.gz
 
-rhel-geronimo-jdbc-x86_64-urls-man = http://REPO_ADDR/jdbc
-ubuntu-geronimo-jdbc-amd64-urls-man = http://REPO_ADDR/jdbc
+common-geronimo-jdbc-x86_64-urls-man = http://REPO_ADDR/jdbc
 
-rhel-daytrader-x86_64-urls-man = http://svn.apache.org/repos/asf/geronimo/daytrader/tags/daytrader-parent-3.0.0
-ubuntu-daytrader-amd64-urls-man = http://svn.apache.org/repos/asf/geronimo/daytrader/tags/daytrader-parent-3.0.0
+common-daytrader-x86_64-urls-man = http://svn.apache.org/repos/asf/geronimo/daytrader/tags/daytrader-parent-3.0.0
 
-rhel-iwlengine-x86_64-urls-man = http://REPO_ADDR/iwlengine/iwl.tar.gz
-ubuntu-iwlengine-amd64-urls-man = http://REPO_ADDR/iwlengine/iwl.tar.gz
+common-iwlengine-x86_64-urls-man = http://REPO_ADDR/iwlengine/iwl.tar.gz
 ### END - Dependency URLs ###
 
 ### START -  Dependency and method-specific command lines ###
-rhel-java-install-pm = sudo yum -y install java-1.7.0-openjdk
-ubuntu-java-install-pm = sudo apt-get -y install openjdk-6-jdk; sudo apt-get -y install openjdk-7-jdk
+rhel-java-install-pm = package_install java-1.7.0-openjdk
+fedora-java-install-pm = package_install java-1.7.0-openjdk
+ubuntu-java-install-pm = package_install openjdk-6-jdk; package_install openjdk-7-jdk
 ubuntu-java-postinstall-pm = export JAVAALT=$(sudo update-java-alternatives -l 2>&1 | grep java | sort -r | head -n 1 | cut -d ' ' -f 1); sudo update-java-alternatives -s $JAVAALT
 
-rhel-java-home-install-man = echo "export JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre" >> ~/.bashrc; 
-rhel-java-home-postinstall-man = echo "export JRE_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre" >> ~/.bashrc; 
-ubuntu-java-home-install-man = echo "export JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre" >> ~/.bashrc
-ubuntu-java-home-postinstall-man = echo "export JRE_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre" >> ~/.bashrc
+common-java-home-install-man = echo "export JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre" >> ~/.bashrc; 
+common-java-home-postinstall-man = echo "export JRE_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre" >> ~/.bashrc; 
 
-rhel-subversion-install-pm = sudo yum -y install subversion
-ubuntu-subversion-install-pm = sudo apt-get -y install subversion
+common-subversion-install-pm = sudo yum -y install subversion
 
 rhel-maven-preinstall-man = sudo yum -y install java-1.6.0-openjdk-devel
 rhel-maven-install-man = sudo rpm -Uvh URL
 rhel-maven-postinstall-man = sudo ln -s /usr/share/apache-maven/bin/mvn /usr/local/bin/; sudo mkdir /usr/share/apache-maven/conf/logging
+fedora-maven-install-man = sudo apt-get -y install maven2
 ubuntu-maven-install-man = sudo apt-get -y install maven2
 
 rhel-mysql-install-pm = sudo yum -y install mysql-server mysql
 rhel-mysql-postinstall-pm = source SCRIPTSDIR/common/cb_bootstrap.sh; service_restart_enable mysqld; sudo mysqladmin password temp4now; service_stop_disable mysqld
+fedora-mysql-install-pm = sudo yum -y install mysql-server mysql
+fedora-mysql-postinstall-pm = source SCRIPTSDIR/common/cb_bootstrap.sh; service_restart_enable mysqld; sudo mysqladmin password temp4now; service_stop_disable mysqld
 ubuntu-mysql-preinstall-pm = echo "mysql-server-5.5 mysql-server/root_password password temp4now" | sudo debconf-set-selections; echo "mysql-server-5.5 mysql-server/root_password_again password temp4now" | sudo debconf-set-selections
 ubuntu-mysql-install-pm = sudo DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install mysql-server; sudo apt-get -f install -y
 ubuntu-mysql-postinstall-pm = source SCRIPTSDIR/common/cb_bootstrap.sh; service_stop_disable mysqld
 
-rhel-mysql-db-install-man = sudo mysql --user=root --password=temp4now -e "CREATE DATABASE tradedb;"
-rhel-mysql-db-postinstall-man = sudo mysql --user=root --password=temp4now -e "GRANT ALL ON tradedb.* TO 'trade'@'%' IDENTIFIED BY 'trade'; DELETE from mysql.user where user _equal_ ''; FLUSH PRIVILEGES;"
-ubuntu-mysql-db-install-man = sudo mysql --user=root --password=temp4now -e "CREATE DATABASE tradedb;"
-ubuntu-mysql-db-postinstall-man = sudo mysql --user=root --password=temp4now -e "GRANT ALL ON tradedb.* TO 'trade'@'%' IDENTIFIED BY 'trade'; DELETE from mysql.user where user _equal_ ''; FLUSH PRIVILEGES;"
+common-mysql-db-install-man = sudo mysql --user=root --password=temp4now -e "CREATE DATABASE tradedb;"
+common-mysql-db-postinstall-man = sudo mysql --user=root --password=temp4now -e "GRANT ALL ON tradedb.* TO 'trade'@'%' IDENTIFIED BY 'trade'; DELETE from mysql.user where user _equal_ ''; FLUSH PRIVILEGES;"
 
-rhel-geronimo-preinstall-man = wget -N -P ~ URL
-rhel-geronimo-install-man = tar -xzf geronimo-tomcat7*tar.gz
-rhel-geronimo-postinstall-man = mkdir -p ~/geronimo-tomcat7-javaee6-3.0.1/repository/org/apache/geronimo/modules/com/mysql/jdbc/jdbc2/optional/MysqlXADataSource
-ubuntu-geronimo-preinstall-man = wget -N -P ~ URL
-ubuntu-geronimo-install-man = tar -xzf geronimo-tomcat7*tar.gz
-ubuntu-geronimo-postinstall-man = mkdir -p ~/geronimo-tomcat7-javaee6-3.0.1/repository/org/apache/geronimo/modules/com/mysql/jdbc/jdbc2/optional/MysqlXADataSource
+common-geronimo-preinstall-man = wget -N -P ~ URL
+common-geronimo-install-man = tar -xzf geronimo-tomcat7*tar.gz
+common-geronimo-postinstall-man = mkdir -p ~/geronimo-tomcat7-javaee6-3.0.1/repository/org/apache/geronimo/modules/com/mysql/jdbc/jdbc2/optional/MysqlXADataSource
 
 rhel-geronimo-jdbc-preinstall-man = ln -s ~/geronimo-tomcat7-javaee6-3.0.1/repository/org/apache/geronimo/modules/com/mysql/jdbc/jdbc2/optional/MysqlXADataSource /tmp/j
 rhel-geronimo-jdbc-install-man = wget -N -P /tmp/j URL/mysql-connector-java-5.1.29-bin.jar; sudo chmod 755 /tmp/j/*
+fedora-geronimo-jdbc-preinstall-man = ln -s ~/geronimo-tomcat7-javaee6-3.0.1/repository/org/apache/geronimo/modules/com/mysql/jdbc/jdbc2/optional/MysqlXADataSource /tmp/j
+fedora-geronimo-jdbc-install-man = wget -N -P /tmp/j URL/mysql-connector-java-5.1.29-bin.jar; sudo chmod 755 /tmp/j/*
 ubuntu-geronimo-jdbc-preinstall-man = mkdir -p ~/geronimo-tomcat7-javaee6-3.0.1/repository/org/apache/geronimo/modules/com/mysql/jdbc/jdbc2/optional/MysqlXADataSource
 ubuntu-geronimo-jdbc-install-man = wget -N -P /tmp/j URL/mysql-connector-java-5.1.29-bin.jar
 
-rhel-daytrader-preinstall-man = svn co URL; cd daytrader-parent-3.0.0/
-rhel-daytrader-install-man = mvn clean install
-ubuntu-daytrader-preinstall-man = svn co URL; cd daytrader-parent-3.0.0/
-ubuntu-daytrader-install-man = mvn clean install
+common-daytrader-preinstall-man = svn co URL; cd daytrader-parent-3.0.0/
+common-daytrader-install-man = mvn clean install
 
-rhel-iwlengine-preinstall-man = wget -N -P ~ URL
-rhel-iwlengine-install-man = tar -xzf iwl.tar.gz
-ubuntu-iwlengine-preinstall-man = wget -N -P ~ URL
-ubuntu-iwlengine-install-man = tar -xzf iwl.tar.gz
+common-iwlengine-preinstall-man = wget -N -P ~ URL
+common-iwlengine-install-man = tar -xzf iwl.tar.gz
 ### END -  Dependency and method-specific command lines ###

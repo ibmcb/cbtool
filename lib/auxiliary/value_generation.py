@@ -93,7 +93,7 @@ class ValueGeneration :
             _max_tries = 10000
             _fmsg = "Failure while parsing the distribution parameters"            
             parameters = parameters.split('I')
-
+            
             if len(parameters) == 5 :
                 _distribution = str(parameters[0])
                 for _idx in range(1,5) :

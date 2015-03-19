@@ -21,6 +21,5 @@ iperf-ver = 2.0
 ### END - Dependency versions ###
 
 ### START -  Dependency and method-specific command lines ###
-rhel-iperf-install-pm = sudo yum -y install iperf
-ubuntu-iperf-install-pm = sudo apt-get -y install iperf
+common-iperf-install-pm = package_install iperf
 ### END -  Dependency and method-specific command lines ###

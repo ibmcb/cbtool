@@ -23,25 +23,6 @@ source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_hadoop_common.sh
 # - Editing configuration files
 #####################################################################################
 
-SSH_KEY_NAME=$(get_my_vm_attribute identity)
-REMOTE_DIR_NAME=$(get_my_vm_attribute remote_dir_name)
-SSH_KEY_NAME=$(echo ${SSH_KEY_NAME} | rev | cut -d '/' -f 1 | rev)
-
-syslog_netcat "VMs need to be able to perform passwordless SSH between each other. Updating ~/.ssh/id_rsa to be the same on all VMs.."
-sudo cat ~/${REMOTE_DIR_NAME}/credentials/$SSH_KEY_NAME > ~/.ssh/id_rsa
-sudo chmod 0600 ~/.ssh/id_rsa
-
-if [[ $(cat ~/.ssh/config | grep -c StrictHostKeyChecking) -eq 0 ]]
-then
-	echo "StrictHostKeyChecking no" >> ~/.ssh/config
-fi
-
-if [[ $(cat ~/.ssh/config | grep -c UserKnownHostsFile) -eq 0 ]]
-then
-	echo "UserKnownHostsFile /dev/null" >> ~/.ssh/config
-fi
-chmod 0600 ~/.ssh/config
-
 #####################################################################################
 # Assumptions: 
 #   1. There is only one master VM which serves as a NameNode and a 
@@ -430,6 +411,44 @@ then
 		sudo cp $HADOOP_CONF_DIR/yarn-site.xml /etc/hadop
 	fi
 fi
+
+###################################################################
+# Update hadoop-metrics2.properties to send metrics to ganglia
+###################################################################
+
+# All slaves report their hadoop data to master which then sends it
+# to cloudbench node.
+
+GANGLIA_COLLECTOR_VM_PORT=`get_global_sub_attribute mon_defaults collector_vm_port`
+
+cat <<EOF >> $HADOOP_CONF_DIR/hadoop-metrics2.properties
+namenode.sink.ganglia.class=org.apache.hadoop.metrics2.sink.ganglia.GangliaSink31
+namenode.sink.ganglia.period=10
+namenode.sink.ganglia.servers=${hadoop_master_ip}:${GANGLIA_COLLECTOR_VM_PORT}
+
+datanode.sink.ganglia.class=org.apache.hadoop.metrics2.sink.ganglia.GangliaSink31
+datanode.sink.ganglia.period=10
+datanode.sink.ganglia.servers=${hadoop_master_ip}:${GANGLIA_COLLECTOR_VM_PORT}
+
+jobtracker.sink.ganglia.class=org.apache.hadoop.metrics2.sink.ganglia.GangliaSink31
+jobtracker.sink.ganglia.period=10
+jobtracker.sink.ganglia.servers=${hadoop_master_ip}:${GANGLIA_COLLECTOR_VM_PORT}
+
+tasktracker.sink.ganglia.class=org.apache.hadoop.metrics2.sink.ganglia.GangliaSink31
+tasktracker.sink.ganglia.period=10
+tasktracker.sink.ganglia.servers=${hadoop_master_ip}:${GANGLIA_COLLECTOR_VM_PORT}
+
+maptask.sink.ganglia.class=org.apache.hadoop.metrics2.sink.ganglia.GangliaSink31
+maptask.sink.ganglia.period=10
+maptask.sink.ganglia.servers=${hadoop_master_ip}:${GANGLIA_COLLECTOR_VM_PORT}
+
+reducetask.sink.ganglia.class=org.apache.hadoop.metrics2.sink.ganglia.GangliaSink31
+reducetask.sink.ganglia.period=10
+reducetask.sink.ganglia.servers=${hadoop_master_ip}:${GANGLIA_COLLECTOR_VM_PORT}
+
+EOF
+
+###
 
 syslog_netcat "Done updating local Hadoop cluster configuration files."
 exit 0

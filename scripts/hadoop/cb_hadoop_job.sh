@@ -79,8 +79,9 @@ case ${LOAD_PROFILE} in
     ;;
     kmeans)
     NUM_OF_CLUSTERS=`get_my_ai_attribute_with_default num_of_clusters "5"`
-    NUM_OF_SAMPLES=$((5*${LOAD_LEVEL}*${LOAD_FACTOR}))
-    SAMPLES_PER_INPUTFILE=$((${LOAD_LEVEL}*${LOAD_FACTOR}))
+    NUM_OF_SAMPLES=$((${LOAD_LEVEL}*${LOAD_FACTOR}))
+    SAMPLES_PER_INPUTFILE=`get_my_ai_attribute_with_default samples_per_inputfile "500000"`
+#    SAMPLES_PER_INPUTFILE=$((${LOAD_LEVEL}*${LOAD_FACTOR}))
     DIMENSIONS=`get_my_ai_attribute_with_default dimensions "20"`
     MAX_ITERATION=`get_my_ai_attribute_with_default max_iteration "5"`
     export NUM_OF_CLUSTERS
@@ -192,9 +193,9 @@ then
     DATA_GENERATION_TIME=$(expr ${END_GENERATION} - ${START_GENERATION})
     echo ${DATA_GENERATION_TIME} > /tmp/data_generation_time
 
-    if [[ $(cat ${OUTPUT_FILE} | grep -c HDFS_BYTES_WRITTEN) -ne 0 ]]
+    if [[ $(cat ${OUTPUT_FILE} | grep -c 'HDFS_BYTES_WRITTEN\|Bytes Written') -ne 0 ]]
     then
-        cat ${OUTPUT_FILE} | grep HDFS_BYTES_WRITTEN | cut -d '=' -f 2 > /tmp/data_generation_size
+        cat ${OUTPUT_FILE} | grep 'HDFS_BYTES_WRITTEN\|Bytes Written' | head -n 1 | cut -d '=' -f 2 > /tmp/data_generation_size
     fi
 else
     syslog_netcat "The value of the parameter \"GENERATE_DATA\" is \"false\". Will bypass data generation for the hadoop load profile \"${LOAD_PROFILE}\""     
@@ -207,6 +208,8 @@ syslog_netcat "Benchmarking hadoop SUT: MASTER=${hadoop_master_ip} -> SLAVES=${s
 OUTPUT_FILE=$(mktemp)
 
 execute_load_generator "${CMDLINE}" ${OUTPUT_FILE} ${LOAD_DURATION}
+
+COMPLETION_TIME=$?
 
 syslog_netcat "..hadoop job is done. Ready to do a summary..."
 
@@ -250,6 +253,7 @@ tput=`cat ${HIBENCH_HOME}/hibench.report | grep -v Type | tr -s ' ' | cut -d ' '
 load_level:${LOAD_LEVEL}:load \
 load_profile:${LOAD_PROFILE}:name \
 load_duration:${LOAD_DURATION}:sec \
+completion_time:${COMPLETION_TIME}:sec \
 throughput:$tput:tps latency:$lat:msec \
 datagen_time:${datagentime}:sec \
 datagen_size:${datagensize}:MB \

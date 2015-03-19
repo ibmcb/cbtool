@@ -1000,15 +1000,15 @@ vmlist TESTCLOUD
 stats TESTCLOUD
 echo ################################## [TEST] 228: END vmattach TESTCLOUD tinyvm auto empty iron32 pause_provision_complete async ##################################
 echo 
-echo ############################################# [TEST] 229: START shell TESTCLOUD rm /tmp/cb*_was_used_on_execution ##############################################
-shell TESTCLOUD rm /tmp/cb*_was_used_on_execution
+echo ############################################# [TEST] 229: START shell TESTCLOUD rm -rf /tmp/cb*_was_used_on_execution ##############################################
+shell TESTCLOUD rm -rf /tmp/cb*_was_used_on_execution
 cldalter TESTCLOUD vm_defaults execute_script_name=/home/msilva/cloudbench/regression/..//regression/scripts/execute_on_staging.sh
 vmattach TESTCLOUD tinyvm auto empty iron32 execute_provision_complete async
 waituntil TESTCLOUD VM ARRIVING=0 decreasing 1
 shell TESTCLOUD ls /tmp/cb*_was_used_on_execution
 vmlist TESTCLOUD
 stats TESTCLOUD
-echo ############################################## [TEST] 229: END shell TESTCLOUD rm /tmp/cb*_was_used_on_execution ###############################################
+echo ############################################## [TEST] 229: END shell TESTCLOUD rm -rf /tmp/cb*_was_used_on_execution ###############################################
 echo 
 echo ######################### [TEST] 230: START vmattach TESTCLOUD predictablevm auto empty check_boot_started=subscribe_on_starting async #########################
 vmattach TESTCLOUD predictablevm auto empty check_boot_started=subscribe_on_starting async
@@ -1514,8 +1514,8 @@ vmlist TESTCLOUD
 stats TESTCLOUD
 echo ############################## [TEST] 305: END aiattach TESTCLOUD ibm_daytrader default default none none pause_all_vms_booted async ###############################
 echo 
-echo ############################################# [TEST] 306: START shell TESTCLOUD rm /tmp/cb*_was_used_on_execution ##############################################
-shell TESTCLOUD rm /tmp/cb*_was_used_on_execution
+echo ############################################# [TEST] 306: START shell TESTCLOUD rm -rf /tmp/cb*_was_used_on_execution ##############################################
+shell TESTCLOUD rm -rf /tmp/cb*_was_used_on_execution
 cldalter TESTCLOUD ai_defaults execute_script_name=/home/msilva/cloudbench/regression/..//regression/scripts/execute_on_staging.sh
 aiattach TESTCLOUD ibm_daytrader default default none none execute_all_vms_booted
 shell TESTCLOUD ls /tmp/cb*_was_used_on_execution
@@ -1523,7 +1523,7 @@ waitfor TESTCLOUD 5s
 ailist TESTCLOUD
 vmlist TESTCLOUD
 stats TESTCLOUD
-echo ############################################## [TEST] 306: END shell TESTCLOUD rm /tmp/cb*_was_used_on_execution ###############################################
+echo ############################################## [TEST] 306: END shell TESTCLOUD rm -rf /tmp/cb*_was_used_on_execution ###############################################
 echo 
 echo ############################################### [TEST] 307: START aiattach TESTCLOUD hadoop save_on_attach=true ################################################
 aiattach TESTCLOUD hadoop save_on_attach=true
@@ -2440,15 +2440,15 @@ vmlist
 stats
 echo ####################################### [TEST] 495: END vmattach tinyvm auto empty iron32 pause_provision_complete async #######################################
 echo 
-echo ################################################## [TEST] 496: START shell rm /tmp/cb*_was_used_on_execution ###################################################
-shell rm /tmp/cb*_was_used_on_execution
+echo ################################################## [TEST] 496: START shell rm -rf /tmp/cb*_was_used_on_execution ###################################################
+shell rm -rf /tmp/cb*_was_used_on_execution
 cldalter vm_defaults execute_script_name=/home/msilva/cloudbench/regression/..//regression/scripts/execute_on_staging.sh
 vmattach tinyvm auto empty iron32 execute_provision_complete async
 waituntil VM ARRIVING=0 decreasing 1
 shell ls /tmp/cb*_was_used_on_execution
 vmlist
 stats
-echo ################################################### [TEST] 496: END shell rm /tmp/cb*_was_used_on_execution ####################################################
+echo ################################################### [TEST] 496: END shell rm -rf /tmp/cb*_was_used_on_execution ####################################################
 echo 
 echo ############################## [TEST] 497: START vmattach predictablevm auto empty check_boot_started=subscribe_on_starting async ##############################
 vmattach predictablevm auto empty check_boot_started=subscribe_on_starting async
@@ -2954,8 +2954,8 @@ vmlist
 stats
 echo ################################### [TEST] 572: END aiattach ibm_daytrader default default none none pause_all_vms_booted async ####################################
 echo 
-echo ################################################## [TEST] 573: START shell rm /tmp/cb*_was_used_on_execution ###################################################
-shell rm /tmp/cb*_was_used_on_execution
+echo ################################################## [TEST] 573: START shell rm -rf /tmp/cb*_was_used_on_execution ###################################################
+shell rm -rf /tmp/cb*_was_used_on_execution
 cldalter ai_defaults execute_script_name=/home/msilva/cloudbench/regression/..//regression/scripts/execute_on_staging.sh
 aiattach ibm_daytrader default default none none execute_all_vms_booted
 shell ls /tmp/cb*_was_used_on_execution
@@ -2963,7 +2963,7 @@ waitfor 5s
 ailist
 vmlist
 stats
-echo ################################################### [TEST] 573: END shell rm /tmp/cb*_was_used_on_execution ####################################################
+echo ################################################### [TEST] 573: END shell rm -rf /tmp/cb*_was_used_on_execution ####################################################
 echo 
 echo #################################################### [TEST] 574: START aiattach hadoop save_on_attach=true #####################################################
 aiattach hadoop save_on_attach=true

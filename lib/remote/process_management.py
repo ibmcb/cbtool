@@ -65,7 +65,7 @@ class ProcessManagement :
 
     @trace
     def run_os_command(self, cmdline, override_hostname = None, really_execute = True, \
-                       debug_cmd = False) :
+                       debug_cmd = False, raise_exception = True) :
         '''
         TBD
         '''
@@ -107,7 +107,9 @@ class ProcessManagement :
             _cmd += _config_file 
             _cmd += _connection_timeout            
             _cmd += " -o StrictHostKeyChecking=no"
-            _cmd += " -o UserKnownHostsFile=/dev/null " + _username
+            _cmd += " -o UserKnownHostsFile=/dev/null "
+            _cmd += " -o BatchMode=yes " 
+            _cmd += _username
             _cmd += _hostname + " \"" + cmdline + "\""
 
         if str(really_execute).lower() == "true" :
@@ -124,7 +126,13 @@ class ProcessManagement :
                         _msg += "\"" + cmdline + "\" (returncode = "
                         _msg += str(_proc_h.pid) + ") :" + str(_result[1])
                         cbdebug(_msg)
-                        raise self.ProcessManagementException(str(_msg), "81918")
+                        if raise_exception :
+                            raise self.ProcessManagementException(str(_msg), "81918")
+                        
+                        else :
+                            _status = _proc_h.returncode
+                            _result_stdout = _result[0]
+                            _result_stderr = _result[1]
                     else :
                         _status = 0
                         _result_stdout = _result[0]

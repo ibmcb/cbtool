@@ -24,20 +24,11 @@ else
     source $dir/../common/cb_common.sh
 fi
 
-standalone=`online_or_offline "$1"`
-
 USEBALLOON=no
 
-if [ $standalone == online ] ; then
-    DB_IP=`get_ips_from_role db2`
-    USEBALLOON=`get_my_ai_attribute_with_default use_java_balloon $USEBALLOON`
-    ECLIPSED=`get_my_vm_attribute eclipsed`
-else
-    standalone_verify "$2" "Need ip address of database."
-    DB_IP=$2
-    post_boot_steps offline 
-    ECLIPSED="false"
-fi
+DB_IP=`get_ips_from_role db2`
+USEBALLOON=`get_my_ai_attribute_with_default use_java_balloon $USEBALLOON`
+ECLIPSED=`get_my_vm_attribute eclipsed`
 
 START=`provision_application_start`
 SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)

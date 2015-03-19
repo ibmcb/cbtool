@@ -80,12 +80,13 @@ try :
 
     print "Setting new expid" 
     api.expid(cloud_name, "NEWEXPID")
-
+    api.typealter(cloud_name, "nullworkload", "sut", "10_x_tinyvm")
     print "creating new application..."
+    _start = time()
     app = api.appattach(cloud_name, workload)
 
     print app["name"]
-
+    print time()-_start
     for vm in app["vms"].split(",") :
         uuid, role, name = vm.split("|")
         print "Management performance metrics for VM \"" + name + "...."

@@ -40,14 +40,14 @@ START = cb_ycsb.sh
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 READ_RATIO = workloaddefault
 UPDATE_RATIO = workloaddefault
-#APP_COLLECTION = lazy
-#RUN_COUNTER_NAME = experiment_id_counter
-#REDIS_DATA_DIR = /dbstore
-#OPERATION_COUNT = 10000
-#INPUT_RECORDS = 10000
-#RECORD_SIZE = 2.35
-#DATABASE_SIZE_VERSUS_MEMORY = 0.5
-#REPLICATION_FACTOR = 4
+APP_COLLECTION = lazy
+RUN_COUNTER_NAME = experiment_id_counter
+REDIS_DATA_DIR = /dbstore
+OPERATION_COUNT = 10000
+INPUT_RECORDS = 10000
+RECORD_SIZE = 2.35
+DATABASE_SIZE_VERSUS_MEMORY = 0.5
+REPLICATION_FACTOR = 4
 
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
 #SYNC_COUNTER_NAME = synchronization_counter

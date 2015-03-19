@@ -26,6 +26,9 @@
 from time import time, sleep
 from uuid import uuid5, UUID
 from random import choice
+from os import access, F_OK
+from os.path import expanduser
+
 import socket
 import copy
 import iso8601
@@ -56,7 +59,9 @@ class OskCmds(CommonCloudFunctions) :
         self.expid = expid
         self.ft_supported = False
         self.lvirt_conn = {}
-    
+        self.api_error_counter = {}
+        self.max_api_errors = 10
+        
     @trace
     def get_description(self) :
         '''
@@ -72,6 +77,15 @@ class OskCmds(CommonCloudFunctions) :
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
+
+
+            if len(access_url.split('-')) == 1 :
+                _endpoint_type = "publicURL"
+            if len(access_url.split('-')) == 2 :
+                access_url, _endpoint_type = access_url.split('-')                               
+            else :
+                access_url = access_url.split('-')[0]
+                _endpoint_type = "publicURL"
 
             if len(authentication_data.split('-')) == 3 :
                 _username, _password, _tenant = authentication_data.split('-')
@@ -91,20 +105,40 @@ class OskCmds(CommonCloudFunctions) :
             _tenant = _tenant.replace("_dash_",'-')
 
             _fmsg = "About to attempt a connection to OpenStack"
+
             self.oskconncompute = client.Client(_username, _password, _tenant, \
                                          access_url, region_name = region, \
-                                         service_type="compute", cacert = _cacert)
+                                         service_type="compute", \
+                                         endpoint_type = _endpoint_type, \
+                                         cacert = _cacert)
+
             self.oskconncompute.flavors.list()
 
             self.oskconnstorage = client.Client(_username, _password, _tenant, \
                                          access_url, region_name=region, \
-                                         service_type="volume", cacert = _cacert)
+                                         service_type="volume", \
+                                         endpoint_type = _endpoint_type, \
+                                         cacert = _cacert)
 
             self.oskconnstorage.volumes.list()
 
-
             _region = region
             _msg = "Selected region is " + str(region)
+            cbdebug(_msg)
+
+            _file = expanduser("~") + "/adminrc"
+
+            if not access(_file, F_OK) :
+                _file_fd = open(_file, 'w')
+                        
+                _file_fd.write("export OS_TENANT_NAME=" + _tenant + "\n")
+                _file_fd.write("export OS_USERNAME=" + _username + "\n")
+                _file_fd.write("export OS_PASSWORD=" + _password + "\n")                    
+                _file_fd.write("export OS_AUTH_URL=\"" + access_url + "\"\n")
+                _file_fd.write("export OS_NO_CACHE=1\n")
+                _file_fd.write("export OS_REGION_NAME=" + region + "\n")                    
+                _file_fd.close()
+            
             _status = 0
 
         except novaexceptions, obj:
@@ -408,51 +442,51 @@ class OskCmds(CommonCloudFunctions) :
             _can_create_jumphost = True
 
         if "jump_host" in vm_defaults :
+            try :
+                _jh = str(vm_defaults["jump_host"]).lower()
+                if _jh == "true" :
+                    _msg = "Checking if a \"cb_jumphost\" VM is already present on"
+                    _msg += " VMC " + vmc_name + "...."
+                    cbdebug(_msg, True)
+    
+                    _obj_attr_list = copy.deepcopy(vm_defaults)
+    
+                    _obj_attr_list.update(str2dic(vm_templates["tinyvm"]))
+                    _obj_attr_list["cloud_vm_name"] = "cb_jumphost"
+                    _obj_attr_list["cloud_name"] = ""
+                    _obj_attr_list["role"] = "nullworkload"                        
+                    _obj_attr_list["name"] = "vm_0"
+                    _obj_attr_list["size"] = "m1.tiny"                                         
+                    _obj_attr_list["floating_ip"] = "true"
+                    _obj_attr_list["randomize_image_name"] = "false"
+                    _obj_attr_list["experiment_id"] = ""
+                    _obj_attr_list["mgt_001_provisioning_request_originated"] = int(time())
+                    _obj_attr_list["vmc_name"] = vmc_name
+                    _obj_attr_list["ai"] = "none"
+                    _obj_attr_list["check_boot_complete"] = "tcp_on_22"
+                    _obj_attr_list["userdata"] = None
+                    
+                    if not self.is_vm_running(_obj_attr_list) :
+                        if _can_create_jumphost :
+                            _msg = "Creating a \"cb_jumphost\" VM on VMC " + vmc_name
+                            _msg += ", on the network \"" + vm_defaults["prov_netname"] + "\","
+                            _msg += " and attaching a floating IP from pool \""
+                            _msg += vm_defaults["floating_pool"] + "\"."
+                            cbdebug(_msg, True)
+                            
+                            if "jump_host" in _obj_attr_list :
+                                del _obj_attr_list["jump_host"]
+    
+                            self.vmcreate(_obj_attr_list)
+                        else :
+                            _msg = "The jump_host address was set to \"$True\", meaning"
+                            _msg += " that a \"cb_jumphost\" VM should be automatically"
+                            _msg += " created. However, the \"cb_nullworkload\" is not"
+                            _msg += " present on this cloud, and thus the \"cb_jumphost\""
+                            _msg += " cannot be created."
+                            cberr(_msg, True)
+                            return False
 
-            _jh = str(vm_defaults["jump_host"]).lower()
-            if _jh == "true" :
-                _msg = "Checking if a \"cb_jumphost\" VM is already present on"
-                _msg += " VMC " + vmc_name + "...."
-                cbdebug(_msg, True)
-
-                _obj_attr_list = copy.deepcopy(vm_defaults)
-
-                _obj_attr_list.update(str2dic(vm_templates["tinyvm"]))
-                _obj_attr_list["cloud_vm_name"] = "cb_jumphost"
-                _obj_attr_list["cloud_name"] = ""
-                _obj_attr_list["role"] = "nullworkload"                        
-                _obj_attr_list["name"] = "vm_0"
-                _obj_attr_list["size"] = "m1.tiny"                                         
-                _obj_attr_list["floating_ip"] = "true"
-                _obj_attr_list["randomize_image_name"] = "false"
-                _obj_attr_list["experiment_id"] = ""
-                _obj_attr_list["mgt_001_provisioning_request_originated"] = int(time())
-                _obj_attr_list["vmc_name"] = vmc_name
-                _obj_attr_list["ai"] = "none"
-                _obj_attr_list["check_boot_complete"] = "tcp_on_22"
-                _obj_attr_list["userdata"] = None
-                
-                if not self.is_vm_running(_obj_attr_list) :
-                    if _can_create_jumphost :
-                        _msg = "Creating a \"cb_jumphost\" VM on VMC " + vmc_name
-                        _msg += ", on the network \"" + vm_defaults["prov_netname"] + "\","
-                        _msg += " and attaching a floating IP from pool \""
-                        _msg += vm_defaults["floating_pool"] + "\"."
-                        cbdebug(_msg, True)
-                        
-                        if "jump_host" in _obj_attr_list :
-                            del _obj_attr_list["jump_host"]
-
-                        self.vmcreate(_obj_attr_list)
-                    else :
-                        _msg = "The jump_host address was set to \"$True\", meaning"
-                        _msg += " that a \"cb_jumphost\" VM should be automatically"
-                        _msg += " created. However, the \"cb_nullworkload\" is not"
-                        _msg += " present on this cloud, and thus the \"cb_jumphost\""
-                        _msg += " cannot be created."
-                        cberr(_msg, True)
-                        return False
-                else :
                     _obj_attr_list["address_type"] = "floating"
                     _instance = self.get_instances(_obj_attr_list, "vm", "cb_jumphost")
                     self.get_ip_address(_obj_attr_list, _instance)
@@ -463,6 +497,33 @@ class OskCmds(CommonCloudFunctions) :
                     cbdebug(_msg, True)
                     vm_defaults["jump_host"] = _obj_attr_list["run_cloud_ip"]
 
+                else :
+                    return True
+                
+            except CldOpsException, obj :
+                _status = obj.status
+                _fmsg = str(obj.msg)
+                cberr(_fmsg, True)    
+                return False
+            
+            except novaexceptions, obj:
+                _status = int(obj.error_code)
+                _fmsg = str(obj.error_message)
+                cberr(_fmsg, True)    
+                return False
+                                
+            except KeyboardInterrupt :
+                _status = 42
+                _fmsg = "CTRL-C interrupt"
+                cbdebug("VM create keyboard interrupt...", True)
+                return False
+                
+            except Exception, e :
+                _status = 23
+                _fmsg = str(e)
+                cberr(_fmsg, True)    
+                return False
+            
         return True
     
     @trace
@@ -481,7 +542,9 @@ class OskCmds(CommonCloudFunctions) :
 
             _security_group_found = self.check_security_group(vmc_name, security_group_name)
 
-            _floating_pool_found = self.check_floating_pool(vmc_name, vm_defaults)
+            if "jump_host" in vm_defaults :
+                if str(vm_defaults["jump_host"]).lower() != "false" :
+                    _floating_pool_found = self.check_floating_pool(vmc_name, vm_defaults)
 
             _prov_netname_found, _run_netname_found = self.check_networks(vmc_name, vm_defaults)
 
@@ -561,7 +624,7 @@ class OskCmds(CommonCloudFunctions) :
                         _actual_host_name = _host.hypervisor_hostname
                         
                     if "modify_host_names" in obj_attr_list and \
-                    obj_attr_list["modify_host_names"].lower() != "false" :
+                    str(obj_attr_list["modify_host_names"]).lower() != "false" :
                         _queried_host_name = _actual_host_name.split(".")[0] + '.' + obj_attr_list["modify_host_names"]
                     else :
                         _queried_host_name = _actual_host_name
@@ -582,6 +645,12 @@ class OskCmds(CommonCloudFunctions) :
                     obj_attr_list["host_list"][_host_uuid]["hypervisor_type"] = _host.hypervisor_type                    
                     obj_attr_list["host_list"][_host_uuid]["pool"] = obj_attr_list["pool"]
                     obj_attr_list["host_list"][_host_uuid]["username"] = obj_attr_list["username"]
+                                        
+                    if str(obj_attr_list["host_user_root"]).lower() == "true" :
+                        obj_attr_list["host_list"][_host_uuid]["login"] = "root"                        
+                    else :
+                        obj_attr_list["host_list"][_host_uuid]["login"] = obj_attr_list["host_list"][_host_uuid]["username"]
+                        
                     obj_attr_list["host_list"][_host_uuid]["notification"] = "False"
                     obj_attr_list["host_list"][_host_uuid]["model"] = obj_attr_list["model"]
                     obj_attr_list["host_list"][_host_uuid]["vmc_name"] = obj_attr_list["name"]
@@ -704,9 +773,15 @@ class OskCmds(CommonCloudFunctions) :
             _msg += "\")....."
             cbdebug(_msg, True)
             _volumes = self.oskconnstorage.volumes.list()
+
             for _volume in _volumes :
-                if _volume.display_name :
-                    if _volume.display_name.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) :
+                if "display_name" in dir(_volume) :
+                    _volume_name = _volume.display_name
+                else :
+                    _volume_name = _volume.name
+                    
+                if _volume_name :
+                    if _volume_name.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) :
                         _volume.delete()
 
         except novaexceptions, obj:
@@ -758,11 +833,14 @@ class OskCmds(CommonCloudFunctions) :
                                                  obj_attr_list["name"])
     
                 obj_attr_list["cloud_hostname"] = _hostname
+
                 _resolve = obj_attr_list["access"].split(':')[1].replace('//','')
+                _resolve = _resolve.split('/')[0]
+
                 _x, obj_attr_list["cloud_ip"] = hostname2ip(_resolve)
                 obj_attr_list["arrival"] = int(time())
     
-                if obj_attr_list["discover_hosts"].lower() == "true" :                   
+                if str(obj_attr_list["discover_hosts"]).lower() == "true" :                   
                     _msg = "Discovering hosts on VMC \"" + obj_attr_list["name"] + "\"....."
                     cbdebug(_msg, True)
                     _status, _fmsg = self.discover_hosts(obj_attr_list, _time_mark_prs)
@@ -868,11 +946,11 @@ class OskCmds(CommonCloudFunctions) :
             _candidate_images = []
 
             for _idx in range(0,len(_image_list)) :
-                if obj_attr_list["randomize_image_name"].lower() == "false" and \
+                if str(obj_attr_list["randomize_image_name"]).lower() == "false" and \
                 _image_list[_idx].name == obj_attr_list["imageid1"] :
                     _imageid = _image_list[_idx]
                     break
-                elif obj_attr_list["randomize_image_name"].lower() == "true" and \
+                elif str(obj_attr_list["randomize_image_name"]).lower() == "true" and \
                 _image_list[_idx].name.count(obj_attr_list["imageid1"]) :
                     _candidate_images.append(_image_list[_idx])
                 else :                     
@@ -1138,12 +1216,31 @@ class OskCmds(CommonCloudFunctions) :
         except novaexceptions, obj:
             _status = int(obj.error_code)
             _fmsg = "(While getting instance(s) through API call \"" + _call + "\") " + str(obj.error_message)
-            raise CldOpsException(_fmsg, _status)
+
+            if identifier not in self.api_error_counter :
+                self.api_error_counter[identifier] = 0
+            
+            self.api_error_counter[identifier] += 1
+            
+            if self.api_error_counter[identifier] > self.max_api_errors :            
+                raise CldOpsException(_fmsg, _status)
+            else :
+                cbwarn(_fmsg)
+                return False
 
         except Exception, e :
             _status = 23
             _fmsg = "(While getting instance(s) through API call \"" + _call + "\") " + str(e)
-            raise CldOpsException(_fmsg, _status)
+            if identifier not in self.api_error_counter :
+                self.api_error_counter[identifier] = 0
+            
+            self.api_error_counter[identifier] += 1
+            
+            if self.api_error_counter[identifier] > self.max_api_errors :            
+                raise CldOpsException(_fmsg, _status)
+            else :
+                cbwarn(_fmsg)
+                return False
 
     @trace
     def vmcount(self, obj_attr_list):
@@ -1169,12 +1266,14 @@ class OskCmds(CommonCloudFunctions) :
         except novaexceptions, obj:
             _status = int(obj.error_code)
             _fmsg = "(While counting instance(s) through API call \"list\") " + str(obj.error_message)
-            raise CldOpsException(_fmsg, _status)
-
+            cberr(_fmsg, True)
+            return "ERR"
+        
         except Exception, e :
             _status = 23
             _fmsg = "(While counting instance(s) through API call \"list\") " + str(e)
-            raise CldOpsException(_fmsg, _status)
+            cberr(_fmsg, True)
+            return "ERR"
 
     @trace
     def is_vm_running(self, obj_attr_list, fail = True) :
@@ -1190,13 +1289,11 @@ class OskCmds(CommonCloudFunctions) :
             if _instance :
                 if _instance.status == "ACTIVE" :
                     return _instance
+
                 elif _instance.status == "ERROR" :
-                    _msg = "Instance \"" + _cloud_vm_name + "\"" 
-                    _msg += " reported an error (from OpenStack)"
-                    _status = 1870
-                    cberr(_msg)
-                    if fail :
-                        raise CldOpsException(_msg, _status)                    
+                    obj_attr_list["last_known_state"] = "ERROR while checking for ACTIVE state"
+                    return True
+
                 else :
                     return False
             else :
@@ -1217,9 +1314,14 @@ class OskCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
+
         _instance = self.is_vm_running(obj_attr_list)
 
         if _instance :
+
+            if obj_attr_list["last_known_state"].count("ERROR") :
+                return True            
+            
             obj_attr_list["last_known_state"] = "ACTIVE with ip unassigned"
 
             self.take_action_if_requested("VM", obj_attr_list, "provision_complete")
@@ -1361,8 +1463,17 @@ class OskCmds(CommonCloudFunctions) :
                 obj_attr_list["cloud_vv_name"] += '-' + "vv"
                 obj_attr_list["cloud_vv_name"] += obj_attr_list["name"].split("_")[1]
                 obj_attr_list["cloud_vv_name"] += '-' + obj_attr_list["role"]            
-    
-                _msg = "Creating a volume, with size " 
+
+                if "cloud_vv_type" in obj_attr_list :
+                    _volume_type = obj_attr_list["cloud_vv_type"]
+                else :
+                    _volume_type = None
+
+                if not _volume_type :                    
+                    _msg = "Creating a volume, with size " 
+                else :
+                    _msg = "Creating a " + _volume_type + " volume, with size " 
+
                 _msg += obj_attr_list["cloud_vv"] + " GB, on VMC \"" 
                 _msg += obj_attr_list["vmc_name"] + "\""
                 cbdebug(_msg, True)
@@ -1371,7 +1482,7 @@ class OskCmds(CommonCloudFunctions) :
                                                                snapshot_id = None, \
                                                                display_name = obj_attr_list["cloud_vv_name"], \
                                                                display_description = None, \
-                                                               volume_type = None, \
+                                                               volume_type = _volume_type, \
                                                                availability_zone = None, \
                                                                imageRef = None)
                 
@@ -1449,7 +1560,7 @@ class OskCmds(CommonCloudFunctions) :
                              obj_attr_list["credentials"], \
                              obj_attr_list["name"])
         
-            if "cloud_vv_uuid" in obj_attr_list and obj_attr_list["cloud_vv_uuid"].lower() != "none" :
+            if "cloud_vv_uuid" in obj_attr_list and str(obj_attr_list["cloud_vv_uuid"]).lower() != "none" :
                 
                 _instance = self.get_instances(obj_attr_list, "vv", obj_attr_list["cloud_vv_name"])
     
@@ -1537,7 +1648,7 @@ class OskCmds(CommonCloudFunctions) :
                                                     obj_attr_list["host_name"], \
                                                     False)
 
-            _hypervisor_type = _host_attr_list["hypervisor_type"].lower()
+            _hypervisor_type = str(_host_attr_list["hypervisor_type"]).lower()
 
             if _hypervisor_type == "qemu" :
                 _astr = "/system"
@@ -1689,8 +1800,9 @@ class OskCmds(CommonCloudFunctions) :
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
-            _fault = "No info"
-
+            _vvfmsg = ''
+            _vvstatus = 0
+            
             obj_attr_list["cloud_vm_uuid"] = "NA"
             _instance = False
 
@@ -1703,7 +1815,7 @@ class OskCmds(CommonCloudFunctions) :
 
             obj_attr_list["last_known_state"] = "about to connect to openstack manager"
 
-            if obj_attr_list["floating_ip"].lower() == "true" :
+            if str(obj_attr_list["floating_ip"]).lower() == "true" :
                 obj_attr_list["address_type"] = "floating"
             else :
                 obj_attr_list["address_type"] = "fixed"
@@ -1721,14 +1833,14 @@ class OskCmds(CommonCloudFunctions) :
 
             obj_attr_list["last_known_state"] = "about to get flavor and image list"
 
-            if obj_attr_list["security_groups"].lower() == "false" :
+            if str(obj_attr_list["security_groups"]).lower() == "false" :
                 _security_groups = None
             else :
                 # "Security groups" must be a list
                 _security_groups = []
                 _security_groups.append(obj_attr_list["security_groups"])
 
-            if obj_attr_list["key_name"].lower() == "false" :
+            if str(obj_attr_list["key_name"]).lower() == "false" :
                 _key_name = None
             else :
                 _key_name = obj_attr_list["key_name"]
@@ -1808,27 +1920,38 @@ class OskCmds(CommonCloudFunctions) :
 
                 if "floating_ip" in obj_attr_list :
 
-                    if obj_attr_list["floating_ip"].lower() == "true" :
+                    if str(obj_attr_list["floating_ip"]).lower() == "true" :
                         _msg = "Adding a floating IP to " + obj_attr_list["name"] + "..."
                         cbdebug(_msg, True)
                         _instance.add_floating_ip(self.floating_ip_allocate(obj_attr_list))
 
                 _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
-
-                _status, _fmsg = self.vvcreate(obj_attr_list)
-                
-                self.get_mac_address(obj_attr_list, _instance)
-
-                self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
-
-                self.get_host_and_instance_name(obj_attr_list)
-
-                self.get_instance_deployment_time(obj_attr_list)
-
-                if "resource_limits" in obj_attr_list :
-                    _status, _fmsg = self.set_cgroup(obj_attr_list)
+  
+                if obj_attr_list["last_known_state"].count("ERROR") :
+                    _fmsg = obj_attr_list["last_known_state"]
+                    _status = 189
                 else :
-                    _status = 0
+                    _vvstatus, _vvfmsg = self.vvcreate(obj_attr_list)
+    
+                    if _vvstatus :
+                        _status = _vvstatus
+                    
+                    self.get_mac_address(obj_attr_list, _instance)
+    
+                    self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
+    
+                    self.get_host_and_instance_name(obj_attr_list)
+    
+                    self.get_instance_deployment_time(obj_attr_list)
+    
+                    if "resource_limits" in obj_attr_list :
+                        _status, _fmsg = self.set_cgroup(obj_attr_list)
+                    else :
+                        _status = 0
+
+                    if str(obj_attr_list["force_failure"]).lower() == "true" :
+                        _fmsg = "Forced failure (option FORCE_FAILURE set \"true\")"
+                        _status = 916
 
             else :
                 _fmsg = "Failed to obtain instance's (cloud assigned) uuid. The "
@@ -1858,39 +1981,8 @@ class OskCmds(CommonCloudFunctions) :
             self.disconnect()
 
             if _status :
-                
-                _vminstance = self.get_instances(obj_attr_list, "vm", \
-                                               obj_attr_list["cloud_vm_name"])
 
-                _msg = "" + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
-                _msg += "could not be created"
-                _msg += " on OpenStack Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
-
-                if _vminstance :
-                    # Not the best way to solve this problem. Will improve later.
-                    
-                    if not self.is_vm_running(obj_attr_list) :
-                        if "fault" in dir(_vminstance) :
-                            if "message" in _vminstance.fault : 
-                                print _vminstance.fault
-                                _msg += "\n\t" + _vminstance.fault["message"] + "\n: "
-                            #if "details" in _vminstance.fault : 
-                            #    _msg += _vminstance.fault["details"] + ":"
-                    # Try to make a last attempt effort to get the hostname,
-                    # even if the VM creation failed.
-
-                    self.get_host_and_instance_name(obj_attr_list, fail = False)
-
-                    _vminstance.delete()
-
-                    if "cloud_vv" in obj_attr_list :
-                        self.vvdestroy(obj_attr_list)
-
-                _msg += _fmsg + " (The VM creation will be rolled back)"
-                cberr(_msg)
-                
-                raise CldOpsException(_msg, _status)
+                self.instance_cleanup_on_failure(obj_attr_list, _status, _fmsg, _vvstatus, _vvfmsg)
 
             else :
                 _msg = "" + obj_attr_list["name"] + ""
@@ -1899,7 +1991,62 @@ class OskCmds(CommonCloudFunctions) :
                 _msg += " on OpenStack Cloud \"" + obj_attr_list["cloud_name"] + "\"."
                 cbdebug(_msg)
                 return _status, _msg
+
+    def instance_cleanup_on_failure(self, obj_attr_list, _status, _fmsg, _vvstatus, _vvfmsg) :
+        '''
+        TBD
+        '''
+
+        _oskfmsg = ''
+        _liof_msg = ''
+        _vminstance = self.get_instances(obj_attr_list, "vm", \
+                                                       obj_attr_list["cloud_vm_name"])
             
+        _msg = "" + obj_attr_list["name"] + ""
+        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
+        _msg += "could not be created"
+        _msg += " on OpenStack Cloud \"" + obj_attr_list["cloud_name"] + "\""
+
+        if _vminstance :
+            # Not the best way to solve this problem. Will improve later.
+            
+            if not self.is_vm_running(obj_attr_list) :
+                if "fault" in dir(_vminstance) :
+                    if "message" in _vminstance.fault : 
+                        _oskfmsg = "\nINSTANCE ERROR MESSAGE:" + str(_vminstance.fault["message"]) + ".\n"
+
+            # Try and make a last attempt effort to get the hostname,
+            # even if the VM creation failed.
+
+            self.get_host_and_instance_name(obj_attr_list, fail = False)
+
+            if "host_name" in obj_attr_list :
+                _msg += " (Host \"" + obj_attr_list["host_name"] + "\")"
+
+            if str(obj_attr_list["leave_instance_on_failure"]).lower() == "true" :
+                _liof_msg = " (Will leave the VM running due to experimenter's request)"
+            else :
+                _liof_msg = " (The VM creation will be rolled back)"
+                _vminstance.delete()
+
+                if "cloud_vv" in obj_attr_list :
+                    self.vvdestroy(obj_attr_list)
+
+            _msg += ": " 
+
+        _msg += _fmsg + ".\n"
+        
+        if _vvstatus :
+            _msg += "VOLUME ERROR MESSAGE:" + _vvfmsg + ".\n"
+
+        if len(_oskfmsg) :
+            _msg += _oskfmsg
+
+        _msg += _liof_msg
+        cberr(_msg)
+        
+        raise CldOpsException(_msg, _status)
+        
     @trace
     def vmdestroy(self, obj_attr_list) :
         '''

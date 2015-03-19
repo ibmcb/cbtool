@@ -55,6 +55,7 @@ ADDITIONAL_DISCOVERY = $Empty
 MODIFY_HOST_NAMES = $False
 MIGRATE_SUPPORTED = $True
 PROTECT_SUPPORTED = $True
+HOST_USER_ROOT = $False
 
 [VM_DEFAULTS : OSK_CLOUDCONFIG]
 ACCESS = $OSK_ACCESS
@@ -81,6 +82,8 @@ HOSTNAME_KEY = cloud_vm_name
 FLOATING_IP = $False
 FLOATING_POOL = $Empty
 JUMP_HOST = $False
+LEAVE_INSTANCE_ON_FAILURE = $False
+FORCE_FAILURE = $False
 
 [AI_DEFAULTS : OSK_CLOUDCONFIG]
 ATTACH_PARALLELISM = 10
@@ -115,6 +118,8 @@ WAS = size:m1.medium, imageid1:cb_daytrader
 DRIVER_HADOOP = size:m1.tiny, imageid1:cb_hadoop
 HADOOPMASTER = size:m1.small, imageid1:cb_hadoop
 HADOOPSLAVE = size:m1.medium, imageid1:cb_hadoop
+GIRAPHMASTER = size:m1.small, imageid1:cb_giraph
+GIRAPHSLAVE = size:m1.medium, imageid1:cb_giraph
 DRIVER_NETPERF = size:m1.tiny, imageid1:cb_hadoop
 NETCLIENT = size:m1.medium, imageid1:cb_netperf
 NETSERVER = size:m1.tiny, imageid1:cb_netperf

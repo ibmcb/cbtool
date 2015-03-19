@@ -24,10 +24,10 @@ LOAD_LEVEL = uniformIXIXI2I5
 LOAD_DURATION = uniformIXIXI90I120
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
-#NR_QUOTES=40000
-#NR_USERS=15000
-#PERIODIC_MEASUREMENTS = $False
-#APP_COLLECTION = lazy
+NR_QUOTES=40000
+NR_USERS=15000
+PERIODIC_MEASUREMENTS = $False
+APP_COLLECTION = lazy
 
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
 #SYNC_COUNTER_NAME = synchronization_counter

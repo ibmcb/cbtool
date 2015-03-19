@@ -40,6 +40,7 @@ INITIAL_VMCS = $EC2_INITIAL_VMCS
 ADDITIONAL_DISCOVERY = $Empty
 MIGRATE_SUPPORTED = $False
 PROTECT_SUPPORTED = $False
+HOST_USER_ROOT = $False
 
 [VM_DEFAULTS : EC2_CLOUDCONFIG ]
 ACCESS = $EC2_ACCESS
@@ -59,7 +60,9 @@ CHECK_BOOT_COMPLETE = tcp_on_22
 #CHECK_BOOT_COMPLETE = subscribe_on_booting
 #CHECK_BOOT_COMPLETE = wait_for_0
 NETNAME = private
-JUMP_HOST = $Empty
+JUMP_HOST = $False
+LEAVE_INSTANCE_ON_FAILURE = $False
+FORCE_FAILURE = $False
 
 [AI_DEFAULTS : EC2_CLOUDCONFIG ]
 ATTACH_PARALLELISM = 10
@@ -93,6 +96,8 @@ WAS = size:m1.medium, imageid1:ami-60167109
 DRIVER_HADOOP = size:t1-micro, imageid1:ami-60167109
 HADOOPMASTER = size:m1.large, imageid1:ami-60167109
 HADOOPSLAVE = size:m1.medium, imageid1:ami-60167109
+GIRAPHMASTER = size:m1.large, imageid1:ami-60167109
+GIRAPHSLAVE = size:m1.medium, imageid1:ami-60167109
 DRIVER_NETPERF = size:t1-micro, imageid1:ami-60167109
 NETCLIENT = size:m1.medium, imageid1:ami-60167109
 NETSERVER = size:t1-micro, imageid1:ami-60167109

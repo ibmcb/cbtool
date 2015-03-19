@@ -551,15 +551,45 @@ class CBCLI(Cmd) :
         logger.addHandler(status_handler)
     
         if options.verbosity :
-            if int(options.verbosity) >= 5 :
+            if int(options.verbosity) >= 8 :
                 logger.setLevel(DEBUG)
+            elif int(options.verbosity) >= 7 :
+                # Used to filter out all function calls from all modules in the
+                # "stores" subdirectory.
+                hdlr.addFilter(VerbosityFilter("datastore"))
+                logger.setLevel(DEBUG)
+            elif int(options.verbosity) >= 6 :
+                hdlr.addFilter(VerbosityFilter("PassiveObjectOperations"))
+                hdlr.addFilter(VerbosityFilter("data_ops"))
+                # Used to filter out all function calls from all modules in the
+                # "stores" subdirectory.
+                hdlr.addFilter(VerbosityFilter("datastore"))
+                logger.setLevel(DEBUG)
+            elif int(options.verbosity) >= 5 :
+                hdlr.addFilter(VerbosityFilter("PassiveObjectOperations"))
+                hdlr.addFilter(VerbosityFilter("get_object_count"))
+                hdlr.addFilter(VerbosityFilter("get_counters"))
+                hdlr.addFilter(VerbosityFilter("get_process_object"))
+                hdlr.addFilter(VerbosityFilter("data_ops"))             
+                hdlr.addFilter(VerbosityFilter("datastore"))                
+                logger.setLevel(DEBUG)                
             elif int(options.verbosity) >= 4 :
+                hdlr.addFilter(VerbosityFilter("PassiveObjectOperations"))
+                hdlr.addFilter(VerbosityFilter("get_object_count"))
+                hdlr.addFilter(VerbosityFilter("get_counters"))
+                hdlr.addFilter(VerbosityFilter("get_process_object"))
+                hdlr.addFilter(VerbosityFilter("data_ops"))              
                 # Used to filter out all function calls from all modules in the
                 # "stores" subdirectory.
                 hdlr.addFilter(VerbosityFilter("stores"))
                 hdlr.addFilter(VerbosityFilter("datastore"))
                 logger.setLevel(DEBUG)
             elif int(options.verbosity) >= 3 :
+                hdlr.addFilter(VerbosityFilter("PassiveObjectOperations"))
+                hdlr.addFilter(VerbosityFilter("get_object_count"))
+                hdlr.addFilter(VerbosityFilter("get_counters"))
+                hdlr.addFilter(VerbosityFilter("get_process_object"))
+                hdlr.addFilter(VerbosityFilter("data_ops"))                
                 # Used to filter out all function calls from the "auxiliary"
                 # subdirectory.
                 hdlr.addFilter(VerbosityFilter("auxiliary"))
@@ -569,6 +599,11 @@ class CBCLI(Cmd) :
                 hdlr.addFilter(VerbosityFilter("datastore"))
                 logger.setLevel(DEBUG)
             elif int(options.verbosity) >= 2 :
+                hdlr.addFilter(VerbosityFilter("PassiveObjectOperations"))
+                hdlr.addFilter(VerbosityFilter("get_object_count"))
+                hdlr.addFilter(VerbosityFilter("get_counters"))
+                hdlr.addFilter(VerbosityFilter("get_process_object"))
+                hdlr.addFilter(VerbosityFilter("data_ops"))                
                 # Used to filter out all function calls from the "auxiliary"
                 # subdirectory.
                 hdlr.addFilter(VerbosityFilter("auxiliary"))
@@ -584,6 +619,11 @@ class CBCLI(Cmd) :
                 hdlr.addFilter(VerbosityFilter("datastore"))
                 logger.setLevel(DEBUG)
             elif int(options.verbosity) == 1 :
+                hdlr.addFilter(VerbosityFilter("PassiveObjectOperations"))
+                hdlr.addFilter(VerbosityFilter("get_object_count"))
+                hdlr.addFilter(VerbosityFilter("get_counters"))
+                hdlr.addFilter(VerbosityFilter("get_process_object"))
+                hdlr.addFilter(VerbosityFilter("data_ops"))
                 # Used to filter out all function calls from the "auxiliary"
                 # subdirectory.
                 hdlr.addFilter(VerbosityFilter("auxiliary"))
@@ -645,12 +685,17 @@ class CBCLI(Cmd) :
 
             if len(_api_pid) :
                 if _api_pid[0].count("pnf") :
-                    _x, _pid, _username = _api_pid[0].split('-') 
+                    if len(_api_pid[0].split('-')) == 3 :
+                        _x, _pid, _username = _api_pid[0].split('-') 
+                    else :
+                        _pid = str(_api_pid[0])
+                        _username = "NA"
                     _msg = "Unable to start API service. Port "
                     _msg += self.cld_attr_lst["api_defaults"]["port"] + " is "
                     _msg += "already taken by process" + _pid + " (username "
                     _msg += _username + "). Please change "
-                    _msg += "the port number in API_DEFAULTS and try again."
+                    _msg += "the port number in the section [API_DEFAULTS] of "
+                    _msg += "cloud configuration file and try again."
                     _status = 8181
 
                     raise ProcessManagement.ProcessManagementException(_msg, _status)
@@ -679,6 +724,13 @@ class CBCLI(Cmd) :
                 _status = 7161
                 raise ProcessManagement.ProcessManagementException(_msg, _status)
 
+            use_ssl = False
+            cert = self.cld_attr_lst["gui_defaults"]["sslcert"]
+            key = self.cld_attr_lst["gui_defaults"]["sslkey"]
+
+            if cert and key :
+                use_ssl = True
+
             print "Checking for a running GUI service daemon.....",
             _base_cmd = self.path + "/cbact"
             _base_cmd += " --procid=" + self.pid
@@ -689,6 +741,12 @@ class CBCLI(Cmd) :
             _base_cmd += " --apihost=" + self.cld_attr_lst["api_defaults"]["hostname"]
             _base_cmd += " --guiport=" + str(self.cld_attr_lst["gui_defaults"]["port"])
             _base_cmd += " --guihost=" + self.cld_attr_lst["gui_defaults"]["hostname"]
+            _base_cmd += " --guibranding=" + self.cld_attr_lst["gui_defaults"]["branding"]
+
+            if use_ssl :
+                _base_cmd += " --guisslcert=" + cert 
+                _base_cmd += " --guisslkey=" + key 
+
             _base_cmd += " --syslogp=" + self.cld_attr_lst["logstore"]["port"]
             _base_cmd += " --syslogf=" + self.cld_attr_lst["logstore"]["gui_facility"]
             _base_cmd += " --syslogh=" + self.cld_attr_lst["logstore"]["hostname"]
@@ -721,11 +779,20 @@ class CBCLI(Cmd) :
                 else :
                     _gui_pid = _gui_pid[0]
                     _msg = "GUI Service daemon was successfully started. "
-                    _msg += "The process id is " + str(_gui_pid) + ". "
-                    _msg += "Port " + str(self.cld_attr_lst["gui_defaults"]["port"]) + '.\n'
+                    url = "http"
+                    if use_ssl :
+                        url += "s"
+                    url += "://" + self.cld_attr_lst["api_defaults"]["hostname"]
+                    url += ":" + str(self.cld_attr_lst["gui_defaults"]["port"])
+                    _msg += "The process id is " + str(_gui_pid) + ", "
+                    _msg += "listening on port " + str(self.cld_attr_lst["gui_defaults"]["port"]) + '.'
+                    _msg += " Full url is \"" + url + "\".\n"
                     sys.stdout.write(_msg)  
             else :
                 _msg = "\nGUI failed to start. To discover why, please run:\n\n" + _base_cmd + " --logdest=console\n\n ... and report the bug."
+                _msg += "\n\nAlternatively, if the problem is with 'screen', which"
+                _msg += " daemonizes the above command, try this:\n\n"
+                _msg += _cmd + "\n\n ... and report the bug."
                 _status = 7161
                 raise ProcessManagement.ProcessManagementException(_msg, _status)
 

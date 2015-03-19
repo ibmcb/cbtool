@@ -15,6 +15,20 @@ START=`provision_application_start`
 
 SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
 
+sudo mkdir -p ${MONGODB_DATA_DIR}
+
+VOLUME=$(get_attached_volumes)
+if [[ $VOLUME != "NONE" ]]
+then
+    if [[ $(check_filesystem $VOLUME) == "none" ]]
+    then
+        syslog_netcat "Creating $MONGODB_DATA_FSTYP filesystem on volume $VOLUME"
+        sudo mkfs.$MONGODB_DATA_FSTYP $VOLUME
+    fi
+    syslog_netcat "Making $MONGODB_DATA_FSTYP filesystem on volume $VOLUME accessible through the mountpoint ${MONGODB_DATA_DIR}"
+    sudo mount $VOLUME ${MONGODB_DATA_DIR}
+fi
+
 # Remove all previous configurations
 sudo rm -rf ${MONGODB_DATA_DIR}/configdb/*
 

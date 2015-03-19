@@ -390,18 +390,27 @@ class FtcCmds(CommonCloudFunctions) :
             if "configured_size" in obj_attr_list :
                 self.resize_to_configured_default(obj_attr_list)
             status = 0
+
+            if obj_attr_list["force_failure"].lower() == "true" :
+                _fmsg = "Forced failure (option FORCE_FAILURE set \"true\")"                
+                _status = 916
+            
         except FTCException, obj :
             status = obj.status
             _fmsg = "FTC Exception: " + obj.msg
+            
         except CldOpsException, obj :
             status = obj.status
             _fmsg = obj.msg
+            
         except KeyboardInterrupt :
             status = 42 
             _fmsg = "CTRL-C interrupt: " + obj.msg
+            
         except Exception, obj :
             status = 43
             _fmsg = str(obj)
+            
         finally :
             if status :
                 self.vmdestroy(obj_attr_list)

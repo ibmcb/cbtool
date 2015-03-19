@@ -37,6 +37,7 @@ INITIAL_VMCS = $SLR_INITIAL_VMCS
 ADDITIONAL_DISCOVERY = $Empty
 MIGRATE_SUPPORTED = $False
 PROTECT_SUPPORTED = $False
+HOST_USER_ROOT = $False
 
 [VM_DEFAULTS : SLR_CLOUDCONFIG]
 ACCESS = $SLR_ACCESS
@@ -62,7 +63,9 @@ CHECK_BOOT_COMPLETE = tcp_on_22
 #CHECK_BOOT_COMPLETE = wait_for_0
 NETNAME = private
 VM_HOSTNAME_KEY = cloud_vm_name
-JUMP_HOST = $Empty
+JUMP_HOST = $False
+LEAVE_INSTANCE_ON_FAILURE = $False
+FORCE_FAILURE = $False
 
 [AI_DEFAULTS : SLR_CLOUDCONFIG]
 ATTACH_PARALLELISM = 5
@@ -97,6 +100,8 @@ WAS = size:2-4096, eclipsed_size:gold32, imageids:1, imageid1:cb_daytrader
 DRIVER_HADOOP = size:1-1024, imageids:1, imageid1:cb_hadoop
 HADOOPMASTER = size:1-2048, eclipsed_size:gold32, imageids:1, imageid1:cb_hadoop
 HADOOPSLAVE = size:2-4096, eclipsed_size:gold32, imageids:1, imageid1:cb_hadoop
+GIRAPHMASTER = size:1-2048, eclipsed_size:gold32, imageids:1, imageid1:cb_giraph
+GIRAPHSLAVE = size:2-4096, eclipsed_size:gold32, imageids:1, imageid1:cb_giraph
 DRIVER_NETPERF = size:1-1024, imageids:1, imageid1:cb_netperf
 NETCLIENT = size:2-4096, imageids:1, imageid1:cb_netperf
 NETSERVER = size:1-1024, imageids:1, imageid1:cb_netperf

@@ -6,6 +6,8 @@
 .settings
 *.pyc
 *.swo
+*_gmetad_hosts.conf
+*_jump_host.conf
 log
 lsync.*
 cbls
@@ -52,3 +54,14 @@ gmetad-hosts.conf
 *hosts.conf
 configs/definitions.txt
 data
+util/openvpn/easy-rsa/keys/
+configs/client-cb-openvpn-*.conf
+configs/server-cb-openvpn-*.conf
+configs/mongo-cb-openvpn-*.conf
+configs/*_cloud_definitions.txt
+configs/templates/IBM_dependencies.txt
+configs/templates/SPEC_dependencies.txt
+credentials/cbtool.crt
+credentials/cbtool.key
+libpeerconnection.log
+util/pydevd

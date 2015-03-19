@@ -25,9 +25,12 @@
 '''
 
 import socket
+import struct
+import IN
 from subprocess import PIPE,Popen
 from platform import system
 from socket import gethostbyname, gethostbyaddr
+from fcntl import ioctl
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 
@@ -197,6 +200,7 @@ def hostname2ip(hostname) :
     '''
     TBD
     '''
+    cbdebug("Looking for hostname: " + hostname)
     if validIPv4(hostname) :
         _hostip = hostname
         hostname = gethostbyaddr(hostname)[0]
@@ -206,6 +210,25 @@ def hostname2ip(hostname) :
     else :
         _hostip = gethostbyname(hostname)
     return hostname, _hostip
+
+SIOCGIFMTU = 0x8921
+SIOCSIFMTU = 0x8922
+
+def get_mtu(ifname) :
+    '''
+    TBD
+    '''
+    s = socket.socket(type=socket.SOCK_DGRAM)
+    
+    ifr = ifname + '\x00'*(32-len(ifname))
+    try:
+        ifs = ioctl(s, SIOCGIFMTU, ifr)
+        mtu = struct.unpack('<H',ifs[16:18])[0]
+    except Exception, s:
+        print 'socket ioctl call failed: {0}'.format(s)
+        raise
+ 
+    return mtu
 
 @trace
 class Nethashget :
@@ -232,6 +255,12 @@ class Nethashget :
         '''
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((self.hostname, int(self.port)))
+
+    def path_mtu_discover(self, port = False) :
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket.connect((self.hostname, (port if port else (self.port if self.port is not None else 9999))))
+        self.socket.setsockopt(socket.IPPROTO_IP, IN.IP_MTU_DISCOVER, IN.IP_PMTUDISC_DO)
+        return self.socket.getsockopt(socket.IPPROTO_IP, getattr(IN, 'IP_MTU', 14))
 
     @trace        
     def nmap(self, port = None, protocol = "TCP", reverse = False) :

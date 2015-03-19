@@ -75,17 +75,24 @@ sudo sh -c "echo "operationcount=$OPERATION_COUNT" >> $YCSB_PATH/custom_workload
 
 source ~/cb_barrier.sh start
 
+OUTPUT_FILE=$(mktemp)
 if [[ ${GENERATE_DATA} == "true" ]]
 then
-	FIRST_SEED=$(echo $seed_ips_csv | cut -d ',' -f 1)
-	syslog_netcat "Dropping keyspace usertable by executing cassandra-cli against seed node ${FIRST_SEED}"
-	cassandra-cli -h ${FIRST_SEED} -f remove_keyspace.cassandra
-	
-	syslog_netcat "Creating keyspace usertable by executing cassandra-cli against seed node ${FIRST_SEED}"
-	cassandra-cli -h ${FIRST_SEED} -f create_keyspace.cassandra
-				
+    FIRST_SEED=$(echo $seed_ips_csv | cut -d ',' -f 1)
+    syslog_netcat "Dropping keyspace usertable by executing cassandra-cli against seed node ${FIRST_SEED}"
+    cassandra-cli -h ${FIRST_SEED} -f remove_keyspace.cassandra
+
+    if [[ $(cassandra-cli -h ${MY_IP} -f list_keyspace.cassandra | grep Keyspace | grep -c usertable) -eq 0 ]]
+    then
+        syslog_netcat "Keyspace \"usertable\" was successfully deleted"
+    else
+        syslog_netcat "Keyspace \"usertable\" was NOT deleted!!!"
+    fi
+            
+    syslog_netcat "Creating keyspace usertable by executing cassandra-cli against seed node ${FIRST_SEED}"
+    cassandra-cli -h ${FIRST_SEED} -f create_keyspace.cassandra
+                
     syslog_netcat "Number of records to be inserted : $RECORDS"
-    OUTPUT_FILE=$(mktemp)
 
     log_output_command=$(get_my_ai_attribute log_output_command)
     log_output_command=$(echo ${log_output_command} | tr '[:upper:]' '[:lower:]')
@@ -109,7 +116,7 @@ then
     END_GENERATION=$(get_time)
     DATA_GENERATION_TIME=$(expr ${END_GENERATION} - ${START_GENERATION})
     echo ${DATA_GENERATION_TIME} > /tmp/data_generation_time
-	echo ${RECORDS} > /tmp/data_generation_size
+    echo ${RECORDS} > /tmp/data_generation_size
 else
     syslog_netcat "The value of the parameter \"GENERATE_DATA\" is \"false\". Will bypass data generation for the hadoop load profile \"${LOAD_PROFILE}\""     
 fi
@@ -129,9 +136,9 @@ then
     syslog_netcat "Command line is: ${CMDLINE}. Output file is ${OUTPUT_FILE}"
     if [[ $APP_COLLECTION == "lazy" ]]
     then
-        lazy_collection "$CMDLINE" ${SLA_RUNTIME_TARGETS}
+        lazy_collection "$CMDLINE" ${OUTPUT_FILE} ${SLA_RUNTIME_TARGETS}
     else
-        eager_collection "$CMDLINE" ${SLA_RUNTIME_TARGETS}
+        eager_collection "$CMDLINE" ${OUTPUT_FILE} ${SLA_RUNTIME_TARGETS}
     fi
 else
     syslog_netcat "This AI reached the limit of load generation process executions. If you want this AI to continue to execute the load generator, reset the \"run_limit\" counter"

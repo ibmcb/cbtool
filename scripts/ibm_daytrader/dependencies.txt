@@ -21,6 +21,5 @@ netperf-ver = ANY
 ### END - Dependency versions ###
 
 ### START -  Dependency and method-specific command lines ###
-rhel-netperf-install-pm = sudo yum -y install netperf
-ubuntu-netperf-install-pm = sudo apt-get -y install netperf
+common-netperf-install-pm = package_install netperf
 ### END -  Dependency and method-specific command lines ###

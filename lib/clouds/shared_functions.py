@@ -162,7 +162,7 @@ class CommonCloudFunctions:
         while _curr_tries < _max_tries :
             _start_pooling = int(time())
 
-            if "async" not in obj_attr_list or obj_attr_list["async"].lower() == "false" :
+            if "async" not in obj_attr_list or str(obj_attr_list["async"]).lower() == "false" :
                 if threading.current_thread().abort :
                     _msg = "VM Create Aborting..."
                     _status = 123
@@ -301,7 +301,7 @@ class CommonCloudFunctions:
             while not _network_reachable and _curr_tries < _max_tries :
                 _start_pooling = int(time())
 
-                if "async" not in obj_attr_list or obj_attr_list["async"].lower() == "false" :
+                if "async" not in obj_attr_list or str(obj_attr_list["async"]).lower() == "false" :
                     if threading.current_thread().abort :
                         _msg = "VM Create Aborting..."
                         _status = 123
@@ -452,12 +452,12 @@ class CommonCloudFunctions:
 
                 _pooling_time = int(time()) - _start_pooling
     
-                if _pooling_time < _wait :
+                if _pooling_time <= _wait :
                     _actual_wait = _wait - _pooling_time
                 else :
                     _msg = "The time spent on pooling for \"booted\" status (" + str(_pooling_time) 
                     _msg += " s) is actually longer than the "
-                    _msg += "interval between pooling attempts( " + str(_wait) + " s)."
+                    _msg += "interval between pooling attempts (" + str(_wait) + " s)."
                     cbdebug(_msg, True)
                     _actual_wait = 0
 
@@ -697,7 +697,7 @@ class CommonCloudFunctions:
         '''
 
         for op in ["migrate", "protect"] :
-            if obj_attr_list[op + "_supported"].lower() != "true" :
+            if str(obj_attr_list[op + "_supported"]).lower() != "true" :
                 continue
         
             if op + "_interfaces" in obj_attr_list :

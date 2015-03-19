@@ -47,10 +47,24 @@ fi
 if [[ -z ${HADOOP_HOME} ]]
 then
     HADOOP_HOME=`get_my_ai_attribute_with_default hadoop_home ~/hadoop-1.2.1`
-    
-    HADOOP_VERSION=`echo ${HADOOP_HOME} | sed 's/hadoop-//g' | sed 's/-bin//g'` 
     eval HADOOP_HOME=${HADOOP_HOME}
+    
+	if [[ ! -d $HADOOP_HOME} ]]
+    then
+    	syslog_netcat "The value specified in the AI attribute HADOOP_HOME points to a non-existing directory. Will search ~ for a hadoop dir." 
+	    HADOOP_HOME=$(ls ~| grep hadoop- | sort -r | head -n1)
+	    eval HADOOP_HOME="~/${HADOOP_HOME}"
+	    if [[ ! -d $HADOOP_HOME ]]
+	    then
+	    	syslog_netcat "Unable to find a directory with a Hadoop installation - NOK"
+	    	exit 1
+		fi
+	fi
 
+	syslog_netcat "HADOOP_HOME was determined to be $HADOOP_HOME" 
+	HADOOP_VERSION=$(echo ${HADOOP_HOME} | awk -F/ '{print $(NF-1)}' | sed 's/hadoop-//g' | sed 's/-bin//g')
+	syslog_netcat "HADOOP_VERSION was determined to be $HADOOP_VERSION" 
+	
     if [[ -f ~/.bashrc ]]
     then
         is_hadoop_home_export=`grep -c "HADOOP_HOME=${HADOOP_HOME}" ~/.bashrc`
@@ -65,11 +79,13 @@ fi
 
 if [[ -z ${HADOOP_CONF_DIR} ]]
 then
-    if [[ -d $HADOOP_HOME/conf ]]; then
+    if [[ -d $HADOOP_HOME/conf ]]
+    then
         HADOOP_CONF_DIR=$HADOOP_HOME/conf
         syslog_netcat "Setting HADOOP_CONF_DIR to $HADOOP_CONF_DIR"
     else
-        if [[ -d $HADOOP_HOME/etc/hadoop ]]; then
+        if [[ -d $HADOOP_HOME/etc/hadoop ]]
+        then
             HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
             syslog_netcat "Setting HADOOP_CONF_DIR to $HADOOP_CONF_DIR"
         else

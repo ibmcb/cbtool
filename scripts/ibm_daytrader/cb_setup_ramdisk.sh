@@ -30,7 +30,8 @@ RAMDISK=`echo ${RAMDISK} | tr '[:upper:]' '[:lower:]'`
 
 SIZE=`get_my_ai_attribute_with_default tradedb_size small`
 
-if [[ x"${RAMDISK}" == x || x"${RAMDISK}" == "false" ]]; then
+if [[ ${RAMDISK} == "false" ]]
+then
 	syslog_netcat "DB2 will be run from an actual storage volume (${DATABASE_PATH}) on host ($SHORT_HOSTNAME)"
 else
 	syslog_netcat "Setting RAMDISK (${RAMDISK_DEVICE} for holding DB2 database ${DATABASE_NAME} on host ($SHORT_HOSTNAME)"
