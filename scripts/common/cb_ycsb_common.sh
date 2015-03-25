@@ -88,7 +88,6 @@ then
     if [[ -z $cassandra_ips ]]
     then
         syslog_netcat "No VMs with the \"cassandra\" role have been found on this AI"
-        exit 1;
     else
         syslog_netcat "The VMs with the \"cassandra\" role on this AI have the following IPs: ${cassandra_ips_csv}"
     fi
@@ -193,70 +192,67 @@ function lazy_collection {
     # Check for New Shard
     
     done < <($CMDLINE 2>&1)
-
+    
+    ERROR=$?
+    update_app_errors $ERROR
+    
     LOAD_GENERATOR_END=$(date +%s)
-    COMPLETION_TIME=$(( $LOAD_GENERATOR_END - $LOAD_GENERATOR_START ))       
-
-    if [[ $? -gt 0 ]]
-    then
-        syslog_netcat "problem running ycsb prime client on $(hostname)"
-        exit 1
-    fi
-    
-    # Collect data generation time, taking care of reporting the time
-    # with a minus sign in case data was not generated on this 
-    # run
-    if [[ -f /tmp/old_data_generation_time ]]
-    then
-        datagentime=-$(cat /tmp/old_data_generation_time)
-    fi
-    
-    if [[ -f /tmp/data_generation_time ]]
-    then
-        datagentime=$(cat /tmp/data_generation_time)
-        mv /tmp/data_generation_time /tmp/old_data_generation_time
-    fi
-
-    if [[ -f /tmp/old_data_generation_size ]]
-    then
-        datagensize=-$(cat /tmp/old_data_generation_size)
-    fi
-
-    if [[ -f /tmp/data_generation_size ]]
-    then
-        datagensize=$(cat /tmp/data_generation_size)
-        mv /tmp/data_generation_size /tmp/old_data_generation_size        
-    fi  
-
-    if [[ -f /tmp/cassandra_cluster_errors ]]
-    then
-        echo "0" > /tmp/cassandra_cluster_errors
-    fi
+    update_app_completiontime $(( $LOAD_GENERATOR_END - $LOAD_GENERATOR_START ))       
 
     FIRST_SEED=$(echo $seed_ips_csv | cut -d ',' -f 1)
 
-    cassandra_errors=0
-    check_cluster_state ${FIRST_SEED} 1 1
-
-    if [[ $? -ne 0 ]]
-    then
-        curr_err=$(cat /tmp/cassandra_cluster_errors)
-        cassandra_errors="$(( $curr_err + 1 ))"
-        echo $cassandra_errors > /tmp/cassandra_cluster_errors
-    fi
+    check_cassandra_cluster_state ${FIRST_SEED} 1 1
+    ERROR=$?
+    update_app_errors $ERROR
 
     ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
     load_level:${LOAD_LEVEL}:load \
     load_profile:${LOAD_PROFILE}:name \
     load_duration:${LOAD_DURATION}:sec \
-    completion_time:${COMPLETION_TIME}:sec \
-    errors:${cassandra_errors}:num \
+    completion_time:$(update_app_completiontime):sec \
+    errors:$(update_app_errors):num \
     throughput:$(expr $ops):tps \
     latency:$(expr $latency):us \
-    datagen_time:${datagentime}:sec \
-    datagen_size:${datagensize}:records \
+    datagen_time:$(update_app_datagentime):sec \
+    datagen_size:$(update_app_datagensize):records \
     ${SLA_RUNTIME_TARGETS}
 }
+    
+function check_cassandra_cluster_state {
+
+    syslog_netcat "Waiting for all nodes to become available..."
+
+    NODETOOLHN=$1
+    ATTEMPTS=$2
+    INTERVAL=$3
+
+    counter=0
+    
+    while [[ $NODES_REGISTERED -ne $total_nodes && "$counter" -le "$ATTEMPTS" ]]
+    do
+        NODES_REGISTERED=0    
+        syslog_netcat "Obtaining the node list for this Cassandra cluster..."            
+        for NODEIP in $(nodetool -h ${NODETOOLHN} status | tail -n +6 | grep -v "Non-system" | awk '{ print $2 }')
+        do
+            if [[ $(sudo cat /etc/hosts | grep -c $NODEIP) -ne 0 ]]
+            then
+                NODES_REGISTERED="$(( $NODES_REGISTERED + 1 ))"
+            fi            
+        done
+
+        syslog_netcat "Nodes registered on the cluster: $NODES_REGISTERED out of $total_nodes"        
+        counter="$(( $counter + 1 ))"
+        sleep $INTERVAL
+    done
+    
+    if [[ $counter -gt $ATTEMPTS ]]
+    then
+        return 1
+    else
+        return 0
+    fi
+}
+export -f check_cassandra_cluster_state
 
 function eager_collection {
     CMDLINE=$1
@@ -407,56 +403,17 @@ function eager_collection {
         fi
     done < <($CMDLINE 2>&1)
 
+    ERROR=$?
+    update_app_errors $ERROR
+    
     LOAD_GENERATOR_END=$(date +%s)
-    COMPLETION_TIME=$(( $LOAD_GENERATOR_END - $LOAD_GENERATOR_START ))  
-            
-    if [[ $? -gt 0 ]]
-    then
-        syslog_netcat "problem running ycsb prime client on $(hostname)"
-        exit 1
-    fi
-    
-    # Collect data generation time, taking care of reporting the time
-    # with a minus sign in case data was not generated on this 
-    # run
-    if [[ -f /tmp/old_data_generation_time ]]
-    then
-        datagentime=-$(cat /tmp/old_data_generation_time)
-    fi
-    
-    if [[ -f /tmp/data_generation_time ]]
-    then
-        datagentime=$(cat /tmp/data_generation_time)
-        mv /tmp/data_generation_time /tmp/old_data_generation_time
-    fi
-
-    if [[ -f /tmp/old_data_generation_size ]]
-    then
-        datagensize=-$(cat /tmp/old_data_generation_size)
-    fi
-
-    if [[ -f /tmp/data_generation_size ]]
-    then
-        datagensize=$(cat /tmp/data_generation_size)
-        mv /tmp/data_generation_size /tmp/old_data_generation_size        
-    fi
-
-    if [[ -f /tmp/cassandra_cluster_errors ]]
-    then
-        echo "0" > /tmp/cassandra_cluster_errors
-    fi
+    update_app_completiontime $(( $LOAD_GENERATOR_END - $LOAD_GENERATOR_START ))       
 
     FIRST_SEED=$(echo $seed_ips_csv | cut -d ',' -f 1)
 
-    cassandra_errors=0
-    check_cluster_state ${FIRST_SEED} 1 1
-
-    if [[ $? -ne 0 ]]
-    then
-        curr_err=$(cat /tmp/cassandra_cluster_errors)
-        cassandra_errors="$(( $curr_err + 1 ))"
-        echo $cassandra_errors > /tmp/cassandra_cluster_errors
-    fi
+    check_cassandra_cluster_state ${FIRST_SEED} 1 1
+    ERROR=$?
+    update_app_errors $ERROR
 
     if [[ $write_avg_latency -ne 0 ]]
     then
@@ -464,9 +421,9 @@ function eager_collection {
         load_level:${LOAD_LEVEL}:load \
         load_profile:${LOAD_PROFILE}:name \
         load_duration:${LOAD_DURATION}:sec \
-        completion_time:${COMPLETION_TIME}:sec \
+        completion_time:$(update_app_completiontime):sec \
         throughput:$(expr $ops):tps \
-        errors:${cassandra_errors}:num \
+        errors:$(update_app_errors):num \
         write_avg_latency:$(expr $write_avg_latency):us \
         write_min_latency:$(expr $write_min_latency):us \
         write_max_latency:$(expr $write_max_latency):us \
@@ -482,8 +439,8 @@ function eager_collection {
         update_max_latency:$(expr $update_max_latency):us \
         update_95_latency:$(expr $update_95_latency):us \
         update_99_latency:$(expr $update_99_latency):us \
-        datagen_time:${datagentime}:sec \
-        datagen_size:${datagensize}:records \      
+        datagen_time:$(update_app_datagentime):sec \
+        datagen_size:$(update_app_datagensize):records \
         ${SLA_RUNTIME_TARGETS}
     fi
 
@@ -493,9 +450,9 @@ function eager_collection {
         load_level:${LOAD_LEVEL}:load \
         load_profile:${LOAD_PROFILE}:name \
         load_duration:${LOAD_DURATION}:sec \
-        completion_time:${COMPLETION_TIME}:sec \
+        completion_time:$(update_app_completiontime):sec \
         throughput:$(expr $ops):tps \
-        errors:${cassandra_errors}:num \
+        completion_time:$(update_app_completiontime):sec \
         read_avg_latency:$(expr $read_avg_latency):us \
         read_min_latency:$(expr $read_min_latency):us \
         read_max_latency:$(expr $read_max_latency):us \
@@ -506,8 +463,9 @@ function eager_collection {
         update_max_latency:$(expr $update_max_latency):us \
         update_95_latency:$(expr $update_95_latency):us \
         update_99_latency:$(expr $update_99_latency):us \
-        datagen_time:${datagentime}:sec \
-        datagen_size:${datagensize}:records \      
-        ${SLA_RUNTIME_TARGETS}        
+        datagen_time:$(update_app_datagentime):sec \
+        datagen_size:$(update_app_datagensize):records \
+        ${SLA_RUNTIME_TARGETS}
     fi
-}    
+}
+    

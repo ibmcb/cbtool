@@ -16,7 +16,7 @@
 # limitations under the License.
 #/*******************************************************************************
 
-source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_giraph_common.sh
+source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_hadoop_common.sh
 #START=`provision_application_start`
 
 syslog_netcat "Reconfiguring Hadoop cluster on master ${hadoop_master_ip} with slaves ${slave_ips_csv} (my ip is ${my_ip_addr})"

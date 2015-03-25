@@ -29,6 +29,7 @@ from socket import gethostbyname
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import str2dic, DataOpsException
+from lib.remote.ssh_ops import get_ssh_key
 from lib.remote.network_functions import hostname2ip
 
 from shared_functions import CldOpsException, CommonCloudFunctions 
@@ -103,43 +104,78 @@ class Ec2Cmds(CommonCloudFunctions) :
                 _msg = "EC2 connection successful."
                 cbdebug(_msg)
                 return _status, _msg, _region_hostname
-    
-    @trace
-    def test_vmc_connection(self, vmc_name, access, credentials, key_name, \
-                            security_group_name, vm_templates, vm_defaults) :
+
+    def check_ssh_key(self, vmc_name, key_name, vm_defaults) :
         '''
         TBD
         '''
-        try :
-            _status = 100
-            _fmsg = "An error has occurred, but no error message was captured"
-            self.connect(access, credentials, vmc_name)
 
+        _key_pair_found = False      
+        
+        if not key_name :
+            _key_pair_found = True
+        else :
             _msg = "Checking if the ssh key pair \"" + key_name + "\" is created"
             _msg += " on VMC " + vmc_name + "...."
             cbdebug(_msg, True)
 
+            _pub_key_fn = vm_defaults["credentials_dir"] + '/'
+            _pub_key_fn += vm_defaults["ssh_key_name"] + ".pub"
+
+            _key_type, _key_contents, _key_fingerprint = get_ssh_key(_pub_key_fn, "ec2")            
             _key_pair_found = False
+
             for _key_pair in self.ec2conn.get_all_key_pairs() :
                 if _key_pair.name == key_name :
-                    _key_pair_found = True
+                    _msg = "A key named \"" + key_name + "\" was found "
+                    _msg += "on VMC " + vmc_name + ". Checking if the key"
+                    _msg += " contents are correct."
+                    cbdebug(_msg)                    
+                    _keyfp = _key_pair.fingerprint
+                    
+                    if len(_key_fingerprint) > 1 and len(_keyfp) > 1 :
+
+                        if _key_fingerprint == _keyfp :
+                            _msg = "The contents of the key \"" + key_name
+                            _msg += "\" on the VMC " + vmc_name + " and the"
+                            _msg += " one present on directory \"" 
+                            _msg += vm_defaults["credentials_dir"] + "\" ("
+                            _msg += vm_defaults["ssh_key_name"] + ") are the same."
+                            cbdebug(_msg)
+                            _key_pair_found = True
+                            break
+                        else :
+                            _msg = "The contents of the key \"" + key_name
+                            _msg += "\" on the VMC " + vmc_name + " and the"
+                            _msg += " one present on directory \"" 
+                            _msg += vm_defaults["credentials_dir"] + "\" ("
+                            _msg += vm_defaults["ssh_key_name"] + ") differ."
+                            _msg += "Will delete the key on OpenStack"
+                            _msg += " and re-created it"
+                            cbdebug(_msg)
+                            _key_pair.delete()
+                            break
 
             if not _key_pair_found :
-
-                _pub_key_fn = vm_defaults["credentials_dir"] + '/'
-                _pub_key_fn += vm_defaults["ssh_key_name"] + ".pub"
 
                 _msg = "Creating the ssh key pair \"" + key_name + "\""
                 _msg += " on VMC " + vmc_name + ", using the public key \""
                 _msg += _pub_key_fn + "\"..."
                 cbdebug(_msg, True)
-                
-                _fh = open(_pub_key_fn, 'r')
-                _pub_key = _fh.read()
-                _fh.close()
-
-                self.ec2conn.import_key_pair(key_name, _pub_key)
+                                    
+                self.ec2conn.import_key_pair(key_name, _key_type + ' ' + _key_contents)                
                 _key_pair_found = True
+
+            return _key_pair_found
+        
+    def check_security_group(self,vmc_name, security_group_name) :
+        '''
+        TBD
+        '''
+
+        _security_group_name = False
+        
+        if security_group_name :
 
             _msg = "Checking if the security group \"" + security_group_name
             _msg += "\" is created on VMC " + vmc_name + "...."
@@ -151,77 +187,105 @@ class Ec2Cmds(CommonCloudFunctions) :
                     _security_group_found = True
 
             if not _security_group_found :
-                _msg = "ERROR! Please create the security group \"" + security_group_name + "\" in "
+                _msg = "ERROR! Please create the security group \"" 
+                _msg += security_group_name + "\" in "
                 _msg += "Amazon EC2 before proceeding."
                 _fmsg = _msg
                 cberr(_msg, True)
+        else :
+            _security_group_found = True
+
+        return _security_group_found
+
+    def check_images(self, vmc_name, vm_templates) :
+        '''
+        TBD
+        '''
+        _msg = "Checking if the imageids associated to each \"VM role\" are"
+        _msg += " registered on VMC " + vmc_name + "...."
+        cbdebug(_msg, True)
+
+        _wanted_images = []
+        for _vm_role in vm_templates.keys() :
+            _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
+            if _imageid.count("ami-") and _imageid not in _wanted_images :
+                _wanted_images.append(_imageid)
+
+        _registered_image_list = self.ec2conn.get_all_images(image_ids=_wanted_images)
+        _registered_imageid_list = []
+
+        for _registered_image in _registered_image_list :
+            _registered_imageid_list.append(_registered_image.id)
+
+        _required_imageid_list = {}
+
+        for _vm_role in vm_templates.keys() :
+            _imageid = str2dic(vm_templates[_vm_role])["imageid1"]                
+            if _imageid.count("ami-") :
+                if _imageid not in _required_imageid_list :
+                    _required_imageid_list[_imageid] = []
+                _required_imageid_list[_imageid].append(_vm_role)
+
+        _msg = 'y'
+
+        _detected_imageids = {}
+        _undetected_imageids = {}
+
+        for _imageid in _required_imageid_list.keys() :
             
-            _msg = "Checking if the imageids associated to each \"VM role\" are"
-            _msg += " registered on VMC " + vmc_name + "...."
-            cbdebug(_msg, True)
+            # Unfortunately we have to check image names one by one,
+            # because they might be appended by a generic suffix for
+            # image randomization (i.e., deploying the same image multiple
+            # times as if it were different images.
+            _image_detected = False
+            for _registered_imageid in _registered_imageid_list :
+                if str(_registered_imageid).count(_imageid) :
+                    _image_detected = True
+                    _detected_imageids[_imageid] = "detected"
+                else :
+                    _undetected_imageids[_imageid] = "undetected"
 
-            _wanted_images = []
-            for _vm_role in vm_templates.keys() :
-                _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
-                if _imageid.count("ami-") and _imageid not in _wanted_images :
-                    _wanted_images.append(_imageid)
-
-            _registered_image_list = self.ec2conn.get_all_images(image_ids=_wanted_images)
-            _registered_imageid_list = []
-
-            for _registered_image in _registered_image_list :
-                _registered_imageid_list.append(_registered_image.id)
-
-            _required_imageid_list = {}
-
-            for _vm_role in vm_templates.keys() :
-                _imageid = str2dic(vm_templates[_vm_role])["imageid1"]                
-                if _imageid.count("ami-") :
-                    if _imageid not in _required_imageid_list :
-                        _required_imageid_list[_imageid] = []
-                    _required_imageid_list[_imageid].append(_vm_role)
-
-            _msg = 'y'
-
-            _detected_imageids = {}
-            _undetected_imageids = {}
-
-            for _imageid in _required_imageid_list.keys() :
-                
-                # Unfortunately we have to check image names one by one,
-                # because they might be appended by a generic suffix for
-                # image randomization (i.e., deploying the same image multiple
-                # times as if it were different images.
-                _image_detected = False
-                for _registered_imageid in _registered_imageid_list :
-                    if str(_registered_imageid).count(_imageid) :
-                        _image_detected = True
-                        _detected_imageids[_imageid] = "detected"
-                    else :
-                        _undetected_imageids[_imageid] = "undetected"
-
-                if _image_detected :
-                    True
+            if _image_detected :
+                True
 #                    _msg += "xImage id for VM roles \"" + ','.join(_required_imageid_list[_imageid]) + "\" is \""
 #                    _msg += _imageid + "\" and it is already registered.\n"
-                else :
-                    _msg = "xWARNING Image id for VM roles \""
-                    _msg += ','.join(_required_imageid_list[_imageid]) + "\": \""
-                    _msg += _imageid + "\" is NOT registered "
-                    _msg += "(attaching VMs with any of these roles will result in error).\n"
-            
-            if not len(_detected_imageids) :
-                _msg = "ERROR! None of the image ids used by any VM \"role\" were detected"
-                _msg += " in this EC2 cloud. Please register at least one "
-                _msg += "of the following images: " + ','.join(_undetected_imageids.keys())
-                _fmsg = _msg 
-                cberr(_msg, True)
             else :
-                _msg = _msg.replace("yx",'')
-                _msg = _msg.replace('x',"         ")
-                _msg = _msg[:-2]
-                if len(_msg) :
-                    cbdebug(_msg, True)
+                _msg = "xWARNING Image id for VM roles \""
+                _msg += ','.join(_required_imageid_list[_imageid]) + "\": \""
+                _msg += _imageid + "\" is NOT registered "
+                _msg += "(attaching VMs with any of these roles will result in error).\n"
+        
+        if not len(_detected_imageids) :
+            _msg = "ERROR! None of the image ids used by any VM \"role\" were detected"
+            _msg += " in this EC2 cloud. Please register at least one "
+            _msg += "of the following images: " + ','.join(_undetected_imageids.keys())
+            _fmsg = _msg 
+            cberr(_msg, True)
+        else :
+            _msg = _msg.replace("yx",'')
+            _msg = _msg.replace('x',"         ")
+            _msg = _msg[:-2]
+            if len(_msg) :
+                cbdebug(_msg, True)    
+
+        return _detected_imageids
+        
+    @trace
+    def test_vmc_connection(self, vmc_name, access, credentials, key_name, \
+                            security_group_name, vm_templates, vm_defaults) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+            self.connect(access, credentials, vmc_name)
+
+            _key_pair_found = self.check_ssh_key(vmc_name, key_name, vm_defaults)
+
+            _security_group_found = self.check_security_group(vmc_name, security_group_name)
+
+            _detected_imageids = self.check_images(vmc_name, vm_templates)
 
             if not (_key_pair_found and _security_group_found and len(_detected_imageids)) :
                 _fmsg += ": Check the previous errors, fix it (using EC2's web"
@@ -484,29 +548,47 @@ class Ec2Cmds(CommonCloudFunctions) :
             return False
 
     @trace
-    def get_vm_instance(self, obj_attr_list) :
+    def get_instances(self, obj_attr_list, obj_type = "vm", identifier = "all") :
         '''
         TBD
         '''
+        
         try :
-            if "cloud_vm_uuid" in obj_attr_list and obj_attr_list["cloud_vm_uuid"] != "NA" :
-                _reservations = self.ec2conn.get_all_instances(obj_attr_list["cloud_vm_uuid"])
-                if _reservations :
-                    _instance = _reservations[0].instances[0]
-                    obj_attr_list["instance_obj"] = _instance
-                    return _instance
-                else :
-                    return False
-            else :
-                _reservations = self.ec2conn.get_all_instances()
-                _instances = [i for r in _reservations for i in r.instances]
-                for _instance in _instances :
-                    if "Name" in _instance.tags :
-                        if _instance.tags["Name"] == obj_attr_list["cloud_vm_name"] :
+            if obj_type == "vm" :
+                if identifier == "vmuuid" :
+                    if "cloud_vm_uuid" in obj_attr_list and obj_attr_list["cloud_vm_uuid"] != "NA" :
+                        _reservations = self.ec2conn.get_all_instances(obj_attr_list["cloud_vm_uuid"])
+                        if _reservations :
+                            _instance = _reservations[0].instances[0]
                             obj_attr_list["instance_obj"] = _instance
                             return _instance
+                        
+                if identifier == "name" :
+                    _reservations = self.ec2conn.get_all_instances()
+                    _instances = [i for r in _reservations for i in r.instances]
+                    for _instance in _instances :
+                        if "Name" in _instance.tags :
+                            if _instance.tags["Name"] == obj_attr_list["cloud_vm_name"] :
+                                obj_attr_list["instance_obj"] = _instance
+                                return _instance
                 return False
-                
+            
+            else :
+                _instance = []
+
+                if identifier == "vvuid" :
+                    if "cloud_vv_uuid" in obj_attr_list and obj_attr_list["cloud_vv_uuid"].lower() != "none" :
+                        _instance = self.ec2conn.get_all_volumes(volume_ids = [obj_attr_list["cloud_vv_uuid"]])
+
+                if identifier == "vmuuid" :
+                    if "cloud_vm_uuid" in obj_attr_list and obj_attr_list["cloud_vm_uuid"].lower() != "none" :
+                        _instance = self.ec2conn.get_all_volumes(filters={'attachment.instance-id': obj_attr_list["cloud_vm_uuid"]})
+
+                if len(_instance) :    
+                    _volume=_instance[0]
+                else :
+                    return False
+                    
         except AWSException, obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
@@ -532,7 +614,7 @@ class Ec2Cmds(CommonCloudFunctions) :
         try :
 
             if "instance_obj" not in obj_attr_list :
-                _instance = self.get_vm_instance(obj_attr_list)
+                _instance = self.get_instances(obj_attr_list, "vm", "vmuuid")
             else :
                 _instance = obj_attr_list["instance_obj"]
 
@@ -540,8 +622,8 @@ class Ec2Cmds(CommonCloudFunctions) :
                 _instance_state = _instance.update()
             else :
                 _instance_state = "non-existent"
-
-            if _instance_state == "running" :
+            
+            if _instance_state == "running" :                
                 return True
             else :
                 return False
@@ -657,7 +739,7 @@ class Ec2Cmds(CommonCloudFunctions) :
                 return _status, _msg
 
     @trace
-    def vvdestroy(self, obj_attr_list) :
+    def vvdestroy(self, obj_attr_list, identifier) :
         '''
         TBD
         '''
@@ -666,34 +748,33 @@ class Ec2Cmds(CommonCloudFunctions) :
             _fmsg = "An error has occurred, but no error message was captured"
 
             _wait = int(obj_attr_list["update_frequency"])
-            _curr_tries = 0          
+            _curr_tries = 0
             _max_tries = int(obj_attr_list["update_attempts"])
-        
-            if "cloud_vv_uuid" in obj_attr_list and obj_attr_list["cloud_vv_uuid"].lower() != "none" :
-                
+
+            _instance = self.get_instances(obj_attr_list, "vv", identifier)
+
+            if _instance :
                 _msg = "Sending a destruction request for the Volume" 
                 _msg += " previously attached to \"" 
                 _msg += obj_attr_list["name"] + "\""
-                _msg += " (cloud-assigned uuid " 
-                _msg += obj_attr_list["cloud_vv_uuid"] + ")...."
+                _msg += " (cloud-assigned uuid " + identifier + ")...."
                 cbdebug(_msg, True)
 
                 _volume_detached = False
+
                 while not _volume_detached and _curr_tries < _max_tries :
 
-                    _instance = self.ec2conn.get_all_volumes(volume_ids = [obj_attr_list["cloud_vv_uuid"]])
-    
-                    _volume=_instance[0]
+                    _status = _instance.status
 
-                    _status = _volume.status
                     if _status == 'available' :
+                        _instance.delete()                 
                         _volume_detached = True
 
                     else :
                         _msg = " Volume previously attached to \"" 
                         _msg += obj_attr_list["name"] + "\""
                         _msg += " (cloud-assigned uuid " 
-                        _msg += obj_attr_list["cloud_vv_uuid"] + ") status "
+                        _msg += identifier + ") status "
                         _msg += "is still \"" + _status + "\". "
                         _msg += "Will wait " + str(_wait)
                         _msg += " seconds and try again."
@@ -704,13 +785,13 @@ class Ec2Cmds(CommonCloudFunctions) :
 
             if _curr_tries > _max_tries  :
                 _status = 1077
-                _fmsg = obj_attr_list["name"] + "\""
+                _fmsg = " Volume previously attached to \"" 
+                _fmsg += obj_attr_list["name"] + "\""
                 _fmsg += " (cloud-assigned uuid " 
-                _fmsg += obj_attr_list["cloud_vv_uuid"] + ") "
+                _fmsg += identifier + ") "
                 _fmsg +=  "could not be destroyed after " + str(_max_tries * _wait) + " seconds.... "
                 cberr(_msg)
             else :
-                _volume.delete()
                 _status = 0
                     
         except CldOpsException, obj :
@@ -784,15 +865,17 @@ class Ec2Cmds(CommonCloudFunctions) :
             _msg = "Starting an instance on EC2, using the imageid \""
             _msg += obj_attr_list["imageid1"] + "\" and size \""
             _msg += obj_attr_list["size"] + "\" on VMC \""
-            _msg += obj_attr_list["vmc_name"] + "\""
+            _msg += obj_attr_list["vmc_name"] + "\" (with security groups \""
+            _msg += str(_security_groups) + "\")."
             cbdebug(_msg, True)
+
             _reservation = self.ec2conn.run_instances(image_id = obj_attr_list["imageid1"], \
                                                       instance_type = obj_attr_list["size"], \
                                                       key_name = obj_attr_list["key_name"], \
                                                       security_groups = _security_groups)
-    
+
             if _reservation :
-           
+
                 sleep(int(obj_attr_list["update_frequency"]))
                 
                 _instance = _reservation.instances[0]
@@ -838,20 +921,25 @@ class Ec2Cmds(CommonCloudFunctions) :
             _status = 23
     
         finally :
+            
             if "instance_obj" in obj_attr_list :
                 del obj_attr_list["instance_obj"]
                 
             if _status :
+
                 _msg = "VM " + obj_attr_list["uuid"] + " could not be created "
                 _msg += "on Elastic Compute Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg + " (The VM creation will be rolled back)"
                 cberr(_msg)
+
                 if "cloud_vm_uuid" in obj_attr_list :
-                    obj_attr_list["mgt_deprovisioning_request_originated"] = int(time())
-                    self.vmdestroy(obj_attr_list)
+                    if obj_attr_list["cloud_vm_uuid"] != "NA" :
+                        obj_attr_list["mgt_deprovisioning_request_originated"] = int(time())
+                        self.vmdestroy(obj_attr_list)
                 else :
                     if _instance :
                         _instance.terminate()
+
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "VM " + obj_attr_list["uuid"] + " was successfully "
@@ -882,7 +970,7 @@ class Ec2Cmds(CommonCloudFunctions) :
             
             _wait = int(obj_attr_list["update_frequency"])
 
-            _instance = self.get_vm_instance(obj_attr_list)
+            _instance = self.get_instances(obj_attr_list, "vm", "vmuuid")
             
             if _instance :
                 _msg = "Sending a termination request for "  + obj_attr_list["name"] + ""
@@ -899,31 +987,13 @@ class Ec2Cmds(CommonCloudFunctions) :
             else :
                 True
 
-            _status, _fmsg = self.vvdestroy(obj_attr_list)
-
+            _status, _fmsg = self.vvdestroy(obj_attr_list, "vvuid")
+                        
             _time_mark_drc = int(time())
             obj_attr_list["mgt_903_deprovisioning_request_completed"] = \
-                _time_mark_drc - _time_mark_drs
-            
-            # This needs to be changed later. I could not find an easy way to
-            # find the actual volume id of a given instance
+                _time_mark_drc - _time_mark_drs            
              
-            _volumes = self.ec2conn.get_all_volumes()
-
-            if len(_volumes) :
-                for unattachedvol in _volumes :
-                    if unattachedvol.status == 'available' :
-                        _msg = unattachedvol.id + ' ' + unattachedvol.status
-                        _msg += "... was deleted"
-                        cbdebug(_msg)
-                        unattachedvol.delete()
-                    else:
-                        _msg = unattachedvol.id + ' ' + unattachedvol.status
-                        _msg += "... still attached and could not be deleted"
-                        cbdebug(_msg)
-            else :
-                _msg = "No volumes to remove"
-                cbdebug(_msg)
+            _status, _fmsg = self.vvdestroy(obj_attr_list, "vmuid")
             
             _status = 0
 
@@ -970,7 +1040,7 @@ class Ec2Cmds(CommonCloudFunctions) :
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
                              obj_attr_list["vmc_name"])
 
-            _instance = self.get_vm_instance(obj_attr_list)
+            _instance = self.get_instances(obj_attr_list, "vm", "vmuuid")
 
             if _instance :
                 
@@ -1076,7 +1146,7 @@ class Ec2Cmds(CommonCloudFunctions) :
             _msg += "...."
             cbdebug(_msg, True)
 
-            _instance = self.get_vm_instance(obj_attr_list)
+            _instance = self.get_instances(obj_attr_list, "vm", "vmuuid")
 
             if _instance :
                 if _ts == "fail" :

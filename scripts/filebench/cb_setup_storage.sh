@@ -20,13 +20,10 @@ source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_filebench_common.sh
 
 START=`provision_application_start`
 
-syslog_netcat "Setting up filebench storage on /$STORAGE_PATH"
-
 sudo bash -c "echo \"0\" > /proc/sys/kernel/randomize_va_space"
 
-sudo mkdir -p /$STORAGE_PATH
+mount_filesystem_on_volume $FILEBENCH_DATA_DIR $FILEBENCH_DATA_FSTYP
 
-sudo chown ${my_login_username}:${my_login_username} /$STORAGE_PATH
 syslog_netcat "Storage setup for filebench - OK"
 provision_application_stop $START
 exit 0

@@ -267,7 +267,7 @@ class APIClient(Server):
             print "API not available: " + str(obj)
             return False
 
-    def get_performance_data(self, cloud_name, uuid, metric_class = "runtime", object_type = "VM", metric_type = "os", latest = False):
+    def get_performance_data(self, cloud_name, uuid, metric_class = "runtime", object_type = "VM", metric_type = "os", latest = False, samples = "auto") :
         '''
         TBD
         '''
@@ -279,11 +279,23 @@ class APIClient(Server):
             _object_type = metric_class + '_' + object_type
 
         if latest :
-            _collection_name = "latest_" + _object_type + "_" + self.username
+            _allmatches = False            
+            _collection_name = "latest_" + _object_type + "_" + self.username            
+            samples = 1
         else :
+            _allmatches = True            
             _collection_name = _object_type + "_" + self.username
-            
-        metrics = self.msci.find_document(_collection_name, {"uuid" : uuid})
+            if samples == "auto" :
+                samples = 0
+            else :
+                samples = int(samples)
+
+        _limitdocuments = samples
+
+        metrics = self.msci.find_document(_collection_name, \
+                                          {"uuid" : uuid}, \
+                                          limitdocuments = _limitdocuments, \
+                                          allmatches = _allmatches)
 
         if metrics is None :
             _msg = "No " + metric_class + ' ' + _object_type + '(' + metric_type + ") data available."

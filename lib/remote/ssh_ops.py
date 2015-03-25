@@ -26,12 +26,14 @@
 
 from time import sleep
 from subprocess import PIPE,Popen
+import base64
 import hashlib
 from os.path import isdir
 import re
 
 from ..auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from ..auxiliary.data_ops import wait_on_process
+from ..remote.process_management import ProcessManagement
 
 class SSHMgdConn :
     '''
@@ -248,3 +250,58 @@ def repeated_ssh(processid, types, tags, ips, logins, passwds, keys, commands, \
             return False
         
     return True
+
+
+def get_ssh_key(pub_key_fn, fptype = "common") :
+    '''
+    TBD
+    '''
+
+    _fh = open(pub_key_fn, 'r')
+    _pub_key = _fh.read()
+    _fh.close()
+
+    if len(_pub_key.split()) == 2 :
+        _type, _key_contents = _pub_key.split() 
+        
+    if len(_pub_key.split()) == 3 :
+        _type, _key_contents, _extra = _pub_key.split()
+
+    if fptype == "common" :
+        _key_fingerprint = key2fp(_key_contents)
+    else :
+        _key_fingerprint = key2ec2fp(pub_key_fn)
+                
+    return _type, _key_contents, _key_fingerprint
+
+def key2fp(pubkey_contents):
+    '''
+    TBD
+    '''
+    key = base64.b64decode(pubkey_contents.encode('ascii'))
+    fp_plain = hashlib.md5(key).hexdigest()
+    return ':'.join(a+b for a,b in zip(fp_plain[::2], fp_plain[1::2]))
+
+def key2ec2fp(pub_key_fn) :
+    '''
+    TBD
+    '''
+    pub_key_fn = pub_key_fn.replace(".pub",'')
+    _proc_man = ProcessManagement()
+    _cmdline = "openssl pkey -in " + pub_key_fn + " -pubout -outform DER | openssl md5 -c"
+    _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_cmdline)
+    return _result_stdout.strip().replace("(stdin)= ",'')
+    
+def get_public_rsa_fingerprint(pubkey_contents):
+    """
+    Returns the fingerprint of the public portion of an RSA key as a
+    47-character string (32 characters separated every 2 characters by a ':').
+    The fingerprint is computed using the MD5 (hex) digest of the DER-encoded
+    RSA public key.
+    """
+    md5digest = hashlib.md5(pubkey_contents).hexdigest()
+    fingerprint = insert_char_every_n_chars(md5digest, ':', 2)
+    return fingerprint 
+
+def insert_char_every_n_chars(string, char='\n', every=64):
+    return char.join(string[i:i + every] for i in xrange(0, len(string), every)) 

@@ -92,8 +92,6 @@ OUTPUT_FILE=$bench_app_dir/hpccoutf.txt
 
 execute_load_generator "${CMDLINE}" ${OUTPUT_FILE} ${LOAD_DURATION}
 
-COMPLETION_TIME=$?
-
 syslog_netcat "HPCC benchmark run complete. Will collect and report the results"
 
 tp1=`cat ${OUTPUT_FILE} | grep -a HPL_Tflops | cut -d "=" -f 2`
@@ -110,7 +108,10 @@ lat=`echo "scale=8;  ${lat} / 1000" | bc`
 load_level:${LOAD_LEVEL}:load \
 load_profile:${LOAD_PROFILE}:name \
 load_duration:${LOAD_DURATION}:sec \
-completion_time:${COMPLETION_TIME}:sec \
+errors:$(update_app_errors):num \
+completion_time:$(update_app_completiontime):sec \
+datagen_time:$(update_app_datagentime):sec \
+datagen_size:$(update_app_datagensize):records \
 throughput_G_HPL:$tp1:Tflops \
 throughput_G_PTRANS:$tp2:GBps \
 throughput_G_RandomAccess:$tp3:Gupps \

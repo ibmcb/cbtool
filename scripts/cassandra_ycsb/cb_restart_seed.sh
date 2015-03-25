@@ -24,25 +24,15 @@ START=`provision_application_start`
 
 SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
 
-VOLUME=$(get_attached_volumes)
-if [[ $VOLUME != "NONE" ]]
-then
-	if [[ $(sudo mount | grep $VOLUME | grep -c $CASSANDRA_DATA_DIR) -eq 0 ]]
-	then
-		sudo service cassandra stop
-		
-		sudo mkdir -p ${CASSANDRA_DATA_DIR}
-				
-	    if [[ $(check_filesystem $VOLUME) == "none" ]]
-	    then
-	        syslog_netcat "Creating $CASSANDRA_DATA_FSTYP filesystem on volume $VOLUME"
-	        sudo mkfs.$CASSANDRA_DATA_FSTYP $VOLUME
-	    fi
-	    
-	    syslog_netcat "Making $FSTYP filesystem on volume $VOLUME accessible through the mountpoint ${CASSANDRA_DATA_DIR}"
-	    sudo mount $VOLUME ${CASSANDRA_DATA_DIR}
-	fi
-fi
+mount_filesystem_on_volume ${CASSANDRA_DATA_DIR} $CASSANDRA_DATA_FSTYP cassandra
+
+#
+# Cassandra directory structure
+#
+sudo mkdir -p ${CASSANDRA_DATA_DIR}/store/cassandra/data
+sudo mkdir -p ${CASSANDRA_DATA_DIR}/cassandra/commitlog 
+sudo mkdir -p ${CASSANDRA_DATA_DIR}/cassandra/saved_caches
+sudo chown -R cassandra:cassandra ${CASSANDRA_DATA_DIR}
 
 CASSANDRA_REPLICATION_FACTOR=$(get_my_ai_attribute_with_default replication_factor 4)
 sudo sed -i "s/REPLF/${CASSANDRA_REPLICATION_FACTOR}/g" create_keyspace.cassandra
@@ -61,14 +51,6 @@ TEMP_CASSANDRA_DATA_DIR=$(echo ${CASSANDRA_DATA_DIR} | sed 's/\//_+-_-+/g')
 sudo sed -i "s/\/var\/lib\//${TEMP_CASSANDRA_DATA_DIR}\//g" ${CASSANDRA_CONF_PATH}
 sudo sed -i "s/_+-_-+/\//g" ${CASSANDRA_CONF_PATH}
 sudo sed -i "s/'Test Cluster'/'${my_ai_name}'/g" ${CASSANDRA_CONF_PATH}
-
-#
-# Cassandra directory structure
-#
-sudo mkdir -p ${CASSANDRA_DATA_DIR}/store/cassandra/data
-sudo mkdir -p ${CASSANDRA_DATA_DIR}/cassandra/commitlog 
-sudo mkdir -p ${CASSANDRA_DATA_DIR}/cassandra/saved_caches
-sudo chown -R cassandra:cassandra ${CASSANDRA_DATA_DIR}
 
 pos=1
 for db in $cassandra_ips
@@ -109,13 +91,13 @@ syslog_netcat "my ip : $MY_IP"
 FIRST_SEED=$(echo $seed_ips_csv | cut -d ',' -f 1)
 
 syslog_netcat "Performing a quick check on ${SHORT_HOSTNAME} in order to decide on Cassandra restart" 
-check_cluster_state ${FIRST_SEED} 1 1
+check_cassandra_cluster_state ${FIRST_SEED} 1 1
 
 STATUS=$?
 if [[ $STATUS -ne 0 ]]
 then 
-    syslog_netcat "The exit code of \"check_cluster_state ${FIRST_SEED} 1 1\" was $STATUS. Starting cassandra on ${SHORT_HOSTNAME}" 
-    sudo service cassandra restart 
+    syslog_netcat "The exit code of \"check_cassandra_cluster_state ${FIRST_SEED} 1 1\" was $STATUS. Starting cassandra on ${SHORT_HOSTNAME}" 
+    service_restart_enable cassandra
 
     # Give all the Java services time to start
     wait_until_port_open ${MY_IP} 9160 20 5
@@ -125,7 +107,7 @@ then
     if [[ ${STATUS} -eq 0 ]]
     then
         syslog_netcat "Cassandra seed server running"
-        check_cluster_state ${FIRST_SEED} 10 20
+        check_cassandra_cluster_state ${FIRST_SEED} 10 20
         STATUS=$?
         if [[  $STATUS -eq 0 ]]
         then 

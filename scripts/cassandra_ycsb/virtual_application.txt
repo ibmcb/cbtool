@@ -52,7 +52,7 @@ OPERATION_COUNT = 10000
 INPUT_RECORDS = 10000
 RECORD_SIZE = 2.35
 DATABASE_SIZE_VERSUS_MEMORY = 0.5
-REPLICATION_FACTOR = 4
+REPLICATION_FACTOR = 3
 
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
 #SYNC_COUNTER_NAME = synchronization_counter

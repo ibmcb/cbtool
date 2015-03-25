@@ -24,31 +24,15 @@ START=`provision_application_start`
 
 SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
 
-sudo mkdir -p ${CASSANDRA_DATA_DIR}
+mount_filesystem_on_volume ${CASSANDRA_DATA_DIR} $CASSANDRA_DATA_FSTYP cassandra
+
+#
+# Cassandra directory structure
+#
 sudo mkdir -p ${CASSANDRA_DATA_DIR}/store/cassandra/data
 sudo mkdir -p ${CASSANDRA_DATA_DIR}/cassandra/commitlog 
 sudo mkdir -p ${CASSANDRA_DATA_DIR}/cassandra/saved_caches
 sudo chown -R cassandra:cassandra ${CASSANDRA_DATA_DIR}
-
-VOLUME=$(get_attached_volumes)
-if [[ $VOLUME != "NONE" ]]
-then
-	if [[ $(sudo mount | grep $VOLUME | grep -c $CASSANDRA_DATA_DIR) -eq 0 ]]
-	then
-		sudo service cassandra stop
-		
-		sudo mkdir -p ${CASSANDRA_DATA_DIR}
-				
-	    if [[ $(check_filesystem $VOLUME) == "none" ]]
-	    then
-	        syslog_netcat "Creating $CASSANDRA_DATA_FSTYP filesystem on volume $VOLUME"
-	        sudo mkfs.$CASSANDRA_DATA_FSTYP $VOLUME
-	    fi
-	    
-	    syslog_netcat "Making $FSTYP filesystem on volume $VOLUME accessible through the mountpoint ${CASSANDRA_DATA_DIR}"
-	    sudo mount $VOLUME ${CASSANDRA_DATA_DIR}
-	fi
-fi
 
 pos=1
 tk_pos=0
@@ -119,7 +103,7 @@ if [[ ${STATUS} -eq 0 ]]
 then
     THRIFTAPIUP=1
     syslog_netcat "Thrift client API service running on ${FIRST_SEED}. Will check cluster state"
-    check_cluster_state ${FIRST_SEED} 1 1
+    check_cassandra_cluster_state ${FIRST_SEED} 1 1
     STATUS=$?
 else
     THRIFTAPIUP=0
@@ -129,17 +113,17 @@ fi
 if [[ $STATUS -ne 0 ]]
 then 
     syslog_netcat "Starting cassandra on ${SHORT_HOSTNAME}" 
-    sudo service cassandra restart 
+    service_restart_enable cassandra
 
     if [[ $THRIFTAPIUP -eq 1 ]]
     then
-        check_cluster_state ${FIRST_SEED} 10 20
+        check_cassandra_cluster_state ${FIRST_SEED} 10 20
         STATUS=$?
         if [[  $STATUS -eq 0 ]]
         then 
             syslog_netcat "Cassandra cluster fully formed. All nodes registered"
         else
-            syslog_netcat "Failed to form Cassandra cluster! - NOK"    
+            syslog_netcat "Failed to form Cassandra cluster! - NOK"
         fi
     else
         syslog_netcat "Cassandra service restarted."

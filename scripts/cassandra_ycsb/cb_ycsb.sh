@@ -87,11 +87,13 @@ then
         syslog_netcat "Keyspace \"usertable\" was successfully deleted"
     else
         syslog_netcat "Keyspace \"usertable\" was NOT deleted!!!"
+        update_app_errors 1
     fi
             
     syslog_netcat "Creating keyspace usertable by executing cassandra-cli against seed node ${FIRST_SEED}"
     cassandra-cli -h ${FIRST_SEED} -f create_keyspace.cassandra
-                
+    ERROR=$?
+    update_app_errors $ERROR                
     syslog_netcat "Number of records to be inserted : $RECORDS"
 
     log_output_command=$(get_my_ai_attribute log_output_command)
@@ -109,14 +111,18 @@ then
             syslog_netcat "$line"
             echo $line >> $OUTPUT_FILE
         done
+        ERROR=$?
     else
         syslog_netcat "Command output will NOT be shown"
         $command_line 2>&1 >> $OUTPUT_FILE
+        ERROR=$?    
     fi
     END_GENERATION=$(get_time)
+	update_app_errors $ERROR        
+
     DATA_GENERATION_TIME=$(expr ${END_GENERATION} - ${START_GENERATION})
-    echo ${DATA_GENERATION_TIME} > /tmp/data_generation_time
-    echo ${RECORDS} > /tmp/data_generation_size
+    update_app_datagentime ${DATA_GENERATION_TIME}
+    update_app_datagensize ${RECORDS}
 else
     syslog_netcat "The value of the parameter \"GENERATE_DATA\" is \"false\". Will bypass data generation for the hadoop load profile \"${LOAD_PROFILE}\""     
 fi

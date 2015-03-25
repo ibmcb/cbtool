@@ -40,6 +40,7 @@ from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cb
 from lib.auxiliary.data_ops import str2dic, value_suffix
 from lib.remote.network_functions import hostname2ip
 from lib.remote.process_management import ProcessManagement
+from lib.remote.ssh_ops import get_ssh_key
 from shared_functions import CldOpsException, CommonCloudFunctions 
 
 class OskCmds(CommonCloudFunctions) :
@@ -220,20 +221,24 @@ class OskCmds(CommonCloudFunctions) :
             _pub_key_fn = vm_defaults["credentials_dir"] + '/'
             _pub_key_fn += vm_defaults["ssh_key_name"] + ".pub"
 
-            _fh = open(_pub_key_fn, 'r')
-            _pub_key = _fh.read()
-            _fh.close()
+            _pub_key_fn = vm_defaults["credentials_dir"] + '/'
+            _pub_key_fn += vm_defaults["ssh_key_name"] + ".pub"
+
+            _key_type, _key_contents, _key_fingerprint = get_ssh_key(_pub_key_fn)            
+            _key_pair_found = False
 
             for _key_pair in self.oskconncompute.keypairs.list() :
+
                 if _key_pair.name == key_name :
-                    _msg = "A key named \"" + key_name + "\" was found in "
+                    _msg = "A key named \"" + key_name + "\" was found "
                     _msg += "on VMC " + vmc_name + ". Checking if the key"
                     _msg += " contents are correct."
                     cbdebug(_msg)
-                    _key1 = _pub_key.split()
-                    _key2 = _key_pair.public_key.split()
-                    if len(_key1) > 1 and len(_key2) > 1 :
-                        if _key1 == _key2 :
+                    
+                    _key2 = _key_pair.public_key.split()[1]
+                    
+                    if len(_key_contents) > 1 and len(_key2) > 1 :
+                        if _key_contents == _key2 :
                             _msg = "The contents of the key \"" + key_name
                             _msg += "\" on the VMC " + vmc_name + " and the"
                             _msg += " one present on directory \"" 
@@ -260,9 +265,9 @@ class OskCmds(CommonCloudFunctions) :
                 _msg += " on VMC " + vmc_name + ", using the public key \""
                 _msg += _pub_key_fn + "\"..."
                 cbdebug(_msg, True)
-                                    
+
                 self.oskconncompute.keypairs.create(key_name, \
-                                                    public_key = _pub_key)
+                                                    public_key = _key_type + ' ' + _key_contents)
                 _key_pair_found = True
 
             return _key_pair_found

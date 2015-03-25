@@ -768,7 +768,7 @@ class CBCLI(Cmd) :
 
             if len(_gui_pid) :
                 if _gui_pid[0].count("pnf") :
-                    _x, _pid, _username = _api_pid[0].split('-') 
+                    _x, _pid, _username = _gui_pid[0].split('-') 
                     _msg = "Unable to start GUI service. Port "
                     _msg += self.cld_attr_lst["gui_defaults"]["port"] + " is "
                     _msg += "already taken by process" + _pid + " (username "

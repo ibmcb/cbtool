@@ -32,6 +32,10 @@ DESCRIPTION += stress the disk I/O capacity of a single VM.
 FILEBENCH_SETUP1 = cb_setup_storage.sh
 START = cb_filebench.sh
 
+# VApp-specific OPTIONAL modifier parameters. Commented attributes imply default values assumed
+FILEBENCH_DATA_DIR = /fstore
+FILEBENCH_DATA_FSTYP = ext4
+
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
 #SYNC_COUNTER_NAME = synchronization_counter
 #CONCURRENT_AIS = 2
