@@ -224,7 +224,13 @@ class OskCmds(CommonCloudFunctions) :
             _pub_key_fn = vm_defaults["credentials_dir"] + '/'
             _pub_key_fn += vm_defaults["ssh_key_name"] + ".pub"
 
-            _key_type, _key_contents, _key_fingerprint = get_ssh_key(_pub_key_fn)            
+            _key_type, _key_contents, _key_fingerprint = get_ssh_key(_pub_key_fn)
+            
+            if not _key_contents :
+                _fmsg = _key_type 
+                cberr(_fmsg, True)
+                return False
+            
             _key_pair_found = False
 
             for _key_pair in self.oskconncompute.keypairs.list() :
@@ -542,8 +548,8 @@ class OskCmds(CommonCloudFunctions) :
             _fmsg = "An error has occurred, but no error message was captured"
 
             self.connect(access, credentials, vmc_name)
-
-            _key_pair_found = self.check_ssh_key(vmc_name, key_name, vm_defaults)
+            
+            _key_pair_found = self.check_ssh_key(vmc_name, vm_defaults["username"] + '_' + key_name, vm_defaults)
 
             _security_group_found = self.check_security_group(vmc_name, security_group_name)
 
@@ -1848,7 +1854,7 @@ class OskCmds(CommonCloudFunctions) :
             if str(obj_attr_list["key_name"]).lower() == "false" :
                 _key_name = None
             else :
-                _key_name = obj_attr_list["key_name"]
+                _key_name = obj_attr_list["username"] + '_' + obj_attr_list["key_name"]
 
             obj_attr_list["last_known_state"] = "about to send create request"
 

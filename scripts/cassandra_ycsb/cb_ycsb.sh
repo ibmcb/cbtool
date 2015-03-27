@@ -43,6 +43,8 @@ fi
 OPERATION_COUNT=`get_my_ai_attribute_with_default operation_count 10000`
 READ_RATIO=`get_my_ai_attribute_with_default read_ratio workloaddefault`
 UPDATE_RATIO=`get_my_ai_attribute_with_default update_ratio workloaddefault`
+SCAN_RATIO=`get_my_ai_attribute_with_default scan_ratio workloaddefault`
+INSERT_RATIO=`get_my_ai_attribute_with_default insert_ratio workloaddefault`
 INPUT_RECORDS=`get_my_ai_attribute_with_default input_records 10000`
 RECORD_SIZE=`get_my_ai_attribute_with_default record_size 2.35`
 APP_COLLECTION=`get_my_ai_attribute_with_default app_collection lazy`
@@ -50,12 +52,26 @@ DATABASE_SIZE_VERSUS_MEMORY=`get_my_ai_attribute_with_default database_size_vers
 
 if [[ ${READ_RATIO} != "workloaddefault" ]]
 then
-    sudo sed -i "s/^readproportion=.*$/readproportion=0\.$READ_RATIO/g" $YCSB_PATH/workloads/${LOAD_PROFILE}
+    RATIO_STRING=$(printf "%02d" $READ_RATIO)
+    sudo sed -i "s/^readproportion=.*$/readproportion=0\.$RATIO_STRING/g" $YCSB_PATH/workloads/${LOAD_PROFILE}
 fi
 
 if [[ ${UPDATE_RATIO} != "workloaddefault" ]]
 then
-    sudo sed -i "s/^updateproportion=.*$/updateproportion=0\.$UPDATE_RATIO/g" $YCSB_PATH/workloads/${LOAD_PROFILE}
+    RATIO_STRING=$(printf "%02d" $UPDATE_RATIO)
+    sudo sed -i "s/^updateproportion=.*$/updateproportion=0\.$RATIO_STRING/g" $YCSB_PATH/workloads/${LOAD_PROFILE}
+fi
+
+if [[ ${SCAN_RATIO} != "workloaddefault" ]]
+then
+    RATIO_STRING=$(printf "%02d" $SCAN_RATIO)
+    sudo sed -i "s/^scanproportion=.*$/scanproportion=0\.$RATIO_STRING/g" $YCSB_PATH/workloads/${LOAD_PROFILE}
+fi
+
+if [[ ${INSERT_RATIO} != "workloaddefault" ]]
+then
+    RATIO_STRING=$(printf "%02d" $INSERT_RATIO)
+    sudo sed -i "s/^insertproportion=.*$/insertproportion=0\.$RATIO_STRING/g" $YCSB_PATH/workloads/${LOAD_PROFILE}
 fi
 
 # Determine memory size

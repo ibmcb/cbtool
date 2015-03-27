@@ -264,9 +264,13 @@ def get_ssh_key(pub_key_fn, fptype = "common") :
     if len(_pub_key.split()) == 2 :
         _type, _key_contents = _pub_key.split() 
         
-    if len(_pub_key.split()) == 3 :
+    elif len(_pub_key.split()) == 3 :
         _type, _key_contents, _extra = _pub_key.split()
-
+    else :
+        _fmsg = "ERROR: unknown format for pubkey file. The pubkey has to be in"
+        _fmsg += " the format \"<KEY-TYPE> <KEY-CONTENTS> [<KEY-USERNAME>]"
+        return _fmsg, False, False
+    
     if fptype == "common" :
         _key_fingerprint = key2fp(_key_contents)
     else :

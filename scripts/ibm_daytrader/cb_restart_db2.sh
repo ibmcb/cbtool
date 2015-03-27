@@ -17,12 +17,7 @@
 #/*******************************************************************************
 
 source ~/.bashrc
-dir=$(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")
-if [ -e $dir/cb_common.sh ] ; then
-	source $dir/cb_common.sh
-else
-	source $dir/../common/cb_common.sh
-fi
+source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
 DB2_INSTANCE_NAME=`get_my_ai_attribute_with_default db2_instance_name klabuser`
 INSTANCE_PATH=/home/${DB2_INSTANCE_NAME}

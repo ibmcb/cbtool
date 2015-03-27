@@ -122,7 +122,13 @@ class Ec2Cmds(CommonCloudFunctions) :
             _pub_key_fn = vm_defaults["credentials_dir"] + '/'
             _pub_key_fn += vm_defaults["ssh_key_name"] + ".pub"
 
-            _key_type, _key_contents, _key_fingerprint = get_ssh_key(_pub_key_fn, "ec2")            
+            _key_type, _key_contents, _key_fingerprint = get_ssh_key(_pub_key_fn, "ec2")
+
+            if not _key_contents :
+                _fmsg = _key_type 
+                cberr(_fmsg, True)
+                return False
+            
             _key_pair_found = False
 
             for _key_pair in self.ec2conn.get_all_key_pairs() :

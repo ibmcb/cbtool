@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-dir=$(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")
+dir="$(dirname "$(readlink -f "$0")")"
 
 if [[ -z $1 ]]
 then
