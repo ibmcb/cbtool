@@ -587,6 +587,7 @@ function build_ai_mapping {
         vmuuid=`echo $vm | cut -d "|" -f 1`
         vmip=`get_vm_attribute ${vmuuid} cloud_ip`
         vmhn=`get_vm_attribute ${vmuuid} cloud_hostname`
+        vmhn=`echo $vmhn | tr '[:upper:]' '[:lower:]'`
         vmrole=`get_vm_attribute ${vmuuid} role`
         vmclouduuid=`get_vm_attribute ${vmuuid} cloud_uuid`
         echo "${vmip}    ${vmhn}    #${vmrole}    ${vmclouduuid}    ,${vmuuid}" >> ${ai_mapping_file}
@@ -1115,7 +1116,8 @@ function setup_passwordless_ssh {
     SSH_KEY_NAME=$(echo ${SSH_KEY_NAME} | rev | cut -d '/' -f 1 | rev)
 
     syslog_netcat "VMs need to be able to perform passwordless SSH between each other. Updating ~/.ssh/id_rsa to be the same on all VMs.."
-    sudo chmod 600 ~/${REMOTE_DIR_NAME}/credentials/$SSH_KEY_NAME
+    #sudo chmod 0600 ~/${REMOTE_DIR_NAME}/credentials/$SSH_KEY_NAME
+	sudo find ~ -name $SSH_KEY_NAME -exec chmod 0600 {} \;
     sudo cat ~/${REMOTE_DIR_NAME}/credentials/$SSH_KEY_NAME > ~/.ssh/id_rsa
     sudo chmod 0600 ~/.ssh/id_rsa
     sudo cat ~/${REMOTE_DIR_NAME}/credentials/$SSH_KEY_NAME.pub > ~/.ssh/id_rsa.pub

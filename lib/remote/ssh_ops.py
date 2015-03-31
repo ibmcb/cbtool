@@ -261,12 +261,17 @@ def get_ssh_key(pub_key_fn, fptype = "common") :
     _pub_key = _fh.read()
     _fh.close()
 
-    if len(_pub_key.split()) == 2 :
-        _type, _key_contents = _pub_key.split() 
+    _key_type = False
+    _key_contents = False
+
+    for _element in _pub_key.split() :
+        if not _key_type :
+            _key_type = _element
+        else :
+            if not _key_contents :
+                _key_contents = _element
         
-    elif len(_pub_key.split()) == 3 :
-        _type, _key_contents, _extra = _pub_key.split()
-    else :
+    if not _key_contents :
         _fmsg = "ERROR: unknown format for pubkey file. The pubkey has to be in"
         _fmsg += " the format \"<KEY-TYPE> <KEY-CONTENTS> [<KEY-USERNAME>]"
         return _fmsg, False, False
@@ -276,7 +281,7 @@ def get_ssh_key(pub_key_fn, fptype = "common") :
     else :
         _key_fingerprint = key2ec2fp(pub_key_fn)
                 
-    return _type, _key_contents, _key_fingerprint
+    return _key_type, _key_contents, _key_fingerprint
 
 def key2fp(pubkey_contents):
     '''

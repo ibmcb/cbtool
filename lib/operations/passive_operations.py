@@ -656,7 +656,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             if _status :
                 _msg = _fmsg + _xfmsg
                 cberr(_fmsg)
-            else :
+            else :                
                 if obj_attr_list["specified_kv_pairs"].count("experiment_id") :
                     _msg = "The attribute \" experiment_id \" was changed."
                     _msg += " Checking if a Host OS performance data collection"
@@ -2841,6 +2841,11 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 _view_dict = False
 
             else :
+                _msg = "The attribute \" experiment_id \" was changed."
+                _msg += " Checking if a Host OS performance data collection"
+                _msg += " daemon restart is needed."
+                cbdebug(_msg)
+                self.update_host_os_perfmon(obj_attr_list)                
                 cbdebug(_msg)
 
             return self.package(_status, _msg, _result)

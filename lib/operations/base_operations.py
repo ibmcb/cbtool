@@ -2165,6 +2165,7 @@ class BaseObjectOperations :
 
                 if not access(_obj_attr_list["identity"], F_OK) :
                     _obj_attr_list["identity"] = _obj_attr_list["identity"].replace(_obj_attr_list["username"], _obj_attr_list["login"])
+                    _obj_attr_list["identity"] = _obj_attr_list["identity"].replace('/' + _obj_attr_list["local_dir_name"] + '/', '/' + _obj_attr_list["remote_dir_name"] + '/')                    
                 _vm_priv_keys.append(_obj_attr_list["identity"])
 
                 _vm_post_boot_commands.append("~/" + _obj_attr_list["remote_dir_name"] + "/scripts/common/cb_post_boot.sh")
