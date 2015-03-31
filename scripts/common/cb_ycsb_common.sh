@@ -158,7 +158,7 @@ function lazy_collection {
     CMDLINE=$1
     OUTPUT_FILE=$2.run
     SLA_RUNTIME_TARGETS=$3
-        
+    
     ops=0
     latency=0
 
@@ -205,6 +205,9 @@ function lazy_collection {
     ERROR=$?
     update_app_errors $ERROR
 
+	insert_operations=$(cat $OUTPUT_FILE | grep Operations | grep INSERT | cut -d ',' -f 3 | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
+	read_operations=$(cat $OUTPUT_FILE | grep Operations | grep READ | cut -d ',' -f 3 | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
+
     ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
     load_level:${LOAD_LEVEL}:load \
     load_profile:${LOAD_PROFILE}:name \
@@ -215,6 +218,8 @@ function lazy_collection {
     latency:$(expr $latency):us \
     datagen_time:$(update_app_datagentime):sec \
     datagen_size:$(update_app_datagensize):records \
+    read_operations:$read_operations:num \
+    insert_operations:$insert_operations:num \
     ${SLA_RUNTIME_TARGETS}
 }
     
@@ -258,7 +263,7 @@ function eager_collection {
     CMDLINE=$1
     OUTPUT_FILE=$2.run
     SLA_RUNTIME_TARGETS=$3
-    
+	    
     #----------------------- Track all YCSB results  -------------------------------
 
     #----------------------- Total op/sec ------------------------------------------
@@ -394,6 +399,7 @@ function eager_collection {
         done
     done < <($CMDLINE 2>&1)
 
+	# Check for a non-zero exit code of YCSB. If non-zero, consider it as an error.
     ERROR=$?
     update_app_errors $ERROR
     
@@ -402,6 +408,7 @@ function eager_collection {
 
     FIRST_SEED=$(echo $seed_ips_csv | cut -d ',' -f 1)
 
+	# Check for a fully formed cluster *after* YCSB ran. If not, consider it as an error.
     check_cassandra_cluster_state ${FIRST_SEED} 1 1
     ERROR=$?
     update_app_errors $ERROR
@@ -426,6 +433,9 @@ function eager_collection {
         fi
     done
 
+	insert_operations=$(cat $OUTPUT_FILE | grep Operations | grep INSERT | cut -d ',' -f 3 | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
+	read_operations=$(cat $OUTPUT_FILE | grep Operations | grep READ | cut -d ',' -f 3 | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
+	
     # Preserve old behavior:  Send data back to Cloudbench orchestrator even
     # if no latency data was collected.
     ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
@@ -437,19 +447,21 @@ function eager_collection {
     errors:$(update_app_errors):num \
     datagen_time:$(update_app_datagentime):sec \
     datagen_size:$(update_app_datagensize):records \
+    read_operations:$read_operations:num \
+    insert_operations:$insert_operations:num \
     $latency_result_text \
     ${SLA_RUNTIME_TARGETS}
 
-    echo ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
-    load_level:${LOAD_LEVEL}:load \
-    load_profile:${LOAD_PROFILE}:name \
-    load_duration:${LOAD_DURATION}:sec \
-    completion_time:$(update_app_completiontime):sec \
-    throughput:$(expr $ops):tps \
-    errors:$(update_app_errors):num \
-    datagen_time:$(update_app_datagentime):sec \
-    datagen_size:$(update_app_datagensize):records \
-    $latency_result_text \
-    ${SLA_RUNTIME_TARGETS} >> $OUTPUT_FILE
+    #echo ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
+    #load_level:${LOAD_LEVEL}:load \
+    #load_profile:${LOAD_PROFILE}:name \
+    #load_duration:${LOAD_DURATION}:sec \
+    #completion_time:$(update_app_completiontime):sec \
+    #throughput:$(expr $ops):tps \
+    #errors:$(update_app_errors):num \
+    #datagen_time:$(update_app_datagentime):sec \
+    #datagen_size:$(update_app_datagensize):records \
+    #$latency_result_text \
+    #${SLA_RUNTIME_TARGETS} >> $OUTPUT_FILE
 }
 

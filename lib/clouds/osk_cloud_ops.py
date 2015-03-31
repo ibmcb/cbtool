@@ -33,7 +33,11 @@ import socket
 import copy
 import iso8601
 
-from novaclient.v1_1 import client
+try :
+    from novaclient.v2 import client
+except :
+    from novaclient.v1_1 import client
+
 from novaclient import exceptions as novaexceptions
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
