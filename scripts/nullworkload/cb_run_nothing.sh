@@ -38,8 +38,6 @@ OUTPUT_FILE=$(mktemp)
 
 execute_load_generator "${CMDLINE}" ${OUTPUT_FILE} ${LOAD_DURATION}
 
-COMPLETION_TIME=$?
-
 syslog_netcat "nullworkload run complete. Will collect and report the results"
 
 bw=`echo "$LOAD_ID*3.14 + 3.14" | bc`
@@ -50,7 +48,10 @@ lat=`echo "$LOAD_ID*0.577 + 0.577" | bc`
 load_profile:${LOAD_PROFILE}:name \
 load_level:${LOAD_LEVEL}:load \
 load_duration:${LOAD_DURATION}:sec \
-completion_time:${COMPLETION_TIME}:sec \
+errors:$(update_app_errors):num \
+completion_time:$(update_app_completiontime):sec \
+datagen_time:$(update_app_datagentime):sec \
+datagen_size:$(update_app_datagensize):records \
 bandwidth:${bw}:mbps \
 throughput:${tp}:tps \
 latency:${lat}:msec \

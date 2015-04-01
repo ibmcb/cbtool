@@ -33,13 +33,18 @@ import socket
 import copy
 import iso8601
 
-from novaclient.v1_1 import client
+try :
+    from novaclient.v2 import client
+except :
+    from novaclient.v1_1 import client
+
 from novaclient import exceptions as novaexceptions
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import str2dic, value_suffix
 from lib.remote.network_functions import hostname2ip
 from lib.remote.process_management import ProcessManagement
+from lib.remote.ssh_ops import get_ssh_key
 from shared_functions import CldOpsException, CommonCloudFunctions 
 
 class OskCmds(CommonCloudFunctions) :
@@ -220,20 +225,30 @@ class OskCmds(CommonCloudFunctions) :
             _pub_key_fn = vm_defaults["credentials_dir"] + '/'
             _pub_key_fn += vm_defaults["ssh_key_name"] + ".pub"
 
-            _fh = open(_pub_key_fn, 'r')
-            _pub_key = _fh.read()
-            _fh.close()
+            _pub_key_fn = vm_defaults["credentials_dir"] + '/'
+            _pub_key_fn += vm_defaults["ssh_key_name"] + ".pub"
+
+            _key_type, _key_contents, _key_fingerprint = get_ssh_key(_pub_key_fn)
+            
+            if not _key_contents :
+                _fmsg = _key_type 
+                cberr(_fmsg, True)
+                return False
+            
+            _key_pair_found = False
 
             for _key_pair in self.oskconncompute.keypairs.list() :
+
                 if _key_pair.name == key_name :
-                    _msg = "A key named \"" + key_name + "\" was found in "
+                    _msg = "A key named \"" + key_name + "\" was found "
                     _msg += "on VMC " + vmc_name + ". Checking if the key"
                     _msg += " contents are correct."
                     cbdebug(_msg)
-                    _key1 = _pub_key.split()
-                    _key2 = _key_pair.public_key.split()
-                    if len(_key1) > 1 and len(_key2) > 1 :
-                        if _key1 == _key2 :
+                    
+                    _key2 = _key_pair.public_key.split()[1]
+                    
+                    if len(_key_contents) > 1 and len(_key2) > 1 :
+                        if _key_contents == _key2 :
                             _msg = "The contents of the key \"" + key_name
                             _msg += "\" on the VMC " + vmc_name + " and the"
                             _msg += " one present on directory \"" 
@@ -260,9 +275,9 @@ class OskCmds(CommonCloudFunctions) :
                 _msg += " on VMC " + vmc_name + ", using the public key \""
                 _msg += _pub_key_fn + "\"..."
                 cbdebug(_msg, True)
-                                    
+
                 self.oskconncompute.keypairs.create(key_name, \
-                                                    public_key = _pub_key)
+                                                    public_key = _key_type + ' ' + _key_contents)
                 _key_pair_found = True
 
             return _key_pair_found
@@ -537,8 +552,8 @@ class OskCmds(CommonCloudFunctions) :
             _fmsg = "An error has occurred, but no error message was captured"
 
             self.connect(access, credentials, vmc_name)
-
-            _key_pair_found = self.check_ssh_key(vmc_name, key_name, vm_defaults)
+            
+            _key_pair_found = self.check_ssh_key(vmc_name, vm_defaults["username"] + '_' + key_name, vm_defaults)
 
             _security_group_found = self.check_security_group(vmc_name, security_group_name)
 
@@ -1843,7 +1858,7 @@ class OskCmds(CommonCloudFunctions) :
             if str(obj_attr_list["key_name"]).lower() == "false" :
                 _key_name = None
             else :
-                _key_name = obj_attr_list["key_name"]
+                _key_name = obj_attr_list["username"] + '_' + obj_attr_list["key_name"]
 
             obj_attr_list["last_known_state"] = "about to send create request"
 

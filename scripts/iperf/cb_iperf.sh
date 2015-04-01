@@ -54,8 +54,6 @@ OUTPUT_FILE=$(mktemp)
 
 execute_load_generator "${CMDLINE}" ${OUTPUT_FILE} ${LOAD_DURATION}
 
-COMPLETION_TIME=$?
-
 syslog_netcat "iperf run complete. Will collect and report the results"
 
 if [[ $(cat ${OUTPUT_FILE} | grep -c "\[SUM\]") -ne 0 ]]
@@ -69,7 +67,10 @@ fi
 load_level:${LOAD_LEVEL}:load \
 load_profile:${LOAD_PROFILE}:name \
 load_duration:${LOAD_DURATION}:sec \
-completion_time:${COMPLETION_TIME}:sec \
+errors:$(update_app_errors):num \
+completion_time:$(update_app_completiontime):sec \
+datagen_time:$(update_app_datagentime):sec \
+datagen_size:$(update_app_datagensize):records \
 bandwidth:$bw:Mbps \
 ${SLA_RUNTIME_TARGETS}
 

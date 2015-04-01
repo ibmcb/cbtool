@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-dir=$(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")
+dir="$(dirname "$(readlink -f "$0")")"
 
 if [[ -z $1 ]]
 then
@@ -39,8 +39,7 @@ fi
 
 if [[ ${#VMSSHCONF} -eq 0 ]]
 then
-    echo "Unable to get private key file path for ${VMID} ($VMSSHCONF)"
-    exit 1
+    SSH_CMD_PART2=""
 else :
     SSH_CMD_PART2="-F $VMSSHCONF"
 fi

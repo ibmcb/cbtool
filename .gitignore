@@ -37,6 +37,7 @@ util/rc3.pl
 util/simple.pm
 debug.remote_host
 configs/dilma_amazon_credentials.txt
+configs/fedora_cloud_definitions.txt
 configs/softlayer
 configs/cloud_ports.sh
 hard_reset.sh

@@ -88,7 +88,6 @@ then
     if [[ -z $cassandra_ips ]]
     then
         syslog_netcat "No VMs with the \"cassandra\" role have been found on this AI"
-        exit 1;
     else
         syslog_netcat "The VMs with the \"cassandra\" role on this AI have the following IPs: ${cassandra_ips_csv}"
     fi
@@ -159,7 +158,7 @@ function lazy_collection {
     CMDLINE=$1
     OUTPUT_FILE=$2.run
     SLA_RUNTIME_TARGETS=$3
-        
+    
     ops=0
     latency=0
 
@@ -193,72 +192,38 @@ function lazy_collection {
     # Check for New Shard
     
     done < <($CMDLINE 2>&1)
-
+    
+    ERROR=$?
+    update_app_errors $ERROR
+    
     LOAD_GENERATOR_END=$(date +%s)
-    COMPLETION_TIME=$(( $LOAD_GENERATOR_END - $LOAD_GENERATOR_START ))       
-
-    if [[ $? -gt 0 ]]
-    then
-        syslog_netcat "problem running ycsb prime client on $(hostname)"
-        exit 1
-    fi
-    
-    # Collect data generation time, taking care of reporting the time
-    # with a minus sign in case data was not generated on this 
-    # run
-    if [[ -f /tmp/old_data_generation_time ]]
-    then
-        datagentime=-$(cat /tmp/old_data_generation_time)
-    fi
-    
-    if [[ -f /tmp/data_generation_time ]]
-    then
-        datagentime=$(cat /tmp/data_generation_time)
-        mv /tmp/data_generation_time /tmp/old_data_generation_time
-    fi
-
-    if [[ -f /tmp/old_data_generation_size ]]
-    then
-        datagensize=-$(cat /tmp/old_data_generation_size)
-    fi
-
-    if [[ -f /tmp/data_generation_size ]]
-    then
-        datagensize=$(cat /tmp/data_generation_size)
-        mv /tmp/data_generation_size /tmp/old_data_generation_size        
-    fi  
-
-    if [[ -f /tmp/cassandra_cluster_errors ]]
-    then
-        echo "0" > /tmp/cassandra_cluster_errors
-    fi
+    update_app_completiontime $(( $LOAD_GENERATOR_END - $LOAD_GENERATOR_START ))       
 
     FIRST_SEED=$(echo $seed_ips_csv | cut -d ',' -f 1)
 
-    cassandra_errors=0
-    check_cluster_state ${FIRST_SEED} 1 1
+    check_cassandra_cluster_state ${FIRST_SEED} 1 1
+    ERROR=$?
+    update_app_errors $ERROR
 
-    if [[ $? -ne 0 ]]
-    then
-        curr_err=$(cat /tmp/cassandra_cluster_errors)
-        cassandra_errors="$(( $curr_err + 1 ))"
-        echo $cassandra_errors > /tmp/cassandra_cluster_errors
-    fi
+	insert_operations=$(cat $OUTPUT_FILE | grep Operations | grep INSERT | cut -d ',' -f 3 | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
+	read_operations=$(cat $OUTPUT_FILE | grep Operations | grep READ | cut -d ',' -f 3 | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
 
     ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
     load_level:${LOAD_LEVEL}:load \
     load_profile:${LOAD_PROFILE}:name \
     load_duration:${LOAD_DURATION}:sec \
-    completion_time:${COMPLETION_TIME}:sec \
-    errors:${cassandra_errors}:num \
+    completion_time:$(update_app_completiontime):sec \
+    errors:$(update_app_errors):num \
     throughput:$(expr $ops):tps \
     latency:$(expr $latency):us \
-    datagen_time:${datagentime}:sec \
-    datagen_size:${datagensize}:records \
+    datagen_time:$(update_app_datagentime):sec \
+    datagen_size:$(update_app_datagensize):records \
+    read_operations:$read_operations:num \
+    insert_operations:$insert_operations:num \
     ${SLA_RUNTIME_TARGETS}
 }
     
-function check_cluster_state {
+function check_cassandra_cluster_state {
 
     syslog_netcat "Waiting for all nodes to become available..."
 
@@ -292,32 +257,43 @@ function check_cluster_state {
         return 0
     fi
 }
-export -f check_cluster_state
+export -f check_cassandra_cluster_state
 
 function eager_collection {
     CMDLINE=$1
     OUTPUT_FILE=$2.run
     SLA_RUNTIME_TARGETS=$3
-    
+	    
     #----------------------- Track all YCSB results  -------------------------------
 
     #----------------------- Total op/sec ------------------------------------------
     ops=0
 
-    #----------------------- Current op/sec for this client ------------------------
-    write_current_ops=0
-    read_current_ops=0
-    update_current_ops=0
+    #----------------------- Operation types ---------------------------------------
+    # Also, assign an array index to each operation to store results.
+    # Using an array reduces the number of variables and makes the code more
+    # maintainable.
+    #-------------------------------------------------------------------------------
+    OPERATIONS=(READ UPDATE INSERT SCAN)
+    READ=0
+    UPDATE=1
+    INSERT=2
+    SCAN=3
 
     #----------------------- Tracking Latency --------------------------------------
-    # <operation>_latency=average,min,max,95,99
+    # <operation>_[average|min|max|95|99]_latency
+    # declare arrays for latency measurementes and measurement units.
     #-------------------------------------------------------------------------------
-    write_latency=0
-    read_latency=0
-    update_latency=0
-
-    #----------------------- Old tracking ------------------------------------------
-    latency=0    
+    declare -a latency_avg
+    declare -a latency_min
+    declare -a latency_max
+    declare -a latency_95
+    declare -a latency_99
+    declare -a latency_avg_units
+    declare -a latency_min_units
+    declare -a latency_max_units
+    declare -a latency_95_units
+    declare -a latency_99_units
 
     LOAD_GENERATOR_START=$(date +%s)      
     while read line
@@ -327,6 +303,8 @@ function eager_collection {
     # Need to track each YCSB Clients current operation count.
     # NEED TO:
     #       Create a variable that reports to CBTool the current operation
+    # This regex is broken.  So are all of the awk commands. They all reference
+    # an incorrect column for the claimed variable.
     #-------------------------------------------------------------------------------
         if [[ "$line" =~ "[0-9]+\s sec:" ]]
         then
@@ -351,6 +329,10 @@ function eager_collection {
             fi
         fi
     
+    #----------------------- Track Latency -----------------------------------------
+    # example text:  [READ], 95thPercentileLatency(ms), 15
+    # where READ can be INSERT, OVERALL, READ, SCAN, UPDATE
+    #-------------------------------------------------------------------------------
         IFS=',' read -a array <<< "$line"
         if [[ ${array[0]} == *OVERALL* ]]
         then
@@ -359,191 +341,127 @@ function eager_collection {
                 ops=${array[2]}
             fi
         fi
-    
-    #----------------------- Track Latency -----------------------------------------
-        if [[ ${array[0]} == *UPDATE* ]]
-        then
-            if [[ ${array[1]} == *AverageLatency* ]]
+   
+        # Look for all Operations in this line read from YCSB output.
+        # Exit operation loop once a match is found. Only one OPERATION can exist on each line.
+        # (That is different than the real-time tracking done in the (broken) section above.
+        #  Those lines will contain multiple measurements on a single line.)
+        for OPERATION in "${OPERATIONS[@]}"
+        do
+            # dereference Operation variable to extract integer array index for 
+            # this operation.
+            # - this works because above we defined a variable with a name
+            #   equal to the operation name.
+            # - eval executes something like 'echo $READ'
+            index=$(eval echo \$$OPERATION)
+
+            if [[ ${array[0]} == *${OPERATION}* ]]
             then
-                update_avg_latency=${array[2]}
+                # Grab units from second item in array.  Units are in parentheses.
+                # Preserve old behavior if not found. (==> set to 'us')
+                # example text:  [READ], 95thPercentileLatency(ms), 15
+                units='us'
+                if [[ ${array[1]} =~ \(([a-zA-Z]+)\) ]];
+                then
+                    units=${BASH_REMATCH[1]}
+                fi
+
+                # 'expr' will remove any leading or trailing spaces from numbers
+                value=$(expr ${array[2]})
+
+                if [[ ${array[1]} == *AverageLatency* ]]
+                then
+                    latency_avg[$index]=$value
+                    latency_avg_units[$index]=$units
+                    break
+                elif [[ ${array[1]} == *MinLatency* ]]
+                then
+                    latency_min[$index]=$value
+                    latency_min_units[$index]=$units
+                    break
+                elif [[ ${array[1]} == *MaxLatency* ]]
+                then
+                    latency_max[$index]=$value
+                    latency_max_units[$index]=$units
+                    break
+                elif [[ ${array[1]} == *95thPercent* ]]
+                then
+                    latency_95[$index]=$value
+                    latency_95_units[$index]=$units
+                    break
+                elif [[ ${array[1]} == *99thPercent* ]]
+                then
+                    latency_99[$index]=$value
+                    latency_99_units[$index]=$units
+                    break
+                fi
             fi
-            
-            if [[ ${array[1]} == *MinLatency* ]]
-            then
-                update_min_latency="${array[2]}"
-            fi
-            
-            if [[ ${array[1]} == *MaxLatency* ]]
-            then
-                update_max_latency="${array[2]}"
-            fi
-            
-            if [[ ${array[1]} == *95thPercent* ]]
-            then
-                update_95_latency="${array[2]}"
-            fi
-            
-            if [[ ${array[1]} == *99thPercent* ]]
-            then
-                update_99_latency="${array[2]}"
-            fi
-        fi
-        
-        if [[ ${array[0]} == *READ* ]]
-        then
-            if [[ ${array[1]} == *AverageLatency* ]]
-            then
-                read_avg_latency=${array[2]}
-            fi
-            
-            if [[ ${array[1]} == *MinLatency* ]]
-            then
-                read_min_latency="${array[2]}"
-            fi
-            
-            if [[ ${array[1]} == *MaxLatency* ]]
-            then
-                read_max_latency="${array[2]}"
-            fi
-            
-            if [[ ${array[1]} == *95thPercent* ]]
-            then
-                read_95_latency="${array[2]}"
-            fi
-            
-            if [[ ${array[1]} == *99thPercent* ]]
-            then
-                read_99_latency="${array[2]}"
-            fi
-        fi
-        
-        if [[ ${array[0]} == *WRITE* ]]
-        then
-            if [[ ${array[1]} == *AverageLatency* ]]
-            then
-                write_avg_latency=${array[2]}
-            fi
-            if [[ ${array[1]} == *MinLatency* ]]
-            then
-                write_min_latency="${array[2]}"
-            fi
-            if [[ ${array[1]} == *MaxLatency* ]]
-            then
-                write_max_latency="${array[2]}"
-            fi
-            
-            if [[ ${array[1]} == *95thPercent* ]]
-            then
-                write_95_latency="${array[2]}"
-            fi
-            if [[ ${array[1]} == *99thPercent* ]]
-            then
-                write_99_latency="${array[2]}"
-            fi
-        fi
+        done
     done < <($CMDLINE 2>&1)
 
+	# Check for a non-zero exit code of YCSB. If non-zero, consider it as an error.
+    ERROR=$?
+    update_app_errors $ERROR
+    
     LOAD_GENERATOR_END=$(date +%s)
-    COMPLETION_TIME=$(( $LOAD_GENERATOR_END - $LOAD_GENERATOR_START ))  
-            
-    if [[ $? -gt 0 ]]
-    then
-        syslog_netcat "problem running ycsb prime client on $(hostname)"
-        exit 1
-    fi
-    
-    # Collect data generation time, taking care of reporting the time
-    # with a minus sign in case data was not generated on this 
-    # run
-    if [[ -f /tmp/old_data_generation_time ]]
-    then
-        datagentime=-$(cat /tmp/old_data_generation_time)
-    fi
-    
-    if [[ -f /tmp/data_generation_time ]]
-    then
-        datagentime=$(cat /tmp/data_generation_time)
-        mv /tmp/data_generation_time /tmp/old_data_generation_time
-    fi
-
-    if [[ -f /tmp/old_data_generation_size ]]
-    then
-        datagensize=-$(cat /tmp/old_data_generation_size)
-    fi
-
-    if [[ -f /tmp/data_generation_size ]]
-    then
-        datagensize=$(cat /tmp/data_generation_size)
-        mv /tmp/data_generation_size /tmp/old_data_generation_size        
-    fi
-
-    if [[ -f /tmp/cassandra_cluster_errors ]]
-    then
-        echo "0" > /tmp/cassandra_cluster_errors
-    fi
+    update_app_completiontime $(( $LOAD_GENERATOR_END - $LOAD_GENERATOR_START ))       
 
     FIRST_SEED=$(echo $seed_ips_csv | cut -d ',' -f 1)
 
-    cassandra_errors=0
-    check_cluster_state ${FIRST_SEED} 1 1
+	# Check for a fully formed cluster *after* YCSB ran. If not, consider it as an error.
+    check_cassandra_cluster_state ${FIRST_SEED} 1 1
+    ERROR=$?
+    update_app_errors $ERROR
 
-    if [[ $? -ne 0 ]]
-    then
-        curr_err=$(cat /tmp/cassandra_cluster_errors)
-        cassandra_errors="$(( $curr_err + 1 ))"
-        echo $cassandra_errors > /tmp/cassandra_cluster_errors
-    fi
+    # Build space separated string with all latency metrics collected from YCSB output.
+    latency_result_text=""
+    for OPERATION in "${OPERATIONS[@]}"
+    do
+        index=$(eval echo \$$OPERATION)
+        oper=$(echo $OPERATION | tr '[:upper:]' '[:lower:]')
+        # this test determines if we stored anything in array entry while reading YCSB output.
+        # see bash 'shell parameter expansion'
+        # ${var+isset} returns 'isset' if $var is set
+        # ${var+isset} returns nothing if $var is not set
+        if [[ ${latency_avg_units[$index]+isset} ]]
+        then
+            latency_result_text="$latency_result_text ${oper}_avg_latency:${latency_avg[$index]}:${latency_avg_units[$index]}"
+            latency_result_text="$latency_result_text ${oper}_min_latency:${latency_min[$index]}:${latency_min_units[$index]}"
+            latency_result_text="$latency_result_text ${oper}_max_latency:${latency_max[$index]}:${latency_max_units[$index]}"
+            latency_result_text="$latency_result_text ${oper}_95_latency:${latency_95[$index]}:${latency_95_units[$index]}"
+            latency_result_text="$latency_result_text ${oper}_99_latency:${latency_99[$index]}:${latency_99_units[$index]}"
+        fi
+    done
 
-    if [[ $write_avg_latency -ne 0 ]]
-    then
-        ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
-        load_level:${LOAD_LEVEL}:load \
-        load_profile:${LOAD_PROFILE}:name \
-        load_duration:${LOAD_DURATION}:sec \
-        completion_time:${COMPLETION_TIME}:sec \
-        throughput:$(expr $ops):tps \
-        errors:${cassandra_errors}:num \
-        write_avg_latency:$(expr $write_avg_latency):us \
-        write_min_latency:$(expr $write_min_latency):us \
-        write_max_latency:$(expr $write_max_latency):us \
-        write_95_latency:$(expr $write_95_latency):us \
-        write_99_latency:$(expr $write_99_latency):us \
-        read_avg_latency:$(expr $read_avg_latency):us \
-        read_min_latency:$(expr $read_min_latency):us \
-        read_max_latency:$(expr $read_max_latency):us \
-        read_95_latency:$(expr $read_95_latency):us \
-        read_99_latency:$(expr $read_99_latency):us \
-        update_avg_latency:$(expr $update_avg_latency):us \
-        update_min_latency:$(expr $update_min_latency):us \
-        update_max_latency:$(expr $update_max_latency):us \
-        update_95_latency:$(expr $update_95_latency):us \
-        update_99_latency:$(expr $update_99_latency):us \
-        datagen_time:${datagentime}:sec \
-        datagen_size:${datagensize}:records \      
-        ${SLA_RUNTIME_TARGETS}
-    fi
+	insert_operations=$(cat $OUTPUT_FILE | grep Operations | grep INSERT | cut -d ',' -f 3 | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
+	read_operations=$(cat $OUTPUT_FILE | grep Operations | grep READ | cut -d ',' -f 3 | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
+	
+    # Preserve old behavior:  Send data back to Cloudbench orchestrator even
+    # if no latency data was collected.
+    ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
+    load_level:${LOAD_LEVEL}:load \
+    load_profile:${LOAD_PROFILE}:name \
+    load_duration:${LOAD_DURATION}:sec \
+    completion_time:$(update_app_completiontime):sec \
+    throughput:$(expr $ops):tps \
+    errors:$(update_app_errors):num \
+    datagen_time:$(update_app_datagentime):sec \
+    datagen_size:$(update_app_datagensize):records \
+    read_operations:$read_operations:num \
+    insert_operations:$insert_operations:num \
+    $latency_result_text \
+    ${SLA_RUNTIME_TARGETS}
 
-    if [[ $write_avg_latency -eq 0 ]]
-    then
-        ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
-        load_level:${LOAD_LEVEL}:load \
-        load_profile:${LOAD_PROFILE}:name \
-        load_duration:${LOAD_DURATION}:sec \
-        completion_time:${COMPLETION_TIME}:sec \
-        throughput:$(expr $ops):tps \
-        errors:${cassandra_errors}:num \
-        read_avg_latency:$(expr $read_avg_latency):us \
-        read_min_latency:$(expr $read_min_latency):us \
-        read_max_latency:$(expr $read_max_latency):us \
-        read_95_latency:$(expr $read_95_latency):us \
-        read_99_latency:$(expr $read_99_latency):us \
-        update_avg_latency:$(expr $update_avg_latency):us \
-        update_min_latency:$(expr $update_min_latency):us \
-        update_max_latency:$(expr $update_max_latency):us \
-        update_95_latency:$(expr $update_95_latency):us \
-        update_99_latency:$(expr $update_99_latency):us \
-        datagen_time:${datagentime}:sec \
-        datagen_size:${datagensize}:records \      
-        ${SLA_RUNTIME_TARGETS}        
-    fi
+    #echo ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
+    #load_level:${LOAD_LEVEL}:load \
+    #load_profile:${LOAD_PROFILE}:name \
+    #load_duration:${LOAD_DURATION}:sec \
+    #completion_time:$(update_app_completiontime):sec \
+    #throughput:$(expr $ops):tps \
+    #errors:$(update_app_errors):num \
+    #datagen_time:$(update_app_datagentime):sec \
+    #datagen_size:$(update_app_datagensize):records \
+    #$latency_result_text \
+    #${SLA_RUNTIME_TARGETS} >> $OUTPUT_FILE
 }
+

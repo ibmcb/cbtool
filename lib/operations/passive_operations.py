@@ -656,7 +656,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             if _status :
                 _msg = _fmsg + _xfmsg
                 cberr(_fmsg)
-            else :
+            else :                
                 if obj_attr_list["specified_kv_pairs"].count("experiment_id") :
                     _msg = "The attribute \" experiment_id \" was changed."
                     _msg += " Checking if a Host OS performance data collection"
@@ -2780,7 +2780,8 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _fmsg = "An error has occurred, but no error message was captured"
 
             _result = None 
-
+            _new_expid = None
+            
             _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
 
             if not _status :
@@ -2800,7 +2801,6 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     
                     if len(_parameters) == 2 :
                                     
-                        _msg = "Current experiment identifier is \"" + _curr_expid + "\"."
                         _result = _time_obj_attr_list["experiment_id"]
             
                     else :
@@ -2820,8 +2820,6 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         self.initialize_metric_name_list(obj_attr_list)
 
                         if not _status :
-                            _msg = "Experiment identifier was changed from \"" + _curr_expid + "\""
-                            _msg += " to \"" + _new_expid + "\". " 
                             _result = _new_expid
         
                     _status = 0
@@ -2841,8 +2839,15 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 _view_dict = False
 
             else :
-                cbdebug(_msg)
-
+                if _new_expid :
+                    _msg = "The attribute \"experiment_id \" was changed from \""
+                    _msg += _curr_expid + "\" to \"" + self.expid + "\"."
+                    cbdebug(_msg)
+                    self.update_host_os_perfmon(obj_attr_list)                
+                else :
+                    _msg = "Current experiment identifier is \"" + self.expid + "\"."
+                    cbdebug(_msg)
+                    
             return self.package(_status, _msg, _result)
 
 

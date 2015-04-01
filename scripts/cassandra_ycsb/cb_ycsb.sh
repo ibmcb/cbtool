@@ -43,6 +43,8 @@ fi
 OPERATION_COUNT=`get_my_ai_attribute_with_default operation_count 10000`
 READ_RATIO=`get_my_ai_attribute_with_default read_ratio workloaddefault`
 UPDATE_RATIO=`get_my_ai_attribute_with_default update_ratio workloaddefault`
+SCAN_RATIO=`get_my_ai_attribute_with_default scan_ratio workloaddefault`
+INSERT_RATIO=`get_my_ai_attribute_with_default insert_ratio workloaddefault`
 INPUT_RECORDS=`get_my_ai_attribute_with_default input_records 10000`
 RECORD_SIZE=`get_my_ai_attribute_with_default record_size 2.35`
 APP_COLLECTION=`get_my_ai_attribute_with_default app_collection lazy`
@@ -50,12 +52,26 @@ DATABASE_SIZE_VERSUS_MEMORY=`get_my_ai_attribute_with_default database_size_vers
 
 if [[ ${READ_RATIO} != "workloaddefault" ]]
 then
-    sudo sed -i "s/^readproportion=.*$/readproportion=0\.$READ_RATIO/g" $YCSB_PATH/workloads/${LOAD_PROFILE}
+    RATIO_STRING=$(printf "0.%02d" $READ_RATIO)
+    sudo sed -i "s/^readproportion=.*$/readproportion=$RATIO_STRING/g" $YCSB_PATH/workloads/${LOAD_PROFILE}
 fi
 
 if [[ ${UPDATE_RATIO} != "workloaddefault" ]]
 then
-    sudo sed -i "s/^updateproportion=.*$/updateproportion=0\.$UPDATE_RATIO/g" $YCSB_PATH/workloads/${LOAD_PROFILE}
+    RATIO_STRING=$(printf "0.%02d" $UPDATE_RATIO)
+    sudo sed -i "s/^updateproportion=.*$/updateproportion=$RATIO_STRING/g" $YCSB_PATH/workloads/${LOAD_PROFILE}
+fi
+
+if [[ ${SCAN_RATIO} != "workloaddefault" ]]
+then
+    RATIO_STRING=$(printf "0.%02d" $SCAN_RATIO)
+    sudo sed -i "s/^scanproportion=.*$/scanproportion=$RATIO_STRING/g" $YCSB_PATH/workloads/${LOAD_PROFILE}
+fi
+
+if [[ ${INSERT_RATIO} != "workloaddefault" ]]
+then
+    RATIO_STRING=$(printf "0.%02d" $INSERT_RATIO)
+    sudo sed -i "s/^insertproportion=.*$/insertproportion=$RATIO_STRING/g" $YCSB_PATH/workloads/${LOAD_PROFILE}
 fi
 
 # Determine memory size
@@ -79,19 +95,40 @@ OUTPUT_FILE=$(mktemp)
 if [[ ${GENERATE_DATA} == "true" ]]
 then
     FIRST_SEED=$(echo $seed_ips_csv | cut -d ',' -f 1)
-    syslog_netcat "Dropping keyspace usertable by executing cassandra-cli against seed node ${FIRST_SEED}"
-    cassandra-cli -h ${FIRST_SEED} -f remove_keyspace.cassandra
 
-    if [[ $(cassandra-cli -h ${MY_IP} -f list_keyspace.cassandra | grep Keyspace | grep -c usertable) -eq 0 ]]
+    cassandra-cli -h ${FIRST_SEED} -f list_keyspace.cassandra
+    ERROR=$?
+
+    if [[ $ERROR -eq 0 ]]
     then
-        syslog_netcat "Keyspace \"usertable\" was successfully deleted"
+	    if [[ $(cassandra-cli -h ${FIRST_SEED} -f list_keyspace.cassandra | grep Keyspace | grep -c usertable) -ne 0 ]]
+	    then
+	    	syslog_netcat "Dropping keyspace \"usertable\" in Cassandra by executing cassandra-cli against seed node ${FIRST_SEED}"
+	        cassandra-cli -h ${FIRST_SEED} -f remove_keyspace.cassandra
+	        if [[ $(cassandra-cli -h ${FIRST_SEED} -f list_keyspace.cassandra | grep Keyspace | grep -c usertable) -eq 0 ]]
+	        then            
+	        	syslog_netcat "Keyspace \"usertable\" in Cassandra was successfully deleted"
+	        else
+	            syslog_netcat "Error while deleting keyspace \"usertable\" in Cassandra"
+	            update_app_errors 1
+	    	fi
+        else
+            syslog_netcat "Keyspace \"usertable\" not present in Cassandra. Bypassing keyspace deletion"
+        fi
     else
-        syslog_netcat "Keyspace \"usertable\" was NOT deleted!!!"
+        syslog_netcat "Error while contacting Cassandra through cassandra-cli"
+        update_app_errors $ERROR
     fi
-            
-    syslog_netcat "Creating keyspace usertable by executing cassandra-cli against seed node ${FIRST_SEED}"
+
+    syslog_netcat "Creating keyspace \"usertable\" in Cassandra by executing cassandra-cli against seed node ${FIRST_SEED}"
     cassandra-cli -h ${FIRST_SEED} -f create_keyspace.cassandra
-                
+    ERROR=$?
+    
+    if [[ $ERROR -ne 0 ]]
+    then
+        syslog_netcat "Error while attempting to create \"usertable\" in Cassandra"        
+        update_app_errors $ERROR
+    fi
     syslog_netcat "Number of records to be inserted : $RECORDS"
 
     log_output_command=$(get_my_ai_attribute log_output_command)
@@ -102,6 +139,7 @@ then
     syslog_netcat "The value of the parameter \"GENERATE_DATA\" is \"true\". Will generate data for the YCSB load profile \"${LOAD_PROFILE}\"" 
     command_line="sudo $YCSB_PATH/bin/ycsb load cassandra-10 -s -P $YCSB_PATH/workloads/${LOAD_PROFILE} -P $YCSB_PATH/custom_workload.dat -p hosts=$seed_ips_csv"
     syslog_netcat "Command line is: ${command_line}"
+    
     if [[ x"${log_output_command}" == x"true" ]]
     then
         syslog_netcat "Command output will be shown"
@@ -109,16 +147,20 @@ then
             syslog_netcat "$line"
             echo $line >> $OUTPUT_FILE
         done
+        ERROR=$?
     else
         syslog_netcat "Command output will NOT be shown"
         $command_line 2>&1 >> $OUTPUT_FILE
+        ERROR=$?    
     fi
     END_GENERATION=$(get_time)
+    update_app_errors $ERROR        
+
     DATA_GENERATION_TIME=$(expr ${END_GENERATION} - ${START_GENERATION})
-    echo ${DATA_GENERATION_TIME} > /tmp/data_generation_time
-    echo ${RECORDS} > /tmp/data_generation_size
+    update_app_datagentime ${DATA_GENERATION_TIME}
+    update_app_datagensize ${RECORDS}
 else
-    syslog_netcat "The value of the parameter \"GENERATE_DATA\" is \"false\". Will bypass data generation for the hadoop load profile \"${LOAD_PROFILE}\""     
+    syslog_netcat "The value of the parameter \"GENERATE_DATA\" is \"false\". Will bypass data generation for the Cassandra YCSB load profile \"${LOAD_PROFILE}\""     
 fi
 
 CMDLINE="sudo $YCSB_PATH/bin/ycsb run cassandra-10 -s -threads ${LOAD_LEVEL} -P $YCSB_PATH/workloads/${LOAD_PROFILE} -P $YCSB_PATH/custom_workload.dat -p hosts=$seed_ips_csv"
@@ -136,10 +178,12 @@ then
     syslog_netcat "Command line is: ${CMDLINE}. Output file is ${OUTPUT_FILE}"
     if [[ $APP_COLLECTION == "lazy" ]]
     then
-        lazy_collection "$CMDLINE" ${OUTPUT_FILE} ${SLA_RUNTIME_TARGETS}
+		lazy_collection "$CMDLINE" ${OUTPUT_FILE} ${SLA_RUNTIME_TARGETS}
     else
-        eager_collection "$CMDLINE" ${OUTPUT_FILE} ${SLA_RUNTIME_TARGETS}
+    	eager_collection "$CMDLINE" ${OUTPUT_FILE} ${SLA_RUNTIME_TARGETS}
     fi
+    
+    rm ${OUTPUT_FILE}
 else
     syslog_netcat "This AI reached the limit of load generation process executions. If you want this AI to continue to execute the load generator, reset the \"run_limit\" counter"
     sleep ${LOAD_DURATION}

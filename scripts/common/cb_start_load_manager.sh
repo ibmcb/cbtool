@@ -25,24 +25,45 @@ operation="ai-execute"
 daemonize=" --daemon"
 options="$@"
 
-if [ x"$options" != x ] ; then
+if [[ x"$options" != x ]]
+then
     daemonize=""
-    for pid in $(pgrep -f $operation) ; do 
-        if [ $pid == $$ ] ; then 
+    for pid in $(pgrep -f $operation)
+    do 
+        if [[ $pid == $$ ]]
+        then 
             echo skipping $pid
             continue
         fi
-        if [ $PPID == $pid ] ; then 
+        
+        if [[ $PPID == $pid ]]
+        then 
             echo skipping parent ssh process $pid
             continue
         fi
+        
         kill -9 $pid
+        
     done
 fi
 
-source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
-
 load_manager_vm=`get_my_ai_attribute load_manager_vm`
+
+cat > /tmp/cbloadman <<EOF
+#!/usr/bin/env bash
+
+if [[ \$(sudo ps aux | grep -v grep | grep cbact | grep -c ai-execute) -eq 0 ]]
+then
+    echo "Starting Load Manager"
+    ~/${my_remote_dir}/cbact --procid=${osprocid} --uuid=${my_ai_uuid} --syslogp=${NC_PORT_SYSLOG} --syslogf=19 --syslogh=${NC_HOST_SYSLOG} --operation=$operation $daemonize $options
+else
+    echo "A Load Manager is already running"
+fi
+exit 0
+EOF
+
+sudo mv /tmp/cbloadman /usr/local/bin/cbloadman
+sudo chmod 755 /usr/local/bin/cbloadman
 
 if [[ x"${load_manager_vm}" == x"${my_vm_uuid}" ]]
 then
@@ -51,7 +72,12 @@ then
     if [[ x"${running_load_managers}" == x ]]
     then
         syslog_netcat "Starting Load Manager"
-        ~/${my_remote_dir}/cbact --procid=${osprocid} --uuid=${my_ai_uuid} --syslogp=${NC_PORT_SYSLOG} --syslogf=19 --syslogh=${NC_HOST_SYSLOG} --operation=$operation $daemonize $options
+        /usr/local/bin/cbloadman
+
+	    sudo pkill -9 -f cbloadmanwatch
+		sudo screen -d -m -S cbloadmanwatch bash -c "su - ${my_login_username}"
+		sudo screen -p 0 -S cbloadmanwatch -X stuff "while true ; do sleep 30; /usr/local/bin/cbloadman; done$(printf \\r)"				    	
+
         exit 0
     else
         syslog_netcat "A Load Manager is already running"

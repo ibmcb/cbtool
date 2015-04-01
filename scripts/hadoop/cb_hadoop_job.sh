@@ -185,20 +185,25 @@ then
             syslog_netcat "$line"
             echo $line >> $OUTPUT_FILE
         done
+        ERROR=$?        
     else
         syslog_netcat "Command output will NOT be shown"
         $command_line 2>&1 >> $OUTPUT_FILE
+        ERROR=$?
     fi
     END_GENERATION=$(get_time)
-    DATA_GENERATION_TIME=$(expr ${END_GENERATION} - ${START_GENERATION})
-    echo ${DATA_GENERATION_TIME} > /tmp/data_generation_time
+	update_app_errors $ERROR        
 
+    DATA_GENERATION_TIME=$(expr ${END_GENERATION} - ${START_GENERATION})
+    update_app_datagentime ${DATA_GENERATION_TIME}
     if [[ $(cat ${OUTPUT_FILE} | grep -c 'HDFS_BYTES_WRITTEN\|Bytes Written') -ne 0 ]]
     then
-        cat ${OUTPUT_FILE} | grep 'HDFS_BYTES_WRITTEN\|Bytes Written' | head -n 1 | cut -d '=' -f 2 > /tmp/data_generation_size
+        update_app_datagensize $(cat ${OUTPUT_FILE} | grep 'HDFS_BYTES_WRITTEN\|Bytes Written' | head -n 1 | cut -d '=' -f 2)
     fi
+    
 else
-    syslog_netcat "The value of the parameter \"GENERATE_DATA\" is \"false\". Will bypass data generation for the hadoop load profile \"${LOAD_PROFILE}\""     
+    syslog_netcat "The value of the parameter \"GENERATE_DATA\" is \"false\". Will bypass data generation for the hadoop load profile \"${LOAD_PROFILE}\""
+    
 fi
 
 CMDLINE="${HIBENCH_HOME}/${LOAD_PROFILE}/bin/run.sh"
@@ -209,39 +214,7 @@ OUTPUT_FILE=$(mktemp)
 
 execute_load_generator "${CMDLINE}" ${OUTPUT_FILE} ${LOAD_DURATION}
 
-COMPLETION_TIME=$?
-
 syslog_netcat "..hadoop job is done. Ready to do a summary..."
-
-# Collect data generation time, taking care of reporting the time
-# with a minus sign in case data was not generated on this 
-# run
-if [[ -f /tmp/old_data_generation_time ]]
-then
-    datagentime=-$(cat /tmp/old_data_generation_time)
-fi
-
-if [[ -f /tmp/data_generation_time ]]
-then
-    datagentime=$(cat /tmp/data_generation_time)
-    mv /tmp/data_generation_time /tmp/old_data_generation_time
-fi
-
-# Collect data generation size, taking care of reporting the size
-# with a minus sign in case data was not generated on this 
-# run
-if [[ -f /tmp/old_data_generation_size ]]
-then
-    datagensize=-$(cat /tmp/old_data_generation_size)
-fi
-
-if [[ -f /tmp/data_generation_size ]]
-then
-    datagensize=$(cat /tmp/data_generation_size)
-    datagensize=$(echo "$datagensize / 1024" | bc)
-    echo ${datagensize} > /tmp/data_generation_size    
-    mv /tmp/data_generation_size /tmp/old_data_generation_size
-fi
 
 #Parse and report the performace
 
@@ -249,14 +222,19 @@ lat=`cat ${HIBENCH_HOME}/hibench.report | grep -v Type | tr -s ' ' | cut -d ' ' 
 lat=`echo "${lat} * 1000" | bc`
 tput=`cat ${HIBENCH_HOME}/hibench.report | grep -v Type | tr -s ' ' | cut -d ' ' -f 6`
 
+check_hadoop_cluster_state 1 1
+ERROR=$?
+update_app_errors $ERROR
+
 ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
 load_level:${LOAD_LEVEL}:load \
 load_profile:${LOAD_PROFILE}:name \
 load_duration:${LOAD_DURATION}:sec \
-completion_time:${COMPLETION_TIME}:sec \
+completion_time:$(update_app_completiontime):sec \
 throughput:$tput:tps latency:$lat:msec \
-datagen_time:${datagentime}:sec \
-datagen_size:${datagensize}:MB \
+datagen_time:$(update_app_datagentime):sec \
+datagen_size:$(update_app_datagensize):records \
+errors:$(update_app_errors):num \
 ${SLA_RUNTIME_TARGETS}
 
 rm ${OUTPUT_FILE}

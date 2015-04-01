@@ -138,9 +138,13 @@ $CMDLINE 2>&1 | while read line ; do
         fi
     fi
 done
+ERROR=$?
 LOAD_GENERATOR_END=$(date +%s)
-COMPLETION_TIME=$(( $LOAD_GENERATOR_END - $LOAD_GENERATOR_START )) 
+
+update_app_errors $ERROR
     
+update_app_completiontime $(( $LOAD_GENERATOR_END - $LOAD_GENERATOR_START ))      
+            
 syslog_netcat "iwlengine run complete. Will collect and report the results"
 tp=`cat ${OUTPUT_FILE} | grep throughput | grep Page | grep -v element | cut -d " " -f 5 | tr -d ' '`
 lat=`echo "\`cat ${OUTPUT_FILE} | grep response | grep -v all | cut -d " " -f 9 | tr -d ' '\` * 1000" | bc`
@@ -148,7 +152,10 @@ lat=`echo "\`cat ${OUTPUT_FILE} | grep response | grep -v all | cut -d " " -f 9 
 load_level:${LOAD_LEVEL}:load \
 load_profile:${LOAD_PROFILE}:name \
 load_duration:${LOAD_DURATION}:sec \
-completion_time:${COMPLETION_TIME}:sec \
+errors:$(update_app_errors):num \
+completion_time:$(update_app_completiontime):sec \
+datagen_time:$(update_app_datagentime):sec \
+datagen_size:$(update_app_datagensize):records \
 throughput:$tp:tps \
 latency:$lat:msec \
 ${SLA_RUNTIME_TARGETS}

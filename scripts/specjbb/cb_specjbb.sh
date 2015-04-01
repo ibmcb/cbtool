@@ -136,8 +136,6 @@ OUTPUT_FILE=$(mktemp)
 
 execute_load_generator "${CMDLINE}" ${OUTPUT_FILE} ${LOAD_DURATION}
 
-COMPLETION_TIME=$?
-
 #####################################################
 # extract and publish result
 #####################################################
@@ -169,10 +167,14 @@ else
     load_level:${LOAD_LEVEL}:load \
     load_profile:${LOAD_PROFILE}:name \
     load_duration:${LOAD_DURATION}:sec \
-    completion_time:${COMPLETION_TIME}:sec \
+	errors:$(update_app_errors):num \
+	completion_time:$(update_app_completiontime):sec \
+	datagen_time:$(update_app_datagentime):sec \
+	datagen_size:$(update_app_datagensize):records \
     ${app_metric_string} ${SLA_RUNTIME_TARGETS}
 
-    if [ x"${EXPOUTCOLDIR}" == x ]; then
+    if [ x"${EXPOUTCOLDIR}" == x ]
+    then
         true
     else :
         #####################################################

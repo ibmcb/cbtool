@@ -147,3 +147,5 @@ CASSANDRA = size:m1.medium, imageid1:cb_ycsb
 SEED = size:m1.medium, imageid1:cb_ycsb
 REDIS = size:m1.medium, imageid1:cb_ycsb
 YCSB = size:m1.medium, imageid1:cb_ycsb
+GATEST_MASTER = size:m1.large, imageid1: cb_nullworkload
+GATEST_SLAVE = size:m1.large, imageid1: cb_nullworkload

@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-#!/usr/bin/env bash
-
 #/*******************************************************************************
 # This source code is provided as is, without any express or implied warranty.
 #
@@ -39,24 +37,41 @@ then
     GENERATE_DATA="true"
 else
     GENERATE_DATA=`get_my_ai_attribute_with_default regenerate_data true`
+    GENERATE_DATA=$(echo ${GENERATE_DATA} | tr '[:upper:]' '[:lower:]')
 fi
 
-OPERATION_COUNT=`get_my_ai_attribute_with_default operation_count 100000`
+OPERATION_COUNT=`get_my_ai_attribute_with_default operation_count 10000`
 READ_RATIO=`get_my_ai_attribute_with_default read_ratio workloaddefault`
 UPDATE_RATIO=`get_my_ai_attribute_with_default update_ratio workloaddefault`
-INPUT_RECORDS=`get_my_ai_attribute_with_default input_records 100000`
+SCAN_RATIO=`get_my_ai_attribute_with_default scan_ratio workloaddefault`
+INSERT_RATIO=`get_my_ai_attribute_with_default insert_ratio workloaddefault`
+INPUT_RECORDS=`get_my_ai_attribute_with_default input_records 10000`
 RECORD_SIZE=`get_my_ai_attribute_with_default record_size 2.35`
 APP_COLLECTION=`get_my_ai_attribute_with_default app_collection lazy`
 DATABASE_SIZE_VERSUS_MEMORY=`get_my_ai_attribute_with_default database_size_versus_memory 0.5`
 
 if [[ ${READ_RATIO} != "workloaddefault" ]]
 then
-    sudo sed -i "s/^readproportion=.*$/readproportion=0\.$READ_RATIO/g" $YCSB_PATH/workloads/${LOAD_PROFILE}
+    RATIO_STRING=$(printf "0.%02d" $READ_RATIO)
+    sudo sed -i "s/^readproportion=.*$/readproportion=$RATIO_STRING/g" $YCSB_PATH/workloads/${LOAD_PROFILE}
 fi
 
 if [[ ${UPDATE_RATIO} != "workloaddefault" ]]
 then
-    sudo sed -i "s/^updateproportion=.*$/updateproportion=0\.$UPDATE_RATIO/g" $YCSB_PATH/workloads/${LOAD_PROFILE}
+    RATIO_STRING=$(printf "0.%02d" $UPDATE_RATIO)
+    sudo sed -i "s/^updateproportion=.*$/updateproportion=$RATIO_STRING/g" $YCSB_PATH/workloads/${LOAD_PROFILE}
+fi
+
+if [[ ${SCAN_RATIO} != "workloaddefault" ]]
+then
+    RATIO_STRING=$(printf "0.%02d" $SCAN_RATIO)
+    sudo sed -i "s/^scanproportion=.*$/scanproportion=$RATIO_STRING/g" $YCSB_PATH/workloads/${LOAD_PROFILE}
+fi
+
+if [[ ${INSERT_RATIO} != "workloaddefault" ]]
+then
+    RATIO_STRING=$(printf "0.%02d" $INSERT_RATIO)
+    sudo sed -i "s/^insertproportion=.*$/insertproportion=$RATIO_STRING/g" $YCSB_PATH/workloads/${LOAD_PROFILE}
 fi
 
 # Determine memory size
@@ -74,6 +89,9 @@ sudo touch $YCSB_PATH/custom_workload.dat
 sudo sh -c "echo "recordcount=${RECORDS%.*}" > $YCSB_PATH/custom_workload.dat"
 sudo sh -c "echo "operationcount=$OPERATION_COUNT" >> $YCSB_PATH/custom_workload.dat"
 
+source ~/cb_barrier.sh start
+
+OUTPUT_FILE=$(mktemp)
 if [[ ${GENERATE_DATA} == "true" ]]
 then
     syslog_netcat "Number of records to be inserted : $RECORDS"
@@ -114,7 +132,8 @@ then
     
     END_GENERATION=$(get_time)
     DATA_GENERATION_TIME=$(expr ${END_GENERATION} - ${START_GENERATION})
-    echo ${DATA_GENERATION_TIME} > /tmp/data_generation_time
+    update_app_datagentime ${DATA_GENERATION_TIME}
+    update_app_datagensize ${RECORDS}
 else
     syslog_netcat "The value of the parameter \"GENERATE_DATA\" is \"false\". Will bypass data generation for the hadoop load profile \"${LOAD_PROFILE}\""     
 fi
@@ -122,8 +141,6 @@ fi
 CMDLINE="sudo $YCSB_PATH/bin/ycsb run mongodb -s -threads ${LOAD_LEVEL} -P $YCSB_PATH/workloads/${LOAD_PROFILE} -P $YCSB_PATH/custom_workload.dat -p hosts=$mongos_ip"
 
 syslog_netcat "Benchmarking YCSB SUT: MONGOS=${mongos_ip} | MONGO_CFG=${mongocfg_ip} -> MONGODBS=${mongo_ips_csv} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
-
-source ~/cb_barrier.sh start
 
 log_output_command=$(get_my_ai_attribute log_output_command)
 log_output_command=$(echo ${log_output_command} | tr '[:upper:]' '[:lower:]')
@@ -136,9 +153,9 @@ then
     syslog_netcat "Command line is: ${CMDLINE}. Output file is ${OUTPUT_FILE}"
     if [[ $APP_COLLECTION == "lazy" ]]
     then
-        lazy_collection "$CMDLINE"
+        lazy_collection "$CMDLINE" ${OUTPUT_FILE} ${SLA_RUNTIME_TARGETS}
     else
-        eager_collection "$CMDLINE"
+        eager_collection "$CMDLINE" ${OUTPUT_FILE} ${SLA_RUNTIME_TARGETS}
     fi
 else
     syslog_netcat "This AI reached the limit of load generation process executions. If you want this AI to continue to execute the load generator, reset the \"run_limit\" counter"
