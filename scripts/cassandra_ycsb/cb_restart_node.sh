@@ -25,6 +25,10 @@ START=`provision_application_start`
 SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
 
 sudo mkdir -p ${CASSANDRA_DATA_DIR}
+
+find_and_mount_attached_volumes
+
+sudo mkdir -p ${CASSANDRA_DATA_DIR}
 sudo mkdir -p ${CASSANDRA_DATA_DIR}/store/cassandra/data
 sudo mkdir -p ${CASSANDRA_DATA_DIR}/cassandra/commitlog 
 sudo mkdir -p ${CASSANDRA_DATA_DIR}/cassandra/saved_caches
@@ -60,15 +64,13 @@ sudo sed -i "s/REPLF/${CASSANDRA_REPLICATION_FACTOR}/g" create_keyspace.cassandr
 #
 # Update Cassandra Config
 #
-sudo sed -i "s/initial_token:$/initial_token: ${my_token//[[:blank:]]/}/g" /etc/cassandra/conf/cassandra.yaml
-sudo sed -i "s/- seeds:.*$/- seeds: $seed_ips_csv/g" /etc/cassandra/conf/cassandra.yaml
-sudo sed -i "s/listen_address:.*$/listen_address: ${MY_IP}/g" /etc/cassandra/conf/cassandra.yaml
-sudo sed -i 's/rpc_address:.*$/rpc_address: 0\.0\.0\.0/g' /etc/cassandra/conf/cassandra.yaml
-sudo sed -i "s/partitioner:.*$/partitioner: org.apache.cassandra.dht.RandomPartitioner/g" /etc/cassandra/conf/cassandra.yaml	
+sudo sed -i "s/- seeds:.*$/- seeds: $seed_ips_csv/g" ${CASSANDRA_CONFIG_DIR}/cassandra.yaml
+sudo sed -i "s/listen_address:.*$/listen_address:/g" ${CASSANDRA_CONFIG_DIR}/cassandra.yaml
+sudo sed -i 's/rpc_address:.*$/rpc_address:/g' ${CASSANDRA_CONFIG_DIR}/cassandra.yaml
 TEMP_CASSANDRA_DATA_DIR=$(echo ${CASSANDRA_DATA_DIR} | sed 's/\//_+-_-+/g')
-sudo sed -i "s/\/var\/lib\//${TEMP_CASSANDRA_DATA_DIR}\//g" /etc/cassandra/conf/cassandra.yaml
-sudo sed -i "s/_+-_-+/\//g" /etc/cassandra/conf/cassandra.yaml
-sudo sed -i "s/'Test Cluster'/'${my_ai_name}'/g" /etc/cassandra/conf/cassandra.yaml
+sudo sed -i "s/\/var\/lib\//${TEMP_CASSANDRA_DATA_DIR}\//g" ${CASSANDRA_CONFIG_DIR}/cassandra.yaml
+sudo sed -i "s/_+-_-+/\//g" ${CASSANDRA_CONFIG_DIR}/cassandra.yaml
+sudo sed -i "s/'Test Cluster'/'${my_ai_name}'/g" ${CASSANDRA_CONFIG_DIR}/cassandra.yaml
 
 #
 # Remove possible old runs

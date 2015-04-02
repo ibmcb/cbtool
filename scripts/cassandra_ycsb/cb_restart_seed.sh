@@ -26,6 +26,7 @@ SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
 
 sudo mkdir -p ${CASSANDRA_DATA_DIR}
 
+<<<<<<< Updated upstream
 VOLUME=$(get_attached_volumes)
 if [[ $VOLUME != "NONE" ]]
 then
@@ -37,6 +38,9 @@ then
     syslog_netcat "Making $FSTYP filesystem on volume $VOLUME accessible through the mountpoint ${CASSANDRA_DATA_DIR}"
     sudo mount $VOLUME ${CASSANDRA_DATA_DIR}
 fi
+=======
+find_and_attach_volume $YCSB_DB_FSTYP $CASSANDRA_DATA_DIR
+>>>>>>> Stashed changes
 
 CASSANDRA_REPLICATION_FACTOR=$(get_my_ai_attribute_with_default replication_factor 4)
 sudo sed -i "s/REPLF/${CASSANDRA_REPLICATION_FACTOR}/g" create_keyspace.cassandra
@@ -45,9 +49,9 @@ sudo sed -i "s/REPLF/${CASSANDRA_REPLICATION_FACTOR}/g" create_keyspace.cassandr
 # Update the cassandra config
 #
 TEMP_CASSANDRA_DATA_DIR=$(echo ${CASSANDRA_DATA_DIR} | sed 's/\//_+-_-+/g')
-sudo sed -i "s/\/var\/lib\//${TEMP_CASSANDRA_DATA_DIR}\//g" /etc/cassandra/conf/cassandra.yaml
-sudo sed -i "s/_+-_-+/\//g" /etc/cassandra/conf/cassandra.yaml
-sudo sed -i "s/'Test Cluster'/'${my_ai_name}'/g" /etc/cassandra/conf/cassandra.yaml
+sudo sed -i "s/\/var\/lib\//${TEMP_CASSANDRA_DATA_DIR}\//g" ${CASSANDRA_CONFIG_DIR}/cassandra.yaml
+sudo sed -i "s/_+-_-+/\//g" ${CASSANDRA_CONFIG_DIR}/cassandra.yaml
+sudo sed -i "s/'Test Cluster'/'${my_ai_name}'/g" ${CASSANDRA_CONFIG_DIR}/cassandra.yaml
 
 #
 # Cassandra directory structure
@@ -75,11 +79,10 @@ sudo sh -c "echo ${MY_IP} ${SHORT_HOSTNAME} >> /etc/hosts"
 #
 # Update Cassandra Config
 #
-sudo sed -i "s/initial_token:$/initial_token: ${my_token//[[:blank:]]/}/g" /etc/cassandra/conf/cassandra.yaml
-sudo sed -i "s/- seeds:.*$/- seeds: $seed_ips_csv/g" /etc/cassandra/conf/cassandra.yaml
-sudo sed -i "s/listen_address:.*$/listen_address: $MY_IP/g" /etc/cassandra/conf/cassandra.yaml
-sudo sed -i "s/partitioner: org.apache.cassandra.dht.Murmur3Partitioner/partitioner: org.apache.cassandra.dht.RandomPartitioner/g" /etc/cassandra/conf/cassandra.yaml
-sudo sed -i 's/rpc_address:.*$/rpc_address: 0\.0\.0\.0/g' /etc/cassandra/conf/cassandra.yaml
+sudo sed -i "s/- seeds:.*$/- seeds: $seed_ips_csv/g" ${CASSANDRA_CONFIG_DIR}/cassandra.yaml
+# Setting an empty string for listen|rpc_address will force cassnadra to use local hostname
+sudo sed -i "s/listen_address:.*$/listen_address:/g" ${CASSANDRA_CONFIG_DIR}/cassandra.yaml
+sudo sed -i 's/rpc_address:.*$/rpc_address:/g' ${CASSANDRA_CONFIG_DIR}/cassandra.yaml
 
 #
 # Remove possible old runs
@@ -97,7 +100,7 @@ syslog_netcat "Starting cassandra on ${SHORT_HOSTNAME}"
 sudo service cassandra start 
 
 # Give all the Java services time to start
-wait_until_port_open 127.0.0.1 9160 20 5
+wait_until_port_open ${MY_IP} 9160 20 5
 
 STATUS=$?
 

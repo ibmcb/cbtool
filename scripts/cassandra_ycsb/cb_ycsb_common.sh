@@ -52,8 +52,14 @@ eval YCSB_PATH=${YCSB_PATH}
 
 BACKEND_TYPE=$(get_my_ai_attribute type | sed 's/_ycsb//g')
 
+YCSB_DB_FSTYP=$(get_my_ai_attribute_with_default mongodb_data_fstyp ext4)
+eval YCSB_DB_FSTYP=${YCSB_DB_FSTYP}
+
 if [[ $BACKEND_TYPE == "cassandra" ]]
 then 
+    CASSANDRA_CONFIG_DIR=$(get_my_ai_attribute_with_default cassandra_config_dir /etc/cassandra/conf)
+    eval CASSANDRA_CONFIG_DIR=${CASSANDRA_CONFIG_DIR}
+
     CASSANDRA_DATA_DIR=$(get_my_ai_attribute_with_default cassandra_data_dir /dbstore)
     eval CASSANDRA_DATA_DIR=${CASSANDRA_DATA_DIR}
 
@@ -84,6 +90,8 @@ then
     cassandra_ips_csv=`echo ${cassandra_ips} | sed ':a;N;$!ba;s/\n/, /g'`
 
     seed_ips_csv=`echo ${seed_ips} | sed 's/ /,/g'`
+
+    all_cassandra_ips_csv=`echo ${cassandra_ips} ${seed_ips} | sed 's/ /,/g'`
 
     if [[ -z $cassandra_ips ]]
     then
@@ -188,8 +196,6 @@ function lazy_collection {
                 latency=${array[2]}
             fi
         fi
-    
-    # Check for New Shard
     
     done < <($CMDLINE 2>&1)
     

@@ -40,6 +40,7 @@ CASSANDRA_RESIZE1 = cb_modify_node.sh
 START=cb_ycsb.sh
 
 # VApp-specific OPTIONAL modifier parameters. Commented attributes imply default values assumed
+# RATIO values will be divided by 100. If you want 95% set READ_RATIO to 95.  (not 0.95)
 READ_RATIO = workloaddefault
 UPDATE_RATIO = workloaddefault
 #APP_COLLECTION = lazy
@@ -50,6 +51,8 @@ UPDATE_RATIO = workloaddefault
 #RECORD_SIZE = 2.35
 #DATABASE_SIZE_VERSUS_MEMORY = 0.5
 #REPLICATION_FACTOR = 4
+#CASSANDRA_CONFIG_DIR=/etc/cassandra/conf
+#YCSB_DB_FSTYP = ext4
 
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
 #SYNC_COUNTER_NAME = synchronization_counter
