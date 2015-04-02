@@ -26,23 +26,6 @@ SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
 
 mount_filesystem_on_volume ${CASSANDRA_DATA_DIR} $CASSANDRA_DATA_FSTYP cassandra
 
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-VOLUME=$(get_attached_volumes)
-if [[ $VOLUME != "NONE" ]]
-then
-    if [[ $(check_filesystem $VOLUME) == "none" ]]
-    then
-        syslog_netcat "Creating $MONGODB_DATA_FSTYP filesystem on volume $VOLUME"
-        sudo mkfs.$MONGODB_DATA_FSTYP $VOLUME
-    fi
-    syslog_netcat "Making $FSTYP filesystem on volume $VOLUME accessible through the mountpoint ${CASSANDRA_DATA_DIR}"
-    sudo mount $VOLUME ${CASSANDRA_DATA_DIR}
-fi
-=======
-find_and_attach_volume $YCSB_DB_FSTYP $CASSANDRA_DATA_DIR
->>>>>>> Stashed changes
-=======
 #
 # Cassandra directory structure
 #
@@ -50,7 +33,6 @@ sudo mkdir -p ${CASSANDRA_DATA_DIR}/store/cassandra/data
 sudo mkdir -p ${CASSANDRA_DATA_DIR}/cassandra/commitlog 
 sudo mkdir -p ${CASSANDRA_DATA_DIR}/cassandra/saved_caches
 sudo chown -R cassandra:cassandra ${CASSANDRA_DATA_DIR}
->>>>>>> upstream/master
 
 CASSANDRA_REPLICATION_FACTOR=$(get_my_ai_attribute_with_default replication_factor 4)
 sudo sed -i "s/REPLF/${CASSANDRA_REPLICATION_FACTOR}/g" create_keyspace.cassandra
