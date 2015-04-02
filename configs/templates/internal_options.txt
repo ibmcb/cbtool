@@ -153,6 +153,7 @@ UPDATE_ATTEMPTS = $MAIN_UPDATE_ATTEMPTS
 TIMEOUT = $MAIN_TIMEOUT
 ATTEMPTS = $MAIN_ATTEMPTS
 NOTIFICATION = $MAIN_NOTIFICATION
+LOCAL_DIR_NAME = cbtool
 REMOTE_DIR_NAME = cbtool
 RUN_GENERIC_SCRIPTS = $True
 TRANSFER_FILES = $True
@@ -326,7 +327,7 @@ SWAP_M = swap_total, swap_free, swap_procs_running, swap_in_flight,
 SWAP_M += swap_procs_blocked, swap_KB_read, swap_ios_read, swap_KB_write, swap_ios_write
 NET_M = pkts_in, bytes_in, pkts_out, bytes_out
 DSK_M = disk_total, disk_free, ds_in_flight, ds_KB_read, ds_ios_read, ds_KB_write, ds_ios_write
-APP_M = app_load_profile, app_load_id, app_load_level, app_throughput, app_latency, app_bandwidth
+APP_M = app_load_profile, app_load_id, app_load_level, app_datagen_size, app_datagen_time, app_throughput, app_latency, app_bandwidth, app_errors, app_completion_time
 # Actual layout (do not prefix these variables with $)
 VM_RUNTIME_OS_METRICS_HEADER = TSTAMP, VM_ID2, CPU_M, MEM_M, SWAP_M, NET_M, DSK_M
 VM_RUNTIME_APP_METRICS_HEADER = TSTAMP, VM_ID2, APP_M
@@ -335,7 +336,7 @@ HOST_RUNTIME_OS_METRICS_HEADER = TSTAMP, HS_ID2, CPU_M, MEM_M, SWAP_M, NET_M, DS
 REPORTED_MANAGEMENT_VM_METRIC_NAMES = VM_ID1, CRT_M, CAP_M, RST_M, DST_M, FLR_M 
 REPORTED_RUNTIME_OS_HOST_METRIC_NAMES = CPU_M, MEM_M, SWAP_M, NET_M, DSK_M
 REPORTED_RUNTIME_OS_VM_METRIC_NAMES = CPU_M, MEM_M, SWAP_M, NET_M, DSK_M
-REPORTED_RUNTIME_APP_VM_METRIC_NAMES = app_load_id, app_load_level, app_throughput, app_latency, app_datagen_time, app_datagen_size
+REPORTED_RUNTIME_APP_VM_METRIC_NAMES = app_load_id, app_load_profile, app_load_level, app_throughput, app_latency, app_datagen_time, app_datagen_size, app_errors, app_completion_time
 
 [API_DEFAULTS]
 PORT = 7070

@@ -26,6 +26,7 @@
 from time import time, sleep
 from random import randint, choice, shuffle
 from uuid import uuid5, NAMESPACE_DNS
+from subprocess import Popen, PIPE
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import str2dic, DataOpsException
@@ -890,6 +891,39 @@ class SimCmds(CommonCloudFunctions) :
                     _fmsg = "Forced failure during AI definition"
 
             self.take_action_if_requested("AI", obj_attr_list, "all_vms_booted")
+
+            if obj_attr_list["create_performance_emitter"].lower() == "true" :
+                
+                _msg = "Starting a new \"performance emitter\" for " + obj_attr_list["name"]
+                cbdebug(_msg, True)
+
+                _cmd = obj_attr_list["base_dir"] + "/cbact"
+                _cmd += " --procid=" + self.pid
+                _cmd += " --osp=" + obj_attr_list["osp"]
+                _cmd += " --msp=" + obj_attr_list["msp"]
+                _cmd += " --operation=performance-emit"
+                _cmd += " --cn=" + obj_attr_list["cloud_name"]
+                _cmd += " --uuid=" + obj_attr_list["uuid"]
+                _cmd += " --daemon"
+
+                cbdebug(_cmd)
+
+                _proc_h = Popen(_cmd, shell=True, stdout=PIPE, stderr=PIPE)
+
+                if _proc_h.pid :
+                    _msg = "Performance emitter command \"" + _cmd + "\" "
+                    _msg += " successfully started a new daemon."
+                    _msg += "The process id is " + str(_proc_h.pid) + "."
+                    cbdebug(_msg)
+
+                    _obj_id = obj_attr_list["uuid"] + '-' + "performance-emit"
+                    
+                    _process_identifier = "AI-" + _obj_id
+
+                    self.osci.add_to_list(obj_attr_list["cloud_name"], \
+                                          "GLOBAL", \
+                                          "running_processes", \
+                                          _process_identifier)
 
             if _fmsg == "Forced failure during AI definition" :
                 _status = 181

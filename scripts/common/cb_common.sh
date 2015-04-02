@@ -24,7 +24,7 @@ dir=$(pwd)
 if [ $0 != "-bash" ] ; then
     popd 2>&1 > /dev/null
 fi
-    
+
 # Get all parameters to connect to the datastore
 cloudname=`cat ~/cb_os_parameters.txt | grep "#OSCN" | cut -d "-" -f 2`
 oshostname=`cat ~/cb_os_parameters.txt | grep "#OSHN" | cut -d "-" -f 2`
@@ -106,32 +106,6 @@ function linux_distribution {
     
 }
 export -f linux_distribution
-
-function get_attached_volumes {
-    ROOT_VOLUME=$(sudo mount | grep "/ " | cut -d ' ' -f 1 | tr -d 0-9)
-    SWAP_VOLUME=$(sudo swapon -s | grep dev | cut -d ' ' -f 1 | tr -d 0-9)
-    if [[ -z ${SWAP_VOLUME} ]]
-    then
-        SWAP_VOLUME="NONE"
-    fi
-    VOLUME_LIST=$(sudo fdisk -l 2>&1 | grep Disk | grep bytes | grep -v ${ROOT_VOLUME} | grep -v ${SWAP_VOLUME} | awk '{if($5>1073741824)print $2, $5}' | head -n1 | cut -d ':' -f 1)
-    if [[ -z ${VOLUME_LIST} ]]
-    then
-        VOLUME_LIST="NONE"
-    fi
-    echo $VOLUME_LIST
-}
-export -f get_attached_volumes
-
-function check_filesystem {
-    if [[ $(sudo blkid ${1} | grep -c TYPE) -eq 0 ]]
-    then
-        echo "none"
-    else
-        echo $(sudo blkid ${1} | grep TYPE | cut -d ' ' -f 3 | sed 's/TYPE=//g' | sed 's/"//g' | tr -d '\040\011\012\015')
-    fi
-}
-export -f check_filesystem
 
 function service_stop_disable {
     #1 - service list (space-separated list)
@@ -306,6 +280,174 @@ my_base_type=`get_my_vm_attribute base_type`
 my_cloud_model=`get_my_vm_attribute model`
 my_ip_addr=`get_my_vm_attribute cloud_ip`
 
+function get_attached_volumes {
+    ROOT_VOLUME=$(sudo mount | grep "/ " | cut -d ' ' -f 1 | tr -d 0-9)
+    SWAP_VOLUME=$(sudo swapon -s | grep dev | cut -d ' ' -f 1 | tr -d 0-9)
+    if [[ -z ${SWAP_VOLUME} ]]
+    then
+        SWAP_VOLUME="NONE"
+    fi
+    VOLUME_LIST=$(sudo fdisk -l 2>&1 | grep Disk | grep bytes | grep -v ${ROOT_VOLUME} | grep -v ${SWAP_VOLUME} | awk '{if($5>1073741824)print $2, $5}' | head -n1 | cut -d ':' -f 1)
+    if [[ -z ${VOLUME_LIST} ]]
+    then
+        VOLUME_LIST="NONE"
+    fi
+    echo $VOLUME_LIST
+}
+export -f get_attached_volumes
+
+function check_filesystem {
+    if [[ $(sudo blkid ${1} | grep -c TYPE) -eq 0 ]]
+    then
+        echo "none"
+    else
+        echo $(sudo blkid ${1} | grep TYPE | cut -d ' ' -f 3 | sed 's/TYPE=//g' | sed 's/"//g' | tr -d '\040\011\012\015')
+    fi
+}
+export -f check_filesystem
+
+function mount_filesystem_on_volume {
+    MOUNTPOINT_DIR=$1
+    FILESYS_TYPE=$2
+    MOUNTPOINT_OWNER=$3
+    VOLUME=$4
+
+    if [[ -z $MOUNTPOINT_DIR ]]
+    then
+        syslog_netcat "No mountpoint specified. Bypassing mounting"
+        return 1
+    fi
+    
+    if [[ -z $FILESYS_TYPE ]]
+    then
+        FILESYS_TYPE=ext4
+    fi    
+    
+    if [[ -z $VOLUME ]]
+    then        
+        VOLUME=$(get_attached_volumes)
+    else
+        if [[ $(sudo fdisk -l | grep -c $VOLUME) -eq 0 ]]
+        then
+            VOLUME="NONE"
+        fi
+    fi
+
+    sudo mkdir -p $MOUNTPOINT
+
+    if [[ -z $MOUNTPOINT_OWNER  ]]
+    then
+        MOUNTPOINT_OWER=${my_login_username}
+    fi
+    
+    sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT
+        
+    if [[ $VOLUME != "NONE" ]]
+    then
+        
+        syslog_netcat "Setting ${my_type} storage ($MOUNTPOINT_DIR) on volume $VOLUME...."
+        if [[ $(sudo mount | grep $VOLUME | grep -c $MOUNTPOINT_DIR) -eq 0 ]]
+        then
+                                
+            if [[ $(check_filesystem $VOLUME) == "none" ]]
+            then
+                syslog_netcat "Creating $FILESYS_TYPE filesystem on volume $VOLUME"
+                sudo mkfs.$FILESYS_TYPE $VOLUME
+            fi
+            
+            syslog_netcat "Making $FILESYS_TYPE filesystem on volume $VOLUME accessible through the mountpoint ${MOUNTPOINT_DIR}"
+            sudo mount $VOLUME ${MOUNTPOINT_DIR}
+            
+            if [[ $? -ne 0 ]]
+            then
+                syslog_netcat "Error while mounting $FILESYS_TYPE filesystem on volume $VOLUME on mountpoint ${MOUNTPOINT} - NOK" 
+                exit 1
+            fi
+        fi
+        
+        sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT
+    fi
+    return 0
+}
+export -f mount_filesystem_on_volume
+
+function mount_filesystem_on_memory {
+
+    RAMDEVICE=/dev/ram0
+    
+    MOUNTPOINT_DIR=$1
+    FILESYS_TYPE=$2
+    MEMORY_DISK_SIZE=$3
+    MOUNTPOINT_OWNER=$4
+
+    if [[ -z $MOUNTPOINT_DIR ]]
+    then
+        syslog_netcat "No mountpoint specified. Bypassing mounting"
+        return 1
+    fi    
+
+    if [[ -z $MOUNTPOINT_OWNER  ]]
+    then
+        MOUNTPOINT_OWER=${my_login_username}
+    fi
+    
+    sudo mkdir -p $MOUNTPOINT
+
+    sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT
+                    
+    if [[ $FILESYS_TYPE == "tmpfs" ]]
+    then
+        syslog_netcat "Making tmpfs filesystem on accessible through the mountpoint ${MOUNTPOINT_DIR}"        
+        sudo mount -t tmpfs -o size=${MEMORY_DISK_SIZE} tmpfs $MOUNTPOINT_DIR
+    else
+        if [[ $(check_filesystem $RAMDEVICE) == "none" ]]
+        then
+            syslog_netcat "Creating $FILESYS_TYPE filesystem on volume $VOLUME"
+            sudo mkfs.$FILESYS_TYPE $RAMDEVICE
+        fi        
+
+        syslog_netcat "Making $FILESYS_TYPE filesystem on ram disk $RAMDEVICE accessible through the mountpoint ${MOUNTPOINT_DIR}"
+        sudo mount $RAMDEVICE $MOUNTPOINT_DIR    
+    fi
+
+    sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT    
+
+    return 0
+}
+export -f mount_filesystem_on_memory
+
+function mount_remote_filesystem {
+    MOUNTPOINT_DIR=$1
+    FILESYS_TYPE=$2
+    FILESERVER_IP=$3
+    FILESERVER_PATH=$4
+    
+    if [[ -z $MOUNTPOINT_DIR ]]
+    then
+        syslog_netcat "No mountpoint specified. Bypassing mounting"
+        return 1
+    fi    
+
+    if [[ -z $FILESERVER_IP ]]
+    then
+        syslog_netcat "No fileserver IP specified. Bypassing mounting"
+        return 1
+    fi            
+                        
+    sudo mkdir -p $MOUNTPOINT
+
+    sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPO
+            
+    if [[ $FILESYS_TYPE == "nfs" ]]
+    then
+        sudo mount $FILESERVER_IP:${FILESERVER_PATH} $MOUNTPOINT_DIR
+    fi
+    
+    return 0
+}
+export -f mount_remote_filesystem
+
+
 # If we are using floating IPs, then the VM will might not even know about it.
 # We will
 #if [[ $(sudo ifconfig -a | grep ${my_ip_addr}) -eq 0 ]]
@@ -445,6 +587,7 @@ function build_ai_mapping {
         vmuuid=`echo $vm | cut -d "|" -f 1`
         vmip=`get_vm_attribute ${vmuuid} cloud_ip`
         vmhn=`get_vm_attribute ${vmuuid} cloud_hostname`
+        vmhn=`echo $vmhn | tr '[:upper:]' '[:lower:]'`
         vmrole=`get_vm_attribute ${vmuuid} role`
         vmclouduuid=`get_vm_attribute ${vmuuid} cloud_uuid`
         echo "${vmip}    ${vmhn}    #${vmrole}    ${vmclouduuid}    ,${vmuuid}" >> ${ai_mapping_file}
@@ -619,8 +762,8 @@ NC_CMD=${NC}" "${NC_OPTIONS}" "${NC_HOST_SYSLOG}" "${NC_PORT_SYSLOG}
 function syslog_netcat {
     if [[ $osmode == "controllable" ]]
     then 
-        echo "${NC_FACILITY_SYSLOG} - $SCRIPT_NAME: ${1}"
-        echo "${NC_FACILITY_SYSLOG} - $SCRIPT_NAME: ${1}" | $NC_CMD &
+        echo "${NC_FACILITY_SYSLOG} - ${HOSTNAME} $SCRIPT_NAME: ${1}"
+        echo "${NC_FACILITY_SYSLOG} - ${HOSTNAME} $SCRIPT_NAME: ${1}" | $NC_CMD &
     else
         echo "$1"
     fi
@@ -645,16 +788,28 @@ function refresh_hosts_file {
 }
 
 function provision_application_start {
-    date +%s
+    PASTART=$(date +%s)
+    echo $PASTART > /tmp/provision_application_start
+    echo $PASTART
 }
 
 function provision_application_stop {
-    START=$1
+    PASTART=$1
+    
+    if [[ -z $PASTART ]]
+    then
+        if [[ -f /tmp/provision_application_start ]]
+        then
+            PASTART=$(cat /tmp/provision_application_start)
+            rm /tmp/provision_application_start
+        fi
+    fi
+
     if [[ ! -e .appfirstrun ]]
     then
         touch .appfirstrun
         END=$(date +%s)
-        DIFF=$(( $END - $START ))
+        DIFF=$(( $END - $PASTART ))
         syslog_netcat "Updating vm application startup time with value ${DIFF}"
         put_my_vm_attribute mgt_006_application_start $DIFF
     else
@@ -902,18 +1057,33 @@ function execute_load_generator {
         if [[ x"${log_output_command}" == x"true" ]]
         then
             syslog_netcat "Command output will be shown"
+            LOAD_GENERATOR_START=$(date +%s)
             $CMDLINE 2>&1 | while read line ; do
                 syslog_netcat "$line"
                 echo $line >> $OUTPUT_FILE
             done
+            ERROR=$?
+            LOAD_GENERATOR_END=$(date +%s)
+            APP_COMPLETION_TIME=$(( $LOAD_GENERATOR_END - $LOAD_GENERATOR_START )) 
         else
             syslog_netcat "Command output will NOT be shown"
+            LOAD_GENERATOR_START=$(date +%s)            
             $CMDLINE 2>&1 >> $OUTPUT_FILE
+            ERROR=$?
+            LOAD_GENERATOR_END=$(date +%s)
+            APP_COMPLETION_TIME=$(( $LOAD_GENERATOR_END - $LOAD_GENERATOR_START ))            
         fi
     else
+        LOAD_GENERATOR_START=$(date +%s)        
         syslog_netcat "This AI reached the limit of load generation process executions. If you want this AI to continue to execute the load generator, reset the \"run_limit\" counter"
         sleep ${LOAD_DURATION}
+        LOAD_GENERATOR_END=$(date +%s)
+        ERROR=$?
+        APP_COMPLETION_TIME=$(( $LOAD_GENERATOR_END - $LOAD_GENERATOR_START ))
     fi
+    update_app_errors $ERROR
+    update_app_completiontime $APP_COMPLETION_TIME
+    return 0
 }
 
 function wait_until_port_open {
@@ -938,6 +1108,132 @@ function wait_until_port_open {
     syslog_netcat "Port ${2} on host ${1} was NOT found open after ${counter} attempts!"
     return 1
 }
+
+function setup_passwordless_ssh {
+
+    SSH_KEY_NAME=$(get_my_vm_attribute identity)
+    REMOTE_DIR_NAME=$(get_my_vm_attribute remote_dir_name)
+    SSH_KEY_NAME=$(echo ${SSH_KEY_NAME} | rev | cut -d '/' -f 1 | rev)
+
+    syslog_netcat "VMs need to be able to perform passwordless SSH between each other. Updating ~/.ssh/id_rsa to be the same on all VMs.."
+    #sudo chmod 0600 ~/${REMOTE_DIR_NAME}/credentials/$SSH_KEY_NAME
+	sudo find ~ -name $SSH_KEY_NAME -exec chmod 0600 {} \;
+    sudo cat ~/${REMOTE_DIR_NAME}/credentials/$SSH_KEY_NAME > ~/.ssh/id_rsa
+    sudo chmod 0600 ~/.ssh/id_rsa
+    sudo cat ~/${REMOTE_DIR_NAME}/credentials/$SSH_KEY_NAME.pub > ~/.ssh/id_rsa.pub
+    sudo chmod 0600 ~/.ssh/id_rsa.pub
+
+    if [[ $(cat ~/.ssh/config | grep -c StrictHostKeyChecking) -eq 0 ]]
+    then
+        echo "StrictHostKeyChecking no" >> ~/.ssh/config
+    fi
+
+    if [[ $(cat ~/.ssh/config | grep -c UserKnownHostsFile) -eq 0 ]]
+    then
+        echo "UserKnownHostsFile /dev/null" >> ~/.ssh/config
+    fi
+    chmod 0644 ~/.ssh/config
+}
+
+function update_app_errors {
+
+    if [[ ! -z $1 ]]
+    then
+        ERROR=$1
+    else
+        ERROR=0
+    fi
+    
+    if [[ ! -f /tmp/app_errors ]]
+    then
+        echo "0" > /tmp/app_errors
+    fi
+
+    if [[ $ERROR -ne 0 ]]
+    then
+        curr_err=$(cat /tmp/app_errors)
+        new_err="$(( $curr_err + 1 ))"
+        echo $new_err > /tmp/app_errors
+    else
+        new_err=$(cat /tmp/app_errors )
+    fi    
+    
+    echo $new_err
+    return 0
+}
+export -f update_app_errors
+
+function update_app_datagentime {
+
+    if [[ ! -z $1 ]]
+    then
+        echo $1 > /tmp/data_generation_time
+        return 0
+    fi
+        
+    if [[ -f /tmp/old_data_generation_time ]]
+    then
+        datagentime=-$(cat /tmp/old_data_generation_time)
+    fi
+    
+    if [[ -f /tmp/data_generation_time ]]
+    then
+        datagentime=$(cat /tmp/data_generation_time)
+        mv /tmp/data_generation_time /tmp/old_data_generation_time
+    fi
+    
+    echo $datagentime
+    return 0
+}
+export -f update_app_datagentime
+
+function update_app_datagensize {
+    if [[ ! -z $1 ]]
+    then
+        echo $1 > /tmp/data_generation_size
+        return 0
+    fi
+        
+    if [[ -f /tmp/old_data_generation_size ]]
+    then
+        datagensize=-$(cat /tmp/old_data_generation_size)
+    fi
+
+    if [[ -f /tmp/data_generation_size ]]
+    then
+        datagensize=$(cat /tmp/data_generation_size)
+        mv /tmp/data_generation_size /tmp/old_data_generation_size        
+    fi
+    
+    echo $datagensize
+    return 0
+}
+export -f update_app_datagensize
+
+function update_app_completiontime {
+
+    if [[ ! -z $1 ]]
+    then
+        echo $1 > /tmp/app_completiontime
+        return 0
+    fi
+        
+    if [[ -f /tmp/old_app_completiontime ]]
+    then
+        completiontime=-$(cat /tmp/old_app_completiontime)
+    fi
+    
+    if [[ -f /tmp/app_completiontime ]]
+    then
+        completiontime=$(cat /tmp/app_completiontime)
+        mv /tmp/app_completiontime /tmp/old_app_completiontime
+    fi
+    
+    echo $completiontime
+
+    return 0
+}
+export -f update_app_completiontime
 
 function get_offline_ip {
     ip -o addr show $(ip route | grep default | grep -oE "dev [a-z]+[0-9]+" | sed "s/dev //g") | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | grep -v 255

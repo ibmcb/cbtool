@@ -685,12 +685,17 @@ class CBCLI(Cmd) :
 
             if len(_api_pid) :
                 if _api_pid[0].count("pnf") :
-                    _x, _pid, _username = _api_pid[0].split('-') 
+                    if len(_api_pid[0].split('-')) == 3 :
+                        _x, _pid, _username = _api_pid[0].split('-') 
+                    else :
+                        _pid = str(_api_pid[0])
+                        _username = "NA"
                     _msg = "Unable to start API service. Port "
                     _msg += self.cld_attr_lst["api_defaults"]["port"] + " is "
                     _msg += "already taken by process" + _pid + " (username "
                     _msg += _username + "). Please change "
-                    _msg += "the port number in API_DEFAULTS and try again."
+                    _msg += "the port number in the section [API_DEFAULTS] of "
+                    _msg += "cloud configuration file and try again."
                     _status = 8181
 
                     raise ProcessManagement.ProcessManagementException(_msg, _status)
@@ -763,7 +768,7 @@ class CBCLI(Cmd) :
 
             if len(_gui_pid) :
                 if _gui_pid[0].count("pnf") :
-                    _x, _pid, _username = _api_pid[0].split('-') 
+                    _x, _pid, _username = _gui_pid[0].split('-') 
                     _msg = "Unable to start GUI service. Port "
                     _msg += self.cld_attr_lst["gui_defaults"]["port"] + " is "
                     _msg += "already taken by process" + _pid + " (username "

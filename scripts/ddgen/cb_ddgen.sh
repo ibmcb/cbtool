@@ -36,14 +36,14 @@ DATA_DESTINATION=`get_my_ai_attribute_with_default data_destination /root`
 
 source ~/cb_barrier.sh start
 
-CMDLINE="sudo dd if=${DATA_SOURCE} of=${DATA_DESTINATION}/testfile.bin oflag=direct bs=${BLOCK_SIZE} count=${LOAD_LEVEL}"
+CMDLINE="sudo dd if=${DATA_SOURCE} of=${DDGEN_DATA_DIR}/testfile.bin oflag=direct bs=${BLOCK_SIZE} count=${LOAD_LEVEL}"
 
 syslog_netcat "Benchmarking ddgen SUT: HPCVM=${my_ip_addr} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
 
 OUTPUT_FILE=$(mktemp)
 
 execute_load_generator "${CMDLINE}" ${OUTPUT_FILE} ${LOAD_DURATION}
-	
+			
 syslog_netcat "ddgen run complete. Will collect and report the results"
 
 bw=`cat ${OUTPUT_FILE} | grep copied | awk '{ print $8 }'`
@@ -53,6 +53,10 @@ unbw=`cat ${OUTPUT_FILE} | grep copied | awk '{ print $9 }'`
 load_level:${LOAD_LEVEL}:load \
 load_profile:${LOAD_PROFILE}:name \
 load_duration:${LOAD_DURATION}:sec \
+errors:$(update_app_errors):num \
+completion_time:$(update_app_completiontime):sec \
+datagen_time:$(update_app_datagentime):sec \
+datagen_size:$(update_app_datagensize):records \
 bandwidth:${bw}:${unbw} \
 ${SLA_RUNTIME_TARGETS}
 

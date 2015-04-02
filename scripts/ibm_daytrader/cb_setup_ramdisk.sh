@@ -30,14 +30,14 @@ RAMDISK=`echo ${RAMDISK} | tr '[:upper:]' '[:lower:]'`
 
 SIZE=`get_my_ai_attribute_with_default tradedb_size small`
 
-if [[ x"${RAMDISK}" == x || x"${RAMDISK}" == "false" ]]; then
+if [[ ${RAMDISK} == "false" ]]
+then
 	syslog_netcat "DB2 will be run from an actual storage volume (${DATABASE_PATH}) on host ($SHORT_HOSTNAME)"
 else
 	syslog_netcat "Setting RAMDISK (${RAMDISK_DEVICE} for holding DB2 database ${DATABASE_NAME} on host ($SHORT_HOSTNAME)"
-	sudo mkdir ${DATABASE_PATH} 
-	sudo mkfs.ext4 /dev/ram0
-	sudo mount /dev/ram0 $DATABASE_PATH
-	sudo chown ${my_login_username}:${my_login_username} $DATABASE_PATH
+	
+	mount_filesystem_on_memory ${DATABASE_PATH} ext4 
+
 	syslog_netcat "Copying ${DATABASE_PATH}_${SIZE} contents to ${DATABASE_PATH}"
 	cp -r ${DATABASE_PATH}_${SIZE}/* ${DATABASE_PATH}
 	syslog_netcat "DB2 database ${DATABASE_NAME} now on ramdisk device ${RAMDISK_DEVICE} - OK"

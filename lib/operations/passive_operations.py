@@ -24,7 +24,7 @@
     @author: Marcio A. Silva, Michael R. Hines
 '''
 from os import makedirs, access, F_OK
-from time import asctime, localtime, sleep, time
+from time import asctime, localtime, sleep, time, strftime
 from redis import ConnectionError
 from subprocess import Popen, PIPE
 from xdrlib import Packer
@@ -35,6 +35,8 @@ import json
 import shutil
 import textwrap
 import threading
+from hashlib import sha1
+from base64 import b64encode
 
 cwd = (re.compile(".*\/").search(os.path.realpath(__file__)).group(0)) + "/../../"
 path.append(cwd)
@@ -654,7 +656,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             if _status :
                 _msg = _fmsg + _xfmsg
                 cberr(_fmsg)
-            else :
+            else :                
                 if obj_attr_list["specified_kv_pairs"].count("experiment_id") :
                     _msg = "The attribute \" experiment_id \" was changed."
                     _msg += " Checking if a Host OS performance data collection"
@@ -2081,18 +2083,260 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 return _status, _msg
 
     @trace
+    def performance_metrics_emitter(self, cloud_name, object_uuid) :
+        '''
+        TBD
+        '''
+        
+        _status = 100
+        _fmsg = "An error has occurred, but no error message was captured"
+
+        _ai_state = True
+        _error = False
+        _prev_load_level = 0
+        _prev_load_duration = 0
+        _prev_load_id =  0
+        
+        _initial_ai_attr_list = self.osci.get_object(cloud_name, "AI", False, object_uuid, False)
+
+        _mode = _initial_ai_attr_list["mode"]
+        _check_frequency = float(_initial_ai_attr_list["update_frequency"])
+                        
+        while _ai_state and not _error :        
+
+            try :
+
+                if _mode == "controllable" :
+                    _ai_state = self.osci.get_object_state(cloud_name, "AI", object_uuid)
+                    _ai_attr_list = self.osci.get_object(cloud_name, "AI", False, object_uuid, False)
+                    _mode = _ai_attr_list["mode"]
+                    _check_frequency = float(_ai_attr_list["update_frequency"])
+                else :
+                    _ai_state = "attached"
+                    _ai_attr_list = _initial_ai_attr_list
+    
+                _username = _ai_attr_list["username"]
+
+                if _ai_state and _ai_state == "attached" :
+
+                    _load = self.get_load(cloud_name, _ai_attr_list, False, \
+                                          _prev_load_level, _prev_load_duration, \
+                                          _prev_load_id)
+
+                    if _load :
+                        _prev_load_level = _ai_attr_list["current_load_level"]
+                        _prev_load_duration = _ai_attr_list["current_load_duration"]
+                        _prev_load_id = _ai_attr_list["current_load_id"]
+
+                    if _mode == "controllable" :
+
+                        self.update_object_attribute(cloud_name, \
+                                                     "AI", \
+                                                     object_uuid, \
+                                                     "current_load_level", \
+                                                     _ai_attr_list["current_load_level"]) 
+                            
+                        self.update_object_attribute(cloud_name, \
+                                                     "AI", \
+                                                     object_uuid, \
+                                                     "current_load_duration", \
+                                                     _ai_attr_list["current_load_duration"])
+        
+                        self.update_object_attribute(cloud_name, \
+                                                     "AI", \
+                                                     object_uuid, \
+                                                     "current_load_id", \
+                                                     _ai_attr_list["current_load_id"])
+
+
+                    _ai_attr_list["current_load_profile"] = _ai_attr_list["load_profile"]
+
+                    if "reported_metrics" in _ai_attr_list :
+
+                        _vg = ValueGeneration(self.pid)
+
+                        _metrics_dict = {}
+                        _sla_targets_dict = {}
+                        _reported_metrics_dict = {}
+
+                        for _item in [ "id-seqnum", "level-load", "profile-name", "duration-sec"] :
+                            _metric, _unit = _item.split('-')
+                            _metrics_dict["app_load_" + _metric] = {}
+                            _metrics_dict["app_load_" + _metric]["val"] = _ai_attr_list["current_load_" + _metric]
+                            _metrics_dict["app_load_" + _metric]["units"] = _unit
+
+                        for _metric in _ai_attr_list["reported_metrics"].split(',') :
+
+                            if _metric + "_value" in _ai_attr_list :
+                                _val = _vg.get_value(_ai_attr_list[_metric + "_value"])
+                            else :
+                                _val = _vg.get_value("uniformIXIXI1I1000")
+
+                            if _metric.count("latency") :
+                                _unit = "us"
+                            elif _metric.count("bandwidth") :
+                                _unit = "MBps"
+                            elif _metric.count("time") :
+                                _unit = "seconds"
+                            elif _metric.count("size") :
+                                _unit = "size"
+                            elif _metric.count("throughput") :
+                                _unit = "tps"
+                            else :
+                                _unit = "NA"
+                                
+                            _metrics_dict["app_"  + _metric] = {}
+                            _metrics_dict["app_"  + _metric]["val"] = _val
+                            _metrics_dict["app_"  + _metric]["units"] = _unit                            
+
+                            if "sla_runtime_target_" + _metric in _ai_attr_list :
+                                _sla_targets_dict[_metric] = _ai_attr_list["sla_runtime_target_" + _metric] 
+                    
+                    _msg = "Preparing to execute AI load generation"
+                    cbdebug(_msg)
+
+                    sleep(int(_ai_attr_list["current_load_duration"]))
+
+                    _vm_uuid = _ai_attr_list["load_generator_vm"]
+                    _expid = _ai_attr_list["load_generator_vm"]
+                    
+                    for _metric in _metrics_dict.keys() :
+            
+                        if _metric in _sla_targets_dict :
+        
+                            _sla_target, _condition = _sla_targets_dict[_metric].split('-')
+                
+                            _metrics_dict["app_sla_runtime"] = {}
+                            _metrics_dict["app_sla_runtime"]["units"] = ' '
+    
+                            if _condition == "gt" :
+                                if float(_metric[1]) >= float(_sla_target) :
+                                    _metrics_dict["app_sla_runtime"]["val"] = "ok"
+                                else :
+                                    _metrics_dict["app_sla_runtime"]["val"] = "violated"
+    
+                            if _condition == "lt" :
+                                if float(_metric[1]) <= float(_sla_target) :
+                                    _metrics_dict["app_sla_runtime"]["val"] = "ok"
+                                else :
+                                    _metrics_dict["app_sla_runtime"]["val"] = "violated"
+                
+                    _metrics_dict["time"] = int(time())
+                    _metrics_dict["time_h"] = strftime("%a %b %d %X %Z %Y")
+                    _metrics_dict["expid"] = _ai_attr_list["experiment_id"]
+                    _metrics_dict["uuid"] = _vm_uuid
+
+                    if "app_sla_runtime" in _metrics_dict :
+                        
+                        _vm_attr_list = self.osci.get_object(cloud_name, "VM", False, _ai_attr_list["load_generator_vm"], False)
+            
+                        if "sla_runtime" in _vm_attr_list :
+                            _previous_sla_runtime = _vm_attr_list["sla_runtime"]
+                        else :
+                            _previous_sla_runtime = "NA"
+            
+                        _current_sla_runtime = _metrics_dict["app_sla_runtime"]["val"]
+            
+                        if _previous_sla_runtime == _current_sla_runtime :
+                            _msg = "Previous SLA runtime status (\"" + _previous_sla_runtime
+                            _msg += "\") and New (\"" + _current_sla_runtime + "\")"
+                            _msg += " are the same. No updates needed."
+                            cbdebug(_msg)
+                        else :
+                            _msg = "Previous SLA runtime status (\"" + _previous_sla_runtime
+                            _msg += "\") and New (\"" + _current_sla_runtime + "\")"
+                            _msg += " are different. Updating attributes and views on the"
+                            _msg += " Metric Store"
+                            cbdebug(_msg)
+                            self.osci.update_object_attribute(cloud_name, \
+                                                          "VM", \
+                                                          _vm_uuid, \
+                                                          False, \
+                                                          "sla_runtime", \
+                                                          _current_sla_runtime)
+            
+                            _vm_attr_list["sla_runtime"] = _previous_sla_runtime
+                            self.osci.remove_from_view(cloud_name, "VM", _vm_attr_list, "BYSLA_RUNTIME")
+                            _vm_attr_list["sla_runtime"] = _current_sla_runtime
+                            self.osci.add_to_view(cloud_name, "VM", _vm_attr_list, "BYSLA_RUNTIME", "arrival")
+
+                    if "app_load_id" in _metrics_dict and _metrics_dict["app_load_id"]["val"] == "1" :
+                        _new_reported_metrics_dict = {}
+                        for _key in _metrics_dict.keys() :
+                            if not _key.count("time") and not _key.count("uuid") and not _key.count("time_h") :
+                                _new_reported_metrics_dict[_key] = "1"
+                        _new_reported_metrics_dict["expid"] = _expid
+                        _new_reported_metrics_dict["_id"] = b64encode(sha1(_expid).digest())
+                        _reported_metrics_dict = \
+                        self.msci.find_document("reported_runtime_app_VM_metric_names_" + \
+                                            _username, {"_id" : _new_reported_metrics_dict["_id"]})
+                        _reported_metrics_dict.update(_new_reported_metrics_dict)
+
+                    self.msci.add_document("runtime_app_VM_" + _username, _metrics_dict)
+                    _msg = "Application Metrics reported successfully. Data package sent was: \"" 
+                    _msg += str(_metrics_dict) + "\""
+                    cbdebug(_msg)
+
+                    _metrics_dict["_id"] = _metrics_dict["uuid"]
+                    self.msci.update_document("latest_runtime_app_VM_" + _username, _metrics_dict)
+                    _msg = "Latest app performance data updated successfully"
+                    cbdebug(_msg)
+
+                    if len(_reported_metrics_dict) :
+                        self.msci.update_document("reported_runtime_app_VM_metric_names_" + _username, _reported_metrics_dict)
+                        _msg = "Reported runtime application metric names collection "
+                        _msg += "updated successfully. Data package sent was: \""
+                        _msg += str(_reported_metrics_dict) + "\""
+                        cbdebug(_msg)
+
+                else :
+                    # Only reset individual applications on the AI. Don't send
+                    # any load.
+                    _msg = "AI object " + object_uuid 
+                    _msg += " state was set to \"" + _ai_state + "\". No load will "
+                    _msg += "be applied until the state is changed. The "
+                    _msg += "current load will be allowed to finish its course."
+                    cbdebug(_msg)
+
+            except self.msci.MetricStoreMgdConnException, obj :
+                _error = True
+                _status = 44
+                _fmsg = str(obj.msg)
+
+            except self.osci.ObjectStoreMgdConnException, obj :
+                _error = True                
+                _status = 40
+                _fmsg = str(obj.msg)
+    
+            except Exception, e :
+                _error = True                
+                _status = 23
+                _fmsg = str(e)
+
+        if _status :
+            _msg = "Application Performance Metrics emitter failure: " + _fmsg
+            cberr(_msg)
+            return _status, _msg
+        else :
+            _msg = "Application Performance Metrics emitter completed successfully"
+            cbdebug(_msg)
+            return _status, _msg
+
+    @trace
     def execute_shell(self, parameters, command) :
         '''
         TBD
         '''
+        result_dict = {}
         try : 
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
-
             _obj_attr_list = {}
             _status, _fmsg = self.parse_cli(_obj_attr_list, parameters, command)
             _msg = ""
 
+            _vm = None
+            
             if not _status :
 
                 _status, _fmsg = self.initialize_object(_obj_attr_list, command)
@@ -2100,10 +2344,37 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 if not _status :
                     _cmd = _obj_attr_list["cmdexec"]
 
-                    _proc_man =  ProcessManagement()
+                    for _word in _cmd.split() :
+
+                        if _word.count("vm_") :
+                            _vm = _word
+                            
+                            _vm_attr_list = \
+                            self.osci.get_object(_obj_attr_list["cloud_name"], \
+                                                 "VM", \
+                                                 True, \
+                                                 _vm, \
+                                                 False)
+
+                    if not _vm :
+                        True
+                    else :
+                        _ssh_cmd = "ssh -i " + _vm_attr_list["identity"]
+
+                        if "ssh_config_file" in _vm_attr_list :
+                            _ssh_cmd += " -F " + _vm_attr_list["ssh_config_file"]
+
+                        _ssh_cmd += " -o StrictHostKeyChecking=no"
+                        _ssh_cmd += " -o UserKnownHostsFile=/dev/null" 
+                        _ssh_cmd += " -l " + _vm_attr_list["login"] + ' '
+
+                        _cmd = _ssh_cmd + ' ' + _vm_attr_list["prov_cloud_ip"] + " \"" + _cmd.replace(_vm,'') + "\""
+
+                    _proc_man =  ProcessManagement()                                                 
                     print "running shell command: \"" + _cmd + "\"...."
                     _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_cmd)
-
+                    result_dict = {"stdout": _result_stdout, "stderr": _result_stderr}
+ 
                     if not _status :
                         print "stdout:\n " + _result_stdout
 
@@ -2134,8 +2405,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 cberr(_msg)
             else :
                 cbdebug(_msg)
-
-            return _status, _msg, ''
+            return self.package(_status, _msg, result_dict)
 
     @trace
     def globallist(self, obj_attr_list, parameters, command) :
@@ -2298,34 +2568,41 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
                                     elif _key == "sut" :
                                         _key = _key.replace(_key, "01___" + _key)
-                                    elif _key == "reported_metrics" :
-                                        _key = _key.replace(_key, "02___" + _key)                                        
                                     elif _key == "load_balancer_supported" :
-                                        _key = _key.replace(_key, "03___" + _key)
+                                        _key = _key.replace(_key, "02___" + _key)
                                         if _value.lower() == "true" :
                                             _load_balancer_supported = True
                                     elif _key == "resize_supported" :
-                                        _key = _key.replace(_key, "04___" + _key)
+                                        _key = _key.replace(_key, "03___" + _key)
                                     elif _key == "regenerate_data" :
+                                        _key = _key.replace(_key, "04___" + _key)
+                                    elif _key == "load_generator_role" :
                                         _key = _key.replace(_key, "05___" + _key)
-                                    elif _key == "load_profile" :
-                                        _key = _key.replace(_key, "06___" + _key)
-                                    elif _key == "load_level" :
-                                        _key = _key.replace(_key, "07___" + _key)
-                                    elif _key == "load_duration" :
-                                        _key = _key.replace(_key, "08___" + _key)                                                                                
                                     elif _key == "load_manager_role" :
-                                        _key = _key.replace(_key, "09___" + _key)
+                                        _key = _key.replace(_key, "06___" + _key)         
                                     elif _key == "metric_aggregator_role" :
-                                        _key = _key.replace(_key, "10___" + _key)
+                                        _key = _key.replace(_key, "07___" + _key)
                                     elif _key == "capture_role" :
+                                        _key = _key.replace(_key, "08___" + _key)
+                                    elif _key == "load_balancer" :
+                                        _key = _key.replace(_key, "09___" + _key)                                                                                                                        
+                                    elif _key == "load_profile" :
+                                        _key = _key.replace(_key, "10___" + _key)
+                                    elif _key == "load_level" :
                                         _key = _key.replace(_key, "11___" + _key)
+                                    elif _key == "load_duration" :
+                                        _key = _key.replace(_key, "12___" + _key)                                                                                                                        
+                                    elif _key == "reported_metrics" :
+                                        _key = _key.replace(_key, "13___" + _key)           
+
                                     elif _key.count("setup") :
-                                        _key = _key.replace(_key, "12___" + _key)
-                                    elif _key.count("reset") :
-                                        _key = _key.replace(_key, "13___" + _key)
-                                    elif _key.count("start") :
                                         _key = _key.replace(_key, "14___" + _key)
+                                    elif _key.count("reset") :
+                                        _key = _key.replace(_key, "15___" + _key)
+                                    elif _key.count("resize") :
+                                        _key = _key.replace(_key, "16___" + _key)                                        
+                                    elif _key.count("start") :
+                                        _key = _key.replace(_key, "17___" + _key)
 
                                     elif _key == "type" :
                                         _key = _key.replace(_key, "00___" + _key)
@@ -2336,20 +2613,29 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                     elif _key == "lifetime" :
                                         _key = _key.replace(_key, "09___" + _key)
 
-                                    if not _key.count("load_balancer_supported") and _key.count("load_balancer") :
-                                        if _load_balancer_supported :
-                                            _formatted_result.append(_key + ": " + _value)
-                                    else :
-                                        _formatted_result.append(_key + ": " + _value)
+                                    _formatted_result.append(_key + ": " + _value)
 
                         _formatted_result.sort()
 
                         if obj_attr_list["global_object"] == "ai_templates" or obj_attr_list["global_object"] == "aidrs_templates" :
+                            _sh = 'Z'
                             for _line_number in range(0, len(_formatted_result)) :
-                                if _formatted_result[_line_number].count("___") :
-                                    _formatted_result[_line_number] = _formatted_result[_line_number][5:]
-                                _formatted_result[_line_number] = _formatted_result[_line_number].replace('\\n','\n')
 
+                                if _formatted_result[_line_number].count("___") :
+                                    if _formatted_result[_line_number].count("sut") :
+                                        _formatted_result[_line_number] = "# Attributes MANDATORY for all Virtual Applications: \n\n" + _formatted_result[_line_number][5:]
+                                    elif _formatted_result[_line_number].count("reported_metrics") :
+                                        _formatted_result[_line_number] = _formatted_result[_line_number][5:]
+                                        _formatted_result[_line_number] += "\n\n# Virtual Application-specific MANDATORY attributes: \n"
+                                    else :
+                                        _formatted_result[_line_number] = _formatted_result[_line_number][5:]
+                                else :
+                                    if len(_sh) == 1 :
+                                        _sh = "\n# Virtual Application-specific OPTIONAL attributes: \n\n"
+                                        
+                                    _formatted_result[_line_number] = _sh + _formatted_result[_line_number].replace('\\n','\n')
+                                    _sh = ''
+                                    
                         _status = 0
                     else :
                         _status = 179
@@ -2494,7 +2780,8 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _fmsg = "An error has occurred, but no error message was captured"
 
             _result = None 
-
+            _new_expid = None
+            
             _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
 
             if not _status :
@@ -2514,12 +2801,15 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     
                     if len(_parameters) == 2 :
                                     
-                        _msg = "Current experiment identifier is \"" + _curr_expid + "\"."
                         _result = _time_obj_attr_list["experiment_id"]
             
                     else :
                         
                         _new_expid = _parameters[2]
+                        
+                        if _new_expid.count("$CLOUD_NAME") :
+                            _new_expid = _new_expid.replace("$CLOUD_NAME",obj_attr_list["cloud_name"])
+                            
                         self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
                                                           "GLOBAL", "time", False,\
                                                            "experiment_id", \
@@ -2530,8 +2820,6 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         self.initialize_metric_name_list(obj_attr_list)
 
                         if not _status :
-                            _msg = "Experiment identifier was changed from \"" + _curr_expid + "\""
-                            _msg += " to \"" + _new_expid + "\". " 
                             _result = _new_expid
         
                     _status = 0
@@ -2551,8 +2839,15 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 _view_dict = False
 
             else :
-                cbdebug(_msg)
-
+                if _new_expid :
+                    _msg = "The attribute \"experiment_id \" was changed from \""
+                    _msg += _curr_expid + "\" to \"" + self.expid + "\"."
+                    cbdebug(_msg)
+                    self.update_host_os_perfmon(obj_attr_list)                
+                else :
+                    _msg = "Current experiment identifier is \"" + self.expid + "\"."
+                    cbdebug(_msg)
+                    
             return self.package(_status, _msg, _result)
 
 

@@ -113,6 +113,7 @@ source ~/cb_barrier.sh start
 
 syslog_netcat "Command line is: ${CMDLINE}. Output file is ${OUTPUT_FILE}. Application data collection mode is ${APP_COLLECTION}"
 
+LOAD_GENERATOR_START=$(date +%s) 
 $CMDLINE | while read line ; do
     if [ x"${log_output_command}" == x"true" ]; then
         syslog_netcat "$line"
@@ -135,12 +136,19 @@ $CMDLINE | while read line ; do
             ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
             load_level:${LOAD_LEVEL}:load \
             load_duration:${LOAD_DURATION}:sec \
+            load_profile:${LOAD_PROFILE}:name \
             throughput:$tp:tps \
             latency:$lat:msec \
             ${SLA_RUNTIME_TARGETS}
         fi
     fi
 done
+ERROR=$?
+LOAD_GENERATOR_END=$(date +%s)
+
+update_app_errors $ERROR
+    
+update_app_completiontime $(( $LOAD_GENERATOR_END - $LOAD_GENERATOR_START ))  
 
 syslog_netcat "iwlengine run complete. Will collect and report the results"
 tp=`cat ${OUTPUT_FILE} | grep throughput | grep Page | grep -v element | cut -d " " -f 5 | tr -d ' '`
@@ -149,6 +157,10 @@ lat=`echo "\`cat ${OUTPUT_FILE} | grep response | grep -v all | cut -d " " -f 9 
 load_level:${LOAD_LEVEL}:load \
 load_duration:${LOAD_DURATION}:sec \
 load_profile:${LOAD_PROFILE}:name \
+errors:$(update_app_errors):num \
+completion_time:$(update_app_completiontime):sec \
+datagen_time:$(update_app_datagentime):sec \
+datagen_size:$(update_app_datagensize):records \
 throughput:$tp:tps \
 latency:$lat:msec \
 ${SLA_RUNTIME_TARGETS}

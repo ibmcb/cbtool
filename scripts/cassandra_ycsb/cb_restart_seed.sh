@@ -24,8 +24,9 @@ START=`provision_application_start`
 
 SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
 
-sudo mkdir -p ${CASSANDRA_DATA_DIR}
+mount_filesystem_on_volume ${CASSANDRA_DATA_DIR} $CASSANDRA_DATA_FSTYP cassandra
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 VOLUME=$(get_attached_volumes)
 if [[ $VOLUME != "NONE" ]]
@@ -41,18 +42,7 @@ fi
 =======
 find_and_attach_volume $YCSB_DB_FSTYP $CASSANDRA_DATA_DIR
 >>>>>>> Stashed changes
-
-CASSANDRA_REPLICATION_FACTOR=$(get_my_ai_attribute_with_default replication_factor 4)
-sudo sed -i "s/REPLF/${CASSANDRA_REPLICATION_FACTOR}/g" create_keyspace.cassandra
-
-#
-# Update the cassandra config
-#
-TEMP_CASSANDRA_DATA_DIR=$(echo ${CASSANDRA_DATA_DIR} | sed 's/\//_+-_-+/g')
-sudo sed -i "s/\/var\/lib\//${TEMP_CASSANDRA_DATA_DIR}\//g" ${CASSANDRA_CONFIG_DIR}/cassandra.yaml
-sudo sed -i "s/_+-_-+/\//g" ${CASSANDRA_CONFIG_DIR}/cassandra.yaml
-sudo sed -i "s/'Test Cluster'/'${my_ai_name}'/g" ${CASSANDRA_CONFIG_DIR}/cassandra.yaml
-
+=======
 #
 # Cassandra directory structure
 #
@@ -60,11 +50,30 @@ sudo mkdir -p ${CASSANDRA_DATA_DIR}/store/cassandra/data
 sudo mkdir -p ${CASSANDRA_DATA_DIR}/cassandra/commitlog 
 sudo mkdir -p ${CASSANDRA_DATA_DIR}/cassandra/saved_caches
 sudo chown -R cassandra:cassandra ${CASSANDRA_DATA_DIR}
+>>>>>>> upstream/master
+
+CASSANDRA_REPLICATION_FACTOR=$(get_my_ai_attribute_with_default replication_factor 4)
+sudo sed -i "s/REPLF/${CASSANDRA_REPLICATION_FACTOR}/g" create_keyspace.cassandra
+
+CASSANDRA_CONF_PATH=$(get_my_ai_attribute_with_default cassandra_conf_path /etc/cassandra/cassandra.yaml)
+
+if [[ ! -f $CASSANDRA_CONF_PATH ]]
+then
+    CASSANDRA_CONF_PATH=$(sudo find /etc -name cassandra.yaml)
+fi
+
+#
+# Update the cassandra config
+#
+TEMP_CASSANDRA_DATA_DIR=$(echo ${CASSANDRA_DATA_DIR} | sed 's/\//_+-_-+/g')
+sudo sed -i "s/\/var\/lib\//${TEMP_CASSANDRA_DATA_DIR}\//g" ${CASSANDRA_CONF_PATH}
+sudo sed -i "s/_+-_-+/\//g" ${CASSANDRA_CONF_PATH}
+sudo sed -i "s/'Test Cluster'/'${my_ai_name}'/g" ${CASSANDRA_CONF_PATH}
 
 pos=1
 for db in $cassandra_ips
 do
-    if [[ $(cat /etc/hosts | grep -c "cassandra$pos ") -eq 0 ]]
+    if [[ $(sudo cat /etc/hosts | grep -c "cassandra${pos} ") -eq 0 ]]
     then
         sudo sh -c "echo $db cassandra$pos cassandra-$pos >> /etc/hosts"
     fi
@@ -74,47 +83,61 @@ done
 #
 # Cassandra will not properly start if the hostname is not in DNS or /etc/hosts
 #
-sudo sh -c "echo ${MY_IP} ${SHORT_HOSTNAME} >> /etc/hosts"
+if [[ $(sudo cat /etc/hosts | grep ${MY_IP} | grep -c ${SHORT_HOSTNAME}) -eq 0 ]]
+then
+    sudo sh -c "echo ${MY_IP} ${SHORT_HOSTNAME} >> /etc/hosts"
+fi
 
 #
 # Update Cassandra Config
 #
-sudo sed -i "s/- seeds:.*$/- seeds: $seed_ips_csv/g" ${CASSANDRA_CONFIG_DIR}/cassandra.yaml
-# Setting an empty string for listen|rpc_address will force cassnadra to use local hostname
-sudo sed -i "s/listen_address:.*$/listen_address:/g" ${CASSANDRA_CONFIG_DIR}/cassandra.yaml
-sudo sed -i 's/rpc_address:.*$/rpc_address:/g' ${CASSANDRA_CONFIG_DIR}/cassandra.yaml
-
-#
-# Remove possible old runs
-#
-sudo rm -rf ${CASSANDRA_DATA_DIR}/cassandra/saved_caches/*
-sudo rm -rf ${CASSANDRA_DATA_DIR}/cassandra/data/system/*
-sudo rm -rf ${CASSANDRA_DATA_DIR}/cassandra/commitlog/*
-
-syslog_netcat "my ip : $MY_IP"
+sudo sed -i "s/initial_token:$/initial_token: ${my_token//[[:blank:]]/}/g" ${CASSANDRA_CONF_PATH}
+sudo sed -i "s/- seeds:.*$/- seeds: $seed_ips_csv/g" ${CASSANDRA_CONF_PATH}
+sudo sed -i "s/listen_address:.*$/listen_address: ${MY_IP}/g" ${CASSANDRA_CONF_PATH}
+sudo sed -i "s/rpc_address:.*$/rpc_address: ${MY_IP}/g" ${CASSANDRA_CONF_PATH}
+sudo sed -i "s/partitioner: org.apache.cassandra.dht.Murmur3Partitioner/partitioner: org.apache.cassandra.dht.RandomPartitioner/g" ${CASSANDRA_CONF_PATH}
+#sudo sed -i "s/partitioner:.*$/partitioner: org.apache.cassandra.dht.RandomPartitioner/g" ${CASSANDRA_CONF_PATH}    
+sudo sed -i "s^/var/lib/^${CASSANDRA_DATA_DIR}/^g" ${CASSANDRA_CONF_PATH}
+sudo sed -i "s/'Test Cluster'/'${my_ai_name}'/g" ${CASSANDRA_CONF_PATH}
 
 #
 # Start the database
 #
-syslog_netcat "Starting cassandra on ${SHORT_HOSTNAME}" 
-sudo service cassandra start 
+FIRST_SEED=$(echo $seed_ips_csv | cut -d ',' -f 1)
 
-# Give all the Java services time to start
-wait_until_port_open ${MY_IP} 9160 20 5
+syslog_netcat "Performing a quick check from ${SHORT_HOSTNAME} in order to decide on Cassandra restart" 
+check_cassandra_cluster_state ${FIRST_SEED} 1 1
 
 STATUS=$?
+if [[ $STATUS -ne 0 ]]
+then 
+    syslog_netcat "The exit code of \"check_cassandra_cluster_state ${FIRST_SEED} 1 1\" was $STATUS. Starting Cassandra service on this seed..." 
+    service_restart_enable cassandra
 
-if [[ ${STATUS} -eq 0 ]]
-then
-    syslog_netcat "Cassandra seed server running"
-else
-    syslog_netcat "Cassandra seed server failed to start"
+    # Give all the Java services time to start
+    wait_until_port_open ${MY_IP} 9160 20 5
+
+    STATUS=$?
+
+    if [[ ${STATUS} -eq 0 ]]
+    then
+        syslog_netcat "Cassandra service running on this seed"
+        check_cassandra_cluster_state ${FIRST_SEED} 10 20
+        STATUS=$?
+        if [[  $STATUS -eq 0 ]]
+        then 
+            syslog_netcat "Cassandra cluster fully formed. All nodes registered after Cassandra restart"
+        else
+            syslog_netcat "Failed to form Cassandra cluster! - NOK"    
+        fi          
+    else
+        syslog_netcat "Cassandra service failed to start on this seed"
+        STATUS=1
+    fi
+else                  
+    syslog_netcat "Cassandra cluster fully formed. All nodes registered. Bypassing Cassandra service restart."
+    STATUS=0
 fi
-
-#
-# Init database
-#
-cassandra-cli -f create_keyspace.cassandra
 
 provision_application_stop $START
 

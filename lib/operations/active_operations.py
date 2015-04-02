@@ -86,6 +86,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 if not self.expid :                
                     _time_attr_list = self.osci.get_object(cld_attr_lst["name"], "GLOBAL", False, "time", False)
                     self.expid = _time_attr_list["experiment_id"]
+                    _expid = self.expid
                     
                 _cld_name = cld_attr_lst["name"]
 
@@ -4543,7 +4544,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             for _key in _ai_attr_list :
                 if _key.count("sla_runtime_target") :
                     _sla_runtime_targets += _key + ':' + _ai_attr_list[_key]
-                
+
             if _ai_state and _ai_state == "attached" :
                 _load = self.get_load(cloud_name, _ai_attr_list, False, \
                                       _prev_load_level, _prev_load_duration, \

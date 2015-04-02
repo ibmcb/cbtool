@@ -551,6 +551,13 @@ def main(options) :
             _obj_type = "GLOBAL"
             _status, _msg = _passive_obj_command.cloud_watch(options.cn, _uuid)
             _status = 0
+
+        elif _operation.count("emit") :
+            _local_process = True
+            _uuid = options.ouuid            
+            _obj_type = "AI"
+            _status, _msg = _passive_obj_command.performance_metrics_emitter(options.cn, _uuid)
+            _status = 0
             
         elif _operation.count("execute") :
             

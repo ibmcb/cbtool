@@ -28,17 +28,17 @@ LOAD_LEVEL = 1
 LOAD_DURATION = 60
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
-#APP_COLLECTION = lazy
-#RUN_COUNTER_NAME = experiment_id_counter
-#MONGODB_DATA_DIR = /dbstore
-#MONGODB_DATA_FSTYP = ext4
-#OPERATION_COUNT = 100000
-#READ_RATIO = workloaddefault
-#UPDATE_RATIO = workloaddefault
-#INPUT_RECORDS = memory
-#RECORD_SIZE = 2.35
-#DATABASE_SIZE_VERSUS_MEMORY = 0.5
-#REPLICATION_FACTOR = 4
+APP_COLLECTION = lazy
+RUN_COUNTER_NAME = experiment_id_counter
+MONGODB_DATA_DIR = /dbstore
+MONGODB_DATA_FSTYP = ext4
+OPERATION_COUNT = 100000
+READ_RATIO = workloaddefault
+UPDATE_RATIO = workloaddefault
+INPUT_RECORDS = memory
+RECORD_SIZE = 2.35
+DATABASE_SIZE_VERSUS_MEMORY = 0.5
+REPLICATION_FACTOR = 4
 
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
 #SYNC_COUNTER_NAME = synchronization_counter

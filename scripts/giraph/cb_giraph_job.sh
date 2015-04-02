@@ -16,7 +16,7 @@
 # limitations under the License.
 #/*******************************************************************************
 
-source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_giraph_common.sh
+source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_hadoop_common.sh
 
 LOAD_PROFILE=$1
 LOAD_LEVEL=$2
@@ -30,8 +30,7 @@ then
     exit 1
 fi
 
-DFSADMINOUTPUT=`${HADOOP_HOME}/bin/hadoop dfsadmin -report | grep "Datanodes available"`
-AVAILABLE_NODES=`echo ${DFSADMINOUTPUT} | cut -d ":" -f 2 | cut -d " " -f 2`
+AVAILABLE_NODES=$(get_available_nodes)
 
 # Check for updated jar
 GIRAPH_EXAMPLES=$(find $GIRAPH_HOME | grep giraph-examples | grep dependencies | grep -is snapshot | grep jar)
@@ -113,10 +112,18 @@ syslog_netcat "..giraph job is done. Ready to do a summary..."
 lat=$(cat ${OUTPUT_FILE} | grep "Total (ms)" | cut -d '=' -f 2)
 #tput=`cat ${HIBENCH_HOME}/hibench.report | grep -v Type | tr -s ' ' | cut -d ' ' -f 6`
 
+check_hadoop_cluster_state 1 1
+ERROR=$?
+update_app_errors $ERROR
+
 ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
 load_level:${LOAD_LEVEL}:load \
 load_profile:${LOAD_PROFILE}:name \
 load_duration:${LOAD_DURATION}:sec \
+errors:$(update_app_errors):num \
+completion_time:$(update_app_completiontime):sec \
+datagen_time:$(update_app_datagentime):sec \
+datagen_size:$(update_app_datagensize):records \
 latency:$lat:msec \
 ${SLA_RUNTIME_TARGETS}
 

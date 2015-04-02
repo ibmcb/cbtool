@@ -60,6 +60,10 @@ lat=`echo "\`cat ${OUTPUT_FILE} | grep time | cut -d ":" -f 2 | tr -d ' '\` * 10
 load_level:${LOAD_LEVEL}:load \
 load_profile:${LOAD_PROFILE}:name \
 load_duration:${LOAD_DURATION}:sec \
+errors:$(update_app_errors):num \
+completion_time:$(update_app_completiontime):sec \
+datagen_time:$(update_app_datagentime):sec \
+datagen_size:$(update_app_datagensize):records \
 throughput:$tp:tps latency:$lat:msec \
 ${SLA_RUNTIME_TARGETS}
 

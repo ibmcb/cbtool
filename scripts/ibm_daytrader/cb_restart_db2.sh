@@ -17,12 +17,7 @@
 #/*******************************************************************************
 
 source ~/.bashrc
-dir=$(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")
-if [ -e $dir/cb_common.sh ] ; then
-	source $dir/cb_common.sh
-else
-	source $dir/../common/cb_common.sh
-fi
+source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
 DB2_INSTANCE_NAME=`get_my_ai_attribute_with_default db2_instance_name klabuser`
 INSTANCE_PATH=/home/${DB2_INSTANCE_NAME}
@@ -35,6 +30,8 @@ SIZE=`get_my_ai_attribute_with_default tradedb_size small`
 
 syslog_netcat "Moving /tradedb_${SIZE} to /tradedb"
 sudo mv /tradedb_${SIZE} /tradedb
+syslog_netcat "Changing ownership of /tradedb to ${DB2_INSTANCE_NAME}:${DB2_INSTANCE_NAME}"
+sudo chown -R ${DB2_INSTANCE_NAME}:${DB2_INSTANCE_NAME} /tradedb
 
 syslog_netcat "Setting DB2 for the new hostname ($SHORT_HOSTNAME)"
 sudo chmod 666 $INSTANCE_PATH/sqllib/db2nodes.cfg

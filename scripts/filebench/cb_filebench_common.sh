@@ -22,4 +22,5 @@ source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 #FB_BINARY_NAME=filebench_elo
 FB_BINARY_PATH=/usr/local/bin
 FB_BINARY_NAME=filebench
-STORAGE_PATH=fbtest
+FILEBENCH_DATA_DIR=$(get_my_ai_attribute_with_default filebench_data_dir /fbtest)
+FILEBENCH_DATA_FSTYP=$(get_my_ai_attribute_with_default filebench_data_fstyp ext4)

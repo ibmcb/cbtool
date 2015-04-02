@@ -26,17 +26,25 @@
 from time import time, sleep
 from uuid import uuid5, UUID
 from random import choice
+from os import access, F_OK
+from os.path import expanduser
+
 import socket
 import copy
 import iso8601
 
-from novaclient.v1_1 import client
+try :
+    from novaclient.v2 import client
+except :
+    from novaclient.v1_1 import client
+
 from novaclient import exceptions as novaexceptions
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import str2dic, value_suffix
 from lib.remote.network_functions import hostname2ip
 from lib.remote.process_management import ProcessManagement
+from lib.remote.ssh_ops import get_ssh_key
 from shared_functions import CldOpsException, CommonCloudFunctions 
 
 class OskCmds(CommonCloudFunctions) :
@@ -56,7 +64,9 @@ class OskCmds(CommonCloudFunctions) :
         self.expid = expid
         self.ft_supported = False
         self.lvirt_conn = {}
-    
+        self.api_error_counter = {}
+        self.max_api_errors = 10
+        
     @trace
     def get_description(self) :
         '''
@@ -72,6 +82,7 @@ class OskCmds(CommonCloudFunctions) :
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
+
 
             if len(access_url.split('-')) == 1 :
                 _endpoint_type = "publicURL"
@@ -99,11 +110,13 @@ class OskCmds(CommonCloudFunctions) :
             _tenant = _tenant.replace("_dash_",'-')
 
             _fmsg = "About to attempt a connection to OpenStack"
+
             self.oskconncompute = client.Client(_username, _password, _tenant, \
                                          access_url, region_name = region, \
                                          service_type="compute", \
                                          endpoint_type = _endpoint_type, \
                                          cacert = _cacert)
+
             self.oskconncompute.flavors.list()
 
             self.oskconnstorage = client.Client(_username, _password, _tenant, \
@@ -116,6 +129,21 @@ class OskCmds(CommonCloudFunctions) :
 
             _region = region
             _msg = "Selected region is " + str(region)
+            cbdebug(_msg)
+
+            _file = expanduser("~") + "/adminrc"
+
+            if not access(_file, F_OK) :
+                _file_fd = open(_file, 'w')
+                        
+                _file_fd.write("export OS_TENANT_NAME=" + _tenant + "\n")
+                _file_fd.write("export OS_USERNAME=" + _username + "\n")
+                _file_fd.write("export OS_PASSWORD=" + _password + "\n")                    
+                _file_fd.write("export OS_AUTH_URL=\"" + access_url + "\"\n")
+                _file_fd.write("export OS_NO_CACHE=1\n")
+                _file_fd.write("export OS_REGION_NAME=" + region + "\n")                    
+                _file_fd.close()
+            
             _status = 0
 
         except novaexceptions, obj:
@@ -197,20 +225,30 @@ class OskCmds(CommonCloudFunctions) :
             _pub_key_fn = vm_defaults["credentials_dir"] + '/'
             _pub_key_fn += vm_defaults["ssh_key_name"] + ".pub"
 
-            _fh = open(_pub_key_fn, 'r')
-            _pub_key = _fh.read()
-            _fh.close()
+            _pub_key_fn = vm_defaults["credentials_dir"] + '/'
+            _pub_key_fn += vm_defaults["ssh_key_name"] + ".pub"
+
+            _key_type, _key_contents, _key_fingerprint = get_ssh_key(_pub_key_fn)
+            
+            if not _key_contents :
+                _fmsg = _key_type 
+                cberr(_fmsg, True)
+                return False
+            
+            _key_pair_found = False
 
             for _key_pair in self.oskconncompute.keypairs.list() :
+
                 if _key_pair.name == key_name :
-                    _msg = "A key named \"" + key_name + "\" was found in "
+                    _msg = "A key named \"" + key_name + "\" was found "
                     _msg += "on VMC " + vmc_name + ". Checking if the key"
                     _msg += " contents are correct."
                     cbdebug(_msg)
-                    _key1 = _pub_key.split()
-                    _key2 = _key_pair.public_key.split()
-                    if len(_key1) > 1 and len(_key2) > 1 :
-                        if _key1 == _key2 :
+                    
+                    _key2 = _key_pair.public_key.split()[1]
+                    
+                    if len(_key_contents) > 1 and len(_key2) > 1 :
+                        if _key_contents == _key2 :
                             _msg = "The contents of the key \"" + key_name
                             _msg += "\" on the VMC " + vmc_name + " and the"
                             _msg += " one present on directory \"" 
@@ -237,9 +275,9 @@ class OskCmds(CommonCloudFunctions) :
                 _msg += " on VMC " + vmc_name + ", using the public key \""
                 _msg += _pub_key_fn + "\"..."
                 cbdebug(_msg, True)
-                                    
+
                 self.oskconncompute.keypairs.create(key_name, \
-                                                    public_key = _pub_key)
+                                                    public_key = _key_type + ' ' + _key_contents)
                 _key_pair_found = True
 
             return _key_pair_found
@@ -514,8 +552,8 @@ class OskCmds(CommonCloudFunctions) :
             _fmsg = "An error has occurred, but no error message was captured"
 
             self.connect(access, credentials, vmc_name)
-
-            _key_pair_found = self.check_ssh_key(vmc_name, key_name, vm_defaults)
+            
+            _key_pair_found = self.check_ssh_key(vmc_name, vm_defaults["username"] + '_' + key_name, vm_defaults)
 
             _security_group_found = self.check_security_group(vmc_name, security_group_name)
 
@@ -1193,12 +1231,31 @@ class OskCmds(CommonCloudFunctions) :
         except novaexceptions, obj:
             _status = int(obj.error_code)
             _fmsg = "(While getting instance(s) through API call \"" + _call + "\") " + str(obj.error_message)
-            raise CldOpsException(_fmsg, _status)
+
+            if identifier not in self.api_error_counter :
+                self.api_error_counter[identifier] = 0
+            
+            self.api_error_counter[identifier] += 1
+            
+            if self.api_error_counter[identifier] > self.max_api_errors :            
+                raise CldOpsException(_fmsg, _status)
+            else :
+                cbwarn(_fmsg)
+                return False
 
         except Exception, e :
             _status = 23
             _fmsg = "(While getting instance(s) through API call \"" + _call + "\") " + str(e)
-            raise CldOpsException(_fmsg, _status)
+            if identifier not in self.api_error_counter :
+                self.api_error_counter[identifier] = 0
+            
+            self.api_error_counter[identifier] += 1
+            
+            if self.api_error_counter[identifier] > self.max_api_errors :            
+                raise CldOpsException(_fmsg, _status)
+            else :
+                cbwarn(_fmsg)
+                return False
 
     @trace
     def vmcount(self, obj_attr_list):
@@ -1421,8 +1478,17 @@ class OskCmds(CommonCloudFunctions) :
                 obj_attr_list["cloud_vv_name"] += '-' + "vv"
                 obj_attr_list["cloud_vv_name"] += obj_attr_list["name"].split("_")[1]
                 obj_attr_list["cloud_vv_name"] += '-' + obj_attr_list["role"]            
-    
-                _msg = "Creating a volume, with size " 
+
+                if "cloud_vv_type" in obj_attr_list :
+                    _volume_type = obj_attr_list["cloud_vv_type"]
+                else :
+                    _volume_type = None
+
+                if not _volume_type :                    
+                    _msg = "Creating a volume, with size " 
+                else :
+                    _msg = "Creating a " + _volume_type + " volume, with size " 
+
                 _msg += obj_attr_list["cloud_vv"] + " GB, on VMC \"" 
                 _msg += obj_attr_list["vmc_name"] + "\""
                 cbdebug(_msg, True)
@@ -1431,7 +1497,7 @@ class OskCmds(CommonCloudFunctions) :
                                                                snapshot_id = None, \
                                                                display_name = obj_attr_list["cloud_vv_name"], \
                                                                display_description = None, \
-                                                               volume_type = None, \
+                                                               volume_type = _volume_type, \
                                                                availability_zone = None, \
                                                                imageRef = None)
                 
@@ -1792,7 +1858,7 @@ class OskCmds(CommonCloudFunctions) :
             if str(obj_attr_list["key_name"]).lower() == "false" :
                 _key_name = None
             else :
-                _key_name = obj_attr_list["key_name"]
+                _key_name = obj_attr_list["username"] + '_' + obj_attr_list["key_name"]
 
             obj_attr_list["last_known_state"] = "about to send create request"
 

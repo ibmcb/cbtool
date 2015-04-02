@@ -112,6 +112,7 @@ iptables-order = 50
 R-order = 51
 sshkey-order = 52
 sshd-order = 53
+pssh-order = 54
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -176,6 +177,7 @@ iptables-install = pm
 R-install = pm
 sshkey-install = man
 sshd-install = man
+pssh-install = pm
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
@@ -233,6 +235,7 @@ iptables-configure = iptables -v 2>&1 | grep v | cut -d ' ' -f 2 | sed 's/v//g' 
 R-configure = R --version | grep version | grep -v GNU
 sshkey-configure = ls CREDENTIALSDIR/cbtool_rsa
 sshd-configure = sudo cat /etc/ssh/sshd_config | grep -v ^# | grep UseDNS | grep no
+pssh-configure = sudo ln -s /usr/bin/parallel-ssh /usr/local/bin/pssh; pssh --version
 ### END - Tests ###
 
 ### START - Dependency versions ###
@@ -290,6 +293,7 @@ iptables-ver = 1.2
 R-ver = 2.1
 sshkey-ver = ANY
 sshd-ver = ANY
+pssh-ver = ANY
 ### END - Dependency versions ###
 
 ### START - Dependency URLs ###
@@ -304,10 +308,10 @@ ubuntu-redis-ppc64-urls-man = http://ppa.launchpad.net/chris-lea/redis-server/ub
 common-redis-urls-git = https://github.com/antirez
 
 rhel-chef-client-x86_64-urls-man = https://opscode-omnibus-packages.s3.amazonaws.com/el/REPO_MAJOR_RELEASE/x86_64/chef-11.10.4-1.elREPO_MAJOR_RELEASE.x86_64.rpm
-ubuntu-chef-client-amd64-urls-man = https://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/REPO_RELEASE/x86_64/chef_11.10.4-1.ubuntu.REPO_RELEASE_amd64.deb
+ubuntu-chef-client-x86_64-urls-man = https://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/REPO_RELEASE/x86_64/chef_11.10.4-1.ubuntu.REPO_RELEASE_amd64.deb
 
 rhel-chef-server-x86_64-urls-man = https://opscode-omnibus-packages.s3.amazonaws.com/el/REPO_MAJOR_RELEASE/x86_64/chef-server-11.0.10-1.elREPO_MAJOR_RELEASE.x86_64.rpm
-ubuntu-chef-server-amd64-urls-man = https://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/REPO_RELEASE/x86_64/chef-server_11.0.10-1.ubuntu.REPO_RELEASE_amd64.deb
+ubuntu-chef-server-x86_64-urls-man = https://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/REPO_RELEASE/x86_64/chef-server_11.0.10-1.ubuntu.REPO_RELEASE_amd64.deb
 
 rhel-mongodb-x86_64-urls-man = http://downloads-distro.mongodb.org/repo/redhat/os/ARCH/RPMS
 rhel-mongodb-urls-git = https://github.com/mongodb/mongo.git
@@ -492,4 +496,6 @@ ubuntu-R-install-pm = package_install r-base-core
 common-sshkey-install-man = ssh-keygen -f CREDENTIALSDIR/cbtool_rsa -t rsa -N ''
 
 common-sshd-install-man = sudo sed -i 's/.*UseDNS.*/UseDNS no/g' /etc/ssh/sshd_config; sudo sed -i 's/.*GSSAPIAuthentication.*/GSSAPIAuthentication no/g' /etc/ssh/sshd_config
+
+common-pssh-install-pm = package_install pssh
 ### END -  Dependency and method-specific command lines ###

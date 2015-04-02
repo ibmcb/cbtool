@@ -40,11 +40,11 @@ CN_HPC_SETUP1 = cb_config_cn_hpc.sh
 START = cb_hpcc.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
-#MAX_N_SIZE_PER_NODE = 40
-#NB_SIZE = 4
-#PROCESSES_PER_NODE = 3
-#MPIEXECUTABLE_PATH=/usr/lib64/openmpi/bin/
-#MPILIBRARY_PATH=/usr/lib64/openmpi/lib/
+MAX_N_SIZE_PER_NODE = 40
+NB_SIZE = 4
+PROCESSES_PER_NODE = 3
+MPIEXECUTABLE_PATH=/usr/lib64/openmpi/bin/
+MPILIBRARY_PATH=/usr/lib64/openmpi/lib/
 
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
 #SYNC_COUNTER_NAME = synchronization_counter

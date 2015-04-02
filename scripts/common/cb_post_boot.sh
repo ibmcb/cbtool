@@ -38,6 +38,7 @@ sudo bash -c "echo \"${my_ip_addr}   $(hostname)\" >> /etc/hosts"
 
 syslog_netcat "Starting generic VM post_boot configuration"
 linux_distribution
+setup_passwordless_ssh
 load_manager_vm_uuid=`get_my_ai_attribute load_manager_vm`
 
 if [[ x"${my_vm_uuid}" == x"${load_manager_vm_uuid}" || x"${my_type}" == x"none" ]]
