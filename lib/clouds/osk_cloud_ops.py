@@ -569,8 +569,10 @@ class OskCmds(CommonCloudFunctions) :
         try :
             _cjh = str(vm_defaults["create_jumphost"]).lower()
             _jhn = vm_defaults["jumphost_name"]
-            
+                       
             if _cjh == "true" :
+                vm_defaults["jump_host"] = "to be created"
+                                
                 _msg = " OpenStack status: Checking if a \"Jump Host\" (" + _jhn + ") VM is already" 
                 _msg += " present on VMC " + vmc_name + "...."
                 #cbdebug(_msg)
@@ -591,6 +593,7 @@ class OskCmds(CommonCloudFunctions) :
                 _obj_attr_list["vmc_name"] = vmc_name
                 _obj_attr_list["ai"] = "none"
                 _obj_attr_list["is_jumphost"] = True
+                _obj_attr_list["use_jumphost"] = False                
                 _obj_attr_list["check_boot_complete"] = "tcp_on_22"
                 _obj_attr_list["userdata"] = None
                 
@@ -606,7 +609,7 @@ class OskCmds(CommonCloudFunctions) :
                     if _can_create_jumphost :
                         _msg = "                   Creating a \"Jump Host\" (" + _jhn + ") VM on "
                         _msg += " VMC " + vmc_name + ", connected to the networks \"" 
-                        _msg += _netname + "\" , and attaching a floating IP from pool \""
+                        _msg += _netname + "\", and attaching a floating IP from pool \""
                         _msg += vm_defaults["floating_pool"] + "\"."
                         #cbdebug(_msg)
                         print _msg

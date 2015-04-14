@@ -196,6 +196,16 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 else :
                     _initial_vmcs = []
                     _cld_conn = _cld_ops_class(self.pid, None, None)
+
+                if str(cld_attr_lst["vm_defaults"]["use_jumphost"]).lower() != "false" and \
+                str(cld_attr_lst["vm_defaults"]["create_jumphost"]).lower() == "false" :
+
+                    _msg = " The attribute \"USE_JUMPHOST\" in Global Object "
+                    _msg += "[VM_DEFAULTS] is set to \"True\". "                    
+                    _msg += "Will set the attribute \"CREATE_JUMPHOST\" in the" 
+                    _msg += " same Global Object ([VM_DEFAULTS]) also to \"True\"."
+                    cbdebug(_msg, True)
+                    cld_attr_lst["vm_defaults"]["create_jumphost"] = "true"
     
                 _msg = "Attempting to connect to all VMCs described in the cloud "
                 _msg += "defaults file, in order to check the access parameters "
@@ -211,15 +221,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                   cld_attr_lst["vmc_defaults"]["security_groups"], \
                                                   cld_attr_lst["vm_templates"],
                                                   cld_attr_lst["vm_defaults"])
-
-                if cld_attr_lst["vm_defaults"]["use_jumphost"] and not cld_attr_lst["vm_defaults"]["create_jumphost"]:
-                    _msg = " The attribute \"USE_JUMPHOST\" in Global Object "
-                    _msg += "[VM_DEFAULTS] is set to \"True\"."                    
-                    _msg += "Will set the"
-                    _msg += "attribute \"CREATE_JUMPHOST\" in the same Global Object "
-                    _msg += "([VM_DEFAULTS]) also to \"True\"."
-                    cbdebug(_msg, True)
-                    cld_attr_lst["vm_defaults"]["create_jumphost"] = True
                 
                 if str(cld_attr_lst["vm_defaults"]["create_jumphost"]).lower() != "false" :
 

@@ -105,14 +105,15 @@ bootstrap-wizard-order = 43
 streamprox-order = 44
 d3-order = 45
 novaclient-order = 46
-softlayer-order = 47
-boto-order = 48
-libcloud-order = 49
-iptables-order = 50
-R-order = 51
-sshkey-order = 52
-sshd-order = 53
-pssh-order = 54
+neutronclient-order = 47
+softlayer-order = 48
+boto-order = 49
+libcloud-order = 50
+iptables-order = 51
+R-order = 52
+sshkey-order = 53
+sshd-order = 54
+pssh-order = 55
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -170,6 +171,7 @@ streamprox-install = git
 d3-install = git
 bootstrap-install = git
 novaclient-install = pip
+neutronclient-install = pip
 softlayer-install = pip
 boto-install = pip
 libcloud-install = pip
@@ -228,6 +230,7 @@ bootstrap-wizard-configure = ls -la 3RPARTYDIR/Bootstrap-Wizard/README.md
 streamprox-configure = ls -la 3RPARTYDIR/StreamProx/README.md
 d3-configure = ls -la 3RPARTYDIR/d3/component.json
 novaclient-configure = python -c "import novaclient; from novaclient.v1_1 import client"
+neutronclient-configure = python -c "import neutronclient; from neutronclient.v2_0 import client"
 softlayer-configure = python -c "import SoftLayer; print "SoftLayer.__version__".replace('v','')"
 boto-configure = python -c "import boto; print str(boto.__version__).strip().replace('-dev','')"
 libcloud-configure = python -c "import libcloud; print str(libcloud.__version__).replace('-dev','').strip()"
@@ -286,6 +289,7 @@ bootstrap-wizard-ver = ANY
 streamprox-ver = ANY
 d3-ver = ANY
 novaclient-ver = ANY
+neutronclient-ver = ANY
 softlayer-ver = 3.1
 boto-ver = 2.1.8
 libcloud-ver = 0.11.0
@@ -479,6 +483,8 @@ common-d3-preinstall-git = cd 3RPARTYDIR; git clone URL/d3.git
 
 common-novaclient-preinstall-pip = sudo pip install INDEXURL pbr; sudo pip install INDEXURL netifaces
 common-novaclient-install-pip = sudo pip install INDEXURL python-novaclient
+
+common-neutronclient-install-pip = sudo pip install INDEXURL python-neutronclient
 
 common-softlayer-install-pip = sudo pip install INDEXURL softlayer
 
