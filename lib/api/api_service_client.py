@@ -146,7 +146,7 @@ class APIClient(Server):
             return resp["result"]
         return wrapped
     
-    def dashboard_conn_check(self, cloud_name, msattrs = None, username = None):
+    def dashboard_conn_check(self, cloud_name, msattrs = None, username = None, experiment_id = None):
         '''
         TBD
         '''        
@@ -157,6 +157,7 @@ class APIClient(Server):
             self.msattrs = self.cldshow(cloud_name, "metricstore") if msattrs is None else msattrs
             self.msci = MongodbMgdConn(self.msattrs)
             self.username = self.cldshow(cloud_name, "time")["username"] if username is None else username
+            self.expid = self.cldshow(cloud_name, "time")["experiment_id"] if experiment_id is None else experiment_id
 
     def __init__ (self, service_url, print_message = False):
         
@@ -279,9 +280,12 @@ class APIClient(Server):
             _object_type = metric_class + '_' + object_type
 
         if latest :
-            _allmatches = False            
+            _allmatches = True            
             _collection_name = "latest_" + _object_type + "_" + self.username            
-            samples = 1
+            if samples == "auto" :
+                samples = 0
+            else :
+                samples = int(samples)
         else :
             _allmatches = True            
             _collection_name = _object_type + "_" + self.username
@@ -292,13 +296,17 @@ class APIClient(Server):
 
         _limitdocuments = samples
 
+        _criteria = { "expid" : self.expid }
+        if uuid :
+            _criteria["uuid"] = uuid
+                    
         metrics = self.msci.find_document(_collection_name, \
-                                          {"uuid" : uuid}, \
+                                          _criteria, \
                                           limitdocuments = _limitdocuments, \
                                           allmatches = _allmatches)
 
         if metrics is None :
-            _msg = "No " + metric_class + ' ' + _object_type + '(' + metric_type + ") data available."
+            _msg = "No " + metric_class + ' ' + _object_type + '(' + metric_type + ") data available."            
 #            raise APINoSuchMetricException(1, _msg")
         return metrics
     

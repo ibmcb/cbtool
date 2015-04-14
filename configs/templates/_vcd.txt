@@ -43,7 +43,6 @@ VCD_SNMP_VARIABLE_DOC = Please enter an SNMP field to fetch from the target.
 
 [SPACE : VCD_CLOUDCONFIG ]
 SSH_KEY_NAME = $VCD_SSH_KEY_NAME
-OPENVPN_SERVER_ADDRESS = $False
 
 [MON_DEFAULTS : VCD_CLOUDCONFIG ]
 COLLECT_FROM_HOST = $False
@@ -86,7 +85,6 @@ SNMP_VARIABLE = $VCD_SNMP_VARIABLE
 # CLONE_TIMEOUT is number of seconds libcloud should poll VCD after issuing clone command before timing out
 CLONE_TIMEOUT = 600
 NETNAME = private
-JUMP_HOST = $False
 LEAVE_INSTANCE_ON_FAILURE = $False
 
 [AI_DEFAULTS : VCD_CLOUDCONFIG ]

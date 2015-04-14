@@ -1,11 +1,9 @@
 proto tcp
 dev tun
 client
-remote DESTINATION 1194
+remote DESTINATION VPN_PORT
 
-log /var/log/openvpn-cb.log
-up /tmp/cb_vm_ready.sh
-
+log /var/log/openvpn/USERNAME_openvpn-cb.log
 
 ca       [inline]
 cert     [inline]

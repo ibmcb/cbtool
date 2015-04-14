@@ -24,6 +24,7 @@
     @author: Marcio A. Silva, Michael R. Hines
 '''
 from time import time, strftime, strptime, localtime
+from os import chmod
 from datetime import datetime
 
 from ..auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
@@ -329,3 +330,278 @@ def value_suffix(value, in_kilobytes = False) :
     else :
         _value = int(value)
     return _value
+
+def get_rdir_fullp(obj_attr_list) :
+    '''
+    TBD
+    '''
+    _rdn = obj_attr_list["remote_dir_name"]
+
+    if obj_attr_list["login"] != "root" :
+        _rln = "/home/" + obj_attr_list["login"]
+    else :
+        _rln = "/root"
+
+    _rdir_full_path = _rln + '/' + obj_attr_list["remote_dir_name"]
+    
+    return _rln, _rdir_full_path
+
+def get_boostrap_command(obj_attr_list, osci) :
+    '''
+    TBD
+    '''
+    
+    _rdh, _rdfp = get_rdir_fullp(obj_attr_list)
+    _rbf = _rdh + "/cb_os_parameters.txt"
+    
+    _bcmd = "mkdir -p " + _rdfp + ';'
+
+    _bcmd += "echo '#OSKN-redis' > " + _rbf + ';'
+    
+#   if "openvpn_server_address" in obj_attr_list :
+#       _bcmd += "echo '#OSHN-" + obj_attr_list["openvpn_bootstrap_address"] + "' >> ~/cb_os_parameters.txt;"
+#    else :
+    _bcmd += "echo '#OSHN-" + osci.host + "' >> " + _rbf + ';'
+
+    _bcmd += "echo '#OSPN-" + str(osci.port) + "' >>  " + _rbf + ';'
+    _bcmd += "echo '#OSDN-" + str(osci.dbid) + "' >>  " + _rbf + ';'
+    _bcmd += "echo '#OSTO-" + str(osci.timout) + "' >>  " + _rbf + ';'
+    _bcmd += "echo '#OSCN-" + obj_attr_list["cloud_name"] + "' >>  " + _rbf + ';'
+    _bcmd += "echo '#OSMO-" + obj_attr_list["mode"] + "' >>  " + _rbf + ';'
+    _bcmd += "echo '#OSOI-" + "TEST_" + obj_attr_list["username"] + ":" + obj_attr_list["cloud_name"] + "' >>  " + _rbf + ';'
+    _bcmd += "echo '#VMUUID-" + obj_attr_list["uuid"] + "' >>  " + _rbf + ';'
+    _bcmd += "sudo chown -R " +  obj_attr_list["login"] + ':' + obj_attr_list["login"] + " ~/" + obj_attr_list["remote_dir_name"]
+
+    return _bcmd
+                
+def create_user_data_contents(obj_attr_list, osci) :
+    '''
+    TBD
+    '''
+
+    _attempts = str(3)
+    _sleep = str(2)
+    
+    _fshn = obj_attr_list["filestore_hostname"]
+    _fspn = obj_attr_list["filestore_port"]
+    _fsun = obj_attr_list["filestore_username"]
+    _ldn = obj_attr_list["local_dir_name"]
+
+    _rdh, _rdfp = get_rdir_fullp(obj_attr_list)
+    _rln = obj_attr_list["login"] 
+    
+    _ohn = obj_attr_list["vpn_server_ip"]
+    _opn = obj_attr_list["vpn_server_port"]
+    _cn = obj_attr_list["cloud_name"]
+
+    _userdata_contents = "#!/bin/bash\n\n"
+    _userdata_contents += "# This VM is part of experiment id \"" + obj_attr_list["experiment_id"] + "\""
+    _userdata_contents += "\n"            
+    _userdata_contents += "mkdir -p /var/log/cloudbench\n"    
+    _userdata_contents += "\n"        
+    _userdata_contents += "chmod 777 /var/log/cloudbench\n"
+    _userdata_contents += "\n"
+                
+    _userdata_contents += get_boostrap_command(obj_attr_list, osci).replace(';','\n')
+    
+    _userdata_contents += "\nif [[ $(cat " + _rdh + "/cb_os_parameters.txt | grep -c \"#OSOI-" + "TEST_" + obj_attr_list["username"] + ":" + obj_attr_list["cloud_name"] + "\") -ne 0 ]]\n"
+    _userdata_contents += "then\n"
+    _userdata_contents += "    redis-cli -h " + osci.host + " -n " + str(osci.dbid) + " -p " + str(osci.port) + " hset TEST_" + _fsun + ':' + obj_attr_list["cloud_name"] + ":VM:PENDING:" + obj_attr_list["uuid"] + " cloud_init_bootstrap  true\n"
+    _userdata_contents += "fi\n"
+    _userdata_contents += "\n"        
+    _userdata_contents += "\n"                
+    _userdata_contents += "counter=0\n"    
+    _userdata_contents += "\nwhile [[ \"$counter\" -le " + _attempts + " ]]\n"
+    _userdata_contents += "do\n"
+    _userdata_contents += "    rsync -az --delete --no-o --no-g --inplace rsync://" + _fshn + ':' + _fspn + '/' + _fsun + "_cb" + "/exclude_list.txt " + _rdfp + "/exclude_list\n"
+    _userdata_contents += "    if [[ $? -eq 0 ]]\n"
+    _userdata_contents += "    then\n"
+    _userdata_contents += "        break\n"
+    _userdata_contents += "    else\n"    
+    _userdata_contents += "        sleep " + _sleep + "\n"
+    _userdata_contents += "        counter=\"$(( $counter + 1 ))\"\n"        
+    _userdata_contents += "    fi\n"
+    _userdata_contents += "done\n"
+    _userdata_contents += "counter=0\n"        
+    _userdata_contents += "\nwhile [[ \"$counter\" -le " + _attempts + " ]]\n"
+    _userdata_contents += "do\n"
+    _userdata_contents += "    rsync -az --exclude-from '" + _rdfp + "/exclude_list' --delete --no-o --no-g --inplace rsync://" + _fshn + ':' + _fspn + '/' + _fsun + "_cb/ " + _rdfp + "/\n"
+    _userdata_contents += "    if [[ $? -eq 0 ]]\n"
+    _userdata_contents += "    then\n"
+    _userdata_contents += "        redis-cli -h " + osci.host + " -n " + str(osci.dbid) + " -p " + str(osci.port) + " hset TEST_" + _fsun + ':' + obj_attr_list["cloud_name"] + ":VM:PENDING:" + obj_attr_list["uuid"] + " cloud_init_rsync true\n"
+    _userdata_contents += "        break\n"    
+    _userdata_contents += "    else\n"    
+    _userdata_contents += "        sleep " + _sleep + "\n"
+    _userdata_contents += "        counter=\"$(( $counter + 1 ))\"\n"    
+    _userdata_contents += "    fi\n"
+    _userdata_contents += "done\n"
+    _userdata_contents += "chown -R " + _rln + ':' + _rln + ' ' + _rdfp + "/\n"
+
+    if obj_attr_list["use_vpn_ip"].lower() != "false" :
+        _userdata_contents += "\n"                
+        _userdata_contents += "\n"            
+        _userdata_contents += "mkdir /var/log/openvpn\n"
+        _userdata_contents += "chmod 777 /var/log/openvpn\n"            
+        _userdata_contents += "cp " + _rdfp + "/configs/generated/*client-cb-openvpn.conf /etc/openvpn/\n"
+        _userdata_contents += "service openvpn restart\n"
+        _userdata_contents += "counter=0\n"        
+        _userdata_contents += "\nwhile [[ \"$counter\" -le " + _attempts + " ]]\n"
+        _userdata_contents += "do\n"
+        _userdata_contents += "    ifconfig tun0\n"
+        _userdata_contents += "    if [[ $? -eq 0 ]]\n"
+        _userdata_contents += "    then\n"
+        _userdata_contents += "        VPNIP=$(ifconfig tun0 | grep inet | cut -d: -f2 | cut -d' ' -f1 | tr -d '\n')\n"
+        _userdata_contents += "        redis-cli -h " + osci.host + " -n " + str(osci.dbid) + " -p " + str(osci.port) + " hset TEST_" + _fsun + ':' + obj_attr_list["cloud_name"] + ":VM:PENDING:" + obj_attr_list["uuid"] + " cloud_init_vpn $VPNIP\n"
+        _userdata_contents += "        break\n"    
+        _userdata_contents += "    else\n"    
+        _userdata_contents += "        sleep " + _sleep + "\n"
+        _userdata_contents += "        counter=\"$(( $counter + 1 ))\"\n"    
+        _userdata_contents += "    fi\n"
+        _userdata_contents += "done\n" 
+
+    _userdata_contents += "\n"        
+    _userdata_contents += "\n"                    
+    _userdata_contents += "VMUUID=$(grep -ri " + obj_attr_list["experiment_id"] + " /var/lib/cloud/ | grep user-data | grep -v .i: | cut -d '/' -f 6)\n"
+    _userdata_contents += "redis-cli -h " + osci.host + " -n " + str(osci.dbid) + " -p " + str(osci.port) + " publish TEST_" + _fsun + ':' + obj_attr_list["cloud_name"] + ":VM:BOOT " + "\"VM $VMUUID is booted\"\n"
+    _userdata_contents += "exit 0\n"    
+        
+    return _userdata_contents
+
+def create_restart_script(scriptname, cmdline, username, searchcmd, objectname = '', uuid = '', scriptpath="/tmp", vtycmd = None) :
+    '''
+    TBD
+    '''
+    _fn = scriptpath + '/' + scriptname + '_' + username + '-' + objectname + '--' + uuid
+
+    _fn = _fn.replace('---','')
+            
+    _fc = "#!/bin/bash\n\n"
+    _fc += "PID=$(sudo pgrep -u " + username + " -f " + searchcmd + ")\n"
+    _fc += "if [[ ${PID} ]]\n"
+    _fc += "then\n"        
+    _fc += "    echo \"Killing current \\\"" + searchcmd + "\\\" process (PID is $PID)\"\n"
+    _fc += "    sudo pkill -u " + username + " -9 -f " + searchcmd + "\n"
+    _fc += "    if [[ $? -eq 0 ]]\n"
+    _fc += "    then\n"
+    _fc += "        echo \"Process killed\"\n"
+    _fc += "    else\n"
+    _fc += "        echo \"Failure while killing the process!\"\n"
+    _fc += "        exit 1\n"
+    _fc += "    fi\n"
+    _fc += "fi\n\n" 
+    _fc += "echo \"Starting a new \\\"" + searchcmd + "\\\" process\"\n\n"
+    _fc += "if [[ -z $1 ]]\n"
+    _fc += "then\n"
+    if not vtycmd :
+        _fc += "    " + cmdline + "\n"
+    else :
+        _session_name=scriptname.replace("restart_",'').replace("cb_","cb")
+        _cmdline = "screen -d -m -S " + _session_name + username + " bash -c '" + cmdline + "'"
+        _fc += "    " + _cmdline + "\n"    
+    _fc += "else\n"
+    _fc += "    if [[ $1 == \"debug\" ]]\n"
+    _fc += "    then\n"
+    if not vtycmd :
+        if cmdline.count("--daemon") :
+            _fc += "        " + cmdline.replace("--daemon","--logdest=console") + '\n'
+        elif cmdline.count("-d 4") :
+            _fc += "        " + cmdline.replace("-d 4","-d 5") + '\n'
+        else :
+            _fc += "        " + cmdline + " --logdest=console" + '\n'
+    else :
+        _fc += "        " + cmdline + " --logdest=console" + '\n'
+    _fc += "    fi\n"    
+    _fc += "fi\n\n"
+    _fc += "\nif [[ $? -eq 0 ]]\n"
+    _fc += "then\n"
+    _fc += "    sleep 5\n"    
+    _fc += "    echo \"Process started successfully, with new PID $(sudo pgrep -u " + username + " -f " + searchcmd + ")\"\n"
+    _fc += "else\n"
+    _fc += "    echo \"Failure while restarting process!\"\n"
+    _fc += "    exit 1\n"
+    _fc += "fi\n"
+    
+    _fh = open(_fn, "w")
+    _fh.write(_fc)
+    _fh.close()
+    chmod(_fn, 0755)
+    
+    return True
+
+def is_number(val) :
+    '''
+    TBD
+    '''
+    try:
+        _val = float(val)
+        return _val
+    
+    except ValueError:
+        return False
+    
+def summarize(summaries_dict, value, unit) :
+    '''
+    TBD
+    '''
+    if summaries_dict["KB => MB"][0] :
+        if unit == "KB" or unit == "KiB" :
+            value = "%.2f" % (float(value) / 1024)
+            unit = "MB"            
+            return value, unit
+        
+    if summaries_dict["Bytes => MB"][0] :
+        if unit.lower() == "bytes" or unit == "b" :
+            value = "%.2f" % (float(value) / 1024 / 1024)
+            unit = "MB"
+            return value, unit
+                    
+    if summaries_dict["bytes/sec => Mbps"][0] :
+        if unit == "bytes/sec" :
+            value = "%.2f" % (float(value) / 1024 / 1024 * 8)
+            unit = "mbps"
+            return value, unit
+                    
+    if summaries_dict["#4K pages => MB"][0] :
+        if unit == "#4K pages" :
+            value = "%.2f" % (float(value) * 4094 / 1024 / 1024)
+            unit = "MB"
+            return value, unit
+    
+    return value, unit
+
+def value_cleanup(object_dict, unit) :
+    '''
+    TBD
+    '''
+    _values = []
+    if unit in object_dict :
+
+        _value_types = [ "val" ]        
+        if "acc" in object_dict[unit] :
+            _value_types = [ "val", "acc" ]
+        if "avg" in object_dict[unit] :
+            _value_types = [ "val", "avg" ]
+        
+        for _value_type in _value_types : 
+            if _value_type in object_dict[unit] :
+                _values.append(object_dict[unit][_value_type])
+                
+    _val_string = ''
+    for _value in _values :
+        if str(_value).count(":") == 0 :          
+            if is_number(_value) :
+                _value = str(float(_value))
+                if "." in _value :
+                    _integer, _decimal = _value.split(".") 
+                    if _decimal == "0" :
+                        _value = _integer
+                    else :
+                        _value = str(_integer) + '.' + str(_decimal[0:3])
+        else :
+            _value = "--"
+            
+        _val_string += str(_value) + " / "
+
+    _val_string = _val_string[0:-3]
+            
+    return _val_string

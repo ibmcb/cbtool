@@ -8,7 +8,7 @@ if [ $0 != "-bash" ] ; then
 	popd 2>&1 > /dev/null
 fi
 
-logpath=$dir/../../stores/logs/openvpn-client.log 
+logpath=/var/log/cloudbench/$USER_openvpn_client.log
 
 echo "client connected $(date) params: $@" >> $logpath
 

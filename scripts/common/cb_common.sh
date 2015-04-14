@@ -1144,6 +1144,11 @@ function update_app_errors {
         ERROR=0
     fi
     
+    if [[ ! -z $2 ]]
+    then
+    	rm -rf /tmp/app_errors
+	fi
+	
     if [[ ! -f /tmp/app_errors ]]
     then
         echo "0" > /tmp/app_errors

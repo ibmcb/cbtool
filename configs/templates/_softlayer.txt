@@ -22,7 +22,6 @@ SLR_INITIAL_VMCS_DEFAULT = RegionOne
 
 [SPACE : SLR_CLOUDCONFIG ]
 SSH_KEY_NAME = $SLR_SSH_KEY_NAME
-OPENVPN_SERVER_ADDRESS = $False
 
 [MON_DEFAULTS : SLR_CLOUDCONFIG ]
 COLLECT_FROM_HOST = $False # requires ganglia installation on hypervisor
@@ -63,7 +62,6 @@ CHECK_BOOT_COMPLETE = tcp_on_22
 #CHECK_BOOT_COMPLETE = wait_for_0
 NETNAME = private
 VM_HOSTNAME_KEY = cloud_vm_name
-JUMP_HOST = $False
 LEAVE_INSTANCE_ON_FAILURE = $False
 FORCE_FAILURE = $False
 

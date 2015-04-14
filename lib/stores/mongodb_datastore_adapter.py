@@ -109,6 +109,8 @@ class MongodbMgdConn :
         except PymongoException, msg :
             True
 
+        except :
+            True
         # This was added here just because some MongoDBs don't accept the 
         # "max_pool_size" parameter
         try:
@@ -142,13 +144,14 @@ class MongodbMgdConn :
         '''    
         try:
 
-            self.mongodb_conn.disconnect()
-            self.mongodb_conn = False
-            _msg = "A connection to MongoDB running on host "
-            _msg += self.host + ", port " + str(self.port) + ", database"
-            _msg += ' ' + str(self.database) + ", was terminated."
-            cbdebug(_msg)
-            return self.mongodb_conn
+            if "disconnect" in dir(self.mongodb_conn) :
+                self.mongodb_conn.disconnect()
+                self.mongodb_conn = False
+                _msg = "A connection to MongoDB running on host "
+                _msg += self.host + ", port " + str(self.port) + ", database"
+                _msg += ' ' + str(self.database) + ", was terminated."
+                cbdebug(_msg)
+                return self.mongodb_conn
 
         except PymongoException, msg :
             _msg = "Unable to terminate a connection with the MongoDB "
@@ -285,22 +288,26 @@ class MongodbMgdConn :
         '''
         TBD
         '''
+
         self.conn_check()
 
         collection = collection.replace('-',"dash")
 
         try :
+
             _collection_handle = self.mongodb_conn[self.database][collection]
 
             if allmatches :
+
                 _results = _collection_handle.find(criteria, \
                                                    sort = sortkeypairs, \
                                                    limit = limitdocuments, \
-                                                   fields = documentfields)
+                                                   projection = documentfields)
             else :
+
                 _results = _collection_handle.find_one(criteria, \
                                                        sort = sortkeypairs, \
-                                                       fields = documentfields)
+                                                       projection = documentfields)
 
             if disconnect_finish :
                 self.disconnect()

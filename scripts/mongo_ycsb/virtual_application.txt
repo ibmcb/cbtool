@@ -10,6 +10,11 @@ LOAD_MANAGER_ROLE = ycsb
 METRIC_AGGREGATOR_ROLE = ycsb
 CAPTURE_ROLE = mongodb
 LOAD_BALANCER = $False
+LOAD_PROFILE = workloada
+LOAD_LEVEL = 1
+LOAD_DURATION = 60
+REPORTED_METRICS = bandwidth,throughput,latency,datagen_time,datagen_size,completion_time,errors
+
 MONGO_CFG_SERVER_SETUP1 = cb_restart_mongo_cfg.sh
 MONGODB_SETUP1 = cb_restart_mongo.sh
 MONGOS_SETUP2 = cb_restart_mongos.sh
@@ -19,13 +24,6 @@ MONGOS_RESIZE2 = cb_modify_shard.sh
 MONGODB_RESIZE1 = cb_restart_mongo.sh
 MONGO_CFG_SERVER_RESIZE1 = cb_modify_hosts.sh
 START = cb_ycsb.sh
-LOAD_PROFILE = default
-LOAD_LEVEL = 1
-LOAD_DURATION = 60
-START=cb_ycsb.sh
-LOAD_PROFILE = workloada
-LOAD_LEVEL = 1
-LOAD_DURATION = 60
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 APP_COLLECTION = lazy

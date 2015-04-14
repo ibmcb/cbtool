@@ -38,11 +38,11 @@ from subprocess import Popen, PIPE
 
 from lib.auxiliary.code_instrumentation import trace, cblog, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.value_generation import ValueGeneration
-from lib.auxiliary.data_ops import message_beautifier, dic2str, str2dic, is_valid_temp_attr_list, DataOpsException
-from lib.auxiliary.data_ops import selective_dict_update
+from lib.auxiliary.data_ops import message_beautifier, dic2str, str2dic, is_valid_temp_attr_list, selective_dict_update, create_user_data_contents, create_restart_script, DataOpsException
 from lib.remote.network_functions import Nethashget 
 from lib.remote.ssh_ops import repeated_ssh
 from lib.remote.process_management import ProcessManagement
+from lib.stores.stores_initial_setup import syslog_logstore_setup
 
 class BaseObjectOperations :
     '''
@@ -223,6 +223,15 @@ class BaseObjectOperations :
             else :
                 _status = 9
                 _msg = "Usage: monextract <cloud name> <object type> <metric type> [experiment id]"
+
+        elif command == "mon-extractall" :
+            if _length == 2 :
+                object_attribute_list["expid"] = "current"
+            elif _length == 3 :
+                object_attribute_list["expid"] = _parameters[2]
+            else :
+                _status = 9
+                _msg = "Usage: monextract <cloud name> all [experiment id]"
                 
         elif command == "host-fail" :
             if _length >= 3 :
@@ -758,24 +767,34 @@ class BaseObjectOperations :
                         object_attribute_list["direction"] = "increasing"
                     else :
                         object_attribute_list["direction"] = "decreasing"
+                    object_attribute_list["time_limit"] = 36000
                 elif _length == 4 :
                     object_attribute_list["type"] = _parameters[1]
                     object_attribute_list["counter"] = _parameters[2].split('=')[0]
                     object_attribute_list["value"] = _parameters[2].split('=')[1]
                     object_attribute_list["direction"] = _parameters[3] 
                     object_attribute_list["interval"] = 20
+                    object_attribute_list["time_limit"] = 36000                    
                 elif _length == 5 :
                     object_attribute_list["type"] = _parameters[1]
                     object_attribute_list["counter"] = _parameters[2].split('=')[0]
                     object_attribute_list["value"] = _parameters[2].split('=')[1]
                     object_attribute_list["direction"] = _parameters[3]
                     object_attribute_list["interval"] = _parameters[4]
+                    object_attribute_list["time_limit"] = 36000
+                elif _length == 6 :
+                    object_attribute_list["type"] = _parameters[1]
+                    object_attribute_list["counter"] = _parameters[2].split('=')[0]
+                    object_attribute_list["value"] = _parameters[2].split('=')[1]
+                    object_attribute_list["direction"] = _parameters[3]
+                    object_attribute_list["interval"] = _parameters[4]
+                    object_attribute_list["time_limit"] = _parameters[5]                                        
                 else :
                     _status =  9
-                    _msg = "Usage: waituntil <cloud name> <object type> <counter>=<value> [direction] [update interval]"
+                    _msg = "Usage: waituntil <cloud name> <object type> <counter>=<value> [direction] [update interval] [time limit]"
             else :
                 _status =  9
-                _msg = "Usage: waituntil <cloud name> <object type> <counter>=<value> [direction] [update interval]"
+                _msg = "Usage: waituntil <cloud name> <object type> <counter>=<value> [direction] [update interval] [time limit]"
 
         elif command == "wait-on" :
             if _length >= 4 :
@@ -896,7 +915,7 @@ class BaseObjectOperations :
             elif cmd == "shell-execute" :
                 _status = 0
                 
-            elif cmd == "mon-extract" :
+            elif cmd == "mon-extract" or cmd == "mon-extractall" :
                 _mon_parameters = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "mon_defaults", False)
                 obj_attr_list["current_experiment_id"] = self.expid
                 
@@ -995,7 +1014,7 @@ class BaseObjectOperations :
                         _temp_attr_list = _temp_attr_list.replace('=',':')
                         _temp_attr_list = str2dic(_temp_attr_list)
                         obj_attr_list.update(_temp_attr_list)
-
+                        
                     '''
                     Now we perform the "selective" dictionary update. It is
                     "selective" in the sense that any already set key will not
@@ -1009,31 +1028,61 @@ class BaseObjectOperations :
                                                                         "experiment_counter", \
                                                                         "increment")
                     obj_attr_list["comments"] = ''
-                    _dir_list = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "space", \
-                                                     False)
-                        
+                    _dir_list = self.osci.get_object(obj_attr_list["cloud_name"],\
+                                                      "GLOBAL", False, "space", \
+                                                      False)
+
                     obj_attr_list["base_dir"] = _dir_list["base_dir"]
                     obj_attr_list["identity"] = _dir_list["ssh_key_name"]
 
                     if _obj_type == "VM" :
+                        
+                        _filestor_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
+                                                                   "GLOBAL", False, "filestore", \
+                                                                   False)
+                        _vpn_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
+                                                                   "GLOBAL", False, "vpn", \
+                                                                   False)
+    
+                        obj_attr_list["filestore_hostname"] = _filestor_attr_list["hostname"]
+                        obj_attr_list["filestore_port"] = _filestor_attr_list["port"]
+                        obj_attr_list["filestore_username"] = _filestor_attr_list["username"]
+                        obj_attr_list["vpn_server_ip"] = _vpn_attr_list["server_ip"]
+                        obj_attr_list["vpn_server_port"] = _vpn_attr_list["server_port"]
+                        obj_attr_list["errors"] = "no"
+                        obj_attr_list["sla_runtime"] = "ok"
+                                                                        
                         obj_attr_list["jars_dir"] = _dir_list["jars_dir"]
                         obj_attr_list["exclude_list"] = _dir_list["base_dir"] + "/exclude_list.txt"
                         obj_attr_list["daemon_dir"] = _dir_list["vm_daemon_dir"]
+                        
+                        obj_attr_list["cloud_init_bootstrap"] = False
+                        obj_attr_list["cloud_init_rsync"] = False
 
-                        if "openvpn_server_address" not in _dir_list or _dir_list["openvpn_server_address"].lower().strip() == "false" :
-                            obj_attr_list["userdata"] = None
-                        else :
-                            _pending_fn = self.osci.pending_object_fn(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"])
-                            openvpn_fh = open(_dir_list["openvpn_client_config_prefix"] + "-" + obj_attr_list["cloud_name"] + ".conf")
-                            _openvpn_contents = openvpn_fh.read()
-                            openvpn_fh.close()
-                            _openvpn_contents = _openvpn_contents.replace("DESTINATION", _dir_list["openvpn_server_address"])
-                            
-                            openvpn_server_and_port = _dir_list["openvpn_bootstrap_address"] + " -p " + str(self.osci.port)
-                            obj_attr_list["userdata"] = _pending_fn + "\n" + openvpn_server_and_port + "\n" + _openvpn_contents
-                            obj_attr_list["openvpn_server_address"] = _dir_list["openvpn_server_address"]
-                            obj_attr_list["openvpn_bootstrap_address"] = _dir_list["openvpn_bootstrap_address"]
+                        _vm_templates = self.osci.get_object(obj_attr_list["cloud_name"], \
+                                                             "GLOBAL", False, \
+                                                             "vm_templates", False)
             
+                        _vm_template_attr_list = str2dic(_vm_templates[obj_attr_list["role"]])
+            
+                        if obj_attr_list["size"] == "load_balanced_default" :
+                            if "lb_size" in _vm_template_attr_list :
+                                obj_attr_list["size"] = _vm_template_attr_list["lb_size"]
+                            else :
+                                obj_attr_list["size"] = "default"
+            
+                        obj_attr_list.update(_vm_template_attr_list)
+                        
+                        if str(obj_attr_list["userdata"]).lower() == "true" :
+                            obj_attr_list["userdata"] = create_user_data_contents(obj_attr_list, self.osci)
+                        elif str(obj_attr_list["userdata"]).lower() == "false" :
+                            True
+                        else :
+                            _userdata_fh = open(obj_attr_list["userdata"])
+                            _userdata_contents = _userdata_fh.read()
+                            _userdata_fh.close()
+                            obj_attr_list["userdata"] = _userdata_contents
+
                     self.get_counters(obj_attr_list["cloud_name"], obj_attr_list)
                        
                     _status = 0
@@ -1786,6 +1835,9 @@ class BaseObjectOperations :
 
         if vm_role + "_resource_limits" in obj_attr_list :
             _extra_parms += ",resource_limits=" + obj_attr_list[vm_role + "_resource_limits"]
+
+        if vm_role + "_userdata" in obj_attr_list :
+            _extra_parms += ",userdata=" + obj_attr_list[vm_role + "_userdata"]
 
         if vm_role + "_cloud_vv" in obj_attr_list :
             _extra_parms += ",cloud_vv=" + obj_attr_list[vm_role + "_cloud_vv"]
@@ -2687,15 +2739,14 @@ class BaseObjectOperations :
         '''
         TBD
         '''
-        
+                         
         _total_provisioning_time = 0
         
-        if "sla_provisioning_target" in obj_attr_list :
+        if "sla_provisioning_target" in obj_attr_list :            
             for _key in obj_attr_list.keys() :
-                if _key.count("mgt") :
-                    if _key.count("provisioning") :
-                        if not _key.count("originated") and not _key.count("sla") :
-                            _total_provisioning_time += int(obj_attr_list[_key])
+                if _key.count("mgt_00") :
+                    if not _key.count("originated") and not _key.count("sla") :
+                        _total_provisioning_time += int(obj_attr_list[_key])
 
             if _total_provisioning_time > int(obj_attr_list["sla_provisioning_target"]) :
                 _sla_provisioning = "violated"
@@ -3199,7 +3250,7 @@ class BaseObjectOperations :
                 _gmetad_config_fc += "cloud_name " + obj_attr_list["cloud_name"] + '\n'
                 _gmetad_config_fc += "}\n"
                 
-                _gmetad_config_fn = _space_attr_list["base_dir"] + "/" + obj_attr_list["cloud_name"] + "_gmetad-hosts.conf"
+                _gmetad_config_fn = _space_attr_list["generated_configurations_dir"] + "/" + obj_attr_list["cloud_name"] + "_gmetad-hosts.conf"
                 
                 _gmetad_config_fd = open(_gmetad_config_fn, 'w')
                 _gmetad_config_fd.write(_gmetad_config_fc)
@@ -3220,7 +3271,9 @@ class BaseObjectOperations :
                 _cmd += " --syslogp " + _log_attr_list["port"]
                 _cmd += " --syslogf " + _log_attr_list["monitor_host_facility"]
                 _cmd += " -d 4"
-                
+
+                create_restart_script("restart_cb_gmetad", _cmd, _space_attr_list["username"], "gmetad.py")
+                                    
                 cbdebug(_cmd)
 
                 _gmetad_pid = _proc_man.start_daemon(_cmd)
@@ -3264,6 +3317,79 @@ class BaseObjectOperations :
             else :
                 _msg = "Host OS performance monitor daemon startup success."
                 cbdebug(_msg)
+                return _status, _msg
+
+    def update_logstore(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        
+        try : 
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"        
+
+            _logstore_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
+                                                       "GLOBAL", False, \
+                                                       "logstore", False)        
+
+            if str(_logstore_attr_list["expid_change_restart"]).lower() == "true" :
+                _space_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
+                                                           "GLOBAL", False, \
+                                                           "space", False)   
+    
+                _global_objects = { "logstore" : _logstore_attr_list, "space": _space_attr_list}  
+                          
+                _log_dir = _space_attr_list["log_dir"]
+                _username = _space_attr_list["username"]
+                _logstore_username = _logstore_attr_list["username"]
+    
+    
+                _proc_man =  ProcessManagement()
+            
+                _msg = "Flushing Log Store..."
+                cbdebug(_msg, True)
+                
+                _proc_man.run_os_command("pkill -9 -u " + _logstore_username + " -f rsyslogd")
+                _file_list = []
+                _file_list.append("operations.log")
+                _file_list.append("report.log")
+                _file_list.append("submmiter.log")
+                _file_list.append("loadmanager.log")
+                _file_list.append("gui.log")
+                _file_list.append("remotescripts.log")
+                _file_list.append("monitor.log")
+                _file_list.append("subscribe.log")
+    
+                for _fn in  _file_list :
+                    _proc_man.run_os_command("rm -rf " + _log_dir + '/' + _logstore_username + '_' + _fn)
+                    _proc_man.run_os_command("touch " + _log_dir + '/' + _logstore_username + '_' + _fn)
+                _status, _msg = syslog_logstore_setup(_global_objects, "check")
+
+                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "GLOBAL", "logstore", False, "just_restarted", "true")
+                
+            else :
+                _status = 1111
+                
+        except self.osci.ObjectStoreMgdConnException, obj :
+            _status = 40
+            _fmsg = str(obj.msg)
+
+        except ProcessManagement.ProcessManagementException, obj :
+            _status = str(obj.status)
+            _fmsg = str(obj.msg)
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+
+        finally :
+            if _status and _status != 1111:
+                _msg = "Error while flushing Log Store: " + _fmsg
+                cberr(_msg)
+                raise self.ObjectOperationException(_msg, _status)
+            else :
+                _msg = "Log store successfully flushed"
+                cbdebug(_msg, True)
                 return _status, _msg
 
     @trace

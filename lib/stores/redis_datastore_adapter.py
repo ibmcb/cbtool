@@ -164,6 +164,22 @@ class RedisMgdConn :
 
             self.redis_conn.sadd(self.experiment_inst + ":CLOUD", cloud_name)
 
+            for _key in cloud_kv_list["ai_templates"].keys() :
+                if _key.count("_sut") :
+                    _actual_ai_type_name = _key.replace("_sut", '')
+
+                    _roles = cloud_kv_list["ai_templates"][_actual_ai_type_name + "_sut"].split('->')
+
+                    _role_list = ''
+                    for _role in _roles :
+                        _role = _role.split("_x_")
+                        if len(_role) == 2 :
+                            _role_list += _role[1] + ','
+                        else :
+                            _role_list += _role[0] + ','                            
+
+                    cloud_kv_list["ai_templates"][_actual_ai_type_name + "_role_list"] = _role_list[0:-1]
+
             _cld_attrs = cloud_kv_list["query"]["cloud_attributes"].split(',')
             for _cld_attr in _cld_attrs :
                 self.redis_conn.hset(self.experiment_inst + ":CLOUD:" + \
@@ -206,6 +222,7 @@ class RedisMgdConn :
             for _key in cloud_kv_list["ai_templates"].keys() :
                 if _key.count("_sut") :
                     _actual_ai_type_name = _key.replace("_sut", '')
+
                     if path.exists(cloud_kv_list["space"]["scripts_dir"] + '/' + _actual_ai_type_name) :
                         self.add_to_list(cloud_name, "GLOBAL", "ai_types", _actual_ai_type_name)
                     for _key_suffix in ["load_profile", "sut", \
@@ -893,7 +910,7 @@ class RedisMgdConn :
             cberr(_msg)
             raise self.ObjectStoreMgdConnException(str(_msg), 2)
     @trace        
-    def pending_object_get(self, cloud_name, obj_type, obj_uuid, obj_key, failcheck = True, lock = False) :
+    def pending_object_get(self, cloud_name, obj_type, obj_uuid, obj_key = "all", failcheck = True, lock = False) :
         '''
         TBD
         '''
@@ -902,10 +919,15 @@ class RedisMgdConn :
 
         _obj_inst_fn = obj_inst + ':' + obj_type + ":PENDING"
 
+        if obj_key == "all" :
+            _check_key = "status"
+        else :
+            _check_key = obj_key
+            
         try :
             _obj_id_fn = _obj_inst_fn + ':' + obj_uuid    
 
-            if not self.pending_object_exists(cloud_name, obj_type, obj_uuid, obj_key) :
+            if not self.pending_object_exists(cloud_name, obj_type, obj_uuid, _check_key) :
                 _msg = "Pending " + obj_type + " object key " + str(obj_key) + " could not be "
                 _msg += "found in hash set (FQIN: " + _obj_inst_fn
                 _msg += ")."
@@ -913,8 +935,11 @@ class RedisMgdConn :
                 if failcheck :
                     raise self.ObjectStoreMgdConnException(str(_msg), 2)
                 return False
-            
-            _val = self.redis_conn.hget(_obj_id_fn, obj_key)
+
+            if obj_key == "all" :
+                _val = self.redis_conn.hgetall(_obj_id_fn)
+            else :
+                _val = self.redis_conn.hget(_obj_id_fn, obj_key)
 
             _msg =  obj_type + " object " + obj_uuid + " pending " + obj_key
             _msg += " was retrieved."

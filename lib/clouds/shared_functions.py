@@ -208,7 +208,7 @@ class CommonCloudFunctions:
                 cbdebug(_msg, True)
 
                 if _boot_wait_time :
-                    sleep(_boot_wait_time)
+                    sleep(_boot_wait_time)                    
                 _vm_started = self.is_vm_ready(obj_attr_list)                 
 
             else :
@@ -255,25 +255,28 @@ class CommonCloudFunctions:
             cberr(_msg, True)
             raise CldOpsException(_msg, 71)
         
-    def get_openvpn_client_ip(self, obj_attr_list) :
+    def get_attr_from_pending(self, obj_attr_list, key) :
         '''
         TBD
         '''
-        if "openvpn_ip" in obj_attr_list :
-            return True
-        
-        elif self.osci.pending_object_exists(obj_attr_list["cloud_name"],  
-                                            "VM", obj_attr_list["uuid"], "openvpn_ip") :
+        if str(obj_attr_list["is_jumphost"]).lower() == "false" :
             
-            ip = self.osci.pending_object_get(obj_attr_list["cloud_name"], 
-                                              "VM", obj_attr_list["uuid"], "openvpn_ip")
-            
-            if ip :
-                cbdebug("Openvpn reported in from client with ip: " + ip)
-                obj_attr_list["openvpn_ip"] = ip
-                obj_attr_list["prov_cloud_ip"] = ip
-                return True
-            
+            _pending_attr_list = self.osci.pending_object_get(obj_attr_list["cloud_name"], \
+                                                              "VM", obj_attr_list["uuid"], \
+                                                              key, False)
+    
+            if _pending_attr_list :
+                
+                if key == "all" :
+                    for _key in [ "cloud_init_rsync", "cloud_init_bootstrap", "cloud_init_vpn" ] :
+                        if _key in _pending_attr_list :
+                            obj_attr_list[_key] = _pending_attr_list[_key]
+    
+                else :                
+                    obj_attr_list[key] = _pending_attr_list
+    
+                return True                
+
         return False
 
     @trace
@@ -292,7 +295,14 @@ class CommonCloudFunctions:
             _msg = "Trying to establish network connectivity to "
             _msg +=  obj_attr_list["name"] + " (cloud-assigned uuid "
             _msg += obj_attr_list["cloud_vm_uuid"] + "), on IP address "
-            _msg += obj_attr_list["prov_cloud_ip"] + "..."
+            _msg += obj_attr_list["prov_cloud_ip"]
+            
+            if str(obj_attr_list["use_jumphost"]).lower() == "false" :
+                _msg += "..."
+            else :
+                _msg += " via jumphost " + obj_attr_list["jump_host"] + "..."
+                obj_attr_list["check_boot_complete"] = "run_command_/bin/true"
+                
             cbdebug(_msg, True)
             self.pending_set(obj_attr_list, _msg)
 
@@ -387,9 +397,12 @@ class CommonCloudFunctions:
                         _connection_timeout = int(obj_attr_list["update_frequency"])*2
                         obj_attr_list["comments"] += "Had to increase ssh timeout one more time. "
 
-                    if "ssh_config_file" in obj_attr_list:
-                        _ssh_conf_file = obj_attr_list["ssh_config_file"]
-                    else:
+                    if str(obj_attr_list["use_jumphost"]).lower() == "true" :
+                        if "ssh_config_file" in obj_attr_list:
+                            _ssh_conf_file = obj_attr_list["ssh_config_file"]
+                        else:                            
+                            _ssh_conf_file = None
+                    else :
                         _ssh_conf_file = None
 
                     _proc_man = ProcessManagement(username = obj_attr_list["login"], \
@@ -408,7 +421,6 @@ class CommonCloudFunctions:
                             _vm_is_booted = False
                     except :
                         _vm_is_booted = False
-
                 
                 elif obj_attr_list["check_boot_complete"].count("snmpget_poll") :
                     import netsnmp
@@ -460,7 +472,7 @@ class CommonCloudFunctions:
                     _msg += "interval between pooling attempts (" + str(_wait) + " s)."
                     cbdebug(_msg, True)
                     _actual_wait = 0
-
+                
                 if _vm_is_booted :
                     obj_attr_list["mgt_004_network_acessible"] = int(time()) - time_mark_prc
                     self.pending_set(obj_attr_list, "Network accessible now. Continuing...")
@@ -487,6 +499,7 @@ class CommonCloudFunctions:
             # It should be mgt_006, NOT mgt_005
             obj_attr_list["mgt_006_application_start"] = "0"
             self.pending_set(obj_attr_list, "Application starting up...")
+            self.get_attr_from_pending(obj_attr_list, "all")
 
         else :
             _msg = "" + obj_attr_list["name"] + ""
@@ -505,7 +518,7 @@ class CommonCloudFunctions:
                                          obj_attr_list["uuid"], "status", msg, \
                                          parent=obj_attr_list["ai"], parent_type="AI")
         else :
-            if not obj_attr_list["cloud_vm_name"].count("cb_jumphost") :
+            if str(obj_attr_list["is_jumphost"]).lower() == "false" :
                 self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
                                              obj_attr_list["uuid"], "status", msg) 
 

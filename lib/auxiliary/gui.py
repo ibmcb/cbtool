@@ -53,6 +53,7 @@ path.append(cwd + "3rd_party/StreamProx/streamprox")
 
 from lib.api.api_service_client import *
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
+from lib.auxiliary.data_ops import is_number, summarize, value_cleanup
 from proxy import BufferingProxyFactory
 from packet_buffer import PacketBuffer
 
@@ -179,16 +180,18 @@ class Dashboard () :
         accumulate_rows = deepcopy(self.base_dict)
         accumulate_units = {}
         print_labels = {}
+
         for dest in self.categories :
             accumulate_units[dest] = {}
             print_labels[dest] = {}
-        
+
         # Go through all the objects in the data store and parse their latest
         # Metrics as reported by ganglia
         #
         # Accumulate those metrics and unit names in a master dictionary
         # For later formatting into HTML
         _obj_list = []
+
         for _obj_type in self.manage_collection.keys() :
             _obj_list += self.msci.find_document(self.manage_collection[_obj_type], \
                             {'mgt_901_deprovisioning_request_originated' : { "$exists" : False}, \
@@ -262,6 +265,11 @@ class Dashboard () :
                 label_indexer[dest] = {}
                        
             for mkey, mvalue in metrics.iteritems() :
+
+                average = False
+                max = False
+                min = False
+                acc = False
                 
                 if not isinstance(mvalue, dict):
                     # This path gathers metrics to display on the "Provisioning Performance" Tab                    
@@ -295,8 +303,21 @@ class Dashboard () :
                 else :
                     # This path gathers metrics to display on the "* Performance" Tab
                     key = mkey
-                    value = mvalue['val']
+                    value = mvalue["val"]
                     unit = mvalue['units']
+
+                    if "avg" in mvalue :
+                        average = mvalue["avg"]
+
+                    if "max" in mvalue :
+                        max = mvalue["max"]
+
+                    if "min" in mvalue :
+                        max = mvalue["min"]
+
+                    if "acc" in mvalue :
+                        acc = mvalue["acc"]
+                                            
                     if _obj_type == "HOST" :
                         metric_type = 'h'
                     else :
@@ -318,24 +339,23 @@ class Dashboard () :
                     newkey = key
                     
                 # Perform any necessary summaries if the user requests them
-                if self.summaries["KB => MB"][0] :
-                    if unit == "KB" or unit == "KiB" :
-                        value = "%.2f" % (float(value) / 1024)
-                        unit = "MB"
-                if self.summaries["Bytes => MB"][0] :
-                    if unit.lower() == "bytes" or unit == "b" :
-                        value = "%.2f" % (float(value) / 1024 / 1024)
-                        unit = "MB"
-                if self.summaries["bytes/sec => Mbps"][0] :
-                    if unit == "bytes/sec" :
-                        value = "%.2f" % (float(value) / 1024 / 1024 * 8)
-                        unit = "mbps"
-                        
-                if self.summaries["#4K pages => MB"][0] :
-                    if unit == "#4K pages" :
-                        value = "%.2f" % (float(value) * 4094 / 1024 / 1024)
-                        unit = "MB"
-                row_indexer[metric_type][newkey] = value
+                value, unit = summarize(self.summaries, value, unit)
+                                                
+                row_indexer[metric_type][newkey] = {}
+                row_indexer[metric_type][newkey]["val"] = value
+                
+                if average :
+                    row_indexer[metric_type][newkey]["avg"] = average
+
+                if max :
+                    row_indexer[metric_type][newkey]["max"] = max
+
+                if min :
+                    row_indexer[metric_type][newkey]["min"] = min
+
+                if acc :
+                    row_indexer[metric_type][newkey]["acc"] = acc
+                                    
                 accumulate_units[metric_type][newkey] = unit 
                     
             # We also want some "common" columns to be at the front of 
@@ -390,7 +410,7 @@ class Dashboard () :
             for unit in unitkeys :
                 row1.append(unit) 
                 row2.append(accumulate_units[dest][unit]) 
-                    
+
             # First print the units and their corresponding common labels 
             current_labels = prefix_rows1 + row1
             self.destinations[dest] += self.makeRow(dest, current_labels, False, False, False, False, False, False, current_labels, bold = True, exclude = prefix_rows1)
@@ -412,37 +432,12 @@ class Dashboard () :
                 for label in (self.labels) :
                     if label in label_dict :
                         row.append(label_dict[label])
+                                        
                 for unit in unitkeys :
-                    if unit in obj_dict :
-                        val = obj_dict[unit]
-                        
-                        # Some float values are zero. Get rid of the decimal
-                        # if they are zero and only print integer to save
-                        # screen space
-                        try :
-                            if str(val).count(":") == 0 :  
-                                try:
-                                    val = str(float(val))
-                                    if "." in val :
-                                        integer, decimal = val.split(".") 
-                                        if decimal == "0" :
-                                            val = integer
-                                except ValueError:
-                                    pass
-     
-                                row.append(val) 
-                            else :
-                                row.append("--")
-                                #row.append(val)
-                        
-                        except Exception :
-                            pass
-                    else :
-                        row.append("--")
+                    row.append(value_cleanup(obj_dict, unit))
 
                 self.destinations[dest] += self.makeRow(dest, row, uuid, current_labels, name, ip, host, role, current_labels)
-            
-            
+                        
         for dest in ['p', 'h', 's', 'a' ] :
             if not self.show[dest] :
                 continue
@@ -1237,13 +1232,9 @@ class GUI(object):
             elif req.action == "monitordata" :
 
                 self.api.dashboard_conn_check(req.cloud_name, req.session['msattrs'], req.session['time_vars']['username'])
-
                 mon = Dashboard(self.api.msci, req.unparsed_uri, req.session['time_vars'], req.session['msattrs'], req.session['cloud_name'])
-
                 mon.parse_url(req.session["dashboard_parameters"])
-
                 mon.gather_contents()
-
                 output_fd = open(cwd + "/gui_files/cli_template.html", "r")
                 cli_html = output_fd.read()
                 output_fd.close()

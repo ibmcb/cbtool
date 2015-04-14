@@ -34,7 +34,7 @@ from json import dumps
 
 from lib.remote.process_management import ProcessManagement
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from lib.auxiliary.data_ops import str2dic, dic2str, DataOpsException
+from lib.auxiliary.data_ops import str2dic, dic2str, DataOpsException, get_boostrap_command
 from lib.auxiliary.value_generation import ValueGeneration
 from lib.stores.stores_initial_setup import StoreSetupException
 from lib.auxiliary.thread_pool import ThreadPool
@@ -169,9 +169,16 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 _proc_man =  ProcessManagement(username = cld_attr_lst["time"]["username"], cloud_name = cld_attr_lst["cloud_name"])
 
-                if str(cld_attr_lst["space"]["openvpn_server_address"]).lower() != "false" :
-                    self.start_openvpn(cld_attr_lst)
-    
+                if cld_attr_lst["vm_defaults"]["use_vpn_ip"] and not cld_attr_lst["vpn"]["start_server"] :
+                    _msg = " The attribute \"USE_VPN_IP\" in Global Object "
+                    _msg += "[VM_DEFAULTS] is set to \"True\". Will set the"
+                    _msg += "attribute \"START_SERVER\" in the Global Object "
+                    _msg += "[VPN] also to \"True\"."
+                    cbdebug(_msg, True)
+                    cld_attr_lst["vpn"]["start_server"] = True
+                    
+                self.start_vpnserver(cld_attr_lst)
+
                 # User may have an empty VMC list. Need to be able to handle that.
                 if cld_attr_lst["vmc_defaults"]["initial_vmcs"].strip() != "" :
                     _tmp_vmcs = cld_attr_lst["vmc_defaults"]["initial_vmcs"].split(",")
@@ -205,56 +212,71 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                   cld_attr_lst["vm_templates"],
                                                   cld_attr_lst["vm_defaults"])
 
-                if "jump_host" in cld_attr_lst["vm_defaults"] :
-                    if str(cld_attr_lst["vm_defaults"]["jump_host"]).lower() != "false" :
-                        if str(cld_attr_lst["vm_defaults"]["jump_host"]).lower() != "true" :
-                            _msg = "The attribute \"jump_host\" in VM_DEFAULTS is set. "
-                            _msg += "Will attempt to connect (ssh) to the host \"" 
-                            _msg += str(cld_attr_lst["vm_defaults"]["jump_host"]) + "\""
-                            _msg += " to confirm that this host can be used as a \""
-                            _msg += "jump box\"."
-                            cbdebug(_msg, True)
-    
-                            _jump_box_host_fn = cld_attr_lst["space"]["base_dir"] 
-                            _jump_box_host_fn += "/" + cld_attr_lst["name"]
-                            _jump_box_host_fn += "_jump_box.conf"
-    
-                            # Just re-using the already existing ProcessManagement
-                            # instance. That is why all ssh parameters are being 
-                            # specified here instead of there.
-    
-                            _command = "ssh -i " +  cld_attr_lst["space"]["credentials_dir"]
-                            _command += '/' + cld_attr_lst["vm_defaults"]["key_name"] 
-                            _command += " -o StrictHostKeyChecking=no"
-                            _command += " -o UserKnownHostsFile=/dev/null"                         
-                            _command += ' ' + cld_attr_lst["vm_defaults"]["login"] 
-                            _command += '@' + cld_attr_lst["vm_defaults"]["jump_host"]
-                            _command += " \"which nc\""
-    
-                            _status, _result_stdout, _result_stderr = \
-                            _proc_man.retriable_run_os_command(_command, \
-                                                               total_attempts = int(cld_attr_lst["vm_defaults"]["update_attempts"]),\
-                                                               retry_interval = int(cld_attr_lst["vm_defaults"]["update_frequency"]), \
-                                                               raise_exception_on_error = False)
-    
-                            if not _status :
-                                _jump_box_host_contents = "Host *\n"
-                                _jump_box_host_contents += "  ProxyCommand "
-                                _jump_box_host_contents += _command.replace('"', '').replace("which",'').replace(" nc", "nc -w 2 %h 22")
-    
-                                _jump_box_host_fd = open(_jump_box_host_fn, 'w')
-    
-                                _jump_box_host_fd.write(_jump_box_host_contents)
-                                _jump_box_host_fd.close()
-    
-                                cld_attr_lst["vm_defaults"]["ssh_config_file"] = _jump_box_host_fn
-                        else :
-                            _msg = "The attribute \"jump_host\" in VM_DEFAULTS"
-                            _msg += " is set to \"$True\", but the actual IP address"
-                            _msg += " of the jump_host VM could not be determined."
-                            _msg += " Please try to re-run the tool."
-                            cberr(_msg, True)
-                            exit(1)
+                if cld_attr_lst["vm_defaults"]["use_jumphost"] and not cld_attr_lst["vm_defaults"]["create_jumphost"]:
+                    _msg = " The attribute \"USE_JUMPHOST\" in Global Object "
+                    _msg += "[VM_DEFAULTS] is set to \"True\"."                    
+                    _msg += "Will set the"
+                    _msg += "attribute \"CREATE_JUMPHOST\" in the same Global Object "
+                    _msg += "([VM_DEFAULTS]) also to \"True\"."
+                    cbdebug(_msg, True)
+                    cld_attr_lst["vm_defaults"]["create_jumphost"] = True
+                
+                if str(cld_attr_lst["vm_defaults"]["create_jumphost"]).lower() != "false" :
+
+                    if str(cld_attr_lst["vm_defaults"]["jump_host"]).count('.') == 3 :
+                        _msg = "The attribute \"CREATE_JUMPHOST\" in the Global Object" 
+                        _msg += " VM_DEFAULTS is set to \"True\"."
+                        cbdebug(_msg, True)                        
+
+                        _msg = "         Will attempt to connect (ssh) to the host \"" 
+                        _msg += str(cld_attr_lst["vm_defaults"]["jump_host"]) + "\""
+                        _msg += " to confirm that this host can be used as a \""
+                        _msg += "jump box\"..."
+                        #cbdebug(_msg, True)
+                        print _msg, 
+
+                        _jump_box_host_fn = cld_attr_lst["space"]["generated_configurations_dir"] 
+                        _jump_box_host_fn += "/" + cld_attr_lst["name"]
+                        _jump_box_host_fn += "_jump_box.conf"
+
+                        # Just re-using the already existing ProcessManagement
+                        # instance. That is why all ssh parameters are being 
+                        # specified here instead of there.
+
+                        _command = "ssh -i " +  cld_attr_lst["space"]["credentials_dir"]
+                        _command += '/' + cld_attr_lst["vm_defaults"]["key_name"] 
+                        _command += " -o StrictHostKeyChecking=no"
+                        _command += " -o UserKnownHostsFile=/dev/null"                         
+                        _command += ' ' + cld_attr_lst["vm_defaults"]["login"] 
+                        _command += '@' + cld_attr_lst["vm_defaults"]["jump_host"]
+                        _command += " \"which nc\""
+
+                        _status, _result_stdout, _result_stderr = \
+                        _proc_man.retriable_run_os_command(_command, \
+                                                           total_attempts = int(cld_attr_lst["vm_defaults"]["update_attempts"]),\
+                                                           retry_interval = int(cld_attr_lst["vm_defaults"]["update_frequency"]), \
+                                                           raise_exception_on_error = False)
+
+                        if not _status :
+                            _jump_box_host_contents = "Host *\n"
+                            _jump_box_host_contents += "  ProxyCommand "
+                            _jump_box_host_contents += _command.replace('"', '').replace("which",'').replace(" nc", "nc -w 2 %h 22")
+
+                            _jump_box_host_fd = open(_jump_box_host_fn, 'w')
+
+                            _jump_box_host_fd.write(_jump_box_host_contents)
+                            _jump_box_host_fd.close()
+
+                            cld_attr_lst["vm_defaults"]["ssh_config_file"] = _jump_box_host_fn
+                            
+                            print "done\n"
+                    else :
+                        _msg = "The attribute \"CREATE_JUMPHOST\" in Global Object "
+                        _msg += " VM_DEFAULTS is set to \"True\", but the actual "
+                        _msg += " IP address of the jump_host VM could not be determined."
+                        _msg += " Please try to re-run the tool."
+                        cberr(_msg, True)
+                        exit(1)
                               
                 _all_global_objects = cld_attr_lst.keys()
                 cld_attr_lst["client_should_refresh"] = str(0.0)
@@ -293,7 +315,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 cld_attr_lst["mon_defaults"]["collector_host_aggregator_port"] = _proc_man.get_free_port(cld_attr_lst["mon_defaults"]["collector_host_aggregator_port"], protocol = "tcp")
                 cld_attr_lst["mon_defaults"]["collector_host_summarizer_port"] = _proc_man.get_free_port(cld_attr_lst["mon_defaults"]["collector_host_summarizer_port"], protocol = "tcp")
     
-                os_func, ms_func, unused  = load_store_functions(cld_attr_lst)
+                os_func, ms_func, unused, unused = load_store_functions(cld_attr_lst)
 
                 os_func(cld_attr_lst, "initialize", cloud_name = cld_attr_lst["name"])
                 ms_func(cld_attr_lst, "initialize")
@@ -358,61 +380,98 @@ class ActiveObjectOperations(BaseObjectOperations) :
             return self.package(_status, _msg, cld_attr_lst)
         
     @trace
-    def start_openvpn(self, cld_attr_lst) :
+    def start_vpnserver(self, cld_attr_lst) :
         '''
         TBD
         '''
+            
         try : 
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
+
+            _type = cld_attr_lst["vpn"]["kind"]
+
+            _vpn_server_config = cld_attr_lst["space"]["generated_configurations_dir"] 
+            _vpn_server_config += '/' + cld_attr_lst["cloud_name"] + "_server-cb-openvpn.conf"
+
+            _vpn_server_address = cld_attr_lst["vpn"]["server_ip"]
+            _vpn_server_port = cld_attr_lst["vpn"]["server_port"]
             
-            openvpn_config = cld_attr_lst["space"]["openvpn_server_config_prefix"] + "-" + cld_attr_lst["cloud_name"] + ".conf"
-            openvpn_server_address = cld_attr_lst["space"]["openvpn_server_address"]
-            if not os.path.isfile(openvpn_config) :
+            if not os.path.isfile(_vpn_server_config) :
                 _proc_man =  ProcessManagement()
                 script = self.path + "/util/openvpn/make_keys.sh"
-                address_range = cld_attr_lst["space"]["openvpn_address_range"]
-                cmd = script + " " + address_range + " " + cld_attr_lst["cloud_name"] + " " + openvpn_server_address
-                cbinfo("Creating openvpn unified CB configuration: " + cmd + ", please wait ...", True)
-                _status, out, err =_proc_man.run_os_command(cmd)
+                _vpn_network = cld_attr_lst["vpn"]["network"]
+                _vpn_netmask = cld_attr_lst["vpn"]["netmask"]
+                _cmd = script + ' ' + _vpn_network + ' ' + _vpn_netmask + ' ' 
+                _cmd += cld_attr_lst["cloud_name"] + ' ' + _vpn_server_address + ' ' + _vpn_server_port
+                cbinfo("Creating \"" + _type + "\" VPN server unified CB configuration: " + _cmd + ", please wait ...", True)
+                _status, out, err =_proc_man.run_os_command(_cmd)
     
                 if not _status :
-                    cberr("openvpn configuration success: range: " + address_range, True)
+                    cbdebug("VPN configuration success: (" + _vpn_network + ' ' + _vpn_netmask + ")", True)
                 else :
-                    raise Exception("openvpn configuration failed: " + out + err)
+                    raise Exception("VPN configuration failed: " + out + err)
             else :
-                cbinfo("OpenVPN configuration for this cloud already generated: " + openvpn_config, True)
-            
-            _msg = "Checking for a running OpenVPN daemon.....", 
-            cbdebug(_msg, True)
 
-            _proc_man = ProcessManagement(username = "root")
-            _base_cmd = "sudo openvpn --config " + openvpn_config
-            _cmd = _base_cmd + " --daemon"
-            cbdebug(_cmd) 
-            _pid = _proc_man.start_daemon(_cmd, "1194", "tcp", conditional = True, 
-                                  search_keywords = cld_attr_lst["space"]["openvpn_server_config_prefix"])
+                cbinfo("VPN configuration for this cloud already generated: " + _vpn_server_config, True)
 
-            if len(_pid) :
-                if _pid[0].count("pnf") :
-                    _x, _p, _username = _pid[0].split('-') 
-                    _msg = "Unable to start OpenVPN service. Port 1194"
-                    _msg += " is already taken by process" + _p + "."
-                    _status = 8181
+            if str(cld_attr_lst["vpn"]["start_server"]).lower() == "false" :
 
-                    raise ProcessManagement.ProcessManagementException(_status, _msg)
+                _msg = "Bypassing the startup of a \"" + _type + "\" VPN server..."
+                _status = 0
+            else :
+                _vpn_pid = False
+                
+                print "Checking for a running VPN daemon.....",
+                
+                _proc_man = ProcessManagement(username = "root")
+                _base_cmd = "openvpn --config " + _vpn_server_config
+                _cmd = _base_cmd + " --daemon"
+
+                _vpn_pid = _proc_man.get_pid_from_cmdline(_cmd)     
+
+                if not _vpn_pid :
+                    
+                    _vpn_pid = _proc_man.start_daemon("sudo " + _cmd, \
+                                                      protocol = "tcp", \
+                                                      conditional = True, \
+                                                      port = _vpn_server_port, \
+                                                      search_keywords = _vpn_server_config)
+                            
+                    if len(_vpn_pid) :
+                        if _vpn_pid[0].count("pnf") :
+                            _x, _p, _username = _vpn_pid[0].split('-') 
+                            _msg = "Unable to start VPN service. Port 1194"
+                            _msg += " is already taken by process" + _p + "."
+                            _status = 8181
+        
+                            raise ProcessManagement.ProcessManagementException(_status, _msg)
+                        else :
+                            _p = _vpn_pid[0]
+                            _msg = "VPN daemon was successfully started. "
+                            _msg += "The process id is " + str(_p) + ".\n"
+                            sys.stdout.write(_msg)
+                    else :
+                        _msg = "\nVPN failed to start. To discover why, please "
+                        _msg += "run:\n\n" + _base_cmd + "\n\n ... and report the bug."
+                        cberr(_msg, True)
+                        _status = 7161
+                        raise ProcessManagement.ProcessManagementException(_status, _msg)
+
                 else :
-                    _p = _pid[0]
-                    _msg = "OpenVPN daemon was successfully started. "
-                    _msg += "The process id is " + str(_p) + ".\n"
+                    _p = _vpn_pid
+                    _msg = "A VPN daemon of the kind \"" + _type + "\" "
+                    _msg += "on node " + _vpn_server_address + ", TCP "
+                    _msg += "port " + str(_vpn_server_port) + " seems to be "
+                    _msg += "running.\n"
                     sys.stdout.write(_msg)
-            else :
-                _msg = "\nOpenVPN failed to start. To discover why, please run:\n\n" + _base_cmd + "\n\n ... and report the bug."
-                cberr(_msg, True)
-                _status = 7161
-                raise ProcessManagement.ProcessManagementException(_status, _msg)
-            
-            _status = 0
+                    _status = 0
+    
+                vpn_client_config = cld_attr_lst["space"]["generated_configurations_dir"] 
+                vpn_client_config += '/' + cld_attr_lst["cloud_name"] + "_client-cb-openvpn.conf"
+                cld_attr_lst["vm_defaults"]["vpn_config_file"] = vpn_client_config
+
+                _status = 0
             
         except ProcessManagement.ProcessManagementException, obj :
             _status = str(obj.status)
@@ -424,11 +483,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
         finally :
             if _status :
-                _msg = "Unable to start OpenVPN server: " + _fmsg
+                _msg = "Unable to start VPN server: " + _fmsg
                 cberr(_msg)         
                 exit(_status)       
             else :
                 cbdebug(_msg)
+                return True
 
     @trace    
     def clddetach(self, cld_attr_list, parameters, command, api = False) :
@@ -473,7 +533,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _curr_tries += 1
                     else :
                         break
-                
+
                 if _curr_tries >= _max_tries :
                     _msg = "Some AIDRS (daemons) did not die after " 
                     _msg += str(_max_tries * _update_frequency) + " seconds."
@@ -605,7 +665,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                                   False, \
                                                                   "fi_templates", \
                                                                   False)
-                
+
                 if not obj_attr_list["situation"] + "_fault" in _fault_situations_attr_list :
                     _fmsg = "Fault Injection situation \"" + obj_attr_list["situation"]
                     _fmsg += "\" is not defined."
@@ -977,6 +1037,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
         _fmsg = "An error has occurred, but no error message was captured"
         _vm_location = obj_attr_list["pool"]
         _cn = obj_attr_list["cloud_name"]
+        
         del obj_attr_list["pool"]
 
         try :
@@ -1100,18 +1161,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
             obj_attr_list["migrate_supported"] = _vmc_attr_list["migrate_supported"]
             obj_attr_list["protect_supported"] = _vmc_attr_list["protect_supported"]
             obj_attr_list["vmc_access"] = _vmc_attr_list["access"]
-
-            _vm_templates = self.osci.get_object(_cn, "GLOBAL", False, "vm_templates", False)
-
-            _vm_template_attr_list = str2dic(_vm_templates[obj_attr_list["role"]])
-
-            if obj_attr_list["size"] == "load_balanced_default" :
-                if "lb_size" in _vm_template_attr_list :
-                    obj_attr_list["size"] = _vm_template_attr_list["lb_size"]
-                else :
-                    obj_attr_list["size"] = "default"
-
-            selective_dict_update(obj_attr_list, _vm_template_attr_list)
 
             obj_attr_list["utc_offset_on_orchestrator"] = timezone * -1 if (localtime().tm_isdst == 0) else altzone * -1
 
@@ -1693,7 +1742,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                 obj_attr_list["host_cloud_ip"] = _host_attr_list["cloud_ip"]
 
                         if "userdata" in obj_attr_list :
-                            del obj_attr_list["userdata"]
+                            obj_attr_list["userdata"] = "/var/lib/cloud/" + obj_attr_list["cloud_vm_uuid"] + "/user-data.txt"
 
                         self.osci.create_object(_cloud_name, _obj_type, obj_attr_list["uuid"], \
                                                 obj_attr_list, False, True)
@@ -1857,7 +1906,15 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     self.osci.update_counter(_cloud_name, _obj_type, "ARRIVED", "increment")
     
                     if not "submitter" in obj_attr_list :
-                        _msg += " It is ssh-accessible at the IP address " + obj_attr_list["cloud_ip"]
+                        if _obj_type == "VM" :
+                            if obj_attr_list["prov_cloud_ip"] == obj_attr_list["run_cloud_ip"] :
+                                _ip = "IP address " + obj_attr_list["cloud_ip"]
+                            else :
+                                _ip = "IP addresses " + obj_attr_list["prov_cloud_ip"] + " and " + obj_attr_list["run_cloud_ip"] 
+                        else :
+                            _ip = "IP address " + obj_attr_list["cloud_ip"]
+                            
+                        _msg += " It is ssh-accessible at the " + _ip
                         _msg += " (" + obj_attr_list["cloud_hostname"] + ")."
                     obj_attr_list["tracking"] = "Attach: success." 
                     
@@ -1953,10 +2010,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
         _max_tries = int(obj_attr_list["attempts"])
         _retry_interval = int(obj_attr_list["update_frequency"])
 
-        if "ssh_config_file" in obj_attr_list :
-            _config_file = obj_attr_list["ssh_config_file"]
+        if str(obj_attr_list["use_jumphost"]).lower() == "true" :
+            if "ssh_config_file" in obj_attr_list :
+                _config_file = obj_attr_list["ssh_config_file"]
+            else :
+                _config_file = None
         else :
-            _config_file = None
+            _config_file = None            
 
         _proc_man = ProcessManagement(username = obj_attr_list["login"], \
                                       cloud_name = obj_attr_list["cloud_name"], \
@@ -1972,82 +2032,69 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     raise self.ObjectOperationException(_msg, _status)
 
             if obj_attr_list["transfer_files"].lower() != "false" :
-
-                _ssh_cmd = "ssh -i " + obj_attr_list["identity"]
-
-                if "ssh_config_file" in obj_attr_list :
-                    _ssh_cmd += " -F " + obj_attr_list["ssh_config_file"]
-
-                _ssh_cmd += " -o StrictHostKeyChecking=no"
-                _ssh_cmd += " -o UserKnownHostsFile=/dev/null" 
-                _ssh_cmd += " -l " + obj_attr_list["login"] + ' '
-
-                _bcmd = _ssh_cmd + ' ' + obj_attr_list["prov_cloud_ip"] 
                 
                 _msg = "Checking ssh accessibility on " + obj_attr_list["name"]
                 _msg += " (" + obj_attr_list["login"] + "@" + obj_attr_list["prov_cloud_ip"] + ")..."
                 cbdebug(_msg, True)
-                _proc_man.retriable_run_os_command(_bcmd + " \"/bin/true\"", \
-                                                   "127.0.0.1", \
+                _proc_man.retriable_run_os_command("/bin/true", \
+                                                   obj_attr_list["prov_cloud_ip"], \
                                                    _max_tries, \
                                                    _retry_interval, \
                                                    obj_attr_list["transfer_files"], \
                                                    obj_attr_list["debug_remote_commands"], \
                                                    True)
 
-                _bcmd += " \"mkdir -p ~/" + obj_attr_list["remote_dir_name"] +  ';'
-
-                _bcmd += "echo '#OSKN-redis' > ~/cb_os_parameters.txt;"
-                
-                if "openvpn_server_address" in obj_attr_list :
-                    _bcmd += "echo '#OSHN-" + obj_attr_list["openvpn_bootstrap_address"] + "' >> ~/cb_os_parameters.txt;"
-                else :
-                    _bcmd += "echo '#OSHN-" + self.osci.host + "' >> ~/cb_os_parameters.txt;"
-
-                _bcmd += "echo '#OSPN-" + str(self.osci.port) + "' >> ~/cb_os_parameters.txt;"
-                _bcmd += "echo '#OSDN-" + str(self.osci.dbid) + "' >> ~/cb_os_parameters.txt;"
-                _bcmd += "echo '#OSTO-" + str(self.osci.timout) + "' >> ~/cb_os_parameters.txt;"
-                _bcmd += "echo '#OSCN-" + obj_attr_list["cloud_name"] + "' >> ~/cb_os_parameters.txt;"
-                _bcmd += "echo '#OSMO-" + obj_attr_list["mode"] + "' >> ~/cb_os_parameters.txt;"
-                _bcmd += "echo '#OSOI-" + "TEST_" + obj_attr_list["username"] + ":" + obj_attr_list["cloud_name"] + "' >> ~/cb_os_parameters.txt;"
-                _bcmd += "echo '#VMUUID-" + obj_attr_list["uuid"] + "' >> ~/cb_os_parameters.txt;"
-                _bcmd += "sudo chown -R " +  obj_attr_list["login"] + " ~/" + obj_attr_list["remote_dir_name"] + "\""
-
-                _msg = "BOOTSTRAP: " + _bcmd
-                cbdebug(_msg)
-
-                _msg = "Boostrapping " + obj_attr_list["name"] + " (creating file"
+                _msg = "Bootstrapping " + obj_attr_list["name"] + " (creating file"
                 _msg += " cb_os_paramaters.txt in \"" + obj_attr_list["login"] 
                 _msg += "\" user's home dir on " + obj_attr_list["prov_cloud_ip"] + ")..."
-                cbdebug(_msg, True)
 
-                _proc_man.retriable_run_os_command(_bcmd, \
-                                                   "127.0.0.1", \
-                                                   _max_tries, \
-                                                   _retry_interval, \
-                                                   obj_attr_list["transfer_files"], \
-                                                   obj_attr_list["debug_remote_commands"], \
-                                                   True)
+                if obj_attr_list["cloud_init_bootstrap"] :
+                    _msg += " done by cloud-init!"
+                    cbdebug(_msg, True)
+                else :
+                    cbdebug(_msg, True)                    
+                    _bcmd = get_boostrap_command(obj_attr_list, self.osci)
+                    
+                    _msg = "BOOTSTRAP: " + _bcmd
+                    cbdebug(_msg)
+    
+                    _proc_man.retriable_run_os_command(_bcmd, \
+                                                       obj_attr_list["prov_cloud_ip"], \
+                                                       _max_tries, \
+                                                       _retry_interval, \
+                                                       obj_attr_list["transfer_files"], \
+                                                       obj_attr_list["debug_remote_commands"], \
+                                                       True)
 
-                _rcmd = "rsync -e \"" + _ssh_cmd + "\""
-                _rcmd += " --exclude-from "
-                _rcmd += "'" +  obj_attr_list["exclude_list"] + "' -az --delete --no-o --no-g --inplace -O " + obj_attr_list["base_dir"] + "/* " 
-                _rcmd += obj_attr_list["prov_cloud_ip"] + ":~/" + obj_attr_list["remote_dir_name"] + '/'
 
                 _msg = "Sending a copy of the code tree to "
                 _msg += obj_attr_list["name"] + " ("+ obj_attr_list["prov_cloud_ip"] + ")..."
-                cbdebug(_msg, True)
 
-                _msg = "RSYNC: " + _rcmd
-                cbdebug(_msg)
+                if obj_attr_list["cloud_init_rsync"] :
+                    _msg += " done by cloud-init!"
+                    cbdebug(_msg, True)
 
-                _proc_man.retriable_run_os_command(_rcmd, \
-                                                   "127.0.0.1", \
-                                                   _max_tries, \
-                                                   _retry_interval, \
-                                                   obj_attr_list["transfer_files"], \
-                                                   obj_attr_list["debug_remote_commands"], \
-                                                   True)                
+                else :
+                    cbdebug(_msg, True)
+
+                    _rcmd = "rsync -e \"" + _proc_man.rsync_conn + "\""
+                    _rcmd += " --exclude-from "
+                    _rcmd += "'" +  obj_attr_list["exclude_list"] + "' -az "
+                    _rcmd += "--delete --no-o --no-g --inplace -O " 
+                    _rcmd += obj_attr_list["base_dir"] + "/* " 
+                    _rcmd += obj_attr_list["prov_cloud_ip"] + ":~/" 
+                    _rcmd += obj_attr_list["remote_dir_name"] + '/'
+        
+                    _msg = "RSYNC: " + _rcmd
+                    cbdebug(_msg)
+    
+                    _proc_man.retriable_run_os_command(_rcmd, \
+                                                       "127.0.0.1", \
+                                                       _max_tries, \
+                                                       _retry_interval, \
+                                                       obj_attr_list["transfer_files"], \
+                                                       obj_attr_list["debug_remote_commands"], \
+                                                       True)                
             else :
                 _msg = "Bypassing the bootstrapping and the sending of a copy of"
                 _msg += " the code tree to " + obj_attr_list["name"] 

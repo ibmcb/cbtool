@@ -160,6 +160,7 @@ case ${LOAD_PROFILE} in
 esac
 
 source ~/cb_barrier.sh start
+update_app_errors 0 reset
 
 syslog_netcat "Removing old HiBench report file"
 rm -rf ${HIBENCH_HOME}/hibench.report

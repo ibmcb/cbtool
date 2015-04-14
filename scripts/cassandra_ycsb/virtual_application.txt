@@ -17,7 +17,7 @@ LOAD_BALANCER = $False
 LOAD_PROFILE = workloadd
 LOAD_LEVEL = 1
 LOAD_DURATION = 60
-REPORTED_METRICS = bandwidth,throughput,latency,datagen_time,datagen_size
+REPORTED_METRICS = bandwidth,throughput,latency,datagen_time,datagen_size,completion_time,errors
 
 # VApp-specific MANDATORY attributes
 DESCRIPTION = Deploys a Cassandra cluster (N seed nodes and M data nodes), plus

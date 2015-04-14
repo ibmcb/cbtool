@@ -319,13 +319,13 @@ function eager_collection {
             if [[ "$line" == *WRITE* ]]
             then
                 AVG_WRITE_LATENCY=$(echo $line | awk '{print $9}' | sed 's/^.*[^0-9]\([0-9]*\.[0-9]*\)/\1/' | rev | cut -c 2- | rev)
-                syslog_netncat "Current Avg. Write Latency : $AVG_WRITE_LATENCY"
+                syslog_netcat "Current Avg. Write Latency : $AVG_WRITE_LATENCY"
             fi
             
             if [[ "$line" == *UPDATE* ]]
             then
                 AVG_UPDATE_LATENCY=$(echo $line | awk '{print $9}' | sed 's/^.*[^0-9]\([0-9]*\.[0-9]*\)/\1/' | rev | cut -c 2- | rev)
-                syslog_netncat "Current Avg. Update Latency : $AVG_UPDATE_LATENCY"
+                syslog_netcat "Current Avg. Update Latency : $AVG_UPDATE_LATENCY"
             fi
         fi
     

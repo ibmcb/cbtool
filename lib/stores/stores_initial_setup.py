@@ -387,7 +387,7 @@ def mongodb_metricstore_setup(global_objects, operation = "check") :
                 if not _mongodb_pid :
                     global_objects["metricstore"]["port"] = _proc_man.get_free_port(global_objects["metricstore"]["port"], protocol = "tcp")
                     _hostport = int(global_objects["metricstore"]["port"])
-                    
+
                     _config_file_contents = global_objects["metricstore"]["config_string"].replace('_', ' ')
                     _config_file_contents = _config_file_contents.replace("REPLPORT", str(_hostport))
                     _config_file_contents = _config_file_contents.replace("REPLSTORESWORKINGDIR", global_objects["space"]["stores_working_dir"])
@@ -460,6 +460,138 @@ def mongodb_metricstore_setup(global_objects, operation = "check") :
         _msg = str(e)
         raise StoreSetupException(_msg, 9)
 
+def rsync_filestore_setup(global_objects, operation = "check") :
+    '''
+    TBD
+    '''
+    _hostname = global_objects["filestore"]["hostname"]
+    _protocol = global_objects["filestore"]["protocol"]
+    _username = global_objects["filestore"]["username"]
+    _port = global_objects["filestore"]["port"]
+    _usage = global_objects["filestore"]["usage"].lower()
+    _base_dir = global_objects["space"]["base_dir"]
+    _stores_wk_dir = global_objects["space"]["stores_working_dir"]
+    _log_dir = global_objects["space"]["log_dir"]
+
+    try :
+        _name, _ip = hostname2ip(_hostname)        
+        
+        if operation == "check" :
+
+            if _usage == "shared" :
+
+                _hostport = int(global_objects["filestore"]["port"])
+                
+                if not pre_check_port(_hostname, _hostport, _protocol) :
+                    _proc_man =  ProcessManagement(username = "root")
+                    _rsync_pid = _proc_man.get_pid_from_cmdline("rsync --daemon")
+    
+                    _cmd = "rsync --daemon"
+
+                    if not _rsync_pid :
+                        _msg = "Unable to detect a shared rsync server daemon running. "
+                        _msg += "Please try to start one (e.g., " + _cmd + ")"                    
+                        print _msg
+                        exit(8)
+
+            else :
+                _usage = "private"
+
+                _proc_man =  ProcessManagement(username = _username)
+                
+                _config_file_fn = _stores_wk_dir + '/' + _username + "_rsync.conf"
+                _cmd = "rsync --daemon --config " + _config_file_fn
+
+                if not access(_config_file_fn, F_OK) :
+                    # File was deleted, but the rsync process is still dangling
+                    _proc_man.run_os_command("sudo pkill -9 -f " + _config_file_fn)
+
+                _rsyslog_pid = _proc_man.get_pid_from_cmdline(_cmd)
+
+                if not _rsyslog_pid :
+
+                    _proc_man.run_os_command("sudo rm -rf " + _stores_wk_dir + '/' + _username + "_rsyncd.pid")
+                    
+                    global_objects["filestore"]["port"] = _proc_man.get_free_port(global_objects["filestore"]["port"], protocol = "tcp")
+
+                    _hostport = int(global_objects["filestore"]["port"])
+                    
+                    _config_file_contents = global_objects["filestore"]["config_string"].replace('_', ' ')
+                    _config_file_contents = _config_file_contents.replace("DOLLAR", '$')
+                    _config_file_contents = _config_file_contents.replace("REPLEQUAL", '=')                    
+                    _config_file_contents = _config_file_contents.replace("REPLPORT", str(_hostport))
+                    _config_file_contents = _config_file_contents.replace("REPLLOGDIR", _log_dir)
+                    _config_file_contents = _config_file_contents.replace("REPLUSERU", _username + '_')
+                    _config_file_contents = _config_file_contents.replace("REPLUSER", _username)                    
+                    _config_file_contents = _config_file_contents.replace("REPLBASEDIR", _base_dir)
+                    _config_file_contents = _config_file_contents.replace("REPLSTORESWORKINGDIR", global_objects["space"]["stores_working_dir"])                                         
+                    _config_file_contents = _config_file_contents.replace(';','\n')
+                    _config_file_contents = _config_file_contents.replace("--", ';')
+
+                    _config_file_fn = _stores_wk_dir + '/' + _username + "_rsync.conf"
+                    _config_file_fd = open(_config_file_fn, 'w')
+                    _config_file_fd.write(_config_file_contents)
+                    _config_file_fd.close()
+                    
+                    _rsyslog_pid = _proc_man.start_daemon("sudo " + _cmd)
+
+                    if not _rsyslog_pid :
+                        _msg = "Unable to detect a private rsyslog server daemon running. "
+                        _msg += "Please try to start one (e.g., " + _cmd + ")"
+                        print _msg
+                        exit(8)
+
+                else :
+                    _config_file_fd = open(_config_file_fn, 'r')
+                    _config_file_contents = _config_file_fd.readlines()
+                    _config_file_fd.close()
+
+                    for _line in _config_file_contents :
+                        if _line.count("port=") :
+                            global_objects["filestore"]["port"] = _line.split('=')[1]
+                            _hostport = int(global_objects["filestore"]["port"])
+                            break
+
+        _nh_conn = Nethashget(_hostname)
+        
+        _nh_conn.nmap(_hostport, _protocol)
+        _msg = "A File Store of the kind \"rsync\" (" + _usage + ") "
+        _msg += "on node " + _hostname + ", " + _protocol
+        _msg += " port " + str(_hostport) + " seems to be running."
+        cbdebug(_msg)
+        _status = 0
+        return _status, _msg
+
+    except socket.herror:
+        _status = 1200
+        _msg = "The IP address \"" + _hostname + "\" - used by the rsync "
+        _msg += " daemon - is not mapped to a Hostname. "
+        _msg += "Please make sure this name is resolvable either in /etc/hosts or DNS."
+        raise StoreSetupException(_msg, 9)
+
+    except socket.gaierror:
+        _status = 1200
+        _msg = "The Hostname \"" + _hostname + "\" - used by the rsync"
+        _msg += " daemon - is not mapped to an IP. "
+        _msg += "Please make sure this name is resolvable either in /etc/hosts or DNS."
+        raise StoreSetupException(_msg, 9)
+    
+    except ProcessManagement.ProcessManagementException, obj :
+        _status = str(obj.status)
+        _msg = str(obj.msg)
+        raise StoreSetupException(_msg, 9)
+        
+    except NetworkException, obj :
+        _msg = "Rsync File Store on server " + _hostname + ", " + _protocol
+        _msg += " port " + str(_hostport) + " seems to be down:" + str(obj.msg) + '.'
+        cberr(_msg)
+        raise StoreSetupException(_msg, 8)
+
+    except Exception, e :
+        _status = 23
+        _msg = str(e)
+        raise StoreSetupException(_msg, 9)
+
 '''
 Hard resets delete data from Mongo, which is bad.
 Soft reset should be the default for regular usage,
@@ -474,7 +606,11 @@ def reset(global_objects, soft = True) :
 
         _stores_wk_dir = global_objects["space"]["stores_working_dir"]
         _log_dir = global_objects["space"]["log_dir"]
-        _username = global_objects["logstore"]["username"]
+        _username = global_objects["space"]["username"]
+        _logstore_username = global_objects["logstore"]["username"]
+        _filestore_username = global_objects["filestore"]["username"]
+        
+        _filestore_config_file_fn = _stores_wk_dir + '/' + _filestore_username + "_rsync.conf"
             
         _msg = "Killing all processes..."
         print _msg,
@@ -492,6 +628,9 @@ def reset(global_objects, soft = True) :
 
         _proc_man.run_os_command("screen -wipe")
 
+        _proc_man.run_os_command("rm -rf /tmp/restart_cb*" + global_objects["logstore"]["username"] + '*')
+        _proc_man.run_os_command("rm -rf /tmp/*-*-*-*-*_avg_acc")
+        
         _msg = "Flushing Object Store..." 
         print _msg,
         _rmc = RedisMgdConn(global_objects["objectstore"])
@@ -507,7 +646,7 @@ def reset(global_objects, soft = True) :
 
             _msg = "Flushing Log Store..."
             print _msg,
-            _proc_man.run_os_command("pkill -9 -u " + global_objects["space"]["username"] + " -f rsyslogd")
+            _proc_man.run_os_command("pkill -9 -u " + _logstore_username + " -f rsyslogd")
             _file_list = []
             _file_list.append("operations.log")
             _file_list.append("report.log")
@@ -515,15 +654,27 @@ def reset(global_objects, soft = True) :
             _file_list.append("loadmanager.log")
             _file_list.append("gui.log")
             _file_list.append("remotescripts.log")
+            _file_list.append("messages.log")            
             _file_list.append("monitor.log")
             _file_list.append("subscribe.log")
 
             for _fn in  _file_list :
-                _proc_man.run_os_command("rm -rf " + _log_dir + '/' + _username + '_' + _fn)                    
-
+                _proc_man.run_os_command("rm -rf " + _log_dir + '/' + _logstore_username + '_' + _fn)
+                _proc_man.run_os_command("touch " + _log_dir + '/' + _logstore_username + '_' + _fn)
             _status, _msg = syslog_logstore_setup(global_objects, "check")
-            print "done"
+            
+            global_objects["logstore"]["just_restarted"] = True
+            
+            print "done\n"
+            
+            #_msg = "Flushing File Store..."
+            #print _msg,
+            #_proc_man.run_os_command("sudo pkill -9 -u root -f \"rsync --daemon --config " + _filestore_config_file_fn +"\"", raise_exception = False)
+            #_proc_man.run_os_command("sudo rm -rf " + _stores_wk_dir + '/' + _filestore_username + "_rsyncd.pid")
 
+            #_status, _msg = rsync_filestore_setup(global_objects, "check")
+            #print "done"
+                        
         _msg = ""
         _status = 0
 
