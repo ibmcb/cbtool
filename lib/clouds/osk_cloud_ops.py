@@ -195,6 +195,10 @@ class OskCmds(CommonCloudFunctions) :
             if self.oskconnstorage :
                 self.oskconnstorage.novaclient.http.close()
 
+
+            if self.oskconnnetwork :
+                self.oskconnnetwork.neutronclient.http.close()
+
             _status = 0
 
         except novaexceptions, obj :
@@ -375,12 +379,15 @@ class OskCmds(CommonCloudFunctions) :
 
         return _floating_pool_found
 
-    def get_network_attr(self, vm_defaults, network_attr_list) :
+    def get_network_attr(self, vm_defaults, network_attr_list, use_neutron = "auto") :
         '''
         TBD
         '''
-        
-        if str(vm_defaults["use_neutron"]).lower() == "true" :
+
+        if use_neutron == "auto" :
+            use_neutron = vm_defaults["use_neutron"]
+                    
+        if str(use_neutron).lower() == "true" :
             _name = network_attr_list["name"]
             _type = network_attr_list["provider:network_type"]
             _uuid = network_attr_list["id"]
@@ -407,20 +414,23 @@ class OskCmds(CommonCloudFunctions) :
         if _model == "tenant" :
             if _name not in self.networks_attr_list["tenant_network_list"] :
                 self.networks_attr_list["tenant_network_list"].append(_name)
-                
+                        
         return True
     
-    def get_network_list(self, vm_defaults) :
+    def get_network_list(self, vm_defaults, use_neutron = "auto") :
         '''
         TBD
         '''
-        if str(vm_defaults["use_neutron"]).lower() == "false" :
-            _network_list = self.oskconnnetwork.list_networks()
+        if use_neutron == "auto" :
+            use_neutron = vm_defaults["use_neutron"]
+            
+        if str(use_neutron).lower() == "false" :
+            _network_list = self.oskconncompute.networks.list()
         else :
             _network_list = self.oskconnnetwork.list_networks()["networks"]
-
+        
         for _network_attr_list in _network_list :
-            self.get_network_attr(vm_defaults, _network_attr_list)
+            self.get_network_attr(vm_defaults, _network_attr_list, use_neutron)
 
         return _network_list
     
@@ -597,10 +607,9 @@ class OskCmds(CommonCloudFunctions) :
                 _obj_attr_list["check_boot_complete"] = "tcp_on_22"
                 _obj_attr_list["userdata"] = None
                 
-                _netname = _obj_attr_list["prov_netname"]
-                if _netname in self.networks_attr_list :
-                    if self.networks_attr_list[_netname]["model"] != "tenant" :
-                        _netname = ','.join(self.networks_attr_list["tenant_network_list"])
+                _netname = _obj_attr_list["jumphost_netnames"]
+                if _netname == "all" :
+                    _netname = ','.join(self.networks_attr_list["tenant_network_list"])
 
                 _obj_attr_list["prov_netname"] = _netname
                 _obj_attr_list["run_netname"] = _netname
@@ -1135,8 +1144,8 @@ class OskCmds(CommonCloudFunctions) :
                 if not _netname in self.networks_attr_list :
                     _status = 168
                     _fmsg = "Please check if the defined network is present on this "
-                    _fmsg += "OpenStack Cloud"                
-                    self.get_network_list(obj_attr_list)
+                    _fmsg += "OpenStack Cloud"
+                    self.get_network_list(obj_attr_list, use_neutron = "false")
                 
                 if _netname in self.networks_attr_list :
                     _networkid = self.networks_attr_list[_netname]["uuid"]
@@ -1969,6 +1978,7 @@ class OskCmds(CommonCloudFunctions) :
         '''
         
         try :
+            
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
             _vvfmsg = ''

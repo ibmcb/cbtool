@@ -557,6 +557,9 @@ class API():
     def waituntil(self, cloud_name, object_type, counter, value, direction, interval = 20, time_limit = 36000) :
         return self.passive.wait_until({}, cloud_name + ' ' + object_type + ' ' + str(counter) + '=' + str(value) + ' ' + direction +' ' + str(interval) + ' ' + str(time_limit), "wait-until")[2]
 
+    def getrandnr(self, cloud_name, distribution) :
+        return self.passive.getrandnr({}, cloud_name + ' ' + distribution, "get-randomnr")[2]
+            
     def msgpub(self, cloud_name, object_type, channel, message) :
         return self.passive.msgpub({}, cloud_name + ' ' + object_type + ' ' + channel + ' ' + message, "msg-pub")[2]
     

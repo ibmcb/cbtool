@@ -1602,7 +1602,9 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         if _space_attr_list["tracefile"][0] != "/" :
                             _source = _space_attr_list["base_dir"] + '/' + _space_attr_list["tracefile"]
                         shutil.copy2(_source, _destination)
-                    
+
+                    print str(_logstor_attr_list["just_restarted"]).lower()
+
                     if str(_logstor_attr_list["just_restarted"]).lower() == "true" :
                         _msg = "This experiment was run right after a flushing of the Log Store."
                         _msg += " Will also include all logs files (from the Log Store) "
@@ -1623,8 +1625,13 @@ class PassiveObjectOperations(BaseObjectOperations) :
                             _source = _space_attr_list["log_dir"] + '/' + _space_attr_list["username"] + '_' + _fn
                             if access(_source, F_OK) :
                                 shutil.copy2(_source, _destination)
-        
+
                         self.osci.update_object_attribute(_obj_attr_list["cloud_name"], "GLOBAL", "logstore", False, "just_restarted", "false")
+
+                    else :
+                        _msg = "Bypassing the copy of all logs files"
+                        cbdebug(_msg, True)
+
             
         except self.ObjectOperationException, obj :
             _status = 8
@@ -2847,6 +2854,48 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     
             return self.package(_status, _msg, _result)
 
+    @trace
+    def getrandnr(self, obj_attr_list, parameters, command) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+
+            _result = None 
+
+            _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
+
+            if not _status :
+
+                _status, _fmsg = self.initialize_object(obj_attr_list, command)
+
+                if not _status :
+
+                    _dist = obj_attr_list["distribution"]
+                    _vg = ValueGeneration(self.pid)
+                    
+                    _start = time()
+                    _result = _vg.get_value(_dist)
+                    _end = time() - _start
+                    
+                    _status = 0
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+
+        finally :
+            if _status :
+                _msg = "Unable to get a random number using distribution  \"" + _dist + "\""
+                cberr(_msg)
+
+            else :
+                _msg = "Got the value \"" + str(_result) + "\" after " + str(_end) + " seconds"
+                cbdebug(_msg)
+                                    
+            return self.package(_status, _msg, _result)
 
     def list_domains(self, cloud_name, lvirt_conns,  uuid) :
         '''

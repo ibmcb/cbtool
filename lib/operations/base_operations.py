@@ -809,6 +809,13 @@ class BaseObjectOperations :
             if _length == 5 :
                 object_attribute_list["timeout"] = _parameters[4]
 
+        elif command == "get-randomnr" :
+            if _length == 2 :
+                object_attribute_list["distribution"] = _parameters[1]
+            else :
+                _status =  9
+                _msg = "Usage: getrandnr <cloud name> <distribution>"
+
         elif command == "msg-pub" :
             if _length >= 4 :
                 object_attribute_list["type"] = _parameters[1]
@@ -864,6 +871,7 @@ class BaseObjectOperations :
         TBD
         '''
         try :
+                        
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
             _obj_type = "unknown"
@@ -908,6 +916,9 @@ class BaseObjectOperations :
                 selective_dict_update(obj_attr_list, _vmc_defaults)
 
                 _status = 0
+
+            elif cmd == "get-randomnr" :
+                _status = 0
                 
             elif cmd == "mon-repair" :
                 _status = 0
@@ -931,7 +942,7 @@ class BaseObjectOperations :
 
             elif cmd == "vmc-attachall" :
                 _status = 0
-
+                
             elif cmd.count("attach") :
 
                 _postpone_counter = False
@@ -3363,6 +3374,7 @@ class BaseObjectOperations :
                 for _fn in  _file_list :
                     _proc_man.run_os_command("rm -rf " + _log_dir + '/' + _logstore_username + '_' + _fn)
                     _proc_man.run_os_command("touch " + _log_dir + '/' + _logstore_username + '_' + _fn)
+                    
                 _status, _msg = syslog_logstore_setup(_global_objects, "check")
 
                 self.osci.update_object_attribute(obj_attr_list["cloud_name"], "GLOBAL", "logstore", False, "just_restarted", "true")
