@@ -157,7 +157,7 @@ class APIClient(Server):
             self.msattrs = self.cldshow(cloud_name, "metricstore") if msattrs is None else msattrs
             self.msci = MongodbMgdConn(self.msattrs)
             self.username = self.cldshow(cloud_name, "time")["username"] if username is None else username
-            self.expid = self.cldshow(cloud_name, "time")["experiment_id"] if experiment_id is None else experiment_id
+            self.experiment_id = self.cldshow(cloud_name, "time")["experiment_id"] if experiment_id is None else experiment_id
 
     def __init__ (self, service_url, print_message = False):
         
@@ -218,7 +218,7 @@ class APIClient(Server):
         TBD
         '''        
         try :
-            self.expid = self.cldshow(cloud_name, "time")["experiment_id"]
+            self.experiment_id = self.cldshow(cloud_name, "time")["experiment_id"]
 
             if not force :
                 if not self.should_refresh(cloud_name, str(self.last_refresh)) :
@@ -268,11 +268,14 @@ class APIClient(Server):
             print "API not available: " + str(obj)
             return False
 
-    def get_performance_data(self, cloud_name, uuid, metric_class = "runtime", object_type = "VM", metric_type = "os", latest = False, samples = "auto") :
+    def get_performance_data(self, cloud_name, uuid, metric_class = "runtime", object_type = "VM", metric_type = "os", latest = False, expid = "auto") :
         '''
         TBD
         '''
         self.dashboard_conn_check(cloud_name)
+
+        if str(uuid).lower() == "all" :
+            uuid = None
         
         if metric_class == "runtime" :
             _object_type = metric_class + '_' + metric_type + '_' + object_type
@@ -281,22 +284,19 @@ class APIClient(Server):
 
         if latest :
             _allmatches = True            
-            _collection_name = "latest_" + _object_type + "_" + self.username            
-            if samples == "auto" :
-                samples = 0
-            else :
-                samples = int(samples)
+            _collection_name = "latest_" + _object_type + "_" + self.username
+            
         else :
             _allmatches = True            
             _collection_name = _object_type + "_" + self.username
-            if samples == "auto" :
-                samples = 0
-            else :
-                samples = int(samples)
+            
+        _limitdocuments = 0
 
-        _limitdocuments = samples
+        _criteria = {}
+        
+        if expid != "auto" :
+            _criteria["expid"] = expid
 
-        _criteria = { "expid" : self.expid }
         if uuid :
             _criteria["uuid"] = uuid
                     
@@ -305,65 +305,73 @@ class APIClient(Server):
                                           limitdocuments = _limitdocuments, \
                                           allmatches = _allmatches)
 
+        if uuid :
+            _samples = metrics.count() 
+            
+            if _samples == 0 :                
+                metrics = None
+                            
+            if _samples == 1 :                
+                metrics = metrics[0]
+                                
         if metrics is None :
-            _msg = "No " + metric_class + ' ' + _object_type + '(' + metric_type + ") data available."            
+            _msg = "No " + metric_class + ' ' + _object_type + '(' + str(metric_type) + ") data available."
 #            raise APINoSuchMetricException(1, _msg")
+        
         return metrics
     
-    def get_latest_app_data(self, cloud_name, uuid) :
+    def get_latest_app_data(self, cloud_name, uuid, expid = "auto") :
         '''
         TBD
         '''        
-        _metrics = self.get_performance_data(cloud_name, uuid, metric_class = "runtime", object_type = "VM", metric_type = "app", latest = True) 
+        _metrics = self.get_performance_data(cloud_name, uuid, "runtime", "VM", "app", True, expid) 
         if uuid in self.vms :
             self.vms[uuid].app_metrics = _metrics
 
         return _metrics
         
-    def get_latest_system_data(self, cloud_name, uuid) :
+    def get_latest_system_data(self, cloud_name, uuid, expid = "auto") :
         '''
         TBD
         '''
-        _metrics = self.get_performance_data(cloud_name, uuid, metric_class = "runtime", object_type = "VM", metric_type = "os", latest = True)
+        _metrics = self.get_performance_data(cloud_name, uuid, "runtime", "VM", "os", True, expid)
         if uuid in self.vms :
             self.vms[uuid].system_metrics = _metrics
             
         return _metrics
     
-    def get_latest_management_data(self, cloud_name, uuid) :
+    def get_latest_management_data(self, cloud_name, uuid, expid = "auto") :
         '''
         TBD
         '''
-        _metrics = self.get_performance_data(cloud_name, uuid, metric_class = "management", object_type = "VM", latest = True)
+        _metrics = self.get_performance_data(cloud_name, uuid, "management", "VM", True, expid)
             
         return _metrics
 
-    def get_app_data(self, cloud_name, uuid) :
+    def get_app_data(self, cloud_name, uuid, expid = "auto") :
         '''
         TBD
         '''        
-        _metrics = self.get_performance_data(cloud_name, uuid, metric_class = "runtime", object_type = "VM", metric_type = "app", latest = False) 
+        _metrics = self.get_performance_data(cloud_name, uuid, "runtime", "VM", "app", False, expid) 
         if uuid in self.vms :
             self.vms[uuid].app_metrics = _metrics
 
         return _metrics
         
-    def get_system_data(self, cloud_name, uuid) :
+    def get_system_data(self, cloud_name, uuid, expid = "auto") :
         '''
         TBD
         '''
-        _metrics = self.get_performance_data(cloud_name, uuid, metric_class = "runtime", object_type = "VM", metric_type = "os", latest = False)
+        _metrics = self.get_performance_data(cloud_name, uuid, "runtime", "VM", "os", False, expid)
         if uuid in self.vms :
             self.vms[uuid].system_metrics = _metrics
             
         return _metrics
     
-    def get_management_data(self, cloud_name, uuid) :
+    def get_management_data(self, cloud_name, uuid, expid = "auto") :
         '''
         TBD
         '''
-        _metrics = self.get_performance_data(cloud_name, uuid, metric_class = "management", object_type = "VM", latest = False)
+        _metrics = self.get_performance_data(cloud_name, uuid, "management", "VM", False, expid)
             
         return _metrics
-    
-    

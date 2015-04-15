@@ -247,7 +247,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _command = "ssh -i " +  cld_attr_lst["space"]["credentials_dir"]
                         _command += '/' + cld_attr_lst["vm_defaults"]["key_name"] 
                         _command += " -o StrictHostKeyChecking=no"
-                        _command += " -o UserKnownHostsFile=/dev/null"                         
+                        _command += " -o UserKnownHostsFile=/dev/null"
+                        _command += " -o BatchMode=yes "                                                  
                         _command += ' ' + cld_attr_lst["vm_defaults"]["login"] 
                         _command += '@' + cld_attr_lst["vm_defaults"]["jump_host"]
                         _command += " \"which nc\""
