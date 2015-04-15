@@ -415,7 +415,7 @@ class OskCmds(CommonCloudFunctions) :
         TBD
         '''
         if str(vm_defaults["use_neutron"]).lower() == "false" :
-            _network_list = self.oskconnnetworks.list_networks()
+            _network_list = self.oskconnnetwork.list_networks()
         else :
             _network_list = self.oskconnnetwork.list_networks()["networks"]
 
