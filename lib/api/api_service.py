@@ -543,7 +543,10 @@ class API():
         return self.passive.monitoring_list(cloud_name + ' ' + object_type, "mon-list")[2]
 
     def monextract(self, cloud_name, object_type, metric_type, expid = "current"):
-        return self.passive.monitoring_list(cloud_name + ' ' + object_type + ' ' + metric_type + ' ' + expid, "mon-extract")[2]
+        if str(object_type).lower() == "all" :
+            return self.passive.monitoring_extractall(cloud_name + ' ' + object_type + ' ' + metric_type + ' ' + expid, "mon-extract")[2]
+        else :
+            return self.passive.monitoring_extract(cloud_name + ' ' + object_type + ' ' + metric_type + ' ' + expid, "mon-extract")[2]
     
     def waitfor(self, cloud_name, time, update_interval = "default") :
         return self.passive.wait_for({}, cloud_name + ' ' + str(time) + ' ' + str(update_interval), "wait-for")[2]
