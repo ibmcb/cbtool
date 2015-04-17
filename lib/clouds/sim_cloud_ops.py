@@ -27,10 +27,11 @@ from time import time, sleep
 from random import randint, choice, shuffle
 from uuid import uuid5, NAMESPACE_DNS
 from subprocess import Popen, PIPE
+from os import chmod
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from lib.auxiliary.data_ops import str2dic, DataOpsException
-from lib.remote.network_functions import Nethashget 
+from lib.auxiliary.data_ops import str2dic, DataOpsException, create_restart_script
+from lib.remote.network_functions import Nethashget
 from shared_functions import CldOpsException, CommonCloudFunctions 
 
 class SimCmds(CommonCloudFunctions) :
@@ -905,7 +906,6 @@ class SimCmds(CommonCloudFunctions) :
                 _cmd += " --cn=" + obj_attr_list["cloud_name"]
                 _cmd += " --uuid=" + obj_attr_list["uuid"]
                 _cmd += " --daemon"
-
                 cbdebug(_cmd)
 
                 _proc_h = Popen(_cmd, shell=True, stdout=PIPE, stderr=PIPE)
@@ -924,6 +924,14 @@ class SimCmds(CommonCloudFunctions) :
                                           "GLOBAL", \
                                           "running_processes", \
                                           _process_identifier)
+
+                    create_restart_script("restart_cb_perf-emitter", \
+                                          _cmd, \
+                                          obj_attr_list["username"], \
+                                          "performance-emit", \
+                                          obj_attr_list["name"], \
+                                          obj_attr_list["uuid"])
+
 
             if _fmsg == "Forced failure during AI definition" :
                 _status = 181

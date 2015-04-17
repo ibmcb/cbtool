@@ -110,13 +110,16 @@ class ProcessManagement :
             _cmd += " -o UserKnownHostsFile=/dev/null "
             _cmd += " -o BatchMode=yes " 
             _cmd += _username
+            
+            self.rsync_conn = _cmd
+            
             _cmd += _hostname + " \"" + cmdline + "\""
 
         if str(really_execute).lower() == "true" :
             _msg = "running os command: " + _cmd
             cbdebug(_msg);
             _proc_h = Popen(_cmd, shell=True, stdout=PIPE, stderr=PIPE)
-    
+
             if _proc_h.pid :
                 if not cmdline.count("--debug_host=localhost") :
                     _result = _proc_h.communicate()
@@ -407,14 +410,14 @@ class ProcessManagement :
         '''
         if self.hostname == "127.0.0.1" :
             _cmd = cmdline
-
+        
         if port :
             _pid, _username = self.get_pid_from_port(port, protocol)
             if _pid :
                 if _username != self.username :
                     return [ "pnf-" + _pid + '-' + _username ]
-
         if conditional :
+            
             _pid = self.get_pid_from_cmdline(_cmd if not search_keywords else search_keywords)
             if not _pid :
                 _status, _a, _b = self.run_os_command(_cmd)
@@ -429,11 +432,11 @@ class ProcessManagement :
             sleep(3)
 
         _pid = self.get_pid_from_cmdline(cmdline if not search_keywords else search_keywords)
-        
+
         _msg = "A process with the command line \"" + cmdline + "\" (pid "
         _msg += str(_pid) + ") was started succesfully."
         cbdebug(_msg)
-        return _pid
+        return [ _pid ]
 
     @trace
     def kill_process(self, cmdline, kill_options = False, port = False) :

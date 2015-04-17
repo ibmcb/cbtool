@@ -19,11 +19,11 @@ LOAD_GENERATOR_ROLE = client_daytrader
 LOAD_MANAGER_ROLE = client_daytrader
 METRIC_AGGREGATOR_ROLE = client_daytrader
 CAPTURE_ROLE = db2
-REPORTED_METRICS = throughput,latency,datagen_time,datagen_size
 LOAD_PROFILE = default
 LOAD_LEVEL = uniformIXIXI1I10
 # The load duration for daytrader should not be smaller than 90 seconds
 LOAD_DURATION = uniformIXIXI90I120
+REPORTED_METRICS = throughput,latency,datagen_time,datagen_size,completion_time
 
 # VApp-specific MANDATORY attributes
 DESCRIPTION = Deploys an 2-tier stack, formed by N "application (Websphere) nodes"

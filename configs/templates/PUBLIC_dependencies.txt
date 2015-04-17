@@ -105,14 +105,15 @@ bootstrap-wizard-order = 43
 streamprox-order = 44
 d3-order = 45
 novaclient-order = 46
-softlayer-order = 47
-boto-order = 48
-libcloud-order = 49
-iptables-order = 50
-R-order = 51
-sshkey-order = 52
-sshd-order = 53
-pssh-order = 54
+neutronclient-order = 47
+softlayer-order = 48
+boto-order = 49
+libcloud-order = 50
+iptables-order = 51
+R-order = 52
+sshkey-order = 53
+sshd-order = 54
+pssh-order = 55
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -170,6 +171,7 @@ streamprox-install = git
 d3-install = git
 bootstrap-install = git
 novaclient-install = pip
+neutronclient-install = pip
 softlayer-install = pip
 boto-install = pip
 libcloud-install = pip
@@ -205,9 +207,9 @@ openvpn-configure = openvpn --version | grep built | cut -d ' ' -f 2
 gmond-configure = gmond --version | cut -d ' ' -f 2
 chef-client-configure = knife -v | cut -d ' ' -f 2
 rsyslog-configure = rsyslogd -v | grep compiled | cut -d ' ' -f 2 | sed 's/,//g'
-rsyslog-filter-configure = nmap -P0 -sU -p514 localhost 2>&1 | grep open && ls /var/log/devops
+rsyslog-filter-configure = nmap -P0 -sU -p514 localhost 2>&1 | grep open && ls /var/log/cloudbench
 apache-configure = sudo apachectl -v | grep version | cut -d '/' -f 2 | cut -d ' ' -f 1
-redis-configure = redis-server -v | sed 's/[^0-9]*//g' 
+redis-configure = redis-server -v | sed 's/[^0-9]*//g'
 mongodb-configure =  mongod --version
 chef-server-configure = sudo chef-server-ctl status
 python-devel-configure = ls -la $(python -c "from distutils import sysconfig as s; print s.get_config_vars()['INCLUDEPY']")/Python.h
@@ -228,6 +230,7 @@ bootstrap-wizard-configure = ls -la 3RPARTYDIR/Bootstrap-Wizard/README.md
 streamprox-configure = ls -la 3RPARTYDIR/StreamProx/README.md
 d3-configure = ls -la 3RPARTYDIR/d3/component.json
 novaclient-configure = python -c "import novaclient; from novaclient.v1_1 import client"
+neutronclient-configure = python -c "import neutronclient; from neutronclient.v2_0 import client"
 softlayer-configure = python -c "import SoftLayer; print "SoftLayer.__version__".replace('v','')"
 boto-configure = python -c "import boto; print str(boto.__version__).strip().replace('-dev','')"
 libcloud-configure = python -c "import libcloud; print str(libcloud.__version__).replace('-dev','').strip()"
@@ -286,6 +289,7 @@ bootstrap-wizard-ver = ANY
 streamprox-ver = ANY
 d3-ver = ANY
 novaclient-ver = ANY
+neutronclient-ver = ANY
 softlayer-ver = 3.1
 boto-ver = 2.1.8
 libcloud-ver = 0.11.0
@@ -398,12 +402,16 @@ fedora-chef-client-install-man = sudo rpm -Uvh URL
 ubuntu-chef-client-preinstall-man =  wget -N -P 3RPARTYDIR URL
 ubuntu-chef-client-install-man = sudo dpkg -i 3RPARTYDIR/chef_*.deb
 
-common-rsyslog-install-pm = package_install rsyslog
-common-rsyslog-postinstall-pm = sudo ln -s /sbin/rsyslogd /usr/local/bin/rsyslogd
+rhel-rsyslog-install-pm = package_install rsyslog
+rhel-rsyslog-postinstall-pm = sudo ln -s /sbin/rsyslogd /usr/local/bin/rsyslogd
+fedora-rsyslog-install-pm = package_install rsyslog
+fedora-rsyslog-postinstall-pm = sudo ln -s /sbin/rsyslogd /usr/local/bin/rsyslogd
+ubuntu-rsyslog-install-pm = package_install rsyslog
+ubuntu-rsyslog-postinstall-pm = sudo ln -s /usr/sbin/rsyslogd /usr/local/bin/rsyslogd
 
-common-rsyslog-filter-preinstall-man =  sudo mkdir -p /var/log/devops
+common-rsyslog-filter-preinstall-man =  sudo mkdir -p /var/log/cloudbench
 common-rsyslog-filter-install-man = sudo sed -i -e "s/#\$ModLoad imudp/\$ModLoad imudp/g" /etc/rsyslog.conf; sudo sed -i -e "s/#\$UDPServerRun 514/\$UDPServerRun 514/g" /etc/rsyslog.conf
-common-rsyslog-filter-postinstall-man = sudo bash -c "echo -e \"local5.*  \t\t\t\t /var/log/devops/remote.log\" >> /etc/rsyslog.conf"; sudo bash -c "echo -e \"local6.* \t\t\t\t /var/log/devops/local.log\" >> /etc/rsyslog.conf"; service_restart_enable rsyslog
+common-rsyslog-filter-postinstall-man = sudo bash -c "echo -e \"local5.*  \t\t\t\t /var/log/cloudbench/remote.log\" >> /etc/rsyslog.conf"; sudo bash -c "echo -e \"local6.* \t\t\t\t /var/log/cloudbench/local.log\" >> /etc/rsyslog.conf"; service_restart_enable rsyslog
 
 rhel-apache-install-pm = package_install httpd
 fedora-apache-install-pm = package_install httpd
@@ -411,21 +419,21 @@ ubuntu-apache-install-pm = package_install apache2
 
 rhel-redis-preinstall-man = lftp -c 'open -e "mget redis*remi*.rpm" URL'
 rhel-redis-install-man = package_install gperftools-libs && sudo rpm -Uvh $(ls -t | grep redis | head -n 1)
-rhel-redis-postinstall-man = sudo sed -i "s/^bind .*/bind 0.0.0.0/" /etc/redis.conf; service_restart_enable redis
+rhel-redis-postinstall-man = sudo sed -i "s/.*bind 127.0.0.1/bind 0.0.0.0/" /etc/redis.conf; service_restart_enable redis
 fedora-redis-install-man = package_install redis
-fedora-redis-postinstall-man = sudo sed -i "s/^bind .*/bind 0.0.0.0/" /etc/redis.conf; service_restart_enable redis
+fedora-redis-postinstall-man = sudo sed -i "s/.*bind 127.0.0.1/bind 0.0.0.0/" /etc/redis.conf; service_restart_enable redis
 ubuntu-redis-install-man = package_install redis-server
-ubuntu-redis-postinstall-man = sudo sed -i "s/^bind .*/bind 0.0.0.0/" /etc/redis/redis.conf; service_restart_enable redis-server
+ubuntu-redis-postinstall-man = sudo sed -i "s/.*bind 127.0.0.1/bind 0.0.0.0/" /etc/redis/redis.conf; service_restart_enable redis-server
 
 common-redis-preinstall-git = cd 3RPARTYDIR; git clone URL/redis.git
 common-redis-install-git = cd 3RPARTYDIR;redis; make; sudo make install
 
 rhel-mongodb-install-man = sudo rpm -Uvh URL/mongo-10gen-2.4.9-mongodb_1.ARCH.rpm; sudo rpm -Uvh URL/mongo-10gen-server-2.4.9-mongodb_1.ARCH.rpm 
-rhel-mongodb-postinstall-man = sudo sed -i "s/^bind_ip.*/bind_ip=0.0.0.0/" /etc/mongod.conf; service_restart_enable mongod
+rhel-mongodb-postinstall-man = sudo sed -i "s/.*bind_ip.*/bind_ip=0.0.0.0/" /etc/mongod.conf; service_restart_enable mongod
 fedora-mongodb-install-man = package_install mongodb mongodb-server
-fedora-mongodb-postinstall-man = sudo sed -i "s/^bind_ip.*/bind_ip=0.0.0.0/" /etc/mongod.conf; service_restart_enable mongod
+fedora-mongodb-postinstall-man = sudo sed -i "s/.*bind_ip.*/bind_ip=0.0.0.0/" /etc/mongod.conf; service_restart_enable mongod
 ubuntu-mongodb-install-man = package_install mongodb
-ubuntu-mongodb-postinstall-man = sudo sed -i "s/^bind_ip.*/bind_ip=0.0.0.0/" /etc/mongodb.conf; service_restart_enable mongodb
+ubuntu-mongodb-postinstall-man = sudo sed -i "s/.*bind_ip.*/bind_ip=0.0.0.0/" /etc/mongodb.conf; service_restart_enable mongodb
 
 rhel-chef-server-install-man = sudo rpm -Uvh URL 
 fedora-chef-server-install-man = sudo rpm -Uvh URL 
@@ -475,6 +483,8 @@ common-d3-preinstall-git = cd 3RPARTYDIR; git clone URL/d3.git
 
 common-novaclient-preinstall-pip = sudo pip install INDEXURL pbr; sudo pip install INDEXURL netifaces
 common-novaclient-install-pip = sudo pip install INDEXURL python-novaclient
+
+common-neutronclient-install-pip = sudo pip install INDEXURL python-neutronclient
 
 common-softlayer-install-pip = sudo pip install INDEXURL softlayer
 

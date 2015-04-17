@@ -59,6 +59,10 @@ class ValueGeneration :
         try :
             _status = 100
             _fmsg = "Failure while trying to generate value."
+            
+            if parameters.count('|') :
+                parameters = parameters.replace('|','I')
+                
             if parameters.count('I') :
                 _value = self.rand_dist_gen(parameters)
             elif parameters.count('+') or parameters.count('-') or parameters.count('*') :

@@ -44,60 +44,107 @@ then
     fi
 fi
 
+export JAVA_HOME=${JAVA_HOME}
+
 if [[ -z ${HADOOP_HOME} ]]
 then
     HADOOP_HOME=`get_my_ai_attribute_with_default hadoop_home ~/hadoop-2.6.0`
     eval HADOOP_HOME=${HADOOP_HOME}
+    syslog_netcat "HADOOP_HOME not defined on the environment. Value obtained from CB's Object Store was \"$HADOOP_HOME\""
+else
+    syslog_netcat "HADOOP_HOME already defined on the environment (\"$HADOOP_HOME\")"     
+fi
     
-    if [[ ! -d $HADOOP_HOME} ]]
+if [[ ! -d ${HADOOP_HOME} ]]
+then
+    syslog_netcat "The value specified in the AI attribute HADOOP_HOME (\"$HADOOP_HOME\") points to a non-existing directory. Will search ~ for a hadoop dir." 
+    HADOOP_HOME=$(ls ~ | grep -v tar | grep hadoop- | sort -r | head -n1)
+    eval HADOOP_HOME="~/${HADOOP_HOME}"
+    if [[ ! -d $HADOOP_HOME ]]
     then
-        syslog_netcat "The value specified in the AI attribute HADOOP_HOME points to a non-existing directory. Will search ~ for a hadoop dir." 
-        HADOOP_HOME=$(ls ~ | grep -v tar | grep hadoop- | sort -r | head -n1)
-        eval HADOOP_HOME="~/${HADOOP_HOME}"
-        if [[ ! -d $HADOOP_HOME ]]
-        then
-            syslog_netcat "Unable to find a directory with a Hadoop installation - NOK"
-            exit 1
-        fi
-    fi
-
-    syslog_netcat "HADOOP_HOME was determined to be $HADOOP_HOME" 
-    HADOOP_VERSION=$(echo ${HADOOP_HOME} | awk -F/ '{print $(NF-1)}' | sed 's/hadoop-//g' | sed 's/-bin//g')
-    syslog_netcat "HADOOP_VERSION was determined to be $HADOOP_VERSION" 
-    
-    if [[ -f ~/.bashrc ]]
-    then
-        is_hadoop_home_export=`grep -c "HADOOP_HOME=${HADOOP_HOME}" ~/.bashrc`
-        if [[ $is_hadoop_home_export -eq 0 ]]
-        then
-            syslog_netcat "Adding HADOOP_HOME to bashrc"
-            echo "export HADOOP_HOME=${HADOOP_HOME}" >> ~/.bashrc
-            echo "export PATH=\$PATH:$HADOOP_HOME/bin" >> ~/.bashrc
-        fi
+        syslog_netcat "Unable to find a directory with a Hadoop installation - NOK"
+        exit 1
     fi
 fi
 
+export HADOOP_HOME=${HADOOP_HOME}
+
+syslog_netcat "HADOOP_HOME was determined to be $HADOOP_HOME"     
+HADOOP_VERSION=$(echo ${HADOOP_HOME} | awk -F/ '{print $(NF-1)}' | sed 's/hadoop-//g' | sed 's/-bin//g')
+    
+re='^[0-9]+$'
+if ! [[ $yournumber =~ $re ]]
+then
+    syslog_netcat "Unable to determine HADOOP_VERSION. Assuming \"2.6\"."
+    HADOOP_VERSION="2.6"
+else
+    syslog_netcat "HADOOP_VERSION was determined to be $HADOOP_VERSION" 
+fi
+
+export HADOOP_VERSION=${HADOOP_VERSION}
+
+if [[ -f ~/.bashrc ]]
+then
+    is_hadoop_home_export=`grep -c "HADOOP_HOME=${HADOOP_HOME}" ~/.bashrc`
+    if [[ $is_hadoop_home_export -eq 0 ]]
+    then
+        syslog_netcat "Adding HADOOP_HOME ($HADOOP_HOME) to bashrc"
+        echo "export HADOOP_HOME=${HADOOP_HOME}" >> ~/.bashrc
+        echo "export PATH=\$PATH:$HADOOP_HOME/bin" >> ~/.bashrc
+    fi
+fi
+    
 if [[ -z ${HADOOP_CONF_DIR} ]]
 then
-    if [[ -d $HADOOP_HOME/conf ]]
+    HADOOP_CONF_DIR=$(find $HADOOP_HOME -name core-site.xml | grep -v templates | sed 's/core-site.xml//g' | tail -1)
+    syslog_netcat "HADOOP_CONF_DIR not defined on the environment. Assuming \"$HADOOP_CONF_DIR\" as the directory"
+fi
+
+if [[ ! -d $HADOOP_CONF_DIR ]]
+then
+    syslog_netcat "Error. The detected HADOOP_CONF_DIR ($HADOOP_CONF_DIR) is not a directory - NOK"
+    exit 1
+fi
+  
+if [[ -f ~/.bashrc ]]
+then
+    is_hadoop_conf_export=`grep -c "HADOOP_CONF_DIR=${HADOOP_CONF_DIR}" ~/.bashrc`
+    if [[ $is_hadoop_conf_export -eq 0 ]]
     then
-        HADOOP_CONF_DIR=$HADOOP_HOME/conf
-        syslog_netcat "Setting HADOOP_CONF_DIR to $HADOOP_CONF_DIR"
-    else
-        if [[ -d $HADOOP_HOME/etc/hadoop ]]
-        then
-            HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
-            syslog_netcat "Setting HADOOP_CONF_DIR to $HADOOP_CONF_DIR"
-        else
-            syslog_netcat "Error - Cannot find hadoop configuration directory."
-        fi
+        syslog_netcat "Adding HADOOP_CONF_DIR ($HADOOP_CONF_DIR) to bashrc"
+        echo "export HADOOP_CONF_DIR=${HADOOP_CONF_DIR}" >> ~/.bashrc
+    fi
+fi            
+
+export HADOOP_CONF_DIR=${HADOOP_CONF_DIR}
+
+if [[ -z ${HADOOP_EXECUTABLE} ]]
+then
+    HADOOP_EXECUTABLE=$(find $HADOOP_HOME -name hadoop.cmd | grep -v templates | sed 's/.cmd//g' | tail -1)
+    syslog_netcat "HADOOP_EXECUTABLE not defined on the environment. Assuming \"$HADOOP_EXECUTABLE\" as the executable"
+fi
+
+if [[ ! -f $HADOOP_EXECUTABLE ]]
+then
+    syslog_netcat "Error. The detected HADOOP_EXECUTABLE ($HADOOP_EXECUTABLE) does not exist - NOK"
+    exit 1
+fi
+  
+if [[ -f ~/.bashrc ]]
+then
+    is_hadoop_executable_export=`grep -c "HADOOP_EXECUTABLE=${HADOOP_EXECUTABLE}" ~/.bashrc`
+    if [[ $is_hadoop_executable_export -eq 0 ]]
+    then
+        syslog_netcat "Adding HADOOP_EXECUTABLE ($HADOOP_EXECUTABLE) to bashrc"
+        echo "export HADOOP_EXECUTABLE=${HADOOP_EXECUTABLE}" >> ~/.bashrc
     fi
 fi
+
+export HADOOP_EXECUTABLE=${HADOOP_EXECUTABLE}
 
 if [[ -z ${GIRAPH_HOME} ]]
 then
-    GIRAPH_HOME=`get_my_ai_attribute_with_default giraph_home ~/giraph/giraph/`
-    
+    GIRAPH_HOME=`get_my_ai_attribute_with_default giraph_home ~/giraph/giraph/`    
     eval GIRAPH_HOME=${GIRAPH_HOME}
 
     if [[ -f ~/.bashrc ]]
@@ -105,11 +152,13 @@ then
         is_giraph_home_export=`grep -c "GIRAPH_HOME=${GIRAPH_HOME}" ~/.bashrc`
         if [[ $is_giraph_home_export -eq 0 ]]
         then
-            syslog_netcat "Adding GIRAPH_HOME to bashrc"
+            syslog_netcat "Adding GIRAPH_HOME ($GIRAPH_HOME) to bashrc"
             echo "export GIRAPH_HOME=${GIRAPH_HOME}" >> ~/.bashrc
         fi
     fi
 fi
+
+export GIRAPH_HOME=${GIRAPH_HOME}
 
 if [[ -z ${ZOOKEPER_HOME} ]]
 then
@@ -122,11 +171,13 @@ then
         is_zookeper_home_export=`grep -c "ZOOKEPER_HOME=${ZOOKEPER_HOME}" ~/.bashrc`
         if [[ $is_zookeper_home_export -eq 0 ]]
         then
-            syslog_netcat "Adding ZOOKEPER_HOME to bashrc"
+            syslog_netcat "Adding ZOOKEPER_HOME ($ZOOKEPER_HOME) to bashrc"
             echo "export ZOOKEPER_HOME=${ZOOKEPER_HOME}" >> ~/.bashrc
         fi
     fi
 fi
+
+export ZOOKEPER_HOME=${ZOOKEPER_HOME}
 
 if [[ -z ${HIBENCH_HOME} ]]
 then
@@ -139,11 +190,13 @@ then
         is_hibench_home_export=`grep -c "HIBENCH_HOME=${HIBENCH_HOME}" ~/.bashrc`
         if [[ $is_hibench_home_export -eq 0 ]]
         then
-            syslog_netcat "Adding HIBENCH_HOME to bashrc"
+            syslog_netcat "Adding HIBENCH_HOME ($HIBENCH_HOME) to bashrc"
             echo "export HIBENCH_HOME=${HIBENCH_HOME}" >> ~/.bashrc
         fi
     fi
 fi
+
+export HIBENCH_HOME=${HIBENCH_HOME}
 
 export HADOOP_EXAMPLES_JAR=${HADOOP_HOME}/$(get_my_ai_attribute_with_default hadoop_examples share/hadoop/mapreduce/hadoop-mapreduce-examples-2.6.0.jar)
 
@@ -574,6 +627,13 @@ function check_hadoop_cluster_state {
     ATTEMPTS=$1
     INTERVAL=$2
 
+	if [[ $ATTEMPTS -eq 1 && $INTERVAL -eq 1 ]]
+	then
+		QUICK_CHECK=1
+	else
+		QUICK_CHECK=0
+	fi
+	
     if [[ x"$my_role" == x"hadoopmaster" || x"$my_role" == x"giraphmaster" ]] 
     then
         syslog_netcat "Waiting for all Datanodes to become available..."
@@ -626,9 +686,15 @@ function check_hadoop_cluster_state {
 
         if [[ "$ATTEMPTS" -eq 0 ]]
         then
-            syslog_netcat "Timeout Error waiting for datanodes to start. ${AVAILABLE_NODES} of ${TOTAL_NODES} are live. - NOK"
-            syslog_netcat "`${HADOOP_HOME}/bin/hadoop dfsadmin -report`"
+        	if [[ $QUICK_CHECK -eq 0 ]]
+        	then
+            	syslog_netcat "Timeout Error waiting for datanodes to start. ${AVAILABLE_NODES} of ${TOTAL_NODES} are live. - NOK"
+            	syslog_netcat "`${HADOOP_HOME}/bin/hadoop dfsadmin -report`"
+        	else
+        		syslog_netcat "Hadoop cluster not formed yet."
+        	fi
             return 1
+
         fi
         
         return 0

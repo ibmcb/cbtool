@@ -333,14 +333,14 @@ function mount_filesystem_on_volume {
         fi
     fi
 
-    sudo mkdir -p $MOUNTPOINT
+    sudo mkdir -p $MOUNTPOINT_DIR
 
     if [[ -z $MOUNTPOINT_OWNER  ]]
     then
         MOUNTPOINT_OWER=${my_login_username}
     fi
     
-    sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT
+    sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT_DIR
         
     if [[ $VOLUME != "NONE" ]]
     then
@@ -360,12 +360,12 @@ function mount_filesystem_on_volume {
             
             if [[ $? -ne 0 ]]
             then
-                syslog_netcat "Error while mounting $FILESYS_TYPE filesystem on volume $VOLUME on mountpoint ${MOUNTPOINT} - NOK" 
+                syslog_netcat "Error while mounting $FILESYS_TYPE filesystem on volume $VOLUME on mountpoint ${MOUNTPOINT_DIR} - NOK" 
                 exit 1
             fi
         fi
         
-        sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT
+        sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT_DIR
     fi
     return 0
 }
@@ -391,9 +391,9 @@ function mount_filesystem_on_memory {
         MOUNTPOINT_OWER=${my_login_username}
     fi
     
-    sudo mkdir -p $MOUNTPOINT
+    sudo mkdir -p $MOUNTPOINT_DIR
 
-    sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT
+    sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT_DIR
                     
     if [[ $FILESYS_TYPE == "tmpfs" ]]
     then
@@ -410,7 +410,7 @@ function mount_filesystem_on_memory {
         sudo mount $RAMDEVICE $MOUNTPOINT_DIR    
     fi
 
-    sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT    
+    sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT_DIR
 
     return 0
 }
@@ -434,9 +434,9 @@ function mount_remote_filesystem {
         return 1
     fi            
                         
-    sudo mkdir -p $MOUNTPOINT
+    sudo mkdir -p $MOUNTPOINT_DIR
 
-    sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPO
+    sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT_DIR
             
     if [[ $FILESYS_TYPE == "nfs" ]]
     then
@@ -1144,6 +1144,11 @@ function update_app_errors {
         ERROR=0
     fi
     
+    if [[ ! -z $2 ]]
+    then
+    	rm -rf /tmp/app_errors
+	fi
+	
     if [[ ! -f /tmp/app_errors ]]
     then
         echo "0" > /tmp/app_errors

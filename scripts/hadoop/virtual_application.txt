@@ -16,7 +16,7 @@ CAPTURE_ROLE = hadoopslave
 LOAD_PROFILE = terasort
 LOAD_LEVEL = uniformIXIXI1I3
 LOAD_DURATION = 60
-REPORTED_METRICS = throughput,latency,datagen_time,datagen_size
+REPORTED_METRICS = throughput,latency,datagen_time,datagen_size,completion_time,errors
 
 # VApp-specific MANDATORY attributes
 DESCRIPTION = Deploys a Hadoop cluster (1 master and N slave nodes). The master

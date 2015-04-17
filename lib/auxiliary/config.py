@@ -402,8 +402,9 @@ def load_store_functions(cld_attr_lst) :
     os_func = getattr(_store_ops, cld_attr_lst["objectstore"]["kind"] + "_objectstore_setup")
     ms_func = getattr(_store_ops, cld_attr_lst["metricstore"]["kind"] + "_metricstore_setup")
     ls_func = getattr(_store_ops, cld_attr_lst["logstore"]["kind"] + "_logstore_setup")
-
-    return os_func, ms_func, ls_func
+    fs_func = getattr(_store_ops, cld_attr_lst["filestore"]["kind"] + "_filestore_setup")
+    
+    return os_func, ms_func, ls_func, fs_func
 
 @trace
 def get_available_clouds(cld_attr_lst, return_all_options = False) :

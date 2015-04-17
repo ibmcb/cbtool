@@ -90,6 +90,7 @@ sudo sh -c "echo "recordcount=${RECORDS%.*}" > $YCSB_PATH/custom_workload.dat"
 sudo sh -c "echo "operationcount=$OPERATION_COUNT" >> $YCSB_PATH/custom_workload.dat"
 
 source ~/cb_barrier.sh start
+update_app_errors 0 reset
 
 OUTPUT_FILE=$(mktemp)
 if [[ ${GENERATE_DATA} == "true" ]]

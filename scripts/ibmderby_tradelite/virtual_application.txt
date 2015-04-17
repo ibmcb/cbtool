@@ -12,6 +12,8 @@ LOAD_BALANCER = $False
 LOAD_BALANCER_TARGET_PORT = 9080
 LOAD_BALANCER_TARGET_URL = daytrader
 LOAD_BALANCER_TARGET_CHILDREN = 2
+REPORTED_METRICS = throughput,latency,datagen_time,datagen_size,completion_time
+
 # This only has effect if the parameter LOAD_BALANCER is set to "$True"
 LB_SETUP1 = cb_restart_loadbalancer.sh
 LB_RESET1 = cb_restart_loadbalancer.sh

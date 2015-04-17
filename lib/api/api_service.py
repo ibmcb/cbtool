@@ -540,8 +540,13 @@ class API():
             return self.active.objdetach({}, cloud_name + ' ' + identifier + ' ' + force, "aidrs-detach")[2]
     
     def monlist(self, cloud_name, object_type):
-        result = self.passive.monitoring_list(cloud_name + ' ' + object_type, "mon-list")[2]
-        return result
+        return self.passive.monitoring_list(cloud_name + ' ' + object_type, "mon-list")[2]
+
+    def monextract(self, cloud_name, object_type, metric_type, expid = "current"):
+        if str(object_type).lower() == "all" :
+            return self.passive.monitoring_extractall(cloud_name + ' ' + object_type + ' ' + metric_type + ' ' + expid, "mon-extract")[2]
+        else :
+            return self.passive.monitoring_extract(cloud_name + ' ' + object_type + ' ' + metric_type + ' ' + expid, "mon-extract")[2]
     
     def waitfor(self, cloud_name, time, update_interval = "default") :
         return self.passive.wait_for({}, cloud_name + ' ' + str(time) + ' ' + str(update_interval), "wait-for")[2]
@@ -549,9 +554,12 @@ class API():
     def waiton(self, cloud_name, object_type, channel, keyword, timeout = 86400) :
         return self.passive.wait_on({}, cloud_name + ' ' + object_type + ' ' + channel + ' ' + keyword + ' ' + str(timeout), "wait-on")[2]
 
-    def waituntil(self, cloud_name, object_type, counter, value, direction, interval = 20) :
-        return self.passive.wait_until({}, cloud_name + ' ' + object_type + ' ' + str(counter) + '=' + str(value) + ' ' + direction +' ' + str(interval), "wait-until")[2]
+    def waituntil(self, cloud_name, object_type, counter, value, direction, interval = 20, time_limit = 36000) :
+        return self.passive.wait_until({}, cloud_name + ' ' + object_type + ' ' + str(counter) + '=' + str(value) + ' ' + direction +' ' + str(interval) + ' ' + str(time_limit), "wait-until")[2]
 
+    def getrandnr(self, cloud_name, distribution) :
+        return self.passive.getrandnr({}, cloud_name + ' ' + distribution, "get-randomnr")[2]
+            
     def msgpub(self, cloud_name, object_type, channel, message) :
         return self.passive.msgpub({}, cloud_name + ' ' + object_type + ' ' + channel + ' ' + message, "msg-pub")[2]
     

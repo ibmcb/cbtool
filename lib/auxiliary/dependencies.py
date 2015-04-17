@@ -304,16 +304,16 @@ def expand_command(cmdline, depsdict, process_manager = False) :
                         _service_cmd="sudo systemctl stop SERVICE; sudo systemctl disable SERVICE"
                 else :
                     if cmdline.count("service_restart_enable") :
-                        _service_cmd="sudo service SERVICE start;"
+                        _service_cmd="sudo service SERVICE restart;"
                         
                         if depsdict["cdistkind"] == "rhel" or depsdict["cdistkind"] == "fedora" :
-                            _service_cmd = "sudo chkconfig SERVICE on;"
+                            _service_cmd += "sudo chkconfig SERVICE on;"
         
                         elif depsdict["cdistkind"] == "ubuntu" :
                             if os.access("/etc/init/" + _service + ".conf", os.F_OK) :
-                                _service_cmd = "sudo rm -rf /etc/init/SERVICE.override"
+                                _service_cmd += "sudo rm -rf /etc/init/SERVICE.override"
                             else :
-                                _service_cmd = "sudo update-rc.d -f SERVICE defaults"
+                                _service_cmd += "sudo update-rc.d -f SERVICE defaults"
                                                         
                     if cmdline.count("service_stop_disable") :            
                         _service_cmd="sudo systemctl SERVICE stop; sudo chkconfig SERVICE off;"            

@@ -46,6 +46,7 @@ from lib.auxiliary.value_generation import ValueGeneration
 from lib.remote.process_management import ProcessManagement
 from lib.auxiliary.data_ops import str2dic, dic2str, makeTimestamp
 from lib.operations.base_operations import BaseObjectOperations
+from scripts.common.cb_common import report_app_metrics
 
 qemu_supported = False
 
@@ -663,6 +664,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _msg += " daemon restart is needed."
                     cbdebug(_msg)
                     self.update_host_os_perfmon(obj_attr_list)
+                    self.update_logstore(obj_attr_list)
                 _msg = _smsg
                 cbdebug(_smsg)
 
@@ -763,7 +765,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             return self.package(_status, _msg, _result)
 
     @trace
-    def stats(self, obj_attr_list, parameters, command) :
+    def stats(self, obj_attr_list, parameters, command, internal = False) :
         '''
         TBD
         '''
@@ -870,17 +872,19 @@ class PassiveObjectOperations(BaseObjectOperations) :
                             _fmt_obj_list += '\n'
 
                         if _obj_type == "VM" :
-                            _vm_defaults = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "vm_defaults", False)
-                            _vm_defaults["cloud_name"] = obj_attr_list["cloud_name"]
-                            self.set_cloud_operations_instance(obj_attr_list["cloud_model"])      
-                            _cld_conn = self.coi[obj_attr_list["cloud_model"]][self.pid + '-' + self.expid]
-                            _stats["experiment_counters"][_obj_type]["reported"] = _cld_conn.vmcount(_vm_defaults)
-                            _obj_count = str(_stats["experiment_counters"][_obj_type]["reported"])
+                            
+                            if str(_query_object["get_vm_list"]).lower() == "true" :
+                                _vm_defaults = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "vm_defaults", False)                                
+                                _vm_defaults["cloud_name"] = obj_attr_list["cloud_name"]                            
+                                self.set_cloud_operations_instance(obj_attr_list["cloud_model"])      
+                                _cld_conn = self.coi[obj_attr_list["cloud_model"]][self.pid + '-' + self.expid]
+                                _stats["experiment_counters"][_obj_type]["reported"] = _cld_conn.vmcount(_vm_defaults)
+                                _obj_count = str(_stats["experiment_counters"][_obj_type]["reported"])
 
-                            if obj_attr_list["output"] == "print" :                                
-                                _fmt_obj_list += ('|' + _obj_type + "s REPORTED").ljust(len(_fields[0]))
-                                _fmt_obj_list += ('|' + _obj_count).ljust(len(_fields[1]))
-                                _fmt_obj_list += '\n'
+                                if obj_attr_list["output"] == "print" :                                
+                                    _fmt_obj_list += ('|' + _obj_type + "s REPORTED").ljust(len(_fields[0]))
+                                    _fmt_obj_list += ('|' + _obj_count).ljust(len(_fields[1]))
+                                    _fmt_obj_list += '\n'
                         
                         _obj_count = str(self.get_object_count(obj_attr_list["cloud_name"], _obj_type, "ARRIVED"))
                         _stats["experiment_counters"][_obj_type]["arrived"] = _obj_count
@@ -930,6 +934,31 @@ class PassiveObjectOperations(BaseObjectOperations) :
                             _fmt_obj_list += ('|' + _obj_type + "s FAILED").ljust(len(_fields[0]))
                             _fmt_obj_list += ('|' + _obj_count).ljust(len(_fields[1]))
                             _fmt_obj_list += '\n'
+
+                        if _obj_type == "VM" :
+                            _obj_count = str(len(self.osci.query_by_view(obj_attr_list["cloud_name"], _obj_type, "BYSLA_PROVISIONING", "violated")))
+                            _stats["experiment_counters"][_obj_type]["sla_provisioning_violated"] = _obj_count
+    
+                            if obj_attr_list["output"] == "print" :                                                  
+                                _fmt_obj_list += ('|' + _obj_type + "s SLA PROVISIONING VIOLATED").ljust(len(_fields[0]))
+                                _fmt_obj_list += ('|' + _obj_count).ljust(len(_fields[1]))
+                                _fmt_obj_list += '\n'
+
+                            _obj_count = str(len(self.osci.query_by_view(obj_attr_list["cloud_name"], _obj_type, "BYSLA_RUNTIME", "violated")))
+                            _stats["experiment_counters"][_obj_type]["sla_runtime_violated"] = _obj_count
+    
+                            if obj_attr_list["output"] == "print" :                                                  
+                                _fmt_obj_list += ('|' + _obj_type + "s SLA RUNTIME VIOLATED").ljust(len(_fields[0]))
+                                _fmt_obj_list += ('|' + _obj_count).ljust(len(_fields[1]))
+                                _fmt_obj_list += '\n'
+
+                            _obj_count = str(len(self.osci.query_by_view(obj_attr_list["cloud_name"], _obj_type, "BYERRORS", "yes")))
+                            _stats["experiment_counters"][_obj_type]["app_errors"] = _obj_count
+
+                            if obj_attr_list["output"] == "print" :                                                  
+                                _fmt_obj_list += ('|' + _obj_type + "s APPLICATION ERRORS").ljust(len(_fields[0]))
+                                _fmt_obj_list += ('|' + _obj_count).ljust(len(_fields[1]))
+                                _fmt_obj_list += '\n'
     
                     _obj_count = str(self.osci.count_object(obj_attr_list["cloud_name"], "GLOBAL", "experiment_counter"))
                     _stats["experiment_counters"]["Experiment Counter"] = _obj_count
@@ -1013,7 +1042,10 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _msg = "Success (data returned on a JSON object)"
                     cbdebug(_msg)
 
-            return self.package(_status, _msg, _stats)
+            if not internal :
+                return self.package(_status, _msg, _stats)
+            else :
+                return _status, _msg, _stats
 
     @trace
     def show_state(self, obj_attr_list, parameters, command) :
@@ -1179,6 +1211,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
 
             if not _status :
+                _cloud_name = obj_attr_list["cloud_name"]
                 _vg = ValueGeneration(self.pid)
                 _time_to_wait = int(_vg.time2seconds(obj_attr_list["specified_time"]))   
                 
@@ -1225,7 +1258,10 @@ class PassiveObjectOperations(BaseObjectOperations) :
             else :
                 _msg = "Waited for " + str(_time_to_wait) + " seconds."
                 cbdebug(_msg)
-            return self.package(_status, _msg, None)
+
+                _x, _y, _stats = self.stats(obj_attr_list, _cloud_name + " all noprint", "stats-get", True)
+                    
+            return self.package(_status, _msg, _stats)
         
     @trace
     def wait_until(self, obj_attr_list, parameters, command) :
@@ -1239,10 +1275,13 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
             obj_attr_list["cloud_name"] = "undefined"
 
+            _time_elapsed = 0
+                
             _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
             
             if not _status :
-                
+
+                _cloud_name = obj_attr_list["cloud_name"]                                 
                 _obj_type = obj_attr_list["type"].upper()
 
                 if len(obj_attr_list["counter"]) :
@@ -1262,7 +1301,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     cberr(_msg)
                     raise self.ObjectOperationException(_msg, _status)            
 
-                _counter_value = self.get_object_count(obj_attr_list["cloud_name"], _obj_type, _counter_type)                
+                _counter_value = self.get_object_count(_cloud_name, _obj_type, _counter_type)                
                 if _counter_value != "-1" :
                     True
                 else :
@@ -1270,9 +1309,10 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _msg += " does not exist. Will keep polling and checking anyway."
                     cbdebug(_msg)
 
+                _time_limit = int(obj_attr_list["time_limit"])
                 _check_interval = float(obj_attr_list["interval"])
                 _start_time = int(time())
-
+                
                 if _counter_value :
                     _msg = "Going to wait until the value on counter \"" + _obj_type
                     _msg += ' ' + _counter_name + "\" is equal to " + str(obj_attr_list["value"])
@@ -1281,10 +1321,11 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _msg += "samples. The counter is assumed to be " + _direction + '.'
                     print _msg
                 
-                    while True :
+                    while _time_elapsed < _time_limit :
                         sleep(_check_interval)
                         _current_time = int(time())
 
+                        _time_elapsed = _current_time - _start_time
                         _counter_value = self.get_object_count(obj_attr_list["cloud_name"], _obj_type, _counter_type)
 
                         _msg = "Counter \"" + _obj_type + ' ' + _counter_name
@@ -1319,16 +1360,28 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
         finally :
             _total_time = int(time()) - _start_time
-            
+
             if _status :
                 _msg = "Error while \"waiting until\": " + _fmsg
                 cberr(_msg)
             else :
-                _msg = "Waited " + str(_total_time) + " seconds"
-                _msg += " until \"" + _obj_type + "s " + _counter_name
-                _msg += "\" was equal to " + str(obj_attr_list["value"]) + '.'
-                cbdebug(_msg)
-            return self.package(_status, _msg, _total_time)
+                if _time_elapsed >= _time_limit :
+                    _total_time = - _total_time
+                    _msg = "After " + str(obj_attr_list["time_limit"]) + " seconds"
+                    _msg += " the \"" + _obj_type + "s " + _counter_name
+                    _msg += "\" was still not equal to " + str(obj_attr_list["value"]) + '.'
+                    cbdebug(_msg)                    
+                else :
+                    _msg = "Waited " + str(_total_time) + " seconds"
+                    _msg += " until \"" + _obj_type + "s " + _counter_name
+                    _msg += "\" was equal to " + str(obj_attr_list["value"]) + '.'
+                    cbdebug(_msg)
+                    
+            _x, _y, _stats = self.stats(obj_attr_list, _cloud_name + " all noprint", "stats-get", True)
+
+            _stats["total_time"] = _total_time
+                        
+            return self.package(_status, _msg, _stats)
 
     @trace
     def wait_on(self, obj_attr_list, parameters, command) :
@@ -1503,69 +1556,82 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
             _smsg = ''
-            if BaseObjectOperations.default_cloud is not None:
-                _cn = BaseObjectOperations.default_cloud
-            else :
-                if len(parameters.split()) > 1 :
-                    _cn = parameters.split()[0]
-                else :
-                    _status = 9
-                    _msg = "Usage: monextract <cloud name> all"
-                    raise self.ObjectOperationException(_msg, 11)
 
-            _cloud_list = self.osci.get_object_list("ITSELF", "CLOUD")
-
-            if _cloud_list and _cn in list(_cloud_list) :
-                # Cloud is attached, we can proceed
-                True
-            else :
-                _msg = "The cloud \"" + _cn + "\" is not yet attached "
-                _msg += "to this experiment. Please attach it first."
-                _status = 9876
-                raise self.ObjectOperationException(_msg, _status)
-
-            _space_attr_list = self.osci.get_object(_cn, "GLOBAL", False, "space", False)
-            _time_attr_list = self.osci.get_object(_cn, "GLOBAL", False, "time", False)
-
-            self.monitoring_extract(_cn + " HOST os", "mon-extract")
-            self.monitoring_extract(_cn + " VM os", "mon-extract")
-            self.monitoring_extract(_cn + " VM app", "mon-extract")
-            self.monitoring_extract(_cn + " VM management", "mon-extract")
-
-            _destination = _space_attr_list["data_working_dir"] + '/' + _time_attr_list["experiment_id"]
+            _expid = None
             
-            if _space_attr_list["tracefile"].lower() != "none" :
-                _msg = "This experiment was created with a trace file, which will"
-                _msg += " also be included alongside the extracted metrics."
-                cbdebug(_msg, True)
-                if _space_attr_list["tracefile"][0] != "/" :
-                    _source = _space_attr_list["base_dir"] + '/' + _space_attr_list["tracefile"]
-                shutil.copy2(_source, _destination)
+            _obj_attr_list = {}
+            _status, _fmsg = self.parse_cli(_obj_attr_list, parameters, command)
+            _msg = ""
 
-            if _time_attr_list["hard_reset"].lower() == "true" :
-                _msg = "This experiment was run right after a \"hard reset\"."
-                _msg += "Will also include all logs files (from the Log Store) "
-                _msg += "alongside the extracted metrics."
-                cbdebug(_msg, True)
-                
-                _file_list = []
-                _file_list.append("operations.log")
-                _file_list.append("report.log")
-                _file_list.append("submmiter.log")
-                _file_list.append("loadmanager.log")
-                _file_list.append("gui.log")
-                _file_list.append("remotescripts.log")
-                _file_list.append("monitor.log")
-                _file_list.append("subscribe.log")
+            if not _status :
+                _status, _fmsg = self.initialize_object(_obj_attr_list, command)
 
-                for _fn in  _file_list :
-                    _source = _space_attr_list["log_dir"] + '/' + _space_attr_list["username"] + '_' + _fn
-                    if access(_source, F_OK) :
+                if not _status :
+                    _space_attr_list = self.osci.get_object(_obj_attr_list["cloud_name"], "GLOBAL", False, "space", False)
+                    _time_attr_list = self.osci.get_object(_obj_attr_list["cloud_name"], "GLOBAL", False, "time", False)
+        
+                    if _obj_attr_list["expid"] == "current" :
+                        _expid = _obj_attr_list["current_experiment_id"]
+                    else :
+                        _expid = _obj_attr_list["expid"]
+        
+                    _filestor_attr_list = self.osci.get_object(_obj_attr_list["cloud_name"], \
+                                                               "GLOBAL", False, "filestore", \
+                                                               False)
+
+                    _logstor_attr_list = self.osci.get_object(_obj_attr_list["cloud_name"], \
+                                                               "GLOBAL", False, "logstore", \
+                                                               False)
+        
+                    _fshn = _filestor_attr_list["hostname"]
+                    _fspn = _filestor_attr_list["port"]
+                    _fsun = _filestor_attr_list["username"]
+                    _url =  "rsync://" + _fshn + ':' + _fspn + '/' + _fsun + "_cb/data/" + _expid
+                        
+                    self.monitoring_extract(_obj_attr_list["cloud_name"] + " HOST os " + _expid, "mon-extract")
+                    self.monitoring_extract(_obj_attr_list["cloud_name"] + " VM os "  + _expid, "mon-extract")
+                    self.monitoring_extract(_obj_attr_list["cloud_name"] + " VM app " + _expid, "mon-extract")
+                    self.monitoring_extract(_obj_attr_list["cloud_name"] + " VM management " + _expid, "mon-extract")
+        
+                    _destination = _space_attr_list["data_working_dir"] + '/' + _expid
+                    
+                    if _space_attr_list["tracefile"].lower() != "none" :
+                        _msg = "This experiment was created with a trace file, which will"
+                        _msg += " also be included alongside the extracted metrics."
+                        cbdebug(_msg, True)
+                        if _space_attr_list["tracefile"][0] != "/" :
+                            _source = _space_attr_list["base_dir"] + '/' + _space_attr_list["tracefile"]
                         shutil.copy2(_source, _destination)
 
-                self.osci.update_object_attribute(_cn, "GLOBAL", "time", False, "hard_reset", "False")
+                    print str(_logstor_attr_list["just_restarted"]).lower()
 
-            _status = 0
+                    if str(_logstor_attr_list["just_restarted"]).lower() == "true" :
+                        _msg = "This experiment was run right after a flushing of the Log Store."
+                        _msg += " Will also include all logs files (from the Log Store) "
+                        _msg += "alongside the extracted metrics."
+                        cbdebug(_msg, True)
+                        
+                        _file_list = []
+                        _file_list.append("operations.log")
+                        _file_list.append("report.log")
+                        _file_list.append("submmiter.log")
+                        _file_list.append("loadmanager.log")
+                        _file_list.append("gui.log")
+                        _file_list.append("remotescripts.log")
+                        _file_list.append("monitor.log")
+                        _file_list.append("subscribe.log")
+        
+                        for _fn in  _file_list :
+                            _source = _space_attr_list["log_dir"] + '/' + _space_attr_list["username"] + '_' + _fn
+                            if access(_source, F_OK) :
+                                shutil.copy2(_source, _destination)
+
+                        self.osci.update_object_attribute(_obj_attr_list["cloud_name"], "GLOBAL", "logstore", False, "just_restarted", "false")
+
+                    else :
+                        _msg = "Bypassing the copy of all logs files"
+                        cbdebug(_msg, True)
+
             
         except self.ObjectOperationException, obj :
             _status = 8
@@ -1585,9 +1651,11 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 cberr(_msg)
             else :
                 _msg = "Monitor extraction success. All metrics written to csv"
-                _msg += " files on the directory \""  + _space_attr_list["data_working_dir"] + "\"."
+                _msg += " files on the directory \""  + _space_attr_list["data_working_dir"] + "\".\n"
+                _msg += "Data is available at the url \"" + _url + "\"." 
                 cbdebug(_msg)
-            return _status, _msg
+
+            return self.package(_status, _msg, _url)                
         
     @trace
     def monitoring_extract(self, parameters, command) :
@@ -1602,10 +1670,13 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _status, _fmsg = self.parse_cli(_obj_attr_list, parameters, command)
             _msg = ""
 
+            _url = False
+            
             if not _status :
                 _status, _fmsg = self.initialize_object(_obj_attr_list, command)
 
                 if not _status :
+
                     _obj_type = _obj_attr_list["type"].lower()
     
                     _metric_type = _obj_attr_list["metric_type"].lower()
@@ -1629,6 +1700,16 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _space_attr_list = self.osci.get_object(_obj_attr_list["cloud_name"], "GLOBAL", False, "space", False)
 
                     _obj_attr_list["data_file_location"] = _space_attr_list["data_working_dir"] + '/' + _criteria["expid"]
+
+
+                    _filestor_attr_list = self.osci.get_object(_obj_attr_list["cloud_name"], \
+                                                               "GLOBAL", False, "filestore", \
+                                                               False)
+
+                    _fshn = _filestor_attr_list["hostname"]
+                    _fspn = _filestor_attr_list["port"]
+                    _fsun = _filestor_attr_list["username"]
+                    _url =  "rsync://" + _fshn + ':' + _fspn + '/' + _fsun + "_cb/data/" + _criteria["expid"]
 
                     if not access(_obj_attr_list["data_file_location"], F_OK) :
                         makedirs(_obj_attr_list["data_file_location"])
@@ -1841,9 +1922,12 @@ class PassiveObjectOperations(BaseObjectOperations) :
             else :
                 _msg = "Monitor extraction success. " + _obj_type.upper()
                 _msg += ' ' + _metric_type.replace("_app", " application").replace("_os", " OS")
-                _msg += " performance data samples were written to the file " + _fn
+                _msg += " performance data samples were written to the file " + _fn + ".\n"
+                if _url :
+                    _msg += "Data is available at the url \"" + _url + "\"." 
                 cbdebug(_msg)
-            return _status, _msg
+
+            return self.package(_status, _msg, _url)
 
     @trace
     def monitoring_list(self, parameters, command) :
@@ -1986,28 +2070,28 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     found = {} 
                     for cloud in clouds :
                         if cloud["name"] not in services :
-                            attrs = api.cldshow(cloud["name"], "space")
-                            if "openvpn_server_address" in attrs :
-                                if attrs["openvpn_server_address"].lower() != "false" :
-                                    address = attrs["openvpn_bootstrap_address"]
-                                    result = False 
-                                    msg = "Failed to register openvpn address " + address + ": "
-                                    try :
-                                        result = api.register(address)
-                                        services[cloud["name"]] = address
-                                        found[cloud["name"]] = cloud
-                                        msg = "Success registring openvpn address: " + address
-                                    except APIException, e :
-                                        msg += str(e)
-                                    except Exception, e :
-                                        msg += str(e)
-                                    finally :
-                                        if result :
-                                            cbdebug(msg)
-                                        else :
-                                            cberr(msg)
-                                else :
-                                    found[cloud["name"]] = True 
+                            attrs = api.cldshow(cloud["name"], "vpn")
+                            
+                            if attrs["start_server"].lower() != "false" :
+                                address = attrs["server_ip"]
+                                result = False 
+                                msg = "Failed to register openvpn address " + address + ": "
+                                try :
+                                    result = api.register(address)
+                                    services[cloud["name"]] = address
+                                    found[cloud["name"]] = cloud
+                                    msg = "Success registring openvpn address: " + address
+                                except APIException, e :
+                                    msg += str(e)
+                                except Exception, e :
+                                    msg += str(e)
+                                finally :
+                                    if result :
+                                        cbdebug(msg)
+                                    else :
+                                        cberr(msg)
+                            else :
+                                found[cloud["name"]] = True 
                         else :
                             found[cloud["name"]] = True 
                                         
@@ -2118,7 +2202,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 _username = _ai_attr_list["username"]
 
                 if _ai_state and _ai_state == "attached" :
-
+                    
                     _load = self.get_load(cloud_name, _ai_attr_list, False, \
                                           _prev_load_level, _prev_load_duration, \
                                           _prev_load_id)
@@ -2155,16 +2239,13 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
                         _vg = ValueGeneration(self.pid)
 
-                        _metrics_dict = {}
-                        _sla_targets_dict = {}
-                        _reported_metrics_dict = {}
-
+                        _metrics_list = ''
+                        _sla_target_list = ''
+                        
                         for _item in [ "id-seqnum", "level-load", "profile-name", "duration-sec"] :
                             _metric, _unit = _item.split('-')
-                            _metrics_dict["app_load_" + _metric] = {}
-                            _metrics_dict["app_load_" + _metric]["val"] = _ai_attr_list["current_load_" + _metric]
-                            _metrics_dict["app_load_" + _metric]["units"] = _unit
-
+                            _metrics_list += "load_" + _metric + ':' + str(_ai_attr_list["current_load_" + _metric]) + ':' + _unit + ' '
+                        
                         for _metric in _ai_attr_list["reported_metrics"].split(',') :
 
                             if _metric + "_value" in _ai_attr_list :
@@ -2182,113 +2263,32 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                 _unit = "size"
                             elif _metric.count("throughput") :
                                 _unit = "tps"
+                            elif _metric.count("errors") :
+                                _unit = "num"                               
                             else :
                                 _unit = "NA"
-                                
-                            _metrics_dict["app_"  + _metric] = {}
-                            _metrics_dict["app_"  + _metric]["val"] = _val
-                            _metrics_dict["app_"  + _metric]["units"] = _unit                            
+
+                            _metrics_list += _metric + ':' + str(_val) + ':' + _unit + ' '
 
                             if "sla_runtime_target_" + _metric in _ai_attr_list :
-                                _sla_targets_dict[_metric] = _ai_attr_list["sla_runtime_target_" + _metric] 
-                    
+                                _sla_target_list += "sla_runtime_target_" + _metric + ':' + _ai_attr_list["sla_runtime_target_" + _metric] + ' '
+
                     _msg = "Preparing to execute AI load generation"
                     cbdebug(_msg)
 
                     sleep(int(_ai_attr_list["current_load_duration"]))
 
                     _vm_uuid = _ai_attr_list["load_generator_vm"]
-                    _expid = _ai_attr_list["load_generator_vm"]
+                    _expid = _ai_attr_list["experiment_id"]
+
+                    print _metrics_list
                     
-                    for _metric in _metrics_dict.keys() :
-            
-                        if _metric in _sla_targets_dict :
-        
-                            _sla_target, _condition = _sla_targets_dict[_metric].split('-')
-                
-                            _metrics_dict["app_sla_runtime"] = {}
-                            _metrics_dict["app_sla_runtime"]["units"] = ' '
-    
-                            if _condition == "gt" :
-                                if float(_metric[1]) >= float(_sla_target) :
-                                    _metrics_dict["app_sla_runtime"]["val"] = "ok"
-                                else :
-                                    _metrics_dict["app_sla_runtime"]["val"] = "violated"
-    
-                            if _condition == "lt" :
-                                if float(_metric[1]) <= float(_sla_target) :
-                                    _metrics_dict["app_sla_runtime"]["val"] = "ok"
-                                else :
-                                    _metrics_dict["app_sla_runtime"]["val"] = "violated"
-                
-                    _metrics_dict["time"] = int(time())
-                    _metrics_dict["time_h"] = strftime("%a %b %d %X %Z %Y")
-                    _metrics_dict["expid"] = _ai_attr_list["experiment_id"]
-                    _metrics_dict["uuid"] = _vm_uuid
-
-                    if "app_sla_runtime" in _metrics_dict :
-                        
-                        _vm_attr_list = self.osci.get_object(cloud_name, "VM", False, _ai_attr_list["load_generator_vm"], False)
-            
-                        if "sla_runtime" in _vm_attr_list :
-                            _previous_sla_runtime = _vm_attr_list["sla_runtime"]
-                        else :
-                            _previous_sla_runtime = "NA"
-            
-                        _current_sla_runtime = _metrics_dict["app_sla_runtime"]["val"]
-            
-                        if _previous_sla_runtime == _current_sla_runtime :
-                            _msg = "Previous SLA runtime status (\"" + _previous_sla_runtime
-                            _msg += "\") and New (\"" + _current_sla_runtime + "\")"
-                            _msg += " are the same. No updates needed."
-                            cbdebug(_msg)
-                        else :
-                            _msg = "Previous SLA runtime status (\"" + _previous_sla_runtime
-                            _msg += "\") and New (\"" + _current_sla_runtime + "\")"
-                            _msg += " are different. Updating attributes and views on the"
-                            _msg += " Metric Store"
-                            cbdebug(_msg)
-                            self.osci.update_object_attribute(cloud_name, \
-                                                          "VM", \
-                                                          _vm_uuid, \
-                                                          False, \
-                                                          "sla_runtime", \
-                                                          _current_sla_runtime)
-            
-                            _vm_attr_list["sla_runtime"] = _previous_sla_runtime
-                            self.osci.remove_from_view(cloud_name, "VM", _vm_attr_list, "BYSLA_RUNTIME")
-                            _vm_attr_list["sla_runtime"] = _current_sla_runtime
-                            self.osci.add_to_view(cloud_name, "VM", _vm_attr_list, "BYSLA_RUNTIME", "arrival")
-
-                    if "app_load_id" in _metrics_dict and _metrics_dict["app_load_id"]["val"] == "1" :
-                        _new_reported_metrics_dict = {}
-                        for _key in _metrics_dict.keys() :
-                            if not _key.count("time") and not _key.count("uuid") and not _key.count("time_h") :
-                                _new_reported_metrics_dict[_key] = "1"
-                        _new_reported_metrics_dict["expid"] = _expid
-                        _new_reported_metrics_dict["_id"] = b64encode(sha1(_expid).digest())
-                        _reported_metrics_dict = \
-                        self.msci.find_document("reported_runtime_app_VM_metric_names_" + \
-                                            _username, {"_id" : _new_reported_metrics_dict["_id"]})
-                        _reported_metrics_dict.update(_new_reported_metrics_dict)
-
-                    self.msci.add_document("runtime_app_VM_" + _username, _metrics_dict)
-                    _msg = "Application Metrics reported successfully. Data package sent was: \"" 
-                    _msg += str(_metrics_dict) + "\""
-                    cbdebug(_msg)
-
-                    _metrics_dict["_id"] = _metrics_dict["uuid"]
-                    self.msci.update_document("latest_runtime_app_VM_" + _username, _metrics_dict)
-                    _msg = "Latest app performance data updated successfully"
-                    cbdebug(_msg)
-
-                    if len(_reported_metrics_dict) :
-                        self.msci.update_document("reported_runtime_app_VM_metric_names_" + _username, _reported_metrics_dict)
-                        _msg = "Reported runtime application metric names collection "
-                        _msg += "updated successfully. Data package sent was: \""
-                        _msg += str(_reported_metrics_dict) + "\""
-                        cbdebug(_msg)
-
+                    report_app_metrics(_metrics_list, \
+                                       _sla_target_list, \
+                                       [self.msci, _vm_uuid, _expid,  _username], \
+                                       [self.osci, _vm_uuid, cloud_name], \
+                                       False)
+                    
                 else :
                     # Only reset individual applications on the AI. Don't send
                     # any load.
@@ -2552,7 +2552,8 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                         _key = _key.replace(obj_attr_list["attribute_name"] + '_', '')
                                     else :
                                         _key = _key.replace(obj_attr_list["attribute_name"] + '_', '',1)
-                                    _result[_key] = _value                                        
+                                    _result[_key] = _value
+                                    
                                     # A trick to display the AI definition
                                     # in a specific order. It is ugly and not
                                     # efficient, but it will do for now.
@@ -2576,33 +2577,35 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                         _key = _key.replace(_key, "03___" + _key)
                                     elif _key == "regenerate_data" :
                                         _key = _key.replace(_key, "04___" + _key)
+                                    elif _key == "role_list" :
+                                        _key = _key.replace(_key, "05___" + _key)                                        
                                     elif _key == "load_generator_role" :
-                                        _key = _key.replace(_key, "05___" + _key)
+                                        _key = _key.replace(_key, "06___" + _key)
                                     elif _key == "load_manager_role" :
-                                        _key = _key.replace(_key, "06___" + _key)         
+                                        _key = _key.replace(_key, "07___" + _key)         
                                     elif _key == "metric_aggregator_role" :
-                                        _key = _key.replace(_key, "07___" + _key)
-                                    elif _key == "capture_role" :
                                         _key = _key.replace(_key, "08___" + _key)
+                                    elif _key == "capture_role" :
+                                        _key = _key.replace(_key, "09___" + _key)
                                     elif _key == "load_balancer" :
-                                        _key = _key.replace(_key, "09___" + _key)                                                                                                                        
+                                        _key = _key.replace(_key, "10___" + _key)                                                                                                                        
                                     elif _key == "load_profile" :
-                                        _key = _key.replace(_key, "10___" + _key)
-                                    elif _key == "load_level" :
                                         _key = _key.replace(_key, "11___" + _key)
+                                    elif _key == "load_level" :
+                                        _key = _key.replace(_key, "12___" + _key)
                                     elif _key == "load_duration" :
-                                        _key = _key.replace(_key, "12___" + _key)                                                                                                                        
+                                        _key = _key.replace(_key, "13___" + _key)                                                                                                                        
                                     elif _key == "reported_metrics" :
-                                        _key = _key.replace(_key, "13___" + _key)           
+                                        _key = _key.replace(_key, "14___" + _key)           
 
                                     elif _key.count("setup") :
-                                        _key = _key.replace(_key, "14___" + _key)
-                                    elif _key.count("reset") :
                                         _key = _key.replace(_key, "15___" + _key)
+                                    elif _key.count("reset") :
+                                        _key = _key.replace(_key, "16___" + _key)
                                     elif _key.count("resize") :
-                                        _key = _key.replace(_key, "16___" + _key)                                        
+                                        _key = _key.replace(_key, "17___" + _key)                                        
                                     elif _key.count("start") :
-                                        _key = _key.replace(_key, "17___" + _key)
+                                        _key = _key.replace(_key, "18___" + _key)
 
                                     elif _key == "type" :
                                         _key = _key.replace(_key, "00___" + _key)
@@ -2843,13 +2846,56 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _msg = "The attribute \"experiment_id \" was changed from \""
                     _msg += _curr_expid + "\" to \"" + self.expid + "\"."
                     cbdebug(_msg)
-                    self.update_host_os_perfmon(obj_attr_list)                
+                    self.update_host_os_perfmon(obj_attr_list)
+                    self.update_logstore(obj_attr_list)
                 else :
                     _msg = "Current experiment identifier is \"" + self.expid + "\"."
                     cbdebug(_msg)
                     
             return self.package(_status, _msg, _result)
 
+    @trace
+    def getrandnr(self, obj_attr_list, parameters, command) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+
+            _result = None 
+
+            _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
+
+            if not _status :
+
+                _status, _fmsg = self.initialize_object(obj_attr_list, command)
+
+                if not _status :
+
+                    _dist = obj_attr_list["distribution"]
+                    _vg = ValueGeneration(self.pid)
+                    
+                    _start = time()
+                    _result = _vg.get_value(_dist)
+                    _end = time() - _start
+                    
+                    _status = 0
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+
+        finally :
+            if _status :
+                _msg = "Unable to get a random number using distribution  \"" + _dist + "\""
+                cberr(_msg)
+
+            else :
+                _msg = "Got the value \"" + str(_result) + "\" after " + str(_end) + " seconds"
+                cbdebug(_msg)
+                                    
+            return self.package(_status, _msg, _result)
 
     def list_domains(self, cloud_name, lvirt_conns,  uuid) :
         '''

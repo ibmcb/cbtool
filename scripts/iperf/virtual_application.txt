@@ -16,7 +16,7 @@ CAPTURE_ROLE = iperfserver
 LOAD_PROFILE = tcp
 LOAD_LEVEL = uniformIXIXI1I5
 LOAD_DURATION = uniformIXIXI70I90
-REPORTED_METRICS = bandwidth
+REPORTED_METRICS = bandwidth,completion_time
 
 # VApp-specific MANDATORY attributes
 DESCRIPTION = Deploys a pair of VMs (client and server) and then runs the iperf

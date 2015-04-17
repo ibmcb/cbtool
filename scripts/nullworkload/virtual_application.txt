@@ -16,7 +16,7 @@ CAPTURE_ROLE = tinyvm
 LOAD_PROFILE = default
 LOAD_LEVEL = uniformIXIXI1I100
 LOAD_DURATION = 30
-REPORTED_METRICS = bandwidth,throughput,latency
+REPORTED_METRICS = bandwidth,throughput,latency,completion_time,errors
 
 # VApp-specific MANDATORY attributes
 DESCRIPTION = Deploys one or more VMs, and then continuously executes

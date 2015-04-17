@@ -71,16 +71,15 @@ fi
 #
 # Update Cassandra Config
 #
-    sudo sed -i "s/initial_token:$/initial_token: ${my_token//[[:blank:]]/}/g" $CASSANDRA_CONF_PATH
+    #    sudo sed -i "s/initial_token:$/initial_token: ${my_token//[[:blank:]]/}/g" $CASSANDRA_CONF_PATH
+    sudo sed -i "s/.*initial_token:.*/initial_token: ${my_token//[[:blank:]]/}/g" ${CASSANDRA_CONF_PATH}
     sudo sed -i "s/- seeds:.*$/- seeds: $seeds_ips_csv/g" $CASSANDRA_CONF_PATH
     sudo sed -i "s/listen_address:.*$/listen_address: ${MY_IP}/g" $CASSANDRA_CONF_PATH
     sudo sed -i 's/rpc_address:.*$/rpc_address: 0\.0\.0\.0/g' $CASSANDRA_CONF_PATH
 
     if [[ -f ${CASSANDRA_DATA_DIR} ]]
     then
-        TEMP_CASSANDRA_DATA_DIR=$(echo ${CASSANDRA_DATA_DIR} | sed 's/\//_+-_-+/g')
-        sudo sed -i "s/\/var\/lib\//${TEMP_CASSANDRA_DATA_DIR}\//g" $CASSANDRA_CONF_PATH
-        sudo sed -i "s/_+-_-+/\//g" $CASSANDRA_CONF_PATH
+        sudo sed -i "s^/var/lib/^${CASSANDRA_DATA_DIR}/^g" ${CASSANDRA_CONF_PATH}
     fi
     sudo sed -i "s/'Test Cluster'/'${my_ai_name}'/g" $CASSANDRA_CONF_PATH
 

@@ -42,7 +42,7 @@ from logging import getLogger, StreamHandler, Formatter, Filter, DEBUG, ERROR, I
 from logging.handlers import logging, SysLogHandler, RotatingFileHandler
 from lib.auxiliary.code_instrumentation import VerbosityFilter, MsgFilter, AntiMsgFilter, STATUS
 from lib.stores.stores_initial_setup import StoreSetupException
-from lib.auxiliary.data_ops import message_beautifier, dic2str, is_valid_temp_attr_list
+from lib.auxiliary.data_ops import message_beautifier, dic2str, is_valid_temp_attr_list, create_restart_script
 from lib.remote.process_management import ProcessManagement
 from lib.operations.active_operations import ActiveObjectOperations
 from lib.operations.passive_operations import PassiveObjectOperations
@@ -147,7 +147,7 @@ class CBCLI(Cmd) :
             readline.set_history_length(10000)
             readline.read_history_file(history) 
 
-            self.os_func, self.ms_func, self.ls_func = \
+            self.os_func, self.ms_func, self.ls_func, self.fs_func = \
             load_store_functions(self.cld_attr_lst)
     
             print "Checking \"Object Store\".....",        
@@ -161,6 +161,10 @@ class CBCLI(Cmd) :
             print "Checking \"Metric Store\".....", 
             _status, _msg = self.ms_func(self.cld_attr_lst, "check")
             sys.stdout.write(_msg + '\n')
+
+            print "Checking \"File Store\".....", 
+            _status, _msg = self.fs_func(self.cld_attr_lst, "check")
+            sys.stdout.write(_msg + '\n')
             
             oscp = self.cld_attr_lst["objectstore"].copy()
             del oscp["config_string"]
@@ -172,7 +176,7 @@ class CBCLI(Cmd) :
             self.api_service_url += ":" + self.cld_attr_lst["api_defaults"]["port"]
             
             self.api = APIClient(self.api_service_url)
-            
+
             '''
              All thanks to python. This works, again, by using decorators:
              
@@ -187,6 +191,7 @@ class CBCLI(Cmd) :
              
             self.signatures = {}
             self.usage = {}
+
             for methodtuple in inspect.getmembers(API, predicate=inspect.ismethod) :
                 
                 # Record the function signatures required to be provided by the CLI
@@ -674,9 +679,8 @@ class CBCLI(Cmd) :
             _base_cmd += " --verbosity=" + self.cld_attr_lst["logstore"]["verbosity"]
             _cmd = _base_cmd + " --daemon"
             #_cmd = _base_cmd + " --debug_host=localhost"
-
-            cbdebug(_cmd) 
-
+            cbdebug(_cmd)     
+            
             _api_pid = _proc_man.start_daemon(_cmd, \
                                               self.cld_attr_lst["api_defaults"]["port"], \
                                               self.cld_attr_lst["api_defaults"]["protocol"], \
@@ -706,6 +710,8 @@ class CBCLI(Cmd) :
                     _msg = "API Service daemon was successfully started. "
                     _msg += "The process id is " + str(_api_pid) + " (" + _api_conn_string + ").\n"
                     sys.stdout.write(_msg)
+
+                    create_restart_script("restart_cb_api", _cmd, self.cld_attr_lst["logstore"]["username"], "cloud-api")
                     
                     try :
                         _fn = "/tmp/cb_api_" + self.cld_attr_lst["api_defaults"]["username"]
@@ -752,11 +758,12 @@ class CBCLI(Cmd) :
             _base_cmd += " --syslogh=" + self.cld_attr_lst["logstore"]["hostname"]
             _base_cmd += " --verbosity=" + self.cld_attr_lst["logstore"]["verbosity"]
 
+            # DaemonContext Doesn't work with Twisted 
+            # Someone else will have to figure it out.
             _cmd = "screen -d -m -S cbgui" + self.cld_attr_lst["objectstore"]["username"] 
             _cmd += " bash -c '" + _base_cmd + "'"
 
-            # DaemonContext Doesn't work with Twisted 
-            # Someone else will have to figure it out.
+            create_restart_script("restart_cb_gui", _base_cmd, self.cld_attr_lst["logstore"]["username"], "cloud-gui", vtycmd = True)
 
             cbdebug(_cmd)
 
@@ -888,12 +895,12 @@ class CBCLI(Cmd) :
         '''
         if parameters.count("all") :
     
-            _status, _msg = self.passive_operations.monitoring_extractall(parameters, \
-                                                                          "mon-extractall")
+            _status, _msg, _object = self.passive_operations.monitoring_extractall(parameters, \
+                                                                                   "mon-extractall")
         else :
     
-            _status, _msg = self.passive_operations.monitoring_extract(parameters, \
-                                                                       "mon-extract")
+            _status, _msg, _object = self.passive_operations.monitoring_extract(parameters, \
+                                                                                "mon-extract")
         
 
         print(message_beautifier(_msg))

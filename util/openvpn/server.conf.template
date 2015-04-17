@@ -1,11 +1,10 @@
 proto tcp
 dev tun
-port 1194
-#management 0.0.0.0 1194
+port VPN_PORT
 
-server ADDRESS_RANGE 
+server VPN_ADDRESS_RANGE 
 
-log CBPATH/stores/logs/openvpn-server.log
+log LOGDIR/USERNAME_openvpn_server.log
 client-connect CBPATH/util/openvpn/client_connected.sh
 
 ca       [inline]
