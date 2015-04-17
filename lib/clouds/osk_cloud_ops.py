@@ -1656,33 +1656,61 @@ class OskCmds(CommonCloudFunctions) :
                 _msg += obj_attr_list["cloud_vv"] + " GB, on VMC \"" 
                 _msg += obj_attr_list["vmc_name"] + "\""
                 cbdebug(_msg, True)
+                _boot_volume = False
+
+
+                if "boot_volume" in obj_attr_list :
+                    _boot_volume = True
+                    _imageid = self.get_images(obj_attr_list).__getattr__("id")
+                    cbdebug("Creating boot volume with name %s" % obj_attr_list['cloud_vv_name'], True)
+                    cbdebug("Creating boot image with id %s" % _imageid, True)
+                    _instance = self.oskconnstorage.volumes.create(obj_attr_list["cloud_vv"], \
+                                                                snapshot_id = None, \
+                                                                display_name = obj_attr_list["cloud_vv_name"], \
+                                                                display_description = None, \
+                                                                volume_type = _volume_type, \
+                                                                availability_zone = None, \
+                                                                imageRef = _imageid)
+                else :
+                    _instance = self.oskconnstorage.volumes.create(obj_attr_list["cloud_vv"], \
+                                                                snapshot_id = None, \
+                                                                display_name = obj_attr_list["cloud_vv_name"], \
+                                                                display_description = None, \
+                                                                volume_type = _volume_type, \
+                                                                availability_zone = None, \
+                                                                imageRef = None)
     
-                _instance = self.oskconnstorage.volumes.create(obj_attr_list["cloud_vv"], \
-                                                               snapshot_id = None, \
-                                                               display_name = obj_attr_list["cloud_vv_name"], \
-                                                               display_description = None, \
-                                                               volume_type = _volume_type, \
-                                                               availability_zone = None, \
-                                                               imageRef = None)
-                
+               
                 sleep(int(obj_attr_list["update_frequency"]))
         
                 obj_attr_list["cloud_vv_uuid"] = '{0}'.format(_instance.id)
+
+                if _boot_volume :
+                    _wait_for_volume = 180
+                    for i in range(1, _wait_for_volume) :
+                        if self.oskconnstorage.volumes.get(_instance.id).status == "available" :
+                            cbdebug("Instance took %s time (sec) to boot" % i,True)
+                            break
+                        else :
+                            sleep(1)
+
+                if not _boot_volume :
+
+                    _msg = "Attaching the newly created Volume \""
+                    _msg += obj_attr_list["cloud_vv_name"] + "\" (cloud-assigned uuid \""
+                    _msg += obj_attr_list["cloud_vv_uuid"] + "\") to instance \""
+                    _msg += obj_attr_list["cloud_vm_name"] + "\" (cloud-assigned uuid \""
+                    _msg += obj_attr_list["cloud_vm_uuid"] + "\")"
+                    cbdebug(_msg)
+
+                    # There is weird bug on the python novaclient code. Don't change the
+                    # following line, it is supposed to be "oskconncompute", even though
+                    # is dealing with volumes. Will explain latter.
+                    self.oskconncompute.volumes.create_server_volume(obj_attr_list["cloud_vm_uuid"], \
+                                                                     obj_attr_list["cloud_vv_uuid"], \
+                                                                     "/dev/vdd")
+
     
-                _msg = "Attaching the newly created Volume \"" 
-                _msg += obj_attr_list["cloud_vv_name"] + "\" (cloud-assigned uuid \""
-                _msg += obj_attr_list["cloud_vv_uuid"] + "\") to instance \""
-                _msg += obj_attr_list["cloud_vm_name"] + "\" (cloud-assigned uuid \""
-                _msg += obj_attr_list["cloud_vm_uuid"] + "\")"
-                cbdebug(_msg)
-
-                # There is weird bug on the python novaclient code. Don't change the
-                # following line, it is supposed to be "oskconncompute", even though
-                # is dealing with volumes. Will explain latter.
-                self.oskconncompute.volumes.create_server_volume(obj_attr_list["cloud_vm_uuid"], \
-                                                                 obj_attr_list["cloud_vv_uuid"], \
-                                                                 "/dev/vdd")
-
             else :
                 obj_attr_list["cloud_vv_uuid"] = "none"
 
@@ -2058,6 +2086,19 @@ class OskCmds(CommonCloudFunctions) :
             
             obj_attr_list["mgt_002_provisioning_request_sent"] = \
             _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
+
+#
+#           Create volume based image.
+#
+            _boot_volume = False
+            if "boot_volume" in obj_attr_list :
+                _boot_volume = True
+                _boot_volume_imageid = _imageid
+                obj_attr_list['cloud_vv'] = obj_attr_list['boot_volume_size']
+                obj_attr_list['cloud_vv_type'] = None
+                self.vvcreate(obj_attr_list)
+                block_device_mapping = {'vda':'%s' % obj_attr_list["cloud_vv_uuid"]}
+
             
             _msg = "Starting an instance on OpenStack, using the imageid \""
             _msg += obj_attr_list["imageid1"] + "\" (" + str(_imageid) + ") and "
@@ -2073,18 +2114,33 @@ class OskCmds(CommonCloudFunctions) :
             _msg += ", on VMC \"" + obj_attr_list["vmc_name"] + "\""
             cbdebug(_msg, True)
 
-            _instance = self.oskconncompute.servers.create(name = obj_attr_list["cloud_vm_name"], \
-                                                    image = _imageid, \
-                                                    flavor = _flavor, \
-                                                    security_groups = _security_groups, \
-                                                    key_name = _key_name, \
-                                                    scheduler_hints = _scheduler_hints, \
-                                                    availability_zone = _availability_zone, \
-                                                    meta = _meta, \
-                                                    config_drive = _config_drive, \
-                                                    userdata = _userdata, \
-                                                    nics = _netids, \
-                                                    disk_config = "AUTO")
+            if _boot_volume :
+                _instance = self.oskconncompute.servers.create(name = obj_attr_list["cloud_vm_name"], \
+                                                     image = _imageid, \
+                                                     block_device_mapping = block_device_mapping, \
+                                                     flavor = _flavor, \
+                                                     security_groups = _security_groups, \
+                                                     key_name = _key_name, \
+                                                     scheduler_hints = _scheduler_hints, \
+                                                     availability_zone = _availability_zone, \
+                                                     meta = _meta, \
+                                                     config_drive = _config_drive, \
+                                                     userdata = _userdata, \
+                                                     nics = _netids, \
+                                                     disk_config = "AUTO")
+            else :
+                _instance = self.oskconncompute.servers.create(name = obj_attr_list["cloud_vm_name"], \
+                                                     image = _imageid, \
+                                                     flavor = _flavor, \
+                                                     security_groups = _security_groups, \
+                                                     key_name = _key_name, \
+                                                     scheduler_hints = _scheduler_hints, \
+                                                     availability_zone = _availability_zone, \
+                                                     meta = _meta, \
+                                                     config_drive = _config_drive, \
+                                                     userdata = _userdata, \
+                                                     nics = _netids, \
+                                                     disk_config = "AUTO")
 
             if _instance :
                 
@@ -2105,7 +2161,8 @@ class OskCmds(CommonCloudFunctions) :
                     _fmsg = obj_attr_list["last_known_state"]
                     _status = 189
                 else :
-                    _vvstatus, _vvfmsg = self.vvcreate(obj_attr_list)
+                    if not _boot_volume :
+                        _vvstatus, _vvfmsg = self.vvcreate(obj_attr_list)
     
                     if _vvstatus :
                         _status = _vvstatus
@@ -2261,7 +2318,8 @@ class OskCmds(CommonCloudFunctions) :
             else :
                 True
 
-            _status, _fmsg = self.vvdestroy(obj_attr_list)
+            if "boot_volume" not in obj_attr_list :
+                _status, _fmsg = self.vvdestroy(obj_attr_list)
 
             _time_mark_drc = int(time())
             obj_attr_list["mgt_903_deprovisioning_request_completed"] = \
