@@ -1025,6 +1025,28 @@ class CBCLI(Cmd) :
         print(message_beautifier(_msg))
 
     @trace
+    def do_appdev(self, parameters) :
+        '''
+        TBD
+        '''
+        _status, _msg, _object = self.passive_operations.alter_object(self.cld_attr_lst, \
+                                                                      "ai_defaults run_application_scripts=false", \
+                                                                      "cloud-alter")
+
+        print(message_beautifier(_msg))
+
+    @trace
+    def do_appundev(self, parameters) :
+        '''
+        TBD
+        '''
+        _status, _msg, _object = self.passive_operations.alter_object(self.cld_attr_lst, \
+                                                                      "ai_defaults run_application_scripts=true", \
+                                                                      "cloud-alter")
+
+        print(message_beautifier(_msg))
+
+    @trace
     def do_echo(self, line):
         '''
         TBD

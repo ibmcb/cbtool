@@ -675,6 +675,9 @@ def report_app_metrics(metriclist, sla_targets_list, ms_conn = "auto", \
         _sla_targets_dict = {}
         _reported_metrics_dict = {}
 
+        _msg = "SLA violation verification"
+        cbdebug(_msg)
+        
         for _sla_target in sla_targets_list.split() :
             _sla_target = _sla_target.split(':')
             if len(_sla_target) == 2 :
@@ -721,6 +724,9 @@ def report_app_metrics(metriclist, sla_targets_list, ms_conn = "auto", \
         
         obj_attr_list = False
 
+        _msg = "SLA violation status update"
+        cbdebug(_msg)
+        
         for _m in [ "sla_runtime", "errors" ] :
             
             if "app_" + _m in _metrics_dict :
@@ -772,8 +778,14 @@ def report_app_metrics(metriclist, sla_targets_list, ms_conn = "auto", \
                     obj_attr_list[_m] = _current_m
                     _osci.add_to_view(_cloud_name, "VM", obj_attr_list, "BY" + _m.upper(), "arrival")
 
+        _msg = "Determine average,min,max"
+        cbdebug(_msg)
+        
         update_avg_acc_max_min(_metrics_dict, _my_uuid)
 
+        _msg = "Report metrics"
+        cbdebug(_msg)
+        
         if "app_load_id" in _metrics_dict and _metrics_dict["app_load_id"]["val"] == "1" :
             _new_reported_metrics_dict = {}
             for _key in _metrics_dict.keys() :
@@ -802,7 +814,23 @@ def report_app_metrics(metriclist, sla_targets_list, ms_conn = "auto", \
             _msg += "updated successfully. Data package sent was: \""
             _msg += str(_reported_metrics_dict) + "\""
             cbdebug(_msg)
-        
+
+
+        if str(obj_attr_list["notification"]).lower() != "false" :
+            if obj_attr_list["notification_channel"].lower() == "auto" :
+                _channel = "APPLICATION"
+            else :
+                _channel = obj_attr_list["notification_channel"]
+
+            _message = "VM object " + _my_uuid + " (" + obj_attr_list["name"] 
+            _message += ") submitted a new set of application metrics"
+
+            print _channel
+            print _message
+                        
+            _osci.publish_message(obj_attr_list["cloud_name"], "VM", _channel, _message, \
+                                 1, \
+                                 float(obj_attr_list["timeout"]))
         _status = 0
         
     except _msci.MetricStoreMgdConnException, obj :

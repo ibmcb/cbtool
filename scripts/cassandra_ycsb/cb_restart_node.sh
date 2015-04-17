@@ -47,7 +47,10 @@ fi
 #
 # Update the cassandra config
 #
-sudo sed -i "s^/var/lib/^${CASSANDRA_DATA_DIR}/^g" ${CASSANDRA_CONF_PATH}
+if [[ -d ${CASSANDRA_DATA_DIR} ]]
+then
+	sudo sed -i "s^/var/lib/^${CASSANDRA_DATA_DIR}/^g" ${CASSANDRA_CONF_PATH}
+fi
 sudo sed -i "s/'Test Cluster'/'${my_ai_name}'/g" ${CASSANDRA_CONF_PATH}
 
 pos=1
@@ -83,9 +86,7 @@ sudo sed -i "s/- seeds:.*$/- seeds: $seed_ips_csv/g" ${CASSANDRA_CONF_PATH}
 sudo sed -i "s/listen_address:.*$/listen_address: ${MY_IP}/g" ${CASSANDRA_CONF_PATH}
 sudo sed -i "s/rpc_address:.*$/rpc_address: ${MY_IP}/g" ${CASSANDRA_CONF_PATH}
 sudo sed -i "s/partitioner: org.apache.cassandra.dht.Murmur3Partitioner/partitioner: org.apache.cassandra.dht.RandomPartitioner/g" ${CASSANDRA_CONF_PATH}
-#sudo sed -i "s/partitioner:.*$/partitioner: org.apache.cassandra.dht.RandomPartitioner/g" ${CASSANDRA_CONF_PATH}    
-sudo sed -i "s^/var/lib/^${CASSANDRA_DATA_DIR}/^g" ${CASSANDRA_CONF_PATH}
-sudo sed -i "s/'Test Cluster'/'${my_ai_name}'/g" ${CASSANDRA_CONF_PATH}
+#sudo sed -i "s/partitioner:.*$/partitioner: org.apache.cassandra.dht.RandomPartitioner/g" ${CASSANDRA_CONF_PATH}
 
 #
 # Start the database

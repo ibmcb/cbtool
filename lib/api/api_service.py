@@ -400,6 +400,12 @@ class API():
         
     def cldalter(self, cloud_name, gobject, attribute, value):
         return self.passive.alter_object({"name": cloud_name}, cloud_name + ' ' + gobject + ' ' + attribute + "=" + str(value), "cloud-alter")[2]
+
+    def appdev(self, cloud_name) :
+        return self.passive.alter_object({"name": cloud_name}, cloud_name + " ai_defaults run_application_scripts=false", "cloud-alter")[2]
+
+    def appundev(self, cloud_name, gobject, attribute, value):        
+        return self.passive.alter_object({"name": cloud_name}, cloud_name + " ai_defaults run_application_scripts=true", "cloud-alter")[2]
     
     def appalter(self, cloud_name, identifier, attribute, value):
         return self.passive.alter_object({}, cloud_name + ' ' + identifier + ' ' + attribute + "=" + str(value), "ai-alter")[2]

@@ -300,7 +300,7 @@ class CommonCloudFunctions:
             if str(obj_attr_list["use_jumphost"]).lower() == "false" :
                 _msg += "..."
             else :
-                _msg += " via jumphost " + obj_attr_list["jump_host"] + "..."
+                _msg += " via jumphost " + obj_attr_list["jumphost_ip"] + "..."
                 obj_attr_list["check_boot_complete"] = "run_command_/bin/true"
                 
             cbdebug(_msg, True)

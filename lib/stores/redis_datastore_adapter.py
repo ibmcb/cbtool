@@ -566,12 +566,16 @@ class RedisMgdConn :
                 _obj_state_fn = _obj_inst_fn + ':' + obj_uuid + ":STATE"
                 self.redis_conn.set(_obj_state_fn, "attached")
 
-                if obj_attr_list["notification"] != "False" :
-                    _channel = "ARRIVAL"
+                if str(obj_attr_list["notification"]).lower() != "false" :
+                    if obj_attr_list["notification_channel"].lower() == "auto" :
+                        _channel = "ARRIVAL"
+                    else :
+                        _channel = obj_attr_list["notification_channel"]
+
                     _message = obj_type + " object " + obj_uuid + " (" + \
                     obj_attr_list["name"] + ") arrived"
                     self.publish_message(cloud_name, obj_type, _channel, _message, \
-                                         3, \
+                                         1, \
                                          float(obj_attr_list["timeout"]))
 
             if lock :
@@ -1190,12 +1194,15 @@ class RedisMgdConn :
                 _obj_state_fn = _obj_inst_fn + ':' + obj_uuid + ":STATE"
                 self.redis_conn.delete(_obj_state_fn)
 
-                if obj_attr_list["notification"] != "False" :
-                    _channel = "DEPARTURE"
+                if str(obj_attr_list["notification"]).lower() != "false" :
+                    if obj_attr_list["notification_channel"].lower() == "auto" :
+                        _channel = "DEPARTURE"
+                    else :
+                        _channel = obj_attr_list["notification_channel"]
                     _message = obj_type + " object " + obj_uuid + " (" + \
                     obj_attr_list["name"] + ") departed"
                     self.publish_message(cloud_name, obj_type, _channel, _message, \
-                                         3, \
+                                         1, \
                                          float(obj_attr_list["timeout"]))
 
             if lock :

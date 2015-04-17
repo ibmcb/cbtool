@@ -1401,33 +1401,36 @@ class PassiveObjectOperations(BaseObjectOperations) :
             if not _status :
 
                 _obj_type = obj_attr_list["type"].upper()                
-                _sub_channel = self.osci.subscribe(obj_attr_list["cloud_name"], \
-                                                   _obj_type, \
-                                                   obj_attr_list["channel"], \
-                                                   int(obj_attr_list["timeout"]))
 
-                _msg = "Subscribed to channel \"" + obj_attr_list["channel"] + "\""
-                _msg += " with a timeout of " + str(obj_attr_list["timeout"]) + " seconds "
-                _msg += "(object \"" + _obj_type + "\" listening for messages with"
-                _msg += " the keyword \"" + obj_attr_list["keyword"] + "\")"
-                print _msg
+                if obj_attr_list["keyword"] != "getsubscription" :
 
-                for _message in _sub_channel.listen() :
-                    if _message["type"] == "message" :
-                        _msg = "Message received (" + _message["data"] 
-                        _msg += "). Proceeding to parse it"
-                        cbdebug(_msg)
-
-                        if _message["data"].count(obj_attr_list["keyword"]) :
-                            _msg = "Message \"" + _message["data"] + "\" received"
-                            _msg += " on channel \"" + obj_attr_list["channel"]
-                            _msg += "\"."
+                    _sub_channel = self.osci.subscribe(obj_attr_list["cloud_name"], \
+                                                       _obj_type, \
+                                                       obj_attr_list["channel"], \
+                                                       int(obj_attr_list["timeout"]))
+    
+                    _msg = "Subscribed to channel \"" + obj_attr_list["channel"] + "\""
+                    _msg += " with a timeout of " + str(obj_attr_list["timeout"]) + " seconds "
+                    _msg += "(object \"" + _obj_type + "\" listening for messages with"
+                    _msg += " the keyword \"" + obj_attr_list["keyword"] + "\")"
+                    print _msg
+    
+                    for _message in _sub_channel.listen() :
+                        if _message["type"] == "message" :
+                            _msg = "Message received (" + _message["data"] 
+                            _msg += "). Proceeding to parse it"
                             cbdebug(_msg)
-                            _sub_channel.unsubscribe()
-                            break
+    
+                            if _message["data"].count(obj_attr_list["keyword"]) :
+                                _msg = "Message \"" + _message["data"] + "\" received"
+                                _msg += " on channel \"" + obj_attr_list["channel"]
+                                _msg += "\"."
+                                cbdebug(_msg)
+                                _sub_channel.unsubscribe()
+                                break
 
                 _status = 0
-
+                
         except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
@@ -1440,6 +1443,11 @@ class PassiveObjectOperations(BaseObjectOperations) :
             
             _end = time() - _start
 
+            _result = {"subscription" : self.pid + ':' + obj_attr_list["cloud_name"] + ':' + _obj_type + ':' + obj_attr_list["channel"], \
+                       "total_time" : _end, \
+                       "host" : self.osci.host, \
+                       "dbid" : self.osci.dbid }
+                        
             if _status :
                 _msg = "Error while \"waiting on channel\" after " + str(_end) + " seconds : " + _fmsg
                 cberr(_msg)
@@ -1449,7 +1457,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 _msg += "\" (" + _obj_type + ")."
                 cbdebug(_msg)
 
-            return self.package(_status, _msg, _end)
+            return self.package(_status, _msg, _result)
 
     @trace
     def msgpub(self, obj_attr_list, parameters, command) :

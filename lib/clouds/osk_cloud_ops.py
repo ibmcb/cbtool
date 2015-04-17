@@ -38,8 +38,6 @@ try :
 except :
     from novaclient.v1_1 import client as novac
 
-from neutronclient.v2_0 import client as neutronc
-
 from novaclient import exceptions as novaexceptions
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
@@ -78,7 +76,7 @@ class OskCmds(CommonCloudFunctions) :
         return "OpenStack Compute Cloud"
 
     @trace
-    def connect(self, access_url, authentication_data, region) :
+    def connect(self, access_url, authentication_data, region, extra_parms = {}) :
         '''
         TBD
         '''
@@ -128,19 +126,30 @@ class OskCmds(CommonCloudFunctions) :
                                          endpoint_type = _endpoint_type, \
                                          cacert = _cacert)
 
-            self.oskconnstorage.volumes.list()
+            self.oskconnstorage.volumes.list()                
+            
+            if "use_neutronclient" in extra_parms :
+                _use_neutronclient = str(extra_parms["use_neutronclient"]).lower()
+            else :
+                _use_neutronclient = "false"
+            
+            if _use_neutronclient == "true" :
 
-            self.oskconnnetwork = neutronc.Client(username = _username, \
-                                                  password = _password, \
-                                                  tenant_name = _tenant, \
-                                                  auth_url = access_url, \
-                                                  region_name = region, \
-                                                  service_type="network", \
-                                                  endpoint_type = _endpoint_type, \
-                                                  cacert = _cacert)
-
-
-            self.oskconnnetwork.list_networks()
+                from neutronclient.v2_0 import client as neutronc                           
+                
+                self.oskconnnetwork = neutronc.Client(username = _username, \
+                                                      password = _password, \
+                                                      tenant_name = _tenant, \
+                                                      auth_url = access_url, \
+                                                      region_name = region, \
+                                                      service_type="network", \
+                                                      endpoint_type = _endpoint_type, \
+                                                      cacert = _cacert)
+    
+    
+                self.oskconnnetwork.list_networks()
+            else :
+                self.oskconnnetwork = False
             
             _region = region
             _msg = "Selected region is " + str(region)
@@ -379,15 +388,15 @@ class OskCmds(CommonCloudFunctions) :
 
         return _floating_pool_found
 
-    def get_network_attr(self, vm_defaults, network_attr_list, use_neutron = "auto") :
+    def get_network_attr(self, obj_attr_list, network_attr_list) :
         '''
         TBD
         '''
 
-        if use_neutron == "auto" :
-            use_neutron = vm_defaults["use_neutron"]
-                    
-        if str(use_neutron).lower() == "true" :
+        if "use_neutronclient" in obj_attr_list :
+            _use_neutronclient = str(obj_attr_list["use_neutronclient"]).lower()
+                            
+        if _use_neutronclient == "true" :
             _name = network_attr_list["name"]
             _type = network_attr_list["provider:network_type"]
             _uuid = network_attr_list["id"]
@@ -417,20 +426,20 @@ class OskCmds(CommonCloudFunctions) :
                         
         return True
     
-    def get_network_list(self, vm_defaults, use_neutron = "auto") :
+    def get_network_list(self, obj_attr_list) :
         '''
         TBD
         '''
-        if use_neutron == "auto" :
-            use_neutron = vm_defaults["use_neutron"]
+        if "use_neutronclient" in obj_attr_list :
+            _use_neutronclient = str(obj_attr_list["use_neutronclient"]).lower()
             
-        if str(use_neutron).lower() == "false" :
+        if _use_neutronclient == "false" :
             _network_list = self.oskconncompute.networks.list()
         else :
             _network_list = self.oskconnnetwork.list_networks()["networks"]
         
         for _network_attr_list in _network_list :
-            self.get_network_attr(vm_defaults, _network_attr_list, use_neutron)
+            self.get_network_attr(obj_attr_list, _network_attr_list)
 
         return _network_list
     
@@ -572,6 +581,11 @@ class OskCmds(CommonCloudFunctions) :
         TBD
         '''
         _can_create_jumphost = False
+
+        if vm_defaults["jumphost_login"] == "auto" :
+            vm_defaults["jumphost_login"] = vm_defaults["login"]
+
+        vm_defaults["jumphost_name"] = vm_defaults["username"] + '_' + vm_defaults["jumphost_base_name"]
         
         if "floating_pool" in vm_defaults and "cb_nullworkload" in detected_imageids :
             _can_create_jumphost = True
@@ -581,7 +595,7 @@ class OskCmds(CommonCloudFunctions) :
             _jhn = vm_defaults["jumphost_name"]
                        
             if _cjh == "true" :
-                vm_defaults["jump_host"] = "to be created"
+                vm_defaults["jumphost_ip"] = "to be created"
                                 
                 _msg = " OpenStack status: Checking if a \"Jump Host\" (" + _jhn + ") VM is already" 
                 _msg += " present on VMC " + vmc_name + "...."
@@ -606,7 +620,7 @@ class OskCmds(CommonCloudFunctions) :
                 _obj_attr_list["use_jumphost"] = False                
                 _obj_attr_list["check_boot_complete"] = "tcp_on_22"
                 _obj_attr_list["userdata"] = None
-                
+
                 _netname = _obj_attr_list["jumphost_netnames"]
                 if _netname == "all" :
                     _netname = ','.join(self.networks_attr_list["tenant_network_list"])
@@ -623,8 +637,8 @@ class OskCmds(CommonCloudFunctions) :
                         #cbdebug(_msg)
                         print _msg
                         
-                        if "jump_host" in _obj_attr_list :
-                            del _obj_attr_list["jump_host"]
+                        if "jumphost_ip" in _obj_attr_list :
+                            del _obj_attr_list["jumphost_ip"]
 
                         self.vmcreate(_obj_attr_list)
                     else :
@@ -645,7 +659,7 @@ class OskCmds(CommonCloudFunctions) :
                 #cbdebug(_msg)
                 print _msg
                 
-                vm_defaults["jump_host"] = _obj_attr_list["prov_cloud_ip"]
+                vm_defaults["jumphost_ip"] = _obj_attr_list["prov_cloud_ip"]
 
             else :
                 return True
@@ -686,7 +700,7 @@ class OskCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
-            self.connect(access, credentials, vmc_name)
+            self.connect(access, credentials, vmc_name, {"use_neutronclient" : str(vm_defaults["use_neutronclient"])})
             
             _key_pair_found = self.check_ssh_key(vmc_name, vm_defaults["username"] + '_' + key_name, vm_defaults)
 
@@ -1145,7 +1159,7 @@ class OskCmds(CommonCloudFunctions) :
                     _status = 168
                     _fmsg = "Please check if the defined network is present on this "
                     _fmsg += "OpenStack Cloud"
-                    self.get_network_list(obj_attr_list, use_neutron = "false")
+                    self.get_network_list(obj_attr_list)
                 
                 if _netname in self.networks_attr_list :
                     _networkid = self.networks_attr_list[_netname]["uuid"]
@@ -1624,6 +1638,9 @@ class OskCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
+        # Too many problems with neutronclient. Failures, API calls hanging, etc.
+        obj_attr_list["use_neutronclient"] = "false"
+        
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
@@ -1729,6 +1746,8 @@ class OskCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
+        # Too many problems with neutronclient. Failures, API calls hanging, etc.
+        obj_attr_list["use_neutronclient"] = "false"
 
         try :
             _status = 100
@@ -1978,7 +1997,10 @@ class OskCmds(CommonCloudFunctions) :
         '''
         
         try :
-            
+
+            # Too many problems with neutronclient. Failures, API calls hanging, etc.
+            obj_attr_list["use_neutronclient"] = "false"
+                        
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
             _vvfmsg = ''
@@ -1998,7 +2020,8 @@ class OskCmds(CommonCloudFunctions) :
                 
             if not self.oskconncompute :
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
-                             obj_attr_list["vmc_name"])
+                             obj_attr_list["vmc_name"], \
+                             {"use_neutronclient" : obj_attr_list["use_neutronclient"]})
 
             if self.is_vm_running(obj_attr_list) :
                 _msg = "An instance named \"" + obj_attr_list["cloud_vm_name"]
@@ -2227,6 +2250,10 @@ class OskCmds(CommonCloudFunctions) :
         TBD
         '''
         try :
+            
+            # Too many problems with neutronclient. Failures, API calls hanging, etc.
+            obj_attr_list["use_neutronclient"] = "false"
+                        
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
@@ -2239,7 +2266,8 @@ class OskCmds(CommonCloudFunctions) :
 
             if not self.oskconncompute :
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
-                             obj_attr_list["vmc_name"])
+                             obj_attr_list["vmc_name"], \
+                             {"use_neutronclient" : obj_attr_list["use_neutronclient"]})
             
             _wait = int(obj_attr_list["update_frequency"])
 
@@ -2305,14 +2333,17 @@ class OskCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
+        # Too many problems with neutronclient. Failures, API calls hanging, etc.
+        obj_attr_list["use_neutronclient"] = "false"
+                
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
             if not self.oskconncompute :
-                self.connect(obj_attr_list["access"], \
-                             obj_attr_list["credentials"], \
-                             obj_attr_list["vmc_name"])
+                self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
+                             obj_attr_list["vmc_name"], \
+                             {"use_neutronclient" : obj_attr_list["use_neutronclient"]})
 
             _wait = int(obj_attr_list["update_frequency"])
             _curr_tries = 0
@@ -2417,13 +2448,16 @@ class OskCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
+        # Too many problems with neutronclient. Failures, API calls hanging, etc.
+        obj_attr_list["use_neutronclient"] = "false"        
+        
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
 
         if not self.oskconncompute :
-            self.connect(obj_attr_list["access"], \
-                         obj_attr_list["credentials"], \
-                         obj_attr_list["name"])
+                self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
+                             obj_attr_list["vmc_name"], \
+                             {"use_neutronclient" : obj_attr_list["use_neutronclient"]})
 
         operation = obj_attr_list["mtype"]
 
@@ -2445,9 +2479,9 @@ class OskCmds(CommonCloudFunctions) :
         _time_mark_crs = int(time())            
         try :
             if not self.oskconncompute :
-                self.connect(obj_attr_list["access"], \
-                             obj_attr_list["credentials"], \
-                             obj_attr_list["vmc_name"])
+                self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
+                             obj_attr_list["vmc_name"], \
+                             {"use_neutronclient" : obj_attr_list["use_neutronclient"]})
     
             _instance = self.get_instances(obj_attr_list, "vm", obj_attr_list["cloud_vm_name"])
             
@@ -2518,6 +2552,9 @@ class OskCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
+        # Too many problems with neutronclient. Failures, API calls hanging, etc.
+        obj_attr_list["use_neutronclient"] = "false"
+
         try :
             _status = 100
 
@@ -2525,9 +2562,9 @@ class OskCmds(CommonCloudFunctions) :
             _cs = obj_attr_list["current_state"]
     
             if not self.oskconncompute :
-                self.connect(obj_attr_list["access"], \
-                             obj_attr_list["credentials"], \
-                             obj_attr_list["vmc_name"])
+                self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
+                             obj_attr_list["vmc_name"], \
+                             {"use_neutronclient" : obj_attr_list["use_neutronclient"]})
 
             _wait = int(obj_attr_list["update_frequency"])
             _curr_tries = 0

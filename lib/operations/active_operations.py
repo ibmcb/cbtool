@@ -224,13 +224,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 
                 if str(cld_attr_lst["vm_defaults"]["create_jumphost"]).lower() != "false" :
 
-                    if str(cld_attr_lst["vm_defaults"]["jump_host"]).count('.') == 3 :
+                    if str(cld_attr_lst["vm_defaults"]["jumphost_ip"]).count('.') == 3 :
                         _msg = "The attribute \"CREATE_JUMPHOST\" in the Global Object" 
                         _msg += " VM_DEFAULTS is set to \"True\"."
                         cbdebug(_msg, True)                        
 
                         _msg = "         Will attempt to connect (ssh) to the host \"" 
-                        _msg += str(cld_attr_lst["vm_defaults"]["jump_host"]) + "\""
+                        _msg += str(cld_attr_lst["vm_defaults"]["jumphost_ip"]) + "\""
                         _msg += " to confirm that this host can be used as a \""
                         _msg += "jump box\"..."
                         #cbdebug(_msg, True)
@@ -249,8 +249,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _command += " -o StrictHostKeyChecking=no"
                         _command += " -o UserKnownHostsFile=/dev/null"
                         _command += " -o BatchMode=yes "                                                  
-                        _command += ' ' + cld_attr_lst["vm_defaults"]["login"] 
-                        _command += '@' + cld_attr_lst["vm_defaults"]["jump_host"]
+                        _command += ' ' + cld_attr_lst["vm_defaults"]["jumphost_login"] 
+                        _command += '@' + cld_attr_lst["vm_defaults"]["jumphost_ip"]
                         _command += " \"which nc\""
 
                         _status, _result_stdout, _result_stderr = \
@@ -270,7 +270,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             _jump_box_host_fd.close()
 
                             cld_attr_lst["vm_defaults"]["ssh_config_file"] = _jump_box_host_fn
-                            
+
                             print "done\n"
                     else :
                         _msg = "The attribute \"CREATE_JUMPHOST\" in Global Object "

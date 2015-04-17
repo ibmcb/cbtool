@@ -77,18 +77,11 @@ fi
     sudo sed -i "s/listen_address:.*$/listen_address: ${MY_IP}/g" $CASSANDRA_CONF_PATH
     sudo sed -i 's/rpc_address:.*$/rpc_address: 0\.0\.0\.0/g' $CASSANDRA_CONF_PATH
 
-    if [[ -f ${CASSANDRA_DATA_DIR} ]]
+    if [[ -d ${CASSANDRA_DATA_DIR} ]]
     then
         sudo sed -i "s^/var/lib/^${CASSANDRA_DATA_DIR}/^g" ${CASSANDRA_CONF_PATH}
     fi
     sudo sed -i "s/'Test Cluster'/'${my_ai_name}'/g" $CASSANDRA_CONF_PATH
-
-#
-# Remove possible old runs
-#
-    sudo rm -rf ${CASSANDRA_DATA_DIR}/cassandra/saved_caches/*
-    sudo rm -rf ${CASSANDRA_DATA_DIR}/cassandra/data/system/*
-    sudo rm -rf ${CASSANDRA_DATA_DIR}/cassandra/commitlog/*
 
 #
 # Start the database

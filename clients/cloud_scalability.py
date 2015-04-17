@@ -30,6 +30,7 @@ from time import sleep
 import fnmatch
 import os
 import pwd
+import redis
 
 home = os.environ["HOME"]
 username = pwd.getpwuid(os.getuid())[0]
@@ -93,6 +94,28 @@ def set_runtime_sla(cloud_name, workload, workload_attrs, metric, value) :
     api.typealter(cloud_name, workload, "sla_runtime_target_" + metric, str(value) + '-' + _limit)
 
     return True
+
+def subscribe(cloud_name) :
+    '''
+    TBD
+    '''
+    _obj_stor_attr = api.waiton(cloud_name,"VM",_channel,"getsubscription",1)
+
+    redis_conn = redis.Redis(host = _obj_stor_attr["host"], port = 6379, db = _obj_stor_attr["dbid"])
+        
+    redis_conn_pubsub = redis_conn.pubsub()
+    redis_conn_pubsub.subscribe(_obj_stor_attr["subscription"])
+
+    _msg = "Will wait for messages published by VMs..."
+    print _msg
+    
+    for message in redis_conn_pubsub.listen() :
+        if isinstance(message["data"], str) :
+            _msg = "Message detected, getting statistics from CB"
+            print _msg            
+            _stats = api.stats(cloud_name)
+            
+            return _stats    
 
 def check_stopping_conditions(cloud_name, \
                               stats, \
@@ -209,6 +232,8 @@ pattern = argv[3]
 try :
     error = False
 
+    _channel = "EXPERIMENT"
+    
     _start = int(time())
 
     _msg = "Setting new expid" 
@@ -231,6 +256,12 @@ try :
     _msg += "error, permanently add this AI to the \"AI in Error\" list)"
     print _msg
     api.cldalter(cloud_name, "vm_defaults", "sticky_app_status", "true")
+
+    _msg = "Instructing VMs to publish messages whenever they arrive, update app"
+    _msg += " metrics or depart)"
+    print _msg
+    api.cldalter(cloud_name, "vm_defaults", "notification", "true")
+    api.cldalter(cloud_name, "vm_defaults", "notification_channel", _channel)
 
     _iait = "unformIxIxI300I600"
     # ------------------ START SIMULATED CLOUD ONLY ----------------------------                
@@ -305,6 +336,7 @@ try :
         _msg += str(_max_check) + " seconds."
         print _msg
 
+        '''
         _counters = api.waituntil(cloud_name, \
                                   "AI", \
                                   "ARRIVING", \
@@ -312,6 +344,9 @@ try :
                                   "decreasing", \
                                   _check_interval, \
                                   _max_check)
+        '''
+        
+        _counters = subscribe(cloud_name)
 
         _min_ais = 5
 
