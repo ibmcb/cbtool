@@ -140,18 +140,18 @@ class ValueGeneration :
             _fmsg += str(_max) + " (max)"
 
             _distributions = {}
-            _distributions["exponential"] = expovariate(1/_mean)
-            _distributions["uniform"] = uniform(_min, _max)
-            _distributions["gamma"] = gammavariate((_mean * _mean) / (_stdev * _stdev), (_stdev * _stdev) / _mean)
-            _distributions["normal"] = gauss(_mean, _stdev)
+            _distributions["exponential"] = "expovariate(1/_mean)"
+            _distributions["uniform"] = "uniform(_min, _max)"
+            _distributions["gamma"] = "gammavariate((_mean * _mean) / (_stdev * _stdev), (_stdev * _stdev) / _mean)"
+            _distributions["normal"] = "gauss(_mean, _stdev)"
 
             if _distribution in _distributions :        
                 _tries = 0
                 _value = _min - 1.0
 
-                while _value < _min or _value > _max or _tries < _max_tries :
+                while (_value < _min or _value > _max) and _tries < _max_tries :
 
-                    _value = _distributions[_distribution]
+                    _value = eval(_distributions[_distribution])
 
                     _tries += 1
 
