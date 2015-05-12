@@ -774,10 +774,10 @@ function start_master_hadooop_services {
             syslog_netcat "...Namenode formatted."
     
             syslog_netcat "...Starting primary Namenode service..."
-            if [[ -e ${HADOOP_HOME}/bin/start-dfs.sh ]] 
+            if [[ -e ${HADOOP_HOME}/sbin/start-dfs.sh ]] 
             then
                 syslog_netcat "...start-dfs.sh script exists, using that to launch Namenode services..."
-                ${HADOOP_HOME}/bin/start-dfs.sh
+                ${HADOOP_HOME}/sbin/start-dfs.sh
                 namenode_running=`ps aux | grep -e [n]amenode`
                 if [[ x"$namenode_running" == x ]] 
                 then
@@ -935,5 +935,15 @@ export -f setup_matrix_multiplication
 #HDFS_SITE_PROPERTIES["dfs.block.size"]=67108864
 #
 #declare -A MAPRED_SITE_PROPERTIES 
+
+# https://hadoop.apache.org/docs/r2.6.0/hadoop-mapreduce-client/hadoop-mapreduce-client-core/mapred-default.xml
+
+#MAPRED_SITE_PROPERTIES["mapreduce.job.maps"]=10
+#MAPRED_SITE_PROPERTIES["mapreduce.job.reduces"]=5
+
+#MAPRED_SITE_PROPERTIES["mapreduce.tasktracker.map.tasks.maximum"]=4
+#MAPRED_SITE_PROPERTIES["mapreduce.tasktracker.reduce.tasks.maximum"]=4
+
+
 #MAPRED_SITE_PROPERTIES["mapred.min.split.size"]=0
 #MAPRED_SITE_PROPERTIES["mapred.max.split.size"]=16777216

@@ -43,12 +43,12 @@ HADOOPSLAVE_RESIZE1 = cb_restart_hadoop_cluster.sh
 START = cb_hadoop_job.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
-JAVA_HOME = ~/jdk1.6.0_21
-HADOOP_HOME = ~/hadoop-2.6.0
+JAVA_HOME = /usr/lib/jvm/java-7-openjdk-amd64
+HADOOP_HOME = /usr/local/hadoop
 HADOOP_EXAMPLES = share/hadoop/mapreduce/hadoop-mapreduce-examples-2.6.0.jar
 HIBENCH_HOME = ~/HiBench
-DFS_NAME_DIR = /tmp/cbhadoopname
-DFS_DATA_DIR = /tmp/cbhadoopdata
+DFS_NAME_DIR = /usr/local/hadoop_store/hdfs/namenode
+DFS_DATA_DIR = /usr/local/hadoop_store/hdfs/datanode
 LOAD_FACTOR = 10000
 CLASSES = 20
 NUM_MAPS = 2
