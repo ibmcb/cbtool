@@ -116,7 +116,13 @@ if (opt$expid == "all") {
 	experiment_directories <- list.dirs(path = opt$directory, 
 			full.names = FALSE, recursive = FALSE)
 } else {
-	experiment_directories <- c(paste(opt$directory, '/', opt$expid, sep =''))
+
+	expid_list <- unlist(strsplit(opt$expid, split=","))
+
+	experiment_directories <- c(paste(opt$directory, '/', expid_list, sep =''))
+
+	if (length(expid_list) > 1)
+		opt$expid <- "all"
 }
 
 msg <- paste("################################## START PHASE 1 - Pre-processing", 

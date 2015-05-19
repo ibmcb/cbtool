@@ -1,0 +1,25 @@
+### START - Dependency installation order ###
+nuttcp-order = 50
+### END - Dependency installation order ###
+
+### START - Dependency-specific installation method ###
+# pm = "package manager" (yum or apt-get)
+# sl = "soft link" (assume that the dependency is already installed, just has to
+# be properly exposed to the user's path.
+# git = git clone using above giturl
+# pip = python pip utility
+# man = "manual"
+nuttcp-install = pm
+### END - Dependency-specific installation method ###
+
+### START - Tests ###
+nuttcp-configure = nuttcp -V 2>&1 | sed 's/nuttcp-//g'
+### END - Tests ###
+
+### START - Dependency versions ###
+nuttcp-ver = 5.0
+### END - Dependency versions ###
+
+### START -  Dependency and method-specific command lines ###
+common-nuttcp-install-pm = package_install nuttcp
+### END -  Dependency and method-specific command lines ###

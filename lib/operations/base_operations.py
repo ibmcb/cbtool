@@ -232,6 +232,13 @@ class BaseObjectOperations :
             else :
                 _status = 9
                 _msg = "Usage: monextract <cloud name> all [experiment id]"
+
+        elif command == "mon-purge" :
+            if _length == 2 :
+                object_attribute_list["expid"] = _parameters[1]
+            else :
+                _status = 9
+                _msg = "Usage: monpurge <cloud name> <experiment id>"
                 
         elif command == "host-fail" :
             if _length >= 3 :
@@ -934,6 +941,12 @@ class BaseObjectOperations :
 
                 _status = 0
 
+            elif cmd == "mon-purge" :
+                _mon_parameters = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "mon_defaults", False)                
+                selective_dict_update(obj_attr_list, _mon_parameters)
+
+                _status = 0                
+
             elif cmd == "mon-list" :
                 _mon_parameters = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "mon_defaults", False)                
                 selective_dict_update(obj_attr_list, _mon_parameters)
@@ -954,7 +967,8 @@ class BaseObjectOperations :
                 obj_attr_list["mgt_003_provisioning_request_completed"] = "0"
                 if _obj_type == "VM" :
                     obj_attr_list["mgt_005_file_transfer"] = "0"                                
-                    obj_attr_list["mgt_006_application_start"] = "0"
+                    obj_attr_list["mgt_006_instance_preparation"] = "0"
+                    obj_attr_list["mgt_007_application_start"] = "0"
                     
                 _cloud_parameters = self.get_cloud_parameters(obj_attr_list["cloud_name"])
 
@@ -1080,10 +1094,16 @@ class BaseObjectOperations :
                             if "lb_size" in _vm_template_attr_list :
                                 obj_attr_list["size"] = _vm_template_attr_list["lb_size"]
                             else :
-                                obj_attr_list["size"] = "default"
-            
+                                obj_attr_list["size"] = "from_vm_template"
+
+                        if obj_attr_list["size"] != "from_vm_template" :
+                            del _vm_template_attr_list["size"]
+
+                        if "login" in _vm_template_attr_list :
+                            del obj_attr_list["login"]
+
                         obj_attr_list.update(_vm_template_attr_list)
-                        
+                                                
                         if str(obj_attr_list["userdata"]).lower() == "true" :
                             obj_attr_list["userdata"] = create_user_data_contents(obj_attr_list, self.osci)
                         elif str(obj_attr_list["userdata"]).lower() == "false" :
@@ -1835,8 +1855,8 @@ class BaseObjectOperations :
         if "access" in obj_attr_list :
             _extra_parms += ",access=" + obj_attr_list["access"]
         
-        if vm_role + "_netid" in obj_attr_list :
-            _extra_parms += ",netid=" + obj_attr_list[vm_role + "_netid"]
+        if vm_role + "_netname" in obj_attr_list :
+            _extra_parms += ",netname=" + obj_attr_list[vm_role + "_netname"]
 
         if vm_role + "_imageid1" in obj_attr_list :
             _extra_parms += ",imageid1=" + obj_attr_list[vm_role + "_imageid1"]
@@ -2592,6 +2612,7 @@ class BaseObjectOperations :
         TBD
         '''
         try :
+
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
@@ -2635,15 +2656,23 @@ class BaseObjectOperations :
 
                     if operation == "attach" :
 
+                        self.get_from_pending(cloud_name, obj_type, obj_attr_list)
+
                         self.compute_sla(cloud_name, obj_type, obj_attr_list, operation, _mgt_attr_list)
 
-                        if obj_type.upper() == "VM" :
+                        # HACK alert - Repeating code here is not good
+                        for _key in obj_attr_list.keys() :
+                            if _key in _key_list or _key.count("mgt"):
+                                _mgt_attr_list[_key] = obj_attr_list[_key]
 
-                            _mgt_attr_list["utc_offset_delta"] = \
-                            self.compute_utc_offset(cloud_name, obj_type, obj_attr_list)
+                        _mgt_attr_list["utc_offset_delta"] = self.compute_utc_offset(cloud_name, obj_type, obj_attr_list)
 
-                        self.msci.add_document(_management_key, _mgt_attr_list)
-                        self.msci.add_document(_latest_key, _mgt_attr_list)
+                        if obj_type.upper() == "HOST" :
+                            self.msci.update_document(_management_key, _mgt_attr_list)
+                            self.msci.update_document(_latest_key, _mgt_attr_list)
+                        else :                            
+                            self.msci.add_document(_management_key, _mgt_attr_list)
+                            self.msci.add_document(_latest_key, _mgt_attr_list)
                         
                     elif operation == "runstate" :
                         self.msci.update_document(_management_key, _mgt_attr_list)
@@ -2654,7 +2683,6 @@ class BaseObjectOperations :
                         _criteria = { "_id" : obj_attr_list["uuid"] }
 
                         self.msci.update_document(_management_key, _mgt_attr_list)
-
                         self.msci.delete_document(_latest_key, _criteria)
 
                         # This was added directly by the VM, but it has to be
@@ -2665,8 +2693,11 @@ class BaseObjectOperations :
                         # deleted by us.
                         self.msci.delete_document("latest_runtime_os_" + obj_type.upper() + '_' + _mon_defaults["username"], _criteria) 
 
+
                 elif obj_type.upper() == "AI" :
 
+                    # HACK alert - This whole section should be removed.
+                    
                     _management_key = "management_VM_" + _mon_defaults["username"]
                     _latest_key = "latest_management_VM_" + _mon_defaults["username"]
 
@@ -2678,24 +2709,28 @@ class BaseObjectOperations :
         
                         for _vm in _vm_list :
                             _vm_uuid, _vm_role, _vm_name = _vm.split('|')
-                            _vm_attr_list = self.osci.get_object(cloud_name, "VM", False, _vm_uuid, False)
 
+                            _vm_attr_list = self.osci.get_object(cloud_name, "VM", False, _vm_uuid, False)
+                            
                             _mgt_attr_list["obj_type"] = "VM"
+                            
+                            self.get_from_pending(cloud_name, "VM", _vm_attr_list)
+
                             for _key in _vm_attr_list.keys() :
                                 if _key in _key_list or _key.count("mgt"):
                                     _mgt_attr_list[_key] = _vm_attr_list[_key]
-        
+
+                            self.compute_sla(cloud_name, "VM", _vm_attr_list, operation, _mgt_attr_list)
+
                             _mgt_attr_list["_id"] = _vm_uuid
-                            _mgt_attr_list["state"] = self.osci.get_object_state(cloud_name, "VM", _vm_attr_list["uuid"])
-    
+                            _mgt_attr_list["state"] = self.osci.get_object_state(cloud_name, "VM", _vm_uuid)
+
                             _mgt_attr_list["utc_offset_delta"] = \
                             self.compute_utc_offset(cloud_name, "VM", _vm_attr_list)
 
-                            self.compute_sla(cloud_name, "VM", _vm_attr_list, operation, _mgt_attr_list)
-                            
                             self.msci.add_document(_management_key, _mgt_attr_list)
                             self.msci.add_document(_latest_key, _mgt_attr_list)
-            
+
                 _status = 0
 
         except self.ObjectOperationException, obj :
@@ -2725,24 +2760,61 @@ class BaseObjectOperations :
                 cbdebug(_msg)
                 return True
 
+
+    def get_from_pending(self, cloud_name, obj_type, obj_attr_list) :
+        '''
+        TBD
+        '''
+
+        if obj_type != "VM" :
+            return False
+        
+        _pending_attr_list = self.osci.pending_object_get(obj_attr_list["cloud_name"], \
+                                                          "VM", obj_attr_list["uuid"], \
+                                                          "all", False)
+        
+        if _pending_attr_list :
+                        
+            for _key in [ "utc_offset_on_vm", \
+                          "mgt_006_instance_preparation", \
+                          "mgt_007_application_start"] :
+
+                if _key in _pending_attr_list :
+                    obj_attr_list[_key] = _pending_attr_list[_key]
+
+                    self.osci.update_object_attribute(cloud_name, \
+                                                      obj_type, \
+                                                      obj_attr_list["uuid"], \
+                                                      False, \
+                                                      _key, \
+                                                      obj_attr_list[_key])
+    
+            return True                
+
+        return False
+    
     @trace
     def compute_utc_offset(self, cloud_name, obj_type, obj_attr_list) :
         '''
         TBD
         '''
-        
-        if "utc_offset_on_vm" not in obj_attr_list :
-            obj_attr_list["utc_offset_on_vm"] = 0
 
-        _utc_offset_delta = int(obj_attr_list["utc_offset_on_orchestrator"]) \
-            - int(obj_attr_list["utc_offset_on_vm"])
+        if obj_type == "VM" :
 
-        self.osci.update_object_attribute(cloud_name, \
-                                          obj_type, \
-                                          obj_attr_list["uuid"], \
-                                          False, \
-                                          "utc_offset_delta", \
-                                          _utc_offset_delta)
+            if "utc_offset_on_vm" not in obj_attr_list :
+                obj_attr_list["utc_offset_on_vm"] = 0
+            
+            _utc_offset_delta = int(obj_attr_list["utc_offset_on_orchestrator"]) \
+                - int(obj_attr_list["utc_offset_on_vm"])
+    
+            self.osci.update_object_attribute(cloud_name, \
+                                              obj_type, \
+                                              obj_attr_list["uuid"], \
+                                              False, \
+                                              "utc_offset_delta", \
+                                              _utc_offset_delta)
+        else :
+            _utc_offset_delta = "NA"
 
         return _utc_offset_delta
 
@@ -2853,6 +2925,7 @@ class BaseObjectOperations :
             obj_attr_list["current_inter_arrival_time"] = float((_vg.get_value(_iait_parms)))
             _aidrs_overload = False
 
+
             _current_ai_reservations = self.osci.count_object(cloud_name, "AI", "RESERVATIONS")
 
             _admission_control_limits = self.osci.get_object(cloud_name, "GLOBAL", False, \
@@ -2864,10 +2937,10 @@ class BaseObjectOperations :
 
             if "nr_ais" in obj_attr_list and int(obj_attr_list["nr_ais"]) >= int(obj_attr_list["max_ais"]) :
                 _aidrs_overload = 2
-                
+
             _active = int(self.get_object_count(cloud_name, "AI", "ARRIVING"))
             _active += int(self.get_object_count(cloud_name, "AI", "DEPARTING"))
-            
+
             if _active >= int(obj_attr_list["daemon_parallelism"]) :
                 _aidrs_overload = 3
 
@@ -3218,6 +3291,9 @@ class BaseObjectOperations :
 
     @trace
     def compare_refresh(self, cloud_name, last_refresh) :
+        '''
+        TBD
+        '''
         _cloud_parameters = self.get_cloud_parameters(cloud_name)
         
         if float(_cloud_parameters["client_should_refresh"]) > float(last_refresh) :
@@ -3231,6 +3307,15 @@ class BaseObjectOperations :
         TBD
         '''
         try : 
+            
+            _host_list = self.osci.get_object_list(obj_attr_list["cloud_name"], "HOST")
+            if _host_list :
+                for _host_uuid in _host_list :
+                    _host_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "HOST", True, _host_uuid, False)
+
+                    self.record_management_metrics(obj_attr_list["cloud_name"], \
+                                                   "HOST", _host_attr_list, "attach")            
+
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 

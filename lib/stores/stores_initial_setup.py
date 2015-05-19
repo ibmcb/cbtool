@@ -636,6 +636,37 @@ def reset(global_objects, soft = True) :
         _rmc = RedisMgdConn(global_objects["objectstore"])
         _rmc.flush_object_store()
         print "done"
+
+        _msg = "Flushing Log Store..."
+        print _msg,
+        _proc_man.run_os_command("pkill -9 -u " + _logstore_username + " -f rsyslogd")
+        _file_list = []
+        _file_list.append("operations.log")
+        _file_list.append("report.log")
+        _file_list.append("submmiter.log")
+        _file_list.append("loadmanager.log")
+        _file_list.append("gui.log")
+        _file_list.append("remotescripts.log")
+        _file_list.append("messages.log")            
+        _file_list.append("monitor.log")
+        _file_list.append("subscribe.log")
+
+        for _fn in  _file_list :
+            _proc_man.run_os_command("rm -rf " + _log_dir + '/' + _logstore_username + '_' + _fn)
+            _proc_man.run_os_command("touch " + _log_dir + '/' + _logstore_username + '_' + _fn)
+        _status, _msg = syslog_logstore_setup(global_objects, "check")
+        
+        global_objects["logstore"]["just_restarted"] = True
+        
+        print "done\n"
+        
+        #_msg = "Flushing File Store..."
+        #print _msg,
+        #_proc_man.run_os_command("sudo pkill -9 -u root -f \"rsync --daemon --config " + _filestore_config_file_fn +"\"", raise_exception = False)
+        #_proc_man.run_os_command("sudo rm -rf " + _stores_wk_dir + '/' + _filestore_username + "_rsyncd.pid")
+
+        #_status, _msg = rsync_filestore_setup(global_objects, "check")
+        #print "done"
         
         if not soft :
             _msg = "Flushing Metric Store..."
@@ -643,37 +674,6 @@ def reset(global_objects, soft = True) :
             _mmc = MongodbMgdConn(global_objects["metricstore"])
             _mmc.flush_metric_store(global_objects["mon_defaults"]["username"])
             print "done"
-
-            _msg = "Flushing Log Store..."
-            print _msg,
-            _proc_man.run_os_command("pkill -9 -u " + _logstore_username + " -f rsyslogd")
-            _file_list = []
-            _file_list.append("operations.log")
-            _file_list.append("report.log")
-            _file_list.append("submmiter.log")
-            _file_list.append("loadmanager.log")
-            _file_list.append("gui.log")
-            _file_list.append("remotescripts.log")
-            _file_list.append("messages.log")            
-            _file_list.append("monitor.log")
-            _file_list.append("subscribe.log")
-
-            for _fn in  _file_list :
-                _proc_man.run_os_command("rm -rf " + _log_dir + '/' + _logstore_username + '_' + _fn)
-                _proc_man.run_os_command("touch " + _log_dir + '/' + _logstore_username + '_' + _fn)
-            _status, _msg = syslog_logstore_setup(global_objects, "check")
-            
-            global_objects["logstore"]["just_restarted"] = True
-            
-            print "done\n"
-            
-            #_msg = "Flushing File Store..."
-            #print _msg,
-            #_proc_man.run_os_command("sudo pkill -9 -u root -f \"rsync --daemon --config " + _filestore_config_file_fn +"\"", raise_exception = False)
-            #_proc_man.run_os_command("sudo rm -rf " + _stores_wk_dir + '/' + _filestore_username + "_rsyncd.pid")
-
-            #_status, _msg = rsync_filestore_setup(global_objects, "check")
-            #print "done"
                         
         _msg = ""
         _status = 0

@@ -16,7 +16,7 @@ CAPTURE_ROLE = netserver
 LOAD_PROFILE = tcp_stream
 LOAD_LEVEL = 1
 LOAD_DURATION = uniformIXIXI70I90
-REPORTED_METRICS = bandwidth,throughput,completion_time
+REPORTED_METRICS = bandwidth,throughput,completion_time,quiescent_time
 
 # VApp-specific MANDATORY attributes
 DESCRIPTION = Deploys a pair of VMs (client and server) and then runs the netperf
@@ -29,6 +29,15 @@ DESCRIPTION +=- COMMENT: One of the "Synthetic" Workloads.
 NETCLIENT_SETUP1 = cb_check_netperf_client.sh
 NETSERVER_SETUP1 = cb_check_netperf_server.sh
 START = cb_netperf.sh
+
+# VApp-specific modifier parameters. 
+SEND_BUFFER_SIZE=auto
+RECV_BUFFER_SIZE=auto
+CLIENT_BUFFER_SIZE=auto
+SERVER_BUFFER_SIZE=auto
+REQUEST_RESPONSE_SIZE=auto
+IF_MTU=auto
+EXTERNAL_TARGET=none
 
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
 #SYNC_COUNTER_NAME = synchronization_counter

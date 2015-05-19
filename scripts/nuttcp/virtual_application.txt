@@ -1,0 +1,44 @@
+# Parameters for this Virtual Application (Application Instance - AI) type should
+# be set on YOUR private configuration configuration file, including the ones 
+# commented.
+
+[AI_TEMPLATES : NUTTCP]
+
+# Attributes MANDATORY for all Virtual Applications
+SUT = nuttcpclient->nuttcpserver
+LOAD_BALANCER_SUPPORTED = $False
+RESIZE_SUPPORTED = $False
+REGENERATE_DATA = $False
+LOAD_GENERATOR_ROLE = nuttcpclient
+LOAD_MANAGER_ROLE = nuttcpclient
+METRIC_AGGREGATOR_ROLE = nuttcpclient
+CAPTURE_ROLE = nuttcpserver
+LOAD_PROFILE = tcp
+LOAD_LEVEL = uniformIXIXI1I5
+LOAD_DURATION = uniformIXIXI70I90
+REPORTED_METRICS = bandwidth,completion_time,quiescent_time
+
+# VApp-specific MANDATORY attributes
+DESCRIPTION = Deploys a pair of VMs (client and server) and then runs the nuttcp
+DESCRIPTION += network benchmark, sending an unidirectional stream of packets between these.\n 
+DESCRIPTION +=- LOAD_PROFILE possible values: "tcp" or "udp".\n
+DESCRIPTION +=- LOAD_LEVEL meaning: number of parallel client threads.\n 
+DESCRIPTION +=- LOAD_DURATION meaning: maximum length of time to run.\n
+DESCRIPTION +=- COMMENT: One of the "Synthetic" Workloads.
+NUTTCPCLIENT_SETUP1 = cb_check_nuttcp_client.sh
+NUTTCPSERVER_SETUP1 = cb_check_nuttcp_server.sh
+START = cb_nuttcp.sh
+
+# VApp-specific modifier parameters. 
+TRAFFIC_DIRECTION=r
+TRAFFIC_WINDOW=auto
+TRAFFIC_MSS=auto
+RATE_LIMIT=none
+IF_MTU=auto
+EXTERNAL_TARGET=none
+
+# Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
+#SYNC_COUNTER_NAME = synchronization_counter
+#CONCURRENT_AIS = 2
+#SYNC_CHANNEL_NAME = synchronization_channel
+#RUN_COUNTER_NAME = experiment_id_counter

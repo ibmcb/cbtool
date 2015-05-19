@@ -218,7 +218,7 @@ class MongodbMgdConn :
             cberr(_msg)
             raise self.MetricStoreMgdConnException(str(_msg), 1)
 
-    def flush_metric_store(self, username) :
+    def flush_metric_store(self, username, partial = False, criteria = {}) :
         '''
         TBD
         '''
@@ -241,12 +241,14 @@ class MongodbMgdConn :
                             "reported_management_VM_metric_names_" + username, \
                             "reported_runtime_app_VM_metric_names_" + username, \
                             "reported_runtime_os_HOST_metric_names_" + username, \
-                            "reported_runtime_os_VM_metric_names_" + username, \
-                            ]
+                            "reported_runtime_os_VM_metric_names_" + username ]
 
             for _collection in _collections :
                 _collection_handle = self.mongodb_conn[self.database][_collection]
-                _collection_handle.drop()
+                if partial :
+                    _collection_handle.remove(criteria)
+                else :
+                    _collection_handle.drop()
 
             self.disconnect()
             return True
@@ -389,6 +391,8 @@ class MongodbMgdConn :
             cberr(_msg)
             raise self.MetricStoreMgdConnException(str(_msg), 1)
 
+
+
     @trace
     def count_document(self, collection, criteria, disconnect_finish = False) :
         '''
@@ -467,6 +471,32 @@ class MongodbMgdConn :
                 self.disconnect()
 
             return _start_time, _end_time
+
+        except PymongoException, msg :
+            _msg = "Unable to get time boundaries on the collection \""
+            _msg += collection + ": " 
+            _msg += str(msg) + '.'
+            cberr(_msg)
+            raise self.MetricStoreMgdConnException(str(_msg), 1)
+
+    def get_experiment_list(self, collection, disconnect_finish = False) :
+        '''
+        TBD
+        '''
+        self.conn_check()
+
+        collection = collection.replace('-',"dash")
+
+        _experiment_list = None
+        try :
+            _collection_handle = self.mongodb_conn[self.database][collection]
+            
+            _experiment_list = _collection_handle.distinct('expid')
+
+            if disconnect_finish :
+                self.disconnect()
+
+            return _experiment_list
 
         except PymongoException, msg :
             _msg = "Unable to get time boundaries on the collection \""

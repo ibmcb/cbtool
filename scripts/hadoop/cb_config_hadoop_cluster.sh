@@ -118,6 +118,7 @@ echo "</configuration>" >> $output_file
 #mapred-site.xml
 output_file=$HADOOP_CONF_DIR/mapred-site.xml
 sudo sed -i -e "s/<\/configuration>//" $output_file
+
 for k in "${!MAPRED_SITE_PROPERTIES[@]}"
 do
 	echo "<property>" >> $output_file

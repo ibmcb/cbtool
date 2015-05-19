@@ -897,8 +897,11 @@ class RedisMgdConn :
 
         try :
             _obj_id_fn = _obj_inst_fn + ':' + obj_uuid    
-
-            return self.redis_conn.hexists(_obj_id_fn, obj_key)
+            
+            if obj_key :    
+                return self.redis_conn.hexists(_obj_id_fn, obj_key)
+            else :
+                return self.redis_conn.exists(_obj_id_fn)
 
         except ConnectionError, msg :
             _msg = "The connection to the data store seems to be "
@@ -924,7 +927,7 @@ class RedisMgdConn :
         _obj_inst_fn = obj_inst + ':' + obj_type + ":PENDING"
 
         if obj_key == "all" :
-            _check_key = "status"
+            _check_key = None
         else :
             _check_key = obj_key
             

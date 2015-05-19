@@ -420,6 +420,8 @@ ubuntu-apache-install-pm = package_install apache2
 rhel-redis-preinstall-man = lftp -c 'open -e "mget redis*remi*.rpm" URL'
 rhel-redis-install-man = package_install gperftools-libs && sudo rpm -Uvh $(ls -t | grep redis | head -n 1)
 rhel-redis-postinstall-man = sudo sed -i "s/.*bind 127.0.0.1/bind 0.0.0.0/" /etc/redis.conf; service_restart_enable redis
+maipo-redis-install-man = package_install redis
+maipo-redis-postinstall-man = sudo sed -i "s/.*bind 127.0.0.1/bind 0.0.0.0/" /etc/redis.conf; service_restart_enable redis
 fedora-redis-install-man = package_install redis
 fedora-redis-postinstall-man = sudo sed -i "s/.*bind 127.0.0.1/bind 0.0.0.0/" /etc/redis.conf; service_restart_enable redis
 ubuntu-redis-install-man = package_install redis-server
@@ -430,6 +432,8 @@ common-redis-install-git = cd 3RPARTYDIR;redis; make; sudo make install
 
 rhel-mongodb-install-man = sudo rpm -Uvh URL/mongo-10gen-2.4.9-mongodb_1.ARCH.rpm; sudo rpm -Uvh URL/mongo-10gen-server-2.4.9-mongodb_1.ARCH.rpm 
 rhel-mongodb-postinstall-man = sudo sed -i "s/.*bind_ip.*/bind_ip=0.0.0.0/" /etc/mongod.conf; service_restart_enable mongod
+maipo-mongodb-install-man = sudo package_install mongodb 
+maipo-mongodb-postinstall-man = sudo sed -i "s/.*bind_ip.*/bind_ip=0.0.0.0/" /etc/mongod.conf; service_restart_enable mongod
 fedora-mongodb-install-man = package_install mongodb mongodb-server
 fedora-mongodb-postinstall-man = sudo sed -i "s/.*bind_ip.*/bind_ip=0.0.0.0/" /etc/mongod.conf; service_restart_enable mongod
 ubuntu-mongodb-install-man = package_install mongodb

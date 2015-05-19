@@ -41,17 +41,17 @@ DATA_HDFS=`get_my_ai_attribute_with_default dfs_data_dir /tmp/cbhadoopdata`
 export DATA_HDFS
 
 LOAD_FACTOR=`get_my_ai_attribute_with_default load_factor "10000"`
+NUM_MAPS=`get_my_ai_attribute_with_default num_maps "2"`
+NUM_REDS=`get_my_ai_attribute_with_default num_reds "2"`
+export NUM_MAPS
+export NUM_REDS
 
 case ${LOAD_PROFILE} in
     bayes)
     PAGES=$((${LOAD_LEVEL}*${LOAD_FACTOR}))
     CLASSES=`get_my_ai_attribute_with_default classes "20"`
-    NUM_MAPS=`get_my_ai_attribute_with_default num_maps "2"`
-    NUM_REDS=`get_my_ai_attribute_with_default num_reds "2"`
     NGRAMS=`get_my_ai_attribute_with_default ngrams "3"`
     export PAGES
-    export NUM_MAPS
-    export NUM_REDS
     export NGRAMS
     syslog_netcat "Parameters used for bayes are: PAGES=${PAGES}, CLASSES=${CLASSES}, NUM_MAPS=${NUM_MAPS}, NUM_REDS=${NUM_REDS}, NGRAMS=${NGRAMS}"    
     ;;
@@ -69,8 +69,6 @@ case ${LOAD_PROFILE} in
     hivebench)
     USERVISITS=$((8*${LOAD_LEVEL}*${LOAD_FACTOR}))
     PAGES=$((${LOAD_LEVEL}*${LOAD_FACTOR}))
-    NUM_MAPS=`get_my_ai_attribute_with_default num_maps "2"`
-    NUM_REDS=`get_my_ai_attribute_with_default num_reds "2"`
     export USERVISITS
     export PAGES
     export NUM_MAPS
@@ -78,12 +76,12 @@ case ${LOAD_PROFILE} in
     syslog_netcat "Parameters used for hivebench are: USERVISITS=${USERVISITS}, PAGES=${PAGES}, NUM_MAPS=${NUM_MAPS}, NUM_REDS=${NUM_REDS}"
     ;;
     kmeans)
-    NUM_OF_CLUSTERS=`get_my_ai_attribute_with_default num_of_clusters "5"`
+    NUM_OF_CLUSTERS=`get_my_ai_attribute_with_default num_of_clusters "2"`
     NUM_OF_SAMPLES=$((${LOAD_LEVEL}*${LOAD_FACTOR}))
-    SAMPLES_PER_INPUTFILE=`get_my_ai_attribute_with_default samples_per_inputfile "500000"`
+    SAMPLES_PER_INPUTFILE=`get_my_ai_attribute_with_default samples_per_inputfile "5000"`
 #    SAMPLES_PER_INPUTFILE=$((${LOAD_LEVEL}*${LOAD_FACTOR}))
-    DIMENSIONS=`get_my_ai_attribute_with_default dimensions "20"`
-    MAX_ITERATION=`get_my_ai_attribute_with_default max_iteration "5"`
+    DIMENSIONS=`get_my_ai_attribute_with_default dimensions "4"`
+    MAX_ITERATION=`get_my_ai_attribute_with_default max_iteration "2"`
     export NUM_OF_CLUSTERS
     export NUM_OF_SAMPLES
     export SAMPLES_PER_INPUTFILE
@@ -106,52 +104,32 @@ case ${LOAD_PROFILE} in
     ;;
     nutchindexing)
     PAGES=$((${LOAD_LEVEL}*${LOAD_FACTOR}))
-    NUM_MAPS=`get_my_ai_attribute_with_default num_maps "2"`
-    NUM_REDS=`get_my_ai_attribute_with_default num_reds "2"`
     export PAGES
-    export NUM_MAPS
-    export NUM_REDS
     syslog_netcat "Parameters used for nutchindexing are: PAGES=${PAGES}, NUM_MAPS=${NUM_MAPS}, NUM_REDS=${NUM_REDS}"
     ;;
     pagerank)
     PAGES=$((${LOAD_LEVEL}*${LOAD_FACTOR}))
-    NUM_MAPS=`get_my_ai_attribute_with_default num_maps "2"`
-    NUM_REDS=`get_my_ai_attribute_with_default num_reds "2"`
     NUM_ITERATIONS=`get_my_ai_attribute_with_default num_iterations "3"`
     BLOCK=`get_my_ai_attribute_with_default block "0"`
     BLOCK_WIDTH=`get_my_ai_attribute_with_default block_width "16"`
     export PAGES
-    export NUM_MAPS
-    export NUM_REDS
     export BLOCK
     export BLOCK_WIDTH
     syslog_netcat "Parameters used for pagerank are: PAGES=${PAGES}, NUM_MAPS=${NUM_MAPS}, NUM_REDS=${NUM_REDS}, BLOCK=${BLOCK}, BLOCK_WIDTH=${BLOCK_WIDTH}"
     ;;
     sort)
     DATASIZE=$((${LOAD_LEVEL}*${LOAD_FACTOR}))
-    NUM_MAPS=`get_my_ai_attribute_with_default num_maps "2"`
-    NUM_REDS=`get_my_ai_attribute_with_default num_reds "2"`
     export DATASIZE
-    export NUM_MAPS
-    export NUM_REDS
     syslog_netcat "Parameters used for sort are: DATASIZE=${DATASIZE}, NUM_MAPS=${NUM_MAPS}, NUM_REDS=${NUM_REDS}"
     ;;
     terasort)
     DATASIZE=$((${LOAD_LEVEL}*${LOAD_FACTOR}))
-    NUM_MAPS=`get_my_ai_attribute_with_default num_maps "2"`
-    NUM_REDS=`get_my_ai_attribute_with_default num_reds "2"`
     export DATASIZE
-    export NUM_MAPS
-    export NUM_REDS
     syslog_netcat "Parameters used for terasort are: DATASIZE=${DATASIZE}, NUM_MAPS=${NUM_MAPS}, NUM_REDS=${NUM_REDS}"
     ;;
     wordcount)
     DATASIZE=$((${LOAD_LEVEL}*${LOAD_FACTOR}))
-    NUM_MAPS=`get_my_ai_attribute_with_default num_maps "2"`
-    NUM_REDS=`get_my_ai_attribute_with_default num_reds "2"`
     export DATASIZE
-    export NUM_MAPS
-    export NUM_REDS
     syslog_netcat "Parameters used for wordcount are: DATASIZE=${DATASIZE}, NUM_MAPS=${NUM_MAPS}, NUM_REDS=${NUM_REDS}"
     ;;
     *)
@@ -236,6 +214,7 @@ throughput:$tput:tps latency:$lat:msec \
 datagen_time:$(update_app_datagentime):sec \
 datagen_size:$(update_app_datagensize):records \
 errors:$(update_app_errors):num \
+quiescent_time:$(update_app_quiescent):sec \
 ${SLA_RUNTIME_TARGETS}
 
 rm ${OUTPUT_FILE}

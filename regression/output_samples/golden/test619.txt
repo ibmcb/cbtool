@@ -28,7 +28,7 @@ stdout:
 #mgt_003_provisioning_request_completed:23
 #mgt_004_network_acessible:24
 #mgt_005_file_transfer:25
-#mgt_006_application_start:26
+#mgt_007_application_start:26
 #mgt_101_capture_request_originated:27
 #mgt_102_capture_request_sent:28
 #mgt_103_capture_request_completed:29
@@ -40,7 +40,7 @@ stdout:
 #mgt_903_deprovisioning_request_completed:35
 #mgt_999_provisioning_request_failed:36
 
-uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_application_start,mgt_101_capture_request_originated,mgt_102_capture_request_sent,mgt_103_capture_request_completed,mgt_201_runstate_request_originated,mgt_202_runstate_request_sent,mgt_203_runstate_request_completed,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed,mgt_999_provisioning_request_failed
+uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_007_application_start,mgt_101_capture_request_originated,mgt_102_capture_request_sent,mgt_103_capture_request_completed,mgt_201_runstate_request_originated,mgt_202_runstate_request_sent,mgt_203_runstate_request_completed,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed,mgt_999_provisioning_request_failed
 F9F3E0E1-ABF2-5A5F-A5B1-1EF893ECE02B,vm_2,running with ip assigned,88.92.70.13,TESTCLOUD,sim,ED67A2BA-1E64-5BB1-B0EC-B88D9789AC41.simcloud.com,simhostb3,79.199.178.116,simzone_d,32.7.40.113,tinyvm,pico32,cb_nullworkload,none,none,none,none,none,none,59,0,1,1,0,0,69,0,1,NA,NA,NA,70,0,0,NA
 5D4F4D2F-3B0E-5650-9F60-03D3D47AC723,vm_24,NA,undefined,TESTCLOUD,sim,undefined,NA,NA,simzone_b,186.227.44.89,willfail,nano32,doesnotmatter,none,none,none,none,none,none,214,0,0,NA,0,0,NA,NA,NA,NA,NA,NA,214,0,NA,0
 9F550248-A2E3-5568-B7A3-C5B8711C434F,vm_4,running with ip assigned,194.134.169.92,TESTCLOUD,sim,22D0C26A-4A6F-5BC0-B7B6-67BE44DDB1D2.simcloud.com,simhosta1,221.146.69.246,simzone_b,186.227.44.89,db2,copper32,cb_daytrader,none,none,none,none,none,none,64,0,1,1,0,0,NA,NA,NA,NA,NA,NA,199,0,0,NA

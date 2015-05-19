@@ -24,18 +24,18 @@ syslog_netcat "Stopping Hadoop cluster on master ${hadoop_master_ip} with slaves
 if [ x"$my_role" == x"hadoopmaster" ]; then
 	if [ ${hadoop_use_yarn} -eq 1 ] ; then
 		syslog_netcat "....stopping namenode, yarn, and jobhistory daemons...."
-		${HADOOP_HOME}/sbin/hadoop-daemon.sh stop namenode
-		${HADOOP_HOME}/sbin/yarn-daemon.sh stop resourcemanager
-		${HADOOP_HOME}/sbin/mr-jobhistory-daemon.sh stop historyserver
+		${HADOOP_BIN_DIR}/hadoop-daemon.sh stop namenode
+		${HADOOP_BIN_DIR}/yarn-daemon.sh stop resourcemanager
+		${HADOOP_BIN_DIR}/mr-jobhistory-daemon.sh stop historyserver
 	else
 		syslog_netcat "....stopping hadoop service...."
-		${HADOOP_HOME}/bin/stop-mapred.sh
-		${HADOOP_HOME}/bin/stop-dfs.sh
+		${HADOOP_BIN_DIR}/stop-mapred.sh
+		${HADOOP_BIN_DIR}/stop-dfs.sh
 	fi
 else
 	if [ ${hadoop_use_yarn} -eq 1 ] ; then
-		${HADOOP_HOME}/sbin/hadoop-daemon.sh stop datanode
-		${HADOOP_HOME}/sbin/yarn-daemon.sh stop nodemanager
+		${HADOOP_BIN_DIR}/hadoop-daemon.sh stop datanode
+		${HADOOP_BIN_DIR}/yarn-daemon.sh stop nodemanager
 	fi
 fi
 

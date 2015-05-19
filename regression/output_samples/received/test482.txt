@@ -62,7 +62,7 @@ The VM object vm_1, attached to this experiment, has the following attributes (C
 |mgt_003_provisioning_request_completed  |1                                    
 |mgt_004_network_acessible               |1                                    
 |mgt_005_file_transfer                   |0                                    
-|mgt_006_application_start               |0                                    
+|mgt_007_application_start               |0                                    
 |migrate_protocol                        |tcp                                  
 |migrate_protocol_supported              |tcp,rdma,x-rdma                      
 |migrate_supported                       |True                                 

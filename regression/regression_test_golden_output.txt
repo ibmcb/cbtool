@@ -1609,13 +1609,13 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |mon_defaults                     |collector_vm_port              |8650                                 
 |mon_defaults                     |collector_vm_summarizer_port   |8652                                 
 |mon_defaults                     |cpu_m                          |cpu_speed,cores,cpu_num,proc_total,proc_run,cpu_idle,cpu_aidle,cpu_user,cpu_system,cpu_wio,cpu_nice
-|mon_defaults                     |crt_m                          |mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_application_start
+|mon_defaults                     |crt_m                          |mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_007_application_start
 |mon_defaults                     |dsk_m                          |disk_total,disk_free,ds_in_flight,ds_KB_read,ds_ios_read,ds_KB_write,ds_ios_write
 |mon_defaults                     |dst_m                          |mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed
 |mon_defaults                     |filler_string                  |NA                                   
 |mon_defaults                     |flr_m                          |mgt_999_provisioning_request_failed  
 |mon_defaults                     |host_attributes                |uuid,name,cloud_ip,cloud_name,model,cloud_hostname,nr_vms
-|mon_defaults                     |host_management_metrics_header |uuid,name,cloud_ip,model,vmc_name,vmc_cloud_ip,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_application_start,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed
+|mon_defaults                     |host_management_metrics_header |uuid,name,cloud_ip,model,vmc_name,vmc_cloud_ip,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_007_application_start,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed
 |mon_defaults                     |host_runtime_os_metrics_header |time,time_h,uuid,name,cpu_speed,cores,cpu_num,proc_total,proc_run,cpu_idle,cpu_aidle,cpu_user,cpu_system,cpu_wio,cpu_nice,mem_total,mem_free,mem_cached,mem_buffers,mem_shared,swap_total,swap_free,swap_procs_running,swap_in_flight,swap_procs_blocked,swap_KB_read,swap_ios_read,swap_KB_write,swap_ios_write,pkts_in,bytes_in,pkts_out,bytes_out,disk_total,disk_free,ds_in_flight,ds_KB_read,ds_ios_read,ds_KB_write,ds_ios_write
 |mon_defaults                     |hostname                       |172.16.1.250                         
 |mon_defaults                     |hs_id1                         |uuid,name,cloud_ip,model,vmc_name,vmc_cloud_ip
@@ -1623,7 +1623,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |mon_defaults                     |mem_m                          |mem_total,mem_free,mem_cached,mem_buffers,mem_shared
 |mon_defaults                     |net_m                          |pkts_in,bytes_in,pkts_out,bytes_out  
 |mon_defaults                     |protocol                       |TCP                                  
-|mon_defaults                     |reported_management_vm_metric_names|uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_application_start,mgt_101_capture_request_originated,mgt_102_capture_request_sent,mgt_103_capture_request_completed,mgt_201_runstate_request_originated,mgt_202_runstate_request_sent,mgt_203_runstate_request_completed,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed,mgt_999_provisioning_request_failed
+|mon_defaults                     |reported_management_vm_metric_names|uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_007_application_start,mgt_101_capture_request_originated,mgt_102_capture_request_sent,mgt_103_capture_request_completed,mgt_201_runstate_request_originated,mgt_202_runstate_request_sent,mgt_203_runstate_request_completed,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed,mgt_999_provisioning_request_failed
 |mon_defaults                     |reported_runtime_app_vm_metric_names|app_load_id,app_load_level,app_throughput,app_latency,app_datagen_time,app_datagen_size
 |mon_defaults                     |reported_runtime_os_host_metric_names|cpu_speed,cores,cpu_num,proc_total,proc_run,cpu_idle,cpu_aidle,cpu_user,cpu_system,cpu_wio,cpu_nice,mem_total,mem_free,mem_cached,mem_buffers,mem_shared,swap_total,swap_free,swap_procs_running,swap_in_flight,swap_procs_blocked,swap_KB_read,swap_ios_read,swap_KB_write,swap_ios_write,pkts_in,bytes_in,pkts_out,bytes_out,disk_total,disk_free,ds_in_flight,ds_KB_read,ds_ios_read,ds_KB_write,ds_ios_write
 |mon_defaults                     |reported_runtime_os_vm_metric_names|cpu_speed,cores,cpu_num,proc_total,proc_run,cpu_idle,cpu_aidle,cpu_user,cpu_system,cpu_wio,cpu_nice,mem_total,mem_free,mem_cached,mem_buffers,mem_shared,swap_total,swap_free,swap_procs_running,swap_in_flight,swap_procs_blocked,swap_KB_read,swap_ios_read,swap_KB_write,swap_ios_write,pkts_in,bytes_in,pkts_out,bytes_out,disk_total,disk_free,ds_in_flight,ds_KB_read,ds_ios_read,ds_KB_write,ds_ios_write
@@ -1638,7 +1638,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |mon_defaults                     |vm_attributes                  |uuid,name,cloud_ip,last_known_state,cloud_name,model,cloud_hostname,vmc_name,vmc_cloud_ip,host_name,host_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern
 |mon_defaults                     |vm_id1                         |uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern
 |mon_defaults                     |vm_id2                         |uuid,name,role,ai_name,type          
-|mon_defaults                     |vm_management_metrics_header   |uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_application_start,mgt_101_capture_request_originated,mgt_102_capture_request_sent,mgt_103_capture_request_completed,mgt_201_runstate_request_originated,mgt_202_runstate_request_sent,mgt_203_runstate_request_completed,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed,mgt_999_provisioning_request_failed
+|mon_defaults                     |vm_management_metrics_header   |uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_007_application_start,mgt_101_capture_request_originated,mgt_102_capture_request_sent,mgt_103_capture_request_completed,mgt_201_runstate_request_originated,mgt_202_runstate_request_sent,mgt_203_runstate_request_completed,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed,mgt_999_provisioning_request_failed
 |mon_defaults                     |vm_runtime_app_metrics_header  |time,time_h,uuid,name,role,ai_name,type,app_load_profile,app_load_id,app_load_level,app_throughput,app_latency,app_bandwidth
 |mon_defaults                     |vm_runtime_os_metrics_header   |time,time_h,uuid,name,role,ai_name,type,cpu_speed,cores,cpu_num,proc_total,proc_run,cpu_idle,cpu_aidle,cpu_user,cpu_system,cpu_wio,cpu_nice,mem_total,mem_free,mem_cached,mem_buffers,mem_shared,swap_total,swap_free,swap_procs_running,swap_in_flight,swap_procs_blocked,swap_KB_read,swap_ios_read,swap_KB_write,swap_ios_write,pkts_in,bytes_in,pkts_out,bytes_out,disk_total,disk_free,ds_in_flight,ds_KB_read,ds_ios_read,ds_KB_write,ds_ios_write
 |query                            |ai                             |BYUSERNAME,BYTYPE,BYAIDRS            
@@ -3477,7 +3477,7 @@ The VM object vm_1, attached to this experiment, has the following attributes (C
 |mgt_003_provisioning_request_completed  |1                                    
 |mgt_004_network_acessible               |1                                    
 |mgt_005_file_transfer                   |0                                    
-|mgt_006_application_start               |0                                    
+|mgt_007_application_start               |0                                    
 |migrate_protocol                        |tcp                                  
 |migrate_protocol_supported              |tcp,rdma,x-rdma                      
 |migrate_supported                       |True                                 
@@ -17442,12 +17442,12 @@ stdout:
 #mgt_003_provisioning_request_completed:9
 #mgt_004_network_acessible:10
 #mgt_005_file_transfer:11
-#mgt_006_application_start:12
+#mgt_007_application_start:12
 #mgt_901_deprovisioning_request_originated:13
 #mgt_902_deprovisioning_request_sent:14
 #mgt_903_deprovisioning_request_completed:15
 
-uuid,name,cloud_ip,model,vmc_name,vmc_cloud_ip,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_application_start,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed
+uuid,name,cloud_ip,model,vmc_name,vmc_cloud_ip,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_007_application_start,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed
 
 
 
@@ -17637,7 +17637,7 @@ stdout:
 #mgt_003_provisioning_request_completed:23
 #mgt_004_network_acessible:24
 #mgt_005_file_transfer:25
-#mgt_006_application_start:26
+#mgt_007_application_start:26
 #mgt_101_capture_request_originated:27
 #mgt_102_capture_request_sent:28
 #mgt_103_capture_request_completed:29
@@ -17649,7 +17649,7 @@ stdout:
 #mgt_903_deprovisioning_request_completed:35
 #mgt_999_provisioning_request_failed:36
 
-uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_application_start,mgt_101_capture_request_originated,mgt_102_capture_request_sent,mgt_103_capture_request_completed,mgt_201_runstate_request_originated,mgt_202_runstate_request_sent,mgt_203_runstate_request_completed,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed,mgt_999_provisioning_request_failed
+uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_007_application_start,mgt_101_capture_request_originated,mgt_102_capture_request_sent,mgt_103_capture_request_completed,mgt_201_runstate_request_originated,mgt_202_runstate_request_sent,mgt_203_runstate_request_completed,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed,mgt_999_provisioning_request_failed
 F9F3E0E1-ABF2-5A5F-A5B1-1EF893ECE02B,vm_2,running with ip assigned,88.92.70.13,TESTCLOUD,sim,ED67A2BA-1E64-5BB1-B0EC-B88D9789AC41.simcloud.com,simhostb3,79.199.178.116,simzone_d,32.7.40.113,tinyvm,pico32,cb_nullworkload,none,none,none,none,none,none,59,0,1,1,0,0,69,0,1,NA,NA,NA,70,0,0,NA
 5D4F4D2F-3B0E-5650-9F60-03D3D47AC723,vm_24,NA,undefined,TESTCLOUD,sim,undefined,NA,NA,simzone_b,186.227.44.89,willfail,nano32,doesnotmatter,none,none,none,none,none,none,214,0,0,NA,0,0,NA,NA,NA,NA,NA,NA,214,0,NA,0
 9F550248-A2E3-5568-B7A3-C5B8711C434F,vm_4,running with ip assigned,194.134.169.92,TESTCLOUD,sim,22D0C26A-4A6F-5BC0-B7B6-67BE44DDB1D2.simcloud.com,simhosta1,221.146.69.246,simzone_b,186.227.44.89,db2,copper32,cb_daytrader,none,none,none,none,none,none,64,0,1,1,0,0,NA,NA,NA,NA,NA,NA,199,0,0,NA
@@ -19112,13 +19112,13 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |mon_defaults                     |collector_vm_port              |8650                                 
 |mon_defaults                     |collector_vm_summarizer_port   |8652                                 
 |mon_defaults                     |cpu_m                          |cpu_speed,cores,cpu_num,proc_total,proc_run,cpu_idle,cpu_aidle,cpu_user,cpu_system,cpu_wio,cpu_nice
-|mon_defaults                     |crt_m                          |mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_application_start
+|mon_defaults                     |crt_m                          |mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_007_application_start
 |mon_defaults                     |dsk_m                          |disk_total,disk_free,ds_in_flight,ds_KB_read,ds_ios_read,ds_KB_write,ds_ios_write
 |mon_defaults                     |dst_m                          |mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed
 |mon_defaults                     |filler_string                  |NA                                   
 |mon_defaults                     |flr_m                          |mgt_999_provisioning_request_failed  
 |mon_defaults                     |host_attributes                |uuid,name,cloud_ip,cloud_name,model,cloud_hostname,nr_vms
-|mon_defaults                     |host_management_metrics_header |uuid,name,cloud_ip,model,vmc_name,vmc_cloud_ip,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_application_start,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed
+|mon_defaults                     |host_management_metrics_header |uuid,name,cloud_ip,model,vmc_name,vmc_cloud_ip,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_007_application_start,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed
 |mon_defaults                     |host_runtime_os_metrics_header |time,time_h,uuid,name,cpu_speed,cores,cpu_num,proc_total,proc_run,cpu_idle,cpu_aidle,cpu_user,cpu_system,cpu_wio,cpu_nice,mem_total,mem_free,mem_cached,mem_buffers,mem_shared,swap_total,swap_free,swap_procs_running,swap_in_flight,swap_procs_blocked,swap_KB_read,swap_ios_read,swap_KB_write,swap_ios_write,pkts_in,bytes_in,pkts_out,bytes_out,disk_total,disk_free,ds_in_flight,ds_KB_read,ds_ios_read,ds_KB_write,ds_ios_write
 |mon_defaults                     |hostname                       |172.16.1.250                         
 |mon_defaults                     |hs_id1                         |uuid,name,cloud_ip,model,vmc_name,vmc_cloud_ip
@@ -19126,7 +19126,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |mon_defaults                     |mem_m                          |mem_total,mem_free,mem_cached,mem_buffers,mem_shared
 |mon_defaults                     |net_m                          |pkts_in,bytes_in,pkts_out,bytes_out  
 |mon_defaults                     |protocol                       |TCP                                  
-|mon_defaults                     |reported_management_vm_metric_names|uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_application_start,mgt_101_capture_request_originated,mgt_102_capture_request_sent,mgt_103_capture_request_completed,mgt_201_runstate_request_originated,mgt_202_runstate_request_sent,mgt_203_runstate_request_completed,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed,mgt_999_provisioning_request_failed
+|mon_defaults                     |reported_management_vm_metric_names|uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_007_application_start,mgt_101_capture_request_originated,mgt_102_capture_request_sent,mgt_103_capture_request_completed,mgt_201_runstate_request_originated,mgt_202_runstate_request_sent,mgt_203_runstate_request_completed,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed,mgt_999_provisioning_request_failed
 |mon_defaults                     |reported_runtime_app_vm_metric_names|app_load_id,app_load_level,app_throughput,app_latency,app_datagen_time,app_datagen_size
 |mon_defaults                     |reported_runtime_os_host_metric_names|cpu_speed,cores,cpu_num,proc_total,proc_run,cpu_idle,cpu_aidle,cpu_user,cpu_system,cpu_wio,cpu_nice,mem_total,mem_free,mem_cached,mem_buffers,mem_shared,swap_total,swap_free,swap_procs_running,swap_in_flight,swap_procs_blocked,swap_KB_read,swap_ios_read,swap_KB_write,swap_ios_write,pkts_in,bytes_in,pkts_out,bytes_out,disk_total,disk_free,ds_in_flight,ds_KB_read,ds_ios_read,ds_KB_write,ds_ios_write
 |mon_defaults                     |reported_runtime_os_vm_metric_names|cpu_speed,cores,cpu_num,proc_total,proc_run,cpu_idle,cpu_aidle,cpu_user,cpu_system,cpu_wio,cpu_nice,mem_total,mem_free,mem_cached,mem_buffers,mem_shared,swap_total,swap_free,swap_procs_running,swap_in_flight,swap_procs_blocked,swap_KB_read,swap_ios_read,swap_KB_write,swap_ios_write,pkts_in,bytes_in,pkts_out,bytes_out,disk_total,disk_free,ds_in_flight,ds_KB_read,ds_ios_read,ds_KB_write,ds_ios_write
@@ -19141,7 +19141,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |mon_defaults                     |vm_attributes                  |uuid,name,cloud_ip,last_known_state,cloud_name,model,cloud_hostname,vmc_name,vmc_cloud_ip,host_name,host_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern
 |mon_defaults                     |vm_id1                         |uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern
 |mon_defaults                     |vm_id2                         |uuid,name,role,ai_name,type          
-|mon_defaults                     |vm_management_metrics_header   |uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_application_start,mgt_101_capture_request_originated,mgt_102_capture_request_sent,mgt_103_capture_request_completed,mgt_201_runstate_request_originated,mgt_202_runstate_request_sent,mgt_203_runstate_request_completed,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed,mgt_999_provisioning_request_failed
+|mon_defaults                     |vm_management_metrics_header   |uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_007_application_start,mgt_101_capture_request_originated,mgt_102_capture_request_sent,mgt_103_capture_request_completed,mgt_201_runstate_request_originated,mgt_202_runstate_request_sent,mgt_203_runstate_request_completed,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed,mgt_999_provisioning_request_failed
 |mon_defaults                     |vm_runtime_app_metrics_header  |time,time_h,uuid,name,role,ai_name,type,app_load_profile,app_load_id,app_load_level,app_throughput,app_latency,app_bandwidth
 |mon_defaults                     |vm_runtime_os_metrics_header   |time,time_h,uuid,name,role,ai_name,type,cpu_speed,cores,cpu_num,proc_total,proc_run,cpu_idle,cpu_aidle,cpu_user,cpu_system,cpu_wio,cpu_nice,mem_total,mem_free,mem_cached,mem_buffers,mem_shared,swap_total,swap_free,swap_procs_running,swap_in_flight,swap_procs_blocked,swap_KB_read,swap_ios_read,swap_KB_write,swap_ios_write,pkts_in,bytes_in,pkts_out,bytes_out,disk_total,disk_free,ds_in_flight,ds_KB_read,ds_ios_read,ds_KB_write,ds_ios_write
 |query                            |ai                             |BYUSERNAME,BYTYPE,BYAIDRS            
@@ -20980,7 +20980,7 @@ The VM object vm_1, attached to this experiment, has the following attributes (C
 |mgt_003_provisioning_request_completed  |1                                    
 |mgt_004_network_acessible               |1                                    
 |mgt_005_file_transfer                   |0                                    
-|mgt_006_application_start               |0                                    
+|mgt_007_application_start               |0                                    
 |migrate_protocol                        |tcp                                  
 |migrate_protocol_supported              |tcp,rdma,x-rdma                      
 |migrate_supported                       |True                                 
@@ -34980,12 +34980,12 @@ stdout:
 #mgt_003_provisioning_request_completed:9
 #mgt_004_network_acessible:10
 #mgt_005_file_transfer:11
-#mgt_006_application_start:12
+#mgt_007_application_start:12
 #mgt_901_deprovisioning_request_originated:13
 #mgt_902_deprovisioning_request_sent:14
 #mgt_903_deprovisioning_request_completed:15
 
-uuid,name,cloud_ip,model,vmc_name,vmc_cloud_ip,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_application_start,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed
+uuid,name,cloud_ip,model,vmc_name,vmc_cloud_ip,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_007_application_start,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed
 
 
 
@@ -35257,7 +35257,7 @@ stdout:
 #mgt_003_provisioning_request_completed:23
 #mgt_004_network_acessible:24
 #mgt_005_file_transfer:25
-#mgt_006_application_start:26
+#mgt_007_application_start:26
 #mgt_101_capture_request_originated:27
 #mgt_102_capture_request_sent:28
 #mgt_103_capture_request_completed:29
@@ -35269,7 +35269,7 @@ stdout:
 #mgt_903_deprovisioning_request_completed:35
 #mgt_999_provisioning_request_failed:36
 
-uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_application_start,mgt_101_capture_request_originated,mgt_102_capture_request_sent,mgt_103_capture_request_completed,mgt_201_runstate_request_originated,mgt_202_runstate_request_sent,mgt_203_runstate_request_completed,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed,mgt_999_provisioning_request_failed
+uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_007_application_start,mgt_101_capture_request_originated,mgt_102_capture_request_sent,mgt_103_capture_request_completed,mgt_201_runstate_request_originated,mgt_202_runstate_request_sent,mgt_203_runstate_request_completed,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed,mgt_999_provisioning_request_failed
 F9F3E0E1-ABF2-5A5F-A5B1-1EF893ECE02B,vm_2,running with ip assigned,88.92.70.13,TESTCLOUD,sim,ED67A2BA-1E64-5BB1-B0EC-B88D9789AC41.simcloud.com,simhostb3,79.199.178.116,simzone_d,32.7.40.113,tinyvm,pico32,cb_nullworkload,none,none,none,none,none,none,59,0,1,1,0,0,69,0,1,NA,NA,NA,70,0,0,NA
 5D4F4D2F-3B0E-5650-9F60-03D3D47AC723,vm_24,NA,undefined,TESTCLOUD,sim,undefined,NA,NA,simzone_b,186.227.44.89,willfail,nano32,doesnotmatter,none,none,none,none,none,none,214,0,0,NA,0,0,NA,NA,NA,NA,NA,NA,214,0,NA,0
 9F550248-A2E3-5568-B7A3-C5B8711C434F,vm_4,running with ip assigned,194.134.169.92,TESTCLOUD,sim,22D0C26A-4A6F-5BC0-B7B6-67BE44DDB1D2.simcloud.com,simhosta1,221.146.69.246,simzone_b,186.227.44.89,db2,copper32,cb_daytrader,none,none,none,none,none,none,64,0,1,1,0,0,NA,NA,NA,NA,NA,NA,199,0,0,NA

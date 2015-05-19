@@ -148,11 +148,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _cld_ops_class = getattr(_cld_ops, \
                                          cld_attr_lst["model"].capitalize() + "Cmds")
 
-                if "prov_netname" not in cld_attr_lst["vm_defaults"] :
-                    cld_attr_lst["vm_defaults"]["prov_netname"] = cld_attr_lst["vm_defaults"]["netname"]
-                if "run_netname" not in cld_attr_lst["vm_defaults"] :
-                    cld_attr_lst["vm_defaults"]["run_netname"] = cld_attr_lst["vm_defaults"]["netname"]
-
                 if "ssh_key_name" in cld_attr_lst["space"] :
                     ssh_filename = cld_attr_lst["space"]["credentials_dir"] + '/' + cld_attr_lst["space"]["ssh_key_name"]
                 else :
@@ -221,6 +216,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                   cld_attr_lst["vmc_defaults"]["security_groups"], \
                                                   cld_attr_lst["vm_templates"],
                                                   cld_attr_lst["vm_defaults"])
+
+                # This needs to be better coded later. Right now, it is just a fix to avoid
+                # the problems caused by the fact that git keeps resetting RSA's private key
+                # back to 644 (which are too open).
+                chmod(cld_attr_lst["space"]["ssh_key_name"], 0600)
                 
                 if str(cld_attr_lst["vm_defaults"]["create_jumphost"]).lower() != "false" :
 
@@ -321,11 +321,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 os_func(cld_attr_lst, "initialize", cloud_name = cld_attr_lst["name"])
                 ms_func(cld_attr_lst, "initialize")
-    
-                # This needs to be better coded later. Right now, it is just a fix to avoid
-                # the problems caused by the fact that git keeps resetting RSA's private key
-                # back to 644 (which are too open).
-                chmod(cld_attr_lst["space"]["ssh_key_name"], 0600)
 
                 _status = 0
 
@@ -715,6 +710,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
    
                                 _msg = "Repairing a fault on host " + obj_attr_list["name"]
                                 _msg += " by executing the command \"" + _cmd + "\""
+                                _msg += " as user " + _host_attr_list["login"]
                                 cbdebug(_msg, True)
     
                                 _host_repaired = True
@@ -1163,6 +1159,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
             obj_attr_list["migrate_supported"] = _vmc_attr_list["migrate_supported"]
             obj_attr_list["protect_supported"] = _vmc_attr_list["protect_supported"]
             obj_attr_list["vmc_access"] = _vmc_attr_list["access"]
+
+            if "prov_netname" not in obj_attr_list :
+                obj_attr_list["prov_netname"] = obj_attr_list["netname"]
+
+            if "run_netname" not in obj_attr_list :
+                obj_attr_list["run_netname"] = obj_attr_list["netname"]
 
             obj_attr_list["utc_offset_on_orchestrator"] = timezone * -1 if (localtime().tm_isdst == 0) else altzone * -1
 
@@ -1948,17 +1950,15 @@ class ActiveObjectOperations(BaseObjectOperations) :
             if "hosts" in obj_attr_list and len(obj_attr_list["hosts"]) :
 
                 for _host_uuid in obj_attr_list["hosts"].split(',') :
-
+        
                     self.osci.create_object(obj_attr_list["cloud_name"], "HOST", _host_uuid, \
                                             obj_attr_list["host_list"][_host_uuid], False, True)
-
-                    self.record_management_metrics(obj_attr_list["cloud_name"], \
-                                                   "HOST", obj_attr_list["host_list"][_host_uuid], "attach")
 
                 if not "attach_parallel" in obj_attr_list :
                     self.update_host_os_perfmon(obj_attr_list)
                 elif obj_attr_list["attach_parallel"].lower() != "true" :
-                    self.update_host_os_perfmon(obj_attr_list)
+                    self.update_host_os_perfmon(obj_attr_list)        
+                
             else :
                 _msg = "The host list for VMC \"" + obj_attr_list["name"] + "\" is empty"
                 if obj_attr_list["discover_hosts"].lower() == "false" :
@@ -2144,6 +2144,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 self.record_management_metrics(obj_attr_list["cloud_name"], \
                                                "VM", obj_attr_list, "attach")
             else :
+                                
                 _status = 0
 
             '''

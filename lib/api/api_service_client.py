@@ -34,6 +34,7 @@
 from sys import path
 from xmlrpclib import Server
 import xmlrpclib
+import pwd
 import sys
 import re
 import os
@@ -149,7 +150,7 @@ class APIClient(Server):
     def dashboard_conn_check(self, cloud_name, msattrs = None, username = None, experiment_id = None):
         '''
         TBD
-        '''        
+        '''
         if not self.msattrs :
             """
             Open a connection to the metric store
@@ -160,7 +161,7 @@ class APIClient(Server):
             self.experiment_id = self.cldshow(cloud_name, "time")["experiment_id"] if experiment_id is None else experiment_id
 
     def __init__ (self, service_url, print_message = False):
-        
+                        
         '''
          This rewrites the xmlrpc function bindings to use a
          decorator so that we can check the return status of API
@@ -268,7 +269,7 @@ class APIClient(Server):
             print "API not available: " + str(obj)
             return False
 
-    def get_performance_data(self, cloud_name, uuid, metric_class = "runtime", object_type = "VM", metric_type = "os", latest = False, expid = "auto") :
+    def get_performance_data(self, cloud_name, uuid, metric_class = "runtime", object_type = "VM", metric_type = "os", latest = False, samples = 0, expid = "auto") :
         '''
         TBD
         '''
@@ -283,15 +284,19 @@ class APIClient(Server):
             _object_type = metric_class + '_' + object_type
 
         if latest :
-            _allmatches = True            
+            _allmatches = True
             _collection_name = "latest_" + _object_type + "_" + self.username
-            
+            _limitdocuments = 0
         else :
-            _allmatches = True            
-            _collection_name = _object_type + "_" + self.username
-            
-        _limitdocuments = 0
+            if samples != 0 :
+                _allmatches = False
+                _limitdocuments = samples
+            else :
+                _allmatches = True
+                _limitdocuments = 0
 
+            _collection_name = _object_type + "_" + self.username
+ 
         _criteria = {}
         
         if expid != "auto" :
@@ -306,14 +311,17 @@ class APIClient(Server):
                                           allmatches = _allmatches)
 
         if uuid :
-            _samples = metrics.count() 
-            
-            if _samples == 0 :                
-                metrics = None
-                            
-            if _samples == 1 :                
-                metrics = metrics[0]
-                                
+            if samples > 1 :
+                if metrics :
+                    if "count" in dir(metrics) :
+                        _samples = metrics.count() 
+                    
+                        if _samples == 0 :                
+                            metrics = None
+
+                        if _samples == 1 :                
+                            metrics = metrics[0]
+                    
         if metrics is None :
             _msg = "No " + metric_class + ' ' + _object_type + '(' + str(metric_type) + ") data available."
 #            raise APINoSuchMetricException(1, _msg")

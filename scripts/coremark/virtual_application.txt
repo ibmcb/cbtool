@@ -16,7 +16,7 @@ CAPTURE_ROLE = coremark
 LOAD_PROFILE = default
 LOAD_LEVEL = uniformIXIXI1I7
 LOAD_DURATION = uniformIXIXI40I60
-REPORTED_METRICS = throughput,latency,completion_time
+REPORTED_METRICS = throughput,latency,completion_time,quiescent_time
 
 # VApp-specific MANDATORY attributes
 DESCRIPTION = Deploys a single VM running the coremark benchmark.\n

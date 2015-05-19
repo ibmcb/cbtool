@@ -1047,6 +1047,28 @@ class CBCLI(Cmd) :
         print(message_beautifier(_msg))
 
     @trace
+    def do_appnoload(self, parameters) :
+        '''
+        TBD
+        '''
+        _status, _msg, _object = self.passive_operations.alter_object(self.cld_attr_lst, \
+                                                                      "ai_defaults dont_start_load_manager=true", \
+                                                                      "cloud-alter")
+
+        print(message_beautifier(_msg))
+
+    @trace
+    def do_appload(self, parameters) :
+        '''
+        TBD
+        '''
+        _status, _msg, _object = self.passive_operations.alter_object(self.cld_attr_lst, \
+                                                                      "ai_defaults dont_start_load_manager=false", \
+                                                                      "cloud-alter")
+
+        print(message_beautifier(_msg))
+
+    @trace
     def do_echo(self, line):
         '''
         TBD

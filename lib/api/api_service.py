@@ -406,6 +406,12 @@ class API():
 
     def appundev(self, cloud_name, gobject, attribute, value):        
         return self.passive.alter_object({"name": cloud_name}, cloud_name + " ai_defaults run_application_scripts=true", "cloud-alter")[2]
+
+    def appnoload(self, cloud_name) :
+        return self.passive.alter_object({"name": cloud_name}, cloud_name + " ai_defaults dont_start_load_manager=true", "cloud-alter")[2]
+
+    def appload(self, cloud_name, gobject, attribute, value):        
+        return self.passive.alter_object({"name": cloud_name}, cloud_name + " ai_defaults dont_start_load_manager=false", "cloud-alter")[2]
     
     def appalter(self, cloud_name, identifier, attribute, value):
         return self.passive.alter_object({}, cloud_name + ' ' + identifier + ' ' + attribute + "=" + str(value), "ai-alter")[2]
@@ -553,6 +559,9 @@ class API():
             return self.passive.monitoring_extractall(cloud_name + ' ' + object_type + ' ' + metric_type + ' ' + expid, "mon-extract")[2]
         else :
             return self.passive.monitoring_extract(cloud_name + ' ' + object_type + ' ' + metric_type + ' ' + expid, "mon-extract")[2]
+
+    def monpurge(self, cloud_name, expid):
+        return self.passive.monitoring_purge(cloud_name + ' ' + expid, "mon-purge")[2]
     
     def waitfor(self, cloud_name, time, update_interval = "default") :
         return self.passive.wait_for({}, cloud_name + ' ' + str(time) + ' ' + str(update_interval), "wait-for")[2]

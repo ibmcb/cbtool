@@ -200,6 +200,7 @@ def check_stopping_conditions(cloud_name, \
     _total_run_errors = 0
     
     # Get data for ALL AIs currently running with a single API call.
+    
     for _ai_metrics in api.get_performance_data(cloud_name, None, metric_class = "runtime", object_type = "VM", metric_type = "app", latest = True) :
         if "app_load_id" in _ai_metrics :
             if "val" in _ai_metrics["app_load_id"] :
@@ -208,8 +209,11 @@ def check_stopping_conditions(cloud_name, \
         if "app_errors" in _ai_metrics :
             if "acc" in _ai_metrics["app_errors"] :
                 _total_run_errors += int(_ai_metrics["app_errors"]["acc"])
-    
-    _cumulative_run_errors_pct = float(_total_run_errors) / float(_total_runs)
+
+    if float(_total_runs):    
+        _cumulative_run_errors_pct = float(_total_run_errors) / float(_total_runs)
+    else :
+        _cumulative_run_errors_pct = 0        
 
     if _cumulative_run_errors_pct >= cumulative_run_errors_pct :
         print " YES ",
@@ -348,7 +352,7 @@ try :
         
         _counters = subscribe(cloud_name)
 
-        _min_ais = 5
+        _min_ais = 3
 
     # ------------------ START SIMULATED CLOUD ONLY ----------------------------
     # We want the cloud to misbehave after a certain number of AIs are present.

@@ -139,7 +139,7 @@ if ((object_type == "VM") && (selected_obj_index == "")) {
 	timeline_data <- melt(subset(trace_metrics, select = c("vm_arrived", "vm_departed", "relative_time")), id.vars="relative_time")
 
 	# Provisioning latency for all VMs
-	prov_lat_data <- melt(subset(mgt_metrics, select = c("vm_name", "mgt_002_provisioning_request_sent", "mgt_003_provisioning_request_completed", "mgt_004_network_acessible", "mgt_005_file_transfer", "mgt_006_application_start")), id.vars="vm_name")
+	prov_lat_data <- melt(subset(mgt_metrics, select = c("vm_name", "mgt_002_provisioning_request_sent", "mgt_003_provisioning_request_completed", "mgt_004_network_acessible", "mgt_005_file_transfer", "mgt_007_application_start")), id.vars="vm_name")
 
 	# Latency for all VMs
 	vm_lat_data <- melt(subset(rapp_metrics, select = c("relative_time", "vm_name", "app_latency")), id=c("relative_time", "vm_name"))
@@ -156,7 +156,7 @@ if ((object_type == "VM") && (selected_obj_index == "")) {
 	timeline_data <- melt(subset(trace_metrics, select = c("vm_arrived", "vm_departed", "relative_time")), id.vars="relative_time")
 	
 	# Provisioning latency for all VMs
-	prov_lat_data <- melt(subset(mgt_metrics, name == selected_obj_name, select = c("vm_name", "mgt_002_provisioning_request_sent", "mgt_003_provisioning_request_completed", "mgt_004_network_acessible", "mgt_005_file_transfer", "mgt_006_application_start")), id.vars="vm_name")
+	prov_lat_data <- melt(subset(mgt_metrics, name == selected_obj_name, select = c("vm_name", "mgt_002_provisioning_request_sent", "mgt_003_provisioning_request_completed", "mgt_004_network_acessible", "mgt_005_file_transfer", "mgt_007_application_start")), id.vars="vm_name")
 	
 	# Latency for all VMs
 	vm_lat_data <- melt(subset(rapp_metrics, name == selected_obj_name, select = c("relative_time", "vm_name", "app_latency")), id=c("relative_time", "vm_name"))

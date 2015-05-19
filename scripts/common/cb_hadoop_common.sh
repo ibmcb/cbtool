@@ -196,6 +196,13 @@ then
     fi
 fi
 
+if [[ -d ${HADOOP_HOME}/sbin ]]
+then
+    HADOOP_BIN_DIR=${HADOOP_HOME}/sbin
+else
+    HADOOP_BIN_DIR=${HADOOP_HOME}/bin
+fi
+
 export HIBENCH_HOME=${HIBENCH_HOME}
 
 export HADOOP_EXAMPLES_JAR=${HADOOP_HOME}/$(get_my_ai_attribute_with_default hadoop_examples share/hadoop/mapreduce/hadoop-mapreduce-examples-2.6.0.jar)
@@ -591,12 +598,12 @@ function copy_hadoop_config_files_to_etc {
         then
             sudo cp $HADOOP_CONF_DIR/masters /etc/hadoop
         fi
-        sudo cp $HADOOP_CONF_DIR/mapred-site.xml /etc/hadop
+        sudo cp $HADOOP_CONF_DIR/mapred-site.xml /etc/hadoop
         sudo cp $HADOOP_CONF_DIR/hdfs-site.xml /etc/hadoop
         
         if [ ${hadoop_use_yarn} -eq 1 ]
         then
-            sudo cp $HADOOP_CONF_DIR/yarn-site.xml /etc/hadop
+            sudo cp $HADOOP_CONF_DIR/yarn-site.xml /etc/hadoop
         fi
     fi
 }
@@ -607,11 +614,11 @@ function get_available_nodes {
     # Apache format: Live datanodes (4):
     #                Dead datanodes (1):
     AVAILABLE_NODES=0
-    DFSADMINOUTPUT=`${HADOOP_HOME}/bin/hadoop dfsadmin -report 2>&1 | grep "Datanodes available"`
+    DFSADMINOUTPUT=`$HADOOP_HOME/bin/hadoop dfsadmin -report 2>&1 | grep "Datanodes available"`
     if [ -z "$DFSADMINOUTPUT" ]
     then
          # Format: Live datanodes (4):
-         AVAILABLE_NODES=`${HADOOP_HOME}/bin/hadoop dfsadmin -report 2>&1 | grep "Live datanodes" | awk -F"[()]" '{print $2}'`
+         AVAILABLE_NODES=`$HADOOP_HOME/bin/hadoop dfsadmin -report 2>&1 | grep "Live datanodes" | awk -F"[()]" '{print $2}'`
     else
          AVAILABLE_NODES=`echo ${DFSADMINOUTPUT} | cut -d ":" -f 2 | cut -d " " -f 2`
     fi
@@ -627,13 +634,13 @@ function check_hadoop_cluster_state {
     ATTEMPTS=$1
     INTERVAL=$2
 
-	if [[ $ATTEMPTS -eq 1 && $INTERVAL -eq 1 ]]
-	then
-		QUICK_CHECK=1
-	else
-		QUICK_CHECK=0
-	fi
-	
+    if [[ $ATTEMPTS -eq 1 && $INTERVAL -eq 1 ]]
+    then
+        QUICK_CHECK=1
+    else
+        QUICK_CHECK=0
+    fi
+    
     if [[ x"$my_role" == x"hadoopmaster" || x"$my_role" == x"giraphmaster" ]] 
     then
         syslog_netcat "Waiting for all Datanodes to become available..."
@@ -647,12 +654,12 @@ function check_hadoop_cluster_state {
             # CDH format: Datanodes available: 4 (5 total, 1 dead)
             # Apache format: Live datanodes (4):
             #                Dead datanodes (1):
-            DFSADMINOUTPUT=`${HADOOP_HOME}/bin/hadoop dfsadmin -report | grep "Datanodes available"`
+            DFSADMINOUTPUT=`$HADOOP_HOME/bin/hadoop dfsadmin -report | grep "Datanodes available"`
             if [ -z "$DFSADMINOUTPUT" ]
             then
                  # Format: Live datanodes (4):
-                 AVAILABLE_NODES=`${HADOOP_HOME}/bin/hadoop dfsadmin -report | grep "Live datanodes" | awk -F"[()]" '{print $2}'`
-                 DEAD_NODES=`${HADOOP_HOME}/bin/hadoop dfsadmin -report | grep "Dead datanodes" | awk -F"[()]" '{print $2}'`
+                 AVAILABLE_NODES=`$HADOOP_HOME/bin/hadoop dfsadmin -report | grep "Live datanodes" | awk -F"[()]" '{print $2}'`
+                 DEAD_NODES=`$HADOOP_HOME/bin/hadoop dfsadmin -report | grep "Dead datanodes" | awk -F"[()]" '{print $2}'`
                  REPORTED_TOTAL_NODES=$((AVAILABLE_NODES+DEAD_NODES))
             else
                  AVAILABLE_NODES=`echo ${DFSADMINOUTPUT} | cut -d ":" -f 2 | cut -d " " -f 2`
@@ -686,13 +693,13 @@ function check_hadoop_cluster_state {
 
         if [[ "$ATTEMPTS" -eq 0 ]]
         then
-        	if [[ $QUICK_CHECK -eq 0 ]]
-        	then
-            	syslog_netcat "Timeout Error waiting for datanodes to start. ${AVAILABLE_NODES} of ${TOTAL_NODES} are live. - NOK"
-            	syslog_netcat "`${HADOOP_HOME}/bin/hadoop dfsadmin -report`"
-        	else
-        		syslog_netcat "Hadoop cluster not formed yet."
-        	fi
+            if [[ $QUICK_CHECK -eq 0 ]]
+            then
+                syslog_netcat "Timeout Error waiting for datanodes to start. ${AVAILABLE_NODES} of ${TOTAL_NODES} are live. - NOK"
+                syslog_netcat "`$HADOOP_HOME/bin/hadoop dfsadmin -report`"
+            else
+                syslog_netcat "Hadoop cluster not formed yet."
+            fi
             return 1
 
         fi
@@ -729,7 +736,7 @@ function start_master_hadooop_services {
     if [[ ${hadoop_use_yarn} -eq 1 ]]
         then
             syslog_netcat "...Formatting Namenode..."
-            ${HADOOP_HOME}/bin/hadoop namenode -format -force
+            $HADOOP_HOME/bin/hadoop namenode -format -force
             if [[ $? -ne 0 ]]
             then
                 syslog_netcat "Error when formatting namenode - NOK"
@@ -737,18 +744,18 @@ function start_master_hadooop_services {
             fi
     
             syslog_netcat "...Starting Namenode daemon..."
-            ${HADOOP_HOME}/sbin/hadoop-daemon.sh start namenode
+            ${HADOOP_BIN_DIR}/hadoop-daemon.sh start namenode
     
             syslog_netcat "...Starting YARN Resource Manager daemon..."
-            ${HADOOP_HOME}/sbin/yarn-daemon.sh start resourcemanager
+            ${HADOOP_BIN_DIR}/yarn-daemon.sh start resourcemanager
     
             syslog_netcat "...Starting Job History daemon..."
-            ${HADOOP_HOME}/sbin/mr-jobhistory-daemon.sh start historyserver
+            ${HADOOP_BIN_DIR}/mr-jobhistory-daemon.sh start historyserver
     
         else
             syslog_netcat "...Formating Namenode..."
     
-            #${HADOOP_HOME}/bin/hadoop namenode -format -force
+            #$HADOOP_HOME/bin/hadoop namenode -format -force
             # Default Hadoop permissions require hadoop superuser to format namenode
             #  Attempt to identify superuser, with default value of hdfs
 
@@ -764,7 +771,7 @@ function start_master_hadooop_services {
                 sudo chown -R $(whoami) ${DFS_NAME_DIR}
             fi
     
-            sudo -u ${dfs_name_dir_owner} ${HADOOP_HOME}/bin/hadoop namenode -format -force
+            sudo -u ${dfs_name_dir_owner} $HADOOP_HOME/bin/hadoop namenode -format -force
             if [[ $? -ne 0 ]]
             then
                 syslog_netcat "Error when formatting namenode as user ${dfs_name_dir_owner} - NOK"
@@ -774,10 +781,10 @@ function start_master_hadooop_services {
             syslog_netcat "...Namenode formatted."
     
             syslog_netcat "...Starting primary Namenode service..."
-            if [[ -e ${HADOOP_HOME}/bin/start-dfs.sh ]] 
+            if [[ -e ${HADOOP_BIN_DIR}/start-dfs.sh ]] 
             then
                 syslog_netcat "...start-dfs.sh script exists, using that to launch Namenode services..."
-                ${HADOOP_HOME}/bin/start-dfs.sh
+                ${HADOOP_BIN_DIR}/start-dfs.sh
                 namenode_running=`ps aux | grep -e [n]amenode`
                 if [[ x"$namenode_running" == x ]] 
                 then
@@ -808,10 +815,10 @@ function start_master_hadooop_services {
             fi
     
             syslog_netcat "...Starting JobTracker service..."
-            if [[ -e ${HADOOP_HOME}/bin/start-mapred.sh ]]
+            if [[ -e ${HADOOP_BIN_DIR}/start-mapred.sh ]]
             then
                 syslog_netcat "...start-mapred.sh script exists, using that to launch Jobtracker services..."
-                ${HADOOP_HOME}/bin/start-mapred.sh
+                ${HADOOP_BIN_DIR}/start-mapred.sh
                 jobtracker_running=`ps aux | grep -e [j]obtracker`
                 if [[ x"$jobtracker_running" == x ]] 
                 then
@@ -854,7 +861,7 @@ function start_slave_hadoop_services {
     then
         
         syslog_netcat "...Starting datanode..."
-        ${HADOOP_HOME}/sbin/hadoop-daemon.sh start datanode
+        ${HADOOP_BIN_DIR}/hadoop-daemon.sh start datanode
         datanode_error=`grep FATAL ${HADOOP_HOME}/logs/hadoop*.log`
         if [[ x"$datanode_error" != x ]]
         then
@@ -863,7 +870,7 @@ function start_slave_hadoop_services {
         fi
         
         syslog_netcat "....starting nodemanager on ${my_ip_addr} ..."
-        ${HADOOP_HOME}/sbin/yarn-daemon.sh start nodemanager
+        ${HADOOP_BIN_DIR}/yarn-daemon.sh start nodemanager
     else
         
         for x in `cd /etc/init.d ; ls *datanode*`
@@ -934,6 +941,14 @@ export -f setup_matrix_multiplication
 #declare -A HDFS_SITE_PROPERTIES
 #HDFS_SITE_PROPERTIES["dfs.block.size"]=67108864
 #
-#declare -A MAPRED_SITE_PROPERTIES 
+declare -A MAPRED_SITE_PROPERTIES 
 #MAPRED_SITE_PROPERTIES["mapred.min.split.size"]=0
 #MAPRED_SITE_PROPERTIES["mapred.max.split.size"]=16777216
+#MAPRED_SITE_PROPERTIES["mapreduce.tasktracker.map.tasks.maximum"]=4
+#MAPRED_SITE_PROPERTIES["mapreduce.tasktracker.reduce.tasks.maximum"]=4
+NUM_MAPS=`get_my_ai_attribute_with_default num_maps "2"`
+NUM_REDS=`get_my_ai_attribute_with_default num_reds "2"`
+export NUM_MAPS
+export NUM_REDS
+MAPRED_SITE_PROPERTIES["mapreduce.job.maps"]=${NUM_MAPS}
+MAPRED_SITE_PROPERTIES["mapreduce.job.reduces"]=${NUM_REDS}

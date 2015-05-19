@@ -31,6 +31,7 @@ from os import chmod
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import str2dic, DataOpsException, create_restart_script
+from lib.auxiliary.value_generation import ValueGeneration
 from lib.remote.network_functions import Nethashget
 from shared_functions import CldOpsException, CommonCloudFunctions 
 
@@ -289,6 +290,9 @@ class SimCmds(CommonCloudFunctions) :
                 obj_attr_list["hosts"] = ''
                 obj_attr_list["host_list"] = {}
                 obj_attr_list["host_count"] = "NA"
+
+            for _net_n in range(1, int(obj_attr_list["networks_per_vmc"]) + 1) :
+                obj_attr_list["network_private" + str(_net_n)] = obj_attr_list["network_type"]
             
             _time_mark_prc = int(time())
             obj_attr_list["mgt_003_provisioning_request_completed"] = _time_mark_prc - _time_mark_prs
@@ -643,6 +647,15 @@ class SimCmds(CommonCloudFunctions) :
 
             self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
 
+            self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
+                                         obj_attr_list["uuid"], "utc_offset_on_vm", "3600") 
+            
+            self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
+                                         obj_attr_list["uuid"], "mgt_006_instance_preparation", "1")
+
+            self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
+                                         obj_attr_list["uuid"], "status", "Application starting up...") 
+
             obj_attr_list["arrival"] = int(time())
 
             _status = 0
@@ -887,7 +900,18 @@ class SimCmds(CommonCloudFunctions) :
         try :
             _fmsg = "An error has occurred, but no error message was captured"
 
+            _vg = ValueGeneration("NA")
+            
             for _vm in obj_attr_list["vms"].split(',') :
+                _vm_uuid, _vm_role, _vm_name = _vm.split('|')
+
+                self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
+                                             _vm_uuid, "mgt_007_application_start", \
+                                             int(_vg.get_value("uniformIXIXI10I500", 0))) 
+
+                self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
+                                             obj_attr_list["uuid"], "status", "Application starting up...") 
+
                 if _vm.count("faildb2") :
                     _fmsg = "Forced failure during AI definition"
 

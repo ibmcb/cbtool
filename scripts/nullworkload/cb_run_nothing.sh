@@ -52,6 +52,7 @@ errors:$(update_app_errors):num \
 completion_time:$(update_app_completiontime):sec \
 datagen_time:$(update_app_datagentime):sec \
 datagen_size:$(update_app_datagensize):records \
+quiescent_time:$(update_app_quiescent):sec \
 bandwidth:${bw}:mbps \
 throughput:${tp}:tps \
 latency:${lat}:msec \

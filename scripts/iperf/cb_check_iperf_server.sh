@@ -28,19 +28,33 @@ which iperf
 if [ $? -gt 0 ] ; then
     syslog_netcat "iperf client/server not installed on ${SHORT_HOSTNAME} - NOK"
     exit 2
-else :
+else
     syslog_netcat "iperf client/server installed on ${SHORT_HOSTNAME} - OK"
     provision_application_stop $START
 fi
 
-is_iperfserver_running=$(sudo ps aux | grep iperf | grep -v grep | grep D)
+
+LOAD_PROFILE=$(get_my_ai_attribute load_profile)
+
+is_iperfserver_running=$(sudo ps aux | grep iperf | grep -v grep | grep "\-s")
 if [[ x"${is_iperfserver_running}" == x ]]
 then
     syslog_netcat "Starting iperf server on ${SHORT_HOSTNAME}"
-    sudo screen -d -m -S IPERFSERVER bash -c "iperf -s"
+    if [[ ${LOAD_PROFILE} == "udp" ]]
+    then    
+        sudo screen -d -m -S IPERFSERVER bash -c "iperf -s -u"
+    else
+        sudo screen -d -m -S IPERFSERVER bash -c "iperf -s"
+    fi
 fi
 
-is_iperfserver_listening=$(sudo netstat -tunlp | grep LISTEN | grep iperf)
+if [[ ${LOAD_PROFILE} == "udp" ]]
+then
+    is_iperfserver_listening=$(sudo ps aux | grep iperf | grep -v grep | grep "\-s \-u")
+else
+    is_iperfserver_listening=$(sudo netstat -tunlp | grep LISTEN | grep iperf)
+fi
+
 if [[ x"${is_iperfserver_listening}" == x ]]
 then
     syslog_netcat "iperf server is not listening on ${SHORT_HOSTNAME} - NOK"

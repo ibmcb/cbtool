@@ -201,7 +201,8 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _fields.append("|size        ")
             _fields.append("|cloud_ip        ")
             _fields.append("|host_name                  ")
-            _fields.append("|vmc_pool            ")
+            _fields.append("|vmc_pool      ")
+            _fields.append("|netname    ")            
             _fields.append("|ai      ")
             _fields.append("|aidrs      ")                    
             _fields.append("|uuid")
@@ -1278,7 +1279,10 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _time_elapsed = 0
                 
             _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
-            
+
+            _cloud_name = False
+            _stats = {}
+                        
             if not _status :
 
                 _cloud_name = obj_attr_list["cloud_name"]                                 
@@ -1309,16 +1313,17 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _msg += " does not exist. Will keep polling and checking anyway."
                     cbdebug(_msg)
 
-                _time_limit = int(obj_attr_list["time_limit"])
+                _time_limit = float(obj_attr_list["time_limit"])
                 _check_interval = float(obj_attr_list["interval"])
-                _start_time = int(time())
-                
+                _start_time = float(time())
+
                 if _counter_value :
                     _msg = "Going to wait until the value on counter \"" + _obj_type
                     _msg += ' ' + _counter_name + "\" is equal to " + str(obj_attr_list["value"])
                     _msg += " (currently it is equal to " + str(_counter_value) + ") "
                     _msg += "waiting " + str(_check_interval) + " seconds between "
-                    _msg += "samples. The counter is assumed to be " + _direction + '.'
+                    _msg += "samples, for a maximum of " + str(_time_limit) + " seconds."
+                    _msg += " The counter is assumed to be " + _direction + '.'
                     print _msg
                 
                     while _time_elapsed < _time_limit :
@@ -1376,10 +1381,11 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _msg += " until \"" + _obj_type + "s " + _counter_name
                     _msg += "\" was equal to " + str(obj_attr_list["value"]) + '.'
                     cbdebug(_msg)
-                    
-            _x, _y, _stats = self.stats(obj_attr_list, _cloud_name + " all noprint", "stats-get", True)
 
-            _stats["total_time"] = _total_time
+            if _cloud_name :                    
+                _x, _y, _stats = self.stats(obj_attr_list, _cloud_name + " all noprint", "stats-get", True)
+    
+                _stats["total_time"] = _total_time
                         
             return self.package(_status, _msg, _stats)
 
@@ -1611,8 +1617,6 @@ class PassiveObjectOperations(BaseObjectOperations) :
                             _source = _space_attr_list["base_dir"] + '/' + _space_attr_list["tracefile"]
                         shutil.copy2(_source, _destination)
 
-                    print str(_logstor_attr_list["just_restarted"]).lower()
-
                     if str(_logstor_attr_list["just_restarted"]).lower() == "true" :
                         _msg = "This experiment was run right after a flushing of the Log Store."
                         _msg += " Will also include all logs files (from the Log Store) "
@@ -1640,7 +1644,8 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _msg = "Bypassing the copy of all logs files"
                         cbdebug(_msg, True)
 
-            
+                    _status = 0
+                    
         except self.ObjectOperationException, obj :
             _status = 8
             _fmsg = str(obj.msg)
@@ -1663,7 +1668,66 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 _msg += "Data is available at the url \"" + _url + "\"." 
                 cbdebug(_msg)
 
-            return self.package(_status, _msg, _url)                
+            return self.package(_status, _msg, _url)
+
+    @trace
+    def monitoring_purge(self, parameters, command) :
+        '''
+        TBD
+        '''
+        try : 
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+            _smsg = ''
+
+            _expid = None
+            
+            _obj_attr_list = {}
+            _status, _fmsg = self.parse_cli(_obj_attr_list, parameters, command)
+            _msg = ""
+
+            if not _status :
+                _status, _fmsg = self.initialize_object(_obj_attr_list, command)
+
+                if not _status :
+                    _space_attr_list = self.osci.get_object(_obj_attr_list["cloud_name"], "GLOBAL", False, "space", False)
+
+                    _username = _space_attr_list["username"]
+
+                    _expid = _obj_attr_list["expid"]
+
+                    _msg = "Purging all data collected during experiment \""
+                    _msg += _expid + "\" from the Metric Store..."
+                    cbdebug(_msg, True)
+
+                    if _expid.count('*') :
+                        _expid = {'$regex':_expid}
+                                            
+                    self.msci.flush_metric_store(_username, True, {"expid" : _expid })
+
+                    _status = 0
+            
+        except self.ObjectOperationException, obj :
+            _status = 8
+            _fmsg = str(obj.msg)
+
+        except self.msci.MetricStoreMgdConnException, obj :
+            _status = 40
+            _fmsg = str(obj.msg)
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+
+        finally :
+            if _status and _status != 1111:
+                _msg = "Monitor data purge failure: " + _fmsg
+                cberr(_msg)
+            else :
+                _msg = "Monitor purge success." 
+                cbdebug(_msg)
+
+            return self.package(_status, _msg, {})
         
     @trace
     def monitoring_extract(self, parameters, command) :
@@ -1828,7 +1892,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                             _trace_csv_contents_header = ''
                             for _key in _trace_desired_keys  :
                                 if _key in _trace_item :
-                                    _trace_csv_contents_header += str(_trace_item[_key]) + ','
+                                    _trace_csv_contents_header += str(_trace_item[_key]).replace(',',"replacewithcomma") + ','
                                 else :
                                     _trace_csv_contents_header += _obj_attr_list["filler_string"] + ','
     
@@ -2556,7 +2620,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                             _key.count("_pref_pool") or \
                                             _key.count("_meta_tag") or \
                                             _key.count("_size") or \
-                                            _key.count("_netid")) :
+                                            _key.count("_netname")) :
                                         _key = _key.replace(obj_attr_list["attribute_name"] + '_', '')
                                     else :
                                         _key = _key.replace(obj_attr_list["attribute_name"] + '_', '',1)
@@ -2804,15 +2868,19 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                                                "GLOBAL", False, \
                                                                "time", False)
 
+                    _username = _time_obj_attr_list["username"]
+                    
                     _curr_expid = _time_obj_attr_list["experiment_id"]
 
                     self.expid = _curr_expid
                     
                     _parameters = obj_attr_list["command"].split()
-                    
+
+                    _result = {}
+                                        
                     if len(_parameters) == 2 :
                                     
-                        _result = _time_obj_attr_list["experiment_id"]
+                        _result["current"] = _time_obj_attr_list["experiment_id"]
             
                     else :
                         
@@ -2831,8 +2899,11 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         self.initialize_metric_name_list(obj_attr_list)
 
                         if not _status :
-                            _result = _new_expid
-        
+                            _result["current"] = _new_expid
+
+
+                    _result["experiment_list"] = self.msci.get_experiment_list("reported_management_VM_metric_names_" + _username)
+                    
                     _status = 0
 
         except self.osci.ObjectStoreMgdConnException, obj :
@@ -2852,12 +2923,15 @@ class PassiveObjectOperations(BaseObjectOperations) :
             else :
                 if _new_expid :
                     _msg = "The attribute \"experiment_id \" was changed from \""
-                    _msg += _curr_expid + "\" to \"" + self.expid + "\"."
+                    _msg += _curr_expid + "\" to \"" + _result["current"] + "\"."
                     cbdebug(_msg)
                     self.update_host_os_perfmon(obj_attr_list)
                     self.update_logstore(obj_attr_list)
                 else :
-                    _msg = "Current experiment identifier is \"" + self.expid + "\"."
+                    _msg = "Current experiment identifier is \"" + _result["current"] + "\".\n\n"
+                    _msg += "Also, data for the following experiments was found on "
+                    _msg += "the metric store:\n"
+                    _msg += '\n'.join(_result["experiment_list"])
                     cbdebug(_msg)
                     
             return self.package(_status, _msg, _result)

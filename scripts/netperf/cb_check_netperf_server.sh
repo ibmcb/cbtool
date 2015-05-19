@@ -20,7 +20,7 @@ source ~/.bashrc
 
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
-START=$(provision_application_start)
+provision_application_start
 
 SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
 
@@ -44,6 +44,6 @@ then
     exit 2
 else
     syslog_netcat "Netperf server is listening on ${SHORT_HOSTNAME} - OK"
-    provision_application_stop $START
+    provision_application_stop
     exit 0
 fi

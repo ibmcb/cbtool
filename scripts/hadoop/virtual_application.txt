@@ -16,7 +16,7 @@ CAPTURE_ROLE = hadoopslave
 LOAD_PROFILE = terasort
 LOAD_LEVEL = uniformIXIXI1I3
 LOAD_DURATION = 60
-REPORTED_METRICS = throughput,latency,datagen_time,datagen_size,completion_time,errors
+REPORTED_METRICS = throughput,latency,datagen_time,datagen_size,completion_time,errors,quiescent_time
 
 # VApp-specific MANDATORY attributes
 DESCRIPTION = Deploys a Hadoop cluster (1 master and N slave nodes). The master
@@ -42,7 +42,7 @@ HADOOPMASTER_RESIZE1 = cb_restart_hadoop_cluster.sh
 HADOOPSLAVE_RESIZE1 = cb_restart_hadoop_cluster.sh
 START = cb_hadoop_job.sh
 
-# VApp-specific modifier parameters. Commented attributes imply default values assumed
+# VApp-specific modifier parameters.
 JAVA_HOME = ~/jdk1.6.0_21
 HADOOP_HOME = ~/hadoop-2.6.0
 HADOOP_EXAMPLES = share/hadoop/mapreduce/hadoop-mapreduce-examples-2.6.0.jar
@@ -56,8 +56,8 @@ NUM_REDS = 2
 NGRAMS = 3
 RD_FILE_SIZE = 20
 WT_FILE_SIZE = 10
-NUM_OF_SAMPLES = 3000000
-SAMPLES_PER_INPUTFILE = 500000
+NUM_OF_SAMPLES = 3000
+SAMPLES_PER_INPUTFILE = 5000
 NUM_CLUSTERS = 5
 DIMENSIONS = 20
 MAX_ITERATION = 5

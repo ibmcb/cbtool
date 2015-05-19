@@ -12,7 +12,7 @@ FAULT = pkill___-9___-f___keystone
 REPAIR = $EMPTY
 
 [FI_TEMPLATES : KEYSTONE-EC]
-FAULT = cp___-f___/usr/bin/keystone-all___/usr/bin/keystone-all-backup;___cp___-f___/usr/bin/corrupt_executable___/usr/bin/keystone-all;___ pkill___-9___-f___keystone-all
+FAULT = cp___-n___/usr/bin/keystone-all___/usr/bin/keystone-all-backup;___echo___-n___''___>___/usr/bin/keystone-all;___pkill___-9___-U___keystone___-f___keystone-all
 REPAIR = cp___-f___/usr/bin/keystone-all-backup___/usr/bin/keystone-all
 
 [FI_TEMPLATES : GLANCE-API-SS]
@@ -31,44 +31,48 @@ REPAIR = service___glance-registry___start
 FAULT = pkill___-9___-f___glance-registry
 REPAIR = $EMPTY
 
-[FI_TEMPLATES : QUANTUM-SERVER-SS]
-FAULT = service___quantum-server___stop
-REPAIR = service___quantum-server___start
+[FI_TEMPLATES : NEUTRON-SERVER-SS]
+FAULT = service___neutron-server___stop
+REPAIR = service___neutron-server___start
 
-[FI_TEMPLATES : QUANTUM-SERVER-KP]
-FAULT = pkill___-9___-f___quantum-server
+[FI_TEMPLATES : NEUTRON-SERVER-EC]
+FAULT = cp___-n___/usr/bin/neutron-server___/usr/bin/neutron-server-backup;___echo___-n___''___>___/usr/bin/neutron-server;___ pkill___-9___-U___neutron___-f___neutron-server
+REPAIR = cp___-f___/usr/bin/neutron-server-backup___/usr/bin/neutron-server
+
+[FI_TEMPLATES : NEUTRON-SERVER-KP]
+FAULT = pkill___-9___-f___neutron-server
 REPAIR = $EMPTY
 
-[FI_TEMPLATES : QUANTUM-METADATA-AGENT-SS]
-FAULT = service___quantum-metadata-agent___stop
-REPAIR = service___quantum-metadata-agent___start
+[FI_TEMPLATES : NEUTRON-METADATA-AGENT-SS]
+FAULT = service___neutron-metadata-agent___stop
+REPAIR = service___neutron-metadata-agent___start
 
-[FI_TEMPLATES : QUANTUM-METADATA-AGENT-KP]
-FAULT = pkill___-9___-f___quantum-metadata-agent
+[FI_TEMPLATES : NEUTRON-METADATA-AGENT-KP]
+FAULT = pkill___-9___-f___neutron-metadata-agent
 REPAIR = $EMPTY
 
-[FI_TEMPLATES : QUANTUM-DHCP-AGENT-SS]
-FAULT = service___quantum-dhcp-agent___stop
-REPAIR = service___quantum-dhcp-agent___start
+[FI_TEMPLATES : NEUTRON-DHCP-AGENT-SS]
+FAULT = service___neutron-dhcp-agent___stop
+REPAIR = service___neutron-dhcp-agent___start
 
-[FI_TEMPLATES : QUANTUM-DHCP-AGENT-KP]
-FAULT = pkill___-9___-f___quantum-dhcp-agent
+[FI_TEMPLATES : NEUTRON-DHCP-AGENT-KP]
+FAULT = pkill___-9___-f___neutron-dhcp-agent
 REPAIR = $EMPTY
 
-[FI_TEMPLATES : QUANTUM-L3-AGENT-SS]
-FAULT = service___quantum-l3-agent___stop
-REPAIR = service___quantum-l3-agent___start
+[FI_TEMPLATES : NEUTRON-L3-AGENT-SS]
+FAULT = service___neutron-l3-agent___stop
+REPAIR = service___neutron-l3-agent___start
 
-[FI_TEMPLATES : QUANTUM-L3-AGENT-KP]
-FAULT = pkill___-9___-f___quantum-l3-agent
+[FI_TEMPLATES : NEUTRON-L3-AGENT-KP]
+FAULT = pkill___-9___-f___neutron-l3-agent
 REPAIR = $EMPTY
 
-[FI_TEMPLATES : QUANTUM-PLUGIN-OPENVSWITCH-AGENT-SS]
-FAULT = service___quantum-plugin-openvswitch-agent___stop
-REPAIR = service___quantum-plugin-openvswitch-agent___start
+[FI_TEMPLATES : NEUTRON-PLUGIN-OPENVSWITCH-AGENT-SS]
+FAULT = service___neutron-plugin-openvswitch-agent___stop
+REPAIR = service___neutron-plugin-openvswitch-agent___start
 
-[FI_TEMPLATES : QUANTUM-PLUGIN-OPENVSWITCH-AGENT-KP]
-FAULT = pkill___-9___-f___quantum-plugin-openvswitch-agent
+[FI_TEMPLATES : NEUTRON-PLUGIN-OPENVSWITCH-AGENT-KP]
+FAULT = pkill___-9___-f___neutron-plugin-openvswitch-agent
 REPAIR = $EMPTY
 
 [FI_TEMPLATES : OPENVSWITCH-SS]
@@ -136,7 +140,7 @@ FAULT = pkill___-9___-f___nova-scheduler
 REPAIR = $EMPTY
 
 [FI_TEMPLATES : NOVA-SCHEDULER-EC]
-FAULT = cp___-f___/usr/bin/nova-scheduler___/usr/bin/nova-scheduler-backup;___cp___-f___/usr/bin/corrupt_executable___/usr/bin/nova-scheduler;___ pkill___-9___-f___nova-scheduler
+FAULT = cp___-n___/usr/bin/nova-scheduler___/usr/bin/nova-scheduler-backup;___echo___-n___''___>___/usr/bin/nova-scheduler;___ pkill___-9___-U___nova___-f___nova-scheduler
 REPAIR = cp___-f___/usr/bin/nova-scheduler-backup___/usr/bin/nova-scheduler
 
 [FI_TEMPLATES : LIBVIRT-SS]

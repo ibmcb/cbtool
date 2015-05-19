@@ -5,11 +5,18 @@ dir="$(dirname "$(readlink -f "$0")")"
 if [[ -z $1 ]]
 then
     echo "need a VM cloudbench identifier (e.g. vm_10)"
+    echo "usage $0 <VM IDENTIFIER> [CLOUD CONFIGURATION FILE]"
     exit 1
 fi
-
 VMID=$1
-INFO=$($dir/../cb vmshow $VMID)
+
+if [[ ! -z $2 ]]
+then
+	INFO=$($dir/../cb -c $2 vmshow $VMID)
+else
+	INFO=$($dir/../cb vmshow $VMID)
+fi
+
 VMIP=$(echo "$INFO" | grep "|prov_cloud_ip" | sed -e "s/|//g" | sed -e "s/ \+/ /g" | cut -d " " -f 2)
 VMLOGIN=$(echo "$INFO" | grep "|login" | sed -e "s/|//g" | sed -e "s/ \+/ /g" | cut -d " " -f 2)
 VMKEY=$(echo "$INFO" | grep "|identity" | sed -e "s/|//g" | sed -e "s/ \+/ /g" | cut -d " " -f 2)

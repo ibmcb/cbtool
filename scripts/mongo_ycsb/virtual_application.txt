@@ -13,7 +13,7 @@ LOAD_BALANCER = $False
 LOAD_PROFILE = workloada
 LOAD_LEVEL = 1
 LOAD_DURATION = 60
-REPORTED_METRICS = bandwidth,throughput,latency,datagen_time,datagen_size,completion_time,errors,insert_operations,read_operations
+REPORTED_METRICS = bandwidth,throughput,latency,datagen_time,datagen_size,completion_time,errors,insert_operations,read_operations,quiescent_time
 
 MONGO_CFG_SERVER_SETUP1 = cb_restart_mongo_cfg.sh
 MONGODB_SETUP1 = cb_restart_mongo.sh

@@ -26,29 +26,59 @@ SLA_RUNTIME_TARGETS=$5
 
 if [[ -z "$LOAD_PROFILE" || -z "$LOAD_LEVEL" || -z "$LOAD_DURATION" || -z "$LOAD_ID" ]]
 then
-	syslog_netcat "Usage: cb_iperf.sh <load profile> <load level> <load duration> <load_id>"
-	exit 1
+    syslog_netcat "Usage: cb_iperf.sh <load profile> <load level> <load duration> <load_id>"
+    exit 1
 fi
-
+    
 LOAD_GENERATOR_IP=$(get_my_ai_attribute load_generator_ip)
 LOAD_GENERATOR_TARGET_IP=$(get_my_ai_attribute load_generator_target_ip)
+
+TRAFFIC_MSS=$(get_my_ai_attribute_with_default traffic_mss auto)
+RATE_LIMIT=$(get_my_ai_attribute_with_default rate_limit auto)
+IF_MTU=$(get_my_ai_attribute_with_default if_mtu auto)
+BUFFER_LENGTH=$(get_my_ai_attribute_with_default buffer_length auto)
+EXTERNAL_TARGET=$(get_my_ai_attribute_with_default external_target none)
+
+if [[ ${IF_MTU} != "auto" ]]
+then
+    sudo ifconfig $my_if mtu ${IF_MTU}
+fi
 
 iperf=$(which iperf)
 
 LOAD_PROFILE=$(echo ${LOAD_PROFILE} | tr '[:upper:]' '[:lower:]')
 
+ADDITIONAL_CLI_OPT=""
 if [[ ${LOAD_PROFILE} == "udp" ]]
 then
-	ADDITIONAL_CLI_OPT=" -u "
-else :
-	ADDITIONAL_CLI_OPT=""
+    ADDITIONAL_CLI_OPT=" -u "
+fi
+
+if [[ $TRAFFIC_MSS != "auto" ]]
+then
+    ADDITIONAL_CLI_OPT=$ADDITIONAL_CLI_OPT" --mss $TRAFFIC_MSS "
+fi
+
+if [[ $RATE_LIMIT != "auto" ]]
+then
+    ADDITIONAL_CLI_OPT=$ADDITIONAL_CLI_OPT" -b $RATE_LIMIT "
+fi    
+
+if [[ $BUFFER_LENGTH != "auto" ]]
+then
+    ADDITIONAL_CLI_OPT=$ADDITIONAL_CLI_OPT" -l $BUFFER_LENGTH "
+fi    
+
+if [[ ${EXTERNAL_TARGET} != "none" ]]
+then            
+    LOAD_GENERATOR_TARGET_IP=${EXTERNAL_TARGET} 
 fi
 
 source ~/cb_barrier.sh start
 
 CMDLINE="$iperf -c ${LOAD_GENERATOR_TARGET_IP} -t ${LOAD_DURATION} -P ${LOAD_LEVEL} -f m ${ADDITIONAL_CLI_OPT}"
 
-syslog_netcat "Benchmarking iperf SUT: NET_CLIENT=${LOAD_GENERATOR_IP} -> NET_SERVER=${LOAD_GENERATOR_TARGET_IP} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
+syslog_netcat "Benchmarking iperf SUT: IPERF_CLIENT=${LOAD_GENERATOR_IP} -> IPERF_SERVER=${LOAD_GENERATOR_TARGET_IP} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
 
 OUTPUT_FILE=$(mktemp)
 
@@ -56,12 +86,7 @@ execute_load_generator "${CMDLINE}" ${OUTPUT_FILE} ${LOAD_DURATION}
 
 syslog_netcat "iperf run complete. Will collect and report the results"
 
-if [[ $(cat ${OUTPUT_FILE} | grep -c "\[SUM\]") -ne 0 ]]
-then
-	bw=$(cat ${OUTPUT_FILE} | grep SUM | awk '{ print $6 }' | tr -d ' ')
-else
-	bw=$(cat ${OUTPUT_FILE} | grep Mbits | awk '{ print $7 }' | tr -d ' ')
-fi
+~/cb_iperf_process.py ${OUTPUT_FILE}
 
 ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
 load_level:${LOAD_LEVEL}:load \
@@ -71,7 +96,10 @@ errors:$(update_app_errors):num \
 completion_time:$(update_app_completiontime):sec \
 datagen_time:$(update_app_datagentime):sec \
 datagen_size:$(update_app_datagensize):records \
-bandwidth:$bw:Mbps \
+quiescent_time:$(update_app_quiescent):sec \
+bandwidth:$(cat /tmp/iperf_bw):Mbps \
+jitter:$(cat /tmp/iperf_jitter):ms \
+loss:$(cat /tmp/iperf_loss):pct \
 ${SLA_RUNTIME_TARGETS}
 
 rm ${OUTPUT_FILE}

@@ -38,14 +38,16 @@ LINUX_DISTRO=$(linux_distribution)
 sudo mkdir -p /var/run/cassandra/
 sudo chmod 777 /var/run/cassandra
 
-MY_IP=`/sbin/ifconfig eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' | tr -d '\r\n'`
+#MY_IP=`/sbin/ifconfig eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' | tr -d '\r\n'`
 
-while [[ -z $MY_IP ]] 
-do
-    syslog_netcat "MY IP is null"
-    MY_IP=`/sbin/ifconfig eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' | tr -d '\r\n'`
-    sleep 1
-done
+#while [[ -z $MY_IP ]] 
+#do
+    #    syslog_netcat "MY IP is null"
+    #MY_IP=`/sbin/ifconfig eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' | tr -d '\r\n'`
+    #sleep 1
+#done
+
+MY_IP=$my_ip_addr
 
 YCSB_PATH=$(get_my_ai_attribute_with_default ycsb_path ~/YCSB)
 eval YCSB_PATH=${YCSB_PATH}
@@ -220,6 +222,7 @@ function lazy_collection {
     datagen_size:$(update_app_datagensize):records \
     read_operations:$read_operations:num \
     insert_operations:$insert_operations:num \
+    quiescent_time:$(update_app_quiescent):sec \
     ${SLA_RUNTIME_TARGETS}
 }
     
@@ -449,6 +452,7 @@ function eager_collection {
     datagen_size:$(update_app_datagensize):records \
     read_operations:$read_operations:num \
     insert_operations:$insert_operations:num \
+    quiescent_time:$(update_app_quiescent):sec \
     $latency_result_text \
     ${SLA_RUNTIME_TARGETS}
 

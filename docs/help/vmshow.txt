@@ -74,7 +74,8 @@ Examples :
 	|mgt_003_provisioning_request_completed  |1                                    
 	|mgt_004_network_acessible               |0                                    
 	|mgt_005_file_transfer                   |0                                    
-	|mgt_006_application_start               |0                                    
+	|mgt_006_instance_preparation            |0                                    
+	|mgt_007_application_start               |0                                    
 	|model                                   |sim                                  
 	|name                                    |vm_31                                
 	|notification                            |False                                

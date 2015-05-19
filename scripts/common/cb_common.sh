@@ -24,7 +24,7 @@ dir=$(pwd)
 if [ $0 != "-bash" ] ; then
     popd 2>&1 > /dev/null
 fi
-
+    
 # Get all parameters to connect to the datastore
 cloudname=`cat ~/cb_os_parameters.txt | grep "#OSCN" | cut -d "-" -f 2`
 oshostname=`cat ~/cb_os_parameters.txt | grep "#OSHN" | cut -d "-" -f 2`
@@ -447,15 +447,7 @@ function mount_remote_filesystem {
 }
 export -f mount_remote_filesystem
 
-
-# If we are using floating IPs, then the VM will might not even know about it.
-# We will
-#if [[ $(sudo ifconfig -a | grep ${my_ip_addr}) -eq 0 ]]
-#then
-    #    my_if=$(netstat -rn | grep UG | awk '{ print $8 }')
-    #my_ip_addr=$(ip addr | grep eth0 | grep inet | awk '{ print $2 }' | cut -d '/' -f 1)
-#fi
-
+my_if=$(netstat -rn | grep UG | awk '{ print $8 }')
 my_type=`get_my_vm_attribute type`
 my_login_username=`get_my_vm_attribute login`
 my_remote_dir=`get_my_vm_attribute remote_dir_name`
@@ -482,6 +474,12 @@ function put_my_vm_attribute {
     attribute_name=`echo $1 | tr '[:upper:]' '[:lower:]'`
     attribute_value=$2    
     put_hash VM ${my_vm_uuid} ${attribute_name} ${attribute_value}
+}
+
+function put_my_pending_vm_attribute {
+    attribute_name=`echo $1 | tr '[:upper:]' '[:lower:]'`
+    attribute_value=$2    
+    put_hash VM:PENDING ${my_vm_uuid} ${attribute_name} ${attribute_value}
 }
 
 function get_ai_attribute {
@@ -679,7 +677,7 @@ function inter_ai_get_counter {
 
 function reset_counter {
     object_type=$1
-    counter_name=`echo $1 | tr '[:upper:]' '[:lower:]'`
+    counter_name=`echo $2 | tr '[:upper:]' '[:lower:]'`
     retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber set ${osinstance}:${object_type}:${counter_name} 0" 1
 }
 
@@ -792,6 +790,7 @@ function provision_application_start {
     echo $PASTART > /tmp/provision_application_start
     echo $PASTART
 }
+export -f provision_application_start
 
 function provision_application_stop {
     PASTART=$1
@@ -811,11 +810,44 @@ function provision_application_stop {
         END=$(date +%s)
         DIFF=$(( $END - $PASTART ))
         syslog_netcat "Updating vm application startup time with value ${DIFF}"
-        put_my_vm_attribute mgt_006_application_start $DIFF
+        put_my_pending_vm_attribute mgt_007_application_start $DIFF
     else
         syslog_netcat "Application Instance already deployed (once). Will not report application startup time (again)"    
     fi
 }
+export -f provision_application_stop
+
+function provision_generic_start {
+    PASTART=$(date +%s)
+    echo $PASTART > /tmp/provision_generic_start
+    echo $PASTART
+}
+export -f provision_generic_start
+
+function provision_generic_stop {
+    PASTART=$1
+    
+    if [[ -z $PASTART ]]
+    then
+        if [[ -f /tmp/provision_generic_start ]]
+        then
+            PASTART=$(cat /tmp/provision_generic_start)
+            rm /tmp/provision_generic_start
+        fi
+    fi
+
+    if [[ ! -e .genfirstrun ]]
+    then
+        touch .genfirstrun
+        END=$(date +%s)
+        DIFF=$(( $END - $PASTART ))
+        syslog_netcat "Updating instance preaparation time with value ${DIFF}"
+        put_my_pending_vm_attribute mgt_006_instance_preparation $DIFF
+    else
+        syslog_netcat "Generic startup already run (once). Will not report instance preparation time (again)"    
+    fi
+}
+export -f provision_generic_stop
 
 function security_configuration {
 
@@ -1050,6 +1082,14 @@ function execute_load_generator {
 
     run_limit=`decrement_my_ai_attribute run_limit`
 
+    if [[ -f /tmp/quiescent_time_start ]]
+    then
+        QSTART=$(cat /tmp/quiescent_time_start)
+        END=$(date +%s)
+        DIFF=$(( $END - $QSTART ))
+        echo $DIFF > /tmp/quiescent_time        
+    fi
+    
     if [[ ${run_limit} -ge 0 ]]
     then
         syslog_netcat "This AI will execute the load_generating process ${run_limit} more times" 
@@ -1083,6 +1123,9 @@ function execute_load_generator {
     fi
     update_app_errors $ERROR
     update_app_completiontime $APP_COMPLETION_TIME
+    
+    echo $(date +%s) > /tmp/quiescent_time_start
+    
     return 0
 }
 
@@ -1117,7 +1160,7 @@ function setup_passwordless_ssh {
 
     syslog_netcat "VMs need to be able to perform passwordless SSH between each other. Updating ~/.ssh/id_rsa to be the same on all VMs.."
     #sudo chmod 0600 ~/${REMOTE_DIR_NAME}/credentials/$SSH_KEY_NAME
-	sudo find ~ -name $SSH_KEY_NAME -exec chmod 0600 {} \;
+    sudo find ~ -name $SSH_KEY_NAME -exec chmod 0600 {} \;
     sudo cat ~/${REMOTE_DIR_NAME}/credentials/$SSH_KEY_NAME > ~/.ssh/id_rsa
     sudo chmod 0600 ~/.ssh/id_rsa
     sudo cat ~/${REMOTE_DIR_NAME}/credentials/$SSH_KEY_NAME.pub > ~/.ssh/id_rsa.pub
@@ -1146,9 +1189,9 @@ function update_app_errors {
     
     if [[ ! -z $2 ]]
     then
-    	rm -rf /tmp/app_errors
-	fi
-	
+        rm -rf /tmp/app_errors
+    fi
+    
     if [[ ! -f /tmp/app_errors ]]
     then
         echo "0" > /tmp/app_errors
@@ -1239,6 +1282,19 @@ function update_app_completiontime {
     return 0
 }
 export -f update_app_completiontime
+
+function update_app_quiescent {
+        
+    if [[ -f /tmp/quiescent_time ]]
+    then
+        quiescent_time=$(cat /tmp/quiescent_time)
+    else
+        quiescent_time=-1 
+    fi
+    
+    echo $quiescent_time
+    return 0
+}
 
 function get_offline_ip {
     ip -o addr show $(ip route | grep default | grep -oE "dev [a-z]+[0-9]+" | sed "s/dev //g") | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | grep -v 255

@@ -65,6 +65,7 @@ completion_time:$(update_app_completiontime):sec \
 datagen_time:$(update_app_datagentime):sec \
 datagen_size:$(update_app_datagensize):records \
 throughput:$tp:tps latency:$lat:msec \
+quiescent_time:$(update_app_quiescent):sec \
 ${SLA_RUNTIME_TARGETS}
 
 rm ${OUTPUT_FILE}

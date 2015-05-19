@@ -27,7 +27,7 @@ which iperf
 if [ $? -gt 0 ] ; then
 	syslog_netcat "iperf client/server not installed on ${SHORT_HOSTNAME} - NOK"
 	exit 2
-else :
+else
 	syslog_netcat "iperf client/server installed on ${SHORT_HOSTNAME} - OK"
 	provision_application_stop $START
 	exit 0

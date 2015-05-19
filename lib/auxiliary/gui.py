@@ -95,7 +95,11 @@ class Dashboard () :
                           "Bytes => MB" : [False, "bytes2mb"], 
                           "bytes/sec => Mbps" : [False, "b2mb"], 
                           "#4K pages => MB" : [False, "4k2mb"]}
-        self.labels = ['name', 'size', 'role', 'type', 'cloud_ip', 'age', 'vms', 'state', 'latest_update', 'vmc_name', 'host_name', 'ai_name', 'aidrs_name' ]
+
+        self.labels = ['name', 'size', 'role', 'type', 'cloud_ip', 'age', 'vms',\
+                       'state', 'latest_update', 'tenant', 'netname', 'vmc_name',\
+                       'host_name', 'ai_name', 'aidrs_name' ]
+        
         self.separator = "<p/>\n"
         self.show = {}
         self.base_dict = {}

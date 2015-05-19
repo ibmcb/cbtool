@@ -18,7 +18,7 @@ LOAD_LEVEL = uniformIXIXI1I6
 LOAD_DURATION = 60
 REPORTED_METRICS = throughput_G_HPL, throughput_G_PTRANS, throughput_G_RandomAccess,
 REPORTED_METRICS += throughput_G_FFTE, throughput_EP_STREAM_Triad, throughput_EP_DGEMM,
-REPORTED_METRICS += throughput_RandomRing, lat_RandomRing,completion_time
+REPORTED_METRICS += throughput_RandomRing, lat_RandomRing,completion_time,quiescent_time
 
 # VApp-specific MANDATORY attributes
 DESCRIPTION = Deploys an HPC cluster formed by N "compute node" VMs and

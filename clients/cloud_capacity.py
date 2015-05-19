@@ -28,26 +28,40 @@ conditions: failure ratio, decrease in  performance and experiment time.
 
 #--------------------------------- START CB API --------------------------------
 
-import sys
-import pwd
-import fnmatch
-import prettytable
-
-from os import environ, getuid, access, F_OK, walk, path
-from optparse import OptionParser
-from random import choice,sample
+from sys import path, argv
 from time import sleep
-from json import dumps
 
-from uuid import uuid5, NAMESPACE_DNS
-from random import randint
-    
+import fnmatch
+import os
+import pwd
+import redis
+
+home = os.environ["HOME"]
+username = pwd.getpwuid(os.getuid())[0]
+
+api_file_name = "/tmp/cb_api_" + username
+if os.access(api_file_name, os.F_OK) :    
+    try :
+        _fd = open(api_file_name, 'r')
+        _api_conn_info = _fd.read()
+        _fd.close()
+    except :
+        _msg = "Unable to open file containing API connection information "
+        _msg += "(" + api_file_name + ")."
+        print _msg
+        exit(4)
+else :
+    _msg = "Unable to locate file containing API connection information "
+    _msg += "(" + api_file_name + ")."
+    print _msg
+    exit(4)
+
 _path_set = False
 
-for _path, _dirs, _files in walk(path.abspath(sys.path[0] + "/../")):
+for _path, _dirs, _files in os.walk(os.path.abspath(path[0] + "/../")):
     for _filename in fnmatch.filter(_files, "code_instrumentation.py") :
         if _path.count("/lib/auxiliary") :
-            sys.path.append(_path.replace("/lib/auxiliary",''))
+            path.append(_path.replace("/lib/auxiliary",''))
             _path_set = True
             break
     if _path_set :
@@ -55,6 +69,9 @@ for _path, _dirs, _files in walk(path.abspath(sys.path[0] + "/../")):
 
 from lib.api.api_service_client import *
 
+_msg = "Connecting to API daemon (" + _api_conn_info + ")..."
+print _msg
+api = APIClient(_api_conn_info)
 #---------------------------------- END CB API ---------------------------------
 
 def parse_cli() :
@@ -126,43 +143,7 @@ def parse_cli() :
     _parser.set_defaults()
     (options, _args) = _parser.parse_args()
 
-    _username = pwd.getpwuid(getuid())[0]
-    
-    _api_conn_info = False
-    # When CB is started and the API daemons are brought on-line, a fine containing
-    # the API connection string will be generated in /tmp (cb_api_<username>).
-    # If this executable is run co-located with the API daemon, then the connection
-    # information can be automatically determined.    
-    _api_file_name = "/tmp/cb_api_" + _username
-    if access(_api_file_name, F_OK) :    
-        try :
-            _fd = open(_api_file_name, 'r')
-            _api_conn_info = _fd.read()
-            _fd.close()
-        except :
-            _msg = "Unable to open file containing API connection information "
-            _msg += "(" + _api_file_name + ")."
-            print "WARNING: " + _msg
-    else :
-        _msg = "Unable to locate file containing API connection information "
-        _msg += "(" + _api_file_name + ")."
-        print "WARNING: " + _msg
-
-    if not _api_conn_info :
-        if not (options.host and options.port) :
-            _msg = "API connection information (host and port) could not be"
-            _msg += " automatically determined. Options \"-a\",\"--address\" and "
-            _msg += "\"-p\",\"--port\" will have to be specified. "
-            print "ERROR: " + _msg
-            exit()
-        else :
-            _api_conn_info = "http://" + options.address + ':' + options.port
-
-    if not options.cloud :
-        _msg = "A cloud name (option \"-c\",\"--cloud\") needs to specified"
-        print "ERROR: " + _msg
-
-    return _api_conn_info, options
+    return options
 
 def profiling_phase(api, options, performance_data) :
     '''
@@ -462,7 +443,6 @@ def main() :
         _phase = "capacity"
         capacity_phase(api, _options, _perf_dict)
 
-    
     except APIException, obj :
         _error = True
         print "API Problem (" + str(obj.status) + "): " + obj.msg

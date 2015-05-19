@@ -260,15 +260,16 @@ class CommonCloudFunctions:
         TBD
         '''
         if str(obj_attr_list["is_jumphost"]).lower() == "false" :
-            
+
             _pending_attr_list = self.osci.pending_object_get(obj_attr_list["cloud_name"], \
                                                               "VM", obj_attr_list["uuid"], \
                                                               key, False)
-    
             if _pending_attr_list :
                 
                 if key == "all" :
-                    for _key in [ "cloud_init_rsync", "cloud_init_bootstrap", "cloud_init_vpn" ] :
+                    for _key in [ "cloud_init_rsync", \
+                                  "cloud_init_bootstrap", \
+                                  "cloud_init_vpn"] :
                         if _key in _pending_attr_list :
                             obj_attr_list[_key] = _pending_attr_list[_key]
     
@@ -496,8 +497,9 @@ class CommonCloudFunctions:
             cbdebug(_msg)
             obj_attr_list["arrival"] = int(time())
 
-            # It should be mgt_006, NOT mgt_005
-            obj_attr_list["mgt_006_application_start"] = "0"
+            # It should be mgt_006 and mgt_007 NOT mgt_005
+            obj_attr_list["mgt_006_instance_preparation"] = "0"
+            obj_attr_list["mgt_007_application_start"] = "0"
             self.pending_set(obj_attr_list, "Application starting up...")
             self.get_attr_from_pending(obj_attr_list, "all")
 

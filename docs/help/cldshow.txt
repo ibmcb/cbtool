@@ -399,7 +399,7 @@ Examples :
 	|mon_defaults                     |collector_summarizer_port      |8675                                 
 	|mon_defaults                     |collector_vm_port              |8650                                 
 	|mon_defaults                     |cpu_m                          |cpu_speed,cores,cpu_num,proc_total,proc_run,cpu_idle,cpu_aidle,cpu_user,cpu_system,cpu_wio,cpu_intr,cpu_sintr,cpu_nice
-	|mon_defaults                     |crt_m                          |mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_application_start
+	|mon_defaults                     |crt_m                          |mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_instance_preparation,mgt_007_application_start
 	|mon_defaults                     |data_file_location             |/home/cbrtuser                       
 	|mon_defaults                     |dsk_m                          |disk_total,disk_free,ds_in_flight,ds_KB_read,ds_ios_read,ds_KB_write,ds_ios_write
 	|mon_defaults                     |dst_m                          |mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed
