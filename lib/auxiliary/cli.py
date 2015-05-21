@@ -98,8 +98,10 @@ class CBCLI(Cmd) :
              have to be passed to the cldattach() command manually.
             '''
 
-            self.cld_attr_lst, self.definitions = parse_cld_defs_file(None, True, self.options.config)
+            get_options_from_env(self.options)
 
+            self.cld_attr_lst, self.definitions = parse_cld_defs_file(None, True, self.options.config)
+            
             if self.options.hard_reset :
                 self.cld_attr_lst["time"]["hard_reset"] = True
             else :
@@ -1122,3 +1124,20 @@ def help(args):
         return True
     else :
         return False
+
+
+def get_options_from_env(options) :
+    '''
+    TBD
+    '''
+    if not options.config :
+        _key = "CB_CONFIGURATION_FILE"
+        if _key in os.environ :
+            print "\n##########################################################################################"
+            _msg = "CLI option \" --config=" + os.environ[_key] + " set on the"
+            _msg += " environment (" + _key + ")."
+            cbdebug(_msg, True)            
+            print "##########################################################################################\n"
+            options.config = os.environ[_key]
+
+    return True

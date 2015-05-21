@@ -42,7 +42,7 @@ from novaclient import exceptions as novaexceptions
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import str2dic, value_suffix
-from lib.remote.network_functions import hostname2ip
+from lib.remote.network_functions import hostname2ip,validIPv4
 from lib.remote.process_management import ProcessManagement
 from lib.remote.ssh_ops import get_ssh_key
 from shared_functions import CldOpsException, CommonCloudFunctions 
@@ -953,10 +953,13 @@ class OskCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
-        if project == "compute" or project == "volume" :
-            return service.host.split('@')[0].split('.')[0]
+        if project == "compute" or project == "volume" :            
+            _service_host = service.host.split('@')[0]
         else :
-            return service["host"]
+            _service_host = service["host"]
+
+        _host, _ip = hostname2ip(_service_host)
+        return _host.split('.')[0]
 
     def get_service_binary(self, service, project) :
         '''
@@ -992,7 +995,7 @@ class OskCmds(CommonCloudFunctions) :
                     self.host_map[_host]["services"].append(_name)
 
         for _entry in self.oskconncompute.hypervisors.list() :
-            _host = _entry.hypervisor_hostname
+            _host = _entry.hypervisor_hostname.split('.')[0]
             if _host not in self.host_map :
                 self.host_map[_host] = {}
                 self.host_map[_host]["services"] = []
@@ -1712,7 +1715,7 @@ class OskCmds(CommonCloudFunctions) :
         if _instance :
             if "_info" in dir(_instance) :
                 if "OS-EXT-SRV-ATTR:host" in _instance._info :
-                    obj_attr_list["host_name"] = _instance._info['OS-EXT-SRV-ATTR:host']
+                    obj_attr_list["host_name"] = _instance._info['OS-EXT-SRV-ATTR:host'].split('.')[0]
                 else :
                     obj_attr_list["host_name"] = "unknown"
                 

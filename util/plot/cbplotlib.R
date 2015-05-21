@@ -408,7 +408,7 @@ plot_trace_data <- function(tdf, ed, en, sps) {
 	trace_data <- subset(trace_data, relative_time > 0, 
 			select = columns)
 	
-	#output_table(ed, en, trace_data, "001_operations_vs_time")
+	output_table(ed, en, trace_data, "001_operations_vs_time")
 	
 	trace_data <- melt(trace_data, id.vars="relative_time")
 	
@@ -426,7 +426,7 @@ plot_trace_data <- function(tdf, ed, en, sps) {
 			ylab("Number of Objects") + 
 			labs(title = trace_plot_title)
 	
-	#output_pdf_plot(ed, en, trace_data_plot, "001_operations_vs_time", sps)
+	output_pdf_plot(ed, en, trace_data_plot, "001_operations_vs_time", sps)
 	################## END Provisioning vs VM ##################
 }
 

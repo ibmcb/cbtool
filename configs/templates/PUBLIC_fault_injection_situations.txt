@@ -8,7 +8,7 @@ FAULT = service___keystone___stop
 REPAIR = service___keystone___start
 
 [FI_TEMPLATES : KEYSTONE-KP]
-FAULT = pkill___-9___-f___keystone
+FAULT = pkill___-9___-U___keystone___-f___keystone-all
 REPAIR = $EMPTY
 
 [FI_TEMPLATES : KEYSTONE-EC]
@@ -20,7 +20,7 @@ FAULT = service___glance-api___stop
 REPAIR = service___glance-api___start
 
 [FI_TEMPLATES : GLANCE-API-KP]
-FAULT = pkill___-9___-f___glance-api
+FAULT = pkill___-9___-U___glance___-f___glance-api
 REPAIR = $EMPTY
 
 [FI_TEMPLATES : GLANCE-REGISTRY-SS]
@@ -28,7 +28,7 @@ FAULT = service___glance-registry___stop
 REPAIR = service___glance-registry___start
 
 [FI_TEMPLATES : GLANCE-REGISTRY-KP]
-FAULT = pkill___-9___-f___glance-registry
+FAULT = pkill___-9___-U___glance___-f___glance-registry
 REPAIR = $EMPTY
 
 [FI_TEMPLATES : NEUTRON-SERVER-SS]
@@ -40,7 +40,7 @@ FAULT = cp___-n___/usr/bin/neutron-server___/usr/bin/neutron-server-backup;___ec
 REPAIR = cp___-f___/usr/bin/neutron-server-backup___/usr/bin/neutron-server
 
 [FI_TEMPLATES : NEUTRON-SERVER-KP]
-FAULT = pkill___-9___-f___neutron-server
+FAULT = pkill___-9___-U___neutron___-f___neutron-server
 REPAIR = $EMPTY
 
 [FI_TEMPLATES : NEUTRON-METADATA-AGENT-SS]
@@ -48,7 +48,7 @@ FAULT = service___neutron-metadata-agent___stop
 REPAIR = service___neutron-metadata-agent___start
 
 [FI_TEMPLATES : NEUTRON-METADATA-AGENT-KP]
-FAULT = pkill___-9___-f___neutron-metadata-agent
+FAULT = pkill___-9___-U___neutron___-f___neutron-metadata-agent
 REPAIR = $EMPTY
 
 [FI_TEMPLATES : NEUTRON-DHCP-AGENT-SS]
@@ -56,7 +56,7 @@ FAULT = service___neutron-dhcp-agent___stop
 REPAIR = service___neutron-dhcp-agent___start
 
 [FI_TEMPLATES : NEUTRON-DHCP-AGENT-KP]
-FAULT = pkill___-9___-f___neutron-dhcp-agent
+FAULT = pkill___-9___-U___neutron___-f___neutron-dhcp-agent
 REPAIR = $EMPTY
 
 [FI_TEMPLATES : NEUTRON-L3-AGENT-SS]
@@ -64,7 +64,7 @@ FAULT = service___neutron-l3-agent___stop
 REPAIR = service___neutron-l3-agent___start
 
 [FI_TEMPLATES : NEUTRON-L3-AGENT-KP]
-FAULT = pkill___-9___-f___neutron-l3-agent
+FAULT = pkill___-9___-U___neutron___-f___neutron-l3-agent
 REPAIR = $EMPTY
 
 [FI_TEMPLATES : NEUTRON-PLUGIN-OPENVSWITCH-AGENT-SS]
@@ -72,7 +72,7 @@ FAULT = service___neutron-plugin-openvswitch-agent___stop
 REPAIR = service___neutron-plugin-openvswitch-agent___start
 
 [FI_TEMPLATES : NEUTRON-PLUGIN-OPENVSWITCH-AGENT-KP]
-FAULT = pkill___-9___-f___neutron-plugin-openvswitch-agent
+FAULT = pkill___-9___-U___neutron___-f___neutron-plugin-openvswitch-agent
 REPAIR = $EMPTY
 
 [FI_TEMPLATES : OPENVSWITCH-SS]
@@ -80,7 +80,7 @@ FAULT = service___openvswitch-switch___stop
 REPAIR = service___openvswitch-switch___start
 
 [FI_TEMPLATES : OPENVSWITCH-KP]
-FAULT = pkill___-9___-f___openvswitch
+FAULT = pkill___-9___ovs-vswitchd
 REPAIR = $EMPTY
 
 [FI_TEMPLATES : NOVA-API-SS]
@@ -88,7 +88,7 @@ FAULT = service___nova-api___stop
 REPAIR = service___nova-api___start
 
 [FI_TEMPLATES : NOVA-API-KP]
-FAULT = pkill___-9___-f___nova-api
+FAULT = pkill___-9___-U___nova___-f___nova-api
 REPAIR = $EMPTY
 
 [FI_TEMPLATES : NOVA-CERT-SS]
@@ -96,7 +96,7 @@ FAULT = service___nova-cert___stop
 REPAIR = service___nova-cert___start
 
 [FI_TEMPLATES : NOVA-CERT-KP]
-FAULT = pkill___-9___-f___nova-cert
+FAULT = pkill___-9___-U___nova___-f___nova-cert
 REPAIR = $EMPTY
 
 [FI_TEMPLATES : NOVA-COMPUTE-SS]
@@ -104,7 +104,7 @@ FAULT = service___nova-compute___stop
 REPAIR = service___nova-compute___start
 
 [FI_TEMPLATES : NOVA-COMPUTE-KP]
-FAULT = pkill___-9___-f___nova-compute
+FAULT = pkill___-9___-U___nova___-f___nova-compute
 REPAIR = $EMPTY
 
 [FI_TEMPLATES : NOVA-CONDUCTOR-SS]
@@ -112,7 +112,7 @@ FAULT = service___nova-conductor___stop
 REPAIR = service___nova-conductor___start
 
 [FI_TEMPLATES : NOVA-CONDUCTOR-KP]
-FAULT = pkill___-9___-f___nova-conductor
+FAULT = pkill___-9___-U___nova___-f___nova-conductor
 REPAIR = $EMPTY
 
 [FI_TEMPLATES : NOVA-CONSOLEAUTH-SS]
@@ -120,7 +120,7 @@ FAULT = service___nova-consoleauth___stop
 REPAIR = service___nova-consoleauth___start
 
 [FI_TEMPLATES : NOVA-CONSOLEAUTH-KP]
-FAULT = pkill___-9___-f___nova-consoleauth
+FAULT = pkill___-9___-U___nova___-f___nova-consoleauth
 REPAIR = $EMPTY
 
 [FI_TEMPLATES : NOVA-NOVNCPROXY-SS]
@@ -128,7 +128,7 @@ FAULT = service___nova-novncproxy___stop
 REPAIR = service___nova-novncproxy___start
 
 [FI_TEMPLATES : NOVA-NOVNCPROXY-KP]
-FAULT = pkill___-9___-f___nova-novncproxy
+FAULT = pkill___-9___-U___nova___-f___nova-novncproxy
 REPAIR = $EMPTY
 
 [FI_TEMPLATES : NOVA-SCHEDULER-SS]
@@ -136,7 +136,7 @@ FAULT = service___nova-scheduler___stop
 REPAIR = service___nova-scheduler___start
 
 [FI_TEMPLATES : NOVA-SCHEDULER-KP]
-FAULT = pkill___-9___-f___nova-scheduler
+FAULT = pkill___-9___-U___nova___-f___nova-scheduler
 REPAIR = $EMPTY
 
 [FI_TEMPLATES : NOVA-SCHEDULER-EC]
@@ -148,7 +148,7 @@ FAULT = service___libvirt-bin___stop
 REPAIR = service___libvirt-bin___start
 
 [FI_TEMPLATES : LIBVIRT-KP]
-FAULT = pkill___-9___-f___libvirt
+FAULT = pkill___-9___libvirt
 REPAIR = $EMPTY
 
 [FI_TEMPLATES : CINDER-API-SS]
@@ -156,7 +156,7 @@ FAULT = service___cinder-api___stop
 REPAIR = service___cinder-api___start
 
 [FI_TEMPLATES : CINDER-API-KP]
-FAULT = pkill___-9___-f___cinder-api
+FAULT = pkill___-9___-U___cinder__-f___cinder-api
 REPAIR = $EMPTY
 
 [FI_TEMPLATES : CINDER-SCHEDULER-SS]
@@ -164,7 +164,7 @@ FAULT = service___cinder-scheduler___stop
 REPAIR = service___cinder-scheduler___start
 
 [FI_TEMPLATES : CINDER-SCHEDULER-KP]
-FAULT = pkill___-9___-f___cinder-scheduler
+FAULT = pkill___-9___-U___cinder__-f___cinder-scheduler
 REPAIR = $EMPTY
 
 [FI_TEMPLATES : CINDER-VOLUME-SS]
@@ -172,7 +172,7 @@ FAULT = service___cinder-volume___stop
 REPAIR = service___cinder-volume___start
 
 [FI_TEMPLATES : CINDER-VOLUME-KP]
-FAULT = pkill___-9___-f___cinder-volume
+FAULT = pkill___-9___-U___cinder__-f___cinder-volume
 REPAIR = $EMPTY
 
 [FI_TEMPLATES : STONITH]
