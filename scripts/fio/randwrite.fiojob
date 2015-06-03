@@ -1,0 +1,12 @@
+[global]
+ioengine=sync 
+bs=64k 
+direct=1 
+fsync_on_close=1
+rw=randwrite
+size=4g 
+rate_iops=100
+
+[randwrites]
+name=fiofile
+numjobs=1
