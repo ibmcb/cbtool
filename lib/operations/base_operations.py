@@ -1061,7 +1061,7 @@ class BaseObjectOperations :
                     obj_attr_list["identity"] = _dir_list["ssh_key_name"]
 
                     if _obj_type == "VM" :
-                        
+                                                
                         _filestor_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
                                                                    "GLOBAL", False, "filestore", \
                                                                    False)

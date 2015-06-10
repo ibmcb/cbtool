@@ -70,7 +70,7 @@ fi
 export HADOOP_HOME=${HADOOP_HOME}
 
 syslog_netcat "HADOOP_HOME was determined to be $HADOOP_HOME"     
-HADOOP_VERSION=$(echo ${HADOOP_HOME} | awk -F/ '{print $(NF-1)}' | sed 's/hadoop-//g' | sed 's/-bin//g')
+HADOOP_VERSION=$(echo ${HADOOP_HOME} | awk -F/ '{print $(NF)}' | sed 's/hadoop-//g' | sed 's/-bin//g')
     
 re='^[0-9]+$'
 if ! [[ $yournumber =~ $re ]]

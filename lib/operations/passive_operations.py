@@ -1752,7 +1752,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _obj_type = _obj_attr_list["type"].lower()
     
                     _metric_type = _obj_attr_list["metric_type"].lower()
-                    
+
                     if _metric_type == "m" or _metric_type == "mgt" or _metric_type == "man" or _metric_type == "management" :
                         _metric_type = "management"
                     elif _metric_type == "a" or _metric_type == "app" or _metric_type == "application" and _obj_type == "VM" :
@@ -1763,7 +1763,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _msg = "Metrics of type \"" + _metric_type + "\" are not available for \"" + _obj_type + "\" objects." 
                         _status = 1028
                         raise self.ObjectOperationException(_msg, _status)
-                        
+
                     if _obj_attr_list["expid"] == "current" :
                         _criteria = { "expid" : _obj_attr_list["current_experiment_id"] }
                     else :
@@ -1772,7 +1772,6 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _space_attr_list = self.osci.get_object(_obj_attr_list["cloud_name"], "GLOBAL", False, "space", False)
 
                     _obj_attr_list["data_file_location"] = _space_attr_list["data_working_dir"] + '/' + _criteria["expid"]
-
 
                     _filestor_attr_list = self.osci.get_object(_obj_attr_list["cloud_name"], \
                                                                "GLOBAL", False, "filestore", \
@@ -1797,7 +1796,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     for _index, _item in enumerate(_csv_contents_header.split(',')) :
                         _fd.write('#' + _item + ':' + str(_index + 1) + '\n')
                     _fd.write("\n")
-    
+
                     _msg = "Preparing to extract " + _metric_type + " metrics for all "
                     _msg += _obj_type.upper() + " objects with experiment id \"" 
                     _msg += str(_obj_attr_list["expid"]) + "\""
@@ -1833,6 +1832,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     # later.
                     
                     _collection_name = "management_" + _obj_type.upper() + '_' + _obj_attr_list["username"]
+
                     _management_metrics_list = self.msci.find_document(_collection_name, {}, True)
                     
                     for _metric in _management_metrics_list :
@@ -1902,6 +1902,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _trace_fd.close()
                     
                     if _metric_type == "runtime_os" or _metric_type == "runtime_app" :
+
                         _last_unchanged_metric = {}
 
                         _collection_name = _metric_type + '_' + _obj_type.upper() + '_' + _obj_attr_list["username"]
@@ -1909,7 +1910,9 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                                                        _criteria, \
                                                                        True, \
                                                                        [("time", 1)])
+
                         _empty = True
+
                         for _metric in _runtime_metric_list :
 
                             _empty = False
@@ -1929,7 +1932,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                 _last_unchanged_metric[_current_uuid] = {}
     
                             for _key in _desired_keys :
-                                if _key in _metric and _key != "uuid" and _key != "time" and _key != "time_h" :
+                                if _key in _metric and _key != "uuid" and _key != "time" and _key != "time_h" and _key != "time_cbtool":
                                     _val = str(_metric[_key]["val"])
                                     # Every time we find a metric, we add it to an
                                     # in-memory cache (dictionary)
@@ -1938,7 +1941,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                 elif _key == "uuid" or _key == "time_h" :
                                     _val = str(_metric[_key])
     
-                                elif _key == "time" :
+                                elif _key == "time" or _key == "time_cbtool" :
                                     _val = str(int(_metric[_key]) - _experiment_start_time)
     
                                 elif _metric["uuid"] in _uuid_to_attr_dict and _key in _uuid_to_attr_dict[_metric["uuid"]] :
@@ -1954,7 +1957,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                 _csv_contents_line += _val + ','
                                 
                             _fd.write(_csv_contents_line[:-1] + '\n')
-    
+
                     _fd.close()
 
                     if _empty :
@@ -2352,8 +2355,6 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
                     _vm_uuid = _ai_attr_list["load_generator_vm"]
                     _expid = _ai_attr_list["experiment_id"]
-
-                    print _metrics_list
                     
                     report_app_metrics(_metrics_list, \
                                        _sla_target_list, \

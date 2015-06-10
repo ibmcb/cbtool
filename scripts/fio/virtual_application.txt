@@ -1,0 +1,19 @@
+# Parameters for this Virtual Application (Application Instance - AI) type should
+# be set on YOUR private configuration configuration file, including the ones 
+# commented.
+
+[AI_TEMPLATES : FIO] 
+DESCRIPTION = TBD
+SUT = fio 
+LOAD_GENERATOR_ROLE = fio
+LOAD_MANAGER_ROLE = fio
+METRIC_AGGREGATOR_ROLE = fio
+CAPTURE_ROLE = fio
+LOAD_BALANCER = $False
+LOAD_BALANCER_TARGET_PORT = 80 
+LOAD_BALANCER_TARGET_URL = unknown 
+START = cb_start_fio.sh
+LOAD_PROFILE = default
+LOAD_LEVEL = 1
+LOAD_DURATION = 1
+WAIT_FOR = 0

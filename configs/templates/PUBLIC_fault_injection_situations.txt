@@ -47,6 +47,10 @@ REPAIR = $EMPTY
 FAULT = service___neutron-metadata-agent___stop
 REPAIR = service___neutron-metadata-agent___start
 
+[FI_TEMPLATES : NEUTRON-METADATA-AGENT-EC]
+FAULT = cp___-n___/usr/bin/neutron-metadata-agent___/usr/bin/neutron-metadata-agent-backup;___echo___-n___''___>___/usr/bin/neutron-metadata-agent;___ pkill___-9___-U___neutron___-f___neutron-metadata-agent
+REPAIR = cp___-f___/usr/bin/neutron-metadata-agent-backup___/usr/bin/neutron-metadata-agent
+
 [FI_TEMPLATES : NEUTRON-METADATA-AGENT-KP]
 FAULT = pkill___-9___-U___neutron___-f___neutron-metadata-agent
 REPAIR = $EMPTY
@@ -54,6 +58,10 @@ REPAIR = $EMPTY
 [FI_TEMPLATES : NEUTRON-DHCP-AGENT-SS]
 FAULT = service___neutron-dhcp-agent___stop
 REPAIR = service___neutron-dhcp-agent___start
+
+[FI_TEMPLATES : NEUTRON-DHCP-AGENT-EC]
+FAULT = cp___-n___/usr/bin/neutron-dhcp-agent___/usr/bin/neutron-dhcp-agent-backup;___echo___-n___''___>___/usr/bin/neutron-dhcp-agent;___ pkill___-9___-U___neutron___-f___neutron-dhcp-agent
+REPAIR = cp___-f___/usr/bin/neutron-dhcp-agent-backup___/usr/bin/neutron-dhcp-agent
 
 [FI_TEMPLATES : NEUTRON-DHCP-AGENT-KP]
 FAULT = pkill___-9___-U___neutron___-f___neutron-dhcp-agent
@@ -63,16 +71,36 @@ REPAIR = $EMPTY
 FAULT = service___neutron-l3-agent___stop
 REPAIR = service___neutron-l3-agent___start
 
+[FI_TEMPLATES : NEUTRON-L3-AGENT-EC]
+FAULT = cp___-n___/usr/bin/neutron-l3-agent___/usr/bin/neutron-l3-agent-backup;___echo___-n___''___>___/usr/bin/neutron-l3-agent;___ pkill___-9___-U___neutron___-f___neutron-l3-agent
+REPAIR = cp___-f___/usr/bin/neutron-l3-agent-backup___/usr/bin/neutron-l3-agent
+
 [FI_TEMPLATES : NEUTRON-L3-AGENT-KP]
 FAULT = pkill___-9___-U___neutron___-f___neutron-l3-agent
 REPAIR = $EMPTY
 
-[FI_TEMPLATES : NEUTRON-PLUGIN-OPENVSWITCH-AGENT-SS]
-FAULT = service___neutron-plugin-openvswitch-agent___stop
-REPAIR = service___neutron-plugin-openvswitch-agent___start
+[FI_TEMPLATES : NEUTRON-VPN-AGENT-SS]
+FAULT = service___neutron-vpn-agent___stop
+REPAIR = service___neutron-vpn-agent___start
+
+[FI_TEMPLATES : NEUTRON-VPN-AGENT-EC]
+FAULT = cp___-n___/usr/bin/neutron-vpn-agent___/usr/bin/neutron-vpn-agent-backup;___echo___-n___''___>___/usr/bin/neutron-vpn-agent;___ pkill___-9___-U___neutron___-f___neutron-vpn-agent
+REPAIR = cp___-f___/usr/bin/neutron-vpn-agent-backup___/usr/bin/neutron-vpn-agent
+
+[FI_TEMPLATES : NEUTRON-VPN-AGENT-KP]
+FAULT = pkill___-9___-U___neutron___-f___neutron-vpn-agent
+REPAIR = $EMPTY
+
+[FI_TEMPLATES : NEUTRON-OPENVSWITCH-AGENT-SS]
+FAULT = service___neutron-openvswitch-agent___stop
+REPAIR = service___neutron-openvswitch-agent___start
+
+[FI_TEMPLATES : NEUTRON-OPENVSWITCH-AGENT-EC]
+FAULT = cp___-n___/usr/bin/neutron-openvswitch-agent___/usr/bin/neutron-openvswitch-agent-backup;___echo___-n___''___>___/usr/bin/neutron-openvswitch-agent;___ pkill___-9___-U___neutron___-f___neutron-openvswitch-agent
+REPAIR = cp___-f___/usr/bin/neutron-openvswitch-agent-backup___/usr/bin/neutron-openvswitch-agent
 
 [FI_TEMPLATES : NEUTRON-PLUGIN-OPENVSWITCH-AGENT-KP]
-FAULT = pkill___-9___-U___neutron___-f___neutron-plugin-openvswitch-agent
+FAULT = pkill___-9___-U___neutron___-f___neutron-openvswitch-agent
 REPAIR = $EMPTY
 
 [FI_TEMPLATES : OPENVSWITCH-SS]

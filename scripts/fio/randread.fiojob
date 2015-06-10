@@ -1,0 +1,11 @@
+[global]
+ioengine=sync 
+bs=64k 
+direct=1 
+rw=randread 
+size=4g 
+rate_iops=100
+
+[randreads]
+name=fiofile
+numjobs=1
