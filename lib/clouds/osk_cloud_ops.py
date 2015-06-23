@@ -87,7 +87,6 @@ class OskCmds(CommonCloudFunctions) :
 
         elif len(authentication_data.split('-')) == 4 :
             _username, _password, _tenant, _cacert = authentication_data.split('-')
-            _cacert = _cacert.replace("_dash_",'-')
 
         else :
             _username = ''
@@ -110,6 +109,9 @@ class OskCmds(CommonCloudFunctions) :
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
+            # Specify _insecure=True for cases where novaclient insists on using SSLv3
+            # instead of TLS1.2 where only TLS1.2 is allowed.
+            _insecure = False
 
             if len(access_url.split('-')) == 1 :
                 _endpoint_type = "publicURL"
@@ -125,6 +127,7 @@ class OskCmds(CommonCloudFunctions) :
             _username = _username.replace("_dash_",'-')
             _password = _password.replace("_dash_",'-')
             _tenant = _tenant.replace("_dash_",'-')
+            _cacert = _cacert.replace("_dash_",'-')
 
             if _cacert == "NA" :
                 _cacert = None
@@ -135,7 +138,8 @@ class OskCmds(CommonCloudFunctions) :
                                          access_url, region_name = region, \
                                          service_type="compute", \
                                          endpoint_type = _endpoint_type, \
-                                         cacert = _cacert)
+                                         cacert = _cacert, \
+                                         insecure = _insecure )
 
             self.oskconncompute.flavors.list()
 
@@ -150,7 +154,8 @@ class OskCmds(CommonCloudFunctions) :
                                              access_url, region_name=region, \
                                              service_type="volume", \
                                              endpoint_type = _endpoint_type, \
-                                             cacert = _cacert)
+                                             cacert = _cacert, \
+                                             insecure = _insecure )
     
                 self.oskconnstorage.volumes.list()                
             
@@ -170,7 +175,8 @@ class OskCmds(CommonCloudFunctions) :
                                                       region_name = region, \
                                                       service_type="network", \
                                                       endpoint_type = _endpoint_type, \
-                                                      cacert = _cacert)
+                                                      cacert = _cacert, \
+                                                      insecure = _insecure )
     
     
                 self.oskconnnetwork.list_networks()
