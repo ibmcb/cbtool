@@ -663,7 +663,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                                   "fi_templates", \
                                                                   False)
 
-                if not obj_attr_list["situation"] + "_fault" in _fault_situations_attr_list :
+                if obj_attr_list["situation"] != "auto" and not \
+                obj_attr_list["situation"] + "_fault" in _fault_situations_attr_list :
                     _fmsg = "Fault Injection situation \"" + obj_attr_list["situation"]
                     _fmsg += "\" is not defined."
                     _status = 102
@@ -673,15 +674,17 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 if not _status :
                     _status = 103
 
-                    _cmd_fault = _fault_situations_attr_list[obj_attr_list["situation"] + "_fault"]
-                    _cmd_repair = _fault_situations_attr_list[obj_attr_list["situation"] + "_repair"]
-
                     _host_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
                                                            "HOST", \
                                                            True, \
                                                            obj_attr_list["name"], \
                                                            False)
-     
+
+                    if obj_attr_list["situation"] == "auto" :
+                        obj_attr_list["situation"] = _host_attr_list["fault"]
+                        
+                    _cmd_fault = _fault_situations_attr_list[obj_attr_list["situation"] + "_fault"]
+                    _cmd_repair = _fault_situations_attr_list[obj_attr_list["situation"] + "_repair"]                    
      
                     _proc_man = ProcessManagement(username = _host_attr_list["login"], \
                                                   cloud_name = obj_attr_list["cloud_name"], \
@@ -728,6 +731,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                                "FAILED_HOSTS", \
                                                                obj_attr_list["name"], \
                                                                True)
+
+                                    self.osci.remove_object_attribute(obj_attr_list["cloud_name"], \
+                                                                      "HOST", \
+                                                                      _host_attr_list["uuid"], \
+                                                                      False, \
+                                                                      "fault")                                    
+                                    
                             break
     
                     if _target_state.lower() == "fail" and not _host_already_failed :
@@ -750,7 +760,14 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         if not _status :
                             self.osci.add_to_list(obj_attr_list["cloud_name"], \
                                                   "HOST", "FAILED_HOSTS", \
-                                                  obj_attr_list["name"], int(time()))            
+                                                  obj_attr_list["name"], int(time())) 
+
+                            self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
+                                                              "HOST", \
+                                                              _host_attr_list["uuid"], \
+                                                              False, \
+                                                              "fault", \
+                                                              obj_attr_list["situation"])
         
                     if _target_state.lower() == "repair" and \
                     not _host_already_failed and not _host_repaired :
@@ -1211,7 +1228,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
         '''
         #Don't want exceptions to be caught here. Let them propagate to
         #upper-level handling code....
-        
+
         if "save_on_attach" in obj_attr_list and obj_attr_list["save_on_attach"].lower() == "true" :
             cbdebug("Warning: the VMs of this VApp will be saved after attachment. " + \
                     "If this is not what you want, then CTRL-C and use cldalter command.", True)
@@ -1219,7 +1236,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
         _status = 100
         _post_speculative_admission_control = False
         _fmsg = "An error has occurred, but no error message was captured"
-            
+
         #Now start the exceptions...
         try :
                     
@@ -1281,7 +1298,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             if "description" in obj_attr_list :
                 del(obj_attr_list["description"])
-                   
+
             if "lifetime" in obj_attr_list and obj_attr_list["lifetime"] != "none" :
                 _value_generation = ValueGeneration(self.pid)
                 obj_attr_list["lifetime"] = int(_value_generation.get_value(obj_attr_list["lifetime"]))
@@ -1289,18 +1306,21 @@ class ActiveObjectOperations(BaseObjectOperations) :
             if not "base_type" in obj_attr_list :
                 obj_attr_list["base_type"] = obj_attr_list["type"]
 
+            _fmsg = "About to create VM list for AI"
             self.create_vm_list_for_ai(obj_attr_list)
-     
+
+            _fmsg = "About to execute speculative admission control"
             self.speculative_admission_control(obj_attr_list)
 
             _post_speculative_admission_control = True
 
             self.osci.pending_object_set(obj_attr_list["cloud_name"], \
                  "AI", obj_attr_list["uuid"], "status", "Creating VMs: Switch tabs for tracking..." )
-            
+
             if obj_attr_list["vm_creation"].lower() == "explicit" : 
+                _fmsg = "About to create VMs for AI"                
                 _status, _fmsg = self.parallel_obj_operation("attach", obj_attr_list)
-                
+
             if not _status :
                 _vm_uuid_list = obj_attr_list["vms"].split(',')
                 obj_attr_list["vms"] = ''
@@ -4441,7 +4461,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         self.thread_pools[pool_key] = _thread_pool
                     else :
                         _thread_pool = self.thread_pools[pool_key]
-                        
+                                            
                 if operation_type == "attach" :       
                     _func = self.objattach
                 elif operation_type == "detach" :

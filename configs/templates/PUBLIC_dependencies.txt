@@ -158,8 +158,8 @@ python-devel-install = pm
 python-setuptools-install = pm
 python-prettytable-install = pip 
 python-daemon-install = pm
-python-twisted-install = pm
-python-webob-install = pm
+python-twisted-install = man
+python-webob-install = man
 python-beaker-install = pm
 gmetad-python-install = git
 pyredis-install = pip
@@ -341,9 +341,9 @@ common-d3-urls-git = https://github.com/ibmcb
 ### START -  Dependency and method-specific command lines ###
 common-sudo-install-man = echo "USERNAME  ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers; sed -i s/"Defaults requiretty"/"#Defaults requiretty"/g /etc/sudoers
 
-rhel-repo-install-man = sudo mv -f /tmp/*.repo /etc/yum.repos.d; touch /tmp/repoupdated; service_stop_disable iptables; service_stop_disable firewalld
-fedora-repo-install-man = sudo mv -f /tmp/*.repo /etc/yum.repos.d; touch /tmp/repoupdated; service_stop_disable iptables; service_stop_disable firewalld
-ubuntu-repo-install-man = sudo mv -f /tmp/*.list /etc/apt/sources.list.d/; sudo apt-get update; service_stop_disable iptables; service_stop_disable ipfw 
+rhel-repo-install-man = sudo mv -f /tmp/*.repo /etc/yum.repos.d; touch /tmp/repoupdated; service_stop_disable iptables; service_stop_disable firewalld; exit 0
+fedora-repo-install-man = sudo mv -f /tmp/*.repo /etc/yum.repos.d; touch /tmp/repoupdated; service_stop_disable iptables; service_stop_disable firewalld; exit 0
+ubuntu-repo-install-man = sudo mv -f /tmp/*.list /etc/apt/sources.list.d/; sudo apt-get update; service_stop_disable iptables; service_stop_disable ipfw; exit 0
 
 common-ifconfig-install-sl = sudo ln -s /sbin/ifconfig /usr/local/bin/ifconfig
 
@@ -441,7 +441,7 @@ common-redis-install-git = cd 3RPARTYDIR;redis; make; sudo make install
 
 santiago-mongodb-install-man = sudo rpm -Uvh URL/mongo-10gen-2.4.9-mongodb_1.ARCH.rpm; sudo rpm -Uvh URL/mongo-10gen-server-2.4.9-mongodb_1.ARCH.rpm 
 santiago-mongodb-postinstall-man = sudo sed -i "s/.*bind_ip.*/bind_ip=0.0.0.0/" /etc/mongod.conf; service_restart_enable mongod
-rhel-mongodb-install-man = sudo package_install mongodb 
+rhel-mongodb-install-man = sudo package_install mongodb mongodb-server 
 rhel-mongodb-postinstall-man = sudo sed -i "s/.*bind_ip.*/bind_ip=0.0.0.0/" /etc/mongod.conf; service_restart_enable mongod
 fedora-mongodb-install-man = package_install mongodb mongodb-server
 fedora-mongodb-postinstall-man = sudo sed -i "s/.*bind_ip.*/bind_ip=0.0.0.0/" /etc/mongod.conf; service_restart_enable mongod
@@ -466,8 +466,10 @@ common-python-prettytable-install-pip = sudo pip install INDEXURL prettytable
 common-python-daemon-install-pm = package_install python-daemon
 
 common-python-twisted-install-pm = package_install python-twisted-web
+common-python-webob-install-man = sudo pip install twisted
 
 common-python-webob-install-pm = package_install python-webob
+common-python-webob-install-man = sudo pip install webob
 
 common-python-beaker-install-pm = package_install python-beaker
 

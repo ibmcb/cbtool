@@ -109,9 +109,6 @@ class OskCmds(CommonCloudFunctions) :
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
-            # Specify _insecure=True for cases where novaclient insists on using SSLv3
-            # instead of TLS1.2 where only TLS1.2 is allowed.
-            _insecure = False
 
             if len(access_url.split('-')) == 1 :
                 _endpoint_type = "publicURL"
@@ -127,7 +124,6 @@ class OskCmds(CommonCloudFunctions) :
             _username = _username.replace("_dash_",'-')
             _password = _password.replace("_dash_",'-')
             _tenant = _tenant.replace("_dash_",'-')
-            _cacert = _cacert.replace("_dash_",'-')
 
             if _cacert == "NA" :
                 _cacert = None
@@ -138,8 +134,7 @@ class OskCmds(CommonCloudFunctions) :
                                          access_url, region_name = region, \
                                          service_type="compute", \
                                          endpoint_type = _endpoint_type, \
-                                         cacert = _cacert, \
-                                         insecure = _insecure )
+                                         cacert = _cacert)
 
             self.oskconncompute.flavors.list()
 
@@ -154,8 +149,7 @@ class OskCmds(CommonCloudFunctions) :
                                              access_url, region_name=region, \
                                              service_type="volume", \
                                              endpoint_type = _endpoint_type, \
-                                             cacert = _cacert, \
-                                             insecure = _insecure )
+                                             cacert = _cacert)
     
                 self.oskconnstorage.volumes.list()                
             
@@ -175,8 +169,7 @@ class OskCmds(CommonCloudFunctions) :
                                                       region_name = region, \
                                                       service_type="network", \
                                                       endpoint_type = _endpoint_type, \
-                                                      cacert = _cacert, \
-                                                      insecure = _insecure )
+                                                      cacert = _cacert)
     
     
                 self.oskconnnetwork.list_networks()
@@ -2270,7 +2263,9 @@ class OskCmds(CommonCloudFunctions) :
 
             if obj_attr_list["tenant"] != "default" :
                 obj_attr_list["credentials"] = self.parse_authentication_data(obj_attr_list["credentials"], obj_attr_list["tenant"], obj_attr_list["project"])
-                self.check_ssh_key(obj_attr_list["vmc_name"], obj_attr_list["key_name"], obj_attr_list, True)
+                self.check_ssh_key(obj_attr_list["vmc_name"], \
+                                   obj_attr_list["key_name"], \
+                                   obj_attr_list, True)
                 self.oskconncompute = False
 
             if not self.oskconncompute :
@@ -2279,7 +2274,9 @@ class OskCmds(CommonCloudFunctions) :
                              {"use_neutronclient" : obj_attr_list["use_neutronclient"]})
 
             if obj_attr_list["tenant"] != "default" :
-                self.check_ssh_key(obj_attr_list["vmc_name"], obj_attr_list["key_name"], obj_attr_list, True)
+                self.check_ssh_key(obj_attr_list["vmc_name"], \
+                                   obj_attr_list["key_name"], \
+                                   obj_attr_list, True)
 
             if self.is_vm_running(obj_attr_list) :
                 _msg = "An instance named \"" + obj_attr_list["cloud_vm_name"]
@@ -2310,6 +2307,11 @@ class OskCmds(CommonCloudFunctions) :
 
             if "host_name" in obj_attr_list :
 #                _scheduler_hints = { "force_hosts" : obj_attr_list["host_name"] }
+
+                for _host in self.oskconncompute.hypervisors.list() :
+                    if _host.hypervisor_hostname.count(obj_attr_list["host_name"]) :
+                        obj_attr_list["host_name"] = _host.hypervisor_hostname
+
                 _availability_zone = "nova:" + obj_attr_list["host_name"]
             else :
 #                _scheduler_hints = None
@@ -2343,7 +2345,7 @@ class OskCmds(CommonCloudFunctions) :
 #
 #           Create volume based image.
 #
-	    _block_device_mapping = {}
+            _block_device_mapping = {}
             if "boot_volume" in obj_attr_list :
                 _boot_volume = True
                 _boot_volume_imageid = _imageid 

@@ -26,8 +26,9 @@ import pwd
 import redis
 import prettytable
 
-from sys import path, argv
+from sys import path, argv, stdout
 from time import sleep, time
+from random import sample
 from optparse import OptionParser
 
 def connect_to_cb(cloud_name) :
@@ -100,6 +101,95 @@ def connect_to_cb(cloud_name) :
     print "#" * 75
     return api
 
+def cloud_attach(options, api) :
+    '''
+    TBD
+    '''
+    attached=False
+    for cloud in api.cldlist():
+        if cloud['name'] == options.cloud_name : 
+            attached=True
+            
+    if not attached:
+        print '# Attaching to cloud %s'%(options.cloud_name)
+        try:
+            api.cldattach(options.cloud_model, options.cloud_name)
+        except Exception, e:
+            print 'Attachment failed: %s'%(str(e))
+            exit(1)
+            
+    print '#' * 10 + " Attached to cloud %s" %(options.cloud_name)
+
+    attached=False
+
+    _vmcs = len(api.vmclist(options.cloud_name))
+    if _vmcs > 1 :
+        attached=True
+        print '#' * 10 + " All VMCs (" + str(_vmcs) + ") attached to the cloud." 
+
+    return True
+
+def cloud_detach(options, api) :
+    '''
+    TBD
+    '''
+    
+    print '# Detaching from VMC %s'%(options.vmc_name)
+    try:
+        api.vmcdetach(options.cloud_name, options.vmc_name)
+        
+    except Exception, e:
+        print 'Detaching from VMC %s failed:\n %s'%(options.vmc_name, str(e))
+
+    print '# Detaching from cloud %s'%(options.cloud_name)
+    
+    try:
+        options.api.clddetach(options.cloud_name)
+        
+    except Exception, e:
+        print 'Detaching from cloud %s failed:\n %s'%(options.cloud_name, str(e))
+
+def cloud_cleanup(options, api) :
+    '''
+    TBD
+    '''
+    print '#' * 10 + "Cleaning up all AIs in cloud \"" + options.cloud_name + "\"...."        
+    try:
+        api.appdetach(options.cloud_name, 'all')        
+    except Exception, e:
+        print str(e)
+        return False
+    
+    try:
+        ailist = api.applist(options.cloud_name)
+        for ai in ailist:
+            print '#' * 10 + "Detaching AI %s" %(ai['uuid'])
+            try:
+                api.appdetach(options.cloud_name, ai['uuid'])
+            except Exception, e:
+                print str(e)
+                return False
+                            
+    except Exception, e:
+        print str(e)
+        return False
+    
+    try:
+        vmlist = api.vmlist(options.cloud_name)
+        for vm in vmlist:
+            print '#' * 10 + "Detaching VM %s" %(vm['uuid'])
+            try:
+                api.vmdetach(options.cloud_name, vm['uuid'])
+            except Exception, e:
+                print str(e)
+                return False
+                    
+    except Exception, e:
+        print str(e)
+        return False
+    
+    return True
+
 def get_network_parms(options, api) :
     '''
     TBD
@@ -128,7 +218,6 @@ def get_network_parms(options, api) :
 
     return _net_type, _net_mechanism
 
-
 def get_compute_nodes(options, api) :
     '''
     TBD
@@ -140,6 +229,60 @@ def get_compute_nodes(options, api) :
             _host_list.append(_host["name"].replace("host_",''))
 
     return _host_list
+
+def get_controller_nodes(options, api) :
+    '''
+    TBD
+    '''
+    _host_list = []
+
+    for _host in api.hostlist(options.cloud_name) :
+        if _host["function"] != "hypervisor" and _host["function"] != "compute" :        
+            _host_list.append(_host["name"].replace("host_",''))
+
+    return _host_list
+
+def selective_fault_injection(options, api, fault_clock) :
+    '''
+    TBD
+    '''
+    if not int(options.fault_duration) :
+
+        return True
+    else :
+        
+        _controller_list = get_controller_nodes(options, api)
+
+        if fault_clock["time_to_next_repair"] > 0 :
+            _elapsed_time = time() - fault_clock["loop_start_time"] 
+            fault_clock["time_to_next_repair"] = fault_clock["time_to_next_repair"] - _elapsed_time
+        elif fault_clock["time_to_next_repair"] == 0 :
+            True
+        else :
+            for _element in api.stateshow(options.cloud_name) :
+                if _element["type"] == "HOST" :
+                    if _element["state"] == "fail" :
+                        _msg = '#' * 15 + " Repairing host \"" + _element["name"].replace("host_", '') + "\""
+                        print _msg                
+                        api.hostrepair(options.cloud_name, _element["name"])
+                        fault_clock["time_to_next_repair"] = 0
+                                                      
+    #    api.viewshow(options.cloud_name, "VM", "batch", str(_batch_id))        
+
+        _elapsed_time = time() - fault_clock["loop_start_time"]
+        fault_clock["time_to_next_fault"] = fault_clock["time_to_next_fault"] - _elapsed_time       
+
+        if fault_clock["time_to_next_fault"] <= 0 :        
+            _host = sample(_controller_list,1)[0]
+            _msg = '#' * 15 + " Injecting fault \"" + options.fault_situation + "\" on host \"" + _host + "\""
+            print _msg
+            
+            api.hostfail(options.cloud_name, _host, options.fault_situation)
+            fault_clock["fault_base_time"] = time()
+            fault_clock["time_to_next_fault"] = int(options.ift)              
+            fault_clock["time_to_next_repair"] = int(options.fault_duration)
+
+    return True
 
 def prepare_host_ring_list(options, api) :
     '''
@@ -211,7 +354,7 @@ def configure_vapp(options, api, workload, rate_limit, buffer_length) :
 
     return True
 
-def deploy_vapp(options, api, cloud_model, workload, hostpair, nr_ais = "1", \
+def deploy_vapp(options, api, workload, hostpair, nr_ais = "1", \
                 inter_vm_wait = 0, max_check = False):
     '''
     TBD
@@ -429,7 +572,11 @@ def host_to_host(options, api, experiment_id):
     _host_list = []    
     _ai_list = []
     _mgt_reported_vm_uuids = []
-        
+
+    _cb_dirs = api.cldshow(options.cloud_name, "space")
+
+    _cb_data_dir = os.path.abspath(_cb_dirs["data_working_dir"])
+
     for _mgt_metrics in api.get_performance_data(options.cloud_name, \
                                                  None, \
                                                  metric_class = "management", \
@@ -536,6 +683,11 @@ def host_to_host(options, api, experiment_id):
         _host_table.add_row(_line)
 
     print _host_table
+
+    _fn = _cb_data_dir + '/' + experiment_id + "/host_to_host.txt"
+    _fh = open(_fn, "w")
+    _fh.write(str(_host_table))
+    _fh.close()
     
     return _host_table
     

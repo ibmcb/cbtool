@@ -1,6 +1,8 @@
 ### START - Dependency installation order ###
-oraclejava-order = 50
-oracle-java-home-order = 51
+#oraclejava-order = 50
+#oracle-java-home-order = 51
+java-order = 50
+java-home-order = 51
 cassandra-order = 52
 cassandra-tools-order = 53
 maven-order = 54
@@ -16,6 +18,8 @@ ycsb-order = 55
 # man = "manual"
 oraclejava-install = man
 oracle-java-home-install = man
+java-install = pm
+java-home-install = man
 cassandra-install = man
 cassandra-tools-install = man
 maven-install = man
@@ -25,8 +29,10 @@ ycsb-install = git
 ### START - Tests ###
 oraclejava-configure = java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g'
 oracle-java-home-configure = cat .bashrc | grep -c latest
+java-configure = java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g'
+java-home-configure = cat ~/.bashrc | grep -c openjdk
 cassandra-configure = which cassandra
-cassandra-tools = which token-generator
+cassandra-tools-configure = which token-generator
 maven-configure = mvn --version | head -n 1 | cut -d ' ' -f 3
 ycsb-configure = ls -la ~/YCSB
 ### END - Tests ###
@@ -57,7 +63,8 @@ rhel-cassandra-tools-x86_64-urls-man = http://rpm.datastax.com/community/noarch/
 fedora-cassandra-tools-x86_64-urls-man = http://rpm.datastax.com/community/noarch/cassandra21-tools-2.1.2-1.noarch.rpm
 ubuntu-cassandra-tools-x86_64-urls-man = http://www.apache.org/dist/cassandra/debian/pool/main/c/cassandra/cassandra-tools_2.1.2_all.deb
 
-rhel-maven-x86_64-urls-man = https://repos.fedorapeople.org/repos/dchen/apache-maven/epel-6/x86_64/apache-maven-3.2.1-2.el6.noarch.rpm
+santiago-maven-x86_64-urls-man = https://repos.fedorapeople.org/repos/dchen/apache-maven/epel-6/x86_64/apache-maven-3.2.1-2.el6.noarch.rpm
+maipo-maven-x86_64-urls-man = https://repos.fedorapeople.org/repos/dchen/apache-maven/epel-7/x86_64/apache-maven-3.2.5-1.el7.noarch.rpm
 fedora-maven-x86_64-urls-man = https://repos.fedorapeople.org/repos/dchen/apache-maven/epel-6/x86_64/apache-maven-3.2.1-2.el6.noarch.rpm
 
 common-ycsb-urls-git = https://github.com/brianfrankcooper
@@ -73,6 +80,13 @@ ubuntu-oraclejava-install-man = tar -xvf jdk-7u51-linux-x64.tar.gz; sudo mkdir -
 ubuntu-oraclejava-postinstall-man = sudo update-alternatives --install "/usr/bin/java" "java" "/usr/lib/jvm/jdk1.7.0_51/bin/java" 1; sudo update-alternatives --install "/usr/bin/javac" "javac" "/usr/lib/jvm/jdk1.7.0_51/bin/javac" 1; sudo update-alternatives --install "/usr/bin/javaws" "javaws" "/usr/lib/jvm/jdk1.7.0_51/bin/javaws" 1
 
 common-oracle-java-home-install-man = echo "export JAVA_HOME=/usr/java/latest/jre" >> ~/.bashrc
+
+rhel-java-install-pm = package_install java-1.7.0-openjdk
+fedora-java-install-pm = package_install java-1.7.0-openjdk
+ubuntu-java-install-pm = package_install openjdk-6-jdk; package_install openjdk-7-jdk
+ubuntu-java-postinstall-pm = export JAVAALT=$(sudo update-java-alternatives -l 2>&1 | grep java | sort -r | head -n 1 | cut -d ' ' -f 1); sudo update-java-alternatives -s $JAVAALT
+
+common-java-home-install-man = echo "export JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre" >> ~/.bashrc
 
 rhel-cassandra-preinstall-man = package_install jna which
 rhel-cassandra-install-man = sudo rpm -Uvh URL

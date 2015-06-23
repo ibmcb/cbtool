@@ -2351,6 +2351,9 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _msg = "Preparing to execute AI load generation"
                     cbdebug(_msg)
 
+                    _msg = "Sleeping for " + str(_ai_attr_list["current_load_duration"]) + " seconds"
+                    cbdebug(_msg)
+                    
                     sleep(int(_ai_attr_list["current_load_duration"]))
 
                     _vm_uuid = _ai_attr_list["load_generator_vm"]

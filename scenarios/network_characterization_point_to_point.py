@@ -206,7 +206,7 @@ def run_pt2pt_pattern_scenario(options, api) :
 
         for _host_pair in _host_pair_list :
 
-            _vapp_attrs = deploy_vapp(options, api, cloud_model, _workload, _host_pair, 1, 0, _max_check)
+            _vapp_attrs = deploy_vapp(options, api, _workload, _host_pair, 1, 0, _max_check)
 
             if _vapp_attrs :
 

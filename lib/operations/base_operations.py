@@ -249,18 +249,22 @@ class BaseObjectOperations :
                 object_attribute_list["firs"] = _parameters[3]
             if _length < 2:
                 _status = 9
-                _msg = "Usage: hostfail <cloud name> <host name> <situation> [parent] [mode]"
+                _msg = "Usage: hostfail <cloud name> <host name> <fault> [parent] [mode]"
                 
         elif command == "host-repair" :
+            if _length >= 2 :
+                object_attribute_list["name"] = _parameters[1]
+                object_attribute_list["situation"] = "auto"                
+                object_attribute_list["firs"] = "none"            
             if _length >= 3 :
                 object_attribute_list["name"] = _parameters[1]
                 object_attribute_list["situation"] = _parameters[2]                
                 object_attribute_list["firs"] = "none"
             if _length >= 4 :
                 object_attribute_list["firs"] = _parameters[3]
-            if _length < 2:
+            if _length < 1:
                 _status = 9
-                _msg = "Usage: hostfail <cloud name> <host name> <situation> [parent] [mode]"
+                _msg = "Usage: hostrepair <cloud name> <host name> <fault> [parent] [mode]"
 
         elif command == "vmc-cleanup" :
             if _length >= 2 :
@@ -1380,6 +1384,10 @@ class BaseObjectOperations :
 
             _admission_control_limits = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, \
                                                              "admission_control", False)
+
+            if _admission_control_limits[obj_type.lower() + "_max_reservations"].count('.'):
+                _admission_control_limits[obj_type.lower() + "_max_reservations"] = _admission_control_limits[obj_type.lower() + "_max_reservations"].split('.')[0]            
+            
             if transaction == "attach" :
                 if obj_type != "AI" :
                     _reservation = self.osci.update_counter(obj_attr_list["cloud_name"], obj_type, \
@@ -1410,6 +1418,10 @@ class BaseObjectOperations :
                     cbdebug(_msg)
 
                     _vmc_attrs = self.osci.get_object(obj_attr_list["cloud_name"], "VMC", False, vmc, False)
+
+                    if _vmc_attrs["max_vm_reservations"].count('.'):
+                        _vmc_attrs["max_vm_reservations"] = _admission_control_limits["max_vm_reservations"].split('.')[0] 
+                    
                     if int(_vmc_reservation) > int(_vmc_attrs["max_vm_reservations"]) :
                         _status = 102
                         _fmsg ="VMC-wide reservations for VM objects exhausted."
@@ -1436,6 +1448,10 @@ class BaseObjectOperations :
                 cbdebug(_msg)
 
                 _vmc_attrs = self.osci.get_object(obj_attr_list["cloud_name"], "VMC", False, vmc, False)
+                
+                if _vmc_attrs["max_vm_reservations"].count('.'):
+                    _vmc_attrs["max_vm_reservations"] = _admission_control_limits["max_vm_reservations"].split('.')[0]
+                                    
                 if int(_vmc_reservation) > int(_vmc_attrs["max_vm_reservations"]) :
                     _status = 102
                     _fmsg ="VMC-wide reservations for VM objects exhausted."
@@ -1622,9 +1638,22 @@ class BaseObjectOperations :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"            
 
+            if str(obj_attr_list["max_ais"]).count('.'):
+                obj_attr_list["max_ais"] = str(obj_attr_list["max_ais"]).split('.')[0]
+            
+            if str(obj_attr_list["attach_parallelism"]).count('.'):
+                obj_attr_list["attach_parallelism"] = str(obj_attr_list["attach_parallelism"]).split('.')[0]
+
             _admission_control_limits = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, \
                                                              "admission_control", \
                                                              False)
+
+            if _admission_control_limits["ai_max_reservations"].count('.'):
+                _admission_control_limits["ai_max_reservations"] = _admission_control_limits["ai_max_reservations"].split('.')[0]
+                
+            if _admission_control_limits["vm_max_reservations"].count('.'):
+                _admission_control_limits["vm_max_reservations"] = _admission_control_limits["vm_max_reservations"].split('.')[0]
+                                
             # We need to check if the number of AI reservations was exhausted 
             # BEFORE issuing the creation of new VMs.
             _reservation = self.osci.update_counter(obj_attr_list["cloud_name"], "AI", "RESERVATIONS", "increment")
@@ -2931,15 +2960,23 @@ class BaseObjectOperations :
             _admission_control_limits = self.osci.get_object(cloud_name, "GLOBAL", False, \
                                                              "admission_control", \
                                                              False)
-
+            if _admission_control_limits["ai_max_reservations"].count('.'):
+                _admission_control_limits["ai_max_reservations"] = _admission_control_limits["ai_max_reservations"].split('.')[0]
+                
             if int(_current_ai_reservations) >= int(_admission_control_limits["ai_max_reservations"]) :
                 _aidrs_overload = 1
 
+            if obj_attr_list["max_ais"].count('.'):
+                obj_attr_list["max_ais"] = obj_attr_list["max_ais"].split('.')[0]
+                
             if "nr_ais" in obj_attr_list and int(obj_attr_list["nr_ais"]) >= int(obj_attr_list["max_ais"]) :
                 _aidrs_overload = 2
 
             _active = int(self.get_object_count(cloud_name, "AI", "ARRIVING"))
             _active += int(self.get_object_count(cloud_name, "AI", "DEPARTING"))
+
+            if obj_attr_list["daemon_parallelism"].count('.') :
+                obj_attr_list["daemon_parallelism"] = obj_attr_list["daemon_parallelism"].split('.')[0]
 
             if _active >= int(obj_attr_list["daemon_parallelism"]) :
                 _aidrs_overload = 3
