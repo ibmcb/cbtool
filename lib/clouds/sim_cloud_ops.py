@@ -904,10 +904,14 @@ class SimCmds(CommonCloudFunctions) :
             
             for _vm in obj_attr_list["vms"].split(',') :
                 _vm_uuid, _vm_role, _vm_name = _vm.split('|')
+                # default distribution is 10-500.  If the user set distribution, use it.
+                _distribution = 'uniformIXIXI10I500'
+                if 'deployment_time_value' in obj_attr_list:
+                    _distribution = obj_attr_list['deployment_time_value']
 
                 self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
                                              _vm_uuid, "mgt_007_application_start", \
-                                             int(_vg.get_value("uniformIXIXI10I500", 0))) 
+                                             int(_vg.get_value(_distribution, 0)))
 
                 self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
                                              obj_attr_list["uuid"], "status", "Application starting up...") 
