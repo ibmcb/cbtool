@@ -200,7 +200,7 @@ def run_ring_pattern_scenario(options, api) :
                 
         for _host_pair in _host_ring_pair_list :
 
-            deploy_vapp(options, api, cloud_model, _workload, _host_pair, _nr_ais, _inter_vm_wait)
+            deploy_vapp(options, api, _workload, _host_pair, _nr_ais, _inter_vm_wait)
             if int(_inter_host_wait) :
                 sleep(float(_inter_host_wait))
 

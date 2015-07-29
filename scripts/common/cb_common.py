@@ -718,6 +718,7 @@ def report_app_metrics(metriclist, sla_targets_list, ms_conn = "auto", \
             _metrics_dict["app_sla_runtime"]["val"] = _sla_status
     
         _metrics_dict["time"] = int(time())
+        _metrics_dict["time_cbtool"] = _osci.get_remote_time()[0]
         _metrics_dict["time_h"] = strftime("%a %b %d %X %Z %Y")
         _metrics_dict["expid"] = _expid
         _metrics_dict["uuid"] = _my_uuid

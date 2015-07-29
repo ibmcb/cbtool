@@ -145,31 +145,39 @@ def get_linux_distro() :
     return _linux_distro_kind, _linux_distro_ver, _linux_major_ver, _linux_distro_name, _arch
 
 def get_cmdline(depkey, depsdict, operation, process_manager = False) :
-    '''
+    ''' 
     TBD
     '''
 
     if operation != "configure" :
         if depsdict[depkey + '-' + operation] == "man" :
-            _urls_key = "common-" + depkey + '-' + depsdict["carch"] + "-urls-" + depsdict[depkey + '-' + operation]
-            
+
+            _urls_key = depsdict["cdistnam"] + '-' + depkey + '-' + depsdict["carch"] + "-urls-" + depsdict[depkey + '-' + operation]            
+
             if _urls_key not in depsdict :
                 _urls_key = depsdict["cdistkind"] + '-' + depkey + '-' + depsdict["carch"] + "-urls-" + depsdict[depkey + '-' + operation]
-                
-                if _urls_key not in depsdict :
-                    _urls_key = False
+
+                if _urls_key not in depsdict :            
+                    _urls_key = "common-" + depkey + '-' + depsdict["carch"] + "-urls-" + depsdict[depkey + '-' + operation]
+                            
+                    if _urls_key not in depsdict :
+                        _urls_key = False
         else :
-            _urls_key = "common-" + depkey + "-urls-" + depsdict[depkey + '-' + operation]
+
+            _urls_key = depsdict["cdistnam"] + '-' + depkey + "-urls-" + depsdict[depkey + '-' + operation]            
 
             if _urls_key not in depsdict :            
-                _urls_key = depsdict["cdistkind"] + '-' + depkey + "-urls-" + depsdict[depkey + '-' + operation]
+                _urls_key = depsdict["cdistkind"] + '-' + depkey + "-urls-" + depsdict[depkey + '-' + operation]            
 
-                if _urls_key not in depsdict :
-                    _urls_key = False                
+                if _urls_key not in depsdict :               
+                    _urls_key = "common-" + depkey + "-urls-" + depsdict[depkey + '-' + operation]
+
+                    if _urls_key not in depsdict :
+                        _urls_key = False                
 
     else :
         _urls_key = False
-
+    
     if _urls_key :
         if len(depsdict[_urls_key]) > 7 :
             _tested_urls = ''

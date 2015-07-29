@@ -1536,6 +1536,14 @@ class RedisMgdConn :
             cberr(_msg)
             raise self.ObjectStoreMgdConnException(str(_msg), 2)
 
+    def get_remote_time(self):
+        '''
+        TBD
+        '''
+        self.conn_check()
+        
+        return self.redis_conn.time()
+    
     @trace
     def remove_from_view(self, cloud_name, obj_type, obj_attr_list, criterion) :
         '''

@@ -109,9 +109,6 @@ class OskCmds(CommonCloudFunctions) :
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
-            # Specify _insecure=True for cases where novaclient insists on using SSLv3
-            # instead of TLS1.2 where only TLS1.2 is allowed.
-            _insecure = False
 
             if len(access_url.split('-')) == 1 :
                 _endpoint_type = "publicURL"
@@ -127,7 +124,6 @@ class OskCmds(CommonCloudFunctions) :
             _username = _username.replace("_dash_",'-')
             _password = _password.replace("_dash_",'-')
             _tenant = _tenant.replace("_dash_",'-')
-            _cacert = _cacert.replace("_dash_",'-')
 
             if _cacert == "NA" :
                 _cacert = None
@@ -138,8 +134,7 @@ class OskCmds(CommonCloudFunctions) :
                                          access_url, region_name = region, \
                                          service_type="compute", \
                                          endpoint_type = _endpoint_type, \
-                                         cacert = _cacert, \
-                                         insecure = _insecure )
+                                         cacert = _cacert)
 
             self.oskconncompute.flavors.list()
 
@@ -154,8 +149,7 @@ class OskCmds(CommonCloudFunctions) :
                                              access_url, region_name=region, \
                                              service_type="volume", \
                                              endpoint_type = _endpoint_type, \
-                                             cacert = _cacert, \
-                                             insecure = _insecure )
+                                             cacert = _cacert)
     
                 self.oskconnstorage.volumes.list()                
             
@@ -175,8 +169,7 @@ class OskCmds(CommonCloudFunctions) :
                                                       region_name = region, \
                                                       service_type="network", \
                                                       endpoint_type = _endpoint_type, \
-                                                      cacert = _cacert, \
-                                                      insecure = _insecure )
+                                                      cacert = _cacert)
     
     
                 self.oskconnnetwork.list_networks()
@@ -821,15 +814,16 @@ class OskCmds(CommonCloudFunctions) :
             _fmsg = str(obj.error_message)
             
         except CldOpsException, obj :
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
+            _status = int(obj.status)
+            _fmsg = str(obj.msg)
                     
         except Exception, e :
             _status = 23
             _fmsg = str(e)
     
         finally :
-            self.disconnect()            
+
+            self.disconnect()    
             if _status :
                 _msg = "HOSTS belonging to VMC " + obj_attr_list["name"] + " could not be "
                 _msg += "discovered on OpenStack Cloud \"" + obj_attr_list["cloud_name"]
@@ -853,9 +847,12 @@ class OskCmds(CommonCloudFunctions) :
             _fmsg = "An error has occurred, but no error message was captured"
 
             _function = ''
-            if "nova-scheduler" in self.host_map[host]["services"]  or "nova-api" in self.host_map[host]["services"] :
-                _function = "controller,"
-
+            for _service in self.host_map[host]["services"] :
+                if _service.count("scheduler") or _service.count("api") or \
+                _service.count("server") or _service.count("dhcp") :
+                    _function = "controller,"
+                    break
+                
             if "nova-compute" in self.host_map[host]["services"] :
                 _function = "compute,"
 
@@ -877,7 +874,7 @@ class OskCmds(CommonCloudFunctions) :
 
             obj_attr_list["host_list"][_host_uuid]["cloud_hostname"], \
             obj_attr_list["host_list"][_host_uuid]["cloud_ip"] = hostname2ip(_queried_host_name)
-            
+
             obj_attr_list["host_list"][_host_uuid]["cloud_hostname"] = \
             _actual_host_name
 
@@ -914,8 +911,8 @@ class OskCmds(CommonCloudFunctions) :
             _status = 0
             
         except CldOpsException, obj :
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
+            _status = int(obj.status)
+            _fmsg = str(obj.msg)
 
         except socket.gaierror, e :
             _status = 453
@@ -964,8 +961,17 @@ class OskCmds(CommonCloudFunctions) :
         else :
             _service_host = service["host"]
 
-        _host, _ip = hostname2ip(_service_host)
-        return _host.split('.')[0]
+        try :
+            _host, _ip = hostname2ip(_service_host)
+            return _host.split('.')[0]
+        
+        except socket.gaierror:
+            _status = 1200
+            _fmsg = "The Hostname \"" + _service_host + "\" - used by the OpenSTack"
+            _fmsg += " Controller - is not mapped to an IP. "
+            _fmsg += "Please make sure this name is resolvable either in /etc/hosts or DNS."
+            cberr(_fmsg, True)
+            raise CldOpsException(_fmsg, _status)
 
     def get_service_binary(self, service, project) :
         '''
@@ -980,38 +986,44 @@ class OskCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
-        
-        for _project in ["compute", "volume", "network"] :
 
-            for _service in self.get_service_list(_project) :
-
-                _host = self.get_service_host(_service, _project)
-                
+        try :        
+            for _project in ["compute", "volume", "network"] :
+    
+                for _service in self.get_service_list(_project) :
+    
+                    _host = self.get_service_host(_service, _project)
+                    
+                    if _host not in self.host_map :
+                        self.host_map[_host] = {}
+                        self.host_map[_host]["services"] = []
+                        self.host_map[_host]["extended_info"] = False
+                        self.host_map[_host]["memory_size"] = "NA"
+                        self.host_map[_host]["cores"] = "NA"
+                        self.host_map[_host]["hypervisor_type"] = "NA"    
+    
+                    _name = self.get_service_binary(_service, _project)
+    
+                    if _name not in self.host_map[_host]["services"] :
+                        self.host_map[_host]["services"].append(_name)
+    
+            for _entry in self.oskconncompute.hypervisors.list() :
+                _host = _entry.hypervisor_hostname.split('.')[0]
                 if _host not in self.host_map :
                     self.host_map[_host] = {}
                     self.host_map[_host]["services"] = []
-                    self.host_map[_host]["extended_info"] = False
-                    self.host_map[_host]["memory_size"] = "NA"
-                    self.host_map[_host]["cores"] = "NA"
-                    self.host_map[_host]["hypervisor_type"] = "NA"    
+                                    
+                self.host_map[_host]["extended_info"] = _entry._info
+                self.host_map[_host]["memory_size"] = _entry.memory_mb
+                self.host_map[_host]["cores"] = _entry.vcpus
+                self.host_map[_host]["hypervisor_type"] = _entry.hypervisor_type             
+    
+            return True
 
-                _name = self.get_service_binary(_service, _project)
-
-                if _name not in self.host_map[_host]["services"] :
-                    self.host_map[_host]["services"].append(_name)
-
-        for _entry in self.oskconncompute.hypervisors.list() :
-            _host = _entry.hypervisor_hostname.split('.')[0]
-            if _host not in self.host_map :
-                self.host_map[_host] = {}
-                self.host_map[_host]["services"] = []
-                                
-            self.host_map[_host]["extended_info"] = _entry._info
-            self.host_map[_host]["memory_size"] = _entry.memory_mb
-            self.host_map[_host]["cores"] = _entry.vcpus
-            self.host_map[_host]["hypervisor_type"] = _entry.hypervisor_type             
-
-        return True
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+            raise CldOpsException(_fmsg, _status)
 
     @trace
     def vmccleanup(self, obj_attr_list) :
@@ -1101,8 +1113,8 @@ class OskCmds(CommonCloudFunctions) :
             _fmsg = str(obj.error_message)
             
         except CldOpsException, obj :
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
+            _status = int(obj.status)
+            _fmsg = str(obj.msg)
 
         except Exception, e :
             _status = 23
@@ -1884,6 +1896,14 @@ class OskCmds(CommonCloudFunctions) :
                 _msg += obj_attr_list["cloud_vv"] + " GB, on VMC \"" 
                 _msg += obj_attr_list["vmc_name"] + "\""
                 cbdebug(_msg, True)
+
+                _imageid = None
+                if "boot_volume" in obj_attr_list :
+                    _imageid = self.get_images(obj_attr_list).__getattr__("id")
+                    _msg = "Creating boot volume with name \"" 
+                    _msg += obj_attr_list['cloud_vv_name'] + "\", from image id"
+                    _msg += " id \"" + _imageid + "\""
+                    cbdebug(_msg, True)
     
                 _instance = self.oskconnstorage.volumes.create(obj_attr_list["cloud_vv"], \
                                                                snapshot_id = None, \
@@ -1891,25 +1911,35 @@ class OskCmds(CommonCloudFunctions) :
                                                                display_description = None, \
                                                                volume_type = _volume_type, \
                                                                availability_zone = None, \
-                                                               imageRef = None)
+                                                               imageRef = _imageid)
                 
                 sleep(int(obj_attr_list["update_frequency"]))
         
                 obj_attr_list["cloud_vv_uuid"] = '{0}'.format(_instance.id)
-    
-                _msg = "Attaching the newly created Volume \"" 
-                _msg += obj_attr_list["cloud_vv_name"] + "\" (cloud-assigned uuid \""
-                _msg += obj_attr_list["cloud_vv_uuid"] + "\") to instance \""
-                _msg += obj_attr_list["cloud_vm_name"] + "\" (cloud-assigned uuid \""
-                _msg += obj_attr_list["cloud_vm_uuid"] + "\")"
-                cbdebug(_msg)
 
-                # There is weird bug on the python novaclient code. Don't change the
-                # following line, it is supposed to be "oskconncompute", even though
-                # is dealing with volumes. Will explain latter.
-                self.oskconncompute.volumes.create_server_volume(obj_attr_list["cloud_vm_uuid"], \
-                                                                 obj_attr_list["cloud_vv_uuid"], \
-                                                                 "/dev/vdd")
+                _wait_for_volume = 180
+                for i in range(1, _wait_for_volume) :
+                    if self.oskconnstorage.volumes.get(_instance.id).status == "available" :
+                        cbdebug("Volume took %s second(s) to become available" % i,True)
+                        break
+                    else :
+                        sleep(1)
+
+                if not _imageid :
+
+                    _msg = "Attaching the newly created Volume \""
+                    _msg += obj_attr_list["cloud_vv_name"] + "\" (cloud-assigned uuid \""
+                    _msg += obj_attr_list["cloud_vv_uuid"] + "\") to instance \""
+                    _msg += obj_attr_list["cloud_vm_name"] + "\" (cloud-assigned uuid \""
+                    _msg += obj_attr_list["cloud_vm_uuid"] + "\")"
+                    cbdebug(_msg)
+
+                    # There is weird bug on the python novaclient code. Don't change the
+                    # following line, it is supposed to be "oskconncompute", even though
+                    # is dealing with volumes. Will explain latter.
+                    self.oskconncompute.volumes.create_server_volume(obj_attr_list["cloud_vm_uuid"], \
+                                                                     obj_attr_list["cloud_vv_uuid"], \
+                                                                     "/dev/vdd")
 
             else :
                 obj_attr_list["cloud_vv_uuid"] = "none"
@@ -2233,7 +2263,9 @@ class OskCmds(CommonCloudFunctions) :
 
             if obj_attr_list["tenant"] != "default" :
                 obj_attr_list["credentials"] = self.parse_authentication_data(obj_attr_list["credentials"], obj_attr_list["tenant"], obj_attr_list["project"])
-                self.check_ssh_key(obj_attr_list["vmc_name"], obj_attr_list["key_name"], obj_attr_list, True)
+                self.check_ssh_key(obj_attr_list["vmc_name"], \
+                                   obj_attr_list["key_name"], \
+                                   obj_attr_list, True)
                 self.oskconncompute = False
 
             if not self.oskconncompute :
@@ -2242,7 +2274,9 @@ class OskCmds(CommonCloudFunctions) :
                              {"use_neutronclient" : obj_attr_list["use_neutronclient"]})
 
             if obj_attr_list["tenant"] != "default" :
-                self.check_ssh_key(obj_attr_list["vmc_name"], obj_attr_list["key_name"], obj_attr_list, True)
+                self.check_ssh_key(obj_attr_list["vmc_name"], \
+                                   obj_attr_list["key_name"], \
+                                   obj_attr_list, True)
 
             if self.is_vm_running(obj_attr_list) :
                 _msg = "An instance named \"" + obj_attr_list["cloud_vm_name"]
@@ -2273,6 +2307,11 @@ class OskCmds(CommonCloudFunctions) :
 
             if "host_name" in obj_attr_list :
 #                _scheduler_hints = { "force_hosts" : obj_attr_list["host_name"] }
+
+                for _host in self.oskconncompute.hypervisors.list() :
+                    if _host.hypervisor_hostname.count(obj_attr_list["host_name"]) :
+                        obj_attr_list["host_name"] = _host.hypervisor_hostname
+
                 _availability_zone = "nova:" + obj_attr_list["host_name"]
             else :
 #                _scheduler_hints = None
@@ -2302,6 +2341,18 @@ class OskCmds(CommonCloudFunctions) :
             
             obj_attr_list["mgt_002_provisioning_request_sent"] = \
             _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
+
+#
+#           Create volume based image.
+#
+            _block_device_mapping = {}
+            if "boot_volume" in obj_attr_list :
+                _boot_volume = True
+                _boot_volume_imageid = _imageid 
+                obj_attr_list['cloud_vv'] = obj_attr_list['boot_volume_size'] 
+                obj_attr_list['cloud_vv_type'] = None 
+                self.vvcreate(obj_attr_list)
+                _block_device_mapping = {'vda':'%s' % obj_attr_list["cloud_vv_uuid"]}
             
             _msg = "Starting an instance on OpenStack, using the imageid \""
             _msg += obj_attr_list["imageid1"] + "\" (" + str(_imageid) + ") and "
@@ -2320,6 +2371,7 @@ class OskCmds(CommonCloudFunctions) :
             cbdebug(_msg, True)
 
             _instance = self.oskconncompute.servers.create(name = obj_attr_list["cloud_vm_name"], \
+                                                           block_device_mapping = _block_device_mapping, \
                                                            image = _imageid, \
                                                            flavor = _flavor, \
                                                            security_groups = _security_groups, \
@@ -2348,11 +2400,15 @@ class OskCmds(CommonCloudFunctions) :
                     _fmsg = obj_attr_list["last_known_state"]
                     _status = 189
                 else :
-                    _vvstatus, _vvfmsg = self.vvcreate(obj_attr_list)
 
-                    if _vvstatus :
-                        _status = _vvstatus
+	            if not len(_block_device_mapping) :
+                        _vvstatus, _vvfmsg = self.vvcreate(obj_attr_list)
 
+                        if _vvstatus :
+                            _status = _vvstatus
+                    else :
+                        _status = 0
+ 
                     self.get_mac_address(obj_attr_list, _instance)
 
                     self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)

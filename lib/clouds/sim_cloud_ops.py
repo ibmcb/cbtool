@@ -206,15 +206,22 @@ class SimCmds(CommonCloudFunctions) :
             obj_attr_list["host_list"][_host_uuid]["cloud_vm_uuid"] = _host_uuid
             obj_attr_list["host_list"][_host_uuid]["uuid"] = _host_uuid
             obj_attr_list["host_list"][_host_uuid]["model"] = obj_attr_list["model"]
-            obj_attr_list["host_list"][_host_uuid]["function"] = "hypervisor"
+                        
+            if _host_n == 0 :
+                obj_attr_list["host_list"][_host_uuid]["function"] = "controller"
+            else :
+                obj_attr_list["host_list"][_host_uuid]["function"] = "hypervisor"
+
             self.create_simulated_hosts(obj_attr_list, _host_uuid)
             obj_attr_list["host_list"][_host_uuid]["arrival"] = int(time())
             obj_attr_list["host_list"][_host_uuid]["simulated"] = "True"
             obj_attr_list["host_list"][_host_uuid]["identity"] = obj_attr_list["identity"]
+            
             if "login" in obj_attr_list :
                 obj_attr_list["host_list"][_host_uuid]["login"] = obj_attr_list["login"]
             else :
                 obj_attr_list["host_list"][_host_uuid]["login"] = "root"
+
             obj_attr_list["host_list"][_host_uuid]["counter"] = obj_attr_list["counter"]
             obj_attr_list["host_list"][_host_uuid]["mgt_001_provisioning_request_originated"] = obj_attr_list["mgt_001_provisioning_request_originated"]
             obj_attr_list["host_list"][_host_uuid]["mgt_002_provisioning_request_sent"] = obj_attr_list["mgt_002_provisioning_request_sent"]
