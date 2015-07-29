@@ -4613,7 +4613,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _sla_runtime_targets = ''
             for _key in _ai_attr_list :
                 if _key.count("sla_runtime_target") :
-                    _sla_runtime_targets += _key + ':' + _ai_attr_list[_key]
+                    _sla_runtime_targets += _key + ':' + _ai_attr_list[_key] + ','
+            # Strip trailing comma if one or more sla targets were found.
+            # load manager cb_report_app_metrics.py expects SLA targets to be comma separated.
+            if _sla_runtime_targets != '':
+                _sla_runtime_targets = _sla_runtime_targets[:-1]
 
             if _ai_state and _ai_state == "attached" :
                 _load = self.get_load(cloud_name, _ai_attr_list, False, \
