@@ -652,6 +652,9 @@ class SlrCmds(CommonCloudFunctions) :
             obj_attr_list["cloud_vm_name"] += obj_attr_list["name"].split("_")[1]
             obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["role"]
 
+            if obj_attr_list["ai"] != "none" :            
+                obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["ai_name"] 
+
             obj_attr_list["last_known_state"] = "about to connect to SoftLayer manager"
 
             if not self.nodeman or not self.sshman or not self.imageman :

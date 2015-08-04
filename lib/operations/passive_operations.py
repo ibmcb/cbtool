@@ -1771,6 +1771,8 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
                     _space_attr_list = self.osci.get_object(_obj_attr_list["cloud_name"], "GLOBAL", False, "space", False)
 
+                    _time_attr_list = self.osci.get_object(_obj_attr_list["cloud_name"], "GLOBAL", False, "time", False)
+                    
                     _obj_attr_list["data_file_location"] = _space_attr_list["data_working_dir"] + '/' + _criteria["expid"]
 
                     _filestor_attr_list = self.osci.get_object(_obj_attr_list["cloud_name"], \
@@ -1821,7 +1823,10 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                                           False, \
                                                           [("command_originated", 1)])
 
-                    _experiment_start_time = int(_trace["command_originated"])
+                    if "experiment_start_time" in _time_attr_list :
+                        _experiment_start_time = _time_attr_list
+                    else :
+                        _experiment_start_time = int(_trace["command_originated"])
 
                     # Management metrics collection is always extracted, because it 
                     # contains all the information that maps UUIDs to all other attributes.

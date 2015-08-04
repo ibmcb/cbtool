@@ -4614,8 +4614,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             for _key in _ai_attr_list :
                 if _key.count("sla_runtime_target") :
                     _sla_runtime_targets += _key + ':' + _ai_attr_list[_key] + ','
-            # Strip trailing comma if one or more sla targets were found.
-            # load manager cb_report_app_metrics.py expects SLA targets to be comma separated.
+
             if _sla_runtime_targets != '':
                 _sla_runtime_targets = _sla_runtime_targets[:-1]
 

@@ -2722,7 +2722,6 @@ class BaseObjectOperations :
                         # deleted by us.
                         self.msci.delete_document("latest_runtime_os_" + obj_type.upper() + '_' + _mon_defaults["username"], _criteria) 
 
-
                 elif obj_type.upper() == "AI" :
 
                     # HACK alert - This whole section should be removed.

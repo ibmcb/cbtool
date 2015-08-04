@@ -30,7 +30,12 @@ sudo mkdir -p /etc/ntp
 echo "driftfile /etc/ntp/ntp.drift" > ${NTP_CONF_FILE}
 echo "tracefile /etc/ntp/ntp.trace" >> ${NTP_CONF_FILE}
 echo "logfile /etc/ntp/ntp.log" >> ${NTP_CONF_FILE}
-echo "server ${TIMESERVER}" >> ${NTP_CONF_FILE}
+
+TIMESERVER=$(echo $TIMESERVER | sed 's/,/ /g')
+for TIMESRVNODE in $TIMESERVER
+do
+    echo "server ${TIMESERVER}" >> ${NTP_CONF_FILE}
+done
 
 sudo /bin/cp ${NTP_CONF_FILE} /etc/ntp.conf
 sudo /bin/cp ${NTP_CONF_FILE} /var/lib/ntp/ntp.conf.dhcp

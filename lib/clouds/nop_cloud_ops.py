@@ -302,6 +302,9 @@ class NopCmds(CommonCloudFunctions) :
             obj_attr_list["cloud_vm_name"] += '-' + "vm_" 
             obj_attr_list["cloud_vm_name"] += obj_attr_list["name"].split("_")[1] 
             obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["role"]
+
+            if obj_attr_list["ai"] != "none" :            
+                obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["ai_name"]  
             
             obj_attr_list["cloud_mac"] = "NA"
             obj_attr_list["vcpus"] = "NA"

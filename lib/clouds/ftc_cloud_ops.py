@@ -368,7 +368,14 @@ class FtcCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
-        obj_attr_list["cloud_vm_uuid"] = "cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"] + '-' + "vm_" + obj_attr_list["name"].split("_")[1] + '-' + obj_attr_list["role"]
+        obj_attr_list["cloud_vm_uuid"] = "cb-" + obj_attr_list["username"] + '-'
+        obj_attr_list["cloud_vm_uuid"] += obj_attr_list["cloud_name"] + '-' 
+        obj_attr_list["cloud_vm_uuid"] += "vm_" + obj_attr_list["name"].split("_")[1] 
+        obj_attr_list["cloud_vm_uuid"] += '-' + obj_attr_list["role"]
+
+        if obj_attr_list["ai"] != "none" :            
+            obj_attr_list["cloud_vm_uuid"] += '-' + obj_attr_list["ai_name"]        
+        
         obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_uuid"]
         obj_attr_list["host_name"] = obj_attr_list["vmc_name"]
         obj_attr_list["host_cloud_ip"] = obj_attr_list["vmc_cloud_ip"]

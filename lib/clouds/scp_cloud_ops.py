@@ -737,7 +737,12 @@ class ScpCmds(CommonCloudFunctions) :
 
             _instance = False
 
-            obj_attr_list["cloud_vm_name"] = "cb-" + obj_attr_list["username"] + '-' + "vm" + obj_attr_list["name"].split("_")[1] + '-' + obj_attr_list["role"]
+            obj_attr_list["cloud_vm_name"] = "cb-" + obj_attr_list["username"] 
+            obj_attr_list["cloud_vm_name"] += '-' + "vm" + obj_attr_list["name"].split("_")[1] 
+            obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["role"]
+
+            if obj_attr_list["ai"] != "none" :            
+                obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["ai_name"]  
 
             obj_attr_list["last_known_state"] = "about to connect to webservice VM"
 

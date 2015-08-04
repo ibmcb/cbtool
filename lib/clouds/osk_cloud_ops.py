@@ -110,6 +110,10 @@ class OskCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
+            # Specify _insecure=True for cases where novaclient insists on using SSLv3
+            # instead of TLS1.2 where only TLS1.2 is allowed.
+            _insecure = False
+
             if len(access_url.split('-')) == 1 :
                 _endpoint_type = "publicURL"
             if len(access_url.split('-')) == 2 :
@@ -124,6 +128,7 @@ class OskCmds(CommonCloudFunctions) :
             _username = _username.replace("_dash_",'-')
             _password = _password.replace("_dash_",'-')
             _tenant = _tenant.replace("_dash_",'-')
+            _cacert = _cacert.replace("_dash_",'-')
 
             if _cacert == "NA" :
                 _cacert = None
@@ -134,7 +139,8 @@ class OskCmds(CommonCloudFunctions) :
                                          access_url, region_name = region, \
                                          service_type="compute", \
                                          endpoint_type = _endpoint_type, \
-                                         cacert = _cacert)
+                                         cacert = _cacert, \
+                                         insecure = _insecure)
 
             self.oskconncompute.flavors.list()
 
@@ -149,7 +155,8 @@ class OskCmds(CommonCloudFunctions) :
                                              access_url, region_name=region, \
                                              service_type="volume", \
                                              endpoint_type = _endpoint_type, \
-                                             cacert = _cacert)
+                                             cacert = _cacert, \
+                                             insecure = _insecure)
     
                 self.oskconnstorage.volumes.list()                
             
@@ -169,8 +176,8 @@ class OskCmds(CommonCloudFunctions) :
                                                       region_name = region, \
                                                       service_type="network", \
                                                       endpoint_type = _endpoint_type, \
-                                                      cacert = _cacert)
-    
+                                                      cacert = _cacert, \
+                                                      insecure = _insecure)
     
                 self.oskconnnetwork.list_networks()
             else :
@@ -2256,6 +2263,9 @@ class OskCmds(CommonCloudFunctions) :
                 obj_attr_list["cloud_vm_name"] += '-' + "vm"
                 obj_attr_list["cloud_vm_name"] += obj_attr_list["name"].split("_")[1]
                 obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["role"]
+
+                if obj_attr_list["ai"] != "none" :            
+                    obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["ai_name"]  
 
             obj_attr_list["last_known_state"] = "about to connect to openstack manager"
 

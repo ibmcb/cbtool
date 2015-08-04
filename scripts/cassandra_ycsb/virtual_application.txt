@@ -5,7 +5,8 @@
 [AI_TEMPLATES : CASSANDRA_YCSB]
 
 # Attributes MANDATORY for all Virtual Applications
-SUT = ycsb->1_x_seed->1_x_cassandra
+#SUT = ycsb->2_x_seed->1_x_cassandra
+SUT = ycsb->2_x_seed
 LOAD_BALANCER_SUPPORTED = $False
 RESIZE_SUPPORTED = $True
 REGENERATE_DATA = $True

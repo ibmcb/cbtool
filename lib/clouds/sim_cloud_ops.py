@@ -621,7 +621,12 @@ class SimCmds(CommonCloudFunctions) :
             else :
                 obj_attr_list["cloud_vm_uuid"] = "11111111-1111-1111-1111-111111111111"
 
-            obj_attr_list["cloud_vm_name"] = "cb-" + obj_attr_list["username"] + '-' + "vm_" + obj_attr_list["name"].split("_")[1] + '-' + obj_attr_list["role"]
+            obj_attr_list["cloud_vm_name"] = "cb-" + obj_attr_list["username"] 
+            obj_attr_list["cloud_vm_name"] += '-' + "vm_" + obj_attr_list["name"].split("_")[1] 
+            obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["role"]
+
+            if obj_attr_list["ai"] != "none" :            
+                obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["ai_name"]
             
             obj_attr_list["cloud_mac"] = self.generate_random_mac_address()
             self.get_virtual_hardware_config(obj_attr_list)
@@ -911,6 +916,7 @@ class SimCmds(CommonCloudFunctions) :
             
             for _vm in obj_attr_list["vms"].split(',') :
                 _vm_uuid, _vm_role, _vm_name = _vm.split('|')
+
                 # default distribution is 10-500.  If the user set distribution, use it.
                 _distribution = 'uniformIXIXI10I500'
                 if 'deployment_time_value' in obj_attr_list:

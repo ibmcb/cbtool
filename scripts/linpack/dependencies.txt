@@ -1,0 +1,31 @@
+### START - Dependency installation order ###
+linpack-order = 50
+### END - Dependency installation order ###
+
+### START - Dependency-specific installation method ###
+# pm = "package manager" (yum or apt-get)
+# sl = "soft link" (assume that the dependency is already installed, just has to
+# be properly exposed to the user's path.
+# git = git clone using above giturl
+# pip = python pip utility
+# man = "manual"
+linpack-install = man
+### END - Dependency-specific installation method ###
+
+### START - Tests ###
+linpack-configure = xlinpack_xeon64 -e
+### END - Tests ###
+
+### START - Dependency versions ###
+linpack-ver = ANY
+### END - Dependency versions ###
+
+### START - Dependency URLs ###
+common-linpack-x86_64-urls-man = http://registrationcenter.intel.com/irc_nas/7615/l_lpk_p_11.3.0.004.tgz
+### END - Dependency URLs ###
+
+### START -  Dependency and method-specific command lines ###
+common-linpack-preinstall-man = cd~; wget -N URL; mkdir -p ~/linpack/benchmarks/linpack
+common-linpack-install-man = ln -s ~/compilers_and_libraries_2016.0.038/linux/mkl/benchmarks/linpack/xlinpack_xeon64 ~/linpack/benchmarks/linpack/xlinpack_xeon64
+common-linpack-postinstall-man = sudo ln -s ~/compilers_and_libraries_2016.0.038/linux/mkl/benchmarks/linpack/xlinpack_xeon64 /usr/local/bin/xlinpack_xeon64
+### END -  Dependency and method-specific command lines ###

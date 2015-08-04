@@ -794,6 +794,10 @@ class CskCmds(CommonCloudFunctions) :
             _instance_name += '-' + "vm"
             _instance_name += obj_attr_list["name"].split("_")[1]
             _instance_name += '-' + obj_attr_list["role"]
+
+            if obj_attr_list["ai"] != "none" :            
+                _instance_name += '-' + obj_attr_list["ai_name"]            
+            
             obj_attr_list["cloud_vm_name"] = _instance_name.lower().replace("_", "-")
             obj_attr_list["last_known_state"] = "about to connect to cloud platform manager"
 
