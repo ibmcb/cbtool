@@ -34,7 +34,7 @@ echo "logfile /etc/ntp/ntp.log" >> ${NTP_CONF_FILE}
 TIMESERVER=$(echo $TIMESERVER | sed 's/,/ /g')
 for TIMESRVNODE in $TIMESERVER
 do
-    echo "server ${TIMESERVER}" >> ${NTP_CONF_FILE}
+    echo "server ${TIMESRVNODE}" >> ${NTP_CONF_FILE}
 done
 
 sudo /bin/cp ${NTP_CONF_FILE} /etc/ntp.conf
