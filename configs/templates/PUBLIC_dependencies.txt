@@ -115,6 +115,10 @@ R-order = 53
 sshkey-order = 54
 sshd-order = 55
 pssh-order = 56
+docutils-order = 57
+setuptools-order = 58
+markup-order = 59
+pyyaml-order = 60
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -182,6 +186,10 @@ R-install = pm
 sshkey-install = man
 sshd-install = man
 pssh-install = pm
+docutils-install = man
+setuptools-install = man
+markup-install = man
+pyyaml-install = man
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
@@ -242,6 +250,10 @@ R-configure = R --version | grep version | grep -v GNU
 sshkey-configure = ls CREDENTIALSDIR/cbtool_rsa
 sshd-configure = sudo cat /etc/ssh/sshd_config | grep -v ^# | grep UseDNS | grep no
 pssh-configure = sudo ln -s /usr/bin/parallel-ssh /usr/local/bin/pssh; pssh --version
+docutils-configure = python -c "import docutils; print str(docutils.__version__).strip()"
+setuptools-configure = python -c "import setuptools; print str(setuptools.__version__).strip()"
+markup-configure = python -c "import markup;"
+pyyaml-configure = python -c "import yaml; print str(yaml.__version__).strip()"
 ### END - Tests ###
 
 ### START - Dependency versions ###
@@ -254,7 +266,7 @@ which-ver = ANY
 ntp-ver = ANY
 git-ver = 1.6.0
 wget-ver = 1.00
-pip-ver = 1.0
+pip-ver = 1.5.6
 gcc-ver = 4.0
 make-ver = 3.5
 emacs-ver = 20.0.0
@@ -302,6 +314,10 @@ R-ver = 2.1
 sshkey-ver = ANY
 sshd-ver = ANY
 pssh-ver = ANY
+docutils-ver = 0.12
+setuptools-ver = 7.0 
+markup-ver = ANY
+pyyaml-ver = 3.11
 ### END - Dependency versions ###
 
 ### START - Dependency URLs ###
@@ -523,4 +539,13 @@ common-sshkey-install-man = ssh-keygen -f CREDENTIALSDIR/cbtool_rsa -t rsa -N ''
 common-sshd-install-man = sudo sed -i 's/.*UseDNS.*/UseDNS no/g' /etc/ssh/sshd_config; sudo sed -i 's/.*GSSAPIAuthentication.*/GSSAPIAuthentication no/g' /etc/ssh/sshd_config
 
 common-pssh-install-pm = package_install pssh
+
+common-docutils-install-man = sudo pip install docutils
+
+common-setuptools-install-man = sudo pip install setuptools
+
+common-markup-install-man = sudo pip install markup
+
+common-pyyaml-install-man = sudo pip install pyyaml
+
 ### END -  Dependency and method-specific command lines ###
