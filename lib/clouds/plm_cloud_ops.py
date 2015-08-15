@@ -465,6 +465,7 @@ class PlmCmds(CommonCloudFunctions) :
             if obj_attr_list["ai"] != "none" :            
                 obj_attr_list["tag"] += '-' + obj_attr_list["ai_name"]  
 
+            obj_attr_list["tag"] = obj_attr_list["tag"].lower().replace("_", "-")
             obj_attr_list["last_known_state"] = "about to connect to PLM"
 
             if type(self.plmconn) is type(False) :

@@ -427,6 +427,7 @@ class VcdCmds(CommonCloudFunctions) :
             if obj_attr_list["ai"] != "none" :            
                 obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["ai_name"] 
 
+            obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"].lower().replace("_", "-")
             obj_attr_list["last_known_state"] = "about to connect to vCloud Director manager"
          
             credential_name = obj_attr_list["credentials"]

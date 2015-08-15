@@ -242,11 +242,16 @@ class Nethashget :
         '''
         self.pid = "nethashget"
         self.hostname = hostname
+
+        if self.hostname.count('@') :
+            self.hostname = self.hostname.split('@')[1]
+
         if port :
             self.port = int(port)
         else :
             self.port = None
         self.socket = None
+        
 
     @trace
     def connect(self) :

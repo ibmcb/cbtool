@@ -90,7 +90,8 @@ class MongodbMgdConn :
         '''
         try:
 
-            if tout > 0:
+            if tout > 0:            
+                
                 _conn = MongoClient(host = self.host, port = self.port, \
                                     max_pool_size=10)
             else :
