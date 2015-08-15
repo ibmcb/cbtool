@@ -1783,11 +1783,12 @@ class BaseObjectOperations :
         '''
         TBD
         '''
+        
         _collection_names = [ "reported_management_VM_metric_names", \
                              "reported_runtime_os_HOST_metric_names", \
                              "reported_runtime_os_VM_metric_names", \
                              "reported_runtime_app_VM_metric_names" ]
-
+        
         _mon_parameters = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "mon_defaults", False)
 
         for _collection_name in _collection_names :
@@ -1796,7 +1797,10 @@ class BaseObjectOperations :
             _document["_id"] = b64encode(sha1(_document["expid"]).digest())
             for _metric_name in _mon_parameters[_collection_name.lower()].split(',') :
                 _document[_metric_name] = "1"
+                           
             self.msci.update_document(_collection_name + '_' + _mon_parameters["username"], _document)
+
+        return True
 
     @trace
     def pre_select_object(self, obj_attr_list, obj_type, username) :

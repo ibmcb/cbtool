@@ -62,6 +62,7 @@ class MongodbMgdConn :
         TBD
         '''
         set_my_parameters(self, parameters)
+        self.password = str(self.password)
         self.pid = "TEST_" + getpwuid(os.getuid())[0]
         self.mongodb_conn = False
         if pymongo.has_c() is False:
@@ -163,18 +164,28 @@ class MongodbMgdConn :
             raise self.MetricStoreMgdConnException(str(_msg), 1)
 
     @trace
-    def conn_check(self) :
+    def conn_check(self, hostov = False, dbov = False, tout = False) :
         '''
         TBD
         '''
+        
         if not self.mongodb_conn :
+            if hostov :
+                self.host = hostov
+
+            if dbov :
+                self.database = dbov
+
+            if tout :
+                self.timeout = tout
+                
             try :
                 self.connect(self.timeout)
                 
             except self.MetricStoreMgdConnException, obj :
                 raise self.MetricStoreMgdConnException(obj.msg, 2)
-
-            if len(self.password) > 2 :
+            
+            if len(self.password) > 2 and self.password.lower() != "false" :
                 try :
                     self.mongodb_conn[self.database].authenticate(self.username, self.password)
                 

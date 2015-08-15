@@ -2862,17 +2862,18 @@ class PassiveObjectOperations(BaseObjectOperations) :
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
-
+            
             _result = None 
             _new_expid = None
             
             _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
-
+            
             if not _status :
-
+                
                 _status, _fmsg = self.initialize_object(obj_attr_list, command)
 
                 if not _status :
+                    
                     _time_obj_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
                                                                "GLOBAL", False, \
                                                                "time", False)
@@ -2904,12 +2905,10 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                                            _new_expid, False)
 
                         self.expid = _new_expid
-                        
                         self.initialize_metric_name_list(obj_attr_list)
 
                         if not _status :
                             _result["current"] = _new_expid
-
 
                     _result["experiment_list"] = self.msci.get_experiment_list("reported_management_VM_metric_names_" + _username)
                     
