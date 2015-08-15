@@ -104,7 +104,7 @@ class MongodbMgdConn :
             _msg += self.host + ", port " + str(self.port) + ", database"
             _msg += ' ' + str(self.database) + ", with a timeout of "
             _msg += str(tout) + "s was established."
-            cbdebug(_msg)
+            cbdebug(_msg)            
             return self.mongodb_conn
 
         except PymongoException, msg :
@@ -127,7 +127,7 @@ class MongodbMgdConn :
             _msg += self.host + ", port " + str(self.port) + ", database"
             _msg += ' ' + str(self.database) + ", with a timeout of "
             _msg += str(tout) + "s was established."
-            cbdebug(_msg)
+            cbdebug(_msg)            
             return self.mongodb_conn
 
         except PymongoException, msg :
@@ -170,16 +170,34 @@ class MongodbMgdConn :
         if not self.mongodb_conn :
             try :
                 self.connect(self.timeout)
+                
             except self.MetricStoreMgdConnException, obj :
                 raise self.MetricStoreMgdConnException(obj.msg, 2)
+
+            if len(self.password) > 2 :
+                try :
+                    self.mongodb_conn[self.database].authenticate(self.username, self.password)
+                
+                except PymongoException, errmsg :
+                    _msg = "Unable to authenticate against the database \"" + self.database
+                    _msg += "\":" + str(errmsg) + ". \nPlease create the user there (i.e., directly on "
+                    _msg += self.host + ") using the following command:\n"               
+                    _msg += "mongo localhost/" + self.database + " --eval \"db.addUser({user: '" + self.username  + "', pwd:'" + self.password + "', roles:['readWrite']})\""                
+                    raise self.MetricStoreMgdConnException(_msg, 2)
+    
+                except Exception, e:
+                    _msg = "Unable to authenticate against the database \"" + self.database
+                    _msg += "\":" + str(e) + ". \nPlease create the user there (i.e., directly on "
+                    _msg += self.host + ") using the following command:\n"               
+                    _msg += "mongo localhost/" + self.database + " --eval \"db.addUser({user: '" + self.username  + "', pwd:'" + self.password + "', roles:['readWrite']})\""                
+                    raise self.MetricStoreMgdConnException(_msg, 2)
 
     @trace
     def initialize_metric_store(self, username) :
         '''
         TBD
         '''
-        self.conn_check()
-
+        self.conn_check()        
         username = username.replace('-',"dash")
 
         try :

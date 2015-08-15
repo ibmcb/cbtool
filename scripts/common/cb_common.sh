@@ -540,6 +540,7 @@ metricstore_port=`get_global_sub_attribute metricstore port`
 metricstore_database=`get_global_sub_attribute metricstore database`
 metricstore_kind=`get_global_sub_attribute metricstore kind`
 metricstore_username=`get_global_sub_attribute metricstore username`
+metricstore_password=`get_global_sub_attribute metricstore password`
 metricstore_timeout=`get_global_sub_attribute metricstore timeout`
 my_experiment_id=`get_global_sub_attribute time experiment_id`
 collect_from_guest=`get_global_sub_attribute mon_defaults collect_from_guest`
