@@ -2864,7 +2864,7 @@ class BaseObjectOperations :
         '''
         TBD
         '''
-                         
+
         _total_provisioning_time = 0
         
         if "sla_provisioning_target" in obj_attr_list :            

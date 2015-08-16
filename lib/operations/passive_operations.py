@@ -2015,13 +2015,13 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                 _last_unchanged_metric[_current_uuid] = {}
     
                             for _key in _desired_keys :
-                                if _key in _metric and _key != "uuid" and _key != "time" and _key != "time_h" and _key != "time_cbtool":
+                                if _key in _metric and _key != "uuid" and _key != "time" and _key != "time_h" and _key != "time_cbtool" and _key != "time_cbtool_h" :
                                     _val = str(_metric[_key]["val"])
                                     # Every time we find a metric, we add it to an
                                     # in-memory cache (dictionary)
                                     _last_unchanged_metric[_current_uuid][_key] = str(_val)
     
-                                elif _key == "uuid" or _key == "time_h" :
+                                elif _key == "uuid" or _key == "time_h" or _key == "time_cbtool_h" :
                                     _val = str(_metric[_key])
     
                                 elif _key == "time" or _key == "time_cbtool" :

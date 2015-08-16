@@ -314,7 +314,7 @@ HOST_MANAGEMENT_METRICS_HEADER = HS_ID1, CRT_M, DST_M
 
 ### Layout of the runtime metrics file
 # Layout "components"
-TSTAMP = time, time_h, time_cbtool
+TSTAMP = time, time_h, time_cbtool, time_cbtool_h
 VM_ID2 = uuid, name, role, ai_name, type, host_name, aidrs_name, sla_provisioning
 HS_ID2 = uuid, name
 #CPU_M = cpu_speed, cores, cpu_num, proc_total, proc_run, cpu_idle, cpu_aidle, 

@@ -27,6 +27,7 @@ from logging import getLogger, StreamHandler, Formatter, Filter, DEBUG, ERROR, \
 INFO, WARN, CRITICAL
 from logging.handlers import logging, SysLogHandler, RotatingFileHandler
 from time import time, sleep, strftime
+from datetime import datetime
 from sys import path, argv, stdout
 from subprocess import Popen, PIPE, STDOUT
 from json import dumps,loads
@@ -720,6 +721,7 @@ def report_app_metrics(metriclist, sla_targets_list, ms_conn = "auto", \
         _metrics_dict["time"] = int(time())
         _metrics_dict["time_cbtool"] = _osci.get_remote_time()[0]
         _metrics_dict["time_h"] = strftime("%a %b %d %X %Z %Y")
+        _metrics_dict["time_cbtool_h"] = datetime.fromtimestamp(int(_metrics_dict["time_cbtool"])).strftime("%a %b %d %X %Z %Y")        
         _metrics_dict["expid"] = _expid
         _metrics_dict["uuid"] = _my_uuid
         
