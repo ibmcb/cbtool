@@ -574,6 +574,9 @@ class API():
 
     def getrandnr(self, cloud_name, distribution) :
         return self.passive.getrandnr({}, cloud_name + ' ' + distribution, "get-randomnr")[2]
+
+    def reset(self, cloud_name, object_list) :
+        return self.passive.reset_counters({}, cloud_name + ' ' + object_list, "counters-set")[2]
             
     def msgpub(self, cloud_name, object_type, channel, message) :
         return self.passive.msgpub({}, cloud_name + ' ' + object_type + ' ' + channel + ' ' + message, "msg-pub")[2]

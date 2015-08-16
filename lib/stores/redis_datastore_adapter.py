@@ -188,11 +188,6 @@ class RedisMgdConn :
 
             for _object_type in cloud_kv_list["query"]["object_type_list"].split(',') :
                 if _object_type.lower() in cloud_kv_list["query"] :
-                    _counters = ["COUNTER", "ARRIVED", "DEPARTED", "FAILED", "RESERVATIONS"]
-                    for _counter in _counters :
-                        _obj_count_fn = obj_inst + ':' + _object_type + ':' + _counter
-                        self.redis_conn.set(_obj_count_fn, 0)
-
                     for _view_type in cloud_kv_list["query"][_object_type.lower() ].split(',') :
                         self.redis_conn.zadd(obj_inst + ':' + _object_type + ":VIEW", _view_type, 1)
 
@@ -225,6 +220,7 @@ class RedisMgdConn :
 
                     if path.exists(cloud_kv_list["space"]["scripts_dir"] + '/' + _actual_ai_type_name) :
                         self.add_to_list(cloud_name, "GLOBAL", "ai_types", _actual_ai_type_name)
+                        
                     for _key_suffix in ["load_profile", "sut", \
                                         "load_generator_role", "load_manager_role",\
                                         "metric_aggregator_role", "capture_role",\
@@ -260,7 +256,50 @@ class RedisMgdConn :
                 for _key in cloud_kv_list["vm_templates"].keys() :
                     self.add_to_list(cloud_name, "GLOBAL", "vm_roles", _key)
 
-            self.redis_conn.set(obj_inst + ":GLOBAL:experiment_counter", "0")
+            self.reset_counters(cloud_name, cloud_kv_list)
+
+            return True
+
+        except ConnectionError, msg :
+            _msg = "The connection to the data store seems to be "
+            _msg += "severed: " + str(msg)
+            cberr(_msg)
+            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+
+        except ResponseError, msg :
+            _msg = "Unable to initialize the contents of the Redis "
+            _msg += "server on host " + self.host + " port "
+            _msg += str(self.port) + " database " + str(self.dbid) + ": "
+            _msg += str(msg)
+            cberr(_msg)
+            raise self.ObjectStoreMgdConnException(str(_msg), 1)
+
+    def reset_counters(self, cloud_name, cloud_kv_list, reset_exp_counter = True, counter_list = None) :
+        '''
+        TBD
+        '''
+        self.conn_check()
+
+        obj_inst = self.experiment_inst + ":" + cloud_name
+        
+        try :
+
+            if reset_exp_counter :
+                self.redis_conn.set(obj_inst + ":GLOBAL:experiment_counter", "0")
+            
+            if not counter_list :
+                _object_list = cloud_kv_list["query"]["object_type_list"].split(',')
+                _query_list = cloud_kv_list["query"]
+            else :
+                _object_list = counter_list.split(',')
+                _query_list = _object_list
+                
+            for _object_type in _object_list :
+                if _object_type.lower() in _query_list :
+                    _counters = ["COUNTER", "ARRIVED", "DEPARTED", "FAILED", "RESERVATIONS"]
+                    for _counter in _counters :
+                        _obj_count_fn = obj_inst + ':' + _object_type + ':' + _counter
+                        self.redis_conn.set(_obj_count_fn, 0)
 
             return True
 

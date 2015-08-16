@@ -1142,6 +1142,84 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 
             return self.package(_status, _msg, _result)
 
+    def reset_counters(self, obj_attr_list, parameters, command) :
+        '''
+        TBD
+        '''
+
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _obj_type = "undefined"
+            _result = []
+
+            obj_attr_list["cloud_name"] = "undefined"
+            _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
+                
+            if not _status :
+                _status, _fmsg = self.initialize_object(obj_attr_list, command)
+
+                _x, _y, _stats = self.stats(obj_attr_list, obj_attr_list["cloud_name"] + " all noprint", "stats-get", True)
+
+                _exp_counters = _stats["experiment_counters"]
+                
+                _aidrs = int(_exp_counters["AIDRS"]["reservations"]) 
+                _aidrs += int(_exp_counters["AIDRS"]["arrived"]) 
+                _aidrs += int(_exp_counters["AIDRS"]["arriving"]) 
+
+                if _aidrs :
+                    _fmsg = "Unable to reset counters. At least one VAppS (AIDRS)"
+                    _fmsg += " is present on the experiment."
+                    _status = 1972
+
+                else :
+                    
+                    _status = 0
+                    
+                    for _obj in obj_attr_list["object_list"].split(',') :
+                        _obj = _obj.upper()
+                        
+                        _obj_count = int(_exp_counters[_obj]["reservations"]) 
+                        _obj_count += int(_exp_counters[_obj]["arriving"]) 
+
+                        if _obj_count :
+                            _fmsg = "Unable to reset counters. At least one " + _obj
+                            _fmsg += " is present on the experiment."
+                            _status = 1972
+                    
+                    if not _status :
+                        self.osci.reset_counters(obj_attr_list["cloud_name"], {}, False, counter_list = obj_attr_list["object_list"])
+                        _x, _y, _stats = self.stats(obj_attr_list, obj_attr_list["cloud_name"] + " all noprint", "stats-get", True)                        
+                        _status = 0
+
+        except self.ObjectOperationException, obj :
+            _status = 8
+            _fmsg = str(obj.msg)
+
+        except self.osci.ObjectStoreMgdConnException, obj :
+            _status = 8
+            _fmsg = str(obj.msg)
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+
+        finally :
+            if _status :
+                _msg = "Unable to reset the counters for objects \""  + obj_attr_list["object_list"]
+                _msg += "\" on this experiment (Cloud "
+                _msg += obj_attr_list["cloud_name"] + "): " + _fmsg
+                cberr(_msg)
+            else :
+                _msg = "Successfully reset the counters for objects \""  + obj_attr_list["object_list"]
+                _msg += "\" on this experiment (Cloud "
+                _msg += obj_attr_list["cloud_name"] + ")."
+                cbdebug(_msg)
+                
+            return self.package(_status, _msg, _stats)
+
     @trace
     def alter_state(self, obj_attr_list, parameters, command) :
         '''
@@ -2965,7 +3043,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
                     _dist = obj_attr_list["distribution"]
                     _vg = ValueGeneration(self.pid)
-                    
+
                     _start = time()
                     _result = _vg.get_value(_dist)
                     _end = time() - _start

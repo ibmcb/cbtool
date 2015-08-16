@@ -846,6 +846,13 @@ class BaseObjectOperations :
                 _status =  9
                 _msg = "Usage: stats <cloud name> [object type] [output]"
 
+        elif command == "counters-set" :
+            if _length == 2 :
+                object_attribute_list["object_list"] = _parameters[1]
+            else :
+                _status =  9
+                _msg = "Usage: reset <cloud name> [object type list]"
+
         elif command == "shell-execute" :
             if _length >= 2 :
                 object_attribute_list["cmdexec"] = ' '.join(_parameters[1:]) 
@@ -929,6 +936,9 @@ class BaseObjectOperations :
                 _status = 0
 
             elif cmd == "get-randomnr" :
+                _status = 0
+
+            elif cmd == "counters-set" :
                 _status = 0
                 
             elif cmd == "mon-repair" :
