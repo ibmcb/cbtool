@@ -2267,7 +2267,7 @@ class OskCmds(CommonCloudFunctions) :
                 if obj_attr_list["ai"] != "none" :            
                     obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["ai_name"]  
 
-            obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"].lower().replace("_", "-")
+            obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"].replace("_", "-")
             obj_attr_list["last_known_state"] = "about to connect to openstack manager"
 
             obj_attr_list["key_name"] = obj_attr_list["username"] + '_' + obj_attr_list["tenant"] + '_' + obj_attr_list["key_name"]

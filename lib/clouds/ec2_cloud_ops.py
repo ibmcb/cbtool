@@ -849,7 +849,7 @@ class Ec2Cmds(CommonCloudFunctions) :
             if obj_attr_list["ai"] != "none" :            
                 obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["ai_name"]
 
-            obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"].lower().replace("_", "-")
+            obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"].replace("_", "-")
             obj_attr_list["last_known_state"] = "about to connect to ec2 manager"
 
             if not self.ec2conn :

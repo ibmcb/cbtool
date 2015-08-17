@@ -798,7 +798,7 @@ class CskCmds(CommonCloudFunctions) :
             if obj_attr_list["ai"] != "none" :            
                 _instance_name += '-' + obj_attr_list["ai_name"]            
             
-            obj_attr_list["cloud_vm_name"] = _instance_name.lower().replace("_", "-")
+            obj_attr_list["cloud_vm_name"] = _instance_name.replace("_", "-")
             obj_attr_list["last_known_state"] = "about to connect to cloud platform manager"
 
             if not self.cskconn :

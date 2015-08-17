@@ -377,7 +377,7 @@ class FtcCmds(CommonCloudFunctions) :
             obj_attr_list["cloud_vm_uuid"] += '-' + obj_attr_list["ai_name"]        
         
         obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_uuid"]
-        obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"].lower().replace("_", "-")
+        obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"].replace("_", "-")
             
         obj_attr_list["host_name"] = obj_attr_list["vmc_name"]
         obj_attr_list["host_cloud_ip"] = obj_attr_list["vmc_cloud_ip"]
