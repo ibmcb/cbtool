@@ -121,6 +121,7 @@ class OskCmds(CommonCloudFunctions) :
             else :
                 access_url = access_url.split('-')[0]
                 _endpoint_type = "publicURL"
+            access_url = access_url.replace("_dash_",'-')
 
             _username, _password, _tenant, _cacert = \
             self.parse_authentication_data(authentication_data).split('-')
@@ -1169,6 +1170,7 @@ class OskCmds(CommonCloudFunctions) :
 
                 _resolve = obj_attr_list["access"].split(':')[1].replace('//','')
                 _resolve = _resolve.split('/')[0]
+                _resolve = _resolve.replace("_dash_","-")
 
                 _x, obj_attr_list["cloud_ip"] = hostname2ip(_resolve)
                 obj_attr_list["arrival"] = int(time())
