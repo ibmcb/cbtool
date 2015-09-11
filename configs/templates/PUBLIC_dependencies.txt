@@ -119,6 +119,7 @@ docutils-order = 57
 setuptools-order = 58
 markup-order = 59
 pyyaml-order = 60
+ruamelyaml-order = 61 
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -190,6 +191,7 @@ docutils-install = man
 setuptools-install = man
 markup-install = man
 pyyaml-install = man
+ruamelyaml-install = man 
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
@@ -254,6 +256,7 @@ docutils-configure = python -c "import docutils; print str(docutils.__version__)
 setuptools-configure = python -c "import setuptools; print str(setuptools.__version__).strip()"
 markup-configure = python -c "import markup;"
 pyyaml-configure = python -c "import yaml; print str(yaml.__version__).strip()"
+ruamelyaml-configure = python -c "import ruamel.yaml; print ruamel.yaml.__version__"
 ### END - Tests ###
 
 ### START - Dependency versions ###
@@ -318,6 +321,7 @@ docutils-ver = 0.12
 setuptools-ver = 7.0 
 markup-ver = ANY
 pyyaml-ver = 3.11
+ruamelyaml-ver = ANY
 ### END - Dependency versions ###
 
 ### START - Dependency URLs ###
@@ -548,4 +552,5 @@ common-markup-install-man = sudo pip install markup
 
 common-pyyaml-install-man = sudo pip install pyyaml
 
+common-ruamelyaml-install-man = sudo pip install ruamel.yaml
 ### END -  Dependency and method-specific command lines ###
