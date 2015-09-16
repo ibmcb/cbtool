@@ -917,10 +917,10 @@ function restart_ntp {
     fi
     syslog_netcat "Stopping ${ntp_service_name} service...." 
     sudo service ${ntp_service_name} stop
-    syslog_netcat "Forcing clock update from ntp"
-    sudo ntpd -gq
     syslog_netcat "Creating ${ntp_service_name} (ntp.conf) file"
     ~/cb_create_ntp_config_file.sh
+    syslog_netcat "Forcing clock update from ntp"
+    sudo ntpd -gq
     syslog_netcat "Starting ${ntp_service_name} service...." 
     sudo service ${ntp_service_name} start
 }
