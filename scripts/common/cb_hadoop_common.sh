@@ -70,18 +70,6 @@ fi
 export HADOOP_HOME=${HADOOP_HOME}
 
 syslog_netcat "HADOOP_HOME was determined to be $HADOOP_HOME"     
-HADOOP_VERSION=$(echo ${HADOOP_HOME} | awk -F/ '{print $(NF)}' | sed 's/hadoop-//g' | sed 's/-bin//g')
-    
-re='^[0-9]+$'
-if ! [[ $yournumber =~ $re ]]
-then
-    syslog_netcat "Unable to determine HADOOP_VERSION. Assuming \"2.6\"."
-    HADOOP_VERSION="2.6"
-else
-    syslog_netcat "HADOOP_VERSION was determined to be $HADOOP_VERSION" 
-fi
-
-export HADOOP_VERSION=${HADOOP_VERSION}
 
 if [[ -f ~/.bashrc ]]
 then
