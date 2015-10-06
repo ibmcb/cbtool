@@ -27,6 +27,7 @@ CLOUDOPTION_MYVCDCLOUD = cldattach vcd, vmcattach all
 CLOUDOPTION_MYPLM = cldattach plm, vmcattach all
 CLOUDOPTION_MYSLR = cldattach slr, vmcattach all
 CLOUDOPTION_MYSMARTCLOUD = cldattach scp, vmcattach all
+CLOUDOPTION_MYDIGITALOCEAN = cldattach do, vmcattach all
 
 # Now, Specify the individual parameters for each cloud
 
@@ -91,6 +92,12 @@ SCP_INITIAL_VMCS = kvm_rack1:sut                           # Change "kvm_rack1" 
 SCP_SSH_KEY_NAME = cbtool_rsa                              # Name of the private key used to login on the VMs
 SCP_LOGIN = cbuser                                         # The username that logins on the VMs
 #-------------------------------------------------------------------------------
+# DigitalOcean (DO) requires the following parameters
+[USER-DEFINED : CLOUDOPTION_MYDIGITALOCEAN ]
+DO_ACCESS_TOKEN = <token>
+DO_SSH_KEY_NAME = cbtool_rsa
+#-------------------------------------------------------------------------------
+
 [OBJECTSTORE]
 USAGE = shared
 
