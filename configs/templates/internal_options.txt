@@ -171,7 +171,7 @@ USE_FLOATING_IP = $False
 USE_JUMPHOST = $False
 CREATE_JUMPHOST = $False
 IS_JUMPHOST = $False
-JUMPHOST_BASE_NAME =  cb_jumphost
+JUMPHOST_BASE_NAME =  cb-jumphost
 JUMPHOST_LOGIN = auto
 JUMPHOST_NETNAMES = all
 
@@ -314,7 +314,8 @@ HOST_MANAGEMENT_METRICS_HEADER = HS_ID1, CRT_M, DST_M
 
 ### Layout of the runtime metrics file
 # Layout "components"
-TSTAMP = time, time_h, time_cbtool, time_cbtool_h
+TSTAMP_APP = time, time_h, time_cbtool, time_cbtool_h
+TSTAMP_OS = time, time_h
 VM_ID2 = uuid, name, role, ai_name, type, host_name, aidrs_name, sla_provisioning
 HS_ID2 = uuid, name
 #CPU_M = cpu_speed, cores, cpu_num, proc_total, proc_run, cpu_idle, cpu_aidle, 
@@ -330,9 +331,9 @@ APP_M = app_load_id, app_load_profile, app_load_level, app_datagen_size,
 APP_M += app_datagen_time, app_throughput, app_latency, app_bandwidth, 
 APP_M += app_errors, app_completion_time, app_sla_runtime
 # Actual layout (do not prefix these variables with $)
-VM_RUNTIME_OS_METRICS_HEADER = TSTAMP, VM_ID2, CPU_M, MEM_M, SWAP_M, NET_M, DSK_M
-VM_RUNTIME_APP_METRICS_HEADER = TSTAMP, VM_ID2, APP_M
-HOST_RUNTIME_OS_METRICS_HEADER = TSTAMP, HS_ID2, CPU_M, MEM_M, SWAP_M, NET_M, DSK_M 
+VM_RUNTIME_OS_METRICS_HEADER = TSTAMP_OS, VM_ID2, CPU_M, MEM_M, SWAP_M, NET_M, DSK_M
+VM_RUNTIME_APP_METRICS_HEADER = TSTAMP_APP, VM_ID2, APP_M
+HOST_RUNTIME_OS_METRICS_HEADER = TSTAMP_OS, HS_ID2, CPU_M, MEM_M, SWAP_M, NET_M, DSK_M 
 #
 REPORTED_MANAGEMENT_VM_METRIC_NAMES = VM_ID1, CRT_M, CAP_M, RST_M, DST_M, FLR_M 
 REPORTED_RUNTIME_OS_HOST_METRIC_NAMES = CPU_M, MEM_M, SWAP_M, NET_M, DSK_M

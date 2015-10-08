@@ -24,3 +24,4 @@ FB_BINARY_PATH=/usr/local/bin
 FB_BINARY_NAME=filebench
 FILEBENCH_DATA_DIR=$(get_my_ai_attribute_with_default filebench_data_dir /fbtest)
 FILEBENCH_DATA_FSTYP=$(get_my_ai_attribute_with_default filebench_data_fstyp ext4)
+FILEBENCH_DATA_VOLUME=$(get_my_ai_attribute_with_default filebench_data_volume NONE)

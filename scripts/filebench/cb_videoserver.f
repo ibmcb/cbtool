@@ -33,7 +33,7 @@
 # 10 seconds. Thus the write bandwidth will be set as $filesize/$repintval.
 #
 
-set $dir=/STORAGE_PATH
+set $dir=FILEBENCH_DATA_DIR
 set $eventrate=96
 set $filesize=1g
 set $nthreads=48

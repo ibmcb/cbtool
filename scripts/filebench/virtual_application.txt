@@ -35,6 +35,7 @@ START = cb_filebench.sh
 # VApp-specific OPTIONAL modifier parameters. Commented attributes imply default values assumed
 FILEBENCH_DATA_DIR = /fstore
 FILEBENCH_DATA_FSTYP = ext4
+FILEBENCH_DATA_VOLUME = NONE
 
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
 #SYNC_COUNTER_NAME = synchronization_counter

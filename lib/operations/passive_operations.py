@@ -187,7 +187,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
         elif obj_type == "HOST" :
             _fields = []
-            _fields.append("|name                          ")
+            _fields.append("|name                               ")
             _fields.append("|vmc_name            ")
             _fields.append("|function                                          ")
             _fields.append("|pool         ")

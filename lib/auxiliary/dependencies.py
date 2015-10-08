@@ -269,7 +269,6 @@ def expand_command(cmdline, depsdict, process_manager = False) :
     for _command in cmdline.split(';') :
             
         if _command.count("package_install") :
-
             _packages = _command.replace("package_install",'')
             
             if depsdict["cdistkind"] == "ubuntu" :

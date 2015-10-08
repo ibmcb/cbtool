@@ -12,9 +12,10 @@ SLA_RUNTIME_TARGETS=$5
 WAIT_FOR=`get_my_ai_attribute_with_default wait_for 0`
 LOAD_PROFILE=$(echo ${LOAD_PROFILE} | tr '[:upper:]' '[:lower:]')
 
-if [ ${WAIT_FOR} == 0 ] ; then 
+if [[ ${WAIT_FOR} == 0 ]]
+then 
 
-  syslog_netcat "Waiting for singal"
+  syslog_netcat "Waiting for signal"
 
 else
  WRITE_OUTPUT=$(fio randwrite.fiojob --minimal > fio.run; rm -rf randwrites.1.0; ./fiostats.sh fio.run)

@@ -22,7 +22,7 @@ START=`provision_application_start`
 
 sudo bash -c "echo \"0\" > /proc/sys/kernel/randomize_va_space"
 
-mount_filesystem_on_volume $FILEBENCH_DATA_DIR $FILEBENCH_DATA_FSTYP
+mount_filesystem_on_volume $FILEBENCH_DATA_DIR $FILEBENCH_DATA_FSTYP ${my_login_username} $FILEBENCH_DATA_VOLUME
 
 syslog_netcat "Storage setup for filebench - OK"
 provision_application_stop $START

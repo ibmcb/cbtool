@@ -486,7 +486,7 @@ common-python-prettytable-install-pip = sudo pip install INDEXURL prettytable
 common-python-daemon-install-pm = package_install python-daemon
 
 common-python-twisted-install-pm = package_install python-twisted-web
-common-python-webob-install-man = sudo pip install twisted
+common-python-twisted-install-man = sudo pip install twisted
 
 common-python-webob-install-pm = package_install python-webob
 common-python-webob-install-man = sudo pip install webob

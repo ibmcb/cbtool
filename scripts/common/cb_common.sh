@@ -321,7 +321,7 @@ function mount_filesystem_on_volume {
     if [[ -z $FILESYS_TYPE ]]
     then
         FILESYS_TYPE=ext4
-    fi    
+    fi
     
     if [[ -z $VOLUME ]]
     then        

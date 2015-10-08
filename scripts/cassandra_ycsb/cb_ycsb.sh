@@ -183,7 +183,8 @@ then
     else
         eager_collection "$CMDLINE" ${OUTPUT_FILE} ${SLA_RUNTIME_TARGETS}
     fi
-    
+
+#    rm ${OUTPUT_FILE}
 else
     syslog_netcat "This AI reached the limit of load generation process executions. If you want this AI to continue to execute the load generator, reset the \"run_limit\" counter"
     sleep ${LOAD_DURATION}
