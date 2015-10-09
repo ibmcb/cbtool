@@ -69,18 +69,18 @@ class DoCmds(CommonCloudFunctions) :
             cbdebug(_msg)
 
             driver = get_driver(Provider.DIGITAL_OCEAN)
-            _status = 110    
+            _status = 110
 
             self.digitalocean = driver(access_token, api_version='v2')
             _status = 120
 
             # Attempt to a connection using those login credentials
             print self.digitalocean.list_nodes()
-          
+
             _status = 0
-             
+
         except :
-            _msg = "Error connecting DigitalOcean.  Status = " + str(_status) 
+            _msg = "Error connecting DigitalOcean.  Status = " + str(_status)
             cbdebug(_msg, True)
             cberr(_msg)
 
@@ -96,7 +96,7 @@ class DoCmds(CommonCloudFunctions) :
                 _msg = "DigitalOcean connection successful."
                 cbdebug(_msg)
                 return _status, _msg
-    
+
     @trace
     def test_vmc_connection(self, access_token) :
         '''
@@ -104,7 +104,7 @@ class DoCmds(CommonCloudFunctions) :
         '''
         try :
             self.connect(access_token)
-                        
+
         except CldOpsException, obj :
             _msg = str(obj.msg)
             cberr(_msg)
@@ -145,6 +145,7 @@ class DoCmds(CommonCloudFunctions) :
                     else :
                         _msg = "Cleaning up DigitalOcean.  Ignoring instance: " + _reservation.name
                         cbdebug(_msg)
+
                 sleep(int(obj_attr_list["update_frequency"]))
 
             _msg = "All running instances on DigitalOcean " + obj_attr_list["name"]
@@ -162,7 +163,7 @@ class DoCmds(CommonCloudFunctions) :
         except Exception, e :
             _status = 23
             _fmsg = str(e)
-    
+
         finally :
             if _status :
                 _msg = "DigitalOcean " + obj_attr_list["name"] + " could not be cleaned "
@@ -190,16 +191,16 @@ class DoCmds(CommonCloudFunctions) :
 
             _time_mark_prs = int(time())
             obj_attr_list["mgt_002_provisioning_request_sent"] = _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
-            
+
             if "cleanup_on_attach" in obj_attr_list and obj_attr_list["cleanup_on_attach"] == "True" :
                 _msg = "Cleaning up VMC before attaching it."
                 cbdebug(_msg)
                 _status, _fmsg = self.vmccleanup(obj_attr_list)
 
             obj_attr_list["cloud_hostname"] = "257.0.0.0"
-            
+
             obj_attr_list["cloud_ip"] = "257.0.0.0"
-            
+
             obj_attr_list["arrival"] = int(time())
 
             _time_mark_prc = int(time())
@@ -216,7 +217,7 @@ class DoCmds(CommonCloudFunctions) :
             _status = 23
             _fmsg = sys.exc_info()[0]
             raise
-    
+
         finally :
             if _status :
                 _msg = "VMC " + obj_attr_list["uuid"] + " could not be registered "
@@ -246,13 +247,13 @@ class DoCmds(CommonCloudFunctions) :
                 obj_attr_list["mgt_901_deprovisioning_request_originated"] = _time_mark_drs
 
             obj_attr_list["mgt_902_deprovisioning_request_sent"] = _time_mark_drs - int(obj_attr_list["mgt_901_deprovisioning_request_originated"])
-            
+
             if "cleanup_on_detach" in obj_attr_list and obj_attr_list["cleanup_on_detach"] == "True" :
                 _status, _fmsg = self.vmccleanup(obj_attr_list)
 
             _time_mark_prc = int(time())
             obj_attr_list["mgt_903_deprovisioning_request_completed"] = _time_mark_prc - _time_mark_drs
-            
+
             _status = 0
 
         except CldOpsException, obj :
@@ -262,7 +263,7 @@ class DoCmds(CommonCloudFunctions) :
         except Exception, e :
             _status = 23
             _fmsg = str(e)
-    
+
         finally :
             if _status :
                 _msg = "VMC " + obj_attr_list["uuid"] + " could not be unregistered "
@@ -283,19 +284,19 @@ class DoCmds(CommonCloudFunctions) :
         TBD
         '''
         try :
-            obj_attr_list["cloud_hostname"] = "vm" + obj_attr_list["name"].split("_")[1]
-            
-            obj_attr_list["prov_cloud_ip"] = obj_attr_list["instance_obj"].private_ips[0]
-            obj_attr_list["run_cloud_ip"] =  obj_attr_list["instance_obj"].private_ips[0]
+            node = self.get_vm_instance(obj_attr_list)
+
+            obj_attr_list["prov_cloud_ip"] = node.public_ips[0]
+            obj_attr_list["run_cloud_ip"] =  node.public_ips[0]
             # NOTE: "cloud_ip" is always equal to "run_cloud_ip"
-            obj_attr_list["cloud_ip"] = obj_attr_list["run_cloud_ip"]            
-            
+            obj_attr_list["cloud_ip"] = obj_attr_list["run_cloud_ip"]
+
             _msg = "Public IP = " + obj_attr_list["cloud_hostname"]
             _msg += " Private IP = " + obj_attr_list["cloud_ip"]
             cbdebug(_msg)
             _status = 0
             return True
-        
+
         except :
             _msg = "Could not retrieve IP addresses for object " + obj_attr_list["uuid"]
             _msg += "from DigitalOcean \"" + obj_attr_list["cloud_name"]
@@ -308,20 +309,17 @@ class DoCmds(CommonCloudFunctions) :
         TBD
         '''
         try :
-            _msg = "Looking for node named " + obj_attr_list["cloud_vm_name"]
-            cbdebug(_msg)
+            _msg = "cloud_vm_name " + obj_attr_list["cloud_vm_name"]
+            _msg += "from DigitalOcean \"" + obj_attr_list["cloud_name"]
+            cberr(_msg)
 
-            _nodes = self.digitalocean.list_nodes()
-            for _node in _nodes :
-                if _node.name == obj_attr_list["cloud_vm_name"] :
-                    _msg = "Found one!"
-                    cbdebug(_msg)
-                    obj_attr_list["instance_obj"] = _node
-                    return _node
-            _msg = "Did not find one."
-            cbdebug(_msg)
-            return False
-                
+            node_list = [x for x in self.digitalocean.list_nodes() if x.name == obj_attr_list["cloud_vm_name"]]
+
+            _msg = str(node_list)
+            cberr(_msg)
+
+            return node_list[0]
+
         except Exception, e :
             _status = 23
             _fmsg = str(e)
@@ -333,30 +331,14 @@ class DoCmds(CommonCloudFunctions) :
         TBD
         '''
         return "NA"
-    
+
     def is_vm_running(self, obj_attr_list):
         '''
         TBD
         '''
         try :
-            if "instance_obj" not in obj_attr_list :
-                _instance = self.get_vm_instance(obj_attr_list)
-            else :
-                _instance = obj_attr_list["instance_obj"]
-
-            if _instance :
-                _msg = "is_vm_running reports instance with instance state of " + str(_instance.state)
-                cbdebug(_msg)
-                _instance_state = _instance.state
-            else :
-                _msg = "is_vm_running reports non-existant instance."
-                cbdebug(_msg)
-                _instance_state = "non-existent"
-
-            if _instance_state == NodeState.RUNNING :
-                return True
-            else :
-                return False
+            node = self.get_vm_instance(obj_attr_list)
+            return node.state == NodeState.RUNNING
 
         except Exception, e :
             _status = 23
@@ -367,9 +349,8 @@ class DoCmds(CommonCloudFunctions) :
     def is_vm_ready(self, obj_attr_list) :
         '''
         TBD
-        ''' 
+        '''
         if self.is_vm_running(obj_attr_list) :
-            
             self.take_action_if_requested("VM", obj_attr_list, "provision_complete")
 
             if self.get_ip_address(obj_attr_list) :
@@ -381,7 +362,7 @@ class DoCmds(CommonCloudFunctions) :
         else :
             obj_attr_list["last_known_state"] = "not running"
             return False
-        
+
     @trace
     def vmcreate(self, obj_attr_list) :
         '''
@@ -389,77 +370,60 @@ class DoCmds(CommonCloudFunctions) :
         '''
         try :
             _status = 100
-            _fmsg = "An error has occurred when creating new vApp, but no error message was captured"
-            
+            _fmsg = "An error has occurred when creating new Droplet, but no error message was captured"
+
             obj_attr_list["cloud_vm_uuid"] = "NA"
             _instance = False
-            
-            obj_attr_list["cloud_vm_name"] = "cb-" + obj_attr_list["username"] 
+
+            obj_attr_list["cloud_vm_name"] = "cb-" + obj_attr_list["username"]
             obj_attr_list["cloud_vm_name"] += '-' + "vm" + obj_attr_list["name"].split("_")[1]
             obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["role"]
-            
-            if obj_attr_list["ai"] != "none" :            
-                obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["ai_name"] 
+
+            if obj_attr_list["ai"] != "none" :
+                obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["ai_name"]
 
             obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"].replace("_", "-")
             obj_attr_list["last_known_state"] = "about to connect to DigitalOcean"
-         
-            credential_name = obj_attr_list["credentials"]
+
+            access_token = obj_attr_list["access_token"]
 
             if not self.digitalocean :
-                _msg = "Connecting to VCD with credentials " + credential_name + " at address " + obj_attr_list["access"]
+                _msg = "Connecting to VCD with credentials " + access_token
                 cbdebug(_msg)
 
-                self.connect(credential_name, obj_attr_list["access"], \
-                             obj_attr_list["password"], obj_attr_list["version"])
-
-
-            # Removing check of run state until basic launch / shutdown functionality working
-#            if self.is_vm_running(obj_attr_list) :
-#                _msg = "An instance named \"" + obj_attr_list["cloud_vm_name"]
-#                _msg += " is already running. It needs to be destroyed first."
-#                _status = 187
-#                cberr(_msg)
-#                raise CldOpsException(_msg, _status)
+                self.connect(access_token)
 
             _time_mark_prs = int(time())
             obj_attr_list["mgt_002_provisioning_request_sent"] = _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
 
             obj_attr_list["last_known_state"] = "about to send create request"
 
-            _msg = "Attempting to clone an instance of vApp "
-            _msg += obj_attr_list["imageid1"]
-            _msg += " on DigitalOCean, creating a vm named "
+            _msg = "Attempting to create a Droplet "
+            _msg += obj_attr_list["image"]
+            _msg += " on DigitalOcean, creating a vm named "
             _msg += obj_attr_list["cloud_vm_name"]
             cbdebug(_msg, True)
 
-            # I can't get libcloud's driver.list_images() function to work, so I'm not sure how to create a new image object
-            # based on an image.  The vCloud Director system I use doesn't have an appropriate stock image that will work with
-            # cloudbench.  So, I'll instead clone an instantiated image that I've created.
-            _msg = "...Looking for an existing vApp named "
-            _msg += obj_attr_list["imageid1"]
+            _msg = "...Looking for an existing image named "
+            _msg += obj_attr_list["image"]
             cbdebug(_msg, True)
 
-            image_to_clone = self.digitalocean.ex_find_node(node_name = obj_attr_list["imageid1"])
-
-            if image_to_clone == None :
-               _msg = "Error : Cannot find a vApp named "
-               _msg += obj_attr_list["imageid1"]
-               _msg += " on DigitalOcean. Aborting."
-               cbdebug(_msg, True)
-               _status = 188
-               cberr(_msg)
-               raise CldOpsException(_msg, _status)
+            size = [x for x in self.digitalocean.list_sizes() if x.id == "1gb"][0]
+            image = [x for x in self.digitalocean.list_images() if x.id == obj_attr_list["image"]][0]
+            location = [x for x in self.digitalocean.list_locations() if x.id == obj_attr_list["location"]][0]
 
             vm_computername = "vm" + obj_attr_list["name"].split("_")[1]
-            _msg = "...Launching new vApp containing VM with hostname " + vm_computername
+            _msg = "...Launching new Droplet with hostname " + vm_computername
             cbdebug(_msg,True)
 
             _timeout = obj_attr_list["clone_timeout"]
             _msg = "...libcloud clone_timeout is " + _timeout
             cbdebug(_msg)
 
-            _reservation = self.digitalocean.create_node(name = obj_attr_list["cloud_vm_name"], image = image_to_clone, ex_vm_names = [vm_computername], ex_clone_timeout = int(obj_attr_list["clone_timeout"]))
+            _reservation = self.digitalocean.create_node(name=obj_attr_list["cloud_vm_name"],
+                                                         image=image,
+                                                         size=size,
+                                                         location=location)
 
             obj_attr_list["last_known_state"] = "sent create request to DigitalOcean, parsing response"
 
@@ -470,13 +434,8 @@ class DoCmds(CommonCloudFunctions) :
 
                 obj_attr_list["last_known_state"] = "vm created"
                 sleep(int(obj_attr_list["update_frequency"]))
-                
-                #_instance = _reservation.instances[0]
-        
-                #_instance.add_tag("Name", obj_attr_list["cloud_vm_name"])            
-                
+
                 obj_attr_list["cloud_vm_uuid"] = _reservation.uuid
-                obj_attr_list["instance_obj"] = _reservation
 
                 _msg = "...Success. New instance UUID is " + _reservation.uuid
                 cbdebug(_msg,True)
@@ -488,8 +447,9 @@ class DoCmds(CommonCloudFunctions) :
                 self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
                 obj_attr_list["host_name"] = "unknown"
 
-                if "instance_obj" in obj_attr_list : 
+                if "instance_obj" in obj_attr_list :
                     del obj_attr_list["instance_obj"]
+
                 _status = 0
 
             else :
@@ -506,17 +466,16 @@ class DoCmds(CommonCloudFunctions) :
         except Exception, e :
             _status = 23
             _fmsg = str(e)
-    
+
         finally :
             if "instance_obj" in obj_attr_list :
                 del obj_attr_list["instance_obj"]
-                
+
             if _status :
                 _msg = "VM " + obj_attr_list["uuid"] + " could not be created "
                 _msg += "on DigitalOcean \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg + " (The VM creation will be rolled back)"
                 cberr(_msg)
- 
 
                 if "cloud_vm_uuid" in obj_attr_list :
                     obj_attr_list["mgt_deprovisioning_request_originated"] = int(time())
@@ -546,16 +505,14 @@ class DoCmds(CommonCloudFunctions) :
 
             if "mgt_901_deprovisioning_request_originated" not in obj_attr_list :
                 obj_attr_list["mgt_901_deprovisioning_request_originated"] = _time_mark_drs
-                
-            obj_attr_list["mgt_902_deprovisioning_request_sent"] = \
-                _time_mark_drs - int(obj_attr_list["mgt_901_deprovisioning_request_originated"])
 
+            obj_attr_list["mgt_902_deprovisioning_request_sent"] = _time_mark_drs - int(obj_attr_list["mgt_901_deprovisioning_request_originated"])
 
             if ( obj_attr_list["last_known_state"] == "running with ip assigned" or \
                  obj_attr_list["last_known_state"] == "running with ip unassigned" or \
                  obj_attr_list["last_known_state"] == "vm created" ) :
 
-                _msg = "vApp " + obj_attr_list["name"] + " was in created or running state. Will attempt to terminate."
+                _msg = "Droplet " + obj_attr_list["name"] + " was in created or running state. Will attempt to terminate."
                 cbdebug(_msg)
 
                 credential_name = obj_attr_list["credentials"]
@@ -564,20 +521,15 @@ class DoCmds(CommonCloudFunctions) :
                 _curr_tries = 0
                 _max_tries = int(obj_attr_list["update_attempts"])
 
-	        while _curr_tries < _max_tries :
-		    try :
+                while _curr_tries < _max_tries :
+                    try :
                         _errmsg = "self.digitalocean"
-# Force re-connect, in case authorization times out!
-#                        if not self.digitalocean :
-#                            _errmsg = "self.connect"
-#        	            self.connect(credential_name, obj_attr_list["access"], \
-#                	                 obj_attr_list["password"], obj_attr_list["version"])
                         _errmsg = "self.connect"
                         self.connect(credential_name, obj_attr_list["access"], \
-                                    obj_attr_list["password"], obj_attr_list["version"])
+                                     obj_attr_list["password"], obj_attr_list["version"])
 
                         _errmsg = "get_vm_instance"
-    	                _instance = self.get_vm_instance(obj_attr_list)
+                        _instance = self.get_vm_instance(obj_attr_list)
 
                         break
                     except :
@@ -586,7 +538,7 @@ class DoCmds(CommonCloudFunctions) :
                         _msg += " after " + str(_curr_tries) + " attempts. Will retry in " + str(_wait) + " seconds."
                         cbdebug(_msg, True)
                         sleep(_wait)
-            
+
                 if _instance :
 
                     _msg = "Sending a termination request for "  + obj_attr_list["name"] + ""
@@ -606,12 +558,12 @@ class DoCmds(CommonCloudFunctions) :
                     while _destroy_curr_tries < _max_tries :
 
                         try :
-# Force re-connect, in case timeout occured
+                            # Force re-connect, in case timeout occured
                             self.connect(credential_name, obj_attr_list["access"], \
-                                    obj_attr_list["password"], obj_attr_list["version"])
+                                         obj_attr_list["password"], obj_attr_list["version"])
                             _status = _instance.destroy()
                             obj_attr_list["last_known_state"] = "vm destoyed"
-		    	    sleep(_wait)
+                            sleep(_wait)
                             break
 
                         except :
@@ -619,10 +571,10 @@ class DoCmds(CommonCloudFunctions) :
 
                             if _destroy_curr_tries >= _destroy_max_tries :
                                 _msg = "Aborting VM destroy call for "  + obj_attr_list["name"]
-	    	    	        _msg += " after " + str(_destroy_curr_tries) + " attempts."
+                                _msg += " after " + str(_destroy_curr_tries) + " attempts."
                                 _status = 1
-#                                cberr(_msg)
-#                                raise self.ObjectOperationException(_msg, _status)
+                                #                                cberr(_msg)
+                                #                                raise self.ObjectOperationException(_msg, _status)
                             else :
                                 _msg = "VM destroy call to DigitalOcean has failed for "  + obj_attr_list["name"]
                                 _msg += " Will try again."
@@ -634,14 +586,13 @@ class DoCmds(CommonCloudFunctions) :
             else :
                 # instance never really existed
                 obj_attr_list["last_known_state"] = "vm destoyed"
-                _msg = "vApp " + obj_attr_list["name"] + " had not been successfully created; no need to issue destory command."
+                _msg = "Droplet " + obj_attr_list["name"] + " had not been successfully created; no need to issue destory command."
                 cbdebug(_msg)
 
 
             _time_mark_drc = int(time())
-            obj_attr_list["mgt_903_deprovisioning_request_completed"] = \
-                _time_mark_drc - _time_mark_drs
-            
+            obj_attr_list["mgt_903_deprovisioning_request_completed"] = _time_mark_drc - _time_mark_drs
+
             _status = 0
 
         except CldOpsException, obj :
@@ -651,14 +602,14 @@ class DoCmds(CommonCloudFunctions) :
         except Exception, e :
             _status = 23
             _fmsg = str(e)
-    
+
         finally :
             if _status :
                 _msg = "VM " + obj_attr_list["uuid"] + " could not be destroyed "
                 _msg += " on DigitalOcean cloud \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
-#                cberr(_msg)
-#                raise CldOpsException(_status, _msg)
+                # cberr(_msg)
+                # raise CldOpsException(_status, _msg)
             else :
                 _msg = "VM " + obj_attr_list["uuid"] + " was successfully "
                 _msg += "destroyed on DigitalOcean cloud \"" + obj_attr_list["cloud_name"]
@@ -687,7 +638,7 @@ class DoCmds(CommonCloudFunctions) :
             _instance = self.get_vm_instance(obj_attr_list)
 
             if _instance :
-                
+
                 _time_mark_crs = int(time())
 
                 # Just in case the instance does not exist, make crc = crs
@@ -695,11 +646,11 @@ class DoCmds(CommonCloudFunctions) :
 
                 obj_attr_list["mgt_102_capture_request_sent"] = _time_mark_crs - obj_attr_list["mgt_101_capture_request_originated"]
 
-                obj_attr_list["captured_image_name"] = obj_attr_list["imageid1"] + "_captured_at_"
+                obj_attr_list["captured_image_name"] = obj_attr_list["image"] + "_captured_at_"
                 obj_attr_list["captured_image_name"] += str(obj_attr_list["mgt_101_capture_request_originated"])
 
                 _msg = obj_attr_list["name"] + " capture request sent. "
-                _msg += "Will capture with image name \"" + obj_attr_list["captured_image_name"] + "\"."                 
+                _msg += "Will capture with image name \"" + obj_attr_list["captured_image_name"] + "\"."
                 cbdebug(_msg)
 
                 _captured_imageid = self.digitalocean.create_image(obj_attr_list["cloud_vm_uuid"] , obj_attr_list["captured_image_name"])
@@ -729,7 +680,7 @@ class DoCmds(CommonCloudFunctions) :
                     _msg += " seconds and try again."
                     cbdebug(_msg)
 
-                    sleep(int(obj_attr_list["update_frequency"]))             
+                    sleep(int(obj_attr_list["update_frequency"]))
                     _curr_tries += 1
 
             else :
@@ -744,7 +695,7 @@ class DoCmds(CommonCloudFunctions) :
                 cberr(_msg)
             else :
                 _status = 0
-            
+
         except CldOpsException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
@@ -752,7 +703,7 @@ class DoCmds(CommonCloudFunctions) :
         except Exception, e :
             _status = 23
             _fmsg = str(e)
-    
+
         finally :
             if _status :
                 _msg = "VM " + obj_attr_list["uuid"] + " could not be captured "
@@ -776,7 +727,7 @@ class DoCmds(CommonCloudFunctions) :
 
             _ts = obj_attr_list["target_state"]
             _cs = obj_attr_list["current_state"]
-    
+
             credential_name = obj_attr_list["credentials"]
             if not self.digitalocean :
                 self.connect(credential_name, obj_attr_list["access"], \
@@ -784,9 +735,8 @@ class DoCmds(CommonCloudFunctions) :
 
             if "mgt_201_runstate_request_originated" in obj_attr_list :
                 _time_mark_rrs = int(time())
-                obj_attr_list["mgt_202_runstate_request_sent"] = \
-                    _time_mark_rrs - obj_attr_list["mgt_201_runstate_request_originated"]
-    
+                obj_attr_list["mgt_202_runstate_request_sent"] = _time_mark_rrs - obj_attr_list["mgt_201_runstate_request_originated"]
+
             _msg = "Sending a runstate change request (" + _ts + " for " + obj_attr_list["name"]
             _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
             _msg += "...."
@@ -803,13 +753,13 @@ class DoCmds(CommonCloudFunctions) :
                     _instance.start()
                 elif (_ts == "attached" or _ts == "restore") and _cs == "save" :
                     _instance.start()
-            
+
             _time_mark_rrc = int(time())
             obj_attr_list["mgt_203_runstate_request_completed"] = _time_mark_rrc - _time_mark_rrs
 
             _msg = "VM " + obj_attr_list["name"] + " runstate request completed."
             cbdebug(_msg)
-                        
+
             _status = 0
 
         except CldOpsException, obj :
@@ -823,21 +773,22 @@ class DoCmds(CommonCloudFunctions) :
         except Exception, e :
             _status = 23
             _fmsg = str(e)
-    
+
         finally :
             if _status :
                 _msg = "VM " + obj_attr_list["uuid"] + " could not have its "
-                _msg += "run state changed on Elastic Compute Cloud \"" 
+                _msg += "run state changed on Elastic Compute Cloud \""
                 _msg += obj_attr_list["cloud_name"] + "\" : " + _fmsg
                 cberr(_msg, True)
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "VM " + obj_attr_list["uuid"] + " successfully had its "
-                _msg += "run state changed on Elastic Compute Cloud \"" 
+                _msg += "run state changed on Elastic Compute Cloud \""
                 _msg += obj_attr_list["cloud_name"] + "\"."
                 cbdebug(_msg, True)
                 return _status, _msg
-    @trace        
+
+    @trace
     def aidefine(self, obj_attr_list) :
         '''
         TBD
@@ -852,7 +803,7 @@ class DoCmds(CommonCloudFunctions) :
         except Exception, e :
             _status = 23
             _fmsg = str(e)
-    
+
         finally :
             if _status :
                 _msg = "AI " + obj_attr_list["name"] + " could not be defined "
@@ -867,7 +818,7 @@ class DoCmds(CommonCloudFunctions) :
                 cbdebug(_msg)
                 return _status, _msg
 
-    @trace        
+    @trace
     def aiundefine(self, obj_attr_list) :
         '''
         TBD
@@ -879,7 +830,7 @@ class DoCmds(CommonCloudFunctions) :
         except Exception, e :
             _status = 23
             _fmsg = str(e)
-    
+
         finally :
             if _status :
                 _msg = "AI " + obj_attr_list["name"] + " could not be undefined "
