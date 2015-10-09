@@ -43,7 +43,7 @@ class DoCmds(CommonCloudFunctions) :
         CommonCloudFunctions.__init__(self, pid, osci)
         self.pid = pid
         self.osci = osci
-        self.digitalocean = False
+        self.digitalocean = None
         self.access_url = False
         self.ft_supported = False
         self.lock = False
@@ -71,11 +71,11 @@ class DoCmds(CommonCloudFunctions) :
             driver = get_driver(Provider.DIGITAL_OCEAN)
             _status = 110    
 
-            digitalocean = driver(access_token, api_version='v2')
+            self.digitalocean = driver(access_token, api_version='v2')
             _status = 120
 
             # Attempt to a connection using those login credentials
-            nodes = self.digitalocean.list_nodes()
+            print self.digitalocean.list_nodes()
           
             _status = 0
              
@@ -196,9 +196,9 @@ class DoCmds(CommonCloudFunctions) :
                 cbdebug(_msg)
                 _status, _fmsg = self.vmccleanup(obj_attr_list)
 
-            obj_attr_list["cloud_hostname"] = obj_attr_list["access"]
+            obj_attr_list["cloud_hostname"] = "257.0.0.0"
             
-            obj_attr_list["cloud_ip"] = obj_attr_list["access"]
+            obj_attr_list["cloud_ip"] = "257.0.0.0"
             
             obj_attr_list["arrival"] = int(time())
 
@@ -214,7 +214,8 @@ class DoCmds(CommonCloudFunctions) :
 
         except :
             _status = 23
-            _fmsg = str(e)
+            _fmsg = sys.exc_info()[0]
+            raise
     
         finally :
             if _status :
@@ -401,7 +402,7 @@ class DoCmds(CommonCloudFunctions) :
                 obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["ai_name"] 
 
             obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"].replace("_", "-")
-            obj_attr_list["last_known_state"] = "about to connect to vCloud Director manager"
+            obj_attr_list["last_known_state"] = "about to connect to DigitalOcean"
          
             credential_name = obj_attr_list["credentials"]
 
@@ -428,7 +429,7 @@ class DoCmds(CommonCloudFunctions) :
 
             _msg = "Attempting to clone an instance of vApp "
             _msg += obj_attr_list["imageid1"]
-            _msg += " on vCloud Director, creating a vm named "
+            _msg += " on DigitalOCean, creating a vm named "
             _msg += obj_attr_list["cloud_vm_name"]
             cbdebug(_msg, True)
 
@@ -444,7 +445,7 @@ class DoCmds(CommonCloudFunctions) :
             if image_to_clone == None :
                _msg = "Error : Cannot find a vApp named "
                _msg += obj_attr_list["imageid1"]
-               _msg += " on vCloud Director. Aborting."
+               _msg += " on DigitalOcean. Aborting."
                cbdebug(_msg, True)
                _status = 188
                cberr(_msg)
@@ -460,7 +461,7 @@ class DoCmds(CommonCloudFunctions) :
 
             _reservation = self.digitalocean.create_node(name = obj_attr_list["cloud_vm_name"], image = image_to_clone, ex_vm_names = [vm_computername], ex_clone_timeout = int(obj_attr_list["clone_timeout"]))
 
-            obj_attr_list["last_known_state"] = "sent create request to vCloud Director, parsing response"
+            obj_attr_list["last_known_state"] = "sent create request to DigitalOcean, parsing response"
 
             _msg = "...Sent command to create node, waiting for creation..."
             cbdebug(_msg)
@@ -512,7 +513,7 @@ class DoCmds(CommonCloudFunctions) :
                 
             if _status :
                 _msg = "VM " + obj_attr_list["uuid"] + " could not be created "
-                _msg += "on vCloud Director \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += "on DigitalOcean \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg + " (The VM creation will be rolled back)"
                 cberr(_msg)
  
@@ -526,7 +527,7 @@ class DoCmds(CommonCloudFunctions) :
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "VM " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "created on vCloud Director \"" + obj_attr_list["cloud_name"]
+                _msg += "created on DigitalOcean \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
                 cbdebug(_msg)
                 return _status, _msg
@@ -623,7 +624,7 @@ class DoCmds(CommonCloudFunctions) :
 #                                cberr(_msg)
 #                                raise self.ObjectOperationException(_msg, _status)
                             else :
-                                _msg = "VM destroy call to vCloud Director has failed for "  + obj_attr_list["name"]
+                                _msg = "VM destroy call to DigitalOcean has failed for "  + obj_attr_list["name"]
                                 _msg += " Will try again."
                                 cbdebug(_msg, True)
                                 sleep(_wait)
@@ -654,13 +655,13 @@ class DoCmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "VM " + obj_attr_list["uuid"] + " could not be destroyed "
-                _msg += " on vCloud Director cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += " on DigitalOcean cloud \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
 #                cberr(_msg)
 #                raise CldOpsException(_status, _msg)
             else :
                 _msg = "VM " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "destroyed on vCloud Director cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "destroyed on DigitalOcean cloud \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
                 cbdebug(_msg)
                 return _status, _msg
@@ -755,13 +756,13 @@ class DoCmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "VM " + obj_attr_list["uuid"] + " could not be captured "
-                _msg += " on vCloud Director cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += " on DigitalOcean cloud \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
                 cberr(_msg)
                 raise CldOpsException(_status, _msg)
             else :
                 _msg = "VM " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "captured on vCloud Director cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "captured on DigitalOcean cloud \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
                 cbdebug(_msg)
                 return _status, _msg
@@ -855,13 +856,13 @@ class DoCmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "AI " + obj_attr_list["name"] + " could not be defined "
-                _msg += " on vCloud Director \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += " on DigitalOcean \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
                 cberr(_msg)
                 raise CldOpsException(_status, _msg)
             else :
                 _msg = "AI " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "defined on vCloud Director \"" + obj_attr_list["cloud_name"]
+                _msg += "defined on DigitalOcean \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
                 cbdebug(_msg)
                 return _status, _msg
@@ -882,13 +883,13 @@ class DoCmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "AI " + obj_attr_list["name"] + " could not be undefined "
-                _msg += " on vCloud Director \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += " on DigitalOcean \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
                 cberr(_msg)
                 raise CldOpsException(_status, _msg)
             else :
                 _msg = "AI " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "undefined on vCloud Director \"" + obj_attr_list["cloud_name"]
+                _msg += "undefined on DigitalOcean \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
                 cbdebug(_msg)
                 return _status, _msg

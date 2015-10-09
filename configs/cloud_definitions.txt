@@ -17,7 +17,7 @@ MAIN_LOGIN = klabuser
 MAIN_BASE_DIR = $PATH_TO_TOOL
 
 # Which cloud to pick first when the tool first starts
-STARTUP_CLOUD = MYSIMCLOUD
+STARTUP_CLOUD = MYDIGITALOCEAN
 
 # List the clouds you want to define
 CLOUDOPTION_MYSIMCLOUD = cldattach sim, vmcattach all
