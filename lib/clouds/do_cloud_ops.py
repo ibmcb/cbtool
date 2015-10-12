@@ -140,7 +140,7 @@ class DoCmds(CommonCloudFunctions) :
                     if _reservation.name.count("cb-" + obj_attr_list["username"]) :
                         _msg = "Cleaning up DigitalOcean.  Destroying CB instantiated node: " + _reservation.name
                         cbdebug(_msg)
-                        _reservation.destroy_node(_reservation)
+                        _reservation.destroy()
                         _running_instances = True
                     else :
                         _msg = "Cleaning up DigitalOcean.  Ignoring instance: " + _reservation.name
@@ -311,12 +311,12 @@ class DoCmds(CommonCloudFunctions) :
         try :
             _msg = "cloud_vm_name " + obj_attr_list["cloud_vm_name"]
             _msg += "from DigitalOcean \"" + obj_attr_list["cloud_name"]
-            cberr(_msg)
+            cbdebug(_msg)
 
             node_list = [x for x in self.digitalocean.list_nodes() if x.name == obj_attr_list["cloud_vm_name"]]
 
             _msg = str(node_list)
-            cberr(_msg)
+            cbdebug(_msg)
 
             return node_list[0]
 
@@ -420,10 +420,13 @@ class DoCmds(CommonCloudFunctions) :
             _msg = "...libcloud clone_timeout is " + _timeout
             cbdebug(_msg)
 
-            _reservation = self.digitalocean.create_node(name=obj_attr_list["cloud_vm_name"],
-                                                         image=image,
-                                                         size=size,
-                                                         location=location)
+            _reservation = self.digitalocean.create_node(
+                name=obj_attr_list["cloud_vm_name"],
+                image=image,
+                size=size,
+                location=location,
+                ex_create_attr={ "ssh_keys": [obj_attr_list["ssh_key"]] }
+            )
 
             obj_attr_list["last_known_state"] = "sent create request to DigitalOcean, parsing response"
 
@@ -515,8 +518,6 @@ class DoCmds(CommonCloudFunctions) :
                 _msg = "Droplet " + obj_attr_list["name"] + " was in created or running state. Will attempt to terminate."
                 cbdebug(_msg)
 
-                credential_name = obj_attr_list["credentials"]
-
                 _wait = int(obj_attr_list["update_frequency"])
                 _curr_tries = 0
                 _max_tries = int(obj_attr_list["update_attempts"])
@@ -525,8 +526,7 @@ class DoCmds(CommonCloudFunctions) :
                     try :
                         _errmsg = "self.digitalocean"
                         _errmsg = "self.connect"
-                        self.connect(credential_name, obj_attr_list["access"], \
-                                     obj_attr_list["password"], obj_attr_list["version"])
+                        self.connect(obj_attr_list["access_token"])
 
                         _errmsg = "get_vm_instance"
                         _instance = self.get_vm_instance(obj_attr_list)
@@ -547,39 +547,7 @@ class DoCmds(CommonCloudFunctions) :
                     cbdebug(_msg, True)
 
                     #_instance.destroy()
-                    #sleep(_wait)
-
-                    # Code to check if vm running isn't working yet, so won't wait for VM to be marked as not running
-                    #while self.is_vm_running(obj_attr_list) :
-                    #    sleep(_wait)
-
-                    # Multiple simultaneous API calls to destroy a VM on my VCD often fail, so adding retries
-                    _destroy_curr_tries = 0
-                    while _destroy_curr_tries < _max_tries :
-
-                        try :
-                            # Force re-connect, in case timeout occured
-                            self.connect(credential_name, obj_attr_list["access"], \
-                                         obj_attr_list["password"], obj_attr_list["version"])
-                            _status = _instance.destroy()
-                            obj_attr_list["last_known_state"] = "vm destoyed"
-                            sleep(_wait)
-                            break
-
-                        except :
-                            _destroy_curr_tries = _destroy_curr_tries + 1
-
-                            if _destroy_curr_tries >= _destroy_max_tries :
-                                _msg = "Aborting VM destroy call for "  + obj_attr_list["name"]
-                                _msg += " after " + str(_destroy_curr_tries) + " attempts."
-                                _status = 1
-                                #                                cberr(_msg)
-                                #                                raise self.ObjectOperationException(_msg, _status)
-                            else :
-                                _msg = "VM destroy call to DigitalOcean has failed for "  + obj_attr_list["name"]
-                                _msg += " Will try again."
-                                cbdebug(_msg, True)
-                                sleep(_wait)
+                    sleep(_wait)
 
                 else :
                     True
@@ -588,7 +556,6 @@ class DoCmds(CommonCloudFunctions) :
                 obj_attr_list["last_known_state"] = "vm destoyed"
                 _msg = "Droplet " + obj_attr_list["name"] + " had not been successfully created; no need to issue destory command."
                 cbdebug(_msg)
-
 
             _time_mark_drc = int(time())
             obj_attr_list["mgt_903_deprovisioning_request_completed"] = _time_mark_drc - _time_mark_drs
