@@ -2108,7 +2108,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _rcmd += obj_attr_list["remote_dir_name"] + '/'
         
                     _msg = "RSYNC: " + _rcmd
-                    cbdebug(_msg)
+                    cbdebug(_msg, True)
     
                     _proc_man.retriable_run_os_command(_rcmd, \
                                                        "127.0.0.1", \

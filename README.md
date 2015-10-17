@@ -41,6 +41,7 @@ Each individual application can have a specific load profile using probability d
 5. VMWare vCloud (in progress)
 6. CloudStack
 7. SoftLayer
+8. DigitalOcean (in progress)
 
 Contacts:
 
