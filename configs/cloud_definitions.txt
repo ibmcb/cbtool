@@ -91,6 +91,7 @@ SCP_IAAS_CLI_LOCATION = <hostname>                         # Address of the webs
 SCP_INITIAL_VMCS = kvm_rack1:sut                           # Change "kvm_rack1" accordingly
 SCP_SSH_KEY_NAME = cbtool_rsa                              # Name of the private key used to login on the VMs
 SCP_LOGIN = cbuser                                         # The username that logins on the VMs
+
 #-------------------------------------------------------------------------------
 # DigitalOcean (DO) requires the following parameters
 [USER-DEFINED : CLOUDOPTION_MYDIGITALOCEAN ]

@@ -1,6 +1,6 @@
 [USER-DEFINED]
 DO_ACCESS = cloud.digitalocean.com
-DO_ACCESS_TOKEN = a_token
+DO_ACCESS_TOKEN = need_to_be_configured_by_user
 DO_LOGIN = root
 DO_SSH_KEY_NAME = cbtool_rsa
 
