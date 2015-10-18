@@ -1,0 +1,43 @@
+[USER-DEFINED]
+DO_ACCESS = https://api.digitalocean.com/v2/
+DO_CREDENTIALS = need_to_be_configured_by_user 
+DO_LOGIN = root
+DO_SSH_KEY_NAME = cbtool_rsa
+DO_INITIAL_VMCS = need_to_be_configured_by_user
+DO_KEY_NAME = need_to_be_configured_by_user 
+
+# PEBCAK documentation for the Wizard and CLI
+DO_INITIAL_VMCS_DOC = $INITIAL_VMCS_DOC 
+DO_INITIAL_VMCS_DEFAULT = tor1 
+
+[SPACE : DO_CLOUDCONFIG ]
+SSH_KEY_NAME = $DO_SSH_KEY_NAME
+
+[VM_DEFAULTS : DO_CLOUDCONFIG ]
+CREDENTIALS = $DO_CREDENTIALS
+SSH_KEY_NAME = $DO_SSH_KEY_NAME
+KEY_NAME = $DO_KEY_NAME
+LOGIN = $DO_LOGIN
+NETNAME = internet
+CLONE_TIMEOUT = 600
+CHECK_BOOT_STARTED = poll_cloud30
+CHECK_BOOT_COMPLETE = tcp_on_22
+SECURITY_GROUPS = not_yet_applicable 
+
+[MON_DEFAULTS : DO_CLOUDCONFIG ]
+COLLECT_FROM_GUEST = $True
+
+[VMC_DEFAULTS : DO_CLOUDCONFIG ]
+CREDENTIALS = $DO_CREDENTIALS
+INITIAL_VMCS = $DO_INITIAL_VMCS
+KEY_NAME = $DO_KEY_NAME
+SSH_KEY_NAME = $DO_SSH_KEY_NAME
+ACCESS = $DO_ACCESS
+SECURITY_GROUPS = not_yet_applicable 
+
+# DigitalOcean (DO) doesn't have any public images yet.
+# Until then, this section MUST be overriden in your personal
+# configuration file as an example, replacing
+# DO_CLOUDCONFIG with CLOUDOPTION_MYDIGITALOCEAN
+[VM_TEMPLATES : DO_CLOUDCONFIG ]
+TINYVM = size:512mb, imageids:1, imageid1:needs_override

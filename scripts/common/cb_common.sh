@@ -903,7 +903,7 @@ function start_syslog {
         sed -i s/"TMPLT_LOGSTORE_PORT"/"${TMPLT_LOGSTORE_PORT}"/g ~/rsyslog.conf
         sed -i s/"TMPLT_USERNAME"/"${LOGNAME}"/g ~/rsyslog.conf
         RSYSLOG=`sudo which rsyslogd`
-        ${RSYSLOG} -c 4 -f ~/rsyslog.conf -i ~/rsyslog.pid
+        ${RSYSLOG} -f ~/rsyslog.conf -i ~/rsyslog.pid
     fi
 }
 
@@ -1017,10 +1017,10 @@ function stop_ganglia {
     service_stop_disable ${GANGLIA_SERVICE[${LINUX_DISTRO}]}          
     
     syslog_netcat "Killing previously running ganglia monitoring processes on $SHORT_HOSTNAME"
-    sudo pkill -9 -f gmond 
+    gpid="$(pidof gmond)"
+    sudo kill -9 $gpid 
     sleep 3
-    result="$(ps aux | grep gmond | grep -v grep)"
-    if [[ x"$result" == x ]]
+    if [[ x"$gpid" != x$(pidof gmond) ]]
     then
         syslog_netcat "Ganglia monitoring processes killed successfully on $SHORT_HOSTNAME"
     else
@@ -1037,10 +1037,10 @@ function start_ganglia {
     syslog_netcat "Restarting ganglia monitoring processes (gmond) on $SHORT_HOSTNAME"
     GANGLIA_FILE_LOCATION=~
     eval GANGLIA_FILE_LOCATION=${GANGLIA_FILE_LOCATION}
-    sudo pkill -9 -f gmond
+    gpid="$(pidof gmond)"
+    sudo kill -9 $gpid
     sudo screen -d -m -S gmond bash -c "while true ; do sleep 10; if [ x\`$PIDOF_CMD gmond\` == x ] ; then gmond -c ${GANGLIA_FILE_LOCATION}/gmond-vms.conf; fi; done"
-    result="$(ps aux | grep gmond | grep -v grep)"
-    if [[ x"$result" == x ]]
+    if [[ x"$(pidof gmond)" == x ]] || [[ x"$gpid" == x$(pidof gmond) ]]
     then
         syslog_netcat "Ganglia monitoring processes (gmond) could not be restarted on $SHORT_HOSTNAME - NOK"
         exit 2
