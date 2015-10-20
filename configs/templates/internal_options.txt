@@ -370,25 +370,19 @@ SSLCERT = $False
 SSLKEY = $False
 
 [VPN]
-SERVER_ADDRESS_DOC = (Optional) If your cloud network is private,\n but 
-SERVER_ADDRESS_DOC += your CB installation is on a different network,\n 
-SERVER_ADDRESS_DOC += the tool has the ability to instruct\n the VMs to 
-SERVER_ADDRESS_DOC += use an OpenVPN server\n to control the virtual 
-SERVER_ADDRESS_DOC += machines.\nThis address is the externally reachable
-SERVER_ADDRESS_DOC +=  address\nwhere the OpenVPN server will run
+SERVER_IP_DOC = (Optional) If your cloud network is private,\n but 
+SERVER_IP_DOC += your CB installation is on a different network,\n 
+SERVER_IP_DOC += the tool has the ability to instruct\n the VMs to 
+SERVER_IP_DOC += use an OpenVPN server\n to control the virtual 
+SERVER_IP_DOC += machines.\nThis address is the externally reachable
+SERVER_IP_DOC +=  address\nwhere the OpenVPN server will run
 ADDRESS_RANGE_DOC = (Optional) Choose an address range for the OpenVPN\nnetwork to operate on.
-BOOTSTRAP_ADDRESS_DOC = (Optional) We use your cloud's meta-data services\n 
-BOOTSTRAP_ADDRESS_DOC += to bootstrap client VPN connections,\n but 
-BOOTSTRAP_ADDRESS_DOC += sometimes it is necessary for the CB tool to\n 
-BOOTSTRAP_ADDRESS_DOC += be in a different location than the OpenVPN 
-BOOTSTRAP_ADDRESS_DOC += server\n in which case the client virtual machine
-BOOTSTRAP_ADDRESS_DOC += will need to register itself using a different IP address.
 START_SERVER = $False
 KIND = OpenVPN
 SERVER_IP = $MANAGER_IP
 SERVER_PORT = 1194
+SERVER_BOOTSTRAP = 192.168.0.6
 NETWORK = 192.168.0.0 
 NETMASK = 255.255.0.0
-BOOTSTRAP_ADDRESS = 192.168.0.1
 
 [AI_TEMPLATES]

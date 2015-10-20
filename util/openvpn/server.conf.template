@@ -1,4 +1,4 @@
-proto tcp
+proto udp 
 dev tun
 port VPN_PORT
 

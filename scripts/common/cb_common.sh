@@ -1018,7 +1018,7 @@ function stop_ganglia {
     
     syslog_netcat "Killing previously running ganglia monitoring processes on $SHORT_HOSTNAME"
     gpid="$(pidof gmond)"
-    sudo kill -9 $gpid 
+	blowawaypids gmond
     sleep 3
     if [[ x"$gpid" != x$(pidof gmond) ]]
     then
@@ -1030,6 +1030,16 @@ function stop_ganglia {
     syslog_netcat "Previously running ganglia monitoring processes killed $SHORT_HOSTNAME"
 }
 
+# Kill processes, for the love of god, without killing yourself
+function blowawaypids {
+    pids="$(pgrep -f "$1")"
+    for pid in $pids ; do
+        if [ $pid != $$ ] && [ $pid != $PPID ] ; then
+            sudo kill -9 $pid
+        fi
+    done
+}
+
 function start_ganglia {
 
     syslog_netcat "Creating ganglia (gmond) file"
@@ -1038,7 +1048,7 @@ function start_ganglia {
     GANGLIA_FILE_LOCATION=~
     eval GANGLIA_FILE_LOCATION=${GANGLIA_FILE_LOCATION}
     gpid="$(pidof gmond)"
-    sudo kill -9 $gpid
+	blowawaypids gmond
     sudo screen -d -m -S gmond bash -c "while true ; do sleep 10; if [ x\`$PIDOF_CMD gmond\` == x ] ; then gmond -c ${GANGLIA_FILE_LOCATION}/gmond-vms.conf; fi; done"
     if [[ x"$(pidof gmond)" == x ]] || [[ x"$gpid" == x$(pidof gmond) ]]
     then
@@ -1053,7 +1063,7 @@ function start_ganglia {
         syslog_netcat "Starting Gmetad"
         ~/cb_create_gmetad_config_file.sh
         syslog_netcat "Restarting ganglia meta process (gmetad) on $SHORT_HOSTNAME"
-        sudo pkill -9 -f gmetad
+		blowawaypids gmetad
 
         GMETAD_PATH=~/${my_remote_dir}/3rd_party/monitor-core/gmetad-python
         

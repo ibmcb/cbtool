@@ -1,9 +1,10 @@
-proto tcp
+proto udp 
 dev tun
 client
 remote DESTINATION VPN_PORT
 
 log /var/log/openvpn/USERNAME_openvpn-cb.log
+
 
 ca       [inline]
 cert     [inline]

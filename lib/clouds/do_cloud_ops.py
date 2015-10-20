@@ -410,8 +410,8 @@ class DoCmds(CommonCloudFunctions) :
             _msg += obj_attr_list["imageid1"]
             cbdebug(_msg, True)
 
-	    size = [x for x in self.digitalocean.list_sizes() if x.id == obj_attr_list["size"]][0]
-            image = [x for x in self.digitalocean.list_images() if x.id == obj_attr_list["imageid1"]][0]
+            size = [x for x in self.digitalocean.list_sizes() if x.id == obj_attr_list["size"]][0]
+            image = [x for x in self.digitalocean.list_images() if (x.name == obj_attr_list["imageid1"] or x.id == obj_attr_list["imageid1"])][0]
             location = [x for x in self.digitalocean.list_locations() if x.id == obj_attr_list["vmc_name"]][0]
 
             vm_computername = "vm" + obj_attr_list["name"].split("_")[1]
@@ -422,12 +422,29 @@ class DoCmds(CommonCloudFunctions) :
             _msg = "libcloud clone_timeout is " + _timeout
             cbdebug(_msg)
 
-	    _reservation = self.digitalocean.create_node(
-                image=image,
-                name=obj_attr_list["cloud_vm_name"],
-                size=size,
-                location=location,
-                ex_create_attr={ "ssh_keys": obj_attr_list["key_name"].split(",") }
+            cloudconfig = False
+            if "userdata" in obj_attr_list and obj_attr_list["userdata"] :
+                cloudconfig = """
+#cloud-config
+write_files:
+  - path: /tmp/userscript.sh
+    content: |
+"""
+                for line in obj_attr_list["userdata"].split("\n")[:-1] :
+                    cloudconfig += "      " + line + "\n"
+                cloudconfig += """
+runcmd:
+  - bash -c "chmod +x /tmp/userscript.sh; /tmp/userscript.sh"
+"""
+                cbdebug("Final userdata: \n" + cloudconfig, True)
+
+            _reservation = self.digitalocean.create_node(
+                image = image,
+                name = obj_attr_list["cloud_vm_name"],
+                size = size,
+                location = location,
+                ex_user_data = cloudconfig,
+                ex_create_attr={ "ssh_keys": obj_attr_list["key_name"].split(","), "private_networking" : True }
                 )
 
             obj_attr_list["last_known_state"] = "sent create request to DigitalOcean, parsing response"

@@ -40,4 +40,5 @@ SECURITY_GROUPS = not_yet_applicable
 # configuration file as an example, replacing
 # DO_CLOUDCONFIG with CLOUDOPTION_MYDIGITALOCEAN
 [VM_TEMPLATES : DO_CLOUDCONFIG ]
+# imageid can be either the actual ID number or more easily the name in the case of a private account
 TINYVM = size:512mb, imageids:1, imageid1:needs_override
