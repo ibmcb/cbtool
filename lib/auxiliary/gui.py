@@ -1245,40 +1245,45 @@ class GUI(object):
                 return self.bootstrap(req, "<div class='span10'>" + mon.body + cli_html)
 
             elif req.action == "stats" :
-                stats = self.api.stats(req.cloud_name)
-                output = "<div class='span10'>"
-                output += self.heromsg + "\n<h4>&nbsp;&nbsp;Runtime Summary Statistics:</h4></div>\n"
-                output += "<div class='accordion' id='statistics'>\n"
-                
-                for group, label, unit, data in stats :
-                    group_key = group.replace(" ", "_")
-                    output += """
-                            <div class="accordion-group">
-                                <div class="accordion-heading">
-                    """
-                    output += "<a class='accordion-toggle' data-toggle='collapse' data-parent='#statistics' href='#collapse" + group_key + "'>" + group + "</a>"
-                    output += "</div>\n"
-                    output += "<div id='collapse" + group_key + "' class='accordion-body collapse'>"
-                    output += "<div class='accordion-inner'>"
-                    output += "<table class='table table-hover table-striped'>\n"
-                    output += "<tr><td><b>" + label + "</b></td><td><b>" + unit + "</b></td></tr>\n"
-                    for name, value in data :
-                        output += "<tr><td>" + name + "</td><td>" + value + "</td></tr>\n"
-                    output  += "</table>"
-    
-                    output += """
-                                    </div>
-                                </div>
-                            </div>
-                    """
-                output += """
-                        </div>
-                """
-                output_fd = open(cwd + "/gui_files/cli_template.html", "r")
-                cli_html = output_fd.read()
-                output_fd.close()
-                output += cli_html
-                return self.bootstrap(req, output)
+		try :
+			stats = self.api.stats(req.cloud_name)
+			output = "<div class='span10'>"
+			output += self.heromsg + "\n<h4>&nbsp;&nbsp;Runtime Summary Statistics:</h4></div>\n"
+			output += "<div class='accordion' id='statistics'>\n"
+			
+		        cbdebug(str(stats))
+			for group_key in stats.keys() :
+				group = group_key.replace("_", " ")
+				output += """
+					    <div class="accordion-group">
+						<div class="accordion-heading">
+				"""
+				output += "<a class='accordion-toggle' data-toggle='collapse' data-parent='#statistics' href='#collapse" + group_key + "'>" + group + "</a>"
+				output += "</div>\n"
+				output += "<div id='collapse" + group_key + "' class='accordion-body collapse'>"
+				output += "<div class='accordion-inner'>"
+				for label, stat in stats[group_key].iteritems() :
+					output += "<table class='table table-hover table-striped'>\n"
+					output += "<tr><td><b>" + label + "</b></td></tr>\n"
+					for name, value in stats[group_key].iteritems() :
+					    output += "<tr><td>" + name + "</td><td>" + str(value) + "</td></tr>\n"
+					output  += "</table>"
+		    
+				output += """
+				    </div>
+				   </div>
+				 </div>
+				"""
+			output += """
+				</div>
+			"""
+			output_fd = open(cwd + "/gui_files/cli_template.html", "r")
+			cli_html = output_fd.read()
+			output_fd.close()
+			output += cli_html
+			return self.bootstrap(req, output)
+		except Exception, e:
+ 			return self.bootstrap(req, str(e))
             elif req.action == "commands" :
                 self.api.dashboard_conn_check(req.cloud_name, req.session['msattrs'], req.session['time_vars']['username'])
                 contents = """

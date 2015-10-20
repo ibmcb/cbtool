@@ -75,7 +75,8 @@ class DoCmds(CommonCloudFunctions) :
             _status = 120
 
             # Attempt to a connection using those login credentials
-            print self.digitalocean.list_nodes()
+	    cbdebug("Testing DigitalOcean connectivity...")
+            self.digitalocean.list_nodes()
 
             _status = 0
 
@@ -88,7 +89,7 @@ class DoCmds(CommonCloudFunctions) :
 
         finally :
             if _status :
-                _msg = "DigitalOcean connection failure. Failed to connect with token " + access_token
+                _msg = "DigitalOcean connection failure. Failed to use your access token."
                 cbdebug(_msg, True)
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
@@ -98,12 +99,13 @@ class DoCmds(CommonCloudFunctions) :
                 return _status, _msg
 
     @trace
-    def test_vmc_connection(self, access_token) :
+    def test_vmc_connection(self, vmc_name, access, credentials, key_name, \
+                            security_group_name, vm_templates, vm_defaults) :
         '''
         TBD
         '''
         try :
-            self.connect(access_token)
+            self.connect(credentials)
 
         except CldOpsException, obj :
             _msg = str(obj.msg)
@@ -123,7 +125,7 @@ class DoCmds(CommonCloudFunctions) :
             if not self.digitalocean :
                 _msg = "Cleaning DigitalOcean"
                 cbdebug(_msg)
-                self.connect(obj_attr_list["access_token"])
+                self.connect(obj_attr_list["credentials"])
 
             _pre_existing_instances = False
 
@@ -385,7 +387,7 @@ class DoCmds(CommonCloudFunctions) :
             obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"].replace("_", "-")
             obj_attr_list["last_known_state"] = "about to connect to DigitalOcean"
 
-            access_token = obj_attr_list["access_token"]
+            access_token = obj_attr_list["credentials"]
 
             if not self.digitalocean :
                 _msg = "Connecting to VCD with credentials " + access_token
@@ -399,39 +401,39 @@ class DoCmds(CommonCloudFunctions) :
             obj_attr_list["last_known_state"] = "about to send create request"
 
             _msg = "Attempting to create a Droplet "
-            _msg += obj_attr_list["image"]
+            _msg += obj_attr_list["imageid1"]
             _msg += " on DigitalOcean, creating a vm named "
             _msg += obj_attr_list["cloud_vm_name"]
             cbdebug(_msg, True)
 
-            _msg = "...Looking for an existing image named "
-            _msg += obj_attr_list["image"]
+            _msg = "Looking for an existing image named "
+            _msg += obj_attr_list["imageid1"]
             cbdebug(_msg, True)
 
-            size = [x for x in self.digitalocean.list_sizes() if x.id == "1gb"][0]
-            image = [x for x in self.digitalocean.list_images() if x.id == obj_attr_list["image"]][0]
-            location = [x for x in self.digitalocean.list_locations() if x.id == obj_attr_list["location"]][0]
+	    size = [x for x in self.digitalocean.list_sizes() if x.id == obj_attr_list["size"]][0]
+            image = [x for x in self.digitalocean.list_images() if x.id == obj_attr_list["imageid1"]][0]
+            location = [x for x in self.digitalocean.list_locations() if x.id == obj_attr_list["vmc_name"]][0]
 
             vm_computername = "vm" + obj_attr_list["name"].split("_")[1]
-            _msg = "...Launching new Droplet with hostname " + vm_computername
+            _msg = "Launching new Droplet with hostname " + vm_computername + " against datacenter " + obj_attr_list["vmc_name"] + " with image id " + str(obj_attr_list["imageid1"]) + " key ids " + str(obj_attr_list["key_name"].split(",")) + " size " + obj_attr_list["size"]
             cbdebug(_msg,True)
 
             _timeout = obj_attr_list["clone_timeout"]
-            _msg = "...libcloud clone_timeout is " + _timeout
+            _msg = "libcloud clone_timeout is " + _timeout
             cbdebug(_msg)
 
-            _reservation = self.digitalocean.create_node(
-                name=obj_attr_list["cloud_vm_name"],
+	    _reservation = self.digitalocean.create_node(
                 image=image,
+                name=obj_attr_list["cloud_vm_name"],
                 size=size,
                 location=location,
-                ex_create_attr={ "ssh_keys": [obj_attr_list["ssh_key"]] }
-            )
+                ex_create_attr={ "ssh_keys": obj_attr_list["key_name"].split(",") }
+                )
 
             obj_attr_list["last_known_state"] = "sent create request to DigitalOcean, parsing response"
 
-            _msg = "...Sent command to create node, waiting for creation..."
-            cbdebug(_msg)
+            _msg = "Sent command to create node, waiting for creation..."
+            cbdebug(_msg, True)
 
             if _reservation :
 
@@ -440,7 +442,7 @@ class DoCmds(CommonCloudFunctions) :
 
                 obj_attr_list["cloud_vm_uuid"] = _reservation.uuid
 
-                _msg = "...Success. New instance UUID is " + _reservation.uuid
+                _msg = "Success. New instance UUID is " + _reservation.uuid
                 cbdebug(_msg,True)
 
                 self.take_action_if_requested("VM", obj_attr_list, "provision_started")
@@ -457,7 +459,7 @@ class DoCmds(CommonCloudFunctions) :
 
             else :
                 obj_attr_list["last_known_state"] = "vm creation failed"
-                _fmsg = "...Failed to obtain instance's (cloud-assigned) uuid. The "
+                _fmsg = "Failed to obtain instance's (cloud-assigned) uuid. The "
                 _fmsg += "instance creation failed for some unknown reason."
                 cberr(_fmsg)
                 _status = 100
@@ -526,7 +528,7 @@ class DoCmds(CommonCloudFunctions) :
                     try :
                         _errmsg = "self.digitalocean"
                         _errmsg = "self.connect"
-                        self.connect(obj_attr_list["access_token"])
+                        self.connect(obj_attr_list["credentials"])
 
                         _errmsg = "get_vm_instance"
                         _instance = self.get_vm_instance(obj_attr_list)
@@ -546,7 +548,7 @@ class DoCmds(CommonCloudFunctions) :
                     _msg += "...."
                     cbdebug(_msg, True)
 
-                    #_instance.destroy()
+                    _instance.destroy()
                     sleep(_wait)
 
                 else :
