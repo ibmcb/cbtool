@@ -110,16 +110,18 @@ neutronclient-order = 48
 softlayer-order = 49
 boto-order = 50
 libcloud-order = 51
-iptables-order = 52
-R-order = 53
-sshkey-order = 54
-sshd-order = 55
-pssh-order = 56
-docutils-order = 57
-setuptools-order = 58
-markup-order = 59
-pyyaml-order = 60
-ruamelyaml-order = 61 
+gcloud-order = 52
+pygce-order = 53
+iptables-order = 55
+R-order = 56
+sshkey-order = 57
+sshd-order = 58
+pssh-order = 59
+docutils-order = 60
+setuptools-order = 61
+markup-order = 62
+pyyaml-order = 63
+ruamelyaml-order = 64 
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -182,6 +184,8 @@ neutronclient-install = pip
 softlayer-install = pip
 boto-install = pip
 libcloud-install = pip
+gcloud-install = man
+pygce-install = pip
 iptables-install = pm
 R-install = pm
 sshkey-install = man
@@ -247,11 +251,13 @@ neutronclient-configure = python -c "import neutronclient; from neutronclient.v2
 softlayer-configure = python -c "import SoftLayer; print "SoftLayer.__version__".replace('v','')"
 boto-configure = python -c "import boto; print str(boto.__version__).strip().replace('-dev','')"
 libcloud-configure = python -c "import libcloud; print str(libcloud.__version__).replace('-dev','').strip()"
-iptables-configure = iptables -v 2>&1 | grep v | cut -d ' ' -f 2 | sed 's/v//g' | sed 's/://g'
+gcloud-configure = gcloud -v | grep SDK | cut -d ' ' -f 4
+pygce-configure = python -c "from oauth2client.client import GoogleCredentials; from googleapiclient.discovery import build"
+iptables-configure = sudo iptables -v 2>&1 | grep v | cut -d ' ' -f 2 | sed 's/v//g' | sed 's/://g'
 R-configure = R --version | grep version | grep -v GNU
 sshkey-configure = ls CREDENTIALSDIR/cbtool_rsa
 sshd-configure = sudo cat /etc/ssh/sshd_config | grep -v ^# | grep UseDNS | grep no
-pssh-configure = sudo ln -s /usr/bin/parallel-ssh /usr/local/bin/pssh; pssh --version
+pssh-configure = sudo ln -s /usr/bin/parallel-ssh /usr/local/bin/pssh; pssh --help
 docutils-configure = python -c "import docutils; print str(docutils.__version__).strip()"
 setuptools-configure = python -c "import setuptools; print str(setuptools.__version__).strip()"
 markup-configure = python -c "import markup;"
@@ -269,7 +275,7 @@ which-ver = ANY
 ntp-ver = ANY
 git-ver = 1.6.0
 wget-ver = 1.00
-pip-ver = 1.5.6
+pip-ver = 1.5.4
 gcc-ver = 4.0
 make-ver = 3.5
 emacs-ver = 20.0.0
@@ -312,6 +318,8 @@ neutronclient-ver = ANY
 softlayer-ver = 3.1
 boto-ver = 2.1.8
 libcloud-ver = 0.11.0
+gcloud-ver = 0.8
+pygce-ver = ANY
 iptables-ver = 1.2
 R-ver = 2.1
 sshkey-ver = ANY
@@ -320,7 +328,7 @@ pssh-ver = ANY
 docutils-ver = 0.12
 setuptools-ver = 7.0 
 markup-ver = ANY
-pyyaml-ver = 3.11
+pyyaml-ver = 3.10
 ruamelyaml-ver = ANY
 ### END - Dependency versions ###
 
@@ -481,27 +489,27 @@ common-python-setuptools-install-pm = package_install python-setuptools
 
 common-python-prettytable-install-pm = package_install python-prettytable
 
-common-python-prettytable-install-pip = sudo pip install INDEXURL prettytable
+common-python-prettytable-install-pip = sudo pip install --upgrade INDEXURL prettytable
 
 common-python-daemon-install-pm = package_install python-daemon
 
 common-python-twisted-install-pm = package_install python-twisted-web
-common-python-twisted-install-man = sudo pip install twisted
+common-python-twisted-install-man = sudo pip install --upgrade twisted
 
 common-python-webob-install-pm = package_install python-webob
-common-python-webob-install-man = sudo pip install webob
+common-python-webob-install-man = sudo pip install --upgrade webob
 
 common-python-beaker-install-pm = package_install python-beaker
 
-common-pyredis-install-pip = sudo pip install INDEXURL redis
+common-pyredis-install-pip = sudo pip install --upgrade INDEXURL redis
 
-common-pymongo-install-pip = sudo pip install INDEXURL pymongo
+common-pymongo-install-pip = sudo pip install --upgrade INDEXURL pymongo
 
 rhel-pylibvirt-install-pm = package_install libvirt-python
 fedora-pylibvirt-install-pm = package_install libvirt-python
 ubuntu-pylibvirt-install-pm = package_install python-libvirt
 
-common-pypureomapi-install-pip = sudo pip install INDEXURL pypureomapi
+common-pypureomapi-install-pip = sudo pip install --upgrade INDEXURL pypureomapi
 
 common-pyhtml-preinstall-git = cd 3RPARTYDIR; git clone URL/HTML.py
 common-pyhtml-install-git = cd HTML.py; sudo python setup.py install
@@ -516,16 +524,20 @@ common-streamprox-preinstall-git = cd 3RPARTYDIR; git clone URL/StreamProx.git
 
 common-d3-preinstall-git = cd 3RPARTYDIR; git clone URL/d3.git
 
-common-novaclient-preinstall-pip = sudo pip install INDEXURL pbr; sudo pip install INDEXURL netifaces
-common-novaclient-install-pip = sudo pip install INDEXURL python-novaclient
+common-novaclient-preinstall-pip = sudo pip install --upgrade INDEXURL pbr; sudo pip install --upgrade INDEXURL netifaces
+common-novaclient-install-pip = sudo pip install --upgrade INDEXURL python-novaclient
 
-common-neutronclient-install-pip = sudo pip install INDEXURL python-neutronclient
+common-neutronclient-install-pip = sudo pip install --upgrade INDEXURL python-neutronclient
 
-common-softlayer-install-pip = sudo pip install INDEXURL softlayer
+common-softlayer-install-pip = sudo pip install --upgrade INDEXURL softlayer
 
-common-boto-install-pip = sudo pip install INDEXURL boto
+common-boto-install-pip = sudo pip install --upgrade INDEXURL boto
 
-common-libcloud-install-pip = sudo pip install INDEXURL apache-libcloud
+common-libcloud-install-pip = sudo pip install --upgrade INDEXURL apache-libcloud
+
+common-gcloud-install-man =  export CLOUDSDK_CORE_DISABLE_PROMPTS=1 && curl https://sdk.cloud.google.com | bash
+
+common-pygce-install-man =  sudo pip install --upgrade INDEXURL gcloud google-api-python-client
 
 rhel-iptables-install-pm = package_install iptables-services iptables
 rhel-iptables-postinstall-pm = sudo  touch /etc/sysconfig/iptables; sudo touch /etc/sysconfig/ip6table; service_stop_disable iptables
@@ -544,13 +556,13 @@ common-sshd-install-man = sudo sed -i 's/.*UseDNS.*/UseDNS no/g' /etc/ssh/sshd_c
 
 common-pssh-install-pm = package_install pssh
 
-common-docutils-install-man = sudo pip install docutils
+common-docutils-install-man = sudo pip install --upgrade docutils
 
-common-setuptools-install-man = sudo pip install setuptools
+common-setuptools-install-man = sudo pip install --upgrade setuptools
 
-common-markup-install-man = sudo pip install markup
+common-markup-install-man = sudo pip install --upgrade markup
 
-common-pyyaml-install-man = sudo pip install pyyaml
+common-pyyaml-install-man = sudo pip install --upgrade pyyaml
 
-common-ruamelyaml-install-man = sudo pip install ruamel.yaml
+common-ruamelyaml-install-man = sudo pip install --upgrade ruamel.yaml
 ### END -  Dependency and method-specific command lines ###

@@ -852,7 +852,10 @@ export -f provision_generic_stop
 
 function security_configuration {
 
-    LINUX_DISTRO=$(linux_distribution)
+    if [[ -z ${LINUX_DISTRO} ]]
+    then
+        linux_distribution
+    fi
                 
     FW_SERVICE[1]="ufw"
     FW_SERVICE[2]="iptables"
@@ -877,7 +880,10 @@ function security_configuration {
 
 function start_redis {
     
-    LINUX_DISTRO=$(linux_distribution)
+    if [[ -z ${LINUX_DISTRO} ]]
+    then
+        linux_distribution
+    fi
 
     REDIS_SERVICE[1]="redis-server"
     REDIS_SERVICE[2]="redis"
@@ -915,14 +921,16 @@ function restart_ntp {
     else
         ntp_service_name="ntpd"
     fi
-    syslog_netcat "Stopping ${ntp_service_name} service...." 
-    sudo service ${ntp_service_name} stop
+    
+    service_stop_disable ${ntp_service_name}
+    
     syslog_netcat "Creating ${ntp_service_name} (ntp.conf) file"
     ~/cb_create_ntp_config_file.sh
+    
     syslog_netcat "Forcing clock update from ntp"
     sudo ntpd -gq
-    syslog_netcat "Starting ${ntp_service_name} service...." 
-    sudo service ${ntp_service_name} start
+    	
+    service_restart_enable ${ntp_service_name}
 }
 
 function online_or_offline {
@@ -935,7 +943,8 @@ function online_or_offline {
 
 function post_boot_steps {
 
-    if [ ! -e /usr/lib64 ]; then
+    if [[ ! -e /usr/lib64 ]]
+    then
         syslog_netcat "Creating symbolic link /usr/lib64 -> /usr/lib"
         sudo ln -s /usr/lib /usr/lib64
     fi
@@ -1009,11 +1018,14 @@ function post_boot_steps {
     
 function stop_ganglia {
             
-    LINUX_DISTRO=$(linux_distribution)
+    if [[ -z ${LINUX_DISTRO} ]]
+    then
+        linux_distribution
+    fi
 
     GANGLIA_SERVICE[1]="ganglia-monitor gmetad"
     GANGLIA_SERVICE[2]="gmond gmetad"
-        
+      
     service_stop_disable ${GANGLIA_SERVICE[${LINUX_DISTRO}]}          
     
     syslog_netcat "Killing previously running ganglia monitoring processes on $SHORT_HOSTNAME"

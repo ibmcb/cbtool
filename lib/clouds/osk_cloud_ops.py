@@ -1292,21 +1292,25 @@ class OskCmds(CommonCloudFunctions) :
             _candidate_images = []
 
             for _idx in range(0,len(_image_list)) :
-                if str(obj_attr_list["randomize_image_name"]).lower() == "false" and \
-                _image_list[_idx].name == obj_attr_list["imageid1"] :
-                    _imageid = _image_list[_idx]
-                    break
-                elif str(obj_attr_list["randomize_image_name"]).lower() == "true" and \
-                _image_list[_idx].name.count(obj_attr_list["imageid1"]) :
+                if _image_list[_idx].name.count(obj_attr_list["imageid1"]) :
                     _candidate_images.append(_image_list[_idx])
                 else :                     
                     True
+            
+            if "hypervisor_type" in obj_attr_list :
+                for _image in list(_candidate_images) :
+                    if "hypervisor_type" in _image.metadata :
+                        if _image.metadata["hypervisor_type"] != obj_attr_list["hypervisor_type"] :
+                            _candidate_images.remove(_image)
 
-            if  obj_attr_list["randomize_image_name"].lower() == "true" :
-                _imageid = choice(_candidate_images)
-
-            _status = 0
-
+            if len(_candidate_images) :
+                if  obj_attr_list["randomize_image_name"].lower() == "true" :
+                    _imageid = choice(_candidate_images)
+                else :
+                    _imageid = _candidate_images[0]
+                    
+                _status = 0
+            
         except novaexceptions, obj:
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)

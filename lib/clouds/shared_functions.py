@@ -250,7 +250,7 @@ class CommonCloudFunctions:
         else :
             _msg = "" + obj_attr_list["name"] + ""
             _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
-            _msg += "is not ready after " + str(_max_tries * _wait) + " seconds.... "
+            _msg += "is not ready after " + str(_max_tries * _wait) + " seconds... "
             _msg += "Giving up."
             cberr(_msg, True)
             raise CldOpsException(_msg, 71)

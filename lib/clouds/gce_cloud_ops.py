@@ -17,9 +17,9 @@
 #/*******************************************************************************
 
 '''
-    Created on Jan 3, 2012
+    Created on Oct 20, 2015
 
-    EC2 Object Operations Library
+    GCE Object Operations Library
 
     @author: Marcio A. Silva
 '''
@@ -34,10 +34,11 @@ from lib.remote.network_functions import hostname2ip
 
 from shared_functions import CldOpsException, CommonCloudFunctions 
 
-from boto.ec2 import regions
-from boto import exception as AWSException 
+from oauth2client.client import GoogleCredentials
+from googleapiclient.discovery import build 
+import googleapiclient.errors as GCEException
 
-class Ec2Cmds(CommonCloudFunctions) :
+class GceCmds(CommonCloudFunctions) :
     '''
     TBD
     '''
@@ -49,7 +50,10 @@ class Ec2Cmds(CommonCloudFunctions) :
         CommonCloudFunctions.__init__(self, pid, osci)
         self.pid = pid
         self.osci = osci
-        self.ec2conn = False
+        self.gceconn = False
+        self.project = None
+        self.zone = None
+        self.instance_info = None
         self.expid = expid
 
     @trace
@@ -57,37 +61,39 @@ class Ec2Cmds(CommonCloudFunctions) :
         '''
         TBD
         '''
-        return "Amazon Elastic Compute Cloud"
+        return "Google Compute Engine"
 
     @trace
-    def connect(self, access_key_id, secret_key, region = "us-east-1") :
+    def connect(self, project, secret_key, zone = "us-east1-b") :
         '''
         TBD
         '''
         try :
             _status = 100
-            _region_list = regions(aws_access_key_id = access_key_id, \
-                                   aws_secret_access_key = secret_key)
+            if not self.project  :
+                self.project = project
 
-            _region_info = False
-            for _idx in range(0,len(_region_list)) :
-                if _region_list[_idx].name == region :
-                    _region_info = _region_list[_idx]
-                    _region_hostname = _region_info.endpoint
-                    _msg = "Selected region is " + str(_region_info.name)
+            _credentials = GoogleCredentials.get_application_default()
+            self.gceconn = build('compute', 'v1', credentials=_credentials)
+
+            _zone_list = self.gceconn.zones().list(project=self.project).execute()["items"]            
+
+            _zone_info = False
+            for _idx in range(0,len(_zone_list)) :
+                if _zone_list[_idx]["description"] == zone :
+                    _zone_info = _zone_list[_idx]
+                    _zone_hostname = _zone_info["region"]
+                    _msg = "Selected zone is " + str(_zone_info["description"])
                     cbdebug(_msg)
                     break
 
-            if _region_info :
-                self.ec2conn = _region_info.connect(aws_access_key_id = \
-                                                    access_key_id, \
-                                                    aws_secret_access_key = \
-                                                    secret_key)
+            if _zone_info :
+                self.zone = zone
                 _status = 0
             else :
-                _fmsg = "Unknown EC2 region (" + region + ")"
+                _fmsg = "Unknown GCE zone (" + zone + ")"
                 
-        except AWSException, obj:
+        except GCEException, obj:
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
@@ -97,13 +103,14 @@ class Ec2Cmds(CommonCloudFunctions) :
 
         finally :
             if _status :
-                _msg = "EC2 connection failure: " + _fmsg
+                _msg = "GCE connection failure: " + _fmsg
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
             else :
-                _msg = "EC2 connection successful."
+
+                _msg = "GCE connection successful."
                 cbdebug(_msg)
-                return _status, _msg, _region_hostname
+                return _status, _msg, _zone_hostname
 
     def check_ssh_key(self, vmc_name, key_name, vm_defaults) :
         '''
@@ -131,7 +138,7 @@ class Ec2Cmds(CommonCloudFunctions) :
             
             _key_pair_found = False
 
-            for _key_pair in self.ec2conn.get_all_key_pairs() :
+            for _key_pair in self.gceconn.get_all_key_pairs() :
                 if _key_pair.name == key_name :
                     _msg = "A key named \"" + key_name + "\" was found "
                     _msg += "on VMC " + vmc_name + ". Checking if the key"
@@ -169,7 +176,7 @@ class Ec2Cmds(CommonCloudFunctions) :
                 _msg += _pub_key_fn + "\"..."
                 cbdebug(_msg, True)
                                     
-                self.ec2conn.import_key_pair(key_name, _key_type + ' ' + _key_contents)                
+                self.gceconn.import_key_pair(key_name, _key_type + ' ' + _key_contents)                
                 _key_pair_found = True
 
             return _key_pair_found
@@ -188,14 +195,14 @@ class Ec2Cmds(CommonCloudFunctions) :
             cbdebug(_msg, True)
 
             _security_group_found = False
-            for security_group in self.ec2conn.get_all_security_groups() :
+            for security_group in self.gceconn.get_all_security_groups() :
                 if security_group.name == security_group_name :
                     _security_group_found = True
 
             if not _security_group_found :
                 _msg = "ERROR! Please create the security group \"" 
                 _msg += security_group_name + "\" in "
-                _msg += "Amazon EC2 before proceeding."
+                _msg += "Google CE before proceeding."
                 _fmsg = _msg
                 cberr(_msg, True)
         else :
@@ -214,23 +221,22 @@ class Ec2Cmds(CommonCloudFunctions) :
         _wanted_images = []
         for _vm_role in vm_templates.keys() :
             _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
-            if _imageid.count("ami-") and _imageid not in _wanted_images :
+            if _imageid not in _wanted_images :
                 _wanted_images.append(_imageid)
 
-        _registered_image_list = self.ec2conn.get_all_images(image_ids=_wanted_images)
+        _registered_image_list = self.gceconn.images().list(project=self.project).execute()["items"]
         _registered_imageid_list = []
 
         for _registered_image in _registered_image_list :
-            _registered_imageid_list.append(_registered_image.id)
+            _registered_imageid_list.append(_registered_image["name"])
 
         _required_imageid_list = {}
 
         for _vm_role in vm_templates.keys() :
-            _imageid = str2dic(vm_templates[_vm_role])["imageid1"]                
-            if _imageid.count("ami-") :
-                if _imageid not in _required_imageid_list :
-                    _required_imageid_list[_imageid] = []
-                _required_imageid_list[_imageid].append(_vm_role)
+            _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
+            if _imageid not in _required_imageid_list :
+                _required_imageid_list[_imageid] = []
+            _required_imageid_list[_imageid].append(_vm_role)
 
         _msg = 'y'
 
@@ -263,7 +269,7 @@ class Ec2Cmds(CommonCloudFunctions) :
         
         if not len(_detected_imageids) :
             _msg = "ERROR! None of the image ids used by any VM \"role\" were detected"
-            _msg += " in this EC2 cloud. Please register at least one "
+            _msg += " in this GCE cloud. Please register at least one "
             _msg += "of the following images: " + ','.join(_undetected_imageids.keys())
             _fmsg = _msg 
             cberr(_msg, True)
@@ -287,15 +293,16 @@ class Ec2Cmds(CommonCloudFunctions) :
             _fmsg = "An error has occurred, but no error message was captured"
             self.connect(access, credentials, vmc_name)
 
-            _key_pair_found = self.check_ssh_key(vmc_name, key_name, vm_defaults)
-
-            _security_group_found = self.check_security_group(vmc_name, security_group_name)
-
+            #_key_pair_found = self.check_ssh_key(vmc_name, key_name, vm_defaults)
+            _key_pair_found = True
+            #_security_group_found = self.check_security_group(vmc_name, security_group_name)
+            _security_group_found = True
             _detected_imageids = self.check_images(vmc_name, vm_templates)
 
             if not (_key_pair_found and _security_group_found and len(_detected_imageids)) :
-                _fmsg += ": Check the previous errors, fix it (using EC2's web"
-                _fmsg += " GUI (AWS Console) or ec2-* CLI utilities"
+                _fmsg = ''                
+                _fmsg += ": Check the previous errors, fix it (using GCE's web"
+                _fmsg += " GUI (Google Developer's Console) or gcloud CLI utility"
                 _status = 1178
                 raise CldOpsException(_fmsg, _status) 
 
@@ -332,17 +339,24 @@ class Ec2Cmds(CommonCloudFunctions) :
             self.connect(obj_attr_list["access"], obj_attr_list["credentials"], obj_attr_list["name"])
 
             _pre_existing_instances = False
-            _reservations = self.ec2conn.get_all_instances()
 
             _running_instances = True
+
             while _running_instances :
                 _running_instances = False
-                for _reservation in _reservations :
-                    for _instance in _reservation.instances :
-                        if "Name" in _instance.tags :
-                            if _instance.tags[u'Name'].count("cb-" + obj_attr_list["username"]) and _instance.state == u'running' :
-                                _instance.terminate()
-                                _running_instances = True
+
+                _instance_list = self.get_instances({}, "vm", "all")                
+
+                for _instance in _instance_list :
+
+                    if _instance["name"].count("cb-" + obj_attr_list["username"]) and _instance["status"] == u'RUNNING' :
+                        self.gceconn.instances().delete(project = self.project, \
+                                                        zone = self.zone, \
+                                                        instance = _instance["name"]).execute()
+
+                        _running_instances = True
+
+
                 sleep(int(obj_attr_list["update_frequency"]))
 
             _msg = "All running instances on the VMC " + obj_attr_list["name"]
@@ -351,31 +365,32 @@ class Ec2Cmds(CommonCloudFunctions) :
 
             sleep(int(obj_attr_list["update_frequency"])*5)
 
-            _msg = "Now all EBS volumes belonging to the just terminated "
+            _msg = "Now all volumes belonging to the just terminated "
             _msg += "instances on the VMC " + obj_attr_list["name"] + " will "
             _msg += "also be removed."
             cbdebug(_msg)
             
-            _volumes = self.ec2conn.get_all_volumes()
+            _volume_list = self.get_instances({}, "vv", "all")
 
-            if len(_volumes) :
-                for unattachedvol in _volumes :
-                    if unattachedvol.status == 'available' :
-                        _msg = unattachedvol.id + ' ' + unattachedvol.status
-                        _msg += "... was deleted"
-                        cbdebug(_msg)
-                        unattachedvol.delete()
-                    else:
-                        _msg = unattachedvol.id + ' ' + unattachedvol.status
-                        _msg += "... still attached and could not be deleted"
-                        cbdebug(_msg)
+            if len(_volume_list) :
+                for _volume in _volume_list :
+                    if _volume["name"].count("cb-" + obj_attr_list["username"]) :
+                        if not "users" in _volume :
+                            _msg = _volume["id"] + " detached "
+                            _msg += "... was deleted"
+                            cbdebug(_msg)
+                            self.gceconn.disks().delete(project = self.project, zone = self.zone, disk = _volume["name"]).execute()
+                        else:
+                            _msg = _volume["id"] + ' '
+                            _msg += "... still attached and could not be deleted"
+                            cbdebug(_msg)
             else :
                 _msg = "No volumes to remove"
                 cbdebug(_msg)
 
             _status = 0
 
-        except AWSException, obj :
+        except GCEException, obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
             
@@ -391,13 +406,13 @@ class Ec2Cmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "VMC " + obj_attr_list["name"] + " could not be cleaned "
-                _msg += "on Elastic Compute Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "on Compute Engine Cloud \"" + obj_attr_list["cloud_name"]
                 _msg += "\" : " + _fmsg
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "VMC " + obj_attr_list["name"] + " was successfully cleaned "
-                _msg += "on Elastic Compute Cloud \"" + obj_attr_list["cloud_name"] + "\""
+                _msg += "on Compute Engine Cloud \"" + obj_attr_list["cloud_name"] + "\""
                 cbdebug(_msg)
                 return _status, _msg
 
@@ -426,12 +441,12 @@ class Ec2Cmds(CommonCloudFunctions) :
             _x, _y, _hostname = self.connect(obj_attr_list["access"], obj_attr_list["credentials"], obj_attr_list["name"])
 
             obj_attr_list["cloud_hostname"] = _hostname
-            obj_attr_list["cloud_ip"] = gethostbyname(_hostname)
+            obj_attr_list["cloud_ip"] = gethostbyname(_hostname.split('/')[2])
             obj_attr_list["arrival"] = int(time())
 
             if obj_attr_list["discover_hosts"].lower() == "true" :
                 _msg = "Host discovery for VMC \"" + obj_attr_list["name"]
-                _msg += "\" request, but EC2 does not allow it. Ignoring for now....."
+                _msg += "\" request, but GCE does not allow it. Ignoring for now....."
                 cbdebug(_msg, True)
                 obj_attr_list["hosts"] = ''
                 obj_attr_list["host_list"] = {}
@@ -447,7 +462,7 @@ class Ec2Cmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except AWSException, obj :
+        except GCEException, obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
             
@@ -463,13 +478,13 @@ class Ec2Cmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "VMC " + obj_attr_list["uuid"] + " could not be registered "
-                _msg += "on Elastic Compute Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += "on Compute Engine Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "VMC " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "registered on Elastic Compute Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "registered on Compute Engine Cloud \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
                 cbdebug(_msg)
                 return _status, _msg
@@ -498,7 +513,7 @@ class Ec2Cmds(CommonCloudFunctions) :
             
             _status = 0
 
-        except AWSException, obj :
+        except GCEException, obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
@@ -513,13 +528,13 @@ class Ec2Cmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "VMC " + obj_attr_list["uuid"] + " could not be unregistered "
-                _msg += "on Elastic Compute Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += "on Compute Engine Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "VMC " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "unregistered on Elastic Compute Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "unregistered on Compute Engine Cloud \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
                 cbdebug(_msg)
                 return _status, _msg
@@ -530,10 +545,13 @@ class Ec2Cmds(CommonCloudFunctions) :
         TBD
         '''
         try :
-            _private_hostname = '{0}'.format(obj_attr_list["instance_obj"].private_dns_name)
-            _private_ip_address = '{0}'.format(obj_attr_list["instance_obj"].private_ip_address)
-            _public_hostname = '{0}'.format(obj_attr_list["instance_obj"].public_dns_name)
-            _public_hostname, _public_ip_address = hostname2ip(_public_hostname)
+
+            _private_ip_address = self.instance_info["networkInterfaces"][0]["networkIP"]
+            _public_ip_address = self.instance_info["networkInterfaces"][0]["accessConfigs"][0]["natIP"]
+                       
+            _public_hostname = obj_attr_list["cloud_vm_name"] + '.' + obj_attr_list["vmc_name"] + '.' + self.project
+            _private_hostname = obj_attr_list["cloud_vm_name"] + '.' + obj_attr_list["vmc_name"] + '.' + self.project
+                        
             if obj_attr_list["run_netname"] == "private" :
                 obj_attr_list["cloud_hostname"] = _private_hostname
                 obj_attr_list["run_cloud_ip"] = _private_ip_address
@@ -558,53 +576,46 @@ class Ec2Cmds(CommonCloudFunctions) :
         '''
         TBD
         '''
-        
+
+        _instances = []
+        _fmsg = "Error while getting instances"
+              
         try :
             if obj_type == "vm" :
-                if identifier == "vmuuid" :
-                    if "cloud_vm_uuid" in obj_attr_list and obj_attr_list["cloud_vm_uuid"] != "NA" :
-                        _reservations = self.ec2conn.get_all_instances(obj_attr_list["cloud_vm_uuid"])
-                        if _reservations :
-                            _instance = _reservations[0].instances[0]
-                            obj_attr_list["instance_obj"] = _instance
-                            return _instance
-                        
-                if identifier == "name" :
-                    _reservations = self.ec2conn.get_all_instances()
-                    _instances = [i for r in _reservations for i in r.instances]
-                    for _instance in _instances :
-                        if "Name" in _instance.tags :
-                            if _instance.tags["Name"] == obj_attr_list["cloud_vm_name"] :
-                                obj_attr_list["instance_obj"] = _instance
-                                return _instance
-                return False
-            
-            else :
-                _instance = []
-
-                if identifier == "vvuid" :
-                    if "cloud_vv_uuid" in obj_attr_list and obj_attr_list["cloud_vv_uuid"].lower() != "none" :
-                        _instance = self.ec2conn.get_all_volumes(volume_ids = [obj_attr_list["cloud_vv_uuid"]])
-
-                if identifier == "vmuuid" :
-                    if "cloud_vm_uuid" in obj_attr_list and obj_attr_list["cloud_vm_uuid"].lower() != "none" :
-                        _instance = self.ec2conn.get_all_volumes(filters={'attachment.instance-id': obj_attr_list["cloud_vm_uuid"]})
-
-                if len(_instance) :    
-                    _volume=_instance[0]
+                if identifier == "all" :
+                    _instance_list = self.gceconn.instances().list(project = self.project, \
+                                                                   zone = self.zone).execute()
+                                                                   
                 else :
-                    return False
+                    _instance_list = self.gceconn.instances().get(project = self.project, \
+                                                                   zone = self.zone, \
+                                                                   instance = identifier).execute()
+           
+            else :
+                if identifier == "all" :
+                    _instance_list = self.gceconn.disks().list(project = self.project, \
+                                                                   zone = self.zone).execute()                    
+ 
+                else :
+                    _instance_list = self.gceconn.disks().get(project = self.project, \
+                                                                   zone = self.zone, \
+                                                                   disk = identifier).execute()
                     
-        except AWSException, obj :
+            if "items" in _instance_list :
+                _instances = _instance_list["items"]
+
+            elif "status" in _instance_list :
+                _instances = _instance_list
+                
+            return _instances
+        
+        except GCEException, obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
             raise CldOpsException(_fmsg, _status)
         
-        except Exception, msg :
-            _fmsg = str(msg)
-            cberr(_fmsg)
-            _status = 23
-            raise CldOpsException(_fmsg, _status)
+        except Exception, _fmsg :
+            return []
 
     @trace
     def vmcount(self, obj_attr_list):
@@ -618,23 +629,21 @@ class Ec2Cmds(CommonCloudFunctions) :
         TBD
         '''
         try :
-
-            if "instance_obj" not in obj_attr_list :
-                _instance = self.get_instances(obj_attr_list, "vm", "vmuuid")
-            else :
-                _instance = obj_attr_list["instance_obj"]
+            
+            _instance = self.get_instances(obj_attr_list, "vm", obj_attr_list["cloud_vm_name"])
 
             if _instance :
-                _instance_state = _instance.update()
+                _instance_state = _instance["status"]
             else :
                 _instance_state = "non-existent"
             
-            if _instance_state == "running" :                
+            if _instance_state == "RUNNING" :
+                self.instance_info = _instance
                 return True
             else :
                 return False
 
-        except AWSException, obj :
+        except GCEException, obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
             raise CldOpsException(_fmsg, _status)
@@ -664,6 +673,45 @@ class Ec2Cmds(CommonCloudFunctions) :
             obj_attr_list["last_known_state"] = "not running"
             return False
 
+    def wait_until_operation(self, obj_attr_list, opid) :
+        '''
+        TBD
+        '''
+
+        _msg = "Waiting for " + obj_attr_list["name"] + " operation to finish..."
+        cbdebug(_msg, True)
+    
+        _curr_tries = 0
+        _max_tries = int(obj_attr_list["update_attempts"])
+        _wait = int(obj_attr_list["update_frequency"])
+        sleep(_wait)
+        
+        while _curr_tries < _max_tries :
+            _start_pooling = int(time())
+
+            _op = self.gceconn.zoneOperations().get(project = self.project, \
+                                                           zone = self.zone, \
+                                                           operation = opid["name"]).execute()
+            
+            if _op['status'] == 'DONE':
+                if 'error' in _op :
+                    raise CldOpsException(_op["error"], 2001)
+
+                if "cloud_vm_uuid" in obj_attr_list :
+                    if obj_attr_list["cloud_vm_uuid"] == "NA" :
+                        obj_attr_list["cloud_vm_uuid"] = _op["id"]
+
+                return True
+            else:
+                sleep(_wait)
+                _curr_tries += 1
+                
+        _fmsg = obj_attr_list["name"] + " operation did not finish after "
+        _fmsg += str(_max_tries * _wait) + " seconds... "
+        _fmsg += "Giving up."
+        
+        raise CldOpsException(_op["error"], 2001)        
+
     @trace
     def vvcreate(self, obj_attr_list) :
         '''
@@ -673,13 +721,13 @@ class Ec2Cmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
-
+            obj_attr_list["cloud_vv_uuid"] = "none"
+            obj_attr_list["cloud_vv_name"] = "none"
             if "cloud_vv" in obj_attr_list :
     
                 obj_attr_list["last_known_state"] = "about to send volume create request"
     
                 obj_attr_list["cloud_vv_name"] = "cb-" + obj_attr_list["username"]
-                obj_attr_list["cloud_vv_name"] += '-' + obj_attr_list["cloud_name"]
                 obj_attr_list["cloud_vv_name"] += '-' + "vv"
                 obj_attr_list["cloud_vv_name"] += obj_attr_list["name"].split("_")[1]
                 obj_attr_list["cloud_vv_name"] += '-' + obj_attr_list["role"]            
@@ -689,31 +737,32 @@ class Ec2Cmds(CommonCloudFunctions) :
                 _msg += obj_attr_list["vmc_name"] + "\""
                 cbdebug(_msg, True)
 
-                _instance =  self.ec2conn.create_volume(obj_attr_list["cloud_vv"], obj_attr_list["instance_obj"].placement)
 
-                sleep(int(obj_attr_list["update_frequency"]))
+                _config = {
+                    'name': obj_attr_list["cloud_vv_name"], 
+                    'description' : "used by " + obj_attr_list["cloud_vm_name"],
+                    'sizeGb' : obj_attr_list["cloud_vv"],
+                }
 
-                obj_attr_list["cloud_vv_uuid"] = '{0}'.format(_instance.id)
+                _fmsg = _msg
 
-                _msg = "Attaching the newly created Volume \"" 
-                _msg += obj_attr_list["cloud_vv_name"] + "\" (cloud-assigned uuid \""
-                _msg += obj_attr_list["cloud_vv_uuid"] + "\") to instance \""
-                _msg += obj_attr_list["cloud_vm_name"] + "\" (cloud-assigned uuid \""
-                _msg += obj_attr_list["cloud_vm_uuid"] + "\")"
-                cbdebug(_msg)
+                _operation = self.gceconn.disks().insert(project = self.project, \
+                                                         zone = self.zone, \
+                                                         body = _config).execute()
 
-                _instance.attach(obj_attr_list["cloud_vm_uuid"], "/dev/xvdb")
-
-            else :
-                obj_attr_list["cloud_vv_uuid"] = "none"
-
+                if self.wait_until_operation(obj_attr_list, _operation) :
+                    _instance =  self.get_instances(obj_attr_list, "vv", obj_attr_list["cloud_vv_name"])
+                    
+                    obj_attr_list["cloud_vv_uuid"] = _instance["id"]
+                    obj_attr_list["cloud_vv_source"] = _instance["selfLink"]
+                    
             _status = 0
 
         except CldOpsException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except AWSException, obj :
+        except GCEException, obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
@@ -731,7 +780,7 @@ class Ec2Cmds(CommonCloudFunctions) :
                 _msg = "Volume to be attached to the " + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vv_uuid"] + ") "
                 _msg += "could not be created"
-                _msg += " on Elastic Compute Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += " on Compute Engine Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
@@ -740,7 +789,7 @@ class Ec2Cmds(CommonCloudFunctions) :
                 _msg = "Volume to be attached to the " + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vv_uuid"] + ") "
                 _msg += "was successfully created"
-                _msg += " on Elastic Compute Cloud \"" + obj_attr_list["cloud_name"] + "\"."
+                _msg += " on Compute Engine Cloud \"" + obj_attr_list["cloud_name"] + "\"."
                 cbdebug(_msg)
                 return _status, _msg
 
@@ -757,7 +806,7 @@ class Ec2Cmds(CommonCloudFunctions) :
             _curr_tries = 0
             _max_tries = int(obj_attr_list["update_attempts"])
 
-            _instance = self.get_instances(obj_attr_list, "vv", identifier)
+            _instance = self.get_instances(obj_attr_list, "vm", obj_attr_list["cloud_vv_name"])
 
             if _instance :
                 _msg = "Sending a destruction request for the Volume" 
@@ -766,45 +815,19 @@ class Ec2Cmds(CommonCloudFunctions) :
                 _msg += " (cloud-assigned uuid " + identifier + ")...."
                 cbdebug(_msg, True)
 
-                _volume_detached = False
+                _operation = self.gceconn.disks().delete(project = self.project, \
+                                                             zone = self.zone, \
+                                                             disk = obj_attr_list["cloud_vv_name"]).execute()
 
-                while not _volume_detached and _curr_tries < _max_tries :
+                self.wait_until_operation(obj_attr_list, _operation)
 
-                    _status = _instance.status
-
-                    if _status == 'available' :
-                        _instance.delete()                 
-                        _volume_detached = True
-
-                    else :
-                        _msg = " Volume previously attached to \"" 
-                        _msg += obj_attr_list["name"] + "\""
-                        _msg += " (cloud-assigned uuid " 
-                        _msg += identifier + ") status "
-                        _msg += "is still \"" + _status + "\". "
-                        _msg += "Will wait " + str(_wait)
-                        _msg += " seconds and try again."
-                        cbdebug(_msg)
-
-                        sleep(_wait)
-                        _curr_tries += 1                           
-
-            if _curr_tries > _max_tries  :
-                _status = 1077
-                _fmsg = " Volume previously attached to \"" 
-                _fmsg += obj_attr_list["name"] + "\""
-                _fmsg += " (cloud-assigned uuid " 
-                _fmsg += identifier + ") "
-                _fmsg +=  "could not be destroyed after " + str(_max_tries * _wait) + " seconds.... "
-                cberr(_msg)
-            else :
-                _status = 0
+            _status = 0
                     
         except CldOpsException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except AWSException, obj :
+        except GCEException, obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
@@ -817,7 +840,7 @@ class Ec2Cmds(CommonCloudFunctions) :
                 _msg = "Volume previously attached to the " + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "could not be destroyed "
-                _msg += " on Elastic Compute Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += " on Compute Engine Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
@@ -825,7 +848,7 @@ class Ec2Cmds(CommonCloudFunctions) :
                 _msg = "Volume previously attached to the " + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "was successfully destroyed "
-                _msg += "on Elastic Compute Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "on Compute Engine Cloud \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
                 cbdebug(_msg)
                 return _status, _msg
@@ -841,7 +864,7 @@ class Ec2Cmds(CommonCloudFunctions) :
             
             obj_attr_list["cloud_vm_uuid"] = "NA"
             _instance = False
-            
+
             obj_attr_list["cloud_vm_name"] = "cb-" + obj_attr_list["username"] 
             obj_attr_list["cloud_vm_name"] += '-' + "vm" + obj_attr_list["name"].split("_")[1] 
             obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["role"]
@@ -851,8 +874,9 @@ class Ec2Cmds(CommonCloudFunctions) :
 
             obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"].replace("_", "-")
             obj_attr_list["last_known_state"] = "about to connect to ec2 manager"
+            obj_attr_list["project"] = self.project
 
-            if not self.ec2conn :
+            if not self.gceconn :
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
                              obj_attr_list["vmc_name"])
 
@@ -863,50 +887,100 @@ class Ec2Cmds(CommonCloudFunctions) :
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
 
+            _status, _fmsg = self.vvcreate(obj_attr_list)
+
             # "Security groups" must be a list
             _security_groups = []
             _security_groups.append(obj_attr_list["security_groups"])
+
+            _source_disk_image = "projects/" + self.project + "/global/images/" + obj_attr_list["imageid1"]
+            _machine_type = "zones/" + obj_attr_list["vmc_name"] + "/machineTypes/" + obj_attr_list["size"]
+
+            _config = {
+                'name': obj_attr_list["cloud_vm_name"],
+                'machineType': _machine_type,
+        
+                # Specify the boot disk and the image to use as a source.
+                'disks': [
+                    {
+                        'boot': True,
+                        'autoDelete': True,
+                        'initializeParams': {
+                            'sourceImage': _source_disk_image,
+                        }
+                    }
+                ],
+        
+                # Specify a network interface with NAT to access the public
+                # internet.
+                'networkInterfaces': [{
+                    'network': 'global/networks/default',
+                    'accessConfigs': [
+                        {'type': 'ONE_TO_ONE_NAT', 'name': 'External NAT'}
+                    ]
+                }],
+        
+                # Allow the instance to access cloud storage and logging.
+                'serviceAccounts': [{
+                    'email': 'default',
+                    'scopes': [
+                        'https://www.googleapis.com/auth/devstorage.read_write',
+                        'https://www.googleapis.com/auth/logging.write'
+                    ]
+                }],
+        
+                # Metadata is readable from the instance and allows you to
+                # pass configuration from deployment scripts to instances.
+                'metadata': {
+                    'items': [{
+                        'key': 'expid',
+                        'value': obj_attr_list["experiment_id"]
+                    }, {
+                        'key': 'use',
+                        'value': "cloudbench"
+                    }]
+                }
+            }
+
+
+            if obj_attr_list["cloud_vv_uuid"] != "none":
+                _msg = "Attaching the newly created Volume \"" 
+                _msg += obj_attr_list["cloud_vv_name"] + "\" (cloud-assigned uuid \""
+                _msg += obj_attr_list["cloud_vv_uuid"] + "\") to instance \""
+                _msg += obj_attr_list["cloud_vm_name"] + "\" (cloud-assigned uuid \""
+                _msg += obj_attr_list["cloud_vm_uuid"] + "\")"
+                cbdebug(_msg)
+            
+                _config["disks"].append({'boot': False, \
+                                         "autoDelete" : True, \
+                                         "source" : obj_attr_list["cloud_vv_source"]})
 
             _time_mark_prs = int(time())
             obj_attr_list["mgt_002_provisioning_request_sent"] = _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
 
             obj_attr_list["last_known_state"] = "about to send create request"
 
-            _msg = "Starting an instance on EC2, using the imageid \""
+            _msg = "Starting an instance on GCE, using the imageid \""
             _msg += obj_attr_list["imageid1"] + "\" and size \""
             _msg += obj_attr_list["size"] + "\" on VMC \""
             _msg += obj_attr_list["vmc_name"] + "\" (with security groups \""
             _msg += str(_security_groups) + "\")."
             cbdebug(_msg, True)
 
-            _reservation = self.ec2conn.run_instances(image_id = obj_attr_list["imageid1"], \
-                                                      instance_type = obj_attr_list["size"], \
-                                                      key_name = obj_attr_list["key_name"], \
-                                                      security_groups = _security_groups)
+            _operation = self.gceconn.instances().insert(project = self.project, \
+                                                         zone = self.zone, \
+                                                         body = _config).execute()
 
-            if _reservation :
-
-                sleep(int(obj_attr_list["update_frequency"]))
-                
-                _instance = _reservation.instances[0]
-        
-                _instance.add_tag("Name", obj_attr_list["cloud_vm_name"])            
-                
-                obj_attr_list["cloud_vm_uuid"] = '{0}'.format(_instance.id)
-                obj_attr_list["instance_obj"] = _instance
+            if self.wait_until_operation(obj_attr_list, _operation) :
 
                 self.take_action_if_requested("VM", obj_attr_list, "provision_started")
 
                 _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
 
-                _status, _fmsg = self.vvcreate(obj_attr_list)
-                          
                 self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
 
                 obj_attr_list["host_name"] = "unknown"
 
-                if "instance_obj" in obj_attr_list : 
-                    del obj_attr_list["instance_obj"]
                 _status = 0
 
                 if obj_attr_list["force_failure"].lower() == "true" :
@@ -922,7 +996,7 @@ class Ec2Cmds(CommonCloudFunctions) :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except AWSException, obj :
+        except GCEException, obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
@@ -938,7 +1012,7 @@ class Ec2Cmds(CommonCloudFunctions) :
             if _status :
 
                 _msg = "VM " + obj_attr_list["uuid"] + " could not be created "
-                _msg += "on Elastic Compute Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += "on Compute Engine Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg + " (The VM creation will be rolled back)"
                 cberr(_msg)
 
@@ -953,7 +1027,7 @@ class Ec2Cmds(CommonCloudFunctions) :
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "VM " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "created on Elastic Compute Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "created on Compute Engine Cloud \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
                 cbdebug(_msg)
                 return _status, _msg
@@ -974,13 +1048,13 @@ class Ec2Cmds(CommonCloudFunctions) :
             obj_attr_list["mgt_902_deprovisioning_request_sent"] = \
                 _time_mark_drs - int(obj_attr_list["mgt_901_deprovisioning_request_originated"])
 
-            if not self.ec2conn :
+            if not self.gceconn :
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
                          obj_attr_list["vmc_name"])
             
             _wait = int(obj_attr_list["update_frequency"])
 
-            _instance = self.get_instances(obj_attr_list, "vm", "vmuuid")
+            _instance = self.get_instances(obj_attr_list, "vm", obj_attr_list["cloud_vm_name"])
             
             if _instance :
                 _msg = "Sending a termination request for "  + obj_attr_list["name"] + ""
@@ -988,20 +1062,24 @@ class Ec2Cmds(CommonCloudFunctions) :
                 _msg += "...."
                 cbdebug(_msg, True)
 
-                _instance.terminate()
+                _operation = self.gceconn.instances().delete(project = self.project, \
+                                                             zone = self.zone, \
+                                                             instance = obj_attr_list["cloud_vm_name"]).execute()
 
-                sleep(_wait)
+                self.wait_until_operation(obj_attr_list, _operation)
 
                 while self.is_vm_running(obj_attr_list) :
                     sleep(_wait)
             else :
                 True
+
+            _status, _fmsg = self.vvdestroy(obj_attr_list, "vvuid")
                         
             _time_mark_drc = int(time())
             obj_attr_list["mgt_903_deprovisioning_request_completed"] = \
                 _time_mark_drc - _time_mark_drs            
              
-            _status, _fmsg = self.vvdestroy(obj_attr_list, "vvuid")
+            _status, _fmsg = self.vvdestroy(obj_attr_list, "vmuid")
             
             _status = 0
 
@@ -1009,7 +1087,7 @@ class Ec2Cmds(CommonCloudFunctions) :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except AWSException, obj :
+        except GCEException, obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
@@ -1020,13 +1098,13 @@ class Ec2Cmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "VM " + obj_attr_list["uuid"] + " could not be destroyed "
-                _msg += " on Elastic Compute Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += " on Compute Engine Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
                 cberr(_msg)
                 raise CldOpsException(_status, _msg)
             else :
                 _msg = "VM " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "destroyed on Elastic Compute Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "destroyed on Compute Engine Cloud \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
                 cbdebug(_msg)
                 return _status, _msg
@@ -1044,7 +1122,7 @@ class Ec2Cmds(CommonCloudFunctions) :
             _curr_tries = 0
             _max_tries = int(obj_attr_list["update_attempts"])
 
-            if not self.ec2conn :
+            if not self.gceconn :
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
                              obj_attr_list["vmc_name"])
 
@@ -1066,7 +1144,7 @@ class Ec2Cmds(CommonCloudFunctions) :
                 _msg += "Will capture with image name \"" + obj_attr_list["captured_image_name"] + "\"."                 
                 cbdebug(_msg)
 
-                _captured_imageid = self.ec2conn.create_image(obj_attr_list["cloud_vm_uuid"] , obj_attr_list["captured_image_name"])
+                _captured_imageid = self.gceconn.create_image(obj_attr_list["cloud_vm_uuid"] , obj_attr_list["captured_image_name"])
 
                 _msg = "Waiting for " + obj_attr_list["name"]
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
@@ -1077,7 +1155,7 @@ class Ec2Cmds(CommonCloudFunctions) :
                 _vm_image_created = False
                 while not _vm_image_created and _curr_tries < _max_tries :
 
-                    _image_instance = self.ec2conn.get_all_images(_captured_imageid)
+                    _image_instance = self.gceconn.get_all_images(_captured_imageid)
 
                     if len(_image_instance)  :
                         if _image_instance[0].state == "pending" :
@@ -1120,13 +1198,13 @@ class Ec2Cmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "VM " + obj_attr_list["uuid"] + " could not be captured "
-                _msg += " on Elastic Compute Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += " on Compute Engine Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
                 cberr(_msg)
                 raise CldOpsException(_status, _msg)
             else :
                 _msg = "VM " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "captured on Elastic Compute Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "captured on Compute Engine Cloud \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
                 cbdebug(_msg)
                 return _status, _msg
@@ -1154,18 +1232,30 @@ class Ec2Cmds(CommonCloudFunctions) :
             _msg += "...."
             cbdebug(_msg, True)
 
-            _instance = self.get_instances(obj_attr_list, "vm", "vmuuid")
+            _instance = self.get_instances(obj_attr_list, "vm", obj_attr_list["cloud_vm_name"])
 
             if _instance :
                 if _ts == "fail" :
-                    _instance.stop()
+                    _operation = self.gceconn.instances().stop(project = self.project, \
+                                                               zone = self.zone, \
+                                                               instance = obj_attr_list["cloud_vm_name"]).execute()
+
                 elif _ts == "save" :
-                    _instance.stop()
+                    _operation = self.gceconn.instances().stop(project = self.project, \
+                                                               zone = self.zone, \
+                                                               instance = obj_attr_list["cloud_vm_name"]).execute()
+                                                               
                 elif (_ts == "attached" or _ts == "resume") and _cs == "fail" :
-                    _instance.start()
+                    _operation = self.gceconn.instances().start(project = self.project, \
+                                                                zone = self.zone, \
+                                                                instance = obj_attr_list["cloud_vm_name"]).execute()
+                                                                
                 elif (_ts == "attached" or _ts == "restore") and _cs == "save" :
-                    _instance.start()
-            
+                    _operation = self.gceconn.instances().start(project = self.project, \
+                                                                zone = self.zone, \
+                                                                instance = obj_attr_list["cloud_vm_name"]).execute()
+
+                self.wait_until_operation(obj_attr_list, _operation)            
             _time_mark_rrc = int(time())
             obj_attr_list["mgt_203_runstate_request_completed"] = _time_mark_rrc - _time_mark_rrs
 
@@ -1178,7 +1268,7 @@ class Ec2Cmds(CommonCloudFunctions) :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except AWSException, obj :
+        except GCEException, obj :
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
@@ -1189,13 +1279,13 @@ class Ec2Cmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "VM " + obj_attr_list["uuid"] + " could not have its "
-                _msg += "run state changed on Elastic Compute Cloud \"" 
+                _msg += "run state changed on Compute Engine Cloud \"" 
                 _msg += obj_attr_list["cloud_name"] + "\" : " + _fmsg
                 cberr(_msg, True)
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "VM " + obj_attr_list["uuid"] + " successfully had its "
-                _msg += "run state changed on Elastic Compute Cloud \"" 
+                _msg += "run state changed on Compute Engine Cloud \"" 
                 _msg += obj_attr_list["cloud_name"] + "\"."
                 cbdebug(_msg, True)
                 return _status, _msg
@@ -1219,13 +1309,13 @@ class Ec2Cmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "AI " + obj_attr_list["name"] + " could not be defined "
-                _msg += " on EC2 \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += " on GCE \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
                 cberr(_msg)
                 raise CldOpsException(_status, _msg)
             else :
                 _msg = "AI " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "defined on Elastic Compute Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "defined on Compute Engine Cloud \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
                 cbdebug(_msg)
                 return _status, _msg
@@ -1247,13 +1337,13 @@ class Ec2Cmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "AI " + obj_attr_list["name"] + " could not be undefined "
-                _msg += " on Elastic Compute Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += " on Compute Engine Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
                 cberr(_msg)
                 raise CldOpsException(_status, _msg)
             else :
                 _msg = "AI " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "undefined on Elastic Compute Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "undefined on Compute Engine Cloud \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
                 cbdebug(_msg)
                 return _status, _msg

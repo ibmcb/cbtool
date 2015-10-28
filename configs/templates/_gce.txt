@@ -1,0 +1,130 @@
+[USER-DEFINED]
+GCE_ACCESS = need_to_be_configured_by_user 
+GCE_SECURITY_GROUP = need_to_be_configured_by_user 
+GCE_CREDENTIALS = need_to_be_configured_by_user 
+GCE_KEY_NAME = cbtool_rsa 
+GCE_INITIAL_VMCS = need_to_be_configured_by_user 
+GCE_SSH_KEY_NAME = cbtool_rsa
+GCE_LOGIN = need_to_be_configured_by_user
+
+# PEBCAK documentation for the Wizard and CLI
+GCE_ACCESS_DOC = Please enter the project to be used with the Google Compute Engine API.\n
+GCE_ACCESS_DEFAULT = cbproject
+GCE_SECURITY_GROUP_DOC = Please enter the name of the security\ngroup associated with your Google Compute Engine instances.\nThis needs to be setup with any use of Google before running the tool.
+GCE_SECURITY_GROUP_DEFAULT = some_security_group
+GCE_CREDENTIALS_DOC = Please enter the GCE project credentials.\nThis value is another long boring hash string.
+GCE_CREDENTIALS_DEFAULT = XXXXX/YYYYYYYYY/ZZZ/AAAAAAAAAAAAAAA/B
+GCE_KEY_NAME_DOC = Please enter the name of the SSH key created in\nthe GCE service for logging as root to your Google VMs. 
+GCE_KEY_NAME_DEFAULT = some_amazon_root_ssh_key_name
+GCE_LOGIN_DOC = $LOGIN_DOC
+GCE_LOGIN_DEFAULT = cbuser
+GCE_SSH_KEY_NAME_DOC = $SSH_KEY_NAME_DOC
+GCE_SSH_KEY_NAME_DEFAULT = path_to_some_private_ssh_key_location
+GCE_INITIAL_VMCS_DOC = $INITIAL_VMCS_DOC 
+GCE_INITIAL_VMCS_DEFAULT = us-central1-f
+
+[SPACE : GCE_CLOUDCONFIG ]
+SSH_KEY_NAME = $GCE_SSH_KEY_NAME
+
+[MON_DEFAULTS : GCE_CLOUDCONFIG ]
+COLLECT_FROM_HOST = $False # impossible for amazon
+COLLECT_FROM_GUEST = $True
+
+[VMC_DEFAULTS : GCE_CLOUDCONFIG ]
+ACCESS = $GCE_ACCESS
+CREDENTIALS = $GCE_CREDENTIALS
+SECURITY_GROUPS = $GCE_SECURITY_GROUP
+KEY_NAME = $GCE_KEY_NAME
+INITIAL_VMCS = $GCE_INITIAL_VMCS
+ADDITIONAL_DISCOVERY = $Empty
+MIGRATE_SUPPORTED = $False
+PROTECT_SUPPORTED = $False
+HOST_USER_ROOT = $False
+
+[VM_DEFAULTS : GCE_CLOUDCONFIG ]
+ACCESS = $GCE_ACCESS
+CREDENTIALS = $GCE_CREDENTIALS
+KEY_NAME = $GCE_KEY_NAME
+SECURITY_GROUPS = $GCE_SECURITY_GROUP
+CAPTURE_SUPPORTED = $False
+RUNSTATE_SUPPORTED = $True
+RESIZE_SUPPORTED = $False
+LOGIN = $GCE_LOGIN
+SSH_KEY_NAME = $GCE_SSH_KEY_NAME
+CHECK_BOOT_STARTED = poll_cloud
+# Other methods could be used to check if a VM *STARTED* booting
+#CHECK_BOOT_STARTED = subscribe_on_starting
+CHECK_BOOT_COMPLETE = tcp_on_22
+# Other methods could be used to check if a VM *FINISHED* booting
+#CHECK_BOOT_COMPLETE = subscribe_on_booting
+#CHECK_BOOT_COMPLETE = wait_for_0
+NETNAME = private
+TENANT = default
+SIZE = from_vm_template
+LEAVE_INSTANCE_ON_FAILURE = $False
+FORCE_FAILURE = $False
+
+[AI_DEFAULTS : GCE_CLOUDCONFIG ]
+ATTACH_PARALLELISM = 10
+CAPTURE_SUPPORTED = $False
+RUNSTATE_SUPPORTED = $True
+RESIZE_SUPPORTED = $True
+LOGIN = $GCE_LOGIN
+SSH_KEY_NAME = $GCE_SSH_KEY_NAME
+
+[AIDRS_DEFAULTS : GCE_CLOUDCONFIG]
+LOGIN = $GCE_LOGIN
+SSH_KEY_NAME = $GCE_SSH_KEY_NAME
+
+[VMCRS_DEFAULTS : GCE_CLOUDCONFIG]
+LOGIN = $GCE_LOGIN
+SSH_KEY_NAME = $GCE_SSH_KEY_NAME
+
+[FIRS_DEFAULTS : GCE_CLOUDCONFIG]
+LOGIN = $GCE_LOGIN
+SSH_KEY_NAME = $GCE_SSH_KEY_NAME
+
+[VM_TEMPLATES : GCE_CLOUDCONFIG ]
+CLIENT_DAYTRADER = size:n1-standard-4, imageid1:cb-daytrader
+DRIVER_DAYTRADER = size:n1-standard-4, imageid1:cb-daytrader
+CLIENT_TRADELITE = size:n1-standard-4, imageid1:cb-tradelite
+DRIVER_TRADELITE = size:n1-standard-4, imageid1:cb-tradelite
+MYSQL = size:n1-standard-4, lb_size:n1-standard-8, imageid1:cb-daytrader
+GERONIMO = size:n1-standard-4, imageid1:cb-daytrader
+DB2 = size:n1-standard-4, lb_size:n1-standard-8, imageid1:cb-daytrader
+WAS = size:n1-standard-4, imageid1:cb-daytrader
+DRIVER_HADOOP = size:f1-micro, imageid1:cb-hadoop
+HADOOPMASTER = size:g1-small, imageid1:cb-hadoop
+HADOOPSLAVE = size:n1-standard-4, imageid1:cb-hadoop
+GIRAPHMASTER = size:g1-small, imageid1:cb-giraph
+GIRAPHSLAVE = size:n1-standard-4, imageid1:cb-giraph
+DRIVER_NETPERF = size:f1-micro, imageid1:cb-hadoop
+NETCLIENT = size:g1-small, imageid1:cb-netperf
+NETSERVER = size:g1-small, imageid1:cb-netperf
+NUTTCPCLIENT = size:g1-small, imageid1:cb-nuttcp
+NUTTCPSERVER = size:g1-small, imageid1:cb-nuttcp
+XPINGSENDER = size:g1-small, imageid1:cb-xping
+XPINGRECEIVER = size:g1-small, imageid1:cb-xping
+IPERFCLIENT = size:g1-small, imageid1:cb-iperf
+IPERFSERVER = size:g1-small, imageid1:cb-iperf
+DRIVER_COREMARK = size:f1-micro, imageid1:cb-coremark
+COREMARK = size:f1-micro, imageid1:cb-coremark
+CLIENT_WINDOWS = size:n1-standard-4, imageid1:cb-windows
+WINDOWS = size:n1-standard-4, imageid1:cb-windows
+DRIVER_FILEBENCH = size:n1-standard-4, imageid1:cb-filebench
+FILEBENCH = size:g1-small, imageid1:cb-filebench
+DRIVER_FIO = size:n1-standard-4, imageid1:cb-fio
+FIO = size:n1-standard-4, imageid1:cb-fio
+TINYVM = size:f1-micro, imageid1:cb-nullworkload
+FEN_HPC = size:n1-standard-4, imageid1:cb-hpcc
+CN_HPC = size:n1-standard-4, imageid1:cb-hpcc
+DDGEN = size:n1-standard-4, imageid1:cb-ddgen
+SPECJBB = size:n1-standard-4, imageid1:cb-specjbb
+LB = size:n1-standard-4, imageid1:cb-daytrader
+MONGOS = size:n1-standard-8, imageid1:cb-ycsb
+MONGO_CFG_SERVER = size:g1-small, imageid1:cb-ycsb
+MONGODB = size:n1-standard-4, imageid1:cb-ycsb
+CASSANDRA = size:n1-standard-4, imageid1:cb-ycsb
+SEED = size:n1-standard-4, imageid1:cb-ycsb
+REDIS = size:n1-standard-4, imageid1:cb-ycsb
+YCSB = size:n1-standard-4, imageid1:cb-ycsb
