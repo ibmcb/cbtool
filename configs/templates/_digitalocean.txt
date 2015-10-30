@@ -23,6 +23,7 @@ CLONE_TIMEOUT = 600
 CHECK_BOOT_STARTED = poll_cloud30
 CHECK_BOOT_COMPLETE = tcp_on_22
 SECURITY_GROUPS = not_yet_applicable 
+HOSTNAME_KEY = cloud_vm_name
 
 [MON_DEFAULTS : DO_CLOUDCONFIG ]
 COLLECT_FROM_GUEST = $True
@@ -42,3 +43,8 @@ SECURITY_GROUPS = not_yet_applicable
 [VM_TEMPLATES : DO_CLOUDCONFIG ]
 # imageid can be either the actual ID number or more easily the name in the case of a private account
 TINYVM = size:512mb, imageids:1, imageid1:needs_override
+CASSANDRA = size:2gb, imageids:1, imageid1:needs_override
+YCSB = size:2gb, imageids:1, imageid1:needs_override
+SEED = size:2gb, imageids:1, imageid1:needs_override
+HADOOPMASTER = size:1gb, imageids:1, imageid1:needs_override
+HADOOPSLAVE = size:2gb, imageids:1, imageid1:needs_override

@@ -407,7 +407,8 @@ def create_user_data_contents(obj_attr_list, osci) :
     # and use the VPN before talking to redis...
 
     _userdata_contents = "#!/bin/bash\n\n"
-    #_userdata_contents += "rm -f " + _rdfp + "/configs/generated/*" + obj_attr_list["cloud_name"] + "*client-cb-openvpn.conf 2>/dev/null)\n"
+    _userdata_contents += "rm -f " + _rdfp + "/configs/generated/*" + obj_attr_list["cloud_name"] + "*client-cb-openvpn.conf 2>/dev/null\n"
+    _userdata_contents += "rm -f /etc/openvpn/*" + obj_attr_list["cloud_name"] + "*client-cb-openvpn.conf 2>/dev/null\n"
     _userdata_contents += "# This VM is part of experiment id \"" + obj_attr_list["experiment_id"] + "\""
     _userdata_contents += "\n"            
     _userdata_contents += "mkdir -p /var/log/cloudbench\n"    

@@ -31,52 +31,58 @@ from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 from libcloud.compute.types import NodeState
 
+import pickle
+
 class DoCmds(CommonCloudFunctions) :
-    '''
-    TBD
-    '''
     @trace
     def __init__ (self, pid, osci, expid = None) :
-        '''
-        TBD
-        '''
         CommonCloudFunctions.__init__(self, pid, osci)
         self.pid = pid
         self.osci = osci
-        self.digitalocean = None
+        self.digitalocean = False 
         self.access_url = False
         self.ft_supported = False
         self.lock = False
         self.expid = expid
+        self.locations = False
+        self.sizes = False
+        self.images = False
 
     @trace
     def get_description(self) :
-        '''
-        TBD
-        '''
         return "DigitalOcean"
 
     @trace
     def connect(self, access_token) :
-        '''
-        TBD
-        '''
         try :
 
             _status = 100
 
-            _msg = "Connecting to DigitalOcean host with access token " + access_token
-            cbdebug(_msg)
+            if not self.digitalocean :
+                _msg = "Connecting to DigitalOcean..."
+                cbdebug(_msg)
 
-            driver = get_driver(Provider.DIGITAL_OCEAN)
-            _status = 110
+                driver = get_driver(Provider.DIGITAL_OCEAN)
+                _status = 110
 
-            self.digitalocean = driver(access_token, api_version='v2')
-            _status = 120
+                self.digitalocean = driver(access_token, api_version='v2')
+            else :
+                cbdebug("DigitalOcean Already connected.")
 
-            # Attempt to a connection using those login credentials
-	    cbdebug("Testing DigitalOcean connectivity...")
-            self.digitalocean.list_nodes()
+            cbdebug("Caching DigitalOcean locations, sizes, and images. If stale, then restart...")
+            if not self.locations :
+                cbdebug("Locations...")
+                self.locations = self.digitalocean.list_locations()
+            if not self.sizes :
+                cbdebug("Sizes...")
+                self.sizes = self.digitalocean.list_sizes()
+            if not self.images :
+                cbdebug("Images...")
+                self.images = self.digitalocean.list_images()
+            assert(self.images)
+            assert(self.sizes)
+            assert(self.locations)
+            cbdebug("Done caching.")
 
             _status = 0
 
@@ -92,6 +98,7 @@ class DoCmds(CommonCloudFunctions) :
                 _msg = "DigitalOcean connection failure. Failed to use your access token."
                 cbdebug(_msg, True)
                 cberr(_msg)
+                self.digitalocean = False
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "DigitalOcean connection successful."
@@ -101,10 +108,8 @@ class DoCmds(CommonCloudFunctions) :
     @trace
     def test_vmc_connection(self, vmc_name, access, credentials, key_name, \
                             security_group_name, vm_templates, vm_defaults) :
-        '''
-        TBD
-        '''
         try :
+            # Attempt to a connection using those login credentials
             self.connect(credentials)
 
         except CldOpsException, obj :
@@ -115,10 +120,6 @@ class DoCmds(CommonCloudFunctions) :
 
     @trace
     def vmccleanup(self, obj_attr_list) :
-        '''
-        TBD
-        '''
-
         try :
             _status = 100
 
@@ -131,18 +132,28 @@ class DoCmds(CommonCloudFunctions) :
 
             _msg = "Cleaning up DigitalOcean"
             cbdebug(_msg)
-            _reservations = self.digitalocean.list_nodes()
 
             _running_instances = True
             while _running_instances :
+                _reservations = self.digitalocean.list_nodes()
+
                 _msg = "Cleaning up running instances. Checking to see if they were instantiated by CB..."
                 cbdebug(_msg)
                 _running_instances = False
                 for _reservation in _reservations :
                     if _reservation.name.count("cb-" + obj_attr_list["username"]) :
-                        _msg = "Cleaning up DigitalOcean.  Destroying CB instantiated node: " + _reservation.name
-                        cbdebug(_msg)
-                        _reservation.destroy()
+                        if _reservation.state == NodeState.PENDING :
+                            cbdebug("Instance still has a pending event. waiting to destroy...")
+                            sleep(10)
+                            _msg = "Cleaning up DigitalOcean.  Destroying CB instantiated node: " + _reservation.name
+                            cbdebug(_msg)
+                            continue
+
+                        try :
+                            cbdebug("Killing: " + _reservation.name, True)
+                            _reservation.destroy()
+                        except :
+                            pass
                         _running_instances = True
                     else :
                         _msg = "Cleaning up DigitalOcean.  Ignoring instance: " + _reservation.name
@@ -181,15 +192,21 @@ class DoCmds(CommonCloudFunctions) :
 
     @trace
     def vmcregister(self, obj_attr_list) :
-        '''
-        TBD
-        '''
+        _fmsg = "none"
         try :
             _msg = "Attempting to attach a new VMC..."
             cbdebug(_msg)
 
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
+
+            access_token = obj_attr_list["credentials"]
+
+            if not self.digitalocean :
+                _msg = "Connecting to DigitalOcean..."
+                cbdebug(_msg)
+
+                self.connect(access_token)
 
             _time_mark_prs = int(time())
             obj_attr_list["mgt_002_provisioning_request_sent"] = _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
@@ -214,10 +231,12 @@ class DoCmds(CommonCloudFunctions) :
         except CldOpsException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
+            cberr(str(obj))
 
-        except :
+        except Exception, e:
             _status = 23
             _fmsg = sys.exc_info()[0]
+            cberr(str(e))
             raise
 
         finally :
@@ -236,9 +255,6 @@ class DoCmds(CommonCloudFunctions) :
 
     @trace
     def vmcunregister(self, obj_attr_list) :
-        '''
-        TBD
-        '''
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
@@ -282,16 +298,24 @@ class DoCmds(CommonCloudFunctions) :
 
     @trace
     def get_ip_address(self, obj_attr_list) :
-        '''
-        TBD
-        '''
         try :
+            _status = 100
             node = self.get_vm_instance(obj_attr_list)
 
             obj_attr_list["prov_cloud_ip"] = node.public_ips[0]
-            obj_attr_list["run_cloud_ip"] =  node.public_ips[0]
+            if len(node.private_ips) > 0 :
+                obj_attr_list["run_cloud_ip"] = node.private_ips[0]
+            else :
+                obj_attr_list["run_cloud_ip"] =  node.public_ips[0]
             # NOTE: "cloud_ip" is always equal to "run_cloud_ip"
             obj_attr_list["cloud_ip"] = obj_attr_list["run_cloud_ip"]
+
+            cbdebug(str(obj_attr_list))
+
+            if obj_attr_list["hostname_key"] == "cloud_vm_name" :
+                obj_attr_list["cloud_hostname"] = obj_attr_list["cloud_vm_name"]
+            elif obj_attr_list["hostname_key"] == "cloud_ip" :
+                obj_attr_list["cloud_hostname"] = obj_attr_list["cloud_ip"].replace('.','-')
 
             _msg = "Public IP = " + obj_attr_list["cloud_hostname"]
             _msg += " Private IP = " + obj_attr_list["cloud_ip"]
@@ -299,28 +323,31 @@ class DoCmds(CommonCloudFunctions) :
             _status = 0
             return True
 
-        except :
+        except Exception, e :
             _msg = "Could not retrieve IP addresses for object " + obj_attr_list["uuid"]
-            _msg += "from DigitalOcean \"" + obj_attr_list["cloud_name"]
+            _msg += "from DigitalOcean \"" + obj_attr_list["cloud_name"] + ": " + str(e)
             cberr(_msg)
             raise CldOpsException(_msg, _status)
 
     @trace
     def get_vm_instance(self, obj_attr_list) :
-        '''
-        TBD
-        '''
         try :
+            _status = 100
             _msg = "cloud_vm_name " + obj_attr_list["cloud_vm_name"]
             _msg += "from DigitalOcean \"" + obj_attr_list["cloud_name"]
             cbdebug(_msg)
 
-            node_list = [x for x in self.digitalocean.list_nodes() if x.name == obj_attr_list["cloud_vm_name"]]
+            node_list = self.digitalocean.list_nodes()
 
-            _msg = str(node_list)
-            cbdebug(_msg)
+            node = False
+            if node_list :
+                for x in node_list :
+                    if x.name == obj_attr_list["cloud_vm_name"] :
+                        node = x
+                        break
+            _status = 0
 
-            return node_list[0]
+            return node
 
         except Exception, e :
             _status = 23
@@ -329,18 +356,12 @@ class DoCmds(CommonCloudFunctions) :
 
     @trace
     def vmcount(self, obj_attr_list):
-        '''
-        TBD
-        '''
         return "NA"
 
     def is_vm_running(self, obj_attr_list):
-        '''
-        TBD
-        '''
         try :
             node = self.get_vm_instance(obj_attr_list)
-            return node.state == NodeState.RUNNING
+            return node and node.state == NodeState.RUNNING
 
         except Exception, e :
             _status = 23
@@ -349,9 +370,6 @@ class DoCmds(CommonCloudFunctions) :
 
     @trace
     def is_vm_ready(self, obj_attr_list) :
-        '''
-        TBD
-        '''
         if self.is_vm_running(obj_attr_list) :
             self.take_action_if_requested("VM", obj_attr_list, "provision_complete")
 
@@ -390,7 +408,7 @@ class DoCmds(CommonCloudFunctions) :
             access_token = obj_attr_list["credentials"]
 
             if not self.digitalocean :
-                _msg = "Connecting to VCD with credentials " + access_token
+                _msg = "Connecting to DigitalOcean..."
                 cbdebug(_msg)
 
                 self.connect(access_token)
@@ -410,17 +428,21 @@ class DoCmds(CommonCloudFunctions) :
             _msg += obj_attr_list["imageid1"]
             cbdebug(_msg, True)
 
-            size = [x for x in self.digitalocean.list_sizes() if x.id == obj_attr_list["size"]][0]
-            image = [x for x in self.digitalocean.list_images() if (x.name == obj_attr_list["imageid1"] or x.id == obj_attr_list["imageid1"])][0]
-            location = [x for x in self.digitalocean.list_locations() if x.id == obj_attr_list["vmc_name"]][0]
+            image = [x for x in self.images if (x.name == obj_attr_list["imageid1"] or x.id == obj_attr_list["imageid1"])][0]
 
             vm_computername = "vm" + obj_attr_list["name"].split("_")[1]
             _msg = "Launching new Droplet with hostname " + vm_computername + " against datacenter " + obj_attr_list["vmc_name"] + " with image id " + str(obj_attr_list["imageid1"]) + " key ids " + str(obj_attr_list["key_name"].split(",")) + " size " + obj_attr_list["size"]
+
             cbdebug(_msg,True)
 
             _timeout = obj_attr_list["clone_timeout"]
             _msg = "libcloud clone_timeout is " + _timeout
             cbdebug(_msg)
+
+            # CloudBench should be passing us a more complex object for userdata,
+            # but is only passing us a script instead. So, we have to wrap the
+            # userdata in formal cloud-config syntax in order to be able to use
+            # if with cloud images that have cloud-init configured correctly.
 
             cloudconfig = False
             if "userdata" in obj_attr_list and obj_attr_list["userdata"] :
@@ -436,13 +458,13 @@ write_files:
 runcmd:
   - bash -c "chmod +x /tmp/userscript.sh; /tmp/userscript.sh"
 """
-                cbdebug("Final userdata: \n" + cloudconfig, True)
+                #cbdebug("Final userdata: \n" + cloudconfig, True)
 
             _reservation = self.digitalocean.create_node(
                 image = image,
                 name = obj_attr_list["cloud_vm_name"],
-                size = size,
-                location = location,
+                size = [x for x in self.sizes if x.id == obj_attr_list["size"]][0],
+                location = [x for x in self.locations if x.id == obj_attr_list["vmc_name"]][0],
                 ex_user_data = cloudconfig,
                 ex_create_attr={ "ssh_keys": obj_attr_list["key_name"].split(","), "private_networking" : True }
                 )
@@ -484,10 +506,12 @@ runcmd:
         except CldOpsException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
+            cbwarn("Error during reservation creation: " + _fmsg)
 
         except Exception, e :
             _status = 23
             _fmsg = str(e)
+            cbwarn("Error reaching digitalocean: " + _fmsg)
 
         finally :
             if "instance_obj" in obj_attr_list :
@@ -503,8 +527,8 @@ runcmd:
                     obj_attr_list["mgt_deprovisioning_request_originated"] = int(time())
                     self.vmdestroy(obj_attr_list)
                 else :
-                    if _instance :
-                        _instance.destroy()
+                    if _reservation :
+                        _reservation.destroy()
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "VM " + obj_attr_list["uuid"] + " was successfully "
@@ -530,9 +554,12 @@ runcmd:
 
             obj_attr_list["mgt_902_deprovisioning_request_sent"] = _time_mark_drs - int(obj_attr_list["mgt_901_deprovisioning_request_originated"])
 
+            cbdebug("Last known state: " + str(obj_attr_list["last_known_state"]))
+
             if ( obj_attr_list["last_known_state"] == "running with ip assigned" or \
                  obj_attr_list["last_known_state"] == "running with ip unassigned" or \
-                 obj_attr_list["last_known_state"] == "vm created" ) :
+                 obj_attr_list["last_known_state"] == "vm created" or \
+                 obj_attr_list["last_known_state"] == "not running") :
 
                 _msg = "Droplet " + obj_attr_list["name"] + " was in created or running state. Will attempt to terminate."
                 cbdebug(_msg)
@@ -540,36 +567,41 @@ runcmd:
                 _wait = int(obj_attr_list["update_frequency"])
                 _curr_tries = 0
                 _max_tries = int(obj_attr_list["update_attempts"])
+                self.connect(obj_attr_list["credentials"])
 
-                while _curr_tries < _max_tries :
-                    try :
-                        _errmsg = "self.digitalocean"
-                        _errmsg = "self.connect"
-                        self.connect(obj_attr_list["credentials"])
+                _msg = "Sending a termination request for "  + obj_attr_list["name"] + ""
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
+                _msg += "...."
+                cbdebug(_msg, True)
 
-                        _errmsg = "get_vm_instance"
-                        _instance = self.get_vm_instance(obj_attr_list)
-
+                while True :
+                    _errmsg = "get_vm_instance"
+                    cbdebug("Getting instance...")
+                    _instance = self.get_vm_instance(obj_attr_list)
+                    if not _instance :
+                        cbdebug("Breaking...")
                         break
+
+                    if _instance.state == NodeState.PENDING :
+                        try :
+                            _instance.destroy()
+                        except :
+                            pass
+                        cbdebug("DigitalOcean still has a pending event. Waiting to destroy...", True)
+                        sleep(30)
+                        continue
+
+                    try :
+                        result = _instance.destroy()
                     except :
-                        _curr_tries += 1
-                        _msg = "Inside destroy. " + _errmsg + " failed"
-                        _msg += " after " + str(_curr_tries) + " attempts. Will retry in " + str(_wait) + " seconds."
-                        cbdebug(_msg, True)
-                        sleep(_wait)
+                        pass
 
-                if _instance :
-
-                    _msg = "Sending a termination request for "  + obj_attr_list["name"] + ""
-                    _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
-                    _msg += "...."
-                    cbdebug(_msg, True)
-
-                    _instance.destroy()
+                    _curr_tries += 1
+                    _msg = "Inside destroy. " + _errmsg
+                    _msg += " after " + str(_curr_tries) + " attempts. Will retry in " + str(_wait) + " seconds."
+                    cbdebug(_msg)
                     sleep(_wait)
-
-                else :
-                    True
+                    cbdebug("Next try...")
             else :
                 # instance never really existed
                 obj_attr_list["last_known_state"] = "vm destoyed"
@@ -584,10 +616,12 @@ runcmd:
         except CldOpsException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
+            cberr("CldOpsException: " + str(obj), True)
 
         except Exception, e :
             _status = 23
             _fmsg = str(e)
+            cberr("Exception: " + str(e), True)
 
         finally :
             if _status :
