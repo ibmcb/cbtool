@@ -147,7 +147,7 @@ class APIClient(Server):
             return resp["result"]
         return wrapped
     
-    def dashboard_conn_check(self, cloud_name, msattrs = None, username = None, experiment_id = None):
+    def dashboard_conn_check(self, cloud_name, msattrs = None, username = None, experiment_id = None, check_for_vpn = False):
         '''
         TBD
         '''
@@ -156,6 +156,12 @@ class APIClient(Server):
             Open a connection to the metric store
             """
             self.msattrs = self.cldshow(cloud_name, "metricstore") if msattrs is None else msattrs
+        # We are opted-out of the VPN by default. But, when inside a virtual machine,
+        # we need to opt-in.
+        if check_for_vpn :
+            use_vpn_ip = self.cldshow(cloud_name, "vm_defaults")["use_vpn_ip"]
+            if use_vpn_ip :
+                self.msattrs['host'] = self.cldshow(cloud_name, "vpn")["server_bootstrap"]
             self.msci = MongodbMgdConn(self.msattrs)
             self.username = self.cldshow(cloud_name, "time")["username"] if username is None else username
             self.experiment_id = self.cldshow(cloud_name, "time")["experiment_id"] if experiment_id is None else experiment_id

@@ -255,7 +255,7 @@ class CommonCloudFunctions:
             cberr(_msg, True)
             raise CldOpsException(_msg, 71)
         
-    def get_attr_from_pending(self, obj_attr_list, key) :
+    def get_attr_from_pending(self, obj_attr_list, key = "all") :
         '''
         TBD
         '''

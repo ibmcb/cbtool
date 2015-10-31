@@ -31,7 +31,9 @@ from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 from libcloud.compute.types import NodeState
 
-import pickle
+import re, os
+
+cwd = (re.compile(".*\/").search(os.path.realpath(__file__)).group(0)) + "/../../"
 
 class DoCmds(CommonCloudFunctions) :
     @trace
@@ -71,13 +73,13 @@ class DoCmds(CommonCloudFunctions) :
 
             cbdebug("Caching DigitalOcean locations, sizes, and images. If stale, then restart...")
             if not self.locations :
-                cbdebug("Locations...")
+                cbdebug("Caching Locations...", True)
                 self.locations = self.digitalocean.list_locations()
             if not self.sizes :
-                cbdebug("Sizes...")
+                cbdebug("Caching Sizes...", True)
                 self.sizes = self.digitalocean.list_sizes()
             if not self.images :
-                cbdebug("Images...")
+                cbdebug("Caching Images...", True)
                 self.images = self.digitalocean.list_images()
             assert(self.images)
             assert(self.sizes)
@@ -302,24 +304,36 @@ class DoCmds(CommonCloudFunctions) :
             _status = 100
             node = self.get_vm_instance(obj_attr_list)
 
-            obj_attr_list["prov_cloud_ip"] = node.public_ips[0]
             if len(node.private_ips) > 0 :
                 obj_attr_list["run_cloud_ip"] = node.private_ips[0]
             else :
-                obj_attr_list["run_cloud_ip"] =  node.public_ips[0]
+                obj_attr_list["run_cloud_ip"] = node.public_ips[0]
             # NOTE: "cloud_ip" is always equal to "run_cloud_ip"
             obj_attr_list["cloud_ip"] = obj_attr_list["run_cloud_ip"]
-
-            cbdebug(str(obj_attr_list))
 
             if obj_attr_list["hostname_key"] == "cloud_vm_name" :
                 obj_attr_list["cloud_hostname"] = obj_attr_list["cloud_vm_name"]
             elif obj_attr_list["hostname_key"] == "cloud_ip" :
                 obj_attr_list["cloud_hostname"] = obj_attr_list["cloud_ip"].replace('.','-')
 
-            _msg = "Public IP = " + obj_attr_list["cloud_hostname"]
+            _msg = "Public IP = " + node.public_ips[0]
             _msg += " Private IP = " + obj_attr_list["cloud_ip"]
             cbdebug(_msg)
+
+            if obj_attr_list["use_vpn_ip"].lower() == "true" :
+                while True :
+                    cbdebug("Waiting for VPN connection...")
+                    assert(self.get_attr_from_pending(obj_attr_list))
+                    if "cloud_init_vpn" in obj_attr_list :
+                        cbdebug("Found VPN IP: " + obj_attr_list["cloud_init_vpn"])
+
+                        break
+                    sleep(10)
+                obj_attr_list["prov_cloud_ip"] = obj_attr_list["cloud_init_vpn"]
+
+            else :
+                obj_attr_list["prov_cloud_ip"] = node.public_ips[0]
+
             _status = 0
             return True
 
@@ -383,6 +397,88 @@ class DoCmds(CommonCloudFunctions) :
             obj_attr_list["last_known_state"] = "not running"
             return False
 
+
+    # CloudBench should be passing us a more complex object for userdata,
+    # but is only passing us a script instead. So, we have to wrap the
+    # userdata in formal cloud-config syntax in order to be able to use
+    # if with cloud images that have cloud-init configured correctly.
+    @trace
+    def populate_cloudconfig(self, obj_attr_list) :
+        if ("userdata" not in obj_attr_list or obj_attr_list["userdata"]) and obj_attr_list["use_vpn_ip"].lower() == "false" :
+            return False
+
+        cloudconfig = """
+#cloud-config
+write_files:"""
+        if "userdata" in obj_attr_list and obj_attr_list["userdata"] :
+            cloudconfig += """
+  - path: /tmp/userscript.sh
+    content: |
+"""
+            for line in obj_attr_list["userdata"].split("\n")[:-1] :
+                cloudconfig += "      " + line + "\n"
+
+        # We need the VPN's IP address in advance, which was solved before
+        # the previous VPN support was gutted, but since we're left to do it
+        # on our own, we need cloud-config to send our VPN configuration file
+        # in advance.
+        conf_destination = "/etc/openvpn/" + obj_attr_list["cloud_name"] + "_client-cb-openvpn-digitalocean.conf"
+
+        if obj_attr_list["use_vpn_ip"].lower() == "true" :
+            targets = []
+            targets.append(("/configs/generated/" + obj_attr_list["cloud_name"] + "_client-cb-openvpn.conf", conf_destination))
+            targets.append(("/util/openvpn/client_connected.sh", "/etc/openvpn/client_connected.sh"))
+
+            for target in targets :
+                (src, dest) = target
+                cbdebug("src: " + src + " dest: " + dest)
+                cloudconfig += """
+  - path: """ + dest + """
+    content: |
+"""
+                fhname = cwd + src
+                cbdebug("Opening: " + fhname)
+                fh = open(fhname, 'r')
+                while True :
+                    line = fh.readline()
+                    if not line :
+                        break
+
+                    line = line.replace("USER", obj_attr_list["username"])
+                    line = line.replace("CLOUD_NAME", obj_attr_list["cloud_name"])
+                    line = line.replace("SERVER_BOOTSTRAP", obj_attr_list["vpn_server_bootstrap"])
+                    line = line.replace("UUID", obj_attr_list["uuid"])
+                    line = line.replace("OSCI_PORT", str(self.osci.port))
+                    line = line.replace("OSCI_DBID", str(self.osci.dbid))
+                    if line.count("remote") :
+                        line = "remote " + obj_attr_list["vpn_server_ip"] + " " + obj_attr_list["vpn_server_port"] + "\n"
+                    cloudconfig += "      " + line
+
+                    if line.count("remote") :
+                        cloudconfig += "      up /etc/openvpn/client_connected.sh"
+                fh.close()
+
+        cloudconfig += """
+runcmd:
+  - chmod +x /tmp/userscript.sh"""
+
+        # We can't run the userdata from cloudbench until the VPN is connected,
+        # so only run it if we're not using the VPN.
+        # Otherwise, /etc/openvpn/client_connected.sh will do it.
+        if obj_attr_list["use_vpn_ip"].lower() == "false" :
+            cloudconfig += """
+  - /tmp/userscript.sh"""
+        else :
+            cloudconfig += """
+  - chmod +x /etc/openvpn/client_connected.sh
+  - mv """ + conf_destination + """ /tmp/cbvpn.conf
+  - rm -f /etc/openvpn/*.conf /etc/openvpn/*.ovpn
+  - mv /tmp/cbvpn.conf """ + conf_destination + """
+  - service openvpn restart
+"""
+        cbdebug("Final userdata: \n" + cloudconfig)
+        return cloudconfig
+
     @trace
     def vmcreate(self, obj_attr_list) :
         '''
@@ -428,51 +524,38 @@ class DoCmds(CommonCloudFunctions) :
             _msg += obj_attr_list["imageid1"]
             cbdebug(_msg, True)
 
-            image = [x for x in self.images if (x.name == obj_attr_list["imageid1"] or x.id == obj_attr_list["imageid1"])][0]
+            image = False
 
-            vm_computername = "vm" + obj_attr_list["name"].split("_")[1]
-            _msg = "Launching new Droplet with hostname " + vm_computername + " against datacenter " + obj_attr_list["vmc_name"] + " with image id " + str(obj_attr_list["imageid1"]) + " key ids " + str(obj_attr_list["key_name"].split(",")) + " size " + obj_attr_list["size"]
+            for x in self.images :
+                if x.name == obj_attr_list["imageid1"] or x.id == obj_attr_list["imageid1"] :
+                    image = x
+                    break
 
-            cbdebug(_msg,True)
+            if not image :
+                cbdebug("Image is missing. Refreshing image list...", True)
+                self.images = self.digitalocean.list_images()
+                for x in self.images :
+                    if x.name == obj_attr_list["imageid1"] or x.id == obj_attr_list["imageid1"] :
+                        image = x
+                        break
 
-            _timeout = obj_attr_list["clone_timeout"]
-            _msg = "libcloud clone_timeout is " + _timeout
-            cbdebug(_msg)
+            if not image :
+                raise CldOpsException("Image doesn't exist at DigitalOcean. Check your configuration: " + obj_attr_list["imageid1"], _status)
 
-            # CloudBench should be passing us a more complex object for userdata,
-            # but is only passing us a script instead. So, we have to wrap the
-            # userdata in formal cloud-config syntax in order to be able to use
-            # if with cloud images that have cloud-init configured correctly.
-
-            cloudconfig = False
-            if "userdata" in obj_attr_list and obj_attr_list["userdata"] :
-                cloudconfig = """
-#cloud-config
-write_files:
-  - path: /tmp/userscript.sh
-    content: |
-"""
-                for line in obj_attr_list["userdata"].split("\n")[:-1] :
-                    cloudconfig += "      " + line + "\n"
-                cloudconfig += """
-runcmd:
-  - bash -c "chmod +x /tmp/userscript.sh; /tmp/userscript.sh"
-"""
-                #cbdebug("Final userdata: \n" + cloudconfig, True)
+            cbdebug("Launching new Droplet with hostname " + obj_attr_list["cloud_vm_name"], True)
 
             _reservation = self.digitalocean.create_node(
                 image = image,
                 name = obj_attr_list["cloud_vm_name"],
                 size = [x for x in self.sizes if x.id == obj_attr_list["size"]][0],
                 location = [x for x in self.locations if x.id == obj_attr_list["vmc_name"]][0],
-                ex_user_data = cloudconfig,
+                ex_user_data = self.populate_cloudconfig(obj_attr_list),
                 ex_create_attr={ "ssh_keys": obj_attr_list["key_name"].split(","), "private_networking" : True }
-                )
+            )
 
-            obj_attr_list["last_known_state"] = "sent create request to DigitalOcean, parsing response"
+            obj_attr_list["last_known_state"] = "sent create request"
 
-            _msg = "Sent command to create node, waiting for creation..."
-            cbdebug(_msg, True)
+            cbdebug("Sent command to create node, waiting for creation...", True)
 
             if _reservation :
 
@@ -481,8 +564,7 @@ runcmd:
 
                 obj_attr_list["cloud_vm_uuid"] = _reservation.uuid
 
-                _msg = "Success. New instance UUID is " + _reservation.uuid
-                cbdebug(_msg,True)
+                cbdebug("Success. New instance UUID is " + _reservation.uuid, True)
 
                 self.take_action_if_requested("VM", obj_attr_list, "provision_started")
 

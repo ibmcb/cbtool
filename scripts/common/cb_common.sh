@@ -107,6 +107,243 @@ function linux_distribution {
 }
 export -f linux_distribution
 
+function retriable_execution {
+        COMMAND=$1
+        non_cacheable=$2
+
+        ECODE=1
+        ATTEMPT=0
+        OUTERR=1
+        EXPRESSION=`echo $1 | cut -d ' ' -f 9-15`
+
+        if [[ -f ~/cb_os_cache.txt && ${non_cacheable} -eq 0 ]]; then
+            OUTPUT=`cat ~/cb_os_cache.txt | grep "${EXPRESSION}" -m 1 | awk '{print $NF}'`
+        fi
+
+        if [ x"${OUTPUT}" == x ]; then
+            can_cache=1
+        else
+            can_cache=0
+        fi
+
+        if [[ x"${OUTPUT}" == x || x"${osmode}" != x"scalable" ]]; then
+            while [[ (( ${ECODE} -ne 0 || ${OUTERR} -eq 1 )) && ${ATTEMPT} -le ${ATTEMPTS} ]]
+            do
+                OUTPUT=`${COMMAND}`
+                ECODE=$?
+                OUTERR=`echo ${OUTPUT} | grep -c "ERR"`
+                SLEEP_TIME=$(( $RANDOM % ${RANGE} ))
+                SLEEP_TIME=$(( ${SLEEP_TIME} * ${ATTEMPT} ))
+                sleep $SLEEP_TIME
+                ATTEMPT=$(( ${ATTEMPT} + 1 ))
+            done
+        fi
+
+    if [[ x"${OUTPUT}" != x && ${can_cache} -eq 1 && ${non_cacheable} -eq 0 ]]; then
+        echo "${EXPRESSION} ${OUTPUT}" >> ~/cb_os_cache.txt
+	fi
+
+	echo $OUTPUT
+}
+
+function get_time {
+        time=`retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber time" 1`
+        echo -n $time | cut -d " " -f 1
+}
+
+function get_vm_uuid_from_ip {
+    uip=$1
+    fqon=`retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber get ${osinstance}:VM:TAG:CLOUD_IP:${uip}" 0`
+    echo $fqon | cut -d ':' -f 4
+}
+
+function get_hash {
+    object_type=$1
+    key_name=$2
+    attribute_name=`echo $3 | tr '[:upper:]' '[:lower:]'`
+    non_cacheable=$4
+    retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber hget ${osinstance}:${object_type}:${key_name} ${attribute_name}" ${non_cacheable} 
+}
+
+function get_vm_attribute {
+    vmuuid=$1
+    attribute=`echo $2 | tr '[:upper:]' '[:lower:]'`
+    get_hash VM ${vmuuid} ${attribute} 0
+}
+
+function get_my_vm_attribute {
+    attribute=`echo $1 | tr '[:upper:]' '[:lower:]'`
+    get_hash VM ${my_vm_uuid} ${attribute} 0
+}
+
+function be_open_or_die {
+	host=$1
+	port=$2
+	proto=$3
+	delay=$4
+	tries=$5
+	nmapcount=0
+	while [ $nmapcount -lt $tries ] ; do
+		$dir/nmap.py $host $port $proto
+		if [ $? -eq 0 ] ; then
+			echo "port checker: host $host is open."
+			return
+		fi
+		((nmapcount=nmapcount+1))
+		if [ $nmapcount -lt $tries ] ; then
+			echo "port checker: host $host port not open yet..."
+			sleep $delay 
+		fi
+	done
+	echo "port checker: host $host port $port could not be reached. Dying now."
+	exit 1
+}
+
+# This is the first redis function to execute during post boot.
+# Sometimes the VPN comes up to slow, so, if it doesn't work, then
+# we need to try again.
+be_open_or_die $oshostname $osportnumber tcp 30 5
+
+my_role=`get_my_vm_attribute role`
+my_ai_name=`get_my_vm_attribute ai_name`
+my_ai_uuid=`get_my_vm_attribute ai`
+my_base_type=`get_my_vm_attribute base_type`
+my_cloud_model=`get_my_vm_attribute model`
+my_ip_addr=`get_my_vm_attribute cloud_ip`
+
+function get_attached_volumes {
+    ROOT_VOLUME=$(sudo mount | grep "/ " | cut -d ' ' -f 1 | tr -d 0-9)
+    SWAP_VOLUME=$(sudo swapon -s | grep dev | cut -d ' ' -f 1 | tr -d 0-9)
+    if [[ -z ${SWAP_VOLUME} ]]
+    then
+        SWAP_VOLUME="NONE"
+    fi
+    VOLUME_LIST=$(sudo fdisk -l 2>&1 | grep Disk | grep bytes | grep -v ${ROOT_VOLUME} | grep -v ${SWAP_VOLUME} | awk '{if($5>1073741824)print $2, $5}' | head -n1 | cut -d ':' -f 1)
+    if [[ -z ${VOLUME_LIST} ]]
+    then
+        VOLUME_LIST="NONE"
+    fi
+    echo $VOLUME_LIST
+}
+export -f get_attached_volumes
+
+function check_filesystem {
+    if [[ $(sudo blkid ${1} | grep -c TYPE) -eq 0 ]]
+    then
+        echo "none"
+    else
+        echo $(sudo blkid ${1} | grep TYPE | cut -d ' ' -f 3 | sed 's/TYPE=//g' | sed 's/"//g' | tr -d '\040\011\012\015')
+    fi
+}
+export -f check_filesystem
+
+my_if=$(netstat -rn | grep UG | awk '{ print $8 }')
+my_type=`get_my_vm_attribute type`
+my_login_username=`get_my_vm_attribute login`
+my_remote_dir=`get_my_vm_attribute remote_dir_name`
+
+function counter_hash {
+    object_type=$1
+    key_name=$2
+    attribute_name=`echo $3 | tr '[:upper:]' '[:lower:]'`
+    attribute_value=$4
+    retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber hincrby ${osinstance}:${object_type}:${key_name} ${attribute_name} ${attribute_value}" 1
+}
+
+function increment_my_ai_attribute {
+    attribute_name=`echo $1 | tr '[:upper:]' '[:lower:]'`
+    counter_hash AI ${my_ai_uuid} ${attribute_name} 1
+}
+
+function decrement_my_ai_attribute {
+    attribute_name=`echo $1 | tr '[:upper:]' '[:lower:]'`
+    counter_hash AI ${my_ai_uuid} ${attribute_name} -1
+}
+
+function put_my_vm_attribute {
+    attribute_name=`echo $1 | tr '[:upper:]' '[:lower:]'`
+    attribute_value=$2    
+    put_hash VM ${my_vm_uuid} ${attribute_name} ${attribute_value}
+}
+
+function put_my_pending_vm_attribute {
+    attribute_name=`echo $1 | tr '[:upper:]' '[:lower:]'`
+    attribute_value=$2    
+    put_hash VM:PENDING ${my_vm_uuid} ${attribute_name} ${attribute_value}
+}
+
+function get_ai_attribute {
+    aiuuid=`echo $1 | tr '[:lower:]' '[:upper:]'`
+    attribute=`echo $2 | tr '[:upper:]' '[:lower:]'`
+    get_hash AI ${aiuuid} ${attribute} 0
+}
+
+function get_my_ai_attribute {
+    attribute=`echo $1 | tr '[:upper:]' '[:lower:]'`
+    get_hash AI ${my_ai_uuid} ${attribute} 0
+}
+metric_aggregator_vm_uuid=`get_my_ai_attribute metric_aggregator_vm`
+
+function get_global_sub_attribute {
+    global_attribute=`echo $1 | tr '[:upper:]' '[:lower:]'`
+    global_sub_attribute=`echo $2 | tr '[:upper:]' '[:lower:]'`
+    retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber hget ${osinstance}:GLOBAL:${global_attribute} ${global_sub_attribute}" 0
+}
+
+my_username=`get_my_ai_attribute username`
+
+load_manager_ip=`get_my_ai_attribute load_manager_ip`
+
+if [ x"${NC_HOST_SYSLOG}" == x ]; then
+    if [ x"${osmode}" != x"scalable" ]; then
+		USE_VPN_IP=`get_global_sub_attribute vm_defaults use_vpn_ip`
+		if [ x"$USE_VPN_IP" == x"True" ] ; then
+			NC_HOST_SYSLOG=`get_global_sub_attribute vpn server_bootstrap`
+		else
+			NC_HOST_SYSLOG=`get_global_sub_attribute logstore hostname`
+		fi
+        NC_OPTIONS="-w1 -u"
+    else 
+        NC_HOST_SYSLOG=`get_my_ai_attribute load_manager_ip`
+        NC_OPTIONS="-w1 -u -q1"
+    fi
+fi
+
+if [ x"${NC_PORT_SYSLOG}" == x ]; then
+    NC_PORT_SYSLOG=`get_global_sub_attribute logstore port`
+fi
+
+if [ x"${NC_FACILITY_SYSLOG}" == x ]; then
+    NC_FACILITY_SYSLOG="<"`get_global_sub_attribute logstore script_facility`">"
+fi
+
+NC_CMD=${NC}" "${NC_OPTIONS}" "${NC_HOST_SYSLOG}" "${NC_PORT_SYSLOG}
+
+function syslog_netcat {
+    if [[ $osmode == "controllable" ]]
+    then 
+        echo "${NC_FACILITY_SYSLOG} - ${HOSTNAME} $SCRIPT_NAME: ${1}"
+        echo "${NC_FACILITY_SYSLOG} - ${HOSTNAME} $SCRIPT_NAME: ${1}" | $NC_CMD &
+    else
+        echo "$1"
+    fi
+}
+
+function get_my_ai_attribute_with_default {
+    NAME=$1
+    DEFAULT=$2
+    TEST="`get_my_ai_attribute $NAME`"
+
+    if [ x"$TEST" != x ] ; then
+        echo "$TEST"
+    elif [ x"$DEFAULT" != x ] ; then
+        echo "$DEFAULT"
+    else
+        syslog_netcat "Configuration error: Value for key ($NAME) not available online or offline."
+        exit 1
+    fi
+}
+
 function service_stop_disable {
     #1 - service list (space-separated list)
 
@@ -205,311 +442,6 @@ function service_restart_enable {
 }
 export -f service_restart_enable
 
-function retriable_execution {
-        COMMAND=$1
-        non_cacheable=$2
-
-        ECODE=1
-        ATTEMPT=0
-        OUTERR=1
-        EXPRESSION=`echo $1 | cut -d ' ' -f 9-15`
-
-        if [[ -f ~/cb_os_cache.txt && ${non_cacheable} -eq 0 ]]; then
-            OUTPUT=`cat ~/cb_os_cache.txt | grep "${EXPRESSION}" -m 1 | awk '{print $NF}'`
-        fi
-
-        if [ x"${OUTPUT}" == x ]; then
-            can_cache=1
-        else
-            can_cache=0
-        fi
-
-        if [[ x"${OUTPUT}" == x || x"${osmode}" != x"scalable" ]]; then
-            while [[ (( ${ECODE} -ne 0 || ${OUTERR} -eq 1 )) && ${ATTEMPT} -le ${ATTEMPTS} ]]
-            do
-                OUTPUT=`${COMMAND}`
-                ECODE=$?
-                OUTERR=`echo ${OUTPUT} | grep -c "ERR"`
-                SLEEP_TIME=$(( $RANDOM % ${RANGE} ))
-                SLEEP_TIME=$(( ${SLEEP_TIME} * ${ATTEMPT} ))
-                sleep $SLEEP_TIME
-                ATTEMPT=$(( ${ATTEMPT} + 1 ))
-            done
-        fi
-
-    if [[ x"${OUTPUT}" != x && ${can_cache} -eq 1 && ${non_cacheable} -eq 0 ]]; then
-        echo "${EXPRESSION} ${OUTPUT}" >> ~/cb_os_cache.txt
-        fi
-
-        echo $OUTPUT
-}
-
-function get_time {
-        time=`retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber time" 1`
-        echo -n $time | cut -d " " -f 1
-}
-
-function get_vm_uuid_from_ip {
-    uip=$1
-    fqon=`retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber get ${osinstance}:VM:TAG:CLOUD_IP:${uip}" 0`
-    echo $fqon | cut -d ':' -f 4
-}
-
-function get_hash {
-    object_type=$1
-    key_name=$2
-    attribute_name=`echo $3 | tr '[:upper:]' '[:lower:]'`
-    non_cacheable=$4
-    retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber hget ${osinstance}:${object_type}:${key_name} ${attribute_name}" ${non_cacheable} 
-}
-
-function get_vm_attribute {
-    vmuuid=$1
-    attribute=`echo $2 | tr '[:upper:]' '[:lower:]'`
-    get_hash VM ${vmuuid} ${attribute} 0
-}
-
-function get_my_vm_attribute {
-    attribute=`echo $1 | tr '[:upper:]' '[:lower:]'`
-    get_hash VM ${my_vm_uuid} ${attribute} 0
-}
-my_role=`get_my_vm_attribute role`
-my_ai_name=`get_my_vm_attribute ai_name`
-my_ai_uuid=`get_my_vm_attribute ai`
-my_base_type=`get_my_vm_attribute base_type`
-my_cloud_model=`get_my_vm_attribute model`
-my_ip_addr=`get_my_vm_attribute cloud_ip`
-
-function get_attached_volumes {
-    ROOT_VOLUME=$(sudo mount | grep "/ " | cut -d ' ' -f 1 | tr -d 0-9)
-    SWAP_VOLUME=$(sudo swapon -s | grep dev | cut -d ' ' -f 1 | tr -d 0-9)
-    if [[ -z ${SWAP_VOLUME} ]]
-    then
-        SWAP_VOLUME="NONE"
-    fi
-    VOLUME_LIST=$(sudo fdisk -l 2>&1 | grep Disk | grep bytes | grep -v ${ROOT_VOLUME} | grep -v ${SWAP_VOLUME} | awk '{if($5>1073741824)print $2, $5}' | head -n1 | cut -d ':' -f 1)
-    if [[ -z ${VOLUME_LIST} ]]
-    then
-        VOLUME_LIST="NONE"
-    fi
-    echo $VOLUME_LIST
-}
-export -f get_attached_volumes
-
-function check_filesystem {
-    if [[ $(sudo blkid ${1} | grep -c TYPE) -eq 0 ]]
-    then
-        echo "none"
-    else
-        echo $(sudo blkid ${1} | grep TYPE | cut -d ' ' -f 3 | sed 's/TYPE=//g' | sed 's/"//g' | tr -d '\040\011\012\015')
-    fi
-}
-export -f check_filesystem
-
-function mount_filesystem_on_volume {
-    MOUNTPOINT_DIR=$1
-    FILESYS_TYPE=$2
-    MOUNTPOINT_OWNER=$3
-    VOLUME=$4
-
-    if [[ -z $MOUNTPOINT_DIR ]]
-    then
-        syslog_netcat "No mountpoint specified. Bypassing mounting"
-        return 1
-    fi
-    
-    if [[ -z $FILESYS_TYPE ]]
-    then
-        FILESYS_TYPE=ext4
-    fi    
-    
-    if [[ -z $VOLUME ]]
-    then        
-        VOLUME=$(get_attached_volumes)
-    else
-        if [[ $(sudo fdisk -l | grep -c $VOLUME) -eq 0 ]]
-        then
-            VOLUME="NONE"
-        fi
-    fi
-
-    sudo mkdir -p $MOUNTPOINT_DIR
-
-    if [[ -z $MOUNTPOINT_OWNER  ]]
-    then
-        MOUNTPOINT_OWER=${my_login_username}
-    fi
-    
-    sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT_DIR
-        
-    if [[ $VOLUME != "NONE" ]]
-    then
-        
-        syslog_netcat "Setting ${my_type} storage ($MOUNTPOINT_DIR) on volume $VOLUME...."
-        if [[ $(sudo mount | grep $VOLUME | grep -c $MOUNTPOINT_DIR) -eq 0 ]]
-        then
-                                
-            if [[ $(check_filesystem $VOLUME) == "none" ]]
-            then
-                syslog_netcat "Creating $FILESYS_TYPE filesystem on volume $VOLUME"
-                sudo mkfs.$FILESYS_TYPE $VOLUME
-            fi
-            
-            syslog_netcat "Making $FILESYS_TYPE filesystem on volume $VOLUME accessible through the mountpoint ${MOUNTPOINT_DIR}"
-            sudo mount $VOLUME ${MOUNTPOINT_DIR}
-            
-            if [[ $? -ne 0 ]]
-            then
-                syslog_netcat "Error while mounting $FILESYS_TYPE filesystem on volume $VOLUME on mountpoint ${MOUNTPOINT_DIR} - NOK" 
-                exit 1
-            fi
-        fi
-        
-        sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT_DIR
-    fi
-    return 0
-}
-export -f mount_filesystem_on_volume
-
-function mount_filesystem_on_memory {
-
-    RAMDEVICE=/dev/ram0
-    
-    MOUNTPOINT_DIR=$1
-    FILESYS_TYPE=$2
-    MEMORY_DISK_SIZE=$3
-    MOUNTPOINT_OWNER=$4
-
-    if [[ -z $MOUNTPOINT_DIR ]]
-    then
-        syslog_netcat "No mountpoint specified. Bypassing mounting"
-        return 1
-    fi    
-
-    if [[ -z $MOUNTPOINT_OWNER  ]]
-    then
-        MOUNTPOINT_OWER=${my_login_username}
-    fi
-    
-    sudo mkdir -p $MOUNTPOINT_DIR
-
-    sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT_DIR
-                    
-    if [[ $FILESYS_TYPE == "tmpfs" ]]
-    then
-        syslog_netcat "Making tmpfs filesystem on accessible through the mountpoint ${MOUNTPOINT_DIR}"        
-        sudo mount -t tmpfs -o size=${MEMORY_DISK_SIZE} tmpfs $MOUNTPOINT_DIR
-    else
-        if [[ $(check_filesystem $RAMDEVICE) == "none" ]]
-        then
-            syslog_netcat "Creating $FILESYS_TYPE filesystem on volume $VOLUME"
-            sudo mkfs.$FILESYS_TYPE $RAMDEVICE
-        fi        
-
-        syslog_netcat "Making $FILESYS_TYPE filesystem on ram disk $RAMDEVICE accessible through the mountpoint ${MOUNTPOINT_DIR}"
-        sudo mount $RAMDEVICE $MOUNTPOINT_DIR    
-    fi
-
-    sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT_DIR
-
-    return 0
-}
-export -f mount_filesystem_on_memory
-
-function mount_remote_filesystem {
-    MOUNTPOINT_DIR=$1
-    FILESYS_TYPE=$2
-    FILESERVER_IP=$3
-    FILESERVER_PATH=$4
-    
-    if [[ -z $MOUNTPOINT_DIR ]]
-    then
-        syslog_netcat "No mountpoint specified. Bypassing mounting"
-        return 1
-    fi    
-
-    if [[ -z $FILESERVER_IP ]]
-    then
-        syslog_netcat "No fileserver IP specified. Bypassing mounting"
-        return 1
-    fi            
-                        
-    sudo mkdir -p $MOUNTPOINT_DIR
-
-    sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT_DIR
-            
-    if [[ $FILESYS_TYPE == "nfs" ]]
-    then
-        sudo mount $FILESERVER_IP:${FILESERVER_PATH} $MOUNTPOINT_DIR
-    fi
-    
-    return 0
-}
-export -f mount_remote_filesystem
-
-my_if=$(netstat -rn | grep UG | awk '{ print $8 }')
-my_type=`get_my_vm_attribute type`
-my_login_username=`get_my_vm_attribute login`
-my_remote_dir=`get_my_vm_attribute remote_dir_name`
-
-function counter_hash {
-    object_type=$1
-    key_name=$2
-    attribute_name=`echo $3 | tr '[:upper:]' '[:lower:]'`
-    attribute_value=$4
-    retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber hincrby ${osinstance}:${object_type}:${key_name} ${attribute_name} ${attribute_value}" 1
-}
-
-function increment_my_ai_attribute {
-    attribute_name=`echo $1 | tr '[:upper:]' '[:lower:]'`
-    counter_hash AI ${my_ai_uuid} ${attribute_name} 1
-}
-
-function decrement_my_ai_attribute {
-    attribute_name=`echo $1 | tr '[:upper:]' '[:lower:]'`
-    counter_hash AI ${my_ai_uuid} ${attribute_name} -1
-}
-
-function put_my_vm_attribute {
-    attribute_name=`echo $1 | tr '[:upper:]' '[:lower:]'`
-    attribute_value=$2    
-    put_hash VM ${my_vm_uuid} ${attribute_name} ${attribute_value}
-}
-
-function put_my_pending_vm_attribute {
-    attribute_name=`echo $1 | tr '[:upper:]' '[:lower:]'`
-    attribute_value=$2    
-    put_hash VM:PENDING ${my_vm_uuid} ${attribute_name} ${attribute_value}
-}
-
-function get_ai_attribute {
-    aiuuid=`echo $1 | tr '[:lower:]' '[:upper:]'`
-    attribute=`echo $2 | tr '[:upper:]' '[:lower:]'`
-    get_hash AI ${aiuuid} ${attribute} 0
-}
-
-function get_my_ai_attribute {
-    attribute=`echo $1 | tr '[:upper:]' '[:lower:]'`
-    get_hash AI ${my_ai_uuid} ${attribute} 0
-}
-metric_aggregator_vm_uuid=`get_my_ai_attribute metric_aggregator_vm`
-
-function get_my_ai_attribute_with_default {
-    NAME=$1
-    DEFAULT=$2
-    TEST="`get_my_ai_attribute $NAME`"
-
-    if [ x"$TEST" != x ] ; then
-        echo "$TEST"
-    elif [ x"$DEFAULT" != x ] ; then
-        echo "$DEFAULT"
-    else
-        syslog_netcat "Configuration error: Value for key ($NAME) not available online or offline."
-        exit 1
-    fi
-}
-my_username=`get_my_ai_attribute username`
-
 function put_my_ai_attribute {
     attribute_name=`echo $1 | tr '[:upper:]' '[:lower:]'`
     attribute_value=$2
@@ -528,12 +460,6 @@ function get_vm_uuid_from_hostname {
     uhostname=$1
     fqon=`retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber get ${osinstance}:VM:TAG:CLOUD_HOSTNAME:${uhostname}" 0`
     echo $fqon | cut -d ':' -f 4
-}
-
-function get_global_sub_attribute {
-    global_attribute=`echo $1 | tr '[:upper:]' '[:lower:]'`
-    global_sub_attribute=`echo $2 | tr '[:upper:]' '[:lower:]'`
-    retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber hget ${osinstance}:GLOBAL:${global_attribute} ${global_sub_attribute}" 0
 }
 metricstore_hostname=`get_global_sub_attribute metricstore host`
 metricstore_port=`get_global_sub_attribute metricstore port`
@@ -734,38 +660,6 @@ function subscribeai {
     channel=$1
     message=$2
     ${SUBSCRIBE_CMD} AI ${channel} $message
-}
-
-load_manager_ip=`get_my_ai_attribute load_manager_ip`
-
-if [ x"${NC_HOST_SYSLOG}" == x ]; then
-    if [ x"${osmode}" != x"scalable" ]; then
-        NC_HOST_SYSLOG=`get_global_sub_attribute logstore hostname`
-        NC_OPTIONS="-w1 -u"
-    else 
-        NC_HOST_SYSLOG=`get_my_ai_attribute load_manager_ip`
-        NC_OPTIONS="-w1 -u -q1"
-    fi
-fi
-
-if [ x"${NC_PORT_SYSLOG}" == x ]; then
-    NC_PORT_SYSLOG=`get_global_sub_attribute logstore port`
-fi
-
-if [ x"${NC_FACILITY_SYSLOG}" == x ]; then
-    NC_FACILITY_SYSLOG="<"`get_global_sub_attribute logstore script_facility`">"
-fi
-
-NC_CMD=${NC}" "${NC_OPTIONS}" "${NC_HOST_SYSLOG}" "${NC_PORT_SYSLOG}
-
-function syslog_netcat {
-    if [[ $osmode == "controllable" ]]
-    then 
-        echo "${NC_FACILITY_SYSLOG} - ${HOSTNAME} $SCRIPT_NAME: ${1}"
-        echo "${NC_FACILITY_SYSLOG} - ${HOSTNAME} $SCRIPT_NAME: ${1}" | $NC_CMD &
-    else
-        echo "$1"
-    fi
 }
 
 function refresh_hosts_file {
@@ -1020,7 +914,7 @@ function stop_ganglia {
     gpid="$(pidof gmond)"
 	blowawaypids gmond
     sleep 3
-    if [[ x"$gpid" != x$(pidof gmond) ]]
+    if [[ x"$gpid" == x ]] || [[ x"$(pidof gmond)" == x ]]
     then
         syslog_netcat "Ganglia monitoring processes killed successfully on $SHORT_HOSTNAME"
     else
@@ -1047,10 +941,10 @@ function start_ganglia {
     syslog_netcat "Restarting ganglia monitoring processes (gmond) on $SHORT_HOSTNAME"
     GANGLIA_FILE_LOCATION=~
     eval GANGLIA_FILE_LOCATION=${GANGLIA_FILE_LOCATION}
-    gpid="$(pidof gmond)"
 	blowawaypids gmond
-    sudo screen -d -m -S gmond bash -c "while true ; do sleep 10; if [ x\`$PIDOF_CMD gmond\` == x ] ; then gmond -c ${GANGLIA_FILE_LOCATION}/gmond-vms.conf; fi; done"
-    if [[ x"$(pidof gmond)" == x ]] || [[ x"$gpid" == x$(pidof gmond) ]]
+    sudo screen -d -m -S gmond bash -c "while true ; do if [ x\`$PIDOF_CMD gmond\` == x ] ; then gmond -c ${GANGLIA_FILE_LOCATION}/gmond-vms.conf; fi; sleep 10; done"
+	sleep 2
+    if [[ x"$(pidof gmond)" == x ]]
     then
         syslog_netcat "Ganglia monitoring processes (gmond) could not be restarted on $SHORT_HOSTNAME - NOK"
         exit 2
@@ -1312,3 +1206,145 @@ function update_app_quiescent {
 function get_offline_ip {
     ip -o addr show $(ip route | grep default | grep -oE "dev [a-z]+[0-9]+" | sed "s/dev //g") | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | grep -v 255
 }
+
+function mount_filesystem_on_volume {
+    MOUNTPOINT_DIR=$1
+    FILESYS_TYPE=$2
+    MOUNTPOINT_OWNER=$3
+    VOLUME=$4
+
+    if [[ -z $MOUNTPOINT_DIR ]]
+    then
+        syslog_netcat "No mountpoint specified. Bypassing mounting"
+        return 1
+    fi
+    
+    if [[ -z $FILESYS_TYPE ]]
+    then
+        FILESYS_TYPE=ext4
+    fi    
+    
+    if [[ -z $VOLUME ]]
+    then        
+        VOLUME=$(get_attached_volumes)
+    else
+        if [[ $(sudo fdisk -l | grep -c $VOLUME) -eq 0 ]]
+        then
+            VOLUME="NONE"
+        fi
+    fi
+
+    sudo mkdir -p $MOUNTPOINT_DIR
+
+    if [[ -z $MOUNTPOINT_OWNER  ]]
+    then
+        MOUNTPOINT_OWER=${my_login_username}
+    fi
+    
+    sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT_DIR
+        
+    if [[ $VOLUME != "NONE" ]]
+    then
+        
+        syslog_netcat "Setting ${my_type} storage ($MOUNTPOINT_DIR) on volume $VOLUME...."
+        if [[ $(sudo mount | grep $VOLUME | grep -c $MOUNTPOINT_DIR) -eq 0 ]]
+        then
+                                
+            if [[ $(check_filesystem $VOLUME) == "none" ]]
+            then
+                syslog_netcat "Creating $FILESYS_TYPE filesystem on volume $VOLUME"
+                sudo mkfs.$FILESYS_TYPE $VOLUME
+            fi
+            
+            syslog_netcat "Making $FILESYS_TYPE filesystem on volume $VOLUME accessible through the mountpoint ${MOUNTPOINT_DIR}"
+            sudo mount $VOLUME ${MOUNTPOINT_DIR}
+            
+            if [[ $? -ne 0 ]]
+            then
+                syslog_netcat "Error while mounting $FILESYS_TYPE filesystem on volume $VOLUME on mountpoint ${MOUNTPOINT_DIR} - NOK" 
+                exit 1
+            fi
+        fi
+        
+        sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT_DIR
+    fi
+    return 0
+}
+export -f mount_filesystem_on_volume
+
+function mount_filesystem_on_memory {
+
+    RAMDEVICE=/dev/ram0
+    
+    MOUNTPOINT_DIR=$1
+    FILESYS_TYPE=$2
+    MEMORY_DISK_SIZE=$3
+    MOUNTPOINT_OWNER=$4
+
+    if [[ -z $MOUNTPOINT_DIR ]]
+    then
+        syslog_netcat "No mountpoint specified. Bypassing mounting"
+        return 1
+    fi    
+
+    if [[ -z $MOUNTPOINT_OWNER  ]]
+    then
+        MOUNTPOINT_OWER=${my_login_username}
+    fi
+    
+    sudo mkdir -p $MOUNTPOINT_DIR
+
+    sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT_DIR
+                    
+    if [[ $FILESYS_TYPE == "tmpfs" ]]
+    then
+        syslog_netcat "Making tmpfs filesystem on accessible through the mountpoint ${MOUNTPOINT_DIR}"        
+        sudo mount -t tmpfs -o size=${MEMORY_DISK_SIZE} tmpfs $MOUNTPOINT_DIR
+    else
+        if [[ $(check_filesystem $RAMDEVICE) == "none" ]]
+        then
+            syslog_netcat "Creating $FILESYS_TYPE filesystem on volume $VOLUME"
+            sudo mkfs.$FILESYS_TYPE $RAMDEVICE
+        fi        
+
+        syslog_netcat "Making $FILESYS_TYPE filesystem on ram disk $RAMDEVICE accessible through the mountpoint ${MOUNTPOINT_DIR}"
+        sudo mount $RAMDEVICE $MOUNTPOINT_DIR    
+    fi
+
+    sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT_DIR
+
+    return 0
+}
+export -f mount_filesystem_on_memory
+
+function mount_remote_filesystem {
+    MOUNTPOINT_DIR=$1
+    FILESYS_TYPE=$2
+    FILESERVER_IP=$3
+    FILESERVER_PATH=$4
+    
+    if [[ -z $MOUNTPOINT_DIR ]]
+    then
+        syslog_netcat "No mountpoint specified. Bypassing mounting"
+        return 1
+    fi    
+
+    if [[ -z $FILESERVER_IP ]]
+    then
+        syslog_netcat "No fileserver IP specified. Bypassing mounting"
+        return 1
+    fi            
+                        
+    sudo mkdir -p $MOUNTPOINT_DIR
+
+    sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT_DIR
+            
+    if [[ $FILESYS_TYPE == "nfs" ]]
+    then
+        sudo mount $FILESERVER_IP:${FILESERVER_PATH} $MOUNTPOINT_DIR
+    fi
+    
+    return 0
+}
+export -f mount_remote_filesystem
+

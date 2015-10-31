@@ -44,11 +44,18 @@ API_PORT=`get_global_sub_attribute api_defaults port`
 #fi
 #DATA_SOURCE=`echo -e $DATA_SOURCE`
 
+USE_VPN_IP=`get_global_sub_attribute vm_defaults use_vpn_ip`
+if [ x"$USE_VPN_IP" == x"True" ] ; then
+	API_HOSTNAME=`get_global_sub_attribute vpn server_bootstrap`
+fi
+
 cat << EOF > $GMETAD_VMS
 xml_port ${COLLECTOR_AGGREGATOR_PORT}
 interactive_port ${COLLECTOR_SUMMARIZER_PORT}
 plugins_dir ${PLUGINS_DIR}
 data_source "127.0.0.1" 127.0.0.1:${COLLECTOR_VM_PORT}
+setuid_username "$(whoami)"
+
 mongodb { 
         path ${CB_MAIN_PATH}
         api http://${API_HOSTNAME}:${API_PORT}
