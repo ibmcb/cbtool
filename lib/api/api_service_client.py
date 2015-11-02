@@ -162,9 +162,10 @@ class APIClient(Server):
             use_vpn_ip = self.cldshow(cloud_name, "vm_defaults")["use_vpn_ip"]
             if use_vpn_ip :
                 self.msattrs['host'] = self.cldshow(cloud_name, "vpn")["server_bootstrap"]
-            self.msci = MongodbMgdConn(self.msattrs)
-            self.username = self.cldshow(cloud_name, "time")["username"] if username is None else username
-            self.experiment_id = self.cldshow(cloud_name, "time")["experiment_id"] if experiment_id is None else experiment_id
+
+        self.msci = MongodbMgdConn(self.msattrs)
+        self.username = self.cldshow(cloud_name, "time")["username"] if username is None else username
+        self.experiment_id = self.cldshow(cloud_name, "time")["experiment_id"] if experiment_id is None else experiment_id
 
     def __init__ (self, service_url, print_message = False):
                         

@@ -73,13 +73,13 @@ class DoCmds(CommonCloudFunctions) :
 
             cbdebug("Caching DigitalOcean locations, sizes, and images. If stale, then restart...")
             if not self.locations :
-                cbdebug("Caching Locations...", True)
+                cbdebug("Caching DigitalOcean Locations...", True)
                 self.locations = self.digitalocean.list_locations()
             if not self.sizes :
-                cbdebug("Caching Sizes...", True)
+                cbdebug("Caching DigitalOcean Sizes...", True)
                 self.sizes = self.digitalocean.list_sizes()
             if not self.images :
-                cbdebug("Caching Images...", True)
+                cbdebug("Caching DigitalOcean Images...", True)
                 self.images = self.digitalocean.list_images()
             assert(self.images)
             assert(self.sizes)
@@ -321,16 +321,14 @@ class DoCmds(CommonCloudFunctions) :
             cbdebug(_msg)
 
             if obj_attr_list["use_vpn_ip"].lower() == "true" :
-                while True :
-                    cbdebug("Waiting for VPN connection...")
-                    assert(self.get_attr_from_pending(obj_attr_list))
-                    if "cloud_init_vpn" in obj_attr_list :
-                        cbdebug("Found VPN IP: " + obj_attr_list["cloud_init_vpn"])
+                assert(self.get_attr_from_pending(obj_attr_list))
 
-                        break
-                    sleep(10)
+                if "cloud_init_vpn" not in obj_attr_list :
+                    cbdebug("Droplet VPN address not yet available.")
+                    return False
+                cbdebug("Found VPN IP: " + obj_attr_list["cloud_init_vpn"])
                 obj_attr_list["prov_cloud_ip"] = obj_attr_list["cloud_init_vpn"]
-
+                obj_attr_list["public_cloud_ip"] = node.public_ips[0]
             else :
                 obj_attr_list["prov_cloud_ip"] = node.public_ips[0]
 
@@ -476,7 +474,7 @@ runcmd:
   - mv /tmp/cbvpn.conf """ + conf_destination + """
   - service openvpn restart
 """
-        cbdebug("Final userdata: \n" + cloudconfig)
+        #cbdebug("Final userdata: \n" + cloudconfig)
         return cloudconfig
 
     @trace
