@@ -537,7 +537,7 @@ common-libcloud-install-pip = sudo pip install --upgrade INDEXURL apache-libclou
 
 common-gcloud-install-man =  export CLOUDSDK_CORE_DISABLE_PROMPTS=1 && curl https://sdk.cloud.google.com | bash
 
-common-pygce-install-man =  sudo pip install --upgrade INDEXURL gcloud google-api-python-client
+common-pygce-install-pip =  sudo pip install --upgrade INDEXURL gcloud google-api-python-client
 
 rhel-iptables-install-pm = package_install iptables-services iptables
 rhel-iptables-postinstall-pm = sudo  touch /etc/sysconfig/iptables; sudo touch /etc/sysconfig/ip6table; service_stop_disable iptables

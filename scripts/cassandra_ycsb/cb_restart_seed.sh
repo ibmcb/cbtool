@@ -35,13 +35,41 @@ sudo mkdir -p ${CASSANDRA_DATA_DIR}/cassandra/saved_caches
 sudo chown -R cassandra:cassandra ${CASSANDRA_DATA_DIR}
 
 CASSANDRA_REPLICATION_FACTOR=$(get_my_ai_attribute_with_default replication_factor 4)
-sudo sed -i "s/REPLF/${CASSANDRA_REPLICATION_FACTOR}/g" create_keyspace.cassandra
+sudo sed -i "s/REPLF/${CASSANDRA_REPLICATION_FACTOR}/g" *_create_keyspace.cassandra
 
 CASSANDRA_CONF_PATH=$(get_my_ai_attribute_with_default cassandra_conf_path /etc/cassandra/cassandra.yaml)
 
 if [[ ! -f $CASSANDRA_CONF_PATH ]]
 then
     CASSANDRA_CONF_PATH=$(sudo find /etc -name cassandra.yaml)
+fi
+
+CASSANDRA_CONF_DIR=$(echo "/etc/cassandra/cassandra.yaml" | sed 's/cassandra.yaml//g')
+
+which cassandra-cli
+
+if [[ $? -ne 0 ]]
+then
+    sudo ls ${CASSANDRA_CONF_DIR}/jmxremote.password
+    if [[ $? -ne 0 ]]
+    then
+        sudo echo "cassandra cassandra" > /tmp/jmxremote.password
+        sudo mv /tmp/jmxremote.password ${CASSANDRA_CONF_DIR}/jmxremote.password
+        sudo chown cassandra:cassandra ${CASSANDRA_CONF_DIR}/jmxremote.password
+        sudo chmod 0600 ${CASSANDRA_CONF_DIR}/jmxremote.password
+    fi
+    
+    if [[ $(sudo grep -c cassandra ${JAVA_HOME}/lib/management/jmxremote.access) -eq 0 ]]
+    then
+        sudo sed -i 's/monitorRole   readonly/monitorRole   readonly\ncassandra    readwrite\n/g' ${JAVA_HOME}/lib/management/jmxremote.access
+    fi
+    
+    if [[ $(grep -c "LOCAL_JMX=no" /etc/cassandra/cassandra-env.sh) -eq 0 ]]
+    then
+        LINE_NUMBER=$(sudo grep -n LOCAL_JMX=yes /etc/cassandra/cassandra-env.sh | cut -d ':' -f 1)
+        LINE_NUMBER=$((LINE_NUMBER-2))
+        sudo sed -i -e "${LINE_NUMBER}i\LOCAL_JMX=no" ${CASSANDRA_CONF_DIR}/cassandra-env.sh
+    fi
 fi
 
 pos=1
@@ -69,6 +97,7 @@ fi
 sudo sed -i "s/- seeds:.*$/- seeds: $seed_ips_csv/g" ${CASSANDRA_CONF_PATH}
 sudo sed -i "s/listen_address:.*$/listen_address: ${MY_IP}/g" ${CASSANDRA_CONF_PATH}
 sudo sed -i "s/rpc_address:.*$/rpc_address: ${MY_IP}/g" ${CASSANDRA_CONF_PATH}
+sudo sed -i "s/start_rpc:.*$/start_rpc: true/g" ${CASSANDRA_CONF_PATH}
 sudo sed -i "s/partitioner: org.apache.cassandra.dht.Murmur3Partitioner/partitioner: org.apache.cassandra.dht.RandomPartitioner/g" ${CASSANDRA_CONF_PATH}
 #sudo sed -i "s/partitioner:.*$/partitioner: org.apache.cassandra.dht.RandomPartitioner/g" ${CASSANDRA_CONF_PATH}    
 if [[ -d ${CASSANDRA_DATA_DIR} ]]

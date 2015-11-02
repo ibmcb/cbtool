@@ -1310,6 +1310,40 @@ function update_app_quiescent {
     echo $quiescent_time
     return 0
 }
+export -f update_app_quiescent
+
+function vercomp {
+    if [[ $1 == $2 ]]
+    then
+        return 0
+    fi
+    
+    local IFS=.
+    local i ver1=($1) ver2=($2)
+
+    for ((i=${#ver1[@]}; i<${#ver2[@]}; i++))
+    do
+        ver1[i]=0
+    done
+    
+    for ((i=0; i<${#ver1[@]}; i++))
+    do
+        if [[ -z ${ver2[i]} ]]
+        then
+            ver2[i]=0
+        fi
+        if ((10#${ver1[i]} > 10#${ver2[i]}))
+        then
+            return 1
+        fi
+        if ((10#${ver1[i]} < 10#${ver2[i]}))
+        then
+            return 2
+        fi
+    done
+    return 0
+}
+export -f vercomp
 
 function get_offline_ip {
     ip -o addr show $(ip route | grep default | grep -oE "dev [a-z]+[0-9]+" | sed "s/dev //g") | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | grep -v 255

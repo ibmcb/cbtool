@@ -52,6 +52,24 @@ MY_IP=$my_ip_addr
 YCSB_PATH=$(get_my_ai_attribute_with_default ycsb_path ~/YCSB)
 eval YCSB_PATH=${YCSB_PATH}
 
+if [[ -z ${JAVA_HOME} ]]
+then
+    #JAVA_HOME=`get_my_ai_attribute_with_default java_home ~/jdk1.6.0_21`
+    JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre
+    eval JAVA_HOME=${JAVA_HOME}
+    if [[ -f ~/.bashrc ]]
+    then
+        is_java_home_export=`grep -c "JAVA_HOME=${JAVA_HOME}" ~/.bashrc`
+        if [[ $is_java_home_export -eq 0 ]]
+        then
+            syslog_netcat "Adding JAVA_HOME to bashrc"
+            echo "export JAVA_HOME=${JAVA_HOME}" >> ~/.bashrc
+        fi
+    fi
+fi
+
+export JAVA_HOME=${JAVA_HOME}
+
 BACKEND_TYPE=$(get_my_ai_attribute type | sed 's/_ycsb//g')
 
 if [[ $BACKEND_TYPE == "cassandra" ]]
@@ -207,8 +225,8 @@ function lazy_collection {
     ERROR=$?
     update_app_errors $ERROR
 
-	insert_operations=$(cat $OUTPUT_FILE | grep Operations | grep INSERT | cut -d ',' -f 3 | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
-	read_operations=$(cat $OUTPUT_FILE | grep Operations | grep READ | cut -d ',' -f 3 | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
+    insert_operations=$(cat $OUTPUT_FILE | grep Operations | grep INSERT | cut -d ',' -f 3 | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
+    read_operations=$(cat $OUTPUT_FILE | grep Operations | grep READ | cut -d ',' -f 3 | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
 
     ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
     load_level:${LOAD_LEVEL}:load \
@@ -235,12 +253,20 @@ function check_cassandra_cluster_state {
     INTERVAL=$3
 
     counter=0
-    
+
+    nodetool -h $NODETOOLHN status
+    if [[ $? -eq 0 ]]
+    then
+        NODETOOLAUTH=""
+    else
+        NODETOOLAUTH="-u cassandra -pw cassandra" 
+    fi
+                
     while [[ $NODES_REGISTERED -ne $total_nodes && "$counter" -le "$ATTEMPTS" ]]
     do
         NODES_REGISTERED=0    
         syslog_netcat "Obtaining the node list for this Cassandra cluster..."            
-        for NODEIP in $(nodetool -h ${NODETOOLHN} status | tail -n +6 | grep -v "Non-system" | awk '{ print $2 }')
+        for NODEIP in $(nodetool $NODETOOLAUTH -h ${NODETOOLHN} status | tail -n +6 | grep -v "Non-system" | awk '{ print $2 }')
         do
             if [[ $(sudo cat /etc/hosts | grep -c $NODEIP) -ne 0 ]]
             then
@@ -266,7 +292,7 @@ function eager_collection {
     CMDLINE=$1
     OUTPUT_FILE=$2.run
     SLA_RUNTIME_TARGETS=$3
-	    
+        
     #----------------------- Track all YCSB results  -------------------------------
 
     #----------------------- Total op/sec ------------------------------------------
@@ -402,7 +428,7 @@ function eager_collection {
         done
     done < <($CMDLINE 2>&1)
 
-	# Check for a non-zero exit code of YCSB. If non-zero, consider it as an error.
+    # Check for a non-zero exit code of YCSB. If non-zero, consider it as an error.
     ERROR=$?
     update_app_errors $ERROR
     
@@ -411,7 +437,7 @@ function eager_collection {
 
     FIRST_SEED=$(echo $seed_ips_csv | cut -d ',' -f 1)
 
-	# Check for a fully formed cluster *after* YCSB ran. If not, consider it as an error.
+    # Check for a fully formed cluster *after* YCSB ran. If not, consider it as an error.
     check_cassandra_cluster_state ${FIRST_SEED} 1 1
     ERROR=$?
     update_app_errors $ERROR
@@ -436,9 +462,9 @@ function eager_collection {
         fi
     done
 
-	insert_operations=$(cat $OUTPUT_FILE | grep Operations | grep INSERT | cut -d ',' -f 3 | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
-	read_operations=$(cat $OUTPUT_FILE | grep Operations | grep READ | cut -d ',' -f 3 | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
-	
+    insert_operations=$(cat $OUTPUT_FILE | grep Operations | grep INSERT | cut -d ',' -f 3 | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
+    read_operations=$(cat $OUTPUT_FILE | grep Operations | grep READ | cut -d ',' -f 3 | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
+    
     # Preserve old behavior:  Send data back to Cloudbench orchestrator even
     # if no latency data was collected.
     ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \

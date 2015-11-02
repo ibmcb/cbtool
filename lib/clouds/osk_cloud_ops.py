@@ -1864,7 +1864,7 @@ class OskCmds(CommonCloudFunctions) :
                 cbdebug(_msg, True)
 
                 _fip = self.floating_ip_allocate(obj_attr_list)
-
+                
                 _call = "floating ip attach"                
                 _instance.add_floating_ip(_fip)
 

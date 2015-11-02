@@ -5,7 +5,15 @@
 
 IMAGES_URL=http://sderepo.watson.ibm.com/repo/vmimages/
 IMAGES_ARCH=x86_64
-IMAGES_LIST=coremark:bare:qcow2:x86_64:qemu,daytrader:bare:qcow2:x86_64:qemu,ddgen:bare:qcow2:x86_64:qemu,filebench:bare:qcow2:x86_64:qemu,hadoop:bare:qcow2:x86_64:qemu,linpack:bare:qcow2:x86_64:qemu,hpcc:bare:qcow2:x86_64:qemu,ycsb:bare:qcow2:x86_64:qemu,iperf:bare:qcow2:x86_64:qemu,netperf:bare:qcow2:x86_64:qemu,nullworkload:bare:qcow2:x86_64:qemu,specjbb:bare:qcow2:x86_64:qemu,giraph:bare:qcow2:x86_64:qemu,nuttcp:bare:qcow2:x86_64:qemu,fio:bare:qcow2:x86_64:qemu,xping:bare:qcow2:x86_64:qemu,speccloud_cassandra:bare:qcow2:x86_64:qemu,speccloud_kmeans:bare:qcow2:x86_64:qemu
+IMAGES_LIST=coremark:bare:qcow2:x86_64:qemu,daytrader:bare:qcow2:x86_64:qemu
+IMAGES_LIST=${IMAGES_LIST},ddgen:bare:qcow2:x86_64:qemu,filebench:bare:qcow2:x86_64:qemu
+IMAGES_LIST=${IMAGES_LIST},hadoop:bare:qcow2:x86_64:qemu,linpack:bare:qcow2:x86_64:qemu
+IMAGES_LIST=${IMAGES_LIST},hpcc:bare:qcow2:x86_64:qemu,ycsb:bare:qcow2:x86_64:qemu
+IMAGES_LIST=${IMAGES_LIST},iperf:bare:qcow2:x86_64:qemu,netperf:bare:qcow2:x86_64:qemu
+IMAGES_LIST=${IMAGES_LIST},nullworkload:bare:qcow2:x86_64:qemu,specjbb:bare:qcow2:x86_64:qemu
+IMAGES_LIST=${IMAGES_LIST},giraph:bare:qcow2:x86_64:qemu,nuttcp:bare:qcow2:x86_64:qemu
+IMAGES_LIST=${IMAGES_LIST},fio:bare:qcow2:x86_64:qemu,xping:bare:qcow2:x86_64:qemu
+IMAGES_LIST=${IMAGES_LIST},speccloud_cassandra:bare:qcow2:x86_64:qemu,speccloud_kmeans:bare:qcow2:x86_64:qemu
 
 IMAGES_LIST=$(echo ${IMAGES_LIST} | sed 's/,/ /g')
 

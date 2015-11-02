@@ -92,37 +92,53 @@ sudo sh -c "echo "operationcount=$OPERATION_COUNT" >> $YCSB_PATH/custom_workload
 source ~/cb_barrier.sh start
 update_app_errors 0 reset
 
+FIRST_SEED=$(echo $seed_ips_csv | cut -d ',' -f 1)
+
+which cassandra-cli
+if [[ $? -eq 0 ]]
+then
+    CCLIN=cassandra-cli
+    CCLI="$CCLIN -h ${FIRST_SEED}"
+    CTBN=userspace
+    YCSB_PROFILE=cassandra-10
+else
+    CCLIN=cqlsh
+    CCLI="$CCLIN ${FIRST_SEED}"
+    CTBN=ycsb
+    YCSB_PROFILE=cassandra-cql
+fi
+
 OUTPUT_FILE=$(mktemp)
 if [[ ${GENERATE_DATA} == "true" ]]
 then
-    FIRST_SEED=$(echo $seed_ips_csv | cut -d ',' -f 1)
-
-    cassandra-cli -h ${FIRST_SEED} -f list_keyspace.cassandra
+    
+    $CCLI -f ${CCLIN}_list_keyspace.cassandra
+         
     ERROR=$?
 
     if [[ $ERROR -eq 0 ]]
     then
-	    if [[ $(cassandra-cli -h ${FIRST_SEED} -f list_keyspace.cassandra | grep Keyspace | grep -c usertable) -ne 0 ]]
-	    then
-	    	syslog_netcat "Dropping keyspace \"usertable\" in Cassandra by executing cassandra-cli against seed node ${FIRST_SEED}"
-	        cassandra-cli -h ${FIRST_SEED} -f remove_keyspace.cassandra
-	        if [[ $(cassandra-cli -h ${FIRST_SEED} -f list_keyspace.cassandra | grep Keyspace | grep -c usertable) -eq 0 ]]
-	        then            
-	        	syslog_netcat "Keyspace \"usertable\" in Cassandra was successfully deleted"
-	        else
-	            syslog_netcat "Error while deleting keyspace \"usertable\" in Cassandra"
-	            update_app_errors 1
-	    	fi
+        if [[ $($CCLI -f ${CCLIN}_list_keyspace.cassandra | grep -c $CTBN) -ne 0 ]]
+        then
+            syslog_netcat "Dropping keyspace \"$CTBN\" in Cassandra by executing $CCLIN against seed node ${FIRST_SEED}"
+            $CCLI -f ${CCLIN}_list_keyspace.cassandra
+            if [[ $($CCLI -f ${CCLIN}_list_keyspace.cassandra | grep -c $CTBN) -eq 0 ]]
+            then            
+                syslog_netcat "Keyspace \"$CTBN\" in Cassandra was successfully deleted"
+            else
+                syslog_netcat "Error while deleting keyspace \"$CTBN\" in Cassandra"
+                update_app_errors 1
+            fi
         else
-            syslog_netcat "Keyspace \"usertable\" not present in Cassandra. Bypassing keyspace deletion"
+            syslog_netcat "Keyspace \"$CTBN\" not present in Cassandra. Bypassing keyspace deletion"
         fi
     else
-        syslog_netcat "Error while contacting Cassandra through cassandra-cli"
+        syslog_netcat "Error while contacting Cassandra through $CCLIN"
         update_app_errors $ERROR
     fi
 
-    syslog_netcat "Creating keyspace \"usertable\" in Cassandra by executing cassandra-cli against seed node ${FIRST_SEED}"
-    cassandra-cli -h ${FIRST_SEED} -f create_keyspace.cassandra
+    syslog_netcat "Creating keyspace \"$CTBN\" in Cassandra by executing $CCLIN against seed node ${FIRST_SEED}"
+    $CCLI -f ${CCLIN}_create_keyspace.cassandra
     ERROR=$?
     
     if [[ $ERROR -ne 0 ]]
@@ -138,7 +154,7 @@ then
     START_GENERATION=$(get_time)
     
     syslog_netcat "The value of the parameter \"GENERATE_DATA\" is \"true\". Will generate data for the YCSB load profile \"${LOAD_PROFILE}\"" 
-    command_line="sudo $YCSB_PATH/bin/ycsb load cassandra-10 -s -P $YCSB_PATH/workloads/${LOAD_PROFILE} -P $YCSB_PATH/custom_workload.dat -p hosts=$seed_ips_csv"
+    command_line="sudo $YCSB_PATH/bin/ycsb load $YCSB_PROFILE -s -P $YCSB_PATH/workloads/${LOAD_PROFILE} -P $YCSB_PATH/custom_workload.dat -p hosts=$seed_ips_csv"
     syslog_netcat "Command line is: ${command_line}"
     
     if [[ x"${log_output_command}" == x"true" ]]
@@ -164,7 +180,7 @@ else
     syslog_netcat "The value of the parameter \"GENERATE_DATA\" is \"false\". Will bypass data generation for the Cassandra YCSB load profile \"${LOAD_PROFILE}\""     
 fi
 
-CMDLINE="sudo $YCSB_PATH/bin/ycsb run cassandra-10 -s -threads ${LOAD_LEVEL} -P $YCSB_PATH/workloads/${LOAD_PROFILE} -P $YCSB_PATH/custom_workload.dat -p hosts=$seed_ips_csv"
+CMDLINE="sudo $YCSB_PATH/bin/ycsb run $YCSB_PROFILE -s -threads ${LOAD_LEVEL} -P $YCSB_PATH/workloads/${LOAD_PROFILE} -P $YCSB_PATH/custom_workload.dat -p hosts=$seed_ips_csv"
 
 syslog_netcat "Benchmarking YCSB SUT: SEED=${seed_ips_csv} -> CASSANDRAS=${cassandra_ips_csv} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
 

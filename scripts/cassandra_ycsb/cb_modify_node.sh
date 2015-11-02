@@ -41,7 +41,7 @@ sudo chown -R cassandra:cassandra ${CASSANDRA_DATA_DIR}
 nodes=`nodetool ring | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}'`
 if [[ $? == 1 ]]
 then 
-    sudo service cassandra stop
+    service_stop_disable cassandra
 
     pos=1
     tk_pos=0
@@ -68,14 +68,43 @@ then
     CASSANDRA_CONF_PATH=$(sudo find /etc -name cassandra.yaml)
 fi
 
+CASSANDRA_CONF_DIR=$(echo "/etc/cassandra/cassandra.yaml" | sed 's/cassandra.yaml//g')
+
+which cassandra-cli
+
+if [[ $? -ne 0 ]]
+then
+    sudo ls ${CASSANDRA_CONF_DIR}/jmxremote.password
+    if [[ $? -ne 0 ]]
+    then
+        sudo echo "cassandra cassandra" > /tmp/jmxremote.password
+        sudo mv /tmp/jmxremote.password ${CASSANDRA_CONF_DIR}/jmxremote.password
+        sudo chown cassandra:cassandra ${CASSANDRA_CONF_DIR}/jmxremote.password
+        sudo chmod 0600 ${CASSANDRA_CONF_DIR}/jmxremote.password
+    fi
+    
+    if [[ $(sudo grep -c cassandra ${JAVA_HOME}/lib/management/jmxremote.access) -eq 0 ]]
+    then
+        sudo sed -i 's/monitorRole   readonly/monitorRole   readonly\ncassandra    readwrite\n/g' ${JAVA_HOME}/lib/management/jmxremote.access
+    fi
+    
+    if [[ $(grep -c "LOCAL_JMX=no" /etc/cassandra/cassandra-env.sh) -eq 0 ]]
+    then
+        LINE_NUMBER=$(sudo grep -n LOCAL_JMX=yes /etc/cassandra/cassandra-env.sh | cut -d ':' -f 1)
+        LINE_NUMBER=$((LINE_NUMBER-2))
+        sudo sed -i -e "${LINE_NUMBER}i\LOCAL_JMX=no" ${CASSANDRA_CONF_DIR}/cassandra-env.sh
+    fi
+fi
+
 #
 # Update Cassandra Config
 #
     #sudo sed -i "s/.*initial_token:.*/initial_token: ${my_token//[[:blank:]]/}/g" ${CASSANDRA_CONF_PATH}
     sudo sed -i "s/- seeds:.*$/- seeds: $seeds_ips_csv/g" $CASSANDRA_CONF_PATH
     sudo sed -i "s/listen_address:.*$/listen_address: ${MY_IP}/g" $CASSANDRA_CONF_PATH
-    sudo sed -i 's/rpc_address:.*$/rpc_address: 0\.0\.0\.0/g' $CASSANDRA_CONF_PATH
-
+    sudo sed -i "s/rpc_address:.*$/rpc_address: ${MY_IP}/g" ${CASSANDRA_CONF_PATH}
+    sudo sed -i "s/start_rpc:.*$/start_rpc: true/g" ${CASSANDRA_CONF_PATH}
+    
     if [[ -d ${CASSANDRA_DATA_DIR} ]]
     then
         sudo sed -i "s^/var/lib/^${CASSANDRA_DATA_DIR}/^g" ${CASSANDRA_CONF_PATH}
@@ -86,7 +115,7 @@ fi
 # Start the database
 #
     syslog_netcat "Starting cassandra on ${SHORT_HOSTNAME}"
-    sudo service cassandra start
+    service_start_enable cassandra
 
 #
 # Modify Nodes 
