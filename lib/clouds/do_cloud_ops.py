@@ -32,7 +32,9 @@ from libcloud.compute.providers import get_driver
 from libcloud.compute.types import NodeState
 
 import re, os
+import threading
 
+catalogs = threading.local()
 cwd = (re.compile(".*\/").search(os.path.realpath(__file__)).group(0)) + "/../../"
 
 class DoCmds(CommonCloudFunctions) :
@@ -41,7 +43,6 @@ class DoCmds(CommonCloudFunctions) :
         CommonCloudFunctions.__init__(self, pid, osci)
         self.pid = pid
         self.osci = osci
-        self.digitalocean = False 
         self.access_url = False
         self.ft_supported = False
         self.lock = False
@@ -49,6 +50,7 @@ class DoCmds(CommonCloudFunctions) :
         self.locations = False
         self.sizes = False
         self.images = False
+        self.cache_mutex = threading.Lock()
 
     @trace
     def get_description(self) :
@@ -56,31 +58,36 @@ class DoCmds(CommonCloudFunctions) :
 
     @trace
     def connect(self, access_token) :
+        # libcloud is totally not thread-safe. bastards.
+        cbdebug("Checking libcloud connection...")
         try :
+            getattr(catalogs, "digitalocean")
+        except Exception, e :
+            cbdebug("Initializing thread local connection.")
+            catalogs.digitalocean = False
 
+        self.cache_mutex.acquire()
+        try :
             _status = 100
 
-            if not self.digitalocean :
-                _msg = "Connecting to DigitalOcean..."
-                cbdebug(_msg)
-
+            if not catalogs.digitalocean :
+                cbdebug("Connecting to DigitalOcean...")
                 driver = get_driver(Provider.DIGITAL_OCEAN)
                 _status = 110
-
-                self.digitalocean = driver(access_token, api_version='v2')
+                catalogs.digitalocean = driver(access_token, api_version='v2')
             else :
                 cbdebug("DigitalOcean Already connected.")
 
             cbdebug("Caching DigitalOcean locations, sizes, and images. If stale, then restart...")
             if not self.locations :
                 cbdebug("Caching DigitalOcean Locations...", True)
-                self.locations = self.digitalocean.list_locations()
+                self.locations = catalogs.digitalocean.list_locations()
             if not self.sizes :
                 cbdebug("Caching DigitalOcean Sizes...", True)
-                self.sizes = self.digitalocean.list_sizes()
+                self.sizes = catalogs.digitalocean.list_sizes()
             if not self.images :
-                cbdebug("Caching DigitalOcean Images...", True)
-                self.images = self.digitalocean.list_images()
+                cbdebug("Caching DigitalOcean Images (can take a minute or so)...", True)
+                self.images = catalogs.digitalocean.list_images()
             assert(self.images)
             assert(self.sizes)
             assert(self.locations)
@@ -88,19 +95,17 @@ class DoCmds(CommonCloudFunctions) :
 
             _status = 0
 
-        except :
-            _msg = "Error connecting DigitalOcean.  Status = " + str(_status)
+        except Exception, e:
+            _msg = "Error connecting DigitalOcean: " + str(e) 
             cbdebug(_msg, True)
-            cberr(_msg)
-
             _status = 23
-
         finally :
+            self.cache_mutex.release()
             if _status :
                 _msg = "DigitalOcean connection failure. Failed to use your access token."
                 cbdebug(_msg, True)
                 cberr(_msg)
-                self.digitalocean = False
+                catalogs.digitalocean = False
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "DigitalOcean connection successful."
@@ -125,11 +130,7 @@ class DoCmds(CommonCloudFunctions) :
         try :
             _status = 100
 
-            if not self.digitalocean :
-                _msg = "Cleaning DigitalOcean"
-                cbdebug(_msg)
-                self.connect(obj_attr_list["credentials"])
-
+            self.connect(obj_attr_list["credentials"])
             _pre_existing_instances = False
 
             _msg = "Cleaning up DigitalOcean"
@@ -137,7 +138,7 @@ class DoCmds(CommonCloudFunctions) :
 
             _running_instances = True
             while _running_instances :
-                _reservations = self.digitalocean.list_nodes()
+                _reservations = catalogs.digitalocean.list_nodes()
 
                 _msg = "Cleaning up running instances. Checking to see if they were instantiated by CB..."
                 cbdebug(_msg)
@@ -204,12 +205,8 @@ class DoCmds(CommonCloudFunctions) :
 
             access_token = obj_attr_list["credentials"]
 
-            if not self.digitalocean :
-                _msg = "Connecting to DigitalOcean..."
-                cbdebug(_msg)
-
-                self.connect(access_token)
-
+            cbdebug("Connecting to DigitalOcean...")
+            self.connect(access_token)
             _time_mark_prs = int(time())
             obj_attr_list["mgt_002_provisioning_request_sent"] = _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
 
@@ -337,7 +334,7 @@ class DoCmds(CommonCloudFunctions) :
 
         except Exception, e :
             _msg = "Could not retrieve IP addresses for object " + obj_attr_list["uuid"]
-            _msg += "from DigitalOcean \"" + obj_attr_list["cloud_name"] + ": " + str(e)
+            _msg += " from DigitalOcean \"" + obj_attr_list["cloud_name"] + ": " + str(e)
             cberr(_msg)
             raise CldOpsException(_msg, _status)
 
@@ -346,10 +343,10 @@ class DoCmds(CommonCloudFunctions) :
         try :
             _status = 100
             _msg = "cloud_vm_name " + obj_attr_list["cloud_vm_name"]
-            _msg += "from DigitalOcean \"" + obj_attr_list["cloud_name"]
+            _msg += " from DigitalOcean \"" + obj_attr_list["cloud_name"]
             cbdebug(_msg)
 
-            node_list = self.digitalocean.list_nodes()
+            node_list = catalogs.digitalocean.list_nodes()
 
             node = False
             if node_list :
@@ -501,11 +498,8 @@ runcmd:
 
             access_token = obj_attr_list["credentials"]
 
-            if not self.digitalocean :
-                _msg = "Connecting to DigitalOcean..."
-                cbdebug(_msg)
-
-                self.connect(access_token)
+            cbdebug("Connecting to DigitalOcean...")
+            self.connect(access_token)
 
             _time_mark_prs = int(time())
             obj_attr_list["mgt_002_provisioning_request_sent"] = _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
@@ -531,7 +525,7 @@ runcmd:
 
             if not image :
                 cbdebug("Image is missing. Refreshing image list...", True)
-                self.images = self.digitalocean.list_images()
+                self.images = catalogs.digitalocean.list_images()
                 for x in self.images :
                     if x.name == obj_attr_list["imageid1"] or x.id == obj_attr_list["imageid1"] :
                         image = x
@@ -542,7 +536,7 @@ runcmd:
 
             cbdebug("Launching new Droplet with hostname " + obj_attr_list["cloud_vm_name"], True)
 
-            _reservation = self.digitalocean.create_node(
+            _reservation = catalogs.digitalocean.create_node(
                 image = image,
                 name = obj_attr_list["cloud_vm_name"],
                 size = [x for x in self.sizes if x.id == obj_attr_list["size"]][0],
@@ -619,9 +613,6 @@ runcmd:
 
     @trace
     def vmdestroy(self, obj_attr_list) :
-        '''
-        TBD
-        '''
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
@@ -731,9 +722,8 @@ runcmd:
             _max_tries = int(obj_attr_list["update_attempts"])
 
             credential_name = obj_attr_list["credentials"]
-            if not self.digitalocean :
-                self.connect(credential_name, obj_attr_list["access"], \
-                             obj_attr_list["password"], obj_attr_list["version"])
+            self.connect(credential_name, obj_attr_list["access"], \
+                         obj_attr_list["password"], obj_attr_list["version"])
 
             _instance = self.get_vm_instance(obj_attr_list)
 
@@ -753,7 +743,7 @@ runcmd:
                 _msg += "Will capture with image name \"" + obj_attr_list["captured_image_name"] + "\"."
                 cbdebug(_msg)
 
-                _captured_imageid = self.digitalocean.create_image(obj_attr_list["cloud_vm_uuid"] , obj_attr_list["captured_image_name"])
+                _captured_imageid = catalogs.digitalocean.create_image(obj_attr_list["cloud_vm_uuid"] , obj_attr_list["captured_image_name"])
 
                 _msg = "Waiting for " + obj_attr_list["name"]
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
@@ -764,7 +754,7 @@ runcmd:
                 _vm_image_created = False
                 while not _vm_image_created and _curr_tries < _max_tries :
 
-                    _image_instance = self.digitalocean.get_all_images(_captured_imageid)
+                    _image_instance = catalogs.digitalocean.get_all_images(_captured_imageid)
 
                     if len(_image_instance)  :
                         if _image_instance[0].state == "pending" :
@@ -829,9 +819,8 @@ runcmd:
             _cs = obj_attr_list["current_state"]
 
             credential_name = obj_attr_list["credentials"]
-            if not self.digitalocean :
-                self.connect(credential_name, obj_attr_list["access"], \
-                             obj_attr_list["password"], obj_attr_list["version"])
+            self.connect(credential_name, obj_attr_list["access"], \
+                         obj_attr_list["password"], obj_attr_list["version"])
 
             if "mgt_201_runstate_request_originated" in obj_attr_list :
                 _time_mark_rrs = int(time())
