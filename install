@@ -1,1 +1,155 @@
-configure
+#!/usr/bin/env python
+
+#/*******************************************************************************
+# Copyright (c) 2012 IBM Corp.
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#     http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#/*******************************************************************************
+
+
+'''
+    Created on Nov 1, 2012
+
+    CREAT (CBTOOL) Configuration Tool
+
+    @author: Marcio Silva, Michael R. Hines
+'''
+
+from pwd import getpwuid
+from shutil import copyfile
+
+from sys import path, argv
+from optparse import OptionParser
+import os
+import re
+
+def main() :
+    '''
+    TBD
+    '''
+    _path = re.compile(".*\/").search(os.path.realpath(__file__)).group(0)
+
+    usage = '''usage: %prog [options] [command]
+    '''
+
+    _parser = OptionParser(usage)
+    
+    _parser.add_option("--tpdir", \
+                       dest="tpdir", \
+                       default= _path + "/3rd_party", \
+                       help="Name of the third-party directory")
+
+    _parser.add_option("--creddir", \
+                       dest="creddir", \
+                       default=_path + "/credentials/", \
+                       help="Credentials configuration file defaults dir")
+
+    _parser.add_option("--defdir", \
+                       dest="defdir", \
+                       default=_path + "/configs/templates/", \
+                       help="Dependencies configuration file defaults dir")
+
+    _parser.add_option("--cusdir", \
+                       dest="cusdir", \
+                       default=_path + "/configs/", \
+                       help="Dependencies configuration file customizations dir")
+
+    _parser.add_option("-r", "--role", \
+                       dest = "role", \
+                       default = None, \
+                       help = "The role assigned to this node (\"orchestrator\" or \"workload\")")
+
+    _parser.add_option("--wksdir", \
+                       dest = "wksdir", \
+                       default = _path + "/scripts/", \
+                       help = "Workload dependencies configuration file dir")
+
+    _parser.add_option("-w","--wks", \
+                       dest = "wks", \
+                       default = None, \
+                       help = "Comma-separated workload list")
+
+    _parser.add_option("-c","--custom", \
+                       dest = "custom", \
+                       default = "", \
+                       help = "Dependencies customization file name")
+
+    _parser.add_option("-a","--addr", \
+                       dest = "addr", \
+                       default = None, \
+                       help = "Package (and pip) repository address")
+
+    _parser.set_defaults()
+    (options, _args) = _parser.parse_args()
+
+    _3rd_party = options.tpdir
+    
+    if not os.path.exists(_3rd_party) :
+        os.mkdir(_3rd_party)
+
+    from lib.auxiliary.dependencies import dependency_checker_installer
+
+    _tool = "Cloud Rapid Experimentation Analysis and Toolkit (cbtool)"
+    _bname = os.path.basename(argv[0])
+
+    if not options.role :
+        _msg = "You need to select a role for this node (option \"-r\" or \"--role\""
+        _msg += "). Possible roles are \"orchestrator\" (needs at least 10 GB of "
+        _msg += "free space) or \"workload\"."
+        print _msg
+        exit(1)
+
+    if options.role.count("orchestrator") :
+        options.wks = ''
+    elif options.role.count("workload") :
+        if not options.wks :
+            _msg = "You need to select one of the workloads (option \"-w\" or \"--wks\""
+            print _msg
+            exit(2)
+    else :
+        _msg = "Unknown node role: \"" + options.role + "\"."
+        print _msg
+        exit(3)
+
+    if _bname == "configure" :    
+        _msg = "Checking for " + _tool + "dependencies on this node........."
+        print _msg
+    else :
+        _msg = "Installing dependencies for " + _tool + " on this node........."
+        print _msg
+
+    _status, _msg = dependency_checker_installer("127.0.0.1", getpwuid(os.getuid())[0], _bname, options)
+    if _status :
+        print _msg
+        exit()
+    else :
+        print _msg
+
+    if not len(options.wks) :
+        _username = getpwuid(os.getuid())[0]
+    
+        _msg = "Checking for a \"private\" configuration file for user \"" + _username
+        _msg += "\" in " + _path + "/configs/" + _username + "_cloud_definitions.txt)"
+        print _msg
+        if not os.path.exists(_path + "/configs/" + _username + "_cloud_definitions.txt") :
+            _msg = "Copying " + _path + "/configs/cloud_definitions.txt to "
+            _msg += _path + "/configs/" + _username + "_cloud_definitions.txt..."
+            print _msg
+            copyfile(_path + "/configs/cloud_definitions.txt", _path + "/configs/" + _username + "_cloud_definitions.txt")
+            print "Please re-run configure again"
+        else :
+            print "File already exists, tool is ready to be used."
+    else :
+        print ""
+        
+main()

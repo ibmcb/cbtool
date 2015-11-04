@@ -2227,18 +2227,19 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     clouds = api.cldlist()
                     found = {} 
                     for cloud in clouds :
+                        # The binded API server for the VPN address comes online later after the next sleep. It won't show up immediately, because the VPN client is forked later.
                         if cloud["name"] not in services :
                             attrs = api.cldshow(cloud["name"], "vpn")
                             
                             if attrs["start_server"].lower() != "false" :
-                                address = attrs["server_ip"]
+                                address = attrs["server_bootstrap"]
                                 result = False 
                                 msg = "Failed to register openvpn address " + address + ": "
                                 try :
                                     result = api.register(address)
                                     services[cloud["name"]] = address
                                     found[cloud["name"]] = cloud
-                                    msg = "Success registring openvpn address: " + address
+                                    msg = "Success registering openvpn address: " + address
                                 except APIException, e :
                                     msg += str(e)
                                 except Exception, e :

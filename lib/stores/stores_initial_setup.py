@@ -240,7 +240,7 @@ def syslog_logstore_setup(global_objects, operation = "check") :
                     _proc_man =  ProcessManagement(username = "root")
                     _rsyslog_pid = _proc_man.get_pid_from_cmdline("rsyslogd")
     
-                    _cmd = "/sbin/rsyslogd -i /var/run/syslogd.pid -c 5"
+                    _cmd = "/sbin/rsyslogd -i /var/run/syslogd.pid "
 
                     if not _rsyslog_pid :
                         _msg = "Unable to detect a shared rsyslog server daemon running. "
@@ -254,7 +254,7 @@ def syslog_logstore_setup(global_objects, operation = "check") :
                 _proc_man =  ProcessManagement(username = _username)
 
                 _config_file_fn = _stores_wk_dir + '/' + _username + "_rsyslog.conf"
-                _cmd = "rsyslogd -f " + _config_file_fn + " -c 4 " + "-i " + _stores_wk_dir + "/rsyslog.pid"
+                _cmd = "rsyslogd -f " + _config_file_fn + " " + "-i " + _stores_wk_dir + "/rsyslog.pid"
 
                 if not access(_config_file_fn, F_OK) :
                     # File was deleted, but the rsyslog process is still dangling

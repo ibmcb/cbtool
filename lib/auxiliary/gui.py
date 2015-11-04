@@ -71,6 +71,7 @@ class Dashboard () :
         self.msattrs = msattrs
         self.username = self.time_vars["username"]
         self.msci = msci
+        assert(msci is not None)
         self.manage_collection = {"VM": "latest_management_VM_" + self.username, \
                                   "HOST" : "latest_management_HOST_" + self.username }
         self.latest_os_collection = {"VM" : "latest_runtime_os_VM_" + self.username, \
@@ -650,7 +651,7 @@ class GUI(object):
         self.data_names = {'vm' : 'System', 'vmc' : 'System', "host" : 'System', "app" : 'App', 'appdrs' : 'Provision'}
 
         if self.apihost == "0.0.0.0" :
-                self.apihost = "127.0.0.1"
+            self.apihost = "127.0.0.1"
 
         self.api_access = "http://" + self.apihost + ":" + str(self.apiport)
         self.api = APIClient(self.api_access)
@@ -1031,7 +1032,7 @@ class GUI(object):
                 if req.http.params.get("show") is not None :
                     req.session['dash_active'] = req.http.params.get("show")
                     req.session.save()
-                self.api.dashboard_conn_check(req.cloud_name, req.session['msattrs'], req.session['time_vars']['username'])
+                self.api.dashboard_conn_check(req.cloud_name, msattrs = req.session['msattrs'], username = req.session['time_vars']['username'])
                 
                 mon = Dashboard(self.api.msci, req.unparsed_uri, req.session['time_vars'], req.session['msattrs'], req.cloud_name)
                 orig_url = req.session["dashboard_parameters"]
@@ -1154,7 +1155,7 @@ class GUI(object):
                 ip = req.http.params.get("ip")
                 host = req.http.params.get("host")
                 role = req.http.params.get("role")
-                self.api.dashboard_conn_check(req.cloud_name, req.session['msattrs'], req.session['time_vars']['username'])
+                self.api.dashboard_conn_check(req.cloud_name, msattrs = req.session['msattrs'], username = req.session['time_vars']['username'])
                 try :
                     expid = self.api.cldshow(req.cloud_name, "time")["experiment_id"]
                 except APIException, obj :
@@ -1235,7 +1236,7 @@ class GUI(object):
     
             elif req.action == "monitordata" :
 
-                self.api.dashboard_conn_check(req.cloud_name, req.session['msattrs'], req.session['time_vars']['username'])
+                self.api.dashboard_conn_check(req.cloud_name, msattrs = req.session['msattrs'], username = req.session['time_vars']['username'])
                 mon = Dashboard(self.api.msci, req.unparsed_uri, req.session['time_vars'], req.session['msattrs'], req.session['cloud_name'])
                 mon.parse_url(req.session["dashboard_parameters"])
                 mon.gather_contents()
@@ -1245,42 +1246,47 @@ class GUI(object):
                 return self.bootstrap(req, "<div class='span10'>" + mon.body + cli_html)
 
             elif req.action == "stats" :
-                stats = self.api.stats(req.cloud_name)
-                output = "<div class='span10'>"
-                output += self.heromsg + "\n<h4>&nbsp;&nbsp;Runtime Summary Statistics:</h4></div>\n"
-                output += "<div class='accordion' id='statistics'>\n"
-                
-                for group, label, unit, data in stats :
-                    group_key = group.replace(" ", "_")
-                    output += """
-                            <div class="accordion-group">
-                                <div class="accordion-heading">
-                    """
-                    output += "<a class='accordion-toggle' data-toggle='collapse' data-parent='#statistics' href='#collapse" + group_key + "'>" + group + "</a>"
-                    output += "</div>\n"
-                    output += "<div id='collapse" + group_key + "' class='accordion-body collapse'>"
-                    output += "<div class='accordion-inner'>"
-                    output += "<table class='table table-hover table-striped'>\n"
-                    output += "<tr><td><b>" + label + "</b></td><td><b>" + unit + "</b></td></tr>\n"
-                    for name, value in data :
-                        output += "<tr><td>" + name + "</td><td>" + value + "</td></tr>\n"
-                    output  += "</table>"
-    
-                    output += """
-                                    </div>
-                                </div>
-                            </div>
-                    """
-                output += """
-                        </div>
-                """
-                output_fd = open(cwd + "/gui_files/cli_template.html", "r")
-                cli_html = output_fd.read()
-                output_fd.close()
-                output += cli_html
-                return self.bootstrap(req, output)
+		try :
+			stats = self.api.stats(req.cloud_name)
+			output = "<div class='span10'>"
+			output += self.heromsg + "\n<h4>&nbsp;&nbsp;Runtime Summary Statistics:</h4></div>\n"
+			output += "<div class='accordion' id='statistics'>\n"
+			
+		        cbdebug(str(stats))
+			for group_key in stats.keys() :
+				group = group_key.replace("_", " ")
+				output += """
+					    <div class="accordion-group">
+						<div class="accordion-heading">
+				"""
+				output += "<a class='accordion-toggle' data-toggle='collapse' data-parent='#statistics' href='#collapse" + group_key + "'>" + group + "</a>"
+				output += "</div>\n"
+				output += "<div id='collapse" + group_key + "' class='accordion-body collapse'>"
+				output += "<div class='accordion-inner'>"
+				for label, stat in stats[group_key].iteritems() :
+					output += "<table class='table table-hover table-striped'>\n"
+					output += "<tr><td><b>" + label + "</b></td></tr>\n"
+					for name, value in stats[group_key].iteritems() :
+					    output += "<tr><td>" + name + "</td><td>" + str(value) + "</td></tr>\n"
+					output  += "</table>"
+		    
+				output += """
+				    </div>
+				   </div>
+				 </div>
+				"""
+			output += """
+				</div>
+			"""
+			output_fd = open(cwd + "/gui_files/cli_template.html", "r")
+			cli_html = output_fd.read()
+			output_fd.close()
+			output += cli_html
+			return self.bootstrap(req, output)
+		except Exception, e:
+ 			return self.bootstrap(req, str(e))
             elif req.action == "commands" :
-                self.api.dashboard_conn_check(req.cloud_name, req.session['msattrs'], req.session['time_vars']['username'])
+                self.api.dashboard_conn_check(req.cloud_name, msattrs = req.session['msattrs'], username = req.session['time_vars']['username'])
                 contents = """
                     <div id='commandcontent'>
                             <table class='table table-hover table-striped'>
@@ -1365,6 +1371,8 @@ class GUI(object):
             print "Exception: " + str(msg)
             _msg = self.heromsg + "\n<h4 id='gerror'>Error: Something bad "
             _msg += "happened while executing the action " + str(req.action) + ": " + str(msg) + "</h4></div>"
+            for line in traceback.format_exc().splitlines() :
+                _msg += "<br>" + line
             return self.bootstrap(req, _msg)
         
     def default(self, req, params, attach_params, views, operations, objects, liststates, last_active):

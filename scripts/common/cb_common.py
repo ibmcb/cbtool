@@ -250,6 +250,13 @@ def get_stores_parms() :
         _fc = _fh.readlines()
         _fh.close()
 
+        use_vpn = False
+        for _line in _fc :
+            _line = _line.strip()
+            if _line.count("use_vpn_ip") and _line.count("True") :
+                use_vpn = True
+                break
+
         _mscp = {}
         for _line in _fc :
             _line = _line.strip()
@@ -262,6 +269,13 @@ def get_stores_parms() :
                 _mscp["experiment_id"] = _line[1].strip()
             else :
                 True
+
+        if use_vpn :
+            for _line in _fc :
+                _line = _line.strip()
+                if _line.count("server_bootstrap") :
+                    _mscp["host"] = _line.split("server_bootstrap")[1].strip()
+                    break
 
         _mscp["mongodb_conn"] = False
 

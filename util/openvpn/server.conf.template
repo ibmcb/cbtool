@@ -1,11 +1,10 @@
-proto tcp
+proto udp 
 dev tun
 port VPN_PORT
 
 server VPN_ADDRESS_RANGE 
 
 log LOGDIR/USERNAME_openvpn_server.log
-client-connect CBPATH/util/openvpn/client_connected.sh
 
 ca       [inline]
 cert     [inline]

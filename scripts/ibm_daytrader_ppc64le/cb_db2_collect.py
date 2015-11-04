@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
 
@@ -14,16 +16,18 @@
 # limitations under the License.
 #/*******************************************************************************
 
-__version__ = '2.0'
+from sys import argv, path
 
-__all__ = [ 'ec2_cloud_ops', \
-            'nop_cloud_ops', \
-            'osk_cloud_ops', \
-            'plm_cloud_ops', \
-            'scp_cloud_ops', \
-            'shared_functions', \
-            'sim_cloud_ops', \
-            'tsam_cloud_ops', \
-            'vcd_cloud_ops',
-            'do_cloud_ops'
-]
+import os
+import fnmatch
+
+_home = os.environ["HOME"]
+
+for _path, _dirs, _files in os.walk(os.path.abspath(_home)):
+    for _filename in fnmatch.filter(_files, "code_instrumentation.py") :
+        path.append(_path.replace("/lib/auxiliary",''))
+        break
+
+from scripts.common.cb_common import get_os_conn, get_ms_conn, get_my_ip, get_uuid_from_ip, collect_db
+
+collect_db("db2", "db2", 50007, "tradedb klabuser ki0000ki", "select COMMIT_SQL_STMTS from sysibmadm.snapdb")

@@ -17,7 +17,7 @@ MAIN_LOGIN = klabuser
 MAIN_BASE_DIR = $PATH_TO_TOOL
 
 # Which cloud to pick first when the tool first starts
-STARTUP_CLOUD = MYSIMCLOUD
+STARTUP_CLOUD = MYDIGITALOCEAN
 
 # List the clouds you want to define
 CLOUDOPTION_MYSIMCLOUD = cldattach sim, vmcattach all
@@ -27,6 +27,7 @@ CLOUDOPTION_MYVCDCLOUD = cldattach vcd, vmcattach all
 CLOUDOPTION_MYPLM = cldattach plm, vmcattach all
 CLOUDOPTION_MYSLR = cldattach slr, vmcattach all
 CLOUDOPTION_MYSMARTCLOUD = cldattach scp, vmcattach all
+CLOUDOPTION_MYDIGITALOCEAN = cldattach do, vmcattach all
 
 # Now, Specify the individual parameters for each cloud
 
@@ -90,7 +91,25 @@ SCP_IAAS_CLI_LOCATION = <hostname>                         # Address of the webs
 SCP_INITIAL_VMCS = kvm_rack1:sut                           # Change "kvm_rack1" accordingly
 SCP_SSH_KEY_NAME = cbtool_rsa                              # Name of the private key used to login on the VMs
 SCP_LOGIN = cbuser                                         # The username that logins on the VMs
+
 #-------------------------------------------------------------------------------
+# DigitalOcean (DO) requires the following parameters
+[USER-DEFINED : CLOUDOPTION_MYDIGITALOCEAN ]
+DO_INITIAL_VMCS = tor1:sut                              # VMC == DO data center (we don't have availability zones yet)
+DO_CREDENTIALS = long_hex_string_from digitalocean.com  # This is your DO access token
+DO_SSH_KEY_NAME = cbtool_rsa                            # Either upload credentials/cbtool_rsa.pub to DO or tell us where your private key is
+DO_KEY_NAME = 1520229                                   # Comma-separated list of IDs (not the names) of your DO ssh keys
+
+# Your DO ssh key IDs can be found like this: curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" -X GET "https://api.digitalocean.com/v2/account/keys"
+
+[VM_TEMPLATES : CLOUDOPTION_MYDIGITALOCEAN ]
+TINYVM = size:512mb, imageids:1, imageid1:13991071
+# size options are: 512mb, 1gb, 2gb, etc....
+# Your DO image id can be found like this: curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" -X GET "https://api.digitalocean.com/v2/images?page=1", page2, page3, etc....
+# You'll need to sift through the json to find the corresponding ID
+# We can make lib/clouds/do_cloud_ops.py convert names to IDs later
+#-------------------------------------------------------------------------------
+
 [OBJECTSTORE]
 USAGE = shared
 
