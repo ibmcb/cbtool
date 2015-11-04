@@ -1087,6 +1087,7 @@ class BaseObjectOperations :
                         obj_attr_list["filestore_port"] = _filestor_attr_list["port"]
                         obj_attr_list["filestore_username"] = _filestor_attr_list["username"]
                         obj_attr_list["vpn_server_ip"] = _vpn_attr_list["server_ip"]
+                        obj_attr_list["vpn_server_bootstrap"] = _vpn_attr_list["server_bootstrap"]
                         obj_attr_list["vpn_server_port"] = _vpn_attr_list["server_port"]
                         obj_attr_list["errors"] = "no"
                         obj_attr_list["sla_runtime"] = "ok"

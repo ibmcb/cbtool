@@ -24,18 +24,18 @@ else
 fi
     
 syslog_netcat "Killing all CB-related processes..."
-sudo pkill -9 -f cloud-api
-sudo pkill -9 -f cloud-gui        
-sudo pkill -9 -f ai-
-sudo pkill -9 -f vm-
-sudo pkill -9 -f submit-
-sudo pkill -9 -f capture-
-sudo pkill -9 -f -f gtkCBUI
-sudo pkill -9 -f gmetad.py
-sudo pkill -9 -f gmond
-sudo pkill -9 -f rsyslog
-sudo pkill -9 -f ntp
-sudo pkill -9 -f redis
+blowawaypids cloud-api
+blowawaypids cloud-gui        
+blowawaypids ai-
+blowawaypids vm-
+blowawaypids submit-
+blowawaypids capture-
+blowawaypids -f gtkCBUI
+blowawaypids gmetad.py
+blowawaypids gmond
+blowawaypids rsyslog
+blowawaypids ntp
+blowawaypids redis
 syslog_netcat "Done"
 
 syslog_netcat "Removing all CB-related files..."

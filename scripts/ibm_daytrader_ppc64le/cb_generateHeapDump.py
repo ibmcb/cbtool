@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
 
@@ -14,16 +16,7 @@
 # limitations under the License.
 #/*******************************************************************************
 
-__version__ = '2.0'
-
-__all__ = [ 'ec2_cloud_ops', \
-            'nop_cloud_ops', \
-            'osk_cloud_ops', \
-            'plm_cloud_ops', \
-            'scp_cloud_ops', \
-            'shared_functions', \
-            'sim_cloud_ops', \
-            'tsam_cloud_ops', \
-            'vcd_cloud_ops',
-            'do_cloud_ops'
-]
+serverJVM = AdminControl.queryNames("type=JVM,process=server1,*")
+print 'generating heap dump for ' + serverJVM
+AdminControl.invoke(serverJVM,"generateHeapDump")
+print 'done'
