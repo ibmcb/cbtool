@@ -22,7 +22,8 @@ Development: https://groups.google.com/forum/#!forum/cbtool-devel
 10. Try administrating the tool with the [Graphical Environment](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Using-the-Graphical-Environment)
 11. Then try [monitoring your experiments with the Graphical Environment](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Monitoring-with-the-Graphical-Environment)
 12. Try to [customize your dashboard monitoring data with filters in the Graphical Environment](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Customize-Dashboard-Monitoring-in-the-Graphical-Environment)
-13. Read the [Frequently Asked Questions](https://github.com/ibmcb/cbtool/wiki/FAQ)
+13. Try to [use VPN support if you are not on the same network as the cloud](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Use-VPN-support-with-your-benchmarks)
+14. Read the [Frequently Asked Questions](https://github.com/ibmcb/cbtool/wiki/FAQ)
 
 ## Features:
 - Automatic deployment and controlled execution of multiple multi-tier applications.
@@ -36,12 +37,12 @@ Each individual application can have a specific load profile using probability d
 
 1. Amazon EC2
 2. OpenStack (and RackSpace)
-3. IBM SCP and IBM SCE
-4. "pure" Libvirt+KVM or Libvirt+XEN (soon)
-5. VMWare vCloud (in progress)
-6. CloudStack
-7. SoftLayer
-8. DigitalOcean (in progress)
+3. DigitalOcean
+4. IBM SCP and IBM SCE
+5. "pure" Libvirt+KVM or Libvirt+XEN (soon)
+6. VMWare vCloud (in progress)
+7. CloudStack
+8. SoftLayer
 
 Contacts:
 
