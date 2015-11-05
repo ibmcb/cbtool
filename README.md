@@ -33,7 +33,7 @@ Each individual application can have a specific load profile using probability d
 - Collects application and system (OS) performance data from hosts and guests in real time.
 - It is designed from the ground up to be highly scalable and parallel.
 
-## Supported Clouds:
+## [Supported Clouds](https://github.com/ibmcb/cbtool/wiki/DOC:-Supported-Clouds):
 
 1. Amazon EC2
 2. OpenStack (and RackSpace)
