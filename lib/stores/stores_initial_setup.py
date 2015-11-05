@@ -260,7 +260,6 @@ def syslog_logstore_setup(global_objects, operation = "check") :
                     # File was deleted, but the rsyslog process is still dangling
                     _proc_man.run_os_command("sudo pkill -9 -f " + _config_file_fn)
 
-
                 if not access(_log_dir, W_OK) :
                     # The directory does not even exist, kill any rsyslog processes still dangling
                     _proc_man.run_os_command("sudo pkill -9 -f " + _config_file_fn)                    
@@ -269,7 +268,9 @@ def syslog_logstore_setup(global_objects, operation = "check") :
                 _rsyslog_pid = _proc_man.get_pid_from_cmdline(_cmd)     
 
                 if not _rsyslog_pid :
-                    global_objects["logstore"]["port"] = _proc_man.get_free_port(global_objects["logstore"]["port"], protocol = "udp")
+
+                    global_objects["logstore"]["port"] = _proc_man.get_free_port(global_objects["logstore"]["port"],\
+                                                                                 protocol = "udp")
                     _hostport = int(global_objects["logstore"]["port"])
 
                     _config_file_contents = global_objects["logstore"]["config_string"].replace('_', ' ')

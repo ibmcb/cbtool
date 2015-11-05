@@ -35,7 +35,7 @@ sudo mkdir -p ${CASSANDRA_DATA_DIR}/cassandra/saved_caches
 sudo chown -R cassandra:cassandra ${CASSANDRA_DATA_DIR}
 
 CASSANDRA_REPLICATION_FACTOR=$(get_my_ai_attribute_with_default replication_factor 4)
-sudo sed -i "s/REPLF/${CASSANDRA_REPLICATION_FACTOR}/g" *_create_keyspace.cassandra
+sudo sed -i --follow-symlinks "s/REPLF/${CASSANDRA_REPLICATION_FACTOR}/g" *_create_keyspace.cassandra
 
 CASSANDRA_CONF_PATH=$(get_my_ai_attribute_with_default cassandra_conf_path /etc/cassandra/cassandra.yaml)
 

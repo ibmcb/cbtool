@@ -159,8 +159,9 @@ class APIClient(Server):
         # We are opted-out of the VPN by default. But, when inside a virtual machine,
         # we need to opt-in.
         if check_for_vpn :
-            use_vpn_ip = self.cldshow(cloud_name, "vm_defaults")["use_vpn_ip"]
-            if use_vpn_ip :
+            use_vpn_ip = str(self.cldshow(cloud_name, "vm_defaults")["use_vpn_ip"]).lower()
+            vpn_only = str(self.cldshow(cloud_name, "vm_defaults")["vpn_only"]).lower()
+            if use_vpn_ip == "true" and vpn_only == "true" :
                 self.msattrs['host'] = self.cldshow(cloud_name, "vpn")["server_bootstrap"]
 
         self.msci = MongodbMgdConn(self.msattrs)

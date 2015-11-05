@@ -24,6 +24,7 @@ __all__ = [ 'ec2_cloud_ops', \
             'shared_functions', \
             'sim_cloud_ops', \
             'tsam_cloud_ops', \
-            'vcd_cloud_ops',
-            'do_cloud_ops'
+            'vcd_cloud_ops', \
+            'gce_cloud_ops', \
+            'do_cloud_ops' 
 ]

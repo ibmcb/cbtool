@@ -191,11 +191,11 @@ R-install = pm
 sshkey-install = man
 sshd-install = man
 pssh-install = pm
-docutils-install = man
-setuptools-install = man
-markup-install = man
-pyyaml-install = man
-ruamelyaml-install = man 
+docutils-install = pip
+setuptools-install = pip
+markup-install = pip
+pyyaml-install = pip
+ruamelyaml-install = pip 
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
@@ -556,13 +556,13 @@ common-sshd-install-man = sudo sed -i 's/.*UseDNS.*/UseDNS no/g' /etc/ssh/sshd_c
 
 common-pssh-install-pm = package_install pssh
 
-common-docutils-install-man = sudo pip install --upgrade docutils
+common-docutils-install-pip = sudo pip install --upgrade docutils
 
-common-setuptools-install-man = sudo pip install --upgrade setuptools
+common-setuptools-install-pip = sudo pip install --upgrade setuptools
 
-common-markup-install-man = sudo pip install --upgrade markup
+common-markup-install-pip = sudo pip install --upgrade markup
 
-common-pyyaml-install-man = sudo pip install --upgrade pyyaml
+common-pyyaml-install-pip = sudo pip install --upgrade pyyaml
 
-common-ruamelyaml-install-man = sudo pip install --upgrade ruamel.yaml
+common-ruamelyaml-install-pip = sudo pip install --upgrade ruamel.yaml
 ### END -  Dependency and method-specific command lines ###

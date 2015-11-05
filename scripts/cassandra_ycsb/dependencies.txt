@@ -57,11 +57,11 @@ ubuntu-oraclejava-x86_64-urls-man = http://ppa.launchpad.net/webupd8team/oraclej
 
 rhel-cassandra-x86_64-urls-man = http://rpm.datastax.com/community/noarch/cassandra21-2.1.2-1.noarch.rpm
 fedora-cassandra-x86_64-urls-man = http://rpm.datastax.com/community/noarch/cassandra21-2.1.2-1.noarch.rpm
-ubuntu-cassandra-x86_64-urls-man = http://www.apache.org/dist/cassandra/debian/pool/main/c/cassandra/cassandra_2.1.2_all.deb
+ubuntu-cassandra-x86_64-urls-man = http://dl.bintray.com/apache/cassandra/pool/main/c/cassandra/:cassandra_2.2.3_all.deb
 
 rhel-cassandra-tools-x86_64-urls-man = http://rpm.datastax.com/community/noarch/cassandra21-tools-2.1.2-1.noarch.rpm
 fedora-cassandra-tools-x86_64-urls-man = http://rpm.datastax.com/community/noarch/cassandra21-tools-2.1.2-1.noarch.rpm
-ubuntu-cassandra-tools-x86_64-urls-man = http://www.apache.org/dist/cassandra/debian/pool/main/c/cassandra/cassandra-tools_2.1.2_all.deb
+ubuntu-cassandra-tools-x86_64-urls-man = http://dl.bintray.com/apache/cassandra/pool/main/c/cassandra/cassandra-tools_2.2.3_all.deb
 
 santiago-maven-x86_64-urls-man = https://repos.fedorapeople.org/repos/dchen/apache-maven/epel-6/x86_64/apache-maven-3.2.1-2.el6.noarch.rpm
 maipo-maven-x86_64-urls-man = https://repos.fedorapeople.org/repos/dchen/apache-maven/epel-7/x86_64/apache-maven-3.2.5-1.el7.noarch.rpm

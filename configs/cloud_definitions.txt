@@ -17,20 +17,32 @@ MAIN_LOGIN = klabuser
 MAIN_BASE_DIR = $PATH_TO_TOOL
 
 # Which cloud to pick first when the tool first starts
-STARTUP_CLOUD = MYDIGITALOCEAN
+STARTUP_CLOUD = MYSIMCLOUD
 
 # List the clouds you want to define
 CLOUDOPTION_MYSIMCLOUD = cldattach sim, vmcattach all
+CLOUDOPTION_MYSMARTCLOUD = cldattach scp, vmcattach all
 CLOUDOPTION_MYOPENSTACK = cldattach osk, vmcattach all
 CLOUDOPTION_MYAMAZON = cldattach ec2, vmcattach all
 CLOUDOPTION_MYVCDCLOUD = cldattach vcd, vmcattach all
 CLOUDOPTION_MYPLM = cldattach plm, vmcattach all
 CLOUDOPTION_MYSLR = cldattach slr, vmcattach all
-CLOUDOPTION_MYSMARTCLOUD = cldattach scp, vmcattach all
-CLOUDOPTION_MYDIGITALOCEAN = cldattach do, vmcattach all
+CLOUDOPTION_MYGCE = cldattach gce, vmcattach all
+CLOUDOPTION_MYDO = cldattach do, vmcattach all
 
 # Now, Specify the individual parameters for each cloud
-
+#-------------------------------------------------------------------------------
+# Smart Cloud Provisioning (SCP) requires the following parameters
+[USER-DEFINED : CLOUDOPTION_MYSMARTCLOUD]
+SCP_IAAS_ACCESS_ID = <user>
+SCP_IAAS_PRIVATE_KEY = /iaas/cli/adminkey/admin.key
+SCP_IAAS_SERVICE_PUBLIC_KEY = /iaas/cli/adminkey/vm_service.key
+SCP_IAAS_PROXY_PORT = 9090
+SCP_IAAS_WEBSERVICE_PORT = 5678/query/
+SCP_IAAS_CLI_LOCATION = <hostname>                         # Address of the webservice VM for SCP
+SCP_INITIAL_VMCS = kvm_rack1:sut                           # Change "kvm_rack1" accordingly
+SCP_SSH_KEY_NAME = cbtool_rsa                              # Name of the private key used to login on the VMs
+SCP_LOGIN = cbuser                                         # The username that logins on the VMs
 #-------------------------------------------------------------------------------
 # OpenStack (OSK) requires the following parameters (replace everything between <>, *including* the signs!)
 [USER-DEFINED : CLOUDOPTION_MYOPENSTACK]
@@ -80,18 +92,12 @@ SLR_CREDENTIALS = <username>-ABCDEFGHIJKLMNOPQRSTUVXYWZ01234567890-+*01234567890
 SLR_LOGIN = cbuser                                                                              # The username that logins on the VMs
 SLR_INITIAL_VMCS = dal05                                                                        # Select the appropriate SoftLayer datacenter
 #-------------------------------------------------------------------------------
-# Smart Cloud Provisioning (SCP) requires the following parameters
-[USER-DEFINED : CLOUDOPTION_MYSMARTCLOUD]
-SCP_IAAS_ACCESS_ID = <user>
-SCP_IAAS_PRIVATE_KEY = /iaas/cli/adminkey/admin.key
-SCP_IAAS_SERVICE_PUBLIC_KEY = /iaas/cli/adminkey/vm_service.key
-SCP_IAAS_PROXY_PORT = 9090
-SCP_IAAS_WEBSERVICE_PORT = 5678/query/
-SCP_IAAS_CLI_LOCATION = <hostname>                         # Address of the webservice VM for SCP
-SCP_INITIAL_VMCS = kvm_rack1:sut                           # Change "kvm_rack1" accordingly
-SCP_SSH_KEY_NAME = cbtool_rsa                              # Name of the private key used to login on the VMs
-SCP_LOGIN = cbuser                                         # The username that logins on the VMs
-
+[USER-DEFINED : CLOUDOPTION_MYGCE ]
+GCE_ACCESS = project_name                                  # Obtained with "gcloud info"
+GCE_SECURITY_GROUPS = cloudbench                           # Currently, not used
+GCE_CREDENTIALS = ABCDEFGHIJKLMNOPQRSTUVXYWZ01234567890-+* # Currently, not used
+GCE_INITIAL_VMCS = us-east1-b:sut                          # Change "us-east1-b" accordingly
+GCE_LOGIN = cbuser                                         # The username that logins on the VMs
 #-------------------------------------------------------------------------------
 # DigitalOcean (DO) requires the following parameters
 [USER-DEFINED : CLOUDOPTION_MYDIGITALOCEAN ]
@@ -101,14 +107,6 @@ DO_SSH_KEY_NAME = cbtool_rsa                            # Either upload credenti
 DO_KEY_NAME = 1520229                                   # Comma-separated list of IDs (not the names) of your DO ssh keys
 
 # Your DO ssh key IDs can be found like this: curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" -X GET "https://api.digitalocean.com/v2/account/keys"
-
-[VM_TEMPLATES : CLOUDOPTION_MYDIGITALOCEAN ]
-TINYVM = size:512mb, imageids:1, imageid1:13991071
-# size options are: 512mb, 1gb, 2gb, etc....
-# Your DO image id can be found like this: curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" -X GET "https://api.digitalocean.com/v2/images?page=1", page2, page3, etc....
-# You'll need to sift through the json to find the corresponding ID
-# We can make lib/clouds/do_cloud_ops.py convert names to IDs later
-#-------------------------------------------------------------------------------
 
 [OBJECTSTORE]
 USAGE = shared

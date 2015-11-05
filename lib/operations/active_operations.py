@@ -2070,7 +2070,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _msg += " cb_os_paramaters.txt in \"" + obj_attr_list["login"] 
                 _msg += "\" user's home dir on " + obj_attr_list["prov_cloud_ip"] + ")..."
 
-                if obj_attr_list["cloud_init_bootstrap"] :
+                if str(obj_attr_list["cloud_init_bootstrap"]).lower() == "true" :
                     _msg += " done by cloud-init!"
                     cbdebug(_msg, True)
                 else :
@@ -2092,7 +2092,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _msg = "Sending a copy of the code tree to "
                 _msg += obj_attr_list["name"] + " ("+ obj_attr_list["prov_cloud_ip"] + ")..."
 
-                if obj_attr_list["cloud_init_rsync"] :
+                if str(obj_attr_list["cloud_init_rsync"]).lower() == "true" :
                     _msg += " done by cloud-init!"
                     cbdebug(_msg, True)
 
@@ -2108,7 +2108,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _rcmd += obj_attr_list["remote_dir_name"] + '/'
         
                     _msg = "RSYNC: " + _rcmd
-                    cbdebug(_msg, True)
+                    cbdebug(_msg)
     
                     _proc_man.retriable_run_os_command(_rcmd, \
                                                        "127.0.0.1", \

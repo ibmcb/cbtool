@@ -224,7 +224,16 @@ class CommonCloudFunctions:
                 _msg += "interval between pooling attempts (" + str(_wait) + " s)."
                 cbdebug(_msg, True)
                 _actual_wait = 0
-                
+
+            if str(obj_attr_list["use_vpn_ip"]).lower() != "false" :
+                if self.get_attr_from_pending(obj_attr_list, "cloud_init_vpn") :
+                    obj_attr_list["last_known_state"] = "ACTIVE with (vpn) ip assigned"
+                    obj_attr_list["prov_cloud_ip"] = obj_attr_list["cloud_init_vpn"]  
+                    _vm_started = True
+                else :
+                    obj_attr_list["last_known_state"] = "ACTIVE with (vpn) ip unassigned"
+                    _vm_started = False
+                                        
             if  _vm_started :
                 _time_mark_prc = int(time())
                 obj_attr_list["mgt_003_provisioning_request_completed"] = _time_mark_prc - time_mark_prs

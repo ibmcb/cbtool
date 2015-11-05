@@ -35,7 +35,7 @@ sudo mkdir -p ${CASSANDRA_DATA_DIR}/cassandra/saved_caches
 sudo chown -R cassandra:cassandra ${CASSANDRA_DATA_DIR}
 
 CASSANDRA_REPLICATION_FACTOR=$(get_my_ai_attribute_with_default replication_factor 4)
-sudo sed -i "s/REPLF/${CASSANDRA_REPLICATION_FACTOR}/g" *_create_keyspace.cassandra
+sudo sed -i --follow-symlinks "s/REPLF/${CASSANDRA_REPLICATION_FACTOR}/g" *_create_keyspace.cassandra
 
 CASSANDRA_CONF_PATH=$(get_my_ai_attribute_with_default cassandra_conf_path /etc/cassandra/cassandra.yaml)
 
@@ -105,16 +105,6 @@ then
 	sudo sed -i "s^/var/lib/^${CASSANDRA_DATA_DIR}/^g" ${CASSANDRA_CONF_PATH}
 fi
 sudo sed -i "s/'Test Cluster'/'${my_ai_name}'/g" ${CASSANDRA_CONF_PATH}
-
-# As of April, 2015, cassandra patched the server so that JMX port 7199 only listened on localhost by default
-# https://issues.apache.org/jira/browse/CASSANDRA-9085
-# So, open it back up again
-sudo sed -i "s/com.sun.management.jmxremote.authenticate=true/com.sun.management.jmxremote.authenticate=false/g" ${CASSANDRA_ENV_PATH}
-sudo sed -i "s/LOCAL_JMX=yes/LOCAL_JMX=no/g" ${CASSANDRA_ENV_PATH}
-
-if [ x"$(cat ${CASSANDRA_ENV_PATH} | grep rmi.hostname)" == x ] ; then
-	echo "JVM_OPTS=\"\$JVM_OPTS -Dcom.sun.management.jmxremote.rmi.hostname=${MY_IP}\"" >> ${CASSANDRA_ENV_PATH}
-fi
 
 #
 # Start the database

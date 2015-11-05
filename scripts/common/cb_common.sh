@@ -107,6 +107,104 @@ function linux_distribution {
 }
 export -f linux_distribution
 
+function service_stop_disable {
+    #1 - service list (space-separated list)
+
+    if [[ -z ${LINUX_DISTRO} ]]
+    then
+        linux_distribution
+    fi
+    
+    for s in $*
+    do
+        if [[ ${LINUX_DISTRO} -eq 2 ]]
+        then
+            if [[ $(sudo systemctl | grep -c $s) -ne 0 ]]
+            then
+                STOP_COMMAND="sudo systemctl stop $s"
+                DISABLE_COMMAND="sudo systemctl disable $s"
+            else
+                STOP_COMMAND="sudo service $s stop"
+                DISABLE_COMMAND="sudo chkconfig $s off >/dev/null 2>&1"
+            fi
+        else
+            STOP_COMMAND="sudo service $s stop"
+            if [[ -f /etc/init/$s.conf ]]
+            then
+                DISABLE_COMMAND="sudo sh -c 'echo manual > /etc/init/$s.override'"
+            else
+                DISABLE_COMMAND="sudo update-rc.d -f $s remove"
+            fi
+        fi
+
+        syslog_netcat "Stopping service \"${s}\" with command \"$STOP_COMMAND\"..."       
+        bash -c "$STOP_COMMAND"
+
+        syslog_netcat "Disabling service \"${s}\" with command \"$DISABLE_COMMAND\"..."               
+        bash -c "$DISABLE_COMMAND"
+    done
+    /bin/true
+}
+export -f service_stop_disable
+    
+function service_restart_enable {
+    #1 - service list (space-separated list)
+    if [[ -z ${LINUX_DISTRO} ]]
+    then
+        linux_distribution
+    fi
+    
+    for s in $*
+    do            
+        if [[ ${LINUX_DISTRO} -eq 2 ]]
+        then
+            if [[ $(sudo systemctl | grep -c $s) -ne 0 ]]
+            then
+                START_COMMAND="sudo systemctl restart $s"
+                ENABLE_COMMAND="sudo systemctl enable $s"
+            else
+                START_COMMAND="sudo service $s restart"
+                ENABLE_COMMAND="sudo chkconfig $s on >/dev/null 2>&1"
+            fi
+        else
+            START_COMMAND="sudo service $s restart"
+            if [[ -f /etc/init/$s.conf ]]
+            then
+                ENABLE_COMMAND="sudo rm -rf /etc/init/$s.override"            
+            else
+                ENABLE_COMMAND="sudo update-rc.d -f $s defaults"
+            fi
+        fi
+    
+        counter=1
+        ATTEMPTS=7
+        while [ "$counter" -le "$ATTEMPTS" ]
+        do
+            syslog_netcat "Restarting service \"${s}\", with command \"$START_COMMAND\", attempt ${counter} of ${ATTEMPTS}..."            
+            bash -c "$START_COMMAND"
+            if [[ $? -eq 0 ]]
+            then
+                syslog_netcat "Service \"$s\" was successfully restarted"
+                syslog_netcat "Enabling service \"${s}\", with command \"$ENABLE_COMMAND\"..."   
+                bash -c "$ENABLE_COMMAND"
+                break
+            else
+                sleep 5
+                counter="$(( $counter + 1 ))"
+            fi
+        done
+    
+        if [[ "${counter}" -ge "$ATTEMPTS" ]]
+        then
+            syslog_netcat "Service \"${s}\" failed to restart after ${ATTEMPTS} attempts"
+            exit 1
+        fi
+    done
+    
+    /bin/true
+}
+export -f service_restart_enable
+
 function retriable_execution {
         COMMAND=$1
         non_cacheable=$2
@@ -141,9 +239,9 @@ function retriable_execution {
 
     if [[ x"${OUTPUT}" != x && ${can_cache} -eq 1 && ${non_cacheable} -eq 0 ]]; then
         echo "${EXPRESSION} ${OUTPUT}" >> ~/cb_os_cache.txt
-	fi
+        fi
 
-	echo $OUTPUT
+        echo $OUTPUT
 }
 
 function get_time {
@@ -184,7 +282,7 @@ function be_open_or_die {
 	tries=$5
 	nmapcount=0
 	while [ $nmapcount -lt $tries ] ; do
-		$dir/nmap.py $host $port $proto
+		$dir/cb_nmap.py $host $port $proto
 		if [ $? -eq 0 ] ; then
 			echo "port checker: host $host is open."
 			return
@@ -317,6 +415,12 @@ function mount_filesystem_on_memory {
         return 1
     fi    
 
+    if [[ -z $FILESYS_TYPE ]]
+    then
+        syslog_netcat "No filesystem size specified. Bypassing mounting"
+        return 1
+    fi    
+
     if [[ -z $MOUNTPOINT_OWNER  ]]
     then
         MOUNTPOINT_OWER=${my_login_username}
@@ -425,51 +529,6 @@ function get_my_ai_attribute {
 }
 metric_aggregator_vm_uuid=`get_my_ai_attribute metric_aggregator_vm`
 
-function get_global_sub_attribute {
-    global_attribute=`echo $1 | tr '[:upper:]' '[:lower:]'`
-    global_sub_attribute=`echo $2 | tr '[:upper:]' '[:lower:]'`
-    retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber hget ${osinstance}:GLOBAL:${global_attribute} ${global_sub_attribute}" 0
-}
-
-my_username=`get_my_ai_attribute username`
-
-load_manager_ip=`get_my_ai_attribute load_manager_ip`
-
-if [ x"${NC_HOST_SYSLOG}" == x ]; then
-    if [ x"${osmode}" != x"scalable" ]; then
-		USE_VPN_IP=`get_global_sub_attribute vm_defaults use_vpn_ip`
-		if [ x"$USE_VPN_IP" == x"True" ] ; then
-			NC_HOST_SYSLOG=`get_global_sub_attribute vpn server_bootstrap`
-		else
-			NC_HOST_SYSLOG=`get_global_sub_attribute logstore hostname`
-		fi
-        NC_OPTIONS="-w1 -u"
-    else 
-        NC_HOST_SYSLOG=`get_my_ai_attribute load_manager_ip`
-        NC_OPTIONS="-w1 -u -q1"
-    fi
-fi
-
-if [ x"${NC_PORT_SYSLOG}" == x ]; then
-    NC_PORT_SYSLOG=`get_global_sub_attribute logstore port`
-fi
-
-if [ x"${NC_FACILITY_SYSLOG}" == x ]; then
-    NC_FACILITY_SYSLOG="<"`get_global_sub_attribute logstore script_facility`">"
-fi
-
-NC_CMD=${NC}" "${NC_OPTIONS}" "${NC_HOST_SYSLOG}" "${NC_PORT_SYSLOG}
-
-function syslog_netcat {
-    if [[ $osmode == "controllable" ]]
-    then 
-        echo "${NC_FACILITY_SYSLOG} - ${HOSTNAME} $SCRIPT_NAME: ${1}"
-        echo "${NC_FACILITY_SYSLOG} - ${HOSTNAME} $SCRIPT_NAME: ${1}" | $NC_CMD &
-    else
-        echo "$1"
-    fi
-}
-
 function get_my_ai_attribute_with_default {
     NAME=$1
     DEFAULT=$2
@@ -484,104 +543,7 @@ function get_my_ai_attribute_with_default {
         exit 1
     fi
 }
-
-function service_stop_disable {
-    #1 - service list (space-separated list)
-
-    if [[ -z ${LINUX_DISTRO} ]]
-    then
-        linux_distribution
-    fi
-    
-    for s in $*
-    do
-        if [[ ${LINUX_DISTRO} -eq 2 ]]
-        then
-            if [[ $(sudo systemctl | grep -c $s) -ne 0 ]]
-            then
-                STOP_COMMAND="sudo systemctl stop $s"
-                DISABLE_COMMAND="sudo systemctl disable $s"
-            else
-                STOP_COMMAND="sudo service $s stop"
-                DISABLE_COMMAND="sudo chkconfig $s off >/dev/null 2>&1"
-            fi
-        else
-            STOP_COMMAND="sudo service $s stop"
-            if [[ -f /etc/init/$s.conf ]]
-            then
-                DISABLE_COMMAND="sudo sh -c 'echo manual > /etc/init/$s.override'"
-            else
-                DISABLE_COMMAND="sudo update-rc.d -f $s remove"
-            fi
-        fi
-
-        syslog_netcat "Stopping service \"${s}\" with command \"$STOP_COMMAND\"..."       
-        bash -c "$STOP_COMMAND"
-
-        syslog_netcat "Disabling service \"${s}\" with command \"$DISABLE_COMMAND\"..."               
-        bash -c "$DISABLE_COMMAND"
-    done
-    /bin/true
-}
-export -f service_stop_disable
-    
-function service_restart_enable {
-    #1 - service list (space-separated list)
-    if [[ -z ${LINUX_DISTRO} ]]
-    then
-        linux_distribution
-    fi
-    
-    for s in $*
-    do            
-        if [[ ${LINUX_DISTRO} -eq 2 ]]
-        then
-            if [[ $(sudo systemctl | grep -c $s) -ne 0 ]]
-            then
-                START_COMMAND="sudo systemctl restart $s"
-                ENABLE_COMMAND="sudo systemctl enable $s"
-            else
-                START_COMMAND="sudo service $s restart"
-                ENABLE_COMMAND="sudo chkconfig $s on >/dev/null 2>&1"
-            fi
-        else
-            START_COMMAND="sudo service $s restart"
-            if [[ -f /etc/init/$s.conf ]]
-            then
-                ENABLE_COMMAND="sudo rm -rf /etc/init/$s.override"            
-            else
-                ENABLE_COMMAND="sudo update-rc.d -f $s defaults"
-            fi
-        fi
-    
-        counter=1
-        ATTEMPTS=7
-        while [ "$counter" -le "$ATTEMPTS" ]
-        do
-            syslog_netcat "Restarting service \"${s}\", with command \"$START_COMMAND\", attempt ${counter} of ${ATTEMPTS}..."            
-            bash -c "$START_COMMAND"
-            if [[ $? -eq 0 ]]
-            then
-                syslog_netcat "Service \"$s\" was successfully restarted"
-                syslog_netcat "Enabling service \"${s}\", with command \"$ENABLE_COMMAND\"..."   
-                bash -c "$ENABLE_COMMAND"
-                break
-            else
-                sleep 5
-                counter="$(( $counter + 1 ))"
-            fi
-        done
-    
-        if [[ "${counter}" -ge "$ATTEMPTS" ]]
-        then
-            syslog_netcat "Service \"${s}\" failed to restart after ${ATTEMPTS} attempts"
-            exit 1
-        fi
-    done
-    
-    /bin/true
-}
-export -f service_restart_enable
+my_username=`get_my_ai_attribute username`
 
 function put_my_ai_attribute {
     attribute_name=`echo $1 | tr '[:upper:]' '[:lower:]'`
@@ -601,6 +563,12 @@ function get_vm_uuid_from_hostname {
     uhostname=$1
     fqon=`retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber get ${osinstance}:VM:TAG:CLOUD_HOSTNAME:${uhostname}" 0`
     echo $fqon | cut -d ':' -f 4
+}
+
+function get_global_sub_attribute {
+    global_attribute=`echo $1 | tr '[:upper:]' '[:lower:]'`
+    global_sub_attribute=`echo $2 | tr '[:upper:]' '[:lower:]'`
+    retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber hget ${osinstance}:GLOBAL:${global_attribute} ${global_sub_attribute}" 0
 }
 metricstore_hostname=`get_global_sub_attribute metricstore host`
 metricstore_port=`get_global_sub_attribute metricstore port`
@@ -803,6 +771,38 @@ function subscribeai {
     ${SUBSCRIBE_CMD} AI ${channel} $message
 }
 
+load_manager_ip=`get_my_ai_attribute load_manager_ip`
+
+if [ x"${NC_HOST_SYSLOG}" == x ]; then
+    if [ x"${osmode}" != x"scalable" ]; then
+        NC_HOST_SYSLOG=`get_global_sub_attribute logstore hostname`
+        NC_OPTIONS="-w1 -u"
+    else 
+        NC_HOST_SYSLOG=`get_my_ai_attribute load_manager_ip`
+        NC_OPTIONS="-w1 -u -q1"
+    fi
+fi
+
+if [ x"${NC_PORT_SYSLOG}" == x ]; then
+    NC_PORT_SYSLOG=`get_global_sub_attribute logstore port`
+fi
+
+if [ x"${NC_FACILITY_SYSLOG}" == x ]; then
+    NC_FACILITY_SYSLOG="<"`get_global_sub_attribute logstore script_facility`">"
+fi
+
+NC_CMD=${NC}" "${NC_OPTIONS}" "${NC_HOST_SYSLOG}" "${NC_PORT_SYSLOG}
+
+function syslog_netcat {
+    if [[ $osmode == "controllable" ]]
+    then 
+        echo "${NC_FACILITY_SYSLOG} - ${HOSTNAME} $SCRIPT_NAME: ${1}"
+        echo "${NC_FACILITY_SYSLOG} - ${HOSTNAME} $SCRIPT_NAME: ${1}" | $NC_CMD &
+    else
+        echo "$1"
+    fi
+}
+
 function refresh_hosts_file {
 
     if [[ x"${my_ai_uuid}" != x"none" ]] 
@@ -949,23 +949,24 @@ function start_syslog {
 }
 
 function restart_ntp {
-    is_ntp_service_name_ntpd=`ls -la /etc/init.d/ | grep -v ntpdate | grep -v open | grep -c ntpd`
-    if [ ${is_ntp_service_name_ntpd} -eq 0 ]
+
+    if [[ -z ${LINUX_DISTRO} ]]
     then
-        ntp_service_name="ntp"
-    else
-        ntp_service_name="ntpd"
+        linux_distribution
     fi
+
+    NTP_SERVICE[1]="ntp"
+    NTP_SERVICE[2]="ntpd" 
+                
+    service_stop_disable ${NTP_SERVICE[${LINUX_DISTRO}]}
     
-    service_stop_disable ${ntp_service_name}
-    
-    syslog_netcat "Creating ${ntp_service_name} (ntp.conf) file"
+    syslog_netcat "Creating ${NTP_SERVICE[${LINUX_DISTRO}]} (ntp.conf) file"
     ~/cb_create_ntp_config_file.sh
     
     syslog_netcat "Forcing clock update from ntp"
-    sudo ntpd -gq
+    sudo ~/cb_timebound_exec.py ntpd -gq 5
     	
-    service_restart_enable ${ntp_service_name}
+    service_restart_enable ${NTP_SERVICE[${LINUX_DISTRO}]}
 }
 
 function online_or_offline {
@@ -1077,7 +1078,6 @@ function stop_ganglia {
     syslog_netcat "Previously running ganglia monitoring processes killed $SHORT_HOSTNAME"
 }
 
-# Kill processes, for the love of god, without killing yourself
 function blowawaypids {
     pids="$(pgrep -f "$1")"
     for pid in $pids ; do
@@ -1094,9 +1094,9 @@ function start_ganglia {
     syslog_netcat "Restarting ganglia monitoring processes (gmond) on $SHORT_HOSTNAME"
     GANGLIA_FILE_LOCATION=~
     eval GANGLIA_FILE_LOCATION=${GANGLIA_FILE_LOCATION}
-	blowawaypids gmond
+    blowawaypids gmond
     sudo screen -d -m -S gmond bash -c "while true ; do if [ x\`$PIDOF_CMD gmond\` == x ] ; then gmond -c ${GANGLIA_FILE_LOCATION}/gmond-vms.conf; fi; sleep 10; done"
-	sleep 2
+    sleep 2
     if [[ x"$(pidof gmond)" == x ]]
     then
         syslog_netcat "Ganglia monitoring processes (gmond) could not be restarted on $SHORT_HOSTNAME - NOK"
@@ -1110,7 +1110,7 @@ function start_ganglia {
         syslog_netcat "Starting Gmetad"
         ~/cb_create_gmetad_config_file.sh
         syslog_netcat "Restarting ganglia meta process (gmetad) on $SHORT_HOSTNAME"
-		blowawaypids gmetad
+        blowawaypids gmetad
 
         GMETAD_PATH=~/${my_remote_dir}/3rd_party/monitor-core/gmetad-python
         
@@ -1393,145 +1393,3 @@ export -f vercomp
 function get_offline_ip {
     ip -o addr show $(ip route | grep default | grep -oE "dev [a-z]+[0-9]+" | sed "s/dev //g") | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | grep -v 255
 }
-
-function mount_filesystem_on_volume {
-    MOUNTPOINT_DIR=$1
-    FILESYS_TYPE=$2
-    MOUNTPOINT_OWNER=$3
-    VOLUME=$4
-
-    if [[ -z $MOUNTPOINT_DIR ]]
-    then
-        syslog_netcat "No mountpoint specified. Bypassing mounting"
-        return 1
-    fi
-    
-    if [[ -z $FILESYS_TYPE ]]
-    then
-        FILESYS_TYPE=ext4
-    fi    
-    
-    if [[ -z $VOLUME ]]
-    then        
-        VOLUME=$(get_attached_volumes)
-    else
-        if [[ $(sudo fdisk -l | grep -c $VOLUME) -eq 0 ]]
-        then
-            VOLUME="NONE"
-        fi
-    fi
-
-    sudo mkdir -p $MOUNTPOINT_DIR
-
-    if [[ -z $MOUNTPOINT_OWNER  ]]
-    then
-        MOUNTPOINT_OWER=${my_login_username}
-    fi
-    
-    sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT_DIR
-        
-    if [[ $VOLUME != "NONE" ]]
-    then
-        
-        syslog_netcat "Setting ${my_type} storage ($MOUNTPOINT_DIR) on volume $VOLUME...."
-        if [[ $(sudo mount | grep $VOLUME | grep -c $MOUNTPOINT_DIR) -eq 0 ]]
-        then
-                                
-            if [[ $(check_filesystem $VOLUME) == "none" ]]
-            then
-                syslog_netcat "Creating $FILESYS_TYPE filesystem on volume $VOLUME"
-                sudo mkfs.$FILESYS_TYPE $VOLUME
-            fi
-            
-            syslog_netcat "Making $FILESYS_TYPE filesystem on volume $VOLUME accessible through the mountpoint ${MOUNTPOINT_DIR}"
-            sudo mount $VOLUME ${MOUNTPOINT_DIR}
-            
-            if [[ $? -ne 0 ]]
-            then
-                syslog_netcat "Error while mounting $FILESYS_TYPE filesystem on volume $VOLUME on mountpoint ${MOUNTPOINT_DIR} - NOK" 
-                exit 1
-            fi
-        fi
-        
-        sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT_DIR
-    fi
-    return 0
-}
-export -f mount_filesystem_on_volume
-
-function mount_filesystem_on_memory {
-
-    RAMDEVICE=/dev/ram0
-    
-    MOUNTPOINT_DIR=$1
-    FILESYS_TYPE=$2
-    MEMORY_DISK_SIZE=$3
-    MOUNTPOINT_OWNER=$4
-
-    if [[ -z $MOUNTPOINT_DIR ]]
-    then
-        syslog_netcat "No mountpoint specified. Bypassing mounting"
-        return 1
-    fi    
-
-    if [[ -z $MOUNTPOINT_OWNER  ]]
-    then
-        MOUNTPOINT_OWER=${my_login_username}
-    fi
-    
-    sudo mkdir -p $MOUNTPOINT_DIR
-
-    sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT_DIR
-                    
-    if [[ $FILESYS_TYPE == "tmpfs" ]]
-    then
-        syslog_netcat "Making tmpfs filesystem on accessible through the mountpoint ${MOUNTPOINT_DIR}"        
-        sudo mount -t tmpfs -o size=${MEMORY_DISK_SIZE} tmpfs $MOUNTPOINT_DIR
-    else
-        if [[ $(check_filesystem $RAMDEVICE) == "none" ]]
-        then
-            syslog_netcat "Creating $FILESYS_TYPE filesystem on volume $VOLUME"
-            sudo mkfs.$FILESYS_TYPE $RAMDEVICE
-        fi        
-
-        syslog_netcat "Making $FILESYS_TYPE filesystem on ram disk $RAMDEVICE accessible through the mountpoint ${MOUNTPOINT_DIR}"
-        sudo mount $RAMDEVICE $MOUNTPOINT_DIR    
-    fi
-
-    sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT_DIR
-
-    return 0
-}
-export -f mount_filesystem_on_memory
-
-function mount_remote_filesystem {
-    MOUNTPOINT_DIR=$1
-    FILESYS_TYPE=$2
-    FILESERVER_IP=$3
-    FILESERVER_PATH=$4
-    
-    if [[ -z $MOUNTPOINT_DIR ]]
-    then
-        syslog_netcat "No mountpoint specified. Bypassing mounting"
-        return 1
-    fi    
-
-    if [[ -z $FILESERVER_IP ]]
-    then
-        syslog_netcat "No fileserver IP specified. Bypassing mounting"
-        return 1
-    fi            
-                        
-    sudo mkdir -p $MOUNTPOINT_DIR
-
-    sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT_DIR
-            
-    if [[ $FILESYS_TYPE == "nfs" ]]
-    then
-        sudo mount $FILESERVER_IP:${FILESERVER_PATH} $MOUNTPOINT_DIR
-    fi
-    
-    return 0
-}
-export -f mount_remote_filesystem
-

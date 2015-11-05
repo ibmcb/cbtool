@@ -105,7 +105,7 @@ else
     CCLIN=cqlsh
     CCLI="$CCLIN ${FIRST_SEED}"
     CTBN=ycsb
-    YCSB_PROFILE=cassandra-cql
+    YCSB_PROFILE=cassandra2-cql
 fi
 
 OUTPUT_FILE=$(mktemp)
