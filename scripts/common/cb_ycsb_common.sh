@@ -253,14 +253,8 @@ function check_cassandra_cluster_state {
     INTERVAL=$3
 
     counter=0
-
-    nodetool -h $NODETOOLHN status
-    if [[ $? -eq 0 ]]
-    then
-        NODETOOLAUTH=""
-    else
-        NODETOOLAUTH="-u cassandra -pw cassandra" 
-    fi
+    
+    NODETOOLAUTH="-u cassandra -pw cassandra" 
                 
     while [[ $NODES_REGISTERED -ne $total_nodes && "$counter" -le "$ATTEMPTS" ]]
     do

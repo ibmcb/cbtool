@@ -70,30 +70,25 @@ fi
 
 CASSANDRA_CONF_DIR=$(echo "/etc/cassandra/cassandra.yaml" | sed 's/cassandra.yaml//g')
 
-which cassandra-cli
-
+sudo ls ${CASSANDRA_CONF_DIR}/jmxremote.password
 if [[ $? -ne 0 ]]
 then
-    sudo ls ${CASSANDRA_CONF_DIR}/jmxremote.password
-    if [[ $? -ne 0 ]]
-    then
-        sudo echo "cassandra cassandra" > /tmp/jmxremote.password
-        sudo mv /tmp/jmxremote.password ${CASSANDRA_CONF_DIR}/jmxremote.password
-        sudo chown cassandra:cassandra ${CASSANDRA_CONF_DIR}/jmxremote.password
-        sudo chmod 0600 ${CASSANDRA_CONF_DIR}/jmxremote.password
-    fi
+    sudo echo "cassandra cassandra" > /tmp/jmxremote.password
+    sudo mv /tmp/jmxremote.password ${CASSANDRA_CONF_DIR}/jmxremote.password
+    sudo chown cassandra:cassandra ${CASSANDRA_CONF_DIR}/jmxremote.password
+    sudo chmod 0600 ${CASSANDRA_CONF_DIR}/jmxremote.password
+fi
     
-    if [[ $(sudo grep -c cassandra ${JAVA_HOME}/lib/management/jmxremote.access) -eq 0 ]]
-    then
-        sudo sed -i 's/monitorRole   readonly/monitorRole   readonly\ncassandra    readwrite\n/g' ${JAVA_HOME}/lib/management/jmxremote.access
-    fi
+if [[ $(sudo grep -c cassandra ${JAVA_HOME}/lib/management/jmxremote.access) -eq 0 ]]
+then
+    sudo sed -i 's/monitorRole   readonly/monitorRole   readonly\ncassandra    readwrite\n/g' ${JAVA_HOME}/lib/management/jmxremote.access
+fi
     
-    if [[ $(grep -c "LOCAL_JMX=no" /etc/cassandra/cassandra-env.sh) -eq 0 ]]
-    then
-        LINE_NUMBER=$(sudo grep -n LOCAL_JMX=yes /etc/cassandra/cassandra-env.sh | cut -d ':' -f 1)
-        LINE_NUMBER=$((LINE_NUMBER-2))
-        sudo sed -i -e "${LINE_NUMBER}i\LOCAL_JMX=no" ${CASSANDRA_CONF_DIR}/cassandra-env.sh
-    fi
+if [[ $(grep -c "LOCAL_JMX=no" /etc/cassandra/cassandra-env.sh) -eq 0 ]]
+then
+    LINE_NUMBER=$(sudo grep -n LOCAL_JMX=yes /etc/cassandra/cassandra-env.sh | cut -d ':' -f 1)
+    LINE_NUMBER=$((LINE_NUMBER-2))
+    sudo sed -i -e "${LINE_NUMBER}i\LOCAL_JMX=no" ${CASSANDRA_CONF_DIR}/cassandra-env.sh
 fi
 
 #

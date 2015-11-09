@@ -1,2 +1,2 @@
-drop keyspace ycsb;
+drop keyspace usertable;
 exit;

@@ -49,6 +49,7 @@ INPUT_RECORDS=`get_my_ai_attribute_with_default input_records 10000`
 RECORD_SIZE=`get_my_ai_attribute_with_default record_size 2.35`
 APP_COLLECTION=`get_my_ai_attribute_with_default app_collection lazy`
 DATABASE_SIZE_VERSUS_MEMORY=`get_my_ai_attribute_with_default database_size_versus_memory 0.5`
+LOAD_THREADS=`get_my_ai_attribute_with_default load_threads 8`
 
 if [[ ${READ_RATIO} != "workloaddefault" ]]
 then
@@ -154,7 +155,7 @@ then
     START_GENERATION=$(get_time)
     
     syslog_netcat "The value of the parameter \"GENERATE_DATA\" is \"true\". Will generate data for the YCSB load profile \"${LOAD_PROFILE}\"" 
-    command_line="sudo $YCSB_PATH/bin/ycsb load $YCSB_PROFILE -s -P $YCSB_PATH/workloads/${LOAD_PROFILE} -P $YCSB_PATH/custom_workload.dat -p hosts=$seed_ips_csv"
+    command_line="sudo $YCSB_PATH/bin/ycsb load $YCSB_PROFILE -s -P $YCSB_PATH/workloads/${LOAD_PROFILE} -threads ${LOAD_THREADS} -P $YCSB_PATH/custom_workload.dat -p hosts=$seed_ips_csv"
     syslog_netcat "Command line is: ${command_line}"
     
     if [[ x"${log_output_command}" == x"true" ]]
