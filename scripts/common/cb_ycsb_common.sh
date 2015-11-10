@@ -228,7 +228,7 @@ function lazy_collection {
     insert_operations=$(cat $OUTPUT_FILE | grep Operations | grep INSERT | cut -d ',' -f 3 | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
     read_operations=$(cat $OUTPUT_FILE | grep Operations | grep READ | cut -d ',' -f 3 | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
 
-    ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
+    ~/cb_report_app_metrics.py force_conversion_us_to_ms load_id:${LOAD_ID}:seqnum \
     load_level:${LOAD_LEVEL}:load \
     load_profile:${LOAD_PROFILE}:name \
     load_duration:${LOAD_DURATION}:sec \
@@ -461,7 +461,7 @@ function eager_collection {
     
     # Preserve old behavior:  Send data back to Cloudbench orchestrator even
     # if no latency data was collected.
-    ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
+    ~/cb_report_app_metrics.py force_conversion_us_to_ms load_id:${LOAD_ID}:seqnum \
     load_level:${LOAD_LEVEL}:load \
     load_profile:${LOAD_PROFILE}:name \
     load_duration:${LOAD_DURATION}:sec \

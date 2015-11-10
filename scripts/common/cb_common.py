@@ -663,9 +663,33 @@ def update_avg_acc_max_min(metrics_dict, uuid) :
     _fh.close()
 
     return True
-                                            
+
+def unit_convert(convstr, unit, value) :
+    '''
+    TBD
+    '''
+    if convstr :
+        _conversion_dict = {}
+        _conversion_dict["s"] = { "s": 1, "ms": 1000, "us": 1000000, "ns": 1000000000}
+        _conversion_dict["ms"] = { "s": 1/float(1000), "ms": 1, "us": 1000, "ns": 1000000}
+        _conversion_dict["us"] = { "s": 1/float(1000000), "ms": 1/float(1000), "us": 1, "ns": 1000}
+        _conversion_dict["ns"] = { "s": 1/float(1000000000), "ms": 1/float(1000000), "us": 1/float(1000), "ns": 1}
+    
+        _source, _destination = convstr.split("_to_")
+
+        if unit == _source :        
+            if _source in _conversion_dict :
+                if _destination in _conversion_dict[_source] :
+                    try :
+                        unit = _destination
+                        value = float(value) * float(_conversion_dict[_source][_destination])
+                    except :
+                        pass
+            
+    return unit, value
+                                                
 def report_app_metrics(metriclist, sla_targets_list, ms_conn = "auto", \
-                       os_conn = "auto", reset_syslog = True) :
+                       os_conn = "auto", reset_syslog = True, force_conversion = None) :
 
     if ms_conn == "auto" :
         _msci, _my_uuid, _expid, _username = get_ms_conn()
@@ -704,6 +728,7 @@ def report_app_metrics(metriclist, sla_targets_list, ms_conn = "auto", \
         for _metric in metriclist.split() :
             _metric = _metric.split(':')
             if len(_metric[1]) :
+                _metric[2], _metric[1] = unit_convert(force_conversion, _metric[2], _metric[1])
                 _metrics_dict["app_"  + _metric[0]] = {}
                 _metrics_dict["app_"  + _metric[0]]["val"] = _metric[1]
                 _metrics_dict["app_"  + _metric[0]]["units"] = _metric[2]

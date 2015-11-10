@@ -27,11 +27,15 @@ from scripts.common.cb_common import report_app_metrics
 _metric_list = ''                                                                                                     
 _sla_target_list = ''
 
+_force_conversion = None
+
 for _arg in argv :
     if _arg.count("sla_runtime_target") :
         _sla_target_list = _arg.replace(',',' ')
+    elif _arg.count("force_conversion_") :
+        _force_conversion = _arg.replace("force_conversion_",'')
     else :
         if _arg.count(":") == 2 :                                                                                                 
             _metric_list += _arg + ' '                                                                                    
 
-report_app_metrics(_metric_list, _sla_target_list)
+report_app_metrics(_metric_list, _sla_target_list, force_conversion = _force_conversion)

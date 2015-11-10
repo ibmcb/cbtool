@@ -45,7 +45,7 @@ START = cb_hadoop_job.sh
 # VApp-specific modifier parameters.
 JAVA_HOME = ~/jdk1.6.0_21
 HADOOP_HOME = ~/hadoop-2.6.0
-HADOOP_EXAMPLES = share/hadoop/mapreduce/hadoop-mapreduce-examples-2.6.0.jar
+HADOOP_EXAMPLES = share/hadoop/mapreduce/hadoop-mapreduce-examples-VERSION.jar
 HIBENCH_HOME = ~/HiBench
 DFS_NAME_DIR = /tmp/cbhadoopname
 DFS_DATA_DIR = /tmp/cbhadoopdata

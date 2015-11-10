@@ -191,10 +191,6 @@ else
     HADOOP_BIN_DIR=${HADOOP_HOME}/bin
 fi
 
-export HIBENCH_HOME=${HIBENCH_HOME}
-
-export HADOOP_EXAMPLES_JAR=${HADOOP_HOME}/$(get_my_ai_attribute_with_default hadoop_examples share/hadoop/mapreduce/hadoop-mapreduce-examples-2.6.0.jar)
-
 if [[ $(echo $my_type | grep -c giraph) -ne 0 ]]
 then
     hadoop_master_ip=`get_ips_from_role giraphmaster`
@@ -216,10 +212,9 @@ hadoop_version_nr=$(echo ${hadoop_version} | sed 's/Hadoop //g')
 hadoop_version_major=`echo ${hadoop_version} | sed 's/Hadoop \([0-9]*\)\..*/\1/'`
 hadoop_version_minor=`echo ${hadoop_version} | sed 's/Hadoop [0-9]*\.\([0-9]*\).*/\1/'`
 
-if [[ ! -f  ${HADOOP_HOME}/hadoop-examples-${hadoop_version_nr}.jar ]]
-then
-    ln -s ${HADOOP_EXAMPLES_JAR} ${HADOOP_HOME}/hadoop-examples-${hadoop_version_nr}.jar
-fi
+export HIBENCH_HOME=${HIBENCH_HOME}
+HADOOP_EXAMPLES_JAR=${HADOOP_HOME}/$(get_my_ai_attribute_with_default hadoop_examples share/hadoop/mapreduce/hadoop-mapreduce-examples-VERSION.jar)
+export HADOOP_EXAMPLES_JAR=$(echo $HADOOP_EXAMPLES_JAR | sed "s/VERSION/$hadoop_version_nr/g")
 
 hadoop_use_yarn=0
 if [ $hadoop_version_major -gt 2 ]
