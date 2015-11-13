@@ -2029,7 +2029,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
         _start = int(time())
 
-        _max_tries = int(obj_attr_list["attempts"])
+        _max_tries = int(obj_attr_list["update_attempts"])
         _retry_interval = int(obj_attr_list["update_frequency"])
 
         if str(obj_attr_list["use_jumphost"]).lower() == "true" :
