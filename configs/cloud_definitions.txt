@@ -103,11 +103,8 @@ DO_KEY_NAME = 1520229                                   # Comma-separated list o
 # Your DO ssh key IDs can be found like this: curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" -X GET "https://api.digitalocean.com/v2/account/keys"
 
 [VM_TEMPLATES : CLOUDOPTION_MYDIGITALOCEAN ]
-TINYVM = size:512mb, imageids:1, imageid1:13991071
+TINYVM = size:512mb, imageids:1, imageid1:foo
 # size options are: 512mb, 1gb, 2gb, etc....
-# Your DO image id can be found like this: curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" -X GET "https://api.digitalocean.com/v2/images?page=1", page2, page3, etc....
-# You'll need to sift through the json to find the corresponding ID
-# We can make lib/clouds/do_cloud_ops.py convert names to IDs later
 #-------------------------------------------------------------------------------
 
 [OBJECTSTORE]
