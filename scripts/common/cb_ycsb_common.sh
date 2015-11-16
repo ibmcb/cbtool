@@ -228,20 +228,25 @@ function lazy_collection {
     insert_operations=$(cat $OUTPUT_FILE | grep Operations | grep INSERT | cut -d ',' -f 3 | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
     read_operations=$(cat $OUTPUT_FILE | grep Operations | grep READ | cut -d ',' -f 3 | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
 
-    ~/cb_report_app_metrics.py force_conversion_us_to_ms load_id:${LOAD_ID}:seqnum \
-    load_level:${LOAD_LEVEL}:load \
-    load_profile:${LOAD_PROFILE}:name \
-    load_duration:${LOAD_DURATION}:sec \
-    completion_time:$(update_app_completiontime):sec \
-    errors:$(update_app_errors):num \
-    throughput:$(expr $ops):tps \
-    latency:$(expr $latency):us \
-    datagen_time:$(update_app_datagentime):sec \
-    datagen_size:$(update_app_datagensize):records \
-    read_operations:$read_operations:num \
-    insert_operations:$insert_operations:num \
-    quiescent_time:$(update_app_quiescent):sec \
-    ${SLA_RUNTIME_TARGETS}
+    CB_REPORT_CLI_PARMS=force_conversion_us_to_ms
+    CB_REPORT_CLI_PARMS=$CB_REPORT_CLI_PARMS' 'load_id:${LOAD_ID}:seqnum
+    CB_REPORT_CLI_PARMS=$CB_REPORT_CLI_PARMS' 'load_level:${LOAD_LEVEL}:load
+    CB_REPORT_CLI_PARMS=$CB_REPORT_CLI_PARMS' 'load_profile:${LOAD_PROFILE}:name
+    CB_REPORT_CLI_PARMS=$CB_REPORT_CLI_PARMS' 'load_duration:${LOAD_DURATION}:sec
+    CB_REPORT_CLI_PARMS=$CB_REPORT_CLI_PARMS' 'completion_time:$(update_app_completiontime):sec
+    CB_REPORT_CLI_PARMS=$CB_REPORT_CLI_PARMS' 'throughput:$(expr $ops):tps
+    CB_REPORT_CLI_PARMS=$CB_REPORT_CLI_PARMS' 'errors:$(update_app_errors):num
+    CB_REPORT_CLI_PARMS=$CB_REPORT_CLI_PARMS' 'datagen_time:$(update_app_datagentime):sec
+    CB_REPORT_CLI_PARMS=$CB_REPORT_CLI_PARMS' 'datagen_size:$(update_app_datagensize):records
+    CB_REPORT_CLI_PARMS=$CB_REPORT_CLI_PARMS' 'read_operations:$read_operations:num
+    CB_REPORT_CLI_PARMS=$CB_REPORT_CLI_PARMS' 'insert_operations:$insert_operations:num
+    CB_REPORT_CLI_PARMS=$CB_REPORT_CLI_PARMS' 'quiescent_time:$(update_app_quiescent):sec
+    CB_REPORT_CLI_PARMS=$CB_REPORT_CLI_PARMS' 'latency:$(expr $latency):us
+    CB_REPORT_CLI_PARMS=$CB_REPORT_CLI_PARMS' '${SLA_RUNTIME_TARGETS}
+
+    ~/cb_report_app_metrics.py $CB_REPORT_CLI_PARMS
+        
+    syslog_netcat "Exit code for ~/cb_report_app_metrics.py is $?"    
 }
     
 function check_cassandra_cluster_state {
@@ -460,32 +465,24 @@ function eager_collection {
     read_operations=$(cat $OUTPUT_FILE | grep Operations | grep READ | cut -d ',' -f 3 | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
     
     # Preserve old behavior:  Send data back to Cloudbench orchestrator even
-    # if no latency data was collected.
-    ~/cb_report_app_metrics.py force_conversion_us_to_ms load_id:${LOAD_ID}:seqnum \
-    load_level:${LOAD_LEVEL}:load \
-    load_profile:${LOAD_PROFILE}:name \
-    load_duration:${LOAD_DURATION}:sec \
-    completion_time:$(update_app_completiontime):sec \
-    throughput:$(expr $ops):tps \
-    errors:$(update_app_errors):num \
-    datagen_time:$(update_app_datagentime):sec \
-    datagen_size:$(update_app_datagensize):records \
-    read_operations:$read_operations:num \
-    insert_operations:$insert_operations:num \
-    quiescent_time:$(update_app_quiescent):sec \
-    $latency_result_text \
-    ${SLA_RUNTIME_TARGETS}
+    # if no latency data was collected.    
+    CB_REPORT_CLI_PARMS=force_conversion_us_to_ms
+    CB_REPORT_CLI_PARMS=$CB_REPORT_CLI_PARMS' 'load_id:${LOAD_ID}:seqnum
+    CB_REPORT_CLI_PARMS=$CB_REPORT_CLI_PARMS' 'load_level:${LOAD_LEVEL}:load
+    CB_REPORT_CLI_PARMS=$CB_REPORT_CLI_PARMS' 'load_profile:${LOAD_PROFILE}:name
+    CB_REPORT_CLI_PARMS=$CB_REPORT_CLI_PARMS' 'load_duration:${LOAD_DURATION}:sec
+    CB_REPORT_CLI_PARMS=$CB_REPORT_CLI_PARMS' 'completion_time:$(update_app_completiontime):sec
+    CB_REPORT_CLI_PARMS=$CB_REPORT_CLI_PARMS' 'throughput:$(expr $ops):tps
+    CB_REPORT_CLI_PARMS=$CB_REPORT_CLI_PARMS' 'errors:$(update_app_errors):num
+    CB_REPORT_CLI_PARMS=$CB_REPORT_CLI_PARMS' 'datagen_time:$(update_app_datagentime):sec
+    CB_REPORT_CLI_PARMS=$CB_REPORT_CLI_PARMS' 'datagen_size:$(update_app_datagensize):records
+    CB_REPORT_CLI_PARMS=$CB_REPORT_CLI_PARMS' 'read_operations:$read_operations:num
+    CB_REPORT_CLI_PARMS=$CB_REPORT_CLI_PARMS' 'insert_operations:$insert_operations:num
+    CB_REPORT_CLI_PARMS=$CB_REPORT_CLI_PARMS' 'quiescent_time:$(update_app_quiescent):sec
+    CB_REPORT_CLI_PARMS=$CB_REPORT_CLI_PARMS' '$latency_result_text
+    CB_REPORT_CLI_PARMS=$CB_REPORT_CLI_PARMS' '${SLA_RUNTIME_TARGETS}
 
-    #echo ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
-    #load_level:${LOAD_LEVEL}:load \
-    #load_profile:${LOAD_PROFILE}:name \
-    #load_duration:${LOAD_DURATION}:sec \
-    #completion_time:$(update_app_completiontime):sec \
-    #throughput:$(expr $ops):tps \
-    #errors:$(update_app_errors):num \
-    #datagen_time:$(update_app_datagentime):sec \
-    #datagen_size:$(update_app_datagensize):records \
-    #$latency_result_text \
-    #${SLA_RUNTIME_TARGETS} >> $OUTPUT_FILE
+    ~/cb_report_app_metrics.py $CB_REPORT_CLI_PARMS
+    
+    syslog_netcat "Exit code for ~/cb_report_app_metrics.py $CB_REPORT_CLI_PARMS is $?"
 }
-

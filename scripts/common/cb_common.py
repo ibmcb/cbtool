@@ -716,7 +716,7 @@ def report_app_metrics(metriclist, sla_targets_list, ms_conn = "auto", \
 
         _msg = "SLA violation verification"
         cbdebug(_msg)
-        
+
         for _sla_target in sla_targets_list.split() :
             _sla_target = _sla_target.split(':')
             if len(_sla_target) == 2 :
@@ -737,7 +737,7 @@ def report_app_metrics(metriclist, sla_targets_list, ms_conn = "auto", \
 
                     _sla_target, _condition = _sla_targets_dict[_metric[0]].split('-')
 
-                    if len(_metric[1]) :
+                    if len(str(_metric[1])) :
 
                         _metrics_dict["app_sla_runtime"] = {}
                         _metrics_dict["app_sla_runtime"]["units"] = ' '
@@ -867,9 +867,6 @@ def report_app_metrics(metriclist, sla_targets_list, ms_conn = "auto", \
             _message = "VM object " + _my_uuid + " (" + obj_attr_list["name"] 
             _message += ") submitted a new set of application metrics"
 
-            print _channel
-            print _message
-                        
             _osci.publish_message(obj_attr_list["cloud_name"], "VM", _channel, _message, \
                                  1, \
                                  float(obj_attr_list["timeout"]))
