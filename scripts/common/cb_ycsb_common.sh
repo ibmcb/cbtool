@@ -246,7 +246,7 @@ function lazy_collection {
 
     ~/cb_report_app_metrics.py $CB_REPORT_CLI_PARMS
         
-    syslog_netcat "Exit code for ~/cb_report_app_metrics.py is $?"    
+    syslog_netcat "Exit code for ~/cb_report_app_metrics.py $CB_REPORT_CLI_PARMS is $?"    
 }
     
 function check_cassandra_cluster_state {

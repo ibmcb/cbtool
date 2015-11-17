@@ -100,7 +100,7 @@ if [[ $? -eq 0 ]]
 then
     CCLIN=cassandra-cli
     CCLI="$CCLIN -h ${FIRST_SEED}"
-    CTBN=userspace
+    CTBN=usertable
     YCSB_PROFILE=cassandra-10
 else
     CCLIN=cqlsh
@@ -122,7 +122,7 @@ then
         if [[ $($CCLI -f ${CCLIN}_list_keyspace.cassandra | grep -c $CTBN) -ne 0 ]]
         then
             syslog_netcat "Dropping keyspace \"$CTBN\" in Cassandra by executing $CCLIN against seed node ${FIRST_SEED}"
-            $CCLI -f ${CCLIN}_list_keyspace.cassandra
+            $CCLI -f ${CCLIN}_remove_keyspace.cassandra
             if [[ $($CCLI -f ${CCLIN}_list_keyspace.cassandra | grep -c $CTBN) -eq 0 ]]
             then            
                 syslog_netcat "Keyspace \"$CTBN\" in Cassandra was successfully deleted"
