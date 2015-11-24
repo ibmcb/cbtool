@@ -87,6 +87,11 @@ def parse_cli() :
                        default=2, \
                        help="Number of samples during the profiling phase")
 
+    _parser.add_option("--batches", \
+                       dest="batches", \
+                       default=100000, \
+                       help="Maximum number of batches during the capacity phase")
+
     _parser.add_option("--failure", \
                        dest="failure", \
                        default=20, \
@@ -96,6 +101,11 @@ def parse_cli() :
                        dest="increase", \
                        default=20, \
                        help="Maximum deployment time increase (number converted to percentage)")
+
+    _parser.add_option("--experiment_id", \
+                       dest="experiment_id", \
+                       default="capacity_" + makeTimestamp().replace(' ','_').replace('/','_').replace(':','_'), \
+                       help="Experiment identifier")
 
     _parser.set_defaults()
     (options, _args) = _parser.parse_args()
@@ -281,7 +291,11 @@ def capacity_phase(api, options, performance_data) :
             _mgt_metric = api.get_latest_management_data(options.cloud_name, _vm["uuid"])
             _batch_tdt += total_deployment_time(_mgt_metric)
 
-        _batch_adt = _batch_tdt/_batch_actual_size
+        if _batch_actual_size :
+            _batch_adt = _batch_tdt/_batch_actual_size
+        else :
+            _batch_adt = 0
+            
         performance_data["batch" + str(_batch_nr)]["average_deployment_time"] = _batch_adt
 
         _msg = "####### Average deployment time for batch " + str(_batch_nr)
@@ -343,6 +357,12 @@ def capacity_phase(api, options, performance_data) :
             _msg += "). Ending the experiment...."            
             print _msg            
             break
+        
+        if _batch_nr >= int(options.batches) :
+            _msg = "##### The Number of batches (" + str(_batch_nr) + ") is larger"
+            _msg += " than the total number of batches. Ending the experiment..."
+            print _msg        
+            return True
 
         if _batch_nr >= 2 :
             _delta_failure_ratio = performance_data["batch" + str(_batch_nr)]["failure_ratio"] - \
@@ -383,7 +403,17 @@ def main() :
         print "A cloud name (\"-c\") is mandatory"
         exit(1)
         
-    api = connect_to_cb(_options.cloud_name)        
+    api = connect_to_cb(_options.cloud_name)
+
+    _msg = "Setting expid to \"" + _options.experiment_id  + "\"" + '#' * 15 
+    print _msg
+    
+    api.expid(_options.cloud_name, _options.experiment_id)
+
+    _cb_dirs = api.cldshow(_options.cloud_name, "space")
+    
+    _cb_base_dir = os.path.abspath(_cb_dirs["base_dir"])
+    _cb_data_dir = os.path.abspath(_cb_dirs["data_working_dir"])
 
     if not _options.deployment :
         _phase = "profiling"
@@ -398,6 +428,17 @@ def main() :
                    
     _phase = "capacity"
     capacity_phase(api, _options, _perf_dict)
+
+    _msg = "Experiment \"" + _options.experiment_id + "\" ended. Performance metrics will"
+    _msg += " be collected in .csv files." 
+    print _msg
+    _url = api.monextract(_options.cloud_name, "all", "all")
+    
+    _msg = "Data is available at url \"" + _url + "\". \nTo automatically generate"
+    _msg += " plots, just run \"" + _cb_base_dir + "/util/plot/cbplotgen.R "
+    _msg += "-d " + _cb_data_dir + " -e " + _options.experiment_id
+    _msg += " -c -p -r -l -a\""
+    print _msg
 
 if __name__ == '__main__':
     main()

@@ -27,9 +27,10 @@ import redis
 import prettytable
 
 from sys import path, argv, stdout
-from time import sleep, time
+from time import sleep, time, strftime, strptime, localtime
 from random import sample
 from optparse import OptionParser
+from datetime import datetime
 
 def connect_to_cb(cloud_name) :
     '''
@@ -483,6 +484,26 @@ def remove_all_vapps(options, api, total_ais) :
     print _msg
     
     return True
+
+def makeTimestamp(supplied_epoch_time = False) :
+    '''
+    TBD
+    '''
+    if not supplied_epoch_time :
+        _now = datetime.now()
+    else :
+        _now = datetime.fromtimestamp(supplied_epoch_time)
+
+    _date = _now.date()
+
+    result = ("%02d" % _date.month) + "/" + ("%02d" % _date.day) + "/" + ("%04d" % _date.year)
+
+    result += strftime(" %I:%M:%S %p",
+                        strptime(str(_now.hour) + ":" + str(_now.minute) + ":" + \
+                                 str(_now.second), "%H:%M:%S"))
+
+    result += strftime(" %Z", localtime(time()))
+    return result
 
 def check_samples(options, api, start_time, max_time) :
     '''

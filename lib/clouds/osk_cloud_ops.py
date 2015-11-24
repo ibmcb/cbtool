@@ -81,13 +81,31 @@ class OskCmds(CommonCloudFunctions) :
         TBD
         '''
 
-        if len(authentication_data.split('-')) == 3 :
-            _username, _password, _tenant = authentication_data.split('-')
-            _cacert = "NA"
+        if authentication_data.count(':') >= 2 :
+            _separator = ':'
+        else :
+            _separator = '-'
 
-        elif len(authentication_data.split('-')) == 4 :
-            _username, _password, _tenant, _cacert = authentication_data.split('-')
+        if len(authentication_data.split(_separator)) == 3 :
+            _username, _password, _tenant = authentication_data.split(_separator)
+            _cacert = None
+            _insecure = False
+            
+        elif len(authentication_data.split(_separator)) == 4 :
+            _username, _password, _tenant, _cacert = authentication_data.split(_separator)
+            _insecure = False
+            
+        elif len(authentication_data.split(_separator)) == 5 :
+            _username, _password, _tenant, _cacert, _insecure = authentication_data.split(_separator)
+            _insecure = True
 
+        elif len(authentication_data.split(_separator)) > 5 and _separator == '-' :            
+            _msg = "ERROR: Please make sure that the none of the parameters in"
+            _msg += "OSK_CREDENTIALS have any dashes (i.e., \"-\") on it. If"
+            _msg += "a dash is required, please use the string \"_dash\", and"
+            _msg += "it will be automatically replaced."
+            return False, _msg, False, False, False
+            
         else :
             _username = ''
             _password = ''
@@ -99,20 +117,16 @@ class OskCmds(CommonCloudFunctions) :
         if project != "default" :
             _tenant = project
 
-        return _username + '-' + _password + '-' + _tenant + '-' + _cacert
+        return _username, _password, _tenant, _cacert, _insecure
         
     @trace
-    def connect(self, access_url, authentication_data, region, extra_parms = {}) :
+    def connect(self, access_url, authentication_data, region, extra_parms = {}, diag = False) :
         '''
         TBD
         '''        
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
-
-            # Specify _insecure=True for cases where novaclient insists on using SSLv3
-            # instead of TLS1.2 where only TLS1.2 is allowed.
-            _insecure = False
 
             if len(access_url.split('-')) == 1 :
                 _endpoint_type = "publicURL"
@@ -122,86 +136,95 @@ class OskCmds(CommonCloudFunctions) :
                 access_url = access_url.split('-')[0]
                 _endpoint_type = "publicURL"
             access_url = access_url.replace("_dash_",'-')
+            
+            _username, _password, _tenant, _cacert, _insecure = \
+            self.parse_authentication_data(authentication_data)
 
-            _username, _password, _tenant, _cacert = \
-            self.parse_authentication_data(authentication_data).split('-')
-
-            _username = _username.replace("_dash_",'-')
-            _password = _password.replace("_dash_",'-')
-            _tenant = _tenant.replace("_dash_",'-')
-            _cacert = _cacert.replace("_dash_",'-')
-
-            if _cacert == "NA" :
-                _cacert = None
-
-            _fmsg = "About to attempt a connection to OpenStack"
-
-            self.oskconncompute = novac.Client(_username, _password, _tenant, \
-                                         access_url, region_name = region, \
-                                         service_type="compute", \
-                                         endpoint_type = _endpoint_type, \
-                                         cacert = _cacert, \
-                                         insecure = _insecure)
-
-            self.oskconncompute.flavors.list()
-
-            if "use_cinderclient" in extra_parms :
-                self.use_cinderclient = str(extra_parms["use_cinderclient"]).lower()
+            if not _username :
+                _fmsg = _password
             else :
-                self.use_cinderclient = "false"
+                _username = _username.replace("_dash_",'-')
+                _password = _password.replace("_dash_",'-')
+                _tenant = _tenant.replace("_dash_",'-')
 
-            if self.use_cinderclient == "true" :
-                # At the moment, we're still making cinder call from nova.                
-                self.oskconnstorage = novac.Client(_username, _password, _tenant, \
-                                             access_url, region_name=region, \
-                                             service_type="volume", \
+                if _cacert :
+                    _cacert = _cacert.replace("_dash_",'-')
+    
+                _msg = "OpenStack connection parameters: username=" + _username
+                _msg += ", password=<omitted>, tenant=" + _tenant + ", "
+                _msg += "cacert=" + str(_cacert) + ", insecure=" + str(_insecure)
+                _msg += ", region_name=" + region + ", access_url=" + access_url
+                _msg += ", endpoint_type=" + str(_endpoint_type)
+                cbdebug(_msg, diag)
+    
+                _fmsg = "About to attempt a connection to OpenStack"
+    
+                self.oskconncompute = novac.Client(_username, _password, _tenant, \
+                                             access_url, region_name = region, \
+                                             service_type="compute", \
                                              endpoint_type = _endpoint_type, \
                                              cacert = _cacert, \
                                              insecure = _insecure)
     
-                self.oskconnstorage.volumes.list()                
-            
-            if "use_neutronclient" in extra_parms :
-                self.use_neutronclient = str(extra_parms["use_neutronclient"]).lower()
-            else :
-                self.use_neutronclient = "false"
-            
-            if self.use_neutronclient == "true" :
-
-                from neutronclient.v2_0 import client as neutronc                           
-                
-                self.oskconnnetwork = neutronc.Client(username = _username, \
-                                                      password = _password, \
-                                                      tenant_name = _tenant, \
-                                                      auth_url = access_url, \
-                                                      region_name = region, \
-                                                      service_type="network", \
-                                                      endpoint_type = _endpoint_type, \
-                                                      cacert = _cacert, \
-                                                      insecure = _insecure)
+                self.oskconncompute.flavors.list()
     
-                self.oskconnnetwork.list_networks()
-            else :
-                self.oskconnnetwork = False
-            
-            _region = region
-            _msg = "Selected region is " + str(region)
-            cbdebug(_msg)
-
-            _file = expanduser("~") + "/adminrc"
-
-            if not access(_file, F_OK) :
-                _file_fd = open(_file, 'w')
-                        
-                _file_fd.write("export OS_TENANT_NAME=" + _tenant + "\n")
-                _file_fd.write("export OS_USERNAME=" + _username + "\n")
-                _file_fd.write("export OS_PASSWORD=" + _password + "\n")                    
-                _file_fd.write("export OS_AUTH_URL=\"" + access_url + "\"\n")
-                _file_fd.write("export OS_NO_CACHE=1\n")
-                _file_fd.write("export OS_REGION_NAME=" + region + "\n")                    
-                _file_fd.close()
-            
-            _status = 0
+                if "use_cinderclient" in extra_parms :
+                    self.use_cinderclient = str(extra_parms["use_cinderclient"]).lower()
+                else :
+                    self.use_cinderclient = "false"
+    
+                if self.use_cinderclient == "true" :
+                    # At the moment, we're still making cinder call from nova.                
+                    self.oskconnstorage = novac.Client(_username, _password, _tenant, \
+                                                 access_url, region_name=region, \
+                                                 service_type="volume", \
+                                                 endpoint_type = _endpoint_type, \
+                                                 cacert = _cacert, \
+                                                 insecure = _insecure)
+        
+                    self.oskconnstorage.volumes.list()                
+                
+                if "use_neutronclient" in extra_parms :
+                    self.use_neutronclient = str(extra_parms["use_neutronclient"]).lower()
+                else :
+                    self.use_neutronclient = "false"
+                
+                if self.use_neutronclient == "true" :
+    
+                    from neutronclient.v2_0 import client as neutronc                           
+                    
+                    self.oskconnnetwork = neutronc.Client(username = _username, \
+                                                          password = _password, \
+                                                          tenant_name = _tenant, \
+                                                          auth_url = access_url, \
+                                                          region_name = region, \
+                                                          service_type="network", \
+                                                          endpoint_type = _endpoint_type, \
+                                                          cacert = _cacert, \
+                                                          insecure = _insecure)
+        
+                    self.oskconnnetwork.list_networks()
+                else :
+                    self.oskconnnetwork = False
+                
+                _region = region
+                _msg = "Selected region is " + str(region)
+                cbdebug(_msg)
+    
+                _file = expanduser("~") + "/adminrc"
+    
+                if not access(_file, F_OK) :
+                    _file_fd = open(_file, 'w')
+                            
+                    _file_fd.write("export OS_TENANT_NAME=" + _tenant + "\n")
+                    _file_fd.write("export OS_USERNAME=" + _username + "\n")
+                    _file_fd.write("export OS_PASSWORD=" + _password + "\n")                    
+                    _file_fd.write("export OS_AUTH_URL=\"" + access_url + "\"\n")
+                    _file_fd.write("export OS_NO_CACHE=1\n")
+                    _file_fd.write("export OS_REGION_NAME=" + region + "\n")                    
+                    _file_fd.close()
+                
+                _status = 0
 
         except novaexceptions, obj:
             _status = int(obj.error_code)
@@ -741,7 +764,7 @@ class OskCmds(CommonCloudFunctions) :
 
             self.connect(access, credentials, vmc_name, \
                          {"use_neutronclient" : str(vm_defaults["use_neutronclient"]), \
-                          "use_cinderclient" : str(vm_defaults["use_cinderclient"])})
+                          "use_cinderclient" : str(vm_defaults["use_cinderclient"])}, True)
 
             _key_pair_found = self.check_ssh_key(vmc_name, \
                                                  vm_defaults["username"] + '_' + vm_defaults["tenant"] + '_' + key_name, vm_defaults)
@@ -1296,7 +1319,7 @@ class OskCmds(CommonCloudFunctions) :
                     _candidate_images.append(_image_list[_idx])
                 else :                     
                     True
-            
+
             if "hypervisor_type" in obj_attr_list :
                 for _image in list(_candidate_images) :
                     if "hypervisor_type" in _image.metadata :
@@ -1308,7 +1331,7 @@ class OskCmds(CommonCloudFunctions) :
                     _imageid = choice(_candidate_images)
                 else :
                     _imageid = _candidate_images[0]
-                    
+
                 _status = 0
             
         except novaexceptions, obj:
@@ -2347,9 +2370,11 @@ class OskCmds(CommonCloudFunctions) :
 
             _imageid = self.get_images(obj_attr_list)
 
-            _availability_zone = obj_attr_list["availability_zone"]
+            _availability_zone = None            
+            if len(obj_attr_list["availability_zone"]) > 1 :
+                _availability_zone = obj_attr_list["availability_zone"]
 
-            if "host_name" in obj_attr_list :
+            if "host_name" in obj_attr_list and _availability_zone :
 #                _scheduler_hints = { "force_hosts" : obj_attr_list["host_name"] }
 
                 for _host in self.oskconncompute.hypervisors.list() :

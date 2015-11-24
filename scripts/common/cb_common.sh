@@ -90,6 +90,16 @@ fi
 
 SCRIPT_NAME=$0
 
+function check_container {
+    if [[ $(sudo cat /proc/1/cgroup | grep -c docker) -ne 0 ]]
+    then
+        export IS_CONTAINER=1
+    else
+        export IS_CONTAINER=0
+    fi
+}
+export -f check_container
+
 function linux_distribution {
     IS_UBUNTU=$(cat /etc/*release | grep -c "Ubuntu")
 
@@ -104,6 +114,7 @@ function linux_distribution {
         export LINUX_DISTRO=2
     fi
     
+    check_container
 }
 export -f linux_distribution
 
@@ -119,7 +130,11 @@ function service_stop_disable {
     do
         if [[ ${LINUX_DISTRO} -eq 2 ]]
         then
-            if [[ $(sudo systemctl | grep -c $s) -ne 0 ]]
+            if [[ $(sudo sv status $s | grep -c $s) -ne 0 ]]
+            then
+                STOP_COMMAND="sudo sv stop $s"
+                DISABLE_COMMAND="sudo touch /etc/service/$s/down"
+            elif [[ $(sudo systemctl | grep -c $s) -ne 0 ]]
             then
                 STOP_COMMAND="sudo systemctl stop $s"
                 DISABLE_COMMAND="sudo systemctl disable $s"
@@ -128,12 +143,22 @@ function service_stop_disable {
                 DISABLE_COMMAND="sudo chkconfig $s off >/dev/null 2>&1"
             fi
         else
-            STOP_COMMAND="sudo service $s stop"
-            if [[ -f /etc/init/$s.conf ]]
+            if [[ $(sudo sv status $s | grep -c $s) -ne 0 ]]
             then
-                DISABLE_COMMAND="sudo sh -c 'echo manual > /etc/init/$s.override'"
+                STOP_COMMAND="sudo sv stop $s"
+                DISABLE_COMMAND="sudo touch /etc/service/$s/down"
+            elif [[ $(sudo systemctl | grep -c $s) -ne 0 ]]
+            then
+                STOP_COMMAND="sudo systemctl stop $s"
+                DISABLE_COMMAND="sudo systemctl disable $s"
             else
-                DISABLE_COMMAND="sudo update-rc.d -f $s remove"
+                STOP_COMMAND="sudo service $s stop"
+                if [[ -f /etc/init/$s.conf ]]
+                then
+                    DISABLE_COMMAND="sudo sh -c 'echo manual > /etc/init/$s.override'"
+                else
+                    DISABLE_COMMAND="sudo update-rc.d -f $s remove"
+                fi                    
             fi
         fi
 
@@ -158,7 +183,11 @@ function service_restart_enable {
     do            
         if [[ ${LINUX_DISTRO} -eq 2 ]]
         then
-            if [[ $(sudo systemctl | grep -c $s) -ne 0 ]]
+            if [[ $(sudo sv status $s | grep -c $s) -ne 0 ]]
+            then
+                START_COMMAND="sudo sv restart $s"
+                ENABLE_COMMAND="sudo rm /etc/service/$s/down"            
+            elif [[ $(sudo systemctl | grep -c $s) -ne 0 ]]
             then
                 START_COMMAND="sudo systemctl restart $s"
                 ENABLE_COMMAND="sudo systemctl enable $s"
@@ -167,12 +196,22 @@ function service_restart_enable {
                 ENABLE_COMMAND="sudo chkconfig $s on >/dev/null 2>&1"
             fi
         else
-            START_COMMAND="sudo service $s restart"
-            if [[ -f /etc/init/$s.conf ]]
+            if [[ $(sudo sv status $s | grep -c $s) -ne 0 ]]
             then
-                ENABLE_COMMAND="sudo rm -rf /etc/init/$s.override"            
+                START_COMMAND="sudo sv restart $s"
+                ENABLE_COMMAND="sudo rm /etc/service/$s/down"            
+            elif [[ $(sudo systemctl | grep -c $s) -ne 0 ]]
+            then
+                START_COMMAND="sudo systemctl restart $s"
+                ENABLE_COMMAND="sudo systemctl enable $s"
             else
-                ENABLE_COMMAND="sudo update-rc.d -f $s defaults"
+                START_COMMAND="sudo service $s restart"
+                if [[ -f /etc/init/$s.conf ]]
+                then
+                    ENABLE_COMMAND="sudo rm -rf /etc/init/$s.override"            
+                else
+                    ENABLE_COMMAND="sudo update-rc.d -f $s defaults"
+                fi
             fi
         fi
     
@@ -274,34 +313,68 @@ function get_my_vm_attribute {
     get_hash VM ${my_vm_uuid} ${attribute} 0
 }
 
-function be_open_or_die {
-	host=$1
-	port=$2
-	proto=$3
-	delay=$4
-	tries=$5
-	nmapcount=0
-	while [ $nmapcount -lt $tries ] ; do
-		$dir/cb_nmap.py $host $port $proto
-		if [ $? -eq 0 ] ; then
-			echo "port checker: host $host is open."
-			return
-		fi
-		((nmapcount=nmapcount+1))
-		if [ $nmapcount -lt $tries ] ; then
-			echo "port checker: host $host port not open yet..."
-			sleep $delay 
-		fi
-	done
-	echo "port checker: host $host port $port could not be reached. Dying now."
-	exit 1
+function blowawaypids {
+    pids="$(pgrep -f "$1")"
+    for pid in $pids ; do
+        if [ $pid != $$ ] && [ $pid != $PPID ] ; then
+            sudo kill -9 $pid
+        fi
+    done
 }
+
+function wait_until_port_open {
+    #1 - host name
+    #2 - port number
+    #3 - number of attempts
+    #4 - time between attempts
+
+    counter=1
+    ATTEMPTS=${3}
+    while [ "$counter" -le "$ATTEMPTS" ]
+    do
+        ${NC} -z -w 3 ${1} ${2}
+        if [[ $? -eq 0 ]]
+        then
+            syslog_netcat "Port ${2} on host ${1} was found open after ${counter} attempts"
+            return 0
+        fi
+        sleep ${4}
+        counter="$(( $counter + 1 ))"
+    done
+    syslog_netcat "Port ${2} on host ${1} was NOT found open after ${counter} attempts!"
+    return 1
+}
+export -f wait_until_port_open
+
+function be_open_or_die {
+    host=$1
+    port=$2
+    proto=$3
+    delay=$4
+    tries=$5
+    nmapcount=0
+    while [ $nmapcount -lt $tries ] ; do
+        $dir/cb_nmap.py $host $port $proto
+        if [ $? -eq 0 ] ; then
+            echo "port checker: host $host is open."
+            return
+        fi
+        ((nmapcount=nmapcount+1))
+        if [ $nmapcount -lt $tries ] ; then
+            echo "port checker: host $host port not open yet..."
+            sleep $delay 
+        fi
+    done
+    echo "port checker: host $host port $port could not be reached. Dying now."
+    exit 1
+}
+export -f be_open_or_die
 
 # This is the first redis function to execute during post boot.
 # Sometimes the VPN comes up to slow, so, if it doesn't work, then
 # we need to try again.
 be_open_or_die $oshostname $osportnumber tcp 30 5
-
+    
 my_role=`get_my_vm_attribute role`
 my_ai_name=`get_my_vm_attribute ai_name`
 my_ai_uuid=`get_my_vm_attribute ai`
@@ -891,27 +964,33 @@ function security_configuration {
     then
         linux_distribution
     fi
+
+    if [[ $IS_CONTAINER -eq 0 ]]
+    then                                        
+        FW_SERVICE[1]="ufw"
+        FW_SERVICE[2]="iptables"
+    
+        service_stop_disable ${FW_SERVICE[${LINUX_DISTRO}]}
+    
+        if [[ ${LINUX_DISTRO} -eq 1 ]]
+        then
+            syslog_netcat "Disabling Apparmor..."
+            service_stop_disable_apparmor
+            sudo service apparmor teardown
+        fi
                 
-    FW_SERVICE[1]="ufw"
-    FW_SERVICE[2]="iptables"
-
-    service_stop_disable ${FW_SERVICE[${LINUX_DISTRO}]}
-
-    if [[ ${LINUX_DISTRO} -eq 1 ]]
-    then
-        syslog_netcat "Disabling Apparmor..."
-        sudo service apparmor stop
-        sudo service apparmor teardown
+        if [[ ${LINUX_DISTRO} -eq 2 ]]
+        then 
+            syslog_netcat "Disabling SElinux..."        
+            sudo sed -i "s/^SELINUX=.*/SELINUX=disabled/" /etc/selinux/config
+            sudo setenforce 0
+        fi
+        syslog_netcat "Done"
+    else
+        syslog_netcat "Running inside a container, Apparmor/SElinux not present"
     fi
-            
-    if [[ ${LINUX_DISTRO} -eq 2 ]]
-    then 
-        syslog_netcat "Disabling SElinux..."        
-        sudo sed -i "s/^SELINUX=.*/SELINUX=disabled/" /etc/selinux/config
-        sudo setenforce 0
-    fi
-    syslog_netcat "Done"
 }
+export -f security_configuration
 
 function start_redis {
     
@@ -926,27 +1005,39 @@ function start_redis {
     REDIS_CONFIG[1]="/etc/redis/redis.conf"
     REDIS_CONFIG[2]="/etc/redis.conf"
 
-    service_stop_disable ${REDIS_SERVICE[${LINUX_DISTRO}]}    
-
+    if [[ $IS_CONTAINER -eq 0 ]]
+    then        
+        service_stop_disable ${REDIS_SERVICE[${LINUX_DISTRO}]}
+    fi
+    
     TMPLT_OBJSTORE_PORT=$1
     syslog_netcat "Updating object store configuration template"
     sudo cp ${REDIS_CONFIG[${LINUX_DISTRO}]} ${REDIS_CONFIG[${LINUX_DISTRO}]}.old                
     sudo sed -i s/"port 6379"/"port ${TMPLT_OBJSTORE_PORT}"/g ${REDIS_CONFIG[${LINUX_DISTRO}]}
-    service_restart_enable ${REDIS_SERVICE[${LINUX_DISTRO}]}
-}
 
-function start_syslog {
-    is_syslog_running=`ps aux | grep -v grep | grep -c rsyslog.conf`
-    if [ ${is_syslog_running} -eq 0 ]
-    then 
-        mkdir -p ~/logs
-        TMPLT_LOGSTORE_PORT=$1
-        sed -i s/"TMPLT_LOGSTORE_PORT"/"${TMPLT_LOGSTORE_PORT}"/g ~/rsyslog.conf
-        sed -i s/"TMPLT_USERNAME"/"${LOGNAME}"/g ~/rsyslog.conf
-        RSYSLOG=`sudo which rsyslogd`
-        ${RSYSLOG} -f ~/rsyslog.conf -i ~/rsyslog.pid
+    if [[ $IS_CONTAINER -eq 0 ]]
+    then            
+        service_restart_enable ${REDIS_SERVICE[${LINUX_DISTRO}]}
     fi
 }
+export -f start_redis
+
+function start_syslog {
+    if [[ $IS_CONTAINER -eq 0 ]]
+    then                                            
+        is_syslog_running=`ps aux | grep -v grep | grep -c rsyslog.conf`
+        if [ ${is_syslog_running} -eq 0 ]
+        then 
+            mkdir -p ~/logs
+            TMPLT_LOGSTORE_PORT=$1
+            sed -i s/"TMPLT_LOGSTORE_PORT"/"${TMPLT_LOGSTORE_PORT}"/g ~/rsyslog.conf
+            sed -i s/"TMPLT_USERNAME"/"${LOGNAME}"/g ~/rsyslog.conf
+            RSYSLOG=`sudo which rsyslogd`
+            ${RSYSLOG} -f ~/rsyslog.conf -i ~/rsyslog.pid
+        fi
+    fi
+}
+export -f start_syslog
 
 function restart_ntp {
 
@@ -957,17 +1048,24 @@ function restart_ntp {
 
     NTP_SERVICE[1]="ntp"
     NTP_SERVICE[2]="ntpd" 
-                
-    service_stop_disable ${NTP_SERVICE[${LINUX_DISTRO}]}
+
+    if [[ $IS_CONTAINER -eq 0 ]]
+    then                                        
+        service_stop_disable ${NTP_SERVICE[${LINUX_DISTRO}]}
+    fi
     
     syslog_netcat "Creating ${NTP_SERVICE[${LINUX_DISTRO}]} (ntp.conf) file"
     ~/cb_create_ntp_config_file.sh
     
     syslog_netcat "Forcing clock update from ntp"
     sudo ~/cb_timebound_exec.py ntpd -gq 5
-    	
-    service_restart_enable ${NTP_SERVICE[${LINUX_DISTRO}]}
+    
+    if [[ $IS_CONTAINER -eq 0 ]]
+    then        
+        service_restart_enable ${NTP_SERVICE[${LINUX_DISTRO}]}
+    fi
 }
+export -f restart_ntp
 
 function online_or_offline {
     if [ x"$1" == x ] ; then
@@ -1059,33 +1157,28 @@ function stop_ganglia {
         linux_distribution
     fi
 
-    GANGLIA_SERVICE[1]="ganglia-monitor gmetad"
-    GANGLIA_SERVICE[2]="gmond gmetad"
-      
-    service_stop_disable ${GANGLIA_SERVICE[${LINUX_DISTRO}]}          
-    
-    syslog_netcat "Killing previously running ganglia monitoring processes on $SHORT_HOSTNAME"
-    gpid="$(pidof gmond)"
-	blowawaypids gmond
-    sleep 3
-    if [[ x"$gpid" == x ]] || [[ x"$(pidof gmond)" == x ]]
-    then
-        syslog_netcat "Ganglia monitoring processes killed successfully on $SHORT_HOSTNAME"
-    else
-        syslog_netcat "Ganglia monitoring processes could not be killed on $SHORT_HOSTNAME - NOK"
-        exit 2
-    fi
-    syslog_netcat "Previously running ganglia monitoring processes killed $SHORT_HOSTNAME"
-}
-
-function blowawaypids {
-    pids="$(pgrep -f "$1")"
-    for pid in $pids ; do
-        if [ $pid != $$ ] && [ $pid != $PPID ] ; then
-            sudo kill -9 $pid
+    if [[ $IS_CONTAINER -eq 0 ]]
+    then        
+        GANGLIA_SERVICE[1]="ganglia-monitor gmetad"
+        GANGLIA_SERVICE[2]="gmond gmetad"
+          
+        service_stop_disable ${GANGLIA_SERVICE[${LINUX_DISTRO}]}          
+        
+        syslog_netcat "Killing previously running ganglia monitoring processes on $SHORT_HOSTNAME"
+        gpid="$(pidof gmond)"
+        blowawaypids gmond
+        sleep 3
+        if [[ x"$gpid" == x ]] || [[ x"$(pidof gmond)" == x ]]
+        then
+            syslog_netcat "Ganglia monitoring processes killed successfully on $SHORT_HOSTNAME"
+        else
+            syslog_netcat "Ganglia monitoring processes could not be killed on $SHORT_HOSTNAME - NOK"
+            exit 2
         fi
-    done
+        syslog_netcat "Previously running ganglia monitoring processes killed $SHORT_HOSTNAME"
+    fi
 }
+export -f stop_ganglia
 
 function start_ganglia {
 
@@ -1128,7 +1221,8 @@ function start_ganglia {
         fi
     fi
 }
-    
+export -f start_ganglia    
+
 function execute_load_generator {
 
     CMDLINE=$1
@@ -1188,29 +1282,7 @@ function execute_load_generator {
     
     return 0
 }
-
-function wait_until_port_open {
-    #1 - host name
-    #2 - port number
-    #3 - number of attempts
-    #4 - time between attempts
-
-    counter=1
-    ATTEMPTS=${3}
-    while [ "$counter" -le "$ATTEMPTS" ]
-    do
-        ${NC} -z -w 3 ${1} ${2}
-        if [[ $? -eq 0 ]]
-        then
-            syslog_netcat "Port ${2} on host ${1} was found open after ${counter} attempts"
-            return 0
-        fi
-        sleep ${4}
-        counter="$(( $counter + 1 ))"
-    done
-    syslog_netcat "Port ${2} on host ${1} was NOT found open after ${counter} attempts!"
-    return 1
-}
+export -f execute_load_generator
 
 function setup_passwordless_ssh {
 
@@ -1237,6 +1309,7 @@ function setup_passwordless_ssh {
     fi
     chmod 0644 ~/.ssh/config
 }
+export -f setup_passwordless_ssh
 
 function update_app_errors {
 
