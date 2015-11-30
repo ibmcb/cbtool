@@ -60,9 +60,9 @@ then
     sudo sed -i 's/monitorRole   readonly/monitorRole   readonly\ncassandra    readwrite\n/g' ${JAVA_HOME}/lib/management/jmxremote.access
 fi
     
-if [[ $(grep -c "LOCAL_JMX=no" ${CASSANDRA_CONF_DIR}/cassandra-env.sh) -eq 0 ]]
+if [[ $(grep -c "LOCAL_JMX=no" /etc/cassandra/cassandra-env.sh) -eq 0 ]]
 then
-    LINE_NUMBER=$(sudo grep -n LOCAL_JMX=yes ${CASSANDRA_CONF_DIR}/cassandra-env.sh | cut -d ':' -f 1)
+    LINE_NUMBER=$(sudo grep -n LOCAL_JMX=yes /etc/cassandra/cassandra-env.sh | cut -d ':' -f 1)
     LINE_NUMBER=$((LINE_NUMBER-2))
     sudo sed -i -e "${LINE_NUMBER}i\LOCAL_JMX=no" ${CASSANDRA_CONF_DIR}/cassandra-env.sh
 fi

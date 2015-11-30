@@ -3,17 +3,31 @@
 # commented.
 
 [AI_TEMPLATES : LINPACK] 
-DESCRIPTION = TBD
-SUT = linpack 
+
+# Attributes MANDATORY for all Virtual Applications
+SUT = linpack
+LOAD_BALANCER_SUPPORTED = $False
+RESIZE_SUPPORTED = $True
+REGENERATE_DATA = $True 
 LOAD_GENERATOR_ROLE = linpack
 LOAD_MANAGER_ROLE = linpack
 METRIC_AGGREGATOR_ROLE = linpack
 CAPTURE_ROLE = linpack
-LOAD_BALANCER = $False
-LOAD_BALANCER_TARGET_PORT = 80 
-LOAD_BALANCER_TARGET_URL = unknown 
-START = cb_linpack.sh
 LOAD_PROFILE = default
-LOAD_LEVEL = 1
-LOAD_DURATION = 1
+LOAD_LEVEL = uniformIXIXI1I5
+LOAD_DURATION = 60
+REPORTED_METRICS = throughput_max, throughput, completion_time, quiescent_time
+
+# VApp-specific MANDATORY attributes
+DESCRIPTION = Deploys an SINGLE VM and runs the Intel-optimized linpack benchmark.\n
+DESCRIPTION +=- LOAD_PROFILE possible values: "default" (single VM).\n
+DESCRIPTION +=- LOAD_LEVEL meaning: problem size (square root of the matrix size),
+DESCRIPTION += multiplied by the LOAD_FACTOR.\n 
+DESCRIPTION +=- LOAD_DURATION meaning: not used, a run ends when the problem is solved.\n
+DESCRIPTION +=- COMMENT: For clustered (multi-VM) linpack execution, please use HPCC.
+START = cb_linpack.sh
+
+# VApp-specific modifier parameters. Commented attributes imply default values assumed
+LOAD_FACTOR = 1000
+LINPACK=~/linpack/benchmarks/linpack/xlinpack_xeon64
 WAIT_FOR = 0

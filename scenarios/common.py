@@ -195,17 +195,34 @@ def get_network_parms(options, api) :
     '''
     TBD
     '''
-    _net_type = "NA"
-    _net_mechanism = "NA"
+    _net_mechanism = "NA"    
+    if "networks" in dir(options) :
+        _net_type = "NA"
+        _netname = options.networks[0]
 
-    _netname = options.networks[0]
+        for _vmc in api.vmclist(options.cloud_name) :
+            _vmc_attr = api.vmcshow(options.cloud_name, _vmc["uuid"])
+            
+            if "network_" + _netname in _vmc_attr :
+                _net_type = _vmc_attr["network_" + _netname]
+                break
+    else :
+        _net_type = []
 
-    for _vmc in api.vmclist(options.cloud_name) :
-        _vmc_attr = api.vmcshow(options.cloud_name, _vmc["uuid"])
-        
-        if "network_" + _netname in _vmc_attr :
-            _net_type = _vmc_attr["network_" + _netname]
-            break
+        for _vmc in api.vmclist(options.cloud_name) :
+            _vmc_attr = api.vmcshow(options.cloud_name, _vmc["uuid"])
+
+            for _attr in _vmc_attr.keys() :
+                if _attr.count("network_") and not _attr.count("overcommit") :
+                    _x_net_type = _vmc_attr[_attr]
+                
+                    if _x_net_type not in _net_type :
+                        _net_type.append(_x_net_type)
+                    
+        if len(_net_type) :
+            _net_type = '\\'.join(_net_type).upper()
+        else :
+            _net_type = "NA"
 
     for _host in api.hostlist(options.cloud_name) :
         if _host["function"] == "controller" :
@@ -219,6 +236,25 @@ def get_network_parms(options, api) :
 
     return _net_type, _net_mechanism
 
+def get_compute_parms(options, api) :
+    '''
+    TBD
+    '''
+    _hypervisor_type = []
+
+    for _host in api.hostlist(options.cloud_name) :
+        if _host["function"] == "hypervisor" or _host["function"] == "compute" :
+            if "hypervisor_type" in _host :
+                if _host["hypervisor_type"] not in _hypervisor_type :
+                    _hypervisor_type.append(_host["hypervisor_type"])
+
+    if len(_hypervisor_type) :
+        _hypervisor_type = '\\'.join(_hypervisor_type).upper()
+    else :
+        _hypervisor_type = "NA"
+        
+    return _hypervisor_type
+
 def get_compute_nodes(options, api) :
     '''
     TBD
@@ -226,8 +262,9 @@ def get_compute_nodes(options, api) :
     _host_list = []
 
     for _host in api.hostlist(options.cloud_name) :
-        if _host["function"] == "hypervisor" or _host["function"] == "compute" :        
-            _host_list.append(_host["name"].replace("host_",''))
+        if _host["function"] == "hypervisor" or _host["function"] == "compute" :
+            if _host["hypervisor_type"].lower() == options.hypervisor.lower() :   
+                _host_list.append(_host["name"].replace("host_",''))
 
     return _host_list
 
@@ -242,6 +279,25 @@ def get_controller_nodes(options, api) :
             _host_list.append(_host["name"].replace("host_",''))
 
     return _host_list
+
+def list_private_networks(options, api) :
+    '''
+    TBD
+    '''
+    _network_list = [] 
+
+    for _vmc in api.vmclist(options.cloud_name) :
+        _vmc_attr = api.vmcshow(options.cloud_name, _vmc["uuid"])
+
+        for _attr in _vmc_attr.keys() :
+            if _attr.count("network_") and not _attr.count("overcommit") :
+                _x_net_type = _vmc_attr[_attr]
+                if _x_net_type == "gre" or _x_net_type == "vxlan" or _x_net_type == "vlan" :
+                
+                    if _x_net_type not in _network_list :
+                        _network_list.append(_attr.replace("network_",''))                
+
+    return _network_list
 
 def selective_fault_injection(options, api, fault_clock) :
     '''

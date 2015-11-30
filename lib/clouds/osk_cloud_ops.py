@@ -461,16 +461,22 @@ class OskCmds(CommonCloudFunctions) :
                             
         if _use_neutronclient == "true" :
             _name = network_attr_list["name"]
-            _type = network_attr_list["provider:network_type"]
+            if "provider:network_type" in network_attr_list :
+                _type = network_attr_list["provider:network_type"]
+            else :
+                _type = "NA"
             _uuid = network_attr_list["id"]
             
             if _type == "flat":
                 _model = "flat"
             else :
-                if network_attr_list["router:external"] :
-                    _model = "external"
+                if "router:external" in network_attr_list :
+                    if network_attr_list["router:external"] :
+                        _model = "external"
+                    else :
+                        _model = "tenant"
                 else :
-                    _model = "tenant"
+                    _model = "NA"
         else :
             _name = network_attr_list.label
             _uuid = network_attr_list.id 
@@ -1827,17 +1833,19 @@ class OskCmds(CommonCloudFunctions) :
 
             _fip = False
 
-            _call = "floating ip list"
-            fips = self.oskconncompute.floating_ips.list()
-
-            for _fip in fips :
-                if _fip.instance_id == None :
-                    _fip = _fip.ip
-                    break
+            if obj_attr_list["always_create_floating_ip"].lower() == "false" :
+                
+                _call = "floating ip list"
+                fips = self.oskconncompute.floating_ips.list()
+                
+                for _fip in fips :
+                    if _fip.instance_id == None :
+                        _fip = _fip.ip
+                        break
 
             if not _fip :
                 _call = "floating ip create"   
-                self.oskconncompute.floating_ips.create(obj_attr_list["floating_pool"]).ip
+                _fip = self.oskconncompute.floating_ips.create(obj_attr_list["floating_pool"]).ip
 
             return _fip
 
@@ -1877,7 +1885,7 @@ class OskCmds(CommonCloudFunctions) :
 
             _call = "NA"
             if str(obj_attr_list["use_floating_ip"]).lower() == "true" :
-                _msg = "Adding a floating IP to " + obj_attr_list["name"] + "..."
+                _msg = "Attempting to add a floating IP to " + obj_attr_list["name"] + "..."
                 cbdebug(_msg, True)
 
                 _fip = self.floating_ip_allocate(obj_attr_list)

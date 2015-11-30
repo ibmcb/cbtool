@@ -206,7 +206,8 @@ class SimCmds(CommonCloudFunctions) :
             obj_attr_list["host_list"][_host_uuid]["cloud_vm_uuid"] = _host_uuid
             obj_attr_list["host_list"][_host_uuid]["uuid"] = _host_uuid
             obj_attr_list["host_list"][_host_uuid]["model"] = obj_attr_list["model"]
-                        
+            obj_attr_list["host_list"][_host_uuid]["hypervisor_type"] = obj_attr_list["hosts_hypervisor_type"]
+                                    
             if _host_n == 0 :
                 obj_attr_list["host_list"][_host_uuid]["function"] = "controller"
             else :

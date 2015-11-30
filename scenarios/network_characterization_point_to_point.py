@@ -74,7 +74,7 @@ def pt2pt_configure_vapp(options, api, cloud_model, workload, load_level, load_d
 
     if options.experiment_type == "tput" :
         
-        if protocol_type == "tcp" :
+        if options.protocol_type == "tcp" :
 
             api.typealter(options.cloud_name, workload, "load_profile", "tcp_rr")        
         else :
