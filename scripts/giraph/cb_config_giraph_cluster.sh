@@ -48,7 +48,7 @@ DFS_DATA_DIR=`get_my_ai_attribute_with_default dfs_data_dir /tmp/cbhadoopdata`
 eval DFS_DATA_DIR=${DFS_DATA_DIR}
 syslog_netcat "Local directory for Hadoop datanode is ${DFS_NAME_DIR}"
 
-mount_filesystem_on_volume $DFS_NAME_DIR ext4
+mount_filesystem_on_volume $DFS_NAME_DIR ext4 ${my_login_username}
 
 JVM_HEAP_MEM_MB=`get_my_ai_attribute_with_default jvm_heap_mem_mb 200`
 eval JVM_HEAP_MEM_MB=${JVM_HEAP_MEM_MB}

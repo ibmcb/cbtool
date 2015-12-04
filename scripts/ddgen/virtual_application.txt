@@ -37,7 +37,7 @@ START = cb_ddgen.sh
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 BLOCK_SIZE=64K
 DATA_SOURCE=/dev/urandom
-DDGEN_DATA_DIR = /root
+DDGEN_DATA_DIR = /ddgentest
 DDGEN_DATA_FSTYP = ext4
 RUN_JUST_ONCE=false
 

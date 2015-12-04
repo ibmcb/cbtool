@@ -48,7 +48,7 @@ CASSANDRA_CONF_DIR=`echo $CASSANDRA_CONF_PATH | awk -F  '/cassandra.yaml' '{prin
 
 if [[ $(grep -c "${CASSANDRA_CONF_DIR}" ${CASSANDRA_CONF_DIR}/cassandra-env.sh) -eq 0 ]]
 then
-        sudo sed -i 's|JVM_OPTS=\"$JVM_OPTS \-Dcom\.sun\.management\.jmxremote\.password\.file=\/etc\/cassandra\/jmxremote\.password\"|JVM_OPTS=\"\$JVM_OPTS \-Dcom\.sun\.management\.jmxremote\.password\.file='"$CASSANDRA_CONF_DIR"'/jmxremote\.password\"|' /etc/cassandra/conf/cassandra-env.sh
+    sudo sed -i 's|JVM_OPTS=\"$JVM_OPTS \-Dcom\.sun\.management\.jmxremote\.password\.file=\/etc\/cassandra\/jmxremote\.password\"|JVM_OPTS=\"\$JVM_OPTS \-Dcom\.sun\.management\.jmxremote\.password\.file='"$CASSANDRA_CONF_DIR"'/jmxremote\.password\"|' /etc/cassandra/conf/cassandra-env.sh
 fi
 
 sudo ls ${CASSANDRA_CONF_DIR}/jmxremote.password
