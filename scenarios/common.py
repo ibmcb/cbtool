@@ -498,7 +498,7 @@ def wait_until_vapp_deployed(options, api, curr_stats, nr_vapps, max_check, \
 
     _pct_failed = 0    
     if int(_failed_ais) > 0 :
-        _pct_failed = nr_vapps/_failed_ais        
+        _pct_failed = float(nr_vapps)/float(_failed_ais)
     
     if _pct_failed > pct_failure :
         

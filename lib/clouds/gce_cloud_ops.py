@@ -51,7 +51,8 @@ class GceCmds(CommonCloudFunctions) :
         self.pid = pid
         self.osci = osci
         self.gceconn = False
-        self.project = None
+        self.instances_project= None
+        self.images_project = None
         self.zone = None
         self.instance_info = None
         self.expid = expid
@@ -70,13 +71,18 @@ class GceCmds(CommonCloudFunctions) :
         '''
         try :
             _status = 100
-            if not self.project  :
-                self.project = project
+            if not self.instances_project :
+                project = project.split(',')
+                if len(project) == 2 :
+                    self.instances_project, self.images_project = project
+                else :
+                    self.instances_project = project[0]
+                    self.images_project = self.instances_project
 
             _credentials = GoogleCredentials.get_application_default()
             self.gceconn = build('compute', 'v1', credentials=_credentials)
 
-            _zone_list = self.gceconn.zones().list(project=self.project).execute()["items"]            
+            _zone_list = self.gceconn.zones().list(project=self.instances_project).execute()["items"]            
 
             _zone_info = False
             for _idx in range(0,len(_zone_list)) :
@@ -129,26 +135,37 @@ class GceCmds(CommonCloudFunctions) :
             _pub_key_fn = vm_defaults["credentials_dir"] + '/'
             _pub_key_fn += vm_defaults["ssh_key_name"] + ".pub"
 
-            _key_type, _key_contents, _key_fingerprint = get_ssh_key(_pub_key_fn, "ec2")
+            _key_type, _key_contents, _key_fingerprint = get_ssh_key(_pub_key_fn, "common")
 
             if not _key_contents :
                 _fmsg = _key_type 
                 cberr(_fmsg, True)
                 return False
-            
+
+            _keys_available = []
+            _metadata = self.gceconn.projects().get(project=self.instances_project).execute()
+            for _element in _metadata['commonInstanceMetadata']['items'] :
+                if _element["key"] == "sshKeys" :
+                    for _component in _element["value"].split('\n') :
+                        _component = _component.split(' ')
+                        if len(_component) == 3 :
+                            _keys_available.append(_component)
+                                                    
             _key_pair_found = False
 
-            for _key_pair in self.gceconn.get_all_key_pairs() :
-                if _key_pair.name == key_name :
+            for _available_key_pair in _keys_available :
+                _available_key_name = _available_key_pair[0].split(':')[0]
+
+                if _available_key_name == key_name :
                     _msg = "A key named \"" + key_name + "\" was found "
                     _msg += "on VMC " + vmc_name + ". Checking if the key"
                     _msg += " contents are correct."
                     cbdebug(_msg)                    
-                    _keyfp = _key_pair.fingerprint
+                    _available_key_contents = _available_key_pair[1]
                     
-                    if len(_key_fingerprint) > 1 and len(_keyfp) > 1 :
+                    if len(_available_key_contents) > 1 and len(_key_contents) > 1 :
 
-                        if _key_fingerprint == _keyfp :
+                        if _available_key_contents == _key_contents :
                             _msg = "The contents of the key \"" + key_name
                             _msg += "\" on the VMC " + vmc_name + " and the"
                             _msg += " one present on directory \"" 
@@ -163,22 +180,16 @@ class GceCmds(CommonCloudFunctions) :
                             _msg += " one present on directory \"" 
                             _msg += vm_defaults["credentials_dir"] + "\" ("
                             _msg += vm_defaults["ssh_key_name"] + ") differ."
-                            _msg += "Will delete the key on OpenStack"
-                            _msg += " and re-created it"
                             cbdebug(_msg)
-                            _key_pair.delete()
                             break
 
             if not _key_pair_found :
 
-                _msg = "Creating the ssh key pair \"" + key_name + "\""
-                _msg += " on VMC " + vmc_name + ", using the public key \""
-                _msg += _pub_key_fn + "\"..."
-                cbdebug(_msg, True)
+                _msg = "ERROR: Please go to Google Developers Console -> Compute Engine"
+                _msg += " -> Metadata and add the contents of the public key \""
+                _msg += _pub_key_fn + "\" there..."
+                cberr(_msg, True)
                                     
-                self.gceconn.import_key_pair(key_name, _key_type + ' ' + _key_contents)                
-                _key_pair_found = True
-
             return _key_pair_found
         
     def check_security_group(self,vmc_name, security_group_name) :
@@ -215,7 +226,8 @@ class GceCmds(CommonCloudFunctions) :
         TBD
         '''
         _msg = "Checking if the imageids associated to each \"VM role\" are"
-        _msg += " registered on VMC " + vmc_name + "...."
+        _msg += " registered on VMC " + vmc_name + " (project " + self.images_project
+        _msg += ")...."
         cbdebug(_msg, True)
 
         _wanted_images = []
@@ -224,7 +236,7 @@ class GceCmds(CommonCloudFunctions) :
             if _imageid not in _wanted_images :
                 _wanted_images.append(_imageid)
 
-        _registered_image_list = self.gceconn.images().list(project=self.project).execute()["items"]
+        _registered_image_list = self.gceconn.images().list(project=self.images_project).execute()["items"]
         _registered_imageid_list = []
 
         for _registered_image in _registered_image_list :
@@ -293,8 +305,7 @@ class GceCmds(CommonCloudFunctions) :
             _fmsg = "An error has occurred, but no error message was captured"
             self.connect(access, credentials, vmc_name)
 
-            #_key_pair_found = self.check_ssh_key(vmc_name, key_name, vm_defaults)
-            _key_pair_found = True
+            _key_pair_found = self.check_ssh_key(vmc_name, key_name, vm_defaults)
             #_security_group_found = self.check_security_group(vmc_name, security_group_name)
             _security_group_found = True
             _detected_imageids = self.check_images(vmc_name, vm_templates)
@@ -350,7 +361,7 @@ class GceCmds(CommonCloudFunctions) :
                 for _instance in _instance_list :
 
                     if _instance["name"].count("cb-" + obj_attr_list["username"]) and _instance["status"] == u'RUNNING' :
-                        self.gceconn.instances().delete(project = self.project, \
+                        self.gceconn.instances().delete(project = self.instances_project, \
                                                         zone = self.zone, \
                                                         instance = _instance["name"]).execute()
 
@@ -379,7 +390,7 @@ class GceCmds(CommonCloudFunctions) :
                             _msg = _volume["id"] + " detached "
                             _msg += "... was deleted"
                             cbdebug(_msg)
-                            self.gceconn.disks().delete(project = self.project, zone = self.zone, disk = _volume["name"]).execute()
+                            self.gceconn.disks().delete(project = self.instances_project, zone = self.zone, disk = _volume["name"]).execute()
                         else:
                             _msg = _volume["id"] + ' '
                             _msg += "... still attached and could not be deleted"
@@ -549,8 +560,8 @@ class GceCmds(CommonCloudFunctions) :
             _private_ip_address = self.instance_info["networkInterfaces"][0]["networkIP"]
             _public_ip_address = self.instance_info["networkInterfaces"][0]["accessConfigs"][0]["natIP"]
                        
-            _public_hostname = obj_attr_list["cloud_vm_name"] + '.' + obj_attr_list["vmc_name"] + '.' + self.project
-            _private_hostname = obj_attr_list["cloud_vm_name"] + '.' + obj_attr_list["vmc_name"] + '.' + self.project
+            _public_hostname = obj_attr_list["cloud_vm_name"] + '.' + obj_attr_list["vmc_name"] + '.' + self.instances_project
+            _private_hostname = obj_attr_list["cloud_vm_name"] + '.' + obj_attr_list["vmc_name"] + '.' + self.instances_project
                         
             if obj_attr_list["run_netname"] == "private" :
                 obj_attr_list["cloud_hostname"] = _private_hostname
@@ -583,21 +594,21 @@ class GceCmds(CommonCloudFunctions) :
         try :
             if obj_type == "vm" :
                 if identifier == "all" :
-                    _instance_list = self.gceconn.instances().list(project = self.project, \
+                    _instance_list = self.gceconn.instances().list(project = self.instances_project, \
                                                                    zone = self.zone).execute()
                                                                    
                 else :
-                    _instance_list = self.gceconn.instances().get(project = self.project, \
+                    _instance_list = self.gceconn.instances().get(project = self.instances_project, \
                                                                    zone = self.zone, \
                                                                    instance = identifier).execute()
            
             else :
                 if identifier == "all" :
-                    _instance_list = self.gceconn.disks().list(project = self.project, \
+                    _instance_list = self.gceconn.disks().list(project = self.instances_project, \
                                                                    zone = self.zone).execute()                    
  
                 else :
-                    _instance_list = self.gceconn.disks().get(project = self.project, \
+                    _instance_list = self.gceconn.disks().get(project = self.instances_project, \
                                                                    zone = self.zone, \
                                                                    disk = identifier).execute()
                     
@@ -689,10 +700,10 @@ class GceCmds(CommonCloudFunctions) :
         while _curr_tries < _max_tries :
             _start_pooling = int(time())
 
-            _op = self.gceconn.zoneOperations().get(project = self.project, \
+            _op = self.gceconn.zoneOperations().get(project = self.instances_project, \
                                                            zone = self.zone, \
                                                            operation = opid["name"]).execute()
-            
+                        
             if _op['status'] == 'DONE':
                 if 'error' in _op :
                     raise CldOpsException(_op["error"], 2001)
@@ -746,7 +757,7 @@ class GceCmds(CommonCloudFunctions) :
 
                 _fmsg = _msg
 
-                _operation = self.gceconn.disks().insert(project = self.project, \
+                _operation = self.gceconn.disks().insert(project = self.instances_project, \
                                                          zone = self.zone, \
                                                          body = _config).execute()
 
@@ -815,7 +826,7 @@ class GceCmds(CommonCloudFunctions) :
                 _msg += " (cloud-assigned uuid " + identifier + ")...."
                 cbdebug(_msg, True)
 
-                _operation = self.gceconn.disks().delete(project = self.project, \
+                _operation = self.gceconn.disks().delete(project = self.instances_project, \
                                                              zone = self.zone, \
                                                              disk = obj_attr_list["cloud_vv_name"]).execute()
 
@@ -874,7 +885,7 @@ class GceCmds(CommonCloudFunctions) :
 
             obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"].replace("_", "-")
             obj_attr_list["last_known_state"] = "about to connect to ec2 manager"
-            obj_attr_list["project"] = self.project
+            obj_attr_list["project"] = self.instances_project
 
             if not self.gceconn :
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
@@ -893,7 +904,7 @@ class GceCmds(CommonCloudFunctions) :
             _security_groups = []
             _security_groups.append(obj_attr_list["security_groups"])
 
-            _source_disk_image = "projects/" + self.project + "/global/images/" + obj_attr_list["imageid1"]
+            _source_disk_image = "projects/" + self.images_project + "/global/images/" + obj_attr_list["imageid1"]
             _machine_type = "zones/" + obj_attr_list["vmc_name"] + "/machineTypes/" + obj_attr_list["size"]
 
             _config = {
@@ -960,14 +971,15 @@ class GceCmds(CommonCloudFunctions) :
 
             obj_attr_list["last_known_state"] = "about to send create request"
 
-            _msg = "Starting an instance on GCE, using the imageid \""
-            _msg += obj_attr_list["imageid1"] + "\" and size \""
+            _msg = "Starting an instance on GCE (project \"" + self.instances_project
+            _msg += "\"), using the imageid \"" + obj_attr_list["imageid1"] 
+            _msg += "\" (project \"" + self.images_project + "\") and size \"" 
             _msg += obj_attr_list["size"] + "\" on VMC \""
             _msg += obj_attr_list["vmc_name"] + "\" (with security groups \""
             _msg += str(_security_groups) + "\")."
             cbdebug(_msg, True)
 
-            _operation = self.gceconn.instances().insert(project = self.project, \
+            _operation = self.gceconn.instances().insert(project = self.instances_project, \
                                                          zone = self.zone, \
                                                          body = _config).execute()
 
@@ -1062,7 +1074,7 @@ class GceCmds(CommonCloudFunctions) :
                 _msg += "...."
                 cbdebug(_msg, True)
 
-                _operation = self.gceconn.instances().delete(project = self.project, \
+                _operation = self.gceconn.instances().delete(project = self.instances_project, \
                                                              zone = self.zone, \
                                                              instance = obj_attr_list["cloud_vm_name"]).execute()
 
@@ -1236,22 +1248,22 @@ class GceCmds(CommonCloudFunctions) :
 
             if _instance :
                 if _ts == "fail" :
-                    _operation = self.gceconn.instances().stop(project = self.project, \
+                    _operation = self.gceconn.instances().stop(project = self.instances_project, \
                                                                zone = self.zone, \
                                                                instance = obj_attr_list["cloud_vm_name"]).execute()
 
                 elif _ts == "save" :
-                    _operation = self.gceconn.instances().stop(project = self.project, \
+                    _operation = self.gceconn.instances().stop(project = self.instances_project, \
                                                                zone = self.zone, \
                                                                instance = obj_attr_list["cloud_vm_name"]).execute()
                                                                
                 elif (_ts == "attached" or _ts == "resume") and _cs == "fail" :
-                    _operation = self.gceconn.instances().start(project = self.project, \
+                    _operation = self.gceconn.instances().start(project = self.instances_project, \
                                                                 zone = self.zone, \
                                                                 instance = obj_attr_list["cloud_vm_name"]).execute()
                                                                 
                 elif (_ts == "attached" or _ts == "restore") and _cs == "save" :
-                    _operation = self.gceconn.instances().start(project = self.project, \
+                    _operation = self.gceconn.instances().start(project = self.instances_project, \
                                                                 zone = self.zone, \
                                                                 instance = obj_attr_list["cloud_vm_name"]).execute()
 

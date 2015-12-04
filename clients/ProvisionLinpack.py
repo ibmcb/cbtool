@@ -75,16 +75,16 @@ def _sampling(_api, _ai) :
     _samples = 5
     file = open("%s-workload-data"%(_write_file), "a")
     while _samples > 0  :
-       _data = _api.get_latest_app_data(_cloud_name,_ai)
-       if _data != None :
-           if _data['time'] != check_time :
-               check_time = _data['time']
-               file.write("%s, %s, %s, %s\n" % (_ai, _data['time'],
-                   _data['app_throughput_average']['val'],
+        _data = _api.get_latest_app_data(_cloud_name,_ai)
+        if _data != None :
+            if _data['time'] != check_time :
+                check_time = _data['time']
+                file.write("%s, %s, %s, %s\n" % (_ai, _data['time'],
+                   _data['app_throughput']['val'],
                    _data['app_throughput_max']['val']))
-               _samples-=1
-       else: 
-          continue
+                _samples-=1
+        else: 
+            continue
 
     file.close()
     return True

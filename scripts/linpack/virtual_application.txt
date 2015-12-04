@@ -7,8 +7,8 @@
 # Attributes MANDATORY for all Virtual Applications
 SUT = linpack
 LOAD_BALANCER_SUPPORTED = $False
-RESIZE_SUPPORTED = $True
-REGENERATE_DATA = $True 
+RESIZE_SUPPORTED = $False
+REGENERATE_DATA = $False 
 LOAD_GENERATOR_ROLE = linpack
 LOAD_MANAGER_ROLE = linpack
 METRIC_AGGREGATOR_ROLE = linpack
@@ -16,7 +16,7 @@ CAPTURE_ROLE = linpack
 LOAD_PROFILE = default
 LOAD_LEVEL = uniformIXIXI1I5
 LOAD_DURATION = 60
-REPORTED_METRICS = throughput_max, throughput, completion_time, quiescent_time
+REPORTED_METRICS = throughput_max, throughput, errors, completion_time, quiescent_time
 
 # VApp-specific MANDATORY attributes
 DESCRIPTION = Deploys an SINGLE VM and runs the Intel-optimized linpack benchmark.\n
@@ -30,4 +30,9 @@ START = cb_linpack.sh
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 LOAD_FACTOR = 1000
 LINPACK=~/linpack/benchmarks/linpack/xlinpack_xeon64
-WAIT_FOR = 0
+
+# Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
+#SYNC_COUNTER_NAME = synchronization_counter
+#CONCURRENT_AIS = 2
+#SYNC_CHANNEL_NAME = synchronization_channel
+#RUN_COUNTER_NAME = experiment_id_counter

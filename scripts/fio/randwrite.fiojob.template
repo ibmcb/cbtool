@@ -1,0 +1,13 @@
+[global]
+ioengine=FIO_ENGINE
+bs=FIO_BS 
+direct=FIO_DIRECT
+fsync_on_close=1
+rw=randwrite
+size=FIO_FILE_SIZE
+directory=FIO_DATA_DIR 
+rate_iops=FIO_RATE_IOPS 
+
+[randwrites]
+name=fiofile
+numjobs=LOAD_LEVEL

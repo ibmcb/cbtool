@@ -442,7 +442,7 @@ function mount_filesystem_on_volume {
         MOUNTPOINT_OWER=${my_login_username}
     fi
     
-    sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT_DIR
+    sudo chown -R ${MOUNTPOINT_OWNER}:${MOUNTPOINT_OWNER} $MOUNTPOINT_DIR
         
     if [[ $VOLUME != "NONE" ]]
     then

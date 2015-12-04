@@ -93,7 +93,7 @@ SLR_LOGIN = cbuser                                                              
 SLR_INITIAL_VMCS = dal05                                                                        # Select the appropriate SoftLayer datacenter
 #-------------------------------------------------------------------------------
 [USER-DEFINED : CLOUDOPTION_MYGCE ]
-GCE_ACCESS = project_name                                  # Obtained with "gcloud info"
+GCE_ACCESS = project_name_for_images,project_name_for_instances  # Obtained with "gcloud info".
 GCE_SECURITY_GROUPS = cloudbench                           # Currently, not used
 GCE_CREDENTIALS = ABCDEFGHIJKLMNOPQRSTUVXYWZ01234567890-+* # Currently, not used
 GCE_INITIAL_VMCS = us-east1-b:sut                          # Change "us-east1-b" accordingly

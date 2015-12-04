@@ -160,6 +160,7 @@ def additional_vm_attributes(options) :
         _temp_attr_list_str = "netname=" + _chosen_networkname
     else :
         if options.network :
+            _chosen_networkname = options.network
             _msg = "### The network \"" + _chosen_networkname + "\" was "
             _msg += "selected for deployment."
             print _msg
@@ -206,8 +207,14 @@ def profiling_phase(api, options, performance_data, directory) :
             _vm_attrs = api.vmattach(options.cloud_name, options.role, vm_location = _node, temp_attr_list = _temp_attr_list_str)
 
             _msg = "####### \"" + _vm_attrs["name"] + "\" (" + _vm_attrs["uuid"] 
-            _msg += ") successfully deployed" 
+            _msg += ") successfully deployed." 
             print _msg
+
+            _msg = "####### \"" + _vm_attrs["name"] + "\" (" + _vm_attrs["uuid"] 
+            _msg += ") will now be deleted." 
+            print _msg
+
+            api.vmdetach(options.cloud_name, _vm_attrs["name"])
 
             print "####### Obtaining management performance metrics for VM \"" + _vm_attrs["name"] + "\"...."
             _mgt_metric = api.get_latest_management_data(options.cloud_name, _vm_attrs["uuid"])

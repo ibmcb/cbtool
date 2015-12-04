@@ -16,19 +16,12 @@
 # limitations under the License.
 #/*******************************************************************************
 
-source ~/.bashrc
-source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
+source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_fio_common.sh
 
 START=`provision_application_start`
 
-SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
+mount_filesystem_on_volume $FIO_DATA_DIR $FIO_DATA_FSTYP ${my_login_username} $FIO_DATA_VOLUME
 
-syslog_netcat "Start nothing on ${SHORT_HOSTNAME}"
-
-mount_filesystem_on_volume ${NULLWORKLOAD_BLOCK_DATA_DIR} $NULLWORKLOAD_BLOCK_DATA_FSTYP ${my_login_username} $NULLWORKLOAD_BLOCK_VOLUME
-mount_filesystem_on_memory ${NULLWORKLOAD_MEMORY_DATA_DIR} $NULLWORKLOAD_MEMORY_DATA_FSTYP 200m ${my_login_username}
-mount_remote_filesystem ${NULLWORKLOAD_REMOTE_DATA_DIR} $NULLWORKLOAD_REMOTE_DATA_FSTYP $NULLWORKLOAD_FILESERVER_IP $NULLWORKLOAD_FILESERVER_PATH
-
-syslog_netcat "Nothing started on ${SHORT_HOSTNAME} - OK"
+syslog_netcat "Storage setup for FIO - OK"
 provision_application_stop $START
 exit 0

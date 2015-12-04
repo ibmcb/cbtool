@@ -43,6 +43,8 @@ OUTPUT_FILE=$(mktemp)
 PROBLEM_SIZES=$((${LOAD_LEVEL}*${LOAD_FACTOR}))
 LEADING_DIMENSIONS=$((${LOAD_LEVEL}*${LOAD_FACTOR}))
 
+LINPACK_IP=`get_ips_from_role linpack`
+
 NUM_CPU=`cat /proc/cpuinfo | grep processor | wc -l`
 export OMP_NUM_THREADS=$NUM_CPU
 echo "Sample Intel(R) LINPACK data file (from lininput_xeon64)" > ${LINPACK_DAT}
@@ -53,7 +55,12 @@ echo "$LEADING_DIMENSIONS # leading dimensions" >> ${LINPACK_DAT}
 echo "2 # times to run a test " >> ${LINPACK_DAT}
 echo "4 # alignment values (in KBytes)" >> ${LINPACK_DAT}
 
+source ~/cb_barrier.sh start
+update_app_errors 0 reset
+
 CMDLINE="${LINPACK} ${LINPACK_DAT}" 
+
+syslog_netcat "Benchmarking linpack SUT: LINPACK=${LINPACK_IP} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
 
 execute_load_generator "$CMDLINE" ${OUTPUT_FILE} ${LOAD_DURATION}
 RESULTS=$(cat ${OUTPUT_FILE} | grep -A 1 Average | grep $PROBLEM_SIZES)
@@ -66,6 +73,7 @@ load_profile:${LOAD_PROFILE}:name \
 load_duration:${LOAD_DURATION}:sec \
 throughput_max:$MAX:tps \
 throughput:$AVERAGE:tps \
+errors:$(update_app_errors):num \
 completion_time:$(update_app_completiontime):sec \
 quiescent_time:$(update_app_quiescent):sec \    
 ${SLA_RUNTIME_TARGETS}

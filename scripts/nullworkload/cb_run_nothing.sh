@@ -30,6 +30,9 @@ then
 	exit 1
 fi
 
+source ~/cb_barrier.sh start
+update_app_errors 0 reset
+
 CMDLINE="sleep ${LOAD_DURATION}"
 
 syslog_netcat "Benchmarking nullworkload SUT: TINYVM=${my_ip_addr} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"

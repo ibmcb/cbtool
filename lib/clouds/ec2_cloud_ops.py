@@ -156,14 +156,12 @@ class Ec2Cmds(CommonCloudFunctions) :
                             _msg += " one present on directory \"" 
                             _msg += vm_defaults["credentials_dir"] + "\" ("
                             _msg += vm_defaults["ssh_key_name"] + ") differ."
-                            _msg += "Will delete the key on OpenStack"
-                            _msg += " and re-created it"
+                            _msg += "Will delete the key and re-created it"
                             cbdebug(_msg)
-                            _key_pair.delete()
+                            self.ec2conn.delete_key_pair(key_name)
                             break
 
             if not _key_pair_found :
-
                 _msg = "Creating the ssh key pair \"" + key_name + "\""
                 _msg += " on VMC " + vmc_name + ", using the public key \""
                 _msg += _pub_key_fn + "\"..."

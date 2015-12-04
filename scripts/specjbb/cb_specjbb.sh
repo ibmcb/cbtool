@@ -81,6 +81,7 @@ sed -i s/"RAMPUP_TIME_TMPLT"/"${RAMPUP_TIME}"/g ~/SPECjbb.props
 syslog_netcat "Updating properties file SPECjbb.props with the following parameters starting_number_warehouses:${STARTING_WAREHOUSES},ending_number_warehouses:${ENDING_WAREHOUSES},measurement:${LOAD_DURATION},rampup:${RAMPUP_TIME}"
 
 source ~/cb_barrier.sh start
+update_app_errors 0 reset
 
 #####################################################
 # same thing for the JVM
