@@ -757,7 +757,7 @@ function start_master_hadooop_services {
             sudo -u ${dfs_name_dir_owner} $HADOOP_HOME/bin/hadoop namenode -format -force
             if [[ $? -ne 0 ]]
             then
-                syslog_netcat "Error when formatting namenode as user ${dfs_name_dir_owner} - NOK"
+                syslog_netcat "Error when formatting namenode (on $DFS_NAME_DIR) as user ${dfs_name_dir_owner} - NOK"
                 exit 1
             fi
     
