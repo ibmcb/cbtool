@@ -74,7 +74,7 @@ class GceCmds(CommonCloudFunctions) :
             if not self.instances_project :
                 project = project.split(',')
                 if len(project) == 2 :
-                    self.instances_project, self.images_project = project
+                    self.images_project, self.instances_project = project
                 else :
                     self.instances_project = project[0]
                     self.images_project = self.instances_project
