@@ -57,9 +57,17 @@ fi
     
 if [[ ! -d ${HADOOP_HOME} ]]
 then
-    syslog_netcat "The value specified in the AI attribute HADOOP_HOME (\"$HADOOP_HOME\") points to a non-existing directory. Will search ~ for a hadoop dir." 
-    HADOOP_HOME=$(ls ~ | grep -v tar | grep hadoop- | sort -r | head -n1)
-    eval HADOOP_HOME="~/${HADOOP_HOME}"
+    for HADOOP_CPATH in ~ /usr/local
+    do
+        if [[ $(sudo ls $HADOOP_CPATH | grep -v tar | grep -c hadoop) -ne 0 ]]
+        then
+            eval HADOOP_CPATH=${HADOOP_CPATH}
+            break
+        fi
+    done
+    syslog_netcat "The value specified in the AI attribute HADOOP_HOME (\"$HADOOP_HOME\") points to a non-existing directory. Will search ${HADOOP_CPATH} for a hadoop dir." 
+    HADOOP_HOME=$(ls ${HADOOP_CPATH} | grep -v tar | grep hadoop | sort -r | head -n1)
+    eval HADOOP_HOME="$HADOOP_CPATH/${HADOOP_HOME}"
     if [[ ! -d $HADOOP_HOME ]]
     then
         syslog_netcat "Unable to find a directory with a Hadoop installation - NOK"
