@@ -142,6 +142,9 @@ class GceCmds(CommonCloudFunctions) :
                 cberr(_fmsg, True)
                 return False
 
+            vm_defaults["ssh_key_contents"] = _key_contents
+            vm_defaults["ssh_key_type"] = _key_type
+            
             _keys_available = []
             _metadata = self.gceconn.projects().get(project=self.instances_project).execute()
             for _element in _metadata['commonInstanceMetadata']['items'] :
@@ -182,7 +185,9 @@ class GceCmds(CommonCloudFunctions) :
                             _msg += vm_defaults["ssh_key_name"] + ") differ."
                             cbdebug(_msg)
                             break
-
+                        
+            _key_pair_found = True
+            
             if not _key_pair_found :
 
                 _msg = "ERROR: Please go to Google Developers Console -> Compute Engine"
@@ -949,7 +954,13 @@ class GceCmds(CommonCloudFunctions) :
                     }, {
                         'key': 'use',
                         'value': "cloudbench"
-                    }]
+                    }, {
+                        'key': 'sshKeys',
+                        'value': obj_attr_list["ssh_key_name"] + ':' + \
+                        obj_attr_list["ssh_key_type"] + ' ' + \
+                        obj_attr_list["ssh_key_contents"].strip('\n') + ' ' + \
+                        obj_attr_list["ssh_key_name"].strip('\n') + "@orchestrator"
+                    }]            
                 }
             }
 
