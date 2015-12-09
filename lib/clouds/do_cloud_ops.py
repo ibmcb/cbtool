@@ -215,9 +215,8 @@ class DoCmds(CommonCloudFunctions) :
                 cbdebug(_msg)
                 _status, _fmsg = self.vmccleanup(obj_attr_list)
 
-            obj_attr_list["cloud_hostname"] = "257.0.0.0"
-
-            obj_attr_list["cloud_ip"] = "257.0.0.0"
+            obj_attr_list["cloud_hostname"] = obj_attr_list["name"] 
+            obj_attr_list["cloud_ip"] = obj_attr_list["name"] + ".digitalocean.com"
 
             obj_attr_list["arrival"] = int(time())
 
