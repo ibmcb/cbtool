@@ -23,6 +23,8 @@
 
     @author: Marcio A. Silva
 '''
+import httplib2
+
 from time import time, sleep
 
 from socket import gethostbyname
@@ -56,6 +58,7 @@ class GceCmds(CommonCloudFunctions) :
         self.zone = None
         self.instance_info = None
         self.expid = expid
+        self.http_conn = {}
 
     @trace
     def get_description(self) :
@@ -65,7 +68,7 @@ class GceCmds(CommonCloudFunctions) :
         return "Google Compute Engine"
 
     @trace
-    def connect(self, project, secret_key, zone = "us-east1-b") :
+    def connect(self, project, secret_key, zone = "us-east1-b", http_conn_id = None) :
         '''
         TBD
         '''
@@ -80,8 +83,16 @@ class GceCmds(CommonCloudFunctions) :
                     self.images_project = self.instances_project
 
             _credentials = GoogleCredentials.get_application_default()
+                                    
             self.gceconn = build('compute', 'v1', credentials=_credentials)
 
+            _http_conn_id = "common"
+            if http_conn_id :
+                _http_conn_id = http_conn_id
+
+            if _http_conn_id not in self.http_conn :  
+                self.http_conn[_http_conn_id] = _credentials.authorize(http = httplib2.Http())
+                        
             _zone_list = self.gceconn.zones().list(project=self.instances_project).execute()["items"]            
 
             _zone_info = False
@@ -118,7 +129,7 @@ class GceCmds(CommonCloudFunctions) :
                 cbdebug(_msg)
                 return _status, _msg, _zone_hostname
 
-    def check_ssh_key(self, vmc_name, key_name, vm_defaults) :
+    def check_ssh_key(self, vmc_name, key_name, vm_defaults, http_conn_id) :
         '''
         TBD
         '''
@@ -146,7 +157,7 @@ class GceCmds(CommonCloudFunctions) :
             vm_defaults["ssh_key_type"] = _key_type
             
             _keys_available = []
-            _metadata = self.gceconn.projects().get(project=self.instances_project).execute()
+            _metadata = self.gceconn.projects().get(project=self.instances_project).execute(http = self.http_conn[http_conn_id])
             for _element in _metadata['commonInstanceMetadata']['items'] :
                 if _element["key"] == "sshKeys" :
                     for _component in _element["value"].split('\n') :
@@ -226,7 +237,7 @@ class GceCmds(CommonCloudFunctions) :
 
         return _security_group_found
 
-    def check_images(self, vmc_name, vm_templates) :
+    def check_images(self, vmc_name, vm_templates, http_conn_id) :
         '''
         TBD
         '''
@@ -241,7 +252,7 @@ class GceCmds(CommonCloudFunctions) :
             if _imageid not in _wanted_images :
                 _wanted_images.append(_imageid)
 
-        _registered_image_list = self.gceconn.images().list(project=self.images_project).execute()["items"]
+        _registered_image_list = self.gceconn.images().list(project=self.images_project).execute(http = self.http_conn[http_conn_id])["items"]
         _registered_imageid_list = []
 
         for _registered_image in _registered_image_list :
@@ -308,12 +319,12 @@ class GceCmds(CommonCloudFunctions) :
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
-            self.connect(access, credentials, vmc_name)
+            self.connect(access, credentials, vmc_name, vmc_name)
 
-            _key_pair_found = self.check_ssh_key(vmc_name, key_name, vm_defaults)
+            _key_pair_found = self.check_ssh_key(vmc_name, key_name, vm_defaults, vmc_name)
             #_security_group_found = self.check_security_group(vmc_name, security_group_name)
             _security_group_found = True
-            _detected_imageids = self.check_images(vmc_name, vm_templates)
+            _detected_imageids = self.check_images(vmc_name, vm_templates, vmc_name)
 
             if not (_key_pair_found and _security_group_found and len(_detected_imageids)) :
                 _fmsg = ''                
@@ -352,7 +363,7 @@ class GceCmds(CommonCloudFunctions) :
         try :
             _status = 100
 
-            self.connect(obj_attr_list["access"], obj_attr_list["credentials"], obj_attr_list["name"])
+            self.connect(obj_attr_list["access"], obj_attr_list["credentials"], obj_attr_list["name"], obj_attr_list["name"])
 
             _pre_existing_instances = False
 
@@ -362,13 +373,13 @@ class GceCmds(CommonCloudFunctions) :
                 _running_instances = False
 
                 _instance_list = self.get_instances({}, "vm", "all")                
-
+                
                 for _instance in _instance_list :
 
                     if _instance["name"].count("cb-" + obj_attr_list["username"]) and _instance["status"] == u'RUNNING' :
                         self.gceconn.instances().delete(project = self.instances_project, \
                                                         zone = self.zone, \
-                                                        instance = _instance["name"]).execute()
+                                                        instance = _instance["name"]).execute(http = self.http_conn[obj_attr_list["name"]])
 
                         _running_instances = True
 
@@ -395,7 +406,7 @@ class GceCmds(CommonCloudFunctions) :
                             _msg = _volume["id"] + " detached "
                             _msg += "... was deleted"
                             cbdebug(_msg)
-                            self.gceconn.disks().delete(project = self.instances_project, zone = self.zone, disk = _volume["name"]).execute()
+                            self.gceconn.disks().delete(project = self.instances_project, zone = self.zone, disk = _volume["name"]).execute(http = self.http_conn[obj_attr_list["name"]])
                         else:
                             _msg = _volume["id"] + ' '
                             _msg += "... still attached and could not be deleted"
@@ -454,7 +465,7 @@ class GceCmds(CommonCloudFunctions) :
             else :
                 _status = 0
 
-            _x, _y, _hostname = self.connect(obj_attr_list["access"], obj_attr_list["credentials"], obj_attr_list["name"])
+            _x, _y, _hostname = self.connect(obj_attr_list["access"], obj_attr_list["credentials"], obj_attr_list["name"], obj_attr_list["name"])
 
             obj_attr_list["cloud_hostname"] = _hostname
             obj_attr_list["cloud_ip"] = gethostbyname(_hostname.split('/')[2])
@@ -605,17 +616,17 @@ class GceCmds(CommonCloudFunctions) :
                 else :
                     _instance_list = self.gceconn.instances().get(project = self.instances_project, \
                                                                    zone = self.zone, \
-                                                                   instance = identifier).execute()
+                                                                   instance = identifier).execute(http = self.http_conn[obj_attr_list["name"]])
            
             else :
                 if identifier == "all" :
                     _instance_list = self.gceconn.disks().list(project = self.instances_project, \
-                                                                   zone = self.zone).execute()                    
+                                                                   zone = self.zone).execute()
  
                 else :
                     _instance_list = self.gceconn.disks().get(project = self.instances_project, \
                                                                    zone = self.zone, \
-                                                                   disk = identifier).execute()
+                                                                   disk = identifier).execute(http = self.http_conn[obj_attr_list["name"]])
                     
             if "items" in _instance_list :
                 _instances = _instance_list["items"]
@@ -707,8 +718,8 @@ class GceCmds(CommonCloudFunctions) :
 
             _op = self.gceconn.zoneOperations().get(project = self.instances_project, \
                                                            zone = self.zone, \
-                                                           operation = opid["name"]).execute()
-                        
+                                                           operation = opid["name"]).execute(http = self.http_conn[obj_attr_list["name"]])
+            
             if _op['status'] == 'DONE':
                 if 'error' in _op :
                     raise CldOpsException(_op["error"], 2001)
@@ -764,7 +775,7 @@ class GceCmds(CommonCloudFunctions) :
 
                 _operation = self.gceconn.disks().insert(project = self.instances_project, \
                                                          zone = self.zone, \
-                                                         body = _config).execute()
+                                                         body = _config).execute(http = self.http_conn[obj_attr_list["name"]])
 
                 if self.wait_until_operation(obj_attr_list, _operation) :
                     _instance =  self.get_instances(obj_attr_list, "vv", obj_attr_list["cloud_vv_name"])
@@ -833,7 +844,7 @@ class GceCmds(CommonCloudFunctions) :
 
                 _operation = self.gceconn.disks().delete(project = self.instances_project, \
                                                              zone = self.zone, \
-                                                             disk = obj_attr_list["cloud_vv_name"]).execute()
+                                                             disk = obj_attr_list["cloud_vv_name"]).execute(http = self.http_conn[obj_attr_list["name"]])
 
                 self.wait_until_operation(obj_attr_list, _operation)
 
@@ -892,9 +903,8 @@ class GceCmds(CommonCloudFunctions) :
             obj_attr_list["last_known_state"] = "about to connect to ec2 manager"
             obj_attr_list["project"] = self.instances_project
 
-            if not self.gceconn :
-                self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
-                             obj_attr_list["vmc_name"])
+            self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
+                         obj_attr_list["vmc_name"], obj_attr_list["name"])
 
             if self.is_vm_running(obj_attr_list) :
                 _msg = "An instance named \"" + obj_attr_list["cloud_vm_name"]
@@ -956,7 +966,7 @@ class GceCmds(CommonCloudFunctions) :
                         'value': "cloudbench"
                     }, {
                         'key': 'sshKeys',
-                        'value': obj_attr_list["ssh_key_name"] + ':' + \
+                        'value': obj_attr_list["login"] + ':' + \
                         obj_attr_list["ssh_key_type"] + ' ' + \
                         obj_attr_list["ssh_key_contents"].strip('\n') + ' ' + \
                         obj_attr_list["ssh_key_name"].strip('\n') + "@orchestrator"
@@ -990,10 +1000,12 @@ class GceCmds(CommonCloudFunctions) :
             _msg += str(_security_groups) + "\")."
             cbdebug(_msg, True)
 
+            sleep(float(obj_attr_list["name"].replace("vm_",'')) + 1.0)
+
             _operation = self.gceconn.instances().insert(project = self.instances_project, \
                                                          zone = self.zone, \
-                                                         body = _config).execute()
-
+                                                         body = _config).execute(http = self.http_conn[obj_attr_list["name"]])
+            
             if self.wait_until_operation(obj_attr_list, _operation) :
 
                 self.take_action_if_requested("VM", obj_attr_list, "provision_started")
@@ -1071,10 +1083,9 @@ class GceCmds(CommonCloudFunctions) :
             obj_attr_list["mgt_902_deprovisioning_request_sent"] = \
                 _time_mark_drs - int(obj_attr_list["mgt_901_deprovisioning_request_originated"])
 
-            if not self.gceconn :
-                self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
-                         obj_attr_list["vmc_name"])
-            
+            self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
+                     obj_attr_list["vmc_name"], obj_attr_list["name"])
+
             _wait = int(obj_attr_list["update_frequency"])
 
             _instance = self.get_instances(obj_attr_list, "vm", obj_attr_list["cloud_vm_name"])
@@ -1087,7 +1098,7 @@ class GceCmds(CommonCloudFunctions) :
 
                 _operation = self.gceconn.instances().delete(project = self.instances_project, \
                                                              zone = self.zone, \
-                                                             instance = obj_attr_list["cloud_vm_name"]).execute()
+                                                             instance = obj_attr_list["cloud_vm_name"]).execute(http = self.http_conn[obj_attr_list["name"]])
 
                 self.wait_until_operation(obj_attr_list, _operation)
 
@@ -1147,7 +1158,7 @@ class GceCmds(CommonCloudFunctions) :
 
             if not self.gceconn :
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
-                             obj_attr_list["vmc_name"])
+                             obj_attr_list["vmc_name"], obj_attr_list["name"])
 
             _instance = self.get_instances(obj_attr_list, "vm", "vmuuid")
 
@@ -1243,7 +1254,7 @@ class GceCmds(CommonCloudFunctions) :
             _cs = obj_attr_list["current_state"]
     
             self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
-                         obj_attr_list["vmc_name"])
+                         obj_attr_list["vmc_name"], obj_attr_list["name"])
 
             if "mgt_201_runstate_request_originated" in obj_attr_list :
                 _time_mark_rrs = int(time())
@@ -1261,22 +1272,22 @@ class GceCmds(CommonCloudFunctions) :
                 if _ts == "fail" :
                     _operation = self.gceconn.instances().stop(project = self.instances_project, \
                                                                zone = self.zone, \
-                                                               instance = obj_attr_list["cloud_vm_name"]).execute()
+                                                               instance = obj_attr_list["cloud_vm_name"]).execute(http = self.http_conn[obj_attr_list["name"]])
 
                 elif _ts == "save" :
                     _operation = self.gceconn.instances().stop(project = self.instances_project, \
                                                                zone = self.zone, \
-                                                               instance = obj_attr_list["cloud_vm_name"]).execute()
+                                                               instance = obj_attr_list["cloud_vm_name"]).execute(http = self.http_conn[obj_attr_list["name"]])
                                                                
                 elif (_ts == "attached" or _ts == "resume") and _cs == "fail" :
                     _operation = self.gceconn.instances().start(project = self.instances_project, \
                                                                 zone = self.zone, \
-                                                                instance = obj_attr_list["cloud_vm_name"]).execute()
+                                                                instance = obj_attr_list["cloud_vm_name"]).execute(http = self.http_conn[obj_attr_list["name"]])
                                                                 
                 elif (_ts == "attached" or _ts == "restore") and _cs == "save" :
                     _operation = self.gceconn.instances().start(project = self.instances_project, \
                                                                 zone = self.zone, \
-                                                                instance = obj_attr_list["cloud_vm_name"]).execute()
+                                                                instance = obj_attr_list["cloud_vm_name"]).execute(http = self.http_conn[obj_attr_list["name"]])
 
                 self.wait_until_operation(obj_attr_list, _operation)            
             _time_mark_rrc = int(time())

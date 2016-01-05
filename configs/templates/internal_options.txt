@@ -201,7 +201,7 @@ DONT_START_LOAD_MANAGER = $False
 DONT_START_QEMU_SCRAPER = $True
 RUN_LIMIT = 100000
 REPLICATED_VMS = 0
-ATTACH_PARALLELISM = 20
+ATTACH_PARALLELISM = 1
 DETACH_PARALLELISM = 20
 EXECUTE_PARALLELISM = 6
 RUNSTATE_PARALLELISM = 5
@@ -248,7 +248,7 @@ DETACH_PARALLELISM = 20
 # for objects that don't make sense. Additional filters can be
 # added by clicking on the dashboard and saving the configuration URL
 # in the user's own configuration file
-DASHBOARD_PARAMETERS = monitor?kb2mb=no&failedvm=yes&4k2mb=no&b2mb=no&p=yes
+DASHBOARD_PARAMETERS = dashboard?kb2mb=no&failedvm=yes&4k2mb=no&b2mb=no&p=yes
 DASHBOARD_PARAMETERS += &h=yes&s=yes&a=yes&filter=s-vmc_name,s-vms,h-type,
 DASHBOARD_PARAMETERS +=h-vmc_name,a-vmc_name,h-aidrs_name,h-size,h-age,h-host_name,h-ai_name,h-role,p-vms,a-vms,p-latest_update
 
