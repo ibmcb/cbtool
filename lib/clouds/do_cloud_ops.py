@@ -316,7 +316,7 @@ class DoCmds(CommonCloudFunctions) :
             _msg += " Private IP = " + obj_attr_list["cloud_ip"]
             cbdebug(_msg)
 
-            if obj_attr_list["use_vpn_ip"].lower() == "true" :
+            if str(obj_attr_list["use_vpn_ip"]).lower() == "true" and str(obj_attr_list["vpn_only"]).lower() == "true" :
                 assert(self.get_attr_from_pending(obj_attr_list))
 
                 if "cloud_init_vpn" not in obj_attr_list :

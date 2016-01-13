@@ -5,7 +5,13 @@ port VPN_PORT
 server VPN_ADDRESS_RANGE 
 
 log LOGDIR/USERNAME_openvpn_server.log
-client-connect CBPATH/util/openvpn/client_connected.sh
+
+#This was not what this script was designed for. It called 'client_connected'
+#because the VPN client is supposed to execute it from within the VM,
+#not the server.
+# If you, for whatever reason, need the VPN server to run
+# a script as well, please create a new one when VPN_ONLY = False
+#client-connect CBPATH/util/openvpn/client_connected.sh
 
 ca       [inline]
 cert     [inline]
