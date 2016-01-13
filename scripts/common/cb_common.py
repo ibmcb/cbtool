@@ -26,7 +26,7 @@
 from logging import getLogger, StreamHandler, Formatter, Filter, DEBUG, ERROR, \
 INFO, WARN, CRITICAL
 from logging.handlers import logging, SysLogHandler, RotatingFileHandler
-from time import time, sleep, strftime
+from time import time, sleep
 from datetime import datetime
 from sys import path, argv, stdout
 from subprocess import Popen, PIPE, STDOUT
@@ -49,6 +49,7 @@ import urllib
 
 from lib.auxiliary.code_instrumentation import VerbosityFilter, MsgFilter
 from lib.auxiliary.code_instrumentation import cbdebug, cberr, cbwarn, cbinfo, cbcrit
+from lib.auxiliary.data_ops import makeTimestamp
 
 class NetworkException(Exception) :
     '''
@@ -757,10 +758,11 @@ def report_app_metrics(metriclist, sla_targets_list, ms_conn = "auto", \
         if "app_sla_runtime" in _metrics_dict :
             _metrics_dict["app_sla_runtime"]["val"] = _sla_status
     
-        _metrics_dict["time"] = int(time())
+        tzoffset = datetime.utcfromtimestamp(-1).hour - datetime.fromtimestamp(0).hour + 1
+        _metrics_dict["time"] = int(time()) + (3600 * tzoffset)
         _metrics_dict["time_cbtool"] = _osci.get_remote_time()[0]
-        _metrics_dict["time_h"] = strftime("%a %b %d %X %Z %Y")
-        _metrics_dict["time_cbtool_h"] = datetime.fromtimestamp(int(_metrics_dict["time_cbtool"])).strftime("%a %b %d %X %Z %Y")        
+        _metrics_dict["time_h"] = makeTimestamp() 
+        _metrics_dict["time_cbtool_h"] = makeTimestamp(_metrics_dict["time_cbtool"])
         _metrics_dict["expid"] = _expid
         _metrics_dict["uuid"] = _my_uuid
         

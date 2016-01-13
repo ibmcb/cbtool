@@ -546,7 +546,7 @@ def makeTimestamp(supplied_epoch_time = False) :
     TBD
     '''
     if not supplied_epoch_time :
-        _now = datetime.now()
+        _now = datetime.utcnow()
     else :
         _now = datetime.fromtimestamp(supplied_epoch_time)
 
@@ -558,7 +558,7 @@ def makeTimestamp(supplied_epoch_time = False) :
                         strptime(str(_now.hour) + ":" + str(_now.minute) + ":" + \
                                  str(_now.second), "%H:%M:%S"))
 
-    result += strftime(" %Z", localtime(time()))
+    result += " UTC" 
     return result
 
 def check_samples(options, api, start_time, max_time) :
