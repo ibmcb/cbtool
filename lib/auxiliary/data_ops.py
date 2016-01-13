@@ -201,7 +201,7 @@ def makeTimestamp(supplied_epoch_time = False) :
     TBD
     '''
     if not supplied_epoch_time :
-        _now = datetime.now()
+        _now = datetime.utcnow()
     else :
         _now = datetime.fromtimestamp(supplied_epoch_time)
         
@@ -213,7 +213,7 @@ def makeTimestamp(supplied_epoch_time = False) :
                         strptime(str(_now.hour) + ":" + str(_now.minute) + ":" + \
                                  str(_now.second), "%H:%M:%S"))
         
-    result += strftime(" %Z", localtime(time())) 
+    result += " UTC"
     return result
 
 @trace
@@ -410,7 +410,7 @@ def create_user_data_contents(obj_attr_list, osci) :
                 
     _userdata_contents += get_boostrap_command(obj_attr_list, osci).replace(';','\n')
 
-    if obj_attr_list["use_vpn_ip"].lower() != "false" :
+    if obj_attr_list["use_vpn_ip"].lower() != "false" and obj_attr_list["vpn_only"].lower() == "false" :
         _userdata_contents += "\nmkdir /var/log/openvpn\n"
         _userdata_contents += "chmod 777 /var/log/openvpn\n"
         _file_fd = open(obj_attr_list["vpn_config_file"], 'r')

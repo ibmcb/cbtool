@@ -28,6 +28,7 @@ CHECK_BOOT_COMPLETE = tcp_on_22
 SECURITY_GROUPS = not_yet_applicable 
 HOSTNAME_KEY = cloud_vm_name
 ATTACH_PARALLELISM = 1
+SIZE = from_vm_template
 
 # We're not as big as amazon yet. Go easy on us please.
 [AI_DEFAULTS]
@@ -61,5 +62,5 @@ TINYVM = size:512mb, imageids:1, imageid1:needs_override
 CASSANDRA = size:4gb, imageids:1, imageid1:needs_override
 YCSB = size:4gb, imageids:1, imageid1:needs_override
 SEED = size:4gb, imageids:1, imageid1:needs_override
-HADOOPMASTER = size:2gb, imageids:1, imageid1:needs_override
+HADOOPMASTER = size:4gb, imageids:1, imageid1:needs_override
 HADOOPSLAVE = size:4gb, imageids:1, imageid1:needs_override

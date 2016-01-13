@@ -5,6 +5,11 @@ remote DESTINATION VPN_PORT
 
 log /var/log/openvpn/USERNAME_openvpn-cb.log
 
+# This script was designed for the VPN client, not the server.
+# If you, for whatever reason, need the VPN server to run
+# a script as well, please create a new one when VPN_ONLY = False
+up /etc/openvpn/client_connected.sh
+
 ca       [inline]
 cert     [inline]
 key      [inline]

@@ -11,11 +11,11 @@ for _command in _commands :
     _complete = False
     while _current_attempts <= _attempts and not _complete :
         _complete = True
-        start = datetime.datetime.now()
+        start = datetime.datetime.utcnow()
         process = subprocess.Popen(_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         while process.poll() is None :
             time.sleep(0.1)
-            now = datetime.datetime.now()
+            now = datetime.datetime.utcnow()
             if (now - start).seconds > _timeout:
                 os.kill(process.pid, signal.SIGKILL)
                 os.waitpid(-1, os.WNOHANG)
