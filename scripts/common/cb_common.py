@@ -26,7 +26,7 @@
 from logging import getLogger, StreamHandler, Formatter, Filter, DEBUG, ERROR, \
 INFO, WARN, CRITICAL
 from logging.handlers import logging, SysLogHandler, RotatingFileHandler
-from time import time, sleep
+from time import time, sleep, mktime
 from datetime import datetime
 from sys import path, argv, stdout
 from subprocess import Popen, PIPE, STDOUT
@@ -758,8 +758,9 @@ def report_app_metrics(metriclist, sla_targets_list, ms_conn = "auto", \
         if "app_sla_runtime" in _metrics_dict :
             _metrics_dict["app_sla_runtime"]["val"] = _sla_status
     
-        tzoffset = datetime.utcfromtimestamp(-1).hour - datetime.fromtimestamp(0).hour + 1
-        _metrics_dict["time"] = int(time()) + (3600 * tzoffset)
+#        tzoffset = datetime.utcfromtimestamp(-1).hour - datetime.fromtimestamp(0).hour + 1
+#        _metrics_dict["time"] = int(time()) + (3600 * tzoffset)
+        _metrics_dict["time"] = _metrics_dict["time"] = int(mktime(datetime.utcnow().timetuple()))
         _metrics_dict["time_cbtool"] = _osci.get_remote_time()[0]
         _metrics_dict["time_h"] = makeTimestamp() 
         _metrics_dict["time_cbtool_h"] = makeTimestamp(_metrics_dict["time_cbtool"])
