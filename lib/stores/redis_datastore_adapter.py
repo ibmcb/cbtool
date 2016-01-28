@@ -1774,6 +1774,34 @@ class RedisMgdConn :
             raise self.ObjectStoreMgdConnException(str(_msg), 2)
 
     @trace
+    def get_counter(self, cloud_name, obj_type, obj_id) :
+        '''
+        TBD
+        '''
+        self.conn_check()
+        obj_inst = self.experiment_inst + ":" + cloud_name
+
+        _obj_inst_fn = obj_inst + ':' + obj_type
+        _obj_id_fn = _obj_inst_fn + ':' + str(obj_id)
+        
+        try :
+            _curr_value = self.redis_conn.get(_obj_id_fn) 
+            _msg = "Object " + _obj_id_fn + " current value is " + str(_curr_value)
+            cbdebug(_msg)
+            return _curr_value
+
+        except ConnectionError, msg :
+            _msg = "The connection to the data store seems to be "
+            _msg += "severed: " + str(msg)
+            cberr(_msg)
+            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+
+        except ResponseError, msg :
+            _msg = "Object " + _obj_id_fn + " could not retrieved: " + str(msg)
+            cberr(_msg)
+            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+
+    @trace
     def acquire_lock(self, cloud_name, obj_type, obj_id, id_str, tout_fct) :
         '''
         TBD

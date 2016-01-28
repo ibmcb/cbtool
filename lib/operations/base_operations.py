@@ -3155,6 +3155,9 @@ class BaseObjectOperations :
             if not counter :
                 _counter_value = str(self.osci.count_object(cloud_name, obj_type))
                 _status = 0
+            elif counter == "ISSUED" :
+                _counter_value = str(self.osci.get_counter(cloud_name, obj_type, "COUNTER"))
+                _status = 0
             elif counter in [ "RESERVATIONS", "ARRIVED", "DEPARTED", "FAILED" ] :
                 _counter_value = str(self.osci.count_object(cloud_name, obj_type, counter))
                 _status = 0

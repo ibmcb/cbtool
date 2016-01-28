@@ -277,9 +277,9 @@ FILLER_STRING=NA
 
 # Attributes recorded during management operations
 TRACE_ATTRIBUTES = command_originated, command, name, vmc_arrived, 
-TRACE_ATTRIBUTES += vmc_departed, vmc_failed, vm_reservations, vm_arrived, 
-TRACE_ATTRIBUTES += vm_arriving, vm_departed, vm_failed, ai_reservations, 
-TRACE_ATTRIBUTES += ai_arrived, ai_arriving, ai_departed, ai_failed
+TRACE_ATTRIBUTES += vmc_issued, vmc_departed, vmc_failed, 
+TRACE_ATTRIBUTES += vm_issued, vm_reservations, vm_arrived, vm_arriving, vm_departed, vm_failed,
+TRACE_ATTRIBUTES += ai_issued, ai_reservations, ai_arrived, ai_arriving, ai_departed, ai_failed
 HOST_ATTRIBUTES = uuid, name, cloud_ip, cloud_name, model, cloud_hostname, nr_vms
 VM_ATTRIBUTES = uuid, name, cloud_ip, last_known_state, cloud_name, model, 
 VM_ATTRIBUTES += cloud_hostname, vmc_name, vmc_cloud_ip, host_name, 

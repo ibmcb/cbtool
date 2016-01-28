@@ -886,7 +886,15 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                     _fmt_obj_list += ('|' + _obj_type + "s REPORTED").ljust(len(_fields[0]))
                                     _fmt_obj_list += ('|' + _obj_count).ljust(len(_fields[1]))
                                     _fmt_obj_list += '\n'
-                        
+
+                        _obj_count = str(self.get_object_count(obj_attr_list["cloud_name"], _obj_type, "COUNTER"))
+                        _stats["experiment_counters"][_obj_type]["issued"] = _obj_count
+
+                        if obj_attr_list["output"] == "print" :
+                            _fmt_obj_list += ('|' + _obj_type + "s ISSUED").ljust(len(_fields[0]))
+                            _fmt_obj_list += ('|' + _obj_count).ljust(len(_fields[1]))
+                            _fmt_obj_list += '\n'
+                                                    
                         _obj_count = str(self.get_object_count(obj_attr_list["cloud_name"], _obj_type, "ARRIVED"))
                         _stats["experiment_counters"][_obj_type]["arrived"] = _obj_count
 
