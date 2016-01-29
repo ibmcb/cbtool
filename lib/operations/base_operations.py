@@ -2627,7 +2627,8 @@ class BaseObjectOperations :
             
             for _key in _key_list :
                 if _key.count("reservations") or _key.count("arrived") or \
-                _key.count("departed") or _key.count("failed") or _key.count("arriving") :
+                _key.count("departed") or _key.count("failed") or \
+                _key.count("arriving") or _key.count("issued") :
                     _obj_type, _counter_type = _key.upper().split('_')
                     obj_attr_list[_key] = self.get_object_count(cloud_name, _obj_type, _counter_type)
 
@@ -2846,16 +2847,16 @@ class BaseObjectOperations :
 
             if "utc_offset_on_vm" not in obj_attr_list :
                 obj_attr_list["utc_offset_on_vm"] = 0
-            
+
             _utc_offset_delta = int(obj_attr_list["utc_offset_on_orchestrator"]) \
                 - int(obj_attr_list["utc_offset_on_vm"])
-    
-            self.osci.update_object_attribute(cloud_name, \
-                                              obj_type, \
-                                              obj_attr_list["uuid"], \
-                                              False, \
-                                              "utc_offset_delta", \
-                                              _utc_offset_delta)
+            if "mgt_999_provisioning_request_failed" not in obj_attr_list :
+                self.osci.update_object_attribute(cloud_name, \
+                                                  obj_type, \
+                                                  obj_attr_list["uuid"], \
+                                                  False, \
+                                                  "utc_offset_delta", \
+                                                  _utc_offset_delta)
         else :
             _utc_offset_delta = "NA"
 

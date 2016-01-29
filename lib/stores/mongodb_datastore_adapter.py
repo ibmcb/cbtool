@@ -168,7 +168,6 @@ class MongodbMgdConn :
         '''
         TBD
         '''
-        
         if not self.mongodb_conn :
             if hostov :
                 self.host = hostov
