@@ -126,6 +126,11 @@ def get_ip_address() :
             _default_ip = _line.split(':')[1]
             _default_ip = _default_ip.split()[0]
             break
+        ### This is  centos specific
+        elif _line.count("inet") and system() == "Linux" :
+            _default_ip = _line.split()[1]
+            break
+
     
     if not _default_ip :
         _msg = "Unable to locate default ip address interface of this "
