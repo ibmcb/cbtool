@@ -1,4 +1,4 @@
-shell TESTCLOUD rm /tmp/cb*_was_used_on_execution
+shell TESTCLOUD rm -rf /tmp/cb*_was_used_on_execution
 cldalter TESTCLOUD ai_defaults execute_script_name=/home/msilva/cloudbench/regression/..//regression/scripts/execute_on_staging.sh
 aiattach TESTCLOUD ibm_daytrader default default none none execute_all_vms_booted
 shell TESTCLOUD ls /tmp/cb*_was_used_on_execution

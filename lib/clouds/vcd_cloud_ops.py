@@ -432,6 +432,8 @@ class VcdCmds(CommonCloudFunctions) :
          
             credential_name = obj_attr_list["credentials"]
 
+            self.take_action_if_requested("VM", obj_attr_list, "provision_originated")
+
             if not self.vcdconn :
                 _msg = "Connecting to VCD with credentials " + credential_name + " at address " + obj_attr_list["access"]
                 cbdebug(_msg)
@@ -864,7 +866,7 @@ class VcdCmds(CommonCloudFunctions) :
                 cbdebug(_msg, True)
                 return _status, _msg
     @trace        
-    def aidefine(self, obj_attr_list) :
+    def aidefine(self, obj_attr_list, current_step) :
         '''
         TBD
         '''
@@ -894,7 +896,7 @@ class VcdCmds(CommonCloudFunctions) :
                 return _status, _msg
 
     @trace        
-    def aiundefine(self, obj_attr_list) :
+    def aiundefine(self, obj_attr_list, current_step) :
         '''
         TBD
         '''

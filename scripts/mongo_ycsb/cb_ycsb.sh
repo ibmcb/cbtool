@@ -49,6 +49,7 @@ INPUT_RECORDS=`get_my_ai_attribute_with_default input_records 10000`
 RECORD_SIZE=`get_my_ai_attribute_with_default record_size 2.35`
 APP_COLLECTION=`get_my_ai_attribute_with_default app_collection lazy`
 DATABASE_SIZE_VERSUS_MEMORY=`get_my_ai_attribute_with_default database_size_versus_memory 0.5`
+LOAD_THREADS=`get_my_ai_attribute_with_default load_threads 8`
 
 if [[ ${READ_RATIO} != "workloaddefault" ]]
 then
@@ -90,6 +91,7 @@ sudo sh -c "echo "recordcount=${RECORDS%.*}" > $YCSB_PATH/custom_workload.dat"
 sudo sh -c "echo "operationcount=$OPERATION_COUNT" >> $YCSB_PATH/custom_workload.dat"
 
 source ~/cb_barrier.sh start
+update_app_errors 0 reset
 
 OUTPUT_FILE=$(mktemp)
 if [[ ${GENERATE_DATA} == "true" ]]
@@ -100,10 +102,22 @@ then
     log_output_command=$(get_my_ai_attribute log_output_command)
     log_output_command=$(echo ${log_output_command} | tr '[:upper:]' '[:lower:]')
 
+	#
+	# Enable Sharding for YCSB
+	#
+	mongo ${mongos_ip}:27017 --eval "sh.enableSharding(\"ycsb\")"
+	mongo ${mongos_ip}:27017/ycsb --eval "db.usertable.ensureIndex( { _id: \"hashed\" } )"
+	mongo ${mongos_ip}:27017/ycsb --eval "sh.shardCollection(\"ycsb.usertable\", { _id: \"hashed\" } )"
+
+	#
+	# Change chunk size to 32MB (optional) 
+	#
+	mongo ${mongos_ip}:27017/ycsb --eval "db.settings.save( { _id:\"chunksize\", value: 32 } )"
+
     START_GENERATION=$(get_time)
     
     syslog_netcat "The value of the parameter \"GENERATE_DATA\" is \"true\". Will generate data for the YCSB load profile \"${LOAD_PROFILE}\"" 
-    command_line="sudo $YCSB_PATH/bin/ycsb load mongodb -s -P $YCSB_PATH/workloads/${LOAD_PROFILE} -P $YCSB_PATH/custom_workload.dat -p hosts=$mongos_ip"
+    command_line="sudo $YCSB_PATH/bin/ycsb load mongodb -s -P $YCSB_PATH/workloads/${LOAD_PROFILE} -P $YCSB_PATH/custom_workload.dat -threads ${LOAD_THREADS} -p mongodb.url=mongodb://$mongos_ip:27017/ycsb?w=0"
     syslog_netcat "Command line is: ${command_line}"
     if [[ x"${log_output_command}" == x"true" ]]
     then
@@ -115,30 +129,17 @@ then
     else
         syslog_netcat "Command output will NOT be shown"
         $command_line 2>&1 >> $OUTPUT_FILE
-    fi
-
-	#
-	# Enable Sharding for YCSB
-	#
-            
-	mongo --host ${mongos_ip}:27017 --eval "sh.enableSharding(\"ycsb\")"
-	mongo ${mongos_ip}:27017/ycsb --eval "db.usertable.ensureIndex( { _id: \"hashed\" } )"
-	mongo ${mongos_ip}:27017/ycsb --eval "sh.shardCollection(\"ycsb.usertable\", { _id: \"hashed\" } )"
-
-	#
-	# Change chunk size to 32MB (optional) 
-	#
-	mongo --host ${mongos_ip}:27017/ycsb --eval "db.settings.save( { _id:\"chunksize\", value: 32 } )"    
+    fi    
     
     END_GENERATION=$(get_time)
     DATA_GENERATION_TIME=$(expr ${END_GENERATION} - ${START_GENERATION})
     update_app_datagentime ${DATA_GENERATION_TIME}
     update_app_datagensize ${RECORDS}
 else
-    syslog_netcat "The value of the parameter \"GENERATE_DATA\" is \"false\". Will bypass data generation for the hadoop load profile \"${LOAD_PROFILE}\""     
+    syslog_netcat "The value of the parameter \"GENERATE_DATA\" is \"false\". Will bypass data generation for the MongoDB load profile \"${LOAD_PROFILE}\""     
 fi
 
-CMDLINE="sudo $YCSB_PATH/bin/ycsb run mongodb -s -threads ${LOAD_LEVEL} -P $YCSB_PATH/workloads/${LOAD_PROFILE} -P $YCSB_PATH/custom_workload.dat -p hosts=$mongos_ip"
+CMDLINE="sudo $YCSB_PATH/bin/ycsb run mongodb -s -threads ${LOAD_LEVEL} -P $YCSB_PATH/workloads/${LOAD_PROFILE} -P $YCSB_PATH/custom_workload.dat -p mongodb.url=mongodb://$mongos_ip:27017/ycsb?w=0"
 
 syslog_netcat "Benchmarking YCSB SUT: MONGOS=${mongos_ip} | MONGO_CFG=${mongocfg_ip} -> MONGODBS=${mongo_ips_csv} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
 

@@ -766,21 +766,22 @@ def dependency_checker_installer(hostname, username, operation, options) :
             print _msg
             
             _unneeded_dep_list = [ "mongodb", \
-                              "python-twisted", \
-                              "python-webob", \
-                              "python-beaker", \
-                              "pylibvirt", \
-                              "pypureomapi", \
-                              "pyhtml", \
-                              "bootstrap", \
-                              "bootstrap-wizard", \
-                              "streamprox", \
-                              "d3", \
-                              "novaclient", \
-                              "softlayer", \
-                              "boto", \
-                              "libcloud", \
-                              "R"]
+                                   "python-twisted", \
+                                   "python-webob", \
+                                   "python-beaker", \
+                                   "pylibvirt", \
+                                   "pypureomapi", \
+                                   "pyhtml", \
+                                   "bootstrap", \
+                                   "bootstrap-wizard", \
+                                   "streamprox", \
+                                   "d3", \
+                                   "novaclient", \
+                                   "softlayer", \
+                                   "boto", \
+                                   "libcloud", \
+                                   "gcloud", \
+                                   "R"]
             
             for _unneeded_dep in _unneeded_dep_list :
                 if _unneeded_dep in _dep_list :

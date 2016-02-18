@@ -1,114 +1,519 @@
 |ai_defaults |attempts |24 
+|ai_defaults |create_performance_emitter |True 
+|ai_defaults |credentials_dir |/path/to/tool/lib/auxiliary//../../credentials
+|ai_defaults |notification_channel |auto 
 |ai_defaults |ssh_key_name |cbtool_rsa 
+|ai_templates |cassandra_ycsb_app_collection |lazy 
+|ai_templates |cassandra_ycsb_cassandra_data_dir|/dbstore 
+|ai_templates |cassandra_ycsb_cassandra_data_fstyp|ext4 
+|ai_templates |cassandra_ycsb_cassandra_reset1|cb_restart_node.sh 
+|ai_templates |cassandra_ycsb_cassandra_resize1|cb_restart_node.sh 
+|ai_templates |cassandra_ycsb_database_size_versus_memory|0.5 
 |ai_templates |cassandra_ycsb_description | Deploys a Cassandra cluster (N seed nodes and M data nodes), plus one VM running the YCSB benchmark. This single VM sends requests to all seed node VMs simultaneously.\n- LOAD_PROFILE possible values: "workload"{a-f} (for a proper description, consult the section "Core Workloads" on the YCSB documentation)\n- LOAD_LEVEL meaning: number of threads on YCSB (parameter -threads).\n- LOAD_DURATION meaning: not used, a run ends when all YCSB operations (default is 1000) are finished.\n- COMMENT: One of the "Big Data" Workloads. One of the two Virtual Applications types selected for the SPECCloud 2014 v1.0 benchmark. When new seed nodes are added (after an "airesize") the VM running YCSB will automatically direct requests to these new seed nodes.
+|ai_templates |cassandra_ycsb_input_records |10000 
 |ai_templates |cassandra_ycsb_load_balancer_supported|False 
 |ai_templates |cassandra_ycsb_load_profile |workloadd 
+|ai_templates |cassandra_ycsb_load_threads |8 
+|ai_templates |cassandra_ycsb_operation_count |10000 
 |ai_templates |cassandra_ycsb_read_ratio |workloaddefault 
+|ai_templates |cassandra_ycsb_record_size |2.35 
 |ai_templates |cassandra_ycsb_regenerate_data |True 
-|ai_templates |cassandra_ycsb_reported_metrics|bandwidth,throughput,latency,datagen_time,datagen_size
+|ai_templates |cassandra_ycsb_replication_factor|3 
+|ai_templates |cassandra_ycsb_reported_metrics|bandwidth,throughput,latency,datagen_time,datagen_size,completion_time,errors,insert_operations,read_operations,quiescent_time
 |ai_templates |cassandra_ycsb_resize_supported|True 
-|ai_templates |cassandra_ycsb_sut |ycsb->1_x_seed->1_x_cassandra 
+|ai_templates |cassandra_ycsb_role_list |ycsb,seed 
+|ai_templates |cassandra_ycsb_seed_reset1 |cb_restart_seed.sh 
+|ai_templates |cassandra_ycsb_seed_resize1 |cb_restart_seed.sh 
+|ai_templates |cassandra_ycsb_sut |ycsb->2_x_seed 
 |ai_templates |cassandra_ycsb_update_ratio |workloaddefault 
 |ai_templates |coremark_description | Deploys a single VM running the coremark benchmark.\n- LOAD_PROFILE possible values: "default" (the benchmark is alwaysrun with the following parameters "7 1 2000").\n- LOAD_LEVEL meaning: number of benchmark iterations, multipliedby a "load factor" (default 1000).\n- LOAD_DURATION meaning: not used, a run ends when all iterations are finished.\n- COMMENT: One of the "Synthetic" Workloads. The coremark benchmark is CPU (core)-centric and deliberately tries to ignore I/O and memory effects. During initial setup, the benchmark is compiled to run in a specific number of CPUs (this number may vary, since VMs can be resized by the cloud).\n
 |ai_templates |coremark_load_balancer_supported|False 
+|ai_templates |coremark_load_factor |10000 
 |ai_templates |coremark_regenerate_data |False 
-|ai_templates |coremark_reported_metrics |throughput,latency 
+|ai_templates |coremark_reported_metrics |throughput,latency,completion_time,quiescent_time
 |ai_templates |coremark_resize_supported |False 
+|ai_templates |coremark_role_list |coremark 
+|ai_templates |coremark_threads_per_cpu |2 
+|ai_templates |ddgen_block_size |64K 
+|ai_templates |ddgen_data_source |/dev/urandom 
+|ai_templates |ddgen_ddgen_data_dir |/ddgentest 
+|ai_templates |ddgen_ddgen_data_fstyp |ext4 
 |ai_templates |ddgen_description | Deploys a single VM, which will use the "dd" to write a variable amount of data (by default from /dev/random) to one of its local file systems.\n- LOAD_PROFILE possible values: "default" (just run a single instance of the dd process and write data to disk).\n- LOAD_LEVEL meaning: number of blocks written to disk.\n- LOAD_DURATION meaning: not used, a run ends when all data (defined by BLOCK_SIZE * LOAD_LEVEL) is written.\n- COMMENT: One of the "Synthetic" Workloads. The main use case of this Virtual Application type is the testing of "cloud image capture". By writing a specific amount of data to an instance's disk, and then capturing the instance onto a new image, cloud "capture" performance can be measured.
 |ai_templates |ddgen_load_balancer_supported |False 
 |ai_templates |ddgen_regenerate_data |True 
-|ai_templates |ddgen_reported_metrics |bandwidth 
+|ai_templates |ddgen_reported_metrics |bandwidth,completion_time,quiescent_time
 |ai_templates |ddgen_resize_supported |False 
-|ai_templates |fbnfsrd_description | TBD 
+|ai_templates |ddgen_role_list |ddgen 
+|ai_templates |ddgen_run_just_once |false 
 |ai_templates |filebench_description | Deploys a single VM running the filebench benchmark.\n- LOAD_PROFILE possible values: "fileserver", "oltp_noism", "varmail", "videoserver", "webproxy" (these are the "personalities" used by filebench to emulate the disk I/O generated by an application).\n- LOAD_LEVEL meaning: number of threads generating I/O.\n- LOAD_DURATION meaning: maximum length of time to run (might end before the maximum, if the amount of data is small or disk fast).\n- COMMENT: One of the "Synthetic" Workloads. The filebench benchmark, due its internal timing idiosyncrasies, might not be able to fully stress the disk I/O capacity of a single VM.
+|ai_templates |filebench_filebench_data_dir |/fstore 
+|ai_templates |filebench_filebench_data_fstyp |ext4 
+|ai_templates |filebench_filebench_data_volume|NONE 
 |ai_templates |filebench_load_balancer_supported|False 
 |ai_templates |filebench_regenerate_data |True 
-|ai_templates |filebench_reported_metrics |bandwidth,throughput,latency 
+|ai_templates |filebench_reported_metrics |bandwidth,throughput,latency,completion_time,quiescent_time
 |ai_templates |filebench_resize_supported |False 
-|ai_templates |giraph_capture_role |hadoopslave 
-|ai_templates |giraph_description | TBD 
-|ai_templates |giraph_hadoopmaster_resize1 |cb_restart_hadoop_cluster.sh 
-|ai_templates |giraph_hadoopmaster_setup1 |cb_config_hadoop_cluster.sh 
-|ai_templates |giraph_hadoopmaster_setup2 |cb_start_hadoop_cluster.sh 
-|ai_templates |giraph_hadoopslave_resize1 |cb_restart_hadoop_cluster.sh 
-|ai_templates |giraph_hadoopslave_setup1 |cb_config_hadoop_cluster.sh 
-|ai_templates |giraph_hadoopslave_setup2 |cb_start_hadoop_cluster.sh 
-|ai_templates |giraph_load_balancer |False 
-|ai_templates |giraph_load_balancer_target_children|2 
-|ai_templates |giraph_load_balancer_target_port|80 
-|ai_templates |giraph_load_balancer_target_url|unknown 
+|ai_templates |filebench_role_list |filebench 
+|ai_templates |fio_capture_role |fio 
+|ai_templates |fio_description | Deploys an SINGLE VM and runs the fio.\n- LOAD_PROFILE possible values: "default" (single VM).\n- LOAD_LEVEL meaning: number of random IO (read or write) jobs.\n- LOAD_DURATION meaning: not used, a run ends when the problem is solved.\n- COMMENT: For clustered (multi-VM) linpack execution, please use HPCC.
+|ai_templates |fio_fio_bs |64k 
+|ai_templates |fio_fio_data_dir |/fiotest 
+|ai_templates |fio_fio_data_fstyp |ext4 
+|ai_templates |fio_fio_data_volume |NONE 
+|ai_templates |fio_fio_direct |1 
+|ai_templates |fio_fio_engine |sync 
+|ai_templates |fio_fio_file_size |128m 
+|ai_templates |fio_fio_rate_iops |100 
+|ai_templates |fio_fio_setup1 |cb_setup_storage.sh 
+|ai_templates |fio_load_duration |1 
+|ai_templates |fio_load_generator_role |fio 
+|ai_templates |fio_load_level |1 
+|ai_templates |fio_load_manager_role |fio 
+|ai_templates |fio_load_profile |default 
+|ai_templates |fio_metric_aggregator_role |fio 
+|ai_templates |fio_regenerate_data |False 
+|ai_templates |fio_reported_metrics |latency,throughput,write_latency,write_throughput,read_latency,read_troughput,errors,completion_time,quiescent_time
+|ai_templates |fio_resize_supported |False 
+|ai_templates |fio_role_list |fio 
+|ai_templates |fio_start |cb_start_fio.sh 
+|ai_templates |fio_sut |fio 
+|ai_templates |gatest_capture_role |gatest_slave 
+|ai_templates |gatest_description | Futzing____around 
+|ai_templates |gatest_gatest_master_setup1 |gatest_master_setup.sh 
+|ai_templates |gatest_gatest_slave_setup1 |gatest_slave_setup.sh 
+|ai_templates |gatest_load_balancer_supported |False 
+|ai_templates |gatest_load_duration |60 
+|ai_templates |gatest_load_generator_role |gatest_master 
+|ai_templates |gatest_load_level |uniformIXIXI1I6 
+|ai_templates |gatest_load_manager_role |gatest_master 
+|ai_templates |gatest_load_profile |default 
+|ai_templates |gatest_metric_aggregator_role |gatest_master 
+|ai_templates |gatest_regenerate_data |True 
+|ai_templates |gatest_reported_metrics |test1,completion_time,quiescent_time 
+|ai_templates |gatest_resize_supported |True 
+|ai_templates |gatest_role_list |gatest_master,gatest_slave 
+|ai_templates |gatest_start |gatest_start.sh 
+|ai_templates |gatest_sut |gatest_master->3_x_gatest_slave 
+|ai_templates |giraph_capture_role |giraphslave 
+|ai_templates |giraph_description | Deploys a Hadoop/Giraph cluster (1 master and N slave nodes). The master node submits giraph jobs jobs to the cluster.\n- LOAD_PROFILE possible values: "pagerank", "topkpagerank" (for a proper description, consult the section "Page Rank Example" on the Giraph documentation)\n- LOAD_LEVEL meaning: number of vertices on the graph (multiplied by a NUM_VERTICES_FACTOR, with default "100").\n- LOAD_DURATION meaning: not used, a run ends when the giraph job is completed.\n- COMMENT: One of the "Big Data" Workloads. When new slave nodes are added (after an "airesize") the Hadoop/Giraph cluster is reconfigured to include these nodes.
+|ai_templates |giraph_dfs_data_dir |/tmp/cbhadoopdata 
+|ai_templates |giraph_dfs_name_dir |/tmp/cbhadoopname 
+|ai_templates |giraph_edges_per_vertex |3 
+|ai_templates |giraph_giraph_home |~/giraph/giraph/ 
+|ai_templates |giraph_giraphmaster_resize1 |cb_giraph_hadoop_cluster.sh 
+|ai_templates |giraph_giraphmaster_setup1 |cb_config_giraph_cluster.sh 
+|ai_templates |giraph_giraphmaster_setup2 |cb_start_giraph_cluster.sh 
+|ai_templates |giraph_giraphslave_resize1 |cb_giraph_hadoop_cluster.sh 
+|ai_templates |giraph_giraphslave_setup1 |cb_config_giraph_cluster.sh 
+|ai_templates |giraph_giraphslave_setup2 |cb_start_giraph_cluster.sh 
+|ai_templates |giraph_hadoop_examples |hadoop-examples-1.2.1.jar 
+|ai_templates |giraph_hadoop_home |~/hadoop-1.2.1 
+|ai_templates |giraph_is_static_graph |True 
+|ai_templates |giraph_java_home |~/jdk1.6.0_21 
+|ai_templates |giraph_load_balancer_supported |False 
 |ai_templates |giraph_load_duration |60 
-|ai_templates |giraph_load_generator_role |hadoopmaster 
+|ai_templates |giraph_load_generator_role |giraphmaster 
 |ai_templates |giraph_load_level |uniformIXIXI1I3 
-|ai_templates |giraph_load_manager_role |hadoopmaster 
-|ai_templates |giraph_load_profile |terasort 
-|ai_templates |giraph_metric_aggregator_role |hadoopmaster 
-|ai_templates |giraph_start |cb_hadoop_job.sh 
-|ai_templates |giraph_sut |hadoopmaster->3_x_hadoopslave 
+|ai_templates |giraph_load_manager_role |giraphmaster 
+|ai_templates |giraph_load_profile |pagerank 
+|ai_templates |giraph_max_heap_usage_bytes |1000000000 
+|ai_templates |giraph_max_messages_in_memory |1000 
+|ai_templates |giraph_max_partitions_in_memory|10 
+|ai_templates |giraph_metric_aggregator_role |giraphmaster 
+|ai_templates |giraph_num_supersteps |3 
+|ai_templates |giraph_num_vertices_factor |100 
+|ai_templates |giraph_num_workers_factor |1 
+|ai_templates |giraph_out_of_core_base_directory|/path/to/tool|ai_templates |giraph_ramdisk_size_mb |1024 
+|ai_templates |giraph_regenerate_data |True 
+|ai_templates |giraph_reported_metrics |latency,completion_time,quiescent_time
+|ai_templates |giraph_resize_supported |True 
+|ai_templates |giraph_role_list |giraphmaster,giraphslave 
+|ai_templates |giraph_start |cb_giraph_job.sh 
+|ai_templates |giraph_sut |giraphmaster->3_x_giraphslave 
+|ai_templates |giraph_use_out_of_core |False 
+|ai_templates |giraph_use_ramdisk |True 
+|ai_templates |giraph_user_partition_count |100 
+|ai_templates |giraph_zookeeper_home |~/giraph/zookeeper/zookeeper-3.4.6/ 
+|ai_templates |hadoop_block |0 
+|ai_templates |hadoop_block_width |16 
+|ai_templates |hadoop_classes |20 
+|ai_templates |hadoop_cols_of_blocks |2 
 |ai_templates |hadoop_description | Deploys a Hadoop cluster (1 master and N slave nodes). The master node also runs the HiBench benchmark, which is used to submit hadoop jobs to the cluster.\n- LOAD_PROFILE possible values: "sort", "wordcount", "terasort", "dfsioe", "nutchindexing", "pagerank", "bayes", "kmeans", "hivebench" (for a proper description, consult the section "Overview" on the HiBench documentation)\n- LOAD_LEVEL meaning: although the specifics vary by load profile, it basically represents "amount of data" generated and processed by the job.\n- LOAD_DURATION meaning: not used, a run ends when the hadoop job is completed.\n- COMMENT: One of the "Big Data" Workloads. One of the two Virtual Applications types selected for the SPECCloud 2014 v1.0 benchmark. When new slave nodes are added (after an "airesize") the Hadoop cluster is reconfigured to include these nodes.
+|ai_templates |hadoop_dfs_data_dir |/tmp/cbhadoopdata 
+|ai_templates |hadoop_dfs_name_dir |/tmp/cbhadoopname 
+|ai_templates |hadoop_dimensions |20 
+|ai_templates |hadoop_hadoop_examples |share/hadoop/mapreduce/hadoop-mapreduce-examples-VERSION.jar
+|ai_templates |hadoop_hadoop_home |~/hadoop-2.6.0 
+|ai_templates |hadoop_hibench_home |~/HiBench 
+|ai_templates |hadoop_java_home |~/jdk1.6.0_21 
+|ai_templates |hadoop_kmeans_generate_data |1 
 |ai_templates |hadoop_load_balancer_supported |False 
+|ai_templates |hadoop_load_factor |10000 
+|ai_templates |hadoop_max_iteration |5 
+|ai_templates |hadoop_ngrams |3 
+|ai_templates |hadoop_num_maps |2 
+|ai_templates |hadoop_num_of_clusters |5 
+|ai_templates |hadoop_num_of_samples |3000 
+|ai_templates |hadoop_num_reds |2 
+|ai_templates |hadoop_rd_file_size |20 
 |ai_templates |hadoop_regenerate_data |True 
-|ai_templates |hadoop_reported_metrics |throughput,latency,datagen_time,datagen_size
+|ai_templates |hadoop_reported_metrics |throughput,latency,datagen_time,datagen_size,completion_time,errors,quiescent_time
 |ai_templates |hadoop_resize_supported |True 
+|ai_templates |hadoop_role_list |hadoopmaster,hadoopslave 
+|ai_templates |hadoop_rows_of_blocks |2 
+|ai_templates |hadoop_samples_per_inputfile |5000 
+|ai_templates |hadoop_seed_base |1234567890 
+|ai_templates |hadoop_wt_file_size |10 
 |ai_templates |hpcc_cn_hpc_setup1 |cb_config_cn_hpc.sh 
-|ai_templates |hpcc_description | Deploys an HPC cluster formed by N "compute node" VMs and one one "frontend node" VM, and then runs the HPC Challenge benchmark on the cluster.\n- LOAD_PROFILE possible values: "default", consisting of 7 individual tests: HPL (Linpack TPP benchmark), DGEMM (measures the floating point rate of execution of double precision real matrix-matrix multiplication), STREAM (synthetic benchmark that measures sustainable memory bandwidth), PTRANS (parallel matrix transpose), RandomAccess (measures the rate of integer random updates of memory), FFT (measures the floating point rate of execution of Discrete Fourier Transform, Communication bandwidth and latency (effective bandwidth benchmark).\n- LOAD_LEVEL meaning: multiplier for the size of computational problem.\n- LOAD_DURATION meaning: not used, a run ends when the problem is solved.\n- COMMENT: One of the "High Performance Computing" Workloads.
+|ai_templates |hpcc_description | Deploys an HPC cluster formed by N "compute node" VMs and one "frontend node" VM, and then runs the HPC Challenge benchmark on the cluster.\n- LOAD_PROFILE possible values: "default", consisting of 7 individual tests: HPL (Linpack TPP benchmark), DGEMM (measures the floating point rate of execution of double precision real matrix-matrix multiplication), STREAM (synthetic benchmark that measures sustainable memory bandwidth), PTRANS (parallel matrix transpose), RandomAccess (measures the rate of integer random updates of memory), FFT (measures the floating point rate of execution of Discrete Fourier Transform, Communication bandwidth and latency (effective bandwidth benchmark).\n- LOAD_LEVEL meaning: multiplier for the size of computational problem.\n- LOAD_DURATION meaning: not used, a run ends when the problem is solved.\n- COMMENT: One of the "High Performance Computing" Workloads.
 |ai_templates |hpcc_load_balancer_supported |False 
+|ai_templates |hpcc_max_n_size_per_node |40 
+|ai_templates |hpcc_mpiexecutable_path |/usr/lib64/openmpi/bin/ 
+|ai_templates |hpcc_mpilibrary_path |/usr/lib64/openmpi/lib/ 
+|ai_templates |hpcc_nb_size |4 
+|ai_templates |hpcc_processes_per_node |3 
 |ai_templates |hpcc_regenerate_data |True 
-|ai_templates |hpcc_reported_metrics |throughput_G_HPL,throughput_G_PTRANS,throughput_G_RandomAccess,throughput_G_FFTE,throughput_EP_STREAM_Triad,throughput_EP_DGEMM,throughput_RandomRing,lat_RandomRing
+|ai_templates |hpcc_reported_metrics |throughput_G_HPL,throughput_G_PTRANS,throughput_G_RandomAccess,throughput_G_FFTE,throughput_EP_STREAM_Triad,throughput_EP_DGEMM,throughput_RandomRing,lat_RandomRing,completion_time,quiescent_time
 |ai_templates |hpcc_resize_supported |True 
-|ai_templates |ibm_daytrader_description | TBD 
+|ai_templates |hpcc_role_list |fen_hpc,cn_hpc 
+|ai_templates |ibm_daytrader_app_collection |lazy 
+|ai_templates |ibm_daytrader_db2_instance_name|klabuser 
+|ai_templates |ibm_daytrader_db2_on_ramdisk |False 
+|ai_templates |ibm_daytrader_description | Deploys an 2-tier stack, formed by N "application (Websphere) nodes" VMs \n - if N > 1, then a "load balancer (IHS) node" VM is also deployed -\n and one "database (DB2) node" VM, and then runs the DayTrader benchmark on the stack. The actual load is performed by an additional VM, running the WebSphere Studio Workload Simulator (iwlengine).\n- LOAD_PROFILE possible values: "default" (the only profile that we have registered in the iwlengine).- LOAD_LEVEL meaning: number of clients simultaneously performing transactions (parameter "-c" on iwlengine).\n- LOAD_DURATION meaning: total transaction time for all clients.\n- COMMENT: None.
+|ai_templates |ibm_daytrader_load_balancer_supported|True 
+|ai_templates |ibm_daytrader_nr_quotes |40000 
+|ai_templates |ibm_daytrader_nr_users |15000 
+|ai_templates |ibm_daytrader_periodic_measurements|False 
+|ai_templates |ibm_daytrader_regenerate_data |False 
+|ai_templates |ibm_daytrader_reported_metrics |throughput,latency,datagen_time,datagen_size,completion_time,quiescent_time
+|ai_templates |ibm_daytrader_resize_supported |True 
+|ai_templates |ibm_daytrader_role_list |client_daytrader,was,db2 
+|ai_templates |ibm_daytrader_tradedb_size |small 
+|ai_templates |ibmdb2_tradelite_app_collection|lazy 
+|ai_templates |ibmdb2_tradelite_db2_on_ramdisk|False 
 |ai_templates |ibmdb2_tradelite_description | TBD 
+|ai_templates |ibmdb2_tradelite_nr_quotes |40000 
+|ai_templates |ibmdb2_tradelite_nr_users |15000 
+|ai_templates |ibmdb2_tradelite_periodic_measurements|False 
+|ai_templates |ibmdb2_tradelite_reported_metrics|throughput,latency,datagen_time,datagen_size,completion_time,quiescent_time
+|ai_templates |ibmdb2_tradelite_role_list |client_daytrader,was,db2 
+|ai_templates |ibmdb2_tradelite_tradedb_size |small 
+|ai_templates |ibmderby_tradelite_app_collection|lazy 
 |ai_templates |ibmderby_tradelite_description | TBD 
+|ai_templates |ibmderby_tradelite_nr_quotes |40000 
+|ai_templates |ibmderby_tradelite_nr_users |15000 
+|ai_templates |ibmderby_tradelite_periodic_measurements|False 
+|ai_templates |ibmderby_tradelite_reported_metrics|throughput,latency,datagen_time,datagen_size,completion_time,quiescent_time
+|ai_templates |ibmderby_tradelite_role_list |client_tradelite,was 
+|ai_templates |iperf_buffer_length |auto 
 |ai_templates |iperf_description | Deploys a pair of VMs (client and server) and then runs the iperf network benchmark, sending an unidirectional stream of packets between these.\n- LOAD_PROFILE possible values: "tcp" or "udp".\n- LOAD_LEVEL meaning: number of parallel client threads.\n- LOAD_DURATION meaning: maximum length of time to run.\n- COMMENT: One of the "Synthetic" Workloads.
+|ai_templates |iperf_external_target |none 
+|ai_templates |iperf_if_mtu |auto 
 |ai_templates |iperf_load_balancer_supported |False 
+|ai_templates |iperf_rate_limit |auto 
 |ai_templates |iperf_regenerate_data |False 
-|ai_templates |iperf_reported_metrics |bandwidth 
+|ai_templates |iperf_reported_metrics |bandwidth,jitter,loss,completion_time,quiescent_time
 |ai_templates |iperf_resize_supported |False 
+|ai_templates |iperf_role_list |iperfclient,iperfserver 
+|ai_templates |iperf_traffic_mss |auto 
+|ai_templates |linpack_capture_role |linpack 
+|ai_templates |linpack_description | Deploys an SINGLE VM and runs the Intel-optimized linpack benchmark.\n- LOAD_PROFILE possible values: "default" (single VM).\n- LOAD_LEVEL meaning: problem size (square root of the matrix size), multiplied by the LOAD_FACTOR.\n- LOAD_DURATION meaning: not used, a run ends when the problem is solved.\n- COMMENT: For clustered (multi-VM) linpack execution, please use HPCC.
+|ai_templates |linpack_linpack |~/linpack/benchmarks/linpack/xlinpack_xeon64
+|ai_templates |linpack_load_balancer_supported|False 
+|ai_templates |linpack_load_duration |60 
+|ai_templates |linpack_load_factor |1000 
+|ai_templates |linpack_load_generator_role |linpack 
+|ai_templates |linpack_load_level |uniformIXIXI1I5 
+|ai_templates |linpack_load_manager_role |linpack 
+|ai_templates |linpack_load_profile |default 
+|ai_templates |linpack_metric_aggregator_role |linpack 
+|ai_templates |linpack_regenerate_data |False 
+|ai_templates |linpack_reported_metrics |throughput_max,throughput,errors,completion_time,quiescent_time
+|ai_templates |linpack_resize_supported |False 
+|ai_templates |linpack_role_list |linpack 
+|ai_templates |linpack_start |cb_linpack.sh 
+|ai_templates |linpack_sut |linpack 
 |ai_templates |mlg_description | TBD 
+|ai_templates |mlg_role_list |mlg 
+|ai_templates |mongo_ycsb_app_collection |lazy 
+|ai_templates |mongo_ycsb_database_size_versus_memory|0.5 
 |ai_templates |mongo_ycsb_description | TBD 
+|ai_templates |mongo_ycsb_input_records |10000 
+|ai_templates |mongo_ycsb_load_threads |8 
+|ai_templates |mongo_ycsb_mongodb_data_dir |/dbstore 
+|ai_templates |mongo_ycsb_mongodb_data_fstyp |ext4 
+|ai_templates |mongo_ycsb_operation_count |10000 
+|ai_templates |mongo_ycsb_read_ratio |workloaddefault 
+|ai_templates |mongo_ycsb_record_size |2.35 
+|ai_templates |mongo_ycsb_replication_factor |3 
+|ai_templates |mongo_ycsb_reported_metrics |bandwidth,throughput,latency,datagen_time,datagen_size,completion_time,errors,insert_operations,read_operations,quiescent_time
+|ai_templates |mongo_ycsb_role_list |ycsb,mongos,mongo_cfg_server,mongodb 
+|ai_templates |mongo_ycsb_run_counter_name |experiment_id_counter 
+|ai_templates |mongo_ycsb_update_ratio |workloaddefault 
 |ai_templates |mweb_description | TBD 
+|ai_templates |mweb_role_list |client_mweb,mwebfront,mwebback 
+|ai_templates |netperf_client_buffer_size |auto 
 |ai_templates |netperf_description | Deploys a pair of VMs (client and server) and then runs the netperf network benchmark, sending packets (stream or request/response) between these.\n- LOAD_PROFILE possible values: "tcp_stream", "tcp_maerts", "udp_stream" "tcp_rr", "tcp_cc", "tcp_crr", "udp_rr".\n- LOAD_LEVEL meaning: not applicatble/not used.\n- LOAD_DURATION meaning: maximum length of time to run.\n- COMMENT: One of the "Synthetic" Workloads.
+|ai_templates |netperf_external_target |none 
+|ai_templates |netperf_if_mtu |auto 
 |ai_templates |netperf_load_balancer_supported|False 
+|ai_templates |netperf_recv_buffer_size |auto 
 |ai_templates |netperf_regenerate_data |False 
+|ai_templates |netperf_reported_metrics |bandwidth,throughput,completion_time,quiescent_time
+|ai_templates |netperf_request_response_size |auto 
 |ai_templates |netperf_resize_supported |False 
+|ai_templates |netperf_role_list |netclient,netserver 
+|ai_templates |netperf_send_buffer_size |auto 
+|ai_templates |netperf_server_buffer_size |auto 
 |ai_templates |nullworkload_description | Deploys one or more VMs, and then continuously executes a variable-length sleep, followed by the reporting of fake performance numbers at the end.\n- LOAD_PROFILE possible values: "default" (since this is just sleep call, multiple profiles don't make any sense).\n- LOAD_LEVEL meaning: does not matter/do not care.\n- LOAD_DURATION meaning: the length of the sleep call.\n- COMMENT: One of the "Synthetic" Workloads. This a very useful workload to test a Cloud's management/infrastructure in an "ideal" or "baseline" scenario (without any resource starvation from workloads on compute nodes). The fact that, despite not executing any actual meaningful workload on the VM, both Guest OS (actual) and Application metrics are reported back to CB's Metric Store, makes it also an interesting "sanity check" workload.
 |ai_templates |nullworkload_load_balancer_supported|False 
 |ai_templates |nullworkload_regenerate_data |False 
-|ai_templates |nullworkload_reported_metrics |bandwidth,throughput,latency 
+|ai_templates |nullworkload_reported_metrics |bandwidth,throughput,latency,completion_time,errors,quiescent_time
 |ai_templates |nullworkload_resize_supported |True 
+|ai_templates |nullworkload_role_list |tinyvm 
+|ai_templates |nuttcp_capture_role |nuttcpserver 
+|ai_templates |nuttcp_description | Deploys a pair of VMs (client and server) and then runs the nuttcp network benchmark, sending an unidirectional stream of packets between these.\n- LOAD_PROFILE possible values: "tcp" or "udp".\n- LOAD_LEVEL meaning: number of parallel client threads.\n- LOAD_DURATION meaning: maximum length of time to run.\n- COMMENT: One of the "Synthetic" Workloads.
+|ai_templates |nuttcp_external_target |none 
+|ai_templates |nuttcp_if_mtu |auto 
+|ai_templates |nuttcp_load_balancer_supported |False 
+|ai_templates |nuttcp_load_duration |uniformIXIXI70I90 
+|ai_templates |nuttcp_load_generator_role |nuttcpclient 
+|ai_templates |nuttcp_load_level |uniformIXIXI1I5 
+|ai_templates |nuttcp_load_manager_role |nuttcpclient 
+|ai_templates |nuttcp_load_profile |tcp 
+|ai_templates |nuttcp_metric_aggregator_role |nuttcpclient 
+|ai_templates |nuttcp_nuttcpclient_setup1 |cb_check_nuttcp_client.sh 
+|ai_templates |nuttcp_nuttcpserver_setup1 |cb_check_nuttcp_server.sh 
+|ai_templates |nuttcp_rate_limit |none 
+|ai_templates |nuttcp_regenerate_data |False 
+|ai_templates |nuttcp_reported_metrics |bandwidth,completion_time,quiescent_time
+|ai_templates |nuttcp_resize_supported |False 
+|ai_templates |nuttcp_role_list |nuttcpclient,nuttcpserver 
+|ai_templates |nuttcp_start |cb_nuttcp.sh 
+|ai_templates |nuttcp_sut |nuttcpclient->nuttcpserver 
+|ai_templates |nuttcp_traffic_direction |r 
+|ai_templates |nuttcp_traffic_mss |auto 
+|ai_templates |nuttcp_traffic_window |auto 
+|ai_templates |open_daytrader_app_collection |lazy 
+|ai_templates |open_daytrader_db2_on_ramdisk |False 
 |ai_templates |open_daytrader_description | TBD 
+|ai_templates |open_daytrader_nr_quotes |40000 
+|ai_templates |open_daytrader_nr_users |15000 
+|ai_templates |open_daytrader_periodic_measurements|False 
+|ai_templates |open_daytrader_role_list |client_daytrader,geronimo,mysql 
+|ai_templates |open_daytrader_tradedb_size |small 
+|ai_templates |redis_ycsb_app_collection |lazy 
+|ai_templates |redis_ycsb_database_size_versus_memory|0.5 
 |ai_templates |redis_ycsb_description | Deploys one or more VMs running standalone Redis server(s), plus one VM running the YCSB benchmark. This single VM sends requests to all seed Redis VMs simultaneously.\n- LOAD_PROFILE possible values: "workload"{a-f} (for a proper description, consult the section "Core Workloads" on the YCSB documentation)\n- LOAD_LEVEL meaning: number of threads on YCSB (parameter -threads).\n- LOAD_DURATION meaning: not used, a run ends when all YCSB operations (default is 1000) are finished.\n- COMMENT: One of the "Big Data" Workloads. One of the two Virtual Applications types selected for the SPECCloud 2014 v1.0 benchmark. When new Redis nodes are added (after an "airesize") the VM running YCSB will automatically direct requests to these new nodes.
+|ai_templates |redis_ycsb_input_records |10000 
 |ai_templates |redis_ycsb_load_balancer_supported|False 
 |ai_templates |redis_ycsb_load_profile |workloadd 
+|ai_templates |redis_ycsb_operation_count |10000 
 |ai_templates |redis_ycsb_read_ratio |workloaddefault 
+|ai_templates |redis_ycsb_record_size |2.35 
+|ai_templates |redis_ycsb_redis_data_dir |/dbstore 
 |ai_templates |redis_ycsb_regenerate_data |True 
-|ai_templates |redis_ycsb_reported_metrics |bandwidth,throughput,latency,datagen_time,datagen_size
+|ai_templates |redis_ycsb_replication_factor |4 
+|ai_templates |redis_ycsb_reported_metrics |bandwidth,throughput,latency,datagen_time,datagen_size,completion_time,errors,insert_operations,read_operations,quiescent_time
 |ai_templates |redis_ycsb_resize_supported |True 
+|ai_templates |redis_ycsb_role_list |ycsb,redis 
+|ai_templates |redis_ycsb_run_counter_name |experiment_id_counter 
 |ai_templates |redis_ycsb_update_ratio |workloaddefault 
 |ai_templates |specimap_description | TBD 
+|ai_templates |specimap_role_list |specclient,mailsut 
+|ai_templates |specjbb_balloon_delay |300 
+|ai_templates |specjbb_balloon_size |500 
 |ai_templates |specjbb_description | TBD 
+|ai_templates |specjbb_experiment_output_collection_dir|specjbb_balloon_experiment_results 
+|ai_templates |specjbb_experiment_output_collection_host|xxx.xxx.xxx.xxx 
+|ai_templates |specjbb_java_home |j9vm_sdk 
+|ai_templates |specjbb_role_list |specjbb 
+|ai_templates |specjbb_run_counter_name |experiment_id_counter 
+|ai_templates |specjbb_specific_parameters |BALLOON_SIZE:BALLOON_DELAY 
+|ai_templates |specjbb_specjbb_rampup |20 
 |ai_templates |windesktop_description | TBD 
+|ai_templates |windesktop_role_list |client_windows,windows 
+|ai_templates |xping_capture_role |xpingsender 
+|ai_templates |xping_description | Deploys a pair of VMs (sender and receiver) and then runs \"ping\" between them sending a specific number of ICMP packets between these.\n- LOAD_PROFILE possible values: "icmp".\n- LOAD_LEVEL meaning: number of packets to send\n- LOAD_DURATION meaning: not used, a run ends when all packets are sent.\n- COMMENT: One of the "Synthetic" Workloads.
+|ai_templates |xping_external_target |none 
+|ai_templates |xping_if_mtu |auto 
+|ai_templates |xping_load_balancer_supported |False 
+|ai_templates |xping_load_duration |uniformIXIXI70I90 
+|ai_templates |xping_load_generator_role |xpingsender 
+|ai_templates |xping_load_level |uniformIXIXI1I5 
+|ai_templates |xping_load_manager_role |xpingsender 
+|ai_templates |xping_load_profile |icmp 
+|ai_templates |xping_metric_aggregator_role |xpingsender 
+|ai_templates |xping_packet_size |auto 
+|ai_templates |xping_packet_ttl |auto 
+|ai_templates |xping_regenerate_data |False 
+|ai_templates |xping_reported_metrics |latency,completion_time,quiescent_time
+|ai_templates |xping_resize_supported |False 
+|ai_templates |xping_role_list |xpingsender,xpingreceiver 
+|ai_templates |xping_start |cb_xping.sh 
+|ai_templates |xping_sut |xpingsender->xpingreceiver 
+|ai_templates |xping_xpingreceiver_setup1 |cb_check_xping_receiver.sh 
+|ai_templates |xping_xpingsender_setup1 |cb_check_xping_sender.sh 
+|aidrs_defaults |attach_parallelism |1 
+|aidrs_defaults |notification_channel |auto 
 |aidrs_defaults |ssh_key_name |cbtool_rsa 
+|aidrs_templates |simpleyc_iait |uniformIXIXI120I180 
+|aidrs_templates |simpleyc_lifetime |uniformIXIXI600I900 
+|aidrs_templates |simpleyc_load_duration |60 
+|aidrs_templates |simpleyc_load_level |4 
+|aidrs_templates |simpleyc_max_ais |8000 
+|aidrs_templates |simpleyc_type |cassandra_ycsb 
 |api_defaults |username |msilva 
+|fi_templates |cinder-api-kp_fault |pkill -9 -U cinder__-f cinder-api 
+|fi_templates |cinder-scheduler-kp_fault |pkill -9 -U cinder__-f cinder-scheduler
+|fi_templates |cinder-volume-kp_fault |pkill -9 -U cinder__-f cinder-volume 
+|fi_templates |glance-api-kp_fault |pkill -9 -U glance -f glance-api 
+|fi_templates |glance-registry-kp_fault |pkill -9 -U glance -f glance-registry
+|fi_templates |keystone-ec_fault |cp -n /usr/bin/keystone-all /usr/bin/keystone-all-backup; echo -n '' > /usr/bin/keystone-all; pkill -9 -U keystone -f keystone-all
+|fi_templates |keystone-kp_fault |pkill -9 -U keystone -f keystone-all 
+|fi_templates |libvirt-kp_fault |pkill -9 libvirt 
+|fi_templates |neutron-dhcp-agent-ec_fault |cp -n /usr/bin/neutron-dhcp-agent /usr/bin/neutron-dhcp-agent-backup; echo -n '' > /usr/bin/neutron-dhcp-agent; pkill -9 -U neutron -f neutron-dhcp-agent
+|fi_templates |neutron-dhcp-agent-ec_repair |cp -f /usr/bin/neutron-dhcp-agent-backup /usr/bin/neutron-dhcp-agent
+|fi_templates |neutron-dhcp-agent-kp_fault |pkill -9 -U neutron -f neutron-dhcp-agent
+|fi_templates |neutron-dhcp-agent-kp_repair | 
+|fi_templates |neutron-dhcp-agent-ss_fault |service neutron-dhcp-agent stop 
+|fi_templates |neutron-dhcp-agent-ss_repair |service neutron-dhcp-agent start 
+|fi_templates |neutron-l3-agent-ec_fault |cp -n /usr/bin/neutron-l3-agent /usr/bin/neutron-l3-agent-backup; echo -n '' > /usr/bin/neutron-l3-agent; pkill -9 -U neutron -f neutron-l3-agent
+|fi_templates |neutron-l3-agent-ec_repair |cp -f /usr/bin/neutron-l3-agent-backup /usr/bin/neutron-l3-agent
+|fi_templates |neutron-l3-agent-kp_fault |pkill -9 -U neutron -f neutron-l3-agent
+|fi_templates |neutron-l3-agent-kp_repair | 
+|fi_templates |neutron-l3-agent-ss_fault |service neutron-l3-agent stop 
+|fi_templates |neutron-l3-agent-ss_repair |service neutron-l3-agent start 
+|fi_templates |neutron-metadata-agent-ec_fault|cp -n /usr/bin/neutron-metadata-agent /usr/bin/neutron-metadata-agent-backup; echo -n '' > /usr/bin/neutron-metadata-agent; pkill -9 -U neutron -f neutron-metadata-agent
+|fi_templates |neutron-metadata-agent-ec_repair|cp -f /usr/bin/neutron-metadata-agent-backup /usr/bin/neutron-metadata-agent
+|fi_templates |neutron-metadata-agent-kp_fault|pkill -9 -U neutron -f neutron-metadata-agent
+|fi_templates |neutron-metadata-agent-kp_repair| 
+|fi_templates |neutron-metadata-agent-ss_fault|service neutron-metadata-agent stop 
+|fi_templates |neutron-metadata-agent-ss_repair|service neutron-metadata-agent start 
+|fi_templates |neutron-openvswitch-agent-ec_fault|cp -n /usr/bin/neutron-openvswitch-agent /usr/bin/neutron-openvswitch-agent-backup; echo -n '' > /usr/bin/neutron-openvswitch-agent; pkill -9 -U neutron -f neutron-openvswitch-agent
+|fi_templates |neutron-openvswitch-agent-ec_repair|cp -f /usr/bin/neutron-openvswitch-agent-backup /usr/bin/neutron-openvswitch-agent
+|fi_templates |neutron-openvswitch-agent-ss_fault|service neutron-openvswitch-agent stop
+|fi_templates |neutron-openvswitch-agent-ss_repair|service neutron-openvswitch-agent start
+|fi_templates |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx|pkill -9 -U neutron -f neutron-openvswitch-agent
+|fi_templates |neutron-server-ec_fault |cp -n /usr/bin/neutron-server /usr/bin/neutron-server-backup; echo -n '' > /usr/bin/neutron-server; pkill -9 -U neutron -f neutron-server
+|fi_templates |neutron-server-ec_repair |cp -f /usr/bin/neutron-server-backup /usr/bin/neutron-server
+|fi_templates |neutron-server-kp_fault |pkill -9 -U neutron -f neutron-server
+|fi_templates |neutron-server-kp_repair | 
+|fi_templates |neutron-server-ss_fault |service neutron-server stop 
+|fi_templates |neutron-server-ss_repair |service neutron-server start 
+|fi_templates |neutron-vpn-agent-ec_fault |cp -n /usr/bin/neutron-vpn-agent /usr/bin/neutron-vpn-agent-backup; echo -n '' > /usr/bin/neutron-vpn-agent; pkill -9 -U neutron -f neutron-vpn-agent
+|fi_templates |neutron-vpn-agent-ec_repair |cp -f /usr/bin/neutron-vpn-agent-backup /usr/bin/neutron-vpn-agent
+|fi_templates |neutron-vpn-agent-kp_fault |pkill -9 -U neutron -f neutron-vpn-agent
+|fi_templates |neutron-vpn-agent-kp_repair | 
+|fi_templates |neutron-vpn-agent-ss_fault |service neutron-vpn-agent stop 
+|fi_templates |neutron-vpn-agent-ss_repair |service neutron-vpn-agent start 
+|fi_templates |nova-api-kp_fault |pkill -9 -U nova -f nova-api 
+|fi_templates |nova-cert-kp_fault |pkill -9 -U nova -f nova-cert 
+|fi_templates |nova-compute-kp_fault |pkill -9 -U nova -f nova-compute 
+|fi_templates |nova-conductor-kp_fault |pkill -9 -U nova -f nova-conductor 
+|fi_templates |nova-consoleauth-kp_fault |pkill -9 -U nova -f nova-consoleauth 
+|fi_templates |nova-novncproxy-kp_fault |pkill -9 -U nova -f nova-novncproxy 
+|fi_templates |nova-scheduler-ec_fault |cp -n /usr/bin/nova-scheduler /usr/bin/nova-scheduler-backup; echo -n '' > /usr/bin/nova-scheduler; pkill -9 -U nova -f nova-scheduler
+|fi_templates |nova-scheduler-kp_fault |pkill -9 -U nova -f nova-scheduler 
+|fi_templates |openvswitch-kp_fault |pkill -9 ovs-vswitchd 
+|filestore |config_string |portREPLEQUALREPLPORT;lock_fileREPLEQUALREPLSTORESWORKINGDIR/REPLUSERUrsync.lock;log_fileREPLEQUALREPLLOGDIR/REPLUSERUrsyncd.log;pid_fileREPLEQUALREPLSTORESWORKINGDIR/REPLUSERUrsyncd.pid;[REPLUSERUcb];____pathREPLEQUALREPLBASEDIR;____uidREPLEQUALREPLUSER;____gidREPLEQUALREPLUSER;____read_onlyREPLEQUALno;____listREPLEQUALyes
+|filestore |hostname |xxx.xxx.xxx.xxx 
+|filestore |kind |rsync 
+|filestore |port |10000 
+|filestore |protocol |TCP 
+|filestore |usage |private 
+|filestore |username |msilva 
+|firs_defaults |notification_channel |auto 
 |firs_defaults |ssh_key_name |cbtool_rsa 
+|gui_defaults |branding |favicon.ico,20,http://localhost 
+|gui_defaults |port |8080 
+|gui_defaults |sslcert |False 
+|gui_defaults |sslkey |False 
 |logstore |config_string |DOLLARModLoad_imudp.so;DOLLARUDPServerRun_REPLPORT;DOLLARActionFileDefaultTemplate_RSYSLOGTraditionalFileFormat;DOLLAREscapeControlCharactersOnReceive_off;*.info--mail.none--authpriv.none--cron.none________________REPLLOGDIR/REPLUSERmessages;authpriv.*______________________________________________REPLLOGDIR/REPLUSERsecure;mail.*__________________________________________________REPLLOGDIR/REPLUSERmaillog;cron.*__________________________________________________REPLLOGDIR/REPLUSERcron;*.emerg_________________________________________________*;uucp,news.crit__________________________________________REPLLOGDIR/REPLUSERspooler;local0.*________________________________________________REPLLOGDIR/REPLUSERoperations.log;local1.*________________________________________________REPLLOGDIR/REPLUSERreport.log;local2.*________________________________________________REPLLOGDIR/REPLUSERsubmmiter.log;local3.*________________________________________________REPLLOGDIR/REPLUSERloadmanager.log;local4.*________________________________________________REPLLOGDIR/REPLUSERgui.log;local5.*________________________________________________REPLLOGDIR/REPLUSERremotescripts.log;local6.*________________________________________________REPLLOGDIR/REPLUSERmonitor.log;local7.*________________________________________________REPLLOGDIR/REPLUSERsubscribe.log
-|mon_defaults |reported_management_vm_metric_names|uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,utc_offset_delta,comments,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_007_application_start,mgt_101_capture_request_originated,mgt_102_capture_request_sent,mgt_103_capture_request_completed,mgt_201_runstate_request_originated,mgt_202_runstate_request_sent,mgt_203_runstate_request_completed,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed,mgt_999_provisioning_request_failed
-|mon_defaults |vm_attributes |uuid,name,cloud_ip,last_known_state,cloud_name,model,cloud_hostname,vmc_name,vmc_cloud_ip,host_name,host_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,utc_offset_delta
-|mon_defaults |vm_id1 |uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,utc_offset_delta,comments
-|mon_defaults |vm_id2 |uuid,name,role,ai_name,type,utc_offset_delta
-|mon_defaults |vm_management_metrics_header |uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,utc_offset_delta,comments,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_007_application_start,mgt_101_capture_request_originated,mgt_102_capture_request_sent,mgt_103_capture_request_completed,mgt_201_runstate_request_originated,mgt_202_runstate_request_sent,mgt_203_runstate_request_completed,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed,mgt_999_provisioning_request_failed
-|mon_defaults |vm_runtime_app_metrics_header |time,time_h,uuid,name,role,ai_name,type,utc_offset_delta,app_load_profile,app_load_id,app_load_level,app_throughput,app_latency,app_bandwidth
-|mon_defaults |vm_runtime_os_metrics_header |time,time_h,uuid,name,role,ai_name,type,utc_offset_delta,cpu_speed,cores,cpu_num,proc_total,proc_run,cpu_idle,cpu_aidle,cpu_user,cpu_system,cpu_wio,cpu_nice,mem_total,mem_free,mem_cached,mem_buffers,mem_shared,swap_total,swap_free,swap_procs_running,swap_in_flight,swap_procs_blocked,swap_KB_read,swap_ios_read,swap_KB_write,swap_ios_write,pkts_in,bytes_in,pkts_out,bytes_out,disk_total,disk_free,ds_in_flight,ds_KB_read,ds_ios_read,ds_KB_write,ds_ios_write
-|query |vm |BYUSERNAME,BYVMC,BYHOST,BYROLE,BYTYPE,BYAI,BYAIDRS,BYBATCH,BYSLA_PROVISIONING,BYSLA_RUNTIME
+|logstore |emit_facility |23 
+|logstore |expid_change_restart |False 
+|logstore |just_restarted |True 
+|metricstore |password |cbpwdZ9 
+|mon_defaults |app_m |app_load_id,app_load_profile,app_load_level,app_datagen_size,app_datagen_time,app_throughput,app_latency,app_bandwidth,app_errors,app_completion_time,app_sla_runtime
+|mon_defaults |crt_m |mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_instance_preparation,mgt_007_application_start
+|mon_defaults |host_management_metrics_header |uuid,name,cloud_ip,model,vmc_name,vmc_cloud_ip,total_ai_provisioning_time,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_instance_preparation,mgt_007_application_start,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed
+|mon_defaults |hs_id1 |uuid,name,cloud_ip,model,vmc_name,vmc_cloud_ip,total_ai_provisioning_time
+|mon_defaults |reported_management_vm_metric_names|uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,tenant,netname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,utc_offset_delta,comments,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_instance_preparation,mgt_007_application_start,mgt_101_capture_request_originated,mgt_102_capture_request_sent,mgt_103_capture_request_completed,mgt_201_runstate_request_originated,mgt_202_runstate_request_sent,mgt_203_runstate_request_completed,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed,mgt_999_provisioning_request_failed
+|mon_defaults |reported_runtime_app_vm_metric_names|app_load_id,app_load_profile,app_load_level,app_datagen_size,app_datagen_time,app_throughput,app_latency,app_bandwidth,app_errors,app_completion_time
+|mon_defaults |trace_attributes |command_originated,command,name,vmc_arrived,vmc_issued,vmc_departed,vmc_failed,vm_issued,vm_reservations,vm_arrived,vm_arriving,vm_departed,vm_failed,ai_issued,ai_reservations,ai_arrived,ai_arriving,ai_departed,ai_failed
+|mon_defaults |trace_header |command_originated,command,name,vmc_arrived,vmc_issued,vmc_departed,vmc_failed,vm_issued,vm_reservations,vm_arrived,vm_arriving,vm_departed,vm_failed,ai_issued,ai_reservations,ai_arrived,ai_arriving,ai_departed,ai_failed
+|mon_defaults |tstamp_app |time,time_h,time_cbtool,time_cbtool_h
+|mon_defaults |tstamp_os |time,time_h 
+|mon_defaults |vm_attributes |uuid,name,cloud_ip,last_known_state,cloud_name,model,cloud_hostname,vmc_name,vmc_cloud_ip,host_name,host_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,utc_offset_delta,tenant,netname,total_ai_provisioning_time
+|mon_defaults |vm_id1 |uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,tenant,netname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,utc_offset_delta,comments
+|mon_defaults |vm_id2 |uuid,name,role,ai_name,type,host_name,aidrs_name,sla_provisioning
+|mon_defaults |vm_management_metrics_header |uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,tenant,netname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,utc_offset_delta,comments,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_instance_preparation,mgt_007_application_start,mgt_101_capture_request_originated,mgt_102_capture_request_sent,mgt_103_capture_request_completed,mgt_201_runstate_request_originated,mgt_202_runstate_request_sent,mgt_203_runstate_request_completed,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed,mgt_999_provisioning_request_failed
+|mon_defaults |vm_runtime_app_metrics_header |time,time_h,time_cbtool,time_cbtool_h,uuid,name,role,ai_name,type,host_name,aidrs_name,sla_provisioning,app_load_id,app_load_profile,app_load_level,app_datagen_size,app_datagen_time,app_throughput,app_latency,app_bandwidth,app_errors,app_completion_time,app_sla_runtime
+|mon_defaults |vm_runtime_os_metrics_header |time,time_h,uuid,name,role,ai_name,type,host_name,aidrs_name,sla_provisioning,cpu_speed,cores,cpu_num,proc_total,proc_run,cpu_idle,cpu_aidle,cpu_user,cpu_system,cpu_wio,cpu_nice,mem_total,mem_free,mem_cached,mem_buffers,mem_shared,swap_total,swap_free,swap_procs_running,swap_in_flight,swap_procs_blocked,swap_KB_read,swap_ios_read,swap_KB_write,swap_ios_write,pkts_in,bytes_in,pkts_out,bytes_out,disk_total,disk_free,ds_in_flight,ds_KB_read,ds_ios_read,ds_KB_write,ds_ios_write
+|query |get_vm_list |False 
+|query |vm |BYUSERNAME,BYVMC,BYHOST,BYROLE,BYTYPE,BYAI,BYAIDRS,BYBATCH,BYSLA_PROVISIONING,BYSLA_RUNTIME,BYAPP_ERROR
+|setup |global_object_list |setup,logstore,metricstore,filestore,dash_defaults,mon_defaults,vpn,space,time,vmc_defaults,vm_defaults,ai_defaults,aidrs_defaults,vmcrs_defaults,firs_defaults,vm_templates,ai_templates,aidrs_templates,vmcrs_templates,fi_templates,firs_templates,query,admission_control,api_defaults,gui_defaults
+|space |generated_configurations_dir |/path/to/tool/lib/auxiliary//../../configs/generated
 |space |log_dir |/var/log/cloudbench 
-|space |ssh_key_name |/home/msilva/cloudbench/lib/auxiliary//../../credentials/cbtool_rsa
-|time |start_time |1413827659 
+|space |ssh_key_name |/path/to/tool/lib/auxiliary//../../credentials/cbtool_rsa
+|time |start_time |1455816637 
+|vm_defaults |alternative_remote_mtu |False 
+|vm_defaults |alternative_remote_mtu_default |1200 
+|vm_defaults |alternative_remote_mtu_interface|default 
 |vm_defaults |attempts |24 
-|vm_defaults |credentials_dir |/home/msilva/cloudbench/lib/auxiliary//../../credentials
-|vm_defaults |jump_host | 
+|vm_defaults |create_jumphost |False 
+|vm_defaults |credentials_dir |/path/to/tool/lib/auxiliary//../../credentials
+|vm_defaults |expected_mtu |1500 
+|vm_defaults |force_failure |False 
+|vm_defaults |is_jumphost |False 
+|vm_defaults |jumphost_base_name |cb-jumphost 
+|vm_defaults |jumphost_login |auto 
+|vm_defaults |jumphost_netnames |all 
+|vm_defaults |leave_instance_on_failure |False 
+|vm_defaults |local_dir_name |cloudbench 
+|vm_defaults |migrate_protocol_supported |tcp,rdma 
 |vm_defaults |netname |private 
-|vm_defaults |prov_netname |private 
-|vm_defaults |run_netname |private 
+|vm_defaults |notification_channel |auto 
+|vm_defaults |protect_protocol_supported |tcp,rdma 
+|vm_defaults |size |from_vm_template 
 |vm_defaults |ssh_key_name |cbtool_rsa 
+|vm_defaults |sticky_app_status |False 
+|vm_defaults |tenant |default 
+|vm_defaults |use_floating_ip |False 
+|vm_defaults |use_jumphost |False 
+|vm_defaults |use_vpn_ip |False 
+|vm_defaults |userdata |False 
+|vm_defaults |vpn_only |False 
+|vm_templates |cassandra |size:platinum64,imageid1:cb_speccloud_cassandra,login:cbuser,remote_dir_name:cbtool
+|vm_templates |giraphpmaster |size:copper32,eclipsed_size:gold32,imageids:1,imageid1:cb_giraph
+|vm_templates |giraphslave |size:iron32,eclipsed_size:gold32,imageids:1,imageid1:cb_giraph
+|vm_templates |hadoopmaster |size:platinum64,imageid1:cb_speccloud_kmeans,login:cbuser,remote_dir_name:cbtool
+|vm_templates |hadoopslave |size:platinum64,imageid1:cb_speccloud_kmeans,login:cbuser,remote_dir_name:cbtool
+|vm_templates |iperfclient |size:iron32,imageids:1,imageid1:cb_iperf
+|vm_templates |iperfserver |size:iron32,imageids:1,imageid1:cb_iperf
+|vm_templates |nuttcpclient |size:iron32,imageids:1,imageid1:cb_nuttcp
+|vm_templates |nuttcpserver |size:iron32,imageids:1,imageid1:cb_nuttcp
+|vm_templates |seed |size:platinum64,imageid1:cb_speccloud_cassandra,login:cbuser,remote_dir_name:cbtool
+|vm_templates |xpingreceiver |size:iron32,imageids:1,imageid1:cb_xping
+|vm_templates |xpingsender |size:iron32,imageids:1,imageid1:cb_xping
+|vm_templates |ycsb |size:platinum64,imageid1:cb_speccloud_cassandra,login:cbuser,remote_dir_name:cbtool
 |vmc_defaults |attempts |24 
+|vmc_defaults |host_user_root |False 
+|vmc_defaults |hosts_cpu |200000 
+|vmc_defaults |hosts_hypervisor_type |QEMU 
+|vmc_defaults |hosts_mem_per_core |10000000 
+|vmc_defaults |hosts_per_vmc |15 
+|vmc_defaults |network_type |vlan 
+|vmc_defaults |networks_per_vmc |2 
+|vmc_defaults |notification_channel |auto 
+|vmcrs_defaults |notification_channel |auto 
 |vmcrs_defaults |ssh_key_name |cbtool_rsa 
+|vpn |address_range_doc |(Optional)ChooseanaddressrangefortheOpenVPN\nnetworktooperateon.
+|vpn |kind |OpenVPN 
+|vpn |netmask |xxx.xxx.xxx.xxx 
+|vpn |network |xxx.xxx.xxx.xxx 
+|vpn |server_bootstrap |xxx.xxx.xxx.xxx 
+|vpn |server_ip |xxx.xxx.xxx.xxx 
+|vpn |server_ip_doc |(Optional)Ifyourcloudnetworkisprivate,\nbutyourCBinstallationisonadifferentnetwork,\nthetoolhastheabilitytoinstruct\ntheVMstouseanOpenVPNserver\ntocontrolthevirtualmachines.\nThisaddressistheexternallyreachableaddress\nwheretheOpenVPNserverwillrun
+|vpn |server_port |1194 
+|vpn |start_server |False 

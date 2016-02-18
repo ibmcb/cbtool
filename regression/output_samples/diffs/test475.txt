@@ -1,3 +1,7 @@
-|arrival |1413828494 
-|identity |/home/msilva/cloudbench/lib/auxiliary//../../credentials/cbtool_rsa
-\|mgt_d \|X 
+|arrival |1455817521 
+|available_cores |200000 
+|available_memory |2048000000000000 
+|cores |200000 
+|hypervisor_type |QEMU 
+|identity |/path/to/tool/lib/auxiliary//../../credentials/cbtool_rsa
+|memory |2048000000000000 

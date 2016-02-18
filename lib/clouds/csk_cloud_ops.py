@@ -25,6 +25,7 @@
 '''
 from os import makedirs, access, F_OK
 from time import time, sleep
+from random import choice
 
 from socket import gethostbyname
 
@@ -819,6 +820,8 @@ class CskCmds(CommonCloudFunctions) :
 
             obj_attr_list["last_known_state"] = "about to send create request"
 
+            self.take_action_if_requested("VM", obj_attr_list, "provision_originated")
+
             _sizeid = self.get_sizes(obj_attr_list)
             _imageid = self.get_images(_zoneid, obj_attr_list)
 
@@ -1202,7 +1205,7 @@ class CskCmds(CommonCloudFunctions) :
                 cbdebug(_msg, True)
                 return _status, _msg
     @trace        
-    def aidefine(self, obj_attr_list) :
+    def aidefine(self, obj_attr_list, current_step) :
         '''
         TBD
         '''
@@ -1233,7 +1236,7 @@ class CskCmds(CommonCloudFunctions) :
                 return _status, _msg
 
     @trace        
-    def aiundefine(self, obj_attr_list) :
+    def aiundefine(self, obj_attr_list, current_step) :
         '''
         TBD
         '''

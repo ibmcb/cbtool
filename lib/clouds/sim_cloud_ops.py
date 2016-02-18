@@ -617,6 +617,8 @@ class SimCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
+            obj_attr_list["host"] = "NA"
+                
             if obj_attr_list["role"] != "predictablevm" :
                 obj_attr_list["cloud_vm_uuid"] = self.generate_random_uuid()
             else :
@@ -634,6 +636,13 @@ class SimCmds(CommonCloudFunctions) :
             obj_attr_list["cloud_mac"] = self.generate_random_mac_address()
             self.get_virtual_hardware_config(obj_attr_list)
 
+            self.take_action_if_requested("VM", obj_attr_list, "provision_originated")
+
+            if "execute_provision_originated_stdout" in obj_attr_list :
+                if obj_attr_list["execute_provision_originated_stdout"].count("tenant") :
+                    _temp_dict = str2dic(obj_attr_list["execute_provision_originated_stdout"].replace('\n',''))
+                    obj_attr_list.update(_temp_dict)
+
             _time_mark_prs = int(time())
             obj_attr_list["mgt_002_provisioning_request_sent"] = _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
 
@@ -646,8 +655,10 @@ class SimCmds(CommonCloudFunctions) :
 
             self.take_action_if_requested("VM", obj_attr_list, "provision_started")
 
+            _time_mark_vmp = int(time())
             self.vm_placement(obj_attr_list)
-
+            obj_attr_list["sim_0021_vm_placement_time"] = _time_mark_vmp - int(time())
+            
             if "meta_tags" in obj_attr_list :
                 if obj_attr_list["meta_tags"] != "empty" and \
                 obj_attr_list["meta_tags"].count(':') and \
@@ -743,7 +754,14 @@ class SimCmds(CommonCloudFunctions) :
             _time_mark_drc = int(time())
             obj_attr_list["mgt_903_deprovisioning_request_completed"] = \
                 _time_mark_drc - _time_mark_drs
-            
+
+            self.take_action_if_requested("VM", obj_attr_list, "deprovision_finished")
+
+            if "execute_deprovision_finished_stdout" in obj_attr_list :
+                if obj_attr_list["execute_deprovision_finished_stdout"].count("tenant") :
+                    _temp_dict = str2dic(obj_attr_list["execute_deprovision_finished_stdout"].replace('\n',''))
+                    obj_attr_list.update(_temp_dict)
+                    
             _status = 0
             
         except CldOpsException, obj :
@@ -908,79 +926,85 @@ class SimCmds(CommonCloudFunctions) :
         return 0, _msg
 
     @trace        
-    def aidefine(self, obj_attr_list) :
+    def aidefine(self, obj_attr_list, current_step) :
         '''
         TBD
         '''
         try :
+            
             _fmsg = "An error has occurred, but no error message was captured"
 
-            _vg = ValueGeneration("NA")
-            
-            for _vm in obj_attr_list["vms"].split(',') :
-                _vm_uuid, _vm_role, _vm_name = _vm.split('|')
-
-                # default distribution is 10-500.  If the user set distribution, use it.
-                _distribution = 'uniformIXIXI10I500'
-                if 'deployment_time_value' in obj_attr_list:
-                    _distribution = obj_attr_list['deployment_time_value']
-
-                self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
-                                             _vm_uuid, "mgt_007_application_start", \
-                                             int(_vg.get_value(_distribution, 0)))
-
-                self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
-                                             obj_attr_list["uuid"], "status", "Application starting up...") 
-
-                if _vm.count("faildb2") :
-                    _fmsg = "Forced failure during AI definition"
-
-            self.take_action_if_requested("AI", obj_attr_list, "all_vms_booted")
-
-            if obj_attr_list["create_performance_emitter"].lower() == "true" :
-                
-                _msg = "Starting a new \"performance emitter\" for " + obj_attr_list["name"]
-                cbdebug(_msg, True)
-
-                _cmd = obj_attr_list["base_dir"] + "/cbact"
-                _cmd += " --procid=" + self.pid
-                _cmd += " --osp=" + obj_attr_list["osp"]
-                _cmd += " --msp=" + obj_attr_list["msp"]
-                _cmd += " --operation=performance-emit"
-                _cmd += " --cn=" + obj_attr_list["cloud_name"]
-                _cmd += " --uuid=" + obj_attr_list["uuid"]
-                _cmd += " --daemon"
-                cbdebug(_cmd)
-
-                _proc_h = Popen(_cmd, shell=True, stdout=PIPE, stderr=PIPE)
-
-                if _proc_h.pid :
-                    _msg = "Performance emitter command \"" + _cmd + "\" "
-                    _msg += " successfully started a new daemon."
-                    _msg += "The process id is " + str(_proc_h.pid) + "."
-                    cbdebug(_msg)
-
-                    _obj_id = obj_attr_list["uuid"] + '-' + "performance-emit"
-                    
-                    _process_identifier = "AI-" + _obj_id
-
-                    self.osci.add_to_list(obj_attr_list["cloud_name"], \
-                                          "GLOBAL", \
-                                          "running_processes", \
-                                          _process_identifier)
-
-                    create_restart_script("restart_cb_perf-emitter", \
-                                          _cmd, \
-                                          obj_attr_list["username"], \
-                                          "performance-emit", \
-                                          obj_attr_list["name"], \
-                                          obj_attr_list["uuid"])
-
-
-            if _fmsg == "Forced failure during AI definition" :
-                _status = 181
-            else :
+            if current_step == "provision_originated" :
                 _status = 0
+
+            else :
+
+                _vg = ValueGeneration("NA")
+                
+                for _vm in obj_attr_list["vms"].split(',') :
+                    _vm_uuid, _vm_role, _vm_name = _vm.split('|')
+    
+                    # default distribution is 10-500.  If the user set distribution, use it.
+                    _distribution = 'uniformIXIXI10I500'
+                    if 'deployment_time_value' in obj_attr_list:
+                        _distribution = obj_attr_list['deployment_time_value']
+    
+                    self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
+                                                 _vm_uuid, "mgt_007_application_start", \
+                                                 int(_vg.get_value(_distribution, 0)))
+    
+                    self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
+                                                 obj_attr_list["uuid"], "status", "Application starting up...") 
+    
+                    if _vm.count("faildb2") :
+                        _fmsg = "Forced failure during AI definition"
+    
+                self.take_action_if_requested("AI", obj_attr_list, "all_vms_booted")
+    
+                if obj_attr_list["create_performance_emitter"].lower() == "true" :
+                    
+                    _msg = "Starting a new \"performance emitter\" for " + obj_attr_list["name"]
+                    cbdebug(_msg, True)
+    
+                    _cmd = obj_attr_list["base_dir"] + "/cbact"
+                    _cmd += " --procid=" + self.pid
+                    _cmd += " --osp=" + obj_attr_list["osp"]
+                    _cmd += " --msp=" + obj_attr_list["msp"]
+                    _cmd += " --operation=performance-emit"
+                    _cmd += " --cn=" + obj_attr_list["cloud_name"]
+                    _cmd += " --uuid=" + obj_attr_list["uuid"]
+                    _cmd += " --daemon"
+                    cbdebug(_cmd)
+    
+                    _proc_h = Popen(_cmd, shell=True, stdout=PIPE, stderr=PIPE)
+    
+                    if _proc_h.pid :
+                        _msg = "Performance emitter command \"" + _cmd + "\" "
+                        _msg += " successfully started a new daemon."
+                        _msg += "The process id is " + str(_proc_h.pid) + "."
+                        cbdebug(_msg)
+    
+                        _obj_id = obj_attr_list["uuid"] + '-' + "performance-emit"
+                        
+                        _process_identifier = "AI-" + _obj_id
+    
+                        self.osci.add_to_list(obj_attr_list["cloud_name"], \
+                                              "GLOBAL", \
+                                              "running_processes", \
+                                              _process_identifier)
+    
+                        create_restart_script("restart_cb_perf-emitter", \
+                                              _cmd, \
+                                              obj_attr_list["username"], \
+                                              "performance-emit", \
+                                              obj_attr_list["name"], \
+                                              obj_attr_list["uuid"])
+    
+    
+                if _fmsg == "Forced failure during AI definition" :
+                    _status = 181
+                else :
+                    _status = 0
 
         except Exception, e :
             _status = 23
@@ -1001,7 +1025,7 @@ class SimCmds(CommonCloudFunctions) :
                 return _status, _msg
 
     @trace        
-    def aiundefine(self, obj_attr_list) :
+    def aiundefine(self, obj_attr_list, current_step) :
         '''
         TBD
         '''

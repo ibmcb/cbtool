@@ -1705,6 +1705,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         self.pre_attach_vm(obj_attr_list)
     
                     elif _obj_type == "AI" :
+                        _status, _fmsg = _cld_conn.aidefine(obj_attr_list, "provision_originated")                        
                         self.pre_attach_ai(obj_attr_list)
     
                     elif _obj_type == "AIDRS" :
@@ -1736,7 +1737,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _vmcreate = True
 
                     elif _obj_type == "AI" :
-                        _status, _fmsg = _cld_conn.aidefine(obj_attr_list)
+                        _status, _fmsg = _cld_conn.aidefine(obj_attr_list, "all_vms_booted")
                         self.assign_roles(obj_attr_list)
                         _aidefine = True
     
@@ -1862,6 +1863,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
 
                     if _obj_type == "VM" :
+
                         if "cloud_name" in obj_attr_list :
                             self.record_management_metrics(_cloud_name, \
                                                            "VM", obj_attr_list, "attach")
@@ -1903,8 +1905,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             self.auto_free_port("qemu_debug", obj_attr_list, "VMC", obj_attr_list["vmc"], obj_attr_list["vmc_cloud_ip"])
                         
                     if _aidefine :
-                        _cld_conn.aiundefine(obj_attr_list)
-    
+                        _cld_conn.aiundefine(obj_attr_list,"deprovision_finished")
+
                     if _created_object :
                         self.osci.destroy_object(_cloud_name, _obj_type, obj_attr_list["uuid"], \
                                                 obj_attr_list, False)
@@ -1914,7 +1916,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         self.osci.create_object(_cloud_name, "FAILEDTRACKING" + _obj_type, obj_attr_list["uuid"] + unique_state_key, \
                                                 obj_attr_list, False, True, 3600)
                     _xmsg = "Done "
-                    cberr(_xmsg)                
+                    cberr(_xmsg)
 
             else :
                 
@@ -2053,12 +2055,32 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _status = 12345
                     raise self.ObjectOperationException(_msg, _status)
 
-            if obj_attr_list["transfer_files"].lower() != "false" :
-                
-                _msg = "Checking ssh accessibility on " + obj_attr_list["name"]
-                _msg += " (" + obj_attr_list["login"] + "@" + obj_attr_list["prov_cloud_ip"] + ")..."
+            _msg = "Checking ssh accessibility on " + obj_attr_list["name"]
+            _msg += " (ssh " + obj_attr_list["login"] + "@" + obj_attr_list["prov_cloud_ip"] + ")..."
+            cbdebug(_msg, True)
+            _proc_man.retriable_run_os_command("/bin/true", \
+                                               obj_attr_list["prov_cloud_ip"], \
+                                               _max_tries, \
+                                               _retry_interval, \
+                                               obj_attr_list["transfer_files"], \
+                                               obj_attr_list["debug_remote_commands"], \
+                                               True)
+
+            _msg = "Bootstrapping " + obj_attr_list["name"] + " (creating file"
+            _msg += " cb_os_paramaters.txt in \"" + obj_attr_list["login"] 
+            _msg += "\" user's home dir on " + obj_attr_list["prov_cloud_ip"] + ")..."
+
+            if str(obj_attr_list["cloud_init_bootstrap"]).lower() == "true" :
+                _msg += " done by cloud-init!"
                 cbdebug(_msg, True)
-                _proc_man.retriable_run_os_command("/bin/true", \
+            else :
+                cbdebug(_msg, True)                    
+                _bcmd = get_boostrap_command(obj_attr_list, self.osci)
+                
+                _msg = "BOOTSTRAP: " + _bcmd
+                cbdebug(_msg)
+
+                _proc_man.retriable_run_os_command(_bcmd, \
                                                    obj_attr_list["prov_cloud_ip"], \
                                                    _max_tries, \
                                                    _retry_interval, \
@@ -2066,63 +2088,35 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                    obj_attr_list["debug_remote_commands"], \
                                                    True)
 
-                _msg = "Bootstrapping " + obj_attr_list["name"] + " (creating file"
-                _msg += " cb_os_paramaters.txt in \"" + obj_attr_list["login"] 
-                _msg += "\" user's home dir on " + obj_attr_list["prov_cloud_ip"] + ")..."
 
-                if str(obj_attr_list["cloud_init_bootstrap"]).lower() == "true" :
-                    _msg += " done by cloud-init!"
-                    cbdebug(_msg, True)
-                else :
-                    cbdebug(_msg, True)                    
-                    _bcmd = get_boostrap_command(obj_attr_list, self.osci)
-                    
-                    _msg = "BOOTSTRAP: " + _bcmd
-                    cbdebug(_msg)
-    
-                    _proc_man.retriable_run_os_command(_bcmd, \
-                                                       obj_attr_list["prov_cloud_ip"], \
-                                                       _max_tries, \
-                                                       _retry_interval, \
-                                                       obj_attr_list["transfer_files"], \
-                                                       obj_attr_list["debug_remote_commands"], \
-                                                       True)
+            _msg = "Sending a copy of the code tree to "
+            _msg += obj_attr_list["name"] + " ("+ obj_attr_list["prov_cloud_ip"] + ")..."
 
-
-                _msg = "Sending a copy of the code tree to "
-                _msg += obj_attr_list["name"] + " ("+ obj_attr_list["prov_cloud_ip"] + ")..."
-
-                if str(obj_attr_list["cloud_init_rsync"]).lower() == "true" :
-                    _msg += " done by cloud-init!"
-                    cbdebug(_msg, True)
-
-                else :
-                    cbdebug(_msg, True)
-
-                    _rcmd = "rsync -e \"" + _proc_man.rsync_conn + "\""
-                    _rcmd += " --exclude-from "
-                    _rcmd += "'" +  obj_attr_list["exclude_list"] + "' -az "
-                    _rcmd += "--delete --no-o --no-g --inplace -O " 
-                    _rcmd += obj_attr_list["base_dir"] + "/* " 
-                    _rcmd += obj_attr_list["prov_cloud_ip"] + ":~/" 
-                    _rcmd += obj_attr_list["remote_dir_name"] + '/'
-        
-                    _msg = "RSYNC: " + _rcmd
-                    cbdebug(_msg)
-    
-                    _proc_man.retriable_run_os_command(_rcmd, \
-                                                       "127.0.0.1", \
-                                                       _max_tries, \
-                                                       _retry_interval, \
-                                                       obj_attr_list["transfer_files"], \
-                                                       obj_attr_list["debug_remote_commands"], \
-                                                       True)                
-            else :
-                _msg = "Bypassing the bootstrapping and the sending of a copy of"
-                _msg += " the code tree to " + obj_attr_list["name"] 
-                _msg += " ("+ obj_attr_list["prov_cloud_ip"] + ")..."
+            if str(obj_attr_list["cloud_init_rsync"]).lower() == "true" :
+                _msg += " done by cloud-init!"
                 cbdebug(_msg, True)
 
+            else :
+                cbdebug(_msg, True)
+
+                _rcmd = "rsync -e \"" + _proc_man.rsync_conn + "\""
+                _rcmd += " --exclude-from "
+                _rcmd += "'" +  obj_attr_list["exclude_list"] + "' -az "
+                _rcmd += "--delete --no-o --no-g --inplace -O " 
+                _rcmd += obj_attr_list["base_dir"] + "/* " 
+                _rcmd += obj_attr_list["prov_cloud_ip"] + ":~/" 
+                _rcmd += obj_attr_list["remote_dir_name"] + '/'
+    
+                _msg = "RSYNC: " + _rcmd
+                cbdebug(_msg)
+
+                _proc_man.retriable_run_os_command(_rcmd, \
+                                                   "127.0.0.1", \
+                                                   _max_tries, \
+                                                   _retry_interval, \
+                                                   obj_attr_list["transfer_files"], \
+                                                   obj_attr_list["debug_remote_commands"], \
+                                                   True)                
 
             _delay = int(time()) - _start
             self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "status", "Files transferred...")
@@ -2137,16 +2131,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     obj_attr_list["identity"] = obj_attr_list["identity"].replace(obj_attr_list["username"], \
                                                                                   obj_attr_list["login"])
 
-                if "run_generic_scripts" in obj_attr_list and obj_attr_list["run_generic_scripts"].lower() != "false" :
-                    _msg = "Performing generic VM post_boot configuration on "
-                    _msg += obj_attr_list["name"] + " ("+ obj_attr_list["prov_cloud_ip"] + ")..."     
-                    cbdebug(_msg, True)
-
-                else :
-                    _msg = "Bypassing generic VM post_boot configuration on "
-                    _msg += obj_attr_list["name"] 
-                    _msg += " ("+ obj_attr_list["prov_cloud_ip"] + ")..." 
-                    cbdebug(_msg, True)
+                _msg = "Performing generic VM post_boot configuration on "
+                _msg += obj_attr_list["name"] + " ("+ obj_attr_list["prov_cloud_ip"] + ")..."     
+                cbdebug(_msg, True)
 
                 _cmd = "~/" + obj_attr_list["remote_dir_name"] + "/scripts/common/cb_post_boot.sh"
                 
@@ -2223,7 +2210,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
-
 
             self.osci.pending_object_set(obj_attr_list["cloud_name"], "AI", obj_attr_list["uuid"], "status", "Running VM Applications..." )
             _status, _fmsg  = self.parallel_vm_config_for_ai(obj_attr_list["cloud_name"], \
@@ -2743,7 +2729,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 elif _obj_type == "AI" :
                     self.pre_detach_ai(obj_attr_list)
-
+                    _cld_conn.aiundefine(obj_attr_list,"deprovision_finished")
+                    
                 elif _obj_type == "AIDRS" :
                     self.pre_detach_aidrs(obj_attr_list)
 
@@ -4259,16 +4246,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                 _msg += "destroyed."
                                 cbdebug(_msg)
 
-                    if "run_application_scripts" in obj_attr_list and obj_attr_list["run_application_scripts"].lower() != "false" :
-                        _status, _fmsg  = self.parallel_vm_config_for_ai(obj_attr_list["cloud_name"], \
-                                                                         obj_attr_list["uuid"], \
-                                                                         "resize")
-                    else :
-                        _msg = "Bypassing application-specific \"setup\" operations"
-                        _fmsg = "none"
-                        cbdebug(_msg, True)
-                        _status = 0
-
+                    _status, _fmsg  = self.parallel_vm_config_for_ai(obj_attr_list["cloud_name"], \
+                                                                     obj_attr_list["uuid"], \
+                                                                     "resize")
+                    
                     if not _status :
 
                         _aux_dict = {}

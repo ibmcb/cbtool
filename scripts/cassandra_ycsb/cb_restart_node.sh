@@ -144,11 +144,13 @@ then
 
     if [[ $THRIFTAPIUP -eq 1 ]]
     then
+        syslog_netcat "Cassandra service running on seed ${FIRST_SEED}"    	
         check_cassandra_cluster_state ${FIRST_SEED} 10 20
         STATUS=$?
         if [[  $STATUS -eq 0 ]]
         then 
-            syslog_netcat "Cassandra cluster fully formed. All nodes registered"
+            syslog_netcat "Cassandra cluster fully formed. All nodes registered after Cassandra restart"
+            STATUS=0
         else
             syslog_netcat "Failed to form Cassandra cluster! - NOK"
         fi

@@ -1,2 +1,13 @@
-
-
+Background operation execution success. Operation "vmc-detach" will be processed asynchronously, through the command "/path/to/tool/lib/operations//../../cbact --procid=TEST_msilva --osp=port:xxxx,experiment_inst:TEST_msilva,host:xxx.xxx.xxx.xxx ,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:xxxx,password:cbpwdZ9,timeout:240,host:xxx.xxx.xxx.xxx ,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,simzone_X,false --operation=vmc-detach --cn=TESTCLOUD --uuid=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx --daemon". The process id is xxxx.
+|Redis Version |2.8.6 
+|VMCs ISSUED |4 
+|HOSTs ISSUED |0 
+|VMs ISSUED |0 
+|VMs SLA PROVISIONING VIOLATED |0 
+|VMs SLA RUNTIME VIOLATED |0 
+|VMs APPLICATION ERRORS |6 
+|AIs ISSUED |0 
+|AIDRSs ISSUED |0 
+|VMCRSs ISSUED |0 
+|FIRSs ISSUED |0 
+|EXPERIMENT COUNTER |68 

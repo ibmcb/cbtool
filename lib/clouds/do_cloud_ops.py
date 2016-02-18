@@ -484,7 +484,7 @@ runcmd:
 
             obj_attr_list["cloud_vm_uuid"] = "NA"
             _instance = False
-
+            
             obj_attr_list["cloud_vm_name"] = "cb-" + obj_attr_list["username"]
             obj_attr_list["cloud_vm_name"] += '-' + "vm" + obj_attr_list["name"].split("_")[1]
             obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["role"]
@@ -494,6 +494,8 @@ runcmd:
 
             obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"].replace("_", "-")
             obj_attr_list["last_known_state"] = "about to connect to DigitalOcean"
+
+            self.take_action_if_requested("VM", obj_attr_list, "provision_originated")
 
             access_token = obj_attr_list["credentials"]
 
@@ -877,7 +879,7 @@ runcmd:
                 return _status, _msg
 
     @trace
-    def aidefine(self, obj_attr_list) :
+    def aidefine(self, obj_attr_list, current_step) :
         '''
         TBD
         '''
@@ -907,7 +909,7 @@ runcmd:
                 return _status, _msg
 
     @trace
-    def aiundefine(self, obj_attr_list) :
+    def aiundefine(self, obj_attr_list, current_step) :
         '''
         TBD
         '''

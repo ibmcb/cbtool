@@ -850,6 +850,8 @@ class Ec2Cmds(CommonCloudFunctions) :
             obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"].replace("_", "-")
             obj_attr_list["last_known_state"] = "about to connect to ec2 manager"
 
+            self.take_action_if_requested("VM", obj_attr_list, "provision_originated")
+
             if not self.ec2conn :
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
                              obj_attr_list["vmc_name"])
@@ -1198,7 +1200,7 @@ class Ec2Cmds(CommonCloudFunctions) :
                 cbdebug(_msg, True)
                 return _status, _msg
     @trace        
-    def aidefine(self, obj_attr_list) :
+    def aidefine(self, obj_attr_list, current_step) :
         '''
         TBD
         '''
@@ -1229,7 +1231,7 @@ class Ec2Cmds(CommonCloudFunctions) :
                 return _status, _msg
 
     @trace        
-    def aiundefine(self, obj_attr_list) :
+    def aiundefine(self, obj_attr_list, current_step) :
         '''
         TBD
         '''

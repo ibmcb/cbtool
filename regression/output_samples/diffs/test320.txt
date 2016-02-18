@@ -1,2 +1,51 @@
-
-
+Going to wait until the value on counter "AI (Objects created on the Object Store)" is equal to XX (currently it is equal to XX) waiting 1.0 seconds between samples, for a maximum of 36000.0 seconds. The counter is assumed to be decreasing.
+ status: Counter "AI (Objects created on the Object Store)" equals 2 after 0.347179889679 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 2 after 1.34717988968 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 2 after 2.34717988968 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 2 after 3.34717988968 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 2 after 4.34717988968 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 2 after 5.34717988968 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 2 after 6.34717988968 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 2 after 7.34717988968 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 2 after 8.34717988968 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 2 after 9.34717988968 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 2 after 10.3471798897 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 2 after 11.3471798897 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 2 after 12.3471798897 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 2 after 13.3471798897 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 2 after 14.3471798897 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 2 after 15.3471798897 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 2 after 16.3471798897 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 2 after 17.3471798897 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 2 after 18.3471798897 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 2 after 19.3471798897 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 2 after 20.3471798897 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 2 after 21.3471798897 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 2 after 22.3471798897 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 2 after 23.3471798897 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 2 after 24.3471798897 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 2 after 25.3471798897 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 1 after 26.3471798897 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 1 after 27.3471798897 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 1 after 28.3471798897 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 1 after 29.3471798897 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 1 after 30.3471798897 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 1 after 31.3471798897 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 1 after 32.3471798897 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 1 after 33.3471798897 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 1 after 34.3471798897 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI (Objects created on the Object Store)" equals 0 after 35.3471798897 seconds (the counter is assumed to be decreasing).
+Waited 35.3471798897 seconds until "AIs (Objects created on the Object Store)" was equal to 0.
+|Redis Version |2.8.6 
+|HOSTs |60 
+|VMCs ISSUED |16 
+|HOSTs ISSUED |0 
+|VMs ISSUED |123 
+|VMs SLA PROVISIONING VIOLATED |0 
+|VMs SLA RUNTIME VIOLATED |0 
+|VMs APPLICATION ERRORS |1 
+|AIs ISSUED |32 
+|AIDRSs ISSUED |1 
+|VMCRSs ISSUED |0 
+|FIRSs ISSUED |0 
+|EXPERIMENT COUNTER |513 

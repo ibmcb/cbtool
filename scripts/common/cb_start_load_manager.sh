@@ -48,6 +48,16 @@ then
 fi
 
 load_manager_vm=`get_my_ai_attribute load_manager_vm`
+run_application_scripts=`get_my_ai_attribute run_application_scripts`
+run_application_scripts=`echo $run_application_scripts | tr '[:upper:]' '[:lower:]'`
+
+debug_remote_commands=`get_my_ai_attribute debug_remote_commands`
+debug_remote_commands=`echo $debug_remote_commands | tr '[:upper:]' '[:lower:]'`
+
+if [[ $run_application_scripts == "false" && $debug_remote_commands == "true" ]]
+then
+    daemonize="--logdest console -v 5"
+fi
 
 cat > /tmp/cbloadman <<EOF
 #!/usr/bin/env bash
@@ -67,23 +77,29 @@ sudo chmod 755 /usr/local/bin/cbloadman
 
 if [[ x"${load_manager_vm}" == x"${my_vm_uuid}" ]]
 then
-    running_load_managers=`pgrep -f $operation`
-
-    if [[ x"${running_load_managers}" == x ]]
+    if [[ $run_application_scripts == "false" && $debug_remote_commands == "true" ]]
     then
-        syslog_netcat "Starting Load Manager"
-        /usr/local/bin/cbloadman
+        syslog_netcat "The command \"appdev\" was run on the orchestrator. Please start the Load Manager in debug mode by running /usr/loca/bin/cbloadman"    
+    else        
+        running_load_managers=`pgrep -f $operation`
+    
+        if [[ x"${running_load_managers}" == x ]]
+        then
+            syslog_netcat "Starting Load Manager"
+            /usr/local/bin/cbloadman
 
-	    sudo pkill -9 -f cbloadmanwatch
-		sudo screen -d -m -S cbloadmanwatch bash -c "su - ${my_login_username}"
-		sudo screen -p 0 -S cbloadmanwatch -X stuff "while true ; do sleep 30; /usr/local/bin/cbloadman; done$(printf \\r)"				    	
-
-        exit 0
-    else
-        syslog_netcat "A Load Manager is already running"
-        exit 2
+            sudo pkill -9 -f cbloadmanwatch
+            sudo screen -d -m -S cbloadmanwatch bash -c "su - ${my_login_username}"
+            sudo screen -p 0 -S cbloadmanwatch -X stuff "while true ; do sleep 30; /usr/local/bin/cbloadman; done$(printf \\r)"                        
+    
+            exit 0
+        else
+            syslog_netcat "A Load Manager is already running"
+            exit 2
+        fi
     fi
 fi
 syslog_netcat "This VM is not designated as Load Manager"
+
 exit 0
 exit 0

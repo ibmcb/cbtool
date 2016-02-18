@@ -1,4 +1,4 @@
-shell TESTCLOUD rm /tmp/cb*_was_used_on_execution
+shell TESTCLOUD rm -rf /tmp/cb*_was_used_on_execution
 cldalter TESTCLOUD vm_defaults execute_script_name=/home/msilva/cloudbench/regression/..//regression/scripts/execute_on_staging.sh
 vmattach TESTCLOUD tinyvm auto empty iron32 execute_provision_complete async
 waituntil TESTCLOUD VM ARRIVING=0 decreasing 1

@@ -43,6 +43,8 @@ do
     ((pos++))
 done
 
+linux_distribution
+
 # Start Mongo Config-Serverv
 
 SERVICES[1]="mongodb"
@@ -66,9 +68,9 @@ STATUS=$?
 
 if [[ ${STATUS} -eq 0 ]]
 then
-        syslog_netcat "MongoDB Configuration server running - OK"
+    syslog_netcat "MongoDB Configuration server running - OK"
 else
-        syslog_netcat "MongoS Configuration server failed to start - NOK"
+    syslog_netcat "MongoS Configuration server failed to start - NOK"
 fi
 
 provision_application_stop $START

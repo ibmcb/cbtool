@@ -71,7 +71,7 @@ def selective_dict_update(maindict, extradict) :
             return True 
 
 @trace
-def str2dic(input_string) :
+def str2dic(input_string, raise_exception = True) :
     '''
     String needs to be in the form KEY1:VALUE1,KEY2:VALUE2,...,KEYN:VALUEN
     '''
@@ -96,12 +96,15 @@ def str2dic(input_string) :
         if _status :
             _msg = "String to dictionary conversion failure: " + _fmsg
             cberr(_msg)
-            raise DataOpsException(_status, _msg)
+            if raise_exception :
+                raise DataOpsException(_status, _msg)
+            else :
+                return None
         else :
             return _dictionary
 
 @trace
-def dic2str(input_dictionary) :
+def dic2str(input_dictionary, raise_exception = True) :
     '''
     String will be output in the form KEY1:VALUE1,KEY2:VALUE2,...,KEYN:VALUEN
     '''
@@ -121,7 +124,10 @@ def dic2str(input_dictionary) :
         if _status :
             _msg = "Dictionary to string conversion failure: " + _fmsg
             cberr(_msg)
-            raise DataOpsException(_status, _msg)
+            if raise_exception :
+                raise DataOpsException(_status, _msg)
+            else :
+                return None
         else :
             return _string
 
@@ -203,7 +209,7 @@ def makeTimestamp(supplied_epoch_time = False) :
     if not supplied_epoch_time :
         _now = datetime.utcnow()
     else :
-        _now = datetime.fromtimestamp(supplied_epoch_time)
+        _now = datetime.fromtimestamp(float(supplied_epoch_time))
         
     _date = _now.date()
 

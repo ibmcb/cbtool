@@ -1,5 +1,10 @@
-|arrival |1413828239 
-|command_originated |1413828239 
+|ai_issued |30 
+|arrival |1455817261 
+|attach_parallelism |1 
+|command_originated |1455817261 
 |comments | 
-|identity |/home/msilva/cloudbench/lib/auxiliary//../../credentials/cbtool_rsa
+|identity |/path/to/tool/lib/auxiliary//../../credentials/cbtool_rsa
+|notification_channel |auto 
 |ssh_key_name |cbtool_rsa 
+|vm_issued |121 
+|vmc_issued |16 

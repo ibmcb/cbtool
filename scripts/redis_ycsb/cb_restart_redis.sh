@@ -33,6 +33,8 @@ do
     ((pos++))
 done
 
+linux_distribution
+
 SERVICES[1]="redis-server"
 SERVICES[2]="redis"
 service_stop_disable ${SERVICES[${LINUX_DISTRO}]}

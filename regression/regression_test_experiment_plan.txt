@@ -1506,7 +1506,7 @@ echo ########################################################## [TEST] 304: END 
 echo 
 echo ############################# [TEST] 305: START aiattach TESTCLOUD ibm_daytrader default default none none pause_all_vms_booted async ##############################
 aiattach TESTCLOUD ibm_daytrader default default none none pause_all_vms_booted async
-waitfor TESTCLOUD 5s
+waitfor TESTCLOUD 15s
 msgpub TESTCLOUD VM staging ai_26;continue;something
 waituntil TESTCLOUD AI ARRIVING=0 decreasing 1
 ailist TESTCLOUD
@@ -2946,7 +2946,7 @@ echo ############################################################### [TEST] 571:
 echo 
 echo ################################## [TEST] 572: START aiattach ibm_daytrader default default none none pause_all_vms_booted async ###################################
 aiattach ibm_daytrader default default none none pause_all_vms_booted async
-waitfor 5s
+waitfor 15s
 msgpub VM staging ai_26;continue;something
 waituntil AI ARRIVING=0 decreasing 1
 ailist

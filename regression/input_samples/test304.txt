@@ -1,5 +1,5 @@
 aiattach TESTCLOUD ibm_daytrader default default none none pause_all_vms_booted async
-waitfor TESTCLOUD 5s
+waitfor TESTCLOUD 15s
 msgpub TESTCLOUD VM staging ai_26;continue;something
 waituntil TESTCLOUD AI ARRIVING=0 decreasing 1
 ailist TESTCLOUD

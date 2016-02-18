@@ -1,7 +1,47 @@
-
-
-
-
-
-
-
+ status: Checking ssh accessibility on vm_52 (ssh klabuser@xxx.xxx.xxx.xxx )...
+ status: Bootstrapping vm_52 (creating file cb_os_paramaters.txt in "klabuser" user's home dir on xxx.xxx.xxx.xxx )...
+ status: Sending a copy of the code tree to vm_52 (xxx.xxx.xxx.xxx )...
+ status: Checking ssh accessibility on vm_54 (ssh klabuser@xxx.xxx.xxx.xxx )...
+ status: Bootstrapping vm_54 (creating file cb_os_paramaters.txt in "klabuser" user's home dir on xxx.xxx.xxx.xxx )...
+ status: Sending a copy of the code tree to vm_54 (xxx.xxx.xxx.xxx )...
+ status: Checking ssh accessibility on vm_53 (ssh klabuser@xxx.xxx.xxx.xxx )...
+ status: Bootstrapping vm_53 (creating file cb_os_paramaters.txt in "klabuser" user's home dir on xxx.xxx.xxx.xxx )...
+ status: Sending a copy of the code tree to vm_53 (xxx.xxx.xxx.xxx )...
+ status: Starting a new "performance emitter" for ai_9
+ status: Performing generic application instance post_boot configuration on all VMs belonging to ai_9...
+ status: Running application-specific "setup" configuration on all VMs belonging to ai_9...
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1455817711 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1455817756 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1455817773 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1455817866 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1455817872 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|name |role |size |cloud_ip |host_name |vmc_pool |netname |ai |aidrs |uuid
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|Redis Version |2.8.6 
+|HOSTs |60 
+|VMCs ISSUED |16 
+|HOSTs ISSUED |0 
+|VMs ISSUED |54 
+|VMs SLA PROVISIONING VIOLATED |0 
+|VMs SLA RUNTIME VIOLATED |0 
+|VMs APPLICATION ERRORS |7 
+|AIs ISSUED |9 
+|AIDRSs ISSUED |0 
+|VMCRSs ISSUED |0 
+|FIRSs ISSUED |0 
+|EXPERIMENT COUNTER |310 

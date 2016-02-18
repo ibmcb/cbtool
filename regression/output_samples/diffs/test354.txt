@@ -1,8 +1,89 @@
-#utc_offset_delta:8
-#app_load_profile:9
-#app_load_id:10
-#app_load_level:11
-#app_throughput:12
-#app_latency:13
-#app_bandwidth:14
-time,time_h,uuid,name,role,ai_name,type,utc_offset_delta,app_load_profile,app_load_id,app_load_level,app_throughput,app_latency,app_bandwidth
+ status: Multiple samples of runtime_app metrics for all VMs were found (the file /path/to/tool/lib/auxiliary//../../data/REGRESSION_B/VM_runtime_app_REGRESSION_B.csv will *NOT* be empty).
+Monitor extraction success. VM runtime application performance data samples were written to the file /path/to/tool/lib/auxiliary//../../data/REGRESSION_B/VM_runtime_app_REGRESSION_B.csv.
+Data is available at the url "rsync://xxx.xxx.xxx.xxx :10000/msilva_cb/data/REGRESSION_B".
+#time_cbtool:3
+#time_cbtool_h:4
+#uuid:5
+#name:6
+#role:7
+#ai_name:8
+#type:9
+#host_name:10
+#aidrs_name:11
+#sla_provisioning:12
+#app_load_id:13
+#app_load_profile:14
+#app_load_level:15
+#app_datagen_size:16
+#app_datagen_time:17
+#app_throughput:18
+#app_latency:19
+#app_bandwidth:20
+#app_errors:21
+#app_completion_time:22
+#app_sla_runtime:23
+time,time_h,time_cbtool,time_cbtool_h,uuid,name,role,ai_name,type,host_name,aidrs_name,sla_provisioning,app_load_id,app_load_profile,app_load_level,app_datagen_size,app_datagen_time,app_throughput,app_latency,app_bandwidth,app_errors,app_completion_time,app_sla_runtime
+18294,02/18/2016 05:35:33 PM UTC,294,02/18/2016 12:35:33 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_29,hadoopmaster,ai_2,hadoop,simhostX,none,NA,1,terasort,2,818.125655042,376.727671041,504.341818933,190.109560383,NA,936.761023134,534.912333652,NA
+18321,02/18/2016 05:36:00 PM UTC,321,02/18/2016 12:36:00 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_26,client_daytrader,ai_1,ibm_daytrader,simhostX,none,NA,1,default,8,478.978475118,399.611091136,292.608058541,804.440719595,NA,NA,97.5673305526,NA
+18353,02/18/2016 05:36:32 PM UTC,353,02/18/2016 12:36:32 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_33,client_daytrader,ai_3,ibm_daytrader,simhostX,none,NA,1,default,1,874.754562447,508.562288648,791.982599724,331.195523811,NA,NA,999.572627207,NA
+18389,02/18/2016 05:37:08 PM UTC,389,02/18/2016 12:37:08 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_39,netclient,ai_5,netperf,simhostX,none,NA,1,tcp_stream,1,NA,NA,964.270714651,NA,349.689259766,NA,707.271991267,NA
+18394,02/18/2016 05:37:13 PM UTC,394,02/18/2016 12:37:13 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_36,client_daytrader,ai_4,ibm_daytrader,simhostX,none,NA,1,default,7,132.141976286,62.8804445264,525.204476008,846.862096387,NA,NA,1.37969733946,NA
+18427,02/18/2016 05:37:46 PM UTC,427,02/18/2016 12:37:46 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_26,client_daytrader,ai_1,ibm_daytrader,simhostX,none,NA,2,default,4,826.044334535,500.411819088,55.6780387062,888.724238715,NA,NA,424.076232068,NA
+18454,02/18/2016 05:38:13 PM UTC,454,02/18/2016 12:38:13 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_45,client_daytrader,ai_7,ibm_daytrader,simhostX,none,NA,1,default,4,403.387110613,643.983488148,636.795892316,434.30801569,NA,NA,683.83954578,NA
+18465,02/18/2016 05:38:24 PM UTC,465,02/18/2016 12:38:24 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_39,netclient,ai_5,netperf,simhostX,none,NA,2,tcp_stream,1,NA,NA,191.079968735,NA,975.914674565,NA,549.941788608,NA
+18471,02/18/2016 05:38:30 PM UTC,471,02/18/2016 12:38:30 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_33,client_daytrader,ai_3,ibm_daytrader,simhostX,none,NA,2,default,3,227.378242018,809.3796208,402.611159597,278.759199499,NA,NA,67.3696792398,NA
+18491,02/18/2016 05:38:50 PM UTC,491,02/18/2016 12:38:50 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_47,client_daytrader,ai_8,ibm_daytrader,simhostX,none,NA,1,default,3,561.240796715,992.734390886,738.028516544,771.163571445,NA,NA,786.602314811,NA
+18495,02/18/2016 05:38:54 PM UTC,495,02/18/2016 12:38:54 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_52,client_daytrader,ai_9,ibm_daytrader,simhostX,none,NA,1,default,4,660.659326269,946.70555945,427.726937113,871.874246363,NA,NA,474.880118594,NA
+18497,02/18/2016 05:38:56 PM UTC,497,02/18/2016 12:38:56 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_36,client_daytrader,ai_4,ibm_daytrader,simhostX,none,NA,2,default,5,44.2910431563,945.777880133,771.319395343,160.987706059,NA,NA,291.842979742,NA
+18505,02/18/2016 05:39:04 PM UTC,505,02/18/2016 12:39:04 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_55,client_daytrader,ai_10,ibm_daytrader,simhostX,none,NA,1,default,4,898.597838306,727.090998063,796.57714235,47.0853675876,NA,NA,16.469943448,NA
+18513,02/18/2016 05:39:12 PM UTC,513,02/18/2016 12:39:12 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_71,netclient,ai_14,netperf,simhostX,none,NA,1,tcp_stream,1,NA,NA,43.5797694265,NA,742.883102115,NA,479.367974559,NA
+18514,02/18/2016 05:39:13 PM UTC,514,02/18/2016 12:39:13 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_90,coremark,ai_21,coremark,simhostX,none,NA,1,default,4,NA,NA,745.421669577,283.937830122,NA,NA,147.022739846,NA
+18517,02/18/2016 05:39:16 PM UTC,517,02/18/2016 12:39:16 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_75,netclient,ai_16,netperf,simhostX,none,NA,1,tcp_stream,1,NA,NA,649.577912118,NA,639.708292153,NA,761.934211557,NA
+18523,02/18/2016 05:39:22 PM UTC,523,02/18/2016 12:39:22 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_73,netclient,ai_15,netperf,simhostX,none,NA,1,tcp_stream,1,NA,NA,498.911467123,NA,202.635695717,NA,365.686455436,NA
+18527,02/18/2016 05:39:26 PM UTC,527,02/18/2016 12:39:26 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_89,fen_hpc,ai_20,hpcc,simhostX,none,NA,1,default,4,NA,NA,NA,NA,NA,NA,537.348297446,NA
+18531,02/18/2016 05:39:30 PM UTC,531,02/18/2016 12:39:30 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_77,netclient,ai_17,netperf,simhostX,none,NA,1,tcp_stream,1,NA,NA,952.646241925,NA,325.317482854,NA,184.755445052,NA
+18531,02/18/2016 05:39:30 PM UTC,531,02/18/2016 12:39:30 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_58,client_daytrader,ai_11,ibm_daytrader,simhostX,none,NA,1,default,1,299.497266073,694.04591946,334.973527449,717.074945125,NA,NA,704.352336112,NA
+18532,02/18/2016 05:39:31 PM UTC,532,02/18/2016 12:39:31 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_26,client_daytrader,ai_1,ibm_daytrader,simhostX,none,NA,3,default,8,190.808120655,467.724617781,955.374081212,969.477060981,NA,NA,716.159797495,NA
+18539,02/18/2016 05:39:38 PM UTC,539,02/18/2016 12:39:38 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_64,client_daytrader,ai_12,ibm_daytrader,simhostX,none,NA,1,default,9,134.109510455,737.373745549,623.282363185,49.0997746967,NA,NA,774.633700233,NA
+18541,02/18/2016 05:39:40 PM UTC,541,02/18/2016 12:39:40 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_67,client_daytrader,ai_13,ibm_daytrader,simhostX,none,NA,1,default,7,897.545233417,735.848032227,399.027212845,284.14157085,NA,NA,393.913564891,NA
+18546,02/18/2016 05:39:45 PM UTC,546,02/18/2016 12:39:45 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_91,filebench,ai_22,filebench,simhostX,none,NA,1,fileserver,1,NA,NA,453.777654962,103.323144712,646.224060788,NA,292.923691771,NA
+18548,02/18/2016 05:39:47 PM UTC,548,02/18/2016 12:39:47 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_39,netclient,ai_5,netperf,simhostX,none,NA,3,tcp_stream,1,NA,NA,231.018539567,NA,306.785101173,NA,988.70919541,NA
+18555,02/18/2016 05:39:54 PM UTC,555,02/18/2016 12:39:54 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_84,client_tradelite,ai_19,ibmderby_tradelite,simhostX,none,NA,1,default,4,149.286116564,831.112634024,513.888858177,81.9998204416,NA,NA,990.318425992,NA
+18564,02/18/2016 05:40:03 PM UTC,564,02/18/2016 12:40:03 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_79,client_daytrader,ai_18,ibm_daytrader,simhostX,none,NA,1,default,2,647.597675414,272.723077422,585.109228731,650.730534885,NA,NA,459.354256618,NA
+18565,02/18/2016 05:40:04 PM UTC,565,02/18/2016 12:40:04 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_90,coremark,ai_21,coremark,simhostX,none,NA,2,default,1,NA,NA,158.267642132,239.674730826,NA,NA,621.509508396,NA
+18567,02/18/2016 05:40:06 PM UTC,567,02/18/2016 12:40:06 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_101,fen_hpc,ai_25,hpcc,simhostX,none,NA,1,default,5,NA,NA,NA,NA,NA,NA,217.799315601,NA
+18568,02/18/2016 05:40:07 PM UTC,568,02/18/2016 12:40:07 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_33,client_daytrader,ai_3,ibm_daytrader,simhostX,none,NA,3,default,2,156.447349967,2.38397503482,296.633639512,49.1526981791,NA,NA,893.150517858,NA
+18578,02/18/2016 05:40:17 PM UTC,578,02/18/2016 12:40:17 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_97,netclient,ai_24,netperf,simhostX,none,NA,1,tcp_stream,1,NA,NA,93.2309643256,NA,443.164548288,NA,361.280833636,NA
+18583,02/18/2016 05:40:22 PM UTC,583,02/18/2016 12:40:22 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_71,netclient,ai_14,netperf,simhostX,none,NA,2,tcp_stream,1,NA,NA,600.393407166,NA,982.496632824,NA,726.324040386,NA
+18587,02/18/2016 05:40:26 PM UTC,587,02/18/2016 12:40:26 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_89,fen_hpc,ai_20,hpcc,simhostX,none,NA,2,default,2,NA,NA,NA,NA,NA,NA,239.854875157,NA
+18597,02/18/2016 05:40:36 PM UTC,597,02/18/2016 12:40:36 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_93,client_daytrader,ai_23,ibm_daytrader,simhostX,none,NA,1,default,3,803.707970288,743.319706152,746.942940222,269.776758773,NA,NA,310.307060588,NA
+18599,02/18/2016 05:40:38 PM UTC,599,02/18/2016 12:40:38 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_36,client_daytrader,ai_4,ibm_daytrader,simhostX,none,NA,3,default,1,523.648132266,829.760790299,47.5963673887,973.872280339,NA,NA,314.538643345,NA
+18599,02/18/2016 05:40:38 PM UTC,599,02/18/2016 12:40:38 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_73,netclient,ai_15,netperf,simhostX,none,NA,2,tcp_stream,1,NA,NA,489.685230818,NA,24.7576795662,NA,51.2392699851,NA
+18605,02/18/2016 05:40:44 PM UTC,605,02/18/2016 12:40:44 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_75,netclient,ai_16,netperf,simhostX,none,NA,2,tcp_stream,1,NA,NA,121.952290391,NA,881.268546188,NA,914.479239583,NA
+18605,02/18/2016 05:40:44 PM UTC,605,02/18/2016 12:40:44 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_90,coremark,ai_21,coremark,simhostX,none,NA,3,default,1,NA,NA,758.932355338,726.099853945,NA,NA,582.302374534,NA
+18607,02/18/2016 05:40:46 PM UTC,607,02/18/2016 12:40:46 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_47,client_daytrader,ai_8,ibm_daytrader,simhostX,none,NA,2,default,3,896.719422212,229.162355366,223.508517383,799.546068431,NA,NA,504.842779115,NA
+18609,02/18/2016 05:40:48 PM UTC,609,02/18/2016 12:40:48 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_77,netclient,ai_17,netperf,simhostX,none,NA,2,tcp_stream,1,NA,NA,418.139869334,NA,157.374638753,NA,121.463990241,NA
+18610,02/18/2016 05:40:49 PM UTC,610,02/18/2016 12:40:49 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_52,client_daytrader,ai_9,ibm_daytrader,simhostX,none,NA,2,default,2,179.822384422,304.269904129,918.080266528,789.543000326,NA,NA,393.943971507,NA
+18618,02/18/2016 05:40:57 PM UTC,618,02/18/2016 12:40:57 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_55,client_daytrader,ai_10,ibm_daytrader,simhostX,none,NA,2,default,8,740.49665969,688.248771829,41.9868910839,228.184159315,NA,NA,294.594097034,NA
+18627,02/18/2016 05:41:06 PM UTC,627,02/18/2016 12:41:06 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_58,client_daytrader,ai_11,ibm_daytrader,simhostX,none,NA,2,default,8,310.162055661,698.494164735,670.17415793,313.561194966,NA,NA,970.490384786,NA
+18637,02/18/2016 05:41:16 PM UTC,637,02/18/2016 12:41:16 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_39,netclient,ai_5,netperf,simhostX,none,NA,4,tcp_stream,1,NA,NA,103.227662526,NA,495.989674192,NA,793.851072444,NA
+18639,02/18/2016 05:41:18 PM UTC,639,02/18/2016 12:41:18 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_26,client_daytrader,ai_1,ibm_daytrader,simhostX,none,NA,4,default,8,288.19578831,173.375731356,310.319694152,548.099622879,NA,NA,224.5017756,NA
+18648,02/18/2016 05:41:27 PM UTC,648,02/18/2016 12:41:27 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_89,fen_hpc,ai_20,hpcc,simhostX,none,NA,3,default,4,NA,NA,NA,NA,NA,NA,961.225622164,NA
+18656,02/18/2016 05:41:35 PM UTC,656,02/18/2016 12:41:35 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_84,client_tradelite,ai_19,ibmderby_tradelite,simhostX,none,NA,2,default,4,240.847014561,47.0113196039,265.831545647,461.378706971,NA,NA,289.762248971,NA
+18656,02/18/2016 05:41:35 PM UTC,656,02/18/2016 12:41:35 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_97,netclient,ai_24,netperf,simhostX,none,NA,2,tcp_stream,1,NA,NA,993.289111099,NA,24.1427914986,NA,710.579444151,NA
+18657,02/18/2016 05:41:36 PM UTC,657,02/18/2016 12:41:36 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_71,netclient,ai_14,netperf,simhostX,none,NA,3,tcp_stream,1,NA,NA,18.4516974064,NA,668.660859445,NA,685.347216744,NA
+18657,02/18/2016 05:41:36 PM UTC,657,02/18/2016 12:41:36 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_103,client_daytrader,ai_26,ibm_daytrader,simhostX,none,NA,1,default,4,119.099156633,840.23122422,194.278316726,368.502653971,NA,NA,496.103501667,NA
+18661,02/18/2016 05:41:40 PM UTC,661,02/18/2016 12:41:40 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_90,coremark,ai_21,coremark,simhostX,none,NA,4,default,6,NA,NA,149.846241506,241.579639524,NA,NA,58.7992359818,NA
+18670,02/18/2016 05:41:49 PM UTC,670,02/18/2016 12:41:49 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_108,client_daytrader,ai_27,ibm_daytrader,simhostX,none,NA,1,default,9,553.364235834,931.818423302,801.513745704,400.452494561,NA,NA,957.700592092,NA
+18684,02/18/2016 05:42:03 PM UTC,684,02/18/2016 12:42:03 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_77,netclient,ai_17,netperf,simhostX,none,NA,3,tcp_stream,1,NA,NA,10.6463323046,NA,523.393148646,NA,659.585666504,NA
+18688,02/18/2016 05:42:07 PM UTC,688,02/18/2016 12:42:07 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_73,netclient,ai_15,netperf,simhostX,none,NA,3,tcp_stream,1,NA,NA,503.263391377,NA,69.8267280439,NA,797.768941099,NA
+18690,02/18/2016 05:42:09 PM UTC,690,02/18/2016 12:42:09 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_75,netclient,ai_16,netperf,simhostX,none,NA,3,tcp_stream,1,NA,NA,171.57888243,NA,256.148903376,NA,698.594238732,NA
+18703,02/18/2016 05:42:22 PM UTC,703,02/18/2016 12:42:22 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_52,client_daytrader,ai_9,ibm_daytrader,simhostX,none,NA,3,default,5,400.752828856,576.455400601,266.384788942,870.262346606,NA,NA,43.7576590942,NA
+18705,02/18/2016 05:42:24 PM UTC,705,02/18/2016 12:42:24 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_93,client_daytrader,ai_23,ibm_daytrader,simhostX,none,NA,2,default,3,224.06776474,399.892605589,596.513232848,488.231516517,NA,NA,653.311185067,NA
+18712,02/18/2016 05:42:31 PM UTC,712,02/18/2016 12:42:31 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_47,client_daytrader,ai_8,ibm_daytrader,simhostX,none,NA,3,default,8,614.916161085,83.2039566912,6.15273950925,21.6377270409,NA,NA,145.792728133,NA
+18730,02/18/2016 05:42:49 PM UTC,730,02/18/2016 12:42:49 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_26,client_daytrader,ai_1,ibm_daytrader,simhostX,none,NA,5,default,6,572.223974494,719.828990118,403.661888276,684.290188679,NA,NA,827.549926856,NA
+18745,02/18/2016 05:43:04 PM UTC,745,02/18/2016 12:43:04 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_124,tinyvm,ai_33,nullworkload,simhostX,aidrs_2,NA,1,default,1,NA,NA,567.32823749,342.908653324,58.7350322591,217.914945361,250.978412739,NA
+18757,02/18/2016 05:43:16 PM UTC,757,02/18/2016 12:43:16 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_125,tinyvm,ai_34,nullworkload,simhostX,aidrs_2,NA,1,default,2,NA,NA,231.996993745,766.873629017,984.556320884,555.4122161,966.741662457,NA
+18758,02/18/2016 05:43:17 PM UTC,758,02/18/2016 12:43:17 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_126,tinyvm,ai_35,nullworkload,simhostX,aidrs_2,NA,1,default,2,NA,NA,624.336171263,638.582843919,621.669846817,313.686521174,459.561530937,NA
+18763,02/18/2016 05:43:22 PM UTC,763,02/18/2016 12:43:22 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_127,tinyvm,ai_36,nullworkload,simhostX,aidrs_2,NA,1,default,1,NA,NA,790.262208671,458.547996174,675.073352797,322.506111506,853.428183198,NA
+18777,02/18/2016 05:43:36 PM UTC,777,02/18/2016 12:43:36 PM UTC,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_128,tinyvm,ai_37,nullworkload,simhostX,aidrs_2,NA,1,default,2,NA,NA,671.410662643,805.876652196,541.115773742,29.4609466559,263.197085807,NA

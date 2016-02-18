@@ -1,5 +1,6 @@
  status: No samples of runtime_os metrics for all HOSTs were found (the file /home/msilva/cloudbench/lib/auxiliary//../../data/REGRESSION_B/HOST_runtime_os_REGRESSION_B.csv will be empty).
-Monitor extraction success. HOST runtime OS performance data samples were written to the file /home/msilva/cloudbench/lib/auxiliary//../../data/REGRESSION_B/HOST_runtime_os_REGRESSION_B.csv
+Monitor extraction success. HOST runtime OS performance data samples were written to the file /home/msilva/cloudbench/lib/auxiliary//../../data/REGRESSION_B/HOST_runtime_os_REGRESSION_B.csv.
+Data is available at the url "rsync://172.16.0.4:10000/msilva_cb/data/REGRESSION_B".
 running shell command: "cat /home/msilva/cloudbench/regression/..//data/REGRESSION_B/HOST_runtime_os_*REGRESSION*"....
 stdout:
  #field:column #

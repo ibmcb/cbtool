@@ -130,7 +130,7 @@ function service_stop_disable {
     do
         if [[ ${LINUX_DISTRO} -eq 2 ]]
         then
-            if [[ $(sudo sv status $s | grep -c $s) -ne 0 ]]
+            if [[ $(sudo sv status $s 2>&1 | grep -v "fail:" | grep -c $s) -ne 0 ]]
             then
                 STOP_COMMAND="sudo sv stop $s"
                 DISABLE_COMMAND="sudo touch /etc/service/$s/down"
@@ -143,7 +143,7 @@ function service_stop_disable {
                 DISABLE_COMMAND="sudo chkconfig $s off >/dev/null 2>&1"
             fi
         else
-            if [[ $(sudo sv status $s | grep -c $s) -ne 0 ]]
+            if [[ $(sudo sv status $s 2>&1 | grep -v "fail:" | grep -c $s) -ne 0 ]]
             then
                 STOP_COMMAND="sudo sv stop $s"
                 DISABLE_COMMAND="sudo touch /etc/service/$s/down"
@@ -183,11 +183,11 @@ function service_restart_enable {
     do            
         if [[ ${LINUX_DISTRO} -eq 2 ]]
         then
-            if [[ $(sudo sv status $s | grep -c $s) -ne 0 ]]
+            if [[ $(sudo sv status $s 2>&1 | grep -v "fail:" | grep -c $s) -ne 0 ]]
             then
                 START_COMMAND="sudo sv restart $s"
                 ENABLE_COMMAND="sudo rm /etc/service/$s/down"            
-            elif [[ $(sudo systemctl | grep -c $s) -ne 0 ]]
+            elif [[ $(sudo systemctl | grep -c $s) -ne 0 && $(sudo find /etc/systemd | grep -c $s) -ne 0 ]]
             then
                 START_COMMAND="sudo systemctl restart $s"
                 ENABLE_COMMAND="sudo systemctl enable $s"
@@ -196,7 +196,7 @@ function service_restart_enable {
                 ENABLE_COMMAND="sudo chkconfig $s on >/dev/null 2>&1"
             fi
         else
-            if [[ $(sudo sv status $s | grep -c $s) -ne 0 ]]
+            if [[ $(sudo sv status $s 2>&1 | grep -v "fail:" | grep -c $s) -ne 0 ]]
             then
                 START_COMMAND="sudo sv restart $s"
                 ENABLE_COMMAND="sudo rm /etc/service/$s/down"            
@@ -848,16 +848,7 @@ load_manager_ip=`get_my_ai_attribute load_manager_ip`
 
 if [ x"${NC_HOST_SYSLOG}" == x ]; then
     if [ x"${osmode}" != x"scalable" ]; then
-		USE_VPN_IP=`get_global_sub_attribute vm_defaults use_vpn_ip`
-		VPN_ONLY=`get_global_sub_attribute vm_defaults vpn_only`
-
-		# We cannot log anything with VPN_ONLY if we don't use the VPN server's IP address
-
-		if [ x"$USE_VPN_IP" == x"True" ] && [ x"$VPN_ONLY" == x"True" ] ; then
-			NC_HOST_SYSLOG=`get_global_sub_attribute vpn server_bootstrap`
-		else
-			NC_HOST_SYSLOG=`get_global_sub_attribute logstore hostname`
-		fi
+        NC_HOST_SYSLOG=`get_global_sub_attribute logstore hostname`
         NC_OPTIONS="-w1 -u"
     else 
         NC_HOST_SYSLOG=`get_my_ai_attribute load_manager_ip`

@@ -747,6 +747,8 @@ class ScpCmds(CommonCloudFunctions) :
             obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"].replace("_", "-")
             obj_attr_list["last_known_state"] = "about to connect to webservice VM"
 
+            self.take_action_if_requested("VM", obj_attr_list, "provision_originated")
+
             if self.get_vm_instance(obj_attr_list) :
                 _msg = "An instance named \"" + obj_attr_list["cloud_vm_name"]
                 _msg += " is already running. It needs to be destroyed first."
@@ -1009,7 +1011,7 @@ class ScpCmds(CommonCloudFunctions) :
                 return _status, _msg
 
     @trace        
-    def aidefine(self, obj_attr_list) :
+    def aidefine(self, obj_attr_list, current_step) :
         '''
         TBD
         '''
@@ -1039,7 +1041,7 @@ class ScpCmds(CommonCloudFunctions) :
                 return _status, _msg
 
     @trace        
-    def aiundefine(self, obj_attr_list) :
+    def aiundefine(self, obj_attr_list, current_step) :
         '''
         TBD
         '''

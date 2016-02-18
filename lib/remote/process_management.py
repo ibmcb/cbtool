@@ -65,7 +65,7 @@ class ProcessManagement :
 
     @trace
     def run_os_command(self, cmdline, override_hostname = None, really_execute = True, \
-                       debug_cmd = False, raise_exception = True) :
+                       debug_cmd = False, raise_exception = True, step = None) :
         '''
         TBD
         '''
@@ -146,13 +146,17 @@ class ProcessManagement :
                     _result_stderr = " "
             else :
                 _msg = "Error running the command \"" + cmdline + "\"."
+                cbdebug(_msg)
                 _status = 81713
                 _result_stdout = ""
                 _result_stderr = ""
         else :
             _msg = "This is the command that would have been executed "
-            _msg += "from the orchestrator: \n"
-            _msg += _cmd
+            _msg += "from the orchestrator"
+
+            if step :
+                _msg += " on STEP " + str(step)
+            _msg += " : \n         "  + _cmd
 
             if str(debug_cmd).lower() == "true" :
                 cbdebug(_msg, True)
@@ -169,11 +173,11 @@ class ProcessManagement :
                                  total_attempts = 2, retry_interval = 3,
                                  really_execute = True, \
                                  debug_cmd = False, \
-                                 raise_exception_on_error = False) :
+                                 raise_exception_on_error = False, \
+                                 step = None) :
         '''
         TBD
         '''
-
         _attempts = 0
 
         while _attempts < int(total_attempts) :
@@ -181,7 +185,9 @@ class ProcessManagement :
                 _status, _result_stdout, _result_stderr = self.run_os_command(cmdline, \
                                                                               override_hostname, \
                                                                               really_execute, \
-                                                                              debug_cmd)
+                                                                              debug_cmd, \
+                                                                              raise_exception_on_error, \
+                                                                              step)
 
             except ProcessManagement.ProcessManagementException, obj :
                 _status = obj.status
@@ -221,7 +227,7 @@ class ProcessManagement :
     def parallel_run_os_command(self, cmdline_list, override_hostname_list, \
                                 total_attempts, retry_interval, \
                                 execute_parallelism, really_execute = True, \
-                                debug_cmd = False) :
+                                debug_cmd = False, step = None) :
         '''
         TBD
         '''
@@ -251,7 +257,9 @@ class ProcessManagement :
                                                       total_attempts, \
                                                       retry_interval, \
                                                       really_execute, \
-                                                      debug_cmd, False)
+                                                      debug_cmd, \
+                                                      False, \
+                                                      step)
                     else :
                         _status = 0
                         _xfmsg = "OK"
@@ -265,8 +273,12 @@ class ProcessManagement :
                         _thread_pool.add_task(self.retriable_run_os_command, \
                                               cmdline_list[_index], \
                                               override_hostname_list[_index], \
-                                              total_attempts, retry_interval, \
-                                              really_execute, debug_cmd)
+                                              total_attempts, \
+                                              retry_interval, \
+                                              really_execute, \
+                                              debug_cmd, \
+                                              False, \
+                                              step)
 
             if _thread_pool and not serial_mode:
                 _xfmsg = ''

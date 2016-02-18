@@ -33,16 +33,18 @@ import socket
 import copy
 import iso8601
 
-try :
-    from novaclient.v2 import client as novac
-except :
-    from novaclient.v1_1 import client as novac
+from novaclient import client as novac
+
+#try :
+#    from novaclient.v2 import client as novac
+#except :
+#    from novaclient.v1_1 import client as novac
 
 from novaclient import exceptions as novaexceptions
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import str2dic, value_suffix
-from lib.remote.network_functions import hostname2ip,validIPv4
+from lib.remote.network_functions import hostname2ip, validIPv4
 from lib.remote.process_management import ProcessManagement
 from lib.remote.ssh_ops import get_ssh_key
 from shared_functions import CldOpsException, CommonCloudFunctions 
@@ -68,6 +70,7 @@ class OskCmds(CommonCloudFunctions) :
         self.host_map = {}
         self.api_error_counter = {}
         self.max_api_errors = 10
+        self.time_profile = False
         
     @trace
     def get_description(self) :
@@ -76,15 +79,23 @@ class OskCmds(CommonCloudFunctions) :
         '''
         return "OpenStack Compute Cloud"
 
-    def parse_authentication_data(self, authentication_data, tenant = "default", project = "default"):
+    def parse_authentication_data(self, authentication_data, tenant = "default", username = "default", single = False):
         '''
         TBD
         '''
-
         if authentication_data.count(':') >= 2 :
             _separator = ':'
         else :
             _separator = '-'
+
+        if len(authentication_data.split(_separator)) < 3 :
+            _msg = "ERROR: Insufficient number of parameters in OSK_CREDENTIALS."
+            _msg += "Please make sure that at least username, password and tenant"
+            _msg += " are present."
+            if single :
+                return _msg
+            else :
+                return False, _msg, False, False, False
 
         if len(authentication_data.split(_separator)) == 3 :
             _username, _password, _tenant = authentication_data.split(_separator)
@@ -104,7 +115,10 @@ class OskCmds(CommonCloudFunctions) :
             _msg += "OSK_CREDENTIALS have any dashes (i.e., \"-\") on it. If"
             _msg += "a dash is required, please use the string \"_dash\", and"
             _msg += "it will be automatically replaced."
-            return False, _msg, False, False, False
+            if single :
+                return _msg
+            else :
+                return False, _msg, False, False, False
             
         else :
             _username = ''
@@ -112,15 +126,25 @@ class OskCmds(CommonCloudFunctions) :
             _tenant = ''
 
         if tenant != "default" :
-            _username = tenant
+            _tenant = tenant
         
-        if project != "default" :
-            _tenant = project
+        if username != "default" :
+            _username = username
 
-        return _username, _password, _tenant, _cacert, _insecure
+        if single :
+            _str = str(_username) + ':' + str(_password) + ':' + str(_tenant)
+
+            if _cacert :
+                _str += ':' + str(_cacert) 
+            if _insecure :
+                _str += ':' +  str(_insecure)
+
+            return _str
+        else :
+            return _username, _password, _tenant, _cacert, _insecure
         
     @trace
-    def connect(self, access_url, authentication_data, region, extra_parms = {}, diag = False) :
+    def connect(self, access_url, authentication_data, region, extra_parms = {}, diag = False, generate_rc = False) :
         '''
         TBD
         '''        
@@ -137,9 +161,11 @@ class OskCmds(CommonCloudFunctions) :
                 _endpoint_type = "publicURL"
             access_url = access_url.replace("_dash_",'-')
             
+            _data_auth_parse = False
             _username, _password, _tenant, _cacert, _insecure = \
             self.parse_authentication_data(authentication_data)
-
+            _data_auth_parse = True
+            
             if not _username :
                 _fmsg = _password
             else :
@@ -159,7 +185,7 @@ class OskCmds(CommonCloudFunctions) :
     
                 _fmsg = "About to attempt a connection to OpenStack"
     
-                self.oskconncompute = novac.Client(_username, _password, _tenant, \
+                self.oskconncompute = novac.Client(2, _username, _password, _tenant, \
                                              access_url, region_name = region, \
                                              service_type="compute", \
                                              endpoint_type = _endpoint_type, \
@@ -175,7 +201,7 @@ class OskCmds(CommonCloudFunctions) :
     
                 if self.use_cinderclient == "true" :
                     # At the moment, we're still making cinder call from nova.                
-                    self.oskconnstorage = novac.Client(_username, _password, _tenant, \
+                    self.oskconnstorage = novac.Client(2, _username, _password, _tenant, \
                                                  access_url, region_name=region, \
                                                  service_type="volume", \
                                                  endpoint_type = _endpoint_type, \
@@ -210,19 +236,29 @@ class OskCmds(CommonCloudFunctions) :
                 _region = region
                 _msg = "Selected region is " + str(region)
                 cbdebug(_msg)
-    
-                _file = expanduser("~") + "/adminrc"
-    
-                if not access(_file, F_OK) :
-                    _file_fd = open(_file, 'w')
-                            
-                    _file_fd.write("export OS_TENANT_NAME=" + _tenant + "\n")
-                    _file_fd.write("export OS_USERNAME=" + _username + "\n")
-                    _file_fd.write("export OS_PASSWORD=" + _password + "\n")                    
-                    _file_fd.write("export OS_AUTH_URL=\"" + access_url + "\"\n")
-                    _file_fd.write("export OS_NO_CACHE=1\n")
-                    _file_fd.write("export OS_REGION_NAME=" + region + "\n")                    
-                    _file_fd.close()
+
+                if generate_rc :
+                    if "cloud_name" in extra_parms :
+                        _file = expanduser("~") + "/cbrc-" + extra_parms["cloud_name"].lower()
+                    else :
+                        _file = expanduser("~") + "/cbrc"
+                        
+                    if not access(_file, F_OK) :
+                        _file_fd = open(_file, 'w')
+                                
+                        _file_fd.write("export OS_TENANT_NAME=" + _tenant + "\n")
+                        _file_fd.write("export OS_USERNAME=" + _username + "\n")
+                        _file_fd.write("export OS_PASSWORD=" + _password + "\n")                    
+                        _file_fd.write("export OS_AUTH_URL=\"" + access_url + "\"\n")
+                        _file_fd.write("export OS_NO_CACHE=1\n")
+                        if _cacert :
+                            _file_fd.write("export OS_CACERT=" + _cacert + "\n")
+                        _file_fd.write("export OS_REGION_NAME=" + region + "\n")
+
+                        if "cloud_name" in extra_parms :                        
+                            _file_fd.write("export CB_CLOUD_NAME=" + extra_parms["cloud_name"] + "\n")
+                            _file_fd.write("export CB_USERNAME=" + extra_parms["username"] + "\n")
+                        _file_fd.close()
                 
                 _status = 0
 
@@ -238,6 +274,16 @@ class OskCmds(CommonCloudFunctions) :
             if _status :
                 _msg = "OpenStack connection failure: " + _fmsg
                 cberr(_msg)
+                if _data_auth_parse :
+                    _dmsg = "Please attempt to execute the following : \"python -c \""
+                    _dmsg += "from novaclient import client as novac;"
+                    _dmsg += "ct = novac.Client(2, '" + str(_username) + "', '"
+                    _dmsg += "REPLACE_PASSWORD', '" + str(_tenant) + "', '" + str(access_url)
+                    _dmsg += "', region_name='" + str(region) + "', service_type='compute', "
+                    _dmsg += "endpoint_type='" + str(_endpoint_type) + "', cacert='" + str(_cacert)
+                    _dmsg += "', insecure='" + str(_insecure) + "'); ct.flavors.list()\""
+                    print _dmsg
+                    
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "OpenStack connection successful."
@@ -583,7 +629,7 @@ class OskCmds(CommonCloudFunctions) :
         _msg += " registered on VMC " + vmc_name + "...."
         #cbdebug(_msg)
         print _msg,
-        
+
         _registered_image_list = self.oskconncompute.images.list()
         _registered_imageid_list = []
 
@@ -591,7 +637,7 @@ class OskCmds(CommonCloudFunctions) :
             _registered_imageid_list.append(_registered_image.name)
 
         _required_imageid_list = {}
-
+        
         for _vm_role in vm_templates.keys() :
             _imageid = str2dic(vm_templates[_vm_role])["imageid1"]                
             if _imageid not in _required_imageid_list :
@@ -768,9 +814,7 @@ class OskCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
-            self.connect(access, credentials, vmc_name, \
-                         {"use_neutronclient" : str(vm_defaults["use_neutronclient"]), \
-                          "use_cinderclient" : str(vm_defaults["use_cinderclient"])}, True)
+            self.connect(access, credentials, vmc_name, vm_defaults, True, True)
 
             _key_pair_found = self.check_ssh_key(vmc_name, \
                                                  vm_defaults["username"] + '_' + vm_defaults["tenant"] + '_' + key_name, vm_defaults)
@@ -1096,7 +1140,7 @@ class OskCmds(CommonCloudFunctions) :
                 
                 _criteria = {}                              
                 _criteria['all_tenants'] = 1                
-                _instances = self.oskconncompute.servers.list(_criteria)
+                _instances = self.oskconncompute.servers.list(search_opts = _criteria)
                 
                 for _instance in _instances :
                     if _instance.name.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) \
@@ -1194,8 +1238,9 @@ class OskCmds(CommonCloudFunctions) :
                 _x, _y, _hostname = self.connect(obj_attr_list["access"], \
                                                  obj_attr_list["credentials"], \
                                                  obj_attr_list["name"], 
-                                                 {"use_neutronclient" : str(obj_attr_list["use_neutronclient"]), \
-                                                  "use_cinderclient" : str(obj_attr_list["use_cinderclient"])})
+                                                 obj_attr_list, \
+                                                 False, \
+                                                 True)
     
                 obj_attr_list["cloud_hostname"] = _hostname
 
@@ -1309,11 +1354,13 @@ class OskCmds(CommonCloudFunctions) :
         '''
         try :
             _status = 100
+            _hyper = ''
+            
             _fmsg = "An error has occurred, but no error message was captured"
 
             _image_list = self.oskconncompute.images.list()
 
-            _fmsg += "Please check if the defined image name is present on this "
+            _fmsg = "Please check if the defined image name is present on this "
             _fmsg += "OpenStack Cloud"
 
             _imageid = False
@@ -1327,11 +1374,14 @@ class OskCmds(CommonCloudFunctions) :
                     True
 
             if "hypervisor_type" in obj_attr_list :
+                _hyper = obj_attr_list["hypervisor_type"]                
                 for _image in list(_candidate_images) :
                     if "hypervisor_type" in _image.metadata :
                         if _image.metadata["hypervisor_type"] != obj_attr_list["hypervisor_type"] :
                             _candidate_images.remove(_image)
-
+                        else :
+                            _hyper = _image.metadata["hypervisor_type"]
+                            
             if len(_candidate_images) :
                 if  obj_attr_list["randomize_image_name"].lower() == "true" :
                     _imageid = choice(_candidate_images)
@@ -1350,11 +1400,11 @@ class OskCmds(CommonCloudFunctions) :
             
         finally :
             if _status :
-                _msg = "Image Name (" +  obj_attr_list["imageid1"] + " ) not found: " + _fmsg
+                _msg = "Image Name (" +  obj_attr_list["imageid1"] + ' ' + _hyper + ") not found: " + _fmsg
                 cberr(_msg, True)
                 raise CldOpsException(_msg, _status)
             else :
-                return _imageid
+                return _imageid, _hyper
 
     def get_networks(self, obj_attr_list) :
         '''
@@ -1567,7 +1617,7 @@ class OskCmds(CommonCloudFunctions) :
         '''
         try :
             _search_opts = {}
-
+            _call = "NAi"
             _search_opts['all_tenants'] = 1
             
             if identifier != "all" :
@@ -1767,21 +1817,29 @@ class OskCmds(CommonCloudFunctions) :
         # established to access the most up-to-date data on this attribute
         # Not sure how stable it will be with newer versions of the API. 
         _instance = self.is_vm_running(obj_attr_list, fail = fail)
-        
+
         if _instance :
-            if "_info" in dir(_instance) :
-                if "OS-EXT-SRV-ATTR:host" in _instance._info :
-                    obj_attr_list["host_name"] = _instance._info['OS-EXT-SRV-ATTR:host'].split('.')[0]
-                else :
-                    obj_attr_list["host_name"] = "unknown"
+
+            obj_attr_list["host_name"] = "unknown"
+            obj_attr_list["instance_name"] = "unknown" 
+                        
+            obj_attr_list["host_name"] = getattr(_instance, 'OS-EXT-SRV-ATTR:host')
+            obj_attr_list["instance_name"] = getattr(_instance, 'OS-EXT-SRV-ATTR:instance_name')
+            
+#            if "_info" in dir(_instance) :
+
+#                if "OS-EXT-SRV-ATTR:host" in _instance._info :
+#                    obj_attr_list["host_name"] = _instance._info['OS-EXT-SRV-ATTR:host'].split('.')[0]
+#                else :
+#                    obj_attr_list["host_name"] = "unknown"
                 
-                if "OS-EXT-SRV-ATTR:instance_name" in _instance._info :
-                    obj_attr_list["instance_name"] = _instance._info['OS-EXT-SRV-ATTR:instance_name']
-                else :
-                    obj_attr_list["instance_name"] = "unknown"
-            else :
-                obj_attr_list["instance_name"] = "unknown"            
-                obj_attr_list["host_name"] = "unknown"                    
+#                if "OS-EXT-SRV-ATTR:instance_name" in _instance._info :
+#                    obj_attr_list["instance_name"] = _instance._info['OS-EXT-SRV-ATTR:instance_name']
+#                else :
+#                    obj_attr_list["instance_name"] = "unknown"
+#            else :
+#                obj_attr_list["instance_name"] = "unknown"            
+#                obj_attr_list["host_name"] = "unknown"                    
         else :
             obj_attr_list["instance_name"] = "unknown"            
             obj_attr_list["host_name"] = "unknown"
@@ -1824,8 +1882,8 @@ class OskCmds(CommonCloudFunctions) :
         try :
             _status = 100
 
+            _call = "NAfpc"
             identifier = obj_attr_list["cloud_vm_name"]
-            _call = "NA"
             
             if not self.oskconncompute :
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
@@ -1844,8 +1902,16 @@ class OskCmds(CommonCloudFunctions) :
                         break
 
             if not _fip :
-                _call = "floating ip create"   
-                _fip = self.oskconncompute.floating_ips.create(obj_attr_list["floating_pool"]).ip
+                _call = "floating ip create"
+                _mark1 = int(time())
+                _fip_h = self.oskconncompute.floating_ips.create(obj_attr_list["floating_pool"])
+                
+                _fip = _fip_h.ip
+                obj_attr_list["cloud_floating_ip_uuid"] = _fip_h.id
+            
+                if self.time_profile :
+                    _mark2 = int(time())
+                    obj_attr_list["osk_017_create_fip_time"] = _mark2 - _mark1    
 
             return _fip
 
@@ -1864,15 +1930,73 @@ class OskCmds(CommonCloudFunctions) :
                 cbwarn(_fmsg)
                 return False
 
+        except Exception, e :
+            _status = 23
+            _fmsg = "(While getting instance(s) through API call \"" + _call + "\") " + str(e)
+
+            if identifier not in self.api_error_counter :
+                self.api_error_counter[identifier] = 0
+            
+            self.api_error_counter[identifier] += 1
+            
+            if self.api_error_counter[identifier] > 3 :            
+                raise CldOpsException(_fmsg, _status)
+            else :
+                cbwarn(_fmsg)
+                return False
+
+    @trace
+    def floating_ip_delete(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+
+            _call = "NAfpd"
+            identifier = obj_attr_list["cloud_vm_name"]
+            
+            if not self.oskconncompute :
+                self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
+                             obj_attr_list["vmc_name"])
+
+
+            if "cloud_floating_ip_uuid" in obj_attr_list :
+                _call = "floating ip delete"
+                self.oskconncompute.floating_ips.delete(obj_attr_list["cloud_floating_ip_uuid"])
+                
+            return True
+
         except novaexceptions, obj:
             _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
-            raise CldOpsException(_fmsg, _status)
+            _fmsg = "(While getting instance(s) through API call \"" + _call + "\") " + str(obj.error_message)
+
+            if identifier not in self.api_error_counter :
+                self.api_error_counter[identifier] = 0
+            
+            self.api_error_counter[identifier] += 1
+            
+            if self.api_error_counter[identifier] > self.max_api_errors :            
+                raise CldOpsException(_fmsg, _status)
+            else :
+                cbwarn(_fmsg)
+                return False
 
         except Exception, e :
             _status = 23
-            _fmsg = str(e)
-            raise CldOpsException(_fmsg, _status)
+            _fmsg = "(While getting instance(s) through API call \"" + _call + "\") " + str(e)
+
+            if identifier not in self.api_error_counter :
+                self.api_error_counter[identifier] = 0
+            
+            self.api_error_counter[identifier] += 1
+            
+            if self.api_error_counter[identifier] > 3 :            
+                raise CldOpsException(_fmsg, _status)
+            else :
+                cbwarn(_fmsg)
+                return False
+
 
     def floating_ip_attach(self, obj_attr_list, _instance) :
         '''
@@ -1881,17 +2005,25 @@ class OskCmds(CommonCloudFunctions) :
 
         try :
             
+            _call = "NAfpa"
             identifier = obj_attr_list["cloud_vm_name"]
 
-            _call = "NA"
             if str(obj_attr_list["use_floating_ip"]).lower() == "true" :
                 _msg = "Attempting to add a floating IP to " + obj_attr_list["name"] + "..."
                 cbdebug(_msg, True)
 
                 _fip = self.floating_ip_allocate(obj_attr_list)
-                
-                _call = "floating ip attach"                
+
+                while not self.is_vm_running(obj_attr_list) :
+                    sleep(int(obj_attr_list["update_frequency"]))
+
+                _call = "floating ip attach"
+                _mark1 = int(time())
                 _instance.add_floating_ip(_fip)
+
+                if self.time_profile :
+                    _mark2 = int(time())
+                    obj_attr_list["osk_018_attach_fip_time"] = _mark2 - _mark1    
 
             return True
 
@@ -1968,12 +2100,13 @@ class OskCmds(CommonCloudFunctions) :
 
                 _imageid = None
                 if "boot_volume" in obj_attr_list :
-                    _imageid = self.get_images(obj_attr_list).__getattr__("id")
+                    _imageid, _hyper = self.get_images(obj_attr_list).__getattr__("id")
                     _msg = "Creating boot volume with name \"" 
                     _msg += obj_attr_list['cloud_vv_name'] + "\", from image id"
                     _msg += " id \"" + _imageid + "\""
                     cbdebug(_msg, True)
     
+                _mark1 = int(time())
                 _instance = self.oskconnstorage.volumes.create(obj_attr_list["cloud_vv"], \
                                                                snapshot_id = None, \
                                                                display_name = obj_attr_list["cloud_vv_name"], \
@@ -1994,8 +2127,13 @@ class OskCmds(CommonCloudFunctions) :
                     else :
                         sleep(1)
 
+                if self.time_profile :
+                    _mark2 = int(time())
+                    obj_attr_list["osk_015_create_volume_time"] = _mark2 - _mark1
+
                 if not _imageid :
 
+                    _mark3 = int(time())
                     _msg = "Attaching the newly created Volume \""
                     _msg += obj_attr_list["cloud_vv_name"] + "\" (cloud-assigned uuid \""
                     _msg += obj_attr_list["cloud_vv_uuid"] + "\") to instance \""
@@ -2009,6 +2147,10 @@ class OskCmds(CommonCloudFunctions) :
                     self.oskconncompute.volumes.create_server_volume(obj_attr_list["cloud_vm_uuid"], \
                                                                      obj_attr_list["cloud_vv_uuid"], \
                                                                      "/dev/vdd")
+
+                    if self.time_profile :
+                        _mark2 = int(time())
+                        obj_attr_list["osk_015_create_volume_time"] += (_mark3 - _mark3)
 
             else :
                 obj_attr_list["cloud_vv_uuid"] = "none"
@@ -2332,24 +2474,42 @@ class OskCmds(CommonCloudFunctions) :
             obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"].replace("_", "-")
             obj_attr_list["last_known_state"] = "about to connect to openstack manager"
 
+            self.take_action_if_requested("VM", obj_attr_list, "provision_originated")
+            self.time_profile = False
+            if "execute_provision_originated_stdout" in obj_attr_list :
+                if obj_attr_list["execute_provision_originated_stdout"].count("tenant") :
+                    _temp_dict = str2dic(obj_attr_list["execute_provision_originated_stdout"].replace('\n',''), False)
+                    if _temp_dict :
+                        obj_attr_list.update(_temp_dict)
+                        self.time_profile = True
+                    
             obj_attr_list["key_name"] = obj_attr_list["username"] + '_' + obj_attr_list["tenant"] + '_' + obj_attr_list["key_name"]
 
             if obj_attr_list["tenant"] != "default" :
-                obj_attr_list["credentials"] = self.parse_authentication_data(obj_attr_list["credentials"], obj_attr_list["tenant"], obj_attr_list["project"])
-                self.check_ssh_key(obj_attr_list["vmc_name"], \
-                                   obj_attr_list["key_name"], \
-                                   obj_attr_list, True)
+                if "ssh_key_injected" not in obj_attr_list :
+                    self.check_ssh_key(obj_attr_list["vmc_name"], \
+                                       obj_attr_list["key_name"], \
+                                       obj_attr_list, True)
+
+                if "user" not in obj_attr_list :
+                    obj_attr_list["user"] = obj_attr_list["tenant"] 
+
+                obj_attr_list["admin_credentials"] = obj_attr_list["credentials"]                  
+                obj_attr_list["credentials"] = self.parse_authentication_data(obj_attr_list["credentials"], \
+                                                                              obj_attr_list["tenant"], \
+                                                                              obj_attr_list["user"], \
+                                                                              True)
                 self.oskconncompute = False
 
             if not self.oskconncompute :
+                _mark1 = int(time())
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
                              obj_attr_list["vmc_name"], \
                              {"use_neutronclient" : obj_attr_list["use_neutronclient"]})
-
-            if obj_attr_list["tenant"] != "default" :
-                self.check_ssh_key(obj_attr_list["vmc_name"], \
-                                   obj_attr_list["key_name"], \
-                                   obj_attr_list, True)
+                
+                if self.time_profile :
+                    _mark2 = int(time())
+                    obj_attr_list["osk_010_authenticate_time"] = _mark2 - _mark1
 
             if self.is_vm_running(obj_attr_list) :
                 _msg = "An instance named \"" + obj_attr_list["cloud_vm_name"]
@@ -2358,6 +2518,10 @@ class OskCmds(CommonCloudFunctions) :
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
 
+            if self.time_profile :
+                _mark3 = int(time())
+                obj_attr_list["osk_011_check_existing_instance_time"] = _mark3 - _mark2
+                    
             obj_attr_list["last_known_state"] = "about to get flavor and image list"
 
             if str(obj_attr_list["security_groups"]).lower() == "false" :
@@ -2376,7 +2540,15 @@ class OskCmds(CommonCloudFunctions) :
 
             _flavor = self.get_flavors(obj_attr_list)
 
-            _imageid = self.get_images(obj_attr_list)
+            if self.time_profile :
+                _mark4 = int(time())
+                obj_attr_list["osk_012_get_flavors_time"] = _mark4 - _mark3            
+
+            _imageid, _hyper = self.get_images(obj_attr_list)
+
+            if self.time_profile :
+                _mark5 = int(time())
+                obj_attr_list["osk_013_get_imageid_time"] = _mark5 - _mark4
 
             _availability_zone = None            
             if len(obj_attr_list["availability_zone"]) > 1 :
@@ -2400,7 +2572,12 @@ class OskCmds(CommonCloudFunctions) :
                 _config_drive = None                
                 _userdata = None
 
+            _mark5 = int(time())
             _netnames, _netids = self.get_networks(obj_attr_list)
+
+            if self.time_profile :
+                _mark6 = int(time())
+                obj_attr_list["osk_014_get_netid_time"] = _mark6 - _mark5
             
             _meta = {}
             if "meta_tags" in obj_attr_list :
@@ -2416,20 +2593,21 @@ class OskCmds(CommonCloudFunctions) :
             obj_attr_list["mgt_002_provisioning_request_sent"] = \
             _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
 
+            _boot_volume_imageid = _imageid 
 #
 #           Create volume based image.
 #
             _block_device_mapping = {}
             if "boot_volume" in obj_attr_list :
                 _boot_volume = True
-                _boot_volume_imageid = _imageid 
+                _boot_volume_imageid = None                 
                 obj_attr_list['cloud_vv'] = obj_attr_list['boot_volume_size'] 
                 obj_attr_list['cloud_vv_type'] = None 
                 self.vvcreate(obj_attr_list)
                 _block_device_mapping = {'vda':'%s' % obj_attr_list["cloud_vv_uuid"]}
-            
+
             _msg = "Starting an instance on OpenStack, using the imageid \""
-            _msg += obj_attr_list["imageid1"] + "\" (" + str(_imageid) + ") and "
+            _msg += obj_attr_list["imageid1"] + "\" (" + str(_imageid) + ' ' + _hyper + ") and "
             _msg += "size \"" + obj_attr_list["size"] + "\" (" + str(_flavor) + ")"
 
 #            if _scheduler_hints :
@@ -2437,6 +2615,9 @@ class OskCmds(CommonCloudFunctions) :
 
             if _availability_zone :
                 _msg += ", on the availability zone \"" + str(_availability_zone) + "\""
+
+            if len(_block_device_mapping) :
+                _msg += ", with \"block_device_mapping=" + str(_block_device_mapping) + "\""
 
             _msg += ", connected to networks \"" + _netnames + "\""
             _msg += ", on VMC \"" + obj_attr_list["vmc_name"] + "\", under tenant"
@@ -2446,7 +2627,7 @@ class OskCmds(CommonCloudFunctions) :
 
             _instance = self.oskconncompute.servers.create(name = obj_attr_list["cloud_vm_name"], \
                                                            block_device_mapping = _block_device_mapping, \
-                                                           image = _imageid, \
+                                                           image = _boot_volume_imageid, \
                                                            flavor = _flavor, \
                                                            security_groups = _security_groups, \
                                                            key_name = _key_name, \
@@ -2484,14 +2665,29 @@ class OskCmds(CommonCloudFunctions) :
                     else :
                         _status = 0
  
+                    if "admin_credentials" in obj_attr_list :
+                        self.connect(obj_attr_list["access"], obj_attr_list["admin_credentials"], \
+                                     obj_attr_list["vmc_name"], \
+                                     {"use_neutronclient" : obj_attr_list["use_neutronclient"]})                        
+
                     self.get_mac_address(obj_attr_list, _instance)
 
                     self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
     
                     self.get_host_and_instance_name(obj_attr_list)
     
-                    self.get_instance_deployment_time(obj_attr_list)
-    
+                    self.take_action_if_requested("VM", obj_attr_list, "provision_finished")
+
+                    if "execute_provision_finished_stdout" in obj_attr_list :
+                        if obj_attr_list["execute_provision_finished_stdout"].count("tenant") :
+                            _temp_dict = str2dic(obj_attr_list["execute_provision_finished_stdout"].replace('\n',''), False)
+                            if _temp_dict :
+                                obj_attr_list.update(_temp_dict)
+                                self.time_profile = True
+
+                    if obj_attr_list["tenant"] != "default" :
+                        self.oskconncompute = False
+
                     if "resource_limits" in obj_attr_list :
                         _status, _fmsg = self.set_cgroup(obj_attr_list)
                     else :
@@ -2595,7 +2791,6 @@ class OskCmds(CommonCloudFunctions) :
         
         raise CldOpsException(_msg, _status)
 
-
     def retriable_instance_delete(self, obj_attr_list, instance) :
         '''
         TBD
@@ -2661,17 +2856,20 @@ class OskCmds(CommonCloudFunctions) :
                              {"use_neutronclient" : obj_attr_list["use_neutronclient"]})
             
             _wait = int(obj_attr_list["update_frequency"])
-            
+
             _instance = self.get_instances(obj_attr_list, "vm", obj_attr_list["cloud_vm_name"])
-            
+
             if _instance :
+
+                self.floating_ip_delete(obj_attr_list)
+
                 _msg = "Sending a termination request for Instance \""  + obj_attr_list["name"] + "\""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
                 _msg += "...."
                 cbdebug(_msg, True)
 
                 self.retriable_instance_delete(obj_attr_list, _instance)
-    
+
                 while _instance :
                     _instance = self.get_instances(obj_attr_list, "vm", \
                                            obj_attr_list["cloud_vm_name"], True)
@@ -2684,7 +2882,15 @@ class OskCmds(CommonCloudFunctions) :
             _time_mark_drc = int(time())
             obj_attr_list["mgt_903_deprovisioning_request_completed"] = \
                 _time_mark_drc - _time_mark_drs
-             
+                
+            self.take_action_if_requested("VM", obj_attr_list, "deprovision_finished")
+
+            if "execute_deprovision_finished_stdout" in obj_attr_list :
+                if obj_attr_list["execute_deprovision_finished_stdout"].count("tenant") :
+                    _temp_dict = str2dic(obj_attr_list["execute_deprovision_finished_stdout"].replace('\n',''), False)
+                    if _temp_dict :
+                        obj_attr_list.update(_temp_dict)
+                    
             _status = 0
 
         except CldOpsException, obj :
@@ -3019,15 +3225,28 @@ class OskCmds(CommonCloudFunctions) :
                 return _status, _msg
 
     @trace        
-    def aidefine(self, obj_attr_list) :
+    def aidefine(self, obj_attr_list, current_step) :
         '''
         TBD
         '''
         try :
+
             _fmsg = "An error has occurred, but no error message was captured"
 
-            self.take_action_if_requested("AI", obj_attr_list, "all_vms_booted")
+            self.take_action_if_requested("AI", obj_attr_list, current_step)
 
+            if "execute_provision_originated_stdout" in obj_attr_list and current_step == "provision_originated" :
+                if obj_attr_list["execute_provision_originated_stdout"].count("tenant") :
+                    _temp_dict = str2dic(obj_attr_list["execute_provision_originated_stdout"].replace('\n',''), False)
+
+                    if _temp_dict :
+                        obj_attr_list["vm_extra_parms"] = ''                    
+                        for _key in _temp_dict.keys() :
+                            if _key != "staging" :
+                                obj_attr_list["vm_extra_parms"] += _key + '=' + _temp_dict[_key] + ','
+                        obj_attr_list["vm_extra_parms"] = obj_attr_list["vm_extra_parms"][0:-1]
+                        obj_attr_list.update(_temp_dict)
+                    
             _status = 0
 
         except Exception, e :
@@ -3049,11 +3268,12 @@ class OskCmds(CommonCloudFunctions) :
                 return _status, _msg
 
     @trace        
-    def aiundefine(self, obj_attr_list) :
+    def aiundefine(self, obj_attr_list, current_step) :
         '''
         TBD
         '''
         try :
+            self.take_action_if_requested("AI", obj_attr_list, current_step)            
             _fmsg = "An error has occurred, but no error message was captured"
             _status = 0
 

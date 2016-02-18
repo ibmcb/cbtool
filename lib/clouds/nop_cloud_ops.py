@@ -316,6 +316,8 @@ class NopCmds(CommonCloudFunctions) :
             obj_attr_list["size"] = "NA"
             obj_attr_list["class"] = "NA"
 
+            self.take_action_if_requested("VM", obj_attr_list, "provision_originated")
+
             _time_mark_prs = int(time())
             obj_attr_list["mgt_002_provisioning_request_sent"] = _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
 
@@ -463,7 +465,7 @@ class NopCmds(CommonCloudFunctions) :
                 return _status, _msg
 
     @trace        
-    def aidefine(self, obj_attr_list) :
+    def aidefine(self, obj_attr_list, current_step) :
         '''
         TBD
         '''
@@ -493,7 +495,7 @@ class NopCmds(CommonCloudFunctions) :
                 return _status, _msg
 
     @trace        
-    def aiundefine(self, obj_attr_list) :
+    def aiundefine(self, obj_attr_list, current_step) :
         '''
         TBD
         '''

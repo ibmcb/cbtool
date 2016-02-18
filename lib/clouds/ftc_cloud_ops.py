@@ -374,6 +374,10 @@ class FtcCmds(CommonCloudFunctions) :
         obj_attr_list["host_name"] = obj_attr_list["vmc_name"]
         obj_attr_list["host_cloud_ip"] = obj_attr_list["vmc_cloud_ip"]
 
+        obj_attr_list["last_known_state"] = "about to connect to cloud"
+
+        self.take_action_if_requested("VM", obj_attr_list, "provision_originated")
+
         self.connect(obj_attr_list["access"])
 
         kwargs = self.dic_to_rpc_kwargs(self.ftcconn, "run_instances", obj_attr_list)
@@ -693,7 +697,7 @@ class FtcCmds(CommonCloudFunctions) :
         return 0, _msg
 
     @trace        
-    def aidefine(self, obj_attr_list) :
+    def aidefine(self, obj_attr_list, current_step) :
         '''
         TBD
         '''
@@ -705,7 +709,7 @@ class FtcCmds(CommonCloudFunctions) :
         return 0, _msg
 
     @trace        
-    def aiundefine(self, obj_attr_list) :
+    def aiundefine(self, obj_attr_list, current_step) :
         '''
         TBD
         '''

@@ -1,146 +1,165 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Monitor extraction success. VM management performance data samples were written to the file /path/to/tool/lib/auxiliary//../../data/REGRESSION_B/VM_management_REGRESSION_B.csv.
+Data is available at the url "rsync://xxx.xxx.xxx.xxx :10000/msilva_cb/data/REGRESSION_B".
+#tenant:8
+#netname:9
+#host_name:10
+#host_cloud_ip:11
+#vmc_name:12
+#vmc_cloud_ip:13
+#role:14
+#size:15
+#imageid1:16
+#ai:17
+#ai_name:18
+#type:19
+#aidrs:20
+#aidrs_name:21
+#pattern:22
+#utc_offset_delta:23
+#comments:24
+#mgt_001_provisioning_request_originated:25
+#mgt_002_provisioning_request_sent:26
+#mgt_003_provisioning_request_completed:27
+#mgt_004_network_acessible:28
+#mgt_005_file_transfer:29
+#mgt_006_instance_preparation:30
+#mgt_007_application_start:31
+#mgt_101_capture_request_originated:32
+#mgt_102_capture_request_sent:33
+#mgt_103_capture_request_completed:34
+#mgt_201_runstate_request_originated:35
+#mgt_202_runstate_request_sent:36
+#mgt_203_runstate_request_completed:37
+#mgt_901_deprovisioning_request_originated:38
+#mgt_902_deprovisioning_request_sent:39
+#mgt_903_deprovisioning_request_completed:40
+#mgt_999_provisioning_request_failed:41
+uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,tenant,netname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,utc_offset_delta,comments,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_instance_preparation,mgt_007_application_start,mgt_101_capture_request_originated,mgt_102_capture_request_sent,mgt_103_capture_request_completed,mgt_201_runstate_request_originated,mgt_202_runstate_request_sent,mgt_203_runstate_request_completed,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed,mgt_999_provisioning_request_failed
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_2,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,tinyvm,pico32,cb_nullworkload,none,none,none,none,none,none,-21600,NA,66,0,1,1,0,1,0,75,0,1,NA,NA,NA,76,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_4,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,db2,copper32,cb_daytrader,none,none,none,none,none,none,-21600,NA,70,0,1,1,0,1,0,NA,NA,NA,NA,NA,NA,206,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_5,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,netclient,platinum64,cb_netperf,none,none,none,none,none,none,-21600,NA,73,0,1,1,0,1,0,NA,NA,NA,NA,NA,NA,207,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_1,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,tinyvm,pico32,cb_nullworkload,none,none,none,none,none,none,-21600,NA,63,0,1,1,0,1,0,NA,NA,NA,NA,NA,NA,217,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_22,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,tinyvm,pico32,cb_nullworkload,none,none,none,none,none,none,-21600,NA,172,0,1,1,0,1,0,NA,NA,NA,NA,NA,NA,217,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_12,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,tinyvm,iron32,cb_nullworkload,none,none,none,none,none,none,-21600,NA,115,1,7,1,0,1,0,NA,NA,NA,NA,NA,NA,217,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_6,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,tinyvm,pico32,cb_nullworkload,none,none,none,none,none,none,-21600,NA,76,0,1,1,0,1,0,NA,NA,NA,NA,NA,NA,217,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_8,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,tinyvm,pico32,cb_nullworkload,none,none,none,none,none,none,-21600,NA,86,0,1,1,0,1,0,NA,NA,NA,NA,NA,NA,217,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_16,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,tinyvm,pico32,cb_nullworkload,none,none,none,none,none,none,-21600,NA,157,0,1,1,0,1,0,NA,NA,NA,NA,NA,NA,217,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_7,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,tinyvm,pico32,cb_nullworkload,none,none,none,none,none,none,-21600,NA,86,0,1,1,0,1,0,NA,NA,NA,NA,NA,NA,217,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_11,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,fen_hpc,platinum64,cb_hpc,none,none,none,none,none,none,-21600,NA,107,0,1,1,0,1,0,NA,NA,NA,NA,NA,NA,217,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_10,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,netclient,iron32,cb_netperf,none,none,none,none,none,none,-21600,NA,98,0,1,1,0,1,0,NA,NA,NA,NA,NA,NA,217,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_21,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,tinyvm,pico32,cb_nullworkload,none,none,none,none,none,none,-21600,NA,169,0,1,1,0,1,0,NA,NA,NA,NA,NA,NA,217,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_19,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,tinyvm,pico32,cb_nullworkload,none,none,none,none,none,none,-21600,NA,164,0,1,1,0,1,0,NA,NA,NA,NA,NA,NA,217,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_24,NA,undefined,TESTCLOUD,sim,undefined,default,private,NA,NA,simzone_X,xxx.xxx.xxx.xxx ,willfail,nano32,doesnotmatter,none,none,none,none,none,none,-18000,NA,221,0,0,NA,0,0,0,NA,NA,NA,NA,NA,NA,221,0,0,0
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_25,NA,undefined,TESTCLOUD,sim,undefined,default,private,NA,NA,simzone_X,xxx.xxx.xxx.xxx ,willfail,nano32,doesnotmatter,none,none,none,none,none,none,-18000,NA,221,1,0,NA,0,0,0,NA,NA,NA,NA,NA,NA,222,0,0,1
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_15,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,tinyvm,pico32,cb_nullworkload,none,none,none,none,none,none,-21600,NA,155,0,1,1,0,1,0,NA,NA,NA,NA,NA,NA,217,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_17,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,tinyvm,pico32,cb_nullworkload,none,none,none,none,none,none,-21600,NA,160,0,1,1,0,1,0,NA,NA,NA,NA,NA,NA,217,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_14,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,predictablevm,iron32,cloudbench_root,none,none,none,none,none,none,-21600,NA,139,0,8,1,0,1,0,NA,NA,NA,NA,NA,NA,217,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_9,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,db2,platinum64,cb_daytrader,none,none,none,none,none,none,-21600,NA,89,0,1,1,0,1,0,NA,NA,NA,NA,NA,NA,217,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_3,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,tinyvm,pico32,cb_nullworkload,none,none,none,none,none,none,-21600,NA,68,0,1,1,0,1,0,NA,NA,NA,201,0,0,217,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_18,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,tinyvm,pico32,cb_nullworkload,none,none,none,none,none,none,-21600,NA,162,0,1,1,0,1,0,NA,NA,NA,NA,NA,NA,217,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_13,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,tinyvm,iron32,cb_nullworkload,none,none,none,none,none,none,-21600,NA,131,0,1,1,0,1,0,NA,NA,NA,NA,NA,NA,217,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_20,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,tinyvm,pico32,cb_nullworkload,none,none,none,none,none,none,-21600,NA,167,0,1,1,0,1,0,NA,NA,NA,NA,NA,NA,217,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_27,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,was,iron32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_1,ibm_daytrader,none,none,none,-21600,NA,223,0,1,1,0,1,383,NA,NA,NA,NA,NA,NA,331,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_30,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,hadoopslave,platinum64,cb_speccloud_kmeans,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_2,hadoop,none,none,none,-21600,NA,229,1,1,1,0,1,50,NA,NA,NA,NA,NA,NA,339,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_32,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,hadoopslave,platinum64,cb_speccloud_kmeans,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_2,hadoop,none,none,none,-21600,NA,229,1,1,1,0,1,209,NA,NA,NA,NA,NA,NA,339,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_31,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,hadoopslave,platinum64,cb_speccloud_kmeans,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_2,hadoop,none,none,none,-21600,NA,229,1,1,1,0,1,322,NA,NA,NA,NA,NA,NA,339,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_29,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,hadoopmaster,platinum64,cb_speccloud_kmeans,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_2,hadoop,none,none,none,-21600,NA,229,1,1,1,0,1,63,339,1,1,NA,NA,NA,341,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_46,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,db2,platinum64,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_7,ibm_daytrader,none,none,none,-21600,NA,332,0,1,2,0,1,91,NA,NA,NA,NA,NA,NA,341,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_45,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,client_daytrader,micro32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_7,ibm_daytrader,none,none,none,-21600,NA,332,0,1,2,0,1,487,NA,NA,NA,NA,NA,NA,341,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_44,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,was,iron32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_7,ibm_daytrader,none,none,none,-21600,NA,332,0,1,2,0,1,112,341,1,1,NA,NA,NA,343,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_42,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,hadoopslave,platinum64,cb_speccloud_kmeans,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_6,hadoop,none,none,none,-21600,NA,310,0,1,1,0,1,489,NA,NA,NA,NA,NA,NA,344,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_41,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,hadoopmaster,platinum64,cb_speccloud_kmeans,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_6,hadoop,none,none,none,-21600,NA,310,0,1,1,0,1,279,344,0,1,NA,NA,NA,345,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_28,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,db2,platinum64,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_1,ibm_daytrader,none,none,none,-21600,NA,223,0,1,1,0,1,219,NA,NA,NA,NA,NA,NA,369,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_43,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,was,iron32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,none,ibm_daytrader,none,none,none,NA,NA,328,0,1,1,0,0,0,NA,NA,NA,NA,NA,NA,369,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_26,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,client_daytrader,micro32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_1,ibm_daytrader,none,none,none,-21600,NA,223,0,1,1,0,1,351,369,0,1,NA,NA,NA,370,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_47,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,client_daytrader,micro32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_8,ibm_daytrader,none,none,none,-21600,NA,394,0,1,1,0,1,382,NA,NA,NA,NA,NA,NA,601,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_52,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,client_daytrader,micro32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_9,ibm_daytrader,none,none,none,-21600,NA,401,1,1,1,0,1,141,NA,NA,NA,NA,NA,NA,605,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_55,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,client_daytrader,micro32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_10,ibm_daytrader,none,none,none,-21600,NA,408,0,1,1,0,1,245,NA,NA,NA,NA,NA,NA,510,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_58,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,client_daytrader,micro32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_11,ibm_daytrader,none,none,none,-21600,NA,415,0,1,1,0,1,303,NA,NA,NA,NA,NA,NA,600,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_64,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,client_daytrader,micro32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_12,ibm_daytrader,none,none,none,-21600,NA,421,1,1,1,0,1,366,NA,NA,NA,NA,NA,NA,480,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_61,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,lb,iron32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_12,ibm_daytrader,none,none,none,-21600,NA,421,1,3,1,0,1,87,NA,NA,NA,NA,NA,NA,480,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_62,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,was,iron32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_12,ibm_daytrader,none,none,none,-21600,NA,421,1,1,1,0,1,244,NA,NA,NA,NA,NA,NA,480,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_65,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,db2,gold32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_12,ibm_daytrader,none,none,none,-21600,NA,421,1,1,1,0,1,480,NA,NA,NA,NA,NA,NA,480,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_63,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,was,iron32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_12,ibm_daytrader,none,none,none,-21600,NA,421,1,1,1,0,1,384,NA,NA,NA,NA,NA,NA,480,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_67,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,client_daytrader,micro32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_13,ibm_daytrader,none,none,none,-21600,NA,429,1,1,1,0,1,253,NA,NA,NA,NA,NA,NA,483,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_70,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,db2,gold32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_13,ibm_daytrader,none,none,none,-21600,NA,430,0,1,1,0,1,68,NA,NA,NA,NA,NA,NA,483,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_69,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,was,iron32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_13,ibm_daytrader,none,none,none,-21600,NA,430,0,1,1,0,1,322,NA,NA,NA,NA,NA,NA,483,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_68,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,lb,iron32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_13,ibm_daytrader,none,none,none,-21600,NA,429,1,1,1,0,1,234,NA,NA,NA,NA,NA,NA,483,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_66,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,was,iron32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_13,ibm_daytrader,none,none,none,-21600,NA,430,0,1,1,0,1,59,NA,NA,NA,NA,NA,NA,483,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_34,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,was,iron32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_3,ibm_daytrader,none,none,none,-21600,NA,241,0,1,1,0,1,426,NA,NA,NA,279,0,0,488,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_33,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,client_daytrader,micro32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_3,ibm_daytrader,none,none,none,-21600,NA,241,0,1,1,0,1,156,NA,NA,NA,279,0,0,488,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_35,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,db2,platinum64,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_3,ibm_daytrader,none,none,none,-21600,NA,241,0,1,1,0,1,203,NA,NA,NA,279,0,0,488,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_91,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,filebench,iron32,cb_filebench,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_22,filebench,none,none,none,-21600,NA,475,0,1,1,0,1,32,NA,NA,NA,NA,NA,NA,490,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_93,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,client_daytrader,micro32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_23,ibm_daytrader,none,none,none,-21600,NA,491,0,1,1,0,1,111,NA,NA,NA,NA,NA,NA,605,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_92,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,lb,iron32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_23,ibm_daytrader,none,none,none,-21600,NA,491,0,1,1,0,1,458,NA,NA,NA,NA,NA,NA,605,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_96,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,was,iron32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_23,ibm_daytrader,none,none,none,-21600,NA,491,0,1,1,0,1,192,NA,NA,NA,NA,NA,NA,605,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_95,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,was,iron32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_23,ibm_daytrader,none,none,none,-21600,NA,491,0,1,1,0,1,141,NA,NA,NA,NA,NA,NA,605,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_94,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,db2,gold32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_23,ibm_daytrader,none,none,none,-21600,NA,491,0,1,1,0,1,37,NA,NA,NA,NA,NA,NA,605,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_97,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,netclient,iron32,cb_netperf,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_24,netperf,none,none,none,-21600,NA,498,0,1,1,0,1,395,NA,NA,NA,NA,NA,NA,605,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_98,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,netserver,iron32,cb_netperf,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_24,netperf,none,none,none,-21600,NA,498,0,1,1,0,1,462,NA,NA,NA,NA,NA,NA,606,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_56,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,was,iron32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_10,ibm_daytrader,none,none,none,-21600,NA,408,0,1,1,0,1,380,NA,NA,NA,NA,NA,NA,510,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_57,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,db2,platinum64,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_10,ibm_daytrader,none,none,none,-21600,NA,408,0,1,1,0,1,128,510,0,1,NA,NA,NA,511,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_36,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,client_daytrader,micro32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_4,ibm_daytrader,none,none,none,-21600,NA,286,0,1,1,0,1,385,NA,NA,NA,NA,NA,NA,512,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_38,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,was,iron32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_4,ibm_daytrader,none,none,none,-21600,NA,286,0,1,1,0,1,161,NA,NA,NA,NA,NA,NA,512,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_37,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,db2,platinum64,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_4,ibm_daytrader,none,none,none,-21600,NA,286,0,1,1,0,1,234,512,1,1,NA,NA,NA,514,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_101,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,fen_hpc,bronze32,cb_hpc,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_25,hpcc,none,none,none,-21600,NA,503,0,1,1,0,1,252,NA,NA,NA,NA,NA,NA,515,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_100,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,cn_hpc,bronze32,cb_hpc,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_25,hpcc,none,none,none,-21600,NA,503,0,1,1,0,1,422,NA,NA,NA,NA,NA,NA,515,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_102,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,cn_hpc,bronze32,cb_hpc,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_25,hpcc,none,none,none,-21600,NA,503,0,1,1,0,1,77,NA,NA,NA,NA,NA,NA,515,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_99,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,cn_hpc,bronze32,cb_hpc,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_25,hpcc,none,none,none,-21600,NA,503,0,1,1,0,1,283,515,1,1,NA,NA,NA,517,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_83,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,lb,iron32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_18,ibm_daytrader,none,none,none,-21600,NA,449,1,1,1,0,1,397,NA,NA,NA,NA,NA,NA,535,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_81,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,was,iron32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_18,ibm_daytrader,none,none,none,-21600,NA,449,1,1,1,0,1,120,NA,NA,NA,NA,NA,NA,535,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_82,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,db2,gold32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_18,ibm_daytrader,none,none,none,-21600,NA,449,1,1,1,0,1,38,NA,NA,NA,NA,NA,NA,535,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_79,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,client_daytrader,micro32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_18,ibm_daytrader,none,none,none,-21600,NA,449,1,1,1,0,1,409,NA,NA,NA,NA,NA,NA,535,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_80,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,was,iron32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_18,ibm_daytrader,none,none,none,-21600,NA,449,1,1,1,0,1,390,NA,NA,NA,NA,NA,NA,535,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_103,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,client_daytrader,micro32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_26,ibm_daytrader,none,none,none,-21600,NA,537,0,1,2,0,1,430,NA,NA,NA,NA,NA,NA,600,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_104,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,lb,iron32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_26,ibm_daytrader,none,none,none,-21600,NA,537,0,1,2,0,1,333,NA,NA,NA,NA,NA,NA,600,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_107,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,was,iron32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_26,ibm_daytrader,none,none,none,-21600,NA,537,0,1,2,0,1,99,NA,NA,NA,NA,NA,NA,601,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_106,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,was,iron32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_26,ibm_daytrader,none,none,none,-21600,NA,537,0,1,2,0,1,208,NA,NA,NA,NA,NA,NA,601,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_105,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,db2,gold32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_26,ibm_daytrader,none,none,none,-21600,NA,537,0,1,1,0,1,222,NA,NA,NA,NA,NA,NA,601,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_108,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,client_daytrader,micro32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_27,ibm_daytrader,none,none,none,-21600,NA,560,1,1,1,0,1,497,NA,NA,NA,NA,NA,NA,609,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_111,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,lb,iron32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_27,ibm_daytrader,none,none,none,-21600,NA,560,1,1,1,0,1,384,NA,NA,NA,NA,NA,NA,609,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_110,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,was,iron32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_27,ibm_daytrader,none,none,none,-21600,NA,560,1,1,1,0,1,406,NA,NA,NA,NA,NA,NA,609,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_109,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,was,iron32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_27,ibm_daytrader,none,none,none,-21600,NA,560,1,1,1,0,1,452,NA,NA,NA,NA,NA,NA,610,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_112,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,db2,gold32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_27,ibm_daytrader,none,none,none,-21600,NA,560,1,1,1,0,1,116,NA,NA,NA,NA,NA,NA,610,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_59,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,was,iron32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_11,ibm_daytrader,none,none,none,-21600,NA,415,0,1,1,0,1,438,NA,NA,NA,NA,NA,NA,600,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_60,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,db2,platinum64,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_11,ibm_daytrader,none,none,none,-21600,NA,415,0,1,1,0,1,298,NA,NA,NA,NA,NA,NA,600,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_48,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,lb,iron32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_8,ibm_daytrader,none,none,none,-21600,NA,394,0,1,1,0,1,394,NA,NA,NA,NA,NA,NA,601,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_49,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,was,iron32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_8,ibm_daytrader,none,none,none,-21600,NA,394,0,1,1,0,1,191,NA,NA,NA,NA,NA,NA,601,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_90,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,coremark,iron32,cb_netperf,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_21,coremark,none,none,none,-21600,NA,470,0,1,1,0,1,128,NA,NA,NA,NA,NA,NA,601,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_50,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,was,iron32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_8,ibm_daytrader,none,none,none,-21600,NA,394,0,1,1,0,1,63,NA,NA,NA,NA,NA,NA,601,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_51,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,db2,gold32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_8,ibm_daytrader,none,none,none,-21600,NA,394,0,1,1,0,1,420,NA,NA,NA,NA,NA,NA,601,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_113,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,hadoopmaster,platinum64,cb_speccloud_kmeans,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_28,hadoop,none,none,none,-21600,NA,579,0,1,1,0,1,146,NA,NA,NA,592,0,0,601,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_84,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,client_tradelite,micro32,cb_tradelite,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_19,ibmderby_tradelite,none,none,none,-21600,NA,457,0,1,1,0,1,414,NA,NA,NA,NA,NA,NA,601,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_114,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,hadoopslave,platinum64,cb_speccloud_kmeans,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_28,hadoop,none,none,none,-21600,NA,579,0,1,1,0,1,335,NA,NA,NA,592,1,0,601,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_85,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,was,iron32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_19,ibmderby_tradelite,none,none,none,-21600,NA,457,0,1,1,0,1,353,NA,NA,NA,NA,NA,NA,601,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_116,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,hadoopslave,platinum64,cb_speccloud_kmeans,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_28,hadoop,none,none,none,-21600,NA,579,0,1,1,0,1,170,NA,NA,NA,592,1,0,601,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_115,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,hadoopslave,platinum64,cb_speccloud_kmeans,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_28,hadoop,none,none,none,-21600,NA,579,0,1,1,0,1,15,NA,NA,NA,592,0,0,601,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_89,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,fen_hpc,bronze32,cb_hpc,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_20,hpcc,none,none,none,-21600,NA,463,0,1,1,0,1,314,NA,NA,NA,NA,NA,NA,604,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_87,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,cn_hpc,bronze32,cb_hpc,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_20,hpcc,none,none,none,-21600,NA,463,0,1,1,0,1,140,NA,NA,NA,NA,NA,NA,605,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_88,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,cn_hpc,bronze32,cb_hpc,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_20,hpcc,none,none,none,-21600,NA,463,0,1,1,0,1,148,NA,NA,NA,NA,NA,NA,605,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_86,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,cn_hpc,bronze32,cb_hpc,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_20,hpcc,none,none,none,-21600,NA,463,0,1,1,0,1,288,NA,NA,NA,NA,NA,NA,605,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_53,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,was,iron32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_9,ibm_daytrader,none,none,none,-21600,NA,401,1,1,1,0,1,109,NA,NA,NA,NA,NA,NA,605,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_54,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,db2,platinum64,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_9,ibm_daytrader,none,none,none,-21600,NA,401,1,1,1,0,1,124,NA,NA,NA,NA,NA,NA,605,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_71,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,netclient,iron32,cb_netperf,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_14,netperf,none,none,none,-21600,NA,437,0,1,1,0,1,221,NA,NA,NA,NA,NA,NA,605,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_72,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,netserver,iron32,cb_netperf,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_14,netperf,none,none,none,-21600,NA,437,0,1,1,0,1,267,NA,NA,NA,NA,NA,NA,605,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_77,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,netclient,iron32,cb_netperf,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_17,netperf,none,none,none,-21600,NA,443,0,1,1,0,1,190,NA,NA,NA,NA,NA,NA,606,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_78,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,netserver,iron32,cb_netperf,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_17,netperf,none,none,none,-21600,NA,443,0,1,1,0,1,166,NA,NA,NA,NA,NA,NA,606,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_76,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,netserver,iron32,cb_netperf,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_16,netperf,none,none,none,-21600,NA,441,0,1,1,0,1,435,NA,NA,NA,NA,NA,NA,606,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_75,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,netclient,iron32,cb_netperf,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_16,netperf,none,none,none,-21600,NA,441,0,1,1,0,1,280,NA,NA,NA,NA,NA,NA,606,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_73,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,netclient,iron32,cb_netperf,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_15,netperf,none,none,none,-21600,NA,439,0,1,1,0,1,329,NA,NA,NA,NA,NA,NA,609,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_39,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,netclient,platinum64,cb_netperf,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_5,netperf,none,none,none,-21600,NA,304,0,1,1,0,1,481,NA,NA,NA,NA,NA,NA,609,0,1,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_74,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,netserver,iron32,cb_netperf,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_15,netperf,none,none,none,-21600,NA,439,0,1,1,0,1,139,NA,NA,NA,NA,NA,NA,609,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_40,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,netserver,iron32,cb_netperf,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_5,netperf,none,none,none,-21600,NA,304,0,1,1,0,1,276,NA,NA,NA,NA,NA,NA,609,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_121,NA,undefined,TESTCLOUD,sim,undefined,default,private,NA,NA,simzone_X,xxx.xxx.xxx.xxx ,willfail,nano32,doesnotmatter,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_30,ibm_daytrader,none,none,none,-18000,NA,615,1,0,NA,0,0,0,NA,NA,NA,NA,NA,NA,616,0,0,1
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_118,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,was,iron32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_30,ibm_daytrader,none,none,none,NA,NA,615,1,1,1,0,0,0,NA,NA,NA,NA,NA,NA,619,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_117,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,client_daytrader,micro32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_30,ibm_daytrader,none,none,none,NA,NA,615,1,1,1,0,0,0,NA,NA,NA,NA,NA,NA,619,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_119,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,lb,iron32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_30,ibm_daytrader,none,none,none,NA,NA,615,1,1,1,0,0,0,NA,NA,NA,NA,NA,NA,619,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_120,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,was,iron32,cb_daytrader,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_30,ibm_daytrader,none,none,none,NA,NA,615,1,1,1,0,0,0,NA,NA,NA,NA,NA,NA,619,1,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_122,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,tinyvm,pico32,cb_nullworkload,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_31,nullworkload,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,aidrs_1,simplenw,-21600,NA,623,0,1,1,0,1,71,NA,NA,NA,NA,NA,NA,665,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_123,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,tinyvm,pico32,cb_nullworkload,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_32,nullworkload,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,aidrs_1,simplenw,-21600,NA,632,0,1,1,0,1,319,NA,NA,NA,NA,NA,NA,674,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_124,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,tinyvm,pico32,cb_nullworkload,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_33,nullworkload,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,aidrs_2,simplenw,-21600,NA,696,0,1,1,0,1,426,NA,NA,NA,NA,NA,NA,784,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_125,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,tinyvm,pico32,cb_nullworkload,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_34,nullworkload,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,aidrs_2,simplenw,-21600,NA,706,0,1,1,0,1,424,NA,NA,NA,NA,NA,NA,784,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_126,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,tinyvm,pico32,cb_nullworkload,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_35,nullworkload,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,aidrs_2,simplenw,-21600,NA,712,0,1,1,0,1,194,NA,NA,NA,NA,NA,NA,784,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_127,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,tinyvm,pico32,cb_nullworkload,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_36,nullworkload,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,aidrs_2,simplenw,-21600,NA,718,0,1,1,0,1,227,NA,NA,NA,NA,NA,NA,784,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_128,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,tinyvm,pico32,cb_nullworkload,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,ai_37,nullworkload,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,aidrs_2,simplenw,-21600,NA,724,0,1,1,0,1,142,NA,NA,NA,NA,NA,NA,784,0,0,NA
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,vm_129,running with ip assigned,xxx.xxx.xxx.xxx ,TESTCLOUD,sim,xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.simcloud.com,default,private,simhostX,xxx.xxx.xxx.xxx ,simzone_X,xxx.xxx.xxx.xxx ,tinyvm,pico32,cb_nullworkload,none,none,none,none,none,none,-21600,NA,787,0,1,1,0,1,0,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA

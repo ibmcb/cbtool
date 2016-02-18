@@ -468,6 +468,8 @@ class PlmCmds(CommonCloudFunctions) :
             obj_attr_list["tag"] = obj_attr_list["tag"].replace("_", "-")
             obj_attr_list["last_known_state"] = "about to connect to PLM"
 
+            self.take_action_if_requested("VM", obj_attr_list, "provision_originated")
+
             if type(self.plmconn) is type(False) :
                 self.connect(obj_attr_list["access"], \
                              obj_attr_list["credentials"], \
@@ -718,7 +720,7 @@ class PlmCmds(CommonCloudFunctions) :
                 return _status, _msg
 
     @trace        
-    def aidefine(self, obj_attr_list) :
+    def aidefine(self, obj_attr_list, current_step) :
         '''
         TBD
         '''
@@ -748,7 +750,7 @@ class PlmCmds(CommonCloudFunctions) :
                 return _status, _msg
 
     @trace        
-    def aiundefine(self, obj_attr_list) :
+    def aiundefine(self, obj_attr_list, current_step) :
         '''
         TBD
         '''

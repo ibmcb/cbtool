@@ -1581,7 +1581,12 @@ class RedisMgdConn :
         '''
         self.conn_check()
         
-        return self.redis_conn.time()
+        try :
+            _result = self.redis_conn.time()
+        except :
+            _result = self.redis_conn.execute_command("time")
+
+        return _result
     
     @trace
     def remove_from_view(self, cloud_name, obj_type, obj_attr_list, criterion) :

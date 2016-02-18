@@ -380,7 +380,7 @@ def mongodb_metricstore_setup(global_objects, operation = "check") :
                 _usage = "private"
 
                 _config_file_fn = global_objects["space"]["stores_working_dir"] + '/' + _username + "_mongod.conf"
-                _cmd = "mongod -f " + _config_file_fn + " --pidfilepath " + global_objects["space"]["stores_working_dir"] + "/mongod.pid"
+                _cmd = "mkdir -p " + global_objects["space"]["stores_working_dir"]  + "/logs; mongod -f " + _config_file_fn + " --pidfilepath " + global_objects["space"]["stores_working_dir"] + "/mongod.pid"
     
                 _proc_man =  ProcessManagement(username = _username)
                 _mongodb_pid = _proc_man.get_pid_from_cmdline("mongod -f")

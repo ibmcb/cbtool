@@ -92,7 +92,7 @@ fi
     
 if [[ -z ${HADOOP_CONF_DIR} ]]
 then
-    HADOOP_CONF_DIR=$(find $HADOOP_HOME -name core-site.xml | grep -v templates | sed 's/core-site.xml//g' | tail -1)
+    HADOOP_CONF_DIR=$(find $HADOOP_HOME -name core-site.xml | grep -v src | grep -v share | grep -v templates | sed 's/core-site.xml//g' | tail -1)
     syslog_netcat "HADOOP_CONF_DIR not defined on the environment. Assuming \"$HADOOP_CONF_DIR\" as the directory"
 fi
 
@@ -117,6 +117,12 @@ export HADOOP_CONF_DIR=${HADOOP_CONF_DIR}
 if [[ -z ${HADOOP_EXECUTABLE} ]]
 then
     HADOOP_EXECUTABLE=$(find $HADOOP_HOME -name hadoop.cmd | grep -v templates | sed 's/.cmd//g' | tail -1)
+    syslog_netcat "HADOOP_EXECUTABLE not defined on the environment. Assuming \"$HADOOP_EXECUTABLE\" as the executable"
+fi
+
+if [[ -z ${HADOOP_EXECUTABLE} ]]
+then
+    HADOOP_EXECUTABLE=$(find $HADOOP_HOME | grep hadoop$ | grep -v core | grep -v src | tail -1)
     syslog_netcat "HADOOP_EXECUTABLE not defined on the environment. Assuming \"$HADOOP_EXECUTABLE\" as the executable"
 fi
 
@@ -194,7 +200,12 @@ fi
 
 if [[ -d ${HADOOP_HOME}/sbin ]]
 then
-    HADOOP_BIN_DIR=${HADOOP_HOME}/sbin
+    if [[ -e ${HADOOP_HOME}/sbin/start-dfs.sh ]]
+    then
+        HADOOP_BIN_DIR=${HADOOP_HOME}/sbin
+    else
+        HADOOP_BIN_DIR=${HADOOP_HOME}/bin        
+    fi
 else
     HADOOP_BIN_DIR=${HADOOP_HOME}/bin
 fi
@@ -762,7 +773,7 @@ function start_master_hadooop_services {
                 sudo chown -R $(whoami) ${DFS_NAME_DIR}
             fi
     
-            sudo -u ${dfs_name_dir_owner} $HADOOP_HOME/bin/hadoop namenode -format -force
+            sudo -E -u ${dfs_name_dir_owner} $HADOOP_HOME/bin/hadoop namenode -format -force
             if [[ $? -ne 0 ]]
             then
                 syslog_netcat "Error when formatting namenode (on $DFS_NAME_DIR) as user ${dfs_name_dir_owner} - NOK"
@@ -774,7 +785,7 @@ function start_master_hadooop_services {
             syslog_netcat "...Starting primary Namenode service..."
             if [[ -e ${HADOOP_BIN_DIR}/start-dfs.sh ]] 
             then
-                syslog_netcat "...start-dfs.sh script exists, using that to launch Namenode services..."
+                syslog_netcat "...${HADOOP_BIN_DIR}/start-dfs.sh script exists, using that to launch Namenode services..."
                 ${HADOOP_BIN_DIR}/start-dfs.sh
                 namenode_running=`ps aux | grep -e [n]amenode`
                 if [[ x"$namenode_running" == x ]] 
@@ -786,7 +797,7 @@ function start_master_hadooop_services {
                 fi
     
             else
-                syslog_netcat "...No start-dfs script exists. Attempting to identify namenode service..."
+                syslog_netcat "...No ${HADOOP_BIN_DIR}/start-dfs.sh script exists. Attempting to identify namenode service..."
     
                 for x in `cd /etc/init.d ; ls *namenode*`
                 do 
@@ -808,7 +819,7 @@ function start_master_hadooop_services {
             syslog_netcat "...Starting JobTracker service..."
             if [[ -e ${HADOOP_BIN_DIR}/start-mapred.sh ]]
             then
-                syslog_netcat "...start-mapred.sh script exists, using that to launch Jobtracker services..."
+                syslog_netcat "...${HADOOP_BIN_DIR}/start-mapred.sh script exists, using that to launch Jobtracker services..."
                 ${HADOOP_BIN_DIR}/start-mapred.sh
                 jobtracker_running=`ps aux | grep -e [j]obtracker`
                 if [[ x"$jobtracker_running" == x ]] 
@@ -820,7 +831,7 @@ function start_master_hadooop_services {
                 fi
     
             else
-                syslog_netcat "...No start-mapred script exists. Attempting to identify Jobtracker service..."
+                syslog_netcat "...No ${HADOOP_BIN_DIR}/start-mapred.sh script exists. Attempting to identify Jobtracker service..."
     
                 for x in `cd /etc/init.d ; ls *jobtracker*`
                 do 
@@ -852,6 +863,7 @@ function start_slave_hadoop_services {
     then
         
         syslog_netcat "...Starting datanode..."
+        syslog_netcat "...${HADOOP_BIN_DIR}/hadoop-daemon.sh script exists, using that to launch Jobtracker services..."        
         ${HADOOP_BIN_DIR}/hadoop-daemon.sh start datanode
         datanode_error=`grep FATAL ${HADOOP_HOME}/logs/hadoop*.log`
         if [[ x"$datanode_error" != x ]]
@@ -914,7 +926,7 @@ function setup_matrix_multiplication {
 
 }
 export -f setup_matrix_multiplication
-
+    
 #######################################################################################
 # Result log destinations 
 #

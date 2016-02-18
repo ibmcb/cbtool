@@ -312,23 +312,29 @@ class APIClient(Server):
 
         if uuid :
             _criteria["uuid"] = uuid
-                    
+
         metrics = self.msci.find_document(_collection_name, \
                                           _criteria, \
                                           limitdocuments = _limitdocuments, \
                                           allmatches = _allmatches)
 
-        if uuid :
-            if samples > 1 :
-                if metrics :
-                    if "count" in dir(metrics) :
-                        _samples = metrics.count() 
-                    
-                        if _samples == 0 :                
-                            metrics = None
+        if isinstance(metrics, dict) :
+            _metrics = []
+            _metrics.append(metrics)      
+            metrics = _metrics            
+            
+#        if uuid and metrics :
+#            if metrics :
+#                if "count" in dir(metrics) :
+#                    _samples = metrics.count() 
+#                
+#                    if _samples == 0 :                
+#                        metrics = None
 
-                        if _samples == 1 :                
-                            metrics = metrics[0]
+#                    if _samples == 1 :
+#                        _metrics = []
+#                        _metrics.append(metrics)      
+#                        metrics = _metrics
                     
         if metrics is None :
             _msg = "No " + metric_class + ' ' + _object_type + '(' + str(metric_type) + ") data available."
@@ -388,6 +394,6 @@ class APIClient(Server):
         '''
         TBD
         '''
-        _metrics = self.get_performance_data(cloud_name, uuid, "management", "VM", False, expid)
+        _metrics = self.get_performance_data(cloud_name, uuid, "management", "VM", "os", False, expid)
             
         return _metrics

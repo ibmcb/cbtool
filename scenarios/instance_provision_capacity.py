@@ -132,6 +132,12 @@ def parse_cli() :
                        default=None, \
                        help="Private network to be used. Possible values are None (just use default), a network name and \"random\" (use any private network)")
 
+    _parser.add_option("--multitenant", "-m",\
+                       action="store_true", \
+                       dest="multitenant", \
+                       default=False, \
+                       help="Create each instance on its own tenant and network")
+
     _parser.add_option("--update_frequency", \
                        dest="update_frequency", \
                        default=5, \
@@ -185,8 +191,12 @@ def profiling_phase(api, options, performance_data, directory) :
     _msg = "### The following computes nodes are reported as part of the cloud "
     _msg += "\"" + options.cloud_name + "\" " + ','.join(_hosts) + '\n'    
     print _msg
-    
-    _chosen_nodenames = sample(_hosts, options.profile)
+
+    if options.profile == "1" :
+        _chosen_nodenames = []
+        _chosen_nodenames.append(choice(_hosts))
+    else :
+        _chosen_nodenames = sample(_hosts, options.profile)
 
     _msg = "### The following computes nodes were selected for the profiling"
     _msg += " phase: " + ','.join(_chosen_nodenames) + '\n'    
@@ -204,7 +214,9 @@ def profiling_phase(api, options, performance_data, directory) :
             _msg += "node \"" + _node  + "\" (Sample " + str(_j) + ")..."
             print _msg
             
-            _vm_attrs = api.vmattach(options.cloud_name, options.role, vm_location = _node, temp_attr_list = _temp_attr_list_str)
+            _vm_attrs = api.vmattach(options.cloud_name, options.role, \
+                                     vm_location = _node, \
+                                     temp_attr_list = _temp_attr_list_str, pause_step = options.pause_step)
 
             _msg = "####### \"" + _vm_attrs["name"] + "\" (" + _vm_attrs["uuid"] 
             _msg += ") successfully deployed." 
@@ -217,9 +229,11 @@ def profiling_phase(api, options, performance_data, directory) :
             api.vmdetach(options.cloud_name, _vm_attrs["name"])
 
             print "####### Obtaining management performance metrics for VM \"" + _vm_attrs["name"] + "\"...."
-            _mgt_metric = api.get_latest_management_data(options.cloud_name, _vm_attrs["uuid"])
-            #print _mgt_metric
+            _mgt_metric = {}
 
+            for _metric in api.get_management_data(options.cloud_name, _vm_attrs["uuid"]):
+                _mgt_metric = _metric
+            
             if not _j :
                 _msg = "####### Since this is the first deployment on this node,"
                 _msg += " will ignore this result (VM image might not be pre-"
@@ -289,14 +303,13 @@ def total_deployment_time(management_metrics) :
     '''
     total_time = 0
 
-    for _entry in management_metrics :
-        for _key in _entry.keys() :
-            if _key.count("mgt") :
-                if _key.count("provisioning") :                    
-                    if not _key.count("originated") and not _key.count("sla") :
-                        total_time += int(_entry[_key])
-                if _key.count("network_acessible") or _key.count("instance_preparation") :
-                    total_time += int(_entry[_key])
+    for _key in management_metrics.keys() :
+        if _key.count("mgt") :
+            if _key.count("provisioning") :                    
+                if not _key.count("originated") and not _key.count("sla") :
+                    total_time += int(management_metrics[_key])
+            if _key.count("network_acessible") or _key.count("instance_preparation") :
+                total_time += int(management_metrics[_key])
 
     return total_time
 
@@ -307,7 +320,7 @@ def capacity_phase(api, options, performance_data, directory) :
     print "\n# Starting CAPACITY phase...."
 
     _msg = "### IMPORTANT! It is assumed that this is the only process deploying"
-    _msg += "VMs on the cloud \"" + options.cloud_name + "\".\n"
+    _msg += " VMs on the cloud \"" + options.cloud_name + "\".\n"
     print _msg
 
     if options.batch_size == "auto" :    
@@ -333,7 +346,8 @@ def capacity_phase(api, options, performance_data, directory) :
 
     _total_average_time = 0
 
-    _header = ["Batch", "Batch Size", "VM Reservations", "VMs ARRIVED", "VMs ARRIVING", \
+    _header = ["Batch", "Batch Size", "Total Time Spent (s)", "VM Reservations", \
+               "VMs ARRIVED", "VMs ARRIVING", \
                "VMs DEPARTED", "VMs DEPARTING", "VMs FAILED", "VMs REPORTED (Cloud)", \
                "Avg Deployment Time (s)", "Shortest Deployment Time (s)", \
                "Longest Deployment Time (s)", "Failure Ratio (%)"]
@@ -366,21 +380,29 @@ def capacity_phase(api, options, performance_data, directory) :
 
         _temp_attr_list_str = additional_vm_attributes(options)
 
-        _temp_attr_list_str += ",batch=" + str(_batch_id)
+        if len(_temp_attr_list_str) :
+            _temp_attr_list_str += ','
+            
+        _temp_attr_list_str += "batch=" + str(_batch_id)
+
+        _batch_start = int(time())        
         api.vmattach(options.cloud_name, options.role, \
                      temp_attr_list = _temp_attr_list_str, \
-                     async = _selected_batch_size)
+                     async = _selected_batch_size, \
+                     pause_step = options.pause_step)
 
         _vms_deployed = int(_selected_batch_size * options.completion/100)
         
         _msg = "####### Waiting until " + str(options.completion) + "% of the VMs"
         _msg += " forming the batch " + str(_batch_nr) + " (" + str(_vms_deployed)
         _msg += " VMs) are deployed....."
-        print _msg
-        api.waituntil(options.cloud_name, "VM", "ARRIVING", \
-                      _batch_size - _vms_deployed, "decreasing", \
-                      5)
 
+        _msg = api.waituntil(options.cloud_name, "VM", "ARRIVING", \
+                             _batch_size - _vms_deployed, "decreasing", \
+                             5)
+
+        _batch_total = int(time()) - _batch_start
+        
         _msg = "####### Determining average deployment time for batch " + str(_batch_nr) + "...."
         print _msg
         _batch_vms = api.viewshow(options.cloud_name, "VM", "batch", str(_batch_id))
@@ -389,12 +411,14 @@ def capacity_phase(api, options, performance_data, directory) :
         _batch_actual_size = len(_batch_vms)
         performance_data["batch" + str(_batch_nr)]["size"] = _batch_actual_size
 
+        performance_data["batch" + str(_batch_nr)]["total_deployment_time"] = _batch_total
+
         _slowest_vm = 0
         _fastest_vm = 10000000
-        
-        for _vm in _batch_vms :            
-            _mgt_metric = api.get_latest_management_data(options.cloud_name, _vm["uuid"])
-            _tdt = total_deployment_time(_mgt_metric)
+
+        for _vm in _batch_vms :
+            for _mgt_metric in api.get_latest_management_data(options.cloud_name, _vm["uuid"]) :
+                _tdt = total_deployment_time(_mgt_metric)
             
             if _tdt < _fastest_vm :
                 _fastest_vm = _tdt
@@ -438,7 +462,8 @@ def capacity_phase(api, options, performance_data, directory) :
         
         _capacity_row = []
         _capacity_row.append(_batch_nr)
-        _capacity_row.append(_selected_batch_size)        
+        _capacity_row.append(_selected_batch_size)
+        _capacity_row.append(_batch_total)        
         _capacity_row.append(_vm_stats["reservations"])
         _capacity_row.append(_vm_stats["arrived"])
         _capacity_row.append(_vm_stats["arriving"])
@@ -543,9 +568,10 @@ def main() :
     _experiment_id = _options.hypervisor + '_' + _net_type + '_' + _net_mechanism + '_'
     _experiment_id += _options.experiment_id
 
+    _experiment_id = _experiment_id.replace("\\","_and_" )
     _msg = "# Setting expid to \"" + _experiment_id  + "\""
     print _msg
-    api.expid(_options.cloud_name, _options.experiment_id)
+    api.expid(_options.cloud_name, _experiment_id)
 
     _options.network_list = list_private_networks(_options, api)
     _msg = "# The following networks were reported as created on the cloud "
@@ -565,7 +591,55 @@ def main() :
         
     api.cldalter(_options.cloud_name, "vm_defaults", "update_attempts", _options.update_attempts)
     api.cldalter(_options.cloud_name, "vm_defaults", "update_frequency", _options.update_frequency)
-                         
+
+    if _options.multitenant :
+        _mt_script = _cb_base_dir + "/scenarios/scripts/openstack_multitenant.sh"
+         
+        _msg = "# Instances run the script \"" + _mt_script + "\" in order to "
+        _msg += "create a new tenant/user/network/subnet/router before attachment"
+        print _msg
+        
+        api.cldalter(_options.cloud_name, "vm_defaults", "execute_script_name", _mt_script)        
+        _options.pause_step = "execute_provision_originated"
+        _mgt_info = api.cldshow(_options.cloud_name, "mon_defaults")
+        _mgt_metrics_header = _mgt_info["vm_management_metrics_header"]
+
+        _mgt_metrics_header += ','.join([ "osk_001_tenant_creation_time", \
+                                         "osk_002_quota_update_time", \
+                                         "osk_003_user_creation_time", \
+                                         "osk_004_security_group_update_time", \
+                                         "osk_005_keypair_creation_time", \
+                                         "osk_006_net_creation_time", \
+                                         "osk_007_subnet_creation_time", \
+                                         "osk_008_router_creation_time", \
+                                         "osk_009_router_attachment", \
+                                         "osk_010_authenticate_time", \
+                                         "osk_011_check_existing_instance_time", \
+                                         "osk_012_get_flavors_time", \
+                                         "osk_013_get_imageid_time", \
+                                         "osk_014_get_netid_time", \
+                                         "osk_016_instance_creation_time", \
+                                         "osk_016_instance_scheduling_time", \
+                                         "osk_016_port_creation_time", \
+                                         "osk_017_create_fip_time", \
+                                         "osk_018_attach_fip_time" ])
+        
+        api.cldalter(_options.cloud_name, \
+                     "mon_defaults", \
+                     "vm_management_metrics_header", \
+                     _mgt_metrics_header)
+
+#        _mgt_info = api.cldshow(_options.cloud_name, "mon_defaults")
+#        _mgt_metrics_header = _mgt_info["vm_management_metrics_header"]
+        
+#        _msg = "# The attribute \"vm_management_metrics_header\" was updated to"
+#        _msg += ' ' + _mgt_metrics_header
+
+#        print _msg
+
+    else :
+        _options.pause_step = "none"
+
     if not _options.deployment :
         _phase = "profiling"
         profiling_phase(api, _options, _perf_dict, _cb_data_dir + '/' + _experiment_id)
@@ -573,15 +647,18 @@ def main() :
         _perf_dict["selected_nodes"] = 0
         _perf_dict["samples"] = 0
         _perf_dict["total_samples"] = 0
+        _perf_dict["total_nodes"] = len(get_compute_nodes(_options, api) )    
         _perf_dict["average"] = int(_options.deployment)
         _perf_dict["min"] = int(_options.deployment)
         _perf_dict["max"] = int(_options.deployment)
-              
+
     _phase = "capacity"
     capacity_phase(api, _options, _perf_dict, _cb_data_dir + '/' + _experiment_id)
 
-    _msg = "# Experiment \"" + _options.experiment_id + "\" ended. Performance metrics will"
-    _msg += " be collected in .csv files." 
+    _msg = "# Experiment \"" + _options.experiment_id + "\" ended."
+    print _msg
+            
+    _msg = "# Performance metrics will be collected in .csv files." 
     print _msg
     _url = api.monextract(_options.cloud_name, "all", "all")
     
@@ -590,6 +667,10 @@ def main() :
     _msg += "-d " + _cb_data_dir + " -e " + _options.experiment_id
     _msg += " -c -p -r -l -a\""
     print _msg
+
+    _msg += " Cleaning up all VMs (might take a long time, if the number of VMs is large)."
+    print _msg
+    api.vmdetach(_options.cloud_name, "all")
 
 if __name__ == '__main__':
     main()

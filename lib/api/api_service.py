@@ -402,10 +402,16 @@ class API():
         return self.passive.alter_object({"name": cloud_name}, cloud_name + ' ' + gobject + ' ' + attribute + "=" + str(value), "cloud-alter")[2]
 
     def appdev(self, cloud_name) :
-        return self.passive.alter_object({"name": cloud_name}, cloud_name + " ai_defaults run_application_scripts=false", "cloud-alter")[2]
+        return self.passive.alter_object({"name": cloud_name}, cloud_name + " ai_defaults run_application_scripts=false,debug_remote_commands=true", "cloud-alter")[2]
 
     def appundev(self, cloud_name, gobject, attribute, value):        
-        return self.passive.alter_object({"name": cloud_name}, cloud_name + " ai_defaults run_application_scripts=true", "cloud-alter")[2]
+        return self.passive.alter_object({"name": cloud_name}, cloud_name + " ai_defaults run_application_scripts=true,debug_remote_commands=false", "cloud-alter")[2]
+
+    def vmdev(self, cloud_name) :
+        return self.passive.alter_object({"name": cloud_name}, cloud_name + " vm_defaults check_boot_complete=wait_for_0,transfer_files=false,run_generic_scripts=false,debug_remote_commands=true", "cloud-alter")[2]
+
+    def vmundev(self, cloud_name, gobject, attribute, value):        
+        return self.passive.alter_object({"name": cloud_name}, cloud_name + " vm_defaults check_boot_complete=tcp_on_22,transfer_files=true,run_generic_scripts=true,debug_remote_commands=false", "cloud-alter")[2]
 
     def appnoload(self, cloud_name) :
         return self.passive.alter_object({"name": cloud_name}, cloud_name + " ai_defaults dont_start_load_manager=true", "cloud-alter")[2]

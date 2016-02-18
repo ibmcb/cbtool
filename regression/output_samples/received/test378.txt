@@ -1,1 +1,5 @@
-Current experiment identifier is "EXP-10-20-2014-02-07-24-PM-EDT".
+Current experiment identifier is "EXP-02-18-2016-05-44-24-PM-UTC".
+
+Also, data for the following experiments was found on the metric store:
+EXP-02-18-2016-05-30-21-PM-UTC
+REGRESSION_B

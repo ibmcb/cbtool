@@ -474,22 +474,40 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 		prov_lat_data <- prov_lat_data[selected_vms,]
 		number_of_vms <- length(prov_lat_data$name)		
 	}
-	
-	columns_remove <- c("name", "vm_arrival_diff")
-	prov_lat_data <- prov_lat_data[,!(names(prov_lat_data) %in% columns_remove)]
-	
-	prov_lat_data <- melt(prov_lat_data, id.vars="full_obj_name")
-	
+
 	# Plot provisioning latency
 	prov_lat_plot_title <- paste("Provisioning Latency for VM(s) \"", vmn, 
 			"\" on experiment \"", selected_expid, "\"", sep = '')
-	cat(prov_lat_plot_title, sep='\n')
+	cat(prov_lat_plot_title, sep='\n')	
 	
-	prov_lat_plot <- ggplot(prov_lat_data, 
-					aes(x=full_obj_name, y=value, fill=variable)) + 
-			geom_bar(stat='identity', width=0.2) + xlab("VM name") + 
-			ylab("Provisioning Latency (seconds)") + 
-			labs(title = prov_lat_plot_title)
+	if (mnv == 100000) {
+		columns_remove <- c("full_obj_name", "vm_arrival_diff")
+		prov_lat_data <- prov_lat_data[,!(names(prov_lat_data) %in% columns_remove)]
+		
+		prov_lat_data <- within(prov_lat_data, 
+				"name" <- as.integer(gsub("vm_", '', prov_lat_data$name)))
+		prov_lat_data <- prov_lat_data[order(prov_lat_data$name), ]
+		setnames(prov_lat_data, "name", "x_axis_id")
+		prov_lat_data <- melt(prov_lat_data, id.vars="x_axis_id")		
+		prov_lat_plot <- ggplot(prov_lat_data, 
+						aes(x=x_axis_id, y=value, fill=variable)) + 
+				geom_bar(stat='identity', width=0.05, position = position_stack(width=0.01)) + 
+				xlab("VM name") + 
+				ylab("Provisioning Latency (seconds)") + 
+				labs(title = prov_lat_plot_title) +
+				scale_x_continuous(limits=c(0,number_of_vms), breaks=seq(0,number_of_vms,1))
+	} else {
+		columns_remove <- c("name", "vm_arrival_diff")
+		prov_lat_data <- prov_lat_data[,!(names(prov_lat_data) %in% columns_remove)]
+		setnames(prov_lat_data, "full_obj_name", "x_axis_id")
+		prov_lat_data <- melt(prov_lat_data, id.vars="x_axis_id")		
+		prov_lat_plot <- ggplot(prov_lat_data, 
+						aes(x=x_axis_id, y=value, fill=variable)) + 
+				geom_bar(stat='identity', width=0.2) + xlab("VM name") + 
+				ylab("Provisioning Latency (seconds)") + 
+				labs(title = prov_lat_plot_title)		
+	}
+
 	
 	output_pdf_plot(ed, en, prov_lat_plot, "002_individual_vm_provision_latency",
 			sps, number_of_vms)

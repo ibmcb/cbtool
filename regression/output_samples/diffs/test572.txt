@@ -1,17 +1,98 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+running shell command: "rm -rf /tmp/cb*_was_used_on_execution"....
+ status: Checking ssh accessibility on vm_109 (ssh klabuser@xxx.xxx.xxx.xxx )...
+ status: Bootstrapping vm_109 (creating file cb_os_paramaters.txt in "klabuser" user's home dir on xxx.xxx.xxx.xxx )...
+ status: Sending a copy of the code tree to vm_109 (xxx.xxx.xxx.xxx )...
+ status: Checking ssh accessibility on vm_112 (ssh klabuser@xxx.xxx.xxx.xxx )...
+ status: Bootstrapping vm_112 (creating file cb_os_paramaters.txt in "klabuser" user's home dir on xxx.xxx.xxx.xxx )...
+ status: Sending a copy of the code tree to vm_112 (xxx.xxx.xxx.xxx )...
+ status: Checking ssh accessibility on vm_108 (ssh klabuser@xxx.xxx.xxx.xxx )...
+ status: Bootstrapping vm_108 (creating file cb_os_paramaters.txt in "klabuser" user's home dir on xxx.xxx.xxx.xxx )...
+ status: Sending a copy of the code tree to vm_108 (xxx.xxx.xxx.xxx )...
+ status: Checking ssh accessibility on vm_111 (ssh klabuser@xxx.xxx.xxx.xxx )...
+ status: Bootstrapping vm_111 (creating file cb_os_paramaters.txt in "klabuser" user's home dir on xxx.xxx.xxx.xxx )...
+ status: Sending a copy of the code tree to vm_111 (xxx.xxx.xxx.xxx )...
+ status: Checking ssh accessibility on vm_110 (ssh klabuser@xxx.xxx.xxx.xxx )...
+ status: Bootstrapping vm_110 (creating file cb_os_paramaters.txt in "klabuser" user's home dir on xxx.xxx.xxx.xxx )...
+ status: Sending a copy of the code tree to vm_110 (xxx.xxx.xxx.xxx )...
+ status: Starting a new "performance emitter" for ai_27
+ status: Performing generic application instance post_boot configuration on all VMs belonging to ai_27...
+ status: Running application-specific "setup" configuration on all VMs belonging to ai_27...
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1455817773 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1455817866 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1455817872 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1455817908 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1455817910 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1455817912 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1455817914 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1455817922 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |ibmderby_tradelite|1_x_client_tradelite->1_x_was |xxx.xxx.xxx.xxx |1455817930 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1455817937 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1455817942 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1455817965 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1455817971 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1455818011 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1455818035 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|name |role |size |cloud_ip |host_name |vmc_pool |netname |ai |aidrs |uuid
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|Redis Version |2.8.6 
+|HOSTs |60 
+|VMs |47 
+|VMCs ISSUED |16 
+|HOSTs ISSUED |0 
+|VM RESERVATIONS |47 
+|VMs ISSUED |112 
+|VMs DEPARTED |62 
+|VMs SLA PROVISIONING VIOLATED |0 
+|VMs SLA RUNTIME VIOLATED |0 
+|VMs APPLICATION ERRORS |7 
+|AIs ISSUED |27 
+|AIDRSs ISSUED |0 
+|VMCRSs ISSUED |0 
+|FIRSs ISSUED |0 
+|EXPERIMENT COUNTER |421 

@@ -1,2 +1,2 @@
 VIEWs with the following criteria can be used onto this experiment (Cloud TESTCLOUD) :
-aidrs:username or pattern, vmc:pool or username, firs:username or pattern or scope, vmcrs:username or pattern or scope, ai:username or type or aidrs, host:username or vmc, vm:username or vmc or host or role or type or ai or aidrs or batch or sla_provisioning or sla_runtime
+vmcrs:username or pattern or scope, vmc:pool or username, firs:username or pattern or scope, vm:username or vmc or host or role or type or ai or aidrs or batch or sla_provisioning or sla_runtime or app_error, ai:username or type or aidrs, host:username or vmc, aidrs:username or pattern

@@ -1,2 +1,2 @@
 AIDRSs with the following patterns can be attached to to this experiment (Cloud TESTCLOUD) :
-simplemlg, simplehd, simplefb, simplenw, simplenp, simpledt, simplemlg2, simplecm
+simplemlg, simplehd, simplefb, simpleyc, simplenw, simplenp, simpledt, simplemlg2, simplecm

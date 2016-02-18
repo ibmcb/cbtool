@@ -1,2 +1,30 @@
-
-
+Background operation execution success. Operation "vm-attach" will be processed asynchronously, through the command "/path/to/tool/lib/operations//../../cbact --procid=TEST_msilva --osp=port:xxxx,experiment_inst:TEST_msilva,host:xxx.xxx.xxx.xxx ,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:xxxx,password:cbpwdZ9,timeout:240,host:xxx.xxx.xxx.xxx ,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,tinyvm,auto,empty,default,none,empty=empty --operation=vm-attach --cn=TESTCLOUD --uuid=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx --daemon". The process id is xxxx.
+Operation "vm-attach" will be processed asynchronously, through the command "/path/to/tool/lib/operations//../../cbact --procid=TEST_msilva --osp=port:xxxx,experiment_inst:TEST_msilva,host:xxx.xxx.xxx.xxx ,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:xxxx,password:cbpwdZ9,timeout:240,host:xxx.xxx.xxx.xxx ,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,tinyvm,auto,empty,default,none,empty=empty --operation=vm-attach --cn=TESTCLOUD --uuid=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx --daemon". The process id is xxxx.
+|name |role |size |cloud_ip |host_name |vmc_pool |netname |ai |aidrs |uuid
+|vm_XX |unavailable |unavailable |unavailable |unavailable |unavailable |unavailable|unavailable|unavailable|xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |unavailable |unavailable |unavailable |unavailable |unavailable |unavailable|unavailable|unavailable|xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+Going to wait until the value on counter "VM ARRIVED" is equal to XX (currently it is equal to XX) waiting 1.0 seconds between samples, for a maximum of 36000.0 seconds. The counter is assumed to be increasing.
+ status: Counter "VM ARRIVED" equals 6 after 0.0379838943481 seconds (the counter is assumed to be increasing).
+ status: Counter "VM ARRIVED" equals 8 after 1.03798389435 seconds (the counter is assumed to be increasing).
+Waited 1.03798389435 seconds until "VMs ARRIVED" was equal to 8.
+|name |role |size |cloud_ip |host_name |vmc_pool |netname |ai |aidrs |uuid
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |none |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |none |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |none |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |none |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |none |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |none |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |none |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|Redis Version |2.8.6 
+|HOSTs |60 
+|VMCs ISSUED |16 
+|HOSTs ISSUED |0 
+|VMs ISSUED |8 
+|VMs SLA PROVISIONING VIOLATED |0 
+|VMs SLA RUNTIME VIOLATED |0 
+|VMs APPLICATION ERRORS |0 
+|AIs ISSUED |0 
+|AIDRSs ISSUED |0 
+|VMCRSs ISSUED |0 
+|FIRSs ISSUED |0 
+|EXPERIMENT COUNTER |217 

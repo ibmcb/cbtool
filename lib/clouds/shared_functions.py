@@ -544,7 +544,7 @@ class CommonCloudFunctions:
 
         if "staging" not in obj_attr_list :
             return
-                
+
         if not obj_attr_list["staging"].count(current_step) :
             return
 
@@ -617,11 +617,12 @@ class CommonCloudFunctions:
                 if obj_type == "AI" :
                     _json_contents["vms"] = {}
 
-                    _vm_id_list = obj_attr_list["vms"].split(',')
-                    for _vm_id in _vm_id_list :
-                        _vm_uuid = _vm_id.split('|')[0]
-                        _vm_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "VM", False, _vm_uuid, False)
-                        _json_contents["vms"][_vm_attr_list["uuid"]] = _vm_attr_list 
+                    if "vms" in obj_attr_list and current_step != "deprovision_finished" :
+                        _vm_id_list = obj_attr_list["vms"].split(',')
+                        for _vm_id in _vm_id_list :
+                            _vm_uuid = _vm_id.split('|')[0]
+                            _vm_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "VM", False, _vm_uuid, False)
+                            _json_contents["vms"][_vm_attr_list["uuid"]] = _vm_attr_list 
 
                 obj_attr_list["execute_json_filename"] = "/tmp/" 
                 obj_attr_list["execute_json_filename"] += obj_attr_list["execute_json_filename_prefix"]
@@ -632,7 +633,7 @@ class CommonCloudFunctions:
                 _json_fh = open(obj_attr_list["execute_json_filename"], 'w')
                 _json_fh.write(json.dumps(_json_contents, sort_keys = True, indent = 4))
                 _json_fh.close()
-                
+
                 _msg = "JSON contents written to " 
                 _msg += obj_attr_list["execute_json_filename"] + '.'
                 cbdebug(_msg, True)
@@ -645,8 +646,11 @@ class CommonCloudFunctions:
                 _msg = "Command \"" + _cmd + "\" executed, with return code " + str(_status)
                 cbdebug(_msg, True)
 
-            obj_attr_list[obj_attr_list["staging"] + "_complete"] = int(time())
+                obj_attr_list[obj_attr_list["staging"] + "_stdout"] = _result_stdout
+                obj_attr_list[obj_attr_list["staging"] + "_stderr"] = _result_stderr
 
+            obj_attr_list[obj_attr_list["staging"] + "_complete"] = int(time())
+                        
         except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)

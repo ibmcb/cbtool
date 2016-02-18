@@ -576,8 +576,8 @@ class GceCmds(CommonCloudFunctions) :
             _private_ip_address = self.instance_info["networkInterfaces"][0]["networkIP"]
             _public_ip_address = self.instance_info["networkInterfaces"][0]["accessConfigs"][0]["natIP"]
                        
-            _public_hostname = obj_attr_list["cloud_vm_name"] + '.' + obj_attr_list["vmc_name"] + '.' + self.instances_project
-            _private_hostname = obj_attr_list["cloud_vm_name"] + '.' + obj_attr_list["vmc_name"] + '.' + self.instances_project
+            _public_hostname = obj_attr_list["cloud_vm_name"] + '.' + obj_attr_list["vmc_name"] + '.' + self.instances_project.replace(':','_')
+            _private_hostname = obj_attr_list["cloud_vm_name"] + '.' + obj_attr_list["vmc_name"] + '.' + self.instances_project.replace(':','_')
                         
             if obj_attr_list["run_netname"] == "private" :
                 obj_attr_list["cloud_hostname"] = _private_hostname
@@ -900,8 +900,10 @@ class GceCmds(CommonCloudFunctions) :
                 obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["ai_name"]
 
             obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"].replace("_", "-")
-            obj_attr_list["last_known_state"] = "about to connect to ec2 manager"
+            obj_attr_list["last_known_state"] = "about to connect to gce manager"
             obj_attr_list["project"] = self.instances_project
+
+            self.take_action_if_requested("VM", obj_attr_list, "provision_originated")
 
             self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
                          obj_attr_list["vmc_name"], obj_attr_list["name"])
@@ -1324,7 +1326,7 @@ class GceCmds(CommonCloudFunctions) :
                 cbdebug(_msg, True)
                 return _status, _msg
     @trace        
-    def aidefine(self, obj_attr_list) :
+    def aidefine(self, obj_attr_list, current_step) :
         '''
         TBD
         '''
@@ -1355,7 +1357,7 @@ class GceCmds(CommonCloudFunctions) :
                 return _status, _msg
 
     @trace        
-    def aiundefine(self, obj_attr_list) :
+    def aiundefine(self, obj_attr_list, current_step) :
         '''
         TBD
         '''

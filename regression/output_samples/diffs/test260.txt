@@ -1,6 +1,29 @@
-|arrival |1413827880 
+|ai_issued |1 
+|app_collection |lazy 
+|arrival |1455816865 
 |attempts |24 
-|command_originated |1413827877 
+|command_originated |1455816862 
 |comments | 
-|identity |/home/msilva/cloudbench/lib/auxiliary//../../credentials/cbtool_rsa
+|create_performance_emitter |True 
+|credentials_dir |/path/to/tool/lib/auxiliary//../../credentials
+|current_load_duration |95 
+|current_load_id |1 
+|current_load_level |8 
+|db2_instance_name |klabuser 
+|db2_on_ramdisk |False 
+|first_app_run_finished |true 
+|identity |/path/to/tool/lib/auxiliary//../../credentials/cbtool_rsa
+|load_balancer_supported |True 
+|msp |port:xxxx,password:cbpwdZ9,timeout:240,host:xxx.xxx.xxx.xxx ,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva
+|notification_channel |auto 
+|nr_quotes |40000 
+|nr_users |15000 
+|osp |port:xxxx,experiment_inst:TEST_msilva,host:xxx.xxx.xxx.xxx ,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva
+|periodic_measurements |False 
+|regenerate_data |False 
+|reported_metrics |throughput,latency,datagen_time,datagen_size,completion_time,quiescent_time
+|role_list |client_daytrader,was,db2 
 |ssh_key_name |cbtool_rsa 
+|tradedb_size |small 
+|vm_issued |25 
+|vmc_issued |16 

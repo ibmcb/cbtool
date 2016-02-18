@@ -634,7 +634,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
     
                         _fmt_obj_chg_attr += '|' + _key.ljust(len(_fields[0]) - 1)
                         _fmt_obj_chg_attr += '|' + _old_values[_key].ljust(len(_fields[1]) - 1)
-                        _fmt_obj_chg_attr += '|' + _value.ljust(len(_fields[2]) - 1)
+                        _fmt_obj_chg_attr += '|' + _value.ljust(len(_fields[2]) - 1) + '\n'
                         _result["old_" + _key] = _old_values[_key]
                         _result[_key] = _value
     
@@ -1874,7 +1874,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         makedirs(_obj_attr_list["data_file_location"])
 
                     _csv_contents_header = _obj_attr_list[_obj_type + '_' + _metric_type + "_metrics_header"]
-
+                    
                     _fn = _obj_attr_list["data_file_location"] + '/' 
                     _fn += _obj_type.upper() + '_' + _metric_type + '_'
                     _fn += _criteria["expid"] + ".csv"

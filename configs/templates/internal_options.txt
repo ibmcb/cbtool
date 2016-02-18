@@ -196,6 +196,7 @@ SECONDS_BEFORE_SAVE = 0
 RUN_APPLICATION_SCRIPTS = $True
 DEBUG_REMOTE_COMMANDS = $False
 DONT_START_LOAD_MANAGER = $False
+CREDENTIALS_DIR = $MAIN_BASE_DIR/credentials
 # Most clouds don't use (or allow access to) libvirt,
 # so, enable this only in the right clouds.
 DONT_START_QEMU_SCRAPER = $True
@@ -357,7 +358,7 @@ PARAMETERS = $EMPTY
 REMOTE = $False
 
 [GUI_DEFAULTS]
-PORT = 7080
+PORT = 8080
 PROTOCOL = TCP
 HOSTNAME = 0.0.0.0
 GTK_LOGIN = $True

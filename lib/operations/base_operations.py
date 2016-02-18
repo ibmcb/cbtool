@@ -1923,12 +1923,15 @@ class BaseObjectOperations :
         if vm_role + "_sla_provisioning_target" in obj_attr_list :
             _extra_parms += ",sla_provisioning_target=" + obj_attr_list[vm_role + "_sla_provisioning_target"]            
 
+        if "vm_extra_parms" in obj_attr_list :
+            _extra_parms += "," + obj_attr_list["vm_extra_parms"]
+        
         if vm_role + "_cloud_ips" in obj_attr_list :
             if not vm_role in cloud_ips :
                 cloud_ips[vm_role] = obj_attr_list[vm_role + "_cloud_ips"].split(';')
 
         if obj_attr_list["load_balancer"].strip().lower() == "true" :
-            _size = 'load_balanced_default'        
+            _size = 'load_balanced_default'                
 
         return _pool, _meta_tag, _size, _extra_parms
 
@@ -1994,7 +1997,8 @@ class BaseObjectOperations :
                 _pool, _meta_tag, _size, _extra_parms = \
                 self.propagate_ai_attributes_to_vm(_vm_role, _cloud_ips, obj_attr_list) 
 
-                _attach_action = obj_attr_list["staging"]
+                _attach_action = ''
+                #_attach_action = obj_attr_list["staging"]
 
                 _vg = ValueGeneration(self.pid)
                 _nr_vms = int(_vg.get_value(_nr_vms, _nr_vms))
@@ -2299,18 +2303,10 @@ class BaseObjectOperations :
 
             if operation == "setup" or operation == "resize" :
 
-                if "run_generic_scripts" in _obj_attr_list and \
-                _obj_attr_list["run_generic_scripts"].lower() != "false" :
-
-                    _msg = "Performing generic application instance post_boot "
-                    _msg += "configuration on all VMs belonging to " + _ai_attr_list["name"] + "..."                
-                    cbdebug(_msg, True)
-                    self.osci.pending_object_set(cloud_name, "AI", ai_uuid, "status", _msg)
-
-                else :
-                    _msg = "Bypassing generic VM post_boot configuration on all "
-                    _msg += "VMs belonging to " + _ai_attr_list["name"] + "..."                
-                    cbdebug(_msg, True)
+                _msg = "Performing generic application instance post_boot "
+                _msg += "configuration on all VMs belonging to " + _ai_attr_list["name"] + "..."                
+                cbdebug(_msg, True)
+                self.osci.pending_object_set(cloud_name, "AI", ai_uuid, "status", _msg)
 
                 # This variable is permanent, now (for as long as the daemon lives)
                 # but these parameters can still change across daemon invocations,
@@ -2328,7 +2324,7 @@ class BaseObjectOperations :
                                                                     int(_ai_attr_list["update_frequency"]), \
                                                                     _ai_attr_list["execute_parallelism"], \
                                                                     _obj_attr_list["run_generic_scripts"], \
-                                                                    _ai_attr_list["debug_remote_commands"])
+                                                                    _obj_attr_list["debug_remote_commands"])
 
                 if _status :
 
@@ -2355,28 +2351,18 @@ class BaseObjectOperations :
             # for each VM
             if not _status :
                 
-                if "run_application_scripts" in _ai_attr_list and \
-                _ai_attr_list["run_application_scripts"].lower() != "false" :
-                
-                    _msg = "Running application-specific \"" + operation + "\" "
-                    _msg += "configuration on all VMs belonging to " + _ai_attr_list["name"] + "..."                
-                    cbdebug(_msg, True)
-                    notify_client_refresh = False
-                    if "first_app_run_finished" not in _ai_attr_list or \
-                        _ai_attr_list["first_app_run_finished"].lower() != "true" :
-                        notify_client_refresh = True
-                        self.osci.update_object_attribute(_ai_attr_list["cloud_name"], "AI", _ai_attr_list["uuid"], \
-                              False, "first_app_run_finished", "true")
-                        _ai_attr_list["first_app_run_finished"] = "true"
-                        
-                        
-                    self.osci.pending_object_set(cloud_name, "AI", ai_uuid, "status", _msg, notify_client_refresh)
-
-                else :
-                    _msg = "Bypassing application-specific configuration on all "
-                    _msg += "VMs beloging to " + _ai_attr_list["name"] + "..."  
-                    cbdebug(_msg, True)
-                    _status = 0
+                _msg = "Running application-specific \"" + operation + "\" "
+                _msg += "configuration on all VMs belonging to " + _ai_attr_list["name"] + "..."                
+                cbdebug(_msg, True)
+                notify_client_refresh = False
+                if "first_app_run_finished" not in _ai_attr_list or \
+                    _ai_attr_list["first_app_run_finished"].lower() != "true" :
+                    notify_client_refresh = True
+                    self.osci.update_object_attribute(_ai_attr_list["cloud_name"], "AI", _ai_attr_list["uuid"], \
+                          False, "first_app_run_finished", "true")
+                    _ai_attr_list["first_app_run_finished"] = "true"
+                    
+                self.osci.pending_object_set(cloud_name, "AI", ai_uuid, "status", _msg, notify_client_refresh)
 
                 if "dont_start_load_manager" in _ai_attr_list and \
                     _ai_attr_list["dont_start_load_manager"].lower() == "true" :
@@ -2443,20 +2429,6 @@ class BaseObjectOperations :
                                     
                                     _ai_attr_list[_lmr + '_' + operation + str(_num + 2)] = "cb_start_qemu_scraper.sh"
 
-                    if _ai_attr_list["run_application_scripts"].lower() != "false" :
-                        _msg = "The following command list will be executed: "
-                        _msg += ','.join(_vm_command_list)
-                        cbdebug(_msg)
-    
-                        # Now run the application-specific initializations
-                        _msg = "Executing command list described on " + operation
-                        _msg += " step " + str(_num) + "..."
-                        cbdebug(_msg)
-                    else :
-                        if _ai_attr_list["debug_remote_commands"].lower() != "false" :
-                            _msg = operation.upper() + str(_num)
-                            cbdebug(_msg, True)
-
                     self.proc_man_os_command.cloud_name =  _ai_attr_list["cloud_name"]
                     self.proc_man_os_command.username = _vm_logins[0]
                     self.proc_man_os_command.priv_key = _vm_priv_keys[0]
@@ -2467,7 +2439,8 @@ class BaseObjectOperations :
                                                                         int(_ai_attr_list["update_frequency"]), \
                                                                         _ai_attr_list["execute_parallelism"], \
                                                                         _ai_attr_list["run_application_scripts"], 
-                                                                        _ai_attr_list["debug_remote_commands"])
+                                                                        _ai_attr_list["debug_remote_commands"],
+                                                                        _num)
 
                     if _status :
     
@@ -2692,9 +2665,9 @@ class BaseObjectOperations :
                     _key_list = _mon_defaults[obj_type.lower() + "_attributes"].split(',')
 
                     for _key in obj_attr_list.keys() :
-                        if _key in _key_list or _key.count("mgt"):
+                        if _key in _key_list or _key.count("mgt") or (_key.count(obj_attr_list["model"] + '_')) :
                             _mgt_attr_list[_key] = obj_attr_list[_key]
-
+                            
                     _mgt_attr_list["_id"] = obj_attr_list["uuid"]
                     _mgt_attr_list["obj_type"] = obj_type
                     _mgt_attr_list["state"] = self.osci.get_object_state(cloud_name, obj_type, obj_attr_list["uuid"])
@@ -2715,10 +2688,10 @@ class BaseObjectOperations :
                         if obj_type.upper() == "HOST" :
                             self.msci.update_document(_management_key, _mgt_attr_list)
                             self.msci.update_document(_latest_key, _mgt_attr_list)
-                        else :                            
+                        else :
                             self.msci.add_document(_management_key, _mgt_attr_list)
                             self.msci.add_document(_latest_key, _mgt_attr_list)
-                        
+                            
                     elif operation == "runstate" :
                         self.msci.update_document(_management_key, _mgt_attr_list)
                         self.msci.update_document(_latest_key, _mgt_attr_list)
@@ -2761,11 +2734,10 @@ class BaseObjectOperations :
                             self.get_from_pending(cloud_name, "VM", _vm_attr_list)
 
                             for _key in _vm_attr_list.keys() :
-                                if _key in _key_list or _key.count("mgt"):
+                                if _key in _key_list or _key.count("mgt") or (_key.count(obj_attr_list["model"] + '_')) :
                                     _mgt_attr_list[_key] = _vm_attr_list[_key]
 
                             self.compute_sla(cloud_name, "VM", _vm_attr_list, operation, _mgt_attr_list)
-
                             _mgt_attr_list["_id"] = _vm_uuid
                             _mgt_attr_list["state"] = self.osci.get_object_state(cloud_name, "VM", _vm_uuid)
 

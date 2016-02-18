@@ -28,7 +28,7 @@ import prettytable
 
 from sys import path, argv, stdout
 from time import sleep, time, strftime, strptime, localtime
-from random import sample
+from random import sample, choice
 from optparse import OptionParser
 from datetime import datetime
 

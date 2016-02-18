@@ -26,7 +26,7 @@ import pwd
 home = os.environ["HOME"]
 username = pwd.getpwuid(os.getuid())[0]
 
-api_file_name = "/tmp/cbapi_" + username
+api_file_name = "/tmp/cb_api_" + username
 if os.access(api_file_name, os.F_OK) :    
     try :
         _fd = open(api_file_name, 'r')
@@ -65,35 +65,76 @@ api = APIClient(api_conn_info)
 
 import prettytable
 
-def main(api, cloud_name) :
+    
+#_usage = "./" + argv[0] + " <cloud_name>"
+
+#if len(argv) < 2 :
+#    print _usage
+#    exit(1)
+
+#cloud_name = argv[1]
+
+def main(apiconn) :
     '''
     TBD
     '''
-    _timeout = 240
+    _timeout = 900
     _check_interval = 30
     _runtime_samples = 3
+    
+    try :
+        cloud_name = apiconn.cldlist()[0]["name"]
+    except :
+        _msg = "ERROR: Unable to connect to API and get a list of attached clouds"
+        exit(1)
 
     _test_results_table = prettytable.PrettyTable(["Virtual Application", \
+                                                   "Hypervisor Type", \
                                                    "Management Report Pass?", \
                                                    "Runtime Report Pass?"])
 
-    for _type in [ "cassandra_ycsb", "coremark", "ddgen", "filebench", "hadoop",\
-                   "iperf", "netperf", "nullworkload", "redis_ycsb", "hpcc" ] :
+    for _type in [ "nullworkload|docker,qemu", \
+                   "coremark|qemu", \
+                   "ddgen|qemu", \
+                   "filebench|qemu", \
+                   "fio|docker,qemu", \
+                   "iperf|docker,qemu", \
+                   "netperf|docker,qemu", \
+                   "nuttcp|docker,qemu", \
+                   "xping|docker,qemu", \
+                   "hadoop|docker,qemu", \
+                   "giraph|qemu", \
+                   "cassandra_ycsb|docker,qemu", \
+                   "redis_ycsb|qemu", \
+                   "mongo_ycsb|qemu", \
+                   "hpcc|qemu", \
+                   "linpack|qemu", \
+                   "ibm_daytrader|qemu", \
+                   "open_daytrader|qemu", \
+                   "specjbb|qemu" ] :
 
-        _mgt_pass, _rt_pass = deploy_virtual_application(api, _type, _runtime_samples, _timeout, _check_interval)
+        _type, _hypervisor_list = _type.split('|')
+        for _hypervisor_type in _hypervisor_list.split(',') :
+            _mgt_pass, _rt_pass = deploy_virtual_application(api, _type, _hypervisor_type, _runtime_samples, _timeout, _check_interval)
 
-        _results_row = []
-        _results_row.append(_type)
-        _results_row.append(str(_mgt_pass))
-        _results_row.append(str(_rt_pass))
+            _results_row = []
+            _results_row.append(_type)
+            _results_row.append(_hypervisor_type)
+            _results_row.append(str(_mgt_pass))
+            _results_row.append(str(_rt_pass))
+    
+            _test_results_table.add_row(_results_row)
 
-        _test_results_table.add_row(_results_row)
+            _fn = "/tmp/real_application_regression_test.txt"
+            _fh = open(_fn, "w")
+            _fh.write(str(_test_results_table))
+            _fh.close()
 
-    print _test_results_table
+            print _test_results_table
     
     return True
     
-def deploy_virtual_application(apiconn, application_type, runtime_samples, timeout, check_interval) :
+def deploy_virtual_application(apiconn, application_type, hypervisor_type, runtime_samples, timeout, check_interval) :
     '''
     TBD
     '''
@@ -105,6 +146,11 @@ def deploy_virtual_application(apiconn, application_type, runtime_samples, timeo
         cloud_name = apiconn.cldlist()[0]["name"]
         _crt_m = apiconn.cldshow(cloud_name,"mon_defaults")["crt_m"].split(',')
         _dst_m = apiconn.cldshow(cloud_name,"mon_defaults")["dst_m"].split(',')
+
+        _msg = "Set hypervisor type to \"" + hypervisor_type + "\" on cloud \""
+        _msg += cloud_name + "\"..."
+        print _msg
+        _vapp = apiconn.cldalter(cloud_name, "vm_defaults", "hypervisor_type", hypervisor_type)
 
         _msg = "Creating a new Virtual Application Instance with type \"" 
         _msg += application_type + "\" on cloud \"" + cloud_name + "\"..."
@@ -119,15 +165,15 @@ def deploy_virtual_application(apiconn, application_type, runtime_samples, timeo
         # Get some data from the monitoring system
         for _vm in _vapp["vms"].split(",") :
             _vm_uuid, _vm_role, _vm_name = _vm.split("|") 
-            _management_metrics = apiconn.get_latest_management_data(cloud_name, _vm_uuid)
-            for _metric in _crt_m :
-                _msg = "        Checking metric \"" + _metric + "\"..."
-                print _msg,
-                if _metric not in _management_metrics :
-                    print "NOK"
-                else :
-                    _value = int(_management_metrics[_metric])
-                    print str(_value) + " OK"
+            for _management_metrics in apiconn.get_latest_management_data(cloud_name, _vm_uuid) :
+                for _metric in _crt_m :
+                    _msg = "        Checking metric \"" + _metric + "\"..."
+                    print _msg,
+                    if _metric not in _management_metrics :
+                        print "NOK"
+                    else :
+                        _value = int(_management_metrics[_metric])
+                        print str(_value) + " OK"
 
         _msg = "    Reported provisioning metrics OK" 
         print _msg
@@ -147,9 +193,7 @@ def deploy_virtual_application(apiconn, application_type, runtime_samples, timeo
             _load_manager_vm_uuid = _vapp["load_manager_vm"]
             while _curr_time < timeout and _collected_samples < runtime_samples :
                 try :
-                    _runtime_metrics = apiconn.get_latest_app_data(cloud_name, _load_manager_vm_uuid)
-
-                    if _runtime_metrics :                    
+                    for _runtime_metrics in apiconn.get_latest_app_data(cloud_name, _load_manager_vm_uuid) :
                         for _metric in _app_m :
                             
                             if not _metric.count("app_") :
@@ -179,26 +223,26 @@ def deploy_virtual_application(apiconn, application_type, runtime_samples, timeo
                 _msg = "    Reported application performance metrics OK"
                 print _msg
 
-        _msg = "    Destroying Virtual Application \"" + _vapp["name"] + "\"..."
-        print _msg
-    
-        apiconn.appdetach(cloud_name, _vapp["uuid"])
+        if "uuid" in _vapp :
+            _msg = "    Destroying Virtual Application \"" + _vapp["name"] + "\"..."
+            print _msg
+            apiconn.appdetach(cloud_name, _vapp["uuid"])
 
         _msg = "    Checking reported deprovisioning metrics..." 
         print _msg
         # Get some data from the monitoring system
         for _vm in _vapp["vms"].split(",") :
             _vm_uuid, _vm_role, _vm_name = _vm.split("|") 
-            _management_metrics = apiconn.get_management_data(cloud_name, _vm_uuid)
-            for _metric in _dst_m :
-                _msg = "        Checking metric \"" + _metric + "\"..."
-                print _msg,
-                if _metric not in _management_metrics :
-                    _management_metrics_pass = False
-                    print "NOK"
-                else :
-                    _value = int(_management_metrics[_metric])                        
-                    print str(_value) + " OK"
+            for _management_metrics in apiconn.get_management_data(cloud_name, _vm_uuid) :
+                for _metric in _dst_m :
+                    _msg = "        Checking metric \"" + _metric + "\"..."
+                    print _msg,
+                    if _metric not in _management_metrics :
+                        _management_metrics_pass = False
+                        print "NOK"
+                    else :
+                        _value = int(_management_metrics[_metric])                        
+                        print str(_value) + " OK"
 
         if _management_metrics_pass :
             _msg = "    Reported deprovisioning metrics OK" 
@@ -224,6 +268,9 @@ def deploy_virtual_application(apiconn, application_type, runtime_samples, timeo
     finally :
         if _vapp is not None :
             try :
+                if "name" not in _vapp :
+                    _vapp["name"] = "NA"
+                    
                 if not (_management_metrics_pass and _runtime_metrics_pass) :
                     _msg = "Destroying Virtual Application \"" + _vapp["name"] + "\"..."
                     print _msg             
@@ -233,4 +280,4 @@ def deploy_virtual_application(apiconn, application_type, runtime_samples, timeo
 
         return _management_metrics_pass, _runtime_metrics_pass
     
-main(api, cloud_name)
+main(api)

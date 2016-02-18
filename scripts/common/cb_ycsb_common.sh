@@ -264,7 +264,7 @@ function check_cassandra_cluster_state {
     while [[ $NODES_REGISTERED -ne $total_nodes && "$counter" -le "$ATTEMPTS" ]]
     do
         NODES_REGISTERED=0    
-        syslog_netcat "Obtaining the node list for this Cassandra cluster..."            
+        syslog_netcat "Obtaining the node list for this Cassandra cluster by running \"nodetool $NODETOOLAUTH -h ${NODETOOLHN} status\"..."            
         for NODEIP in $(nodetool $NODETOOLAUTH -h ${NODETOOLHN} status | tail -n +6 | grep -v "Non-system" | awk '{ print $2 }')
         do
             if [[ $(sudo cat /etc/hosts | grep -c $NODEIP) -ne 0 ]]

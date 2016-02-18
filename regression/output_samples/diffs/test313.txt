@@ -1,0 +1,3 @@
+lifetime: uniformIXIXI200I300
+load_level: uniformIXIXI1I3
+load_duration: uniformIXIXI40I60

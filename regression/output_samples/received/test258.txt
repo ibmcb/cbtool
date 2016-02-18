@@ -1,25 +1,32 @@
- status: Waiting for vm_26 (cloud-assigned uuid 7D62045C-FD66-57F8-9C18-651F0F0AC6EA) to start...
- status: Waiting for vm_27 (cloud-assigned uuid 79534785-985D-53F3-A314-8BD5D28283F4) to start...
- status: Waiting for vm_28 (cloud-assigned uuid 70DCAD4A-3D56-5366-9B54-E64DACA2F085) to start...
- status: Trying to establish network connectivity to vm_26 (cloud-assigned uuid 7D62045C-FD66-57F8-9C18-651F0F0AC6EA), on IP address 228.53.216.145...
- status: Trying to establish network connectivity to vm_27 (cloud-assigned uuid 79534785-985D-53F3-A314-8BD5D28283F4), on IP address 95.134.163.22...
- status: Trying to establish network connectivity to vm_28 (cloud-assigned uuid 70DCAD4A-3D56-5366-9B54-E64DACA2F085), on IP address 92.68.114.208...
- status: Bypassing the bootstrapping and the sending of a copy of the code tree to vm_26 (228.53.216.145)...
- status: Bypassing the bootstrapping and the sending of a copy of the code tree to vm_28 (92.68.114.208)...
- status: Bypassing the bootstrapping and the sending of a copy of the code tree to vm_27 (95.134.163.22)...
- status: Bypassing generic VM post_boot configuration on all VMs belonging to ai_1...
- status: Bypassing application-specific configuration on all VMs beloging to ai_1...
+ status: Waiting for vm_27 (cloud-assigned uuid F715DC4A-EF9C-55E3-93A3-86D9E2FD6021) to start...
+ status: Waiting for vm_28 (cloud-assigned uuid F54BD6E1-DD67-58A8-B533-9B0C388EE438) to start...
+ status: Waiting for vm_26 (cloud-assigned uuid 70247285-5F24-5C46-BECD-9A0BBA993EF2) to start...
+ status: Trying to establish network connectivity to vm_27 (cloud-assigned uuid F715DC4A-EF9C-55E3-93A3-86D9E2FD6021), on IP address 83.83.240.241...
+ status: Trying to establish network connectivity to vm_28 (cloud-assigned uuid F54BD6E1-DD67-58A8-B533-9B0C388EE438), on IP address 112.59.87.90...
+ status: Trying to establish network connectivity to vm_26 (cloud-assigned uuid 70247285-5F24-5C46-BECD-9A0BBA993EF2), on IP address 86.211.88.167...
+ status: Checking ssh accessibility on vm_26 (ssh klabuser@86.211.88.167)...
+ status: Bootstrapping vm_26 (creating file cb_os_paramaters.txt in "klabuser" user's home dir on 86.211.88.167)...
+ status: Sending a copy of the code tree to vm_26 (86.211.88.167)...
+ status: Checking ssh accessibility on vm_27 (ssh klabuser@83.83.240.241)...
+ status: Checking ssh accessibility on vm_28 (ssh klabuser@112.59.87.90)...
+ status: Bootstrapping vm_27 (creating file cb_os_paramaters.txt in "klabuser" user's home dir on 83.83.240.241)...
+ status: Bootstrapping vm_28 (creating file cb_os_paramaters.txt in "klabuser" user's home dir on 112.59.87.90)...
+ status: Sending a copy of the code tree to vm_27 (83.83.240.241)...
+ status: Sending a copy of the code tree to vm_28 (112.59.87.90)...
+ status: Starting a new "performance emitter" for ai_1
+ status: Performing generic application instance post_boot configuration on all VMs belonging to ai_1...
+ status: Running application-specific "setup" configuration on all VMs belonging to ai_1...
  status: QEMU Scraper will NOT be automatically started during the deployment of ai_1...
-AI object 5C95C5F0-0E21-5CE6-9B45-FC7580E0E22E (named "ai_1") sucessfully attached to this experiment. It is ssh-accessible at the IP address 32.7.228.94 (7D62045C-FD66-57F8-9C18-651F0F0AC6EA.simcloud.com).
+AI object 939149BF-317A-5214-A198-8B4F617540FA (named "ai_1") sucessfully attached to this experiment. It is ssh-accessible at the IP address 9.159.186.115 (70247285-5F24-5C46-BECD-9A0BBA993EF2.simcloud.com).
 The following ATTACHED AIs are in this experiment (Cloud TESTCLOUD) :
 |name      |type           |sut                                               |cloud_ip        |arrival        |aidrs                                   |uuid
-|ai_1      |ibm_daytrader  |1_x_client_daytrader->1_x_was->1_x_db2            |32.7.228.94     |1413827880     |none                                    |5C95C5F0-0E21-5CE6-9B45-FC7580E0E22E
+|ai_1      |ibm_daytrader  |1_x_client_daytrader->1_x_was->1_x_db2            |9.159.186.115   |1455816865     |none                                    |939149BF-317A-5214-A198-8B4F617540FA
 
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
-|name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
-|vm_26         |client_daytrader    |micro32     |32.7.228.94     |simhostd4                  |LG                  |ai_1    |none       |A02ED02D-34FD-555E-A4FE-84D3F98C6C2D
-|vm_27         |was                 |iron32      |168.244.185.202 |simhostd1                  |SUT                 |ai_1    |none       |828B33F7-8DDF-5186-8CE8-A57A12D3E986
-|vm_28         |db2                 |platinum64  |14.164.118.112  |simhostd2                  |SUT                 |ai_1    |none       |D3024195-CEE4-5818-8C94-53D0569EA25A
+|name          |role                |size        |cloud_ip        |host_name                  |vmc_pool      |netname    |ai      |aidrs      |uuid
+|vm_27         |was                 |iron32      |150.142.58.191  |simhostc6                  |SUT           |private    |ai_1    |none       |072C2688-B678-5E1E-867F-EFFE70BE8962
+|vm_26         |client_daytrader    |micro32     |9.159.186.115   |simhostc4                  |LG            |private    |ai_1    |none       |697A4A02-EBE2-5892-8990-145DC1104942
+|vm_28         |db2                 |platinum64  |46.177.64.79    |simhostb0                  |SUT           |private    |ai_1    |none       |CF8A4FBE-0D46-5349-8F83-D69678064C22
 
 The AI object ai_1, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
 |attribute (AI object key)               |value                                
@@ -30,19 +37,19 @@ The AI object ai_1, attached to this experiment, has the following attributes (C
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |3.40M                         
-|Redis Version                                        |2.8.4                         
-|Uptime (in seconds)                                  |4161351                       
-|Total Connections Received                           |152645                        
-|Total Commands Processed                             |16419572                      
-|Number of Keys                                       |380                           
+|Used Memory                                          |18.68M                        
+|Redis Version                                        |2.8.6                         
+|Uptime (in seconds)                                  |14069009                      
+|Total Connections Received                           |596187                        
+|Total Commands Processed                             |48089657                      
+|Number of Keys                                       |650                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|Collections                                          |14                            
+|Collections                                          |27                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
 |VMCs                                                 |4                             
-|HOSTs                                                |20                            
+|HOSTs                                                |60                            
 |VMs                                                  |3                             
 |AIs                                                  |1                             
 |AIDRSs                                               |0                             
@@ -51,26 +58,32 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------ EXPERIMENT-WIDE COUNTERS ------------------
 |Counter                                              |Value                         
 |VMC RESERVATIONS                                     |4                             
+|VMCs ISSUED                                          |16                            
 |VMCs ARRIVED                                         |16                            
 |VMCs ARRIVING                                        |0                             
 |VMCs DEPARTED                                        |12                            
 |VMCs DEPARTING                                       |0                             
 |VMCs FAILED                                          |0                             
 |HOST RESERVATIONS                                    |0                             
+|HOSTs ISSUED                                         |0                             
 |HOSTs ARRIVED                                        |0                             
 |HOSTs ARRIVING                                       |0                             
 |HOSTs DEPARTED                                       |0                             
 |HOSTs DEPARTING                                      |0                             
 |HOSTs FAILED                                         |0                             
 |VM RESERVATIONS                                      |3                             
-|VMs REPORTED                                         |3                             
+|VMs ISSUED                                           |28                            
 |VMs ARRIVED                                          |25                            
 |VMs ARRIVING                                         |0                             
 |VMs CAPTURING                                        |0                             
 |VMs DEPARTED                                         |22                            
 |VMs DEPARTING                                        |0                             
 |VMs FAILED                                           |3                             
+|VMs SLA PROVISIONING VIOLATED                        |0                             
+|VMs SLA RUNTIME VIOLATED                             |0                             
+|VMs APPLICATION ERRORS                               |0                             
 |AI RESERVATIONS                                      |1                             
+|AIs ISSUED                                           |1                             
 |AIs ARRIVED                                          |1                             
 |AIs ARRIVING                                         |0                             
 |AIs CAPTURING                                        |0                             
@@ -78,28 +91,31 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |AIs DEPARTING                                        |0                             
 |AIs FAILED                                           |0                             
 |AIDRS RESERVATIONS                                   |0                             
+|AIDRSs ISSUED                                        |0                             
 |AIDRSs ARRIVED                                       |0                             
 |AIDRSs ARRIVING                                      |0                             
 |AIDRSs DEPARTED                                      |0                             
 |AIDRSs DEPARTING                                     |0                             
 |AIDRSs FAILED                                        |0                             
 |VMCRS RESERVATIONS                                   |0                             
+|VMCRSs ISSUED                                        |0                             
 |VMCRSs ARRIVED                                       |0                             
 |VMCRSs ARRIVING                                      |0                             
 |VMCRSs DEPARTED                                      |0                             
 |VMCRSs DEPARTING                                     |0                             
 |VMCRSs FAILED                                        |0                             
 |FIRS RESERVATIONS                                    |0                             
+|FIRSs ISSUED                                         |0                             
 |FIRSs ARRIVED                                        |0                             
 |FIRSs ARRIVING                                       |0                             
 |FIRSs DEPARTED                                       |0                             
 |FIRSs DEPARTING                                      |0                             
 |FIRSs FAILED                                         |0                             
-|EXPERIMENT COUNTER                                   |139                           
+|EXPERIMENT COUNTER                                   |259                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|24B2060B-BAC6-5039-8B92-8ECA0CEA2921 (simzone_d) VM RESERVATIONS|1                             
-|577567C0-B42F-5E5E-AECD-11828250DFD7 (simzone_b) VM RESERVATIONS|0                             
-|A22C5322-68EF-5F83-98B7-22040C159B26 (simzone_c) VM RESERVATIONS|1                             
-|5E796C7B-165F-560B-96AF-D5C5EAA08ED5 (simzone_a) VM RESERVATIONS|1                             
+|2D8F262B-5E17-5F1B-A264-3BD47379AA09 (simzone_c) VM RESERVATIONS|1                             
+|985A3CDE-4B6D-55E4-BD6D-3206A124B3B7 (simzone_a) VM RESERVATIONS|0                             
+|2750418D-66C8-53FC-960D-583DC2FB3F15 (simzone_b) VM RESERVATIONS|1                             
+|ED106041-1C2C-51B7-BC93-6D906AE0E438 (simzone_d) VM RESERVATIONS|1                             
 

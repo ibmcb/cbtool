@@ -2,6 +2,6 @@ The AIDRS with the pattern simplehd has the following configuration on experimen
 type: hadoop
 max_ais: 8000
 iait: uniformIXIXI120I180
+lifetime: uniformIXIXI600I900
 load_level: uniformIXIXI1I10
 load_duration: uniformIXIXI90I120
-lifetime: uniformIXIXI600I900
