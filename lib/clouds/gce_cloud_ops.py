@@ -576,8 +576,8 @@ class GceCmds(CommonCloudFunctions) :
             _private_ip_address = self.instance_info["networkInterfaces"][0]["networkIP"]
             _public_ip_address = self.instance_info["networkInterfaces"][0]["accessConfigs"][0]["natIP"]
                        
-            _public_hostname = obj_attr_list["cloud_vm_name"] + '.' + obj_attr_list["vmc_name"] + '.' + self.instances_project
-            _private_hostname = obj_attr_list["cloud_vm_name"] + '.' + obj_attr_list["vmc_name"] + '.' + self.instances_project
+            _public_hostname = obj_attr_list["cloud_vm_name"] + '.' + obj_attr_list["vmc_name"] + '.' + self.instances_project.replace(':','_')
+            _private_hostname = obj_attr_list["cloud_vm_name"] + '.' + obj_attr_list["vmc_name"] + '.' + self.instances_project.replace(':','_')
                         
             if obj_attr_list["run_netname"] == "private" :
                 obj_attr_list["cloud_hostname"] = _private_hostname
