@@ -748,7 +748,7 @@ class GUI(object):
                     if init_pending :
                         output += "<a class='btn btn-mini btn-info' href='BOOTDEST/provision?object=" + active + "&operation=runstate&keywords=4&keyword1=" + obj["uuid"] + "&keyword2=attached&keyword3=run&keyword4=async'><i class='icon-play icon-white'></i>&nbsp;" + obj["name"] + "</a>&nbsp;&nbsp;"
                     if "order" in obj :
-                        order = datetime.fromtimestamp(int(obj["order"].split(".")[0])).strftime('%m/%d %H:%M')
+                        order = datetime.utcfromtimestamp(int(obj["order"].split(".")[0])).strftime('%m/%d %H:%M')
                     act = ((("[" + order + "] ")) if "order" in obj else "") + obj["tracking"] if "tracking" in obj else None
                     output += (str(act) if (act is not None and act != "None") else "")
                 output += "</td>"
