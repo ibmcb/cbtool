@@ -612,9 +612,6 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |ai_templates                     |specjbb_balloon_size           |500                                  
 |ai_templates                     |specjbb_capture_role           |specjbb                              
 |ai_templates                     |specjbb_description            | TBD                                 
-|ai_templates                     |specjbb_experiment_output_collection_dir|specjbb_balloon_experiment_results   
-|ai_templates                     |specjbb_experiment_output_collection_host|172.16.0.1                           
-|ai_templates                     |specjbb_java_home              |j9vm_sdk                             
 |ai_templates                     |specjbb_load_balancer          |False                                
 |ai_templates                     |specjbb_load_balancer_target_port|80                                   
 |ai_templates                     |specjbb_load_balancer_target_url|unknown                              
@@ -1002,12 +999,12 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |space                            |tracefile                      |regression/regression_test_experiment_plan.txt
 |space                            |username                       |msilva                               
 |space                            |vm_daemon_dir                  |/home/klabuser                       
-|time                             |experiment_id                  |EXP-02-18-2016-05-44-24-PM-UTC       
+|time                             |experiment_id                  |EXP-02-22-2016-11-27-05-PM-UTC       
 |time                             |external_timeout               |30                                   
 |time                             |external_tries                 |2                                    
 |time                             |hard_reset                     |True                                 
 |time                             |internal_tries                 |2                                    
-|time                             |start_time                     |1455817463                           
+|time                             |start_time                     |1456183624                           
 |time                             |step_delay                     |5                                    
 |time                             |username                       |msilva                               
 |vm_defaults                      |access                         |                                     
@@ -1045,6 +1042,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |vm_defaults                      |netname                        |private                              
 |vm_defaults                      |notification                   |False                                
 |vm_defaults                      |notification_channel           |auto                                 
+|vm_defaults                      |pct_failure                    |                                     
 |vm_defaults                      |placement                      |random                               
 |vm_defaults                      |protect_protocol               |tcp                                  
 |vm_defaults                      |protect_protocol_supported     |tcp,rdma                             
@@ -1169,7 +1167,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |vpn                              |kind                           |OpenVPN                              
 |vpn                              |netmask                        |255.255.0.0                          
 |vpn                              |network                        |192.168.0.0                          
-|vpn                              |server_bootstrap               |192.168.0.6                          
+|vpn                              |server_bootstrap               |192.168.0.1                          
 |vpn                              |server_ip                      |9.2.208.228                          
 |vpn                              |server_ip_doc                  |(Optional)Ifyourcloudnetworkisprivate,\nbutyourCBinstallationisonadifferentnetwork,\nthetoolhastheabilitytoinstruct\ntheVMstouseanOpenVPNserver\ntocontrolthevirtualmachines.\nThisaddressistheexternallyreachableaddress\nwheretheOpenVPNserverwillrun
 |vpn                              |server_port                    |1194                                 

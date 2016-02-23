@@ -108,10 +108,19 @@ do
         fi
         
         UUID=$(glance --os-image-api-version 1 image-list | grep ${DISK_FORMAT} | grep ${CONTAINER_FORMAT} | grep [[:space:]]${IMAGE_NAME}[[:space:]] | awk '{ print $2 }')
-        echo "Adding property \"architecture=${ARCH}\" to image \"${IMAGE_NAME}\" (${UUID})..."
-        glance --os-image-api-version 1 image-update ${UUID} --property architecture=${ARCH} > /dev/null 2>&1 || ( echo "failed while updating image properties"; exit 1 )
-        echo "Adding property \"hypervisor_type=${HYPERVISOR}\" to image \"${IMAGE_NAME}\" (${UUID})..."
-        glance --os-image-api-version 1 image-update ${UUID} --property hypervisor_type=${HYPERVISOR} > /dev/null 2>&1 || ( echo "failed while updating image properties"; exit 1 )        
+        IMGINFO=$(glance --os-image-api-version 1 image-show $UUID)
+        if [[ $(echo "$IMGINFO" | grep architecture | grep -c $ARCH) -eq 0 ]]
+        then
+            echo "Adding property \"architecture=${ARCH}\" to image \"${IMAGE_NAME}\" (${UUID})..."
+            glance --os-image-api-version 1 image-update ${UUID} --property architecture=${ARCH} > /dev/null 2>&1 || ( echo "failed while updating image properties"; exit 1 )
+        fi
+
+        if [[ $(echo "$IMGINFO" | grep hypervisor_type | grep -c $HYPERVISOR) -eq 0 ]]
+        then
+            echo "Adding property \"hypervisor_type=${HYPERVISOR}\" to image \"${IMAGE_NAME}\" (${UUID})..."
+            glance --os-image-api-version 1 image-update ${UUID} --property hypervisor_type=${HYPERVISOR} > /dev/null 2>&1 || ( echo "failed while updating image properties"; exit 1 )
+        fi
+ 
     done
       
     COUNTER=1
@@ -124,22 +133,24 @@ do
         for IMAGE_FILE in ${IMAGES_LIST}
         do
             
-            IMAGE_NAME=cb_$(echo ${IMAGE} | cut -d ':' -f 1)
-            CONTAINER_FORMAT=$(echo ${IMAGE} | cut -d ':' -f 2)
-            DISK_FORMAT=$(echo ${IMAGE} | cut -d ':' -f 3)
-            ARCH=$(echo ${IMAGE} | cut -d ':' -f 4)
-            HYPERVISOR=$(echo ${IMAGE} | cut -d ':' -f 5)
+            IMAGE_NAME=cb_$(echo ${IMAGE_FILE} | cut -d ':' -f 1)
+            CONTAINER_FORMAT=$(echo ${IMAGE_FILE} | cut -d ':' -f 2)
+            DISK_FORMAT=$(echo ${IMAGE_FILE} | cut -d ':' -f 3)
+            ARCH=$(echo ${IMAGE_FILE} | cut -d ':' -f 4)
+            HYPERVISOR=$(echo ${IMAGE_FILE} | cut -d ':' -f 5)
     
             if [[ $(glance --os-image-api-version 1 image-list | grep ${DISK_FORMAT} | grep ${CONTAINER_FORMAT} | grep -c ${IMAGE_NAME}) -eq 0 ]]
             then
                 ERROR=1
-                echo "Image ${IMAGE_NAME} not present on Glance!"
+                echo "Image ${IMAGE_NAME} ($HYPERVISOR) not present on Glance!"
                 break
             else
                 if [[ $(glance --os-image-api-version 1 image-list | grep [[:space:]]${IMAGE_NAME}[[:space:]] | grep -c active) -eq 0 ]]
                 then
-                    echo "Image ${IMAGE_NAME} still not in \"active\" state"
+                    echo "Image ${IMAGE_NAME} ($HYPERVISOR) still not in \"active\" state"
                     SAVING_IMAGES=1
+                else 
+                    echo "Image ${IMAGE_NAME} ($HYPERVISOR) is ready to be used"
                 fi
             fi
     

@@ -1,14 +1,14 @@
 AIDRS object undefined (named "all") was sucessfully detached from this experiment.
- status: Sending a termination request for vm_126 (cloud-assigned uuid D2A10BE4-B279-5C31-9ABB-16F4C216B26C)....
- status: Sending a termination request for vm_125 (cloud-assigned uuid E204DE40-AC91-5FD5-8AC0-1076BA4ADA47)....
- status: Sending a termination request for vm_128 (cloud-assigned uuid 65A0AD16-55E0-5ED4-BC9B-0E3D0A72C565)....
- status: Sending a termination request for vm_127 (cloud-assigned uuid 978391CF-FDD0-56C3-9178-87D436008CA9)....
- status: Sending a termination request for vm_124 (cloud-assigned uuid 50C506B4-44D4-598E-8F42-EC4BDC3004BC)....
- status: AI F0D290EF-F880-56AF-B843-3ECF7D44B4B6 was successfully undefined on SimCloud "TESTCLOUD".
- status: AI F8051D38-8EC0-5E43-9040-475025B3CC60 was successfully undefined on SimCloud "TESTCLOUD".
- status: AI 195AAB98-F98F-5D02-8226-43196F8F14D2 was successfully undefined on SimCloud "TESTCLOUD".
- status: AI 09750561-AB1E-5BD6-A64C-7875FCA053CE was successfully undefined on SimCloud "TESTCLOUD".
- status: AI C9306834-C8D2-54AE-ACA0-0FBAD7A3802C was successfully undefined on SimCloud "TESTCLOUD".
+ status: Sending a termination request for vm_124 (cloud-assigned uuid BC4FAA17-F37D-50C0-AC37-0DB94D3EC5F5)....
+ status: Sending a termination request for vm_128 (cloud-assigned uuid E60604DD-42D5-5BE3-AC0A-AC87B55BB749)....
+ status: Sending a termination request for vm_127 (cloud-assigned uuid 2B43D9D1-912A-5D87-A2A7-88151584EB3B)....
+ status: Sending a termination request for vm_126 (cloud-assigned uuid D045032F-47FB-5917-B79E-FE6C4002C622)....
+ status: Sending a termination request for vm_125 (cloud-assigned uuid 0A2D659E-D18A-5A3E-B9E9-66C8BCE4641D)....
+ status: AI 7D2DBFDF-8683-508D-801C-36CCBBCC091A was successfully undefined on SimCloud "TESTCLOUD".
+ status: AI 3BDBBF99-5A0E-54CA-979F-536CC47DC8B3 was successfully undefined on SimCloud "TESTCLOUD".
+ status: AI 228C0780-1379-5DA5-A894-BC2A99B00339 was successfully undefined on SimCloud "TESTCLOUD".
+ status: AI EDEDE167-BCAF-5D8A-9D20-C7EFA3328CC5 was successfully undefined on SimCloud "TESTCLOUD".
+ status: AI 304F6988-5A6A-5528-8A5A-71AE43F3B258 was successfully undefined on SimCloud "TESTCLOUD".
 AI object undefined (named "all") was sucessfully detached from this experiment.
 The following ATTACHED AIDRSs are in this experiment (Cloud TESTCLOUD) :
 No objects available.
@@ -19,11 +19,11 @@ No objects available.
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |25.01M                        
+|Used Memory                                          |26.35M                        
 |Redis Version                                        |2.8.6                         
-|Uptime (in seconds)                                  |14070400                      
-|Total Connections Received                           |596458                        
-|Total Commands Processed                             |48669817                      
+|Uptime (in seconds)                                  |14436555                      
+|Total Connections Received                           |614889                        
+|Total Commands Processed                             |58991123                      
 |Number of Keys                                       |1219                          
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
@@ -96,8 +96,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |536                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|0338389A-81C2-5396-B689-5F36D76F9D05 (simzone_b) VM RESERVATIONS|0                             
-|F2EBCF68-00A1-594D-B008-8C6DCA0EBDA1 (simzone_a) VM RESERVATIONS|0                             
-|9E637C8E-EE92-58F3-9F6F-30D21F360CD0 (simzone_c) VM RESERVATIONS|0                             
-|7356F988-866D-5BAB-B6A1-DFE3D6063EDF (simzone_d) VM RESERVATIONS|0                             
+|2C0CBD0C-C4AB-589F-B1DC-473FE1792EEA (simzone_b) VM RESERVATIONS|0                             
+|09BE1FD2-5286-5B6E-AA11-D68D33341047 (simzone_a) VM RESERVATIONS|0                             
+|95B3CBBD-180B-59D1-9048-B3EAC63E092B (simzone_d) VM RESERVATIONS|0                             
+|4DFFE7AE-4E70-5DA7-82EF-D0BC8960A44B (simzone_c) VM RESERVATIONS|0                             
 

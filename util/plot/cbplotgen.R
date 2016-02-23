@@ -16,7 +16,7 @@
 # limitations under the License.
 #/*****************************************************************************
 
-required_libraries <- c("optparse", "reshape2", "ggplot2", "hash", "data.table", "xtable", "sciplot")
+required_libraries <- c("optparse", "reshape2", "ggplot2", "hash", "data.table", "xtable", "sciplot", "digest")
 
 for (required_library in required_libraries) {
     is_loaded <- suppressPackageStartupMessages(library(required_library, character.only=TRUE, logical.return=TRUE, quietly=TRUE))

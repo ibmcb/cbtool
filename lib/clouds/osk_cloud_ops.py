@@ -1820,11 +1820,15 @@ class OskCmds(CommonCloudFunctions) :
 
         if _instance :
 
-            obj_attr_list["host_name"] = "unknown"
+
             obj_attr_list["instance_name"] = "unknown" 
-                        
-            obj_attr_list["host_name"] = getattr(_instance, 'OS-EXT-SRV-ATTR:host')
-            obj_attr_list["instance_name"] = getattr(_instance, 'OS-EXT-SRV-ATTR:instance_name')
+            obj_attr_list["host_name"] = "unknown"
+
+            try :                   
+                obj_attr_list["instance_name"] = getattr(_instance, 'OS-EXT-SRV-ATTR:instance_name')                        
+                obj_attr_list["host_name"] = getattr(_instance, 'OS-EXT-SRV-ATTR:host')
+            except :
+                pass
             
 #            if "_info" in dir(_instance) :
 
@@ -2566,10 +2570,11 @@ class OskCmds(CommonCloudFunctions) :
             _scheduler_hints = None
 
             if "userdata" in obj_attr_list and obj_attr_list["userdata"] :
-                _userdata = obj_attr_list["userdata"]
+                _userdata = obj_attr_list["userdata"].replace("# INSERT OPENVPN COMMAND", \
+                                                              "openvpn --config /etc/openvpn/" + obj_attr_list["cloud_name"].upper() + "_client-cb-openvpn.conf --daemon --client")
                 _config_drive = True
             else :
-                _config_drive = None                
+                _config_drive = None
                 _userdata = None
 
             _mark5 = int(time())
@@ -2622,7 +2627,12 @@ class OskCmds(CommonCloudFunctions) :
             _msg += ", connected to networks \"" + _netnames + "\""
             _msg += ", on VMC \"" + obj_attr_list["vmc_name"] + "\", under tenant"
             _msg += " \"" + obj_attr_list["tenant"] + "\" (ssh key is \""
-            _msg += str(_key_name) + "\")"
+            _msg += str(_key_name) + "\" and userdata is "
+            if _userdata :
+                _msg += "\"auto\")"
+            else :
+                _msg += "\"none\")" 
+
             cbdebug(_msg, True)
 
             _instance = self.oskconncompute.servers.create(name = obj_attr_list["cloud_vm_name"], \
@@ -2797,7 +2807,7 @@ class OskCmds(CommonCloudFunctions) :
         '''
         try :
             if "cloud_vm_name" in obj_attr_list :
-                identifier =obj_attr_list["cloud_vm_name"]
+                identifier = obj_attr_list["cloud_vm_name"]
             else :
                 identifier = instance.name
             instance.delete()

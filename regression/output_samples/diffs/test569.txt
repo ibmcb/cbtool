@@ -1,21 +1,21 @@
 Background operation execution success. Operation "ai-capture" will be processed asynchronously, through the command "/path/to/tool/lib/operations//../../cbact --procid=TEST_msilva --osp=port:xxxx,experiment_inst:TEST_msilva,host:xxx.xxx.xxx.xxx ,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:xxxx,password:cbpwdZ9,timeout:240,host:xxx.xxx.xxx.xxx ,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,youngest,none --operation=ai-capture --cn=TESTCLOUD --uuid=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx --daemon". The process id is xxxx.
 Going to wait until the value on counter "AI CAPTURING" is equal to XX (currently it is equal to XX) waiting 20.0 seconds between samples, for a maximum of 36000.0 seconds. The counter is assumed to be decreasing.
- status: Counter "AI CAPTURING" equals 0 after 19.0589549541 seconds (the counter is assumed to be decreasing).
-Waited 19.0589549541 seconds until "AIs CAPTURING" was equal to 0.
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1455817773 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1455817866 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1455817872 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1455817885 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1455817908 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1455817910 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1455817912 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1455817914 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1455817922 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |ibmderby_tradelite|1_x_client_tradelite->1_x_was |xxx.xxx.xxx.xxx |1455817930 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1455817937 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1455817942 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1455817965 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1455817971 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+ status: Counter "AI CAPTURING" equals 0 after 19.4321420193 seconds (the counter is assumed to be decreasing).
+Waited 19.4321420193 seconds until "AIs CAPTURING" was equal to 0.
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1456183935 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1456184027 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1456184033 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1456184047 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1456184069 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1456184071 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1456184073 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1456184075 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1456184083 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |ibmderby_tradelite|1_x_client_tradelite->1_x_was |xxx.xxx.xxx.xxx |1456184089 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1456184096 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1456184101 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1456184124 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1456184130 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 |name |role |size |cloud_ip |host_name |vmc_pool |netname |ai |aidrs |uuid
 |vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 |vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx

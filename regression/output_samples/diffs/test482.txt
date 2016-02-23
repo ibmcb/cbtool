@@ -2,12 +2,12 @@
 |alternative_remote_mtu |False 
 |alternative_remote_mtu_default |1200 
 |alternative_remote_mtu_interface |default 
-|arrival |1455817531 
+|arrival |1456183692 
 |attempts |24 
 |cloud_init_bootstrap |False 
 |cloud_init_rsync |False 
 |cloud_vm_name |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx 
-|command_originated |1455817529 
+|command_originated |1456183690 
 |comments | 
 |create_jumphost |False 
 |credentials_dir |/path/to/tool/lib/auxiliary//../../credentials
@@ -22,12 +22,14 @@
 |jumphost_base_name |cb-jumphost 
 |jumphost_login |auto 
 |jumphost_netnames |all 
+|last_known_state |generic post-boot script executed 
 |leave_instance_on_failure |False 
 |local_dir_name |cloudbench 
 \|mgt_n \|X 
 |migrate_protocol_supported |tcp,rdma 
 |netname |private 
 |notification_channel |auto 
+|pct_failure | 
 |protect_protocol_supported |tcp,rdma 
 |prov_netname |private 
 |run_cloud_ip |xxx.xxx.xxx.xxx 

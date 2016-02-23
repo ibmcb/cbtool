@@ -1,21 +1,21 @@
 The HOST object host_simhosta3, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
 |attribute (HOST object key)               |value                                
-|arrival                                   |1455817521                           
+|arrival                                   |1456183682                           
 |available_cores                           |200000                               
-|available_gpus                            |2                                    
+|available_gpus                            |0                                    
 |available_memory                          |2048000000000000                     
 |cloud_hostname                            |simhosta3                            
-|cloud_ip                                  |50.114.87.115                        
-|cloud_vm_uuid                             |B9959019-0C81-5DFE-A39F-59A83D1D6738 
+|cloud_ip                                  |77.120.20.125                        
+|cloud_vm_uuid                             |8D37470D-51CB-5106-8CDD-0615C3AA86B3 
 |cores                                     |200000                               
 |counter                                   |205                                  
 |function                                  |hypervisor                           
-|gpus                                      |2                                    
+|gpus                                      |0                                    
 |hypervisor_type                           |QEMU                                 
 |identity                                  |/home/msilva/cloudbench/lib/auxiliary//../../credentials/cbtool_rsa
 |login                                     |root                                 
 |memory                                    |2048000000000000                     
-|mgt_001_provisioning_request_originated   |1455817521                           
+|mgt_001_provisioning_request_originated   |1456183682                           
 |mgt_002_provisioning_request_sent         |0                                    
 |mgt_003_provisioning_request_completed    |0                                    
 |migrate_interface                         |default                              
@@ -27,7 +27,7 @@ The HOST object host_simhosta3, attached to this experiment, has the following a
 |simulated                                 |True                                 
 |state                                     |attached                             
 |username                                  |msilva                               
-|uuid                                      |B9959019-0C81-5DFE-A39F-59A83D1D6738 
-|vmc                                       |F2EBCF68-00A1-594D-B008-8C6DCA0EBDA1 
+|uuid                                      |8D37470D-51CB-5106-8CDD-0615C3AA86B3 
+|vmc                                       |09BE1FD2-5286-5B6E-AA11-D68D33341047 
 |vmc_name                                  |simzone_a                            
 

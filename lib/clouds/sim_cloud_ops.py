@@ -30,7 +30,7 @@ from subprocess import Popen, PIPE
 from os import chmod
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from lib.auxiliary.data_ops import str2dic, DataOpsException, create_restart_script
+from lib.auxiliary.data_ops import str2dic, DataOpsException, create_restart_script, weighted_choice
 from lib.auxiliary.value_generation import ValueGeneration
 from lib.remote.network_functions import Nethashget
 from shared_functions import CldOpsException, CommonCloudFunctions 
@@ -614,6 +614,7 @@ class SimCmds(CommonCloudFunctions) :
         TBD
         '''
         try :
+                         
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
@@ -650,9 +651,18 @@ class SimCmds(CommonCloudFunctions) :
                 True
             else :
                 _status = 7778
-                _msg = "Failed to create VM image"
+                _msg = "Deterministic VM failure (\"willfail\")"
                 raise CldOpsException(_msg, _status)
 
+            if obj_attr_list["pct_failure"] != " " :
+                _pct_failure = int(obj_attr_list["pct_failure"])
+                if not weighted_choice([_pct_failure, (100 - _pct_failure)]) :
+                    _status = 7779
+                    _msg = "Probabilistic VM failure (" + obj_attr_list["pct_failure"] + "%)"
+                    raise CldOpsException(_msg, _status)
+                else :
+                    True
+                
             self.take_action_if_requested("VM", obj_attr_list, "provision_started")
 
             _time_mark_vmp = int(time())

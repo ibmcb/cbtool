@@ -1,11 +1,11 @@
 The following FAILED VMs are in this experiment (Cloud TESTCLOUD) :
 |name          |role                |size        |cloud_ip        |host_name                  |vmc_pool      |netname    |ai      |aidrs      |uuid
-|vm_23         |norole              |from_vm_template|undefined       |unavailable                |unavailable   |private    |none    |none       |5A1524A9-E803-5F8A-9F49-B5506B124843
-|vm_24         |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |none    |none       |E8DAB60C-48EF-5FE0-B464-EE92DCBB51C8
-|vm_25         |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |none    |none       |AF02698A-7233-5FE5-AEA4-B32D4F1856F2
-|vm_23         |norole              |from_vm_template|undefined       |unavailable                |unavailable   |private    |none    |none       |6B5E4819-8517-5951-969E-99D66CA01937
-|vm_25         |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |none    |none       |DED3AEF0-E752-5A76-8889-58E7489AE4BB
-|vm_121        |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |(orphan)|none       |7BC1F383-0E98-5BC9-9C1A-5F31F728A1EC
-|vm_24         |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |none    |none       |0BBBBC31-8126-5040-B460-403F4C7B2624
-|vm_121        |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |(orphan)|none       |F86158CF-D502-5255-BAF4-2DF363E5FA28
+|vm_24         |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |none    |none       |60442821-DBD0-505C-8E27-F63AD7A567A2
+|vm_118        |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |(orphan)|none       |9ED66DDE-7F02-5FFF-84D7-8A499B174809
+|vm_24         |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |none    |none       |760685B2-BC54-5851-B01E-FAAE51727F4A
+|vm_23         |norole              |from_vm_template|undefined       |unavailable                |unavailable   |private    |none    |none       |F2778E8A-E566-56ED-999F-D3A382EB4A37
+|vm_25         |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |none    |none       |44B9F311-528B-59B0-A435-B0F2D89DEBED
+|vm_25         |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |none    |none       |4BD9ABCF-BE31-5BC0-8C95-EC3629FA937E
+|vm_120        |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |(orphan)|none       |F9FBFEF9-A540-58C8-AAB5-19C3F70A4D7A
+|vm_23         |norole              |from_vm_template|undefined       |unavailable                |unavailable   |private    |none    |none       |5C4EC6C5-6A7D-56D6-B6BE-107F0CD22CD8
 

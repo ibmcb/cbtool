@@ -81,7 +81,7 @@ def makeTimestamp(supplied_epoch_time = False) :
     if not supplied_epoch_time :
         _now = datetime.utcnow()
     else :
-        _now = datetime.fromtimestamp(supplied_epoch_time)
+        _now = datetime.utcfromtimestamp(supplied_epoch_time)
         
     _date = _now.date()
 

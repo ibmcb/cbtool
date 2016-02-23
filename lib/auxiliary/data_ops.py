@@ -25,6 +25,7 @@
 '''
 from time import time, strftime, strptime, localtime
 from os import chmod
+from random import random
 from datetime import datetime
 
 from ..auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
@@ -209,7 +210,7 @@ def makeTimestamp(supplied_epoch_time = False) :
     if not supplied_epoch_time :
         _now = datetime.utcnow()
     else :
-        _now = datetime.fromtimestamp(float(supplied_epoch_time))
+        _now = datetime.utcfromtimestamp(float(supplied_epoch_time))
         
     _date = _now.date()
 
@@ -377,8 +378,14 @@ def get_boostrap_command(obj_attr_list, osci) :
     _bcmd += "echo '#OSOI-" + "TEST_" + obj_attr_list["username"] + ":" + obj_attr_list["cloud_name"] + "' >>  " + _rbf + ';'
     _bcmd += "echo '#VMUUID-" + obj_attr_list["uuid"] + "' >>  " + _rbf + ';'
     _bcmd += "sudo chown -R " +  obj_attr_list["login"] + ':' + obj_attr_list["login"] + ' ' + _rbf + ';'    
-    _bcmd += "sudo chown -R " +  obj_attr_list["login"] + ':' + obj_attr_list["login"] + " ~/" + obj_attr_list["remote_dir_name"]
 
+    if obj_attr_list["login"] == "root" :
+        obj_attr_list["remote_dir_full_path"] = " /root/" + obj_attr_list["remote_dir_name"]
+    else :
+        obj_attr_list["remote_dir_full_path"] = " /home/" + obj_attr_list["login"] + '/' + obj_attr_list["remote_dir_name"]        
+        
+    _bcmd += "sudo chown -R " +  obj_attr_list["login"] + ':' + obj_attr_list["login"] + ' ' + obj_attr_list["remote_dir_full_path"]
+            
     return _bcmd
                 
 def create_user_data_contents(obj_attr_list, osci) :
@@ -386,7 +393,7 @@ def create_user_data_contents(obj_attr_list, osci) :
     TBD
     '''
 
-    _attempts = str(3)
+    _attempts = str(5)
     _sleep = str(2)
     
     _fshn = obj_attr_list["filestore_hostname"]
@@ -413,10 +420,18 @@ def create_user_data_contents(obj_attr_list, osci) :
     _userdata_contents += "\n"        
     _userdata_contents += "chmod 777 /var/log/cloudbench\n"
     _userdata_contents += "\n"
-                
+
     _userdata_contents += get_boostrap_command(obj_attr_list, osci).replace(';','\n')
 
-    if obj_attr_list["use_vpn_ip"].lower() != "false" and obj_attr_list["vpn_only"].lower() == "false" :
+    if obj_attr_list["use_vpn_ip"].lower() != "false" :    
+        _userdata_contents += "\nsudo cp " + obj_attr_list["remote_dir_full_path"] + "/util/openvpn/client_connected.sh /etc/openvpn\n"
+        _userdata_contents += "sudo sed 's/USER/" + obj_attr_list["username"] + "/g' /etc/openvpn/client_connected.sh\n"
+        _userdata_contents += "sudo sed 's/CLOUD_NAME/" + obj_attr_list["cloud_name"] + "/g' /etc/openvpn/client_connected.sh\n"
+        _userdata_contents += "sudo sed 's/SERVER_BOOTSTRAP/" + _ohn  + "/g' /etc/openvpn/client_connected.sh\n"
+        _userdata_contents += "sudo sed 's/UUID/" + obj_attr_list["uuid"]  + "/g' /etc/openvpn/client_connected.sh\n"
+        _userdata_contents += "sudo sed 's/OSCI_PORT/" + str(_opn)  + "/g' /etc/openvpn/client_connected.sh\n"
+        _userdata_contents += "sudo sed 's/OSCI_DBID/" + str(_odb)  + "/g' /etc/openvpn/client_connected.sh\n"
+
         _userdata_contents += "\nmkdir /var/log/openvpn\n"
         _userdata_contents += "chmod 777 /var/log/openvpn\n"
         _file_fd = open(obj_attr_list["vpn_config_file"], 'r')
@@ -424,15 +439,16 @@ def create_user_data_contents(obj_attr_list, osci) :
         _userdata_contents += "cat << EOF > /etc/openvpn/" + _cn.upper() + "_client-cb-openvpn.conf\n"
         _userdata_contents += _file_contents
         _userdata_contents += "EOF"
-        _userdata_contents += "\n"       
-        _userdata_contents += "openvpn --config /etc/openvpn/" + _cn.upper() + "_client-cb-openvpn.conf --daemon --client\n"
+        _userdata_contents += "\n"
+
+        _userdata_contents += "# INSERT OPENVPN COMMAND\n"
         _userdata_contents += "counter=0\n"        
         _userdata_contents += "\nwhile [[ \"$counter\" -le " + _attempts + " ]]\n"
         _userdata_contents += "do\n"
         _userdata_contents += "    ifconfig tun0\n"
         _userdata_contents += "    if [[ $? -eq 0 ]]\n"
         _userdata_contents += "    then\n"
-        _userdata_contents += "        VPNIP=$(ifconfig tun0 | grep inet[[:space:]] | sed 's/addr://g' | awk '{ print $2 }' | tr -d '\n')\n"
+        _userdata_contents += "        VPNIP=$(ifconfig tun0 | grep inet[[:space:]] | sed 's/addr://g' | awk '{ print $2 }' | tr -d '\\n')\n"
         _userdata_contents += "        redis-cli -h " + _ohn + " -n " + str(_odb) + " -p " + str(_opn) + " hset TEST_" + _fsun + ':' + obj_attr_list["cloud_name"] + ":VM:PENDING:" + obj_attr_list["uuid"] + " cloud_init_vpn $VPNIP\n"
         _userdata_contents += "        break\n"    
         _userdata_contents += "    else\n"    
@@ -445,8 +461,7 @@ def create_user_data_contents(obj_attr_list, osci) :
     _userdata_contents += "then\n"
     _userdata_contents += "    redis-cli -h " + _ohn + " -n " + str(_odb) + " -p " + str(_opn) + " hset TEST_" + _fsun + ':' + obj_attr_list["cloud_name"] + ":VM:PENDING:" + obj_attr_list["uuid"] + " cloud_init_bootstrap  true\n"
     _userdata_contents += "fi\n"
-    _userdata_contents += "\n"        
-    _userdata_contents += "\n"                
+    _userdata_contents += "\n"
     _userdata_contents += "counter=0\n"    
     _userdata_contents += "\nwhile [[ \"$counter\" -le " + _attempts + " ]]\n"
     _userdata_contents += "do\n"
@@ -465,7 +480,7 @@ def create_user_data_contents(obj_attr_list, osci) :
     _userdata_contents += "    rsync -az --exclude-from '/tmp/exclude_list' --delete --no-o --no-g --inplace rsync://" + _fshn + ':' + _fspn + '/' + _fsun + "_cb/ " + _rdfp + "/\n"
     _userdata_contents += "    if [[ $? -eq 0 ]]\n"
     _userdata_contents += "    then\n"
-    _userdata_contents += "        redis-cli -h " + _ohn + " -n " + str(_odb) + " -p " + str(_opn) + " hset TEST_" + _fsun + ':' + obj_attr_list["cloud_name"] + ":VM:PENDING:" + obj_attr_list["uuid"] + " cloud_init_rsync true\n"
+    _userdata_contents += "        redis-cli -h " + _ohn + " -n " + str(_odb) + " -p " + str(_opn) + " hset TEST_" + _fsun + ':' + obj_attr_list["cloud_name"] + ":VM:PENDING:" + obj_attr_list["uuid"] + " cloud_init_rsync true\n"    
     _userdata_contents += "        break\n"    
     _userdata_contents += "    else\n"    
     _userdata_contents += "        sleep " + _sleep + "\n"
@@ -553,6 +568,20 @@ def is_number(val) :
     
     except ValueError:
         return False
+
+# Thannks to Eli Bendersky
+def weighted_choice(weights):
+    totals = []
+    running_total = 0
+
+    for w in weights:
+        running_total += w
+        totals.append(running_total)
+
+    rnd = random() * running_total
+    for i, total in enumerate(totals):
+        if rnd < total:
+            return i
     
 def summarize(summaries_dict, value, unit) :
     '''

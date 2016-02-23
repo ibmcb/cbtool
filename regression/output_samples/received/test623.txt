@@ -8,22 +8,22 @@ Monitor extraction success. All metrics written to csv files on the directory "/
 Data is available at the url "rsync://172.16.0.4:10000/msilva_cb/data/REGRESSION_B".
 running shell command: "ls -la /home/msilva/cloudbench/regression/..//data/REGRESSION_B"....
 stdout:
- total 6620
-drwxrwxr-x   2 msilva msilva   16384 Feb 18 12:58 .
-drwxr-xr-x 121 msilva msilva   12288 Feb  8 10:24 ..
--rw-rw-r--   1 msilva msilva    1014 Feb 18 12:58 HOST_runtime_os_REGRESSION_B.csv
--rw-rw-r--   1 msilva msilva    1078 Feb 18 12:30 msilva_gui.log
--rw-rw-r--   1 msilva msilva       0 Feb 18 12:30 msilva_loadmanager.log
--rw-rw-r--   1 msilva msilva       0 Feb 18 12:30 msilva_monitor.log
--rw-rw-r--   1 msilva msilva 5321334 Feb 18 12:58 msilva_operations.log
--rw-rw-r--   1 msilva msilva       0 Feb 18 12:30 msilva_remotescripts.log
--rw-rw-r--   1 msilva msilva       0 Feb 18 12:30 msilva_report.log
--rw-rw-r--   1 msilva msilva  156507 Feb 18 12:57 msilva_submmiter.log
--rw-rw-r--   1 msilva msilva  779821 Feb 18 12:57 msilva_subscribe.log
+ total 6608
+drwxrwxr-x   2 msilva msilva   16384 Feb 22 18:40 .
+drwxr-xr-x 137 msilva msilva   12288 Feb 20 16:41 ..
+-rw-rw-r--   1 msilva msilva    1014 Feb 22 18:40 HOST_runtime_os_REGRESSION_B.csv
+-rw-rw-r--   1 msilva msilva    1078 Feb 22 18:12 msilva_gui.log
+-rw-rw-r--   1 msilva msilva       0 Feb 22 18:12 msilva_loadmanager.log
+-rw-rw-r--   1 msilva msilva       0 Feb 22 18:12 msilva_monitor.log
+-rw-rw-r--   1 msilva msilva 5328183 Feb 22 18:40 msilva_operations.log
+-rw-rw-r--   1 msilva msilva       0 Feb 22 18:12 msilva_remotescripts.log
+-rw-rw-r--   1 msilva msilva       0 Feb 22 18:12 msilva_report.log
+-rw-rw-r--   1 msilva msilva  155320 Feb 22 18:40 msilva_submmiter.log
+-rw-rw-r--   1 msilva msilva  766510 Feb 22 18:40 msilva_subscribe.log
 -rwxr-xr-x   1 msilva msilva  239391 Feb  4 10:23 regression_test_experiment_plan.txt
--rw-rw-r--   1 msilva msilva   95599 Feb 18 12:58 trace_REGRESSION_B.csv
--rw-rw-r--   1 msilva msilva   93922 Feb 18 12:58 VM_management_REGRESSION_B.csv
--rw-rw-r--   1 msilva msilva   32773 Feb 18 12:58 VM_runtime_app_REGRESSION_B.csv
--rw-rw-r--   1 msilva msilva    1150 Feb 18 12:58 VM_runtime_os_REGRESSION_B.csv
+-rw-rw-r--   1 msilva msilva   95408 Feb 22 18:40 trace_REGRESSION_B.csv
+-rw-rw-r--   1 msilva msilva   94352 Feb 22 18:40 VM_management_REGRESSION_B.csv
+-rw-rw-r--   1 msilva msilva   32143 Feb 22 18:40 VM_runtime_app_REGRESSION_B.csv
+-rw-rw-r--   1 msilva msilva    1150 Feb 22 18:40 VM_runtime_os_REGRESSION_B.csv
 
 

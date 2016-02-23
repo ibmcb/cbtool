@@ -324,9 +324,6 @@
 |ai_templates |specjbb_balloon_delay |300 
 |ai_templates |specjbb_balloon_size |500 
 |ai_templates |specjbb_description | TBD 
-|ai_templates |specjbb_experiment_output_collection_dir|specjbb_balloon_experiment_results 
-|ai_templates |specjbb_experiment_output_collection_host|xxx.xxx.xxx.xxx 
-|ai_templates |specjbb_java_home |j9vm_sdk 
 |ai_templates |specjbb_role_list |specjbb 
 |ai_templates |specjbb_run_counter_name |experiment_id_counter 
 |ai_templates |specjbb_specific_parameters |BALLOON_SIZE:BALLOON_DELAY 
@@ -456,7 +453,7 @@
 |space |generated_configurations_dir |/path/to/tool/lib/auxiliary//../../configs/generated
 |space |log_dir |/var/log/cloudbench 
 |space |ssh_key_name |/path/to/tool/lib/auxiliary//../../credentials/cbtool_rsa
-|time |start_time |1455816637 
+|time |start_time |1456182794 
 |vm_defaults |alternative_remote_mtu |False 
 |vm_defaults |alternative_remote_mtu_default |1200 
 |vm_defaults |alternative_remote_mtu_interface|default 
@@ -474,6 +471,7 @@
 |vm_defaults |migrate_protocol_supported |tcp,rdma 
 |vm_defaults |netname |private 
 |vm_defaults |notification_channel |auto 
+|vm_defaults |pct_failure | 
 |vm_defaults |protect_protocol_supported |tcp,rdma 
 |vm_defaults |size |from_vm_template 
 |vm_defaults |ssh_key_name |cbtool_rsa 

@@ -2,5 +2,5 @@
  status: Log store successfully flushed
 The global object "time" on Cloud TESTCLOUD was modified:
 |"sub-attribute" (key)                |old value                          |new value                          
-|experiment_id                        |EXP-02-18-2016-05-30-38-PM-UTC     |REGRESSION_A                       
+|experiment_id                        |EXP-02-22-2016-11-13-15-PM-UTC     |REGRESSION_A                       
 

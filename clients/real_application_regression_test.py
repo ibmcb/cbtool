@@ -272,9 +272,10 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
                     _vapp["name"] = "NA"
                     
                 if not (_management_metrics_pass and _runtime_metrics_pass) :
-                    _msg = "Destroying Virtual Application \"" + _vapp["name"] + "\"..."
-                    print _msg             
-                    apiconn.appdetach(cloud_name, _vapp["uuid"])
+                    if "uuid" in _vapp :
+                        _msg = "Destroying Virtual Application \"" + _vapp["name"] + "\"..."
+                        print _msg             
+                        apiconn.appdetach(cloud_name, _vapp["uuid"])
             except APIException, obj :
                 print "Error finishing up: (" + str(obj.status) + "): " + obj.msg
 

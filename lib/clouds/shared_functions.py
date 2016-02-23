@@ -225,9 +225,16 @@ class CommonCloudFunctions:
                 cbdebug(_msg, True)
                 _actual_wait = 0
 
-            # There is still some reconciliation to be done here. If vpn_only is used, then only openvpn-initiated callbacks should set the pending attribute, not userdata scripts. There is a distinction. It also means that public_cloud_ip should be set as well and that access to pending attributes is a requirement. See get_ip_address from do_cloud_ops.py
-            # Also "use_vpn_ip" is used throughout the scripts and codebase, so use_vpn_ip is already reserved to ensure that vpn_only works as it did before.
-            # So any changes to use_vpn_ip need to be conditionalized with an extra check to vpn_only as well.
+            # There is still some reconciliation to be done here. 
+            # If vpn_only is used, then only openvpn-initiated callbacks should 
+            # set the pending attribute, not userdata scripts. 
+            # There is a distinction. It also means that public_cloud_ip should 
+            # be set as well and that access to pending attributes is a requirement. 
+            # See get_ip_address from do_cloud_ops.py
+            # Also "use_vpn_ip" is used throughout the scripts and codebase, so 
+            # use_vpn_ip is already reserved to ensure that vpn_only works as it did before.
+            # So any changes to use_vpn_ip need to be conditionalized with an 
+            # extra check to vpn_only as well.
             if str(obj_attr_list["use_vpn_ip"]).lower() != "false" and obj_attr_list["vpn_only"].lower() == "false" :
                 if self.get_attr_from_pending(obj_attr_list, "cloud_init_vpn") :
                     obj_attr_list["last_known_state"] = "ACTIVE with (vpn) ip assigned"
@@ -275,7 +282,7 @@ class CommonCloudFunctions:
 
             _pending_attr_list = self.osci.pending_object_get(obj_attr_list["cloud_name"], \
                                                               "VM", obj_attr_list["uuid"], \
-                                                              key, False)
+                                                              key, False)            
             if _pending_attr_list :
                 
                 if key == "all" :
@@ -557,6 +564,9 @@ class CommonCloudFunctions:
 
             if obj_attr_list["staging"] == "pause_" + current_step :
 
+                if current_step == "provision_originated" :
+                    obj_attr_list["last_known_state"] = "waiting for signal"
+
                 _max_tries = int(obj_attr_list["update_attempts"])
                 _wait = int(obj_attr_list["update_frequency"])
 
@@ -608,6 +618,9 @@ class CommonCloudFunctions:
                 _status = 0
 
             elif obj_attr_list["staging"] == "execute_" + current_step :
+
+                if current_step == "provision_originated" :
+                    obj_attr_list["last_known_state"] = "about to execute script"
 
                 _proc_man = ProcessManagement(username = obj_attr_list["username"], \
                                               cloud_name = obj_attr_list["cloud_name"])

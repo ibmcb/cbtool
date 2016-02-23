@@ -102,7 +102,7 @@ output_pdf_plot <- function(ed, en, po, pn = '', sps = 15, vmn = -1) {
 	file_location <- paste(ed, en, file_name, sep = '')
 	
 	if (vmn > 0) {
-		determined_width <- round(vmn * 3)		
+		determined_width <- round(vmn * 1)		
 		if (determined_width < sps) {
 			determined_width <- sps
 		}
@@ -218,9 +218,13 @@ pre_process_files <- function(ednl, fp2df_dict) {
 				
 				file_contents <- read.csv(file = full_experiment_file_name, 
 						head = TRUE, comment.char = "#", blank.lines.skip = "true")
+
+				experiment_name_hash <- digest(object = experiment_name, algo = "crc32", serialize = FALSE)
 				
 				# Create a new column, containing the experiment id				
-				file_contents <- within(file_contents, "expid" <- experiment_name)
+				file_contents <- within(file_contents, "expid" <- experiment_name_hash)
+				file_contents <- within(file_contents, "experiment_name" <- experiment_name)
+				
 				if ("name" %in% names(file_contents) & 
 						"role" %in% names(file_contents)) {
 					
@@ -231,17 +235,29 @@ pre_process_files <- function(ednl, fp2df_dict) {
 									file_contents$role, 
 									file_contents$host_name, 
 									file_contents$aidrs_name, 
-									file_contents$expid, sep = '|'))
+									file_contents$expid, 
+									sep = '|'))
 					
 					file_contents <- within(file_contents, 
-							"partial_obj_name" <- paste(
+							"partial_obj_name1" <- paste(
 									file_contents$role, 
 									file_contents$aidrs_name,
 									file_contents$expid, 
 									sep = '|'))
 					
 				}
-				
+
+				if ("name" %in% names(file_contents) & 
+						"host_name" %in% names(file_contents)) {				
+					
+					file_contents <- within(file_contents, 
+							"partial_obj_name2" <- paste(
+									file_contents$role, 
+									file_contents$host_name,
+									file_contents$expid, 
+									sep = '|'))					
+				}
+					
 				# The "relative time" column is created only for "trace" files.
 				if ("command_originated" %in% names(file_contents)) {
 					file_contents <- within(file_contents, 
@@ -365,8 +381,10 @@ plot_trace_data <- function(tdf, ed, en, sps) {
 	
 	if (en == "all") {
 		selected_expid = c(levels(tdf$expid))
+		selected_expname = c(levels(tdf$experiment_name))
 	} else {
-		selected_expid = c(en)
+		selected_expid = digest(object = en, algo = "crc32", serialize = FALSE)
+		selected_expname = c(en)		
 	}
 	
 	################## START Provisioning vs VM ##################
@@ -412,8 +430,8 @@ plot_trace_data <- function(tdf, ed, en, sps) {
 	
 	trace_data <- melt(trace_data, id.vars="relative_time")
 	
-	trace_plot_title <- paste("Trace data for experiment \"", selected_expid,
-			"\"", sep = '')
+	trace_plot_title <- paste("Trace data for experiment \"", selected_expname,
+			"\" (", selected_expid, ")", sep = '')
 	cat(trace_plot_title, sep='\n')
 	
 	cat(paste(round(max(trace_data$relative_time, na.rm=TRUE))), sep = '\n')
@@ -431,11 +449,13 @@ plot_trace_data <- function(tdf, ed, en, sps) {
 }
 
 plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
-	
+
 	if (en == "all") {
 		selected_expid = c(levels(mmdf$expid))
+		selected_expname = c(levels(mmdf$experiment_name))
 	} else {
-		selected_expid = c(en)
+		selected_expid = digest(object = en, algo = "crc32", serialize = FALSE)
+		selected_expname = c(en)		
 	}
 	
 	if (vmn == "all") {
@@ -445,6 +465,9 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 	}
 	
 	################## START Provisioning vs VM ##################
+	msg <- paste("# Preparing Provisioning Latency for VMs.... #", sep = '')
+	cat(msg, sep='\n')
+	
 	prov_lat_data <- subset(mmdf, (expid %in% selected_expid) & 
 					(name %in% selected_vm_name), 
 			select = c("full_obj_name", 
@@ -462,61 +485,169 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 	
 	number_of_vms <- length(prov_lat_data$name)
 	
-	if (number_of_vms > mnv ) {
-		selected_vms <- c(c("1", "2", "3"), seq(number_of_vms - 2, number_of_vms))
-		msg <- paste("WARNING: The number of VMs is too large (", number_of_vms, 
-				"). Will", " plot only the 3 smallest and the 3 largest ", 
-				"provisioning time", sep = '')
-		cat(msg, sep='\n')
+	#if (number_of_vms > mnv ) {
+	#	selected_vms <- c(c("1", "2", "3"), seq(number_of_vms - 2, number_of_vms))
+	#	msg <- paste("WARNING: The number of VMs is too large (", number_of_vms, 
+	#			"). Will", " plot only the 3 smallest and the 3 largest ", 
+	#			"provisioning time", sep = '')
+	#	cat(msg, sep='\n')
 		
-		prov_lat_data <- prov_lat_data[order(prov_lat_data$vm_arrival_diff), ]
-		rownames(prov_lat_data) <- NULL
-		prov_lat_data <- prov_lat_data[selected_vms,]
-		number_of_vms <- length(prov_lat_data$name)		
-	}
+	#	prov_lat_data <- prov_lat_data[order(prov_lat_data$vm_arrival_diff), ]
+	#	rownames(prov_lat_data) <- NULL
+	#	prov_lat_data <- prov_lat_data[selected_vms,]
+	#	number_of_vms <- length(prov_lat_data$name)		
+	#}
 
 	# Plot provisioning latency
-	prov_lat_plot_title <- paste("Provisioning Latency for VM(s) \"", vmn, 
-			"\" on experiment \"", selected_expid, "\"", sep = '')
+	prov_lat_plot_title <- paste("Provisioning Latency for all VM(s) \"", vmn, 
+			"\" on experiment \"", selected_expname, "\" (", selected_expid, ")",
+			sep = '')
 	cat(prov_lat_plot_title, sep='\n')	
 	
-	if (mnv == 100000) {
-		columns_remove <- c("full_obj_name", "vm_arrival_diff")
-		prov_lat_data <- prov_lat_data[,!(names(prov_lat_data) %in% columns_remove)]
+	columns_remove <- c("full_obj_name", "vm_arrival_diff")
+	prov_lat_data <- prov_lat_data[,!(names(prov_lat_data) %in% columns_remove)]
+	
+	prov_lat_data <- within(prov_lat_data, 
+			"name" <- as.integer(gsub("vm_", '', prov_lat_data$name)))
+	prov_lat_data <- prov_lat_data[order(prov_lat_data$name), ]
+	setnames(prov_lat_data, "name", "x_axis_id")
+	prov_lat_data <- melt(prov_lat_data, id.vars="x_axis_id")		
+	prov_lat_plot <- ggplot(prov_lat_data, 
+					aes(x=x_axis_id, y=value, fill=variable)) + 
+			geom_area(stat='identity') + 
+			xlab("VM name") + 
+			ylab("Provisioning Latency (seconds)") + 
+			labs(title = prov_lat_plot_title)
+	output_pdf_plot(ed, en, prov_lat_plot, "002_individual_vm_provision_latency",
+			sps)
+
+	#prov_lat_plot_title <- paste("Provisioning Latency for select VM(s) \"", vmn, 
+	#		"\" on experiment \"", selected_expname, "\" (", selected_expid, ")",
+	#		sep = '')
+	#cat(prov_lat_plot_title, sep='\n')		
+	
+	#columns_remove <- c("name", "vm_arrival_diff")
+	#prov_lat_data <- prov_lat_data[,!(names(prov_lat_data) %in% columns_remove)]
+	#setnames(prov_lat_data, "full_obj_name", "x_axis_id")
+	#prov_lat_data <- melt(prov_lat_data, id.vars="x_axis_id")		
+	#prov_lat_plot <- ggplot(prov_lat_data, 
+	#				aes(x=x_axis_id, y=value, fill=variable)) + 
+	#		geom_bar(stat='identity', width=0.2) + xlab("VM name") + 
+	#		ylab("Provisioning Latency (seconds)") +
+	#		theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+	#		labs(title = prov_lat_plot_title)		
+
+	#output_pdf_plot(ed, en, prov_lat_plot, "003_individual_vm_provision_latency",
+	#		sps, number_of_vms)
+	
+	################## END Provisioning vs VM ##################
+
+	if("osk_010_authenticate_time" %in% colnames(mmdf)) {
+		################## START Provisioning vs VM (Cloud-Specific info) ##################
+		msg <- paste("# Preparing Provisioning Latency for VMs (Cloud-Specific", 
+				"information) .... #", sep = '')
+		cat(msg, sep='\n')
 		
-		prov_lat_data <- within(prov_lat_data, 
-				"name" <- as.integer(gsub("vm_", '', prov_lat_data$name)))
-		prov_lat_data <- prov_lat_data[order(prov_lat_data$name), ]
-		setnames(prov_lat_data, "name", "x_axis_id")
-		prov_lat_data <- melt(prov_lat_data, id.vars="x_axis_id")		
-		prov_lat_plot <- ggplot(prov_lat_data, 
+		prov_cs_lat_data <- subset(mmdf, (expid %in% selected_expid) & 
+						(name %in% selected_vm_name), 
+				select = c("full_obj_name", 
+						"osk_001_tenant_creation_time",
+						"osk_002_quota_update_time",
+						"osk_003_user_creation_time",
+						"osk_004_security_group_update_time",
+						"osk_005_keypair_creation_time",
+						"osk_006_net_creation_time",
+						"osk_007_subnet_creation_time",
+						"osk_008_router_creation_time",
+						"osk_009_router_attachment",
+						"osk_010_authenticate_time",
+						"osk_011_check_existing_instance_time",
+						"osk_012_get_flavors_time",
+						"osk_013_get_imageid_time",
+						"osk_014_get_netid_time",
+						"osk_016_instance_creation_time",
+						"osk_016_instance_scheduling_time",
+						"osk_016_port_creation_time",
+						"osk_017_create_fip_time",
+						"osk_018_attach_fip_time",
+						"name", "vm_arrival_diff"))
+		
+		prov_cs_lat_data <- prov_cs_lat_data[!is.na(prov_cs_lat_data$vm_arrival_diff),]
+		
+		output_table(ed, en, prov_lat_data, "003_individual_vm_provision_latency")
+		
+		number_of_vms <- length(prov_lat_data$name)	
+		
+		# Plot provisioning latency
+		prov_cs_lat_plot_title <- paste("Provisioning Latency for all VM(s) (",
+				"Cloud-Specific information\"", vmn, "\" on experiment \"", 
+				selected_expname, "\" (", selected_expid, ")", sep = '')
+		cat(prov_cs_lat_plot_title, sep='\n')	
+		
+		columns_remove <- c("full_obj_name", "vm_arrival_diff")
+		prov_cs_lat_data <- prov_cs_lat_data[,!(names(prov_cs_lat_data) %in% columns_remove)]
+		
+		prov_cs_lat_data <- within(prov_cs_lat_data, 
+				"name" <- as.integer(gsub("vm_", '', prov_cs_lat_data$name)))
+		prov_cs_lat_data <- prov_cs_lat_data[order(prov_cs_lat_data$name), ]
+		setnames(prov_cs_lat_data, "name", "x_axis_id")
+		prov_cs_lat_data <- melt(prov_cs_lat_data, id.vars="x_axis_id")		
+		prov_cs_lat_plot <- ggplot(prov_cs_lat_data, 
 						aes(x=x_axis_id, y=value, fill=variable)) + 
-				geom_bar(stat='identity', width=0.05, position = position_stack(width=0.01)) + 
+				geom_area(stat='identity') + 
 				xlab("VM name") + 
 				ylab("Provisioning Latency (seconds)") + 
-				labs(title = prov_lat_plot_title) +
-				scale_x_continuous(limits=c(0,number_of_vms), breaks=seq(0,number_of_vms,1))
-	} else {
-		columns_remove <- c("name", "vm_arrival_diff")
-		prov_lat_data <- prov_lat_data[,!(names(prov_lat_data) %in% columns_remove)]
-		setnames(prov_lat_data, "full_obj_name", "x_axis_id")
-		prov_lat_data <- melt(prov_lat_data, id.vars="x_axis_id")		
-		prov_lat_plot <- ggplot(prov_lat_data, 
-						aes(x=x_axis_id, y=value, fill=variable)) + 
-				geom_bar(stat='identity', width=0.2) + xlab("VM name") + 
-				ylab("Provisioning Latency (seconds)") + 
-				labs(title = prov_lat_plot_title)		
+				labs(title = prov_cs_lat_plot_title)
+		output_pdf_plot(ed, en, prov_cs_lat_plot, "003_individual_vm_provision_latency",
+				sps)
+		################## END Provisioning vs VM ##################
 	}
 
-	
-	output_pdf_plot(ed, en, prov_lat_plot, "002_individual_vm_provision_latency",
-			sps, number_of_vms)
-	################## END Provisioning vs VM ##################
-	
 	################## START Provisioning vs VApp Submitter ##################
+	msg <- paste("# Preparing Average Provisioning Latency for VMs.... #", sep = '')
+	cat(msg, sep='\n')
+	
 	agg_prov_lat_data <- subset(mmdf, (expid %in% selected_expid) & 
 					(name %in% selected_vm_name), 
-			select = c("partial_obj_name", 
+			select = c("partial_obj_name1", 
+					"vm_arrival_diff"))
+
+	agg_prov_lat_data <- agg_prov_lat_data[!is.na(agg_prov_lat_data$vm_arrival_diff),]
+	
+	agg_prov_lat_data <- data.table(agg_prov_lat_data)
+	
+	agg_prov_lat_data <- agg_prov_lat_data[,list(avg = mean(vm_arrival_diff), 
+					sd=sd(vm_arrival_diff), se=se(vm_arrival_diff)), by = "partial_obj_name1"]
+	
+	output_table(ed, en, agg_prov_lat_data, "004_average_vm_provision_latency")
+	
+	agg_prov_lat_data <- agg_prov_lat_data[!is.na(agg_prov_lat_data$avg),]
+	
+	agg_prov_lat_data <- agg_prov_lat_data[as.numeric(agg_prov_lat_data$avg) > 0,]	
+	
+	# Plot provisioning latency
+	agg_prov_lat_plot_title <- paste("Average Provisioning Latency (per-Submmiter) for VM(s) \"", vmn, 
+			"\" on experiment \"", selected_expname, "\" (", selected_expid, ")", sep = '')
+	cat(agg_prov_lat_plot_title, sep='\n')
+	
+	agg_prov_lat_plot <- ggplot(agg_prov_lat_data, aes(x = partial_obj_name1, 
+							y = avg, fill=partial_obj_name1)) + 
+			geom_bar(stat='identity', width=0.2) + xlab("VM role|submitter|expid") + 
+			geom_errorbar(aes(ymin=avg-se, ymax=avg+se), width=.1) +
+			ylab("Average Provisioning Latency (seconds)") + 
+			labs(title = agg_prov_lat_plot_title)
+	
+	output_pdf_plot(ed, en, agg_prov_lat_plot, "004_average_vm_provision_latency", 
+			sps, number_of_vms)
+	################## END Provisioning vs VApp Submitter ##################	
+
+	################## START Provisioning vs Host ##################
+	msg <- paste("# Preparing Average Provisioning Latency for VMs.... #", sep = '')
+	cat(msg, sep='\n')
+	
+	agg_prov_lat_data <- subset(mmdf, (expid %in% selected_expid) & 
+					(name %in% selected_vm_name), 
+			select = c("partial_obj_name2", 
 					"vm_arrival_diff"))
 	
 	agg_prov_lat_data <- agg_prov_lat_data[!is.na(agg_prov_lat_data$vm_arrival_diff),]
@@ -524,37 +655,41 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 	agg_prov_lat_data <- data.table(agg_prov_lat_data)
 	
 	agg_prov_lat_data <- agg_prov_lat_data[,list(avg = mean(vm_arrival_diff), 
-					sd=sd(vm_arrival_diff), se=se(vm_arrival_diff)), by = "partial_obj_name"]
+					sd=sd(vm_arrival_diff), se=se(vm_arrival_diff)), by = "partial_obj_name2"]
 	
-	output_table(ed, en, agg_prov_lat_data, "003_average_vm_provision_latency")
+	output_table(ed, en, agg_prov_lat_data, "005_average_vm_provision_latency_per_host")
 	
 	agg_prov_lat_data <- agg_prov_lat_data[!is.na(agg_prov_lat_data$avg),]
 	
 	agg_prov_lat_data <- agg_prov_lat_data[as.numeric(agg_prov_lat_data$avg) > 0,]	
 	
 	# Plot provisioning latency
-	agg_prov_lat_plot_title <- paste("Average Provisioning Latency for VM(s) \"", vmn, 
-			"\" on experiment \"", selected_expid, "\"", sep = '')
+	agg_prov_lat_plot_title <- paste("Average Provisioning Latency (per-Host) for VM(s) \"", vmn, 
+			"\" on experiment \"", selected_expname, "\" (", selected_expid, ")", sep = '')
 	cat(agg_prov_lat_plot_title, sep='\n')
 	
-	agg_prov_lat_plot <- ggplot(agg_prov_lat_data, aes(x = partial_obj_name, 
-							y = avg, fill=partial_obj_name)) + 
-			geom_bar(stat='identity', width=0.2) + xlab("VM role|submitter|expid") + 
+	agg_prov_lat_plot <- ggplot(agg_prov_lat_data, aes(x = partial_obj_name2, 
+							y = avg, fill=partial_obj_name2)) + 
+			geom_bar(stat='identity', width=0.2) + xlab("VM role|host_name|expid") + 
 			geom_errorbar(aes(ymin=avg-se, ymax=avg+se), width=.1) +
 			ylab("Average Provisioning Latency (seconds)") + 
+			theme(axis.text.x = element_text(angle = 45, hjust = 1)) +			
 			labs(title = agg_prov_lat_plot_title)
 	
-	output_pdf_plot(ed, en, agg_prov_lat_plot, "003_average_vm_provision_latency", 
+	output_pdf_plot(ed, en, agg_prov_lat_plot, "005_average_vm_provision_latency_per_host", 
 			sps, number_of_vms)
-	################## END Provisioning vs VApp Submitter ##################	
+	################## END Provisioning vs Host ##################		
+	
 	
 	################## START Provisioning Failures vs VApp Submitter ##################
-	
+	msg <- paste("# Provisioning Successes + Failures for VMs.... #", sep = '')
+	cat(msg, sep='\n')	
+
 	agg_prov_fail_data <- subset(mmdf, (expid %in% selected_expid) & 
 					(name %in% selected_vm_name), 
-			select = c("partial_obj_name", 
+			select = c("partial_obj_name1", 
 					"vm_arrival_diff", "vm_departure_diff", "mgt_999_provisioning_request_failed"))
-	
+
 	#### START Arrival Failure count ####
 	tmp_vms_arrival_fail <- agg_prov_fail_data
 	
@@ -564,10 +699,10 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 	tmp_vms_arrival_fail <- data.table(tmp_vms_arrival_fail)
 	
 	tmp_vms_arrival_fail <- tmp_vms_arrival_fail[,list(total_arrival_failures = 
-							sum(vm_arrival_diff)), by = "partial_obj_name"]
+							sum(vm_arrival_diff)), by = "partial_obj_name1"]
 	
 	#### END Arrival Failure count ####
-	
+
 	#### START Arrival Success count ####
 	tmp_vms_arrival_success <- agg_prov_fail_data
 	
@@ -577,12 +712,12 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 	tmp_vms_arrival_success <- data.table(tmp_vms_arrival_success)
 	
 	tmp_vms_arrival_success <- tmp_vms_arrival_success[,list(total_arrival_successes = 
-							sum(vm_arrival_diff)), by = "partial_obj_name"]
+							sum(vm_arrival_diff)), by = "partial_obj_name1"]
 	#### END Arrival Success count ####
-	
+
 	#### START Departure Failure count ####
 	tmp_vms_departure_fail <- subset(agg_prov_fail_data, 
-			!is.na(vm_arrival_diff), select = c("partial_obj_name", 
+			!is.na(vm_arrival_diff), select = c("partial_obj_name1", 
 					"vm_arrival_diff", "vm_departure_diff"))
 	
 	tmp_vms_departure_fail <- within(tmp_vms_departure_fail, "vm_departure_diff" <- 
@@ -591,12 +726,12 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 	tmp_vms_departure_fail <- data.table(tmp_vms_departure_fail)
 	
 	tmp_vms_departure_fail <- tmp_vms_departure_fail[,list(total_departure_failures = 
-							sum(vm_departure_diff)), by = "partial_obj_name"]
+							sum(vm_departure_diff)), by = "partial_obj_name1"]
 	#### END Departure Failure count ####
-	
+
 	#### START Departure Success count ####
 	tmp_vms_departure_success <- subset(agg_prov_fail_data, 
-			!is.na(vm_arrival_diff), select = c("partial_obj_name", 
+			!is.na(vm_arrival_diff), select = c("partial_obj_name1", 
 					"vm_arrival_diff", "vm_departure_diff"))
 	
 	tmp_vms_departure_success <- within(tmp_vms_departure_success, "vm_departure_diff" <- 
@@ -605,30 +740,31 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 	tmp_vms_departure_success <- data.table(tmp_vms_departure_success)
 	
 	tmp_vms_departure_success <- tmp_vms_departure_success[,list(total_departure_successes = 
-							sum(vm_departure_diff)), by = "partial_obj_name"]	
+							sum(vm_departure_diff)), by = "partial_obj_name1"]	
 	#### END Departure Success count ####
+
+	arrivals <- merge(tmp_vms_arrival_fail, tmp_vms_arrival_success, by="partial_obj_name1")
+	departures <- merge(tmp_vms_departure_fail, tmp_vms_departure_success, by="partial_obj_name1")
 	
-	arrivals <- merge(tmp_vms_arrival_fail, tmp_vms_arrival_success, by="partial_obj_name")
-	departures <- merge(tmp_vms_departure_fail, tmp_vms_departure_success, by="partial_obj_name")
+	agg_prov_fail_data <- merge(arrivals, departures, by="partial_obj_name1")
 	
-	agg_prov_fail_data <- merge(arrivals, departures, by="partial_obj_name")
+	output_table(ed, en, agg_prov_fail_data, "005_total_vm_provision_failure")
 	
-	output_table(ed, en, agg_prov_fail_data, "004_total_vm_provision_failure")
-	
-	agg_prov_fail_data <- melt(agg_prov_fail_data, id.vars="partial_obj_name")
-	
+	agg_prov_fail_data <- melt(agg_prov_fail_data, id.vars="partial_obj_name1")
+
 	# Plot provisioning latency
 	agg_prov_fail_plot_title <- paste("Provisioning Successes + Failures for VM(s) \"", vmn, 
-			"\" on experiment \"", selected_expid, "\"", sep = '')
+			"\" on experiment \"", selected_expname, "\" (", selected_expid, ")", sep = '')
 	cat(agg_prov_fail_plot_title, sep='\n')
 	
 	agg_prov_fail_plot <- ggplot(agg_prov_fail_data, 
-					aes(x = partial_obj_name, y = value, fill = variable)) + 
+					aes(x = partial_obj_name1, y = value, fill = variable)) + 
 			geom_bar(stat='identity', position = "dodge", width=0.2) + xlab("VM role|submitter|expid") + 
-			ylab("Number of Provisioning Successes + Failures") + 
+			ylab("Number of Provisioning Successes + Failures") +
+			theme(axis.text.x = element_text(angle = 45, hjust = 1)) +			
 			labs(title = agg_prov_fail_plot_title)
 	
-	output_pdf_plot(ed, en, agg_prov_fail_plot, "004_total_vm_provision_failure", sps, number_of_vms)	
+	output_pdf_plot(ed, en, agg_prov_fail_plot, "005_total_vm_provision_failure", sps, number_of_vms)	
 	################## END Provisioning Failures vs VApp Submitter ##################
 }
 
@@ -637,8 +773,10 @@ plot_runtime_application_data <- function(ramdf, ed, en, vmn, vmel, xati, yati,
 	
 	if (en == "all") {
 		selected_expid = c(levels(ramdf$expid))
+		selected_expname = c(levels(ramdf$experiment_name))
 	} else {
-		selected_expid = c(en)
+		selected_expid = digest(object = en, algo = "crc32", serialize = FALSE)
+		selected_expname = c(en)		
 	}
 	
 	if (vmn == "all") {
@@ -672,11 +810,11 @@ plot_runtime_application_data <- function(ramdf, ed, en, vmn, vmel, xati, yati,
 		for (metric_type in metric_types) {
 			
 			if (metric_type == "app_latency") {
-				prefix = "006_"
-			} else if (metric_type == "app_throughput") {
-				prefix = "005_"
-			} else {
 				prefix = "007_"
+			} else if (metric_type == "app_throughput") {
+				prefix = "008_"
+			} else {
+				prefix = "009_"
 			}
 			
 			################## START Performance vs Time ##################
@@ -700,7 +838,8 @@ plot_runtime_application_data <- function(ramdf, ed, en, vmn, vmel, xati, yati,
 				
 				msg <- paste(metric_types2metric_names[[metric_type]], 
 						" versus time for VM(s) \"", vmn, "\" on experiment \"", 
-						en, "\"", sep = '')
+						selected_expname, "\" (", selected_expid, ")", sep = '')
+
 				cat(paste(msg, "...", sep = ''), sep='\n')
 				
 				perf_vs_time_plot_title <- msg
@@ -772,7 +911,7 @@ plot_runtime_application_data <- function(ramdf, ed, en, vmn, vmel, xati, yati,
 
 				msg <- paste(metric_types2metric_names[[metric_type]], 
 						" versus load for VM(s) \"", vmn, "\" on experiment \"",
-						en, "\"", sep = '')
+						selected_expname, "\" (", selected_expid, ")", sep = '')
 				
 				cat(paste(msg, "...", sep = ''), sep='\n')
 				
@@ -800,7 +939,7 @@ plot_runtime_application_data <- function(ramdf, ed, en, vmn, vmel, xati, yati,
 					
 					msg <- paste(metric_types2metric_names[[metric_type]], 
 							" versus VM for VM(s) \"", vmn, "\" on experiment \"",
-							en, "\"", sep = '')
+							selected_expname, "\" (", selected_expid, ")", sep = '')
 					
 					cat(paste(msg, "...", sep = ''), sep='\n')
 					
@@ -881,7 +1020,7 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 		os_cpu_data <- subset(rosmdf, (name == experiment_node), 
 				select = c("relative_time", "cpu_user", "cpu_system", "cpu_wio"))
 		
-		output_table(ed, en, os_cpu_data, paste("008_os_cpu_vs_time_data_", 
+		output_table(ed, en, os_cpu_data, paste("010_os_cpu_vs_time_data_", 
 						experiment_node_name, sep = ''), FALSE)
 		
 		os_cpu_data <- melt(os_cpu_data, id.vars="relative_time")
@@ -889,7 +1028,7 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 		os_cpu_data <- os_cpu_data[!is.na(os_cpu_data$value),]
 		
 		msg <- paste("CPU usage for ", node_type, " \"", experiment_node_name, 
-				"\" on experiment ", en, sep = '')
+				"\" on experiment ", selected_expname, "\" (", selected_expid, ")", sep = '')
 		cat(paste(msg, "...", sep = ''), sep='\n')
 		
 		os_cpu_vs_time_plot_title <- msg
@@ -925,7 +1064,7 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 		os_mem_data <- within(os_mem_data, 
 				"mem_shared" <- abs(os_mem_data$mem_shared / (1024)))
 		
-		output_table(ed, en, os_mem_data, paste("009_os_mem_vs_time_data_", 
+		output_table(ed, en, os_mem_data, paste("011_os_mem_vs_time_data_", 
 						experiment_node_name, sep = ''), FALSE)
 		
 		os_mem_data <- melt(os_mem_data, id.vars="relative_time")
@@ -933,7 +1072,7 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 		os_mem_data <- os_mem_data[!is.na(os_mem_data$value),]
 		
 		msg <- paste("Memory usage for ", node_type, " \"", experiment_node_name, 
-				"\" on experiment ", en, sep = '')
+				"\" on experiment ", selected_expname, "\" (", selected_expid, ")", sep = '')
 		cat(paste(msg, "...", sep = ''), sep='\n')
 		
 		os_mem_vs_time_plot_title <- msg
@@ -1109,13 +1248,13 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 		
 		################## START Network Bandwidth vs Time ##################
 		
-		output_table(ed, en, os_net_bw_data, paste("010_os_net_bw_vs_time_data_", 
+		output_table(ed, en, os_net_bw_data, paste("012_os_net_bw_vs_time_data_", 
 						experiment_node_name, sep = ''), FALSE)
 		
 		os_net_bw_data <- melt(os_net_bw_data, id.vars="relative_time")
 		
 		msg <- paste("Network bandwidth for ", node_type, " \"", experiment_node_name,
-				"\" on experiment ", en, sep = '')
+				"\" on experiment ", selected_expname, "\" (", selected_expid, ")", sep = '')
 		cat(paste(msg, "...", sep = ''), sep='\n')
 		
 		os_net_bw_vs_time_plot_title <- msg
@@ -1148,7 +1287,7 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 		os_net_tput_data <- melt(os_net_tput_data, id.vars="relative_time")
 		
 		msg <- paste("Network throughput for ", node_type, " \"", experiment_node_name, 
-				"\" on experiment ", en, sep = '')
+				"\" on experiment ", selected_expname, "\" (", selected_expid, ")", sep = '')
 		cat(paste(msg, "...", sep = ''), sep='\n')
 		
 		os_net_tput_vs_time_plot_title <- msg
@@ -1176,13 +1315,13 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 		if (swap_activity) {
 			################## START Swap Bandwidth vs Time ##################
 			
-			output_table(ed, en, os_swap_bw_data, paste("012_os_swap_vs_time_data_", 
+			output_table(ed, en, os_swap_bw_data, paste("013_os_swap_vs_time_data_", 
 							experiment_node_name, sep = ''), FALSE)
 			
 			os_swap_bw_data <- melt(os_swap_bw_data, id.vars="relative_time")
 			
 			msg <- paste("Swap bandwidth for ", node_type, "  \"", experiment_node_name, 
-					"\" on experiment ", en, sep = '')
+					"\" on experiment ", selected_expname, "\" (", selected_expid, ")", sep = '')
 			cat(paste(msg, "...", sep = ''), sep='\n')
 			
 			os_swap_bw_vs_time_data_plot_title <- msg
@@ -1209,13 +1348,13 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 			
 			################## START Swap Throughput vs Time ##################
 			
-			output_table(ed, en, os_swap_tput_data, paste("013_os_swap_tput_vs_time_data_", 
+			output_table(ed, en, os_swap_tput_data, paste("014_os_swap_tput_vs_time_data_", 
 							experiment_node_name, sep = ''), FALSE)
 			
 			os_swap_tput_data <- melt(os_swap_tput_data, id.vars="relative_time")
 			
 			msg <- paste("Swap throughput for ", node_type, " \"", experiment_node_name, 
-					"\" on experiment ", en, sep='')
+					"\" on experiment ", selected_expname, "\" (", selected_expid, ")", sep = '')
 			cat(paste(msg, "...", sep = ''), sep='\n')
 			
 			os_swap_tput_vs_time_data_plot_title <- msg
@@ -1244,13 +1383,13 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 		if (disk_activity) {
 			################## START Disk Bandwidth vs Time ##################
 			
-			output_table(ed, en, os_dsk_bw_data, paste("014_os_dsk_bw_vs_time_data_", 
+			output_table(ed, en, os_dsk_bw_data, paste("015_os_dsk_bw_vs_time_data_", 
 							experiment_node_name, sep = ''), FALSE)
 			
 			os_dsk_bw_data <- melt(os_dsk_bw_data, id.vars="relative_time")
 			
 			msg <- paste("Disk bandwidth for ", node_type, "  \"", experiment_node_name, 
-					"\" on experiment ", en, sep = '')
+					"\" on experiment ", selected_expname, "\" (", selected_expid, ")", sep = '')
 			cat(paste(msg, "...", sep = ''), sep='\n')
 			
 			os_dsk_bw_vs_time_data_plot_title <- msg
@@ -1277,13 +1416,13 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 			
 			################## START Disk Throughput vs Time ##################
 			
-			output_table(ed, en, os_dsk_tput_data, paste("015_os_dsk_tput_vs_time_data_", 
+			output_table(ed, en, os_dsk_tput_data, paste("016_os_dsk_tput_vs_time_data_", 
 							experiment_node_name, sep = ''), FALSE)
 			
 			os_dsk_tput_data <- melt(os_dsk_tput_data, id.vars="relative_time")
 			
 			msg <- paste("Disk throughput for ", node_type, " \"", experiment_node_name, 
-					"\" on experiment ", en, sep='')
+					"\" on experiment ", selected_expname, "\" (", selected_expid, ")", sep = '')
 			cat(paste(msg, "...", sep = ''), sep='\n')
 			
 			os_dsk_tput_vs_time_data_plot_title <- msg

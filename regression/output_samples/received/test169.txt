@@ -1,11 +1,11 @@
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |16.05M                        
+|Used Memory                                          |17.36M                        
 |Redis Version                                        |2.8.6                         
-|Uptime (in seconds)                                  |14068780                      
-|Total Connections Received                           |596141                        
-|Total Commands Processed                             |47989725                      
+|Uptime (in seconds)                                  |14434937                      
+|Total Connections Received                           |614578                        
+|Total Commands Processed                             |58307020                      
 |Number of Keys                                       |79                            
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         

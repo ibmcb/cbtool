@@ -1,3 +1,4 @@
+VM object xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx (named "vm_XX") could not be migrateed on this experiment: VM object initialization failure: Source and destination hosts are the same. Try again.
 |Redis Version |2.8.6 
 |HOSTs |62 
 |VMCs ISSUED |18 
@@ -12,4 +13,4 @@
 |FIRSs ISSUED |0 
 |EXPERIMENT COUNTER |539 
 |name |role |size |cloud_ip |host_name |vmc_pool |netname |ai |aidrs |uuid
-|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |dest |sut |private |none |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |dest |POOL |private |none |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx

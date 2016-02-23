@@ -1,14 +1,14 @@
 |ai_issued |32 
-|arrival |1455817335 
+|arrival |1456183495 
 |attach_parallelism |1 
-|command_originated |1455817335 
+|command_originated |1456183495 
 |comments | 
 |identity |/path/to/tool/lib/auxiliary//../../credentials/cbtool_rsa
 |notification_channel |auto 
 |ssh_key_name |cbtool_rsa 
 |vm_issued |123 
 |vmc_issued |16 
-|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1455817338 |aidrs_2 |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1456183498 |aidrs_2 |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 |name |role |size |cloud_ip |host_name |vmc_pool |netname |ai |aidrs |uuid
 |vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |ai_XX |aidrs_2 |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 |Redis Version |2.8.6 

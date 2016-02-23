@@ -1,7 +1,7 @@
 The following FAILED VMs are in this experiment (Cloud TESTCLOUD) :
 |name          |role                |size        |cloud_ip        |host_name                  |vmc_pool      |netname    |ai      |aidrs      |uuid
-|vm_24         |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |none    |none       |E8DAB60C-48EF-5FE0-B464-EE92DCBB51C8
-|vm_23         |norole              |from_vm_template|undefined       |unavailable                |unavailable   |private    |none    |none       |5A1524A9-E803-5F8A-9F49-B5506B124843
-|vm_25         |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |none    |none       |DED3AEF0-E752-5A76-8889-58E7489AE4BB
-|vm_121        |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |(orphan)|none       |F86158CF-D502-5255-BAF4-2DF363E5FA28
+|vm_118        |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |(orphan)|none       |9ED66DDE-7F02-5FFF-84D7-8A499B174809
+|vm_23         |norole              |from_vm_template|undefined       |unavailable                |unavailable   |private    |none    |none       |F2778E8A-E566-56ED-999F-D3A382EB4A37
+|vm_24         |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |none    |none       |760685B2-BC54-5851-B01E-FAAE51727F4A
+|vm_25         |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |none    |none       |44B9F311-528B-59B0-A435-B0F2D89DEBED
 

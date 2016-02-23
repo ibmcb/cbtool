@@ -1864,10 +1864,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                     if _obj_type == "VM" :
 
-                        if "cloud_name" in obj_attr_list :
-                            self.record_management_metrics(_cloud_name, \
-                                                           "VM", obj_attr_list, "attach")
-
                         '''
                         Whenever the staging action (be it pause or execute) 
                         is completed (it is always completed inside the 
@@ -2066,6 +2062,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                obj_attr_list["debug_remote_commands"], \
                                                True)
 
+            self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], \
+                                              False, "last_known_state", \
+                                              "checked SSH accessibility")
+            obj_attr_list["last_known_state"] = "checked SSH accessibility"
+
             _msg = "Bootstrapping " + obj_attr_list["name"] + " (creating file"
             _msg += " cb_os_paramaters.txt in \"" + obj_attr_list["login"] 
             _msg += "\" user's home dir on " + obj_attr_list["prov_cloud_ip"] + ")..."
@@ -2088,10 +2089,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                    obj_attr_list["debug_remote_commands"], \
                                                    True)
 
-
             _msg = "Sending a copy of the code tree to "
             _msg += obj_attr_list["name"] + " ("+ obj_attr_list["prov_cloud_ip"] + ")..."
-
+            
             if str(obj_attr_list["cloud_init_rsync"]).lower() == "true" :
                 _msg += " done by cloud-init!"
                 cbdebug(_msg, True)
@@ -2117,6 +2117,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                    obj_attr_list["transfer_files"], \
                                                    obj_attr_list["debug_remote_commands"], \
                                                    True)                
+
+                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], \
+                                                  False, "last_known_state", \
+                                                  "sent copy of code tree")
+                obj_attr_list["last_known_state"] = "sent copy of code tree"
 
             _delay = int(time()) - _start
             self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "status", "Files transferred...")
@@ -2147,12 +2152,19 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _fmsg += "post_boot configuration on "
                     _fmsg += obj_attr_list["name"] + '.\n'
 #                            _fmsg += _xfmsg
-            
+                else :
+
+                    self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], \
+                                                      False, "last_known_state", \
+                                                      "generic post-boot script executed")                    
+                    obj_attr_list["last_known_state"] = "generic post-boot script executed"
+                     
                 self.record_management_metrics(obj_attr_list["cloud_name"], \
                                                "VM", obj_attr_list, "attach")
             else :
                                 
                 _status = 0
+
 
             '''
             Whenever the staging action (be it pause or execute) is completed 

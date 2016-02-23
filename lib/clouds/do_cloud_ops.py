@@ -453,6 +453,8 @@ write_files:"""
                 fh.close()
 
         cloudconfig += """
+packages:
+  - ntp
 runcmd:
   - chmod +x /tmp/userscript.sh"""
 

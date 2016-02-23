@@ -1,14 +1,14 @@
-VM object 6B5E4819-8517-5951-969E-99D66CA01937 (named "vm_23") could not be attached to this experiment: VM object initialization failure: 'norole'
+VM object 5C4EC6C5-6A7D-56D6-B6BE-107F0CD22CD8 (named "vm_23") could not be attached to this experiment: VM object initialization failure: 'norole'
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 No objects available.
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |18.64M                        
+|Used Memory                                          |19.96M                        
 |Redis Version                                        |2.8.6                         
-|Uptime (in seconds)                                  |14069828                      
-|Total Connections Received                           |596342                        
-|Total Commands Processed                             |48432870                      
+|Uptime (in seconds)                                  |14435990                      
+|Total Connections Received                           |614779                        
+|Total Commands Processed                             |58752669                      
 |Number of Keys                                       |762                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
@@ -81,8 +81,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |253                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|0338389A-81C2-5396-B689-5F36D76F9D05 (simzone_b) VM RESERVATIONS|0                             
-|F2EBCF68-00A1-594D-B008-8C6DCA0EBDA1 (simzone_a) VM RESERVATIONS|0                             
-|9E637C8E-EE92-58F3-9F6F-30D21F360CD0 (simzone_c) VM RESERVATIONS|0                             
-|7356F988-866D-5BAB-B6A1-DFE3D6063EDF (simzone_d) VM RESERVATIONS|0                             
+|2C0CBD0C-C4AB-589F-B1DC-473FE1792EEA (simzone_b) VM RESERVATIONS|0                             
+|09BE1FD2-5286-5B6E-AA11-D68D33341047 (simzone_a) VM RESERVATIONS|0                             
+|95B3CBBD-180B-59D1-9048-B3EAC63E092B (simzone_d) VM RESERVATIONS|0                             
+|4DFFE7AE-4E70-5DA7-82EF-D0BC8960A44B (simzone_c) VM RESERVATIONS|0                             
 

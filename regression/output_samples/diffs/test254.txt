@@ -1,4 +1,5 @@
-VM object xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx (named "vm_XX") could not be attached to this experiment: vm_XXX (cloud-assigned uuid xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx) could not be created on SimCloud "TESTCLOUD" : Failed to create VM image (The VM creation was rolled back)
+ status: vm_XXX (cloud-assigned uuid xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx) could not be created on SimCloud "TESTCLOUD" : Deterministic VM failure ("willfail") (The VM creation was rolled back)
+VM object xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx (named "vm_XX") could not be attached to this experiment: vm_XXX (cloud-assigned uuid xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx) could not be created on SimCloud "TESTCLOUD" : Deterministic VM failure ("willfail") (The VM creation was rolled back)
 |Redis Version |2.8.6 
 |HOSTs |60 
 |VMCs ISSUED |16 

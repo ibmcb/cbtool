@@ -1,4 +1,4 @@
-Background operation execution success. Operation "ai-attach" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.0.4,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,password:cbpwdZ9,timeout:240,host:172.16.0.4,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,hadoop,default,default,none,none,none,empty=empty --operation=ai-attach --cn=TESTCLOUD --uuid=3D001D03-5F6F-5042-93D1-476E723C8E76 --daemon". The process id is 20050.
+Background operation execution success. Operation "ai-attach" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.0.4,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,password:cbpwdZ9,timeout:240,host:172.16.0.4,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,hadoop,default,default,none,none,none,empty=empty --operation=ai-attach --cn=TESTCLOUD --uuid=3F8F76D3-CC64-5EF9-BDA0-2D403DFBFCBD --daemon". The process id is 4278.
 
 Going to unconditionally wait for 12s (12 seconds). The command line interface will be blocked during the waiting.
 Waited 10 seconds... (83.3333333333%)
@@ -6,18 +6,18 @@ Waited 12 seconds... (100.0%)
 Waited for 12 seconds.
 The following ATTACHED AIs are in this experiment (Cloud TESTCLOUD) :
 |name      |type           |sut                                               |cloud_ip        |arrival        |aidrs                                   |uuid
-|ai_1      |ibm_daytrader  |1_x_client_daytrader->1_x_was->1_x_db2            |9.159.186.115   |1455816865     |none                                    |939149BF-317A-5214-A198-8B4F617540FA
-|ai_2      |hadoop         |1_x_hadoopmaster->3_x_hadoopslave                 |26.227.133.156  |1455816872     |none                                    |3D001D03-5F6F-5042-93D1-476E723C8E76
+|ai_1      |ibm_daytrader  |1_x_client_daytrader->1_x_was->1_x_db2            |150.132.88.10   |1456183024     |none                                    |C613388E-89D3-51D5-92E4-355C952BC4E9
+|ai_2      |hadoop         |1_x_hadoopmaster->3_x_hadoopslave                 |8.207.244.241   |1456183031     |none                                    |3F8F76D3-CC64-5EF9-BDA0-2D403DFBFCBD
 
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 |name          |role                |size        |cloud_ip        |host_name                  |vmc_pool      |netname    |ai      |aidrs      |uuid
-|vm_27         |was                 |iron32      |150.142.58.191  |simhostc6                  |SUT           |private    |ai_1    |none       |072C2688-B678-5E1E-867F-EFFE70BE8962
-|vm_26         |client_daytrader    |micro32     |9.159.186.115   |simhostc4                  |LG            |private    |ai_1    |none       |697A4A02-EBE2-5892-8990-145DC1104942
-|vm_28         |db2                 |platinum64  |46.177.64.79    |simhostb0                  |SUT           |private    |ai_1    |none       |CF8A4FBE-0D46-5349-8F83-D69678064C22
-|vm_31         |hadoopslave         |platinum64  |114.220.38.168  |simhostb2                  |SUT           |private    |ai_2    |none       |E8F5A536-27AE-557B-9E9A-25E074060C37
-|vm_30         |hadoopslave         |platinum64  |242.102.44.32   |simhostc14                 |SUT           |private    |ai_2    |none       |842155CB-116A-5700-A822-57957293538C
-|vm_29         |hadoopmaster        |platinum64  |26.227.133.156  |simhostc2                  |SUT           |private    |ai_2    |none       |CC16FFFB-3BDF-5EB5-8FCE-FD257EFEB5C5
-|vm_32         |hadoopslave         |platinum64  |213.109.15.93   |simhostd3                  |SUT           |private    |ai_2    |none       |50B06031-FBFB-5BEA-962E-6A66796B8577
+|vm_26         |client_daytrader    |micro32     |150.132.88.10   |simhostc12                 |LG            |private    |ai_1    |none       |6D25DB7D-7849-5D5C-AFD6-ADB669666ADE
+|vm_27         |was                 |iron32      |80.36.191.137   |simhostc0                  |SUT           |private    |ai_1    |none       |D8BC99DD-F400-585E-A674-9400DC10BA7B
+|vm_28         |db2                 |platinum64  |166.149.96.214  |simhostc12                 |SUT           |private    |ai_1    |none       |4CE197DD-4FD6-536A-8512-7BCFE711D1F7
+|vm_29         |hadoopmaster        |platinum64  |8.207.244.241   |simhostd0                  |SUT           |private    |ai_2    |none       |089D23C3-147F-50E7-A6EB-2102D91CDEA7
+|vm_31         |hadoopslave         |platinum64  |94.19.51.76     |simhosta11                 |SUT           |private    |ai_2    |none       |9CE75FB6-4EC0-5502-8036-B2BB4AFADBAC
+|vm_30         |hadoopslave         |platinum64  |226.48.243.43   |simhostc0                  |SUT           |private    |ai_2    |none       |062BCCDA-90D2-5EE6-9227-466E80CD5D8C
+|vm_32         |hadoopslave         |platinum64  |238.118.227.104 |simhostc2                  |SUT           |private    |ai_2    |none       |2B00782A-B96D-50CD-B2F1-5C6B6D6EB126
 
 The AI object ai_2, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
 |attribute (AI object key)               |value                                
@@ -28,12 +28,12 @@ The AI object ai_2, attached to this experiment, has the following attributes (C
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |18.90M                        
+|Used Memory                                          |20.23M                        
 |Redis Version                                        |2.8.6                         
-|Uptime (in seconds)                                  |14069021                      
-|Total Connections Received                           |596192                        
-|Total Commands Processed                             |48094919                      
-|Number of Keys                                       |694                           
+|Uptime (in seconds)                                  |14435180                      
+|Total Connections Received                           |614629                        
+|Total Commands Processed                             |58412613                      
+|Number of Keys                                       |693                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
 |Collections                                          |27                            
@@ -105,8 +105,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |264                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|2D8F262B-5E17-5F1B-A264-3BD47379AA09 (simzone_c) VM RESERVATIONS|4                             
-|985A3CDE-4B6D-55E4-BD6D-3206A124B3B7 (simzone_a) VM RESERVATIONS|0                             
-|2750418D-66C8-53FC-960D-583DC2FB3F15 (simzone_b) VM RESERVATIONS|2                             
-|ED106041-1C2C-51B7-BC93-6D906AE0E438 (simzone_d) VM RESERVATIONS|1                             
+|4D841AFA-3629-5865-B277-3C9B87B46AF4 (simzone_d) VM RESERVATIONS|1                             
+|B07D97D7-6259-50D3-8A5D-2F6387957881 (simzone_b) VM RESERVATIONS|2                             
+|73396447-1A1B-5F78-8FD0-C71D15101114 (simzone_a) VM RESERVATIONS|3                             
+|FB6EC147-6C78-5AE6-BD5F-8F8D6A60F5BC (simzone_c) VM RESERVATIONS|1                             
 

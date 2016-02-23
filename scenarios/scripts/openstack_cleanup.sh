@@ -66,8 +66,29 @@ function all_clear () {
     done
 }
 
+function set_quotas () {
+	neutron quota-update --security-group-rule -1
+	neutron quota-update --security-group -1
+	neutron quota-update --subnet -1
+	neutron quota-update --floatingip -1
+	neutron quota-update --network -1
+	neutron quota-update --port -1
+	neutron quota-update --rbac_policy -1
+	neutron quota-update --router -1
+}
+
+function create_smallest_flavor {
+	if [[ $(nova flavor-list | grep f1.nano | grep -c 64[[:space:]]) -eq 0 ]]
+	then
+		nova flavor-create f1.nano auto 64 0 1
+	fi
+
+}
+
 for RCFILE in $(ls ~/cbrc-*)
 do
-	source $RCFILE
+    source $RCFILE
     all_clear
+    set_quotas
+    create_smallest_flavor
 done

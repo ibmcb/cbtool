@@ -1,14 +1,14 @@
 Background operation execution success. Operation "vm-attach" will be processed asynchronously, through the command "/path/to/tool/lib/operations//../../cbact --procid=TEST_msilva --osp=port:xxxx,experiment_inst:TEST_msilva,host:xxx.xxx.xxx.xxx ,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:xxxx,password:cbpwdZ9,timeout:240,host:xxx.xxx.xxx.xxx ,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,tinyvm,auto,empty,iron32,pause_provision_complete,empty=empty --operation=vm-attach --cn=TESTCLOUD --uuid=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx --daemon". The process id is xxxx.
 Message "vm_12;continue;something" published on channel "staging" (object "VM").
 Going to wait until the value on counter "VM ARRIVING" is equal to XX (currently it is equal to XX) waiting 1.0 seconds between samples, for a maximum of 36000.0 seconds. The counter is assumed to be decreasing.
- status: Counter "VM ARRIVING" equals 1 after 0.139713048935 seconds (the counter is assumed to be decreasing).
- status: Counter "VM ARRIVING" equals 1 after 1.13971304893 seconds (the counter is assumed to be decreasing).
- status: Counter "VM ARRIVING" equals 1 after 2.13971304893 seconds (the counter is assumed to be decreasing).
- status: Counter "VM ARRIVING" equals 1 after 3.13971304893 seconds (the counter is assumed to be decreasing).
- status: Counter "VM ARRIVING" equals 1 after 4.13971304893 seconds (the counter is assumed to be decreasing).
- status: Counter "VM ARRIVING" equals 1 after 5.13971304893 seconds (the counter is assumed to be decreasing).
- status: Counter "VM ARRIVING" equals 0 after 6.13971304893 seconds (the counter is assumed to be decreasing).
-Waited 6.13971304893 seconds until "VMs ARRIVING" was equal to 0.
+ status: Counter "VM ARRIVING" equals 1 after 0.283968925476 seconds (the counter is assumed to be decreasing).
+ status: Counter "VM ARRIVING" equals 1 after 1.28396892548 seconds (the counter is assumed to be decreasing).
+ status: Counter "VM ARRIVING" equals 1 after 2.28396892548 seconds (the counter is assumed to be decreasing).
+ status: Counter "VM ARRIVING" equals 1 after 3.28396892548 seconds (the counter is assumed to be decreasing).
+ status: Counter "VM ARRIVING" equals 1 after 4.28396892548 seconds (the counter is assumed to be decreasing).
+ status: Counter "VM ARRIVING" equals 1 after 5.28396892548 seconds (the counter is assumed to be decreasing).
+ status: Counter "VM ARRIVING" equals 0 after 6.28396892548 seconds (the counter is assumed to be decreasing).
+Waited 6.28396892548 seconds until "VMs ARRIVING" was equal to 0.
 |name |role |size |cloud_ip |host_name |vmc_pool |netname |ai |aidrs |uuid
 |vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |none |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 |vm_XX |type |sizeXX |xxx.xxx.xxx.xxx |simhostX |POOL |private |none |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx

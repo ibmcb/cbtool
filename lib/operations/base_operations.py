@@ -1419,6 +1419,8 @@ class BaseObjectOperations :
                     raise self.ObjectOperationException(_fmsg, 10)
                 
                 if obj_type == "VM" :
+                    obj_attr_list["last_known_state"] = "about to obtain a reservation"
+                    
                     vmc = obj_attr_list["vmc"]
                         
                     _msg = "Increasing the \"number of VMs\" counter for the VMC: " + vmc 
@@ -2127,6 +2129,7 @@ class BaseObjectOperations :
                         obj_attr_list["cloud_hostname"] = _vm_attr_list["cloud_hostname"]
                         obj_attr_list["load_manager_vm"] = _vm_uuid
                         obj_attr_list["load_manager_ip"] = _vm_attr_list["cloud_ip"]
+                        obj_attr_list["load_manager_name"] = _vm_attr_list["name"]
                         _roles +=1
                         break
 
@@ -2333,6 +2336,17 @@ class BaseObjectOperations :
                     _fmsg += "on all VMs beloging to " + _ai_attr_list["name"] + ": "
                     _fmsg += _xfmsg
 
+                else :
+
+                    for _vm in _vm_list :
+                        
+                        _vm_uuid, _vm_role, _vm_name = _vm.split('|')
+                            
+                        self.osci.update_object_attribute(_ai_attr_list["cloud_name"], "VM", _vm_uuid, \
+                                                          False, "last_known_state", \
+                                                          "generic post-boot script executed")                    
+                    
+
             else :
                 _status = 0
 
@@ -2367,8 +2381,8 @@ class BaseObjectOperations :
                 if "dont_start_load_manager" in _ai_attr_list and \
                     _ai_attr_list["dont_start_load_manager"].lower() == "true" :
                     _msg = "Load Manager will NOT be automatically"
-                    _msg += " started during the deployment of "
-                    _msg += _ai_attr_list["name"] + "..."                
+                    _msg += " started on " + _ai_attr_list["load_manager_name"] 
+                    _msg += " during the deployment of " + _ai_attr_list["name"] + "..."                
                     cbdebug(_msg, True)
 
                 if "dont_start_qemu_scraper" in _ai_attr_list and \
@@ -2630,7 +2644,6 @@ class BaseObjectOperations :
         TBD
         '''
         try :
-
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 

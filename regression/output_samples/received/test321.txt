@@ -1,4 +1,4 @@
-AIDRS object 90FF11A5-FBD1-5A8B-BA7D-41582717CB67 (named "aidrs_1") was sucessfully detached from this experiment.
+AIDRS object 84E84B4C-3BCA-510F-887E-E178E7A5A439 (named "aidrs_1") was sucessfully detached from this experiment.
 The following ATTACHED AIDRSs are in this experiment (Cloud TESTCLOUD) :
 No objects available.
 The following ATTACHED AIs are in this experiment (Cloud TESTCLOUD) :
@@ -8,11 +8,11 @@ No objects available.
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |24.41M                        
+|Used Memory                                          |25.78M                        
 |Redis Version                                        |2.8.6                         
-|Uptime (in seconds)                                  |14069475                      
-|Total Connections Received                           |596283                        
-|Total Commands Processed                             |48305862                      
+|Uptime (in seconds)                                  |14435636                      
+|Total Connections Received                           |614720                        
+|Total Commands Processed                             |58625288                      
 |Number of Keys                                       |1019                          
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
@@ -85,8 +85,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |514                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|2D8F262B-5E17-5F1B-A264-3BD47379AA09 (simzone_c) VM RESERVATIONS|0                             
-|985A3CDE-4B6D-55E4-BD6D-3206A124B3B7 (simzone_a) VM RESERVATIONS|0                             
-|2750418D-66C8-53FC-960D-583DC2FB3F15 (simzone_b) VM RESERVATIONS|0                             
-|ED106041-1C2C-51B7-BC93-6D906AE0E438 (simzone_d) VM RESERVATIONS|0                             
+|4D841AFA-3629-5865-B277-3C9B87B46AF4 (simzone_d) VM RESERVATIONS|0                             
+|B07D97D7-6259-50D3-8A5D-2F6387957881 (simzone_b) VM RESERVATIONS|0                             
+|73396447-1A1B-5F78-8FD0-C71D15101114 (simzone_a) VM RESERVATIONS|0                             
+|FB6EC147-6C78-5AE6-BD5F-8F8D6A60F5BC (simzone_c) VM RESERVATIONS|0                             
 

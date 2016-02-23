@@ -1,19 +1,20 @@
 |ai_issued |1 
 |app_collection |lazy 
-|arrival |1455816865 
+|arrival |1456183024 
 |attempts |24 
-|command_originated |1455816862 
+|command_originated |1456183019 
 |comments | 
 |create_performance_emitter |True 
 |credentials_dir |/path/to/tool/lib/auxiliary//../../credentials
-|current_load_duration |95 
+|current_load_duration |114 
 |current_load_id |1 
-|current_load_level |8 
+|current_load_level |1 
 |db2_instance_name |klabuser 
 |db2_on_ramdisk |False 
 |first_app_run_finished |true 
 |identity |/path/to/tool/lib/auxiliary//../../credentials/cbtool_rsa
 |load_balancer_supported |True 
+|load_manager_name |vm_26 
 |msp |port:xxxx,password:cbpwdZ9,timeout:240,host:xxx.xxx.xxx.xxx ,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva
 |notification_channel |auto 
 |nr_quotes |40000 

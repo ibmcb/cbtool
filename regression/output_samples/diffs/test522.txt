@@ -1,7 +1,7 @@
 Background operation execution success. Operation "vm-attach" will be processed asynchronously, through the command "/path/to/tool/lib/operations//../../cbact --procid=TEST_msilva --osp=port:xxxx,experiment_inst:TEST_msilva,host:xxx.xxx.xxx.xxx ,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:xxxx,password:cbpwdZ9,timeout:240,host:xxx.xxx.xxx.xxx ,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,willfail,auto,empty,default,none,empty=empty --operation=vm-attach --cn=TESTCLOUD --uuid=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx --daemon". The process id is xxxx.
 Going to wait until the value on counter "VM ARRIVING" is equal to XX (currently it is equal to XX) waiting 1.0 seconds between samples, for a maximum of 36000.0 seconds. The counter is assumed to be decreasing.
- status: Counter "VM ARRIVING" equals 0 after 0.878973007202 seconds (the counter is assumed to be decreasing).
-Waited 0.878973007202 seconds until "VMs ARRIVING" was equal to 0.
+ status: Counter "VM ARRIVING" equals 0 after 0.568938016891 seconds (the counter is assumed to be decreasing).
+Waited 0.568938016891 seconds until "VMs ARRIVING" was equal to 0.
 |Redis Version |2.8.6 
 |HOSTs |60 
 |VMCs ISSUED |16 

@@ -1,6 +1,6 @@
-|simzone_X |15 |sut |simzone_X |xxx.xxx.xxx.xxx 
-|simzone_X |15 |sut |simzone_X |xxx.xxx.xxx.xxx 
 |simzone_X |15 |lg |simzone_X |xxx.xxx.xxx.xxx 
+|simzone_X |15 |sut |simzone_X |xxx.xxx.xxx.xxx 
+|simzone_X |15 |sut |simzone_X |xxx.xxx.xxx.xxx 
 |Redis Version |2.8.6 
 |HOSTs |45 
 |VMCs ISSUED |8 

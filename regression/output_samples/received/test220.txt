@@ -1,22 +1,22 @@
- status: Waiting for vm_2 (cloud-assigned uuid 07A9B7FA-2E00-5296-A174-8BA3F80CB5A8) to be captured with image name "vm_2_at_1455816714"...
- status: Sending a termination request for vm_2 (cloud-assigned uuid 07A9B7FA-2E00-5296-A174-8BA3F80CB5A8)....
-VM object 0BFE2E94-F77A-5BB8-8944-A050C0894C7C (named "vm_2") successfully captured on this experiment.
+ status: Waiting for vm_2 (cloud-assigned uuid EB90D6A0-BBED-58DE-B31F-4FAD6A98A46B) to be captured with image name "vm_2_at_1456182871"...
+ status: Sending a termination request for vm_2 (cloud-assigned uuid EB90D6A0-BBED-58DE-B31F-4FAD6A98A46B)....
+VM object 5244FC98-6DA8-5AB6-A72D-866C6875A181 (named "vm_2") successfully captured on this experiment.
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 |name          |role                |size        |cloud_ip        |host_name                  |vmc_pool      |netname    |ai      |aidrs      |uuid
-|vm_1          |tinyvm              |pico32      |179.41.91.120   |simhosta13                 |SUT           |private    |none    |none       |EBC1DB3C-02E4-5186-B447-575BBDFFAABB
-|vm_3          |tinyvm              |pico32      |122.94.112.128  |simhostb1                  |SUT           |private    |none    |none       |95CD38B7-21CC-523A-B508-70B12F07599A
-|vm_4          |db2                 |copper32    |94.143.30.197   |simhostc10                 |SUT           |private    |none    |none       |7E5EFD81-E536-54E9-B0B7-443B56139EDA
-|vm_5          |netclient           |platinum64  |160.247.234.171 |simhosta12                 |SUT           |private    |none    |none       |755C343D-04DB-5DFE-8A17-6273CF8726C6
+|vm_1          |tinyvm              |pico32      |156.132.157.237 |simhostb12                 |SUT           |private    |none    |none       |FFBD485E-62F9-55ED-AD0E-F9751F318A3E
+|vm_3          |tinyvm              |pico32      |142.51.103.232  |simhostb1                  |SUT           |private    |none    |none       |1E717DC1-DAF2-5D0C-9D2C-0818F7890FB1
+|vm_4          |db2                 |copper32    |20.247.126.40   |simhostb2                  |SUT           |private    |none    |none       |2FCBA3CF-BB21-545D-84F2-D2D4CC9DE828
+|vm_5          |netclient           |platinum64  |131.247.204.241 |simhosta1                  |SUT           |private    |none    |none       |68EC517B-E962-50B4-B0E6-D33A50A35CBA
 
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |17.40M                        
+|Used Memory                                          |18.72M                        
 |Redis Version                                        |2.8.6                         
-|Uptime (in seconds)                                  |14068856                      
-|Total Connections Received                           |596152                        
-|Total Commands Processed                             |48046892                      
-|Number of Keys                                       |567                           
+|Uptime (in seconds)                                  |14435014                      
+|Total Connections Received                           |614589                        
+|Total Commands Processed                             |58364249                      
+|Number of Keys                                       |566                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
 |Collections                                          |27                            
@@ -88,8 +88,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |214                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|2D8F262B-5E17-5F1B-A264-3BD47379AA09 (simzone_c) VM RESERVATIONS|1                             
-|985A3CDE-4B6D-55E4-BD6D-3206A124B3B7 (simzone_a) VM RESERVATIONS|2                             
-|2750418D-66C8-53FC-960D-583DC2FB3F15 (simzone_b) VM RESERVATIONS|1                             
-|ED106041-1C2C-51B7-BC93-6D906AE0E438 (simzone_d) VM RESERVATIONS|0                             
+|4D841AFA-3629-5865-B277-3C9B87B46AF4 (simzone_d) VM RESERVATIONS|0                             
+|B07D97D7-6259-50D3-8A5D-2F6387957881 (simzone_b) VM RESERVATIONS|3                             
+|73396447-1A1B-5F78-8FD0-C71D15101114 (simzone_a) VM RESERVATIONS|1                             
+|FB6EC147-6C78-5AE6-BD5F-8F8D6A60F5BC (simzone_c) VM RESERVATIONS|0                             
 
