@@ -61,6 +61,8 @@ Each individual application can have a specific load profile using probability d
 7. CloudStack
 8. SoftLayer
 
+## [Supported Workloads](https://github.com/ibmcb/cbtool/wiki/DOC:-Supported-Virtual-Applications)
+
 Contacts:
 
 Marcio Silva marcios@us.ibm.com
