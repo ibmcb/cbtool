@@ -118,4 +118,5 @@ USAGE = shared
 PORT = 7070
 
 [GUI_DEFAULTS]
+BRANDING = favicon.ico,20,http://localhost
 PORT = 8080
