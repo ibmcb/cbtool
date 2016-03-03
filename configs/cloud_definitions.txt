@@ -106,9 +106,6 @@ DO_CREDENTIALS = long_hex_string_from digitalocean.com  # This is your DO access
 DO_SSH_KEY_NAME = cbtool_rsa                            # Either upload credentials/cbtool_rsa.pub to DO or tell us where your private key is
 DO_KEY_NAME = 1520229                                   # Comma-separated list of IDs (not the names) of your DO ssh keys
 # Your DO ssh key IDs can be found like this: curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" -X GET "https://api.digitalocean.com/v2/account/keys"
-[VM_TEMPLATES : CLOUDOPTION_MYDIGITALOCEAN ]
-TINYVM = size:512mb, imageids:1, imageid1:foo
-# size options are: 512mb, 1gb, 2gb, etc....
 #-------------------------------------------------------------------------------
 
 [OBJECTSTORE]
