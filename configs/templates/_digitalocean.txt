@@ -52,15 +52,14 @@ SECURITY_GROUPS = not_yet_applicable
 [AI_TEMPLATES : HADOOP ]
 HADOOP_HOME = /usr/local/hadoop 
 
-# DigitalOcean (DO) doesn't have any public images yet.
-# Until then, this section MUST be overriden in your personal
-# configuration file as an example, replacing
-# DO_CLOUDCONFIG with CLOUDOPTION_MYDIGITALOCEAN
+# DigitalOcean has made public images available for the following 3 workloads: 
 [VM_TEMPLATES : DO_CLOUDCONFIG ]
 # imageid can be either the actual ID number or more easily the name in the case of a private account
-TINYVM = size:512mb, imageids:1, imageid1:needs_override
-CASSANDRA = size:4gb, imageids:1, imageid1:needs_override
-YCSB = size:4gb, imageids:1, imageid1:needs_override
-SEED = size:4gb, imageids:1, imageid1:needs_override
-HADOOPMASTER = size:4gb, imageids:1, imageid1:needs_override
-HADOOPSLAVE = size:4gb, imageids:1, imageid1:needs_override
+TINYVM = size:512mb, imageids:1, imageid1:16082940
+CASSANDRA = size:4gb, imageids:1, imageid1:16071652
+YCSB = size:4gb, imageids:1, imageid1:16071652
+SEED = size:4gb, imageids:1, imageid1:16071652
+HADOOPMASTER = size:4gb, imageids:1, imageid1:16071743
+HADOOPSLAVE = size:4gb, imageids:1, imageid1:16071743
+# Other images can be made on an as-needed basis or by creating your own
+# in your own private account

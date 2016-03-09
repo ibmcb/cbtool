@@ -122,6 +122,11 @@ do
 	sed -ie "s/USERNAME/$USER/g" $path/$filenam  
 done
 
+filenam=$mongo
+
+replacedir=$(echo $dir | sed "s/\//\\\\\//g")
+sed -ie "s/\/etc\/openvpn\/client_connected.sh/${replacedir}\/tool_connected.sh/g" $path/$filenam
+
 rm -f $path/${server}e
 rm -f $path/${mongo}e
 
