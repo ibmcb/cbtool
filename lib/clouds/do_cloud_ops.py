@@ -31,11 +31,9 @@ from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 from libcloud.compute.types import NodeState
 
-import re, os
 import threading
 
 catalogs = threading.local()
-cwd = (re.compile(".*\/").search(os.path.realpath(__file__)).group(0)) + "/../../"
 
 class DoCmds(CommonCloudFunctions) :
     @trace
@@ -324,7 +322,6 @@ class DoCmds(CommonCloudFunctions) :
                     return False
                 cbdebug("Found VPN IP: " + obj_attr_list["cloud_init_vpn"])
                 obj_attr_list["prov_cloud_ip"] = obj_attr_list["cloud_init_vpn"]
-                obj_attr_list["public_cloud_ip"] = node.public_ips[0]
             else :
                 obj_attr_list["prov_cloud_ip"] = node.public_ips[0]
 
@@ -391,89 +388,6 @@ class DoCmds(CommonCloudFunctions) :
             obj_attr_list["last_known_state"] = "not running"
             return False
 
-
-    # CloudBench should be passing us a more complex object for userdata,
-    # but is only passing us a script instead. So, we have to wrap the
-    # userdata in formal cloud-config syntax in order to be able to use
-    # if with cloud images that have cloud-init configured correctly.
-    @trace
-    def populate_cloudconfig(self, obj_attr_list) :
-        if ("userdata" not in obj_attr_list or obj_attr_list["userdata"]) and obj_attr_list["use_vpn_ip"].lower() == "false" :
-            return False
-
-        cloudconfig = """
-#cloud-config
-write_files:"""
-        if "userdata" in obj_attr_list and obj_attr_list["userdata"] :
-            cloudconfig += """
-  - path: /tmp/userscript.sh
-    content: |
-"""
-            for line in obj_attr_list["userdata"].split("\n")[:-1] :
-                cloudconfig += "      " + line + "\n"
-
-        # We need the VPN's IP address in advance, which was solved before
-        # the previous VPN support was gutted, but since we're left to do it
-        # on our own, we need cloud-config to send our VPN configuration file
-        # in advance.
-        conf_destination = "/etc/openvpn/" + obj_attr_list["cloud_name"] + "_client-cb-openvpn-digitalocean.conf"
-
-        if obj_attr_list["use_vpn_ip"].lower() == "true" :
-            targets = []
-            targets.append(("/configs/generated/" + obj_attr_list["cloud_name"] + "_client-cb-openvpn.conf", conf_destination))
-            targets.append(("/util/openvpn/client_connected.sh", "/etc/openvpn/client_connected.sh"))
-
-            for target in targets :
-                (src, dest) = target
-                cbdebug("src: " + src + " dest: " + dest)
-                cloudconfig += """
-  - path: """ + dest + """
-    content: |
-"""
-                fhname = cwd + src
-                cbdebug("Opening: " + fhname)
-                fh = open(fhname, 'r')
-                while True :
-                    line = fh.readline()
-                    if not line :
-                        break
-
-                    line = line.replace("USER", obj_attr_list["username"])
-                    line = line.replace("CLOUD_NAME", obj_attr_list["cloud_name"])
-                    line = line.replace("SERVER_BOOTSTRAP", obj_attr_list["vpn_server_bootstrap"])
-                    line = line.replace("UUID", obj_attr_list["uuid"])
-                    line = line.replace("OSCI_PORT", str(self.osci.port))
-                    line = line.replace("OSCI_DBID", str(self.osci.dbid))
-                    if line.count("remote") :
-                        line = "remote " + obj_attr_list["vpn_server_ip"] + " " + obj_attr_list["vpn_server_port"] + "\n"
-                    cloudconfig += "      " + line
-
-                    if line.count("remote") :
-                        cloudconfig += "      up /etc/openvpn/client_connected.sh"
-                fh.close()
-
-        cloudconfig += """
-packages:
-  - ntp
-runcmd:
-  - chmod +x /tmp/userscript.sh"""
-
-        # We can't run the userdata from cloudbench until the VPN is connected,
-        # so only run it if we're not using the VPN.
-        # Otherwise, /etc/openvpn/client_connected.sh will do it.
-        if obj_attr_list["use_vpn_ip"].lower() == "false" :
-            cloudconfig += """
-  - /tmp/userscript.sh"""
-        else :
-            cloudconfig += """
-  - chmod +x /etc/openvpn/client_connected.sh
-  - mv """ + conf_destination + """ /tmp/cbvpn.conf
-  - rm -f /etc/openvpn/*.conf /etc/openvpn/*.ovpn
-  - mv /tmp/cbvpn.conf """ + conf_destination + """
-  - service openvpn restart
-"""
-        #cbdebug("Final userdata: \n" + cloudconfig)
-        return cloudconfig
 
     @trace
     def vmcreate(self, obj_attr_list) :

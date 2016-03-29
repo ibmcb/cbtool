@@ -539,13 +539,22 @@ class Ec2Cmds(CommonCloudFunctions) :
                 obj_attr_list["cloud_hostname"] = _public_hostname
                 obj_attr_list["run_cloud_ip"] = _public_ip_address
 
-            if obj_attr_list["prov_netname"] == "private" :
-                obj_attr_list["prov_cloud_ip"] = _private_ip_address
-            else :
-                obj_attr_list["prov_cloud_ip"]  = _public_ip_address
-
             # NOTE: "cloud_ip" is always equal to "run_cloud_ip"
             obj_attr_list["cloud_ip"] = obj_attr_list["run_cloud_ip"]
+
+            if str(obj_attr_list["use_vpn_ip"]).lower() == "true" and str(obj_attr_list["vpn_only"]).lower() == "true" :
+                assert(self.get_attr_from_pending(obj_attr_list))
+
+                if "cloud_init_vpn" not in obj_attr_list :
+                    cbdebug("Instance VPN address not yet available.")
+                    return False
+                cbdebug("Found VPN IP: " + obj_attr_list["cloud_init_vpn"])
+                obj_attr_list["prov_cloud_ip"] = obj_attr_list["cloud_init_vpn"]
+            else :
+                if obj_attr_list["prov_netname"] == "private" :
+                    obj_attr_list["prov_cloud_ip"] = _private_ip_address
+                else :
+                    obj_attr_list["prov_cloud_ip"]  = _public_ip_address
             
             return True
         except :
@@ -880,6 +889,7 @@ class Ec2Cmds(CommonCloudFunctions) :
             _reservation = self.ec2conn.run_instances(image_id = obj_attr_list["imageid1"], \
                                                       instance_type = obj_attr_list["size"], \
                                                       key_name = obj_attr_list["key_name"], \
+                                                      user_data = self.populate_cloudconfig(obj_attr_list),
                                                       security_groups = _security_groups)
 
             if _reservation :
