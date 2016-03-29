@@ -27,7 +27,6 @@ CHECK_BOOT_STARTED = poll_cloud30
 CHECK_BOOT_COMPLETE = tcp_on_22
 SECURITY_GROUPS = not_yet_applicable 
 HOSTNAME_KEY = cloud_vm_name
-ATTACH_PARALLELISM = 1
 SIZE = from_vm_template
 
 # We're not as big as amazon yet. Go easy on us please.
@@ -36,7 +35,7 @@ ATTACH_PARALLELISM = 1
 
 # We're not as big as amazon yet. Go easy on us please.
 [AIDRS_DEFAULTS]
-ATTACH_PARALLELISM = 1
+DAEMON_PARALLELISM = 1
 
 [MON_DEFAULTS : DO_CLOUDCONFIG ]
 COLLECT_FROM_GUEST = $True
