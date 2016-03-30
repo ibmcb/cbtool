@@ -1,22 +1,24 @@
 
 Documented commands (type help <topic>):
 ========================================
-EOF          airun       firsalter     register    vmattach     vmlist    
-aialter      airunstate  firsattach    rolealter   vmcalter     vmlogin   
-aiattach     aisave      firsdetach    rolelist    vmcapture    vmmigrate 
-aicapture    aishow      firslist      roleshow    vmcattach    vmprotect 
-aidetach     aisuspend   firsshow      shell       vmccleanup   vmrepair  
-aidrsalter   cldalter    hostfail      statealter  vmcdetach    vmresize  
-aidrsattach  cldattach   hostlist      stateshow   vmclist      vmrestore 
-aidrsdetach  clddefault  hostrepair    stats       vmcrsalter   vmresume  
-aidrslist    clddetach   hostshow      trace       vmcrsattach  vmrun     
-aidrsshow    cldlist     monextract    typealter   vmcrsdetach  vmrunstate
-aifail       cldshow     monlist       typelist    vmcrslist    vmsave    
-ailist       echo        msgpub        typeshow    vmcrsshow    vmshow    
-airepair     expid       patternalter  unregister  vmcshow      vmsuspend 
-airesize     faultalter  patternlist   viewlist    vmdetach     waitfor   
-airestore    faultlist   patternshow   viewshow    vmdisplay    waiton    
-airesume     faultshow   poollist      vmalter     vmfail       waituntil 
+EOF          aisave      firsalter     poollist    vmattach     vmlogin   
+aialter      aishow      firsattach    register    vmcalter     vmmigrate 
+aiattach     aisuspend   firsdetach    reset       vmcapture    vmprotect 
+aicapture    appdev      firslist      rolealter   vmcattach    vmrepair  
+aidetach     appload     firsshow      rolelist    vmccleanup   vmresize  
+aidrsalter   appnoload   getrandnr     roleshow    vmcdetach    vmrestore 
+aidrsattach  appundev    hostalter     shell       vmclist      vmresume  
+aidrsdetach  cldalter    hostfail      statealter  vmcrsalter   vmrun     
+aidrslist    cldattach   hostlist      stateshow   vmcrsattach  vmrunstate
+aidrsshow    clddefault  hostrepair    stats       vmcrsdetach  vmsave    
+aifail       clddetach   hostshow      trace       vmcrslist    vmshow    
+ailist       cldlist     monextract    typealter   vmcrsshow    vmsuspend 
+airepair     cldshow     monlist       typelist    vmcshow      vmundev   
+airesize     echo        monpurge      typeshow    vmdetach     waitfor   
+airestore    expid       msgpub        unregister  vmdev        waiton    
+airesume     faultalter  patternalter  viewlist    vmdisplay    waituntil 
+airun        faultlist   patternlist   viewshow    vmfail     
+airunstate   faultshow   patternshow   vmalter     vmlist     
 
 Undocumented commands:
 ======================

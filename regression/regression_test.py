@@ -344,8 +344,8 @@ def validate_regression_test(reg_tst_expl_f_contents, reg_tst_gold_f_contents, r
         _diff_size = abs(int(_golden_output_results[str(_test)]["size"]) - int(_received_output_results[str(_test)]["size"]))
 
         _failure_string = _received_output_results[str(_test)]["contents"].count("unable") \
-        or _received_output_results[str(_test)]["contents"].count(" failure ") \
-        or _received_output_results[str(_test)]["contents"].count(" error ") \
+        or _received_output_results[str(_test)]["contents"].count(" failure") \
+        or _received_output_results[str(_test)]["contents"].count(" error") \
         or _received_output_results[str(_test)]["contents"].count("could not be detached") \
         or _received_output_results[str(_test)]["contents"].count("could not be retrieved")
 

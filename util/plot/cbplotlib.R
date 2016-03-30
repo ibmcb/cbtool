@@ -565,33 +565,40 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 						"osk_012_get_flavors_time",
 						"osk_013_get_imageid_time",
 						"osk_014_get_netid_time",
+						"osk_015_create_volume_time",
 						"osk_016_instance_creation_time",
 						"osk_016_instance_scheduling_time",
 						"osk_016_port_creation_time",
 						"osk_017_create_fip_time",
 						"osk_018_attach_fip_time",
+						"osk_019_instance_reachable",						
 						"name", "vm_arrival_diff"))
 		
 		prov_cs_lat_data <- prov_cs_lat_data[!is.na(prov_cs_lat_data$vm_arrival_diff),]
-		
+		prov_cs_lat_data[is.na(prov_cs_lat_data)] <- 0
+
 		output_table(ed, en, prov_lat_data, "003_individual_vm_provision_latency")
 		
 		number_of_vms <- length(prov_lat_data$name)	
 		
 		# Plot provisioning latency
 		prov_cs_lat_plot_title <- paste("Provisioning Latency for all VM(s) (",
-				"Cloud-Specific information\"", vmn, "\" on experiment \"", 
+				"Cloud-Specific information) \"", vmn, "\" on experiment \"", 
 				selected_expname, "\" (", selected_expid, ")", sep = '')
 		cat(prov_cs_lat_plot_title, sep='\n')	
 		
 		columns_remove <- c("full_obj_name", "vm_arrival_diff")
 		prov_cs_lat_data <- prov_cs_lat_data[,!(names(prov_cs_lat_data) %in% columns_remove)]
-		
+
 		prov_cs_lat_data <- within(prov_cs_lat_data, 
 				"name" <- as.integer(gsub("vm_", '', prov_cs_lat_data$name)))
+
 		prov_cs_lat_data <- prov_cs_lat_data[order(prov_cs_lat_data$name), ]
+
 		setnames(prov_cs_lat_data, "name", "x_axis_id")
-		prov_cs_lat_data <- melt(prov_cs_lat_data, id.vars="x_axis_id")		
+
+		prov_cs_lat_data <- melt(prov_cs_lat_data, id.vars="x_axis_id")
+
 		prov_cs_lat_plot <- ggplot(prov_cs_lat_data, 
 						aes(x=x_axis_id, y=value, fill=variable)) + 
 				geom_area(stat='identity') + 

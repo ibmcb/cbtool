@@ -1,11 +1,11 @@
 The following FAILED VMs are in this experiment (Cloud TESTCLOUD) :
-|name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
-|vm_23         |norole              |default     |undefined       |unavailable                |SUT                 |none    |none       |8F7EBB5A-1A0D-50C6-940C-B7C7E941A828
-|vm_25         |willfail            |nano32      |undefined       |unavailable                |SUT                 |none    |none       |49293408-A185-53DD-90DA-07CBE476E986
-|vm_120        |willfail            |nano32      |undefined       |unavailable                |SUT                 |(orphan)|none       |34899953-90C4-5C26-BC2A-1C8211FF7A8F
-|vm_24         |willfail            |nano32      |undefined       |unavailable                |SUT                 |none    |none       |A14E707C-4666-5565-B293-851F170CB924
-|vm_23         |norole              |default     |undefined       |unavailable                |SUT                 |none    |none       |CAE47627-34FE-5E8F-9DA3-2ADF4EB0D27E
-|vm_121        |willfail            |nano32      |undefined       |unavailable                |SUT                 |(orphan)|none       |AA66EEC5-187C-57A0-B45C-9A393625AC04
-|vm_24         |willfail            |nano32      |undefined       |unavailable                |SUT                 |none    |none       |5D4F4D2F-3B0E-5650-9F60-03D3D47AC723
-|vm_25         |willfail            |nano32      |undefined       |unavailable                |SUT                 |none    |none       |DD9C305E-2CC7-5D92-94F4-D043E9656827
+|name          |role                |size        |cloud_ip        |host_name                  |vmc_pool      |netname    |ai      |aidrs      |uuid
+|vm_24         |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |none    |none       |60442821-DBD0-505C-8E27-F63AD7A567A2
+|vm_118        |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |(orphan)|none       |9ED66DDE-7F02-5FFF-84D7-8A499B174809
+|vm_24         |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |none    |none       |760685B2-BC54-5851-B01E-FAAE51727F4A
+|vm_23         |norole              |from_vm_template|undefined       |unavailable                |unavailable   |private    |none    |none       |F2778E8A-E566-56ED-999F-D3A382EB4A37
+|vm_25         |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |none    |none       |44B9F311-528B-59B0-A435-B0F2D89DEBED
+|vm_25         |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |none    |none       |4BD9ABCF-BE31-5BC0-8C95-EC3629FA937E
+|vm_120        |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |(orphan)|none       |F9FBFEF9-A540-58C8-AAB5-19C3F70A4D7A
+|vm_23         |norole              |from_vm_template|undefined       |unavailable                |unavailable   |private    |none    |none       |5C4EC6C5-6A7D-56D6-B6BE-107F0CD22CD8
 

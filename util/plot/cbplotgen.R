@@ -53,6 +53,8 @@ option_list <- list(
                 metavar="selected_maxvms"),
         make_option(c("-l", "--layer"), action="store_true", default=FALSE,
                 dest="layer", help="Layer provisioning events on top of runtime"),
+		make_option(c("-i", "--trace"), action="store_true", default=FALSE,
+				dest="trace", help="Plot trace (experiment events and counters)"),		
         make_option(c("-d", "--directory"), default=getwd(),
                 help = "Directory where the csv files to be processed are located [default \"%default\"]", 
                 metavar="selected_directory"),
@@ -160,16 +162,18 @@ if (opt$aggregate) {
     msg <- paste("### Done ###", sep = '')
     cat(msg, sep='\n')
 
-    msg <- paste("Generating aggregate runtime application metrics plot for all ", 
-            "experiments....", sep = '')
-    cat(msg, sep='\n')
-    
-    plot_runtime_application_data(rapp_metrics, opt$directory, "all", "all", 
-            "none", opt$xint, opt$yint, 
-            opt$size)
-    
-    msg <- paste("### Done ###", sep = '')
-    cat(msg, sep='\n')
+	if (opt$runtimemetrics) {
+	    msg <- paste("Generating aggregate runtime application metrics plot for all ", 
+	            "experiments....", sep = '')
+	    cat(msg, sep='\n')
+	    
+	    plot_runtime_application_data(rapp_metrics, opt$directory, "all", "all", 
+	            "none", opt$xint, opt$yint, 
+	            opt$size)
+	    
+	    msg <- paste("### Done ###", sep = '')
+	    cat(msg, sep='\n')
+		}		
 
     } else {
         msg <- paste("### BYPASSING aggregate metrics plotting for all experiments ###", 
@@ -182,11 +186,13 @@ if (opt$expid == "all")    {
 } else {
     experiment_list <- c(opt$expid)
 }
-    
+
 for (experiment in experiment_list) {
 
-    plot_trace_data(trace_metrics, opt$directory, experiment, opt$size)
-
+	if (opt$trace) {
+    	plot_trace_data(trace_metrics, opt$directory, experiment, opt$size)
+	}
+	
     if (opt$provisionmetrics) {
     
         msg <- paste("### Generating management metrics plot for experiment ", 

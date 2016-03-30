@@ -1,43 +1,38 @@
- status: Sending a termination request for vm_8 (cloud-assigned uuid 0AC1421B-4C57-50E7-8381-CFE9F708722F)....
- status: Sending a termination request for vm_12 (cloud-assigned uuid 23559AC0-11B0-5D23-9946-29D76BEAE3A4)....
+ status: Sending a termination request for vm_16 (cloud-assigned uuid D1992BDD-406A-556D-B45F-A8F0091E7EA8)....
+ status: Sending a termination request for vm_21 (cloud-assigned uuid 0893FEF9-4EE8-5025-9983-BA915CB89016)....
+ status: Sending a termination request for vm_19 (cloud-assigned uuid BFF7DA94-9109-5FF3-8A0F-4AD8122073BA)....
+ status: Sending a termination request for vm_9 (cloud-assigned uuid A4115C1B-8774-5BDD-9DDC-4435E036A844)....
+ status: Sending a termination request for vm_11 (cloud-assigned uuid FCB745CB-5BC5-5D80-8D99-78AB09C1C1CD)....
+ status: Sending a termination request for vm_13 (cloud-assigned uuid E992F4D2-C63B-5DAD-B4F3-D0CB03445F72)....
+ status: Sending a termination request for vm_8 (cloud-assigned uuid A02E9AC9-59DD-5797-A8D4-84758D3051A8)....
+ status: Sending a termination request for vm_18 (cloud-assigned uuid C3847D9F-E346-5539-9C3C-D76C06661217)....
+ status: Sending a termination request for vm_20 (cloud-assigned uuid 90D0A8F2-42B2-5022-B750-16536B76C367)....
+ status: Sending a termination request for vm_10 (cloud-assigned uuid D1C21516-02AA-5DD9-91E9-1B9FCC6B43A2)....
+ status: Sending a termination request for vm_15 (cloud-assigned uuid A2B5C28C-9344-5A37-8BF3-A61E86D5C0C4)....
+ status: Sending a termination request for vm_17 (cloud-assigned uuid 52174E88-4132-5CA6-993E-60B1E2A2D292)....
+ status: Sending a termination request for vm_12 (cloud-assigned uuid B309B112-3CC2-511F-AD95-219EEFC5362E)....
+ status: Sending a termination request for vm_7 (cloud-assigned uuid 6985CAD9-A5CC-5D64-BC8D-FE212114EA75)....
+ status: Sending a termination request for vm_6 (cloud-assigned uuid 76F0BDBF-35B5-5653-84DB-9D801ADF9B6E)....
  status: Sending a termination request for vm_14 (cloud-assigned uuid 11111111-1111-1111-1111-111111111111)....
- status: Sending a termination request for vm_11 (cloud-assigned uuid D18F2F8F-ADD0-5F95-91EB-A61C0737C178)....
- status: Sending a termination request for vm_20 (cloud-assigned uuid 77B3FACD-2CC3-52AC-A4C7-31761E59985C)....
- status: Sending a termination request for vm_3 (cloud-assigned uuid 9D48289E-7A96-52A2-A1A4-E9D172C01B72)....
- status: Sending a termination request for vm_6 (cloud-assigned uuid F525E385-8D9C-5FAC-ABC7-3C7852A72CFB)....
- status: Sending a termination request for vm_21 (cloud-assigned uuid 96CAE1BD-203D-52F8-BCD4-395A75F1EA86)....
- status: Sending a termination request for vm_7 (cloud-assigned uuid DCBD62C7-1DB4-5F19-9B0A-7036E8BDBD03)....
- status: Sending a termination request for vm_17 (cloud-assigned uuid 53F4E1B1-A0A9-507A-90B0-690823258141)....
- status: Sending a termination request for vm_19 (cloud-assigned uuid 5A8A828B-275B-5625-9008-7E15B4CA563E)....
- status: Sending a termination request for vm_9 (cloud-assigned uuid 6844553E-8277-524E-990F-2A7E98B6730B)....
- status: Sending a termination request for vm_10 (cloud-assigned uuid 6194D77C-300E-520B-960E-25DDEDD0A1B8)....
- status: Sending a termination request for vm_16 (cloud-assigned uuid F162CD01-5361-57CD-AF98-02D3AD00D77C)....
- status: Sending a termination request for vm_13 (cloud-assigned uuid 92FEBE84-0930-5ADD-A6A6-71A8E4546324)....
- status: Sending a termination request for vm_15 (cloud-assigned uuid 752F8871-5A0C-5CF5-A7E5-281CEC481141)....
 VM object undefined (named "all") was sucessfully detached from this experiment.
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 No objects available.
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |2.34M                         
-|Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |3793232                       
-|Total Connections Received                           |81328                         
-|Total Commands Processed                             |6050022                       
-|Number of Keys                                       |335                           
+|Used Memory                                          |19.95M                        
+|Redis Version                                        |2.8.6                         
+|Uptime (in seconds)                                  |14435989                      
+|Total Connections Received                           |614779                        
+|Total Commands Processed                             |58752318                      
+|Number of Keys                                       |761                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|MongoDB Version                                      |2.4.9                         
-|Storage Size                                         |2158592                       
-|Data Size                                            |540160                        
-|Index Size                                           |425152                        
-|Average Object Size                                  |506.716697936                 
-|Collections                                          |14                            
+|Collections                                          |28                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
 |VMCs                                                 |4                             
-|HOSTs                                                |20                            
+|HOSTs                                                |60                            
 |VMs                                                  |0                             
 |AIs                                                  |0                             
 |AIDRSs                                               |0                             
@@ -46,25 +41,32 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------ EXPERIMENT-WIDE COUNTERS ------------------
 |Counter                                              |Value                         
 |VMC RESERVATIONS                                     |4                             
+|VMCs ISSUED                                          |16                            
 |VMCs ARRIVED                                         |16                            
 |VMCs ARRIVING                                        |0                             
 |VMCs DEPARTED                                        |12                            
 |VMCs DEPARTING                                       |0                             
 |VMCs FAILED                                          |0                             
 |HOST RESERVATIONS                                    |0                             
+|HOSTs ISSUED                                         |0                             
 |HOSTs ARRIVED                                        |0                             
 |HOSTs ARRIVING                                       |0                             
 |HOSTs DEPARTED                                       |0                             
 |HOSTs DEPARTING                                      |0                             
 |HOSTs FAILED                                         |0                             
 |VM RESERVATIONS                                      |0                             
+|VMs ISSUED                                           |22                            
 |VMs ARRIVED                                          |22                            
 |VMs ARRIVING                                         |0                             
 |VMs CAPTURING                                        |0                             
 |VMs DEPARTED                                         |22                            
 |VMs DEPARTING                                        |0                             
 |VMs FAILED                                           |0                             
+|VMs SLA PROVISIONING VIOLATED                        |0                             
+|VMs SLA RUNTIME VIOLATED                             |0                             
+|VMs APPLICATION ERRORS                               |6                             
 |AI RESERVATIONS                                      |0                             
+|AIs ISSUED                                           |0                             
 |AIs ARRIVED                                          |0                             
 |AIs ARRIVING                                         |0                             
 |AIs CAPTURING                                        |0                             
@@ -72,28 +74,31 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |AIs DEPARTING                                        |0                             
 |AIs FAILED                                           |0                             
 |AIDRS RESERVATIONS                                   |0                             
+|AIDRSs ISSUED                                        |0                             
 |AIDRSs ARRIVED                                       |0                             
 |AIDRSs ARRIVING                                      |0                             
 |AIDRSs DEPARTED                                      |0                             
 |AIDRSs DEPARTING                                     |0                             
 |AIDRSs FAILED                                        |0                             
 |VMCRS RESERVATIONS                                   |0                             
+|VMCRSs ISSUED                                        |0                             
 |VMCRSs ARRIVED                                       |0                             
 |VMCRSs ARRIVING                                      |0                             
 |VMCRSs DEPARTED                                      |0                             
 |VMCRSs DEPARTING                                     |0                             
 |VMCRSs FAILED                                        |0                             
 |FIRS RESERVATIONS                                    |0                             
+|FIRSs ISSUED                                         |0                             
 |FIRSs ARRIVED                                        |0                             
 |FIRSs ARRIVING                                       |0                             
 |FIRSs DEPARTED                                       |0                             
 |FIRSs DEPARTING                                      |0                             
 |FIRSs FAILED                                         |0                             
-|EXPERIMENT COUNTER                                   |132                           
+|EXPERIMENT COUNTER                                   |252                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|516A5A15-B093-5B5F-B171-EE9AA82AAEF0 (simzone_c) VM RESERVATIONS|0                             
-|8D79A9F1-34B8-5D1A-A903-082245CE052C (simzone_d) VM RESERVATIONS|0                             
-|B0B6FF0A-FAE8-5217-A335-C0F1B0BEA0D6 (simzone_b) VM RESERVATIONS|0                             
-|D5506DC9-493A-57EE-86F6-0B96CB07D162 (simzone_a) VM RESERVATIONS|0                             
+|2C0CBD0C-C4AB-589F-B1DC-473FE1792EEA (simzone_b) VM RESERVATIONS|0                             
+|09BE1FD2-5286-5B6E-AA11-D68D33341047 (simzone_a) VM RESERVATIONS|0                             
+|95B3CBBD-180B-59D1-9048-B3EAC63E092B (simzone_d) VM RESERVATIONS|0                             
+|4DFFE7AE-4E70-5DA7-82EF-D0BC8960A44B (simzone_c) VM RESERVATIONS|0                             
 

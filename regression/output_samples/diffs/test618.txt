@@ -1,2 +1,0 @@
-Monitor extraction success. HOST runtime OS performance data samples were written to the file /path/to/tool/lib/auxiliary//../../data/REGRESSION_B/HOST_runtime_os_REGRESSION_B.csv.
-Data is available at the url "rsync://xxx.xxx.xxx.xxx :10000/msilva_cb/data/REGRESSION_B".

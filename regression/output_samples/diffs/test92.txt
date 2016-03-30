@@ -1,1 +1,0 @@
- status: VPN configuration for this cloud already generated: /path/to/tool/lib/auxiliary//../../configs/generated/TESTCLOUD_server-cb-openvpn.conf

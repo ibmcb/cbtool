@@ -243,22 +243,22 @@ class OskCmds(CommonCloudFunctions) :
                     else :
                         _file = expanduser("~") + "/cbrc"
                         
-                    if not access(_file, F_OK) :
-                        _file_fd = open(_file, 'w')
-                                
-                        _file_fd.write("export OS_TENANT_NAME=" + _tenant + "\n")
-                        _file_fd.write("export OS_USERNAME=" + _username + "\n")
-                        _file_fd.write("export OS_PASSWORD=" + _password + "\n")                    
-                        _file_fd.write("export OS_AUTH_URL=\"" + access_url + "\"\n")
-                        _file_fd.write("export OS_NO_CACHE=1\n")
-                        if _cacert :
-                            _file_fd.write("export OS_CACERT=" + _cacert + "\n")
-                        _file_fd.write("export OS_REGION_NAME=" + region + "\n")
+                    _file_fd = open(_file, 'w')
 
-                        if "cloud_name" in extra_parms :                        
-                            _file_fd.write("export CB_CLOUD_NAME=" + extra_parms["cloud_name"] + "\n")
-                            _file_fd.write("export CB_USERNAME=" + extra_parms["username"] + "\n")
-                        _file_fd.close()
+                    _file_fd.write("export OS_TENANT_NAME=" + _tenant + "\n")
+                    _file_fd.write("export OS_USERNAME=" + _username + "\n")
+                    _file_fd.write("export OS_PASSWORD=" + _password + "\n")                    
+                    _file_fd.write("export OS_AUTH_URL=\"" + access_url + "\"\n")
+                    _file_fd.write("export OS_NO_CACHE=1\n")
+                    _file_fd.write("export OS_INTERFACE=" + _endpoint_type.replace("URL",'') +  "\n")                        
+                    if _cacert :
+                        _file_fd.write("export OS_CACERT=" + _cacert + "\n")
+                    _file_fd.write("export OS_REGION_NAME=" + region + "\n")
+
+                    if "cloud_name" in extra_parms :                        
+                        _file_fd.write("export CB_CLOUD_NAME=" + extra_parms["cloud_name"] + "\n")
+                        _file_fd.write("export CB_USERNAME=" + extra_parms["username"] + "\n")
+                    _file_fd.close()
                 
                 _status = 0
 
@@ -2016,18 +2016,32 @@ class OskCmds(CommonCloudFunctions) :
                 _msg = "Attempting to add a floating IP to " + obj_attr_list["name"] + "..."
                 cbdebug(_msg, True)
 
+                obj_attr_list["last_known_state"] = "about to create floating IP"
+                
                 _fip = self.floating_ip_allocate(obj_attr_list)
 
-                while not self.is_vm_running(obj_attr_list) :
-                    sleep(int(obj_attr_list["update_frequency"]))
+                _curr_tries = 0
+                _max_tries = int(obj_attr_list["update_attempts"])
+                _wait = int(obj_attr_list["update_frequency"])
+
+                obj_attr_list["last_known_state"] = "about to attach floating IP"
+
+                _vm_ready = False
+                while _curr_tries < _max_tries :
+                    _vm_ready = self.is_vm_running(obj_attr_list)
+
+                    if _vm_ready :
+                        break
+                    else :
+                        _curr_tries += 1
+                        sleep(_wait)
 
                 _call = "floating ip attach"
                 _mark1 = int(time())
                 _instance.add_floating_ip(_fip)
 
-                if self.time_profile :
-                    _mark2 = int(time())
-                    obj_attr_list["osk_018_attach_fip_time"] = _mark2 - _mark1    
+                _mark2 = int(time())
+                obj_attr_list["osk_018_attach_fip_time"] = _mark2 - _mark1    
 
             return True
 
@@ -2480,6 +2494,7 @@ class OskCmds(CommonCloudFunctions) :
 
             self.take_action_if_requested("VM", obj_attr_list, "provision_originated")
             self.time_profile = False
+
             if "execute_provision_originated_stdout" in obj_attr_list :
                 if obj_attr_list["execute_provision_originated_stdout"].count("tenant") :
                     _temp_dict = str2dic(obj_attr_list["execute_provision_originated_stdout"].replace('\n',''), False)
@@ -2662,6 +2677,11 @@ class OskCmds(CommonCloudFunctions) :
 
                 _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
 
+                if "osk_016_instance_creation_time" not in obj_attr_list :
+                    obj_attr_list["osk_016_instance_creation_time"] = obj_attr_list["mgt_003_provisioning_request_completed"]
+                else :
+                    obj_attr_list["osk_016_instance_creation_time"] = float(obj_attr_list["osk_016_instance_creation_time"]) - float(obj_attr_list["osk_016_port_creation_time"])
+                    
                 if obj_attr_list["last_known_state"].count("ERROR") :
                     _fmsg = obj_attr_list["last_known_state"]
                     _status = 189
@@ -2683,7 +2703,9 @@ class OskCmds(CommonCloudFunctions) :
                     self.get_mac_address(obj_attr_list, _instance)
 
                     self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
-    
+
+                    obj_attr_list["osk_019_instance_reachable"] = obj_attr_list["mgt_004_network_acessible"]   
+                    
                     self.get_host_and_instance_name(obj_attr_list)
     
                     self.take_action_if_requested("VM", obj_attr_list, "provision_finished")
@@ -2883,6 +2905,9 @@ class OskCmds(CommonCloudFunctions) :
                 while _instance :
                     _instance = self.get_instances(obj_attr_list, "vm", \
                                            obj_attr_list["cloud_vm_name"], True)
+                    if _instance :
+                        if _instance.status != "ACTIVE" :
+                            break
                     sleep(_wait)
             else :
                 True

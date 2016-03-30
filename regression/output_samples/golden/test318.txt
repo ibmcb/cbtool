@@ -1,42 +1,37 @@
-Going to wait until the value on counter "AI ARRIVED" is equal to 30 (currently it is equal to 29) waiting 5.0 seconds between samples. The counter is assumed to be increasing.
- status: Counter "AI ARRIVED" equals 29 after 5 seconds (the counter is assumed to be increasing).
- status: Counter "AI ARRIVED" equals 30 after 10 seconds (the counter is assumed to be increasing).
-Waited 10 seconds until "AIs ARRIVED" was equal to 30.
+Going to wait until the value on counter "AI ARRIVED" is equal to 30 (currently it is equal to 29) waiting 5.0 seconds between samples, for a maximum of 36000.0 seconds. The counter is assumed to be increasing.
+ status: Counter "AI ARRIVED" equals 29 after 4.7624669075 seconds (the counter is assumed to be increasing).
+ status: Counter "AI ARRIVED" equals 30 after 9.7624669075 seconds (the counter is assumed to be increasing).
+Waited 9.7624669075 seconds until "AIs ARRIVED" was equal to 30.
 The following ATTACHED AIDRSs are in this experiment (Cloud TESTCLOUD) :
 |name                |pattern                |type              
 |aidrs_1             |simplenw               |nullworkload      
 
 The following ATTACHED AIs are in this experiment (Cloud TESTCLOUD) :
 |name      |type           |sut                                               |cloud_ip        |arrival        |aidrs                                   |uuid
-|ai_31     |nullworkload   |1_x_tinyvm                                        |24.109.78.203   |1399996289     |aidrs_1                                 |02184EEE-69DF-5193-A21D-C1508D8EC915
-|ai_32     |nullworkload   |1_x_tinyvm                                        |15.32.200.95    |1399996298     |aidrs_1                                 |F9893E3A-C69E-5707-9F4A-46B8BBECB06F
+|ai_31     |nullworkload   |1_x_tinyvm                                        |142.112.116.80  |1456183425     |aidrs_1                                 |401C09FF-5BB5-5224-BD46-01458A8B552B
+|ai_32     |nullworkload   |1_x_tinyvm                                        |30.252.11.207   |1456183434     |aidrs_1                                 |E1C05C33-7CCF-549D-826B-920E2CF61B62
 
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
-|name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
-|vm_122        |tinyvm              |pico32      |24.109.78.203   |simhostb2                  |SUT                 |ai_31   |aidrs_1    |FFC533C9-4ABD-504E-BF4F-2BD4B2379626
-|vm_123        |tinyvm              |pico32      |15.32.200.95    |simhostc3                  |SUT                 |ai_32   |aidrs_1    |04754BCF-9137-57F3-B7CE-FA30E1360876
+|name          |role                |size        |cloud_ip        |host_name                  |vmc_pool      |netname    |ai      |aidrs      |uuid
+|vm_122        |tinyvm              |pico32      |142.112.116.80  |simhostc1                  |SUT           |private    |ai_31   |aidrs_1    |2E5CCDDA-EC82-5348-8FA6-22102B1C39DC
+|vm_123        |tinyvm              |pico32      |30.252.11.207   |simhosta9                  |SUT           |private    |ai_32   |aidrs_1    |CA2886C1-6C8A-5637-9395-45FFEA62FC27
 
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |6.49M                         
-|Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |3792832                       
-|Total Connections Received                           |81271                         
-|Total Commands Processed                             |5965906                       
-|Number of Keys                                       |678                           
+|Used Memory                                          |26.05M                        
+|Redis Version                                        |2.8.6                         
+|Uptime (in seconds)                                  |14435580                      
+|Total Connections Received                           |614718                        
+|Total Commands Processed                             |58622219                      
+|Number of Keys                                       |1070                          
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|MongoDB Version                                      |2.4.9                         
-|Storage Size                                         |1814528                       
-|Data Size                                            |376112                        
-|Index Size                                           |327040                        
-|Average Object Size                                  |522.377777778                 
-|Collections                                          |14                            
+|Collections                                          |28                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
 |VMCs                                                 |4                             
-|HOSTs                                                |20                            
+|HOSTs                                                |60                            
 |VMs                                                  |2                             
 |AIs                                                  |2                             
 |AIDRSs                                               |1                             
@@ -45,25 +40,32 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------ EXPERIMENT-WIDE COUNTERS ------------------
 |Counter                                              |Value                         
 |VMC RESERVATIONS                                     |4                             
+|VMCs ISSUED                                          |16                            
 |VMCs ARRIVED                                         |16                            
 |VMCs ARRIVING                                        |0                             
 |VMCs DEPARTED                                        |12                            
 |VMCs DEPARTING                                       |0                             
 |VMCs FAILED                                          |0                             
 |HOST RESERVATIONS                                    |0                             
+|HOSTs ISSUED                                         |0                             
 |HOSTs ARRIVED                                        |0                             
 |HOSTs ARRIVING                                       |0                             
 |HOSTs DEPARTED                                       |0                             
 |HOSTs DEPARTING                                      |0                             
 |HOSTs FAILED                                         |0                             
 |VM RESERVATIONS                                      |2                             
+|VMs ISSUED                                           |123                           
 |VMs ARRIVED                                          |119                           
 |VMs ARRIVING                                         |0                             
 |VMs CAPTURING                                        |0                             
 |VMs DEPARTED                                         |117                           
 |VMs DEPARTING                                        |0                             
 |VMs FAILED                                           |4                             
+|VMs SLA PROVISIONING VIOLATED                        |0                             
+|VMs SLA RUNTIME VIOLATED                             |0                             
+|VMs APPLICATION ERRORS                               |1                             
 |AI RESERVATIONS                                      |2                             
+|AIs ISSUED                                           |32                            
 |AIs ARRIVED                                          |30                            
 |AIs ARRIVING                                         |0                             
 |AIs CAPTURING                                        |0                             
@@ -71,31 +73,34 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |AIs DEPARTING                                        |0                             
 |AIs FAILED                                           |2                             
 |AIDRS RESERVATIONS                                   |1                             
+|AIDRSs ISSUED                                        |1                             
 |AIDRSs ARRIVED                                       |1                             
 |AIDRSs ARRIVING                                      |0                             
 |AIDRSs DEPARTED                                      |0                             
 |AIDRSs DEPARTING                                     |0                             
 |AIDRSs FAILED                                        |0                             
 |VMCRS RESERVATIONS                                   |0                             
+|VMCRSs ISSUED                                        |0                             
 |VMCRSs ARRIVED                                       |0                             
 |VMCRSs ARRIVING                                      |0                             
 |VMCRSs DEPARTED                                      |0                             
 |VMCRSs DEPARTING                                     |0                             
 |VMCRSs FAILED                                        |0                             
 |FIRS RESERVATIONS                                    |0                             
+|FIRSs ISSUED                                         |0                             
 |FIRSs ARRIVED                                        |0                             
 |FIRSs ARRIVING                                       |0                             
 |FIRSs DEPARTED                                       |0                             
 |FIRSs DEPARTING                                      |0                             
 |FIRSs FAILED                                         |0                             
-|EXPERIMENT COUNTER                                   |389                           
+|EXPERIMENT COUNTER                                   |509                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|76A8BFA3-0C2E-5D7E-A667-254C804D93C2 (simzone_b) VM RESERVATIONS|1                             
-|785C590F-E88D-5ABB-9A6F-08292348ADB9 (simzone_c) VM RESERVATIONS|1                             
-|DE75759E-CFAB-53C8-A062-05C5AB16764D (simzone_a) VM RESERVATIONS|0                             
-|706D24CD-9D55-592D-915D-7D4D41F35312 (simzone_d) VM RESERVATIONS|0                             
+|4D841AFA-3629-5865-B277-3C9B87B46AF4 (simzone_d) VM RESERVATIONS|0                             
+|B07D97D7-6259-50D3-8A5D-2F6387957881 (simzone_b) VM RESERVATIONS|2                             
+|73396447-1A1B-5F78-8FD0-C71D15101114 (simzone_a) VM RESERVATIONS|0                             
+|FB6EC147-6C78-5AE6-BD5F-8F8D6A60F5BC (simzone_c) VM RESERVATIONS|0                             
 
  ---------------- AIDRS-WIDE COUNTERS ----------------
-|3E45A164-4ED6-599D-B7BC-D69F4350C0C8 (aidrs_1) AI RESERVATIONS|2                             
+|84E84B4C-3BCA-510F-887E-E178E7A5A439 (aidrs_1) AI RESERVATIONS|2                             
 

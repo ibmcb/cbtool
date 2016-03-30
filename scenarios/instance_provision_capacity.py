@@ -63,7 +63,7 @@ def parse_cli() :
 
     _parser.add_option("--duration", \
                        dest="duration", \
-                       default=86400, \
+                       default=259200, \
                        help="Total experiment duration")
 
     _parser.add_option("--completion", \
@@ -175,6 +175,11 @@ def parse_cli() :
                        default=5, \
                        help="Seconds between status requests from the cloud")
 
+    _parser.add_option("--phone", \
+                       dest="phone", \
+                       default=None, \
+                       help="Telephone number to receive messages when important experiment events happen")
+
     _parser.add_option("--update_attempts", \
                        dest="update_attempts", \
                        default=60, \
@@ -249,16 +254,45 @@ def get_experiment_parameters(api, options) :
     if "exp_opt.pctif" in _setup :
         options.pctif = _setup["exp_opt.pctif"].lower()
 
-    _batch_nr = None
+    _batch_nr = 0
     if "exp_ctrl.batch_nr" in _setup :
         _batch_nr = _setup["exp_ctrl.batch_nr"]
 
-    _total_average_time = None
+    _sample_nr = 1
+    if "exp_ctrl.sample_nr" in _setup :
+        _sample_nr = _setup["exp_ctrl.sample_nr"]
+
+    _total_average_time = 0
     if "exp_ctrl.total_average_time" in _setup :
         _total_average_time = _setup["exp_ctrl.total_average_time"]
 
-    return _batch_nr, _total_average_time
- 
+    return _batch_nr, _sample_nr, _total_average_time
+
+def asynchronously_end_experiment(api, options) :
+
+    _setup = api.cldshow(options.cloud_name, "setup")
+    
+    if "exp_ctrl.end_now" in _setup :
+        if _setup["exp_ctrl.end_now"].lower() == "true" :
+            _msg = "# Attrbiute \"exp_ctrl.end_now\" set to \"true\" in CBTOOL's"
+            _msg += "[SETUP] global object. Ending the experiment now..."
+            print _msg
+            send_text(options, _msg)            
+            return True
+
+    try :
+        _fn = "/tmp/end_" + options.experiment_id
+        _fh = open(_fn, "r")
+        _fh.close()
+        _msg = "# File \"" + _fn + "\" ending the experiment now..."
+        print _msg
+        send_text(options, _msg)
+        return True
+    except :
+        pass
+
+    return False
+
 def profiling_phase(api, options, performance_data, directory) :
     '''
     In the profiling phase, an attempt to determine the average deployment
@@ -387,7 +421,10 @@ def profiling_phase(api, options, performance_data, directory) :
 
     manipulate_perf_dict(api, options, performance_data, directory, "write")
 
-    print "# Ended PROFILING phase.\n"        
+    _msg = "# Ended PROFILING phase.\n"
+    print _msg
+    send_text(options, _msg)
+           
     return True
 
 def total_deployment_time(management_metrics) :
@@ -437,31 +474,39 @@ def capacity_phase(api, options, performance_data, directory) :
     _max_failure_ratio = float(int(options.failure)/100.0)
     _msg = "### Maximum failure ratio is " + str(options.failure) + "%.\n"
     print _msg
+
+    _batch_nr, _sample_nr, _total_average_time = get_experiment_parameters(api, options)
+    _batch_nr = int(_batch_nr) + 1
+    _total_average_time = int(_total_average_time)
     
-    if not options.resume : 
-        _batch_nr = 1
-        _total_average_time = 0
-    else :
-        _batch_nr, _total_average_time = get_experiment_parameters(api, options)
-        _batch_nr = int(_batch_nr) + 1
-        _total_average_time = int(_total_average_time)
+    if options.resume : 
+
+        _msg = "### Resuming from batch " + str(_batch_nr) + "\n"
+        print _msg
+        
+        _msg = "### Resuming with accumulated average time " + str(_total_average_time) + " s\n"
+        print _msg
 
     _duration = time() - performance_data["experiment_start"] 
 
-    _total_average_time = 0
-
     _header = ["Timestamp", "Batch", "Batch Size", "Total Time Spent (s)", \
-               "VM Reservations", "VMs ARRIVED", "VMs ARRIVING", \
+               "VM Reservations", "VMs ISSUED", "VMs ARRIVED", "VMs ARRIVING", \
                "VMs DEPARTED", "VMs DEPARTING", "VMs FAILED", \
-               "VMs REPORTED (Cloud)", "Avg Deployment Time (s)", \
-               "Shortest Deployment Time (s)", "Longest Deployment Time (s)", \
-               "Failure Ratio (%)"]
+               "VMs REPORTED (Cloud)", "Exp Avg Deployment Time (s)", \
+               "Batch Avg Deployment Time(s)", "Shortest Deployment Time (s)", \
+               "Longest Deployment Time (s)", "Failure Ratio (%)"]
 
     #_capacity_table = prettytable.PrettyTable(_header)
 
-    _failed_vms = 0
-    _arrived_vms = 0
-    _sample_nr = 1
+    _stats = api.stats(options.cloud_name, "VM")
+    _vm_stats = _stats["experiment_counters"]["VM"]
+
+    _failed_vms = int(_vm_stats["failed"])
+    _arrived_vms = int(_vm_stats["arrived"])
+    _issued_vms = int(_vm_stats["issued"])
+    
+    _max_wait_time = 10 * _max_average_deployment_time
+    _single_vm_failure_counter = 1
     _experiment_end = False
 
     while _duration < options.duration and not _experiment_end :
@@ -510,17 +555,24 @@ def capacity_phase(api, options, performance_data, directory) :
                      pause_step = options.pause_step)
 
         _vms_deployed = int(_selected_batch_size * options.completion/100)
+
+        _target = _selected_batch_size - _vms_deployed
         
         _msg = "####### Waiting until " + str(options.completion) + "% of the VMs"
         _msg += " forming the batch " + str(_batch_nr) + " (" + str(_vms_deployed)
-        _msg += " VMs) are deployed....."
+        _msg += " VMs) are deployed (VM ARRIVING=" + str(_target) + ")....."
         print _msg
 
-        _msg = api.waituntil(options.cloud_name, "VM", "ARRIVING", \
-                             _batch_size - _vms_deployed, "decreasing", \
-                             5)
-        #print _msg
-
+        _counters = api.waituntil(options.cloud_name, "VM", "ARRIVING", \
+                             _target, "decreasing", \
+                             5, time_limit = _max_wait_time)
+        
+        if _counters['experiment_counters']["VM"]["arriving"] != str(_target) :
+            _msg = "####### WARNING: VM ARRIVING counter still not \"" + _target
+            _msg += " even after " + str(_max_wait_time) + " seconds!"
+            print _msg
+            send_text(options, _msg)
+            
         _batch_total = int(time()) - _batch_start
         
         _msg = "####### Determining average deployment time for batch " + str(_batch_nr) + "...."
@@ -575,14 +627,16 @@ def capacity_phase(api, options, performance_data, directory) :
 
         _failed_vms = int(_vm_stats["failed"])
         _arrived_vms = int(_vm_stats["arrived"])
+        _issued_vms = int(_vm_stats["issued"])
 
-        if _arrived_vms :
-            _failure_ratio = float(_failed_vms)/float(_arrived_vms)
+        if _issued_vms :
+            _failure_ratio = float(_failed_vms)/float(_issued_vms)
         else :
             _failure_ratio = 1.0
 
         performance_data["batch" + str(_batch_nr)]["failure_ratio"] = _failure_ratio
-
+        performance_data["batch" + str(_batch_nr)]["failed_vms"] = _failed_vms
+        
         _temp_capacity_table = prettytable.PrettyTable(_header)
         
         _capacity_row = []
@@ -591,6 +645,7 @@ def capacity_phase(api, options, performance_data, directory) :
         _capacity_row.append(_selected_batch_size)
         _capacity_row.append(_batch_total)        
         _capacity_row.append(_vm_stats["reservations"])
+        _capacity_row.append(_vm_stats["issued"])        
         _capacity_row.append(_vm_stats["arrived"])
         _capacity_row.append(_vm_stats["arriving"])
         _capacity_row.append(_vm_stats["departed"])
@@ -600,7 +655,9 @@ def capacity_phase(api, options, performance_data, directory) :
             _capacity_row.append(_vm_stats["reported"])
         else :
             _capacity_row.append("NA")
-        _capacity_row.append(_average_deployment_time)        
+
+        _capacity_row.append(_average_deployment_time)            
+        _capacity_row.append(_batch_adt)                    
         
         if _fastest_vm != 10000000 :            
             _capacity_row.append(_fastest_vm)
@@ -637,25 +694,39 @@ def capacity_phase(api, options, performance_data, directory) :
             _msg = "##### The average deployment time (" + str(_average_deployment_time)
             _msg += " seconds) is higher than the maximum (" + str(_max_average_deployment_time)
             _msg += " seconds). Ending the experiment...."            
-            print _msg            
+            print _msg
+            send_text(options, _msg)            
             _experiment_end = True
 
         if _failure_ratio > _max_failure_ratio :
             _msg = "##### The failure ratio (" + str(_failure_ratio) + ") is "
             _msg += " higher than the maximum (" + str(_max_failure_ratio)
             _msg += "). Ending the experiment...."            
-            print _msg            
+            print _msg
+            send_text(options, _msg)            
             _experiment_end = True
         
         if _batch_nr >= int(options.batches) :
             _msg = "##### The Number of batches (" + str(_batch_nr) + ") is larger"
             _msg += " than the total number of batches. Ending the experiment..."
-            print _msg        
+            print _msg
+            send_text(options, _msg)                    
             _experiment_end = True
 
         if _batch_nr >= 2 :
             _delta_failure_ratio = performance_data["batch" + str(_batch_nr)]["failure_ratio"] - \
             performance_data["batch" + str(_batch_nr - 1)]["failure_ratio"]
+
+            _delta_failed_vms = performance_data["batch" + str(_batch_nr)]["failed_vms"] - \
+            performance_data["batch" + str(_batch_nr - 1)]["failed_vms"]
+
+            if _delta_failed_vms :
+                _msg = "##### The number of failures increased between batches \""
+                _msg += str(_batch_nr) + "\" and \"" + str(_batch_nr-1) + "\""
+                _msg += " by " + str(_delta_failed_vms) + "." 
+                print _msg
+                if _delta_failure_ratio < 0 :
+                    _delta_failure_ratio *= -1
             
             if _delta_failure_ratio > 0 :
                 _inter_batch_success_counter = 0
@@ -666,7 +737,7 @@ def capacity_phase(api, options, performance_data, directory) :
                     _msg += str(_batch_nr) + "\" and \"" + str(_batch_nr-1) + "\""
                     _msg += " by " + str(_delta_failure_ratio) + " (" 
                     _msg += str(_inter_batch_failure_counter) + ")." 
-                    print _msg 
+                    print _msg
 
                     if _inter_batch_failure_counter >= options.batch_scaling_hysteresis :
                         _msg = "##### The failure ratio increased "
@@ -675,13 +746,31 @@ def capacity_phase(api, options, performance_data, directory) :
                         _msg += str(options.batch_scaling_factor) + '.' 
                         print _msg            
                         _batch_size = int(_batch_size/int(options.batch_scaling_factor))
+                    else :
+                        _msg = "###### The failure ratio increased "
+                        _msg += "for " + str(_inter_batch_failure_counter)
+                        _msg += " consecutive batches, waiting for failure "
+                        _msg += "counter to reach " 
+                        _msg += str(options.batch_scaling_hysteresis) + ". "
+                        print _msg
 
                 else :
+                    _svcf = 20                    
                     _msg = "##### The failure ratio increased between batches \""
                     _msg += str(_batch_nr) + "\" and \"" + str(_batch_nr-1) + "\""
                     _msg += " by " + str(_delta_failure_ratio) + "(" 
-                    _msg += str(_inter_batch_failure_counter) + "), but batch size is already 1"            
-                    print _msg            
+                    _msg += str(_inter_batch_failure_counter) + "), but batch "
+                    _msg += "size is already 1 (" + str(_single_vm_failure_counter)
+                    _msg += '/' + str(_svcf) + "). "            
+                    print _msg
+                    send_text(options, _msg)
+                    _single_vm_failure_counter += float(1.0)
+
+                    if _single_vm_failure_counter > _svcf :
+                        _msg = "##### The batch size is already and " + str(_svcf)
+                        _msg += " consecutive failures were detected. Ending the experiment..."
+                        print _msg
+                        _experiment_end = True
 
                 if not _batch_size :
                     _msg = "##### Batch size equal zero (too many failures). Ending the experiment..."
@@ -695,11 +784,15 @@ def capacity_phase(api, options, performance_data, directory) :
                 _msg = "##### The failure ratio between batches \""
                 _msg += str(_batch_nr) + "\" and \"" + str(_batch_nr-1) + "\""
                 _msg += " did not increase (" + str(_inter_batch_success_counter) + ")."
-                print _msg                        
+                print _msg           
+
+                if _batch_size == 1 :
+                    _single_vm_failure_counter = 0
                
                 if _batch_size < _original_batch_size : 
+                            
                     if _inter_batch_success_counter >= options.batch_scaling_hysteresis :
-                        _msg = "##### The failure ratio did not increase "
+                        _msg = "###### The failure ratio did not increase "
                         _msg += "for " + str(_inter_batch_success_counter)
                         _msg += " consecutive batches. Multiplying the batch size"
                         _msg += " by " + str(options.batch_scaling_factor) + " (up to "
@@ -709,10 +802,34 @@ def capacity_phase(api, options, performance_data, directory) :
                         _batch_size = _batch_size * int(options.batch_scaling_factor)
                         if _batch_size > _original_batch_size :
                             _batch_size = _original_batch_size
-        
+                    else :
+                        _msg = "###### The failure ratio did not increase "
+                        _msg += "for " + str(_inter_batch_success_counter)
+                        _msg += " consecutive batches, waiting for success "
+                        _msg += "counter to reach " 
+                        _msg += str(options.batch_scaling_hysteresis) + ". "
+                        print _msg
+                else :
+                    if _inter_batch_success_counter >= options.batch_scaling_hysteresis :                    
+                        _msg = "\n###### The failure ratio did not increase "
+                        _msg += "for " + str(_inter_batch_success_counter)
+                        _msg += " consecutive batches, but current batch size ("
+                        _msg += str(_batch_size) + ") is already maximum." 
+                        print _msg                                        
+                    else :
+                        _msg = "\n " 
+                        print _msg
+                                            
         api.cldalter(options.cloud_name, "setup", "exp_ctrl.batch_nr", _batch_nr)
+        api.cldalter(options.cloud_name, "setup", "exp_ctrl.sample_nr", _sample_nr)        
+
         manipulate_perf_dict(api, options, performance_data, directory, "write")
+
+        if not _experiment_end :
+            _experiment_end = asynchronously_end_experiment(api, options) 
+        
         _batch_nr +=1
+
     return True    
         
 def main() :
@@ -737,7 +854,7 @@ def main() :
     _net_type, _net_mechanism = get_network_parms(_options, api)
     
     if not _hyper_type.lower().count(_options.hypervisor.lower()) :
-        _msg = "ERROR: There are no hypervisors with type \"" + _hyper_type
+        _msg = "ERROR: There are no hypervisors with type \"" + _options.hypervisor
         _msg += "\" on the cloud \"" + _options.cloud_name + "\". The hypervisor"
         _msg += "types detected on the cloud are: " + _hyper_type
         print _msg
@@ -769,6 +886,8 @@ def main() :
         
     api.cldalter(_options.cloud_name, "vm_defaults", "update_attempts", _options.update_attempts)
     api.cldalter(_options.cloud_name, "vm_defaults", "update_frequency", _options.update_frequency)
+    api.cldalter(_options.cloud_name, "vm_defaults", "leave_instance_on_failure", "true")    
+    
     api.cldalter(_options.cloud_name, "admission_control", "vm_max_reservations", 75000)
 
     if _options.multitenant :
@@ -785,24 +904,26 @@ def main() :
 
         if not _mgt_metrics_header.count("osk_001_tenant_creation_time") :
             _mgt_metrics_header += ','.join([ "osk_001_tenant_creation_time", \
-                                             "osk_002_quota_update_time", \
-                                             "osk_003_user_creation_time", \
-                                             "osk_004_security_group_update_time", \
-                                             "osk_005_keypair_creation_time", \
-                                             "osk_006_net_creation_time", \
-                                             "osk_007_subnet_creation_time", \
-                                             "osk_008_router_creation_time", \
-                                             "osk_009_router_attachment", \
-                                             "osk_010_authenticate_time", \
-                                             "osk_011_check_existing_instance_time", \
-                                             "osk_012_get_flavors_time", \
-                                             "osk_013_get_imageid_time", \
-                                             "osk_014_get_netid_time", \
-                                             "osk_016_instance_creation_time", \
-                                             "osk_016_instance_scheduling_time", \
-                                             "osk_016_port_creation_time", \
-                                             "osk_017_create_fip_time", \
-                                             "osk_018_attach_fip_time" ])
+                                              "osk_002_quota_update_time", \
+                                              "osk_003_user_creation_time", \
+                                              "osk_004_security_group_update_time", \
+                                              "osk_005_keypair_creation_time", \
+                                              "osk_006_net_creation_time", \
+                                              "osk_007_subnet_creation_time", \
+                                              "osk_008_router_creation_time", \
+                                              "osk_009_router_attachment", \
+                                              "osk_010_authenticate_time", \
+                                              "osk_011_check_existing_instance_time", \
+                                              "osk_012_get_flavors_time", \
+                                              "osk_013_get_imageid_time", \
+                                              "osk_014_get_netid_time", \
+                                              "osk_015_create_volume_time", \
+                                              "osk_016_instance_creation_time", \
+                                              "osk_016_instance_scheduling_time", \
+                                              "osk_016_port_creation_time", \
+                                              "osk_017_create_fip_time", \
+                                              "osk_018_attach_fip_time", \
+                                              "osk_019_instance_reachable"])
             
             api.cldalter(_options.cloud_name, \
                          "mon_defaults", \
@@ -820,6 +941,7 @@ def main() :
     else :
         _options.pause_step = "none"
 
+
     if not _options.deployment and not _options.resume :
         _phase = "profiling"
         profiling_phase(api, _options, _perf_dict, _cb_data_dir + '/' + _experiment_id)
@@ -829,9 +951,10 @@ def main() :
         _perf_dict["samples"] = 0
         _perf_dict["total_samples"] = 0
         _perf_dict["total_nodes"] = len(get_compute_nodes(_options, api) )    
-        _perf_dict["average"] = int(_options.deployment)
-        _perf_dict["min"] = int(_options.deployment)
-        _perf_dict["max"] = int(_options.deployment)
+        if _options.deployment :
+            _perf_dict["average"] = int(_options.deployment)
+            _perf_dict["min"] = int(_options.deployment)
+            _perf_dict["max"] = int(_options.deployment)
 
         api.cldalter(_options.cloud_name, "setup", "exp_opt.role", _options.role)
         api.cldalter(_options.cloud_name, "setup", "exp_opt.instance_size", _options.instance_size)

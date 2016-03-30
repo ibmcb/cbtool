@@ -1,2 +1,2 @@
- status: Repairing a fault on host simhostc2 by executing the command "sudo  ; "
+ status: Repairing a fault on host simhostc2 by executing the command "sudo  ; " as user root
 HOST "simhostc2" was successfully attached on this experiment.

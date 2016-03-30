@@ -4,7 +4,8 @@
 IMAGES_URL=http://9.2.212.67/repo/vmimages/
 IMAGES_ARCH=x86_64
 IMAGES_LIST=coremark:bare:qcow2:x86_64:qemu
-IMAGES_LIST=${IMAGES_LIST},daytrader:bare:qcow2:x86_64:qemu
+IMAGES_LIST=${IMAGES_LIST},nullworkload:bare:qcow2:x86_64:qemu
+IMAGES_LIST=${IMAGES_LIST},nullworkload:docker:raw:x86_64:docker
 IMAGES_LIST=${IMAGES_LIST},ddgen:bare:qcow2:x86_64:qemu
 IMAGES_LIST=${IMAGES_LIST},filebench:bare:qcow2:x86_64:qemu
 IMAGES_LIST=${IMAGES_LIST},hadoop:bare:qcow2:x86_64:qemu
@@ -17,8 +18,6 @@ IMAGES_LIST=${IMAGES_LIST},iperf:bare:qcow2:x86_64:qemu
 IMAGES_LIST=${IMAGES_LIST},iperf:docker:raw:x86_64:docker
 IMAGES_LIST=${IMAGES_LIST},netperf:bare:qcow2:x86_64:qemu
 IMAGES_LIST=${IMAGES_LIST},netperf:docker:raw:x86_64:docker
-IMAGES_LIST=${IMAGES_LIST},nullworkload:bare:qcow2:x86_64:qemu
-IMAGES_LIST=${IMAGES_LIST},nullworkload:docker:raw:x86_64:docker
 IMAGES_LIST=${IMAGES_LIST},specjbb:bare:qcow2:x86_64:qemu
 IMAGES_LIST=${IMAGES_LIST},giraph:bare:qcow2:x86_64:qemu
 IMAGES_LIST=${IMAGES_LIST},nuttcp:bare:qcow2:x86_64:qemu
@@ -31,6 +30,7 @@ IMAGES_LIST=${IMAGES_LIST},speccloud_cassandra_2111:bare:qcow2:x86_64:qemu
 IMAGES_LIST=${IMAGES_LIST},speccloud_cassandra_2111:docker:raw:x86_64:docker
 IMAGES_LIST=${IMAGES_LIST},speccloud_hadoop_271:bare:qcow2:x86_64:qemu
 IMAGES_LIST=${IMAGES_LIST},speccloud_hadoop_271:docker:raw:x86_64:docker
+IMAGES_LIST=${IMAGES_LIST},daytrader:bare:qcow2:x86_64:qemu
 IMAGES_LIST=$(echo ${IMAGES_LIST} | sed 's/,/ /g')
 
 sudo wget -N --directory-prefix=/tmp/sdebuilder ${IMAGES_URL}/cloudbench/${IMAGES_ARCH}/md5sum.txt

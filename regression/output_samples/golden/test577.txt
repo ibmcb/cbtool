@@ -1,26 +1,33 @@
 The attribute "sut" on ibm_daytrader AI was modified:
 |attribute                              |old value                          |new value                          
 |ibm_daytrader_sut                      |client_daytrader->was->db2         |client_daytrader->was->willfail    
- status: vm_120 (cloud-assigned uuid F67DD025-8449-567E-BC19-8A86061D2D58) could not be created on SimCloud "TESTCLOUD" : Failed to create VM image (The VM creation was rolled back)
- status: Sending a termination request for vm_120 (cloud-assigned uuid F67DD025-8449-567E-BC19-8A86061D2D58)....
- status: vm_120 (cloud-assigned uuid F67DD025-8449-567E-BC19-8A86061D2D58) could not be destroyed  on SimCloud "TESTCLOUD" : 'host'
- status: Waiting for vm_117 (cloud-assigned uuid F125D0CD-6B34-5A6D-8599-69AFD76813D3) to start...
- status: Waiting for vm_119 (cloud-assigned uuid 21DED857-E062-502D-8A26-C51D26E56ABA) to start...
- status: Waiting for vm_121 (cloud-assigned uuid CF5F1387-6340-575C-B6EB-C7D1212FF911) to start...
- status: Waiting for vm_118 (cloud-assigned uuid 41730051-D7AA-56B3-857A-B99910C05869) to start...
- status: Trying to establish network connectivity to vm_117 (cloud-assigned uuid F125D0CD-6B34-5A6D-8599-69AFD76813D3), on IP address 143.251.26.221...
- status: Trying to establish network connectivity to vm_121 (cloud-assigned uuid CF5F1387-6340-575C-B6EB-C7D1212FF911), on IP address 29.51.104.29...
- status: Trying to establish network connectivity to vm_118 (cloud-assigned uuid 41730051-D7AA-56B3-857A-B99910C05869), on IP address 87.112.6.247...
- status: Trying to establish network connectivity to vm_119 (cloud-assigned uuid 21DED857-E062-502D-8A26-C51D26E56ABA), on IP address 233.95.2.41...
- status: Bypassing the bootstrapping and the sending of a copy of the code tree to vm_118 (87.112.6.247)...
- status: Bypassing the bootstrapping and the sending of a copy of the code tree to vm_119 (233.95.2.41)...
- status: Bypassing the bootstrapping and the sending of a copy of the code tree to vm_121 (29.51.104.29)...
- status: Bypassing the bootstrapping and the sending of a copy of the code tree to vm_117 (143.251.26.221)...
- status: Sending a termination request for vm_117 (cloud-assigned uuid F125D0CD-6B34-5A6D-8599-69AFD76813D3)....
- status: Sending a termination request for vm_118 (cloud-assigned uuid 41730051-D7AA-56B3-857A-B99910C05869)....
- status: Sending a termination request for vm_121 (cloud-assigned uuid CF5F1387-6340-575C-B6EB-C7D1212FF911)....
- status: Sending a termination request for vm_119 (cloud-assigned uuid 21DED857-E062-502D-8A26-C51D26E56ABA)....
-AI object 62470204-B8D1-5A38-9E23-058D05EBFC42 (named "ai_30") could not be attached to this experiment: AI pre-attachment operations failure: Parallel object operation failure: VM object 34899953-90C4-5C26-BC2A-1C8211FF7A8F (named "vm_120") could not be attached to this experiment: vm_120 (cloud-assigned uuid F67DD025-8449-567E-BC19-8A86061D2D58) could not be destroyed  on SimCloud "TESTCLOUD" : 'host' A rollback might be needed (only for VMs).
+ status: vm_120 (cloud-assigned uuid EADDD608-1526-5E18-BDED-B627775F8803) could not be created on SimCloud "TESTCLOUD" : Deterministic VM failure ("willfail") (The VM creation was rolled back)
+ status: Sending a termination request for vm_120 (cloud-assigned uuid EADDD608-1526-5E18-BDED-B627775F8803)....
+ status: Waiting for vm_118 (cloud-assigned uuid CFB66660-C1B4-5AB2-9320-6CC7F86AD87C) to start...
+ status: Waiting for vm_119 (cloud-assigned uuid B43A5351-AC58-5462-8207-28C6C2EE7348) to start...
+ status: Waiting for vm_117 (cloud-assigned uuid 78BF07A1-E058-55D9-8405-D245956E97DA) to start...
+ status: Waiting for vm_121 (cloud-assigned uuid 00DCFC80-6E72-53BA-8105-37B90504D49E) to start...
+ status: Trying to establish network connectivity to vm_118 (cloud-assigned uuid CFB66660-C1B4-5AB2-9320-6CC7F86AD87C), on IP address 40.108.19.41...
+ status: Trying to establish network connectivity to vm_117 (cloud-assigned uuid 78BF07A1-E058-55D9-8405-D245956E97DA), on IP address 211.148.125.174...
+ status: Trying to establish network connectivity to vm_119 (cloud-assigned uuid B43A5351-AC58-5462-8207-28C6C2EE7348), on IP address 95.159.71.171...
+ status: Trying to establish network connectivity to vm_121 (cloud-assigned uuid 00DCFC80-6E72-53BA-8105-37B90504D49E), on IP address 146.68.129.160...
+ status: Checking ssh accessibility on vm_118 (ssh klabuser@40.108.19.41)...
+ status: Bootstrapping vm_118 (creating file cb_os_paramaters.txt in "klabuser" user's home dir on 40.108.19.41)...
+ status: Sending a copy of the code tree to vm_118 (40.108.19.41)...
+ status: Checking ssh accessibility on vm_119 (ssh klabuser@95.159.71.171)...
+ status: Bootstrapping vm_119 (creating file cb_os_paramaters.txt in "klabuser" user's home dir on 95.159.71.171)...
+ status: Sending a copy of the code tree to vm_119 (95.159.71.171)...
+ status: Checking ssh accessibility on vm_121 (ssh klabuser@146.68.129.160)...
+ status: Bootstrapping vm_121 (creating file cb_os_paramaters.txt in "klabuser" user's home dir on 146.68.129.160)...
+ status: Sending a copy of the code tree to vm_121 (146.68.129.160)...
+ status: Checking ssh accessibility on vm_117 (ssh klabuser@211.148.125.174)...
+ status: Bootstrapping vm_117 (creating file cb_os_paramaters.txt in "klabuser" user's home dir on 211.148.125.174)...
+ status: Sending a copy of the code tree to vm_117 (211.148.125.174)...
+ status: Sending a termination request for vm_121 (cloud-assigned uuid 00DCFC80-6E72-53BA-8105-37B90504D49E)....
+ status: Sending a termination request for vm_117 (cloud-assigned uuid 78BF07A1-E058-55D9-8405-D245956E97DA)....
+ status: Sending a termination request for vm_119 (cloud-assigned uuid B43A5351-AC58-5462-8207-28C6C2EE7348)....
+ status: Sending a termination request for vm_118 (cloud-assigned uuid CFB66660-C1B4-5AB2-9320-6CC7F86AD87C)....
+AI object 402D0B03-5B57-55D6-A515-F15C779A9702 (named "ai_30") could not be attached to this experiment: AI pre-attachment operations failure: Parallel object operation failure: VM object F9FBFEF9-A540-58C8-AAB5-19C3F70A4D7A (named "vm_120") could not be attached to this experiment: vm_120 (cloud-assigned uuid EADDD608-1526-5E18-BDED-B627775F8803) could not be created on SimCloud "TESTCLOUD" : Deterministic VM failure ("willfail") (The VM creation was rolled back) A rollback might be needed (only for VMs).
 The following ATTACHED AIs are in this experiment (Cloud TESTCLOUD) :
 No objects available.
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
@@ -28,24 +35,19 @@ No objects available.
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |6.34M                         
-|Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |3793594                       
-|Total Connections Received                           |81390                         
-|Total Commands Processed                             |6218532                       
-|Number of Keys                                       |622                           
+|Used Memory                                          |26.02M                        
+|Redis Version                                        |2.8.6                         
+|Uptime (in seconds)                                  |14436390                      
+|Total Connections Received                           |614869                        
+|Total Commands Processed                             |58966288                      
+|Number of Keys                                       |1171                          
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|MongoDB Version                                      |2.4.9                         
-|Storage Size                                         |3321856                       
-|Data Size                                            |742688                        
-|Index Size                                           |474208                        
-|Average Object Size                                  |545.692872888                 
-|Collections                                          |14                            
+|Collections                                          |28                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
 |VMCs                                                 |4                             
-|HOSTs                                                |20                            
+|HOSTs                                                |60                            
 |VMs                                                  |0                             
 |AIs                                                  |0                             
 |AIDRSs                                               |0                             
@@ -54,25 +56,32 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------ EXPERIMENT-WIDE COUNTERS ------------------
 |Counter                                              |Value                         
 |VMC RESERVATIONS                                     |4                             
+|VMCs ISSUED                                          |16                            
 |VMCs ARRIVED                                         |16                            
 |VMCs ARRIVING                                        |0                             
 |VMCs DEPARTED                                        |12                            
 |VMCs DEPARTING                                       |0                             
 |VMCs FAILED                                          |0                             
 |HOST RESERVATIONS                                    |0                             
+|HOSTs ISSUED                                         |0                             
 |HOSTs ARRIVED                                        |0                             
 |HOSTs ARRIVING                                       |0                             
 |HOSTs DEPARTED                                       |0                             
 |HOSTs DEPARTING                                      |0                             
 |HOSTs FAILED                                         |0                             
 |VM RESERVATIONS                                      |0                             
+|VMs ISSUED                                           |121                           
 |VMs ARRIVED                                          |117                           
 |VMs ARRIVING                                         |0                             
 |VMs CAPTURING                                        |0                             
 |VMs DEPARTED                                         |117                           
 |VMs DEPARTING                                        |0                             
 |VMs FAILED                                           |4                             
+|VMs SLA PROVISIONING VIOLATED                        |0                             
+|VMs SLA RUNTIME VIOLATED                             |0                             
+|VMs APPLICATION ERRORS                               |7                             
 |AI RESERVATIONS                                      |0                             
+|AIs ISSUED                                           |30                            
 |AIs ARRIVED                                          |28                            
 |AIs ARRIVING                                         |0                             
 |AIs CAPTURING                                        |0                             
@@ -80,28 +89,31 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |AIs DEPARTING                                        |0                             
 |AIs FAILED                                           |2                             
 |AIDRS RESERVATIONS                                   |0                             
+|AIDRSs ISSUED                                        |0                             
 |AIDRSs ARRIVED                                       |0                             
 |AIDRSs ARRIVING                                      |0                             
 |AIDRSs DEPARTED                                      |0                             
 |AIDRSs DEPARTING                                     |0                             
 |AIDRSs FAILED                                        |0                             
 |VMCRS RESERVATIONS                                   |0                             
+|VMCRSs ISSUED                                        |0                             
 |VMCRSs ARRIVED                                       |0                             
 |VMCRSs ARRIVING                                      |0                             
 |VMCRSs DEPARTED                                      |0                             
 |VMCRSs DEPARTING                                     |0                             
 |VMCRSs FAILED                                        |0                             
 |FIRS RESERVATIONS                                    |0                             
+|FIRSs ISSUED                                         |0                             
 |FIRSs ARRIVED                                        |0                             
 |FIRSs ARRIVING                                       |0                             
 |FIRSs DEPARTED                                       |0                             
 |FIRSs DEPARTING                                      |0                             
 |FIRSs FAILED                                         |0                             
-|EXPERIMENT COUNTER                                   |384                           
+|EXPERIMENT COUNTER                                   |504                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|516A5A15-B093-5B5F-B171-EE9AA82AAEF0 (simzone_c) VM RESERVATIONS|0                             
-|8D79A9F1-34B8-5D1A-A903-082245CE052C (simzone_d) VM RESERVATIONS|0                             
-|B0B6FF0A-FAE8-5217-A335-C0F1B0BEA0D6 (simzone_b) VM RESERVATIONS|0                             
-|D5506DC9-493A-57EE-86F6-0B96CB07D162 (simzone_a) VM RESERVATIONS|0                             
+|2C0CBD0C-C4AB-589F-B1DC-473FE1792EEA (simzone_b) VM RESERVATIONS|0                             
+|09BE1FD2-5286-5B6E-AA11-D68D33341047 (simzone_a) VM RESERVATIONS|0                             
+|95B3CBBD-180B-59D1-9048-B3EAC63E092B (simzone_d) VM RESERVATIONS|0                             
+|4DFFE7AE-4E70-5DA7-82EF-D0BC8960A44B (simzone_c) VM RESERVATIONS|0                             
 

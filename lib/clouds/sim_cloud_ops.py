@@ -683,6 +683,8 @@ class SimCmds(CommonCloudFunctions) :
 
             self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
 
+            self.take_action_if_requested("VM", obj_attr_list, "provision_finished")
+
             self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
                                          obj_attr_list["uuid"], "utc_offset_on_vm", "3600") 
             

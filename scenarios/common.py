@@ -25,6 +25,7 @@ import os
 import pwd
 import redis
 import prettytable
+import httplib, urllib
 
 from sys import path, argv, stdout
 from time import sleep, time, strftime, strptime, localtime
@@ -149,6 +150,19 @@ def cloud_detach(options, api) :
         
     except Exception, e:
         print 'Detaching from cloud %s failed:\n %s'%(options.cloud_name, str(e))
+
+def send_text(options, message):    
+    if options.phone :
+        _msg = "Experiment \"" + options.experiment_id + "\" on cloud \""
+        _msg +=  options.cloud_name + "\": " + message 
+        params = urllib.urlencode({'number': options.phone, 'message': _msg})
+        headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
+        conn = httplib.HTTPConnection("textbelt.com:80")
+        conn.request("POST", "/text", params, headers)
+        response = conn.getresponse()
+        return response.status, response.reason
+    else :
+        return None, None
 
 def cloud_cleanup(options, api) :
     '''

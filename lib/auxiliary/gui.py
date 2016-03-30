@@ -1962,6 +1962,7 @@ class GUIDispatcher(Resource) :
         Resource.__init__(self)
         self.third_party = File(cwd + "/3rd_party")
         self.files = File(cwd + "/gui_files")
+        self.fdrs = File(cwd + "/../driver")
         self.icon = File(cwd + "/gui_files/favicon.ico")
         self.git = File(cwd + "/.git")
         self.git.indexNames = ["test.rpy"]
@@ -1994,6 +1995,8 @@ class GUIDispatcher(Resource) :
             return self.third_party
         elif name.count("gui_files") :
             return self.files
+        elif name.count("fdrs") :
+            return self.fdrs
         elif name.count("favicon.ico"):
             return self.icon
         elif name.count("git"):

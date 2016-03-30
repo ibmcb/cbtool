@@ -1,8 +1,34 @@
 The AI with the type ibm_daytrader has the following configuration on experiment (Cloud TESTCLOUD) :
+description:  Deploys an 2-tier stack, formed by N "application (Websphere) nodes" VMs
+ - if N > 1, then a "load balancer (IHS) node" VM is also deployed -
+  and one "database (DB2) node" VM, and then runs the DayTrader benchmark on the
+stack. The actual load is performed by an additional VM, running the WebSphere
+Studio Workload Simulator (iwlengine).
+- LOAD_PROFILE possible values: "default" (the only profile that we have
+registered in the iwlengine).- LOAD_LEVEL meaning: number of clients
+simultaneously performing transactions (parameter "-c" on iwlengine).
+- LOAD_DURATION meaning: total transaction time for all clients.
+- COMMENT: None.
+
+# Attributes MANDATORY for all Virtual Applications: 
+
 sut: client_daytrader->was->db2
+load_balancer_supported: True
+resize_supported: True
+regenerate_data: False
+role_list: client_daytrader,was,db2
+load_generator_role: client_daytrader
 load_manager_role: client_daytrader
 metric_aggregator_role: client_daytrader
 capture_role: db2
+load_balancer: False
+load_profile: default
+load_level: uniformIXIXI1I10
+load_duration: uniformIXIXI90I120
+reported_metrics: throughput,latency,datagen_time,datagen_size,completion_time,quiescent_time
+
+# Virtual Application-specific MANDATORY attributes: 
+
 db2_setup1: cb_setup_ramdisk.sh
 db2_setup2: cb_restart_db2.sh
 lb_setup1: cb_restart_loadbalancer.sh
@@ -11,13 +37,18 @@ db2_reset1: cb_restart_db2.sh
 lb_reset1: cb_restart_loadbalancer.sh
 was_reset1: cb_restart_was.sh
 start: cb_daytrader.sh
-load_level: uniformIXIXI1I10
-load_duration: uniformIXIXI90I120
-load_balancer: False
+
+# Virtual Application-specific OPTIONAL attributes: 
+
+app_collection: lazy
+db2_instance_name: klabuser
+db2_on_ramdisk: False
 load_balancer_port: 9080
 load_balancer_target_children: 2
 load_balancer_target_port: 9080
 load_balancer_target_url: daytrader
 load_balancer_url: daytrader
-load_generator_role: client_daytrader
-load_profile: default
+nr_quotes: 40000
+nr_users: 15000
+periodic_measurements: False
+tradedb_size: small

@@ -1,2 +1,2 @@
 AIs with the following types can be attached to to this experiment (Cloud TESTCLOUD) :
-nullworkload, ibmderby_tradelite, fbnfsrd, ddgen, specjbb, filebench, hpcc, ibm_daytrader, netperf, hadoop, open_daytrader, windesktop, mongo_ycsb, cassandra_ycsb, ibmdb2_tradelite, coremark, iperf, specimap, mweb, redis_ycsb, mlg
+hpcc, coremark, iperf, redis_ycsb, filebench, nullworkload, ibmderby_tradelite, ddgen, windesktop, hadoop, mongo_ycsb, cassandra_ycsb, giraph, linpack, mweb, fio, xping, specjbb, specimap, mlg, ibm_daytrader, netperf, open_daytrader, ibmdb2_tradelite, nuttcp, gatest

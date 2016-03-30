@@ -8,7 +8,7 @@ OSK_NETWORK_NAME=cb-tenantnet
 OSK_SUBNETWORK_NAME=cb-subtenantnet
 OSK_ROUTER_NAME=cb-router
 
-TNSRC_ERROR=0
+#TNSRC_ERROR=0
 
 #counter=$(echo ${1} | cut -d _ -f 5)
 #counter=$(cat ${1} | grep counter | cut -d ':' -f 2 | sed 's^"\|,\| ^^g')    
@@ -49,7 +49,12 @@ function create_user () {
     openstack user show ${OSK_USER_NAME}-${_n} > /dev/null 2>&1
     if [[ $? -ne 0 ]]
     then    
-        openstack user create --password temp4now --project ${_t} --email user-${_n}@nowhere.org --enable ${OSK_USER_NAME}-${_n} > /dev/null 2>&1 || ( echo "user creation failed" ; export TNSRC_ERROR=1 )
+        openstack user create --password temp4now --project ${_t} --email user-${_n}@nowhere.org --enable ${OSK_USER_NAME}-${_n} > /dev/null 2>&1 
+        if [[ $? -ne 0 ]]
+        then
+            echo "user creation failed" >&2
+            export TNSRC_ERROR=1
+        fi
         export TENANT_JUST_CREATED=1
     else
         export TENANT_JUST_CREATED=0           
@@ -59,8 +64,18 @@ function create_user () {
 function update_security_groups () {
     _t=$1
     secgroup=$(neutron security-group-list --tenant-id ${_t} | grep default | awk '{ print $2 }')
-    neutron security-group-rule-create $secgroup --direction ingress --protocol icmp > /dev/null 2>&1 || (echo "failed to update secgroup"; exit 1)
-    neutron security-group-rule-create $secgroup --direction ingress --protocol tcp --port-range-min 22 --port-range-max 22 > /dev/null 2>&1 || (echo "failed to update secgroup"; exit 1)
+    neutron security-group-rule-create $secgroup --direction ingress --protocol icmp > /dev/null 2>&1
+    if [[ $? -ne 0 ]]
+    then
+        echo "failed to update secgroup" >&2
+        export TNSRC_ERROR=1
+    fi    
+    neutron security-group-rule-create $secgroup --direction ingress --protocol tcp --port-range-min 22 --port-range-max 22 > /dev/null 2>&1
+    if [[ $? -ne 0 ]]
+    then
+        echo "failed to update secgroup" >&2
+        export TNSRC_ERROR=1
+    fi    
 }
 
 function add_keypair () {
@@ -68,7 +83,12 @@ function add_keypair () {
     keyname=$2
     kusername=$3    
     _n=$4
-    nova --os-tenant-name cb-tenant-${_n} --os-username ${OSK_USER_NAME}-${_n} --os-password temp4now keypair-add --pub-key $keypath/${keyname}.pub ${kusername}_cb-tenant-${_n}_${keyname} > /dev/null 2>&1 || ( echo "pubkey injection failed"; export TNSRC_ERROR=1 )
+    nova --os-tenant-name cb-tenant-${_n} --os-username ${OSK_USER_NAME}-${_n} --os-password temp4now keypair-add --pub-key $keypath/${keyname}.pub ${kusername}_cb-tenant-${_n}_${keyname} > /dev/null 2>&1
+    if [[ $? -ne 0 ]]
+    then
+        echo "pubkey injection failed" >&2
+        export TNSRC_ERROR=1
+    fi
 }
 
 function create_network () {
@@ -87,7 +107,12 @@ function create_network () {
         neutron net-show ${OSK_NETWORK_NAME}-${_n}-${i} > /dev/null 2>&1
         if [[ $? -ne 0 ]]
         then         
-           neutron net-create --tenant-id ${_t} ${OSK_NETWORK_NAME}-${_n}-${i} > /dev/null 2>&1 || ( echo "network creation failed" ; export TNSRC_ERROR=1 )
+            neutron net-create --tenant-id ${_t} ${OSK_NETWORK_NAME}-${_n}-${i} > /dev/null 2>&1
+            if [[ $? -ne 0 ]]
+            then
+                echo "network creation failed" >&2
+                export TNSRC_ERROR=1
+            fi        
         fi
     done
 }
@@ -118,7 +143,12 @@ function create_subnet() {
             neutron subnet-show ${OSK_SUBNETWORK_NAME}-${_n}-${i}-${j} > /dev/null 2>&1
             if [[ $? -ne 0 ]]
             then                                                                      
-                neutron subnet-create --tenant-id ${_t} --name ${OSK_SUBNETWORK_NAME}-${_n}-${i}-${j} --enable-dhcp ${OSK_NETWORK_NAME}-${_n}-${i} ${_snipa} > /dev/null 2>&1 || ( echo "subnet creation failed" ; export TNSRC_ERROR=1 )
+                neutron subnet-create --tenant-id ${_t} --name ${OSK_SUBNETWORK_NAME}-${_n}-${i}-${j} --enable-dhcp ${OSK_NETWORK_NAME}-${_n}-${i} ${_snipa} > /dev/null 2>&1
+                if [[ $? -ne 0 ]]
+                then
+                    echo "subnet creation failed" >&2
+                    export TNSRC_ERROR=1
+                fi  
             fi
         done
     done
@@ -139,7 +169,12 @@ function create_router () {
         neutron router-show ${OSK_ROUTER_NAME}-${_n}-${i} > /dev/null 2>&1
         if [[ $? -ne 0 ]]
         then
-            neutron router-create --tenant-id ${_t} ${OSK_ROUTER_NAME}-${_n}-${i} > /dev/null 2>&1 || ( echo "router creation failed" ; export TNSRC_ERROR=1 )
+            neutron router-create --tenant-id ${_t} ${OSK_ROUTER_NAME}-${_n}-${i} > /dev/null 2>&1
+            if [[ $? -ne 0 ]]
+            then
+                echo "router creation failed" >&2
+                export TNSRC_ERROR=1
+            fi                  
             export ROUTER_JUST_CREATED=1
         else
             export ROUTER_JUST_CREATED=0
@@ -159,7 +194,12 @@ function router_set_gateway () {
     
     for ((i=1; i <= $numrouters ; i++))
     do
-        neutron router-gateway-set ${OSK_ROUTER_NAME}-${_n}-${i} ${_extnet} > /dev/null 2>&1 || ( echo "router attachment failed" ; export TNSRC_ERROR=1 ) 
+        neutron router-gateway-set ${OSK_ROUTER_NAME}-${_n}-${i} ${_extnet} > /dev/null 2>&1
+        if [[ $? -ne 0 ]]
+        then
+            echo "setting router gateway failed" >&2
+            export TNSRC_ERROR=1
+        fi              
     done
 }
 
@@ -193,12 +233,17 @@ function attach_to_router () {
         do                            
             for ((k=1; k <= $numrouters ; k++))
             do
-                neutron router-interface-add  ${OSK_ROUTER_NAME}-${_n}-${k} ${OSK_SUBNETWORK_NAME}-${_n}-${i}-${j} > /dev/null 2>&1 || ( echo "router attachment failed" ; export TNSRC_ERROR=1 ) 
+                neutron router-interface-add  ${OSK_ROUTER_NAME}-${_n}-${k} ${OSK_SUBNETWORK_NAME}-${_n}-${i}-${j} > /dev/null 2>&1 
+                if [[ $? -ne 0 ]]
+                then
+                    echo "router attachment failed" >&2
+                    export TNSRC_ERROR=1
+                fi         
             done
         done
     done
 }
-
+    
 function delete_router () {
     _n=$1
 
@@ -233,7 +278,12 @@ function delete_router () {
                 do
                     neutron router-interface-delete ${OSK_ROUTER_NAME}-${_n}-${k} $sn > /dev/null 2>&1
                 done        
-                neutron router-delete ${OSK_ROUTER_NAME}-${_n}-${k} > /dev/null 2>&1 || ( echo "router deletion failed" ; export TNSRC_ERROR=1 )
+                neutron router-delete ${OSK_ROUTER_NAME}-${_n}-${k} > /dev/null 2>&1
+                if [[ $? -ne 0 ]]
+                then
+                    echo "router deletion failed" >&2
+                    export TNSRC_ERROR=1
+                fi                         
             done
         done
     done
@@ -260,7 +310,12 @@ function delete_subnet() {
     do
         for ((j=1; j <= $numsubnets ; j++))
         do                            
-            neutron subnet-delete ${OSK_SUBNETWORK_NAME}-${_n}-${i}-${j} > /dev/null 2>&1 || ( echo "subnet deletion failed" ; export TNSRC_ERROR=1 )    
+            neutron subnet-delete ${OSK_SUBNETWORK_NAME}-${_n}-${i}-${j} > /dev/null 2>&1
+	        if [[ $? -ne 0 ]]
+	        then
+	            echo "subnet deletion failed" >&2
+	            export TNSRC_ERROR=1
+	        fi                                     
         done
     done
 }
@@ -277,13 +332,23 @@ function delete_network () {
     
     for ((i=1; i <= $numnets ; i++))
     do    
-        neutron net-delete ${_t} ${OSK_NETWORK_NAME}-${_n}-${i} > /dev/null 2>&1 || ( echo "network deletion failed" ; export TNSRC_ERROR=1 )
+        neutron net-delete ${_t} ${OSK_NETWORK_NAME}-${_n}-${i} > /dev/null 2>&1
+        if [[ $? -ne 0 ]]
+        then
+            echo "network deletion failed" >&2
+            export TNSRC_ERROR=1
+        fi          
     done
 }
 
 function delete_user () {
     _n=$1 
-    openstack user delete ${OSK_USER_NAME}-${_n} > /dev/null 2>&1 || ( echo "user deletion failed" ; export TNSRC_ERROR=1 )
+    openstack user delete ${OSK_USER_NAME}-${_n} > /dev/null 2>&1
+	if [[ $? -ne 0 ]]
+	then
+	    echo "user deletion failed" >&2
+	    export TNSRC_ERROR=1
+	fi              
 }
 
 function delete_tenant () {
@@ -293,7 +358,12 @@ function delete_tenant () {
     do 
         neutron security-group-delete $SECGID
     done       
-    openstack project delete ${OSK_TENANT_NAME}-${_n} > /dev/null 2>&1 || ( echo "tenant deletion failed"; export TNSRC_ERROR=1 )
+    openstack project delete ${OSK_TENANT_NAME}-${_n} > /dev/null 2>&1
+	if [[ $? -ne 0 ]]
+	then
+	    echo "tenant deletion failed" >&2
+	    export TNSRC_ERROR=1
+	fi            
 }
 
 if [[ $step == "execute_deprovision_finished" ]]

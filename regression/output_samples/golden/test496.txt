@@ -1,4 +1,4 @@
-Background operation execution success. Operation "vm-attach" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.1.250,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,timeout:240,host:172.16.1.250,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,predictablevm,auto,empty,default,none,check_boot_started=subscribe_on_starting --operation=vm-attach --cn=TESTCLOUD --uuid=13ADD3C5-42EF-5A6A-8FD0-CD28A02142D0 --daemon". The process id is 27148.
+Background operation execution success. Operation "vm-attach" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.0.4,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,password:cbpwdZ9,timeout:240,host:172.16.0.4,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,predictablevm,auto,empty,default,none,check_boot_started=subscribe_on_starting --operation=vm-attach --cn=TESTCLOUD --uuid=72A88028-0646-574B-8F68-81E56BDC5B36 --daemon". The process id is 9751.
 
 Going to unconditionally wait for 8s (8 seconds). The command line interface will be blocked during the waiting.
 Waited 1 seconds... (12.5%)
@@ -10,7 +10,7 @@ Waited 6 seconds... (75.0%)
 Waited 7 seconds... (87.5%)
 Waited 8 seconds... (100.0%)
 Waited for 8 seconds.
-Message "11111111-1111-1111-1111-111111111111 has started" published on channel "starting" (object "VM" ).
+Message "11111111-1111-1111-1111-111111111111 has started" published on channel "starting" (object "VM").
 Going to unconditionally wait for 8s (8 seconds). The command line interface will be blocked during the waiting.
 Waited 1 seconds... (12.5%)
 Waited 2 seconds... (25.0%)
@@ -22,42 +22,37 @@ Waited 7 seconds... (87.5%)
 Waited 8 seconds... (100.0%)
 Waited for 8 seconds.
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
-|name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
-|vm_1          |tinyvm              |pico32      |180.159.11.28   |simhosta1                  |SUT                 |none    |none       |5C29CE0D-B174-5AD8-BF75-6B1793833BBF
-|vm_3          |tinyvm              |pico32      |84.243.161.209  |simhostb1                  |SUT                 |none    |none       |EE9F2972-129F-5020-A9CA-5FFD376C69A9
-|vm_4          |db2                 |copper32    |25.107.28.157   |simhostb1                  |SUT                 |none    |none       |FDB6A9EA-8A7A-5DAB-ADAA-CE2AECFF01DA
-|vm_5          |netclient           |platinum64  |121.217.11.74   |simhostd3                  |SUT                 |none    |none       |1E7D7D70-5AC8-555B-A53B-0C831E5522E8
-|vm_6          |tinyvm              |pico32      |7.228.165.122   |simhostc3                  |SUT                 |none    |none       |D50569B7-E411-5214-83AF-E6653495906C
-|vm_7          |tinyvm              |pico32      |70.230.20.236   |simhosta3                  |SUT                 |none    |none       |318B9CD3-277A-5943-B19E-71F871D639E7
-|vm_8          |tinyvm              |pico32      |247.34.81.128   |simhosta2                  |SUT                 |none    |none       |C345ACE0-B563-56B5-A4F5-4A6F3F49858C
-|vm_9          |db2                 |platinum64  |143.13.76.80    |simhostd2                  |SUT                 |none    |none       |0EA1AF57-79C7-5F87-B6D7-17F1875283DC
-|vm_10         |netclient           |iron32      |123.130.161.89  |simhosta2                  |SUT                 |none    |none       |BA1E6907-CF6F-5BDE-9EC7-53D8761006C9
-|vm_11         |fen_hpc             |platinum64  |17.22.25.153    |simhosta1                  |LG                  |none    |none       |91BB361B-CDF3-5DC7-B074-6D4CDFDE7E31
-|vm_12         |tinyvm              |iron32      |155.60.136.248  |simhostc1                  |SUT                 |none    |none       |EEA4B21B-AB15-5DC1-8428-EDD99C89D6B5
-|vm_13         |tinyvm              |iron32      |179.52.166.183  |simhostd4                  |SUT                 |none    |none       |99B6FDCC-10C6-5813-A98B-B02F8CE55813
-|vm_14         |predictablevm       |iron32      |1.2.3.4         |simhostb4                  |SUT                 |none    |none       |13ADD3C5-42EF-5A6A-8FD0-CD28A02142D0
+|name          |role                |size        |cloud_ip        |host_name                  |vmc_pool      |netname    |ai      |aidrs      |uuid
+|vm_1          |tinyvm              |pico32      |229.34.189.54   |simhostc12                 |SUT           |private    |none    |none       |FE0440AA-ABE8-54D3-BB2B-5F260B36067D
+|vm_3          |tinyvm              |pico32      |193.123.238.143 |simhostb1                  |SUT           |private    |none    |none       |A7FD0203-E5C5-5070-8DDE-C87A3E4E302F
+|vm_4          |db2                 |copper32    |130.168.194.254 |simhosta3                  |SUT           |private    |none    |none       |325854B7-33E2-5B6E-9B69-57EDC6FE865A
+|vm_5          |netclient           |platinum64  |198.62.168.124  |simhostc2                  |SUT           |private    |none    |none       |716FA71C-EA4E-50CD-B018-61526F4B0B65
+|vm_6          |tinyvm              |pico32      |106.9.243.243   |simhostb5                  |SUT           |private    |none    |none       |8B038382-CC58-55AC-B970-10F058A9CF4E
+|vm_7          |tinyvm              |pico32      |196.241.129.46  |simhostc9                  |SUT           |private    |none    |none       |60A5B19D-E762-52E4-A8E6-C95EE331D498
+|vm_8          |tinyvm              |pico32      |34.102.144.192  |simhostc3                  |SUT           |private    |none    |none       |B8414E3C-252C-584F-BAF1-D72E5FCA6C7E
+|vm_9          |db2                 |platinum64  |16.50.116.206   |simhostb13                 |SUT           |private    |none    |none       |1A07BF13-EBA1-57D3-96E8-6D39FAE13839
+|vm_10         |netclient           |iron32      |236.198.248.190 |simhosta2                  |SUT           |private    |none    |none       |74A61B10-7A62-5681-9998-8D2042DABF0E
+|vm_11         |fen_hpc             |platinum64  |118.239.10.35   |simhostd13                 |LG            |private    |none    |none       |E07D13B0-041B-5177-8C0A-C56B54D498D8
+|vm_12         |tinyvm              |iron32      |82.46.121.56    |simhosta11                 |SUT           |private    |none    |none       |3F8128E8-A398-5355-BBA1-9CB823AB4103
+|vm_13         |tinyvm              |iron32      |170.220.201.175 |simhostb4                  |SUT           |private    |none    |none       |10987359-524C-5599-B5AA-B9ADDCBF3343
+|vm_14         |predictablevm       |iron32      |1.2.3.4         |simhostd6                  |SUT           |private    |none    |none       |72A88028-0646-574B-8F68-81E56BDC5B36
 
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |1.76M                         
-|Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |3793166                       
-|Total Connections Received                           |81312                         
-|Total Commands Processed                             |6030276                       
-|Number of Keys                                       |393                           
+|Used Memory                                          |19.22M                        
+|Redis Version                                        |2.8.6                         
+|Uptime (in seconds)                                  |14435922                      
+|Total Connections Received                           |614763                        
+|Total Commands Processed                             |58727034                      
+|Number of Keys                                       |815                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|MongoDB Version                                      |2.4.9                         
-|Storage Size                                         |2158592                       
-|Data Size                                            |519632                        
-|Index Size                                           |425152                        
-|Average Object Size                                  |510.945919371                 
-|Collections                                          |14                            
+|Collections                                          |28                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
 |VMCs                                                 |4                             
-|HOSTs                                                |20                            
+|HOSTs                                                |60                            
 |VMs                                                  |13                            
 |AIs                                                  |0                             
 |AIDRSs                                               |0                             
@@ -66,25 +61,32 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------ EXPERIMENT-WIDE COUNTERS ------------------
 |Counter                                              |Value                         
 |VMC RESERVATIONS                                     |4                             
+|VMCs ISSUED                                          |16                            
 |VMCs ARRIVED                                         |16                            
 |VMCs ARRIVING                                        |0                             
 |VMCs DEPARTED                                        |12                            
 |VMCs DEPARTING                                       |0                             
 |VMCs FAILED                                          |0                             
 |HOST RESERVATIONS                                    |0                             
+|HOSTs ISSUED                                         |0                             
 |HOSTs ARRIVED                                        |0                             
 |HOSTs ARRIVING                                       |0                             
 |HOSTs DEPARTED                                       |0                             
 |HOSTs DEPARTING                                      |0                             
 |HOSTs FAILED                                         |0                             
 |VM RESERVATIONS                                      |13                            
+|VMs ISSUED                                           |14                            
 |VMs ARRIVED                                          |14                            
 |VMs ARRIVING                                         |0                             
 |VMs CAPTURING                                        |0                             
 |VMs DEPARTED                                         |1                             
 |VMs DEPARTING                                        |0                             
 |VMs FAILED                                           |0                             
+|VMs SLA PROVISIONING VIOLATED                        |0                             
+|VMs SLA RUNTIME VIOLATED                             |0                             
+|VMs APPLICATION ERRORS                               |6                             
 |AI RESERVATIONS                                      |0                             
+|AIs ISSUED                                           |0                             
 |AIs ARRIVED                                          |0                             
 |AIs ARRIVING                                         |0                             
 |AIs CAPTURING                                        |0                             
@@ -92,28 +94,31 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |AIs DEPARTING                                        |0                             
 |AIs FAILED                                           |0                             
 |AIDRS RESERVATIONS                                   |0                             
+|AIDRSs ISSUED                                        |0                             
 |AIDRSs ARRIVED                                       |0                             
 |AIDRSs ARRIVING                                      |0                             
 |AIDRSs DEPARTED                                      |0                             
 |AIDRSs DEPARTING                                     |0                             
 |AIDRSs FAILED                                        |0                             
 |VMCRS RESERVATIONS                                   |0                             
+|VMCRSs ISSUED                                        |0                             
 |VMCRSs ARRIVED                                       |0                             
 |VMCRSs ARRIVING                                      |0                             
 |VMCRSs DEPARTED                                      |0                             
 |VMCRSs DEPARTING                                     |0                             
 |VMCRSs FAILED                                        |0                             
 |FIRS RESERVATIONS                                    |0                             
+|FIRSs ISSUED                                         |0                             
 |FIRSs ARRIVED                                        |0                             
 |FIRSs ARRIVING                                       |0                             
 |FIRSs DEPARTED                                       |0                             
 |FIRSs DEPARTING                                      |0                             
 |FIRSs FAILED                                         |0                             
-|EXPERIMENT COUNTER                                   |103                           
+|EXPERIMENT COUNTER                                   |223                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|516A5A15-B093-5B5F-B171-EE9AA82AAEF0 (simzone_c) VM RESERVATIONS|3                             
-|8D79A9F1-34B8-5D1A-A903-082245CE052C (simzone_d) VM RESERVATIONS|1                             
-|B0B6FF0A-FAE8-5217-A335-C0F1B0BEA0D6 (simzone_b) VM RESERVATIONS|6                             
-|D5506DC9-493A-57EE-86F6-0B96CB07D162 (simzone_a) VM RESERVATIONS|3                             
+|2C0CBD0C-C4AB-589F-B1DC-473FE1792EEA (simzone_b) VM RESERVATIONS|4                             
+|09BE1FD2-5286-5B6E-AA11-D68D33341047 (simzone_a) VM RESERVATIONS|5                             
+|95B3CBBD-180B-59D1-9048-B3EAC63E092B (simzone_d) VM RESERVATIONS|1                             
+|4DFFE7AE-4E70-5DA7-82EF-D0BC8960A44B (simzone_c) VM RESERVATIONS|3                             
 

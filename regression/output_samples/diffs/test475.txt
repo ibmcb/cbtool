@@ -1,9 +1,0 @@
-|arrival |1456183682 
-|available_cores |200000 
-|available_gpus |0 
-|available_memory |2048000000000000 
-|cores |200000 
-|gpus |0 
-|hypervisor_type |QEMU 
-|identity |/path/to/tool/lib/auxiliary//../../credentials/cbtool_rsa
-|memory |2048000000000000 

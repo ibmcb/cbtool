@@ -1,26 +1,21 @@
- status: VMC B86E56E5-38C5-5AA6-8E43-15D48B34485E was successfully unregistered on SimCloud "TESTCLOUD".
- status: VMC B61D2893-48E1-5F4A-828E-38EFBCF878C2 was successfully unregistered on SimCloud "TESTCLOUD".
- status: VMC E9673EB2-77F5-513D-AB51-FEB07E0244D3 was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC 27EA289D-7E7A-55B4-A446-C836B817A658 was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC 208A0447-D258-5545-B144-DB46AB06075A was successfully unregistered on SimCloud "TESTCLOUD".
+ status: VMC 047C9477-03D9-51ED-85F6-5E6CF06126E1 was successfully unregistered on SimCloud "TESTCLOUD".
 VMC object undefined (named "all") was sucessfully detached from this experiment.
 The following ATTACHED VMCs are in this experiment (Cloud TESTCLOUD) :
 No objects available.
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |1.43M                         
-|Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |3793057                       
-|Total Connections Received                           |81286                         
-|Total Commands Processed                             |6006380                       
-|Number of Keys                                       |109                           
+|Used Memory                                          |18.30M                        
+|Redis Version                                        |2.8.6                         
+|Uptime (in seconds)                                  |14435810                      
+|Total Connections Received                           |614738                        
+|Total Commands Processed                             |58686053                      
+|Number of Keys                                       |273                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|MongoDB Version                                      |2.4.9                         
-|Storage Size                                         |2101248                       
-|Data Size                                            |438632                        
-|Index Size                                           |367920                        
-|Average Object Size                                  |510.63096624                  
-|Collections                                          |13                            
+|Collections                                          |27                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
 |VMCs                                                 |0                             
@@ -33,25 +28,32 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------ EXPERIMENT-WIDE COUNTERS ------------------
 |Counter                                              |Value                         
 |VMC RESERVATIONS                                     |0                             
+|VMCs ISSUED                                          |8                             
 |VMCs ARRIVED                                         |8                             
 |VMCs ARRIVING                                        |0                             
 |VMCs DEPARTED                                        |8                             
 |VMCs DEPARTING                                       |0                             
 |VMCs FAILED                                          |0                             
 |HOST RESERVATIONS                                    |0                             
+|HOSTs ISSUED                                         |0                             
 |HOSTs ARRIVED                                        |0                             
 |HOSTs ARRIVING                                       |0                             
 |HOSTs DEPARTED                                       |0                             
 |HOSTs DEPARTING                                      |0                             
 |HOSTs FAILED                                         |0                             
 |VM RESERVATIONS                                      |0                             
+|VMs ISSUED                                           |0                             
 |VMs ARRIVED                                          |0                             
 |VMs ARRIVING                                         |0                             
 |VMs CAPTURING                                        |0                             
 |VMs DEPARTED                                         |0                             
 |VMs DEPARTING                                        |0                             
 |VMs FAILED                                           |0                             
+|VMs SLA PROVISIONING VIOLATED                        |0                             
+|VMs SLA RUNTIME VIOLATED                             |0                             
+|VMs APPLICATION ERRORS                               |6                             
 |AI RESERVATIONS                                      |0                             
+|AIs ISSUED                                           |0                             
 |AIs ARRIVED                                          |0                             
 |AIs ARRIVING                                         |0                             
 |AIs CAPTURING                                        |0                             
@@ -59,22 +61,25 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |AIs DEPARTING                                        |0                             
 |AIs FAILED                                           |0                             
 |AIDRS RESERVATIONS                                   |0                             
+|AIDRSs ISSUED                                        |0                             
 |AIDRSs ARRIVED                                       |0                             
 |AIDRSs ARRIVING                                      |0                             
 |AIDRSs DEPARTED                                      |0                             
 |AIDRSs DEPARTING                                     |0                             
 |AIDRSs FAILED                                        |0                             
 |VMCRS RESERVATIONS                                   |0                             
+|VMCRSs ISSUED                                        |0                             
 |VMCRSs ARRIVED                                       |0                             
 |VMCRSs ARRIVING                                      |0                             
 |VMCRSs DEPARTED                                      |0                             
 |VMCRSs DEPARTING                                     |0                             
 |VMCRSs FAILED                                        |0                             
 |FIRS RESERVATIONS                                    |0                             
+|FIRSs ISSUED                                         |0                             
 |FIRSs ARRIVED                                        |0                             
 |FIRSs ARRIVING                                       |0                             
 |FIRSs DEPARTED                                       |0                             
 |FIRSs DEPARTING                                      |0                             
 |FIRSs FAILED                                         |0                             
-|EXPERIMENT COUNTER                                   |56                            
+|EXPERIMENT COUNTER                                   |136                           
 

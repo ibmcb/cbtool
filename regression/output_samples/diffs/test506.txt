@@ -1,5 +1,0 @@
-|name |role |size |cloud_ip |host_name |vmc_pool |netname |ai |aidrs |uuid
-|vm_XX |type |sizeXX |undefined |unavailable |POOL |private |(orphan)|none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|vm_XX |foorole |from_vm_template|undefined |unavailable |unavailable |private |none |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|vm_XX |type |sizeXX |undefined |unavailable |POOL |private |none |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-|vm_XX |type |sizeXX |undefined |unavailable |POOL |private |none |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx

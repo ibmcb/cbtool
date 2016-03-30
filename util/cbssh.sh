@@ -12,9 +12,22 @@ VMID=$1
 
 if [[ ! -z $2 ]]
 then
-	INFO=$($dir/../cb -c $2 vmshow $VMID)
+    CB_EXECUTABLE=$2/cb
 else
-	INFO=$($dir/../cb vmshow $VMID)
+    CB_EXECUTABLE=$dir/../cb
+fi
+
+if [[ ! -f $CB_EXECUTABLE ]]
+then
+    echo "Unable to find CB executable in $CB_EXECUTABLE. Please specificy a directory for it with $0 <VM IDENTIFIER> [CB DIR] [CLOUD CONFIGURATION FILE]"
+    exit 1
+fi
+
+if [[ ! -z $3 ]]
+then
+	INFO=$($CB_EXECUTABLE -c $3 vmshow $VMID)
+else
+	INFO=$($CB_EXECUTABLE vmshow $VMID)
 fi
 
 VMIP=$(echo "$INFO" | grep "|prov_cloud_ip" | sed -e "s/|//g" | sed -e "s/ \+/ /g" | cut -d " " -f 2)

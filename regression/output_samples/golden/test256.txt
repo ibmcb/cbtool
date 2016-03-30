@@ -1,53 +1,53 @@
 The following FINISHED VMs are in this experiment (Cloud TESTCLOUD) :
-|name          |role                |size        |cloud_ip        |host_name                  |vmc_pool            |ai      |aidrs      |uuid
-|vm_1          |tinyvm              |pico32      |156.4.116.25    |simhostd1                  |SUT                 |none    |none       |776531B5-7DCD-5B1C-BDD2-0962E8F87DF2
-|vm_14         |predictablevm       |iron32      |1.2.3.4         |simhosta0                  |SUT                 |none    |none       |A23F8E82-5D27-5624-AD48-360368A4B6F3
-|vm_3          |tinyvm              |pico32      |108.252.120.109 |simhostb1                  |SUT                 |none    |none       |1304A629-B272-53F3-99F2-C116650A5340
-|vm_7          |tinyvm              |pico32      |2.81.152.255    |simhostd0                  |SUT                 |none    |none       |BC432A15-7D32-51E6-966C-387BE1E0F1EE
-|vm_8          |tinyvm              |pico32      |252.35.149.231  |simhostd2                  |SUT                 |none    |none       |4A86138A-F12F-50FF-9C62-1042B8432A16
-|vm_12         |tinyvm              |iron32      |187.148.255.210 |simhostd2                  |SUT                 |none    |none       |447FB2A8-F053-5C88-AE6D-FD9F19319362
-|vm_11         |fen_hpc             |platinum64  |139.97.26.132   |simhosta4                  |LG                  |none    |none       |7B4DB42B-F55F-5528-8E29-181D72F2098C
-|vm_14         |predictablevm       |iron32      |1.2.3.4         |simhosta0                  |SUT                 |none    |none       |A23F8E82-5D27-5624-AD48-360368A4B6F3
-|vm_15         |tinyvm              |pico32      |144.182.108.210 |simhostd2                  |SUT                 |none    |none       |A2FAF47B-6AAF-50A3-AE4B-5805BB7D64CD
-|vm_15         |tinyvm              |pico32      |144.182.108.210 |simhostd2                  |SUT                 |none    |none       |A2FAF47B-6AAF-50A3-AE4B-5805BB7D64CD
-|vm_19         |tinyvm              |pico32      |206.160.88.160  |simhosta0                  |SUT                 |none    |none       |82FEB23E-38BC-5F8D-841F-5A68BF2A6FB1
-|vm_6          |tinyvm              |pico32      |110.213.95.178  |simhostd1                  |SUT                 |none    |none       |74AF7F16-9A25-5973-9371-431B14E3499D
-|vm_2          |tinyvm              |pico32      |88.92.70.13     |simhostb3                  |LG                  |none    |none       |F9F3E0E1-ABF2-5A5F-A5B1-1EF893ECE02B
-|vm_17         |tinyvm              |pico32      |73.86.251.20    |simhostd0                  |SUT                 |none    |none       |25DCEEC3-AAFF-5AD0-9DBD-EA815E88D8F8
-|vm_21         |tinyvm              |pico32      |104.137.146.56  |simhostc3                  |SUT                 |none    |none       |48A09473-7E1A-5800-8530-891ADB708644
-|vm_8          |tinyvm              |pico32      |252.35.149.231  |simhostd2                  |SUT                 |none    |none       |4A86138A-F12F-50FF-9C62-1042B8432A16
-|vm_13         |tinyvm              |iron32      |147.178.87.142  |simhosta1                  |SUT                 |none    |none       |D034CB71-8EDC-52AA-BEA1-D4783A802FD6
-|vm_18         |tinyvm              |pico32      |162.191.47.183  |simhostd3                  |SUT                 |none    |none       |7F75D423-84E8-50C5-8B1C-741A46E3D06A
-|vm_16         |tinyvm              |pico32      |68.190.243.183  |simhostd2                  |SUT                 |none    |none       |D67B6962-A80A-5060-8189-5FA56762E6C9
-|vm_22         |tinyvm              |pico32      |218.86.37.104   |simhostb2                  |SUT                 |none    |none       |C4C76CC2-7DE2-5DBA-B0A2-A1986EFFF633
-|vm_16         |tinyvm              |pico32      |68.190.243.183  |simhostd2                  |SUT                 |none    |none       |D67B6962-A80A-5060-8189-5FA56762E6C9
-|vm_10         |netclient           |iron32      |229.61.116.135  |simhosta2                  |SUT                 |none    |none       |66A867D7-232A-59C5-A60D-E6D998D88BA1
-|vm_3          |tinyvm              |pico32      |108.252.120.109 |simhostb1                  |SUT                 |none    |none       |1304A629-B272-53F3-99F2-C116650A5340
-|vm_17         |tinyvm              |pico32      |73.86.251.20    |simhostd0                  |SUT                 |none    |none       |25DCEEC3-AAFF-5AD0-9DBD-EA815E88D8F8
-|vm_21         |tinyvm              |pico32      |104.137.146.56  |simhostc3                  |SUT                 |none    |none       |48A09473-7E1A-5800-8530-891ADB708644
-|vm_20         |tinyvm              |pico32      |17.187.196.11   |simhosta0                  |SUT                 |none    |none       |D8825ACB-3DA1-593E-928F-91C48A6E8A68
-|vm_2          |tinyvm              |pico32      |88.92.70.13     |simhostb3                  |LG                  |none    |none       |F9F3E0E1-ABF2-5A5F-A5B1-1EF893ECE02B
-|vm_3          |tinyvm              |pico32      |108.252.120.109 |simhostb1                  |SUT                 |none    |none       |1304A629-B272-53F3-99F2-C116650A5340
-|vm_3          |tinyvm              |pico32      |108.252.120.109 |simhostb1                  |SUT                 |none    |none       |1304A629-B272-53F3-99F2-C116650A5340
-|vm_5          |netclient           |platinum64  |71.94.6.222     |simhostb3                  |SUT                 |none    |none       |033D3751-876F-54FF-9FE4-07EA02E951FF
-|vm_10         |netclient           |iron32      |229.61.116.135  |simhosta2                  |SUT                 |none    |none       |66A867D7-232A-59C5-A60D-E6D998D88BA1
-|vm_20         |tinyvm              |pico32      |17.187.196.11   |simhosta0                  |SUT                 |none    |none       |D8825ACB-3DA1-593E-928F-91C48A6E8A68
-|vm_3          |tinyvm              |pico32      |108.252.120.109 |simhostb1                  |SUT                 |none    |none       |1304A629-B272-53F3-99F2-C116650A5340
-|vm_9          |db2                 |platinum64  |146.116.158.219 |simhostb0                  |SUT                 |none    |none       |C6E7C4CD-8A47-5826-A061-8C1670692FE2
-|vm_4          |db2                 |copper32    |194.134.169.92  |simhosta1                  |SUT                 |none    |none       |9F550248-A2E3-5568-B7A3-C5B8711C434F
-|vm_6          |tinyvm              |pico32      |110.213.95.178  |simhostd1                  |SUT                 |none    |none       |74AF7F16-9A25-5973-9371-431B14E3499D
-|vm_13         |tinyvm              |iron32      |147.178.87.142  |simhosta1                  |SUT                 |none    |none       |D034CB71-8EDC-52AA-BEA1-D4783A802FD6
-|vm_12         |tinyvm              |iron32      |187.148.255.210 |simhostd2                  |SUT                 |none    |none       |447FB2A8-F053-5C88-AE6D-FD9F19319362
-|vm_3          |tinyvm              |pico32      |108.252.120.109 |simhostb1                  |SUT                 |none    |none       |1304A629-B272-53F3-99F2-C116650A5340
-|vm_19         |tinyvm              |pico32      |206.160.88.160  |simhosta0                  |SUT                 |none    |none       |82FEB23E-38BC-5F8D-841F-5A68BF2A6FB1
-|vm_1          |tinyvm              |pico32      |156.4.116.25    |simhostd1                  |SUT                 |none    |none       |776531B5-7DCD-5B1C-BDD2-0962E8F87DF2
-|vm_9          |db2                 |platinum64  |146.116.158.219 |simhostb0                  |SUT                 |none    |none       |C6E7C4CD-8A47-5826-A061-8C1670692FE2
-|vm_4          |db2                 |copper32    |194.134.169.92  |simhosta1                  |SUT                 |none    |none       |9F550248-A2E3-5568-B7A3-C5B8711C434F
-|vm_7          |tinyvm              |pico32      |2.81.152.255    |simhostd0                  |SUT                 |none    |none       |BC432A15-7D32-51E6-966C-387BE1E0F1EE
-|vm_3          |tinyvm              |pico32      |108.252.120.109 |simhostb1                  |SUT                 |none    |none       |1304A629-B272-53F3-99F2-C116650A5340
-|vm_11         |fen_hpc             |platinum64  |139.97.26.132   |simhosta4                  |LG                  |none    |none       |7B4DB42B-F55F-5528-8E29-181D72F2098C
-|vm_5          |netclient           |platinum64  |71.94.6.222     |simhostb3                  |SUT                 |none    |none       |033D3751-876F-54FF-9FE4-07EA02E951FF
-|vm_3          |tinyvm              |pico32      |108.252.120.109 |simhostb1                  |SUT                 |none    |none       |1304A629-B272-53F3-99F2-C116650A5340
-|vm_18         |tinyvm              |pico32      |162.191.47.183  |simhostd3                  |SUT                 |none    |none       |7F75D423-84E8-50C5-8B1C-741A46E3D06A
-|vm_22         |tinyvm              |pico32      |218.86.37.104   |simhostb2                  |SUT                 |none    |none       |C4C76CC2-7DE2-5DBA-B0A2-A1986EFFF633
+|name          |role                |size        |cloud_ip        |host_name                  |vmc_pool      |netname    |ai      |aidrs      |uuid
+|vm_3          |tinyvm              |pico32      |142.51.103.232  |simhostb1                  |SUT           |private    |none    |none       |1E717DC1-DAF2-5D0C-9D2C-0818F7890FB1
+|vm_12         |tinyvm              |iron32      |97.180.244.228  |simhostc12                 |SUT           |private    |none    |none       |25E95148-2C01-5B50-97CF-E7CC8CCCE741
+|vm_3          |tinyvm              |pico32      |142.51.103.232  |simhostb1                  |SUT           |private    |none    |none       |1E717DC1-DAF2-5D0C-9D2C-0818F7890FB1
+|vm_4          |db2                 |copper32    |20.247.126.40   |simhostb2                  |SUT           |private    |none    |none       |2FCBA3CF-BB21-545D-84F2-D2D4CC9DE828
+|vm_15         |tinyvm              |pico32      |102.197.149.180 |simhostd3                  |SUT           |private    |none    |none       |6A23D608-93B9-5A1B-A790-1278D108987F
+|vm_19         |tinyvm              |pico32      |55.191.167.44   |simhosta6                  |SUT           |private    |none    |none       |C0E1A7B0-544F-5334-A909-58919D91C505
+|vm_3          |tinyvm              |pico32      |142.51.103.232  |simhostb1                  |SUT           |private    |none    |none       |1E717DC1-DAF2-5D0C-9D2C-0818F7890FB1
+|vm_14         |predictablevm       |iron32      |1.2.3.4         |simhostc2                  |SUT           |private    |none    |none       |8591AE45-C644-5390-A381-C74C64CF5718
+|vm_5          |netclient           |platinum64  |131.247.204.241 |simhosta1                  |SUT           |private    |none    |none       |68EC517B-E962-50B4-B0E6-D33A50A35CBA
+|vm_3          |tinyvm              |pico32      |142.51.103.232  |simhostb1                  |SUT           |private    |none    |none       |1E717DC1-DAF2-5D0C-9D2C-0818F7890FB1
+|vm_13         |tinyvm              |iron32      |205.1.62.114    |simhostc2                  |SUT           |private    |none    |none       |E876284D-E22B-53DB-83D3-4E5FC2D73BEA
+|vm_16         |tinyvm              |pico32      |193.171.141.24  |simhostb10                 |SUT           |private    |none    |none       |FE90B68A-589D-5478-8C27-339C9A03A5E5
+|vm_6          |tinyvm              |pico32      |22.155.58.249   |simhostb14                 |SUT           |private    |none    |none       |7AD069C4-0225-5AA5-8390-B031386648D6
+|vm_14         |predictablevm       |iron32      |1.2.3.4         |simhostc2                  |SUT           |private    |none    |none       |8591AE45-C644-5390-A381-C74C64CF5718
+|vm_7          |tinyvm              |pico32      |168.218.237.166 |simhostc9                  |SUT           |private    |none    |none       |7F54B7DE-E36E-5EB6-AA44-460E0B7B8233
+|vm_3          |tinyvm              |pico32      |142.51.103.232  |simhostb1                  |SUT           |private    |none    |none       |1E717DC1-DAF2-5D0C-9D2C-0818F7890FB1
+|vm_3          |tinyvm              |pico32      |142.51.103.232  |simhostb1                  |SUT           |private    |none    |none       |1E717DC1-DAF2-5D0C-9D2C-0818F7890FB1
+|vm_5          |netclient           |platinum64  |131.247.204.241 |simhosta1                  |SUT           |private    |none    |none       |68EC517B-E962-50B4-B0E6-D33A50A35CBA
+|vm_9          |db2                 |platinum64  |98.62.76.227    |simhostd5                  |SUT           |private    |none    |none       |CC7FBEBB-72C2-57BD-ABF6-6A5007E4E595
+|vm_4          |db2                 |copper32    |20.247.126.40   |simhostb2                  |SUT           |private    |none    |none       |2FCBA3CF-BB21-545D-84F2-D2D4CC9DE828
+|vm_3          |tinyvm              |pico32      |142.51.103.232  |simhostb1                  |SUT           |private    |none    |none       |1E717DC1-DAF2-5D0C-9D2C-0818F7890FB1
+|vm_1          |tinyvm              |pico32      |156.132.157.237 |simhostb12                 |SUT           |private    |none    |none       |FFBD485E-62F9-55ED-AD0E-F9751F318A3E
+|vm_11         |fen_hpc             |platinum64  |203.180.229.62  |simhostb1                  |LG            |private    |none    |none       |D6D4C364-AD63-5207-A605-E42A5B37AFBE
+|vm_6          |tinyvm              |pico32      |22.155.58.249   |simhostb14                 |SUT           |private    |none    |none       |7AD069C4-0225-5AA5-8390-B031386648D6
+|vm_21         |tinyvm              |pico32      |105.28.54.111   |simhosta1                  |SUT           |private    |none    |none       |5728A65F-846E-5752-987F-E0E63C5C084E
+|vm_20         |tinyvm              |pico32      |161.142.49.47   |simhostb14                 |SUT           |private    |none    |none       |5809E047-1BC0-5E59-996B-2505B8ABDBB1
+|vm_13         |tinyvm              |iron32      |205.1.62.114    |simhostc2                  |SUT           |private    |none    |none       |E876284D-E22B-53DB-83D3-4E5FC2D73BEA
+|vm_22         |tinyvm              |pico32      |99.157.185.92   |simhostc5                  |SUT           |private    |none    |none       |958C010A-3877-528E-96C7-70B89AFB0223
+|vm_21         |tinyvm              |pico32      |105.28.54.111   |simhosta1                  |SUT           |private    |none    |none       |5728A65F-846E-5752-987F-E0E63C5C084E
+|vm_19         |tinyvm              |pico32      |55.191.167.44   |simhosta6                  |SUT           |private    |none    |none       |C0E1A7B0-544F-5334-A909-58919D91C505
+|vm_15         |tinyvm              |pico32      |102.197.149.180 |simhostd3                  |SUT           |private    |none    |none       |6A23D608-93B9-5A1B-A790-1278D108987F
+|vm_10         |netclient           |iron32      |138.234.53.105  |simhosta2                  |SUT           |private    |none    |none       |DE243271-F277-5B8F-B64E-CB666AF9E6F7
+|vm_1          |tinyvm              |pico32      |156.132.157.237 |simhostb12                 |SUT           |private    |none    |none       |FFBD485E-62F9-55ED-AD0E-F9751F318A3E
+|vm_22         |tinyvm              |pico32      |99.157.185.92   |simhostc5                  |SUT           |private    |none    |none       |958C010A-3877-528E-96C7-70B89AFB0223
+|vm_20         |tinyvm              |pico32      |161.142.49.47   |simhostb14                 |SUT           |private    |none    |none       |5809E047-1BC0-5E59-996B-2505B8ABDBB1
+|vm_7          |tinyvm              |pico32      |168.218.237.166 |simhostc9                  |SUT           |private    |none    |none       |7F54B7DE-E36E-5EB6-AA44-460E0B7B8233
+|vm_8          |tinyvm              |pico32      |63.244.87.158   |simhostc8                  |SUT           |private    |none    |none       |AF139952-8CA9-5230-93D9-1EF729E2EF96
+|vm_3          |tinyvm              |pico32      |142.51.103.232  |simhostb1                  |SUT           |private    |none    |none       |1E717DC1-DAF2-5D0C-9D2C-0818F7890FB1
+|vm_8          |tinyvm              |pico32      |63.244.87.158   |simhostc8                  |SUT           |private    |none    |none       |AF139952-8CA9-5230-93D9-1EF729E2EF96
+|vm_16         |tinyvm              |pico32      |193.171.141.24  |simhostb10                 |SUT           |private    |none    |none       |FE90B68A-589D-5478-8C27-339C9A03A5E5
+|vm_12         |tinyvm              |iron32      |97.180.244.228  |simhostc12                 |SUT           |private    |none    |none       |25E95148-2C01-5B50-97CF-E7CC8CCCE741
+|vm_9          |db2                 |platinum64  |98.62.76.227    |simhostd5                  |SUT           |private    |none    |none       |CC7FBEBB-72C2-57BD-ABF6-6A5007E4E595
+|vm_17         |tinyvm              |pico32      |121.178.74.193  |simhostb9                  |SUT           |private    |none    |none       |D01E40CD-D603-5821-8D13-FB22AC5B74F2
+|vm_2          |tinyvm              |pico32      |124.207.89.90   |simhosta14                 |LG            |private    |none    |none       |5244FC98-6DA8-5AB6-A72D-866C6875A181
+|vm_2          |tinyvm              |pico32      |124.207.89.90   |simhosta14                 |LG            |private    |none    |none       |5244FC98-6DA8-5AB6-A72D-866C6875A181
+|vm_17         |tinyvm              |pico32      |121.178.74.193  |simhostb9                  |SUT           |private    |none    |none       |D01E40CD-D603-5821-8D13-FB22AC5B74F2
+|vm_10         |netclient           |iron32      |138.234.53.105  |simhosta2                  |SUT           |private    |none    |none       |DE243271-F277-5B8F-B64E-CB666AF9E6F7
+|vm_11         |fen_hpc             |platinum64  |203.180.229.62  |simhostb1                  |LG            |private    |none    |none       |D6D4C364-AD63-5207-A605-E42A5B37AFBE
+|vm_18         |tinyvm              |pico32      |211.215.121.136 |simhostc13                 |SUT           |private    |none    |none       |9A82336F-A0DA-5D14-A9AD-638EB2C59F82
+|vm_18         |tinyvm              |pico32      |211.215.121.136 |simhostc13                 |SUT           |private    |none    |none       |9A82336F-A0DA-5D14-A9AD-638EB2C59F82
 

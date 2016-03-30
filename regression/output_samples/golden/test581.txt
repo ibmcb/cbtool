@@ -1,4 +1,4 @@
-AIDRS object 29F990ED-8ACE-5A84-8BD1-9AEFA11930C1 (named "aidrs_1") sucessfully attached to this experiment.
+AIDRS object 77085658-C7FF-5DDD-B4FA-F7E629B356C2 (named "aidrs_1") sucessfully attached to this experiment.
 The following ATTACHED AIDRSs are in this experiment (Cloud TESTCLOUD) :
 |name                |pattern                |type              
 |aidrs_1             |simplenw               |nullworkload      
@@ -12,24 +12,19 @@ The AIDRS object aidrs_1, attached to this experiment, has the following attribu
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |6.45M                         
-|Redis Version                                        |2.6.16                        
-|Uptime (in seconds)                                  |3793602                       
-|Total Connections Received                           |81393                         
-|Total Commands Processed                             |6222613                       
-|Number of Keys                                       |670                           
+|Used Memory                                          |26.14M                        
+|Redis Version                                        |2.8.6                         
+|Uptime (in seconds)                                  |14436399                      
+|Total Connections Received                           |614873                        
+|Total Commands Processed                             |58970806                      
+|Number of Keys                                       |1221                          
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|MongoDB Version                                      |2.4.9                         
-|Storage Size                                         |3321856                       
-|Data Size                                            |747856                        
-|Index Size                                           |474208                        
-|Average Object Size                                  |545.880291971                 
-|Collections                                          |14                            
+|Collections                                          |28                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
 |VMCs                                                 |4                             
-|HOSTs                                                |20                            
+|HOSTs                                                |60                            
 |VMs                                                  |1                             
 |AIs                                                  |1                             
 |AIDRSs                                               |1                             
@@ -38,25 +33,32 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------ EXPERIMENT-WIDE COUNTERS ------------------
 |Counter                                              |Value                         
 |VMC RESERVATIONS                                     |4                             
+|VMCs ISSUED                                          |16                            
 |VMCs ARRIVED                                         |16                            
 |VMCs ARRIVING                                        |0                             
 |VMCs DEPARTED                                        |12                            
 |VMCs DEPARTING                                       |0                             
 |VMCs FAILED                                          |0                             
 |HOST RESERVATIONS                                    |0                             
+|HOSTs ISSUED                                         |0                             
 |HOSTs ARRIVED                                        |0                             
 |HOSTs ARRIVING                                       |0                             
 |HOSTs DEPARTED                                       |0                             
 |HOSTs DEPARTING                                      |0                             
 |HOSTs FAILED                                         |0                             
 |VM RESERVATIONS                                      |1                             
+|VMs ISSUED                                           |122                           
 |VMs ARRIVED                                          |118                           
 |VMs ARRIVING                                         |0                             
 |VMs CAPTURING                                        |0                             
 |VMs DEPARTED                                         |117                           
 |VMs DEPARTING                                        |0                             
 |VMs FAILED                                           |4                             
+|VMs SLA PROVISIONING VIOLATED                        |0                             
+|VMs SLA RUNTIME VIOLATED                             |0                             
+|VMs APPLICATION ERRORS                               |7                             
 |AI RESERVATIONS                                      |1                             
+|AIs ISSUED                                           |31                            
 |AIs ARRIVED                                          |29                            
 |AIs ARRIVING                                         |0                             
 |AIs CAPTURING                                        |0                             
@@ -64,31 +66,34 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |AIs DEPARTING                                        |0                             
 |AIs FAILED                                           |2                             
 |AIDRS RESERVATIONS                                   |1                             
+|AIDRSs ISSUED                                        |1                             
 |AIDRSs ARRIVED                                       |1                             
 |AIDRSs ARRIVING                                      |0                             
 |AIDRSs DEPARTED                                      |0                             
 |AIDRSs DEPARTING                                     |0                             
 |AIDRSs FAILED                                        |0                             
 |VMCRS RESERVATIONS                                   |0                             
+|VMCRSs ISSUED                                        |0                             
 |VMCRSs ARRIVED                                       |0                             
 |VMCRSs ARRIVING                                      |0                             
 |VMCRSs DEPARTED                                      |0                             
 |VMCRSs DEPARTING                                     |0                             
 |VMCRSs FAILED                                        |0                             
 |FIRS RESERVATIONS                                    |0                             
+|FIRSs ISSUED                                         |0                             
 |FIRSs ARRIVED                                        |0                             
 |FIRSs ARRIVING                                       |0                             
 |FIRSs DEPARTED                                       |0                             
 |FIRSs DEPARTING                                      |0                             
 |FIRSs FAILED                                         |0                             
-|EXPERIMENT COUNTER                                   |387                           
+|EXPERIMENT COUNTER                                   |507                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|516A5A15-B093-5B5F-B171-EE9AA82AAEF0 (simzone_c) VM RESERVATIONS|0                             
-|8D79A9F1-34B8-5D1A-A903-082245CE052C (simzone_d) VM RESERVATIONS|0                             
-|B0B6FF0A-FAE8-5217-A335-C0F1B0BEA0D6 (simzone_b) VM RESERVATIONS|0                             
-|D5506DC9-493A-57EE-86F6-0B96CB07D162 (simzone_a) VM RESERVATIONS|1                             
+|2C0CBD0C-C4AB-589F-B1DC-473FE1792EEA (simzone_b) VM RESERVATIONS|1                             
+|09BE1FD2-5286-5B6E-AA11-D68D33341047 (simzone_a) VM RESERVATIONS|0                             
+|95B3CBBD-180B-59D1-9048-B3EAC63E092B (simzone_d) VM RESERVATIONS|0                             
+|4DFFE7AE-4E70-5DA7-82EF-D0BC8960A44B (simzone_c) VM RESERVATIONS|0                             
 
  ---------------- AIDRS-WIDE COUNTERS ----------------
-|29F990ED-8ACE-5A84-8BD1-9AEFA11930C1 (aidrs_1) AI RESERVATIONS|1                             
+|77085658-C7FF-5DDD-B4FA-F7E629B356C2 (aidrs_1) AI RESERVATIONS|1                             
 

@@ -121,9 +121,10 @@ class ProcessManagement :
             _proc_h = Popen(_cmd, shell=True, stdout=PIPE, stderr=PIPE)
 
             if _proc_h.pid :
-                if not cmdline.count("--debug_host=localhost") :
-                    _result = _proc_h.communicate()
 
+                if not cmdline.count("--debug_host=localhost") :
+
+                    _result = _proc_h.communicate()
                     if _proc_h.returncode and len(_result[1]) :
                         _msg = "Error while executing the command line "
                         _msg += "\"" + cmdline + "\" (returncode = "
