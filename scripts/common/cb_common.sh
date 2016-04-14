@@ -848,7 +848,16 @@ load_manager_ip=`get_my_ai_attribute load_manager_ip`
 
 if [ x"${NC_HOST_SYSLOG}" == x ]; then
     if [ x"${osmode}" != x"scalable" ]; then
-        NC_HOST_SYSLOG=`get_global_sub_attribute logstore hostname`
+		USE_VPN_IP=`get_global_sub_attribute vm_defaults use_vpn_ip`
+		VPN_ONLY=`get_global_sub_attribute vm_defaults vpn_only`
+
+		# We cannot log anything with VPN_ONLY if we don't use the VPN server's IP address
+
+		if [ x"$USE_VPN_IP" == x"True" ] && [ x"$VPN_ONLY" == x"True" ] ; then
+			NC_HOST_SYSLOG=`get_global_sub_attribute vpn server_bootstrap`
+		else
+			NC_HOST_SYSLOG=`get_global_sub_attribute logstore hostname`
+		fi
         NC_OPTIONS="-w1 -u"
     else 
         NC_HOST_SYSLOG=`get_my_ai_attribute load_manager_ip`
