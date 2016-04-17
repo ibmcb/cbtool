@@ -30,11 +30,11 @@ HOSTNAME_KEY = cloud_vm_name
 SIZE = from_vm_template
 
 # We're not as big as amazon yet. Go easy on us please.
-[AI_DEFAULTS]
+[AI_DEFAULTS : DO_CLOUDCONFIG ]
 ATTACH_PARALLELISM = 1
 
 # We're not as big as amazon yet. Go easy on us please.
-[AIDRS_DEFAULTS]
+[AIDRS_DEFAULTS : DO_CLOUDCONFIG ]
 DAEMON_PARALLELISM = 1
 
 [MON_DEFAULTS : DO_CLOUDCONFIG ]
