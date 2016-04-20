@@ -1897,7 +1897,7 @@ class OskCmds(CommonCloudFunctions) :
 
             _fip = False
 
-            if obj_attr_list["always_create_floating_ip"].lower() == "false" :
+            if obj_attr_list["always_create_floating_ip"] == "false" :
 
                 _call = "floating ip list"
                 fips = self.oskconncompute.floating_ips.list()
