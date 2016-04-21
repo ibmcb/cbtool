@@ -89,6 +89,17 @@ def main() :
                        default = None, \
                        help = "Package (and pip) repository address")
 
+    _parser.add_option("--clouds", \
+                       dest = "clouds", \
+                       default = "all", \
+                       help = "Cloud adapters to install (comma-separated values)")
+
+    _parser.add_option("--venv",\
+                       action="store_true", \
+                       dest="venv", \
+                       default=False, \
+                       help="Install on a python virtual environment (python dependencies ONLY !!!)")
+
     _parser.set_defaults()
     (options, _args) = _parser.parse_args()
 
@@ -116,6 +127,9 @@ def main() :
             _msg = "You need to select one of the workloads (option \"-w\" or \"--wks\""
             print _msg
             exit(2)
+        else :
+            if not options.wks.count("nullworkload") :
+                options.wks = "nullworkload," + options.wks
     else :
         _msg = "Unknown node role: \"" + options.role + "\"."
         print _msg

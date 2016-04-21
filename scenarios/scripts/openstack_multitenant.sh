@@ -7,25 +7,35 @@ OSK_USER_NAME=cb-user
 OSK_NETWORK_NAME=cb-tenantnet
 OSK_SUBNETWORK_NAME=cb-subtenantnet
 OSK_ROUTER_NAME=cb-router
+OSK_LBPOOL_NAME=cb-lbpool
+OSK_LBVIP_NAME=cb-lbvip
+OSK_LBMEMBER_NAME=cb-lbmember
 
 #TNSRC_ERROR=0
-
-#counter=$(echo ${1} | cut -d _ -f 5)
-#counter=$(cat ${1} | grep counter | cut -d ':' -f 2 | sed 's^"\|,\| ^^g')    
+  
 counter=$(cat ${1} | grep '"'name'"' | cut -d ':' -f 2 | sed 's^"\|,\| ^^g' | cut -d '_' -f 2)
-step=$(cat ${1} | grep staging\" | cut -d ':' -f 2 | sed 's^"\|,\| ^^g')    
+step=$(cat ${1} | grep '"'staging'"' | cut -d ':' -f 2 | sed 's^"\|,\| ^^g')    
 model=$(cat ${1} | grep model | cut -d ':' -f 2 | sed 's^"\|,\| ^^g')
 cloud_name=$(cat ${1} | grep '"'cloud_name'"' | cut -d ':' -f 2 | sed 's^"\|,\| ^^g' | tr '[:upper:]' '[:lower:]')
-
+create_lb=$(cat ${1} | grep \"create_lb\" | cut -d ':' -f 2 | sed 's^"\|,\| ^^g' | tr '[:upper:]' '[:lower:]')
+ai_counter=$(cat ${1} | grep '"'ai_name'"' | cut -d ':' -f 2 | sed 's^"\|,\| ^^g' | cut -d '_' -f 2)
+                    
+if [[ -z $create_lb ]]
+then
+    create_lb=false
+fi
+        
 source ~/cbrc-${cloud_name}
 
 function create_tenant () {
     _n=$1
     TINFO=$(openstack project show ${OSK_TENANT_NAME}-${_n} 2>&1)
+    export TENANT_JUST_CREATED=0    
     if [[ $(echo "$TINFO" | grep -c [[:space:]]id[[:space:]]) -eq 0 ]]
     then
         openstack project create ${OSK_TENANT_NAME}-${_n} > /dev/null 2>&1 || ( echo "tenant creation failed"; export TNSRC_ERROR=1 )
         TINFO=$(openstack project show ${OSK_TENANT_NAME}-${_n} 2>&1)
+        export TENANT_JUST_CREATED=1
     fi
     TID=$(echo "$TINFO" | grep [[:space:]]id[[:space:]] | cut -d '|' -f 3 | tr -d ' ')
     export TID
@@ -55,9 +65,9 @@ function create_user () {
             echo "user creation failed" >&2
             export TNSRC_ERROR=1
         fi
-        export TENANT_JUST_CREATED=1
+        export USER_JUST_CREATED=1
     else
-        export TENANT_JUST_CREATED=0           
+        export USER_JUST_CREATED=0           
     fi
 }
 
@@ -243,7 +253,250 @@ function attach_to_router () {
         done
     done
 }
+
+function create_lb_pools () {
+    _n=$1
+    _t=$2
     
+    if [[ -z $3 ]]
+    then
+        numnets=1
+    else
+        numnets=$3
+    fi
+
+    if [[ -z $4 ]]
+    then
+        numsubnets=1
+    else
+        numsubnets=$4
+    fi        
+        
+    if [[ -z $5 ]]
+    then
+        numpools=1
+    else
+        numpools=$5
+    fi
+
+    for ((i=1; i <= $numnets ; i++))
+    do
+        for ((j=1; j <= $numsubnets ; j++))
+        do                            
+            for ((k=1; k <= $numpools ; k++))
+            do
+            neutron lb-pool-show ${OSK_LBPOOL_NAME}-${_n}-${i}-${j}-${k} > /dev/null 2>&1
+                if [[ $? -ne 0 ]]
+                then    
+                    neutron lb-pool-create --name ${OSK_LBPOOL_NAME}-${_n}-${i}-${j}-${k} --tenant-id ${_t} --protocol HTTP --subnet-id ${OSK_SUBNETWORK_NAME}-${_n}-${i}-${j} --lb-method ROUND_ROBIN > /dev/null 2>&1
+                    if [[ $? -ne 0 ]]
+                    then
+                        echo "lb pool creation failed" >&2
+                        export TNSRC_ERROR=1
+                    fi                  
+                else
+                    /bin/true
+                fi    
+            done
+        done
+    done
+}
+
+function create_lb_vips () {
+    _n=$1
+    _t=$2
+    
+    if [[ -z $3 ]]
+    then
+        numnets=1
+    else
+        numnets=$3
+    fi
+
+    if [[ -z $4 ]]
+    then
+        numsubnets=1
+    else
+        numsubnets=$4
+    fi        
+        
+    if [[ -z $5 ]]
+    then
+        numpools=1
+    else
+        numpools=$5
+    fi
+    
+    for ((i=1; i <= $numnets ; i++))
+    do
+        for ((j=1; j <= $numsubnets ; j++))
+        do                            
+            for ((k=1; k <= $numpools ; k++))
+            do
+                neutron lb-vip-show ${OSK_LBVIP_NAME}-${_n}-${i}-${j}-${k}  > /dev/null 2>&1
+                if [[ $? -ne 0 ]]
+                then
+                    neutron lb-vip-create --name ${OSK_LBVIP_NAME}-${_n}-${i}-${j}-${k} --tenant-id ${_t} --protocol-port 80 --protocol HTTP --subnet-id ${OSK_SUBNETWORK_NAME}-${_n}-${i}-${j} ${OSK_LBPOOL_NAME}-${_n}-${i}-${j}-${k} > /dev/null 2>&1
+                    if [[ $? -ne 0 ]]
+                    then
+                        echo "lb VIP creation failed" >&2
+                        export TNSRC_ERROR=1
+                    fi                  
+                else
+                    /bin/ture
+                fi
+            done
+        done
+    done
+}
+    
+function create_lb_member () {
+    _n=$1
+    _t=$2
+    _ipaddr=$3
+
+    
+    #for instaddr in $(openstack server list --project ${OSK_NETWORK_NAME}-${_n}-1 -c Networks | grep cb-tenantnet | cut -d '=' -f 2 | cut -d ',' -f 1)
+
+    neutron lb-member-create --tenant-id ${_t} --protocol-port 80 --address ${_ipaddr} ${OSK_LBPOOL_NAME}-${_n}-1-1-1 > /dev/null 2>&1
+    if [[ $? -ne 0 ]]
+    then
+        echo "lb member creation failed" >&2
+        export TNSRC_ERROR=1
+    fi  
+
+}
+
+function delete_lb_member () {
+    _n=$1
+    _t=$2
+    _ipaddr=$3
+
+    LB_UUID=$(neutron lb-member-list --address ${_ipaddr} -c id -f value)
+    if [[ ! -z $LB_UUID ]]
+    then
+        neutron lb-member-delete $LB_UUID > /dev/null 2>&1
+        if [[ $? -ne 0 ]]
+        then
+            echo "lb member deletion failed" >&2
+            export TNSRC_ERROR=1
+        fi  
+    else
+        /bin/true
+    fi
+}
+
+function delete_lb_members () {
+    _n=$1
+    _t=$2
+
+    for LB_MEMBER_UUID in $(neutron lb-member-list --tenant-id ${_t} -c id -f value)
+    do 
+        neutron lb-member-delete $LB_MEMBER_UUID > /dev/null 2>&1
+        if [[ $? -ne 0 ]]
+        then
+            echo "lb member deletion failed" >&2
+            export TNSRC_ERROR=1
+        fi
+    done
+}
+
+function delete_lb_vips () {
+    _n=$1
+    _t=$2
+    
+    if [[ -z $3 ]]
+    then
+        numnets=1
+    else
+        numnets=$3
+    fi
+
+    if [[ -z $4 ]]
+    then
+        numsubnets=1
+    else
+        numsubnets=$4
+    fi        
+        
+    if [[ -z $5 ]]
+    then
+        numpools=1
+    else
+        numpools=$5
+    fi
+    
+    for ((i=1; i <= $numnets ; i++))
+    do
+        for ((j=1; j <= $numsubnets ; j++))
+        do                            
+            for ((k=1; k <= $numpools ; k++))
+            do
+                neutron lb-vip-show ${OSK_LBVIP_NAME}-${_n}-${i}-${j}-${k}  > /dev/null 2>&1
+                if [[ $? -eq 0 ]]
+                then
+                    neutron lb-vip-delete ${OSK_LBVIP_NAME}-${_n}-${i}-${j}-${k} > /dev/null 2>&1
+                    if [[ $? -ne 0 ]]
+                    then
+                        echo "lb VIP creation failed" >&2
+                        export TNSRC_ERROR=1
+                    fi                  
+                else
+                    /bin/ture
+                fi
+            done
+        done
+    done
+}
+
+function delete_lb_pools () {
+    _n=$1
+    _t=$2
+    
+    if [[ -z $3 ]]
+    then
+        numnets=1
+    else
+        numnets=$3
+    fi
+
+    if [[ -z $4 ]]
+    then
+        numsubnets=1
+    else
+        numsubnets=$4
+    fi        
+        
+    if [[ -z $5 ]]
+    then
+        numpools=1
+    else
+        numpools=$5
+    fi
+
+    for ((i=1; i <= $numnets ; i++))
+    do
+        for ((j=1; j <= $numsubnets ; j++))
+        do                            
+            for ((k=1; k <= $numpools ; k++))
+            do
+                neutron lb-pool-show ${OSK_LBPOOL_NAME}-${_n}-${i}-${j}-${k} > /dev/null 2>&1
+                if [[ $? -eq 0 ]]
+                then    
+                    neutron lb-pool-delete ${OSK_LBPOOL_NAME}-${_n}-${i}-${j}-${k}  > /dev/null 2>&1
+                    if [[ $? -ne 0 ]]
+                    then
+                        echo "lb pool creation failed" >&2
+                        export TNSRC_ERROR=1
+                    fi                  
+                else
+                    /bin/true
+                fi    
+            done
+        done
+    done
+}
+
 function delete_router () {
     _n=$1
 
@@ -274,16 +527,20 @@ function delete_router () {
         do                            
             for ((k=1; k <= $numrouters ; k++))
             do
-                for sn in $(neutron router-port-list ${OSK_ROUTER_NAME}-${_n}-${k} -F fixed_ips | grep subnet_id | awk '{ print $3 }' | sed 's/"//g' | sed 's/,//g')
-                do
-                    neutron router-interface-delete ${OSK_ROUTER_NAME}-${_n}-${k} $sn > /dev/null 2>&1
-                done        
-                neutron router-delete ${OSK_ROUTER_NAME}-${_n}-${k} > /dev/null 2>&1
-                if [[ $? -ne 0 ]]
+                neutron router-show ${OSK_ROUTER_NAME}-${_n}-${k} > /dev/null 2>&1
+                if [[ $? -eq 0 ]]
                 then
-                    echo "router deletion failed" >&2
-                    export TNSRC_ERROR=1
-                fi                         
+                    for sn in $(neutron router-port-list ${OSK_ROUTER_NAME}-${_n}-${k} -F fixed_ips | grep subnet_id | awk '{ print $3 }' | sed 's/"//g' | sed 's/,//g')
+                    do
+                        neutron router-interface-delete ${OSK_ROUTER_NAME}-${_n}-${k} $sn > /dev/null 2>&1
+                    done        
+                    neutron router-delete ${OSK_ROUTER_NAME}-${_n}-${k} > /dev/null 2>&1
+                    if [[ $? -ne 0 ]]
+                    then
+                        echo "router deletion failed" >&2
+                        export TNSRC_ERROR=1
+                    fi
+                fi                       
             done
         done
     done
@@ -309,13 +566,17 @@ function delete_subnet() {
     for ((i=1; i <= $numnets ; i++))
     do
         for ((j=1; j <= $numsubnets ; j++))
-        do                            
-            neutron subnet-delete ${OSK_SUBNETWORK_NAME}-${_n}-${i}-${j} > /dev/null 2>&1
-	        if [[ $? -ne 0 ]]
-	        then
-	            echo "subnet deletion failed" >&2
-	            export TNSRC_ERROR=1
-	        fi                                     
+        do  
+            neutron subnet-show ${OSK_SUBNETWORK_NAME}-${_n}-${i}-${j} > /dev/null 2>&1
+            if [[ $? -eq 0 ]]
+            then                                       
+                neutron subnet-delete ${OSK_SUBNETWORK_NAME}-${_n}-${i}-${j} > /dev/null 2>&1
+                if [[ $? -ne 0 ]]
+                then
+                    echo "subnet deletion failed" >&2
+                    export TNSRC_ERROR=1
+                fi
+            fi                                     
         done
     done
 }
@@ -332,40 +593,54 @@ function delete_network () {
     
     for ((i=1; i <= $numnets ; i++))
     do    
-        neutron net-delete ${_t} ${OSK_NETWORK_NAME}-${_n}-${i} > /dev/null 2>&1
-        if [[ $? -ne 0 ]]
-        then
-            echo "network deletion failed" >&2
-            export TNSRC_ERROR=1
+        neutron net-show ${OSK_NETWORK_NAME}-${_n}-${i} > /dev/null 2>&1
+        if [[ $? -eq 0 ]]
+        then        
+            neutron net-delete ${OSK_NETWORK_NAME}-${_n}-${i} > /dev/null 2>&1
+            if [[ $? -ne 0 ]]
+            then
+                echo "network deletion failed" >&2
+                export TNSRC_ERROR=1
+            fi
         fi          
     done
 }
 
 function delete_user () {
     _n=$1 
-    openstack user delete ${OSK_USER_NAME}-${_n} > /dev/null 2>&1
-	if [[ $? -ne 0 ]]
-	then
-	    echo "user deletion failed" >&2
-	    export TNSRC_ERROR=1
-	fi              
+    openstack user show ${OSK_USER_NAME}-${_n} > /dev/null 2>&1
+    if [[ $? -eq 0 ]]
+    then
+        openstack user delete ${OSK_USER_NAME}-${_n} > /dev/null 2>&1
+        if [[ $? -ne 0 ]]
+        then
+            echo "user deletion failed" >&2
+            export TNSRC_ERROR=1
+        fi
+    fi            
 }
 
 function delete_tenant () {
     _n=$1
-    TID=$(openstack project show ${OSK_TENANT_NAME}-${_n} | grep [[:space:]]id[[:space:]] | cut -d '|' -f 3 | tr -d ' ')
-    for SECGID in $(neutron security-group-list --tenant_id $TID | grep default | awk '{ print $2 }')
-    do 
-        neutron security-group-delete $SECGID
-    done       
-    openstack project delete ${OSK_TENANT_NAME}-${_n} > /dev/null 2>&1
-	if [[ $? -ne 0 ]]
-	then
-	    echo "tenant deletion failed" >&2
-	    export TNSRC_ERROR=1
-	fi            
-}
+    openstack project show ${OSK_TENANT_NAME}-${_n} > /dev/null 2>&1
+    if [[ $? -eq 0 ]]
+    then
 
+        TID=$(openstack project show ${OSK_TENANT_NAME}-${_n} | grep [[:space:]]id[[:space:]] | cut -d '|' -f 3 | tr -d ' ')
+        for SECGID in $(neutron security-group-list --tenant_id $TID | grep default | awk '{ print $2 }')
+        do 
+            neutron security-group-delete $SECGID
+        done        
+        
+        openstack project delete ${OSK_TENANT_NAME}-${_n} > /dev/null 2>&1
+        if [[ $? -ne 0 ]]
+        then
+            echo "tenant deletion failed" >&2
+            export TNSRC_ERROR=1
+        fi
+    fi          
+}
+    
 if [[ $step == "execute_deprovision_finished" ]]
 then
     TNSR_OUTPUT="staging:execute_deprovision_finished"
@@ -375,28 +650,38 @@ then
         TNSR_OUTPUT=$TNSR_OUTPUT",tenant:${OSK_TENANT_NAME}-$counter,sim_901_test_deletion_time:1"
         echo "$TNSR_OUTPUT"
     elif [[ $model == "osk" ]]
-    then             
+    then
+        tenant_id=$(cat ${1} | grep \"project\" | cut -d ':' -f 2 | sed 's^"\|,\| ^^g')
         date0=`date +%s`
-        delete_router $counter
+        if [[ $create_lb == "true" ]]
+        then
+            delete_lb_members $counter $tenant_id
+            delete_lb_vips $counter $tenant_id
+            delete_lb_pools $counter $tenant_id
+        fi
         date1=`date +%s`
-        rdiff=$((date1-date0))
-        TNSR_OUTPUT=$TNSR_OUTPUT",tenant:${OSK_TENANT_NAME}-$counter,osk_901_router_deletion_time:${rdiff}"
-        delete_subnet $counter
+        ldiff=$((date1-date0))
+        TNSR_OUTPUT=$TNSR_OUTPUT",tenant:${OSK_TENANT_NAME}-$counter,osk_901_lb_deletion_time:${ldiff}"
+        delete_router $counter
         date2=`date +%s`
-        sdiff=$((date2-date1))
-        TNSR_OUTPUT=$TNSR_OUTPUT",osk_902_subnet_deletion_time:${sdiff}"
-        delete_network $counter
+        rdiff=$((date2-date1))
+        TNSR_OUTPUT=$TNSR_OUTPUT",osk_902_router_deletion_time:${rdiff}"
+        delete_subnet $counter
         date3=`date +%s`
-        ndiff=$((date3-date2))
-        TNSR_OUTPUT=$TNSR_OUTPUT",osk_903_network_deletion_time:${ndiff}"
-        delete_user $counter
+        sdiff=$((date3-date2))
+        TNSR_OUTPUT=$TNSR_OUTPUT",osk_903_subnet_deletion_time:${sdiff}"
+        delete_network $counter
         date4=`date +%s`
-        udiff=$((date4-date3))
-        TNSR_OUTPUT=$TNSR_OUTPUT",osk_904_user_deletion_time:${udiff}"
-        delete_tenant $counter  
+        ndiff=$((date4-date3))
+        TNSR_OUTPUT=$TNSR_OUTPUT",osk_904_network_deletion_time:${ndiff}"
+        delete_user $counter
         date5=`date +%s`
         udiff=$((date5-date4))
-        TNSR_OUTPUT=$TNSR_OUTPUT",osk_905_tenant_deletion_time:${udiff}"
+        TNSR_OUTPUT=$TNSR_OUTPUT",osk_905_user_deletion_time:${udiff}"
+        delete_tenant $counter  
+        date6=`date +%s`
+        udiff=$((date6-date5))
+        TNSR_OUTPUT=$TNSR_OUTPUT",osk_906_tenant_deletion_time:${udiff}"
         if [[ $TNSRC_ERROR -eq 0 ]]
         then
             echo "$TNSR_OUTPUT"
@@ -414,9 +699,33 @@ then
     then
         TNSR_OUTPUT=$TNSR_OUTPUT",tenant:${OSK_TENANT_NAME}-$counter,sim_051_test_creation_time:10"
         echo "$TNSR_OUTPUT"
-    else                    
-        TNSR_OUTPUT="staging:execute_deprovision_finished,tenant:${OSK_TENANT_NAME}-$counter"
+    else
         vm_uuid=$(cat ${1} | grep cloud_vm_uuid | cut -d ':' -f 2 | sed 's^"\|,\| ^^g')
+        run_cloud_ip=$(cat ${1} | grep run_cloud_ip | cut -d ':' -f 2 | sed 's^"\|,\| ^^g')
+        tenant_id=$(cat ${1} | grep \"project\" | cut -d ':' -f 2 | sed 's^"\|,\| ^^g')
+
+        date0=`date +%s`
+
+        if [[ $ai_counter != "none" ]]
+        then
+            TNSR_OUTPUT="staging:none" 
+            actual_counter=$ai_counter
+        else
+            TNSR_OUTPUT="staging:execute_deprovision_finished"                
+            actual_counter=$counter
+        fi
+
+        if [[ $create_lb == "true" ]]
+        then                                        
+            create_lb_member $actual_counter $tenant_id $run_cloud_ip
+        fi
+        
+        date1=`date +%s`
+        ldiff=$((date1-date0))
+        
+        TNSR_OUTPUT=$TNSR_OUTPUT",tenant:${OSK_TENANT_NAME}-$actual_counter"        
+        TNSR_OUTPUT=$TNSR_OUTPUT",osk_017_lb_member_creation:${ldiff}"                                                                                                                                                                                                        
+        
         stacky_output=$(stacky uuid $vm_uuid)
         
         if [[ $(echo "$stacky_output" | grep -c "No results") -eq 0 ]]
@@ -446,7 +755,7 @@ then
                 pdiff=$pdiff"NA"
             fi                                                
     
-            TNSR_OUTPUT=$TNSR_OUTPUT",osk_016_instance_scheduling_time:$sdiff,osk_016_instance_creation_time:$idiff,osk_016_port_creation_time:$pdiff"
+            TNSR_OUTPUT=$TNSR_OUTPUT",osk_018_instance_scheduling_time:$sdiff,osk_019_instance_creation_time:$idiff,osk_018_port_creation_time:$pdiff"
         fi
         echo "$TNSR_OUTPUT"    
     fi
@@ -461,9 +770,20 @@ then
     kusername=$(cat ${1} | grep \"username\" | cut -d ':' -f 2 | sed 's^"\|,\| ^^g')
     ext_net=$(cat ${1} | grep \"floating_pool\" | cut -d ':' -f 2 | sed 's^"\|,\| ^^g')
 
+    if [[ -z $ext_net ]]
+    then
+        echo "error: floating_pool not defined"
+        exit 1
+    fi
+                
     snipa=$(sed -n ${counter}p $basedir/scenarios/scripts/pre_computed_nets.txt)
 
-    TNSR_OUTPUT="staging:execute_provision_finished"
+    if [[ $ai_counter == "none" ]]
+    then
+        TNSR_OUTPUT="staging:execute_provision_finished"
+    else
+        TNSR_OUTPUT="staging:execute_deprovision_finished,vm_staging:execute_provision_finished"
+    fi
 
     if [[ $model == "sim" ]]
     then
@@ -475,7 +795,7 @@ then
         create_tenant $counter
         date1=`date +%s`
         tdiff=$((date1-date0))
-        TNSR_OUTPUT=$TNSR_OUTPUT",tenant:${OSK_TENANT_NAME}-$counter,osk_001_tenant_creation_time:${tdiff}"
+        TNSR_OUTPUT=$TNSR_OUTPUT",tenant:${OSK_TENANT_NAME}-$counter,project:$TID,osk_001_tenant_creation_time:${tdiff}"
         if [[ $TENANT_JUST_CREATED -eq 1 ]]
         then   
             update_quotas $TID
@@ -520,7 +840,16 @@ then
         fi
         date9=`date +%s`
         xdiff=$((date9-date8))
-        TNSR_OUTPUT=$TNSR_OUTPUT",osk_009_router_attachment:${xdiff}"    
+        TNSR_OUTPUT=$TNSR_OUTPUT",osk_009_router_attachment:${xdiff}"
+        if [[ $create_lb == "true" ]]
+        then
+            TNSR_OUTPUT=$TNSR_OUTPUT",create_lb:true"
+            create_lb_pools $counter $TID
+            create_lb_vips $counter $TID            
+        fi
+        date10=`date +%s`
+        xdiff=$((date10-date9))
+        TNSR_OUTPUT=$TNSR_OUTPUT",osk_010_lb_creation:${xdiff}"                
         if [[ $TNSRC_ERROR -eq 0 ]]
         then
             echo "$TNSR_OUTPUT"
