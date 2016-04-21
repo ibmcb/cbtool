@@ -1926,9 +1926,8 @@ class BaseObjectOperations :
             _extra_parms += ",sla_provisioning_target=" + obj_attr_list[vm_role + "_sla_provisioning_target"]            
 
         if "vm_extra_parms" in obj_attr_list :
-            obj_attr_list["vm_extra_parms"]=obj_attr_list["vm_extra_parms"].replace("_EQUAL_","=")
             _extra_parms += "," + obj_attr_list["vm_extra_parms"]
-                        
+                
         if vm_role + "_cloud_ips" in obj_attr_list :
             if not vm_role in cloud_ips :
                 cloud_ips[vm_role] = obj_attr_list[vm_role + "_cloud_ips"].split(';')
@@ -3632,7 +3631,7 @@ class BaseObjectOperations :
                                                                              1000000000000000000)))).upper()
                         _obj_attr_list["uuid"] = _obj_uuid
         
-                        _cmd = "\"" + self.path + "/cbact\""
+                        _cmd = self.path + "/cbact"
                         _cmd += " --procid=" + self.pid
                         _cmd += " --osp=" + dic2str(self.osci.oscp())
                         _cmd += " --msp=" + dic2str(self.msci.mscp())
@@ -3659,7 +3658,7 @@ class BaseObjectOperations :
                             _status = 37
     
                         else :
-                            _cmd = "\"" + self.path + "/cbact\""
+                            _cmd = self.path + "/cbact"
                             _cmd += " --procid=" + self.pid
                             _cmd += " --osp=" + dic2str(self.osci.oscp())
                             _cmd += " --msp=" + dic2str(self.msci.mscp())
@@ -3690,7 +3689,7 @@ class BaseObjectOperations :
                             _status = 37
     
                         else :
-                            _cmd = "\"" + self.path + "/cbact\""
+                            _cmd = self.path + "/cbact"
                             _cmd += " --procid=" + self.pid
                             _cmd += " --osp=" + dic2str(self.osci.oscp())
                             _cmd += " --msp=" + dic2str(self.msci.mscp())

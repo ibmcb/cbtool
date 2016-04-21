@@ -285,16 +285,15 @@ function create_lb_pools () {
         do                            
             for ((k=1; k <= $numpools ; k++))
             do
-                neutron lb-pool-show ${OSK_LBPOOL_NAME}-${_n}-${i}-${j}-${k} > /dev/null 2>&1
+            neutron lb-pool-show ${OSK_LBPOOL_NAME}-${_n}-${i}-${j}-${k} > /dev/null 2>&1
                 if [[ $? -ne 0 ]]
                 then    
-#                    neutron lb-pool-create --name ${OSK_LBPOOL_NAME}-${_n}-${i}-${j}-${k} --tenant-id ${_t} --protocol HTTP --subnet-id ${OSK_SUBNETWORK_NAME}-${_n}-${i}-${j} --lb-method ROUND_ROBIN > /dev/null 2>&1
-                    neutron lb-pool-create --name ${OSK_LBPOOL_NAME}-${_n}-${i}-${j}-${k} --tenant-id ${_t} --protocol TCP --subnet-id ${OSK_SUBNETWORK_NAME}-${_n}-${i}-${j} --lb-method ROUND_ROBIN > /dev/null 2>&1
+                    neutron lb-pool-create --name ${OSK_LBPOOL_NAME}-${_n}-${i}-${j}-${k} --tenant-id ${_t} --protocol HTTP --subnet-id ${OSK_SUBNETWORK_NAME}-${_n}-${i}-${j} --lb-method ROUND_ROBIN > /dev/null 2>&1
                     if [[ $? -ne 0 ]]
                     then
                         echo "lb pool creation failed" >&2
                         export TNSRC_ERROR=1
-                    fi
+                    fi                  
                 else
                     /bin/true
                 fi    
@@ -337,13 +336,12 @@ function create_lb_vips () {
                 neutron lb-vip-show ${OSK_LBVIP_NAME}-${_n}-${i}-${j}-${k}  > /dev/null 2>&1
                 if [[ $? -ne 0 ]]
                 then
-#                    export LB_VIP_PORT=$(neutron lb-vip-create --name ${OSK_LBVIP_NAME}-${_n}-${i}-${j}-${k} --tenant-id ${_t} --protocol-port 80 --protocol HTTP --subnet-id ${OSK_SUBNETWORK_NAME}-${_n}-${i}-${j} ${OSK_LBPOOL_NAME}-${_n}-${i}-${j}-${k} | grep port_id | cut -d "|" -f 3)
-                    export LB_VIP_PORT=$(neutron lb-vip-create --name ${OSK_LBVIP_NAME}-${_n}-${i}-${j}-${k} --tenant-id ${_t} --protocol-port 22 --protocol TCP --subnet-id ${OSK_SUBNETWORK_NAME}-${_n}-${i}-${j} ${OSK_LBPOOL_NAME}-${_n}-${i}-${j}-${k} | grep port_id | cut -d "|" -f 3)
+                    neutron lb-vip-create --name ${OSK_LBVIP_NAME}-${_n}-${i}-${j}-${k} --tenant-id ${_t} --protocol-port 80 --protocol HTTP --subnet-id ${OSK_SUBNETWORK_NAME}-${_n}-${i}-${j} ${OSK_LBPOOL_NAME}-${_n}-${i}-${j}-${k} > /dev/null 2>&1
                     if [[ $? -ne 0 ]]
                     then
                         echo "lb VIP creation failed" >&2
                         export TNSRC_ERROR=1
-                    fi
+                    fi                  
                 else
                     /bin/ture
                 fi
@@ -360,84 +358,13 @@ function create_lb_member () {
     
     #for instaddr in $(openstack server list --project ${OSK_NETWORK_NAME}-${_n}-1 -c Networks | grep cb-tenantnet | cut -d '=' -f 2 | cut -d ',' -f 1)
 
-#    neutron lb-member-create --tenant-id ${_t} --protocol-port 80 --address ${_ipaddr} ${OSK_LBPOOL_NAME}-${_n}-1-1-1 > /dev/null 2>&1
-    neutron lb-member-create --tenant-id ${_t} --protocol-port 22 --address ${_ipaddr} ${OSK_LBPOOL_NAME}-${_n}-1-1-1 > /dev/null 2>&1
+    neutron lb-member-create --tenant-id ${_t} --protocol-port 80 --address ${_ipaddr} ${OSK_LBPOOL_NAME}-${_n}-1-1-1 > /dev/null 2>&1
     if [[ $? -ne 0 ]]
     then
         echo "lb member creation failed" >&2
         export TNSRC_ERROR=1
-    fi
-}
+    fi  
 
-function check_lb_active () {
-    _n=$1
-    _t=$2
-    
-    #for instaddr in $(openstack server list --project ${OSK_NETWORK_NAME}-${_n}-1 -c Networks | grep cb-tenantnet | cut -d '=' -f 2 | cut -d ',' -f 1)
-
-    neutron lb-pool-list --tenant-id ${_t} | grep ACTIVE > /dev/null 2>&1
-    if [[ $? -ne 0 ]]
-    then
-        echo "lb pool creation failed" >&2
-        export TNSRC_ERROR=1
-    fi    
-    
-    neutron lb-vip-list --tenant-id ${_t} | grep ACTIVE > /dev/null 2>&1
-    if [[ $? -ne 0 ]]
-    then
-        echo "lb VIP creation failed" >&2
-        export TNSRC_ERROR=1
-    fi
-        
-}
-
-function create_floating_ip () {
-    _ext_net=$1
-    LB_FLOATING_INFO=$(neutron floatingip-create ${ext_net} --tenant-id ${tenant_id})
-    if [[ $? -ne 0 ]]
-    then
-        echo "lb FIP creation failed" >&2        
-        export TNSRC_ERROR=1
-    else
-        export LB_FLOATING_ID=$(echo "$LB_FLOATING_INFO" | grep [[:space:]]id[[:space:]] | cut -d "|" -f 3)
-        export LB_FLOATING_ADDR=$(echo "$LB_FLOATING_INFO" | grep floating_ip_address | cut -d "|" -f 3)        
-    fi
-}
-    
-function associate_floating_ip () {
-    _lb_fip_id=$1
-    _lb_vip_port=$2
-    
-    neutron floatingip-associate ${_lb_fip_id} ${_lb_vip_port} > /dev/null 2>&1
-    if [[ $? -ne 0 ]]
-    then
-        echo "lb FIP association failed" >&2
-        export TNSRC_ERROR=1
-    fi
-}
- 
-function connect_to_floating_ip () {
-    _ssh_priv_key=$1
-    _login_user=$2
-    _fip=$3
-    
-    ssh -i ${_ssh_priv_key} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -l ${_login_user} ${_fip} "/bin/true" > /dev/null 2>&1
-    if [[ $? -ne 0 ]]
-    then
-        echo "lb FIP connection failed" >&2
-        export TNSRC_ERROR=1
-    fi
-}                                        
-                                                                                                                   
-function delete_floating_ip () {
-    _lb_fip_id=$1
-    
-    neutron floatingip-delete ${_lb_fip_id} > /dev/null 2>&1    
-    if [[ $? -ne 0 ]]
-    then
-        echo "lb FIP deletion failed" >&2        
-        export TNSRC_ERROR=1
-    fi
 }
 
 function delete_lb_member () {
@@ -728,11 +655,9 @@ then
         date0=`date +%s`
         if [[ $create_lb == "true" ]]
         then
-            lb_fip_id=$(cat ${1} | grep \"lb_fip_id\" | cut -d ':' -f 2 | sed 's^"\|,\| ^^g')                          
             delete_lb_members $counter $tenant_id
             delete_lb_vips $counter $tenant_id
             delete_lb_pools $counter $tenant_id
-            delete_floating_ip $lb_fip_id
         fi
         date1=`date +%s`
         ldiff=$((date1-date0))
@@ -778,8 +703,7 @@ then
         vm_uuid=$(cat ${1} | grep cloud_vm_uuid | cut -d ':' -f 2 | sed 's^"\|,\| ^^g')
         run_cloud_ip=$(cat ${1} | grep run_cloud_ip | cut -d ':' -f 2 | sed 's^"\|,\| ^^g')
         tenant_id=$(cat ${1} | grep \"project\" | cut -d ':' -f 2 | sed 's^"\|,\| ^^g')
-        ext_net=$(cat ${1} | grep \"floating_pool\" | cut -d ':' -f 2 | sed 's^"\|,\| ^^g')
-                 
+
         date0=`date +%s`
 
         if [[ $ai_counter != "none" ]]
@@ -790,24 +714,17 @@ then
             TNSR_OUTPUT="staging:execute_deprovision_finished"                
             actual_counter=$counter
         fi
-    
+
         if [[ $create_lb == "true" ]]
-        then
-            lb_vip_port=$(cat ${1} | grep \"lb_vip_port\" | cut -d ':' -f 2 | sed 's^"\|,\| ^^g')
-            ssh_priv_key=$(cat ${1} | grep \"identity\" | cut -d ':' -f 2 | sed 's^"\|,\| ^^g')
-            login_user=$(cat ${1} | grep \"login\" | cut -d ':' -f 2 | sed 's^"\|,\| ^^g')       
+        then                                        
             create_lb_member $actual_counter $tenant_id $run_cloud_ip
-            check_lb_active $actual_counter $tenant_id
-            create_floating_ip $ext_net
-            associate_floating_ip $LB_FLOATING_ID $lb_vip_port
-            connect_to_floating_ip $ssh_priv_key $login_user $LB_FLOATING_ADDR
         fi
         
         date1=`date +%s`
         ldiff=$((date1-date0))
         
         TNSR_OUTPUT=$TNSR_OUTPUT",tenant:${OSK_TENANT_NAME}-$actual_counter"        
-        TNSR_OUTPUT=$TNSR_OUTPUT",osk_017_lb_member_creation:${ldiff},lb_fip_id:$LB_FLOATING_ID,lb_fip_addr:$LB_FLOATING_ADDR"  
+        TNSR_OUTPUT=$TNSR_OUTPUT",osk_017_lb_member_creation:${ldiff}"                                                                                                                                                                                                        
         
         stacky_output=$(stacky uuid $vm_uuid)
         
@@ -840,13 +757,7 @@ then
     
             TNSR_OUTPUT=$TNSR_OUTPUT",osk_018_instance_scheduling_time:$sdiff,osk_019_instance_creation_time:$idiff,osk_018_port_creation_time:$pdiff"
         fi
-        
-        if [[ $TNSRC_ERROR -eq 0 ]]
-        then
-            echo "$TNSR_OUTPUT"
-        else
-            exit 1
-        fi   
+        echo "$TNSR_OUTPUT"    
     fi
 fi
 
@@ -859,15 +770,12 @@ then
     kusername=$(cat ${1} | grep \"username\" | cut -d ':' -f 2 | sed 's^"\|,\| ^^g')
     ext_net=$(cat ${1} | grep \"floating_pool\" | cut -d ':' -f 2 | sed 's^"\|,\| ^^g')
 
-    if [[ $model == "osk" ]]
+    if [[ -z $ext_net ]]
     then
-        if [[ -z $ext_net ]]
-        then
-            echo "error: floating_pool not defined"
-            exit 1
-        fi
+        echo "error: floating_pool not defined"
+        exit 1
     fi
-
+                
     snipa=$(sed -n ${counter}p $basedir/scenarios/scripts/pre_computed_nets.txt)
 
     if [[ $ai_counter == "none" ]]
@@ -937,8 +845,7 @@ then
         then
             TNSR_OUTPUT=$TNSR_OUTPUT",create_lb:true"
             create_lb_pools $counter $TID
-            create_lb_vips $counter $TID
-            TNSR_OUTPUT=$TNSR_OUTPUT",lb_vip_port:$LB_VIP_PORT"       
+            create_lb_vips $counter $TID            
         fi
         date10=`date +%s`
         xdiff=$((date10-date9))
