@@ -199,8 +199,10 @@ class OskCmds(CommonCloudFunctions) :
                     self.use_cinderclient = "false"
     
                 if self.use_cinderclient == "true" :
-                    # At the moment, we're still making cinder call from nova.                
-                    self.oskconnstorage = novac.Client(2, _username, _password, _tenant, \
+                    
+                    from cinderclient.v2 import cinderc 
+
+                    self.oskconnstorage = cinderc.Client(_username, _password, _tenant, \
                                                  access_url, region_name=region, \
                                                  service_type="volume", \
                                                  endpoint_type = _endpoint_type, \
@@ -1420,7 +1422,10 @@ class OskCmds(CommonCloudFunctions) :
             _netlist = obj_attr_list["prov_netname"].split(',') + obj_attr_list["run_netname"].split(',')
                                     
             for _netname in _netlist :  
-                
+
+                if "HA network tenant" in _netname :
+                    continue
+ 
                 if not _netname in self.networks_attr_list :
                     _status = 168
                     _fmsg = "Please check if the defined network is present on this "
