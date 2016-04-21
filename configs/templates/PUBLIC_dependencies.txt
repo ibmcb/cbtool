@@ -336,6 +336,7 @@ pyyaml-ver = 3.10
 ruamelyaml-ver = ANY
 ### END - Dependency versions ###
 
+<<<<<<< HEAD
 ### START - Dependency tags ###
 sudo-tag = base
 repo-tag = base
