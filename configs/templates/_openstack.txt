@@ -69,6 +69,7 @@ NETNAME = $OSK_NETNAME
 TENANT = default
 PROJECT = default
 SIZE = from_vm_template
+CREATE_LB = $false
 CGROUPS_BASE_DIR = /sys/fs/cgroup/
 HOSTNAME_KEY = cloud_vm_name
 FLOATING_POOL = $Empty
@@ -92,6 +93,7 @@ NETNAME = $OSK_NETNAME
 TENANT = default
 PROJECT = default
 FLOATING_POOL = $Empty
+CREATE_LB = $false
 ALWAYS_CREATE_FLOATING_IP = $True
 DONT_START_QEMU_SCRAPER = $True
 

@@ -1927,7 +1927,7 @@ class BaseObjectOperations :
 
         if "vm_extra_parms" in obj_attr_list :
             _extra_parms += "," + obj_attr_list["vm_extra_parms"]
-        
+                
         if vm_role + "_cloud_ips" in obj_attr_list :
             if not vm_role in cloud_ips :
                 cloud_ips[vm_role] = obj_attr_list[vm_role + "_cloud_ips"].split(';')
@@ -1999,8 +1999,7 @@ class BaseObjectOperations :
                 _pool, _meta_tag, _size, _extra_parms = \
                 self.propagate_ai_attributes_to_vm(_vm_role, _cloud_ips, obj_attr_list) 
 
-                _attach_action = ''
-                #_attach_action = obj_attr_list["staging"]
+                _attach_action = obj_attr_list["vm_attach_action"]
 
                 _vg = ValueGeneration(self.pid)
                 _nr_vms = int(_vg.get_value(_nr_vms, _nr_vms))
