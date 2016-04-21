@@ -70,7 +70,6 @@ class OskCmds(CommonCloudFunctions) :
         self.host_map = {}
         self.api_error_counter = {}
         self.max_api_errors = 10
-        self.time_profile = False
         
     @trace
     def get_description(self) :
@@ -250,7 +249,8 @@ class OskCmds(CommonCloudFunctions) :
                     _file_fd.write("export OS_PASSWORD=" + _password + "\n")                    
                     _file_fd.write("export OS_AUTH_URL=\"" + access_url + "\"\n")
                     _file_fd.write("export OS_NO_CACHE=1\n")
-                    _file_fd.write("export OS_INTERFACE=" + _endpoint_type.replace("URL",'') +  "\n")                        
+#                    _file_fd.write("export OS_INTERFACE=" + _endpoint_type.replace("URL",'') +  "\n")
+                    _file_fd.write("export OS_INTERFACE=admin\n")                        
                     if _cacert :
                         _file_fd.write("export OS_CACERT=" + _cacert + "\n")
                     _file_fd.write("export OS_REGION_NAME=" + region + "\n")
@@ -1895,7 +1895,7 @@ class OskCmds(CommonCloudFunctions) :
 
             _fip = False
 
-            if obj_attr_list["always_create_floating_ip"].lower() == "false" :
+            if str(obj_attr_list["always_create_floating_ip"]).lower() == "false" :
                 
                 _call = "floating ip list"
                 fips = self.oskconncompute.floating_ips.list()
@@ -1913,9 +1913,8 @@ class OskCmds(CommonCloudFunctions) :
                 _fip = _fip_h.ip
                 obj_attr_list["cloud_floating_ip_uuid"] = _fip_h.id
             
-                if self.time_profile :
-                    _mark2 = int(time())
-                    obj_attr_list["osk_017_create_fip_time"] = _mark2 - _mark1    
+                _mark2 = int(time())
+                obj_attr_list["osk_020_create_fip_time"] = _mark2 - _mark1    
 
             return _fip
 
@@ -2041,7 +2040,7 @@ class OskCmds(CommonCloudFunctions) :
                 _instance.add_floating_ip(_fip)
 
                 _mark2 = int(time())
-                obj_attr_list["osk_018_attach_fip_time"] = _mark2 - _mark1    
+                obj_attr_list["osk_021_attach_fip_time"] = _mark2 - _mark1    
 
             return True
 
@@ -2145,9 +2144,8 @@ class OskCmds(CommonCloudFunctions) :
                     else :
                         sleep(1)
 
-                if self.time_profile :
-                    _mark2 = int(time())
-                    obj_attr_list["osk_015_create_volume_time"] = _mark2 - _mark1
+                _mark2 = int(time())
+                obj_attr_list["osk_016_create_volume_time"] = _mark2 - _mark1
 
                 if not _imageid :
 
@@ -2166,9 +2164,8 @@ class OskCmds(CommonCloudFunctions) :
                                                                      obj_attr_list["cloud_vv_uuid"], \
                                                                      "/dev/vdd")
 
-                    if self.time_profile :
-                        _mark2 = int(time())
-                        obj_attr_list["osk_015_create_volume_time"] += (_mark3 - _mark3)
+                    _mark2 = int(time())
+                    obj_attr_list["osk_016_create_volume_time"] += (_mark3 - _mark3)
 
             else :
                 obj_attr_list["cloud_vv_uuid"] = "none"
@@ -2493,14 +2490,12 @@ class OskCmds(CommonCloudFunctions) :
             obj_attr_list["last_known_state"] = "about to connect to openstack manager"
 
             self.take_action_if_requested("VM", obj_attr_list, "provision_originated")
-            self.time_profile = False
 
             if "execute_provision_originated_stdout" in obj_attr_list :
                 if obj_attr_list["execute_provision_originated_stdout"].count("tenant") :
                     _temp_dict = str2dic(obj_attr_list["execute_provision_originated_stdout"].replace('\n',''), False)
                     if _temp_dict :
                         obj_attr_list.update(_temp_dict)
-                        self.time_profile = True
                     
             obj_attr_list["key_name"] = obj_attr_list["username"] + '_' + obj_attr_list["tenant"] + '_' + obj_attr_list["key_name"]
 
@@ -2525,10 +2520,11 @@ class OskCmds(CommonCloudFunctions) :
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
                              obj_attr_list["vmc_name"], \
                              {"use_neutronclient" : obj_attr_list["use_neutronclient"]})
-                
-                if self.time_profile :
-                    _mark2 = int(time())
-                    obj_attr_list["osk_010_authenticate_time"] = _mark2 - _mark1
+
+                _mark2 = int(time())
+                obj_attr_list["osk_011_authenticate_time"] = _mark2 - _mark1
+            else :
+                _mark2 = int(time())
 
             if self.is_vm_running(obj_attr_list) :
                 _msg = "An instance named \"" + obj_attr_list["cloud_vm_name"]
@@ -2537,9 +2533,8 @@ class OskCmds(CommonCloudFunctions) :
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
 
-            if self.time_profile :
-                _mark3 = int(time())
-                obj_attr_list["osk_011_check_existing_instance_time"] = _mark3 - _mark2
+            _mark3 = int(time())
+            obj_attr_list["osk_012_check_existing_instance_time"] = _mark3 - _mark2
                     
             obj_attr_list["last_known_state"] = "about to get flavor and image list"
 
@@ -2559,15 +2554,13 @@ class OskCmds(CommonCloudFunctions) :
 
             _flavor = self.get_flavors(obj_attr_list)
 
-            if self.time_profile :
-                _mark4 = int(time())
-                obj_attr_list["osk_012_get_flavors_time"] = _mark4 - _mark3            
+            _mark4 = int(time())
+            obj_attr_list["osk_013_get_flavors_time"] = _mark4 - _mark3            
 
             _imageid, _hyper = self.get_images(obj_attr_list)
 
-            if self.time_profile :
-                _mark5 = int(time())
-                obj_attr_list["osk_013_get_imageid_time"] = _mark5 - _mark4
+            _mark5 = int(time())
+            obj_attr_list["osk_014_get_imageid_time"] = _mark5 - _mark4
 
             _availability_zone = None            
             if len(obj_attr_list["availability_zone"]) > 1 :
@@ -2595,9 +2588,8 @@ class OskCmds(CommonCloudFunctions) :
             _mark5 = int(time())
             _netnames, _netids = self.get_networks(obj_attr_list)
 
-            if self.time_profile :
-                _mark6 = int(time())
-                obj_attr_list["osk_014_get_netid_time"] = _mark6 - _mark5
+            _mark6 = int(time())
+            obj_attr_list["osk_015_get_netid_time"] = _mark6 - _mark5
             
             _meta = {}
             if "meta_tags" in obj_attr_list :
@@ -2677,10 +2669,12 @@ class OskCmds(CommonCloudFunctions) :
 
                 _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
 
-                if "osk_016_instance_creation_time" not in obj_attr_list :
-                    obj_attr_list["osk_016_instance_creation_time"] = obj_attr_list["mgt_003_provisioning_request_completed"]
+                if "osk_018_instance_creation_time" not in obj_attr_list :
+                    obj_attr_list["osk_018_instance_scheduling_time"] = 0
+                    obj_attr_list["osk_018_port_creation_time"] = 0
+                    obj_attr_list["osk_019_instance_creation_time"] = obj_attr_list["mgt_003_provisioning_request_completed"]
                 else :
-                    obj_attr_list["osk_016_instance_creation_time"] = float(obj_attr_list["osk_016_instance_creation_time"]) - float(obj_attr_list["osk_016_port_creation_time"])
+                    obj_attr_list["osk_019_instance_creation_time"] = float(obj_attr_list["osk_019_instance_creation_time"]) - float(obj_attr_list["osk_018_port_creation_time"])
                     
                 if obj_attr_list["last_known_state"].count("ERROR") :
                     _fmsg = obj_attr_list["last_known_state"]
@@ -2704,7 +2698,7 @@ class OskCmds(CommonCloudFunctions) :
 
                     self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
 
-                    obj_attr_list["osk_019_instance_reachable"] = obj_attr_list["mgt_004_network_acessible"]   
+                    obj_attr_list["osk_022_instance_reachable"] = obj_attr_list["mgt_004_network_acessible"]   
                     
                     self.get_host_and_instance_name(obj_attr_list)
     
@@ -2715,7 +2709,6 @@ class OskCmds(CommonCloudFunctions) :
                             _temp_dict = str2dic(obj_attr_list["execute_provision_finished_stdout"].replace('\n',''), False)
                             if _temp_dict :
                                 obj_attr_list.update(_temp_dict)
-                                self.time_profile = True
 
                     if obj_attr_list["tenant"] != "default" :
                         self.oskconncompute = False
@@ -3277,8 +3270,11 @@ class OskCmds(CommonCloudFunctions) :
                     if _temp_dict :
                         obj_attr_list["vm_extra_parms"] = ''                    
                         for _key in _temp_dict.keys() :
-                            if _key != "staging" :
+                            if not _key.count("staging") :
                                 obj_attr_list["vm_extra_parms"] += _key + '=' + _temp_dict[_key] + ','
+                            else :
+                                obj_attr_list["vm_attach_action"] = _temp_dict["vm_staging"]
+                                
                         obj_attr_list["vm_extra_parms"] = obj_attr_list["vm_extra_parms"][0:-1]
                         obj_attr_list.update(_temp_dict)
                     

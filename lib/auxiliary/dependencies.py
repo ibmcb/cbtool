@@ -580,7 +580,7 @@ def inst_conf_msg(depkey, depsdict) :
 
     return msg
 
-def execute_command(operation, depkey, depsdict, hostname = "127.0.0.1", username = None, process_manager = None):
+def execute_command(operation, depkey, depsdict, hostname = "127.0.0.1", username = None, process_manager = None, venv = False):
     '''
     TBD
     '''
@@ -607,6 +607,10 @@ def execute_command(operation, depkey, depsdict, hostname = "127.0.0.1", usernam
             _msg += "by executing the command \"" + _cmd[operation] + "\" (" + _cmd[operation + "-keys"] + ")..."
 
         else :
+
+            if venv :
+                _cmd["install"] = _cmd["install"].replace("sudo pip", "pip")
+            
             _msg = "(" + _order + ") Installing \"" + depkey + "\" by executing the command \""
             _msg += _cmd[operation] + "\" (" + _cmd[operation + "-keys"] + ")..."
 
@@ -721,6 +725,44 @@ def dependency_checker_installer(hostname, username, operation, options) :
 
         _dep_list = [x for x in _dep_list if x != 0]
 
+        if options.role.count("workload") :
+
+            options.tag = "base," + options.role
+                
+            _msg = "\n"
+            _msg += "##### INFO: This node will be used to play a role in the Virtual Applications"
+            _msg += " (AIs) \"" + str(options.wks) + "\". Only a subset of the depedencies"
+            _msg += " will be " + operation + "ed. This node cannot be used as an Orchestrator Node\n"
+            _msg += "\n"
+            print _msg
+
+        else :
+
+            options.tag = "base," + options.role + ',' + options.clouds
+                        
+            _msg = "\n"            
+            _msg += "##### INFO: This node will be prepared as an Orchestration Node."
+            _msg += " The full set of dependencies will be " + operation + "ed. "
+            _msg += "\n"            
+            print _msg
+            
+        options.tag = options.tag.split(',')
+            
+        _selected_dep_list = []
+        
+        for _dep in _dep_list :
+            for _tag in options.tag :
+                if _dep + "-tag" in _depsdict :
+                    _dep_tag_list = _depsdict[_dep + "-tag"].split(',')
+                else :
+                    _dep_tag_list = [ "workload" ]
+
+                if _tag in _dep_tag_list :
+                    if _dep not in _selected_dep_list :
+                        _selected_dep_list.append(_dep)
+
+        _dep_list = _selected_dep_list
+        
         print '\n'
         _msg = "##### INFO: DETECTED OPERATING SYSTEM KIND: " + _depsdict["cdistkind"]
         print _msg
@@ -756,42 +798,6 @@ def dependency_checker_installer(hostname, username, operation, options) :
             print _msg
             _dep_list.remove("mongodb")
             _dep_list.remove("chef-client")
-                        
-        if options.role.count("workload") :
-            _msg = "\n"
-            _msg += "##### INFO: This node will be used to play a role in the Virtual Applications"
-            _msg += " (AIs) \"" + str(options.wks) + "\". Only a subset of the depedencies"
-            _msg += " will be " + operation + "ed. This node cannot be used as an Orchestrator Node\n"
-            _msg += "\n"
-            print _msg
-            
-            _unneeded_dep_list = [ "mongodb", \
-                                   "python-twisted", \
-                                   "python-webob", \
-                                   "python-beaker", \
-                                   "pylibvirt", \
-                                   "pypureomapi", \
-                                   "pyhtml", \
-                                   "bootstrap", \
-                                   "bootstrap-wizard", \
-                                   "streamprox", \
-                                   "d3", \
-                                   "novaclient", \
-                                   "softlayer", \
-                                   "boto", \
-                                   "libcloud", \
-                                   "gcloud", \
-                                   "R"]
-            
-            for _unneeded_dep in _unneeded_dep_list :
-                if _unneeded_dep in _dep_list :
-                    _dep_list.remove(_unneeded_dep)
-        else :
-            _msg = "\n"            
-            _msg += "##### INFO: This node will be prepared as an Orchestration Node."
-            _msg += " The full set of dependencies will be " + operation + "ed. "
-            _msg += "\n"            
-            print _msg
 
         if "java" in _dep_list and "oraclejava" in _dep_list :
             _msg = "Since both \"java\" and \"oraclejava\" are listed as dependencies"
@@ -807,7 +813,8 @@ def dependency_checker_installer(hostname, username, operation, options) :
 
             _status, _msg = execute_command("configure", _dep, _depsdict, \
                                             hostname = "127.0.0.1", \
-                                            username = username)
+                                            username = username, \
+                                            venv = options.venv)
             print _msg
 
             if _status :
@@ -818,7 +825,8 @@ def dependency_checker_installer(hostname, username, operation, options) :
 
                     _status, _msg = execute_command("install", _dep, _depsdict, \
                                                     hostname = "127.0.0.1", \
-                                                    username = username)
+                                                    username = username, \
+                                                    venv = options.venv)
                     print _msg
                     if not _status :
                         _dep_missing -= 1

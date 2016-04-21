@@ -129,7 +129,7 @@ DETACH_PARALLELISM = 20
 DISCOVER_HOSTS = $False
 MIGRATE_SUPPORTED = $False
 PROTECT_SUPPORTED = $False
-ADDITIONAL_DISCOVERY = $Empty
+ADDITIONAL_DISCOVERY = $EMPTY
 
 [VM_DEFAULTS]
 USERNAME = $MAIN_USERNAME
@@ -208,6 +208,7 @@ EXECUTE_PARALLELISM = 6
 RUNSTATE_PARALLELISM = 5
 EXECUTE_SCRIPT_NAME = execute_on_staging.sh 
 EXECUTE_JSON_FILENAME_PREFIX = cb
+VM_ATTACH_ACTION = $EMPTY
 
 [AIDRS_DEFAULTS]
 USERNAME = $MAIN_USERNAME
@@ -332,6 +333,47 @@ SWAP_M = swap_total, swap_free, swap_procs_running, swap_in_flight,
 SWAP_M += swap_procs_blocked, swap_KB_read, swap_ios_read, swap_KB_write, swap_ios_write
 NET_M = pkts_in, bytes_in, pkts_out, bytes_out
 DSK_M = disk_total, disk_free, ds_in_flight, ds_KB_read, ds_ios_read, ds_KB_write, ds_ios_write
+
+CLOUD_BASE_M = procstat_base-apache2_cpu, procstat_base-apache2_mem, 
+CLOUD_BASE_M += procstat_base-dnsmasq_cpu, procstat_base-dnsmasq_mem, 
+CLOUD_BASE_M += procstat_base-libvirtd_cpu, procstat_base-libvirtd_mem, 
+CLOUD_BASE_M += procstat_base-mysqld_cpu, procstat_base-mysqld_mem, 
+CLOUD_BASE_M += procstat_base-openvswitch_cpu, procstat_base-openvswitch_mem,
+CLOUD_BASE_M += procstat_base-openvswitch-db_cpu, procstat_base-openvswitch-db_mem,  
+CLOUD_BASE_M += procstat_base-ovn-controller_cpu, procstat_base-ovn-controller_mem
+
+OPENSTACK_M = procstat_ceilometer-agent-central_cpu, procstat_ceilometer-agent-central_mem, 
+OPENSTACK_M += procstat_ceilometer-agent-compute_cpu, procstat_ceilometer-agent-compute_mem, 
+OPENSTACK_M += procstat_ceilometer-agent-notification_cpu, procstat_ceilometer-agent-notification_mem, 
+OPENSTACK_M += procstat_ceilometer-alarm-evaluator_cpu, procstat_ceilometer-alarm-evaluator_mem, 
+OPENSTACK_M += procstat_ceilometer-alarm-notifier_cpu, procstat_ceilometer-alarm-notifier_mem, 
+OPENSTACK_M += procstat_ceilometer-api_cpu, procstat_ceilometer-api_mem, 
+OPENSTACK_M += procstat_ceilometer-collector_cpu, procstat_ceilometer-collector_mem, 
+OPENSTACK_M += procstat_cinder-api_cpu, procstat_cinder-api_mem, 
+OPENSTACK_M += procstat_cinder-scheduler_cpu, procstat_cinder-scheduler_mem, 
+OPENSTACK_M += procstat_cinder-volume_cpu, procstat_cinder-volume_mem, 
+OPENSTACK_M += procstat_glance-api_cpu, procstat_glance-api_mem, 
+OPENSTACK_M += procstat_glance-registry_cpu, procstat_glance-registry_mem, 
+OPENSTACK_M += procstat_heat-api-cfn_cpu, procstat_heat-api-cfn_mem, 
+OPENSTACK_M += procstat_heat-api-cloudwatch_cpu, procstat_heat-api-cloudwatch_mem, 
+OPENSTACK_M += procstat_heat-api_cpu, procstat_heat-api_mem, 
+OPENSTACK_M += procstat_heat-engine_cpu, procstat_heat-engine_mem, 
+OPENSTACK_M += procstat_keystone_cpu, procstat_keystone_mem, 
+OPENSTACK_M += procstat_neutron-dhcp-agent_cpu, procstat_neutron-dhcp-agent_mem, 
+OPENSTACK_M += procstat_neutron-l3-agent_cpu, procstat_neutron-l3-agent_mem, 
+OPENSTACK_M += procstat_neutron-lbaas-agent_cpu, procstat_neutron-lbaas-agent_mem, 
+OPENSTACK_M += procstat_neutron-metadata-agent_cpu, procstat_neutron-metadata-agent_mem, 
+OPENSTACK_M += procstat_neutron-ns-metadata-proxy_cpu, procstat_neutron-ns-metadata-proxy_mem, 
+OPENSTACK_M += procstat_neutron-openvswitch-agent_cpu, procstat_neutron-openvswitch-agent_mem, 
+OPENSTACK_M += procstat_neutron-server_cpu, procstat_neutron-server_mem, 
+OPENSTACK_M += procstat_neutron-vpn-agent_cpu, procstat_neutron-vpn-agent_mem, 
+OPENSTACK_M += procstat_nova-api_cpu, procstat_nova-api_mem, 
+OPENSTACK_M += procstat_nova-cert_cpu, procstat_nova-cert_mem, 
+OPENSTACK_M += procstat_nova-compute_cpu, procstat_nova-compute_mem, 
+OPENSTACK_M += procstat_nova-conductor_cpu, procstat_nova-conductor_mem, 
+OPENSTACK_M += procstat_nova-novncproxy_cpu, procstat_nova-novncproxy_mem, 
+OPENSTACK_M += procstat_nova-scheduler_cpu, procstat_nova-scheduler_mem
+ 
 APP_M = app_load_id, app_load_profile, app_load_level, app_datagen_size, 
 APP_M += app_datagen_time, app_throughput, app_latency, app_bandwidth, 
 APP_M += app_errors, app_completion_time, app_sla_runtime

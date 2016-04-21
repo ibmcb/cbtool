@@ -142,9 +142,7 @@ class API():
         Get the list of arguments of a specific API function
         '''
         return self.success("signature", self.signatures[name])
-    
-   
-            
+             
     '''
         This simple command table tries to preserve the best of both worlds.
         We make direct calls into lib/operations without having to have an
@@ -158,7 +156,7 @@ class API():
         the formatted output result.
         
         The client-side of the API will do the appropriate error checking
-        and will propogate exceptions properly across the API boundary
+        and will propagate exceptions properly across the API boundary
         to the client code.
     '''
 
