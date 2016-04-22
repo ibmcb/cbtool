@@ -26,7 +26,12 @@
 
 import socket
 import struct
-import IN
+
+try :
+    import IN
+except :
+    pass
+
 from subprocess import PIPE,Popen
 from platform import system
 from socket import gethostbyname, gethostbyaddr
