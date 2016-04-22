@@ -83,9 +83,9 @@ def parse_cli() :
                        help="VM role used in the profiling phase")
 
     _parser.add_option("--samples", \
-                       dest="samples", \
+                       dest="num_samples", \
                        default=2, \
-                       help="Number of samples during the profiling phase")
+                       help="Number of samples during the profiling phase, and also the number of Application Performance Samples")
 
     _parser.add_option("--sample_every", \
                        dest="sample_every", \
@@ -158,6 +158,12 @@ def parse_cli() :
                        default=False, \
                        help="Create each instance on its own tenant and network")
 
+    _parser.add_option("--lb",\
+                       action="store_true", \
+                       dest="lb", \
+                       default=False, \
+                       help="Create a load balancer associated with each instance")
+
     _parser.add_option("--resume", "-r",\
                        action="store_true", \
                        dest="resume", \
@@ -169,6 +175,11 @@ def parse_cli() :
                        dest="cleanup", \
                        default=False, \
                        help="Remove VMs at the end of the experiment.")
+
+    _parser.add_option("--bgwks", \
+                       dest="bgwks", \
+                       default=None, \
+                       help="Will deploy user-controlled \"background noise\" workloads. Format: workload1:N,workload2:M")
 
     _parser.add_option("--update_frequency", \
                        dest="update_frequency", \
@@ -276,15 +287,30 @@ def asynchronously_end_experiment(api, options) :
         if _setup["exp_ctrl.end_now"].lower() == "true" :
             _msg = "# Attrbiute \"exp_ctrl.end_now\" set to \"true\" in CBTOOL's"
             _msg += "[SETUP] global object. Ending the experiment now..."
+            api.cldalter(options.cloud_name, "setup", "exp_ctrl.end_now", "false")
             print _msg
             send_text(options, _msg)            
             return True
+
+    _current_bgwks_state = options.bgwks_state
+
+    if "exp_ctrl.bgwks_state" in _setup :
+        if _setup["exp_ctrl.bgwks_state"].lower() == "attached" :
+            options.bgwks_state = "attached"
+        else :
+            options.bgwks_state = "stopped"
+
+    if _current_bgwks_state == options.bgwks_state :
+        True
+    else :
+        stop_start_all_vapps(options, api, options.bgwks_state, options.total_ais)
 
     try :
         _fn = "/tmp/end_" + options.experiment_id
         _fh = open(_fn, "r")
         _fh.close()
-        _msg = "# File \"" + _fn + "\" ending the experiment now..."
+        _msg = "# File \"" + _fn + "\" found, ending the experiment now..."
+        os.remove(_fn)
         print _msg
         send_text(options, _msg)
         return True
@@ -301,7 +327,10 @@ def profiling_phase(api, options, performance_data, directory) :
     then computed.
     '''
 
-    print "\n# Starting PROFILING phase...."    
+    _msg = "\n# Starting PROFILING phase...."
+    print _msg
+    send_text(options, _msg)
+        
     print "### Getting compute node list on cloud \"" + options.cloud_name + "\"....."
     _hosts = get_compute_nodes(options, api)
     
@@ -330,7 +359,7 @@ def profiling_phase(api, options, performance_data, directory) :
         _msg = "##### Selected compute node is \"" + _node + "\""
         print _msg
 
-        for _j in range(0, options.samples + 1) :
+        for _j in range(0, options.num_samples + 1) :
             _msg = "####### Deploying VM with role \"" + options.role 
             _msg += "\" size \"" + options.instance_size + "\", on "
             _msg += "node \"" + _node  + "\" (Sample " + str(_j) + ")..."
@@ -388,7 +417,7 @@ def profiling_phase(api, options, performance_data, directory) :
             _acc += _perf
 
     performance_data["selected_nodes"] = int(options.profile)
-    performance_data["samples"] = int(options.samples)    
+    performance_data["samples"] = int(options.num_samples)    
     performance_data["total_samples"] = performance_data["selected_nodes"] * performance_data["samples"]
     performance_data["average"] = _acc/performance_data["total_samples"]
     performance_data["min"] = int(_min)
@@ -443,11 +472,116 @@ def total_deployment_time(management_metrics) :
 
     return total_time
 
+def deploy_background_workloads(api, options, performance_data) :
+    '''
+    TBD
+    '''
+    _msg = "\n# Starting BACKGROUND WORKLOADS (PRE-CAPACITY) phase...."
+    print _msg
+    send_text(options, _msg)
+        
+    _msg = "### Before starting the capacity phase, deploying workloads to"
+    _msg += " generate background \"noise\".\n" 
+    _msg += "    Each application will produce one application performance sample "
+    _msg += "and will then have its execution suspended.\n"
+    _msg += "    During the experiment, workload execution can be resumed at any "
+    _msg += "time by executing the command \"cldalter " 
+    _msg += options.cloud_name + " setup exp_ctrl.bgwks_state attached\" on the CLI."
+    print _msg            
+
+    _max_average_deployment_time = performance_data["average"] * (1 + float(options.increase/100))
+    _max_wait_time = 40 * _max_average_deployment_time
+        
+    for _item in options.bgwks.split(',') :
+        _workload, _nr_ais = _item.split(':')
+        if _nr_ais == "auto" :
+            _nr_ais = int(performance_data["total_nodes"])
+            _inter_vm_wait = "5"
+        else :
+            if _nr_ais.count('-') :
+                _nr_ais, _inter_vm_wait = _nr_ais.split('-')
+            else :
+                _inter_vm_wait = "0"
+
+        _load_duration = "60"
+        api.typealter(options.cloud_name, _workload, "load_duration", _load_duration)    
+            
+        _msg = "####### Deploying " + _nr_ais + " Application Instances of type \""
+        _msg += _workload + "\" (" + _inter_vm_wait + ")...."
+        print _msg
+        deploy_vapp(options, api, _workload, None, _nr_ais, _inter_vm_wait, \
+                    False, True, options.pause_step)
+
+    _msg = "##### Waiting until all Application Instances (Workloads) are fully deployed....."
+    print _msg
+
+    _counters = api.waituntil(options.cloud_name, "AI", "ARRIVING", "0", \
+                              "decreasing", 5, time_limit = _max_wait_time)
+
+
+    _failed_ais = int(_counters['experiment_counters']["AI"]["failed"])
+    _arrived_ais = int(_counters['experiment_counters']["AI"]["arrived"])
+    _issued_ais = int(_counters['experiment_counters']["AI"]["issued"])
+
+    if _issued_ais :
+        _failure_ratio = float(_failed_ais)/float(_arrived_ais)
+    else :
+        _failure_ratio = 1.0
+
+    _max_failure_ratio = float(int(options.failure)/100.0)
+
+    if _failure_ratio > _max_failure_ratio :
+        _msg = "##### The failure ratio (" + str(_failure_ratio) + ") for Application Instances is "
+        _msg += " higher than the maximum (" + str(_max_failure_ratio)
+        _msg += "). Ending the experiment...."            
+        print _msg
+        send_text(options, _msg)            
+        _experiment_end = True
+        exit(1)
+        
+    options.total_ais = str(_arrived_ais)
+                            
+    _per_vapp_run_time = 2 * int(_load_duration) * int (options.num_samples)
+    _check_interval = 5
+    _msg = "##### Done, will wait for " + str(_per_vapp_run_time) + " seconds for"
+    _msg += " at least one application performance sample from each Application Instance..."
+    print _msg
+
+    _start_time = int(time())
+
+    while check_samples(options, api, _start_time, _per_vapp_run_time) :
+        sleep(float(_check_interval))
+        print ' '
+
+    if check_samples(options, api, _start_time, _per_vapp_run_time, True) :
+        options.bgwks_state = "stopped"        
+        stop_start_all_vapps(options, api, options.bgwks_state, options.total_ais)
+        
+        _msg = "# Ended BACKGROUND WORKLOADS (PRE-CAPACITY) phase."
+        print _msg
+        send_text(options, _msg)
+        return True
+    else :        
+        _msg = "# Failed to get application performance samples from all Application"
+        _msg += " Instances. Ending the experiment....\n\n"            
+        print _msg
+        send_text(options, _msg)            
+        _experiment_end = True
+        exit(1)
+
 def capacity_phase(api, options, performance_data, directory) :
     '''
     TBD
     '''
-    print "\n# Starting CAPACITY phase...."
+    _msg = "\n# Starting CAPACITY phase...."
+    print _msg
+    send_text(options, _msg)
+    
+    _msg = "### The experiment can be ended at any time by either executing the"
+    _msg += " command \"cldalter " + options.cloud_name + " setup exp_ctrl.end_now True"
+    _msg += "\" on the CLI or by running \"touch /tmp/end_" + options.experiment_id
+    _msg += "\" on the bash prompt."
+    print _msg
 
     _msg = "### IMPORTANT! It is assumed that this is the only process deploying"
     _msg += " VMs on the cloud \"" + options.cloud_name + "\".\n"
@@ -494,7 +628,7 @@ def capacity_phase(api, options, performance_data, directory) :
                "VMs DEPARTED", "VMs DEPARTING", "VMs FAILED", \
                "VMs REPORTED (Cloud)", "Exp Avg Deployment Time (s)", \
                "Batch Avg Deployment Time(s)", "Shortest Deployment Time (s)", \
-               "Longest Deployment Time (s)", "Failure Ratio (%)"]
+               "Longest Deployment Time (s)", "Failure Ratio (%)", "Background Workload"]
 
     #_capacity_table = prettytable.PrettyTable(_header)
 
@@ -670,7 +804,8 @@ def capacity_phase(api, options, performance_data, directory) :
             _capacity_row.append("NA")
             
         _capacity_row.append(_failure_ratio * 100)
-            
+        _capacity_row.append(options.bgwks_state)
+                    
         #_capacity_table.add_row(_capacity_row)
 
         _temp_capacity_table.add_row(_capacity_row)
@@ -699,7 +834,7 @@ def capacity_phase(api, options, performance_data, directory) :
             _experiment_end = True
 
         if _failure_ratio > _max_failure_ratio :
-            _msg = "##### The failure ratio (" + str(_failure_ratio) + ") is "
+            _msg = "##### The failure ratio (" + str(_failure_ratio) + ") for VMs/Containers is "
             _msg += " higher than the maximum (" + str(_max_failure_ratio)
             _msg += "). Ending the experiment...."            
             print _msg
@@ -881,9 +1016,22 @@ def main() :
     if _options.fip :
         _msg = "# Instances will use floating IPs from pool \"" + _options.fip + "\""
         print _msg
+        api.cldalter(_options.cloud_name, "vm_defaults", "floating_pool", _options.fip)     
         api.cldalter(_options.cloud_name, "vm_defaults", "use_floating_ip", "True")
         api.cldalter(_options.cloud_name, "vm_defaults", "always_create_floating_ip", "True")
-        
+        api.cldalter(_options.cloud_name, "ai_defaults", "floating_pool", _options.fip)     
+    else :
+        api.cldalter(_options.cloud_name, "vm_defaults", "use_floating_ip", "False")
+
+    if _options.lb :
+        _msg = "# Instances will have load balancers associated to it"
+        print _msg        
+        api.cldalter(_options.cloud_name, "vm_defaults", "create_lb", "True")     
+        api.cldalter(_options.cloud_name, "ai_defaults", "create_lb", "True")             
+    else :
+        api.cldalter(_options.cloud_name, "vm_defaults", "create_lb", "False")     
+        api.cldalter(_options.cloud_name, "ai_defaults", "create_lb", "False")             
+
     api.cldalter(_options.cloud_name, "vm_defaults", "update_attempts", _options.update_attempts)
     api.cldalter(_options.cloud_name, "vm_defaults", "update_frequency", _options.update_frequency)
     api.cldalter(_options.cloud_name, "vm_defaults", "leave_instance_on_failure", "true")    
@@ -897,7 +1045,8 @@ def main() :
         _msg += "create a new tenant/user/network/subnet/router before attachment"
         print _msg
         
-        api.cldalter(_options.cloud_name, "vm_defaults", "execute_script_name", _mt_script)        
+        api.cldalter(_options.cloud_name, "vm_defaults", "execute_script_name", _mt_script)
+        api.cldalter(_options.cloud_name, "ai_defaults", "execute_script_name", _mt_script)                
         _options.pause_step = "execute_provision_originated"
         _mgt_info = api.cldshow(_options.cloud_name, "mon_defaults")
         _mgt_metrics_header = _mgt_info["vm_management_metrics_header"] + ','
@@ -912,18 +1061,24 @@ def main() :
                                               "osk_007_subnet_creation_time", \
                                               "osk_008_router_creation_time", \
                                               "osk_009_router_attachment", \
-                                              "osk_010_authenticate_time", \
-                                              "osk_011_check_existing_instance_time", \
-                                              "osk_012_get_flavors_time", \
-                                              "osk_013_get_imageid_time", \
-                                              "osk_014_get_netid_time", \
-                                              "osk_015_create_volume_time", \
-                                              "osk_016_instance_creation_time", \
-                                              "osk_016_instance_scheduling_time", \
-                                              "osk_016_port_creation_time", \
-                                              "osk_017_create_fip_time", \
-                                              "osk_018_attach_fip_time", \
-                                              "osk_019_instance_reachable"])
+                                              "osk_010_lb_creation", \
+                                              "osk_011_authenticate_time", \
+                                              "osk_012_check_existing_instance_time", \
+                                              "osk_013_get_flavors_time", \
+                                              "osk_014_get_imageid_time", \
+                                              "osk_015_get_netid_time", \
+                                              "osk_016_create_volume_time", \
+                                              "osk_017_lb_member_creation", \
+                                              "osk_018_instance_scheduling_time", \
+                                              "osk_018_port_creation_time", \
+                                              "osk_019_instance_creation_time", \
+                                              "osk_020_create_fip_time", \
+                                              "osk_021_attach_fip_time", \
+                                              "osk_022_instance_reachable"])
+
+
+
+
             
             api.cldalter(_options.cloud_name, \
                          "mon_defaults", \
@@ -964,6 +1119,11 @@ def main() :
         api.cldalter(_options.cloud_name, "setup", "exp_opt.batch_scaling_factor", _options.batch_scaling_factor)
         api.cldalter(_options.cloud_name, "setup", "exp_opt.batch_scaling_hysteresis", _options.batch_scaling_hysteresis)
         api.cldalter(_options.cloud_name, "setup", "exp_opt.pctif", str(_options.pctif).lower())
+        
+        if _options.bgwks :
+            deploy_background_workloads(api, _options, _perf_dict)
+        else :
+            _options.bgwks_state = "stopped"
     else :
         manipulate_perf_dict(api, _options, _perf_dict, _cb_data_dir + '/' + _experiment_id, "read")
 

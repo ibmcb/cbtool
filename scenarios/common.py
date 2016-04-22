@@ -154,12 +154,13 @@ def cloud_detach(options, api) :
 def send_text(options, message):    
     if options.phone :
         _msg = "Experiment \"" + options.experiment_id + "\" on cloud \""
-        _msg +=  options.cloud_name + "\": " + message 
-        params = urllib.urlencode({'number': options.phone, 'message': _msg})
-        headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
-        conn = httplib.HTTPConnection("textbelt.com:80")
-        conn.request("POST", "/text", params, headers)
-        response = conn.getresponse()
+        _msg +=  options.cloud_name + "\": " + message
+        for _phone in options.phone.split(',') :
+            params = urllib.urlencode({'number': _phone, 'message': _msg})
+            headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
+            conn = httplib.HTTPConnection("textbelt.com:80")
+            conn.request("POST", "/text", params, headers)
+            response = conn.getresponse()
         return response.status, response.reason
     else :
         return None, None
@@ -425,33 +426,35 @@ def configure_vapp(options, api, workload, rate_limit, buffer_length) :
 
     return True
 
-def deploy_vapp(options, api, workload, hostpair, nr_ais = "1", \
-                inter_vm_wait = 0, max_check = False):
+def deploy_vapp(options, api, workload, hostpair = None, nr_ais = "1", \
+                inter_vm_wait = 0, max_check = False, silent = False, script_execution = "none"):
     '''
     TBD
     '''
 
-    _msg = '#' * 10 + " Deploying " + str(nr_ais) + " Virtual Application(s) of type \"" + workload + "\""
-    _msg += " on the Host pair \"" + str(hostpair) + "\" (network"
-    _msg += " pair " + str(options.networks) + ")..."
-    print _msg    
-
-    workload_attrs = api.typeshow(options.cloud_name, workload)
-
-    _role_list = workload_attrs["role_list"].split(',')     
+    if not silent :
+        _msg = '#' * 10 + " Deploying " + str(nr_ais) + " Virtual Application(s) of type \"" + workload + "\""
+        _msg += " on the Host pair \"" + str(hostpair) + "\" (network"
+        _msg += " pair " + str(options.networks) + ")..."
+        print _msg    
 
     _temp_attr_list_str = ''    
-    for _role in _role_list :
-        _temp_attr_list_str += _role + "_pref_host=" + hostpair[_role_list.index(_role)] + ','
-        _temp_attr_list_str += _role + "_netname=" + options.networks[_role_list.index(_role)] + ',' 
-    _temp_attr_list_str = _temp_attr_list_str[0:-1]
+    if hostpair :
+        workload_attrs = api.typeshow(options.cloud_name, workload)
+    
+        _role_list = workload_attrs["role_list"].split(',')     
+    
+        for _role in _role_list :
+            _temp_attr_list_str += _role + "_pref_host=" + hostpair[_role_list.index(_role)] + ','
+            _temp_attr_list_str += _role + "_netname=" + options.networks[_role_list.index(_role)] + ',' 
+        _temp_attr_list_str = _temp_attr_list_str[0:-1]
 
     if int(inter_vm_wait) :
         _async = nr_ais + ':' + inter_vm_wait
     else :
         _async = nr_ais
 
-    _app_attr = api.appattach(options.cloud_name, workload, temp_attr_list = _temp_attr_list_str, async = nr_ais)
+    _app_attr = api.appattach(options.cloud_name, workload, pause_step = script_execution, temp_attr_list = _temp_attr_list_str, async = nr_ais)
 
     if max_check :
 
@@ -461,17 +464,20 @@ def deploy_vapp(options, api, workload, hostpair, nr_ais = "1", \
         _counters = _stats["experiment_counters"]
             
         if int(_counters["AI"]["failed"]) > 0 :
-            _msg = '#' * 10 + " Error while deploying Virtual Application!"
-            print _msg
+            if not silent :
+                _msg = '#' * 10 + " Error while deploying Virtual Application!"
+                print _msg
             return False
         else :
             return _app_attr
 
-        _msg = '#' * 10 + " Virtual Application \"" + workload + "\" has now ARRIVED."
-        print _msg
+        if not silent :
+            _msg = '#' * 10 + " Virtual Application \"" + workload + "\" has now ARRIVED."
+            print _msg
     else :
-        _msg = '#' * 10 + " Virtual Application \"" + workload + "\" is now ARRIVING."
-        print _msg
+        if not silent :
+            _msg = '#' * 10 + " Virtual Application \"" + workload + "\" is now ARRIVING."
+            print _msg
 
     return _app_attr
 
@@ -555,6 +561,32 @@ def remove_all_vapps(options, api, total_ais) :
     
     return True
 
+def stop_start_all_vapps(options, api, target_state, total_ais = 0) :
+    '''
+    TBD
+    '''
+    _total_changed = 0
+    _msg = "##### Will now put all Application Instances in \"" + target_state + "\" state..."
+    print _msg    
+
+    _ai_list = api.applist(options.cloud_name)
+    if not len(_ai_list) :
+        _ai_list = api.applist(options.cloud_name, "stopped")
+    
+    for _vapp in _ai_list :
+        api.statealter(options.cloud_name, _vapp["name"], target_state)
+        _total_changed += 1
+
+    if total_ais :
+        _msg = "##### " + str(_total_changed) + " out of " + options.total_ais
+        _msg += " Application Instances had a state change to \"" + target_state + "\"."
+        print _msg
+
+    if _total_changed :
+        api.cldalter(options.cloud_name, "setup", "exp_ctrl.bgwks_state", target_state)
+                
+    return _total_changed
+
 def makeTimestamp(supplied_epoch_time = False) :
     '''
     TBD
@@ -575,14 +607,18 @@ def makeTimestamp(supplied_epoch_time = False) :
     result += " UTC" 
     return result
 
-def check_samples(options, api, start_time, max_time) :
+def check_samples(options, api, start_time, max_time, silent = False) :
     '''
     TBD
     '''
 
-    _ai_table_header = [ "AI", "LOAD_ID", "BANDWIDTH", "THROUGHPUT", "JITTER", "LOSS" ]
+    if silent :
+        _ai_table_header = [ "AI", "LOAD_ID", "BANDWIDTH", "THROUGHPUT", "JITTER", "LOSS" ]
+    else :
+        _ai_table_header = [ "AI", "LOAD_ID" ]
+                
     _ai_table = prettytable.PrettyTable(_ai_table_header)
-
+    
     _min_samples = 100000000000
 
     for _ai in api.applist(options.cloud_name) :
@@ -596,6 +632,8 @@ def check_samples(options, api, start_time, max_time) :
                                                       metric_type = "app", \
                                                       latest = True)
 
+        _samples = 0
+        
         if _vapp_metrics_list :
             for _vapp_metrics in _vapp_metrics_list :
     
@@ -603,15 +641,14 @@ def check_samples(options, api, start_time, max_time) :
                     _ai_table_line.append(_vapp_metrics["uuid"])
                 else :
                     _ai_table_line.append("NA")
-    
+                    
                 for _value in _ai_table_header[1:] :
                     _value = "app_" + _value.lower()
                     
                     if _value in _vapp_metrics :
                         
                         if _value == "app_load_id" :
-                            if _min_samples > int(_vapp_metrics[_value]["val"]) :
-                                _min_samples = int(_vapp_metrics[_value]["val"])
+                            _samples = int(_vapp_metrics[_value]["val"])
                         _ai_table_line.append(_vapp_metrics[_value]["val"])                        
                     else :
                         _ai_table_line.append("NA")
@@ -619,18 +656,21 @@ def check_samples(options, api, start_time, max_time) :
             if len(_ai_table_line) == len(_ai_table_header) :
                 _ai_table.add_row(_ai_table_line) 
 
-    if _min_samples == 100000000000 :
-        _min_samples = 0
-    
+        if _samples < _min_samples :
+            _min_samples = _samples
+        
     _elapsed_time = int(time()) - start_time
 
     if int(_min_samples) >= int(options.num_samples) :
         _msg = "All Virtual Applications (AIs) reported at least " + str(_min_samples)
         _msg += " application performance metrics samples."
         _msg += "Finishing the experiment after " + str(_elapsed_time) + " seconds."
-        print _msg
-        print _ai_table        
-        return False
+        if not silent :
+            print _msg
+            print _ai_table        
+            return False
+        else :
+            return True
     else :
         if float(_elapsed_time) > float(max_time) :
             _msg = "At least one Virtual Application (AI) reported fewer application "
@@ -638,8 +678,9 @@ def check_samples(options, api, start_time, max_time) :
             _msg += " minimum required (" + str(options.num_samples) + "), but the experiment"
             _msg += " will be finished due to the specified time limit (" + str(max_time) + ")."
             _msg += "Finishing the experiment after " + str(_elapsed_time) + " seconds."
-            print _msg
-            print _ai_table        
+            if not silent :            
+                print _msg
+                print _ai_table        
             return False
     
         else :
@@ -649,11 +690,12 @@ def check_samples(options, api, start_time, max_time) :
             _msg += " has not yet reached the specified time limit (" + str(max_time)
             _msg += "). Remaining time until end: " + str(max_time - _elapsed_time)
             _msg += " seconds."
-            print _msg
-            print _ai_table        
+            if not silent :            
+                print _msg
+                print _ai_table        
             return True
 
-def host_to_host(options, api, experiment_id):
+def host_to_host(options, api, experiment_id, print_only = True):
     '''
     TBD
     '''
@@ -723,7 +765,7 @@ def host_to_host(options, api, experiment_id):
     
     for _vm_uuid in _mgt_reported_vm_uuids :
 
-        _vm_app_metrics = api.get_performance_data(options.cloud_name, \
+        _vm_app_metrics_data = api.get_performance_data(options.cloud_name, \
                                                     _vm_uuid, \
                                                     metric_class = "runtime", \
                                                     object_type = "VM", \
@@ -731,20 +773,20 @@ def host_to_host(options, api, experiment_id):
                                                     latest = False, \
                                                     samples = 1, \
                                                     expid = experiment_id)
+        if _vm_app_metrics_data :
+            for _vm_app_metrics in _vm_app_metrics_data :
+                _vm_uuid = _vm_app_metrics["uuid"]
+                _val = _vm_app_metrics[_metric]["avg"]
     
-        if _vm_app_metrics :
-            _vm_uuid = _vm_app_metrics["uuid"]
-            _val = _vm_app_metrics[_metric]["avg"]
-
-            if _metric == "app_bandwidth" :            
-                if _val > _best :
-                    _best = _val
-            else :
-                if _val < _best :
-                    _best = _val
-                                    
-            _app_reported_vm_uuids.append(_vm_uuid)
-            _vm2host[_vm_uuid]["val"] = _vm_app_metrics[_metric]["avg"]
+                if _metric == "app_bandwidth" :            
+                    if _val > _best :
+                        _best = _val
+                else :
+                    if _val < _best :
+                        _best = _val
+                                        
+                _app_reported_vm_uuids.append(_vm_uuid)
+                _vm2host[_vm_uuid]["val"] = _vm_app_metrics[_metric]["avg"]
 
     _host_pairs = {}
     
@@ -775,10 +817,11 @@ def host_to_host(options, api, experiment_id):
 
     print _host_table
 
-    _fn = _cb_data_dir + '/' + experiment_id + "/host_to_host.txt"
-    _fh = open(_fn, "w")
-    _fh.write(str(_host_table))
-    _fh.close()
+    if not print_only :
+        _fn = _cb_data_dir + '/' + experiment_id + "/host_to_host.txt"
+        _fh = open(_fn, "w")
+        _fh.write(str(_host_table))
+        _fh.close()
     
     return _host_table
     
