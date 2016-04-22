@@ -199,7 +199,7 @@ class OskCmds(CommonCloudFunctions) :
                     self.use_cinderclient = "false"
 
                 if self.use_cinderclient == "true" :
-                    from cinderclient.v2 import cinderc
+                    from cinderclient.v2 import client as cinderc
 
                     self.oskconnstorage = cinderc.Client(_username, _password, _tenant, \
                                                  access_url, region_name=region, \
