@@ -63,7 +63,7 @@ Each individual application can have a specific load profile using probability d
 
 ## [Supported Workloads](https://github.com/ibmcb/cbtool/wiki/DOC:-Supported-Virtual-Applications)
 
-- New! CloudBench is now released as a component of [SPEC Cloud 2016](http://spec.org/cloud_iaas2016)
+- New! CloudBench is now released as a component of [SPEC Cloud IaaS 2016](http://spec.org/cloud_iaas2016)
 
 Contacts:
 
