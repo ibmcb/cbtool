@@ -265,6 +265,9 @@ def get_experiment_parameters(api, options) :
     if "exp_opt.pctif" in _setup :
         options.pctif = _setup["exp_opt.pctif"].lower()
 
+    if "exp_ctrl.bgwks_state" in _setup :
+        options.bgwks_state = _setup["exp_ctrl.bgwks_state"].lower()
+
     _batch_nr = 0
     if "exp_ctrl.batch_nr" in _setup :
         _batch_nr = _setup["exp_ctrl.batch_nr"]
@@ -299,7 +302,11 @@ def asynchronously_end_experiment(api, options) :
             options.bgwks_state = "attached"
         else :
             options.bgwks_state = "stopped"
-
+    else :
+        options.bgwks_state = "stopped"
+        stop_start_all_vapps(options, api, options.bgwks_state)
+    api.cldalter(options.cloud_name, "setup", "exp_ctrl.bgwks_state", "stopped")
+        
     if _current_bgwks_state == options.bgwks_state :
         True
     else :
@@ -670,7 +677,8 @@ def capacity_phase(api, options, performance_data, directory) :
                 _selected_batch_size = int(options.override_batch_size)
 
         _msg = "\n\n##### Deploying batch " + str(_batch_nr) + " (id " + str(_batch_id)
-        _msg += ") with size (parallelism) " + str(_selected_batch_size) + "...."
+        _msg += ") with size (parallelism) " + str(_selected_batch_size) 
+        _msg += " (instance size is \"" + options.instance_size + "\") ..."
         print _msg
 
         _temp_attr_list_str = additional_vm_attributes(options)
@@ -890,7 +898,7 @@ def capacity_phase(api, options, performance_data, directory) :
                         print _msg
 
                 else :
-                    _svcf = 20                    
+                    _svcf = 5                   
                     _msg = "##### The failure ratio increased between batches \""
                     _msg += str(_batch_nr) + "\" and \"" + str(_batch_nr-1) + "\""
                     _msg += " by " + str(_delta_failure_ratio) + "(" 
@@ -902,8 +910,8 @@ def capacity_phase(api, options, performance_data, directory) :
                     _single_vm_failure_counter += float(1.0)
 
                     if _single_vm_failure_counter > _svcf :
-                        _msg = "##### The batch size is already and " + str(_svcf)
-                        _msg += " consecutive failures were detected. Ending the experiment..."
+                        _msg = "##### The batch size is already 1 and " + str(_svcf)
+                        _msg += " consecutive failures were detected. Ending the experimen..."
                         print _msg
                         _experiment_end = True
 
@@ -1037,6 +1045,14 @@ def main() :
     api.cldalter(_options.cloud_name, "vm_defaults", "leave_instance_on_failure", "true")    
     
     api.cldalter(_options.cloud_name, "admission_control", "vm_max_reservations", 75000)
+
+    if _options.hypervisor.lower() == "fake" :
+        api.cldalter(_options.cloud_name, "vm_defaults", "check_boot_complete", "wait_for_0")
+        api.cldalter(_options.cloud_name, "vm_defaults", "transfer_files", "false")
+        api.cldalter(_options.cloud_name, "vm_defaults", "run_generic_scripts", "false")
+        api.cldalter(_options.cloud_name, "vm_defaults", "update_frequency", "2")       
+        api.cldalter(_options.cloud_name, "ai_defaults", "run_application_scripts", "false")
+        api.cldalter(_options.cloud_name, 'ai_defaults', "dont_start_load_manager", "true")
 
     if _options.multitenant :
         _mt_script = _cb_base_dir + "/scenarios/scripts/openstack_multitenant.sh"

@@ -8,6 +8,7 @@ OSK_ROUTER_NAME=cb-router
 OSK_LBPOOL_NAME=cb-lbpool
 OSK_LBVIP_NAME=cb-lbvip
 OSK_LBMEMBER_NAME=cb-lbmember
+FLAVOR_SIZE=5
 
 function all_clear () {
 
@@ -100,7 +101,7 @@ function set_quotas () {
 function create_smallest_flavor {
     if [[ $(nova flavor-list | grep f1.nano | grep -c 64[[:space:]]) -eq 0 ]]
     then
-        nova flavor-create f1.nano auto 64 0 1
+        nova flavor-create f1.nano auto 64 $FLAVOR_SIZE 1
     fi
 
 }
