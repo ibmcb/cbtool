@@ -1,4 +1,4 @@
-#! /usr/bin/Rscript
+#! /usr/bin/env Rscript
 
 #/*****************************************************************************
 # Copyright (c) 2012 IBM Corp.
@@ -566,7 +566,7 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 	
 	################## END Provisioning vs VM ##################
 
-	if("osk_010_authenticate_time" %in% colnames(mmdf)) {
+	if("osk_011_authenticate_time" %in% colnames(mmdf)) {
 		################## START Provisioning vs VM (Cloud-Specific info) ##################
 		msg <- paste("# Preparing Provisioning Latency for VMs/Containers (Cloud-Specific", 
 				"information) .... #", sep = '')

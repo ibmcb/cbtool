@@ -429,7 +429,12 @@ class CommonCloudFunctions:
                                                   connection_timeout = _connection_timeout)
 
                     try :
-                        _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_command_to_run)
+                        _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_command_to_run, \
+                                                                                           "127.0.0.1", \
+                                                                                           1, \
+                                                                                           0, \
+                                                                                           obj_attr_list["transfer_files"], \
+                                                                                           obj_attr_list["debug_remote_commands"])
 
                         if not _status :
                             _vm_is_booted = True
