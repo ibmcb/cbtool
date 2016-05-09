@@ -299,6 +299,10 @@ def expand_command(cmdline, depsdict, process_manager = False) :
             _command = ''    
             for _service in _services.split() :
 
+                _status = 20000
+                _result_stdout = "NA"
+                _result_stderr = "NA"
+
                 _status, _result_stdout, _result_stderr = \
                 process_manager.run_os_command("sudo systemctl status " + _service, \
                                                raise_exception = False)
@@ -621,6 +625,9 @@ def execute_command(operation, depkey, depsdict, hostname = "127.0.0.1", usernam
         if depkey == "repo" and operation == "install" :
             build_repository_files(depsdict)
 
+        _status = 20000
+        _result_stdout = "NA"
+        _result_stderr = "NA"
         _status, _result_stdout, _result_stderr = process_manager.run_os_command(_cmd[operation], False)
 
         if not _status :
