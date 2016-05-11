@@ -220,6 +220,7 @@ class DoCmds(CommonCloudFunctions) :
             _time_mark_prs = int(time())
             obj_attr_list["mgt_002_provisioning_request_sent"] = _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
 
+
             if "cleanup_on_attach" in obj_attr_list and obj_attr_list["cleanup_on_attach"] == "True" :
                 _msg = "Cleaning up VMC before attaching it."
                 cbdebug(_msg)
@@ -437,9 +438,6 @@ class DoCmds(CommonCloudFunctions) :
             cbdebug("Connecting to DigitalOcean...")
             self.connect(credential_pair)
 
-            _time_mark_prs = int(time())
-            obj_attr_list["mgt_002_provisioning_request_sent"] = _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
-
             obj_attr_list["last_known_state"] = "about to send create request"
 
             _msg = "Attempting to create a Droplet "
@@ -495,6 +493,10 @@ class DoCmds(CommonCloudFunctions) :
                 ex_user_data = self.populate_cloudconfig(obj_attr_list),
                 ex_create_attr={ "ssh_keys": keys, "private_networking" : True }
             )
+
+            _time_mark_prs = int(time())
+            obj_attr_list["mgt_002_provisioning_request_sent"] = _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
+
 
             obj_attr_list["last_known_state"] = "sent create request"
 

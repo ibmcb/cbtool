@@ -340,8 +340,8 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _fmt_obj_list = ''.join(_fields) + '\n'
                     for obj in objs :
                         _obj_uuid, _obj_name = obj[0].split("|")
-                        _new_result = {"uuid" : _obj_uuid, "name" : _obj_name, "status" : "pending", 
-                                        "tracking" : self.osci.pending_object_get(obj_attr_list["cloud_name"], _obj_type, _obj_uuid, "status")}
+			_new_result = self.osci.pending_object_get(obj_attr_list["cloud_name"], _obj_type, _obj_uuid)
+			_new_result.update({"uuid" : _obj_uuid, "name" : _obj_name, "status" : "pending", "tracking" : _new_result["status"]})
                         _result.append(_new_result)
                         for _field in _fields :
                             _display_value = self.get_display_value(_new_result, _translation_cache, _field, obj_attr_list["cloud_name"])
