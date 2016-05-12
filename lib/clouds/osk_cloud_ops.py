@@ -2067,7 +2067,9 @@ class OskCmds(CommonCloudFunctions) :
                 _call = "floating ip attach"
                 _mark1 = int(time())
                 
-                if obj_attr_list["hypervisor_type"].lower() != "fake" :
+                if "hypervisor_type" in obj_attr_list and obj_attr_list["hypervisor_type"].lower() == "fake" :
+                    True
+                else :
                     _instance.add_floating_ip(_fip)
 
                 _mark2 = int(time())
@@ -3299,7 +3301,11 @@ class OskCmds(CommonCloudFunctions) :
                     _temp_dict = str2dic(obj_attr_list["execute_provision_originated_stdout"].replace('\n',''), False)
 
                     if _temp_dict :
-                        obj_attr_list["vm_extra_parms"] = ''                    
+                        if "vm_extra_parms" not in obj_attr_list :
+                            obj_attr_list["vm_extra_parms"] = ''                    
+                        else :
+                            obj_attr_list["vm_extra_parms"] += ','
+                                                
                         for _key in _temp_dict.keys() :
                             if not _key.count("staging") :
                                 obj_attr_list["vm_extra_parms"] += _key + '=' + _temp_dict[_key] + ','
