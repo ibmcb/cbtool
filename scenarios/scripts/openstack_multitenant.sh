@@ -770,12 +770,15 @@ then
     kusername=$(cat ${1} | grep \"username\" | cut -d ':' -f 2 | sed 's^"\|,\| ^^g')
     ext_net=$(cat ${1} | grep \"floating_pool\" | cut -d ':' -f 2 | sed 's^"\|,\| ^^g')
 
-    if [[ -z $ext_net ]]
+    if [[ $model == "osk" ]]
     then
-        echo "error: floating_pool not defined"
-        exit 1
+        if [[ -z $ext_net ]]
+        then
+            echo "error: floating_pool not defined"
+            exit 1
+        fi
     fi
-                
+
     snipa=$(sed -n ${counter}p $basedir/scenarios/scripts/pre_computed_nets.txt)
 
     if [[ $ai_counter == "none" ]]
