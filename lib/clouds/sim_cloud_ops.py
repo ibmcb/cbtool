@@ -644,6 +644,9 @@ class SimCmds(CommonCloudFunctions) :
                     _temp_dict = str2dic(obj_attr_list["execute_provision_originated_stdout"].replace('\n',''))
                     obj_attr_list.update(_temp_dict)
 
+
+            sleep(float(obj_attr_list["pre_creation_delay"]))
+                  
             _time_mark_prs = int(time())
             obj_attr_list["mgt_002_provisioning_request_sent"] = _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
 
@@ -947,6 +950,27 @@ class SimCmds(CommonCloudFunctions) :
             _fmsg = "An error has occurred, but no error message was captured"
 
             if current_step == "provision_originated" :
+                self.take_action_if_requested("AI", obj_attr_list, "provision_originated")
+    
+                if "execute_provision_originated_stdout" in obj_attr_list and current_step == "provision_originated" :
+                    if obj_attr_list["execute_provision_originated_stdout"].count("tenant") :
+                        _temp_dict = str2dic(obj_attr_list["execute_provision_originated_stdout"].replace('\n',''), False)
+    
+                        if _temp_dict :
+                            if "vm_extra_parms" not in obj_attr_list :
+                                obj_attr_list["vm_extra_parms"] = ''                    
+                            else :
+                                obj_attr_list["vm_extra_parms"] += ','
+                                                                
+                            for _key in _temp_dict.keys() :
+                                if not _key.count("staging") :
+                                    obj_attr_list["vm_extra_parms"] += _key + '=' + _temp_dict[_key] + ','
+                                else :
+                                    obj_attr_list["vm_attach_action"] = _temp_dict["vm_staging"]
+                                    
+                            obj_attr_list["vm_extra_parms"] = obj_attr_list["vm_extra_parms"][0:-1]
+                            obj_attr_list.update(_temp_dict)
+                            
                 _status = 0
 
             else :
