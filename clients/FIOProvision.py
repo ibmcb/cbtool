@@ -12,7 +12,7 @@
 # limitations under the License.
 #/*******************************************************************************
 '''
-This script will launch X guests at Y rate, once all guests are launched 
+This script will launch X guests at Y rate, once all guests are launched
 this script will change a field, to start load on all the guests.
 
 Please review the cbtool/scripts/fio/cb_start_fio.sh for an example
@@ -27,8 +27,9 @@ import fnmatch
 import yaml
 import threading
 import sys
+import pprint
 
-_home = "/opt/cbtool"
+_home = "/home/stack/cbtool/"
 
 for _path, _dirs, _files in os.walk(os.path.abspath(_home)):
     for _filename in fnmatch.filter(_files, "code_instrumentation.py") :
@@ -37,10 +38,10 @@ for _path, _dirs, _files in os.walk(os.path.abspath(_home)):
 
 from lib.api.api_service_client import *
 
-_api_endpoint = "192.168.0.4"
+_api_endpoint = "10.12.23.28"
 _cloud_name = "MYOPENSTACK"
 _workload = "fio"
-_launch_rate = 8 
+_launch_rate = 1
 _write_file = "%s" % strftime("%m%d%Y-%H:%M:%S")
 _launch_until = int(sys.argv[1])
 _retrun_msg = ""
@@ -68,7 +69,7 @@ class theThread (threading.Thread):
 #-------------------------------------------------------------------------------
 def _sampling(_api, _ai) :
     check_time = None
-    
+
     #
     # Chagne to bool, switch to false when outside of QoS
     #
@@ -76,26 +77,26 @@ def _sampling(_api, _ai) :
     file = open("%s-workload-data"%(_write_file), "a")
     file.write("instance,time,write_latency,write_iops,read_latency,read_iops\n")
     while _samples > 0  :
-       _data = _api.get_latest_app_data(_cloud_name,_ai)
-       logger.info("Sampling :: %s" % _ai)
-       if _data != None :
-           logger.info("Sampling :: Check Time : %s vs %s" % (check_time, _data['time']))
-           if _data['time'] != check_time :
-               check_time = _data['time']
-               file.write("%s, %s, %s, %s, %s, %s\n" % (_ai, _data['time'],
-                   _data['app_write_latency']['val'],
-                   _data['app_write_max']['val'],
-                   _data['app_read_latency']['val'],
-                   _data['app_read_max']['val']))
-               _samples-=1
-           else: 
-               logger.info("Sampling :: No update for data :: %s" % _ai)
-               sleep(5)
-    
-       else: 
-          logger.info("Sampling :: No Data for :: %s" % _ai)
-          sleep(5)
-          continue
+       for _data in _api.get_latest_app_data(_cloud_name,_ai) :
+           logger.info("Sampling :: %s" % _ai)
+           if _data != None :
+               logger.info("Sampling :: Check Time : %s vs %s" % (check_time, _data['time']))
+               if _data['time'] != check_time :
+                   check_time = _data['time']
+                   file.write("%s, %s, %s, %s, %s, %s\n" % (_ai, _data['time'],
+                       _data['app_write_latency']['val'],
+                       _data['app_write_throughput']['val'],
+                       _data['app_read_latency']['val'],
+                       _data['app_read_throughput']['val']))
+                   _samples-=1
+               else:
+                   logger.info("Sampling :: No update for data :: %s" % _ai)
+                   sleep(5)
+
+           else:
+              logger.info("Sampling :: No Data for :: %s" % _ai)
+              sleep(5)
+              continue
 
     file.close()
     return True
@@ -173,13 +174,13 @@ try :
 #----------------------- Build a list of Guest UUIDs ---------------------------
         _file.write("guest,guest_active,guest_sshable,last_known_state\n")
         for vm in _ai_list :
-            _guest_data = api.get_latest_management_data(_cloud_name,vm)
-            if _guest_data["cloud_hostname"].find(_workload) != -1 :
-                _data_uuid = _guest_data["uuid"]
-            _file.write("%s ,%s, %s, %s\n" % (_guest_data["cloud_hostname"],
-                            _guest_data["mgt_003_provisioning_request_completed"],
-                            _guest_data["mgt_004_network_acessible"],
-                            _guest_data["last_known_state"]))
+            for _guest_data in api.get_latest_management_data(_cloud_name,vm) :
+                if _guest_data["cloud_hostname"][0].find(_workload) != -1 :
+                    _data_uuid = _guest_data["uuid"]
+                _file.write("%s ,%s, %s, %s\n" % (_guest_data["cloud_hostname"],
+                         _guest_data["mgt_003_provisioning_request_completed"],
+                             _guest_data["mgt_004_network_acessible"],
+                             _guest_data["last_known_state"]))
 
         _launch_until = _launch_until - _launch_rate
         if _launch_until > 0 :
@@ -224,3 +225,4 @@ finally :
                 api.appdetach(_cloud_name, app["uuid"])
         except APIException, obj :
             print "Error finishing up: (" + str(obj.status) + "): " + obj.msg
+
