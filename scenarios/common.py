@@ -427,7 +427,8 @@ def configure_vapp(options, api, workload, rate_limit, buffer_length) :
     return True
 
 def deploy_vapp(options, api, workload, hostpair = None, nr_ais = "1", \
-                inter_vm_wait = 0, max_check = False, silent = False, script_execution = "none"):
+                inter_vm_wait = 0, max_check = False, silent = False, \
+                script_execution = "none", batch_nr = -1) :
     '''
     TBD
     '''
@@ -436,9 +437,13 @@ def deploy_vapp(options, api, workload, hostpair = None, nr_ais = "1", \
         _msg = '#' * 10 + " Deploying " + str(nr_ais) + " Virtual Application(s) of type \"" + workload + "\""
         _msg += " on the Host pair \"" + str(hostpair) + "\" (network"
         _msg += " pair " + str(options.networks) + ")..."
-        print _msg    
+        print _msg
 
-    _temp_attr_list_str = ''    
+    if batch_nr >= 0 :
+        _temp_attr_list_str = "batch=" + str(batch_nr) + ",vm_extra_parms=batch_EQUAL_" + str(batch_nr)
+    else :
+        _temp_attr_list_str = ''
+            
     if hostpair :
         workload_attrs = api.typeshow(options.cloud_name, workload)
     

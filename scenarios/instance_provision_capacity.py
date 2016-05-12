@@ -517,7 +517,7 @@ def deploy_background_workloads(api, options, performance_data) :
         _msg += _workload + "\" (" + _inter_vm_wait + ")...."
         print _msg
         deploy_vapp(options, api, _workload, None, _nr_ais, _inter_vm_wait, \
-                    False, True, options.pause_step)
+                    False, True, options.pause_step, 0)
 
     _msg = "##### Waiting until all Application Instances (Workloads) are fully deployed....."
     print _msg
