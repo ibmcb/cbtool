@@ -19,8 +19,6 @@
 '''
 from time import time, sleep
 
-from socket import gethostbyname
-
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import str2dic, DataOpsException
 from lib.remote.network_functions import Nethashget
@@ -58,11 +56,12 @@ class DoCmds(CommonCloudFunctions) :
 
     @trace
     def connect(self, credential_pair) :
-	credentials = credential_pair.split(":")
-	if len(credentials) != 2 :
-		raise CldOpsException("DigitalOcean credentials should be in the form of tag:bearer_token, where tag is arbitrary.", 8499)
-	tenant = credentials[0]
-	access_token = credentials[1]
+        credentials = credential_pair.split(":")
+        if len(credentials) != 2 :
+            raise CldOpsException("DigitalOcean credentials should be in the form of tag:bearer_token, where tag is arbitrary.", 8499)
+        tenant = credentials[0]
+        access_token = credentials[1]
+
         # libcloud is totally not thread-safe. bastards.
         cbdebug("Checking libcloud connection...")
         try :
@@ -819,21 +818,22 @@ class DoCmds(CommonCloudFunctions) :
 
     @trace
     def rotate_token(self, cloud_name) :
-	vmc_defaults = self.osci.get_object(cloud_name, "GLOBAL", False, "vmc_defaults", False)
-	credential_pairs = vmc_defaults["credentials"].split(",")
-	lock = self.lock(cloud_name, "VMC", "shared_access_token_counter", "credential_pair")
-	assert(lock)
+        vmc_defaults = self.osci.get_object(cloud_name, "GLOBAL", False, "vmc_defaults", False)
+        credential_pairs = vmc_defaults["credentials"].split(",")
+        lock = self.lock(cloud_name, "VMC", "shared_access_token_counter", "credential_pair")
 
-	current_token = 0 if "current_token" not in vmc_defaults else int(vmc_defaults["current_token"])
-	new_token = current_token
+        assert(lock)
 
-	if len(credential_pairs) > 1 :
-	    new_token += 1
-	    if new_token == len(credential_pairs) :
-		new_token = 0
+        current_token = 0 if "current_token" not in vmc_defaults else int(vmc_defaults["current_token"])
+        new_token = current_token
 
-	self.osci.update_object_attribute(cloud_name, "GLOBAL", "vmc_defaults", False, "current_token", str(new_token))
-	self.unlock(cloud_name, "VMC", "shared_access_token_counter", lock)
+        if len(credential_pairs) > 1 :
+            new_token += 1
+            if new_token == len(credential_pairs) :
+                new_token = 0
+
+        self.osci.update_object_attribute(cloud_name, "GLOBAL", "vmc_defaults", False, "current_token", str(new_token))
+        self.unlock(cloud_name, "VMC", "shared_access_token_counter", lock)
 
         return credential_pairs[current_token]
 
@@ -845,8 +845,8 @@ class DoCmds(CommonCloudFunctions) :
         lock = False
         try :
             if current_step == "provision_originated" :
-		credentials_pair = self.rotate_token(obj_attr_list["cloud_name"])
-		tenant = credentials_pair.split(":")[0]
+                credentials_pair = self.rotate_token(obj_attr_list["cloud_name"])
+                tenant = credentials_pair.split(":")[0]
                 obj_attr_list["tenant"] = tenant
                 obj_attr_list["credentials_pair"] = credentials_pair
                 self.osci.pending_object_set(obj_attr_list["cloud_name"], "AI", \
