@@ -4,7 +4,7 @@ MAIN_UPDATE_ATTEMPTS = 180
 DO_ACCESS = https://api.digitalocean.com/v2/
 DO_CREDENTIALS = need_to_be_configured_by_user
 DO_LOGIN = need_to_be_configured_by_user
-DO_SSH_KEY_NAME = cbtool_rsa
+DO_SSH_KEY_NAME = need_to_be_configured_by_user
 DO_INITIAL_VMCS = need_to_be_configured_by_user
 DO_KEY_NAME = need_to_be_configured_by_user
 
@@ -21,6 +21,9 @@ DO_KEY_NAME_DEFAULT = foo,bar
 DO_LOGIN_DOC = username to which your ssh key corresponds
 DO_LOGIN_DEFAULT = root
 
+DO_SSH_KEY_NAME_DOC = Name of the ssh key from digitalocean.com
+DO_SSH_KEY_NAME_DEFAULT = cbtool_rsa
+
 [SPACE : DO_CLOUDCONFIG ]
 SSH_KEY_NAME = $DO_SSH_KEY_NAME
 
@@ -29,7 +32,8 @@ CREDENTIALS = $DO_CREDENTIALS
 SSH_KEY_NAME = $DO_SSH_KEY_NAME
 KEY_NAME = $DO_KEY_NAME
 LOGIN = $DO_LOGIN
-NETNAME = internet
+PROV_NETNAME = private
+RUN_NETNAME = private
 CLONE_TIMEOUT = 600
 CHECK_BOOT_STARTED = poll_cloud30
 CHECK_BOOT_COMPLETE = tcp_on_22

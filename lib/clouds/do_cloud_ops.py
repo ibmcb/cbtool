@@ -310,7 +310,7 @@ class DoCmds(CommonCloudFunctions) :
             _status = 100
             node = self.get_vm_instance(obj_attr_list)
 
-            if len(node.private_ips) > 0 :
+            if len(node.private_ips) > 0 and obj_attr_list["run_netname"].lower() == "private" :
                 obj_attr_list["run_cloud_ip"] = node.private_ips[0]
             else :
                 obj_attr_list["run_cloud_ip"] = node.public_ips[0]
@@ -335,7 +335,10 @@ class DoCmds(CommonCloudFunctions) :
                 cbdebug("Found VPN IP: " + obj_attr_list["cloud_init_vpn"])
                 obj_attr_list["prov_cloud_ip"] = obj_attr_list["cloud_init_vpn"]
             else :
-                obj_attr_list["prov_cloud_ip"] = node.public_ips[0]
+                if len(node.private_ips) > 0 and obj_attr_list["prov_netname"].lower() == "private" :
+                    obj_attr_list["prov_cloud_ip"] = node.private_ips[0]
+                else :
+                    obj_attr_list["prov_cloud_ip"] = node.public_ips[0]
 
             _status = 0
             return True
