@@ -996,13 +996,15 @@ class SimCmds(CommonCloudFunctions) :
                         _fmsg = "Forced failure during AI definition"
     
                 self.take_action_if_requested("AI", obj_attr_list, "all_vms_booted")
+                
+                sleep(float(obj_attr_list["pre_creation_delay"]))
     
                 if obj_attr_list["create_performance_emitter"].lower() == "true" :
                     
                     _msg = "Starting a new \"performance emitter\" for " + obj_attr_list["name"]
                     cbdebug(_msg, True)
     
-                    _cmd = obj_attr_list["base_dir"] + "/cbact"
+                    _cmd = "\"" + obj_attr_list["base_dir"] + "/cbact\""
                     _cmd += " --procid=" + self.pid
                     _cmd += " --osp=" + obj_attr_list["osp"]
                     _cmd += " --msp=" + obj_attr_list["msp"]

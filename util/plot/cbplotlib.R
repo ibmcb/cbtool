@@ -1066,7 +1066,7 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 		################## START CPU Usage vs Time ##################
 		os_cpu_data <- subset(rosmdf, (name == experiment_node), 
 				select = c("relative_time", "cpu_user", "cpu_system", "cpu_wio"))
-		
+
 		output_table(ed, en, os_cpu_data, paste("010_os_cpu_vs_time_data_", 
 						experiment_node_name, sep = ''), FALSE)
 		
@@ -1099,6 +1099,48 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 			
 			output_pdf_plot(ed, en, os_cpu_vs_time_plot, paste("008_os_cpu_vs_time_plot_",
 							experiment_node_name, sep = ''), sps)
+		}
+		
+		if("procstat_base.apache2_cpu" %in% colnames(rosmdf)) {
+			procstat_cpu_columns <- grep("^procstat.*cpu$|relative_time", colnames(rosmdf), value = TRUE)
+
+			per_process_os_cpu_data <- subset(rosmdf, (name == experiment_node), 
+					select = procstat_cpu_columns)
+
+			output_table(ed, en, per_process_os_cpu_data, paste("011_per_process_os_cpu_vs_time_data_", 
+							experiment_node_name, sep = ''), FALSE)
+			
+			per_process_os_cpu_data <- melt(per_process_os_cpu_data, id.vars="relative_time")		
+			
+			per_process_os_cpu_data <- per_process_os_cpu_data[!is.na(per_process_os_cpu_data$value),]		
+			
+			msg <- paste("Per-process CPU usage for ", node_type, " \"", experiment_node_name, 
+					"\" on experiment ", selected_expname, "\" (", selected_expid, ")", sep = '')
+			cat(paste(msg, "...", sep = ''), sep='\n')
+			
+			per_process_os_cpu_vs_time_plot_title <- msg
+			
+			xy_lims <- plot_get_x_y_limits(en, per_process_os_cpu_data, xati, yati)		
+			
+			if (xy_lims[[5]] == 0) {
+				per_process_os_cpu_vs_time_plot <- ggplot(per_process_os_cpu_data, 
+								aes(x = relative_time, y = value, colour = variable, fill = variable)) + 
+						geom_bar(stat='identity') + 
+						geom_vline(xintercept = lnel, linetype=7, colour="black") +
+						geom_vline(xintercept = vmasl, linetype=4, colour="black") +
+						geom_vline(xintercept = vmael, linetype=1, colour="black") +
+						geom_vline(xintercept = vmcsl, linetype=3, colour="black") +
+						geom_vline(xintercept = vmcel, linetype=5, colour="black") +					
+						xlab("Time (minutes)") + 
+						ylab("CPU usage (%)") + 
+						labs(title = per_process_os_cpu_vs_time_plot_title) + 
+						scale_x_continuous(limits = xy_lims[[1]], breaks = xy_lims[[2]])
+				#				+ scale_y_continuous(limits =  xy_lims[[3]], breaks =  xy_lims[[4]])
+				
+				output_pdf_plot(ed, en, per_process_os_cpu_vs_time_plot, paste("009_per_process_os_cpu_vs_time_plot_",
+								experiment_node_name, sep = ''), sps)
+			}			
+
 		}
 		################## END CPU Usage vs Time ##################
 		
@@ -1143,9 +1185,49 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 					scale_x_continuous(limits =  xy_lims[[1]], breaks =  xy_lims[[2]]) 
 			#				+ scale_y_continuous(limits =  xy_lims[[3]], breaks =  xy_lims[[4]])
 			
-			output_pdf_plot(ed, en, os_mem_vs_time_plot, paste("009_os_mem_vs_time_plot_", 
+			output_pdf_plot(ed, en, os_mem_vs_time_plot, paste("010_os_mem_vs_time_plot_", 
 							experiment_node_name, sep = ''), sps)
 		}
+
+		if("procstat_base.apache2_mem" %in% colnames(rosmdf)) {		
+			procstat_mem_columns <- grep("^procstat.*mem$|relative_time", colnames(rosmdf), value = TRUE)
+			
+			per_process_os_mem_data <- subset(rosmdf, (name == experiment_node), 
+					select = procstat_mem_columns)
+			
+			per_process_os_mem_data <- melt(per_process_os_mem_data, id.vars="relative_time")		
+			
+			per_process_os_mem_data <- per_process_os_mem_data[!is.na(per_process_os_mem_data$value),]		
+			
+			msg <- paste("Per-process Memory usage for ", node_type, " \"", experiment_node_name, 
+					"\" on experiment ", selected_expname, "\" (", selected_expid, ")", sep = '')
+			cat(paste(msg, "...", sep = ''), sep='\n')
+			
+			per_process_os_mem_vs_time_plot_title <- msg
+			
+			xy_lims <- plot_get_x_y_limits(en, per_process_os_mem_data, xati, yati)		
+			
+			if (xy_lims[[5]] == 0) {
+				per_process_os_mem_vs_time_plot <- ggplot(per_process_os_mem_data, 
+								aes(x = relative_time, y = value, colour = variable, fill = variable)) + 
+						geom_bar(stat='identity') + 
+						geom_vline(xintercept = lnel, linetype=7, colour="black") +
+						geom_vline(xintercept = vmasl, linetype=4, colour="black") +
+						geom_vline(xintercept = vmael, linetype=1, colour="black") +
+						geom_vline(xintercept = vmcsl, linetype=3, colour="black") +
+						geom_vline(xintercept = vmcel, linetype=5, colour="black") +					
+						xlab("Time (minutes)") + 
+						ylab("Mem usage (Kilobytes)") + 
+						labs(title = per_process_os_mem_vs_time_plot_title) + 
+						scale_x_continuous(limits = xy_lims[[1]], breaks = xy_lims[[2]])
+				#				+ scale_y_continuous(limits =  xy_lims[[3]], breaks =  xy_lims[[4]])
+				
+				output_pdf_plot(ed, en, per_process_os_mem_vs_time_plot, paste("010_per_process_os_mem_vs_time_plot_",
+								experiment_node_name, sep = ''), sps)
+			}			
+			
+		}		
+		
 		################## END Memory Usage vs Time ##################
 		
 		# For network, swap and disk, differences need to be calculated

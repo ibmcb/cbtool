@@ -3632,7 +3632,7 @@ class BaseObjectOperations :
                                                                              1000000000000000000)))).upper()
                         _obj_attr_list["uuid"] = _obj_uuid
         
-                        _cmd = self.path + "/cbact"
+                        _cmd = "\"" + self.path + "/cbact\""
                         _cmd += " --procid=" + self.pid
                         _cmd += " --osp=" + dic2str(self.osci.oscp())
                         _cmd += " --msp=" + dic2str(self.msci.mscp())
@@ -3659,7 +3659,7 @@ class BaseObjectOperations :
                             _status = 37
     
                         else :
-                            _cmd = self.path + "/cbact"
+                            _cmd = "\"" + self.path + "/cbact\""
                             _cmd += " --procid=" + self.pid
                             _cmd += " --osp=" + dic2str(self.osci.oscp())
                             _cmd += " --msp=" + dic2str(self.msci.mscp())
@@ -3690,7 +3690,7 @@ class BaseObjectOperations :
                             _status = 37
     
                         else :
-                            _cmd = self.path + "/cbact"
+                            _cmd = "\"" + self.path + "/cbact\""
                             _cmd += " --procid=" + self.pid
                             _cmd += " --osp=" + dic2str(self.osci.oscp())
                             _cmd += " --msp=" + dic2str(self.msci.mscp())
