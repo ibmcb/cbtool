@@ -1703,6 +1703,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                     self.osci.pending_object_set(_cloud_name, _obj_type, \
                                         obj_attr_list["uuid"], "status", "Initializing...")
+
+                    for pkey in obj_attr_list.keys() :
+                        self.osci.pending_object_set(_cloud_name, _obj_type, \
+                            obj_attr_list["uuid"], pkey, obj_attr_list[pkey])
+
+                    self.osci.pending_object_set(_cloud_name, _obj_type, \
+                        obj_attr_list["uuid"], "status", "Initializing...")
                     
                     _created_pending = True
 

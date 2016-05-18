@@ -282,6 +282,12 @@ function disable_ip_version_six {
         echo "export HADOOP_OPTS=-Djava.net.preferIPv4Stack=true" > $HADOOP_CONF_DIR/hadoop-env.sh
         echo "export JAVA_HOME=${JAVA_HOME}" >> $HADOOP_CONF_DIR/hadoop-env.sh
     fi
+
+    # Force use of native libraries 
+    if [[ -e ${HADOOP_CONF_DIR}/hadoop-env.sh ]]
+    then
+       echo "export HADOOP_OPTS=\"\$HADOOP_OPTS -Djava.library.path=${HADOOP_HOME}/lib/native\"" >> $HADOOP_CONF_DIR/hadoop-env.sh
+    fi
 }
 export -f disable_ip_version_six
 
