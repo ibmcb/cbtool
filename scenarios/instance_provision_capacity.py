@@ -1066,7 +1066,8 @@ def main() :
         _options.pause_step = "execute_provision_originated"
         _mgt_info = api.cldshow(_options.cloud_name, "mon_defaults")
         _mgt_metrics_header = _mgt_info["vm_management_metrics_header"] + ','
-
+        _host_runtime_metrics_header = _mgt_info["host_runtime_os_metrics_header"]
+        
         if not _mgt_metrics_header.count("osk_001_tenant_creation_time") :
             _mgt_metrics_header += ','.join([ "osk_001_tenant_creation_time", \
                                               "osk_002_quota_update_time", \
@@ -1091,16 +1092,21 @@ def main() :
                                               "osk_020_create_fip_time", \
                                               "osk_021_attach_fip_time", \
                                               "osk_022_instance_reachable"])
-
-
-
-
-            
+                        
             api.cldalter(_options.cloud_name, \
                          "mon_defaults", \
                          "vm_management_metrics_header", \
                          _mgt_metrics_header)
-        
+
+        if not _host_runtime_metrics_header.count("procstat") :
+            _host_runtime_metrics_header += ',' + _mgt_info["cloud_base_m"]
+            _host_runtime_metrics_header += ',' + _mgt_info["openstack_m"]
+
+            api.cldalter(_options.cloud_name, \
+                         "mon_defaults", \
+                         "host_runtime_os_metrics_header", \
+                         _host_runtime_metrics_header)
+
 #        _mgt_info = api.cldshow(_options.cloud_name, "mon_defaults")
 #        _mgt_metrics_header = _mgt_info["vm_management_metrics_header"]
         
