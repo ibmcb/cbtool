@@ -2338,7 +2338,6 @@ class PassiveObjectOperations(BaseObjectOperations) :
         '''
         TBD
         '''
-        
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
 
@@ -2351,6 +2350,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
         _initial_ai_attr_list = self.osci.get_object(cloud_name, "AI", False, object_uuid, False)
 
         _mode = _initial_ai_attr_list["mode"]
+        
         _check_frequency = float(_initial_ai_attr_list["update_frequency"])
                         
         while _ai_state and not _error :        
