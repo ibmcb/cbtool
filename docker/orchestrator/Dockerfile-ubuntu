@@ -1,7 +1,9 @@
 FROM ubuntu:latest
+
+ENV DEBIAN_FRONTEND=noninteractive
+
 RUN apt-get update
 RUN useradd -ms /bin/bash cbuser
-RUN echo "cbuser  ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 ENV OBJECTSTORE_PORT=10000
 ENV METRICSTORE_PORT=20000
@@ -44,7 +46,8 @@ libssl-dev \
 python-webob \
 python-beaker \
 python-libvirt \
-netcat-openbsd
+netcat-openbsd \
+net-tools
 RUN cp /bin/nc /usr/local/bin/netcat
 
 RUN apt-get install -y \
@@ -74,6 +77,10 @@ RUN apt-get install -y \
 mongodb
 RUN sed -i "s/.*bind_ip.*/bind_ip=0.0.0.0/" /etc/mongodb.conf
 RUN sed -i "s/.*port.*/port = $METRICSTORE_PORT/" /etc/redis/redis.conf
+
+RUN apt-get install -y \
+sudo
+RUN echo "cbuser  ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 RUN apt-get install -y \
 python-dev \
