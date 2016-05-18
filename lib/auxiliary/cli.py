@@ -668,7 +668,7 @@ class CBCLI(Cmd) :
 
             _proc_man = ProcessManagement(username = self.cld_attr_lst["objectstore"]["username"])
 
-            _base_cmd = self.path + "/cbact"
+            _base_cmd = "\"" +  self.path + "/cbact\""
             _base_cmd += " --procid=" + self.pid
             _base_cmd += " --osp=" + dic2str(self.osci.oscp()) 
             _base_cmd += " --msp=" + dic2str(self.msci.mscp()) 
@@ -740,7 +740,7 @@ class CBCLI(Cmd) :
                 use_ssl = True
 
             print "Checking for a running GUI service daemon.....",
-            _base_cmd = self.path + "/cbact"
+            _base_cmd = "\"" + self.path + "/cbact\""
             _base_cmd += " --procid=" + self.pid
             _base_cmd += " --osp=" + dic2str(self.osci.oscp()) 
             _base_cmd += " --msp=" + dic2str(self.msci.mscp()) 
