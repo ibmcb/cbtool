@@ -313,7 +313,12 @@ class DoCmds(CommonCloudFunctions) :
             if len(node.private_ips) > 0 and obj_attr_list["run_netname"].lower() == "private" :
                 obj_attr_list["run_cloud_ip"] = node.private_ips[0]
             else :
-                obj_attr_list["run_cloud_ip"] = node.public_ips[0]
+                if len(node.public_ips[0]) > 0 :
+                    cbdebug("Droplet Public address not yet available.")
+                    obj_attr_list["run_cloud_ip"] = node.public_ips[0]
+                else :
+                    return False
+
             # NOTE: "cloud_ip" is always equal to "run_cloud_ip"
             obj_attr_list["cloud_ip"] = obj_attr_list["run_cloud_ip"]
 
