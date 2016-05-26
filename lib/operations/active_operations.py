@@ -1792,43 +1792,40 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                         _created_object = True
 
-                        _max_recreate_tries = int(obj_attr_list["attempts"])
-                        _finished_object = False
+                        if _obj_type == "VM" :
+                            _max_recreate_tries = int(obj_attr_list["attempts"])
+                            _finished_object = False
 
-                        while not _finished_object and _max_recreate_tries > 0 :
-                            if _obj_type == "VMC" :
-                                _finished_object = self.post_attach_vmc(obj_attr_list)
-                            elif _obj_type == "VM" :
+                            while not _finished_object and _max_recreate_tries > 0 :
                                 _finished_object = self.post_attach_vm(obj_attr_list, _staging)
-                            elif _obj_type == "AI" :
-                                _finished_object = self.post_attach_ai(obj_attr_list, _staging)
-                            elif _obj_type == "AIDRS" :
-                                _finished_object = self.post_attach_aidrs(obj_attr_list)
-                            elif _obj_type == "VMCRS" :
-                                _finished_object = self.post_attach_vmcrs(obj_attr_list)
-                            elif _obj_type == "FIRS" :
-                                _finished_object = self.post_attach_firs(obj_attr_list)
-                            else :
-                                _finished_object = True
-
-                            if not _finished_object :
-                                if _obj_type == "VM" :
-                                    self.osci.pending_object_set(_cloud_name, _obj_type, \
-                                                        obj_attr_list["uuid"], "status", "Recreating ...")
-
-                                    cbdebug("Recreating VM " + obj_attr_list["name"] + "...", True)
-                                    self.osci.destroy_object(_cloud_name, _obj_type, obj_attr_list["uuid"], \
-                                                             obj_attr_list, False)
-                                    _status, _fmsg = _cld_conn.vmdestroy(obj_attr_list)
-                                    _created_object = False
-                                    _status, _fmsg = _cld_conn.vmcreate(obj_attr_list)
-                                    self.osci.create_object(_cloud_name, _obj_type, obj_attr_list["uuid"], \
-                                                                obj_attr_list, False, True)
-                                    _created_object = True
-                                    _max_recreate_tries -= 1
-                                    cbdebug("Attempts left #" + str(_max_recreate_tries))
-                                else :
+                                if _finished_object :
                                     break
+
+                                self.osci.pending_object_set(_cloud_name, _obj_type, \
+                                                    obj_attr_list["uuid"], "status", "Recreating ...")
+
+                                cbdebug("Recreating VM " + obj_attr_list["name"] + "...", True)
+                                self.osci.destroy_object(_cloud_name, _obj_type, obj_attr_list["uuid"], \
+                                                         obj_attr_list, False)
+                                _status, _fmsg = _cld_conn.vmdestroy(obj_attr_list)
+                                _created_object = False
+                                _status, _fmsg = _cld_conn.vmcreate(obj_attr_list)
+                                self.osci.create_object(_cloud_name, _obj_type, obj_attr_list["uuid"], \
+                                                            obj_attr_list, False, True)
+                                _created_object = True
+                                _max_recreate_tries -= 1
+                                cbdebug("Attempts left #" + str(_max_recreate_tries))
+                        elif _obj_type == "VMC" :
+                            self.post_attach_vmc(obj_attr_list)
+                        elif _obj_type == "AI" :
+                            self.post_attach_ai(obj_attr_list, _staging)
+                        elif _obj_type == "AIDRS" :
+                            self.post_attach_aidrs(obj_attr_list)
+                        elif _obj_type == "VMCRS" :
+                            self.post_attach_vmcrs(obj_attr_list)
+                        elif _obj_type == "FIRS" :
+                            self.post_attach_firs(obj_attr_list)
+
 
         except self.ObjectOperationException, obj :
             _status = obj.status
