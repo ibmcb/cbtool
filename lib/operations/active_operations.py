@@ -1789,28 +1789,46 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                         self.osci.create_object(_cloud_name, _obj_type, obj_attr_list["uuid"], \
                                                 obj_attr_list, False, True)
+
                         _created_object = True
 
-                        if _obj_type == "VMC" :
-                            self.post_attach_vmc(obj_attr_list)
-    
-                        elif _obj_type == "VM" :
-                            self.post_attach_vm(obj_attr_list, _staging)
+                        _max_recreate_tries = int(obj_attr_list["attempts"])
+                        _finished_object = False
 
-                        elif _obj_type == "AI" :
-                            self.post_attach_ai(obj_attr_list, _staging)
-    
-                        elif _obj_type == "AIDRS" :
-                            self.post_attach_aidrs(obj_attr_list)
-    
-                        elif _obj_type == "VMCRS" :
-                            self.post_attach_vmcrs(obj_attr_list)
+                        while not _finished_object and _max_recreate_tries > 0 :
+                            if _obj_type == "VMC" :
+                                _finished_object = self.post_attach_vmc(obj_attr_list)
+                            elif _obj_type == "VM" :
+                                _finished_object = self.post_attach_vm(obj_attr_list, _staging)
+                            elif _obj_type == "AI" :
+                                _finished_object = self.post_attach_ai(obj_attr_list, _staging)
+                            elif _obj_type == "AIDRS" :
+                                _finished_object = self.post_attach_aidrs(obj_attr_list)
+                            elif _obj_type == "VMCRS" :
+                                _finished_object = self.post_attach_vmcrs(obj_attr_list)
+                            elif _obj_type == "FIRS" :
+                                _finished_object = self.post_attach_firs(obj_attr_list)
+                            else :
+                                _finished_object = True
 
-                        elif _obj_type == "FIRS" :
-                            self.post_attach_firs(obj_attr_list)
+                            if not _finished_object :
+                                if _obj_type == "VM" :
+                                    self.osci.pending_object_set(_cloud_name, _obj_type, \
+                                                        obj_attr_list["uuid"], "status", "Recreating ...")
 
-                        else :
-                            True
+                                    cbdebug("Recreating VM " + obj_attr_list["name"] + "...", True)
+                                    self.osci.destroy_object(_cloud_name, _obj_type, obj_attr_list["uuid"], \
+                                                             obj_attr_list, False)
+                                    _status, _fmsg = _cld_conn.vmdestroy(obj_attr_list)
+                                    _created_object = False
+                                    _status, _fmsg = _cld_conn.vmcreate(obj_attr_list)
+                                    self.osci.create_object(_cloud_name, _obj_type, obj_attr_list["uuid"], \
+                                                                obj_attr_list, False, True)
+                                    _created_object = True
+                                    _max_recreate_tries -= 1
+                                    cbdebug("Attempts left #" + str(_max_recreate_tries))
+                                else :
+                                    break
 
         except self.ObjectOperationException, obj :
             _status = obj.status
@@ -2028,7 +2046,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
                 _msg = "VMC post-attachment operations success."
                 cbdebug(_msg)
-                return _status, _msg
+
+        return True
 
     @trace
     def post_attach_vm(self, obj_attr_list, staging = None) :
@@ -2078,8 +2097,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                _retry_interval, \
                                                obj_attr_list["transfer_files"], \
                                                obj_attr_list["debug_remote_commands"], \
-                                               True)
-
+                                               True,
+                                               tell_me_if_stderr_contains = "Connection reset by peer")
             self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], \
                                               False, "last_known_state", \
                                               "checked SSH accessibility")
@@ -2224,13 +2243,18 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
         finally :
             if _status :
+                if _status == "90001" :
+                    cbdebug("VM creation succeeded, but authentication has failed, likely due to cloud-init or similar bootstrapping not completing correctly. Will re-create the VM and try again.", True)
+                    return False
+
                 _msg = "VM post-attachment operations failure: " + _fmsg
                 cberr(_msg)
                 raise self.ObjectOperationException(_msg, _status)
             else :
                 _msg = "VM post-attachment operations success."
                 cbdebug(_msg)
-                return _status, _msg
+
+        return True
 
     @trace
     def post_attach_ai(self, obj_attr_list, staging = None) :
@@ -2314,7 +2338,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
                 _msg = "AI post-attachment operations success."
                 cbdebug(_msg)
-                return _status, _msg
+
+        return True
 
     @trace
     def post_attach_aidrs(self, obj_attr_list) :
@@ -2396,7 +2421,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
                 _msg = "AIDRS post-attachment operations success."
                 cbdebug(_msg)
-                return _status, _msg
+
+        return True
 
     @trace
     def post_attach_vmcrs(self, obj_attr_list) :
@@ -2449,7 +2475,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
                 _msg = "VMCRS post-attachment operations success."
                 cbdebug(_msg)
-                return _status, _msg
+
+        return True
 
     def post_attach_firs(self, obj_attr_list) :
         '''
@@ -2501,7 +2528,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
                 _msg = "FIRS post-attachment operations success."
                 cbdebug(_msg)
-                return _status, _msg
+
+        return True
         
     @trace
     def pre_detach_vmc(self, obj_attr_list) :
