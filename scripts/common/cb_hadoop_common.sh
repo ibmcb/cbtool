@@ -880,6 +880,9 @@ function start_slave_hadoop_services {
             truncate -s 0 ${HADOOP_HOME}/logs/hadoop*.log
             syslog_netcat "Error starting datanode on ${my_ip_addr}: ${datanode_error} - NOK"
             pkill -9 -f java
+            syslog_netcat "Truncated log. Will retry on ${my_ip_addr}"
+            # The second truncate is in case java writes additional error messages to the log before it dies
+            truncate -s 0 ${HADOOP_HOME}/logs/hadoop*.log
             exit 1
         fi
         
@@ -899,6 +902,9 @@ function start_slave_hadoop_services {
                 truncate -s 0 /var/log/hadoop-hdfs/*.log
                 syslog_netcat "Error starting ${x} on ${my_ip_addr}. ${errorstring} - NOK"
                 pkill -9 -f java
+                syslog_netcat "Truncated log. Will retry on ${my_ip_addr}"
+                # The second truncate is in case java writes additional error messages to the log before it dies
+                truncate -s 0 /var/log/hadoop-hdfs/*.log
                 exit 1
             else
                 syslog_netcat "...Datanode process appears to be running."
