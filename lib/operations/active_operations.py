@@ -42,6 +42,7 @@ from lib.auxiliary.data_ops import selective_dict_update
 from lib.auxiliary.config import parse_cld_defs_file, load_store_functions, get_available_clouds, rewrite_cloudconfig, rewrite_cloudoptions
 from lib.clouds.shared_functions import CldOpsException
 from lib.remote.network_functions import Nethashget
+from lib.remote.network_functions import Nethashget, hostname2ip, NetworkException
 from base_operations import BaseObjectOperations
 
 import copy
@@ -49,6 +50,7 @@ import threading
 import os
 import sys
 import socket
+import telnetlib
 
 class ActiveObjectOperations(BaseObjectOperations) :
     '''
@@ -164,14 +166,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 _proc_man =  ProcessManagement(username = cld_attr_lst["time"]["username"], cloud_name = cld_attr_lst["cloud_name"])
 
-                if cld_attr_lst["vm_defaults"]["use_vpn_ip"] and not cld_attr_lst["vpn"]["start_server"] :
-                    _msg = " The attribute \"USE_VPN_IP\" in Global Object "
-                    _msg += "[VM_DEFAULTS] is set to \"True\". Will set the"
-                    _msg += "attribute \"START_SERVER\" in the Global Object "
-                    _msg += "[VPN] also to \"True\"."
-                    cbdebug(_msg, True)
-                    cld_attr_lst["vpn"]["start_server"] = True
-                    
                 self.start_vpnserver(cld_attr_lst)
 
                 # User may have an empty VMC list. Need to be able to handle that.
@@ -393,18 +387,19 @@ class ActiveObjectOperations(BaseObjectOperations) :
         TBD
         '''
             
+        if str(cld_attr_lst["vm_defaults"]["use_vpn_ip"]).lower() == "false" :
+            return
+
+        _type = cld_attr_lst["vpn"]["kind"]
+        _vpn_server_config = cld_attr_lst["space"]["generated_configurations_dir"] 
+        _vpn_server_config += '/' + cld_attr_lst["cloud_name"] + "_server-cb-openvpn.conf"
+        _vpn_server_address = cld_attr_lst["vpn"]["server_ip"]
+        _vpn_server_port = cld_attr_lst["vpn"]["server_port"]
+
         try : 
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
-            _type = cld_attr_lst["vpn"]["kind"]
-
-            _vpn_server_config = cld_attr_lst["space"]["generated_configurations_dir"] 
-            _vpn_server_config += '/' + cld_attr_lst["cloud_name"] + "_server-cb-openvpn.conf"
-
-            _vpn_server_address = cld_attr_lst["vpn"]["server_ip"]
-            _vpn_server_port = cld_attr_lst["vpn"]["server_port"]
-            
             if not os.path.isfile(_vpn_server_config) :
                 _proc_man =  ProcessManagement()
                 script = self.path + "/util/openvpn/make_keys.sh"
@@ -426,6 +421,38 @@ class ActiveObjectOperations(BaseObjectOperations) :
             if str(cld_attr_lst["vpn"]["start_server"]).lower() == "false" :
 
                 _msg = "Bypassing the startup of a \"" + _type + "\" VPN server..."
+
+                # Occasionally (on laptops) the VPN ip address of the orchestrator
+                # has reset and is no longer the same as what is located in the
+                # configuration file. In that case, update the runtime configuration
+                # and notify the user.
+                client_not_found = True
+                try :
+                    tmp = Nethashget(cld_attr_lst["vpn"]["management_ip"])
+                    tmp.nmap(int(cld_attr_lst["vpn"]["management_port"]), "TCP")
+                    tn = telnetlib.Telnet(cld_attr_lst["vpn"]["management_ip"], int(cld_attr_lst["vpn"]["management_port"]), 1)
+                    tn.write("log all\r\n")
+                    tn.write("exit\n")
+                    lines = []
+                    while True :
+                        try :
+                            lines.append(tn.read_until("\n", 1))
+                        except Exception, e :
+                            break
+                    tn.close
+                    for line in lines :
+                        if line.count("route " + cld_attr_lst["vpn"]["network"]) :
+                            bip = line.split(" ")[10]
+                            client_not_found = False
+                            if bip != cld_attr_lst["vpn"]["server_bootstrap"] :
+                                cbwarn("VPN Bootstrap changed to: " + bip, True)
+                                cld_attr_lst["vpn"]["server_bootstrap"] = bip
+                            break
+                except Exception, e: 
+                    pass
+
+                if client_not_found :
+                    cbdebug("Local VPN client not online. VMs may not be reachable.", True)
                 _status = 0
             else :
                 _vpn_pid = False
