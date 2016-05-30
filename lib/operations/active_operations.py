@@ -387,9 +387,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
         TBD
         '''
             
-        if str(cld_attr_lst["vm_defaults"]["use_vpn_ip"]).lower() == "false" :
-            return
-
         _type = cld_attr_lst["vpn"]["kind"]
         _vpn_server_config = cld_attr_lst["space"]["generated_configurations_dir"] 
         _vpn_server_config += '/' + cld_attr_lst["cloud_name"] + "_server-cb-openvpn.conf"
@@ -417,6 +414,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
 
                 cbinfo("VPN configuration for this cloud already generated: " + _vpn_server_config, True)
+
+            vpn_client_config = cld_attr_lst["space"]["generated_configurations_dir"] 
+            vpn_client_config += '/' + cld_attr_lst["cloud_name"] + "_client-cb-openvpn.conf"
+            cld_attr_lst["vm_defaults"]["vpn_config_file"] = vpn_client_config
+
+            if str(cld_attr_lst["vm_defaults"]["use_vpn_ip"]).lower() == "false" :
+                return
 
             if str(cld_attr_lst["vpn"]["start_server"]).lower() == "false" :
 
@@ -500,14 +504,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _msg += "port " + str(_vpn_server_port) + " seems to be "
                     _msg += "running.\n"
                     sys.stdout.write(_msg)
-                    _status = 0
-    
-                vpn_client_config = cld_attr_lst["space"]["generated_configurations_dir"] 
-                vpn_client_config += '/' + cld_attr_lst["cloud_name"] + "_client-cb-openvpn.conf"
-                cld_attr_lst["vm_defaults"]["vpn_config_file"] = vpn_client_config
 
-                _status = 0
-            
+            _status = 0
+    
         except ProcessManagement.ProcessManagementException, obj :
             _status = str(obj.status)
             _fmsg = str(obj.msg)
