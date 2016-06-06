@@ -67,3 +67,4 @@ credentials/cbtool.crt
 credentials/cbtool.key
 libpeerconnection.log
 util/pydevd
+credentials/*

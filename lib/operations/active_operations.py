@@ -42,6 +42,7 @@ from lib.auxiliary.data_ops import selective_dict_update
 from lib.auxiliary.config import parse_cld_defs_file, load_store_functions, get_available_clouds, rewrite_cloudconfig, rewrite_cloudoptions
 from lib.clouds.shared_functions import CldOpsException
 from lib.remote.network_functions import Nethashget
+from lib.remote.network_functions import Nethashget, hostname2ip, NetworkException
 from base_operations import BaseObjectOperations
 
 import copy
@@ -49,6 +50,7 @@ import threading
 import os
 import sys
 import socket
+import telnetlib
 
 class ActiveObjectOperations(BaseObjectOperations) :
     '''
@@ -164,14 +166,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 _proc_man =  ProcessManagement(username = cld_attr_lst["time"]["username"], cloud_name = cld_attr_lst["cloud_name"])
 
-                if cld_attr_lst["vm_defaults"]["use_vpn_ip"] and not cld_attr_lst["vpn"]["start_server"] :
-                    _msg = " The attribute \"USE_VPN_IP\" in Global Object "
-                    _msg += "[VM_DEFAULTS] is set to \"True\". Will set the"
-                    _msg += "attribute \"START_SERVER\" in the Global Object "
-                    _msg += "[VPN] also to \"True\"."
-                    cbdebug(_msg, True)
-                    cld_attr_lst["vpn"]["start_server"] = True
-                    
                 self.start_vpnserver(cld_attr_lst)
 
                 # User may have an empty VMC list. Need to be able to handle that.
@@ -393,18 +387,16 @@ class ActiveObjectOperations(BaseObjectOperations) :
         TBD
         '''
             
+        _type = cld_attr_lst["vpn"]["kind"]
+        _vpn_server_config = cld_attr_lst["space"]["generated_configurations_dir"] 
+        _vpn_server_config += '/' + cld_attr_lst["cloud_name"] + "_server-cb-openvpn.conf"
+        _vpn_server_address = cld_attr_lst["vpn"]["server_ip"]
+        _vpn_server_port = cld_attr_lst["vpn"]["server_port"]
+
         try : 
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
-            _type = cld_attr_lst["vpn"]["kind"]
-
-            _vpn_server_config = cld_attr_lst["space"]["generated_configurations_dir"] 
-            _vpn_server_config += '/' + cld_attr_lst["cloud_name"] + "_server-cb-openvpn.conf"
-
-            _vpn_server_address = cld_attr_lst["vpn"]["server_ip"]
-            _vpn_server_port = cld_attr_lst["vpn"]["server_port"]
-            
             if not os.path.isfile(_vpn_server_config) :
                 _proc_man =  ProcessManagement()
                 script = self.path + "/util/openvpn/make_keys.sh"
@@ -423,9 +415,48 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 cbinfo("VPN configuration for this cloud already generated: " + _vpn_server_config, True)
 
+            vpn_client_config = cld_attr_lst["space"]["generated_configurations_dir"] 
+            vpn_client_config += '/' + cld_attr_lst["cloud_name"] + "_client-cb-openvpn.conf"
+            cld_attr_lst["vm_defaults"]["vpn_config_file"] = vpn_client_config
+
+            if str(cld_attr_lst["vm_defaults"]["use_vpn_ip"]).lower() == "false" :
+                return
+
             if str(cld_attr_lst["vpn"]["start_server"]).lower() == "false" :
 
                 _msg = "Bypassing the startup of a \"" + _type + "\" VPN server..."
+
+                # Occasionally (on laptops) the VPN ip address of the orchestrator
+                # has reset and is no longer the same as what is located in the
+                # configuration file. In that case, update the runtime configuration
+                # and notify the user.
+                client_not_found = True
+                try :
+                    tmp = Nethashget(cld_attr_lst["vpn"]["management_ip"])
+                    tmp.nmap(int(cld_attr_lst["vpn"]["management_port"]), "TCP")
+                    tn = telnetlib.Telnet(cld_attr_lst["vpn"]["management_ip"], int(cld_attr_lst["vpn"]["management_port"]), 1)
+                    tn.write("log all\r\n")
+                    tn.write("exit\n")
+                    lines = []
+                    while True :
+                        try :
+                            lines.append(tn.read_until("\n", 1))
+                        except Exception, e :
+                            break
+                    tn.close
+                    for line in lines :
+                        if line.count("route " + cld_attr_lst["vpn"]["network"]) :
+                            bip = line.split(" ")[10]
+                            client_not_found = False
+                            if bip != cld_attr_lst["vpn"]["server_bootstrap"] :
+                                cbwarn("VPN Bootstrap changed to: " + bip, True)
+                                cld_attr_lst["vpn"]["server_bootstrap"] = bip
+                            break
+                except Exception, e: 
+                    pass
+
+                if client_not_found :
+                    cbdebug("Local VPN client not online. VMs may not be reachable.", True)
                 _status = 0
             else :
                 _vpn_pid = False
@@ -473,14 +504,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _msg += "port " + str(_vpn_server_port) + " seems to be "
                     _msg += "running.\n"
                     sys.stdout.write(_msg)
-                    _status = 0
-    
-                vpn_client_config = cld_attr_lst["space"]["generated_configurations_dir"] 
-                vpn_client_config += '/' + cld_attr_lst["cloud_name"] + "_client-cb-openvpn.conf"
-                cld_attr_lst["vm_defaults"]["vpn_config_file"] = vpn_client_config
 
-                _status = 0
-            
+            _status = 0
+    
         except ProcessManagement.ProcessManagementException, obj :
             _status = str(obj.status)
             _fmsg = str(obj.msg)
@@ -1703,6 +1729,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                     self.osci.pending_object_set(_cloud_name, _obj_type, \
                                         obj_attr_list["uuid"], "status", "Initializing...")
+
+                    for pkey in obj_attr_list.keys() :
+                        self.osci.pending_object_set(_cloud_name, _obj_type, \
+                            obj_attr_list["uuid"], pkey, obj_attr_list[pkey])
+
+                    self.osci.pending_object_set(_cloud_name, _obj_type, \
+                        obj_attr_list["uuid"], "status", "Initializing...")
                     
                     _created_pending = True
 
@@ -1782,28 +1815,43 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                         self.osci.create_object(_cloud_name, _obj_type, obj_attr_list["uuid"], \
                                                 obj_attr_list, False, True)
+
                         _created_object = True
 
-                        if _obj_type == "VMC" :
-                            self.post_attach_vmc(obj_attr_list)
-    
-                        elif _obj_type == "VM" :
-                            self.post_attach_vm(obj_attr_list, _staging)
+                        if _obj_type == "VM" :
+                            _max_recreate_tries = int(obj_attr_list["attempts"])
+                            _finished_object = False
 
+                            while not _finished_object and _max_recreate_tries > 0 :
+                                _finished_object = self.post_attach_vm(obj_attr_list, _staging)
+                                if _finished_object :
+                                    break
+
+                                self.osci.pending_object_set(_cloud_name, _obj_type, \
+                                                    obj_attr_list["uuid"], "status", "Recreating ...")
+
+                                cbdebug("Recreating VM " + obj_attr_list["name"] + "...", True)
+                                self.osci.destroy_object(_cloud_name, _obj_type, obj_attr_list["uuid"], \
+                                                         obj_attr_list, False)
+                                _status, _fmsg = _cld_conn.vmdestroy(obj_attr_list)
+                                _created_object = False
+                                _status, _fmsg = _cld_conn.vmcreate(obj_attr_list)
+                                self.osci.create_object(_cloud_name, _obj_type, obj_attr_list["uuid"], \
+                                                            obj_attr_list, False, True)
+                                _created_object = True
+                                _max_recreate_tries -= 1
+                                cbdebug("Attempts left #" + str(_max_recreate_tries))
+                        elif _obj_type == "VMC" :
+                            self.post_attach_vmc(obj_attr_list)
                         elif _obj_type == "AI" :
                             self.post_attach_ai(obj_attr_list, _staging)
-    
                         elif _obj_type == "AIDRS" :
                             self.post_attach_aidrs(obj_attr_list)
-    
                         elif _obj_type == "VMCRS" :
                             self.post_attach_vmcrs(obj_attr_list)
-
                         elif _obj_type == "FIRS" :
                             self.post_attach_firs(obj_attr_list)
 
-                        else :
-                            True
 
         except self.ObjectOperationException, obj :
             _status = obj.status
@@ -2021,7 +2069,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
                 _msg = "VMC post-attachment operations success."
                 cbdebug(_msg)
-                return _status, _msg
+
+        return True
 
     @trace
     def post_attach_vm(self, obj_attr_list, staging = None) :
@@ -2071,8 +2120,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                _retry_interval, \
                                                obj_attr_list["transfer_files"], \
                                                obj_attr_list["debug_remote_commands"], \
-                                               True)
-
+                                               True,
+                                               tell_me_if_stderr_contains = "Connection reset by peer")
             self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], \
                                               False, "last_known_state", \
                                               "checked SSH accessibility")
@@ -2217,13 +2266,18 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
         finally :
             if _status :
+                if _status == "90001" :
+                    cbdebug("VM creation succeeded, but authentication has failed, likely due to cloud-init or similar bootstrapping not completing correctly. Will re-create the VM and try again.", True)
+                    return False
+
                 _msg = "VM post-attachment operations failure: " + _fmsg
                 cberr(_msg)
                 raise self.ObjectOperationException(_msg, _status)
             else :
                 _msg = "VM post-attachment operations success."
                 cbdebug(_msg)
-                return _status, _msg
+
+        return True
 
     @trace
     def post_attach_ai(self, obj_attr_list, staging = None) :
@@ -2307,7 +2361,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
                 _msg = "AI post-attachment operations success."
                 cbdebug(_msg)
-                return _status, _msg
+
+        return True
 
     @trace
     def post_attach_aidrs(self, obj_attr_list) :
@@ -2389,7 +2444,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
                 _msg = "AIDRS post-attachment operations success."
                 cbdebug(_msg)
-                return _status, _msg
+
+        return True
 
     @trace
     def post_attach_vmcrs(self, obj_attr_list) :
@@ -2442,7 +2498,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
                 _msg = "VMCRS post-attachment operations success."
                 cbdebug(_msg)
-                return _status, _msg
+
+        return True
 
     def post_attach_firs(self, obj_attr_list) :
         '''
@@ -2494,7 +2551,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
                 _msg = "FIRS post-attachment operations success."
                 cbdebug(_msg)
-                return _status, _msg
+
+        return True
         
     @trace
     def pre_detach_vmc(self, obj_attr_list) :

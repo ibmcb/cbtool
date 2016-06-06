@@ -65,7 +65,7 @@ class ProcessManagement :
 
     @trace
     def run_os_command(self, cmdline, override_hostname = None, really_execute = True, \
-                       debug_cmd = False, raise_exception = True, step = None) :
+                       debug_cmd = False, raise_exception = True, step = None, tell_me_if_stderr_contains = False) :
         '''
         TBD
         '''
@@ -130,7 +130,10 @@ class ProcessManagement :
                         _msg += "\"" + cmdline + "\" (returncode = "
                         _msg += str(_proc_h.pid) + ") :" + str(_result[1])
                         cbdebug(_msg)
-                        if raise_exception :
+                        if tell_me_if_stderr_contains is not False and _result[1].count(tell_me_if_stderr_contains) :
+                            cbdebug("Command failed with: " + tell_me_if_stderr_contains, True)
+                            raise self.ProcessManagementException(str(_msg), "90001")
+                        elif raise_exception :
                             raise self.ProcessManagementException(str(_msg), "81918")
                         
                         else :
@@ -175,7 +178,8 @@ class ProcessManagement :
                                  really_execute = True, \
                                  debug_cmd = False, \
                                  raise_exception_on_error = False, \
-                                 step = None) :
+                                 step = None,
+                                 tell_me_if_stderr_contains = False) :
         '''
         TBD
         '''
@@ -188,9 +192,12 @@ class ProcessManagement :
                                                                               really_execute, \
                                                                               debug_cmd, \
                                                                               raise_exception_on_error, \
-                                                                              step)
+                                                                              step = step,
+                                                                              tell_me_if_stderr_contains = tell_me_if_stderr_contains)
 
             except ProcessManagement.ProcessManagementException, obj :
+                if obj.status == "90001" :
+                    raise obj
                 _status = obj.status
                 _result_stdout = "NOK"
                 _result_stderr = obj.msg

@@ -285,6 +285,8 @@ class Nethashget :
             self.socket.connect((self.hostname, self.port if port is None else port))
 
             if not reverse :
+                self.socket.close()
+                self.socket = None
                 return True
             else :
                 _msg = protocol + " port " + str(port) + " on host " 
@@ -293,6 +295,9 @@ class Nethashget :
                 raise NetworkException(str(_msg), "1")
 
         except socket.error, msg :
+            self.socket.close()
+            self.socket = None
+
             if not reverse :
                 _msg = "Unable to connect to " + protocol + " port " + str(port)
                 _msg += " on host " + self.hostname + ": " + str(msg)
@@ -304,8 +309,6 @@ class Nethashget :
                 cbdebug(_msg)
                 return True
 
-            self.socket.close()
-            self.socket = None
 
     def check_port(self, port = None, protocol = "TCP") :
         '''
