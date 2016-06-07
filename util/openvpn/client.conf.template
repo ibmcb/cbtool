@@ -2,6 +2,7 @@ proto tcp
 dev tun
 client
 remote DESTINATION VPN_PORT
+management 127.0.0.1 1195
 
 log /var/log/openvpn/USERNAME_openvpn-cb.log
 
