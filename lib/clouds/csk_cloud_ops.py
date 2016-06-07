@@ -770,6 +770,7 @@ class CskCmds(CommonCloudFunctions) :
 
             if self.get_ip_address(obj_attr_list) :
                 obj_attr_list["last_known_state"] = "running with ip assigned"
+                self.take_action_if_requested("VM", obj_attr_list, "provision_complete")
                 return True
             else :
                 obj_attr_list["last_known_state"] = "running with ip unassigned"
@@ -1211,9 +1212,7 @@ class CskCmds(CommonCloudFunctions) :
         '''
         try :
             _fmsg = "An error has occurred, but no error message was captured"
-
-            self.take_action_if_requested("AI", obj_attr_list, "all_vms_booted")
-
+            self.take_action_if_requested("AI", obj_attr_list, current_step)
             _status = 0
 
         except Exception, msg :
@@ -1242,6 +1241,7 @@ class CskCmds(CommonCloudFunctions) :
         '''
         try :
             _fmsg = "An error has occurred, but no error message was captured"
+            self.take_action_if_requested("AI", obj_attr_list, current_step)                        
             _status = 0
 
         except Exception, msg :

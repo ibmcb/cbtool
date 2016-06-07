@@ -489,10 +489,29 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _fields.append("|value                                ")
     
                         _fmt_obj_attr_list = ''.join(_fields) + '\n'
-                        _obj_attribs = self.osci.get_object(obj_attr_list["cloud_name"], _obj_type, True, \
-                                                            obj_attr_list["name"], \
-                                                            False)
-                        _obj_attribs["state"] = self.osci.get_object_state(obj_attr_list["cloud_name"], _obj_type, _obj_attribs["uuid"])
+                        
+                        if obj_attr_list["state"] != "pending" :
+                            if len(obj_attr_list["name"]) == 36 and obj_attr_list["name"].count('-') == 4 :
+                                _is_tag = False
+                            else :
+                                _is_tag = True
+                                
+                            _obj_attribs = self.osci.get_object(obj_attr_list["cloud_name"], _obj_type, _is_tag, \
+                                                                obj_attr_list["name"], \
+                                                                False)
+                            _obj_attribs["state"] = self.osci.get_object_state(obj_attr_list["cloud_name"], _obj_type, _obj_attribs["uuid"])
+                        else :
+                            if len(obj_attr_list["name"]) == 36 and obj_attr_list["name"].count('-') == 4 :
+                                True
+                            else :
+                                # This code path is expected to be rarely used, mostly for debugging
+                                for _obj_uuid  in self.osci.get_list(obj_attr_list["cloud_name"], _obj_type, "PENDING", True) :
+                                    if _obj_uuid[0].count(obj_attr_list["name"]) :
+                                        obj_attr_list["name"] = _obj_uuid[0].replace('|' + obj_attr_list["name"],'')
+                            
+                            _obj_attribs = self.osci.pending_object_get(obj_attr_list["cloud_name"], _obj_type, obj_attr_list["name"], _obj_select_attribs[0])
+                            
+                            _obj_attribs["state"] = "pending"
     
                         for _attrib, _value in iter(sorted(_obj_attribs.iteritems())) :
                             if _attrib in _obj_select_attribs or \
@@ -570,7 +589,8 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _fields = [] 
     
                     if _obj_type == "CLOUD" :
-                        _can_be_tag = False
+                        _is_tag = False
+                        obj_attr_list["state"] = "default"
                         _obj_type = "GLOBAL"
                         _obj_uuid = obj_attr_list["specified_attributes"]
     
@@ -587,7 +607,11 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _fmsg += obj_attr_list["specified_attributes"] + "\" on Cloud " + obj_attr_list["cloud_name"] + ": "
     
                     else :
-                        _can_be_tag = True
+                        if len(obj_attr_list["name"]) == 36 and obj_attr_list["name"].count('-') == 4 :
+                            _is_tag = False
+                        else :
+                            _is_tag = True
+                            
                         _obj_uuid = obj_attr_list["name"]
     
                         _fields.append("|attribute                              ")
@@ -603,8 +627,19 @@ class PassiveObjectOperations(BaseObjectOperations) :
     
                     _fmt_obj_chg_attr = ''.join(_fields) + '\n'
     
-                    _old_values = self.osci.get_object(obj_attr_list["cloud_name"], _obj_type, _can_be_tag, \
-                                                       _obj_uuid, False)
+                    if obj_attr_list["state"] != "pending" :
+                        _old_values = self.osci.get_object(obj_attr_list["cloud_name"], _obj_type, _is_tag, \
+                                                           _obj_uuid, False)
+                    else :
+                        if len(obj_attr_list["name"]) == 36 and obj_attr_list["name"].count('-') == 4 :
+                            True
+                        else :
+                            # This code path is expected to be rarely used, mostly for debugging
+                            for _c_obj_uuid  in self.osci.get_list(obj_attr_list["cloud_name"], _obj_type, "PENDING", True) :
+                                if _c_obj_uuid[0].count(obj_attr_list["name"]) :
+                                    _obj_uuid = _c_obj_uuid[0].replace('|' + obj_attr_list["name"],'')
+                        
+                        _old_values = self.osci.pending_object_get(obj_attr_list["cloud_name"], _obj_type, _obj_uuid, "all")                    
 
                     for _kv in _obj_attrib_kvs :
                         # use split('=', 1) to allow for value to contain
@@ -614,10 +649,10 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         if not _key in _old_values :
                             _old_values[_key] = "non-existent"
     
-                        if _key[0] == '-' :
+                        if _key[0] == '-' and obj_attr_list["state"] != "pending" :
                             _key = _key[1:]
                             self.osci.remove_object_attribute(obj_attr_list["cloud_name"], _obj_type, _obj_uuid, \
-                                                              _can_be_tag, _key)
+                                                              _is_tag, _key)
                         else :
                             if _value.count("C+") :
                                 _counter = True
@@ -627,10 +662,12 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                 _counter = True
                             else :
                                 _counter = False
-                                
-                            self.osci.update_object_attribute(obj_attr_list["cloud_name"], _obj_type, _obj_uuid, \
-                                                              _can_be_tag, _key, _value, _counter)
-                            
+
+                            if obj_attr_list["state"] != "pending" :
+                                self.osci.update_object_attribute(obj_attr_list["cloud_name"], _obj_type, _obj_uuid, \
+                                                                  _is_tag, _key, _value, _counter)
+                            else :
+                                self.osci.pending_object_set(obj_attr_list["cloud_name"], _obj_type, _obj_uuid, _key, _value)
     
                         _fmt_obj_chg_attr += '|' + _key.ljust(len(_fields[0]) - 1)
                         _fmt_obj_chg_attr += '|' + _old_values[_key].ljust(len(_fields[1]) - 1)

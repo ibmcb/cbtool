@@ -201,8 +201,6 @@ class OskCmds(CommonCloudFunctions) :
                     
                 _cinder_client = True                    
                 if self.use_cinderclient == "true" :
-                    
-                    from cinderclient.v2 import client as cinderc
                     _cinder_client = False
                     from cinderclient.v2 import client as cinderc 
 
@@ -259,7 +257,6 @@ class OskCmds(CommonCloudFunctions) :
                     _file_fd.write("export OS_AUTH_URL=\"" + access_url + "\"\n")
                     _file_fd.write("export OS_NO_CACHE=1\n")
 #                    _file_fd.write("export OS_INTERFACE=" + _endpoint_type.replace("URL",'') +  "\n")
-
                     _file_fd.write("export OS_INTERFACE=admin\n")                        
                     if _cacert :
                         _file_fd.write("export OS_CACERT=" + _cacert + "\n")
@@ -1812,8 +1809,6 @@ class OskCmds(CommonCloudFunctions) :
             
             obj_attr_list["last_known_state"] = "ACTIVE with ip unassigned"
 
-            self.take_action_if_requested("VM", obj_attr_list, "provision_complete")
-
             if self.get_ip_address(obj_attr_list, _instance) :
                 obj_attr_list["last_known_state"] = "ACTIVE with ip assigned"
                 return True
@@ -2526,12 +2521,6 @@ class OskCmds(CommonCloudFunctions) :
             obj_attr_list["last_known_state"] = "about to connect to openstack manager"
 
             self.take_action_if_requested("VM", obj_attr_list, "provision_originated")
-
-            if "execute_provision_originated_stdout" in obj_attr_list :
-                if obj_attr_list["execute_provision_originated_stdout"].count("tenant") :
-                    _temp_dict = str2dic(obj_attr_list["execute_provision_originated_stdout"].replace('\n',''), False)
-                    if _temp_dict :
-                        obj_attr_list.update(_temp_dict)
                     
             obj_attr_list["key_name"] = obj_attr_list["username"] + '_' + obj_attr_list["tenant"] + '_' + obj_attr_list["key_name"]
 
@@ -2710,7 +2699,6 @@ class OskCmds(CommonCloudFunctions) :
                     obj_attr_list["osk_018_port_creation_time"] = 0
                     obj_attr_list["osk_019_instance_creation_time"] = obj_attr_list["mgt_003_provisioning_request_completed"]
                 else :
-
                     obj_attr_list["osk_019_instance_creation_time"] = float(obj_attr_list["osk_019_instance_creation_time"]) - float(obj_attr_list["osk_018_port_creation_time"])
                     
                 if obj_attr_list["last_known_state"].count("ERROR") :
@@ -2739,14 +2727,6 @@ class OskCmds(CommonCloudFunctions) :
                     
                     self.get_host_and_instance_name(obj_attr_list)
     
-                    self.take_action_if_requested("VM", obj_attr_list, "provision_finished")
-
-                    if "execute_provision_finished_stdout" in obj_attr_list :
-                        if obj_attr_list["execute_provision_finished_stdout"].count("tenant") :
-                            _temp_dict = str2dic(obj_attr_list["execute_provision_finished_stdout"].replace('\n',''), False)
-                            if _temp_dict :
-                                obj_attr_list.update(_temp_dict)
-
                     if obj_attr_list["tenant"] != "default" :
                         self.oskconncompute = False
 
@@ -2949,12 +2929,6 @@ class OskCmds(CommonCloudFunctions) :
                 _time_mark_drc - _time_mark_drs
                 
             self.take_action_if_requested("VM", obj_attr_list, "deprovision_finished")
-
-            if "execute_deprovision_finished_stdout" in obj_attr_list :
-                if obj_attr_list["execute_deprovision_finished_stdout"].count("tenant") :
-                    _temp_dict = str2dic(obj_attr_list["execute_deprovision_finished_stdout"].replace('\n',''), False)
-                    if _temp_dict :
-                        obj_attr_list.update(_temp_dict)
                     
             _status = 0
 
@@ -3297,28 +3271,7 @@ class OskCmds(CommonCloudFunctions) :
         try :
 
             _fmsg = "An error has occurred, but no error message was captured"
-
-            self.take_action_if_requested("AI", obj_attr_list, current_step)
-
-            if "execute_provision_originated_stdout" in obj_attr_list and current_step == "provision_originated" :
-                if obj_attr_list["execute_provision_originated_stdout"].count("tenant") :
-                    _temp_dict = str2dic(obj_attr_list["execute_provision_originated_stdout"].replace('\n',''), False)
-
-                    if _temp_dict :
-                        if "vm_extra_parms" not in obj_attr_list :
-                            obj_attr_list["vm_extra_parms"] = ''                    
-                        else :
-                            obj_attr_list["vm_extra_parms"] += ','
-                                                
-                        for _key in _temp_dict.keys() :
-                            if not _key.count("staging") :
-                                obj_attr_list["vm_extra_parms"] += _key + '=' + _temp_dict[_key] + ','
-                            else :
-                                obj_attr_list["vm_attach_action"] = _temp_dict["vm_staging"]
-                                
-                        obj_attr_list["vm_extra_parms"] = obj_attr_list["vm_extra_parms"][0:-1]
-                        obj_attr_list.update(_temp_dict)
-                    
+            self.take_action_if_requested("AI", obj_attr_list, current_step)                    
             _status = 0
 
         except Exception, e :
@@ -3345,8 +3298,8 @@ class OskCmds(CommonCloudFunctions) :
         TBD
         '''
         try :
-            self.take_action_if_requested("AI", obj_attr_list, current_step)            
             _fmsg = "An error has occurred, but no error message was captured"
+            self.take_action_if_requested("AI", obj_attr_list, current_step)                        
             _status = 0
 
         except Exception, e :

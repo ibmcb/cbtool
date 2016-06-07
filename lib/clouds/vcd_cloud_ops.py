@@ -78,7 +78,8 @@ class VcdCmds(CommonCloudFunctions) :
             _status = 110    
     
             # Assign login credentials and host information to libcloud handler
-            self.vcdconn = vcloud(name, password, host=host, api_version = '1.5')
+            self.vcdconn = vcloud(name, password, host=host, api_version = version)
+            # should the above be self.vcdconn ???
             _status = 120
 
             # Attempt to a connection using those login credentials
@@ -110,7 +111,7 @@ class VcdCmds(CommonCloudFunctions) :
         TBD
         '''
         try :
-            self.connect(credentials.split(";")[0], access, credentials.split(";")[1], '1.5')
+            self.connect(credentials, access, extra_info, '1.5')
                         
         except CldOpsException, obj :
             _msg = str(obj.msg)
@@ -130,8 +131,8 @@ class VcdCmds(CommonCloudFunctions) :
             if not self.vcdconn :
                 _msg = "Cleaning up VMC. Making connection to vCloud Director host..."
                 cbdebug(_msg)
-                self.connect(obj_attr_list["credentials"].split(";")[0], obj_attr_list["access"], \
-                             obj_attr_list["credentials"].split(";")[1], '1.5')
+                self.connect(obj_attr_list["credentials"], obj_attr_list["access"], \
+                             obj_attr_list["password"], '1.5')
 
             _pre_existing_instances = False
 
@@ -204,8 +205,14 @@ class VcdCmds(CommonCloudFunctions) :
                 cbdebug(_msg)
                 _status, _fmsg = self.vmccleanup(obj_attr_list)
 
-            # vCloud Director doesn't reveal hostname of hypervisor host
+            # Hiding actual VMC registration code, because I don't think vCloud Director gives access to the physical host
+            # _x, _y, _hostname = self.connect(obj_attr_list["access"], obj_attr_list["credentials"], obj_attr_list["name"])
+            
+            # Not sure what the Amazon connect command above returns, so I'm hard-coding some data here to see if this works.
+            #obj_attr_list["cloud_hostname"] = _hostname
+            #obj_attr_list["cloud_ip"] = gethostbyname(_hostname)
             obj_attr_list["cloud_hostname"] = obj_attr_list["access"]
+            
             obj_attr_list["cloud_ip"] = obj_attr_list["access"]
             
             obj_attr_list["arrival"] = int(time())
@@ -306,6 +313,7 @@ class VcdCmds(CommonCloudFunctions) :
             
             obj_attr_list["prov_cloud_ip"] = obj_attr_list["instance_obj"].private_ips[0]
             obj_attr_list["run_cloud_ip"] =  obj_attr_list["instance_obj"].private_ips[0]
+            # NOTE: "cloud_ip" is always equal to "run_cloud_ip"
             obj_attr_list["cloud_ip"] = obj_attr_list["run_cloud_ip"]            
             
             _msg = "Public IP = " + obj_attr_list["cloud_hostname"]
@@ -357,8 +365,24 @@ class VcdCmds(CommonCloudFunctions) :
         TBD
         '''
         try :
-            node = self.get_vm_instance(obj_attr_list)
-            return node and node.state == NodeState.RUNNING
+            if "instance_obj" not in obj_attr_list :
+                _instance = self.get_vm_instance(obj_attr_list)
+            else :
+                _instance = obj_attr_list["instance_obj"]
+
+            if _instance :
+                _msg = "is_vm_running reports instance with instance state of " + str(_instance.state)
+                cbdebug(_msg)
+                _instance_state = _instance.state
+            else :
+                _msg = "is_vm_running reports non-existant instance."
+                cbdebug(_msg)
+                _instance_state = "non-existent"
+
+            if _instance_state == NodeState.RUNNING :
+                return True
+            else :
+                return False
 
         except Exception, e :
             _status = 23
@@ -372,8 +396,6 @@ class VcdCmds(CommonCloudFunctions) :
         ''' 
         if self.is_vm_running(obj_attr_list) :
             
-            self.take_action_if_requested("VM", obj_attr_list, "provision_complete")
-
             if self.get_ip_address(obj_attr_list) :
                 obj_attr_list["last_known_state"] = "running with ip assigned"
                 return True
@@ -406,88 +428,64 @@ class VcdCmds(CommonCloudFunctions) :
             obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"].replace("_", "-")
             obj_attr_list["last_known_state"] = "about to connect to vCloud Director manager"
          
-            credential_name = obj_attr_list["credentials"].split(";")[0]
+            credential_name = obj_attr_list["credentials"]
 
             self.take_action_if_requested("VM", obj_attr_list, "provision_originated")
 
             if not self.vcdconn :
-                _msg = "Connecting to VCD with username " + credential_name + " at address " + obj_attr_list["access"]
+                _msg = "Connecting to VCD with credentials " + credential_name + " at address " + obj_attr_list["access"]
                 cbdebug(_msg)
 
                 self.connect(credential_name, obj_attr_list["access"], \
-                             obj_attr_list["credentials"].split(";")[1], '1.5')
+                             obj_attr_list["password"], obj_attr_list["version"])
+
+
+            # Removing check of run state until basic launch / shutdown functionality working
+#            if self.is_vm_running(obj_attr_list) :
+#                _msg = "An instance named \"" + obj_attr_list["cloud_vm_name"]
+#                _msg += " is already running. It needs to be destroyed first."
+#                _status = 187
+#                cberr(_msg)
+#                raise CldOpsException(_msg, _status)
 
             _time_mark_prs = int(time())
             obj_attr_list["mgt_002_provisioning_request_sent"] = _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
+
             obj_attr_list["last_known_state"] = "about to send create request"
 
-            _msg = "Attempting to create an instance of vApp "
+            _msg = "Attempting to clone an instance of vApp "
             _msg += obj_attr_list["imageid1"]
             _msg += " on vCloud Director, creating a vm named "
             _msg += obj_attr_list["cloud_vm_name"]
             cbdebug(_msg, True)
 
-            # Create new VCD vApp
-            _msg = "...Looking for vApp in VCD Catalog named "
+            # I can't get libcloud's driver.list_images() function to work, so I'm not sure how to create a new image object
+            # based on an image.  The vCloud Director system I use doesn't have an appropriate stock image that will work with
+            # cloudbench.  So, I'll instead clone an instantiated image that I've created.
+            _msg = "...Looking for an existing vApp named "
             _msg += obj_attr_list["imageid1"]
             cbdebug(_msg, True)
 
-            vcd_vapp_images = self.vcdconn.list_images()
-            image_to_launch = None
-            _force_recustomization = False
+            image_to_clone = self.vcdconn.ex_find_node(node_name = obj_attr_list["imageid1"])
 
-            for t in vcd_vapp_images :
-                if t.name == obj_attr_list["imageid1"] :
-                    image_to_launch = t
-                    _msg = "...Found vApp in VCD catalog named "
-                    _msg += obj_attr_list["imageid1"]
-                    cbdebug(_msg, True)
-
-                # Allow for image name to be the VCD UUID rather than text name
-                # This permits cbtool to work when there are spaces in image names
-                _image_id_name = "https://" + obj_attr_list["access"] + "/api/vAppTemplate/vappTemplate-" + obj_attr_list["imageid1"]
-                if t.id == _image_id_name :
-                    image_to_launch = t
-                    _msg = "...Found vApp in VCD catalog with name "
-                    _msg += t.name
-                    _msg += " with an ID corresponding to "
-                    _msg += obj_attr_list["imageid1"]
-                    cbdebug(_msg, True)
-
-            if image_to_launch == None :
-                # Test whether an instantiated vApp exists with the request image name.  If so, clone this Vapp.
-                # This allows users who cannot add images to the VCD catalog to create and use custom images
-                _msg = "Cannot find a matching vApp in VCD catalog. Searching for instantiated vApp..."
-                cbdebug(_msg, True)
-
-                image_to_launch = self.vcdconn.ex_find_node(node_name = obj_attr_list["imageid1"])
-
-                if image_to_launch == None :
-                    _msg = "Cannot find an instantiated vApp named "
-                    _msg += obj_attr_list["imageid1"]
-                    cbdebug (_msg, True)
-                else:
-                    _force_recustomization = True
-                    _msg = "Found an instantiated vApp named "
-                    _msg += obj_attr_list["imageid1"]
-                    _msg += " Will attempt to clone this vApp."
-                    cbdebug (_msg, True)
-
-            if image_to_launch == None :
+            if image_to_clone == None :
                _msg = "Error : Cannot find a vApp named "
                _msg += obj_attr_list["imageid1"]
-               _msg += " in vCloud Director catalog.  Aborting."
+               _msg += " on vCloud Director. Aborting."
+               cbdebug(_msg, True)
+               _status = 188
                cberr(_msg)
                raise CldOpsException(_msg, _status)
 
             vm_computername = "vm" + obj_attr_list["name"].split("_")[1]
             _msg = "...Launching new vApp containing VM with hostname " + vm_computername
             cbdebug(_msg,True)
+
             _timeout = obj_attr_list["clone_timeout"]
             _msg = "...libcloud clone_timeout is " + _timeout
             cbdebug(_msg)
 
-            _reservation = self.vcdconn.create_node(name = obj_attr_list["cloud_vm_name"], image = image_to_launch, ex_vm_names = [vm_computername], ex_clone_timeout = int(obj_attr_list["clone_timeout"]), ex_force_customization=_force_recustomization)
+            _reservation = self.vcdconn.create_node(name = obj_attr_list["cloud_vm_name"], image = image_to_clone, ex_vm_names = [vm_computername], ex_clone_timeout = int(obj_attr_list["clone_timeout"]))
 
             obj_attr_list["last_known_state"] = "sent create request to vCloud Director, parsing response"
 
@@ -498,6 +496,10 @@ class VcdCmds(CommonCloudFunctions) :
 
                 obj_attr_list["last_known_state"] = "vm created"
                 sleep(int(obj_attr_list["update_frequency"]))
+                
+                #_instance = _reservation.instances[0]
+        
+                #_instance.add_tag("Name", obj_attr_list["cloud_vm_name"])            
                 
                 obj_attr_list["cloud_vm_uuid"] = _reservation.uuid
                 obj_attr_list["instance_obj"] = _reservation
@@ -510,6 +512,7 @@ class VcdCmds(CommonCloudFunctions) :
                 _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
 
                 self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
+                                
                 obj_attr_list["host_name"] = "unknown"
 
                 if "instance_obj" in obj_attr_list : 
@@ -575,27 +578,93 @@ class VcdCmds(CommonCloudFunctions) :
                 _time_mark_drs - int(obj_attr_list["mgt_901_deprovisioning_request_originated"])
 
 
-            credential_name = obj_attr_list["credentials"].split(";")[0]
-            self.connect(credential_name, obj_attr_list["access"], \
-                        obj_attr_list["credentials"].split(";")[1], '1.5')
+            if ( obj_attr_list["last_known_state"] == "running with ip assigned" or \
+                 obj_attr_list["last_known_state"] == "running with ip unassigned" or \
+                 obj_attr_list["last_known_state"] == "vm created" ) :
 
-    	    _instance = self.get_vm_instance(obj_attr_list)
-            if _instance :
-                _msg = "Sending a termination request for "  + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
-                _msg += "...."
-                cbdebug(_msg, True)
+                _msg = "vApp " + obj_attr_list["name"] + " was in created or running state. Will attempt to terminate."
+                cbdebug(_msg)
 
-                _status = _instance.destroy()
-                obj_attr_list["last_known_state"] = "vm destoyed"
-       	        sleep(_wait)
+                credential_name = obj_attr_list["credentials"]
 
-                # Code to check if vm running isn't working yet, so won't wait for VM to be marked as not running
-                #while self.is_vm_running(obj_attr_list) :
-                #    sleep(_wait)
+                _wait = int(obj_attr_list["update_frequency"])
+                _curr_tries = 0
+                _max_tries = int(obj_attr_list["update_attempts"])
 
+            while _curr_tries < _max_tries :
+            try :
+                        _errmsg = "self.vcdconn"
+# Force re-connect, in case authorization times out!
+#                        if not self.vcdconn :
+#                            _errmsg = "self.connect"
+#        	            self.connect(credential_name, obj_attr_list["access"], \
+#                	                 obj_attr_list["password"], obj_attr_list["version"])
+                        _errmsg = "self.connect"
+                        self.connect(credential_name, obj_attr_list["access"], \
+                                    obj_attr_list["password"], obj_attr_list["version"])
+
+                        _errmsg = "get_vm_instance"
+                        _instance = self.get_vm_instance(obj_attr_list)
+
+                        break
+                    except :
+                        _curr_tries += 1
+                        _msg = "Inside destroy. " + _errmsg + " failed"
+                        _msg += " after " + str(_curr_tries) + " attempts. Will retry in " + str(_wait) + " seconds."
+                        cbdebug(_msg, True)
+                        sleep(_wait)
+            
+                if _instance :
+
+                    _msg = "Sending a termination request for "  + obj_attr_list["name"] + ""
+                    _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
+                    _msg += "...."
+                    cbdebug(_msg, True)
+
+                    #_instance.destroy()
+                    #sleep(_wait)
+
+                    # Code to check if vm running isn't working yet, so won't wait for VM to be marked as not running
+                    #while self.is_vm_running(obj_attr_list) :
+                    #    sleep(_wait)
+
+                    # Multiple simultaneous API calls to destroy a VM on my VCD often fail, so adding retries
+                    _destroy_curr_tries = 0
+                    while _destroy_curr_tries < _max_tries :
+
+                        try :
+# Force re-connect, in case timeout occured
+                            self.connect(credential_name, obj_attr_list["access"], \
+                                    obj_attr_list["password"], obj_attr_list["version"])
+                            _status = _instance.destroy()
+                            obj_attr_list["last_known_state"] = "vm destoyed"
+            	    sleep(_wait)
+                            break
+
+                        except :
+                            _destroy_curr_tries = _destroy_curr_tries + 1
+
+                            if _destroy_curr_tries >= _destroy_max_tries :
+                                _msg = "Aborting VM destroy call for "  + obj_attr_list["name"]
+            	    	        _msg += " after " + str(_destroy_curr_tries) + " attempts."
+                                _status = 1
+#                                cberr(_msg)
+#                                raise self.ObjectOperationException(_msg, _status)
+                            else :
+                                _msg = "VM destroy call to vCloud Director has failed for "  + obj_attr_list["name"]
+                                _msg += " Will try again."
+                                cbdebug(_msg, True)
+                                sleep(_wait)
+
+                else :
+                    True
             else :
-                True
+                # instance never really existed
+                obj_attr_list["last_known_state"] = "vm destoyed"
+                _msg = "vApp " + obj_attr_list["name"] + " had not been successfully created; no need to issue destory command."
+                cbdebug(_msg)
+
+            self.take_action_if_requested("VM", obj_attr_list, "deprovision_finished")
 
             _time_mark_drc = int(time())
             obj_attr_list["mgt_903_deprovisioning_request_completed"] = \
@@ -616,8 +685,8 @@ class VcdCmds(CommonCloudFunctions) :
                 _msg = "VM " + obj_attr_list["uuid"] + " could not be destroyed "
                 _msg += " on vCloud Director cloud \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
-                cberr(_msg)
-                raise CldOpsException(_status, _msg)
+#                cberr(_msg)
+#                raise CldOpsException(_status, _msg)
             else :
                 _msg = "VM " + obj_attr_list["uuid"] + " was successfully "
                 _msg += "destroyed on vCloud Director cloud \"" + obj_attr_list["cloud_name"]
@@ -638,10 +707,10 @@ class VcdCmds(CommonCloudFunctions) :
             _curr_tries = 0
             _max_tries = int(obj_attr_list["update_attempts"])
 
-            credential_name = obj_attr_list["credentials"].split(";")[0]
+            credential_name = obj_attr_list["credentials"]
             if not self.vcdconn :
                 self.connect(credential_name, obj_attr_list["access"], \
-                             obj_attr_list["credentials"].split(";")[1], '1.5')
+                             obj_attr_list["password"], obj_attr_list["version"])
 
             _instance = self.get_vm_instance(obj_attr_list)
 
@@ -736,10 +805,10 @@ class VcdCmds(CommonCloudFunctions) :
             _ts = obj_attr_list["target_state"]
             _cs = obj_attr_list["current_state"]
     
-            credential_name = obj_attr_list["credentials"].split(";")[0]
+            credential_name = obj_attr_list["credentials"]
             if not self.vcdconn :
                 self.connect(credential_name, obj_attr_list["access"], \
-                             obj_attr_list["credentials"].split(";")[1], '1.5')
+                             obj_attr_list["password"], obj_attr_list["version"])
 
             if "mgt_201_runstate_request_originated" in obj_attr_list :
                 _time_mark_rrs = int(time())
@@ -803,9 +872,7 @@ class VcdCmds(CommonCloudFunctions) :
         '''
         try :
             _fmsg = "An error has occurred, but no error message was captured"
-
-            self.take_action_if_requested("AI", obj_attr_list, "all_vms_booted")
-
+            self.take_action_if_requested("AI", obj_attr_list, current_step)            
             _status = 0
 
         except Exception, e :
@@ -833,6 +900,7 @@ class VcdCmds(CommonCloudFunctions) :
         '''
         try :
             _fmsg = "An error has occurred, but no error message was captured"
+            self.take_action_if_requested("AI", obj_attr_list, current_step)            
             _status = 0
 
         except Exception, e :
