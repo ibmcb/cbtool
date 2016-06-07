@@ -24,8 +24,11 @@ if [[ -z $create_lb ]]
 then
     create_lb=false
 fi
-        
-source ~/cbrc-${cloud_name}
+
+if [[ -f ~/cbrc-${cloud_name} ]]
+then
+    source ~/cbrc-${cloud_name}
+fi
 
 function create_tenant () {
     _n=$1
@@ -345,7 +348,7 @@ function create_lb_vips () {
                         export TNSRC_ERROR=1
                     fi
                 else
-                    /bin/ture
+                    /bin/true
                 fi
             done
         done
@@ -378,14 +381,14 @@ function check_lb_active () {
     neutron lb-pool-list --tenant-id ${_t} | grep ACTIVE > /dev/null 2>&1
     if [[ $? -ne 0 ]]
     then
-        echo "lb pool creation failed" >&2
+        echo "lb pool checking failed" >&2
         export TNSRC_ERROR=1
     fi    
     
     neutron lb-vip-list --tenant-id ${_t} | grep ACTIVE > /dev/null 2>&1
     if [[ $? -ne 0 ]]
     then
-        echo "lb VIP creation failed" >&2
+        echo "lb VIP checking failed" >&2
         export TNSRC_ERROR=1
     fi
         
@@ -511,7 +514,7 @@ function delete_lb_vips () {
                     neutron lb-vip-delete ${OSK_LBVIP_NAME}-${_n}-${i}-${j}-${k} > /dev/null 2>&1
                     if [[ $? -ne 0 ]]
                     then
-                        echo "lb VIP creation failed" >&2
+                        echo "lb VIP deletion failed" >&2
                         export TNSRC_ERROR=1
                     fi                  
                 else
@@ -772,6 +775,7 @@ if [[ $step == "execute_provision_finished" ]]
 then
     if [[ $model == "sim" ]]
     then
+    	TNSR_OUTPUT="sim_050_finished_marker:9"
         TNSR_OUTPUT=$TNSR_OUTPUT",tenant:${OSK_TENANT_NAME}-$counter,sim_051_test_creation_time:10"
         echo "$TNSR_OUTPUT"
     else

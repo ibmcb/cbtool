@@ -37,7 +37,7 @@ class ProcessManagement :
     @trace
     def __init__(self, hostname = "127.0.0.1", port = "22", username = None, \
                  cloud_name = None, priv_key = None, config_file = None, \
-                 connection_timeout = None) :
+                 connection_timeout = None, osci = None) :
         '''
         TBD
         '''
@@ -49,6 +49,7 @@ class ProcessManagement :
         self.priv_key = priv_key
         self.config_file = config_file
         self.connection_timeout = connection_timeout
+        self.osci = osci
         self.thread_pools = {}
 
     @trace
@@ -185,7 +186,9 @@ class ProcessManagement :
         '''
         _attempts = 0
 
-        while _attempts < int(total_attempts) :
+        _abort = "no"
+
+        while _attempts < int(total_attempts) and _abort != "yes" :
             try :
                 _status, _result_stdout, _result_stderr = self.run_os_command(cmdline, \
                                                                               override_hostname, \
@@ -223,14 +226,26 @@ class ProcessManagement :
             if raise_exception_on_error :
                 raise self.ProcessManagementException(str(_fmsg), _status)
 
-            return _status, _msg, {"status" : _status, "msg" : _msg, "result" : _status}
+            return _status, _fmsg, {"status" : _status, "msg" : _fmsg, "result" : _status}
         
         else :
-            _status = 0
-            _msg = "Command \"" + cmdline + "\" executed on hostname "
-            _msg += str(override_hostname) + " successfully."
-            cbdebug(_msg)
-            return _status, _msg, {"status" : _status, "msg" : _msg, "result" : _status}
+            if _abort != "yes" :
+                _status = 0
+                _msg = "Command \"" + cmdline + "\" executed on hostname "
+                _msg += str(override_hostname) + " successfully."
+                cbdebug(_msg)
+                return _status, _msg, {"status" : _status, "msg" : _msg, "result" : _status}
+            else :
+                _status = 8167
+                _fmsg = "Execution of command \"" + cmdline + "\", on hostname "
+                _fmsg += str(override_hostname) + " was aborted."
+                #_fmsg += "STDOUT is :\n" + str(_result_stdout) + '\n'
+                #_fmsg += "STDERR is :\n" + str(_result_stderr) + '\n'
+                cberr(_fmsg)
+                if raise_exception_on_error :
+                    raise self.ProcessManagementException(str(_fmsg), _status)
+    
+                return _status, _fmsg, {"status" : _status, "msg" : _fmsg, "result" : _status}
 
     def parallel_run_os_command(self, cmdline_list, override_hostname_list, \
                                 total_attempts, retry_interval, \

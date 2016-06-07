@@ -238,8 +238,8 @@ class API():
     def rolealter(self, cloud_name, role_name, attribute, value):
         return self.passive.globalalter({}, cloud_name + ' ' + role_name + ' ' + attribute + "=" + value + " vm_templates role", "global-alter")[2]
     
-    def vmshow(self, cloud_name, identifier, key = "all"):
-        return self.passive.show_object({}, cloud_name + ' ' + identifier + ' ' + key, "vm-show")[2]
+    def vmshow(self, cloud_name, identifier, key = "all", state = "default"):
+        return self.passive.show_object({}, cloud_name + ' ' + identifier + ' ' + key + ' ' + state, "vm-show")[2]
     
     def vmcshow(self, cloud_name, identifier, key = "all"):
         return self.passive.show_object({}, cloud_name + ' ' + identifier + ' ' + key, "vmc-show")[2]
@@ -420,8 +420,8 @@ class API():
     def appalter(self, cloud_name, identifier, attribute, value):
         return self.passive.alter_object({}, cloud_name + ' ' + identifier + ' ' + attribute + "=" + str(value), "ai-alter")[2]
     
-    def vmalter(self, cloud_name, identifier, attribute, value):
-        return self.passive.alter_object({}, cloud_name + ' ' + identifier + ' ' + attribute + "=" + str(value), "vm-alter")[2]
+    def vmalter(self, cloud_name, identifier, attribute, value, state = "default"):
+        return self.passive.alter_object({}, cloud_name + ' ' + identifier + ' ' + attribute + "=" + str(value) + ' ' + state, "vm-alter")[2]
     
     def appdrsalter(self, cloud_name, identifier, attribute, value):
         return self.passive.alter_object({}, cloud_name + ' ' + identifier + ' ' + attribute + "=" + str(value), "aidrs-alter")[2]

@@ -156,14 +156,19 @@ class CommonCloudFunctions:
         _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") to start..."
         self.pending_set(obj_attr_list, _msg)
         cbdebug(_msg, True)
-    
+           
         _curr_tries = 0
         _max_tries = int(obj_attr_list["update_attempts"])
         _wait = int(obj_attr_list["update_frequency"])
         sleep(_wait)
+
+        _abort = "false"
+        _x_fmsg = ''
         
-        while _curr_tries < _max_tries :
+        while _curr_tries < _max_tries and _abort != "true" :
             _start_pooling = int(time())
+
+            _abort, _x_fmsg = self.pending_cloud_decide_abortion(obj_attr_list)
 
             if "async" not in obj_attr_list or str(obj_attr_list["async"]).lower() == "false" :
                 if threading.current_thread().abort :
@@ -241,6 +246,7 @@ class CommonCloudFunctions:
                     _vm_started = False
                                         
             if  _vm_started :
+                self.take_action_if_requested("VM", obj_attr_list, "provision_complete")
                 _time_mark_prc = int(time())
                 obj_attr_list["mgt_003_provisioning_request_completed"] = _time_mark_prc - time_mark_prs
                 self.pending_set(obj_attr_list, "Booting...")
@@ -256,12 +262,20 @@ class CommonCloudFunctions:
                 self.pending_set(obj_attr_list, _msg)
     
         if _curr_tries < _max_tries :
-            _msg = "" + obj_attr_list["name"] + ""
-            _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
-            _msg += "started successfully, got IP address " + obj_attr_list["cloud_ip"]
-            self.pending_set(obj_attr_list, _msg)
-            cbdebug(_msg)
-            return _time_mark_prc
+            if _abort == "true" :
+                _msg = "" + obj_attr_list["name"] + ""
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
+                _msg += "was aborted " + _x_fmsg + ". Giving up."
+                cberr(_msg, True)
+                raise CldOpsException(_msg, 71)                
+            else :
+                _msg = "" + obj_attr_list["name"] + ""
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
+                _msg += "started successfully, got IP address " + obj_attr_list["cloud_ip"]
+                self.pending_set(obj_attr_list, _msg)
+                cbdebug(_msg)
+                return _time_mark_prc
+        
         else :
             _msg = "" + obj_attr_list["name"] + ""
             _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
@@ -320,12 +334,16 @@ class CommonCloudFunctions:
                 obj_attr_list["check_boot_complete"] = "run_command_/bin/true"
                 
             cbdebug(_msg, True)
-            self.pending_set(obj_attr_list, _msg)
-
+            
             sleep(_wait)
 
-            while not _network_reachable and _curr_tries < _max_tries :
+            _abort = "false"
+            _x_fmsg = '' 
+            
+            while not _network_reachable and _curr_tries < _max_tries and _abort != "true" :
                 _start_pooling = int(time())
+
+                _abort, _x_fmsg = self.pending_cloud_decide_abortion(obj_attr_list)
 
                 if "async" not in obj_attr_list or str(obj_attr_list["async"]).lower() == "false" :
                     if threading.current_thread().abort :
@@ -495,6 +513,7 @@ class CommonCloudFunctions:
                     _actual_wait = 0
                 
                 if _vm_is_booted :
+                    self.take_action_if_requested("VM", obj_attr_list, "provision_finished")
                     obj_attr_list["mgt_004_network_acessible"] = int(time()) - time_mark_prc
                     self.pending_set(obj_attr_list, "Network accessible now. Continuing...")
                     _network_reachable = True
@@ -511,17 +530,25 @@ class CommonCloudFunctions:
                     _curr_tries += 1
 
         if _curr_tries < _max_tries :
-            _msg = "" + obj_attr_list["name"] + ""
-            _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
-            _msg += "is network reachable (boot process finished successfully)"
-            cbdebug(_msg)
-            obj_attr_list["arrival"] = int(time())
+            if _abort == "true" :
+                _msg = "" + obj_attr_list["name"] + ""
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
+                _msg += "was aborted " + _x_fmsg + ". Giving up."
+                cberr(_msg, True)                
+                raise CldOpsException(_msg, 89)
 
-            # It should be mgt_006 and mgt_007 NOT mgt_005
-            obj_attr_list["mgt_006_instance_preparation"] = "0"
-            obj_attr_list["mgt_007_application_start"] = "0"
-            self.pending_set(obj_attr_list, "Application starting up...")
-            self.get_attr_from_pending(obj_attr_list, "all")
+            else :
+                _msg = "" + obj_attr_list["name"] + ""
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
+                _msg += "is network reachable (boot process finished successfully)"
+                cbdebug(_msg)
+                obj_attr_list["arrival"] = int(time())
+    
+                # It should be mgt_006 and mgt_007 NOT mgt_005
+                obj_attr_list["mgt_006_instance_preparation"] = "0"
+                obj_attr_list["mgt_007_application_start"] = "0"
+                self.pending_set(obj_attr_list, "Application starting up...")
+                self.get_attr_from_pending(obj_attr_list, "all")
 
         else :
             _msg = "" + obj_attr_list["name"] + ""
@@ -544,6 +571,32 @@ class CommonCloudFunctions:
                 self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
                                              obj_attr_list["uuid"], "status", msg) 
 
+    def pending_cloud_decide_abortion(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        _abort = "false"
+        _x_fmsg = ''
+        if obj_attr_list["sla_provisioning_abort"].lower() == "true" :
+            if "sla_provisioning_target" in obj_attr_list :
+                _provisioning_time = int(time()) - int(obj_attr_list["mgt_001_provisioning_request_originated"])
+                
+                if _provisioning_time > int(obj_attr_list["sla_provisioning_target"]) :
+                    self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
+                                             obj_attr_list["uuid"], "abort", "true")
+                    
+                    _x_fmsg= "(due to SLA provisioning target violation)" 
+                    
+        try :            
+            _abort = self.osci.pending_object_get(obj_attr_list["cloud_name"], \
+                                                  "VM", \
+                                                  obj_attr_list["uuid"], \
+                                                  "abort").lower()
+        except :
+            pass
+
+        return _abort, _x_fmsg
+                        
     @trace
     def take_action_if_requested(self, obj_type, obj_attr_list, current_step):
         '''
@@ -552,13 +605,12 @@ class CommonCloudFunctions:
 
         if "staging" not in obj_attr_list :
             return
-
+        
         if not obj_attr_list["staging"].count(current_step) :
             return
 
-        if obj_attr_list["staging"] + "_complete" in obj_attr_list : 
-            return
-
+        _current_staging = obj_attr_list["staging"] 
+               
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
@@ -619,7 +671,7 @@ class CommonCloudFunctions:
                 _status = 0
 
             elif obj_attr_list["staging"] == "execute_" + current_step :
-
+                
                 if current_step == "provision_originated" :
                     obj_attr_list["last_known_state"] = "about to execute script"
 
@@ -663,8 +715,11 @@ class CommonCloudFunctions:
                 obj_attr_list[obj_attr_list["staging"] + "_stdout"] = _result_stdout
                 obj_attr_list[obj_attr_list["staging"] + "_stderr"] = _result_stderr
 
-            obj_attr_list[obj_attr_list["staging"] + "_complete"] = int(time())
-                        
+                if not _status :
+                    self.process_script_output(obj_attr_list, current_step)
+
+            obj_attr_list[_current_staging + "_complete"] = int(time())
+            
         except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
@@ -847,3 +902,33 @@ runcmd:
 """
         #cbdebug("Final userdata: \n" + cloudconfig)
         return cloudconfig
+
+    def process_script_output(self, obj_attr_list, current_step) :
+        '''
+        TBD
+        '''
+        _temp_dict = None
+        if "execute_" + current_step + "_stdout" in obj_attr_list :
+            if obj_attr_list["execute_" + current_step + "_stdout"].count("tenant") :
+                _temp_dict = str2dic(obj_attr_list["execute_" + current_step + "_stdout"].replace('\n',''), False)
+
+        if _temp_dict :
+            if obj_attr_list["name"].count("ai_") and current_step == "provision_originated":
+                if "vm_extra_parms" not in obj_attr_list :
+                    obj_attr_list["vm_extra_parms"] = ''                    
+                else :
+                    obj_attr_list["vm_extra_parms"] += ','
+                                        
+                for _key in _temp_dict.keys() :
+                    if not _key.count("staging") :
+                        obj_attr_list["vm_extra_parms"] += _key + '=' + _temp_dict[_key] + ','
+                    else :
+                        obj_attr_list["vm_attach_action"] = _temp_dict["vm_staging"]
+                        
+                obj_attr_list["vm_extra_parms"] = obj_attr_list["vm_extra_parms"][0:-1]
+                obj_attr_list.update(_temp_dict)
+            
+            if obj_attr_list["name"].count("vm_") :
+                obj_attr_list.update(_temp_dict)
+                        
+        return True

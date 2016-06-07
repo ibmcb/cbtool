@@ -396,8 +396,6 @@ class VcdCmds(CommonCloudFunctions) :
         ''' 
         if self.is_vm_running(obj_attr_list) :
             
-            self.take_action_if_requested("VM", obj_attr_list, "provision_complete")
-
             if self.get_ip_address(obj_attr_list) :
                 obj_attr_list["last_known_state"] = "running with ip assigned"
                 return True
@@ -514,6 +512,7 @@ class VcdCmds(CommonCloudFunctions) :
                 _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
 
                 self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
+                                
                 obj_attr_list["host_name"] = "unknown"
 
                 if "instance_obj" in obj_attr_list : 
@@ -592,8 +591,8 @@ class VcdCmds(CommonCloudFunctions) :
                 _curr_tries = 0
                 _max_tries = int(obj_attr_list["update_attempts"])
 
-	        while _curr_tries < _max_tries :
-		    try :
+            while _curr_tries < _max_tries :
+            try :
                         _errmsg = "self.vcdconn"
 # Force re-connect, in case authorization times out!
 #                        if not self.vcdconn :
@@ -605,7 +604,7 @@ class VcdCmds(CommonCloudFunctions) :
                                     obj_attr_list["password"], obj_attr_list["version"])
 
                         _errmsg = "get_vm_instance"
-    	                _instance = self.get_vm_instance(obj_attr_list)
+                        _instance = self.get_vm_instance(obj_attr_list)
 
                         break
                     except :
@@ -639,7 +638,7 @@ class VcdCmds(CommonCloudFunctions) :
                                     obj_attr_list["password"], obj_attr_list["version"])
                             _status = _instance.destroy()
                             obj_attr_list["last_known_state"] = "vm destoyed"
-		    	    sleep(_wait)
+            	    sleep(_wait)
                             break
 
                         except :
@@ -647,7 +646,7 @@ class VcdCmds(CommonCloudFunctions) :
 
                             if _destroy_curr_tries >= _destroy_max_tries :
                                 _msg = "Aborting VM destroy call for "  + obj_attr_list["name"]
-	    	    	        _msg += " after " + str(_destroy_curr_tries) + " attempts."
+            	    	        _msg += " after " + str(_destroy_curr_tries) + " attempts."
                                 _status = 1
 #                                cberr(_msg)
 #                                raise self.ObjectOperationException(_msg, _status)
@@ -665,6 +664,7 @@ class VcdCmds(CommonCloudFunctions) :
                 _msg = "vApp " + obj_attr_list["name"] + " had not been successfully created; no need to issue destory command."
                 cbdebug(_msg)
 
+            self.take_action_if_requested("VM", obj_attr_list, "deprovision_finished")
 
             _time_mark_drc = int(time())
             obj_attr_list["mgt_903_deprovisioning_request_completed"] = \
@@ -872,9 +872,7 @@ class VcdCmds(CommonCloudFunctions) :
         '''
         try :
             _fmsg = "An error has occurred, but no error message was captured"
-
-            self.take_action_if_requested("AI", obj_attr_list, "all_vms_booted")
-
+            self.take_action_if_requested("AI", obj_attr_list, current_step)            
             _status = 0
 
         except Exception, e :
@@ -902,6 +900,7 @@ class VcdCmds(CommonCloudFunctions) :
         '''
         try :
             _fmsg = "An error has occurred, but no error message was captured"
+            self.take_action_if_requested("AI", obj_attr_list, current_step)            
             _status = 0
 
         except Exception, e :
