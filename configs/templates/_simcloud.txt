@@ -126,6 +126,7 @@ DRIVER_FIO = size:nano32, imageids:1, imageid1:cb_fio
 FIOCLIENT = size:iron32, imageids:1, imageid1:cb_fio
 FIOSERVER = size:iron32, eclipsed_size:gold32, imageids:1, imageid1:cb_fio
 TINYVM = size:pico32, imageids:1, imageid1:cb_nullworkload
+YATINYVM = size:pico32, imageids:1, imageid1:cb_nullworkload
 FEN_HPC = size:bronze32, imageids:1, imageid1:cb_hpc
 CN_HPC = size:bronze32, imageids:1, imageid1:cb_hpc
 DDGEN = size:bronze32, imageids:1, imageid1:cb_ddgen

@@ -1079,13 +1079,12 @@ class BaseObjectOperations :
                     be overwritten by the keys in <OBJECT_TYPE>_DEFAULTS, as it
                     would normally occur with the "update" method from python
                     '''
-
                     selective_dict_update(obj_attr_list, _obj_defaults)
 
                     obj_attr_list["counter"] = self.osci.update_counter(obj_attr_list["cloud_name"], "GLOBAL", \
                                                                         "experiment_counter", \
                                                                         "increment")
-                    obj_attr_list["comments"] = ''
+
                     _dir_list = self.osci.get_object(obj_attr_list["cloud_name"],\
                                                       "GLOBAL", False, "space", \
                                                       False)
@@ -1943,7 +1942,7 @@ class BaseObjectOperations :
             _extra_parms += ",sla_provisioning_target=" + obj_attr_list[vm_role + "_sla_provisioning_target"]            
 
         if "vm_extra_parms" in obj_attr_list :
-            obj_attr_list["vm_extra_parms"]=obj_attr_list["vm_extra_parms"].replace("_EQUAL_","=")
+            obj_attr_list["vm_extra_parms"]=obj_attr_list["vm_extra_parms"].replace("_EQUAL_","=").replace("_COMMA_",',')
             _extra_parms += "," + obj_attr_list["vm_extra_parms"]
                         
         if vm_role + "_cloud_ips" in obj_attr_list :
@@ -2295,7 +2294,7 @@ class BaseObjectOperations :
             _run_generic_scripts = False
 
             _smallest_remaining_time = 100000
-            
+
             for _vm in _vm_list :
                 
                 _vm_uuid, _vm_role, _vm_name = _vm.split('|')
@@ -2328,6 +2327,9 @@ class BaseObjectOperations :
 
                 _vm_post_boot_commands.append("~/" + _obj_attr_list["remote_dir_name"] + "/scripts/common/cb_post_boot.sh")
 
+
+            _actual_attempts = int(_ai_attr_list["configuration_attempts"])
+            
             if operation == "setup" or operation == "resize" :
 
                 _msg = "Performing generic application instance post_boot "
@@ -2340,16 +2342,14 @@ class BaseObjectOperations :
                 # so we need to be sure to update them in case they are changed
                 # by the user between one VApp to the next.
                 
-                self.proc_man_os_command.cloud_name =  _ai_attr_list["cloud_name"]
+                self.proc_man_os_command.cloud_name = _ai_attr_list["cloud_name"]
                 self.proc_man_os_command.username = _vm_logins[0]
                 self.proc_man_os_command.priv_key = _vm_priv_keys[0]
                 self.proc_man_os_command.config_file = _vm_config_files[0]
 
-                if _smallest_remaining_time != 10000 and operation == "setup":
+                if _smallest_remaining_time != 100000 and operation == "setup":
                     _actual_attempts = _smallest_remaining_time/int(_ai_attr_list["update_frequency"])
-                else :
-                    _actual_attempts = int(_ai_attr_list["configuration_attempts"])
-
+                
                 if _actual_attempts > 0 :
                     _status, _xfmsg = self.proc_man_os_command.parallel_run_os_command(_vm_post_boot_commands, \
                                                                         _vm_ip_addrs, \
@@ -2482,9 +2482,8 @@ class BaseObjectOperations :
                     self.proc_man_os_command.cloud_name =  _ai_attr_list["cloud_name"]
                     self.proc_man_os_command.username = _vm_logins[0]
                     self.proc_man_os_command.priv_key = _vm_priv_keys[0]
-    
-                    if _actual_attempts > 0 :
 
+                    if _actual_attempts > 0 :
                         _status, _xfmsg = self.proc_man_os_command.parallel_run_os_command(_vm_command_list, \
                                                                             _vm_ip_addrs, \
                                                                             _actual_attempts, \
