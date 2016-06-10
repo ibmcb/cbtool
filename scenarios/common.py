@@ -426,9 +426,26 @@ def configure_vapp(options, api, workload, rate_limit, buffer_length) :
 
     return True
 
+def enumerate_vms_in_vapp(sut) :
+    '''
+    TBD
+    '''
+    _total_vms = 0
+    _roles = []
+    for _tier in sut.split("->") :
+        if _tier.count("_x_") :
+            _nr_vms, _role = _tier.split("_x_")
+            _total_vms += int(_nr_vms)
+        else :
+            _role = _tier
+            _total_vms += 1
+        
+        _roles.append(_role)
+    return _total_vms, _roles
+
 def deploy_vapp(options, api, workload, hostpair = None, nr_ais = "1", \
                 inter_vm_wait = 0, max_check = False, silent = False, \
-                script_execution = "none", batch_nr = -1) :
+                script_execution = "none", extra_attr = None) :
     '''
     TBD
     '''
@@ -439,10 +456,13 @@ def deploy_vapp(options, api, workload, hostpair = None, nr_ais = "1", \
         _msg += " pair " + str(options.networks) + ")..."
         print _msg
 
-    if batch_nr >= 0 :
-        _temp_attr_list_str = "batch=" + str(batch_nr) + ",vm_extra_parms=batch_EQUAL_" + str(batch_nr)
-    else :
+    if extra_attr :
+        _temp_attr_list_str = extra_attr        
+    else:
         _temp_attr_list_str = ''
+    
+    if len(_temp_attr_list_str) > 1 :
+        _temp_attr_list_str += ",vm_extra_parms=" + _temp_attr_list_str.replace('=',"_EQUAL_").replace(',',"_COMMA_") + ','
             
     if hostpair :
         workload_attrs = api.typeshow(options.cloud_name, workload)
@@ -452,14 +472,22 @@ def deploy_vapp(options, api, workload, hostpair = None, nr_ais = "1", \
         for _role in _role_list :
             _temp_attr_list_str += _role + "_pref_host=" + hostpair[_role_list.index(_role)] + ','
             _temp_attr_list_str += _role + "_netname=" + options.networks[_role_list.index(_role)] + ',' 
-        _temp_attr_list_str = _temp_attr_list_str[0:-1]
-
+            
+    _temp_attr_list_str = _temp_attr_list_str[0:-1]
+    
     if int(inter_vm_wait) :
         _async = nr_ais + ':' + inter_vm_wait
     else :
         _async = nr_ais
 
-    _app_attr = api.appattach(options.cloud_name, workload, pause_step = script_execution, temp_attr_list = _temp_attr_list_str, async = nr_ais)
+    if nr_ais == "1" :
+        _max_check = False
+        _async = False
+    else :
+        _max_check = max_check
+        _async = nr_ais
+        
+    _app_attr = api.appattach(options.cloud_name, workload, pause_step = script_execution, temp_attr_list = _temp_attr_list_str, async = _async)
 
     if max_check :
 

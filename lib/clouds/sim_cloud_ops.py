@@ -713,15 +713,23 @@ class SimCmds(CommonCloudFunctions) :
                 del obj_attr_list["lvt_cnt"]
                 
             if _status :
+
+                if str(obj_attr_list["leave_instance_on_failure"]).lower() == "true" :
+                    _liof_msg = " (Will leave the VM running due to experimenter's request)"
+                else :
+                    _liof_msg = " (The VM creation will be rolled back)"
+                    obj_attr_list["mgt_901_deprovisioning_request_originated"] = int(time())
+                    self.vmdestroy(obj_attr_list)
+                
                 _msg = "" + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "could not be created"
                 _msg += " on SimCloud \"" + obj_attr_list["cloud_name"] + "\" : "
-                _msg += _fmsg + " (The VM creation was rolled back)"
+                _msg += _fmsg + _liof_msg
                 cberr(_msg, True)
-                
-                obj_attr_list["mgt_901_deprovisioning_request_originated"] = int(time())
-                self.vmdestroy(obj_attr_list)
+
+
+            
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "" + obj_attr_list["name"] + ""

@@ -102,7 +102,7 @@ sudo sed -i "s/partitioner: org.apache.cassandra.dht.Murmur3Partitioner/partitio
 #sudo sed -i "s/partitioner:.*$/partitioner: org.apache.cassandra.dht.RandomPartitioner/g" ${CASSANDRA_CONF_PATH}    
 if [[ -d ${CASSANDRA_DATA_DIR} ]]
 then
-	sudo sed -i "s^/var/lib/^${CASSANDRA_DATA_DIR}/^g" ${CASSANDRA_CONF_PATH}
+    sudo sed -i "s^/var/lib/^${CASSANDRA_DATA_DIR}/^g" ${CASSANDRA_CONF_PATH}
 fi
 sudo sed -i "s/'Test Cluster'/'${my_ai_name}'/g" ${CASSANDRA_CONF_PATH}
 
@@ -146,6 +146,8 @@ else
     STATUS=0
 fi
 
-provision_application_stop $START
-
+if [[ $STATUS -eq 0 ]]
+then
+    provision_application_stop $START
+fi
 exit ${STATUS}
