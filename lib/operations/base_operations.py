@@ -699,9 +699,18 @@ class BaseObjectOperations :
             if _length >= 2 :
                 object_attribute_list["name"] = _parameters[1]
                 object_attribute_list["specified_attributes"] = 'all'
-                
-            if _length == 3 :
+                # 'default' means 'attached', but that need not necessarily
+                # be true in the future.
+                object_attribute_list["state"] = "default"
+                                
+            if _length >= 3 :
                 object_attribute_list["specified_attributes"] = _parameters[2]
+                # 'default' means 'attached', but that need not necessarily
+                # be true in the future.
+                object_attribute_list["state"] = "default"
+
+            if _length >= 4 :
+                object_attribute_list["state"] = _parameters[3]
                 
             if _length < 2 :
                 _status = 9
@@ -746,9 +755,19 @@ class BaseObjectOperations :
         # "cloud-alter" and "state-alter" are the special cases. All others
         # are handled here.                
         elif command.count("alter") :
-            if _length == 3:
+            if _length >= 3:
                 object_attribute_list["name"] = _parameters[1]
-                object_attribute_list["specified_kv_pairs"] = _parameters[-1]
+                object_attribute_list["specified_kv_pairs"] = _parameters[2]
+                # 'default' means 'attached', but that need not necessarily
+                # be true in the future.
+                object_attribute_list["state"] = "default"
+
+            if _length >= 4:
+                object_attribute_list["name"] = _parameters[1]
+                object_attribute_list["specified_kv_pairs"] = _parameters[2]
+                # 'default' means 'attached', but that need not necessarily
+                # be true in the future.
+                object_attribute_list["state"] = _parameters[3]
  
             if _length < 3 :
                 _status = 9
