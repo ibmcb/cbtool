@@ -183,7 +183,8 @@ class OskCmds(CommonCloudFunctions) :
                 cbdebug(_msg, diag)
     
                 _fmsg = "About to attempt a connection to OpenStack"
-    
+                
+                _nova_client = False
                 self.oskconncompute = novac.Client(2, _username, _password, _tenant, \
                                              access_url, region_name = region, \
                                              service_type="compute", \
@@ -192,15 +193,18 @@ class OskCmds(CommonCloudFunctions) :
                                              insecure = _insecure)
     
                 self.oskconncompute.flavors.list()
-    
+                _nova_client = True
                 if "use_cinderclient" in extra_parms :
                     self.use_cinderclient = str(extra_parms["use_cinderclient"]).lower()
                 else :
                     self.use_cinderclient = "false"
-    
+                    
+                _cinder_client = True                    
                 if self.use_cinderclient == "true" :
-                    # At the moment, we're still making cinder call from nova.                
-                    self.oskconnstorage = novac.Client(2, _username, _password, _tenant, \
+                    _cinder_client = False
+                    from cinderclient.v2 import client as cinderc 
+
+                    self.oskconnstorage = cinderc.Client(_username, _password, _tenant, \
                                                  access_url, region_name=region, \
                                                  service_type="volume", \
                                                  endpoint_type = _endpoint_type, \
@@ -208,14 +212,16 @@ class OskCmds(CommonCloudFunctions) :
                                                  insecure = _insecure)
         
                     self.oskconnstorage.volumes.list()                
-                
+                    _cinder_client = True                                    
+                    
                 if "use_neutronclient" in extra_parms :
                     self.use_neutronclient = str(extra_parms["use_neutronclient"]).lower()
                 else :
                     self.use_neutronclient = "false"
-                
+ 
+                _neutron_client = True
                 if self.use_neutronclient == "true" :
-    
+                    _neutron_client = False    
                     from neutronclient.v2_0 import client as neutronc                           
                     
                     self.oskconnnetwork = neutronc.Client(username = _username, \
@@ -229,6 +235,7 @@ class OskCmds(CommonCloudFunctions) :
                                                           insecure = _insecure)
         
                     self.oskconnnetwork.list_networks()
+                    _neutron_client = True                       
                 else :
                     self.oskconnnetwork = False
                 
@@ -249,7 +256,8 @@ class OskCmds(CommonCloudFunctions) :
                     _file_fd.write("export OS_PASSWORD=" + _password + "\n")                    
                     _file_fd.write("export OS_AUTH_URL=\"" + access_url + "\"\n")
                     _file_fd.write("export OS_NO_CACHE=1\n")
-                    _file_fd.write("export OS_INTERFACE=" + _endpoint_type.replace("URL",'') +  "\n")                        
+#                    _file_fd.write("export OS_INTERFACE=" + _endpoint_type.replace("URL",'') +  "\n")
+                    _file_fd.write("export OS_INTERFACE=admin\n")                        
                     if _cacert :
                         _file_fd.write("export OS_CACERT=" + _cacert + "\n")
                     _file_fd.write("export OS_REGION_NAME=" + region + "\n")
@@ -274,13 +282,30 @@ class OskCmds(CommonCloudFunctions) :
                 _msg = "OpenStack connection failure: " + _fmsg
                 cberr(_msg)
                 if _data_auth_parse :
-                    _dmsg = "Please attempt to execute the following : \"python -c \""
-                    _dmsg += "from novaclient import client as novac;"
-                    _dmsg += "ct = novac.Client(2, '" + str(_username) + "', '"
-                    _dmsg += "REPLACE_PASSWORD', '" + str(_tenant) + "', '" + str(access_url)
-                    _dmsg += "', region_name='" + str(region) + "', service_type='compute', "
-                    _dmsg += "endpoint_type='" + str(_endpoint_type) + "', cacert='" + str(_cacert)
-                    _dmsg += "', insecure='" + str(_insecure) + "'); ct.flavors.list()\""
+                    if not _nova_client :
+                        _dmsg = "Please attempt to execute the following : \"python -c \""
+                        _dmsg += "from novaclient import client as novac;"
+                        _dmsg += "ct = novac.Client(2, '" + str(_username) + "', '"
+                        _dmsg += "REPLACE_PASSWORD', '" + str(_tenant) + "', '" + str(access_url)
+                        _dmsg += "', region_name='" + str(region) + "', service_type='compute', "
+                        _dmsg += "endpoint_type='" + str(_endpoint_type) + "', cacert='" + str(_cacert)
+                        _dmsg += "', insecure='" + str(_insecure) + "'); print ct.flavors.list()\"\""
+                    elif not _cinder_client :
+                        _dmsg = "Please attempt to execute the following : \"python -c \""
+                        _dmsg += "from cinderclient.v2 import client as cinderc;"
+                        _dmsg += "ct = cinderc.Client('" + str(_username) + "', '"
+                        _dmsg += "REPLACE_PASSWORD', '" + str(_tenant) + "', '" + str(access_url)
+                        _dmsg += "', region_name='" + str(region) + "', service_type='volume', "
+                        _dmsg += "endpoint_type='" + str(_endpoint_type) + "', cacert='" + str(_cacert)
+                        _dmsg += "', insecure='" + str(_insecure) + "'); print ct.volumes.list()\"\""                    
+                    elif not _neutron_client :
+                        _dmsg = "Please attempt to execute the following : \"python -c \""
+                        _dmsg += "from neutronclient.v2_0 import client as neutronc;"
+                        _dmsg += "ct = neutronc.Client('" + str(_username) + "', '"
+                        _dmsg += "REPLACE_PASSWORD', '" + str(_tenant) + "', '" + str(access_url)
+                        _dmsg += "', region_name='" + str(region) + "', service_type='network', "
+                        _dmsg += "endpoint_type='" + str(_endpoint_type) + "', cacert='" + str(_cacert)
+                        _dmsg += "', insecure='" + str(_insecure) + "'); print ct.list_networks()\"\""                          
                     print _dmsg
                     
                 raise CldOpsException(_msg, _status)
