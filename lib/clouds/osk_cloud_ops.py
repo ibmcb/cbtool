@@ -742,12 +742,12 @@ class OskCmds(CommonCloudFunctions) :
 
                 _obj_attr_list = copy.deepcopy(vm_defaults)
 
-                _obj_attr_list.update(str2dic(vm_templates["tinyvm"]))
+                _obj_attr_list.update(str2dic(vm_templates[vm_defaults["jumphost_role"]]))
                 _obj_attr_list["cloud_vm_name"] = _jhn
                 _obj_attr_list["cloud_name"] = ""
-                _obj_attr_list["role"] = "nullworkload"                        
+                _obj_attr_list["role"] = vm_defaults["jumphost_role"]      
                 _obj_attr_list["name"] = "vm_0"
-                _obj_attr_list["size"] = "m1.tiny"                                         
+                _obj_attr_list["size"] = vm_defaults["jumphost_size"]                        
                 _obj_attr_list["use_floating_ip"] = "true"
                 _obj_attr_list["randomize_image_name"] = "false"
                 _obj_attr_list["experiment_id"] = ""
