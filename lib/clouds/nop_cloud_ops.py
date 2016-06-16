@@ -346,7 +346,7 @@ class NopCmds(CommonCloudFunctions) :
             else :
                 obj_attr_list["meta_tags"] = "empty"
  
-            self.take_action_if_requested("VM", obj_attr_list, "provision_started")
+            self.take_action_if_requested("VM", obj_attr_list, "provision_finished")
  
             _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
 
@@ -502,6 +502,7 @@ class NopCmds(CommonCloudFunctions) :
         try :
             _fmsg = "An error has occurred, but no error message was captured"
             _status = 0
+            self.take_action_if_requested("AI", obj_attr_list, current_step)            
 
         except Exception, e :
             _status = 23
