@@ -1107,7 +1107,7 @@ class BaseObjectOperations :
                         obj_attr_list["vpn_server_ip"] = _vpn_attr_list["server_ip"]
                         obj_attr_list["vpn_server_bootstrap"] = _vpn_attr_list["server_bootstrap"]
                         obj_attr_list["vpn_server_port"] = _vpn_attr_list["server_port"]
-                                                                        
+                                                                                                                        
                         obj_attr_list["jars_dir"] = _dir_list["jars_dir"]
                         obj_attr_list["exclude_list"] = _dir_list["base_dir"] + "/exclude_list.txt"
                         obj_attr_list["daemon_dir"] = _dir_list["vm_daemon_dir"]
@@ -2293,11 +2293,18 @@ class BaseObjectOperations :
 
             _run_generic_scripts = False
 
+            _smallest_remaining_time = 100000
+
             for _vm in _vm_list :
                 
                 _vm_uuid, _vm_role, _vm_name = _vm.split('|')
                             
                 _obj_attr_list = self.osci.get_object(cloud_name, "VM", False, _vm_uuid, False)
+                
+                _abort, _fmsg, _remaining_time = self.pending_decide_abortion(_obj_attr_list, "VM")
+
+                if _remaining_time < _smallest_remaining_time :
+                    _smallest_remaining_time = _remaining_time
 
                 _obj_types.append("VM")
                 
@@ -2320,6 +2327,9 @@ class BaseObjectOperations :
 
                 _vm_post_boot_commands.append("~/" + _obj_attr_list["remote_dir_name"] + "/scripts/common/cb_post_boot.sh")
 
+
+            _actual_attempts = int(_ai_attr_list["configuration_attempts"])
+            
             if operation == "setup" or operation == "resize" :
 
                 _msg = "Performing generic application instance post_boot "
@@ -2332,19 +2342,32 @@ class BaseObjectOperations :
                 # so we need to be sure to update them in case they are changed
                 # by the user between one VApp to the next.
                 
-                self.proc_man_os_command.cloud_name =  _ai_attr_list["cloud_name"]
+                self.proc_man_os_command.cloud_name = _ai_attr_list["cloud_name"]
                 self.proc_man_os_command.username = _vm_logins[0]
                 self.proc_man_os_command.priv_key = _vm_priv_keys[0]
                 self.proc_man_os_command.config_file = _vm_config_files[0]
 
-                _status, _xfmsg = self.proc_man_os_command.parallel_run_os_command(_vm_post_boot_commands, \
-                                                                    _vm_ip_addrs, \
-                                                                    int(_ai_attr_list["attempts"]), \
-                                                                    int(_ai_attr_list["update_frequency"]), \
-                                                                    _ai_attr_list["execute_parallelism"], \
-                                                                    _obj_attr_list["run_generic_scripts"], \
-                                                                    _obj_attr_list["debug_remote_commands"])
+                if _smallest_remaining_time != 100000 and operation == "setup":
+                    _actual_attempts = _smallest_remaining_time/int(_ai_attr_list["update_frequency"])
+                
+                if _actual_attempts > 0 :
+                    _status, _xfmsg = self.proc_man_os_command.parallel_run_os_command(_vm_post_boot_commands, \
+                                                                        _vm_ip_addrs, \
+                                                                        _actual_attempts, \
+                                                                        int(_ai_attr_list["update_frequency"]), \
+                                                                        _ai_attr_list["execute_parallelism"], \
+                                                                        _obj_attr_list["run_generic_scripts"], \
+                                                                        _obj_attr_list["debug_remote_commands"])
+                else :
+                    _status = 7162
+                    _xfmsg = "Ran out of time to run generic post_boot scripts "
+                    _xfmsg += "due to the established SLA provisioning target."
 
+                    for _vm in _vm_list :                        
+                        _vm_uuid, _vm_role, _vm_name = _vm.split('|')                            
+                        _obj_attr_list = self.osci.get_object(cloud_name, "VM", False, _vm_uuid, False)                        
+                        self.pending_decide_abortion(_obj_attr_list, "VM")
+                        
                 if _status :
 
                     _status = 1495
@@ -2354,15 +2377,12 @@ class BaseObjectOperations :
 
                 else :
 
-                    for _vm in _vm_list :
-                        
-                        _vm_uuid, _vm_role, _vm_name = _vm.split('|')
-                            
+                    for _vm in _vm_list :                        
+                        _vm_uuid, _vm_role, _vm_name = _vm.split('|')                            
                         self.osci.update_object_attribute(_ai_attr_list["cloud_name"], "VM", _vm_uuid, \
                                                           False, "last_known_state", \
-                                                          "generic post-boot script executed")                    
+                                                          "generic post-boot script executed")
                     
-
             else :
                 _status = 0
 
@@ -2463,14 +2483,19 @@ class BaseObjectOperations :
                     self.proc_man_os_command.username = _vm_logins[0]
                     self.proc_man_os_command.priv_key = _vm_priv_keys[0]
 
-                    _status, _xfmsg = self.proc_man_os_command.parallel_run_os_command(_vm_command_list, \
-                                                                        _vm_ip_addrs, \
-                                                                        int(_ai_attr_list["attempts"]), \
-                                                                        int(_ai_attr_list["update_frequency"]), \
-                                                                        _ai_attr_list["execute_parallelism"], \
-                                                                        _ai_attr_list["run_application_scripts"], 
-                                                                        _ai_attr_list["debug_remote_commands"],
-                                                                        _num)
+                    if _actual_attempts > 0 :
+                        _status, _xfmsg = self.proc_man_os_command.parallel_run_os_command(_vm_command_list, \
+                                                                            _vm_ip_addrs, \
+                                                                            _actual_attempts, \
+                                                                            int(_ai_attr_list["update_frequency"]), \
+                                                                            _ai_attr_list["execute_parallelism"], \
+                                                                            _ai_attr_list["run_application_scripts"], 
+                                                                            _ai_attr_list["debug_remote_commands"],
+                                                                            _num)
+                    else :
+                        _status = 7163
+                        _xfmsg = "Ran out of time to run application-specific \"setup\""
+                        _xfmsg += "scripts due to the established SLA provisioning target."
 
                     if _status :
     
@@ -2478,6 +2503,11 @@ class BaseObjectOperations :
                         _fmsg += "on all VMs beloging to " + _ai_attr_list["name"] + ":\n "
                         _fmsg += _xfmsg
                         break
+
+                    for _vm in _vm_list :                        
+                        _vm_uuid, _vm_role, _vm_name = _vm.split('|')                                    
+                        _obj_attr_list = self.osci.get_object(cloud_name, "VM", False, _vm_uuid, False)                        
+                        self.pending_decide_abortion(_obj_attr_list, "VM")
 
         except Exception, e :
             _status = 23
@@ -2852,6 +2882,70 @@ class BaseObjectOperations :
             return True                
 
         return False
+
+    def pending_decide_abortion(self, obj_attr_list, obj_type) :
+        '''
+        TBD
+        '''
+        _abort = "false"
+        _remaining_time = 100000
+
+        _pending_object = self.osci.pending_object_exists(obj_attr_list["cloud_name"], obj_type, obj_attr_list["uuid"], "abort")
+                    
+        if "recreate_attempts_left" in obj_attr_list :
+            if int(obj_attr_list["recreate_attempts_left"]) == 0 :
+                _abort = "true"
+                if _pending_object :
+                    self.osci.pending_object_set(obj_attr_list["cloud_name"], \
+                                                 obj_type, \
+                                                 obj_attr_list["uuid"], \
+                                                 "abort", \
+                                                 _abort)
+                else :
+                    self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
+                                                      obj_type, \
+                                                      obj_attr_list["uuid"], \
+                                                      False, \
+                                                      "abort", \
+                                                      _abort)
+                                    
+                _x_fmsg = "(due to recreate attempts left equal zero)"
+
+        if "sla_provisioning_target" in obj_attr_list :
+            _provisioning_time = int(time()) - int(obj_attr_list["mgt_001_provisioning_request_originated"])
+            
+            _remaining_time = int(obj_attr_list["sla_provisioning_target"]) - _provisioning_time
+            
+            if _remaining_time <= 0 and obj_attr_list["sla_provisioning_abort"].lower() == "true" :
+                _abort = "true"
+                if _pending_object :
+                    self.osci.pending_object_set(obj_attr_list["cloud_name"], \
+                                                 obj_type, \
+                                                 obj_attr_list["uuid"], \
+                                                 "abort", \
+                                                 _abort)
+                else :
+                    self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
+                                                      obj_type, \
+                                                      obj_attr_list["uuid"], \
+                                                      False, \
+                                                      "abort", \
+                                                      _abort)
+                 
+                if obj_attr_list["sla_provisioning_abort"].lower() != "true" :
+                    _remaining_time = 100000
+                
+                _x_fmsg= "(due to SLA provisioning target violation)"
+
+        obj_attr_list["abort"] = _abort
+
+        if _abort == "true" :
+            _fmsg = obj_type + " object " + obj_attr_list["uuid"] + " ("
+            _fmsg += "named \"" + obj_attr_list["name"] + "\") was aborted "
+            _fmsg += _x_fmsg + " during attachment to this experiment"
+            raise self.ObjectOperationException(_fmsg, 2218)
+        else :
+            return False, '', _remaining_time    
     
     @trace
     def compute_utc_offset(self, cloud_name, obj_type, obj_attr_list) :
@@ -3665,7 +3759,7 @@ class BaseObjectOperations :
                                                                              1000000000000000000)))).upper()
                         _obj_attr_list["uuid"] = _obj_uuid
         
-                        _cmd = self.path + "/cbact"
+                        _cmd = "\"" + self.path + "/cbact\""
                         _cmd += " --procid=" + self.pid
                         _cmd += " --osp=" + dic2str(self.osci.oscp())
                         _cmd += " --msp=" + dic2str(self.msci.mscp())
@@ -3692,7 +3786,7 @@ class BaseObjectOperations :
                             _status = 37
     
                         else :
-                            _cmd = self.path + "/cbact"
+                            _cmd = "\"" + self.path + "/cbact\""
                             _cmd += " --procid=" + self.pid
                             _cmd += " --osp=" + dic2str(self.osci.oscp())
                             _cmd += " --msp=" + dic2str(self.msci.mscp())
@@ -3723,7 +3817,7 @@ class BaseObjectOperations :
                             _status = 37
     
                         else :
-                            _cmd = self.path + "/cbact"
+                            _cmd = "\"" + self.path + "/cbact\""
                             _cmd += " --procid=" + self.pid
                             _cmd += " --osp=" + dic2str(self.osci.oscp())
                             _cmd += " --msp=" + dic2str(self.msci.mscp())
