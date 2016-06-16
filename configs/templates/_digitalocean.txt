@@ -67,6 +67,7 @@ HADOOP_HOME = /usr/local/hadoop
 [VM_TEMPLATES : DO_CLOUDCONFIG ]
 # imageid can be either the actual ID number or more easily the name in the case of a private account
 TINYVM = size:512mb, imageids:1, imageid1:16082940
+YATINYVM = size:512mb, imageids:1, imageid1:16082940
 CASSANDRA = size:4gb, imageids:1, imageid1:16071652
 YCSB = size:4gb, imageids:1, imageid1:16071652
 SEED = size:4gb, imageids:1, imageid1:16071652

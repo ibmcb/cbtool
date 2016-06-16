@@ -117,6 +117,7 @@ FILEBENCH = size:g1-small, imageid1:cb-filebench
 DRIVER_FIO = size:n1-standard-4, imageid1:cb-fio
 FIO = size:n1-standard-4, imageid1:cb-fio
 TINYVM = size:f1-micro, imageid1:cb-nullworkload
+YATINYVM = size:f1-micro, imageid1:cb-nullworkload
 FEN_HPC = size:n1-standard-4, imageid1:cb-hpcc
 CN_HPC = size:n1-standard-4, imageid1:cb-hpcc
 DDGEN = size:n1-standard-4, imageid1:cb-ddgen
