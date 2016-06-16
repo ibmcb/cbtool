@@ -1397,8 +1397,10 @@ class OskCmds(CommonCloudFunctions) :
                 else :                     
                     True
 
-            if "hypervisor_type" in obj_attr_list :
-                _hyper = obj_attr_list["hypervisor_type"]                
+            if "hypervisor_type" in obj_attr_list and obj_attr_list["hypervisor_type"].lower() != "fake" :
+                
+                _hyper = obj_attr_list["hypervisor_type"]
+                    
                 for _image in list(_candidate_images) :
                     if "hypervisor_type" in _image.metadata :
                         if _image.metadata["hypervisor_type"] != obj_attr_list["hypervisor_type"] :
@@ -1919,7 +1921,7 @@ class OskCmds(CommonCloudFunctions) :
 
             _fip = False
 
-            if obj_attr_list["always_create_floating_ip"].lower() == "false" :
+            if str(obj_attr_list["always_create_floating_ip"]).lower() == "false" :
                 
                 _call = "floating ip list"
                 fips = self.oskconncompute.floating_ips.list()
@@ -2061,7 +2063,11 @@ class OskCmds(CommonCloudFunctions) :
 
                 _call = "floating ip attach"
                 _mark1 = int(time())
-                _instance.add_floating_ip(_fip)
+                
+                if "hypervisor_type" in obj_attr_list and obj_attr_list["hypervisor_type"].lower() == "fake" :
+                    True
+                else :
+                    _instance.add_floating_ip(_fip)
 
                 _mark2 = int(time())
                 obj_attr_list["osk_021_attach_fip_time"] = _mark2 - _mark1    
