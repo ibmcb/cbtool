@@ -708,7 +708,6 @@ class CommonCloudFunctions:
                 _cmd += obj_attr_list["execute_json_filename"]
 
                 _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_cmd)
-
                 _msg = "Command \"" + _cmd + "\" executed, with return code " + str(_status)
                 cbdebug(_msg, True)
 
@@ -926,6 +925,7 @@ runcmd:
                         obj_attr_list["vm_attach_action"] = _temp_dict["vm_staging"]
                         
                 obj_attr_list["vm_extra_parms"] = obj_attr_list["vm_extra_parms"][0:-1]
+
                 obj_attr_list.update(_temp_dict)
             
             if obj_attr_list["name"].count("vm_") :

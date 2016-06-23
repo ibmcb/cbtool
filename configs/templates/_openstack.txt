@@ -157,5 +157,3 @@ SEED = size:m1.medium, imageid1:cb_ycsb
 REDIS = size:m1.medium, imageid1:cb_ycsb
 YCSB = size:m1.medium, imageid1:cb_ycsb
 LINPACK = size:m1.medium, imageid1:cb_linpack
-GATEST_MASTER = size:m1.large, imageid1: cb_nullworkload
-GATEST_SLAVE = size:m1.large, imageid1: cb_nullworkload
