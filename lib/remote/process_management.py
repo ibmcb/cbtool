@@ -103,7 +103,8 @@ class ProcessManagement :
             else :
                 _connection_timeout = ''
 
-            _cmd = "ssh " 
+            _cmd = "ssh "
+            _cmd += " -p " + str(self.port) + ' ' 
             _cmd += _priv_key 
             _cmd += _config_file 
             _cmd += _connection_timeout            

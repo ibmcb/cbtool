@@ -663,7 +663,7 @@ class SimCmds(CommonCloudFunctions) :
             _time_mark_vmp = int(time())
             self.vm_placement(obj_attr_list)
             obj_attr_list["sim_0021_vm_placement_time"] = _time_mark_vmp - int(time())
-            
+
             if "meta_tags" in obj_attr_list :
                 if obj_attr_list["meta_tags"] != "empty" and \
                 obj_attr_list["meta_tags"].count(':') and \
@@ -1044,7 +1044,7 @@ class SimCmds(CommonCloudFunctions) :
         TBD
         '''
         try :
-            _fmsg = "An error has occurred, but no error message was captured"
+            _fmsg = "An error has occurred, but no error message was captured"            
             self.take_action_if_requested("AI", obj_attr_list, current_step)            
             _status = 0
 

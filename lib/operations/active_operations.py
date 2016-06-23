@@ -1806,6 +1806,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                  obj_attr_list["arrival"]
 
                         if _obj_type == "VM" and "host_name" in obj_attr_list and obj_attr_list["host_name"] != "unknown" :
+
                             if obj_attr_list["discover_hosts"].lower() == "true" :
                                 _host_attr_list = self.osci.get_object(_cloud_name, "HOST", True, "host_" + obj_attr_list["host_name"], False)
                                 obj_attr_list["host"] = _host_attr_list["uuid"]
@@ -2117,10 +2118,16 @@ class ActiveObjectOperations(BaseObjectOperations) :
         else :
             _config_file = None            
 
+        if "port_mapping" in obj_attr_list and str(obj_attr_list["port_mapping"]).lower() != "none" :
+            _port = obj_attr_list["port_mapping"]
+        else :
+            _port = 22
+            
         _proc_man = ProcessManagement(username = obj_attr_list["login"], \
                                       cloud_name = obj_attr_list["cloud_name"], \
                                       priv_key = obj_attr_list["identity"], \
-                                      config_file = _config_file)
+                                      config_file = _config_file, \
+                                      port = _port)
 
         try :
 
@@ -2141,6 +2148,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                obj_attr_list["debug_remote_commands"], \
                                                True,
                                                tell_me_if_stderr_contains = "Connection reset by peer")
+            
             self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], \
                                               False, "last_known_state", \
                                               "checked SSH accessibility")
@@ -2621,9 +2629,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
             if obj_attr_list["ai"] == "none" or obj_attr_list["force_detach"].lower() != "false" :
                 _status = 0
             else :
-                _status = 46
-                _fmsg = "This VM is part of the AI " + obj_attr_list["ai"] + '.'
-                _fmsg += "Please detach this AI instead."
+                if self.osci.object_exists(obj_attr_list["cloud_name"], "AI", obj_attr_list["ai"], False) :
+                    _status = 46
+                    _fmsg = "This VM is part of the AI " + obj_attr_list["ai"] + '.'
+                    _fmsg += "Please detach this AI instead."
+                else :
+                    _status = 0
                 
         except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status

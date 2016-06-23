@@ -3077,7 +3077,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
-            _result = None 
+            _result = None
 
             _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
 
