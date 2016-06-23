@@ -1397,7 +1397,7 @@ class OskCmds(CommonCloudFunctions) :
                 else :                     
                     True
 
-            if "hypervisor_type" in obj_attr_list and obj_attr_list["hypervisor_type"].lower() != "fake" :
+            if "hypervisor_type" in obj_attr_list and str(obj_attr_list["hypervisor_type"]).lower() != "fake" :
                 
                 _hyper = obj_attr_list["hypervisor_type"]
                     
@@ -1409,7 +1409,7 @@ class OskCmds(CommonCloudFunctions) :
                             _hyper = _image.metadata["hypervisor_type"]
                             
             if len(_candidate_images) :
-                if  obj_attr_list["randomize_image_name"].lower() == "true" :
+                if  str(obj_attr_list["randomize_image_name"]).lower() == "true" :
                     _imageid = choice(_candidate_images)
                 else :
                     _imageid = _candidate_images[0]
