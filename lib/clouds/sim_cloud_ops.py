@@ -663,7 +663,7 @@ class SimCmds(CommonCloudFunctions) :
             _time_mark_vmp = int(time())
             self.vm_placement(obj_attr_list)
             obj_attr_list["sim_0021_vm_placement_time"] = _time_mark_vmp - int(time())
-            
+
             if "meta_tags" in obj_attr_list :
                 if obj_attr_list["meta_tags"] != "empty" and \
                 obj_attr_list["meta_tags"].count(':') and \

@@ -2600,7 +2600,8 @@ class BaseObjectOperations :
             _vm_command_list = ''
 
             for _vm in _vm_list :
-
+                
+                _vm_leave_on_failure = False
                 if not _vm.count('|') :
                     # We expect this code path to be executed only rarely. That
                     # is why it is left so unoptimized.
@@ -2609,14 +2610,20 @@ class BaseObjectOperations :
                         _vm_uuid = _vm
                         _vm_role = _vm_attr_list["role"]
                         _vm_name = _vm_attr_list["name"]
+                        
+                        if _vm_attr_list["leave_instance_on_failure"].lower() == "false" :
+                            _vm_leave_on_failure = False
+                        else :
+                            _vm_leave_on_failure = True                                                    
                     else :
                         _vm_uuid = False
+
                 else :
                     _vm_uuid, _vm_role, _vm_name = _vm.split('|')
                     if not self.osci.object_exists(obj_attr_list["cloud_name"], "VM", _vm_uuid, False) :
                         _vm_uuid = False
                    
-                if _vm_uuid and _vm_uuid != _vm_uuid_to_exclude :
+                if _vm_uuid and _vm_uuid != _vm_uuid_to_exclude and not _vm_leave_on_failure :
                     obj_attr_list["parallel_operations"][_vm_counter] = {}
                     obj_attr_list["parallel_operations"][_vm_counter]["parameters"] = obj_attr_list["cloud_name"] + ' ' + _vm_name + " true"
                     obj_attr_list["parallel_operations"][_vm_counter]["uuid"] = _vm_uuid 
@@ -3622,7 +3629,8 @@ class BaseObjectOperations :
                 _file_list.append("remotescripts.log")
                 _file_list.append("monitor.log")
                 _file_list.append("subscribe.log")
-    
+                _file_list.append("staging.log")
+                    
                 for _fn in  _file_list :
                     _proc_man.run_os_command("rm -rf " + _log_dir + '/' + _logstore_username + '_' + _fn)
                     _proc_man.run_os_command("touch " + _log_dir + '/' + _logstore_username + '_' + _fn)
