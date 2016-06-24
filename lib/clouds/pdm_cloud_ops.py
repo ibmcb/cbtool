@@ -263,7 +263,20 @@ class PdmCmds(CommonCloudFunctions) :
                 cberr(_msg, True)
             else :
                 _status = 0
-                                       
+
+            _msg = "Removing all VVs previously created on VMC \""
+            _msg += obj_attr_list["name"] + "\" (only VV names starting with"
+            _msg += " \"" + "cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]
+            _msg += "\")....."
+            cbdebug(_msg, True)
+
+            for _endpoint in self.dockconn :
+                _volume_list = self.dockconn[_endpoint].volumes()["Volumes"]
+                if _volume_list :
+                    for _volume in _volume_list :
+                        if _volume["Name"].count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) :
+                            self.dockconn[_endpoint].remove_volume(name=_volume["Name"])
+
             _msg = "Ok"
             _status = 0
 
@@ -498,11 +511,12 @@ class PdmCmds(CommonCloudFunctions) :
                         _instances += self.dockconn[_endpoint].containers(filters = {"name" : identifier})
                 else :
                     if identifier == "all" :
-                        _instances += self.dockconn[_endpoint].volumes(all=True)
-
+                        _instances += self.dockconn[_endpoint].volumes()
      
                     else :
-                        _instances += self.dockconn[_endpoint].volumes(filters = {"name" : identifier})
+                        for _volume in self.dockconn[_endpoint].volumes()["Volumes"] :
+                            if _volume["Name"] == identifier :
+                                _instances += _volume
                         
             if len(_instances) == 1 :
                 _instances = _instances[0]
@@ -619,6 +633,144 @@ class PdmCmds(CommonCloudFunctions) :
         obj_attr_list["host_cloud_ip"] = choice(self.dockconn.keys())
         self.name_resolution(obj_attr_list, "VM")
         return True
+
+    @trace        
+    def vvcreate(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+
+
+            if "cloud_vv" in obj_attr_list :
+                self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
+                             obj_attr_list["vmc_name"], obj_attr_list["name"])
+
+                obj_attr_list["last_known_state"] = "about to send volume create request"
+    
+                obj_attr_list["cloud_vv_name"] = "cb-" + obj_attr_list["username"]
+                obj_attr_list["cloud_vv_name"] += '-' + obj_attr_list["cloud_name"]
+                obj_attr_list["cloud_vv_name"] += '-' + "vv"
+                obj_attr_list["cloud_vv_name"] += obj_attr_list["name"].split("_")[1]
+                obj_attr_list["cloud_vv_name"] += '-' + obj_attr_list["role"]  
+
+
+                if "cloud_vv_type" in obj_attr_list :
+                    _volume_type = obj_attr_list["cloud_vv_type"]
+                else :
+                    _volume_type = "local"
+
+                _msg = "Creating a " + _volume_type + " volume, with size " 
+                _msg += obj_attr_list["cloud_vv"] + ", on VMC \"" 
+                _msg += obj_attr_list["vmc_name"] + "\""
+                cbdebug(_msg, True)
+
+                _vv = self.dockconn[obj_attr_list["host_cloud_ip"]].create_volume(name=obj_attr_list["cloud_vv_name"], driver=_volume_type)
+
+                if _volume_type == "local" :
+                    obj_attr_list["cloud_vv_uuid"] = _vv["Mountpoint"]
+
+                obj_attr_list["cloud_vv_mpt"] = _vv["Mountpoint"]
+
+            else :
+                obj_attr_list["cloud_vv_uuid"] = "none"
+
+            _status = 0
+
+        except APIError, obj:
+            _status = 18127
+            _fmsg = str(obj.message) + " \"" + str(obj.explanation) + "\""
+
+        except CldOpsException, obj :
+            _status = obj.status
+            _fmsg = str(obj.msg)
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+    
+        finally :
+            if _status :
+                _msg = "Volume to be attached to the " + obj_attr_list["name"] + ""
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vv_uuid"] + ") "
+                _msg += "could not be created"
+                _msg += " on PDM Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += _fmsg
+                cberr(_msg)
+                raise CldOpsException(_msg, _status)
+
+            else :
+                _msg = "Volume to be attached to the " + obj_attr_list["name"] + ""
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vv_uuid"] + ") "
+                _msg += "was successfully created"
+                _msg += " on PDM Cloud \"" + obj_attr_list["cloud_name"] + "\"."
+                cbdebug(_msg)
+                return _status, _msg
+
+    @trace        
+    def vvdestroy(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+
+
+            if "cloud_vv_uuid" in obj_attr_list and str(obj_attr_list["cloud_vv_uuid"]).lower() != "none" :
+
+                self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
+                             obj_attr_list["vmc_name"], obj_attr_list["name"])
+                
+                _instance = self.get_instances(obj_attr_list, \
+                                               "vv", \
+                                               obj_attr_list["host_cloud_ip"], \
+                                               obj_attr_list["cloud_vv_name"])
+                    
+                if _instance :
+    
+                    _msg = "Sending a destruction request for the Volume" 
+                    _msg += " previously attached to \"" 
+                    _msg += obj_attr_list["name"] + "\""
+                    _msg += " (cloud-assigned uuid " 
+                    _msg += obj_attr_list["cloud_vv_uuid"] + ")...."
+                    cbdebug(_msg, True)
+    
+                self.dockconn[obj_attr_list["host_cloud_ip"]].remove_volume(name=obj_attr_list["cloud_vv_name"])
+                                
+            _status = 0
+
+        except APIError, obj:
+            _status = 18127
+            _fmsg = str(obj.message) + " \"" + str(obj.explanation) + "\""
+
+        except CldOpsException, obj :
+            _status = obj.status
+            _fmsg = str(obj.msg)
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+    
+        finally :
+            if _status :
+                _msg = "" + obj_attr_list["name"] + ""
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
+                _msg += "could not be destroyed "
+                _msg += " on PDM Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += _fmsg
+                cberr(_msg, True)
+                raise CldOpsException(_msg, _status)
+            else :
+                _msg = "" + obj_attr_list["name"] + ""
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
+                _msg += "was successfully "
+                _msg += "destroyed on PDM Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "\"."
+                cbdebug(_msg)
+                return _status, _msg
     
     @trace
     def vmcreate(self, obj_attr_list) :
@@ -677,6 +829,8 @@ class PdmCmds(CommonCloudFunctions) :
             _time_mark_prs = int(time())            
             obj_attr_list["mgt_002_provisioning_request_sent"] = _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
 
+            self.vvcreate(obj_attr_list)
+
             obj_attr_list["last_known_state"] = "about to send create request"
 
             _msg = "Starting an instance on PDM Cloud, using the imageid \"" 
@@ -685,14 +839,24 @@ class PdmCmds(CommonCloudFunctions) :
             _msg += obj_attr_list["vmc_name"] + "\" (endpoint \"" + obj_attr_list["host_cloud_ip"] + "\")"
             cbdebug(_msg, True)
 
+            _volumes = []
+            _binds = []
+            
+            if "cloud_vv_name" in obj_attr_list :
+                _binds = [ obj_attr_list["cloud_vv_name"] + ":/mnt/cbvol1:rw"]                
+                _volumes = [ "/mnt/cbvol1" ]
+                
             _host_config = self.dockconn[obj_attr_list["host_cloud_ip"]].create_host_config(network_mode = obj_attr_list["netname"], \
-                                                                                            port_bindings = _port_bindings)
+                                                                                            port_bindings = _port_bindings, 
+                                                                                            binds = _binds)
+
             
             _instance = self.dockconn[obj_attr_list["host_cloud_ip"]].create_container(image = obj_attr_list["imageid1"], \
                                                                                  hostname = obj_attr_list["cloud_vm_name"], \
                                                                                  detach = True, \
                                                                                  name = obj_attr_list["cloud_vm_name"], \
                                                                                  ports = _ports_mapping, \
+                                                                                 volumes = _volumes, \
                                                                                  host_config = _host_config)
 #                                                                                 command = "/sbin/my_init", \
 #                                                                                 environment = {"PATH" : "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"})
@@ -784,14 +948,15 @@ class PdmCmds(CommonCloudFunctions) :
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
                 _msg += "...."
                 cbdebug(_msg, True)
-
                                     
                 if  _instance["State"] == "running" :
-
                     self.dockconn[obj_attr_list["host_cloud_ip"]].kill(obj_attr_list["cloud_vm_uuid"])
 
                 self.dockconn[obj_attr_list["host_cloud_ip"]].remove_container(_instance["Id"])
 
+            if "cloud_vv" in obj_attr_list :
+                self.vvdestroy(obj_attr_list)
+                
             _time_mark_drc = int(time())
             obj_attr_list["mgt_903_deprovisioning_request_completed"] = \
                 _time_mark_drc - _time_mark_drs
@@ -828,6 +993,82 @@ class PdmCmds(CommonCloudFunctions) :
                 _msg += "destroyed on PDM Cloud \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
                 cbdebug(_msg)
+                return _status, _msg
+
+    def vmrunstate(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        # Too many problems with neutronclient. Failures, API calls hanging, etc.
+        obj_attr_list["use_neutronclient"] = "false"
+
+        try :
+            _status = 100
+
+            _ts = obj_attr_list["target_state"]
+            _cs = obj_attr_list["current_state"]
+    
+            self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
+                         obj_attr_list["vmc_name"], obj_attr_list["name"])
+
+            _wait = int(obj_attr_list["update_frequency"])
+            _curr_tries = 0
+            _max_tries = int(obj_attr_list["update_attempts"])
+
+            if "mgt_201_runstate_request_originated" in obj_attr_list :
+                _time_mark_rrs = int(time())
+                obj_attr_list["mgt_202_runstate_request_sent"] = \
+                    _time_mark_rrs - obj_attr_list["mgt_201_runstate_request_originated"]
+    
+            _msg = "Sending a runstate change request (" + _ts + " for " + obj_attr_list["name"]
+            _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
+            _msg += "...."
+            cbdebug(_msg, True)
+
+            _instance = self.get_instances(obj_attr_list, "vm", obj_attr_list["host_cloud_ip"], obj_attr_list["cloud_vm_name"])
+
+            if _instance :
+                if _ts == "fail" :
+                    self.dockconn[obj_attr_list["host_cloud_ip"]].pause(obj_attr_list["cloud_vm_uuid"])
+                elif _ts == "save" :
+                    self.dockconn[obj_attr_list["host_cloud_ip"]].stop(obj_attr_list["cloud_vm_uuid"])
+                elif (_ts == "attached" or _ts == "resume") and _cs == "fail" :
+                    self.dockconn[obj_attr_list["host_cloud_ip"]].unpause(obj_attr_list["cloud_vm_uuid"])
+                elif (_ts == "attached" or _ts == "restore") and _cs == "save" :
+                    self.dockconn[obj_attr_list["host_cloud_ip"]].start(obj_attr_list["cloud_vm_uuid"])
+            
+            _time_mark_rrc = int(time())
+            obj_attr_list["mgt_203_runstate_request_completed"] = _time_mark_rrc - _time_mark_rrs
+
+            _msg = "VM " + obj_attr_list["name"] + " runstate request completed."
+            cbdebug(_msg)
+                        
+            _status = 0
+
+        except APIError, obj:
+            _status = 18127
+            _fmsg = str(obj.message) + " \"" + str(obj.explanation) + "\""
+
+        except CldOpsException, obj :
+            _status = obj.status
+            _fmsg = str(obj.msg)
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+    
+        finally :
+            if _status :
+                _msg = "VM " + obj_attr_list["uuid"] + " could not have its "
+                _msg += "run state changed on PDM Cloud"
+                _msg += " \"" + obj_attr_list["cloud_name"] + "\" :" + _fmsg
+                cberr(_msg, True)
+                raise CldOpsException(_msg, _status)
+            else :
+                _msg = "VM " + obj_attr_list["uuid"] + " successfully had its "
+                _msg += "run state changed on PDM Cloud"
+                _msg += " \"" + obj_attr_list["cloud_name"] + "\"."
+                cbdebug(_msg, True)
                 return _status, _msg
 
     @trace        
