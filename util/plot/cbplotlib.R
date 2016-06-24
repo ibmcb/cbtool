@@ -243,8 +243,8 @@ pre_process_files <- function(ednl, fp2df_dict) {
 				file_contents <- read.csv(file = full_experiment_file_name, 
 						head = TRUE, comment.char = "#", blank.lines.skip = "true")
 
-				experiment_name_hash <- digest(object = experiment_name, algo = "crc32", serialize = FALSE)
-				
+				experiment_name_hash <- paste("K", toString(digest(object = experiment_name, algo = "crc32", serialize = FALSE)), sep='')
+
 				# Create a new column, containing the experiment id				
 				file_contents <- within(file_contents, "expid" <- experiment_name_hash)
 				file_contents <- within(file_contents, "experiment_name" <- experiment_name)
@@ -407,7 +407,7 @@ plot_trace_data <- function(tdf, ed, en, sps) {
 		selected_expid = c(levels(tdf$expid))
 		selected_expname = c(levels(tdf$experiment_name))
 	} else {
-		selected_expid = digest(object = en, algo = "crc32", serialize = FALSE)
+		selected_expid =  paste("K", toString(digest(object = en, algo = "crc32", serialize = FALSE)),sep='')
 		selected_expname = c(en)		
 	}
 	
@@ -478,7 +478,7 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 		selected_expid = c(levels(mmdf$expid))
 		selected_expname = c(levels(mmdf$experiment_name))
 	} else {
-		selected_expid = digest(object = en, algo = "crc32", serialize = FALSE)
+		selected_expid =  paste("K", toString(digest(object = en, algo = "crc32", serialize = FALSE)), sep = '')
 		selected_expname = c(en)		
 	}
 	
@@ -491,7 +491,7 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 	################## START Provisioning vs VM ##################
 	msg <- paste("# Preparing Provisioning Latency for VMs/Containers.... #", sep = '')
 	cat(msg, sep='\n')
-	
+
 	prov_lat_data <- subset(mmdf, (expid %in% selected_expid) & 
 					(name %in% selected_vm_name), 
 			select = c("full_obj_name", 
@@ -502,7 +502,7 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 					"mgt_006_instance_preparation", 					
 					"mgt_007_application_start", 
 					"name", "vm_arrival_diff"))
-	
+
 	prov_lat_data <- prov_lat_data[!is.na(prov_lat_data$vm_arrival_diff),]
 	
 	output_table(ed, en, prov_lat_data, "002_individual_vm_provision_latency")
@@ -529,6 +529,7 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 	cat(prov_lat_plot_title, sep='\n')	
 	
 	columns_remove <- c("full_obj_name", "vm_arrival_diff")
+
 	prov_lat_data <- prov_lat_data[,!(names(prov_lat_data) %in% columns_remove)]
 	
 	prov_lat_data <- within(prov_lat_data, 
@@ -808,7 +809,7 @@ plot_runtime_application_data <- function(ramdf, ed, en, vmn, vmel, xati, yati,
 		selected_expid = c(levels(ramdf$expid))
 		selected_expname = c(levels(ramdf$experiment_name))
 	} else {
-		selected_expid = digest(object = en, algo = "crc32", serialize = FALSE)
+		selected_expid =  paste("K", toString(digest(object = en, algo = "crc32", serialize = FALSE)), sep='')
 		selected_expname = c(en)		
 	}
 	
@@ -1023,7 +1024,7 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 		selected_expid = c(levels(tdf$expid))
 		selected_expname = c(levels(tdf$experiment_name))
 	} else {
-		selected_expid = digest(object = en, algo = "crc32", serialize = FALSE)
+		selected_expid =  paste("K", toString(digest(object = en, algo = "crc32", serialize = FALSE)), sep='')
 		selected_expname = c(en)		
 	}	
 	
