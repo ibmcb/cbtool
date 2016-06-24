@@ -298,13 +298,16 @@ class NopCmds(CommonCloudFunctions) :
 
             obj_attr_list["cloud_vm_uuid"] = self.generate_random_uuid()
 
-            obj_attr_list["cloud_vm_name"] = "cb-" + obj_attr_list["username"] 
-            obj_attr_list["cloud_vm_name"] += '-' + "vm_" 
-            obj_attr_list["cloud_vm_name"] += obj_attr_list["name"].split("_")[1] 
-            obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["role"]
+            if "cloud_vm_name" not in obj_attr_list :
+                obj_attr_list["cloud_vm_name"] = "cb-" + obj_attr_list["username"]
+                obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["cloud_name"]
+                obj_attr_list["cloud_vm_name"] += '-' + "vm"
+                obj_attr_list["cloud_vm_name"] += obj_attr_list["name"].split("_")[1]
+                obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["role"]
 
-            if obj_attr_list["ai"] != "none" :            
-                obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["ai_name"]  
+
+                if obj_attr_list["ai"] != "none" :            
+                    obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["ai_name"]  
 
             obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"].replace("_", "-")
                         
@@ -346,7 +349,7 @@ class NopCmds(CommonCloudFunctions) :
             else :
                 obj_attr_list["meta_tags"] = "empty"
  
-            self.take_action_if_requested("VM", obj_attr_list, "provision_finished")
+            self.take_action_if_requested("VM", obj_attr_list, "provision_started")
  
             _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
 
