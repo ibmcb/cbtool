@@ -417,14 +417,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
             vpn_client_config += '/' + cld_attr_lst["cloud_name"] + "_client-cb-openvpn.conf"
             cld_attr_lst["vm_defaults"]["vpn_config_file"] = vpn_client_config
 
-#            if cld_attr_lst["vm_defaults"]["use_vpn_ip"] and not cld_attr_lst["vpn"]["start_server"] :
-#                _msg = " The attribute \"USE_VPN_IP\" in Global Object "
-#                _msg += "[VM_DEFAULTS] is set to \"True\". Will set the"
-#                _msg += "attribute \"START_SERVER\" in the Global Object "
-#                _msg += "[VPN] also to \"True\"."
-#                cbdebug(_msg, True)
-#                cld_attr_lst["vpn"]["start_server"] = True
-                    
             if str(cld_attr_lst["vpn"]["start_server"]).lower() == "false" :
                 _msg = "Bypassing the startup of a \"" + _type + "\" VPN server..."
 
