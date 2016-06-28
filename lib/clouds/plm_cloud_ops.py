@@ -421,8 +421,6 @@ class PlmCmds(CommonCloudFunctions) :
         '''
         if self.is_vm_running(obj_attr_list) :
 
-            self.take_action_if_requested("VM", obj_attr_list, "provision_complete")
-
             _status, _msg, _info = self.plmconn.instances_describe(obj_attr_list["cloud_vm_name"])
 
             if not _status :
@@ -613,6 +611,8 @@ class PlmCmds(CommonCloudFunctions) :
             else :
                 True
 
+            self.take_action_if_requested("VM", obj_attr_list, "deprovision_finished")
+
             _time_mark_drc = int(time())
             obj_attr_list["mgt_903_deprovisioning_request_completed"] = \
                 _time_mark_drc - _time_mark_drs
@@ -726,9 +726,7 @@ class PlmCmds(CommonCloudFunctions) :
         '''
         try :
             _fmsg = "An error has occurred, but no error message was captured"
-
-            self.take_action_if_requested("AI", obj_attr_list, "all_vms_booted")
-
+            self.take_action_if_requested("AI", obj_attr_list, current_step)            
             _status = 0
 
         except Exception, e :
@@ -756,6 +754,7 @@ class PlmCmds(CommonCloudFunctions) :
         '''
         try :
             _fmsg = "An error has occurred, but no error message was captured"
+            self.take_action_if_requested("AI", obj_attr_list, current_step)            
             _status = 0
 
         except Exception, e :

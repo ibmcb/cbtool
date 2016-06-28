@@ -149,3 +149,4 @@ STORAGECLIENT = size:dummysize, imageid1:image-001
 STORAGESERVER = size:dummysize, imageid1:image-001
 LB = size:dummysize, imageid1:image-001
 TINYVM = size:dummysize,  imageid1:image-001
+YATINYVM = size:dummysize,  imageid1:image-001

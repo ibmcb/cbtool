@@ -396,7 +396,6 @@ class DoCmds(CommonCloudFunctions) :
     @trace
     def is_vm_ready(self, obj_attr_list) :
         if self.is_vm_running(obj_attr_list) :
-            self.take_action_if_requested("VM", obj_attr_list, "provision_complete")
 
             if self.get_ip_address(obj_attr_list) :
                 obj_attr_list["last_known_state"] = "running with ip assigned"
@@ -628,6 +627,7 @@ class DoCmds(CommonCloudFunctions) :
                 cbdebug("Next try...")
 
             obj_attr_list["last_known_state"] = "vm destoyed"
+            self.take_action_if_requested("VM", obj_attr_list, "deprovision_finished")            
             _time_mark_drc = int(time())
             obj_attr_list["mgt_903_deprovisioning_request_completed"] = _time_mark_drc - _time_mark_drs
 
@@ -862,7 +862,7 @@ class DoCmds(CommonCloudFunctions) :
 
             _fmsg = "An error has occurred, but no error message was captured"
 
-            self.take_action_if_requested("AI", obj_attr_list, "all_vms_booted")
+            self.take_action_if_requested("AI", obj_attr_list, current_step)            
 
             _status = 0
 
@@ -893,6 +893,7 @@ class DoCmds(CommonCloudFunctions) :
         '''
         try :
             _fmsg = "An error has occurred, but no error message was captured"
+            self.take_action_if_requested("AI", obj_attr_list, current_step)            
             _status = 0
 
         except Exception, e :

@@ -25,12 +25,10 @@
 '''
 from os import chmod, access, F_OK
 from random import choice, randint
-from time import time, sleep, timezone, localtime, altzone
+from time import time, sleep
 from subprocess import Popen, PIPE
 from re import sub
 from uuid import uuid5, NAMESPACE_DNS
-from datetime import datetime
-from json import dumps
 
 from lib.remote.process_management import ProcessManagement
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
@@ -419,11 +417,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             vpn_client_config += '/' + cld_attr_lst["cloud_name"] + "_client-cb-openvpn.conf"
             cld_attr_lst["vm_defaults"]["vpn_config_file"] = vpn_client_config
 
-            if str(cld_attr_lst["vm_defaults"]["use_vpn_ip"]).lower() == "false" :
-                return
-
             if str(cld_attr_lst["vpn"]["start_server"]).lower() == "false" :
-
                 _msg = "Bypassing the startup of a \"" + _type + "\" VPN server..."
 
                 # Occasionally (on laptops) the VPN ip address of the orchestrator
@@ -1220,8 +1214,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
             if "run_netname" not in obj_attr_list :
                 obj_attr_list["run_netname"] = obj_attr_list["netname"]
 
-            obj_attr_list["utc_offset_on_orchestrator"] = timezone * -1 if (localtime().tm_isdst == 0) else altzone * -1
-
             _status = 0
 
             if not _status :
@@ -1642,6 +1634,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
         _result = {}
 
         _pre_attach = False
+        _post_attach = False
         _admission_control = False
         _vmcregister = False
         _vmcreate = False
@@ -1763,7 +1756,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
     
                     else :
                         _msg = "Unknown object: " + _obj_type
-                        raise self.ObjectOperationsException(_msg, 28)
+                        raise self.ObjectOperationException(_msg, 28)
                     
                     _pre_attach = True
                     _admission_control = self.admission_control(_obj_type, \
@@ -1818,13 +1811,18 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                         _created_object = True
 
-                        if _obj_type == "VM" :
-                            _max_recreate_tries = int(obj_attr_list["attempts"])
+                        if _obj_type == "VMC" :
+                            self.post_attach_vmc(obj_attr_list)
+    
+                        elif _obj_type == "VM" :
+
+                            _max_recreate_tries = int(obj_attr_list["recreate_attempts"])
                             _finished_object = False
 
                             while not _finished_object and _max_recreate_tries > 0 :
-                                _finished_object = self.post_attach_vm(obj_attr_list, _staging)
-                                if _finished_object :
+                                _status, _msg = self.post_attach_vm(obj_attr_list, _staging)
+                                self.pending_decide_abortion(obj_attr_list, "VM")
+                                if not _status :
                                     break
 
                                 self.osci.pending_object_set(_cloud_name, _obj_type, \
@@ -1840,18 +1838,27 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                             obj_attr_list, False, True)
                                 _created_object = True
                                 _max_recreate_tries -= 1
+                                obj_attr_list["recreate_attempts_left"] = _max_recreate_tries
                                 cbdebug("Attempts left #" + str(_max_recreate_tries))
-                        elif _obj_type == "VMC" :
-                            self.post_attach_vmc(obj_attr_list)
+
+                            self.pending_decide_abortion(obj_attr_list, "VM")
+                            
                         elif _obj_type == "AI" :
                             self.post_attach_ai(obj_attr_list, _staging)
+    
                         elif _obj_type == "AIDRS" :
                             self.post_attach_aidrs(obj_attr_list)
+    
                         elif _obj_type == "VMCRS" :
                             self.post_attach_vmcrs(obj_attr_list)
+
                         elif _obj_type == "FIRS" :
                             self.post_attach_firs(obj_attr_list)
 
+                        else :
+                            True
+
+                        _post_attach = True
 
         except self.ObjectOperationException, obj :
             _status = obj.status
@@ -1965,7 +1972,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     if _created_object :
                         self.osci.destroy_object(_cloud_name, _obj_type, obj_attr_list["uuid"], \
                                                 obj_attr_list, False)
-    
+
+                    if not _post_attach :
+                        self.record_management_metrics(obj_attr_list["cloud_name"], \
+                                                       _obj_type, obj_attr_list, "attach")
+                    
                     obj_attr_list["tracking"] = str(_fmsg)
                     if "uuid" in obj_attr_list and "cloud_name" in obj_attr_list :
                         self.osci.create_object(_cloud_name, "FAILEDTRACKING" + _obj_type, obj_attr_list["uuid"] + unique_state_key, \
@@ -2011,6 +2022,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             if _created_pending :
                 self.osci.pending_object_remove(_cloud_name, _obj_type, obj_attr_list["uuid"], "status")
+                self.osci.pending_object_remove(_cloud_name, _obj_type, obj_attr_list["uuid"], "abort")                
                 self.osci.remove_from_list(_cloud_name, _obj_type, "PENDING",obj_attr_list["uuid"] + "|" + obj_attr_list["name"], True)
                 
             return self.package(_status, _msg, _result)
@@ -2069,8 +2081,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
                 _msg = "VMC post-attachment operations success."
                 cbdebug(_msg)
-
-        return True
+                return _status, _msg
 
     @trace
     def post_attach_vm(self, obj_attr_list, staging = None) :
@@ -2098,10 +2109,16 @@ class ActiveObjectOperations(BaseObjectOperations) :
         else :
             _config_file = None            
 
+        if "port_mapping" in obj_attr_list and str(obj_attr_list["port_mapping"]).lower() != "none" :
+            _port = obj_attr_list["port_mapping"]
+        else :
+            _port = 22
+            
         _proc_man = ProcessManagement(username = obj_attr_list["login"], \
                                       cloud_name = obj_attr_list["cloud_name"], \
                                       priv_key = obj_attr_list["identity"], \
-                                      config_file = _config_file)
+                                      config_file = _config_file, \
+                                      port = _port)
 
         try :
 
@@ -2122,6 +2139,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                obj_attr_list["debug_remote_commands"], \
                                                True,
                                                tell_me_if_stderr_contains = "Connection reset by peer")
+
             self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], \
                                               False, "last_known_state", \
                                               "checked SSH accessibility")
@@ -2265,10 +2283,14 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _fmsg = str(e)
 
         finally :
+
             if _status :
                 if _status == "90001" :
-                    cbdebug("VM creation succeeded, but authentication has failed, likely due to cloud-init or similar bootstrapping not completing correctly. Will re-create the VM and try again.", True)
-                    return False
+                    _msg = "VM creation succeeded, but authentication has failed,"
+                    _msg += " likely due to cloud-init or similar bootstrapping"
+                    _msg += " not completing correctly. Will re-create the VM and try again."
+                    cbdebug(_msg, True)
+                    return _status, _msg
 
                 _msg = "VM post-attachment operations failure: " + _fmsg
                 cberr(_msg)
@@ -2276,8 +2298,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
                 _msg = "VM post-attachment operations success."
                 cbdebug(_msg)
-
-        return True
+                return _status, _msg
 
     @trace
     def post_attach_ai(self, obj_attr_list, staging = None) :
@@ -2361,8 +2382,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
                 _msg = "AI post-attachment operations success."
                 cbdebug(_msg)
-
-        return True
+                return _status, _msg
 
     @trace
     def post_attach_aidrs(self, obj_attr_list) :
@@ -2444,8 +2464,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
                 _msg = "AIDRS post-attachment operations success."
                 cbdebug(_msg)
-
-        return True
+                return _status, _msg
 
     @trace
     def post_attach_vmcrs(self, obj_attr_list) :
@@ -2498,8 +2517,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
                 _msg = "VMCRS post-attachment operations success."
                 cbdebug(_msg)
-
-        return True
+                return _status, _msg
 
     def post_attach_firs(self, obj_attr_list) :
         '''
@@ -2551,8 +2569,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
                 _msg = "FIRS post-attachment operations success."
                 cbdebug(_msg)
-
-        return True
+                return _status, _msg
         
     @trace
     def pre_detach_vmc(self, obj_attr_list) :
@@ -2603,9 +2620,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
             if obj_attr_list["ai"] == "none" or obj_attr_list["force_detach"].lower() != "false" :
                 _status = 0
             else :
-                _status = 46
-                _fmsg = "This VM is part of the AI " + obj_attr_list["ai"] + '.'
-                _fmsg += "Please detach this AI instead."
+                if self.osci.object_exists(obj_attr_list["cloud_name"], "AI", obj_attr_list["ai"], False) :
+                    _status = 46
+                    _fmsg = "This VM is part of the AI " + obj_attr_list["ai"] + '.'
+                    _fmsg += "Please detach this AI instead."
+                else :
+                    _status = 0
                 
         except self.osci.ObjectStoreMgdConnException, obj :
             _status = obj.status

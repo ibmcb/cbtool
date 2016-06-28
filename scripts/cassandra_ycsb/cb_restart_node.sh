@@ -166,5 +166,9 @@ else
     fi
 fi
     
-provision_application_stop $START
+if [[ $STATUS -eq 0 ]]
+then
+    provision_application_stop $START
+fi
+
 exit $STATUS

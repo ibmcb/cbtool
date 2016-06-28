@@ -1,4 +1,4 @@
-#! /usr/bin/Rscript
+#! /usr/bin/env Rscript
 
 #/*****************************************************************************
 # Copyright (c) 2012 IBM Corp.
@@ -53,8 +53,8 @@ option_list <- list(
                 metavar="selected_maxvms"),
         make_option(c("-l", "--layer"), action="store_true", default=FALSE,
                 dest="layer", help="Layer provisioning events on top of runtime"),
-		make_option(c("-i", "--trace"), action="store_true", default=FALSE,
-				dest="trace", help="Plot trace (experiment events and counters)"),		
+        make_option(c("-i", "--trace"), action="store_true", default=FALSE,
+                dest="trace", help="Plot trace (experiment events and counters)"),        
         make_option(c("-d", "--directory"), default=getwd(),
                 help = "Directory where the csv files to be processed are located [default \"%default\"]", 
                 metavar="selected_directory"),
@@ -82,8 +82,8 @@ option_list <- list(
         make_option(c("-y", "--yint"), type="integer", default=10,
                 help = "Metric unit intervals [default \"%default\"]", 
                 metavar="selected_metric_intervals"),
-        make_option(c("-u", "--update"), action="store_true", default=FALSE,
-                dest="layer", help="Outuput Latex/CSV tables with the plot points")        
+        make_option(c("-u", "--ulatex"), action="store_true", default=FALSE,
+                dest="latex", help="Outuput Latex/CSV tables with the plot points")        
 )
 
 opt <- parse_args(OptionParser(option_list=option_list))
@@ -162,18 +162,18 @@ if (opt$aggregate) {
     msg <- paste("### Done ###", sep = '')
     cat(msg, sep='\n')
 
-	if (opt$runtimemetrics) {
-	    msg <- paste("Generating aggregate runtime application metrics plot for all ", 
-	            "experiments....", sep = '')
-	    cat(msg, sep='\n')
-	    
-	    plot_runtime_application_data(rapp_metrics, opt$directory, "all", "all", 
-	            "none", opt$xint, opt$yint, 
-	            opt$size)
-	    
-	    msg <- paste("### Done ###", sep = '')
-	    cat(msg, sep='\n')
-		}		
+    if (opt$runtimemetrics) {
+        msg <- paste("Generating aggregate runtime application metrics plot for all ", 
+                "experiments....", sep = '')
+        cat(msg, sep='\n')
+        
+        plot_runtime_application_data(rapp_metrics, opt$directory, "all", "all", 
+                "none", opt$xint, opt$yint, 
+                opt$size)
+        
+        msg <- paste("### Done ###", sep = '')
+        cat(msg, sep='\n')
+        }        
 
     } else {
         msg <- paste("### BYPASSING aggregate metrics plotting for all experiments ###", 
@@ -189,10 +189,10 @@ if (opt$expid == "all")    {
 
 for (experiment in experiment_list) {
 
-	if (opt$trace) {
-    	plot_trace_data(trace_metrics, opt$directory, experiment, opt$size)
-	}
-	
+    if (opt$trace) {
+        plot_trace_data(trace_metrics, opt$directory, experiment, opt$size)
+    }
+    
     if (opt$provisionmetrics) {
     
         msg <- paste("### Generating management metrics plot for experiment ", 
@@ -283,14 +283,15 @@ for (experiment in experiment_list) {
             } else {
                 named_events <- "none"
                 }
-
+				
+		actual_expid <- digest(object = experiment, algo = "crc32", serialize = FALSE)
         if (opt$layer && opt$namedevent == "none") {
             msg <- paste("### Layering provisioning events on top of the runtime",
                     "host metrics plot for experiment", "\"", experiment,
                     "\" ###", sep = '')
             cat(msg, sep='\n')    
             
-            vm_events <- subset(mgt_metrics, expid == experiment , 
+            vm_events <- subset(mgt_metrics, expid == actual_expid , 
                     select = c("host_name", "vm_arrival_start", "vm_arrival_end", "vm_capture_start", "vm_capture_end"))
 
             vm_events$vm_arrival_start[is.na(vm_events$vm_arrival_start)] <- -1
@@ -300,8 +301,8 @@ for (experiment in experiment_list) {
             
             named_events <- unique(vm_events)
             }
-                
-        experiment_host_list <- subset(mgt_metrics, expid == experiment, select = c("host_name", "expid"))
+
+	    experiment_host_list <- subset(mgt_metrics, expid == actual_expid, select = c("host_name", "expid"))
         experiment_host_list <- experiment_host_list[experiment_host_list$host_name != "unknown",]
 
         if (length(experiment_host_list$host_name) > 0 ) {
@@ -332,16 +333,18 @@ for (experiment in experiment_list) {
         
                 system(paste("rm -rf ", pdf_dir, "/Rplots.pdf", sep = ''))
         tex_files <- c(list.files(path = opt$directory, pattern = "tex", recursive = TRUE))
-        if (length(tex_files) > 1) {
-            command <- paste("pdflatex -output-directory=", pdf_dir, ' ', pdf_dir, "/*.tex", sep = '')
-                        print(command)
-            system(command)
-        }
-        
-        command <- paste("rm -rf ", pdf_dir, "/all_plots.pdf; pdftk ", pdf_dir, "/*.pdf cat output ", pdf_dir, "/all_plots.pdf", sep = '')
-                print(command)
-        system(command)
-        
+		
+		if (opt$latex) {
+	        if (length(tex_files) > 1) {
+	            command <- paste("pdflatex -output-directory=", pdf_dir, ' ', pdf_dir, "/*.tex", sep = '')
+	                        print(command)
+	            system(command)
+	        }
+	        
+	        command <- paste("rm -rf ", pdf_dir, "/all_plots.pdf; pdftk ", pdf_dir, "/*.pdf cat output ", pdf_dir, "/all_plots.pdf", sep = '')
+	                print(command)
+	        system(command)
+		}        
     }
 
 pdf_dir <- paste(opt$directory, sep = '')
@@ -351,13 +354,13 @@ system(paste("rm -rf ", pdf_dir, "/texput.log", sep = ''))
 if (opt$aggregate) {
     
     tex_files <- c(list.files(path = opt$directory, pattern = "tex", recursive = TRUE))
-       
-    if (length(tex_files) > 1) {
-        command <- paste("pdflatex -output-directory=", pdf_dir, ' ', pdf_dir, "/*.tex", sep = '')
-                print(command)
-                system(command)
-    }
-    
+	if (opt$latex) {       
+	    if (length(tex_files) > 1) {
+	        command <- paste("pdflatex -output-directory=", pdf_dir, ' ', pdf_dir, "/*.tex", sep = '')
+	                print(command)
+	                system(command)
+	    }
+	}
     command <- paste("rm -rf ", pdf_dir, "/all_plots.pdf; pdftk ", pdf_dir, "/*.pdf cat output ", pdf_dir, "/all_plots.pdf", sep = '')
     print(command)
     system(command)

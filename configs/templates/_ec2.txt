@@ -116,6 +116,7 @@ FILEBENCH = size:m1.small, imageid1:ami-9cee76f5
 DRIVER_FIO = size:m1.medium, imageid1:ami-9cee76f5
 FIO = size:m1.medium, imageid1:ami-9cee76f5
 TINYVM = size:t1.micro, imageid1:ami-b485addc
+YATINYVM = size:t1.micro, imageid1:ami-b485addc
 FEN_HPC = size:m1.medium, imageid1:ami-9cee76f5
 CN_HPC = size:m1.medium, imageid1:ami-9cee76f5
 DDGEN = size:m1.medium, imageid1:ami-9cee76f5

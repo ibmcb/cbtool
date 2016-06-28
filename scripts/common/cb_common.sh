@@ -904,8 +904,13 @@ function refresh_hosts_file {
 }
 
 function provision_application_start {
-    PASTART=$(date +%s)
-    echo $PASTART > /tmp/provision_application_start
+	if [[ -f /tmp/provision_application_start ]]
+	then
+		PASTART=$(cat /tmp/provision_application_start)
+	else 
+    	PASTART=$(date +%s)
+    	echo $PASTART > /tmp/provision_application_start
+	fi
     echo $PASTART
 }
 export -f provision_application_start
