@@ -4767,6 +4767,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _msg += "current load will be allowed to finish its course."
                 cbdebug(_msg)
                 self.parallel_vm_config_for_ai(cloud_name, object_uuid, "reset")
+                sleep(_check_frequency)
 
         _msg = "AI \"state key\" was removed. The Load Manager will now end its execution"
         cbdebug(_msg)
