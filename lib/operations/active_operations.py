@@ -444,6 +444,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         except Exception, e :
                             break
                     tn.close
+                    lines.reverse()
                     for line in lines :
                         if line.count("route " + cld_attr_lst["vpn"]["network"]) :
                             bip = line.split(" ")[10]
