@@ -65,11 +65,9 @@ EC2_LOGIN = cbuser                                         # The username that l
 # vCloud Director requires the following parameters
 [USER-DEFINED : CLOUDOPTION_MYVCDCLOUD]
 VCD_ACCESS = 10.1.1.1                                      # IP address or host name for vCloud Director API
-VCD_CREDENTIALS = happyguy@DeployPlace                     # username to log into vCloud Director API
-VCD_PASSWORD = xxxxx                                       # password to log into vCloud Director API
+VCD_CREDENTIALS = happyguy@DeployPlace;password            # username to log into vCloud Director API
 VCD_KEY_NAME = xxxxx                                       # password to log into vCloud Director API (same as above)
 VCD_SECURITY_GROUPS = none                                 # Not used in vCloud Director, but required by CloudBench
-VCD_VERSION = 1.5                                          # VCD version. Only tested with 1.5.
 VCD_INITIAL_VMCS = DeployPlace                             # vCloud Director instance name
 VCD_SSH_KEY_NAME = cbtool_rsa                              # Private key used to SSH into VMs
 VCD_LOGIN = cbuser                                         # Username associated with the private key above
