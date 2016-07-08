@@ -1400,7 +1400,7 @@ class OskCmds(CommonCloudFunctions) :
             if "hypervisor_type" in obj_attr_list and str(obj_attr_list["hypervisor_type"]).lower() != "fake" :
                 
                 _hyper = obj_attr_list["hypervisor_type"]
-                    
+
                 for _image in list(_candidate_images) :
                     if "hypervisor_type" in _image.metadata :
                         if _image.metadata["hypervisor_type"] != obj_attr_list["hypervisor_type"] :
@@ -2195,8 +2195,8 @@ class OskCmds(CommonCloudFunctions) :
                                                                      obj_attr_list["cloud_vv_uuid"], \
                                                                      "/dev/vdd")
 
-                    _mark2 = int(time())
-                    obj_attr_list["osk_016_create_volume_time"] += (_mark3 - _mark3)
+                    _mark4 = int(time())
+                    obj_attr_list["osk_016_attach_volume_time"] += (_mark4 - _mark3)
 
             else :
                 obj_attr_list["cloud_vv_uuid"] = "none"
@@ -2593,12 +2593,11 @@ class OskCmds(CommonCloudFunctions) :
 
             if "host_name" in obj_attr_list and _availability_zone :
 #                _scheduler_hints = { "force_hosts" : obj_attr_list["host_name"] }
-
                 for _host in self.oskconncompute.hypervisors.list() :
                     if _host.hypervisor_hostname.count(obj_attr_list["host_name"]) :
                         obj_attr_list["host_name"] = _host.hypervisor_hostname
 
-                _availability_zone += ':' + obj_attr_list["availability_zone"]
+                _availability_zone += ':' + obj_attr_list["host_name"]
 
             _scheduler_hints = None
 

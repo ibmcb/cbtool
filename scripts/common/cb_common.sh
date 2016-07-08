@@ -848,16 +848,16 @@ load_manager_ip=`get_my_ai_attribute load_manager_ip`
 
 if [ x"${NC_HOST_SYSLOG}" == x ]; then
     if [ x"${osmode}" != x"scalable" ]; then
-		USE_VPN_IP=`get_global_sub_attribute vm_defaults use_vpn_ip`
-		VPN_ONLY=`get_global_sub_attribute vm_defaults vpn_only`
+        USE_VPN_IP=`get_global_sub_attribute vm_defaults use_vpn_ip`
+        VPN_ONLY=`get_global_sub_attribute vm_defaults vpn_only`
 
-		# We cannot log anything with VPN_ONLY if we don't use the VPN server's IP address
+        # We cannot log anything with VPN_ONLY if we don't use the VPN server's IP address
 
-		if [ x"$USE_VPN_IP" == x"True" ] && [ x"$VPN_ONLY" == x"True" ] ; then
-			NC_HOST_SYSLOG=`get_global_sub_attribute vpn server_bootstrap`
-		else
-			NC_HOST_SYSLOG=`get_global_sub_attribute logstore hostname`
-		fi
+        if [ x"$USE_VPN_IP" == x"True" ] && [ x"$VPN_ONLY" == x"True" ] ; then
+            NC_HOST_SYSLOG=`get_global_sub_attribute vpn server_bootstrap`
+        else
+            NC_HOST_SYSLOG=`get_global_sub_attribute logstore hostname`
+        fi
         NC_OPTIONS="-w1 -u"
     else 
         NC_HOST_SYSLOG=`get_my_ai_attribute load_manager_ip`
@@ -904,13 +904,13 @@ function refresh_hosts_file {
 }
 
 function provision_application_start {
-	if [[ -f /tmp/provision_application_start ]]
-	then
-		PASTART=$(cat /tmp/provision_application_start)
-	else 
-    	PASTART=$(date +%s)
-    	echo $PASTART > /tmp/provision_application_start
-	fi
+    if [[ -f /tmp/provision_application_start ]]
+    then
+        PASTART=$(cat /tmp/provision_application_start)
+    else 
+        PASTART=$(date +%s)
+        echo $PASTART > /tmp/provision_application_start
+    fi
     echo $PASTART
 }
 export -f provision_application_start
@@ -1136,7 +1136,12 @@ function post_boot_steps {
     sleep 1
 
     sudo bash -c "chmod 777 /dev/pts/*"
-    restart_ntp
+    DISABLE_TIMESYNC=$(get_my_vm_attribute disable_timesync)
+    DISABLE_TIMESYNC=$(echo ${DISABLE_TIMESYNC} | tr '[:upper:]' '[:lower:]')
+    if [[ $DISABLE_TIMESYNC == "false" ]] 
+    then
+        restart_ntp
+    fi
     sudo ln -sf ${dir}/../../3rd_party/monitor-core ~
     sudo ln -sf ${dir}/../../util ~
 

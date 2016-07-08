@@ -51,6 +51,7 @@ class PdmCmds(CommonCloudFunctions) :
         self.ft_supported = False
         self.dockconn = {}
         self.expid = expid
+        self.swarm_ip = False
 
     @trace
     def get_description(self) :
@@ -108,7 +109,7 @@ class PdmCmds(CommonCloudFunctions) :
             _key_pair_found = True
             
             _detected_imageids = self.check_images(vmc_name, vm_templates)
-            
+
             if not (_run_netname_found and _prov_netname_found and \
                     _key_pair_found and len(_detected_imageids)) :
                 _msg = "Check the previous errors, fix it (using OpenStack's web"
@@ -166,43 +167,63 @@ class PdmCmds(CommonCloudFunctions) :
         obj_attr_list["host_list"] = {}
         obj_attr_list["hosts"] = ''
 
+        _access_list = ''
+        for _endpoint in self.dockconn :
+            _info = self.dockconn[_endpoint].info()
+            if _info["SystemStatus"] :
+                for _item in _info["SystemStatus"] :
+                    if _item[1].count(':') == 1 :
+                        _ip, _port = _item[1].split(':')
+                        _hostname, _ip = hostname2ip(_item[0].strip())
+                        _access_list += "tcp://" + _ip + ':' + _port + ','
+
+        if len(_access_list) :
+            _access_list = _access_list[0:-1]
+    
+            self.connect(_access_list, \
+                         obj_attr_list["credentials"], \
+                         obj_attr_list["name"])
+
         for _endpoint in self.dockconn :
             _host_info = self.dockconn[_endpoint].info()
-            _host_uuid = self.generate_random_uuid(_host_info["Name"])
-
-            obj_attr_list["hosts"] += _host_uuid + ','            
-            obj_attr_list["host_list"][_host_uuid] = {}
-            obj_attr_list["host_list"][_host_uuid]["pool"] = obj_attr_list["pool"].upper()
-            obj_attr_list["host_list"][_host_uuid]["username"] = obj_attr_list["username"]
-#            obj_attr_list["host_list"][_host_uuid]["cloud_ip"] = self.generate_random_ip_address()
-            obj_attr_list["host_list"][_host_uuid]["notification"] = "False"
-            obj_attr_list["host_list"][_host_uuid]["cloud_hostname"] = _host_info["Name"]
-
-            obj_attr_list["host_list"][_host_uuid]["name"] = "host_"  + obj_attr_list["host_list"][_host_uuid]["cloud_hostname"]
-            obj_attr_list["host_list"][_host_uuid]["vmc_name"] = obj_attr_list["name"]
-            obj_attr_list["host_list"][_host_uuid]["vmc"] = obj_attr_list["uuid"]
-            obj_attr_list["host_list"][_host_uuid]["cloud_vm_uuid"] = _host_uuid
-            obj_attr_list["host_list"][_host_uuid]["uuid"] = _host_uuid
-            obj_attr_list["host_list"][_host_uuid]["model"] = obj_attr_list["model"]
-            obj_attr_list["host_list"][_host_uuid]["function"] = "hypervisor"
-            obj_attr_list["host_list"][_host_uuid]["cores"] = _host_info["NCPU"]
-            obj_attr_list["host_list"][_host_uuid]["memory"] = _host_info["MemTotal"]/(1024*1024)
-            obj_attr_list["host_list"][_host_uuid]["cloud_ip"] = _endpoint             
-            obj_attr_list["host_list"][_host_uuid]["arrival"] = int(time())
-            obj_attr_list["host_list"][_host_uuid]["simulated"] = "True"
-            obj_attr_list["host_list"][_host_uuid]["identity"] = obj_attr_list["identity"]
-            
-            if "login" in obj_attr_list :
-                obj_attr_list["host_list"][_host_uuid]["login"] = obj_attr_list["login"]
-            else :
-                obj_attr_list["host_list"][_host_uuid]["login"] = "root"
+            if not _host_info["SystemStatus"] :
+                _host_uuid = self.generate_random_uuid(_host_info["Name"])
+    
+                obj_attr_list["hosts"] += _host_uuid + ','            
+                obj_attr_list["host_list"][_host_uuid] = {}
+                obj_attr_list["host_list"][_host_uuid]["pool"] = obj_attr_list["pool"].upper()
+                obj_attr_list["host_list"][_host_uuid]["username"] = obj_attr_list["username"]
+    #            obj_attr_list["host_list"][_host_uuid]["cloud_ip"] = self.generate_random_ip_address()
+                obj_attr_list["host_list"][_host_uuid]["notification"] = "False"
+                obj_attr_list["host_list"][_host_uuid]["cloud_hostname"] = _host_info["Name"]
+    
+                obj_attr_list["host_list"][_host_uuid]["name"] = "host_"  + obj_attr_list["host_list"][_host_uuid]["cloud_hostname"]
+                obj_attr_list["host_list"][_host_uuid]["vmc_name"] = obj_attr_list["name"]
+                obj_attr_list["host_list"][_host_uuid]["vmc"] = obj_attr_list["uuid"]
+                obj_attr_list["host_list"][_host_uuid]["cloud_vm_uuid"] = _host_uuid
+                obj_attr_list["host_list"][_host_uuid]["uuid"] = _host_uuid
+                obj_attr_list["host_list"][_host_uuid]["model"] = obj_attr_list["model"]
+                obj_attr_list["host_list"][_host_uuid]["function"] = "hypervisor"
+                obj_attr_list["host_list"][_host_uuid]["cores"] = _host_info["NCPU"]
+                obj_attr_list["host_list"][_host_uuid]["memory"] = _host_info["MemTotal"]/(1024*1024)
+                obj_attr_list["host_list"][_host_uuid]["cloud_ip"] = _endpoint             
+                obj_attr_list["host_list"][_host_uuid]["arrival"] = int(time())
+                obj_attr_list["host_list"][_host_uuid]["simulated"] = "True"
+                obj_attr_list["host_list"][_host_uuid]["identity"] = obj_attr_list["identity"]
                 
-            obj_attr_list["host_list"][_host_uuid]["counter"] = obj_attr_list["counter"]
-            obj_attr_list["host_list"][_host_uuid]["mgt_001_provisioning_request_originated"] = obj_attr_list["mgt_001_provisioning_request_originated"]
-            obj_attr_list["host_list"][_host_uuid]["mgt_002_provisioning_request_sent"] = obj_attr_list["mgt_002_provisioning_request_sent"]
-            _time_mark_prc = int(time())
-            obj_attr_list["host_list"][_host_uuid]["mgt_003_provisioning_request_completed"] = _time_mark_prc - start
-
+                if "login" in obj_attr_list :
+                    obj_attr_list["host_list"][_host_uuid]["login"] = obj_attr_list["login"]
+                else :
+                    obj_attr_list["host_list"][_host_uuid]["login"] = "root"
+                    
+                obj_attr_list["host_list"][_host_uuid]["counter"] = obj_attr_list["counter"]
+                obj_attr_list["host_list"][_host_uuid]["mgt_001_provisioning_request_originated"] = obj_attr_list["mgt_001_provisioning_request_originated"]
+                obj_attr_list["host_list"][_host_uuid]["mgt_002_provisioning_request_sent"] = obj_attr_list["mgt_002_provisioning_request_sent"]
+                _time_mark_prc = int(time())
+                obj_attr_list["host_list"][_host_uuid]["mgt_003_provisioning_request_completed"] = _time_mark_prc - start
+            else :
+                self.swarm_ip = _endpoint
+                
         obj_attr_list["hosts"] = obj_attr_list["hosts"][:-1]
 
         self.additional_host_discovery (obj_attr_list)
@@ -542,7 +563,7 @@ class PdmCmds(CommonCloudFunctions) :
         obj_attr_list["cloud_mac"] = "NA"
                         
         _networks = self.instance_info["NetworkSettings"]["Networks"].keys()
-        
+                
         if len(_networks) :
             
             if _networks.count(obj_attr_list["run_netname"]) :
@@ -585,21 +606,27 @@ class PdmCmds(CommonCloudFunctions) :
         TBD
         '''
         try :
-
-            if "host_ip" in obj_attr_list :
+            if "host_cloud_ip" in obj_attr_list :
                 _host_ip = obj_attr_list["host_cloud_ip"]
             else :
                 _host_ip = "all"
-                
+
             _instance = self.get_instances(obj_attr_list, "vm", _host_ip, obj_attr_list["cloud_vm_name"])
-            
+
             if _instance :
                 _instance_state = _instance["State"]
             else :
                 _instance_state = "non-existent"
-            
+
             if _instance_state == "running" :
                 self.instance_info = _instance
+                
+                _instance_name = _instance["Names"][0][1:]
+                _host_name = _instance_name.replace(obj_attr_list["cloud_vm_name"],'')
+                _host_name = _host_name.replace('/','').strip()
+                                
+                if len(_host_name) :
+                    obj_attr_list["host_name"], obj_attr_list["host_cloud_ip"] = hostname2ip(_host_name.strip())
                 return True
             else :
                 return False
@@ -612,8 +639,7 @@ class PdmCmds(CommonCloudFunctions) :
     def is_vm_ready(self, obj_attr_list) :
         '''
         TBD
-        '''
-
+        '''        
         if self.is_vm_running(obj_attr_list) :
 
             if self.get_ip_address(obj_attr_list) :
@@ -630,7 +656,11 @@ class PdmCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
-        obj_attr_list["host_cloud_ip"] = choice(self.dockconn.keys())
+        if self.swarm_ip :
+            obj_attr_list["host_cloud_ip"] = self.swarm_ip
+        else :
+            obj_attr_list["host_cloud_ip"] = choice(self.dockconn.keys())
+            
         self.name_resolution(obj_attr_list, "VM")
         return True
 
@@ -790,7 +820,6 @@ class PdmCmds(CommonCloudFunctions) :
                 obj_attr_list["cloud_vm_name"] += obj_attr_list["name"].split("_")[1]
                 obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["role"]
 
-
                 if obj_attr_list["ai"] != "none" :            
                     obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["ai_name"]
 
@@ -835,7 +864,8 @@ class PdmCmds(CommonCloudFunctions) :
 
             _msg = "Starting an instance on PDM Cloud, using the imageid \"" 
             _msg +=  obj_attr_list["imageid1"] + " \"" + "and size \"" 
-            _msg += obj_attr_list["size"] + "\" on VMC \"" 
+            _msg += obj_attr_list["size"] + "\", connected to the network \"" 
+            _msg += obj_attr_list["netname"] + "\", on VMC \"" 
             _msg += obj_attr_list["vmc_name"] + "\" (endpoint \"" + obj_attr_list["host_cloud_ip"] + "\")"
             cbdebug(_msg, True)
 
@@ -845,7 +875,7 @@ class PdmCmds(CommonCloudFunctions) :
             if "cloud_vv_name" in obj_attr_list :
                 _binds = [ obj_attr_list["cloud_vv_name"] + ":/mnt/cbvol1:rw"]                
                 _volumes = [ "/mnt/cbvol1" ]
-                
+                                                                                                            
             _host_config = self.dockconn[obj_attr_list["host_cloud_ip"]].create_host_config(network_mode = obj_attr_list["netname"], \
                                                                                             port_bindings = _port_bindings, 
                                                                                             binds = _binds)
@@ -864,7 +894,7 @@ class PdmCmds(CommonCloudFunctions) :
             obj_attr_list["cloud_vm_uuid"] = _instance["Id"]
 
             self.dockconn[obj_attr_list["host_cloud_ip"]].start(obj_attr_list["cloud_vm_uuid"])
-                       
+
             self.take_action_if_requested("VM", obj_attr_list, "provision_started")
 
             _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
@@ -893,7 +923,6 @@ class PdmCmds(CommonCloudFunctions) :
             cbdebug("VM create keyboard interrupt...", True)
 
         except Exception, e :
-            print "A"
             _status = 23
             _fmsg = str(e)
 
@@ -906,11 +935,16 @@ class PdmCmds(CommonCloudFunctions) :
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "could not be created"
                 _msg += " on PDM Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
-                _msg += _fmsg + " (The VM creation was rolled back)"
-                cberr(_msg, True)
-                
-                obj_attr_list["mgt_901_deprovisioning_request_originated"] = int(time())
-                self.vmdestroy(obj_attr_list)
+                _msg += _fmsg
+
+                if str(obj_attr_list["leave_instance_on_failure"]).lower() == "true" :
+                    _msg += " (Will leave the VM running due to experimenter's request)"
+                    cberr(_msg, True)
+                else :
+                    _msg += " (The VM creation will be rolled back)"
+                    cberr(_msg, True)                    
+                    obj_attr_list["mgt_901_deprovisioning_request_originated"] = int(time())
+                    self.vmdestroy(obj_attr_list)
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "" + obj_attr_list["name"] + ""

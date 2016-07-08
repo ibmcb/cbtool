@@ -925,7 +925,6 @@ runcmd:
                         obj_attr_list["vm_attach_action"] = _temp_dict["vm_staging"]
                         
                 obj_attr_list["vm_extra_parms"] = obj_attr_list["vm_extra_parms"][0:-1]
-
                 obj_attr_list.update(_temp_dict)
             
             if obj_attr_list["name"].count("vm_") :

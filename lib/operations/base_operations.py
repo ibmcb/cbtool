@@ -2281,6 +2281,7 @@ class BaseObjectOperations :
             _obj_types = []
             _vm_names = []
             _vm_hns = []
+            _vm_pns = []
             _vm_roles = []
             _vm_ip_addrs = []
             _vm_logins = []
@@ -2310,8 +2311,17 @@ class BaseObjectOperations :
                 
                 _vm_names.append(_obj_attr_list["name"])
                 _vm_hns.append(_obj_attr_list["cloud_hostname"])
+                if "port_mapping" in _obj_attr_list and operation != "reset" :
+                    _vm_pns.append(_obj_attr_list["port_mapping"])
+                else :
+                    _vm_pns.append("22")                    
+                
                 _vm_roles.append(_obj_attr_list["role"])
-                _vm_ip_addrs.append(_obj_attr_list["prov_cloud_ip"])
+                if operation != "reset" :
+                    _vm_ip_addrs.append(_obj_attr_list["prov_cloud_ip"])
+                else :
+                    _vm_ip_addrs.append(_obj_attr_list["run_cloud_ip"])
+                                        
                 _vm_logins.append(_obj_attr_list["login"])
                 _vm_passwds.append(None)
 
@@ -2353,6 +2363,7 @@ class BaseObjectOperations :
                 if _actual_attempts > 0 :
                     _status, _xfmsg = self.proc_man_os_command.parallel_run_os_command(_vm_post_boot_commands, \
                                                                         _vm_ip_addrs, \
+                                                                        _vm_pns, \
                                                                         _actual_attempts, \
                                                                         int(_ai_attr_list["update_frequency"]), \
                                                                         _ai_attr_list["execute_parallelism"], \
@@ -2486,6 +2497,7 @@ class BaseObjectOperations :
                     if _actual_attempts > 0 :
                         _status, _xfmsg = self.proc_man_os_command.parallel_run_os_command(_vm_command_list, \
                                                                             _vm_ip_addrs, \
+                                                                            _vm_pns, \
                                                                             _actual_attempts, \
                                                                             int(_ai_attr_list["update_frequency"]), \
                                                                             _ai_attr_list["execute_parallelism"], \
@@ -3021,7 +3033,7 @@ class BaseObjectOperations :
                  previous_load_id = False) :
         '''
         TBD
-        '''
+        '''        
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
@@ -3031,13 +3043,22 @@ class BaseObjectOperations :
 
             else :
                 if not previous_load :
-                    previous_load = 0
+                    if "current_load_level" in obj_attr_list :
+                        previous_load = obj_attr_list["current_load_level"]
+                    else :                    
+                        previous_load = 0
                     
                 if not previous_duration :
-                    previous_duration = 0
+                    if "current_load_duration" in obj_attr_list :
+                        previous_duration = obj_attr_list["current_load_duration"]
+                    else :                 
+                        previous_duration = 0
                     
                 if not previous_load_id :
-                    previous_load_id = 0
+                    if "current_load_id" in obj_attr_list :
+                        previous_load_id = obj_attr_list["current_load_id"]
+                    else :
+                        previous_load_id = 0
 
                 _vg = ValueGeneration(self.pid)
                 obj_attr_list["current_load_level"] = int(_vg.get_value(obj_attr_list["load_level"], previous_load))                
@@ -3046,7 +3067,7 @@ class BaseObjectOperations :
                 obj_attr_list["current_load_id"] = int(previous_load_id) + 1
 
                 _msg = "The selected load level for load id " 
-                _msg += str(obj_attr_list["current_load_id"]) + "(load profile \""
+                _msg += str(obj_attr_list["current_load_id"]) + " (load profile \""
                 _msg += obj_attr_list["current_load_profile"] + "\") was "  
                 _msg += str(obj_attr_list["current_load_level"])
                 _msg += " and it will be applied to the sut for "

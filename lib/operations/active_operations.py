@@ -1806,7 +1806,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                  obj_attr_list["arrival"]
 
                         if _obj_type == "VM" and "host_name" in obj_attr_list and obj_attr_list["host_name"] != "unknown" :
-
                             if obj_attr_list["discover_hosts"].lower() == "true" :
                                 _host_attr_list = self.osci.get_object(_cloud_name, "HOST", True, "host_" + obj_attr_list["host_name"], False)
                                 obj_attr_list["host"] = _host_attr_list["uuid"]
@@ -2126,8 +2125,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
         _proc_man = ProcessManagement(username = obj_attr_list["login"], \
                                       cloud_name = obj_attr_list["cloud_name"], \
                                       priv_key = obj_attr_list["identity"], \
-                                      config_file = _config_file, \
-                                      port = _port)
+                                      config_file = _config_file)
 
         try :
 
@@ -2147,8 +2145,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                obj_attr_list["transfer_files"], \
                                                obj_attr_list["debug_remote_commands"], \
                                                True,
-                                               tell_me_if_stderr_contains = "Connection reset by peer")
-            
+                                               tell_me_if_stderr_contains = "Connection reset by peer", \
+                                               port = _port)
+
             self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], \
                                               False, "last_known_state", \
                                               "checked SSH accessibility")
@@ -2174,7 +2173,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                    _retry_interval, \
                                                    obj_attr_list["transfer_files"], \
                                                    obj_attr_list["debug_remote_commands"], \
-                                                   True)
+                                                   True, \
+                                                   tell_me_if_stderr_contains = "Connection reset by peer", \
+                                                   port = _port)
 
             _msg = "Sending a copy of the code tree to "
             _msg += obj_attr_list["name"] + " ("+ obj_attr_list["prov_cloud_ip"] + ")..."
@@ -2203,7 +2204,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                    _retry_interval, \
                                                    obj_attr_list["transfer_files"], \
                                                    obj_attr_list["debug_remote_commands"], \
-                                                   True)                
+                                                   True, \
+                                                   tell_me_if_stderr_contains = "Connection reset by peer", \
+                                                   port = _port)                
 
                 self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], \
                                                   False, "last_known_state", \
@@ -2232,7 +2235,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _status, _xfmsg, _object = \
                 _proc_man.run_os_command(_cmd, obj_attr_list["prov_cloud_ip"], \
                                          obj_attr_list["run_generic_scripts"], \
-                                         obj_attr_list["debug_remote_commands"])
+                                         obj_attr_list["debug_remote_commands"], \
+                                         True, \
+                                         tell_me_if_stderr_contains = "Connection reset by peer", \
+                                         port = _port)                    
 
                 if _status :
                     _fmsg = "Failure while executing generic VM "
@@ -4796,7 +4802,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _msg += "current load will be allowed to finish its course."
                 cbdebug(_msg)
                 self.parallel_vm_config_for_ai(cloud_name, object_uuid, "reset")
-
+                sleep(_check_frequency)
+        
         _msg = "AI \"state key\" was removed. The Load Manager will now end its execution"
         cbdebug(_msg)
         _status = 0
