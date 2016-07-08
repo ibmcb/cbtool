@@ -607,7 +607,7 @@ class RedisMgdConn :
                 else :
                     _initial_state = "attached"
                     
-                _obj_state_fn = _obj_inst_fn + ':' + obj_uuid + ":STATE"                
+                _obj_state_fn = _obj_inst_fn + ':' + obj_uuid + ":STATE"
                 self.redis_conn.set(_obj_state_fn, _initial_state)
 
                 if str(obj_attr_list["notification"]).lower() != "false" :
@@ -763,7 +763,7 @@ class RedisMgdConn :
         obj_inst = self.experiment_inst + ":" + cloud_name
 
         _obj_inst_fn = obj_inst + ':' + obj_type + ':' + obj_uuid
-        
+
         try :
             _state = self.redis_conn.set(_obj_inst_fn + ":STATE", value)
 

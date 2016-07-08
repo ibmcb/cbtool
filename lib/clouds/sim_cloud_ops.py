@@ -1044,7 +1044,7 @@ class SimCmds(CommonCloudFunctions) :
         TBD
         '''
         try :
-            _fmsg = "An error has occurred, but no error message was captured"            
+            _fmsg = "An error has occurred, but no error message was captured"
             self.take_action_if_requested("AI", obj_attr_list, current_step)            
             _status = 0
 

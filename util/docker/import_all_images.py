@@ -7,26 +7,35 @@ import wget
 
 def main() :
     
-    _usage = argv[0] + " docker_host_ip1[,docker_host_ip2,..,docker_host_ipn]"    
+    _usage = argv[0] + " docker_host_ip1[,docker_host_ip2,..,docker_host_ipn] [images names]"    
 
-    if len(argv) != 2 :
+    if len(argv) < 2 :
         print _usage
-        exit(1)    
+        exit(1) 
+
+    if len(argv) > 2 :
+        _image_list = argv[2]
+    else :
+        _image_list = "all"
 
     _endpoint_port = 2375    
     _images_base_dir = "/tmp"
     _images_base_url = "http://9.2.212.67/repo/vmimages/"
     _images_arch = "x86_64"
-    _images_names = [ "nullworkload", \
-                      "hadoop", \
-                      "ycsb", \
-                      "iperf", \
-                      "netperf", \
-                      "nuttcp", \
-                      "fio", \
-                      "xping", \
-                      "speccloud_cassandra_2111", \
-                      "speccloud_hadoop_271" ]
+
+    if _image_list == "all" :
+        _images_names = [ "nullworkload", \
+                          "hadoop", \
+                          "ycsb", \
+                          "iperf", \
+                          "netperf", \
+                          "nuttcp", \
+                          "fio", \
+                          "xping", \
+                          "speccloud_cassandra_2111", \
+                          "speccloud_hadoop_271" ]
+    else :
+        _images_names = argv[2].split(',')
 
     _images_cksum = _images_base_url + "/cloudbench/" + _images_arch + "/md5sum.txt"
     

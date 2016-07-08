@@ -66,7 +66,7 @@ class ProcessManagement :
 
     @trace
     def run_os_command(self, cmdline, override_hostname = None, really_execute = True, \
-                       debug_cmd = False, raise_exception = True, step = None, tell_me_if_stderr_contains = False) :
+                       debug_cmd = False, raise_exception = True, step = None, tell_me_if_stderr_contains = False, port = 22) :
         '''
         TBD
         '''
@@ -79,6 +79,8 @@ class ProcessManagement :
             _local = True
         else :
             _local = False
+
+        _port = port
 
         if _local :     
             _cmd = cmdline
@@ -104,7 +106,7 @@ class ProcessManagement :
                 _connection_timeout = ''
 
             _cmd = "ssh "
-            _cmd += " -p " + str(self.port) + ' ' 
+            _cmd += " -p " + str(_port) + ' ' 
             _cmd += _priv_key 
             _cmd += _config_file 
             _cmd += _connection_timeout            
@@ -181,7 +183,8 @@ class ProcessManagement :
                                  debug_cmd = False, \
                                  raise_exception_on_error = False, \
                                  step = None,
-                                 tell_me_if_stderr_contains = False) :
+                                 tell_me_if_stderr_contains = False, \
+                                 port = 22) :
         '''
         TBD
         '''
@@ -197,7 +200,8 @@ class ProcessManagement :
                                                                               debug_cmd, \
                                                                               raise_exception_on_error, \
                                                                               step = step,
-                                                                              tell_me_if_stderr_contains = tell_me_if_stderr_contains)
+                                                                              tell_me_if_stderr_contains = tell_me_if_stderr_contains, \
+                                                                              port = port)
 
             except ProcessManagement.ProcessManagementException, obj :
                 if obj.status == "90001" :
@@ -248,7 +252,7 @@ class ProcessManagement :
     
                 return _status, _fmsg, {"status" : _status, "msg" : _fmsg, "result" : _status}
 
-    def parallel_run_os_command(self, cmdline_list, override_hostname_list, \
+    def parallel_run_os_command(self, cmdline_list, override_hostname_list, port_list, \
                                 total_attempts, retry_interval, \
                                 execute_parallelism, really_execute = True, \
                                 debug_cmd = False, step = None) :
@@ -283,7 +287,9 @@ class ProcessManagement :
                                                       really_execute, \
                                                       debug_cmd, \
                                                       False, \
-                                                      step)
+                                                      step, \
+                                                      False, \
+                                                      port_list[_index])
                     else :
                         _status = 0
                         _xfmsg = "OK"
@@ -302,7 +308,9 @@ class ProcessManagement :
                                               really_execute, \
                                               debug_cmd, \
                                               False, \
-                                              step)
+                                              step, \
+                                              False, \
+                                              port_list[_index])
 
             if _thread_pool and not serial_mode:
                 _xfmsg = ''
