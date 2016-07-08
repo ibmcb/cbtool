@@ -1,9 +1,7 @@
-FROM ubuntu:latest
-
-ENV DEBIAN_FRONTEND=noninteractive
-
-RUN apt-get update
+FROM centos:latest
+RUN yum -y update
 RUN useradd -ms /bin/bash cbuser
+RUN echo "cbuser  ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 ENV OBJECTSTORE_PORT=10000
 ENV METRICSTORE_PORT=20000
@@ -24,13 +22,12 @@ EXPOSE $VPN_PORT
 RUN ln -s /sbin/ifconfig /usr/local/bin/ifconfig
 RUN ln -s /sbin/ip /usr/local/bin/ip
 
-RUN apt-get install -y \
+RUN yum install -y \
 psmisc \
 ntp \
 ntpdate \
 git \
 wget \
-python-pip \
 gcc \
 make \
 emacs \
@@ -41,52 +38,45 @@ screen \
 rsync \
 ncftp \
 lftp \
-libffi-dev \
-libssl-dev \
+libffi-devel \
+openssl-devel \
 python-webob \
 python-beaker \
 python-libvirt \
-netcat-openbsd \
-net-tools
+nmap-ncat \
+netcat-openbsd
 RUN cp /bin/nc /usr/local/bin/netcat
 
-RUN apt-get install -y \
+RUN yum install -y \
 nmap \
-openvpn 
+openvpn
 RUN ln -s /usr/sbin/openvpn /usr/local/bin/openvpn
 
-RUN apt-get install -y \
-ganglia-monitor
+RUN yum install -y epel-release
+RUN yum install -y python-pip
+RUN yum install -y \
+ganglia \
+ganglia-gmond.x86_64
 RUN ln -s /usr/sbin/gmond /usr/local/bin/gmond
 
-RUN apt-get install -y \
+RUN yum install -y \
 rsyslog
 RUN ln -s /usr/sbin/rsyslogd /usr/local/bin/rsyslogd
 
 RUN mkdir -p /var/log/cloudbench
-RUN sed -i -e "s/#\$ModLoad imudp/\$ModLoad imudp/g" /etc/rsyslog.conf
-RUN sed -i -e "s/#\$UDPServerRun.*/\$UDPServerRun $METRIC_STORE_PORT/g" /etc/rsyslog.conf
+RUN sed -i  "s/#\$ModLoad imudp/\$ModLoad imudp/g" /etc/rsyslog.conf
+RUN sed -i  "s/#\$UDPServerRun.*/\$UDPServerRun $METRIC_STORE_PORT/g" /etc/rsyslog.conf
 
-RUN apt-get install -y \
-apache2 \
-redis-server
-RUN sed -i "s/.*bind 127.0.0.1/bind 0.0.0.0/" /etc/redis/redis.conf
-RUN sed -i "s/.*port.*/port $OBJECTSTORE_PORT/" /etc/redis/redis.conf
+RUN yum install -y \
+httpd \
+redis 
+RUN sed -i "s/.*bind 127.0.0.1/bind 0.0.0.0/" /etc/redis.conf
+RUN sed -i "s/.*port.*/port $OBJECTSTORE_PORT/" /etc/redis.conf
 
-RUN apt-get install -y \
-mongodb
-RUN sed -i "s/.*bind_ip.*/bind_ip=0.0.0.0/" /etc/mongodb.conf
-RUN sed -i "s/.*port.*/port = $METRICSTORE_PORT/" /etc/redis/redis.conf
-
-RUN apt-get install -y \
-sudo
-RUN echo "cbuser  ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers
-
-RUN apt-get install -y \
-python-dev \
+RUN yum install -y \
+python-devel \
 python-setuptools \
 python-prettytable
-
 RUN pip install --upgrade \
 prettytable \
 python-daemon \
@@ -104,8 +94,9 @@ boto \
 gcloud \
 google-api-python-client
 
-RUN apt-get install -y \
+RUN yum install -y \
 r-base-core \
+sudo \
 pssh
 
 RUN pip install --upgrade \
