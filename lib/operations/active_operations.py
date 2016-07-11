@@ -420,6 +420,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
             cld_attr_lst["vm_defaults"]["vpn_config_file"] = vpn_client_config
 
             if str(cld_attr_lst["vm_defaults"]["use_vpn_ip"]).lower() == "false" :
+                _status = 0
+                _msg = "VPN is disabled for this cloud."
                 return
 
             if str(cld_attr_lst["vpn"]["start_server"]).lower() == "false" :
@@ -444,6 +446,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         except Exception, e :
                             break
                     tn.close
+                    lines.reverse()
                     for line in lines :
                         if line.count("route " + cld_attr_lst["vpn"]["network"]) :
                             bip = line.split(" ")[10]
