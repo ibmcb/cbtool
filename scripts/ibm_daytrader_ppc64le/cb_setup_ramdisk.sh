@@ -35,7 +35,7 @@ if [[ x"${RAMDISK}" == x || x"${RAMDISK}" == "false" ]]; then
 else
 	syslog_netcat "Setting RAMDISK (${RAMDISK_DEVICE} for holding DB2 database ${DATABASE_NAME} on host ($SHORT_HOSTNAME)"
 	sudo mkdir ${DATABASE_PATH} 
-	sudo mkfs.ext4 /dev/ram0
+	sudo mkfs.ext4 -F /dev/ram0
 	sudo mount /dev/ram0 $DATABASE_PATH
 	sudo chown ${my_login_username}:${my_login_username} $DATABASE_PATH
 	syslog_netcat "Copying ${DATABASE_PATH}_${SIZE} contents to ${DATABASE_PATH}"
