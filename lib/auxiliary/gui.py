@@ -118,7 +118,7 @@ class Dashboard () :
         elif "cloud_ip" in attrs and attrs["cloud_ip"] == "undefined" :
             return False
         elif metrics is not None and "last_known_state" in metrics :
-            if metrics["last_known_state"].count("with ip assigned") == 0 :
+            if metrics["last_known_state"].count("with ip assigned") == 0 and metrics["last_known_state"].count("generic post-boot script executed") == 0:
                 return True
             else :
                 return False
