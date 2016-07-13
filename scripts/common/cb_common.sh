@@ -454,7 +454,7 @@ function mount_filesystem_on_volume {
             if [[ $(check_filesystem $VOLUME) == "none" ]]
             then
                 syslog_netcat "Creating $FILESYS_TYPE filesystem on volume $VOLUME"
-                sudo mkfs.$FILESYS_TYPE $VOLUME
+                sudo mkfs.$FILESYS_TYPE -F $VOLUME
             fi
             
             syslog_netcat "Making $FILESYS_TYPE filesystem on volume $VOLUME accessible through the mountpoint ${MOUNTPOINT_DIR}"
@@ -511,7 +511,7 @@ function mount_filesystem_on_memory {
         if [[ $(check_filesystem $RAMDEVICE) == "none" ]]
         then
             syslog_netcat "Creating $FILESYS_TYPE filesystem on volume $VOLUME"
-            sudo mkfs.$FILESYS_TYPE $RAMDEVICE
+            sudo mkfs.$FILESYS_TYPE -F $RAMDEVICE
         fi        
 
         syslog_netcat "Making $FILESYS_TYPE filesystem on ram disk $RAMDEVICE accessible through the mountpoint ${MOUNTPOINT_DIR}"
