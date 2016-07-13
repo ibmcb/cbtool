@@ -183,6 +183,33 @@ class DoCmds(CommonCloudFunctions) :
                 _msg += " were terminated"
                 cbdebug(_msg)
 
+            _running_volumes = True
+            while _running_volumes :
+                _running_volumes = False
+                for credential_pair in obj_attr_list["credentials"].split(","):
+                    credentials = credential_pair.split(":")
+                    tenant = credentials[0]
+
+                    _volumes = catalogs.digitalocean[credential_pair].list_volumes()
+                    for _volume in _volumes :
+                        if _volume.name.count("cb-" + obj_attr_list["username"]) :
+                            try :
+                                cbdebug("Destroying: " + _volume.name + " (" + tenant + ")", True)
+                                _volume.destroy()
+                            except :
+                                pass
+                            _running_volumes = True
+                        else :
+                            _msg = "Cleaning up DigitalOcean. Ignoring volume: " + _volume.name
+                            cbdebug(_msg)
+
+                    if _running_volumes :
+                        sleep(int(obj_attr_list["update_frequency"]))
+
+                _msg = "All volumes on DigitalOcean " + obj_attr_list["name"]
+                _msg += " were destroyed"
+                cbdebug(_msg)
+
             _status = 0
 
         except CldOpsException, obj :
@@ -313,7 +340,12 @@ class DoCmds(CommonCloudFunctions) :
             if len(node.private_ips) > 0 and obj_attr_list["run_netname"].lower() == "private" :
                 obj_attr_list["run_cloud_ip"] = node.private_ips[0]
             else :
-                obj_attr_list["run_cloud_ip"] = node.public_ips[0]
+                if len(node.public_ips) > 0 :
+                    obj_attr_list["run_cloud_ip"] = node.public_ips[0]
+                else :
+                    cbdebug("Droplet Public address not yet available.")
+                    return False
+
             # NOTE: "cloud_ip" is always equal to "run_cloud_ip"
             obj_attr_list["cloud_ip"] = obj_attr_list["run_cloud_ip"]
 
@@ -411,9 +443,9 @@ class DoCmds(CommonCloudFunctions) :
         try :
             _status = 100
             _fmsg = "An error has occurred when creating new Droplet, but no error message was captured"
-
             obj_attr_list["cloud_vm_uuid"] = "NA"
             _instance = False
+            volume = False
 
             obj_attr_list["cloud_vm_name"] = "cb-" + obj_attr_list["username"]
             obj_attr_list["cloud_vm_name"] += '-' + "vm" + obj_attr_list["name"].split("_")[1]
@@ -523,13 +555,71 @@ class DoCmds(CommonCloudFunctions) :
                     del obj_attr_list["instance_obj"]
 
                 _status = 0
-
             else :
                 obj_attr_list["last_known_state"] = "vm creation failed"
                 _fmsg = "Failed to obtain instance's (cloud-assigned) uuid. The "
                 _fmsg += "instance creation failed for some unknown reason."
                 cberr(_fmsg)
                 _status = 100
+
+
+            if "cloud_vv" in obj_attr_list :
+                _status = 101
+
+                obj_attr_list["last_known_state"] = "about to send volume create request"
+
+                obj_attr_list["cloud_vv_name"] = "cb-" + obj_attr_list["username"]
+                obj_attr_list["cloud_vv_name"] += '-' + "vv"
+                obj_attr_list["cloud_vv_name"] += obj_attr_list["name"].split("_")[1]
+                obj_attr_list["cloud_vv_name"] += '-' + obj_attr_list["role"]
+                if obj_attr_list["ai"] != "none" :
+                    obj_attr_list["cloud_vv_name"] += '-' + obj_attr_list["ai_name"]
+
+                obj_attr_list["cloud_vv_name"] = obj_attr_list["cloud_vv_name"].replace("_", "-")
+
+                _msg = "Creating a volume, with size "
+                _msg += obj_attr_list["cloud_vv"] + " GB, on VMC \""
+                _msg += obj_attr_list["vmc_name"] + "\" with name " + obj_attr_list["cloud_vv_name"] + "..."
+                cbdebug(_msg, True)
+
+                _mark1 = int(time())
+
+                volume = catalogs.digitalocean[credential_pair].create_volume(int(obj_attr_list["cloud_vv"]),
+                                                                              obj_attr_list["cloud_vv_name"],
+                                                                              location = [x for x in self.locations if x.id == obj_attr_list["vmc_name"]][0])
+
+                sleep(int(obj_attr_list["update_frequency"]))
+
+                obj_attr_list["cloud_vv_uuid"] = volume.id
+
+                _mark2 = int(time())
+                obj_attr_list["do_015_create_volume_time"] = _mark2 - _mark1
+
+                if volume :
+                    _mark3 = int(time())
+                    _msg = "Attaching the newly created Volume \""
+                    _msg += obj_attr_list["cloud_vv_name"] + "\" (cloud-assigned uuid \""
+                    _msg += obj_attr_list["cloud_vv_uuid"] + "\") to instance \""
+                    _msg += obj_attr_list["cloud_vm_name"] + "\" (cloud-assigned uuid \""
+                    _msg += obj_attr_list["cloud_vm_uuid"] + "\")"
+                    cbdebug(_msg)
+
+                    if not volume.attach(_reservation) :
+                        msg = "Volume attach failed. Aborting VM creation..."
+                        cbdebug(msg, True)
+                        volume.destroy()
+                        raise CldOpsException(msg, _status)
+
+                    cbdebug("Volume attach success.", True)
+                    _mark4 = int(time())
+                    obj_attr_list["do_015_create_volume_time"] += (_mark4 - _mark3)
+                    _status = 0
+                else :
+                    msg = "Volume creation failed. Aborting VM creation..."
+                    cbdebug(msg, True)
+                    raise CldOpsException(msg, _status)
+            else :
+                obj_attr_list["cloud_vv_uuid"] = "none"
 
         except CldOpsException, obj :
             _status = obj.status
@@ -557,6 +647,7 @@ class DoCmds(CommonCloudFunctions) :
                 else :
                     if _reservation :
                         _reservation.destroy()
+
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "VM " + obj_attr_list["uuid"] + " was successfully "
@@ -625,6 +716,21 @@ class DoCmds(CommonCloudFunctions) :
             self.take_action_if_requested("VM", obj_attr_list, "deprovision_finished")            
             _time_mark_drc = int(time())
             obj_attr_list["mgt_903_deprovisioning_request_completed"] = _time_mark_drc - _time_mark_drs
+
+            if "cloud_vv_name" in obj_attr_list :
+                tenant = credential_pair.split(":")[0]
+                cbdebug("Checking for volumes from tenant: " + tenant)
+                _volumes = catalogs.digitalocean[credential_pair].list_volumes()
+                for _volume in _volumes :
+                    if _volume.name == obj_attr_list["cloud_vv_name"] :
+                        try :
+                            cbdebug("Destroying: " + _volume.name + " (" + tenant + ")", True)
+                            _volume.destroy()
+                            break
+                        except :
+                            pass
+                    else :
+                        cbdebug("Ignoring volume: " + _volume.name)
 
             _status = 0
 
@@ -908,3 +1014,4 @@ class DoCmds(CommonCloudFunctions) :
                 _msg += "\"."
                 cbdebug(_msg)
                 return _status, _msg
+

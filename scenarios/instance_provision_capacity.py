@@ -424,10 +424,8 @@ def profiling_phase(api, options, performance_data, directory) :
 
             if options.obj == "VM" :
                 api.vmdetach(options.cloud_name, _vm_name)
-
             else :
                 api.appdetach(options.cloud_name, _ai_attrs["uuid"])
-
 
             for _vm_attrs in _vm_list :
                 _vm_uuid, _p_role, _vm_name = _vm_attrs.split('|')
@@ -1290,8 +1288,12 @@ def main() :
 
     if _options.cleanup :
         _msg = "\nCleaning up all VMs (might take a long time, if the number of VMs is large)."
-        print _msg
-        api.vmdetach(_options.cloud_name, "all")
+        print _msg        
+        if _options.obj == "VM" :
+            api.vmdetach(_options.cloud_name, "all")
+        else :
+            api.appdetach(_options.cloud_name, "all")
+
 
 if __name__ == '__main__':
     main()

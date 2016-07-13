@@ -2302,7 +2302,10 @@ class BaseObjectOperations :
                             
                 _obj_attr_list = self.osci.get_object(cloud_name, "VM", False, _vm_uuid, False)
                 
-                _abort, _fmsg, _remaining_time = self.pending_decide_abortion(_obj_attr_list, "VM")
+                if operation != "reset" :
+                    _abort, _fmsg, _remaining_time = self.pending_decide_abortion(_obj_attr_list, "VM")
+                else :
+                    _remaining_time = 100000
 
                 if _remaining_time < _smallest_remaining_time :
                     _smallest_remaining_time = _remaining_time
@@ -2516,9 +2519,9 @@ class BaseObjectOperations :
                         _fmsg += _xfmsg
                         break
 
-                    for _vm in _vm_list :                        
-                        _vm_uuid, _vm_role, _vm_name = _vm.split('|')                                    
-                        _obj_attr_list = self.osci.get_object(cloud_name, "VM", False, _vm_uuid, False)                        
+                    for _vm in _vm_list :
+                        _vm_uuid, _vm_role, _vm_name = _vm.split('|')
+                        _obj_attr_list = self.osci.get_object(cloud_name, "VM", False, _vm_uuid, False)
                         self.pending_decide_abortion(_obj_attr_list, "VM")
 
         except Exception, e :

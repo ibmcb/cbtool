@@ -424,8 +424,14 @@ class ActiveObjectOperations(BaseObjectOperations) :
 #                _msg += "[VPN] also to \"True\"."
 #                cbdebug(_msg, True)
 #                cld_attr_lst["vpn"]["start_server"] = True
-                    
+
+            if str(cld_attr_lst["vm_defaults"]["use_vpn_ip"]).lower() == "false" :
+                _status = 0
+                _msg = "VPN is disabled for this cloud."
+                return True
+
             if str(cld_attr_lst["vpn"]["start_server"]).lower() == "false" :
+
                 _msg = "Bypassing the startup of a \"" + _type + "\" VPN server..."
 
                 # Occasionally (on laptops) the VPN ip address of the orchestrator
@@ -446,6 +452,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         except Exception, e :
                             break
                     tn.close
+                    lines.reverse()
                     for line in lines :
                         if line.count("route " + cld_attr_lst["vpn"]["network"]) :
                             bip = line.split(" ")[10]
@@ -3003,14 +3010,14 @@ class ActiveObjectOperations(BaseObjectOperations) :
             if "qemu_debug_port_base" in obj_attr_list :
                 self.auto_free_port("qemu_debug", obj_attr_list, "VMC", obj_attr_list["vmc"], obj_attr_list["vmc_cloud_ip"])
 
-            if obj_attr_list["current_state"] != "attached" :
+            if str(obj_attr_list["current_state"]).lower() != "attached" :
 
                 if "post_capture" in obj_attr_list and obj_attr_list["post_capture"] == "true" :
                     _scores = True
                 else :
                     _scores = False
 
-                self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "VMS_UNDERGOING_" + obj_attr_list["current_state"].upper(), obj_attr_list["uuid"], _scores)
+                self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "VMS_UNDERGOING_" + str(obj_attr_list["current_state"]).upper(), obj_attr_list["uuid"], _scores)
 
 
             self.record_management_metrics(obj_attr_list["cloud_name"], "VM", \

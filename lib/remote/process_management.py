@@ -66,7 +66,8 @@ class ProcessManagement :
 
     @trace
     def run_os_command(self, cmdline, override_hostname = None, really_execute = True, \
-                       debug_cmd = False, raise_exception = True, step = None, tell_me_if_stderr_contains = False, port = 22) :
+                       debug_cmd = False, raise_exception = True, step = None, \
+                       tell_me_if_stderr_contains = False, port = 22, check_stderr_len = True) :
         '''
         TBD
         '''
@@ -129,7 +130,13 @@ class ProcessManagement :
                 if not cmdline.count("--debug_host=localhost") :
 
                     _result = _proc_h.communicate()
-                    if _proc_h.returncode and len(_result[1]) :
+
+                    if check_stderr_len :
+                        _stderr_len = len(_result[1])
+                    else :
+                        _stderr_len = 1
+                    
+                    if _proc_h.returncode and _stderr_len :
                         _msg = "Error while executing the command line "
                         _msg += "\"" + cmdline + "\" (returncode = "
                         _msg += str(_proc_h.pid) + ") :" + str(_result[1])

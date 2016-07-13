@@ -98,6 +98,15 @@ def connect_to_cb(cloud_name) :
     _msg = "#" * 75
     _msg += "\nChecking connection to cloud \"" + cloud_name + "\"..."
     print _msg,
+    _cloud_not_found = True
+    for _cld  in api.cldlist() :
+        if _cld["name"] == cloud_name :
+            _cloud_not_found = False
+            
+    if _cloud_not_found :
+        print "Unable to find cloud \"" + str(cloud_name) + "\""
+        exit(1)
+
     api.hostlist(cloud_name)
     print "OK"
     print "#" * 75

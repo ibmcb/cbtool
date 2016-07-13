@@ -52,7 +52,9 @@ class PdmCmds(CommonCloudFunctions) :
         self.dockconn = {}
         self.expid = expid
         self.swarm_ip = False
-
+        self.api_error_counter = {}
+        self.max_api_errors = 10
+        
     @trace
     def get_description(self) :
         '''
@@ -73,7 +75,7 @@ class PdmCmds(CommonCloudFunctions) :
                 _endpoint_ip = _endpoint.split('//')[1].split(':')[0]
 
                 if _endpoint_ip not in self.dockconn :
-                    self.dockconn[_endpoint_ip] = docker.Client(base_url=_endpoint)
+                    self.dockconn[_endpoint_ip] = docker.Client(base_url = _endpoint, timeout = 180)
                     self.dockconn[_endpoint_ip].ping()
 
             _status = 0
@@ -210,7 +212,9 @@ class PdmCmds(CommonCloudFunctions) :
                 obj_attr_list["host_list"][_host_uuid]["arrival"] = int(time())
                 obj_attr_list["host_list"][_host_uuid]["simulated"] = "True"
                 obj_attr_list["host_list"][_host_uuid]["identity"] = obj_attr_list["identity"]
-                
+
+                obj_attr_list["host_list"][_host_uuid]["hypervisor_type"] = "docker"
+                                                    
                 if "login" in obj_attr_list :
                     obj_attr_list["host_list"][_host_uuid]["login"] = obj_attr_list["login"]
                 else :
@@ -516,7 +520,8 @@ class PdmCmds(CommonCloudFunctions) :
 
         _instances = []
         _fmsg = "Error while getting instances"
-
+        _call = "NA"
+        
         if endpoints == "all" :
             _endpoints = self.dockconn.keys()
         else :
@@ -525,12 +530,14 @@ class PdmCmds(CommonCloudFunctions) :
         try :
             for _endpoint in _endpoints :            
                 if obj_type == "vm" :
+                    _call = "containers()"
                     if identifier == "all" :
                         _instances += self.dockconn[_endpoint].containers(all=True)
                                                                        
                     else :
                         _instances += self.dockconn[_endpoint].containers(filters = {"name" : identifier})
                 else :
+                    _call = "volumes()"                    
                     if identifier == "all" :
                         _instances += self.dockconn[_endpoint].volumes()
      
@@ -541,11 +548,36 @@ class PdmCmds(CommonCloudFunctions) :
                         
             if len(_instances) == 1 :
                 _instances = _instances[0]
-                
-            return _instances
+
+            _status = 0
         
-        except Exception, _fmsg :
-            return []
+        except APIError, obj:
+            _status = 18127
+            _xfmsg = str(obj.message) + " \"" + str(obj.explanation) + "\""
+
+        except CldOpsException, obj :
+            _status = obj.status
+            _xfmsg = str(obj.msg)
+
+        except Exception, e :
+            _status = 23
+            _xfmsg = str(e)
+            
+        finally :
+            if _status :
+                _fmsg = "(While getting instance(s) through API call \"" + _call + "\") " + _xfmsg
+                if identifier not in self.api_error_counter :
+                    self.api_error_counter[identifier] = 0
+                
+                self.api_error_counter[identifier] += 1
+                
+                if self.api_error_counter[identifier] > self.max_api_errors :            
+                    raise CldOpsException(_fmsg, _status)
+                else :
+                    cbwarn(_fmsg)
+                    return []
+            else :
+                return _instances
 
     @trace
     def vmcount(self, obj_attr_list):
@@ -828,6 +860,13 @@ class PdmCmds(CommonCloudFunctions) :
 
             obj_attr_list["cloud_mac"] = "NA"
 
+            if len(obj_attr_list["pubkey_contents"]) == 1 :
+                _fh = open(obj_attr_list["identity"] + '.pub', 'r')
+                _pub_key = _fh.read()
+                _fh.close()
+                obj_attr_list["pubkey_contents"] = _pub_key.replace("ssh-rsa ",'')
+                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "GLOBAL", "vm_defaults", False, "pubkey_contents", obj_attr_list["pubkey_contents"])
+                
             self.take_action_if_requested("VM", obj_attr_list, "provision_originated")
 
             self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
@@ -854,7 +893,9 @@ class PdmCmds(CommonCloudFunctions) :
                 _port_bindings = None
                                                 
             self.select_host(obj_attr_list)
-            
+
+            _cpu, _memory = obj_attr_list["size"].split('-')
+                        
             _time_mark_prs = int(time())            
             obj_attr_list["mgt_002_provisioning_request_sent"] = _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
 
@@ -878,8 +919,8 @@ class PdmCmds(CommonCloudFunctions) :
                                                                                                             
             _host_config = self.dockconn[obj_attr_list["host_cloud_ip"]].create_host_config(network_mode = obj_attr_list["netname"], \
                                                                                             port_bindings = _port_bindings, 
-                                                                                            binds = _binds)
-
+                                                                                            binds = _binds, \
+                                                                                            mem_limit = str(_memory) + 'm')
             
             _instance = self.dockconn[obj_attr_list["host_cloud_ip"]].create_container(image = obj_attr_list["imageid1"], \
                                                                                  hostname = obj_attr_list["cloud_vm_name"], \
@@ -887,9 +928,9 @@ class PdmCmds(CommonCloudFunctions) :
                                                                                  name = obj_attr_list["cloud_vm_name"], \
                                                                                  ports = _ports_mapping, \
                                                                                  volumes = _volumes, \
-                                                                                 host_config = _host_config)
+                                                                                 host_config = _host_config, \
 #                                                                                 command = "/sbin/my_init", \
-#                                                                                 environment = {"PATH" : "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"})
+                                                                                 environment = {"CB_SSH_PUB_KEY" : obj_attr_list["pubkey_contents"]})
 
             obj_attr_list["cloud_vm_uuid"] = _instance["Id"]
 
@@ -975,7 +1016,12 @@ class PdmCmds(CommonCloudFunctions) :
             
             _wait = int(obj_attr_list["update_frequency"])
 
-            _instance = self.get_instances(obj_attr_list, "vm", obj_attr_list["host_cloud_ip"], obj_attr_list["cloud_vm_name"])
+            if self.swarm_ip :
+                _host_ip = self.swarm_ip
+            else :
+                _host_ip = obj_attr_list["host_cloud_ip"]
+
+            _instance = self.get_instances(obj_attr_list, "vm", _host_ip, obj_attr_list["cloud_vm_name"])
 
             if len(_instance) :
                 _msg = "Sending a termination request for Instance \""  + obj_attr_list["name"] + "\""
@@ -983,10 +1029,10 @@ class PdmCmds(CommonCloudFunctions) :
                 _msg += "...."
                 cbdebug(_msg, True)
                                     
-                if  _instance["State"] == "running" :
-                    self.dockconn[obj_attr_list["host_cloud_ip"]].kill(obj_attr_list["cloud_vm_uuid"])
+                if  _instance["State"] == "running" :                    
+                    self.dockconn[_host_ip].kill(obj_attr_list["cloud_vm_uuid"])
 
-                self.dockconn[obj_attr_list["host_cloud_ip"]].remove_container(_instance["Id"])
+                self.dockconn[_host_ip].remove_container(_instance["Id"])
 
             if "cloud_vv" in obj_attr_list :
                 self.vvdestroy(obj_attr_list)
@@ -1059,17 +1105,22 @@ class PdmCmds(CommonCloudFunctions) :
             _msg += "...."
             cbdebug(_msg, True)
 
-            _instance = self.get_instances(obj_attr_list, "vm", obj_attr_list["host_cloud_ip"], obj_attr_list["cloud_vm_name"])
+            if self.swarm_ip :
+                _host_ip = self.swarm_ip
+            else :
+                _host_ip = obj_attr_list["host_cloud_ip"]
+
+            _instance = self.get_instances(obj_attr_list, "vm", _host_ip, obj_attr_list["cloud_vm_name"])
 
             if _instance :
                 if _ts == "fail" :
-                    self.dockconn[obj_attr_list["host_cloud_ip"]].pause(obj_attr_list["cloud_vm_uuid"])
+                    self.dockconn[_host_ip].pause(obj_attr_list["cloud_vm_uuid"])
                 elif _ts == "save" :
-                    self.dockconn[obj_attr_list["host_cloud_ip"]].stop(obj_attr_list["cloud_vm_uuid"])
+                    self.dockconn[_host_ip].stop(obj_attr_list["cloud_vm_uuid"])
                 elif (_ts == "attached" or _ts == "resume") and _cs == "fail" :
-                    self.dockconn[obj_attr_list["host_cloud_ip"]].unpause(obj_attr_list["cloud_vm_uuid"])
+                    self.dockconn[_host_ip].unpause(obj_attr_list["cloud_vm_uuid"])
                 elif (_ts == "attached" or _ts == "restore") and _cs == "save" :
-                    self.dockconn[obj_attr_list["host_cloud_ip"]].start(obj_attr_list["cloud_vm_uuid"])
+                    self.dockconn[_host_ip].start(obj_attr_list["cloud_vm_uuid"])
             
             _time_mark_rrc = int(time())
             obj_attr_list["mgt_203_runstate_request_completed"] = _time_mark_rrc - _time_mark_rrs
@@ -1114,7 +1165,6 @@ class PdmCmds(CommonCloudFunctions) :
             _fmsg = "An error has occurred, but no error message was captured"
 
             self.take_action_if_requested("AI", obj_attr_list, "all_vms_booted")
-
             _status = 0
 
         except Exception, e :

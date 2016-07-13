@@ -113,16 +113,17 @@ boto-order = 51
 libcloud-order = 52
 gcloud-order = 53
 pygce-order = 54
-iptables-order = 55
-R-order = 56
-sshkey-order = 57
-sshd-order = 58
-pssh-order = 59
-docutils-order = 60
-setuptools-order = 61
-markup-order = 62
-pyyaml-order = 63
-ruamelyaml-order = 64 
+pydocker-order = 55
+iptables-order = 56
+R-order = 57
+sshkey-order = 58
+sshd-order = 59
+pssh-order = 60
+docutils-order = 61
+setuptools-order = 62
+markup-order = 63
+pyyaml-order = 64
+ruamelyaml-order = 65 
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -188,6 +189,7 @@ boto-install = pip
 libcloud-install = pip
 gcloud-install = man
 pygce-install = pip
+pydocker-install = pip
 iptables-install = pm
 R-install = pm
 sshkey-install = man
@@ -225,7 +227,7 @@ nmap-configure = nmap -V | grep version | cut -d ' ' -f 3
 openvpn-configure = openvpn --version | grep built | cut -d ' ' -f 2
 gmond-configure = gmond --version | cut -d ' ' -f 2
 chef-client-configure = knife -v | cut -d ' ' -f 2
-rsyslog-configure = rsyslogd -v | grep compiled | cut -d ' ' -f 2 | sed 's/,//g'
+rsyslog-configure = if [[ $(sudo cat cat /proc/1/cgroup | grep -c docker) -eq 0 ]]; then rsyslogd -v | grep compiled | cut -d ' ' -f 2 | sed 's/,//g'; else echo "1000"; fi
 rsyslog-filter-configure = nmap -P0 -sU -p514 localhost 2>&1 | grep open && ls /var/log/cloudbench
 apache-configure = sudo apachectl -v | grep version | cut -d '/' -f 2 | cut -d ' ' -f 1
 redis-configure = redis-server -v | sed 's/[^0-9]*//g'
@@ -254,8 +256,9 @@ cinderclient-configure = python -c "import cinderclient; from cinderclient.v2 im
 softlayer-configure = python -c "import SoftLayer; print "SoftLayer.__version__".replace('v','')"
 boto-configure = python -c "import boto; print str(boto.__version__).strip().replace('-dev','')"
 libcloud-configure = python -c "import libcloud; print str(libcloud.__version__).replace('-dev','').strip()"
-gcloud-configure = gcloud -v | grep SDK | cut -d ' ' -f 4
+gcloud-configure = source ~/.bahsrc; source ~/.profile; gcloud -v | grep SDK | cut -d ' ' -f 4
 pygce-configure = python -c "from oauth2client.client import GoogleCredentials; from googleapiclient.discovery import build"
+pydokcer-configure = python -c "import docker"
 iptables-configure = sudo iptables -v 2>&1 | grep v | cut -d ' ' -f 2 | sed 's/v//g' | sed 's/://g'
 R-configure = R --version | grep version | grep -v GNU
 sshkey-configure = ls CREDENTIALSDIR/cbtool_rsa
@@ -324,6 +327,7 @@ boto-ver = 2.1.8
 libcloud-ver = 0.11.0
 gcloud-ver = 0.8
 pygce-ver = ANY
+pydocker-ver = ANY
 iptables-ver = 1.2
 R-ver = 2.1
 sshkey-ver = ANY
@@ -336,7 +340,6 @@ pyyaml-ver = 3.10
 ruamelyaml-ver = ANY
 ### END - Dependency versions ###
 
-<<<<<<< HEAD
 ### START - Dependency tags ###
 sudo-tag = base
 repo-tag = base
@@ -393,6 +396,7 @@ boto-tag = ec2,all
 libcloud-tag = vcd,all
 gcloud-tag = gce,all
 pygce-tag = gce,all
+pydocker-tag = pdm,all
 iptables-tag = base
 R-tag = orchestrator
 sshkey-tag = base
@@ -613,6 +617,8 @@ common-libcloud-install-pip = sudo pip install --upgrade INDEXURL apache-libclou
 common-gcloud-install-man =  export CLOUDSDK_CORE_DISABLE_PROMPTS=1 && curl https://sdk.cloud.google.com | bash
 
 common-pygce-install-pip =  sudo pip install --upgrade INDEXURL gcloud google-api-python-client
+
+common-pydocker-install-pip =  sudo pip install --upgrade INDEXURL docker-py wget
 
 rhel-iptables-install-pm = package_install iptables-services iptables
 rhel-iptables-postinstall-pm = sudo  touch /etc/sysconfig/iptables; sudo touch /etc/sysconfig/ip6table; service_stop_disable iptables

@@ -1646,7 +1646,7 @@ class OskCmds(CommonCloudFunctions) :
         '''
         try :
             _search_opts = {}
-            _call = "NAi"
+            _call = "NA"
             _search_opts['all_tenants'] = 1
             
             if identifier != "all" :

@@ -7,7 +7,12 @@ import wget
 
 def main() :
     
-    _usage = argv[0] + " docker_host_ip1[,docker_host_ip2,..,docker_host_ipn] [images names]"    
+    _usage = argv[0] + " docker_host_ip1:port[,docker_host_ip2:port,..,docker_host_ipn] [images names]"    
+
+    for _argv in argv :
+        if argv.count("--help") or argv.count("-h") :
+            print _usage
+            exit(0)
 
     if len(argv) < 2 :
         print _usage
@@ -18,7 +23,6 @@ def main() :
     else :
         _image_list = "all"
 
-    _endpoint_port = 2375    
     _images_base_dir = "/tmp"
     _images_base_url = "http://9.2.212.67/repo/vmimages/"
     _images_arch = "x86_64"
@@ -48,8 +52,25 @@ def main() :
             print " "
 
     print " " 
+    
+    _endpoint_list = ''
     for _endpoint in argv[1].split(',') :
-        _cli = docker.Client(base_url="tcp://" + _endpoint + ':' + str(_endpoint_port), timeout = 600)
+        _cli = docker.Client(base_url="tcp://" + _endpoint, timeout = 600)        
+        _info = _cli.info()
+        if _info["SystemStatus"] :
+            for _item in _info["SystemStatus"] :
+                if _item[1].count(':') == 1 :
+                    _endpoint_list += _item[1] + ','
+
+    if len(_endpoint_list) :
+        _endpoint_list = _endpoint_list[0:-1]    
+    else :
+        _endpoint_list = argv[1]
+    
+    _endpoint_port = 17282
+    
+    for _endpoint in _endpoint_list.split(',') :
+        _cli = docker.Client(base_url="tcp://" + _endpoint, timeout = 600)
         for _image in _images_names :
             _image = "cb_" + _image
             if not len(_cli.images(name = _image)) :

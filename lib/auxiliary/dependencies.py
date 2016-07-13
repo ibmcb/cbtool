@@ -628,7 +628,7 @@ def execute_command(operation, depkey, depsdict, hostname = "127.0.0.1", usernam
         _status = 20000
         _result_stdout = "NA"
         _result_stderr = "NA"
-        _status, _result_stdout, _result_stderr = process_manager.run_os_command(_cmd[operation], False)
+        _status, _result_stdout, _result_stderr = process_manager.run_os_command(_cmd[operation], False, True, False, True, None, False, 22, False)
 
         if not _status :
             if operation == "install" :
