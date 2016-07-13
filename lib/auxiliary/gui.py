@@ -543,7 +543,7 @@ class Dashboard () :
                     if not gfilter.count(dest + "-") :
                         continue
                     output += "[<a href='" + self.prefix() + "/monitor?remove=" + gfilter + "' target='_top'>X</a>] " + \
-                        gfilter.split("-")[1].replace("_", " ") + "&nbsp;"
+                        gfilter.split("-", 1)[1].replace("_", " ") + "&nbsp;"
             
         output += """
                     </div>
