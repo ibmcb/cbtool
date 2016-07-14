@@ -175,6 +175,12 @@ def parse_cli() :
                        default=False, \
                        help="Resume from a previous execution")
 
+    _parser.add_option("--create_only",\
+                       action="store_true", \
+                       dest="create_only", \
+                       default=False, \
+                       help="Do not attempt to contact the deployed VMs")
+
     _parser.add_option("--cleanup", \
                        action="store_true", \
                        dest="cleanup", \
@@ -1141,7 +1147,7 @@ def main() :
     
     api.cldalter(_options.cloud_name, "admission_control", "vm_max_reservations", 75000)
 
-    if _options.hypervisor.lower() == "fake" :
+    if _options.hypervisor.lower() == "fake" or _options.create_only :
         api.cldalter(_options.cloud_name, "vm_defaults", "check_boot_complete", "wait_for_0")
         api.cldalter(_options.cloud_name, "vm_defaults", "transfer_files", "false")
         api.cldalter(_options.cloud_name, "vm_defaults", "run_generic_scripts", "false")
