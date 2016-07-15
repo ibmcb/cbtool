@@ -4898,7 +4898,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 _inter_arrival_time = int(time()) - _inter_arrival_time_start
                 
-                if _inter_arrival_time - _curr_iait < _check_frequency :
+                if abs(_inter_arrival_time - _curr_iait) < _check_frequency :
                     sleep(_check_frequency/10)
                 else :
                     sleep(_check_frequency)
