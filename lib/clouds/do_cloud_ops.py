@@ -327,8 +327,8 @@ class DoCmds(CommonCloudFunctions) :
             elif obj_attr_list["hostname_key"] == "cloud_ip" :
                 obj_attr_list["cloud_hostname"] = obj_attr_list["cloud_ip"].replace('.','-')
 
-            _msg = "Public IP = " + node.public_ips[0]
-            _msg += " Private IP = " + obj_attr_list["cloud_ip"]
+            _msg = "Public IP = " + str(node.public_ips)
+            _msg += " Private IP = " + str(node.private_ips)
             cbdebug(_msg)
 
             if str(obj_attr_list["use_vpn_ip"]).lower() == "true" and str(obj_attr_list["vpn_only"]).lower() == "true" :
