@@ -559,7 +559,7 @@ class DoCmds(CommonCloudFunctions) :
                 cberr(_msg)
 
                 if "cloud_vm_uuid" in obj_attr_list :
-                    obj_attr_list["mgt_deprovisioning_request_originated"] = int(time())
+                    obj_attr_list["mgt_901_deprovisioning_request_originated"] = int(time())
                     self.vmdestroy(obj_attr_list)
                 else :
                     if _reservation :
