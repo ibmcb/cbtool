@@ -491,8 +491,6 @@ class DoCmds(CommonCloudFunctions) :
 
             cbdebug("Launching new Droplet with hostname " + obj_attr_list["cloud_vm_name"], True)
 
-            obj_attr_list["mgt_001_provisioning_request_originated"] = int(time())
-
             _reservation = catalogs.digitalocean[credential_pair].create_node(
                 image = image,
                 name = obj_attr_list["cloud_vm_name"],
@@ -866,6 +864,9 @@ class DoCmds(CommonCloudFunctions) :
                 obj_attr_list["credentials_pair"] = credentials_pair
                 self.osci.pending_object_set(obj_attr_list["cloud_name"], "AI", \
                     obj_attr_list["uuid"], "credential_pair", credentials_pair)
+
+                # Cache libcloud objects for this daemon / process before the VMs are attached
+                self.connect(credentials_pair)
 
             _fmsg = "An error has occurred, but no error message was captured"
 
