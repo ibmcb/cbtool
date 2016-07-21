@@ -519,8 +519,6 @@ class DoCmds(CommonCloudFunctions) :
 
             cbdebug("Launching new Droplet with hostname " + obj_attr_list["cloud_vm_name"], True)
 
-            obj_attr_list["mgt_001_provisioning_request_originated"] = int(time())
-
             _reservation = catalogs.digitalocean[credential_pair].create_node(
                 image = image,
                 name = obj_attr_list["cloud_vm_name"],
