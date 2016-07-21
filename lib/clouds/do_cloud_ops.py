@@ -519,6 +519,8 @@ class DoCmds(CommonCloudFunctions) :
 
             cbdebug("Launching new Droplet with hostname " + obj_attr_list["cloud_vm_name"], True)
 
+            obj_attr_list["mgt_001_provisioning_request_originated"] = int(time())
+
             _reservation = catalogs.digitalocean[credential_pair].create_node(
                 image = image,
                 name = obj_attr_list["cloud_vm_name"],
@@ -665,13 +667,7 @@ class DoCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
-            _time_mark_drs = int(time())
             _wait = int(obj_attr_list["update_frequency"])
-
-            if "mgt_901_deprovisioning_request_originated" not in obj_attr_list :
-                obj_attr_list["mgt_901_deprovisioning_request_originated"] = _time_mark_drs
-
-            obj_attr_list["mgt_902_deprovisioning_request_sent"] = _time_mark_drs - int(obj_attr_list["mgt_901_deprovisioning_request_originated"])
 
             cbdebug("Last known state: " + str(obj_attr_list["last_known_state"]))
 
