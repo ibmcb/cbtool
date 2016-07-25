@@ -19,7 +19,7 @@ hibench-install = git
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
-java-configure = java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g'
+java-configure = java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g' | sed 's/-internal//g'
 java-home-configure = cat ~/.bashrc | grep -c openjdk
 hadoop-configure = . .bashrc; ~/hadoop-1.2.1/bin/hadoop version | head -n 1 | cut -d ' ' -f 2
 hibench-configure = ls -la ~/HiBench

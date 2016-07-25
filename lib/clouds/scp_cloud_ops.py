@@ -713,8 +713,6 @@ class ScpCmds(CommonCloudFunctions) :
         
         if _instance :
             
-            self.take_action_if_requested("VM", obj_attr_list, "provision_complete")
-            
             if self.get_ip_address(obj_attr_list, _instance) :
                 obj_attr_list["last_known_state"] = "running with ip assigned"
                 return True
@@ -783,7 +781,7 @@ class ScpCmds(CommonCloudFunctions) :
                 _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
                             
                 self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
-    
+ 
                 _status = 0
 
                 if obj_attr_list["force_failure"].lower() == "true" :
@@ -873,6 +871,8 @@ class ScpCmds(CommonCloudFunctions) :
                     sleep(_wait)
             else :
                 True
+
+            self.take_action_if_requested("VM", obj_attr_list, "deprovision_finished")
 
             _time_mark_drc = int(time())
             obj_attr_list["mgt_903_deprovisioning_request_completed"] = \
@@ -1017,9 +1017,7 @@ class ScpCmds(CommonCloudFunctions) :
         '''
         try :
             _fmsg = "An error has occurred, but no error message was captured"
-
-            self.take_action_if_requested("AI", obj_attr_list, "all_vms_booted")
-            
+            self.take_action_if_requested("AI", obj_attr_list, current_step)                        
             _status = 0
 
         except Exception, e :
@@ -1047,6 +1045,7 @@ class ScpCmds(CommonCloudFunctions) :
         '''
         try :
             _fmsg = "An error has occurred, but no error message was captured"
+            self.take_action_if_requested("AI", obj_attr_list, current_step)            
             _status = 0
 
         except Exception, e :

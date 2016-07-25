@@ -688,8 +688,6 @@ class GceCmds(CommonCloudFunctions) :
         '''        
         if self.is_vm_running(obj_attr_list) :
 
-            self.take_action_if_requested("VM", obj_attr_list, "provision_complete")
-
             if self.get_ip_address(obj_attr_list) :
                 obj_attr_list["last_known_state"] = "running with ip assigned"
                 return True
@@ -1116,6 +1114,8 @@ class GceCmds(CommonCloudFunctions) :
                 _time_mark_drc - _time_mark_drs            
              
             _status, _fmsg = self.vvdestroy(obj_attr_list, "vmuid")
+
+            self.take_action_if_requested("VM", obj_attr_list, "deprovision_finished")
             
             _status = 0
 
@@ -1332,9 +1332,7 @@ class GceCmds(CommonCloudFunctions) :
         '''
         try :
             _fmsg = "An error has occurred, but no error message was captured"
-
-            self.take_action_if_requested("AI", obj_attr_list, "all_vms_booted")
-
+            self.take_action_if_requested("AI", obj_attr_list, current_step)            
             _status = 0
 
         except Exception, msg :
@@ -1363,6 +1361,7 @@ class GceCmds(CommonCloudFunctions) :
         '''
         try :
             _fmsg = "An error has occurred, but no error message was captured"
+            self.take_action_if_requested("AI", obj_attr_list, current_step)            
             _status = 0
 
         except Exception, msg :

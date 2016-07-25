@@ -411,8 +411,6 @@ class SimCmds(CommonCloudFunctions) :
 
         if self.is_vm_running(obj_attr_list) :
 
-            self.take_action_if_requested("VM", obj_attr_list, "provision_complete")
-
             if self.get_ip_address(obj_attr_list) :
                 obj_attr_list["last_known_state"] = "running with ip assigned"
                 return True
@@ -466,7 +464,7 @@ class SimCmds(CommonCloudFunctions) :
         else :
             _host_core_found = True
             _host_mem_found = True
-            obj_attr_list["host"] = self.osci.object_exists(obj_attr_list["cloud_name"], "HOST", obj_attr_list["host_name"], True, False)
+            obj_attr_list["host"] = self.osci.object_exists(obj_attr_list["cloud_name"], "HOST", obj_attr_list["host_name"], True, False)            
             self.host_resource_update(obj_attr_list, "create")
 
         if not _host_core_found :
@@ -639,11 +637,8 @@ class SimCmds(CommonCloudFunctions) :
 
             self.take_action_if_requested("VM", obj_attr_list, "provision_originated")
 
-            if "execute_provision_originated_stdout" in obj_attr_list :
-                if obj_attr_list["execute_provision_originated_stdout"].count("tenant") :
-                    _temp_dict = str2dic(obj_attr_list["execute_provision_originated_stdout"].replace('\n',''))
-                    obj_attr_list.update(_temp_dict)
-
+            sleep(float(obj_attr_list["pre_creation_delay"]))
+                  
             _time_mark_prs = int(time())
             obj_attr_list["mgt_002_provisioning_request_sent"] = _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
 
@@ -668,7 +663,7 @@ class SimCmds(CommonCloudFunctions) :
             _time_mark_vmp = int(time())
             self.vm_placement(obj_attr_list)
             obj_attr_list["sim_0021_vm_placement_time"] = _time_mark_vmp - int(time())
-            
+
             if "meta_tags" in obj_attr_list :
                 if obj_attr_list["meta_tags"] != "empty" and \
                 obj_attr_list["meta_tags"].count(':') and \
@@ -682,8 +677,6 @@ class SimCmds(CommonCloudFunctions) :
             _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
 
             self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
-
-            self.take_action_if_requested("VM", obj_attr_list, "provision_finished")
 
             self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
                                          obj_attr_list["uuid"], "utc_offset_on_vm", "3600") 
@@ -720,15 +713,23 @@ class SimCmds(CommonCloudFunctions) :
                 del obj_attr_list["lvt_cnt"]
                 
             if _status :
+
+                if str(obj_attr_list["leave_instance_on_failure"]).lower() == "true" :
+                    _liof_msg = " (Will leave the VM running due to experimenter's request)"
+                else :
+                    _liof_msg = " (The VM creation will be rolled back)"
+                    obj_attr_list["mgt_901_deprovisioning_request_originated"] = int(time())
+                    self.vmdestroy(obj_attr_list)
+                
                 _msg = "" + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "could not be created"
                 _msg += " on SimCloud \"" + obj_attr_list["cloud_name"] + "\" : "
-                _msg += _fmsg + " (The VM creation was rolled back)"
+                _msg += _fmsg + _liof_msg
                 cberr(_msg, True)
-                
-                obj_attr_list["mgt_901_deprovisioning_request_originated"] = int(time())
-                self.vmdestroy(obj_attr_list)
+
+
+            
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "" + obj_attr_list["name"] + ""
@@ -945,11 +946,12 @@ class SimCmds(CommonCloudFunctions) :
         try :
             
             _fmsg = "An error has occurred, but no error message was captured"
+            
+            self.take_action_if_requested("AI", obj_attr_list, current_step)
 
-            if current_step == "provision_originated" :
-                _status = 0
-
-            else :
+            _status = 0
+                                      
+            if current_step == "all_vms_booted" :
 
                 _vg = ValueGeneration("NA")
                 
@@ -970,15 +972,15 @@ class SimCmds(CommonCloudFunctions) :
     
                     if _vm.count("faildb2") :
                         _fmsg = "Forced failure during AI definition"
-    
-                self.take_action_if_requested("AI", obj_attr_list, "all_vms_booted")
+                    
+                sleep(float(obj_attr_list["pre_creation_delay"]))
     
                 if obj_attr_list["create_performance_emitter"].lower() == "true" :
                     
                     _msg = "Starting a new \"performance emitter\" for " + obj_attr_list["name"]
                     cbdebug(_msg, True)
     
-                    _cmd = obj_attr_list["base_dir"] + "/cbact"
+                    _cmd = "\"" + obj_attr_list["base_dir"] + "/cbact\""
                     _cmd += " --procid=" + self.pid
                     _cmd += " --osp=" + obj_attr_list["osp"]
                     _cmd += " --msp=" + obj_attr_list["msp"]
@@ -1043,6 +1045,7 @@ class SimCmds(CommonCloudFunctions) :
         '''
         try :
             _fmsg = "An error has occurred, but no error message was captured"
+            self.take_action_if_requested("AI", obj_attr_list, current_step)            
             _status = 0
 
         except Exception, e :

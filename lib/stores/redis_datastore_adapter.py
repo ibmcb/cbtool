@@ -602,8 +602,13 @@ class RedisMgdConn :
                     self.redis_conn.set(_obj_count_fn, 0)
                     self.add_to_list(cloud_name, "GLOBAL", "host_names", obj_attr_list["name"][5:].upper())
 
+                if "initial_state" in obj_attr_list :
+                    _initial_state = obj_attr_list["initial_state"]
+                else :
+                    _initial_state = "attached"
+                    
                 _obj_state_fn = _obj_inst_fn + ':' + obj_uuid + ":STATE"
-                self.redis_conn.set(_obj_state_fn, "attached")
+                self.redis_conn.set(_obj_state_fn, _initial_state)
 
                 if str(obj_attr_list["notification"]).lower() != "false" :
                     if obj_attr_list["notification_channel"].lower() == "auto" :
