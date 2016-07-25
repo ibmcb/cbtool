@@ -298,13 +298,16 @@ class NopCmds(CommonCloudFunctions) :
 
             obj_attr_list["cloud_vm_uuid"] = self.generate_random_uuid()
 
-            obj_attr_list["cloud_vm_name"] = "cb-" + obj_attr_list["username"] 
-            obj_attr_list["cloud_vm_name"] += '-' + "vm_" 
-            obj_attr_list["cloud_vm_name"] += obj_attr_list["name"].split("_")[1] 
-            obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["role"]
+            if "cloud_vm_name" not in obj_attr_list :
+                obj_attr_list["cloud_vm_name"] = "cb-" + obj_attr_list["username"]
+                obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["cloud_name"]
+                obj_attr_list["cloud_vm_name"] += '-' + "vm"
+                obj_attr_list["cloud_vm_name"] += obj_attr_list["name"].split("_")[1]
+                obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["role"]
 
-            if obj_attr_list["ai"] != "none" :            
-                obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["ai_name"]  
+
+                if obj_attr_list["ai"] != "none" :            
+                    obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["ai_name"]  
 
             obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"].replace("_", "-")
                         
@@ -502,6 +505,7 @@ class NopCmds(CommonCloudFunctions) :
         try :
             _fmsg = "An error has occurred, but no error message was captured"
             _status = 0
+            self.take_action_if_requested("AI", obj_attr_list, current_step)            
 
         except Exception, e :
             _status = 23

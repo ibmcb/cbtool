@@ -61,7 +61,11 @@ class Nethashget :
             elif protocol.lower() == "udp" :
                 self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.socket.settimeout(5)
-            self.socket.connect((self.hostname, self.port if port is None else port))
+
+            if port is None :
+                port = self.port
+
+            self.socket.connect((self.hostname, port))
 
             if not reverse :
                 return True

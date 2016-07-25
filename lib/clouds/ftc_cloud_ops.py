@@ -329,9 +329,6 @@ class FtcCmds(CommonCloudFunctions) :
         '''
         if self.is_vm_running(obj_attr_list) :
 
-            self.take_action_if_requested("VM", obj_attr_list, "provision_complete")
-
-
             if self.get_ip_address(obj_attr_list) :
                 obj_attr_list["cloud_hostname"] = "cb-" + obj_attr_list["cloud_ip"].replace('.', '-')
                 cbdebug("VM " + obj_attr_list["name"] + " received IP: " + obj_attr_list["cloud_ip"])
@@ -390,6 +387,8 @@ class FtcCmds(CommonCloudFunctions) :
 
         _status, _fmsg, result = self.ftcconn.run_instances(**kwargs)
 
+        self.take_action_if_requested("VM", obj_attr_list, "provision_started")
+
         obj_attr_list.update(result)
 
         _time_mark_prs = int(time())
@@ -403,6 +402,7 @@ class FtcCmds(CommonCloudFunctions) :
             # Restore to configured size
             if "configured_size" in obj_attr_list :
                 self.resize_to_configured_default(obj_attr_list)
+                
             status = 0
 
             if obj_attr_list["force_failure"].lower() == "true" :
@@ -467,6 +467,7 @@ class FtcCmds(CommonCloudFunctions) :
         kwargs = self.dic_to_rpc_kwargs(self.ftcconn, "destroy_instances", obj_attr_list)
         self.ftcconn.destroy_instances(storage_keys, **kwargs)
 
+        self.take_action_if_requested("VM", obj_attr_list, "deprovision_finished")
         _time_mark_drc = int(time())
         obj_attr_list["mgt_903_deprovisioning_request_completed"] = \
             _time_mark_drc - _time_mark_drs
@@ -701,7 +702,7 @@ class FtcCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
-        self.take_action_if_requested("AI", obj_attr_list, "all_vms_booted")
+        self.take_action_if_requested("AI", obj_attr_list, current_step)            
         _msg = "AI " + obj_attr_list["uuid"] + " was successfully "
         _msg += "defined on FTCloud \"" + obj_attr_list["cloud_name"]
         _msg += "\"."
@@ -713,6 +714,7 @@ class FtcCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
+        self.take_action_if_requested("AI", obj_attr_list, current_step)        
         _msg = "AI " + obj_attr_list["uuid"] + " was successfully "
         _msg += "undefined on FTCloud \"" + obj_attr_list["cloud_name"]
         _msg += "\"."
