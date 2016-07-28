@@ -73,6 +73,7 @@ do
         if [[ IS_IMAGE_IMPORTED -eq 0 ]]
         then 
             echo "Importing Cloudbench image ${IMAGE_NAME} (${DISK_FORMAT}/${CONTAINER_FORMAT}) from ${IMAGES_URL}/cloudbench/${ARCH}/${IMAGE_NAME} into Glance..."
+            #GICMD="openstack image create ${IMAGE_NAME} --public --container-format ${CONTAINER_FORMAT} --disk-format ${DISK_FORMAT} $GIMAGE_FS"            
             GICMD="glance --os-image-api-version 1 image-create --name ${IMAGE_NAME} --is-public true --container-format ${CONTAINER_FORMAT} --disk-format ${DISK_FORMAT} --copy-from ${IMAGES_URL}/cloudbench/${ARCH}/${IMAGE_NAME}.${IMAGE_FILE_EXTENSION}"
             echo "Command line is \"$GICMD\""
             $GICMD
@@ -85,7 +86,7 @@ do
             echo "The Cloudbench image ${IMAGE_NAME} (${DISK_FORMAT}/${CONTAINER_FORMAT}) is present in glance with the UUID ${UUID} (state \"$STATE\")"
             if [[ $STATE == "active" ]]
             then
-                CURRENT_CHECKSUM=$(glance --os-image-api-version 1 image-show $UUID | grep checksum | awk '{ print $4}')
+                CURRENT_CHECKSUM=$(openstack image show $UUID | grep checksum | awk '{ print $4}')
                 NEW_CHECKSUM=$(sudo cat /tmp/sdebuilder/md5sum.txt | grep $IMAGE_FILE_EXTENSION | grep [[:space:]]${IMAGE_NAME}\. | awk '{ print $1 }')
                 
                 if [[ ${CURRENT_CHECKSUM} == ${NEW_CHECKSUM} ]]
