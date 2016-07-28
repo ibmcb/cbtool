@@ -379,7 +379,7 @@ def get_actual_cmdline(commandline_keys, depsdict, _actual_url) :
             _commandline = _commandline.replace("USERNAME", depsdict["username"].strip())
     
             if depsdict["pip_addr"] :
-                _commandline = _commandline.replace("INDEXURL", "--index-url=http://" + depsdict["pip_addr"])            
+                _commandline = _commandline.replace("INDEXURL", "--index-url=http://" + depsdict["pip_addr"] + " --trusted-host " + depsdict["pip_addr"].split('/')[0] + ' ')
             else :
                 _commandline = _commandline.replace("INDEXURL", '')
             return _commandline_key, _commandline

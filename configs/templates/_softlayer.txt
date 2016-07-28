@@ -134,3 +134,4 @@ CASSANDRA = size:2-4096, eclipsed_size:gold32, imageid1:cb_ycsb
 SEED = size:2-4096, imageid1:cb_ycsb
 REDIS = size:2-4096, imageid1:cb_ycsb
 YCSB = size:2-4096, imageid1:cb_ycsb
+UNIXBENCH = size:2-4096, imageids:1, imageid1:cb_unixbench

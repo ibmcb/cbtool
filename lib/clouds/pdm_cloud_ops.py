@@ -24,14 +24,14 @@
     @author: Marcio A. Silva
 '''
 from time import time, sleep
-from random import randint, choice
-from uuid import uuid5, NAMESPACE_DNS, UUID
+from random import choice
+from uuid import uuid5, UUID
+from os.path import expanduser
 
 import docker
 from docker.errors import APIError
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from lib.remote.process_management import ProcessManagement
 from lib.auxiliary.data_ops import str2dic, DataOpsException
 from lib.remote.network_functions import hostname2ip
 from shared_functions import CldOpsException, CommonCloudFunctions 
@@ -76,7 +76,14 @@ class PdmCmds(CommonCloudFunctions) :
 
                 if _endpoint_ip not in self.dockconn :
                     self.dockconn[_endpoint_ip] = docker.Client(base_url = _endpoint, timeout = 180)
-                    self.dockconn[_endpoint_ip].ping()
+                _host_info = self.dockconn[_endpoint_ip].info()
+                
+                if not _host_info["SystemStatus"] :
+                    True
+                else :
+                    _x = _endpoint.replace("tcp://",'').split(':')
+                    self.swarm_ip = _x[0]
+                    self.swarm_port = _x[1]
 
             _status = 0
             
@@ -188,6 +195,7 @@ class PdmCmds(CommonCloudFunctions) :
 
         for _endpoint in self.dockconn :
             _host_info = self.dockconn[_endpoint].info()
+            
             if not _host_info["SystemStatus"] :
                 _host_uuid = self.generate_random_uuid(_host_info["Name"])
     
@@ -225,8 +233,6 @@ class PdmCmds(CommonCloudFunctions) :
                 obj_attr_list["host_list"][_host_uuid]["mgt_002_provisioning_request_sent"] = obj_attr_list["mgt_002_provisioning_request_sent"]
                 _time_mark_prc = int(time())
                 obj_attr_list["host_list"][_host_uuid]["mgt_003_provisioning_request_completed"] = _time_mark_prc - start
-            else :
-                self.swarm_ip = _endpoint
                 
         obj_attr_list["hosts"] = obj_attr_list["hosts"][:-1]
 
@@ -438,6 +444,28 @@ class PdmCmds(CommonCloudFunctions) :
                 obj_attr_list["hosts"] = ''
                 obj_attr_list["host_list"] = {}
                 obj_attr_list["host_count"] = "NA"
+
+            if self.swarm_ip :
+#                self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
+#                                                  "GLOBAL", \
+#                                                  "ai_defaults", \
+#                                                  False, \
+#                                                  "host_swarm", \
+#                                                  self.swarm_ip)
+
+                if "cloud_name" in obj_attr_list :
+                    _file = expanduser("~") + "/cbrc-" + obj_attr_list["cloud_name"].lower()
+                else :
+                    _file = expanduser("~") + "/cbrc"
+                    
+                _file_fd = open(_file, 'w')
+                _file_fd.write("export DOCKER_HOST=tcp://" + self.swarm_ip + ':' + self.swarm_port + "\n")
+
+                if "cloud_name" in obj_attr_list :                        
+                    _file_fd.write("export CB_CLOUD_NAME=" + obj_attr_list["cloud_name"] + "\n")
+                    _file_fd.write("export CB_USERNAME=" + obj_attr_list["username"] + "\n")
+                    
+                _file_fd.close()
             
             _time_mark_prc = int(time())
             obj_attr_list["mgt_003_provisioning_request_completed"] = \
@@ -728,9 +756,13 @@ class PdmCmds(CommonCloudFunctions) :
                 _msg += obj_attr_list["cloud_vv"] + ", on VMC \"" 
                 _msg += obj_attr_list["vmc_name"] + "\""
                 cbdebug(_msg, True)
-
+                
+                _mark1 = int(time())
                 _vv = self.dockconn[obj_attr_list["host_cloud_ip"]].create_volume(name=obj_attr_list["cloud_vv_name"], driver=_volume_type)
+                _mark2 = int(time())
 
+                obj_attr_list["pdm_002_create_volume_time"] = _mark2 - _mark1
+                
                 if _volume_type == "local" :
                     obj_attr_list["cloud_vv_uuid"] = _vv["Mountpoint"]
 
@@ -859,6 +891,11 @@ class PdmCmds(CommonCloudFunctions) :
             obj_attr_list["cloud_hostname"] = obj_attr_list["cloud_vm_name"]
 
             obj_attr_list["cloud_mac"] = "NA"
+            
+            if self.swarm_ip :
+                obj_attr_list["host_swarm"] = self.swarm_ip
+            else :
+                obj_attr_list["host_swarm"] = "None"
 
             if len(obj_attr_list["pubkey_contents"]) == 1 :
                 _fh = open(obj_attr_list["identity"] + '.pub', 'r')
@@ -866,7 +903,7 @@ class PdmCmds(CommonCloudFunctions) :
                 _fh.close()
                 obj_attr_list["pubkey_contents"] = _pub_key.replace("ssh-rsa ",'')
                 self.osci.update_object_attribute(obj_attr_list["cloud_name"], "GLOBAL", "vm_defaults", False, "pubkey_contents", obj_attr_list["pubkey_contents"])
-                
+
             self.take_action_if_requested("VM", obj_attr_list, "provision_originated")
 
             self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
@@ -916,12 +953,16 @@ class PdmCmds(CommonCloudFunctions) :
             if "cloud_vv_name" in obj_attr_list :
                 _binds = [ obj_attr_list["cloud_vv_name"] + ":/mnt/cbvol1:rw"]                
                 _volumes = [ "/mnt/cbvol1" ]
-                                                                                                            
+
+            _mark1 = int(time())
             _host_config = self.dockconn[obj_attr_list["host_cloud_ip"]].create_host_config(network_mode = obj_attr_list["netname"], \
                                                                                             port_bindings = _port_bindings, 
                                                                                             binds = _binds, \
                                                                                             mem_limit = str(_memory) + 'm')
-            
+                
+            _mark2 = int(time())
+            obj_attr_list["pdm_003_create_host_config_time"] = _mark2 - _mark1
+                        
             _instance = self.dockconn[obj_attr_list["host_cloud_ip"]].create_container(image = obj_attr_list["imageid1"], \
                                                                                  hostname = obj_attr_list["cloud_vm_name"], \
                                                                                  detach = True, \
@@ -932,16 +973,25 @@ class PdmCmds(CommonCloudFunctions) :
 #                                                                                 command = "/sbin/my_init", \
                                                                                  environment = {"CB_SSH_PUB_KEY" : obj_attr_list["pubkey_contents"]})
 
+            _mark3 = int(time())
+            obj_attr_list["pdm_004_create_docker_time"] = _mark3 - _mark2
+                        
             obj_attr_list["cloud_vm_uuid"] = _instance["Id"]
 
             self.dockconn[obj_attr_list["host_cloud_ip"]].start(obj_attr_list["cloud_vm_uuid"])
-
+            _mark4 = int(time())
+            obj_attr_list["pdm_005_start_docker_time"] = _mark4 - _mark3
+                        
             self.take_action_if_requested("VM", obj_attr_list, "provision_started")
 
             _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
 
+            obj_attr_list["pdm_006_instance_creation_time"] = obj_attr_list["mgt_003_provisioning_request_completed"]
+
             self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
 
+            obj_attr_list["pdm_007_instance_reachable"] = obj_attr_list["mgt_004_network_acessible"]
+            
             obj_attr_list["arrival"] = int(time())
 
             _status = 0
@@ -1015,6 +1065,9 @@ class PdmCmds(CommonCloudFunctions) :
                          obj_attr_list["vmc_name"], obj_attr_list["name"])
             
             _wait = int(obj_attr_list["update_frequency"])
+
+            if str(obj_attr_list["host_swarm"]).lower() != "none" :
+                self.swarm_ip = obj_attr_list["host_swarm"]
 
             if self.swarm_ip :
                 _host_ip = self.swarm_ip
@@ -1105,6 +1158,9 @@ class PdmCmds(CommonCloudFunctions) :
             _msg += "...."
             cbdebug(_msg, True)
 
+            if str(obj_attr_list["host_swarm"]).lower() != "none" :
+                self.swarm_ip = obj_attr_list["host_swarm"]
+
             if self.swarm_ip :
                 _host_ip = self.swarm_ip
             else :
@@ -1162,9 +1218,8 @@ class PdmCmds(CommonCloudFunctions) :
         TBD
         '''
         try :
-            _fmsg = "An error has occurred, but no error message was captured"
-
-            self.take_action_if_requested("AI", obj_attr_list, "all_vms_booted")
+            _fmsg = "An error has occurred, but no error message was captured"          
+            self.take_action_if_requested("AI", obj_attr_list, current_step)                    
             _status = 0
 
         except Exception, e :
@@ -1192,7 +1247,7 @@ class PdmCmds(CommonCloudFunctions) :
         '''
         try :
             _fmsg = "An error has occurred, but no error message was captured"
-            _status = 0
+            _status = 0            
             self.take_action_if_requested("AI", obj_attr_list, current_step)            
 
         except Exception, e :

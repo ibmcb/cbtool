@@ -130,3 +130,4 @@ CASSANDRA = size:m1.medium, imageid1:ami-9cee76f5
 SEED = size:m1.medium, imageid1:ami-9cee76f5
 REDIS = size:m1.medium, imageid1:ami-9cee76f5
 YCSB = size:m1.medium, imageid1:ami-9cee76f5
+UNIXBENCH = size:m1.small, imageid1:ami-9cee76f5

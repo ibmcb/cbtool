@@ -2601,7 +2601,7 @@ class OskCmds(CommonCloudFunctions) :
 
             _scheduler_hints = None
 
-            if "userdata" in obj_attr_list and obj_attr_list["userdata"] :
+            if "userdata" in obj_attr_list and str(obj_attr_list["userdata"]).lower() != "false" :
                 _userdata = obj_attr_list["userdata"].replace("# INSERT OPENVPN COMMAND", \
                                                               "openvpn --config /etc/openvpn/" + obj_attr_list["cloud_name"].upper() + "_client-cb-openvpn.conf --daemon --client")
                 _config_drive = True
@@ -2654,7 +2654,7 @@ class OskCmds(CommonCloudFunctions) :
 
             if len(_block_device_mapping) :
                 _msg += ", with \"block_device_mapping=" + str(_block_device_mapping) + "\""
-
+            
             _msg += ", connected to networks \"" + _netnames + "\""
             _msg += ", on VMC \"" + obj_attr_list["vmc_name"] + "\", under tenant"
             _msg += " \"" + obj_attr_list["tenant"] + "\" (ssh key is \""

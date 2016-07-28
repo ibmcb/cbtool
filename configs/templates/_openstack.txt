@@ -160,3 +160,4 @@ SEED = size:m1.medium, imageid1:cb_ycsb
 REDIS = size:m1.medium, imageid1:cb_ycsb
 YCSB = size:m1.medium, imageid1:cb_ycsb
 LINPACK = size:m1.medium, imageid1:cb_linpack
+UNIXBENCH = size:m1.medium, imageid1:cb_unixbench

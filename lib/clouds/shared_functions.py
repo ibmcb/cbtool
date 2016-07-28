@@ -906,12 +906,15 @@ runcmd:
         '''
         TBD
         '''
+
         _temp_dict = None
         if "execute_" + current_step + "_stdout" in obj_attr_list :
-            if obj_attr_list["execute_" + current_step + "_stdout"].count("tenant") :
+            if obj_attr_list["execute_" + current_step + "_stdout"].count("staging") or \
+            obj_attr_list["execute_" + current_step + "_stdout"].count("tenant") :
                 _temp_dict = str2dic(obj_attr_list["execute_" + current_step + "_stdout"].replace('\n',''), False)
 
         if _temp_dict :
+
             if obj_attr_list["name"].count("ai_") and current_step == "provision_originated":
                 if "vm_extra_parms" not in obj_attr_list :
                     obj_attr_list["vm_extra_parms"] = ''                    
@@ -928,6 +931,7 @@ runcmd:
                 obj_attr_list.update(_temp_dict)
             
             if obj_attr_list["name"].count("vm_") :
-                obj_attr_list.update(_temp_dict)
-                        
+                obj_attr_list.update(_temp_dict)               
+
+
         return True

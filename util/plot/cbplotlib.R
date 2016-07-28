@@ -599,7 +599,61 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 						"osk_020_create_fip_time",
 						"osk_021_attach_fip_time",
 						"osk_022_instance_reachable",						
-						"name", "vm_arrival_diff"))		
+						"name", "vm_arrival_diff"))
+
+		prov_cs_lat_data <- prov_cs_lat_data[!is.na(prov_cs_lat_data$vm_arrival_diff),]
+		prov_cs_lat_data[is.na(prov_cs_lat_data)] <- 0
+		
+		output_table(ed, en, prov_lat_data, "003_individual_vm_provision_latency")
+		
+		number_of_vms <- length(prov_lat_data$name)	
+		
+		# Plot provisioning latency
+		prov_cs_lat_plot_title <- paste("Provisioning Latency for all VMs/Containers (",
+				"Cloud-Specific information) \"", vmn, "\" on experiment \"", 
+				selected_expname, "\" (", selected_expid, ")", sep = '')
+		cat(prov_cs_lat_plot_title, sep='\n')	
+		
+		columns_remove <- c("full_obj_name", "vm_arrival_diff")
+		prov_cs_lat_data <- prov_cs_lat_data[,!(names(prov_cs_lat_data) %in% columns_remove)]
+		
+		prov_cs_lat_data <- within(prov_cs_lat_data, 
+				"name" <- as.integer(gsub("vm_", '', prov_cs_lat_data$name)))
+		
+		prov_cs_lat_data <- prov_cs_lat_data[order(prov_cs_lat_data$name), ]
+		
+		setnames(prov_cs_lat_data, "name", "x_axis_id")
+		
+		prov_cs_lat_data <- melt(prov_cs_lat_data, id.vars="x_axis_id")
+		
+		prov_cs_lat_plot <- ggplot(prov_cs_lat_data, 
+						aes(x=x_axis_id, y=value, fill=variable)) + 
+				geom_area(stat='identity') + 
+				xlab("VM name") + 
+				ylab("Provisioning Latency (seconds)") + 
+				labs(title = prov_cs_lat_plot_title)
+		output_pdf_plot(ed, en, prov_cs_lat_plot, "003_individual_vm_provision_latency",
+				sps)
+		################## END Provisioning vs VM ##################
+	}	
+		
+		if("pdm_003_create_host_config_time" %in% colnames(mmdf)) {
+			################## START Provisioning vs VM (Cloud-Specific info) ##################
+			msg <- paste("# Preparing Provisioning Latency for VMs/Containers (Cloud-Specific", 
+					"information) .... #", sep = '')
+			cat(msg, sep='\n')
+			
+			prov_cs_lat_data <- subset(mmdf, (expid %in% selected_expid) & 
+							(name %in% selected_vm_name), 
+					select = c("full_obj_name", 
+							   "pdm_001_net_creation_time",
+							   "pdm_002_create_volume_time",
+			                   "pdm_003_create_host_config_time",
+			                   "pdm_004_create_docker_time",
+			                   "pdm_005_start_docker_time",
+			                   "pdm_006_instance_creation_time",
+			                   "pdm_007_instance_reachable",				
+						 	   "name", "vm_arrival_diff"))	
 		
 		prov_cs_lat_data <- prov_cs_lat_data[!is.na(prov_cs_lat_data$vm_arrival_diff),]
 		prov_cs_lat_data[is.na(prov_cs_lat_data)] <- 0

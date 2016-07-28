@@ -211,7 +211,7 @@ ifconfig-configure = ifconfig
 ip-configure = ip -V
 pkill-configure = pkill -V 2>&1 | cut -d ' ' -f 4
 which-configure = which true
-ntp-configure = ntpd -V 2>&1 | grep Ver | cut -d ' ' -f 8
+ntp-configure = sudo ntpd >/dev/null 2>&1 && sudo ntpd -V 2>&1 | grep Ver | cut -d ' ' -f 8
 git-configure = git --version | cut -d ' ' -f 3
 wget-configure = wget -V | head -n 1 | cut -d ' ' -f 3
 pip-configure = pip --version | cut -d ' ' -f 2
@@ -224,7 +224,7 @@ screen-configure = screen -v | grep version
 rsync-configure = rsync --version | grep version
 ncftp-configure = ncftp -h 2>&1 | grep Program | cut -d ' ' -f 5 | sed -e 's/\//./g'
 lftp-configure = lftp --version | grep Version | cut -d " " -f 4
-netcat-configure = if [[ $(sudo cat cat /proc/1/cgroup | grep -c docker) -eq 0 ]]; then netcat -v -w 1 localhost -z 22; else /bin/true; fi
+netcat-configure = if [[ $(sudo cat cat /proc/1/cgroup | grep -c docker) -eq 0 ]]; then netcat -v -w 1 localhost -z 22; else which netcat; fi
 nmap-configure = nmap -V | grep version | cut -d ' ' -f 3
 openvpn-configure = openvpn --version | grep built | cut -d ' ' -f 2
 gmond-configure = gmond --version | cut -d ' ' -f 2
@@ -455,7 +455,8 @@ rhel-repo-install-man = sudo mv -f /tmp/*.repo /etc/yum.repos.d; touch /tmp/repo
 fedora-repo-install-man = sudo mv -f /tmp/*.repo /etc/yum.repos.d; touch /tmp/repoupdated; service_stop_disable iptables; service_stop_disable firewalld; exit 0
 ubuntu-repo-install-man = sudo mv -f /tmp/*.list /etc/apt/sources.list.d/; sudo apt-get update; service_stop_disable iptables; service_stop_disable ipfw; exit 0
 
-common-ifconfig-install-sl = sudo ln -s /sbin/ifconfig /usr/local/bin/ifconfig
+ubuntu-ifconfig-install-sl = sudo ln -s /sbin/ifconfig /usr/local/bin/ifconfig
+rhel-ifconfig-install-sl = package_install net-tools; sudo ln -s /sbin/ifconfig /usr/local/bin/ifconfig
 
 common-ip-install-sl = sudo ln -s /sbin/ip /usr/local/bin/ip
 
@@ -644,13 +645,13 @@ common-sshd-install-man = sudo sed -i 's/.*UseDNS.*/UseDNS no/g' /etc/ssh/sshd_c
 
 common-pssh-install-pm = package_install pssh
 
-common-docutils-install-pip = sudo pip install --upgrade docutils
+common-docutils-install-pip = sudo pip install --upgrade INDEXURL docutils
 
-common-setuptools-install-pip = sudo pip install --upgrade setuptools
+common-setuptools-install-pip = sudo pip install --upgrade INDEXURL setuptools
 
-common-markup-install-pip = sudo pip install --upgrade markup
+common-markup-install-pip = sudo pip install --upgrade INDEXURL markup
 
-common-pyyaml-install-pip = sudo pip install --upgrade pyyaml
+common-pyyaml-install-pip = sudo pip install --upgrade INDEXURL pyyaml
 
-common-ruamelyaml-install-pip = sudo pip install --upgrade ruamel.yaml
+common-ruamelyaml-install-pip = sudo pip install --upgrade INDEXURL ruamel.yaml
 ### END -  Dependency and method-specific command lines ###
