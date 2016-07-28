@@ -19,17 +19,14 @@
 source ~/.bashrc
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
-START=`provision_application_start`
+FORCE_FAILURE_ON_RESET=$(get_my_ai_attribute_with_default force_failure_on_reset false)
+FORCE_FAILURE_ON_RESET=$(echo ${FORCE_FAILURE_ON_RESET} | tr '[:upper:]' '[:lower:]')
 
-SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
-
-syslog_netcat "Start nothing on ${SHORT_HOSTNAME}"
-
-mount_filesystem_on_volume ${NULLWORKLOAD_BLOCK_DATA_DIR} $NULLWORKLOAD_BLOCK_DATA_FSTYP ${my_login_username} $NULLWORKLOAD_BLOCK_VOLUME
-mount_filesystem_on_memory ${NULLWORKLOAD_MEMORY_DATA_DIR} $NULLWORKLOAD_MEMORY_DATA_FSTYP 200m ${my_login_username}
-mount_remote_filesystem ${NULLWORKLOAD_REMOTE_DATA_DIR} $NULLWORKLOAD_REMOTE_DATA_FSTYP $NULLWORKLOAD_FILESERVER_IP $NULLWORKLOAD_FILESERVER_PATH
-
-syslog_netcat "Nothing started on ${SHORT_HOSTNAME} - OK"
-provision_application_stop $START
-
-exit 0
+if [[ $FORCE_FAILURE_ON_RESET == "false" ]]
+then
+	syslog_netcat "Nothing reset on ${SHORT_HOSTNAME} - OK"
+    exit 0
+else
+	syslog_netcat "Nothing reset FAILED on ${SHORT_HOSTNAME} - NOK"
+    exit 1
+fi
