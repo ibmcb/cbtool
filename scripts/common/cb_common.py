@@ -549,12 +549,12 @@ def is_number(val) :
     except ValueError:
         return False
 
-def update_avg_acc_max_min(metrics_dict, uuid) :
+def update_avg_acc_max_min(metrics_dict, uuid, username) :
     '''
     TBD
     '''
 
-    _fn = "/tmp/" + uuid + "_avg_acc"
+    _fn = "/tmp/" + username + '_' + uuid + "_avg_acc"
 
     _acc_dict = {}
 
@@ -758,9 +758,7 @@ def report_app_metrics(metriclist, sla_targets_list, ms_conn = "auto", \
         if "app_sla_runtime" in _metrics_dict :
             _metrics_dict["app_sla_runtime"]["val"] = _sla_status
     
-#        tzoffset = datetime.utcfromtimestamp(-1).hour - datetime.fromtimestamp(0).hour + 1
-#        _metrics_dict["time"] = int(time()) + (3600 * tzoffset)
-        _metrics_dict["time"] = _metrics_dict["time"] = int(mktime(datetime.utcnow().timetuple()))
+        _metrics_dict["time"] = _metrics_dict["time"] = int(time())
         _metrics_dict["time_cbtool"] = _osci.get_remote_time()[0]
         _metrics_dict["time_h"] = makeTimestamp() 
         _metrics_dict["time_cbtool_h"] = makeTimestamp(_metrics_dict["time_cbtool"])
@@ -787,6 +785,8 @@ def report_app_metrics(metriclist, sla_targets_list, ms_conn = "auto", \
     
                 if is_number(_current_m) and float(_current_m) > 0 :
                     _current_m = "yes"
+
+                _username = obj_attr_list["username"]
                 
                 _xmsg = '.'
                 if str(obj_attr_list["sticky_app_status"]).lower() == "true" :                    
@@ -826,7 +826,7 @@ def report_app_metrics(metriclist, sla_targets_list, ms_conn = "auto", \
         _msg = "Determine average,min,max"
         cbdebug(_msg)
         
-        update_avg_acc_max_min(_metrics_dict, _my_uuid)
+        update_avg_acc_max_min(_metrics_dict, _my_uuid, _username)
 
         _msg = "Report metrics"
         cbdebug(_msg)
