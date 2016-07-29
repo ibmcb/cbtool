@@ -417,7 +417,21 @@ class ActiveObjectOperations(BaseObjectOperations) :
             vpn_client_config += '/' + cld_attr_lst["cloud_name"] + "_client-cb-openvpn.conf"
             cld_attr_lst["vm_defaults"]["vpn_config_file"] = vpn_client_config
 
+#            if cld_attr_lst["vm_defaults"]["use_vpn_ip"] and not cld_attr_lst["vpn"]["start_server"] :
+#                _msg = " The attribute \"USE_VPN_IP\" in Global Object "
+#                _msg += "[VM_DEFAULTS] is set to \"True\". Will set the"
+#                _msg += "attribute \"START_SERVER\" in the Global Object "
+#                _msg += "[VPN] also to \"True\"."
+#                cbdebug(_msg, True)
+#                cld_attr_lst["vpn"]["start_server"] = True
+
+            if str(cld_attr_lst["vm_defaults"]["use_vpn_ip"]).lower() == "false" :
+                _status = 0
+                _msg = "VPN is disabled for this cloud."
+                return True
+
             if str(cld_attr_lst["vpn"]["start_server"]).lower() == "false" :
+
                 _msg = "Bypassing the startup of a \"" + _type + "\" VPN server..."
 
                 # Occasionally (on laptops) the VPN ip address of the orchestrator
@@ -438,6 +452,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         except Exception, e :
                             break
                     tn.close
+                    lines.reverse()
                     for line in lines :
                         if line.count("route " + cld_attr_lst["vpn"]["network"]) :
                             bip = line.split(" ")[10]
@@ -1821,7 +1836,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                             while not _finished_object and _max_recreate_tries > 0 :
                                 _status, _msg = self.post_attach_vm(obj_attr_list, _staging)
-                                self.pending_decide_abortion(obj_attr_list, "VM")
+                                self.pending_decide_abortion(obj_attr_list, "VM", "instance creation")
                                 if not _status :
                                     break
 
@@ -1841,7 +1856,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                 obj_attr_list["recreate_attempts_left"] = _max_recreate_tries
                                 cbdebug("Attempts left #" + str(_max_recreate_tries))
 
-                            self.pending_decide_abortion(obj_attr_list, "VM")
+                            self.pending_decide_abortion(obj_attr_list, "VM", "instance creation")
                             
                         elif _obj_type == "AI" :
                             self.post_attach_ai(obj_attr_list, _staging)
@@ -2098,7 +2113,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
         _start = int(time())
 
-        _max_tries = int(obj_attr_list["update_attempts"])
         _retry_interval = int(obj_attr_list["update_frequency"])
 
         if str(obj_attr_list["use_jumphost"]).lower() == "true" :
@@ -2117,8 +2131,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
         _proc_man = ProcessManagement(username = obj_attr_list["login"], \
                                       cloud_name = obj_attr_list["cloud_name"], \
                                       priv_key = obj_attr_list["identity"], \
-                                      config_file = _config_file, \
-                                      port = _port)
+                                      config_file = _config_file)
 
         try :
 
@@ -2128,17 +2141,25 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _status = 12345
                     raise self.ObjectOperationException(_msg, _status)
 
+            _abort, _fmsg, _remaining_time = self.pending_decide_abortion(obj_attr_list, "VM", "checking SSH accessibility")
+
+            if _remaining_time != 100000 :
+                _actual_tries = _remaining_time/int(obj_attr_list["update_frequency"])
+            else :
+                _actual_tries = int(obj_attr_list["update_attempts"])
+                
             _msg = "Checking ssh accessibility on " + obj_attr_list["name"]
             _msg += " (ssh " + obj_attr_list["login"] + "@" + obj_attr_list["prov_cloud_ip"] + ")..."
             cbdebug(_msg, True)
             _proc_man.retriable_run_os_command("/bin/true", \
                                                obj_attr_list["prov_cloud_ip"], \
-                                               _max_tries, \
+                                               _actual_tries, \
                                                _retry_interval, \
                                                obj_attr_list["transfer_files"], \
                                                obj_attr_list["debug_remote_commands"], \
                                                True,
-                                               tell_me_if_stderr_contains = "Connection reset by peer")
+                                               tell_me_if_stderr_contains = "Connection reset by peer", \
+                                               port = _port)
 
             self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], \
                                               False, "last_known_state", \
@@ -2153,7 +2174,15 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _msg += " done by cloud-init!"
                 cbdebug(_msg, True)
             else :
-                cbdebug(_msg, True)                    
+                cbdebug(_msg, True)
+
+                _abort, _fmsg, _remaining_time = self.pending_decide_abortion(obj_attr_list, "VM", "boostrapping")
+    
+                if _remaining_time != 100000 :
+                    _actual_tries = _remaining_time/int(obj_attr_list["update_frequency"])
+                else :
+                    _actual_tries = int(obj_attr_list["update_attempts"])                
+                
                 _bcmd = get_boostrap_command(obj_attr_list, self.osci)
                 
                 _msg = "BOOTSTRAP: " + _bcmd
@@ -2161,11 +2190,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 _proc_man.retriable_run_os_command(_bcmd, \
                                                    obj_attr_list["prov_cloud_ip"], \
-                                                   _max_tries, \
+                                                   _actual_tries, \
                                                    _retry_interval, \
                                                    obj_attr_list["transfer_files"], \
                                                    obj_attr_list["debug_remote_commands"], \
-                                                   True)
+                                                   True, \
+                                                   tell_me_if_stderr_contains = "Connection reset by peer", \
+                                                   port = _port)
 
             _msg = "Sending a copy of the code tree to "
             _msg += obj_attr_list["name"] + " ("+ obj_attr_list["prov_cloud_ip"] + ")..."
@@ -2176,6 +2207,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             else :
                 cbdebug(_msg, True)
+
+                _abort, _fmsg, _remaining_time = self.pending_decide_abortion(obj_attr_list, "VM", "transfer files")
+    
+                if _remaining_time != 100000 :
+                    _actual_tries = _remaining_time/int(obj_attr_list["update_frequency"])
+                else :
+                    _actual_tries = int(obj_attr_list["update_attempts"])    
 
                 _rcmd = "rsync -e \"" + _proc_man.rsync_conn + "\""
                 _rcmd += " --exclude-from "
@@ -2190,11 +2228,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 _proc_man.retriable_run_os_command(_rcmd, \
                                                    "127.0.0.1", \
-                                                   _max_tries, \
+                                                   _actual_tries, \
                                                    _retry_interval, \
                                                    obj_attr_list["transfer_files"], \
                                                    obj_attr_list["debug_remote_commands"], \
-                                                   True)                
+                                                   True, \
+                                                   tell_me_if_stderr_contains = "Connection reset by peer", \
+                                                   port = _port)                
 
                 self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], \
                                                   False, "last_known_state", \
@@ -2223,7 +2263,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _status, _xfmsg, _object = \
                 _proc_man.run_os_command(_cmd, obj_attr_list["prov_cloud_ip"], \
                                          obj_attr_list["run_generic_scripts"], \
-                                         obj_attr_list["debug_remote_commands"])
+                                         obj_attr_list["debug_remote_commands"], \
+                                         True, \
+                                         tell_me_if_stderr_contains = "Connection reset by peer", \
+                                         port = _port)                    
 
                 if _status :
                     _fmsg = "Failure while executing generic VM "
@@ -2988,14 +3031,14 @@ class ActiveObjectOperations(BaseObjectOperations) :
             if "qemu_debug_port_base" in obj_attr_list :
                 self.auto_free_port("qemu_debug", obj_attr_list, "VMC", obj_attr_list["vmc"], obj_attr_list["vmc_cloud_ip"])
 
-            if obj_attr_list["current_state"] != "attached" :
+            if str(obj_attr_list["current_state"]).lower() != "attached" :
 
                 if "post_capture" in obj_attr_list and obj_attr_list["post_capture"] == "true" :
                     _scores = True
                 else :
                     _scores = False
 
-                self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "VMS_UNDERGOING_" + obj_attr_list["current_state"].upper(), obj_attr_list["uuid"], _scores)
+                self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "VMS_UNDERGOING_" + str(obj_attr_list["current_state"]).upper(), obj_attr_list["uuid"], _scores)
 
 
             self.record_management_metrics(obj_attr_list["cloud_name"], "VM", \
@@ -4787,7 +4830,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _msg += "current load will be allowed to finish its course."
                 cbdebug(_msg)
                 self.parallel_vm_config_for_ai(cloud_name, object_uuid, "reset")
-
+                sleep(_check_frequency)
+        
         _msg = "AI \"state key\" was removed. The Load Manager will now end its execution"
         cbdebug(_msg)
         _status = 0

@@ -2281,6 +2281,7 @@ class BaseObjectOperations :
             _obj_types = []
             _vm_names = []
             _vm_hns = []
+            _vm_pns = []
             _vm_roles = []
             _vm_ip_addrs = []
             _vm_logins = []
@@ -2302,7 +2303,7 @@ class BaseObjectOperations :
                 _obj_attr_list = self.osci.get_object(cloud_name, "VM", False, _vm_uuid, False)
                 
                 if operation != "reset" :
-                    _abort, _fmsg, _remaining_time = self.pending_decide_abortion(_obj_attr_list, "VM")
+                    _abort, _fmsg, _remaining_time = self.pending_decide_abortion(_obj_attr_list, "VM", "instance creation")
                 else :
                     _remaining_time = 100000
 
@@ -2313,8 +2314,17 @@ class BaseObjectOperations :
                 
                 _vm_names.append(_obj_attr_list["name"])
                 _vm_hns.append(_obj_attr_list["cloud_hostname"])
+                if "port_mapping" in _obj_attr_list and operation != "reset" :
+                    _vm_pns.append(_obj_attr_list["port_mapping"])
+                else :
+                    _vm_pns.append("22")                    
+                
                 _vm_roles.append(_obj_attr_list["role"])
-                _vm_ip_addrs.append(_obj_attr_list["prov_cloud_ip"])
+                if operation != "reset" :
+                    _vm_ip_addrs.append(_obj_attr_list["prov_cloud_ip"])
+                else :
+                    _vm_ip_addrs.append(_obj_attr_list["run_cloud_ip"])
+                                        
                 _vm_logins.append(_obj_attr_list["login"])
                 _vm_passwds.append(None)
 
@@ -2329,7 +2339,6 @@ class BaseObjectOperations :
                 _vm_priv_keys.append(_obj_attr_list["identity"])
 
                 _vm_post_boot_commands.append("~/" + _obj_attr_list["remote_dir_name"] + "/scripts/common/cb_post_boot.sh")
-
 
             _actual_attempts = int(_ai_attr_list["configuration_attempts"])
             
@@ -2352,15 +2361,28 @@ class BaseObjectOperations :
 
                 if _smallest_remaining_time != 100000 and operation == "setup":
                     _actual_attempts = _smallest_remaining_time/int(_ai_attr_list["update_frequency"])
-                
+                    _msg = "The VM-specific attribute \"sla_provisioning_abort\" "
+                    _msg += "was set \"True\". Remaining deployment time (generic"
+                    _msg += " application instance post_boot) is " + str(_smallest_remaining_time)
+                    _msg += " seconds and actual number of configuration attempts" 
+                    _msg += " is " + str(_actual_attempts) + " (instead of " 
+                    _msg += str(_ai_attr_list["configuration_attempts"]) + ")."
+                    cbdebug(_msg)
+                    
                 if _actual_attempts > 0 :
+                    _post_boot_start = int(time())
                     _status, _xfmsg = self.proc_man_os_command.parallel_run_os_command(_vm_post_boot_commands, \
                                                                         _vm_ip_addrs, \
+                                                                        _vm_pns, \
                                                                         _actual_attempts, \
                                                                         int(_ai_attr_list["update_frequency"]), \
                                                                         _ai_attr_list["execute_parallelism"], \
                                                                         _obj_attr_list["run_generic_scripts"], \
-                                                                        _obj_attr_list["debug_remote_commands"])
+                                                                        _obj_attr_list["debug_remote_commands"], \
+                                                                        "0", \
+                                                                        _smallest_remaining_time)
+                    _post_boot_spent_time = int(time()) - _post_boot_start
+                    
                 else :
                     _status = 7162
                     _xfmsg = "Ran out of time to run generic post_boot scripts "
@@ -2369,7 +2391,7 @@ class BaseObjectOperations :
                     for _vm in _vm_list :                        
                         _vm_uuid, _vm_role, _vm_name = _vm.split('|')                            
                         _obj_attr_list = self.osci.get_object(cloud_name, "VM", False, _vm_uuid, False)                        
-                        self.pending_decide_abortion(_obj_attr_list, "VM")
+                        self.pending_decide_abortion(_obj_attr_list, "VM", "generic post-boot script", 0.1, False)
                         
                 if _status :
 
@@ -2486,19 +2508,32 @@ class BaseObjectOperations :
                     self.proc_man_os_command.username = _vm_logins[0]
                     self.proc_man_os_command.priv_key = _vm_priv_keys[0]
 
+                    if _smallest_remaining_time != 100000 and operation == "setup":
+                        _smallest_remaining_time = _smallest_remaining_time - _post_boot_spent_time
+                        _actual_attempts = _smallest_remaining_time/int(_ai_attr_list["update_frequency"])
+                        _msg = "The VM-specific attribute \"sla_provisioning_abort\" "
+                        _msg += " was set \"True\". Remaining deployment time "
+                        _msg += "(application-specific setup) is " + str(_smallest_remaining_time)
+                        _msg += " seconds and actual number of configuration "
+                        _msg += "attempts is " + str(_actual_attempts) + " (instead of "
+                        _msg += str(_ai_attr_list["configuration_attempts"]) + ")."
+                        cbdebug(_msg)
+
                     if _actual_attempts > 0 :
                         _status, _xfmsg = self.proc_man_os_command.parallel_run_os_command(_vm_command_list, \
                                                                             _vm_ip_addrs, \
+                                                                            _vm_pns, \
                                                                             _actual_attempts, \
                                                                             int(_ai_attr_list["update_frequency"]), \
                                                                             _ai_attr_list["execute_parallelism"], \
                                                                             _ai_attr_list["run_application_scripts"], 
                                                                             _ai_attr_list["debug_remote_commands"],
-                                                                            _num)
+                                                                            _num, \
+                                                                            _smallest_remaining_time)
                     else :
                         _status = 7163
                         _xfmsg = "Ran out of time to run application-specific \"setup\""
-                        _xfmsg += "scripts due to the established SLA provisioning target."
+                        _xfmsg += " scripts due to the established SLA provisioning target."
 
                     if _status :
     
@@ -2507,10 +2542,11 @@ class BaseObjectOperations :
                         _fmsg += _xfmsg
                         break
 
-                    for _vm in _vm_list :
-                        _vm_uuid, _vm_role, _vm_name = _vm.split('|')
-                        _obj_attr_list = self.osci.get_object(cloud_name, "VM", False, _vm_uuid, False)
-                        self.pending_decide_abortion(_obj_attr_list, "VM")
+                    if operation != "reset" :
+                        for _vm in _vm_list :
+                            _vm_uuid, _vm_role, _vm_name = _vm.split('|')
+                            _obj_attr_list = self.osci.get_object(cloud_name, "VM", False, _vm_uuid, False)
+                            self.pending_decide_abortion(_obj_attr_list, "VM", "application-specific scripts", 0.1, False)
 
         except Exception, e :
             _status = 23
@@ -2893,7 +2929,7 @@ class BaseObjectOperations :
 
         return False
 
-    def pending_decide_abortion(self, obj_attr_list, obj_type) :
+    def pending_decide_abortion(self, obj_attr_list, obj_type, reason = 'abort', remaining_time = False, raise_exception = True) :
         '''
         TBD
         '''
@@ -2904,7 +2940,7 @@ class BaseObjectOperations :
                     
         if "recreate_attempts_left" in obj_attr_list :
             if int(obj_attr_list["recreate_attempts_left"]) == 0 :
-                _abort = "true"
+                _abort = reason
                 if _pending_object :
                     self.osci.pending_object_set(obj_attr_list["cloud_name"], \
                                                  obj_type, \
@@ -2922,12 +2958,16 @@ class BaseObjectOperations :
                 _x_fmsg = "(due to recreate attempts left equal zero)"
 
         if "sla_provisioning_target" in obj_attr_list :
+            
             _provisioning_time = int(time()) - int(obj_attr_list["mgt_001_provisioning_request_originated"])
-            
-            _remaining_time = int(obj_attr_list["sla_provisioning_target"]) - _provisioning_time
-            
-            if _remaining_time <= 0 and obj_attr_list["sla_provisioning_abort"].lower() == "true" :
-                _abort = "true"
+
+            if not remaining_time :
+                _remaining_time = int(obj_attr_list["sla_provisioning_target"]) - _provisioning_time
+            else :
+                _remaining_time = int(remaining_time)
+                
+            if _remaining_time < int(obj_attr_list["update_frequency"]) and obj_attr_list["sla_provisioning_abort"].lower() == "true" :
+                _abort = reason
                 if _pending_object :
                     self.osci.pending_object_set(obj_attr_list["cloud_name"], \
                                                  obj_type, \
@@ -2948,8 +2988,8 @@ class BaseObjectOperations :
                 _x_fmsg= "(due to SLA provisioning target violation)"
 
         obj_attr_list["abort"] = _abort
-
-        if _abort == "true" :
+        
+        if _abort != "false" and raise_exception :
             _fmsg = obj_type + " object " + obj_attr_list["uuid"] + " ("
             _fmsg += "named \"" + obj_attr_list["name"] + "\") was aborted "
             _fmsg += _x_fmsg + " during attachment to this experiment"
@@ -3024,7 +3064,7 @@ class BaseObjectOperations :
                  previous_load_id = False) :
         '''
         TBD
-        '''
+        '''        
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
@@ -3034,13 +3074,22 @@ class BaseObjectOperations :
 
             else :
                 if not previous_load :
-                    previous_load = 0
+                    if "current_load_level" in obj_attr_list :
+                        previous_load = obj_attr_list["current_load_level"]
+                    else :                    
+                        previous_load = 0
                     
                 if not previous_duration :
-                    previous_duration = 0
+                    if "current_load_duration" in obj_attr_list :
+                        previous_duration = obj_attr_list["current_load_duration"]
+                    else :                 
+                        previous_duration = 0
                     
                 if not previous_load_id :
-                    previous_load_id = 0
+                    if "current_load_id" in obj_attr_list :
+                        previous_load_id = obj_attr_list["current_load_id"]
+                    else :
+                        previous_load_id = 0
 
                 _vg = ValueGeneration(self.pid)
                 obj_attr_list["current_load_level"] = int(_vg.get_value(obj_attr_list["load_level"], previous_load))                
@@ -3049,7 +3098,7 @@ class BaseObjectOperations :
                 obj_attr_list["current_load_id"] = int(previous_load_id) + 1
 
                 _msg = "The selected load level for load id " 
-                _msg += str(obj_attr_list["current_load_id"]) + "(load profile \""
+                _msg += str(obj_attr_list["current_load_id"]) + " (load profile \""
                 _msg += obj_attr_list["current_load_profile"] + "\") was "  
                 _msg += str(obj_attr_list["current_load_level"])
                 _msg += " and it will be applied to the sut for "

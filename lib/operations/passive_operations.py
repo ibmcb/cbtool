@@ -169,7 +169,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
         return x["name"]
     
     @trace
-    def get_fields(self, obj_type):
+    def get_fields(self, obj_type, criteria = "attached"):
         if obj_type == "CLOUD" :
             _obj_inst = self.pid
             _fields = []
@@ -204,7 +204,9 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _fields.append("|vmc_pool      ")
             _fields.append("|netname    ")            
             _fields.append("|ai      ")
-            _fields.append("|aidrs      ")                    
+            _fields.append("|aidrs      ")
+            if criteria == "failed" :
+                _fields.append("|abort                        ")            
             _fields.append("|uuid")
 #            _fields.append("|uuid                                 ")
         elif obj_type == "AI" :
@@ -280,11 +282,11 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _obj_type = command.split('-')[0].upper()
             _obj_list = []
             _total = 0
-            _fields = self.get_fields(_obj_type)
 
             _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
-
+            
             if not _status :
+                _fields = self.get_fields(_obj_type, obj_attr_list["state"])                
                 _status, _fmsg = self.initialize_object(obj_attr_list, command)
 
                 if not _status and (obj_attr_list["state"].lower() not in ["pending", "failed", "finished"]):

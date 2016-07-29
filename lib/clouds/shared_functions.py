@@ -165,10 +165,10 @@ class CommonCloudFunctions:
         _abort = "false"
         _x_fmsg = ''
 
-        while _curr_tries < _max_tries and _abort != "true" :
+        while _curr_tries < _max_tries and _abort == "false" :
             _start_pooling = int(time())
 
-            _abort, _x_fmsg = self.pending_cloud_decide_abortion(obj_attr_list)
+            _abort, _x_fmsg = self.pending_cloud_decide_abortion(obj_attr_list, "instance creation")
 
             if "async" not in obj_attr_list or str(obj_attr_list["async"]).lower() == "false" :
                 if threading.current_thread().abort :
@@ -262,7 +262,7 @@ class CommonCloudFunctions:
                 self.pending_set(obj_attr_list, _msg)
     
         if _curr_tries < _max_tries :
-            if _abort == "true" :
+            if _abort != "false" :
                 _msg = "" + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "was aborted " + _x_fmsg + ". Giving up."
@@ -343,7 +343,7 @@ class CommonCloudFunctions:
             while not _network_reachable and _curr_tries < _max_tries and _abort != "true" :
                 _start_pooling = int(time())
 
-                _abort, _x_fmsg = self.pending_cloud_decide_abortion(obj_attr_list)
+                _abort, _x_fmsg = self.pending_cloud_decide_abortion(obj_attr_list, "instance boot")
 
                 if "async" not in obj_attr_list or str(obj_attr_list["async"]).lower() == "false" :
                     if threading.current_thread().abort :
@@ -530,7 +530,7 @@ class CommonCloudFunctions:
                     _curr_tries += 1
 
         if _curr_tries < _max_tries :
-            if _abort == "true" :
+            if _abort != "false" :
                 _msg = "" + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "was aborted " + _x_fmsg + ". Giving up."
@@ -571,7 +571,7 @@ class CommonCloudFunctions:
                 self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
                                              obj_attr_list["uuid"], "status", msg) 
 
-    def pending_cloud_decide_abortion(self, obj_attr_list) :
+    def pending_cloud_decide_abortion(self, obj_attr_list, _reason = "abort") :
         '''
         TBD
         '''
@@ -583,7 +583,7 @@ class CommonCloudFunctions:
                 
                 if _provisioning_time > int(obj_attr_list["sla_provisioning_target"]) :
                     self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
-                                             obj_attr_list["uuid"], "abort", "true")
+                                             obj_attr_list["uuid"], "abort", _reason)
                     
                     _x_fmsg= "(due to SLA provisioning target violation)" 
                     
@@ -906,12 +906,15 @@ runcmd:
         '''
         TBD
         '''
+
         _temp_dict = None
         if "execute_" + current_step + "_stdout" in obj_attr_list :
-            if obj_attr_list["execute_" + current_step + "_stdout"].count("tenant") :
+            if obj_attr_list["execute_" + current_step + "_stdout"].count("staging") or \
+            obj_attr_list["execute_" + current_step + "_stdout"].count("tenant") :
                 _temp_dict = str2dic(obj_attr_list["execute_" + current_step + "_stdout"].replace('\n',''), False)
 
         if _temp_dict :
+
             if obj_attr_list["name"].count("ai_") and current_step == "provision_originated":
                 if "vm_extra_parms" not in obj_attr_list :
                     obj_attr_list["vm_extra_parms"] = ''                    
@@ -928,6 +931,7 @@ runcmd:
                 obj_attr_list.update(_temp_dict)
             
             if obj_attr_list["name"].count("vm_") :
-                obj_attr_list.update(_temp_dict)
-                        
+                obj_attr_list.update(_temp_dict)               
+
+
         return True
