@@ -22,12 +22,12 @@ function all_clear () {
     for lbpool in $(neutron lb-pool-list | grep $OSK_LBPOOL_NAME | awk '{ print $2 }')
     do
         echo "deleting lbpool $lbpool"
-        for lbvip in $(neutron lb-vip-list --poll-id $lbpool -c id -c pool_id | awk '{ print $2 }')
+        for lbvip in $(neutron lb-vip-list --pool-id $lbpool -c id -c pool_id | awk '{ print $2 }')
         do
             neutron lb-vip-delete $lbvip 
         done
         
-        for lbmember in $(neutron lb-member --poll-id $lbpool-list -c id -c pool_id | awk '{ print $2 }')
+        for lbmember in $(neutron lb-member --pool-id $lbpool-list -c id -c pool_id | awk '{ print $2 }')
         do
             neutron lb-member-delete $lbmember
         done
