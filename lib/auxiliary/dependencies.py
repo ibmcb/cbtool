@@ -379,7 +379,7 @@ def get_actual_cmdline(commandline_keys, depsdict, _actual_url) :
             _commandline = _commandline.replace("USERNAME", depsdict["username"].strip())
     
             if depsdict["pip_addr"] :
-                _commandline = _commandline.replace("INDEXURL", "--index-url=http://" + depsdict["pip_addr"])            
+                _commandline = _commandline.replace("INDEXURL", "--index-url=http://" + depsdict["pip_addr"] + " --trusted-host " + depsdict["pip_addr"].split('/')[0] + ' ')
             else :
                 _commandline = _commandline.replace("INDEXURL", '')
             return _commandline_key, _commandline
@@ -628,7 +628,7 @@ def execute_command(operation, depkey, depsdict, hostname = "127.0.0.1", usernam
         _status = 20000
         _result_stdout = "NA"
         _result_stderr = "NA"
-        _status, _result_stdout, _result_stderr = process_manager.run_os_command(_cmd[operation], False)
+        _status, _result_stdout, _result_stderr = process_manager.run_os_command(_cmd[operation], False, True, False, True, None, False, 22, False)
 
         if not _status :
             if operation == "install" :
