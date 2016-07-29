@@ -66,6 +66,7 @@ class Dashboard () :
         self.time_vars = time_vars 
         self.base_uri = base_uri
         self.start_time = int(self.time_vars["start_time"])
+        self.pid = "none"
         self.processid = "none"
         self.cn = cloud_name
         self.msattrs = msattrs

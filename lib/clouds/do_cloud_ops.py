@@ -642,7 +642,7 @@ class DoCmds(CommonCloudFunctions) :
                 cberr(_msg)
 
                 if "cloud_vm_uuid" in obj_attr_list :
-                    obj_attr_list["mgt_deprovisioning_request_originated"] = int(time())
+                    obj_attr_list["mgt_901_deprovisioning_request_originated"] = int(time())
                     self.vmdestroy(obj_attr_list)
                 else :
                     if _reservation :
@@ -662,13 +662,7 @@ class DoCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
-            _time_mark_drs = int(time())
             _wait = int(obj_attr_list["update_frequency"])
-
-            if "mgt_901_deprovisioning_request_originated" not in obj_attr_list :
-                obj_attr_list["mgt_901_deprovisioning_request_originated"] = _time_mark_drs
-
-            obj_attr_list["mgt_902_deprovisioning_request_sent"] = _time_mark_drs - int(obj_attr_list["mgt_901_deprovisioning_request_originated"])
 
             cbdebug("Last known state: " + str(obj_attr_list["last_known_state"]))
 
@@ -683,6 +677,7 @@ class DoCmds(CommonCloudFunctions) :
             _msg += "...."
             cbdebug(_msg, True)
 
+            firsttime = True
             while True :
                 _errmsg = "get_vm_instance"
                 cbdebug("Getting instance...")
@@ -701,7 +696,17 @@ class DoCmds(CommonCloudFunctions) :
                     continue
 
                 try :
+                    _time_mark_drs = int(time())
+                    if firsttime :
+                        if "mgt_901_deprovisioning_request_originated" not in obj_attr_list :
+                            obj_attr_list["mgt_901_deprovisioning_request_originated"] = _time_mark_drs
+
                     result = _instance.destroy()
+
+                    if firsttime :
+                        obj_attr_list["mgt_902_deprovisioning_request_sent"] = _time_mark_drs - int(obj_attr_list["mgt_901_deprovisioning_request_originated"])
+
+                    firsttime = False
                 except :
                     pass
 
@@ -960,6 +965,9 @@ class DoCmds(CommonCloudFunctions) :
                 obj_attr_list["credentials_pair"] = credentials_pair
                 self.osci.pending_object_set(obj_attr_list["cloud_name"], "AI", \
                     obj_attr_list["uuid"], "credential_pair", credentials_pair)
+
+                # Cache libcloud objects for this daemon / process before the VMs are attached
+                self.connect(credentials_pair)
 
             _fmsg = "An error has occurred, but no error message was captured"
 
