@@ -1400,7 +1400,7 @@ class OskCmds(CommonCloudFunctions) :
             if "hypervisor_type" in obj_attr_list and str(obj_attr_list["hypervisor_type"]).lower() != "fake" :
                 
                 _hyper = obj_attr_list["hypervisor_type"]
-                    
+
                 for _image in list(_candidate_images) :
                     if "hypervisor_type" in _image.metadata :
                         if _image.metadata["hypervisor_type"] != obj_attr_list["hypervisor_type"] :
@@ -1646,7 +1646,7 @@ class OskCmds(CommonCloudFunctions) :
         '''
         try :
             _search_opts = {}
-            _call = "NAi"
+            _call = "NA"
             _search_opts['all_tenants'] = 1
             
             if identifier != "all" :
@@ -2593,16 +2593,15 @@ class OskCmds(CommonCloudFunctions) :
 
             if "host_name" in obj_attr_list and _availability_zone :
 #                _scheduler_hints = { "force_hosts" : obj_attr_list["host_name"] }
-
                 for _host in self.oskconncompute.hypervisors.list() :
                     if _host.hypervisor_hostname.count(obj_attr_list["host_name"]) :
                         obj_attr_list["host_name"] = _host.hypervisor_hostname
 
-                _availability_zone += ':' + obj_attr_list["availability_zone"]
+                _availability_zone += ':' + obj_attr_list["host_name"]
 
             _scheduler_hints = None
 
-            if "userdata" in obj_attr_list and obj_attr_list["userdata"] :
+            if "userdata" in obj_attr_list and str(obj_attr_list["userdata"]).lower() != "false" :
                 _userdata = obj_attr_list["userdata"].replace("# INSERT OPENVPN COMMAND", \
                                                               "openvpn --config /etc/openvpn/" + obj_attr_list["cloud_name"].upper() + "_client-cb-openvpn.conf --daemon --client")
                 _config_drive = True
@@ -2655,7 +2654,7 @@ class OskCmds(CommonCloudFunctions) :
 
             if len(_block_device_mapping) :
                 _msg += ", with \"block_device_mapping=" + str(_block_device_mapping) + "\""
-
+            
             _msg += ", connected to networks \"" + _netnames + "\""
             _msg += ", on VMC \"" + obj_attr_list["vmc_name"] + "\", under tenant"
             _msg += " \"" + obj_attr_list["tenant"] + "\" (ssh key is \""

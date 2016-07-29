@@ -55,6 +55,7 @@ SIZE = from_vm_template
 TENANT = default
 LEAVE_INSTANCE_ON_FAILURE = $False
 FORCE_FAILURE = $False
+DISABLE_TIMESYNC = $False
 
 [AI_DEFAULTS : PLM_CLOUDCONFIG]
 ATTACH_PARALLELISM = 5
@@ -120,3 +121,4 @@ CASSANDRA = size:silver32, eclipsed_size:gold32, imageid1:cb_ycsb
 SEED = size:silver32, eclipsed_size:gold32, imageid1:cb_ycsb
 REDIS = size:silver32, eclipsed_size:gold32, imageid1:cb_ycsb
 YCSB = size:silver32, eclipsed_size:gold32, imageid1:cb_ycsb
+UNIXBENCH = size:iron32, imageids:1, imageid1:cb_unixbench

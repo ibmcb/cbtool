@@ -66,6 +66,7 @@ SIZE = from_vm_template
 VM_HOSTNAME_KEY = cloud_vm_name
 LEAVE_INSTANCE_ON_FAILURE = $False
 FORCE_FAILURE = $False
+DISABLE_TIMESYNC = $False
 
 [AI_DEFAULTS : SLR_CLOUDCONFIG]
 ATTACH_PARALLELISM = 5
@@ -133,3 +134,4 @@ CASSANDRA = size:2-4096, eclipsed_size:gold32, imageid1:cb_ycsb
 SEED = size:2-4096, imageid1:cb_ycsb
 REDIS = size:2-4096, imageid1:cb_ycsb
 YCSB = size:2-4096, imageid1:cb_ycsb
+UNIXBENCH = size:2-4096, imageids:1, imageid1:cb_unixbench

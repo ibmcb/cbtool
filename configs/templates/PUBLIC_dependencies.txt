@@ -108,21 +108,23 @@ d3-order = 46
 novaclient-order = 47
 neutronclient-order = 48
 cinderclient-order = 49
-softlayer-order = 50
-boto-order = 51
-libcloud-order = 52
-gcloud-order = 53
-pygce-order = 54
-iptables-order = 55
-R-order = 56
-sshkey-order = 57
-sshd-order = 58
-pssh-order = 59
-docutils-order = 60
-setuptools-order = 61
-markup-order = 62
-pyyaml-order = 63
-ruamelyaml-order = 64 
+glanceclient-order = 50
+softlayer-order = 51
+boto-order = 52
+libcloud-order = 53
+gcloud-order = 54
+pygce-order = 55
+pydocker-order = 56
+iptables-order = 57
+R-order = 58
+sshkey-order = 59
+sshd-order = 60
+pssh-order = 61
+docutils-order = 62
+setuptools-order = 63
+markup-order = 64
+pyyaml-order = 65
+ruamelyaml-order = 66
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -183,11 +185,13 @@ bootstrap-install = git
 novaclient-install = pip
 neutronclient-install = pip
 cinderclient-install = pip
+glanceclient-install = pip
 softlayer-install = pip
 boto-install = pip
 libcloud-install = pip
 gcloud-install = man
 pygce-install = pip
+pydocker-install = pip
 iptables-install = pm
 R-install = pm
 sshkey-install = man
@@ -206,8 +210,8 @@ repo-configure = ls -la /tmp/repoupdated
 ifconfig-configure = ifconfig
 ip-configure = ip -V
 pkill-configure = pkill -V 2>&1 | cut -d ' ' -f 4
-which-configure = which
-ntp-configure = ntpd -V 2>&1 | grep Ver | cut -d ' ' -f 8
+which-configure = which true
+ntp-configure = sudo ntpd >/dev/null 2>&1 && sudo ntpd -V 2>&1 | grep Ver | cut -d ' ' -f 8
 git-configure = git --version | cut -d ' ' -f 3
 wget-configure = wget -V | head -n 1 | cut -d ' ' -f 3
 pip-configure = pip --version | cut -d ' ' -f 2
@@ -220,12 +224,12 @@ screen-configure = screen -v | grep version
 rsync-configure = rsync --version | grep version
 ncftp-configure = ncftp -h 2>&1 | grep Program | cut -d ' ' -f 5 | sed -e 's/\//./g'
 lftp-configure = lftp --version | grep Version | cut -d " " -f 4
-netcat-configure = if [[ $(sudo cat cat /proc/1/cgroup | grep -c docker) -eq 0 ]]; then netcat -v -w 1 localhost -z 22; else /bin/true; fi
+netcat-configure = if [[ $(sudo cat cat /proc/1/cgroup | grep -c docker) -eq 0 ]]; then netcat -v -w 1 localhost -z 22; else which netcat; fi
 nmap-configure = nmap -V | grep version | cut -d ' ' -f 3
 openvpn-configure = openvpn --version | grep built | cut -d ' ' -f 2
 gmond-configure = gmond --version | cut -d ' ' -f 2
 chef-client-configure = knife -v | cut -d ' ' -f 2
-rsyslog-configure = rsyslogd -v | grep compiled | cut -d ' ' -f 2 | sed 's/,//g'
+rsyslog-configure = if [[ $(sudo cat cat /proc/1/cgroup | grep -c docker) -eq 0 ]]; then rsyslogd -v | grep compiled | cut -d ' ' -f 2 | sed 's/,//g'; else echo "1000"; fi
 rsyslog-filter-configure = nmap -P0 -sU -p514 localhost 2>&1 | grep open && ls /var/log/cloudbench
 apache-configure = sudo apachectl -v | grep version | cut -d '/' -f 2 | cut -d ' ' -f 1
 redis-configure = redis-server -v | sed 's/[^0-9]*//g'
@@ -251,11 +255,13 @@ d3-configure = ls -la 3RPARTYDIR/d3/component.json
 novaclient-configure = python -c "import novaclient; from novaclient import client"
 neutronclient-configure = python -c "import neutronclient; from neutronclient.v2_0 import client"
 cinderclient-configure = python -c "import cinderclient; from cinderclient.v2 import client"
+glanceclient-configure = python -c "import glanceclient; from glanceclient.v2 import client"
 softlayer-configure = python -c "import SoftLayer; print "SoftLayer.__version__".replace('v','')"
 boto-configure = python -c "import boto; print str(boto.__version__).strip().replace('-dev','')"
 libcloud-configure = python -c "import libcloud; print str(libcloud.__version__).replace('-dev','').strip()"
-gcloud-configure = gcloud -v | grep SDK | cut -d ' ' -f 4
+gcloud-configure = source ~/.bahsrc; source ~/.profile; gcloud -v | grep SDK | cut -d ' ' -f 4
 pygce-configure = python -c "from oauth2client.client import GoogleCredentials; from googleapiclient.discovery import build"
+pydocker-configure = python -c "import docker"
 iptables-configure = sudo iptables -v 2>&1 | grep v | cut -d ' ' -f 2 | sed 's/v//g' | sed 's/://g'
 R-configure = R --version | grep version | grep -v GNU
 sshkey-configure = ls CREDENTIALSDIR/cbtool_rsa
@@ -319,11 +325,13 @@ d3-ver = ANY
 novaclient-ver = ANY
 neutronclient-ver = ANY
 cinderclient-ver = ANY
+glanceclient-ver = ANY
 softlayer-ver = 3.1
 boto-ver = 2.1.8
 libcloud-ver = 0.11.0
 gcloud-ver = 0.8
 pygce-ver = ANY
+pydocker-ver = ANY
 iptables-ver = 1.2
 R-ver = 2.1
 sshkey-ver = ANY
@@ -336,7 +344,6 @@ pyyaml-ver = 3.10
 ruamelyaml-ver = ANY
 ### END - Dependency versions ###
 
-<<<<<<< HEAD
 ### START - Dependency tags ###
 sudo-tag = base
 repo-tag = base
@@ -388,11 +395,13 @@ d3-tag = orchestrator
 novaclient-tag = osk,all
 neutronclient-tag = osk,all
 cinderclient-tag = osk,all
+glanceclient-tag = osk,all
 softlayer-tag = slr,all
 boto-tag = ec2,all
 libcloud-tag = vcd,all
 gcloud-tag = gce,all
 pygce-tag = gce,all
+pydocker-tag = pdm,all
 iptables-tag = base
 R-tag = orchestrator
 sshkey-tag = base
@@ -446,7 +455,8 @@ rhel-repo-install-man = sudo mv -f /tmp/*.repo /etc/yum.repos.d; touch /tmp/repo
 fedora-repo-install-man = sudo mv -f /tmp/*.repo /etc/yum.repos.d; touch /tmp/repoupdated; service_stop_disable iptables; service_stop_disable firewalld; exit 0
 ubuntu-repo-install-man = sudo mv -f /tmp/*.list /etc/apt/sources.list.d/; sudo apt-get update; service_stop_disable iptables; service_stop_disable ipfw; exit 0
 
-common-ifconfig-install-sl = sudo ln -s /sbin/ifconfig /usr/local/bin/ifconfig
+ubuntu-ifconfig-install-sl = sudo ln -s /sbin/ifconfig /usr/local/bin/ifconfig
+rhel-ifconfig-install-sl = package_install net-tools; sudo ln -s /sbin/ifconfig /usr/local/bin/ifconfig
 
 common-ip-install-sl = sudo ln -s /sbin/ip /usr/local/bin/ip
 
@@ -604,6 +614,8 @@ common-neutronclient-install-pip = sudo pip install --upgrade INDEXURL python-ne
 
 common-cinderclient-install-pip = sudo pip install --upgrade INDEXURL python-cinderclient
 
+common-glanceclient-install-pip = sudo pip install --upgrade INDEXURL python-glanceclient
+
 common-softlayer-install-pip = sudo pip install --upgrade INDEXURL softlayer
 
 common-boto-install-pip = sudo pip install --upgrade INDEXURL boto
@@ -613,6 +625,8 @@ common-libcloud-install-pip = sudo pip install --upgrade INDEXURL apache-libclou
 common-gcloud-install-man =  export CLOUDSDK_CORE_DISABLE_PROMPTS=1 && curl https://sdk.cloud.google.com | bash
 
 common-pygce-install-pip =  sudo pip install --upgrade INDEXURL gcloud google-api-python-client
+
+common-pydocker-install-pip =  sudo pip install --upgrade INDEXURL docker-py wget
 
 rhel-iptables-install-pm = package_install iptables-services iptables
 rhel-iptables-postinstall-pm = sudo  touch /etc/sysconfig/iptables; sudo touch /etc/sysconfig/ip6table; service_stop_disable iptables
@@ -631,13 +645,13 @@ common-sshd-install-man = sudo sed -i 's/.*UseDNS.*/UseDNS no/g' /etc/ssh/sshd_c
 
 common-pssh-install-pm = package_install pssh
 
-common-docutils-install-pip = sudo pip install --upgrade docutils
+common-docutils-install-pip = sudo pip install --upgrade INDEXURL docutils
 
-common-setuptools-install-pip = sudo pip install --upgrade setuptools
+common-setuptools-install-pip = sudo pip install --upgrade INDEXURL setuptools
 
-common-markup-install-pip = sudo pip install --upgrade markup
+common-markup-install-pip = sudo pip install --upgrade INDEXURL markup
 
-common-pyyaml-install-pip = sudo pip install --upgrade pyyaml
+common-pyyaml-install-pip = sudo pip install --upgrade INDEXURL pyyaml
 
-common-ruamelyaml-install-pip = sudo pip install --upgrade ruamel.yaml
+common-ruamelyaml-install-pip = sudo pip install --upgrade INDEXURL ruamel.yaml
 ### END -  Dependency and method-specific command lines ###

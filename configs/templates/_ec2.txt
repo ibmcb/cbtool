@@ -63,6 +63,7 @@ TENANT = default
 SIZE = from_vm_template
 LEAVE_INSTANCE_ON_FAILURE = $False
 FORCE_FAILURE = $False
+DISABLE_TIMESYNC = $False
 
 [AI_DEFAULTS : EC2_CLOUDCONFIG ]
 ATTACH_PARALLELISM = 10
@@ -129,3 +130,4 @@ CASSANDRA = size:m1.medium, imageid1:ami-9cee76f5
 SEED = size:m1.medium, imageid1:ami-9cee76f5
 REDIS = size:m1.medium, imageid1:ami-9cee76f5
 YCSB = size:m1.medium, imageid1:ami-9cee76f5
+UNIXBENCH = size:m1.small, imageid1:ami-9cee76f5
