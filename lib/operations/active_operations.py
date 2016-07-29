@@ -1836,7 +1836,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                             while not _finished_object and _max_recreate_tries > 0 :
                                 _status, _msg = self.post_attach_vm(obj_attr_list, _staging)
-                                self.pending_decide_abortion(obj_attr_list, "VM")
+                                self.pending_decide_abortion(obj_attr_list, "VM", "instance creation")
                                 if not _status :
                                     break
 
@@ -1856,7 +1856,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                 obj_attr_list["recreate_attempts_left"] = _max_recreate_tries
                                 cbdebug("Attempts left #" + str(_max_recreate_tries))
 
-                            self.pending_decide_abortion(obj_attr_list, "VM")
+                            self.pending_decide_abortion(obj_attr_list, "VM", "instance creation")
                             
                         elif _obj_type == "AI" :
                             self.post_attach_ai(obj_attr_list, _staging)
@@ -2113,7 +2113,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
         _start = int(time())
 
-        _max_tries = int(obj_attr_list["update_attempts"])
         _retry_interval = int(obj_attr_list["update_frequency"])
 
         if str(obj_attr_list["use_jumphost"]).lower() == "true" :
@@ -2142,12 +2141,19 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _status = 12345
                     raise self.ObjectOperationException(_msg, _status)
 
+            _abort, _fmsg, _remaining_time = self.pending_decide_abortion(obj_attr_list, "VM", "checking SSH accessibility")
+
+            if _remaining_time != 100000 :
+                _actual_tries = _remaining_time/int(obj_attr_list["update_frequency"])
+            else :
+                _actual_tries = int(obj_attr_list["update_attempts"])
+                
             _msg = "Checking ssh accessibility on " + obj_attr_list["name"]
             _msg += " (ssh " + obj_attr_list["login"] + "@" + obj_attr_list["prov_cloud_ip"] + ")..."
             cbdebug(_msg, True)
             _proc_man.retriable_run_os_command("/bin/true", \
                                                obj_attr_list["prov_cloud_ip"], \
-                                               _max_tries, \
+                                               _actual_tries, \
                                                _retry_interval, \
                                                obj_attr_list["transfer_files"], \
                                                obj_attr_list["debug_remote_commands"], \
@@ -2168,7 +2174,15 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _msg += " done by cloud-init!"
                 cbdebug(_msg, True)
             else :
-                cbdebug(_msg, True)                    
+                cbdebug(_msg, True)
+
+                _abort, _fmsg, _remaining_time = self.pending_decide_abortion(obj_attr_list, "VM", "boostrapping")
+    
+                if _remaining_time != 100000 :
+                    _actual_tries = _remaining_time/int(obj_attr_list["update_frequency"])
+                else :
+                    _actual_tries = int(obj_attr_list["update_attempts"])                
+                
                 _bcmd = get_boostrap_command(obj_attr_list, self.osci)
                 
                 _msg = "BOOTSTRAP: " + _bcmd
@@ -2176,7 +2190,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 _proc_man.retriable_run_os_command(_bcmd, \
                                                    obj_attr_list["prov_cloud_ip"], \
-                                                   _max_tries, \
+                                                   _actual_tries, \
                                                    _retry_interval, \
                                                    obj_attr_list["transfer_files"], \
                                                    obj_attr_list["debug_remote_commands"], \
@@ -2194,6 +2208,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
                 cbdebug(_msg, True)
 
+                _abort, _fmsg, _remaining_time = self.pending_decide_abortion(obj_attr_list, "VM", "transfer files")
+    
+                if _remaining_time != 100000 :
+                    _actual_tries = _remaining_time/int(obj_attr_list["update_frequency"])
+                else :
+                    _actual_tries = int(obj_attr_list["update_attempts"])    
+
                 _rcmd = "rsync -e \"" + _proc_man.rsync_conn + "\""
                 _rcmd += " --exclude-from "
                 _rcmd += "'" +  obj_attr_list["exclude_list"] + "' -az "
@@ -2207,7 +2228,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 _proc_man.retriable_run_os_command(_rcmd, \
                                                    "127.0.0.1", \
-                                                   _max_tries, \
+                                                   _actual_tries, \
                                                    _retry_interval, \
                                                    obj_attr_list["transfer_files"], \
                                                    obj_attr_list["debug_remote_commands"], \

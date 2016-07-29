@@ -25,7 +25,7 @@
 '''
 
 from subprocess import PIPE,Popen
-from time import sleep
+from time import sleep, time
 
 from lib.auxiliary.thread_pool import ThreadPool
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
@@ -191,7 +191,8 @@ class ProcessManagement :
                                  raise_exception_on_error = False, \
                                  step = None,
                                  tell_me_if_stderr_contains = False, \
-                                 port = 22) :
+                                 port = 22, \
+                                 remaining_time = 100000) :
         '''
         TBD
         '''
@@ -199,6 +200,9 @@ class ProcessManagement :
 
         _abort = "no"
 
+        _start = int(time())
+        _spent_time = 0
+        
         while _attempts < int(total_attempts) and _abort != "yes" :
             try :
                 _status, _result_stdout, _result_stderr = self.run_os_command(cmdline, \
@@ -225,6 +229,10 @@ class ProcessManagement :
                 cbdebug(_msg, True)
                 _attempts += 1
                 sleep(retry_interval)
+                _spent_time = int(time()) - _start
+                
+                if _spent_time > remaining_time :
+                    _abort = "yes"
             else :
                 break
 
@@ -262,7 +270,7 @@ class ProcessManagement :
     def parallel_run_os_command(self, cmdline_list, override_hostname_list, port_list, \
                                 total_attempts, retry_interval, \
                                 execute_parallelism, really_execute = True, \
-                                debug_cmd = False, step = None) :
+                                debug_cmd = False, step = None, remaining_time = 100000) :
         '''
         TBD
         '''
@@ -296,7 +304,8 @@ class ProcessManagement :
                                                       False, \
                                                       step, \
                                                       False, \
-                                                      port_list[_index])
+                                                      port_list[_index], \
+                                                      remaining_time)
                     else :
                         _status = 0
                         _xfmsg = "OK"
@@ -317,7 +326,8 @@ class ProcessManagement :
                                               False, \
                                               step, \
                                               False, \
-                                              port_list[_index])
+                                              port_list[_index], \
+                                              remaining_time)
 
             if _thread_pool and not serial_mode:
                 _xfmsg = ''
