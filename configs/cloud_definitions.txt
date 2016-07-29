@@ -29,6 +29,7 @@ CLOUDOPTION_MYPLM = cldattach plm, vmcattach all
 CLOUDOPTION_MYSLR = cldattach slr, vmcattach all
 CLOUDOPTION_MYGCE = cldattach gce, vmcattach all
 CLOUDOPTION_MYDO = cldattach do, vmcattach all
+CLOUDOPTION_MYPDM = cldattach pdm, vmcattach all
 
 # Now, Specify the individual parameters for each cloud
 #-------------------------------------------------------------------------------
@@ -65,11 +66,9 @@ EC2_LOGIN = cbuser                                         # The username that l
 # vCloud Director requires the following parameters
 [USER-DEFINED : CLOUDOPTION_MYVCDCLOUD]
 VCD_ACCESS = 10.1.1.1                                      # IP address or host name for vCloud Director API
-VCD_CREDENTIALS = happyguy@DeployPlace                     # username to log into vCloud Director API
-VCD_PASSWORD = xxxxx                                       # password to log into vCloud Director API
+VCD_CREDENTIALS = happyguy@DeployPlace;password            # username to log into vCloud Director API
 VCD_KEY_NAME = xxxxx                                       # password to log into vCloud Director API (same as above)
 VCD_SECURITY_GROUPS = none                                 # Not used in vCloud Director, but required by CloudBench
-VCD_VERSION = 1.5                                          # VCD version. Only tested with 1.5.
 VCD_INITIAL_VMCS = DeployPlace                             # vCloud Director instance name
 VCD_SSH_KEY_NAME = cbtool_rsa                              # Private key used to SSH into VMs
 VCD_LOGIN = cbuser                                         # Username associated with the private key above
@@ -105,7 +104,14 @@ DO_INITIAL_VMCS = tor1:sut                              # VMC == DO data center 
 DO_CREDENTIALS = long_hex_token_from_digitalocean.com:arbitrarytag1,another_token:arbitrarytag2,another_token:arbitrarytag3  # This is your DO access token. The driver supports multiple accounts and will distribute AIs across all accounts in a round-robin fashion.
 DO_SSH_KEY_NAME = cbtool_rsa                            # Either upload credentials/cbtool_rsa.pub to DO or tell us where your private key is
 DO_KEY_NAME = key_name_from_digitialocean.com           # Comma-separated list of IDs (or names) of your DO ssh keys
-DO_LOGIN = root
+DO_LOGIN = root                                         # The username that logins on the VMs
+#-------------------------------------------------------------------------------
+[USER-DEFINED : CLOUDOPTION_MYPDM ]
+PDM_INITIAL_VMCS = world                                 # This really does not matter, could be anything
+PDM_CREDENTIALS = NOTUSED                                # Currently not used
+PDM_ACCESS = tcp://<address>:2375,tcp://<address>:2375   # A comma-separated list of Docker hosts (usually port 2375) or a single Swarm host (usually port 5001)
+PDM_NETNAME = bridge                                     # The name of an already existing network on Docker
+PDM_LOGIN = root                                         # The username that logins on the VMs
 #-------------------------------------------------------------------------------
 
 [OBJECTSTORE]
