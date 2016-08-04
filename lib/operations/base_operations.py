@@ -2303,7 +2303,7 @@ class BaseObjectOperations :
                 _obj_attr_list = self.osci.get_object(cloud_name, "VM", False, _vm_uuid, False)
                 
                 if operation != "reset" :
-                    _abort, _fmsg, _remaining_time = self.pending_decide_abortion(_obj_attr_list, "VM", "instance creation")
+                    _abort, _fmsg, _remaining_time = self.pending_decide_abortion(_obj_attr_list, "VM", "after file transfer")
                 else :
                     _remaining_time = 100000
 
@@ -2388,10 +2388,13 @@ class BaseObjectOperations :
                     _xfmsg = "Ran out of time to run generic post_boot scripts "
                     _xfmsg += "due to the established SLA provisioning target."
 
-                    for _vm in _vm_list :                        
-                        _vm_uuid, _vm_role, _vm_name = _vm.split('|')                            
-                        _obj_attr_list = self.osci.get_object(cloud_name, "VM", False, _vm_uuid, False)                        
-                        self.pending_decide_abortion(_obj_attr_list, "VM", "generic post-boot script", 0.1, False)
+                for _vm in _vm_list :                        
+                    _vm_uuid, _vm_role, _vm_name = _vm.split('|')                            
+                    _obj_attr_list = self.osci.get_object(cloud_name, "VM", False, _vm_uuid, False)                        
+                    _abort, _fmsg, _remaining_time = self.pending_decide_abortion(_obj_attr_list, "VM", "generic post-boot", False)
+
+                    if _remaining_time < _smallest_remaining_time :
+                        _smallest_remaining_time = _remaining_time
                         
                 if _status :
 
@@ -2530,23 +2533,32 @@ class BaseObjectOperations :
                                                                             _ai_attr_list["debug_remote_commands"],
                                                                             _num, \
                                                                             _smallest_remaining_time)
+                        _potential_abort_reason = "load manager execution"
                     else :
                         _status = 7163
+                        _potential_abort_reason = "application-specific scripts"
                         _xfmsg = "Ran out of time to run application-specific \"setup\""
                         _xfmsg += " scripts due to the established SLA provisioning target."
 
+                    if operation != "reset" :
+                        for _vm in _vm_list :
+                            _vm_uuid, _vm_role, _vm_name = _vm.split('|')
+                            _obj_attr_list = self.osci.get_object(cloud_name, "VM", False, _vm_uuid, False)
+                            _abort, _x, _remaining_time = self.pending_decide_abortion(_obj_attr_list, "VM", _potential_abort_reason, False)
+                            
+                            if _abort and not _status:
+                                _status = 17493
+                                _xfmsg = "The application-specific \"setup\" scripts "
+                                _xfmsg += " completed successfully, but ran out of "
+                                _xfmsg += "time to start the \"load manager\" due to "
+                                _xfmsg += "the established SLA provisioning target."
+                        
                     if _status :
     
                         _fmsg = "Failure while executing application-specific configuration on "
                         _fmsg += "on all VMs beloging to " + _ai_attr_list["name"] + ":\n "
                         _fmsg += _xfmsg
                         break
-
-                    if operation != "reset" :
-                        for _vm in _vm_list :
-                            _vm_uuid, _vm_role, _vm_name = _vm.split('|')
-                            _obj_attr_list = self.osci.get_object(cloud_name, "VM", False, _vm_uuid, False)
-                            self.pending_decide_abortion(_obj_attr_list, "VM", "application-specific scripts", 0.1, False)
 
         except Exception, e :
             _status = 23
@@ -2929,73 +2941,74 @@ class BaseObjectOperations :
 
         return False
 
-    def pending_decide_abortion(self, obj_attr_list, obj_type, reason = 'abort', remaining_time = False, raise_exception = True) :
+    def pending_decide_abortion(self, obj_attr_list, obj_type, reason = 'abort', raise_exception = True) :
         '''
         TBD
         '''
-        _abort = "false"
+        _abort = False
         _remaining_time = 100000
 
         _pending_object = self.osci.pending_object_exists(obj_attr_list["cloud_name"], obj_type, obj_attr_list["uuid"], "abort")
                     
         if "recreate_attempts_left" in obj_attr_list :
             if int(obj_attr_list["recreate_attempts_left"]) == 0 :
-                _abort = reason
+                _abort = True
                 if _pending_object :
                     self.osci.pending_object_set(obj_attr_list["cloud_name"], \
                                                  obj_type, \
                                                  obj_attr_list["uuid"], \
                                                  "abort", \
-                                                 _abort)
+                                                 reason)
                 else :
                     self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
                                                       obj_type, \
                                                       obj_attr_list["uuid"], \
                                                       False, \
                                                       "abort", \
-                                                      _abort)
+                                                      reason)
                                     
                 _x_fmsg = "(due to recreate attempts left equal zero)"
 
         if "sla_provisioning_target" in obj_attr_list :
             
             _provisioning_time = int(time()) - int(obj_attr_list["mgt_001_provisioning_request_originated"])
+            _remaining_time = int(obj_attr_list["sla_provisioning_target"]) - _provisioning_time
 
-            if not remaining_time :
-                _remaining_time = int(obj_attr_list["sla_provisioning_target"]) - _provisioning_time
-            else :
-                _remaining_time = int(remaining_time)
-                
+            if reason == "application-specific scripts" :
+                if _remaining_time >= int(obj_attr_list["update_frequency"]) :
+                    _remaining_time = int(obj_attr_list["update_frequency"]) - 1
+                            
             if _remaining_time < int(obj_attr_list["update_frequency"]) and obj_attr_list["sla_provisioning_abort"].lower() == "true" :
-                _abort = reason
+                _abort = True
+                
                 if _pending_object :
                     self.osci.pending_object_set(obj_attr_list["cloud_name"], \
                                                  obj_type, \
                                                  obj_attr_list["uuid"], \
                                                  "abort", \
-                                                 _abort)
+                                                 reason)
                 else :
                     self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
                                                       obj_type, \
                                                       obj_attr_list["uuid"], \
                                                       False, \
                                                       "abort", \
-                                                      _abort)
+                                                      reason)
                  
                 if obj_attr_list["sla_provisioning_abort"].lower() != "true" :
                     _remaining_time = 100000
                 
                 _x_fmsg= "(due to SLA provisioning target violation)"
 
-        obj_attr_list["abort"] = _abort
+        obj_attr_list["abort"] = reason
         
-        if _abort != "false" and raise_exception :
+        if _abort and raise_exception :
             _fmsg = obj_type + " object " + obj_attr_list["uuid"] + " ("
             _fmsg += "named \"" + obj_attr_list["name"] + "\") was aborted "
             _fmsg += _x_fmsg + " during attachment to this experiment"
             raise self.ObjectOperationException(_fmsg, 2218)
         else :
-            return False, '', _remaining_time    
+            return _abort, reason, _remaining_time    
     
     @trace
     def compute_utc_offset(self, cloud_name, obj_type, obj_attr_list) :
