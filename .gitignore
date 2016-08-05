@@ -68,3 +68,4 @@ credentials/cbtool.key
 libpeerconnection.log
 util/pydevd
 credentials/*
+scripts/btest/libaio.so.1.0.1
