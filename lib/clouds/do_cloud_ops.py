@@ -683,7 +683,9 @@ class DoCmds(CommonCloudFunctions) :
                 _instance = self.get_vm_instance(obj_attr_list)
                 if not _instance :
                     cbdebug("Breaking...")
-                    _time_mark_drs = int(time())
+                    if firsttime :
+                        if "mgt_901_deprovisioning_request_originated" not in obj_attr_list :
+                            obj_attr_list["mgt_901_deprovisioning_request_originated"] = _time_mark_drs
                     break
 
                 if _instance.state == NodeState.PENDING :
