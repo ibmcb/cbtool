@@ -85,8 +85,6 @@ sed -i s/"<Qs>"/"$NUM_PROCESSES"/g $infile
 #	echo $line >> ${OUTPUT_FILE}
 #done
 
-source ~/cb_barrier.sh start
-
 CMDLINE="mpirun -np $NUM_PROCESSES --machinefile $cluster_hosts_file $bench_app_bin"
 
 OUTPUT_FILE=$bench_app_dir/hpccoutf.txt

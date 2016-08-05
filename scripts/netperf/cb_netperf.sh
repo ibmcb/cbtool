@@ -112,8 +112,6 @@ then
     LOAD_GENERATOR_TARGET_IP=${EXTERNAL_TARGET} 
 fi
 
-source ~/cb_barrier.sh start
-
 syslog_netcat "Benchmarking netperf SUT: NET_CLIENT=${LOAD_GENERATOR_IP} -> NET_SERVER=${LOAD_GENERATOR_TARGET_IP} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
 
 OUTPUT_FILE=$(mktemp)

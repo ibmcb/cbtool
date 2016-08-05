@@ -55,7 +55,6 @@ echo "$LEADING_DIMENSIONS # leading dimensions" >> ${LINPACK_DAT}
 echo "2 # times to run a test " >> ${LINPACK_DAT}
 echo "4 # alignment values (in KBytes)" >> ${LINPACK_DAT}
 
-source ~/cb_barrier.sh start
 update_app_errors 0 reset
 
 CMDLINE="${LINPACK} ${LINPACK_DAT}" 
