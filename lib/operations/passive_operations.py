@@ -1969,7 +1969,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _csv_contents_line = ''
                         for _key in _desired_keys  :
                             if _metric["expid"] == _criteria["expid"] :
-                                if _key in _metric :
+                                if _key in _metric : 
                                     if _key == "mgt_001_provisioning_request_originated" :
                                         _csv_contents_line += str(int(_metric[_key]) - _experiment_start_time) + ','
                                     elif _key == "mgt_101_capture_request_originated" :
@@ -1981,7 +1981,11 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                     else :
                                         _csv_contents_line += str(_metric[_key]) + ','
                                 else :
-                                    _csv_contents_line += _obj_attr_list["filler_string"] + ','
+                                    if _key == "mgt_001_provisioning_request_originated_abs" :
+                                        _key = "mgt_001_provisioning_request_originated"
+                                        _csv_contents_line += str(int(_metric[_key])) + ','                                       
+                                    else:
+                                        _csv_contents_line += _obj_attr_list["filler_string"] + ','
 
                             # The uuid to attribute cache/map has to be unconditionally
                             # populated.

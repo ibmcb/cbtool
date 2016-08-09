@@ -942,7 +942,8 @@ plot_runtime_application_data <- function(ramdf, ed, en, vmn, vmel, xati, yati,
 							geom_vline(xintercept = vmael, linetype=1, colour="black") +
 							geom_vline(xintercept = vmcsl, linetype=3, colour="black") +
 							geom_vline(xintercept = vmcel, linetype=5, colour="black") +						
-							xlab("Time (minutes)") + 
+							xlab("Time (minutes)") +
+							theme(legend.position="none") +
 							ylab(metric_types2metric_names[[metric_type]]) + 
 							labs(title = perf_vs_time_plot_title) + 
 							scale_x_continuous(limits = xy_lims[[1]], breaks = xy_lims[[2]])
@@ -1019,6 +1020,7 @@ plot_runtime_application_data <- function(ramdf, ed, en, vmn, vmel, xati, yati,
 							xlab("Load Level") + 
 							ylab(metric_types2metric_names[[metric_type]]) + 
 							labs(title = perf_vs_load_plot_title) + 
+							theme(legend.position="none") +							
 							scale_x_continuous(limits = xy_lims[[1]], breaks = xy_lims[[2]]) 
 					#			+ scale_y_continuous(limits = xy_lims[[3]], breaks = xy_lims[[4]])
 					
@@ -1041,19 +1043,23 @@ plot_runtime_application_data <- function(ramdf, ed, en, vmn, vmel, xati, yati,
 
 					if (xy_lims[[5]] == 0) {					
 						perf_vs_load_data$obj_name <- unlist(lapply(strsplit(as.character(perf_vs_load_data$full_obj_name), "|", fixed=TRUE), "[", 1))
-						
+						perf_vs_load_data <- within(perf_vs_load_data, 
+								"obj_name" <- 
+										(as.numeric(gsub("vm_", '', perf_vs_load_data$obj_name))))
+						perf_vs_load_data <- perf_vs_load_data[order(perf_vs_load_data$obj_name), ]
+
 						perf_vs_load_plot <- ggplot(perf_vs_load_data, aes(x=obj_name, 
 												y=avg, colour=full_obj_name, fill = full_obj_name)) + 
 								geom_point(size = 3)  + 
 								geom_line() +
 								geom_errorbar(aes(ymin=avg-se, ymax=avg+se), width=.1) +
 								#						geom_bar(stat='identity', position = "dodge", width=.5) +
-								xlab("VM/Container name") + 
+								xlab("VM/Container name") +
+								theme(legend.position="none") +
+								theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 5)) +								
 								ylab(metric_types2metric_names[[metric_type]]) + 
-								labs(title = perf_vs_load_plot_title) 
-	#							scale_x_continuous(limits = xy_lims[[1]], breaks = xy_lims[[2]]) 
-						#			+ scale_y_continuous(limits = xy_lims[[3]], breaks = xy_lims[[4]])
-						
+								labs(title = perf_vs_load_plot_title)
+
 						output_pdf_plot(ed, en, perf_vs_load_plot, paste(prefix, "vm_", 
 										metric_type, "_vs_vm_plot_", vapp_type, 
 										sep = ''))

@@ -2272,12 +2272,15 @@ class BaseObjectOperations :
         '''
         TBD
         '''
+        _ai_name = "NA"
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
             _ai_attr_list = self.osci.get_object(cloud_name, "AI", False, ai_uuid, False)
 
+            _ai_name = _ai_attr_list["name"]
+            
             _obj_types = []
             _vm_names = []
             _vm_hns = []
@@ -2363,7 +2366,8 @@ class BaseObjectOperations :
                     _actual_attempts = _smallest_remaining_time/int(_ai_attr_list["update_frequency"])
                     _msg = "The VM-specific attribute \"sla_provisioning_abort\" "
                     _msg += "was set \"True\". Remaining deployment time (generic"
-                    _msg += " application instance post_boot) is " + str(_smallest_remaining_time)
+                    _msg += " application instance post_boot) for " + _ai_name
+                    _msg += " is " + str(_smallest_remaining_time)
                     _msg += " seconds and actual number of configuration attempts" 
                     _msg += " is " + str(_actual_attempts) + " (instead of " 
                     _msg += str(_ai_attr_list["configuration_attempts"]) + ")."
@@ -2516,7 +2520,8 @@ class BaseObjectOperations :
                         _actual_attempts = _smallest_remaining_time/int(_ai_attr_list["update_frequency"])
                         _msg = "The VM-specific attribute \"sla_provisioning_abort\" "
                         _msg += " was set \"True\". Remaining deployment time "
-                        _msg += "(application-specific setup) is " + str(_smallest_remaining_time)
+                        _msg += "(application-specific setup) for " + _ai_name
+                        _msg += " is " + str(_smallest_remaining_time)
                         _msg += " seconds and actual number of configuration "
                         _msg += "attempts is " + str(_actual_attempts) + " (instead of "
                         _msg += str(_ai_attr_list["configuration_attempts"]) + ")."
@@ -2538,7 +2543,8 @@ class BaseObjectOperations :
                         _status = 7163
                         _potential_abort_reason = "application-specific scripts"
                         _xfmsg = "Ran out of time to run application-specific \"setup\""
-                        _xfmsg += " scripts due to the established SLA provisioning target."
+                        _xfmsg += " scripts on " + _ai_name + " due to the "
+                        _xfmsg += "established SLA provisioning target."
 
                     if operation != "reset" :
                         for _vm in _vm_list :
@@ -2550,13 +2556,13 @@ class BaseObjectOperations :
                                 _status = 17493
                                 _xfmsg = "The application-specific \"setup\" scripts "
                                 _xfmsg += " completed successfully, but ran out of "
-                                _xfmsg += "time to start the \"load manager\" due to "
-                                _xfmsg += "the established SLA provisioning target."
+                                _xfmsg += "time to start the \"load manager\" on "
+                                _xfmsg += _ai_name + " due to the established"
+                                _xfmsg += "SLA provisioning target."
                         
-                    if _status :
-    
+                    if _status :    
                         _fmsg = "Failure while executing application-specific configuration on "
-                        _fmsg += "on all VMs beloging to " + _ai_attr_list["name"] + ":\n "
+                        _fmsg += "on all VMs beloging to " + _ai_name + ":\n "
                         _fmsg += _xfmsg
                         break
 
@@ -2566,10 +2572,10 @@ class BaseObjectOperations :
 
         finally :
             if _status :
-                _msg = "Parallel VM configuration failure: " + _fmsg
+                _msg = "Parallel VM configuration for " + _ai_name + " failure (" + str(_status) + "): " + _fmsg
                 cberr(_msg)
             else :
-                _msg = "Parallel VM configuration success."
+                _msg = "Parallel VM configuration for " + _ai_name + " success."
                 cbdebug(_msg)
             return _status, _msg
 
