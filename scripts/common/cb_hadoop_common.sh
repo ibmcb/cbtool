@@ -282,12 +282,6 @@ function disable_ip_version_six {
         echo "export HADOOP_OPTS=-Djava.net.preferIPv4Stack=true" > $HADOOP_CONF_DIR/hadoop-env.sh
         echo "export JAVA_HOME=${JAVA_HOME}" >> $HADOOP_CONF_DIR/hadoop-env.sh
     fi
-
-    # Force use of native libraries 
-    if [[ -e ${HADOOP_CONF_DIR}/hadoop-env.sh ]]
-    then
-       echo "export HADOOP_OPTS=\"\$HADOOP_OPTS -Djava.library.path=${HADOOP_HOME}/lib/native\"" >> $HADOOP_CONF_DIR/hadoop-env.sh
-    fi
 }
 export -f disable_ip_version_six
 
@@ -874,15 +868,8 @@ function start_slave_hadoop_services {
         datanode_error=`grep FATAL ${HADOOP_HOME}/logs/hadoop*.log`
         if [[ x"$datanode_error" != x ]]
         then
-            # Sometimes fatal is because this script is called too many times and hadoop is already running.
-            # Just try again
-            syslog_netcat "...Hadoop Possibly already running ... will try again on the next interation"
-            truncate -s 0 ${HADOOP_HOME}/logs/hadoop*.log
-            syslog_netcat "Error starting datanode on ${my_ip_addr}: ${datanode_error} - NOK"
-            pkill -9 -f java
-            syslog_netcat "Truncated log. Will retry on ${my_ip_addr}"
-            # The second truncate is in case java writes additional error messages to the log before it dies
-            truncate -s 0 ${HADOOP_HOME}/logs/hadoop*.log
+            sed -i 's/FATAL/CBTOOLERROR/g' ${HADOOP_HOME}/logs/hadoop*.log
+            syslog_netcat "Replacing FATAL with CBTOOLERROR. Error starting datanode on ${my_ip_addr}: ${datanode_error} - NOK"
             exit 1
         fi
         
@@ -898,13 +885,7 @@ function start_slave_hadoop_services {
             if [[ x"$datanode_running" == x ]]
             then
                 errorstring=`grep "FATAL\|Exception" /var/log/hadoop-hdfs/*.log`
-                syslog_netcat "...HDFS Possibly already running ... will try again on the next interation"
-                truncate -s 0 /var/log/hadoop-hdfs/*.log
                 syslog_netcat "Error starting ${x} on ${my_ip_addr}. ${errorstring} - NOK"
-                pkill -9 -f java
-                syslog_netcat "Truncated log. Will retry on ${my_ip_addr}"
-                # The second truncate is in case java writes additional error messages to the log before it dies
-                truncate -s 0 /var/log/hadoop-hdfs/*.log
                 exit 1
             else
                 syslog_netcat "...Datanode process appears to be running."

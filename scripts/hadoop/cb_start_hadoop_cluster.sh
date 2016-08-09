@@ -27,7 +27,8 @@ then
         start_master_hadooop_services
     fi
     
-    check_hadoop_cluster_state 30 10
+    #check_hadoop_cluster_state 30 10
+    check_hadoop_cluster_state 2 2 
     ERROR=$?
     update_app_errors $ERROR
 
