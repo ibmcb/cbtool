@@ -152,8 +152,9 @@ class CommonCloudFunctions:
         '''
         TBD
         '''
-        _msg = "Waiting for " + obj_attr_list["name"] + ""
-        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") to start..."
+        _msg = "Waiting for " + obj_attr_list["name"] + " (cloud-assigned uuid "
+        _msg += obj_attr_list["cloud_vm_uuid"] + "), part of AI " + obj_attr_list["ai_name"] 
+        _msg += ", to start..."
         self.pending_set(obj_attr_list, _msg)
         cbdebug(_msg, True)
            
@@ -324,8 +325,8 @@ class CommonCloudFunctions:
 
             _msg = "Trying to establish network connectivity to "
             _msg +=  obj_attr_list["name"] + " (cloud-assigned uuid "
-            _msg += obj_attr_list["cloud_vm_uuid"] + "), on IP address "
-            _msg += obj_attr_list["prov_cloud_ip"]
+            _msg += obj_attr_list["cloud_vm_uuid"] + "), part of AI " + obj_attr_list["ai_name"]
+            _msg += ", on IP address " + obj_attr_list["prov_cloud_ip"]
             
             if str(obj_attr_list["use_jumphost"]).lower() == "false" :
                 _msg += "..."

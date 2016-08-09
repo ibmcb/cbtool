@@ -1102,6 +1102,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
         del obj_attr_list["pool"]
 
         try :
+            _msg = "Starting the attachment of " + obj_attr_list["name"] + ", part"
+            _msg += " of AI " + obj_attr_list["ai_name"] + "..."
+            cbdebug(_msg, True)            
+                        
             _vmc_pools = list(self.osci.get_list(_cn, "GLOBAL", "vmc_pools"))
             _hosts = list(self.osci.get_list(_cn, "GLOBAL", "host_names"))
             
@@ -2149,7 +2153,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _actual_tries = int(obj_attr_list["update_attempts"])
                 
             _msg = "Checking ssh accessibility on " + obj_attr_list["name"]
-            _msg += " (ssh " + obj_attr_list["login"] + "@" + obj_attr_list["prov_cloud_ip"] + ")..."
+            _msg += ", part of AI " + obj_attr_list["ai_name"] + " (ssh -p " 
+            _msg += str(_port) + ' ' + obj_attr_list["login"] + "@" + obj_attr_list["prov_cloud_ip"] + ")..."
             cbdebug(_msg, True)
             _proc_man.retriable_run_os_command("/bin/true", \
                                                obj_attr_list["prov_cloud_ip"], \
@@ -2166,7 +2171,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                               "checked SSH accessibility")
             obj_attr_list["last_known_state"] = "checked SSH accessibility"
 
-            _msg = "Bootstrapping " + obj_attr_list["name"] + " (creating file"
+            _msg = "Bootstrapping " + obj_attr_list["name"] + ", part of AI "
+            _msg += obj_attr_list["ai_name"] + " (creating file"
             _msg += " cb_os_paramaters.txt in \"" + obj_attr_list["login"] 
             _msg += "\" user's home dir on " + obj_attr_list["prov_cloud_ip"] + ")..."
 
@@ -2199,7 +2205,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                    port = _port)
 
             _msg = "Sending a copy of the code tree to "
-            _msg += obj_attr_list["name"] + " ("+ obj_attr_list["prov_cloud_ip"] + ")..."
+            _msg += obj_attr_list["name"] + ", part of AI " + obj_attr_list["ai_name"]
+            _msg += " ("+ obj_attr_list["prov_cloud_ip"] + ")..."
             
             if str(obj_attr_list["cloud_init_rsync"]).lower() == "true" :
                 _msg += " done by cloud-init!"
@@ -2255,7 +2262,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                                                   obj_attr_list["login"])
 
                 _msg = "Performing generic VM post_boot configuration on "
-                _msg += obj_attr_list["name"] + " ("+ obj_attr_list["prov_cloud_ip"] + ")..."     
+                _msg += obj_attr_list["name"] + ", part of AI " + obj_attr_list["ai_name"] 
+                _msg += "("+ obj_attr_list["prov_cloud_ip"] + ")..."     
                 cbdebug(_msg, True)
 
                 _cmd = "~/" + obj_attr_list["remote_dir_name"] + "/scripts/common/cb_post_boot.sh"
