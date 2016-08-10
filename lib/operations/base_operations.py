@@ -2404,10 +2404,11 @@ class BaseObjectOperations :
                         _xfmsg = "The generic post-boot \"setup\" scripts "
                         _xfmsg += " completed successfully (after "
                         _xfmsg += str(_post_boot_spent_time) + " seconds), but "
-                        _xfmsg += "ran out of time to continue setup on "
+                        _xfmsg += "ran out of time to run application-specific \"setup\""
+                        _xfmsg += " scripts on " + _ai_name + " due to the "
+                        _xfmsg += "established SLA provisioning target."
                         _xfmsg += _ai_name + " due to the established "
                         _xfmsg += "SLA provisioning target."
-                        
 
                     if _remaining_time < _smallest_remaining_time :
                         _smallest_remaining_time = _remaining_time
@@ -2526,7 +2527,6 @@ class BaseObjectOperations :
                     self.proc_man_os_command.priv_key = _vm_priv_keys[0]
 
                     if _smallest_remaining_time != 100000 and operation == "setup":
-                        _smallest_remaining_time = _smallest_remaining_time - _post_boot_spent_time
                         _actual_attempts = _smallest_remaining_time/int(_ai_attr_list["update_frequency"])
                         _msg = "The VM-specific attribute \"sla_provisioning_abort\" "
                         _msg += " was set \"True\". Remaining deployment time "
@@ -2538,6 +2538,7 @@ class BaseObjectOperations :
                         cbdebug(_msg)
 
                     if _actual_attempts > 0 :
+                        _application_start = int(time())                        
                         _status, _xfmsg = self.proc_man_os_command.parallel_run_os_command(_vm_command_list, \
                                                                             _vm_ip_addrs, \
                                                                             _vm_pns, \
@@ -2550,33 +2551,28 @@ class BaseObjectOperations :
                                                                             _smallest_remaining_time)
                         
                         sleep(float(_ai_attr_list["post_application_scripts_delay"]))
-                        _potential_abort_reason = "load manager execution"
-                    else :
-                        _status = 7163
-                        _potential_abort_reason = "application-specific scripts"
-                        _xfmsg = "Ran out of time to run application-specific \"setup\""
-                        _xfmsg += " scripts on " + _ai_name + " due to the "
-                        _xfmsg += "established SLA provisioning target."
+                        _application_spent_time = int(time()) - _application_start                        
 
-                    if operation != "reset" :
-                        for _vm in _vm_list :
-                            _vm_uuid, _vm_role, _vm_name = _vm.split('|')
-                            _obj_attr_list = self.osci.get_object(cloud_name, "VM", False, _vm_uuid, False)
-                            _abort, _x, _remaining_time = self.pending_decide_abortion(_obj_attr_list, "VM", _potential_abort_reason, False)
-                            
-                            if _abort and not _status:
-                                _status = 17493
-                                _xfmsg = "The application-specific \"setup\" scripts "
-                                _xfmsg += " completed successfully, but ran out of "
-                                _xfmsg += "time to start the \"load manager\" on "
-                                _xfmsg += _ai_name + " due to the established"
-                                _xfmsg += " SLA provisioning target."
+                        if operation != "reset" :
+                            for _vm in _vm_list :
+                                _vm_uuid, _vm_role, _vm_name = _vm.split('|')
+                                _obj_attr_list = self.osci.get_object(cloud_name, "VM", False, _vm_uuid, False)
+                                _abort, _x, _remaining_time = self.pending_decide_abortion(_obj_attr_list, "VM", "application-specific scripts", False)
+                                
+                                if _abort and not _status:
+                                    _status = 17493
+                                    _xfmsg = "The application-specific \"setup\" scripts"
+                                    _xfmsg += " completed successfully (after "
+                                    _xfmsg += str(_application_spent_time) + " seconds),"
+                                    _xfmsg += " but ran out of time to start the "
+                                    _xfmsg += "\"load manager\" on " + _ai_name 
+                                    _xfmsg += " due to the established SLA provisioning target."
                         
-                    if _status :    
-                        _fmsg = "Failure while executing application-specific configuration on "
-                        _fmsg += "on all VMs beloging to " + _ai_name + ":\n "
-                        _fmsg += _xfmsg
-                        break
+                        if _status :    
+                            _fmsg = "Failure while executing application-specific configuration on "
+                            _fmsg += "on all VMs beloging to " + _ai_name + ":\n "
+                            _fmsg += _xfmsg
+                            break
 
         except Exception, e :
             _status = 23
@@ -2994,7 +2990,7 @@ class BaseObjectOperations :
 
             if obj_attr_list["sla_provisioning_abort"].lower() == "true" :
                 
-                if _remaining_time < int(obj_attr_list["update_frequency"]) or reason == "application-specific scripts" :
+                if _remaining_time < int(obj_attr_list["update_frequency"]) :
                     _abort = True
                     
                     if _pending_object :
