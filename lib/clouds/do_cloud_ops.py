@@ -354,7 +354,7 @@ class DoCmds(CommonCloudFunctions) :
             elif obj_attr_list["hostname_key"] == "cloud_ip" :
                 obj_attr_list["cloud_hostname"] = obj_attr_list["cloud_ip"].replace('.','-')
 
-            _msg = "Public IP = " + node.public_ips[0]
+            _msg = "Public IP = " + str(node.public_ips[0])
             _msg += " Private IP = " + obj_attr_list["cloud_ip"]
             cbdebug(_msg)
 
@@ -677,6 +677,7 @@ class DoCmds(CommonCloudFunctions) :
             cbdebug(_msg, True)
 
             firsttime = True
+            _time_mark_drs = int(time())
             while True :
                 _errmsg = "get_vm_instance"
                 cbdebug("Getting instance...")
@@ -698,7 +699,6 @@ class DoCmds(CommonCloudFunctions) :
                     continue
 
                 try :
-                    _time_mark_drs = int(time())
                     if firsttime :
                         if "mgt_901_deprovisioning_request_originated" not in obj_attr_list :
                             obj_attr_list["mgt_901_deprovisioning_request_originated"] = _time_mark_drs
@@ -706,7 +706,7 @@ class DoCmds(CommonCloudFunctions) :
                     result = _instance.destroy()
 
                     if firsttime :
-                        obj_attr_list["mgt_902_deprovisioning_request_sent"] = _time_mark_drs - int(obj_attr_list["mgt_901_deprovisioning_request_originated"])
+                        obj_attr_list["mgt_902_deprovisioning_request_sent"] = int(time()) - int(obj_attr_list["mgt_901_deprovisioning_request_originated"])
 
                     firsttime = False
                 except :
