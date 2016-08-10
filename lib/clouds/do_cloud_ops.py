@@ -30,6 +30,7 @@ from libcloud.compute.providers import get_driver
 from libcloud.compute.types import NodeState
 
 import threading
+import traceback
 
 catalogs = threading.local()
 
@@ -626,6 +627,8 @@ class DoCmds(CommonCloudFunctions) :
             cbwarn("Error during reservation creation: " + _fmsg)
 
         except Exception, e :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             _status = 23
             _fmsg = str(e)
             cbwarn("Error reaching digitalocean: " + _fmsg)
@@ -746,6 +749,8 @@ class DoCmds(CommonCloudFunctions) :
             cberr("CldOpsException: " + str(obj), True)
 
         except Exception, e :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             _status = 23
             _fmsg = str(e)
             cberr("Exception: " + str(e), True)
