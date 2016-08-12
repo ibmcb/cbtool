@@ -1,5 +1,6 @@
 ### START - Dependency installation order ###
-unixbench_order = 50
+git-order = 50
+unixbench-order = 51
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -9,18 +10,21 @@ unixbench_order = 50
 # git = git clone using above giturl
 # pip = python pip utility
 # man = "manual"
-linpack-install = man
+git-install = man
+unixbench-install = man
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
+git-configure = git --version
+unixbench-configure = ls -la 3RDPARTYDIR/byte-unixbench/UnixBench/Run
 ### END - Tests ###
 
 ### START - Dependency versions ###
 unixbench-ver = ANY
+git-ver = ANY
 ### END - Dependency versions ###
 
-### START - Dependency URLs ###
-### END - Dependency URLs ###
-
 ### START -  Dependency and method-specific command lines ###
+common-git-install-man = package_install git-all
+common-unixbench-install-man = git clone https://github.com/kdlucas/byte-unixbench.git
 ### END -  Dependency and method-specific command lines ###

@@ -27,7 +27,6 @@ UNIXBENCH_DIR="~/byte-unixbench/UnixBench"
 eval UNIXBENCH_DIR=${UNIXBENCH_DIR}
 
 UNIXBENCH_IP=`get_ips_from_role unixbench`
-source ~/cb_barrier.sh start
 update_app_errors 0 reset
 
 syslog_netcat "Benchmarking UnixBench SUT: UNIXBENCH=${UNIXBENCH_IP} with (default) Index tests."
