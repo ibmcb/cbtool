@@ -1,22 +1,23 @@
-Background operation execution success. Operation "vm-attach" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.0.4,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,password:cbpwdZ9,timeout:240,host:172.16.0.4,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,willfail,auto,empty,default,none,empty=empty --operation=vm-attach --cn=TESTCLOUD --uuid=44B9F311-528B-59B0-A435-B0F2D89DEBED --daemon". The process id is 4199.
+Background operation execution success. Operation "vm-attach" will be processed asynchronously, through the command ""/home/msilva/cloudbench/lib/operations//../../cbact" --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:9.2.208.21,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,password:cbpwdZ9,timeout:240,host:9.2.208.21,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,willfail,auto,empty,default,none,empty=empty --operation=vm-attach --cn=TESTCLOUD --uuid=C78178DE-B1C1-5DC2-9E0C-B2FF7B119630 --daemon". The process id is 433.
 
 Going to wait until the value on counter "VM ARRIVING" is equal to 0 (currently it is equal to 1) waiting 1.0 seconds between samples, for a maximum of 36000.0 seconds. The counter is assumed to be decreasing.
- status: Counter "VM ARRIVING" equals 0 after 0.308275938034 seconds (the counter is assumed to be decreasing).
-Waited 0.308275938034 seconds until "VMs ARRIVING" was equal to 0.
+ status: Counter "VM ARRIVING" equals 1 after 0.0125529766083 seconds (the counter is assumed to be decreasing).
+ status: Counter "VM ARRIVING" equals 0 after 1.01255297661 seconds (the counter is assumed to be decreasing).
+Waited 1.01255297661 seconds until "VMs ARRIVING" was equal to 0.
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 No objects available.
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |19.81M                        
-|Redis Version                                        |2.8.6                         
-|Uptime (in seconds)                                  |14435160                      
-|Total Connections Received                           |614623                        
-|Total Commands Processed                             |58403148                      
-|Number of Keys                                       |592                           
+|Used Memory                                          |6.91M                         
+|Redis Version                                        |3.0.6                         
+|Uptime (in seconds)                                  |8704600                       
+|Total Connections Received                           |377258                        
+|Total Commands Processed                             |1222809684                    
+|Number of Keys                                       |614                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|Collections                                          |27                            
+|Collections                                          |14                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
 |VMCs                                                 |4                             
@@ -85,8 +86,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |255                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|4D841AFA-3629-5865-B277-3C9B87B46AF4 (simzone_d) VM RESERVATIONS|0                             
-|B07D97D7-6259-50D3-8A5D-2F6387957881 (simzone_b) VM RESERVATIONS|0                             
-|73396447-1A1B-5F78-8FD0-C71D15101114 (simzone_a) VM RESERVATIONS|0                             
-|FB6EC147-6C78-5AE6-BD5F-8F8D6A60F5BC (simzone_c) VM RESERVATIONS|0                             
+|48E847B7-4EAD-595E-A603-912566454DDC (simzone_a) VM RESERVATIONS|0                             
+|0F125A34-8350-57DE-AA00-635042C08FD4 (simzone_c) VM RESERVATIONS|0                             
+|C1CCDA39-30E1-56FF-A6AE-36406AD2BA16 (simzone_d) VM RESERVATIONS|0                             
+|67592E97-AC3C-50A4-B3D9-009931854DBD (simzone_b) VM RESERVATIONS|0                             
 

@@ -1,30 +1,30 @@
 Going to wait until the value on counter "AI ARRIVED" is equal to 30 (currently it is equal to 29) waiting 5.0 seconds between samples, for a maximum of 36000.0 seconds. The counter is assumed to be increasing.
- status: Counter "AI ARRIVED" equals 29 after 4.61875605583 seconds (the counter is assumed to be increasing).
- status: Counter "AI ARRIVED" equals 30 after 9.61875605583 seconds (the counter is assumed to be increasing).
-Waited 9.61875605583 seconds until "AIs ARRIVED" was equal to 30.
+ status: Counter "AI ARRIVED" equals 29 after 4.53542304039 seconds (the counter is assumed to be increasing).
+ status: Counter "AI ARRIVED" equals 30 after 9.53542304039 seconds (the counter is assumed to be increasing).
+Waited 9.53542304039 seconds until "AIs ARRIVED" was equal to 30.
 The following ATTACHED AIDRSs are in this experiment (Cloud TESTCLOUD) :
 |name                |pattern                |type              
 |aidrs_1             |simplenw               |nullworkload      
 
 The following ATTACHED AIs are in this experiment (Cloud TESTCLOUD) :
 |name      |type           |sut                                               |cloud_ip        |arrival        |aidrs                                   |uuid
-|ai_31     |nullworkload   |1_x_tinyvm                                        |47.221.7.96     |1456184254     |aidrs_1                                 |D6FD0C44-2EEA-5813-B93F-F8FFB22E847C
-|ai_32     |nullworkload   |1_x_tinyvm                                        |131.179.45.6    |1456184263     |aidrs_1                                 |85D5894C-BEE0-536A-ABCF-46299077743A
+|ai_31     |nullworkload   |1_x_tinyvm                                        |26.143.199.207  |1454605317     |aidrs_1                                 |43D3AD18-552A-578E-B30C-74F0C1B26E67
+|ai_32     |nullworkload   |1_x_tinyvm                                        |134.29.190.124  |1454605326     |aidrs_1                                 |FD60F170-3E7F-5DD1-A17D-E12102A092E7
 
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 |name          |role                |size        |cloud_ip        |host_name                  |vmc_pool      |netname    |ai      |aidrs      |uuid
-|vm_122        |tinyvm              |pico32      |47.221.7.96     |simhosta10                 |SUT           |private    |ai_31   |aidrs_1    |BC3C29ED-9385-55D3-BBF9-08E09C30342E
-|vm_123        |tinyvm              |pico32      |131.179.45.6    |simhosta13                 |SUT           |private    |ai_32   |aidrs_1    |EF4991D3-5D34-53CF-ACEF-DA5989A231ED
+|vm_122        |tinyvm              |pico32      |26.143.199.207  |simhostd9                  |SUT           |private    |ai_31   |aidrs_1    |79580EC6-A848-5370-8E20-25FFEFBF9D64
+|vm_123        |tinyvm              |pico32      |134.29.190.124  |simhostc14                 |SUT           |private    |ai_32   |aidrs_1    |ECEC45C8-1DEB-5838-A3B1-20FF9955B93C
 
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |26.24M                        
+|Used Memory                                          |23.61M                        
 |Redis Version                                        |2.8.6                         
-|Uptime (in seconds)                                  |14436409                      
-|Total Connections Received                           |614875                        
-|Total Commands Processed                             |58972988                      
-|Number of Keys                                       |1238                          
+|Uptime (in seconds)                                  |12857472                      
+|Total Connections Received                           |548789                        
+|Total Commands Processed                             |42934105                      
+|Number of Keys                                       |1239                          
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
 |Collections                                          |28                            
@@ -96,11 +96,11 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |509                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|2C0CBD0C-C4AB-589F-B1DC-473FE1792EEA (simzone_b) VM RESERVATIONS|2                             
-|09BE1FD2-5286-5B6E-AA11-D68D33341047 (simzone_a) VM RESERVATIONS|0                             
-|95B3CBBD-180B-59D1-9048-B3EAC63E092B (simzone_d) VM RESERVATIONS|0                             
-|4DFFE7AE-4E70-5DA7-82EF-D0BC8960A44B (simzone_c) VM RESERVATIONS|0                             
+|9ADC8244-8C1F-5728-8581-9D8825A87B6E (simzone_a) VM RESERVATIONS|1                             
+|662A8BAF-6270-52A0-B49B-7E1326CCC8B6 (simzone_c) VM RESERVATIONS|1                             
+|8E167E6D-B4E1-531D-A90A-A469EF1067C6 (simzone_b) VM RESERVATIONS|0                             
+|B37F024B-5D05-5130-8E9E-0804A1122684 (simzone_d) VM RESERVATIONS|0                             
 
  ---------------- AIDRS-WIDE COUNTERS ----------------
-|77085658-C7FF-5DDD-B4FA-F7E629B356C2 (aidrs_1) AI RESERVATIONS|2                             
+|C3677920-7C56-58A6-B3B8-B1601A0F1C4B (aidrs_1) AI RESERVATIONS|2                             
 

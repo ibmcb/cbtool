@@ -977,7 +977,7 @@ class SimCmds(CommonCloudFunctions) :
     
                 if obj_attr_list["create_performance_emitter"].lower() == "true" :
                     
-                    _msg = "Starting a new \"performance emitter\" for " + obj_attr_list["name"]
+                    _msg = "Starting a new \"performance emitter\" for " + obj_attr_list["log_string"]
                     cbdebug(_msg, True)
     
                     _cmd = "\"" + obj_attr_list["base_dir"] + "/cbact\""

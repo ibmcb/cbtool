@@ -151,10 +151,8 @@ class CommonCloudFunctions:
     def wait_for_instance_ready(self, obj_attr_list, time_mark_prs) :
         '''
         TBD
-        '''
-        _msg = "Waiting for " + obj_attr_list["name"] + " (cloud-assigned uuid "
-        _msg += obj_attr_list["cloud_vm_uuid"] + "), part of AI " + obj_attr_list["ai_name"] 
-        _msg += ", to start..."
+        '''     
+        _msg = "Waiting for " + obj_attr_list["log_string"]  + ", to start..."
         self.pending_set(obj_attr_list, _msg)
         cbdebug(_msg, True)
            
@@ -178,9 +176,8 @@ class CommonCloudFunctions:
                     raise CldOpsException(_msg, _status)
 
             if obj_attr_list["check_boot_started"].count("poll_cloud") :
-                _msg = "Check if the VM \"" + obj_attr_list["name"]
-                _msg += "\" (" + obj_attr_list["cloud_vm_uuid"] + ") has started by "
-                _msg += "querying the cloud directly."
+                _msg = "Check if " + obj_attr_list["log_string"]  + " has started by querying the" 
+                _msg += "cloud directly."
                 cbdebug(_msg)                
                 _vm_started = self.is_vm_ready(obj_attr_list) 
 
@@ -190,9 +187,8 @@ class CommonCloudFunctions:
 
                 _channel_to_subscribe = obj_attr_list["check_boot_started"].replace("subscribe_on_",'')
 
-                _msg = "Check if the VM \"" + obj_attr_list["name"]
-                _msg += "\" (" + obj_attr_list["cloud_vm_uuid"] + ") has started by "
-                _msg += "subscribing to channel \"" + str(_channel_to_subscribe)
+                _msg = "Check if " + obj_attr_list["log_string"] + " has started by subscribing"
+                _msg += " to channel \"" + str(_channel_to_subscribe)
                 _msg += "\" and waiting for the message \""
                 _msg += _string_to_search + "\"."
                 cbdebug(_msg)
@@ -211,8 +207,7 @@ class CommonCloudFunctions:
             elif obj_attr_list["check_boot_started"].count("wait_for_") :
                 _boot_wait_time = int(obj_attr_list["check_boot_started"].replace("wait_for_",''))
 
-                _msg = "Assuming that the VM \"" + obj_attr_list["cloud_name"]
-                _msg += "\" (" + obj_attr_list["name"] + ") is booted after"
+                _msg = "Assuming that " + obj_attr_list["log_string"] + " is booted after"
                 _msg += " waiting for " + str(_boot_wait_time) + " seconds."
                 cbdebug(_msg, True)
 
@@ -319,13 +314,11 @@ class CommonCloudFunctions:
         _max_tries = int(obj_attr_list["update_attempts"])
         _wait = int(obj_attr_list["update_frequency"])
         _network_reachable = False 
-        _curr_tries = 0
+        _curr_tries = 0 
 
         if not _network_reachable :
 
-            _msg = "Trying to establish network connectivity to "
-            _msg +=  obj_attr_list["name"] + " (cloud-assigned uuid "
-            _msg += obj_attr_list["cloud_vm_uuid"] + "), part of AI " + obj_attr_list["ai_name"]
+            _msg = "Trying to establish network connectivity to " + obj_attr_list["log_string"]  
             _msg += ", on IP address " + obj_attr_list["prov_cloud_ip"]
             
             if str(obj_attr_list["use_jumphost"]).lower() == "false" :
@@ -357,8 +350,7 @@ class CommonCloudFunctions:
                     _nh_conn = Nethashget(obj_attr_list["prov_cloud_ip"])
                     _port_to_check = obj_attr_list["check_boot_complete"].replace("tcp_on_",'')
 
-                    _msg = "Check if the VM \"" + obj_attr_list["cloud_name"]
-                    _msg += "\" (" + obj_attr_list["name"] + ") is booted by "
+                    _msg = "Check if " + obj_attr_list["log_string"] + " is booted by "
                     _msg += "attempting to establish a TCP connection to port "
                     _msg += str(_port_to_check) + " on address "
                     _msg += obj_attr_list["prov_cloud_ip"]
@@ -368,8 +360,7 @@ class CommonCloudFunctions:
 
                 elif obj_attr_list["check_boot_complete"].count("cloud_ping") :
 
-                    _msg = "Check if the VM \"" + obj_attr_list["cloud_name"]
-                    _msg += "\" (" + obj_attr_list["name"] + ") is booted by "
+                    _msg = "Check if " + obj_attr_list["log_string"] + " is booted by "
                     _msg += "attempting to establish network connectivity "
                     _msg += "through the cloud's API"
                     cbdebug(_msg)
@@ -383,8 +374,7 @@ class CommonCloudFunctions:
                     
                     _channel_to_subscribe = obj_attr_list["check_boot_complete"].replace("subscribe_on_",'')
 
-                    _msg = "Check if the VM \"" + obj_attr_list["name"]
-                    _msg += "\" (" + obj_attr_list["cloud_vm_uuid"] + ") has booted by "
+                    _msg = "Check if " + obj_attr_list["log_string"] + " has booted by "
                     _msg += "subscribing to channel \"" + str(_channel_to_subscribe)
                     _msg += "\" and waiting for the message \""
                     _msg += _string_to_search + "\"."
@@ -405,9 +395,8 @@ class CommonCloudFunctions:
                 elif obj_attr_list["check_boot_complete"].count("wait_for_") :
                     _boot_wait_time = int(obj_attr_list["check_boot_complete"].replace("wait_for_",''))
 
-                    _msg = "Assuming that the VM \"" + obj_attr_list["cloud_name"]
-                    _msg += "\" (" + obj_attr_list["name"] + ") is booted after"
-                    _msg += " waiting for " + str(_boot_wait_time) + " seconds."
+                    _msg = "Assuming that " + obj_attr_list["log_string"]
+                    _msg += " is booted after waiting for " + str(_boot_wait_time) + " seconds."
                     cbdebug(_msg)
 
                     if _boot_wait_time :
@@ -418,9 +407,8 @@ class CommonCloudFunctions:
                     _command_to_run = obj_attr_list["check_boot_complete"].replace("run_command_",'')
                     _command_to_run = _command_to_run.replace("____",' ')
 
-                    _msg = "Check if the VM \"" + obj_attr_list["name"]
-                    _msg += "\" (" + obj_attr_list["cloud_vm_uuid"] + ") has booted by "
-                    _msg += "running the command \"" + str(_command_to_run)
+                    _msg = "Check if " + obj_attr_list["log_string"]  + " has booted by "
+                    _msg += "running the command \"" + str(_command_to_run) + "\""
                     cbdebug(_msg)
 
                     if _curr_tries <= _max_tries/3 :                        
@@ -468,14 +456,15 @@ class CommonCloudFunctions:
                     _vm_is_booted = False
 
                     try : 
-                        _msg = "Opening SNMP session to " + obj_attr_list["cloud_ip"]
+                        _msg = "Check if " + obj_attr_list["log_string"]  + " has booted by "
+                        _msg += "opening SNMP session to " + obj_attr_list["prov_cloud_ip"]
                         cbdebug(_msg)
 
                         _snmp_wait_time = _wait * 1000000
                         _snmp_version = int(obj_attr_list["snmp_version"])
                         _snmp_comm = str(obj_attr_list["snmp_community"])
                         _snmp_session = netsnmp.Session(Version=_snmp_version, \
-                                                        DestHost=obj_attr_list["cloud_ip"], \
+                                                        DestHost=obj_attr_list["prov_cloud_ip"], \
                                                         Community=_snmp_comm, \
                                                         Timeout=_snmp_wait_time, Retries=0)
 

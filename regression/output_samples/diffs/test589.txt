@@ -1,0 +1,33 @@
+
+The following attributes for the AIDRS object were changed (Cloud TESTCLOUD):
+|attribute |old value |new value 
+|iait |10 |6 
+
+The AIDRS object aidrs_2, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
+|attribute (AIDRS object key) |value 
+|ai_arrived |31 
+|ai_arriving |0 
+|ai_departed |31 
+|ai_failed |2 
+|ai_issued |33 
+|ai_reservations |0 
+|arrival |1471276935 
+|base_dir |/path/to/tool/lib/auxiliary//../..
+|cloud_hostname |undefined 
+|cloud_ip |undefined 
+|cloud_name |TESTCLOUD 
+|command |aidrsattach TESTCLOUD simplenw empty=empty
+|command_originated |1471276934 
+|vm_arrived |120 
+|vm_departed |120 
+|vm_issued |124 
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1471276941 |aidrs_2 |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|Redis Version |3.0.6 
+|VMs ISSUED |125 
+|VMs ARRIVED |121 
+|VMs DEPARTED |120 
+|VMs APPLICATION ERRORS |6 
+|AIs ISSUED |34 
+|AIs ARRIVED |32 
+|AIs DEPARTED |31 
+|EXPERIMENT COUNTER |521 

@@ -1,11 +1,11 @@
 The following FAILED VMs are in this experiment (Cloud TESTCLOUD) :
 |name          |role                |size        |cloud_ip        |host_name                  |vmc_pool      |netname    |ai      |aidrs      |uuid
-|vm_24         |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |none    |none       |60442821-DBD0-505C-8E27-F63AD7A567A2
-|vm_118        |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |(orphan)|none       |9ED66DDE-7F02-5FFF-84D7-8A499B174809
-|vm_24         |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |none    |none       |760685B2-BC54-5851-B01E-FAAE51727F4A
-|vm_23         |norole              |from_vm_template|undefined       |unavailable                |unavailable   |private    |none    |none       |F2778E8A-E566-56ED-999F-D3A382EB4A37
-|vm_25         |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |none    |none       |44B9F311-528B-59B0-A435-B0F2D89DEBED
-|vm_25         |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |none    |none       |4BD9ABCF-BE31-5BC0-8C95-EC3629FA937E
-|vm_120        |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |(orphan)|none       |F9FBFEF9-A540-58C8-AAB5-19C3F70A4D7A
-|vm_23         |norole              |from_vm_template|undefined       |unavailable                |unavailable   |private    |none    |none       |5C4EC6C5-6A7D-56D6-B6BE-107F0CD22CD8
+|vm_120        |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |(orphan)|none       |56F3E60F-EAB2-5BDF-8993-C310446FA817
+|vm_121        |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |(orphan)|none       |02BE8431-44A2-5533-AFB6-DE02D77B31D7
+|vm_24         |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |none    |none       |5D517660-ED8B-5B46-BEB0-940E7D499BE7
+|vm_24         |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |none    |none       |6D2BB260-4D95-53F8-AA15-447368D62787
+|vm_25         |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |none    |none       |1E61E77B-57D9-5F6C-B7E8-32983B9F5092
+|vm_23         |norole              |from_vm_template|undefined       |unavailable                |unavailable   |private    |none    |none       |E5F0B0BE-12BC-5006-AA0D-50A6E8F2C334
+|vm_23         |norole              |from_vm_template|undefined       |unavailable                |unavailable   |private    |none    |none       |08048E0F-0532-5532-A944-296B12BAAF0C
+|vm_25         |willfail            |nano32      |undefined       |unavailable                |SUT           |private    |none    |none       |F3D8F4D2-FC13-5E89-941C-14DE790434AA
 

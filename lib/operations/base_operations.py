@@ -1641,8 +1641,12 @@ class BaseObjectOperations :
             _status = 2341
         
         finally :
-            
-            _imsg = "Reservation for " + obj_type + " object " + obj_attr_list["uuid"]
+            if "log_string" in obj_attr_list :
+                _obj_id = obj_attr_list["log_string"]
+            else :
+                _obj_id = obj_type + " object " + obj_attr_list["uuid"]
+                
+            _imsg = "Reservation for " + _obj_id
             if _status :
                 _msg = _imsg + " could not be obtained: " + _fmsg
                 cberr(_msg, True)
@@ -2350,7 +2354,7 @@ class BaseObjectOperations :
             if operation == "setup" or operation == "resize" :
 
                 _msg = "Performing generic application instance post_boot "
-                _msg += "configuration on all VMs belonging to " + _ai_attr_list["name"] + "..."                
+                _msg += "configuration on all VMs belonging to " + _ai_attr_list["log_string"] + "..."                
                 cbdebug(_msg, True)
                 self.osci.pending_object_set(cloud_name, "AI", ai_uuid, "status", _msg)
 
@@ -2368,7 +2372,7 @@ class BaseObjectOperations :
                     _actual_attempts = _smallest_remaining_time/int(_ai_attr_list["update_frequency"])
                     _msg = "The VM-specific attribute \"sla_provisioning_abort\" "
                     _msg += "was set \"True\". Remaining deployment time (generic"
-                    _msg += " application instance post_boot) for " + _ai_name
+                    _msg += " application instance post_boot) for " + _ai_attr_list["log_string"]
                     _msg += " is " + str(_smallest_remaining_time)
                     _msg += " seconds and actual number of configuration attempts" 
                     _msg += " is " + str(_actual_attempts) + " (instead of " 
@@ -2405,7 +2409,7 @@ class BaseObjectOperations :
                         _xfmsg += " completed successfully (after "
                         _xfmsg += str(_post_boot_spent_time) + " seconds), but "
                         _xfmsg += "ran out of time to run application-specific \"setup\""
-                        _xfmsg += " scripts on " + _ai_name + " due to the "
+                        _xfmsg += " scripts on " + _ai_attr_list["log_string"] + " due to the "
                         _xfmsg += "established SLA provisioning target."
                         _xfmsg += _ai_name + " due to the established "
                         _xfmsg += "SLA provisioning target."
@@ -2416,7 +2420,7 @@ class BaseObjectOperations :
                 if _status :
                     _status = 1495
                     _fmsg = "Failure while executing generic post_boot configuration on "
-                    _fmsg += "on all VMs beloging to " + _ai_attr_list["name"] + ": "
+                    _fmsg += "on all VMs beloging to " + _ai_attr_list["log_string"] + ": "
                     _fmsg += _xfmsg
 
                 else :
@@ -2445,7 +2449,7 @@ class BaseObjectOperations :
             # for each VM
             if not _status :
                 _msg = "Running application-specific \"" + operation + "\" "
-                _msg += "configuration on all VMs belonging to " + _ai_attr_list["name"] + "..."                
+                _msg += "configuration on all VMs belonging to " + _ai_attr_list["log_string"] + "..."                
                 cbdebug(_msg, True)
                 notify_client_refresh = False
                 if "first_app_run_finished" not in _ai_attr_list or \
@@ -2461,14 +2465,14 @@ class BaseObjectOperations :
                     _ai_attr_list["dont_start_load_manager"].lower() == "true" :
                     _msg = "Load Manager will NOT be automatically"
                     _msg += " started on " + _ai_attr_list["load_manager_name"] 
-                    _msg += " during the deployment of " + _ai_attr_list["name"] + "..."                
+                    _msg += " during the deployment of " + _ai_attr_list["log_string"] + "..."                
                     cbdebug(_msg, True)
 
                 if "dont_start_qemu_scraper" in _ai_attr_list and \
                     _ai_attr_list["dont_start_qemu_scraper"].lower() == "true" :
                     _msg = "QEMU Scraper will NOT be automatically"
                     _msg += " started during the deployment of "
-                    _msg += _ai_attr_list["name"] + "..."                
+                    _msg += _ai_attr_list["log_string"] + "..."                
                     cbdebug(_msg, True)
 
                 _lmr = False
@@ -2558,6 +2562,9 @@ class BaseObjectOperations :
                                 _vm_uuid, _vm_role, _vm_name = _vm.split('|')
                                 _obj_attr_list = self.osci.get_object(cloud_name, "VM", False, _vm_uuid, False)
                                 _abort, _x, _remaining_time = self.pending_decide_abortion(_obj_attr_list, "VM", "application-specific scripts", False)
+
+                                if _remaining_time < _smallest_remaining_time :
+                                    _smallest_remaining_time = _remaining_time
                                 
                                 if _abort and not _status:
                                     _status = 17493
@@ -2565,12 +2572,12 @@ class BaseObjectOperations :
                                     _xfmsg += " completed successfully (after "
                                     _xfmsg += str(_application_spent_time) + " seconds),"
                                     _xfmsg += " but ran out of time to start the "
-                                    _xfmsg += "\"load manager\" on " + _ai_name 
+                                    _xfmsg += "\"load manager\" on " + _ai_attr_list["log_string"] 
                                     _xfmsg += " due to the established SLA provisioning target."
                         
                         if _status :    
                             _fmsg = "Failure while executing application-specific configuration on "
-                            _fmsg += "on all VMs beloging to " + _ai_name + ":\n "
+                            _fmsg += "on all VMs beloging to " + _ai_attr_list["log_string"] + ":\n "
                             _fmsg += _xfmsg
                             break
 
@@ -2583,7 +2590,7 @@ class BaseObjectOperations :
                 _msg = "Parallel VM configuration for " + _ai_name + " failure (" + str(_status) + "): " + _fmsg
                 cberr(_msg)
             else :
-                _msg = "Parallel VM configuration for " + _ai_name + " success."
+                _msg = "Parallel VM configuration for " + _ai_attr_list["log_string"] + " success."
                 cbdebug(_msg)
             return _status, _msg
 
@@ -3301,7 +3308,7 @@ class BaseObjectOperations :
 
     @trace
     def update_process_list(self, cloud_name, obj_type, obj_id, obj_pid, \
-                            operation) :
+                            operation, log_tag = '') :
         '''
         TBD
         '''
@@ -3331,12 +3338,12 @@ class BaseObjectOperations :
         finally :
             if _status :
                 _msg = obj_type + " object pid \"" + _process_identifier + "\" "
-                _msg += operation + "ed to list failure: " + _fmsg
+                _msg += operation + "ed to list failure" + log_tag + ": " + _fmsg
                 cberr(_msg)
                 return False
             else :
                 _msg = obj_type + " object pid \"" + _process_identifier + "\" "
-                _msg += operation + "ed to list success "
+                _msg += operation + "ed to list success" + log_tag
                 cbdebug(_msg)
                 return True
 

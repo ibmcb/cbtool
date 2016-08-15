@@ -1,4 +1,4 @@
  status: VPN configuration for this cloud already generated: /home/msilva/cloudbench/lib/auxiliary//../../configs/generated/TESTCLOUD_server-cb-openvpn.conf
 The "sim" cloud named "TESTCLOUD" was successfully attached to this experiment.
-The experiment identifier is EXP-02-22-2016-11-27-05-PM-UTC
+The experiment identifier is EXP-02-04-2016-04-51-28-PM-UTC
 

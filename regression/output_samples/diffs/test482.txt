@@ -1,0 +1,13 @@
+|abort |False 
+|arrival |1471276259 
+|command_originated |1471276257 
+|disable_timesync |False 
+|execute_script_name |~/cloudbench/scenarios/scripts/openstack_multitenant.sh
+|last_known_state |generic post-boot script executed 
+|pct_failure | 
+|pre_creation_delay |0 
+|recreate_attempts |1 
+|sim_0021_vm_placement_time |0 
+|sla_provisioning_abort |False 
+|utc_offset_delta |-18000 
+|vpn_config_file |/path/to/tool/lib/auxiliary//../../configs/generated/TESTCLOUD_client-cb-openvpn.conf

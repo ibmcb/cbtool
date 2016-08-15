@@ -1,15 +1,15 @@
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |17.89M                        
-|Redis Version                                        |2.8.6                         
-|Uptime (in seconds)                                  |14435767                      
-|Total Connections Received                           |614735                        
-|Total Commands Processed                             |58657737                      
-|Number of Keys                                       |252                           
+|Used Memory                                          |7.08M                         
+|Redis Version                                        |3.0.6                         
+|Uptime (in seconds)                                  |8705221                       
+|Total Connections Received                           |377391                        
+|Total Commands Processed                             |1223274692                    
+|Number of Keys                                       |316                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|Collections                                          |25                            
+|Collections                                          |12                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
 |VMCs                                                 |0                             
@@ -45,7 +45,7 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |VMs FAILED                                           |0                             
 |VMs SLA PROVISIONING VIOLATED                        |0                             
 |VMs SLA RUNTIME VIOLATED                             |0                             
-|VMs APPLICATION ERRORS                               |6                             
+|VMs APPLICATION ERRORS                               |5                             
 |AI RESERVATIONS                                      |0                             
 |AIs ISSUED                                           |0                             
 |AIs ARRIVED                                          |0                             

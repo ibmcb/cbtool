@@ -1,22 +1,23 @@
-Background operation execution success. Operation "vm-attach" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.0.4,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,password:cbpwdZ9,timeout:240,host:172.16.0.4,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,willfail,auto,empty,default,none,empty=empty --operation=vm-attach --cn=TESTCLOUD --uuid=4BD9ABCF-BE31-5BC0-8C95-EC3629FA937E --daemon". The process id is 10232.
+Background operation execution success. Operation "vm-attach" will be processed asynchronously, through the command ""/home/msilva/cloudbench/lib/operations//../../cbact" --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:9.2.208.21,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,password:cbpwdZ9,timeout:240,host:9.2.208.21,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,willfail,auto,empty,default,none,empty=empty --operation=vm-attach --cn=TESTCLOUD --uuid=7FC11800-E419-5029-B6ED-87C1AF2FE98E --daemon". The process id is 16079.
 
 Going to wait until the value on counter "VM ARRIVING" is equal to 0 (currently it is equal to 1) waiting 1.0 seconds between samples, for a maximum of 36000.0 seconds. The counter is assumed to be decreasing.
- status: Counter "VM ARRIVING" equals 0 after 0.568938016891 seconds (the counter is assumed to be decreasing).
-Waited 0.568938016891 seconds until "VMs ARRIVING" was equal to 0.
+ status: Counter "VM ARRIVING" equals 1 after 0.360672950745 seconds (the counter is assumed to be decreasing).
+ status: Counter "VM ARRIVING" equals 0 after 1.36067295074 seconds (the counter is assumed to be decreasing).
+Waited 1.36067295074 seconds until "VMs ARRIVING" was equal to 0.
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 No objects available.
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |20.00M                        
-|Redis Version                                        |2.8.6                         
-|Uptime (in seconds)                                  |14435991                      
-|Total Connections Received                           |614780                        
-|Total Commands Processed                             |58753901                      
-|Number of Keys                                       |764                           
+|Used Memory                                          |9.74M                         
+|Redis Version                                        |3.0.6                         
+|Uptime (in seconds)                                  |8705468                       
+|Total Connections Received                           |377444                        
+|Total Commands Processed                             |1223422679                    
+|Number of Keys                                       |846                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|Collections                                          |28                            
+|Collections                                          |15                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
 |VMCs                                                 |4                             
@@ -52,7 +53,7 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |VMs FAILED                                           |3                             
 |VMs SLA PROVISIONING VIOLATED                        |0                             
 |VMs SLA RUNTIME VIOLATED                             |0                             
-|VMs APPLICATION ERRORS                               |6                             
+|VMs APPLICATION ERRORS                               |5                             
 |AI RESERVATIONS                                      |0                             
 |AIs ISSUED                                           |0                             
 |AIs ARRIVED                                          |0                             
@@ -85,8 +86,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |255                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|2C0CBD0C-C4AB-589F-B1DC-473FE1792EEA (simzone_b) VM RESERVATIONS|0                             
-|09BE1FD2-5286-5B6E-AA11-D68D33341047 (simzone_a) VM RESERVATIONS|0                             
-|95B3CBBD-180B-59D1-9048-B3EAC63E092B (simzone_d) VM RESERVATIONS|0                             
-|4DFFE7AE-4E70-5DA7-82EF-D0BC8960A44B (simzone_c) VM RESERVATIONS|0                             
+|9E74D721-5227-5C9B-A7BD-BE5B4A43D6AA (simzone_d) VM RESERVATIONS|0                             
+|3B6C80F6-6318-5721-A484-E3DA77718B57 (simzone_c) VM RESERVATIONS|0                             
+|803C5D90-3C59-5871-9ACF-5683E3FB4506 (simzone_a) VM RESERVATIONS|0                             
+|270A5605-A7C0-5F5E-B66F-19B77C6645BE (simzone_b) VM RESERVATIONS|0                             
 

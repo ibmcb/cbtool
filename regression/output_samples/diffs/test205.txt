@@ -1,0 +1,4 @@
+Background operation execution success. Operation "vmc-attachall" will be processed asynchronously, through the command ""/path/to/tool/lib/operations//../../cbact" --procid=TEST_msilva --osp=port:xxxx,experiment_inst:TEST_msilva,host:xxx.xxx.xxx.xxx ,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:xxxx,password:cbpwdZ9,timeout:240,host:xxx.xxx.xxx.xxx ,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,all,empty=empty --operation=vmc-attachall --cn=TESTCLOUD --uuid=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx --daemon". The process id is xxxx.
+|simzone_X |15 |lg |simzone_X |xxx.xxx.xxx.xxx 
+|simzone_X |15 |sut |simzone_X |xxx.xxx.xxx.xxx 
+|Redis Version |3.0.6 

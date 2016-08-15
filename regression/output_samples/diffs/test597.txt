@@ -1,0 +1,10 @@
+Background operation execution success. Operation "vm-protect" will be processed asynchronously, through the command ""/path/to/tool/lib/operations//../../cbact" --procid=TEST_msilva --osp=port:xxxx,experiment_inst:TEST_msilva,host:xxx.xxx.xxx.xxx ,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:xxxx,password:cbpwdZ9,timeout:240,host:xxx.xxx.xxx.xxx ,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,youngest,source,tcp,default --operation=vm-protect --cn=TESTCLOUD --uuid=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx --daemon". The process id is xxxx.
+|Redis Version |3.0.6 
+|VMs ISSUED |xxxxxxxxxx 
+|VMs ARRIVED |126 
+|VMs DEPARTED |125 
+|VMs APPLICATION ERRORS |10 
+|AIs ISSUED |38 
+|AIs ARRIVED |36 
+|AIs DEPARTED |36 
+|EXPERIMENT COUNTER |543 

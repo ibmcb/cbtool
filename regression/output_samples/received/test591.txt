@@ -1,14 +1,14 @@
 AIDRS object undefined (named "all") was sucessfully detached from this experiment.
- status: Sending a termination request for vm_124 (cloud-assigned uuid BC4FAA17-F37D-50C0-AC37-0DB94D3EC5F5)....
- status: Sending a termination request for vm_128 (cloud-assigned uuid E60604DD-42D5-5BE3-AC0A-AC87B55BB749)....
- status: Sending a termination request for vm_127 (cloud-assigned uuid 2B43D9D1-912A-5D87-A2A7-88151584EB3B)....
- status: Sending a termination request for vm_126 (cloud-assigned uuid D045032F-47FB-5917-B79E-FE6C4002C622)....
- status: Sending a termination request for vm_125 (cloud-assigned uuid 0A2D659E-D18A-5A3E-B9E9-66C8BCE4641D)....
- status: AI 7D2DBFDF-8683-508D-801C-36CCBBCC091A was successfully undefined on SimCloud "TESTCLOUD".
- status: AI 3BDBBF99-5A0E-54CA-979F-536CC47DC8B3 was successfully undefined on SimCloud "TESTCLOUD".
- status: AI 228C0780-1379-5DA5-A894-BC2A99B00339 was successfully undefined on SimCloud "TESTCLOUD".
- status: AI EDEDE167-BCAF-5D8A-9D20-C7EFA3328CC5 was successfully undefined on SimCloud "TESTCLOUD".
- status: AI 304F6988-5A6A-5528-8A5A-71AE43F3B258 was successfully undefined on SimCloud "TESTCLOUD".
+ status: Sending a termination request for vm_125 (cloud-assigned uuid CD675708-B4F1-5E0B-81D7-1A4E674E84FD)....
+ status: Sending a termination request for vm_129 (cloud-assigned uuid D10A25D4-E55D-5C04-8AAC-65B4FE81C0C3)....
+ status: Sending a termination request for vm_128 (cloud-assigned uuid 2A4FE025-F0A7-5BAF-BC75-0CCBEB47D79C)....
+ status: Sending a termination request for vm_126 (cloud-assigned uuid 1040C781-0A37-535B-9DA6-F43B2EF6E9E6)....
+ status: Sending a termination request for vm_127 (cloud-assigned uuid 48FF8AC8-960F-5323-A80D-8E52FD024DCB)....
+ status: AI 0C80A32B-7978-5555-AC19-81885CD70A40 was successfully undefined on SimCloud "TESTCLOUD".
+ status: AI 0BDC2483-3F1C-5C44-A20C-486F5668C28E was successfully undefined on SimCloud "TESTCLOUD".
+ status: AI 611AB176-14CC-5697-9BE0-A0EB7285B9A5 was successfully undefined on SimCloud "TESTCLOUD".
+ status: AI DAA79975-8CA2-5105-84F7-336D200DD995 was successfully undefined on SimCloud "TESTCLOUD".
+ status: AI C04E5946-6DAF-5C4D-9C5A-4B4F17128121 was successfully undefined on SimCloud "TESTCLOUD".
 AI object undefined (named "all") was sucessfully detached from this experiment.
 The following ATTACHED AIDRSs are in this experiment (Cloud TESTCLOUD) :
 No objects available.
@@ -19,15 +19,15 @@ No objects available.
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |26.35M                        
-|Redis Version                                        |2.8.6                         
-|Uptime (in seconds)                                  |14436555                      
-|Total Connections Received                           |614889                        
-|Total Commands Processed                             |58991123                      
-|Number of Keys                                       |1219                          
+|Used Memory                                          |18.59M                        
+|Redis Version                                        |3.0.6                         
+|Uptime (in seconds)                                  |8706059                       
+|Total Connections Received                           |377575                        
+|Total Commands Processed                             |1223872277                    
+|Number of Keys                                       |1348                          
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|Collections                                          |28                            
+|Collections                                          |15                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
 |VMCs                                                 |4                             
@@ -54,22 +54,22 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |HOSTs DEPARTING                                      |0                             
 |HOSTs FAILED                                         |0                             
 |VM RESERVATIONS                                      |0                             
-|VMs ISSUED                                           |128                           
-|VMs ARRIVED                                          |124                           
+|VMs ISSUED                                           |129                           
+|VMs ARRIVED                                          |125                           
 |VMs ARRIVING                                         |0                             
 |VMs CAPTURING                                        |0                             
-|VMs DEPARTED                                         |124                           
+|VMs DEPARTED                                         |125                           
 |VMs DEPARTING                                        |0                             
 |VMs FAILED                                           |4                             
 |VMs SLA PROVISIONING VIOLATED                        |0                             
 |VMs SLA RUNTIME VIOLATED                             |0                             
-|VMs APPLICATION ERRORS                               |12                            
+|VMs APPLICATION ERRORS                               |10                            
 |AI RESERVATIONS                                      |0                             
-|AIs ISSUED                                           |37                            
-|AIs ARRIVED                                          |35                            
+|AIs ISSUED                                           |38                            
+|AIs ARRIVED                                          |36                            
 |AIs ARRIVING                                         |0                             
 |AIs CAPTURING                                        |0                             
-|AIs DEPARTED                                         |35                            
+|AIs DEPARTED                                         |36                            
 |AIs DEPARTING                                        |0                             
 |AIs FAILED                                           |2                             
 |AIDRS RESERVATIONS                                   |0                             
@@ -93,11 +93,11 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |FIRSs DEPARTED                                       |0                             
 |FIRSs DEPARTING                                      |0                             
 |FIRSs FAILED                                         |0                             
-|EXPERIMENT COUNTER                                   |536                           
+|EXPERIMENT COUNTER                                   |540                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|2C0CBD0C-C4AB-589F-B1DC-473FE1792EEA (simzone_b) VM RESERVATIONS|0                             
-|09BE1FD2-5286-5B6E-AA11-D68D33341047 (simzone_a) VM RESERVATIONS|0                             
-|95B3CBBD-180B-59D1-9048-B3EAC63E092B (simzone_d) VM RESERVATIONS|0                             
-|4DFFE7AE-4E70-5DA7-82EF-D0BC8960A44B (simzone_c) VM RESERVATIONS|0                             
+|9E74D721-5227-5C9B-A7BD-BE5B4A43D6AA (simzone_d) VM RESERVATIONS|0                             
+|3B6C80F6-6318-5721-A484-E3DA77718B57 (simzone_c) VM RESERVATIONS|0                             
+|803C5D90-3C59-5871-9ACF-5683E3FB4506 (simzone_a) VM RESERVATIONS|0                             
+|270A5605-A7C0-5F5E-B66F-19B77C6645BE (simzone_b) VM RESERVATIONS|0                             
 
