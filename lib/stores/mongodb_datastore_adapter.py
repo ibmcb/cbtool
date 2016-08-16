@@ -186,7 +186,7 @@ class MongodbMgdConn :
             
             if len(self.password) > 2 and self.password.lower() != "false" :
                 try :
-                    self.mongodb_conn[self.database].authenticate(self.username, self.password)
+                    self.mongodb_conn[self.database].authenticate(self.username, self.password, mechanism='MONGODB-CR')
                 
                 except PymongoException, errmsg :
                     _msg = "Unable to authenticate against the database \"" + self.database

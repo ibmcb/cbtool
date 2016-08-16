@@ -43,7 +43,7 @@ def cli_postional_argument_parser() :
     '''
     
     _usage = "./" + argv[0] + " <cloud_name> options.experiment_id "
-    _usage += "[vms per host] [flows per vm] [samples] [networks] [workloads] "
+    _usage += "[hypervisor type] [vms per host] [flows per vm] [samples] [networks] [workloads] "
     _usage += "[profile] [load duration] [external address]"
 
     options, args = cli_named_option_parser()
@@ -53,59 +53,54 @@ def cli_postional_argument_parser() :
         exit(1)
 
     options.cloud_name = argv[1]
-    options.experiment_id = options.cloud_name + "_ring_" + argv[2]
+
+    options.experiment_name = argv[2]
     
-    if len(argv) > 3:
-        options.vm_per_host = argv[3]    
+    if len(argv) > 3 :
+        options.hypervisor = argv[3]
+    else :
+        options.hypervisor = "QEMU"
+    
+    if len(argv) > 4 :
+        options.vm_per_host = argv[4]    
     else :
         options.vm_per_host = "1"
     
-    if len(argv) > 4:
-        options.flows_per_vm = argv[4]    
+    if len(argv) > 5 :
+        options.flows_per_vm = argv[5]    
     else :
         options.flows_per_vm = "1"
     
-    if len(argv) > 5:
-        options.num_samples = argv[5]  
+    if len(argv) > 6 :
+        options.num_samples = argv[6]  
     else :
         options.num_samples = "10"
     
-    if len(argv) > 6:
-        options.networks = argv[6].split(',')   
+    if len(argv) > 7 :
+        options.networks = argv[7].split(',')   
     else :
         options.networks = ["private1", "private1"]
     
-    if len(argv) > 7:
-        options.workloads = argv[7].split(',')   
+    if len(argv) > 8 :
+        options.workloads = argv[8].split(',')   
     else :
     #    options.workloads = [ "netperf", "iperf", "nuttcp" ]
         options.workloads = [ "iperf" ]
     
-    if len(argv) > 8:
-        options.load_profile = argv[8] 
+    if len(argv) > 9 :
+        options.load_profile = argv[9] 
     else :
         options.load_profile = "tcp"
 
-    if len(argv) > 9 :
-        options.load_duration = argv[9]
+    if len(argv) > 10 :
+        options.load_duration = argv[10]
     else :
         options.load_duration = "60"
     
-    if len(argv) > 10:
-        options.external_target = argv[10] 
+    if len(argv) > 11:
+        options.external_target = argv[11] 
     else :
         options.external_target = False
-        
-    print '#' * 5 + " cloud name: " + str(options.cloud_name)
-    print '#' * 5 + " experiment id: " + str(options.experiment_id)
-    print '#' * 5 + " vms per host: " + str(options.vm_per_host)
-    print '#' * 5 + " flows per vm: " + str(options.flows_per_vm)
-    print '#' * 5 + " samples: " + str(options.num_samples)
-    print '#' * 5 + " networks: " + str(options.networks)
-    print '#' * 5 + " workloads: " + str(options.workloads)
-    print '#' * 5 + " load_profile: " + str(options.load_profile)
-    print '#' * 5 + " load_duration : " + str(options.load_duration)
-    print '#' * 5 + " external_target: " + str(options.external_target)
 
     return options
 
@@ -119,6 +114,23 @@ def run_ring_pattern_scenario(options, api) :
 
     cloud_attrs = api.cldlist()[0]
     cloud_model = cloud_attrs["model"]
+
+    _hyper_type = get_compute_parms(options, api)
+
+    options.experiment_id = options.cloud_name + "_ring_" + options.hypervisor 
+    options.experiment_id += '_' + options.experiment_name
+
+    print '#' * 5 + " cloud name: " + str(options.cloud_name)
+    print '#' * 5 + " hypervisor: " + str(options.hypervisor)
+    print '#' * 5 + " experiment id: " + str(options.experiment_id)
+    print '#' * 5 + " vms per host: " + str(options.vm_per_host)
+    print '#' * 5 + " flows per vm: " + str(options.flows_per_vm)
+    print '#' * 5 + " samples: " + str(options.num_samples)
+    print '#' * 5 + " networks: " + str(options.networks)
+    print '#' * 5 + " workloads: " + str(options.workloads)
+    print '#' * 5 + " load_profile: " + str(options.load_profile)
+    print '#' * 5 + " load_duration : " + str(options.load_duration)
+    print '#' * 5 + " external_target: " + str(options.external_target)
 
     _net_n = "NA"
     if len(options.networks) == 2 :
@@ -153,7 +165,7 @@ def run_ring_pattern_scenario(options, api) :
     if cloud_model == "sim" :    
         _check_interval = int(_check_interval)/10
         options.load_duration = str(int(options.load_duration)/20)
-        _per_vapp_run_time = _per_vapp_run_time/10
+        _per_vapp_run_time = _per_vapp_run_time/1
 
     _cb_dirs = api.cldshow(options.cloud_name, "space")
     
@@ -219,9 +231,9 @@ def run_ring_pattern_scenario(options, api) :
 
             _h2h = False
             if options.vm_per_host == "1" :
-                _msg = "Performing a quick \"host-to-host\" analysis"
+                _msg = "Performing a quick \"host-to-host\" analysis (" + _workload + ")" 
                 print _msg
-                _h2h = host_to_host(options, api, _curr_experiment_id)
+                _h2h = host_to_host(options, api, _curr_experiment_id, True)                
                 print ' '
 
             print ' '
@@ -230,6 +242,7 @@ def run_ring_pattern_scenario(options, api) :
             print _msg
             _tm = time()            
             _url = api.monextract(options.cloud_name, "all", "all")
+            _h2h = host_to_host(options, api, _curr_experiment_id, False)
             _tm = int(time() - _tm)
             _msg = "\n"
             _msg = '#' * 3 + " After " + str(_tm )+ " seconds, all metrics were collected "

@@ -104,7 +104,7 @@ def cli_postional_argument_parser() :
     TBD
     '''
     
-    _usage = "./" + argv[0] + " <cloud_name> <experiment_id> bw|lat|tput tcp|udp|icmp"
+    _usage = "./" + argv[0] + " <cloud_name> <experiment_id> bw|lat|tput tcp|udp|icmp [hypervisor type]"
 
     options, args = cli_named_option_parser()
 
@@ -113,6 +113,7 @@ def cli_postional_argument_parser() :
         exit(1)
 
     options.cloud_name = argv[1]
+    options.experiment_name = argv[2]
 
     options.experiment_type = argv[3]
     if options.experiment_type != "bw" and options.experiment_type != "lat" and options.experiment_type != "tput":
@@ -131,14 +132,14 @@ def cli_postional_argument_parser() :
         print _usage
         exit(1)
 
+    if len(argv) > 5 :
+        options.hypervisor = argv[5]
+    else :
+        options.hypervisor = "QEMU"
+
     options.networks = [ "private1", "private1" ]
     options.num_samples = "3"
-    options.experiment_id = options.cloud_name + "_pt2pt_" + options.experiment_type + '_' + options.protocol_type + '_' + argv[2]
 
-    print '#' * 5 + " cloud name: " + str(options.cloud_name)
-    print '#' * 5 + " experiment id: " + str(options.experiment_id)    
-    print '#' * 5 + " experiment_type: " + str(options.experiment_type)
-    print '#' * 5 + " protocol type: " + str(options.protocol_type)
     return options
 
 def run_pt2pt_pattern_scenario(options, api) :
@@ -150,6 +151,23 @@ def run_pt2pt_pattern_scenario(options, api) :
 
     cloud_attrs = api.cldlist()[0]
     cloud_model = cloud_attrs["model"]
+
+    _hyper_type = get_compute_parms(options, api)
+    _net_type, _net_mechanism = get_network_parms(options, api)
+
+    options.experiment_id = options.cloud_name + "_pt2pt_" + options.hypervisor 
+    options.experiment_id += '_' + _net_type + '_' + _net_mechanism + '_' 
+    options.experiment_id += options.experiment_type + '_' 
+    options.experiment_id += options.protocol_type + '_' + options.experiment_name
+
+    print '#' * 5 + " cloud name: " + str(options.cloud_name)
+    print '#' * 5 + " hypervisor: " + str(options.hypervisor)
+    print '#' * 5 + " net type: " + str(_net_type)
+    print '#' * 5 + " net mechanism: " + str(_net_mechanism)    
+    print '#' * 5 + " experiment id: " + str(options.experiment_id)
+    print '#' * 5 + " experiment name: " + str(options.experiment_name)    
+    print '#' * 5 + " experiment_type: " + str(options.experiment_type)
+    print '#' * 5 + " protocol type: " + str(options.protocol_type)
 
     ################## START - USER-DEFINED PARAMATERS" ################## 
     _load_level = "1"
@@ -178,7 +196,7 @@ def run_pt2pt_pattern_scenario(options, api) :
     if cloud_model == "sim" :    
         _check_interval = int(_check_interval)/10
         _load_duration = str(int(_load_duration)/10)
-        per_vapp_run_time = per_vapp_run_time/10
+        per_vapp_run_time = per_vapp_run_time/1
 
     _cb_dirs = api.cldshow(options.cloud_name, "space")
     
@@ -214,7 +232,6 @@ def run_pt2pt_pattern_scenario(options, api) :
                 _msg += " the experiment to run."
                 print _msg
 
-
                 _start_time = int(time())
 
                 while check_samples(options, api, _start_time, per_vapp_run_time) :
@@ -225,16 +242,17 @@ def run_pt2pt_pattern_scenario(options, api) :
                 print _msg
                 api.appdetach(options.cloud_name, "all")
 
-            _msg = "Performing a quick \"host-to-host\" analysis"
+            _msg = "Performing a quick \"host-to-host\" analysis (" + _workload + ")" 
             print _msg
-            _h2h = host_to_host(options, api, _curr_experiment_id)
+            _h2h = host_to_host(options, api, _curr_experiment_id, True)
             print ' '
 
         _msg = "Experiment \"" + options.experiment_id + "\" ended. Performance metrics will"
         _msg += " be collected in .csv files." 
         print _msg
         _url = api.monextract(options.cloud_name, "all", "all")
-    
+        _h2h = host_to_host(options, api, _curr_experiment_id, False)
+                
     _msg = "Data is available at url \"" + _url + "\". \nTo automatically generate"
     _msg += " plots, just run \"" + _cb_base_dir + "/util/plot/cbplotgen.R "
     _msg += "-d " + _cb_data_dir + " -e " + ','.join(_executed_experiment_list)

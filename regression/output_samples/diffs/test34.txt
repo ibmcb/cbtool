@@ -1,0 +1,1 @@
+Usage: vmshow <cloud_name> <identifier> [key = all] [state = default] 

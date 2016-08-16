@@ -659,8 +659,6 @@ class Ec2Cmds(CommonCloudFunctions) :
         '''        
         if self.is_vm_running(obj_attr_list) :
 
-            self.take_action_if_requested("VM", obj_attr_list, "provision_complete")
-
             if self.get_ip_address(obj_attr_list) :
                 obj_attr_list["last_known_state"] = "running with ip assigned"
                 return True
@@ -914,6 +912,8 @@ class Ec2Cmds(CommonCloudFunctions) :
                 self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
 
                 obj_attr_list["host_name"] = "unknown"
+
+                self.take_action_if_requested("VM", obj_attr_list, "provision_finished")
 
                 if "instance_obj" in obj_attr_list : 
                     del obj_attr_list["instance_obj"]
@@ -1216,9 +1216,7 @@ class Ec2Cmds(CommonCloudFunctions) :
         '''
         try :
             _fmsg = "An error has occurred, but no error message was captured"
-
-            self.take_action_if_requested("AI", obj_attr_list, "all_vms_booted")
-
+            self.take_action_if_requested("AI", obj_attr_list, current_step)            
             _status = 0
 
         except Exception, msg :
@@ -1247,6 +1245,7 @@ class Ec2Cmds(CommonCloudFunctions) :
         '''
         try :
             _fmsg = "An error has occurred, but no error message was captured"
+            self.take_action_if_requested("AI", obj_attr_list, current_step)            
             _status = 0
 
         except Exception, msg :

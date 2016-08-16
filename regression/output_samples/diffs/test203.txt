@@ -1,0 +1,3 @@
+|simzone_X |15 |sut |simzone_X |xxx.xxx.xxx.xxx 
+|simzone_X |15 |lg |simzone_X |xxx.xxx.xxx.xxx 
+|Redis Version |3.0.6 

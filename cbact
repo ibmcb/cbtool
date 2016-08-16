@@ -495,10 +495,10 @@ def main(options) :
 
             if _obj_type.upper() == "AIDR" :
                 _obj_type = "AIDRS"
-                _status, _msg = _active_obj_command.aidsubmit(options.cn, _base_dir, _obj_type, _uuid)
+                _status, _fmsg = _active_obj_command.aidsubmit(options.cn, _base_dir, _obj_type, _uuid)
             elif _obj_type.upper() == "VMCR" :
                 _obj_type = "VMCRS"
-                _status, _msg = _active_obj_command.vmcrsubmit(options.cn, _base_dir, _obj_type, _uuid)
+                _status, _fmsg = _active_obj_command.vmcrsubmit(options.cn, _base_dir, _obj_type, _uuid)
             else :
                 _msg = "Unknown Submitter Type"
                 _status = 99
@@ -510,9 +510,9 @@ def main(options) :
 
             if _obj_type.upper() == "AIDR" :
                 _obj_type = "AIDRS"
-                _status, _msg = _active_obj_command.aidremove(options.cn, _base_dir, _obj_type, _uuid)
+                _status, _fmsg = _active_obj_command.aidremove(options.cn, _base_dir, _obj_type, _uuid)
             else :
-                _msg = "Unknown Remover Type"
+                _fmsg = "Unknown Remover Type"
                 _status = 99
 
         elif _operation.count("subscribe") :
@@ -526,7 +526,7 @@ def main(options) :
         elif _operation.count("api") :
             _local_process = True
             _obj_type = "GLOBAL"
-            _status, _msg = _passive_obj_command.run_api_service(_passive_obj_command, \
+            _status, _fmsg = _passive_obj_command.run_api_service(_passive_obj_command, \
                                                                  _active_obj_command, \
                                                                  _background_obj_command, \
                                                                  options.debug_host,
@@ -544,19 +544,19 @@ def main(options) :
         elif _operation.count("qemu") :
             _local_process = True
             _obj_type = "AI"
-            _status, _msg = _passive_obj_command.qemu_scraper(options.cn, options.ouuid)
+            _status, _fmsg = _passive_obj_command.qemu_scraper(options.cn, options.ouuid)
 
         elif _operation.count("watch") :
             _local_process = True
             _obj_type = "GLOBAL"
-            _status, _msg = _passive_obj_command.cloud_watch(options.cn, _uuid)
+            _status, _fmsg = _passive_obj_command.cloud_watch(options.cn, _uuid)
             _status = 0
 
         elif _operation.count("emit") :
             _local_process = True
             _uuid = options.ouuid            
             _obj_type = "AI"
-            _status, _msg = _passive_obj_command.performance_metrics_emitter(options.cn, _uuid)
+            _status, _fmsg = _passive_obj_command.performance_metrics_emitter(options.cn, _uuid)
             _status = 0
             
         elif _operation.count("execute") :
@@ -565,7 +565,7 @@ def main(options) :
             _local_process = False
             _uuid = options.ouuid
 
-            _status, _msg = _active_obj_command.aiexecute(options.cn, \
+            _status, _fmsg = _active_obj_command.aiexecute(options.cn, \
                                                           _obj_type, _uuid)
 
         elif _operation.count("migrate") or _operation.count("protect") :

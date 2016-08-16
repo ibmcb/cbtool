@@ -55,6 +55,7 @@ SIZE = from_vm_template
 TENANT = default
 LEAVE_INSTANCE_ON_FAILURE = $False
 FORCE_FAILURE = $False
+DISABLE_TIMESYNC = $False
 
 [AI_DEFAULTS : PLM_CLOUDCONFIG]
 ATTACH_PARALLELISM = 5
@@ -107,6 +108,7 @@ FILEBENCH = size:iron32, eclipsed_size:gold32, imageids:1, imageid1:cb_filebench
 DRIVER_FIO = size:nano32, imageids:1, imageid1:cb_fio
 FIO = size:iron32, imageids:1, imageid1:cb_fio
 TINYVM = size:pico32, imageids:1, imageid1:cb_nullworkload
+YATINYVM = size:pico32, imageids:1, imageid1:cb_nullworkload
 FEN_HPC = size:bronze32, imageids:1, imageid1:cb_hpc
 CN_HPC = size:bronze32, imageids:1, imageid1:cb_hpc
 DDGEN = size:bronze32, imageids:1, imageid1:cb_ddgen
@@ -119,3 +121,4 @@ CASSANDRA = size:silver32, eclipsed_size:gold32, imageid1:cb_ycsb
 SEED = size:silver32, eclipsed_size:gold32, imageid1:cb_ycsb
 REDIS = size:silver32, eclipsed_size:gold32, imageid1:cb_ycsb
 YCSB = size:silver32, eclipsed_size:gold32, imageid1:cb_ycsb
+UNIXBENCH = size:iron32, imageids:1, imageid1:cb_unixbench

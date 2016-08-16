@@ -1,4 +1,4 @@
-Background operation execution success. Operation "vmc-detach" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.0.4,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,password:cbpwdZ9,timeout:240,host:172.16.0.4,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,simzone_a,false --operation=vmc-detach --cn=TESTCLOUD --uuid=1F028D4C-1577-5210-86C2-40D7B7019B43 --daemon". The process id is 8977.
+Background operation execution success. Operation "vmc-detach" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.0.4,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,password:cbpwdZ9,timeout:240,host:172.16.0.4,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,simzone_a,false --operation=vmc-detach --cn=TESTCLOUD --uuid=944619D4-7D64-5BB1-A13A-3089E57B3426 --daemon". The process id is 3169.
 
 Going to unconditionally wait for 8s (8 seconds). The command line interface will be blocked during the waiting.
 Waited 1 seconds... (12.5%)
@@ -15,11 +15,11 @@ No objects available.
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |18.09M                        
+|Used Memory                                          |15.57M                        
 |Redis Version                                        |2.8.6                         
-|Uptime (in seconds)                                  |14435804                      
-|Total Connections Received                           |614738                        
-|Total Commands Processed                             |58672997                      
+|Uptime (in seconds)                                  |12856868                      
+|Total Connections Received                           |548652                        
+|Total Commands Processed                             |42637122                      
 |Number of Keys                                       |265                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         

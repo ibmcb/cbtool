@@ -25,7 +25,7 @@
 '''
 
 from subprocess import PIPE,Popen
-from time import sleep
+from time import sleep, time
 
 from lib.auxiliary.thread_pool import ThreadPool
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
@@ -37,7 +37,7 @@ class ProcessManagement :
     @trace
     def __init__(self, hostname = "127.0.0.1", port = "22", username = None, \
                  cloud_name = None, priv_key = None, config_file = None, \
-                 connection_timeout = None) :
+                 connection_timeout = None, osci = None) :
         '''
         TBD
         '''
@@ -49,6 +49,7 @@ class ProcessManagement :
         self.priv_key = priv_key
         self.config_file = config_file
         self.connection_timeout = connection_timeout
+        self.osci = osci
         self.thread_pools = {}
 
     @trace
@@ -65,7 +66,8 @@ class ProcessManagement :
 
     @trace
     def run_os_command(self, cmdline, override_hostname = None, really_execute = True, \
-                       debug_cmd = False, raise_exception = True, step = None, tell_me_if_stderr_contains = False) :
+                       debug_cmd = False, raise_exception = True, step = None, \
+                       tell_me_if_stderr_contains = False, port = 22, check_stderr_len = True) :
         '''
         TBD
         '''
@@ -78,6 +80,8 @@ class ProcessManagement :
             _local = True
         else :
             _local = False
+
+        _port = port
 
         if _local :     
             _cmd = cmdline
@@ -102,7 +106,8 @@ class ProcessManagement :
             else :
                 _connection_timeout = ''
 
-            _cmd = "ssh " 
+            _cmd = "ssh "
+            _cmd += " -p " + str(_port) + ' ' 
             _cmd += _priv_key 
             _cmd += _config_file 
             _cmd += _connection_timeout            
@@ -125,7 +130,13 @@ class ProcessManagement :
                 if not cmdline.count("--debug_host=localhost") :
 
                     _result = _proc_h.communicate()
-                    if _proc_h.returncode and len(_result[1]) :
+
+                    if check_stderr_len :
+                        _stderr_len = len(_result[1])
+                    else :
+                        _stderr_len = 1
+                    
+                    if _proc_h.returncode and _stderr_len :
                         _msg = "Error while executing the command line "
                         _msg += "\"" + cmdline + "\" (returncode = "
                         _msg += str(_proc_h.pid) + ") :" + str(_result[1])
@@ -179,13 +190,20 @@ class ProcessManagement :
                                  debug_cmd = False, \
                                  raise_exception_on_error = False, \
                                  step = None,
-                                 tell_me_if_stderr_contains = False) :
+                                 tell_me_if_stderr_contains = False, \
+                                 port = 22, \
+                                 remaining_time = 100000) :
         '''
         TBD
         '''
         _attempts = 0
 
-        while _attempts < int(total_attempts) :
+        _abort = "no"
+
+        _start = int(time())
+        _spent_time = 0
+        
+        while _attempts < int(total_attempts) and _abort != "yes" :
             try :
                 _status, _result_stdout, _result_stderr = self.run_os_command(cmdline, \
                                                                               override_hostname, \
@@ -193,7 +211,8 @@ class ProcessManagement :
                                                                               debug_cmd, \
                                                                               raise_exception_on_error, \
                                                                               step = step,
-                                                                              tell_me_if_stderr_contains = tell_me_if_stderr_contains)
+                                                                              tell_me_if_stderr_contains = tell_me_if_stderr_contains, \
+                                                                              port = port)
 
             except ProcessManagement.ProcessManagementException, obj :
                 if obj.status == "90001" :
@@ -210,6 +229,10 @@ class ProcessManagement :
                 cbdebug(_msg, True)
                 _attempts += 1
                 sleep(retry_interval)
+                _spent_time = int(time()) - _start
+                
+                if _spent_time > remaining_time :
+                    _abort = "yes"
             else :
                 break
 
@@ -223,19 +246,31 @@ class ProcessManagement :
             if raise_exception_on_error :
                 raise self.ProcessManagementException(str(_fmsg), _status)
 
-            return _status, _msg, {"status" : _status, "msg" : _msg, "result" : _status}
+            return _status, _fmsg, {"status" : _status, "msg" : _fmsg, "result" : _status}
         
         else :
-            _status = 0
-            _msg = "Command \"" + cmdline + "\" executed on hostname "
-            _msg += str(override_hostname) + " successfully."
-            cbdebug(_msg)
-            return _status, _msg, {"status" : _status, "msg" : _msg, "result" : _status}
+            if _abort != "yes" :
+                _status = 0
+                _msg = "Command \"" + cmdline + "\" executed on hostname "
+                _msg += str(override_hostname) + " successfully."
+                cbdebug(_msg)
+                return _status, _msg, {"status" : _status, "msg" : _msg, "result" : _status}
+            else :
+                _status = 8167
+                _fmsg = "Execution of command \"" + cmdline + "\", on hostname "
+                _fmsg += str(override_hostname) + " was aborted."
+                #_fmsg += "STDOUT is :\n" + str(_result_stdout) + '\n'
+                #_fmsg += "STDERR is :\n" + str(_result_stderr) + '\n'
+                cberr(_fmsg)
+                if raise_exception_on_error :
+                    raise self.ProcessManagementException(str(_fmsg), _status)
+    
+                return _status, _fmsg, {"status" : _status, "msg" : _fmsg, "result" : _status}
 
-    def parallel_run_os_command(self, cmdline_list, override_hostname_list, \
+    def parallel_run_os_command(self, cmdline_list, override_hostname_list, port_list, \
                                 total_attempts, retry_interval, \
                                 execute_parallelism, really_execute = True, \
-                                debug_cmd = False, step = None) :
+                                debug_cmd = False, step = None, remaining_time = 100000) :
         '''
         TBD
         '''
@@ -267,7 +302,10 @@ class ProcessManagement :
                                                       really_execute, \
                                                       debug_cmd, \
                                                       False, \
-                                                      step)
+                                                      step, \
+                                                      False, \
+                                                      port_list[_index], \
+                                                      remaining_time)
                     else :
                         _status = 0
                         _xfmsg = "OK"
@@ -286,7 +324,10 @@ class ProcessManagement :
                                               really_execute, \
                                               debug_cmd, \
                                               False, \
-                                              step)
+                                              step, \
+                                              False, \
+                                              port_list[_index], \
+                                              remaining_time)
 
             if _thread_pool and not serial_mode:
                 _xfmsg = ''

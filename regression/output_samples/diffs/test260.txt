@@ -1,0 +1,14 @@
+|arrival |1471275572 
+|command_originated |1471275569 
+|configuration_attempts |24 
+|current_load_duration |97 
+|current_load_level |4 
+|execute_parallelism |100 
+|execute_script_name |~/cloudbench/scenarios/scripts/openstack_multitenant.sh
+|first_app_run_finished |true 
+|load_manager_name |vm_27 
+|post_application_scripts_delay |0 
+|post_generic_scripts_delay |0 
+|pre_creation_delay |0 
+|pre_generic_scripts_delay |0 
+|vm_attach_action | 

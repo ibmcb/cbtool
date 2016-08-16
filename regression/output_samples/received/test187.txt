@@ -7,8 +7,8 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |admission_control                |vmc_max_reservations           |100000                               
 |admission_control                |vmcrs_max_reservations         |100000                               
 |ai_defaults                      |attach_parallelism             |5                                    
-|ai_defaults                      |attempts                       |24                                   
 |ai_defaults                      |capture_supported              |True                                 
+|ai_defaults                      |configuration_attempts         |24                                   
 |ai_defaults                      |create_performance_emitter     |True                                 
 |ai_defaults                      |credentials_dir                |/home/msilva/cloudbench/lib/auxiliary//../../credentials
 |ai_defaults                      |debug_remote_commands          |False                                
@@ -16,13 +16,17 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |ai_defaults                      |dont_start_load_manager        |False                                
 |ai_defaults                      |dont_start_qemu_scraper        |True                                 
 |ai_defaults                      |execute_json_filename_prefix   |cb                                   
-|ai_defaults                      |execute_parallelism            |6                                    
-|ai_defaults                      |execute_script_name            |execute_on_staging.sh                
+|ai_defaults                      |execute_parallelism            |100                                  
+|ai_defaults                      |execute_script_name            |~/cloudbench/scenarios/scripts/openstack_multitenant.sh
 |ai_defaults                      |log_output_command             |True                                 
 |ai_defaults                      |login                          |klabuser                             
 |ai_defaults                      |mode                           |controllable                         
 |ai_defaults                      |notification                   |False                                
 |ai_defaults                      |notification_channel           |auto                                 
+|ai_defaults                      |post_application_scripts_delay |0                                    
+|ai_defaults                      |post_generic_scripts_delay     |0                                    
+|ai_defaults                      |pre_creation_delay             |0                                    
+|ai_defaults                      |pre_generic_scripts_delay      |0                                    
 |ai_defaults                      |replicated_vms                 |0                                    
 |ai_defaults                      |resize_supported               |True                                 
 |ai_defaults                      |run_application_scripts        |False                                
@@ -36,6 +40,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |ai_defaults                      |update_attempts                |720                                  
 |ai_defaults                      |update_frequency               |1                                    
 |ai_defaults                      |username                       |msilva                               
+|ai_defaults                      |vm_attach_action               |                                     
 |ai_defaults                      |vm_creation                    |explicit                             
 |ai_defaults                      |vm_destruction                 |explicit                             
 |ai_templates                     |cassandra_ycsb_app_collection  |lazy                                 
@@ -513,6 +518,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |ai_templates                     |nullworkload_role_list         |tinyvm                               
 |ai_templates                     |nullworkload_start             |cb_run_nothing.sh                    
 |ai_templates                     |nullworkload_sut               |tinyvm                               
+|ai_templates                     |nullworkload_tinyvm_reset1     |cb_reset_nothing.sh                  
 |ai_templates                     |nullworkload_tinyvm_setup1     |cb_start_nothing.sh                  
 |ai_templates                     |nuttcp_capture_role            |nuttcpserver                         
 |ai_templates                     |nuttcp_description             | Deploys a pair of VMs (client and server) and then runs the nuttcp network benchmark, sending an unidirectional stream of packets between these.\n- LOAD_PROFILE possible values: "tcp" or "udp".\n- LOAD_LEVEL meaning: number of parallel client threads.\n- LOAD_DURATION meaning: maximum length of time to run.\n- COMMENT: One of the "Synthetic" Workloads.
@@ -628,6 +634,21 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |ai_templates                     |specjbb_specjbb_setup1         |cb_setup_specjbb.sh                  
 |ai_templates                     |specjbb_start                  |cb_specjbb.sh                        
 |ai_templates                     |specjbb_sut                    |specjbb                              
+|ai_templates                     |unixbench_capture_role         |unixbench                            
+|ai_templates                     |unixbench_description          | Deploys an SINGLE VM and runs the Index set of tests in UnixBench.\n
+|ai_templates                     |unixbench_load_balancer_supported|False                                
+|ai_templates                     |unixbench_load_duration        |60                                   
+|ai_templates                     |unixbench_load_generator_role  |unixbench                            
+|ai_templates                     |unixbench_load_level           |uniformIXIXI1I5                      
+|ai_templates                     |unixbench_load_manager_role    |unixbench                            
+|ai_templates                     |unixbench_load_profile         |default                              
+|ai_templates                     |unixbench_metric_aggregator_role|unixbench                            
+|ai_templates                     |unixbench_regenerate_data      |False                                
+|ai_templates                     |unixbench_reported_metrics     |num_cores,dhry_result,dhry_index,whet_result,whet_index,execl_result,execl_index,fc1024_result,fc1024_index,fc256_result,fc256_index,fc4096_result,fc4096_index,pipe_result,pipe_index,ctxt_result,ctxt_index,proc_result,proc_index,sh1_result,sh1_index,sh8_result,sh8_index,syso_result,syso_index,total_index,mc_dhry_result,mc_dhry_index,mc_whet_result,mc_whet_index,mc_execl_result,mc_execl_index,mc_fc1024_result,mc_fc1024_index,mc_fc256_result,mc_fc256_index,mc_fc4096_result,mc_fc4096_index,mc_pipe_result,mc_pipe_index,mc_ctxt_result,mc_ctxt_index,mc_proc_result,mc_proc_index,mc_sh1_result,mc_sh1_index,mc_sh8_result,mc_sh8_index,mc_syso_result,mc_syso_index,mc_total_index,errors,completion_time,quiescent_time
+|ai_templates                     |unixbench_resize_supported     |False                                
+|ai_templates                     |unixbench_role_list            |unixbench                            
+|ai_templates                     |unixbench_start                |cb_unixbench.sh                      
+|ai_templates                     |unixbench_sut                  |unixbench                            
 |ai_templates                     |windesktop_capture_role        |windows                              
 |ai_templates                     |windesktop_client_windows_setup1|cb_windesktop_setup.sh               
 |ai_templates                     |windesktop_description         | TBD                                 
@@ -665,7 +686,6 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |ai_templates                     |xping_sut                      |xpingsender->xpingreceiver           
 |ai_templates                     |xping_xpingreceiver_setup1     |cb_check_xping_receiver.sh           
 |ai_templates                     |xping_xpingsender_setup1       |cb_check_xping_sender.sh             
-|aidrs_defaults                   |attach_parallelism             |1                                    
 |aidrs_defaults                   |daemon_parallelism             |50                                   
 |aidrs_defaults                   |detach_parallelism             |20                                   
 |aidrs_defaults                   |login                          |klabuser                             
@@ -694,12 +714,24 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |aidrs_templates                  |simplefb_load_level            |1                                    
 |aidrs_templates                  |simplefb_max_ais               |8000                                 
 |aidrs_templates                  |simplefb_type                  |filebench                            
+|aidrs_templates                  |simplefi_iait                  |uniformIXIXI60I180                   
+|aidrs_templates                  |simplefi_lifetime              |uniformIXIXI500I600                  
+|aidrs_templates                  |simplefi_load_duration         |uniformIXIXI90I120                   
+|aidrs_templates                  |simplefi_load_level            |1                                    
+|aidrs_templates                  |simplefi_max_ais               |8000                                 
+|aidrs_templates                  |simplefi_type                  |fio                                  
 |aidrs_templates                  |simplehd_iait                  |uniformIXIXI120I180                  
 |aidrs_templates                  |simplehd_lifetime              |uniformIXIXI600I900                  
 |aidrs_templates                  |simplehd_load_duration         |uniformIXIXI90I120                   
 |aidrs_templates                  |simplehd_load_level            |uniformIXIXI1I10                     
 |aidrs_templates                  |simplehd_max_ais               |8000                                 
 |aidrs_templates                  |simplehd_type                  |hadoop                               
+|aidrs_templates                  |simpleip_iait                  |uniformIXIXI120I180                  
+|aidrs_templates                  |simpleip_lifetime              |uniformIXIXI500I600                  
+|aidrs_templates                  |simpleip_load_duration         |uniformIXIXI40I60                    
+|aidrs_templates                  |simpleip_load_level            |uniformIXIXI1I5                      
+|aidrs_templates                  |simpleip_max_ais               |8000                                 
+|aidrs_templates                  |simpleip_type                  |iperf                                
 |aidrs_templates                  |simplemlg2_iait                |uniformIXIXI60I180                   
 |aidrs_templates                  |simplemlg2_lifetime            |uniformIXIXI500I600                  
 |aidrs_templates                  |simplemlg2_load_duration       |uniformIXIXI40I60                    
@@ -718,25 +750,37 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |aidrs_templates                  |simplenp_load_level            |1                                    
 |aidrs_templates                  |simplenp_max_ais               |8000                                 
 |aidrs_templates                  |simplenp_type                  |netperf                              
+|aidrs_templates                  |simplenu_iait                  |uniformIXIXI120I180                  
+|aidrs_templates                  |simplenu_lifetime              |uniformIXIXI500I600                  
+|aidrs_templates                  |simplenu_load_duration         |uniformIXIXI40I60                    
+|aidrs_templates                  |simplenu_load_level            |uniformIXIXI1I5                      
+|aidrs_templates                  |simplenu_max_ais               |8000                                 
+|aidrs_templates                  |simplenu_type                  |nuttcp                               
 |aidrs_templates                  |simplenw_iait                  |30                                   
 |aidrs_templates                  |simplenw_lifetime              |uniformIXIXI200I300                  
 |aidrs_templates                  |simplenw_load_duration         |uniformIXIXI40I60                    
 |aidrs_templates                  |simplenw_load_level            |uniformIXIXI1I3                      
 |aidrs_templates                  |simplenw_max_ais               |8000                                 
 |aidrs_templates                  |simplenw_type                  |nullworkload                         
+|aidrs_templates                  |simplexp_iait                  |uniformIXIXI120I180                  
+|aidrs_templates                  |simplexp_lifetime              |uniformIXIXI500I600                  
+|aidrs_templates                  |simplexp_load_duration         |uniformIXIXI40I60                    
+|aidrs_templates                  |simplexp_load_level            |uniformIXIXI1I5                      
+|aidrs_templates                  |simplexp_max_ais               |8000                                 
+|aidrs_templates                  |simplexp_type                  |xping                                
 |aidrs_templates                  |simpleyc_iait                  |uniformIXIXI120I180                  
 |aidrs_templates                  |simpleyc_lifetime              |uniformIXIXI600I900                  
 |aidrs_templates                  |simpleyc_load_duration         |60                                   
 |aidrs_templates                  |simpleyc_load_level            |4                                    
 |aidrs_templates                  |simpleyc_max_ais               |8000                                 
 |aidrs_templates                  |simpleyc_type                  |cassandra_ycsb                       
-|api_defaults                     |hostname                       |9.2.208.228                          
+|api_defaults                     |hostname                       |9.2.208.21                           
 |api_defaults                     |parameters                     |                                     
 |api_defaults                     |port                           |7070                                 
 |api_defaults                     |protocol                       |TCP                                  
 |api_defaults                     |remote                         |False                                
 |api_defaults                     |username                       |msilva                               
-|dash_defaults                    |dashboard_parameters           |dashboard?kb2mb=no&failedvm=yes&4k2mb=no&b2mb=no&p=yes&h=yes&s=yes&a=yes&filter=s-vmc_name,s-vms,h-type,h-vmc_name,a-vmc_name,h-aidrs_name,h-size,h-age,h-host_name,h-ai_name,h-role,p-vms,a-vms,p-latest_update
+|dash_defaults                    |dashboard_parameters           |monitor?kb2mb=no&failedvm=yes&4k2mb=no&b2mb=no&p=yes&h=yes&s=yes&a=yes&filter=s-vmc_name,s-vms,h-type,h-vmc_name,a-vmc_name,h-aidrs_name,h-size,h-age,h-host_name,h-ai_name,h-role,p-vms,a-vms,p-latest_update
 |fi_templates                     |cinder-api-kp_fault            |pkill -9 -U cinder__-f cinder-api    
 |fi_templates                     |cinder-api-kp_repair           |                                     
 |fi_templates                     |cinder-api-ss_fault            |service cinder-api stop              
@@ -840,7 +884,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |fi_templates                     |stonith_fault                  |echo b > /proc/sysrq-trigger         
 |fi_templates                     |stonith_repair                 |                                     
 |filestore                        |config_string                  |portREPLEQUALREPLPORT;lock_fileREPLEQUALREPLSTORESWORKINGDIR/REPLUSERUrsync.lock;log_fileREPLEQUALREPLLOGDIR/REPLUSERUrsyncd.log;pid_fileREPLEQUALREPLSTORESWORKINGDIR/REPLUSERUrsyncd.pid;[REPLUSERUcb];____pathREPLEQUALREPLBASEDIR;____uidREPLEQUALREPLUSER;____gidREPLEQUALREPLUSER;____read_onlyREPLEQUALno;____listREPLEQUALyes
-|filestore                        |hostname                       |172.16.0.4                           
+|filestore                        |hostname                       |9.2.208.21                           
 |filestore                        |kind                           |rsync                                
 |filestore                        |port                           |10000                                
 |filestore                        |protocol                       |TCP                                  
@@ -878,7 +922,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |logstore                         |attach_facility                |16                                   
 |logstore                         |attachall_facility             |16                                   
 |logstore                         |capture_facility               |16                                   
-|logstore                         |config_string                  |DOLLARModLoad_imudp.so;DOLLARUDPServerRun_REPLPORT;DOLLARActionFileDefaultTemplate_RSYSLOGTraditionalFileFormat;DOLLAREscapeControlCharactersOnReceive_off;*.info--mail.none--authpriv.none--cron.none________________REPLLOGDIR/REPLUSERmessages;authpriv.*______________________________________________REPLLOGDIR/REPLUSERsecure;mail.*__________________________________________________REPLLOGDIR/REPLUSERmaillog;cron.*__________________________________________________REPLLOGDIR/REPLUSERcron;*.emerg_________________________________________________*;uucp,news.crit__________________________________________REPLLOGDIR/REPLUSERspooler;local0.*________________________________________________REPLLOGDIR/REPLUSERoperations.log;local1.*________________________________________________REPLLOGDIR/REPLUSERreport.log;local2.*________________________________________________REPLLOGDIR/REPLUSERsubmmiter.log;local3.*________________________________________________REPLLOGDIR/REPLUSERloadmanager.log;local4.*________________________________________________REPLLOGDIR/REPLUSERgui.log;local5.*________________________________________________REPLLOGDIR/REPLUSERremotescripts.log;local6.*________________________________________________REPLLOGDIR/REPLUSERmonitor.log;local7.*________________________________________________REPLLOGDIR/REPLUSERsubscribe.log
+|logstore                         |config_string                  |DOLLARModLoad_imudp.so;DOLLARUDPServerRun_REPLPORT;DOLLARActionFileDefaultTemplate_RSYSLOGTraditionalFileFormat;DOLLAREscapeControlCharactersOnReceive_off;*.info--mail.none--authpriv.none--cron.none________________REPLLOGDIR/REPLUSERmessages;authpriv.*______________________________________________REPLLOGDIR/REPLUSERsecure;mail.*__________________________________________________REPLLOGDIR/REPLUSERmaillog;cron.*__________________________________________________REPLLOGDIR/REPLUSERcron;*.emerg_________________________________________________:omusrmsg:*;uucp,news.crit__________________________________________REPLLOGDIR/REPLUSERspooler;local0.*________________________________________________REPLLOGDIR/REPLUSERoperations.log;local1.*________________________________________________REPLLOGDIR/REPLUSERreport.log;local2.*________________________________________________REPLLOGDIR/REPLUSERsubmmiter.log;local3.*________________________________________________REPLLOGDIR/REPLUSERloadmanager.log;local4.*________________________________________________REPLLOGDIR/REPLUSERgui.log;local5.*________________________________________________REPLLOGDIR/REPLUSERremotescripts.log;local6.*________________________________________________REPLLOGDIR/REPLUSERmonitor.log;local7.*________________________________________________REPLLOGDIR/REPLUSERsubscribe.log
 |logstore                         |console_facility               |16                                   
 |logstore                         |detach_facility                |16                                   
 |logstore                         |emit_facility                  |23                                   
@@ -886,7 +930,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |logstore                         |expid_change_restart           |False                                
 |logstore                         |fail_facility                  |16                                   
 |logstore                         |gui_facility                   |20                                   
-|logstore                         |hostname                       |172.16.0.4                           
+|logstore                         |hostname                       |9.2.208.21                           
 |logstore                         |just_restarted                 |True                                 
 |logstore                         |kind                           |syslog                               
 |logstore                         |migrate_facility               |16                                   
@@ -910,7 +954,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |logstore                         |watch_facility                 |17                                   
 |metricstore                      |config_string                  |logpath--REPLSTORESWORKINGDIR/logs/mongod.log;logappend--true;fork--true;port--REPLPORT;dbpath--REPLSTORESWORKINGDIR
 |metricstore                      |database                       |metrics                              
-|metricstore                      |host                           |172.16.0.4                           
+|metricstore                      |host                           |9.2.208.21                           
 |metricstore                      |kind                           |mongodb                              
 |metricstore                      |password                       |cbpwdZ9                              
 |metricstore                      |port                           |27017                                
@@ -920,14 +964,15 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |metricstore                      |username                       |msilva                               
 |mon_defaults                     |app_m                          |app_load_id,app_load_profile,app_load_level,app_datagen_size,app_datagen_time,app_throughput,app_latency,app_bandwidth,app_errors,app_completion_time,app_sla_runtime
 |mon_defaults                     |cap_m                          |mgt_101_capture_request_originated,mgt_102_capture_request_sent,mgt_103_capture_request_completed
+|mon_defaults                     |cloud_base_m                   |procstat_base-apache2_cpu,procstat_base-apache2_mem,procstat_base-dnsmasq_cpu,procstat_base-dnsmasq_mem,procstat_base-libvirtd_cpu,procstat_base-libvirtd_mem,procstat_base-mysqld_cpu,procstat_base-mysqld_mem,procstat_base-openvswitch_cpu,procstat_base-openvswitch_mem,procstat_base-openvswitch-db_cpu,procstat_base-openvswitch-db_mem,procstat_base-ovn-controller_cpu,procstat_base-ovn-controller_mem
 |mon_defaults                     |collect_from_guest             |False                                
 |mon_defaults                     |collect_from_host              |False                                
-|mon_defaults                     |collector_aggregator_host_address|9.2.208.228                          
+|mon_defaults                     |collector_aggregator_host_address|9.2.208.21                           
 |mon_defaults                     |collector_executable_path_suffix|3rd_party/monitor-core/gmetad-python/gmetad.py
-|mon_defaults                     |collector_host_aggregator_port |8651                                 
+|mon_defaults                     |collector_host_aggregator_port |8653                                 
 |mon_defaults                     |collector_host_multicast_port  |8650                                 
 |mon_defaults                     |collector_host_port            |8649                                 
-|mon_defaults                     |collector_host_summarizer_port |8652                                 
+|mon_defaults                     |collector_host_summarizer_port |8653                                 
 |mon_defaults                     |collector_kind                 |ganglia                              
 |mon_defaults                     |collector_multicast_ip         |239.2.11.71                          
 |mon_defaults                     |collector_plugins_dir_suffix   |3rd_party/monitor-core/gmetad-python/plugins
@@ -937,36 +982,37 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |mon_defaults                     |collector_vm_port              |8650                                 
 |mon_defaults                     |collector_vm_summarizer_port   |8652                                 
 |mon_defaults                     |cpu_m                          |cpu_speed,cores,cpu_num,proc_total,proc_run,cpu_idle,cpu_aidle,cpu_user,cpu_system,cpu_wio,cpu_nice
-|mon_defaults                     |crt_m                          |mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_instance_preparation,mgt_007_application_start
+|mon_defaults                     |crt_m                          |mgt_001_provisioning_request_originated_abs,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_instance_preparation,mgt_007_application_start
 |mon_defaults                     |dsk_m                          |disk_total,disk_free,ds_in_flight,ds_KB_read,ds_ios_read,ds_KB_write,ds_ios_write
 |mon_defaults                     |dst_m                          |mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed
 |mon_defaults                     |filler_string                  |NA                                   
 |mon_defaults                     |flr_m                          |mgt_999_provisioning_request_failed  
 |mon_defaults                     |host_attributes                |uuid,name,cloud_ip,cloud_name,model,cloud_hostname,nr_vms
-|mon_defaults                     |host_management_metrics_header |uuid,name,cloud_ip,model,vmc_name,vmc_cloud_ip,total_ai_provisioning_time,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_instance_preparation,mgt_007_application_start,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed
+|mon_defaults                     |host_management_metrics_header |uuid,name,cloud_ip,model,vmc_name,vmc_cloud_ip,total_ai_provisioning_time,mgt_001_provisioning_request_originated_abs,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_instance_preparation,mgt_007_application_start,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed
 |mon_defaults                     |host_runtime_os_metrics_header |time,time_h,uuid,name,cpu_speed,cores,cpu_num,proc_total,proc_run,cpu_idle,cpu_aidle,cpu_user,cpu_system,cpu_wio,cpu_nice,mem_total,mem_free,mem_cached,mem_buffers,mem_shared,swap_total,swap_free,swap_procs_running,swap_in_flight,swap_procs_blocked,swap_KB_read,swap_ios_read,swap_KB_write,swap_ios_write,pkts_in,bytes_in,pkts_out,bytes_out,disk_total,disk_free,ds_in_flight,ds_KB_read,ds_ios_read,ds_KB_write,ds_ios_write
 |mon_defaults                     |hs_id1                         |uuid,name,cloud_ip,model,vmc_name,vmc_cloud_ip,total_ai_provisioning_time
 |mon_defaults                     |hs_id2                         |uuid,name                            
 |mon_defaults                     |mem_m                          |mem_total,mem_free,mem_cached,mem_buffers,mem_shared
 |mon_defaults                     |net_m                          |pkts_in,bytes_in,pkts_out,bytes_out  
+|mon_defaults                     |openstack_m                    |procstat_ceilometer-agent-central_cpu,procstat_ceilometer-agent-central_mem,procstat_ceilometer-agent-compute_cpu,procstat_ceilometer-agent-compute_mem,procstat_ceilometer-agent-notification_cpu,procstat_ceilometer-agent-notification_mem,procstat_ceilometer-alarm-evaluator_cpu,procstat_ceilometer-alarm-evaluator_mem,procstat_ceilometer-alarm-notifier_cpu,procstat_ceilometer-alarm-notifier_mem,procstat_ceilometer-api_cpu,procstat_ceilometer-api_mem,procstat_ceilometer-collector_cpu,procstat_ceilometer-collector_mem,procstat_cinder-api_cpu,procstat_cinder-api_mem,procstat_cinder-scheduler_cpu,procstat_cinder-scheduler_mem,procstat_cinder-volume_cpu,procstat_cinder-volume_mem,procstat_glance-api_cpu,procstat_glance-api_mem,procstat_glance-registry_cpu,procstat_glance-registry_mem,procstat_heat-api-cfn_cpu,procstat_heat-api-cfn_mem,procstat_heat-api-cloudwatch_cpu,procstat_heat-api-cloudwatch_mem,procstat_heat-api_cpu,procstat_heat-api_mem,procstat_heat-engine_cpu,procstat_heat-engine_mem,procstat_keystone_cpu,procstat_keystone_mem,procstat_neutron-dhcp-agent_cpu,procstat_neutron-dhcp-agent_mem,procstat_neutron-l3-agent_cpu,procstat_neutron-l3-agent_mem,procstat_neutron-lbaas-agent_cpu,procstat_neutron-lbaas-agent_mem,procstat_neutron-metadata-agent_cpu,procstat_neutron-metadata-agent_mem,procstat_neutron-ns-metadata-proxy_cpu,procstat_neutron-ns-metadata-proxy_mem,procstat_neutron-openvswitch-agent_cpu,procstat_neutron-openvswitch-agent_mem,procstat_neutron-server_cpu,procstat_neutron-server_mem,procstat_neutron-vpn-agent_cpu,procstat_neutron-vpn-agent_mem,procstat_nova-api_cpu,procstat_nova-api_mem,procstat_nova-cert_cpu,procstat_nova-cert_mem,procstat_nova-compute_cpu,procstat_nova-compute_mem,procstat_nova-conductor_cpu,procstat_nova-conductor_mem,procstat_nova-novncproxy_cpu,procstat_nova-novncproxy_mem,procstat_nova-scheduler_cpu,procstat_nova-scheduler_mem
 |mon_defaults                     |protocol                       |TCP                                  
-|mon_defaults                     |reported_management_vm_metric_names|uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,tenant,netname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,utc_offset_delta,comments,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_instance_preparation,mgt_007_application_start,mgt_101_capture_request_originated,mgt_102_capture_request_sent,mgt_103_capture_request_completed,mgt_201_runstate_request_originated,mgt_202_runstate_request_sent,mgt_203_runstate_request_completed,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed,mgt_999_provisioning_request_failed
+|mon_defaults                     |reported_management_vm_metric_names|uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,tenant,netname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,utc_offset_delta,abort,comments,mgt_001_provisioning_request_originated_abs,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_instance_preparation,mgt_007_application_start,mgt_101_capture_request_originated,mgt_102_capture_request_sent,mgt_103_capture_request_completed,mgt_201_runstate_request_originated,mgt_202_runstate_request_sent,mgt_203_runstate_request_completed,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed,mgt_999_provisioning_request_failed
 |mon_defaults                     |reported_runtime_app_vm_metric_names|app_load_id,app_load_profile,app_load_level,app_datagen_size,app_datagen_time,app_throughput,app_latency,app_bandwidth,app_errors,app_completion_time
 |mon_defaults                     |reported_runtime_os_host_metric_names|cpu_speed,cores,cpu_num,proc_total,proc_run,cpu_idle,cpu_aidle,cpu_user,cpu_system,cpu_wio,cpu_nice,mem_total,mem_free,mem_cached,mem_buffers,mem_shared,swap_total,swap_free,swap_procs_running,swap_in_flight,swap_procs_blocked,swap_KB_read,swap_ios_read,swap_KB_write,swap_ios_write,pkts_in,bytes_in,pkts_out,bytes_out,disk_total,disk_free,ds_in_flight,ds_KB_read,ds_ios_read,ds_KB_write,ds_ios_write
 |mon_defaults                     |reported_runtime_os_vm_metric_names|cpu_speed,cores,cpu_num,proc_total,proc_run,cpu_idle,cpu_aidle,cpu_user,cpu_system,cpu_wio,cpu_nice,mem_total,mem_free,mem_cached,mem_buffers,mem_shared,swap_total,swap_free,swap_procs_running,swap_in_flight,swap_procs_blocked,swap_KB_read,swap_ios_read,swap_KB_write,swap_ios_write,pkts_in,bytes_in,pkts_out,bytes_out,disk_total,disk_free,ds_in_flight,ds_KB_read,ds_ios_read,ds_KB_write,ds_ios_write
 |mon_defaults                     |rst_m                          |mgt_201_runstate_request_originated,mgt_202_runstate_request_sent,mgt_203_runstate_request_completed
 |mon_defaults                     |swap_m                         |swap_total,swap_free,swap_procs_running,swap_in_flight,swap_procs_blocked,swap_KB_read,swap_ios_read,swap_KB_write,swap_ios_write
 |mon_defaults                     |timeout                        |240                                  
-|mon_defaults                     |timeserver                     |9.2.208.228                          
+|mon_defaults                     |timeserver                     |9.2.208.21                           
 |mon_defaults                     |trace_attributes               |command_originated,command,name,vmc_arrived,vmc_issued,vmc_departed,vmc_failed,vm_issued,vm_reservations,vm_arrived,vm_arriving,vm_departed,vm_failed,ai_issued,ai_reservations,ai_arrived,ai_arriving,ai_departed,ai_failed
 |mon_defaults                     |trace_header                   |command_originated,command,name,vmc_arrived,vmc_issued,vmc_departed,vmc_failed,vm_issued,vm_reservations,vm_arrived,vm_arriving,vm_departed,vm_failed,ai_issued,ai_reservations,ai_arrived,ai_arriving,ai_departed,ai_failed
 |mon_defaults                     |tstamp_app                     |time,time_h,time_cbtool,time_cbtool_h
 |mon_defaults                     |tstamp_os                      |time,time_h                          
 |mon_defaults                     |username                       |msilva                               
-|mon_defaults                     |vm_attributes                  |uuid,name,cloud_ip,last_known_state,cloud_name,model,cloud_hostname,vmc_name,vmc_cloud_ip,host_name,host_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,utc_offset_delta,tenant,netname,total_ai_provisioning_time
-|mon_defaults                     |vm_id1                         |uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,tenant,netname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,utc_offset_delta,comments
+|mon_defaults                     |vm_attributes                  |uuid,name,cloud_ip,last_known_state,cloud_name,model,cloud_hostname,vmc_name,vmc_cloud_ip,host_name,host_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,utc_offset_delta,tenant,netname,total_ai_provisioning_time,comments,abort
+|mon_defaults                     |vm_id1                         |uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,tenant,netname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,utc_offset_delta,abort,comments
 |mon_defaults                     |vm_id2                         |uuid,name,role,ai_name,type,host_name,aidrs_name,sla_provisioning
-|mon_defaults                     |vm_management_metrics_header   |uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,tenant,netname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,utc_offset_delta,comments,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_instance_preparation,mgt_007_application_start,mgt_101_capture_request_originated,mgt_102_capture_request_sent,mgt_103_capture_request_completed,mgt_201_runstate_request_originated,mgt_202_runstate_request_sent,mgt_203_runstate_request_completed,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed,mgt_999_provisioning_request_failed
+|mon_defaults                     |vm_management_metrics_header   |uuid,name,last_known_state,cloud_ip,cloud_name,model,cloud_hostname,tenant,netname,host_name,host_cloud_ip,vmc_name,vmc_cloud_ip,role,size,imageid1,ai,ai_name,type,aidrs,aidrs_name,pattern,utc_offset_delta,abort,comments,mgt_001_provisioning_request_originated_abs,mgt_001_provisioning_request_originated,mgt_002_provisioning_request_sent,mgt_003_provisioning_request_completed,mgt_004_network_acessible,mgt_005_file_transfer,mgt_006_instance_preparation,mgt_007_application_start,mgt_101_capture_request_originated,mgt_102_capture_request_sent,mgt_103_capture_request_completed,mgt_201_runstate_request_originated,mgt_202_runstate_request_sent,mgt_203_runstate_request_completed,mgt_901_deprovisioning_request_originated,mgt_902_deprovisioning_request_sent,mgt_903_deprovisioning_request_completed,mgt_999_provisioning_request_failed
 |mon_defaults                     |vm_runtime_app_metrics_header  |time,time_h,time_cbtool,time_cbtool_h,uuid,name,role,ai_name,type,host_name,aidrs_name,sla_provisioning,app_load_id,app_load_profile,app_load_level,app_datagen_size,app_datagen_time,app_throughput,app_latency,app_bandwidth,app_errors,app_completion_time,app_sla_runtime
 |mon_defaults                     |vm_runtime_os_metrics_header   |time,time_h,uuid,name,role,ai_name,type,host_name,aidrs_name,sla_provisioning,cpu_speed,cores,cpu_num,proc_total,proc_run,cpu_idle,cpu_aidle,cpu_user,cpu_system,cpu_wio,cpu_nice,mem_total,mem_free,mem_cached,mem_buffers,mem_shared,swap_total,swap_free,swap_procs_running,swap_in_flight,swap_procs_blocked,swap_KB_read,swap_ios_read,swap_KB_write,swap_ios_write,pkts_in,bytes_in,pkts_out,bytes_out,disk_total,disk_free,ds_in_flight,ds_KB_read,ds_ios_read,ds_KB_write,ds_ios_write
 |query                            |ai                             |BYUSERNAME,BYTYPE,BYAIDRS            
@@ -999,32 +1045,35 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |space                            |tracefile                      |regression/regression_test_experiment_plan.txt
 |space                            |username                       |msilva                               
 |space                            |vm_daemon_dir                  |/home/klabuser                       
-|time                             |experiment_id                  |EXP-02-22-2016-11-13-15-PM-UTC       
+|time                             |experiment_id                  |EXP-08-15-2016-03-35-39-PM-UTC       
 |time                             |external_timeout               |30                                   
 |time                             |external_tries                 |2                                    
 |time                             |hard_reset                     |True                                 
 |time                             |internal_tries                 |2                                    
-|time                             |start_time                     |1456182794                           
+|time                             |start_time                     |1471275339                           
 |time                             |step_delay                     |5                                    
 |time                             |username                       |msilva                               
+|vm_defaults                      |abort                          |False                                
 |vm_defaults                      |access                         |                                     
 |vm_defaults                      |alternative_remote_mtu         |False                                
 |vm_defaults                      |alternative_remote_mtu_default |1200                                 
 |vm_defaults                      |alternative_remote_mtu_interface|default                              
-|vm_defaults                      |attempts                       |24                                   
 |vm_defaults                      |capture_supported              |True                                 
 |vm_defaults                      |check_boot_complete            |wait_for_0                           
 |vm_defaults                      |check_boot_started             |poll_cloud                           
 |vm_defaults                      |client_pref_pool               |lg                                   
+|vm_defaults                      |comments                       |                                     
 |vm_defaults                      |create_jumphost                |False                                
 |vm_defaults                      |credentials                    |                                     
 |vm_defaults                      |credentials_dir                |/home/msilva/cloudbench/lib/auxiliary//../../credentials
 |vm_defaults                      |debug_remote_commands          |False                                
 |vm_defaults                      |detach_parallelism             |20                                   
+|vm_defaults                      |disable_timesync               |False                                
 |vm_defaults                      |driver_pref_pool               |lg                                   
 |vm_defaults                      |eclipsed                       |False                                
+|vm_defaults                      |errors                         |no                                   
 |vm_defaults                      |execute_json_filename_prefix   |cb                                   
-|vm_defaults                      |execute_script_name            |execute_on_staging.sh                
+|vm_defaults                      |execute_script_name            |~/cloudbench/scenarios/scripts/openstack_multitenant.sh
 |vm_defaults                      |expected_mtu                   |1500                                 
 |vm_defaults                      |extra_info                     |                                     
 |vm_defaults                      |force_failure                  |False                                
@@ -1044,10 +1093,12 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |vm_defaults                      |notification_channel           |auto                                 
 |vm_defaults                      |pct_failure                    |                                     
 |vm_defaults                      |placement                      |random                               
+|vm_defaults                      |pre_creation_delay             |0                                    
 |vm_defaults                      |protect_protocol               |tcp                                  
 |vm_defaults                      |protect_protocol_supported     |tcp,rdma                             
 |vm_defaults                      |qemu_debug                     |False                                
 |vm_defaults                      |randomize_image_name           |False                                
+|vm_defaults                      |recreate_attempts              |1                                    
 |vm_defaults                      |remote_dir_name                |cloudbench                           
 |vm_defaults                      |resize_supported               |False                                
 |vm_defaults                      |run_generic_scripts            |False                                
@@ -1055,6 +1106,8 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |vm_defaults                      |runstate_supported             |True                                 
 |vm_defaults                      |security_groups                |                                     
 |vm_defaults                      |size                           |from_vm_template                     
+|vm_defaults                      |sla_provisioning_abort         |False                                
+|vm_defaults                      |sla_runtime                    |ok                                   
 |vm_defaults                      |ssh_key_name                   |cbtool_rsa                           
 |vm_defaults                      |sticky_app_status              |False                                
 |vm_defaults                      |tenant                         |default                              
@@ -1067,6 +1120,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |vm_defaults                      |use_vpn_ip                     |False                                
 |vm_defaults                      |userdata                       |False                                
 |vm_defaults                      |username                       |msilva                               
+|vm_defaults                      |vpn_config_file                |/home/msilva/cloudbench/lib/auxiliary//../../configs/generated/TESTCLOUD_client-cb-openvpn.conf
 |vm_defaults                      |vpn_only                       |False                                
 |vm_templates                     |cassandra                      |size:platinum64,imageid1:cb_speccloud_cassandra,login:cbuser,remote_dir_name:cbtool
 |vm_templates                     |client_daytrader               |size:micro32,imageids:1,imageid1:cb_daytrader
@@ -1086,8 +1140,7 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |vm_templates                     |faildb2                        |size:copper32,imageid1:cloudbench_root
 |vm_templates                     |fen_hpc                        |size:bronze32,imageids:1,imageid1:cb_hpc
 |vm_templates                     |filebench                      |size:iron32,eclipsed_size:gold32,imageids:1,imageid1:cb_filebench
-|vm_templates                     |fioclient                      |size:iron32,imageids:1,imageid1:cb_fio
-|vm_templates                     |fioserver                      |size:iron32,eclipsed_size:gold32,imageids:1,imageid1:cb_fio
+|vm_templates                     |fio                            |size:iron32,imageids:1,imageid1:cb_fio
 |vm_templates                     |geronimo                       |size:iron32,eclipsed_size:gold32,imageids:1,imageid1:cb_daytrader
 |vm_templates                     |giraphpmaster                  |size:copper32,eclipsed_size:gold32,imageids:1,imageid1:cb_giraph
 |vm_templates                     |giraphslave                    |size:iron32,eclipsed_size:gold32,imageids:1,imageid1:cb_giraph
@@ -1109,11 +1162,13 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |vm_templates                     |seed                           |size:platinum64,imageid1:cb_speccloud_cassandra,login:cbuser,remote_dir_name:cbtool
 |vm_templates                     |specjbb                        |size:iron32,eclipsed_size:gold32,imageids:1,imageid1:cb_specjbb
 |vm_templates                     |tinyvm                         |size:pico32,imageids:1,imageid1:cb_nullworkload
+|vm_templates                     |unixbench                      |size:iron32,imageids:1,imageid1:cb_fio
 |vm_templates                     |was                            |size:iron32,eclipsed_size:gold32,imageids:1,imageid1:cb_daytrader
 |vm_templates                     |willfail                       |size:nano32,imageid1:doesnotmatter   
 |vm_templates                     |windows                        |size:iron32,imageids:1,imageid1:cb_windows
 |vm_templates                     |xpingreceiver                  |size:iron32,imageids:1,imageid1:cb_xping
 |vm_templates                     |xpingsender                    |size:iron32,imageids:1,imageid1:cb_xping
+|vm_templates                     |yatinyvm                       |size:pico32,imageids:1,imageid1:cb_nullworkload
 |vm_templates                     |ycsb                           |size:platinum64,imageid1:cb_speccloud_cassandra,login:cbuser,remote_dir_name:cbtool
 |vmc_defaults                     |access                         |                                     
 |vmc_defaults                     |additional_discovery           |                                     
@@ -1165,10 +1220,12 @@ The GLOBAL object cloud_TESTCLOUD, attached to this experiment, has the followin
 |vmcrs_templates                  |scapnw_scope                   |nullworkload                         
 |vpn                              |address_range_doc              |(Optional)ChooseanaddressrangefortheOpenVPN\nnetworktooperateon.
 |vpn                              |kind                           |OpenVPN                              
+|vpn                              |management_ip                  |127.0.0.1                            
+|vpn                              |management_port                |1195                                 
 |vpn                              |netmask                        |255.255.0.0                          
 |vpn                              |network                        |192.168.0.0                          
 |vpn                              |server_bootstrap               |192.168.0.1                          
-|vpn                              |server_ip                      |9.2.208.228                          
+|vpn                              |server_ip                      |9.2.208.21                           
 |vpn                              |server_ip_doc                  |(Optional)Ifyourcloudnetworkisprivate,\nbutyourCBinstallationisonadifferentnetwork,\nthetoolhastheabilitytoinstruct\ntheVMstouseanOpenVPNserver\ntocontrolthevirtualmachines.\nThisaddressistheexternallyreachableaddress\nwheretheOpenVPNserverwillrun
 |vpn                              |server_port                    |1194                                 
 |vpn                              |start_server                   |False                                

@@ -35,6 +35,7 @@ DESCRIPTION += workload on the VM, both Guest OS (actual) and Application
 DESCRIPTION += metrics are reported back to CB's Metric Store, makes it
 DESCRIPTION += also an interesting "sanity check" workload.
 TINYVM_SETUP1 = cb_start_nothing.sh
+TINYVM_RESET1 = cb_reset_nothing.sh
 START = cb_run_nothing.sh
 
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional

@@ -1,0 +1,8 @@
+|host_simhostX |simzone_X |hypervisor |POOL |simhostX |xxx.xxx.xxx.xxx 
+|host_simhostX |simzone_X |controller |POOL |simhostX |xxx.xxx.xxx.xxx 
+|host_simhostX |simzone_X |controller |POOL |simhostX |xxx.xxx.xxx.xxx 
+|host_simhostX |simzone_X |hypervisor |POOL |simhostX |xxx.xxx.xxx.xxx 
+|host_simhostX |simzone_X |hypervisor |POOL |simhostX |xxx.xxx.xxx.xxx 
+|host_simhostX |simzone_X |controller |POOL |simhostX |xxx.xxx.xxx.xxx 
+|host_simhostX |simzone_X |hypervisor |POOL |simhostX |xxx.xxx.xxx.xxx 
+|host_simhostX |simzone_X |controller |POOL |simhostX |xxx.xxx.xxx.xxx 

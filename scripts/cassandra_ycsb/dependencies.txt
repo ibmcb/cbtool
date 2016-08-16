@@ -27,9 +27,9 @@ ycsb-install = git
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
-oraclejava-configure = java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g'
+oraclejava-configure = java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g' | sed 's/-internal//g'
 oracle-java-home-configure = cat .bashrc | grep -c latest
-java-configure = java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g'
+java-configure = java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g' | sed 's/-internal//g'
 java-home-configure = cat ~/.bashrc | grep -c openjdk
 cassandra-configure = which cassandra
 cassandra-tools-configure = which token-generator

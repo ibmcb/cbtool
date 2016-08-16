@@ -85,6 +85,7 @@ TENANT = default
 SIZE = from_vm_template
 LEAVE_INSTANCE_ON_FAILURE = $False
 FORCE_FAILURE = $False
+DISABLE_TIMESYNC = $False
 
 [AI_DEFAULTS : SCP_CLOUDCONFIG]
 ATTACH_PARALLELISM = 2
@@ -145,6 +146,7 @@ FILEBENCH = size:small, imageid1:cb_filebench
 DRIVER_FIO = size:medium, imageid1:cb_fio
 FIO = size:medium, imageid1:cb_fio
 TINYVM = size:xsmall, imageid1:cb_nullworkload
+YATINYVM = size:xsmall, imageid1:cb_nullworkload
 FEN_HPC = size:medium, imageid1:cb_hpcc
 CN_HPC = size:medium, imageid1:cb_hpcc
 DDGEN = size:medium, imageid1:cb_ddgen
@@ -157,3 +159,4 @@ CASSANDRA = size:medium, imageid1:cb_ycsb
 SEED = size:medium, imageid1:cb_ycsb
 REDIS = size:medium, imageid1:cb_ycsb
 YCSB = size:medium, imageid1:cb_ycsb
+UNIXBENCH = size:medium, imageid1:cb_unixbench

@@ -1,20 +1,21 @@
- status: vm_24 (cloud-assigned uuid 96B6D117-6AED-5381-9396-170E7D8A0A03) could not be created on SimCloud "TESTCLOUD" : Deterministic VM failure ("willfail") (The VM creation was rolled back)
- status: Sending a termination request for vm_24 (cloud-assigned uuid 96B6D117-6AED-5381-9396-170E7D8A0A03)....
-VM object 760685B2-BC54-5851-B01E-FAAE51727F4A (named "vm_24") could not be attached to this experiment: vm_24 (cloud-assigned uuid 96B6D117-6AED-5381-9396-170E7D8A0A03) could not be created on SimCloud "TESTCLOUD" : Deterministic VM failure ("willfail") (The VM creation was rolled back)
+ status: Starting the attachment of vm_24, part of AI none...
+ status: Sending a termination request for vm_24 (cloud-assigned uuid B93BA7FA-9CB6-5931-9B5C-B90CAB728819)....
+ status: vm_24 (cloud-assigned uuid B93BA7FA-9CB6-5931-9B5C-B90CAB728819) could not be created on SimCloud "TESTCLOUD" : Deterministic VM failure ("willfail") (The VM creation will be rolled back)
+VM object 07DF61BC-96F1-508C-AA97-0F072C1406D2 (named "vm_24") could not be attached to this experiment: vm_24 (cloud-assigned uuid B93BA7FA-9CB6-5931-9B5C-B90CAB728819) could not be created on SimCloud "TESTCLOUD" : Deterministic VM failure ("willfail") (The VM creation will be rolled back)
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 No objects available.
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |19.80M                        
-|Redis Version                                        |2.8.6                         
-|Uptime (in seconds)                                  |14435159                      
-|Total Connections Received                           |614622                        
-|Total Commands Processed                             |58402463                      
-|Number of Keys                                       |591                           
+|Used Memory                                          |6.88M                         
+|Redis Version                                        |3.0.6                         
+|Uptime (in seconds)                                  |8704598                       
+|Total Connections Received                           |377257                        
+|Total Commands Processed                             |1222807429                    
+|Number of Keys                                       |612                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|Collections                                          |27                            
+|Collections                                          |14                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
 |VMCs                                                 |4                             
@@ -83,8 +84,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |254                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|4D841AFA-3629-5865-B277-3C9B87B46AF4 (simzone_d) VM RESERVATIONS|0                             
-|B07D97D7-6259-50D3-8A5D-2F6387957881 (simzone_b) VM RESERVATIONS|0                             
-|73396447-1A1B-5F78-8FD0-C71D15101114 (simzone_a) VM RESERVATIONS|0                             
-|FB6EC147-6C78-5AE6-BD5F-8F8D6A60F5BC (simzone_c) VM RESERVATIONS|0                             
+|48E847B7-4EAD-595E-A603-912566454DDC (simzone_a) VM RESERVATIONS|0                             
+|0F125A34-8350-57DE-AA00-635042C08FD4 (simzone_c) VM RESERVATIONS|0                             
+|C1CCDA39-30E1-56FF-A6AE-36406AD2BA16 (simzone_d) VM RESERVATIONS|0                             
+|67592E97-AC3C-50A4-B3D9-009931854DBD (simzone_b) VM RESERVATIONS|0                             
 

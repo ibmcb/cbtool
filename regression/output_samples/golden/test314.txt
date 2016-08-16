@@ -1,4 +1,4 @@
-AIDRS object 84E84B4C-3BCA-510F-887E-E178E7A5A439 (named "aidrs_1") sucessfully attached to this experiment.
+AIDRS object 6DEFFF8B-03C4-51B2-9A81-F003D4824B76 (named "aidrs_1") sucessfully attached to this experiment.
 The following ATTACHED AIDRSs are in this experiment (Cloud TESTCLOUD) :
 |name                |pattern                |type              
 |aidrs_1             |simplenw               |nullworkload      
@@ -12,11 +12,11 @@ The AIDRS object aidrs_1, attached to this experiment, has the following attribu
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |25.98M                        
+|Used Memory                                          |23.32M                        
 |Redis Version                                        |2.8.6                         
-|Uptime (in seconds)                                  |14435570                      
-|Total Connections Received                           |614716                        
-|Total Commands Processed                             |58620021                      
+|Uptime (in seconds)                                  |12856632                      
+|Total Connections Received                           |548630                        
+|Total Commands Processed                             |42584476                      
 |Number of Keys                                       |1053                          
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
@@ -89,11 +89,11 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |507                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|4D841AFA-3629-5865-B277-3C9B87B46AF4 (simzone_d) VM RESERVATIONS|0                             
-|B07D97D7-6259-50D3-8A5D-2F6387957881 (simzone_b) VM RESERVATIONS|1                             
-|73396447-1A1B-5F78-8FD0-C71D15101114 (simzone_a) VM RESERVATIONS|0                             
-|FB6EC147-6C78-5AE6-BD5F-8F8D6A60F5BC (simzone_c) VM RESERVATIONS|0                             
+|A168E857-FDCA-5E02-98BB-32D5CA3934A5 (simzone_d) VM RESERVATIONS|0                             
+|2A9C7A1E-D5EE-5CFE-BE56-2B4E298B71F7 (simzone_a) VM RESERVATIONS|0                             
+|FB2A884A-73A4-5C91-B913-9AD4AF1FB28A (simzone_c) VM RESERVATIONS|0                             
+|073C9CDF-01E7-5AA9-B92E-02C6DA6E75D6 (simzone_b) VM RESERVATIONS|1                             
 
  ---------------- AIDRS-WIDE COUNTERS ----------------
-|84E84B4C-3BCA-510F-887E-E178E7A5A439 (aidrs_1) AI RESERVATIONS|1                             
+|6DEFFF8B-03C4-51B2-9A81-F003D4824B76 (aidrs_1) AI RESERVATIONS|1                             
 

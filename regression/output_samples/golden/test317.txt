@@ -1,4 +1,3 @@
 The following attributes for the AIDRS object were changed (Cloud TESTCLOUD):
 |attribute                              |old value                          |new value                          
 |max_ais                                |8000                               |20                                 
-

@@ -1,0 +1,15 @@
+ status: Counter "AI ARRIVED" equals 29 after 4.64304590225 seconds (the counter is assumed to be increasing).
+ status: Counter "AI ARRIVED" equals 29 after 9.64304590225 seconds (the counter is assumed to be increasing).
+ status: Counter "AI ARRIVED" equals 30 after 14.6430459023 seconds (the counter is assumed to be increasing).
+Waited 14.6430459023 seconds until "AIs ARRIVED" was equal to 30.
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1471276852 |aidrs_1 |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1471276863 |aidrs_1 |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|Redis Version |3.0.6 
+|VM RESERVATIONS |3 
+|VMs ISSUED |124 
+|VMs APPLICATION ERRORS |6 
+|AI RESERVATIONS |3 
+|AIs ISSUED |33 
+|AIs ARRIVING |1 
+|EXPERIMENT COUNTER |511 
+|xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx (aidrs_1) AI RESERVATIONS|3 

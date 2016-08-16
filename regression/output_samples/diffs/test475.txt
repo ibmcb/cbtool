@@ -1,0 +1,3 @@
+|arrival |1471276251 
+|available_gpus |1 
+|gpus |1 

@@ -1,269 +1,269 @@
 The following FINISHED VMs are in this experiment (Cloud TESTCLOUD) :
 |name          |role                |size        |cloud_ip        |host_name                  |vmc_pool      |netname    |ai      |aidrs      |uuid
-|vm_37         |was                 |iron32      |85.217.36.20    |simhostc14                 |SUT           |private    |(orphan)|none       |98807CED-A1C8-599E-8FCA-27A6FDEBE037
-|vm_33         |client_daytrader    |micro32     |159.80.110.195  |simhostc9                  |LG            |private    |(orphan)|none       |4F12485F-F4CF-598E-AF84-8EC1B93C7A69
-|vm_77         |netclient           |iron32      |31.133.32.21    |simhostb5                  |LG            |private    |(orphan)|none       |1AC7FAAB-2EBF-5317-92BF-1576DD0559AE
-|vm_86         |fen_hpc             |bronze32    |14.71.219.248   |simhostc1                  |SUT           |private    |(orphan)|none       |EF6E0CE4-2B73-5000-8C5E-0E88A33B7A41
-|vm_91         |filebench           |iron32      |166.141.14.11   |simhosta3                  |SUT           |private    |(orphan)|none       |2D4FEC64-27FE-5E20-BA49-8804F98CE900
-|vm_93         |client_daytrader    |micro32     |207.84.250.119  |simhostc11                 |LG            |private    |(orphan)|none       |78E48931-3177-5153-9082-DDB4FBBD5A64
-|vm_99         |cn_hpc              |bronze32    |12.72.254.192   |simhostc9                  |SUT           |private    |(orphan)|none       |99AF57E5-AD4C-57B9-ACE4-8674420155F1
-|vm_105        |db2                 |gold32      |35.212.47.174   |simhosta10                 |SUT           |private    |(orphan)|none       |9834DBC4-97D1-5F7D-B42B-8D867F250BC2
-|vm_117        |lb                  |iron32      |100.122.71.139  |simhostb1                  |SUT           |private    |(orphan)|none       |C4840D78-ED25-5D6B-AD11-9AAA300DC9CA
-|vm_94         |lb                  |iron32      |56.23.94.16     |simhostc8                  |SUT           |private    |(orphan)|none       |B6BA675E-4EF7-53DC-B5AF-37868FA9AAAD
-|vm_115        |hadoopslave         |platinum64  |219.125.205.183 |simhostb11                 |SUT           |private    |(orphan)|none       |A9FB8541-4569-5D7E-8F19-91D8430A2354
-|vm_7          |tinyvm              |pico32      |168.218.237.166 |simhostc9                  |SUT           |private    |none    |none       |7F54B7DE-E36E-5EB6-AA44-460E0B7B8233
-|vm_65         |was                 |iron32      |28.227.124.121  |simhostd9                  |SUT           |private    |(orphan)|none       |63F78EF3-4446-5540-9304-837445BEC6FD
-|vm_51         |db2                 |gold32      |203.125.74.51   |simhostd0                  |SUT           |private    |(orphan)|none       |B3995401-96EF-5F6A-846C-71FCAB194BD9
-|vm_81         |was                 |iron32      |3.38.121.3      |simhostb1                  |SUT           |private    |(orphan)|none       |5171E572-2C0C-5695-B84D-B79147818E4E
-|vm_33         |client_daytrader    |micro32     |159.80.110.195  |simhostc9                  |LG            |private    |(orphan)|none       |4F12485F-F4CF-598E-AF84-8EC1B93C7A69
-|vm_65         |was                 |iron32      |28.227.124.121  |simhostd9                  |SUT           |private    |(orphan)|none       |63F78EF3-4446-5540-9304-837445BEC6FD
-|vm_30         |hadoopslave         |platinum64  |226.48.243.43   |simhostc0                  |SUT           |private    |(orphan)|none       |062BCCDA-90D2-5EE6-9227-466E80CD5D8C
-|vm_102        |cn_hpc              |bronze32    |216.207.85.21   |simhostb4                  |SUT           |private    |(orphan)|none       |901625D2-326F-5494-ACF6-D422DD367E3A
-|vm_55         |client_daytrader    |micro32     |249.34.75.39    |simhostc4                  |LG            |private    |(orphan)|none       |D010B10A-0C21-504E-9829-51D064560DB1
-|vm_74         |netserver           |iron32      |82.23.217.115   |simhostd4                  |SUT           |private    |(orphan)|none       |5A374958-F736-5C03-AF7A-0A1395B9F7E0
-|vm_30         |hadoopslave         |platinum64  |226.48.243.43   |simhostc0                  |SUT           |private    |(orphan)|none       |062BCCDA-90D2-5EE6-9227-466E80CD5D8C
-|vm_72         |netserver           |iron32      |123.15.25.116   |simhostd7                  |SUT           |private    |(orphan)|none       |94888254-CC9D-5467-90E7-C1D87BE55EF6
-|vm_29         |hadoopmaster        |platinum64  |8.207.244.241   |simhostd0                  |SUT           |private    |(orphan)|none       |089D23C3-147F-50E7-A6EB-2102D91CDEA7
-|vm_114        |hadoopslave         |platinum64  |154.69.96.108   |simhosta14                 |SUT           |private    |(orphan)|none       |7D9DC287-0AA7-5F62-8B7F-A4C3D118A91C
-|vm_6          |tinyvm              |pico32      |22.155.58.249   |simhostb14                 |SUT           |private    |none    |none       |7AD069C4-0225-5AA5-8390-B031386648D6
-|vm_54         |db2                 |platinum64  |232.232.24.90   |simhostc12                 |SUT           |private    |(orphan)|none       |03441A0F-8088-57A1-8EFA-9CD65FC92ECD
-|vm_42         |hadoopmaster        |platinum64  |41.68.185.96    |simhostd7                  |SUT           |private    |(orphan)|none       |2211996A-6B33-5EE4-9906-216392BCF4FA
-|vm_49         |client_daytrader    |micro32     |160.222.94.134  |simhostd10                 |LG            |private    |(orphan)|none       |83E9F917-5C3F-57D7-9833-F743E7A30223
-|vm_35         |db2                 |platinum64  |17.245.79.135   |simhostd1                  |SUT           |private    |(orphan)|none       |5AEE0BDA-B2EC-54A8-AA0D-CFED2D06A2D3
-|vm_34         |was                 |iron32      |57.227.105.8    |simhostd12                 |SUT           |private    |(orphan)|none       |CF56FEF8-083F-5D04-9A9C-1E98168B9FC7
-|vm_35         |db2                 |platinum64  |17.245.79.135   |simhostd1                  |SUT           |private    |(orphan)|none       |5AEE0BDA-B2EC-54A8-AA0D-CFED2D06A2D3
-|vm_17         |tinyvm              |pico32      |121.178.74.193  |simhostb9                  |SUT           |private    |none    |none       |D01E40CD-D603-5821-8D13-FB22AC5B74F2
-|vm_35         |db2                 |platinum64  |17.245.79.135   |simhostd1                  |SUT           |private    |(orphan)|none       |5AEE0BDA-B2EC-54A8-AA0D-CFED2D06A2D3
-|vm_114        |hadoopslave         |platinum64  |154.69.96.108   |simhosta14                 |SUT           |private    |(orphan)|none       |7D9DC287-0AA7-5F62-8B7F-A4C3D118A91C
-|vm_109        |lb                  |iron32      |92.125.19.76    |simhostd14                 |SUT           |private    |(orphan)|none       |8AED5B12-5109-5EE4-A8A0-08AFD118CB01
-|vm_6          |tinyvm              |pico32      |22.155.58.249   |simhostb14                 |SUT           |private    |none    |none       |7AD069C4-0225-5AA5-8390-B031386648D6
-|vm_33         |client_daytrader    |micro32     |159.80.110.195  |simhostc9                  |LG            |private    |(orphan)|none       |4F12485F-F4CF-598E-AF84-8EC1B93C7A69
-|vm_26         |client_daytrader    |micro32     |150.132.88.10   |simhostc12                 |LG            |private    |(orphan)|none       |6D25DB7D-7849-5D5C-AFD6-ADB669666ADE
-|vm_38         |db2                 |platinum64  |86.50.78.100    |simhostc11                 |SUT           |private    |(orphan)|none       |17F16914-09F1-5647-8197-1C35E6350C4F
-|vm_73         |netclient           |iron32      |17.146.245.176  |simhostc1                  |LG            |private    |(orphan)|none       |40FDF25A-F36E-50AB-AC63-A1D163423FB4
-|vm_22         |tinyvm              |pico32      |99.157.185.92   |simhostc5                  |SUT           |private    |none    |none       |958C010A-3877-528E-96C7-70B89AFB0223
-|vm_21         |tinyvm              |pico32      |105.28.54.111   |simhosta1                  |SUT           |private    |none    |none       |5728A65F-846E-5752-987F-E0E63C5C084E
-|vm_15         |tinyvm              |pico32      |102.197.149.180 |simhostd3                  |SUT           |private    |none    |none       |6A23D608-93B9-5A1B-A790-1278D108987F
-|vm_41         |hadoopslave         |platinum64  |149.110.63.139  |simhostc11                 |SUT           |private    |(orphan)|none       |617B6A60-622E-51F2-A1BE-5389B4400AA2
-|vm_63         |db2                 |gold32      |23.173.5.19     |simhostc9                  |SUT           |private    |(orphan)|none       |BA027470-520D-58FC-932D-77F0FB8D5FF3
-|vm_69         |lb                  |iron32      |121.102.212.175 |simhostb10                 |SUT           |private    |(orphan)|none       |B2609A5F-D95D-560D-A9C5-D135636C5165
-|vm_41         |hadoopslave         |platinum64  |149.110.63.139  |simhostc11                 |SUT           |private    |(orphan)|none       |617B6A60-622E-51F2-A1BE-5389B4400AA2
-|vm_31         |hadoopslave         |platinum64  |94.19.51.76     |simhosta11                 |SUT           |private    |(orphan)|none       |9CE75FB6-4EC0-5502-8036-B2BB4AFADBAC
-|vm_66         |was                 |iron32      |198.5.61.155    |simhostd5                  |SUT           |private    |(orphan)|none       |72825415-9312-56EA-B59A-A29532E67536
-|vm_103        |client_daytrader    |micro32     |243.63.201.100  |simhostb2                  |LG            |private    |(orphan)|none       |30A09E95-DB76-57E6-992F-C698949003C3
-|vm_83         |db2                 |gold32      |194.224.136.179 |simhostb5                  |SUT           |private    |(orphan)|none       |6093A532-6E28-55AC-BF82-42B387F908CA
-|vm_79         |lb                  |iron32      |12.242.203.112  |simhostb5                  |SUT           |private    |(orphan)|none       |512B5092-31AB-5B57-B17E-78BF9EFC8DC0
-|vm_116        |hadoopslave         |platinum64  |50.209.110.116  |simhosta7                  |SUT           |private    |(orphan)|none       |D03DC605-36CF-5BD7-A178-92C0BAE1E3C6
-|vm_9          |db2                 |platinum64  |98.62.76.227    |simhostd5                  |SUT           |private    |none    |none       |CC7FBEBB-72C2-57BD-ABF6-6A5007E4E595
-|vm_53         |was                 |iron32      |77.169.55.222   |simhostb12                 |SUT           |private    |(orphan)|none       |A7572740-63EE-56F5-BDA2-69B10BAC8FF2
-|vm_58         |client_daytrader    |micro32     |104.143.85.197  |simhostd9                  |LG            |private    |(orphan)|none       |36B003BE-5C71-5149-9642-ED1736A02122
-|vm_112        |was                 |iron32      |201.38.38.76    |simhosta9                  |SUT           |private    |(orphan)|none       |0FAFE06F-3799-5D03-9857-B0F4F4749717
-|vm_113        |hadoopmaster        |platinum64  |248.60.3.255    |simhostb0                  |SUT           |private    |(orphan)|none       |9CE18CE1-8427-5EC7-832C-0150550E6531
-|vm_17         |tinyvm              |pico32      |121.178.74.193  |simhostb9                  |SUT           |private    |none    |none       |D01E40CD-D603-5821-8D13-FB22AC5B74F2
-|vm_57         |was                 |iron32      |174.129.118.203 |simhostc6                  |SUT           |private    |(orphan)|none       |2BEB6E41-1811-56E3-988D-EA0959C38415
-|vm_107        |was                 |iron32      |202.180.34.125  |simhostd3                  |SUT           |private    |(orphan)|none       |92A794BF-74E4-5E1B-A25E-99A879F328BF
-|vm_61         |client_daytrader    |micro32     |123.110.14.42   |simhostb4                  |LG            |private    |(orphan)|none       |A8C3F26F-0B1D-5386-9CEA-1979B595E5A9
-|vm_93         |client_daytrader    |micro32     |207.84.250.119  |simhostc11                 |LG            |private    |(orphan)|none       |78E48931-3177-5153-9082-DDB4FBBD5A64
-|vm_116        |hadoopslave         |platinum64  |50.209.110.116  |simhosta7                  |SUT           |private    |(orphan)|none       |D03DC605-36CF-5BD7-A178-92C0BAE1E3C6
-|vm_35         |db2                 |platinum64  |17.245.79.135   |simhostd1                  |SUT           |private    |(orphan)|none       |5AEE0BDA-B2EC-54A8-AA0D-CFED2D06A2D3
-|vm_77         |netclient           |iron32      |31.133.32.21    |simhostb5                  |LG            |private    |(orphan)|none       |1AC7FAAB-2EBF-5317-92BF-1576DD0559AE
-|vm_34         |was                 |iron32      |57.227.105.8    |simhostd12                 |SUT           |private    |(orphan)|none       |CF56FEF8-083F-5D04-9A9C-1E98168B9FC7
-|vm_96         |db2                 |gold32      |216.76.162.40   |simhostb4                  |SUT           |private    |(orphan)|none       |8FF4BE87-64D3-55EC-96D3-084007CEC676
-|vm_3          |tinyvm              |pico32      |142.51.103.232  |simhostb1                  |SUT           |private    |none    |none       |1E717DC1-DAF2-5D0C-9D2C-0818F7890FB1
-|vm_13         |tinyvm              |iron32      |205.1.62.114    |simhostc2                  |SUT           |private    |none    |none       |E876284D-E22B-53DB-83D3-4E5FC2D73BEA
-|vm_106        |was                 |iron32      |252.146.38.54   |simhostd12                 |SUT           |private    |(orphan)|none       |1D98D505-4B83-5E6A-93D5-14410B2ED2DD
-|vm_4          |db2                 |copper32    |20.247.126.40   |simhostb2                  |SUT           |private    |none    |none       |2FCBA3CF-BB21-545D-84F2-D2D4CC9DE828
-|vm_67         |client_daytrader    |micro32     |83.183.148.101  |simhostd12                 |LG            |private    |(orphan)|none       |6F9718B9-D512-5C88-9E72-9BC611AE2991
-|vm_29         |hadoopmaster        |platinum64  |8.207.244.241   |simhostd0                  |SUT           |private    |(orphan)|none       |089D23C3-147F-50E7-A6EB-2102D91CDEA7
-|vm_103        |client_daytrader    |micro32     |243.63.201.100  |simhostb2                  |LG            |private    |(orphan)|none       |30A09E95-DB76-57E6-992F-C698949003C3
-|vm_34         |was                 |iron32      |57.227.105.8    |simhostd12                 |SUT           |private    |(orphan)|none       |CF56FEF8-083F-5D04-9A9C-1E98168B9FC7
-|vm_15         |tinyvm              |pico32      |102.197.149.180 |simhostd3                  |SUT           |private    |none    |none       |6A23D608-93B9-5A1B-A790-1278D108987F
-|vm_100        |cn_hpc              |bronze32    |226.107.199.24  |simhostc7                  |SUT           |private    |(orphan)|none       |D1040789-DFDE-527F-B67A-F83DAD148774
-|vm_28         |db2                 |platinum64  |166.149.96.214  |simhostc12                 |SUT           |private    |(orphan)|none       |4CE197DD-4FD6-536A-8512-7BCFE711D1F7
-|vm_117        |lb                  |iron32      |100.122.71.139  |simhostb1                  |SUT           |private    |(orphan)|none       |C4840D78-ED25-5D6B-AD11-9AAA300DC9CA
-|vm_33         |client_daytrader    |micro32     |159.80.110.195  |simhostc9                  |LG            |private    |(orphan)|none       |4F12485F-F4CF-598E-AF84-8EC1B93C7A69
-|vm_54         |db2                 |platinum64  |232.232.24.90   |simhostc12                 |SUT           |private    |(orphan)|none       |03441A0F-8088-57A1-8EFA-9CD65FC92ECD
-|vm_35         |db2                 |platinum64  |17.245.79.135   |simhostd1                  |SUT           |private    |(orphan)|none       |5AEE0BDA-B2EC-54A8-AA0D-CFED2D06A2D3
-|vm_59         |was                 |iron32      |83.205.205.26   |simhosta0                  |SUT           |private    |(orphan)|none       |5145816B-D3F8-5A21-954E-B969C560C9F8
-|vm_104        |lb                  |iron32      |46.14.208.206   |simhostc6                  |SUT           |private    |(orphan)|none       |6A45F684-B113-5588-9E6E-3C6377AE1796
-|vm_2          |tinyvm              |pico32      |124.207.89.90   |simhosta14                 |LG            |private    |none    |none       |5244FC98-6DA8-5AB6-A72D-866C6875A181
-|vm_113        |hadoopmaster        |platinum64  |248.60.3.255    |simhostb0                  |SUT           |private    |(orphan)|none       |9CE18CE1-8427-5EC7-832C-0150550E6531
-|vm_95         |was                 |iron32      |217.111.118.238 |simhostd3                  |SUT           |private    |(orphan)|none       |59143A72-3DE9-5DF0-A2D2-5549AD391BFF
-|vm_52         |client_daytrader    |micro32     |252.77.197.236  |simhostb8                  |LG            |private    |(orphan)|none       |F55A3E42-1286-5618-B567-9A56B6247C4B
-|vm_110        |was                 |iron32      |167.151.121.124 |simhostc8                  |SUT           |private    |(orphan)|none       |6EECD5DF-888F-508B-A8D0-2F125EB5A0E0
-|vm_34         |was                 |iron32      |57.227.105.8    |simhostd12                 |SUT           |private    |(orphan)|none       |CF56FEF8-083F-5D04-9A9C-1E98168B9FC7
-|vm_108        |client_daytrader    |micro32     |42.210.17.167   |simhosta5                  |LG            |private    |(orphan)|none       |6F213CD2-9662-5EFF-BD41-3085A8755426
-|vm_7          |tinyvm              |pico32      |168.218.237.166 |simhostc9                  |SUT           |private    |none    |none       |7F54B7DE-E36E-5EB6-AA44-460E0B7B8233
-|vm_73         |netclient           |iron32      |17.146.245.176  |simhostc1                  |LG            |private    |(orphan)|none       |40FDF25A-F36E-50AB-AC63-A1D163423FB4
-|vm_107        |was                 |iron32      |202.180.34.125  |simhostd3                  |SUT           |private    |(orphan)|none       |92A794BF-74E4-5E1B-A25E-99A879F328BF
-|vm_106        |was                 |iron32      |252.146.38.54   |simhostd12                 |SUT           |private    |(orphan)|none       |1D98D505-4B83-5E6A-93D5-14410B2ED2DD
-|vm_96         |db2                 |gold32      |216.76.162.40   |simhostb4                  |SUT           |private    |(orphan)|none       |8FF4BE87-64D3-55EC-96D3-084007CEC676
-|vm_5          |netclient           |platinum64  |131.247.204.241 |simhosta1                  |SUT           |private    |none    |none       |68EC517B-E962-50B4-B0E6-D33A50A35CBA
-|vm_33         |client_daytrader    |micro32     |159.80.110.195  |simhostc9                  |LG            |private    |(orphan)|none       |4F12485F-F4CF-598E-AF84-8EC1B93C7A69
-|vm_91         |filebench           |iron32      |166.141.14.11   |simhosta3                  |SUT           |private    |(orphan)|none       |2D4FEC64-27FE-5E20-BA49-8804F98CE900
-|vm_57         |was                 |iron32      |174.129.118.203 |simhostc6                  |SUT           |private    |(orphan)|none       |2BEB6E41-1811-56E3-988D-EA0959C38415
-|vm_99         |cn_hpc              |bronze32    |12.72.254.192   |simhostc9                  |SUT           |private    |(orphan)|none       |99AF57E5-AD4C-57B9-ACE4-8674420155F1
-|vm_85         |was                 |iron32      |103.239.68.134  |simhostc5                  |SUT           |private    |(orphan)|none       |ACB97511-4811-5288-9F09-B6D7CA6B8D93
-|vm_18         |tinyvm              |pico32      |211.215.121.136 |simhostc13                 |SUT           |private    |none    |none       |9A82336F-A0DA-5D14-A9AD-638EB2C59F82
-|vm_89         |cn_hpc              |bronze32    |138.105.187.84  |simhostb3                  |SUT           |private    |(orphan)|none       |05EABF6F-AE74-58AD-9799-A5DEAF8601E1
-|vm_1          |tinyvm              |pico32      |156.132.157.237 |simhostb12                 |SUT           |private    |none    |none       |FFBD485E-62F9-55ED-AD0E-F9751F318A3E
-|vm_8          |tinyvm              |pico32      |63.244.87.158   |simhostc8                  |SUT           |private    |none    |none       |AF139952-8CA9-5230-93D9-1EF729E2EF96
-|vm_19         |tinyvm              |pico32      |55.191.167.44   |simhosta6                  |SUT           |private    |none    |none       |C0E1A7B0-544F-5334-A909-58919D91C505
-|vm_44         |was                 |iron32      |232.162.10.250  |simhostc10                 |SUT           |private    |(orphan)|none       |F1682046-B2FD-56A7-8E50-69B8C9B43516
-|vm_121        |was                 |iron32      |55.4.25.14      |simhostc2                  |SUT           |private    |(orphan)|none       |FBE33A67-9FA1-51B2-A858-48DE22573E53
-|vm_111        |db2                 |gold32      |143.194.8.217   |simhostc10                 |SUT           |private    |(orphan)|none       |F4D5CC7D-E56D-529A-8A26-26B88D19E6BD
-|vm_32         |hadoopslave         |platinum64  |238.118.227.104 |simhostc2                  |SUT           |private    |(orphan)|none       |2B00782A-B96D-50CD-B2F1-5C6B6D6EB126
-|vm_12         |tinyvm              |iron32      |97.180.244.228  |simhostc12                 |SUT           |private    |none    |none       |25E95148-2C01-5B50-97CF-E7CC8CCCE741
-|vm_83         |db2                 |gold32      |194.224.136.179 |simhostb5                  |SUT           |private    |(orphan)|none       |6093A532-6E28-55AC-BF82-42B387F908CA
-|vm_90         |coremark            |iron32      |225.223.246.66  |simhostc10                 |SUT           |private    |(orphan)|none       |8FFCA7F4-C86F-536D-98D5-1ADCA8139113
-|vm_67         |client_daytrader    |micro32     |83.183.148.101  |simhostd12                 |LG            |private    |(orphan)|none       |6F9718B9-D512-5C88-9E72-9BC611AE2991
-|vm_70         |was                 |iron32      |7.38.72.16      |simhostb2                  |SUT           |private    |(orphan)|none       |AF8EA0BC-30B0-59E6-8DEC-725DEDC72CBA
-|vm_105        |db2                 |gold32      |35.212.47.174   |simhosta10                 |SUT           |private    |(orphan)|none       |9834DBC4-97D1-5F7D-B42B-8D867F250BC2
-|vm_8          |tinyvm              |pico32      |63.244.87.158   |simhostc8                  |SUT           |private    |none    |none       |AF139952-8CA9-5230-93D9-1EF729E2EF96
-|vm_75         |netclient           |iron32      |85.189.186.150  |simhostb10                 |LG            |private    |(orphan)|none       |CE1EBE8C-5F2F-5CA7-A029-D5BF2585569B
-|vm_33         |client_daytrader    |micro32     |159.80.110.195  |simhostc9                  |LG            |private    |(orphan)|none       |4F12485F-F4CF-598E-AF84-8EC1B93C7A69
-|vm_2          |tinyvm              |pico32      |124.207.89.90   |simhosta14                 |LG            |private    |none    |none       |5244FC98-6DA8-5AB6-A72D-866C6875A181
-|vm_115        |hadoopslave         |platinum64  |219.125.205.183 |simhostb11                 |SUT           |private    |(orphan)|none       |A9FB8541-4569-5D7E-8F19-91D8430A2354
-|vm_62         |lb                  |iron32      |65.7.105.203    |simhosta14                 |SUT           |private    |(orphan)|none       |8657595B-A4EF-5BFC-A399-140B6DB6FB23
-|vm_27         |was                 |iron32      |80.36.191.137   |simhostc0                  |SUT           |private    |(orphan)|none       |D8BC99DD-F400-585E-A674-9400DC10BA7B
-|vm_101        |fen_hpc             |bronze32    |26.248.215.163  |simhostb11                 |SUT           |private    |(orphan)|none       |E7738375-52A4-5A50-9CF5-BA60B6145595
-|vm_51         |db2                 |gold32      |203.125.74.51   |simhostd0                  |SUT           |private    |(orphan)|none       |B3995401-96EF-5F6A-846C-71FCAB194BD9
-|vm_98         |netserver           |iron32      |191.72.184.34   |simhostb2                  |SUT           |private    |(orphan)|none       |5C7B8167-84ED-50E9-8C13-C586251EE2FF
-|vm_50         |was                 |iron32      |19.45.196.172   |simhostc11                 |SUT           |private    |(orphan)|none       |B6413BC0-EE36-5F1E-BDBD-6F254D5A4332
-|vm_18         |tinyvm              |pico32      |211.215.121.136 |simhostc13                 |SUT           |private    |none    |none       |9A82336F-A0DA-5D14-A9AD-638EB2C59F82
-|vm_114        |hadoopslave         |platinum64  |154.69.96.108   |simhosta14                 |SUT           |private    |(orphan)|none       |7D9DC287-0AA7-5F62-8B7F-A4C3D118A91C
-|vm_68         |db2                 |gold32      |76.202.39.59    |simhostd6                  |SUT           |private    |(orphan)|none       |A6AC747C-949E-5A1A-AFE1-609A511CADDF
-|vm_4          |db2                 |copper32    |20.247.126.40   |simhostb2                  |SUT           |private    |none    |none       |2FCBA3CF-BB21-545D-84F2-D2D4CC9DE828
-|vm_42         |hadoopmaster        |platinum64  |41.68.185.96    |simhostd7                  |SUT           |private    |(orphan)|none       |2211996A-6B33-5EE4-9906-216392BCF4FA
-|vm_68         |db2                 |gold32      |76.202.39.59    |simhostd6                  |SUT           |private    |(orphan)|none       |A6AC747C-949E-5A1A-AFE1-609A511CADDF
-|vm_64         |was                 |iron32      |191.93.86.76    |simhostc11                 |SUT           |private    |(orphan)|none       |CCC166E2-C189-50C3-AD00-F9398B77A644
-|vm_78         |netserver           |iron32      |8.180.104.42    |simhostb5                  |SUT           |private    |(orphan)|none       |159C1F26-4F43-5231-BE26-2AAD6082567F
-|vm_109        |lb                  |iron32      |92.125.19.76    |simhostd14                 |SUT           |private    |(orphan)|none       |8AED5B12-5109-5EE4-A8A0-08AFD118CB01
-|vm_46         |client_daytrader    |micro32     |144.81.120.159  |simhosta0                  |LG            |private    |(orphan)|none       |B7458CA8-9359-55E2-8DF1-6DCFC1BF799E
-|vm_92         |was                 |iron32      |35.43.206.41    |simhosta12                 |SUT           |private    |(orphan)|none       |0E87E566-ACB5-5B63-A1A9-949E0D2082DF
-|vm_19         |tinyvm              |pico32      |55.191.167.44   |simhosta6                  |SUT           |private    |none    |none       |C0E1A7B0-544F-5334-A909-58919D91C505
-|vm_35         |db2                 |platinum64  |17.245.79.135   |simhostd1                  |SUT           |private    |(orphan)|none       |5AEE0BDA-B2EC-54A8-AA0D-CFED2D06A2D3
-|vm_98         |netserver           |iron32      |191.72.184.34   |simhostb2                  |SUT           |private    |(orphan)|none       |5C7B8167-84ED-50E9-8C13-C586251EE2FF
-|vm_34         |was                 |iron32      |57.227.105.8    |simhostd12                 |SUT           |private    |(orphan)|none       |CF56FEF8-083F-5D04-9A9C-1E98168B9FC7
-|vm_80         |client_daytrader    |micro32     |210.26.234.215  |simhostc2                  |LG            |private    |(orphan)|none       |5DABEE20-0F6A-51F3-9643-7486C0CFAB64
-|vm_85         |was                 |iron32      |103.239.68.134  |simhostc5                  |SUT           |private    |(orphan)|none       |ACB97511-4811-5288-9F09-B6D7CA6B8D93
-|vm_5          |netclient           |platinum64  |131.247.204.241 |simhosta1                  |SUT           |private    |none    |none       |68EC517B-E962-50B4-B0E6-D33A50A35CBA
-|vm_84         |client_tradelite    |micro32     |205.120.191.230 |simhostb3                  |LG            |private    |(orphan)|none       |9AABB1CC-4DC2-541E-AA62-931567B4FB52
-|vm_86         |fen_hpc             |bronze32    |14.71.219.248   |simhostc1                  |SUT           |private    |(orphan)|none       |EF6E0CE4-2B73-5000-8C5E-0E88A33B7A41
-|vm_26         |client_daytrader    |micro32     |150.132.88.10   |simhostc12                 |LG            |private    |(orphan)|none       |6D25DB7D-7849-5D5C-AFD6-ADB669666ADE
-|vm_40         |netserver           |iron32      |12.99.84.240    |simhosta2                  |SUT           |private    |(orphan)|none       |F5426B59-637E-537A-91F3-5872931CC786
-|vm_35         |db2                 |platinum64  |17.245.79.135   |simhostd1                  |SUT           |private    |(orphan)|none       |5AEE0BDA-B2EC-54A8-AA0D-CFED2D06A2D3
-|vm_44         |was                 |iron32      |232.162.10.250  |simhostc10                 |SUT           |private    |(orphan)|none       |F1682046-B2FD-56A7-8E50-69B8C9B43516
-|vm_34         |was                 |iron32      |57.227.105.8    |simhostd12                 |SUT           |private    |(orphan)|none       |CF56FEF8-083F-5D04-9A9C-1E98168B9FC7
-|vm_110        |was                 |iron32      |167.151.121.124 |simhostc8                  |SUT           |private    |(orphan)|none       |6EECD5DF-888F-508B-A8D0-2F125EB5A0E0
-|vm_39         |netclient           |platinum64  |233.84.117.232  |simhostc2                  |SUT           |private    |(orphan)|none       |585AE321-C83B-5F1C-BB8F-C21303ED5495
-|vm_114        |hadoopslave         |platinum64  |154.69.96.108   |simhosta14                 |SUT           |private    |(orphan)|none       |7D9DC287-0AA7-5F62-8B7F-A4C3D118A91C
-|vm_31         |hadoopslave         |platinum64  |94.19.51.76     |simhosta11                 |SUT           |private    |(orphan)|none       |9CE75FB6-4EC0-5502-8036-B2BB4AFADBAC
-|vm_58         |client_daytrader    |micro32     |104.143.85.197  |simhostd9                  |LG            |private    |(orphan)|none       |36B003BE-5C71-5149-9642-ED1736A02122
-|vm_45         |db2                 |platinum64  |142.152.117.30  |simhostd5                  |SUT           |private    |(orphan)|none       |1824964B-F2A1-5540-A696-E353C13A56D1
-|vm_75         |netclient           |iron32      |85.189.186.150  |simhostb10                 |LG            |private    |(orphan)|none       |CE1EBE8C-5F2F-5CA7-A029-D5BF2585569B
-|vm_120        |was                 |iron32      |228.71.136.134  |simhostc6                  |SUT           |private    |(orphan)|none       |AB2B9BA6-5DF5-5324-B423-35414350CFAA
-|vm_3          |tinyvm              |pico32      |142.51.103.232  |simhostb1                  |SUT           |private    |none    |none       |1E717DC1-DAF2-5D0C-9D2C-0818F7890FB1
-|vm_1          |tinyvm              |pico32      |156.132.157.237 |simhostb12                 |SUT           |private    |none    |none       |FFBD485E-62F9-55ED-AD0E-F9751F318A3E
-|vm_3          |tinyvm              |pico32      |142.51.103.232  |simhostb1                  |SUT           |private    |none    |none       |1E717DC1-DAF2-5D0C-9D2C-0818F7890FB1
-|vm_43         |was                 |iron32      |236.200.242.39  |simhostb3                  |SUT           |private    |(orphan)|none       |7A21C8CD-0A9C-5CA0-A35E-5C156D904849
-|vm_47         |was                 |iron32      |92.145.143.137  |simhostc14                 |SUT           |private    |(orphan)|none       |A2A68D64-DB90-57CC-A808-01527D87C37C
-|vm_102        |cn_hpc              |bronze32    |216.207.85.21   |simhostb4                  |SUT           |private    |(orphan)|none       |901625D2-326F-5494-ACF6-D422DD367E3A
-|vm_76         |netserver           |iron32      |143.241.58.167  |simhostb2                  |SUT           |private    |(orphan)|none       |375A5E81-118E-5A03-B525-6F80F4BC268B
-|vm_32         |hadoopslave         |platinum64  |238.118.227.104 |simhostc2                  |SUT           |private    |(orphan)|none       |2B00782A-B96D-50CD-B2F1-5C6B6D6EB126
-|vm_80         |client_daytrader    |micro32     |210.26.234.215  |simhostc2                  |LG            |private    |(orphan)|none       |5DABEE20-0F6A-51F3-9643-7486C0CFAB64
-|vm_119        |client_daytrader    |micro32     |123.39.48.153   |simhosta11                 |LG            |private    |(orphan)|none       |12B3C39B-5BCA-59A9-A947-C530EBBCDCC2
-|vm_101        |fen_hpc             |bronze32    |26.248.215.163  |simhostb11                 |SUT           |private    |(orphan)|none       |E7738375-52A4-5A50-9CF5-BA60B6145595
-|vm_37         |was                 |iron32      |85.217.36.20    |simhostc14                 |SUT           |private    |(orphan)|none       |98807CED-A1C8-599E-8FCA-27A6FDEBE037
-|vm_60         |db2                 |platinum64  |184.78.126.255  |simhostc11                 |SUT           |private    |(orphan)|none       |8F21C7ED-7636-5173-A168-E60DB3EBF42C
-|vm_22         |tinyvm              |pico32      |99.157.185.92   |simhostc5                  |SUT           |private    |none    |none       |958C010A-3877-528E-96C7-70B89AFB0223
-|vm_76         |netserver           |iron32      |143.241.58.167  |simhostb2                  |SUT           |private    |(orphan)|none       |375A5E81-118E-5A03-B525-6F80F4BC268B
-|vm_63         |db2                 |gold32      |23.173.5.19     |simhostc9                  |SUT           |private    |(orphan)|none       |BA027470-520D-58FC-932D-77F0FB8D5FF3
-|vm_3          |tinyvm              |pico32      |142.51.103.232  |simhostb1                  |SUT           |private    |none    |none       |1E717DC1-DAF2-5D0C-9D2C-0818F7890FB1
-|vm_92         |was                 |iron32      |35.43.206.41    |simhosta12                 |SUT           |private    |(orphan)|none       |0E87E566-ACB5-5B63-A1A9-949E0D2082DF
-|vm_61         |client_daytrader    |micro32     |123.110.14.42   |simhostb4                  |LG            |private    |(orphan)|none       |A8C3F26F-0B1D-5386-9CEA-1979B595E5A9
-|vm_12         |tinyvm              |iron32      |97.180.244.228  |simhostc12                 |SUT           |private    |none    |none       |25E95148-2C01-5B50-97CF-E7CC8CCCE741
-|vm_16         |tinyvm              |pico32      |193.171.141.24  |simhostb10                 |SUT           |private    |none    |none       |FE90B68A-589D-5478-8C27-339C9A03A5E5
-|vm_56         |db2                 |platinum64  |88.100.185.8    |simhostb5                  |SUT           |private    |(orphan)|none       |13B467A7-9D7B-5CD6-9569-2B97FC2BC045
-|vm_97         |netclient           |iron32      |102.119.168.68  |simhostb11                 |LG            |private    |(orphan)|none       |A150B48D-BA66-525B-8101-0B67A2225D82
-|vm_121        |was                 |iron32      |55.4.25.14      |simhostc2                  |SUT           |private    |(orphan)|none       |FBE33A67-9FA1-51B2-A858-48DE22573E53
-|vm_9          |db2                 |platinum64  |98.62.76.227    |simhostd5                  |SUT           |private    |none    |none       |CC7FBEBB-72C2-57BD-ABF6-6A5007E4E595
-|vm_87         |cn_hpc              |bronze32    |199.6.235.184   |simhostd4                  |SUT           |private    |(orphan)|none       |93E57ADF-5278-5277-8240-DA23BF342C3B
-|vm_10         |netclient           |iron32      |138.234.53.105  |simhosta2                  |SUT           |private    |none    |none       |DE243271-F277-5B8F-B64E-CB666AF9E6F7
-|vm_11         |fen_hpc             |platinum64  |203.180.229.62  |simhostb1                  |LG            |private    |none    |none       |D6D4C364-AD63-5207-A605-E42A5B37AFBE
-|vm_112        |was                 |iron32      |201.38.38.76    |simhosta9                  |SUT           |private    |(orphan)|none       |0FAFE06F-3799-5D03-9857-B0F4F4749717
-|vm_3          |tinyvm              |pico32      |142.51.103.232  |simhostb1                  |SUT           |private    |none    |none       |1E717DC1-DAF2-5D0C-9D2C-0818F7890FB1
-|vm_53         |was                 |iron32      |77.169.55.222   |simhostb12                 |SUT           |private    |(orphan)|none       |A7572740-63EE-56F5-BDA2-69B10BAC8FF2
-|vm_59         |was                 |iron32      |83.205.205.26   |simhosta0                  |SUT           |private    |(orphan)|none       |5145816B-D3F8-5A21-954E-B969C560C9F8
-|vm_94         |lb                  |iron32      |56.23.94.16     |simhostc8                  |SUT           |private    |(orphan)|none       |B6BA675E-4EF7-53DC-B5AF-37868FA9AAAD
-|vm_34         |was                 |iron32      |57.227.105.8    |simhostd12                 |SUT           |private    |(orphan)|none       |CF56FEF8-083F-5D04-9A9C-1E98168B9FC7
-|vm_33         |client_daytrader    |micro32     |159.80.110.195  |simhostc9                  |LG            |private    |(orphan)|none       |4F12485F-F4CF-598E-AF84-8EC1B93C7A69
-|vm_95         |was                 |iron32      |217.111.118.238 |simhostd3                  |SUT           |private    |(orphan)|none       |59143A72-3DE9-5DF0-A2D2-5549AD391BFF
-|vm_46         |client_daytrader    |micro32     |144.81.120.159  |simhosta0                  |LG            |private    |(orphan)|none       |B7458CA8-9359-55E2-8DF1-6DCFC1BF799E
-|vm_50         |was                 |iron32      |19.45.196.172   |simhostc11                 |SUT           |private    |(orphan)|none       |B6413BC0-EE36-5F1E-BDBD-6F254D5A4332
-|vm_43         |was                 |iron32      |236.200.242.39  |simhostb3                  |SUT           |private    |(orphan)|none       |7A21C8CD-0A9C-5CA0-A35E-5C156D904849
-|vm_113        |hadoopmaster        |platinum64  |248.60.3.255    |simhostb0                  |SUT           |private    |(orphan)|none       |9CE18CE1-8427-5EC7-832C-0150550E6531
-|vm_81         |was                 |iron32      |3.38.121.3      |simhostb1                  |SUT           |private    |(orphan)|none       |5171E572-2C0C-5695-B84D-B79147818E4E
-|vm_115        |hadoopslave         |platinum64  |219.125.205.183 |simhostb11                 |SUT           |private    |(orphan)|none       |A9FB8541-4569-5D7E-8F19-91D8430A2354
-|vm_35         |db2                 |platinum64  |17.245.79.135   |simhostd1                  |SUT           |private    |(orphan)|none       |5AEE0BDA-B2EC-54A8-AA0D-CFED2D06A2D3
-|vm_38         |db2                 |platinum64  |86.50.78.100    |simhostc11                 |SUT           |private    |(orphan)|none       |17F16914-09F1-5647-8197-1C35E6350C4F
-|vm_119        |client_daytrader    |micro32     |123.39.48.153   |simhosta11                 |LG            |private    |(orphan)|none       |12B3C39B-5BCA-59A9-A947-C530EBBCDCC2
-|vm_78         |netserver           |iron32      |8.180.104.42    |simhostb5                  |SUT           |private    |(orphan)|none       |159C1F26-4F43-5231-BE26-2AAD6082567F
-|vm_3          |tinyvm              |pico32      |142.51.103.232  |simhostb1                  |SUT           |private    |none    |none       |1E717DC1-DAF2-5D0C-9D2C-0818F7890FB1
-|vm_72         |netserver           |iron32      |123.15.25.116   |simhostd7                  |SUT           |private    |(orphan)|none       |94888254-CC9D-5467-90E7-C1D87BE55EF6
-|vm_116        |hadoopslave         |platinum64  |50.209.110.116  |simhosta7                  |SUT           |private    |(orphan)|none       |D03DC605-36CF-5BD7-A178-92C0BAE1E3C6
-|vm_71         |netclient           |iron32      |153.233.78.113  |simhostc7                  |LG            |private    |(orphan)|none       |BEDE923E-7FDB-599D-BEF0-422B745A9AD7
-|vm_89         |cn_hpc              |bronze32    |138.105.187.84  |simhostb3                  |SUT           |private    |(orphan)|none       |05EABF6F-AE74-58AD-9799-A5DEAF8601E1
-|vm_16         |tinyvm              |pico32      |193.171.141.24  |simhostb10                 |SUT           |private    |none    |none       |FE90B68A-589D-5478-8C27-339C9A03A5E5
-|vm_28         |db2                 |platinum64  |166.149.96.214  |simhostc12                 |SUT           |private    |(orphan)|none       |4CE197DD-4FD6-536A-8512-7BCFE711D1F7
-|vm_64         |was                 |iron32      |191.93.86.76    |simhostc11                 |SUT           |private    |(orphan)|none       |CCC166E2-C189-50C3-AD00-F9398B77A644
-|vm_88         |cn_hpc              |bronze32    |7.28.215.142    |simhostb12                 |SUT           |private    |(orphan)|none       |ACEFDCC1-E10F-5580-9352-9FADB0D414E0
-|vm_82         |was                 |iron32      |115.192.229.229 |simhostd1                  |SUT           |private    |(orphan)|none       |B65F8CAE-05B3-5BE9-AF2E-9B44B3EAC1DC
-|vm_47         |was                 |iron32      |92.145.143.137  |simhostc14                 |SUT           |private    |(orphan)|none       |A2A68D64-DB90-57CC-A808-01527D87C37C
-|vm_14         |predictablevm       |iron32      |1.2.3.4         |simhostc2                  |SUT           |private    |none    |none       |8591AE45-C644-5390-A381-C74C64CF5718
-|vm_48         |lb                  |iron32      |187.27.74.8     |simhostb2                  |SUT           |private    |(orphan)|none       |7DCA35FA-9FDD-5230-AD80-4FFDB90CB47E
-|vm_56         |db2                 |platinum64  |88.100.185.8    |simhostb5                  |SUT           |private    |(orphan)|none       |13B467A7-9D7B-5CD6-9569-2B97FC2BC045
-|vm_3          |tinyvm              |pico32      |142.51.103.232  |simhostb1                  |SUT           |private    |none    |none       |1E717DC1-DAF2-5D0C-9D2C-0818F7890FB1
-|vm_74         |netserver           |iron32      |82.23.217.115   |simhostd4                  |SUT           |private    |(orphan)|none       |5A374958-F736-5C03-AF7A-0A1395B9F7E0
-|vm_40         |netserver           |iron32      |12.99.84.240    |simhosta2                  |SUT           |private    |(orphan)|none       |F5426B59-637E-537A-91F3-5872931CC786
-|vm_3          |tinyvm              |pico32      |142.51.103.232  |simhostb1                  |SUT           |private    |none    |none       |1E717DC1-DAF2-5D0C-9D2C-0818F7890FB1
-|vm_90         |coremark            |iron32      |225.223.246.66  |simhostc10                 |SUT           |private    |(orphan)|none       |8FFCA7F4-C86F-536D-98D5-1ADCA8139113
-|vm_11         |fen_hpc             |platinum64  |203.180.229.62  |simhostb1                  |LG            |private    |none    |none       |D6D4C364-AD63-5207-A605-E42A5B37AFBE
-|vm_104        |lb                  |iron32      |46.14.208.206   |simhostc6                  |SUT           |private    |(orphan)|none       |6A45F684-B113-5588-9E6E-3C6377AE1796
-|vm_120        |was                 |iron32      |228.71.136.134  |simhostc6                  |SUT           |private    |(orphan)|none       |AB2B9BA6-5DF5-5324-B423-35414350CFAA
-|vm_84         |client_tradelite    |micro32     |205.120.191.230 |simhostb3                  |LG            |private    |(orphan)|none       |9AABB1CC-4DC2-541E-AA62-931567B4FB52
-|vm_108        |client_daytrader    |micro32     |42.210.17.167   |simhosta5                  |LG            |private    |(orphan)|none       |6F213CD2-9662-5EFF-BD41-3085A8755426
-|vm_21         |tinyvm              |pico32      |105.28.54.111   |simhosta1                  |SUT           |private    |none    |none       |5728A65F-846E-5752-987F-E0E63C5C084E
-|vm_52         |client_daytrader    |micro32     |252.77.197.236  |simhostb8                  |LG            |private    |(orphan)|none       |F55A3E42-1286-5618-B567-9A56B6247C4B
-|vm_45         |db2                 |platinum64  |142.152.117.30  |simhostd5                  |SUT           |private    |(orphan)|none       |1824964B-F2A1-5540-A696-E353C13A56D1
-|vm_111        |db2                 |gold32      |143.194.8.217   |simhostc10                 |SUT           |private    |(orphan)|none       |F4D5CC7D-E56D-529A-8A26-26B88D19E6BD
-|vm_20         |tinyvm              |pico32      |161.142.49.47   |simhostb14                 |SUT           |private    |none    |none       |5809E047-1BC0-5E59-996B-2505B8ABDBB1
-|vm_60         |db2                 |platinum64  |184.78.126.255  |simhostc11                 |SUT           |private    |(orphan)|none       |8F21C7ED-7636-5173-A168-E60DB3EBF42C
-|vm_55         |client_daytrader    |micro32     |249.34.75.39    |simhostc4                  |LG            |private    |(orphan)|none       |D010B10A-0C21-504E-9829-51D064560DB1
-|vm_69         |lb                  |iron32      |121.102.212.175 |simhostb10                 |SUT           |private    |(orphan)|none       |B2609A5F-D95D-560D-A9C5-D135636C5165
-|vm_10         |netclient           |iron32      |138.234.53.105  |simhosta2                  |SUT           |private    |none    |none       |DE243271-F277-5B8F-B64E-CB666AF9E6F7
-|vm_88         |cn_hpc              |bronze32    |7.28.215.142    |simhostb12                 |SUT           |private    |(orphan)|none       |ACEFDCC1-E10F-5580-9352-9FADB0D414E0
-|vm_39         |netclient           |platinum64  |233.84.117.232  |simhostc2                  |SUT           |private    |(orphan)|none       |585AE321-C83B-5F1C-BB8F-C21303ED5495
-|vm_27         |was                 |iron32      |80.36.191.137   |simhostc0                  |SUT           |private    |(orphan)|none       |D8BC99DD-F400-585E-A674-9400DC10BA7B
-|vm_34         |was                 |iron32      |57.227.105.8    |simhostd12                 |SUT           |private    |(orphan)|none       |CF56FEF8-083F-5D04-9A9C-1E98168B9FC7
-|vm_100        |cn_hpc              |bronze32    |226.107.199.24  |simhostc7                  |SUT           |private    |(orphan)|none       |D1040789-DFDE-527F-B67A-F83DAD148774
-|vm_48         |lb                  |iron32      |187.27.74.8     |simhostb2                  |SUT           |private    |(orphan)|none       |7DCA35FA-9FDD-5230-AD80-4FFDB90CB47E
-|vm_14         |predictablevm       |iron32      |1.2.3.4         |simhostc2                  |SUT           |private    |none    |none       |8591AE45-C644-5390-A381-C74C64CF5718
-|vm_116        |hadoopslave         |platinum64  |50.209.110.116  |simhosta7                  |SUT           |private    |(orphan)|none       |D03DC605-36CF-5BD7-A178-92C0BAE1E3C6
-|vm_36         |client_daytrader    |micro32     |236.247.96.85   |simhostc8                  |LG            |private    |(orphan)|none       |34EE46C0-A2CE-530A-B7EC-B72F10AB02A8
-|vm_36         |client_daytrader    |micro32     |236.247.96.85   |simhostc8                  |LG            |private    |(orphan)|none       |34EE46C0-A2CE-530A-B7EC-B72F10AB02A8
-|vm_71         |netclient           |iron32      |153.233.78.113  |simhostc7                  |LG            |private    |(orphan)|none       |BEDE923E-7FDB-599D-BEF0-422B745A9AD7
-|vm_113        |hadoopmaster        |platinum64  |248.60.3.255    |simhostb0                  |SUT           |private    |(orphan)|none       |9CE18CE1-8427-5EC7-832C-0150550E6531
-|vm_66         |was                 |iron32      |198.5.61.155    |simhostd5                  |SUT           |private    |(orphan)|none       |72825415-9312-56EA-B59A-A29532E67536
-|vm_49         |client_daytrader    |micro32     |160.222.94.134  |simhostd10                 |LG            |private    |(orphan)|none       |83E9F917-5C3F-57D7-9833-F743E7A30223
-|vm_13         |tinyvm              |iron32      |205.1.62.114    |simhostc2                  |SUT           |private    |none    |none       |E876284D-E22B-53DB-83D3-4E5FC2D73BEA
-|vm_87         |cn_hpc              |bronze32    |199.6.235.184   |simhostd4                  |SUT           |private    |(orphan)|none       |93E57ADF-5278-5277-8240-DA23BF342C3B
-|vm_82         |was                 |iron32      |115.192.229.229 |simhostd1                  |SUT           |private    |(orphan)|none       |B65F8CAE-05B3-5BE9-AF2E-9B44B3EAC1DC
-|vm_62         |lb                  |iron32      |65.7.105.203    |simhosta14                 |SUT           |private    |(orphan)|none       |8657595B-A4EF-5BFC-A399-140B6DB6FB23
-|vm_33         |client_daytrader    |micro32     |159.80.110.195  |simhostc9                  |LG            |private    |(orphan)|none       |4F12485F-F4CF-598E-AF84-8EC1B93C7A69
-|vm_79         |lb                  |iron32      |12.242.203.112  |simhostb5                  |SUT           |private    |(orphan)|none       |512B5092-31AB-5B57-B17E-78BF9EFC8DC0
-|vm_20         |tinyvm              |pico32      |161.142.49.47   |simhostb14                 |SUT           |private    |none    |none       |5809E047-1BC0-5E59-996B-2505B8ABDBB1
-|vm_70         |was                 |iron32      |7.38.72.16      |simhostb2                  |SUT           |private    |(orphan)|none       |AF8EA0BC-30B0-59E6-8DEC-725DEDC72CBA
-|vm_115        |hadoopslave         |platinum64  |219.125.205.183 |simhostb11                 |SUT           |private    |(orphan)|none       |A9FB8541-4569-5D7E-8F19-91D8430A2354
-|vm_97         |netclient           |iron32      |102.119.168.68  |simhostb11                 |LG            |private    |(orphan)|none       |A150B48D-BA66-525B-8101-0B67A2225D82
+|vm_103        |client_daytrader    |micro32     |184.235.168.223 |simhostc3                  |LG            |private    |(orphan)|none       |C1225983-E052-5BB6-98BA-BD860DD1ADD5
+|vm_91         |filebench           |iron32      |62.202.129.6    |simhostc5                  |SUT           |private    |(orphan)|none       |155DDDDE-78F4-5F13-BBEE-A92F3CBBEDDA
+|vm_108        |client_daytrader    |micro32     |208.158.100.152 |simhostb14                 |LG            |private    |(orphan)|none       |CD56ECAA-0AC1-543B-80E5-45D9B077FF75
+|vm_105        |db2                 |gold32      |236.177.204.69  |simhostc12                 |SUT           |private    |(orphan)|none       |BF393300-D639-58E6-9AC3-6975C515959C
+|vm_36         |client_daytrader    |micro32     |139.80.222.129  |simhostd2                  |LG            |private    |(orphan)|none       |9FEDEE77-12CC-5759-900D-AA42583270F4
+|vm_116        |hadoopslave         |platinum64  |154.146.184.104 |simhostb8                  |SUT           |private    |(orphan)|none       |A01571AB-A037-5275-9ACA-F6319A13136D
+|vm_113        |hadoopmaster        |platinum64  |13.220.137.134  |simhostb13                 |SUT           |private    |(orphan)|none       |E5208E20-D494-50B6-9216-6A13DE6AB3CA
+|vm_33         |was                 |iron32      |176.100.215.83  |simhostd13                 |SUT           |private    |(orphan)|none       |07A38861-02BF-5380-82A9-247BF090C63C
+|vm_55         |was                 |iron32      |81.231.47.126   |simhostc7                  |SUT           |private    |(orphan)|none       |483506DC-21C4-5F3E-832C-F20168B19C1A
+|vm_66         |client_daytrader    |micro32     |176.191.15.209  |simhostb4                  |LG            |private    |(orphan)|none       |BA2DE5EB-0E9A-53D2-806D-048ADE4B0770
+|vm_11         |fen_hpc             |platinum64  |95.196.201.244  |simhostd0                  |LG            |private    |none    |none       |4B74CB2F-F539-50B6-BCEC-F25E72CB46F8
+|vm_84         |client_tradelite    |micro32     |214.222.157.225 |simhostb3                  |LG            |private    |(orphan)|none       |64296189-40B9-57FF-AEA2-BB5986AC7EF9
+|vm_69         |lb                  |iron32      |179.50.57.167   |simhosta7                  |SUT           |private    |(orphan)|none       |901B22A0-719E-5A9F-8CF7-33B51388A89E
+|vm_74         |netserver           |iron32      |218.165.69.17   |simhostb10                 |SUT           |private    |(orphan)|none       |3E26A9FB-369F-5555-94D5-1985C236EC1F
+|vm_18         |tinyvm              |pico32      |7.112.172.231   |simhosta4                  |SUT           |private    |none    |none       |C651F903-A5B4-55BA-A3C8-F7E488C079C1
+|vm_80         |lb                  |iron32      |221.201.87.211  |simhostb13                 |SUT           |private    |(orphan)|none       |C693B333-4CBB-5C8F-B1E5-106DD173658D
+|vm_22         |tinyvm              |pico32      |179.212.46.181  |simhostb10                 |SUT           |private    |none    |none       |176496DD-B58E-5C8B-AB47-FDE688566A80
+|vm_68         |db2                 |gold32      |144.62.158.151  |simhostc9                  |SUT           |private    |(orphan)|none       |0034B2FB-5791-5435-821F-5BEFFA0F682A
+|vm_41         |hadoopmaster        |platinum64  |5.126.255.205   |simhostd1                  |SUT           |private    |(orphan)|none       |FF1556C6-311E-556F-8F40-F0BF8A27ABEF
+|vm_59         |client_daytrader    |micro32     |249.8.146.107   |simhosta0                  |LG            |private    |(orphan)|none       |AA0C6FC4-0E14-5DBE-9384-20D8749A19BE
+|vm_100        |fen_hpc             |bronze32    |67.30.233.7     |simhostb5                  |SUT           |private    |(orphan)|none       |50FCDFA9-4B85-5E42-B75F-D4FB2919D428
+|vm_48         |lb                  |iron32      |125.187.241.238 |simhosta2                  |SUT           |private    |(orphan)|none       |5C91630B-5D59-5E6D-AC61-FD54FD84E534
+|vm_115        |hadoopslave         |platinum64  |176.87.40.234   |simhosta10                 |SUT           |private    |(orphan)|none       |85949E0F-E815-5B08-9A8B-C50D196ED53D
+|vm_44         |was                 |iron32      |186.28.148.206  |simhosta0                  |SUT           |private    |(orphan)|none       |A92D0DBA-7DA4-5DF1-B3DC-A7CD6798CC0C
+|vm_7          |tinyvm              |pico32      |19.196.136.214  |simhosta0                  |SUT           |private    |none    |none       |7B00C19A-6F91-5BAB-BB1C-FAAD44394E3C
+|vm_20         |tinyvm              |pico32      |35.9.247.157    |simhosta6                  |SUT           |private    |none    |none       |3D62D390-EB5D-5A93-90EA-6AAD162C9B5C
+|vm_9          |db2                 |platinum64  |109.91.165.169  |simhosta1                  |SUT           |private    |none    |none       |7F809AA2-1033-51E1-A241-82CFD71ABFB1
+|vm_119        |was                 |iron32      |36.198.185.98   |simhostc3                  |SUT           |private    |(orphan)|none       |BF680764-9E94-5D86-82F0-69AA6A1FFE3A
+|vm_68         |db2                 |gold32      |144.62.158.151  |simhostc9                  |SUT           |private    |(orphan)|none       |0034B2FB-5791-5435-821F-5BEFFA0F682A
+|vm_104        |lb                  |iron32      |60.4.193.5      |simhostc4                  |SUT           |private    |(orphan)|none       |FA636E0D-CD51-502E-B7D6-7A4DB08836C5
+|vm_62         |lb                  |iron32      |208.63.53.253   |simhostb11                 |SUT           |private    |(orphan)|none       |548A1875-3AAF-5F04-8AAA-74338CCC8A08
+|vm_34         |db2                 |platinum64  |191.88.194.127  |simhostd7                  |SUT           |private    |(orphan)|none       |242948D0-A71A-5D12-AE05-C83467D3F679
+|vm_33         |was                 |iron32      |176.100.215.83  |simhostd13                 |SUT           |private    |(orphan)|none       |07A38861-02BF-5380-82A9-247BF090C63C
+|vm_54         |was                 |iron32      |92.95.115.19    |simhosta7                  |SUT           |private    |(orphan)|none       |F10B2CFB-A4D5-58EA-A648-2BF2359E44BB
+|vm_104        |lb                  |iron32      |60.4.193.5      |simhostc4                  |SUT           |private    |(orphan)|none       |FA636E0D-CD51-502E-B7D6-7A4DB08836C5
+|vm_77         |netclient           |iron32      |143.132.214.145 |simhostd13                 |LG            |private    |(orphan)|none       |BA328713-16B4-583D-93E7-E5FE8920C6FE
+|vm_91         |filebench           |iron32      |62.202.129.6    |simhostc5                  |SUT           |private    |(orphan)|none       |155DDDDE-78F4-5F13-BBEE-A92F3CBBEDDA
+|vm_89         |cn_hpc              |bronze32    |115.12.49.144   |simhostc3                  |SUT           |private    |(orphan)|none       |B7935502-CDE7-59A8-A232-8C297D5FF19A
+|vm_102        |cn_hpc              |bronze32    |111.219.86.178  |simhostd0                  |SUT           |private    |(orphan)|none       |6428A20A-6402-5AAC-AB90-89AEB8A976B4
+|vm_94         |lb                  |iron32      |87.248.32.69    |simhostc7                  |SUT           |private    |(orphan)|none       |2B462FA8-6CD5-590C-8D68-281039B2CF1C
+|vm_114        |hadoopslave         |platinum64  |200.241.44.137  |simhostc10                 |SUT           |private    |(orphan)|none       |6A1EFDAD-9A7C-5812-AAB7-3F82CECE23B1
+|vm_88         |cn_hpc              |bronze32    |51.171.207.171  |simhosta9                  |SUT           |private    |(orphan)|none       |A5721250-BCDA-50AB-89C3-E427EF346128
+|vm_33         |was                 |iron32      |176.100.215.83  |simhostd13                 |SUT           |private    |(orphan)|none       |07A38861-02BF-5380-82A9-247BF090C63C
+|vm_82         |was                 |iron32      |246.79.193.134  |simhostd9                  |SUT           |private    |(orphan)|none       |C39382FA-371F-5D96-A168-86A30F49B4A2
+|vm_40         |netserver           |iron32      |58.213.180.21   |simhostb5                  |SUT           |private    |(orphan)|none       |FAEE19C0-38F9-590D-AB32-F3A28C5C0F19
+|vm_98         |netserver           |iron32      |121.108.202.155 |simhosta1                  |SUT           |private    |(orphan)|none       |AD64F3D8-A128-546B-9524-DFA09AE35387
+|vm_110        |db2                 |gold32      |59.72.179.190   |simhosta0                  |SUT           |private    |(orphan)|none       |D5EC234B-FB1A-5F7A-871B-57DADE4E7F94
+|vm_46         |client_daytrader    |micro32     |145.93.208.163  |simhostb8                  |LG            |private    |(orphan)|none       |0A17E5D8-B5C1-5543-9BAB-B27A87E4E1EB
+|vm_99         |cn_hpc              |bronze32    |163.25.247.95   |simhostd5                  |SUT           |private    |(orphan)|none       |EC9F63A0-FCC5-5752-B4A3-88B83028D74B
+|vm_16         |tinyvm              |pico32      |126.47.96.25    |simhostb7                  |SUT           |private    |none    |none       |7256E359-EECC-5E9E-A155-1E57CB8F57EC
+|vm_35         |client_daytrader    |micro32     |15.117.68.82    |simhostd0                  |LG            |private    |(orphan)|none       |74C8EA0F-6088-5584-BE22-EB88C8092914
+|vm_107        |was                 |iron32      |159.149.11.150  |simhostb11                 |SUT           |private    |(orphan)|none       |CD448BA2-3985-5828-9F1C-89C4F69F73C1
+|vm_94         |lb                  |iron32      |87.248.32.69    |simhostc7                  |SUT           |private    |(orphan)|none       |2B462FA8-6CD5-590C-8D68-281039B2CF1C
+|vm_52         |db2                 |platinum64  |252.162.197.35  |simhostc10                 |SUT           |private    |(orphan)|none       |4B1F1F21-AB2B-599D-9C2C-88EAF7B7B781
+|vm_93         |was                 |iron32      |60.135.21.64    |simhostc0                  |SUT           |private    |(orphan)|none       |2A4ABAE3-EA11-5824-88BC-63BA10CA68DD
+|vm_59         |client_daytrader    |micro32     |249.8.146.107   |simhosta0                  |LG            |private    |(orphan)|none       |AA0C6FC4-0E14-5DBE-9384-20D8749A19BE
+|vm_16         |tinyvm              |pico32      |126.47.96.25    |simhostb7                  |SUT           |private    |none    |none       |7256E359-EECC-5E9E-A155-1E57CB8F57EC
+|vm_64         |was                 |iron32      |55.120.58.158   |simhostd10                 |SUT           |private    |(orphan)|none       |2C824A25-C863-52FB-9062-ED493543B061
+|vm_67         |was                 |iron32      |142.103.242.189 |simhostd12                 |SUT           |private    |(orphan)|none       |58C6885D-F50F-552F-8AF8-FCFE9579D02B
+|vm_73         |netclient           |iron32      |111.71.193.247  |simhostc7                  |LG            |private    |(orphan)|none       |445CA910-0404-587C-A497-BCE690249654
+|vm_101        |cn_hpc              |bronze32    |44.178.196.229  |simhosta11                 |SUT           |private    |(orphan)|none       |62B45316-4649-55C6-AB1A-4A3FB4CFE074
+|vm_72         |netserver           |iron32      |92.255.20.209   |simhostd4                  |SUT           |private    |(orphan)|none       |04264070-6A61-54F1-991C-16E234301508
+|vm_46         |client_daytrader    |micro32     |145.93.208.163  |simhostb8                  |LG            |private    |(orphan)|none       |0A17E5D8-B5C1-5543-9BAB-B27A87E4E1EB
+|vm_51         |db2                 |gold32      |48.54.178.112   |simhostd7                  |SUT           |private    |(orphan)|none       |CF9951D3-D2E0-568D-8E6E-DE011E238A6E
+|vm_61         |client_daytrader    |micro32     |250.39.90.144   |simhostb11                 |LG            |private    |(orphan)|none       |5D07F413-9267-5A60-B1C5-E9CFF6AF9775
+|vm_31         |hadoopslave         |platinum64  |29.149.240.49   |simhostd8                  |SUT           |private    |(orphan)|none       |B76B9469-5321-5399-A4B2-EDB8AFCA460C
+|vm_3          |tinyvm              |pico32      |71.248.153.186  |simhostb1                  |SUT           |private    |none    |none       |5CAE413F-749A-56CB-AE5D-83A2954057A4
+|vm_35         |client_daytrader    |micro32     |15.117.68.82    |simhostd0                  |LG            |private    |(orphan)|none       |74C8EA0F-6088-5584-BE22-EB88C8092914
+|vm_5          |netclient           |platinum64  |195.243.1.253   |simhostb11                 |SUT           |private    |none    |none       |0FC8B3F6-F86F-5839-8D91-B2D0086F8466
+|vm_76         |netserver           |iron32      |198.255.180.38  |simhosta10                 |SUT           |private    |(orphan)|none       |1187A459-31C8-5A96-A6AF-D1B83EAD2763
+|vm_103        |client_daytrader    |micro32     |184.235.168.223 |simhostc3                  |LG            |private    |(orphan)|none       |C1225983-E052-5BB6-98BA-BD860DD1ADD5
+|vm_34         |db2                 |platinum64  |191.88.194.127  |simhostd7                  |SUT           |private    |(orphan)|none       |242948D0-A71A-5D12-AE05-C83467D3F679
+|vm_108        |client_daytrader    |micro32     |208.158.100.152 |simhostb14                 |LG            |private    |(orphan)|none       |CD56ECAA-0AC1-543B-80E5-45D9B077FF75
+|vm_62         |lb                  |iron32      |208.63.53.253   |simhostb11                 |SUT           |private    |(orphan)|none       |548A1875-3AAF-5F04-8AAA-74338CCC8A08
+|vm_110        |db2                 |gold32      |59.72.179.190   |simhosta0                  |SUT           |private    |(orphan)|none       |D5EC234B-FB1A-5F7A-871B-57DADE4E7F94
+|vm_30         |hadoopslave         |platinum64  |96.120.138.242  |simhosta5                  |SUT           |private    |(orphan)|none       |2A6751FF-E2DD-50D9-B4A3-91E98869088D
+|vm_32         |hadoopmaster        |platinum64  |87.241.144.57   |simhostc8                  |SUT           |private    |(orphan)|none       |C6BA3120-77A7-5300-AA59-7ABD869EA712
+|vm_32         |hadoopmaster        |platinum64  |87.241.144.57   |simhostc8                  |SUT           |private    |(orphan)|none       |C6BA3120-77A7-5300-AA59-7ABD869EA712
+|vm_115        |hadoopslave         |platinum64  |176.87.40.234   |simhosta10                 |SUT           |private    |(orphan)|none       |85949E0F-E815-5B08-9A8B-C50D196ED53D
+|vm_35         |client_daytrader    |micro32     |15.117.68.82    |simhostd0                  |LG            |private    |(orphan)|none       |74C8EA0F-6088-5584-BE22-EB88C8092914
+|vm_54         |was                 |iron32      |92.95.115.19    |simhosta7                  |SUT           |private    |(orphan)|none       |F10B2CFB-A4D5-58EA-A648-2BF2359E44BB
+|vm_70         |was                 |iron32      |93.61.1.164     |simhostc0                  |SUT           |private    |(orphan)|none       |1B679D26-BB58-5844-8057-ADD736050198
+|vm_121        |lb                  |iron32      |117.67.145.133  |simhostd10                 |SUT           |private    |(orphan)|none       |8E052D19-9C16-5178-9EA9-C67B4580B2B3
+|vm_3          |tinyvm              |pico32      |71.248.153.186  |simhostb1                  |SUT           |private    |none    |none       |5CAE413F-749A-56CB-AE5D-83A2954057A4
+|vm_41         |hadoopmaster        |platinum64  |5.126.255.205   |simhostd1                  |SUT           |private    |(orphan)|none       |FF1556C6-311E-556F-8F40-F0BF8A27ABEF
+|vm_1          |tinyvm              |pico32      |90.17.211.77    |simhostd3                  |SUT           |private    |none    |none       |4BB20172-486A-5DCB-9DC1-A49A5B8AFE4A
+|vm_34         |db2                 |platinum64  |191.88.194.127  |simhostd7                  |SUT           |private    |(orphan)|none       |242948D0-A71A-5D12-AE05-C83467D3F679
+|vm_34         |db2                 |platinum64  |191.88.194.127  |simhostd7                  |SUT           |private    |(orphan)|none       |242948D0-A71A-5D12-AE05-C83467D3F679
+|vm_106        |was                 |iron32      |219.246.49.204  |simhosta10                 |SUT           |private    |(orphan)|none       |53EAD437-9200-5AEF-8D74-90EDA8012E03
+|vm_45         |db2                 |platinum64  |6.40.252.52     |simhosta0                  |SUT           |private    |(orphan)|none       |8A6687C3-1E76-5851-890F-73F9C7C8FD22
+|vm_79         |client_daytrader    |micro32     |129.250.46.252  |simhostc10                 |LG            |private    |(orphan)|none       |14BCF295-9199-5C98-A2BE-A3796AF810AE
+|vm_4          |db2                 |copper32    |100.129.101.48  |simhostc12                 |SUT           |private    |none    |none       |9A02889F-F41B-5D9D-94AA-D6FCE06513DE
+|vm_45         |db2                 |platinum64  |6.40.252.52     |simhosta0                  |SUT           |private    |(orphan)|none       |8A6687C3-1E76-5851-890F-73F9C7C8FD22
+|vm_27         |client_daytrader    |micro32     |142.109.179.6   |simhostb10                 |LG            |private    |(orphan)|none       |2CC8DE75-058C-5684-8BF1-94B0A32D6DD2
+|vm_78         |netserver           |iron32      |190.49.118.235  |simhostd14                 |SUT           |private    |(orphan)|none       |F823E55F-BDD2-5473-95F2-6052EB837EE4
+|vm_18         |tinyvm              |pico32      |7.112.172.231   |simhosta4                  |SUT           |private    |none    |none       |C651F903-A5B4-55BA-A3C8-F7E488C079C1
+|vm_56         |client_daytrader    |micro32     |76.229.208.94   |simhostc5                  |LG            |private    |(orphan)|none       |529BB47F-DCBD-5476-AF97-2BDD7AB6BE3C
+|vm_31         |hadoopslave         |platinum64  |29.149.240.49   |simhostd8                  |SUT           |private    |(orphan)|none       |B76B9469-5321-5399-A4B2-EDB8AFCA460C
+|vm_6          |tinyvm              |pico32      |47.211.16.29    |simhostb3                  |SUT           |private    |none    |none       |10411AC8-0B0A-567A-B271-3273F6A27B4C
+|vm_15         |tinyvm              |pico32      |47.112.202.121  |simhosta3                  |SUT           |private    |none    |none       |A9464C24-3E5A-5541-BCEE-8B0ECC875895
+|vm_96         |was                 |iron32      |42.80.127.178   |simhostc4                  |SUT           |private    |(orphan)|none       |3AFF08A9-249B-54EA-B326-C7E5E59A62A4
+|vm_117        |client_daytrader    |micro32     |134.95.6.232    |simhosta10                 |LG            |private    |(orphan)|none       |3AAD7E62-A7EA-5DA3-8A03-14E8878A5B0E
+|vm_95         |db2                 |gold32      |135.22.102.96   |simhostc8                  |SUT           |private    |(orphan)|none       |FF2C9C5F-D51B-52DF-B04D-39D8F1CFBC92
+|vm_90         |coremark            |iron32      |35.25.123.24    |simhosta2                  |SUT           |private    |(orphan)|none       |666F9A4B-3A86-5E44-A52B-EA62B2C47E7D
+|vm_72         |netserver           |iron32      |92.255.20.209   |simhostd4                  |SUT           |private    |(orphan)|none       |04264070-6A61-54F1-991C-16E234301508
+|vm_102        |cn_hpc              |bronze32    |111.219.86.178  |simhostd0                  |SUT           |private    |(orphan)|none       |6428A20A-6402-5AAC-AB90-89AEB8A976B4
+|vm_40         |netserver           |iron32      |58.213.180.21   |simhostb5                  |SUT           |private    |(orphan)|none       |FAEE19C0-38F9-590D-AB32-F3A28C5C0F19
+|vm_39         |netclient           |platinum64  |53.90.168.84    |simhosta12                 |SUT           |private    |(orphan)|none       |E7FBB528-88DE-5985-9F49-49848EC495D5
+|vm_83         |was                 |iron32      |14.32.150.194   |simhostc11                 |SUT           |private    |(orphan)|none       |74E8926D-FDB4-5426-B675-CCB4850AACA4
+|vm_52         |db2                 |platinum64  |252.162.197.35  |simhostc10                 |SUT           |private    |(orphan)|none       |4B1F1F21-AB2B-599D-9C2C-88EAF7B7B781
+|vm_73         |netclient           |iron32      |111.71.193.247  |simhostc7                  |LG            |private    |(orphan)|none       |445CA910-0404-587C-A497-BCE690249654
+|vm_60         |db2                 |platinum64  |97.16.141.218   |simhostd8                  |SUT           |private    |(orphan)|none       |38DC6DB4-629A-5ABE-ABFA-1D1DE468D4E0
+|vm_53         |client_daytrader    |micro32     |238.182.217.233 |simhostb12                 |LG            |private    |(orphan)|none       |19CBC893-2FA3-5FD9-9C41-357322831296
+|vm_112        |was                 |iron32      |209.168.77.196  |simhostb11                 |SUT           |private    |(orphan)|none       |237ACD9F-651E-51C7-A8CC-323D70487F9B
+|vm_3          |tinyvm              |pico32      |71.248.153.186  |simhostb1                  |SUT           |private    |none    |none       |5CAE413F-749A-56CB-AE5D-83A2954057A4
+|vm_61         |client_daytrader    |micro32     |250.39.90.144   |simhostb11                 |LG            |private    |(orphan)|none       |5D07F413-9267-5A60-B1C5-E9CFF6AF9775
+|vm_43         |was                 |iron32      |100.73.137.214  |simhosta4                  |SUT           |private    |(orphan)|none       |58476B8B-7E03-525A-9C54-FE05CBBDAE70
+|vm_75         |netclient           |iron32      |55.139.8.37     |simhostb1                  |LG            |private    |(orphan)|none       |E8741CAF-7314-51AA-884B-F6D57AD641D5
+|vm_49         |was                 |iron32      |236.152.216.42  |simhostc6                  |SUT           |private    |(orphan)|none       |6B6F5B8E-BEC9-515D-BDBD-03BC1FC3BA34
+|vm_89         |cn_hpc              |bronze32    |115.12.49.144   |simhostc3                  |SUT           |private    |(orphan)|none       |B7935502-CDE7-59A8-A232-8C297D5FF19A
+|vm_33         |was                 |iron32      |176.100.215.83  |simhostd13                 |SUT           |private    |(orphan)|none       |07A38861-02BF-5380-82A9-247BF090C63C
+|vm_116        |hadoopslave         |platinum64  |154.146.184.104 |simhostb8                  |SUT           |private    |(orphan)|none       |A01571AB-A037-5275-9ACA-F6319A13136D
+|vm_120        |was                 |iron32      |132.254.84.74   |simhostb10                 |SUT           |private    |(orphan)|none       |6F476416-EB30-5BA9-93EB-4F70E2353E24
+|vm_67         |was                 |iron32      |142.103.242.189 |simhostd12                 |SUT           |private    |(orphan)|none       |58C6885D-F50F-552F-8AF8-FCFE9579D02B
+|vm_37         |db2                 |platinum64  |167.164.246.206 |simhostd13                 |SUT           |private    |(orphan)|none       |4111893C-DBDE-5C27-A55E-20BD0691395B
+|vm_10         |netclient           |iron32      |26.150.188.90   |simhosta2                  |SUT           |private    |none    |none       |88056A2A-A811-5366-87F9-54D9BCF5AFAA
+|vm_20         |tinyvm              |pico32      |35.9.247.157    |simhosta6                  |SUT           |private    |none    |none       |3D62D390-EB5D-5A93-90EA-6AAD162C9B5C
+|vm_79         |client_daytrader    |micro32     |129.250.46.252  |simhostc10                 |LG            |private    |(orphan)|none       |14BCF295-9199-5C98-A2BE-A3796AF810AE
+|vm_101        |cn_hpc              |bronze32    |44.178.196.229  |simhosta11                 |SUT           |private    |(orphan)|none       |62B45316-4649-55C6-AB1A-4A3FB4CFE074
+|vm_29         |hadoopslave         |platinum64  |237.187.73.248  |simhosta7                  |SUT           |private    |(orphan)|none       |6DDDE85B-37E6-51E1-B27C-37F29F81C51D
+|vm_85         |was                 |iron32      |61.113.103.51   |simhostd10                 |SUT           |private    |(orphan)|none       |21AD1644-FF55-5A6B-A302-A3D62CA70581
+|vm_64         |was                 |iron32      |55.120.58.158   |simhostd10                 |SUT           |private    |(orphan)|none       |2C824A25-C863-52FB-9062-ED493543B061
+|vm_66         |client_daytrader    |micro32     |176.191.15.209  |simhostb4                  |LG            |private    |(orphan)|none       |BA2DE5EB-0E9A-53D2-806D-048ADE4B0770
+|vm_111        |was                 |iron32      |19.211.249.221  |simhostb10                 |SUT           |private    |(orphan)|none       |91362B14-1D36-53FB-A455-4E12C9809072
+|vm_14         |predictablevm       |iron32      |1.2.3.4         |simhostb1                  |SUT           |private    |none    |none       |54103581-726A-5158-B0B2-A7DDBFFB8AB8
+|vm_99         |cn_hpc              |bronze32    |163.25.247.95   |simhostd5                  |SUT           |private    |(orphan)|none       |EC9F63A0-FCC5-5752-B4A3-88B83028D74B
+|vm_65         |db2                 |gold32      |66.180.28.190   |simhostd8                  |SUT           |private    |(orphan)|none       |EA711018-07BB-50C6-8AEA-9EAAB6638968
+|vm_21         |tinyvm              |pico32      |227.140.212.6   |simhosta11                 |SUT           |private    |none    |none       |41373C29-FEA0-57AE-AA57-4CE51400C0DB
+|vm_75         |netclient           |iron32      |55.139.8.37     |simhostb1                  |LG            |private    |(orphan)|none       |E8741CAF-7314-51AA-884B-F6D57AD641D5
+|vm_38         |was                 |iron32      |9.147.129.112   |simhostb1                  |SUT           |private    |(orphan)|none       |2FFBB6E0-33B0-55AE-A2BA-0D08380B619F
+|vm_48         |lb                  |iron32      |125.187.241.238 |simhosta2                  |SUT           |private    |(orphan)|none       |5C91630B-5D59-5E6D-AC61-FD54FD84E534
+|vm_3          |tinyvm              |pico32      |71.248.153.186  |simhostb1                  |SUT           |private    |none    |none       |5CAE413F-749A-56CB-AE5D-83A2954057A4
+|vm_50         |was                 |iron32      |123.90.161.41   |simhostb8                  |SUT           |private    |(orphan)|none       |C3288DC9-4DC7-585C-B246-418528931647
+|vm_9          |db2                 |platinum64  |109.91.165.169  |simhosta1                  |SUT           |private    |none    |none       |7F809AA2-1033-51E1-A241-82CFD71ABFB1
+|vm_21         |tinyvm              |pico32      |227.140.212.6   |simhosta11                 |SUT           |private    |none    |none       |41373C29-FEA0-57AE-AA57-4CE51400C0DB
+|vm_69         |lb                  |iron32      |179.50.57.167   |simhosta7                  |SUT           |private    |(orphan)|none       |901B22A0-719E-5A9F-8CF7-33B51388A89E
+|vm_117        |client_daytrader    |micro32     |134.95.6.232    |simhosta10                 |LG            |private    |(orphan)|none       |3AAD7E62-A7EA-5DA3-8A03-14E8878A5B0E
+|vm_76         |netserver           |iron32      |198.255.180.38  |simhosta10                 |SUT           |private    |(orphan)|none       |1187A459-31C8-5A96-A6AF-D1B83EAD2763
+|vm_111        |was                 |iron32      |19.211.249.221  |simhostb10                 |SUT           |private    |(orphan)|none       |91362B14-1D36-53FB-A455-4E12C9809072
+|vm_57         |db2                 |platinum64  |63.87.51.172    |simhosta5                  |SUT           |private    |(orphan)|none       |A1B48760-8147-59F6-954B-A8C9CBC62538
+|vm_109        |lb                  |iron32      |103.216.38.224  |simhostb10                 |SUT           |private    |(orphan)|none       |76CDDCB0-7D4F-5E23-9081-58A6D49757D1
+|vm_33         |was                 |iron32      |176.100.215.83  |simhostd13                 |SUT           |private    |(orphan)|none       |07A38861-02BF-5380-82A9-247BF090C63C
+|vm_109        |lb                  |iron32      |103.216.38.224  |simhostb10                 |SUT           |private    |(orphan)|none       |76CDDCB0-7D4F-5E23-9081-58A6D49757D1
+|vm_50         |was                 |iron32      |123.90.161.41   |simhostb8                  |SUT           |private    |(orphan)|none       |C3288DC9-4DC7-585C-B246-418528931647
+|vm_35         |client_daytrader    |micro32     |15.117.68.82    |simhostd0                  |LG            |private    |(orphan)|none       |74C8EA0F-6088-5584-BE22-EB88C8092914
+|vm_6          |tinyvm              |pico32      |47.211.16.29    |simhostb3                  |SUT           |private    |none    |none       |10411AC8-0B0A-567A-B271-3273F6A27B4C
+|vm_81         |db2                 |gold32      |28.122.7.62     |simhostd6                  |SUT           |private    |(orphan)|none       |4E8A905B-6CEE-5209-A8C4-73AFE1A4363C
+|vm_70         |was                 |iron32      |93.61.1.164     |simhostc0                  |SUT           |private    |(orphan)|none       |1B679D26-BB58-5844-8057-ADD736050198
+|vm_28         |db2                 |platinum64  |229.52.178.138  |simhostb4                  |SUT           |private    |(orphan)|none       |3CC7C166-3832-502D-9BF2-8B1B12D328B3
+|vm_26         |was                 |iron32      |98.178.14.188   |simhostb1                  |SUT           |private    |(orphan)|none       |4A55B538-8C02-5F96-9CB9-4186B7EFE130
+|vm_38         |was                 |iron32      |9.147.129.112   |simhostb1                  |SUT           |private    |(orphan)|none       |2FFBB6E0-33B0-55AE-A2BA-0D08380B619F
+|vm_78         |netserver           |iron32      |190.49.118.235  |simhostd14                 |SUT           |private    |(orphan)|none       |F823E55F-BDD2-5473-95F2-6052EB837EE4
+|vm_112        |was                 |iron32      |209.168.77.196  |simhostb11                 |SUT           |private    |(orphan)|none       |237ACD9F-651E-51C7-A8CC-323D70487F9B
+|vm_98         |netserver           |iron32      |121.108.202.155 |simhosta1                  |SUT           |private    |(orphan)|none       |AD64F3D8-A128-546B-9524-DFA09AE35387
+|vm_14         |predictablevm       |iron32      |1.2.3.4         |simhostb1                  |SUT           |private    |none    |none       |54103581-726A-5158-B0B2-A7DDBFFB8AB8
+|vm_56         |client_daytrader    |micro32     |76.229.208.94   |simhostc5                  |LG            |private    |(orphan)|none       |529BB47F-DCBD-5476-AF97-2BDD7AB6BE3C
+|vm_2          |tinyvm              |pico32      |86.32.144.220   |simhostc12                 |LG            |private    |none    |none       |AAACFDFB-CC50-5D2E-9788-4ABE800E95B5
+|vm_60         |db2                 |platinum64  |97.16.141.218   |simhostd8                  |SUT           |private    |(orphan)|none       |38DC6DB4-629A-5ABE-ABFA-1D1DE468D4E0
+|vm_82         |was                 |iron32      |246.79.193.134  |simhostd9                  |SUT           |private    |(orphan)|none       |C39382FA-371F-5D96-A168-86A30F49B4A2
+|vm_47         |client_daytrader    |micro32     |172.223.164.110 |simhostc10                 |LG            |private    |(orphan)|none       |8C71BF61-6F62-55C2-96F9-72737D3B7E59
+|vm_116        |hadoopslave         |platinum64  |154.146.184.104 |simhostb8                  |SUT           |private    |(orphan)|none       |A01571AB-A037-5275-9ACA-F6319A13136D
+|vm_3          |tinyvm              |pico32      |71.248.153.186  |simhostb1                  |SUT           |private    |none    |none       |5CAE413F-749A-56CB-AE5D-83A2954057A4
+|vm_34         |db2                 |platinum64  |191.88.194.127  |simhostd7                  |SUT           |private    |(orphan)|none       |242948D0-A71A-5D12-AE05-C83467D3F679
+|vm_35         |client_daytrader    |micro32     |15.117.68.82    |simhostd0                  |LG            |private    |(orphan)|none       |74C8EA0F-6088-5584-BE22-EB88C8092914
+|vm_36         |client_daytrader    |micro32     |139.80.222.129  |simhostd2                  |LG            |private    |(orphan)|none       |9FEDEE77-12CC-5759-900D-AA42583270F4
+|vm_97         |netclient           |iron32      |56.237.96.71    |simhostb13                 |LG            |private    |(orphan)|none       |3DF99BBF-E7B7-5A79-886C-DC685E784901
+|vm_34         |db2                 |platinum64  |191.88.194.127  |simhostd7                  |SUT           |private    |(orphan)|none       |242948D0-A71A-5D12-AE05-C83467D3F679
+|vm_53         |client_daytrader    |micro32     |238.182.217.233 |simhostb12                 |LG            |private    |(orphan)|none       |19CBC893-2FA3-5FD9-9C41-357322831296
+|vm_55         |was                 |iron32      |81.231.47.126   |simhostc7                  |SUT           |private    |(orphan)|none       |483506DC-21C4-5F3E-832C-F20168B19C1A
+|vm_113        |hadoopmaster        |platinum64  |13.220.137.134  |simhostb13                 |SUT           |private    |(orphan)|none       |E5208E20-D494-50B6-9216-6A13DE6AB3CA
+|vm_85         |was                 |iron32      |61.113.103.51   |simhostd10                 |SUT           |private    |(orphan)|none       |21AD1644-FF55-5A6B-A302-A3D62CA70581
+|vm_93         |was                 |iron32      |60.135.21.64    |simhostc0                  |SUT           |private    |(orphan)|none       |2A4ABAE3-EA11-5824-88BC-63BA10CA68DD
+|vm_2          |tinyvm              |pico32      |86.32.144.220   |simhostc12                 |LG            |private    |none    |none       |AAACFDFB-CC50-5D2E-9788-4ABE800E95B5
+|vm_19         |tinyvm              |pico32      |111.104.11.54   |simhosta7                  |SUT           |private    |none    |none       |06A9B31D-5593-5250-9844-14075C7E3E55
+|vm_29         |hadoopslave         |platinum64  |237.187.73.248  |simhosta7                  |SUT           |private    |(orphan)|none       |6DDDE85B-37E6-51E1-B27C-37F29F81C51D
+|vm_96         |was                 |iron32      |42.80.127.178   |simhostc4                  |SUT           |private    |(orphan)|none       |3AFF08A9-249B-54EA-B326-C7E5E59A62A4
+|vm_34         |db2                 |platinum64  |191.88.194.127  |simhostd7                  |SUT           |private    |(orphan)|none       |242948D0-A71A-5D12-AE05-C83467D3F679
+|vm_100        |fen_hpc             |bronze32    |67.30.233.7     |simhostb5                  |SUT           |private    |(orphan)|none       |50FCDFA9-4B85-5E42-B75F-D4FB2919D428
+|vm_30         |hadoopslave         |platinum64  |96.120.138.242  |simhosta5                  |SUT           |private    |(orphan)|none       |2A6751FF-E2DD-50D9-B4A3-91E98869088D
+|vm_8          |tinyvm              |pico32      |105.205.107.56  |simhosta2                  |SUT           |private    |none    |none       |D4A55D6A-9D9A-54A2-9907-1FE2C0C6976D
+|vm_27         |client_daytrader    |micro32     |142.109.179.6   |simhostb10                 |LG            |private    |(orphan)|none       |2CC8DE75-058C-5684-8BF1-94B0A32D6DD2
+|vm_26         |was                 |iron32      |98.178.14.188   |simhostb1                  |SUT           |private    |(orphan)|none       |4A55B538-8C02-5F96-9CB9-4186B7EFE130
+|vm_47         |client_daytrader    |micro32     |172.223.164.110 |simhostc10                 |LG            |private    |(orphan)|none       |8C71BF61-6F62-55C2-96F9-72737D3B7E59
+|vm_4          |db2                 |copper32    |100.129.101.48  |simhostc12                 |SUT           |private    |none    |none       |9A02889F-F41B-5D9D-94AA-D6FCE06513DE
+|vm_35         |client_daytrader    |micro32     |15.117.68.82    |simhostd0                  |LG            |private    |(orphan)|none       |74C8EA0F-6088-5584-BE22-EB88C8092914
+|vm_34         |db2                 |platinum64  |191.88.194.127  |simhostd7                  |SUT           |private    |(orphan)|none       |242948D0-A71A-5D12-AE05-C83467D3F679
+|vm_35         |client_daytrader    |micro32     |15.117.68.82    |simhostd0                  |LG            |private    |(orphan)|none       |74C8EA0F-6088-5584-BE22-EB88C8092914
+|vm_49         |was                 |iron32      |236.152.216.42  |simhostc6                  |SUT           |private    |(orphan)|none       |6B6F5B8E-BEC9-515D-BDBD-03BC1FC3BA34
+|vm_74         |netserver           |iron32      |218.165.69.17   |simhostb10                 |SUT           |private    |(orphan)|none       |3E26A9FB-369F-5555-94D5-1985C236EC1F
+|vm_17         |tinyvm              |pico32      |149.84.59.27    |simhostc11                 |SUT           |private    |none    |none       |8E8AE07F-820C-55A1-8B70-693A09C2C3A8
+|vm_58         |was                 |iron32      |210.169.201.225 |simhostc9                  |SUT           |private    |(orphan)|none       |8E900FA7-6691-5412-9C25-BCEF3177CA7B
+|vm_80         |lb                  |iron32      |221.201.87.211  |simhostb13                 |SUT           |private    |(orphan)|none       |C693B333-4CBB-5C8F-B1E5-106DD173658D
+|vm_87         |cn_hpc              |bronze32    |133.203.239.48  |simhostc13                 |SUT           |private    |(orphan)|none       |B4FCAB58-AC82-5971-A9D9-A75D29538CC4
+|vm_114        |hadoopslave         |platinum64  |200.241.44.137  |simhostc10                 |SUT           |private    |(orphan)|none       |6A1EFDAD-9A7C-5812-AAB7-3F82CECE23B1
+|vm_95         |db2                 |gold32      |135.22.102.96   |simhostc8                  |SUT           |private    |(orphan)|none       |FF2C9C5F-D51B-52DF-B04D-39D8F1CFBC92
+|vm_37         |db2                 |platinum64  |167.164.246.206 |simhostd13                 |SUT           |private    |(orphan)|none       |4111893C-DBDE-5C27-A55E-20BD0691395B
+|vm_13         |tinyvm              |iron32      |245.87.250.151  |simhostd0                  |SUT           |private    |none    |none       |C8886D72-0F4A-5153-9BD1-3B12CE6C6606
+|vm_1          |tinyvm              |pico32      |90.17.211.77    |simhostd3                  |SUT           |private    |none    |none       |4BB20172-486A-5DCB-9DC1-A49A5B8AFE4A
+|vm_119        |was                 |iron32      |36.198.185.98   |simhostc3                  |SUT           |private    |(orphan)|none       |BF680764-9E94-5D86-82F0-69AA6A1FFE3A
+|vm_114        |hadoopslave         |platinum64  |200.241.44.137  |simhostc10                 |SUT           |private    |(orphan)|none       |6A1EFDAD-9A7C-5812-AAB7-3F82CECE23B1
+|vm_116        |hadoopslave         |platinum64  |154.146.184.104 |simhostb8                  |SUT           |private    |(orphan)|none       |A01571AB-A037-5275-9ACA-F6319A13136D
+|vm_51         |db2                 |gold32      |48.54.178.112   |simhostd7                  |SUT           |private    |(orphan)|none       |CF9951D3-D2E0-568D-8E6E-DE011E238A6E
+|vm_63         |was                 |iron32      |196.234.233.34  |simhostd11                 |SUT           |private    |(orphan)|none       |9FC739B0-AFED-5CB4-83AD-52D4E143347B
+|vm_77         |netclient           |iron32      |143.132.214.145 |simhostd13                 |LG            |private    |(orphan)|none       |BA328713-16B4-583D-93E7-E5FE8920C6FE
+|vm_7          |tinyvm              |pico32      |19.196.136.214  |simhosta0                  |SUT           |private    |none    |none       |7B00C19A-6F91-5BAB-BB1C-FAAD44394E3C
+|vm_107        |was                 |iron32      |159.149.11.150  |simhostb11                 |SUT           |private    |(orphan)|none       |CD448BA2-3985-5828-9F1C-89C4F69F73C1
+|vm_120        |was                 |iron32      |132.254.84.74   |simhostb10                 |SUT           |private    |(orphan)|none       |6F476416-EB30-5BA9-93EB-4F70E2353E24
+|vm_57         |db2                 |platinum64  |63.87.51.172    |simhosta5                  |SUT           |private    |(orphan)|none       |A1B48760-8147-59F6-954B-A8C9CBC62538
+|vm_115        |hadoopslave         |platinum64  |176.87.40.234   |simhosta10                 |SUT           |private    |(orphan)|none       |85949E0F-E815-5B08-9A8B-C50D196ED53D
+|vm_90         |coremark            |iron32      |35.25.123.24    |simhosta2                  |SUT           |private    |(orphan)|none       |666F9A4B-3A86-5E44-A52B-EA62B2C47E7D
+|vm_43         |was                 |iron32      |100.73.137.214  |simhosta4                  |SUT           |private    |(orphan)|none       |58476B8B-7E03-525A-9C54-FE05CBBDAE70
+|vm_71         |netclient           |iron32      |36.238.7.142    |simhostd11                 |LG            |private    |(orphan)|none       |D7AA43D7-E256-56E0-9766-B0E5EFCEDF43
+|vm_65         |db2                 |gold32      |66.180.28.190   |simhostd8                  |SUT           |private    |(orphan)|none       |EA711018-07BB-50C6-8AEA-9EAAB6638968
+|vm_71         |netclient           |iron32      |36.238.7.142    |simhostd11                 |LG            |private    |(orphan)|none       |D7AA43D7-E256-56E0-9766-B0E5EFCEDF43
+|vm_12         |tinyvm              |iron32      |203.227.93.171  |simhostb14                 |SUT           |private    |none    |none       |0C528743-3D93-553F-B4B7-AC6CEC8A0AC3
+|vm_15         |tinyvm              |pico32      |47.112.202.121  |simhosta3                  |SUT           |private    |none    |none       |A9464C24-3E5A-5541-BCEE-8B0ECC875895
+|vm_33         |was                 |iron32      |176.100.215.83  |simhostd13                 |SUT           |private    |(orphan)|none       |07A38861-02BF-5380-82A9-247BF090C63C
+|vm_81         |db2                 |gold32      |28.122.7.62     |simhostd6                  |SUT           |private    |(orphan)|none       |4E8A905B-6CEE-5209-A8C4-73AFE1A4363C
+|vm_39         |netclient           |platinum64  |53.90.168.84    |simhosta12                 |SUT           |private    |(orphan)|none       |E7FBB528-88DE-5985-9F49-49848EC495D5
+|vm_11         |fen_hpc             |platinum64  |95.196.201.244  |simhostd0                  |LG            |private    |none    |none       |4B74CB2F-F539-50B6-BCEC-F25E72CB46F8
+|vm_113        |hadoopmaster        |platinum64  |13.220.137.134  |simhostb13                 |SUT           |private    |(orphan)|none       |E5208E20-D494-50B6-9216-6A13DE6AB3CA
+|vm_33         |was                 |iron32      |176.100.215.83  |simhostd13                 |SUT           |private    |(orphan)|none       |07A38861-02BF-5380-82A9-247BF090C63C
+|vm_42         |hadoopslave         |platinum64  |188.60.214.198  |simhostd9                  |SUT           |private    |(orphan)|none       |D827FA55-CFCD-5999-B116-5F0EB168340E
+|vm_3          |tinyvm              |pico32      |71.248.153.186  |simhostb1                  |SUT           |private    |none    |none       |5CAE413F-749A-56CB-AE5D-83A2954057A4
+|vm_86         |fen_hpc             |bronze32    |109.152.187.242 |simhosta1                  |SUT           |private    |(orphan)|none       |9956A651-A65B-58D5-9032-A51CFC79353A
+|vm_88         |cn_hpc              |bronze32    |51.171.207.171  |simhosta9                  |SUT           |private    |(orphan)|none       |A5721250-BCDA-50AB-89C3-E427EF346128
+|vm_8          |tinyvm              |pico32      |105.205.107.56  |simhosta2                  |SUT           |private    |none    |none       |D4A55D6A-9D9A-54A2-9907-1FE2C0C6976D
+|vm_10         |netclient           |iron32      |26.150.188.90   |simhosta2                  |SUT           |private    |none    |none       |88056A2A-A811-5366-87F9-54D9BCF5AFAA
+|vm_106        |was                 |iron32      |219.246.49.204  |simhosta10                 |SUT           |private    |(orphan)|none       |53EAD437-9200-5AEF-8D74-90EDA8012E03
+|vm_63         |was                 |iron32      |196.234.233.34  |simhostd11                 |SUT           |private    |(orphan)|none       |9FC739B0-AFED-5CB4-83AD-52D4E143347B
+|vm_3          |tinyvm              |pico32      |71.248.153.186  |simhostb1                  |SUT           |private    |none    |none       |5CAE413F-749A-56CB-AE5D-83A2954057A4
+|vm_121        |lb                  |iron32      |117.67.145.133  |simhostd10                 |SUT           |private    |(orphan)|none       |8E052D19-9C16-5178-9EA9-C67B4580B2B3
+|vm_86         |fen_hpc             |bronze32    |109.152.187.242 |simhosta1                  |SUT           |private    |(orphan)|none       |9956A651-A65B-58D5-9032-A51CFC79353A
+|vm_3          |tinyvm              |pico32      |71.248.153.186  |simhostb1                  |SUT           |private    |none    |none       |5CAE413F-749A-56CB-AE5D-83A2954057A4
+|vm_13         |tinyvm              |iron32      |245.87.250.151  |simhostd0                  |SUT           |private    |none    |none       |C8886D72-0F4A-5153-9BD1-3B12CE6C6606
+|vm_22         |tinyvm              |pico32      |179.212.46.181  |simhostb10                 |SUT           |private    |none    |none       |176496DD-B58E-5C8B-AB47-FDE688566A80
+|vm_97         |netclient           |iron32      |56.237.96.71    |simhostb13                 |LG            |private    |(orphan)|none       |3DF99BBF-E7B7-5A79-886C-DC685E784901
+|vm_19         |tinyvm              |pico32      |111.104.11.54   |simhosta7                  |SUT           |private    |none    |none       |06A9B31D-5593-5250-9844-14075C7E3E55
+|vm_84         |client_tradelite    |micro32     |214.222.157.225 |simhostb3                  |LG            |private    |(orphan)|none       |64296189-40B9-57FF-AEA2-BB5986AC7EF9
+|vm_83         |was                 |iron32      |14.32.150.194   |simhostc11                 |SUT           |private    |(orphan)|none       |74E8926D-FDB4-5426-B675-CCB4850AACA4
+|vm_113        |hadoopmaster        |platinum64  |13.220.137.134  |simhostb13                 |SUT           |private    |(orphan)|none       |E5208E20-D494-50B6-9216-6A13DE6AB3CA
+|vm_33         |was                 |iron32      |176.100.215.83  |simhostd13                 |SUT           |private    |(orphan)|none       |07A38861-02BF-5380-82A9-247BF090C63C
+|vm_114        |hadoopslave         |platinum64  |200.241.44.137  |simhostc10                 |SUT           |private    |(orphan)|none       |6A1EFDAD-9A7C-5812-AAB7-3F82CECE23B1
+|vm_44         |was                 |iron32      |186.28.148.206  |simhosta0                  |SUT           |private    |(orphan)|none       |A92D0DBA-7DA4-5DF1-B3DC-A7CD6798CC0C
+|vm_17         |tinyvm              |pico32      |149.84.59.27    |simhostc11                 |SUT           |private    |none    |none       |8E8AE07F-820C-55A1-8B70-693A09C2C3A8
+|vm_105        |db2                 |gold32      |236.177.204.69  |simhostc12                 |SUT           |private    |(orphan)|none       |BF393300-D639-58E6-9AC3-6975C515959C
+|vm_12         |tinyvm              |iron32      |203.227.93.171  |simhostb14                 |SUT           |private    |none    |none       |0C528743-3D93-553F-B4B7-AC6CEC8A0AC3
+|vm_42         |hadoopslave         |platinum64  |188.60.214.198  |simhostd9                  |SUT           |private    |(orphan)|none       |D827FA55-CFCD-5999-B116-5F0EB168340E
+|vm_115        |hadoopslave         |platinum64  |176.87.40.234   |simhosta10                 |SUT           |private    |(orphan)|none       |85949E0F-E815-5B08-9A8B-C50D196ED53D
+|vm_87         |cn_hpc              |bronze32    |133.203.239.48  |simhostc13                 |SUT           |private    |(orphan)|none       |B4FCAB58-AC82-5971-A9D9-A75D29538CC4
+|vm_35         |client_daytrader    |micro32     |15.117.68.82    |simhostd0                  |LG            |private    |(orphan)|none       |74C8EA0F-6088-5584-BE22-EB88C8092914
+|vm_92         |client_daytrader    |micro32     |5.37.80.3       |simhostd4                  |LG            |private    |(orphan)|none       |75D7FCF6-9936-5094-BC4F-35262D9AE8C9
+|vm_5          |netclient           |platinum64  |195.243.1.253   |simhostb11                 |SUT           |private    |none    |none       |0FC8B3F6-F86F-5839-8D91-B2D0086F8466
+|vm_28         |db2                 |platinum64  |229.52.178.138  |simhostb4                  |SUT           |private    |(orphan)|none       |3CC7C166-3832-502D-9BF2-8B1B12D328B3
+|vm_58         |was                 |iron32      |210.169.201.225 |simhostc9                  |SUT           |private    |(orphan)|none       |8E900FA7-6691-5412-9C25-BCEF3177CA7B
+|vm_92         |client_daytrader    |micro32     |5.37.80.3       |simhostd4                  |LG            |private    |(orphan)|none       |75D7FCF6-9936-5094-BC4F-35262D9AE8C9
 
