@@ -2398,17 +2398,18 @@ class BaseObjectOperations :
                     _xfmsg = "Ran out of time to run generic post_boot scripts "
                     _xfmsg += "due to the established SLA provisioning target."
 
+                _msg = "The generic post-boot \"setup\" scripts completed with"
+                _msg += " status " + str(_status) + " after " + str(_post_boot_spent_time) + " seconds"
+                cbdebug(_msg)
+                
                 for _vm in _vm_list :                        
-                    _vm_uuid, _vm_role, _vm_name = _vm.split('|')                            
+                    _vm_uuid, _vm_role, _vm_name = _vm.split('|')
                     _obj_attr_list = self.osci.get_object(cloud_name, "VM", False, _vm_uuid, False)                        
                     _abort, _fmsg, _remaining_time = self.pending_decide_abortion(_obj_attr_list, "VM", "generic post-boot", False)
 
                     if _abort and not _status:
                         _status = 17492
-                        _xfmsg = "The generic post-boot \"setup\" scripts "
-                        _xfmsg += " completed successfully (after "
-                        _xfmsg += str(_post_boot_spent_time) + " seconds), but "
-                        _xfmsg += "ran out of time to run application-specific \"setup\""
+                        _xfmsg = "Ran out of time to run application-specific \"setup\""
                         _xfmsg += " scripts on " + _ai_attr_list["log_string"] + " due to the "
                         _xfmsg += "established SLA provisioning target."
                         _xfmsg += _ai_name + " due to the established "
@@ -2430,6 +2431,11 @@ class BaseObjectOperations :
                         self.osci.update_object_attribute(_ai_attr_list["cloud_name"], "VM", _vm_uuid, \
                                                           False, "last_known_state", \
                                                           "generic post-boot script executed")
+                        
+                        if _ai_attr_list["prov_from_orchestrator"].lower() == "true" :
+                            self.osci.update_object_attribute(_ai_attr_list["cloud_name"], "VM", _vm_uuid, \
+                                      False, "mgt_006_instance_preparation", \
+                                      _post_boot_spent_time)
                     
             else :
                 _status = 0
@@ -2557,6 +2563,11 @@ class BaseObjectOperations :
                         sleep(float(_ai_attr_list["post_application_scripts_delay"]))
                         _application_spent_time = int(time()) - _application_start                        
 
+                        _msg = "The application-specific \"setup\" scripts"
+                        _msg += " completed with status " + str(_status) + " after "
+                        _msg += str(_application_spent_time) + " seconds"
+                        cbdebug(_msg)
+                        
                         if operation != "reset" :
                             for _vm in _vm_list :
                                 _vm_uuid, _vm_role, _vm_name = _vm.split('|')
@@ -2565,13 +2576,15 @@ class BaseObjectOperations :
 
                                 if _remaining_time < _smallest_remaining_time :
                                     _smallest_remaining_time = _remaining_time
+
+                                if _ai_attr_list["prov_from_orchestrator"].lower() == "true" :
+                                    self.osci.update_object_attribute(_ai_attr_list["cloud_name"], "VM", _vm_uuid, \
+                                              False, "mgt_007_application_start", \
+                                              _application_spent_time)
                                 
                                 if _abort and not _status:
                                     _status = 17493
-                                    _xfmsg = "The application-specific \"setup\" scripts"
-                                    _xfmsg += " completed successfully (after "
-                                    _xfmsg += str(_application_spent_time) + " seconds),"
-                                    _xfmsg += " but ran out of time to start the "
+                                    _xfmsg = "Ran out of time to start the "
                                     _xfmsg += "\"load manager\" on " + _ai_attr_list["log_string"] 
                                     _xfmsg += " due to the established SLA provisioning target."
                         
@@ -2939,8 +2952,10 @@ class BaseObjectOperations :
             for _key in [ "abort", \
                           "comments", \
                           "utc_offset_on_vm", \
-                          "mgt_006_instance_preparation", \
-                          "mgt_007_application_start"] :
+                          "instance_preparation_on_vm", \
+                          "application_start_on_vm" ] :
+#                          "mgt_006_instance_preparation", \
+#                          "mgt_007_application_start"] :
 
                 if _key in _pending_attr_list :
                     obj_attr_list[_key] = _pending_attr_list[_key]

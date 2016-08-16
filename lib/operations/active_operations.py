@@ -2190,6 +2190,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                               False, "last_known_state", \
                                               "checked SSH accessibility")
             obj_attr_list["last_known_state"] = "checked SSH accessibility"
+            
+            _msg = "Checked ssh accessibility on " + obj_attr_list["log_string"]
+            cbdebug(_msg,)
 
             _msg = "Bootstrapping " + obj_attr_list["log_string"]  + ": creating file"
             _msg += " cb_os_paramaters.txt in \"" + obj_attr_list["login"] 
@@ -2223,6 +2226,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                    True, \
                                                    tell_me_if_stderr_contains = "Connection reset by peer", \
                                                    port = _port)
+
+            _msg = "Bootstrapped " + obj_attr_list["log_string"]
+            cbdebug(_msg)
 
             _msg = "Sending a copy of the code tree to " +  obj_attr_list["log_string"]  + ", on IP "
             _msg += "address " + obj_attr_list["prov_cloud_ip"] + "..."
@@ -2273,7 +2279,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
             self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], \
                                               False, "mgt_005_file_transfer", \
                                               _delay)
-
+            
+            _msg = "Sent a copy of the code tree to " +  obj_attr_list["log_string"]  + ", on IP "
+            _msg += "address " + obj_attr_list["prov_cloud_ip"] + "..."
+            cbdebug(_msg)
+            
             if "ai" in obj_attr_list and obj_attr_list["ai"] == "none" :
 
                 if not access(obj_attr_list["identity"], F_OK) :
@@ -2305,6 +2315,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                       False, "last_known_state", \
                                                       "generic post-boot script executed")                    
                     obj_attr_list["last_known_state"] = "generic post-boot script executed"
+
+                _msg = "Performed generic VM post_boot configuration on " + obj_attr_list["log_string"] 
+                _msg += ", on IP address "+ obj_attr_list["prov_cloud_ip"] + "..."     
+                cbdebug(_msg)
                      
                 self.record_management_metrics(obj_attr_list["cloud_name"], \
                                                "VM", obj_attr_list, "attach")

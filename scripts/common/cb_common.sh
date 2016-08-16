@@ -933,7 +933,8 @@ function provision_application_stop {
         END=$(date +%s)
         DIFF=$(( $END - $PASTART ))
         syslog_netcat "Updating vm application startup time with value ${DIFF}"
-        put_my_pending_vm_attribute mgt_007_application_start $DIFF
+        put_my_pending_vm_attribute application_start_on_vm $DIFF          
+        #        put_my_pending_vm_attribute mgt_007_application_start $DIFF
     else
         syslog_netcat "Application Instance already deployed (once). Will not report application startup time (again)"    
     fi
@@ -965,7 +966,8 @@ function provision_generic_stop {
         END=$(date +%s)
         DIFF=$(( $END - $PASTART ))
         syslog_netcat "Updating instance preaparation time with value ${DIFF}"
-        put_my_pending_vm_attribute mgt_006_instance_preparation $DIFF
+        put_my_pending_vm_attribute instance_preparation_on_vm $DIFF        
+        #        put_my_pending_vm_attribute mgt_006_instance_preparation $DIFF
     else
         syslog_netcat "Generic startup already run (once). Will not report instance preparation time (again)"    
     fi
