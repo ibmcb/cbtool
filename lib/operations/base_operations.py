@@ -2398,7 +2398,7 @@ class BaseObjectOperations :
                     _xfmsg = "Ran out of time to run generic post_boot scripts "
                     _xfmsg += "due to the established SLA provisioning target."
 
-                _msg = "The generic post-boot \"setup\" scripts completed with"
+                _msg = "The generic post-boot \"setup\" scripts for " + _ai_attr_list["log_string"] + " completed with"
                 _msg += " status " + str(_status) + " after " + str(_post_boot_spent_time) + " seconds"
                 cbdebug(_msg)
                 
@@ -2432,10 +2432,9 @@ class BaseObjectOperations :
                                                           False, "last_known_state", \
                                                           "generic post-boot script executed")
                         
-                        if _ai_attr_list["prov_from_orchestrator"].lower() == "true" :
-                            self.osci.update_object_attribute(_ai_attr_list["cloud_name"], "VM", _vm_uuid, \
-                                      False, "mgt_006_instance_preparation", \
-                                      _post_boot_spent_time)
+                        self.osci.update_object_attribute(_ai_attr_list["cloud_name"], "VM", _vm_uuid, \
+                                  False, "mgt_006_instance_preparation", \
+                                  _post_boot_spent_time)
                     
             else :
                 _status = 0
@@ -2482,7 +2481,9 @@ class BaseObjectOperations :
                     cbdebug(_msg, True)
 
                 _lmr = False
-                
+
+                _total_application_spent_time = 0
+                                
                 for _num in range(1, 100) :
                     _found = False
                     _vm_command_list = []
@@ -2562,10 +2563,11 @@ class BaseObjectOperations :
                         
                         sleep(float(_ai_attr_list["post_application_scripts_delay"]))
                         _application_spent_time = int(time()) - _application_start                        
-
-                        _msg = "The application-specific \"setup\" scripts"
+                        _total_application_spent_time += _application_spent_time
+                        
+                        _msg = "The application-specific \"setup\" scripts for " + _ai_attr_list["log_string"]
                         _msg += " completed with status " + str(_status) + " after "
-                        _msg += str(_application_spent_time) + " seconds"
+                        _msg += str(_application_spent_time) + '/' + str(_total_application_spent_time) + " seconds"
                         cbdebug(_msg)
                         
                         if operation != "reset" :
@@ -2577,10 +2579,9 @@ class BaseObjectOperations :
                                 if _remaining_time < _smallest_remaining_time :
                                     _smallest_remaining_time = _remaining_time
 
-                                if _ai_attr_list["prov_from_orchestrator"].lower() == "true" :
-                                    self.osci.update_object_attribute(_ai_attr_list["cloud_name"], "VM", _vm_uuid, \
-                                              False, "mgt_007_application_start", \
-                                              _application_spent_time)
+                                self.osci.update_object_attribute(_ai_attr_list["cloud_name"], "VM", _vm_uuid, \
+                                          False, "mgt_007_application_start", \
+                                          _total_application_spent_time)
                                 
                                 if _abort and not _status:
                                     _status = 17493

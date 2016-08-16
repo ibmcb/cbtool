@@ -2135,8 +2135,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
 
-        _start = int(time())
-
         _retry_interval = int(obj_attr_list["update_frequency"])
 
         if str(obj_attr_list["use_jumphost"]).lower() == "true" :
@@ -2273,13 +2271,15 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                   "sent copy of code tree")
                 obj_attr_list["last_known_state"] = "sent copy of code tree"
 
-            _delay = int(time()) - _start
+            _time_mark_ift = int(time())
+            _delay = _time_mark_ift - obj_attr_list["time_mark_aux"]
             self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "status", "Files transferred...")
             obj_attr_list["mgt_005_file_transfer"] = _delay
             self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], \
                                               False, "mgt_005_file_transfer", \
                                               _delay)
-            
+            obj_attr_list["time_mark_aux"] = _time_mark_ift
+             
             _msg = "Sent a copy of the code tree to " +  obj_attr_list["log_string"]  + ", on IP "
             _msg += "address " + obj_attr_list["prov_cloud_ip"] + "..."
             cbdebug(_msg)
@@ -2304,12 +2304,19 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                          tell_me_if_stderr_contains = "Connection reset by peer", \
                                          port = _port)                    
 
+                _time_mark_ipbc = int(time())
+                _delay = _time_mark_ipbc - obj_attr_list["time_mark_aux"]
+                             
                 if _status :
                     _fmsg = "Failure while executing generic VM "
                     _fmsg += "post_boot configuration on "
                     _fmsg += obj_attr_list["name"] + '.\n'
 #                            _fmsg += _xfmsg
                 else :
+
+                    self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], \
+                              False, "mgt_006_instance_preparation", \
+                              _delay)
 
                     self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], \
                                                       False, "last_known_state", \

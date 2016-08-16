@@ -504,7 +504,9 @@ class CommonCloudFunctions:
                 
                 if _vm_is_booted :
                     self.take_action_if_requested("VM", obj_attr_list, "provision_finished")
+                    _time_mark_ib = int(time())
                     obj_attr_list["mgt_004_network_acessible"] = int(time()) - time_mark_prc
+                    obj_attr_list["time_mark_aux"] = _time_mark_ib                    
                     self.pending_set(obj_attr_list, "Network accessible now. Continuing...")
                     _network_reachable = True
                     break
