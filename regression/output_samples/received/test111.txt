@@ -1,4 +1,4 @@
-Current experiment identifier is "EXP-02-22-2016-11-13-15-PM-UTC".
+Current experiment identifier is "EXP-08-15-2016-03-35-39-PM-UTC".
 
 Also, data for the following experiments was found on the metric store:
-EXP-02-22-2016-11-12-58-PM-UTC
+EXP-08-15-2016-03-35-23-PM-UTC

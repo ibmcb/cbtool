@@ -1,4 +1,4 @@
-Background operation execution success. Operation "vm-migrate" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.0.4,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,password:cbpwdZ9,timeout:240,host:172.16.0.4,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,youngest,source,tcp,default --operation=vm-migrate --cn=TESTCLOUD --uuid=65F1542F-B9E4-501C-927A-E83C7F976C8C --daemon". The process id is 14437.
+Background operation execution success. Operation "vm-migrate" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.0.4,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,password:cbpwdZ9,timeout:240,host:172.16.0.4,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,youngest,source,tcp,default --operation=vm-migrate --cn=TESTCLOUD --uuid=686F81BA-3782-5AF2-A7A4-277868AF3B79 --daemon". The process id is 14598.
 
 Going to unconditionally wait for 10s (10 seconds). The command line interface will be blocked during the waiting.
 Waited 1 seconds... (10.0%)
@@ -15,11 +15,11 @@ Waited for 10 seconds.
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |26.49M                        
+|Used Memory                                          |23.86M                        
 |Redis Version                                        |2.8.6                         
-|Uptime (in seconds)                                  |14436569                      
-|Total Connections Received                           |614890                        
-|Total Commands Processed                             |58995957                      
+|Uptime (in seconds)                                  |12857633                      
+|Total Connections Received                           |548804                        
+|Total Commands Processed                             |42957017                      
 |Number of Keys                                       |1269                          
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
@@ -92,14 +92,14 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |539                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|CCD79666-5799-503C-BB5D-9D8F04F09866 (simzone_dest) VM RESERVATIONS|0                             
-|4DFFE7AE-4E70-5DA7-82EF-D0BC8960A44B (simzone_c) VM RESERVATIONS|0                             
-|2C0CBD0C-C4AB-589F-B1DC-473FE1792EEA (simzone_b) VM RESERVATIONS|0                             
-|95B3CBBD-180B-59D1-9048-B3EAC63E092B (simzone_d) VM RESERVATIONS|0                             
-|F393DEF3-835F-50A7-A05B-1D40D72E3297 (simzone_source) VM RESERVATIONS|1                             
-|09BE1FD2-5286-5B6E-AA11-D68D33341047 (simzone_a) VM RESERVATIONS|0                             
+|78BCCB43-FE7A-59C1-8C4B-4DD5A13B0CAB (simzone_source) VM RESERVATIONS|1                             
+|662A8BAF-6270-52A0-B49B-7E1326CCC8B6 (simzone_c) VM RESERVATIONS|0                             
+|8E167E6D-B4E1-531D-A90A-A469EF1067C6 (simzone_b) VM RESERVATIONS|0                             
+|B7DC9A17-FAD8-5627-A74C-1500C089637C (simzone_dest) VM RESERVATIONS|0                             
+|9ADC8244-8C1F-5728-8581-9D8825A87B6E (simzone_a) VM RESERVATIONS|0                             
+|B37F024B-5D05-5130-8E9E-0804A1122684 (simzone_d) VM RESERVATIONS|0                             
 
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 |name          |role                |size        |cloud_ip        |host_name                  |vmc_pool      |netname    |ai      |aidrs      |uuid
-|vm_129        |tinyvm              |pico32      |141.248.106.13  |source                     |sut           |private    |none    |none       |65F1542F-B9E4-501C-927A-E83C7F976C8C
+|vm_129        |tinyvm              |pico32      |49.64.15.146    |source                     |sut           |private    |none    |none       |686F81BA-3782-5AF2-A7A4-277868AF3B79
 

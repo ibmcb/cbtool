@@ -1,0 +1,11 @@
+Background operation execution success. Operation "vm-attach" will be processed asynchronously, through the command ""/path/to/tool/lib/operations//../../cbact" --procid=TEST_msilva --osp=port:xxxx,experiment_inst:TEST_msilva,host:xxx.xxx.xxx.xxx ,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:xxxx,password:cbpwdZ9,timeout:240,host:xxx.xxx.xxx.xxx ,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,tinyvm,auto,empty,default,none,empty=empty --operation=vm-attach --cn=TESTCLOUD --uuid=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx --daemon". The process id is xxxx.
+Operation "vm-attach" will be processed asynchronously, through the command ""/path/to/tool/lib/operations//../../cbact" --procid=TEST_msilva --osp=port:xxxx,experiment_inst:TEST_msilva,host:xxx.xxx.xxx.xxx ,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:xxxx,password:cbpwdZ9,timeout:240,host:xxx.xxx.xxx.xxx ,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,tinyvm,auto,empty,default,none,empty=empty --operation=vm-attach --cn=TESTCLOUD --uuid=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx --daemon". The process id is xxxx.
+The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
+
+Going to wait until the value on counter "VM ARRIVED" is equal to XX (currently it is equal to XX) waiting 1.0 seconds between samples, for a maximum of 36000.0 seconds. The counter is assumed to be increasing.
+ status: Counter "VM ARRIVED" equals 6 after 0.931554079056 seconds (the counter is assumed to be increasing).
+ status: Counter "VM ARRIVED" equals 6 after 1.93155407906 seconds (the counter is assumed to be increasing).
+ status: Counter "VM ARRIVED" equals 7 after 2.93155407906 seconds (the counter is assumed to be increasing).
+ status: Counter "VM ARRIVED" equals 8 after 3.93155407906 seconds (the counter is assumed to be increasing).
+Waited 3.93155407906 seconds until "VMs ARRIVED" was equal to 8.
+|Redis Version |3.0.6 

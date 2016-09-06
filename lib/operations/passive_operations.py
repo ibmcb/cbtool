@@ -169,7 +169,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
         return x["name"]
     
     @trace
-    def get_fields(self, obj_type):
+    def get_fields(self, obj_type, criteria = "attached"):
         if obj_type == "CLOUD" :
             _obj_inst = self.pid
             _fields = []
@@ -204,7 +204,9 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _fields.append("|vmc_pool      ")
             _fields.append("|netname    ")            
             _fields.append("|ai      ")
-            _fields.append("|aidrs      ")                    
+            _fields.append("|aidrs      ")
+            if criteria == "failed" :
+                _fields.append("|abort                        ")            
             _fields.append("|uuid")
 #            _fields.append("|uuid                                 ")
         elif obj_type == "AI" :
@@ -280,11 +282,11 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _obj_type = command.split('-')[0].upper()
             _obj_list = []
             _total = 0
-            _fields = self.get_fields(_obj_type)
 
             _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
-
+            
             if not _status :
+                _fields = self.get_fields(_obj_type, obj_attr_list["state"])                
                 _status, _fmsg = self.initialize_object(obj_attr_list, command)
 
                 if not _status and (obj_attr_list["state"].lower() not in ["pending", "failed", "finished"]):
@@ -489,10 +491,29 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _fields.append("|value                                ")
     
                         _fmt_obj_attr_list = ''.join(_fields) + '\n'
-                        _obj_attribs = self.osci.get_object(obj_attr_list["cloud_name"], _obj_type, True, \
-                                                            obj_attr_list["name"], \
-                                                            False)
-                        _obj_attribs["state"] = self.osci.get_object_state(obj_attr_list["cloud_name"], _obj_type, _obj_attribs["uuid"])
+                        
+                        if obj_attr_list["state"] != "pending" :
+                            if len(obj_attr_list["name"]) == 36 and obj_attr_list["name"].count('-') == 4 :
+                                _is_tag = False
+                            else :
+                                _is_tag = True
+                                
+                            _obj_attribs = self.osci.get_object(obj_attr_list["cloud_name"], _obj_type, _is_tag, \
+                                                                obj_attr_list["name"], \
+                                                                False)
+                            _obj_attribs["state"] = self.osci.get_object_state(obj_attr_list["cloud_name"], _obj_type, _obj_attribs["uuid"])
+                        else :
+                            if len(obj_attr_list["name"]) == 36 and obj_attr_list["name"].count('-') == 4 :
+                                True
+                            else :
+                                # This code path is expected to be rarely used, mostly for debugging
+                                for _obj_uuid  in self.osci.get_list(obj_attr_list["cloud_name"], _obj_type, "PENDING", True) :
+                                    if _obj_uuid[0].count(obj_attr_list["name"]) :
+                                        obj_attr_list["name"] = _obj_uuid[0].replace('|' + obj_attr_list["name"],'')
+                            
+                            _obj_attribs = self.osci.pending_object_get(obj_attr_list["cloud_name"], _obj_type, obj_attr_list["name"], _obj_select_attribs[0])
+                            
+                            _obj_attribs["state"] = "pending"
     
                         for _attrib, _value in iter(sorted(_obj_attribs.iteritems())) :
                             if _attrib in _obj_select_attribs or \
@@ -570,7 +591,8 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _fields = [] 
     
                     if _obj_type == "CLOUD" :
-                        _can_be_tag = False
+                        _is_tag = False
+                        obj_attr_list["state"] = "default"
                         _obj_type = "GLOBAL"
                         _obj_uuid = obj_attr_list["specified_attributes"]
     
@@ -587,7 +609,11 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _fmsg += obj_attr_list["specified_attributes"] + "\" on Cloud " + obj_attr_list["cloud_name"] + ": "
     
                     else :
-                        _can_be_tag = True
+                        if len(obj_attr_list["name"]) == 36 and obj_attr_list["name"].count('-') == 4 :
+                            _is_tag = False
+                        else :
+                            _is_tag = True
+                            
                         _obj_uuid = obj_attr_list["name"]
     
                         _fields.append("|attribute                              ")
@@ -603,8 +629,19 @@ class PassiveObjectOperations(BaseObjectOperations) :
     
                     _fmt_obj_chg_attr = ''.join(_fields) + '\n'
     
-                    _old_values = self.osci.get_object(obj_attr_list["cloud_name"], _obj_type, _can_be_tag, \
-                                                       _obj_uuid, False)
+                    if obj_attr_list["state"] != "pending" :
+                        _old_values = self.osci.get_object(obj_attr_list["cloud_name"], _obj_type, _is_tag, \
+                                                           _obj_uuid, False)
+                    else :
+                        if len(obj_attr_list["name"]) == 36 and obj_attr_list["name"].count('-') == 4 :
+                            True
+                        else :
+                            # This code path is expected to be rarely used, mostly for debugging
+                            for _c_obj_uuid  in self.osci.get_list(obj_attr_list["cloud_name"], _obj_type, "PENDING", True) :
+                                if _c_obj_uuid[0].count(obj_attr_list["name"]) :
+                                    _obj_uuid = _c_obj_uuid[0].replace('|' + obj_attr_list["name"],'')
+                        
+                        _old_values = self.osci.pending_object_get(obj_attr_list["cloud_name"], _obj_type, _obj_uuid, "all")                    
 
                     for _kv in _obj_attrib_kvs :
                         # use split('=', 1) to allow for value to contain
@@ -614,10 +651,10 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         if not _key in _old_values :
                             _old_values[_key] = "non-existent"
     
-                        if _key[0] == '-' :
+                        if _key[0] == '-' and obj_attr_list["state"] != "pending" :
                             _key = _key[1:]
                             self.osci.remove_object_attribute(obj_attr_list["cloud_name"], _obj_type, _obj_uuid, \
-                                                              _can_be_tag, _key)
+                                                              _is_tag, _key)
                         else :
                             if _value.count("C+") :
                                 _counter = True
@@ -627,10 +664,12 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                 _counter = True
                             else :
                                 _counter = False
-                                
-                            self.osci.update_object_attribute(obj_attr_list["cloud_name"], _obj_type, _obj_uuid, \
-                                                              _can_be_tag, _key, _value, _counter)
-                            
+
+                            if obj_attr_list["state"] != "pending" :
+                                self.osci.update_object_attribute(obj_attr_list["cloud_name"], _obj_type, _obj_uuid, \
+                                                                  _is_tag, _key, _value, _counter)
+                            else :
+                                self.osci.pending_object_set(obj_attr_list["cloud_name"], _obj_type, _obj_uuid, _key, _value)
     
                         _fmt_obj_chg_attr += '|' + _key.ljust(len(_fields[0]) - 1)
                         _fmt_obj_chg_attr += '|' + _old_values[_key].ljust(len(_fields[1]) - 1)
@@ -1930,7 +1969,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _csv_contents_line = ''
                         for _key in _desired_keys  :
                             if _metric["expid"] == _criteria["expid"] :
-                                if _key in _metric :
+                                if _key in _metric : 
                                     if _key == "mgt_001_provisioning_request_originated" :
                                         _csv_contents_line += str(int(_metric[_key]) - _experiment_start_time) + ','
                                     elif _key == "mgt_101_capture_request_originated" :
@@ -1942,7 +1981,11 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                     else :
                                         _csv_contents_line += str(_metric[_key]) + ','
                                 else :
-                                    _csv_contents_line += _obj_attr_list["filler_string"] + ','
+                                    if _key == "mgt_001_provisioning_request_originated_abs" :
+                                        _key = "mgt_001_provisioning_request_originated"
+                                        _csv_contents_line += str(int(_metric[_key])) + ','                                       
+                                    else:
+                                        _csv_contents_line += _obj_attr_list["filler_string"] + ','
 
                             # The uuid to attribute cache/map has to be unconditionally
                             # populated.
@@ -2338,7 +2381,6 @@ class PassiveObjectOperations(BaseObjectOperations) :
         '''
         TBD
         '''
-        
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
 
@@ -2351,6 +2393,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
         _initial_ai_attr_list = self.osci.get_object(cloud_name, "AI", False, object_uuid, False)
 
         _mode = _initial_ai_attr_list["mode"]
+        
         _check_frequency = float(_initial_ai_attr_list["update_frequency"])
                         
         while _ai_state and not _error :        
@@ -3040,7 +3083,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
-            _result = None 
+            _result = None
 
             _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
 

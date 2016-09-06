@@ -1,16 +1,16 @@
- status: vm_24 (cloud-assigned uuid 96B6D117-6AED-5381-9396-170E7D8A0A03) could not be created on SimCloud "TESTCLOUD" : Deterministic VM failure ("willfail") (The VM creation was rolled back)
- status: Sending a termination request for vm_24 (cloud-assigned uuid 96B6D117-6AED-5381-9396-170E7D8A0A03)....
-VM object 760685B2-BC54-5851-B01E-FAAE51727F4A (named "vm_24") could not be attached to this experiment: vm_24 (cloud-assigned uuid 96B6D117-6AED-5381-9396-170E7D8A0A03) could not be created on SimCloud "TESTCLOUD" : Deterministic VM failure ("willfail") (The VM creation was rolled back)
+ status: vm_24 (cloud-assigned uuid 2EBE9B87-0513-5D79-A8B9-6E91D2175278) could not be created on SimCloud "TESTCLOUD" : Failed to create VM image (The VM creation was rolled back)
+ status: Sending a termination request for vm_24 (cloud-assigned uuid 2EBE9B87-0513-5D79-A8B9-6E91D2175278)....
+VM object 5D517660-ED8B-5B46-BEB0-940E7D499BE7 (named "vm_24") could not be attached to this experiment: vm_24 (cloud-assigned uuid 2EBE9B87-0513-5D79-A8B9-6E91D2175278) could not be created on SimCloud "TESTCLOUD" : Failed to create VM image (The VM creation was rolled back)
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 No objects available.
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |19.80M                        
+|Used Memory                                          |17.27M                        
 |Redis Version                                        |2.8.6                         
-|Uptime (in seconds)                                  |14435159                      
-|Total Connections Received                           |614622                        
-|Total Commands Processed                             |58402463                      
+|Uptime (in seconds)                                  |12856226                      
+|Total Connections Received                           |548536                        
+|Total Commands Processed                             |42369357                      
 |Number of Keys                                       |591                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
@@ -83,8 +83,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |254                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|4D841AFA-3629-5865-B277-3C9B87B46AF4 (simzone_d) VM RESERVATIONS|0                             
-|B07D97D7-6259-50D3-8A5D-2F6387957881 (simzone_b) VM RESERVATIONS|0                             
-|73396447-1A1B-5F78-8FD0-C71D15101114 (simzone_a) VM RESERVATIONS|0                             
-|FB6EC147-6C78-5AE6-BD5F-8F8D6A60F5BC (simzone_c) VM RESERVATIONS|0                             
+|A168E857-FDCA-5E02-98BB-32D5CA3934A5 (simzone_d) VM RESERVATIONS|0                             
+|2A9C7A1E-D5EE-5CFE-BE56-2B4E298B71F7 (simzone_a) VM RESERVATIONS|0                             
+|FB2A884A-73A4-5C91-B913-9AD4AF1FB28A (simzone_c) VM RESERVATIONS|0                             
+|073C9CDF-01E7-5AA9-B92E-02C6DA6E75D6 (simzone_b) VM RESERVATIONS|0                             
 

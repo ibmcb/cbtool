@@ -1,0 +1,4 @@
+ status: Starting the attachment of vm_24, part of AI none...
+ status: vm_XXX (cloud-assigned uuid xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx) could not be created on SimCloud "TESTCLOUD" : Deterministic VM failure ("willfail") (The VM creation will be rolled back)
+VM object xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx (named "vm_XX") could not be attached to this experiment: vm_XXX (cloud-assigned uuid xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx) could not be created on SimCloud "TESTCLOUD" : Deterministic VM failure ("willfail") (The VM creation will be rolled back)
+|Redis Version |3.0.6 

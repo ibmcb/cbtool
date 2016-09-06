@@ -45,6 +45,7 @@ MIGRATE_SUPPORTED = $True
 PROTECT_SUPPORTED = $True
 USE_NEUTRONCLIENT = $True
 USE_CINDERCLIENT = $True
+USE_GLANCECLIENT = $False
 HOST_USER_ROOT = $False
 
 [VM_DEFAULTS : OSK_CLOUDCONFIG]
@@ -68,15 +69,20 @@ CHECK_BOOT_COMPLETE = tcp_on_22
 NETNAME = $OSK_NETNAME
 TENANT = default
 PROJECT = default
+JUMPHOST_ROLE = tinyvm
+JUMPHOST_SIZE = m1.tiny
 SIZE = from_vm_template
+CREATE_LB = $false
 CGROUPS_BASE_DIR = /sys/fs/cgroup/
 HOSTNAME_KEY = cloud_vm_name
 FLOATING_POOL = $Empty
 ALWAYS_CREATE_FLOATING_IP = $True
 USE_NEUTRONCLIENT = $True
 USE_CINDERCLIENT = $True
+USE_GLANCECLIENT = $False
 LEAVE_INSTANCE_ON_FAILURE = $False
 FORCE_FAILURE = $False
+DISABLE_TIMESYNC = $False
 AVAILABILITY_ZONE = $Empty
 
 [AI_DEFAULTS : OSK_CLOUDCONFIG]
@@ -92,6 +98,7 @@ NETNAME = $OSK_NETNAME
 TENANT = default
 PROJECT = default
 FLOATING_POOL = $Empty
+CREATE_LB = $false
 ALWAYS_CREATE_FLOATING_IP = $True
 DONT_START_QEMU_SCRAPER = $True
 
@@ -139,6 +146,7 @@ FILEBENCH = size:m1.small, imageid1:cb_filebench
 DRIVER_FIO = size:m1.medium, imageid1:cb_fio
 FIO = size:m1.medium, imageid1:cb_fio
 TINYVM = size:m1.tiny, imageid1:cb_nullworkload
+YATINYVM = size:m1.tiny, imageid1:cb_nullworkload
 FEN_HPC = size:m1.medium, imageid1:cb_hpcc
 CN_HPC = size:m1.medium, imageid1:cb_hpcc
 DDGEN = size:m1.medium, imageid1:cb_ddgen
@@ -152,5 +160,4 @@ SEED = size:m1.medium, imageid1:cb_ycsb
 REDIS = size:m1.medium, imageid1:cb_ycsb
 YCSB = size:m1.medium, imageid1:cb_ycsb
 LINPACK = size:m1.medium, imageid1:cb_linpack
-GATEST_MASTER = size:m1.large, imageid1: cb_nullworkload
-GATEST_SLAVE = size:m1.large, imageid1: cb_nullworkload
+UNIXBENCH = size:m1.medium, imageid1:cb_unixbench

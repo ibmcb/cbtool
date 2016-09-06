@@ -1,24 +1,24 @@
- status: VMC 7A280EDE-E4A6-51C9-872E-07B41A3C18CD was successfully registered on SimCloud "TESTCLOUD".
- status: VMC 44EDEF6B-9E1E-56B0-A0A9-6F611A98BD1E was successfully registered on SimCloud "TESTCLOUD".
- status: VMC 57F6AAAA-75EB-523B-882A-4B3CC17722FA was successfully registered on SimCloud "TESTCLOUD".
- status: VMC F2121AAC-E5BB-5D38-A064-06F91FAAF3F8 was successfully registered on SimCloud "TESTCLOUD".
+ status: VMC AACB88C0-9C8C-5E85-BE78-8EC170619630 was successfully registered on SimCloud "TESTCLOUD".
+ status: VMC BE962057-3818-5FBD-A011-2E7B59BC0FF5 was successfully registered on SimCloud "TESTCLOUD".
+ status: VMC 6D5AE994-7010-5437-B680-240FE417A11E was successfully registered on SimCloud "TESTCLOUD".
+ status: VMC A7415450-BD21-506B-8E1A-F92A772FD57F was successfully registered on SimCloud "TESTCLOUD".
  status: Attribute "collect_from_host" was set to "false". Skipping Host OS performance monitor daemon startup
 All VMCs successfully attached to this experiment.
 The following ATTACHED VMCs are in this experiment (Cloud TESTCLOUD) :
 |name                    |host_count      |pool                    |cloud_hostname                  |cloud_ip         
-|simzone_b               |15              |sut                     |simzone_b                       |154.89.70.210    
-|simzone_a               |15              |sut                     |simzone_a                       |112.82.45.74     
-|simzone_d               |15              |lg                      |simzone_d                       |208.245.11.168   
-|simzone_c               |15              |sut                     |simzone_c                       |138.58.246.81    
+|simzone_c               |15              |sut                     |simzone_c                       |132.243.23.97    
+|simzone_a               |15              |sut                     |simzone_a                       |90.213.207.7     
+|simzone_b               |15              |sut                     |simzone_b                       |73.42.128.146    
+|simzone_d               |15              |lg                      |simzone_d                       |85.131.53.87     
 
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |18.08M                        
+|Used Memory                                          |15.56M                        
 |Redis Version                                        |2.8.6                         
-|Uptime (in seconds)                                  |14434978                      
-|Total Connections Received                           |614581                        
-|Total Commands Processed                             |58331428                      
+|Uptime (in seconds)                                  |12856045                      
+|Total Connections Received                           |548495                        
+|Total Commands Processed                             |42298633                      
 |Number of Keys                                       |498                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
@@ -91,8 +91,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |72                            
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|7A280EDE-E4A6-51C9-872E-07B41A3C18CD (simzone_a) VM RESERVATIONS|0                             
-|44EDEF6B-9E1E-56B0-A0A9-6F611A98BD1E (simzone_d) VM RESERVATIONS|0                             
-|F2121AAC-E5BB-5D38-A064-06F91FAAF3F8 (simzone_c) VM RESERVATIONS|0                             
-|57F6AAAA-75EB-523B-882A-4B3CC17722FA (simzone_b) VM RESERVATIONS|0                             
+|A7415450-BD21-506B-8E1A-F92A772FD57F (simzone_a) VM RESERVATIONS|0                             
+|AACB88C0-9C8C-5E85-BE78-8EC170619630 (simzone_c) VM RESERVATIONS|0                             
+|BE962057-3818-5FBD-A011-2E7B59BC0FF5 (simzone_d) VM RESERVATIONS|0                             
+|6D5AE994-7010-5437-B680-240FE417A11E (simzone_b) VM RESERVATIONS|0                             
 

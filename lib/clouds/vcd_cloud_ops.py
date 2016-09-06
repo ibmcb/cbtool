@@ -306,6 +306,7 @@ class VcdCmds(CommonCloudFunctions) :
             
             obj_attr_list["prov_cloud_ip"] = obj_attr_list["instance_obj"].private_ips[0]
             obj_attr_list["run_cloud_ip"] =  obj_attr_list["instance_obj"].private_ips[0]
+            # NOTE: "cloud_ip" is always equal to "run_cloud_ip"
             obj_attr_list["cloud_ip"] = obj_attr_list["run_cloud_ip"]            
             
             _msg = "Public IP = " + obj_attr_list["cloud_hostname"]
@@ -372,8 +373,6 @@ class VcdCmds(CommonCloudFunctions) :
         ''' 
         if self.is_vm_running(obj_attr_list) :
             
-            self.take_action_if_requested("VM", obj_attr_list, "provision_complete")
-
             if self.get_ip_address(obj_attr_list) :
                 obj_attr_list["last_known_state"] = "running with ip assigned"
                 return True
@@ -796,6 +795,7 @@ class VcdCmds(CommonCloudFunctions) :
                 _msg += obj_attr_list["cloud_name"] + "\"."
                 cbdebug(_msg, True)
                 return _status, _msg
+
     @trace        
     def aidefine(self, obj_attr_list, current_step) :
         '''
@@ -803,9 +803,7 @@ class VcdCmds(CommonCloudFunctions) :
         '''
         try :
             _fmsg = "An error has occurred, but no error message was captured"
-
-            self.take_action_if_requested("AI", obj_attr_list, "all_vms_booted")
-
+            self.take_action_if_requested("AI", obj_attr_list, current_step)            
             _status = 0
 
         except Exception, e :
@@ -833,6 +831,7 @@ class VcdCmds(CommonCloudFunctions) :
         '''
         try :
             _fmsg = "An error has occurred, but no error message was captured"
+            self.take_action_if_requested("AI", obj_attr_list, current_step)            
             _status = 0
 
         except Exception, e :

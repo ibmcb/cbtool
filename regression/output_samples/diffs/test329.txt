@@ -1,0 +1,2 @@
+|Redis Version |3.0.6 
+|VMs APPLICATION ERRORS |5 

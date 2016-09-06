@@ -1,18 +1,19 @@
- status: Waiting for vm_2 (cloud-assigned uuid EB90D6A0-BBED-58DE-B31F-4FAD6A98A46B) to start...
- status: Trying to establish network connectivity to vm_2 (cloud-assigned uuid EB90D6A0-BBED-58DE-B31F-4FAD6A98A46B), on IP address 254.64.228.165...
- status: Checking ssh accessibility on vm_2 (ssh klabuser@254.64.228.165)...
- status: Bootstrapping vm_2 (creating file cb_os_paramaters.txt in "klabuser" user's home dir on 254.64.228.165)...
- status: Sending a copy of the code tree to vm_2 (254.64.228.165)...
- status: Performing generic VM post_boot configuration on vm_2 (254.64.228.165)...
-VM object 5244FC98-6DA8-5AB6-A72D-866C6875A181 (named "vm_2") sucessfully attached to this experiment. It is ssh-accessible at the IP addresses 254.64.228.165 and 124.207.89.90 (EB90D6A0-BBED-58DE-B31F-4FAD6A98A46B.simcloud.com).
+ status: Starting the attachment of vm_2, part of AI none...
+ status: Waiting for vm_2 (cloud-assigned uuid 44A36173-799F-595D-8B81-22CEAC9FC291), part of AI none, to start...
+ status: Trying to establish network connectivity to vm_2 (cloud-assigned uuid 44A36173-799F-595D-8B81-22CEAC9FC291), part of AI none, on IP address 109.27.2.23...
+ status: Checking ssh accessibility on vm_2, part of AI none (ssh -p 22 klabuser@109.27.2.23)...
+ status: Bootstrapping vm_2, part of AI none (creating file cb_os_paramaters.txt in "klabuser" user's home dir on 109.27.2.23)...
+ status: Sending a copy of the code tree to vm_2, part of AI none (109.27.2.23)...
+ status: Performing generic VM post_boot configuration on vm_2, part of AI none(109.27.2.23)...
+VM object AAACFDFB-CC50-5D2E-9788-4ABE800E95B5 (named "vm_2") sucessfully attached to this experiment. It is ssh-accessible at the IP addresses 109.27.2.23 and 86.32.144.220 (44A36173-799F-595D-8B81-22CEAC9FC291.simcloud.com).
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 |name          |role                |size        |cloud_ip        |host_name                  |vmc_pool      |netname    |ai      |aidrs      |uuid
-|vm_1          |tinyvm              |pico32      |156.132.157.237 |simhostb12                 |SUT           |private    |none    |none       |FFBD485E-62F9-55ED-AD0E-F9751F318A3E
-|vm_2          |tinyvm              |pico32      |124.207.89.90   |simhosta14                 |LG            |private    |none    |none       |5244FC98-6DA8-5AB6-A72D-866C6875A181
+|vm_1          |tinyvm              |pico32      |90.17.211.77    |simhostd3                  |SUT           |private    |none    |none       |4BB20172-486A-5DCB-9DC1-A49A5B8AFE4A
+|vm_2          |tinyvm              |pico32      |86.32.144.220   |simhostc12                 |LG            |private    |none    |none       |AAACFDFB-CC50-5D2E-9788-4ABE800E95B5
 
 The VM object vm_2, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
 |attribute (VM object key)               |value                                
-|host_name                               |simhosta14                           
+|host_name                               |simhostc12                           
 |meta_tags                               |empty                                
 |size                                    |pico32                               
 |vmc_name                                |simzone_d                            
@@ -21,15 +22,15 @@ The VM object vm_2, attached to this experiment, has the following attributes (C
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |18.59M                        
-|Redis Version                                        |2.8.6                         
-|Uptime (in seconds)                                  |14435005                      
-|Total Connections Received                           |614589                        
-|Total Commands Processed                             |58360210                      
-|Number of Keys                                       |545                           
+|Used Memory                                          |5.31M                         
+|Redis Version                                        |3.0.6                         
+|Uptime (in seconds)                                  |8704437                       
+|Total Connections Received                           |377219                        
+|Total Commands Processed                             |1222731743                    
+|Number of Keys                                       |565                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|Collections                                          |27                            
+|Collections                                          |14                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
 |VMCs                                                 |4                             
@@ -98,8 +99,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |210                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|4D841AFA-3629-5865-B277-3C9B87B46AF4 (simzone_d) VM RESERVATIONS|1                             
-|B07D97D7-6259-50D3-8A5D-2F6387957881 (simzone_b) VM RESERVATIONS|0                             
-|73396447-1A1B-5F78-8FD0-C71D15101114 (simzone_a) VM RESERVATIONS|1                             
-|FB6EC147-6C78-5AE6-BD5F-8F8D6A60F5BC (simzone_c) VM RESERVATIONS|0                             
+|48E847B7-4EAD-595E-A603-912566454DDC (simzone_a) VM RESERVATIONS|1                             
+|0F125A34-8350-57DE-AA00-635042C08FD4 (simzone_c) VM RESERVATIONS|0                             
+|C1CCDA39-30E1-56FF-A6AE-36406AD2BA16 (simzone_d) VM RESERVATIONS|1                             
+|67592E97-AC3C-50A4-B3D9-009931854DBD (simzone_b) VM RESERVATIONS|0                             
 

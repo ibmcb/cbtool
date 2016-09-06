@@ -1,0 +1,30 @@
+Background operation execution success. Operation "ai-attach" will be processed asynchronously, through the command ""/path/to/tool/lib/operations//../../cbact" --procid=TEST_msilva --osp=port:xxxx,experiment_inst:TEST_msilva,host:xxx.xxx.xxx.xxx ,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:xxxx,password:cbpwdZ9,timeout:240,host:xxx.xxx.xxx.xxx ,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,ibm_daytrader,default,default,none,none,pause_all_vms_booted,empty=empty --operation=ai-attach --cn=TESTCLOUD --uuid=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx --daemon". The process id is xxxx.
+ status: Counter "AI ARRIVING" equals 1 after 0.0807859897614 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI ARRIVING" equals 1 after 1.08078598976 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI ARRIVING" equals 1 after 2.08078598976 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI ARRIVING" equals 1 after 3.08078598976 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI ARRIVING" equals 1 after 4.08078598976 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI ARRIVING" equals 1 after 5.08078598976 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI ARRIVING" equals 1 after 6.08078598976 seconds (the counter is assumed to be decreasing).
+ status: Counter "AI ARRIVING" equals 0 after 7.08078598976 seconds (the counter is assumed to be decreasing).
+Waited 7.08078598976 seconds until "AIs ARRIVING" was equal to 0.
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1471276517 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1471276611 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1471276618 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1471276631 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1471276654 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1471276656 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1471276658 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1471276660 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1471276668 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |ibmderby_tradelite|1_x_client_tradelite->1_x_was |xxx.xxx.xxx.xxx |1471276674 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1471276681 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1471276712 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1471276718 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|ai_XX |N_x_foo->M_x_bar |A_x_foo->B_x_bar |xxx.xxx.xxx.xxx |1471276763 |none |xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+|Redis Version |3.0.6 
+|VMs |44 
+|VM RESERVATIONS |44 
+|VMs DEPARTED |60 
+|VMs APPLICATION ERRORS |6 
+|EXPERIMENT COUNTER |413 

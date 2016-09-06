@@ -1,25 +1,25 @@
- status: Waiting for vm_2 (cloud-assigned uuid F1D96335-60AE-5B73-AAE4-BAF5C238145F) to be captured with image name "vm_2_at_1456183702"...
- status: Sending a termination request for vm_2 (cloud-assigned uuid F1D96335-60AE-5B73-AAE4-BAF5C238145F)....
-VM object 92C8B1EF-27EF-5D8D-9EC7-E820567A7651 (named "vm_2") successfully captured on this experiment.
+ status: Waiting for vm_2 (cloud-assigned uuid 3BABBD57-9189-5D91-A0A8-DFB07B5F5B4E) to be captured with image name "vm_2_at_1471276269"...
+ status: Sending a termination request for vm_2 (cloud-assigned uuid 3BABBD57-9189-5D91-A0A8-DFB07B5F5B4E)....
+VM object 86ABE95C-DD36-58FA-A44F-052E2883A359 (named "vm_2") successfully captured on this experiment.
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 |name          |role                |size        |cloud_ip        |host_name                  |vmc_pool      |netname    |ai      |aidrs      |uuid
-|vm_1          |tinyvm              |pico32      |229.34.189.54   |simhostc12                 |SUT           |private    |none    |none       |FE0440AA-ABE8-54D3-BB2B-5F260B36067D
-|vm_3          |tinyvm              |pico32      |193.123.238.143 |simhostb1                  |SUT           |private    |none    |none       |A7FD0203-E5C5-5070-8DDE-C87A3E4E302F
-|vm_4          |db2                 |copper32    |130.168.194.254 |simhosta3                  |SUT           |private    |none    |none       |325854B7-33E2-5B6E-9B69-57EDC6FE865A
-|vm_5          |netclient           |platinum64  |198.62.168.124  |simhostc2                  |SUT           |private    |none    |none       |716FA71C-EA4E-50CD-B018-61526F4B0B65
+|vm_1          |tinyvm              |pico32      |94.59.149.162   |simhostd11                 |SUT           |private    |none    |none       |D02B3075-38D0-5644-A906-1E5A57B17986
+|vm_3          |tinyvm              |pico32      |64.39.37.162    |simhostb1                  |SUT           |private    |none    |none       |C062BEB6-EF0C-5F3F-BEF8-3F269D5B171D
+|vm_4          |db2                 |copper32    |245.121.185.43  |simhostd13                 |SUT           |private    |none    |none       |FB790174-A542-5FE5-ADA2-B73E6907A36C
+|vm_5          |netclient           |platinum64  |34.8.152.115    |simhosta5                  |SUT           |private    |none    |none       |E2876805-A9D0-59A4-848F-EF95AC8CA5E2
 
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |19.22M                        
-|Redis Version                                        |2.8.6                         
-|Uptime (in seconds)                                  |14435844                      
-|Total Connections Received                           |614746                        
-|Total Commands Processed                             |58714952                      
-|Number of Keys                                       |739                           
+|Used Memory                                          |8.64M                         
+|Redis Version                                        |3.0.6                         
+|Uptime (in seconds)                                  |8705302                       
+|Total Connections Received                           |377404                        
+|Total Commands Processed                             |1223353477                    
+|Number of Keys                                       |819                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|Collections                                          |28                            
+|Collections                                          |15                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
 |VMCs                                                 |4                             
@@ -55,7 +55,7 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |VMs FAILED                                           |0                             
 |VMs SLA PROVISIONING VIOLATED                        |0                             
 |VMs SLA RUNTIME VIOLATED                             |0                             
-|VMs APPLICATION ERRORS                               |6                             
+|VMs APPLICATION ERRORS                               |5                             
 |AI RESERVATIONS                                      |0                             
 |AIs ISSUED                                           |0                             
 |AIs ARRIVED                                          |0                             
@@ -88,8 +88,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |214                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|2C0CBD0C-C4AB-589F-B1DC-473FE1792EEA (simzone_b) VM RESERVATIONS|3                             
-|09BE1FD2-5286-5B6E-AA11-D68D33341047 (simzone_a) VM RESERVATIONS|1                             
-|95B3CBBD-180B-59D1-9048-B3EAC63E092B (simzone_d) VM RESERVATIONS|0                             
-|4DFFE7AE-4E70-5DA7-82EF-D0BC8960A44B (simzone_c) VM RESERVATIONS|0                             
+|9E74D721-5227-5C9B-A7BD-BE5B4A43D6AA (simzone_d) VM RESERVATIONS|0                             
+|3B6C80F6-6318-5721-A484-E3DA77718B57 (simzone_c) VM RESERVATIONS|0                             
+|803C5D90-3C59-5871-9ACF-5683E3FB4506 (simzone_a) VM RESERVATIONS|2                             
+|270A5605-A7C0-5F5E-B66F-19B77C6645BE (simzone_b) VM RESERVATIONS|2                             
 

@@ -618,8 +618,6 @@ class SlrCmds(CommonCloudFunctions) :
 
             obj_attr_list["last_known_state"] = "ACTIVE with ip unassigned"
 
-            self.take_action_if_requested("VM", obj_attr_list, "provision_complete")
-
             if self.get_ip_address(obj_attr_list, _instance) :
                 obj_attr_list["last_known_state"] = "ACTIVE with ip assigned"
                 return True
@@ -840,6 +838,8 @@ class SlrCmds(CommonCloudFunctions) :
                     sleep(_wait)
             else :
                 True
+
+            self.take_action_if_requested("VM", obj_attr_list, "deprovision_finished")
 
             _time_mark_drc = int(time())
             obj_attr_list["mgt_903_deprovisioning_request_completed"] = \
@@ -1087,9 +1087,7 @@ class SlrCmds(CommonCloudFunctions) :
         '''
         try :
             _fmsg = "An error has occurred, but no error message was captured"
-
-            self.take_action_if_requested("AI", obj_attr_list, "all_vms_booted")
-
+            self.take_action_if_requested("AI", obj_attr_list, current_step)            
             _status = 0
 
         except Exception, e :
@@ -1117,6 +1115,7 @@ class SlrCmds(CommonCloudFunctions) :
         '''
         try :
             _fmsg = "An error has occurred, but no error message was captured"
+            self.take_action_if_requested("AI", obj_attr_list, current_step)            
             _status = 0
 
         except Exception, e :

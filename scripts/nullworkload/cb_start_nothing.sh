@@ -31,4 +31,5 @@ mount_remote_filesystem ${NULLWORKLOAD_REMOTE_DATA_DIR} $NULLWORKLOAD_REMOTE_DAT
 
 syslog_netcat "Nothing started on ${SHORT_HOSTNAME} - OK"
 provision_application_stop $START
+
 exit 0

@@ -1,4 +1,4 @@
-#! /usr/bin/Rscript
+#! /usr/bin/env Rscript
 
 #/*****************************************************************************
 # Copyright (c) 2012 IBM Corp.
@@ -115,6 +115,8 @@ output_pdf_plot <- function(ed, en, po, pn = '', sps = 15, vmn = -1) {
 
 plot_get_x_y_limits <- function(en, gdf, xati, yati) {
 	
+	error <- 0
+
 	column_names <- c(names(gdf))
 	
 	if ("relative_time" %in% column_names) {
@@ -125,34 +127,56 @@ plot_get_x_y_limits <- function(en, gdf, xati, yati) {
 		x_start <- round(min(gdf$app_load_level))
 		x_end <- round(max(gdf$app_load_level, na.rm=TRUE))
 	}
-	
-	x_limits <- c(x_start, x_end)
-	
-	x_step <- round((x_end - x_start)/xati)
-	if (x_step < 1) {
-		x_step <- 1
+
+	if (is.finite(x_start) & is.finite(x_end)) {
+		x_limits <- c(x_start, x_end)
+		
+		x_step <- round((x_end - x_start)/xati)
+		if (x_step < 1) {
+			x_step <- 1
+		}
+		
+		x_breaks <- seq(x_start, x_end, x_step)		
+	} else {
+		msg <- paste("WARNING: Unable to properly detect lower (", x_start, ") ",
+				"and upper (", x_end, ") for x-axis.", sep = '')
+		cat(msg, sep='\n')
+		x_limits <- c(0, 10)
+				
+		x_breaks <- seq(0, 10, 1)		
+		error <- 1
 	}
-	
-	x_breaks <- seq(x_start, x_end, x_step)
-	
+
 	#y_start = min(gdf$value)
-	y_start = 0
+	y_start <- 0
 	
 	if ("value" %in% column_names) {		
-		y_end = round(max(gdf$value, na.rm=TRUE))
+		y_end <- round(max(gdf$value, na.rm=TRUE))
 	} else {
-		y_end = round(max(gdf$avg, na.rm=TRUE))
+		y_end <- round(max(gdf$avg, na.rm=TRUE))
 	}
-	y_limits = c(y_start, y_end)
+
+	if (is.finite(y_start) & is.finite(y_end)) {
+		y_limits = c(y_start, y_end)
+		
+		y_step <- round((y_end - y_start)/yati)
+		if (y_step < 1) {
+			y_step <- 1
+		}
+		
+		y_breaks <- seq(y_start, y_end, y_step)		
+	} else {
+		msg <- paste("WARNING: Unable to properly detect lower (", y_start, ") ",
+				"and upper (", y_end, ") for y-axis.", sep = '')
+		cat(msg, sep='\n')
+		y_limits <- c(0, 10)
+		
+		y_breaks <- seq(0, 10, 1)	
+		
+		error <- 1
+	}	
 	
-	y_step <- round((y_end - y_start)/yati)
-	if (y_step < 1) {
-		y_step <- 1
-	}
-	
-	y_breaks <- seq(y_start, y_end, y_step)
-	
-	xy_limits <- list(x_limits, x_breaks, y_limits, y_breaks)
+	xy_limits <- list(x_limits, x_breaks, y_limits, y_breaks, error)
 	
 	return(xy_limits)
 }
@@ -219,8 +243,8 @@ pre_process_files <- function(ednl, fp2df_dict) {
 				file_contents <- read.csv(file = full_experiment_file_name, 
 						head = TRUE, comment.char = "#", blank.lines.skip = "true")
 
-				experiment_name_hash <- digest(object = experiment_name, algo = "crc32", serialize = FALSE)
-				
+				experiment_name_hash <- paste("K", toString(digest(object = experiment_name, algo = "crc32", serialize = FALSE)), sep='')
+
 				# Create a new column, containing the experiment id				
 				file_contents <- within(file_contents, "expid" <- experiment_name_hash)
 				file_contents <- within(file_contents, "experiment_name" <- experiment_name)
@@ -383,7 +407,7 @@ plot_trace_data <- function(tdf, ed, en, sps) {
 		selected_expid = c(levels(tdf$expid))
 		selected_expname = c(levels(tdf$experiment_name))
 	} else {
-		selected_expid = digest(object = en, algo = "crc32", serialize = FALSE)
+		selected_expid =  paste("K", toString(digest(object = en, algo = "crc32", serialize = FALSE)),sep='')
 		selected_expname = c(en)		
 	}
 	
@@ -454,7 +478,7 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 		selected_expid = c(levels(mmdf$expid))
 		selected_expname = c(levels(mmdf$experiment_name))
 	} else {
-		selected_expid = digest(object = en, algo = "crc32", serialize = FALSE)
+		selected_expid =  paste("K", toString(digest(object = en, algo = "crc32", serialize = FALSE)), sep = '')
 		selected_expname = c(en)		
 	}
 	
@@ -465,9 +489,9 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 	}
 	
 	################## START Provisioning vs VM ##################
-	msg <- paste("# Preparing Provisioning Latency for VMs.... #", sep = '')
+	msg <- paste("# Preparing Provisioning Latency for VMs/Containers.... #", sep = '')
 	cat(msg, sep='\n')
-	
+
 	prov_lat_data <- subset(mmdf, (expid %in% selected_expid) & 
 					(name %in% selected_vm_name), 
 			select = c("full_obj_name", 
@@ -478,7 +502,7 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 					"mgt_006_instance_preparation", 					
 					"mgt_007_application_start", 
 					"name", "vm_arrival_diff"))
-	
+
 	prov_lat_data <- prov_lat_data[!is.na(prov_lat_data$vm_arrival_diff),]
 	
 	output_table(ed, en, prov_lat_data, "002_individual_vm_provision_latency")
@@ -499,12 +523,13 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 	#}
 
 	# Plot provisioning latency
-	prov_lat_plot_title <- paste("Provisioning Latency for all VM(s) \"", vmn, 
+	prov_lat_plot_title <- paste("Provisioning Latency for all VMs/Containers \"", vmn, 
 			"\" on experiment \"", selected_expname, "\" (", selected_expid, ")",
 			sep = '')
 	cat(prov_lat_plot_title, sep='\n')	
 	
 	columns_remove <- c("full_obj_name", "vm_arrival_diff")
+
 	prov_lat_data <- prov_lat_data[,!(names(prov_lat_data) %in% columns_remove)]
 	
 	prov_lat_data <- within(prov_lat_data, 
@@ -515,7 +540,7 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 	prov_lat_plot <- ggplot(prov_lat_data, 
 					aes(x=x_axis_id, y=value, fill=variable)) + 
 			geom_area(stat='identity') + 
-			xlab("VM name") + 
+			xlab("VM/Container number") + 
 			ylab("Provisioning Latency (seconds)") + 
 			labs(title = prov_lat_plot_title)
 	output_pdf_plot(ed, en, prov_lat_plot, "002_individual_vm_provision_latency",
@@ -542,9 +567,9 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 	
 	################## END Provisioning vs VM ##################
 
-	if("osk_010_authenticate_time" %in% colnames(mmdf)) {
+	if("osk_011_authenticate_time" %in% colnames(mmdf)) {
 		################## START Provisioning vs VM (Cloud-Specific info) ##################
-		msg <- paste("# Preparing Provisioning Latency for VMs (Cloud-Specific", 
+		msg <- paste("# Preparing Provisioning Latency for VMs/Containers (Cloud-Specific", 
 				"information) .... #", sep = '')
 		cat(msg, sep='\n')
 		
@@ -560,19 +585,75 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 						"osk_007_subnet_creation_time",
 						"osk_008_router_creation_time",
 						"osk_009_router_attachment",
-						"osk_010_authenticate_time",
-						"osk_011_check_existing_instance_time",
-						"osk_012_get_flavors_time",
-						"osk_013_get_imageid_time",
-						"osk_014_get_netid_time",
-						"osk_015_create_volume_time",
-						"osk_016_instance_creation_time",
-						"osk_016_instance_scheduling_time",
-						"osk_016_port_creation_time",
-						"osk_017_create_fip_time",
-						"osk_018_attach_fip_time",
-						"osk_019_instance_reachable",						
+						"osk_010_lb_creation",						
+						"osk_011_authenticate_time",
+						"osk_012_check_existing_instance_time",
+						"osk_013_get_flavors_time",
+						"osk_014_get_imageid_time",
+						"osk_015_get_netid_time",
+						"osk_016_create_volume_time",
+						"osk_017_lb_member_creation",						
+						"osk_018_instance_scheduling_time",
+						"osk_018_port_creation_time",
+						"osk_019_instance_creation_time",					
+						"osk_020_create_fip_time",
+						"osk_021_attach_fip_time",
+						"osk_022_instance_reachable",						
 						"name", "vm_arrival_diff"))
+
+		prov_cs_lat_data <- prov_cs_lat_data[!is.na(prov_cs_lat_data$vm_arrival_diff),]
+		prov_cs_lat_data[is.na(prov_cs_lat_data)] <- 0
+		
+		output_table(ed, en, prov_lat_data, "003_individual_vm_provision_latency")
+		
+		number_of_vms <- length(prov_lat_data$name)	
+		
+		# Plot provisioning latency
+		prov_cs_lat_plot_title <- paste("Provisioning Latency for all VMs/Containers (",
+				"Cloud-Specific information) \"", vmn, "\" on experiment \"", 
+				selected_expname, "\" (", selected_expid, ")", sep = '')
+		cat(prov_cs_lat_plot_title, sep='\n')	
+		
+		columns_remove <- c("full_obj_name", "vm_arrival_diff")
+		prov_cs_lat_data <- prov_cs_lat_data[,!(names(prov_cs_lat_data) %in% columns_remove)]
+		
+		prov_cs_lat_data <- within(prov_cs_lat_data, 
+				"name" <- as.integer(gsub("vm_", '', prov_cs_lat_data$name)))
+		
+		prov_cs_lat_data <- prov_cs_lat_data[order(prov_cs_lat_data$name), ]
+		
+		setnames(prov_cs_lat_data, "name", "x_axis_id")
+		
+		prov_cs_lat_data <- melt(prov_cs_lat_data, id.vars="x_axis_id")
+		
+		prov_cs_lat_plot <- ggplot(prov_cs_lat_data, 
+						aes(x=x_axis_id, y=value, fill=variable)) + 
+				geom_area(stat='identity') + 
+				xlab("VM name") + 
+				ylab("Provisioning Latency (seconds)") + 
+				labs(title = prov_cs_lat_plot_title)
+		output_pdf_plot(ed, en, prov_cs_lat_plot, "003_individual_vm_provision_latency",
+				sps)
+		################## END Provisioning vs VM ##################
+	}	
+		
+		if("pdm_003_create_host_config_time" %in% colnames(mmdf)) {
+			################## START Provisioning vs VM (Cloud-Specific info) ##################
+			msg <- paste("# Preparing Provisioning Latency for VMs/Containers (Cloud-Specific", 
+					"information) .... #", sep = '')
+			cat(msg, sep='\n')
+			
+			prov_cs_lat_data <- subset(mmdf, (expid %in% selected_expid) & 
+							(name %in% selected_vm_name), 
+					select = c("full_obj_name", 
+							   "pdm_001_net_creation_time",
+							   "pdm_002_create_volume_time",
+			                   "pdm_003_create_host_config_time",
+			                   "pdm_004_create_docker_time",
+			                   "pdm_005_start_docker_time",
+			                   "pdm_006_instance_creation_time",
+			                   "pdm_007_instance_reachable",				
+						 	   "name", "vm_arrival_diff"))	
 		
 		prov_cs_lat_data <- prov_cs_lat_data[!is.na(prov_cs_lat_data$vm_arrival_diff),]
 		prov_cs_lat_data[is.na(prov_cs_lat_data)] <- 0
@@ -582,7 +663,7 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 		number_of_vms <- length(prov_lat_data$name)	
 		
 		# Plot provisioning latency
-		prov_cs_lat_plot_title <- paste("Provisioning Latency for all VM(s) (",
+		prov_cs_lat_plot_title <- paste("Provisioning Latency for all VMs/Containers (",
 				"Cloud-Specific information) \"", vmn, "\" on experiment \"", 
 				selected_expname, "\" (", selected_expid, ")", sep = '')
 		cat(prov_cs_lat_plot_title, sep='\n')	
@@ -611,7 +692,7 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 	}
 
 	################## START Provisioning vs VApp Submitter ##################
-	msg <- paste("# Preparing Average Provisioning Latency for VMs.... #", sep = '')
+	msg <- paste("# Preparing Average Provisioning Latency for VMs/Containers.... #", sep = '')
 	cat(msg, sep='\n')
 	
 	agg_prov_lat_data <- subset(mmdf, (expid %in% selected_expid) & 
@@ -633,13 +714,13 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 	agg_prov_lat_data <- agg_prov_lat_data[as.numeric(agg_prov_lat_data$avg) > 0,]	
 	
 	# Plot provisioning latency
-	agg_prov_lat_plot_title <- paste("Average Provisioning Latency (per-Submmiter) for VM(s) \"", vmn, 
+	agg_prov_lat_plot_title <- paste("Average Provisioning Latency (per-Submmiter) for VMs/Containers \"", vmn, 
 			"\" on experiment \"", selected_expname, "\" (", selected_expid, ")", sep = '')
 	cat(agg_prov_lat_plot_title, sep='\n')
 	
 	agg_prov_lat_plot <- ggplot(agg_prov_lat_data, aes(x = partial_obj_name1, 
 							y = avg, fill=partial_obj_name1)) + 
-			geom_bar(stat='identity', width=0.2) + xlab("VM role|submitter|expid") + 
+			geom_bar(stat='identity', width=0.2) + xlab("role|submitter|expid") + 
 			geom_errorbar(aes(ymin=avg-se, ymax=avg+se), width=.1) +
 			ylab("Average Provisioning Latency (seconds)") + 
 			labs(title = agg_prov_lat_plot_title)
@@ -649,7 +730,7 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 	################## END Provisioning vs VApp Submitter ##################	
 
 	################## START Provisioning vs Host ##################
-	msg <- paste("# Preparing Average Provisioning Latency for VMs.... #", sep = '')
+	msg <- paste("# Preparing Average Provisioning Latency for VMs/Containers.... #", sep = '')
 	cat(msg, sep='\n')
 	
 	agg_prov_lat_data <- subset(mmdf, (expid %in% selected_expid) & 
@@ -671,13 +752,13 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 	agg_prov_lat_data <- agg_prov_lat_data[as.numeric(agg_prov_lat_data$avg) > 0,]	
 	
 	# Plot provisioning latency
-	agg_prov_lat_plot_title <- paste("Average Provisioning Latency (per-Host) for VM(s) \"", vmn, 
+	agg_prov_lat_plot_title <- paste("Average Provisioning Latency (per-Host) for VMs/Containers \"", vmn, 
 			"\" on experiment \"", selected_expname, "\" (", selected_expid, ")", sep = '')
 	cat(agg_prov_lat_plot_title, sep='\n')
 	
 	agg_prov_lat_plot <- ggplot(agg_prov_lat_data, aes(x = partial_obj_name2, 
 							y = avg, fill=partial_obj_name2)) + 
-			geom_bar(stat='identity', width=0.2) + xlab("VM role|host_name|expid") + 
+			geom_bar(stat='identity', width=0.2) + xlab("role|host_name|expid") + 
 			geom_errorbar(aes(ymin=avg-se, ymax=avg+se), width=.1) +
 			ylab("Average Provisioning Latency (seconds)") + 
 			theme(axis.text.x = element_text(angle = 45, hjust = 1)) +			
@@ -689,7 +770,7 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 	
 	
 	################## START Provisioning Failures vs VApp Submitter ##################
-	msg <- paste("# Provisioning Successes + Failures for VMs.... #", sep = '')
+	msg <- paste("# Provisioning Successes + Failures for VMs/Containers.... #", sep = '')
 	cat(msg, sep='\n')	
 
 	agg_prov_fail_data <- subset(mmdf, (expid %in% selected_expid) & 
@@ -760,13 +841,13 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 	agg_prov_fail_data <- melt(agg_prov_fail_data, id.vars="partial_obj_name1")
 
 	# Plot provisioning latency
-	agg_prov_fail_plot_title <- paste("Provisioning Successes + Failures for VM(s) \"", vmn, 
+	agg_prov_fail_plot_title <- paste("Provisioning Successes + Failures for VMs/Containers \"", vmn, 
 			"\" on experiment \"", selected_expname, "\" (", selected_expid, ")", sep = '')
 	cat(agg_prov_fail_plot_title, sep='\n')
 	
 	agg_prov_fail_plot <- ggplot(agg_prov_fail_data, 
 					aes(x = partial_obj_name1, y = value, fill = variable)) + 
-			geom_bar(stat='identity', position = "dodge", width=0.2) + xlab("VM role|submitter|expid") + 
+			geom_bar(stat='identity', position = "dodge", width=0.2) + xlab("role|submitter|expid") + 
 			ylab("Number of Provisioning Successes + Failures") +
 			theme(axis.text.x = element_text(angle = 45, hjust = 1)) +			
 			labs(title = agg_prov_fail_plot_title)
@@ -782,7 +863,7 @@ plot_runtime_application_data <- function(ramdf, ed, en, vmn, vmel, xati, yati,
 		selected_expid = c(levels(ramdf$expid))
 		selected_expname = c(levels(ramdf$experiment_name))
 	} else {
-		selected_expid = digest(object = en, algo = "crc32", serialize = FALSE)
+		selected_expid =  paste("K", toString(digest(object = en, algo = "crc32", serialize = FALSE)), sep='')
 		selected_expname = c(en)		
 	}
 	
@@ -844,7 +925,7 @@ plot_runtime_application_data <- function(ramdf, ed, en, vmn, vmel, xati, yati,
 			if (length(perf_vs_time_data$full_obj_name) > 1 ) {
 				
 				msg <- paste(metric_types2metric_names[[metric_type]], 
-						" versus time for VM(s) \"", vmn, "\" on experiment \"", 
+						" versus time for VMs/Containers \"", vmn, "\" on experiment \"", 
 						selected_expname, "\" (", selected_expid, ")", sep = '')
 
 				cat(paste(msg, "...", sep = ''), sep='\n')
@@ -852,24 +933,27 @@ plot_runtime_application_data <- function(ramdf, ed, en, vmn, vmel, xati, yati,
 				perf_vs_time_plot_title <- msg
 				
 				xy_lims <- plot_get_x_y_limits(en, perf_vs_time_data, xati, yati)
-				
-				perf_vs_time_plot <- ggplot(perf_vs_time_data, aes(x=relative_time, y=value, 
-										colour=full_obj_name)) + geom_line() + 
-						geom_point()  + 
-						geom_vline(xintercept = vmasl, linetype=4, colour="black") +
-						geom_vline(xintercept = vmael, linetype=1, colour="black") +
-						geom_vline(xintercept = vmcsl, linetype=3, colour="black") +
-						geom_vline(xintercept = vmcel, linetype=5, colour="black") +						
-						xlab("Time (minutes)") + 
-						ylab(metric_types2metric_names[[metric_type]]) + 
-						labs(title = perf_vs_time_plot_title) + 
-						scale_x_continuous(limits = xy_lims[[1]], breaks = xy_lims[[2]])
-				
-#				+ scale_y_continuous(limits = xy_lims[[3]], breaks = xy_lims[[4]])
-				
-				output_pdf_plot(ed, en, perf_vs_time_plot, paste(prefix, "vm_", 
-								metric_type, "_vs_time_plot_", vapp_type, 
-								sep = ''))
+
+				if (xy_lims[[5]] == 0) {
+					perf_vs_time_plot <- ggplot(perf_vs_time_data, aes(x=relative_time, y=value, 
+											colour=full_obj_name)) + geom_line() + 
+							geom_point()  + 
+							geom_vline(xintercept = vmasl, linetype=4, colour="black") +
+							geom_vline(xintercept = vmael, linetype=1, colour="black") +
+							geom_vline(xintercept = vmcsl, linetype=3, colour="black") +
+							geom_vline(xintercept = vmcel, linetype=5, colour="black") +						
+							xlab("Time (minutes)") +
+							theme(legend.position="none") +
+							ylab(metric_types2metric_names[[metric_type]]) + 
+							labs(title = perf_vs_time_plot_title) + 
+							scale_x_continuous(limits = xy_lims[[1]], breaks = xy_lims[[2]])
+					
+	#				+ scale_y_continuous(limits = xy_lims[[3]], breaks = xy_lims[[4]])
+					
+					output_pdf_plot(ed, en, perf_vs_time_plot, paste(prefix, "vm_", 
+									metric_type, "_vs_time_plot_", vapp_type, 
+									sep = ''))
+				}
 				
 			} else {
 				msg <- paste("No \"", metric_type, "\" versus time data found ",
@@ -907,7 +991,7 @@ plot_runtime_application_data <- function(ramdf, ed, en, vmn, vmel, xati, yati,
 				perf_vs_load_data <- perf_vs_load_data[as.numeric(perf_vs_load_data$avg) > 0,]					
 			} else {
 				msg <- paste(metric_types2metric_names[[metric_type]], 
-						" has only one load level for VM(s) \"", vmn, "\" on experiment \"",
+						" has only one load level for VMs/Containers \"", vmn, "\" on experiment \"",
 						en, "\". Will not produce a plot for this metric", sep = '')
 				cat(paste(msg, "...", sep = ''), sep='\n')
 			}
@@ -917,7 +1001,7 @@ plot_runtime_application_data <- function(ramdf, ed, en, vmn, vmel, xati, yati,
 			if (valid_values) {
 
 				msg <- paste(metric_types2metric_names[[metric_type]], 
-						" versus load for VM(s) \"", vmn, "\" on experiment \"",
+						" versus load for VMs/Containers \"", vmn, "\" on experiment \"",
 						selected_expname, "\" (", selected_expid, ")", sep = '')
 				
 				cat(paste(msg, "...", sep = ''), sep='\n')
@@ -926,26 +1010,29 @@ plot_runtime_application_data <- function(ramdf, ed, en, vmn, vmel, xati, yati,
 				
 				xy_lims <- plot_get_x_y_limits(en, perf_vs_load_data, xati, yati)	
 				
-				perf_vs_load_plot <- ggplot(perf_vs_load_data, aes(x=app_load_level, 
-										y=avg, colour=full_obj_name, fill = full_obj_name)) + 
-						geom_point(size = 3)  + 
-						geom_line() +
-						geom_errorbar(aes(ymin=avg-se, ymax=avg+se), width=.1) +
-						#						geom_bar(stat='identity', position = "dodge", width=.5) +
-						xlab("Load Level") + 
-						ylab(metric_types2metric_names[[metric_type]]) + 
-						labs(title = perf_vs_load_plot_title) + 
-						scale_x_continuous(limits = xy_lims[[1]], breaks = xy_lims[[2]]) 
-				#			+ scale_y_continuous(limits = xy_lims[[3]], breaks = xy_lims[[4]])
-				
-				output_pdf_plot(ed, en, perf_vs_load_plot, paste(prefix, "vm_", 
-								metric_type, "_vs_load_plot_", vapp_type, 
-								sep = ''))	
+				if (xy_lims[[5]] == 0) {				
+					perf_vs_load_plot <- ggplot(perf_vs_load_data, aes(x=app_load_level, 
+											y=avg, colour=full_obj_name, fill = full_obj_name)) + 
+							geom_point(size = 3)  + 
+							geom_line() +
+							geom_errorbar(aes(ymin=avg-se, ymax=avg+se), width=.1) +
+							#						geom_bar(stat='identity', position = "dodge", width=.5) +
+							xlab("Load Level") + 
+							ylab(metric_types2metric_names[[metric_type]]) + 
+							labs(title = perf_vs_load_plot_title) + 
+							theme(legend.position="none") +							
+							scale_x_continuous(limits = xy_lims[[1]], breaks = xy_lims[[2]]) 
+					#			+ scale_y_continuous(limits = xy_lims[[3]], breaks = xy_lims[[4]])
 					
+					output_pdf_plot(ed, en, perf_vs_load_plot, paste(prefix, "vm_", 
+									metric_type, "_vs_load_plot_", vapp_type, 
+									sep = ''))	
+				}
+				
 				if (total_load_samples > 1 & total_load_levels == 1) {
 					
 					msg <- paste(metric_types2metric_names[[metric_type]], 
-							" versus VM for VM(s) \"", vmn, "\" on experiment \"",
+							" versus VM/Container for VMs/Containers \"", vmn, "\" on experiment \"",
 							selected_expname, "\" (", selected_expid, ")", sep = '')
 					
 					cat(paste(msg, "...", sep = ''), sep='\n')
@@ -953,24 +1040,30 @@ plot_runtime_application_data <- function(ramdf, ed, en, vmn, vmel, xati, yati,
 					perf_vs_load_plot_title <- msg
 					
 					xy_lims <- plot_get_x_y_limits(en, perf_vs_load_data, xati, yati)	
-					
-					perf_vs_load_data$obj_name <- unlist(lapply(strsplit(as.character(perf_vs_load_data$full_obj_name), "|", fixed=TRUE), "[", 1))
-					
-					perf_vs_load_plot <- ggplot(perf_vs_load_data, aes(x=obj_name, 
-											y=avg, colour=full_obj_name, fill = full_obj_name)) + 
-							geom_point(size = 3)  + 
-							geom_line() +
-							geom_errorbar(aes(ymin=avg-se, ymax=avg+se), width=.1) +
-							#						geom_bar(stat='identity', position = "dodge", width=.5) +
-							xlab("VM name") + 
-							ylab(metric_types2metric_names[[metric_type]]) + 
-							labs(title = perf_vs_load_plot_title) 
-#							scale_x_continuous(limits = xy_lims[[1]], breaks = xy_lims[[2]]) 
-					#			+ scale_y_continuous(limits = xy_lims[[3]], breaks = xy_lims[[4]])
-					
-					output_pdf_plot(ed, en, perf_vs_load_plot, paste(prefix, "vm_", 
-									metric_type, "_vs_vm_plot_", vapp_type, 
-									sep = ''))	
+
+					if (xy_lims[[5]] == 0) {					
+						perf_vs_load_data$obj_name <- unlist(lapply(strsplit(as.character(perf_vs_load_data$full_obj_name), "|", fixed=TRUE), "[", 1))
+						perf_vs_load_data <- within(perf_vs_load_data, 
+								"obj_name" <- 
+										(as.numeric(gsub("vm_", '', perf_vs_load_data$obj_name))))
+						perf_vs_load_data <- perf_vs_load_data[order(perf_vs_load_data$obj_name), ]
+
+						perf_vs_load_plot <- ggplot(perf_vs_load_data, aes(x=obj_name, 
+												y=avg, colour=full_obj_name, fill = full_obj_name)) + 
+								geom_point(size = 3)  + 
+								geom_line() +
+								geom_errorbar(aes(ymin=avg-se, ymax=avg+se), width=.1) +
+								#						geom_bar(stat='identity', position = "dodge", width=.5) +
+								xlab("VM/Container name") +
+								theme(legend.position="none") +
+								theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 5)) +								
+								ylab(metric_types2metric_names[[metric_type]]) + 
+								labs(title = perf_vs_load_plot_title)
+
+						output_pdf_plot(ed, en, perf_vs_load_plot, paste(prefix, "vm_", 
+										metric_type, "_vs_vm_plot_", vapp_type, 
+										sep = ''))
+					}
 				}
 			}
 			################## END Performance vs Load ##################
@@ -986,6 +1079,14 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 	} else {
 		node_type <- "VM"	
 	}
+
+	if (en == "all") {
+		selected_expid = c(levels(tdf$expid))
+		selected_expname = c(levels(tdf$experiment_name))
+	} else {
+		selected_expid =  paste("K", toString(digest(object = en, algo = "crc32", serialize = FALSE)), sep='')
+		selected_expname = c(en)		
+	}	
 	
 	experiment_node_list <- subset(rosmdf, expid == en, select = c("name"))
 	
@@ -1026,7 +1127,7 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 		################## START CPU Usage vs Time ##################
 		os_cpu_data <- subset(rosmdf, (name == experiment_node), 
 				select = c("relative_time", "cpu_user", "cpu_system", "cpu_wio"))
-		
+
 		output_table(ed, en, os_cpu_data, paste("010_os_cpu_vs_time_data_", 
 						experiment_node_name, sep = ''), FALSE)
 		
@@ -1042,22 +1143,66 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 		
 		xy_lims <- plot_get_x_y_limits(en, os_cpu_data, xati, yati)	
 		
-		os_cpu_vs_time_plot <- ggplot(os_cpu_data, aes(x = relative_time, y = value, 
-								colour = variable, fill = variable)) + 
-				geom_bar(stat='identity') + 
-				geom_vline(xintercept = lnel, linetype=7, colour="black") +
-				geom_vline(xintercept = vmasl, linetype=4, colour="black") +
-				geom_vline(xintercept = vmael, linetype=1, colour="black") +
-				geom_vline(xintercept = vmcsl, linetype=3, colour="black") +
-				geom_vline(xintercept = vmcel, linetype=5, colour="black") +					
-				xlab("Time (minutes)") + 
-				ylab("CPU usage (%)") + 
-				labs(title = os_cpu_vs_time_plot_title) + 
-				scale_x_continuous(limits = xy_lims[[1]], breaks = xy_lims[[2]])
-		#				+ scale_y_continuous(limits =  xy_lims[[3]], breaks =  xy_lims[[4]])
+		if (xy_lims[[5]] == 0) {
+			os_cpu_vs_time_plot <- ggplot(os_cpu_data, aes(x = relative_time, y = value, 
+									colour = variable, fill = variable)) + 
+					geom_bar(stat='identity') + 
+					geom_vline(xintercept = lnel, linetype=7, colour="black") +
+					geom_vline(xintercept = vmasl, linetype=4, colour="black") +
+					geom_vline(xintercept = vmael, linetype=1, colour="black") +
+					geom_vline(xintercept = vmcsl, linetype=3, colour="black") +
+					geom_vline(xintercept = vmcel, linetype=5, colour="black") +					
+					xlab("Time (minutes)") + 
+					ylab("CPU usage (%)") + 
+					labs(title = os_cpu_vs_time_plot_title) + 
+					scale_x_continuous(limits = xy_lims[[1]], breaks = xy_lims[[2]])
+			#				+ scale_y_continuous(limits =  xy_lims[[3]], breaks =  xy_lims[[4]])
+			
+			output_pdf_plot(ed, en, os_cpu_vs_time_plot, paste("008_os_cpu_vs_time_plot_",
+							experiment_node_name, sep = ''), sps)
+		}
 		
-		output_pdf_plot(ed, en, os_cpu_vs_time_plot, paste("008_os_cpu_vs_time_plot_",
-						experiment_node_name, sep = ''), sps)
+		if("procstat_base.apache2_cpu" %in% colnames(rosmdf)) {
+			procstat_cpu_columns <- grep("^procstat.*cpu$|relative_time", colnames(rosmdf), value = TRUE)
+
+			per_process_os_cpu_data <- subset(rosmdf, (name == experiment_node), 
+					select = procstat_cpu_columns)
+
+			output_table(ed, en, per_process_os_cpu_data, paste("011_per_process_os_cpu_vs_time_data_", 
+							experiment_node_name, sep = ''), FALSE)
+			
+			per_process_os_cpu_data <- melt(per_process_os_cpu_data, id.vars="relative_time")		
+			
+			per_process_os_cpu_data <- per_process_os_cpu_data[!is.na(per_process_os_cpu_data$value),]		
+			
+			msg <- paste("Per-process CPU usage for ", node_type, " \"", experiment_node_name, 
+					"\" on experiment ", selected_expname, "\" (", selected_expid, ")", sep = '')
+			cat(paste(msg, "...", sep = ''), sep='\n')
+			
+			per_process_os_cpu_vs_time_plot_title <- msg
+			
+			xy_lims <- plot_get_x_y_limits(en, per_process_os_cpu_data, xati, yati)		
+			
+			if (xy_lims[[5]] == 0) {
+				per_process_os_cpu_vs_time_plot <- ggplot(per_process_os_cpu_data, 
+								aes(x = relative_time, y = value, colour = variable, fill = variable)) + 
+						geom_bar(stat='identity') + 
+						geom_vline(xintercept = lnel, linetype=7, colour="black") +
+						geom_vline(xintercept = vmasl, linetype=4, colour="black") +
+						geom_vline(xintercept = vmael, linetype=1, colour="black") +
+						geom_vline(xintercept = vmcsl, linetype=3, colour="black") +
+						geom_vline(xintercept = vmcel, linetype=5, colour="black") +					
+						xlab("Time (minutes)") + 
+						ylab("CPU usage (%)") + 
+						labs(title = per_process_os_cpu_vs_time_plot_title) + 
+						scale_x_continuous(limits = xy_lims[[1]], breaks = xy_lims[[2]])
+				#				+ scale_y_continuous(limits =  xy_lims[[3]], breaks =  xy_lims[[4]])
+				
+				output_pdf_plot(ed, en, per_process_os_cpu_vs_time_plot, paste("009_per_process_os_cpu_vs_time_plot_",
+								experiment_node_name, sep = ''), sps)
+			}			
+
+		}
 		################## END CPU Usage vs Time ##################
 		
 		################## START Memory Usage vs Time ##################
@@ -1085,58 +1230,114 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 		os_mem_vs_time_plot_title <- msg
 		
 		xy_lims <- plot_get_x_y_limits(en, os_mem_data, xati, yati)
+
+		if (xy_lims[[5]] == 0) {		
+			os_mem_vs_time_plot <- ggplot(os_mem_data, aes(x = relative_time, y = value, 
+									colour = variable, fill = variable)) + 
+					geom_bar(stat='identity') + 
+					geom_vline(xintercept = lnel, linetype=7, colour="black") +
+					geom_vline(xintercept = vmasl, linetype=4, colour="black") +
+					geom_vline(xintercept = vmael, linetype=1, colour="black") +
+					geom_vline(xintercept = vmcsl, linetype=3, colour="black") +
+					geom_vline(xintercept = vmcel, linetype=5, colour="black") +
+					xlab("Time (minutes)") + 
+					ylab("Mem usage (Megabytes)") + 
+					labs(title = os_mem_vs_time_plot_title) + 
+					scale_x_continuous(limits =  xy_lims[[1]], breaks =  xy_lims[[2]]) 
+			#				+ scale_y_continuous(limits =  xy_lims[[3]], breaks =  xy_lims[[4]])
+			
+			output_pdf_plot(ed, en, os_mem_vs_time_plot, paste("010_os_mem_vs_time_plot_", 
+							experiment_node_name, sep = ''), sps)
+		}
+
+		if("procstat_base.apache2_mem" %in% colnames(rosmdf)) {		
+			procstat_mem_columns <- grep("^procstat.*mem$|relative_time", colnames(rosmdf), value = TRUE)
+			
+			per_process_os_mem_data <- subset(rosmdf, (name == experiment_node), 
+					select = procstat_mem_columns)
+			
+			per_process_os_mem_data <- melt(per_process_os_mem_data, id.vars="relative_time")		
+			
+			per_process_os_mem_data <- per_process_os_mem_data[!is.na(per_process_os_mem_data$value),]		
+			
+			msg <- paste("Per-process Memory usage for ", node_type, " \"", experiment_node_name, 
+					"\" on experiment ", selected_expname, "\" (", selected_expid, ")", sep = '')
+			cat(paste(msg, "...", sep = ''), sep='\n')
+			
+			per_process_os_mem_vs_time_plot_title <- msg
+			
+			xy_lims <- plot_get_x_y_limits(en, per_process_os_mem_data, xati, yati)		
+			
+			if (xy_lims[[5]] == 0) {
+				per_process_os_mem_vs_time_plot <- ggplot(per_process_os_mem_data, 
+								aes(x = relative_time, y = value, colour = variable, fill = variable)) + 
+						geom_bar(stat='identity') + 
+						geom_vline(xintercept = lnel, linetype=7, colour="black") +
+						geom_vline(xintercept = vmasl, linetype=4, colour="black") +
+						geom_vline(xintercept = vmael, linetype=1, colour="black") +
+						geom_vline(xintercept = vmcsl, linetype=3, colour="black") +
+						geom_vline(xintercept = vmcel, linetype=5, colour="black") +					
+						xlab("Time (minutes)") + 
+						ylab("Mem usage (Kilobytes)") + 
+						labs(title = per_process_os_mem_vs_time_plot_title) + 
+						scale_x_continuous(limits = xy_lims[[1]], breaks = xy_lims[[2]])
+				#				+ scale_y_continuous(limits =  xy_lims[[3]], breaks =  xy_lims[[4]])
+				
+				output_pdf_plot(ed, en, per_process_os_mem_vs_time_plot, paste("010_per_process_os_mem_vs_time_plot_",
+								experiment_node_name, sep = ''), sps)
+			}			
+			
+		}		
 		
-		os_mem_vs_time_plot <- ggplot(os_mem_data, aes(x = relative_time, y = value, 
-								colour = variable, fill = variable)) + 
-				geom_bar(stat='identity') + 
-				geom_vline(xintercept = lnel, linetype=7, colour="black") +
-				geom_vline(xintercept = vmasl, linetype=4, colour="black") +
-				geom_vline(xintercept = vmael, linetype=1, colour="black") +
-				geom_vline(xintercept = vmcsl, linetype=3, colour="black") +
-				geom_vline(xintercept = vmcel, linetype=5, colour="black") +
-				xlab("Time (minutes)") + 
-				ylab("Mem usage (Megabytes)") + 
-				labs(title = os_mem_vs_time_plot_title) + 
-				scale_x_continuous(limits =  xy_lims[[1]], breaks =  xy_lims[[2]]) 
-		#				+ scale_y_continuous(limits =  xy_lims[[3]], breaks =  xy_lims[[4]])
-		
-		output_pdf_plot(ed, en, os_mem_vs_time_plot, paste("009_os_mem_vs_time_plot_", 
-						experiment_node_name, sep = ''), sps)
 		################## END Memory Usage vs Time ##################
 		
 		# For network, swap and disk, differences need to be calculated
 		###
 		os_net_bw_data <- subset(rosmdf, name == experiment_node, 
 				select = c("relative_time", "bytes_out", "bytes_in"))
+
+		if (length(os_net_bw_data$bytes_out) > 0 ){
 		
-		os_net_bw_data$bytes_out_delta <- c(NA, diff(os_net_bw_data$bytes_out))
-		os_net_bw_data$bytes_in_delta <- c(NA, diff(os_net_bw_data$bytes_in))
-		
-		os_net_bw_data <- within(os_net_bw_data, 
-				"Mbps_out" <- abs((os_net_bw_data$bytes_out * 8) / (1024 * 1024)))
-		os_net_bw_data <- within(os_net_bw_data, 
-				"Mbps_in" <- abs((os_net_bw_data$bytes_in * 8) / (1024 * 1024)))
-		
-		####
-		os_net_tput_data <- subset(rosmdf, name == experiment_node, 
-				select = c("relative_time", "pkts_out", "pkts_in"))
-		
-		os_net_tput_data <- within(os_net_tput_data, 
-				"Pps_out" <- abs(os_net_tput_data$pkts_out))
-		os_net_tput_data <- within(os_net_tput_data, 
-				"Pps_in" <- abs(os_net_tput_data$pkts_in))
-		
-		os_net_bw_data <- subset(os_net_bw_data, 
-				Mbps_in < (1024 * 1024) | Mbps_out < (1024 * 1024), 
-				select = c("relative_time", "Mbps_out", "Mbps_in"))
-		os_net_tput_data <- subset(os_net_tput_data, 
-				Pps_in < (1024 * 10) | Pps_out < (1024 * 10), 
-				select = c("relative_time", "Pps_out", "Pps_in"))
+			os_net_bw_data$bytes_out_delta <- c(NA, diff(os_net_bw_data$bytes_out))
+			os_net_bw_data$bytes_in_delta <- c(NA, diff(os_net_bw_data$bytes_in))
+			
+			os_net_bw_data <- within(os_net_bw_data, 
+					"Mbps_out" <- abs((os_net_bw_data$bytes_out * 8) / (1024 * 1024)))
+			os_net_bw_data <- within(os_net_bw_data, 
+					"Mbps_in" <- abs((os_net_bw_data$bytes_in * 8) / (1024 * 1024)))
+			
+			####
+			os_net_tput_data <- subset(rosmdf, name == experiment_node, 
+					select = c("relative_time", "pkts_out", "pkts_in"))
+			
+			os_net_tput_data <- within(os_net_tput_data, 
+					"Pps_out" <- abs(os_net_tput_data$pkts_out))
+			os_net_tput_data <- within(os_net_tput_data, 
+					"Pps_in" <- abs(os_net_tput_data$pkts_in))
+			
+			os_net_bw_data <- subset(os_net_bw_data, 
+					Mbps_in < (1024 * 1024) | Mbps_out < (1024 * 1024), 
+					select = c("relative_time", "Mbps_out", "Mbps_in"))
+			os_net_tput_data <- subset(os_net_tput_data, 
+					Pps_in < (1024 * 10) | Pps_out < (1024 * 10), 
+					select = c("relative_time", "Pps_out", "Pps_in"))
+			network_activity <- TRUE
+		} else {
+			network_activity <- FALSE			
+			msg <- paste("No Network activity for ", node_type, " \"", 
+					experiment_node_name, "\" on experiment ", en, 
+					". Will not produce plots for swap", sep = '')
+			cat(msg, sep='\n')				
+		}
 		
 		###
+		
 		os_swap_bw_data <- subset(rosmdf, name == experiment_node, 
 				select = c("relative_time", "swap_KB_read", 
 						"swap_KB_write"))
+		
+		if (length(os_swap_bw_data$bytes_out) > 0 ){
+			
 		os_swap_bw_data$swap_KB_read_delta <- c(NA, diff(os_swap_bw_data$swap_KB_read))
 		os_swap_bw_data$swap_KB_write_delta <- c(NA, diff(os_swap_bw_data$swap_KB_write))
 		
@@ -1144,181 +1345,201 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 				swap_KB_read_delta > 0 | swap_KB_write_delta > 0, 
 				select = c("relative_time", "swap_KB_read_delta", "swap_KB_write_delta"))
 		
-		if (length(os_swap_bw_data$relative_time) > 0 ){
-			###
-			os_swap_bw_data$time_delta <- c(1, diff(os_swap_bw_data$relative_time))
-			os_swap_bw_data <- within(os_swap_bw_data, 
-					"MBps_read" <- abs(os_swap_bw_data$swap_KB_read_delta / 
-									(1024 * os_swap_bw_data$time_delta * time_unit)))
-			os_swap_bw_data <- within(os_swap_bw_data, 
-					"MBps_write" <- abs(os_swap_bw_data$swap_KB_write_delta / 
-									(1024 * os_swap_bw_data$time_delta * time_unit)))
-			###
-			os_swap_tput_data <- subset(rosmdf, name == experiment_node, 
-					select = c("relative_time", "swap_ios_read", 
-							"swap_ios_write"))
-			os_swap_tput_data$swap_ios_read_delta <- c(NA, 
-					diff(os_swap_tput_data$swap_ios_read))
-			os_swap_tput_data$swap_ios_write_delta <- c(NA, 
-					diff(os_swap_tput_data$swap_ios_write))
-			
-			os_swap_tput_data <- subset(os_swap_tput_data, 
-					swap_ios_read_delta > 0 | swap_ios_write_delta > 0, 
-					select = c("relative_time", "swap_ios_read_delta", 
-							"swap_ios_write_delta"))
-			
-			os_swap_tput_data$time_delta <- c(1, diff(os_swap_tput_data$time))
-			
-			os_swap_tput_data <- within(os_swap_tput_data, 
-					"IOps_read" <- abs(os_swap_tput_data$swap_ios_read_delta) / 
-							(os_swap_tput_data$time_delta))
-			os_swap_tput_data <- within(os_swap_tput_data, 
-					"IOps_write" <- abs(os_swap_tput_data$swap_ios_write_delta) / 
-							(os_swap_tput_data$time_delta))
-			
-			## Cleanup
-			os_swap_bw_data <- subset(os_swap_bw_data, 
-					MBps_read < (1024 * 1024) | MBps_write < (1024 * 1024), 
-					select = c("relative_time", "MBps_write", "MBps_read"))		
-			os_swap_tput_data <- subset(os_swap_tput_data, 
-					IOps_read < (1024 * 1024) | IOps_write < (1024 * 10), 
-					select = c("relative_time", "IOps_write", "IOps_read"))
-			
-			swap_activity <- TRUE
+			if (length(os_swap_bw_data$relative_time) > 0 ){
+				###
+				os_swap_bw_data$time_delta <- c(1, diff(os_swap_bw_data$relative_time))
+				os_swap_bw_data <- within(os_swap_bw_data, 
+						"MBps_read" <- abs(os_swap_bw_data$swap_KB_read_delta / 
+										(1024 * os_swap_bw_data$time_delta * time_unit)))
+				os_swap_bw_data <- within(os_swap_bw_data, 
+						"MBps_write" <- abs(os_swap_bw_data$swap_KB_write_delta / 
+										(1024 * os_swap_bw_data$time_delta * time_unit)))
+				###
+				os_swap_tput_data <- subset(rosmdf, name == experiment_node, 
+						select = c("relative_time", "swap_ios_read", 
+								"swap_ios_write"))
+				os_swap_tput_data$swap_ios_read_delta <- c(NA, 
+						diff(os_swap_tput_data$swap_ios_read))
+				os_swap_tput_data$swap_ios_write_delta <- c(NA, 
+						diff(os_swap_tput_data$swap_ios_write))
+				
+				os_swap_tput_data <- subset(os_swap_tput_data, 
+						swap_ios_read_delta > 0 | swap_ios_write_delta > 0, 
+						select = c("relative_time", "swap_ios_read_delta", 
+								"swap_ios_write_delta"))
+				
+				os_swap_tput_data$time_delta <- c(1, diff(os_swap_tput_data$time))
+				
+				os_swap_tput_data <- within(os_swap_tput_data, 
+						"IOps_read" <- abs(os_swap_tput_data$swap_ios_read_delta) / 
+								(os_swap_tput_data$time_delta))
+				os_swap_tput_data <- within(os_swap_tput_data, 
+						"IOps_write" <- abs(os_swap_tput_data$swap_ios_write_delta) / 
+								(os_swap_tput_data$time_delta))
+				
+				## Cleanup
+				os_swap_bw_data <- subset(os_swap_bw_data, 
+						MBps_read < (1024 * 1024) | MBps_write < (1024 * 1024), 
+						select = c("relative_time", "MBps_write", "MBps_read"))		
+				os_swap_tput_data <- subset(os_swap_tput_data, 
+						IOps_read < (1024 * 1024) | IOps_write < (1024 * 10), 
+						select = c("relative_time", "IOps_write", "IOps_read"))
+				
+				swap_activity <- TRUE
+			} else {
+				swap_activity <- FALSE
+				msg <- paste("No Swap activity for ", node_type, " \"", 
+						experiment_node_name, "\" on experiment ", en, 
+						". Will not produce plots for swap", sep = '')
+				cat(msg, sep='\n')
+			}
 		} else {
 			swap_activity <- FALSE
 			msg <- paste("No Swap activity for ", node_type, " \"", 
 					experiment_node_name, "\" on experiment ", en, 
 					". Will not produce plots for swap", sep = '')
-			cat(msg, sep='\n')
+			cat(msg, sep='\n')			
 		}
-		
 		###
 		os_dsk_bw_data <- subset(rosmdf, name == experiment_node, 
 				select = c("relative_time", "ds_KB_read", 
 						"ds_KB_write"))
-		os_dsk_bw_data$ds_KB_read_delta <- c(NA, diff(os_dsk_bw_data$ds_KB_read))
-		os_dsk_bw_data$ds_KB_write_delta <- c(NA, diff(os_dsk_bw_data$ds_KB_write))
-		os_dsk_bw_data <- subset(os_dsk_bw_data, 
-				ds_KB_read_delta > 0 | ds_KB_write_delta > 0, 
-				select = c("relative_time", "ds_KB_read_delta", "ds_KB_write_delta"))
-		
-		if (length(os_dsk_bw_data$relative_time) > 0 ){
+
+		if (length(os_dsk_bw_data$bytes_out) > 0 ) {
 			
-			os_dsk_bw_data$time_delta <- c(1, diff(os_dsk_bw_data$relative_time))
-			
-			os_dsk_bw_data <- within(os_dsk_bw_data, 
-					"MBps_read" <- abs(os_dsk_bw_data$ds_KB_read_delta / 
-									(1024 * os_dsk_bw_data$time_delta * time_unit)))
-			
-			os_dsk_bw_data <- within(os_dsk_bw_data, 
-					"MBps_write" <- abs(os_dsk_bw_data$ds_KB_write_delta / 
-									(1024 * os_dsk_bw_data$time_delta * time_unit)))
-			
-			###
-			os_dsk_tput_data <- subset(rosmdf, name == experiment_node, 
-					select = c("relative_time", "ds_ios_read", 
-							"ds_ios_write"))
-			os_dsk_tput_data$ds_ios_read_delta <- c(NA, 
-					diff(os_dsk_tput_data$ds_ios_read))
-			os_dsk_tput_data$ds_ios_write_delta <- c(NA, 
-					diff(os_dsk_tput_data$ds_ios_write))
-			os_dsk_tput_data <- subset(os_dsk_tput_data, 
-					ds_ios_read_delta > 0 | ds_ios_write_delta > 0, 
-					select = c("relative_time", "ds_ios_read_delta", 
-							"ds_ios_write_delta"))
-			
-			os_dsk_tput_data$time_delta <- c(1, diff(os_dsk_tput_data$time))
-			os_dsk_tput_data <- within(os_dsk_tput_data, 
-					"IOps_read" <- abs(os_dsk_tput_data$ds_ios_read_delta) / 
-							(os_dsk_bw_data$time_delta * time_unit))
-			os_dsk_tput_data <- within(os_dsk_tput_data, 
-					"IOps_write" <- abs(os_dsk_tput_data$ds_ios_write_delta) / 
-							(os_dsk_bw_data$time_delta * time_unit))
-			
-			## Cleanup
+			os_dsk_bw_data$ds_KB_read_delta <- c(NA, diff(os_dsk_bw_data$ds_KB_read))
+			os_dsk_bw_data$ds_KB_write_delta <- c(NA, diff(os_dsk_bw_data$ds_KB_write))
 			os_dsk_bw_data <- subset(os_dsk_bw_data, 
-					MBps_read < (1024 * 1024) | MBps_write < (1024 * 1024), 
-					select = c("relative_time", "MBps_write", "MBps_read"))
-			os_dsk_tput_data <- subset(os_dsk_tput_data, 
-					IOps_read < (1024 * 1024) | IOps_write < (1024 * 10), 
-					select = c("relative_time", "IOps_write", "IOps_read"))
+					ds_KB_read_delta > 0 | ds_KB_write_delta > 0, 
+					select = c("relative_time", "ds_KB_read_delta", "ds_KB_write_delta"))
 			
-			disk_activity <- TRUE
-			
+			if (length(os_dsk_bw_data$relative_time) > 0 ){
+				
+				os_dsk_bw_data$time_delta <- c(1, diff(os_dsk_bw_data$relative_time))
+				
+				os_dsk_bw_data <- within(os_dsk_bw_data, 
+						"MBps_read" <- abs(os_dsk_bw_data$ds_KB_read_delta / 
+										(1024 * os_dsk_bw_data$time_delta * time_unit)))
+				
+				os_dsk_bw_data <- within(os_dsk_bw_data, 
+						"MBps_write" <- abs(os_dsk_bw_data$ds_KB_write_delta / 
+										(1024 * os_dsk_bw_data$time_delta * time_unit)))
+				
+				###
+				os_dsk_tput_data <- subset(rosmdf, name == experiment_node, 
+						select = c("relative_time", "ds_ios_read", 
+								"ds_ios_write"))
+				os_dsk_tput_data$ds_ios_read_delta <- c(NA, 
+						diff(os_dsk_tput_data$ds_ios_read))
+				os_dsk_tput_data$ds_ios_write_delta <- c(NA, 
+						diff(os_dsk_tput_data$ds_ios_write))
+				os_dsk_tput_data <- subset(os_dsk_tput_data, 
+						ds_ios_read_delta > 0 | ds_ios_write_delta > 0, 
+						select = c("relative_time", "ds_ios_read_delta", 
+								"ds_ios_write_delta"))
+				
+				os_dsk_tput_data$time_delta <- c(1, diff(os_dsk_tput_data$time))
+				os_dsk_tput_data <- within(os_dsk_tput_data, 
+						"IOps_read" <- abs(os_dsk_tput_data$ds_ios_read_delta) / 
+								(os_dsk_bw_data$time_delta * time_unit))
+				os_dsk_tput_data <- within(os_dsk_tput_data, 
+						"IOps_write" <- abs(os_dsk_tput_data$ds_ios_write_delta) / 
+								(os_dsk_bw_data$time_delta * time_unit))
+				
+				## Cleanup
+				os_dsk_bw_data <- subset(os_dsk_bw_data, 
+						MBps_read < (1024 * 1024) | MBps_write < (1024 * 1024), 
+						select = c("relative_time", "MBps_write", "MBps_read"))
+				os_dsk_tput_data <- subset(os_dsk_tput_data, 
+						IOps_read < (1024 * 1024) | IOps_write < (1024 * 10), 
+						select = c("relative_time", "IOps_write", "IOps_read"))
+				
+				disk_activity <- TRUE
+				
+			} else {
+				disk_activity <- FALSE
+				msg <- paste("No Disk activity for ", node_type, " \"", experiment_node_name, 
+						"\" on experiment ", en, ". Will not produce plots for disk", sep = '')
+				cat(msg, sep='\n')
+			}
 		} else {
 			disk_activity <- FALSE
 			msg <- paste("No Disk activity for ", node_type, " \"", experiment_node_name, 
 					"\" on experiment ", en, ". Will not produce plots for disk", sep = '')
-			cat(msg, sep='\n')
+			cat(msg, sep='\n')			
 		}
-		
-		################## START Network Bandwidth vs Time ##################
-		
-		output_table(ed, en, os_net_bw_data, paste("012_os_net_bw_vs_time_data_", 
-						experiment_node_name, sep = ''), FALSE)
-		
-		os_net_bw_data <- melt(os_net_bw_data, id.vars="relative_time")
-		
-		msg <- paste("Network bandwidth for ", node_type, " \"", experiment_node_name,
-				"\" on experiment ", selected_expname, "\" (", selected_expid, ")", sep = '')
-		cat(paste(msg, "...", sep = ''), sep='\n')
-		
-		os_net_bw_vs_time_plot_title <- msg
-		
-		xy_lims <- plot_get_x_y_limits(en, os_net_bw_data, xati, yati)
-		
-		os_net_bw_vs_time_plot <- ggplot(os_net_bw_data, aes(x = relative_time, y = value, 
-								colour = variable, fill = variable)) + 
-				geom_bar(stat = "identity", position = "dodge") + 
-				geom_vline(xintercept = lnel, linetype=7, colour="black") +
-				geom_vline(xintercept = vmasl, linetype=4, colour="black") +
-				geom_vline(xintercept = vmael, linetype=1, colour="black") +
-				geom_vline(xintercept = vmcsl, linetype=3, colour="black") +
-				geom_vline(xintercept = vmcel, linetype=5, colour="black") +
-				xlab("Time (minutes)") + 
-				ylab("Network bandwidth (Mbps)") + 
-				labs(title = os_net_bw_vs_time_plot_title) + 
-				scale_x_continuous(limits =  xy_lims[[1]], breaks =  xy_lims[[2]]) 
-		#				+ scale_y_continuous(limits =  xy_lims[[3]], breaks =  xy_lims[[4]])
-		
-		output_pdf_plot(ed, en, os_net_bw_vs_time_plot, paste("010_os_net_bw_vs_time_plot_",
-						experiment_node_name, sep = ''), sps)
-		################## END Network Bandwidth vs Time ##################
-		
-		################## START Network Throughput vs Time ##################
-		
-		output_table(ed, en, os_net_tput_data, paste("011_os_net_tput_vs_time_data_", 
-						experiment_node_name, sep = ''), FALSE)
-		
-		os_net_tput_data <- melt(os_net_tput_data, id.vars="relative_time")
-		
-		msg <- paste("Network throughput for ", node_type, " \"", experiment_node_name, 
-				"\" on experiment ", selected_expname, "\" (", selected_expid, ")", sep = '')
-		cat(paste(msg, "...", sep = ''), sep='\n')
-		
-		os_net_tput_vs_time_plot_title <- msg
-		
-		xy_lims <- plot_get_x_y_limits(en, os_net_tput_data, xati, yati)
-		
-		os_net_tput_vs_time_plot <- ggplot(os_net_tput_data, aes(x = relative_time, 
-								y = value, colour = variable, fill = variable)) + 
-				geom_bar(stat = "identity", position = "dodge") + 
-				geom_vline(xintercept = lnel, linetype=7, colour="black") +
-				geom_vline(xintercept = vmasl, linetype=4, colour="black") +
-				geom_vline(xintercept = vmael, linetype=1, colour="black") +
-				geom_vline(xintercept = vmcsl, linetype=3, colour="black") +
-				geom_vline(xintercept = vmcel, linetype=5, colour="black") +	
-				xlab("Time (minutes)") + 
-				ylab("Network throughput (packets/s)") + 
-				labs(title = os_net_tput_vs_time_plot_title) + 
-				scale_x_continuous(limits =  xy_lims[[1]], breaks =  xy_lims[[2]]) 
-		#				+ scale_y_continuous(limits =  xy_lims[[3]], breaks =  xy_lims[[4]])
-		
-		output_pdf_plot(ed, en, os_net_tput_vs_time_plot, paste("011_os_net_tput_vs_time_plot_", 
-						experiment_node_name, sep = ''), sps)
-		################## END Network Throughput vs Time ##################
-		
+
+		if (network_activity) {
+			################## START Network Bandwidth vs Time ##################
+			
+			output_table(ed, en, os_net_bw_data, paste("012_os_net_bw_vs_time_data_", 
+							experiment_node_name, sep = ''), FALSE)
+			
+			os_net_bw_data <- melt(os_net_bw_data, id.vars="relative_time")
+			
+			msg <- paste("Network bandwidth for ", node_type, " \"", experiment_node_name,
+					"\" on experiment ", selected_expname, "\" (", selected_expid, ")", sep = '')
+			cat(paste(msg, "...", sep = ''), sep='\n')
+			
+			os_net_bw_vs_time_plot_title <- msg
+			
+			xy_lims <- plot_get_x_y_limits(en, os_net_bw_data, xati, yati)
+	
+			if (xy_lims[[5]] == 0) {
+				os_net_bw_vs_time_plot <- ggplot(os_net_bw_data, aes(x = relative_time, y = value, 
+										colour = variable, fill = variable)) + 
+						geom_bar(stat = "identity", position = "dodge") + 
+						geom_vline(xintercept = lnel, linetype=7, colour="black") +
+						geom_vline(xintercept = vmasl, linetype=4, colour="black") +
+						geom_vline(xintercept = vmael, linetype=1, colour="black") +
+						geom_vline(xintercept = vmcsl, linetype=3, colour="black") +
+						geom_vline(xintercept = vmcel, linetype=5, colour="black") +
+						xlab("Time (minutes)") + 
+						ylab("Network bandwidth (Mbps)") + 
+						labs(title = os_net_bw_vs_time_plot_title) + 
+						scale_x_continuous(limits =  xy_lims[[1]], breaks =  xy_lims[[2]]) 
+				#				+ scale_y_continuous(limits =  xy_lims[[3]], breaks =  xy_lims[[4]])
+				
+				output_pdf_plot(ed, en, os_net_bw_vs_time_plot, paste("010_os_net_bw_vs_time_plot_",
+								experiment_node_name, sep = ''), sps)
+			}
+			################## END Network Bandwidth vs Time ##################
+			
+			################## START Network Throughput vs Time ##################
+			
+			output_table(ed, en, os_net_tput_data, paste("011_os_net_tput_vs_time_data_", 
+							experiment_node_name, sep = ''), FALSE)
+			
+			os_net_tput_data <- melt(os_net_tput_data, id.vars="relative_time")
+			
+			msg <- paste("Network throughput for ", node_type, " \"", experiment_node_name, 
+					"\" on experiment ", selected_expname, "\" (", selected_expid, ")", sep = '')
+			cat(paste(msg, "...", sep = ''), sep='\n')
+			
+			os_net_tput_vs_time_plot_title <- msg
+			
+			xy_lims <- plot_get_x_y_limits(en, os_net_tput_data, xati, yati)
+			
+			if (xy_lims[[5]] == 0) {		
+				os_net_tput_vs_time_plot <- ggplot(os_net_tput_data, aes(x = relative_time, 
+										y = value, colour = variable, fill = variable)) + 
+						geom_bar(stat = "identity", position = "dodge") + 
+						geom_vline(xintercept = lnel, linetype=7, colour="black") +
+						geom_vline(xintercept = vmasl, linetype=4, colour="black") +
+						geom_vline(xintercept = vmael, linetype=1, colour="black") +
+						geom_vline(xintercept = vmcsl, linetype=3, colour="black") +
+						geom_vline(xintercept = vmcel, linetype=5, colour="black") +	
+						xlab("Time (minutes)") + 
+						ylab("Network throughput (packets/s)") + 
+						labs(title = os_net_tput_vs_time_plot_title) + 
+						scale_x_continuous(limits =  xy_lims[[1]], breaks =  xy_lims[[2]]) 
+				#				+ scale_y_continuous(limits =  xy_lims[[3]], breaks =  xy_lims[[4]])
+				
+				output_pdf_plot(ed, en, os_net_tput_vs_time_plot, paste("011_os_net_tput_vs_time_plot_", 
+								experiment_node_name, sep = ''), sps)
+			}
+			################## END Network Throughput vs Time ##################
+		}
 		if (swap_activity) {
 			################## START Swap Bandwidth vs Time ##################
 			
@@ -1334,23 +1555,25 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 			os_swap_bw_vs_time_data_plot_title <- msg
 			
 			xy_lims <- plot_get_x_y_limits(en, os_swap_bw_data, xati, yati)
-			
-			os_swap_bw_vs_time_plot <- ggplot(os_swap_bw_data, aes(x = relative_time, y = value, 
-									colour = variable, fill = variable)) + 
-					geom_bar(stat = "identity", position = "dodge") + 
-					geom_vline(xintercept = lnel, linetype=7, colour="black") +
-					geom_vline(xintercept = vmasl, linetype=4, colour="black") +
-					geom_vline(xintercept = vmael, linetype=1, colour="black") +
-					geom_vline(xintercept = vmcsl, linetype=3, colour="black") +
-					geom_vline(xintercept = vmcel, linetype=5, colour="black") +	
-					xlab("Time (minutes)") + 
-					ylab("Swap bandwidth (MB/s)") + 
-					labs(title = os_swap_bw_vs_time_data_plot_title) + 
-					scale_x_continuous(limits =  xy_lims[[1]], breaks =  xy_lims[[2]]) 
-			#				+ scale_y_continuous(limits =  xy_lims[[3]], breaks =  xy_lims[[4]])
-			
-			output_pdf_plot(ed, en, os_swap_bw_vs_time_plot, paste("012_os_swap_bw_vs_time_plot_", 
-							experiment_node_name, sep = ''), sps)
+
+			if (xy_lims[[5]] == 0) {
+				os_swap_bw_vs_time_plot <- ggplot(os_swap_bw_data, aes(x = relative_time, y = value, 
+										colour = variable, fill = variable)) + 
+						geom_bar(stat = "identity", position = "dodge") + 
+						geom_vline(xintercept = lnel, linetype=7, colour="black") +
+						geom_vline(xintercept = vmasl, linetype=4, colour="black") +
+						geom_vline(xintercept = vmael, linetype=1, colour="black") +
+						geom_vline(xintercept = vmcsl, linetype=3, colour="black") +
+						geom_vline(xintercept = vmcel, linetype=5, colour="black") +	
+						xlab("Time (minutes)") + 
+						ylab("Swap bandwidth (MB/s)") + 
+						labs(title = os_swap_bw_vs_time_data_plot_title) + 
+						scale_x_continuous(limits =  xy_lims[[1]], breaks =  xy_lims[[2]]) 
+				#				+ scale_y_continuous(limits =  xy_lims[[3]], breaks =  xy_lims[[4]])
+				
+				output_pdf_plot(ed, en, os_swap_bw_vs_time_plot, paste("012_os_swap_bw_vs_time_plot_", 
+								experiment_node_name, sep = ''), sps)
+			}				
 			################## END Swap Bandwidth vs Time ##################
 			
 			################## START Swap Throughput vs Time ##################
@@ -1368,22 +1591,24 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 			
 			xy_lims <- plot_get_x_y_limits(en, os_swap_tput_data, xati, yati)
 			
-			os_swap_tput_vs_time_plot <- ggplot(os_swap_tput_data, aes(x = relative_time, 
-									y = value, colour = variable, fill = variable)) + 
-					geom_bar(stat = "identity", position = "dodge") + 
-					geom_vline(xintercept = lnel, linetype=7, colour="black") +
-					geom_vline(xintercept = vmasl, linetype=4, colour="black") +
-					geom_vline(xintercept = vmael, linetype=1, colour="black") +
-					geom_vline(xintercept = vmcsl, linetype=3, colour="black") +
-					geom_vline(xintercept = vmcel, linetype=5, colour="black") +	
-					xlab("Time (minutes)") + 
-					ylab("Swap throughput (IO/s)") + 
-					labs(title = os_swap_tput_vs_time_data_plot_title) + 
-					scale_x_continuous(limits =  xy_lims[[1]], breaks =  xy_lims[[2]]) 
-			#				+ scale_y_continuous(limits =  xy_lims[[3]], breaks =  xy_lims[[4]])
-			
-			output_pdf_plot(ed, en, os_swap_tput_vs_time_plot, paste("013_os_swap_tput_vs_time_plot_", 
-							experiment_node_name, sep = ''), sps)
+			if (xy_lims[[5]] == 0) {			
+				os_swap_tput_vs_time_plot <- ggplot(os_swap_tput_data, aes(x = relative_time, 
+										y = value, colour = variable, fill = variable)) + 
+						geom_bar(stat = "identity", position = "dodge") + 
+						geom_vline(xintercept = lnel, linetype=7, colour="black") +
+						geom_vline(xintercept = vmasl, linetype=4, colour="black") +
+						geom_vline(xintercept = vmael, linetype=1, colour="black") +
+						geom_vline(xintercept = vmcsl, linetype=3, colour="black") +
+						geom_vline(xintercept = vmcel, linetype=5, colour="black") +	
+						xlab("Time (minutes)") + 
+						ylab("Swap throughput (IO/s)") + 
+						labs(title = os_swap_tput_vs_time_data_plot_title) + 
+						scale_x_continuous(limits =  xy_lims[[1]], breaks =  xy_lims[[2]]) 
+				#				+ scale_y_continuous(limits =  xy_lims[[3]], breaks =  xy_lims[[4]])
+				
+				output_pdf_plot(ed, en, os_swap_tput_vs_time_plot, paste("013_os_swap_tput_vs_time_plot_", 
+								experiment_node_name, sep = ''), sps)
+			}
 			################## END Swap Throughput vs Time ##################
 		}
 		
@@ -1403,22 +1628,24 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 			
 			xy_lims <- plot_get_x_y_limits(en, os_dsk_bw_data, xati, yati)
 			
-			os_dsk_bw_vs_time_plot <- ggplot(os_dsk_bw_data, aes(x = relative_time, y = value, 
-									colour = variable, fill = variable)) + 
-					geom_bar(stat = "identity", position = "dodge") + 
-					geom_vline(xintercept = lnel, linetype=7, colour="black") +
-					geom_vline(xintercept = vmasl, linetype=4, colour="black") +
-					geom_vline(xintercept = vmael, linetype=1, colour="black") +
-					geom_vline(xintercept = vmcsl, linetype=3, colour="black") +
-					geom_vline(xintercept = vmcel, linetype=5, colour="black") +	
-					xlab("Time (minutes)") + 
-					ylab("Disk bandwidth (MB/s)") + 
-					labs(title = os_dsk_bw_vs_time_data_plot_title) + 
-					scale_x_continuous(limits =  xy_lims[[1]], breaks =  xy_lims[[2]]) 
-			#				+ scale_y_continuous(limits =  xy_lims[[3]], breaks =  xy_lims[[4]])
-			
-			output_pdf_plot(ed, en, os_dsk_bw_vs_time_plot, paste("014_os_dsk_bw_vs_time_plot_", 
-							experiment_node_name, sep = ''), sps)
+			if (xy_lims[[5]] == 0) {			
+				os_dsk_bw_vs_time_plot <- ggplot(os_dsk_bw_data, aes(x = relative_time, y = value, 
+										colour = variable, fill = variable)) + 
+						geom_bar(stat = "identity", position = "dodge") + 
+						geom_vline(xintercept = lnel, linetype=7, colour="black") +
+						geom_vline(xintercept = vmasl, linetype=4, colour="black") +
+						geom_vline(xintercept = vmael, linetype=1, colour="black") +
+						geom_vline(xintercept = vmcsl, linetype=3, colour="black") +
+						geom_vline(xintercept = vmcel, linetype=5, colour="black") +	
+						xlab("Time (minutes)") + 
+						ylab("Disk bandwidth (MB/s)") + 
+						labs(title = os_dsk_bw_vs_time_data_plot_title) + 
+						scale_x_continuous(limits =  xy_lims[[1]], breaks =  xy_lims[[2]]) 
+				#				+ scale_y_continuous(limits =  xy_lims[[3]], breaks =  xy_lims[[4]])
+				
+				output_pdf_plot(ed, en, os_dsk_bw_vs_time_plot, paste("014_os_dsk_bw_vs_time_plot_", 
+								experiment_node_name, sep = ''), sps)
+			}
 			################## END Disk Bandwidth vs Time ##################
 			
 			################## START Disk Throughput vs Time ##################
@@ -1435,23 +1662,25 @@ plot_runtime_os_data <- function(rosmdf, ed, en, nnl, xati, yati, sps, nel) {
 			os_dsk_tput_vs_time_data_plot_title <- msg
 			
 			xy_lims <- plot_get_x_y_limits(en, os_dsk_tput_data, xati, yati)
-			
-			os_dsk_tput_vs_time_plot <- ggplot(os_dsk_tput_data, aes(x = relative_time, 
-									y = value, colour = variable, fill = variable)) + 
-					geom_bar(stat = "identity", position = "dodge") + 
-					geom_vline(xintercept = lnel, linetype=7, colour="black") +
-					geom_vline(xintercept = vmasl, linetype=4, colour="black") +
-					geom_vline(xintercept = vmael, linetype=1, colour="black") +
-					geom_vline(xintercept = vmcsl, linetype=3, colour="black") +
-					geom_vline(xintercept = vmcel, linetype=5, colour="black") +	
-					xlab("Time (minutes)") + 
-					ylab("Disk throughput (IO/s)") + 
-					labs(title = os_dsk_tput_vs_time_data_plot_title) + 
-					scale_x_continuous(limits =  xy_lims[[1]], breaks =  xy_lims[[2]]) 
-			#				+ scale_y_continuous(limits =  xy_lims[[3]], breaks =  xy_lims[[4]])
-			
-			output_pdf_plot(ed, en, os_dsk_tput_vs_time_plot, paste("015_os_dsk_tput_vs_time_plot_", 
-							experiment_node_name, sep = ''), sps)
+
+			if (xy_lims[[5]] == 0) {
+				os_dsk_tput_vs_time_plot <- ggplot(os_dsk_tput_data, aes(x = relative_time, 
+										y = value, colour = variable, fill = variable)) + 
+						geom_bar(stat = "identity", position = "dodge") + 
+						geom_vline(xintercept = lnel, linetype=7, colour="black") +
+						geom_vline(xintercept = vmasl, linetype=4, colour="black") +
+						geom_vline(xintercept = vmael, linetype=1, colour="black") +
+						geom_vline(xintercept = vmcsl, linetype=3, colour="black") +
+						geom_vline(xintercept = vmcel, linetype=5, colour="black") +	
+						xlab("Time (minutes)") + 
+						ylab("Disk throughput (IO/s)") + 
+						labs(title = os_dsk_tput_vs_time_data_plot_title) + 
+						scale_x_continuous(limits =  xy_lims[[1]], breaks =  xy_lims[[2]]) 
+				#				+ scale_y_continuous(limits =  xy_lims[[3]], breaks =  xy_lims[[4]])
+				
+				output_pdf_plot(ed, en, os_dsk_tput_vs_time_plot, paste("015_os_dsk_tput_vs_time_plot_", 
+								experiment_node_name, sep = ''), sps)
+			}
 			################## END Disk Throughput vs Time ##################
 		}
 	}

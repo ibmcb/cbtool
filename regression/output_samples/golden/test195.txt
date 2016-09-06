@@ -1,11 +1,11 @@
- status: VMC 19431DA8-0588-5F6B-9E25-272916F0D361 was successfully registered on SimCloud "TESTCLOUD".
+ status: VMC E76EC5A2-8FD7-5F0E-881B-D0AA5D199E2C was successfully registered on SimCloud "TESTCLOUD".
  status: Attribute "collect_from_host" was set to "false". Skipping Host OS performance monitor daemon startup
-VMC object 19431DA8-0588-5F6B-9E25-272916F0D361 (named "simzone_c") sucessfully attached to this experiment. It is ssh-accessible at the IP address 4.150.116.245 (simzone_c).
+VMC object E76EC5A2-8FD7-5F0E-881B-D0AA5D199E2C (named "simzone_c") sucessfully attached to this experiment. It is ssh-accessible at the IP address 232.47.214.102 (simzone_c).
 The following ATTACHED VMCs are in this experiment (Cloud TESTCLOUD) :
 |name                    |host_count      |pool                    |cloud_hostname                  |cloud_ip         
-|simzone_a               |15              |sut                     |simzone_a                       |228.14.23.163    
-|simzone_b               |15              |sut                     |simzone_b                       |214.193.30.195   
-|simzone_c               |15              |sut                     |simzone_c                       |4.150.116.245    
+|simzone_a               |15              |sut                     |simzone_a                       |83.2.205.189     
+|simzone_b               |15              |sut                     |simzone_b                       |85.131.121.244   
+|simzone_c               |15              |sut                     |simzone_c                       |232.47.214.102   
 
 The VMC object simzone_c, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
 |attribute (VMC object key)               |value                                
@@ -15,11 +15,11 @@ The VMC object simzone_c, attached to this experiment, has the following attribu
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |17.75M                        
+|Used Memory                                          |15.23M                        
 |Redis Version                                        |2.8.6                         
-|Uptime (in seconds)                                  |14434957                      
-|Total Connections Received                           |614579                        
-|Total Commands Processed                             |58315389                      
+|Uptime (in seconds)                                  |12856024                      
+|Total Connections Received                           |548493                        
+|Total Commands Processed                             |42282594                      
 |Number of Keys                                       |391                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
@@ -92,7 +92,7 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |3                             
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|5111CF49-2B68-5322-8A49-DB1B825611D2 (simzone_b) VM RESERVATIONS|0                             
-|19431DA8-0588-5F6B-9E25-272916F0D361 (simzone_c) VM RESERVATIONS|0                             
-|ECBCEC33-78C3-58B7-847B-CE7CF593B621 (simzone_a) VM RESERVATIONS|0                             
+|297FEBF2-D8FC-5929-83D4-D843648B2450 (simzone_b) VM RESERVATIONS|0                             
+|E76EC5A2-8FD7-5F0E-881B-D0AA5D199E2C (simzone_c) VM RESERVATIONS|0                             
+|E5BEF33B-29C0-5ECD-A378-CCDDFEA92537 (simzone_a) VM RESERVATIONS|0                             
 

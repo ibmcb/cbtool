@@ -1,4 +1,4 @@
-Background operation execution success. Operation "vmc-attach" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.0.4,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,password:cbpwdZ9,timeout:240,host:172.16.0.4,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,simzone_b,empty=empty --operation=vmc-attach --cn=TESTCLOUD --uuid=5111CF49-2B68-5322-8A49-DB1B825611D2 --daemon". The process id is 2370.
+Background operation execution success. Operation "vmc-attach" will be processed asynchronously, through the command ""/home/msilva/cloudbench/lib/operations//../../cbact" --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:9.2.208.21,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,password:cbpwdZ9,timeout:240,host:9.2.208.21,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,simzone_b,empty=empty --operation=vmc-attach --cn=TESTCLOUD --uuid=D033DAF1-7300-5CAB-BF97-C3E49B5B5CCA --daemon". The process id is 258831.
 
 Going to unconditionally wait for 8s (8 seconds). The command line interface will be blocked during the waiting.
 Waited 1 seconds... (12.5%)
@@ -12,8 +12,8 @@ Waited 8 seconds... (100.0%)
 Waited for 8 seconds.
 The following ATTACHED VMCs are in this experiment (Cloud TESTCLOUD) :
 |name                    |host_count      |pool                    |cloud_hostname                  |cloud_ip         
-|simzone_a               |15              |sut                     |simzone_a                       |228.14.23.163    
-|simzone_b               |15              |sut                     |simzone_b                       |214.193.30.195   
+|simzone_a               |15              |sut                     |simzone_a                       |114.8.89.21      
+|simzone_b               |15              |sut                     |simzone_b                       |140.106.144.31   
 
 The VMC object simzone_b, attached to this experiment, has the following attributes (Cloud TESTCLOUD) :
 |attribute (VMC object key)               |value                                
@@ -23,15 +23,15 @@ The VMC object simzone_b, attached to this experiment, has the following attribu
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |17.62M                        
-|Redis Version                                        |2.8.6                         
-|Uptime (in seconds)                                  |14434956                      
-|Total Connections Received                           |614579                        
-|Total Commands Processed                             |58312691                      
-|Number of Keys                                       |293                           
+|Used Memory                                          |4.18M                         
+|Redis Version                                        |3.0.6                         
+|Uptime (in seconds)                                  |8704391                       
+|Total Connections Received                           |377207                        
+|Total Commands Processed                             |1222669135                    
+|Number of Keys                                       |299                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|Collections                                          |26                            
+|Collections                                          |13                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
 |VMCs                                                 |2                             
@@ -100,6 +100,6 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |2                             
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|5111CF49-2B68-5322-8A49-DB1B825611D2 (simzone_b) VM RESERVATIONS|0                             
-|ECBCEC33-78C3-58B7-847B-CE7CF593B621 (simzone_a) VM RESERVATIONS|0                             
+|D033DAF1-7300-5CAB-BF97-C3E49B5B5CCA (simzone_b) VM RESERVATIONS|0                             
+|1DC89DC3-7A32-524E-8057-DCA53E28C4B0 (simzone_a) VM RESERVATIONS|0                             
 

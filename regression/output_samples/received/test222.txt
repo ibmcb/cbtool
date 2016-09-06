@@ -1,41 +1,41 @@
 Going to start 2 "vmattach" operations in parallel. 
-Background operation execution success. Operation "vm-attach" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.0.4,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,password:cbpwdZ9,timeout:240,host:172.16.0.4,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,tinyvm,auto,empty,default,none,empty=empty --operation=vm-attach --cn=TESTCLOUD --uuid=7F54B7DE-E36E-5EB6-AA44-460E0B7B8233 --daemon". The process id is 3115.
-Operation "vm-attach" will be processed asynchronously, through the command "/home/msilva/cloudbench/lib/operations//../../cbact --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:172.16.0.4,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,password:cbpwdZ9,timeout:240,host:172.16.0.4,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,tinyvm,auto,empty,default,none,empty=empty --operation=vm-attach --cn=TESTCLOUD --uuid=AF139952-8CA9-5230-93D9-1EF729E2EF96 --daemon". The process id is 3117.
+Background operation execution success. Operation "vm-attach" will be processed asynchronously, through the command ""/home/msilva/cloudbench/lib/operations//../../cbact" --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:9.2.208.21,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,password:cbpwdZ9,timeout:240,host:9.2.208.21,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,tinyvm,auto,empty,default,none,empty=empty --operation=vm-attach --cn=TESTCLOUD --uuid=D4A55D6A-9D9A-54A2-9907-1FE2C0C6976D --daemon". The process id is 260018.
+Operation "vm-attach" will be processed asynchronously, through the command ""/home/msilva/cloudbench/lib/operations//../../cbact" --procid=TEST_msilva --osp=port:6379,experiment_inst:TEST_msilva,host:9.2.208.21,pid:TEST_msilva,dbid:10,timout:70,protocol:TCP,kind:redis,username:msilva --msp=port:27017,password:cbpwdZ9,timeout:240,host:9.2.208.21,pid:TEST_msilva,database:metrics,protocol:TCP,kind:mongodb,username:msilva --oop=TESTCLOUD,tinyvm,auto,empty,default,none,empty=empty --operation=vm-attach --cn=TESTCLOUD --uuid=7B00C19A-6F91-5BAB-BB1C-FAAD44394E3C --daemon". The process id is 260020.
 
 Going to unconditionally wait for 1s (1 seconds). The command line interface will be blocked during the waiting.
 Waited 1 seconds... (100.0%)
 Waited for 1 seconds.
-The following PENDING VMs are in this experiment (Cloud TESTCLOUD) :
-|name          |role                |size        |cloud_ip        |host_name                  |vmc_pool      |netname    |ai      |aidrs      |uuid
-|vm_7          |unavailable         |unavailable |unavailable     |unavailable                |unavailable   |unavailable|unavailable|unavailable|7F54B7DE-E36E-5EB6-AA44-460E0B7B8233
-|vm_8          |unavailable         |unavailable |unavailable     |unavailable                |unavailable   |unavailable|unavailable|unavailable|AF139952-8CA9-5230-93D9-1EF729E2EF96
-
-Going to wait until the value on counter "VM ARRIVED" is equal to 8 (currently it is equal to 6) waiting 1.0 seconds between samples, for a maximum of 36000.0 seconds. The counter is assumed to be increasing.
- status: Counter "VM ARRIVED" equals 6 after 0.221256971359 seconds (the counter is assumed to be increasing).
- status: Counter "VM ARRIVED" equals 8 after 1.22125697136 seconds (the counter is assumed to be increasing).
-Waited 1.22125697136 seconds until "VMs ARRIVED" was equal to 8.
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 |name          |role                |size        |cloud_ip        |host_name                  |vmc_pool      |netname    |ai      |aidrs      |uuid
-|vm_1          |tinyvm              |pico32      |156.132.157.237 |simhostb12                 |SUT           |private    |none    |none       |FFBD485E-62F9-55ED-AD0E-F9751F318A3E
-|vm_3          |tinyvm              |pico32      |142.51.103.232  |simhostb1                  |SUT           |private    |none    |none       |1E717DC1-DAF2-5D0C-9D2C-0818F7890FB1
-|vm_4          |db2                 |copper32    |20.247.126.40   |simhostb2                  |SUT           |private    |none    |none       |2FCBA3CF-BB21-545D-84F2-D2D4CC9DE828
-|vm_5          |netclient           |platinum64  |131.247.204.241 |simhosta1                  |SUT           |private    |none    |none       |68EC517B-E962-50B4-B0E6-D33A50A35CBA
-|vm_6          |tinyvm              |pico32      |22.155.58.249   |simhostb14                 |SUT           |private    |none    |none       |7AD069C4-0225-5AA5-8390-B031386648D6
-|vm_7          |tinyvm              |pico32      |168.218.237.166 |simhostc9                  |SUT           |private    |none    |none       |7F54B7DE-E36E-5EB6-AA44-460E0B7B8233
-|vm_8          |tinyvm              |pico32      |63.244.87.158   |simhostc8                  |SUT           |private    |none    |none       |AF139952-8CA9-5230-93D9-1EF729E2EF96
+
+Going to wait until the value on counter "VM ARRIVED" is equal to 8 (currently it is equal to 6) waiting 1.0 seconds between samples, for a maximum of 36000.0 seconds. The counter is assumed to be increasing.
+ status: Counter "VM ARRIVED" equals 6 after 0.931554079056 seconds (the counter is assumed to be increasing).
+ status: Counter "VM ARRIVED" equals 6 after 1.93155407906 seconds (the counter is assumed to be increasing).
+ status: Counter "VM ARRIVED" equals 7 after 2.93155407906 seconds (the counter is assumed to be increasing).
+ status: Counter "VM ARRIVED" equals 8 after 3.93155407906 seconds (the counter is assumed to be increasing).
+Waited 3.93155407906 seconds until "VMs ARRIVED" was equal to 8.
+The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
+|name          |role                |size        |cloud_ip        |host_name                  |vmc_pool      |netname    |ai      |aidrs      |uuid
+|vm_1          |tinyvm              |pico32      |90.17.211.77    |simhostd3                  |SUT           |private    |none    |none       |4BB20172-486A-5DCB-9DC1-A49A5B8AFE4A
+|vm_3          |tinyvm              |pico32      |71.248.153.186  |simhostb1                  |SUT           |private    |none    |none       |5CAE413F-749A-56CB-AE5D-83A2954057A4
+|vm_4          |db2                 |copper32    |100.129.101.48  |simhostc12                 |SUT           |private    |none    |none       |9A02889F-F41B-5D9D-94AA-D6FCE06513DE
+|vm_5          |netclient           |platinum64  |195.243.1.253   |simhostb11                 |SUT           |private    |none    |none       |0FC8B3F6-F86F-5839-8D91-B2D0086F8466
+|vm_6          |tinyvm              |pico32      |47.211.16.29    |simhostb3                  |SUT           |private    |none    |none       |10411AC8-0B0A-567A-B271-3273F6A27B4C
+|vm_7          |tinyvm              |pico32      |19.196.136.214  |simhosta0                  |SUT           |private    |none    |none       |7B00C19A-6F91-5BAB-BB1C-FAAD44394E3C
+|vm_8          |tinyvm              |pico32      |105.205.107.56  |simhosta2                  |SUT           |private    |none    |none       |D4A55D6A-9D9A-54A2-9907-1FE2C0C6976D
 
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |18.84M                        
-|Redis Version                                        |2.8.6                         
-|Uptime (in seconds)                                  |14435026                      
-|Total Connections Received                           |614592                        
-|Total Commands Processed                             |58367950                      
-|Number of Keys                                       |591                           
+|Used Memory                                          |5.66M                         
+|Redis Version                                        |3.0.6                         
+|Uptime (in seconds)                                  |8704461                       
+|Total Connections Received                           |377222                        
+|Total Commands Processed                             |1222749016                    
+|Number of Keys                                       |611                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
-|Collections                                          |27                            
+|Collections                                          |14                            
 --------------------- EXPERIMENT OBJECTS ---------------------
 |Object                                               |Count                         
 |VMCs                                                 |4                             
@@ -104,8 +104,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |217                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|4D841AFA-3629-5865-B277-3C9B87B46AF4 (simzone_d) VM RESERVATIONS|0                             
-|B07D97D7-6259-50D3-8A5D-2F6387957881 (simzone_b) VM RESERVATIONS|3                             
-|73396447-1A1B-5F78-8FD0-C71D15101114 (simzone_a) VM RESERVATIONS|2                             
-|FB6EC147-6C78-5AE6-BD5F-8F8D6A60F5BC (simzone_c) VM RESERVATIONS|2                             
+|48E847B7-4EAD-595E-A603-912566454DDC (simzone_a) VM RESERVATIONS|3                             
+|0F125A34-8350-57DE-AA00-635042C08FD4 (simzone_c) VM RESERVATIONS|1                             
+|C1CCDA39-30E1-56FF-A6AE-36406AD2BA16 (simzone_d) VM RESERVATIONS|0                             
+|67592E97-AC3C-50A4-B3D9-009931854DBD (simzone_b) VM RESERVATIONS|3                             
 

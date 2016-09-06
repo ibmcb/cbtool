@@ -1,39 +1,37 @@
- status: Waiting for vm_19 (cloud-assigned uuid 63309A9E-9125-545D-8766-2BDE2D8A43EC) to start...
- status: Trying to establish network connectivity to vm_19 (cloud-assigned uuid 63309A9E-9125-545D-8766-2BDE2D8A43EC), on IP address 168.97.115.197...
- status: Checking ssh accessibility on vm_19 (ssh klabuser@168.97.115.197)...
- status: Bootstrapping vm_19 (creating file cb_os_paramaters.txt in "klabuser" user's home dir on 168.97.115.197)...
- status: Sending a copy of the code tree to vm_19 (168.97.115.197)...
- status: Performing generic VM post_boot configuration on vm_19 (168.97.115.197)...
-VM object C0E1A7B0-544F-5334-A909-58919D91C505 (named "vm_19") sucessfully attached to this experiment. It is ssh-accessible at the IP addresses 168.97.115.197 and 55.191.167.44 (63309A9E-9125-545D-8766-2BDE2D8A43EC.simcloud.com).
+ status: Waiting for vm_19 (cloud-assigned uuid 5F5AC75F-2076-504B-8356-4D2C7704BF9A) to start...
+ status: Trying to establish network connectivity to vm_19 (cloud-assigned uuid 5F5AC75F-2076-504B-8356-4D2C7704BF9A), on IP address 235.13.76.202...
+ status: Bypassing the bootstrapping and the sending of a copy of the code tree to vm_19 (235.13.76.202)...
+ status: Bypassing generic VM post_boot configuration on vm_19 (235.13.76.202)...
+VM object AF85383E-A4C7-5D9B-91BA-44662DAC49D8 (named "vm_19") sucessfully attached to this experiment. It is ssh-accessible at the IP addresses 235.13.76.202 and 156.220.198.32 (5F5AC75F-2076-504B-8356-4D2C7704BF9A.simcloud.com).
 The following ATTACHED VMs are in this experiment (Cloud TESTCLOUD) :
 |name          |role                |size        |cloud_ip        |host_name                  |vmc_pool      |netname    |ai      |aidrs      |uuid
-|vm_1          |tinyvm              |pico32      |156.132.157.237 |simhostb12                 |SUT           |private    |none    |none       |FFBD485E-62F9-55ED-AD0E-F9751F318A3E
-|vm_3          |tinyvm              |pico32      |142.51.103.232  |simhostb1                  |SUT           |private    |none    |none       |1E717DC1-DAF2-5D0C-9D2C-0818F7890FB1
-|vm_4          |db2                 |copper32    |20.247.126.40   |simhostb2                  |SUT           |private    |none    |none       |2FCBA3CF-BB21-545D-84F2-D2D4CC9DE828
-|vm_5          |netclient           |platinum64  |131.247.204.241 |simhosta1                  |SUT           |private    |none    |none       |68EC517B-E962-50B4-B0E6-D33A50A35CBA
-|vm_6          |tinyvm              |pico32      |22.155.58.249   |simhostb14                 |SUT           |private    |none    |none       |7AD069C4-0225-5AA5-8390-B031386648D6
-|vm_7          |tinyvm              |pico32      |168.218.237.166 |simhostc9                  |SUT           |private    |none    |none       |7F54B7DE-E36E-5EB6-AA44-460E0B7B8233
-|vm_8          |tinyvm              |pico32      |63.244.87.158   |simhostc8                  |SUT           |private    |none    |none       |AF139952-8CA9-5230-93D9-1EF729E2EF96
-|vm_9          |db2                 |platinum64  |98.62.76.227    |simhostd5                  |SUT           |private    |none    |none       |CC7FBEBB-72C2-57BD-ABF6-6A5007E4E595
-|vm_10         |netclient           |iron32      |138.234.53.105  |simhosta2                  |SUT           |private    |none    |none       |DE243271-F277-5B8F-B64E-CB666AF9E6F7
-|vm_11         |fen_hpc             |platinum64  |203.180.229.62  |simhostb1                  |LG            |private    |none    |none       |D6D4C364-AD63-5207-A605-E42A5B37AFBE
-|vm_12         |tinyvm              |iron32      |97.180.244.228  |simhostc12                 |SUT           |private    |none    |none       |25E95148-2C01-5B50-97CF-E7CC8CCCE741
-|vm_13         |tinyvm              |iron32      |205.1.62.114    |simhostc2                  |SUT           |private    |none    |none       |E876284D-E22B-53DB-83D3-4E5FC2D73BEA
-|vm_14         |predictablevm       |iron32      |1.2.3.4         |simhostc2                  |SUT           |private    |none    |none       |8591AE45-C644-5390-A381-C74C64CF5718
-|vm_15         |tinyvm              |pico32      |102.197.149.180 |simhostd3                  |SUT           |private    |none    |none       |6A23D608-93B9-5A1B-A790-1278D108987F
-|vm_16         |tinyvm              |pico32      |193.171.141.24  |simhostb10                 |SUT           |private    |none    |none       |FE90B68A-589D-5478-8C27-339C9A03A5E5
-|vm_17         |tinyvm              |pico32      |121.178.74.193  |simhostb9                  |SUT           |private    |none    |none       |D01E40CD-D603-5821-8D13-FB22AC5B74F2
-|vm_18         |tinyvm              |pico32      |211.215.121.136 |simhostc13                 |SUT           |private    |none    |none       |9A82336F-A0DA-5D14-A9AD-638EB2C59F82
-|vm_19         |tinyvm              |pico32      |55.191.167.44   |simhosta6                  |SUT           |private    |none    |none       |C0E1A7B0-544F-5334-A909-58919D91C505
+|vm_1          |tinyvm              |pico32      |4.81.141.120    |simhostb0                  |SUT           |private    |none    |none       |A04D80E7-0BB2-55AD-A873-E01F14DD1C2A
+|vm_3          |tinyvm              |pico32      |199.180.154.172 |simhostb1                  |SUT           |private    |none    |none       |608DB467-1061-5361-8C26-0FC544152663
+|vm_4          |db2                 |copper32    |112.243.120.145 |simhostd14                 |SUT           |private    |none    |none       |492E5ED8-A975-5AE6-82B1-CBC1328B551B
+|vm_5          |netclient           |platinum64  |242.130.46.195  |simhostb11                 |SUT           |private    |none    |none       |FF23191A-5599-58ED-9794-0B325BB697DA
+|vm_6          |tinyvm              |pico32      |126.219.47.171  |simhostb4                  |SUT           |private    |none    |none       |16EEE5D2-B168-51E0-9E7F-09C852B73DFC
+|vm_7          |tinyvm              |pico32      |210.196.58.210  |simhostb4                  |SUT           |private    |none    |none       |B6AC254E-9158-54FA-951A-D121157A1E9B
+|vm_8          |tinyvm              |pico32      |61.86.169.74    |simhostc8                  |SUT           |private    |none    |none       |2E2CCD58-0ABA-562A-92C1-1ABE9C947347
+|vm_9          |db2                 |platinum64  |98.143.209.138  |simhostd11                 |SUT           |private    |none    |none       |B596AA49-2D68-5349-B21C-51A24DB288C1
+|vm_10         |netclient           |iron32      |189.199.59.165  |simhosta2                  |SUT           |private    |none    |none       |D4D12FA0-C705-581B-B443-EEF9467AAF6C
+|vm_11         |fen_hpc             |platinum64  |13.152.90.149   |simhosta1                  |LG            |private    |none    |none       |7A9CB28F-DDF6-51C5-99AA-3EB585D2F229
+|vm_12         |tinyvm              |iron32      |167.158.131.246 |simhostb9                  |SUT           |private    |none    |none       |A33D6CE0-1938-54C0-A924-0A00ED9AED88
+|vm_13         |tinyvm              |iron32      |57.23.188.129   |simhostd6                  |SUT           |private    |none    |none       |B93C51A7-FB63-5DD6-BB1A-8ADF36F74F72
+|vm_14         |predictablevm       |iron32      |1.2.3.4         |simhostd10                 |SUT           |private    |none    |none       |A2A34F76-31B1-5F38-BDFC-37A6819EB40C
+|vm_15         |tinyvm              |pico32      |44.247.109.80   |simhosta12                 |SUT           |private    |none    |none       |C5DF8F5E-899F-531B-8A46-069FD1E307A2
+|vm_16         |tinyvm              |pico32      |251.226.102.215 |simhostc10                 |SUT           |private    |none    |none       |9852295C-F3FB-5817-931E-2EEC47C8CDFD
+|vm_17         |tinyvm              |pico32      |150.120.141.251 |simhostd5                  |SUT           |private    |none    |none       |43B3BFE1-10C9-5BEA-ACA3-B9967F981842
+|vm_18         |tinyvm              |pico32      |205.167.153.149 |simhostd13                 |SUT           |private    |none    |none       |795D16F3-5E21-5C5F-9853-87C450D33F16
+|vm_19         |tinyvm              |pico32      |156.220.198.32  |simhostd5                  |SUT           |private    |none    |none       |AF85383E-A4C7-5D9B-91BA-44662DAC49D8
 
 The following statistics are available on this experiment (Cloud TESTCLOUD) :
 ------------------------- OBJECT STORE -----------------------
 |Metric                                               |Value                         
-|Used Memory                                          |19.24M                        
+|Used Memory                                          |16.71M                        
 |Redis Version                                        |2.8.6                         
-|Uptime (in seconds)                                  |14435104                      
-|Total Connections Received                           |614606                        
-|Total Commands Processed                             |58381946                      
+|Uptime (in seconds)                                  |12856171                      
+|Total Connections Received                           |548520                        
+|Total Commands Processed                             |42348921                      
 |Number of Keys                                       |680                           
 ------------------------- METRIC STORE -----------------------
 |Metric                                               |Value                         
@@ -106,8 +104,8 @@ The following statistics are available on this experiment (Cloud TESTCLOUD) :
 |EXPERIMENT COUNTER                                   |228                           
 
  ---------------- VMC-WIDE COUNTERS ----------------
-|4D841AFA-3629-5865-B277-3C9B87B46AF4 (simzone_d) VM RESERVATIONS|1                             
-|B07D97D7-6259-50D3-8A5D-2F6387957881 (simzone_b) VM RESERVATIONS|7                             
-|73396447-1A1B-5F78-8FD0-C71D15101114 (simzone_a) VM RESERVATIONS|7                             
-|FB6EC147-6C78-5AE6-BD5F-8F8D6A60F5BC (simzone_c) VM RESERVATIONS|3                             
+|A168E857-FDCA-5E02-98BB-32D5CA3934A5 (simzone_d) VM RESERVATIONS|1                             
+|2A9C7A1E-D5EE-5CFE-BE56-2B4E298B71F7 (simzone_a) VM RESERVATIONS|7                             
+|FB2A884A-73A4-5C91-B913-9AD4AF1FB28A (simzone_c) VM RESERVATIONS|5                             
+|073C9CDF-01E7-5AA9-B92E-02C6DA6E75D6 (simzone_b) VM RESERVATIONS|5                             
 

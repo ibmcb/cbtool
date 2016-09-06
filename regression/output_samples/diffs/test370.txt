@@ -1,0 +1,1 @@
+hpcc, coremark, iperf, redis_ycsb, filebench, nullworkload, unixbench, ddgen, windesktop, hadoop, mongo_ycsb, cassandra_ycsb, giraph, linpack, mweb, fio, xping, specjbb, ibmderby_tradelite, specimap, mlg, ibm_daytrader, netperf, open_daytrader, ibmdb2_tradelite, nuttcp, gatest

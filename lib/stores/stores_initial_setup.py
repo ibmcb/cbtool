@@ -630,7 +630,7 @@ def reset(global_objects, soft = True) :
         _proc_man.run_os_command("screen -wipe")
 
         _proc_man.run_os_command("rm -rf /tmp/restart_cb*" + global_objects["logstore"]["username"])
-        _proc_man.run_os_command("rm -rf /tmp/*-*-*-*-*_avg_acc")
+        _proc_man.run_os_command("rm -rf /tmp/" + _username + "_*-*-*-*-*_avg_acc")
         
         _msg = "Flushing Object Store..." 
         print _msg,
