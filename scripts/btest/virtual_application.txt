@@ -1,0 +1,30 @@
+# Parameters for this Virtual Application (Application Instance - AI) type should
+# be set on YOUR private configuration configuration file, including the ones 
+# commented.
+
+[AI_TEMPLATES : BTEST]
+
+# Attributes MANDATORY for all Virtual Applications
+SUT = tinyvm
+LOAD_BALANCER_SUPPORTED = $False
+RESIZE_SUPPORTED = $True
+REGENERATE_DATA = $False
+LOAD_GENERATOR_ROLE = tinyvm
+LOAD_MANAGER_ROLE = tinyvm
+METRIC_AGGREGATOR_ROLE = tinyvm
+CAPTURE_ROLE = tinyvm
+LOAD_PROFILE = 4096;32;50;100;500  # meaning: block size;AIO queue depth;% reads; %random;file size (MB)
+LOAD_LEVEL = uniformIXIXI1I10
+LOAD_DURATION = 100
+REPORTED_METRICS = throughput,latency,completion_time,errors,quiescent_time
+
+# VApp-specific MANDATORY attributes
+DESCRIPTION = Deploys the btest disk microbenchmark from XtremeIO 
+TINYVM_SETUP1 = cb_start_nothing.sh
+START = cb_run_btest.sh
+
+# Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
+#SYNC_COUNTER_NAME = synchronization_counter
+#CONCURRENT_AIS = 2
+#SYNC_CHANNEL_NAME = synchronization_channel
+#RUN_COUNTER_NAME = experiment_id_counter
