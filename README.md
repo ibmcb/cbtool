@@ -8,6 +8,8 @@ Users: https://groups.google.com/forum/#!forum/cbtool-users
 
 Development: https://groups.google.com/forum/#!forum/cbtool-devel
 
+- New! CloudBench is now released as a component of [SPEC Cloud IaaS 2016](http://spec.org/cloud_iaas2016)
+
 ## To get started:
 
 1. [Learn more about the tool](https://github.com/ibmcb/cbtool/wiki/DOC:-Table-of-Contents)
@@ -54,16 +56,15 @@ Each individual application can have a specific load profile using probability d
 
 1. Amazon EC2
 2. OpenStack (and RackSpace)
-3. DigitalOcean
-4. IBM SCP and IBM SCE
-5. "pure" Libvirt+KVM or Libvirt+XEN (soon)
-6. VMWare vCloud (in progress)
-7. CloudStack
-8. SoftLayer
+3. Google Compute Engine 
+4. DigitalOcean
+5. Docker/Swarm
+6. "pure" Libvirt+KVM or Libvirt+XEN (soon)
+7. VMWare vCloud
+8. CloudStack
+9. SoftLayer
 
 ## [Supported Workloads](https://github.com/ibmcb/cbtool/wiki/DOC:-Supported-Virtual-Applications)
-
-- New! CloudBench is now released as a component of [SPEC Cloud IaaS 2016](http://spec.org/cloud_iaas2016)
 
 Contacts:
 
