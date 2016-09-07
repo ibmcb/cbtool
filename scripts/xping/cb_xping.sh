@@ -64,8 +64,6 @@ then
     LOAD_GENERATOR_TARGET_IP=${EXTERNAL_TARGET} 
 fi            
                                     
-source ~/cb_barrier.sh start
-
 CMDLINE="$ping -c ${LOAD_LEVEL} ${ADDITIONAL_CLI_OPT} ${LOAD_GENERATOR_TARGET_IP}"
 
 syslog_netcat "Benchmarking xping SUT: XPING_SENDER=${LOAD_GENERATOR_IP} -> XPING_SERVER=${LOAD_GENERATOR_TARGET_IP} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"

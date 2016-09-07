@@ -810,38 +810,68 @@ function publish_msg {
     object_type=`echo $1 | tr '[:lower:]' '[:upper:]'`
     channel=$2
     msg=$3
-    retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber publish ${osinstance}:${object_type}:${channel} \"$msg\""
-    }
+    subscribers=$4
+
+	total=0
+	while true ; do
+		got=$(retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber publish ${osinstance}:${object_type}:${channel} \"$msg\"")
+		got=$(echo $got | grep -oE [0-9]+)
+		((total=total+got))
+		syslog_netcat "Got $got subscribers. Total $total / $subscribers"
+		if [ x"$subscribers" != x ] ; then
+			syslog_netcat "Checking subscribers..."
+			if [ $total -lt $subscribers ] ; then
+				syslog_netcat "Not enough."
+				sleep 5
+				continue
+			fi
+			syslog_netcat "Sufficient."
+			total=0
+			break
+		else
+			syslog_netcat "No subscribers requested."
+			break
+		fi
+	done
+}
 
 function publishvm {
-    $channel=$1
-    $msg=$2
+    channel=$1
+    msg=$2
     publish_msg VM $channel $msg
-    }
+}
 
 function publishai {
-    $channel=$1
-    $msg=$2
+    channel=$1
+    msg=$2
     publish_msg AI $channel $msg
-    }
+}
     
 function subscribemsg {
     object=`echo $1 | tr '[:lower:]' '[:upper:]'`
     channel=$2
     message=$3
-    ${SUBSCRIBE_CMD} ${object} ${channel} $message
+    ${SUBSCRIBE_CMD} ${object} ${channel} $message $@ | while read line ; do
+        syslog_netcat "$line"
+    done
 }
 
 function subscribevm {
     channel=$1
     message=$2
-    ${SUBSCRIBE_CMD} VM ${channel} $message
+    ${SUBSCRIBE_CMD} VM ${channel} $message $@ | while read line ; do
+        syslog_netcat "$line"
+    done
 }
 
 function subscribeai {
     channel=$1
     message=$2
-    ${SUBSCRIBE_CMD} AI ${channel} $message
+	shift
+	shift
+    ${SUBSCRIBE_CMD} AI ${channel} $message $@ | while read line ; do
+        syslog_netcat "$line"
+    done
 }
 
 load_manager_ip=`get_my_ai_attribute load_manager_ip`
@@ -878,8 +908,8 @@ NC_CMD=${NC}" "${NC_OPTIONS}" "${NC_HOST_SYSLOG}" "${NC_PORT_SYSLOG}
 function syslog_netcat {
     if [[ $osmode == "controllable" ]]
     then 
-        echo "${NC_FACILITY_SYSLOG} - ${HOSTNAME} $SCRIPT_NAME: ${1}"
-        echo "${NC_FACILITY_SYSLOG} - ${HOSTNAME} $SCRIPT_NAME: ${1}" | $NC_CMD &
+        echo "${NC_FACILITY_SYSLOG} - ${HOSTNAME} $SCRIPT_NAME ($$): ${1}"
+        echo "${NC_FACILITY_SYSLOG} - ${HOSTNAME} $SCRIPT_NAME ($$): ${1}" | $NC_CMD &
     else
         echo "$1"
     fi

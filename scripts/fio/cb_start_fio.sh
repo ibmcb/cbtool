@@ -33,7 +33,6 @@ sed -i "s/LOAD_LEVEL/$LOAD_LEVEL/g" ~/*.fiojob
 
 sudo rm -rf $FIO_DATA_DIR/*
 
-source ~/cb_barrier.sh start
 update_app_errors 0 reset
 
 #If more than one command is needed (e.g., connected by "&&" or ";", please dump it on script, instead of just assigining to the variable CMDLINE"
