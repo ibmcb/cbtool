@@ -4,11 +4,12 @@ Cloud Rapid Experimentation and Analysis Tool (aka CBTOOL) is a framework that a
 
 Subscribe to our mailing list:
 
-Users: https://groups.google.com/forum/#!forum/cbtool-users
+- Users: https://groups.google.com/forum/#!forum/cbtool-users
 
-Development: https://groups.google.com/forum/#!forum/cbtool-devel
+- Development: https://groups.google.com/forum/#!forum/cbtool-devel
 
-- New! CloudBench is now released as a component of [SPEC Cloud IaaS 2016](http://spec.org/cloud_iaas2016)
+
+## New! CloudBench is now released as a component of [SPEC Cloud IaaS 2016](http://spec.org/cloud_iaas2016)
 
 ## To get started:
 
