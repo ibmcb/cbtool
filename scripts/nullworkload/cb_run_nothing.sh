@@ -30,7 +30,6 @@ then
     exit 1
 fi
 
-source ~/cb_barrier.sh start
 update_app_errors 0 reset
 
 CMDLINE="sleep ${LOAD_DURATION}"

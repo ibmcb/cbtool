@@ -4837,7 +4837,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 if not _reset_status and _ai_attr_list["load_generator_ip"] == _ai_attr_list["load_manager_ip"] :
                     _cmd = "~/" + _ai_attr_list["start"] + ' '
-                    _cmd += str(_ai_attr_list["current_load_profile"]) + ' '                    
+                    _cmd += '"' + str(_ai_attr_list["current_load_profile"]) + '" '
                     _cmd += str(_ai_attr_list["current_load_level"]) + ' '
                     _cmd += str(_ai_attr_list["current_load_duration"]) + ' '
                     _cmd += str(_ai_attr_list["current_load_id"]) + ' '
