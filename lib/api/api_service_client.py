@@ -24,7 +24,7 @@
     It works by extending the native XML-RPC function calls
     into abstractions that make sense from a cloud and
     application perspective just as, say, Amazon or OpenStack
-    would do. 
+    would do.
 
     So, you create a APIClient() object and then
     perform calls on that object that get send across
@@ -57,7 +57,7 @@ class APIException(Exception) :
         self.status = str(status)
     def __str__(self):
         return self.msg
-        
+
 class APINoSuchMetricException(Exception) :
     def __init__(self, status, msg):
         Exception.__init__(self)
@@ -65,7 +65,7 @@ class APINoSuchMetricException(Exception) :
         self.status = status
     def __str__(self):
         return self.msg
-        
+
 class APINoDataException(Exception) :
     def __init__(self, status, msg):
         Exception.__init__(self)
@@ -73,7 +73,7 @@ class APINoDataException(Exception) :
         self.status = status
     def __str__(self):
         return self.msg
-        
+
 def makeTimestamp(supplied_epoch_time = False) :
     '''
     TBD
@@ -82,15 +82,15 @@ def makeTimestamp(supplied_epoch_time = False) :
         _now = datetime.utcnow()
     else :
         _now = datetime.utcfromtimestamp(supplied_epoch_time)
-        
+
     _date = _now.date()
 
     result = ("%02d" % _date.month) + "/" + ("%02d" % _date.day) + "/" + ("%04d" % _date.year)
-        
-    result += strftime(" %I:%M:%S %p", 
+
+    result += strftime(" %I:%M:%S %p",
                         strptime(str(_now.hour) + ":" + str(_now.minute) + ":" + \
                                  str(_now.second), "%H:%M:%S"))
-        
+
     result += " UTC"
     return result
 
@@ -101,37 +101,37 @@ class APIVM():
         self.uuid = info["uuid"]
         self.app_metrics = None
         self.system_metrics = None
-        self.info = info 
-        self.app = app 
+        self.info = info
+        self.app = app
         self.started = int(info["arrival"])
         self.vcpus = info["vcpus"]
         self.vmemory = info["vmemory"]
         self.new = True
         makeTimestamp()
-        
+
     def val(self, key, dict):
         if dict is None :
             raise APINoSuchMetricException(1, "No data available.")
-        
+
         if key in dict :
             return dict[key]
         else :
             raise APINoSuchMetricException(1, "No such metric: " + key)
-        
+
     def app(self, key):
         return float(self.val(key, self.app_metrics)["val"])
-    
+
     def system(self, key):
         return float(self.val(key, self.system_metrics)["val"])
-    
+
 mutex = Lock()
 
 class APIClient(Server):
-    
+
     def api_error_check(self, func):
         '''
         TBD
-        '''       
+        '''
         def wrapped(*args, **kwargs):
             try :
                 mutex.acquire()
@@ -143,10 +143,10 @@ class APIClient(Server):
             if int(resp["status"]) :
                 raise APIException(str(resp["status"]), resp["msg"])
             if self.print_message :
-                print resp["msg"] 
+                print resp["msg"]
             return resp["result"]
         return wrapped
-    
+
     def dashboard_conn_check(self, cloud_name, msattrs = None, username = None, experiment_id = None, check_for_vpn = False):
         '''
         TBD
@@ -169,7 +169,7 @@ class APIClient(Server):
         self.experiment_id = self.cldshow(cloud_name, "time")["experiment_id"] if experiment_id is None else experiment_id
 
     def __init__ (self, service_url, print_message = False):
-                        
+
         '''
          This rewrites the xmlrpc function bindings to use a
          decorator so that we can check the return status of API
@@ -178,24 +178,24 @@ class APIClient(Server):
          of the API calls exposed on the server side to the
          client side without writing ANOTHER lookup table.
         '''
-        
+
         _orig_Method = xmlrpclib._Method
-        
+
         '''
         XML-RPC doesn't support keyword arguments,
         so we have to do it ourselves...
         '''
-        class KeywordArgMethod(_orig_Method):     
+        class KeywordArgMethod(_orig_Method):
             def __call__(self, *args, **kwargs):
-                args = list(args) 
+                args = list(args)
                 if kwargs:
                     args.append(("kwargs", kwargs))
                 return _orig_Method.__call__(self, *args)
-        
+
         xmlrpclib._Method = KeywordArgMethod
-        
+
         Server.__init__(self, service_url)
-        
+
         setattr(self, "_ServerProxy__request", self.api_error_check(self._ServerProxy__request))
         self.vms = {}
         self.hosts = {}
@@ -204,28 +204,28 @@ class APIClient(Server):
         self.username = None
         self.print_message = print_message
         self.last_refresh = datetime.now()
-        
+
     def check_for_new_vm(self, cloud_name, identifier):
         '''
         TBD
         '''
         info = self.vmshow(cloud_name, identifier)
-        print identifier + " configured: (" + info["vcpus"] + ", " + info["vmemory"] + ")" 
-            
+        print identifier + " configured: (" + info["vcpus"] + ", " + info["vmemory"] + ")"
+
         if "configured_size" in info :
             print "   Eclipsed size: (" + info["vcpus_max"] + ", " + info["vmemory_max"] + ")"
-            
+
         if info["ai"] != "none" :
             app = self.appshow(cloud_name, info["ai_name"])
         else :
             app = None
-            
+
         return APIVM(identifier, info, app)
-    
+
     def refresh_vms(self, cloud_name, force, state = "") :
         '''
         TBD
-        '''        
+        '''
         try :
             self.experiment_id = self.cldshow(cloud_name, "time")["experiment_id"]
 
@@ -233,24 +233,24 @@ class APIClient(Server):
                 if not self.should_refresh(cloud_name, str(self.last_refresh)) :
                     #print "VM list unchanged (" + str(len(self.vms)) + " vms) ..."
                     return False
-                
+
             self.last_refresh = time()
-                
+
             old_vms = copy.copy(self.vms)
-            
+
             for obj in self.stateshow(cloud_name, state) :
                 if obj["type"] != "AI" :
                     continue
 
                 sibling_uuids = []
                 for vm in self.appshow(cloud_name, obj["name"])["vms"].split(",") :
-                    uuid, role, name = vm.split("|") 
+                    uuid, role, name = vm.split("|")
 
                     if uuid not in self.vms :
                         self.vms[uuid] = self.check_for_new_vm(name)
                         sibling_uuids.append(uuid)
 
-                    if uuid in old_vms : 
+                    if uuid in old_vms :
                         del old_vms[uuid]
 
                 for me in sibling_uuids :
@@ -262,10 +262,10 @@ class APIClient(Server):
                             myself.siblings.append(sib)
                             if sib.role.count("client") :
                                 myself.client = sib
-                    
+
             for uuid in old_vms :
-                del self.vms[uuid] 
-        
+                del self.vms[uuid]
+
             self.reset_refresh(cloud_name)
             return True
 
@@ -285,7 +285,7 @@ class APIClient(Server):
 
         if str(uuid).lower() == "all" :
             uuid = None
-        
+
         if metric_class == "runtime" :
             _object_type = metric_class + '_' + metric_type + '_' + object_type
         else :
@@ -304,9 +304,9 @@ class APIClient(Server):
                 _limitdocuments = 0
 
             _collection_name = _object_type + "_" + self.username
- 
+
         _criteria = {}
-        
+
         if expid != "auto" :
             _criteria["expid"] = expid
 
@@ -320,80 +320,80 @@ class APIClient(Server):
 
         if isinstance(metrics, dict) :
             _metrics = []
-            _metrics.append(metrics)      
-            metrics = _metrics            
-            
+            _metrics.append(metrics)
+            metrics = _metrics
+
 #        if uuid and metrics :
 #            if metrics :
 #                if "count" in dir(metrics) :
-#                    _samples = metrics.count() 
-#                
-#                    if _samples == 0 :                
+#                    _samples = metrics.count()
+#
+#                    if _samples == 0 :
 #                        metrics = None
 
 #                    if _samples == 1 :
 #                        _metrics = []
-#                        _metrics.append(metrics)      
+#                        _metrics.append(metrics)
 #                        metrics = _metrics
-                    
+
         if metrics is None :
             _msg = "No " + metric_class + ' ' + _object_type + '(' + str(metric_type) + ") data available."
 #            raise APINoSuchMetricException(1, _msg")
-        
+
         return metrics
-    
+
     def get_latest_app_data(self, cloud_name, uuid, expid = "auto") :
         '''
         TBD
-        '''        
-        _metrics = self.get_performance_data(cloud_name, uuid, "runtime", "VM", "app", True, expid) 
+        '''
+        _metrics = self.get_performance_data(cloud_name, uuid, "runtime", "VM", "app", True, 0, expid)
         if uuid in self.vms :
             self.vms[uuid].app_metrics = _metrics
 
         return _metrics
-        
+
     def get_latest_system_data(self, cloud_name, uuid, expid = "auto") :
         '''
         TBD
         '''
-        _metrics = self.get_performance_data(cloud_name, uuid, "runtime", "VM", "os", True, expid)
+        _metrics = self.get_performance_data(cloud_name, uuid, "runtime", "VM", "os", True, 0, expid)
         if uuid in self.vms :
             self.vms[uuid].system_metrics = _metrics
-            
+
         return _metrics
-    
+
     def get_latest_management_data(self, cloud_name, uuid, expid = "auto") :
         '''
         TBD
         '''
-        _metrics = self.get_performance_data(cloud_name, uuid, "management", "VM", True, expid)
-            
+        _metrics = self.get_performance_data(cloud_name, uuid, "management", "VM", True, 0, expid)
+
         return _metrics
 
     def get_app_data(self, cloud_name, uuid, expid = "auto") :
         '''
         TBD
-        '''        
-        _metrics = self.get_performance_data(cloud_name, uuid, "runtime", "VM", "app", False, expid) 
+        '''
+        _metrics = self.get_performance_data(cloud_name, uuid, "runtime", "VM", "app", False, 0, expid)
         if uuid in self.vms :
             self.vms[uuid].app_metrics = _metrics
 
         return _metrics
-        
+
     def get_system_data(self, cloud_name, uuid, expid = "auto") :
         '''
         TBD
         '''
-        _metrics = self.get_performance_data(cloud_name, uuid, "runtime", "VM", "os", False, expid)
+        _metrics = self.get_performance_data(cloud_name, uuid, "runtime", "VM", "os", False, 0, expid)
         if uuid in self.vms :
             self.vms[uuid].system_metrics = _metrics
-            
+
         return _metrics
-    
+
     def get_management_data(self, cloud_name, uuid, expid = "auto") :
         '''
         TBD
         '''
-        _metrics = self.get_performance_data(cloud_name, uuid, "management", "VM", "os", False, expid)
-            
+        _metrics = self.get_performance_data(cloud_name, uuid, "management", "VM", "os", False, 0, expid)
+
         return _metrics
