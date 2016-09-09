@@ -603,7 +603,7 @@ class LibcloudCmds(CommonCloudFunctions) :
         volume = False
 
         # This is just to pass regression tests.
-        test_map = dict(platinum64 = "64gb", rhodium64 = "48gb", gold64 = "32gb", silver64 = "16gb", bronze64 = "8gb", copper64 = "4gb", gold32 = "4gb", silver32 = "4gb", iron32 = "2gb", bronze32 = "2gb", copper32 = "2gb", micro32 = "1gb", nano32 = "1gb", pico32 = "512mb")
+        test_map = dict(platinum64 = "64gb", rhodium64 = "48gb", gold64 = "32gb", silver64 = "16gb", bronze64 = "8gb", copper64 = "4gb", gold32 = "4gb", silver32 = "4gb", iron64 = "2gb", iron32 = "2gb", bronze32 = "2gb", copper32 = "2gb", micro32 = "1gb", nano32 = "1gb", pico32 = "512mb")
 
         requested_size = obj_attr_list["size"]
 
