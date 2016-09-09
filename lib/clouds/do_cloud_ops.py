@@ -37,7 +37,5 @@ class DoCmds(LibcloudCmds) :
     @trace
     def get_libcloud_driver(self, libcloud_driver, tenant, access_token) :
         driver = libcloud_driver(access_token, api_version = 'v2')
-        driver.EX_CREATE_ATTRIBUTES.append("server")
-        driver.EX_CREATE_ATTRIBUTES.append("management_networking")
 
         return driver
