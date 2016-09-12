@@ -185,11 +185,11 @@ class LibcloudCmds(CommonCloudFunctions) :
 
     @trace
     def repopulate_images(self, obj_attr_list) :
-        LibcloudCmds.images = self.get_libcloud_driver(obj_attr_list).list_images()
+        LibcloudCmds.images = self.get_my_driver(obj_attr_list).list_images()
 
     @trace
     def repopulate_keys(self, obj_attr_list) :
-        LibcloudCmds.keys[obj_attr_list["credentials_list"]] = self.get_libcloud_driver(obj_attr_list).list_key_pairs()
+        LibcloudCmds.keys[obj_attr_list["credentials_list"]] = self.get_my_driver(obj_attr_list).list_key_pairs()
 
     def get_images(self) :
         return LibcloudCmds.images
