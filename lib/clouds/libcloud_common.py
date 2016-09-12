@@ -152,6 +152,7 @@ class LibcloudCmds(CommonCloudFunctions) :
         self.tldomain = tldomain
         self.extra = extra
         self.extra["kwargs"] = {}
+        self.access = False
 
         libcloud.security.VERIFY_SSL_CERT = verify_ssl 
 
@@ -194,7 +195,10 @@ class LibcloudCmds(CommonCloudFunctions) :
         return LibcloudCmds.images
 
     @trace
-    def connect(self, credentials_list) :
+    def connect(self, credentials_list, obj_attr_list = False) :
+        if not self.access and obj_attr_list and "access" in obj_attr_list :
+            self.access = obj_attr_list["access"]
+
         credentials = credentials_list.split(":")
         if len(credentials) != (self.num_credentials + 1) :
             raise CldOpsException(self.description + " needs at least " + str(self.num_credentials) + " credentials, including an arbitrary tag representing the tenant. Refer to the templates for examples.", 8499)
@@ -294,7 +298,7 @@ class LibcloudCmds(CommonCloudFunctions) :
             _status = 100
 
             for credentials_list in obj_attr_list["credentials"].split(","):
-                self.connect(credentials_list)
+                self.connect(credentials_list, obj_attr_list)
 
             _msg = "Cleaning up " + self.description
             cbdebug(_msg)
@@ -392,16 +396,17 @@ class LibcloudCmds(CommonCloudFunctions) :
 
         try :
             for credentials_list in obj_attr_list["credentials"].split(","):
-                self.connect(credentials_list)
+                self.connect(credentials_list, obj_attr_list)
 
-            location_found = False
-            for location in LibcloudCmds.locations :
-                if obj_attr_list["name"] == location.id :
-                    location_found = location
-                    break
-            if not location_found :
-                if len(obj_attr_list["name"]) <= 4 :
-                    raise CldOpsException("No such region: " + obj_attr_list["name"], _status)
+            if self.use_locations :
+                location_found = False
+                for location in LibcloudCmds.locations :
+                    if obj_attr_list["name"] == location.id :
+                        location_found = location
+                        break
+                if not location_found :
+                    if len(obj_attr_list["name"]) <= 4 :
+                        raise CldOpsException("No such region: " + obj_attr_list["name"], _status)
 
             _time_mark_prs = int(time())
             obj_attr_list["mgt_002_provisioning_request_sent"] = _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
@@ -642,7 +647,7 @@ class LibcloudCmds(CommonCloudFunctions) :
             obj_attr_list["credentials_list"] = credentials_list
 
             cbdebug("Connecting to " + self.description + "...")
-            self.connect(credentials_list)
+            self.connect(credentials_list, obj_attr_list)
 
             obj_attr_list["last_known_state"] = "about to send create request"
 
@@ -855,7 +860,7 @@ class LibcloudCmds(CommonCloudFunctions) :
         credentials_list = obj_attr_list["credentials_list"]
 
         try :
-            self.connect(credentials_list)
+            self.connect(credentials_list, obj_attr_list)
 
             _msg = "Sending a termination request for "  + obj_attr_list["name"]
             _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
@@ -967,7 +972,7 @@ class LibcloudCmds(CommonCloudFunctions) :
             _max_tries = int(obj_attr_list["update_attempts"])
 
             credentials_list = obj_attr_list["credentials_list"]
-            self.connect(credentials_list)
+            self.connect(credentials_list, obj_attr_list)
 
             _instance = self.get_vm_instance(obj_attr_list)
 
@@ -1063,7 +1068,7 @@ class LibcloudCmds(CommonCloudFunctions) :
             _cs = obj_attr_list["current_state"]
 
             credentials_list = obj_attr_list["credentials_list"]
-            self.connect(credentials_list)
+            self.connect(credentials_list, obj_attr_list)
 
             if "mgt_201_runstate_request_originated" in obj_attr_list :
                 _time_mark_rrs = int(time())
@@ -1157,7 +1162,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                     obj_attr_list["uuid"], "credentials_list", credentials_list)
 
                 # Cache libcloud objects for this daemon / process before the VMs are attached
-                self.connect(credentials_list)
+                self.connect(credentials_list, obj_attr_list)
 
             _fmsg = "An error has occurred, but no error message was captured"
 
