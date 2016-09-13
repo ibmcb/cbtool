@@ -366,7 +366,7 @@ class APIClient(Server):
         '''
         TBD
         '''
-        _metrics = self.get_performance_data(cloud_name, uuid, "management", "VM", True, 0, expid)
+        _metrics = self.get_performance_data(cloud_name, uuid, "management", "VM", "os", True, 0, expid)
 
         return _metrics
 
