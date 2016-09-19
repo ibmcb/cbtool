@@ -99,7 +99,7 @@ class Dashboard () :
                           "#4K pages => MB" : [False, "4k2mb"]}
 
         self.labels = ['name', 'size', 'role', 'type', 'cloud_ip', 'age', 'vms',\
-                       'state', 'tenant', 'netname', 'vmc_name',\
+                       'state', 'latest_update', 'tenant', 'netname', 'vmc_name',\
                        'host_name', 'ai_name', 'aidrs_name' ]
         
         self.separator = "<p/>\n"
@@ -279,7 +279,7 @@ class Dashboard () :
                 
                 if not isinstance(mvalue, dict):
                     # This path gathers metrics to display on the "Provisioning Performance" Tab                    
-                    if not mkey.count("mgt_") and mkey not in ["time"] :
+                    if not mkey.count("mgt_") and mkey not in ["time", "latest_update"] :
                         continue
                     
                     if _obj_type != "VM" :
