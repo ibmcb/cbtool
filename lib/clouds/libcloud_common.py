@@ -208,7 +208,7 @@ class LibcloudCmds(CommonCloudFunctions) :
         # libcloud is totally not thread-safe. bastards.
         cbdebug("Checking libcloud connection...")
         try :
-            getattr(LibcloudCmds.catalogs, self.description)
+            getattr(LibcloudCmds.catalogs, "cbtool")
         except AttributeError, e :
             cbdebug("Initializing thread local connection: ")
 
