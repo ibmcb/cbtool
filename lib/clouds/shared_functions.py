@@ -56,12 +56,13 @@ class CommonCloudFunctions:
     TBD
     '''
 
-    def __init__ (self, pid, osci) :
+    def __init__ (self, pid, osci, expid = None) :
         '''
         TBD
         '''
         self.pid = pid
         self.osci = osci
+        self.expid = expid
         self.path = re.compile(".*\/").search(os.path.realpath(__file__)).group(0) + "/../.."
 
     @trace
