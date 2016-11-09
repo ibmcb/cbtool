@@ -31,17 +31,27 @@ source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
 if [[ -z ${JAVA_HOME} ]]
 then
-    JAVA_HOME=`get_my_ai_attribute_with_default java_home ~/jdk1.6.0_21`
+    JAVA_HOME=$(get_my_ai_attribute_with_default java_home auto)            
+    if [[ ${JAVA_HOME} == "auto" ]]
+    then
+        syslog_netcat "JAVA_HOME is set to \"auto\". Attempting to find the most recent in /usr/lib/jvm"            
+        JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre
+    fi
+
+    syslog_netcat "JAVA_HOME determined to be \"${JAVA_HOME}\""    
+            
     eval JAVA_HOME=${JAVA_HOME}
     if [[ -f ~/.bashrc ]]
     then
         is_java_home_export=`grep -c "JAVA_HOME=${JAVA_HOME}" ~/.bashrc`
         if [[ $is_java_home_export -eq 0 ]]
         then
-            syslog_netcat "Adding JAVA_HOME to bashrc"
+            syslog_netcat "Adding JAVA_HOME=${JAVA_HOME} to bashrc"
             echo "export JAVA_HOME=${JAVA_HOME}" >> ~/.bashrc
         fi
     fi
+else 
+    syslog_netcat "Line \"export JAVA_HOME=${JAVA_HOME}\" was already added to bashrc"    
 fi
 
 export JAVA_HOME=${JAVA_HOME}
@@ -57,17 +67,24 @@ fi
     
 if [[ ! -d ${HADOOP_HOME} ]]
 then
+    syslog_netcat "The value specified in the AI attribute HADOOP_HOME (\"$HADOOP_HOME\") points to a non-existing directory."     
     for HADOOP_CPATH in ~ /usr/local
     do
+        syslog_netcat "Searching ${HADOOP_CPATH} for a hadoop dir."
         if [[ $(sudo ls $HADOOP_CPATH | grep -v tar | grep -c hadoop) -ne 0 ]]
         then
             eval HADOOP_CPATH=${HADOOP_CPATH}
-            break
+            syslog_netcat "Directory \"${HADOOP_CPATH}\" found."
+            HADOOP_HOME=$(ls ${HADOOP_CPATH} | grep -v tar | grep -v hadoop_store | grep hadoop | sort -r | head -n1)
+            eval HADOOP_HOME="$HADOOP_CPATH/${HADOOP_HOME}"
+            if [[ -d $HADOOP_HOME ]]
+            then
+                syslog_netcat "HADOOP_HOME determined to be \"${HADOOP_HOME}\""
+                break
+            fi
         fi
     done
-    syslog_netcat "The value specified in the AI attribute HADOOP_HOME (\"$HADOOP_HOME\") points to a non-existing directory. Will search ${HADOOP_CPATH} for a hadoop dir." 
-    HADOOP_HOME=$(ls ${HADOOP_CPATH} | grep -v tar | grep hadoop | sort -r | head -n1)
-    eval HADOOP_HOME="$HADOOP_CPATH/${HADOOP_HOME}"
+    
     if [[ ! -d $HADOOP_HOME ]]
     then
         syslog_netcat "Unable to find a directory with a Hadoop installation - NOK"
@@ -111,7 +128,7 @@ then
         echo "export HADOOP_CONF_DIR=${HADOOP_CONF_DIR}" >> ~/.bashrc
     fi
 fi            
-
+    
 export HADOOP_CONF_DIR=${HADOOP_CONF_DIR}
 
 if [[ -z ${HADOOP_EXECUTABLE} ]]

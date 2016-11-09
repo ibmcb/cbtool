@@ -29,7 +29,8 @@ from uuid import uuid5, UUID
 from random import choice
 import socket
 
-import SoftLayer.API
+import SoftLayer
+from SoftLayer import exceptions as slexceptions
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import str2dic
@@ -66,52 +67,37 @@ class SlrCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
-        try :
-            _status = 100
-            _fmsg = "An error has occurred, but no error message was captured"
+
+        _status = 100
+        _fmsg = "An error has occurred, but no error message was captured"
+        
+        _username, _api_key, _api_type = authentication_data.split('-')
+        if access.lower().count("private") :
+            self.slconn = SoftLayer.create_client_from_env (username = _username.strip(), \
+                                                            api_key= _api_key.strip(), \
+                                                            endpoint_url = SoftLayer.API_PRIVATE_ENDPOINT)
+        else :
+            self.slconn = SoftLayer.create_client_from_env (username = _username.strip(), \
+                                                            api_key= _api_key.strip(), \
+                                                            endpoint_url = SoftLayer.API_PUBLIC_ENDPOINT)            
+
+        _resp = self.slconn.call('Account', 'getObject')
+        _region = SoftLayer.MessagingManager(self.slconn).get_endpoint(datacenter = region)
+        
+        _msg = "Selected region is " + str(region) +  " (" + _region + ")"
+        
+        if _api_type.lower().count("baremetal") :
+            self.nodeman = SoftLayer.HardwareManager(self.slconn)
+        else :
+            self.nodeman = SoftLayer.VSManager(self.slconn)
+
+        self.sshman = SoftLayer.SshKeyManager(self.slconn)
             
+        self.imageman = SoftLayer.ImageManager(self.slconn)
 
-            _username, _api_key, _api_type = authentication_data.split('-')
-                        
-            if access.lower().count("private") :
-                _api_endpoint = SoftLayer.API_PRIVATE_ENDPOINT
-            else :
-                _api_endpoint = SoftLayer.API_PUBLIC_ENDPOINT
+        _status = 0
 
-            self.slconn = SoftLayer.Client (username = _username.strip(), \
-                                            api_key= _api_key.strip(), \
-                                            endpoint_url = _api_endpoint)
-
-            self.slconn['Account'].getObject()
-
-            _region = SoftLayer.MessagingManager(self.slconn).get_endpoint(datacenter = region)
-            
-            _msg = "Selected region is " + str(region) +  " (" + _region + ")"
-                                    
-            if _api_type.lower().count("baremetal") :
-                self.nodeman= SoftLayer.HardwareManager(self.slconn)
-            else :
-                self.nodeman= SoftLayer.VSManager(self.slconn)
-
-            self.sshman = SoftLayer.SshKeyManager(self.slconn)
-                
-            self.imageman = SoftLayer.ImageManager(self.slconn)
-
-            _status = 0
-
-        except Exception, e :
-            _status = 23
-            _fmsg = str(e)
-
-        finally :
-            if _status :
-                _msg = "SoftLayer connection failure: " + _fmsg
-                cberr(_msg)
-                raise CldOpsException(_msg, _status)
-            else :
-                _msg = "SoftLayer connection successful."
-                cbdebug(_msg)
-                return _status, _msg, _region
+        return _status, _msg, _region
     
     @trace
     def test_vmc_connection(self, vmc_name, access, credentials, key_name, \
@@ -119,11 +105,13 @@ class SlrCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
+        
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
-            self.connect(access, credentials, vmc_name)
 
+            self.connect(access, credentials, vmc_name)
+            
             if not key_name :
                 _key_pair_found = True
             else :
@@ -186,20 +174,30 @@ class SlrCmds(CommonCloudFunctions) :
             if vm_defaults["images_access"] == "private" :    
                 _registered_image_list = self.imageman.list_private_images()
             else :    
-                _registered_image_list = self.imageman.list_public_images()                
+                _registered_image_list = self.imageman.list_public_images()   
 
             _registered_imageid_list = []
 
-            for _registered_image in _registered_image_list :
-                _registered_imageid_list.append(_registered_image["name"])
+            _map_name_to_id = {}
 
+            for _registered_image in _registered_image_list :
+                _registered_imageid_list.append(_registered_image["id"])
+                _map_name_to_id[_registered_image["name"]] = _registered_image["id"]
+                
             _required_imageid_list = {}
 
             for _vm_role in vm_templates.keys() :
+                
                 _imageid = str2dic(vm_templates[_vm_role])["imageid1"]                
-                if _imageid not in _required_imageid_list :
-                    _required_imageid_list[_imageid] = []
-                _required_imageid_list[_imageid].append(_vm_role)
+                if _imageid != "to_replace" :
+
+                    if _imageid in _map_name_to_id :                     
+                        vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])
+                        _imageid = _map_name_to_id[_imageid]
+                        
+                    if _imageid not in _required_imageid_list :
+                        _required_imageid_list[_imageid] = []
+                    _required_imageid_list[_imageid].append(_vm_role)
 
             _msg = 'y'
 
@@ -214,12 +212,13 @@ class SlrCmds(CommonCloudFunctions) :
                 # times as if it were different images.
                 _image_detected = False
                 for _registered_imageid in _registered_imageid_list :
-                    if str(_registered_imageid).count(_imageid) :
+#                    _registered_imageid = _registered_imageid.encode('utf-8').strip()
+#                    if _registered_imageid.count(_imageid) :
+                    if _registered_imageid == _imageid :
                         _image_detected = True
                         _detected_imageids[_imageid] = "detected"
                     else :
                         _undetected_imageids[_imageid] = "undetected"
-
                 if _image_detected :
                     True
 #                       _msg += "xImage id for VM roles \"" + ','.join(_required_imageid_list[_imageid]) + "\" is \""
@@ -231,35 +230,35 @@ class SlrCmds(CommonCloudFunctions) :
                     _msg += "(attaching VMs with any of these roles will result in error).\n"
 
             if not len(_detected_imageids) :
-                _msg = "ERROR! None of the image ids used by any VM \"role\" were detected"
-                _msg += " in this SoftLayer cloud. Please register at least one "
-                _msg += "of the following images: " + ','.join(_undetected_imageids.keys())
-                cberr(_msg, True)
+                _status = 1                
+                _msg = "WARNING! None of the image ids used by any VM \"role\" were detected"
+                _msg += " in this SoftLayer cloud."
+#                _msg += "of the following images: " + ','.join(_undetected_imageids.keys())
+                cbwarn(_msg, True)
             else :
+                _status = 0
                 _msg = _msg.replace("yx",'')
                 _msg = _msg.replace('x',"         ")
                 _msg = _msg[:-2]
                 if len(_msg) :
                     cbdebug(_msg, True)
 
-            if not (_key_pair_found and _security_group_found and len(_detected_imageids)) :
+            if not (_key_pair_found and _security_group_found) :
                 _msg = "Check the previous errors, fix it (using SoftLayer's Portal"
                 _msg += "or sl CLI"
                 _status = 1178
                 raise CldOpsException(_msg, _status) 
-
-            _status = 0
-
-        except CldOpsException, obj :
-            _fmsg = str(obj.msg)
-            _status = 2
+       
+        except SoftLayer.SoftLayerAPIError, e :
+            _status = 23
+            _fmsg = str(e)
 
         except Exception, msg :
             _fmsg = str(msg)
             _status = 23
 
         finally :
-            if _status :
+            if _status > 1 :
                 _msg = "VMC \"" + vmc_name + "\" did not pass the connection test."
                 _msg += "\" : " + _fmsg
                 cberr(_msg, True)
@@ -302,22 +301,26 @@ class SlrCmds(CommonCloudFunctions) :
                 _instances = self.nodeman.list_instances(datacenter = obj_attr_list["name"])
 
                 for _instance in _instances :
+
                     if _instance["hostname"].count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) :
                         _running_instances = True
 
-                        if not ("activeTransaction" in _instance) :
-                            if  _instance["status"]["keyName"] == "ACTIVE" :
-                                if self.nodeman.wait_for_transaction(_instance["id"], 1, 1) :                                                                
-                                    _msg = "Terminating instance: " 
-                                    _msg += _instance["globalIdentifier"] + " (" + _instance["hostname"] + ")"
-                                    cbdebug(_msg, True)                              
-                                    self.nodeman.cancel_instance(_instance["id"])
+                        _instance_details = self.nodeman.get_instance(int(_instance["id"]))
 
-                        if "activeTransaction" in _instance :
+                        if not ("activeTransaction" in _instance_details) :
+                            if "billingItem" in _instance_details :
+                                if  _instance_details["status"]["keyName"] == "ACTIVE" :
+                                    _msg = "Terminating instance: " 
+                                    _msg += _instance_details["globalIdentifier"] 
+                                    _msg += " (" + _instance_details["hostname"] + ")"
+                                    cbdebug(_msg, True)                              
+                                    self.nodeman.cancel_instance(_instance["globalIdentifier"])
+
+                        if "activeTransaction" in _instance_details :
                             _msg = "Will wait for instance "
-                            _msg += _instance["globalIdentifier"] + "\"" 
-                            _msg += " (" + _instance["hostname"] + ") to "
-                            _msg += "start and then destroy it."
+                            _msg += _instance_details["globalIdentifier"] + "\"" 
+                            _msg += " (" + _instance_details["hostname"] + ") to "
+                            _msg += "be fully deleted"
                             cbdebug(_msg, True)
 
                 sleep(_wait)
@@ -439,10 +442,22 @@ class SlrCmds(CommonCloudFunctions) :
 
             _candidate_images = []
 
+            if len(obj_attr_list["imageid1"]) == 7 and obj_attr_list["imageid1"].isdigit() :
+                _image_key = "id"
+            else :
+                _image_key = "name"                
+            
             for _idx in range(0,len(_image_list)) :
+                _image_list[_idx]["name"] = _image_list[_idx]["name"].encode('utf-8').strip()
+                
                 if obj_attr_list["randomize_image_name"].lower() == "false" and \
-                _image_list[_idx]["name"] == obj_attr_list["imageid1"] :
+                str(_image_list[_idx][_image_key]) == obj_attr_list["imageid1"] :
                     _imageid = _image_list[_idx]["globalIdentifier"]
+#                    _imageid = _image_list[_idx]["id"]
+                      
+                    if _image_key == "id" :
+                        obj_attr_list["imageid1"] = _image_list[_idx]["name"]
+                        
                     break
                 elif obj_attr_list["randomize_image_name"].lower() == "true" and \
                 _image_list[_idx].name.count(obj_attr_list["imageid1"]) :
@@ -452,7 +467,7 @@ class SlrCmds(CommonCloudFunctions) :
 
             if  obj_attr_list["randomize_image_name"].lower() == "true" :
                 _image = choice(_candidate_images)
-                _imageid = _image["globalIdentifier"] 
+                _imageid = _image["id"] 
 
             _status = 0
 
@@ -675,73 +690,79 @@ class SlrCmds(CommonCloudFunctions) :
 
             _imageid = self.get_images(obj_attr_list)
 
-            _vcpus,_vmemory = obj_attr_list["size"].split('-')
-            
-            obj_attr_list["vcpus"] = _vcpus
-            obj_attr_list["vmemory"] = _vmemory
-            
-            _meta = {}
-            if "meta_tags" in obj_attr_list :
-                if obj_attr_list["meta_tags"] != "empty" and \
-                obj_attr_list["meta_tags"].count(':') and \
-                obj_attr_list["meta_tags"].count(',') :
-                    _meta = str2dic(obj_attr_list["meta_tags"])
-            
-            _meta["experiment_id"] = obj_attr_list["experiment_id"]
-
-            _time_mark_prs = int(time())
-            obj_attr_list["mgt_002_provisioning_request_sent"] = \
-            _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
-
-            _msg = "Starting an instance on SoftLayer, using the imageid \""
-            _msg += obj_attr_list["imageid1"] + "\" (" + str(_imageid) + ") and "
-            _msg += "size \"" + obj_attr_list["size"] + "\", "
-            _msg += " on VMC \"" + obj_attr_list["vmc_name"] + "\""
-            cbdebug(_msg, True)
-
-            _key_id = self.sshman.list_keys(label = obj_attr_list["key_name"])[0]["id"]
-
-            _kwargs = { "cpus": int(obj_attr_list["vcpus"]), \
-                       "memory": int(obj_attr_list["vmemory"]), \
-                       "hourly": True, \
-                       "domain": "softlayer.com", \
-                       "hostname": obj_attr_list["cloud_vm_name"], \
-                       "datacenter": obj_attr_list["vmc_name"], \
-                       "image_id" : _imageid, \
-                       "ssh_keys" : [ int(_key_id) ], \
-                       "nic_speed" : int(obj_attr_list["nic_speed"])}
-
-            if len(obj_attr_list["private_vlan"]) > 2 :
-                _kwargs["private_vlan"] = int(obj_attr_list["private_vlan"])
-
-            if obj_attr_list["private_network_only"].lower() == "true" :
-                _kwargs["private"] = True
-                
-            _instance = self.nodeman.create_instance(**_kwargs)
-
-            if _instance :
-
-                sleep(int(obj_attr_list["update_frequency"]))
-
-                obj_attr_list["cloud_vm_uuid"] = _instance["globalIdentifier"]
-
-                self.take_action_if_requested("VM", obj_attr_list, "provision_started")
-
-                _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
-
-                self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
-                
-                _status = 0
-
-                if obj_attr_list["force_failure"].lower() == "true" :
-                    _fmsg = "Forced failure (option FORCE_FAILURE set \"true\")"                    
-                    _status = 916
-
-            else :
-                _fmsg = "Failed to obtain instance's (cloud assigned) uuid. The "
-                _fmsg += "instance creation failed for some unknown reason."
+            if not _imageid :
+                _fmsg = "Unable to find an identifier for image \"" + obj_attr_list["imageid1"]
+                _fmsg += "\"."
                 cberr(_fmsg)
-                _status = 100
+                _status = 100                
+            else :
+                _vcpus,_vmemory = obj_attr_list["size"].split('-')
+                
+                obj_attr_list["vcpus"] = _vcpus
+                obj_attr_list["vmemory"] = _vmemory
+                
+                _meta = {}
+                if "meta_tags" in obj_attr_list :
+                    if obj_attr_list["meta_tags"] != "empty" and \
+                    obj_attr_list["meta_tags"].count(':') and \
+                    obj_attr_list["meta_tags"].count(',') :
+                        _meta = str2dic(obj_attr_list["meta_tags"])
+                
+                _meta["experiment_id"] = obj_attr_list["experiment_id"]
+    
+                _time_mark_prs = int(time())
+                obj_attr_list["mgt_002_provisioning_request_sent"] = \
+                _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
+    
+                _msg = "Starting an instance on SoftLayer, using the imageid \""
+                _msg += obj_attr_list["imageid1"] + "\" (" + str(_imageid) + ") and "
+                _msg += "size \"" + obj_attr_list["size"] + "\", "
+                _msg += "on VMC \"" + obj_attr_list["vmc_name"] + "\""
+                cbdebug(_msg, True)
+    
+                _key_id = self.sshman.list_keys(label = obj_attr_list["key_name"])[0]["id"]
+    
+                _kwargs = { "cpus": int(obj_attr_list["vcpus"]), \
+                            "memory": int(obj_attr_list["vmemory"]), \
+                            "hourly": True, \
+                            "domain": "softlayer.com", \
+                            "hostname": obj_attr_list["cloud_vm_name"], \
+                            "datacenter": obj_attr_list["vmc_name"], \
+                            "image_id" : _imageid, \
+                            "ssh_keys" : [ int(_key_id) ], \
+                            "nic_speed" : int(obj_attr_list["nic_speed"])}
+    
+                if len(obj_attr_list["private_vlan"]) > 2 :
+                    _kwargs["private_vlan"] = int(obj_attr_list["private_vlan"])
+    
+                if obj_attr_list["private_network_only"].lower() == "true" :
+                    _kwargs["private"] = True
+                    
+                _instance = self.nodeman.create_instance(**_kwargs)
+    
+                if _instance :
+    
+                    sleep(int(obj_attr_list["update_frequency"]))
+    
+                    obj_attr_list["cloud_vm_uuid"] = _instance["globalIdentifier"]
+    
+                    self.take_action_if_requested("VM", obj_attr_list, "provision_started")
+    
+                    _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
+    
+                    self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
+                    
+                    _status = 0
+    
+                    if obj_attr_list["force_failure"].lower() == "true" :
+                        _fmsg = "Forced failure (option FORCE_FAILURE set \"true\")"                    
+                        _status = 916
+    
+                else :
+                    _fmsg = "Failed to obtain instance's (cloud assigned) uuid. The "
+                    _fmsg += "instance creation failed for some unknown reason."
+                    cberr(_fmsg)
+                    _status = 100
                 
         except CldOpsException, obj :
             _status = obj.status

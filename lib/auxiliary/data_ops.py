@@ -571,6 +571,9 @@ def is_number(val) :
 
 # Thannks to Eli Bendersky
 def weighted_choice(weights):
+    '''
+    TBD
+    '''
     totals = []
     running_total = 0
 
@@ -582,6 +585,23 @@ def weighted_choice(weights):
     for i, total in enumerate(totals):
         if rnd < total:
             return i
+
+def selectively_print_message(step, obj_attr_list) :
+    '''
+    TBD
+    '''        
+    if obj_attr_list["role"] == "check": 
+        if obj_attr_list[step].lower() == "false" :
+            return False
+    else :
+        if "ai" in obj_attr_list and obj_attr_list["ai"] != "none" :
+            return False
+
+        if obj_attr_list["debug_remote_commands"].lower() == "false" :
+            if obj_attr_list[step].lower() == "false" :
+                return False
+        
+    return True
     
 def summarize(summaries_dict, value, unit) :
     '''

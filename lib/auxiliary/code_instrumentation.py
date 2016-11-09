@@ -190,7 +190,10 @@ class VerbosityFilter(Filter) :
         '''
         TBD
         '''
-        return not record.msg.count(self.expr)
+        if isinstance(record.msg, str) :
+            return not record.msg.count(self.expr)
+        else :
+            return False
     
 class AntiMsgFilter(Filter) :
     '''

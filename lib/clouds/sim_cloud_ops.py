@@ -950,6 +950,13 @@ class SimCmds(CommonCloudFunctions) :
             self.take_action_if_requested("AI", obj_attr_list, current_step)
 
             _status = 0
+
+            for _vm in obj_attr_list["vms"].split(',') :
+                if _vm.count('|') :
+                    _vm_uuid, _vm_role, _vm_name = _vm.split('|')
+
+                if _vm.count("faildb2") :
+                    _fmsg = "Forced failure during AI definition"
                                       
             if current_step == "all_vms_booted" :
 
@@ -969,10 +976,7 @@ class SimCmds(CommonCloudFunctions) :
     
                     self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
                                                  obj_attr_list["uuid"], "status", "Application starting up...") 
-    
-                    if _vm.count("faildb2") :
-                        _fmsg = "Forced failure during AI definition"
-                    
+                        
                 sleep(float(obj_attr_list["pre_creation_delay"]))
     
                 if obj_attr_list["create_performance_emitter"].lower() == "true" :
@@ -1019,7 +1023,7 @@ class SimCmds(CommonCloudFunctions) :
                     _status = 181
                 else :
                     _status = 0
-
+                
         except Exception, e :
             _status = 23
             _fmsg = str(e)

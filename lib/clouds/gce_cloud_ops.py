@@ -249,7 +249,7 @@ class GceCmds(CommonCloudFunctions) :
         _wanted_images = []
         for _vm_role in vm_templates.keys() :
             _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
-            if _imageid not in _wanted_images :
+            if _imageid not in _wanted_images and _imageid != "to_replace" :
                 _wanted_images.append(_imageid)
 
         _registered_image_list = self.gceconn.images().list(project=self.images_project).execute(http = self.http_conn[http_conn_id])["items"]
@@ -262,9 +262,10 @@ class GceCmds(CommonCloudFunctions) :
 
         for _vm_role in vm_templates.keys() :
             _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
-            if _imageid not in _required_imageid_list :
-                _required_imageid_list[_imageid] = []
-            _required_imageid_list[_imageid].append(_vm_role)
+            if _imageid != "to_replace" :
+                if _imageid not in _required_imageid_list :
+                    _required_imageid_list[_imageid] = []
+                _required_imageid_list[_imageid].append(_vm_role)
 
         _msg = 'y'
 
@@ -294,13 +295,12 @@ class GceCmds(CommonCloudFunctions) :
                 _msg += ','.join(_required_imageid_list[_imageid]) + "\": \""
                 _msg += _imageid + "\" is NOT registered "
                 _msg += "(attaching VMs with any of these roles will result in error).\n"
-        
+
         if not len(_detected_imageids) :
-            _msg = "ERROR! None of the image ids used by any VM \"role\" were detected"
-            _msg += " in this GCE cloud. Please register at least one "
-            _msg += "of the following images: " + ','.join(_undetected_imageids.keys())
-            _fmsg = _msg 
-            cberr(_msg, True)
+            _msg = "WARNING! None of the image ids used by any VM \"role\" were detected"
+            _msg += " in this GCE cloud! "            
+            #_msg += "of the following images: " + ','.join(_undetected_imageids.keys())
+            cbwarn(_msg, True)
         else :
             _msg = _msg.replace("yx",'')
             _msg = _msg.replace("x ","          ")
@@ -326,15 +326,18 @@ class GceCmds(CommonCloudFunctions) :
             _security_group_found = True
             _detected_imageids = self.check_images(vmc_name, vm_templates, vmc_name)
 
-            if not (_key_pair_found and _security_group_found and len(_detected_imageids)) :
+            if not (_key_pair_found and _security_group_found) :
                 _fmsg = ''                
                 _fmsg += ": Check the previous errors, fix it (using GCE's web"
                 _fmsg += " GUI (Google Developer's Console) or gcloud CLI utility"
                 _status = 1178
                 raise CldOpsException(_fmsg, _status) 
 
-            _status = 0
-
+            if len(_detected_imageids) :
+                _status = 0               
+            else :
+                _status = 1
+                
         except CldOpsException, obj :
             _fmsg = str(obj.msg)
             _status = 2
@@ -344,7 +347,7 @@ class GceCmds(CommonCloudFunctions) :
             _status = 23
 
         finally :
-            if _status :
+            if _status > 1 :
                 _msg = "VMC \"" + vmc_name + "\" did not pass the connection test."
                 _msg += "\" : " + _fmsg
                 cberr(_msg, True)
@@ -919,7 +922,17 @@ class GceCmds(CommonCloudFunctions) :
             _security_groups = []
             _security_groups.append(obj_attr_list["security_groups"])
 
-            _source_disk_image = "projects/" + self.images_project + "/global/images/" + obj_attr_list["imageid1"]
+            if obj_attr_list["role"] == "check" :
+                if obj_attr_list["imageid1"].count("ubuntu") :
+                    _actual_project = "ubuntu-os-cloud"
+                elif obj_attr_list["imageid1"].count("rhel") :                    
+                    _actual_project = "rhel-cloud"            
+                elif obj_attr_list["imageid1"].count("centos") :                    
+                    _actual_project = "centos-cloud"            
+            else :
+                _actual_project = self.images_project
+                                            
+            _source_disk_image = "projects/" + _actual_project + "/global/images/" + obj_attr_list["imageid1"]
             _machine_type = "zones/" + obj_attr_list["vmc_name"] + "/machineTypes/" + obj_attr_list["size"]
 
             _config = {

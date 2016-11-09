@@ -95,6 +95,7 @@ UPDATE_FREQUENCY = 1
 SSH_KEY_NAME = $PDM_SSH_KEY_NAME
 
 [VM_TEMPLATES : PDM_CLOUDCONFIG]
+CHECK = size:1-256, imageid1:to_replace
 CLIENT_DAYTRADER = size:2-4096, imageid1:cb_daytrader
 DRIVER_DAYTRADER = size:2-4096, imageid1:cb_daytrader
 CLIENT_TRADELITE = size:2-4096, imageid1:cb_tradelite

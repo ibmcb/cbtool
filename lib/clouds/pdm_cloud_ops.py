@@ -113,20 +113,21 @@ class PdmCmds(CommonCloudFunctions) :
 
             self.connect(access, credentials, vmc_name, vm_defaults, True, True)
 
-            _run_netname_found = True
-            _prov_netname_found = True
+            _prov_netname_found, _run_netname_found = self.check_networks(vmc_name, vm_defaults)
             _key_pair_found = True
             
             _detected_imageids = self.check_images(vmc_name, vm_templates)
 
-            if not (_run_netname_found and _prov_netname_found and \
-                    _key_pair_found and len(_detected_imageids)) :
+            if not (_run_netname_found and _prov_netname_found and _key_pair_found) :
                 _msg = "Check the previous errors, fix it (using OpenStack's web"
                 _msg += " GUI (horizon) or nova CLI"
                 _status = 1178
                 raise CldOpsException(_msg, _status) 
 
-            _status = 0
+            if len(_detected_imageids) :
+                _status = 0               
+            else :
+                _status = 1
 
         except CldOpsException, obj :
             _fmsg = str(obj.msg)
@@ -137,7 +138,7 @@ class PdmCmds(CommonCloudFunctions) :
             _status = 23
 
         finally :
-            if _status :
+            if _status > 1 :
                 _msg = "VMC \"" + vmc_name + "\" did not pass the connection test."
                 _msg += "\" : " + _fmsg
                 cberr(_msg, True)
@@ -354,9 +355,10 @@ class PdmCmds(CommonCloudFunctions) :
             
             for _vm_role in vm_templates.keys() :
                 _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
-                if _imageid not in _required_imageid_list :
-                    _required_imageid_list[_imageid] = []
-                _required_imageid_list[_imageid].append(_vm_role)
+                if _imageid != "to_replace" :                
+                    if _imageid not in _required_imageid_list :
+                        _required_imageid_list[_imageid] = []
+                    _required_imageid_list[_imageid].append(_vm_role)
     
             _msg = 'y'
     
@@ -386,12 +388,12 @@ class PdmCmds(CommonCloudFunctions) :
                     _msg += ','.join(_required_imageid_list[_imageid]) + "\": \""
                     _msg += _imageid + "\" is NOT registered "
                     _msg += "(attaching VMs with any of these roles will result in error).\n"
-    
+
             if not len(_detected_imageids) :
-                _msg = "ERROR! None of the image ids used by any VM \"role\" were detected"
-                _msg += " in this VMC " + vmc_name + " (endpoint " + _endpoint + "). Please register at least one "
-                _msg += "of the following images: " + ','.join(_undetected_imageids.keys())
-                cberr(_msg, True)
+                _msg = "WARNING! None of the image ids used by any VM \"role\" were detected"
+                _msg += " in this VMC " + vmc_name + " (endpoint " + _endpoint + ")." 
+                #_msg += "of the following images: " + ','.join(_undetected_imageids.keys())
+                cbwarn(_msg, True)
                 return _detected_imageids
             else :
                 _cmsg = "done"
@@ -404,6 +406,49 @@ class PdmCmds(CommonCloudFunctions) :
                     cbdebug(_msg, True)        
 
         return _detected_imageids
+
+    def check_networks(self, vmc_name, vm_defaults) :
+        '''
+        TBD
+        '''
+        _prov_netname = vm_defaults["netname"]
+        _run_netname = vm_defaults["netname"]
+
+        _net_str = "network \"" + _prov_netname + "\""
+
+        _prov_netname_found = False
+        _run_netname_found = False
+
+        for _endpoint in self.dockconn.keys() :
+
+            _msg = " PDM Cloud status: Checking if the " + _net_str + " can be "
+            _msg += "found on VMC " + vmc_name + " (endpoint " + _endpoint + ")..."
+            #cbdebug(_msg)
+            print _msg,
+
+            for _network in self.dockconn[_endpoint].networks() :
+                if _network["Name"] == _prov_netname :
+                    _prov_netname_found = True
+                    
+                if _network["Name"] == _run_netname :
+                    _run_netname_found = True                    
+
+        if not _prov_netname_found : 
+            _msg = "ERROR! Please make sure that the provisioning network " + _prov_netname + " can be found"
+            _msg += " VMC " + vmc_name  + " (endpoint " + _endpoint + ")..."
+            _fmsg = _msg 
+            cberr(_msg, True)
+
+        if not _prov_netname_found : 
+            _msg = "ERROR! Please make sure that the running network " + _run_netname + " can be found"
+            _msg += " VMC " + vmc_name  + " (endpoint " + _endpoint + ")..."
+            _fmsg = _msg 
+            cberr(_msg, True)
+
+        if _run_netname_found and _prov_netname_found :
+            print "done"
+            
+        return _prov_netname_found, _run_netname_found
 
     @trace
     def vmcregister(self, obj_attr_list) :
@@ -865,6 +910,62 @@ class PdmCmds(CommonCloudFunctions) :
                 _msg += "\"."
                 cbdebug(_msg)
                 return _status, _msg
+
+    def get_images(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _hyper = ''
+            
+            _fmsg = "An error has occurred, but no error message was captured"
+
+            _image_list = self.dockconn[obj_attr_list["host_cloud_ip"]].images()
+
+            _fmsg = "Please check if the defined image name is present on this "
+            _fmsg += "PDM Cloud"
+
+            _imageid = False
+
+            _candidate_images = []
+
+            for _image in _image_list :
+                if _image["RepoTags"][0].count(obj_attr_list["imageid1"]) :
+                    _candidate_images.append(obj_attr_list["imageid1"]) 
+
+            if not len(_candidate_images) :
+                self.dockconn[obj_attr_list["host_cloud_ip"]].pull(obj_attr_list["imageid1"])
+
+                _image_list = self.dockconn[obj_attr_list["host_cloud_ip"]].images()
+                _candidate_images = []
+    
+                for _image in _image_list :
+                    if _image["RepoTags"][0].count(obj_attr_list["imageid1"]) :
+                        _candidate_images.append(obj_attr_list["imageid1"])
+
+            if len(_candidate_images) :                   
+                _status = 0
+            else :
+                _fmsg = "Unable to pull image \"" + obj_attr_list["imageid1"] + "\""
+                _fmsg += " to PDM cloud"
+                _status = 1927
+            
+        except APIError, obj:
+            _status = 18127
+            _fmsg = str(obj.message) + " \"" + str(obj.explanation) + "\""
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+            
+        finally :
+            if _status :
+                _msg = "Image Name (" +  obj_attr_list["imageid1"] + ") not found: " + _fmsg
+                cberr(_msg, True)
+                raise CldOpsException(_msg, _status)
+            else :
+                return True
     
     @trace
     def vmcreate(self, obj_attr_list) :
@@ -940,6 +1041,8 @@ class PdmCmds(CommonCloudFunctions) :
 
             obj_attr_list["last_known_state"] = "about to send create request"
 
+            self.get_images(obj_attr_list)
+            
             _msg = "Starting an instance on PDM Cloud, using the imageid \"" 
             _msg +=  obj_attr_list["imageid1"] + " \"" + "and size \"" 
             _msg += obj_attr_list["size"] + "\", connected to the network \"" 

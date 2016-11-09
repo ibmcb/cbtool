@@ -115,6 +115,7 @@ LOGIN = $OSK_LOGIN
 SSH_KEY_NAME = $OSK_SSH_KEY_NAME
 
 [VM_TEMPLATES : OSK_CLOUDCONFIG]
+CHECK = size:m1.tiny, imageid1:to_replace
 CLIENT_DAYTRADER = size:m1.medium, imageid1:cb_daytrader
 DRIVER_DAYTRADER = size:m1.medium, imageid1:cb_daytrader
 CLIENT_TRADELITE = size:m1.medium, imageid1:cb_tradelite

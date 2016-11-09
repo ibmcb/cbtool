@@ -87,6 +87,7 @@ LOGIN = $GCE_LOGIN
 SSH_KEY_NAME = $GCE_SSH_KEY_NAME
 
 [VM_TEMPLATES : GCE_CLOUDCONFIG ]
+CHECK = size:f1-micro, imageid1:to_replace
 CLIENT_DAYTRADER = size:n1-standard-4, imageid1:cb-daytrader
 DRIVER_DAYTRADER = size:n1-standard-4, imageid1:cb-daytrader
 CLIENT_TRADELITE = size:n1-standard-4, imageid1:cb-tradelite

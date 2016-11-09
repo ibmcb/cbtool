@@ -212,10 +212,19 @@ class Ec2Cmds(CommonCloudFunctions) :
         _wanted_images = []
         for _vm_role in vm_templates.keys() :
             _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
-            if _imageid.count("ami-") and _imageid not in _wanted_images :
-                _wanted_images.append(_imageid)
-
+            if _imageid not in _wanted_images and _imageid != "to_replace" :
+                if _imageid.count("ami-") :
+                    _wanted_images.append(_imageid)
+                else :
+                    _x_img = self.ec2conn.get_all_images(filters = {"name": _imageid + '*'})
+                    if _x_img:
+                        vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _x_img[0].id)
+                        _wanted_images.append(_x_img[0].id)
+                    else :
+                        vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, "ami-" + _imageid)
+                                                
         _registered_image_list = self.ec2conn.get_all_images(image_ids=_wanted_images)
+                
         _registered_imageid_list = []
 
         for _registered_image in _registered_image_list :
@@ -258,13 +267,12 @@ class Ec2Cmds(CommonCloudFunctions) :
                 _msg += ','.join(_required_imageid_list[_imageid]) + "\": \""
                 _msg += _imageid + "\" is NOT registered "
                 _msg += "(attaching VMs with any of these roles will result in error).\n"
-        
+
         if not len(_detected_imageids) :
-            _msg = "ERROR! None of the image ids used by any VM \"role\" were detected"
-            _msg += " in this EC2 cloud. Please register at least one "
-            _msg += "of the following images: " + ','.join(_undetected_imageids.keys())
-            _fmsg = _msg 
-            cberr(_msg, True)
+            _msg = "WARNING! None of the image ids used by any VM \"role\" were detected"
+            _msg += " in this EC2 cloud!"
+#            _msg += "of the following images: " + ','.join(_undetected_imageids.keys())
+            cbwarn(_msg, True)
         else :
             _msg = _msg.replace("yx",'')
             _msg = _msg.replace("x ","          ")
@@ -291,13 +299,16 @@ class Ec2Cmds(CommonCloudFunctions) :
 
             _detected_imageids = self.check_images(vmc_name, vm_templates)
 
-            if not (_key_pair_found and _security_group_found and len(_detected_imageids)) :
+            if not (_key_pair_found and _security_group_found) :
                 _fmsg += ": Check the previous errors, fix it (using EC2's web"
                 _fmsg += " GUI (AWS Console) or ec2-* CLI utilities"
                 _status = 1178
                 raise CldOpsException(_fmsg, _status) 
 
-            _status = 0
+            if len(_detected_imageids) :
+                _status = 0               
+            else :
+                _status = 1
 
         except CldOpsException, obj :
             _fmsg = str(obj.msg)
@@ -308,7 +319,7 @@ class Ec2Cmds(CommonCloudFunctions) :
             _status = 23
 
         finally :
-            if _status :
+            if _status > 1 :
                 _msg = "VMC \"" + vmc_name + "\" did not pass the connection test."
                 _msg += "\" : " + _fmsg
                 cberr(_msg, True)

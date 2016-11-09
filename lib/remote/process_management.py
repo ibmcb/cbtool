@@ -82,9 +82,12 @@ class ProcessManagement :
             _local = False
 
         _port = port
-
-        if _local :     
-            _cmd = cmdline
+        
+        if _local :
+            if self.username == "root" :
+                _cmd = "sudo su -c\"" + cmdline + "\""
+            else :    
+                _cmd = cmdline
         else :
             if self.username :
                 _username = " -l " + self.username + ' '

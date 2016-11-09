@@ -44,6 +44,7 @@ SEED_RESET1 = cb_restart_seed.sh
 START=cb_ycsb.sh
 
 # VApp-specific OPTIONAL modifier parameters. Commented attributes imply default values assumed
+JAVA_HOME = auto
 READ_RATIO = workloaddefault
 UPDATE_RATIO = workloaddefault
 APP_COLLECTION = lazy

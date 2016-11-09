@@ -989,7 +989,7 @@ class BaseObjectOperations :
             elif cmd == "vmc-attachall" :
                 _status = 0
                 
-            elif cmd.count("attach") :
+            elif cmd.count("attach") or cmd.count("check") :
 
                 _postpone_counter = False
 
@@ -1092,6 +1092,9 @@ class BaseObjectOperations :
                     obj_attr_list["base_dir"] = _dir_list["base_dir"]
                     obj_attr_list["identity"] = _dir_list["ssh_key_name"]
 
+                    if _obj_type == "AI" :
+                        obj_attr_list["vms"] = ''
+
                     if _obj_type == "VM" :
                                                 
                         _filestor_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
@@ -1100,24 +1103,67 @@ class BaseObjectOperations :
                         _vpn_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
                                                                    "GLOBAL", False, "vpn", \
                                                                    False)
+                        _metric_store_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
+                                                                       "GLOBAL", \
+                                                                       False, \
+                                                                       "metricstore", \
+                                                                       False)
+                        
+                        _log_store = self.osci.get_object(obj_attr_list["cloud_name"], \
+                                                             "GLOBAL", False, \
+                                                             "logstore", False)
     
-                        obj_attr_list["filestore_hostname"] = _filestor_attr_list["hostname"]
+                        obj_attr_list["filestore_host"] = _filestor_attr_list["hostname"]
                         obj_attr_list["filestore_port"] = _filestor_attr_list["port"]
                         obj_attr_list["filestore_username"] = _filestor_attr_list["username"]
+                        obj_attr_list["filestore_protocol"] = _filestor_attr_list["protocol"]
+
                         obj_attr_list["vpn_server_ip"] = _vpn_attr_list["server_ip"]
+                        obj_attr_list["vpn_server_host"] = _vpn_attr_list["server_ip"]                        
                         obj_attr_list["vpn_server_bootstrap"] = _vpn_attr_list["server_bootstrap"]
                         obj_attr_list["vpn_server_port"] = _vpn_attr_list["server_port"]
-                                                                                                                        
+                        obj_attr_list["vpn_server_protocol"] = "TCP"
+                        
+                        obj_attr_list["metricstore_host"] = _metric_store_attr_list["host"]
+                        obj_attr_list["metricstore_port"] = _metric_store_attr_list["port"]
+                        obj_attr_list["metricstore_protocol"] = _metric_store_attr_list["protocol"]
+                        
+                        obj_attr_list["logstore_host"] = _log_store["hostname"]
+                        obj_attr_list["logstore_port"] = _log_store["port"]
+                        obj_attr_list["logstore_protocol"] = _log_store["protocol"]
+                        
+                        obj_attr_list["objectstore_host"] = self.osci.host
+                        obj_attr_list["objectstore_port"] = self.osci.port 
+                        obj_attr_list["objectstore_protocol"] = "TCP" 
+                        
                         obj_attr_list["jars_dir"] = _dir_list["jars_dir"]
                         obj_attr_list["exclude_list"] = _dir_list["base_dir"] + "/exclude_list.txt"
                         obj_attr_list["daemon_dir"] = _dir_list["vm_daemon_dir"]
-                        
+
                         obj_attr_list["cloud_init_bootstrap"] = False
                         obj_attr_list["cloud_init_rsync"] = False
 
                         _vm_templates = self.osci.get_object(obj_attr_list["cloud_name"], \
                                                              "GLOBAL", False, \
                                                              "vm_templates", False)
+
+                        if obj_attr_list["role"].count("check:") :
+                            _role_tmp = obj_attr_list["role"].replace("check:",'')
+                            if _role_tmp.count(':') :                                
+                                obj_attr_list["imageid1"], obj_attr_list["login"] = _role_tmp.split(':')
+                            else :
+                                obj_attr_list["imageid1"] = _role_tmp
+                                obj_attr_list["login"] = "false"
+                                obj_attr_list["check_boot_complete"] = "wait_for_0"
+                                 
+                            obj_attr_list["role"] = "check"
+                            obj_attr_list["transfer_files"] = "false"
+                            obj_attr_list["run_generic_scripts"] = "false"
+
+                        if obj_attr_list["role"] not in _vm_templates :
+                            _msg = "The VM role \"" + obj_attr_list["role"] + "\" is not defined" 
+                            _status = 6700
+                            raise self.ObjectOperationException(_msg, _status)                            
             
                         _vm_template_attr_list = str2dic(_vm_templates[obj_attr_list["role"]])
             
@@ -1129,6 +1175,9 @@ class BaseObjectOperations :
 
                         if obj_attr_list["size"] != "from_vm_template" :
                             del _vm_template_attr_list["size"]
+
+                        if _vm_template_attr_list["imageid1"] == "to_replace" :
+                            del _vm_template_attr_list["imageid1"]
 
                         if "login" in _vm_template_attr_list :
                             del obj_attr_list["login"]
@@ -1223,6 +1272,7 @@ class BaseObjectOperations :
                             _msg = "Capture operations are not supported on \"" + _cloud_parameters["description"] + "\" clouds." 
                             _status = 9000
                             raise self.ObjectOperationException(_msg, _status)
+                        
                     elif cmd.count("migrate") or cmd.count("protect") :
                         op = cmd.split("-")[1]
                         obj_attr_list["mgt_501_" + op + "_request_originated"] = obj_attr_list["command_originated"]
@@ -1968,7 +2018,6 @@ class BaseObjectOperations :
             _app_type = obj_attr_list["type"]
             obj_attr_list["parallel_operations"] = {}
             _vm_attach_command_lines = []
-            obj_attr_list["vms"] = ''
 
             _vm_counter = 0  
             _vm_creation_list = {}
@@ -2539,8 +2588,7 @@ class BaseObjectOperations :
 
                     if _smallest_remaining_time != 100000 and operation == "setup":
                         _actual_attempts = _smallest_remaining_time/int(_ai_attr_list["update_frequency"])
-                        _msg = "The VM-specific attribute \"sla_provisioning_abort\" "
-                        _msg += " was set \"True\". Remaining deployment time "
+                        _msg = "Remaining deployment time "
                         _msg += "(application-specific setup) for " + _ai_name
                         _msg += " is " + str(_smallest_remaining_time)
                         _msg += " seconds and actual number of configuration "

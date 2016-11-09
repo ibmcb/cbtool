@@ -51,23 +51,32 @@ MY_IP=$my_ip_addr
 
 YCSB_PATH=$(get_my_ai_attribute_with_default ycsb_path ~/YCSB)
 eval YCSB_PATH=${YCSB_PATH}
-
+    
 if [[ -z ${JAVA_HOME} ]]
 then
-    #JAVA_HOME=`get_my_ai_attribute_with_default java_home ~/jdk1.6.0_21`
-    JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre
+    JAVA_HOME=$(get_my_ai_attribute_with_default java_home auto)            
+    if [[ ${JAVA_HOME} == "auto" ]]
+    then
+        syslog_netcat "JAVA_HOME is set to \"auto\". Attempting to find the most recent in /usr/lib/jvm"            
+        JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre
+    fi
+
+    syslog_netcat "JAVA_HOME determined to be \"${JAVA_HOME}\""    
+            
     eval JAVA_HOME=${JAVA_HOME}
     if [[ -f ~/.bashrc ]]
     then
         is_java_home_export=`grep -c "JAVA_HOME=${JAVA_HOME}" ~/.bashrc`
         if [[ $is_java_home_export -eq 0 ]]
         then
-            syslog_netcat "Adding JAVA_HOME to bashrc"
+            syslog_netcat "Adding JAVA_HOME=${JAVA_HOME} to bashrc"
             echo "export JAVA_HOME=${JAVA_HOME}" >> ~/.bashrc
         fi
     fi
+else 
+    syslog_netcat "Line \"export JAVA_HOME=${JAVA_HOME}\" was already added to bashrc"    
 fi
-
+    
 export JAVA_HOME=${JAVA_HOME}
 
 BACKEND_TYPE=$(get_my_ai_attribute type | sed 's/_ycsb//g')

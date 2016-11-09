@@ -386,8 +386,8 @@ OPENSTACK_M += procstat_nova-novncproxy_cpu, procstat_nova-novncproxy_mem,
 OPENSTACK_M += procstat_nova-scheduler_cpu, procstat_nova-scheduler_mem
  
 APP_M = app_load_id, app_load_profile, app_load_level, app_datagen_size, 
-APP_M += app_datagen_time, app_throughput, app_latency, app_bandwidth, 
-APP_M += app_errors, app_completion_time, app_sla_runtime
+APP_M += app_datagen_time, app_throughput, app_latency, app_loss, app_jitter,
+APP_M += app_bandwidth, app_errors, app_completion_time, app_sla_runtime
 # Actual layout (do not prefix these variables with $)
 VM_RUNTIME_OS_METRICS_HEADER = TSTAMP_OS, VM_ID2, CPU_M, MEM_M, SWAP_M, NET_M, DSK_M
 VM_RUNTIME_APP_METRICS_HEADER = TSTAMP_APP, VM_ID2, APP_M
