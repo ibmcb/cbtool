@@ -64,7 +64,11 @@ class SimCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
-        return True
+        _status = 0
+        
+        _msg = "VMC \"" + vmc_hn + "\" was successfully tested."
+        cbdebug(_msg, True)
+        return _status, _msg
 
     def generate_random_ip_address(self) :
         '''

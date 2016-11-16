@@ -1153,7 +1153,7 @@ class BaseObjectOperations :
                                 obj_attr_list["imageid1"], obj_attr_list["login"] = _role_tmp.split(':')
                             else :
                                 obj_attr_list["imageid1"] = _role_tmp
-                                obj_attr_list["login"] = "false"
+                                obj_attr_list["check_ssh"] = "false"
                                 obj_attr_list["check_boot_complete"] = "wait_for_0"
                                  
                             obj_attr_list["role"] = "check"

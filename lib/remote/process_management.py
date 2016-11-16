@@ -122,8 +122,8 @@ class ProcessManagement :
             self.rsync_conn = _cmd
             
             _cmd += _hostname + " \"" + cmdline + "\""
-
-        if str(really_execute).lower() == "true" :
+        
+        if str(really_execute).lower() != "false" :
             _msg = "running os command: " + _cmd
             cbdebug(_msg);
             _proc_h = Popen(_cmd, shell=True, stdout=PIPE, stderr=PIPE)
@@ -140,6 +140,7 @@ class ProcessManagement :
                         _stderr_len = 1
                     
                     if _proc_h.returncode and _stderr_len :
+                        
                         _msg = "Error while executing the command line "
                         _msg += "\"" + cmdline + "\" (returncode = "
                         _msg += str(_proc_h.pid) + ") :" + str(_result[1])

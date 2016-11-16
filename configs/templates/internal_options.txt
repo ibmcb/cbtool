@@ -143,6 +143,7 @@ LOCAL_DIR_NAME = cbtool
 REMOTE_DIR_NAME = cbtool
 RUN_GENERIC_SCRIPTS = $True
 TRANSFER_FILES = $True
+CHECK_SSH = $True
 DEBUG_REMOTE_COMMANDS = $False
 STICKY_APP_STATUS = $False
 # Any VM which contains the string "client" on his role name will be created

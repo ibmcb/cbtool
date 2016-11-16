@@ -2208,10 +2208,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                obj_attr_list["prov_cloud_ip"], \
                                                _actual_tries, \
                                                _retry_interval, \
-                                               obj_attr_list["login"], \
+                                               obj_attr_list["check_ssh"], \
                                                obj_attr_list["debug_remote_commands"], \
                                                True,
-                                               tell_me_if_stderr_contains = "Connection reset by peer", \
+                                               tell_me_if_stderr_contains = False, \
                                                port = _port)
 
             self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], \
@@ -2239,10 +2239,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                        obj_attr_list["prov_cloud_ip"], \
                                                        _actual_tries, \
                                                        _retry_interval, \
-                                                       obj_attr_list["login"], \
+                                                       obj_attr_list["check_ssh"], \
                                                        obj_attr_list["debug_remote_commands"], \
                                                        True,
-                                                       tell_me_if_stderr_contains = "Connection reset by peer", \
+                                                       tell_me_if_stderr_contains = False, \
                                                        port = _port)
             
             _msg = "Bootstrapping " + obj_attr_list["log_string"]  + ": creating file"

@@ -1054,7 +1054,7 @@ class CBCLI(Cmd) :
         TBD
         '''
         _status, _msg, _object = self.passive_operations.alter_object(self.cld_attr_lst, \
-                                                                      "vm_defaults check_boot_complete=wait_for_0,transfer_files=false,run_generic_scripts=false,debug_remote_commands=true", \
+                                                                      "vm_defaults check_boot_complete=wait_for_0,transfer_files=false,run_generic_scripts=false,debug_remote_commands=true,check_ssh=false", \
                                                                       "cloud-alter")
 
         print(message_beautifier(_msg))
@@ -1065,7 +1065,7 @@ class CBCLI(Cmd) :
         TBD
         '''
         _status, _msg, _object = self.passive_operations.alter_object(self.cld_attr_lst, \
-                                                                      "vm_defaults check_boot_complete=tcp_on_22,transfer_files=true,run_generic_scripts=true,debug_remote_commands=false", \
+                                                                      "vm_defaults check_boot_complete=tcp_on_22,transfer_files=true,run_generic_scripts=true,debug_remote_commands=false,check_ssh=true", \
                                                                       "cloud-alter")
 
         print(message_beautifier(_msg))
