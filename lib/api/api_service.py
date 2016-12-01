@@ -283,11 +283,11 @@ class API():
         else :
             return self.active.aicapture({}, cloud_name + ' ' + identifier + ' ' + vmcrs, "ai-capture")[2]
         
-    def vmcapture(self, cloud_name, identifier, vmcrs = "none", async = False):
+    def vmcapture(self, cloud_name, identifier, captured_image_name = "auto", vmcrs = "none", async = False):
         if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + vmcrs + (' ' + async), "vm-capture")[2]
+            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + captured_image_name + ' ' + vmcrs + (' ' + async), "vm-capture")[2]
         else :
-            return self.active.vmcapture({}, cloud_name + ' ' + identifier + ' ' + vmcrs, "vm-capture")[2]
+            return self.active.vmcapture({}, cloud_name + ' ' + identifier + ' ' + captured_image_name + ' ' + vmcrs, "vm-capture")[2]
         
     def vmmigrate(self, cloud_name, identifier, destination, protocol = "tcp", interface = "default", async = False):
         if async and str(async).count("async") :

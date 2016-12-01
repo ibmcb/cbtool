@@ -29,6 +29,9 @@ import re
 import platform
 import urllib2
 
+from os.path import expanduser
+home = expanduser("~")
+
 from json import dumps
 from lib.remote.process_management import ProcessManagement
 
@@ -861,5 +864,84 @@ def dependency_checker_installer(hostname, username, operation, options) :
                 _msg += "Please fix the reported problems re-run " + operation +  " again."               
         else :
             _msg = "All dependencies are in place"
+            if len(options.wks) :
+                _msg += " for workload(s) \"" + str(options.wks) + "\""
+
+        return _status, _msg
+
+def instance_preparation(hostname, options) :
+    '''
+    TBD
+    '''
+    try :    
+        _status = 100
+        _store = False
+        _process_manager = False
+        _cleanup = False
+        
+        _fmsg = "An error has occurred, but no error message was captured"
+
+        _file = home + "/cb_prepare_parameters.txt"
+
+        print "----------------------------------------------------------\n"
+
+        if os.access(_file, os.F_OK) :
+
+            process_manager = ProcessManagement(hostname)
+
+            _fd = open(_file, 'r')
+            _fc = _fd.readlines()
+            _fd.close()
+
+            for _line in _fc :
+                _line = _line.strip()
+
+                _store, _store_ip, _store_port, _store_protocol = _line.split()
+                _cmd = "nc -z -w 3 -" + _store_protocol[0].lower() + ' ' + _store_ip + ' ' + _store_port
+
+                _msg = "Checking accesss from this instance to the CB"
+                _msg += " Orchestrator's " + _store.capitalize() + " with"
+                _msg += " \"" + _cmd + "\"..."
+                print _msg,
+
+                process_manager.run_os_command(_cmd)
+
+                print "OK\n"
+
+        _cmd = options.wksdir + "/common/cb_cleanup.sh"
+        _msg = "Running the instance cleanup script \"" + _cmd + "\"..." 
+        print _msg,
+
+        process_manager.run_os_command(_cmd)
+
+        print "OK\n"
+        _cleanup = True
+        
+        _status = 0
+            
+    except Exception, e :
+        _status = 23
+        _fmsg = str(e)
+    
+    finally :
+
+        if _status :
+            if _store and not _cleanup :
+                _msg = "\nERROR while checking accesss from this instance to the CB"
+                _msg += " Orchestrator's " + _store.capitalize() + ": " + _fmsg
+                _msg += " (make sure that the " + _store_port + " port " + _store_port
+                _msg += " is open at IP address " + _store_ip
+            if not _store and not _cleanup :
+                _msg = "\nERROR while preparing to check access from this instance "
+                _msg += "to the CB Orchestrator's stores:" + _fmsg
+            if _store and _cleanup :
+                _msg = "\nERROR while cleaning up instance."                
+        else :
+            _msg = ''
+            if process_manager :
+                _msg += "\nSucessfully checked this instance's ability to connect"
+                _msg += " to the Orchestrator's stores.\n"
+            if _cleanup :
+                _msg += "\nSucessfully cleaned up this instance.\n"
 
         return _status, _msg

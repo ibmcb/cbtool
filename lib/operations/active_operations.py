@@ -194,7 +194,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     cbdebug(_msg, True)
                     cld_attr_lst["vm_defaults"]["create_jumphost"] = "true"
 
-
                 if str(cld_attr_lst["vm_defaults"]["use_vpn_ip"]).lower() == "true" and \
                 str(cld_attr_lst["vm_defaults"]["userdata"]).lower() == "false" :
 
@@ -210,6 +209,25 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _msg += "and security credentials"
                 cbdebug(_msg)
 
+                # Just create an openSSL certificates to be used later (multiple uses)
+
+                _ssl_key = cld_attr_lst["space"]["generated_configurations_dir"] + "/cb.key"
+                _ssl_csr = cld_attr_lst["space"]["generated_configurations_dir"] + "/cb.csr"
+                _ssl_crt = cld_attr_lst["space"]["generated_configurations_dir"] + "/cb.crt"  
+                if not os.path.isfile(_ssl_key) :
+                    _cmd = 'openssl req -newkey rsa:2048 -nodes -keyout ' 
+                    _cmd += _ssl_key + ' -out ' + _ssl_csr 
+                    _cmd += ' -subj "/C=US/ST=NewYork/L=NewYork/O=CB/CN=www.example.com" '
+                    _cmd += '&& openssl x509 -signkey ' + _ssl_key + ' -in '
+                    _cmd += _ssl_csr + ' -req -days 365 -out ' + _ssl_crt
+                    _proc_man =  ProcessManagement()
+                    _status, out, err =_proc_man.run_os_command(_cmd)
+
+                cld_attr_lst["vm_defaults"]["ssl_cert"] = _ssl_crt
+                cld_attr_lst["vm_defaults"]["ssl_key"] = _ssl_key
+                cld_attr_lst["vmc_defaults"]["ssl_cert"] = _ssl_crt
+                cld_attr_lst["vmc_defaults"]["ssl_key"] = _ssl_key
+                    
                 cld_attr_lst["vmc_defaults"]["check"] = "false"
                 for _vmc_entry in _initial_vmcs :
                     _cld_conn = _cld_ops_class(self.pid, None, None)
@@ -285,8 +303,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _msg += " IP address of the jump_host VM could not be determined."
                         _msg += " Please try to re-run the tool."
                         cberr(_msg, True)
-                        exit(1)
-                              
+                        exit(1)                
+                
                 _all_global_objects = cld_attr_lst.keys()
                 cld_attr_lst["client_should_refresh"] = str(0.0)
 
@@ -2069,7 +2087,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                         3600)
 
                 if _obj_type == "VM" and obj_attr_list["role"] == "check" :
-                    if obj_attr_list["login"] == "false" :
+                    if obj_attr_list["check_ssh"] == "false" :
                         _x_msg = "\n\n The ability to create instances using "
                         _x_msg += "unconfigured images was successfully verified!"
                         _x_msg += " We may now proceed to check the ability to"
@@ -2077,12 +2095,25 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         _x_msg += "\"vmattach check:<IMAGEID OF YOUR CHOICE>:<USERNAME FOR LOGIN>\""
                         _x_msg += " on the CLI.\n"
                     else :
-                        _x_msg = "\n\n The ability to create (and connect via ssh to)"
-                        _x_msg += " instances using unconfigured images was "
-                        _x_msg += "successfully verified. At this point, use this"
-                        _x_msg += " running instance as a base, and go straight to STEP 1 on"
-                        _x_msg += " https://github.com/ibmcb/cbtool/wiki/HOWTO:-Preparing-a-VM-to-be-used-with-CBTOOL-on-a-real-cloud\n"
-
+                        if obj_attr_list["transfer_files"] == "false" :
+                            _x_msg = "\n\n The ability to create (and connect via ssh to)"
+                            _x_msg += " instances using unconfigured images was "
+                            _x_msg += "successfully verified. At this point, we need "
+                            _x_msg += " to create a base image for the Virtual Application \"nullworkload\""
+                            _x_msg += " by executing \"vmattach check:<IMAGEID OF YOUR CHOICE>:<USERNAME FOR LOGIN>:nullworkload\""
+                            _x_msg += " on the CLI.\n"
+                        else :
+                            _x_msg = "\n\n A copy of the code was transferred to "
+                            _x_msg += obj_attr_list["name"] + ". On another terminal"
+                            _x_msg += ", execute \"cd " + obj_attr_list["base_dir"]
+                            _x_msg += "; ./cbssh " + obj_attr_list["name"] + "\""
+                            _x_msg += " to login on the VM. Once there, execute"
+                            _x_msg += " \"cd ~/" + obj_attr_list["remote_dir_name"] 
+                            _x_msg +=  "; ./install -r workload --wks nullworkload\" "
+                            _x_msg += "to automatically configure a new instance."
+                            _x_msg += "\nOnce done, execute \"vmcapture " + obj_attr_list["name"] + " cb_nullworkload\""
+                            _x_msg += " on the CLI, followed by \"vmattach tinyvm\""
+                            _x_msg += ", and then \"aiattach nullworkload\"\n"
                     _msg += _x_msg
                     
                 cbdebug(_msg)
@@ -2172,11 +2203,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _config_file = None
         else :
             _config_file = None            
-
-        if "port_mapping" in obj_attr_list and str(obj_attr_list["port_mapping"]).lower() != "none" :
-            _port = obj_attr_list["port_mapping"]
-        else :
-            _port = 22
             
         _proc_man = ProcessManagement(username = obj_attr_list["login"], \
                                       cloud_name = obj_attr_list["cloud_name"], \
@@ -2198,12 +2224,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
             else :
                 _actual_tries = int(obj_attr_list["update_attempts"])
 
-            _ssh_cmd_log = "ssh -p " + str(_port) + " -i " + obj_attr_list["identity"]
+            _ssh_cmd_log = "ssh -p " + str(obj_attr_list["prov_cloud_port"]) + " -i " + obj_attr_list["identity"]
             _ssh_cmd_log += ' ' + obj_attr_list["login"] + "@" + obj_attr_list["prov_cloud_ip"]
 
             _msg = "Checking ssh accessibility on " + obj_attr_list["log_string"]
             _msg += ": " + _ssh_cmd_log + " \"/bin/true\"..."
-            cbdebug(_msg, selectively_print_message("login", obj_attr_list))
+            cbdebug(_msg, selectively_print_message("check_ssh", obj_attr_list))
             _proc_man.retriable_run_os_command("/bin/true", \
                                                obj_attr_list["prov_cloud_ip"], \
                                                _actual_tries, \
@@ -2212,7 +2238,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                obj_attr_list["debug_remote_commands"], \
                                                True,
                                                tell_me_if_stderr_contains = False, \
-                                               port = _port)
+                                               port = obj_attr_list["prov_cloud_port"])
 
             self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], \
                                               False, "last_known_state", \
@@ -2221,29 +2247,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
             
             _msg = "Checked ssh accessibility on " + obj_attr_list["log_string"]
             cbdebug(_msg)
-
-            if selectively_print_message("transfer_files", obj_attr_list) :
-                _store_list = [ "objectstore", "metricstore", "logstore", "filestore" ]
-                for _store in _store_list :
-                    _store_ip = obj_attr_list[_store + "_host"]
-                    _store_port = str(obj_attr_list[_store + "_port"])
-                    _store_protocol = obj_attr_list[_store + "_protocol"]
-                    _cmd = "nc -z -w 3 -" + _store_protocol[0].lower() + ' ' + _store_ip + ' ' + _store_port
-
-                    _msg = "      Checking accesss from " + obj_attr_list["log_string"]
-                    _msg += " to CB Orchestrator's " + _store.capitalize() + ": "
-                    _msg += _ssh_cmd_log + " \"" + _cmd + "\""
-                    cbdebug(_msg, selectively_print_message("transfer_files", obj_attr_list))
-                    
-                    _proc_man.retriable_run_os_command(_cmd, \
-                                                       obj_attr_list["prov_cloud_ip"], \
-                                                       _actual_tries, \
-                                                       _retry_interval, \
-                                                       obj_attr_list["check_ssh"], \
-                                                       obj_attr_list["debug_remote_commands"], \
-                                                       True,
-                                                       tell_me_if_stderr_contains = False, \
-                                                       port = _port)
             
             _msg = "Bootstrapping " + obj_attr_list["log_string"]  + ": creating file"
             _msg += " cb_os_paramaters.txt in \"" + obj_attr_list["login"] 
@@ -2276,7 +2279,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                    obj_attr_list["debug_remote_commands"], \
                                                    True, \
                                                    tell_me_if_stderr_contains = "Connection reset by peer", \
-                                                   port = _port)
+                                                   port = obj_attr_list["prov_cloud_port"])
 
             _msg = "Bootstrapped " + obj_attr_list["log_string"]
             cbdebug(_msg)
@@ -2317,7 +2320,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                    obj_attr_list["debug_remote_commands"], \
                                                    True, \
                                                    tell_me_if_stderr_contains = "Connection reset by peer", \
-                                                   port = _port)                
+                                                   port = obj_attr_list["prov_cloud_port"])                
 
                 self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], \
                                                   False, "last_known_state", \
@@ -2355,7 +2358,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                          obj_attr_list["debug_remote_commands"], \
                                          True, \
                                          tell_me_if_stderr_contains = "Connection reset by peer", \
-                                         port = _port)                    
+                                         port = obj_attr_list["prov_cloud_port"])                    
 
                 _time_mark_ipbc = int(time())
                 _delay = _time_mark_ipbc - obj_attr_list["time_mark_aux"]

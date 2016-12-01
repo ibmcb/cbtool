@@ -85,7 +85,7 @@ class ProcessManagement :
         
         if _local :
             if self.username == "root" :
-                _cmd = "sudo su -c\"" + cmdline + "\""
+                _cmd = "sudo su -c \"" + cmdline + "\""
             else :    
                 _cmd = cmdline
         else :

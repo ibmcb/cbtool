@@ -232,10 +232,10 @@ class MongodbMgdConn :
 
             for _collection in _collections :
                 _collection_handle = self.mongodb_conn[self.database][_collection]
-                _collection_handle.ensure_index("dashboard_polled")
-                _collection_handle.ensure_index("expid")
-                _collection_handle.ensure_index("time")
-                _collection_handle.ensure_index("uuid")
+                _collection_handle.create_index("dashboard_polled")
+                _collection_handle.create_index("expid")
+                _collection_handle.create_index("time")
+                _collection_handle.create_index("uuid")
 
             self.disconnect()
             return True
@@ -300,7 +300,7 @@ class MongodbMgdConn :
 
         try :
             _collection_handle = self.mongodb_conn[self.database][collection]
-            _collection_handle.insert(document)
+            _collection_handle.insert_one(document)
             if disconnect_finish :
                 self.disconnect()
             return True
@@ -419,8 +419,6 @@ class MongodbMgdConn :
             _msg += str(msg) + '.'
             cberr(_msg)
             raise self.MetricStoreMgdConnException(str(_msg), 1)
-
-
 
     @trace
     def count_document(self, collection, criteria, disconnect_finish = False) :

@@ -108,7 +108,7 @@ def main() :
     if not os.path.exists(_3rd_party) :
         os.mkdir(_3rd_party)
 
-    from lib.auxiliary.dependencies import dependency_checker_installer
+    from lib.auxiliary.dependencies import dependency_checker_installer,instance_preparation
 
     _tool = "Cloud Rapid Experimentation Analysis and Toolkit (cbtool)"
     _bname = os.path.basename(argv[0])
@@ -145,10 +145,8 @@ def main() :
     _status, _msg = dependency_checker_installer("127.0.0.1", getpwuid(os.getuid())[0], _bname, options)
     if _status :
         print _msg
-        exit()
-    else :
-        print _msg
-
+        exit(_status)
+        
     if not len(options.wks) :
         _username = getpwuid(os.getuid())[0]
     
@@ -164,6 +162,15 @@ def main() :
         else :
             print "File already exists, tool is ready to be used."
     else :
-        print ""
-        
+        print _msg + '\n'
+        _status, _msg = instance_preparation("127.0.0.1", options)
+
+        if not _status :
+            print _msg
+            _msg += '\n------------------------------------------------------------\n'
+            _msg += "SUCCESS! Please go back to CBTOOL's CLI and capture the image"
+            print _msg
+            
+        exit(_status)
+                    
 main()

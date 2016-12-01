@@ -2401,79 +2401,74 @@ class OskCmds(CommonCloudFunctions) :
                 cbdebug(_msg, True)
 
                 _status, _result_stdout, _fmsg = _proc_man.run_os_command(_cmd)
-
-            if not _status :
                 
-                if _host_name not in self.lvirt_conn or not self.lvirt_conn[_host_name] :        
-                    _msg = "Attempting to connect to libvirt daemon running on "
-                    _msg += "hypervisor (" + _hypervisor_type + ") \"" + _host_ip + "\"...."
-                    cbdebug(_msg)
+            if _host_name not in self.lvirt_conn or not self.lvirt_conn[_host_name] :        
+                _msg = "Attempting to connect to libvirt daemon running on "
+                _msg += "hypervisor (" + _hypervisor_type + ") \"" + _host_ip + "\"...."
+                cbdebug(_msg)
+
+                self.lvirt_conn[_host_name] = libvirt.open( _hypervisor_type + "+tcp://" + _host_ip + _astr)
+                
+                _msg = "Connection to libvirt daemon running on hypervisor ("
+                _msg += _hypervisor_type + ") \"" + _host_ip + "\" successfully established."
+                cbdebug(_msg)
+
+                instance_data = self.lvirt_conn[_host_name].lookupByName(obj_attr_list["instance_name"])
+
+                obj_attr_list["lvirt_os_type"] = instance_data.OSType()
+
+                obj_attr_list["lvirt_scheduler_type"] = instance_data.schedulerType()[0]
     
-                    self.lvirt_conn[_host_name] = libvirt.open( _hypervisor_type + "+tcp://" + _host_ip + _astr)
-                    
-                    _msg = "Connection to libvirt daemon running on hypervisor ("
-                    _msg += _hypervisor_type + ") \"" + _host_ip + "\" successfully established."
-                    cbdebug(_msg)
-    
-                    instance_data = self.lvirt_conn[_host_name].lookupByName(obj_attr_list["instance_name"])
-    
-                    obj_attr_list["lvirt_os_type"] = instance_data.OSType()
-    
-                    obj_attr_list["lvirt_scheduler_type"] = instance_data.schedulerType()[0]
-        
-                # All object uuids on state store are case-sensitive, so will
-                # try to just capitalize the UUID reported by libvirt
-    #                obj_attr_list["cloud_uuid"] = instance_data.UUIDString().upper()
-    #                obj_attr_list["uuid"] = obj_attr_list["cloud_uuid"]
-    #                obj_attr_list["cloud_lvid"] = instance_data.name()
-    
-                _gobj_attr_list = instance_data.info()
-    
-                obj_attr_list["lvirt_vmem"] = str(_gobj_attr_list[1])
-                obj_attr_list["lvirt_vmem_current"] = str(_gobj_attr_list[2])
-                obj_attr_list["lvirt_vcpus"] = str(_gobj_attr_list[3])
-    
-                _state_code = str(_gobj_attr_list[0])
-                if _state_code in _state_code2value :
-                    obj_attr_list["lvirt_state"] = _state_code2value[_state_code]
-                else :
-                    obj_attr_list["lvirt_state"] = "unknown"
-    
-                if _state_code == "1" :
-    
-                    _vcpu_info = instance_data.vcpus()
-    
-                    for _vcpu_nr in range(0, int(obj_attr_list["lvirt_vcpus"])) :
-                        obj_attr_list["lvirt_vcpu_" + str(_vcpu_nr) + "_pcpu"] = str(_vcpu_info[0][_vcpu_nr][3])
-                        obj_attr_list["lvirt_vcpu_" + str(_vcpu_nr) + "_time"] =  str(_vcpu_info[0][_vcpu_nr][2])
-                        obj_attr_list["lvirt_vcpu_" + str(_vcpu_nr) + "_state"] =  str(_vcpu_info[0][_vcpu_nr][1])
-                        obj_attr_list["lvirt_vcpu_" + str(_vcpu_nr) + "_map"] = str(_vcpu_info[1][_vcpu_nr])
-    
-                    _sched_info = instance_data.schedulerParameters()
-    
-                    obj_attr_list["lvirt_vcpus_soft_limit"] = str(_sched_info["cpu_shares"])
-    
-                    if "vcpu_period" in _sched_info :
-                        obj_attr_list["lvirt_vcpus_period"] = str(float(_sched_info["vcpu_period"]))
-                        obj_attr_list["lvirt_vcpus_quota"] = str(float(_sched_info["vcpu_quota"]))
-                        obj_attr_list["lvirt_vcpus_hard_limit"] = str(float(obj_attr_list["lvirt_vcpus_quota"]) / float(obj_attr_list["lvirt_vcpus_period"]))
-    
-                    if "memoryParameters" in dir(instance_data) :    
-                        _mem_info = instance_data.memoryParameters(0)
-    
-                        obj_attr_list["lvirt_mem_hard_limit"] = str(_mem_info["hard_limit"])
-                        obj_attr_list["lvirt_mem_soft_limit"] = str(_mem_info["soft_limit"])
-                        obj_attr_list["lvirt_mem_swap_hard_limit"] = str(_mem_info["swap_hard_limit"])
-    
-                    if "blkioParameters" in dir(instance_data) :
-                        _diskio_info = instance_data.blkioParameters(0)
-                        obj_attr_list["lvirt_diskio_soft_limit"] = "unknown"
-                        if _diskio_info :
-                            if "weight" in _diskio_info :
-                                obj_attr_list["lvirt_diskio_soft_limit"] = str(_diskio_info["weight"])
-    
-    
-                _status = 0
+            # All object uuids on state store are case-sensitive, so will
+            # try to just capitalize the UUID reported by libvirt
+#                obj_attr_list["cloud_uuid"] = instance_data.UUIDString().upper()
+#                obj_attr_list["uuid"] = obj_attr_list["cloud_uuid"]
+#                obj_attr_list["cloud_lvid"] = instance_data.name()
+
+            _gobj_attr_list = instance_data.info()
+
+            obj_attr_list["lvirt_vmem"] = str(_gobj_attr_list[1])
+            obj_attr_list["lvirt_vmem_current"] = str(_gobj_attr_list[2])
+            obj_attr_list["lvirt_vcpus"] = str(_gobj_attr_list[3])
+
+            _state_code = str(_gobj_attr_list[0])
+            if _state_code in _state_code2value :
+                obj_attr_list["lvirt_state"] = _state_code2value[_state_code]
+            else :
+                obj_attr_list["lvirt_state"] = "unknown"
+
+            if _state_code == "1" :
+
+                _vcpu_info = instance_data.vcpus()
+
+                for _vcpu_nr in range(0, int(obj_attr_list["lvirt_vcpus"])) :
+                    obj_attr_list["lvirt_vcpu_" + str(_vcpu_nr) + "_pcpu"] = str(_vcpu_info[0][_vcpu_nr][3])
+                    obj_attr_list["lvirt_vcpu_" + str(_vcpu_nr) + "_time"] =  str(_vcpu_info[0][_vcpu_nr][2])
+                    obj_attr_list["lvirt_vcpu_" + str(_vcpu_nr) + "_state"] =  str(_vcpu_info[0][_vcpu_nr][1])
+                    obj_attr_list["lvirt_vcpu_" + str(_vcpu_nr) + "_map"] = str(_vcpu_info[1][_vcpu_nr])
+
+                _sched_info = instance_data.schedulerParameters()
+
+                obj_attr_list["lvirt_vcpus_soft_limit"] = str(_sched_info["cpu_shares"])
+
+                if "vcpu_period" in _sched_info :
+                    obj_attr_list["lvirt_vcpus_period"] = str(float(_sched_info["vcpu_period"]))
+                    obj_attr_list["lvirt_vcpus_quota"] = str(float(_sched_info["vcpu_quota"]))
+                    obj_attr_list["lvirt_vcpus_hard_limit"] = str(float(obj_attr_list["lvirt_vcpus_quota"]) / float(obj_attr_list["lvirt_vcpus_period"]))
+
+                if "memoryParameters" in dir(instance_data) :    
+                    _mem_info = instance_data.memoryParameters(0)
+
+                    obj_attr_list["lvirt_mem_hard_limit"] = str(_mem_info["hard_limit"])
+                    obj_attr_list["lvirt_mem_soft_limit"] = str(_mem_info["soft_limit"])
+                    obj_attr_list["lvirt_mem_swap_hard_limit"] = str(_mem_info["swap_hard_limit"])
+
+                if "blkioParameters" in dir(instance_data) :
+                    _diskio_info = instance_data.blkioParameters(0)
+                    obj_attr_list["lvirt_diskio_soft_limit"] = "unknown"
+                    if _diskio_info :
+                        if "weight" in _diskio_info :
+                            obj_attr_list["lvirt_diskio_soft_limit"] = str(_diskio_info["weight"])
 
         except libvirt.libvirtError, msg :
             _fmsg = "Error while attempting to connect to libvirt daemon running on "
@@ -2481,13 +2476,17 @@ class OskCmds(CommonCloudFunctions) :
             _fmsg += msg
             cberr(_fmsg)
 
+        except ProcessManagement.ProcessManagementException, obj:
+            _status = obj.status
+            _fmsg = str(obj.msg)
+
         except Exception, e :
             _status = 23
             _fmsg = str(e)
 
         finally :
             if _status :
-                _msg = "Error while attempting to set resource limits for VM " + obj_attr_list["name"] + ""
+                _msg = "Error while attempting to set resource limits for " + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "running on hypervisor \"" + _host_name + "\""
                 _msg += " in OpenStack Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
@@ -2495,7 +2494,7 @@ class OskCmds(CommonCloudFunctions) :
                 cberr(_msg)
 
             else :
-                _msg = "Successfully set resource limits for VM " + obj_attr_list["name"] + ""
+                _msg = "Successfully set resource limits for " + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "running on hypervisor \"" + _host_name + "\""
                 _msg += " in OpenStack Cloud \"" + obj_attr_list["cloud_name"]
@@ -3010,8 +3009,9 @@ class OskCmds(CommonCloudFunctions) :
 
                 obj_attr_list["mgt_102_capture_request_sent"] = _time_mark_crs - obj_attr_list["mgt_101_capture_request_originated"]
 
-                obj_attr_list["captured_image_name"] = obj_attr_list["imageid1"] + "_captured_at_"
-                obj_attr_list["captured_image_name"] += str(obj_attr_list["mgt_101_capture_request_originated"])
+                if obj_attr_list["captured_image_name"] == "auto" :
+                    obj_attr_list["captured_image_name"] = obj_attr_list["imageid1"] + "_captured_at_"
+                    obj_attr_list["captured_image_name"] += str(obj_attr_list["mgt_101_capture_request_originated"])
 
                 _msg = obj_attr_list["name"] + " capture request sent."
                 _msg += "Will capture with image name \"" + obj_attr_list["captured_image_name"] + "\"."                 

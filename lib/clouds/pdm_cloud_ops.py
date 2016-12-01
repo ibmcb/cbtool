@@ -689,7 +689,7 @@ class PdmCmds(CommonCloudFunctions) :
 
                 obj_attr_list["run_cloud_ip"] = _address
 
-                if obj_attr_list["port_mapping"] :
+                if str(obj_attr_list["ports_base"]).lower() != "false" :
                     obj_attr_list["prov_cloud_ip"] = obj_attr_list["host_cloud_ip"]
                 else :
                     obj_attr_list["prov_cloud_ip"] = obj_attr_list["run_cloud_ip"]
@@ -1003,7 +1003,12 @@ class PdmCmds(CommonCloudFunctions) :
                 _pub_key = _fh.read()
                 _fh.close()
                 obj_attr_list["pubkey_contents"] = _pub_key.replace("ssh-rsa ",'')
-                self.osci.update_object_attribute(obj_attr_list["cloud_name"], "GLOBAL", "vm_defaults", False, "pubkey_contents", obj_attr_list["pubkey_contents"])
+                self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
+                                                  "GLOBAL", \
+                                                  "vm_defaults", \
+                                                  False, \
+                                                  "pubkey_contents", \
+                                                  obj_attr_list["pubkey_contents"])
 
             self.take_action_if_requested("VM", obj_attr_list, "provision_originated")
 
@@ -1017,16 +1022,15 @@ class PdmCmds(CommonCloudFunctions) :
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
 
-            if obj_attr_list["ports_base"].lower() != "false" :
-                obj_attr_list["port_mapping"] = int(obj_attr_list["ports_base"]) + int(obj_attr_list["name"].replace("vm_",''))
+            if str(obj_attr_list["ports_base"]).lower() != "false" :
+                obj_attr_list["prov_cloud_port"] = int(obj_attr_list["ports_base"]) + int(obj_attr_list["name"].replace("vm_",''))
                 _ports_mapping = [ (22, 'tcp') ]
-                _port_bindings = { '22/tcp' : ('0.0.0.0', obj_attr_list["port_mapping"])}
+                _port_bindings = { '22/tcp' : ('0.0.0.0', obj_attr_list["prov_cloud_port"])}
 
                 if obj_attr_list["check_boot_complete"] == "tcp_on_22":
-                    obj_attr_list["check_boot_complete"] = "tcp_on_" + str(obj_attr_list["port_mapping"])
+                    obj_attr_list["check_boot_complete"] = "tcp_on_" + str(obj_attr_list["prov_cloud_port"])
                 
             else :
-                obj_attr_list["port_mapping"] = None
                 _ports_mapping = None
                 _port_bindings = None
                                                 
@@ -1074,15 +1078,18 @@ class PdmCmds(CommonCloudFunctions) :
                                                                                  volumes = _volumes, \
                                                                                  host_config = _host_config, \
 #                                                                                 command = "/sbin/my_init", \
-                                                                                 environment = {"CB_SSH_PUB_KEY" : obj_attr_list["pubkey_contents"]})
+                                                                                 environment = {"CB_SSH_PUB_KEY" : obj_attr_list["pubkey_contents"], "CB_LOGIN" : obj_attr_list["login"]})
 
             _mark3 = int(time())
+            
             obj_attr_list["pdm_004_create_docker_time"] = _mark3 - _mark2
                         
             obj_attr_list["cloud_vm_uuid"] = _instance["Id"]
 
             self.dockconn[obj_attr_list["host_cloud_ip"]].start(obj_attr_list["cloud_vm_uuid"])
+            
             _mark4 = int(time())
+            
             obj_attr_list["pdm_005_start_docker_time"] = _mark4 - _mark3
                         
             self.take_action_if_requested("VM", obj_attr_list, "provision_started")
@@ -1121,8 +1128,6 @@ class PdmCmds(CommonCloudFunctions) :
             _fmsg = str(e)
 
         finally :
-            if "lvt_cnt" in obj_attr_list :
-                del obj_attr_list["lvt_cnt"]
                 
             if _status :
                 _msg = "" + obj_attr_list["name"] + ""
@@ -1231,13 +1236,97 @@ class PdmCmds(CommonCloudFunctions) :
                 cbdebug(_msg)
                 return _status, _msg
 
+    @trace        
+    def vmcapture(self, obj_attr_list) :
+        '''
+        TBD
+        '''                
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+
+            self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
+                         obj_attr_list["vmc_name"], obj_attr_list["name"])
+            
+            _wait = int(obj_attr_list["update_frequency"])
+
+            if str(obj_attr_list["host_swarm"]).lower() != "none" :
+                self.swarm_ip = obj_attr_list["host_swarm"]
+
+            if self.swarm_ip :
+                _host_ip = self.swarm_ip
+            else :
+                _host_ip = obj_attr_list["host_cloud_ip"]
+
+            _instance = self.get_instances(obj_attr_list, "vm", _host_ip, obj_attr_list["cloud_vm_name"])
+
+            if _instance :
+
+                _time_mark_crs = int(time())
+
+                # Just in case the instance does not exist, make crc = crs
+                _time_mark_crc = _time_mark_crs  
+
+                obj_attr_list["mgt_102_capture_request_sent"] = _time_mark_crs - obj_attr_list["mgt_101_capture_request_originated"]
+
+                if obj_attr_list["captured_image_name"] == "auto" :
+                    obj_attr_list["captured_image_name"] = obj_attr_list["imageid1"] + "_captured_at_"
+                    obj_attr_list["captured_image_name"] += str(obj_attr_list["mgt_101_capture_request_originated"])
+
+                _msg = obj_attr_list["name"] + " capture request sent."
+                _msg += "Will capture with image name \"" + obj_attr_list["captured_image_name"] + "\"."                 
+                cbdebug(_msg)
+
+                _msg = "Waiting for " + obj_attr_list["name"]
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
+                _msg += "to be captured with image name \"" + obj_attr_list["captured_image_name"]
+                _msg += "\"..."
+                cbdebug(_msg, True)
+
+                self.dockconn[_host_ip].commit(_instance["Id"], repository=obj_attr_list["captured_image_name"])
+
+                sleep(_wait)
+
+                obj_attr_list["mgt_103_capture_request_completed"] = _time_mark_crc - _time_mark_crs
+
+                if "mgt_103_capture_request_completed" not in obj_attr_list :
+                    obj_attr_list["mgt_999_capture_request_failed"] = int(time()) - _time_mark_crs
+                        
+                _status = 0
+            
+        except APIError, obj:
+            _status = 18127
+            _fmsg = str(obj.message) + " \"" + str(obj.explanation) + "\""
+
+        except CldOpsException, obj :
+            _status = obj.status
+            _fmsg = str(obj.msg)
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+    
+        finally :
+            if _status :
+                _msg = "" + obj_attr_list["name"] + ""
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
+                _msg += "could not be captured "
+                _msg += " on PDM Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += _fmsg
+                cberr(_msg, True)
+                raise CldOpsException(_msg, _status)
+            else :
+                _msg = "" + obj_attr_list["name"] + ""
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
+                _msg += "was successfully captured "
+                _msg += " on PDM Cloud \"" + obj_attr_list["cloud_name"] + "\"."
+                cbdebug(_msg)
+                return _status, _msg
+
     def vmrunstate(self, obj_attr_list) :
         '''
         TBD
         '''
-        # Too many problems with neutronclient. Failures, API calls hanging, etc.
-        obj_attr_list["use_neutronclient"] = "false"
-
         try :
             _status = 100
 

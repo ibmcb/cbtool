@@ -359,15 +359,22 @@ class BaseObjectOperations :
         elif command == "vm-capture" :
             if _length == 2 :
                 object_attribute_list["name"] = _parameters[1]
+                object_attribute_list["captured_image_name"] = "auto"
+                object_attribute_list["vmcrs"] = "none"
+
+            if _length == 3 :
+                object_attribute_list["name"] = _parameters[1]
+                object_attribute_list["captured_image_name"] = _parameters[2]                
                 object_attribute_list["vmcrs"] = "none"
             
-            if _length > 2 :
+            if _length > 3 :
                 object_attribute_list["name"] = _parameters[1]
-                object_attribute_list["vmcrs"] = _parameters[2]
+                object_attribute_list["captured_image_name"] = _parameters[2]                                
+                object_attribute_list["vmcrs"] = _parameters[3]
 
             if _length < 2:
                 _status = 9
-                _msg = "Usage: vmcapture <cloud name> <vm name> [parent] [mode]"
+                _msg = "Usage: vmcapture <cloud name> <vm name> [image name] [parent] [mode]"
                 
         elif command == "api-check":
             
@@ -1149,15 +1156,21 @@ class BaseObjectOperations :
 
                         if obj_attr_list["role"].count("check:") :
                             _role_tmp = obj_attr_list["role"].replace("check:",'')
-                            if _role_tmp.count(':') :                                
+                            if _role_tmp.count(':') == 1 :                                
                                 obj_attr_list["imageid1"], obj_attr_list["login"] = _role_tmp.split(':')
+                                obj_attr_list["check_ssh"] = "true"                                
+                                obj_attr_list["transfer_files"] = "false"
+                            elif _role_tmp.count(':') == 2 :                                
+                                obj_attr_list["imageid1"], obj_attr_list["login"], obj_attr_list["prepare_workload"] = _role_tmp.split(':')
+                                obj_attr_list["check_ssh"] = "true"                                
+                                obj_attr_list["transfer_files"] = "true"                                
                             else :
                                 obj_attr_list["imageid1"] = _role_tmp
                                 obj_attr_list["check_ssh"] = "false"
                                 obj_attr_list["check_boot_complete"] = "wait_for_0"
-                                 
+                                obj_attr_list["transfer_files"] = "false"
+                                
                             obj_attr_list["role"] = "check"
-                            obj_attr_list["transfer_files"] = "false"
                             obj_attr_list["run_generic_scripts"] = "false"
 
                         if obj_attr_list["role"] not in _vm_templates :
@@ -2372,16 +2385,14 @@ class BaseObjectOperations :
                 
                 _vm_names.append(_obj_attr_list["name"])
                 _vm_hns.append(_obj_attr_list["cloud_hostname"])
-                if "port_mapping" in _obj_attr_list and operation != "reset" :
-                    _vm_pns.append(_obj_attr_list["port_mapping"])
-                else :
-                    _vm_pns.append("22")                    
                 
                 _vm_roles.append(_obj_attr_list["role"])
                 if operation != "reset" :
                     _vm_ip_addrs.append(_obj_attr_list["prov_cloud_ip"])
+                    _vm_pns.append(_obj_attr_list["prov_cloud_port"])                    
                 else :
                     _vm_ip_addrs.append(_obj_attr_list["run_cloud_ip"])
+                    _vm_pns.append(_obj_attr_list["run_cloud_port"])
                                         
                 _vm_logins.append(_obj_attr_list["login"])
                 _vm_passwds.append(None)
@@ -2978,7 +2989,6 @@ class BaseObjectOperations :
                 _msg = "Management (" + operation + ") metrics record success."
                 cbdebug(_msg)
                 return True
-
 
     def get_from_pending(self, cloud_name, obj_type, obj_attr_list) :
         '''

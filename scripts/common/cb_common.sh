@@ -490,7 +490,13 @@ function mount_filesystem_on_memory {
 
     if [[ -z $FILESYS_TYPE ]]
     then
-        syslog_netcat "No filesystem size specified. Bypassing mounting"
+        syslog_netcat "No filesystem type specified. Bypassing mounting"
+        return 1
+    fi    
+
+    if [[ -z $MEMORY_DISK_SIZE ]]
+    then
+        syslog_netcat "No memory disk size specified. Bypassing mounting"
         return 1
     fi    
 

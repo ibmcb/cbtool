@@ -23,5 +23,5 @@ sshconfig-ver = ANY
 
 ### START -  Dependency and method-specific command lines ###
 common-sshconfig-preinstall-man = mkdir -p ~/.ssh; chmod 700 ~/.ssh
-common-sshconfig-install-man = echo "StrictHostKeyChecking=no" >> ~/.ssh/config && echo -e "UserKnownHostsFile=/dev/null" >> ~/.ssh/config && chmod 600 ~/.ssh/config
+common-sshconfig-install-man = echo "StrictHostKeyChecking=no" >> ~/.ssh/config && echo "UserKnownHostsFile=/dev/null" >> ~/.ssh/config && chmod 600 ~/.ssh/config
 ### END -  Dependency and method-specific command lines ###

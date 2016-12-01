@@ -932,8 +932,9 @@ class ScpCmds(CommonCloudFunctions) :
 
 #                obj_attr_list["captured_image_name"] = obj_attr_list["imageid1"].split('_')[1] + '_'
                 # Temporary fix... stupid bug in SCP
-                obj_attr_list["captured_image_name"] = obj_attr_list["name"].split('_')[1] + '_'
-                obj_attr_list["captured_image_name"] += str(obj_attr_list["mgt_101_capture_request_originated"])
+                if obj_attr_list["captured_image_name"] == "auto" :                
+                    obj_attr_list["captured_image_name"] = obj_attr_list["name"].split('_')[1] + '_'
+                    obj_attr_list["captured_image_name"] += str(obj_attr_list["mgt_101_capture_request_originated"])
 
                 _msg = obj_attr_list["name"] + " capture request sent. "
                 _msg += "Will capture with image name \"" + obj_attr_list["captured_image_name"] + "\"."                 

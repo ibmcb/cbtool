@@ -817,7 +817,9 @@ class SimCmds(CommonCloudFunctions) :
             _fmsg = "An error has occurred, but no error message was captured"
 
             _time_mark_crs = int(time())
-            obj_attr_list["captured_image_name"] = obj_attr_list["name"] + "_at_" + str(_time_mark_crs)
+            
+            if obj_attr_list["captured_image_name"] == "auto" :
+                obj_attr_list["captured_image_name"] = obj_attr_list["name"] + "_at_" + str(_time_mark_crs)
             
             obj_attr_list["mgt_102_capture_request_sent"] = _time_mark_crs - obj_attr_list["mgt_101_capture_request_originated"]
                       
@@ -833,9 +835,6 @@ class SimCmds(CommonCloudFunctions) :
             obj_attr_list["mgt_103_capture_request_completed"] = _time_mark_crc - _time_mark_crs
 
             _msg = "VM " + obj_attr_list["name"] + " capture request completed."
-            cbdebug(_msg)
-
-            _msg = "VM capture is not implemented for \"SimClouds\""
             cbdebug(_msg)
             
             _status = 0

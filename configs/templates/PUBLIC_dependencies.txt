@@ -115,16 +115,17 @@ libcloud-order = 53
 gcloud-order = 54
 pygce-order = 55
 pydocker-order = 56
-iptables-order = 57
-R-order = 58
-sshkey-order = 59
-sshd-order = 60
-pssh-order = 61
-docutils-order = 62
-setuptools-order = 63
-markup-order = 64
-pyyaml-order = 65
-ruamelyaml-order = 66
+pylxd-order = 57
+iptables-order = 58
+R-order = 59
+sshkey-order = 60
+sshd-order = 61
+pssh-order = 62
+docutils-order = 63
+setuptools-order = 64
+markup-order = 65
+pyyaml-order = 66
+ruamelyaml-order = 67
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -192,6 +193,7 @@ libcloud-install = pip
 gcloud-install = man
 pygce-install = pip
 pydocker-install = pip
+pylxd-install = pip
 iptables-install = pm
 R-install = pm
 sshkey-install = man
@@ -262,6 +264,7 @@ libcloud-configure = python -c "import libcloud; print str(libcloud.__version__)
 gcloud-configure = source ~/.bahsrc; source ~/.profile; gcloud -v | grep SDK | cut -d ' ' -f 4
 pygce-configure = python -c "from oauth2client.client import GoogleCredentials; from googleapiclient.discovery import build"
 pydocker-configure = python -c "import docker"
+pylxd-configure = python -c "import pylxd"
 iptables-configure = sudo iptables -v 2>&1 | grep v | cut -d ' ' -f 2 | sed 's/v//g' | sed 's/://g'
 R-configure = R --version | grep version | grep -v GNU
 sshkey-configure = ls CREDENTIALSDIR/cbtool_rsa
@@ -332,6 +335,7 @@ libcloud-ver = 0.11.0
 gcloud-ver = 0.8
 pygce-ver = ANY
 pydocker-ver = ANY
+pylxd-ver = ANY
 iptables-ver = 1.2
 R-ver = 2.1
 sshkey-ver = ANY
@@ -402,6 +406,7 @@ libcloud-tag = vcd,all
 gcloud-tag = gce,all
 pygce-tag = gce,all
 pydocker-tag = pdm,all
+pylxd-tag = pcm,all
 iptables-tag = base
 R-tag = orchestrator
 sshkey-tag = base
@@ -472,6 +477,7 @@ ubuntu-which-install-pm = /bin/true
 rhel-ntp-install-pm = package_install ntp
 fedora-ntp-install-pm = package_install ntp
 ubuntu-ntp-install-pm = package_install ntpd
+xenial-ntp-install-pm = package_install ntp
 
 common-git-install-pm = package_install git
 
@@ -627,6 +633,8 @@ common-gcloud-install-man =  export CLOUDSDK_CORE_DISABLE_PROMPTS=1 && curl http
 common-pygce-install-pip =  sudo pip install --upgrade INDEXURL gcloud google-api-python-client
 
 common-pydocker-install-pip =  sudo pip install --upgrade INDEXURL docker-py wget
+
+common-pylxd-install-pip =  sudo pip install --upgrade INDEXURL pylxd
 
 rhel-iptables-install-pm = package_install iptables-services iptables
 rhel-iptables-postinstall-pm = sudo  touch /etc/sysconfig/iptables; sudo touch /etc/sysconfig/ip6table; service_stop_disable iptables

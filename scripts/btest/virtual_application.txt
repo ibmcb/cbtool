@@ -20,7 +20,7 @@ REPORTED_METRICS = throughput,latency,completion_time,errors,quiescent_time
 
 # VApp-specific MANDATORY attributes
 DESCRIPTION = Deploys the btest disk microbenchmark from XtremeIO 
-TINYVM_SETUP1 = cb_start_nothing.sh
+TINYVM_SETUP1 = cb_start_btest.sh
 START = cb_run_btest.sh
 
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional

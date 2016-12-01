@@ -16,7 +16,7 @@
 # limitations under the License.
 #/*******************************************************************************
 
-if [[ -f /home/cloud-user/cb_os_parameters.txt ]]
+if [[ -f ~/cb_os_parameters.txt ]]
 then
     source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 else
@@ -38,24 +38,38 @@ blowawaypids ntp
 blowawaypids redis
 syslog_netcat "Done"
 
+PERSISTENT_NET_RULES=$(find /etc/udev/rules.d/ | grep persistent-net.rules)
+if [[ $? -eq 0 ]]
+then
+	syslog_netcat "Removing ${PERSISTENT_NET_RULES}..."	
+	sudo mv $PERSISTENT_NET_RULES ~
+	sudo touch $PERSISTENT_NET_RULES
+	syslog_netcat "Done"
+fi
+
+CLOUD_INIT=$(find /var/lib/cloud/instances/ -maxdepth 1 -type d | grep $(hostname))
+if [[ $? -eq 0 ]]
+then
+	syslog_netcat "Removing ${CLOUD_INIT}..."	
+	sudo rm -rf $CLOUD_INIT
+	sudo rm -rf /var/lib/cloud/instance
+	syslog_netcat "Done"
+fi
+
 syslog_netcat "Removing all CB-related files..."
-rm -rf ~/redis*
-rm -rf ~/__init__.py 
-rm -rf ~/barrier.py
-rm -rf ~/scp2_python_proxy.rb
-rm -rf ~/rsyslog.conf
-rm -rf ~/scp_python_proxy.sh
-rm -rf ~/monitor-core
-rm -rf ~/util
-rm -rf ~/standalone.sh; 
-rm -rf ~/ai_mapping_file.txt
-rm -rf ~/gmetad-vms.conf
-rm -rf ~/gmond-vms.conf
-rm -rf ~/ntp.conf
-rm -rf ~/rsyslog.pid
-rm -rf ~/logs
-rm -rf ~/et*
-rm -rf ~/cb_*
+sudo rm -rf ~/redis* >/dev/null 2>&1
+sudo rm -rf ~/barrier.py >/dev/null 2>&1
+sudo rm -rf ~/scp2_python_proxy.rb >/dev/null 2>&1
+sudo rm -rf ~/rsyslog.conf >/dev/null 2>&1
+sudo rm -rf ~/scp_python_proxy.sh >/dev/null 2>&1
+sudo rm -rf ~/monitor-core >/dev/null 2>&1
+sudo rm -rf ~/standalone.sh >/dev/null 2>&1
+sudo rm -rf ~/ai_mapping_file.txt >/dev/null 2>&1
+sudo rm -rf ~/gmetad-vms.conf >/dev/null 2>&1
+sudo rm -rf ~/gmond-vms.conf >/dev/null 2>&1
+sudo rm -rf ~/ntp.conf >/dev/null 2>&1
+sudo rm -rf ~/rsyslog.pid >/dev/null 2>&1
+sudo rm -rf ~/cb_* >/dev/null 2>&1
 syslog_netcat "Done"
 
 syslog_netcat "OK"

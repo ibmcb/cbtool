@@ -145,6 +145,7 @@ RUN_GENERIC_SCRIPTS = $True
 TRANSFER_FILES = $True
 CHECK_SSH = $True
 DEBUG_REMOTE_COMMANDS = $False
+FORCE_MSG_PRINT = $False
 STICKY_APP_STATUS = $False
 # Any VM which contains the string "client" on his role name will be created
 # on the "LG" pool, if this pools exists.
@@ -181,6 +182,8 @@ SLA_RUNTIME = ok
 ERRORS = no
 ABORT = $False
 COMMENTS = $Empty
+PROV_CLOUD_PORT = 22
+RUN_CLOUD_PORT = 22
 JUMPHOST_BASE_NAME =  cb-jumphost
 JUMPHOST_LOGIN = auto
 JUMPHOST_NETNAMES = all
