@@ -211,6 +211,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 # Just create an openSSL certificates to be used later (multiple uses)
 
+                if not os.path.exists(cld_attr_lst["space"]["generated_configurations_dir"]) :
+                    os.mkdir(cld_attr_lst["space"]["generated_configurations_dir"])
+
                 _ssl_key = cld_attr_lst["space"]["generated_configurations_dir"] + "/cb.key"
                 _ssl_csr = cld_attr_lst["space"]["generated_configurations_dir"] + "/cb.csr"
                 _ssl_crt = cld_attr_lst["space"]["generated_configurations_dir"] + "/cb.crt"  
