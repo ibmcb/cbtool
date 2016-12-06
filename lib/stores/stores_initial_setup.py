@@ -613,7 +613,7 @@ def reset(global_objects, soft = True) :
         
         _filestore_config_file_fn = _stores_wk_dir + '/' + _filestore_username + "_rsync.conf"
             
-        _msg = "Killing all processes..."
+        _msg = "    Killing all processes..."
         print _msg,
         _proc_man =  ProcessManagement()
         _proc_man.run_os_command("pkill -9 -u " + _username + " -f cbact")
@@ -632,13 +632,13 @@ def reset(global_objects, soft = True) :
         _proc_man.run_os_command("rm -rf /tmp/restart_cb*" + global_objects["logstore"]["username"])
         _proc_man.run_os_command("rm -rf /tmp/" + _username + "_*-*-*-*-*_avg_acc")
         
-        _msg = "Flushing Object Store..." 
+        _msg = "    Flushing Object Store..." 
         print _msg,
         _rmc = RedisMgdConn(global_objects["objectstore"])
         _rmc.flush_object_store()
         print "done"
 
-        _msg = "Flushing Log Store..."
+        _msg = "    Flushing Log Store..."
         print _msg,
         _proc_man.run_os_command("pkill -9 -u " + _logstore_username + " -f rsyslogd")
         _file_list = []
@@ -659,7 +659,7 @@ def reset(global_objects, soft = True) :
         
         global_objects["logstore"]["just_restarted"] = True
         
-        print "done\n"
+        print "done"
         
         #_msg = "Flushing File Store..."
         #print _msg,
@@ -670,12 +670,13 @@ def reset(global_objects, soft = True) :
         #print "done"
         
         if not soft :
-            _msg = "Flushing Metric Store..."
+            _msg = "    Flushing Metric Store..."
             print _msg,
             _mmc = MongodbMgdConn(global_objects["metricstore"])
             _mmc.flush_metric_store(global_objects["mon_defaults"]["username"])
             print "done"
-                        
+
+        print '\n'                        
         _msg = ""
         _status = 0
 

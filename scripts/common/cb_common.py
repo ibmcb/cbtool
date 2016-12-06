@@ -841,6 +841,10 @@ def report_app_metrics(metriclist, sla_targets_list, ms_conn = "auto", \
             _reported_metrics_dict = \
             _msci.find_document("reported_runtime_app_VM_metric_names_" + \
                                 _username, {"_id" : _new_reported_metrics_dict["_id"]})
+            
+            if not _reported_metrics_dict :
+                _reported_metrics_dict = {}
+                
             _reported_metrics_dict.update(_new_reported_metrics_dict)
 
         _msci.add_document("runtime_app_VM_" + _username, _metrics_dict)

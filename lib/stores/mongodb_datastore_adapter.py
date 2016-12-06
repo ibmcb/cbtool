@@ -65,10 +65,13 @@ class MongodbMgdConn :
         self.password = str(self.password)
         self.pid = "TEST_" + getpwuid(os.getuid())[0]
         self.mongodb_conn = False
+        
         if pymongo.has_c() is False:
             msg = "WARNING: You do not have the pymongo C extensions installed. Data retrieval performance will be slow"
             cberr(msg)
             print(msg)
+
+        self.version = pymongo.version.split('.')[0]
 
     class MetricStoreMgdConnException(Exception):
         '''
@@ -232,10 +235,17 @@ class MongodbMgdConn :
 
             for _collection in _collections :
                 _collection_handle = self.mongodb_conn[self.database][_collection]
-                _collection_handle.create_index("dashboard_polled")
-                _collection_handle.create_index("expid")
-                _collection_handle.create_index("time")
-                _collection_handle.create_index("uuid")
+                
+                if self.version < 3 :
+                    _collection_handle.ensure_index("dashboard_polled")
+                    _collection_handle.ensure_index("expid")
+                    _collection_handle.ensure_index("time")
+                    _collection_handle.ensure_index("uuid")
+                else :
+                    _collection_handle.create_index("dashboard_polled")
+                    _collection_handle.create_index("expid")
+                    _collection_handle.create_index("time")
+                    _collection_handle.create_index("uuid")
 
             self.disconnect()
             return True
@@ -300,7 +310,10 @@ class MongodbMgdConn :
 
         try :
             _collection_handle = self.mongodb_conn[self.database][collection]
-            _collection_handle.insert_one(document)
+            if self.version < 3 :
+                _collection_handle.insert(document)
+            else :
+                _collection_handle.insert_one(document)
             if disconnect_finish :
                 self.disconnect()
             return True
@@ -363,7 +376,11 @@ class MongodbMgdConn :
 
         try :
             _collection_handle = self.mongodb_conn[self.database][collection]
-            _collection_handle.save(document)
+            
+            if self.version < 3 :
+                _collection_handle.save(document)
+            else :
+                _collection_handle.replace_one({'_id': document["_id"]}, document, upsert = True)
 
             if disconnect_finish :
                 self.disconnect()
@@ -386,7 +403,12 @@ class MongodbMgdConn :
 
         try :
             _collection_handle = self.mongodb_conn[self.database][collection]
-            _collection_handle.remove(criteria)
+            
+            if self.version < 3 :            
+                _collection_handle.remove(criteria)
+            else :
+                _collection_handle.delete_one(criteria)
+                
             if disconnect_finish :
                 self.disconnect()
 

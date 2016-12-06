@@ -78,7 +78,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
             if cld_attr_lst["cloud_name"] in _attached_cloud_list :
                 cld_attr_lst = self.get_cloud_parameters(cld_attr_lst["cloud_name"])
                 
-                _idmsg = "The \"" + cld_attr_lst["model"] + "\" cloud named \""
+                _idmsg = "\nThe " + cld_attr_lst["model"].upper() + " cloud named \""
                 _idmsg += cld_attr_lst["name"] + "\""
                 _smsg = _idmsg + " was already attached to this experiment."
                 _fmsg = _idmsg + " could not be attached to this experiment: "
@@ -135,7 +135,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 rewrite_cloudoptions(cld_attr_lst, available_clouds, False)
 
-                _idmsg = "The \"" + cld_attr_lst["model"] + "\" cloud named \""
+                _idmsg = "\nThe " + cld_attr_lst["model"].upper() + " cloud named \""
                 _idmsg += cld_attr_lst["cloud_name"] + "\""
                 _smsg = _idmsg + " was successfully attached to this "
                 _smsg += "experiment."
@@ -230,8 +230,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 cld_attr_lst["vm_defaults"]["ssl_key"] = _ssl_key
                 cld_attr_lst["vmc_defaults"]["ssl_cert"] = _ssl_crt
                 cld_attr_lst["vmc_defaults"]["ssl_key"] = _ssl_key
+
+                if "walkthrough" not in cld_attr_lst :                    
+                    cld_attr_lst["walkthrough"] = "false"
                     
-                cld_attr_lst["vmc_defaults"]["check"] = "false"
                 for _vmc_entry in _initial_vmcs :
                     _cld_conn = _cld_ops_class(self.pid, None, None)
                     _x_status, _x_msg = _cld_conn.test_vmc_connection(_vmc_entry.split(':')[0], \
@@ -242,9 +244,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                                   cld_attr_lst["vm_templates"], \
                                                                   cld_attr_lst["vm_defaults"])
 
-                    if _x_status == 1 :
-                        cld_attr_lst["vmc_defaults"]["check"] = "true"
-
+                    if _x_status == 1 or str(cld_attr_lst["vmc_defaults"]["force_walkthrough"]).lower() == "true" :
+                        cld_attr_lst["walkthrough"] = "true"
+                
+                cld_attr_lst["vmc_defaults"]["walkthrough"] = cld_attr_lst["walkthrough"]
+                cld_attr_lst["vm_defaults"]["walkthrough"] = cld_attr_lst["walkthrough"]
+                cld_attr_lst["ai_defaults"]["walkthrough"] = cld_attr_lst["walkthrough"]
+                
                 # This needs to be better coded later. Right now, it is just a fix to avoid
                 # the problems caused by the fact that git keeps resetting RSA's private key
                 # back to 644 (which are too open).
@@ -317,7 +323,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                "command_originated", "state", \
                                                "tracking", "channel", "sorting", \
                                                "ai_arrived", "ai_departed", \
-                                               "ai_failed", "ai_reservations" ]
+                                               "ai_failed", "ai_reservations", "walkthrough" ]
     
                 for _object in _remove_from_global_objects :
                     if _object in _all_global_objects :
@@ -554,6 +560,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 cberr(_msg)         
                 exit(_status)       
             else :
+                print ''
                 cbdebug(_msg)
                 return True
 
@@ -941,7 +948,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
         TBD
         '''
         try :
-            
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
             _smsg = ''
@@ -971,7 +977,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _obj_attr_list["command_originated"] = int(time())
                 _obj_attr_list["command"] = "vmcattach " + obj_attr_list["cloud_name"] + " all"
                 _obj_attr_list["name"] = "all"
-
+                                
+                _obj_attr_list["walkthrough"] = _vmc_defaults["walkthrough"]
+                
                 _temp_attr_list = obj_attr_list["temp_attr_list"]
 
                 self.get_counters(_obj_attr_list["cloud_name"], _obj_attr_list)
@@ -1038,22 +1046,16 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _status = 23
             _fmsg = str(e)
 
-        finally:        
+        finally:
+            
             if _status :
                 _msg = "Failure while attaching all VMCs to this "
                 _msg += "experiment: " + _fmsg
                 cberr(_msg)
             else :
-                
-                if _vmc_defaults["check"] == "true" :
-                    _smsg += "\n\n ATTENTION! Given that none of the pre-configured images listed on "
-                    _smsg += "CBTOOL's configuration file were detected on this cloud, "
-                    _smsg += "we need to start by testing the ability to create instances "
-                    _smsg += "using unconfigured images. Start by executing \"vmattach check:<IMAGEID OF YOUR CHOICE>\" on the CLI\n"
-                                    
-                _msg = "All VMCs successfully attached to this experiment." + _smsg
+                _msg = "\nAll VMCs successfully attached to this experiment." + self.walkthrough_messages("CLOUD", "attach", _obj_attr_list)
                 cbdebug(_msg)
-
+                        
             return self.package(_status, _msg, self.get_cloud_parameters(obj_attr_list["cloud_name"]))
 
     @trace
@@ -2089,36 +2091,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                         True, \
                                         3600)
 
-                if _obj_type == "VM" and obj_attr_list["role"] == "check" :
-                    if obj_attr_list["check_ssh"] == "false" :
-                        _x_msg = "\n\n The ability to create instances using "
-                        _x_msg += "unconfigured images was successfully verified!"
-                        _x_msg += " We may now proceed to check the ability to"
-                        _x_msg += " connect (via ssh) to instances by executing "
-                        _x_msg += "\"vmattach check:<IMAGEID OF YOUR CHOICE>:<USERNAME FOR LOGIN>\""
-                        _x_msg += " on the CLI.\n"
-                    else :
-                        if obj_attr_list["transfer_files"] == "false" :
-                            _x_msg = "\n\n The ability to create (and connect via ssh to)"
-                            _x_msg += " instances using unconfigured images was "
-                            _x_msg += "successfully verified. At this point, we need "
-                            _x_msg += " to create a base image for the Virtual Application \"nullworkload\""
-                            _x_msg += " by executing \"vmattach check:<IMAGEID OF YOUR CHOICE>:<USERNAME FOR LOGIN>:nullworkload\""
-                            _x_msg += " on the CLI.\n"
-                        else :
-                            _x_msg = "\n\n A copy of the code was transferred to "
-                            _x_msg += obj_attr_list["name"] + ". On another terminal"
-                            _x_msg += ", execute \"cd " + obj_attr_list["base_dir"]
-                            _x_msg += "; ./cbssh " + obj_attr_list["name"] + "\""
-                            _x_msg += " to login on the VM. Once there, execute"
-                            _x_msg += " \"cd ~/" + obj_attr_list["remote_dir_name"] 
-                            _x_msg +=  "; ./install -r workload --wks nullworkload\" "
-                            _x_msg += "to automatically configure a new instance."
-                            _x_msg += "\nOnce done, execute \"vmcapture " + obj_attr_list["name"] + " cb_nullworkload\""
-                            _x_msg += " on the CLI, followed by \"vmattach tinyvm\""
-                            _x_msg += ", and then \"aiattach nullworkload\"\n"
-                    _msg += _x_msg
-                    
+                _msg += self. walkthrough_messages(_obj_type, "attach", obj_attr_list)
+                
                 cbdebug(_msg)
 
             if _created_pending :
@@ -2386,12 +2360,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _msg += ", on IP address "+ obj_attr_list["prov_cloud_ip"] + "..."     
                 cbdebug(_msg)
                      
-                self.record_management_metrics(obj_attr_list["cloud_name"], \
-                                               "VM", obj_attr_list, "attach")
             else :
                                 
                 _status = 0
 
+            if "ai" in obj_attr_list and obj_attr_list["ai"] == "none" :
+                self.record_management_metrics(obj_attr_list["cloud_name"], \
+                                               "VM", obj_attr_list, "attach")
 
             '''
             Whenever the staging action (be it pause or execute) is completed 
@@ -3785,6 +3760,23 @@ class ActiveObjectOperations(BaseObjectOperations) :
     
                         obj_attr_list["post_capture"] = "true"
     
+                        if obj_attr_list["walkthrough"] == "true" :
+                                _vm_templates = self.osci.get_object(obj_attr_list["cloud_name"], \
+                                                                     "GLOBAL", \
+                                                                     False, \
+                                                                     "vm_templates", False)
+    
+                                _vm_t = str2dic(_vm_templates["tinyvm"])
+                                _vm_t["imageid1"] = "cb_nullworkload"
+                                _vm_t = dic2str(_vm_t)
+
+                                self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
+                                                                  "GLOBAL", \
+                                                                  "vm_templates", \
+                                                                  False, \
+                                                                  "tinyvm", \
+                                                                  _vm_t)
+                                    
                         self.objdetach(obj_attr_list, obj_attr_list["cloud_name"] + \
                                        ' ' + obj_attr_list["name"] + " true", \
                                        "vm-detach")
@@ -3832,6 +3824,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _msg = _obj_type + " object " + obj_attr_list["uuid"] 
                 _msg += " (named \"" + obj_attr_list["name"] +  "\") successfully captured "
                 _msg += "on this experiment."
+                
+                _msg = self.walkthrough_messages(_obj_type, "capture", obj_attr_list)
                 cbdebug(_msg)
 
             return self.package(_status, _msg, _result)

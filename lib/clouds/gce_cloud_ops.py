@@ -108,7 +108,7 @@ class GceCmds(CommonCloudFunctions) :
                 self.zone = zone
                 _status = 0
             else :
-                _fmsg = "Unknown GCE zone (" + zone + ")"
+                _fmsg = "Unknown " + self.get_description() + " zone (" + zone + ")"
                 
         except GCEException, obj:
             _status = int(obj.error_code)
@@ -120,129 +120,21 @@ class GceCmds(CommonCloudFunctions) :
 
         finally :
             if _status :
-                _msg = "GCE connection failure: " + _fmsg
+                _msg =  self.get_description() + " connection failure: " + _fmsg
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
             else :
 
-                _msg = "GCE connection successful."
+                _msg =  self.get_description() + " connection successful."
                 cbdebug(_msg)
                 return _status, _msg, _zone_hostname
-
-    def check_ssh_key(self, vmc_name, key_name, vm_defaults, http_conn_id) :
-        '''
-        TBD
-        '''
-
-        _key_pair_found = False      
-        
-        if not key_name :
-            _key_pair_found = True
-        else :
-            _msg = "Checking if the ssh key pair \"" + key_name + "\" is created"
-            _msg += " on VMC " + vmc_name + "...."
-            cbdebug(_msg, True)
-
-            _pub_key_fn = vm_defaults["credentials_dir"] + '/'
-            _pub_key_fn += vm_defaults["ssh_key_name"] + ".pub"
-
-            _key_type, _key_contents, _key_fingerprint = get_ssh_key(_pub_key_fn, "common")
-
-            if not _key_contents :
-                _fmsg = _key_type 
-                cberr(_fmsg, True)
-                return False
-
-            vm_defaults["ssh_key_contents"] = _key_contents
-            vm_defaults["ssh_key_type"] = _key_type
-            
-            _keys_available = []
-            _metadata = self.gceconn.projects().get(project=self.instances_project).execute(http = self.http_conn[http_conn_id])
-            for _element in _metadata['commonInstanceMetadata']['items'] :
-                if _element["key"] == "sshKeys" :
-                    for _component in _element["value"].split('\n') :
-                        _component = _component.split(' ')
-                        if len(_component) == 3 :
-                            _keys_available.append(_component)
-                                                    
-            _key_pair_found = False
-
-            for _available_key_pair in _keys_available :
-                _available_key_name = _available_key_pair[0].split(':')[0]
-
-                if _available_key_name == key_name :
-                    _msg = "A key named \"" + key_name + "\" was found "
-                    _msg += "on VMC " + vmc_name + ". Checking if the key"
-                    _msg += " contents are correct."
-                    cbdebug(_msg)                    
-                    _available_key_contents = _available_key_pair[1]
-                    
-                    if len(_available_key_contents) > 1 and len(_key_contents) > 1 :
-
-                        if _available_key_contents == _key_contents :
-                            _msg = "The contents of the key \"" + key_name
-                            _msg += "\" on the VMC " + vmc_name + " and the"
-                            _msg += " one present on directory \"" 
-                            _msg += vm_defaults["credentials_dir"] + "\" ("
-                            _msg += vm_defaults["ssh_key_name"] + ") are the same."
-                            cbdebug(_msg)
-                            _key_pair_found = True
-                            break
-                        else :
-                            _msg = "The contents of the key \"" + key_name
-                            _msg += "\" on the VMC " + vmc_name + " and the"
-                            _msg += " one present on directory \"" 
-                            _msg += vm_defaults["credentials_dir"] + "\" ("
-                            _msg += vm_defaults["ssh_key_name"] + ") differ."
-                            cbdebug(_msg)
-                            break
-                        
-            _key_pair_found = True
-            
-            if not _key_pair_found :
-
-                _msg = "ERROR: Please go to Google Developers Console -> Compute Engine"
-                _msg += " -> Metadata and add the contents of the public key \""
-                _msg += _pub_key_fn + "\" there..."
-                cberr(_msg, True)
-                                    
-            return _key_pair_found
-        
-    def check_security_group(self,vmc_name, security_group_name) :
-        '''
-        TBD
-        '''
-
-        _security_group_name = False
-        
-        if security_group_name :
-
-            _msg = "Checking if the security group \"" + security_group_name
-            _msg += "\" is created on VMC " + vmc_name + "...."
-            cbdebug(_msg, True)
-
-            _security_group_found = False
-            for security_group in self.gceconn.get_all_security_groups() :
-                if security_group.name == security_group_name :
-                    _security_group_found = True
-
-            if not _security_group_found :
-                _msg = "ERROR! Please create the security group \"" 
-                _msg += security_group_name + "\" in "
-                _msg += "Google CE before proceeding."
-                _fmsg = _msg
-                cberr(_msg, True)
-        else :
-            _security_group_found = True
-
-        return _security_group_found
 
     def check_images(self, vmc_name, vm_templates, http_conn_id) :
         '''
         TBD
         '''
         _msg = "Checking if the imageids associated to each \"VM role\" are"
-        _msg += " registered on VMC " + vmc_name + " (project " + self.images_project
+        _msg += " registered on VMC \"" + vmc_name + "\" (project " + self.images_project
         _msg += ")...."
         cbdebug(_msg, True)
 
@@ -258,55 +150,7 @@ class GceCmds(CommonCloudFunctions) :
         for _registered_image in _registered_image_list :
             _registered_imageid_list.append(_registered_image["name"])
 
-        _required_imageid_list = {}
-
-        for _vm_role in vm_templates.keys() :
-            _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
-            if _imageid != "to_replace" :
-                if _imageid not in _required_imageid_list :
-                    _required_imageid_list[_imageid] = []
-                _required_imageid_list[_imageid].append(_vm_role)
-
-        _msg = 'y'
-
-        _detected_imageids = {}
-        _undetected_imageids = {}
-
-        for _imageid in _required_imageid_list.keys() :
-            
-            # Unfortunately we have to check image names one by one,
-            # because they might be appended by a generic suffix for
-            # image randomization (i.e., deploying the same image multiple
-            # times as if it were different images.
-            _image_detected = False
-            for _registered_imageid in _registered_imageid_list :
-                if str(_registered_imageid).count(_imageid) :
-                    _image_detected = True
-                    _detected_imageids[_imageid] = "detected"
-                else :
-                    _undetected_imageids[_imageid] = "undetected"
-
-            if _image_detected :
-                True
-#                    _msg += "xImage id for VM roles \"" + ','.join(_required_imageid_list[_imageid]) + "\" is \""
-#                    _msg += _imageid + "\" and it is already registered.\n"
-            else :
-                _msg += "x WARNING Image id for VM roles \""
-                _msg += ','.join(_required_imageid_list[_imageid]) + "\": \""
-                _msg += _imageid + "\" is NOT registered "
-                _msg += "(attaching VMs with any of these roles will result in error).\n"
-
-        if not len(_detected_imageids) :
-            _msg = "WARNING! None of the image ids used by any VM \"role\" were detected"
-            _msg += " in this GCE cloud! "            
-            #_msg += "of the following images: " + ','.join(_undetected_imageids.keys())
-            cbwarn(_msg, True)
-        else :
-            _msg = _msg.replace("yx",'')
-            _msg = _msg.replace("x ","          ")
-            _msg = _msg[:-2]
-            if len(_msg) :
-                cbdebug(_msg, True)    
+        _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list)
 
         return _detected_imageids
         
@@ -321,8 +165,7 @@ class GceCmds(CommonCloudFunctions) :
             _fmsg = "An error has occurred, but no error message was captured"
             self.connect(access, credentials, vmc_name, vmc_name)
 
-            _key_pair_found = self.check_ssh_key(vmc_name, key_name, vm_defaults, vmc_name)
-            #_security_group_found = self.check_security_group(vmc_name, security_group_name)
+            _key_pair_found = self.check_ssh_key(vmc_name, key_name, vm_defaults, False, vmc_name)
             _security_group_found = True
             _detected_imageids = self.check_images(vmc_name, vm_templates, vmc_name)
 
@@ -436,13 +279,13 @@ class GceCmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "VMC " + obj_attr_list["name"] + " could not be cleaned "
-                _msg += "on Compute Engine Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "on "  + self.get_description() +  " \"" + obj_attr_list["cloud_name"]
                 _msg += "\" : " + _fmsg
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "VMC " + obj_attr_list["name"] + " was successfully cleaned "
-                _msg += "on Compute Engine Cloud \"" + obj_attr_list["cloud_name"] + "\""
+                _msg += "on "  + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\""
                 cbdebug(_msg)
                 return _status, _msg
 
@@ -508,13 +351,13 @@ class GceCmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "VMC " + obj_attr_list["uuid"] + " could not be registered "
-                _msg += "on Compute Engine Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += "on "  + self.get_description() +  " \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "VMC " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "registered on Compute Engine Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "registered on "  + self.get_description() + " \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
                 cbdebug(_msg)
                 return _status, _msg
@@ -558,13 +401,13 @@ class GceCmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "VMC " + obj_attr_list["uuid"] + " could not be unregistered "
-                _msg += "on Compute Engine Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += "on "  + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "VMC " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "unregistered on Compute Engine Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "unregistered on "  + self.get_description() + " \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
                 cbdebug(_msg)
                 return _status, _msg
@@ -808,7 +651,7 @@ class GceCmds(CommonCloudFunctions) :
                 _msg = "Volume to be attached to the " + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vv_uuid"] + ") "
                 _msg += "could not be created"
-                _msg += " on Compute Engine Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += " on "  + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
@@ -817,7 +660,7 @@ class GceCmds(CommonCloudFunctions) :
                 _msg = "Volume to be attached to the " + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vv_uuid"] + ") "
                 _msg += "was successfully created"
-                _msg += " on Compute Engine Cloud \"" + obj_attr_list["cloud_name"] + "\"."
+                _msg += " on "  + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\"."
                 cbdebug(_msg)
                 return _status, _msg
 
@@ -868,7 +711,7 @@ class GceCmds(CommonCloudFunctions) :
                 _msg = "Volume previously attached to the " + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "could not be destroyed "
-                _msg += " on Compute Engine Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += " on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
@@ -876,7 +719,7 @@ class GceCmds(CommonCloudFunctions) :
                 _msg = "Volume previously attached to the " + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "was successfully destroyed "
-                _msg += "on Compute Engine Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "on "  + self.get_description() + " \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
                 cbdebug(_msg)
                 return _status, _msg
@@ -1005,7 +848,7 @@ class GceCmds(CommonCloudFunctions) :
 
             obj_attr_list["last_known_state"] = "about to send create request"
 
-            _msg = "Starting an instance on GCE (project \"" + self.instances_project
+            _msg = "Starting an instance on "  + self.get_description() + " (project \"" + self.instances_project
             _msg += "\"), using the imageid \"" + obj_attr_list["imageid1"] 
             _msg += "\" (project \"" + self.images_project + "\") and size \"" 
             _msg += obj_attr_list["size"] + "\" on VMC \""
@@ -1060,7 +903,7 @@ class GceCmds(CommonCloudFunctions) :
             if _status :
 
                 _msg = "VM " + obj_attr_list["uuid"] + " could not be created "
-                _msg += "on Compute Engine Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += "on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg + " (The VM creation will be rolled back)"
                 cberr(_msg)
 
@@ -1075,7 +918,7 @@ class GceCmds(CommonCloudFunctions) :
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "VM " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "created on Compute Engine Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "created on "  + self.get_description() + " \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
                 cbdebug(_msg)
                 return _status, _msg
@@ -1147,13 +990,13 @@ class GceCmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "VM " + obj_attr_list["uuid"] + " could not be destroyed "
-                _msg += " on Compute Engine Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += " on "  + self.get_description() + "\"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
                 cberr(_msg)
                 raise CldOpsException(_status, _msg)
             else :
                 _msg = "VM " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "destroyed on Compute Engine Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "destroyed on "  + self.get_description() + " \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
                 cbdebug(_msg)
                 return _status, _msg
@@ -1248,13 +1091,13 @@ class GceCmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "VM " + obj_attr_list["uuid"] + " could not be captured "
-                _msg += " on Compute Engine Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += " on "  + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
                 cberr(_msg)
                 raise CldOpsException(_status, _msg)
             else :
                 _msg = "VM " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "captured on Compute Engine Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "captured on "  + self.get_description() + " \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
                 cbdebug(_msg)
                 return _status, _msg
@@ -1329,13 +1172,13 @@ class GceCmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "VM " + obj_attr_list["uuid"] + " could not have its "
-                _msg += "run state changed on Compute Engine Cloud \"" 
+                _msg += "run state changed on "  + self.get_description() + " \"" 
                 _msg += obj_attr_list["cloud_name"] + "\" : " + _fmsg
                 cberr(_msg, True)
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "VM " + obj_attr_list["uuid"] + " successfully had its "
-                _msg += "run state changed on Compute Engine Cloud \"" 
+                _msg += "run state changed on "  + self.get_description() + " \"" 
                 _msg += obj_attr_list["cloud_name"] + "\"."
                 cbdebug(_msg, True)
                 return _status, _msg
@@ -1357,13 +1200,13 @@ class GceCmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "AI " + obj_attr_list["name"] + " could not be defined "
-                _msg += " on GCE \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += " on "  + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
                 cberr(_msg)
                 raise CldOpsException(_status, _msg)
             else :
                 _msg = "AI " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "defined on Compute Engine Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "defined on "  + self.get_description() + " \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
                 cbdebug(_msg)
                 return _status, _msg
@@ -1386,13 +1229,13 @@ class GceCmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "AI " + obj_attr_list["name"] + " could not be undefined "
-                _msg += " on Compute Engine Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += " on "  + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
                 cberr(_msg)
                 raise CldOpsException(_status, _msg)
             else :
                 _msg = "AI " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "undefined on Compute Engine Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "undefined on "  + self.get_description() + " \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
                 cbdebug(_msg)
                 return _status, _msg

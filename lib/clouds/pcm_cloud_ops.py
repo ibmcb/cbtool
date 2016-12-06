@@ -24,7 +24,7 @@
     @author: Marcio A. Silva
 '''
 from time import time, sleep
-from random import choice
+from random import choice, randint
 from uuid import uuid5, UUID
 from os.path import expanduser
 
@@ -65,7 +65,7 @@ class PcmCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
-        return "Parallel Container Manager."
+        return "Parallel Container Manager Cloud"
 
     @trace
     def connect(self, access, credentials, vmc_name, extra_parms = {}, diag = False, generate_rc = False) :
@@ -102,11 +102,11 @@ class PcmCmds(CommonCloudFunctions) :
 
         finally :
             if _status :
-                _msg = "PCM connection to endpoint \"" + _endpoint_ip + "\" failed: " + _fmsg
+                _msg = self.get_description() + " connection to endpoint \"" + _endpoint_ip + "\" failed: " + _fmsg
                 cberr(_msg)                    
                 raise CldOpsException(_msg, _status)
             else :
-                _msg = "PCM connection successful."
+                _msg = self.get_description() + " connection successful."
                 cbdebug(_msg)
                 return _status, _msg, ''
     
@@ -310,13 +310,13 @@ class PcmCmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "VMC " + obj_attr_list["name"] + " could not be cleaned "
-                _msg += "on PCM Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "on " + self.get_description() + " \"" + obj_attr_list["cloud_name"]
                 _msg += "\" : " + _fmsg
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "VMC " + obj_attr_list["name"] + " was successfully cleaned "
-                _msg += "on PCM Cloud \"" + obj_attr_list["cloud_name"] + "\""
+                _msg += "on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\""
                 cbdebug(_msg)
                 return _status, _msg
 
@@ -327,71 +327,33 @@ class PcmCmds(CommonCloudFunctions) :
 
         for _endpoint in self.lxdconn.keys() :
 
-            _msg = " PCM Cloud status: Checking if the imageids associated to each \"VM role\" are"
+            _msg = "Checking if the imageids associated to each \"VM role\" are"
             _msg += " registered on VMC " + vmc_name + " (endpoint " + _endpoint + ")..."
-            #cbdebug(_msg)
-            print _msg,
+            cbdebug(_msg, True)
+
+            _map_name_to_id = {}
 
             _registered_image_list = self.lxdconn[_endpoint].images.all()
             _registered_imageid_list = []
-    
-            for _registered_image in _registered_image_list :
-                if len(_registered_image.aliases) :
-                    _registered_imageid_list.append(_registered_image.aliases[0]["name"])
-    
-            _required_imageid_list = {}
-            
-            for _vm_role in vm_templates.keys() :
-                _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
-                if _imageid != "to_replace" :                
-                    if _imageid not in _required_imageid_list :
-                        _required_imageid_list[_imageid] = []
-                    _required_imageid_list[_imageid].append(_vm_role)
-    
-            _msg = 'y'
-    
-            _detected_imageids = {}
-            _undetected_imageids = {}
-    
-            for _imageid in _required_imageid_list.keys() :
-    
-                # Unfortunately we have to check image names one by one,
-                # because they might be appended by a generic suffix for
-                # image randomization (i.e., deploying the same image multiple
-                # times as if it were different images.
-                _image_detected = False
-                for _registered_imageid in _registered_imageid_list :
-                    if str(_registered_imageid).count(_imageid) :
-                        _image_detected = True
-                        _detected_imageids[_imageid] = "detected"
-                    else :
-                        _undetected_imageids[_imageid] = "undetected"
-    
-                if _image_detected :
-                    True
-    #                    _msg += "xImage id for VM roles \"" + ','.join(_required_imageid_list[_imageid]) + "\" is \""
-    #                    _msg += _imageid + "\" and it is already registered.\n"
-                else :
-                    _msg += "zWARNING Image id for VM roles \""
-                    _msg += ','.join(_required_imageid_list[_imageid]) + "\": \""
-                    _msg += _imageid + "\" is NOT registered "
-                    _msg += "(attaching VMs with any of these roles will result in error).\n"
-
-            if not len(_detected_imageids) :
-                _msg = "WARNING! None of the image ids used by any VM \"role\" were detected"
-                _msg += " in this VMC " + vmc_name + " (endpoint " + _endpoint + ")." 
-                #_msg += "of the following images: " + ','.join(_undetected_imageids.keys())
-                cbwarn(_msg, True)
-                return _detected_imageids
-            else :
-                _cmsg = "done"
-                print _cmsg
                 
-                _msg = _msg.replace("yz",'')
-                _msg = _msg.replace('z',"         ")
-                _msg = _msg[:-2]
-                if len(_msg) :
-                    cbdebug(_msg, True)        
+            for _registered_image in _registered_image_list :
+                _registered_imageid_list.append(_registered_image.fingerprint)
+                if len(_registered_image.aliases) :
+                    _map_name_to_id[_registered_image.aliases[0]["name"]] = _registered_image.fingerprint
+                
+            for _vm_role in vm_templates.keys() :            
+                _imageid = str2dic(vm_templates[_vm_role])["imageid1"]                
+                if _imageid != "to_replace" :
+                    if _imageid in _map_name_to_id :                     
+                        vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])
+                    else :
+                        _map_name_to_id[_imageid] = "aaaa0" + ''.join(["%s" % randint(0, 9) for num in range(0, 59)])
+                        vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])                        
+    
+            _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list)
+
+            if not _detected_imageids :
+                return _detected_imageids  
 
         return _detected_imageids
 
@@ -409,10 +371,10 @@ class PcmCmds(CommonCloudFunctions) :
 
         for _endpoint in self.lxdconn.keys() :
 
-            _msg = " PCM Cloud status: Checking if the " + _net_str + " can be "
+            _msg = "Checking if the " + _net_str + " can be "
             _msg += "found on VMC " + vmc_name + " (endpoint " + _endpoint + ")..."
-            #cbdebug(_msg)
-            print _msg,
+            cbdebug(_msg, True)
+
 
             for _network in self.lxdconn[_endpoint].networks.all() :
                 if _network.name == _prov_netname :
@@ -432,9 +394,6 @@ class PcmCmds(CommonCloudFunctions) :
             _msg += " VMC " + vmc_name  + " (endpoint " + _endpoint + ")..."
             _fmsg = _msg 
             cberr(_msg, True)
-
-        if _run_netname_found and _prov_netname_found :
-            print "done"
             
         return _prov_netname_found, _run_netname_found
 
@@ -468,7 +427,7 @@ class PcmCmds(CommonCloudFunctions) :
             self.name_resolution(obj_attr_list)
 
             _fmsg = "VMC " + obj_attr_list["uuid"] + " could not be registered "
-            _fmsg += " on PCM Cloud \"" + obj_attr_list["cloud_name"] + "\"."
+            _fmsg += " on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\"."
 
             obj_attr_list["cloud_vm_uuid"] = self.generate_random_uuid(obj_attr_list["name"])
 
@@ -498,13 +457,13 @@ class PcmCmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "VMC " + obj_attr_list["uuid"] + " could not be registered "
-                _msg += "on PCM Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += "on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
                 cberr(_msg, True)
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "VMC " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "registered on PCM Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "registered on " + self.get_description() + " \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
                 cbdebug(_msg, True)
                 return _status, _msg
@@ -543,13 +502,13 @@ class PcmCmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "VMC " + obj_attr_list["uuid"] + " could not be unregistered "
-                _msg += "on PCM Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += "on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
                 cberr(_msg, True)
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "VMC " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "unregistered on PCM Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "unregistered on " + self.get_description() + " \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
                 cbdebug(_msg, True)
                 return _status, _msg
@@ -622,14 +581,14 @@ class PcmCmds(CommonCloudFunctions) :
             _image_list = self.lxdconn[obj_attr_list["host_cloud_ip"]].images.all()
 
             _fmsg = "Please check if the defined image name is present on this "
-            _fmsg += "PCM Cloud"
+            _fmsg += self.get_description()
 
             _imageid = False
 
             _candidate_images = []
 
             for _image in _image_list :
-                if len(obj_attr_list["imageid1"]) == 64 and is_number(obj_attr_list["imageid1"], True) :
+                if self.is_cloud_image_uuid(obj_attr_list["imageid1"]) : 
                     if _image.fingerprint == obj_attr_list["imageid1"] :
                         _candidate_images.append(_image.fingerprint) 
                 else :
@@ -642,7 +601,7 @@ class PcmCmds(CommonCloudFunctions) :
                 _status = 0
             else :
                 _fmsg = "Unable to pull image \"" + obj_attr_list["imageid1"] + "\""
-                _fmsg += " to PCM cloud"
+                _fmsg += " to " + self.get_description()
                 _status = 1927
 
         except LXDError.LXDAPIException, obj:
@@ -802,7 +761,7 @@ class PcmCmds(CommonCloudFunctions) :
                 _msg = "Error while attempting to " + operation + " port mapping for " + obj_attr_list["name"]
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "running on LXD host \"" + obj_attr_list["host_name"] + "\""
-                _msg += " in PCM Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += " in " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
                 cberr(_msg, True)
                 raise CldOpsException(_msg, _status)
@@ -811,7 +770,7 @@ class PcmCmds(CommonCloudFunctions) :
                 _msg = "Successfully " + operation + " port mapping for " + obj_attr_list["name"]
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "running on LXD host \"" + obj_attr_list["host_name"] + "\""
-                _msg += " in PCM Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += " in " + self.get_description() + " \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
                 cbdebug(_msg)
 
@@ -885,7 +844,7 @@ class PcmCmds(CommonCloudFunctions) :
 
             self.get_images(obj_attr_list)
             
-            _msg = "Starting an instance on PCM Cloud, using the imageid \"" 
+            _msg = "Starting an instance on " + self.get_description() + ", using the imageid \"" 
             _msg += obj_attr_list["imageid1"] + "\" and size \"" 
             _msg += obj_attr_list["size"] + "\", connected to the network \"" 
             _msg += obj_attr_list["netname"] + "\", on VMC \"" 
@@ -967,7 +926,7 @@ class PcmCmds(CommonCloudFunctions) :
                 _msg = "" + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "could not be created"
-                _msg += " on PCM Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += " on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
 
                 if str(obj_attr_list["leave_instance_on_failure"]).lower() == "true" :
@@ -983,7 +942,7 @@ class PcmCmds(CommonCloudFunctions) :
                 _msg = "" + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "was successfully created"
-                _msg += " on PCM Cloud \"" + obj_attr_list["cloud_name"] + "\"."
+                _msg += " on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\"."
                 cbdebug(_msg)
                 return _status, _msg
 
@@ -1052,7 +1011,7 @@ class PcmCmds(CommonCloudFunctions) :
                 _msg = "" + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "could not be destroyed "
-                _msg += " on PCM Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += " on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
                 cberr(_msg, True)
                 raise CldOpsException(_msg, _status)
@@ -1060,7 +1019,7 @@ class PcmCmds(CommonCloudFunctions) :
                 _msg = "" + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "was successfully "
-                _msg += "destroyed on PCM Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "destroyed on " + self.get_description() + " \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
                 cbdebug(_msg)
                 return _status, _msg
@@ -1111,6 +1070,8 @@ class PcmCmds(CommonCloudFunctions) :
                 _imginst = _instance.publish(wait=True)
                 _imginst.add_alias(obj_attr_list["captured_image_name"], "captured by CBTOOL")
 
+                obj_attr_list["cloud_image_uuid"] = _imginst.fingerprint
+                
                 obj_attr_list["mgt_103_capture_request_completed"] = _time_mark_crc - _time_mark_crs
 
                 if "mgt_103_capture_request_completed" not in obj_attr_list :
@@ -1135,7 +1096,7 @@ class PcmCmds(CommonCloudFunctions) :
                 _msg = "" + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "could not be captured "
-                _msg += " on PCM Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += " on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
                 cberr(_msg, True)
                 raise CldOpsException(_msg, _status)
@@ -1143,7 +1104,7 @@ class PcmCmds(CommonCloudFunctions) :
                 _msg = "" + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "was successfully captured "
-                _msg += " on PCM Cloud \"" + obj_attr_list["cloud_name"] + "\"."
+                _msg += " on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\"."
                 cbdebug(_msg)
                 return _status, _msg
 
@@ -1211,13 +1172,13 @@ class PcmCmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "VM " + obj_attr_list["uuid"] + " could not have its "
-                _msg += "run state changed on PCM Cloud"
+                _msg += "run state changed on "  + self.get_description()
                 _msg += " \"" + obj_attr_list["cloud_name"] + "\" :" + _fmsg
                 cberr(_msg, True)
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "VM " + obj_attr_list["uuid"] + " successfully had its "
-                _msg += "run state changed on PCM Cloud"
+                _msg += "run state changed on " + self.get_description() 
                 _msg += " \"" + obj_attr_list["cloud_name"] + "\"."
                 cbdebug(_msg, True)
                 return _status, _msg
@@ -1239,13 +1200,13 @@ class PcmCmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "AI " + obj_attr_list["name"] + " could not be defined "
-                _msg += " on PCM Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += " on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
                 cberr(_msg, True)
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "AI " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "defined on PCM Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "defined on " + self.get_description() + " \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
                 cbdebug(_msg)
                 return _status, _msg
@@ -1267,14 +1228,13 @@ class PcmCmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "AI " + obj_attr_list["name"] + " could not be undefined "
-                _msg += " on PCM Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += " on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
                 cberr(_msg, True)
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "AI " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "undefined on PCM Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "undefined on " + self.get_description() + " \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
                 cbdebug(_msg, True)
                 return _status, _msg
-

@@ -96,7 +96,7 @@ AIDRS = BYUSERNAME, BYPATTERN
 VMCRS = BYUSERNAME, BYPATTERN, BYSCOPE
 FIRS = BYUSERNAME, BYPATTERN, BYSCOPE
 MANDATORY_TAGS = name, cloud_hostname, cloud_ip
-CLOUD_ATTRIBUTES = name, model, description, all, username, client_should_refresh, start_time, all_vmcs_attached, regression
+CLOUD_ATTRIBUTES = name, model, description, all, username, client_should_refresh, start_time, all_vmcs_attached, regression, walkthrough
 GET_VM_LIST = $False
 
 [ADMISSION_CONTROL]
@@ -129,6 +129,7 @@ DETACH_PARALLELISM = 20
 DISCOVER_HOSTS = $False
 MIGRATE_SUPPORTED = $False
 PROTECT_SUPPORTED = $False
+FORCE_WALKTHROUGH = $False
 ADDITIONAL_DISCOVERY = $EMPTY
 
 [VM_DEFAULTS]

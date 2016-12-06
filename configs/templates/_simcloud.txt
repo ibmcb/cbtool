@@ -1,7 +1,9 @@
 [USER-DEFINED]
 SIM_INITIAL_VMCS = simzone_a:sut,simzone_b:sut,simzone_c:sut,simzone_d:lg
 # Name of the ssh key pair
-SIM_SSH_KEY_NAME = cbtool_rsa 
+SIM_SSH_KEY_NAME = cbtool_rsa
+SIM_KEY_NAME = cbtool_rsa 
+SIM_SECURITY_GROUP = simsecgrp
 SIM_LOGIN = klabuser
 
 # PEBCAK documentation for the Wizard and CLI
@@ -29,8 +31,8 @@ DISCOVER_HOSTS = $True
 UPDATE_FREQUENCY = 1
 ACCESS = $Empty
 CREDENTIALS = $Empty
-SECURITY_GROUPS = $Empty
-KEY_NAME = $Empty
+SECURITY_GROUPS = $SIM_SECURITY_GROUP
+KEY_NAME = $SIM_KEY_NAME
 ADDITIONAL_DISCOVERY = $Empty
 MIGRATE_SUPPORTED = $True
 PROTECT_SUPPORTED = $True
@@ -50,8 +52,8 @@ CAPTURE_SUPPORTED = $True
 RUNSTATE_SUPPORTED = $True
 RESIZE_SUPPORTED = $False
 LOGIN = $SIM_LOGIN
-SECURITY_GROUPS = $Empty
-KEY_NAME = $Empty
+SECURITY_GROUPS = $SIM_SECURITY_GROUP
+KEY_NAME = $SIM_KEY_NAME
 SSH_KEY_NAME = $SIM_SSH_KEY_NAME
 CHECK_BOOT_STARTED = poll_cloud
 # Other methods could be used to check if a VM *STARTED* booting

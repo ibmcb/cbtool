@@ -26,7 +26,7 @@
 from time import time, sleep
 from subprocess import Popen, PIPE
 from uuid import uuid5, UUID
-from random import choice
+from random import choice, randint
 import socket
 
 import SoftLayer
@@ -98,6 +98,40 @@ class SlrCmds(CommonCloudFunctions) :
         _status = 0
 
         return _status, _msg, _region
+
+    def check_images(self, vmc_name, vm_templates, access) :
+        '''
+        TBD
+        '''
+        _msg = "Checking if the imageids associated to each \"VM role\" are"
+        _msg += " registered on VMC \"" + vmc_name + "\"...."
+        cbdebug(_msg, True)
+
+        if access == "private" :    
+            _registered_image_list = self.imageman.list_private_images()
+        else :    
+            _registered_image_list = self.imageman.list_public_images()   
+
+        _registered_imageid_list = []
+
+        _map_name_to_id = {}
+
+        for _registered_image in _registered_image_list :
+            _registered_imageid_list.append(_registered_image["id"])
+            _map_name_to_id[str(_registered_image["name"].encode('utf-8').strip())] = str(_registered_image["id"])
+
+        for _vm_role in vm_templates.keys() :            
+            _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
+            if _imageid != "to_replace" :
+                if _imageid in _map_name_to_id :                     
+                    vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])
+                else :
+                    _map_name_to_id[_imageid] = '0' + ''.join(["%s" % randint(0, 9) for num in range(0, 5)]) + '0'
+                    vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])                        
+
+        _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list)
+
+        return _detected_imageids
     
     @trace
     def test_vmc_connection(self, vmc_name, access, credentials, key_name, \
@@ -112,33 +146,7 @@ class SlrCmds(CommonCloudFunctions) :
 
             self.connect(access, credentials, vmc_name)
             
-            if not key_name :
-                _key_pair_found = True
-            else :
-                _msg = "Checking if the ssh key pair \"" + key_name + "\" is created"
-                _msg += " on VMC " + vmc_name + "...."
-                cbdebug(_msg, True)
-                
-                _key_pair_found = False
-                for _key_pair in self.sshman.list_keys() :
-                    if _key_pair["label"] == key_name :
-                        _key_pair_found = True
-
-                if not _key_pair_found :
-                    _pub_key_fn = vm_defaults["credentials_dir"] + '/'
-                    _pub_key_fn += vm_defaults["ssh_key_name"] + ".pub"
-
-                    _msg = "Creating the ssh key pair \"" + key_name + "\""
-                    _msg += " on VMC " + vmc_name + ", using the public key \""
-                    _msg += _pub_key_fn + "\"..."
-                    cbdebug(_msg, True)
-                    
-                    _fh = open(_pub_key_fn, 'r')
-                    _pub_key = _fh.read()
-                    _fh.close()
-                                        
-                    self.sshman.add_key(_pub_key, key_name)
-                    _key_pair_found = True
+            _key_pair_found = self.check_ssh_key(vmc_name, key_name, vm_defaults)
 
             if security_group_name :
                 _security_group_found = True
@@ -149,105 +157,18 @@ class SlrCmds(CommonCloudFunctions) :
                 SoftLayer.
                 '''
 
-#                _msg = "Checking if the security group \"" + security_group_name
-#                _msg += "\" is created on VMC " + vmc_name + "...."
-#                cbdebug(_msg, True)
-
-#                _security_group_found = False
-#                for security_group in self.oskconncompute.security_groups.list() :
-#                    if security_group.name == security_group_name :
-#                        _security_group_found = True
-    
-#                if not _security_group_found :
-#                    _msg = "ERROR! Please create the security group \"" 
-#                    _msg += security_group_name + "\" in "
-#                    _msg += "SoftLayer before proceeding."
-#                    _fmsg = _msg 
-#                    cberr(_msg, True)
-#            else :
-#                _security_group_found = True
-            
-            _msg = "Checking if the imageids associated to each \"VM role\" are"
-            _msg += " registered on VMC " + vmc_name + "...."
-            cbdebug(_msg, True)
-
-            if vm_defaults["images_access"] == "private" :    
-                _registered_image_list = self.imageman.list_private_images()
-            else :    
-                _registered_image_list = self.imageman.list_public_images()   
-
-            _registered_imageid_list = []
-
-            _map_name_to_id = {}
-
-            for _registered_image in _registered_image_list :
-                _registered_imageid_list.append(_registered_image["id"])
-                _map_name_to_id[_registered_image["name"]] = _registered_image["id"]
-                
-            _required_imageid_list = {}
-
-            for _vm_role in vm_templates.keys() :
-                
-                _imageid = str2dic(vm_templates[_vm_role])["imageid1"]                
-                if _imageid != "to_replace" :
-
-                    if _imageid in _map_name_to_id :                     
-                        vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])
-                        _imageid = _map_name_to_id[_imageid]
-                        
-                    if _imageid not in _required_imageid_list :
-                        _required_imageid_list[_imageid] = []
-                    _required_imageid_list[_imageid].append(_vm_role)
-
-            _msg = 'y'
-
-            _detected_imageids = {}
-            _undetected_imageids = {}
-
-            for _imageid in _required_imageid_list.keys() :
-
-                # Unfortunately we have to check image names one by one,
-                # because they might be appended by a generic suffix for
-                # image randomization (i.e., deploying the same image multiple
-                # times as if it were different images.
-                _image_detected = False
-                for _registered_imageid in _registered_imageid_list :
-#                    _registered_imageid = _registered_imageid.encode('utf-8').strip()
-#                    if _registered_imageid.count(_imageid) :
-                    if _registered_imageid == _imageid :
-                        _image_detected = True
-                        _detected_imageids[_imageid] = "detected"
-                    else :
-                        _undetected_imageids[_imageid] = "undetected"
-                if _image_detected :
-                    True
-#                       _msg += "xImage id for VM roles \"" + ','.join(_required_imageid_list[_imageid]) + "\" is \""
-#                       _msg += _imageid + "\" and it is already registered.\n"
-                else :
-                    _msg += "xWARNING Image id for VM roles \""
-                    _msg += ','.join(_required_imageid_list[_imageid]) + "\": \""
-                    _msg += _imageid + "\" is NOT registered "
-                    _msg += "(attaching VMs with any of these roles will result in error).\n"
-
-            if not len(_detected_imageids) :
-                _status = 1                
-                _msg = "WARNING! None of the image ids used by any VM \"role\" were detected"
-                _msg += " in this SoftLayer cloud."
-#                _msg += "of the following images: " + ','.join(_undetected_imageids.keys())
-                cbwarn(_msg, True)
-            else :
-                _status = 0
-                _msg = _msg.replace("yx",'')
-                _msg = _msg.replace('x',"         ")
-                _msg = _msg[:-2]
-                if len(_msg) :
-                    cbdebug(_msg, True)
+            _detected_imageids = self.check_images(vmc_name, vm_templates, vm_defaults["images_access"])
 
             if not (_key_pair_found and _security_group_found) :
                 _msg = "Check the previous errors, fix it (using SoftLayer's Portal"
-                _msg += "or sl CLI"
+                _msg += "or the slcli utility"
                 _status = 1178
                 raise CldOpsException(_msg, _status) 
+
+            if len(_detected_imageids) :
+                _status = 0               
+            else :
+                _status = 1
        
         except SoftLayer.SoftLayerAPIError, e :
             _status = 23
@@ -347,13 +268,13 @@ class SlrCmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "VMC " + obj_attr_list["name"] + " could not be cleaned "
-                _msg += "on SoftLayer Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "on " + self.get_description() + " \"" + obj_attr_list["cloud_name"]
                 _msg += "\" : " + _fmsg
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "VMC " + obj_attr_list["name"] + " was successfully cleaned "
-                _msg += "on SoftLayer Cloud \"" + obj_attr_list["cloud_name"] + "\""
+                _msg += "on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\""
                 cbdebug(_msg)
                 return _status, _msg
 
@@ -387,7 +308,7 @@ class SlrCmds(CommonCloudFunctions) :
     
             if obj_attr_list["discover_hosts"].lower() == "true" :
                 _msg = "Host discovery for VMC \"" + obj_attr_list["name"]
-                _msg += "\" request, but SoftLayer does not allow it. Ignoring for now....."
+                _msg += "\" request, but " + self.get_description() + " does not allow it. Ignoring for now....."
                 cbdebug(_msg, True)
                 obj_attr_list["hosts"] = ''
                 obj_attr_list["host_list"] = {}
@@ -411,13 +332,13 @@ class SlrCmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "VMC " + obj_attr_list["uuid"] + " could not be registered "
-                _msg += "on SoftLayer Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += "on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "VMC " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "registered on SoftLayer Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "registered on " + self.get_description() + " \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
                 cbdebug(_msg)
                 return _status, _msg
@@ -436,13 +357,13 @@ class SlrCmds(CommonCloudFunctions) :
                 _image_list = self.imageman.list_public_images()  
 
             _fmsg += "Please check if the defined image name is present on this "
-            _fmsg += "SoftLayer Cloud"
+            _fmsg += self.get_description()
 
             _imageid = False
 
             _candidate_images = []
 
-            if len(obj_attr_list["imageid1"]) == 7 and obj_attr_list["imageid1"].isdigit() :
+            if self.is_cloud_image_uuid(obj_attr_list["imageid1"]) :
                 _image_key = "id"
             else :
                 _image_key = "name"                
@@ -518,13 +439,13 @@ class SlrCmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "VMC " + obj_attr_list["uuid"] + " could not be unregistered "
-                _msg += "on SoftLayer \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += "on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "VMC " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "unregistered on SoftLayer \"" + obj_attr_list["cloud_name"]
+                _msg += "unregistered on " + self.get_description() + " \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
                 cbdebug(_msg)
                 return _status, _msg
@@ -606,7 +527,7 @@ class SlrCmds(CommonCloudFunctions) :
                 else :
                     if _instance["status"]["name"].lower().count("error") :
                         _msg = "Instance \"" + obj_attr_list["cloud_vm_name"] + "\"" 
-                        _msg += " reported an error (from SoftLayer)"
+                        _msg += " reported an error (from " + self.get_description() + ")"
                         _status = 1870
                         cberr(_msg)
                         if fail :
@@ -664,7 +585,7 @@ class SlrCmds(CommonCloudFunctions) :
                 obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["ai_name"] 
 
             obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"].replace("_", "-")
-            obj_attr_list["last_known_state"] = "about to connect to SoftLayer manager"
+            obj_attr_list["last_known_state"] = "about to connect to " + self.get_description() + " manager"
 
             self.take_action_if_requested("VM", obj_attr_list, "provision_originated")
 
@@ -714,7 +635,7 @@ class SlrCmds(CommonCloudFunctions) :
                 obj_attr_list["mgt_002_provisioning_request_sent"] = \
                 _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
     
-                _msg = "Starting an instance on SoftLayer, using the imageid \""
+                _msg = "Starting an instance on " + self.get_description() + ", using the imageid \""
                 _msg += obj_attr_list["imageid1"] + "\" (" + str(_imageid) + ") and "
                 _msg += "size \"" + obj_attr_list["size"] + "\", "
                 _msg += "on VMC \"" + obj_attr_list["vmc_name"] + "\""
@@ -785,7 +706,7 @@ class SlrCmds(CommonCloudFunctions) :
                 _msg = "" + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "could not be created"
-                _msg += " on SoftLayer Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += " on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\" : "
                 
                 if _vminstance :
                     self.nodeman.wait_for_transaction(_instance["id"], \
@@ -802,7 +723,7 @@ class SlrCmds(CommonCloudFunctions) :
                 _msg = "" + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "was successfully created"
-                _msg += " on SoftLayer Cloud \"" + obj_attr_list["cloud_name"] + "\"."
+                _msg += " on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\"."
                 cbdebug(_msg)
 
                 return _status, _msg
@@ -881,7 +802,7 @@ class SlrCmds(CommonCloudFunctions) :
                 _msg = "" + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "could not be destroyed "
-                _msg += " on SoftLayer Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += " on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
@@ -889,7 +810,7 @@ class SlrCmds(CommonCloudFunctions) :
                 _msg = "" + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "was successfully destroyed "
-                _msg += "on SoftLayer Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "on " + self.get_description() + " \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
                 cbdebug(_msg)
                 return _status, _msg
@@ -1008,7 +929,7 @@ class SlrCmds(CommonCloudFunctions) :
                 _msg = "" + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "could not be captured "
-                _msg += " on SoftLayer Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += " on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
                 cberr(_msg, True)
                 raise CldOpsException(_msg, _status)
@@ -1016,7 +937,7 @@ class SlrCmds(CommonCloudFunctions) :
                 _msg = "" + obj_attr_list["name"] + ""
                 _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _msg += "was successfully captured "
-                _msg += " on SoftLayer Cloud \"" + obj_attr_list["cloud_name"] + "\"."
+                _msg += " on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\"."
                 cbdebug(_msg)
                 return _status, _msg
 
@@ -1091,13 +1012,13 @@ class SlrCmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "VM " + obj_attr_list["uuid"] + " could not have its "
-                _msg += "run state changed on SoftLayer Cloud"
+                _msg += "run state changed on " + self.get_description()
                 _msg += " \"" + obj_attr_list["cloud_name"] + "\" :" + _fmsg
                 cberr(_msg, True)
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "VM " + obj_attr_list["uuid"] + " successfully had its "
-                _msg += "run state changed on SoftLayer Cloud"
+                _msg += "run state changed on " + self.get_description()
                 _msg += " \"" + obj_attr_list["cloud_name"] + "\"."
                 cbdebug(_msg, True)
                 return _status, _msg
@@ -1119,13 +1040,13 @@ class SlrCmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "AI " + obj_attr_list["name"] + " could not be defined "
-                _msg += " on SoftLayer Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += " on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "AI " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "defined on SoftLayer Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "defined on " + self.get_description() + " \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
                 cbdebug(_msg)
                 return _status, _msg
@@ -1147,13 +1068,13 @@ class SlrCmds(CommonCloudFunctions) :
         finally :
             if _status :
                 _msg = "AI " + obj_attr_list["name"] + " could not be undefined "
-                _msg += " on SoftLayer Cloud \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += " on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\" : "
                 _msg += _fmsg
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
             else :
                 _msg = "AI " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "undefined on SoftLayer Cloud \"" + obj_attr_list["cloud_name"]
+                _msg += "undefined on " + self.get_description() + " \"" + obj_attr_list["cloud_name"]
                 _msg += "\"."
                 cbdebug(_msg)
                 return _status, _msg

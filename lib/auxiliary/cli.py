@@ -152,7 +152,7 @@ class CBCLI(Cmd) :
             self.os_func, self.ms_func, self.ls_func, self.fs_func = \
             load_store_functions(self.cld_attr_lst)
     
-            print "Checking \"Object Store\".....",        
+            print "\nChecking \"Object Store\".....",        
             _status, _msg = self.os_func(self.cld_attr_lst, "check")
             sys.stdout.write(_msg + '\n')
     
@@ -166,7 +166,7 @@ class CBCLI(Cmd) :
 
             print "Checking \"File Store\".....", 
             _status, _msg = self.fs_func(self.cld_attr_lst, "check")
-            sys.stdout.write(_msg + '\n')
+            sys.stdout.write(_msg + '\n\n')
             
             oscp = self.cld_attr_lst["objectstore"].copy()
             del oscp["config_string"]
@@ -795,7 +795,7 @@ class CBCLI(Cmd) :
                     url += ":" + str(self.cld_attr_lst["gui_defaults"]["port"])
                     _msg += "The process id is " + str(_gui_pid) + ", "
                     _msg += "listening on port " + str(self.cld_attr_lst["gui_defaults"]["port"]) + '.'
-                    _msg += " Full url is \"" + url + "\".\n"
+                    _msg += " Full url is \"" + url + "\".\n\n"
                     sys.stdout.write(_msg)  
             else :
                 _msg = "\nGUI failed to start. To discover why, please run:\n\n" + _base_cmd + " --logdest=console\n\n ... and report the bug."
@@ -929,9 +929,19 @@ class CBCLI(Cmd) :
         TBD
         '''
         parameters = self.cleanup_comments(parameters)
+        
+        parameters = parameters.strip().split()
 
-        default_cloud = parameters.strip()
-        if default_cloud == "" :
+        default_cloud = ''
+        walkthrough = ''
+        
+        if len(parameters) >= 1 :
+            default_cloud = parameters[0]
+
+        if len(parameters) >= 2 :
+            walkthrough = ' ' + parameters[1]
+        
+        if default_cloud == '' :
             _msg = "Current default cloud is \"" + str(BaseObjectOperations.default_cloud)
             _msg += "\". Need cloud name to be set as default cloud or 'none' to unset."
             print(message_beautifier(_msg))
@@ -939,9 +949,9 @@ class CBCLI(Cmd) :
             if default_cloud.lower() == "none" :
                 BaseObjectOperations.default_cloud = None
                 Cmd.prompt = "() "
-            else :
+            else :                
                 BaseObjectOperations.default_cloud = default_cloud 
-                Cmd.prompt = '(' +  str(BaseObjectOperations.default_cloud) +  ") "
+                Cmd.prompt = '(' +  str(BaseObjectOperations.default_cloud) + walkthrough + ") "
 
     @trace
     def do_cldlist(self, parameters, print_message = True) :
@@ -953,9 +963,14 @@ class CBCLI(Cmd) :
         _status, _msg, _object = self.passive_operations.list_objects(self.cld_attr_lst, \
                                                                       parameters, \
                                                                       "cloud-list")
-        
+                        
         if len(_object["result"]) == 1 :
-            self.do_clddefault(_object["result"][0]["name"])
+            _w = ''
+            if "walkthrough" in _object["result"][0] :
+                if _object["result"][0]["walkthrough"] == "true" :
+                    _w = " WALKTHROUGH"
+                
+            self.do_clddefault(_object["result"][0]["name"] + _w)
 
         for _cloud_name_index in range(0, len(_object["result"])) :
             if _object["result"][_cloud_name_index]["name"] not in self.attached_clouds :

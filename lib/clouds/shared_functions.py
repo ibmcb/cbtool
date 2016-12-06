@@ -31,10 +31,11 @@ import copy
 import json
 from socket import gethostbyname
 
-from lib.auxiliary.data_ops import str2dic, dic2str
+from lib.auxiliary.data_ops import str2dic, dic2str, is_number
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.remote.network_functions import Nethashget
 from lib.stores.redis_datastore_adapter import RedisMgdConn
+from lib.remote.ssh_ops import get_ssh_key
 from lib.remote.process_management import ProcessManagement
 
 import re, os
@@ -812,6 +813,277 @@ class CommonCloudFunctions:
                     except Exception, msg :
                         _fmsg = "Could not lookup interface " + iface + " for hostname " + hostname + " (probably bad /etc/hosts): " + str(msg)
                         raise CldOpsException(_fmsg, 1295)
+    @trace
+    def is_cloud_image_uuid(self, imageid) :
+        '''
+        TBD
+        '''
+        if imageid == "to_replace" :
+            return False
+        
+        if self.get_description() == "Amazon Elastic Compute Cloud" :
+            if len(imageid) > 4 :
+                if imageid[0:4] == "ami-" :
+                    if is_number(imageid[5:]) :
+                        return True
+
+        if self.get_description() == "Cloudbench SimCloud" :
+            return True
+        
+        if self.get_description() == "OpenStack Cloud" :
+            return True
+
+        if self.get_description() == "SoftLayer Cloud" :
+            if len(imageid) == 7 and is_number(imageid) :
+                return True
+
+        if self.get_description() == "Google Compute Engine" :
+            return True
+
+        if self.get_description() == "Parallel Docker Manager Cloud" :
+            if len(imageid) == 64 and is_number(imageid, True) :
+                return True
+
+        if self.get_description() == "Parallel Container Manager Cloud" :
+            if len(imageid) == 64 and is_number(imageid, True) :
+                return True
+        
+        return False
+
+    @trace
+    def check_ssh_key(self, vmc_name, key_name, vm_defaults, internal = False, http_conn_id = None) :
+        '''
+        TBD
+        '''
+
+        _key_pair_found = False      
+        
+        if not key_name :
+            _key_pair_found = True
+        else :
+            _msg = "Checking if the ssh key pair \"" + key_name + "\" is created"
+            _msg += " on VMC " + vmc_name + "...."
+            if not internal :
+                cbdebug(_msg, True)
+            else :
+                cbdebug(_msg)            
+
+            _pub_key_fn = vm_defaults["credentials_dir"] + '/'
+            _pub_key_fn += vm_defaults["ssh_key_name"] + ".pub"
+
+            _key_type, _key_contents, _key_fingerprint = get_ssh_key(_pub_key_fn, self.get_description())
+
+            if not _key_contents :
+                _fmsg = _key_type 
+                cberr(_fmsg, True)
+                return False
+            
+            _key_pair_found = False
+
+            _registered_key_pairs = {}
+            if self.get_description() == "Cloudbench SimCloud" :
+                _registered_key_pairs[key_name] =_key_fingerprint + "-NA"            
+            
+            if self.get_description() == "Amazon Elastic Compute Cloud" :
+                for _key_pair in self.ec2conn.get_all_key_pairs() :
+                    _registered_key_pairs[_key_pair.name] = _key_pair.fingerprint + "-NA"
+
+            if self.get_description() == "OpenStack Cloud" :
+                for _key_pair in self.oskconncompute.keypairs.list() :
+                    _registered_key_pairs[_key_pair.name] = _key_pair.public_key.split()[1] + "-NA"
+
+            if self.get_description() == "SoftLayer Cloud" :
+                for _key_pair in self.sshman.list_keys() :
+                    _registered_key_pairs[_key_pair["label"]] = _key_pair["fingerprint"] + '-' + str(_key_pair["id"])
+
+            if self.get_description() == "Google Compute Engine" :
+                _metadata = self.gceconn.projects().get(project=self.instances_project).execute(http = self.http_conn[http_conn_id])
+                for _element in _metadata['commonInstanceMetadata']['items'] :
+                    if _element["key"] == "sshKeys" :
+                        for _component in _element["value"].split('\n') :
+                            if len(_component.split(' ')) == 3 :
+                                _key_tag, _key_contents, _key_user = _component.split(' ')
+                                _key_name, _key_type = _key_tag.split(':')
+                                _key_type, _key_contents, _key_fingerprint = \
+                                get_ssh_key(_key_type + ' ' + _key_contents + ' ' + _key_user, self.get_description(), False)
+
+                                _registered_key_pairs[_key_name] = _key_fingerprint + "-NA"
+
+            for _key_pair in _registered_key_pairs.keys() :
+                if _key_pair == key_name :
+                    _msg = "A key named \"" + key_name + "\" was found "
+                    _msg += "on VMC " + vmc_name + ". Checking if the key"
+                    _msg += " contents are correct."
+                    cbdebug(_msg)                    
+                    _keyfp, _keyid = _registered_key_pairs[_key_pair].split('-')
+                    
+                    if len(_key_fingerprint) > 1 and len(_keyfp) > 1 :
+
+                        if _key_fingerprint == _keyfp :
+                            _msg = "The contents of the key \"" + key_name
+                            _msg += "\" on the VMC " + vmc_name + " and the"
+                            _msg += " one present on directory \"" 
+                            _msg += vm_defaults["credentials_dir"] + "\" ("
+                            _msg += vm_defaults["ssh_key_name"] + ") are the same."
+                            cbdebug(_msg)
+                            _key_pair_found = True
+                            break
+                        else :
+                            _msg = "The contents of the key \"" + key_name
+                            _msg += "\" on the VMC " + vmc_name + " and the"
+                            _msg += " one present on directory \"" 
+                            _msg += vm_defaults["credentials_dir"] + "\" ("
+                            _msg += vm_defaults["ssh_key_name"] + ") differ."
+                            _msg += "Will delete the key and re-created it"
+                            cbdebug(_msg)
+                            
+                            if self.get_description() == "Amazon Elastic Compute Cloud" :
+                                self.ec2conn.delete_key_pair(key_name)
+                                
+                            if self.get_description() == "OpenStack Cloud" :
+                                self.oskconncompute.keypairs.delete(_key_pair)
+
+                            if self.get_description() == "SoftLayer Cloud" :
+                                self.sshman.delete_key(_keyid)
+
+                            if self.get_description() == "Google Compute Engine" :
+                                _msg = "ERROR: Please go to Google Developers Console -> Compute Engine"
+                                _msg += " -> Metadata and delete the contents of the public key \""
+                                _msg += key_name + "\" there..."
+                                cberr(_msg, True)
+
+                            break
+
+            if not _key_pair_found :
+                _msg = "Creating the ssh key pair \"" + key_name + "\""
+                _msg += " on VMC " + vmc_name + ", using the public key \""
+                _msg += _pub_key_fn + "\"..."
+                
+                if not internal :
+                    cbdebug(_msg, True)
+                else :
+                    cbdebug(_msg)                
+
+                if self.get_description() == "Amazon Elastic Compute Cloud" :
+                    self.ec2conn.import_key_pair(key_name, _key_type + ' ' + _key_contents)
+
+                if self.get_description() == "OpenStack Cloud" :
+                    self.oskconncompute.keypairs.create(key_name, \
+                                                        public_key = _key_type + ' ' + _key_contents)                
+
+                if self.get_description() == "SoftLayer Cloud" :
+                    self.sshman.add_key(_key_type + ' ' + _key_contents, key_name)
+
+                if self.get_description() == "Google Compute Engine" :
+                    _msg = "ERROR: Please go to Google Developers Console -> Compute Engine"
+                    _msg += " -> Metadata and add the contents of the public key \""
+                    _msg += _pub_key_fn + "\" there..."
+                    cberr(_msg, True)
+                
+                _key_pair_found = True
+
+            return _key_pair_found    
+
+    @trace
+    def check_security_group(self,vmc_name, security_group_name) :
+        '''
+        TBD
+        '''
+    
+        _security_group_name = False
+        
+        if security_group_name :
+    
+            _msg = "Checking if the security group \"" + security_group_name
+            _msg += "\" is created on VMC " + vmc_name + "...."
+            cbdebug(_msg, True)
+    
+            _security_group_found = False
+            
+            _registered_security_groups = []
+
+            if self.get_description() == "Cloudbench SimCloud" :
+                _registered_security_groups.append(security_group_name)              
+            
+            if self.get_description() == "Amazon Elastic Compute Cloud" :
+                for _security_group in self.ec2conn.get_all_security_groups() :
+                    _registered_security_groups.append(_security_group.name)       
+
+            if self.get_description() == "OpenStack Cloud" :
+                for _security_group in self.oskconncompute.security_groups.list() :
+                    _registered_security_groups.append(_security_group.name)                                        
+            
+            for _registered_security_group in _registered_security_groups :
+                if _registered_security_group == security_group_name :
+                    _security_group_found = True
+    
+            if not _security_group_found :
+                _msg = "ERROR! Please create the security group \"" 
+                _msg += security_group_name + "\" in "
+                _msg += self.get_description() + " before proceeding."
+                _fmsg = _msg
+                cberr(_msg, True)
+        else :
+            _security_group_found = True
+    
+        return _security_group_found
+
+    @trace        
+    def base_check_images(self, vmc_name, vm_templates, registered_imageid_list) :
+        '''
+        TBD
+        '''        
+        
+        _required_imageid_list = {}
+
+        for _vm_role in vm_templates.keys() :
+            _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
+            if self.is_cloud_image_uuid(_imageid) :
+                if _imageid not in _required_imageid_list :
+                    _required_imageid_list[_imageid] = []
+                _required_imageid_list[_imageid].append(_vm_role)       
+                
+        _msg = 'y'
+
+        _detected_imageids = {}
+        _undetected_imageids = {}
+
+        for _imageid in _required_imageid_list.keys() :
+            
+            # Unfortunately we have to check image names one by one,
+            # because they might be appended by a generic suffix for
+            # image randomization (i.e., deploying the same image multiple
+            # times as if it were different images.
+            _image_detected = False
+            for _registered_imageid in registered_imageid_list :
+                if str(_registered_imageid).count(_imageid) :
+                    _image_detected = True
+                    _detected_imageids[_imageid] = "detected"
+                else :
+                    _undetected_imageids[_imageid] = "undetected"
+            
+            if _image_detected :
+                _msg += "x INFO    Image id for VM roles \"" + ','.join(_required_imageid_list[_imageid]) + "\" is \""
+                _msg += _imageid + "\" and it is already registered.\n"
+            else :
+                _msg += "x WARNING Image id for VM roles \""
+                _msg += ','.join(_required_imageid_list[_imageid]) + "\": \""
+                _msg += _imageid + "\" is NOT registered "
+                _msg += "(attaching VMs with any of these roles will result in error).\n"
+
+        if not len(_detected_imageids) :
+            _msg = "WARNING! None of the image ids used by any VM \"role\" were detected"
+            _msg += " in this " + self.get_description() + " !"
+#            _msg += "of the following images: " + ','.join(_undetected_imageids.keys())
+            cbwarn(_msg, True)
+        else :
+            _msg = _msg.replace("yx",'')
+            _msg = _msg.replace("x ","          ")
+            _msg = _msg[:-2]
+            if len(_msg) :
+                cbdebug(_msg, True)    
+
+        return _detected_imageids
 
     # CloudBench should be passing us a more complex object for userdata,
     # but is only passing us a script instead. So, we have to wrap the

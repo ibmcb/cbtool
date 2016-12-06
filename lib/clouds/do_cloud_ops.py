@@ -87,6 +87,7 @@ class DoCmds(CommonCloudFunctions) :
             if not self.locations :
                 cbdebug("Caching DigitalOcean Locations...", True)
                 self.locations = catalogs.digitalocean[credential_pair].list_locations()
+            
             if not self.sizes :
                 cbdebug("Caching DigitalOcean Sizes...", True)
                 self.sizes = catalogs.digitalocean[credential_pair].list_sizes()
@@ -132,7 +133,7 @@ class DoCmds(CommonCloudFunctions) :
             # Attempt to a connection using those login credentials
             for credential_pair in credentials.split(","):
                 self.connect(credential_pair)
-
+                
         except CldOpsException, obj :
             _msg = str(obj.msg)
             cberr(_msg)

@@ -56,19 +56,119 @@ class SimCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
-        return "Cloudbench SimCloud."
+        return "Cloudbench SimCloud"
+
+    def connect(self, access_url, authentication_data, region, extra_parms = {}, diag = False) :
+        '''
+        TBD
+        '''        
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+            _region = "everything"            
+            _status = 0
+            
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+
+        finally :
+            if _status :
+                _msg = self.get_description() + " connection failure: " + _fmsg
+                cberr(_msg)                    
+                raise CldOpsException(_msg, _status)
+            else :
+                _msg = self.get_description() + " connection successful."
+                cbdebug(_msg)
+                return _status, _msg, _region            
     
     @trace
-    def test_vmc_connection(self, vmc_hn, access, credentials, key_name, \
+    def test_vmc_connection(self, vmc_name, access, credentials, key_name, \
                             security_group_name, vm_templates, vm_defaults) :
         '''
         TBD
         '''
-        _status = 0
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+
+            self.connect(access, credentials, vmc_name, vm_defaults, True)
+
+            _key_pair_found = self.check_ssh_key(vmc_name, vm_defaults["username"] + '_' + key_name, vm_defaults)
+
+            _security_group_found = self.check_security_group(vmc_name, security_group_name)
+
+            _prov_netname_found, _run_netname_found = self.check_networks(vmc_name, vm_defaults)
+
+            _detected_imageids = self.check_images(vmc_name, vm_templates)
+            
+            if not (_run_netname_found and _prov_netname_found and \
+                    _key_pair_found and _security_group_found) :
+                _msg = "Check the previous errors, fix it (using CBTOOL's web"
+                _msg += " GUI or CLI"
+                _status = 1178
+                raise CldOpsException(_msg, _status) 
+
+            if len(_detected_imageids) :
+                _status = 0               
+            else :
+                _status = 1
+
+        except CldOpsException, obj :
+            _fmsg = str(obj.msg)
+            _status = 2
+
+        except Exception, msg :
+            _fmsg = str(msg)
+            _status = 23
+
+        finally :
+            if _status > 1 :
+                _msg = "VMC \"" + vmc_name + "\" did not pass the connection test."
+                _msg += "\" : " + _fmsg
+                cberr(_msg, True)
+                raise CldOpsException(_msg, _status)
+            else :
+                _msg = "VMC \"" + vmc_name + "\" was successfully tested.\n"
+                cbdebug(_msg, True)
+                return _status, _msg
+
+    def check_networks(self, vmc_name, vm_defaults) :
+        '''
+        TBD
+        '''
+        _prov_netname = vm_defaults["netname"]
+        _run_netname = vm_defaults["netname"]
+
+        _net_str = "network \"" + _prov_netname + "\""
         
-        _msg = "VMC \"" + vmc_hn + "\" was successfully tested."
+        _msg = "Checking if the " + _net_str + " can be found on VMC " + vmc_name + "..."
         cbdebug(_msg, True)
-        return _status, _msg
+                        
+        _prov_netname_found = True
+        _run_netname_found = True
+
+        return _prov_netname_found, _run_netname_found
+
+    def check_images(self, vmc_name, vm_templates) :
+        '''
+        TBD
+        '''
+        _msg = "Checking if the imageids associated to each \"VM role\" are"
+        _msg += " registered on VMC \"" + vmc_name + "\"...."
+        cbdebug(_msg, True)
+
+        _registered_imageid_list = []
+        if True :
+            for _vm_role in vm_templates.keys() :
+                _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
+                if self.is_cloud_image_uuid(_imageid) :
+                    if _imageid not in _registered_imageid_list :
+                        _registered_imageid_list.append(_imageid)  
+
+        _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list)
+        
+        return _detected_imageids
 
     def generate_random_ip_address(self) :
         '''
