@@ -1,6 +1,7 @@
 [USER-DEFINED]
 PDM_ACCESS = need_to_be_configured_by_user
 # Name of the ssh key pair 
+PDM_KEY_NAME = cbtool_rsa
 PDM_SSH_KEY_NAME = cbtool_rsa
 PDM_LOGIN = need_to_be_configured_by_user
 PDM_INITIAL_VMCS = need_to_be_configured_by_user
@@ -32,7 +33,7 @@ UPDATE_FREQUENCY = 1
 ACCESS = $Empty
 CREDENTIALS = $Empty
 SECURITY_GROUPS = $Empty
-KEY_NAME = $Empty
+KEY_NAME = $PDM_KEY_NAME
 ADDITIONAL_DISCOVERY = $Empty
 MIGRATE_SUPPORTED = $True
 PROTECT_SUPPORTED = $True
@@ -51,7 +52,7 @@ RUNSTATE_SUPPORTED = $True
 RESIZE_SUPPORTED = $False
 LOGIN = $PDM_LOGIN
 SECURITY_GROUPS = $Empty
-KEY_NAME = $Empty
+KEY_NAME = $PDM_KEY_NAME
 SSH_KEY_NAME = $PDM_SSH_KEY_NAME
 CHECK_BOOT_STARTED = poll_cloud
 # Other methods could be used to check if a VM *STARTED* booting
@@ -67,7 +68,6 @@ LEAVE_INSTANCE_ON_FAILURE = $False
 FORCE_FAILURE = $False
 DISABLE_TIMESYNC = $True
 PORTS_BASE = $False
-PUBKEY_CONTENTS = $Empty
 
 [AI_DEFAULTS : PDM_CLOUDCONFIG]
 CAPTURE_SUPPORTED = $False

@@ -273,6 +273,17 @@ class BaseObjectOperations :
                 _status = 9
                 _msg = "Usage: vmccleanup <cloud name> <vmc name>"
 
+        elif command == "img-delete" :
+            object_attribute_list["force_detach"] = "false"            
+            if _length >= 3 :
+                object_attribute_list["name"] = _parameters[1]
+                object_attribute_list["vmc_name"] = _parameters[2]  
+            if _length >= 4 :
+                object_attribute_list["force_detach"] = _parameters[3]
+            if _length < 3 :
+                _status = 9
+                _msg = "Usage: imgdelete <cloud name> <image name> <vmc_name> [force]"
+
         elif command == "vmc-attach" :
             if _length == 2 :
                 object_attribute_list["name"] = _parameters[1]
@@ -551,7 +562,7 @@ class BaseObjectOperations :
             if _length >= 2 :
                 object_attribute_list["name"] = _parameters[1]
             if _length >= 3 :
-                object_attribute_list["force_detach"] = _parameters[1]
+                object_attribute_list["force_detach"] = _parameters[2]
             if _length < 2 :
                 _status = 9
                 _msg = "Usage: vmcrsdetach <cloud name> <vmcrs name> [force] [mode]"
@@ -588,7 +599,7 @@ class BaseObjectOperations :
             if _length >= 2 :
                 object_attribute_list["name"] = _parameters[1]
             if _length >= 3 :
-                object_attribute_list["force_detach"] = _parameters[1]
+                object_attribute_list["force_detach"] = _parameters[2]
             if _length < 2 :
                 _status = 9
                 _msg = "Usage: firsdetach <cloud name> <vmcrs name> [force] [mode]"
@@ -867,7 +878,8 @@ class BaseObjectOperations :
                 object_attribute_list["type"] = _parameters[1]
             if _length >= 3 :
                 object_attribute_list["output"] = _parameters[2]
-                                
+            if _length >= 4 :
+                object_attribute_list["include_vmcount"] = _parameters[3]   
             if not _length :
                 _status =  9
                 _msg = "Usage: stats <cloud name> [object type] [output]"
@@ -994,6 +1006,23 @@ class BaseObjectOperations :
                 _status = 0
 
             elif cmd == "vmc-attachall" :
+                _status = 0
+
+            elif cmd == "img-delete" :
+                _cloud_parameters = self.get_cloud_parameters(obj_attr_list["cloud_name"])                
+                obj_attr_list["mgt_801_delete_request_originated"] = obj_attr_list["command_originated"]
+                obj_attr_list["imageid1"] = obj_attr_list["name"]
+                obj_attr_list["boot_volume_imageid1"] = "NA"                
+                obj_attr_list["cloud_name"] = _cloud_parameters["name"]
+                obj_attr_list["model"] = _cloud_parameters["model"]
+                obj_attr_list["experiment_id"] = self.expid
+
+                _vm_defaults = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, \
+                                                    "vm_defaults", \
+                                                    False)
+
+                selective_dict_update(obj_attr_list, _vm_defaults)                
+                
                 _status = 0
                 
             elif cmd.count("attach") or cmd.count("check") :
@@ -1172,6 +1201,8 @@ class BaseObjectOperations :
                                 
                             obj_attr_list["role"] = "check"
                             obj_attr_list["run_generic_scripts"] = "false"
+
+                        obj_attr_list["boot_volume_imageid1"] = "NA"
 
                         if obj_attr_list["role"] not in _vm_templates :
                             _msg = "The VM role \"" + obj_attr_list["role"] + "\" is not defined" 
@@ -1369,7 +1400,7 @@ class BaseObjectOperations :
                             _status = 9000
                             raise self.ObjectOperationException(_msg, _status)
                     elif cmd.count("detach") :
-                        obj_attr_list["mgt_901_deprovisioning_request_originated"] = obj_attr_list["command_originated"]
+                        obj_attr_list["mgt_901_deprovisioning_request_originated"] = obj_attr_list["command_originated"]                        
                     elif cmd.count("login") or cmd.count("display") :
                         pass
                     else :
@@ -3866,7 +3897,7 @@ class BaseObjectOperations :
                         if obj_attr_list["transfer_files"] == "false" :
                             _msg = "\n\n The ability to create (and connect via ssh to)"
                             _msg += " instances using unconfigured images was "
-                            _msg += "successfully verified. At this point, we need "
+                            _msg += "successfully verified. At this point, we need"
                             _msg += " to create a base image for the Virtual Application \"nullworkload\""
                             _msg += " by executing \"vmattach check:<IMAGEID OF YOUR CHOICE>:<USERNAME FOR LOGIN>:nullworkload\""
                             _msg += " on the CLI.\n"

@@ -90,6 +90,7 @@ msgpub
 help
 shell
 echo
+imgdelete
 DNRTT
 cldattach sim TESTCLOUD
 cldattach
@@ -179,6 +180,7 @@ monlist
 msgpub
 help
 shell
+imgdelete
 echo
 shell TESTCLOUD date
 cldlist\; clddefault none\; clddefault
@@ -357,4 +359,12 @@ monextract TESTCLOUD VM app\; shell TESTCLOUD cat CB_DIRECTORY/data/REGRESSION_B
 shell TESTCLOUD rm -rf CB_DIRECTORY/data/REGRESSION_B/*\; shell TESTCLOUD find CB_DIRECTORY/data/REGRESSION_B/
 monextract TESTCLOUD all\; shell TESTCLOUD ls -la CB_DIRECTORY/data/REGRESSION_B
 reserved for monplot
+vmdev TESTCLOUD
+vmundev TESTCLOUD
+appdev TESTCLOUD
+appundev TESTCLOUD
+appnoload TESTCLOUD
+appload TESTCLOUD
+vmcapture TESTCLOUD youngest imgtstabc
+imgdelete TESTCLOUD imgtstabc simzone_a
 clddetach TESTCLOUD

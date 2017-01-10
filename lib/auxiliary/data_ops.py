@@ -604,6 +604,9 @@ def selectively_print_message(step, obj_attr_list) :
     if obj_attr_list["role"] == "check": 
         if obj_attr_list[step].lower() == "false" :
             return False
+        if obj_attr_list[step].lower() == "pseudotrue" :
+            obj_attr_list[step] = "false"
+            return True
         
     elif obj_attr_list["force_msg_print"].lower() == "true" :
         return True

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
 
@@ -24,13 +23,11 @@
     @author: Marcio A. Silva
 '''
 from time import time, sleep
-from random import randint, choice, shuffle
-from uuid import uuid5, NAMESPACE_DNS
+from random import choice, shuffle
 from subprocess import Popen, PIPE
-from os import chmod
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from lib.auxiliary.data_ops import str2dic, DataOpsException, create_restart_script, weighted_choice
+from lib.auxiliary.data_ops import str2dic, dic2str, DataOpsException, create_restart_script, weighted_choice
 from lib.auxiliary.value_generation import ValueGeneration
 from lib.remote.network_functions import Nethashget
 from shared_functions import CldOpsException, CommonCloudFunctions 
@@ -58,6 +55,7 @@ class SimCmds(CommonCloudFunctions) :
         '''
         return "Cloudbench SimCloud"
 
+    @trace
     def connect(self, access_url, authentication_data, region, extra_parms = {}, diag = False) :
         '''
         TBD
@@ -84,7 +82,7 @@ class SimCmds(CommonCloudFunctions) :
     
     @trace
     def test_vmc_connection(self, vmc_name, access, credentials, key_name, \
-                            security_group_name, vm_templates, vm_defaults) :
+                            security_group_name, vm_templates, vm_defaults, vmc_defaults) :
         '''
         TBD
         '''
@@ -94,13 +92,13 @@ class SimCmds(CommonCloudFunctions) :
 
             self.connect(access, credentials, vmc_name, vm_defaults, True)
 
-            _key_pair_found = self.check_ssh_key(vmc_name, vm_defaults["username"] + '_' + key_name, vm_defaults)
+            _key_pair_found = self.check_ssh_key(vmc_name, self.determine_key_name(vm_defaults), vm_defaults)
 
             _security_group_found = self.check_security_group(vmc_name, security_group_name)
 
             _prov_netname_found, _run_netname_found = self.check_networks(vmc_name, vm_defaults)
 
-            _detected_imageids = self.check_images(vmc_name, vm_templates)
+            _detected_imageids = self.check_images(vmc_name, vm_templates, vmc_defaults)
             
             if not (_run_netname_found and _prov_netname_found and \
                     _key_pair_found and _security_group_found) :
@@ -123,25 +121,30 @@ class SimCmds(CommonCloudFunctions) :
             _status = 23
 
         finally :
-            if _status > 1 :
-                _msg = "VMC \"" + vmc_name + "\" did not pass the connection test."
-                _msg += "\" : " + _fmsg
-                cberr(_msg, True)
-                raise CldOpsException(_msg, _status)
-            else :
-                _msg = "VMC \"" + vmc_name + "\" was successfully tested.\n"
-                cbdebug(_msg, True)
-                return _status, _msg
+            
+            _status, _msg = self.common_messages("VMC", {"name" : vmc_name }, "connected", _status, _fmsg)
+            return _status, _msg
 
+    @trace
     def check_networks(self, vmc_name, vm_defaults) :
         '''
         TBD
         '''
-        _prov_netname = vm_defaults["netname"]
-        _run_netname = vm_defaults["netname"]
+        if "prov_netname" not in vm_defaults :
+            _prov_netname = vm_defaults["netname"]
+        else :
+            _prov_netname = "public"
 
-        _net_str = "network \"" + _prov_netname + "\""
-        
+        if "run_netname" not in vm_defaults :
+            _run_netname = vm_defaults["netname"]
+        else :
+            _run_netname = vm_defaults["run_netname"]
+
+        if _run_netname == _prov_netname :                        
+            _net_str = "network \"" + _prov_netname + "\""
+        else :
+            _net_str = "networks \"" + _prov_netname + "\" and \"" + _run_netname + "\""
+                        
         _msg = "Checking if the " + _net_str + " can be found on VMC " + vmc_name + "..."
         cbdebug(_msg, True)
                         
@@ -150,127 +153,55 @@ class SimCmds(CommonCloudFunctions) :
 
         return _prov_netname_found, _run_netname_found
 
-    def check_images(self, vmc_name, vm_templates) :
+    @trace
+    def check_images(self, vmc_name, vm_templates, vmc_defaults) :
         '''
         TBD
         '''
-        _msg = "Checking if the imageids associated to each \"VM role\" are"
-        _msg += " registered on VMC \"" + vmc_name + "\"...."
-        cbdebug(_msg, True)
-
+        self.common_messages("IMG", { "name": vmc_name }, "checking", 0, '')
+  
+        _map_name_to_id = {}
+        _map_uuid_to_name = {}
         _registered_imageid_list = []
         if True :
             for _vm_role in vm_templates.keys() :
                 _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
-                if self.is_cloud_image_uuid(_imageid) :
-                    if _imageid not in _registered_imageid_list :
-                        _registered_imageid_list.append(_imageid)  
+                if _imageid != "to_replace" :
+                    if not self.is_cloud_image_uuid(_imageid) :
+                        if _imageid in _map_name_to_id :
+                            vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])
+                        else :
+                            _map_name_to_id[_imageid] = self.generate_random_uuid(_imageid)
+                            _map_uuid_to_name[_map_name_to_id[_imageid]] = _imageid                                              
+                            vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])
+    
+                        if _map_name_to_id[_imageid] not in _registered_imageid_list :
+                            _registered_imageid_list.append(_map_name_to_id[_imageid])  
+                    else :
+                        if _imageid not in _registered_imageid_list :
+                            _registered_imageid_list.append(_imageid)
 
         _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list)
-        
+
+        _map_name_to_id["baseimg"] = self.generate_random_uuid("baseimg")
+        _map_uuid_to_name[self.generate_random_uuid("baseimg")] = "baseimg"
+
+        if "images_uuid2name" not in vmc_defaults :
+            vmc_defaults["images_uuid2name"] = dic2str(_map_uuid_to_name)
+
+        if "images_name2uuid" not in vmc_defaults :            
+            vmc_defaults["images_name2uuid"] = dic2str(_map_name_to_id)
+                
         return _detected_imageids
 
-    def generate_random_ip_address(self) :
-        '''
-        TBD
-        '''
-        _ip = ".".join(str(randint(1, 255)) for _octect in range(4))
-        return _ip
-        
-    def generate_random_mac_address(self) :
-        '''
-        TBD
-        '''
-        _mac_template = [ 0x00, 0x16, 0x3e, randint(0x00, 0x7f), randint(0x00, 0xff), randint(0x00, 0xff) ]
-        _mac = ':'.join(map(lambda x: "%02x" % x, _mac_template))
-        return _mac
-
-    def generate_random_uuid(self) :
-        _uuid = str(uuid5(NAMESPACE_DNS, str(randint(0,1000000000000000000)))).upper()
-        return _uuid
-
     @trace
-    def get_virtual_hardware_config(self, obj_attr_list) :
-        '''
-        TBD
-        '''
-        try :
-            _status = 100
-            _vhw_config = {}
-            _vhw_config["pico32"] = "vcpus:1,vmemory:192,vstorage:2048,vnics:1"
-            _vhw_config["nano32"] = "vcpus:1,vmemory:512,vstorage:61440,vnics:1"
-            _vhw_config["micro32"] = "vcpus:1,vmemory:1024,vstorage:61440,vnics:1"
-            _vhw_config["copper32"] = "vcpus:1,vmemory:2048,vstorage:61440,vnics:1"
-            _vhw_config["bronze32"] = "vcpus:1,vmemory:2048,vstorage:179200,vnics:1"
-            _vhw_config["iron32"] = "vcpus:2,vmemory:2048,vstorage:179200,vnics:1"
-            _vhw_config["silver32"] = "vcpus:4,vmemory:2048,vstorage:358400,vnics:1"
-            _vhw_config["gold32"] = "vcpus:8,vmemory:4096,vstorage:358400,vnics:1"
-            _vhw_config["copper64"] = "vcpus:2,vmemory:4096,vstorage:61440,vnics:1"
-            _vhw_config["bronze64"]  = "vcpus:2,vmemory:4096,vstorage:870400,vnics:1"
-            _vhw_config["silver64"] = "vcpus:4,vmemory:8192,vstorage:1048576,vnics:1"
-            _vhw_config["gold64"] = "vcpus:8,vmemory:16384,vstorage:1048576,vnics:1"
-            _vhw_config["rhodium64"] = "vcpus:16,vmemory:16384,vstorage:2097152,vnics:1"
-            _vhw_config["platinum64"] = "vcpus:24,vmemory:32768,vstorage:2097152,vnics:1"
-                
-            _vhw_config["premium"] = "cpu_upper:1000,cpu_lower:1000,memory_upper:100,memory_lower:100"
-            _vhw_config["standard"] = "cpu_upper:1000,cpu_lower:500,memory_upper:100,memory_lower:50"
-            _vhw_config["value"] = "cpu_upper:-1,cpu_lower:0,memory_upper:100,memory_lower:0"
-            
-            if "size" not in obj_attr_list :
-                obj_attr_list["size"] = "micro32"
-            else :
-                obj_attr_list["size"] = choice(obj_attr_list["size"].strip().split(','))
-
-            if "class" not in obj_attr_list :
-                obj_attr_list["class"] = "standard"
-            
-            _curr_vhw_config = _vhw_config[obj_attr_list["size"]] + ',' + _vhw_config[obj_attr_list["class"]]
-            _curr_vhw_config = str2dic(_curr_vhw_config)
-            obj_attr_list.update(_curr_vhw_config)
-            _status = 0
-        
-        except Exception, e :
-            _status = 23
-            _fmsg = str(e)
-    
-        finally :
-            if _status :
-                _msg = "virtual hardware configuration parameters could not be "
-                _msg += "determined:" + _fmsg
-                cberr(_msg, True)
-                raise CldOpsException(_msg, _status)
-            else :
-                _msg = "virtual hardware configuration parameters were "
-                _msg += "successfully determined."
-                cbdebug(_msg)
-                return True
-
-    def create_simulated_hosts(self, obj_attr_list, host_uuid) :
-        '''
-        TBD
-        '''
-        _cpus = choice(obj_attr_list["hosts_cpu"])
-        obj_attr_list["host_list"][host_uuid]["cores"] = _cpus        
-        obj_attr_list["host_list"][host_uuid]["available_cores"] = _cpus
-
-        _mem_per_core = choice(obj_attr_list["hosts_mem_per_core"])         
-
-        _memory = int(_cpus) * int(_mem_per_core) * 1024
-        
-        obj_attr_list["host_list"][host_uuid]["memory"] = _memory
-        obj_attr_list["host_list"][host_uuid]["available_memory"] = _memory
-        
-        _gpus = choice(obj_attr_list["hosts_gpu"].strip().split(','))
-
-        obj_attr_list["host_list"][host_uuid]["gpus"] = _gpus
-        obj_attr_list["host_list"][host_uuid]["available_gpus"] = _gpus
-        
-        return True
-
     def discover_hosts(self, obj_attr_list, start) :
         '''
         TBD
         '''
+        _status = 100
+        _fmsg = "An error has occurred, but no error message was captured"
+        
         _host_uuid = obj_attr_list["cloud_vm_uuid"]
 
         obj_attr_list["hosts_cpu"] = obj_attr_list["hosts_cpu"].strip().split(',')
@@ -338,6 +269,9 @@ class SimCmds(CommonCloudFunctions) :
         self.additional_host_discovery (obj_attr_list)
         self.populate_interface(obj_attr_list)
 
+        _status = 0
+        _status, _msg = self.common_messages("HOST", obj_attr_list, "discovered", _status, _fmsg)
+
         return True
 
     @trace
@@ -349,6 +283,8 @@ class SimCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
+            self.common_messages("VMC", obj_attr_list, "cleaning up vms", 0, '')
+
             _msg = "Ok"
             _status = 0
             
@@ -357,17 +293,8 @@ class SimCmds(CommonCloudFunctions) :
             _fmsg = str(e)
 
         finally :
-            if _status :
-                _msg = "VMC " + obj_attr_list["name"] + " could not be cleaned "
-                _msg += "on SimCloud \"" + obj_attr_list["cloud_name"]
-                _msg += "\" : " + _fmsg
-                cberr(_msg)
-                raise CldOpsException(_msg, _status)
-            else :
-                _msg = "VMC " + obj_attr_list["name"] + " was successfully cleaned "
-                _msg += "on SimCloud \"" + obj_attr_list["cloud_name"] + "\""
-                cbdebug(_msg)
-                return _status, _msg
+            _status, _msg = self.common_messages("VMC", obj_attr_list, "cleaned up", _status, _fmsg)
+            return _status, _msg
 
     @trace
     def vmcregister(self, obj_attr_list) :
@@ -388,10 +315,6 @@ class SimCmds(CommonCloudFunctions) :
 
             obj_attr_list["cloud_hostname"] = obj_attr_list["name"]
             obj_attr_list["cloud_ip"] = self.generate_random_ip_address()
-
-            _fmsg = "VMC " + obj_attr_list["uuid"] + " could not be registered "
-            _fmsg += " on SimCloud \"" + obj_attr_list["cloud_name"] + "\"."
-
             obj_attr_list["cloud_vm_uuid"] = self.generate_random_uuid()
 
             obj_attr_list["arrival"] = int(time())
@@ -420,19 +343,9 @@ class SimCmds(CommonCloudFunctions) :
             _fmsg = str(e)
     
         finally :
-            if _status :
-                _msg = "VMC " + obj_attr_list["uuid"] + " could not be registered "
-                _msg += "on SimCloud \"" + obj_attr_list["cloud_name"] + "\" : "
-                _msg += _fmsg
-                cberr(_msg, True)
-                raise CldOpsException(_msg, _status)
-            else :
-                _msg = "VMC " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "registered on SimCloud \"" + obj_attr_list["cloud_name"]
-                _msg += "\"."
-                cbdebug(_msg, True)
-                return _status, _msg
-
+            _status, _msg = self.common_messages("VMC", obj_attr_list, "registered", _status, _fmsg)
+            return _status, _msg
+        
     @trace
     def vmcunregister(self, obj_attr_list) :
         '''
@@ -465,19 +378,27 @@ class SimCmds(CommonCloudFunctions) :
             _fmsg = str(e)
     
         finally :
-            if _status :
-                _msg = "VMC " + obj_attr_list["uuid"] + " could not be unregistered "
-                _msg += "on SimCloud \"" + obj_attr_list["cloud_name"] + "\" : "
-                _msg += _fmsg
-                cberr(_msg, True)
-                raise CldOpsException(_msg, _status)
-            else :
-                _msg = "VMC " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "unregistered on SimCloud \"" + obj_attr_list["cloud_name"]
-                _msg += "\"."
-                cbdebug(_msg, True)
-                return _status, _msg
+            _status, _msg = self.common_messages("VMC", obj_attr_list, "unregistered", _status, _fmsg)
+            return _status, _msg
 
+    @trace
+    def vmcount(self, obj_attr_list):
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _nr_instances = "NA"
+            _fmsg = "An error has occurred, but no error message was captured"                        
+            _nr_instances = self.osci.count_object(obj_attr_list["cloud_name"], "VM", "RESERVATIONS")
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+
+        finally :
+            return _nr_instances                    
+        
     @trace
     def get_ip_address(self, obj_attr_list):
         '''
@@ -493,24 +414,91 @@ class SimCmds(CommonCloudFunctions) :
             
         # NOTE: "cloud_ip" is always equal to "run_cloud_ip"
         obj_attr_list["cloud_ip"] = obj_attr_list["run_cloud_ip"] 
-            
-        obj_attr_list["cloud_hostname"] = obj_attr_list["cloud_vm_uuid"] + ".simcloud.com"
-        return True        
+        return True
 
     @trace
-    def vmcount(self, obj_attr_list):
+    def get_instances(self, obj_attr_list) :
         '''
         TBD
         '''
-        return self.osci.count_object(obj_attr_list["cloud_name"], "VM", "ARRIVED")
+        return True
 
+    @trace
+    def get_images(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _hyper = ''
+            
+            _fmsg = "An error has occurred, but no error message was captured"
+
+            _vmc_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "VMC", False, obj_attr_list["vmc"], False)
+            _map_uuid_to_name = str2dic(_vmc_attr_list["images_uuid2name"])
+            _map_name_to_uuid = str2dic(_vmc_attr_list["images_name2uuid"])
+                
+            if self.is_cloud_image_uuid(obj_attr_list["imageid1"]) :
+                
+                obj_attr_list["boot_volume_imageid1"] = obj_attr_list["imageid1"]                
+                if obj_attr_list["imageid1"] in _map_uuid_to_name :
+                    obj_attr_list["imageid1"] = _map_uuid_to_name[obj_attr_list["imageid1"]]
+                    _status = 0                    
+                else :
+                    _fmsg = "image does not exist"
+                    _status = 1817                    
+            else :
+                if obj_attr_list["imageid1"] in _map_name_to_uuid :
+                    obj_attr_list["boot_volume_imageid1"] = _map_name_to_uuid[obj_attr_list["imageid1"]]
+                    _status = 0                    
+                else :
+                    _fmsg = "image does not exist"
+                    _status = 1817
+#                    obj_attr_list["boot_volume_imageid1"] = self.generate_random_uuid(obj_attr_list["imageid1"])
+            
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+            
+        finally :
+            if _status :
+                _msg = "Image Name (" +  obj_attr_list["imageid1"] + ") not found: " + _fmsg
+                cberr(_msg)
+                raise CldOpsException(_msg, _status)
+            else :
+                return True
+
+    @trace
+    def get_networks(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+
+            _status = 0
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+            
+        finally :
+            if _status :
+                _msg = "Network (" +  obj_attr_list["prov_netname"] + " ) not found: " + _fmsg
+                cberr(_msg, True)
+                raise CldOpsException(_msg, _status)
+            else :
+                return True
+    
     @trace
     def is_vm_running(self, obj_attr_list):
         '''
         TBD
         '''
-        return True
-    
+        return self.get_instances(obj_attr_list)
+
+    @trace    
     def is_vm_ready(self, obj_attr_list) :
 
         if self.is_vm_running(obj_attr_list) :
@@ -524,6 +512,7 @@ class SimCmds(CommonCloudFunctions) :
         else :
             obj_attr_list["last_known_state"] = "not running"
 
+    @trace
     def vm_placement(self, obj_attr_list) :
         '''
         TBD
@@ -589,126 +578,65 @@ class SimCmds(CommonCloudFunctions) :
 
         return True
 
-    def check_host_capacity(self, obj_attr_list, host_uuid) :
+    @trace        
+    def vvcreate(self, obj_attr_list) :
         '''
         TBD
         '''
-        _host_core_found = False
-        _host_mem_found = False        
-        
-        _host = self.osci.get_object(obj_attr_list["cloud_name"], "HOST", False, host_uuid, False)
-        
-        if int(_host["available_cores"]) >= int(obj_attr_list["vcpus"]) :
-            _host_core_found = True
-            
-            if int(_host["available_memory"]) >= int(obj_attr_list["vmemory"]) :
-                _host_mem_found = True
-                obj_attr_list["host_name"] = _host["name"][5:]
-                obj_attr_list["host"] = host_uuid
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
 
-        return _host_core_found, _host_mem_found
+            if "cloud_vv_type" not in obj_attr_list :
+                obj_attr_list["cloud_vv_type"] = "local"
 
-    def host_resource_update(self, obj_attr_list, operation) :
+            if "cloud_vv" in obj_attr_list :
+
+                obj_attr_list["last_known_state"] = "about to send volume create request"
+
+                obj_attr_list["cloud_vv_uuid"] = self.generate_random_uuid()
+
+                self.common_messages("VV", obj_attr_list, "creating", _status, _fmsg)
+
+            _status = 0
+
+        except CldOpsException, obj :
+            _status = obj.status
+            _fmsg = str(obj.msg)
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+    
+        finally :                
+            _status, _msg = self.common_messages("VV", obj_attr_list, "created", _status, _fmsg)
+            return _status, _msg
+
+    @trace        
+    def vvdestroy(self, obj_attr_list) :
         '''
         TBD
         '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
 
-        if operation == "create" :
-            _cores = -int(obj_attr_list["vcpus"])
-            _memory = -int(obj_attr_list["vmemory"])
-            _host_uuid = obj_attr_list["host"]
+            if str(obj_attr_list["cloud_vv_uuid"]).lower() != "none" :    
+                self.common_messages("VV", obj_attr_list, "destroying", 0, '')
+                                
+            _status = 0
 
-            if self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
-                                              "HOST", _host_uuid, False, \
-                                              "available_cores", _cores, True) >= 0 :
-                True
-            
-            else :
-                _status = 7778
-                _msg = "Failed to create VM image: no available cores left"
-                self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
-                                                          "VMC", obj_attr_list["vmc"], False, \
-                                                          "cpu_drop", 1, True)
-                raise CldOpsException(_msg, _status)
-            
+        except CldOpsException, obj :
+            _status = obj.status
+            _fmsg = str(obj.msg)
 
-            if self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
-                                              "HOST", _host_uuid, False, \
-                                              "available_memory", _memory, True) >= 0 :
-                True
-                
-            else :
-                _status = 7778
-                _msg = "Failed to create VM image: no available memory left"
-                self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
-                                                          "VMC", obj_attr_list["vmc"], False, \
-                                                          "memory_drop", 1, True)                
-                raise CldOpsException(_msg, _status)
-
-        elif operation == "destroy" :
-            _cores = int(obj_attr_list["vcpus"])
-            _memory = int(obj_attr_list["vmemory"])
-            _host_uuid = obj_attr_list["host"]
-
-
-            self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
-                                          "HOST", _host_uuid, False, \
-                                          "available_cores", _cores, True)
-            
-            self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
-                                                      "HOST", _host_uuid, False, \
-                                                      "available_memory", _memory, True)
-        
-        elif operation == "migrate" :
-            _cores = -_cores
-            _memory = -_memory
-            _host_uuid = obj_attr_list["destination_uuid"]    
-
-            if self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
-                                              "HOST", _host_uuid, False, \
-                                              "available_cores", _cores, True) >= 0 :
-                True
-            
-            else :
-                _status = 7778
-                _msg = "Failed to create VM image: no available cores left"
-                self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
-                                                          "VMC", obj_attr_list["vmc"], False, \
-                                                          "cpu_drop", 1, True)
-                raise CldOpsException(_msg, _status)
-            
-
-            if self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
-                                              "HOST", _host_uuid, False, \
-                                              "available_memory", _memory, True) >= 0 :
-                True
-                
-            else :
-                _status = 7778
-                _msg = "Failed to create VM image: no available memory left"
-                self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
-                                                          "VMC", obj_attr_list["vmc"], False, \
-                                                          "memory_drop", 1, True)                
-                raise CldOpsException(_msg, _status)
-
-            _cores = int(obj_attr_list["vcpus"])
-            _memory = int(obj_attr_list["vmemory"])
-            _host_uuid = obj_attr_list["host"]
-
-            self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
-                                          "HOST", _host_uuid, False, \
-                                          "available_cores", _cores, True)
-            
-            self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
-                                                      "HOST", _host_uuid, False, \
-                                                      "available_memory", _memory, True)
-
-        else :
-            _cores = False
-            _memory = False
-            _host_uuid = False
-
-        return True
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+    
+        finally :                
+            _status, _msg = self.common_messages("VV", obj_attr_list, "destroyed", _status, _fmsg)
+            return _status, _msg
 
     @trace
     def vmcreate(self, obj_attr_list) :
@@ -727,25 +655,30 @@ class SimCmds(CommonCloudFunctions) :
             else :
                 obj_attr_list["cloud_vm_uuid"] = "11111111-1111-1111-1111-111111111111"
 
-            obj_attr_list["cloud_vm_name"] = "cb-" + obj_attr_list["username"] 
-            obj_attr_list["cloud_vm_name"] += '-' + "vm_" + obj_attr_list["name"].split("_")[1] 
-            obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["role"]
-
-            if obj_attr_list["ai"] != "none" :            
-                obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["ai_name"]
-
-            obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"].replace("_", "-")            
-
+            self.determine_instance_name(obj_attr_list)
+            self.determine_key_name(obj_attr_list)
+            
             obj_attr_list["cloud_mac"] = self.generate_random_mac_address()
             self.get_virtual_hardware_config(obj_attr_list)
 
             self.take_action_if_requested("VM", obj_attr_list, "provision_originated")
 
             sleep(float(obj_attr_list["pre_creation_delay"]))
+
+            if str(obj_attr_list["userdata"]).lower() == "false" :
+                obj_attr_list["config_drive"] = None
+            else :
+                obj_attr_list["config_drive"] = True                
                   
             _time_mark_prs = int(time())
             obj_attr_list["mgt_002_provisioning_request_sent"] = _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
 
+            obj_attr_list["last_known_state"] = "about to send create request"
+
+            self.get_images(obj_attr_list)
+            self.get_networks(obj_attr_list) 
+            self.pre_vmcreate_process(obj_attr_list)
+            
             if obj_attr_list["role"] != "willfail" :
                 True
             else :
@@ -766,20 +699,21 @@ class SimCmds(CommonCloudFunctions) :
 
             _time_mark_vmp = int(time())
             self.vm_placement(obj_attr_list)
+            
             obj_attr_list["sim_0021_vm_placement_time"] = _time_mark_vmp - int(time())
 
-            if "meta_tags" in obj_attr_list :
-                if obj_attr_list["meta_tags"] != "empty" and \
-                obj_attr_list["meta_tags"].count(':') and \
-                obj_attr_list["meta_tags"].count(',') :
-                    obj_attr_list["meta_tags"] = str2dic(obj_attr_list["meta_tags"])
-                else :
-                    obj_attr_list["meta_tags"] = "empty"
-            else :
-                obj_attr_list["meta_tags"] = "empty"
-  
+            self.vvcreate(obj_attr_list)
+
+            self.common_messages("VM", obj_attr_list, "creating", 0, '')
+
             _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
 
+            if str(obj_attr_list["check_ssh"]).lower() != "false" :
+                obj_attr_list["check_ssh"] = "pseudotrue" 
+                                
+            if str(obj_attr_list["transfer_files"]).lower() != "false" :
+                obj_attr_list["transfer_files"] = "pseudotrue"
+                
             self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
 
             self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
@@ -812,36 +746,9 @@ class SimCmds(CommonCloudFunctions) :
             _status = 23
             _fmsg = str(e)
 
-        finally :
-            if "lvt_cnt" in obj_attr_list :
-                del obj_attr_list["lvt_cnt"]
-                
-            if _status :
-
-                if str(obj_attr_list["leave_instance_on_failure"]).lower() == "true" :
-                    _liof_msg = " (Will leave the VM running due to experimenter's request)"
-                else :
-                    _liof_msg = " (The VM creation will be rolled back)"
-                    obj_attr_list["mgt_901_deprovisioning_request_originated"] = int(time())
-                    self.vmdestroy(obj_attr_list)
-                
-                _msg = "" + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
-                _msg += "could not be created"
-                _msg += " on SimCloud \"" + obj_attr_list["cloud_name"] + "\" : "
-                _msg += _fmsg + _liof_msg
-                cberr(_msg, True)
-
-
-            
-                raise CldOpsException(_msg, _status)
-            else :
-                _msg = "" + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
-                _msg += "was successfully created"
-                _msg += " on SimCloud \"" + obj_attr_list["cloud_name"] + "\"."
-                cbdebug(_msg)
-                return _status, _msg
+        finally :                
+            _status, _msg = self.common_messages("VM", obj_attr_list, "created", _status, _fmsg)
+            return _status, _msg
 
     @trace        
     def vmdestroy(self, obj_attr_list) :
@@ -860,10 +767,7 @@ class SimCmds(CommonCloudFunctions) :
             obj_attr_list["mgt_902_deprovisioning_request_sent"] = \
                 _time_mark_drs - int(obj_attr_list["mgt_901_deprovisioning_request_originated"])
 
-            _msg = "Sending a termination request for "  + obj_attr_list["name"] + ""
-            _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
-            _msg += "...."
-            cbdebug(_msg, True)
+            self.common_messages("VM", obj_attr_list, "destroying", 0, '')
 
             if obj_attr_list["host"] != "NA" :
                 self.host_resource_update(obj_attr_list, "destroy")
@@ -878,6 +782,8 @@ class SimCmds(CommonCloudFunctions) :
                 if obj_attr_list["execute_deprovision_finished_stdout"].count("tenant") :
                     _temp_dict = str2dic(obj_attr_list["execute_deprovision_finished_stdout"].replace('\n',''))
                     obj_attr_list.update(_temp_dict)
+
+            self.vvdestroy(obj_attr_list)
                     
             _status = 0
             
@@ -890,22 +796,8 @@ class SimCmds(CommonCloudFunctions) :
             _fmsg = str(e)
     
         finally :
-            if _status :
-                _msg = "" + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
-                _msg += "could not be destroyed "
-                _msg += " on SimCloud \"" + obj_attr_list["cloud_name"] + "\" : "
-                _msg += _fmsg
-                cberr(_msg, True)
-                raise CldOpsException(_msg, _status)
-            else :
-                _msg = "" + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
-                _msg += "was successfully "
-                _msg += "destroyed on SimCloud \"" + obj_attr_list["cloud_name"]
-                _msg += "\"."
-                cbdebug(_msg)
-                return _status, _msg
+            _status, _msg = self.common_messages("VM", obj_attr_list, "destroyed", _status, _fmsg)
+            return _status, _msg
 
     @trace        
     def vmcapture(self, obj_attr_list) :
@@ -923,19 +815,38 @@ class SimCmds(CommonCloudFunctions) :
             
             obj_attr_list["mgt_102_capture_request_sent"] = _time_mark_crs - obj_attr_list["mgt_101_capture_request_originated"]
                       
-            _msg = "Waiting for " + obj_attr_list["name"]
-            _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
-            _msg += "to be captured with image name \"" + obj_attr_list["captured_image_name"]
-            _msg += "\"..."
-            cbdebug(_msg, True)
+            self.common_messages("VM", obj_attr_list, "capturing", 0, '')
+
+            _img_uuid = self.generate_random_uuid(obj_attr_list["captured_image_name"])
+            _img_name = obj_attr_list["captured_image_name"]
+            
+            _vmc_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "VMC", False, obj_attr_list["vmc"], False)
+            _map_uuid_to_name = str2dic(_vmc_attr_list["images_uuid2name"])
+            _map_name_to_uuid = str2dic(_vmc_attr_list["images_name2uuid"])
+
+            _map_uuid_to_name[_img_uuid] = _img_name
+            _map_name_to_uuid[_img_name] = _img_uuid
+            
+            self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
+                                              "VMC", \
+                                              obj_attr_list["vmc"], \
+                                              False, \
+                                              "images_uuid2name", \
+                                              dic2str(_map_uuid_to_name), \
+                                              False)
+
+            self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
+                                              "VMC", \
+                                              obj_attr_list["vmc"], \
+                                              False, \
+                                              "images_name2uuid", \
+                                              dic2str(_map_name_to_uuid), \
+                                              False)
             
             sleep(1.0)
             
             _time_mark_crc = int(time())
             obj_attr_list["mgt_103_capture_request_completed"] = _time_mark_crc - _time_mark_crs
-
-            _msg = "VM " + obj_attr_list["name"] + " capture request completed."
-            cbdebug(_msg)
             
             _status = 0
             
@@ -948,21 +859,8 @@ class SimCmds(CommonCloudFunctions) :
             _fmsg = str(e)
     
         finally :
-            if _status :
-                _msg = "" + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
-                _msg += "could not be captured "
-                _msg += " on SimCloud \"" + obj_attr_list["cloud_name"] + "\" : "
-                _msg += _fmsg
-                cberr(_msg, True)
-                raise CldOpsException(_msg, _status)
-            else :
-                _msg = "" + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
-                _msg += "was successfully captured "
-                _msg += " on SimCloud \"" + obj_attr_list["cloud_name"] + "\"."
-                cbdebug(_msg)
-                return _status, _msg
+            _status, _msg = self.common_messages("VM", obj_attr_list, "captured", _status, _fmsg)
+            return _status, _msg
 
     @trace        
     def vmrunstate(self, obj_attr_list) :
@@ -979,12 +877,12 @@ class SimCmds(CommonCloudFunctions) :
                 obj_attr_list["mgt_202_runstate_request_sent"] = \
                     _time_mark_rrs - obj_attr_list["mgt_201_runstate_request_originated"]
 
+            self.common_messages("VM", obj_attr_list, "runstate altering", 0, '')
+
             _time_mark_rrc = int(time())
             obj_attr_list["mgt_203_runstate_request_completed"] = \
                 _time_mark_rrc - _time_mark_rrs
 
-            _msg = "VM " + obj_attr_list["name"] + " runstate completed."
-            cbdebug(_msg)
             sleep(5)
 
             _status = 0
@@ -994,23 +892,10 @@ class SimCmds(CommonCloudFunctions) :
             _fmsg = str(e)
     
         finally :
-            if _status :
-                _msg = "" + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
-                _msg += "could not have its runstate changed "
-                _msg += " on SimCloud \"" + obj_attr_list["cloud_name"] + "\" : "
-                _msg += _fmsg
-                cberr(_msg, True)
-                raise CldOpsException(_msg, _status)
-            else :
-                _msg = "" + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
-                _msg += "had its runstate successfully "
-                _msg += "changed on SimCloud \"" + obj_attr_list["cloud_name"]
-                _msg += "\"."
-                cbdebug(_msg)
-                return _status, _msg
+            _status, _msg = self.common_messages("VM", obj_attr_list, "runstate altered", _status, _fmsg)
+            return _status, _msg
 
+    @trace
     def vmmigrate(self, obj_attr_list) :
         '''
         TBD
@@ -1019,10 +904,7 @@ class SimCmds(CommonCloudFunctions) :
         operation = obj_attr_list["mtype"]
         obj_attr_list["mgt_502_" + operation + "_request_sent"] = _time_mark_crs - obj_attr_list["mgt_501_" + operation + "_request_originated"]
 
-        _msg = "Sending a " + operation + " request for "  + obj_attr_list["name"]
-        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
-        _msg += "...."
-        cbdebug(_msg, True)
+        self.common_messages("VM", obj_attr_list, "migrating", 0, '')
 
         if obj_attr_list["placement"] != "random" :
             self.host_resource_update(obj_attr_list, "migrate")
@@ -1030,16 +912,67 @@ class SimCmds(CommonCloudFunctions) :
         _time_mark_crc = int(time())
         obj_attr_list["mgt_503_" + operation + "_request_completed"] = _time_mark_crc - _time_mark_crs
 
-        cbdebug("VM " + obj_attr_list["name"] + " " + operation + " request completed.")
+        _status, _msg = self.common_messages("VM", obj_attr_list, operation + "d", 0, '')
+        return _status, _msg
 
-        _msg = "" + obj_attr_list["name"] + ""
-        _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
-        _msg += "was successfully "
-        _msg += operation + "ed on SimCloud \"" + obj_attr_list["cloud_name"]
-        _msg += "\"."
-        cbdebug(_msg)
-            
-        return 0, _msg
+    @trace
+    def vmresize(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        return 0, "NOT SUPPORTED"
+
+    @trace        
+    def imgdelete(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+
+            self.common_messages("IMG", obj_attr_list, "deleting", 0, '')
+            _img_name = obj_attr_list["name"]
+
+            _vmc_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "VMC", True, obj_attr_list["vmc_name"], False)
+            _map_uuid_to_name = str2dic(_vmc_attr_list["images_uuid2name"])
+            _map_name_to_uuid = str2dic(_vmc_attr_list["images_name2uuid"])                
+
+            if _img_name in _map_name_to_uuid :
+                _img_uuid = _map_name_to_uuid[_img_name]
+                obj_attr_list["boot_volume_imageid1"] = _img_uuid
+                del _map_name_to_uuid[_img_name]
+                del _map_uuid_to_name[_img_uuid]
+                
+            self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
+                                              "VMC", \
+                                              _vmc_attr_list["uuid"], \
+                                              False, \
+                                              "images_uuid2name", \
+                                              dic2str(_map_uuid_to_name), \
+                                              False)
+
+            self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
+                                              "VMC", \
+                                              _vmc_attr_list["uuid"], \
+                                              False, \
+                                              "images_name2uuid", \
+                                              dic2str(_map_name_to_uuid), \
+                                              False)
+
+            _status = 0
+
+        except CldOpsException, obj :
+            _status = obj.status
+            _fmsg = str(obj.msg)
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+    
+        finally :                
+            _status, _msg = self.common_messages("IMG", obj_attr_list, "deleted", _status, _fmsg)
+            return _status, _msg
 
     @trace        
     def aidefine(self, obj_attr_list, current_step) :
@@ -1132,43 +1065,207 @@ class SimCmds(CommonCloudFunctions) :
             _fmsg = str(e)
     
         finally :
-            if _status :
-                _msg = "AI " + obj_attr_list["name"] + " could not be defined "
-                _msg += " on SimCloud \"" + obj_attr_list["cloud_name"] + "\" : "
-                _msg += _fmsg
-                cberr(_msg, True)
-                raise CldOpsException(_msg, _status)
-            else :
-                _msg = "AI " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "defined on SimCloud \"" + obj_attr_list["cloud_name"]
-                _msg += "\"."
-                cbdebug(_msg)
-                return _status, _msg
+            _status, _msg = self.common_messages("AI", obj_attr_list, "defined", _status, _fmsg)
+            return _status, _msg
 
-    @trace        
-    def aiundefine(self, obj_attr_list, current_step) :
+    @trace
+    def get_virtual_hardware_config(self, obj_attr_list) :
         '''
         TBD
         '''
         try :
-            _fmsg = "An error has occurred, but no error message was captured"
-            self.take_action_if_requested("AI", obj_attr_list, current_step)            
-            _status = 0
+            _status = 100
+            _vhw_config = {}
+            _vhw_config["pico32"] = "vcpus:1,vmemory:192,vstorage:2048,vnics:1"
+            _vhw_config["nano32"] = "vcpus:1,vmemory:512,vstorage:61440,vnics:1"
+            _vhw_config["micro32"] = "vcpus:1,vmemory:1024,vstorage:61440,vnics:1"
+            _vhw_config["copper32"] = "vcpus:1,vmemory:2048,vstorage:61440,vnics:1"
+            _vhw_config["bronze32"] = "vcpus:1,vmemory:2048,vstorage:179200,vnics:1"
+            _vhw_config["iron32"] = "vcpus:2,vmemory:2048,vstorage:179200,vnics:1"
+            _vhw_config["silver32"] = "vcpus:4,vmemory:2048,vstorage:358400,vnics:1"
+            _vhw_config["gold32"] = "vcpus:8,vmemory:4096,vstorage:358400,vnics:1"
+            _vhw_config["copper64"] = "vcpus:2,vmemory:4096,vstorage:61440,vnics:1"
+            _vhw_config["bronze64"]  = "vcpus:2,vmemory:4096,vstorage:870400,vnics:1"
+            _vhw_config["silver64"] = "vcpus:4,vmemory:8192,vstorage:1048576,vnics:1"
+            _vhw_config["gold64"] = "vcpus:8,vmemory:16384,vstorage:1048576,vnics:1"
+            _vhw_config["rhodium64"] = "vcpus:16,vmemory:16384,vstorage:2097152,vnics:1"
+            _vhw_config["platinum64"] = "vcpus:24,vmemory:32768,vstorage:2097152,vnics:1"
+                
+            _vhw_config["premium"] = "cpu_upper:1000,cpu_lower:1000,memory_upper:100,memory_lower:100"
+            _vhw_config["standard"] = "cpu_upper:1000,cpu_lower:500,memory_upper:100,memory_lower:50"
+            _vhw_config["value"] = "cpu_upper:-1,cpu_lower:0,memory_upper:100,memory_lower:0"
+            
+            if "size" not in obj_attr_list :
+                obj_attr_list["size"] = "micro32"
+            else :
+                obj_attr_list["size"] = choice(obj_attr_list["size"].strip().split(','))
 
+            if "class" not in obj_attr_list :
+                obj_attr_list["class"] = "standard"
+            
+            _curr_vhw_config = _vhw_config[obj_attr_list["size"]] + ',' + _vhw_config[obj_attr_list["class"]]
+            _curr_vhw_config = str2dic(_curr_vhw_config)
+            obj_attr_list.update(_curr_vhw_config)
+            _status = 0
+        
         except Exception, e :
             _status = 23
             _fmsg = str(e)
     
         finally :
             if _status :
-                _msg = "AI " + obj_attr_list["name"] + " could not be undefined "
-                _msg += " on SimCloud \"" + obj_attr_list["cloud_name"] + "\" : "
-                _msg += _fmsg
+                _msg = "virtual hardware configuration parameters could not be "
+                _msg += "determined:" + _fmsg
                 cberr(_msg, True)
                 raise CldOpsException(_msg, _status)
             else :
-                _msg = "AI " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "undefined on SimCloud \"" + obj_attr_list["cloud_name"]
-                _msg += "\"."
-                cbdebug(_msg, True)
-                return _status, _msg
+                _msg = "virtual hardware configuration parameters were "
+                _msg += "successfully determined."
+                cbdebug(_msg)
+                return True
+
+    @trace
+    def create_simulated_hosts(self, obj_attr_list, host_uuid) :
+        '''
+        TBD
+        '''
+        _cpus = choice(obj_attr_list["hosts_cpu"])
+        obj_attr_list["host_list"][host_uuid]["cores"] = _cpus        
+        obj_attr_list["host_list"][host_uuid]["available_cores"] = _cpus
+
+        _mem_per_core = choice(obj_attr_list["hosts_mem_per_core"])         
+
+        _memory = int(_cpus) * int(_mem_per_core) * 1024
+        
+        obj_attr_list["host_list"][host_uuid]["memory"] = _memory
+        obj_attr_list["host_list"][host_uuid]["available_memory"] = _memory
+        
+        _gpus = choice(obj_attr_list["hosts_gpu"].strip().split(','))
+
+        obj_attr_list["host_list"][host_uuid]["gpus"] = _gpus
+        obj_attr_list["host_list"][host_uuid]["available_gpus"] = _gpus
+        
+        return True
+    
+    @trace
+    def check_host_capacity(self, obj_attr_list, host_uuid) :
+        '''
+        TBD
+        '''
+        _host_core_found = False
+        _host_mem_found = False        
+        
+        _host = self.osci.get_object(obj_attr_list["cloud_name"], "HOST", False, host_uuid, False)
+        
+        if int(_host["available_cores"]) >= int(obj_attr_list["vcpus"]) :
+            _host_core_found = True
+            
+            if int(_host["available_memory"]) >= int(obj_attr_list["vmemory"]) :
+                _host_mem_found = True
+                obj_attr_list["host_name"] = _host["name"][5:]
+                obj_attr_list["host"] = host_uuid
+
+        return _host_core_found, _host_mem_found
+
+    @trace
+    def host_resource_update(self, obj_attr_list, operation) :
+        '''
+        TBD
+        '''
+
+        if operation == "create" :
+            _cores = -int(obj_attr_list["vcpus"])
+            _memory = -int(obj_attr_list["vmemory"])
+            _host_uuid = obj_attr_list["host"]
+
+            if self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
+                                              "HOST", _host_uuid, False, \
+                                              "available_cores", _cores, True) >= 0 :
+                True
+            
+            else :
+                _status = 7778
+                _msg = "Failed to create instance: no available cores left"
+                self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
+                                                          "VMC", obj_attr_list["vmc"], False, \
+                                                          "cpu_drop", 1, True)
+                raise CldOpsException(_msg, _status)
+            
+
+            if self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
+                                              "HOST", _host_uuid, False, \
+                                              "available_memory", _memory, True) >= 0 :
+                True
+                
+            else :
+                _status = 7778
+                _msg = "Failed to create instance: no available memory left"
+                self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
+                                                          "VMC", obj_attr_list["vmc"], False, \
+                                                          "memory_drop", 1, True)                
+                raise CldOpsException(_msg, _status)
+
+        elif operation == "destroy" :
+            _cores = int(obj_attr_list["vcpus"])
+            _memory = int(obj_attr_list["vmemory"])
+            _host_uuid = obj_attr_list["host"]
+
+
+            self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
+                                          "HOST", _host_uuid, False, \
+                                          "available_cores", _cores, True)
+            
+            self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
+                                                      "HOST", _host_uuid, False, \
+                                                      "available_memory", _memory, True)
+        
+        elif operation == "migrate" :
+            _cores = -_cores
+            _memory = -_memory
+            _host_uuid = obj_attr_list["destination_uuid"]    
+
+            if self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
+                                              "HOST", _host_uuid, False, \
+                                              "available_cores", _cores, True) >= 0 :
+                True
+            
+            else :
+                _status = 7778
+                _msg = "Failed to create instance: no available cores left"
+                self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
+                                                          "VMC", obj_attr_list["vmc"], False, \
+                                                          "cpu_drop", 1, True)
+                raise CldOpsException(_msg, _status)
+            
+
+            if self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
+                                              "HOST", _host_uuid, False, \
+                                              "available_memory", _memory, True) >= 0 :
+                True
+                
+            else :
+                _status = 7778
+                _msg = "Failed to create instance: no available memory left"
+                self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
+                                                          "VMC", obj_attr_list["vmc"], False, \
+                                                          "memory_drop", 1, True)                
+                raise CldOpsException(_msg, _status)
+
+            _cores = int(obj_attr_list["vcpus"])
+            _memory = int(obj_attr_list["vmemory"])
+            _host_uuid = obj_attr_list["host"]
+
+            self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
+                                          "HOST", _host_uuid, False, \
+                                          "available_cores", _cores, True)
+            
+            self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
+                                                      "HOST", _host_uuid, False, \
+                                                      "available_memory", _memory, True)
+
+        else :
+            _cores = False
+            _memory = False
+            _host_uuid = False
+
+        return True

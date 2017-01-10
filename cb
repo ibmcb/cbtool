@@ -78,7 +78,6 @@ def main() :
             print _msg
             print "\n Please add the missing dependency(ies) and re-run configure again."
             exit(_status)
-
     
     _args = _cmd_processor.args
 
@@ -114,16 +113,21 @@ def main() :
         available_clouds = get_available_clouds(_cmd_processor.cld_attr_lst, return_all_options = True)
         for cloud in available_clouds :
             if _cmd_processor.cld_attr_lst["user-defined"]["startup_cloud"].lower() == cloud :
-                for command in available_clouds[cloud] :
-                    _cmd_processor.onecmd(command)
+                for _command in available_clouds[cloud] :
+                    _command = _command.replace("__COMMA__",',').strip()
+                    print "\n ############################# Executing command \"" + _command + "\" (specified on the configuration file) \n"
+                    _cmd_processor.onecmd(_command)
     else :
         # Or do it the old way
         for command in get_available_clouds(_cmd_processor.cld_attr_lst) :
             _cmd_processor.onecmd(command)
 
     if _initial_command != "" :
+
         for _command in _initial_command.split(",") :
-            _cmd_processor.onecmd(_command.strip())
+            _command = _command.replace("__COMMA__",',').strip()
+            print "\n ############################# Executing command \"" + _command + "\" (specified on the command line) \n"
+            _cmd_processor.onecmd(_command)
     else :
         if options.tracefile :
             if options.tracefile[0] != "/" :

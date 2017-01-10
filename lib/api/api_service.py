@@ -159,7 +159,6 @@ class API():
         and will propagate exceptions properly across the API boundary
         to the client code.
     '''
-
             
     def cldparse(self, definitions):
         attributes, unused_definitions = parse_cld_defs_file(definitions)
@@ -526,6 +525,10 @@ class API():
         
     def vmccleanup(self, cloud_name, identifier) :
         return self.active.vmccleanup({}, cloud_name + ' ' + identifier, "vmc-cleanup")[2]
+
+    def imgdelete(self, cloud_name, identifier, vmc, force = False) :
+        force = str(force).lower() if force else "false"
+        return self.active.imgdelete({}, cloud_name + ' ' + identifier + ' ' + vmc + ' ' + force, "img-delete")[2]
     
     def vmcrsdetach(self, cloud_name, identifier, force = False, async = False):
         force = str(force).lower() if force else "false"
@@ -585,8 +588,8 @@ class API():
     def msgpub(self, cloud_name, object_type, channel, message) :
         return self.passive.msgpub({}, cloud_name + ' ' + object_type + ' ' + channel + ' ' + message, "msg-pub")[2]
     
-    def stats(self, cloud_name, object_type = "all", output = "print") :
-        return self.passive.stats({"name": cloud_name}, cloud_name + ' ' + object_type + ' ' + output, "stats-get")[2]
+    def stats(self, cloud_name, object_type = "all", output = "print", include_vmcount="false") :
+        return self.passive.stats({"name": cloud_name}, cloud_name + ' ' + object_type + ' ' + output + ' ' + include_vmcount, "stats-get")[2]
     
     def typelist(self, cloud_name) :
         return self.passive.globallist({}, cloud_name + " ai_templates+types+AIs", "global-list")[2]

@@ -242,7 +242,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                                   cld_attr_lst["vmc_defaults"]["key_name"], \
                                                                   cld_attr_lst["vmc_defaults"]["security_groups"], \
                                                                   cld_attr_lst["vm_templates"], \
-                                                                  cld_attr_lst["vm_defaults"])
+                                                                  cld_attr_lst["vm_defaults"], \
+                                                                  cld_attr_lst["vmc_defaults"])
 
                     if _x_status == 1 or str(cld_attr_lst["vmc_defaults"]["force_walkthrough"]).lower() == "true" :
                         cld_attr_lst["walkthrough"] = "true"
@@ -2057,18 +2058,18 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     cberr(_xmsg)
 
             else :
-                
+
                 _msg = _obj_type + " object " + obj_attr_list["uuid"] 
                 _msg += " (named \"" + obj_attr_list["name"] +  "\") sucessfully "
                 _msg += "attached to this experiment."                
-                
+
                 if "prepare_" + str(_staging) + "_complete" in obj_attr_list :
                     _msg += _staging + "d."
                     obj_attr_list["tracking"] = _staging + ": success." 
                 else :
                     _result = copy.deepcopy(obj_attr_list)
                     self.osci.update_counter(_cloud_name, _obj_type, "ARRIVED", "increment")
-    
+
                     if not "submitter" in obj_attr_list :
                         if _obj_type == "VM" :
                             if obj_attr_list["prov_cloud_ip"] == obj_attr_list["run_cloud_ip"] :
@@ -2077,12 +2078,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                 _ip = "IP addresses " + obj_attr_list["prov_cloud_ip"] + " and " + obj_attr_list["run_cloud_ip"] 
                         else :
                             _ip = "IP address " + obj_attr_list["cloud_ip"]
-                            
+
                         _msg += " It is ssh-accessible at the " + _ip
                         _msg += " (" + obj_attr_list["cloud_hostname"] + ")."
                                                 
                     obj_attr_list["tracking"] = "Attach: success." 
-                    
+
                 self.osci.create_object(_cloud_name, \
                                         "FINISHEDTRACKING" + _obj_type, \
                                         obj_attr_list["uuid"] + unique_state_key, \
@@ -2091,15 +2092,14 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                         True, \
                                         3600)
 
-                _msg += self. walkthrough_messages(_obj_type, "attach", obj_attr_list)
-                
+                _msg += self.walkthrough_messages(_obj_type, "attach", obj_attr_list)
                 cbdebug(_msg)
 
             if _created_pending :
                 self.osci.pending_object_remove(_cloud_name, _obj_type, obj_attr_list["uuid"], "status")
                 self.osci.pending_object_remove(_cloud_name, _obj_type, obj_attr_list["uuid"], "abort")                
                 self.osci.remove_from_list(_cloud_name, _obj_type, "PENDING",obj_attr_list["uuid"] + "|" + obj_attr_list["name"], True)
-                
+
             return self.package(_status, _msg, _result)
 
     @trace
@@ -2130,7 +2130,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _msg += '.'
                 _msg += " Skipping Host OS performance monitor daemon startup"
                 cbdebug(_msg, True)
-                
+
             self.record_management_metrics(obj_attr_list["cloud_name"], "VMC", \
                                            obj_attr_list, "attach")
 
@@ -2277,7 +2277,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _actual_tries = _remaining_time/int(obj_attr_list["update_frequency"])
                 else :
                     _actual_tries = int(obj_attr_list["update_attempts"])    
-
+                
                 _rcmd = "rsync -e \"" + _proc_man.rsync_conn + "\""
                 _rcmd += " --exclude-from "
                 _rcmd += "'" +  obj_attr_list["exclude_list"] + "' -az "
@@ -3737,12 +3737,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                           False, \
                                                           "mgt_101_capture_request_originated", \
                                                           obj_attr_list["mgt_101_capture_request_originated"])
-    
-                        self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
-                                                          obj_attr_list["uuid"], \
-                                                          False, \
-                                                          "mgt_102_capture_request_sent", \
-                                                          obj_attr_list["mgt_102_capture_request_sent"])
+
+                        if "mgt_102_capture_request_sent" in obj_attr_list :
+                            self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
+                                                              obj_attr_list["uuid"], \
+                                                              False, \
+                                                              "mgt_102_capture_request_sent", \
+                                                              obj_attr_list["mgt_102_capture_request_sent"])
 
                         if "mgt_103_capture_request_completed" in obj_attr_list :
                             self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
@@ -3750,8 +3751,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                               False, \
                                                               "mgt_103_capture_request_completed", \
                                                               obj_attr_list["mgt_103_capture_request_completed"])
-
                         else :
+                            if "mgt_999_provisioning_request_failed" not in obj_attr_list :
+                                obj_attr_list["mgt_999_provisioning_request_failed"] = \
+                                    int(time()) - int(obj_attr_list["mgt_001_provisioning_request_originated"])
+
                             self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", \
                                                               obj_attr_list["uuid"], \
                                                               False, \
@@ -3821,11 +3825,83 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _msg += "captured on this experiment: " + _fmsg
                 cberr(_msg)
             else :
-                _msg = _obj_type + " object " + obj_attr_list["uuid"] 
-                _msg += " (named \"" + obj_attr_list["name"] +  "\") successfully captured "
-                _msg += "on this experiment."
-                
                 _msg = self.walkthrough_messages(_obj_type, "capture", obj_attr_list)
+                if len(_msg) < 3 :
+                    _msg = _obj_type + " object " + obj_attr_list["uuid"] 
+                    _msg += " (named \"" + obj_attr_list["name"] +  "\") successfully captured "
+                    _msg += "on this experiment."
+                cbdebug(_msg)
+
+            return self.package(_status, _msg, _result)
+
+    @trace    
+    def imgdelete(self, obj_attr_list, parameters, command) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _result = None
+            _fmsg = "An error has occurred, but no error message was captured"
+            
+            obj_attr_list["name"] = "undefined"
+            obj_attr_list["imageid1"] = "NA"
+            obj_attr_list["boot_volume_imageid1"] = "NA"
+                
+            _obj_type = command.split('-')[0].upper()
+            _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
+
+            if not _status :
+                _status, _fmsg = self.initialize_object(obj_attr_list, command)
+                
+                if not _status :                            
+                    self.set_cloud_operations_instance(obj_attr_list["model"])         
+                    _cld_conn = self.coi[obj_attr_list["model"]][self.pid + '-' + obj_attr_list["experiment_id"]]                
+    
+    #                if "ai" in obj_attr_list and obj_attr_list["ai"].lower() != "none" :
+    #                    _ai_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "AI", False, obj_attr_list["ai"], False)
+                        
+    #                    _current_state = self.osci.get_object_state(obj_attr_list["cloud_name"], "AI", obj_attr_list["ai"])
+                    
+                    _status, _fmsg = _cld_conn.imgdelete(obj_attr_list)
+                    _result = obj_attr_list
+                    _status = 0
+
+        except self.ObjectOperationException, obj :
+            _status = obj.status
+            _fmsg = str(obj.msg)
+
+        except self.osci.ObjectStoreMgdConnException, obj :
+            _status = obj.status
+            _fmsg = str(obj.msg)
+
+        except ImportError, msg :
+            _status = 8
+            _fmsg = str(msg)
+
+        except AttributeError, msg :
+            _status = 8
+            _fmsg = str(msg)
+
+        except CldOpsException, obj :
+            _status = obj.status
+            _fmsg = str(obj.msg)
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+
+        finally:
+            
+            if _status :
+                _msg = "IMAGE object " + obj_attr_list["boot_volume_imageid1"] + " ("
+                _msg += "named \"" + obj_attr_list["name"] + "\") could not be "
+                _msg += "deleted on this experiment: " + _fmsg
+                cberr(_msg)
+            else :
+                _msg = "IMAGE object " + obj_attr_list["boot_volume_imageid1"] 
+                _msg += " (named \"" + obj_attr_list["name"] +  "\") successfully "
+                _msg += "deleted on this experiment."
                 cbdebug(_msg)
 
             return self.package(_status, _msg, _result)
@@ -3837,6 +3913,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
         '''
         try :
             _status = 100
+            _result = None
             _fmsg = "An error has occurred, but no error message was captured"
             
             obj_attr_list["uuid"] = "undefined"            
@@ -3918,6 +3995,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     self.osci.set_object_state(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "attached")
                     self.osci.set_object_state(obj_attr_list["cloud_name"], "AI", obj_attr_list["ai"], "attached")
 
+                    _result = obj_attr_list
+                    
                     _status = 0
 
         except self.ObjectOperationException, obj :
@@ -3956,7 +4035,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _msg += "on this experiment."
                 cbdebug(_msg)
 
-            return _status, _msg, None
+            return self.package(_status, _msg, _result)
 
     @trace    
     def vmrunstate(self, obj_attr_list, parameters, command) :

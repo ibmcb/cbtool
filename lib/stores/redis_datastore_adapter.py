@@ -1031,6 +1031,7 @@ class RedisMgdConn :
                 _update_lock = self.acquire_lock(cloud_name, obj_type, obj_id, \
                                                  "update_object", 1)
 
+
             _obj_uuid = self.object_exists(cloud_name, obj_type, obj_id, can_be_tag)
 
             if not _obj_uuid :
@@ -1043,8 +1044,10 @@ class RedisMgdConn :
             _obj_id_fn = _obj_inst_fn + ':' + _obj_uuid    
 
             if counter :
+
                 _val = self.redis_conn.hincrby(_obj_id_fn, obj_key, obj_value)
             else :
+
                 _val = self.redis_conn.hset(_obj_id_fn, obj_key, obj_value)
 
             _msg =  obj_type + " object " + _obj_uuid + " attribute \"" 

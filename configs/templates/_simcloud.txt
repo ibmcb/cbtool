@@ -18,7 +18,7 @@ COLLECT_FROM_HOST = $False # simulated, nothing to monitor
 COLLECT_FROM_GUEST = $False # simulated, nothing to monitor
 
 [VMC_DEFAULTS : SIM_CLOUDCONFIG]
-INITIAL_VMCS = simzone_a:sut,simzone_b:sut,simzone_c:sut,simzone_d:lg
+INITIAL_VMCS = $SIM_INITIAL_VMCS
 INITIAL_HOSTS = $Empty
 HOSTS_PER_VMC = 5
 HOSTS_CPU = 4,8,12,16,24,32

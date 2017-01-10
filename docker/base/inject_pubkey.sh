@@ -18,13 +18,13 @@ then
         chmod 700 /home/$USRNAM/.ssh
         chown ${USRNAM}:${USRNAM} /home/$USRNAM/.ssh
         echo "# Key Injected by CB" >> /home/$USRNAM/.ssh/authorized_keys
-        echo "ssh-rsa "${CB_SSH_PUB_KEY} >> /home/$USRNAM/.ssh/authorized_keys
+        echo "${CB_SSH_PUB_KEY}" >> /home/$USRNAM/.ssh/authorized_keys
         chmod 0600 /home/$USRNAM/.ssh/authorized_keys
         chown $USRNAM:$USRNAM /home/$USRNAM/.ssh/authorized_keys
     done
 
     echo "# Key Injected by CB" >> /root/.ssh/authorized_keys
-    echo "ssh-rsa "${CB_SSH_PUB_KEY} >> /root/.ssh/authorized_keys
+    echo "${CB_SSH_PUB_KEY}" >> /root/.ssh/authorized_keys
 else
     echo "Bypassing SSH pubkey injection for \"root\" and regular users"
 fi

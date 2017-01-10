@@ -731,7 +731,6 @@ class ScpCmds(CommonCloudFunctions) :
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
-            obj_attr_list["cloud_vm_uuid"] = "NA"
 
             _instance = False
 
@@ -853,7 +852,7 @@ class ScpCmds(CommonCloudFunctions) :
             _instance = self.get_vm_instance(obj_attr_list)
 
             if _instance :
-                if "cloud_vm_uuid" in obj_attr_list and obj_attr_list["cloud_vm_uuid"] != "NA" :
+                if str(obj_attr_list["cloud_vm_uuid"]).lower() != "none" :
                     _instance_id = obj_attr_list["cloud_vm_uuid"]
                 else :
                     _instance_id = _instance["gid"]

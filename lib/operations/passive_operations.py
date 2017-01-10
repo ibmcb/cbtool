@@ -820,6 +820,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 _status, _fmsg = self.initialize_object(obj_attr_list, command)
 
                 if not _status :
+                    
                     _stats["object_store"] = {}
                     _stats["metric_store"] = {}                    
                     _stats["experiment_objects"] = {}
@@ -913,7 +914,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
                         if _obj_type == "VM" :
                             
-                            if str(_query_object["get_vm_list"]).lower() == "true" :
+                            if str(_query_object["get_vm_list"]).lower() == "true" or str(obj_attr_list["include_vmcount"]) == "true" :
                                 _vm_defaults = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "vm_defaults", False)                                
                                 _vm_defaults["cloud_name"] = obj_attr_list["cloud_name"]                            
                                 self.set_cloud_operations_instance(obj_attr_list["cloud_model"])      

@@ -24,10 +24,7 @@
     @author: Marcio A. Silva
 '''
 from time import time, sleep
-from subprocess import Popen, PIPE
-from uuid import uuid5, UUID
 from random import choice, randint
-import socket
 
 import SoftLayer
 from SoftLayer import exceptions as slexceptions
@@ -68,44 +65,116 @@ class SlrCmds(CommonCloudFunctions) :
         TBD
         '''
 
-        _status = 100
-        _fmsg = "An error has occurred, but no error message was captured"
-        
-        _username, _api_key, _api_type = authentication_data.split('-')
-        if access.lower().count("private") :
-            self.slconn = SoftLayer.create_client_from_env (username = _username.strip(), \
-                                                            api_key= _api_key.strip(), \
-                                                            endpoint_url = SoftLayer.API_PRIVATE_ENDPOINT)
-        else :
-            self.slconn = SoftLayer.create_client_from_env (username = _username.strip(), \
-                                                            api_key= _api_key.strip(), \
-                                                            endpoint_url = SoftLayer.API_PUBLIC_ENDPOINT)            
-
-        _resp = self.slconn.call('Account', 'getObject')
-        _region = SoftLayer.MessagingManager(self.slconn).get_endpoint(datacenter = region)
-        
-        _msg = "Selected region is " + str(region) +  " (" + _region + ")"
-        
-        if _api_type.lower().count("baremetal") :
-            self.nodeman = SoftLayer.HardwareManager(self.slconn)
-        else :
-            self.nodeman = SoftLayer.VSManager(self.slconn)
-
-        self.sshman = SoftLayer.SshKeyManager(self.slconn)
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
             
-        self.imageman = SoftLayer.ImageManager(self.slconn)
+            _username, _api_key, _api_type = authentication_data.split('-')
+            if access.lower().count("private") :
+                self.slconn = SoftLayer.create_client_from_env (username = _username.strip(), \
+                                                                api_key= _api_key.strip(), \
+                                                                endpoint_url = SoftLayer.API_PRIVATE_ENDPOINT)
+            else :
+                self.slconn = SoftLayer.create_client_from_env (username = _username.strip(), \
+                                                                api_key= _api_key.strip(), \
+                                                                endpoint_url = SoftLayer.API_PUBLIC_ENDPOINT)            
+    
+            _resp = self.slconn.call('Account', 'getObject')
+            
+            _regions = SoftLayer.MessagingManager(self.slconn).get_endpoints()
+            _region = region
+            if region in _regions :
+                if access.lower() in _regions[region] :
+                    _region = _regions[region][access.lower()]            
 
-        _status = 0
+            _msg = "Selected region is " + str(region) +  " (" + _region + ")"
+            
+            if _api_type.lower().count("baremetal") :
+                self.nodeman = SoftLayer.HardwareManager(self.slconn)
+            else :
+                self.nodeman = SoftLayer.VSManager(self.slconn)
+    
+            self.sshman = SoftLayer.SshKeyManager(self.slconn)
+                
+            self.imageman = SoftLayer.ImageManager(self.slconn)
 
-        return _status, _msg, _region
+            _status = 0
 
+        except Exception, msg :
+            _fmsg = str(msg)
+            _status = 23
+
+        finally :
+            if _status :
+                _msg =  self.get_description() + " connection failure: " + _fmsg
+                cberr(_msg)
+                raise CldOpsException(_msg, _status)
+            else :
+        
+                _msg =  self.get_description() + " connection successful."
+                cbdebug(_msg)
+                return _status, _msg, _region
+
+    @trace
+    def test_vmc_connection(self, vmc_name, access, credentials, key_name, \
+                            security_group_name, vm_templates, vm_defaults, vmc_defaults) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+
+            self.connect(access, credentials, vmc_name)
+
+            _prov_netname_found, _run_netname_found = self.check_networks(vmc_name, vm_defaults)
+            
+            _key_pair_found = self.check_ssh_key(vmc_name, self.determine_key_name(vm_defaults), vm_defaults, False, vmc_name)
+            
+            _detected_imageids = self.check_images(vmc_name, vm_templates, vmc_name)
+
+            if not (_run_netname_found and _prov_netname_found and _key_pair_found) :
+                _msg = "Check the previous errors, fix it (using GCE's web"
+                _msg += " GUI (Google Developer's Console) or gcloud CLI utility"
+                _status = 1178
+                raise CldOpsException(_msg, _status) 
+
+            if len(_detected_imageids) :
+                _status = 0               
+            else :
+                _status = 1
+
+        except CldOpsException, obj :
+            _fmsg = str(obj.msg)
+            _status = 2
+
+        except Exception, msg :
+            _fmsg = str(msg)
+            _status = 23
+
+        finally :
+            _status, _msg = self.common_messages("VMC", {"name" : vmc_name }, "connected", _status, _fmsg)
+            return _status, _msg
+
+    @trace
+    def check_networks(self, vmc_name, vm_defaults) :
+        '''
+        TBD
+        '''
+        _prov_netname = vm_defaults["netname"]
+        _run_netname = vm_defaults["netname"]
+
+        _prov_netname_found = True
+        _run_netname_found = True
+            
+        return _prov_netname_found, _run_netname_found
+
+    @trace
     def check_images(self, vmc_name, vm_templates, access) :
         '''
         TBD
         '''
-        _msg = "Checking if the imageids associated to each \"VM role\" are"
-        _msg += " registered on VMC \"" + vmc_name + "\"...."
-        cbdebug(_msg, True)
+        self.common_messages("IMG", { "name": vmc_name }, "checking", 0, '')
 
         if access == "private" :    
             _registered_image_list = self.imageman.list_private_images()
@@ -132,62 +201,21 @@ class SlrCmds(CommonCloudFunctions) :
         _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list)
 
         return _detected_imageids
-    
+
     @trace
-    def test_vmc_connection(self, vmc_name, access, credentials, key_name, \
-                            security_group_name, vm_templates, vm_defaults) :
+    def discover_hosts(self, obj_attr_list, start) :
         '''
         TBD
         '''
-        
-        try :
-            _status = 100
-            _fmsg = "An error has occurred, but no error message was captured"
+        _host_uuid = obj_attr_list["cloud_vm_uuid"]
 
-            self.connect(access, credentials, vmc_name)
-            
-            _key_pair_found = self.check_ssh_key(vmc_name, key_name, vm_defaults)
+        obj_attr_list["host_list"] = {}
+        obj_attr_list["hosts"] = ''
 
-            if security_group_name :
-                _security_group_found = True
-
-                '''
-                At the moment, there isn't a "security group" object/abstraction
-                (i.e., fine-grained network access control for CCIs/VSs) in 
-                SoftLayer.
-                '''
-
-            _detected_imageids = self.check_images(vmc_name, vm_templates, vm_defaults["images_access"])
-
-            if not (_key_pair_found and _security_group_found) :
-                _msg = "Check the previous errors, fix it (using SoftLayer's Portal"
-                _msg += "or the slcli utility"
-                _status = 1178
-                raise CldOpsException(_msg, _status) 
-
-            if len(_detected_imageids) :
-                _status = 0               
-            else :
-                _status = 1
-       
-        except SoftLayer.SoftLayerAPIError, e :
-            _status = 23
-            _fmsg = str(e)
-
-        except Exception, msg :
-            _fmsg = str(msg)
-            _status = 23
-
-        finally :
-            if _status > 1 :
-                _msg = "VMC \"" + vmc_name + "\" did not pass the connection test."
-                _msg += "\" : " + _fmsg
-                cberr(_msg, True)
-                raise CldOpsException(_msg, _status)
-            else :
-                _msg = "VMC \"" + vmc_name + "\" was successfully tested."
-                cbdebug(_msg, True)
-                return _status, _msg
+        obj_attr_list["initial_hosts"] = ''.split(',')
+        obj_attr_list["host_count"] = len(obj_attr_list["initial_hosts"])
+    
+        return True
 
     @trace
     def vmccleanup(self, obj_attr_list) :
@@ -209,11 +237,8 @@ class SlrCmds(CommonCloudFunctions) :
             _wait = int(obj_attr_list["update_frequency"])
             sleep(_wait)
 
-            _msg = "Removing all VMs previously created on VMC \""
-            _msg += obj_attr_list["name"] + "\" (only VM names starting with"
-            _msg += " \"" + "cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]
-            _msg += "\")....."
-            cbdebug(_msg, True)
+            self.common_messages("VMC", obj_attr_list, "cleaning up vms", 0, '')
+
             _running_instances = True
             while _running_instances and _curr_tries < _max_tries :
 
@@ -266,17 +291,8 @@ class SlrCmds(CommonCloudFunctions) :
             _fmsg = str(e)
     
         finally :
-            if _status :
-                _msg = "VMC " + obj_attr_list["name"] + " could not be cleaned "
-                _msg += "on " + self.get_description() + " \"" + obj_attr_list["cloud_name"]
-                _msg += "\" : " + _fmsg
-                cberr(_msg)
-                raise CldOpsException(_msg, _status)
-            else :
-                _msg = "VMC " + obj_attr_list["name"] + " was successfully cleaned "
-                _msg += "on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\""
-                cbdebug(_msg)
-                return _status, _msg
+            _status, _msg = self.common_messages("VMC", obj_attr_list, "cleaned up", _status, _fmsg)
+            return _status, _msg
 
     @trace
     def vmcregister(self, obj_attr_list) :
@@ -306,20 +322,18 @@ class SlrCmds(CommonCloudFunctions) :
 
                 obj_attr_list["arrival"] = int(time())
     
-            if obj_attr_list["discover_hosts"].lower() == "true" :
-                _msg = "Host discovery for VMC \"" + obj_attr_list["name"]
-                _msg += "\" request, but " + self.get_description() + " does not allow it. Ignoring for now....."
-                cbdebug(_msg, True)
-                obj_attr_list["hosts"] = ''
-                obj_attr_list["host_list"] = {}
-                obj_attr_list["host_count"] = "NA"
+            if str(obj_attr_list["discover_hosts"]).lower() == "true" :
+                self.discover_hosts(obj_attr_list, _time_mark_prs)
             else :
                 obj_attr_list["hosts"] = ''
                 obj_attr_list["host_list"] = {}
                 obj_attr_list["host_count"] = "NA"
+
+            _time_mark_prc = int(time())
                     
-                _time_mark_prc = int(time())
-                obj_attr_list["mgt_003_provisioning_request_completed"] = _time_mark_prc - _time_mark_prs
+            obj_attr_list["mgt_003_provisioning_request_completed"] = _time_mark_prc - _time_mark_prs
+
+            _status = 0
 
         except CldOpsException, obj :
             _status = obj.status
@@ -330,80 +344,9 @@ class SlrCmds(CommonCloudFunctions) :
             _fmsg = str(e)
     
         finally :
-            if _status :
-                _msg = "VMC " + obj_attr_list["uuid"] + " could not be registered "
-                _msg += "on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\" : "
-                _msg += _fmsg
-                cberr(_msg)
-                raise CldOpsException(_msg, _status)
-            else :
-                _msg = "VMC " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "registered on " + self.get_description() + " \"" + obj_attr_list["cloud_name"]
-                _msg += "\"."
-                cbdebug(_msg)
-                return _status, _msg
+            _status, _msg = self.common_messages("VMC", obj_attr_list, "registered", _status, _fmsg)
+            return _status, _msg
 
-    def get_images(self, obj_attr_list) :
-        '''
-        TBD
-        '''
-        try :
-            _status = 100
-            _fmsg = "An error has occurred, but no error message was captured"
-
-            if obj_attr_list["images_access"] == "private" :    
-                _image_list =  self.imageman.list_private_images()
-            else :    
-                _image_list = self.imageman.list_public_images()  
-
-            _fmsg += "Please check if the defined image name is present on this "
-            _fmsg += self.get_description()
-
-            _imageid = False
-
-            _candidate_images = []
-
-            if self.is_cloud_image_uuid(obj_attr_list["imageid1"]) :
-                _image_key = "id"
-            else :
-                _image_key = "name"                
-            
-            for _idx in range(0,len(_image_list)) :
-                _image_list[_idx]["name"] = _image_list[_idx]["name"].encode('utf-8').strip()
-                
-                if obj_attr_list["randomize_image_name"].lower() == "false" and \
-                str(_image_list[_idx][_image_key]) == obj_attr_list["imageid1"] :
-                    _imageid = _image_list[_idx]["globalIdentifier"]
-#                    _imageid = _image_list[_idx]["id"]
-                      
-                    if _image_key == "id" :
-                        obj_attr_list["imageid1"] = _image_list[_idx]["name"]
-                        
-                    break
-                elif obj_attr_list["randomize_image_name"].lower() == "true" and \
-                _image_list[_idx].name.count(obj_attr_list["imageid1"]) :
-                    _candidate_images.append(_image_list[_idx])
-                else :                     
-                    True
-
-            if  obj_attr_list["randomize_image_name"].lower() == "true" :
-                _image = choice(_candidate_images)
-                _imageid = _image["id"] 
-
-            _status = 0
-
-        except Exception, e :
-            _status = 23
-            _fmsg = str(e)
-            
-        finally :
-            if _status :
-                _msg = "Image Name (" +  obj_attr_list["imageid1"] + " ) not found: " + _fmsg
-                cberr(_msg, True)
-                raise CldOpsException(_msg, _status)
-            else :
-                return _imageid
-                            
     @trace
     def vmcunregister(self, obj_attr_list) :
         '''
@@ -437,18 +380,41 @@ class SlrCmds(CommonCloudFunctions) :
             _fmsg = str(e)
     
         finally :
-            if _status :
-                _msg = "VMC " + obj_attr_list["uuid"] + " could not be unregistered "
-                _msg += "on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\" : "
-                _msg += _fmsg
-                cberr(_msg)
-                raise CldOpsException(_msg, _status)
-            else :
-                _msg = "VMC " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "unregistered on " + self.get_description() + " \"" + obj_attr_list["cloud_name"]
-                _msg += "\"."
-                cbdebug(_msg)
-                return _status, _msg
+            _status, _msg = self.common_messages("VMC", obj_attr_list, "unregistered", _status, _fmsg)
+            return _status, _msg
+
+    @trace
+    def vmcount(self, obj_attr_list):
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"                        
+            _nr_instances = 0
+
+            for _vmc_uuid in self.osci.get_object_list(obj_attr_list["cloud_name"], "VMC") :
+                _vmc_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
+                                                      "VMC", False, _vmc_uuid, \
+                                                      False)
+                
+                self.connect(obj_attr_list["access"], obj_attr_list["credentials"], _vmc_attr_list["name"])
+
+                _instance_list = self.get_instances({"vmc_name": _vmc_attr_list["name"]}, "vm", "all")                
+
+                if _instance_list :
+                    for _instance in _instance_list :
+                        if "name" in _instance :
+                            if _instance["name"].count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) :
+                                _nr_instances += 1
+
+        except Exception, e :
+            _status = 23
+            _nr_instances = "NA"
+            _fmsg = "(While counting instance(s) through API call \"list\") " + str(e)
+
+        finally :
+            return _nr_instances
 
     @trace
     def get_ip_address(self, obj_attr_list, instance) :
@@ -486,7 +452,7 @@ class SlrCmds(CommonCloudFunctions) :
             if identifier != "all" :
                 _instances = self.nodeman.list_instances(datacenter = obj_attr_list["vmc_name"], hostname = identifier)
             else :
-                _instances = self.nodeman.list_instances(datacenter = obj_attr_list["vmc_name"])                
+                _instances = self.nodeman.list_instances(datacenter = obj_attr_list["vmc_name"])
 
             if not self.nodeman:
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
@@ -505,13 +471,111 @@ class SlrCmds(CommonCloudFunctions) :
             _status = 23
             _fmsg = str(e)
             raise CldOpsException(_fmsg, _status)
-
+            
     @trace
-    def vmcount(self, obj_attr_list):
+    def get_images(self, obj_attr_list) :
         '''
         TBD
         '''
-        return "NA"
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+
+            if "captured_image_name" in obj_attr_list :
+                _img_key = "captured_image_name"
+            else :
+                _img_key = "imageid1"
+            
+            for _image_access in [ "private", "public"] :           
+                if _image_access == "private" :
+                    if self.is_cloud_image_uuid(obj_attr_list[_img_key]) :
+                        _image_list =  self.imageman.list_private_images(id = obj_attr_list[_img_key])
+                    else :
+                        _image_list =  self.imageman.list_private_images(name = obj_attr_list[_img_key])                    
+                else :
+                    if self.is_cloud_image_uuid(obj_attr_list[_img_key]) :
+                        _image_list =  self.imageman.list_public_images(id = obj_attr_list[_img_key])
+                    else :
+                        _image_list =  self.imageman.list_public_images(name = obj_attr_list[_img_key])
+
+                _fmsg = "Please check if the defined image name is present on this "
+                _fmsg += self.get_description()
+    
+                _image = False
+    
+                _candidate_images = []
+    
+                if self.is_cloud_image_uuid(obj_attr_list[_img_key]) :
+                    _match_key = "id"
+                else :
+                    _match_key = "name"                
+                
+                for _idx in range(0,len(_image_list)) :
+                    _image_list[_idx]["name"] = _image_list[_idx]["name"].encode('utf-8').strip()
+                    
+                    if obj_attr_list["randomize_image_name"].lower() == "false" and \
+                    str(_image_list[_idx][_match_key]) == obj_attr_list[_img_key] :
+                        _imageid = _image_list[_idx]["globalIdentifier"]
+    
+                        _candidate_images.append(_image_list[_idx])
+                    
+                    elif obj_attr_list["randomize_image_name"].lower() == "true" and \
+                    _image_list[_idx].name.count(obj_attr_list[_img_key]) :
+                        _candidate_images.append(_image_list[_idx])
+                    else :                     
+                        True
+    
+                if len(_candidate_images) :
+                    if  obj_attr_list["randomize_image_name"].lower() == "true" :
+                        _image = choice(_candidate_images)
+                    else :
+                        _image = _candidate_images[0]
+    
+                    obj_attr_list["imageid1"] = _image["name"]
+                    obj_attr_list["boot_globalid_imageid1"] = _image["globalIdentifier"]                 
+                    obj_attr_list["boot_volume_imageid1"] = _image["id"] 
+    
+                    _status = 0
+                    break
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+            
+        finally :
+
+            if _status :
+                if _img_key == "imageid1" :
+                    _msg = "Image Name (" +  obj_attr_list["imageid1"] + " ) not found: " + _fmsg
+                    cberr(_msg, True)
+                    raise CldOpsException(_msg, _status)
+                else :
+                    return _image
+            else :
+                return _image
+
+    @trace
+    def get_networks(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+
+            _status = 0
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+            
+        finally :
+            if _status :
+                _msg = "Network (" +  obj_attr_list["prov_netname"] + " ) not found: " + _fmsg
+                cberr(_msg, True)
+                raise CldOpsException(_msg, _status)
+            else :
+                return True
 
     @trace
     def is_vm_running(self, obj_attr_list, fail = True) :
@@ -519,49 +583,138 @@ class SlrCmds(CommonCloudFunctions) :
         TBD
         '''
         try :
-            _instance = self.get_instances(obj_attr_list, "vm", \
-                                           obj_attr_list["cloud_vm_name"])
+            
+            _instance = self.get_instances(obj_attr_list, "vm", obj_attr_list["cloud_vm_name"])
+            
             if _instance :
-                if not ("activeTransaction" in _instance) :
-                    return _instance
-                else :
-                    if _instance["status"]["name"].lower().count("error") :
-                        _msg = "Instance \"" + obj_attr_list["cloud_vm_name"] + "\"" 
-                        _msg += " reported an error (from " + self.get_description() + ")"
-                        _status = 1870
-                        cberr(_msg)
-                        if fail :
-                            raise CldOpsException(_msg, _status)                    
-                    else :
-                        return False
-            else :
-                return False
+                
+                if "activeTransaction" in _instance :
+                    return False
+                
+                if _instance["status"]["name"].lower().count("active") : 
+                    return True
+
+                if _instance["status"]["name"].lower().count("error") :
+                    _msg = "Instance \"" + obj_attr_list["cloud_vm_name"] + "\"" 
+                    _msg += " reported an error (from " + self.get_description() + ")"
+                    _status = 1870
+                    cberr(_msg)
+                    if fail :
+                        raise CldOpsException(_msg, _status)                    
+
+            return False
 
         except Exception, e :
             _status = 23
             _fmsg = str(e)
-            raise CldOpsException(_fmsg, _status)
+            if fail :
+                raise CldOpsException(_fmsg, _status)
+            else :
+                return False
 
     @trace
     def is_vm_ready(self, obj_attr_list) :
         '''
         TBD
         '''
+        if self.is_vm_running(obj_attr_list) :
 
-        _instance = self.is_vm_running(obj_attr_list)
-
-        if _instance :
-
-            obj_attr_list["last_known_state"] = "ACTIVE with ip unassigned"
-
-            if self.get_ip_address(obj_attr_list, _instance) :
-                obj_attr_list["last_known_state"] = "ACTIVE with ip assigned"
-                return True
+            _instance = self.get_instances(obj_attr_list, "vm", obj_attr_list["cloud_vm_name"])
+    
+            if _instance :
+                obj_attr_list["last_known_state"] = "ACTIVE without ip assigned"
+    
+                if self.get_ip_address(obj_attr_list, _instance) :
+                    obj_attr_list["last_known_state"] = "ACTIVE with ip assigned"
+                    return True
         else :
             obj_attr_list["last_known_state"] = "not ACTIVE"
             
         return False
 
+    @trace
+    def vm_placement(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+
+            _status = 0
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+            
+        finally :
+            if _status :
+                _msg = "VM placement failed: " + _fmsg
+                cberr(_msg, True)
+                raise CldOpsException(_msg, _status)
+            else :
+                return True
+
+    @trace
+    def vvcreate(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+
+            if "cloud_vv_type" not in obj_attr_list :
+                obj_attr_list["cloud_vv_type"] = "NOT SUPPORTED"
+
+            if "cloud_vv" in obj_attr_list :
+
+                obj_attr_list["last_known_state"] = "about to send volume create request"
+    
+                obj_attr_list["cloud_vv_uuid"] = "NOT SUPPORTED"
+
+                self.common_messages("VV", obj_attr_list, "creating", _status, _fmsg)
+
+            _status = 0
+
+        except CldOpsException, obj :
+            _status = obj.status
+            _fmsg = str(obj.msg)
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+    
+        finally :                
+            _status, _msg = self.common_messages("VV", obj_attr_list, "created", _status, _fmsg)
+            return _status, _msg
+
+    @trace        
+    def vvdestroy(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+
+            if str(obj_attr_list["cloud_vv_uuid"]).lower() != "not supported" and str(obj_attr_list["cloud_vv_uuid"]).lower() != "none" :    
+                self.common_messages("VV", obj_attr_list, "destroying", 0, '')
+                                
+            _status = 0
+
+        except CldOpsException, obj :
+            _status = obj.status
+            _fmsg = str(obj.msg)
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+    
+        finally :                
+            _status, _msg = self.common_messages("VV", obj_attr_list, "destroyed", _status, _fmsg)
+            return _status, _msg
+            
     @trace
     def vmcreate(self, obj_attr_list) :
         '''
@@ -570,23 +723,16 @@ class SlrCmds(CommonCloudFunctions) :
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
-            _fault = "No info"
             
-            obj_attr_list["cloud_vm_uuid"] = "NA"
             _instance = False
+
+            self.determine_instance_name(obj_attr_list)            
+            self.determine_key_name(obj_attr_list)
             
-            obj_attr_list["cloud_vm_name"] = "cb-" + obj_attr_list["username"]
-            obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["cloud_name"]
-            obj_attr_list["cloud_vm_name"] += '-' + "vm"
-            obj_attr_list["cloud_vm_name"] += obj_attr_list["name"].split("_")[1]
-            obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["role"]
-
-            if obj_attr_list["ai"] != "none" :            
-                obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["ai_name"] 
-
-            obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"].replace("_", "-")
             obj_attr_list["last_known_state"] = "about to connect to " + self.get_description() + " manager"
 
+            obj_attr_list["instance_creation_status"] = 1
+            
             self.take_action_if_requested("VM", obj_attr_list, "provision_originated")
 
             if not self.nodeman or not self.sshman or not self.imageman :
@@ -600,90 +746,74 @@ class SlrCmds(CommonCloudFunctions) :
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
 
-            obj_attr_list["last_known_state"] = "about to get flavor and image list"
-
-            if obj_attr_list["key_name"].lower() == "false" :
-                _key_name = None
-            else :
-                _key_name = obj_attr_list["key_name"]
+            self.pre_vmcreate_process(obj_attr_list)
+            self.vm_placement(obj_attr_list)
 
             obj_attr_list["last_known_state"] = "about to send create request"
 
-            _imageid = self.get_images(obj_attr_list)
+            self.get_images(obj_attr_list)
+            self.get_networks(obj_attr_list)
 
-            if not _imageid :
-                _fmsg = "Unable to find an identifier for image \"" + obj_attr_list["imageid1"]
-                _fmsg += "\"."
-                cberr(_fmsg)
-                _status = 100                
+            obj_attr_list["config_drive"] = False
+            
+            _vcpus,_vmemory = obj_attr_list["size"].split('-')
+            
+            obj_attr_list["vcpus"] = _vcpus
+            obj_attr_list["vmemory"] = _vmemory
+            
+            _time_mark_prs = int(time())
+            obj_attr_list["mgt_002_provisioning_request_sent"] = \
+            _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
+
+            self.common_messages("VM", obj_attr_list, "creating", 0, '')
+
+            _key_id = self.sshman.list_keys(label = obj_attr_list["key_name"])[0]["id"]
+
+            _kwargs = { "cpus": int(obj_attr_list["vcpus"]), \
+                        "memory": int(obj_attr_list["vmemory"]), \
+                        "hourly": True, \
+                        "domain": "softlayer.com", \
+                        "hostname": obj_attr_list["cloud_vm_name"], \
+                        "datacenter": obj_attr_list["vmc_name"], \
+                        "image_id" : obj_attr_list["boot_globalid_imageid1"], \
+                        "ssh_keys" : [ int(_key_id) ], \
+                        "nic_speed" : int(obj_attr_list["nic_speed"])}
+
+            if len(obj_attr_list["private_vlan"]) > 2 :
+                _kwargs["private_vlan"] = int(obj_attr_list["private_vlan"])
+
+            if obj_attr_list["private_network_only"].lower() == "true" :
+                _kwargs["private"] = True
+                
+            _instance = self.nodeman.create_instance(**_kwargs)
+
+            if _instance :
+
+                obj_attr_list["instance_creation_status"] = 2
+
+                sleep(int(obj_attr_list["update_frequency"]))
+
+                obj_attr_list["cloud_vm_uuid"] = _instance["globalIdentifier"]
+
+                self.take_action_if_requested("VM", obj_attr_list, "provision_started")
+
+                _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
+
+                self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
+
+                obj_attr_list["instance_creation_status"] = 0
+                
+                _status = 0
+
+                if obj_attr_list["force_failure"].lower() == "true" :
+                    _fmsg = "Forced failure (option FORCE_FAILURE set \"true\")"                    
+                    _status = 916
+
             else :
-                _vcpus,_vmemory = obj_attr_list["size"].split('-')
-                
-                obj_attr_list["vcpus"] = _vcpus
-                obj_attr_list["vmemory"] = _vmemory
-                
-                _meta = {}
-                if "meta_tags" in obj_attr_list :
-                    if obj_attr_list["meta_tags"] != "empty" and \
-                    obj_attr_list["meta_tags"].count(':') and \
-                    obj_attr_list["meta_tags"].count(',') :
-                        _meta = str2dic(obj_attr_list["meta_tags"])
-                
-                _meta["experiment_id"] = obj_attr_list["experiment_id"]
-    
-                _time_mark_prs = int(time())
-                obj_attr_list["mgt_002_provisioning_request_sent"] = \
-                _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
-    
-                _msg = "Starting an instance on " + self.get_description() + ", using the imageid \""
-                _msg += obj_attr_list["imageid1"] + "\" (" + str(_imageid) + ") and "
-                _msg += "size \"" + obj_attr_list["size"] + "\", "
-                _msg += "on VMC \"" + obj_attr_list["vmc_name"] + "\""
-                cbdebug(_msg, True)
-    
-                _key_id = self.sshman.list_keys(label = obj_attr_list["key_name"])[0]["id"]
-    
-                _kwargs = { "cpus": int(obj_attr_list["vcpus"]), \
-                            "memory": int(obj_attr_list["vmemory"]), \
-                            "hourly": True, \
-                            "domain": "softlayer.com", \
-                            "hostname": obj_attr_list["cloud_vm_name"], \
-                            "datacenter": obj_attr_list["vmc_name"], \
-                            "image_id" : _imageid, \
-                            "ssh_keys" : [ int(_key_id) ], \
-                            "nic_speed" : int(obj_attr_list["nic_speed"])}
-    
-                if len(obj_attr_list["private_vlan"]) > 2 :
-                    _kwargs["private_vlan"] = int(obj_attr_list["private_vlan"])
-    
-                if obj_attr_list["private_network_only"].lower() == "true" :
-                    _kwargs["private"] = True
-                    
-                _instance = self.nodeman.create_instance(**_kwargs)
-    
-                if _instance :
-    
-                    sleep(int(obj_attr_list["update_frequency"]))
-    
-                    obj_attr_list["cloud_vm_uuid"] = _instance["globalIdentifier"]
-    
-                    self.take_action_if_requested("VM", obj_attr_list, "provision_started")
-    
-                    _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
-    
-                    self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
-                    
-                    _status = 0
-    
-                    if obj_attr_list["force_failure"].lower() == "true" :
-                        _fmsg = "Forced failure (option FORCE_FAILURE set \"true\")"                    
-                        _status = 916
-    
-                else :
-                    _fmsg = "Failed to obtain instance's (cloud assigned) uuid. The "
-                    _fmsg += "instance creation failed for some unknown reason."
-                    cberr(_fmsg)
-                    _status = 100
+                _fmsg = "Failed to obtain instance's (cloud assigned) uuid. The "
+                _fmsg += "instance creation failed for some unknown reason."
+                cberr(_fmsg)
+                _status = 100
                 
         except CldOpsException, obj :
             _status = obj.status
@@ -699,34 +829,8 @@ class SlrCmds(CommonCloudFunctions) :
             _fmsg = str(e)
     
         finally :
-            if _status :
-                _vminstance = self.get_instances(obj_attr_list, "vm", \
-                                               obj_attr_list["cloud_vm_name"])
-
-                _msg = "" + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
-                _msg += "could not be created"
-                _msg += " on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\" : "
-                
-                if _vminstance :
-                    self.nodeman.wait_for_transaction(_instance["id"], \
-                                                     int(obj_attr_list["update_attempts"]), \
-                                                     int(obj_attr_list["update_frequency"]))
-                    self.nodeman.cancel_instance(obj_attr_list["cloud_vm_uuid"])
-
-                _msg += _fmsg + " (The VM creation will be rolled back)"
-                cberr(_msg)
-                
-                raise CldOpsException(_msg, _status)
-
-            else :
-                _msg = "" + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
-                _msg += "was successfully created"
-                _msg += " on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\"."
-                cbdebug(_msg)
-
-                return _status, _msg
+            _status, _msg = self.common_messages("VM", obj_attr_list, "created", _status, _fmsg)
+            return _status, _msg
             
     @trace
     def vmdestroy(self, obj_attr_list) :
@@ -754,30 +858,23 @@ class SlrCmds(CommonCloudFunctions) :
             
             _wait = int(obj_attr_list["update_frequency"])
 
-            _instance = self.get_instances(obj_attr_list, "vm", obj_attr_list["cloud_vm_name"])
+            _instance = self.wait_until_transaction(obj_attr_list)
             
             if _instance :
 
-                _msg = "Wait until all active transactions for Instance \""  + obj_attr_list["name"] + "\""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
-                _msg += " are finished...."
-                cbdebug(_msg, True)
+                self.common_messages("VM", obj_attr_list, "destroying", 0, '')
+                
+                if int(obj_attr_list["instance_creation_status"]) == 2 :
+                    self.nodeman.wait_for_transaction(_instance["id"], \
+                                                     int(obj_attr_list["update_attempts"]), \
+                                                     int(obj_attr_list["update_frequency"]))
 
-                while not self.is_vm_running(obj_attr_list) and _curr_tries < _max_tries : 
-
-                    sleep(int(obj_attr_list["update_frequency"]))      
-                    _curr_tries += 1
-
-                _msg = "Sending a termination request for Instance \""  + obj_attr_list["name"] + "\""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
-                _msg += "...."
-                cbdebug(_msg, True)
-            
-                self.nodeman.cancel_instance(obj_attr_list["cloud_vm_uuid"])
-                sleep(_wait)
-
-                while self.is_vm_running(obj_attr_list) :
+                if int(obj_attr_list["instance_creation_status"]) != 1 :
+                    self.nodeman.cancel_instance(obj_attr_list["cloud_vm_uuid"])
                     sleep(_wait)
+    
+                    while self.is_vm_running(obj_attr_list) :
+                        sleep(_wait)
             else :
                 True
 
@@ -798,22 +895,8 @@ class SlrCmds(CommonCloudFunctions) :
             _fmsg = str(e)
     
         finally :
-            if _status :
-                _msg = "" + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
-                _msg += "could not be destroyed "
-                _msg += " on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\" : "
-                _msg += _fmsg
-                cberr(_msg)
-                raise CldOpsException(_msg, _status)
-            else :
-                _msg = "" + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
-                _msg += "was successfully destroyed "
-                _msg += "on " + self.get_description() + " \"" + obj_attr_list["cloud_name"]
-                _msg += "\"."
-                cbdebug(_msg)
-                return _status, _msg
+            _status, _msg = self.common_messages("VM", obj_attr_list, "destroyed", _status, _fmsg)
+            return _status, _msg
 
     @trace        
     def vmcapture(self, obj_attr_list) :
@@ -833,19 +916,9 @@ class SlrCmds(CommonCloudFunctions) :
             _curr_tries = 0
             _max_tries = int(obj_attr_list["update_attempts"])
 
-            _instance = self.get_instances(obj_attr_list, "vm", obj_attr_list["cloud_vm_name"])
+            _instance = self.wait_until_transaction(obj_attr_list)
 
             if _instance :
-
-                _msg = "Wait until all active transactions for Instance \""  + obj_attr_list["name"] + "\""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
-                _msg += " are finished...."
-                cbdebug(_msg, True)
-
-                while not self.is_vm_running(obj_attr_list) and _curr_tries < _max_tries : 
-
-                    sleep(int(obj_attr_list["update_frequency"]))      
-                    _curr_tries += 1
 
                 _time_mark_crs = int(time())
 
@@ -858,50 +931,29 @@ class SlrCmds(CommonCloudFunctions) :
                     obj_attr_list["captured_image_name"] = obj_attr_list["imageid1"] + "_captured_at_"
                     obj_attr_list["captured_image_name"] += str(obj_attr_list["mgt_101_capture_request_originated"])
 
-                _msg = obj_attr_list["name"] + " capture request sent."
-                _msg += "Will capture with image name \"" + obj_attr_list["captured_image_name"] + "\"."                 
-                cbdebug(_msg)
+                self.common_messages("VM", obj_attr_list, "capturing", 0, '')
 
                 self.nodeman.capture(obj_attr_list["cloud_vm_uuid"], obj_attr_list["captured_image_name"])
 
                 sleep(_wait)
 
-                _msg = "Waiting for " + obj_attr_list["name"]
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
-                _msg += "to be captured with image name \"" + obj_attr_list["captured_image_name"]
-                _msg += "\"..."
-                cbdebug(_msg, True)
-
                 _vm_being_captured = False
-
+                
                 while not _vm_being_captured and _curr_tries < _max_tries : 
 
-                    if self.is_vm_running(obj_attr_list) :
+                    obj_attr_list["images_access"] = "private"
+
+                    _image_instance = self.get_images(obj_attr_list)
+                    
+                    if _image_instance :
+                        _instance = self.wait_until_transaction(obj_attr_list)
                         _time_mark_crc = int(time())
                         obj_attr_list["mgt_103_capture_request_completed"] = _time_mark_crc - _time_mark_crs                        
                         _vm_being_captured = False
                         break
 
-                    _msg = "" + obj_attr_list["name"] + ""
-                    _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
-                    _msg += "still undergoing. "
-                    _msg += "Will wait " + obj_attr_list["update_frequency"]
-                    _msg += " seconds and try again."
-                    cbdebug(_msg)
-
                     sleep(int(obj_attr_list["update_frequency"]))             
                     _curr_tries += 1
-
-                if "mgt_103_capture_request_completed" not in obj_attr_list :
-                    obj_attr_list["mgt_999_capture_request_failed"] = int(time()) - _time_mark_crs
-
-                if obj_attr_list["images_access"] == "private" :    
-                    _vm_image =  self.imageman.list_private_images(name = obj_attr_list["captured_image_name"])
-                else :    
-                    _vm_image = self.imageman.list_public_images(name = obj_attr_list["captured_image_name"])
-
-                if len(_vm_image) and not "mgt_999_capture_request_failed" in obj_attr_list :
-                    _status = 0
 
             else :
                 _fmsg = "This instance does not exist"
@@ -912,7 +964,7 @@ class SlrCmds(CommonCloudFunctions) :
                 _fmsg = "" + obj_attr_list["name"] + ""
                 _fmsg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _fmsg +=  "could not be captured after " + str(_max_tries * _wait) + " seconds.... "
-                cberr(_msg)
+                cberr(_fmsg)
             else :
                 _status = 0
             
@@ -925,21 +977,8 @@ class SlrCmds(CommonCloudFunctions) :
             _fmsg = str(e)
     
         finally :
-            if _status :
-                _msg = "" + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
-                _msg += "could not be captured "
-                _msg += " on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\" : "
-                _msg += _fmsg
-                cberr(_msg, True)
-                raise CldOpsException(_msg, _status)
-            else :
-                _msg = "" + obj_attr_list["name"] + ""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
-                _msg += "was successfully captured "
-                _msg += " on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\"."
-                cbdebug(_msg)
-                return _status, _msg
+            _status, _msg = self.common_messages("VM", obj_attr_list, "captured", _status, _fmsg)
+            return _status, _msg
 
     def vmrunstate(self, obj_attr_list) :
         '''
@@ -956,33 +995,16 @@ class SlrCmds(CommonCloudFunctions) :
                              obj_attr_list["credentials"], \
                              obj_attr_list["vmc_name"])
 
-            _wait = int(obj_attr_list["update_frequency"])
-            _curr_tries = 0
-            _max_tries = int(obj_attr_list["update_attempts"])
-
             if "mgt_201_runstate_request_originated" in obj_attr_list :
                 _time_mark_rrs = int(time())
                 obj_attr_list["mgt_202_runstate_request_sent"] = \
                     _time_mark_rrs - obj_attr_list["mgt_201_runstate_request_originated"]
     
-            _msg = "Sending a runstate change request (" + _ts + " for " + obj_attr_list["name"]
-            _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
-            _msg += "...."
-            cbdebug(_msg, True)
+            self.common_messages("VM", obj_attr_list, "runstate altering", 0, '')
 
-            _instance = self.get_instances(obj_attr_list, "vm", obj_attr_list["cloud_vm_name"])
+            _instance = self.wait_until_transaction(obj_attr_list)
 
             if _instance :
-
-                _msg = "Wait until all active transactions for Instance \""  + obj_attr_list["name"] + "\""
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
-                _msg += " are finished...."
-                cbdebug(_msg, True)
-
-                while not self.is_vm_running(obj_attr_list) and _curr_tries < _max_tries : 
-
-                    sleep(int(obj_attr_list["update_frequency"]))      
-                    _curr_tries += 1
 
                 if _ts == "fail" :
                     self.slconn.pause(id = obj_attr_list["cloud_vm_uuid"])
@@ -992,12 +1014,11 @@ class SlrCmds(CommonCloudFunctions) :
                     _instance.resume(id = obj_attr_list["cloud_vm_uuid"])
                 elif (_ts == "attached" or _ts == "restore") and _cs == "save" :
                     _instance.powerOn(id = obj_attr_list["cloud_vm_uuid"])
+
+            _instance = self.wait_until_transaction(obj_attr_list)
             
             _time_mark_rrc = int(time())
             obj_attr_list["mgt_203_runstate_request_completed"] = _time_mark_rrc - _time_mark_rrs
-
-            _msg = "VM " + obj_attr_list["name"] + " runstate request completed."
-            cbdebug(_msg)
                         
             _status = 0
 
@@ -1010,71 +1031,98 @@ class SlrCmds(CommonCloudFunctions) :
             _fmsg = str(e)
     
         finally :
-            if _status :
-                _msg = "VM " + obj_attr_list["uuid"] + " could not have its "
-                _msg += "run state changed on " + self.get_description()
-                _msg += " \"" + obj_attr_list["cloud_name"] + "\" :" + _fmsg
-                cberr(_msg, True)
-                raise CldOpsException(_msg, _status)
-            else :
-                _msg = "VM " + obj_attr_list["uuid"] + " successfully had its "
-                _msg += "run state changed on " + self.get_description()
-                _msg += " \"" + obj_attr_list["cloud_name"] + "\"."
-                cbdebug(_msg, True)
-                return _status, _msg
+            _status, _msg = self.common_messages("VM", obj_attr_list, "runstate altered", _status, _fmsg)
+            return _status, _msg
 
-    @trace        
-    def aidefine(self, obj_attr_list, current_step) :
+    @trace
+    def vmmigrate(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        return 0, "NOT SUPPORTED"
+
+    @trace
+    def vmresize(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        return 0, "NOT SUPPORTED"
+
+    @trace
+    def imgdelete(self, obj_attr_list) :
         '''
         TBD
         '''
         try :
+            _status = 100
+            _image_instance = False
+            
             _fmsg = "An error has occurred, but no error message was captured"
-            self.take_action_if_requested("AI", obj_attr_list, current_step)            
+            
+            self.common_messages("IMG", obj_attr_list, "deleting", 0, '')
+
+            if not self.nodeman or not self.imageman :
+                self.connect(obj_attr_list["access"], \
+                             obj_attr_list["credentials"], \
+                             obj_attr_list["vmc_name"])
+
+            obj_attr_list["images_access"] = "private"
+
+            _image_instance = self.get_images(obj_attr_list)
+                
+            if _image_instance :
+
+                self.imageman.delete_image(obj_attr_list["boot_globalid_imageid1"])
+
+                _wait = int(obj_attr_list["update_frequency"])
+                _curr_tries = 0
+                _max_tries = int(obj_attr_list["update_attempts"])
+
+                _image_deleted = False
+                       
+                while not _image_deleted and _curr_tries < _max_tries :
+
+                    _image_instance = self.get_images(obj_attr_list)                    
+
+                    if not _image_instance :
+                        _image_deleted = True
+                    else :
+                        sleep(_wait)
+                        _curr_tries += 1
+                        
             _status = 0
 
         except Exception, e :
             _status = 23
             _fmsg = str(e)
-    
+            
         finally :
-            if _status :
-                _msg = "AI " + obj_attr_list["name"] + " could not be defined "
-                _msg += " on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\" : "
-                _msg += _fmsg
-                cberr(_msg)
-                raise CldOpsException(_msg, _status)
-            else :
-                _msg = "AI " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "defined on " + self.get_description() + " \"" + obj_attr_list["cloud_name"]
-                _msg += "\"."
-                cbdebug(_msg)
-                return _status, _msg
-
-    @trace        
-    def aiundefine(self, obj_attr_list, current_step) :
+            _status, _msg = self.common_messages("IMG", obj_attr_list, "deleted", _status, _fmsg)
+            return _status, _msg
+        
+    @trace
+    def wait_until_transaction(self, obj_attr_list) :
         '''
         TBD
         '''
-        try :
-            _fmsg = "An error has occurred, but no error message was captured"
-            self.take_action_if_requested("AI", obj_attr_list, current_step)            
-            _status = 0
+        _wait = int(obj_attr_list["update_frequency"])
+        _curr_tries = 0
+        _max_tries = int(obj_attr_list["update_attempts"])
 
-        except Exception, e :
-            _status = 23
-            _fmsg = str(e)
-    
-        finally :
-            if _status :
-                _msg = "AI " + obj_attr_list["name"] + " could not be undefined "
-                _msg += " on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\" : "
-                _msg += _fmsg
-                cberr(_msg)
-                raise CldOpsException(_msg, _status)
+        _active_transaction = True
+
+        while _active_transaction and _curr_tries < _max_tries :
+            
+            _instance = self.get_instances(obj_attr_list, "vm", \
+                                   obj_attr_list["cloud_vm_name"])
+                        
+            if _instance :
+                if "activeTransaction" in _instance :
+                    sleep(_wait)
+                    _curr_tries += 1
+                else :
+                    _active_transaction = False
             else :
-                _msg = "AI " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "undefined on " + self.get_description() + " \"" + obj_attr_list["cloud_name"]
-                _msg += "\"."
-                cbdebug(_msg)
-                return _status, _msg
+                _active_transaction = False
+                
+        return _instance

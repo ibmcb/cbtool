@@ -34,7 +34,7 @@ import HTML
 import re
 import sys
 
-def make_regression_test(reg_tst_f_contents, reg_tst_expl_fn) :
+def make_regression_test(reg_tst_f_contents, reg_tst_expl_fn, override_cb_dir) :
     '''
     TBD
     '''
@@ -45,11 +45,16 @@ def make_regression_test(reg_tst_f_contents, reg_tst_expl_fn) :
     _counter = 0
     _reg_tst_expl_fh = open(path[0] + '/' + reg_tst_expl_fn, 'w', 0)
 
+    if not override_cb_dir :
+        _cb_dir = path[0] + "/../"
+    else :
+        _cb_dir = override_cb_dir
+
     for _nr in range(0,2) :
         for _line_number, _line_contents in enumerate(reg_tst_f_contents) :
             _line_contents = _line_contents.strip('\n')
             _line_contents = _line_contents.replace("CB_DIRECTORY", 
-                                path[0] + "/../")
+                                _cb_dir)
     
             if _line_contents == "DNRTT" :
                 _line_contents = False
@@ -445,7 +450,11 @@ def main() :
                         raise IOError
             
             if argv[1] == "make" :
-                globals()[argv[1] + "_regression_test"](_file_contents[_reg_tst_fn], _reg_tst_expl_fn)
+                if len(argv) > 2 :
+                    _override_cb_dir = argv[2]
+                else :
+                    _override_cb_dir = None
+                globals()[argv[1] + "_regression_test"](_file_contents[_reg_tst_fn], _reg_tst_expl_fn, _override_cb_dir)
 
             elif argv[1] == "validate" :
                 if len(argv) == 3 :

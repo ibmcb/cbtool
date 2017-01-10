@@ -392,7 +392,6 @@ class VcdCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred when creating new vApp, but no error message was captured"
             
-            obj_attr_list["cloud_vm_uuid"] = "NA"
             _instance = False
             
             obj_attr_list["cloud_vm_name"] = "cb-" + obj_attr_list["username"] 

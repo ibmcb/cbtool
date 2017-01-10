@@ -315,21 +315,6 @@ def syslog_logstore_setup(global_objects, operation = "check") :
         cbdebug(_msg)
         _status = 0
         return _status, _msg
-
-    except socket.herror:
-        _status = 1200
-        _msg = "The IP address \"" + _hostname + "\" - used by the rsyslog "
-        _msg += " daemon - is not mapped to a Hostname. "
-        _msg += "Please make sure this name is resolvable either in /etc/hosts or DNS."
-        raise StoreSetupException(_msg, 9)
-
-
-    except socket.gaierror:
-        _status = 1200
-        _msg = "The Hostname \"" + _hostname + "\" - used by the rsyslog"
-        _msg += " daemon - is not mapped to an IP. "
-        _msg += "Please make sure this name is resolvable either in /etc/hosts or DNS."
-        raise StoreSetupException(_msg, 9)
     
     except ProcessManagement.ProcessManagementException, obj :
         _status = str(obj.status)
@@ -337,8 +322,7 @@ def syslog_logstore_setup(global_objects, operation = "check") :
         raise StoreSetupException(_msg, 9)
         
     except NetworkException, obj :
-        _msg = "Syslog Log Store on server " + _hostname + ", " + _protocol
-        _msg += " port " + str(_hostport) + " seems to be down:" + str(obj.msg) + '.'
+        _msg = "Syslog Log Store network error: " + str(obj.msg) + '.'
         cberr(_msg)
         raise StoreSetupException(_msg, 8)
 
@@ -562,20 +546,6 @@ def rsync_filestore_setup(global_objects, operation = "check") :
         cbdebug(_msg)
         _status = 0
         return _status, _msg
-
-    except socket.herror:
-        _status = 1200
-        _msg = "The IP address \"" + _hostname + "\" - used by the rsync "
-        _msg += " daemon - is not mapped to a Hostname. "
-        _msg += "Please make sure this name is resolvable either in /etc/hosts or DNS."
-        raise StoreSetupException(_msg, 9)
-
-    except socket.gaierror:
-        _status = 1200
-        _msg = "The Hostname \"" + _hostname + "\" - used by the rsync"
-        _msg += " daemon - is not mapped to an IP. "
-        _msg += "Please make sure this name is resolvable either in /etc/hosts or DNS."
-        raise StoreSetupException(_msg, 9)
     
     except ProcessManagement.ProcessManagementException, obj :
         _status = str(obj.status)
@@ -583,8 +553,7 @@ def rsync_filestore_setup(global_objects, operation = "check") :
         raise StoreSetupException(_msg, 9)
         
     except NetworkException, obj :
-        _msg = "Rsync File Store on server " + _hostname + ", " + _protocol
-        _msg += " port " + str(_hostport) + " seems to be down:" + str(obj.msg) + '.'
+        _msg = "Rsync File Store network error: " + str(obj.msg) + '.'
         cberr(_msg)
         raise StoreSetupException(_msg, 8)
 

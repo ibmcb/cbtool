@@ -23,15 +23,19 @@
 
     @author: Michael R. Hines, Marcio A. Silva
 '''
-from time import time, sleep
 import threading
 import re
 import os 
 import copy
 import json
-from socket import gethostbyname
+import socket
 
-from lib.auxiliary.data_ops import str2dic, dic2str, is_number
+from time import time, sleep
+from uuid import uuid5, UUID, NAMESPACE_DNS
+from socket import gethostbyname
+from random import randint
+
+from lib.auxiliary.data_ops import str2dic, dic2str, is_number, value_suffix
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.remote.network_functions import Nethashget
 from lib.stores.redis_datastore_adapter import RedisMgdConn
@@ -280,7 +284,8 @@ class CommonCloudFunctions:
             _msg += "Giving up."
             cberr(_msg, True)
             raise CldOpsException(_msg, 71)
-        
+
+    @trace        
     def get_attr_from_pending(self, obj_attr_list, key = "all") :
         '''
         TBD
@@ -320,7 +325,8 @@ class CommonCloudFunctions:
         if not _network_reachable :
 
             _msg = "Trying to establish network connectivity to " + obj_attr_list["log_string"]  
-            _msg += ", on IP address " + obj_attr_list["prov_cloud_ip"]
+            _msg += ", on IP address " + obj_attr_list["prov_cloud_ip"] 
+            _msg += " (using method \"" + obj_attr_list["check_boot_complete"] + "\")" 
             
             if str(obj_attr_list["use_jumphost"]).lower() == "false" :
                 _msg += "..."
@@ -550,7 +556,8 @@ class CommonCloudFunctions:
             _msg += "Giving up."
             cberr(_msg, True)
             raise CldOpsException(_msg, 89)
-        
+
+    @trace        
     def pending_set(self, obj_attr_list, msg) :
         '''
         TBD
@@ -564,6 +571,7 @@ class CommonCloudFunctions:
                 self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", \
                                              obj_attr_list["uuid"], "status", msg) 
 
+    @trace
     def pending_cloud_decide_abortion(self, obj_attr_list, _reason = "abort") :
         '''
         TBD
@@ -813,6 +821,7 @@ class CommonCloudFunctions:
                     except Exception, msg :
                         _fmsg = "Could not lookup interface " + iface + " for hostname " + hostname + " (probably bad /etc/hosts): " + str(msg)
                         raise CldOpsException(_fmsg, 1295)
+                    
     @trace
     def is_cloud_image_uuid(self, imageid) :
         '''
@@ -824,21 +833,28 @@ class CommonCloudFunctions:
         if self.get_description() == "Amazon Elastic Compute Cloud" :
             if len(imageid) > 4 :
                 if imageid[0:4] == "ami-" :
-                    if is_number(imageid[5:]) :
+                    if is_number(imageid[5:], True) :
                         return True
 
-        if self.get_description() == "Cloudbench SimCloud" :
-            return True
+        if self.get_description() == "Cloudbench SimCloud" or self.get_description() == "Cloudbench NoOpCloud" :
+            if len(imageid) == 36 and imageid.count('-') == 4 :
+                return True
         
         if self.get_description() == "OpenStack Cloud" :
-            return True
+            if len(imageid) == 36 and imageid.count('-') == 4 :
+                return True
 
         if self.get_description() == "SoftLayer Cloud" :
             if len(imageid) == 7 and is_number(imageid) :
                 return True
 
         if self.get_description() == "Google Compute Engine" :
-            return True
+            if len(imageid) == 19 and is_number(imageid) :
+                return True
+
+        if self.get_description() == "DigitalOcean Cloud" :
+            if len(imageid) == 8 and is_number(imageid) :
+                return True
 
         if self.get_description() == "Parallel Docker Manager Cloud" :
             if len(imageid) == 64 and is_number(imageid, True) :
@@ -851,7 +867,7 @@ class CommonCloudFunctions:
         return False
 
     @trace
-    def check_ssh_key(self, vmc_name, key_name, vm_defaults, internal = False, http_conn_id = None) :
+    def check_ssh_key(self, vmc_name, key_name, vm_defaults, internal = False, connection = None) :
         '''
         TBD
         '''
@@ -867,11 +883,13 @@ class CommonCloudFunctions:
                 cbdebug(_msg, True)
             else :
                 cbdebug(_msg)            
-
+                
             _pub_key_fn = vm_defaults["credentials_dir"] + '/'
             _pub_key_fn += vm_defaults["ssh_key_name"] + ".pub"
 
             _key_type, _key_contents, _key_fingerprint = get_ssh_key(_pub_key_fn, self.get_description())
+
+            vm_defaults["pubkey_contents"] = _key_type + ' ' + _key_contents
 
             if not _key_contents :
                 _fmsg = _key_type 
@@ -881,6 +899,12 @@ class CommonCloudFunctions:
             _key_pair_found = False
 
             _registered_key_pairs = {}
+            if self.get_description() == "Cloudbench SimCloud" or \
+            self.get_description() == "Parallel Container Manager Cloud" or\
+             self.get_description() == "Parallel Docker Manager Cloud" or\
+              self.get_description() == "Cloudbench NoOpCloud" :
+                _registered_key_pairs[key_name] =_key_fingerprint + "-NA"            
+
             if self.get_description() == "Cloudbench SimCloud" :
                 _registered_key_pairs[key_name] =_key_fingerprint + "-NA"            
             
@@ -897,18 +921,28 @@ class CommonCloudFunctions:
                     _registered_key_pairs[_key_pair["label"]] = _key_pair["fingerprint"] + '-' + str(_key_pair["id"])
 
             if self.get_description() == "Google Compute Engine" :
-                _metadata = self.gceconn.projects().get(project=self.instances_project).execute(http = self.http_conn[http_conn_id])
-                for _element in _metadata['commonInstanceMetadata']['items'] :
-                    if _element["key"] == "sshKeys" :
-                        for _component in _element["value"].split('\n') :
-                            if len(_component.split(' ')) == 3 :
-                                _key_tag, _key_contents, _key_user = _component.split(' ')
-                                _key_name, _key_type = _key_tag.split(':')
-                                _key_type, _key_contents, _key_fingerprint = \
-                                get_ssh_key(_key_type + ' ' + _key_contents + ' ' + _key_user, self.get_description(), False)
+                _temp_key_metadata = {}
+                _metadata = self.gceconn.projects().get(project=self.instances_project).execute(http = self.http_conn[connection])
 
-                                _registered_key_pairs[_key_name] = _key_fingerprint + "-NA"
+                if "items" in _metadata["commonInstanceMetadata"] :
+                    for _element in _metadata["commonInstanceMetadata"]["items"] :
+                        if _element["key"] == "sshKeys" :
+                            for _component in _element["value"].split('\n') :
+                                if len(_component.split(' ')) == 3 :
+                                    _r_key_tag, _r_key_contents, _r_key_user = _component.split(' ')
+                                    _r_key_name, _r_key_type = _r_key_tag.split(':')
+                                    _temp_key_metadata[_r_key_name] = _r_key_tag + ' ' + _r_key_contents + ' ' + _r_key_user                                
+                                    _r_key_type, _r_key_contents, _r_key_fingerprint = \
+                                    get_ssh_key(_r_key_type + ' ' + _r_key_contents + ' ' + _r_key_user, self.get_description(), False)
+    
+                                    _registered_key_pairs[_r_key_name] = _r_key_fingerprint + "-NA"
 
+            if self.get_description() == "DigitalOcean Cloud" :
+                _registered_key_pair_objects = {}
+                for _key_pair in connection.list_key_pairs() :
+                    _registered_key_pairs[_key_pair.name] = str(_key_pair.fingerprint) + '-' + str(_key_pair.extra["id"])
+                    _registered_key_pair_objects[_key_pair.name] = _key_pair
+                    
             for _key_pair in _registered_key_pairs.keys() :
                 if _key_pair == key_name :
                     _msg = "A key named \"" + key_name + "\" was found "
@@ -947,15 +981,15 @@ class CommonCloudFunctions:
                                 self.sshman.delete_key(_keyid)
 
                             if self.get_description() == "Google Compute Engine" :
-                                _msg = "ERROR: Please go to Google Developers Console -> Compute Engine"
-                                _msg += " -> Metadata and delete the contents of the public key \""
-                                _msg += key_name + "\" there..."
-                                cberr(_msg, True)
+                                _temp_key_metadata[key_name] = key_name + ':' + _key_type + ' ' + _key_contents + " cbtool@orchestrator"
 
+                            if self.get_description() == "DigitalOcean Cloud" :
+                                connection.delete_key_pair(_registered_key_pair_objects[key_name])                                
                             break
 
             if not _key_pair_found :
-                _msg = "Creating the ssh key pair \"" + key_name + "\""
+
+                _msg = "    Creating the ssh key pair \"" + key_name + "\""
                 _msg += " on VMC " + vmc_name + ", using the public key \""
                 _msg += _pub_key_fn + "\"..."
                 
@@ -975,11 +1009,26 @@ class CommonCloudFunctions:
                     self.sshman.add_key(_key_type + ' ' + _key_contents, key_name)
 
                 if self.get_description() == "Google Compute Engine" :
-                    _msg = "ERROR: Please go to Google Developers Console -> Compute Engine"
-                    _msg += " -> Metadata and add the contents of the public key \""
-                    _msg += _pub_key_fn + "\" there..."
-                    cberr(_msg, True)
-                
+                    _temp_key_metadata[key_name] = key_name + ':' + _key_type + ' ' + _key_contents + " cbtool@orchestrator"
+                    
+                    _key_list_str = ''
+                    for _key in _temp_key_metadata.keys() :
+                        _key_list_str += _temp_key_metadata[_key] + '\n'
+
+                    _key_list_str = _key_list_str[0:-1]
+
+                    if "items" in _metadata["commonInstanceMetadata"] :                    
+                        for _element in _metadata['commonInstanceMetadata']['items'] :
+                            if _element["key"] == "sshKeys" :
+                                _element["value"] = _key_list_str
+                    else :
+                        _metadata['commonInstanceMetadata']['items'].append({"key": "sshKeys", "value" : _key_list_str})
+                                                
+                    self.gceconn.projects().setCommonInstanceMetadata(project=self.instances_project, body=_metadata["commonInstanceMetadata"]).execute(http = self.http_conn[connection])
+
+                if self.get_description() == "DigitalOcean Cloud" :
+                    connection.create_key_pair(key_name, _key_type + ' ' + _key_contents + " cbtool@orchestrator")
+                    
                 _key_pair_found = True
 
             return _key_pair_found    
@@ -1002,7 +1051,10 @@ class CommonCloudFunctions:
             
             _registered_security_groups = []
 
-            if self.get_description() == "Cloudbench SimCloud" :
+            if self.get_description() == "Cloudbench SimCloud" or \
+            self.get_description() == "Parallel Container Manager Cloud" or\
+             self.get_description() == "Parallel Docker Manager Cloud" or\
+              self.get_description() == "Cloudbench NoOpCloud" :
                 _registered_security_groups.append(security_group_name)              
             
             if self.get_description() == "Amazon Elastic Compute Cloud" :
@@ -1085,12 +1137,14 @@ class CommonCloudFunctions:
 
         return _detected_imageids
 
-    # CloudBench should be passing us a more complex object for userdata,
-    # but is only passing us a script instead. So, we have to wrap the
-    # userdata in formal cloud-config syntax in order to be able to use
-    # if with cloud images that have cloud-init configured correctly.
     @trace
     def populate_cloudconfig(self, obj_attr_list) :
+        '''
+        CloudBench should be passing us a more complex object for userdata,
+        but is only passing us a script instead. So, we have to wrap the
+        userdata in formal cloud-config syntax in order to be able to use
+        if with cloud images that have cloud-init configured correctly.
+        '''
         if ("userdata" not in obj_attr_list or obj_attr_list["userdata"]) and obj_attr_list["use_vpn_ip"].lower() == "false" :
             return False
 
@@ -1166,6 +1220,211 @@ runcmd:
         #cbdebug("Final userdata: \n" + cloudconfig)
         return cloudconfig
 
+    @trace                                                                        
+    def generate_random_uuid(self, name = None, seed = '6cb8e707-0fc5-5f55-88d4-d4fed43e64a8') :
+        '''
+        TBD
+        '''
+        if not name  :        
+            _uuid = str(uuid5(NAMESPACE_DNS, str(randint(0,1000000000000000000)))).upper()
+        else :
+            _uuid = str(uuid5(UUID(seed), str(name))).upper()
+        return _uuid
+
+    @trace
+    def generate_random_ip_address(self) :
+        '''
+        TBD
+        '''
+        _ip = ".".join(str(randint(1, 255)) for _octect in range(4))
+        return _ip
+
+    @trace       
+    def generate_random_mac_address(self) :
+        '''
+        TBD
+        '''
+        _mac_template = [ 0x00, 0x16, 0x3e, randint(0x00, 0x7f), randint(0x00, 0xff), randint(0x00, 0xff) ]
+        _mac = ':'.join(map(lambda x: "%02x" % x, _mac_template))
+        return _mac
+
+    @trace
+    def set_cgroup(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+
+        _status = 189
+        _fmsg = "About to import libvirt...."
+
+        _state_code2value = {}
+        _state_code2value["1"] = "running"
+        _state_code2value["2"] = "blocked"
+        _state_code2value["3"] = "paused"
+        _state_code2value["4"] = "shutdown"
+        # Temporarily renaming "shutoff" to "save"
+        _state_code2value["5"] = "save"
+        _state_code2value["6"] = "crashed"
+
+
+        _cgroups_mapping = {}
+        _cgroups_mapping["mem_hard_limit"] = "memory.limit_in_bytes"
+        _cgroups_mapping["mem_soft_limit"] = "memory.soft_limit_in_bytes"
+        
+        try :        
+
+            import libvirt
+
+            _host_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
+                                                    "HOST", \
+                                                    True, \
+                                                    obj_attr_list["host_name"], \
+                                                    False)
+
+            _hypervisor_type = str(_host_attr_list["hypervisor_type"]).lower()
+
+            if _hypervisor_type == "qemu" :
+                _astr = "/system"
+            else :
+                _astr = ""
+
+            _host_name = _host_attr_list["cloud_hostname"]
+
+            _host_ip = _host_attr_list["cloud_ip"]
+
+
+            obj_attr_list["resource_limits"] = str2dic(obj_attr_list["resource_limits"].replace(';',',').replace('-',':'))
+
+            _proc_man = ProcessManagement(username = "root", \
+                                          hostname = _host_ip, \
+                                          cloud_name = obj_attr_list["cloud_name"])
+
+            for _key in obj_attr_list["resource_limits"] :
+
+                _base_dir = obj_attr_list["cgroups_base_dir"]
+                if _key.count("mem") :
+                    _subsystem = "memory"
+
+                # The cgroups/libvirt interface is currently broken (for memory limit
+                # control). Will have to ssh into the node and set cgroup limits 
+                # manually.
+                
+                _value = str(value_suffix(obj_attr_list["resource_limits"][_key]))
+
+                _cmd = "echo " + _value + " > " + _base_dir + _subsystem +"/machine/"
+                _cmd += obj_attr_list["instance_name"] + ".libvirt-" + _hypervisor_type
+                _cmd += "/" + _cgroups_mapping[_key]
+
+                _msg = "Altering the \"" + _cgroups_mapping[_key] + "\" parameter"
+                _msg += " on the \"" +_subsystem + "\" subsystem on cgroups for"
+                _msg += " instance \"" + obj_attr_list["instance_name"] + "\" with "
+                _msg += " the value \"" + _value + "\"..."
+                cbdebug(_msg, True)
+
+                _status, _result_stdout, _fmsg = _proc_man.run_os_command(_cmd)
+                
+            if _host_name not in self.lvirt_conn or not self.lvirt_conn[_host_name] :        
+                _msg = "Attempting to connect to libvirt daemon running on "
+                _msg += "hypervisor (" + _hypervisor_type + ") \"" + _host_ip + "\"...."
+                cbdebug(_msg)
+
+                self.lvirt_conn[_host_name] = libvirt.open( _hypervisor_type + "+tcp://" + _host_ip + _astr)
+                
+                _msg = "Connection to libvirt daemon running on hypervisor ("
+                _msg += _hypervisor_type + ") \"" + _host_ip + "\" successfully established."
+                cbdebug(_msg)
+
+                instance_data = self.lvirt_conn[_host_name].lookupByName(obj_attr_list["instance_name"])
+
+                obj_attr_list["lvirt_os_type"] = instance_data.OSType()
+
+                obj_attr_list["lvirt_scheduler_type"] = instance_data.schedulerType()[0]
+    
+            # All object uuids on state store are case-sensitive, so will
+            # try to just capitalize the UUID reported by libvirt
+#                obj_attr_list["cloud_uuid"] = instance_data.UUIDString().upper()
+#                obj_attr_list["uuid"] = obj_attr_list["cloud_uuid"]
+#                obj_attr_list["cloud_lvid"] = instance_data.name()
+
+            _gobj_attr_list = instance_data.info()
+
+            obj_attr_list["lvirt_vmem"] = str(_gobj_attr_list[1])
+            obj_attr_list["lvirt_vmem_current"] = str(_gobj_attr_list[2])
+            obj_attr_list["lvirt_vcpus"] = str(_gobj_attr_list[3])
+
+            _state_code = str(_gobj_attr_list[0])
+            if _state_code in _state_code2value :
+                obj_attr_list["lvirt_state"] = _state_code2value[_state_code]
+            else :
+                obj_attr_list["lvirt_state"] = "unknown"
+
+            if _state_code == "1" :
+
+                _vcpu_info = instance_data.vcpus()
+
+                for _vcpu_nr in range(0, int(obj_attr_list["lvirt_vcpus"])) :
+                    obj_attr_list["lvirt_vcpu_" + str(_vcpu_nr) + "_pcpu"] = str(_vcpu_info[0][_vcpu_nr][3])
+                    obj_attr_list["lvirt_vcpu_" + str(_vcpu_nr) + "_time"] =  str(_vcpu_info[0][_vcpu_nr][2])
+                    obj_attr_list["lvirt_vcpu_" + str(_vcpu_nr) + "_state"] =  str(_vcpu_info[0][_vcpu_nr][1])
+                    obj_attr_list["lvirt_vcpu_" + str(_vcpu_nr) + "_map"] = str(_vcpu_info[1][_vcpu_nr])
+
+                _sched_info = instance_data.schedulerParameters()
+
+                obj_attr_list["lvirt_vcpus_soft_limit"] = str(_sched_info["cpu_shares"])
+
+                if "vcpu_period" in _sched_info :
+                    obj_attr_list["lvirt_vcpus_period"] = str(float(_sched_info["vcpu_period"]))
+                    obj_attr_list["lvirt_vcpus_quota"] = str(float(_sched_info["vcpu_quota"]))
+                    obj_attr_list["lvirt_vcpus_hard_limit"] = str(float(obj_attr_list["lvirt_vcpus_quota"]) / float(obj_attr_list["lvirt_vcpus_period"]))
+
+                if "memoryParameters" in dir(instance_data) :    
+                    _mem_info = instance_data.memoryParameters(0)
+
+                    obj_attr_list["lvirt_mem_hard_limit"] = str(_mem_info["hard_limit"])
+                    obj_attr_list["lvirt_mem_soft_limit"] = str(_mem_info["soft_limit"])
+                    obj_attr_list["lvirt_mem_swap_hard_limit"] = str(_mem_info["swap_hard_limit"])
+
+                if "blkioParameters" in dir(instance_data) :
+                    _diskio_info = instance_data.blkioParameters(0)
+                    obj_attr_list["lvirt_diskio_soft_limit"] = "unknown"
+                    if _diskio_info :
+                        if "weight" in _diskio_info :
+                            obj_attr_list["lvirt_diskio_soft_limit"] = str(_diskio_info["weight"])
+
+        except libvirt.libvirtError, msg :
+            _fmsg = "Error while attempting to connect to libvirt daemon running on "
+            _fmsg += "hypervisor (" + _hypervisor_type + ") \"" + _host_ip + "\":"
+            _fmsg += msg
+            cberr(_fmsg)
+
+        except ProcessManagement.ProcessManagementException, obj:
+            _status = obj.status
+            _fmsg = str(obj.msg)
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+
+        finally :
+            if _status :
+                _msg = "Error while attempting to set resource limits for " + obj_attr_list["name"] + ""
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
+                _msg += "running on hypervisor \"" + _host_name + "\""
+                _msg += " in " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\" : "
+                _msg += _fmsg
+                cberr(_msg)
+
+            else :
+                _msg = "Successfully set resource limits for " + obj_attr_list["name"] + ""
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
+                _msg += "running on hypervisor \"" + _host_name + "\""
+                _msg += " in " + self.get_description() + " \"" + obj_attr_list["cloud_name"]
+                _msg += "\"."
+                cbdebug(_msg)
+
+            return _status, _msg
+
+    @trace
     def process_script_output(self, obj_attr_list, current_step) :
         '''
         TBD
@@ -1197,5 +1456,393 @@ runcmd:
             if obj_attr_list["name"].count("vm_") :
                 obj_attr_list.update(_temp_dict)               
 
-
         return True
+
+    @trace
+    def determine_instance_name(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        
+        if "cloud_vm_name" not in obj_attr_list :
+            obj_attr_list["cloud_vm_name"] = "cb-" + obj_attr_list["username"]
+            obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["cloud_name"]
+            obj_attr_list["cloud_vm_name"] += '-' + "vm"
+            obj_attr_list["cloud_vm_name"] += obj_attr_list["name"].split("_")[1]
+            obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["role"]
+            
+            if obj_attr_list["ai"] != "none" :            
+                obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["ai_name"]  
+       
+        if "cloud_vv_name" not in obj_attr_list :       
+            obj_attr_list["cloud_vv_name"] = "cb-" + obj_attr_list["username"]
+            obj_attr_list["cloud_vv_name"] += '-' + obj_attr_list["cloud_name"]
+            obj_attr_list["cloud_vv_name"] += '-' + "vv"
+            obj_attr_list["cloud_vv_name"] += obj_attr_list["name"].split("_")[1]
+            obj_attr_list["cloud_vv_name"] += '-' + obj_attr_list["role"]  
+
+            if obj_attr_list["ai"] != "none" :            
+                obj_attr_list["cloud_vv_name"] += '-' + obj_attr_list["ai_name"]  
+
+        obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"].replace("_", "-")
+        obj_attr_list["cloud_hostname"] = obj_attr_list["cloud_vm_name"]
+
+        obj_attr_list["volume_creation_failure_message"] = "none"
+        obj_attr_list["volume_creation_status"] = 0
+        
+        return True
+
+    @trace
+    def determine_key_name(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        if "tenant" in obj_attr_list :
+            _x = '_' + obj_attr_list["tenant"] + '_'
+        else :
+            _x = '_'
+
+        if not obj_attr_list["key_name"].count(obj_attr_list["username"] + '_') :
+            obj_attr_list["key_name"] = obj_attr_list["username"] + '_' + obj_attr_list["key_name"]
+
+        return obj_attr_list["key_name"]
+
+    @trace
+    def pre_vmcreate_process(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        if "meta_tags" in obj_attr_list :
+            if obj_attr_list["meta_tags"] != "empty" and \
+            obj_attr_list["meta_tags"].count(':') and \
+            obj_attr_list["meta_tags"].count(',') :
+                obj_attr_list["meta_tags"] = str2dic(obj_attr_list["meta_tags"])
+            else :
+                obj_attr_list["meta_tags"] = "empty"
+        else :
+            obj_attr_list["meta_tags"] = "empty"
+
+        if str(obj_attr_list["key_name"]).lower() == "false" :
+            obj_attr_list["key_name"] = None
+    
+        return True
+    
+    @trace    
+    def common_messages(self, obj_type, obj_attr_list, operation, status, failure_msg) :
+        '''
+        TBD
+        '''
+        if operation == "checking" :
+            _msg = "Checking if the imageids associated to each \"VM role\" are"
+            _msg += " registered on VMC \"" + obj_attr_list["name"] + "\""
+            if "endpoint" in obj_attr_list :
+                _msg += " (endpoint \"" + obj_attr_list["endpoint"] + "\")"
+            _msg += "...."
+            cbdebug(_msg, True)
+            return status, _msg
+
+        if "cloud_name" in obj_attr_list :
+            _full_cloud_id = " on " + self.get_description() + " \"" + obj_attr_list["cloud_name"] + "\" "
+
+        _result = " was successfully "
+        if status :
+            _result = " could not be "
+
+        if obj_type == "VMC" :
+
+            if operation == "connected" :
+
+                if status > 1 :
+                    _msg = "VMC \"" + obj_attr_list["name"] + "\" did not pass the connection test."
+                    _msg += "\" : " + failure_msg
+                    cberr(_msg, True)
+                    raise CldOpsException(_msg, status)
+                else :
+                    _msg = "VMC \"" + obj_attr_list["name"] + "\" was successfully tested.\n"
+                    cbdebug(_msg, True)
+                    return status, _msg
+            
+            if operation == "cleaned up" or operation == "registered" or operation == "unregistered" :
+                _full_obj_id = "VMC " + obj_attr_list["name"] 
+                if "uuid" in obj_attr_list : 
+                    _full_obj_id += " (" + obj_attr_list["uuid"] + ")"
+                
+                if status :
+                    _msg = _full_obj_id + _result + operation + _full_cloud_id + ":  " + failure_msg
+                    cberr(_msg)
+                    raise CldOpsException(_msg, status)
+                else :
+                    _msg = _full_obj_id + _result + operation + _full_cloud_id
+                    if operation == "cleaned up" :
+                        cbdebug(_msg)
+                    else :
+                        cbdebug(_msg, True)                    
+                    return status, _msg
+                
+            if operation == "cleaning up vms" :
+                _msg = "Removing all VMs previously created on VMC \""
+                _msg += obj_attr_list["name"] + "\" (only VM names starting with"
+                _msg += " \"" + "cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]
+                _msg += "\")....."
+                cbdebug(_msg, True)                
+                return status, _msg
+
+            if operation == "cleaning up vvs" :
+                _msg = "Removing all VVs previously created on VMC \""
+                _msg += obj_attr_list["name"] + "\" (only VV names starting with"
+                _msg += " \"" + "cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]
+                _msg += "\")....."
+                cbdebug(_msg, True)              
+                return status, _msg
+
+        elif obj_type == "HOST" :
+            _full_obj_id = "HOST set belonging to VMC " + obj_attr_list["name"] + " (" + obj_attr_list["uuid"] + ")"
+            
+            if status :
+                _msg = _full_obj_id + _result + operation + _full_cloud_id + ":  " + failure_msg
+                cberr(_msg)
+                raise CldOpsException(_msg, status)
+            else :
+                _msg = _full_obj_id + _result + operation + _full_cloud_id
+                cbdebug(_msg)                    
+                return status, _msg
+
+        elif obj_type == "VM" :
+            _full_obj_id = obj_attr_list["name"] + " (" + obj_attr_list["cloud_vm_uuid"] + ")"
+
+            if operation == "creating" :
+                _msg = "Starting instance \"" + obj_attr_list["cloud_vm_name"] 
+                _msg += "\" on " + self.get_description()
+                _msg += ", using the image \"" + obj_attr_list["imageid1"] + "\""
+                _msg += " (" + str(obj_attr_list["boot_volume_imageid1"])
+                
+                if "hypervisor_type" in obj_attr_list :
+                    _msg += ' ' + obj_attr_list["hypervisor_type"]
+                    
+                _msg += ") and size \"" + obj_attr_list["size"] + "\"" 
+                if "flavor" in obj_attr_list :
+                    _msg += " (" + str(obj_attr_list["flavor"]) + ")"
+
+                if "availability_zone" in obj_attr_list :
+                    if str(obj_attr_list["availability_zone"]).lower() != "none" :
+                        _msg += ", on the availability zone \"" + str(obj_attr_list["availability_zone"]) + "\""
+
+                if "block_device_mapping" in obj_attr_list :    
+                    if len(obj_attr_list["block_device_mapping"]) :
+                        _msg += ", with \"block_device_mapping=" + str(obj_attr_list["block_device_mapping"]) + "\""
+
+                if obj_attr_list["prov_netname"] == obj_attr_list["run_netname"] :
+                    _msg += ", connected to network \"" + obj_attr_list["prov_netname"] + "\""
+                else :                
+                    _msg += ", connected to networks \"" + obj_attr_list["prov_netname"]
+                    _msg += "\" and \"" + obj_attr_list["run_netname"] + "\""
+                    
+                _msg += ", on VMC \"" + obj_attr_list["vmc_name"] + "\""
+
+                if "host_name" in obj_attr_list :
+                    _msg += " (host \"" + obj_attr_list["host_name"] + "\")"
+                
+                if "tenant" in obj_attr_list :
+                    _msg += ", under tenant \"" + obj_attr_list["tenant"] + "\""
+                                        
+                _msg += ", injecting the contents of the pub ssh key \""
+                _msg += str(obj_attr_list["key_name"]) + "\" (userdata is \""
+                _msg += str(obj_attr_list["config_drive"]) + "\")."
+                cbdebug(_msg, True)
+                return '', ''
+
+            if operation == "destroying" :
+                _msg = "Sending a termination request for instance "  + obj_attr_list["cloud_vm_name"] + ""
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
+                _msg += "...."
+                cbdebug(_msg, True)                
+                return '',''
+
+            if operation == "capturing" :
+                _msg = "Waiting for instance " + obj_attr_list["cloud_vm_name"]
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
+                _msg += "to be captured with image name \"" + obj_attr_list["captured_image_name"]
+                _msg += "\"..."
+                cbdebug(_msg, True)                
+                return '',''
+
+            if operation == "runstate altering" :
+                _msg = "Sending a runstate change request (from \"" 
+                _msg += obj_attr_list["current_state"] + "\" to \"" 
+                _msg += obj_attr_list["target_state"] + "\") for " + obj_attr_list["cloud_vm_name"]
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
+                _msg += "...."
+                cbdebug(_msg, True)                
+                return '',''
+            
+            if operation == "migrating" :
+                _msg = "Sending a " + obj_attr_list["mtype"] + " request for instance "  + obj_attr_list["cloud_vm_name"]
+                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
+                _msg += "...."
+                cbdebug(_msg, True)
+                return '',''
+            
+            if operation == "created" :
+                
+                obj_attr_list["instance_creation_status"] = status
+                obj_attr_list["instance_creation_failure_message"] = "none"
+                                
+                if status :
+                    obj_attr_list["instance_creation_failure_message"] = failure_msg 
+                    
+                    _msg = _full_obj_id + _result + operation + _full_cloud_id + ":  " + failure_msg
+    
+                    if str(obj_attr_list["leave_instance_on_failure"]).lower() == "true" :
+                        _msg += " (Will leave the VM running due to experimenter's request)"
+                        cberr(_msg, True)
+                    else :
+                        _msg += " (The VM creation will be rolled back)"
+                        cberr(_msg, True)
+                        
+                        obj_attr_list["mgt_901_deprovisioning_request_originated"] = int(time())
+                        self.vmdestroy(obj_attr_list)
+                            
+                    raise CldOpsException(_msg, status)
+                
+                else :
+                    _msg = _full_obj_id + _result + operation + _full_cloud_id
+                    cbdebug(_msg)
+                    return status, _msg            
+            else :
+                if status :
+                    _msg = _full_obj_id + _result + operation + _full_cloud_id + ":  " + failure_msg
+                    cberr(_msg, True)
+                    raise CldOpsException(_msg, status)
+                else :
+                    _msg = _full_obj_id + _result + operation + _full_cloud_id
+                    cbdebug(_msg)
+                    return status, _msg
+
+        elif obj_type == "VV" :
+
+            if operation == "creating" :
+    
+                _msg = "Creating volume \"" + obj_attr_list["cloud_vv_name"] + "\""                    
+                _msg += ", type \"" + str(obj_attr_list["cloud_vv_type"]) + "\""
+                if str(obj_attr_list["boot_from_volume"]).lower() == "true" :
+                    _msg += ", from image \"" + obj_attr_list["imageid1"] + "\" (boot_volume)"
+                else :                
+                    _msg += ", with size "+ obj_attr_list["cloud_vv"] + " GB," 
+                _msg += " on VMC \"" + obj_attr_list["vmc_name"] + "\""
+                cbdebug(_msg, True)
+                return '', ''
+
+            if operation == "attaching" :
+                _msg = "Attaching the newly created Volume \""
+                _msg += obj_attr_list["cloud_vv_name"] + "\" (cloud-assigned uuid \""
+                _msg += obj_attr_list["cloud_vv_uuid"] + "\") to instance \""
+                _msg += obj_attr_list["cloud_vm_name"] + "\" (cloud-assigned uuid \""
+                _msg += obj_attr_list["cloud_vm_uuid"] + "\")"
+                cbdebug(_msg, True)
+                return '', ''
+
+            if operation == "destroying" :
+                _msg = "Sending a destruction request for the "
+                _msg += "volume \"" + obj_attr_list["cloud_vv_name"] + "\" ("
+                _msg += "cloud-assigned uuid " + obj_attr_list["cloud_vv_uuid"] 
+                _msg += ") previously attached to \"" + obj_attr_list["cloud_vm_name"] + "\""
+                _msg += " (cloud-assigned uuid " 
+                _msg += obj_attr_list["cloud_vm_uuid"] + ")...."
+                cbdebug(_msg, True)
+                return '', ''
+
+            else :                        
+                                
+                _full_obj_id = "Volume " + obj_attr_list["cloud_vv_name"]
+                _full_obj_id += " (" + obj_attr_list["cloud_vv_uuid"] + "), to be "
+                _full_obj_id += "attached to " +  obj_attr_list["cloud_vm_name"] 
+
+                if operation == "created" :
+                    obj_attr_list["volume_creation_status"] = status
+                    obj_attr_list["volume_creation_failure_message"] = "none"
+                                        
+                if status :
+                    if operation == "created" :                        
+                        obj_attr_list["volume_creation_failure_message"] = failure_msg
+                        
+                    _msg = _full_obj_id + _result + operation + _full_cloud_id + ":  " + failure_msg
+                    cberr(_msg, True)
+                    raise CldOpsException(_msg, status)
+                else :
+                    _msg = _full_obj_id + _result + operation + _full_cloud_id
+                    cbdebug(_msg)
+                    return status, _msg
+
+        elif obj_type == "IMG" :
+            if operation == "deleting" :
+                _msg = "Sending a deletion request for the image \"" + obj_attr_list["name"]
+                _msg += "\"" + _full_cloud_id
+                cbdebug(_msg, True)
+                return '', ''                
+            else :                                
+                _full_obj_id = "Image " + str(obj_attr_list["imageid1"])
+                _full_obj_id += " (" + str(obj_attr_list["boot_volume_imageid1"]) + ")"
+                
+                if status :
+                    _msg = _full_obj_id + _result + operation + _full_cloud_id + ":  " + failure_msg
+                    cberr(_msg, True)
+                    raise CldOpsException(_msg, status)
+                else :
+                    _msg = _full_obj_id + _result + operation + _full_cloud_id
+                    cbdebug(_msg, True)
+                    return status, _msg
+
+        elif obj_type == "AI" :
+            _full_obj_id = obj_attr_list["name"] + " (" + obj_attr_list["uuid"] + ")"
+
+            if operation == "defined" :
+                _x_msg = " (will now be fully deployed)"
+            else :
+                _x_msg = ''
+                            
+            if status :
+                _msg = _full_obj_id + _result + operation + _full_cloud_id + ":  " + failure_msg
+                cberr(_msg, True)
+                raise CldOpsException(_msg, status)
+            else :
+                _msg = _full_obj_id + _result + operation + _full_cloud_id + _x_msg
+                cbdebug(_msg, True)                    
+                return status, _msg
+
+        return '', ''
+
+    @trace        
+    def aidefine(self, obj_attr_list, current_step) :
+        '''
+        TBD
+        '''
+        try :
+            _fmsg = "An error has occurred, but no error message was captured"          
+            self.take_action_if_requested("AI", obj_attr_list, current_step)                    
+            _status = 0
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+    
+        finally :
+            _status, _msg = self.common_messages("AI", obj_attr_list, "defined", _status, _fmsg)
+            return _status, _msg
+
+    @trace        
+    def aiundefine(self, obj_attr_list, current_step) :
+        '''
+        TBD
+        '''
+        try :
+            _fmsg = "An error has occurred, but no error message was captured"
+            _status = 0            
+            self.take_action_if_requested("AI", obj_attr_list, current_step)            
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+    
+        finally :
+            _status, _msg = self.common_messages("AI", obj_attr_list, "undefined", _status, _fmsg)
+            return _status, _msg

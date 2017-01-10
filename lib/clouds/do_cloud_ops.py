@@ -18,6 +18,8 @@
     @author: Michael R. Hines, Darrin Eden
 '''
 from time import time, sleep
+from random import randint
+from socket import gethostbyname
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import str2dic, DataOpsException
@@ -35,8 +37,12 @@ import traceback
 catalogs = threading.local()
 
 class DoCmds(CommonCloudFunctions) :
+    
     @trace
     def __init__ (self, pid, osci, expid = None) :
+        '''
+        TBD
+        '''
         CommonCloudFunctions.__init__(self, pid, osci)
         self.pid = pid
         self.osci = osci
@@ -45,7 +51,6 @@ class DoCmds(CommonCloudFunctions) :
         self.expid = expid
         self.locations = False
         self.sizes = False
-        self.images = False
         self.keys = {}
         self.cache_mutex = threading.Lock()
         self.token_mutex = threading.Lock()
@@ -53,10 +58,16 @@ class DoCmds(CommonCloudFunctions) :
 
     @trace
     def get_description(self) :
-        return "DigitalOcean"
+        '''
+        TBD
+        '''
+        return "DigitalOcean Cloud"
 
     @trace
-    def connect(self, credential_pair) :
+    def connect(self, credential_pair, obj_attr_list = {}) :
+        '''
+        TBD
+        '''
         credentials = credential_pair.split(":")
         if len(credentials) != 2 :
             raise CldOpsException("DigitalOcean credentials should be in the form of tag:bearer_token, where tag is arbitrary.", 8499)
@@ -73,6 +84,8 @@ class DoCmds(CommonCloudFunctions) :
             catalogs.digitalocean = {}
 
         self.cache_mutex.acquire()
+        
+        _hostname = "NA"
         try :
             _status = 100
 
@@ -85,213 +98,283 @@ class DoCmds(CommonCloudFunctions) :
 
             cbdebug("Caching DigitalOcean locations, sizes, and images. If stale, then restart...")
             if not self.locations :
-                cbdebug("Caching DigitalOcean Locations...", True)
+                cbdebug("Caching DigitalOcean Locations...")
                 self.locations = catalogs.digitalocean[credential_pair].list_locations()
+                
+                if "name" in obj_attr_list :
+                    _hostname = obj_attr_list["name"]
             
             if not self.sizes :
-                cbdebug("Caching DigitalOcean Sizes...", True)
+                cbdebug("Caching DigitalOcean Sizes...")
                 self.sizes = catalogs.digitalocean[credential_pair].list_sizes()
 
             if credential_pair not in self.keys :
-                cbdebug("Caching DigitalOcean keys (" + tenant + ")", True)
+                cbdebug("Caching DigitalOcean keys (" + tenant + ")")
                 self.keys[credential_pair] = catalogs.digitalocean[credential_pair].list_key_pairs()
 
-            if not self.images :
-                cbdebug("Caching DigitalOcean Images (can take a minute or so)...", True)
-                self.images = catalogs.digitalocean[credential_pair].list_images()
-
             assert(credential_pair in self.keys)
-            assert(self.images)
             assert(self.sizes)
             assert(self.locations)
             cbdebug("Done caching.")
 
             _status = 0
 
-        except Exception, e:
-            _msg = "Error connecting DigitalOcean: " + str(e)
-            cbdebug(_msg, True)
+        except Exception, msg :
+            _fmsg = str(msg)
             _status = 23
+            
         finally :
             self.cache_mutex.release()
             if _status :
-                _msg = "DigitalOcean connection failure. Failed to use your access token for account: " + tenant
-                cbdebug(_msg, True)
+                _xfmsg = "Failed to use your access token for account: " + tenant
+                _msg =  self.get_description() + " connection failure: " + _fmsg + '(' + _xfmsg + ')'
                 cberr(_msg)
                 if credential_pair in catalogs.digitalocean :
-                    del catalogs.digitalocean[credential_pair]
-                raise CldOpsException(_msg, _status)
+                    del catalogs.digitalocean[credential_pair]                
+                raise CldOpsException(_msg, _status)                
             else :
-                _msg = "DigitalOcean connection successful."
+                _msg =  self.get_description() + " connection successful."
                 cbdebug(_msg)
-                return _status, _msg
+                return _status, _msg, catalogs.digitalocean[credential_pair], _hostname
 
     @trace
     def test_vmc_connection(self, vmc_name, access, credentials, key_name, \
-                            security_group_name, vm_templates, vm_defaults) :
+                            security_group_name, vm_templates, vm_defaults, vmc_defaults) :
+        '''
+        TBD
+        '''
         try :
-            # Attempt to a connection using those login credentials
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+
             for credential_pair in credentials.split(","):
-                self.connect(credential_pair)
-                
+                _status, _msg, _local_conn, _hostname = self.connect(credential_pair, vmc_defaults)
+
+            _prov_netname_found, _run_netname_found = self.check_networks(vmc_name, vm_defaults)
+            
+            _key_pair_found = self.check_ssh_key(vmc_name, self.determine_key_name(vm_defaults), vm_defaults, False, _local_conn)
+            
+            _detected_imageids = self.check_images(vmc_name, vm_templates, _local_conn)
+
+            if not (_run_netname_found and _prov_netname_found and _key_pair_found) :
+                _msg = "Check the previous errors, fix it (using GCE's web"
+                _msg += " GUI (Google Developer's Console) or gcloud CLI utility"
+                _status = 1178
+                raise CldOpsException(_msg, _status) 
+
+            if len(_detected_imageids) :
+                _status = 0               
+            else :
+                _status = 1
+
         except CldOpsException, obj :
-            _msg = str(obj.msg)
-            cberr(_msg)
+            _fmsg = str(obj.msg)
             _status = 2
-            raise CldOpsException(_msg, _status)
+
+        except Exception, msg :
+            _fmsg = str(msg)
+            _status = 23
+
+        finally :
+            _status, _msg = self.common_messages("VMC", {"name" : vmc_name }, "connected", _status, _fmsg)
+            return _status, _msg
+
+    @trace
+    def check_networks(self, vmc_name, vm_defaults) :
+        '''
+        TBD
+        '''
+        _prov_netname = vm_defaults["netname"]
+        _run_netname = vm_defaults["netname"]
+
+        _prov_netname_found = True
+        _run_netname_found = True
+            
+        return _prov_netname_found, _run_netname_found
+
+    @trace
+    def check_images(self, vmc_name, vm_templates, connection) :
+        '''
+        TBD
+        '''
+        self.common_messages("IMG", { "name": vmc_name }, "checking", 0, '')
+
+        _registered_image_list = connection.list_images()
+
+        _registered_imageid_list = []
+
+        _map_name_to_id = {}
+
+        for _registered_image in _registered_image_list :
+            _registered_imageid_list.append(_registered_image.id)
+            _map_name_to_id[str(_registered_image.name.encode('utf-8').strip())] = str(_registered_image.id)
+
+        for _vm_role in vm_templates.keys() :            
+            _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
+            if _imageid != "to_replace" :
+                if _imageid in _map_name_to_id :                     
+                    vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])
+                else :
+                    _map_name_to_id[_imageid] = '00' + ''.join(["%s" % randint(0, 9) for num in range(0, 5)]) + '0'
+                    vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])                        
+
+        _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list)
+
+        return _detected_imageids
+
+    @trace
+    def discover_hosts(self, obj_attr_list, start) :
+        '''
+        TBD
+        '''
+        _host_uuid = obj_attr_list["cloud_vm_uuid"]
+
+        obj_attr_list["host_list"] = {}
+        obj_attr_list["hosts"] = ''
+
+        obj_attr_list["initial_hosts"] = ''.split(',')
+        obj_attr_list["host_count"] = len(obj_attr_list["initial_hosts"])
+    
+        return True
 
     @trace
     def vmccleanup(self, obj_attr_list) :
+        '''
+        TBD
+        '''
         try :
             _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
 
             for credential_pair in obj_attr_list["credentials"].split(","):
-                self.connect(credential_pair)
-
-            _msg = "Cleaning up DigitalOcean"
-            cbdebug(_msg)
-
-            _running_instances = True
-            while _running_instances :
-                _running_instances = False
-                for credential_pair in obj_attr_list["credentials"].split(","):
-                    credentials = credential_pair.split(":")
-                    tenant = credentials[0]
-
-                    _reservations = catalogs.digitalocean[credential_pair].list_nodes()
-                    for _reservation in _reservations :
-                        if _reservation.name.count("cb-" + obj_attr_list["username"]) :
-                            if _reservation.state == NodeState.PENDING :
-                                cbdebug("Instance still has a pending event. waiting to destroy...")
-                                sleep(10)
-                                _msg = "Cleaning up DigitalOcean.  Destroying CB instantiated node: " + _reservation.name
+                _status, _msg, _local_conn, _hostname = self.connect(credential_pair)
+                
+                self.common_messages("VMC", obj_attr_list, "cleaning up vms", 0, '')
+    
+                _running_instances = True
+                while _running_instances :
+                    _running_instances = False
+                    for credential_pair in obj_attr_list["credentials"].split(","):
+                        credentials = credential_pair.split(":")
+                        tenant = credentials[0]
+    
+                        _reservations = catalogs.digitalocean[credential_pair].list_nodes()
+                        for _reservation in _reservations :
+                            if _reservation.name.count("cb-" + obj_attr_list["username"]) :
+                                if _reservation.state == NodeState.PENDING :
+                                    cbdebug("Instance still has a pending event. waiting to destroy...")
+                                    sleep(10)
+                                    _msg = "Cleaning up DigitalOcean.  Destroying CB instantiated node: " + _reservation.name
+                                    cbdebug(_msg)
+                                    continue
+    
+                                try :
+                                    cbdebug("Killing: " + _reservation.name + " (" + tenant + ")", True)
+                                    _reservation.destroy()
+                                except :
+                                    pass
+                                _running_instances = True
+                            else :
+                                _msg = "Cleaning up DigitalOcean.  Ignoring instance: " + _reservation.name
                                 cbdebug(_msg)
-                                continue
-
-                            try :
-                                cbdebug("Killing: " + _reservation.name + " (" + tenant + ")", True)
-                                _reservation.destroy()
-                            except :
-                                pass
-                            _running_instances = True
-                        else :
-                            _msg = "Cleaning up DigitalOcean.  Ignoring instance: " + _reservation.name
-                            cbdebug(_msg)
-
-                    if _running_instances :
-                        sleep(int(obj_attr_list["update_frequency"]))
-
-                _msg = "All running instances on DigitalOcean " + obj_attr_list["name"]
-                _msg += " were terminated"
-                cbdebug(_msg)
-
-            _running_volumes = True
-            while _running_volumes :
-                _running_volumes = False
-                for credential_pair in obj_attr_list["credentials"].split(","):
-                    credentials = credential_pair.split(":")
-                    tenant = credentials[0]
-
-                    _volumes = catalogs.digitalocean[credential_pair].list_volumes()
-                    for _volume in _volumes :
-                        if _volume.name.count("cb-" + obj_attr_list["username"]) :
-                            try :
-                                cbdebug("Destroying: " + _volume.name + " (" + tenant + ")", True)
-                                _volume.destroy()
-                            except :
-                                pass
-                            _running_volumes = True
-                        else :
-                            _msg = "Cleaning up DigitalOcean. Ignoring volume: " + _volume.name
-                            cbdebug(_msg)
-
-                    if _running_volumes :
-                        sleep(int(obj_attr_list["update_frequency"]))
-
-                _msg = "All volumes on DigitalOcean " + obj_attr_list["name"]
-                _msg += " were destroyed"
-                cbdebug(_msg)
+    
+                        if _running_instances :
+                            sleep(int(obj_attr_list["update_frequency"]))
+    
+                self.common_messages("VMC", obj_attr_list, "cleaning up vvs", 0, '')
+    
+                _running_volumes = True
+                while _running_volumes :
+                    _running_volumes = False
+                    for credential_pair in obj_attr_list["credentials"].split(","):
+                        credentials = credential_pair.split(":")
+                        tenant = credentials[0]
+    
+                        _volumes = catalogs.digitalocean[credential_pair].list_volumes()
+                        for _volume in _volumes :
+                            if _volume.name.count("cb-" + obj_attr_list["username"]) :
+                                try :
+                                    cbdebug("Destroying: " + _volume.name + " (" + tenant + ")", True)
+                                    _volume.destroy()
+                                except :
+                                    pass
+                                _running_volumes = True
+                            else :
+                                _msg = "Cleaning up DigitalOcean. Ignoring volume: " + _volume.name
+                                cbdebug(_msg)
+    
+                        if _running_volumes :
+                            sleep(int(obj_attr_list["update_frequency"]))
 
             _status = 0
-
+            
         except CldOpsException, obj :
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
+            _fmsg = str(obj.msg)
+            cberr(_msg)
+            _status = 2
 
-        except Exception, e :
+        except Exception, msg :
+            _fmsg = str(msg)
             _status = 23
-            _fmsg = str(e)
-
+    
         finally :
-            if _status :
-                _msg = "DigitalOcean " + obj_attr_list["name"] + " could not be cleaned "
-                _msg += "on \"" + obj_attr_list["cloud_name"]
-                _msg += "\" : " + _fmsg
-                cberr(_msg)
-                raise CldOpsException(_msg, _status)
-            else :
-                _msg = "DigitalOcean " + obj_attr_list["name"] + " was successfully cleaned "
-                _msg += "on \"" + obj_attr_list["cloud_name"] + "\""
-                cbdebug(_msg)
-                return _status, _msg
+            _status, _msg = self.common_messages("VMC", obj_attr_list, "cleaned up", _status, _fmsg)
+            return _status, _msg
 
     @trace
     def vmcregister(self, obj_attr_list) :
-        _fmsg = "none"
+        '''
+        TBD
+        '''
         try :
-            _msg = "Attempting to attach a new VMC..."
-            cbdebug(_msg)
-
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
             _time_mark_prs = int(time())
             obj_attr_list["mgt_002_provisioning_request_sent"] = _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
-
-
-            if "cleanup_on_attach" in obj_attr_list and obj_attr_list["cleanup_on_attach"] == "True" :
-                _msg = "Cleaning up VMC before attaching it."
-                cbdebug(_msg)
+            
+            if "cleanup_on_attach" in obj_attr_list and obj_attr_list["cleanup_on_attach"] == "True" :             
                 _status, _fmsg = self.vmccleanup(obj_attr_list)
+            else :
+                _status = 0
 
-            obj_attr_list["cloud_hostname"] = obj_attr_list["name"]
-            obj_attr_list["cloud_ip"] = obj_attr_list["name"] + ".digitalocean.com"
-
+            for credential_pair in obj_attr_list["credentials"].split(","):                
+                _x, _y, _z, _hostname = self.connect(credential_pair, obj_attr_list)
+            
+            obj_attr_list["cloud_hostname"] = _hostname
+            obj_attr_list["cloud_ip"] = gethostbyname("cloud.digitalocean.com")
             obj_attr_list["arrival"] = int(time())
+
+            if str(obj_attr_list["discover_hosts"]).lower() == "true" :
+                self.discover_hosts(obj_attr_list, _time_mark_prs)
+            else :
+                obj_attr_list["hosts"] = ''
+                obj_attr_list["host_list"] = {}
+                obj_attr_list["host_count"] = "NA"
 
             _time_mark_prc = int(time())
 
             obj_attr_list["mgt_003_provisioning_request_completed"] = _time_mark_prc - _time_mark_prs
 
             _status = 0
-
+            
         except CldOpsException, obj :
-            _status = obj.status
             _fmsg = str(obj.msg)
-            cberr(str(obj))
+            _status = 2
 
-        except Exception, e:
+        except Exception, msg :
+            _fmsg = str(msg)
             _status = 23
-            _fmsg = sys.exc_info()[0]
-            cberr(str(e))
-            raise
 
         finally :
-            if _status :
-                _msg = "VMC " + obj_attr_list["uuid"] + " could not be registered "
-                _msg += "on DigitalOcean \"" + obj_attr_list["cloud_name"] + "\" : "
-                _msg += _fmsg
-                cberr(_msg)
-                raise CldOpsException(_msg, _status)
-            else :
-                _msg = "VMC " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "registered on DigitalOcean \"" + obj_attr_list["cloud_name"]
-                _msg += "\"."
-                cbdebug(_msg)
-                return _status, _msg
+            _status, _msg = self.common_messages("VMC", obj_attr_list, "registered", _status, _fmsg)
+            return _status, _msg
 
     @trace
     def vmcunregister(self, obj_attr_list) :
+        '''
+        TBD
+        '''
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
@@ -302,42 +385,68 @@ class DoCmds(CommonCloudFunctions) :
                 obj_attr_list["mgt_901_deprovisioning_request_originated"] = _time_mark_drs
 
             obj_attr_list["mgt_902_deprovisioning_request_sent"] = _time_mark_drs - int(obj_attr_list["mgt_901_deprovisioning_request_originated"])
-
+            
             if "cleanup_on_detach" in obj_attr_list and obj_attr_list["cleanup_on_detach"] == "True" :
                 _status, _fmsg = self.vmccleanup(obj_attr_list)
 
             _time_mark_prc = int(time())
             obj_attr_list["mgt_903_deprovisioning_request_completed"] = _time_mark_prc - _time_mark_drs
-
+            
             _status = 0
-
+            
         except CldOpsException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
 
+        except Exception, msg :
+            _fmsg = str(msg)
+            _status = 23
+    
+        finally :
+            _status, _msg = self.common_messages("VMC", obj_attr_list, "unregistered", _status, _fmsg)
+            return _status, _msg
+
+    @trace
+    def vmcount(self, obj_attr_list):
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"                        
+            _nr_instances = 0
+
+            for _vmc_uuid in self.osci.get_object_list(obj_attr_list["cloud_name"], "VMC") :
+                _vmc_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
+                                                      "VMC", False, _vmc_uuid, \
+                                                      False)
+                
+                for credential_pair in _vmc_attr_list["credentials"].split(","):
+                    _status, _msg, _local_conn, _hostname = self.connect(credential_pair)
+                    
+                    _instance_list = _local_conn.list_nodes()
+                    
+                    if _instance_list :
+                        for _instance in _instance_list :
+                            if _instance.name.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) :
+                                _nr_instances += 1
+
         except Exception, e :
             _status = 23
-            _fmsg = str(e)
+            _nr_instances = "NA"
+            _fmsg = "(While counting instance(s) through API call \"list\") " + str(e)
 
         finally :
-            if _status :
-                _msg = "VMC " + obj_attr_list["uuid"] + " could not be unregistered "
-                _msg += "on DigitalOcean \"" + obj_attr_list["cloud_name"] + "\" : "
-                _msg += _fmsg
-                cberr(_msg)
-                raise CldOpsException(_msg, _status)
-            else :
-                _msg = "VMC " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "unregistered on DigitalOcean \"" + obj_attr_list["cloud_name"]
-                _msg += "\"."
-                cbdebug(_msg)
-                return _status, _msg
+            return _nr_instances
 
     @trace
     def get_ip_address(self, obj_attr_list) :
+        '''
+        TBD
+        '''
         try :
             _status = 100
-            node = self.get_vm_instance(obj_attr_list)
+            node = self.get_instances(obj_attr_list)
 
             if len(node.private_ips) > 0 and obj_attr_list["run_netname"].lower() == "private" :
                 obj_attr_list["run_cloud_ip"] = node.private_ips[0]
@@ -384,12 +493,13 @@ class DoCmds(CommonCloudFunctions) :
             raise CldOpsException(_msg, _status)
 
     @trace
-    def get_vm_instance(self, obj_attr_list) :
+    def get_instances(self, obj_attr_list) :
+        '''
+        TBD
+        '''
         try :
             _status = 100
-            _msg = "cloud_vm_name " + obj_attr_list["cloud_vm_name"]
-            _msg += " from DigitalOcean \"" + obj_attr_list["cloud_name"]
-            cbdebug(_msg)
+            _fmsg = "An error has occurred, but no error message was captured"                        
 
             node_list = catalogs.digitalocean[obj_attr_list["credential_pair"]].list_nodes()
 
@@ -409,12 +519,77 @@ class DoCmds(CommonCloudFunctions) :
             raise CldOpsException(_fmsg, _status)
 
     @trace
-    def vmcount(self, obj_attr_list):
-        return "NA"
-
-    def is_vm_running(self, obj_attr_list):
+    def get_images(self, obj_attr_list, fail = True) :
+        '''
+        TBD
+        '''
         try :
-            node = self.get_vm_instance(obj_attr_list)
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"                        
+
+            _candidate_images = False
+            
+            if self.is_cloud_image_uuid(obj_attr_list["imageid1"]) :
+                _candidate_images = catalogs.digitalocean[obj_attr_list["credential_pair"]].get_image(obj_attr_list["imageid1"])
+            else :
+                for _image in catalogs.digitalocean[obj_attr_list["credential_pair"]].list_images() :
+                    if _image.name == obj_attr_list["imageid1"] :
+                        _candidate_images = _image
+                        break
+
+            _fmsg = "Please check if the defined image name is present on this "
+            _fmsg += self.get_description()
+
+            if _candidate_images :
+                obj_attr_list["imageid1"] = _candidate_images.name
+                obj_attr_list["boot_volume_imageid1"] = _candidate_images.id
+                _status = 0
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+
+        finally :
+            if _status :
+                if fail :
+                    _msg = "Image Name (" +  obj_attr_list["imageid1"] + ") not found: " + _fmsg
+                    cberr(_msg)
+                    raise CldOpsException(_msg, _status)
+                else :
+                    return False
+            else :
+                return _candidate_images
+
+    @trace
+    def get_networks(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+
+            _status = 0
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+            
+        finally :
+            if _status :
+                _msg = "Network (" +  obj_attr_list["prov_netname"] + " ) not found: " + _fmsg
+                cberr(_msg, True)
+                raise CldOpsException(_msg, _status)
+            else :
+                return True
+
+    @trace
+    def is_vm_running(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        try :
+            node = self.get_instances(obj_attr_list)
             return node and node.state == NodeState.RUNNING
 
         except Exception, e :
@@ -424,6 +599,9 @@ class DoCmds(CommonCloudFunctions) :
 
     @trace
     def is_vm_ready(self, obj_attr_list) :
+        '''
+        TBD
+        '''
         if self.is_vm_running(obj_attr_list) :
 
             if self.get_ip_address(obj_attr_list) :
@@ -436,6 +614,113 @@ class DoCmds(CommonCloudFunctions) :
             obj_attr_list["last_known_state"] = "not running"
             return False
 
+    @trace
+    def vm_placement(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+
+            _status = 0
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+            
+        finally :
+            if _status :
+                _msg = "VM placement failed: " + _fmsg
+                cberr(_msg, True)
+                raise CldOpsException(_msg, _status)
+            else :
+                return True
+
+    @trace
+    def vvcreate(self, obj_attr_list, connection) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+
+            obj_attr_list["cloud_vv_instance"] = None
+
+            if "cloud_vv_type" not in obj_attr_list :
+                obj_attr_list["cloud_vv_type"] = "DOC"
+
+            if "cloud_vv" in obj_attr_list :
+
+                obj_attr_list["cloud_vv_name"] = obj_attr_list["cloud_vv_name"].lower()
+                
+                obj_attr_list["last_known_state"] = "about to send volume create request"
+
+                self.common_messages("VV", obj_attr_list, "creating", _status, _fmsg)
+                
+                _mark1 = int(time())
+
+                _volume = connection.create_volume(int(obj_attr_list["cloud_vv"]),
+                                                                              obj_attr_list["cloud_vv_name"],
+                                                                              location = [x for x in self.locations if x.id == obj_attr_list["vmc_name"]][0])
+
+                sleep(int(obj_attr_list["update_frequency"]))
+
+                obj_attr_list["cloud_vv_uuid"] = _volume.id
+                obj_attr_list["cloud_vv_instance"] = _volume
+
+                _mark2 = int(time())
+                obj_attr_list["do_015_create_volume_time"] = _mark2 - _mark1
+
+            _status = 0
+
+        except CldOpsException, obj :
+            _status = obj.status
+            _fmsg = str(obj.msg)
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+    
+        finally :                
+            _status, _msg = self.common_messages("VV", obj_attr_list, "created", _status, _fmsg)
+            return _status, _msg
+
+    @trace        
+    def vvdestroy(self, obj_attr_list, connection) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+
+            if str(obj_attr_list["cloud_vv_uuid"]).lower() != "not supported" and str(obj_attr_list["cloud_vv_uuid"]).lower() != "none" :    
+                self.common_messages("VV", obj_attr_list, "destroying", 0, '')
+
+                _volumes = connection.list_volumes()
+                for _volume in _volumes :
+                    if _volume.name == obj_attr_list["cloud_vv_name"] :
+                        try :
+                            _volume.destroy()
+                            break
+                        except :
+                            pass
+                                
+            _status = 0
+
+        except CldOpsException, obj :
+            _status = obj.status
+            _fmsg = str(obj.msg)
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+    
+        finally :                
+            _status, _msg = self.common_messages("VV", obj_attr_list, "destroyed", _status, _fmsg)
+            return _status, _msg
 
     @trace
     def vmcreate(self, obj_attr_list) :
@@ -445,19 +730,13 @@ class DoCmds(CommonCloudFunctions) :
         try :
             _status = 100
             _fmsg = "An error has occurred when creating new Droplet, but no error message was captured"
-            obj_attr_list["cloud_vm_uuid"] = "NA"
             _instance = False
             volume = False
 
-            obj_attr_list["cloud_vm_name"] = "cb-" + obj_attr_list["username"]
-            obj_attr_list["cloud_vm_name"] += '-' + "vm" + obj_attr_list["name"].split("_")[1]
-            obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["role"]
-
-            if obj_attr_list["ai"] != "none" :
-                obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["ai_name"]
-
-            obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"].replace("_", "-")
-            obj_attr_list["last_known_state"] = "about to connect to DigitalOcean"
+            self.determine_instance_name(obj_attr_list)            
+            self.determine_key_name(obj_attr_list)
+            
+            obj_attr_list["last_known_state"] = "about to connect to " + self.get_description() + " manager"
 
             self.take_action_if_requested("VM", obj_attr_list, "provision_originated")
 
@@ -470,24 +749,34 @@ class DoCmds(CommonCloudFunctions) :
             obj_attr_list["credential"] = credential_pair.split(":")[1]
             obj_attr_list["credential_pair"] = credential_pair
 
-            cbdebug("Connecting to DigitalOcean...")
             self.connect(credential_pair)
+            
+            if self.is_vm_running(obj_attr_list) :
+                _msg = "An instance named \"" + obj_attr_list["cloud_vm_name"]
+                _msg += "\" is already running. It needs to be destroyed first."
+                _status = 187
+                cberr(_msg)
+                raise CldOpsException(_msg, _status)
+
+            _time_mark_prs = int(time())
+            obj_attr_list["mgt_002_provisioning_request_sent"] = _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
+
+            self.pre_vmcreate_process(obj_attr_list)
+            self.vm_placement(obj_attr_list)
 
             obj_attr_list["last_known_state"] = "about to send create request"
 
-            _msg = "Attempting to create a Droplet "
-            _msg += obj_attr_list["imageid1"]
-            _msg += " on DigitalOcean, creating a vm named "
-            _msg += obj_attr_list["cloud_vm_name"] + " (" + obj_attr_list["tenant"] + ")"
-            cbdebug(_msg, True)
+            _image = self.get_images(obj_attr_list)
+            self.get_networks(obj_attr_list)
 
-            _msg = "Looking for an existing image named "
-            _msg += obj_attr_list["imageid1"]
-            cbdebug(_msg, True)
+            obj_attr_list["config_drive"] = False
+
+            _status, _fmsg = self.vvcreate(obj_attr_list, catalogs.digitalocean[credential_pair])
+
+            self.common_messages("VM", obj_attr_list, "creating", 0, '')
 
             keys = []
 
-            image = False
             tmp_keys = obj_attr_list["key_name"].split(",")
             for dontcare in range(0, 2) :
                 for tmp_key in tmp_keys :
@@ -504,24 +793,8 @@ class DoCmds(CommonCloudFunctions) :
             if len(keys) != len(tmp_keys) :
                 raise CldOpsException("Not all SSH keys exist. Check your configuration: " + obj_attr_list["key_name"], _status)
 
-            for dontcare in range(0, 2) :
-                for x in self.images :
-                    if x.name == obj_attr_list["imageid1"] or x.id == obj_attr_list["imageid1"] :
-                        image = x
-                        break
-
-                if image :
-                    break
-                cbdebug("Image is missing. Refreshing image list...", True)
-                self.images = catalogs.digitalocean[credential_pair].list_images()
-
-            if not image :
-                raise CldOpsException("Image doesn't exist at DigitalOcean. Check your configuration: " + obj_attr_list["imageid1"], _status)
-
-            cbdebug("Launching new Droplet with hostname " + obj_attr_list["cloud_vm_name"], True)
-
             _reservation = catalogs.digitalocean[credential_pair].create_node(
-                image = image,
+                image = _image,
                 name = obj_attr_list["cloud_vm_name"],
                 size = [x for x in self.sizes if x.id == obj_attr_list["size"]][0],
                 location = [x for x in self.locations if x.id == obj_attr_list["vmc_name"]][0],
@@ -529,99 +802,41 @@ class DoCmds(CommonCloudFunctions) :
                 ex_create_attr={ "ssh_keys": keys, "private_networking" : True }
             )
 
-            _time_mark_prs = int(time())
-            obj_attr_list["mgt_002_provisioning_request_sent"] = _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
-
-
             obj_attr_list["last_known_state"] = "sent create request"
 
-            cbdebug("Sent command to create node, waiting for creation...", True)
-
             if _reservation :
-
+                
                 obj_attr_list["last_known_state"] = "vm created"
                 sleep(int(obj_attr_list["update_frequency"]))
 
                 obj_attr_list["cloud_vm_uuid"] = _reservation.uuid
 
-                cbdebug("Success. New instance UUID is " + _reservation.uuid, True)
-
                 self.take_action_if_requested("VM", obj_attr_list, "provision_started")
 
                 _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
 
+                if obj_attr_list["cloud_vv_instance"] :
+
+                    if not obj_attr_list["cloud_vv_instance"].attach(_reservation) :
+                        _fmsg = "Volume attach failed. Aborting VM creation..."
+                        obj_attr_list["cloud_vv_instance"].destroy()
+                        raise CldOpsException(_fmsg, _status)
+
                 self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
                 obj_attr_list["host_name"] = "unknown"
 
-                if "instance_obj" in obj_attr_list :
-                    del obj_attr_list["instance_obj"]
-
                 _status = 0
+
+                if obj_attr_list["force_failure"].lower() == "true" :
+                    _fmsg = "Forced failure (option FORCE_FAILURE set \"true\")"                    
+                    _status = 916                
+                
             else :
                 obj_attr_list["last_known_state"] = "vm creation failed"
                 _fmsg = "Failed to obtain instance's (cloud-assigned) uuid. The "
                 _fmsg += "instance creation failed for some unknown reason."
                 cberr(_fmsg)
                 _status = 100
-
-
-            if "cloud_vv" in obj_attr_list :
-                _status = 101
-
-                obj_attr_list["last_known_state"] = "about to send volume create request"
-
-                obj_attr_list["cloud_vv_name"] = "cb-" + obj_attr_list["username"]
-                obj_attr_list["cloud_vv_name"] += '-' + "vv"
-                obj_attr_list["cloud_vv_name"] += obj_attr_list["name"].split("_")[1]
-                obj_attr_list["cloud_vv_name"] += '-' + obj_attr_list["role"]
-                if obj_attr_list["ai"] != "none" :
-                    obj_attr_list["cloud_vv_name"] += '-' + obj_attr_list["ai_name"]
-
-                obj_attr_list["cloud_vv_name"] = obj_attr_list["cloud_vv_name"].replace("_", "-")
-
-                _msg = "Creating a volume, with size "
-                _msg += obj_attr_list["cloud_vv"] + " GB, on VMC \""
-                _msg += obj_attr_list["vmc_name"] + "\" with name " + obj_attr_list["cloud_vv_name"] + "..."
-                cbdebug(_msg, True)
-
-                _mark1 = int(time())
-
-                volume = catalogs.digitalocean[credential_pair].create_volume(int(obj_attr_list["cloud_vv"]),
-                                                                              obj_attr_list["cloud_vv_name"],
-                                                                              location = [x for x in self.locations if x.id == obj_attr_list["vmc_name"]][0])
-
-                sleep(int(obj_attr_list["update_frequency"]))
-
-                obj_attr_list["cloud_vv_uuid"] = volume.id
-
-                _mark2 = int(time())
-                obj_attr_list["do_015_create_volume_time"] = _mark2 - _mark1
-
-                if volume :
-                    _mark3 = int(time())
-                    _msg = "Attaching the newly created Volume \""
-                    _msg += obj_attr_list["cloud_vv_name"] + "\" (cloud-assigned uuid \""
-                    _msg += obj_attr_list["cloud_vv_uuid"] + "\") to instance \""
-                    _msg += obj_attr_list["cloud_vm_name"] + "\" (cloud-assigned uuid \""
-                    _msg += obj_attr_list["cloud_vm_uuid"] + "\")"
-                    cbdebug(_msg)
-
-                    if not volume.attach(_reservation) :
-                        msg = "Volume attach failed. Aborting VM creation..."
-                        cbdebug(msg, True)
-                        volume.destroy()
-                        raise CldOpsException(msg, _status)
-
-                    cbdebug("Volume attach success.", True)
-                    _mark4 = int(time())
-                    obj_attr_list["do_015_create_volume_time"] += (_mark4 - _mark3)
-                    _status = 0
-                else :
-                    msg = "Volume creation failed. Aborting VM creation..."
-                    cbdebug(msg, True)
-                    raise CldOpsException(msg, _status)
-            else :
-                obj_attr_list["cloud_vv_uuid"] = "none"
 
         except CldOpsException, obj :
             _status = obj.status
@@ -636,141 +851,122 @@ class DoCmds(CommonCloudFunctions) :
             cbwarn("Error reaching digitalocean: " + _fmsg)
 
         finally :
-            if "instance_obj" in obj_attr_list :
-                del obj_attr_list["instance_obj"]
-
-            if _status :
-                _msg = "VM " + obj_attr_list["uuid"] + " could not be created "
-                _msg += "on DigitalOcean \"" + obj_attr_list["cloud_name"] + "\" : "
-                _msg += _fmsg + " (The VM creation will be rolled back)"
-                cberr(_msg)
-
-                if "cloud_vm_uuid" in obj_attr_list :
-                    obj_attr_list["mgt_901_deprovisioning_request_originated"] = int(time())
-                    self.vmdestroy(obj_attr_list)
-                else :
-                    if _reservation :
-                        _reservation.destroy()
-
-                raise CldOpsException(_msg, _status)
-            else :
-                _msg = "VM " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "created on DigitalOcean \"" + obj_attr_list["cloud_name"]
-                _msg += "\"."
-                cbdebug(_msg)
-                return _status, _msg
+            if not _status :
+                if "instance_obj" in obj_attr_list :
+                    del obj_attr_list["instance_obj"]
+    
+                if obj_attr_list["cloud_vv_instance"] :
+                    del obj_attr_list["cloud_vv_instance"]
+               
+            _status, _msg = self.common_messages("VM", obj_attr_list, "created", _status, _fmsg)
+            return _status, _msg
 
     @trace
     def vmdestroy(self, obj_attr_list) :
+        '''
+        TBD
+        '''
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
-
-            _wait = int(obj_attr_list["update_frequency"])
 
             cbdebug("Last known state: " + str(obj_attr_list["last_known_state"]))
 
             _wait = int(obj_attr_list["update_frequency"])
             _curr_tries = 0
             _max_tries = int(obj_attr_list["update_attempts"])
+
             credential_pair = obj_attr_list["credential_pair"]
             self.connect(credential_pair)
 
-            _msg = "Sending a termination request for "  + obj_attr_list["name"] + ""
-            _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
-            _msg += "...."
-            cbdebug(_msg, True)
+            if "instance_obj" in obj_attr_list :
+                if obj_attr_list["instance_obj"] :
 
-            firsttime = True
-            _time_mark_drs = int(time())
-            while True :
-                _errmsg = "get_vm_instance"
-                cbdebug("Getting instance...")
-                _instance = self.get_vm_instance(obj_attr_list)
-                if not _instance :
-                    cbdebug("Breaking...")
-                    if firsttime :
-                        if "mgt_901_deprovisioning_request_originated" not in obj_attr_list :
-                            obj_attr_list["mgt_901_deprovisioning_request_originated"] = _time_mark_drs
-                    break
+                    self.common_messages("VM", obj_attr_list, "destroying", 0, '')                    
 
-                if _instance.state == NodeState.PENDING :
+                    _time_mark_drs = int(time())
+
+                    if "mgt_901_deprovisioning_request_originated" not in obj_attr_list :
+                        obj_attr_list["mgt_901_deprovisioning_request_originated"] = _time_mark_drs
+                                        
+                    obj_attr_list["instance_obj"].destroy()
+                    
+                    sleep(_wait)
+                    del obj_attr_list["instance_obj"]
+
+                if obj_attr_list["cloud_vv_instance"] :
+                    obj_attr_list["cloud_vv_instance"].destroy()
+                    del obj_attr_list["cloud_vv_instance"]
+
+                obj_attr_list["mgt_902_deprovisioning_request_sent"] = int(time()) - int(obj_attr_list["mgt_901_deprovisioning_request_originated"])
+            
+            else :
+    
+                self.common_messages("VM", obj_attr_list, "destroying", 0, '')
+    
+                firsttime = True
+                _time_mark_drs = int(time())
+                while True :
+                    _errmsg = "get_instances"
+                    cbdebug("Getting instance...")
+                    _instance = self.get_instances(obj_attr_list)
+                    if not _instance :
+                        cbdebug("Breaking...")
+                        if firsttime :
+                            if "mgt_901_deprovisioning_request_originated" not in obj_attr_list :
+                                obj_attr_list["mgt_901_deprovisioning_request_originated"] = _time_mark_drs
+                        break
+    
+                    if _instance.state == NodeState.PENDING :
+                        try :
+                            _instance.destroy()
+                        except :
+                            pass
+                        cbdebug("DigitalOcean still has a pending event. Waiting to destroy...", True)
+                        sleep(30)
+                        continue
+    
                     try :
-                        _instance.destroy()
+                        if firsttime :
+                            if "mgt_901_deprovisioning_request_originated" not in obj_attr_list :
+                                obj_attr_list["mgt_901_deprovisioning_request_originated"] = _time_mark_drs
+    
+                        result = _instance.destroy()
+    
+                        if firsttime :
+                            obj_attr_list["mgt_902_deprovisioning_request_sent"] = int(time()) - int(obj_attr_list["mgt_901_deprovisioning_request_originated"])
+    
+                        firsttime = False
                     except :
                         pass
-                    cbdebug("DigitalOcean still has a pending event. Waiting to destroy...", True)
-                    sleep(30)
-                    continue
-
-                try :
-                    if firsttime :
-                        if "mgt_901_deprovisioning_request_originated" not in obj_attr_list :
-                            obj_attr_list["mgt_901_deprovisioning_request_originated"] = _time_mark_drs
-
-                    result = _instance.destroy()
-
-                    if firsttime :
-                        obj_attr_list["mgt_902_deprovisioning_request_sent"] = int(time()) - int(obj_attr_list["mgt_901_deprovisioning_request_originated"])
-
-                    firsttime = False
-                except :
-                    pass
-
-                _curr_tries += 1
-                _msg = "Inside destroy. " + _errmsg
-                _msg += " after " + str(_curr_tries) + " attempts. Will retry in " + str(_wait) + " seconds."
-                cbdebug(_msg)
-                sleep(_wait)
-                cbdebug("Next try...")
-
-            obj_attr_list["last_known_state"] = "vm destoyed"
-            self.take_action_if_requested("VM", obj_attr_list, "deprovision_finished")            
+    
+                    _curr_tries += 1
+                    _msg = "Inside destroy. " + _errmsg
+                    _msg += " after " + str(_curr_tries) + " attempts. Will retry in " + str(_wait) + " seconds."
+                    cbdebug(_msg)
+                    sleep(_wait)
+                    cbdebug("Next try...")
+            
             _time_mark_drc = int(time())
             obj_attr_list["mgt_903_deprovisioning_request_completed"] = _time_mark_drc - _time_mark_drs
 
-            if "cloud_vv_name" in obj_attr_list :
-                tenant = credential_pair.split(":")[0]
-                cbdebug("Checking for volumes from tenant: " + tenant)
-                _volumes = catalogs.digitalocean[credential_pair].list_volumes()
-                for _volume in _volumes :
-                    if _volume.name == obj_attr_list["cloud_vv_name"] :
-                        try :
-                            cbdebug("Destroying: " + _volume.name + " (" + tenant + ")", True)
-                            _volume.destroy()
-                            break
-                        except :
-                            pass
-                    else :
-                        cbdebug("Ignoring volume: " + _volume.name)
+            _status, _fmsg = self.vvdestroy(obj_attr_list, catalogs.digitalocean[credential_pair])
 
-            _status = 0
+            obj_attr_list["last_known_state"] = "vm destoyed"
+            self.take_action_if_requested("VM", obj_attr_list, "deprovision_finished")
 
         except CldOpsException, obj :
             _status = obj.status
             _fmsg = str(obj.msg)
-            cberr("CldOpsException: " + str(obj), True)
 
-        except Exception, e :
-            for line in traceback.format_exc().splitlines() :
-                cbwarn(line, True)
+        except Exception, msg :
+            _fmsg = str(msg)
             _status = 23
-            _fmsg = str(e)
-            cberr("Exception: " + str(e), True)
-
+    
         finally :
-            if _status :
-                _msg = "VM " + obj_attr_list["uuid"] + " could not be destroyed "
-                _msg += " on DigitalOcean cloud \"" + obj_attr_list["cloud_name"] + "\" : "
-                _msg += _fmsg
-                # cberr(_msg)
-                # raise CldOpsException(_status, _msg)
-            else :
-                _msg = "VM " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "destroyed on DigitalOcean cloud \"" + obj_attr_list["cloud_name"]
-                _msg += "\"."
-                cbdebug(_msg)
-                return _status, _msg
+            _status, _msg = self.common_messages("VM", obj_attr_list, "destroyed", _status, _fmsg)
+            return _status, _msg
+
 
     @trace
     def vmcapture(self, obj_attr_list) :
@@ -787,8 +983,8 @@ class DoCmds(CommonCloudFunctions) :
 
             credential_pair = obj_attr_list["credential_pair"]
             self.connect(credential_pair)
-
-            _instance = self.get_vm_instance(obj_attr_list)
+            
+            _instance = self.get_instances(obj_attr_list)
 
             if _instance :
 
@@ -803,36 +999,30 @@ class DoCmds(CommonCloudFunctions) :
                     obj_attr_list["captured_image_name"] = obj_attr_list["image"] + "_captured_at_"
                     obj_attr_list["captured_image_name"] += str(obj_attr_list["mgt_101_capture_request_originated"])
 
-                _msg = obj_attr_list["name"] + " capture request sent. "
-                _msg += "Will capture with image name \"" + obj_attr_list["captured_image_name"] + "\"."
-                cbdebug(_msg)
+                self.common_messages("VM", obj_attr_list, "capturing", 0, '')
 
-                _captured_imageid = catalogs.digitalocean[credential_pair].create_image(obj_attr_list["cloud_vm_uuid"] , obj_attr_list["captured_image_name"])
+                catalogs.digitalocean[credential_pair].create_image(_instance, obj_attr_list["captured_image_name"])
 
-                _msg = "Waiting for " + obj_attr_list["name"]
-                _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
-                _msg += "to be captured with image name \"" + obj_attr_list["captured_image_name"]
-                _msg += "\"..."
-                cbdebug(_msg, True)
-
+                _capture_image_id = None
                 _vm_image_created = False
+                _image_instance = False
+                
                 while not _vm_image_created and _curr_tries < _max_tries :
 
-                    _image_instance = catalogs.digitalocean[credential_pair].get_all_images(_captured_imageid)
+                    if not _capture_image_id :
+                        for _image in catalogs.digitalocean[credential_pair].list_images() :
+                            if _image.name == obj_attr_list["captured_image_name"] :
+                                _image_instance = _image
+                                _capture_image_id = _image.id
+                                break
+                    else :
+                        _image_instance = catalogs.digitalocean[credential_pair].get_image(_capture_image_id)
 
-                    if len(_image_instance)  :
-                        if _image_instance[0].state == "pending" :
-                            _vm_image_created = True
-                            _time_mark_crc = int(time())
-                            obj_attr_list["mgt_103_capture_request_completed"] = _time_mark_crc - _time_mark_crs
-                            break
-
-                    _msg = "" + obj_attr_list["name"] + ""
-                    _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
-                    _msg += "still undergoing. "
-                    _msg += "Will wait " + obj_attr_list["update_frequency"]
-                    _msg += " seconds and try again."
-                    cbdebug(_msg)
+                    if _image_instance  :
+                        _vm_image_created = True
+                        _time_mark_crc = int(time())
+                        obj_attr_list["mgt_103_capture_request_completed"] = _time_mark_crc - _time_mark_crs
+                        break
 
                     sleep(int(obj_attr_list["update_frequency"]))
                     _curr_tries += 1
@@ -846,7 +1036,6 @@ class DoCmds(CommonCloudFunctions) :
                 _fmsg = "" + obj_attr_list["name"] + ""
                 _fmsg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ") "
                 _fmsg +=  "could not be captured after " + str(_max_tries * _wait) + " seconds.... "
-                cberr(_msg)
             else :
                 _status = 0
 
@@ -859,18 +1048,8 @@ class DoCmds(CommonCloudFunctions) :
             _fmsg = str(e)
 
         finally :
-            if _status :
-                _msg = "VM " + obj_attr_list["uuid"] + " could not be captured "
-                _msg += " on DigitalOcean cloud \"" + obj_attr_list["cloud_name"] + "\" : "
-                _msg += _fmsg
-                cberr(_msg)
-                raise CldOpsException(_status, _msg)
-            else :
-                _msg = "VM " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "captured on DigitalOcean cloud \"" + obj_attr_list["cloud_name"]
-                _msg += "\"."
-                cbdebug(_msg)
-                return _status, _msg
+            _status, _msg = self.common_messages("VM", obj_attr_list, "captured", _status, _fmsg)
+            return _status, _msg
 
     def vmrunstate(self, obj_attr_list) :
         '''
@@ -889,12 +1068,9 @@ class DoCmds(CommonCloudFunctions) :
                 _time_mark_rrs = int(time())
                 obj_attr_list["mgt_202_runstate_request_sent"] = _time_mark_rrs - obj_attr_list["mgt_201_runstate_request_originated"]
 
-            _msg = "Sending a runstate change request (" + _ts + " for " + obj_attr_list["name"]
-            _msg += " (cloud-assigned uuid " + obj_attr_list["cloud_vm_uuid"] + ")"
-            _msg += "...."
-            cbdebug(_msg, True)
+            self.common_messages("VM", obj_attr_list, "runstate altering", 0, '')
 
-            _instance = self.get_vm_instance(obj_attr_list)
+            _instance = self.get_instances(obj_attr_list)
 
             if _instance :
                 if _ts == "fail" :
@@ -918,48 +1094,81 @@ class DoCmds(CommonCloudFunctions) :
             _status = obj.status
             _fmsg = str(obj.msg)
 
-        except AWSException, obj :
-            _status = int(obj.error_code)
-            _fmsg = str(obj.error_message)
-
         except Exception, e :
             _status = 23
             _fmsg = str(e)
 
         finally :
-            if _status :
-                _msg = "VM " + obj_attr_list["uuid"] + " could not have its "
-                _msg += "run state changed on Elastic Compute Cloud \""
-                _msg += obj_attr_list["cloud_name"] + "\" : " + _fmsg
-                cberr(_msg, True)
-                raise CldOpsException(_msg, _status)
-            else :
-                _msg = "VM " + obj_attr_list["uuid"] + " successfully had its "
-                _msg += "run state changed on Elastic Compute Cloud \""
-                _msg += obj_attr_list["cloud_name"] + "\"."
-                cbdebug(_msg, True)
-                return _status, _msg
+            _status, _msg = self.common_messages("VM", obj_attr_list, "runstate altered", _status, _fmsg)
+            return _status, _msg
 
     @trace
-    def rotate_token(self, cloud_name) :
-        vmc_defaults = self.osci.get_object(cloud_name, "GLOBAL", False, "vmc_defaults", False)
-        credential_pairs = vmc_defaults["credentials"].split(",")
-        lock = self.lock(cloud_name, "VMC", "shared_access_token_counter", "credential_pair")
+    def vmmigrate(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        return 0, "NOT SUPPORTED"
 
-        assert(lock)
+    @trace
+    def vmresize(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        return 0, "NOT SUPPORTED"
 
-        current_token = 0 if "current_token" not in vmc_defaults else int(vmc_defaults["current_token"])
-        new_token = current_token
+    @trace
+    def imgdelete(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _image_instance = False
+            
+            _fmsg = "An error has occurred, but no error message was captured"
+            
+            self.common_messages("IMG", obj_attr_list, "deleting", 0, '')
 
-        if len(credential_pairs) > 1 :
-            new_token += 1
-            if new_token == len(credential_pairs) :
-                new_token = 0
+            _credential_pair = self.rotate_token(obj_attr_list["cloud_name"])
 
-        self.osci.update_object_attribute(cloud_name, "GLOBAL", "vmc_defaults", False, "current_token", str(new_token))
-        self.unlock(cloud_name, "VMC", "shared_access_token_counter", lock)
+            obj_attr_list["credential_pair"] = _credential_pair
 
-        return credential_pairs[current_token]
+            _image_instance = self.get_images(obj_attr_list)
+                
+            if _image_instance :
+
+                _x = obj_attr_list["imageid1"] 
+                obj_attr_list["imageid1"] = _image_instance.id
+                
+                catalogs.digitalocean[_credential_pair].delete_image(_image_instance)
+
+                _wait = int(obj_attr_list["update_frequency"])
+                _curr_tries = 0
+                _max_tries = int(obj_attr_list["update_attempts"])
+
+                _image_deleted = False
+                       
+                while not _image_deleted and _curr_tries < _max_tries :
+
+                    _image_instance = self.get_images(obj_attr_list, False)
+
+                    if not _image_instance :
+                        _image_deleted = True
+                    else :
+                        sleep(_wait)
+                        _curr_tries += 1
+
+                obj_attr_list["imageid1"] = _x
+                        
+            _status = 0
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+            
+        finally :
+            _status, _msg = self.common_messages("IMG", obj_attr_list, "deleted", _status, _fmsg)
+            return _status, _msg
 
     @trace
     def aidefine(self, obj_attr_list, current_step) :
@@ -1006,30 +1215,25 @@ class DoCmds(CommonCloudFunctions) :
                 return _status, _msg
 
     @trace
-    def aiundefine(self, obj_attr_list, current_step) :
+    def rotate_token(self, cloud_name) :
         '''
         TBD
         '''
-        try :
-            _fmsg = "An error has occurred, but no error message was captured"
-            self.take_action_if_requested("AI", obj_attr_list, current_step)            
-            _status = 0
+        vmc_defaults = self.osci.get_object(cloud_name, "GLOBAL", False, "vmc_defaults", False)
+        credential_pairs = vmc_defaults["credentials"].split(",")
+        lock = self.lock(cloud_name, "VMC", "shared_access_token_counter", "credential_pair")
 
-        except Exception, e :
-            _status = 23
-            _fmsg = str(e)
+        assert(lock)
 
-        finally :
-            if _status :
-                _msg = "AI " + obj_attr_list["name"] + " could not be undefined "
-                _msg += " on DigitalOcean \"" + obj_attr_list["cloud_name"] + "\" : "
-                _msg += _fmsg
-                cberr(_msg)
-                raise CldOpsException(_status, _msg)
-            else :
-                _msg = "AI " + obj_attr_list["uuid"] + " was successfully "
-                _msg += "undefined on DigitalOcean \"" + obj_attr_list["cloud_name"]
-                _msg += "\"."
-                cbdebug(_msg)
-                return _status, _msg
+        current_token = 0 if "current_token" not in vmc_defaults else int(vmc_defaults["current_token"])
+        new_token = current_token
 
+        if len(credential_pairs) > 1 :
+            new_token += 1
+            if new_token == len(credential_pairs) :
+                new_token = 0
+
+        self.osci.update_object_attribute(cloud_name, "GLOBAL", "vmc_defaults", False, "current_token", str(new_token))
+        self.unlock(cloud_name, "VMC", "shared_access_token_counter", lock)
+
+        return credential_pairs[current_token]
