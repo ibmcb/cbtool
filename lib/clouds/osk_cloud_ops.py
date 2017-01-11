@@ -913,10 +913,12 @@ class OskCmds(CommonCloudFunctions) :
             _candidate_images = []
 
             for _idx in range(0,len(_image_list)) :
-                if _image_list[_idx].name.count(obj_attr_list["imageid1"]) :
-                    _candidate_images.append(_image_list[_idx])
-                else :                     
-                    True
+                if self.is_cloud_image_uuid(obj_attr_list["imageid1"]) :
+                    if _image_list[_idx].id == obj_attr_list["imageid1"] :
+                        _candidate_images.append(_image_list[_idx])
+                else :                        
+                    if _image_list[_idx].name.count(obj_attr_list["imageid1"]) :
+                        _candidate_images.append(_image_list[_idx])
 
             if "hypervisor_type" in obj_attr_list :
                 if str(obj_attr_list["hypervisor_type"]).lower() != "fake" :

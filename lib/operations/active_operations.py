@@ -4967,6 +4967,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     # If we fail, sleep a little and retry
                     sleep(_check_frequency * 2)
 
+                if _mode == "controllable" :
+                    self.update_object_attribute(cloud_name, \
+                                                 object_type.upper(), \
+                                                 object_uuid, \
+                                                 "current_reset_status", \
+                                                 _reset_status) 
+
                 if not _reset_status and _ai_attr_list["load_generator_ip"] == _ai_attr_list["load_manager_ip"] :
                     _cmd = "~/" + _ai_attr_list["start"] + ' '
                     _cmd += str(_ai_attr_list["current_load_profile"]) + ' '                    

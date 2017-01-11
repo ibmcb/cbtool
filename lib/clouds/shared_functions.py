@@ -914,7 +914,7 @@ class CommonCloudFunctions:
 
             if self.get_description() == "OpenStack Cloud" :
                 for _key_pair in self.oskconncompute.keypairs.list() :
-                    _registered_key_pairs[_key_pair.name] = _key_pair.public_key.split()[1] + "-NA"
+                    _registered_key_pairs[_key_pair.name] = _key_pair.fingerprint + "-NA"
 
             if self.get_description() == "SoftLayer Cloud" :
                 for _key_pair in self.sshman.list_keys() :
