@@ -33,10 +33,8 @@ import socket
 import copy
 import iso8601
 
-import requests
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+import requests.packages.urllib3
+requests.packages.urllib3.disable_warnings()
 
 from novaclient import client as novac
 from novaclient import exceptions as novaexceptions
