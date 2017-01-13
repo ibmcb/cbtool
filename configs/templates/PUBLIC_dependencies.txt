@@ -226,7 +226,7 @@ screen-configure = screen -v | grep version
 rsync-configure = rsync --version | grep version
 ncftp-configure = ncftp -h 2>&1 | grep Program | cut -d ' ' -f 5 | sed -e 's/\//./g'
 lftp-configure = lftp --version | grep Version | cut -d " " -f 4
-netcat-configure = if [[ $(sudo cat cat /proc/1/cgroup | grep -c docker) -eq 0 ]]; then netcat -v -w 1 localhost -z 22; else which netcat; fi
+netcat-configure = if [[ $(sudo cat /proc/1/cgroup | grep -c docker) -eq 0 ]]; then netcat -v -w 1 localhost -z 22; else which netcat; fi
 nmap-configure = nmap -V | grep version | cut -d ' ' -f 3
 openvpn-configure = openvpn --version | grep built | cut -d ' ' -f 2
 gmond-configure = gmond --version | cut -d ' ' -f 2
@@ -477,6 +477,7 @@ ubuntu-which-install-pm = /bin/true
 rhel-ntp-install-pm = package_install ntp
 fedora-ntp-install-pm = package_install ntp
 ubuntu-ntp-install-pm = package_install ntpd
+trusty-ntp-install-pm = package_install ntp
 xenial-ntp-install-pm = package_install ntp
 
 common-git-install-pm = package_install git

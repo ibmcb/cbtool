@@ -1209,7 +1209,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             if not _status :
                 _status, _fmsg = self.initialize_object(obj_attr_list, command)
 
-                _x, _y, _stats = self.stats(obj_attr_list, obj_attr_list["cloud_name"] + " all noprint", "stats-get", True)
+                _x, _y, _stats = self.stats(obj_attr_list, obj_attr_list["cloud_name"] + " all noprint false", "stats-get", True)
 
                 _exp_counters = _stats["experiment_counters"]
                 

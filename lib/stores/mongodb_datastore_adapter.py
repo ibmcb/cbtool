@@ -236,7 +236,7 @@ class MongodbMgdConn :
             for _collection in _collections :
                 _collection_handle = self.mongodb_conn[self.database][_collection]
                 
-                if self.version < 3 :
+                if int(self.version) < 3 :
                     _collection_handle.ensure_index("dashboard_polled")
                     _collection_handle.ensure_index("expid")
                     _collection_handle.ensure_index("time")
@@ -307,10 +307,11 @@ class MongodbMgdConn :
         self.conn_check()
 
         collection = collection.replace('-',"dash")
-
+        
         try :
             _collection_handle = self.mongodb_conn[self.database][collection]
-            if self.version < 3 :
+
+            if int(self.version) < 3 :
                 _collection_handle.insert(document)
             else :
                 _collection_handle.insert_one(document)
@@ -377,7 +378,7 @@ class MongodbMgdConn :
         try :
             _collection_handle = self.mongodb_conn[self.database][collection]
             
-            if self.version < 3 :
+            if int(self.version) < 3 :
                 _collection_handle.save(document)
             else :
                 _collection_handle.replace_one({'_id': document["_id"]}, document, upsert = True)
@@ -404,7 +405,7 @@ class MongodbMgdConn :
         try :
             _collection_handle = self.mongodb_conn[self.database][collection]
             
-            if self.version < 3 :            
+            if int(self.version) < 3 :            
                 _collection_handle.remove(criteria)
             else :
                 _collection_handle.delete_one(criteria)

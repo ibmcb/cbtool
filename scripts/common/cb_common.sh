@@ -187,7 +187,7 @@ function service_restart_enable {
             then
                 START_COMMAND="sudo sv restart $s"
                 ENABLE_COMMAND="sudo rm /etc/service/$s/down"            
-            elif [[ $(sudo systemctl | grep -c $s) -ne 0 && $(sudo find /etc/systemd | grep -c $s) -ne 0 ]]
+            elif [[ $(sudo systemctl 2>&1 | grep -c $s) -ne 0 && $(sudo find /etc/systemd 2>&1 | grep -c $s) -ne 0 ]]
             then
                 START_COMMAND="sudo systemctl restart $s"
                 ENABLE_COMMAND="sudo systemctl enable $s"
@@ -200,7 +200,7 @@ function service_restart_enable {
             then
                 START_COMMAND="sudo sv restart $s"
                 ENABLE_COMMAND="sudo rm /etc/service/$s/down"            
-            elif [[ $(sudo systemctl | grep -c $s) -ne 0 ]]
+            elif [[ $(sudo systemctl 2>&1 | grep -c $s) -ne 0 ]]
             then
                 START_COMMAND="sudo systemctl restart $s"
                 ENABLE_COMMAND="sudo systemctl enable $s"

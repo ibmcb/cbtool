@@ -3876,64 +3876,64 @@ class BaseObjectOperations :
         TBD
         '''
         _msg = ''
-
-        if obj_attr_list["walkthrough"] == "true" :
-            if operation == "attach" :
-                if _obj_type == "CLOUD" :
-                    _msg = "\n\n ATTENTION! Given that none of the pre-configured images listed on "
-                    _msg += "CB's configuration file were detected on this cloud, "
-                    _msg += "we need to start by testing the ability to create instances "
-                    _msg += "using unconfigured images. Start by executing \"vmattach check:<IMAGEID OF YOUR CHOICE>\" on the CLI\n"            
-
-                if _obj_type == "VM" and obj_attr_list["role"] == "check" :
-                    if obj_attr_list["check_ssh"] == "false" :
-                        _msg = "\n\n The ability to create instances using "
-                        _msg += "unconfigured images was successfully verified!"
-                        _msg += " We may now proceed to check the ability to"
-                        _msg += " connect (via ssh) to instances by executing "
-                        _msg += "\"vmattach check:<IMAGEID OF YOUR CHOICE>:<USERNAME FOR LOGIN>\""
-                        _msg += " on the CLI.\n"
-                    else :
-                        if obj_attr_list["transfer_files"] == "false" :
-                            _msg = "\n\n The ability to create (and connect via ssh to)"
-                            _msg += " instances using unconfigured images was "
-                            _msg += "successfully verified. At this point, we need"
-                            _msg += " to create a base image for the Virtual Application \"nullworkload\""
-                            _msg += " by executing \"vmattach check:<IMAGEID OF YOUR CHOICE>:<USERNAME FOR LOGIN>:nullworkload\""
+        if "walkthrough" in obj_attr_list :
+            if obj_attr_list["walkthrough"] == "true" :
+                if operation == "attach" :
+                    if _obj_type == "CLOUD" :
+                        _msg = "\n\n ATTENTION! Given that none of the pre-configured images listed on "
+                        _msg += "CB's configuration file were detected on this cloud, "
+                        _msg += "we need to start by testing the ability to create instances "
+                        _msg += "using unconfigured images. Start by executing \"vmattach check:<IMAGEID OF YOUR CHOICE>\" on the CLI\n"            
+    
+                    if _obj_type == "VM" and obj_attr_list["role"] == "check" :
+                        if obj_attr_list["check_ssh"] == "false" :
+                            _msg = "\n\n The ability to create instances using "
+                            _msg += "unconfigured images was successfully verified!"
+                            _msg += " We may now proceed to check the ability to"
+                            _msg += " connect (via ssh) to instances by executing "
+                            _msg += "\"vmattach check:<IMAGEID OF YOUR CHOICE>:<USERNAME FOR LOGIN>\""
                             _msg += " on the CLI.\n"
                         else :
-                            _msg = "\n\n A copy of the code was transferred to "
-                            _msg += obj_attr_list["name"] + ". On another terminal"
-                            _msg += ", execute \"cd " + obj_attr_list["base_dir"]
-                            _msg += "; ./cbssh " + obj_attr_list["name"] + "\""
-                            _msg += " to login on the VM. Once there, execute"
-                            _msg += " \"cd ~/" + obj_attr_list["remote_dir_name"] 
-                            _msg +=  "; ./install -r workload --wks nullworkload\" "
-                            _msg += "to automatically configure a new instance."
-                            _msg += "\nOnce done, execute \"vmcapture youngest cb_nullworkload\""
-                            _msg += " on the CLI\n"
+                            if obj_attr_list["transfer_files"] == "false" :
+                                _msg = "\n\n The ability to create (and connect via ssh to)"
+                                _msg += " instances using unconfigured images was "
+                                _msg += "successfully verified. At this point, we need"
+                                _msg += " to create a base image for the Virtual Application \"nullworkload\""
+                                _msg += " by executing \"vmattach check:<IMAGEID OF YOUR CHOICE>:<USERNAME FOR LOGIN>:nullworkload\""
+                                _msg += " on the CLI.\n"
+                            else :
+                                _msg = "\n\n A copy of the code was transferred to "
+                                _msg += obj_attr_list["name"] + ". On another terminal"
+                                _msg += ", execute \"cd " + obj_attr_list["base_dir"]
+                                _msg += "; ./cbssh " + obj_attr_list["name"] + "\""
+                                _msg += " to login on the VM. Once there, execute"
+                                _msg += " \"cd ~/" + obj_attr_list["remote_dir_name"] 
+                                _msg +=  "; ./install -r workload --wks nullworkload\" "
+                                _msg += "to automatically configure a new instance."
+                                _msg += "\nOnce done, execute \"vmcapture youngest cb_nullworkload\""
+                                _msg += " on the CLI\n"
+            
+                    if _obj_type == "VM" and obj_attr_list["role"] == "tinyvm" :
+                        _msg = "\n\n You have sucessfully deployed your first fully configured"
+                        _msg += "instance, with the role \"tinyvm\". Now lets try deploy "
+                        _msg += "our first workload with \"aiattach nullworkload\" on the CLI\n"
         
-                if _obj_type == "VM" and obj_attr_list["role"] == "tinyvm" :
-                    _msg = "\n\n You have sucessfully deployed your first fully configured"
-                    _msg += "instance, with the role \"tinyvm\". Now lets try deploy "
-                    _msg += "our first workload with \"aiattach nullworkload\" on the CLI\n"
-    
-                if _obj_type == "AI" and obj_attr_list["type"] == "nullworkload" :
-                    _msg = "\n\n You have sucessfully deployed your first workload. You can"
-                    _msg += "check the CB's GUI (go to Dashboard -> Application Performance) "
-                    _msg += "or run \"monlist VM\" on the CLI. If you see application"
-                    _msg += "samples, this means that the initial configuration is complete.\n"
-                    _msg += "Restart the tool with \"cb --soft_reset\". \nTo configure instances"
-                    _msg += " for the deployment of other workloads, just execute "
-                    _msg += "\"vmattach check:cb_nullworkload:<USERNAME FOR LOGIN>:<WORKLOAD TYPE OF YOUR CHOICE>\""
-                    _msg += ", followed \"vmcapture youngest <IMAGE_NAME_DEFINED_ON_THE_WORKLOAD_ROLES>\""
-    
-            if operation == "capture" :
-                if obj_attr_list["captured_image_name"] == "cb_nullworkload" :
-                    _msg = "\n\n You have sucessfully captured your first fully configured"
-                    _msg += " instance, with the role \"tinyvm\", as part of the workload"
-                    _msg += " \"nullworkload\". Now lets try to attach this new instance"
-                    _msg += " with \"vmattach tinyvm\". on the CLI\n"                
+                    if _obj_type == "AI" and obj_attr_list["type"] == "nullworkload" :
+                        _msg = "\n\n You have sucessfully deployed your first workload. You can"
+                        _msg += "check the CB's GUI (go to Dashboard -> Application Performance) "
+                        _msg += "or run \"monlist VM\" on the CLI. If you see application"
+                        _msg += "samples, this means that the initial configuration is complete.\n"
+                        _msg += "Restart the tool with \"cb --soft_reset\". \nTo configure instances"
+                        _msg += " for the deployment of other workloads, just execute "
+                        _msg += "\"vmattach check:cb_nullworkload:<USERNAME FOR LOGIN>:<WORKLOAD TYPE OF YOUR CHOICE>\""
+                        _msg += ", followed \"vmcapture youngest <IMAGE_NAME_DEFINED_ON_THE_WORKLOAD_ROLES>\""
+        
+                if operation == "capture" :
+                    if obj_attr_list["captured_image_name"] == "cb_nullworkload" :
+                        _msg = "\n\n You have sucessfully captured your first fully configured"
+                        _msg += " instance, with the role \"tinyvm\", as part of the workload"
+                        _msg += " \"nullworkload\". Now lets try to attach this new instance"
+                        _msg += " with \"vmattach tinyvm\". on the CLI\n"                
         
         return _msg
     

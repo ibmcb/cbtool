@@ -59,6 +59,7 @@ if [[ $? -eq 0 ]]
 then
     options=$(echo $options | sed 's/debug//g')
     sudo pkill -9 -f cbloadmanwatch
+    sudo screen -wipe
     sudo pkill -9 -f "\\-\\-procid=${osprocid} \\-\\-uuid=${my_ai_uuid} \\-\\-syslogp=${NC_PORT_SYSLOG} \\-\\-syslogf=19 \\-\\-syslogh=${NC_HOST_SYSLOG} \\-\\-operation=$operation"
     run_application_scripts="false"
     debug_remote_commands="true"        
@@ -108,8 +109,8 @@ then
             exit 2
         fi
     fi
+else
+    syslog_netcat "This VM is not designated as Load Manager"
 fi
-syslog_netcat "This VM is not designated as Load Manager"
-
 exit 0
 exit 0
