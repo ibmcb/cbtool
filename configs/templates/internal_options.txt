@@ -182,6 +182,7 @@ SLA_PROVISIONING_ABORT = $False
 SLA_RUNTIME = ok
 ERRORS = no
 ABORT = $False
+BUILD = $False
 BOOT_FROM_VOLUME = auto
 COMMENTS = $Empty
 PROV_CLOUD_PORT = 22
@@ -189,9 +190,11 @@ RUN_CLOUD_PORT = 22
 CLOUD_MAC = NA
 CLOUD_VV_UUID = None
 CLOUD_VM_UUID = None
-JUMPHOST_BASE_NAME =  cb-jumphost
+JUMPHOST_BASE_NAME = cb-jumphost
 JUMPHOST_LOGIN = auto
 JUMPHOST_NETNAMES = all
+IMAGE_PREFIX = $EMPTY
+IMAGE_SUFFIX = $EMPTY
 
 [AI_DEFAULTS]
 USERNAME = $MAIN_USERNAME
@@ -214,6 +217,7 @@ RUN_APPLICATION_SCRIPTS = $True
 DEBUG_REMOTE_COMMANDS = $False
 DONT_START_LOAD_MANAGER = $False
 CREDENTIALS_DIR = $MAIN_BASE_DIR/credentials
+PROPAGATED_ATTRIBUTES = netname, imageid1, login, resource_limits, userdata, cloud_vv, cloud_vv_type, avalability_zone, compute_node, sla_provisioning_target
 # Most clouds don't use (or allow access to) libvirt,
 # so, enable this only in the right clouds.
 DONT_START_QEMU_SCRAPER = $True

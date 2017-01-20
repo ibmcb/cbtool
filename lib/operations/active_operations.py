@@ -233,6 +233,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                 if "walkthrough" not in cld_attr_lst :                    
                     cld_attr_lst["walkthrough"] = "false"
+
+                for _vm_role in cld_attr_lst["vm_templates"].keys() :            
+                    cld_attr_lst["vm_templates"][_vm_role] = \
+                    cld_attr_lst["vm_templates"][_vm_role].replace("imageid1:", "imageid1:" + str(cld_attr_lst["vm_defaults"]["image_prefix"]).strip())
                     
                 for _vmc_entry in _initial_vmcs :
                     _cld_conn = _cld_ops_class(self.pid, None, None)
@@ -2203,19 +2207,25 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
             _ssh_cmd_log = "ssh -p " + str(obj_attr_list["prov_cloud_port"]) + " -i " + obj_attr_list["identity"]
             _ssh_cmd_log += ' ' + obj_attr_list["login"] + "@" + obj_attr_list["prov_cloud_ip"]
+            
+            if obj_attr_list["role"] == "check" :
+                _cmd_list = [ "/bin/true", "sudo /bin/true" ]
+            else :
+                _cmd_list = [ "/bin/true" ]
 
-            _msg = "Checking ssh accessibility on " + obj_attr_list["log_string"]
-            _msg += ": " + _ssh_cmd_log + " \"/bin/true\"..."
-            cbdebug(_msg, selectively_print_message("check_ssh", obj_attr_list))
-            _proc_man.retriable_run_os_command("/bin/true", \
-                                               obj_attr_list["prov_cloud_ip"], \
-                                               _actual_tries, \
-                                               _retry_interval, \
-                                               obj_attr_list["check_ssh"], \
-                                               obj_attr_list["debug_remote_commands"], \
-                                               True,
-                                               tell_me_if_stderr_contains = False, \
-                                               port = obj_attr_list["prov_cloud_port"])
+            for _cmd in _cmd_list :
+                _msg = "Checking ssh accessibility on " + obj_attr_list["log_string"]
+                _msg += ": " + _ssh_cmd_log + " \"" + _cmd + "\"..."
+                cbdebug(_msg, selectively_print_message("check_ssh", obj_attr_list))
+                _proc_man.retriable_run_os_command(_cmd, \
+                                                   obj_attr_list["prov_cloud_ip"], \
+                                                   _actual_tries, \
+                                                   _retry_interval, \
+                                                   obj_attr_list["check_ssh"], \
+                                                   obj_attr_list["debug_remote_commands"], \
+                                                   True,
+                                                   tell_me_if_stderr_contains = False, \
+                                                   port = obj_attr_list["prov_cloud_port"])
 
             self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], \
                                               False, "last_known_state", \
@@ -2317,7 +2327,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
             _msg += "address " + obj_attr_list["prov_cloud_ip"] + "..."
             cbdebug(_msg)
             
-            if selectively_print_message("run_generic_scripts", obj_attr_list) :
+            if selectively_print_message("run_generic_scripts", obj_attr_list) \
+            and "ai" in obj_attr_list and obj_attr_list["ai"] == "none" :
 
                 if not access(obj_attr_list["identity"], F_OK) :
                     obj_attr_list["identity"] = obj_attr_list["identity"].replace(obj_attr_list["username"], \
@@ -2360,8 +2371,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _msg += ", on IP address "+ obj_attr_list["prov_cloud_ip"] + "..."     
                 cbdebug(_msg)
                      
-            else :
-                                
+            else :                
                 _status = 0
 
             if "ai" in obj_attr_list and obj_attr_list["ai"] == "none" :

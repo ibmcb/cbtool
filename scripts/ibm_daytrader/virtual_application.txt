@@ -40,11 +40,9 @@ DESCRIPTION +=- COMMENT: None.
 # This only has effect if the parameter LOAD_BALANCER is set to "$True"
 LB_SETUP1 = cb_restart_loadbalancer.sh
 LB_RESET1 = cb_restart_loadbalancer.sh
-# This only has effect if the parameter DB2_ON_RAMDISK is set to "$True"
-DB2_SETUP1 = cb_setup_ramdisk.sh
 # These are always executed
+DB2_SETUP1 = cb_restart_db2.sh
 WAS_SETUP2 = cb_restart_was.sh
-DB2_SETUP2 = cb_restart_db2.sh
 WAS_RESET1 = cb_restart_was.sh
 DB2_RESET1 = cb_restart_db2.sh
 START = cb_daytrader.sh
@@ -53,7 +51,8 @@ START = cb_daytrader.sh
 TRADEDB_SIZE = small
 NR_QUOTES=40000
 NR_USERS=15000
-DB2_ON_RAMDISK = $False
+DB2_DATA_DIR = /tradedb
+DB2_DATA_FSTYP = ext4
 DB2_INSTANCE_NAME = klabuser
 PERIODIC_MEASUREMENTS = $False
 APP_COLLECTION = lazy

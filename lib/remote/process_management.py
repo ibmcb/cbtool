@@ -123,7 +123,7 @@ class ProcessManagement :
             
             _cmd += _hostname + " \"" + cmdline + "\""
         
-        if str(really_execute).lower() != "false" :
+        if str(really_execute).lower() != "false" and str(really_execute).lower() != "pseudotrue" :
             _msg = "running os command: " + _cmd
             cbdebug(_msg);
             _proc_h = Popen(_cmd, shell=True, stdout=PIPE, stderr=PIPE)

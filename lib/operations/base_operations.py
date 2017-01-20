@@ -1130,47 +1130,17 @@ class BaseObjectOperations :
 
                     if _obj_type == "AI" :
                         obj_attr_list["vms"] = ''
-
+                        obj_attr_list["build"] = False
+                        obj_attr_list["override_imageid1"] = False 
+                        if obj_attr_list["type"].count("build:") :
+                            obj_attr_list["build"] = True
+                            _x, _override_image, _actual_type = obj_attr_list["type"].split(':')
+                            obj_attr_list["type"] = _actual_type
+                            obj_attr_list["override_imageid1"] = _override_image 
+                                                    
                     if _obj_type == "VM" :
                                                 
-                        _filestor_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
-                                                                   "GLOBAL", False, "filestore", \
-                                                                   False)
-                        _vpn_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
-                                                                   "GLOBAL", False, "vpn", \
-                                                                   False)
-                        _metric_store_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
-                                                                       "GLOBAL", \
-                                                                       False, \
-                                                                       "metricstore", \
-                                                                       False)
-                        
-                        _log_store = self.osci.get_object(obj_attr_list["cloud_name"], \
-                                                             "GLOBAL", False, \
-                                                             "logstore", False)
-    
-                        obj_attr_list["filestore_host"] = _filestor_attr_list["hostname"]
-                        obj_attr_list["filestore_port"] = _filestor_attr_list["port"]
-                        obj_attr_list["filestore_username"] = _filestor_attr_list["username"]
-                        obj_attr_list["filestore_protocol"] = _filestor_attr_list["protocol"]
-
-                        obj_attr_list["vpn_server_ip"] = _vpn_attr_list["server_ip"]
-                        obj_attr_list["vpn_server_host"] = _vpn_attr_list["server_ip"]                        
-                        obj_attr_list["vpn_server_bootstrap"] = _vpn_attr_list["server_bootstrap"]
-                        obj_attr_list["vpn_server_port"] = _vpn_attr_list["server_port"]
-                        obj_attr_list["vpn_server_protocol"] = "TCP"
-                        
-                        obj_attr_list["metricstore_host"] = _metric_store_attr_list["host"]
-                        obj_attr_list["metricstore_port"] = _metric_store_attr_list["port"]
-                        obj_attr_list["metricstore_protocol"] = _metric_store_attr_list["protocol"]
-                        
-                        obj_attr_list["logstore_host"] = _log_store["hostname"]
-                        obj_attr_list["logstore_port"] = _log_store["port"]
-                        obj_attr_list["logstore_protocol"] = _log_store["protocol"]
-                        
-                        obj_attr_list["objectstore_host"] = self.osci.host
-                        obj_attr_list["objectstore_port"] = self.osci.port 
-                        obj_attr_list["objectstore_protocol"] = "TCP" 
+                        self.pre_populate_host_info(obj_attr_list)
                         
                         obj_attr_list["jars_dir"] = _dir_list["jars_dir"]
                         obj_attr_list["exclude_list"] = _dir_list["base_dir"] + "/exclude_list.txt"
@@ -1220,7 +1190,7 @@ class BaseObjectOperations :
                         if obj_attr_list["size"] != "from_vm_template" :
                             del _vm_template_attr_list["size"]
 
-                        if _vm_template_attr_list["imageid1"] == "to_replace" :
+                        if _vm_template_attr_list["imageid1"] == "to_replace" or "imageid1" in obj_attr_list :
                             del _vm_template_attr_list["imageid1"]
 
                         if "login" in _vm_template_attr_list :
@@ -1493,6 +1463,52 @@ class BaseObjectOperations :
                 cbdebug(_msg)
 
             return _status, _msg
+
+    @trace
+    def pre_populate_host_info(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        _filestor_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
+                                                   "GLOBAL", False, "filestore", \
+                                                   False)
+        _vpn_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
+                                                   "GLOBAL", False, "vpn", \
+                                                   False)
+        _metric_store_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
+                                                       "GLOBAL", \
+                                                       False, \
+                                                       "metricstore", \
+                                                       False)
+        
+        _log_store = self.osci.get_object(obj_attr_list["cloud_name"], \
+                                             "GLOBAL", False, \
+                                             "logstore", False)
+
+        obj_attr_list["filestore_host"] = _filestor_attr_list["hostname"]
+        obj_attr_list["filestore_port"] = _filestor_attr_list["port"]
+        obj_attr_list["filestore_username"] = _filestor_attr_list["username"]
+        obj_attr_list["filestore_protocol"] = _filestor_attr_list["protocol"]
+
+        obj_attr_list["vpn_server_ip"] = _vpn_attr_list["server_ip"]
+        obj_attr_list["vpn_server_host"] = _vpn_attr_list["server_ip"]                        
+        obj_attr_list["vpn_server_bootstrap"] = _vpn_attr_list["server_bootstrap"]
+        obj_attr_list["vpn_server_port"] = _vpn_attr_list["server_port"]
+        obj_attr_list["vpn_server_protocol"] = "TCP"
+        
+        obj_attr_list["metricstore_host"] = _metric_store_attr_list["host"]
+        obj_attr_list["metricstore_port"] = _metric_store_attr_list["port"]
+        obj_attr_list["metricstore_protocol"] = _metric_store_attr_list["protocol"]
+        
+        obj_attr_list["logstore_host"] = _log_store["hostname"]
+        obj_attr_list["logstore_port"] = _log_store["port"]
+        obj_attr_list["logstore_protocol"] = _log_store["protocol"]
+        
+        obj_attr_list["objectstore_host"] = self.osci.host
+        obj_attr_list["objectstore_port"] = self.osci.port 
+        obj_attr_list["objectstore_protocol"] = "TCP"         
+
+        return True
 
     @trace    
     def admission_control(self, obj_type, obj_attr_list, transaction) :
@@ -2014,6 +2030,9 @@ class BaseObjectOperations :
 
         if "access" in obj_attr_list :
             _extra_parms += ",access=" + obj_attr_list["access"]
+
+        if str(obj_attr_list["override_imageid1"]).lower() != "false" :
+            _extra_parms += ",imageid1=" + obj_attr_list["override_imageid1"]
         
         if vm_role + "_netname" in obj_attr_list :
             _extra_parms += ",netname=" + obj_attr_list[vm_role + "_netname"]
@@ -2033,6 +2052,12 @@ class BaseObjectOperations :
         if vm_role + "_cloud_vv" in obj_attr_list :
             _extra_parms += ",cloud_vv=" + obj_attr_list[vm_role + "_cloud_vv"]
 
+        if vm_role + "_availability_zone" in obj_attr_list :
+            _extra_parms += ",availability_zone=" + obj_attr_list[vm_role + "_availability_zone"]
+
+        if vm_role + "_compute_node" in obj_attr_list :
+            _extra_parms += ",compute_node=" + obj_attr_list[vm_role + "_compute_node"]
+
         if vm_role + "_cloud_vv_type" in obj_attr_list :
             _extra_parms += ",cloud_vv_type=" + obj_attr_list[vm_role + "_cloud_vv_type"]
 
@@ -2040,7 +2065,7 @@ class BaseObjectOperations :
             _extra_parms += ",sla_provisioning_target=" + obj_attr_list[vm_role + "_sla_provisioning_target"]            
 
         if "vm_extra_parms" in obj_attr_list :
-            obj_attr_list["vm_extra_parms"]=obj_attr_list["vm_extra_parms"].replace("_EQUAL_","=").replace("_COMMA_",',')
+            obj_attr_list["vm_extra_parms"] = obj_attr_list["vm_extra_parms"].replace("_EQUAL_","=").replace("_COMMA_",',')
             _extra_parms += "," + obj_attr_list["vm_extra_parms"]
                         
         if vm_role + "_cloud_ips" in obj_attr_list :
@@ -2438,14 +2463,27 @@ class BaseObjectOperations :
                     _obj_attr_list["identity"] = _obj_attr_list["identity"].replace('/' + _obj_attr_list["local_dir_name"] + '/', '/' + _obj_attr_list["remote_dir_name"] + '/')                    
                 _vm_priv_keys.append(_obj_attr_list["identity"])
 
-                _vm_post_boot_commands.append("~/" + _obj_attr_list["remote_dir_name"] + "/scripts/common/cb_post_boot.sh")
+                if str(_ai_attr_list["build"]).lower() != "false" :
+                    _cmd = "~/" + _obj_attr_list["remote_dir_name"] + "/install --role workload"
+                    _cmd += " --wks " + _obj_attr_list["type"] + " --addr bypass"
+                    _cmd += " --syslogh " + _obj_attr_list["logstore_host"]
+                    _cmd += " --syslogp " + _obj_attr_list["logstore_port"] 
+                    _cmd += " --syslogf 21 --logdest syslog && "
+                    _x_str = " (including the installation script for an AI of type \""
+                    _x_str += _ai_attr_list["type"] + "\") "
+                else :
+                    _cmd = ''
+                    _x_str = ''
+                    
+                _cmd += "~/" + _obj_attr_list["remote_dir_name"] + "/scripts/common/cb_post_boot.sh"
+                _vm_post_boot_commands.append(_cmd)
 
             _actual_attempts = int(_ai_attr_list["configuration_attempts"])
             
             if operation == "setup" or operation == "resize" :
 
                 _msg = "Performing generic application instance post_boot "
-                _msg += "configuration on all VMs belonging to " + _ai_attr_list["log_string"] + "..."                
+                _msg += "configuration" + _x_str + "on all VMs belonging to " + _ai_attr_list["log_string"] + "..."                
                 cbdebug(_msg, True)
                 self.osci.pending_object_set(cloud_name, "AI", ai_uuid, "status", _msg)
 
@@ -2574,7 +2612,7 @@ class BaseObjectOperations :
                 _lmr = False
 
                 _total_application_spent_time = 0
-                                
+
                 for _num in range(1, 100) :
                     _found = False
                     _vm_command_list = []
@@ -2637,7 +2675,7 @@ class BaseObjectOperations :
                         _msg += "attempts is " + str(_actual_attempts) + " (instead of "
                         _msg += str(_ai_attr_list["configuration_attempts"]) + ")."
                         cbdebug(_msg)
-
+                    
                     if _actual_attempts > 0 :
                         _application_start = int(time())                        
                         _status, _xfmsg = self.proc_man_os_command.parallel_run_os_command(_vm_command_list, \

@@ -604,8 +604,8 @@ def selectively_print_message(step, obj_attr_list) :
     if obj_attr_list["role"] == "check": 
         if obj_attr_list[step].lower() == "false" :
             return False
+
         if obj_attr_list[step].lower() == "pseudotrue" :
-            obj_attr_list[step] = "false"
             return True
         
     elif obj_attr_list["force_msg_print"].lower() == "true" :
@@ -616,7 +616,7 @@ def selectively_print_message(step, obj_attr_list) :
         if "ai" in obj_attr_list and obj_attr_list["ai"] != "none" and \
         obj_attr_list["debug_remote_commands"].lower() == "false" :
             return False
-        
+                
         if "ai" in obj_attr_list and obj_attr_list["ai"] != "none" and \
         obj_attr_list["debug_remote_commands"].lower() == "true" :
             return True

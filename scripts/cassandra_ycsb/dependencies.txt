@@ -5,7 +5,7 @@ java-order = 50
 java-home-order = 51
 cassandra-order = 52
 cassandra-tools-order = 53
-maven-order = 54
+#maven-order = 54
 ycsb-order = 55
 ### END - Dependency installation order ###
 
@@ -23,7 +23,8 @@ java-home-install = man
 cassandra-install = man
 cassandra-tools-install = man
 maven-install = man
-ycsb-install = git
+#ycsb-install = git
+ycsb-install = man
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
@@ -57,7 +58,7 @@ ubuntu-oraclejava-x86_64-urls-man = http://ppa.launchpad.net/webupd8team/oraclej
 
 rhel-cassandra-x86_64-urls-man = http://rpm.datastax.com/community/noarch/cassandra21-2.1.2-1.noarch.rpm
 fedora-cassandra-x86_64-urls-man = http://rpm.datastax.com/community/noarch/cassandra21-2.1.2-1.noarch.rpm
-ubuntu-cassandra-x86_64-urls-man = http://dl.bintray.com/apache/cassandra/pool/main/c/cassandra/:cassandra_2.2.3_all.deb
+ubuntu-cassandra-x86_64-urls-man = http://dl.bintray.com/apache/cassandra/pool/main/c/cassandra/cassandra_2.2.3_all.deb
 
 rhel-cassandra-tools-x86_64-urls-man = http://rpm.datastax.com/community/noarch/cassandra21-tools-2.1.2-1.noarch.rpm
 fedora-cassandra-tools-x86_64-urls-man = http://rpm.datastax.com/community/noarch/cassandra21-tools-2.1.2-1.noarch.rpm
@@ -67,6 +68,7 @@ santiago-maven-x86_64-urls-man = https://repos.fedorapeople.org/repos/dchen/apac
 maipo-maven-x86_64-urls-man = https://repos.fedorapeople.org/repos/dchen/apache-maven/epel-7/x86_64/apache-maven-3.2.5-1.el7.noarch.rpm
 fedora-maven-x86_64-urls-man = https://repos.fedorapeople.org/repos/dchen/apache-maven/epel-6/x86_64/apache-maven-3.2.1-2.el6.noarch.rpm
 
+common-ycsb-urls-man = https://github.com/brianfrankcooper/YCSB/releases/download/0.4.0/ycsb-0.4.0.tar.gz
 common-ycsb-urls-git = https://github.com/brianfrankcooper
 ### END - Dependency URLs ###
 
@@ -113,4 +115,7 @@ ubuntu-maven-install-man = package_install maven2
 common-ycsb-preinstall-git = cd ~
 common-ycsb-install-git = git clone URL/YCSB.git
 common-ycsb-postinstall-git = cd ~/YCSB/; mvn clean package
+
+common-ycsb-install-man = wget -N -P ~ URL
+common-ycsb-postinstall-man = tar -xvzf ycsb-*.tar.gz; sudo rm ycsb*.gz; sudo mv ycsb-* YCSB
 ### END -  Dependency and method-specific command lines ###

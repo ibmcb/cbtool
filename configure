@@ -25,13 +25,20 @@
     @author: Marcio Silva, Michael R. Hines
 '''
 
+import os
+import re
+
 from pwd import getpwuid
 from shutil import copyfile
 
-from sys import path, argv
+from logging import getLogger, StreamHandler, Formatter, Filter, DEBUG, ERROR, \
+INFO, WARN, CRITICAL
+from logging.handlers import logging, SysLogHandler, RotatingFileHandler
+
+from sys import stdout,path, argv
 from optparse import OptionParser
-import os
-import re
+
+from lib.auxiliary.code_instrumentation import  VerbosityFilter, MsgFilter, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 
 def main() :
     '''
@@ -100,8 +107,76 @@ def main() :
                        default=False, \
                        help="Install on a python virtual environment (python dependencies ONLY !!!)")
 
+    _parser.add_option("--logdest", dest = "logdest", metavar = "LOGDEST", \
+                      default = "console", help ="Alter default logging behavior")
+    
+    _parser.add_option("--syslogp", dest = "syslogp", metavar = "SYSLOGP", \
+                      default = None, \
+                      help ="Set syslog port")
+    
+    _parser.add_option("--syslogh", dest = "syslogh", metavar = "SYSLOGH", \
+                      default = None, \
+                      help ="Set syslog hostname")
+    
+    _parser.add_option("--syslogf", dest = "syslogf", metavar = "SYSLOGF", \
+                      default = None, \
+                      help ="Set syslog facility")
+
+    _parser.add_option("-v", "--verbosity", dest = "verbosity", metavar = "LV", \
+                      default = -1, help = "Set verbosity level.")
+    
+    _parser.add_option("-q", dest = "quiet", action = "store_true", \
+                      help = "Set quiet output.")
+    
     _parser.set_defaults()
     (options, _args) = _parser.parse_args()
+
+    # HACK ALERT - A very crude "syslog facility selector"
+    _syslog_selector = {}
+    _syslog_selector["16"] = SysLogHandler.LOG_LOCAL0
+    _syslog_selector["17"] = SysLogHandler.LOG_LOCAL1
+    _syslog_selector["18"] = SysLogHandler.LOG_LOCAL2
+    _syslog_selector["19"] = SysLogHandler.LOG_LOCAL3
+    _syslog_selector["20"] = SysLogHandler.LOG_LOCAL4
+    _syslog_selector["21"] = SysLogHandler.LOG_LOCAL5
+    _syslog_selector["22"] = SysLogHandler.LOG_LOCAL6
+    _syslog_selector["23"] = SysLogHandler.LOG_LOCAL7
+    
+    _verbosity = int(options.verbosity)
+    
+    logger = getLogger()
+    
+    # Reset the logging handlers
+    while len(logger.handlers) != 0 :
+        logger.removeHandler(logger.handlers[0])
+    
+    if options.logdest == "console" or (not options.syslogh or not options.syslogp) :
+        hdlr = StreamHandler(stdout)
+    else :
+        _facility = int(options.syslogf)
+    
+        if _facility > 23 or _facility < 16 :
+            _facility = 23
+    
+        hdlr = SysLogHandler(address = (options.syslogh, int(options.syslogp)), \
+                             facility=_syslog_selector[str(_facility)])
+    
+    formatter = Formatter("[%(asctime)s] [%(levelname)s] %(message)s")
+    #        formatter = Formatter('%(asctime)s %(levelname)s %(module)s %(message)s')
+    hdlr.setFormatter(formatter)
+    logger.addHandler(hdlr)
+    
+    if _verbosity :
+        if int(_verbosity) > 1 :
+            logger.setLevel(DEBUG)
+        else :
+            hdlr.addFilter(VerbosityFilter("ProcessManagement"))
+            logger.setLevel(DEBUG)                        
+    else :
+        logger.setLevel(INFO)
+    
+    if options.quiet :
+        logger.setLevel(ERROR)
 
     _3rd_party = options.tpdir
     
@@ -117,34 +192,34 @@ def main() :
         _msg = "You need to select a role for this node (option \"-r\" or \"--role\""
         _msg += "). Possible roles are \"orchestrator\" (needs at least 10 GB of "
         _msg += "free space) or \"workload\"."
-        print _msg
+        cberr(_msg)
         exit(1)
 
     if options.role.count("orchestrator") :
         options.wks = ''
     elif options.role.count("workload") :
         if not options.wks :
-            _msg = "You need to select one of the workloads (option \"-w\" or \"--wks\""
-            print _msg
+            _msg = "You need to select one of the workloads (option \"-w\" or \"--wks\")"
+            cberr(_msg)
             exit(2)
         else :
             if not options.wks.count("nullworkload") :
                 options.wks = "nullworkload," + options.wks
     else :
         _msg = "Unknown node role: \"" + options.role + "\"."
-        print _msg
+        cberr(_msg)
         exit(3)
 
     if _bname == "configure" :    
-        _msg = "Checking for " + _tool + "dependencies on this node........."
-        print _msg
+        _msg = "Checking for " + _tool + " dependencies on this node........."
+        cbinfo(_msg)
     else :
         _msg = "Installing dependencies for " + _tool + " on this node........."
-        print _msg
+        cbinfo(_msg)
 
     _status, _msg = dependency_checker_installer("127.0.0.1", getpwuid(os.getuid())[0], _bname, options)
     if _status :
-        print _msg
+        cberr(_msg)
         exit(_status)
         
     if not len(options.wks) :
@@ -152,24 +227,27 @@ def main() :
     
         _msg = "Checking for a \"private\" configuration file for user \"" + _username
         _msg += "\" in " + _path + "/configs/" + _username + "_cloud_definitions.txt)"
-        print _msg
+        cbinfo(_msg)
         if not os.path.exists(_path + "/configs/" + _username + "_cloud_definitions.txt") :
             _msg = "Copying " + _path + "/configs/cloud_definitions.txt to "
             _msg += _path + "/configs/" + _username + "_cloud_definitions.txt..."
-            print _msg
+            cbinfo(_msg)
             copyfile(_path + "/configs/cloud_definitions.txt", _path + "/configs/" + _username + "_cloud_definitions.txt")
-            print "Please re-run configure again"
+            cbinfo("Please re-run configure again")
         else :
-            print "File already exists, tool is ready to be used."
+            cbinfo("File already exists, tool is ready to be used.")
     else :
-        print _msg + '\n'
+        cbinfo(_msg) 
+        print '\n'
         _status, _msg = instance_preparation("127.0.0.1", options)
 
         if not _status :
-            print _msg
-            _msg += '\n------------------------------------------------------------\n'
-            _msg += "SUCCESS! Please go back to CBTOOL's CLI and capture the image"
-            print _msg
+            print '\n------------------------------------------------------------\n'
+            if str(options.addr).lower() != "bypass" :
+                _msg = "SUCCESS! Please go back to CBTOOL's CLI and capture the image"
+            else :
+                _msg = "SUCCESS! Proceeding with Application Instance deployment"   
+            cbinfo(_msg)
             
         exit(_status)
                     

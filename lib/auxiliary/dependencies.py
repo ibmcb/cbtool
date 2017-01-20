@@ -34,6 +34,7 @@ home = expanduser("~")
 
 from json import dumps
 from lib.remote.process_management import ProcessManagement
+from lib.auxiliary.code_instrumentation import  VerbosityFilter, MsgFilter, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 
 def deps_file_parser(depsdict, username, options, hostname, process_manager = False) :
     '''
@@ -68,8 +69,8 @@ def deps_file_parser(depsdict, username, options, hostname, process_manager = Fa
                 _fd = open(_file, 'r')
                 _fc = _fd.readlines()
                 _fd.close()
-                _msg = "##### INFO: File \"" + _file + "\" opened and loaded...."
-                print _msg
+                _msg = "##### File \"" + _file + "\" opened and loaded...."
+                cbinfo(_msg)
 
                 for _line in _fc :
                     _line = _line.strip()
@@ -95,18 +96,18 @@ def deps_file_parser(depsdict, username, options, hostname, process_manager = Fa
                         depsdict[_key] = _value
         
             except Exception, e :
-                _msg = "##### ERROR: Error reading file \"" + _file  + "\":" + str(e)
-                print _msg
+                _msg = "##### Error reading file \"" + _file  + "\":" + str(e)
+                cberr(_msg)
                 exit(4)
 
         else :
-            _msg = "##### WARNING: File \"" + _file + "\" IGNORED...."
-            print _msg
+            _msg = "##### File \"" + _file + "\" IGNORED...."
+            cbwarn(_msg)
 
     if not len(depsdict) :
-        _msg = "##### ERROR: None of the files on the list \"" + str(_file_name_list)
+        _msg = "##### None of the files on the list \"" + str(_file_name_list)
         _msg += "\" contained configuration statements"
-        print _msg
+        cberr(_msg)
         exit(9)
 
     if _cleanup_repos :
@@ -205,7 +206,7 @@ def get_cmdline(depkey, depsdict, operation, process_manager = False) :
                         _tested_urls += _url + ','
     
             if not _actual_url :
-                _msg = "##### WARNING: None of the urls indicated to install \"" + depkey + "\" (" 
+                _msg = "##### None of the urls indicated to install \"" + depkey + "\" (" 
                 _msg += _tested_urls + ") seem to be functional."
                 raise Exception(_msg)
         else :
@@ -402,8 +403,10 @@ def select_url(source, depsdict) :
     else :
         _element = "python pip repository"
 
+    print '\n'
     _msg = "Selecting " + _element + " address...." 
-
+    cbinfo(_msg)
+    
     for _key in sorted(depsdict.keys()) :
         if _key.count(source + "-addr") :
             _index = int(_key.replace(source + "-addr",''))
@@ -418,16 +421,17 @@ def select_url(source, depsdict) :
             _msg = "A " + _element + " in \"" + depsdict[source + "_addr"] + "\" seems to be up"
             depsdict[source + "_dropbox"] = "http://" + depsdict[source + "_addr"] + "/dropbox"
             depsdict[source + "_credentials_url"] = "http://" + depsdict[source + "_addr"] + "/dropbox/ssh_keys"
+            cbinfo(_msg)
         else :
-            _msg = "##### WARNING: None of the indicated " + _element + " was available. ".replace("repository","repositories")
+            _msg = "##### None of the indicated " + _element + " was available. ".replace("repository","repositories")
             if source == "repo" :
                 _msg += "Will ignore any repository URL that has the keyword REPO_ADDR..."
+            cbwarn(_msg)
     else :
-        _msg = "##### WARNING: No " + _element + " specified. ".replace("repository","repositories")
+        _msg = "##### No " + _element + " specified. ".replace("repository","repositories")
         if source == "repo" :
             _msg += "Will ignore any repository URL that has the keyword REPO_ADDR..."
-
-    print _msg
+        cbwarn(_msg)
     
     return True
 
@@ -436,7 +440,7 @@ def build_repository_file_contents(depsdict, repo_name) :
     TBD
     '''
     _msg = "Configuring repository \"" + repo_name +"\"..."
-    print _msg,
+    cbinfo(_msg)
     
     _file_contents = ""
 
@@ -473,12 +477,12 @@ def build_repository_file_contents(depsdict, repo_name) :
 
     if _actual_url :            
         _msg = "Valid URL found: " + _actual_url + "."
-        print _msg
+        cbinfo(_msg)
     else :
-        _msg = "\nWarning: No URLs available for repository \"" + repo_name 
+        _msg = "No URLs available for repository \"" + repo_name 
         _msg += "\" (" + _tested_urls + ")." + " Will ignore this repository"
         _msg += ", but this might cause installation errors due to a lacking on certain dependencies"        
-        print _msg
+        cbwarn(_msg)
         return False
 
     if depsdict["cdistkind"] == "ubuntu" :
@@ -534,17 +538,17 @@ def build_repository_files(depsdict) :
 
             except IOError, msg :
                 _msg = "######## Error writing file \"" + _file_name  + "\":" + str(msg)
-                print _msg
+                cberr(_msg)
                 exit(4)
 
             except OSError, msg :
                 _msg = "######## Error writing file \"" + _file_name  + "\":" + str(msg)
-                print _msg
+                cberr(_msg)
                 exit(4)
 
             except Exception, e :
                 _msg = "######## Error writing file \"" + _file_name  + "\":" + str(e)
-                print _msg
+                cberr(_msg)
                 exit(4)
          
     return True
@@ -621,9 +625,9 @@ def execute_command(operation, depkey, depsdict, hostname = "127.0.0.1", usernam
             _msg = "(" + _order + ") Installing \"" + depkey + "\" by executing the command \""
             _msg += _cmd[operation] + "\" (" + _cmd[operation + "-keys"] + ")..."
 
-        print _msg
+        cbinfo(_msg)
 
-        _msg = "RESULT: "
+        _msg = "(" + _order + ") RESULT for command \"" + _cmd[operation] + "\" : "
 
         if depkey == "repo" and operation == "install" :
             build_repository_files(depsdict)
@@ -660,12 +664,14 @@ def execute_command(operation, depkey, depsdict, hostname = "127.0.0.1", usernam
                 _msg += "There was an error while installing \"" + depkey + "\".: "
                 _msg += _result_stderr + "\n"
             else :
-                _msg += "\nACTION: " + inst_conf_msg(depkey, depsdict)
+                _msg += " CORRECTIVE ACTION: " + inst_conf_msg(depkey, depsdict)
                 if depkey == "sudo" :
                     _msg = "Before proceeding further: " + inst_conf_msg("sudo", depsdict)
                     _msg += " *AS ROOT*"
-                    print _msg
+                    cberr(_msg)
                     exit(20)
+                else :
+                    cbinfo(_msg)
 
         return _status, _msg
 
@@ -724,9 +730,13 @@ def dependency_checker_installer(hostname, username, operation, options) :
         _missing_dep = []
         _dep_list = [0] * 5000
 
-        select_url("repo", _depsdict)
-        select_url("pip", _depsdict)
-
+        if str(options.addr) != "bypass" :
+            select_url("repo", _depsdict)
+            select_url("pip", _depsdict)
+        else :
+            _depsdict["pip_addr"] = None
+            _depsdict["repo_addr"] = None
+            
         for _key in _depsdict.keys() :
             if _key.count("-order")  :
                 _dependency = _key.replace("-order",'')
@@ -735,26 +745,25 @@ def dependency_checker_installer(hostname, username, operation, options) :
 
         _dep_list = [x for x in _dep_list if x != 0]
 
+        print '\n' 
         if options.role.count("workload") :
 
             options.tag = "base," + options.role
                 
-            _msg = "\n"
-            _msg += "##### INFO: This node will be used to play a role in the Virtual Applications"
+            _msg = "##### This node will be used to play a role in the Virtual Applications"
             _msg += " (AIs) \"" + str(options.wks) + "\". Only a subset of the depedencies"
             _msg += " will be " + operation + "ed. This node cannot be used as an Orchestrator Node\n"
             _msg += "\n"
-            print _msg
+            cbinfo(_msg)
 
         else :
 
             options.tag = "base," + options.role + ',' + options.clouds
                         
-            _msg = "\n"            
-            _msg += "##### INFO: This node will be prepared as an Orchestration Node."
+            _msg = "##### This node will be prepared as an Orchestration Node."
             _msg += " The full set of dependencies will be " + operation + "ed. "
             _msg += "\n"            
-            print _msg
+            cbinfo(_msg)
             
         options.tag = options.tag.split(',')
             
@@ -773,18 +782,17 @@ def dependency_checker_installer(hostname, username, operation, options) :
 
         _dep_list = _selected_dep_list
         
-        print '\n'
-        _msg = "##### INFO: DETECTED OPERATING SYSTEM KIND: " + _depsdict["cdistkind"]
-        print _msg
+        _msg = "##### DETECTED OPERATING SYSTEM KIND: " + _depsdict["cdistkind"]
+        cbinfo(_msg)
 
-        _msg = "##### INFO: DETECTED OPERATING SYSTEM VERSION: " + _depsdict["cdistver"] + " (" + _depsdict["cdistmajorver"] + ')'
-        print _msg
+        _msg = "##### DETECTED OPERATING SYSTEM VERSION: " + _depsdict["cdistver"] + " (" + _depsdict["cdistmajorver"] + ')'
+        cbinfo(_msg)
 
-        _msg = "##### INFO: DETECTED OPERATING SYSTEM NAME: " + _depsdict["cdistnam"]
-        print _msg
+        _msg = "##### DETECTED OPERATING SYSTEM NAME: " + _depsdict["cdistnam"]
+        cbinfo(_msg)
 
-        _msg = "##### INFO: DETECTED ARCHITECTURE: " + _depsdict["carch"]
-        print _msg
+        _msg = "##### DETECTED ARCHITECTURE: " + _depsdict["carch"]
+        cbinfo(_msg)
 
         print '\n' 
                
@@ -796,23 +804,23 @@ def dependency_checker_installer(hostname, username, operation, options) :
             _msg = "This node runs the \"" + _depsdict["cdistkind"] + "\" Linux "
             _msg += "distribution. Will treat it as \"rhel\", but will disable"
             _msg += "  the repository manipulation."
-            print _msg
+            cbinfo(_msg)
             
             _depsdict["cdistkind"] = "rhel"
             if "repo" in _dep_list :
                 _dep_list.remove("repo")
 
         if _depsdict["carch"].count("ppc") and "mongdob" in _dep_list :
-            _msg = "##### WARNING: The processors on this node have a \"Power\" architecture."
+            _msg = "##### The processors on this node have a \"Power\" architecture."
             _msg += "Removing MongoDB and Chef (client) from the dependency list"
-            print _msg
+            cbwarn(_msg)
             _dep_list.remove("mongodb")
             _dep_list.remove("chef-client")
 
         if "java" in _dep_list and "oraclejava" in _dep_list :
             _msg = "Since both \"java\" and \"oraclejava\" are listed as dependencies"
             _msg += ", only \"oraclejava\" will be used"
-            print _msg
+            cbinfo(_msg)
             _dep_list.remove("java")
             _dep_list.remove("java-home")
 
@@ -825,22 +833,27 @@ def dependency_checker_installer(hostname, username, operation, options) :
                                             hostname = "127.0.0.1", \
                                             username = username, \
                                             venv = options.venv)
-            print _msg
 
             if _status :
                 _dep_missing += 1
                 _missing_dep.append(_dep)
-
+                cberr(_msg)
+                
                 if operation == "install" :
 
                     _status, _msg = execute_command("install", _dep, _depsdict, \
                                                     hostname = "127.0.0.1", \
                                                     username = username, \
                                                     venv = options.venv)
-                    print _msg
+                    
                     if not _status :
                         _dep_missing -= 1
                         _missing_dep.remove(_dep)
+                        cbinfo(_msg)
+                    else :
+                        cberr(_msg)
+            else :
+                cbinfo(_msg)                
 
         _status = _dep_missing
         _fmsg += ','.join(_missing_dep)
@@ -887,7 +900,7 @@ def instance_preparation(hostname, options) :
 
         if os.access(_file, os.F_OK) :
 
-            process_manager = ProcessManagement(hostname)
+            _process_manager = ProcessManagement(hostname)
 
             _fd = open(_file, 'r')
             _fc = _fd.readlines()
@@ -902,19 +915,21 @@ def instance_preparation(hostname, options) :
                 _msg = "Checking accesss from this instance to the CB"
                 _msg += " Orchestrator's " + _store.capitalize() + " with"
                 _msg += " \"" + _cmd + "\"..."
-                print _msg,
+                cbinfo(_msg)
 
-                process_manager.run_os_command(_cmd)
+                _status, _x, _y = _process_manager.run_os_command(_cmd)
 
-                print "OK\n"
+                _msg = "This instance was able to access CB Orchestrator's " + _store.capitalize()
+                _msg += " with \"" + _cmd + "\" (OK)"
+                cbinfo(_msg)
 
-        _cmd = options.wksdir + "/common/cb_cleanup.sh"
-        _msg = "Running the instance cleanup script \"" + _cmd + "\"..." 
-        print _msg,
+        if str(options.addr) != "bypass" :
+            _cmd = options.wksdir + "/common/cb_cleanup.sh"
+            _msg = "Running the instance cleanup script \"" + _cmd + "\"..." 
+            cbinfo(_msg)
+    
+            _process_manager.run_os_command(_cmd)
 
-        process_manager.run_os_command(_cmd)
-
-        print "OK\n"
         _cleanup = True
         
         _status = 0
@@ -927,21 +942,22 @@ def instance_preparation(hostname, options) :
 
         if _status :
             if _store and not _cleanup :
-                _msg = "\nERROR while checking accesss from this instance to the CB"
+                _msg = "ERROR while checking accesss from this instance to the CB"
                 _msg += " Orchestrator's " + _store.capitalize() + ": " + _fmsg
                 _msg += " (make sure that the " + _store_port + " port " + _store_port
                 _msg += " is open at IP address " + _store_ip
             if not _store and not _cleanup :
-                _msg = "\nERROR while preparing to check access from this instance "
+                _msg = "ERROR while preparing to check access from this instance "
                 _msg += "to the CB Orchestrator's stores:" + _fmsg
             if _store and _cleanup :
-                _msg = "\nERROR while cleaning up instance."                
+                _msg = "ERROR while cleaning up instance."
+            cberr(_msg)
         else :
             _msg = ''
-            if process_manager :
-                _msg += "\nSucessfully checked this instance's ability to connect"
-                _msg += " to the Orchestrator's stores.\n"
-            if _cleanup :
-                _msg += "\nSucessfully cleaned up this instance.\n"
-
+            if _process_manager :
+                _msg += "Sucessfully checked this instance's ability to connect"
+                _msg += " to the Orchestrator's stores."
+            if _cleanup and str(options.addr).lower() != "bypass" :
+                _msg += "Sucessfully cleaned up this instance."
+            cbinfo(_msg)
         return _status, _msg

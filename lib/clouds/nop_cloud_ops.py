@@ -207,7 +207,7 @@ class NopCmds(CommonCloudFunctions) :
             obj_attr_list["host_list"][_host_uuid]["cores"] = 16
             obj_attr_list["host_list"][_host_uuid]["memory"] = 131072
             obj_attr_list["host_list"][_host_uuid]["arrival"] = int(time())
-            obj_attr_list["host_list"][_host_uuid]["simulated"] = "True"
+            obj_attr_list["host_list"][_host_uuid]["simulated"] = False
             obj_attr_list["host_list"][_host_uuid]["identity"] = obj_attr_list["identity"]
             if "login" in obj_attr_list :
                 obj_attr_list["host_list"][_host_uuid]["login"] = obj_attr_list["login"]

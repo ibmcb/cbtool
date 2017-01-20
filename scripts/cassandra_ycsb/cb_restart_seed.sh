@@ -24,7 +24,7 @@ START=`provision_application_start`
 
 SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
 
-mount_filesystem_on_volume ${CASSANDRA_DATA_DIR} $CASSANDRA_DATA_FSTYP cassandra
+automount_data_dirs
 
 #
 # Cassandra directory structure

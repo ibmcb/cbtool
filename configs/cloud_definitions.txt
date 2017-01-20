@@ -31,6 +31,7 @@ CLOUDOPTION_MYGCE = cldattach gce, vmcattach all
 CLOUDOPTION_MYDO = cldattach do, vmcattach all
 CLOUDOPTION_MYPDM = cldattach pdm, vmcattach all
 CLOUDOPTION_MYPCM = cldattach pcm, vmcattach all
+CLOUDOPTION_MYKUB = cldattach kub, vmcattach all
 
 # Now, Specify the individual parameters for each cloud
 #-------------------------------------------------------------------------------
@@ -120,6 +121,13 @@ PDM_CREDENTIALS = trustpassword                          # LXD's "trust password
 PDM_ACCESS = https://<address>:8443,https://<address>:8443 # A comma-separated list of LXD hosts (usually port 8443)
 PDM_NETNAME = lxdbr0                                     # The name of an already existing network on LXD
 PDM_LOGIN = root                                         # The username that logins on the VMs
+#-------------------------------------------------------------------------------
+[USER-DEFINED : CLOUDOPTION_MYKUB ]
+KUB_INITIAL_VMCS = world                                 # This really does not matter, could be anything
+KUB_CREDENTIALS = NOTUSED                                # Currently not used
+KUB_ACCESS = ~/.kube/config                              # The full path to the kubernetes configuration file
+KUB_NETNAME = NOTUSED                                    # Currently not used
+KUB_LOGIN = root                                         # The username that logins on the VMs
 #-------------------------------------------------------------------------------
 
 [OBJECTSTORE]

@@ -860,6 +860,10 @@ class CommonCloudFunctions:
             if len(imageid) == 64 and is_number(imageid, True) :
                 return True
 
+        if self.get_description() == "Kubernetes Cloud" :
+            if len(imageid) == 64 and is_number(imageid, True) :
+                return True
+
         if self.get_description() == "Parallel Container Manager Cloud" :
             if len(imageid) == 64 and is_number(imageid, True) :
                 return True
@@ -902,7 +906,8 @@ class CommonCloudFunctions:
             if self.get_description() == "Cloudbench SimCloud" or \
             self.get_description() == "Parallel Container Manager Cloud" or\
              self.get_description() == "Parallel Docker Manager Cloud" or\
-              self.get_description() == "Cloudbench NoOpCloud" :
+              self.get_description() == "Cloudbench NoOpCloud" or \
+              self.get_description() == "Kubernetes Cloud" :
                 _registered_key_pairs[key_name] =_key_fingerprint + "-NA"            
 
             if self.get_description() == "Cloudbench SimCloud" :

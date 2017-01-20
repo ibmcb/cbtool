@@ -262,7 +262,7 @@ class PcmCmds(CommonCloudFunctions) :
             obj_attr_list["host_list"][_host_uuid]["memory"] = "NA"
             obj_attr_list["host_list"][_host_uuid]["cloud_ip"] = _endpoint             
             obj_attr_list["host_list"][_host_uuid]["arrival"] = int(time())
-            obj_attr_list["host_list"][_host_uuid]["simulated"] = "True"
+            obj_attr_list["host_list"][_host_uuid]["simulated"] = False
             obj_attr_list["host_list"][_host_uuid]["identity"] = obj_attr_list["identity"]
 
             obj_attr_list["host_list"][_host_uuid]["hypervisor_type"] = "lxd"

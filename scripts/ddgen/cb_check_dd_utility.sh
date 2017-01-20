@@ -23,10 +23,7 @@ START=`provision_application_start`
 
 SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
 
-DDGEN_DATA_DIR=$(get_my_ai_attribute_with_default DDGEN_data_dir /ddgentest)
-DDGEN_DATA_FSTYP=$(get_my_ai_attribute_with_default DDGEN_data_fstyp ext4)
-
-mount_filesystem_on_volume ${DDGEN_DATA_DIR} $DDGEN_DATA_FSTYP ${my_login_username}
+automount_data_dirs
 
 syslog_netcat "Checking if the dd utility exists on ${SHORT_HOSTNAME}"
 DD=`which dd 2>&1`

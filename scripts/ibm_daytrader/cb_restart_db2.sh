@@ -28,10 +28,28 @@ ATTEMPTS=3
 START=`provision_application_start`
 SIZE=`get_my_ai_attribute_with_default tradedb_size small`
 
-syslog_netcat "Moving /tradedb_${SIZE} to /tradedb"
-sudo mv /tradedb_${SIZE} /tradedb
-syslog_netcat "Changing ownership of /tradedb to ${DB2_INSTANCE_NAME}:${DB2_INSTANCE_NAME}"
-sudo chown -R ${DB2_INSTANCE_NAME}:${DB2_INSTANCE_NAME} /tradedb
+DB2_DATA_DIR=`get_my_ai_attribute_with_default db2_data_dir /tradedb`
+
+automount_data_dirs
+
+sudo ls $DB2_DATA_DIR/$DB2_INSTANCE_NAME/NODE0000/TRADEDB
+if [[ $? -ne 0 ]]
+then
+    sudo mount | grep $DB2_DATA_DIR
+    
+    if [[ $? -eq 0 ]]
+    then
+        syslog_netcat "Copying /tradedb_${SIZE} to $DB2_DATA_DIR"
+        sudo cp -r /tradedb_${SIZE}/* ${DB2_DATA_DIR}/
+    else    
+        syslog_netcat "Moving /tradedb_${SIZE} to $DB2_DATA_DIR"
+        sudo rm -rf $DB2_DATA_DIR
+        sudo mv /tradedb_${SIZE} $DB2_DATA_DIR
+    fi
+fi    
+    
+syslog_netcat "Changing ownership of $DB2_DATA_DIR to ${DB2_INSTANCE_NAME}:${DB2_INSTANCE_NAME}"
+sudo chown -R ${DB2_INSTANCE_NAME}:${DB2_INSTANCE_NAME} $DB2_DATA_DIR
 
 syslog_netcat "Setting DB2 for the new hostname ($SHORT_HOSTNAME)"
 sudo chmod 666 $INSTANCE_PATH/sqllib/db2nodes.cfg
@@ -44,41 +62,41 @@ syslog_netcat "Done setting DB2 for the new hostname ($SHORT_HOSTNAME)"
 
 while [ "$ATTEMPTS" -ge  0 ]
 do
-	syslog_netcat "Checking for DB2 instances in $SHORT_HOSTNAME...."
-	result1="$($SUDO_CMD $NETSTAT_CMD -atnp | grep 50007)"
-	result2="$(ps aux | grep db2acd | grep -v grep)"
-	if [ x"$result1" == x -o y"$result2" == y ] ; then 
-		sleep 2
-		syslog_netcat "DB2 not running on $SHORT_HOSTNAME... will try to start it $ATTEMPTS more times"
-		syslog_netcat "DB2 being restarted on $SHORT_HOSTNAME"
-		let ATTEMPTS=ATTEMPTS-1
-		syslog_netcat "Running db2stop...."
-		sudo -u ${DB2_INSTANCE_NAME} -H sh -c "cd ~; . ~/.bashrc; $INSTANCE_PATH/sqllib/adm/db2stop force"
-		syslog_netcat "Done running db2stop...."
-		sleep 2
-		syslog_netcat "Running db2_kill..."
-		sudo -u ${DB2_INSTANCE_NAME} -H sh -c "cd ~; . ~/.bashrc; /opt/ibm/db2/V9.7/bin/db2_kill"
-		syslog_netcat "Done running db2_kill"
-		sleep 2
-		syslog_netcat "Running db2ftok..."
-		sudo -u ${DB2_INSTANCE_NAME} -H sh -c "cd ~; . ~/.bashrc; /opt/ibm/db2/V9.7/bin/db2ftok"
-		syslog_netcat "Done running db2ftok"
-		sleep 2
-		syslog_netcat "Running db2start once...."
-		sudo -u ${DB2_INSTANCE_NAME} -H sh -c "cd ~; . ~/.bashrc; $INSTANCE_PATH/sqllib/adm/db2start"
-		syslog_netcat "Done. Let's wait 5 seconds and check for running DB2 instances again..."
-		sleep 5
-		#db2 connect to tradedb
-		#syslog_netcat "Performing a DB2 reorgchk ...."
-		#db2 reorgchk update statistics on table all
-		#db2 terminate
-		#db2 disconnect all
-		#syslog_netcat "Reorgchk complete."
-	else
-		syslog_netcat "DB2 restarted succesfully on $SHORT_HOSTNAME - OK"
-		provision_application_stop $START
-		exit 0
-	fi
+    syslog_netcat "Checking for DB2 instances in $SHORT_HOSTNAME...."
+    result1="$($SUDO_CMD $NETSTAT_CMD -atnp | grep 50007)"
+    result2="$(ps aux | grep db2acd | grep -v grep)"
+    if [ x"$result1" == x -o y"$result2" == y ] ; then 
+        sleep 2
+        syslog_netcat "DB2 not running on $SHORT_HOSTNAME... will try to start it $ATTEMPTS more times"
+        syslog_netcat "DB2 being restarted on $SHORT_HOSTNAME"
+        let ATTEMPTS=ATTEMPTS-1
+        syslog_netcat "Running db2stop...."
+        sudo -u ${DB2_INSTANCE_NAME} -H sh -c "cd ~; . ~/.bashrc; $INSTANCE_PATH/sqllib/adm/db2stop force"
+        syslog_netcat "Done running db2stop...."
+        sleep 2
+        syslog_netcat "Running db2_kill..."
+        sudo -u ${DB2_INSTANCE_NAME} -H sh -c "cd ~; . ~/.bashrc; /opt/ibm/db2/V9.7/bin/db2_kill"
+        syslog_netcat "Done running db2_kill"
+        sleep 2
+        syslog_netcat "Running db2ftok..."
+        sudo -u ${DB2_INSTANCE_NAME} -H sh -c "cd ~; . ~/.bashrc; /opt/ibm/db2/V9.7/bin/db2ftok"
+        syslog_netcat "Done running db2ftok"
+        sleep 2
+        syslog_netcat "Running db2start once...."
+        sudo -u ${DB2_INSTANCE_NAME} -H sh -c "cd ~; . ~/.bashrc; $INSTANCE_PATH/sqllib/adm/db2start"
+        syslog_netcat "Done. Let's wait 5 seconds and check for running DB2 instances again..."
+        sleep 5
+        #db2 connect to tradedb
+        #syslog_netcat "Performing a DB2 reorgchk ...."
+        #db2 reorgchk update statistics on table all
+        #db2 terminate
+        #db2 disconnect all
+        #syslog_netcat "Reorgchk complete."
+    else
+        syslog_netcat "DB2 restarted succesfully on $SHORT_HOSTNAME - OK"
+        provision_application_stop $START
+        exit 0
+    fi
 done
 syslog_netcat "DB2 could not be restarted on $SHORT_HOSTNAME - NOK"
 exit 2

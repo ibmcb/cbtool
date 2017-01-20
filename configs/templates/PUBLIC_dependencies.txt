@@ -336,7 +336,7 @@ gcloud-ver = 0.8
 pygce-ver = ANY
 pydocker-ver = ANY
 pylxd-ver = ANY
-iptables-ver = 1.2
+iptables-ver = ANY
 R-ver = 2.1
 sshkey-ver = ANY
 sshd-ver = ANY
@@ -460,10 +460,10 @@ rhel-repo-install-man = sudo mv -f /tmp/*.repo /etc/yum.repos.d; touch /tmp/repo
 fedora-repo-install-man = sudo mv -f /tmp/*.repo /etc/yum.repos.d; touch /tmp/repoupdated; service_stop_disable iptables; service_stop_disable firewalld; exit 0
 ubuntu-repo-install-man = sudo mv -f /tmp/*.list /etc/apt/sources.list.d/; sudo apt-get update; service_stop_disable iptables; service_stop_disable ipfw; exit 0
 
-ubuntu-ifconfig-install-sl = sudo ln -s /sbin/ifconfig /usr/local/bin/ifconfig
-rhel-ifconfig-install-sl = package_install net-tools; sudo ln -s /sbin/ifconfig /usr/local/bin/ifconfig
+ubuntu-ifconfig-install-sl = package_install net-tools; sudo ln -sf /sbin/ifconfig /usr/local/bin/ifconfig
+rhel-ifconfig-install-sl = package_install net-tools; sudo ln -sf /sbin/ifconfig /usr/local/bin/ifconfig
 
-common-ip-install-sl = sudo ln -s /sbin/ip /usr/local/bin/ip
+common-ip-install-sl = package_install net-tools; sudo ln -sf /sbin/ip /usr/local/bin/ip
 
 rhel-pkill-install-pm = package_install psmisc
 fedora-pkill-install-pm = package_install psmisc

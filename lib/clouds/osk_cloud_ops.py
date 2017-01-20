@@ -150,7 +150,7 @@ class OskCmds(CommonCloudFunctions) :
                     _cinder_client = False
                     from cinderclient import client as cinderc 
 
-                    self.oskconnstorage = cinderc.Client(_version, \
+                    self.oskconnstorage = cinderc.Client('1', \
                                                          _username, \
                                                          _password, \
                                                          _tenant, \
@@ -549,17 +549,14 @@ class OskCmds(CommonCloudFunctions) :
                         _volume.delete()
 
         except CldOpsException, obj :
-            print "A"
             _status = int(obj.status)
             _fmsg = str(obj.msg)
 
         except novaexceptions, obj:
-            print "B"
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
         except Exception, e :
-            print "C"
             _status = 23
             _fmsg = str(e)
     
@@ -1077,11 +1074,11 @@ class OskCmds(CommonCloudFunctions) :
         _availability_zone = None            
         if len(obj_attr_list["availability_zone"]) > 1 :
             _availability_zone = obj_attr_list["availability_zone"]
-
-        if "host_name" in obj_attr_list and _availability_zone :
+                
+        if "compute_node" in obj_attr_list and _availability_zone :
 #                _scheduler_hints = { "force_hosts" : obj_attr_list["host_name"] }
             for _host in self.oskconncompute.hypervisors.list() :
-                if _host.hypervisor_hostname.count(obj_attr_list["host_name"]) :
+                if _host.hypervisor_hostname.count(obj_attr_list["compute_node"]) :
                     obj_attr_list["host_name"] = _host.hypervisor_hostname
 
             _availability_zone += ':' + obj_attr_list["host_name"]
@@ -1104,17 +1101,13 @@ class OskCmds(CommonCloudFunctions) :
 
             obj_attr_list["block_device_mapping"] = {}
 
+            _vol_status = "NA"
             if "cloud_vv_type" not in obj_attr_list :
                 obj_attr_list["cloud_vv_type"] = None
             if str(obj_attr_list["cloud_vv_type"]).lower() == "none" :
                 obj_attr_list["cloud_vv_type"] = None
                 
             if "cloud_vv" in obj_attr_list :
-
-                if not self.oskconncompute :
-                    self.connect(obj_attr_list["access"], \
-                                 obj_attr_list["credentials"], \
-                                 obj_attr_list["name"])
 
                 self.common_messages("VV", obj_attr_list, "creating", _status, _fmsg)
 
@@ -1124,22 +1117,37 @@ class OskCmds(CommonCloudFunctions) :
 
                 obj_attr_list["last_known_state"] = "about to send volume create request"
                 _mark1 = int(time())
-                _instance = self.oskconnstorage.volumes.create(obj_attr_list["cloud_vv"], \
-                                                               snapshot_id = None, \
-                                                               name = obj_attr_list["cloud_vv_name"], \
-                                                               description = None, \
-                                                               volume_type = obj_attr_list["cloud_vv_type"], \
-                                                               availability_zone = None, \
-                                                               imageRef = _imageid)
+
+                if str(self.oskconnstorage.version) == '1' :
+                    _instance = self.oskconnstorage.volumes.create(obj_attr_list["cloud_vv"], \
+                                                                   snapshot_id = None, \
+                                                                   display_name = obj_attr_list["cloud_vv_name"], \
+                                                                   display_description = obj_attr_list["cloud_vv_name"], \
+                                                                   volume_type = obj_attr_list["cloud_vv_type"], \
+                                                                   availability_zone = None, \
+                                                                   imageRef = _imageid)
+                else :
+                    _instance = self.oskconnstorage.volumes.create(obj_attr_list["cloud_vv"], \
+                                                                   snapshot_id = None, \
+                                                                   name = obj_attr_list["cloud_vv_name"], \
+                                                                   description = obj_attr_list["cloud_vv_name"], \
+                                                                   volume_type = obj_attr_list["cloud_vv_type"], \
+                                                                   availability_zone = None, \
+                                                                   imageRef = _imageid)
+
 
                 sleep(int(obj_attr_list["update_frequency"]))
-        
+
                 obj_attr_list["cloud_vv_uuid"] = '{0}'.format(_instance.id)
 
                 _wait_for_volume = 180
                 for i in range(1, _wait_for_volume) :
-                    if self.oskconnstorage.volumes.get(_instance.id).status == "available" :
-                        cbdebug("Volume took %s second(s) to become available" % i,True)
+                    _vol_status = self.oskconnstorage.volumes.get(_instance.id).status
+                    if _vol_status == "available" :
+                        cbdebug("Volume " + obj_attr_list["cloud_vv_name"] + " took " + str(i) + " second(s) to become available",True)
+                        break
+                    elif _vol_status == "error" :
+                        _fmsg = "Volume " + obj_attr_list["cloud_vv_name"] + " reported error after " + str(i) + " second(s)"
                         break
                     else :
                         sleep(1)
@@ -1152,7 +1160,10 @@ class OskCmds(CommonCloudFunctions) :
                     obj_attr_list['cloud_vv'] = self.oskconnstorage.volumes.get(_instance.id).size 
                     obj_attr_list["block_device_mapping"] = {'vda':'%s' % obj_attr_list["cloud_vv_uuid"]}
 
-            _status = 0
+            if _vol_status == "error" :
+                _status = 17262
+            else :
+                _status = 0
 
         except CldOpsException, obj :
             _status = obj.status
@@ -1187,12 +1198,7 @@ class OskCmds(CommonCloudFunctions) :
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
-
-            if not self.oskconncompute :
-                self.connect(obj_attr_list["access"], \
-                             obj_attr_list["credentials"], \
-                             obj_attr_list["name"])
-        
+                        
             if str(obj_attr_list["cloud_vv_uuid"]).lower() != "none" :
                 
                 _instance = self.get_instances(obj_attr_list, "vv", obj_attr_list["cloud_vv_name"])
@@ -1276,7 +1282,8 @@ class OskCmds(CommonCloudFunctions) :
                 _mark1 = int(time())
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
                              obj_attr_list["vmc_name"], \
-                             {"use_neutronclient" : obj_attr_list["use_neutronclient"]})
+                             {"use_neutronclient" : obj_attr_list["use_neutronclient"], \
+                              "use_cinderclient" : obj_attr_list["use_cinderclient"]})
 
                 _mark2 = int(time())
                 obj_attr_list["osk_011_authenticate_time"] = _mark2 - _mark1
@@ -2255,7 +2262,7 @@ class OskCmds(CommonCloudFunctions) :
             obj_attr_list["host_list"][_host_uuid]["uuid"] = _host_uuid
             obj_attr_list["host_list"][_host_uuid]["arrival"] = int(time())
             obj_attr_list["host_list"][_host_uuid]["counter"] = obj_attr_list["counter"]
-            obj_attr_list["host_list"][_host_uuid]["simulated"] = "False"
+            obj_attr_list["host_list"][_host_uuid]["simulated"] = False
             obj_attr_list["host_list"][_host_uuid]["identity"] = obj_attr_list["identity"]
             if "login" in obj_attr_list :
                 obj_attr_list["host_list"][_host_uuid]["login"] = obj_attr_list["login"]

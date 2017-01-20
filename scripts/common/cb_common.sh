@@ -447,10 +447,10 @@ function mount_filesystem_on_volume {
     if [[ $VOLUME != "NONE" ]]
     then
         
-        syslog_netcat "Setting ${my_type} storage ($MOUNTPOINT_DIR) on volume $VOLUME...."
         if [[ $(sudo mount | grep $VOLUME | grep -c $MOUNTPOINT_DIR) -eq 0 ]]
         then
-                                
+            syslog_netcat "Setting ${FILESYS_TYPE} storage ($MOUNTPOINT_DIR) on volume $VOLUME...."
+
             if [[ $(check_filesystem $VOLUME) == "none" ]]
             then
                 syslog_netcat "Creating $FILESYS_TYPE filesystem on volume $VOLUME"
@@ -465,6 +465,8 @@ function mount_filesystem_on_volume {
                 syslog_netcat "Error while mounting $FILESYS_TYPE filesystem on volume $VOLUME on mountpoint ${MOUNTPOINT_DIR} - NOK" 
                 exit 1
             fi
+        else
+            syslog_netcat "${FILESYS_TYPE} storage ($MOUNTPOINT_DIR) on volume $VOLUME is already setup!"            
         fi
         
         sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT_DIR
@@ -511,17 +513,26 @@ function mount_filesystem_on_memory {
                     
     if [[ $FILESYS_TYPE == "tmpfs" ]]
     then
-        syslog_netcat "Making tmpfs filesystem on accessible through the mountpoint ${MOUNTPOINT_DIR}"        
-        sudo mount -t tmpfs -o size=${MEMORY_DISK_SIZE} tmpfs $MOUNTPOINT_DIR
+        if [[ $(sudo mount | grep $FILESYS_TYPE | grep -c $MOUNTPOINT_DIR) -eq 0 ]]
+        then        
+            syslog_netcat "Making tmpfs filesystem on accessible through the mountpoint ${MOUNTPOINT_DIR}..."
+            sudo mount -t tmpfs -o size=${MEMORY_DISK_SIZE},noatime,nodiratime tmpfs $MOUNTPOINT_DIR
+        else
+            syslog_netcat "A tmpfs filesystem is already accessible through the mountpoint ${MOUNTPOINT_DIR}!"
+        fi            
     else
-        if [[ $(check_filesystem $RAMDEVICE) == "none" ]]
-        then
-            syslog_netcat "Creating $FILESYS_TYPE filesystem on volume $VOLUME"
-            sudo mkfs.$FILESYS_TYPE -F $RAMDEVICE
-        fi        
-
-        syslog_netcat "Making $FILESYS_TYPE filesystem on ram disk $RAMDEVICE accessible through the mountpoint ${MOUNTPOINT_DIR}"
-        sudo mount $RAMDEVICE $MOUNTPOINT_DIR    
+        if [[ $(sudo mount | grep $RAMDEVICE | grep -c $MOUNTPOINT_DIR) -eq 0 ]]
+        then                
+            syslog_netcat "Making $FILESYS_TYPE filesystem on ram disk $RAMDEVICE accessible through the mountpoint ${MOUNTPOINT_DIR}..."
+            if [[ $(check_filesystem $RAMDEVICE) == "none" ]]
+            then
+                syslog_netcat "Creating $FILESYS_TYPE filesystem on volume $VOLUME"
+                sudo mkfs.ext4 -F $RAMDEVICE
+            fi            
+            sudo mount $RAMDEVICE $MOUNTPOINT_DIR
+        else
+            syslog_netcat "An ext4 filesystem on ramdisk $RAMDEVICE is accessible through the mountpoint ${MOUNTPOINT_DIR}!"            
+        fi    
     fi
 
     sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT_DIR
@@ -554,13 +565,20 @@ function mount_remote_filesystem {
             
     if [[ $FILESYS_TYPE == "nfs" ]]
     then
-        sudo mount $FILESERVER_IP:${FILESERVER_PATH} $MOUNTPOINT_DIR
+
+        if [[ $(sudo mount | grep $FILESERVER_IP:${FILESERVER_PATH} | grep -c $MOUNTPOINT_DIR) -eq 0 ]]
+        then
+            syslog_netcat "Setting nfs storage on ($MOUNTPOINT_DIR) from $FILESERVER_IP:${FILESERVER_PATH}...."
+            sudo mount $FILESERVER_IP:${FILESERVER_PATH} $MOUNTPOINT_DIR
+        else
+            syslog_netcat "Nfs storage on ($MOUNTPOINT_DIR) from $FILESERVER_IP:${FILESERVER_PATH} is already setup!"            
+        fi
     fi
     
     return 0
 }
 export -f mount_remote_filesystem
-
+    
 my_if=$(netstat -rn | grep UG | awk '{ print $8 }')
 my_type=`get_my_vm_attribute type`
 my_login_username=`get_my_vm_attribute login`
@@ -606,6 +624,8 @@ function get_my_ai_attribute {
     attribute=`echo $1 | tr '[:upper:]' '[:lower:]'`
     get_hash AI ${my_ai_uuid} ${attribute} 0
 }
+export -f get_my_ai_attribute
+
 metric_aggregator_vm_uuid=`get_my_ai_attribute metric_aggregator_vm`
 
 function get_my_ai_attribute_with_default {
@@ -622,6 +642,7 @@ function get_my_ai_attribute_with_default {
         exit 1
     fi
 }
+export -f get_my_ai_attribute_with_default
 my_username=`get_my_ai_attribute username`
 
 function put_my_ai_attribute {
@@ -818,27 +839,27 @@ function publish_msg {
     msg=$3
     subscribers=$4
 
-	total=0
-	while true ; do
-		got=$(retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber publish ${osinstance}:${object_type}:${channel} \"$msg\"")
-		got=$(echo $got | grep -oE [0-9]+)
-		((total=total+got))
-		syslog_netcat "Got $got subscribers. Total $total / $subscribers"
-		if [ x"$subscribers" != x ] ; then
-			syslog_netcat "Checking subscribers..."
-			if [ $total -lt $subscribers ] ; then
-				syslog_netcat "Not enough."
-				sleep 5
-				continue
-			fi
-			syslog_netcat "Sufficient."
-			total=0
-			break
-		else
-			syslog_netcat "No subscribers requested."
-			break
-		fi
-	done
+    total=0
+    while true ; do
+        got=$(retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber publish ${osinstance}:${object_type}:${channel} \"$msg\"")
+        got=$(echo $got | grep -oE [0-9]+)
+        ((total=total+got))
+        syslog_netcat "Got $got subscribers. Total $total / $subscribers"
+        if [ x"$subscribers" != x ] ; then
+            syslog_netcat "Checking subscribers..."
+            if [ $total -lt $subscribers ] ; then
+                syslog_netcat "Not enough."
+                sleep 5
+                continue
+            fi
+            syslog_netcat "Sufficient."
+            total=0
+            break
+        else
+            syslog_netcat "No subscribers requested."
+            break
+        fi
+    done
 }
 
 function publishvm {
@@ -873,8 +894,8 @@ function subscribevm {
 function subscribeai {
     channel=$1
     message=$2
-	shift
-	shift
+    shift
+    shift
     ${SUBSCRIBE_CMD} AI ${channel} $message $@ | while read line ; do
         syslog_netcat "$line"
     done
@@ -1523,3 +1544,34 @@ export -f vercomp
 function get_offline_ip {
     ip -o addr show $(ip route | grep default | grep -oE "dev [a-z]+[0-9]+" | sed "s/dev //g") | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | grep -v 255
 }
+
+function automount_data_dirs {
+    ROLE_DATA_DIR=$(get_my_ai_attribute_with_default ${my_role}_data_dir none)
+    ROLE_DATA_FSTYP=$(get_my_ai_attribute_with_default ${my_role}_data_fstyp local)
+
+    if [[ $ROLE_DATA_DIR != "none" ]]
+    then
+        sudo mkdir -p $ROLE_DATA_DIR
+    fi
+            
+    if [[ $ROLE_DATA_FSTYP == "ramdisk" || $ROLE_DATA_FSTYP == "tmpfs" ]]
+    then
+        ROLE_DATA_SIZE=$(get_my_ai_attribute_with_default ${my_role}_data_size 256m)
+        mount_filesystem_on_memory ${ROLE_DATA_DIR} $ROLE_DATA_FSTYP ${ROLE_DATA_SIZE} ${my_login_username}
+    elif [[ $ROLE_DATA_FSTYP == "nfs" ]]
+    then
+        ROLE_DATA_FILESERVER_IP=$(get_my_ai_attribute_with_default ${my_role}_data_fileserver_ip none)
+        ROLE_DATA_FILESERVER_PATH=$(get_my_ai_attribute_with_default ${my_role}_data_fileserver_path none)
+        
+        if [[ $ROLE_DATA_FILESERVER_IP != "none" && $ROLE_DATA_FILESERVER_PATH != "none" ]]
+        then         
+            mount_remote_filesystem ${ROLE_DATA_DIR} ${ROLE_DATA_FSTYP} ${ROLE_DATA_FILESERVER_IP} ${ROLE_DATA_FILESERVER_PATH}    
+        fi
+    else
+        if [[ $(get_attached_volumes) != "NONE" ]]
+        then
+            mount_filesystem_on_volume ${ROLE_DATA_DIR} $ROLE_DATA_FSTYP ${my_login_username}
+        fi
+    fi
+}
+export -f automount_data_dirs

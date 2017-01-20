@@ -842,8 +842,6 @@ def report_app_metrics(metriclist, sla_targets_list, ms_conn = "auto", \
             _msci.find_document("reported_runtime_app_VM_metric_names_" + \
                                 _username, {"_id" : _new_reported_metrics_dict["_id"]})
 
-            cbdebug(str(type(_reported_metrics_dict)))
-
             if not _reported_metrics_dict :
                 _reported_metrics_dict = {}
                 

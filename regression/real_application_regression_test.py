@@ -93,18 +93,18 @@ def main(apiconn) :
                                                    "Management Report Pass?", \
                                                    "Runtime Report Pass?"])
 
-    for _type in [ "nullworkload|docker,qemu", \
+    for _type in [ "nullworkload|qemu", \
                    "coremark|qemu", \
                    "ddgen|qemu", \
                    "filebench|qemu", \
-                   "fio|docker,qemu", \
-                   "iperf|docker,qemu", \
-                   "netperf|docker,qemu", \
-                   "nuttcp|docker,qemu", \
-                   "xping|docker,qemu", \
-                   "hadoop|docker,qemu", \
+                   "fio|qemu", \
+                   "iperf|qemu", \
+                   "netperf|qemu", \
+                   "nuttcp|qemu", \
+                   "xping|qemu", \
+                   "hadoop|qemu", \
                    "giraph|qemu", \
-                   "cassandra_ycsb|docker,qemu", \
+                   "cassandra_ycsb|qemu", \
                    "redis_ycsb|qemu", \
                    "mongo_ycsb|qemu", \
                    "hpcc|qemu", \
@@ -208,7 +208,8 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
                                     _value = float(_runtime_metrics[_metric]["val"])
                                 print str(_value) + " OK"
                                 if _metric == "app_load_id" :
-                                    _collected_samples = _value                    
+                                    _collected_samples = _value
+                    print "----------------------------------------"                                    
                 except :
                     _curr_time = int(time()) - _initial_time                    
                     _msg = "        No application performance metrics reported after "
