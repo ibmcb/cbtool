@@ -1575,3 +1575,160 @@ function automount_data_dirs {
     fi
 }
 export -f automount_data_dirs
+
+
+function haproxy_setup {
+    LOAD_BALANCER_PORT=$1
+    LOAD_BALANCER_BACKEND_SERVERS=$2
+
+    LOAD_BALANCER_MODE="http"
+    if [[ ! -z $3 ]]
+    then
+        LOAD_BALANCER_MODE=$3
+    fi
+            
+    f=/tmp/haporxy.cfg
+cat << EOF > $f
+global
+  chroot  /var/lib/haproxy
+  daemon
+  group  haproxy
+  log  127.0.0.1 local0
+  maxconn  4096
+  pidfile  /var/run/haproxy.pid
+  stats  socket /var/lib/haproxy/stats
+  user  haproxy
+
+defaults
+  log  global
+  maxconn  8000
+  stats  enable
+  timeout  http-request 10s
+  timeout  queue 1m
+  timeout  connect 10s
+  timeout  client 1m
+  timeout  server 1m
+  timeout  check 10s
+
+EOF
+    echo "listen ${my_type}" >> $f
+    echo "  bind 0.0.0.0:${LOAD_BALANCER_PORT}" >> $f   
+    
+    if [[ $LOAD_BALANCER_NODE == "http" ]]
+    then
+        echo "  mode http" >> $f            
+        echo "  retries 3" >> $f
+        echo "  option tcplog" >> $f
+        echo "  option redispatch" >> $f
+        echo "  balance roundrobin" >> $f
+    fi
+        
+    if [[ $LOAD_BALANCER_NODE == "tcp" ]]
+    then
+        echo "  mode tcp" >> $f
+        echo "  retries 3" >> $f
+        echo "  option tcplog" >> $f 
+        echo "  option redispatch" >> $f
+    fi        
+        
+    for BACKEND_IP in $LOAD_BALANCER_BACKEND_SERVERS
+    do
+        echo "  server $(cat /etc/hosts | grep $BACKEND_IP | grep -v lost | awk '{ print $2 }') $BACKEND_IP:$LOAD_BALANCER_TARGET_PORT check" >> $f
+    done   
+    
+    sudo ls /etc/haproxy/haproxy.cfg.backup
+    if [[ $? -ne 0 ]]
+    then
+        sudo cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.backup
+    fi
+
+    sudo mv $f /etc/haproxy/haproxy.cfg
+
+    SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
+    ATTEMPTS=3
+    while [[ "$ATTEMPTS" -ge  0 ]]
+    do 
+        syslog_netcat "Checking for an HAproxy load balancer running on $SHORT_HOSTNAME...."
+        result="$(ps -ef | grep haproxy | grep -v grep)"
+        
+        if [[ x"$result" == x ]]
+        then 
+            ((ATTEMPTS=ATTEMPTS-1))
+            syslog_netcat "There is no load balancer running on $SHORT_HOSTNAME... will try to start it $ATTEMPTS more times"
+    
+            service_restart_enable haproxy
+            syslog_netcat "HAproxy started on $SHORT_HOSTNAME ( pointing to target service running on $LOAD_BALANCER_TARGET_IPS )."
+            syslog_netcat "Will wait 5 seconds and check for haproxy processes...."
+            sleep 5
+        else 
+            syslog_netcat "HAproxy load balancer restarted successfully on $SHORT_HOSTNAME ( pointing to target service running on $LOAD_BALANCER_TARGET_IPS ) - OK";
+    
+            provision_application_stop $START
+        fi    
+        exit 0
+    
+    done
+    syslog_netcat "haproxy load Balancer could not be restarted on $SHORT_HOSTNAME - NOK"
+    exit 2
+}
+export -f haproxy_setup
+
+function ihs_setup {
+    syslog_netcat "Fixing up httpd.conf..... to point to IPs ${LOAD_BALANCER_TARGET_IPS_CSV}"
+    
+    conf_file=/opt/IBM/HTTPServer/conf/httpd.conf
+    tmp_file=/tmp/http.conf.tmp
+    
+    if [[ x"$(grep "balancer\://$LOAD_BALANCER_TARGET" $conf_file)" == x ]]
+    then
+        sudo cp $conf_file $tmp_file
+        sudo chmod 777 $tmp_file
+    
+        echo "<Proxy balancer://$LOAD_BALANCER_TARGET>" >> $tmp_file
+    
+        for ip in $LOAD_BALANCER_TARGET_IPS ; do
+            echo "BalancerMember http://$ip:$LOAD_BALANCER_TARGET_PORT/$LOAD_BALANCER_TARGET_URL" >> $tmp_file
+        done
+    
+    
+        echo "</Proxy>" >> $tmp_file
+        echo "ProxyPass /daytrader balancer://$LOAD_BALANCER_TARGET" >> $tmp_file
+        echo "ProxyPassReverse /daytrader balancer://$LOAD_BALANCER_TARGET" >> $tmp_file
+    
+        syslog_netcat "Done setting up child load targets for balancer in httpd.conf..."
+    
+        sudo cp $tmp_file $conf_file
+    else
+        syslog_netcat "httpd.conf already fixed. skipping..."
+    fi
+
+    SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)    
+    ATTEMPTS=3
+    while [[ "$ATTEMPTS" -ge  0 ]]
+    do 
+        syslog_netcat "Checking for a http load balancer running on $SHORT_HOSTNAME...."
+        result="$(ps -ef | grep httpd | grep -v grep)"
+        syslog_netcat "Done checking for a WAS server running on $SHORT_HOSTNAME"
+        
+        if [[ x"$result" == x ]]
+        then 
+            ((ATTEMPTS=ATTEMPTS-1))
+            syslog_netcat "There is no load balancer running on $SHORT_HOSTNAME... will try to start it $ATTEMPTS more times"
+    
+            sudo /opt/IBM/HTTPServer/bin/apachectl restart
+            sudo /opt/IBM/HTTPServer/bin/adminctl restart
+            syslog_netcat "Apache started on $SHORT_HOSTNAME ( pointing to target service running on $LOAD_BALANCER_TARGET_IPS )."
+            syslog_netcat "Will wait 5 seconds and check for httpd processes...."
+            sleep 5
+        else 
+            syslog_netcat "Load balancer restarted successfully on $SHORT_HOSTNAME ( pointing to target service running on $LOAD_BALANCER_TARGET_IPS ) - OK";
+    
+            provision_application_stop $START
+        fi    
+        exit 0
+    
+    done
+    syslog_netcat "Load Balancer could not be restarted on $SHORT_HOSTNAME - NOK"
+    exit 2
+}
+export -f ihs_setup

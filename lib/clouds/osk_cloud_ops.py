@@ -939,6 +939,7 @@ class OskCmds(CommonCloudFunctions) :
                     _imageid = _candidate_images[0]
 
                 obj_attr_list["boot_volume_imageid1"] = _imageid.id
+                obj_attr_list["imageid1"] = _imageid.name
                 obj_attr_list["boot_volume_imageid1_instance"] = _imageid
                 
                 _status = 0
@@ -1080,9 +1081,16 @@ class OskCmds(CommonCloudFunctions) :
             for _host in self.oskconncompute.hypervisors.list() :
                 if _host.hypervisor_hostname.count(obj_attr_list["compute_node"]) :
                     obj_attr_list["host_name"] = _host.hypervisor_hostname
+                    break
 
-            _availability_zone += ':' + obj_attr_list["host_name"]
-
+            if "host_name" in obj_attr_list :
+                _availability_zone += ':' + obj_attr_list["host_name"]
+            else :
+                _msg = "Unable to find the compute_node \"" + obj_attr_list["compute_node"] 
+                _msg += "\", indicated during the instance creation. Will let"
+                _msg += " the scheduler pick a compute node"
+                cbwarn(_msg)
+                
         obj_attr_list["availability_zone"] = _availability_zone        
                         
         return True

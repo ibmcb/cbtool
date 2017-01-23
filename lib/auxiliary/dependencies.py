@@ -148,7 +148,7 @@ def get_linux_distro() :
         
     return _linux_distro_kind, _linux_distro_ver, _linux_major_ver, _linux_distro_name, _arch
 
-def get_cmdline(depkey, depsdict, operation, process_manager = False) :
+def get_cmdline(depkey, depsdict, operation, process_manager = False, exception_if_no_url = False) :
     ''' 
     TBD
     '''
@@ -208,7 +208,10 @@ def get_cmdline(depkey, depsdict, operation, process_manager = False) :
             if not _actual_url :
                 _msg = "##### None of the urls indicated to install \"" + depkey + "\" (" 
                 _msg += _tested_urls + ") seem to be functional."
-                raise Exception(_msg)
+                if exception_if_no_url :
+                    raise Exception(_msg)
+                else :
+                    cbwarn(_msg)
         else :
             _actual_url = False                
     else :
@@ -587,11 +590,11 @@ def inst_conf_msg(depkey, depsdict) :
     TBD
     '''
     msg = " Please install/configure \"" + depkey + "\" by issuing the following command: \""
-    msg += get_cmdline(depkey, depsdict, "install")[1] + "\"\n"
+    msg += str(get_cmdline(depkey, depsdict, "install")[1]) + "\"\n"
 
     return msg
 
-def execute_command(operation, depkey, depsdict, hostname = "127.0.0.1", username = None, process_manager = None, venv = False):
+def execute_command(operation, depkey, depsdict, hostname = "127.0.0.1", username = None, process_manager = None, venv = False, raise_exception = False):
     '''
     TBD
     '''
@@ -604,8 +607,8 @@ def execute_command(operation, depkey, depsdict, hostname = "127.0.0.1", usernam
 
         _cmd = {}
 
-        _cmd["configure-keys"], _cmd["configure"] = get_cmdline(depkey, depsdict, "configure", process_manager)
-        _cmd["install-keys"], _cmd["install"] = get_cmdline(depkey, depsdict, "install", process_manager)
+        _cmd["configure-keys"], _cmd["configure"] = get_cmdline(depkey, depsdict, "configure", process_manager, raise_exception)
+        _cmd["install-keys"], _cmd["install"] = get_cmdline(depkey, depsdict, "install", process_manager, raise_exception)
 
         _order = depsdict[depkey + "-order"]
 
@@ -733,9 +736,11 @@ def dependency_checker_installer(hostname, username, operation, options) :
         if str(options.addr) != "bypass" :
             select_url("repo", _depsdict)
             select_url("pip", _depsdict)
+            _raise_exception = True
         else :
             _depsdict["pip_addr"] = None
             _depsdict["repo_addr"] = None
+            _raise_exception = False
             
         for _key in _depsdict.keys() :
             if _key.count("-order")  :
@@ -832,7 +837,8 @@ def dependency_checker_installer(hostname, username, operation, options) :
             _status, _msg = execute_command("configure", _dep, _depsdict, \
                                             hostname = "127.0.0.1", \
                                             username = username, \
-                                            venv = options.venv)
+                                            venv = options.venv, \
+                                            raise_exception = _raise_exception)
 
             if _status :
                 _dep_missing += 1
@@ -844,7 +850,8 @@ def dependency_checker_installer(hostname, username, operation, options) :
                     _status, _msg = execute_command("install", _dep, _depsdict, \
                                                     hostname = "127.0.0.1", \
                                                     username = username, \
-                                                    venv = options.venv)
+                                                    venv = options.venv, \
+                                                    raise_exception = _raise_exception)
                     
                     if not _status :
                         _dep_missing -= 1

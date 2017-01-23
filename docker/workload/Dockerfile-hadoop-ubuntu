@@ -1,0 +1,21 @@
+FROM maugustosilva/ubuntu_cb_nullworkload
+
+RUN apt-get update
+RUN apt-get install -y software-properties-common
+
+RUN wget -N -P /home/cbuser http://launchpadlibrarian.net/109052632/python-support_1.0.15_all.deb
+RUN dpkg -i /home/cbuser/python-support*.deb
+
+RUN add-apt-repository ppa:openjdk-r/ppa
+RUN apt-get update
+RUN apt-get install -y openjdk-7-jdk
+
+#RUN wget -N -P /home/cbuser http://www.carfab.com/apachesoftware/hadoop/common/hadoop-1.2.1/hadoop-1.2.1.tar.gz
+RUN wget -N -P /home/cbuser https://archive.apache.org/dist/hadoop/common/hadoop-2.3.0/hadoop-2.3.0.tar.gz
+RUN cd /home/cbuser; tar -xzf /home/cbuser/hadoop*.gz
+
+RUN cd /home/cbuser; git clone https://github.com/ibmcb/HiBench.git; cd /home/cbuser/HiBench; git checkout dev
+
+RUN echo "export JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre" >> /home/cbuser/.bashrc
+
+RUN chown -R cbuser:cbuser /home/cbuser

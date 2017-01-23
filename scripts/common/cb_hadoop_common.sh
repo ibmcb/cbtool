@@ -31,10 +31,21 @@ source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
 if [[ -z ${JAVA_HOME} ]]
 then
-    JAVA_HOME=$(get_my_ai_attribute_with_default java_home auto)            
+    JAVA_HOME=$(get_my_ai_attribute_with_default java_home auto)
+
+    if [[ ${JAVA_HOME} != "auto" ]]   
+    then
+        sudo ls $JAVA_HOME
+        if [[ $? -ne 0 ]]
+        then
+            syslog_netcat "The JAVA_HOME specified in the AI attributes \"${JAVA_HOME}\" could not be located: setting it to \"auto\"..."
+            JAVA_HOME="auto"
+        fi
+    fi
+    
     if [[ ${JAVA_HOME} == "auto" ]]
     then
-        syslog_netcat "JAVA_HOME is set to \"auto\". Attempting to find the most recent in /usr/lib/jvm"            
+        syslog_netcat "The JAVA_HOME was set to \"auto\". Attempting to find the most recent in /usr/lib/jvm"            
         JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre
     fi
 
@@ -739,11 +750,11 @@ function create_mapreduce_history {
         if [[ ${hadoop_use_yarn} -eq 1 ]]
         then
             syslog_netcat "Creating map-reduce history directory on HDFS filesystem..."
-            hadoop dfs -mkdir /mr-history
-            hadoop dfs -mkdir /mr-history/done
-            hadoop dfs -mkdir /mr-history/tmp
-            hadoop dfs -chmod -R 777 /mr-history/done
-            hadoop dfs -chmod -R 777 /mr-history/tmp
+            $HADOOP_HOME/bin/hadoop dfs -mkdir /mr-history
+            $HADOOP_HOME/bin/hadoop dfs -mkdir /mr-history/done
+            $HADOOP_HOME/bin/hadoop dfs -mkdir /mr-history/tmp
+            $HADOOP_HOME/bin/hadoop dfs -chmod -R 777 /mr-history/done
+            $HADOOP_HOME/bin/hadoop dfs -chmod -R 777 /mr-history/tmp
         fi
     
     fi

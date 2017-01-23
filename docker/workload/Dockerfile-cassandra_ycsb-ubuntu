@@ -1,0 +1,26 @@
+FROM maugustosilva/ubuntu_cb_nullworkload
+
+RUN apt-get update
+RUN apt-get install -y software-properties-common
+
+RUN wget -N -P /home/cbuser http://launchpadlibrarian.net/109052632/python-support_1.0.15_all.deb
+RUN dpkg -i /home/cbuser/python-support*.deb
+
+RUN add-apt-repository ppa:openjdk-r/ppa
+RUN apt-get update
+RUN apt-get install -y openjdk-7-jre-headless
+
+#RUN wget -N -P /home/cbuser http://dl.bintray.com/apache/cassandra/pool/main/c/cassandra/cassandra_2.2.3_all.deb
+RUN wget -N -P /home/cbuser http://dl.bintray.com/apache/cassandra/pool/main/c/cassandra/cassandra_2.1.1_all.deb
+RUN dpkg -i /home/cbuser/cassandra*.deb
+
+#RUN wget -N -P /home/cbuser http://dl.bintray.com/apache/cassandra/pool/main/c/cassandra/cassandra-tools_2.2.3_all.deb
+RUN wget -N -P /home/cbuser http://dl.bintray.com/apache/cassandra/pool/main/c/cassandra/cassandra-tools_2.1.1_all.deb
+RUN dpkg -i /home/cbuser/cassandra-tools*.deb
+
+RUN sed -i "s/Xss.*/Xss1024k\"/g" /etc/cassandra/cassandra-env.sh
+RUN echo "export JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre" >> /home/cbuser/.bashrc
+
+#RUN wget -N -P /home/cbuser https://github.com/brianfrankcooper/YCSB/releases/download/0.4.0/ycsb-0.4.0.tar.gz
+RUN wget -N -P /home/cbuser https://github.com/brianfrankcooper/YCSB/releases/download/0.5.0/ycsb-0.5.0.tar.gz
+RUN cd /home/cbuser; tar -xvzf ycsb-*.tar.gz; sudo rm ycsb*.gz; sudo mv ycsb-* YCSB
