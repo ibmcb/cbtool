@@ -2033,36 +2033,11 @@ class BaseObjectOperations :
 
         if str(obj_attr_list["override_imageid1"]).lower() != "false" :
             _extra_parms += ",imageid1=" + obj_attr_list["override_imageid1"]
-        
-        if vm_role + "_netname" in obj_attr_list :
-            _extra_parms += ",netname=" + obj_attr_list[vm_role + "_netname"]
 
-        if vm_role + "_imageid1" in obj_attr_list :
-            _extra_parms += ",imageid1=" + obj_attr_list[vm_role + "_imageid1"]
-
-        if vm_role + "_login" in obj_attr_list :
-            _extra_parms += ",login=" + obj_attr_list[vm_role + "_login"]
-
-        if vm_role + "_resource_limits" in obj_attr_list :
-            _extra_parms += ",resource_limits=" + obj_attr_list[vm_role + "_resource_limits"]
-
-        if vm_role + "_userdata" in obj_attr_list :
-            _extra_parms += ",userdata=" + obj_attr_list[vm_role + "_userdata"]
-
-        if vm_role + "_cloud_vv" in obj_attr_list :
-            _extra_parms += ",cloud_vv=" + obj_attr_list[vm_role + "_cloud_vv"]
-
-        if vm_role + "_availability_zone" in obj_attr_list :
-            _extra_parms += ",availability_zone=" + obj_attr_list[vm_role + "_availability_zone"]
-
-        if vm_role + "_compute_node" in obj_attr_list :
-            _extra_parms += ",compute_node=" + obj_attr_list[vm_role + "_compute_node"]
-
-        if vm_role + "_cloud_vv_type" in obj_attr_list :
-            _extra_parms += ",cloud_vv_type=" + obj_attr_list[vm_role + "_cloud_vv_type"]
-
-        if vm_role + "_sla_provisioning_target" in obj_attr_list :
-            _extra_parms += ",sla_provisioning_target=" + obj_attr_list[vm_role + "_sla_provisioning_target"]            
+        if "propagated_attributes" in obj_attr_list :
+            for _propagated_attr in obj_attr_list["propagated_attributes"].split(',') :
+                if vm_role + '_' + _propagated_attr in obj_attr_list :
+                    _extra_parms += ',' + _propagated_attr + '=' + obj_attr_list[vm_role + '_' + _propagated_attr]
 
         if "vm_extra_parms" in obj_attr_list :
             obj_attr_list["vm_extra_parms"] = obj_attr_list["vm_extra_parms"].replace("_EQUAL_","=").replace("_COMMA_",',')
@@ -2541,8 +2516,6 @@ class BaseObjectOperations :
                         _xfmsg = "Ran out of time to run application-specific \"setup\""
                         _xfmsg += " scripts on " + _ai_attr_list["log_string"] + " due to the "
                         _xfmsg += "established SLA provisioning target."
-                        _xfmsg += _ai_name + " due to the established "
-                        _xfmsg += "SLA provisioning target."
 
                     if _remaining_time < _smallest_remaining_time :
                         _smallest_remaining_time = _remaining_time
@@ -3953,7 +3926,7 @@ class BaseObjectOperations :
             
                     if _obj_type == "VM" and obj_attr_list["role"] == "tinyvm" :
                         _msg = "\n\n You have sucessfully deployed your first fully configured"
-                        _msg += "instance, with the role \"tinyvm\". Now lets try deploy "
+                        _msg += " instance, with the role \"tinyvm\". Now lets try deploy "
                         _msg += "our first workload with \"aiattach nullworkload\" on the CLI\n"
         
                     if _obj_type == "AI" and obj_attr_list["type"] == "nullworkload" :

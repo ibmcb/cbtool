@@ -480,7 +480,7 @@ ubuntu-ntp-install-pm = package_install ntpd
 trusty-ntp-install-pm = package_install ntp
 xenial-ntp-install-pm = package_install ntp
 
-common-git-install-pm = package_install git
+common-git-install-pm = package_install git bc
 
 common-wget-install-pm = package_install wget
 

@@ -2650,7 +2650,23 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _list_name = obj_attr_list["object_type"][:-1].lower() + '_' + obj_attr_list["object_attribute"]
                     _result = list(self.osci.get_list(obj_attr_list["cloud_name"], "GLOBAL", _list_name))
 
-                    _list = ", ".join(_result)
+                    if _list_name == "ai_types" :
+                        _tmp_dict = {}
+                        for _ai_item in _result :
+                            if _ai_item.count('/') :
+                                _category, _ai_type = _ai_item.split('/')
+                                if _category not in _tmp_dict :
+                                    _tmp_dict[_category] = []
+                                _tmp_dict[_category].append(_ai_type)
+                            
+                        _list = ''
+                        for _category in _tmp_dict.keys() :
+                            _list += '\n' + _category + ":\n"
+                            for _ai_type in sorted(_tmp_dict[_category]) :
+                                _list += "  " + _ai_type + '\n'
+                    else :
+                        _list = ", ".join(_result)
+                        
                     _vmc_list = self.osci.get_object_list(obj_attr_list["cloud_name"], "VMC")
 
                     if not _vmc_list :
@@ -2686,7 +2702,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                       }
                     else :
                         _view_dict = _result
-        
+                                
                     _status = 0
 
         except self.osci.ObjectStoreMgdConnException, obj :
@@ -2712,6 +2728,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
                 if isinstance(_view_dict, set) :
                     _view_dict = sorted(list(_view_dict))
+
                 if isinstance(_view_dict, list) :
                     _view_dict = sorted(_view_dict)
                     

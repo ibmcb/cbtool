@@ -16,6 +16,7 @@ CAPTURE_ROLE = hadoopslave
 LOAD_PROFILE = terasort
 LOAD_LEVEL = uniformIXIXI1I3
 LOAD_DURATION = 60
+CATEGORY = bigdata
 REPORTED_METRICS = throughput,latency,datagen_time,datagen_size,completion_time,errors,quiescent_time
 
 # VApp-specific MANDATORY attributes

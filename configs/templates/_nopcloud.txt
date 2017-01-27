@@ -119,6 +119,7 @@ DRIVER_FILEBENCH = size:NA, imageid1:cb_filebench
 FILEBENCH = size:NA, imageid1:cb_filebench
 DRIVER_FIO = size:NA, imageid1:cb_fio
 FIO = size:NA, imageid1:cb_fio
+BTEST = size:NA, imageid1:cb_btest
 TINYVM = size:NA, imageid1:cb_nullworkload
 YATINYVM = size:NA, imageid1:cb_nullworkload
 FEN_HPC = size:NA, imageid1:cb_hpcc

@@ -34,19 +34,7 @@ service_stop_disable ${SERVICES[${LINUX_DISTRO}]}
 MONGODB_CONF_FILE[1]=/etc/mongodb.conf
 MONGODB_CONF_FILE[2]=/etc/mongod.conf
 
-sudo mkdir -p ${MONGODB_DATA_DIR}
-
-VOLUME=$(get_attached_volumes)
-if [[ $VOLUME != "NONE" ]]
-then
-    if [[ $(check_filesystem $VOLUME) == "none" ]]
-    then
-        syslog_netcat "Creating $MONGODB_DATA_FSTYP filesystem on volume $VOLUME"
-        sudo mkfs.$MONGODB_DATA_FSTYP -F $VOLUME
-    fi
-    syslog_netcat "Making $MONGODB_DATA_FSTYP filesystem on volume $VOLUME accessible through the mountpoint ${MONGODB_DATA_DIR}"
-    sudo mount $VOLUME ${MONGODB_DATA_DIR}
-fi
+automount_data_dirs
 
 # Update Mongo Config
 

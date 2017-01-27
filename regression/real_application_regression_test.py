@@ -81,6 +81,12 @@ def main(apiconn) :
     _timeout = 900
     _check_interval = 30
     _runtime_samples = 3
+
+    if len(argv) < 2 :
+        print "./" + argv[0] + " <AI type1>,...,<AI typeN>"
+        exit(1)
+    
+    _type_list = argv[1].split(',')
     
     try :
         cloud_name = apiconn.cldlist()[0]["name"]
@@ -93,28 +99,15 @@ def main(apiconn) :
                                                    "Management Report Pass?", \
                                                    "Runtime Report Pass?"])
 
-    for _type in [ "nullworkload|qemu", \
-                   "coremark|qemu", \
-                   "ddgen|qemu", \
-                   "filebench|qemu", \
-                   "fio|qemu", \
-                   "iperf|qemu", \
-                   "netperf|qemu", \
-                   "nuttcp|qemu", \
-                   "xping|qemu", \
-                   "hadoop|qemu", \
-                   "giraph|qemu", \
-                   "cassandra_ycsb|qemu", \
-                   "redis_ycsb|qemu", \
-                   "mongo_ycsb|qemu", \
-                   "hpcc|qemu", \
-                   "linpack|qemu", \
-                   "ibm_daytrader|qemu", \
-                   "open_daytrader|qemu", \
-                   "specjbb|qemu" ] :
+    for _type in _type_list :
 
-        _type, _hypervisor_list = _type.split('|')
-        for _hypervisor_type in _hypervisor_list.split(',') :
+        if _type.count('|') :
+            _type, _hypervisor_list = _type.split('|')
+            _hypervisor_list = _hypervisor_list.split(',')            
+        else :
+            _hypervisor_list = [ None ]
+            
+        for _hypervisor_type in _hypervisor_list :
             _mgt_pass, _rt_pass = deploy_virtual_application(api, _type, _hypervisor_type, _runtime_samples, _timeout, _check_interval)
 
             _results_row = []
@@ -147,10 +140,11 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
         _crt_m = apiconn.cldshow(cloud_name,"mon_defaults")["crt_m"].split(',')
         _dst_m = apiconn.cldshow(cloud_name,"mon_defaults")["dst_m"].split(',')
 
-        _msg = "Set hypervisor type to \"" + hypervisor_type + "\" on cloud \""
-        _msg += cloud_name + "\"..."
-        print _msg
-        _vapp = apiconn.cldalter(cloud_name, "vm_defaults", "hypervisor_type", hypervisor_type)
+        if hypervisor_type :
+            _msg = "Set hypervisor type to \"" + hypervisor_type + "\" on cloud \""
+            _msg += cloud_name + "\"..."
+            print _msg
+            _vapp = apiconn.cldalter(cloud_name, "vm_defaults", "hypervisor_type", hypervisor_type)
 
         _msg = "Creating a new Virtual Application Instance with type \"" 
         _msg += application_type + "\" on cloud \"" + cloud_name + "\"..."

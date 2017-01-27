@@ -132,6 +132,7 @@ DRIVER_COREMARK = size:dummysize, imageid1:image-001
 COREMARK = size:dummysize, imageid1:image-001
 DRIVER_FIO = size:dummysize, imageid1:image-001
 FIO = size:dummysize, imageid1:image-001
+BTEST = size:dummysize, imageid1:image-001
 CLIENT_WINDOWS = size:dummysize, imageid1:image-001
 WINDOWS = size:dummysize, imageid1:image-001
 DRIVER_FILEBENCH = size:dummysize, imageid1:image-001

@@ -150,7 +150,7 @@ fi
 
 if [[ -z ${HADOOP_EXECUTABLE} ]]
 then
-    HADOOP_EXECUTABLE=$(find $HADOOP_HOME | grep hadoop$ | grep -v core | grep -v src | tail -1)
+    HADOOP_EXECUTABLE=$(find $HADOOP_HOME | grep hadoop$ | grep -v core | grep -v src | grep -v doc | tail -1)
     syslog_netcat "HADOOP_EXECUTABLE not defined on the environment. Assuming \"$HADOOP_EXECUTABLE\" as the executable"
 fi
 
@@ -174,7 +174,7 @@ export HADOOP_EXECUTABLE=${HADOOP_EXECUTABLE}
 
 if [[ -z ${GIRAPH_HOME} ]]
 then
-    GIRAPH_HOME=`get_my_ai_attribute_with_default giraph_home ~/giraph/giraph/`    
+    GIRAPH_HOME=`get_my_ai_attribute_with_default giraph_home ~/giraph/`    
     eval GIRAPH_HOME=${GIRAPH_HOME}
 
     if [[ -f ~/.bashrc ]]
@@ -195,14 +195,19 @@ then
     ZOOKEPER_HOME=`get_my_ai_attribute_with_default zookeper_home ~/giraph/zookeeper/zookeeper-3.4.6/`
     
     eval ZOOKEPER_HOME=${ZOOKEPER_HOME}
-
-    if [[ -f ~/.bashrc ]]
+    ls $ZOOKEPER_HOME
+    if [[ $? -ne 0 ]]
     then
-        is_zookeper_home_export=`grep -c "ZOOKEPER_HOME=${ZOOKEPER_HOME}" ~/.bashrc`
-        if [[ $is_zookeper_home_export -eq 0 ]]
+        syslog_netcat "ZOOKEPER_HOME directory $ZOOKEPER_HOME not found."
+    else
+        if [[ -f ~/.bashrc ]]
         then
-            syslog_netcat "Adding ZOOKEPER_HOME ($ZOOKEPER_HOME) to bashrc"
-            echo "export ZOOKEPER_HOME=${ZOOKEPER_HOME}" >> ~/.bashrc
+            is_zookeper_home_export=`grep -c "ZOOKEPER_HOME=${ZOOKEPER_HOME}" ~/.bashrc`
+            if [[ $is_zookeper_home_export -eq 0 ]]
+            then
+                syslog_netcat "Adding ZOOKEPER_HOME ($ZOOKEPER_HOME) to bashrc"
+                echo "export ZOOKEPER_HOME=${ZOOKEPER_HOME}" >> ~/.bashrc
+            fi
         fi
     fi
 fi
@@ -889,7 +894,26 @@ function start_slave_hadoop_services {
             
     if [[ ${hadoop_use_yarn} -eq 1 ]]
     then
-        
+    
+        DFS_NAME_DIR=`get_my_ai_attribute_with_default dfs_name_dir /tmp/cbhadoopname`        
+    
+        set -- `sudo ls -l ${DFS_NAME_DIR}`
+        dfs_name_dir_owner=$5
+    
+        if [[ x$dfs_name_dir_owner == x ]]
+        then
+#           dfs_name_dir_owner="hdfs"
+            dfs_name_dir_owner=$(whoami)
+            sudo chown -R $(whoami):$(whoami) ${DFS_NAME_DIR}
+
+            echo $DFS_NAME_DIR | grep /usr/local/hadoop_store/
+            if [[ $? -eq 0 ]]
+            then
+                sudo chown -R $(whoami):$(whoami) /usr/local/hadoop_store/
+            fi
+                        
+        fi
+
         syslog_netcat "...Starting datanode..."
         syslog_netcat "...${HADOOP_BIN_DIR}/hadoop-daemon.sh script exists, using that to launch Jobtracker services..."        
         ${HADOOP_BIN_DIR}/hadoop-daemon.sh start datanode

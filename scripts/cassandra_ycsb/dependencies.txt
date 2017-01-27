@@ -1,12 +1,12 @@
 ### START - Dependency installation order ###
-#oraclejava-order = 50
-#oracle-java-home-order = 51
-java-order = 50
-java-home-order = 51
-cassandra-order = 52
-cassandra-tools-order = 53
-#maven-order = 54
-ycsb-order = 55
+#oraclejava-order = 80
+#oracle-java-home-order = 81
+java-order = 82
+java-home-order = 83
+#maven-order = 84
+ycsb-order = 85
+cassandra-order = 86
+cassandra-tools-order = 87
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -30,8 +30,8 @@ ycsb-install = man
 ### START - Tests ###
 oraclejava-configure = java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g' | sed 's/-internal//g'
 oracle-java-home-configure = cat .bashrc | grep -c latest
-java-configure = java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g' | sed 's/-internal//g'
-java-home-configure = cat ~/.bashrc | grep -c openjdk
+java-configure = . ~/.bashrc; java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g' | sed 's/-internal//g'
+java-home-configure = cat .bashrc | grep -c openjdk
 cassandra-configure = which cassandra
 cassandra-tools-configure = which token-generator
 maven-configure = mvn --version | head -n 1 | cut -d ' ' -f 3
@@ -41,6 +41,8 @@ ycsb-configure = ls -la ~/YCSB
 ### START - Dependency versions ###
 oraclejava-ver = 1.7
 oracle-java-home-ver = 1.0
+java-ver = ANY
+java-home-ver = ANY
 cassandra-ver = ANY
 cassandra-tools-ver = ANY
 maven-ver = 2

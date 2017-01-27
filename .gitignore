@@ -26,6 +26,7 @@ docs/*.graffle
 docs/*FTVM*
 docs/*STG*
 docs/*_metrics.ppt
+docker/workload/coremark*.tar
 util/experimental
 util/graveyard
 util/pydevm/*

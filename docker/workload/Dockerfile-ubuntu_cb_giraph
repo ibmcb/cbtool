@@ -1,0 +1,25 @@
+FROM REPLACE_NULLWORKLOAD_UBUNTU
+
+RUN apt-get update
+RUN apt-get install -y software-properties-common
+
+RUN wget -N -P /home/cbuser http://launchpadlibrarian.net/109052632/python-support_1.0.15_all.deb
+RUN dpkg -i /home/cbuser/python-support*.deb
+
+RUN add-apt-repository -y ppa:openjdk-r/ppa
+RUN apt-get update
+RUN apt-get install -y openjdk-7-jdk 
+RUN apt-get install -y maven
+
+RUN wget -N -P /home/cbuser https://archive.apache.org/dist/hadoop/common/hadoop-1.2.1/hadoop-1.2.1.tar.gz
+#RUN wget -N -P /home/cbuser https://archive.apache.org/dist/hadoop/common/hadoop-2.3.0/hadoop-2.3.0.tar.gz
+RUN cd /home/cbuser; tar -xzf /home/cbuser/hadoop*.gz
+
+RUN echo "export JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre" >> /home/cbuser/.bashrc
+
+RUN cd /home/cbuser; git clone https://github.com/apache/giraph.git
+
+RUN . /home/cbuser/.bashrc; cd /home/cbuser/giraph/; git checkout release-1.0.0; mvn package -Phadoop_1.0 -DskipTests
+#RUN . /home/cbuser/.bashrc; cd /home/cbuser/giraph/; git checkout release-1.1; mvn package -Phadoop_yarn -Dhadoop.version=2.3.0 -DskipTests
+
+RUN chown -R cbuser:cbuser /home/cbuser

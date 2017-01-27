@@ -121,6 +121,7 @@ DRIVER_FILEBENCH = size:2-4096, imageids:1, imageid1:cb_filebench
 FILEBENCH = size:1-2048, eclipsed_size:gold32, imageids:1, imageid1:cb_filebench
 DRIVER_FIO = size:2-4096, imageids:1, imageid1:cb_fio
 FIO = size:2-4096, imageids:1, imageid1:cb_fio
+BTEST = size:2-4096, imageids:1, imageid1:cb_btest
 TINYVM = size:1-1024, imageids:1, imageid1:cb_nullworkload
 YATINYVM = size:1-1024, imageids:1, imageid1:cb_nullworkload
 FEN_HPC = size:2-4096, imageids:1, imageid1:cb_hpc

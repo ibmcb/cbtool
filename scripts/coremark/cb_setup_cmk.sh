@@ -33,7 +33,14 @@ sudo chown ${CBUSERLOGIN}:${CBUSERLOGIN} $COREMARK_HOME/run1.log
 sudo touch $COREMARK_HOME/run2.log
 sudo chown ${CBUSERLOGIN}:${CBUSERLOGIN} $COREMARK_HOME/run2.log
 
-NR_CPUS=`cat /proc/cpuinfo | grep processor | wc -l`
+check_container 
+    
+if [[ $IS_CONTAINER -eq 1 ]]
+then
+    NR_CPUS=`echo $(get_my_vm_attribute size) | cut -d '-' -f 1`
+else 
+    NR_CPUS=`cat /proc/cpuinfo | grep processor | wc -l`
+fi
 THREADS_PER_CPU=`get_my_ai_attribute_with_default threads_per_cpu 2`
 let NR_THREADS=${NR_CPUS}*${THREADS_PER_CPU}
 
@@ -43,7 +50,7 @@ rm -rf ${COREMARK_HOME}/coremark.exe
 
 if [[ $(cat Makefile | grep -c lpthread) -eq 0 ]]
 then
-	sed -i 's/CFLAGS +=/CFLAGS += -lpthread/g' Makefile
+    sed -i 's/CFLAGS +=/CFLAGS += -lpthread/g' Makefile
 fi
 
 #make "LDFLAGS=-L /lib64 -l pthread XCFLAGS=-DMULTITHREAD=${NR_THREADS} -DUSE_PTHREAD" ITERATIONS=100 REBUILD=1

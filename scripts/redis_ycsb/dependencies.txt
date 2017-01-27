@@ -1,9 +1,10 @@
 ### START - Dependency installation order ###
-oraclejava-order = 50
-oracle-java-home-order = 51
-redis-order = 52
-maven-order = 53
-ycsb-order = 54
+#oraclejava-order = 80
+#oracle-java-home-order = 81
+java-order = 82
+java-home-order = 83
+#maven-order = 84
+redis-order = 89
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -23,6 +24,8 @@ ycsb-install = git
 ### START - Tests ###
 oraclejava-configure = java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g' | sed 's/-internal//g'
 oracle-java-home-configure = cat .bashrc | grep -c latest
+java-configure = . ~/.bashrc; java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g' | sed 's/-internal//g'
+java-home-configure = cat .bashrc | grep -c openjdk
 redis-configure = redis-server -v
 maven-configure = mvn --version | head -n 1 | cut -d ' ' -f 3
 ycsb-configure = ls -la ~/YCSB
@@ -31,6 +34,8 @@ ycsb-configure = ls -la ~/YCSB
 ### START - Dependency versions ###
 oraclejava-ver = 1.7
 oracle-java-home-ver = 1.0
+java-ver = ANY
+java-home-ver = ANY
 redis-ver = 2.5.0
 maven-ver = 2
 ycsb-ver = ANY
@@ -63,6 +68,13 @@ ubuntu-oraclejava-install-man = tar -xvf jdk-7u51-linux-x64.tar.gz; sudo mkdir -
 ubuntu-oraclejava-postinstall-man = sudo update-alternatives --install "/usr/bin/java" "java" "/usr/lib/jvm/jdk1.7.0_51/bin/java" 1; sudo update-alternatives --install "/usr/bin/javac" "javac" "/usr/lib/jvm/jdk1.7.0_51/bin/javac" 1; sudo update-alternatives --install "/usr/bin/javaws" "javaws" "/usr/lib/jvm/jdk1.7.0_51/bin/javaws" 1
 
 common-oracle-java-home-install-man = echo "export JAVA_HOME=/usr/java/latest/jre" >> ~/.bashrc
+
+rhel-java-install-pm = package_install java-1.7.0-openjdk
+fedora-java-install-pm = package_install java-1.7.0-openjdk
+ubuntu-java-install-pm = package_install openjdk-6-jdk; package_install openjdk-7-jdk
+ubuntu-java-postinstall-pm = export JAVAALT=$(sudo update-java-alternatives -l 2>&1 | grep java | sort -r | head -n 1 | cut -d ' ' -f 1); sudo update-java-alternatives -s $JAVAALT
+
+common-java-home-install-man = echo "export JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre" >> ~/.bashrc
 
 rhel-redis-preinstall-man = lftp -c 'open -e "mget redis*remi*.rpm" URL'
 rhel-redis-install-man = package_install gperftools-libs && sudo rpm -Uvh $(ls -t | grep redis | head -n 1)

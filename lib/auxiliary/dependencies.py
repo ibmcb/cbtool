@@ -930,14 +930,14 @@ def instance_preparation(hostname, options) :
                 _msg += " with \"" + _cmd + "\" (OK)"
                 cbinfo(_msg)
 
-        if str(options.addr) != "bypass" :
-            _cmd = options.wksdir + "/common/cb_cleanup.sh"
-            _msg = "Running the instance cleanup script \"" + _cmd + "\"..." 
-            cbinfo(_msg)
-    
-            _process_manager.run_os_command(_cmd)
+            if str(options.addr) != "bypass" :
+                _cmd = options.wksdir + "/common/cb_cleanup.sh"
+                _msg = "Running the instance cleanup script \"" + _cmd + "\"..." 
+                cbinfo(_msg)
+        
+                _process_manager.run_os_command(_cmd)
 
-        _cleanup = True
+            _cleanup = True
         
         _status = 0
             

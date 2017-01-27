@@ -5,23 +5,36 @@
 [AI_TEMPLATES : BTEST]
 
 # Attributes MANDATORY for all Virtual Applications
-SUT = tinyvm
+SUT = btest
 LOAD_BALANCER_SUPPORTED = $False
 RESIZE_SUPPORTED = $True
 REGENERATE_DATA = $False
-LOAD_GENERATOR_ROLE = tinyvm
-LOAD_MANAGER_ROLE = tinyvm
-METRIC_AGGREGATOR_ROLE = tinyvm
-CAPTURE_ROLE = tinyvm
-LOAD_PROFILE = 4096;32;50;100;500  # meaning: block size;AIO queue depth;% reads; %random;file size (MB)
+LOAD_GENERATOR_ROLE = btest
+LOAD_MANAGER_ROLE = btest
+METRIC_AGGREGATOR_ROLE = btest
+CAPTURE_ROLE = btest
+LOAD_PROFILE = default
 LOAD_LEVEL = uniformIXIXI1I10
-LOAD_DURATION = 100
+LOAD_DURATION = 20
+CATEGORY = synthetic
 REPORTED_METRICS = throughput,latency,completion_time,errors,quiescent_time
 
 # VApp-specific MANDATORY attributes
-DESCRIPTION = Deploys the btest disk microbenchmark from XtremeIO 
-TINYVM_SETUP1 = cb_start_btest.sh
-START = cb_run_btest.sh
+DESCRIPTION = Deploys the btest disk microbenchmark from XtremeIO\n
+DESCRIPTION +=- LOAD_PROFILE possible values: "default", meaning 4096 block size;\n
+DESCRIPTION += AIO queue depth of 32;50% reads;100% random;500 MB file size\n
+DESCRIPTION += (4096;32;50;100;500). Other profiles can be specified by a\n
+DESCRIPTION += semi-colon separated 5-value tuple.\n
+DESCRIPTION +=- LOAD_LEVEL meaning: number of threads (parameter -T).\n 
+DESCRIPTION +=- LOAD_DURATION meaning: maximum alloted time for the execution of all I/O operations.\n
+
+BTEST_SETUP1 = cb_start_btest.sh
+START = cb_btest.sh
+
+# VApp-specific modifier parameters. Commented attributes imply default values assumed
+BTEST_DATA_DIR = /btestdir
+BTEST_DATA_FSTYP = ext4
+BTEST_DATA_VOLUME = NONE
 
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
 #SYNC_COUNTER_NAME = synchronization_counter

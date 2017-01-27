@@ -1,9 +1,9 @@
 ### START - Dependency installation order ###
-java-order = 50
-java-home-order = 51
-mongo-order = 52
-maven-order = 53
-ycsb-order = 54
+java-order = 82
+java-home-order = 83
+#maven-order = 84
+ycsb-order = 85
+mongo-order = 88
 ### END - Dependency installation order ###
  
 ### START - Dependency-specific installation method ###
@@ -17,7 +17,8 @@ java-install = pm
 java-home-install = man
 mongo-install = man
 maven-install = man
-ycsb-install = git
+#ycsb-install = git
+ycsb-install = man
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
@@ -41,6 +42,7 @@ rhel-mongo-x86_64-urls-man = http://downloads-distro.mongodb.org/repo/redhat/os/
 
 rhel-maven-x86_64-urls-man = https://repos.fedorapeople.org/repos/dchen/apache-maven/epel-6/x86_64/apache-maven-3.2.1-2.el6.noarch.rpm
 
+common-ycsb-urls-man = https://github.com/brianfrankcooper/YCSB/releases/download/0.4.0/ycsb-0.4.0.tar.gz
 common-ycsb-urls-git = https://github.com/brianfrankcooper
 ### END - Dependency URLs ###
 
@@ -62,4 +64,7 @@ ubuntu-mongodb-postinstall-man = sudo sed -i "s/^bind_ip.*/bind_ip=0.0.0.0/" /et
 common-ycsb-preinstall-git = cd ~
 common-ycsb-install-git = git clone URL/YCSB.git
 common-ycsb-postinstall-git = cd ~/YCSB/; mvn clean package
+
+common-ycsb-install-man = wget -N -P ~ URL
+common-ycsb-postinstall-man = tar -xvzf ycsb-*.tar.gz; sudo rm ycsb*.gz; sudo mv ycsb-* YCSB
 ### END -  Dependency and method-specific command lines ###

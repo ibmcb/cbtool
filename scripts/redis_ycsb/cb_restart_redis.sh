@@ -43,6 +43,7 @@ REDIS_CONF_FILE[1]=/etc/redis/redis.conf
 REDIS_CONF_FILE[2]=/etc/redis.conf
 
 # Update Redis Config
+automount_data_dirs
 
 if [[ -f ${REDIS_DATA_DIR} ]]
 then
@@ -61,9 +62,9 @@ STATUS=$?
 
 if [[ ${STATUS} -eq 0 ]]
 then
-        syslog_netcat "Redis server running"
+    syslog_netcat "Redis server running"
 else
-        syslog_netcat "Redis server failed to start"
+    syslog_netcat "Redis server failed to start"
 fi
 
 provision_application_stop $START

@@ -941,9 +941,13 @@ class PdmCmds(CommonCloudFunctions) :
             _volumes = []
             _binds = []
             
-            if "cloud_vv_name" in obj_attr_list :
-                _binds = [ obj_attr_list["cloud_vv_name"] + ":/mnt/cbvol1:rw"]                
-                _volumes = [ "/mnt/cbvol1" ]
+            if "cloud_vv" in obj_attr_list :
+                if "data_dir" in obj_attr_list :
+                    _mapped_dir = obj_attr_list["data_dir"]
+                else :
+                    _mapped_dir = "/mnt/cbvol1"
+                _binds = [ obj_attr_list["cloud_vv_name"] + ':' + _mapped_dir + ":rw"]                
+                _volumes = [ _mapped_dir ]
 
             _mark1 = int(time())
             _host_config = self.dockconn[obj_attr_list["host_cloud_ip"]].create_host_config(network_mode = obj_attr_list["netname"], \

@@ -130,6 +130,7 @@ DRIVER_FILEBENCH = size:nano32, imageids:1, imageid1:cb_filebench
 FILEBENCH = size:iron32, eclipsed_size:gold32, imageids:1, imageid1:cb_filebench
 DRIVER_FIO = size:nano32, imageids:1, imageid1:cb_fio
 FIO = size:iron32, imageids:1, imageid1:cb_fio
+BTEST = size:iron32, imageids:1, imageid1:cb_btest
 TINYVM = size:pico32, imageids:1, imageid1:cb_nullworkload
 YATINYVM = size:pico32, imageids:1, imageid1:cb_nullworkload
 FEN_HPC = size:bronze32, imageids:1, imageid1:cb_hpc

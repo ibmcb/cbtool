@@ -30,6 +30,7 @@ LOAD_PROFILE = default
 LOAD_LEVEL = uniformIXIXI1I10
 # The load duration for daytrader should not be smaller than 90 seconds
 LOAD_DURATION = uniformIXIXI90I120
+CATEGORY = transactional
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 TRADEDB_SIZE = small

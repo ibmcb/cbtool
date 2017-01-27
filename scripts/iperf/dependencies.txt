@@ -1,5 +1,5 @@
 ### START - Dependency installation order ###
-iperf-order = 50
+iperf-order = 94
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###

@@ -34,7 +34,7 @@ update_app_errors 0 reset
 
 BLOCK_SIZE=`get_my_ai_attribute_with_default block_size 64k`
 DATA_SOURCE=`get_my_ai_attribute_with_default data_source /dev/urandom`
-DDGEN_DATA_DIR=$(get_my_ai_attribute_with_default DDGEN_data_dir /ddgentest)
+DDGEN_DATA_DIR=$(get_my_ai_attribute_with_default ddgen_data_dir /ddgentest)
 
 CMDLINE="sudo dd if=${DATA_SOURCE} of=${DDGEN_DATA_DIR}/testfile.bin oflag=direct bs=${BLOCK_SIZE} count=${LOAD_LEVEL}"
 

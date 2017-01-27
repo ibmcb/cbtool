@@ -1,5 +1,5 @@
 ### START - Dependency installation order ###
-netperf-order = 50
+netperf-order = 95
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###

@@ -46,21 +46,16 @@ NUM_WORKERS=$((${AVAILABLE_NODES} * ${NUM_WORKERS_FACTOR}))
 
 # Out of core parameters
 USE_OUT_OF_CORE=`get_my_ai_attribute_with_default use_out_of_core false`
+USE_OUT_OF_CORE=$(echo $USE_OUT_OF_CORE | tr '[:upper:]' '[:lower:]')
 OUT_OF_CORE_BASE_DIRECTORY=`get_my_ai_attribute_with_default out_of_core_base_directory /tmp`
+eval OUT_OF_CORE_BASE_DIRECTORY=${OUT_OF_CORE_BASE_DIRECTORY}
+mkdir -p $OUT_OF_CORE_BASE_DIRECTORY
+
 IS_STATIC_GRAPH=`get_my_ai_attribute_with_default is_static_graph false`
+IS_STATIC_GRAPH=$(echo $IS_STATIC_GRAPH | tr '[:upper:]' '[:lower:]')
 MAX_PARTITIONS_IN_MEMORY=`get_my_ai_attribute_with_default max_partitions_in_memory 10`
 MAX_MESSAGES_IN_MEMORY=`get_my_ai_attribute_with_default max_messages_in_memory 1000000`
 MAX_HEAP_USAGE_BYTES=`get_my_ai_attribute_with_default max_heap_usage_bytes -1`
-
-if [[ ${USE_OUT_OF_CORE} == "True" ]]
-then
-    USE_OUT_OF_CORE="true"
-fi
-
-if [[ ${IS_STATIC_GRAPH} == "True" ]]
-then
-    IS_STATIC_GRAPH="true"
-fi
 
 OOC_STRING="-Dgiraph.useOutOfCoreGraph=$USE_OUT_OF_CORE -Dgiraph.isStaticGraph=$IS_STATIC_GRAPH -Dgiraph.messageStoreFactoryClass=org.apache.giraph.comm.messages.out_of_core.DiskBackedMessageStoreFactory -Dgiraph.messagesDirectory=$OUT_OF_CORE_BASE_DIRECTORY/messages -Dgiraph.partitionsDirectory=$OUT_OF_CORE_BASE_DIRECTORY/partitions -Dgiraph.maxPartitionsInMemory=$MAX_PARTITIONS_IN_MEMORY -Dgiraph.maxMessagesInMemory=$MAX_MESSAGES_IN_MEMORY -Dgiraph.maxHeapUsage=$MAX_HEAP_USAGE_BYTES"
 
@@ -69,7 +64,7 @@ case ${LOAD_PROFILE} in
     LOAD_PROFILE="PageRankBenchmark"
     EDGES_PER_VERTEX=`get_my_ai_attribute_with_default edges_per_vertex 2`
     NUM_SUPERSTEPS=`get_my_ai_attribute_with_default num_supersteps 10`
-    NUM_VERTICES_FACTOR=`get_my_ai_attribute_with_default num_vertices_factor 100`
+    NUM_VERTICES_FACTOR=`get_my_ai_attribute_with_default num_vertices_factor 10`
     NUM_VERTICES=$((${LOAD_LEVEL}*${NUM_VERTICES_FACTOR}))
     CMDLINE="${HADOOP_HOME}/bin/hadoop jar $GIRAPH_EXAMPLES org.apache.giraph.benchmark.$LOAD_PROFILE -e $EDGES_PER_VERTEX -s $NUM_SUPERSTEPS -v -V $NUM_VERTICES -w $NUM_WORKERS "
     if [[ ${USE_OUT_OF_CORE} == "true" ]]
@@ -81,7 +76,7 @@ case ${LOAD_PROFILE} in
     LOAD_PROFILE="TopkPageRankBenchmark"
     EDGES_PER_VERTEX=`get_my_ai_attribute_with_default edges_per_vertex 2`
     NUM_SUPERSTEPS=`get_my_ai_attribute_with_default num_supersteps 10`
-    NUM_VERTICES_FACTOR=`get_my_ai_attribute_with_default num_vertices_factor 100`
+    NUM_VERTICES_FACTOR=`get_my_ai_attribute_with_default num_vertices_factor 10`
     NUM_VERTICES=$((${LOAD_LEVEL}*${NUM_VERTICES_FACTOR}))
     NUM_PAGERANK_SUPERSTEPS=`get_my_ai_attribute_with_default num_pagerank_supersteps 5`
     NUM_TOPK_VERTICES=`get_my_ai_attribute_with_default num_topk_vertices 10`
@@ -109,7 +104,7 @@ syslog_netcat "..giraph job is done. Ready to do a summary..."
 
 #Parse and report the performace
 
-lat=$(cat ${OUTPUT_FILE} | grep "Total (ms)" | cut -d '=' -f 2)
+lat=$(cat ${OUTPUT_FILE} | grep "Total (m" | cut -d '=' -f 2)
 #tput=`cat ${HIBENCH_HOME}/hibench.report | grep -v Type | tr -s ' ' | cut -d ' ' -f 6`
 
 check_hadoop_cluster_state 1 1

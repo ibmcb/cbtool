@@ -16,6 +16,7 @@ CAPTURE_ROLE = giraphslave
 LOAD_PROFILE = pagerank
 LOAD_LEVEL = uniformIXIXI1I3
 LOAD_DURATION = 60
+CATEGORY = bigdata
 REPORTED_METRICS = latency,completion_time,quiescent_time
 
 # VApp-specific MANDATORY attributes
@@ -43,19 +44,19 @@ HADOOP_HOME = ~/hadoop-1.2.1
 HADOOP_EXAMPLES = hadoop-examples-1.2.1.jar
 DFS_NAME_DIR = /tmp/cbhadoopname
 DFS_DATA_DIR = /tmp/cbhadoopdata
-GIRAPH_HOME = ~/giraph/giraph/
+GIRAPH_HOME = ~/giraph/
 ZOOKEEPER_HOME=~/giraph/zookeeper/zookeeper-3.4.6/
 EDGES_PER_VERTEX = 3
 NUM_SUPERSTEPS = 3
 NUM_WORKERS_FACTOR = 1
-NUM_VERTICES_FACTOR = 100
+NUM_VERTICES_FACTOR = 10
 
 ### Out of core parameters
 USE_OUT_OF_CORE = $False
 USER_PARTITION_COUNT = 100 #Implicit at the moment
 ### Dgiraph.messageStoreFactoryClass=org.apache.giraph.comm.messages.out_of_core.DiskBackedMessageStoreFactory #Implicit at the moment
 IS_STATIC_GRAPH = $True
-OUT_OF_CORE_BASE_DIRECTORY = /home/fedora/ooc
+OUT_OF_CORE_BASE_DIRECTORY = ~/ooc
 MAX_PARTITIONS_IN_MEMORY = 10
 MAX_MESSAGES_IN_MEMORY = 1000
 ## If this parameter is set, it will supersede max_partitions_in_memory

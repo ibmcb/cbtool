@@ -938,9 +938,10 @@ class OskCmds(CommonCloudFunctions) :
                 else :
                     _imageid = _candidate_images[0]
 
-                obj_attr_list["boot_volume_imageid1"] = _imageid.id
-                obj_attr_list["imageid1"] = _imageid.name
-                obj_attr_list["boot_volume_imageid1_instance"] = _imageid
+                if _imageid :
+                    obj_attr_list["boot_volume_imageid1"] = _imageid.id
+                    obj_attr_list["imageid1"] = _imageid.name
+                    obj_attr_list["boot_volume_imageid1_instance"] = _imageid
                 
                 _status = 0
             
