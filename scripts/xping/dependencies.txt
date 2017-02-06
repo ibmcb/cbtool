@@ -1,5 +1,5 @@
 ### START - Dependency installation order ###
-ping-order = 50
+ping-order = 97
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###

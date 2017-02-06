@@ -1,5 +1,5 @@
 ### START - Dependency installation order ###
-coremark-order = 50
+coremark-order = 90
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###

@@ -1,12 +1,12 @@
 ### START - Dependency installation order ###
-#oraclejava-order = 50
-#oracle-java-home-order = 51
-java-order = 50
-java-home-order = 51
-cassandra-order = 52
-cassandra-tools-order = 53
-maven-order = 54
-ycsb-order = 55
+#oraclejava-order = 80
+#oracle-java-home-order = 81
+java-order = 82
+java-home-order = 83
+#maven-order = 84
+ycsb-order = 85
+cassandra-order = 86
+cassandra-tools-order = 87
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -23,14 +23,15 @@ java-home-install = man
 cassandra-install = man
 cassandra-tools-install = man
 maven-install = man
-ycsb-install = git
+#ycsb-install = git
+ycsb-install = man
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
 oraclejava-configure = java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g' | sed 's/-internal//g'
 oracle-java-home-configure = cat .bashrc | grep -c latest
-java-configure = java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g' | sed 's/-internal//g'
-java-home-configure = cat ~/.bashrc | grep -c openjdk
+java-configure = . ~/.bashrc; java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g' | sed 's/-internal//g'
+java-home-configure = cat .bashrc | grep -c openjdk
 cassandra-configure = which cassandra
 cassandra-tools-configure = which token-generator
 maven-configure = mvn --version | head -n 1 | cut -d ' ' -f 3
@@ -40,6 +41,8 @@ ycsb-configure = ls -la ~/YCSB
 ### START - Dependency versions ###
 oraclejava-ver = 1.7
 oracle-java-home-ver = 1.0
+java-ver = ANY
+java-home-ver = ANY
 cassandra-ver = ANY
 cassandra-tools-ver = ANY
 maven-ver = 2
@@ -57,7 +60,7 @@ ubuntu-oraclejava-x86_64-urls-man = http://ppa.launchpad.net/webupd8team/oraclej
 
 rhel-cassandra-x86_64-urls-man = http://rpm.datastax.com/community/noarch/cassandra21-2.1.2-1.noarch.rpm
 fedora-cassandra-x86_64-urls-man = http://rpm.datastax.com/community/noarch/cassandra21-2.1.2-1.noarch.rpm
-ubuntu-cassandra-x86_64-urls-man = http://dl.bintray.com/apache/cassandra/pool/main/c/cassandra/:cassandra_2.2.3_all.deb
+ubuntu-cassandra-x86_64-urls-man = http://dl.bintray.com/apache/cassandra/pool/main/c/cassandra/cassandra_2.2.3_all.deb
 
 rhel-cassandra-tools-x86_64-urls-man = http://rpm.datastax.com/community/noarch/cassandra21-tools-2.1.2-1.noarch.rpm
 fedora-cassandra-tools-x86_64-urls-man = http://rpm.datastax.com/community/noarch/cassandra21-tools-2.1.2-1.noarch.rpm
@@ -67,6 +70,7 @@ santiago-maven-x86_64-urls-man = https://repos.fedorapeople.org/repos/dchen/apac
 maipo-maven-x86_64-urls-man = https://repos.fedorapeople.org/repos/dchen/apache-maven/epel-7/x86_64/apache-maven-3.2.5-1.el7.noarch.rpm
 fedora-maven-x86_64-urls-man = https://repos.fedorapeople.org/repos/dchen/apache-maven/epel-6/x86_64/apache-maven-3.2.1-2.el6.noarch.rpm
 
+common-ycsb-urls-man = https://github.com/brianfrankcooper/YCSB/releases/download/0.4.0/ycsb-0.4.0.tar.gz
 common-ycsb-urls-git = https://github.com/brianfrankcooper
 ### END - Dependency URLs ###
 
@@ -76,7 +80,7 @@ rhel-oraclejava-install-man = sudo rpm -Uvh URL; sudo alternatives --install /us
 fedora-oraclejava-preinstall-man = package_install java-1.7.0-openjdk
 fedora-oraclejava-install-man = sudo rpm -Uvh URL; sudo alternatives --install /usr/bin/java java /usr/java/latest/jre/bin/java 200000
 ubuntu-oraclejava-preinstall-man = wget -N -P ~ URL
-ubuntu-oraclejava-install-man = tar -xvf jdk-7u51-linux-x64.tar.gz; sudo mkdir -p /usr/lib/jvm; sudo mv ./jdk1.7.0_51/ /usr/lib/jvm/jdk1.7.0_51/; sudo ln -s /usr/lib/jvm/jdk1.7.0_51 /usr/lib/jvm/latest
+ubuntu-oraclejava-install-man = tar -xf jdk-7u51-linux-x64.tar.gz; sudo mkdir -p /usr/lib/jvm; sudo mv ./jdk1.7.0_51/ /usr/lib/jvm/jdk1.7.0_51/; sudo ln -s /usr/lib/jvm/jdk1.7.0_51 /usr/lib/jvm/latest
 ubuntu-oraclejava-postinstall-man = sudo update-alternatives --install "/usr/bin/java" "java" "/usr/lib/jvm/jdk1.7.0_51/bin/java" 1; sudo update-alternatives --install "/usr/bin/javac" "javac" "/usr/lib/jvm/jdk1.7.0_51/bin/javac" 1; sudo update-alternatives --install "/usr/bin/javaws" "javaws" "/usr/lib/jvm/jdk1.7.0_51/bin/javaws" 1
 
 common-oracle-java-home-install-man = echo "export JAVA_HOME=/usr/java/latest/jre" >> ~/.bashrc
@@ -113,4 +117,7 @@ ubuntu-maven-install-man = package_install maven2
 common-ycsb-preinstall-git = cd ~
 common-ycsb-install-git = git clone URL/YCSB.git
 common-ycsb-postinstall-git = cd ~/YCSB/; mvn clean package
+
+common-ycsb-install-man = wget -N -P ~ URL
+common-ycsb-postinstall-man = tar -xvzf ycsb-*.tar.gz; sudo rm ycsb*.gz; sudo mv ycsb-* YCSB
 ### END -  Dependency and method-specific command lines ###

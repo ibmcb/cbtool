@@ -39,11 +39,15 @@ syslog_netcat "Benchmarking HPCC SUT: FEN_HPC=${FEN_HPC_IP} -> CEN_HPC=${CN_HPC_
 
 cluster_hosts_file=~/cluster.hosts
 eval cluster_hosts_file=${cluster_hosts_file}
-bench_app_dir=~/hpc_files/hpcc-1.4.1
+
+#bench_app_dir=$(find ~ | grep hpccinf.txt.template | sed 's^hpccinf.txt.template^^g')
+#eval bench_app_dir=${bench_app_dir}
+
+bench_app_dir=~
 eval bench_app_dir=${bench_app_dir}
-bench_app_bin=hpcc
-infile=hpccinf.txt
-outfile=hpccoutf.txt
+bench_app_bin=./hpcc
+infile=~/hpccinf.txt
+outfile=~/hpccoutf.txt
 
 #Create a file with the list of nodes in the cluster that will run the job (getting info from /etc/hosts)
 grep -v "localhost\|just_for_lost" /etc/hosts |grep "fen_hpc" |cut -d " " -f 1 >  $cluster_hosts_file
@@ -79,28 +83,24 @@ sed -i s/"<NBs>"/"$NB_SIZE"/g      $infile
 sed -i s/"<Ps>"/"1"/g              $infile
 sed -i s/"<Qs>"/"$NUM_PROCESSES"/g $infile
 
-#FIXME: Remove this, just for testing...
-#mpirun -np 4 --machinefile $cluster_hosts_file uname -a | while read line ; do
-#	syslog_netcat "$line"
-#	echo $line >> ${OUTPUT_FILE}
-#done
+CMDLINE="mpirun -np $NUM_PROCESSES --machinefile $cluster_hosts_file --mca btl tcp,self $bench_app_bin"
 
-CMDLINE="mpirun -np $NUM_PROCESSES --machinefile $cluster_hosts_file $bench_app_bin"
-
-OUTPUT_FILE=$bench_app_dir/hpccoutf.txt
+OUTPUT_FILE=$(mktemp)
 
 execute_load_generator "${CMDLINE}" ${OUTPUT_FILE} ${LOAD_DURATION}
 
+cd ~
+
 syslog_netcat "HPCC benchmark run complete. Will collect and report the results"
 
-tp1=`cat ${OUTPUT_FILE} | grep -a HPL_Tflops | cut -d "=" -f 2`
-tp2=`cat ${OUTPUT_FILE} | grep -a PTRANS_GBs | cut -d "=" -f 2`
-tp3=`cat ${OUTPUT_FILE} | grep -a MPIRandomAccess_GUPs | cut -d "=" -f 2`
-tp4=`cat ${OUTPUT_FILE} | grep -a MPIFFT_Gflops | cut -d "=" -f 2`
-tp5=`cat ${OUTPUT_FILE} | grep -a StarSTREAM_Triad | cut -d "=" -f 2`
-tp6=`cat ${OUTPUT_FILE} | grep -a StarDGEMM_Gflops | cut -d "=" -f 2`
-tp7=`cat ${OUTPUT_FILE} | grep -a RandomlyOrderedRingBandwidth_GBytes | cut -d "=" -f 2`
-lat=`cat ${OUTPUT_FILE} | grep -a RandomlyOrderedRingLatency_usec | cut -d "=" -f 2`
+tp1=`cat ${outfile} | grep -a HPL_Tflops | cut -d "=" -f 2`
+tp2=`cat ${outfile} | grep -a PTRANS_GBs | cut -d "=" -f 2`
+tp3=`cat ${outfile} | grep -a MPIRandomAccess_GUPs | cut -d "=" -f 2`
+tp4=`cat ${outfile} | grep -a MPIFFT_Gflops | cut -d "=" -f 2`
+tp5=`cat ${outfile} | grep -a StarSTREAM_Triad | cut -d "=" -f 2`
+tp6=`cat ${outfile} | grep -a StarDGEMM_Gflops | cut -d "=" -f 2`
+tp7=`cat ${outfile} | grep -a RandomlyOrderedRingBandwidth_GBytes | cut -d "=" -f 2`
+lat=`cat ${outfile} | grep -a RandomlyOrderedRingLatency_usec | cut -d "=" -f 2`
 lat=`echo "scale=8;  ${lat} / 1000" | bc`
 
 ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
@@ -123,5 +123,6 @@ lat_RandomRing:$lat:usec \
 ${SLA_RUNTIME_TARGETS}
 
 rm ${OUTPUT_FILE}
+rm ${outfile}
 
 exit 0

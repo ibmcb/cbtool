@@ -159,7 +159,6 @@ class API():
         and will propagate exceptions properly across the API boundary
         to the client code.
     '''
-
             
     def cldparse(self, definitions):
         attributes, unused_definitions = parse_cld_defs_file(definitions)
@@ -283,11 +282,11 @@ class API():
         else :
             return self.active.aicapture({}, cloud_name + ' ' + identifier + ' ' + vmcrs, "ai-capture")[2]
         
-    def vmcapture(self, cloud_name, identifier, vmcrs = "none", async = False):
+    def vmcapture(self, cloud_name, identifier, captured_image_name = "auto", vmcrs = "none", async = False):
         if async and str(async).count("async") :
-            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + vmcrs + (' ' + async), "vm-capture")[2]
+            return self.active.background_execute(cloud_name + ' ' + identifier + ' ' + captured_image_name + ' ' + vmcrs + (' ' + async), "vm-capture")[2]
         else :
-            return self.active.vmcapture({}, cloud_name + ' ' + identifier + ' ' + vmcrs, "vm-capture")[2]
+            return self.active.vmcapture({}, cloud_name + ' ' + identifier + ' ' + captured_image_name + ' ' + vmcrs, "vm-capture")[2]
         
     def vmmigrate(self, cloud_name, identifier, destination, protocol = "tcp", interface = "default", async = False):
         if async and str(async).count("async") :
@@ -406,10 +405,10 @@ class API():
         return self.passive.alter_object({"name": cloud_name}, cloud_name + " ai_defaults run_application_scripts=true,debug_remote_commands=false", "cloud-alter")[2]
 
     def vmdev(self, cloud_name) :
-        return self.passive.alter_object({"name": cloud_name}, cloud_name + " vm_defaults check_boot_complete=wait_for_0,transfer_files=false,run_generic_scripts=false,debug_remote_commands=true", "cloud-alter")[2]
+        return self.passive.alter_object({"name": cloud_name}, cloud_name + " vm_defaults check_boot_complete=wait_for_0,transfer_files=false,run_generic_scripts=false,debug_remote_commands=true,check_ssh=false", "cloud-alter")[2]
 
     def vmundev(self, cloud_name, gobject, attribute, value):        
-        return self.passive.alter_object({"name": cloud_name}, cloud_name + " vm_defaults check_boot_complete=tcp_on_22,transfer_files=true,run_generic_scripts=true,debug_remote_commands=false", "cloud-alter")[2]
+        return self.passive.alter_object({"name": cloud_name}, cloud_name + " vm_defaults check_boot_complete=tcp_on_22,transfer_files=true,run_generic_scripts=true,debug_remote_commands=false,check_ssh=true", "cloud-alter")[2]
 
     def appnoload(self, cloud_name) :
         return self.passive.alter_object({"name": cloud_name}, cloud_name + " ai_defaults dont_start_load_manager=true", "cloud-alter")[2]
@@ -526,6 +525,10 @@ class API():
         
     def vmccleanup(self, cloud_name, identifier) :
         return self.active.vmccleanup({}, cloud_name + ' ' + identifier, "vmc-cleanup")[2]
+
+    def imgdelete(self, cloud_name, identifier, vmc, force = False) :
+        force = str(force).lower() if force else "false"
+        return self.active.imgdelete({}, cloud_name + ' ' + identifier + ' ' + vmc + ' ' + force, "img-delete")[2]
     
     def vmcrsdetach(self, cloud_name, identifier, force = False, async = False):
         force = str(force).lower() if force else "false"
@@ -585,8 +588,8 @@ class API():
     def msgpub(self, cloud_name, object_type, channel, message) :
         return self.passive.msgpub({}, cloud_name + ' ' + object_type + ' ' + channel + ' ' + message, "msg-pub")[2]
     
-    def stats(self, cloud_name, object_type = "all", output = "print") :
-        return self.passive.stats({"name": cloud_name}, cloud_name + ' ' + object_type + ' ' + output, "stats-get")[2]
+    def stats(self, cloud_name, object_type = "all", output = "print", include_vmcount="false") :
+        return self.passive.stats({"name": cloud_name}, cloud_name + ' ' + object_type + ' ' + output + ' ' + include_vmcount, "stats-get")[2]
     
     def typelist(self, cloud_name) :
         return self.passive.globallist({}, cloud_name + " ai_templates+types+AIs", "global-list")[2]

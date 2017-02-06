@@ -16,6 +16,7 @@ CAPTURE_ROLE = nuttcpserver
 LOAD_PROFILE = tcp
 LOAD_LEVEL = uniformIXIXI1I5
 LOAD_DURATION = uniformIXIXI70I90
+CATEGORY = synthetic
 REPORTED_METRICS = bandwidth,completion_time,quiescent_time
 
 # VApp-specific MANDATORY attributes

@@ -1,4 +1,3 @@
-
 #!/usr/bin/env bash
 
 #/*******************************************************************************
@@ -33,7 +32,16 @@ sudo chown ${CBUSERLOGIN}:${CBUSERLOGIN} $COREMARK_HOME/run1.log
 sudo touch $COREMARK_HOME/run2.log
 sudo chown ${CBUSERLOGIN}:${CBUSERLOGIN} $COREMARK_HOME/run2.log
 
-NR_CPUS=`cat /proc/cpuinfo | grep processor | wc -l`
+sudo chown -R ${CBUSERLOGIN}:${CBUSERLOGIN} ${COREMARK_HOME}
+
+check_container 
+    
+if [[ $IS_CONTAINER -eq 1 ]]
+then
+    NR_CPUS=`echo $(get_my_vm_attribute size) | cut -d '-' -f 1`
+else 
+    NR_CPUS=`cat /proc/cpuinfo | grep processor | wc -l`
+fi
 THREADS_PER_CPU=`get_my_ai_attribute_with_default threads_per_cpu 2`
 let NR_THREADS=${NR_CPUS}*${THREADS_PER_CPU}
 
@@ -43,11 +51,24 @@ rm -rf ${COREMARK_HOME}/coremark.exe
 
 if [[ $(cat Makefile | grep -c lpthread) -eq 0 ]]
 then
-	sed -i 's/CFLAGS +=/CFLAGS += -lpthread/g' Makefile
+    sudo sed -i 's/CFLAGS +=/CFLAGS += -lpthread/g' Makefile
 fi
 
-#make "LDFLAGS=-L /lib64 -l pthread XCFLAGS=-DMULTITHREAD=${NR_THREADS} -DUSE_PTHREAD" ITERATIONS=100 REBUILD=1
-make XCFLAGS="-DMULTITHREAD=${NR_THREADS} -DUSE_PTHREAD" ITERATIONS=100 REBUILD=1
+COMMON_PARMS="PORT_DIR=linux ITERATIONS=100 REBUILD=1"
+
+make "LDFLAGS=-L /lib64 -l pthread XCFLAGS=-DMULTITHREAD=${NR_THREADS} -DUSE_PTHREAD" $COMMON_PARMS
+
+if [[ ! -f ${COREMARK_HOME}/coremark.exe ]]
+then
+	syslog_netcat "Coremark compilation failed, trying again, omiting LDFLAGS"
+	make XCFLAGS="-DMULTITHREAD=${NR_THREADS} -DUSE_PTHREAD" $COMMON_PARMS
+fi
+
+if [[ ! -f ${COREMARK_HOME}/coremark.exe ]]
+then
+	syslog_netcat "Coremark compilation failed, trying again, with DUSE_FORK"	
+	make XCFLAGS="-DMULTITHREAD=${NR_THREADS} -DUSE_FORK=1" $COMMON_PARMS
+fi
 
 if [[ ! -f ${COREMARK_HOME}/coremark.exe ]]
 then

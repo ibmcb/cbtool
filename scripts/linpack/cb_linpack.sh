@@ -34,6 +34,12 @@ LOAD_PROFILE=$(echo ${LOAD_PROFILE} | tr '[:upper:]' '[:lower:]')
 
 LINPACK=`get_my_ai_attribute_with_default linpack ~/linpack/benchmarks/linpack/xlinpack_xeon64`
 eval LINPACK=${LINPACK}
+
+sudo ls ${LINPACK} 2>&1 > /dev/null
+if [[ $? -ne 0 ]]
+then
+	LINPACK=$(sudo find ~ | grep xlinpack_xeon64)
+fi
 LOAD_FACTOR=`get_my_ai_attribute_with_default load_factor 1000`
 LINPACK_DAT='~/linpack.dat'
 eval LINPACK_DAT=${LINPACK_DAT}
@@ -70,8 +76,8 @@ MAX=$(echo $RESULTS | awk '{print $5}')
 load_level:${LOAD_LEVEL}:load \
 load_profile:${LOAD_PROFILE}:name \
 load_duration:${LOAD_DURATION}:sec \
-throughput_max:$MAX:tps \
-throughput:$AVERAGE:tps \
+throughput_max:$MAX:gflops \
+throughput:$AVERAGE:gflops \
 errors:$(update_app_errors):num \
 completion_time:$(update_app_completiontime):sec \
 quiescent_time:$(update_app_quiescent):sec \    

@@ -205,20 +205,54 @@ def validIPv4(address) :
                 return False
     return True
 
-def hostname2ip(hostname) :
+def hostname2ip(hostname, raise_exception = False) :
     '''
     TBD
     '''
-    cbdebug("Looking for hostname: " + hostname)
-    if validIPv4(hostname) :
-        _hostip = hostname
-        hostname = gethostbyaddr(hostname)[0]
-        if hostname.count("in-addr.arpa") :
-            hostname = hostname.replace(".in-addr.arpa",'')
-            hostname = hostname.split('.')[0]
-    else :
-        _hostip = gethostbyname(hostname)
-    return hostname, _hostip
+    try :
+        cbdebug("Looking for host name/IP: " + hostname)
+
+        if validIPv4(hostname) :
+            _x = "ip address"
+            _hostip = hostname
+            hostname = gethostbyaddr(hostname)[0]
+            if hostname.count("in-addr.arpa") :
+                hostname = hostname.replace(".in-addr.arpa",'')
+                hostname = hostname.split('.')[0]
+                
+        else :
+            _x = "host name"
+            _hostip = gethostbyname(hostname)
+
+        _status = 0
+
+    except socket.gaierror :
+        _status = 1200
+        _msg = "Error while attempting to resolve the " + _x + " \"" + hostname + "\"."
+        _msg += " Please make sure this name is resolvable either in /etc/hosts or DNS."
+
+    except socket.herror:
+        _status = 1200
+        _msg = "Error while attempting to resolve the " + _x + " \"" + hostname + "\"."
+        _msg += " Please make sure this name is resolvable either in /etc/hosts or DNS."
+
+    except Exception, e :
+        _status = 23
+        _msg = "Error while attempting to resolve the " + _x + " \"" + hostname + "\":" + str(e)
+
+    finally:
+        if _status :
+            if raise_exception :
+                raise NetworkException(str(_msg), _status)
+            else :
+                if _x == "host name" :
+                    return hostname, "undefined"
+                else :
+                    return "undefined", hostname
+                
+        else :
+            return hostname, _hostip
+
 
 SIOCGIFMTU = 0x8921
 SIOCSIFMTU = 0x8922

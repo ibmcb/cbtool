@@ -2,6 +2,36 @@
 
 dir="$(dirname "$(readlink -f "$0")")"
 
+RUNNING_CB=$(sudo ps aux | grep -v grep | grep -e "python.*cb " | grep "\-c")
+if [[ $? -eq 0 ]]
+then
+    CONFIG_FILE=
+    for WORD in $RUNNING_CB
+    do
+    
+        if [[ CONFIG_FILE -eq 1 ]]
+        then
+            CONFIG_FILE=$WORD
+            break
+        fi
+        
+        if [[ $WORD == "--config" || $WORD == "-c" ]]
+        then
+            CONFIG_FILE=1
+        fi
+    done
+ fi
+
+if [[ ! -z $3 ]]
+then
+    CONFIG_FILE=$3
+fi
+
+if [[ ! -z $CONFIG_FILE ]]
+then
+    CONFIG_FILE="--config $CONFIG_FILE"
+fi
+
 if [[ -z $1 ]]
 then
     echo "need a VM cloudbench identifier (e.g. vm_10)"
@@ -23,18 +53,13 @@ then
     exit 1
 fi
 
-if [[ ! -z $3 ]]
-then
-	INFO=$($CB_EXECUTABLE -c $3 vmshow $VMID)
-else
-	INFO=$($CB_EXECUTABLE vmshow $VMID)
-fi
+INFO=$($CB_EXECUTABLE $CONFIG_FILE vmshow $VMID)
 
 VMIP=$(echo "$INFO" | grep "|prov_cloud_ip" | sed -e "s/|//g" | sed -e "s/ \+/ /g" | cut -d " " -f 2)
 VMLOGIN=$(echo "$INFO" | grep "|login" | sed -e "s/|//g" | sed -e "s/ \+/ /g" | cut -d " " -f 2)
 VMKEY=$(echo "$INFO" | grep "|identity" | sed -e "s/|//g" | sed -e "s/ \+/ /g" | cut -d " " -f 2)
 VMSSHCONF=$(echo "$INFO" | grep "|ssh_config_file" | sed -e "s/|//g" | sed -e "s/ \+/ /g" | cut -d " " -f 2)
-VMSSHPORT=$(echo "$INFO" | grep "|port_mapping" | sed -e "s/|//g" | sed -e "s/ \+/ /g" | cut -d " " -f 2)
+VMSSHPORT=$(echo "$INFO" | grep "|prov_cloud_port" | sed -e "s/|//g" | sed -e "s/ \+/ /g" | cut -d " " -f 2)
 
 if [[ ${#VMIP} -eq 0 ]]
 then

@@ -1,9 +1,9 @@
 ### START - Dependency installation order ###
-java-order = 50
-java-home-order = 51
-hadoop-order = 52
-giraph-order = 53
-maven-order = 54
+java-order = 82
+java-home-order = 83
+hadoop-order = 95
+giraph-order = 96
+maven-order = 99
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -61,5 +61,5 @@ rhel-maven-postinstall-man = sudo ln -s /usr/share/apache-maven/bin/mvn /usr/loc
 fedora-maven-install-man = package_install maven2
 ubuntu-maven-install-man = package_install maven2
 
-common-giraph-preinstall-git = cd ~; git clone URL; cd ~/giraph; mvn package -DskipTests
+common-giraph-preinstall-git = cd ~; git clone URL; cd ~/giraph; git checkout release-1.1; mvn package -Phadoop_1.0 -DskipTests
 ### END -  Dependency and method-specific command lines ###

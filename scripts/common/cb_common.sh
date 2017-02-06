@@ -187,7 +187,7 @@ function service_restart_enable {
             then
                 START_COMMAND="sudo sv restart $s"
                 ENABLE_COMMAND="sudo rm /etc/service/$s/down"            
-            elif [[ $(sudo systemctl | grep -c $s) -ne 0 && $(sudo find /etc/systemd | grep -c $s) -ne 0 ]]
+            elif [[ $(sudo systemctl 2>&1 | grep -c $s) -ne 0 && $(sudo find /etc/systemd 2>&1 | grep -c $s) -ne 0 ]]
             then
                 START_COMMAND="sudo systemctl restart $s"
                 ENABLE_COMMAND="sudo systemctl enable $s"
@@ -200,7 +200,7 @@ function service_restart_enable {
             then
                 START_COMMAND="sudo sv restart $s"
                 ENABLE_COMMAND="sudo rm /etc/service/$s/down"            
-            elif [[ $(sudo systemctl | grep -c $s) -ne 0 ]]
+            elif [[ $(sudo systemctl 2>&1 | grep -c $s) -ne 0 ]]
             then
                 START_COMMAND="sudo systemctl restart $s"
                 ENABLE_COMMAND="sudo systemctl enable $s"
@@ -312,6 +312,23 @@ function get_my_vm_attribute {
     attribute=`echo $1 | tr '[:upper:]' '[:lower:]'`
     get_hash VM ${my_vm_uuid} ${attribute} 0
 }
+export -f get_my_vm_attribute
+
+function get_my_vm_attribute_with_default {
+    NAME=$1
+    DEFAULT=$2
+    TEST="`get_my_vm_attribute $NAME`"
+
+    if [ x"$TEST" != x ] ; then
+        echo "$TEST"
+    elif [ x"$DEFAULT" != x ] ; then
+        echo "$DEFAULT"
+    else
+        syslog_netcat "Configuration error: Value for key ($NAME) not available online or offline."
+        exit 1
+    fi
+}
+export -f get_my_vm_attribute_with_default
 
 function blowawaypids {
     pids="$(pgrep -f "$1")"
@@ -321,6 +338,7 @@ function blowawaypids {
         fi
     done
 }
+export -f blowawaypids
 
 function wait_until_port_open {
     #1 - host name
@@ -447,10 +465,10 @@ function mount_filesystem_on_volume {
     if [[ $VOLUME != "NONE" ]]
     then
         
-        syslog_netcat "Setting ${my_type} storage ($MOUNTPOINT_DIR) on volume $VOLUME...."
         if [[ $(sudo mount | grep $VOLUME | grep -c $MOUNTPOINT_DIR) -eq 0 ]]
         then
-                                
+            syslog_netcat "Setting ${FILESYS_TYPE} storage ($MOUNTPOINT_DIR) on volume $VOLUME...."
+
             if [[ $(check_filesystem $VOLUME) == "none" ]]
             then
                 syslog_netcat "Creating $FILESYS_TYPE filesystem on volume $VOLUME"
@@ -465,6 +483,8 @@ function mount_filesystem_on_volume {
                 syslog_netcat "Error while mounting $FILESYS_TYPE filesystem on volume $VOLUME on mountpoint ${MOUNTPOINT_DIR} - NOK" 
                 exit 1
             fi
+        else
+            syslog_netcat "${FILESYS_TYPE} storage ($MOUNTPOINT_DIR) on volume $VOLUME is already setup!"            
         fi
         
         sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT_DIR
@@ -490,7 +510,13 @@ function mount_filesystem_on_memory {
 
     if [[ -z $FILESYS_TYPE ]]
     then
-        syslog_netcat "No filesystem size specified. Bypassing mounting"
+        syslog_netcat "No filesystem type specified. Bypassing mounting"
+        return 1
+    fi    
+
+    if [[ -z $MEMORY_DISK_SIZE ]]
+    then
+        syslog_netcat "No memory disk size specified. Bypassing mounting"
         return 1
     fi    
 
@@ -505,17 +531,26 @@ function mount_filesystem_on_memory {
                     
     if [[ $FILESYS_TYPE == "tmpfs" ]]
     then
-        syslog_netcat "Making tmpfs filesystem on accessible through the mountpoint ${MOUNTPOINT_DIR}"        
-        sudo mount -t tmpfs -o size=${MEMORY_DISK_SIZE} tmpfs $MOUNTPOINT_DIR
+        if [[ $(sudo mount | grep $FILESYS_TYPE | grep -c $MOUNTPOINT_DIR) -eq 0 ]]
+        then        
+            syslog_netcat "Making tmpfs filesystem on accessible through the mountpoint ${MOUNTPOINT_DIR}..."
+            sudo mount -t tmpfs -o size=${MEMORY_DISK_SIZE},noatime,nodiratime tmpfs $MOUNTPOINT_DIR
+        else
+            syslog_netcat "A tmpfs filesystem is already accessible through the mountpoint ${MOUNTPOINT_DIR}!"
+        fi            
     else
-        if [[ $(check_filesystem $RAMDEVICE) == "none" ]]
-        then
-            syslog_netcat "Creating $FILESYS_TYPE filesystem on volume $VOLUME"
-            sudo mkfs.$FILESYS_TYPE -F $RAMDEVICE
-        fi        
-
-        syslog_netcat "Making $FILESYS_TYPE filesystem on ram disk $RAMDEVICE accessible through the mountpoint ${MOUNTPOINT_DIR}"
-        sudo mount $RAMDEVICE $MOUNTPOINT_DIR    
+        if [[ $(sudo mount | grep $RAMDEVICE | grep -c $MOUNTPOINT_DIR) -eq 0 ]]
+        then                
+            syslog_netcat "Making $FILESYS_TYPE filesystem on ram disk $RAMDEVICE accessible through the mountpoint ${MOUNTPOINT_DIR}..."
+            if [[ $(check_filesystem $RAMDEVICE) == "none" ]]
+            then
+                syslog_netcat "Creating $FILESYS_TYPE filesystem on volume $VOLUME"
+                sudo mkfs.ext4 -F $RAMDEVICE
+            fi            
+            sudo mount $RAMDEVICE $MOUNTPOINT_DIR
+        else
+            syslog_netcat "An ext4 filesystem on ramdisk $RAMDEVICE is accessible through the mountpoint ${MOUNTPOINT_DIR}!"            
+        fi    
     fi
 
     sudo chown -R ${MOUNTPOINT_OWER}:${MOUNTPOINT_OWER} $MOUNTPOINT_DIR
@@ -548,13 +583,20 @@ function mount_remote_filesystem {
             
     if [[ $FILESYS_TYPE == "nfs" ]]
     then
-        sudo mount $FILESERVER_IP:${FILESERVER_PATH} $MOUNTPOINT_DIR
+
+        if [[ $(sudo mount | grep $FILESERVER_IP:${FILESERVER_PATH} | grep -c $MOUNTPOINT_DIR) -eq 0 ]]
+        then
+            syslog_netcat "Setting nfs storage on ($MOUNTPOINT_DIR) from $FILESERVER_IP:${FILESERVER_PATH}...."
+            sudo mount $FILESERVER_IP:${FILESERVER_PATH} $MOUNTPOINT_DIR
+        else
+            syslog_netcat "Nfs storage on ($MOUNTPOINT_DIR) from $FILESERVER_IP:${FILESERVER_PATH} is already setup!"            
+        fi
     fi
     
     return 0
 }
 export -f mount_remote_filesystem
-
+    
 my_if=$(netstat -rn | grep UG | awk '{ print $8 }')
 my_type=`get_my_vm_attribute type`
 my_login_username=`get_my_vm_attribute login`
@@ -600,6 +642,8 @@ function get_my_ai_attribute {
     attribute=`echo $1 | tr '[:upper:]' '[:lower:]'`
     get_hash AI ${my_ai_uuid} ${attribute} 0
 }
+export -f get_my_ai_attribute
+
 metric_aggregator_vm_uuid=`get_my_ai_attribute metric_aggregator_vm`
 
 function get_my_ai_attribute_with_default {
@@ -616,6 +660,7 @@ function get_my_ai_attribute_with_default {
         exit 1
     fi
 }
+export -f get_my_ai_attribute_with_default
 my_username=`get_my_ai_attribute username`
 
 function put_my_ai_attribute {
@@ -812,27 +857,27 @@ function publish_msg {
     msg=$3
     subscribers=$4
 
-	total=0
-	while true ; do
-		got=$(retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber publish ${osinstance}:${object_type}:${channel} \"$msg\"")
-		got=$(echo $got | grep -oE [0-9]+)
-		((total=total+got))
-		syslog_netcat "Got $got subscribers. Total $total / $subscribers"
-		if [ x"$subscribers" != x ] ; then
-			syslog_netcat "Checking subscribers..."
-			if [ $total -lt $subscribers ] ; then
-				syslog_netcat "Not enough."
-				sleep 5
-				continue
-			fi
-			syslog_netcat "Sufficient."
-			total=0
-			break
-		else
-			syslog_netcat "No subscribers requested."
-			break
-		fi
-	done
+    total=0
+    while true ; do
+        got=$(retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber publish ${osinstance}:${object_type}:${channel} \"$msg\"")
+        got=$(echo $got | grep -oE [0-9]+)
+        ((total=total+got))
+        syslog_netcat "Got $got subscribers. Total $total / $subscribers"
+        if [ x"$subscribers" != x ] ; then
+            syslog_netcat "Checking subscribers..."
+            if [ $total -lt $subscribers ] ; then
+                syslog_netcat "Not enough."
+                sleep 5
+                continue
+            fi
+            syslog_netcat "Sufficient."
+            total=0
+            break
+        else
+            syslog_netcat "No subscribers requested."
+            break
+        fi
+    done
 }
 
 function publishvm {
@@ -867,8 +912,8 @@ function subscribevm {
 function subscribeai {
     channel=$1
     message=$2
-	shift
-	shift
+    shift
+    shift
     ${SUBSCRIBE_CMD} AI ${channel} $message $@ | while read line ; do
         syslog_netcat "$line"
     done
@@ -1120,6 +1165,11 @@ function online_or_offline {
         echo offline 
     fi
 }
+
+function comment_lines {
+    sed -i "$1"' s/^/#/' "$2"
+}
+export -f comment_lines
 
 function post_boot_steps {
 
@@ -1517,3 +1567,199 @@ export -f vercomp
 function get_offline_ip {
     ip -o addr show $(ip route | grep default | grep -oE "dev [a-z]+[0-9]+" | sed "s/dev //g") | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | grep -v 255
 }
+
+function automount_data_dirs {
+    #    ROLE_DATA_DIR=$(get_my_ai_attribute_with_default ${my_role}_data_dir none)
+    #    ROLE_DATA_FSTYP=$(get_my_ai_attribute_with_default ${my_role}_data_fstyp local)
+
+    ROLE_DATA_DIR=$(get_my_vm_attribute_with_default data_dir none)
+    ROLE_DATA_FSTYP=$(get_my_vm_attribute_with_default data_fstyp local)
+
+    if [[ $ROLE_DATA_DIR != "none" ]]
+    then
+        syslog_netcat "Creating directory \"$ROLE_DATA_DIR\""
+        sudo mkdir -p $ROLE_DATA_DIR
+    fi
+            
+    if [[ $ROLE_DATA_FSTYP == "ramdisk" || $ROLE_DATA_FSTYP == "tmpfs" ]]
+    then
+
+        #        ROLE_DATA_SIZE=$(get_my_ai_attribute_with_default ${my_role}_data_size 256m)
+        DATA_SIZE=$(get_my_vm_attribute_with_default data_size 256m)
+        mount_filesystem_on_memory ${ROLE_DATA_DIR} $ROLE_DATA_FSTYP ${ROLE_DATA_SIZE} ${my_login_username}
+        
+    elif [[ $ROLE_DATA_FSTYP == "nfs" ]]
+    then
+        
+        #        ROLE_DATA_FILESERVER_IP=$(get_my_ai_attribute_with_default ${my_role}_data_fileserver_ip none)
+        #        ROLE_DATA_FILESERVER_PATH=$(get_my_ai_attribute_with_default ${my_role}_data_fileserver_path none)
+        DATA_FILESERVER_IP=$(get_my_vm_attribute_with_default data_fileserver_ip none)
+        DATA_FILESERVER_PATH=$(get_my_vm_attribute_with_default data_fileserver_path none)        
+        if [[ $ROLE_DATA_FILESERVER_IP != "none" && $ROLE_DATA_FILESERVER_PATH != "none" ]]
+        then         
+            mount_remote_filesystem ${ROLE_DATA_DIR} ${ROLE_DATA_FSTYP} ${ROLE_DATA_FILESERVER_IP} ${ROLE_DATA_FILESERVER_PATH}    
+        fi
+    else
+        if [[ $(get_attached_volumes) != "NONE" ]]
+        then
+            mount_filesystem_on_volume ${ROLE_DATA_DIR} $ROLE_DATA_FSTYP ${my_login_username}
+        fi
+    fi
+}
+export -f automount_data_dirs
+
+function haproxy_setup {
+    LOAD_BALANCER_PORT=$1
+    LOAD_BALANCER_BACKEND_SERVERS=$2
+
+    LOAD_BALANCER_MODE="http"
+    if [[ ! -z $3 ]]
+    then
+        LOAD_BALANCER_MODE=$3
+    fi
+            
+    f=/tmp/haporxy.cfg
+cat << EOF > $f
+global
+  chroot  /var/lib/haproxy
+  daemon
+  group  haproxy
+  log  127.0.0.1 local0
+  maxconn  4096
+  pidfile  /var/run/haproxy.pid
+  stats  socket /var/lib/haproxy/stats
+  user  haproxy
+
+defaults
+  log  global
+  maxconn  8000
+  stats  enable
+  timeout  http-request 10s
+  timeout  queue 1m
+  timeout  connect 10s
+  timeout  client 1m
+  timeout  server 1m
+  timeout  check 10s
+
+EOF
+    echo "listen ${my_type}" >> $f
+    echo "  bind 0.0.0.0:${LOAD_BALANCER_PORT}" >> $f   
+    
+    if [[ $LOAD_BALANCER_NODE == "http" ]]
+    then
+        echo "  mode http" >> $f            
+        echo "  retries 3" >> $f
+        echo "  option tcplog" >> $f
+        echo "  option redispatch" >> $f
+        echo "  balance roundrobin" >> $f
+    fi
+        
+    if [[ $LOAD_BALANCER_NODE == "tcp" ]]
+    then
+        echo "  mode tcp" >> $f
+        echo "  retries 3" >> $f
+        echo "  option tcplog" >> $f 
+        echo "  option redispatch" >> $f
+    fi        
+        
+    for BACKEND_IP in $LOAD_BALANCER_BACKEND_SERVERS
+    do
+        echo "  server $(cat /etc/hosts | grep $BACKEND_IP | grep -v lost | awk '{ print $2 }') $BACKEND_IP:$LOAD_BALANCER_TARGET_PORT check" >> $f
+    done   
+    
+    sudo ls /etc/haproxy/haproxy.cfg.backup
+    if [[ $? -ne 0 ]]
+    then
+        sudo cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.backup
+    fi
+
+    sudo mv $f /etc/haproxy/haproxy.cfg
+
+    SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
+    ATTEMPTS=3
+    while [[ "$ATTEMPTS" -ge  0 ]]
+    do 
+        syslog_netcat "Checking for an HAproxy load balancer running on $SHORT_HOSTNAME...."
+        result="$(ps -ef | grep haproxy | grep -v grep)"
+        
+        if [[ x"$result" == x ]]
+        then 
+            ((ATTEMPTS=ATTEMPTS-1))
+            syslog_netcat "There is no load balancer running on $SHORT_HOSTNAME... will try to start it $ATTEMPTS more times"
+    
+            service_restart_enable haproxy
+            syslog_netcat "HAproxy started on $SHORT_HOSTNAME ( pointing to target service running on $LOAD_BALANCER_TARGET_IPS )."
+            syslog_netcat "Will wait 5 seconds and check for haproxy processes...."
+            sleep 5
+        else 
+            syslog_netcat "HAproxy load balancer restarted successfully on $SHORT_HOSTNAME ( pointing to target service running on $LOAD_BALANCER_TARGET_IPS ) - OK";
+    
+            provision_application_stop $START
+        fi    
+        exit 0
+    
+    done
+    syslog_netcat "haproxy load Balancer could not be restarted on $SHORT_HOSTNAME - NOK"
+    exit 2
+}
+export -f haproxy_setup
+
+function ihs_setup {
+    syslog_netcat "Fixing up httpd.conf..... to point to IPs ${LOAD_BALANCER_TARGET_IPS_CSV}"
+    
+    conf_file=/opt/IBM/HTTPServer/conf/httpd.conf
+    tmp_file=/tmp/http.conf.tmp
+    
+    if [[ x"$(grep "balancer\://$LOAD_BALANCER_TARGET" $conf_file)" == x ]]
+    then
+        sudo cp $conf_file $tmp_file
+        sudo chmod 777 $tmp_file
+    
+        echo "<Proxy balancer://$LOAD_BALANCER_TARGET>" >> $tmp_file
+    
+        for ip in $LOAD_BALANCER_TARGET_IPS ; do
+            echo "BalancerMember http://$ip:$LOAD_BALANCER_TARGET_PORT/$LOAD_BALANCER_TARGET_URL" >> $tmp_file
+        done
+    
+    
+        echo "</Proxy>" >> $tmp_file
+        echo "ProxyPass /daytrader balancer://$LOAD_BALANCER_TARGET" >> $tmp_file
+        echo "ProxyPassReverse /daytrader balancer://$LOAD_BALANCER_TARGET" >> $tmp_file
+    
+        syslog_netcat "Done setting up child load targets for balancer in httpd.conf..."
+    
+        sudo cp $tmp_file $conf_file
+    else
+        syslog_netcat "httpd.conf already fixed. skipping..."
+    fi
+
+    SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)    
+    ATTEMPTS=3
+    while [[ "$ATTEMPTS" -ge  0 ]]
+    do 
+        syslog_netcat "Checking for a http load balancer running on $SHORT_HOSTNAME...."
+        result="$(ps -ef | grep httpd | grep -v grep)"
+        syslog_netcat "Done checking for a WAS server running on $SHORT_HOSTNAME"
+        
+        if [[ x"$result" == x ]]
+        then 
+            ((ATTEMPTS=ATTEMPTS-1))
+            syslog_netcat "There is no load balancer running on $SHORT_HOSTNAME... will try to start it $ATTEMPTS more times"
+    
+            sudo /opt/IBM/HTTPServer/bin/apachectl restart
+            sudo /opt/IBM/HTTPServer/bin/adminctl restart
+            syslog_netcat "Apache started on $SHORT_HOSTNAME ( pointing to target service running on $LOAD_BALANCER_TARGET_IPS )."
+            syslog_netcat "Will wait 5 seconds and check for httpd processes...."
+            sleep 5
+        else 
+            syslog_netcat "Load balancer restarted successfully on $SHORT_HOSTNAME ( pointing to target service running on $LOAD_BALANCER_TARGET_IPS ) - OK";
+    
+            provision_application_stop $START
+        fi    
+        exit 0
+    
+    done
+    syslog_netcat "Load Balancer could not be restarted on $SHORT_HOSTNAME - NOK"
+    exit 2
+}
+export -f ihs_setup

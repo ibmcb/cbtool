@@ -1,6 +1,7 @@
 [USER-DEFINED]
 PDM_ACCESS = need_to_be_configured_by_user
 # Name of the ssh key pair 
+PDM_KEY_NAME = cbtool_rsa
 PDM_SSH_KEY_NAME = cbtool_rsa
 PDM_LOGIN = need_to_be_configured_by_user
 PDM_INITIAL_VMCS = need_to_be_configured_by_user
@@ -32,7 +33,7 @@ UPDATE_FREQUENCY = 1
 ACCESS = $Empty
 CREDENTIALS = $Empty
 SECURITY_GROUPS = $Empty
-KEY_NAME = $Empty
+KEY_NAME = $PDM_KEY_NAME
 ADDITIONAL_DISCOVERY = $Empty
 MIGRATE_SUPPORTED = $True
 PROTECT_SUPPORTED = $True
@@ -46,28 +47,27 @@ EXTRA_INFO = $Empty
 RUN_GENERIC_SCRIPTS = $True
 HOSTS_PER_VMC = 5
 UPDATE_FREQUENCY = 1
-CAPTURE_SUPPORTED = $False
+CAPTURE_SUPPORTED = $True
 RUNSTATE_SUPPORTED = $True
 RESIZE_SUPPORTED = $False
 LOGIN = $PDM_LOGIN
 SECURITY_GROUPS = $Empty
-KEY_NAME = $Empty
+KEY_NAME = $PDM_KEY_NAME
 SSH_KEY_NAME = $PDM_SSH_KEY_NAME
 CHECK_BOOT_STARTED = poll_cloud
 # Other methods could be used to check if a VM *STARTED* booting
 #CHECK_BOOT_STARTED = subscribe_on_starting
-CHECK_BOOT_COMPLETE = wait_for_0
+CHECK_BOOT_COMPLETE = tcp_on_22
 # Other methods could be used to check if a VM *FINISHED* booting
 #CHECK_BOOT_COMPLETE = subscribe_on_booting
-#CHECK_BOOT_COMPLETE = tcp_on_22
+#CHECK_BOOT_COMPLETE = wait_for_0
 NETNAME = private
 TENANT = default
 SIZE = from_vm_template
 LEAVE_INSTANCE_ON_FAILURE = $False
 FORCE_FAILURE = $False
 DISABLE_TIMESYNC = $True
-PORTS_BASE = $False
-PUBKEY_CONTENTS = $Empty
+PORTS_BASE = 10000
 
 [AI_DEFAULTS : PDM_CLOUDCONFIG]
 CAPTURE_SUPPORTED = $False
@@ -95,6 +95,7 @@ UPDATE_FREQUENCY = 1
 SSH_KEY_NAME = $PDM_SSH_KEY_NAME
 
 [VM_TEMPLATES : PDM_CLOUDCONFIG]
+CHECK = size:1-256, imageid1:to_replace
 CLIENT_DAYTRADER = size:2-4096, imageid1:cb_daytrader
 DRIVER_DAYTRADER = size:2-4096, imageid1:cb_daytrader
 CLIENT_TRADELITE = size:2-4096, imageid1:cb_tradelite
@@ -118,20 +119,23 @@ NUTTCPSERVER = size:1-512, imageid1:cb_nuttcp
 XPINGSENDER =  size:1-256, imageid1:cb_xping
 XPINGRECEIVER =  size:1-256, imageid1:cb_xping
 DRIVER_COREMARK = size:1-1024, imageid1:cb_coremark
-COREMARK = size:1-1024, eclipsed_size:gold32, imageid1:cb_netperf
+COREMARK = size:1-1024, eclipsed_size:gold32, imageid1:cb_coremark
 CLIENT_WINDOWS = size:2-4096, imageid1:cb_windows
 WINDOWS = size:2-4096 imageids:1, imageid1:cb_windows
 DRIVER_FILEBENCH = size:2-4096, imageid1:cb_filebench
 FILEBENCH = size:1-2048, eclipsed_size:gold32, imageid1:cb_filebench
 DRIVER_FIO = size:2-4096, imageid1:cb_fio
 FIO = size:2-2048, imageid1:cb_fio
+BTEST = size:2-2048, imageid1:cb_btest
 TINYVM = size:1-256, imageid1:cb_nullworkload
 YATINYVM = size:1-256, imageid1:cb_nullworkload
-FEN_HPC = size:2-4096, imageid1:cb_hpc
-CN_HPC = size:2-4096, imageid1:cb_hpc
+FEN_HPC = size:2-4096, imageid1:cb_hpcc
+CN_HPC = size:2-4096, imageid1:cb_hpcc
+LINPACK = size:2-4096, imageid1:cb_linpack
+PARBOIL = size:2-4096, imageid1:cb_parboil
 DDGEN = size:2-2048, imageid1:cb_ddgen
 SPECJBB = size:2-4096, eclipsed_size:gold32, imageid1:cb_specjbb
-LB = size:2-4096, eclipsed_size:gold32, imageid1:cb_daytrader
+LB = size:2-4096, eclipsed_size:gold32, imageid1:cb_nullworkload
 MONGOS = size:4-8192, eclipsed_size:gold32, imageid1:cb_ycsb
 MONGO_CFG_SERVER = size:1-2048, imageid1:cb_ycsb
 MONGODB = size:2-4096, eclipsed_size:gold32, imageid1:cb_ycsb

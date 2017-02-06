@@ -1,5 +1,5 @@
 ### START - Dependency installation order ###
-nuttcp-order = 50
+nuttcp-order = 96
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###

@@ -1,0 +1,75 @@
+echo ############################################################ [TEST] 700: START expid SLATEST ############################################################
+expid SLATEST
+echo ############################################################# [TEST] 700: END expid SLATEST #############################################################
+echo 
+echo ################################################################### [TEST] 701: START cldalter vm_defaults sla_provisioning_abort true ####################################################################
+cldalter vm_defaults sla_provisioning_abort true
+echo #################################################################### [TEST] 701: END cldalter vm_defaults sla_provisioning_abort true #####################################################################
+echo 
+echo ################################################################## [TEST] 702: START typealter hadoop hadoopmaster_sla_provisioning_target=10 ###################################################################
+typealter hadoop hadoopmaster_sla_provisioning_target=10
+echo ################################################################### [TEST] 702: END typealter hadoop hadoopmaster_sla_provisioning_target=10 ####################################################################
+echo 
+echo ################################################################### [TEST] 703: START typealter hadoop hadoopslave_sla_provisioning_target=10 ###################################################################
+typealter hadoop hadoopslave_sla_provisioning_target=10
+echo #################################################################### [TEST] 703: END typealter hadoop hadoopslave_sla_provisioning_target=10 ####################################################################
+echo 
+echo ################################################################## [TEST] 704: START aiattach hadoop ##################################################################
+aiattach hadoop
+echo ################################################################### [TEST] 704: END aiattach hadoop ###################################################################
+echo 
+echo ################################################################# [TEST] 705: START cldalter ai_defaults post_application_scripts_delay 2 ##################################################################
+cldalter ai_defaults post_application_scripts_delay 2
+echo ################################################################## [TEST] 705: END cldalter ai_defaults post_application_scripts_delay 2 ###################################################################
+echo 
+echo ################################################################## [TEST] 706: START aiattach hadoop ###################################################################
+aiattach hadoop 
+echo ################################################################### [TEST] 706: END aiattach hadoop ####################################################################
+echo 
+echo ######################################################## [TEST] 707: START cldalter ai_defaults post_application_scripts_delay 0 ########################################################
+cldalter ai_defaults post_application_scripts_delay 0
+echo ######################################################### [TEST] 707: END cldalter ai_defaults post_application_scripts_delay 0 #########################################################
+echo 
+echo ####################################################### [TEST] 708: START cldalter ai_defaults post_generic_scripts_delay 5 ########################################################
+cldalter ai_defaults post_generic_scripts_delay 5
+echo ######################################################## [TEST] 708: END cldalter ai_defaults post_generic_scripts_delay 5 #########################################################
+echo 
+echo ################################################################# [TEST] 709: START aiattach hadoop ##################################################################
+aiattach hadoop
+echo ################################################################## [TEST] 709: END aiattach hadoop ###################################################################
+echo 
+echo ####################################################### [TEST] 710: START cldalter ai_defaults post_generic_scripts_delay 0 ########################################################
+cldalter ai_defaults post_generic_scripts_delay 0
+echo ######################################################## [TEST] 710: END cldalter ai_defaults post_generic_scripts_delay 0 #########################################################
+echo 
+echo ####################################################### [TEST] 711: START cldalter vm_defaults pre_creation_delay 7 ########################################################
+cldalter vm_defaults pre_creation_delay 7
+echo ######################################################## [TEST] 711: END cldalter vm_defaults pre_creation_delay 7 #########################################################
+echo 
+echo ################################################################## [TEST] 712: START aiattach hadoop ###################################################################
+aiattach hadoop 
+echo ################################################################### [TEST] 712: END aiattach hadoop ####################################################################
+echo 
+echo ####################################################### [TEST] 713: START cldalter ai_defaults post_generic_scripts_delay 0 ########################################################
+cldalter ai_defaults post_generic_scripts_delay 0
+echo ######################################################## [TEST] 713: END cldalter ai_defaults post_generic_scripts_delay 0 #########################################################
+echo 
+echo ####################################################### [TEST] 714: START cldalter vm_defaults pre_creation_delay 8 ########################################################
+cldalter vm_defaults pre_creation_delay 8
+echo ######################################################## [TEST] 714: END cldalter vm_defaults pre_creation_delay 8 #########################################################
+echo
+echo ################################################################# [TEST] 715: START aiattach hadoop ##################################################################
+aiattach hadoop
+echo ################################################################## [TEST] 715: END aiattach hadoop ###################################################################
+echo 
+echo ################################################################# [TEST] 716: START monextract all ##################################################################
+monextract all
+echo ################################################################## [TEST] 716: END monextract all ###################################################################
+echo 
+echo ################################################################# [TEST] 717: START sudo cat /home/msilva/cloudbench/data/SLATEST/VM_management_SLATEST.csv | grep -v ^# | cut -d ',' -f 2,18,19,24,45 ##################################################################
+shell cat /home/msilva/cloudbench/data/SLATEST/VM_management_SLATEST.csv | grep -v ^# | cut -d ',' -f 2,18,19,24,45
+echo ################################################################## [TEST] 717: END sudo cat /home/msilva/cloudbench/data/SLATEST/VM_management_SLATEST.csv | grep -v ^# | cut -d ',' -f 2,18,19,24,45 ###################################################################
+echo 
+echo ############################ [TEST] 718: START exit ############################
+exit
+echo ############################# [TEST] 718: END exit #############################

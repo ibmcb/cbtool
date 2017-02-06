@@ -18,6 +18,7 @@ START = cb_mlg.sh
 LOAD_PROFILE = SEQ
 LOAD_LEVEL = 1
 LOAD_DURATION = 200
+CATEGORY = synthetic
 
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
 #SYNC_COUNTER_NAME = synchronization_counter

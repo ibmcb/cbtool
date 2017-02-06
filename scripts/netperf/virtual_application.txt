@@ -16,6 +16,7 @@ CAPTURE_ROLE = netserver
 LOAD_PROFILE = tcp_stream
 LOAD_LEVEL = 1
 LOAD_DURATION = uniformIXIXI70I90
+CATEGORY = synthetic
 REPORTED_METRICS = bandwidth,throughput,completion_time,quiescent_time
 
 # VApp-specific MANDATORY attributes

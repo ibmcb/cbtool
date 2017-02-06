@@ -57,6 +57,7 @@ then
 fi
 
 refresh_hosts_file
+automount_data_dirs
 post_boot_executed=`get_my_vm_attribute post_boot_executed`
 
 if [[ x"${post_boot_executed}" == x"true" ]]

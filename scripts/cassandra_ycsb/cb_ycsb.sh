@@ -106,7 +106,7 @@ else
     CCLIN=cqlsh
     CCLI="$CCLIN ${FIRST_SEED}"
     CTBN=ycsb
-    YCSB_PROFILE=cassandra2-cql
+	YCSB_PROFILE=cassandra2-cql
 fi
 
 OUTPUT_FILE=$(mktemp)
@@ -187,7 +187,7 @@ syslog_netcat "Benchmarking YCSB SUT: SEED=${seed_ips_csv} -> CASSANDRAS=${cassa
 
 log_output_command=$(get_my_ai_attribute log_output_command)
 log_output_command=$(echo ${log_output_command} | tr '[:upper:]' '[:lower:]')
-
+    
 run_limit=`decrement_my_ai_attribute run_limit`
 
 if [[ ${run_limit} -ge 0 ]]

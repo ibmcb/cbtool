@@ -1,5 +1,5 @@
 ### START - Dependency installation order ###
-dd-order = 50
+dd-order = 89
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###

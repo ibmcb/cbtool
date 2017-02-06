@@ -273,6 +273,17 @@ class BaseObjectOperations :
                 _status = 9
                 _msg = "Usage: vmccleanup <cloud name> <vmc name>"
 
+        elif command == "img-delete" :
+            object_attribute_list["force_detach"] = "false"            
+            if _length >= 3 :
+                object_attribute_list["name"] = _parameters[1]
+                object_attribute_list["vmc_name"] = _parameters[2]  
+            if _length >= 4 :
+                object_attribute_list["force_detach"] = _parameters[3]
+            if _length < 3 :
+                _status = 9
+                _msg = "Usage: imgdelete <cloud name> <image name> <vmc_name> [force]"
+
         elif command == "vmc-attach" :
             if _length == 2 :
                 object_attribute_list["name"] = _parameters[1]
@@ -359,15 +370,22 @@ class BaseObjectOperations :
         elif command == "vm-capture" :
             if _length == 2 :
                 object_attribute_list["name"] = _parameters[1]
+                object_attribute_list["captured_image_name"] = "auto"
+                object_attribute_list["vmcrs"] = "none"
+
+            if _length == 3 :
+                object_attribute_list["name"] = _parameters[1]
+                object_attribute_list["captured_image_name"] = _parameters[2]                
                 object_attribute_list["vmcrs"] = "none"
             
-            if _length > 2 :
+            if _length > 3 :
                 object_attribute_list["name"] = _parameters[1]
-                object_attribute_list["vmcrs"] = _parameters[2]
+                object_attribute_list["captured_image_name"] = _parameters[2]                                
+                object_attribute_list["vmcrs"] = _parameters[3]
 
             if _length < 2:
                 _status = 9
-                _msg = "Usage: vmcapture <cloud name> <vm name> [parent] [mode]"
+                _msg = "Usage: vmcapture <cloud name> <vm name> [image name] [parent] [mode]"
                 
         elif command == "api-check":
             
@@ -544,7 +562,7 @@ class BaseObjectOperations :
             if _length >= 2 :
                 object_attribute_list["name"] = _parameters[1]
             if _length >= 3 :
-                object_attribute_list["force_detach"] = _parameters[1]
+                object_attribute_list["force_detach"] = _parameters[2]
             if _length < 2 :
                 _status = 9
                 _msg = "Usage: vmcrsdetach <cloud name> <vmcrs name> [force] [mode]"
@@ -581,7 +599,7 @@ class BaseObjectOperations :
             if _length >= 2 :
                 object_attribute_list["name"] = _parameters[1]
             if _length >= 3 :
-                object_attribute_list["force_detach"] = _parameters[1]
+                object_attribute_list["force_detach"] = _parameters[2]
             if _length < 2 :
                 _status = 9
                 _msg = "Usage: firsdetach <cloud name> <vmcrs name> [force] [mode]"
@@ -860,7 +878,8 @@ class BaseObjectOperations :
                 object_attribute_list["type"] = _parameters[1]
             if _length >= 3 :
                 object_attribute_list["output"] = _parameters[2]
-                                
+            if _length >= 4 :
+                object_attribute_list["include_vmcount"] = _parameters[3]   
             if not _length :
                 _status =  9
                 _msg = "Usage: stats <cloud name> [object type] [output]"
@@ -988,8 +1007,25 @@ class BaseObjectOperations :
 
             elif cmd == "vmc-attachall" :
                 _status = 0
+
+            elif cmd == "img-delete" :
+                _cloud_parameters = self.get_cloud_parameters(obj_attr_list["cloud_name"])                
+                obj_attr_list["mgt_801_delete_request_originated"] = obj_attr_list["command_originated"]
+                obj_attr_list["imageid1"] = obj_attr_list["name"]
+                obj_attr_list["boot_volume_imageid1"] = "NA"                
+                obj_attr_list["cloud_name"] = _cloud_parameters["name"]
+                obj_attr_list["model"] = _cloud_parameters["model"]
+                obj_attr_list["experiment_id"] = self.expid
+
+                _vm_defaults = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, \
+                                                    "vm_defaults", \
+                                                    False)
+
+                selective_dict_update(obj_attr_list, _vm_defaults)                
                 
-            elif cmd.count("attach") :
+                _status = 0
+                
+            elif cmd.count("attach") or cmd.count("check") :
 
                 _postpone_counter = False
 
@@ -1092,32 +1128,56 @@ class BaseObjectOperations :
                     obj_attr_list["base_dir"] = _dir_list["base_dir"]
                     obj_attr_list["identity"] = _dir_list["ssh_key_name"]
 
+                    if _obj_type == "AI" :
+                        obj_attr_list["vms"] = ''
+                        obj_attr_list["build"] = False
+                        obj_attr_list["override_imageid1"] = False 
+                        if obj_attr_list["type"].count("build:") :
+                            obj_attr_list["build"] = True
+                            _x, _override_image, _actual_type = obj_attr_list["type"].split(':')
+                            obj_attr_list["type"] = _actual_type
+                            obj_attr_list["override_imageid1"] = _override_image 
+                                                    
                     if _obj_type == "VM" :
                                                 
-                        _filestor_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
-                                                                   "GLOBAL", False, "filestore", \
-                                                                   False)
-                        _vpn_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
-                                                                   "GLOBAL", False, "vpn", \
-                                                                   False)
-    
-                        obj_attr_list["filestore_hostname"] = _filestor_attr_list["hostname"]
-                        obj_attr_list["filestore_port"] = _filestor_attr_list["port"]
-                        obj_attr_list["filestore_username"] = _filestor_attr_list["username"]
-                        obj_attr_list["vpn_server_ip"] = _vpn_attr_list["server_ip"]
-                        obj_attr_list["vpn_server_bootstrap"] = _vpn_attr_list["server_bootstrap"]
-                        obj_attr_list["vpn_server_port"] = _vpn_attr_list["server_port"]
-                                                                                                                        
+                        self.pre_populate_host_info(obj_attr_list)
+                        
                         obj_attr_list["jars_dir"] = _dir_list["jars_dir"]
                         obj_attr_list["exclude_list"] = _dir_list["base_dir"] + "/exclude_list.txt"
                         obj_attr_list["daemon_dir"] = _dir_list["vm_daemon_dir"]
-                        
+
                         obj_attr_list["cloud_init_bootstrap"] = False
                         obj_attr_list["cloud_init_rsync"] = False
 
                         _vm_templates = self.osci.get_object(obj_attr_list["cloud_name"], \
                                                              "GLOBAL", False, \
                                                              "vm_templates", False)
+
+                        if obj_attr_list["role"].count("check:") :
+                            _role_tmp = obj_attr_list["role"].replace("check:",'')
+                            if _role_tmp.count(':') == 1 :                                
+                                obj_attr_list["imageid1"], obj_attr_list["login"] = _role_tmp.split(':')
+                                obj_attr_list["check_ssh"] = "true"                                
+                                obj_attr_list["transfer_files"] = "false"
+                            elif _role_tmp.count(':') == 2 :                                
+                                obj_attr_list["imageid1"], obj_attr_list["login"], obj_attr_list["prepare_workload"] = _role_tmp.split(':')
+                                obj_attr_list["check_ssh"] = "true"                                
+                                obj_attr_list["transfer_files"] = "true"                                
+                            else :
+                                obj_attr_list["imageid1"] = _role_tmp
+                                obj_attr_list["check_ssh"] = "false"
+                                obj_attr_list["check_boot_complete"] = "wait_for_0"
+                                obj_attr_list["transfer_files"] = "false"
+                                
+                            obj_attr_list["role"] = "check"
+                            obj_attr_list["run_generic_scripts"] = "false"
+
+                        obj_attr_list["boot_volume_imageid1"] = "NA"
+
+                        if obj_attr_list["role"] not in _vm_templates :
+                            _msg = "The VM role \"" + obj_attr_list["role"] + "\" is not defined" 
+                            _status = 6700
+                            raise self.ObjectOperationException(_msg, _status)                            
             
                         _vm_template_attr_list = str2dic(_vm_templates[obj_attr_list["role"]])
             
@@ -1129,6 +1189,9 @@ class BaseObjectOperations :
 
                         if obj_attr_list["size"] != "from_vm_template" :
                             del _vm_template_attr_list["size"]
+
+                        if _vm_template_attr_list["imageid1"] == "to_replace" or "imageid1" in obj_attr_list :
+                            del _vm_template_attr_list["imageid1"]
 
                         if "login" in _vm_template_attr_list :
                             del obj_attr_list["login"]
@@ -1223,6 +1286,7 @@ class BaseObjectOperations :
                             _msg = "Capture operations are not supported on \"" + _cloud_parameters["description"] + "\" clouds." 
                             _status = 9000
                             raise self.ObjectOperationException(_msg, _status)
+                        
                     elif cmd.count("migrate") or cmd.count("protect") :
                         op = cmd.split("-")[1]
                         obj_attr_list["mgt_501_" + op + "_request_originated"] = obj_attr_list["command_originated"]
@@ -1306,7 +1370,7 @@ class BaseObjectOperations :
                             _status = 9000
                             raise self.ObjectOperationException(_msg, _status)
                     elif cmd.count("detach") :
-                        obj_attr_list["mgt_901_deprovisioning_request_originated"] = obj_attr_list["command_originated"]
+                        obj_attr_list["mgt_901_deprovisioning_request_originated"] = obj_attr_list["command_originated"]                        
                     elif cmd.count("login") or cmd.count("display") :
                         pass
                     else :
@@ -1399,6 +1463,52 @@ class BaseObjectOperations :
                 cbdebug(_msg)
 
             return _status, _msg
+
+    @trace
+    def pre_populate_host_info(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        _filestor_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
+                                                   "GLOBAL", False, "filestore", \
+                                                   False)
+        _vpn_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
+                                                   "GLOBAL", False, "vpn", \
+                                                   False)
+        _metric_store_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
+                                                       "GLOBAL", \
+                                                       False, \
+                                                       "metricstore", \
+                                                       False)
+        
+        _log_store = self.osci.get_object(obj_attr_list["cloud_name"], \
+                                             "GLOBAL", False, \
+                                             "logstore", False)
+
+        obj_attr_list["filestore_host"] = _filestor_attr_list["hostname"]
+        obj_attr_list["filestore_port"] = _filestor_attr_list["port"]
+        obj_attr_list["filestore_username"] = _filestor_attr_list["username"]
+        obj_attr_list["filestore_protocol"] = _filestor_attr_list["protocol"]
+
+        obj_attr_list["vpn_server_ip"] = _vpn_attr_list["server_ip"]
+        obj_attr_list["vpn_server_host"] = _vpn_attr_list["server_ip"]                        
+        obj_attr_list["vpn_server_bootstrap"] = _vpn_attr_list["server_bootstrap"]
+        obj_attr_list["vpn_server_port"] = _vpn_attr_list["server_port"]
+        obj_attr_list["vpn_server_protocol"] = "TCP"
+        
+        obj_attr_list["metricstore_host"] = _metric_store_attr_list["host"]
+        obj_attr_list["metricstore_port"] = _metric_store_attr_list["port"]
+        obj_attr_list["metricstore_protocol"] = _metric_store_attr_list["protocol"]
+        
+        obj_attr_list["logstore_host"] = _log_store["hostname"]
+        obj_attr_list["logstore_port"] = _log_store["port"]
+        obj_attr_list["logstore_protocol"] = _log_store["protocol"]
+        
+        obj_attr_list["objectstore_host"] = self.osci.host
+        obj_attr_list["objectstore_port"] = self.osci.port 
+        obj_attr_list["objectstore_protocol"] = "TCP"         
+
+        return True
 
     @trace    
     def admission_control(self, obj_type, obj_attr_list, transaction) :
@@ -1920,33 +2030,17 @@ class BaseObjectOperations :
 
         if "access" in obj_attr_list :
             _extra_parms += ",access=" + obj_attr_list["access"]
-        
-        if vm_role + "_netname" in obj_attr_list :
-            _extra_parms += ",netname=" + obj_attr_list[vm_role + "_netname"]
 
-        if vm_role + "_imageid1" in obj_attr_list :
-            _extra_parms += ",imageid1=" + obj_attr_list[vm_role + "_imageid1"]
+        if str(obj_attr_list["override_imageid1"]).lower() != "false" :
+            _extra_parms += ",imageid1=" + obj_attr_list["override_imageid1"]
 
-        if vm_role + "_login" in obj_attr_list :
-            _extra_parms += ",login=" + obj_attr_list[vm_role + "_login"]
-
-        if vm_role + "_resource_limits" in obj_attr_list :
-            _extra_parms += ",resource_limits=" + obj_attr_list[vm_role + "_resource_limits"]
-
-        if vm_role + "_userdata" in obj_attr_list :
-            _extra_parms += ",userdata=" + obj_attr_list[vm_role + "_userdata"]
-
-        if vm_role + "_cloud_vv" in obj_attr_list :
-            _extra_parms += ",cloud_vv=" + obj_attr_list[vm_role + "_cloud_vv"]
-
-        if vm_role + "_cloud_vv_type" in obj_attr_list :
-            _extra_parms += ",cloud_vv_type=" + obj_attr_list[vm_role + "_cloud_vv_type"]
-
-        if vm_role + "_sla_provisioning_target" in obj_attr_list :
-            _extra_parms += ",sla_provisioning_target=" + obj_attr_list[vm_role + "_sla_provisioning_target"]            
+        if "propagated_attributes" in obj_attr_list :
+            for _propagated_attr in obj_attr_list["propagated_attributes"].split(',') :
+                if vm_role + '_' + _propagated_attr in obj_attr_list :
+                    _extra_parms += ',' + _propagated_attr + '=' + obj_attr_list[vm_role + '_' + _propagated_attr]
 
         if "vm_extra_parms" in obj_attr_list :
-            obj_attr_list["vm_extra_parms"]=obj_attr_list["vm_extra_parms"].replace("_EQUAL_","=").replace("_COMMA_",',')
+            obj_attr_list["vm_extra_parms"] = obj_attr_list["vm_extra_parms"].replace("_EQUAL_","=").replace("_COMMA_",',')
             _extra_parms += "," + obj_attr_list["vm_extra_parms"]
                         
         if vm_role + "_cloud_ips" in obj_attr_list :
@@ -1968,7 +2062,6 @@ class BaseObjectOperations :
             _app_type = obj_attr_list["type"]
             obj_attr_list["parallel_operations"] = {}
             _vm_attach_command_lines = []
-            obj_attr_list["vms"] = ''
 
             _vm_counter = 0  
             _vm_creation_list = {}
@@ -2323,16 +2416,14 @@ class BaseObjectOperations :
                 
                 _vm_names.append(_obj_attr_list["name"])
                 _vm_hns.append(_obj_attr_list["cloud_hostname"])
-                if "port_mapping" in _obj_attr_list and operation != "reset" :
-                    _vm_pns.append(_obj_attr_list["port_mapping"])
-                else :
-                    _vm_pns.append("22")                    
                 
                 _vm_roles.append(_obj_attr_list["role"])
                 if operation != "reset" :
                     _vm_ip_addrs.append(_obj_attr_list["prov_cloud_ip"])
+                    _vm_pns.append(_obj_attr_list["prov_cloud_port"])                    
                 else :
                     _vm_ip_addrs.append(_obj_attr_list["run_cloud_ip"])
+                    _vm_pns.append(_obj_attr_list["run_cloud_port"])
                                         
                 _vm_logins.append(_obj_attr_list["login"])
                 _vm_passwds.append(None)
@@ -2347,14 +2438,27 @@ class BaseObjectOperations :
                     _obj_attr_list["identity"] = _obj_attr_list["identity"].replace('/' + _obj_attr_list["local_dir_name"] + '/', '/' + _obj_attr_list["remote_dir_name"] + '/')                    
                 _vm_priv_keys.append(_obj_attr_list["identity"])
 
-                _vm_post_boot_commands.append("~/" + _obj_attr_list["remote_dir_name"] + "/scripts/common/cb_post_boot.sh")
+                if str(_ai_attr_list["build"]).lower() != "false" :
+                    _cmd = "~/" + _obj_attr_list["remote_dir_name"] + "/install --role workload"
+                    _cmd += " --wks " + _obj_attr_list["type"] + " --addr bypass"
+                    _cmd += " --syslogh " + _obj_attr_list["logstore_host"]
+                    _cmd += " --syslogp " + _obj_attr_list["logstore_port"] 
+                    _cmd += " --syslogf 21 --logdest syslog && "
+                    _x_str = " (including the installation script for an AI of type \""
+                    _x_str += _ai_attr_list["type"] + "\") "
+                else :
+                    _cmd = ''
+                    _x_str = ''
+                    
+                _cmd += "~/" + _obj_attr_list["remote_dir_name"] + "/scripts/common/cb_post_boot.sh"
+                _vm_post_boot_commands.append(_cmd)
 
             _actual_attempts = int(_ai_attr_list["configuration_attempts"])
             
             if operation == "setup" or operation == "resize" :
 
                 _msg = "Performing generic application instance post_boot "
-                _msg += "configuration on all VMs belonging to " + _ai_attr_list["log_string"] + "..."                
+                _msg += "configuration" + _x_str + "on all VMs belonging to " + _ai_attr_list["log_string"] + "..."                
                 cbdebug(_msg, True)
                 self.osci.pending_object_set(cloud_name, "AI", ai_uuid, "status", _msg)
 
@@ -2412,8 +2516,6 @@ class BaseObjectOperations :
                         _xfmsg = "Ran out of time to run application-specific \"setup\""
                         _xfmsg += " scripts on " + _ai_attr_list["log_string"] + " due to the "
                         _xfmsg += "established SLA provisioning target."
-                        _xfmsg += _ai_name + " due to the established "
-                        _xfmsg += "SLA provisioning target."
 
                     if _remaining_time < _smallest_remaining_time :
                         _smallest_remaining_time = _remaining_time
@@ -2483,7 +2585,7 @@ class BaseObjectOperations :
                 _lmr = False
 
                 _total_application_spent_time = 0
-                                
+
                 for _num in range(1, 100) :
                     _found = False
                     _vm_command_list = []
@@ -2539,15 +2641,14 @@ class BaseObjectOperations :
 
                     if _smallest_remaining_time != 100000 and operation == "setup":
                         _actual_attempts = _smallest_remaining_time/int(_ai_attr_list["update_frequency"])
-                        _msg = "The VM-specific attribute \"sla_provisioning_abort\" "
-                        _msg += " was set \"True\". Remaining deployment time "
+                        _msg = "Remaining deployment time "
                         _msg += "(application-specific setup) for " + _ai_name
                         _msg += " is " + str(_smallest_remaining_time)
                         _msg += " seconds and actual number of configuration "
                         _msg += "attempts is " + str(_actual_attempts) + " (instead of "
                         _msg += str(_ai_attr_list["configuration_attempts"]) + ")."
                         cbdebug(_msg)
-
+                    
                     if _actual_attempts > 0 :
                         _application_start = int(time())                        
                         _status, _xfmsg = self.proc_man_os_command.parallel_run_os_command(_vm_command_list, \
@@ -2930,7 +3031,6 @@ class BaseObjectOperations :
                 _msg = "Management (" + operation + ") metrics record success."
                 cbdebug(_msg)
                 return True
-
 
     def get_from_pending(self, cloud_name, obj_type, obj_attr_list) :
         '''
@@ -3781,6 +3881,73 @@ class BaseObjectOperations :
         _cloud_parameters[key] = value 
         self.osci.update_cloud(cloud_name, _cloud_parameters)
 
+    @trace
+    def walkthrough_messages(self, _obj_type, operation, obj_attr_list):
+        '''
+        TBD
+        '''
+        _msg = ''
+        if "walkthrough" in obj_attr_list :
+            if obj_attr_list["walkthrough"] == "true" :
+                if operation == "attach" :
+                    if _obj_type == "CLOUD" :
+                        _msg = "\n\n ATTENTION! Given that none of the pre-configured images listed on "
+                        _msg += "CB's configuration file were detected on this cloud, "
+                        _msg += "we need to start by testing the ability to create instances "
+                        _msg += "using unconfigured images. Start by executing \"vmattach check:<IMAGEID OF YOUR CHOICE>\" on the CLI\n"            
+    
+                    if _obj_type == "VM" and obj_attr_list["role"] == "check" :
+                        if obj_attr_list["check_ssh"] == "false" :
+                            _msg = "\n\n The ability to create instances using "
+                            _msg += "unconfigured images was successfully verified!"
+                            _msg += " We may now proceed to check the ability to"
+                            _msg += " connect (via ssh) to instances by executing "
+                            _msg += "\"vmattach check:<IMAGEID OF YOUR CHOICE>:<USERNAME FOR LOGIN>\""
+                            _msg += " on the CLI.\n"
+                        else :
+                            if obj_attr_list["transfer_files"] == "false" :
+                                _msg = "\n\n The ability to create (and connect via ssh to)"
+                                _msg += " instances using unconfigured images was "
+                                _msg += "successfully verified. At this point, we need"
+                                _msg += " to create a base image for the Virtual Application \"nullworkload\""
+                                _msg += " by executing \"vmattach check:<IMAGEID OF YOUR CHOICE>:<USERNAME FOR LOGIN>:nullworkload\""
+                                _msg += " on the CLI.\n"
+                            else :
+                                _msg = "\n\n A copy of the code was transferred to "
+                                _msg += obj_attr_list["name"] + ". On another terminal"
+                                _msg += ", execute \"cd " + obj_attr_list["base_dir"]
+                                _msg += "; ./cbssh " + obj_attr_list["name"] + "\""
+                                _msg += " to login on the VM. Once there, execute"
+                                _msg += " \"cd ~/" + obj_attr_list["remote_dir_name"] 
+                                _msg +=  "; ./install -r workload --wks nullworkload\" "
+                                _msg += "to automatically configure a new instance."
+                                _msg += "\nOnce done, execute \"vmcapture youngest cb_nullworkload\""
+                                _msg += " on the CLI\n"
+            
+                    if _obj_type == "VM" and obj_attr_list["role"] == "tinyvm" :
+                        _msg = "\n\n You have sucessfully deployed your first fully configured"
+                        _msg += " instance, with the role \"tinyvm\". Now lets try deploy "
+                        _msg += "our first workload with \"aiattach nullworkload\" on the CLI\n"
+        
+                    if _obj_type == "AI" and obj_attr_list["type"] == "nullworkload" :
+                        _msg = "\n\n You have sucessfully deployed your first workload. You can"
+                        _msg += "check the CB's GUI (go to Dashboard -> Application Performance) "
+                        _msg += "or run \"monlist VM\" on the CLI. If you see application"
+                        _msg += "samples, this means that the initial configuration is complete.\n"
+                        _msg += "Restart the tool with \"cb --soft_reset\". \nTo configure instances"
+                        _msg += " for the deployment of other workloads, just execute "
+                        _msg += "\"vmattach check:cb_nullworkload:<USERNAME FOR LOGIN>:<WORKLOAD TYPE OF YOUR CHOICE>\""
+                        _msg += ", followed \"vmcapture youngest <IMAGE_NAME_DEFINED_ON_THE_WORKLOAD_ROLES>\""
+        
+                if operation == "capture" :
+                    if obj_attr_list["captured_image_name"] == "cb_nullworkload" :
+                        _msg = "\n\n You have sucessfully captured your first fully configured"
+                        _msg += " instance, with the role \"tinyvm\", as part of the workload"
+                        _msg += " \"nullworkload\". Now lets try to attach this new instance"
+                        _msg += " with \"vmattach tinyvm\". on the CLI\n"                
+        
+        return _msg
+    
     @trace
     def background_execute(self, parameters, command) :
         '''

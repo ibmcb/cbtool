@@ -84,6 +84,8 @@ LEAVE_INSTANCE_ON_FAILURE = $False
 FORCE_FAILURE = $False
 DISABLE_TIMESYNC = $False
 AVAILABILITY_ZONE = $Empty
+BOOT_VOLUME_IMAGEID1_INSTANCE = None
+FLAVOR_INSTANCE = None
 
 [AI_DEFAULTS : OSK_CLOUDCONFIG]
 ATTACH_PARALLELISM = 10
@@ -115,6 +117,7 @@ LOGIN = $OSK_LOGIN
 SSH_KEY_NAME = $OSK_SSH_KEY_NAME
 
 [VM_TEMPLATES : OSK_CLOUDCONFIG]
+CHECK = size:m1.tiny, imageid1:to_replace
 CLIENT_DAYTRADER = size:m1.medium, imageid1:cb_daytrader
 DRIVER_DAYTRADER = size:m1.medium, imageid1:cb_daytrader
 CLIENT_TRADELITE = size:m1.medium, imageid1:cb_tradelite
@@ -145,13 +148,16 @@ DRIVER_FILEBENCH = size:m1.medium, imageid1:cb_filebench
 FILEBENCH = size:m1.small, imageid1:cb_filebench
 DRIVER_FIO = size:m1.medium, imageid1:cb_fio
 FIO = size:m1.medium, imageid1:cb_fio
+BTEST = size:m1.medium, imageid1:cb_btest
 TINYVM = size:m1.tiny, imageid1:cb_nullworkload
 YATINYVM = size:m1.tiny, imageid1:cb_nullworkload
 FEN_HPC = size:m1.medium, imageid1:cb_hpcc
 CN_HPC = size:m1.medium, imageid1:cb_hpcc
+LINPACK = size:m1.medium, imageid1:cb_linpack
+LINPACK = size:m1.medium, imageid1:cb_parboil
 DDGEN = size:m1.medium, imageid1:cb_ddgen
 SPECJBB = size:m1.medium, imageid1:cb_specjbb
-LB = size:m1.medium, imageid1:cb_daytrader
+LB = size:m1.medium, imageid1:cb_nullworkload
 MONGOS = size:m1.large, imageid1:cb_ycsb
 MONGO_CFG_SERVER = size:m1.small, imageid1:cb_ycsb
 MONGODB = size:m1.medium, imageid1:cb_ycsb

@@ -16,6 +16,7 @@ CAPTURE_ROLE=filebench
 LOAD_PROFILE = fileserver
 LOAD_LEVEL = uniformIXIXI1I1
 LOAD_DURATION = uniformIXIXI60I90
+CATEGORY = synthetic
 REPORTED_METRICS = bandwidth,throughput,latency,completion_time,quiescent_time
 
 # VApp-specific MANDATORY attributes
@@ -29,7 +30,7 @@ DESCRIPTION += before the maximum, if the amount of data is small or disk fast).
 DESCRIPTION +=- COMMENT: One of the "Synthetic" Workloads. The filebench benchmark,
 DESCRIPTION += due its internal timing idiosyncrasies, might not be able to fully
 DESCRIPTION += stress the disk I/O capacity of a single VM.
-FILEBENCH_SETUP1 = cb_setup_storage.sh
+FILEBENCH_SETUP1 = cb_start_filebench.sh
 START = cb_filebench.sh
 
 # VApp-specific OPTIONAL modifier parameters. Commented attributes imply default values assumed

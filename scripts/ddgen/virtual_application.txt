@@ -16,6 +16,7 @@ CAPTURE_ROLE=ddgen
 LOAD_PROFILE = default
 LOAD_LEVEL = 1024
 LOAD_DURATION = 180
+CATEGORY = synthetic
 REPORTED_METRICS = bandwidth,completion_time,quiescent_time
 
 # VApp-specific MANDATORY attributes

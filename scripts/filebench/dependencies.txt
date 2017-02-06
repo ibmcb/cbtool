@@ -1,5 +1,5 @@
 ### START - Dependency installation order ###
-filebench-order = 50
+filebench-order = 91
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###

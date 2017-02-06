@@ -31,17 +31,38 @@ source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
 if [[ -z ${JAVA_HOME} ]]
 then
-    JAVA_HOME=`get_my_ai_attribute_with_default java_home ~/jdk1.6.0_21`
+    JAVA_HOME=$(get_my_ai_attribute_with_default java_home auto)
+
+    if [[ ${JAVA_HOME} != "auto" ]]   
+    then
+        sudo ls $JAVA_HOME
+        if [[ $? -ne 0 ]]
+        then
+            syslog_netcat "The JAVA_HOME specified in the AI attributes \"${JAVA_HOME}\" could not be located: setting it to \"auto\"..."
+            JAVA_HOME="auto"
+        fi
+    fi
+    
+    if [[ ${JAVA_HOME} == "auto" ]]
+    then
+        syslog_netcat "The JAVA_HOME was set to \"auto\". Attempting to find the most recent in /usr/lib/jvm"            
+        JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre
+    fi
+
+    syslog_netcat "JAVA_HOME determined to be \"${JAVA_HOME}\""    
+            
     eval JAVA_HOME=${JAVA_HOME}
     if [[ -f ~/.bashrc ]]
     then
         is_java_home_export=`grep -c "JAVA_HOME=${JAVA_HOME}" ~/.bashrc`
         if [[ $is_java_home_export -eq 0 ]]
         then
-            syslog_netcat "Adding JAVA_HOME to bashrc"
+            syslog_netcat "Adding JAVA_HOME=${JAVA_HOME} to bashrc"
             echo "export JAVA_HOME=${JAVA_HOME}" >> ~/.bashrc
         fi
     fi
+else 
+    syslog_netcat "Line \"export JAVA_HOME=${JAVA_HOME}\" was already added to bashrc"    
 fi
 
 export JAVA_HOME=${JAVA_HOME}
@@ -57,17 +78,24 @@ fi
     
 if [[ ! -d ${HADOOP_HOME} ]]
 then
+    syslog_netcat "The value specified in the AI attribute HADOOP_HOME (\"$HADOOP_HOME\") points to a non-existing directory."     
     for HADOOP_CPATH in ~ /usr/local
     do
+        syslog_netcat "Searching ${HADOOP_CPATH} for a hadoop dir."
         if [[ $(sudo ls $HADOOP_CPATH | grep -v tar | grep -c hadoop) -ne 0 ]]
         then
             eval HADOOP_CPATH=${HADOOP_CPATH}
-            break
+            syslog_netcat "Directory \"${HADOOP_CPATH}\" found."
+            HADOOP_HOME=$(ls ${HADOOP_CPATH} | grep -v tar | grep -v hadoop_store | grep hadoop | sort -r | head -n1)
+            eval HADOOP_HOME="$HADOOP_CPATH/${HADOOP_HOME}"
+            if [[ -d $HADOOP_HOME ]]
+            then
+                syslog_netcat "HADOOP_HOME determined to be \"${HADOOP_HOME}\""
+                break
+            fi
         fi
     done
-    syslog_netcat "The value specified in the AI attribute HADOOP_HOME (\"$HADOOP_HOME\") points to a non-existing directory. Will search ${HADOOP_CPATH} for a hadoop dir." 
-    HADOOP_HOME=$(ls ${HADOOP_CPATH} | grep -v tar | grep hadoop | sort -r | head -n1)
-    eval HADOOP_HOME="$HADOOP_CPATH/${HADOOP_HOME}"
+    
     if [[ ! -d $HADOOP_HOME ]]
     then
         syslog_netcat "Unable to find a directory with a Hadoop installation - NOK"
@@ -111,7 +139,7 @@ then
         echo "export HADOOP_CONF_DIR=${HADOOP_CONF_DIR}" >> ~/.bashrc
     fi
 fi            
-
+    
 export HADOOP_CONF_DIR=${HADOOP_CONF_DIR}
 
 if [[ -z ${HADOOP_EXECUTABLE} ]]
@@ -122,7 +150,7 @@ fi
 
 if [[ -z ${HADOOP_EXECUTABLE} ]]
 then
-    HADOOP_EXECUTABLE=$(find $HADOOP_HOME | grep hadoop$ | grep -v core | grep -v src | tail -1)
+    HADOOP_EXECUTABLE=$(find $HADOOP_HOME | grep hadoop$ | grep -v core | grep -v src | grep -v doc | tail -1)
     syslog_netcat "HADOOP_EXECUTABLE not defined on the environment. Assuming \"$HADOOP_EXECUTABLE\" as the executable"
 fi
 
@@ -146,7 +174,7 @@ export HADOOP_EXECUTABLE=${HADOOP_EXECUTABLE}
 
 if [[ -z ${GIRAPH_HOME} ]]
 then
-    GIRAPH_HOME=`get_my_ai_attribute_with_default giraph_home ~/giraph/giraph/`    
+    GIRAPH_HOME=`get_my_ai_attribute_with_default giraph_home ~/giraph/`    
     eval GIRAPH_HOME=${GIRAPH_HOME}
 
     if [[ -f ~/.bashrc ]]
@@ -167,14 +195,19 @@ then
     ZOOKEPER_HOME=`get_my_ai_attribute_with_default zookeper_home ~/giraph/zookeeper/zookeeper-3.4.6/`
     
     eval ZOOKEPER_HOME=${ZOOKEPER_HOME}
-
-    if [[ -f ~/.bashrc ]]
+    ls $ZOOKEPER_HOME
+    if [[ $? -ne 0 ]]
     then
-        is_zookeper_home_export=`grep -c "ZOOKEPER_HOME=${ZOOKEPER_HOME}" ~/.bashrc`
-        if [[ $is_zookeper_home_export -eq 0 ]]
+        syslog_netcat "ZOOKEPER_HOME directory $ZOOKEPER_HOME not found."
+    else
+        if [[ -f ~/.bashrc ]]
         then
-            syslog_netcat "Adding ZOOKEPER_HOME ($ZOOKEPER_HOME) to bashrc"
-            echo "export ZOOKEPER_HOME=${ZOOKEPER_HOME}" >> ~/.bashrc
+            is_zookeper_home_export=`grep -c "ZOOKEPER_HOME=${ZOOKEPER_HOME}" ~/.bashrc`
+            if [[ $is_zookeper_home_export -eq 0 ]]
+            then
+                syslog_netcat "Adding ZOOKEPER_HOME ($ZOOKEPER_HOME) to bashrc"
+                echo "export ZOOKEPER_HOME=${ZOOKEPER_HOME}" >> ~/.bashrc
+            fi
         fi
     fi
 fi
@@ -722,11 +755,11 @@ function create_mapreduce_history {
         if [[ ${hadoop_use_yarn} -eq 1 ]]
         then
             syslog_netcat "Creating map-reduce history directory on HDFS filesystem..."
-            hadoop dfs -mkdir /mr-history
-            hadoop dfs -mkdir /mr-history/done
-            hadoop dfs -mkdir /mr-history/tmp
-            hadoop dfs -chmod -R 777 /mr-history/done
-            hadoop dfs -chmod -R 777 /mr-history/tmp
+            $HADOOP_HOME/bin/hadoop dfs -mkdir /mr-history
+            $HADOOP_HOME/bin/hadoop dfs -mkdir /mr-history/done
+            $HADOOP_HOME/bin/hadoop dfs -mkdir /mr-history/tmp
+            $HADOOP_HOME/bin/hadoop dfs -chmod -R 777 /mr-history/done
+            $HADOOP_HOME/bin/hadoop dfs -chmod -R 777 /mr-history/tmp
         fi
     
     fi
@@ -861,7 +894,26 @@ function start_slave_hadoop_services {
             
     if [[ ${hadoop_use_yarn} -eq 1 ]]
     then
-        
+    
+        DFS_NAME_DIR=`get_my_ai_attribute_with_default dfs_name_dir /tmp/cbhadoopname`        
+    
+        set -- `sudo ls -l ${DFS_NAME_DIR}`
+        dfs_name_dir_owner=$5
+    
+        if [[ x$dfs_name_dir_owner == x ]]
+        then
+#           dfs_name_dir_owner="hdfs"
+            dfs_name_dir_owner=$(whoami)
+            sudo chown -R $(whoami):$(whoami) ${DFS_NAME_DIR}
+
+            echo $DFS_NAME_DIR | grep /usr/local/hadoop_store/
+            if [[ $? -eq 0 ]]
+            then
+                sudo chown -R $(whoami):$(whoami) /usr/local/hadoop_store/
+            fi
+                        
+        fi
+
         syslog_netcat "...Starting datanode..."
         syslog_netcat "...${HADOOP_BIN_DIR}/hadoop-daemon.sh script exists, using that to launch Jobtracker services..."        
         ${HADOOP_BIN_DIR}/hadoop-daemon.sh start datanode

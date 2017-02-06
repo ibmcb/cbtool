@@ -61,9 +61,9 @@ STATUS=$?
 
 if [[ ${STATUS} -eq 0 ]]
 then
-        syslog_netcat "Redis server running"
+    syslog_netcat "Redis server running"
 else
-        syslog_netcat "Redis server failed to start"
+    syslog_netcat "Redis server failed to start"
 fi
 
 provision_application_stop $START

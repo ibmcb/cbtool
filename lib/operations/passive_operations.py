@@ -820,6 +820,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 _status, _fmsg = self.initialize_object(obj_attr_list, command)
 
                 if not _status :
+                    
                     _stats["object_store"] = {}
                     _stats["metric_store"] = {}                    
                     _stats["experiment_objects"] = {}
@@ -913,7 +914,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
                         if _obj_type == "VM" :
                             
-                            if str(_query_object["get_vm_list"]).lower() == "true" :
+                            if str(_query_object["get_vm_list"]).lower() == "true" or str(obj_attr_list["include_vmcount"]) == "true" :
                                 _vm_defaults = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "vm_defaults", False)                                
                                 _vm_defaults["cloud_name"] = obj_attr_list["cloud_name"]                            
                                 self.set_cloud_operations_instance(obj_attr_list["cloud_model"])      
@@ -1208,7 +1209,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             if not _status :
                 _status, _fmsg = self.initialize_object(obj_attr_list, command)
 
-                _x, _y, _stats = self.stats(obj_attr_list, obj_attr_list["cloud_name"] + " all noprint", "stats-get", True)
+                _x, _y, _stats = self.stats(obj_attr_list, obj_attr_list["cloud_name"] + " all noprint false", "stats-get", True)
 
                 _exp_counters = _stats["experiment_counters"]
                 
@@ -2649,7 +2650,23 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _list_name = obj_attr_list["object_type"][:-1].lower() + '_' + obj_attr_list["object_attribute"]
                     _result = list(self.osci.get_list(obj_attr_list["cloud_name"], "GLOBAL", _list_name))
 
-                    _list = ", ".join(_result)
+                    if _list_name == "ai_types" :
+                        _tmp_dict = {}
+                        for _ai_item in _result :
+                            if _ai_item.count('/') :
+                                _category, _ai_type = _ai_item.split('/')
+                                if _category not in _tmp_dict :
+                                    _tmp_dict[_category] = []
+                                _tmp_dict[_category].append(_ai_type)
+                            
+                        _list = ''
+                        for _category in _tmp_dict.keys() :
+                            _list += '\n' + _category + ":\n"
+                            for _ai_type in sorted(_tmp_dict[_category]) :
+                                _list += "  " + _ai_type + '\n'
+                    else :
+                        _list = ", ".join(_result)
+                        
                     _vmc_list = self.osci.get_object_list(obj_attr_list["cloud_name"], "VMC")
 
                     if not _vmc_list :
@@ -2685,7 +2702,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                       }
                     else :
                         _view_dict = _result
-        
+                                
                     _status = 0
 
         except self.osci.ObjectStoreMgdConnException, obj :
@@ -2711,6 +2728,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
                 if isinstance(_view_dict, set) :
                     _view_dict = sorted(list(_view_dict))
+
                 if isinstance(_view_dict, list) :
                     _view_dict = sorted(_view_dict)
                     
