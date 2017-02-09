@@ -251,6 +251,7 @@ class CommonCloudFunctions:
                 self.take_action_if_requested("VM", obj_attr_list, "provision_complete")
                 _time_mark_prc = int(time())
                 obj_attr_list["mgt_003_provisioning_request_completed"] = _time_mark_prc - time_mark_prs
+                self.annotate_time_breakdown(obj_attr_list, "instance_active_time", obj_attr_list["mgt_003_provisioning_request_completed"], False)   
                 self.pending_set(obj_attr_list, "Booting...")
                 break
             else :
@@ -514,6 +515,7 @@ class CommonCloudFunctions:
                     self.take_action_if_requested("VM", obj_attr_list, "provision_finished")
                     _time_mark_ib = int(time())
                     obj_attr_list["mgt_004_network_acessible"] = int(time()) - time_mark_prc
+                    self.annotate_time_breakdown(obj_attr_list, "instance_reachable_time", obj_attr_list["mgt_004_network_acessible"], False)
                     obj_attr_list["time_mark_aux"] = _time_mark_ib                    
                     self.pending_set(obj_attr_list, "Network accessible now. Continuing...")
                     _network_reachable = True
@@ -673,7 +675,7 @@ class CommonCloudFunctions:
                 _status = 0
 
             elif obj_attr_list["staging"] == "execute_" + current_step :
-                
+
                 if current_step == "provision_originated" :
                     obj_attr_list["last_known_state"] = "about to execute script"
 
@@ -684,14 +686,14 @@ class CommonCloudFunctions:
 
                 if obj_type == "AI" :
                     _json_contents["vms"] = {}
-
                     if "vms" in obj_attr_list and current_step != "deprovision_finished" :
                         _vm_id_list = obj_attr_list["vms"].split(',')
                         for _vm_id in _vm_id_list :
                             _vm_uuid = _vm_id.split('|')[0]
-                            _vm_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "VM", False, _vm_uuid, False)
-                            _json_contents["vms"][_vm_attr_list["uuid"]] = _vm_attr_list 
-
+                            if len(_vm_uuid) :
+                                _vm_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "VM", False, _vm_uuid, False)
+                                _json_contents["vms"][_vm_attr_list["uuid"]] = _vm_attr_list 
+                        
                 obj_attr_list["execute_json_filename"] = "/tmp/" 
                 obj_attr_list["execute_json_filename"] += obj_attr_list["execute_json_filename_prefix"]
                 obj_attr_list["execute_json_filename"] += "_vapp_" + obj_attr_list["cloud_name"] 
@@ -718,7 +720,7 @@ class CommonCloudFunctions:
 
                 if not _status :
                     self.process_script_output(obj_attr_list, current_step)
-
+                    
             obj_attr_list[_current_staging + "_complete"] = int(time())
             
         except self.osci.ObjectStoreMgdConnException, obj :
@@ -1435,11 +1437,15 @@ runcmd:
         '''
         TBD
         '''
-
         _temp_dict = None
+
+#        if "time_breakdown_keys" not in obj_attr_list :
+#            obj_attr_list["time_breakdown_keys"] = ''
+
         if "execute_" + current_step + "_stdout" in obj_attr_list :
             if obj_attr_list["execute_" + current_step + "_stdout"].count("staging") or \
-            obj_attr_list["execute_" + current_step + "_stdout"].count("tenant") :
+            obj_attr_list["execute_" + current_step + "_stdout"].count("tenant") or \
+            obj_attr_list["execute_" + current_step + "_stdout"].count("namespace") :
                 _temp_dict = str2dic(obj_attr_list["execute_" + current_step + "_stdout"].replace('\n',''), False)
 
         if _temp_dict :
@@ -1458,10 +1464,49 @@ runcmd:
                         
                 obj_attr_list["vm_extra_parms"] = obj_attr_list["vm_extra_parms"][0:-1]
                 obj_attr_list.update(_temp_dict)
-            
+                        
             if obj_attr_list["name"].count("vm_") :
                 obj_attr_list.update(_temp_dict)               
 
+            '''
+            print obj_attr_list["counter"]
+            if obj_attr_list["counter"] == "1" :
+                self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
+                                                  "GLOBAL", \
+                                                  "time_breakdown_keys", \
+                                                  False, \
+                                                  "time_breakdown_keys", \
+                                                  obj_attr_list["time_breakdown_keys"])
+            '''    
+        return True
+
+    @trace
+    def annotate_time_breakdown(self, obj_attr_list, name, start, diff = True) :
+        '''
+        TBD
+        '''
+        if "time_breakdown_keys" not in obj_attr_list :
+            obj_attr_list["time_breakdown_keys"] = ''
+            for _key in obj_attr_list.keys() :
+                if _key.count(obj_attr_list["model"]) and _key.count("_time") :
+                    obj_attr_list["time_breakdown_keys"] += _key + ','
+            
+        _key_name = obj_attr_list["model"] + '_' + str(obj_attr_list["time_breakdown_step"]).zfill(3) + '_' + name
+        obj_attr_list["time_breakdown_step"] = int(obj_attr_list["time_breakdown_step"]) + 1
+        obj_attr_list["time_breakdown_keys"] += _key_name + ','
+        
+        if diff :  
+            obj_attr_list[_key_name] = time() - start
+        else :
+            obj_attr_list[_key_name] = start
+
+        if obj_attr_list["name"] == "vm_1" or obj_attr_list["name"] == "vm_10" :
+            self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
+                                              "GLOBAL", \
+                                              "mon_defaults", \
+                                              False, \
+                                              "time_breakdown_keys", \
+                                              obj_attr_list["time_breakdown_keys"])
         return True
 
     @trace

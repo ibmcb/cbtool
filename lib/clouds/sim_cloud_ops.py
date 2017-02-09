@@ -675,7 +675,10 @@ class SimCmds(CommonCloudFunctions) :
 
             obj_attr_list["last_known_state"] = "about to send create request"
 
+            _mark_a = time()
             self.get_images(obj_attr_list)
+            self.annotate_time_breakdown(obj_attr_list, "get_imageid_time", _mark_a)
+                                    
             self.get_networks(obj_attr_list) 
             self.pre_vmcreate_process(obj_attr_list)
             
@@ -697,10 +700,9 @@ class SimCmds(CommonCloudFunctions) :
                 
             self.take_action_if_requested("VM", obj_attr_list, "provision_started")
 
-            _time_mark_vmp = int(time())
+            _mark_a = time()
             self.vm_placement(obj_attr_list)
-            
-            obj_attr_list["sim_0021_vm_placement_time"] = _time_mark_vmp - int(time())
+            self.annotate_time_breakdown(obj_attr_list, "vm_placement_time", _mark_a)
 
             self.vvcreate(obj_attr_list)
 
@@ -777,11 +779,6 @@ class SimCmds(CommonCloudFunctions) :
                 _time_mark_drc - _time_mark_drs
 
             self.take_action_if_requested("VM", obj_attr_list, "deprovision_finished")
-
-            if "execute_deprovision_finished_stdout" in obj_attr_list :
-                if obj_attr_list["execute_deprovision_finished_stdout"].count("tenant") :
-                    _temp_dict = str2dic(obj_attr_list["execute_deprovision_finished_stdout"].replace('\n',''))
-                    obj_attr_list.update(_temp_dict)
 
             self.vvdestroy(obj_attr_list)
                     

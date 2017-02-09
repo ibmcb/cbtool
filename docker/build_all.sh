@@ -27,7 +27,7 @@ fi
 echo "##### Building Docker orchestrator images"
 pushd orchestrator > /dev/null 2>&1
 sudo rm -rf Dockerfile
-for DFILE in $(ls Dockerfile*)
+for DFILE in $(ls Dockerfile* | grep -v centos)
 do
     sudo rm -rf Dockerfile && sudo cp -f $DFILE Dockerfile
     DNAME=$(echo $DFILE | sed 's/Dockerfile-//g')
@@ -174,7 +174,9 @@ then
         NOT_COREMARK=$?
         echo $IMG | grep linpack
         NOT_LINPACK=$?
-        if [[ $NOT_COREMARK && $NOT_LINPACK ]]
+        echo $IMG | grep parboil
+        NOT_LINPACK=$?        
+        if [[ $NOT_COREMARK && $NOT_LINPACK && $NOT_PARBOIL ]]
         then
             CMD="docker push $IMG"
             echo "########## Pushing image ${IMG} by executing the command \"$CMD\" ..."             

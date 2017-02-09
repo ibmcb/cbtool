@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
-
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -24,6 +23,7 @@
 '''
 from time import time, sleep
 from random import randint
+from os.path import expanduser
 
 import operator
 import pykube
@@ -248,29 +248,41 @@ class KubCmds(CommonCloudFunctions) :
             sleep(_wait)
 
             self.common_messages("VMC", obj_attr_list, "cleaning up vms", 0, '')
-            _running_instances = True
-
-            while _running_instances and _curr_tries < _max_tries :
-                _running_instances = False
-
-                _container_list = pykube.objects.Pod.objects(self.kubeconn).filter(namespace="default")
-                for _container in _container_list :
-
-                    _container_name = str(_container.name)
-                    
-                    if _container_name.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"].lower()) :
-
-                        _running_instances = True
-                        _container_id = _container.obj["metadata"]["uid"]
-                        _msg = "Terminating instance: " 
-                        _msg += _container_id + " (" + str(_container_name) + ")"
-                        cbdebug(_msg, True)
-                        
-                        _container.delete()
+            
+            for _abstraction_type in [ "deployment", "replicaset", "pod" ] :
+                for _item in pykube.objects.Namespace.objects(self.kubeconn) :
+                    _namespace = _item.name
+                    _running_instances = True
+        
+                    while _running_instances and _curr_tries < _max_tries :
+                        _running_instances = False
+    
+                        if _abstraction_type == "deployment" :
+                            _object_list = pykube.objects.Deployment.objects(self.kubeconn).filter(namespace = _namespace)
+    
+                        if _abstraction_type == "replicaset" :                        
+                            _object_list = pykube.objects.ReplicaSet.objects(self.kubeconn).filter(namespace = _namespace)
+    
+                        if _abstraction_type == "pod" :                        
+                            _object_list = pykube.objects.Pod.objects(self.kubeconn).filter(namespace = _namespace)
                             
-                sleep(_wait)
-
-                _curr_tries += 1
+                        for _object in _object_list :
+        
+                            _object_name = str(_object.name)
+                            
+                            if _object_name.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"].lower()) :
+        
+                                _running_instances = True
+                                _object_id = _object.obj["metadata"]["uid"]
+                                _msg = "Terminating " + _abstraction_type + " : " 
+                                _msg += _object_id + " (" + str(_object_name) + ")"
+                                cbdebug(_msg, True)
+                                
+                                _object.delete()
+                                    
+                        sleep(_wait)
+        
+                        _curr_tries += 1
 
             if _curr_tries > _max_tries  :
                 _status = 1077
@@ -330,6 +342,20 @@ class KubCmds(CommonCloudFunctions) :
                 obj_attr_list["hosts"] = ''
                 obj_attr_list["host_list"] = {}
                 obj_attr_list["host_count"] = "NA"
+
+            if "cloud_name" in obj_attr_list :
+                _file = expanduser("~") + "/cbrc-" + obj_attr_list["cloud_name"].lower()
+            else :
+                _file = expanduser("~") + "/cbrc"
+                
+            _file_fd = open(_file, 'w')
+#            _file_fd.write("export KUBERNETES_MASTER = " + obj_attr_list["access"] + "\n")
+
+            if "cloud_name" in obj_attr_list :                        
+                _file_fd.write("export CB_CLOUD_NAME=" + obj_attr_list["cloud_name"] + "\n")
+                _file_fd.write("export CB_USERNAME=" + obj_attr_list["username"] + "\n")
+                
+            _file_fd.close()
             
             _time_mark_prc = int(time())
             obj_attr_list["mgt_003_provisioning_request_completed"] = \
@@ -405,7 +431,7 @@ class KubCmds(CommonCloudFunctions) :
                              _vmc_attr_list["name"], obj_attr_list)
 
 
-                _container_list = pykube.objects.Pod.objects(self.kubeconn).filter(namespace="default")
+                _container_list = pykube.objects.Pod.objects(self.kubeconn).filter()
                 for _container in _container_list :
                     if _container.name.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"].lower()) :
                         _nr_instances += 1
@@ -449,7 +475,7 @@ class KubCmds(CommonCloudFunctions) :
             return False
 
     @trace
-    def get_instances(self, obj_attr_list, obj_type = "vm", identifier = "all") :
+    def get_instances(self, obj_attr_list, obj_type = "pod", identifier = "all") :
         '''
         TBD
         '''
@@ -457,15 +483,40 @@ class KubCmds(CommonCloudFunctions) :
         _instances = False
         _fmsg = "Error while getting instances"
         _call = "NA"
-                      
+
         try :
-            if obj_type == "vm" :
+            if obj_type == "pod" :
                 _call = "containers()"
                 if identifier == "all" :
-                    _instances = pykube.objects.Pod.objects(self.kubeconn).filter(namespace="default")
+                    _instances = pykube.objects.Pod.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"])
                                                                    
                 else :
-                    _instances = pykube.objects.Pod.objects(self.kubeconn).filter(field_selector={"metadata.name": identifier})
+                    if "selector" in obj_attr_list :
+                        _selector = str2dic(obj_attr_list["selector"])
+                        _instances = pykube.objects.Pod.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"], \
+                                                                                      selector= _selector)                        
+                    else :
+                        _instances = pykube.objects.Pod.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"], \
+                                                                                      field_selector={"metadata.name": identifier})
+                        
+            elif obj_type == "replicaset" :
+                if identifier == "all" :
+                    _instances = pykube.objects.ReplicaSet.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"])
+                else :
+                    if "selector" in obj_attr_list :
+                        _selector = str2dic(obj_attr_list["selector"])
+                        _instances = pykube.objects.ReplicaSet.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"], \
+                                                                                      selector= _selector)
+
+            elif obj_type == "deployment" :
+                if identifier == "all" :
+                    _instances = pykube.objects.Deployment.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"])
+                else :
+                    if "selector" in obj_attr_list :
+                        _selector = str2dic(obj_attr_list["selector"])
+                        _instances = pykube.objects.Deployment.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"], \
+                                                                                      selector= _selector)                 
+                    
             else :
                 _call = "volumes()"                    
                 if identifier == "all" :
@@ -575,7 +626,7 @@ class KubCmds(CommonCloudFunctions) :
         '''
         try :
 
-            _instance = self.get_instances(obj_attr_list, "vm", obj_attr_list["cloud_vm_name"])
+            _instance = self.get_instances(obj_attr_list, "pod", obj_attr_list["cloud_vm_name"])
 
             if _instance :
                 _instance_ready = _instance.obj["status"]["containerStatuses"][0]
@@ -584,7 +635,9 @@ class KubCmds(CommonCloudFunctions) :
 
             if _instance_ready :
                 self.instance_info = _instance.obj
-
+                obj_attr_list["cloud_vm_name"] = _instance.name
+                obj_attr_list["cloud_hostname"] = _instance.name
+                
                 _instance_status = self.instance_info["status"]["containerStatuses"][0]["state"].keys()[0]
                 
                 if "hostIP" in self.instance_info["status"] :
@@ -716,16 +769,20 @@ class KubCmds(CommonCloudFunctions) :
 
             self.take_action_if_requested("VM", obj_attr_list, "provision_originated")
 
+            _mark_a = time()
             self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
                          obj_attr_list["vmc_name"], obj_attr_list["name"])
+            self.annotate_time_breakdown(obj_attr_list, "authenticate_time", _mark_a)
 
+            _mark_a = time()
             if self.is_vm_running(obj_attr_list) :
                 _msg = "An instance named \"" + obj_attr_list["cloud_vm_name"]
                 _msg += " is already running. It needs to be destroyed first."
                 _status = 187
                 cberr(_msg)
-                raise CldOpsException(_msg, _status)
-
+                raise CldOpsException(_msg, _status)            
+            self.annotate_time_breakdown(obj_attr_list, "check_existing_instance_time", _mark_a)
+                        
             _env = [  { "name": "CB_SSH_PUB_KEY", "value" : obj_attr_list["pubkey_contents"]}, {"name": "CB_LOGIN", "value" : obj_attr_list["login"]} ]
 
             if str(obj_attr_list["ports_base"]).lower() != "false" :
@@ -738,17 +795,56 @@ class KubCmds(CommonCloudFunctions) :
             else :
                 _ports = []
 
-            _obj = { "apiVersion": "v1", \
-                     "kind": "Pod", \
-                     "id":  obj_attr_list["cloud_vm_name"], \
-                     "metadata": { "name":  obj_attr_list["cloud_vm_name"], "namespace": "default" }, \
-                     "spec": { "containers": \
-                             [ { "env": _env, \
-                                 "name": obj_attr_list["cloud_vm_name"], \
-                                 "image": obj_attr_list["imageid1"], \
-                                 "ports": _ports } ] }
-                   }
-                                                
+            if obj_attr_list["abstraction"] == "pod" :
+                _obj = { "apiVersion": "v1", \
+                         "kind": "Pod", \
+                         "id":  obj_attr_list["cloud_vm_name"], \
+                         "metadata": { "name":  obj_attr_list["cloud_vm_name"], "namespace": obj_attr_list["namespace"] }, \
+                         "spec": { "containers": \
+                                 [ { "env": _env, \
+                                     "name": obj_attr_list["cloud_vm_name"], \
+                                     "image": obj_attr_list["imageid1"], \
+                                     "ports": _ports } ] }
+                       }
+
+            if obj_attr_list["abstraction"] == "replicaset" :
+                _obj = { "apiVersion": "extensions/v1beta1", \
+                         "kind": "ReplicaSet", \
+                         "id": obj_attr_list["cloud_vm_name"], \
+                         "metadata": { "name": obj_attr_list["cloud_vm_name"], "namespace": obj_attr_list["namespace"]}, \
+                         "spec": { "replicas": 1, \
+                                   "template": {
+                                                "metadata": { "labels": { "app": obj_attr_list["cloud_vm_name"], "role": "master", "tier": "backend" } },\
+                                                "spec": { "containers": \
+                                                        [ { "env": _env, \
+                                                            "name": obj_attr_list["cloud_vm_name"], \
+                                                            "image": obj_attr_list["imageid1"], \
+                                                            "ports": _ports } ] }
+                                                        }
+                                  } 
+    
+                        }
+                obj_attr_list["selector"] = "app:" + obj_attr_list["cloud_vm_name"] + ',' + "role:master,tier:backend" 
+
+            if obj_attr_list["abstraction"] == "deployment" :
+                _obj = { "apiVersion": "extensions/v1beta1", \
+                         "kind": "Deployment", \
+                         "id": obj_attr_list["cloud_vm_name"], \
+                         "metadata": { "name": obj_attr_list["cloud_vm_name"], "namespace": obj_attr_list["namespace"]}, \
+                         "spec": { "replicas": 1, \
+                                   "template": {
+                                                "metadata": { "labels": { "app": obj_attr_list["cloud_vm_name"], "role": "master", "tier": "backend" } },\
+                                                "spec": { "containers": \
+                                                        [ { "env": _env, \
+                                                            "name": obj_attr_list["cloud_vm_name"], \
+                                                            "image": obj_attr_list["imageid1"], \
+                                                            "ports": _ports } ] }
+                                                        }
+                                  } 
+    
+                        }
+                obj_attr_list["selector"] = "app:" + obj_attr_list["cloud_vm_name"] + ',' + "role:master,tier:backend" 
+                        
             self.vm_placement(obj_attr_list)
 
             _cpu, _memory = obj_attr_list["size"].split('-')
@@ -772,20 +868,22 @@ class KubCmds(CommonCloudFunctions) :
             self.vvcreate(obj_attr_list)
 
             self.common_messages("VM", obj_attr_list, "creating", 0, '')
-
-            _mark1 = int(time())
-                        
-            pykube.Pod(self.kubeconn, _obj).create()
-
-            _mark2 = int(time())
             
-            _mark3 = int(time())
+            _mark_a = time()
+            if obj_attr_list["abstraction"] == "pod" :
+                pykube.Pod(self.kubeconn, _obj).create()
+            if obj_attr_list["abstraction"] == "replicaset" :
+                pykube.ReplicaSet(self.kubeconn, _obj).create()
+            if obj_attr_list["abstraction"] == "deployment" :
+                pykube.Deployment(self.kubeconn, _obj).create()
+                                                
+            self.annotate_time_breakdown(obj_attr_list, "instance_creation_time", _mark_a)
                         
             self.take_action_if_requested("VM", obj_attr_list, "provision_started")
 
             _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
 
-            _instance = self.get_instances(obj_attr_list, "vm", obj_attr_list["cloud_vm_name"])
+            _instance = self.get_instances(obj_attr_list, "pod", obj_attr_list["cloud_vm_name"])
                         
             obj_attr_list["cloud_vm_uuid"] = _instance.obj["metadata"]["uid"]
 
@@ -837,12 +935,22 @@ class KubCmds(CommonCloudFunctions) :
             
             _wait = int(obj_attr_list["update_frequency"])
 
-            _instance = self.get_instances(obj_attr_list, "vm", obj_attr_list["cloud_vm_name"])
+            _p_instance = self.get_instances(obj_attr_list, "pod", obj_attr_list["cloud_vm_name"])
 
-            if _instance :
+            if _p_instance :
                 self.common_messages("VM", obj_attr_list, "destroying", 0, '')
+
+                _d_instance = self.get_instances(obj_attr_list, "deployment", obj_attr_list["cloud_vm_name"])
+    
+                if _d_instance :
+                    _d_instance.delete()
+    
+                _r_instance = self.get_instances(obj_attr_list, "replicaset", obj_attr_list["cloud_vm_name"])
+    
+                if _r_instance :
+                    _r_instance.delete()
                                     
-                _instance.delete()
+                _p_instance.delete()
 
             if "cloud_vv" in obj_attr_list :
                 self.vvdestroy(obj_attr_list)
@@ -881,7 +989,7 @@ class KubCmds(CommonCloudFunctions) :
             
             _wait = int(obj_attr_list["update_frequency"])
 
-            _instance = self.get_instances(obj_attr_list, "vm", obj_attr_list["cloud_vm_name"])
+            _instance = self.get_instances(obj_attr_list, "pod", obj_attr_list["cloud_vm_name"])
 
             if _instance :
 
@@ -945,7 +1053,7 @@ class KubCmds(CommonCloudFunctions) :
     
             self.common_messages("VM", obj_attr_list, "runstate altering", 0, '')
 
-            _instance = self.get_instances(obj_attr_list, "vm", obj_attr_list["cloud_vm_name"])
+            _instance = self.get_instances(obj_attr_list, "pod", obj_attr_list["cloud_vm_name"])
 
             if _instance :
                 if _ts == "fail" :

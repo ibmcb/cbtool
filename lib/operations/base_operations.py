@@ -3931,9 +3931,9 @@ class BaseObjectOperations :
         
                     if _obj_type == "AI" and obj_attr_list["type"] == "nullworkload" :
                         _msg = "\n\n You have sucessfully deployed your first workload. You can"
-                        _msg += "check the CB's GUI (go to Dashboard -> Application Performance) "
+                        _msg += " check the CB's GUI (go to Dashboard -> Application Performance) "
                         _msg += "or run \"monlist VM\" on the CLI. If you see application"
-                        _msg += "samples, this means that the initial configuration is complete.\n"
+                        _msg += " samples, this means that the initial configuration is complete.\n"
                         _msg += "Restart the tool with \"cb --soft_reset\". \nTo configure instances"
                         _msg += " for the deployment of other workloads, just execute "
                         _msg += "\"vmattach check:cb_nullworkload:<USERNAME FOR LOGIN>:<WORKLOAD TYPE OF YOUR CHOICE>\""

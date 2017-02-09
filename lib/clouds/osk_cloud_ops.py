@@ -1125,8 +1125,7 @@ class OskCmds(CommonCloudFunctions) :
                     _imageid = obj_attr_list["boot_volume_imageid1"]
                 
                 obj_attr_list["last_known_state"] = "about to send volume create request"
-                _mark1 = int(time())
-
+                _mark_a = time()
                 if str(self.oskconnstorage.version) == '1' :
                     _instance = self.oskconnstorage.volumes.create(obj_attr_list["cloud_vv"], \
                                                                    snapshot_id = None, \
@@ -1144,11 +1143,13 @@ class OskCmds(CommonCloudFunctions) :
                                                                    availability_zone = None, \
                                                                    imageRef = _imageid)
 
-
+                self.annotate_time_breakdown(obj_attr_list, "create_creation_time", _mark_a)
+                
                 sleep(int(obj_attr_list["update_frequency"]))
 
                 obj_attr_list["cloud_vv_uuid"] = '{0}'.format(_instance.id)
 
+                _mark_a = time()
                 _wait_for_volume = 180
                 for i in range(1, _wait_for_volume) :
                     _vol_status = self.oskconnstorage.volumes.get(_instance.id).status
@@ -1160,9 +1161,7 @@ class OskCmds(CommonCloudFunctions) :
                         break
                     else :
                         sleep(1)
-
-                _mark2 = int(time())
-                obj_attr_list["osk_016_create_volume_time"] = _mark2 - _mark1
+                self.annotate_time_breakdown(obj_attr_list, "volume_available_time", _mark_a)
 
                 if str(obj_attr_list["boot_from_volume"]).lower() == "true" :
                     obj_attr_list["boot_volume_imageid1"] = None                 
@@ -1288,16 +1287,16 @@ class OskCmds(CommonCloudFunctions) :
                 self.oskconncompute = False
 
             if not self.oskconncompute :
-                _mark1 = int(time())
+                _mark_a = time()
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
                              obj_attr_list["vmc_name"], \
                              {"use_neutronclient" : obj_attr_list["use_neutronclient"], \
                               "use_cinderclient" : obj_attr_list["use_cinderclient"]})
+                
+                self.annotate_time_breakdown(obj_attr_list, "authenticate_time", _mark_a)
 
-                _mark2 = int(time())
-                obj_attr_list["osk_011_authenticate_time"] = _mark2 - _mark1
             else :
-                _mark2 = int(time())
+                _mark_a = time()
 
             if self.is_vm_running(obj_attr_list) :
                 _msg = "An instance named \"" + obj_attr_list["cloud_vm_name"]
@@ -1306,8 +1305,7 @@ class OskCmds(CommonCloudFunctions) :
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
 
-            _mark3 = int(time())
-            obj_attr_list["osk_012_check_existing_instance_time"] = _mark3 - _mark2
+            self.annotate_time_breakdown(obj_attr_list, "check_existing_instance_time", _mark_a)
                     
             obj_attr_list["last_known_state"] = "about to get flavor and image list"
 
@@ -1322,16 +1320,14 @@ class OskCmds(CommonCloudFunctions) :
             self.vm_placement(obj_attr_list)
 
             obj_attr_list["last_known_state"] = "about to send create request"
-            
+
+            _mark_a = time()
             self.get_flavors(obj_attr_list)
-
-            _mark4 = int(time())
-            obj_attr_list["osk_013_get_flavors_time"] = _mark4 - _mark3            
-
+            self.annotate_time_breakdown(obj_attr_list, "get_flavors_time", _mark_a)
+            
+            _mark_a = time()
             self.get_images(obj_attr_list)
-
-            _mark5 = int(time())
-            obj_attr_list["osk_014_get_imageid_time"] = _mark5 - _mark4
+            self.annotate_time_breakdown(obj_attr_list, "get_imageid_time", _mark_a)
 
             if "userdata" in obj_attr_list and str(obj_attr_list["userdata"]).lower() != "false" :
                 obj_attr_list["userdata"] = obj_attr_list["userdata"].replace("# INSERT OPENVPN COMMAND", \
@@ -1341,11 +1337,9 @@ class OskCmds(CommonCloudFunctions) :
                 obj_attr_list["config_drive"] = None
                 obj_attr_list["userdata"] = None
 
-            _mark5 = int(time())
+            _mark_a = time()
             _netnames, _netids = self.get_networks(obj_attr_list)
-
-            _mark6 = int(time())
-            obj_attr_list["osk_015_get_netid_time"] = _mark6 - _mark5
+            self.annotate_time_breakdown(obj_attr_list, "get_netid_time", _mark_a)
 
             _meta = {}
             if "meta_tags" in obj_attr_list :
@@ -1365,6 +1359,7 @@ class OskCmds(CommonCloudFunctions) :
 
             self.common_messages("VM", obj_attr_list, "creating", 0, '')
 
+            _mark_a = time()
             _instance = self.oskconncompute.servers.create(name = obj_attr_list["cloud_vm_name"], \
                                                            block_device_mapping = obj_attr_list["block_device_mapping"], \
                                                            image = obj_attr_list["boot_volume_imageid1_instance"], \
@@ -1380,6 +1375,7 @@ class OskCmds(CommonCloudFunctions) :
                                                            disk_config = "AUTO")
 
             if _instance :
+                self.annotate_time_breakdown(obj_attr_list, "instance_creation_time", _mark_a)
                                 
                 sleep(int(obj_attr_list["update_frequency"]))
 
@@ -1392,12 +1388,10 @@ class OskCmds(CommonCloudFunctions) :
 
                 _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
 
-                if "osk_018_instance_creation_time" not in obj_attr_list :
-                    obj_attr_list["osk_018_instance_scheduling_time"] = 0
-                    obj_attr_list["osk_018_port_creation_time"] = 0
-                    obj_attr_list["osk_019_instance_creation_time"] = obj_attr_list["mgt_003_provisioning_request_completed"]
-                else :
-                    obj_attr_list["osk_019_instance_creation_time"] = float(obj_attr_list["osk_019_instance_creation_time"]) - float(obj_attr_list["osk_018_port_creation_time"])
+                _mark_a = time()
+                self.annotate_time_breakdown(obj_attr_list, "instance_scheduling_time", _mark_a)
+                _mark_a = time()
+                self.annotate_time_breakdown(obj_attr_list, "port_creation_time", _mark_a)
                     
                 if obj_attr_list["last_known_state"].count("ERROR") :
                     _fmsg = obj_attr_list["last_known_state"]
@@ -1407,18 +1401,17 @@ class OskCmds(CommonCloudFunctions) :
                     if not len(obj_attr_list["block_device_mapping"]) and \
                     str(obj_attr_list["cloud_vv_uuid"]).lower() != "none" :
 
-                        _mark3 = int(time())
                         self.common_messages("VV", obj_attr_list, "attaching", _status, _fmsg)
-    
-                        # There is weird bug on the python novaclient code. Don't change the
+
+                        # There is a weird bug on the python novaclient code. Don't change the
                         # following line, it is supposed to be "oskconncompute", even though
-                        # is dealing with volumes. Will explain latter.
+                        # is dealing with volumes. Will explain later.
+                        _mark_a = time()    
                         self.oskconncompute.volumes.create_server_volume(obj_attr_list["cloud_vm_uuid"], \
                                                                          obj_attr_list["cloud_vv_uuid"], \
                                                                          "/dev/vdd")
     
-                        _mark4 = int(time())
-                        obj_attr_list["osk_022_attach_volume_time"] = (_mark4 - _mark3)
+                        self.annotate_time_breakdown(obj_attr_list, "attach_volume_time", _mark_a)
                         
                         if obj_attr_list["volume_creation_status"] :
                             _status = obj_attr_list["volume_creation_status"]
@@ -1435,8 +1428,6 @@ class OskCmds(CommonCloudFunctions) :
 
                     self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
 
-                    obj_attr_list["osk_023_instance_reachable"] = obj_attr_list["mgt_004_network_acessible"]   
-                    
                     self.get_host_and_instance_name(obj_attr_list)
     
                     if obj_attr_list["tenant"] != "default" :
@@ -2541,14 +2532,12 @@ class OskCmds(CommonCloudFunctions) :
 
             if not _fip :
                 _call = "floating ip create"
-                _mark1 = int(time())
+                _mark_a = time()
                 _fip_h = self.oskconncompute.floating_ips.create(obj_attr_list["floating_pool"])
-                
+                self.annotate_time_breakdown(obj_attr_list, "create_fip_time", _mark_a)
+                                    
                 _fip = _fip_h.ip
                 obj_attr_list["cloud_floating_ip_uuid"] = _fip_h.id
-            
-                _mark2 = int(time())
-                obj_attr_list["osk_020_create_fip_time"] = _mark2 - _mark1    
 
             return _fip
 
@@ -2670,15 +2659,12 @@ class OskCmds(CommonCloudFunctions) :
                         sleep(_wait)
 
                 _call = "floating ip attach"
-                _mark1 = int(time())
-                
+                _mark_a = time()                
                 if "hypervisor_type" in obj_attr_list and obj_attr_list["hypervisor_type"].lower() == "fake" :
                     True
                 else :
                     _instance.add_floating_ip(_fip)
-
-                _mark2 = int(time())
-                obj_attr_list["osk_021_attach_fip_time"] = _mark2 - _mark1    
+                    self.annotate_time_breakdown(obj_attr_list, "attach_fip_time", _mark_a)
 
             return True
 

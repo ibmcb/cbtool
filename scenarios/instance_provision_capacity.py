@@ -137,7 +137,7 @@ def parse_cli() :
                        default=200, \
                        help="Maximum deployment time increase (number converted to percentage)")
 
-    _parser.add_option("--experiment_id", \
+    _parser.add_option("-e", "--experiment_id", \
                        dest="experiment_id", \
                        default="capacity_" + makeTimestamp().replace(' ','_').replace('/','_').replace(':','_'), \
                        help="Experiment identifier")
@@ -796,7 +796,7 @@ def capacity_phase(api, options, performance_data, directory) :
         _counters = api.waituntil(options.cloud_name, options.obj, "ARRIVING", \
                              _target, "decreasing", \
                              5, time_limit = _max_wait_time)
-
+                
         if _counters['experiment_counters'][options.obj]["arriving"] != str(_target) :
             _msg = "####### WARNING: " + options.obj + " ARRIVING counter still not \""
             _msg += str(_target) + " even after " + str(_max_wait_time) + " seconds!"
@@ -1178,49 +1178,15 @@ def main() :
     _type_sut = api.typeshow(_options.cloud_name, _options.fgwk)["sut"]
     _instances_per_tenant, _roles = enumerate_vms_in_vapp(_type_sut)
 
+    _mt_script = None
     if _options.multitenant :
-
-        _mgt_info = api.cldshow(_options.cloud_name, "mon_defaults")
-        _mgt_metrics_header = _mgt_info["vm_management_metrics_header"] + ','
-        _host_runtime_metrics_header = _mgt_info["host_runtime_os_metrics_header"]
+        _mt_script = _cb_base_dir + "/scenarios/scripts/" + _cloud_model + "_multitenant.sh"
 
         if _cloud_model == "osk" :
-            _mt_script = _cb_base_dir + "/scenarios/scripts/openstack_multitenant.sh"
-             
-            _msg = "# Instances will run the script \"" + _mt_script + "\" in order to "
-            _msg += "create a new tenant/user/network/subnet/router before attachment"
-            print _msg
-            
-            if not _mgt_metrics_header.count("osk_001_tenant_creation_time") :
-                _mgt_metrics_header += ','.join([ "osk_001_tenant_creation_time", \
-                                                  "osk_002_quota_update_time", \
-                                                  "osk_003_user_creation_time", \
-                                                  "osk_004_security_group_update_time", \
-                                                  "osk_005_keypair_creation_time", \
-                                                  "osk_006_net_creation_time", \
-                                                  "osk_007_subnet_creation_time", \
-                                                  "osk_008_router_creation_time", \
-                                                  "osk_009_router_attachment", \
-                                                  "osk_010_lb_creation", \
-                                                  "osk_011_authenticate_time", \
-                                                  "osk_012_check_existing_instance_time", \
-                                                  "osk_013_get_flavors_time", \
-                                                  "osk_014_get_imageid_time", \
-                                                  "osk_015_get_netid_time", \
-                                                  "osk_016_create_volume_time", \
-                                                  "osk_017_lb_member_creation", \
-                                                  "osk_018_instance_scheduling_time", \
-                                                  "osk_018_port_creation_time", \
-                                                  "osk_019_instance_creation_time", \
-                                                  "osk_020_create_fip_time", \
-                                                  "osk_021_attach_fip_time", \
-                                                  "osk_022_instance_reachable"])
-                            
-                api.cldalter(_options.cloud_name, \
-                             "mon_defaults", \
-                             "vm_management_metrics_header", \
-                             _mgt_metrics_header)
-    
+
+            _mgt_info = api.cldshow(_options.cloud_name, "mon_defaults")
+            _host_runtime_metrics_header = _mgt_info["host_runtime_os_metrics_header"]
+                
             if not _host_runtime_metrics_header.count("procstat") :
                 _host_runtime_metrics_header += ',' + _mgt_info["cloud_base_m"]
                 _host_runtime_metrics_header += ',' + _mgt_info["openstack_m"]
@@ -1228,28 +1194,11 @@ def main() :
                 api.cldalter(_options.cloud_name, \
                              "mon_defaults", \
                              "host_runtime_os_metrics_header", \
-                             _host_runtime_metrics_header)
+                             _host_runtime_metrics_header)           
 
-        if _cloud_model == "pdm" :
-            _mt_script = _cb_base_dir + "/scenarios/scripts/docker_multitenant.sh"            
-            
-            _msg = "# Instances will run the script \"" + _mt_script + "\" in order to "
-            _msg += "create a new network before attachment"
-            print _msg            
-
-            if not _mgt_metrics_header.count("pdm_001_net_creation_time") :
-                _mgt_metrics_header += ','.join([ "pdm_001_net_creation_time", \
-                                                  "pdm_002_create_volume_time", \
-                                                  "pdm_003_create_host_config_time", \
-                                                  "pdm_004_create_docker_time", \
-                                                  "pdm_005_start_docker_time", \
-                                                  "pdm_006_instance_creation_time", \
-                                                  "pdm_007_instance_reachable"])
-
-                api.cldalter(_options.cloud_name, \
-                             "mon_defaults", \
-                             "vm_management_metrics_header", \
-                             _mgt_metrics_header)
+        _msg = "# Instances will run the script \"" + _mt_script + "\" in order to "
+        _msg += "create a new tenant/user/network/subnet/router before attachment"
+        print _msg
 
         api.cldalter(_options.cloud_name, "vm_defaults", "execute_script_name", _mt_script)
         api.cldalter(_options.cloud_name, "ai_defaults", "execute_script_name", _mt_script)                
@@ -1337,11 +1286,19 @@ def main() :
     _msg = "# Performance metrics will be collected in .csv files." 
     print _msg
     _url = api.monextract(_options.cloud_name, "all", "all")
+
+    _dtb = ''
+    _mgt_info = api.cldshow(_options.cloud_name, "mon_defaults")
+    if "time_breakdown_keys" in _mgt_info :
+        _dtb = _mgt_info["time_breakdown_keys"][0:-1].split(',')
+        _dtb.sort()
+        _dtb = " --breakdown " + ','.join(_dtb)
     
     _msg = "Data is available at url \"" + _url + "\". \nTo automatically generate"
     _msg += " plots, just run \"" + _cb_base_dir + "/util/plot/cbplotgen.R "
-    _msg += "-d " + _cb_data_dir + " -e " + str(_experiment_id)
-    _msg += " -c -p -r -l -a\""
+    _msg += "--directory " + _cb_data_dir + " --expid " + str(_experiment_id)
+    _msg += " --cleanup --provisionmetrics --runtimemetrics " + _dtb + "\""
+    #--layer --aggregate"
     print _msg
 
     if _options.cleanup :

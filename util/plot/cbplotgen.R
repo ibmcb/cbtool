@@ -83,7 +83,10 @@ option_list <- list(
                 help = "Metric unit intervals [default \"%default\"]", 
                 metavar="selected_metric_intervals"),
         make_option(c("-u", "--ulatex"), action="store_true", default=FALSE,
-                dest="latex", help="Outuput Latex/CSV tables with the plot points")        
+                dest="latex", help="Outuput Latex/CSV tables with the plot points"),
+		make_option(c("-b", "--breakdown"), default="none",
+				help = "List of detailed deployment time breakdown steps [default \"%default\"]", 
+				metavar = "selected_breakdown")
 )
 
 opt <- parse_args(OptionParser(option_list=option_list))
@@ -131,6 +134,8 @@ if (opt$expid == "all") {
         opt$expid <- "all"
 }
 
+time_breakdown_list <- unlist(strsplit(opt$breakdown, split=","))
+		
 msg <- paste("################################## START PHASE 1 - Pre-processing", 
         " files ##################################", sep = '')
 cat(msg, sep='\n')
@@ -169,7 +174,7 @@ if (opt$aggregate) {
         
         plot_runtime_application_data(rapp_metrics, opt$directory, "all", "all", 
                 "none", opt$xint, opt$yint, 
-                opt$size)
+                opt$size, time_breakdown_list)
         
         msg <- paste("### Done ###", sep = '')
         cat(msg, sep='\n')
@@ -200,7 +205,7 @@ for (experiment in experiment_list) {
         cat(msg, sep='\n')
     
         plot_management_data(mgt_metrics, opt$directory, experiment, "all", 
-                opt$size, opt$maxvms)
+                opt$size, opt$maxvms, time_breakdown_list)
         
         msg <- paste("### Done ###", sep = '')
         cat(msg, sep='\n')

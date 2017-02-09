@@ -417,7 +417,7 @@ class PdmCmds(CommonCloudFunctions) :
                     _file = expanduser("~") + "/cbrc"
                     
                 _file_fd = open(_file, 'w')
-                _file_fd.write("export DOCKER_HOST=tcp://" + self.swarm_ip + ':' + self.swarm_port + "\n")
+                _file_fd.write("export DOCKER_HOST = tcp://" + self.swarm_ip + ':' + self.swarm_port + "\n")
 
                 if "cloud_name" in obj_attr_list :                        
                     _file_fd.write("export CB_CLOUD_NAME=" + obj_attr_list["cloud_name"] + "\n")
@@ -805,11 +805,9 @@ class PdmCmds(CommonCloudFunctions) :
                 self.common_messages("VV", obj_attr_list, "creating", _status, _fmsg)
 
                 obj_attr_list["last_known_state"] = "about to send volume create request"                                
-                _mark1 = int(time())
+                _mark_a = time()
                 _vv = self.dockconn[obj_attr_list["host_cloud_ip"]].create_volume(name=obj_attr_list["cloud_vv_name"], driver=obj_attr_list["cloud_vv_type"])
-                _mark2 = int(time())
-
-                obj_attr_list["pdm_002_create_volume_time"] = _mark2 - _mark1
+                self.annotate_time_breakdown(obj_attr_list, "create_volume_time", _mark_a)
                 
                 if obj_attr_list["cloud_vv_type"] == "local" :
                     obj_attr_list["cloud_vv_uuid"] = _vv["Mountpoint"]
@@ -953,15 +951,14 @@ class PdmCmds(CommonCloudFunctions) :
                 _binds = [ obj_attr_list["cloud_vv_name"] + ':' + _mapped_dir + ":rw"]                
                 _volumes = [ _mapped_dir ]
 
-            _mark1 = int(time())
+            _mark_a = time()
             _host_config = self.dockconn[obj_attr_list["host_cloud_ip"]].create_host_config(network_mode = obj_attr_list["netname"], \
                                                                                             port_bindings = _port_bindings, 
                                                                                             binds = _binds, \
                                                                                             mem_limit = str(_memory) + 'm')
-                
-            _mark2 = int(time())
-            obj_attr_list["pdm_003_create_host_config_time"] = _mark2 - _mark1
-                        
+            self.annotate_time_breakdown(obj_attr_list, "create_host_config_time", _mark_a)
+
+            _mark_a = time()
             _instance = self.dockconn[obj_attr_list["host_cloud_ip"]].create_container(image = obj_attr_list["imageid1"], \
                                                                                  hostname = obj_attr_list["cloud_vm_name"], \
                                                                                  detach = True, \
@@ -972,27 +969,19 @@ class PdmCmds(CommonCloudFunctions) :
 #                                                                                 command = "/sbin/my_init", \
                                                                                  environment = {"CB_SSH_PUB_KEY" : obj_attr_list["pubkey_contents"], "CB_LOGIN" : obj_attr_list["login"]})
 
-            _mark3 = int(time())
-            
-            obj_attr_list["pdm_004_create_docker_time"] = _mark3 - _mark2
+            self.annotate_time_breakdown(obj_attr_list, "instance_creation_time", _mark_a)
                         
             obj_attr_list["cloud_vm_uuid"] = _instance["Id"]
 
+            _mark_a = time()
             self.dockconn[obj_attr_list["host_cloud_ip"]].start(obj_attr_list["cloud_vm_uuid"])
-            
-            _mark4 = int(time())
-            
-            obj_attr_list["pdm_005_start_docker_time"] = _mark4 - _mark3
+            self.annotate_time_breakdown(obj_attr_list, "instance_start_time", _mark_a)
                         
             self.take_action_if_requested("VM", obj_attr_list, "provision_started")
 
             _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
-
-            obj_attr_list["pdm_006_instance_creation_time"] = obj_attr_list["mgt_003_provisioning_request_completed"]
-
+            
             self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
-
-            obj_attr_list["pdm_007_instance_reachable"] = obj_attr_list["mgt_004_network_acessible"]
             
             obj_attr_list["arrival"] = int(time())
 
