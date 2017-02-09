@@ -1239,7 +1239,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     
                     if not _status :
                         self.osci.reset_counters(obj_attr_list["cloud_name"], {}, False, counter_list = obj_attr_list["object_list"])
-                        _x, _y, _stats = self.stats(obj_attr_list, obj_attr_list["cloud_name"] + " all noprint", "stats-get", True)                        
+                        _x, _y, _stats = self.stats(obj_attr_list, obj_attr_list["cloud_name"] + " all noprint false", "stats-get", True)                        
                         _status = 0
 
         except self.ObjectOperationException, obj :
@@ -1386,7 +1386,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 _msg = "Waited for " + str(_time_to_wait) + " seconds."
                 cbdebug(_msg)
 
-                _x, _y, _stats = self.stats(obj_attr_list, _cloud_name + " all noprint", "stats-get", True)
+                _x, _y, _stats = self.stats(obj_attr_list, _cloud_name + " all noprint false", "stats-get", True)
                     
             return self.package(_status, _msg, _stats)
         
@@ -1509,7 +1509,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     cbdebug(_msg)
 
             if _cloud_name :                    
-                _x, _y, _stats = self.stats(obj_attr_list, _cloud_name + " all noprint", "stats-get", True)
+                _x, _y, _stats = self.stats(obj_attr_list, _cloud_name + " all noprint false", "stats-get", True)
     
                 _stats["total_time"] = _total_time
                         
@@ -1915,6 +1915,12 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
                     _csv_contents_header = _obj_attr_list[_obj_type + '_' + _metric_type + "_metrics_header"]
                     
+                    if _metric_type == "management" :
+                        if "time_breakdown_keys" in _obj_attr_list :
+                            _extra_csv_contents_header = _obj_attr_list["time_breakdown_keys"][0:-1].split(',')
+                            _extra_csv_contents_header.sort()
+                            _csv_contents_header += ',' + ','.join(_extra_csv_contents_header)
+                            
                     _fn = _obj_attr_list["data_file_location"] + '/' 
                     _fn += _obj_type.upper() + '_' + _metric_type + '_'
                     _fn += _criteria["expid"] + ".csv"
@@ -2160,7 +2166,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _obj_type = _obj_attr_list["type"]
 
                     _cloud_name = _obj_attr_list["cloud_name"]
-                    
+
                     _msg = "The following " + _obj_type + "s reported management metrics:\n"
                     _field1 = "Name                        "
                     _field2 = "Age (seconds)     "
@@ -2168,6 +2174,8 @@ class PassiveObjectOperations(BaseObjectOperations) :
                     _field4 = "Number of samples"
                     _msg += _field1 + '|' + _field2 + '|' + _field3 + '|' + _field4 + '\n'
 
+                    #_uuid_to_name_dict = {}
+                    
                     _coll_name = "latest_management_" + _obj_type + '_' + _obj_attr_list["username"]
                     _metrics_list = self.msci.find_document(_coll_name, {}, True)
 
@@ -2177,6 +2185,8 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _msg += '|' + _metric["expid"].ljust(len(_field3))
                         _nr_samples = self.msci.count_document(_coll_name.replace("latest_",''), {"expid": _metric["expid"], "uuid": _metric["uuid"]})
                         _msg += '|' + str(_nr_samples).ljust(len(_field4)) + '\n'
+
+                        #_uuid_to_name_dict[_metric["_id"]] = _metric["name"]
 
                     _msg += "\nThe following " + _obj_type  + "s reported runtime (OS) metrics:\n"
                     _msg += _field1 + '|' + _field2 + '|' + _field3 + '|' + _field4 + '\n'
@@ -2193,7 +2203,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                             _msg += '|' + _metric["expid"].ljust(len(_field3))
                             _nr_samples = self.msci.count_document(_coll_name.replace("latest_",''), {"expid": _metric["expid"], "uuid": _metric["uuid"]})
                             _msg += '|' + str(_nr_samples).ljust(len(_field4)) + '\n'
-                        
+
                     if _obj_type == "VM" :
                         _msg += "\nThe following " + _obj_type  + "s reported runtime (Application) metrics:\n"
                         _msg += _field1 + '|' + _field2 + '|' + _field3 + '|' + _field4 + '\n'
@@ -2203,6 +2213,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
                         for _metric in _metrics_list :
                             if self.osci.object_exists(_cloud_name, _obj_type, _metric["_id"], False) :
+                                _obj_attr_list = self.osci.get_object(_cloud_name, _obj_type, False, _metric["_id"], False)
                                 _result["management"].append([_obj_attr_list["name"], _metric["time"]])
                                 _obj_attr_list = self.osci.get_object(_obj_attr_list["cloud_name"], _obj_type, False, _metric["_id"], False)
                                 _msg += _obj_attr_list["name"].ljust(len(_field1))

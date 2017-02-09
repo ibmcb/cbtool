@@ -117,7 +117,7 @@ then
     START_GENERATION=$(get_time)
     
     syslog_netcat "The value of the parameter \"GENERATE_DATA\" is \"true\". Will generate data for the YCSB load profile \"${LOAD_PROFILE}\"" 
-    command_line="sudo $YCSB_PATH/bin/ycsb load mongodb -s -P $YCSB_PATH/workloads/${LOAD_PROFILE} -P $YCSB_PATH/custom_workload.dat -threads ${LOAD_THREADS} -p mongodb.url=mongodb://$mongos_ip:27017/ycsb?w=0"
+    command_line="sudo $YCSB_PATH/bin/ycsb load mongodb -s -P $YCSB_PATH/workloads/${LOAD_PROFILE} -P $YCSB_PATH/custom_workload.dat -threads ${LOAD_THREADS} -p mongodb.url=mongodb://$mongos_ip:27017/ycsb?w=0 -jvm-args=\"-Dlogback.configurationFile=${HOME}/mongodb_logback.xml\""
     syslog_netcat "Command line is: ${command_line}"
     if [[ x"${log_output_command}" == x"true" ]]
     then

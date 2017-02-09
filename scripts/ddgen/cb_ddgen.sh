@@ -52,8 +52,8 @@ then
     update_app_errors 1
 fi
 
-bw=`cat ${OUTPUT_FILE} | grep copied | awk '{ print $8 }'`
-unbw=`cat ${OUTPUT_FILE} | grep copied | awk '{ print $9 }'`
+bw=`cat ${OUTPUT_FILE} | grep copied | awk '{ print $10 }'`
+unbw=`cat ${OUTPUT_FILE} | grep copied | awk '{ print $11 }'`
     
 ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
 load_level:${LOAD_LEVEL}:load \

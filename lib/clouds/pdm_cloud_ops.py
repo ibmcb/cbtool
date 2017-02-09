@@ -196,9 +196,10 @@ class PdmCmds(CommonCloudFunctions) :
             _registered_image_list = self.dockconn[_endpoint].images()
             _registered_imageid_list = []
                 
-            for _registered_image in _registered_image_list :                
-                _registered_imageid_list.append(_registered_image["Id"].split(':')[1])                
-                _map_name_to_id[_registered_image["RepoTags"][0].replace(":latest",'')] = _registered_image["Id"].split(':')[1]
+            for _registered_image in _registered_image_list :
+                _registered_imageid_list.append(_registered_image["Id"].split(':')[1])
+                if _registered_image["RepoTags"] :
+                    _map_name_to_id[_registered_image["RepoTags"][0].replace(":latest",'')] = _registered_image["Id"].split(':')[1]
                 
             for _vm_role in vm_templates.keys() :            
                 _imageid = str2dic(vm_templates[_vm_role])["imageid1"]                
@@ -416,7 +417,7 @@ class PdmCmds(CommonCloudFunctions) :
                     _file = expanduser("~") + "/cbrc"
                     
                 _file_fd = open(_file, 'w')
-                _file_fd.write("export DOCKER_HOST=tcp://" + self.swarm_ip + ':' + self.swarm_port + "\n")
+                _file_fd.write("export DOCKER_HOST = tcp://" + self.swarm_ip + ':' + self.swarm_port + "\n")
 
                 if "cloud_name" in obj_attr_list :                        
                     _file_fd.write("export CB_CLOUD_NAME=" + obj_attr_list["cloud_name"] + "\n")
@@ -642,13 +643,14 @@ class PdmCmds(CommonCloudFunctions) :
 
             _candidate_images = []
 
-            for _image in _image_list :
+            for _image in _image_list :                
                 if self.is_cloud_image_uuid(obj_attr_list["imageid1"]) :
                     if _image["Id"].split(':')[1] == obj_attr_list["imageid1"] :
-                        _candidate_images.append(obj_attr_list["imageid1"])
+                        _candidate_images.append(_image)
                 else :
-                    if _image["RepoTags"][0].count(obj_attr_list["imageid1"]) :
-                        _candidate_images.append(obj_attr_list["imageid1"])                    
+                    if _image["RepoTags"] :
+                        if _image["RepoTags"][0].count(obj_attr_list["imageid1"]) :
+                            _candidate_images.append(_image)   
 
             if not len(_candidate_images) :
                 self.dockconn[obj_attr_list["host_cloud_ip"]].pull(obj_attr_list["imageid1"])
@@ -657,15 +659,17 @@ class PdmCmds(CommonCloudFunctions) :
                 _candidate_images = []
     
                 for _image in _image_list :
-                    if self.is_cloud_image_uuid(obj_attr_list["imageid1"]) :                 
-                        if _image["RepoTags"][0].count(obj_attr_list["imageid1"]) :
-                            _candidate_images.append(obj_attr_list["imageid1"])
+                    if self.is_cloud_image_uuid(obj_attr_list["imageid1"]) :
+                        if _image["RepoTags"] :                        
+                            if _image["RepoTags"][0].count(obj_attr_list["imageid1"]) :
+                                _candidate_images.append(_image)
                     else :
                         if _image["Id"].split(':')[1] == obj_attr_list["imageid1"] :
-                            _candidate_images.append(obj_attr_list["imageid1"])                        
+                            _candidate_images.append(_image)  
 
             if len(_candidate_images) :
-                obj_attr_list["boot_volume_imageid1"] = _candidate_images[0]                                   
+                obj_attr_list["boot_volume_imageid1"] = _candidate_images[0]["Id"]
+                obj_attr_list["imageid1"] = _candidate_images[0]["RepoTags"][0]
                 _status = 0
             else :
                 _fmsg = "Unable to pull image \"" + obj_attr_list["imageid1"] + "\""
@@ -801,11 +805,9 @@ class PdmCmds(CommonCloudFunctions) :
                 self.common_messages("VV", obj_attr_list, "creating", _status, _fmsg)
 
                 obj_attr_list["last_known_state"] = "about to send volume create request"                                
-                _mark1 = int(time())
+                _mark_a = time()
                 _vv = self.dockconn[obj_attr_list["host_cloud_ip"]].create_volume(name=obj_attr_list["cloud_vv_name"], driver=obj_attr_list["cloud_vv_type"])
-                _mark2 = int(time())
-
-                obj_attr_list["pdm_002_create_volume_time"] = _mark2 - _mark1
+                self.annotate_time_breakdown(obj_attr_list, "create_volume_time", _mark_a)
                 
                 if obj_attr_list["cloud_vv_type"] == "local" :
                     obj_attr_list["cloud_vv_uuid"] = _vv["Mountpoint"]
@@ -949,15 +951,14 @@ class PdmCmds(CommonCloudFunctions) :
                 _binds = [ obj_attr_list["cloud_vv_name"] + ':' + _mapped_dir + ":rw"]                
                 _volumes = [ _mapped_dir ]
 
-            _mark1 = int(time())
+            _mark_a = time()
             _host_config = self.dockconn[obj_attr_list["host_cloud_ip"]].create_host_config(network_mode = obj_attr_list["netname"], \
                                                                                             port_bindings = _port_bindings, 
                                                                                             binds = _binds, \
                                                                                             mem_limit = str(_memory) + 'm')
-                
-            _mark2 = int(time())
-            obj_attr_list["pdm_003_create_host_config_time"] = _mark2 - _mark1
-                        
+            self.annotate_time_breakdown(obj_attr_list, "create_host_config_time", _mark_a)
+
+            _mark_a = time()
             _instance = self.dockconn[obj_attr_list["host_cloud_ip"]].create_container(image = obj_attr_list["imageid1"], \
                                                                                  hostname = obj_attr_list["cloud_vm_name"], \
                                                                                  detach = True, \
@@ -968,27 +969,19 @@ class PdmCmds(CommonCloudFunctions) :
 #                                                                                 command = "/sbin/my_init", \
                                                                                  environment = {"CB_SSH_PUB_KEY" : obj_attr_list["pubkey_contents"], "CB_LOGIN" : obj_attr_list["login"]})
 
-            _mark3 = int(time())
-            
-            obj_attr_list["pdm_004_create_docker_time"] = _mark3 - _mark2
+            self.annotate_time_breakdown(obj_attr_list, "instance_creation_time", _mark_a)
                         
             obj_attr_list["cloud_vm_uuid"] = _instance["Id"]
 
+            _mark_a = time()
             self.dockconn[obj_attr_list["host_cloud_ip"]].start(obj_attr_list["cloud_vm_uuid"])
-            
-            _mark4 = int(time())
-            
-            obj_attr_list["pdm_005_start_docker_time"] = _mark4 - _mark3
+            self.annotate_time_breakdown(obj_attr_list, "instance_start_time", _mark_a)
                         
             self.take_action_if_requested("VM", obj_attr_list, "provision_started")
 
             _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
-
-            obj_attr_list["pdm_006_instance_creation_time"] = obj_attr_list["mgt_003_provisioning_request_completed"]
-
+            
             self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
-
-            obj_attr_list["pdm_007_instance_reachable"] = obj_attr_list["mgt_004_network_acessible"]
             
             obj_attr_list["arrival"] = int(time())
 
@@ -1253,15 +1246,17 @@ class PdmCmds(CommonCloudFunctions) :
                 for _image in _image_list :
                     if self.is_cloud_image_uuid(obj_attr_list["imageid1"]) :                 
                         if _image["Id"].split(':')[1] == obj_attr_list["imageid1"] :
-                            obj_attr_list["imageid1"] = _image["RepoTags"][0]
+                            if _image["RepoTags"] :
+                                obj_attr_list["imageid1"] = _image["RepoTags"][0]
                             obj_attr_list["boot_volume_imageid1"] = _image["Id"]                            
                             self.dockconn[_endpoint].remove_image(_image["Id"])
                             break
                     else :
-                        if _image["RepoTags"][0].count(obj_attr_list["imageid1"]) :
-                            obj_attr_list["boot_volume_imageid1"] = _image["Id"]                        
-                            self.dockconn[_endpoint].remove_image(_image["Id"])
-                            break
+                        if _image["RepoTags"] :                        
+                            if _image["RepoTags"][0].count(obj_attr_list["imageid1"]) :
+                                obj_attr_list["boot_volume_imageid1"] = _image["Id"]                        
+                                self.dockconn[_endpoint].remove_image(_image["Id"])
+                                break
                         
             _status = 0
 

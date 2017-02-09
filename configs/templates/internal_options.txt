@@ -195,6 +195,7 @@ JUMPHOST_LOGIN = auto
 JUMPHOST_NETNAMES = all
 IMAGE_PREFIX = $EMPTY
 IMAGE_SUFFIX = $EMPTY
+TIME_BREAKDOWN_STEP = 1
 
 [AI_DEFAULTS]
 USERNAME = $MAIN_USERNAME
@@ -217,7 +218,11 @@ RUN_APPLICATION_SCRIPTS = $True
 DEBUG_REMOTE_COMMANDS = $False
 DONT_START_LOAD_MANAGER = $False
 CREDENTIALS_DIR = $MAIN_BASE_DIR/credentials
-PROPAGATED_ATTRIBUTES = netname, imageid1, login, resource_limits, userdata, cloud_vv, cloud_vv_type, avalability_zone, compute_node, data_dir, sla_provisioning_target
+PROPAGATED_ATTRIBUTES = netname, imageid1, login, resource_limits, userdata, 
+PROPAGATED_ATTRIBUTES += cloud_vv, cloud_vv_type, avalability_zone, compute_node, 
+PROPAGATED_ATTRIBUTES += data_dir, data_fstyp, data_size, data_fileserver_ip, data_fileserver_path, 
+PROPAGATED_ATTRIBUTES += sla_provisioning_target, ports_base, namespace, abstraction
+TIME_BREAKDOWN_STEP = 1
 # Most clouds don't use (or allow access to) libvirt,
 # so, enable this only in the right clouds.
 DONT_START_QEMU_SCRAPER = $True

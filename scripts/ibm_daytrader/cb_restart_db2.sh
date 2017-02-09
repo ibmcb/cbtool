@@ -30,8 +30,6 @@ SIZE=`get_my_ai_attribute_with_default tradedb_size small`
 
 DB2_DATA_DIR=`get_my_ai_attribute_with_default db2_data_dir /tradedb`
 
-automount_data_dirs
-
 sudo ls $DB2_DATA_DIR/$DB2_INSTANCE_NAME/NODE0000/TRADEDB
 if [[ $? -ne 0 ]]
 then

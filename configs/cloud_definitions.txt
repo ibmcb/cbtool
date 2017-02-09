@@ -21,10 +21,9 @@ STARTUP_CLOUD = MYSIMCLOUD
 
 # List the clouds you want to define
 CLOUDOPTION_MYSIMCLOUD = cldattach sim, vmcattach all
-CLOUDOPTION_MYSMARTCLOUD = cldattach scp, vmcattach all
 CLOUDOPTION_MYOPENSTACK = cldattach osk, vmcattach all
 CLOUDOPTION_MYAMAZON = cldattach ec2, vmcattach all
-CLOUDOPTION_MYVCDCLOUD = cldattach vcd, vmcattach all
+CLOUDOPTION_MYVCD = cldattach vcd, vmcattach all
 CLOUDOPTION_MYPLM = cldattach plm, vmcattach all
 CLOUDOPTION_MYSLR = cldattach slr, vmcattach all
 CLOUDOPTION_MYGCE = cldattach gce, vmcattach all
@@ -36,16 +35,12 @@ CLOUDOPTION_MYKUB = cldattach kub, vmcattach all
 # Now, Specify the individual parameters for each cloud
 #-------------------------------------------------------------------------------
 # Smart Cloud Provisioning (SCP) requires the following parameters
-[USER-DEFINED : CLOUDOPTION_MYSMARTCLOUD]
-SCP_IAAS_ACCESS_ID = <user>
-SCP_IAAS_PRIVATE_KEY = /iaas/cli/adminkey/admin.key
-SCP_IAAS_SERVICE_PUBLIC_KEY = /iaas/cli/adminkey/vm_service.key
-SCP_IAAS_PROXY_PORT = 9090
-SCP_IAAS_WEBSERVICE_PORT = 5678/query/
-SCP_IAAS_CLI_LOCATION = <hostname>                         # Address of the webservice VM for SCP
-SCP_INITIAL_VMCS = kvm_rack1:sut                           # Change "kvm_rack1" accordingly
-SCP_SSH_KEY_NAME = cbtool_rsa                              # Name of the private key used to login on the VMs
-SCP_LOGIN = cbuser                                         # The username that logins on the VMs
+[USER-DEFINED : CLOUDOPTION_MYSIMCLOUD]
+SIM_INITIAL_VMCS = simzone_a:sut,simzone_b:lg
+SIM_SSH_KEY_NAME = cbtool_rsa
+SIM_KEY_NAME = cbtool_rsa 
+SIM_SECURITY_GROUPS = simsecgrp
+SIM_LOGIN = cbuser
 #-------------------------------------------------------------------------------
 # OpenStack (OSK) requires the following parameters (replace everything between <>, *including* the signs!)
 [USER-DEFINED : CLOUDOPTION_MYOPENSTACK]
@@ -66,7 +61,7 @@ EC2_SSH_KEY_NAME = cbtool_rsa                              # Name of the private
 EC2_LOGIN = cbuser                                         # The username that logins on the VMs
 #-------------------------------------------------------------------------------
 # vCloud Director requires the following parameters
-[USER-DEFINED : CLOUDOPTION_MYVCDCLOUD]
+[USER-DEFINED : CLOUDOPTION_MYVCD]
 VCD_ACCESS = 10.1.1.1                                      # IP address or host name for vCloud Director API
 VCD_CREDENTIALS = happyguy@DeployPlace;password            # username to log into vCloud Director API
 VCD_KEY_NAME = xxxxx                                       # password to log into vCloud Director API (same as above)

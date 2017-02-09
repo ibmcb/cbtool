@@ -14,7 +14,7 @@ LOAD_MANAGER_ROLE = unixbench
 METRIC_AGGREGATOR_ROLE = unixbench
 CAPTURE_ROLE = unixbench
 # unused
-LOAD_PROFILE = default
+LOAD_PROFILE = dhrystone
 LOAD_LEVEL = uniformIXIXI1I5
 LOAD_DURATION = 60
 CATEGORY = synthetic
@@ -22,9 +22,10 @@ REPORTED_METRICS = num_cores, dhry_result, dhry_index, whet_result, whet_index, 
 
 
 # VApp-specific MANDATORY attributes
-DESCRIPTION = Deploys an SINGLE VM and runs the Index set of tests in UnixBench.\n
+DESCRIPTION = Deploys an SINGLE INSTANCE and runs a series of tests in UnixBench.\n
+DESCRIPTION +=- LOAD_PROFILE possible values: "arithmetic", "dhrystone", "whetstone", 
+DESCRIPTION += "load", "misc", "speed", "oldsystem", "system", "fs", "shell", "index"
+DESCRIPTION += (for a proper description, consult the USAGE file)\n
+DESCRIPTION +=- LOAD_LEVEL meaning: number of parallel copies (parameter -c).\n 
+DESCRIPTION +=- LOAD_DURATION meaning: not used, a run ends when all tests are complete.\n
 START = cb_unixbench.sh
-
-# VApp-specific modifier parameters. Commented attributes imply default values assumed
-
-# Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional

@@ -42,7 +42,6 @@ def cli_postional_argument_parser() :
     if len(argv) < 2 :
         print "./" + argv[0] + " <multi cloud config dir> [comma-separated value cloud model list] [minimal|low|medium|high|complete|pause]"
         exit(1)
-    
 
     _options, args = cli_named_option_parser()
 
@@ -194,8 +193,21 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         _model_to_imguuid["pdm"] = "basedocker"
         _model_to_imguuid["nop"] = "baseimg"
         _model_to_imguuid["osk"] = "xenial0"
-                
-        _login = "ubuntu"
+        _model_to_imguuid["ec2"] = "ami-a9d276c9"
+        _model_to_imguuid["gce"] = "ubuntu-1604-xenial-v20161221"
+        _model_to_imguuid["do"] = "21669205"        
+        _model_to_imguuid["slr"] = "1373563"        
+
+        _model_to_login = {}
+        _model_to_login["sim"] = "ubuntu"
+        _model_to_login["pcm"] = "ubuntu" 
+        _model_to_login["pdm"] = "ubuntu"
+        _model_to_login["nop"] = "ubuntu"
+        _model_to_login["osk"] = "ubuntu"
+        _model_to_login["ec2"] = "ubuntu"
+        _model_to_login["gce"] = "ubuntu"
+        _model_to_login["do"] = "root"        
+        _model_to_login["slr"] = "root"        
                 
         _vm_location = "auto"
         _meta_tags = "empty"
@@ -207,6 +219,7 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
             _img_name = _model_to_imguuid[cloud_model]
         else :
             _img_name = "regressiontest"
+        _login = _model_to_login[cloud_model]
 
         #if test_case == "no pubkey injection, no volume" :
         _vm_role = "check:" + _img_name
@@ -224,10 +237,10 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
             _temp_attr_list = "force_failure=true"
             
         if test_case == "newly captured image" :
-            _vm_role = "check:regressiontest:ubuntu"
+            _vm_role = "check:regressiontest:" + _login
 
         if test_case == "non-existent image failure" :
-            _vm_role = "check:regressiontest:ubuntu"
+            _vm_role = "check:regressiontest:" + _login
 
         if cloud_model == "nop" :
             _temp_attr_list += ",cloud_ip=172.16.0.254"
@@ -354,7 +367,7 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         
             if int(_vm_counters["reservations"]) == 0 and int(_vm_counters["reported"]) == 0:
                 _attach_error = False
-
+        
         if not _attach_error and not _delete_error :
             _msg = "## Successfully tested VM Attach (" + test_case + ") using image \"" + _img_name +  "\""
             print _msg

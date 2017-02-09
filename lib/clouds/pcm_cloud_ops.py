@@ -582,14 +582,16 @@ class PcmCmds(CommonCloudFunctions) :
             for _image in _image_list :
                 if self.is_cloud_image_uuid(obj_attr_list["imageid1"]) : 
                     if _image.fingerprint == obj_attr_list["imageid1"] :
-                        _candidate_images.append(_image.fingerprint) 
+                        _candidate_images.append(_image) 
                 else :
                     if len(_image.aliases) :
                         if _image.aliases[0]["name"] == obj_attr_list["imageid1"] :
-                            _candidate_images.append(_image.fingerprint)
+                            _candidate_images.append(_image)
 
             if len(_candidate_images) :
-                obj_attr_list["boot_volume_imageid1"] = _candidate_images[0]
+                if len(_image.aliases) :                
+                    obj_attr_list["imageid1"] = _candidate_images[0].aliases[0]["name"]
+                obj_attr_list["boot_volume_imageid1"] = _candidate_images[0].fingerprint
                 _status = 0
             else :
                 _fmsg = "Unable to pull image \"" + obj_attr_list["imageid1"] + "\""

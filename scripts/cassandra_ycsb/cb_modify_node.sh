@@ -27,8 +27,6 @@ SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
 #
 # dbs=`echo $cassandra | wc -w`
 
-automount_data_dirs
-
 sudo mkdir -p ${CASSANDRA_DATA_DIR}
 sudo mkdir -p ${CASSANDRA_DATA_DIR}/store/cassandra/data
 sudo mkdir -p ${CASSANDRA_DATA_DIR}/cassandra/commitlog 

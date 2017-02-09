@@ -18,11 +18,37 @@ then
     fi
 fi
 
-PUSH_IMAGE="nopush"
+PUSH_IMAGES="nopush"
 if [[ ! -z $3 ]]
 then
-    PUSH_IMAGE=`echo $3 | tr '[:upper:]' '[:lower:]'`
+    PUSH_IMAGES=`echo $3 | tr '[:upper:]' '[:lower:]'`
 fi
+    
+echo "##### Building Docker orchestrator images"
+pushd orchestrator > /dev/null 2>&1
+sudo rm -rf Dockerfile
+for DFILE in $(ls Dockerfile* | grep -v centos)
+do
+    sudo rm -rf Dockerfile && sudo cp -f $DFILE Dockerfile
+    DNAME=$(echo $DFILE | sed 's/Dockerfile-//g')
+                                                 
+    CMD="sudo docker build -t ${REPOSITORY}/$DNAME $VERBQUIET ."
+    echo "########## Building image ${REPOSITORY}/$DNAME by executing the command \"$CMD\" ..."
+    $CMD
+    ERROR=$?
+    if [[ $ERROR -ne 0 ]]
+    then
+        echo "Failed while executing command \"$CMD\""
+        sudo rm -rf Dockerfile
+        exit 1
+    fi
+    sudo rm -rf Dockerfile
+    echo "########## Image ${1}/$(echo $DFILE | sed 's/Dockerfile-//g') built successfully"
+done
+echo "##### Done building Docker orchestrator images"
+echo
+
+popd > /dev/null 2>&1    
     
 echo "##### Building Docker base images"
 pushd base > /dev/null 2>&1
@@ -139,13 +165,18 @@ done
 echo "##### Done building the rest of the Docker workload images"
 popd > /dev/null 2>&1
 
-if [[ $PUSH_IMAGES == "nopush" ]]
+if [[ $PUSH_IMAGES == "push" ]]
 then
     echo "##### Pushing all images to Docker repository"
-    for IMG in $(docker images | grep maugusto | awk '{ print $1 }')
+    for IMG in $(docker images | grep ${REPOSITORY} | awk '{ print $1 }')
     do
         echo $IMG | grep coremark
-        if [[ $? -ne 0 ]]
+        NOT_COREMARK=$?
+        echo $IMG | grep linpack
+        NOT_LINPACK=$?
+        echo $IMG | grep parboil
+        NOT_LINPACK=$?        
+        if [[ $NOT_COREMARK && $NOT_LINPACK && $NOT_PARBOIL ]]
         then
             CMD="docker push $IMG"
             echo "########## Pushing image ${IMG} by executing the command \"$CMD\" ..."             

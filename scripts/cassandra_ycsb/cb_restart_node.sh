@@ -24,8 +24,6 @@ START=`provision_application_start`
 
 SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
 
-automount_data_dirs
-
 #
 # Cassandra directory structure
 #
@@ -48,8 +46,11 @@ CASSANDRA_CONF_DIR=`echo $CASSANDRA_CONF_PATH | awk -F  '/cassandra.yaml' '{prin
 
 if [[ $(grep -c "${CASSANDRA_CONF_DIR}" ${CASSANDRA_CONF_DIR}/cassandra-env.sh) -eq 0 ]]
 then
-    sudo sed -i 's|JVM_OPTS=\"$JVM_OPTS \-Dcom\.sun\.management\.jmxremote\.password\.file=\/etc\/cassandra\/jmxremote\.password\"|JVM_OPTS=\"\$JVM_OPTS \-Dcom\.sun\.management\.jmxremote\.password\.file='"$CASSANDRA_CONF_DIR"'/jmxremote\.password\"|' /etc/cassandra/conf/cassandra-env.sh
+    sudo sed -i 's|JVM_OPTS=\"$JVM_OPTS \-Dcom\.sun\.management\.jmxremote\.password\.file=\/etc\/cassandra\/jmxremote\.password\"|JVM_OPTS=\"\$JVM_OPTS \-Dcom\.sun\.management\.jmxremote\.password\.file='"$CASSANDRA_CONF_DIR"'/jmxremote\.password\"|' ${CASSANDRA_CONF_DIR}/cassandra-env.sh
 fi
+
+CASSANDRA_JVM_STACK_SIZE=$(get_my_ai_attribute_with_default jvm_stack_size 1024k)
+sudo sed -i "s/Xss.*/Xss${CASSANDRA_JVM_STACK_SIZE}\"/g" ${CASSANDRA_CONF_DIR}/cassandra-env.sh
 
 sudo ls ${CASSANDRA_CONF_DIR}/jmxremote.password
 if [[ $? -ne 0 ]]

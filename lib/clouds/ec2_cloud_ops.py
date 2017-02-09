@@ -388,7 +388,8 @@ class Ec2Cmds(CommonCloudFunctions) :
                     for _instance in _reservation.instances :
                         if "Name" in _instance.tags :
                             if _instance.tags[u'Name'].count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) :
-                                _nr_instances += 1
+                                if str(_instance.update()).count("running") :
+                                    _nr_instances += 1
 
         except Exception, e :
             _status = 23

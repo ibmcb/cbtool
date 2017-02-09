@@ -25,8 +25,6 @@ SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
 
 syslog_netcat "Start nothing on ${SHORT_HOSTNAME}"
 
-automount_data_dirs
-
 syslog_netcat "Nothing started on ${SHORT_HOSTNAME} - OK"
 provision_application_stop $START
 

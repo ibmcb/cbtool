@@ -1,0 +1,8 @@
+FROM REPLACE_NULLWORKLOAD_UBUNTU
+
+RUN apt-get update
+RUN apt-get install -y gcc php7.0-cli
+RUN mkdir -p /home/cbuser/byte-unixbench
+RUN wget -N -P /home/cbuser/byte-unixbench https://s3.amazonaws.com/cloudbench/software/UnixBench5.1.3.tgz
+RUN cd /home/cbuser/byte-unixbench; tar -zxf UnixBench5.1.3.tgz; rm UnixBench5.1.3.tgz
+RUN cd /home/cbuser/byte-unixbench/UnixBench; make all

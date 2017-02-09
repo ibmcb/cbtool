@@ -35,8 +35,13 @@ fi
 declare -A token
 
 LINUX_DISTRO=$(linux_distribution)
-sudo mkdir -p /var/run/cassandra/
-sudo chmod 777 /var/run/cassandra
+BACKEND_TYPE=$(get_my_ai_attribute type | sed 's/_ycsb//g')
+
+if [[ $BACKEND_TYPE == "cassandra" ]]
+then
+    sudo mkdir -p /var/run/cassandra/
+    sudo chmod 777 /var/run/cassandra
+fi
 
 #MY_IP=`/sbin/ifconfig eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' | tr -d '\r\n'`
 
@@ -79,8 +84,6 @@ fi
     
 export JAVA_HOME=${JAVA_HOME}
 
-BACKEND_TYPE=$(get_my_ai_attribute type | sed 's/_ycsb//g')
-
 if [[ $BACKEND_TYPE == "cassandra" ]]
 then 
     CASSANDRA_DATA_DIR=$(get_my_ai_attribute_with_default cassandra_data_dir /dbstore)
@@ -88,6 +91,12 @@ then
 
     CASSANDRA_DATA_FSTYP=$(get_my_ai_attribute_with_default cassandra_data_fstyp ext4)
     eval CASSANDRA_DATA_FSTYP=${CASSANDRA_DATA_FSTYP}
+
+    SEED_DATA_DIR=$(get_my_ai_attribute_with_default seed_data_dir /dbstore)
+    eval SEED_DATA_DIR=${SEED_DATA_DIR}
+
+    SEED_DATA_FSTYP=$(get_my_ai_attribute_with_default seed_data_fstyp ext4)
+    eval SEED_DATA_FSTYP=${SEED_DATA_FSTYP}
 
     cassandra_ips=`get_ips_from_role cassandra`
     seed_ips=`get_ips_from_role seed`
@@ -138,6 +147,22 @@ then
     MONGODB_DATA_FSTYP=$(get_my_ai_attribute_with_default mongodb_data_fstyp ext4)
     eval MONGODB_DATA_FSTYP=${MONGODB_DATA_FSTYP}
 
+    MONGODB_USER=$(sudo cat /etc/passwd | grep mongo | cut -d ':' -f 1)
+
+    MONGODB_EXECUTABLE=$(which mongodb)
+    if [[ $? -ne 0 ]]
+    then
+        MONGODB_EXECUTABLE=$(which mongod)
+    fi
+    
+    sudo ls /etc/mongodb.conf
+    if [[ $? -eq 0 ]]
+    then
+        MONGODB_CONF_FILE=/etc/mongodb.conf
+    else
+        MONGODB_CONF_FILE=/etc/mongod.conf
+    fi
+                        
     mongos_ip=`get_ips_from_role mongos`
     if [ -z $mongos_ip ]
     then
@@ -171,12 +196,15 @@ then
     REDIS_DATA_DIR=$(get_my_ai_attribute_with_default redis_data_dir /dbstore)
     eval REDIS_DATA_DIR=${REDIS_DATA_DIR}
 
-    redis_ip=`get_ips_from_role redis`
-    if [ -z $redis_ip ]
+    redis_ips=`get_ips_from_role redis`
+    if [ -z $redis_ips ]
     then
         syslog_netcat "redis IP is null"
         exit 1
     fi    
+
+    redis_ips_csv=`echo ${redis_ips} | sed ':a;N;$!ba;s/\n/, /g'`
+                
 else 
     syslog_netcat "Unsupported backend type ($BACKEND_TYPE). Exiting with error"
     exit 1
@@ -190,6 +218,19 @@ function lazy_collection {
     
     ops=0
     latency=0
+
+    log_output_command=$(get_my_ai_attribute log_output_command)
+    log_output_command=$(echo ${log_output_command} | tr '[:upper:]' '[:lower:]')
+
+    run_limit=`decrement_my_ai_attribute run_limit`
+
+    if [[ -f /tmp/quiescent_time_start ]]
+    then
+        QSTART=$(cat /tmp/quiescent_time_start)
+        END=$(date +%s)
+        DIFF=$(( $END - $QSTART ))
+        echo $DIFF > /tmp/quiescent_time        
+    fi
 
     LOAD_GENERATOR_START=$(date +%s)    
     while read line
@@ -226,13 +267,18 @@ function lazy_collection {
     update_app_errors $ERROR
     
     LOAD_GENERATOR_END=$(date +%s)
-    update_app_completiontime $(( $LOAD_GENERATOR_END - $LOAD_GENERATOR_START ))       
+    APP_COMPLETION_TIME=$(( $LOAD_GENERATOR_END - $LOAD_GENERATOR_START ))       
+    update_app_completiontime $APP_COMPLETION_TIME
 
-    FIRST_SEED=$(echo $seed_ips_csv | cut -d ',' -f 1)
+    echo $(date +%s) > /tmp/quiescent_time_start
 
-    check_cassandra_cluster_state ${FIRST_SEED} 1 1
-    ERROR=$?
-    update_app_errors $ERROR
+    if [[ $BACKEND_TYPE == "cassandra" ]]
+    then
+        FIRST_SEED=$(echo $seed_ips_csv | cut -d ',' -f 1)
+        check_cassandra_cluster_state ${FIRST_SEED} 1 1
+        ERROR=$?
+        update_app_errors $ERROR
+    fi
 
     insert_operations=$(cat $OUTPUT_FILE | grep Operations | grep INSERT | cut -d ',' -f 3 | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
     read_operations=$(cat $OUTPUT_FILE | grep Operations | grep READ | cut -d ',' -f 3 | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
@@ -255,7 +301,7 @@ function lazy_collection {
 
     ~/cb_report_app_metrics.py $CB_REPORT_CLI_PARMS
         
-    syslog_netcat "Exit code for ~/cb_report_app_metrics.py $CB_REPORT_CLI_PARMS is $?"    
+    syslog_netcat "Exit code for \"~/cb_report_app_metrics.py $CB_REPORT_CLI_PARMS\" is $?"    
 }
     
 function check_cassandra_cluster_state {
@@ -493,5 +539,5 @@ function eager_collection {
 
     ~/cb_report_app_metrics.py $CB_REPORT_CLI_PARMS
     
-    syslog_netcat "Exit code for ~/cb_report_app_metrics.py $CB_REPORT_CLI_PARMS is $?"
+    syslog_netcat "Exit code for \"~/cb_report_app_metrics.py $CB_REPORT_CLI_PARMS\" is $?"
 }

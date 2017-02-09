@@ -46,11 +46,14 @@ START=cb_ycsb.sh
 
 # VApp-specific OPTIONAL modifier parameters. Commented attributes imply default values assumed
 JAVA_HOME = auto
+JVM_STACK_SIZE = 1024k
 READ_RATIO = workloaddefault
 UPDATE_RATIO = workloaddefault
 APP_COLLECTION = lazy
 CASSANDRA_DATA_DIR = /dbstore
 CASSANDRA_DATA_FSTYP = ext4
+SEED_DATA_DIR = /dbstore
+SEED_DATA_FSTYP = ext4
 OPERATION_COUNT = 10000
 INPUT_RECORDS = 10000
 RECORD_SIZE = 2.35

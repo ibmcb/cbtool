@@ -312,6 +312,23 @@ function get_my_vm_attribute {
     attribute=`echo $1 | tr '[:upper:]' '[:lower:]'`
     get_hash VM ${my_vm_uuid} ${attribute} 0
 }
+export -f get_my_vm_attribute
+
+function get_my_vm_attribute_with_default {
+    NAME=$1
+    DEFAULT=$2
+    TEST="`get_my_vm_attribute $NAME`"
+
+    if [ x"$TEST" != x ] ; then
+        echo "$TEST"
+    elif [ x"$DEFAULT" != x ] ; then
+        echo "$DEFAULT"
+    else
+        syslog_netcat "Configuration error: Value for key ($NAME) not available online or offline."
+        exit 1
+    fi
+}
+export -f get_my_vm_attribute_with_default
 
 function blowawaypids {
     pids="$(pgrep -f "$1")"
@@ -321,6 +338,7 @@ function blowawaypids {
         fi
     done
 }
+export -f blowawaypids
 
 function wait_until_port_open {
     #1 - host name
@@ -1148,6 +1166,11 @@ function online_or_offline {
     fi
 }
 
+function comment_lines {
+    sed -i "$1"' s/^/#/' "$2"
+}
+export -f comment_lines
+
 function post_boot_steps {
 
     if [[ ! -e /usr/lib64 ]]
@@ -1546,23 +1569,32 @@ function get_offline_ip {
 }
 
 function automount_data_dirs {
-    ROLE_DATA_DIR=$(get_my_ai_attribute_with_default ${my_role}_data_dir none)
-    ROLE_DATA_FSTYP=$(get_my_ai_attribute_with_default ${my_role}_data_fstyp local)
+    #    ROLE_DATA_DIR=$(get_my_ai_attribute_with_default ${my_role}_data_dir none)
+    #    ROLE_DATA_FSTYP=$(get_my_ai_attribute_with_default ${my_role}_data_fstyp local)
+
+    ROLE_DATA_DIR=$(get_my_vm_attribute_with_default data_dir none)
+    ROLE_DATA_FSTYP=$(get_my_vm_attribute_with_default data_fstyp local)
 
     if [[ $ROLE_DATA_DIR != "none" ]]
     then
+        syslog_netcat "Creating directory \"$ROLE_DATA_DIR\""
         sudo mkdir -p $ROLE_DATA_DIR
     fi
             
     if [[ $ROLE_DATA_FSTYP == "ramdisk" || $ROLE_DATA_FSTYP == "tmpfs" ]]
     then
-        ROLE_DATA_SIZE=$(get_my_ai_attribute_with_default ${my_role}_data_size 256m)
+
+        #        ROLE_DATA_SIZE=$(get_my_ai_attribute_with_default ${my_role}_data_size 256m)
+        DATA_SIZE=$(get_my_vm_attribute_with_default data_size 256m)
         mount_filesystem_on_memory ${ROLE_DATA_DIR} $ROLE_DATA_FSTYP ${ROLE_DATA_SIZE} ${my_login_username}
+        
     elif [[ $ROLE_DATA_FSTYP == "nfs" ]]
     then
-        ROLE_DATA_FILESERVER_IP=$(get_my_ai_attribute_with_default ${my_role}_data_fileserver_ip none)
-        ROLE_DATA_FILESERVER_PATH=$(get_my_ai_attribute_with_default ${my_role}_data_fileserver_path none)
         
+        #        ROLE_DATA_FILESERVER_IP=$(get_my_ai_attribute_with_default ${my_role}_data_fileserver_ip none)
+        #        ROLE_DATA_FILESERVER_PATH=$(get_my_ai_attribute_with_default ${my_role}_data_fileserver_path none)
+        DATA_FILESERVER_IP=$(get_my_vm_attribute_with_default data_fileserver_ip none)
+        DATA_FILESERVER_PATH=$(get_my_vm_attribute_with_default data_fileserver_path none)        
         if [[ $ROLE_DATA_FILESERVER_IP != "none" && $ROLE_DATA_FILESERVER_PATH != "none" ]]
         then         
             mount_remote_filesystem ${ROLE_DATA_DIR} ${ROLE_DATA_FSTYP} ${ROLE_DATA_FILESERVER_IP} ${ROLE_DATA_FILESERVER_PATH}    
@@ -1575,7 +1607,6 @@ function automount_data_dirs {
     fi
 }
 export -f automount_data_dirs
-
 
 function haproxy_setup {
     LOAD_BALANCER_PORT=$1

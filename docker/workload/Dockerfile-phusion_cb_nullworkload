@@ -16,6 +16,7 @@ RUN ln -s /sbin/ip /usr/local/bin/ip
 
 RUN apt-get update
 RUN apt-get install -y \
+coreutils \
 psmisc \
 ntp \
 ntpdate \
@@ -32,7 +33,8 @@ ncftp \
 lftp \
 bc \
 iputils-ping \
-haproxy
+haproxy \
+vim
 
 RUN apt-get install -y \
 netcat-openbsd

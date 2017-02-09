@@ -15,10 +15,8 @@ START=`provision_application_start`
 
 SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
 
-automount_data_dirs
-
 # Remove all previous configurations
-sudo rm -rf ${MONGODB_DATA_DIR}/configdb/*
+sudo rm -rf $(sudo cat /etc/mongodb.conf | grep dbpath | cut -d '=' -f 2)/configdb/*
 
 pos=1
 
@@ -31,24 +29,20 @@ do
     ((pos++))
 done
 
-linux_distribution
+sudo sed -i "s/bind_ip.*$/bind_ip = ${my_ip_addr}/g" ${MONGODB_CONF_FILE}
+sudo sed -i "s/port.*$/port = 27017/g" ${MONGODB_CONF_FILE}
 
 # Start Mongo Config-Serverv
 
-SERVICES[1]="mongodb"
-SERVICES[2]="mongod"
-
-if [[ ! -f ${MONGODB_DATA_DIR} ]]
-then
-    MONGODB_DATA_DIR=/var/lib/mongo
-fi
-
+service_stop_disable mongod
+service_stop_disable mongodb
+        
 sudo pkill -9 -f ${SERVICES[${LINUX_DISTRO}]}
 
 sudo screen -S MGCS -X quit
 sudo screen -d -m -S MGCS
 sudo screen -p 0 -S MGCS -X stuff "sudo rm /var/lib/mongo/mongod.lock$(printf \\r)"
-sudo screen -p 0 -S MGCS -X stuff "sudo ${SERVICES[${LINUX_DISTRO}]} --configsvr --dbpath ${MONGODB_DATA_DIR}$(printf \\r)"
+sudo screen -p 0 -S MGCS -X stuff "sudo $MONGODB_EXECUTABLE --configsvr --dbpath $(sudo cat /etc/mongodb.conf | grep dbpath | cut -d '=' -f 2)$(printf \\r)"
 
 wait_until_port_open 127.0.0.1 27019 20 5
 

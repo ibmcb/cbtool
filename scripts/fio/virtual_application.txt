@@ -13,7 +13,7 @@ METRIC_AGGREGATOR_ROLE = fio
 CAPTURE_ROLE = fio
 LOAD_PROFILE = default
 LOAD_LEVEL = 1
-LOAD_DURATION = 1
+LOAD_DURATION = 30
 CATEGORY = synthetic
 REPORTED_METRICS = latency, throughput, write_latency, write_throughput, read_latency, read_troughput, errors, completion_time, quiescent_time
 

@@ -23,8 +23,6 @@ START=`provision_application_start`
 
 SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
 
-automount_data_dirs
-
 syslog_netcat "Checking if the dd utility exists on ${SHORT_HOSTNAME}"
 DD=`which dd 2>&1`
 if [ $? -gt 0 ] ; then

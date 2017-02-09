@@ -400,13 +400,18 @@ class SlrCmds(CommonCloudFunctions) :
                 
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], _vmc_attr_list["name"])
 
+                sleep(15)
+
                 _instance_list = self.get_instances({"vmc_name": _vmc_attr_list["name"]}, "vm", "all")                
 
                 if _instance_list :
                     for _instance in _instance_list :
-                        if "name" in _instance :
-                            if _instance["name"].count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) :
-                                _nr_instances += 1
+                        if "hostname" in _instance :
+                            if "status" in _instance :
+                                if "keyName" in _instance["status"] :
+                                    if _instance["status"]["keyName"] == "ACTIVE" :
+                                        if _instance["hostname"].count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) :
+                                            _nr_instances += 1
 
         except Exception, e :
             _status = 23

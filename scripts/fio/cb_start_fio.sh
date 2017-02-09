@@ -22,8 +22,6 @@ START=`provision_application_start`
 
 syslog_netcat "Start storage setup for fio on ${SHORT_HOSTNAME}"
 
-automount_data_dirs
-
 syslog_netcat "Storage setup for fio on ${SHORT_HOSTNAME} - OK"
 provision_application_stop $START
 exit 0

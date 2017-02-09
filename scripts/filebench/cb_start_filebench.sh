@@ -24,8 +24,6 @@ syslog_netcat "Start storage setup for filebench on ${SHORT_HOSTNAME}"
 
 sudo bash -c "echo \"0\" > /proc/sys/kernel/randomize_va_space"
 
-automount_data_dirs
-
 syslog_netcat "Storage setup for filebench on ${SHORT_HOSTNAME} - OK"
 provision_application_stop $START
 exit 0

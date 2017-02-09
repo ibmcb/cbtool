@@ -16,8 +16,8 @@ VCD_SNMP_VARIABLE = need_to_be_configured_by_user
 # PEBCAK documentation for the Wizard and CLI
 VCD_ACCESS_DOC = Host name or IP of the vCloud Director REST interface
 VCD_ACCESS_DEFAULT = 10.0.0.1
-VCD_CREDENTIALS_DOCC = Login name and password for the vCloud Director REST iinterface
-VCD_CREDENTIALS_DEFAULT = happyguy@orgname;password
+VCD_CREDENTIALS_DOC = Login name and password for the vCloud Director REST iinterface
+VCD_CREDENTIALS_DEFAULT = happyguy@orgname:password # need colon instead of semi-colon
 VCD_SECURITY_GROUPS_DOC = Not used with vCloud Director
 VCD_SECURITY_GROUPS_DEFAULT = none
 VCD_KEY_NAME_DOC = Password used by the vCloud Director REST interface. (Again)

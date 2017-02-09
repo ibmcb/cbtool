@@ -7,7 +7,6 @@
 #     http://www.apache.org/licenses/LICENSE-2.0
 
 # Unless required by applicable law or agreed to in writing, software
-set -x
 
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
@@ -26,6 +25,9 @@ fi
 UNIXBENCH_DIR="~/byte-unixbench/UnixBench"
 eval UNIXBENCH_DIR=${UNIXBENCH_DIR}
 
+CBUSERLOGIN=`get_my_ai_attribute login`
+sudo chown -R ${CBUSERLOGIN}:${CBUSERLOGIN} ${UNIXBENCH_DIR}
+
 UNIXBENCH_IP=`get_ips_from_role unixbench`
 update_app_errors 0 reset
 
@@ -37,8 +39,17 @@ then
     execute_load_generator "cat ./test_output.txt" ${OUTPUT_FILE}
 else
     cd ${UNIXBENCH_DIR}
-    execute_load_generator "./Run" ${OUTPUT_FILE}
+    execute_load_generator "./Run -c $LOAD_LEVEL $LOAD_PROFILE" ${OUTPUT_FILE}
     cd -
+fi
+
+check_container 
+    
+if [[ $IS_CONTAINER -eq 1 ]]
+then
+    NR_CPUS=`echo $(get_my_vm_attribute size) | cut -d '-' -f 1`
+else 
+    NR_CPUS=`cat /proc/cpuinfo | grep processor | wc -l`
 fi
 
 NUM_CORES=`grep -P -m1 "CPUs? in system" ${OUTPUT_FILE} | cut -d' ' -f1`

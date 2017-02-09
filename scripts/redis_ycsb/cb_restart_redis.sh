@@ -43,7 +43,6 @@ REDIS_CONF_FILE[1]=/etc/redis/redis.conf
 REDIS_CONF_FILE[2]=/etc/redis.conf
 
 # Update Redis Config
-automount_data_dirs
 
 if [[ -f ${REDIS_DATA_DIR} ]]
 then

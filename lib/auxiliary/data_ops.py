@@ -432,21 +432,24 @@ def create_user_data_contents(obj_attr_list, osci) :
     _userdata_contents += get_boostrap_command(obj_attr_list, osci).replace(';','\n')
 
     if obj_attr_list["use_vpn_ip"].lower() != "false" :    
-        _userdata_contents += "\nsudo cp " + obj_attr_list["remote_dir_full_path"] + "/util/openvpn/client_connected.sh /etc/openvpn\n"
-        _userdata_contents += "sudo sed 's/USER/" + obj_attr_list["username"] + "/g' /etc/openvpn/client_connected.sh\n"
-        _userdata_contents += "sudo sed 's/CLOUD_NAME/" + obj_attr_list["cloud_name"] + "/g' /etc/openvpn/client_connected.sh\n"
-        _userdata_contents += "sudo sed 's/SERVER_BOOTSTRAP/" + _ohn  + "/g' /etc/openvpn/client_connected.sh\n"
-        _userdata_contents += "sudo sed 's/UUID/" + obj_attr_list["uuid"]  + "/g' /etc/openvpn/client_connected.sh\n"
-        _userdata_contents += "sudo sed 's/OSCI_PORT/" + str(_opn)  + "/g' /etc/openvpn/client_connected.sh\n"
-        _userdata_contents += "sudo sed 's/OSCI_DBID/" + str(_odb)  + "/g' /etc/openvpn/client_connected.sh\n"
+#       This is done by cloud-config. Not shell script. see lib/clouds/shared_functions.py
+#        _userdata_contents += "\nsudo cp " + obj_attr_list["remote_dir_full_path"] + "/util/openvpn/client_connected.sh /etc/openvpn\n"
+        _userdata_contents += "sudo sed -i 's/USER/" + obj_attr_list["username"] + "/g' /etc/openvpn/client_connected.sh\n"
+        _userdata_contents += "sudo sed -i 's/CLOUD_NAME/" + obj_attr_list["cloud_name"] + "/g' /etc/openvpn/client_connected.sh\n"
+        _userdata_contents += "sudo sed -i 's/SERVER_BOOTSTRAP/" + _ohn  + "/g' /etc/openvpn/client_connected.sh\n"
+        _userdata_contents += "sudo sed -i 's/UUID/" + obj_attr_list["uuid"]  + "/g' /etc/openvpn/client_connected.sh\n"
+        _userdata_contents += "sudo sed -i 's/OSCI_PORT/" + str(_opn)  + "/g' /etc/openvpn/client_connected.sh\n"
+        _userdata_contents += "sudo sed -i 's/OSCI_DBID/" + str(_odb)  + "/g' /etc/openvpn/client_connected.sh\n"
 
         _userdata_contents += "\nmkdir /var/log/openvpn\n"
         _userdata_contents += "chmod 777 /var/log/openvpn\n"
         _file_fd = open(obj_attr_list["vpn_config_file"], 'r')
         _file_contents = _file_fd.read()
-        _userdata_contents += "cat << EOF > /etc/openvpn/" + _cn.upper() + "_client-cb-openvpn.conf\n"
-        _userdata_contents += _file_contents
-        _userdata_contents += "EOF"
+        _file_fd.close()
+#       This is done by cloud-config. Not shell script. see lib/clouds/shared_functions.py
+#        _userdata_contents += "cat << EOF > /etc/openvpn/" + _cn.upper() + "_client-cb-openvpn.conf\n"
+#        _userdata_contents += _file_contents
+#        _userdata_contents += "EOF"
         _userdata_contents += "\n"
 
         _userdata_contents += "# INSERT OPENVPN COMMAND\n"
