@@ -96,26 +96,26 @@ GCE_INITIAL_VMCS = us-east1-b:sut                          # Change "us-east1-b"
 GCE_LOGIN = cbuser                                         # The username that logins on the VMs
 #-------------------------------------------------------------------------------
 # DigitalOcean (DO) requires the following parameters
-[USER-DEFINED : CLOUDOPTION_MYDIGITALOCEAN ]
-DO_INITIAL_VMCS = tor1:sut                              # VMC == DO data center (we don't have availability zones yet)
-DO_CREDENTIALS = long_hex_token_from_digitalocean.com:arbitrarytag1,another_token:arbitrarytag2,another_token:arbitrarytag3  # This is your DO access token. The driver supports multiple accounts and will distribute AIs across all accounts in a round-robin fashion.
-DO_SSH_KEY_NAME = cbtool_rsa                            # Either upload credentials/cbtool_rsa.pub to DO or tell us where your private key is
-DO_KEY_NAME = key_name_from_digitialocean.com           # Comma-separated list of IDs (or names) of your DO ssh keys
-DO_LOGIN = root                                         # The username that logins on the VMs
+[USER-DEFINED : CLOUDOPTION_MYDIGITALOCEAN]
+DO_INITIAL_VMCS = tor1:sut                                                                       # VMC == DO data center (we don't have availability zones yet)
+DO_CREDENTIALS = long_hex_token_from_digitalocean.com:arbitrarytag1,another_token:arbitrarytag2  # This is your DO access token. The driver supports multiple accounts and will distribute AIs across all accounts in a round-robin fashion.
+DO_SSH_KEY_NAME = cbtool_rsa                                                                     # Either upload credentials/cbtool_rsa.pub to DO or tell us where your private key is
+DO_KEY_NAME = key_name_from_digitialocean.com                                                    # Comma-separated list of IDs (or names) of your DO ssh keys
+DO_LOGIN = root                                                                                  # The username that logins on the VMs
 #-------------------------------------------------------------------------------
 [USER-DEFINED : CLOUDOPTION_MYPDM ]
 PDM_INITIAL_VMCS = world                                 # This really does not matter, could be anything
 PDM_CREDENTIALS = NOTUSED                                # Currently not used
 PDM_ACCESS = tcp://<address>:2375,tcp://<address>:2375   # A comma-separated list of Docker hosts (usually port 2375) or a single Swarm host (usually port 5001)
 PDM_NETNAME = bridge                                     # The name of an already existing network on Docker
-PDM_LOGIN = root                                         # The username that logins on the VMs
+PDM_LOGIN = cbuser                                       # The username that logins on the VMs
 #-------------------------------------------------------------------------------
 [USER-DEFINED : CLOUDOPTION_MYPCM ]
-PDM_INITIAL_VMCS = world                                 # This really does not matter, could be anything
-PDM_CREDENTIALS = trustpassword                          # LXD's "trust password"
-PDM_ACCESS = https://<address>:8443,https://<address>:8443 # A comma-separated list of LXD hosts (usually port 8443)
-PDM_NETNAME = lxdbr0                                     # The name of an already existing network on LXD
-PDM_LOGIN = root                                         # The username that logins on the VMs
+PCM_INITIAL_VMCS = world                                   # This really does not matter, could be anything
+PCM_CREDENTIALS = trustpassword                            # LXD's "trust password"
+PCM_ACCESS = https://<address>:8443,https://<address>:8443 # A comma-separated list of LXD hosts (usually port 8443)
+PCM_NETNAME = lxdbr0                                       # The name of an already existing network on LXD
+PCM_LOGIN = cbuser                                         # The username that logins on the VMs
 #-------------------------------------------------------------------------------
 [USER-DEFINED : CLOUDOPTION_MYKUB ]
 KUB_INITIAL_VMCS = world                                 # This really does not matter, could be anything

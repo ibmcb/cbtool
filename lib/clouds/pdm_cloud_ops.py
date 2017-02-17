@@ -125,7 +125,7 @@ class PdmCmds(CommonCloudFunctions) :
             
             _key_pair_found = self.check_ssh_key(vmc_name, self.determine_key_name(vm_defaults), vm_defaults)
             
-            _detected_imageids = self.check_images(vmc_name, vm_templates)
+            _detected_imageids = self.check_images(vmc_name, vm_templates, vm_defaults)
 
             if not (_run_netname_found and _prov_netname_found and _key_pair_found) :
                 _msg = "Check the previous errors, fix it (using Docker CLI)"
@@ -190,28 +190,42 @@ class PdmCmds(CommonCloudFunctions) :
         return _prov_netname_found, _run_netname_found
 
     @trace
-    def check_images(self, vmc_name, vm_templates) :
+    def check_images(self, vmc_name, vm_templates, vm_defaults) :
         '''
         TBD
         '''
 
+        _map_name_to_id = {}
+        _map_id_to_name = {}
+
         for _endpoint in self.dockconn.keys() :
 
             self.common_messages("IMG", { "name": vmc_name, "endpoint" : _endpoint }, "checking", 0, '')
-    
-            _map_name_to_id = {}
-            _map_id_to_name = {}
+
+            _msg = "Attempting to pull images from \"" 
+            _msg += vm_defaults["image_prefix"].split('/')[0] + "\" repository"
+            _msg += " (may take several minutes on the first execution)..."
+            cbdebug(_msg, True)
+            
+            for _vm_role in vm_templates.keys() :            
+                _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
+                if self.is_cloud_image_uuid(_imageid) :
+                    if _imageid in _map_id_to_name :
+                        _imageid = _map_id_to_name[_imageid]
+
+                if not self.is_cloud_image_uuid(_imageid) :
+                    self.dockconn[_endpoint].pull(_imageid)
 
             _registered_image_list = self.dockconn[_endpoint].images()
             _registered_imageid_list = []
-                
+
             for _registered_image in _registered_image_list :
                 _registered_imageid_list.append(_registered_image["Id"].split(':')[1])
                 if _registered_image["RepoTags"] :
                     _map_name_to_id[_registered_image["RepoTags"][0].replace(":latest",'')] = _registered_image["Id"].split(':')[1]
                 
             for _vm_role in vm_templates.keys() :            
-                _imageid = str2dic(vm_templates[_vm_role])["imageid1"]                
+                _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
                 if _imageid != "to_replace" :
                     if _imageid in _map_name_to_id :                     
                         vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])
