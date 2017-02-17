@@ -634,7 +634,8 @@ common-boto-install-pip = sudo pip install --upgrade INDEXURL boto
 
 common-libcloud-install-pip = sudo pip install --upgrade INDEXURL apache-libcloud
 
-common-gcloud-install-man =  export CLOUDSDK_CORE_DISABLE_PROMPTS=1 && curl https://sdk.cloud.google.com | bash
+common-gcloud-install-man =  rm -rf ~/google-cloud-sdk; export CLOUDSDK_CORE_DISABLE_PROMPTS=1 && curl https://sdk.cloud.google.com | bash
+common-gcloud-postinstall-man =  sudo ln -s ~/google-cloud-sdk/bin/gcloud /usr/local/bin/gcloud
 
 common-pygce-install-pip =  sudo pip install --upgrade INDEXURL gcloud google-api-python-client
 

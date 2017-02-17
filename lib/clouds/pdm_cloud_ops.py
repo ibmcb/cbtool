@@ -224,7 +224,7 @@ class PdmCmds(CommonCloudFunctions) :
                 if _registered_image["RepoTags"] :
                     _map_name_to_id[_registered_image["RepoTags"][0].replace(":latest",'')] = _registered_image["Id"].split(':')[1]
                 
-            for _vm_role in vm_templates.keys() :            
+            for _vm_role in vm_templates.keys() :      
                 _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
                 if _imageid != "to_replace" :
                     if _imageid in _map_name_to_id :                     
