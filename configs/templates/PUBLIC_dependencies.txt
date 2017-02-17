@@ -263,7 +263,7 @@ glanceclient-configure = python -c "import glanceclient; from glanceclient.v2 im
 softlayer-configure = python -c "import SoftLayer; print "SoftLayer.__version__".replace('v','')"
 boto-configure = python -c "import boto; print str(boto.__version__).strip().replace('-dev','')"
 libcloud-configure = python -c "import libcloud; print str(libcloud.__version__).replace('-dev','').strip()"
-gcloud-configure = source ~/.bashrc; source ~/.profile; gcloud -v | grep SDK | cut -d ' ' -f 4
+gcloud-configure =  source ~/.bashrc 2>&1 | grep -v No; source ~/.profile 2>&1 | grep -v No; gcloud -v | grep SDK | cut -d ' ' -f 4;
 pygce-configure = python -c "from oauth2client.client import GoogleCredentials; from googleapiclient.discovery import build"
 pydocker-configure = python -c "import docker"
 pylxd-configure = python -c "import pylxd"
@@ -620,7 +620,7 @@ common-streamprox-preinstall-git = cd 3RPARTYDIR; git clone URL/StreamProx.git
 common-d3-preinstall-git = cd 3RPARTYDIR; git clone URL/d3.git
 
 common-novaclient-preinstall-pip = sudo pip install --upgrade INDEXURL pbr; sudo pip install --upgrade INDEXURL netifaces
-common-novaclient-install-pip = sudo pip install --upgrade INDEXURL python-novaclient
+common-novaclient-install-pip = sudo pip install --upgrade INDEXURL python-novaclient==6.0.0
 
 common-neutronclient-install-pip = sudo pip install --upgrade INDEXURL python-neutronclient
 
@@ -638,7 +638,7 @@ common-gcloud-install-man =  export CLOUDSDK_CORE_DISABLE_PROMPTS=1 && curl http
 
 common-pygce-install-pip =  sudo pip install --upgrade INDEXURL gcloud google-api-python-client
 
-common-pydocker-install-pip =  sudo pip install --upgrade INDEXURL docker-py wget
+common-pydocker-install-pip =  sudo pip install --upgrade INDEXURL docker-py==1.8.1 wget
 
 common-pylxd-install-pip =  sudo pip install --upgrade INDEXURL pylxd
 
