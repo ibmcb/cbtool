@@ -46,6 +46,7 @@ class NopCmds(CommonCloudFunctions) :
         self.osci = osci
         self.ft_supported = False
         self.expid = expid
+        self.additional_rc_contents = ''        
 
     @trace
     def get_description(self) :
@@ -80,7 +81,7 @@ class NopCmds(CommonCloudFunctions) :
                 return _status, _msg, ''
 
     @trace
-    def test_vmc_connection(self, vmc_name, access, credentials, key_name, \
+    def test_vmc_connection(self, cloud_name, vmc_name, access, credentials, key_name, \
                             security_group_name, vm_templates, vm_defaults, vmc_defaults) :
         '''
         TBD
@@ -89,8 +90,9 @@ class NopCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
-
             self.connect(access, credentials, vmc_name, vm_defaults)
+
+            self.generate_rc(cloud_name, vmc_defaults, self.additional_rc_contents)
 
             _prov_netname_found, _run_netname_found = self.check_networks(vmc_name, vm_defaults)
             
@@ -142,6 +144,7 @@ class NopCmds(CommonCloudFunctions) :
   
         _map_name_to_id = {}
         _map_uuid_to_name = {}
+        
         _registered_imageid_list = []
         if True :
             for _vm_role in vm_templates.keys() :
@@ -161,10 +164,10 @@ class NopCmds(CommonCloudFunctions) :
                         if _imageid not in _registered_imageid_list :
                             _registered_imageid_list.append(_imageid)
 
-        _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list)
-
         _map_name_to_id["baseimg"] = self.generate_random_uuid("baseimg")
         _map_uuid_to_name[self.generate_random_uuid("baseimg")] = "baseimg"
+
+        _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list, _map_uuid_to_name)
 
         if "images_uuid2name" not in vmc_defaults :
             vmc_defaults["images_uuid2name"] = dic2str(_map_uuid_to_name)

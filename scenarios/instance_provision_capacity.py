@@ -1292,7 +1292,8 @@ def main() :
     if "time_breakdown_keys" in _mgt_info :
         _dtb = _mgt_info["time_breakdown_keys"][0:-1].split(',')
         _dtb.sort()
-        _dtb = " --breakdown " + ','.join(_dtb)
+        _dtb = " --breakdown " + ','.join(_dtb)        
+#        _dtb = " --breakdown " + ','.join(reversed(_dtb))
     
     _msg = "Data is available at url \"" + _url + "\". \nTo automatically generate"
     _msg += " plots, just run \"" + _cb_base_dir + "/util/plot/cbplotgen.R "

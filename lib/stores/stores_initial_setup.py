@@ -598,7 +598,8 @@ def reset(global_objects, soft = True) :
 
         _proc_man.run_os_command("screen -wipe")
 
-        _proc_man.run_os_command("rm -rf /tmp/restart_cb*" + global_objects["logstore"]["username"])
+        _proc_man.run_os_command("rm -rf " + global_objects["space"]["generated_configurations_dir"] + '/' + _username + "_cb_lastcloudrc")
+        _proc_man.run_os_command("rm -rf /tmp/restart_cb*" + global_objects["logstore"]["username"] + '*')
         _proc_man.run_os_command("rm -rf /tmp/" + _username + "_*-*-*-*-*_avg_acc")
         
         _msg = "    Flushing Object Store..." 

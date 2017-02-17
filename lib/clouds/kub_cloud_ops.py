@@ -21,7 +21,8 @@
 
     @author: Marcio A. Silva
 '''
-from time import time, sleep
+
+from time import time, sleep, mktime, strptime
 from random import randint
 from os.path import expanduser
 
@@ -30,7 +31,7 @@ import pykube
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import str2dic, DataOpsException
-from lib.remote.network_functions import hostname2ip
+from lib.remote.network_functions import hostname2ip, check_url
 from shared_functions import CldOpsException, CommonCloudFunctions 
 
 class KubCmds(CommonCloudFunctions) :
@@ -49,6 +50,7 @@ class KubCmds(CommonCloudFunctions) :
         self.kubeconn = False        
         self.expid = expid
         self.api_error_counter = {}
+        self.additional_rc_contents = ''        
         self.max_api_errors = 10
         
     @trace
@@ -90,7 +92,7 @@ class KubCmds(CommonCloudFunctions) :
                 return _status, _msg, ''
     
     @trace
-    def test_vmc_connection(self, vmc_name, access, credentials, key_name, \
+    def test_vmc_connection(self, cloud_name, vmc_name, access, credentials, key_name, \
                             security_group_name, vm_templates, vm_defaults, vmc_defaults) :
         '''
         TBD
@@ -101,11 +103,13 @@ class KubCmds(CommonCloudFunctions) :
 
             self.connect(access, credentials, vmc_name, vm_defaults, True, True)
 
+            self.generate_rc(cloud_name, vmc_defaults, self.additional_rc_contents)
+
             _prov_netname_found, _run_netname_found = self.check_networks(vmc_name, vm_defaults)
             
             _key_pair_found = self.check_ssh_key(vmc_name, self.determine_key_name(vm_defaults), vm_defaults)
             
-            _detected_imageids = self.check_images(vmc_name, vm_templates)
+            _detected_imageids = self.check_images(vmc_name, vm_templates, vm_defaults)
 
             if not (_run_netname_found and _prov_netname_found and _key_pair_found) :
                 _msg = "Check the previous errors, fix it (using Docker CLI)"
@@ -143,7 +147,7 @@ class KubCmds(CommonCloudFunctions) :
         return _prov_netname_found, _run_netname_found
 
     @trace
-    def check_images(self, vmc_name, vm_templates) :
+    def check_images(self, vmc_name, vm_templates, vm_defaults) :
         '''
         TBD
         '''
@@ -151,25 +155,27 @@ class KubCmds(CommonCloudFunctions) :
         self.common_messages("IMG", { "name": vmc_name }, "checking", 0, '')
 
         _map_name_to_id = {}
+        _map_id_to_name = {}
 
         _registered_image_list = []
         _registered_imageid_list = []
-            
-        for _registered_image in _registered_image_list :                
-            _registered_imageid_list.append(_registered_image["Id"].split(':')[1])                
-            _map_name_to_id[_registered_image["RepoTags"][0].replace(":latest",'')] = _registered_image["Id"].split(':')[1]
-            
+
         for _vm_role in vm_templates.keys() :            
-            _imageid = str2dic(vm_templates[_vm_role])["imageid1"]                
+            _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
             if _imageid != "to_replace" :
                 if _imageid in _map_name_to_id :                     
 #                    vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])
                     True
                 else :
-                    _map_name_to_id[_imageid] = "aaaa0" + ''.join(["%s" % randint(0, 9) for num in range(0, 59)])
-#                    vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])                        
+                    if vm_defaults["docker_repo"] == "https://hub.docker.com/r/" and _imageid == "ibmcb/ubuntu_cb_nullworkload" :
+                        if _imageid not in _registered_imageid_list :
+                            _registered_imageid_list.append(_imageid)                        
+#                    if check_url(vm_defaults["docker_repo"] + '/' + _imageid) :                    
+#                        _map_name_to_id[_imageid] = "aaaa0" + ''.join(["%s" % randint(0, 9) for num in range(0, 59)])
+#                        vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])
+#                        _registered_imageid_list.append(_map_name_to_id[_imageid])
 
-        _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list)
+        _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list, _map_id_to_name)
 
         if not _detected_imageids :
             return _detected_imageids
@@ -420,7 +426,6 @@ class KubCmds(CommonCloudFunctions) :
             _fmsg = "An error has occurred, but no error message was captured"                        
             _nr_instances = 0
 
-            sleep(15)
             for _vmc_uuid in self.osci.get_object_list(obj_attr_list["cloud_name"], "VMC") :
                 _vmc_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
                                                       "VMC", False, _vmc_uuid, \
@@ -430,10 +435,10 @@ class KubCmds(CommonCloudFunctions) :
                              obj_attr_list["credentials"], \
                              _vmc_attr_list["name"], obj_attr_list)
 
-
                 _container_list = pykube.objects.Pod.objects(self.kubeconn).filter()
                 for _container in _container_list :
                     if _container.name.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"].lower()) :
+                        print _container.obj["status"]
                         _nr_instances += 1
 
         except Exception, e :
@@ -485,38 +490,47 @@ class KubCmds(CommonCloudFunctions) :
         _call = "NA"
 
         try :
+
             if obj_type == "pod" :
                 _call = "containers()"
                 if identifier == "all" :
                     _instances = pykube.objects.Pod.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"])
                                                                    
                 else :
-                    if "selector" in obj_attr_list :
+                    
+                    if "cloud_vm_exact_match_name" in obj_attr_list :
+                        identifier = obj_attr_list["cloud_vm_exact_match_name"]
+                        _instances = pykube.objects.Pod.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"], \
+                                                                                      field_selector={"metadata.name": identifier})
+
+                    elif "selector" in obj_attr_list :
                         _selector = str2dic(obj_attr_list["selector"])
                         _instances = pykube.objects.Pod.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"], \
-                                                                                      selector= _selector)                        
+                                                                          selector= _selector)
+
                     else :
                         _instances = pykube.objects.Pod.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"], \
                                                                                       field_selector={"metadata.name": identifier})
-                        
+
+
             elif obj_type == "replicaset" :
                 if identifier == "all" :
                     _instances = pykube.objects.ReplicaSet.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"])
                 else :
-                    if "selector" in obj_attr_list :
+                    if "selector" in obj_attr_list and "detected_cloud_vm_name" not in obj_attr_list :
                         _selector = str2dic(obj_attr_list["selector"])
                         _instances = pykube.objects.ReplicaSet.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"], \
-                                                                                      selector= _selector)
-
+                                                                                             selector= _selector)
+                        
             elif obj_type == "deployment" :
                 if identifier == "all" :
                     _instances = pykube.objects.Deployment.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"])
                 else :
-                    if "selector" in obj_attr_list :
+                    if "selector" in obj_attr_list and "detected_cloud_vm_name" not in obj_attr_list :
                         _selector = str2dic(obj_attr_list["selector"])
                         _instances = pykube.objects.Deployment.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"], \
-                                                                                      selector= _selector)                 
-                    
+                                                                                      selector= _selector)
+                                            
             else :
                 _call = "volumes()"                    
                 if identifier == "all" :
@@ -574,8 +588,8 @@ class KubCmds(CommonCloudFunctions) :
 
             for _image in _image_list :
                 if self.is_cloud_image_uuid(obj_attr_list["imageid1"]) :
-                    if _image["Id"].split(':')[1] == obj_attr_list["imageid1"] :
-                        _candidate_images.append(obj_attr_list["imageid1"])
+#                    if _image["Id"].split(':')[1] == obj_attr_list["imageid1"] :
+                    _candidate_images.append(obj_attr_list["imageid1"])
                 else :
                     if _image.count(obj_attr_list["imageid1"]) :
                         _candidate_images.append(obj_attr_list["imageid1"])                        
@@ -635,6 +649,7 @@ class KubCmds(CommonCloudFunctions) :
 
             if _instance_ready :
                 self.instance_info = _instance.obj
+                obj_attr_list["cloud_vm_exact_match_name"] = _instance.name
                 obj_attr_list["cloud_vm_name"] = _instance.name
                 obj_attr_list["cloud_hostname"] = _instance.name
                 
@@ -662,6 +677,7 @@ class KubCmds(CommonCloudFunctions) :
 
             if self.get_ip_address(obj_attr_list) :
                 obj_attr_list["last_known_state"] = "running with ip assigned"
+                                                            
                 return True
             else :
                 obj_attr_list["last_known_state"] = "running with ip unassigned"
@@ -780,7 +796,7 @@ class KubCmds(CommonCloudFunctions) :
                 _msg += " is already running. It needs to be destroyed first."
                 _status = 187
                 cberr(_msg)
-                raise CldOpsException(_msg, _status)            
+                raise CldOpsException(_msg, _status)    
             self.annotate_time_breakdown(obj_attr_list, "check_existing_instance_time", _mark_a)
                         
             _env = [  { "name": "CB_SSH_PUB_KEY", "value" : obj_attr_list["pubkey_contents"]}, {"name": "CB_LOGIN", "value" : obj_attr_list["login"]} ]
@@ -877,15 +893,13 @@ class KubCmds(CommonCloudFunctions) :
             if obj_attr_list["abstraction"] == "deployment" :
                 pykube.Deployment(self.kubeconn, _obj).create()
                                                 
-            self.annotate_time_breakdown(obj_attr_list, "instance_creation_time", _mark_a)
-                        
+            self.annotate_time_breakdown(obj_attr_list, "instance_scheduling_time", _mark_a)
+
+            self.get_extended_info(obj_attr_list)
+                                    
             self.take_action_if_requested("VM", obj_attr_list, "provision_started")
 
             _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
-
-            _instance = self.get_instances(obj_attr_list, "pod", obj_attr_list["cloud_vm_name"])
-                        
-            obj_attr_list["cloud_vm_uuid"] = _instance.obj["metadata"]["uid"]
 
             self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
             
@@ -911,6 +925,11 @@ class KubCmds(CommonCloudFunctions) :
             _fmsg = str(e)
 
         finally :
+            self.get_extended_info(obj_attr_list)
+            
+            if "mgt_004_network_acessible" in obj_attr_list :
+                self.annotate_time_breakdown(obj_attr_list, "instance_reachable_time", obj_attr_list["mgt_004_network_acessible"], False)
+                   
             _status, _msg = self.common_messages("VM", obj_attr_list, "created", _status, _fmsg)
             return _status, _msg
 
@@ -934,9 +953,11 @@ class KubCmds(CommonCloudFunctions) :
                          obj_attr_list["vmc_name"], obj_attr_list["name"])
             
             _wait = int(obj_attr_list["update_frequency"])
-
+            _max_tries = int(obj_attr_list["update_attempts"])
+            _curr_tries = 0
+                
             _p_instance = self.get_instances(obj_attr_list, "pod", obj_attr_list["cloud_vm_name"])
-
+                
             if _p_instance :
                 self.common_messages("VM", obj_attr_list, "destroying", 0, '')
 
@@ -951,6 +972,11 @@ class KubCmds(CommonCloudFunctions) :
                     _r_instance.delete()
                                     
                 _p_instance.delete()
+
+            while _p_instance and _curr_tries < _max_tries :
+                _p_instance = self.get_instances(obj_attr_list, "pod", obj_attr_list["cloud_vm_name"])                
+                sleep(_wait)
+                _curr_tries += 1                
 
             if "cloud_vv" in obj_attr_list :
                 self.vvdestroy(obj_attr_list)
@@ -976,58 +1002,11 @@ class KubCmds(CommonCloudFunctions) :
             return _status, _msg
 
     @trace        
-    def vmcapture(self, obj_attr_list) :
+    def vmcapture(self, obj_attr_list) :            
         '''
         TBD
-        '''                
-        try :
-            _status = 100
-            _fmsg = "An error has occurred, but no error message was captured"
-
-            self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
-                         obj_attr_list["vmc_name"], obj_attr_list["name"])
-            
-            _wait = int(obj_attr_list["update_frequency"])
-
-            _instance = self.get_instances(obj_attr_list, "pod", obj_attr_list["cloud_vm_name"])
-
-            if _instance :
-
-                _time_mark_crs = int(time())
-
-                # Just in case the instance does not exist, make crc = crs
-                _time_mark_crc = _time_mark_crs  
-
-                obj_attr_list["mgt_102_capture_request_sent"] = _time_mark_crs - obj_attr_list["mgt_101_capture_request_originated"]
-
-                if obj_attr_list["captured_image_name"] == "auto" :
-                    obj_attr_list["captured_image_name"] = obj_attr_list["imageid1"] + "_captured_at_"
-                    obj_attr_list["captured_image_name"] += str(obj_attr_list["mgt_101_capture_request_originated"])
-
-                self.common_messages("VM", obj_attr_list, "capturing", 0, '')
-
-                #self.dockconn[_host_ip].commit(_instance["Id"], repository=obj_attr_list["captured_image_name"])
-
-                sleep(_wait)
-
-                obj_attr_list["mgt_103_capture_request_completed"] = _time_mark_crc - _time_mark_crs
-
-                if "mgt_103_capture_request_completed" not in obj_attr_list :
-                    obj_attr_list["mgt_999_capture_request_failed"] = int(time()) - _time_mark_crs
-                        
-                _status = 0
-
-        except CldOpsException, obj :
-            _status = obj.status
-            _fmsg = str(obj.msg)
-
-        except Exception, e :
-            _status = 23
-            _fmsg = str(e)
-    
-        finally :
-            _status, _msg = self.common_messages("VM", obj_attr_list, "captured", _status, _fmsg)
-            return _status, _msg
+        '''
+        return 0, "NOT SUPPORTED"
 
     def vmrunstate(self, obj_attr_list) :
         '''
@@ -1105,39 +1084,43 @@ class KubCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
+        return 0, "NOT SUPPORTED"
+
+    @trace
+    def get_extended_info(self, obj_attr_list) :
+        '''
+        TBD
+        '''
         try :
             _status = 100
-            _hyper = ''
-            
             _fmsg = "An error has occurred, but no error message was captured"
-            
-            self.common_messages("IMG", obj_attr_list, "deleting", 0, '')
 
-            self.connect(obj_attr_list["access"], \
-                         obj_attr_list["credentials"], \
-                         obj_attr_list["vmc_name"], obj_attr_list)
+            _pattern = "%Y-%m-%dT%H:%M:%SZ"
 
-            _image_list = []
+            if self.instance_info :
+                if "metadata" in self.instance_info :
+                    if "resourceVersion" in self.instance_info["metadata"] :
+                        obj_attr_list["cloud_resource_version"] = self.instance_info["metadata"]["resourceVersion"]
 
-            for _image in _image_list :
-                if self.is_cloud_image_uuid(obj_attr_list["imageid1"]) :                 
-                    if _image["Id"].split(':')[1] == obj_attr_list["imageid1"] :
-                        obj_attr_list["imageid1"] = _image["RepoTags"][0]
-                        obj_attr_list["boot_volume_imageid1"] = _image["Id"]                            
-#                        self.dockconn[_endpoint].remove_image(_image["Id"])
-                        break
-                else :
-                    if _image["RepoTags"][0].count(obj_attr_list["imageid1"]) :
-                        obj_attr_list["boot_volume_imageid1"] = _image["Id"]                        
-#                        self.dockconn[_endpoint].remove_image(_image["Id"])
-                        break
-                        
-            _status = 0
+                    if "uid" in self.instance_info["metadata"] :                        
+                        obj_attr_list["cloud_vm_uuid"] = self.instance_info["metadata"]["uid"]
 
+                    if "creationTimestamp" in self.instance_info["metadata"] :                        
+                        obj_attr_list["cloud_vm_creation_timestamp"] = int(mktime(strptime(self.instance_info["metadata"]["creationTimestamp"], _pattern)))                       
+
+                _mark_a = obj_attr_list["cloud_vm_creation_timestamp"]
+                for _event in pykube.objects.Event.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"], \
+                                                                                      field_selector={"involvedObject.name": obj_attr_list["cloud_vm_name"]}) :
+                    _event_info = _event.obj
+                    if _event_info["involvedObject"]["uid"] == obj_attr_list["cloud_vm_uuid"] :
+                        _epoch = int(mktime(strptime(_event_info["firstTimestamp"], _pattern)))
+                    
+                        self.annotate_time_breakdown(obj_attr_list, "instance_" + _event_info["reason"].lower() + "_time", _epoch - _mark_a, False)
+                        _mark_a = _epoch
+                
         except Exception, e :
             _status = 23
             _fmsg = str(e)
             
         finally :
-            _status, _msg = self.common_messages("IMG", obj_attr_list, "deleted", _status, _fmsg)
-            return _status, _msg
+            return True

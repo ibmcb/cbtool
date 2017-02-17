@@ -22,6 +22,7 @@ cloud_name=$(cat ${1} | grep '"'cloud_name'"' | cut -d ':' -f 2 | sed 's^"\|,\| 
 create_lb=$(cat ${1} | grep \"create_lb\" | cut -d ':' -f 2 | sed 's^"\|,\| ^^g' | tr '[:upper:]' '[:lower:]')
 ai_counter=$(cat ${1} | grep '"'ai_name'"' | cut -d ':' -f 2 | sed 's^"\|,\| ^^g' | cut -d '_' -f 2)
 kusername=$(cat ${1} | grep \"username\" | cut -d ':' -f 2 | sed 's^"\|,\| ^^g')
+rc_path=$(cat ${1} | grep \"generated_configurations_dir\" | cut -d ':' -f 2 | sed 's^"\|,\| ^^g')
 tbs=$(cat ${1} | grep \"time_breakdown_step\" | cut -d ':' -f 2 | sed 's^"\|,\| ^^g')
 
 TRACE_FILE=/var/log/cloudbench/${kusername}_staging.log
@@ -41,10 +42,7 @@ then
     tbs=1
 fi
 
-if [[ -f ~/cbrc-${cloud_name} ]]
-then
-    source ~/cbrc-${cloud_name}
-fi
+source ${rc_path}/${kusername}_cb_lastcloudrc
     
 function write_to_log {
     echo "$(date) - $obj_name - $1" >> $TRACE_FILE

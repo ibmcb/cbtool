@@ -235,19 +235,21 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     cld_attr_lst["walkthrough"] = "false"
 
                 for _vm_role in cld_attr_lst["vm_templates"].keys() :            
-                    cld_attr_lst["vm_templates"][_vm_role] = \
-                    cld_attr_lst["vm_templates"][_vm_role].replace("imageid1:", "imageid1:" + str(cld_attr_lst["vm_defaults"]["image_prefix"]).strip())
+                    _aux = str2dic(cld_attr_lst["vm_templates"][_vm_role])
+                    _aux["imageid1"] = cld_attr_lst["vm_defaults"]["image_prefix"].strip() + _aux["imageid1"] + cld_attr_lst["vm_defaults"]["image_suffix"].strip()
+                    cld_attr_lst["vm_templates"][_vm_role] = dic2str(_aux)
                     
                 for _vmc_entry in _initial_vmcs :
                     _cld_conn = _cld_ops_class(self.pid, None, None)
-                    _x_status, _x_msg = _cld_conn.test_vmc_connection(_vmc_entry.split(':')[0], \
-                                                                  cld_attr_lst["vmc_defaults"]["access"], \
-                                                                  cld_attr_lst["vmc_defaults"]["credentials"], \
-                                                                  cld_attr_lst["vmc_defaults"]["key_name"], \
-                                                                  cld_attr_lst["vmc_defaults"]["security_groups"], \
-                                                                  cld_attr_lst["vm_templates"], \
-                                                                  cld_attr_lst["vm_defaults"], \
-                                                                  cld_attr_lst["vmc_defaults"])
+                    _x_status, _x_msg = _cld_conn.test_vmc_connection(cld_attr_lst["cloud_name"], \
+                                                                      _vmc_entry.split(':')[0], \
+                                                                      cld_attr_lst["vmc_defaults"]["access"], \
+                                                                      cld_attr_lst["vmc_defaults"]["credentials"], \
+                                                                      cld_attr_lst["vmc_defaults"]["key_name"], \
+                                                                      cld_attr_lst["vmc_defaults"]["security_groups"], \
+                                                                      cld_attr_lst["vm_templates"], \
+                                                                      cld_attr_lst["vm_defaults"], \
+                                                                      cld_attr_lst["vmc_defaults"])
 
                     if _x_status == 1 or str(cld_attr_lst["vmc_defaults"]["force_walkthrough"]).lower() == "true" :
                         cld_attr_lst["walkthrough"] = "true"
