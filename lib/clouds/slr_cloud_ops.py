@@ -50,6 +50,7 @@ class SlrCmds(CommonCloudFunctions) :
         self.sshman = False
         self.imageman = False
         self.expid = expid
+        self.additional_rc_contents = ''        
         self.ft_supported = False
 
     @trace
@@ -116,7 +117,7 @@ class SlrCmds(CommonCloudFunctions) :
                 return _status, _msg, _region
 
     @trace
-    def test_vmc_connection(self, vmc_name, access, credentials, key_name, \
+    def test_vmc_connection(self, cloud_name, vmc_name, access, credentials, key_name, \
                             security_group_name, vm_templates, vm_defaults, vmc_defaults) :
         '''
         TBD
@@ -126,6 +127,8 @@ class SlrCmds(CommonCloudFunctions) :
             _fmsg = "An error has occurred, but no error message was captured"
 
             self.connect(access, credentials, vmc_name)
+
+            self.generate_rc(cloud_name, vmc_defaults, self.additional_rc_contents)
 
             _prov_netname_found, _run_netname_found = self.check_networks(vmc_name, vm_defaults)
             
@@ -184,6 +187,7 @@ class SlrCmds(CommonCloudFunctions) :
         _registered_imageid_list = []
 
         _map_name_to_id = {}
+        _map_id_to_name = {}
 
         for _registered_image in _registered_image_list :
             _registered_imageid_list.append(_registered_image["id"])
@@ -198,7 +202,9 @@ class SlrCmds(CommonCloudFunctions) :
                     _map_name_to_id[_imageid] = '0' + ''.join(["%s" % randint(0, 9) for num in range(0, 5)]) + '0'
                     vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])                        
 
-        _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list)
+                _map_id_to_name[_map_name_to_id[_imageid]] = _imageid
+
+        _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list, _map_id_to_name)
 
         return _detected_imageids
 
@@ -862,7 +868,9 @@ class SlrCmds(CommonCloudFunctions) :
                              obj_attr_list["vmc_name"])
             
             _wait = int(obj_attr_list["update_frequency"])
-
+            _max_tries = int(obj_attr_list["update_attempts"])
+            _curr_tries = 0
+            
             _instance = self.wait_until_transaction(obj_attr_list)
             
             if _instance :
@@ -878,8 +886,10 @@ class SlrCmds(CommonCloudFunctions) :
                     self.nodeman.cancel_instance(obj_attr_list["cloud_vm_uuid"])
                     sleep(_wait)
     
-                    while self.is_vm_running(obj_attr_list) :
+                    while self.is_vm_running(obj_attr_list) and _curr_tries < _max_tries :
                         sleep(_wait)
+                        _curr_tries += 1
+                        
             else :
                 True
 

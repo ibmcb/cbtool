@@ -26,6 +26,7 @@
 
 import socket
 import struct
+import urllib2
 
 try :
     import IN
@@ -272,6 +273,20 @@ def get_mtu(ifname) :
         raise
  
     return mtu
+
+def check_url(url, string_to_replace = None, string_replacement = None, tout = 3) :
+    '''
+    TBD
+    '''
+    try:
+        if len(url) :
+            if string_to_replace and string_replacement :
+                _url = url.replace(string_to_replace, string_replacement.strip())
+            urllib2.urlopen(urllib2.Request(_url), timeout = tout)
+        return True
+        
+    except:
+        return False
 
 @trace
 class Nethashget :

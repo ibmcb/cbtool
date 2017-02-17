@@ -381,7 +381,12 @@ class MongodbMgdConn :
             if int(self.version) < 3 :
                 _collection_handle.save(document)
             else :
-                _collection_handle.replace_one({'_id': document["_id"]}, document, upsert = True)
+                # This insane behavior is supposed to be the "expected behavior"
+                # according to https://jira.mongodb.org/browse/SERVER-14322
+                try: 
+                    _collection_handle.replace_one({'_id': document["_id"]}, document, upsert = True)
+                except :
+                    _collection_handle.replace_one({'_id': document["_id"]}, document, upsert = True)                
 
             if disconnect_finish :
                 self.disconnect()

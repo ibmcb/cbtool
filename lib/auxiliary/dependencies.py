@@ -27,7 +27,6 @@ from sys import path
 import os
 import re
 import platform
-import urllib2
 
 from os.path import expanduser
 home = expanduser("~")
@@ -35,6 +34,7 @@ home = expanduser("~")
 from json import dumps
 from lib.remote.process_management import ProcessManagement
 from lib.auxiliary.code_instrumentation import  VerbosityFilter, MsgFilter, cbdebug, cberr, cbwarn, cbinfo, cbcrit
+from lib.remote.network_functions import check_url
 
 def deps_file_parser(depsdict, username, options, hostname, process_manager = False) :
     '''
@@ -198,7 +198,7 @@ def get_cmdline(depkey, depsdict, operation, process_manager = False, exception_
                 _url = _url.replace("DISTRO", depsdict["cdistkind"].strip())
                 _url = _url.replace("USERNAME", depsdict["username"].strip())
                 
-                if check_url(_url, depsdict) :
+                if check_url(_url, "ARCH", depsdict["carch"]) :
                     _actual_url = _url
                     break
                 else :
@@ -351,20 +351,7 @@ def expand_command(cmdline, depsdict, process_manager = False) :
 
         _actual_cmdline += _command + ';'        
     
-    return _actual_cmdline    
-
-def check_url(url, depsdict) :
-    '''
-    TBD
-    '''
-    try:
-        if len(url) :
-            _url = url.replace("ARCH", depsdict["carch"].strip())
-            urllib2.urlopen(urllib2.Request(_url), timeout = 3)
-        return True
-        
-    except:
-        return False
+    return _actual_cmdline
 
 def get_actual_cmdline(commandline_keys, depsdict, _actual_url) :
     '''
@@ -416,7 +403,7 @@ def select_url(source, depsdict) :
             depsdict[source + "_addr_list"].insert(_index, depsdict[_key])
 
     for _repo_addr in depsdict[source + "_addr_list"] :
-        if check_url("http://" + _repo_addr, depsdict) :
+        if check_url("http://" + _repo_addr, "ARCH", depsdict["carch"]) :
             depsdict[source + "_addr"] = _repo_addr
     
     if len(depsdict[source + "_addr_list"]) :
@@ -468,12 +455,12 @@ def build_repository_file_contents(depsdict, repo_name) :
         _actual_url = _actual_url.replace("REPO_MAJOR_RELEASE", depsdict["cdistmajorver"])
         _actual_url = _actual_url.replace("REPO_ARCH", depsdict["carch"])
         
-    if not check_url(_actual_url, depsdict) :
+    if not check_url(_actual_url, "ARCH", depsdict["carch"]) :
         _tested_urls = _actual_url
 
         _actual_url = depsdict["repo_contents"][repo_name]["original-url"]
 
-        if not check_url(_actual_url, depsdict) :
+        if not check_url(_actual_url, "ARCH", depsdict["carch"]) :
             if not _tested_urls.count(_actual_url) :
                 _tested_urls += ',' + _actual_url
             _actual_url = False

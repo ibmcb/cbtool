@@ -1009,7 +1009,14 @@ class BaseObjectOperations :
                 _status = 0
 
             elif cmd == "img-delete" :
+                _vm_defaults = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", False, "vm_defaults", False) 
                 _cloud_parameters = self.get_cloud_parameters(obj_attr_list["cloud_name"])                
+                
+                if _vm_defaults["capture_supported"].lower() != "true" :
+                    _msg = "Image delete operations are not supported on \"" + _cloud_parameters["description"] + "\" clouds." 
+                    _status = 9000
+                    raise self.ObjectOperationException(_msg, _status)
+                
                 obj_attr_list["mgt_801_delete_request_originated"] = obj_attr_list["command_originated"]
                 obj_attr_list["imageid1"] = obj_attr_list["name"]
                 obj_attr_list["boot_volume_imageid1"] = "NA"                
@@ -1063,12 +1070,7 @@ class BaseObjectOperations :
                     _object_exists = self.osci.object_exists(obj_attr_list["cloud_name"], _obj_type, \
                                                              obj_attr_list["name"], \
                                                              True)
-                    _space_obj_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], "GLOBAL", \
-                                                                False, \
-                                                                "space", \
-                                                                False)
 
-                    obj_attr_list["base_dir"] = _space_obj_attr_list["base_dir"]
                 else :
                     _object_exists = False
 
@@ -3921,8 +3923,9 @@ class BaseObjectOperations :
                                 _msg += " \"cd ~/" + obj_attr_list["remote_dir_name"] 
                                 _msg +=  "; ./install -r workload --wks nullworkload\" "
                                 _msg += "to automatically configure a new instance."
-                                _msg += "\nOnce done, execute \"vmcapture youngest cb_nullworkload\""
-                                _msg += " on the CLI\n"
+                                _msg += "\nOnce done, execute \"vmcapture youngest " 
+                                _msg += obj_attr_list["image_prefix"] + "cb_nullworkload"
+                                _msg += obj_attr_list["image_suffix"] + "\" on the CLI\n"
             
                     if _obj_type == "VM" and obj_attr_list["role"] == "tinyvm" :
                         _msg = "\n\n You have sucessfully deployed your first fully configured"

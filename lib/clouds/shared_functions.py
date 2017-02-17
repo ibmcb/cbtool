@@ -251,7 +251,6 @@ class CommonCloudFunctions:
                 self.take_action_if_requested("VM", obj_attr_list, "provision_complete")
                 _time_mark_prc = int(time())
                 obj_attr_list["mgt_003_provisioning_request_completed"] = _time_mark_prc - time_mark_prs
-                self.annotate_time_breakdown(obj_attr_list, "instance_active_time", obj_attr_list["mgt_003_provisioning_request_completed"], False)   
                 self.pending_set(obj_attr_list, "Booting...")
                 break
             else :
@@ -515,8 +514,7 @@ class CommonCloudFunctions:
                     self.take_action_if_requested("VM", obj_attr_list, "provision_finished")
                     _time_mark_ib = int(time())
                     obj_attr_list["mgt_004_network_acessible"] = int(time()) - time_mark_prc
-                    self.annotate_time_breakdown(obj_attr_list, "instance_reachable_time", obj_attr_list["mgt_004_network_acessible"], False)
-                    obj_attr_list["time_mark_aux"] = _time_mark_ib                    
+                    obj_attr_list["time_mark_aux"] = _time_mark_ib
                     self.pending_set(obj_attr_list, "Network accessible now. Continuing...")
                     _network_reachable = True
                     break
@@ -864,6 +862,7 @@ class CommonCloudFunctions:
                 return True
 
         if self.get_description() == "Kubernetes Cloud" :
+            return True
             if len(imageid) == 64 and is_number(imageid, True) :
                 return True
 
@@ -1089,7 +1088,7 @@ class CommonCloudFunctions:
         return _security_group_found
 
     @trace        
-    def base_check_images(self, vmc_name, vm_templates, registered_imageid_list) :
+    def base_check_images(self, vmc_name, vm_templates, registered_imageid_list, map_id_to_name) :
         '''
         TBD
         '''        
@@ -1101,7 +1100,7 @@ class CommonCloudFunctions:
             if self.is_cloud_image_uuid(_imageid) :
                 if _imageid not in _required_imageid_list :
                     _required_imageid_list[_imageid] = []
-                _required_imageid_list[_imageid].append(_vm_role)       
+                _required_imageid_list[_imageid].append(_vm_role)
                 
         _msg = 'y'
 
@@ -1122,13 +1121,19 @@ class CommonCloudFunctions:
                 else :
                     _undetected_imageids[_imageid] = "undetected"
             
-            if _image_detected :
+            if _image_detected :                
                 _msg += "x INFO    Image id for VM roles \"" + ','.join(_required_imageid_list[_imageid]) + "\" is \""
-                _msg += _imageid + "\" and it is already registered.\n"
+                _msg += _imageid + "\" "
+                if _imageid in map_id_to_name :
+                    _msg += "(\"" + map_id_to_name[_imageid].strip() + "\") "
+                _msg += "and it is already registered.\n"
             else :
                 _msg += "x WARNING Image id for VM roles \""
                 _msg += ','.join(_required_imageid_list[_imageid]) + "\": \""
-                _msg += _imageid + "\" is NOT registered "
+                _msg += _imageid + "\" "
+                if _imageid in map_id_to_name :
+                    _msg += "(\"" + map_id_to_name[_imageid].strip() + "\") "                
+                _msg += "is NOT registered "
                 _msg += "(attaching VMs with any of these roles will result in error).\n"
 
         if not len(_detected_imageids) :
@@ -1255,6 +1260,21 @@ runcmd:
         _mac_template = [ 0x00, 0x16, 0x3e, randint(0x00, 0x7f), randint(0x00, 0xff), randint(0x00, 0xff) ]
         _mac = ':'.join(map(lambda x: "%02x" % x, _mac_template))
         return _mac
+
+    @trace       
+    def generate_rc(self, cloud_name, obj_attr_list, extra_rc_contents) :
+        '''
+        TBD
+        '''
+        _file = obj_attr_list["generated_configurations_dir"] + '/' + obj_attr_list["username"] + "_cb_lastcloudrc"
+            
+        _file_fd = open(_file, 'w')
+
+        _file_fd.write(extra_rc_contents)
+        _file_fd.write("export CB_CLOUD_NAME=" + cloud_name + "\n")
+        _file_fd.write("export CB_USERNAME=" + obj_attr_list["username"] + "\n")
+        _file_fd.close()
+        return True
 
     @trace
     def set_cgroup(self, obj_attr_list) :

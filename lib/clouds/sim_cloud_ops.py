@@ -46,6 +46,7 @@ class SimCmds(CommonCloudFunctions) :
         self.osci = osci
         self.ft_supported = False
         self.expid = expid
+        self.additional_rc_contents = ''
         self.last_round_robin_host_index = 0
 
     @trace
@@ -81,7 +82,7 @@ class SimCmds(CommonCloudFunctions) :
                 return _status, _msg, _region            
     
     @trace
-    def test_vmc_connection(self, vmc_name, access, credentials, key_name, \
+    def test_vmc_connection(self, cloud_name, vmc_name, access, credentials, key_name, \
                             security_group_name, vm_templates, vm_defaults, vmc_defaults) :
         '''
         TBD
@@ -92,6 +93,8 @@ class SimCmds(CommonCloudFunctions) :
 
             self.connect(access, credentials, vmc_name, vm_defaults, True)
 
+            self.generate_rc(cloud_name, vmc_defaults, self.additional_rc_contents)
+            
             _key_pair_found = self.check_ssh_key(vmc_name, self.determine_key_name(vm_defaults), vm_defaults)
 
             _security_group_found = self.check_security_group(vmc_name, security_group_name)
@@ -181,10 +184,10 @@ class SimCmds(CommonCloudFunctions) :
                         if _imageid not in _registered_imageid_list :
                             _registered_imageid_list.append(_imageid)
 
-        _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list)
-
         _map_name_to_id["baseimg"] = self.generate_random_uuid("baseimg")
         _map_uuid_to_name[self.generate_random_uuid("baseimg")] = "baseimg"
+
+        _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list, _map_uuid_to_name)
 
         if "images_uuid2name" not in vmc_defaults :
             vmc_defaults["images_uuid2name"] = dic2str(_map_uuid_to_name)

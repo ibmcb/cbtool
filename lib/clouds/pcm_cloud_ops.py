@@ -56,7 +56,8 @@ class PcmCmds(CommonCloudFunctions) :
         self.expid = expid
         self.api_error_counter = {}
         self.max_api_errors = 10
-        
+        self.additional_rc_contents = ''
+                
     @trace
     def get_description(self) :
         '''
@@ -112,7 +113,7 @@ class PcmCmds(CommonCloudFunctions) :
                 return _status, _msg, ''
     
     @trace
-    def test_vmc_connection(self, vmc_name, access, credentials, key_name, \
+    def test_vmc_connection(self, cloud_name, vmc_name, access, credentials, key_name, \
                             security_group_name, vm_templates, vm_defaults, vmc_defaults) :
         '''
         TBD
@@ -122,6 +123,8 @@ class PcmCmds(CommonCloudFunctions) :
             _fmsg = "An error has occurred, but no error message was captured"
 
             self.connect(access, credentials, vmc_name, vm_defaults, True, True)
+
+            self.generate_rc(cloud_name, vmc_defaults, self.additional_rc_contents)
 
             _prov_netname_found, _run_netname_found = self.check_networks(vmc_name, vm_defaults)
             
@@ -202,6 +205,7 @@ class PcmCmds(CommonCloudFunctions) :
             self.common_messages("IMG", { "name": vmc_name, "endpoint" : _endpoint }, "checking", 0, '')
 
             _map_name_to_id = {}
+            _map_id_to_name = {}
 
             _registered_image_list = self.lxdconn[_endpoint].images.all()
             _registered_imageid_list = []
@@ -219,8 +223,10 @@ class PcmCmds(CommonCloudFunctions) :
                     else :
                         _map_name_to_id[_imageid] = "aaaa0" + ''.join(["%s" % randint(0, 9) for num in range(0, 59)])
                         vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])                        
-    
-            _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list)
+
+                    _map_id_to_name[_map_name_to_id[_imageid]] = _imageid
+                
+            _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list, _map_id_to_name)
 
             if not _detected_imageids :
                 return _detected_imageids  
@@ -900,6 +906,8 @@ class PcmCmds(CommonCloudFunctions) :
                          obj_attr_list["vmc_name"], obj_attr_list)
             
             _wait = int(obj_attr_list["update_frequency"])
+            _max_tries = int(obj_attr_list["update_attempts"])
+            _curr_tries = 0
 
             if "host_cloud_ip" in obj_attr_list :
                 _host_ip = obj_attr_list["host_cloud_ip"]
@@ -919,6 +927,12 @@ class PcmCmds(CommonCloudFunctions) :
                             _instance.stop()
     
                     _instance.delete()
+    
+                    while _instance and _curr_tries < _max_tries :
+                        _instance = self.get_instances(obj_attr_list, "vm", \
+                                               obj_attr_list["cloud_vm_name"])
+                        sleep(_wait)
+                        _curr_tries += 1
     
                     if str(obj_attr_list["ports_base"]).lower() != "false" :
                         self.configure_port_mapping(obj_attr_list, "teardown")    

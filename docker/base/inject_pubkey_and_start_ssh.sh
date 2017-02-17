@@ -6,7 +6,7 @@ then
     if [ "${CB_LOGIN}" != "NA" ]
     then
         ls /home | grep $CB_LOGIN
-        if [[ $? -eq 0 ]]
+        if [ $? -eq 0 ]
         then
             CB_USER_LIST=${CB_LOGIN}
         fi

@@ -175,7 +175,7 @@ then
         echo $IMG | grep linpack
         NOT_LINPACK=$?
         echo $IMG | grep parboil
-        NOT_LINPACK=$?        
+        NOT_PARBOIL=$?        
         if [[ $NOT_COREMARK && $NOT_LINPACK && $NOT_PARBOIL ]]
         then
             CMD="docker push $IMG"

@@ -64,6 +64,7 @@ class OskCmds(CommonCloudFunctions) :
         self.networks_attr_list = { "tenant_network_list":[] }
         self.host_map = {}
         self.api_error_counter = {}
+        self.additional_rc_contents = ''
         self.max_api_errors = 10
         
     @trace
@@ -189,29 +190,17 @@ class OskCmds(CommonCloudFunctions) :
                 cbdebug(_msg)
 
                 if generate_rc :
-                    if "cloud_name" in extra_parms :
-                        _file = expanduser("~") + "/cbrc-" + extra_parms["cloud_name"].lower()
-                    else :
-                        _file = expanduser("~") + "/cbrc"
-                        
-                    _file_fd = open(_file, 'w')
-
-                    _file_fd.write("export OS_TENANT_NAME=" + _tenant + "\n")
-                    _file_fd.write("export OS_USERNAME=" + _username + "\n")
-                    _file_fd.write("export OS_PASSWORD=" + _password + "\n")                    
-                    _file_fd.write("export OS_AUTH_URL=\"" + access_url + "\"\n")
-                    _file_fd.write("export OS_NO_CACHE=1\n")
-#                    _file_fd.write("export OS_INTERFACE=" + _endpoint_type.replace("URL",'') +  "\n")
-                    _file_fd.write("export OS_INTERFACE=admin\n")                        
+                    self.additional_rc_contents = "export OS_TENANT_NAME=" + _tenant + "\n"
+                    self.additional_rc_contents += "export OS_USERNAME=" + _username + "\n"
+                    self.additional_rc_contents += "export OS_PASSWORD=" + _password + "\n"
+                    self.additional_rc_contents += "export OS_AUTH_URL=\"" + access_url + "\"\n"
+                    self.additional_rc_contents += "export OS_NO_CACHE=1\n"
+#                    self.additional_rc_contents += "export OS_INTERFACE=" + _endpoint_type.replace("URL",'') +  "\n"
+                    self.additional_rc_contents += "export OS_INTERFACE=admin\n"
                     if _cacert :
-                        _file_fd.write("export OS_CACERT=" + _cacert + "\n")
-                    _file_fd.write("export OS_REGION_NAME=" + region + "\n")
-
-                    if "cloud_name" in extra_parms :                        
-                        _file_fd.write("export CB_CLOUD_NAME=" + extra_parms["cloud_name"] + "\n")
-                        _file_fd.write("export CB_USERNAME=" + extra_parms["username"] + "\n")
-                    _file_fd.close()
-                
+                        self.additional_rc_contents += "export OS_CACERT=" + _cacert + "\n"
+                    self.additional_rc_contents += "export OS_REGION_NAME=" + region + "\n"
+                                    
                 _status = 0
 
         except novaexceptions, obj:
@@ -268,7 +257,7 @@ class OskCmds(CommonCloudFunctions) :
                 return _status, _msg, _region
 
     @trace
-    def test_vmc_connection(self, vmc_name, access, credentials, key_name, \
+    def test_vmc_connection(self, cloud_name, vmc_name, access, credentials, key_name, \
                             security_group_name, vm_templates, vm_defaults, vmc_defaults) :
         '''
         TBD
@@ -278,6 +267,8 @@ class OskCmds(CommonCloudFunctions) :
             _fmsg = "An error has occurred, but no error message was captured"
 
             self.connect(access, credentials, vmc_name, vm_defaults, True, True)
+
+            self.generate_rc(cloud_name, vmc_defaults, self.additional_rc_contents)
 
             _key_pair_found = self.check_ssh_key(vmc_name, self.determine_key_name(vm_defaults), vm_defaults)
 
@@ -390,6 +381,7 @@ class OskCmds(CommonCloudFunctions) :
         self.common_messages("IMG", { "name": vmc_name }, "checking", 0, '')
 
         _map_name_to_id = {}
+        _map_id_to_name = {}
 
         _registered_image_list = self.oskconncompute.images.list()
         _registered_imageid_list = []
@@ -417,7 +409,9 @@ class OskCmds(CommonCloudFunctions) :
                     _map_name_to_id[_imageid] = self.generate_random_uuid(_imageid)
                     vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])   
 
-        _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list)
+                _map_id_to_name[_map_name_to_id[_imageid]] = _imageid
+
+        _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list, _map_id_to_name)
         
         return _detected_imageids
 
@@ -1467,6 +1461,12 @@ class OskCmds(CommonCloudFunctions) :
     
         finally :           
             self.disconnect()
+            if "mgt_003_provisioning_request_completed" in obj_attr_list :
+                self.annotate_time_breakdown(obj_attr_list, "instance_active_time", obj_attr_list["mgt_003_provisioning_request_completed"], False)
+            
+            if "mgt_004_network_acessible" in obj_attr_list :
+                self.annotate_time_breakdown(obj_attr_list, "instance_reachable_time", obj_attr_list["mgt_004_network_acessible"], False)
+                            
             del obj_attr_list["flavor_instance"]           
             del obj_attr_list["boot_volume_imageid1_instance"]
             
@@ -1502,7 +1502,9 @@ class OskCmds(CommonCloudFunctions) :
                                  {"use_neutronclient" : obj_attr_list["use_neutronclient"]})
                 
                 _wait = int(obj_attr_list["update_frequency"])
-    
+                _max_tries = int(obj_attr_list["update_attempts"])
+                _curr_tries = 0
+                
                 _instance = self.get_instances(obj_attr_list, "vm", obj_attr_list["cloud_vm_name"])
     
                 if _instance :
@@ -1513,13 +1515,15 @@ class OskCmds(CommonCloudFunctions) :
         
                     self.retriable_instance_delete(obj_attr_list, _instance)
     
-                    while _instance :
+                    while _instance and _curr_tries < _max_tries :
                         _instance = self.get_instances(obj_attr_list, "vm", \
-                                               obj_attr_list["cloud_vm_name"], True)
+                                               obj_attr_list["cloud_vm_name"])
                         if _instance :
                             if _instance.status != "ACTIVE" :
                                 break
                         sleep(_wait)
+                        _curr_tries += 1
+                                                                    
                 else :
                     True
     

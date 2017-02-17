@@ -51,6 +51,7 @@ class PdmCmds(CommonCloudFunctions) :
         self.expid = expid
         self.swarm_ip = False
         self.api_error_counter = {}
+        self.additional_rc_contents = ''
         self.max_api_errors = 10
         
     @trace
@@ -85,6 +86,11 @@ class PdmCmds(CommonCloudFunctions) :
                     self.swarm_ip = _x[0]
                     self.swarm_port = _x[1]
 
+
+            if generate_rc :
+                if self.swarm_ip :                       
+                    self.additional_rc_contents = "export DOCKER_HOST = tcp://" + self.swarm_ip + ':' + self.swarm_port + "\n"
+ 
             _status = 0
             
         except Exception, e :
@@ -102,7 +108,7 @@ class PdmCmds(CommonCloudFunctions) :
                 return _status, _msg, ''
     
     @trace
-    def test_vmc_connection(self, vmc_name, access, credentials, key_name, \
+    def test_vmc_connection(self, cloud_name, vmc_name, access, credentials, key_name, \
                             security_group_name, vm_templates, vm_defaults, vmc_defaults) :
         '''
         TBD
@@ -112,6 +118,8 @@ class PdmCmds(CommonCloudFunctions) :
             _fmsg = "An error has occurred, but no error message was captured"
 
             self.connect(access, credentials, vmc_name, vm_defaults, True, True)
+
+            self.generate_rc(cloud_name, vmc_defaults, self.additional_rc_contents)
 
             _prov_netname_found, _run_netname_found = self.check_networks(vmc_name, vm_defaults)
             
@@ -192,6 +200,7 @@ class PdmCmds(CommonCloudFunctions) :
             self.common_messages("IMG", { "name": vmc_name, "endpoint" : _endpoint }, "checking", 0, '')
     
             _map_name_to_id = {}
+            _map_id_to_name = {}
 
             _registered_image_list = self.dockconn[_endpoint].images()
             _registered_imageid_list = []
@@ -209,8 +218,10 @@ class PdmCmds(CommonCloudFunctions) :
                     else :
                         _map_name_to_id[_imageid] = "aaaa0" + ''.join(["%s" % randint(0, 9) for num in range(0, 59)])
                         vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])                        
+
+                    _map_id_to_name[_map_name_to_id[_imageid]] = _imageid
     
-            _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list)
+            _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list, _map_id_to_name)
 
             if not _detected_imageids :
                 return _detected_imageids
@@ -402,28 +413,6 @@ class PdmCmds(CommonCloudFunctions) :
                 obj_attr_list["hosts"] = ''
                 obj_attr_list["host_list"] = {}
                 obj_attr_list["host_count"] = "NA"
-
-            if self.swarm_ip :
-#                self.osci.update_object_attribute(obj_attr_list["cloud_name"], \
-#                                                  "GLOBAL", \
-#                                                  "ai_defaults", \
-#                                                  False, \
-#                                                  "host_swarm", \
-#                                                  self.swarm_ip)
-
-                if "cloud_name" in obj_attr_list :
-                    _file = expanduser("~") + "/cbrc-" + obj_attr_list["cloud_name"].lower()
-                else :
-                    _file = expanduser("~") + "/cbrc"
-                    
-                _file_fd = open(_file, 'w')
-                _file_fd.write("export DOCKER_HOST = tcp://" + self.swarm_ip + ':' + self.swarm_port + "\n")
-
-                if "cloud_name" in obj_attr_list :                        
-                    _file_fd.write("export CB_CLOUD_NAME=" + obj_attr_list["cloud_name"] + "\n")
-                    _file_fd.write("export CB_USERNAME=" + obj_attr_list["username"] + "\n")
-                    
-                _file_fd.close()
             
             _time_mark_prc = int(time())
             obj_attr_list["mgt_003_provisioning_request_completed"] = \
@@ -1009,6 +998,13 @@ class PdmCmds(CommonCloudFunctions) :
             _fmsg = str(e)
 
         finally :
+
+            if "mgt_003_provisioning_request_completed" in obj_attr_list :
+                self.annotate_time_breakdown(obj_attr_list, "instance_active_time", obj_attr_list["mgt_003_provisioning_request_completed"], False)
+            
+            if "mgt_004_network_acessible" in obj_attr_list :
+                self.annotate_time_breakdown(obj_attr_list, "instance_reachable_time", obj_attr_list["mgt_004_network_acessible"], False)            
+            
             _status, _msg = self.common_messages("VM", obj_attr_list, "created", _status, _fmsg)
             return _status, _msg
 
@@ -1032,7 +1028,9 @@ class PdmCmds(CommonCloudFunctions) :
                          obj_attr_list["vmc_name"], obj_attr_list["name"])
             
             _wait = int(obj_attr_list["update_frequency"])
-
+            _max_tries = int(obj_attr_list["update_attempts"])
+            _curr_tries = 0
+            
             if str(obj_attr_list["host_swarm"]).lower() != "none" :
                 self.swarm_ip = obj_attr_list["host_swarm"]
 
@@ -1050,6 +1048,13 @@ class PdmCmds(CommonCloudFunctions) :
                     self.dockconn[_host_ip].kill(obj_attr_list["cloud_vm_uuid"])
 
                 self.dockconn[_host_ip].remove_container(_instance["Id"])
+
+                while len(_instance) and _curr_tries < _max_tries :
+                    _instance = self.get_instances(obj_attr_list, "vm", \
+                                           obj_attr_list["cloud_vm_name"])
+
+                    sleep(_wait)
+                    _curr_tries += 1
 
             if "cloud_vv" in obj_attr_list :
                 self.vvdestroy(obj_attr_list)

@@ -126,6 +126,7 @@ class LibcloudCmds(CommonCloudFunctions) :
         self.use_sizes = use_sizes
         self.tldomain = tldomain
         self.extra = extra
+        self.additional_rc_contents = ''        
         self.extra["kwargs"] = {}
         self.access = False
 
@@ -220,7 +221,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                 return _status, _msg, LibcloudCmds.catalogs.cbtool[credentials_list], _hostname
 
     @trace
-    def test_vmc_connection(self, vmc_name, access, credentials, key_name, \
+    def test_vmc_connection(self, cloud_name, vmc_name, access, credentials, key_name, \
                             security_group_name, vm_templates, vm_defaults, vmc_defaults) :
         '''
         TBD
@@ -231,6 +232,8 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             for credentials_list in credentials.split(","):
                 _status, _msg, _local_conn, _hostname = self.connect(credentials_list, vmc_defaults)
+
+            self.generate_rc(cloud_name, vmc_defaults, self.additional_rc_contents)
 
             _prov_netname_found, _run_netname_found = self.check_networks(vmc_name, vm_defaults)
             
@@ -286,6 +289,7 @@ class LibcloudCmds(CommonCloudFunctions) :
         _registered_imageid_list = []
 
         _map_name_to_id = {}
+        _map_id_to_name = {}
 
         for _registered_image in _registered_image_list :
             _registered_imageid_list.append(_registered_image.id)
@@ -300,7 +304,9 @@ class LibcloudCmds(CommonCloudFunctions) :
                     _map_name_to_id[_imageid] = '00' + ''.join(["%s" % randint(0, 9) for num in range(0, 5)]) + '0'
                     vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])                        
 
-        _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list)
+                _map_id_to_name[_map_name_to_id[_imageid]] = _imageid
+
+        _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list, _map_id_to_name)
 
         return _detected_imageids
 
@@ -1027,7 +1033,8 @@ class LibcloudCmds(CommonCloudFunctions) :
     
                 firsttime = True
                 _time_mark_drs = int(time())
-                while True :
+                _instance = self.get_instances(obj_attr_list)
+                while _instance and _curr_tries < _max_tries :
                     _errmsg = "get_instances"
                     cbdebug("Getting instance...")
                     _instance = self.get_instances(obj_attr_list)
@@ -1043,8 +1050,8 @@ class LibcloudCmds(CommonCloudFunctions) :
                             _instance.destroy()
                         except :
                             pass
-                        cbdebug("DigitalOcean still has a pending event. Waiting to destroy...", True)
-                        sleep(30)
+                        cbdebug(self.get_description() + " still has a pending event. Waiting to destroy...", True)
+                        sleep(_wait)
                         continue
     
                     try :
@@ -1061,11 +1068,11 @@ class LibcloudCmds(CommonCloudFunctions) :
                     except :
                         pass
     
-                    _curr_tries += 1
                     _msg = "Inside destroy. " + _errmsg
                     _msg += " after " + str(_curr_tries) + " attempts. Will retry in " + str(_wait) + " seconds."
                     cbdebug(_msg)
                     sleep(_wait)
+                    _curr_tries += 1                    
                     cbdebug("Next try...")
             
             _time_mark_drc = int(time())

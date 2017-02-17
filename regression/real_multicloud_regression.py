@@ -186,29 +186,31 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
                
         if cloud_name == "NA" :
             raise ValueError('No cloud (' + cloud_model + ") attached!")
-        
+
         _model_to_imguuid = {}
         _model_to_imguuid["sim"] = "baseimg"
         _model_to_imguuid["pcm"] = "xenial" 
-        _model_to_imguuid["pdm"] = "basedocker"
+        _model_to_imguuid["pdm"] = "ibmcb/cbtoolbt-ubuntu"
         _model_to_imguuid["nop"] = "baseimg"
         _model_to_imguuid["osk"] = "xenial0"
         _model_to_imguuid["ec2"] = "ami-a9d276c9"
         _model_to_imguuid["gce"] = "ubuntu-1604-xenial-v20161221"
         _model_to_imguuid["do"] = "21669205"        
         _model_to_imguuid["slr"] = "1373563"        
+        _model_to_imguuid["kub"] = "ibmcb/cbtoolbt-ubuntu"
 
         _model_to_login = {}
         _model_to_login["sim"] = "ubuntu"
         _model_to_login["pcm"] = "ubuntu" 
-        _model_to_login["pdm"] = "ubuntu"
+        _model_to_login["pdm"] = "cbuser"
         _model_to_login["nop"] = "ubuntu"
         _model_to_login["osk"] = "ubuntu"
         _model_to_login["ec2"] = "ubuntu"
         _model_to_login["gce"] = "ubuntu"
         _model_to_login["do"] = "root"        
-        _model_to_login["slr"] = "root"        
-                
+        _model_to_login["slr"] = "root"
+        _model_to_login["kub"] = "cbuser"
+
         _vm_location = "auto"
         _meta_tags = "empty"
         _size = "default"
@@ -225,7 +227,7 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         _vm_role = "check:" + _img_name
 
         if test_case == "pubkey injection, no volume" :
-            _vm_role = "check:" + _img_name + ':' + _login            
+            _vm_role = "check:" + _img_name + ':' + _login    
 
         if test_case.count(", volume") :
             if cloud_model == "osk" :            
@@ -554,6 +556,11 @@ def main() :
             _test_cases[5] = "image delete"
             _test_cases[6] = "non-existent image failure"
             _test_cases[7] = "pubkey injection, force failure"
+
+        if _cloud_model == "kub" :
+            _test_cases[3] = "NA"
+            _test_cases[4] = "NA"
+            _test_cases[5] = "NA"            
             
         for _test_case in _test_cases :
             if _test_case.count("vm capture") :

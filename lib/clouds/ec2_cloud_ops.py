@@ -48,6 +48,7 @@ class Ec2Cmds(CommonCloudFunctions) :
         self.pid = pid
         self.osci = osci
         self.ec2conn = False
+        self.additional_rc_contents = ''        
         self.expid = expid
 
     @trace
@@ -104,7 +105,7 @@ class Ec2Cmds(CommonCloudFunctions) :
                 return _status, _msg, _region_hostname
         
     @trace
-    def test_vmc_connection(self, vmc_name, access, credentials, key_name, \
+    def test_vmc_connection(self, cloud_name, vmc_name, access, credentials, key_name, \
                             security_group_name, vm_templates, vm_defaults, vmc_defaults) :
         '''
         TBD
@@ -113,6 +114,8 @@ class Ec2Cmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
             self.connect(access, credentials, vmc_name)
+
+            self.generate_rc(cloud_name, vmc_defaults, self.additional_rc_contents)
 
             _key_pair_found = self.check_ssh_key(vmc_name, self.determine_key_name(vm_defaults), vm_defaults)
 
@@ -164,7 +167,8 @@ class Ec2Cmds(CommonCloudFunctions) :
         self.common_messages("IMG", { "name": vmc_name }, "checking", 0, '')
 
         _map_name_to_id = {}
-
+        _map_id_to_name = {}
+        
         _wanted_images = []
         for _vm_role in vm_templates.keys() :
             _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
@@ -183,7 +187,9 @@ class Ec2Cmds(CommonCloudFunctions) :
                         else :
                             _map_name_to_id[_imageid] = "ami-" + '0' + ''.join(["%s" % randint(0, 9) for num in range(0, 6)])
                             vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])
-                                                        
+
+                        _map_id_to_name[_map_name_to_id[_imageid]] = _imageid
+                        
         _registered_image_list = self.ec2conn.get_all_images(image_ids=_wanted_images)
                         
         _registered_imageid_list = []
@@ -191,7 +197,7 @@ class Ec2Cmds(CommonCloudFunctions) :
         for _registered_image in _registered_image_list :
             _registered_imageid_list.append(_registered_image.id)
 
-        _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list)
+        _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list, _map_id_to_name)
 
         return _detected_imageids
 
@@ -884,7 +890,9 @@ class Ec2Cmds(CommonCloudFunctions) :
                          obj_attr_list["vmc_name"])
             
             _wait = int(obj_attr_list["update_frequency"])
-
+            _max_tries = int(obj_attr_list["update_attempts"])
+            _curr_tries = 0
+                
             _instance = self.get_instances(obj_attr_list, "vm", "vmuuid")
 
             if _instance :
@@ -895,8 +903,9 @@ class Ec2Cmds(CommonCloudFunctions) :
 
                 sleep(_wait)
 
-                while self.is_vm_running(obj_attr_list) :
+                while self.is_vm_running(obj_attr_list) and _curr_tries < _max_tries :
                     sleep(_wait)
+                    _curr_tries += 1                    
             else :
                 True
 
