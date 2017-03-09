@@ -1,0 +1,36 @@
+[USER-DEFINED]
+MANAGER_IP = $IP_AUTO
+MAIN_UPDATE_ATTEMPTS = 720
+
+CLOUDOPTION_TESTDO = cldattach do, vmcattach all, vmattach check:21669205 auto empty default none empty=empty, stats vm print true, vmdetach youngest, stats vm print true, vmattach check:21669205:root auto empty default none empty=empty, stats vm print true, vmdetach youngest, stats vm print true, vmattach check:21669205 auto empty default none cloud_vv=10, stats vm print true, vmcapture youngest regressiontest, stats vm print true, vmattach check:regressiontest:root auto empty default none empty=empty, stats vm print true, vmdetach youngest, stats vm print true, imgdelete regressiontest tor1, vmattach check:regressiontest:root auto empty default none empty=empty, stats vm print true, vmattach check:21669205 auto empty default none force_failure=true, stats vm print true
+
+STARTUP_CLOUD = TESTDO
+
+[USER-DEFINED : CLOUDOPTION_TESTDO ]
+DO_INITIAL_VMCS = nyc1:sut
+DO_CREDENTIALS = long_hex_token_from_digitalocean.com:arbitrarytag1,another_token:arbitrarytag2,another_token:arbitrarytag3
+DO_SSH_KEY_NAME = cbtool_rsa
+DO_KEY_NAME = cbtool_rsa
+DO_LOGIN = root
+
+# Override Examples (Do NOT modify the templates)
+[OBJECTSTORE]
+DBID=10
+USAGE = shared
+
+[LOGSTORE]
+VERBOSITY = 5
+
+[METRICSTORE]
+USAGE = shared
+PASSWORD = cbpwdZ9
+
+[FILESTORE]
+PORT = 10000
+
+[SPACE]
+STORES_WORKING_DIR = /home/$MAIN_USERNAME/stores
+
+[VM_DEFAULTS : DO_CLOUDCONFIG]
+RUN_NETNAME = private
+PROV_NETNAME = public

@@ -1,0 +1,36 @@
+[USER-DEFINED]
+MANAGER_IP = $IP_AUTO
+MAIN_UPDATE_ATTEMPTS = 720
+
+CLOUDOPTION_TESTEC2 = cldattach ec2, vmcattach all, vmattach check:ami-a9d276c9 auto empty default none empty=empty, stats vm print true, vmdetach youngest, stats vm print true, vmattach check:ami-a9d276c9:ubuntu auto empty default none empty=empty, stats vm print true, vmdetach youngest, stats vm print true, vmattach check:ami-a9d276c9 auto empty default none cloud_vv=10, stats vm print true, vmcapture youngest regressiontest, stats vm print true, vmattach check:regressiontest:ubuntu auto empty default none empty=empty, stats vm print true, vmdetach youngest, stats vm print true, imgdelete regressiontest us-east-1, vmattach check:regressiontest:ubuntu auto empty default none empty=empty, stats vm print true, vmattach check:ami-a9d276c9 auto empty default none force_failure=true, stats vm print true
+
+STARTUP_CLOUD = TESTEC2
+
+[USER-DEFINED : CLOUDOPTION_TESTEC2]
+EC2_ACCESS = ABCDEFGHIJKLMNOPQRST
+EC2_SECURITY_GROUPS = cloudbench
+EC2_CREDENTIALS = ABCDEFGHIJKLMNOPQRSTUVXYWZ01234567890-+*
+EC2_INITIAL_VMCS = us-east-1:sut
+EC2_LOGIN = fedora
+
+# Override Examples (Do NOT modify the templates)
+[OBJECTSTORE]
+DBID=10
+USAGE = shared
+
+[LOGSTORE]
+VERBOSITY = 5
+
+[METRICSTORE]
+USAGE = shared
+PASSWORD = cbpwdZ9
+
+[FILESTORE]
+PORT = 10000
+
+[SPACE]
+STORES_WORKING_DIR = /home/$MAIN_USERNAME/stores
+
+[VM_DEFAULTS : EC2_CLOUDCONFIG]
+RUN_NETNAME = public
+PROV_NETNAME = public
