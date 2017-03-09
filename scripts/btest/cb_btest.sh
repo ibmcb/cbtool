@@ -26,7 +26,7 @@ SLA_RUNTIME_TARGETS=$5
 
 if [[ -z "$LOAD_PROFILE" || -z "$LOAD_LEVEL" || -z "$LOAD_DURATION" || -z "$LOAD_ID" ]]
 then
-    syslog_netcat "Usage: cb_run_btest.sh <load_profile> <load level> <load duration> <load_id> [sla_targets]"
+    syslog_netcat "Usage: cb_btest.sh <load_profile> <load level> <load duration> <load_id> [sla_targets]"
     exit 1
 fi
 
@@ -66,7 +66,7 @@ fi
 
 CMDLINE="sudo $BTEST_EXECUTABLE -F -T $threads -b $block -D -l ${sizemb}m -w $queuedepth -t $LOAD_DURATION -F $random_percent $read_percent $BTEST_DATA_DIR/btestfile"
 
-syslog_netcat "Benchmarking btest SUT: IP=${my_ip_addr} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and BLOCK SIZE $block AIO QUEUE DEPTH $queuedepth % READ $read_percent % RANDOM $random_percent SIZE $sizemb MB)"
+syslog_netcat "Benchmarking btest SUT: BTEST=${my_ip_addr} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and BLOCK SIZE $block AIO QUEUE DEPTH $queuedepth % READ $read_percent % RANDOM $random_percent SIZE $sizemb MB)"
 
 OUTPUT_FILE=$(mktemp)
 

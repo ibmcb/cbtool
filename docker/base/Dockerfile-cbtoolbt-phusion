@@ -1,4 +1,4 @@
-FROM phusion/baseimage:latest
+FROM REPLACE_BASE_VANILLA_PHUSION
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV CB_SSH_PUB_KEY=NA

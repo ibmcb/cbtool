@@ -2,3 +2,4 @@ FROM REPLACE_NULLWORKLOAD_UBUNTU
 
 RUN apt-get update
 RUN apt-get install -y coreutils
+RUN chown -R cbuser:cbuser /home/cbuser

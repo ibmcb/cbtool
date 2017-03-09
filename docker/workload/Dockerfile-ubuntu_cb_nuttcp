@@ -2,6 +2,7 @@ FROM REPLACE_NULLWORKLOAD_UBUNTU
 
 RUN apt-get update
 #RUN apt-get install -y nuttcp
-RUN wget -N -P /home/cbuser http://nuttcp.net/nuttcp/nuttcp-7.3.3/nuttcp-7.3.3.x86_64
+RUN wget -N -P /home/cbuser http://nuttcp.net/nuttcp/nuttcp-7.3.3/nuttcp-7.3.3.REPLACE_ARCH1
 RUN mv /home/cbuser/nuttcp* /usr/local/bin/nuttcp
 RUN chmod 755 /usr/local/bin/nuttcp
+RUN chown -R cbuser:cbuser /home/cbuser

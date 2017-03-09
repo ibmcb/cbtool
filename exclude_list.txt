@@ -70,3 +70,4 @@ scripts/windesktop
 3rd_party/websockify
 3rd_party/StreamProx
 3rd_party/*.deb
+3rd_party/workload

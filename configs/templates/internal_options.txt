@@ -219,9 +219,10 @@ RUN_APPLICATION_SCRIPTS = $True
 DEBUG_REMOTE_COMMANDS = $False
 DONT_START_LOAD_MANAGER = $False
 CREDENTIALS_DIR = $MAIN_BASE_DIR/credentials
-PROPAGATED_ATTRIBUTES = netname, imageid1, login, resource_limits, userdata, 
+PROPAGATED_ATTRIBUTES = netname, imageid1, login, resource_limits, userdata, image_prefix, image_suffix, 
 PROPAGATED_ATTRIBUTES += cloud_vv, cloud_vv_type, boot_from_volume, avalability_zone, compute_node, 
 PROPAGATED_ATTRIBUTES += data_dir, data_fstyp, data_size, data_fileserver_ip, data_fileserver_path, 
+PROPAGATED_ATTRIBUTES += extra_ports, extra_devices, ports_base, extra_ports_base, privileged, 
 PROPAGATED_ATTRIBUTES += sla_provisioning_target, ports_base, namespace, abstraction
 TIME_BREAKDOWN_STEP = 1
 # Most clouds don't use (or allow access to) libvirt,

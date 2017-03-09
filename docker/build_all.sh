@@ -1,187 +1,115 @@
 #!/usr/bin/env bash
 
+source ./build_common.sh
 
-if [[ -z $1 ]]
+CB_REPO=NONE
+CB_WKS="ALL"
+CB_RSYNC=$(sudo ifconfig docker0 | grep "inet addr" | cut -d ':' -f 2 | cut -d ' ' -f 1):10000/$(whoami)_cb
+CB_UBUNTU_BASE=ubuntu:16.04
+CB_PHUSION_BASE=phusion/baseimage:latest
+CB_CENTOS_BASE=centos:latest
+CB_VERB="-q"
+CB_PUSH="nopush"
+CB_ARCH=$(uname -a | awk '{ print $12 }')
+CB_PALL=0
+CB_USAGE="Usage: build_all.sh -r <repository> [-u Ubuntu base image] [-p Phusion base image] [-c Centos base image] [-w Workload] [--verbose] [--push] [--psall]"
+
+while [[ $# -gt 0 ]]
+do
+    key="$1"
+
+    case $key in
+        -r|--repo)
+        CB_REPO="$2"
+        shift
+        ;;
+        -r=*|--repo=*)
+        CB_REPO=$(echo $key | cut -d '=' -f 2)
+        shift
+        ;;
+        -u|--ubuntubase)
+        CB_UBUNTU_BASE="$2"
+        shift
+        ;;
+        -u=*|--ubuntubase=*)
+        CB_UBUNTU_BASE=$(echo $key | cut -d '=' -f 2)
+        shift
+        ;;        
+        -p|--phusionbase)
+        CB_PHUSION_BASE="$2"
+        shift
+        ;;
+        -p=*|--phusionbase=*)
+        CB_PHUSION_BASE=$(echo $key | cut -d '=' -f 2)
+        shift
+        ;;        
+        -c|--centosbase)
+        CB_CENTOS_BASE="$2"
+        shift
+        ;;
+        -c=*|--centosbase=*)
+        CB_CENTOS_BASE=$(echo $key | cut -d '=' -f 2)
+        shift
+        ;;
+        -w|--workload)
+        CB_WKS="$2"
+        shift
+        ;;
+        -w=*|--workload=*)
+        CB_WKS=$(echo $key | cut -d '=' -f 2)
+        shift
+        ;;        
+        -a|--arch)
+        CB_ARCH="$2"
+        shift
+        ;;
+        -a=*|--arch=*)
+        CB_ARCH=$(echo $key | cut -d '=' -f 2)
+        shift
+        ;;
+        -r|--rsync)
+        CB_RSYNC="$2"
+        shift
+        ;;
+        -r=*|--rsync=*)
+        CB_RSYNC=$(echo $key | cut -d '=' -f 2)
+        shift
+        ;;                        
+        -v|--verbose)
+        CB_VERB='--ve'
+        shift
+        ;;
+        --push)
+        CB_PUSH="push"
+        ;;
+        --psall)
+        CB_PUSH="push"
+        CB_PALL=1
+        ;;        
+        -h|--help)
+        echo $CB_USAGE
+        shift
+        ;;        
+        *)
+                # unknown option
+        ;;
+        esac
+        shift
+done
+
+if [[ $CB_REPO == NONE ]]
 then
-    echo "Usage: build_all.sh <repository> [quiet|verbose] [nopush|push]"
+	echo $USAGE
     exit 1
 fi
-REPOSITORY=${1}
 
-VERBQUIET="-q"
-if [[ ! -z $2 ]]
+cb_refresh_vanilla_images $CB_UBUNTU_BASE $CB_PHUSION_BASE $CB_CENTOS_BASE
+cb_build_orchestrator $CB_REPO $CB_VERB $CB_ARCH $CB_RSYNC
+cb_build_base_images $CB_REPO $CB_VERB $CB_ARCH $CB_RSYNC
+cb_build_nullworkloads $CB_REPO $CB_VERB $CB_ARCH $CB_RSYNC
+cb_build_workloads $CB_REPO $CB_VERB $CB_ARCH $CB_RSYNC
+
+if [[ $CB_PUSH == "push" ]]
 then
-    VERBQUIET=`echo $2 | tr '[:upper:]' '[:lower:]'`
-    if [[ $VERBQUIET == "verbose" ]]
-    then
-        VERBQUIET=''
-    fi
-fi
-
-PUSH_IMAGES="nopush"
-if [[ ! -z $3 ]]
-then
-    PUSH_IMAGES=`echo $3 | tr '[:upper:]' '[:lower:]'`
-fi
-    
-echo "##### Building Docker orchestrator images"
-pushd orchestrator > /dev/null 2>&1
-sudo rm -rf Dockerfile
-for DFILE in $(ls Dockerfile* | grep -v centos)
-do
-    sudo rm -rf Dockerfile && sudo cp -f $DFILE Dockerfile
-    DNAME=$(echo $DFILE | sed 's/Dockerfile-//g')
-                                                 
-    CMD="sudo docker build -t ${REPOSITORY}/$DNAME $VERBQUIET ."
-    echo "########## Building image ${REPOSITORY}/$DNAME by executing the command \"$CMD\" ..."
-    $CMD
-    ERROR=$?
-    if [[ $ERROR -ne 0 ]]
-    then
-        echo "Failed while executing command \"$CMD\""
-        sudo rm -rf Dockerfile
-        exit 1
-    fi
-    sudo rm -rf Dockerfile
-    echo "########## Image ${1}/$(echo $DFILE | sed 's/Dockerfile-//g') built successfully"
-done
-echo "##### Done building Docker orchestrator images"
-echo
-
-popd > /dev/null 2>&1    
-    
-echo "##### Building Docker base images"
-pushd base > /dev/null 2>&1
-sudo rm -rf Dockerfile
-for DFILE in $(ls Dockerfile*)
-do
-    sudo rm -rf Dockerfile && sudo cp -f $DFILE Dockerfile
-    DNAME=$(echo $DFILE | sed 's/Dockerfile-//g')
-    
-    echo $DNAME | grep ubuntu > /dev/null 2>&1
-    if [[ $? -eq 0 ]]
-    then
-        DNAME_BASE_UBUNTU=$DNAME
-    fi
-
-    echo $DNAME | grep phusion > /dev/null 2>&1
-    if [[ $? -eq 0 ]]
-    then
-        DNAME_BASE_PHUSION=$DNAME
-    fi
-
-    echo $DNAME | grep centos > /dev/null 2>&1
-    if [[ $? -eq 0 ]]
-    then
-        DNAME_CENTOS_PHUSION=$DNAME
-    fi
-                                                 
-    CMD="sudo docker build -t ${REPOSITORY}/$DNAME $VERBQUIET ."
-    echo "########## Building image ${REPOSITORY}/$DNAME by executing the command \"$CMD\" ..."
-    $CMD
-    ERROR=$?
-    if [[ $ERROR -ne 0 ]]
-    then
-        echo "Failed while executing command \"$CMD\""
-        sudo rm -rf Dockerfile
-        exit 1
-    fi
-    sudo rm -rf Dockerfile
-    echo "########## Image ${1}/$(echo $DFILE | sed 's/Dockerfile-//g') built successfully"
-done
-echo "##### Done building Docker base images"
-echo
-
-popd > /dev/null 2>&1
-pushd workload > /dev/null 2>&1
-echo "##### Building Docker nullworkload images"
-for DFILE in $(ls Dockerfile*nullworkload)
-do
-    sudo rm -rf Dockerfile && sudo cp -f $DFILE Dockerfile
-    DNAME=$(echo $DFILE | sed 's/Dockerfile-//g')
-    sudo sed -i "s^REPLACE_BASE_UBUNTU^${REPOSITORY}/$DNAME_BASE_UBUNTU^g" Dockerfile
-    sudo sed -i "s^REPLACE_BASE_PHUSION^${REPOSITORY}/$DNAME_BASE_PHUSION^g" Dockerfile
-    sudo sed -i "s^REPLACE_BASE_CENTOS^${REPOSITORY}/$DNAME_BASE_CENTOS^g" Dockerfile
-
-    echo $DNAME | grep ubuntu > /dev/null 2>&1
-    if [[ $? -eq 0 ]]
-    then
-        DNAME_NULLWORKLOAD_UBUNTU=$DNAME
-    fi
-
-    echo $DNAME | grep phusion > /dev/null 2>&1
-    if [[ $? -eq 0 ]]
-    then
-        DNAME_NULLWORKLOAD_PHUSION=$DNAME
-    fi
-
-    echo $DNAME | grep centos > /dev/null 2>&1
-    if [[ $? -eq 0 ]]
-    then
-        DNAME_NULLWORKLOAD_PHUSION=$DNAME
-    fi                
-                                                
-    CMD="sudo docker build -t ${REPOSITORY}/$DNAME $VERBQUIET ."
-    echo "########## Building image ${REPOSITORY}/$DNAME by executing the command \"$CMD\" ..."
-    $CMD
-    ERROR=$?
-    if [[ $ERROR -ne 0 ]]
-    then
-        echo "Failed while executing command \"$CMD\""
-        sudo rm -rf Dockerfile        
-        exit 1
-    fi
-    sudo rm -rf Dockerfile    
-    echo "########## Image ${REPOSITORY}/$DNAME built successfully"    
-done
-echo "##### Done building Docker nullworkload images"
-echo
-
-echo "##### Building the rest of the Docker workload images"
-for DFILE in $(ls Dockerfile* | grep -v nullworkload | grep -v ignore)
-do
-    sudo rm -rf Dockerfile && sudo cp -f $DFILE Dockerfile
-    DNAME=$(echo $DFILE | sed 's/Dockerfile-//g')
-    sudo sed -i "s^REPLACE_BASE_UBUNTU^${REPOSITORY}/$DNAME_BASE_UBUNTU^g" Dockerfile
-    sudo sed -i "s^REPLACE_BASE_PHUSION^${REPOSITORY}/$DNAME_BASE_PHUSION^g" Dockerfile
-    sudo sed -i "s^REPLACE_BASE_CENTOS^${REPOSITORY}/$DNAME_BASE_CENTOS^g" Dockerfile
-    sudo sed -i "s^REPLACE_NULLWORKLOAD_UBUNTU^${REPOSITORY}/$DNAME_NULLWORKLOAD_UBUNTU^g" Dockerfile
-    sudo sed -i "s^REPLACE_NULLWORKLOAD_PHUSION^${REPOSITORY}/$DNAME_NULLWORKLOAD_PHUSION^g" Dockerfile
-    sudo sed -i "s^REPLACE_NULLWORKLOAD_CENTOS^${REPOSITORY}/$DNAME_NULLWORKLOAD_CENTOS^g" Dockerfile
-                                                
-    CMD="sudo docker build -t ${REPOSITORY}/$DNAME $VERBQUIET ."
-    echo "########## Building image ${REPOSITORY}/$DNAME by executing the command \"$CMD\" ..."
-    $CMD
-    ERROR=$?
-    if [[ $ERROR -ne 0 ]]
-    then
-        echo "Failed while executing command \"$CMD\""
-        sudo rm -rf Dockerfile        
-        exit 1
-    fi
-    sudo rm -rf Dockerfile    
-    echo "########## Image ${REPOSITORY}/$DNAME built successfully"    
-done
-echo "##### Done building the rest of the Docker workload images"
-popd > /dev/null 2>&1
-
-if [[ $PUSH_IMAGES == "push" ]]
-then
-    echo "##### Pushing all images to Docker repository"
-    for IMG in $(docker images | grep ${REPOSITORY} | awk '{ print $1 }')
-    do
-        echo $IMG | grep coremark
-        NOT_COREMARK=$?
-        echo $IMG | grep linpack
-        NOT_LINPACK=$?
-        echo $IMG | grep parboil
-        NOT_PARBOIL=$?        
-        if [[ $NOT_COREMARK && $NOT_LINPACK && $NOT_PARBOIL ]]
-        then
-            CMD="docker push $IMG"
-            echo "########## Pushing image ${IMG} by executing the command \"$CMD\" ..."             
-            $CMD
-        fi
-    done
-    echo "##### Images to Docker repository"    
+    cb_push_images $CB_REPO $CB_PALL
 fi

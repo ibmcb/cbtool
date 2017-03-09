@@ -1,0 +1,6 @@
+FROM REPLACE_NULLWORKLOAD_UBUNTU
+
+RUN apt-get update
+RUN apt-get install -y libaio1
+RUN cd /home/cbuser; git clone https://github.com/wolfwood/postmark.git; cd /home/cbuser/postmark/; make all
+RUN chown -R cbuser:cbuser /home/cbuser

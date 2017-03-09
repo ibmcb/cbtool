@@ -91,12 +91,13 @@ SSH_KEY_NAME = $NOP_SSH_KEY_NAME
 
 [VM_TEMPLATES : NOP_CLOUDCONFIG]
 CHECK = size:NA, imageid1:to_replace
-CLIENT_DAYTRADER = size:NA, imageid1:cb_daytrader
+CLIENT_IBM_DAYTRADER = size:NA, imageid1:cb_daytrader
+CLIENT_OPEN_DAYTRADER = size:NA, imageid1:cb_open_daytrader
 DRIVER_DAYTRADER = size:NA, imageid1:cb_daytrader
 CLIENT_TRADELITE = size:NA, imageid1:cb_tradelite
 DRIVER_TRADELITE = size:NA, imageid1:cb_tradelite
-MYSQL = size:NA, lb_size:NA, imageid1:cb_daytrader
-GERONIMO = size:NA, imageid1:cb_daytrader
+MYSQL = size:NA, lb_size:NA, imageid1:cb_open_daytrader
+GERONIMO = size:NA, imageid1:cb_open_daytrader
 DB2 = size:NA, lb_size:NA, imageid1:cb_daytrader
 WAS = size:NA, imageid1:cb_daytrader
 DRIVER_HADOOP = size:NA, imageid1:cb_hadoop
@@ -122,6 +123,7 @@ FILEBENCH = size:NA, imageid1:cb_filebench
 DRIVER_FIO = size:NA, imageid1:cb_fio
 FIO = size:NA, imageid1:cb_fio
 BTEST = size:NA, imageid1:cb_btest
+POSTMARK = size:NA, imageid1:cb_postmark
 TINYVM = size:NA, imageid1:cb_nullworkload
 YATINYVM = size:NA, imageid1:cb_nullworkload
 FEN_HPC = size:NA, imageid1:cb_hpcc

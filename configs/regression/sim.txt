@@ -1,0 +1,46 @@
+[USER-DEFINED]
+MANAGER_IP = $IP_AUTO
+MAIN_UPDATE_ATTEMPTS = 720
+
+CLOUDOPTION_TESTSIM = cldattach sim, vmcattach all
+
+STARTUP_CLOUD = TESTSIM
+
+[USER-DEFINED : CLOUDOPTION_TESTSIM]
+SIM_INITIAL_VMCS = simzone_a:sut
+SIM_SSH_KEY_NAME = cbtool_rsa
+SIM_KEY_NAME = cbtool_rsa 
+SIM_SECURITY_GROUPS = simsecgrp
+SIM_LOGIN = cbuser
+
+# Override Examples (Do NOT modify the templates)
+[OBJECTSTORE]
+DBID=10
+USAGE = shared
+
+[LOGSTORE]
+VERBOSITY = 5
+
+[METRICSTORE]
+USAGE = shared
+PASSWORD = cbpwdZ9
+
+[FILESTORE]
+PORT = 10000
+
+[SPACE]
+STORES_WORKING_DIR = /home/$MAIN_USERNAME/stores
+
+[ADMISSION_CONTROL]
+VM_MAX_RESERVATIONS = 2000
+
+[VMC_DEFAULTS : SIM_CLOUDCONFIG]
+HOSTS_PER_VMC = 15
+HOSTS_CPU = 200000
+HOSTS_MEM_PER_CORE = 10000000
+
+[VM_DEFAULTS: SIM_CLOUDCONFIG]
+EXECUTE_SCRIPT_NAME=~/cloudbench/scenarios/scripts/openstack_multitenant.sh
+
+[AI_DEFAULTS : SIM_CLOUDCONFIG]
+EXECUTE_SCRIPT_NAME=~/cloudbench/scenarios/scripts/openstack_multitenant.sh

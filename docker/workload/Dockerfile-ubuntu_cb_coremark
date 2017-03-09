@@ -3,5 +3,6 @@ FROM REPLACE_NULLWORKLOAD_UBUNTU
 RUN apt-get update
 
 RUN mkdir -p /home/cbuser/3rd_party
-COPY coremark_v1.0.tar /home/cbuser/3rd_party/coremark_v1.0.tar
+RUN REPLACE_RSYNC/coremark_v1.0.tar /home/cbuser/3rd_party/
 RUN cd /home/cbuser/3rd_party/; tar -xf coremark_v1.0.tar; rm coremark_v1.0.tar; mv coremark_v1.0 _coremark-1.0
+RUN chown -R cbuser:cbuser /home/cbuser

@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM REPLACE_BASE_VANILLA_UBUNTU
 
 ENV DEBIAN_FRONTEND=noninteractive
 

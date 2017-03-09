@@ -1,0 +1,49 @@
+# Parameters for this Virtual Application (Application Instance - AI) type should
+# be set on YOUR private configuration configuration file, including the ones 
+# commented.
+
+[AI_TEMPLATES : POSTMARK]
+
+# Attributes MANDATORY for all Virtual Applications
+SUT = postmark
+LOAD_BALANCER_SUPPORTED = $False
+RESIZE_SUPPORTED = $True
+REGENERATE_DATA = $False
+LOAD_GENERATOR_ROLE = postmark
+LOAD_MANAGER_ROLE = postmark
+METRIC_AGGREGATOR_ROLE = postmark
+CAPTURE_ROLE = postmark
+LOAD_PROFILE = default
+LOAD_LEVEL = uniformIXIXI1I10
+LOAD_DURATION = 20
+CATEGORY = synthetic
+REPORTED_METRICS = throughput,bandwidth,completion_time,errors,quiescent_time
+
+# VApp-specific MANDATORY attributes
+DESCRIPTION = = Deploys a SINGLE VM and runs the \"postmark\" synthetic (disk I/O) benchmark.\n
+DESCRIPTION +=- LOAD_PROFILE possible values: "default" (does not mean anything, not really used).\n
+DESCRIPTION +=- LOAD_LEVEL meaning: number of transactions ("set transactions").\n 
+DESCRIPTION +=- LOAD_DURATION meaning: not used, a run ends when all transactions are finished.\n
+
+POSTMARK_SETUP1 = cb_start_postmark.sh
+START = cb_postmark.sh
+
+# VApp-specific modifier parameters. Commented attributes imply default values assumed
+POSTMARK_DATA_DIR = /postmarkdir
+POSTMARK_DATA_FSTYP = ext4
+POSTMARK_DATA_VOLUME = NONE
+LOAD_FACTOR=10000
+SZ = 500,10000
+NR = 500
+SUBDIRECTORIES=1
+READ_BS=512
+WRITE_BS=512
+BIAS_READ=5
+BIAS_WRITE=5
+BUFFERING=true
+
+# Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
+#SYNC_COUNTER_NAME = synchronization_counter
+#CONCURRENT_AIS = 2
+#SYNC_CHANNEL_NAME = synchronization_channel
+#RUN_COUNTER_NAME = experiment_id_counter

@@ -104,7 +104,8 @@ LOGIN = $VCD_LOGIN
 SSH_KEY_NAME = $VCD_SSH_KEY_NAME
 
 [VM_TEMPLATES : VCD_CLOUDCONFIG ]
-CLIENT_DAYTRADER = size:dummysize, imageid1:image-001
+CLIENT_IBM_DAYTRADER = size:dummysize, imageid1:image-001
+CLIENT_OPEN_DAYTRADER = size:dummysize, imageid1:image-001
 DRIVER_DAYTRADER = size:dummysize, imageid1:image-001
 CLIENT_TRADELITE = size:dummysize, imageid1:image-001
 DRIVER_TRADELIE = size:dummysize, imageid1:image-001
@@ -135,6 +136,7 @@ COREMARK = size:dummysize, imageid1:image-001
 DRIVER_FIO = size:dummysize, imageid1:image-001
 FIO = size:dummysize, imageid1:image-001
 BTEST = size:dummysize, imageid1:image-001
+POSTMARK = size:dummysize, imageid1:image-001
 CLIENT_WINDOWS = size:dummysize, imageid1:image-001
 WINDOWS = size:dummysize, imageid1:image-001
 DRIVER_FILEBENCH = size:dummysize, imageid1:image-001

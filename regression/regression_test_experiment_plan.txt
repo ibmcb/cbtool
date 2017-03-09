@@ -1563,13 +1563,13 @@ vmlist TESTCLOUD
 stats TESTCLOUD
 echo ############################################################ [TEST] 312: END aidetach TESTCLOUD all ############################################################
 echo 
-echo ################################### [TEST] 313: START typealter TESTCLOUD ibm_daytrader sut=client_daytrader->was->willfail ####################################
-typealter TESTCLOUD ibm_daytrader sut=client_daytrader->was->willfail
+echo ################################### [TEST] 313: START typealter TESTCLOUD ibm_daytrader sut=client_ibm_daytrader->was->willfail ####################################
+typealter TESTCLOUD ibm_daytrader sut=client_ibm_daytrader->was->willfail
 aiattach TESTCLOUD ibm_daytrader
 ailist TESTCLOUD
 vmlist TESTCLOUD
 stats TESTCLOUD
-echo #################################### [TEST] 313: END typealter TESTCLOUD ibm_daytrader sut=client_daytrader->was->willfail #####################################
+echo #################################### [TEST] 313: END typealter TESTCLOUD ibm_daytrader sut=client_ibm_daytrader->was->willfail #####################################
 echo 
 echo ######################################################### [TEST] 314: START vmlist TESTCLOUD finished ##########################################################
 vmlist TESTCLOUD finished
@@ -3039,13 +3039,13 @@ vmlist
 stats
 echo ################################################################# [TEST] 588: END aidetach all #################################################################
 echo 
-echo ######################################## [TEST] 589: START typealter ibm_daytrader sut=client_daytrader->was->willfail #########################################
-typealter ibm_daytrader sut=client_daytrader->was->willfail
+echo ######################################## [TEST] 589: START typealter ibm_daytrader sut=client_ibm_daytrader->was->willfail #########################################
+typealter ibm_daytrader sut=client_ibm_daytrader->was->willfail
 aiattach ibm_daytrader
 ailist
 vmlist
 stats
-echo ######################################### [TEST] 589: END typealter ibm_daytrader sut=client_daytrader->was->willfail ##########################################
+echo ######################################### [TEST] 589: END typealter ibm_daytrader sut=client_ibm_daytrader->was->willfail ##########################################
 echo 
 echo ############################################################## [TEST] 590: START vmlist finished ###############################################################
 vmlist finished

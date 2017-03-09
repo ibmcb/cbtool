@@ -88,3 +88,4 @@ WORKDIR /home/cbuser/cbtool/3rd_party/HTML.py
 RUN sudo python setup.py install
 WORKDIR /home/cbuser
 USER root
+RUN chown -R cbuser:cbuser /home/cbuser

@@ -16,6 +16,4 @@ RUN cd /home/cbuser; tar -xzf /home/cbuser/hadoop*.gz
 
 RUN cd /home/cbuser; git clone https://github.com/ibmcb/HiBench.git; cd /home/cbuser/HiBench; git checkout dev
 
-RUN echo "export JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre" >> /home/cbuser/.bashrc
-
 RUN chown -R cbuser:cbuser /home/cbuser
