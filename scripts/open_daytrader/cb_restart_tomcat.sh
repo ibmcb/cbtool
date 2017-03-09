@@ -17,70 +17,72 @@
 #/*******************************************************************************
 
 source ~/.bashrc
-dir=$(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")
-if [ -e $dir/cb_common.sh ] ; then
-	source $dir/cb_common.sh
-else
-	source $dir/../common/cb_common.sh
-fi
+source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
-standalone=`online_or_offline "$1"`
+set_java_home
+
+MYSQL_DATABASE_NAME=`get_my_ai_attribute_with_default mysql_database_name tradedb`
+MYSQL_NONROOT_USER=`get_my_ai_attribute_with_default mysql_nonroot_user trade`
+MYSQL_NONROOT_PASSWORD=`get_my_ai_attribute_with_default mysql_nonroot_password trade`
+MYSQL_DATA_DIR=`get_my_ai_attribute_with_default mysql_data_dir /tradedb`
 
 USEBALLOON=no
+ECLIPSED=False
 
-if [ $standalone == online ] ; then
-	DB_IP=`get_ips_from_role db2`
-	USEBALLOON=`get_my_ai_attribute_with_default use_java_balloon $USEBALLOON`
-	ECLIPSED=`get_my_vm_attribute eclipsed`
-else
-	standalone_verify "$2" "Need ip address of database."
-	DB_IP=$2
-	post_boot_steps offline 
-	ECLIPSED="false"
-fi
-
-START=`provision_application_start`
 SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
+NETSTAT_CMD=`which netstat`
 SUDO_CMD=`which sudo`
-PKILL_CMD=`which pkill`
 ATTEMPTS=3
 
-syslog_netcat "Undeploying any old DayTraders"
+DB_IP=`get_ips_from_role mysql`
 
-/home/cbtool/daytrader/geronimo-tomcat7-javaee6-3.0.0/bin/deploy --user system --password manager undeploy org.apache.geronimo.daytrader/daytrader/3.0.0/car
+START=`provision_application_start`
+
+DT_MYSQL_PLAN=$(find ~ | grep target/classes/daytrader-mysql-xa-plan.xml | grep -v orig | head -1)
+DT_EAR=$(find ~ | find ~ | grep daytrader-ear-[0-9]\.[0-9]\.[0-9]\.ear | head -1)
+
+GERONIMO_DEPLOY=$(find ~ | grep bin/deploy | grep -v bat | grep -v framework)
+GERONIMO_MAIN=$(find ~ | grep bin/geronimo | grep -v bat | grep -v framework)
+
+${SUDO_CMD} chown -R $(whoami):$(whoami) ~/daytrader-parent*
+${SUDO_CMD} chown -R $(whoami):$(whoami) ~/geronimo-tomcat*
+
+#syslog_netcat "Undeploying any old DayTraders"
+#$GERONIMO_DEPLOY --user system --password manager undeploy org.apache.geronimo.daytrader/daytrader/3.0.0/car
 
 syslog_netcat "Checking if the Geronimo server is pointing to MySQL server running on $DB_IP......"
 
 syslog_netcat "Changing configuration file to point the Geronimo server to MySQL server running on $DB_IP...."
-	
+    
 syslog_netcat "Trying.. sed command output.. next:"
-sed "s/<config\-property\-setting name=\"ServerName\">.*<\/config\-property\-setting>/<config\-property\-setting name=\"ServerName\">"$DB_IP"<\/config\-property\-setting>/g" /home/cbtool/daytrader/daytrader-parent-3.0.0/javaee6/plans/target/classes/daytrader-mysql-xa-plan.xml > /home/cbtool/tmp.xml && mv /home/cbtool/tmp.xml /home/cbtool/daytrader/daytrader-parent-3.0.0/javaee6/plans/target/classes/daytrader-mysql-xa-plan.xml
+${SUDO_CMD} sed -i "s/<config\-property\-setting name=\"ServerName\">.*<\/config\-property\-setting>/<config\-property\-setting name=\"ServerName\">"$DB_IP"<\/config\-property\-setting>/g" $DT_MYSQL_PLAN
 
 syslog_netcat "SED Error: $?"
 
 syslog_netcat "Done changing configuration file to point the Geronimo server to MySQL server running on $DB_IP"
 
-
 mem=`cat /proc/meminfo | sed -n 's/MemTotal:[ ]*\([0-9]*\) kB.*/\1/p'`
 
 # amount of mem to reserve for the guest OS, the rest will be 
 # assigned to the JVM
-if [ $USEBALLOON == yes ] ; then
-	syslog_netcat "Java Balloon Activated"
-	range=600
+if [[ $USEBALLOON == yes ]]
+then
+    syslog_netcat "Java Balloon Activated"
+    range=600
 else
-	range=0
+    range=0
 fi
 
 # seconds to wait before the jballoon controller
 # check if the memory assignmented changed (balloon size)
 jballoon_wait=20
 
-if [ $USEBALLOON == yes ] && [ $ECLIPSED == "True" ] ; then
-	mem=`get_my_vm_attribute vmemory_max`
-	syslog_netcat "Setting up Geronimo to support eclipsing: $mem MB"
+if [[ $USEBALLOON == yes && $ECLIPSED == "True" ]]
+then
+    mem=`get_my_vm_attribute vmemory_max`
+    syslog_netcat "Setting up Geronimo to support eclipsing: $mem MB"
 else
-	((mem=mem/1024))
+    ((mem=mem/1024))
 fi
 
 ((initial=mem/4))
@@ -89,52 +91,42 @@ fi
 syslog_netcat "Geronimo will be restarted on $SHORT_HOSTNAME on 5 seconds....."
 sleep 5
 
-while [ "$ATTEMPTS" -ge  0 ] ; do 
+while [[ "$ATTEMPTS" -ge  0 ]]
+do 
     
     syslog_netcat "Checking for a Geronimo running on $SHORT_HOSTNAME...."
-    result="$(sudo /home/cbtool/daytrader/geronimo-tomcat7-javaee6-3.0.0/bin/deploy --user system --password manager list-modules | grep -Fxq \"+ org.apache.geronimo.daytrader/daytrader/3.0.0/car\")"
-    sslog_netcat "Done checking for a Geronimo server running on $SHORT_HOSTNAME with DayTrader"
+    ${SUDO_CMD} bash -c "export JAVA_HOME=$JAVA_HOME; export PATH=$PATH; $GERONIMO_DEPLOY --user system --password manager list-modules" | grep -Fq "+ org.apache.geronimo.daytrader/daytrader/3.0.0/car"
+    DAYTRADER_NOT_LOADED=$?    
+    syslog_netcat "Done checking for a Geronimo server running on $SHORT_HOSTNAME with DayTrader"
     
-    if [ x"$result" == x ] ; then        
-		syslog_netcat "There is no Geronimo running on $SHORT_HOSTNAME... will try to start it $ATTEMPTS more times"
+    if [[ $DAYTRADER_NOT_LOADED -ne 0 ]]
+    then        
+        syslog_netcat "There is no Geronimo running on $SHORT_HOSTNAME... will try to start it $ATTEMPTS more times"
 
-		let ATTEMPTS=ATTEMPTS-1
-		syslog_netcat "Killing any Geronimo leftover processes...."
-		for pid in $(pgrep -f "(java)") ; do
-			kill -9 $pid > /dev/null
-		done
-		syslog_netcat "Done killing any Geronimo leftover processes...."
-		syslog_netcat "Starting Geronimo..."
-		sudo /home/cbtool/daytrader/geronimo-tomcat7-javaee6-3.0.0/bin/geronimo start
-		syslog_netcat "Geronimo started on $SHORT_HOSTNAME ( pointing to MySQL running on $DB_IP )."
-		syslog_netcat "Will wait 30 seconds and check for Geronimo processes...."
-		sleep 30 
-		syslog_netcat "Undeploy previous DayTrader(s)"
-		sudo /home/cbtool/daytrader/geronimo-tomcat7-javaee6-3.0.0/bin/deploy --user system --password manager undeploy org.apache.geronimo.daytrader/daytrader/3.0.0/car
-		sleep 10 
-		syslog_netcat "Deploy DayTrader"
-		sudo /home/cbtool/daytrader/geronimo-tomcat7-javaee6-3.0.0/bin/deploy --user system --password manager deploy /home/cbtool/daytrader/daytrader-parent-3.0.0/javaee6/assemblies/daytrader-ear/target/daytrader-ear-3.0.0.ear /home/cbtool/daytrader/daytrader-parent-3.0.0/javaee6/plans/target/classes/daytrader-mysql-xa-plan.xml
-		sleep 10 
-
-		syslog_netcat "Checking for DayTrader"
-		if sudo /home/cbtool/daytrader/geronimo-tomcat7-javaee6-3.0.0/bin/deploy --user system --password manager list-modules | grep -Fxq "+ org.apache.geronimo.daytrader/daytrader/3.0.0/car"
-		then
-			syslog_netcat "DayTrader is running"
-		else 
-			syslog_netcat "DayTrader not running, trying again"		
-			sudo /home/cbtool/daytrader/geronimo-tomcat7-javaee6-3.0.0/bin/deploy --user system --password manager deploy /home/cbtool/daytrader/daytrader-parent-3.0.0/javaee6/assemblies/daytrader-ear/target/daytrader-ear-3.0.0.ear /home/cbtool/daytrader/daytrader-parent-3.0.0/javaee6/plans/target/classes/daytrader-mysql-xa-plan.xml
-		fi	
+        let ATTEMPTS=ATTEMPTS-1
+        syslog_netcat "Killing any Geronimo leftover processes...."
+        for pid in $(pgrep -f "(java)")
+        do
+            ${SUDO_CMD} kill -9 $pid > /dev/null
+        done
+        syslog_netcat "Done killing any Geronimo leftover processes...."
+        syslog_netcat "Starting Geronimo..."
+        ${SUDO_CMD} bash -c "export JAVA_HOME=$JAVA_HOME; export PATH=$PATH; ${GERONIMO_MAIN} start"
+        syslog_netcat "Geronimo started on $SHORT_HOSTNAME ( pointing to MySQL running on $DB_IP )."
+        syslog_netcat "Will wait 30 seconds and check for Geronimo processes...."
+        sleep 30 
+        syslog_netcat "Undeploy previous DayTrader(s)"
+        ${SUDO_CMD} bash -c "export JAVA_HOME=$JAVA_HOME; export PATH=$PATH; ${GERONIMO_DEPLOY} --user system --password manager undeploy org.apache.geronimo.daytrader/daytrader/3.0.0/car"
+        sleep 10 
+        syslog_netcat "Deploy DayTrader ($DT_MYSQL_PLAN)"
+        ${SUDO_CMD} bash -c "export JAVA_HOME=$JAVA_HOME; export PATH=$PATH; ${GERONIMO_DEPLOY} --user system --password manager deploy $DT_EAR $DT_MYSQL_PLAN"
+        sleep 10 
     else 
-		syslog_netcat "Geronimo restarted successfully on $SHORT_HOSTNAME ( pointing to MySQL running on $DB_IP ) - OK";
-
-    fi
-	
-    if [ -f .appfirstrun ]; then
-	exit 0
-    else
-	provision_application_stop $START
-	exit 0
+        syslog_netcat "Geronimo restarted successfully on $SHORT_HOSTNAME ( pointing to MySQL running on $DB_IP ) - OK";
+        provision_application_stop $START
+        exit 0        
     fi
 done
 syslog_netcat "Geronimo could not be restarted on $SHORT_HOSTNAME - NOK"
 exit 2
+    

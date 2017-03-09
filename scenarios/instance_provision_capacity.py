@@ -169,6 +169,11 @@ def parse_cli() :
                        default=False, \
                        help="Create a load balancer associated with each instance")
 
+    _parser.add_option("--abstraction",\
+                       dest="abstraction", \
+                       default="pod", \
+                       help="Resource type to be deployed (\"pod\", \"replicaset\" or \"deployment\"). Only applicable to KUBERNETE clouds.")
+
     _parser.add_option("--noidle",\
                        action="store_true", \
                        dest="noidle", \
@@ -735,7 +740,7 @@ def capacity_phase(api, options, performance_data, directory) :
 
         performance_data["batch" + str(_batch_nr)]["id"] = _batch_id
 
-        if _arrived_vms >= _sample_nr * options.sample_every :
+        if _arrived_vms >= int(_sample_nr) * int(options.sample_every) :
             _selected_batch_size = 1
             _comments = "sample"
             _sample_nr += 1
@@ -1147,7 +1152,7 @@ def main() :
 
     if _options.lb :
         _msg = "# Instances will have load balancers associated to it"
-        print _msg        
+        print _msg
         api.cldalter(_options.cloud_name, "vm_defaults", "create_lb", "True")     
         api.cldalter(_options.cloud_name, "ai_defaults", "create_lb", "True")             
     else :
@@ -1157,15 +1162,27 @@ def main() :
     api.cldalter(_options.cloud_name, "vm_defaults", "update_attempts", _options.update_attempts)
     api.cldalter(_options.cloud_name, "vm_defaults", "update_frequency", _options.update_frequency)
     api.cldalter(_options.cloud_name, "vm_defaults", "leave_instance_on_failure", "true")    
-    
+
+    api.cldalter(_options.cloud_name, "ai_defaults", "update_attempts", _options.update_attempts)
+    api.cldalter(_options.cloud_name, "ai_defaults", "update_frequency", _options.update_frequency)
+        
     api.cldalter(_options.cloud_name, "admission_control", "vm_max_reservations", 75000)
+
+    if _cloud_model == "kub" :
+        _msg = "# This is a Kubernetes cloud, setting the parameter ABSTRACTION on [VM_DEFAULTS : KUB_CLOUDCONFIG]"
+        _msg += " to \"" + _options.abstraction + "\""
+        print _msg
+        api.cldalter(_options.cloud_name, "vm_defaults", "abstraction", _options.abstraction)        
 
     if _options.hypervisor.lower() == "fake" or _options.create_only :
         api.cldalter(_options.cloud_name, "vm_defaults", "check_boot_complete", "wait_for_0")
         api.cldalter(_options.cloud_name, "vm_defaults", "transfer_files", "false")
         api.cldalter(_options.cloud_name, "vm_defaults", "run_generic_scripts", "false")
-        api.cldalter(_options.cloud_name, "vm_defaults", "update_frequency", "2")
-
+        api.cldalter(_options.cloud_name, "vm_defaults", "check_ssh", "false")        
+        api.cldalter(_options.cloud_name, "vm_defaults", "update_frequency", "1")
+        api.cldalter(_options.cloud_name, "ai_defaults", "run_application_scripts", "false")
+        api.cldalter(_options.cloud_name, "ai_defaults", "dont_start_load_manager", "true")
+                
     if _options.noidle :
         _msg = "# Option \"noidle\" detected, will deploy active workloads"
         print _msg
@@ -1287,20 +1304,7 @@ def main() :
     print _msg
     _url = api.monextract(_options.cloud_name, "all", "all")
 
-    _dtb = ''
-    _mgt_info = api.cldshow(_options.cloud_name, "mon_defaults")
-    if "time_breakdown_keys" in _mgt_info :
-        _dtb = _mgt_info["time_breakdown_keys"][0:-1].split(',')
-        _dtb.sort()
-        _dtb = " --breakdown " + ','.join(_dtb)        
-#        _dtb = " --breakdown " + ','.join(reversed(_dtb))
-    
-    _msg = "Data is available at url \"" + _url + "\". \nTo automatically generate"
-    _msg += " plots, just run \"" + _cb_base_dir + "/util/plot/cbplotgen.R "
-    _msg += "--directory " + _cb_data_dir + " --expid " + str(_experiment_id)
-    _msg += " --cleanup --provisionmetrics --runtimemetrics " + _dtb + "\""
-    #--layer --aggregate"
-    print _msg
+    create_plots(_options, api, _cb_base_dir, _cb_data_dir, _experiment_id, _url)
 
     if _options.cleanup :
         _start = int(time())

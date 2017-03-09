@@ -16,12 +16,7 @@
 # limitations under the License.
 #/*******************************************************************************
 
-dir=$(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")
-if [ -e $dir/cb_common.sh ] ; then
-    source $dir/cb_common.sh
-else
-    source $dir/../common/cb_common.sh
-fi
+source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
 export PATH=$PATH:~/iwl/bin
 eval PATH=${PATH}
@@ -58,7 +53,7 @@ then
 	exit 1
 fi
 WAS_IPS=`get_ips_from_role was`
-DB2_IP=`get_ips_from_role db2`
+DB2_IPS=`get_ips_from_role db2`
 IS_LOAD_BALANCED=`get_my_ai_attribute load_balancer`
 IS_LOAD_BALANCED=`echo ${IS_LOAD_BALANCED} | tr '[:upper:]' '[:lower:]'`
 LOAD_GENERATOR_TARGET_IP=`get_my_ai_attribute load_generator_target_ip`
@@ -68,6 +63,7 @@ APP_COLLECTION=`get_my_ai_attribute_with_default app_collection lazy`
 PERIODIC_MEASUREMENTS=`get_my_ai_attribute_with_default periodic_measurements false`
 
 WAS_IPS_CSV=`echo ${WAS_IPS} | sed ':a;N;$!ba;s/\n/, /g'`
+DB2_IPS_CSV=`echo ${DB2_IPS} | sed ':a;N;$!ba;s/\n/, /g'`
 
 if [ x"${LOAD_PROFILE}" == "default" ]
 then
@@ -80,9 +76,9 @@ eval JXS_SCRIPT=${JXS_SCRIPT}
 if [ x"${IS_LOAD_BALANCED}" == x"true" ]
 then
     LOAD_BALANCER_IP=`get_ips_from_role lb`
-    syslog_netcat "Benchmarking daytrader SUT: LOAD_BALANCER=${LOAD_BALANCER_IP} -> WAS_SERVERS=${WAS_IPS_CSV} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
+    syslog_netcat "Benchmarking daytrader SUT: LOAD_BALANCER=${LOAD_BALANCER_IP} -> WAS_SERVERS=${WAS_IPS_CSV} -> DB2_SERVERS=${DB2_IPS_CSV} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
 else
-    syslog_netcat "Benchmarking daytrader SUT: WAS_SERVER=${WAS_IPS} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID})"
+    syslog_netcat "Benchmarking daytrader SUT: WAS_SERVER=${WAS_IPS} -> DB2_SERVERS=${DB2_IPS_CSV} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID})"
 fi
 
 CMDLINE="iwlengine --enginename testit --define hostname=${LOAD_GENERATOR_TARGET_IP}:9080 --define botClient=0 --define topClient=${NR_USERS} --define stocks=${NR_QUOTES} -e 0 -s ${JXS_SCRIPT} --timelimit $LOAD_DURATION -c $LOAD_LEVEL"
@@ -96,7 +92,7 @@ then
         reset_periodic_monitor cb_was_collect.py 30 $ip
     done
 
-    reset_periodic_monitor cb_db2_collect.py 30 $DB2_IP
+    reset_periodic_monitor cb_db2_collect.py 30 $DB2_IPS
 else 
     syslog_netcat "Periodic measurement of WAS and DB2 vms is disabled"
 fi

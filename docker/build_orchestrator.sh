@@ -3,8 +3,8 @@
 source ./build_common.sh
 
 CB_REPO=NONE
-CB_WKS="ALL"
 CB_RSYNC=$(sudo ifconfig docker0 | grep "inet addr" | cut -d ':' -f 2 | cut -d ' ' -f 1):10000/$(whoami)_cb
+CB_WKS="ALL"
 CB_UBUNTU_BASE=ubuntu:16.04
 CB_PHUSION_BASE=phusion/baseimage:latest
 CB_CENTOS_BASE=centos:latest
@@ -74,7 +74,7 @@ do
         -r=*|--rsync=*)
         CB_RSYNC=$(echo $key | cut -d '=' -f 2)
         shift
-        ;;                        
+        ;;                     
         -v|--verbose)
         CB_VERB='--ve'
         shift
@@ -89,7 +89,7 @@ do
         -h|--help)
         echo $CB_USAGE
         shift
-        ;;        
+        ;;
         *)
                 # unknown option
         ;;
@@ -103,11 +103,7 @@ then
     exit 1
 fi
 
-cb_refresh_vanilla_images $CB_UBUNTU_BASE $CB_PHUSION_BASE $CB_CENTOS_BASE
 cb_build_orchestrator $CB_REPO $CB_VERB $CB_ARCH $CB_RSYNC
-cb_build_base_images $CB_REPO $CB_VERB $CB_ARCH $CB_RSYNC
-cb_build_nullworkloads $CB_REPO $CB_VERB $CB_ARCH $CB_RSYNC
-cb_build_workloads $CB_REPO $CB_VERB $CB_ARCH $CB_RSYNC
 
 if [[ $CB_PUSH == "push" ]]
 then

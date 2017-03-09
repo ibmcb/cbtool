@@ -30,12 +30,13 @@ then
     exit 1
 fi
 
+set_java_home
+
 export MYAINAME=`get_my_ai_attribute name`
 export JVM=`echo ${MYAINAME} | cut -d "_" -f 2`
 export RAMPUP_TIME=`get_my_ai_attribute_with_default specjbb_rampup 20`
 export EXPERIMENT_BASE_ID=`get_my_ai_attribute experiment_base_id`
 export EXPERIMENT_RUN_ID=`get_global_sub_attribute time experiment_id`
-export JAVA_HOME=`get_my_ai_attribute_with_default java_home /opt/ibm-java-x86_64-70/`
 export GC_POLICY=`get_my_ai_attribute gc_policy`
 export BALLOON_SIZE=`get_my_ai_attribute_with_default balloon_size 500` 
 export BALLOON_DELAY=`get_my_ai_attribute_with_default balloon_delay 300`

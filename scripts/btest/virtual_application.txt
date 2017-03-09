@@ -20,7 +20,7 @@ CATEGORY = synthetic
 REPORTED_METRICS = throughput,latency,completion_time,errors,quiescent_time
 
 # VApp-specific MANDATORY attributes
-DESCRIPTION = Deploys the btest disk microbenchmark from XtremeIO\n
+DESCRIPTION = = Deploys a SINGLE VM and runs the \"btest\" synthetic (disk I/O) benchmark (from XtremeIO).\n
 DESCRIPTION +=- LOAD_PROFILE possible values: "default", meaning 4096 block size;\n
 DESCRIPTION += AIO queue depth of 32;50% reads;100% random;500 MB file size\n
 DESCRIPTION += (4096;32;50;100;500). Other profiles can be specified by a\n

@@ -10,7 +10,8 @@ TNSRC_ERROR=0
 function all_clear () {
 
     CB_CLOUD_NAME=$(echo "$CB_CLOUD_NAME" | tr '[:upper:]' '[:lower:]')
-    for NS in $(kubectl get namespaces | grep ${KUB_NAMESPACE_NAME} | awk '{ print $1 }')
+#    for NS in $(kubectl get namespaces | grep ${KUB_NAMESPACE_NAME} | awk '{ print $1 }')
+    for NS in $(kubectl get namespaces | awk '{ print $1 }')
     do
         for D in $(kubectl --namespace $NS get deployments | grep ${CB_CLOUD_NAME} | grep ${CB_USERNAME} | awk '{ print $1 }')
         do  
@@ -30,11 +31,16 @@ function all_clear () {
             kubectl --namespace $NS delete pods ${P}
         done        
 
-        echo "deleting namespace $NS"       
-        kubectl delete namespace $NS
+        echo $NS | grep ${KUB_NAMESPACE_NAME} 
+        
+        if [[ $? -eq 0 ]]
+        then
+            echo "deleting namespace $NS"       
+            kubectl delete namespace $NS
+        fi
     done
 
-    for Q in $(kubectl get quota | grep ${KUB_NAMESPACE_NAME} | awk '{ print $1 }')
+    for Q in $(kubectl get quota | grep ${KUB_QUOTA_NAME} | awk '{ print $1 }')
     do  
         echo "deleting quota $Q"
         kubectl delete quota ${Q}

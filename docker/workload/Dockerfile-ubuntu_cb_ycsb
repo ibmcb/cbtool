@@ -24,3 +24,4 @@ RUN echo "export JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '
 #RUN wget -N -P /home/cbuser https://github.com/brianfrankcooper/YCSB/releases/download/0.4.0/ycsb-0.4.0.tar.gz
 RUN wget -N -P /home/cbuser https://github.com/brianfrankcooper/YCSB/releases/download/0.5.0/ycsb-0.5.0.tar.gz
 RUN cd /home/cbuser; tar -xvzf ycsb-*.tar.gz; sudo rm ycsb*.gz; sudo mv ycsb-* YCSB
+RUN chown -R cbuser:cbuser /home/cbuser

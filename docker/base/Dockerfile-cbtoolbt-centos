@@ -1,23 +1,20 @@
-FROM REPLACE_BASE_VANILLA_UBUNTU
+FROM REPLACE_BASE_VANILLA_CENTOS
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV CB_SSH_PUB_KEY=NA
 ENV CB_LOGIN=NA
 
-RUN apt-get update
-RUN apt-get install -y sudo
-RUN apt-get update
-RUN apt-get install -y rsync
-RUN apt-get update
-RUN apt-get install -y python2.7
-RUN apt-get update
-RUN apt-get install -y openssh-server
-RUN ln -s /usr/bin/python2.7 /usr/bin/python
-RUN mkdir /var/run/sshd
+RUN yum -y update; yum clean all
+RUN yum -y install openssh-server passwd sudo rsync; yum clean all
+
 RUN echo 'root:temp4now' | chpasswd
 RUN sed -i 's/PermitRootLogin without-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN mkdir /var/run/sshd
+
+RUN ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N '' 
+
 # SSH login fix. Otherwise user is kicked off after login
-RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
+#RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
 
 RUN useradd -m -p "$1$1rCJhvTo$nIoKRh4zdGdnk0Dntsdnq/" -s /bin/bash ubuntu
 RUN useradd -m -p "$1$1rCJhvTo$nIoKRh4zdGdnk0Dntsdnq/" -s /bin/bash fedora

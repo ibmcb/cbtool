@@ -5,4 +5,4 @@ RUN apt-get install -y libaio1 bison flex gawk
 RUN wget -N -P /home/cbuser https://github.com/filebench/filebench/releases/download/1.5-alpha3/filebench-1.5-alpha3.tar.gz
 RUN cd /home/cbuser; tar -xzf filebench-*.tar.gz
 RUN cd /home/cbuser/filebench*; ./configure; make; make install
-RUN chown cbuser:cbuser /home/cbuser
+RUN chown -R cbuser:cbuser /home/cbuser

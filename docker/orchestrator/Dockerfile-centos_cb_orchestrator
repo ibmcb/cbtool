@@ -1,4 +1,4 @@
-FROM centos:latest
+FROM REPLACE_BASE_VANILLA_CENTOS
 RUN yum -y update
 RUN useradd -ms /bin/bash cbuser
 RUN echo "cbuser  ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers
@@ -56,7 +56,7 @@ RUN yum install -y epel-release
 RUN yum install -y python-pip
 RUN yum install -y \
 ganglia \
-ganglia-gmond.x86_64
+ganglia-gmond.REPLACE_ARCH1
 RUN ln -s /usr/sbin/gmond /usr/local/bin/gmond
 
 RUN yum install -y \
