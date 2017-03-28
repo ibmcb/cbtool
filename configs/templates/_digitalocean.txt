@@ -32,6 +32,10 @@ CREDENTIALS = $DO_CREDENTIALS
 SSH_KEY_NAME = $DO_SSH_KEY_NAME
 KEY_NAME = $DO_KEY_NAME
 LOGIN = $DO_LOGIN
+NETNAME = private
+CAPTURE_SUPPORTED = $True
+RUNSTATE_SUPPORTED = $True
+RESIZE_SUPPORTED = $False
 PROV_NETNAME = private
 RUN_NETNAME = private
 CLONE_TIMEOUT = 600
@@ -43,17 +47,22 @@ SIZE = from_vm_template
 LEAVE_INSTANCE_ON_FAILURE = $False
 FORCE_FAILURE = $False
 DISABLE_TIMESYNC = $False
+IMAGE_PREFIX = $EMPTY
+IMAGE_SUFFIX = $EMPTY
 
 # We're not as big as amazon yet. Go easy on us please.
 [AI_DEFAULTS : DO_CLOUDCONFIG ]
 ATTACH_PARALLELISM = 1
+CAPTURE_SUPPORTED = $True
+RUNSTATE_SUPPORTED = $True
+RESIZE_SUPPORTED = $True
 
 # We're not as big as amazon yet. Go easy on us please.
 [AIDRS_DEFAULTS : DO_CLOUDCONFIG ]
 DAEMON_PARALLELISM = 1
 
 [MON_DEFAULTS : DO_CLOUDCONFIG ]
-COLLECT_FROM_GUEST = $True
+COLLECT_FROM_GUEST = $False
 
 [VMC_DEFAULTS : DO_CLOUDCONFIG ]
 CREDENTIALS = $DO_CREDENTIALS
@@ -68,6 +77,7 @@ HADOOP_HOME = /usr/local/hadoop
 
 # DigitalOcean has made public images available for the following 3 workloads:
 [VM_TEMPLATES : DO_CLOUDCONFIG ]
+CHECK = size:512mb, imageids:1, imageid1:to_replace
 # imageid can be either the actual ID number or more easily the name in the case of a private account
 TINYVM = size:512mb, imageids:1, imageid1:16082940
 YATINYVM = size:512mb, imageids:1, imageid1:16082940

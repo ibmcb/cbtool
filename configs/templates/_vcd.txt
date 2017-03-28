@@ -40,7 +40,7 @@ SSH_KEY_NAME = $VCD_SSH_KEY_NAME
 
 [MON_DEFAULTS : VCD_CLOUDCONFIG ]
 COLLECT_FROM_HOST = $False
-COLLECT_FROM_GUEST = $True
+COLLECT_FROM_GUEST = $False
 
 [VMC_DEFAULTS : VCD_CLOUDCONFIG ]
 ACCESS = $VCD_ACCESS
@@ -74,13 +74,14 @@ SNMP_COMMUNITY = $VCD_SNMP_COMMUNITY
 SNMP_VARIABLE = $VCD_SNMP_VARIABLE
 # CLONE_TIMEOUT is number of seconds libcloud should poll VCD after issuing clone command before timing out
 CLONE_TIMEOUT = 600
-PROV_NETNAME = private
-RUN_NETNAME = private
+NETNAME = private
 TENANT = default
 SIZE = from_vm_template
 LEAVE_INSTANCE_ON_FAILURE = $False
 FORCE_FAILURE = $False
 DISABLE_TIMESYNC = $False
+IMAGE_PREFIX = $EMPTY
+IMAGE_SUFFIX = $EMPTY
 
 [AI_DEFAULTS : VCD_CLOUDCONFIG ]
 ATTACH_PARALLELISM = 10
@@ -103,7 +104,8 @@ LOGIN = $VCD_LOGIN
 SSH_KEY_NAME = $VCD_SSH_KEY_NAME
 
 [VM_TEMPLATES : VCD_CLOUDCONFIG ]
-CLIENT_DAYTRADER = size:dummysize, imageid1:image-001
+CLIENT_IBM_DAYTRADER = size:dummysize, imageid1:image-001
+CLIENT_OPEN_DAYTRADER = size:dummysize, imageid1:image-001
 DRIVER_DAYTRADER = size:dummysize, imageid1:image-001
 CLIENT_TRADELITE = size:dummysize, imageid1:image-001
 DRIVER_TRADELIE = size:dummysize, imageid1:image-001
@@ -133,6 +135,8 @@ DRIVER_COREMARK = size:dummysize, imageid1:image-001
 COREMARK = size:dummysize, imageid1:image-001
 DRIVER_FIO = size:dummysize, imageid1:image-001
 FIO = size:dummysize, imageid1:image-001
+BTEST = size:dummysize, imageid1:image-001
+POSTMARK = size:dummysize, imageid1:image-001
 CLIENT_WINDOWS = size:dummysize, imageid1:image-001
 WINDOWS = size:dummysize, imageid1:image-001
 DRIVER_FILEBENCH = size:dummysize, imageid1:image-001

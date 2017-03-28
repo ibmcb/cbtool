@@ -1,0 +1,27 @@
+FROM REPLACE_NULLWORKLOAD_UBUNTU
+
+RUN wget -N -P /home/REPLACE_USERNAME http://launchpadlibrarian.net/109052632/python-support_1.0.15_all.deb; dpkg -i /home/REPLACE_USERNAME/python-support*.deb
+
+# java-install-pm
+RUN apt-get update; apt-get install -y software-properties-common;
+RUN add-apt-repository -y ppa:openjdk-r/ppa
+RUN apt-get update; apt-get install -y openjdk-7-jdk
+# java-install-pm
+
+# hadoop-install-man
+RUN wget -N -q -P /home/REPLACE_USERNAME https://archive.apache.org/dist/hadoop/common/hadoop-1.2.1/hadoop-1.2.1.tar.gz
+#RUN wget -N -q -P /home/REPLACE_USERNAME https://archive.apache.org/dist/hadoop/common/hadoop-2.3.0/hadoop-2.3.0.tar.gz
+RUN /bin/true; cd /home/REPLACE_USERNAME; tar -xzf /home/REPLACE_USERNAME/hadoop*.gz
+# hadoop-install-man
+
+# maven-install-pm
+RUN apt-get install -y maven ant
+# maven-install-pm
+
+# giraph-install-git
+RUN /bin/true; cd /home/REPLACE_USERNAME; git clone https://github.com/apache/giraph.git
+RUN /bin/true; cd /home/REPLACE_USERNAME/giraph/; git checkout release-1.0.0; mvn package -Phadoop_1.0 -DskipTests
+#RUN /bin/true; cd /home/REPLACE_USERNAME/giraph/; git checkout release-1.1; mvn package -Phadoop_yarn -Dhadoop.version=2.3.0 -DskipTests
+# giraph-install-git
+
+RUN chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME

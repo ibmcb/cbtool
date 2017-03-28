@@ -472,7 +472,7 @@ plot_trace_data <- function(tdf, ed, en, sps) {
 	################## END Provisioning vs VM ##################
 }
 
-plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
+plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv, dtb) {
 
 	if (en == "all") {
 		selected_expid = c(levels(mmdf$expid))
@@ -567,39 +567,16 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 	
 	################## END Provisioning vs VM ##################
 
-	if("osk_011_authenticate_time" %in% colnames(mmdf)) {
+	if (length(dtb) > 1) {
+		
 		################## START Provisioning vs VM (Cloud-Specific info) ##################
 		msg <- paste("# Preparing Provisioning Latency for VMs/Containers (Cloud-Specific", 
 				"information) .... #", sep = '')
 		cat(msg, sep='\n')
 		
 		prov_cs_lat_data <- subset(mmdf, (expid %in% selected_expid) & 
-						(name %in% selected_vm_name), 
-				select = c("full_obj_name", 
-						"osk_001_tenant_creation_time",
-						"osk_002_quota_update_time",
-						"osk_003_user_creation_time",
-						"osk_004_security_group_update_time",
-						"osk_005_keypair_creation_time",
-						"osk_006_net_creation_time",
-						"osk_007_subnet_creation_time",
-						"osk_008_router_creation_time",
-						"osk_009_router_attachment",
-						"osk_010_lb_creation",						
-						"osk_011_authenticate_time",
-						"osk_012_check_existing_instance_time",
-						"osk_013_get_flavors_time",
-						"osk_014_get_imageid_time",
-						"osk_015_get_netid_time",
-						"osk_016_create_volume_time",
-						"osk_017_lb_member_creation",						
-						"osk_018_instance_scheduling_time",
-						"osk_018_port_creation_time",
-						"osk_019_instance_creation_time",					
-						"osk_020_create_fip_time",
-						"osk_021_attach_fip_time",
-						"osk_022_instance_reachable",						
-						"name", "vm_arrival_diff"))
+						(name %in% selected_vm_name),
+				select = c(c("full_obj_name"), dtb, c("name", "vm_arrival_diff")))
 
 		prov_cs_lat_data <- prov_cs_lat_data[!is.na(prov_cs_lat_data$vm_arrival_diff),]
 		prov_cs_lat_data[is.na(prov_cs_lat_data)] <- 0
@@ -626,60 +603,6 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 		
 		prov_cs_lat_data <- melt(prov_cs_lat_data, id.vars="x_axis_id")
 		
-		prov_cs_lat_plot <- ggplot(prov_cs_lat_data, 
-						aes(x=x_axis_id, y=value, fill=variable)) + 
-				geom_area(stat='identity') + 
-				xlab("VM name") + 
-				ylab("Provisioning Latency (seconds)") + 
-				labs(title = prov_cs_lat_plot_title)
-		output_pdf_plot(ed, en, prov_cs_lat_plot, "003_individual_vm_provision_latency",
-				sps)
-		################## END Provisioning vs VM ##################
-	}	
-		
-		if("pdm_003_create_host_config_time" %in% colnames(mmdf)) {
-			################## START Provisioning vs VM (Cloud-Specific info) ##################
-			msg <- paste("# Preparing Provisioning Latency for VMs/Containers (Cloud-Specific", 
-					"information) .... #", sep = '')
-			cat(msg, sep='\n')
-			
-			prov_cs_lat_data <- subset(mmdf, (expid %in% selected_expid) & 
-							(name %in% selected_vm_name), 
-					select = c("full_obj_name", 
-							   "pdm_001_net_creation_time",
-							   "pdm_002_create_volume_time",
-			                   "pdm_003_create_host_config_time",
-			                   "pdm_004_create_docker_time",
-			                   "pdm_005_start_docker_time",
-			                   "pdm_006_instance_creation_time",
-			                   "pdm_007_instance_reachable",				
-						 	   "name", "vm_arrival_diff"))	
-		
-		prov_cs_lat_data <- prov_cs_lat_data[!is.na(prov_cs_lat_data$vm_arrival_diff),]
-		prov_cs_lat_data[is.na(prov_cs_lat_data)] <- 0
-
-		output_table(ed, en, prov_lat_data, "003_individual_vm_provision_latency")
-		
-		number_of_vms <- length(prov_lat_data$name)	
-		
-		# Plot provisioning latency
-		prov_cs_lat_plot_title <- paste("Provisioning Latency for all VMs/Containers (",
-				"Cloud-Specific information) \"", vmn, "\" on experiment \"", 
-				selected_expname, "\" (", selected_expid, ")", sep = '')
-		cat(prov_cs_lat_plot_title, sep='\n')	
-		
-		columns_remove <- c("full_obj_name", "vm_arrival_diff")
-		prov_cs_lat_data <- prov_cs_lat_data[,!(names(prov_cs_lat_data) %in% columns_remove)]
-
-		prov_cs_lat_data <- within(prov_cs_lat_data, 
-				"name" <- as.integer(gsub("vm_", '', prov_cs_lat_data$name)))
-
-		prov_cs_lat_data <- prov_cs_lat_data[order(prov_cs_lat_data$name), ]
-
-		setnames(prov_cs_lat_data, "name", "x_axis_id")
-
-		prov_cs_lat_data <- melt(prov_cs_lat_data, id.vars="x_axis_id")
-
 		prov_cs_lat_plot <- ggplot(prov_cs_lat_data, 
 						aes(x=x_axis_id, y=value, fill=variable)) + 
 				geom_area(stat='identity') + 
@@ -767,7 +690,59 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 	output_pdf_plot(ed, en, agg_prov_lat_plot, "005_average_vm_provision_latency_per_host", 
 			sps, number_of_vms)
 	################## END Provisioning vs Host ##################		
+
+	################## START Provisioning Failures vs VM ##################
+	msg <- paste("# Preparing Provisioning Latency for VMs/Containers.... #", sep = '')
+	cat(msg, sep='\n')
 	
+	prov_fail_data <- subset(mmdf, (expid %in% selected_expid) & 
+					(name %in% selected_vm_name), 
+			select = c("full_obj_name", 
+					   "name",
+					   "mgt_999_provisioning_request_failed"))
+
+	prov_fail_data <- prov_fail_data[!is.na(prov_fail_data$mgt_999_provisioning_request_failed),]
+	
+	output_table(ed, en, prov_fail_data, "006_individual_vm_provision_failure")
+	
+	number_of_vms <- length(prov_lat_data$name)
+	
+	#if (number_of_vms > mnv ) {
+	#	selected_vms <- c(c("1", "2", "3"), seq(number_of_vms - 2, number_of_vms))
+	#	msg <- paste("WARNING: The number of VMs is too large (", number_of_vms, 
+	#			"). Will", " plot only the 3 smallest and the 3 largest ", 
+	#			"provisioning time", sep = '')
+	#	cat(msg, sep='\n')
+	
+	#	prov_lat_data <- prov_lat_data[order(prov_lat_data$vm_arrival_diff), ]
+	#	rownames(prov_lat_data) <- NULL
+	#	prov_fail_data <- prov_fail_data[selected_vms,]
+	#	number_of_vms <- length(prov_lat_data$name)		
+	#}
+	
+	# Plot provisioning failure
+	prov_fail_plot_title <- paste("Provisioning Failure for all VMs/Containers \"", vmn, 
+			"\" on experiment \"", selected_expname, "\" (", selected_expid, ")",
+			sep = '')
+	cat(prov_fail_plot_title, sep='\n')	
+	
+	columns_remove <- c("full_obj_name")
+	
+	prov_fail_data <- prov_fail_data[,!(names(prov_fail_data) %in% columns_remove)]
+	prov_fail_data <- within(prov_fail_data, 
+			"name" <- as.integer(gsub("vm_", '', prov_fail_data$name)))
+	prov_fail_data <- prov_fail_data[order(prov_fail_data$name), ]
+	setnames(prov_fail_data, "name", "x_axis_id")
+	prov_fail_data <- melt(prov_fail_data, id.vars="x_axis_id")		
+	prov_fail_data <- ggplot(prov_fail_data, 
+					aes(x=x_axis_id, y=value, fill=variable)) + 
+			geom_bar(stat='identity') + 
+			xlab("VM/Container number") + 
+			ylab("Provisioning Failure (seconds)") + 
+			labs(title = prov_fail_plot_title)
+	output_pdf_plot(ed, en, prov_fail_data, "006_individual_vm_provision_failure",
+			sps)
+	################## END Provisioning Failures vs VM ##################
 	
 	################## START Provisioning Failures vs VApp Submitter ##################
 	msg <- paste("# Provisioning Successes + Failures for VMs/Containers.... #", sep = '')
@@ -836,7 +811,7 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 	
 	agg_prov_fail_data <- merge(arrivals, departures, by="partial_obj_name1")
 	
-	output_table(ed, en, agg_prov_fail_data, "005_total_vm_provision_failure")
+	output_table(ed, en, agg_prov_fail_data, "006_total_vm_provision_failure")
 	
 	agg_prov_fail_data <- melt(agg_prov_fail_data, id.vars="partial_obj_name1")
 
@@ -852,7 +827,7 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv) {
 			theme(axis.text.x = element_text(angle = 45, hjust = 1)) +			
 			labs(title = agg_prov_fail_plot_title)
 	
-	output_pdf_plot(ed, en, agg_prov_fail_plot, "005_total_vm_provision_failure", sps, number_of_vms)	
+	output_pdf_plot(ed, en, agg_prov_fail_plot, "007_total_vm_provision_failure", sps, number_of_vms)	
 	################## END Provisioning Failures vs VApp Submitter ##################
 }
 

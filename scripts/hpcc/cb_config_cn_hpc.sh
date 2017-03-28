@@ -21,6 +21,13 @@ source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 MPIEXECUTABLE_PATH=$(get_my_ai_attribute_with_default mpiexecutable_path /usr/lib64/openmpi/bin/)
 MPILIBRARY_PATH=$(get_my_ai_attribute_with_default mpilibrary_path /usr/lib64/openmpi/lib/)
 
+if [[ ! -f ~/hpcc ]]
+then
+	sudo cp $(which hpcc) ~
+	CBUSERLOGIN=`get_my_ai_attribute login`
+	sudo chown -R ${CBUSERLOGIN}:${CBUSERLOGIN} ~/hpcc
+fi
+
 echo "export PATH=\$PATH:$MPIEXECUTABLE_PATH" >> ~/.bashrc
 echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:$MPILIBRARY_PATH" >> ~/.bashrc
 

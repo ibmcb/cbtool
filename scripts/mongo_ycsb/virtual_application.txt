@@ -5,6 +5,9 @@
 [AI_TEMPLATES : MONGO_YCSB]
 DESCRIPTION = TBD
 SUT = ycsb->mongos->mongo_cfg_server->3_x_mongodb
+LOAD_BALANCER_SUPPORTED = $False
+RESIZE_SUPPORTED = $True
+REGENERATE_DATA = $True
 LOAD_GENERATOR_ROLE = ycsb
 LOAD_MANAGER_ROLE = ycsb
 METRIC_AGGREGATOR_ROLE = ycsb
@@ -13,6 +16,7 @@ LOAD_BALANCER = $False
 LOAD_PROFILE = workloada
 LOAD_LEVEL = 1
 LOAD_DURATION = 60
+CATEGORY = transactional
 REPORTED_METRICS = bandwidth,throughput,latency,datagen_time,datagen_size,completion_time,errors,insert_operations,read_operations,quiescent_time
 
 MONGO_CFG_SERVER_SETUP1 = cb_restart_mongo_cfg.sh

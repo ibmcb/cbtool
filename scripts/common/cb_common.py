@@ -830,7 +830,7 @@ def report_app_metrics(metriclist, sla_targets_list, ms_conn = "auto", \
 
         _msg = "Report metrics"
         cbdebug(_msg)
-        
+
         if "app_load_id" in _metrics_dict and _metrics_dict["app_load_id"]["val"] == "1" :
             _new_reported_metrics_dict = {}
             for _key in _metrics_dict.keys() :
@@ -841,13 +841,17 @@ def report_app_metrics(metriclist, sla_targets_list, ms_conn = "auto", \
             _reported_metrics_dict = \
             _msci.find_document("reported_runtime_app_VM_metric_names_" + \
                                 _username, {"_id" : _new_reported_metrics_dict["_id"]})
+
+            if not _reported_metrics_dict :
+                _reported_metrics_dict = {}
+                
             _reported_metrics_dict.update(_new_reported_metrics_dict)
 
         _msci.add_document("runtime_app_VM_" + _username, _metrics_dict)
         _msg = "Application Metrics reported successfully. Data package sent was: \"" 
         _msg += str(_metrics_dict) + "\""
         cbdebug(_msg)
-    
+
         _metrics_dict["_id"] = _metrics_dict["uuid"]
         _msci.update_document("latest_runtime_app_VM_" + _username, _metrics_dict)
         _msg = "Latest app performance data updated successfully"
@@ -859,7 +863,6 @@ def report_app_metrics(metriclist, sla_targets_list, ms_conn = "auto", \
             _msg += "updated successfully. Data package sent was: \""
             _msg += str(_reported_metrics_dict) + "\""
             cbdebug(_msg)
-
 
         if str(obj_attr_list["notification"]).lower() != "false" :
             if obj_attr_list["notification_channel"].lower() == "auto" :
@@ -873,6 +876,7 @@ def report_app_metrics(metriclist, sla_targets_list, ms_conn = "auto", \
             _osci.publish_message(obj_attr_list["cloud_name"], "VM", _channel, _message, \
                                  1, \
                                  float(obj_attr_list["timeout"]))
+
         _status = 0
         
     except _msci.MetricStoreMgdConnException, obj :

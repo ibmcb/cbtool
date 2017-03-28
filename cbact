@@ -106,7 +106,9 @@ def actuator_cli_parsing() :
     parser.add_option('--guihost', default='0.0.0.0', dest='guihost', \
                       help='GUI hostname to which to bind (default 0.0.0.0)')
 
-    parser.add_option('--guibranding', default='favicon.ico,20,http://localhost', dest='guibranding', help='What icon to use in the UI for company branding relative to the gui_files source directory')
+    parser.add_option('--guibranding', default='favicon.ico,20,http://localhost', \
+                      dest='guibranding', \
+                      help='What icon to use in the UI for company branding relative to the gui_files source directory')
 
     parser.add_option('--apiport', default='7070', dest='apiport', \
                       help='GUI Port to serve on (default 7070)')

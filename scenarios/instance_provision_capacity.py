@@ -137,7 +137,7 @@ def parse_cli() :
                        default=200, \
                        help="Maximum deployment time increase (number converted to percentage)")
 
-    _parser.add_option("--experiment_id", \
+    _parser.add_option("-e", "--experiment_id", \
                        dest="experiment_id", \
                        default="capacity_" + makeTimestamp().replace(' ','_').replace('/','_').replace(':','_'), \
                        help="Experiment identifier")
@@ -145,7 +145,7 @@ def parse_cli() :
     _parser.add_option("--fip", \
                        dest="fip", \
                        default=None, \
-                       help="Floating IP Pool to be used")
+                       help="Floating IP Pool to be used. Only applicable to OPENSTACK clouds.")
 
     _parser.add_option("--hypervisor", \
                        dest="hypervisor", \
@@ -168,6 +168,22 @@ def parse_cli() :
                        dest="lb", \
                        default=False, \
                        help="Create a load balancer associated with each instance")
+
+    _parser.add_option("--track",\
+                       action="store_true", \
+                       dest="track", \
+                       default=False, \
+                       help="Track the number of instances reported by the cloud")
+
+    _parser.add_option("-o", "--object",\
+                       dest="object", \
+                       default="AI", \
+                       help="Object type to be deployed (\"VM\" or \"AI\").")
+
+    _parser.add_option("-a", "--abstraction",\
+                       dest="abstraction", \
+                       default="pod", \
+                       help="Resource type to be deployed (\"pod\", \"replicaset\" or \"deployment\"). Only applicable to KUBERNETES clouds.")
 
     _parser.add_option("--noidle",\
                        action="store_true", \
@@ -696,18 +712,27 @@ def capacity_phase(api, options, performance_data, directory) :
 
     _duration = time() - performance_data["experiment_start"] 
 
-    _header = ["Timestamp", "Batch", "Batch Size/Width", "Total Time Spent (s)", \
-               "VM/AI Reservations", "VMs/AIs ISSUED", "VMs/AIs ARRIVED", \
-               "VMs/AIs ARRIVING", "VMs/AIs DEPARTED", "VMs/AIs DEPARTING", \
-               "VMs/AIs FAILED", \
-               #"VMs REPORTED (Cloud)", \
-               "Exp Avg Deployment Time (s)", \
-               "Batch Avg Deployment Time(s)", "Shortest Deployment Time (s)", \
-               "Longest Deployment Time (s)", "Failure Ratio (%)", "Background Workload"]
+    _header0 = [ "Timestamp", "Batch", "Batch Size/Width", "Total Time Spent (s)", \
+                 "VM/AI Reservations", "VMs/AIs ISSUED", "VMs/AIs ARRIVED", \
+                 "VMs/AIs ARRIVING", "VMs/AIs DEPARTED", "VMs/AIs DEPARTING", \
+                 "VMs/AIs FAILED", \
+                 "VMs REPORTED (Cloud)", "Exp Avg Deployment Time (s)", \
+                 "Batch Avg Deployment Time(s)", "Shortest Deployment Time (s)", \
+                 "Longest Deployment Time (s)", "Failure Ratio (%)", "Background Workload" ]
+
+    _header1 = [ "Timestamp", "Batch", "Batch Size/Width", \
+                 "VM/AI Reservations", "VMs/AIs ISSUED", "VMs/AIs ARRIVED", \
+                 "VMs/AIs ARRIVING", "VMs/AIs DEPARTED", "VMs/AIs DEPARTING", \
+                 "VMs/AIs FAILED", \
+                 "VMs REPORTED (Cloud)" ]
+
+    _header2 = [ "Timestamp", "Batch", "Total Time Spent (s)", "Exp Avg Deployment Time (s)", \
+                 "Batch Avg Deployment Time(s)", "Shortest Deployment Time (s)", \
+                "Longest Deployment Time (s)", "Failure Ratio (%)", "Background Workload" ]
 
     #_capacity_table = prettytable.PrettyTable(_header)
 
-    _stats = api.stats(options.cloud_name, "VM")
+    _stats = api.stats(options.cloud_name, "VM", "noprint")
     _vm_stats = _stats["experiment_counters"]["VM"]
 
     _failed_vms = int(_vm_stats["failed"])
@@ -735,7 +760,7 @@ def capacity_phase(api, options, performance_data, directory) :
 
         performance_data["batch" + str(_batch_nr)]["id"] = _batch_id
 
-        if _arrived_vms >= _sample_nr * options.sample_every :
+        if _arrived_vms >= int(_sample_nr) * int(options.sample_every) :
             _selected_batch_size = 1
             _comments = "sample"
             _sample_nr += 1
@@ -766,10 +791,10 @@ def capacity_phase(api, options, performance_data, directory) :
         _batch_start = int(time())        
         
         if options.obj == "VM" :
-
+            
             _deployed = int(_selected_batch_size * options.completion/100)
 
-            _target = _selected_batch_size * - _deployed
+            _target = _selected_batch_size - _deployed
 
             api.vmattach(options.cloud_name, options.role, \
                          size = options.instance_size, \
@@ -796,7 +821,7 @@ def capacity_phase(api, options, performance_data, directory) :
         _counters = api.waituntil(options.cloud_name, options.obj, "ARRIVING", \
                              _target, "decreasing", \
                              5, time_limit = _max_wait_time)
-
+                
         if _counters['experiment_counters'][options.obj]["arriving"] != str(_target) :
             _msg = "####### WARNING: " + options.obj + " ARRIVING counter still not \""
             _msg += str(_target) + " even after " + str(_max_wait_time) + " seconds!"
@@ -846,9 +871,12 @@ def capacity_phase(api, options, performance_data, directory) :
 
         _average_deployment_time = _total_average_time/_batch_nr
         
-        _msg = "####### Obtaining the values of all CB counters"
+        _msg = "####### Obtaining the values of all CB counters..."
+        print _msg,
+        _aux_start = int(time())
+        _stats = api.stats(options.cloud_name, "all", "noprint", str(options.track).lower())
+        _msg = "Done after " + str(int(time()) - _aux_start) + " seconds."
         print _msg
-        _stats = api.stats(options.cloud_name)
 
         _msg = "##### Inter-batch statistics"
         print _msg
@@ -858,6 +886,9 @@ def capacity_phase(api, options, performance_data, directory) :
         _failed_vms = int(_vm_stats["failed"])
         _arrived_vms = int(_vm_stats["arrived"])
         _issued_vms = int(_vm_stats["issued"])
+
+        if "reported" not in _vm_stats :
+            _vm_stats["reported"] = "NA"
 
         _ai_stats = _stats["experiment_counters"]["AI"]
 
@@ -888,47 +919,80 @@ def capacity_phase(api, options, performance_data, directory) :
 
         performance_data["batch" + str(_batch_nr)]["failure_ratio"] = _failure_ratio
         performance_data["batch" + str(_batch_nr)]["failed_vms"] = _failed_vms
-        
-        _temp_capacity_table = prettytable.PrettyTable(_header)
-        
-        _capacity_row = []
-        _capacity_row.append(makeTimestamp())
-        _capacity_row.append(_batch_nr)
-        _capacity_row.append(str(_selected_batch_size) + '/' + str(performance_data["batch_width"]))
-        _capacity_row.append(_batch_total)        
-        _capacity_row.append(_vm_stats["reservations"] + '/' + _ai_stats["reservations"])
-        _capacity_row.append(str(_issued_vms) + _x_mark + '/' + str(_issued_ais))        
-        _capacity_row.append(str(_arrived_vms) + '/' + str(_arrived_ais))
-        _capacity_row.append(_vm_stats["arriving"] + '/' + _ai_stats["arriving"])
-        _capacity_row.append(_vm_stats["departed"] + '/' + _ai_stats["departed"])
-        _capacity_row.append(_vm_stats["departing"] + '/' + _ai_stats["departing"])
-        _capacity_row.append(str(_failed_vms) + _x_mark + '/' + str(_failed_ais))
-#        if "reported" in _vm_stats :
-#            _capacity_row.append(_vm_stats["reported"])
-#        else :
-#            _capacity_row.append("NA")
 
-        _capacity_row.append(_average_deployment_time)            
-        _capacity_row.append(_batch_adt)                    
+        _temp_capacity_table0 = prettytable.PrettyTable(_header0)        
+        _temp_capacity_table1 = prettytable.PrettyTable(_header1)
+        _temp_capacity_table2 = prettytable.PrettyTable(_header2)
+
+        _tstamp = makeTimestamp()
+
+        _capacity0_row = []
+        _capacity0_row.append(_tstamp)
+        _capacity0_row.append(_batch_nr)
+        _capacity0_row.append(str(_selected_batch_size) + '/' + str(performance_data["batch_width"]))
+        _capacity0_row.append(_batch_total)        
+        _capacity0_row.append(_vm_stats["reservations"] + '/' + _ai_stats["reservations"])
+        _capacity0_row.append(str(_issued_vms) + _x_mark + '/' + str(_issued_ais))        
+        _capacity0_row.append(str(_arrived_vms) + '/' + str(_arrived_ais))
+        _capacity0_row.append(_vm_stats["arriving"] + '/' + _ai_stats["arriving"])
+        _capacity0_row.append(_vm_stats["departed"] + '/' + _ai_stats["departed"])
+        _capacity0_row.append(_vm_stats["departing"] + '/' + _ai_stats["departing"])
+        _capacity0_row.append(str(_failed_vms) + _x_mark + '/' + str(_failed_ais))
+        _capacity0_row.append(_vm_stats["reported"])
+        _capacity0_row.append(_average_deployment_time)            
+        _capacity0_row.append(_batch_adt)  
+                
+        _capacity1_row = []
+        _capacity1_row.append(_tstamp)
+        _capacity1_row.append(_batch_nr)
+        _capacity1_row.append(str(_selected_batch_size) + '/' + str(performance_data["batch_width"]))
+        _capacity1_row.append(_vm_stats["reservations"] + '/' + _ai_stats["reservations"])
+        _capacity1_row.append(str(_issued_vms) + _x_mark + '/' + str(_issued_ais))        
+        _capacity1_row.append(str(_arrived_vms) + '/' + str(_arrived_ais))
+        _capacity1_row.append(_vm_stats["arriving"] + '/' + _ai_stats["arriving"])
+        _capacity1_row.append(_vm_stats["departed"] + '/' + _ai_stats["departed"])
+        _capacity1_row.append(_vm_stats["departing"] + '/' + _ai_stats["departing"])
+        _capacity1_row.append(str(_failed_vms) + _x_mark + '/' + str(_failed_ais))
+        _capacity1_row.append(_vm_stats["reported"])
+
+        _capacity2_row = []
+        _capacity2_row.append(_tstamp)
+        _capacity2_row.append(_batch_nr)
+        _capacity2_row.append(_batch_total)                
+        _capacity2_row.append(_average_deployment_time)            
+        _capacity2_row.append(_batch_adt)                    
         
-        if _fastest_vm != 10000000 :            
-            _capacity_row.append(_fastest_vm)
+        if _fastest_vm != 10000000 :          
+            _capacity0_row.append(_fastest_vm)              
+            _capacity2_row.append(_fastest_vm)
         else :
-            _capacity_row.append("NA")
+            _capacity0_row.append("NA")
+            _capacity2_row.append("NA")
             
-        if _slowest_vm != 0 :                                    
-            _capacity_row.append(_slowest_vm)
+        if _slowest_vm != 0 :                 
+            _capacity0_row.append(_slowest_vm)
+            _capacity2_row.append(_slowest_vm)
         else :
-            _capacity_row.append("NA")
-            
-        _capacity_row.append(_failure_ratio * 100)
-        _capacity_row.append(options.bgwks_state)
+            _capacity0_row.append("NA")            
+            _capacity2_row.append("NA")
+
+        _capacity0_row.append(_failure_ratio * 100)
+        _capacity0_row.append(options.bgwks_state)            
+        _capacity2_row.append(_failure_ratio * 100)
+        _capacity2_row.append(options.bgwks_state)
                     
         #_capacity_table.add_row(_capacity_row)
 
-        _temp_capacity_table.add_row(_capacity_row)
+        _temp_capacity_table0.add_row(_capacity0_row)
 
-        print _temp_capacity_table
+        _temp_capacity_table1.add_row(_capacity1_row)
+
+        _temp_capacity_table2.add_row(_capacity2_row)
+
+        print _temp_capacity_table1
+        print '\n'
+
+        print _temp_capacity_table2
         print '\n'
 
         if not os.path.exists(directory) :  
@@ -937,10 +1001,10 @@ def capacity_phase(api, options, performance_data, directory) :
         _fn = directory + "/capacity.txt"
         if _batch_nr == 1 :
             _fh = open(_fn, 'w')
-            _fh.write(str('\n'.join(_temp_capacity_table.get_string().split('\n')[0:-1])) + '\n')
+            _fh.write(str('\n'.join(_temp_capacity_table0.get_string().split('\n')[0:-1])) + '\n')
         else :
             _fh = open(_fn, "a")
-            _fh.write(str('\n'.join(_temp_capacity_table.get_string().split('\n')[2:4])) + '\n')
+            _fh.write(str('\n'.join(_temp_capacity_table0.get_string().split('\n')[2:4])) + '\n')
         _fh.close()
 
         if _average_deployment_time > _max_average_deployment_time :
@@ -950,6 +1014,16 @@ def capacity_phase(api, options, performance_data, directory) :
             print _msg
             send_text(options, _msg)            
             _experiment_end = True
+
+        if _vm_stats["reported"] != "NA" :
+            if int(_vm_stats["reported"]) < int(_vm_stats["reservations"]) :
+                _msg = "##### The number of VMs reported by the cloud  (" 
+                _msg += str(_vm_stats["reported"]) + ") is smaller than the number"
+                _msg += " of reservations (" + str(_vm_stats["reservations"])
+                _msg += "). Ending the experiment...."
+                print _msg
+                send_text(options, _msg)            
+                _experiment_end = True                
 
         if _failure_ratio > _max_failure_ratio :
             _msg = "##### The failure ratio (" + str(_failure_ratio) + ") for VMs/Containers is "
@@ -1101,8 +1175,13 @@ def main() :
         print "A cloud name (\"-c\") is mandatory"
         exit(1)
 
-    _options.obj = "AI"
-        
+    _options.obj = _options.object.upper() 
+    
+    if _options.obj != "AI" and _options.obj != "VM" :
+        _msg = "ERROR: Only \"AI\" or \"VM\" objects can be deployed"
+        print _msg
+        exit(2)
+                
     api = connect_to_cb(_options.cloud_name)
 
     _cloud_model = api.cldlist()[0]["model"]
@@ -1147,7 +1226,7 @@ def main() :
 
     if _options.lb :
         _msg = "# Instances will have load balancers associated to it"
-        print _msg        
+        print _msg
         api.cldalter(_options.cloud_name, "vm_defaults", "create_lb", "True")     
         api.cldalter(_options.cloud_name, "ai_defaults", "create_lb", "True")             
     else :
@@ -1157,15 +1236,32 @@ def main() :
     api.cldalter(_options.cloud_name, "vm_defaults", "update_attempts", _options.update_attempts)
     api.cldalter(_options.cloud_name, "vm_defaults", "update_frequency", _options.update_frequency)
     api.cldalter(_options.cloud_name, "vm_defaults", "leave_instance_on_failure", "true")    
-    
+
+    api.cldalter(_options.cloud_name, "ai_defaults", "update_attempts", _options.update_attempts)
+    api.cldalter(_options.cloud_name, "ai_defaults", "update_frequency", _options.update_frequency)
+        
     api.cldalter(_options.cloud_name, "admission_control", "vm_max_reservations", 75000)
 
+    if _cloud_model == "kub" :
+        _msg = "# This is a Kubernetes cloud, setting the parameter ABSTRACTION on [VM_DEFAULTS : KUB_CLOUDCONFIG]"
+        _msg += " to \"" + _options.abstraction + "\""
+        print _msg
+        api.cldalter(_options.cloud_name, "vm_defaults", "abstraction", _options.abstraction)        
+
     if _options.hypervisor.lower() == "fake" or _options.create_only :
+
+        if _options.create_only :        
+            _msg = "# Option \"create_only\" detected, will disable any connectivity test against the instances"
+            print _msg        
+            
         api.cldalter(_options.cloud_name, "vm_defaults", "check_boot_complete", "wait_for_0")
         api.cldalter(_options.cloud_name, "vm_defaults", "transfer_files", "false")
         api.cldalter(_options.cloud_name, "vm_defaults", "run_generic_scripts", "false")
-        api.cldalter(_options.cloud_name, "vm_defaults", "update_frequency", "2")
-
+        api.cldalter(_options.cloud_name, "vm_defaults", "check_ssh", "false")        
+        api.cldalter(_options.cloud_name, "vm_defaults", "update_frequency", "1")
+        api.cldalter(_options.cloud_name, "ai_defaults", "run_application_scripts", "false")
+        api.cldalter(_options.cloud_name, "ai_defaults", "dont_start_load_manager", "true")
+                
     if _options.noidle :
         _msg = "# Option \"noidle\" detected, will deploy active workloads"
         print _msg
@@ -1178,49 +1274,15 @@ def main() :
     _type_sut = api.typeshow(_options.cloud_name, _options.fgwk)["sut"]
     _instances_per_tenant, _roles = enumerate_vms_in_vapp(_type_sut)
 
+    _mt_script = None
     if _options.multitenant :
-
-        _mgt_info = api.cldshow(_options.cloud_name, "mon_defaults")
-        _mgt_metrics_header = _mgt_info["vm_management_metrics_header"] + ','
-        _host_runtime_metrics_header = _mgt_info["host_runtime_os_metrics_header"]
+        _mt_script = _cb_base_dir + "/scenarios/scripts/" + _cloud_model + "_multitenant.sh"
 
         if _cloud_model == "osk" :
-            _mt_script = _cb_base_dir + "/scenarios/scripts/openstack_multitenant.sh"
-             
-            _msg = "# Instances will run the script \"" + _mt_script + "\" in order to "
-            _msg += "create a new tenant/user/network/subnet/router before attachment"
-            print _msg
-            
-            if not _mgt_metrics_header.count("osk_001_tenant_creation_time") :
-                _mgt_metrics_header += ','.join([ "osk_001_tenant_creation_time", \
-                                                  "osk_002_quota_update_time", \
-                                                  "osk_003_user_creation_time", \
-                                                  "osk_004_security_group_update_time", \
-                                                  "osk_005_keypair_creation_time", \
-                                                  "osk_006_net_creation_time", \
-                                                  "osk_007_subnet_creation_time", \
-                                                  "osk_008_router_creation_time", \
-                                                  "osk_009_router_attachment", \
-                                                  "osk_010_lb_creation", \
-                                                  "osk_011_authenticate_time", \
-                                                  "osk_012_check_existing_instance_time", \
-                                                  "osk_013_get_flavors_time", \
-                                                  "osk_014_get_imageid_time", \
-                                                  "osk_015_get_netid_time", \
-                                                  "osk_016_create_volume_time", \
-                                                  "osk_017_lb_member_creation", \
-                                                  "osk_018_instance_scheduling_time", \
-                                                  "osk_018_port_creation_time", \
-                                                  "osk_019_instance_creation_time", \
-                                                  "osk_020_create_fip_time", \
-                                                  "osk_021_attach_fip_time", \
-                                                  "osk_022_instance_reachable"])
-                            
-                api.cldalter(_options.cloud_name, \
-                             "mon_defaults", \
-                             "vm_management_metrics_header", \
-                             _mgt_metrics_header)
-    
+
+            _mgt_info = api.cldshow(_options.cloud_name, "mon_defaults")
+            _host_runtime_metrics_header = _mgt_info["host_runtime_os_metrics_header"]
+                
             if not _host_runtime_metrics_header.count("procstat") :
                 _host_runtime_metrics_header += ',' + _mgt_info["cloud_base_m"]
                 _host_runtime_metrics_header += ',' + _mgt_info["openstack_m"]
@@ -1228,28 +1290,11 @@ def main() :
                 api.cldalter(_options.cloud_name, \
                              "mon_defaults", \
                              "host_runtime_os_metrics_header", \
-                             _host_runtime_metrics_header)
+                             _host_runtime_metrics_header)           
 
-        if _cloud_model == "pdm" :
-            _mt_script = _cb_base_dir + "/scenarios/scripts/docker_multitenant.sh"            
-            
-            _msg = "# Instances will run the script \"" + _mt_script + "\" in order to "
-            _msg += "create a new network before attachment"
-            print _msg            
-
-            if not _mgt_metrics_header.count("pdm_001_net_creation_time") :
-                _mgt_metrics_header += ','.join([ "pdm_001_net_creation_time", \
-                                                  "pdm_002_create_volume_time", \
-                                                  "pdm_003_create_host_config_time", \
-                                                  "pdm_004_create_docker_time", \
-                                                  "pdm_005_start_docker_time", \
-                                                  "pdm_006_instance_creation_time", \
-                                                  "pdm_007_instance_reachable"])
-
-                api.cldalter(_options.cloud_name, \
-                             "mon_defaults", \
-                             "vm_management_metrics_header", \
-                             _mgt_metrics_header)
+        _msg = "# Instances will run the script \"" + _mt_script + "\" in order to "
+        _msg += "create a new tenant/user/network/subnet/router before attachment"
+        print _msg
 
         api.cldalter(_options.cloud_name, "vm_defaults", "execute_script_name", _mt_script)
         api.cldalter(_options.cloud_name, "ai_defaults", "execute_script_name", _mt_script)                
@@ -1337,12 +1382,8 @@ def main() :
     _msg = "# Performance metrics will be collected in .csv files." 
     print _msg
     _url = api.monextract(_options.cloud_name, "all", "all")
-    
-    _msg = "Data is available at url \"" + _url + "\". \nTo automatically generate"
-    _msg += " plots, just run \"" + _cb_base_dir + "/util/plot/cbplotgen.R "
-    _msg += "-d " + _cb_data_dir + " -e " + str(_experiment_id)
-    _msg += " -c -p -r -l -a\""
-    print _msg
+
+    create_plots(_options, api, _cb_base_dir, _cb_data_dir, _experiment_id, _url)
 
     if _options.cleanup :
         _start = int(time())

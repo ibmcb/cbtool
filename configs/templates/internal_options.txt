@@ -96,7 +96,7 @@ AIDRS = BYUSERNAME, BYPATTERN
 VMCRS = BYUSERNAME, BYPATTERN, BYSCOPE
 FIRS = BYUSERNAME, BYPATTERN, BYSCOPE
 MANDATORY_TAGS = name, cloud_hostname, cloud_ip
-CLOUD_ATTRIBUTES = name, model, description, all, username, client_should_refresh, start_time, all_vmcs_attached, regression
+CLOUD_ATTRIBUTES = name, model, description, all, username, client_should_refresh, start_time, all_vmcs_attached, regression, walkthrough
 GET_VM_LIST = $False
 
 [ADMISSION_CONTROL]
@@ -108,6 +108,8 @@ VMCRS_MAX_RESERVATIONS = 100000
 FIRS_MAX_RESERVATIONS = 100000
 
 [VMC_DEFAULTS]
+BASE_DIR = $MAIN_BASE_DIR
+GENERATED_CONFIGURATIONS_DIR=$MAIN_BASE_DIR/configs/generated
 USERNAME = $MAIN_USERNAME
 CREDENTIALS = $EMPTY
 INITIAL_VMCS = $EMPTY
@@ -129,6 +131,7 @@ DETACH_PARALLELISM = 20
 DISCOVER_HOSTS = $False
 MIGRATE_SUPPORTED = $False
 PROTECT_SUPPORTED = $False
+FORCE_WALKTHROUGH = $False
 ADDITIONAL_DISCOVERY = $EMPTY
 
 [VM_DEFAULTS]
@@ -136,6 +139,7 @@ USERNAME = $MAIN_USERNAME
 UPDATE_FREQUENCY = $MAIN_UPDATE_FREQUENCY
 UPDATE_ATTEMPTS = $MAIN_UPDATE_ATTEMPTS
 TIMEOUT = $MAIN_TIMEOUT
+GENERATED_CONFIGURATIONS_DIR=$MAIN_BASE_DIR/configs/generated
 RECREATE_ATTEMPTS = 1
 NOTIFICATION = $MAIN_NOTIFICATION
 NOTIFICATION_CHANNEL = auto
@@ -143,7 +147,9 @@ LOCAL_DIR_NAME = cbtool
 REMOTE_DIR_NAME = cbtool
 RUN_GENERIC_SCRIPTS = $True
 TRANSFER_FILES = $True
+CHECK_SSH = $True
 DEBUG_REMOTE_COMMANDS = $False
+FORCE_MSG_PRINT = $False
 STICKY_APP_STATUS = $False
 # Any VM which contains the string "client" on his role name will be created
 # on the "LG" pool, if this pools exists.
@@ -179,10 +185,18 @@ SLA_PROVISIONING_ABORT = $False
 SLA_RUNTIME = ok
 ERRORS = no
 ABORT = $False
+BUILD = $False
+BOOT_FROM_VOLUME = auto
 COMMENTS = $Empty
-JUMPHOST_BASE_NAME =  cb-jumphost
+PROV_CLOUD_PORT = 22
+RUN_CLOUD_PORT = 22
+CLOUD_MAC = NA
+CLOUD_VV_UUID = None
+CLOUD_VM_UUID = None
+JUMPHOST_BASE_NAME = cb-jumphost
 JUMPHOST_LOGIN = auto
 JUMPHOST_NETNAMES = all
+TIME_BREAKDOWN_STEP = 1
 
 [AI_DEFAULTS]
 USERNAME = $MAIN_USERNAME
@@ -205,6 +219,12 @@ RUN_APPLICATION_SCRIPTS = $True
 DEBUG_REMOTE_COMMANDS = $False
 DONT_START_LOAD_MANAGER = $False
 CREDENTIALS_DIR = $MAIN_BASE_DIR/credentials
+PROPAGATED_ATTRIBUTES = netname, imageid1, login, resource_limits, userdata, image_prefix, image_suffix, 
+PROPAGATED_ATTRIBUTES += cloud_vv, cloud_vv_type, boot_from_volume, avalability_zone, compute_node, 
+PROPAGATED_ATTRIBUTES += data_dir, data_fstyp, data_size, data_fileserver_ip, data_fileserver_path, 
+PROPAGATED_ATTRIBUTES += extra_ports, extra_devices, ports_base, extra_ports_base, privileged, 
+PROPAGATED_ATTRIBUTES += sla_provisioning_target, ports_base, namespace, abstraction
+TIME_BREAKDOWN_STEP = 1
 # Most clouds don't use (or allow access to) libvirt,
 # so, enable this only in the right clouds.
 DONT_START_QEMU_SCRAPER = $True
@@ -386,8 +406,8 @@ OPENSTACK_M += procstat_nova-novncproxy_cpu, procstat_nova-novncproxy_mem,
 OPENSTACK_M += procstat_nova-scheduler_cpu, procstat_nova-scheduler_mem
  
 APP_M = app_load_id, app_load_profile, app_load_level, app_datagen_size, 
-APP_M += app_datagen_time, app_throughput, app_latency, app_bandwidth, 
-APP_M += app_errors, app_completion_time, app_sla_runtime
+APP_M += app_datagen_time, app_throughput, app_latency, app_loss, app_jitter,
+APP_M += app_bandwidth, app_errors, app_completion_time, app_sla_runtime
 # Actual layout (do not prefix these variables with $)
 VM_RUNTIME_OS_METRICS_HEADER = TSTAMP_OS, VM_ID2, CPU_M, MEM_M, SWAP_M, NET_M, DSK_M
 VM_RUNTIME_APP_METRICS_HEADER = TSTAMP_APP, VM_ID2, APP_M

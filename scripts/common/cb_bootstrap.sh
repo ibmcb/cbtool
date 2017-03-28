@@ -51,6 +51,15 @@ function linux_distribution {
     
 }
 
+function blowawaypids {
+    pids="$(pgrep -f "$1")"
+    for pid in $pids ; do
+        if [ $pid != $$ ] && [ $pid != $PPID ] ; then
+            sudo kill -9 $pid
+        fi
+    done
+}
+
 # ################################################################
 # Install a list of packages. Support multiple formats and multiple
 # packages managers/formats.

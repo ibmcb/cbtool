@@ -4,6 +4,9 @@
 [AI_TEMPLATES : IBMDB2_TRADELITE]
 DESCRIPTION = TBD
 SUT = client_daytrader->was->db2
+LOAD_BALANCER_SUPPORTED = $True
+RESIZE_SUPPORTED = $True
+REGENERATE_DATA = $True
 LOAD_GENERATOR_ROLE = client_daytrader
 LOAD_MANAGER_ROLE = client_daytrader
 METRIC_AGGREGATOR_ROLE = client_daytrader
@@ -14,6 +17,7 @@ LOAD_BALANCER_TARGET_URL = daytrader
 LOAD_BALANCER_TARGET_CHILDREN = 2
 LOAD_BALANCER_PORT = 9080
 LOAD_BALANCER_URL = daytrader
+CATEGORY = transactional
 REPORTED_METRICS = throughput,latency,datagen_time,datagen_size,completion_time,quiescent_time
 
 # This only has effect if the parameter LOAD_BALANCER is set to "$True"

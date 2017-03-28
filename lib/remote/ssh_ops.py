@@ -252,14 +252,17 @@ def repeated_ssh(processid, types, tags, ips, logins, passwds, keys, commands, \
     return True
 
 
-def get_ssh_key(pub_key_fn, fptype = "common") :
+def get_ssh_key(pub_key_fn, fptype = "common", read_from_file = True) :
     '''
     TBD
     '''
 
-    _fh = open(pub_key_fn, 'r')
-    _pub_key = _fh.read()
-    _fh.close()
+    if read_from_file :
+        _fh = open(pub_key_fn, 'r')
+        _pub_key = _fh.read()
+        _fh.close()
+    else :
+        _pub_key = pub_key_fn
 
     _key_type = False
     _key_contents = False
@@ -275,11 +278,11 @@ def get_ssh_key(pub_key_fn, fptype = "common") :
         _fmsg = "ERROR: unknown format for pubkey file. The pubkey has to be in"
         _fmsg += " the format \"<KEY-TYPE> <KEY-CONTENTS> [<KEY-USERNAME>]"
         return _fmsg, False, False
-    
-    if fptype == "common" :
-        _key_fingerprint = key2fp(_key_contents)
+
+    if fptype == "Amazon Elastic Compute Cloud" or fptype == "EC2" or fptype == "ec2" :
+        _key_fingerprint = key2ec2fp(pub_key_fn)    
     else :
-        _key_fingerprint = key2ec2fp(pub_key_fn)
+        _key_fingerprint = key2fp(_key_contents)
                 
     return _key_type, _key_contents, _key_fingerprint
 

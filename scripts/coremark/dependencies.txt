@@ -1,5 +1,5 @@
 ### START - Dependency installation order ###
-coremark-order = 50
+coremark-order = 90
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -21,11 +21,11 @@ coremark-ver = ANY
 ### END - Dependency versions ###
 
 ### START - Dependency URLs ###
-common-coremark-x86_64-urls-man = http://REPO_ADDR/coremark
+
 ### END - Dependency URLs ###
 
 ### START -  Dependency and method-specific command lines ###
-common-coremark-preinstall-man = mkdir -p ~/3rd_party/; wget -N -P ~/3rd_party/ URL/coremark_v1.0.tar; cd ~/3rd_party/; tar -xf ~/3rd_party/coremark_v1.0.tar
-common-coremark-install-man = sudo make
-common-coremark-postinstall-man = mv ~/3rd_party/coremark_v1.0 ~/3rd_party/_coremark-1.0; rm ~/3rd_party/coremark_v1.0.tar
+
+# AUTOMATICALLY EXTRACTED FROM DOCKERFILE ON ../../docker/workload/
+
 ### END -  Dependency and method-specific command lines ###

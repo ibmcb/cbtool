@@ -1,1 +1,1 @@
-Usage: stats <cloud name>
+Usage: stats <cloud name> <object name> [print|noprint] [false|true]

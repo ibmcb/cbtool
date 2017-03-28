@@ -1,8 +1,7 @@
 ### START - Dependency installation order ###
-java-order = 50
-java-home-order = 51
-hadoop-order = 52
-hibench-order = 53
+java-order = 82
+hadoop-order = 83
+hibench-order = 84
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -13,44 +12,28 @@ hibench-order = 53
 # pip = python pip utility
 # man = "manual"
 java-install = pm
-java-home-install = man
 hadoop-install = man
 hibench-install = git
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
 java-configure = java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g' | sed 's/-internal//g'
-java-home-configure = cat ~/.bashrc | grep -c openjdk
-hadoop-configure = . .bashrc; ~/hadoop-1.2.1/bin/hadoop version | head -n 1 | cut -d ' ' -f 2
+hadoop-configure = if [[ -z $JAVA_HOME ]]; then ls ~/hadoop-2.3.0/bin/hadoop; else ~/hadoop-2.3.0/bin/hadoop version | head -n 1 | cut -d ' ' -f 2; fi
 hibench-configure = ls -la ~/HiBench
 ### END - Tests ###
 
 ### START - Dependency versions ###
 java-ver = 1.6
-java-home-ver = 1.0
-hadoop-ver = 1.0
+hadoop-ver = ANY
 hibench-ver = ANY
 ### END - Dependency versions ###
 
 ### START - Dependency URLs ###
-common-hadoop-x86_64-urls-man = http://www.carfab.com/apachesoftware/hadoop/common/hadoop-1.2.1/hadoop-1.2.1.tar.gz
 
-#common-hadoop-x86_64-urls-man = http://www.carfab.com/apachesoftware/hadoop/common/hadoop-2.3.0/hadoop-2.3.0.tar.gz
-
-common-hibench-urls-git = https://github.com/ibmcb
 ### END - Dependency URLs ###
 
 ### START -  Dependency and method-specific command lines ###
-rhel-java-install-pm = package_install java-1.7.0-openjdk
-fedora-java-install-pm = package_install java-1.7.0-openjdk
-ubuntu-java-install-pm = package_install openjdk-6-jdk; package_install openjdk-7-jdk
-ubuntu-java-postinstall-pm = export JAVAALT=$(sudo update-java-alternatives -l 2>&1 | grep java | sort -r | head -n 1 | cut -d ' ' -f 1); sudo update-java-alternatives -s $JAVAALT
 
-common-java-home-install-man = echo "export JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre" >> ~/.bashrc
+# AUTOMATICALLY EXTRACTED FROM DOCKERFILE ON ../../docker/workload/
 
-common-hadoop-preinstall-man = wget -N -P ~ URL
-common-hadoop-install-man = cd ~; tar -xzf ~/hadoop*.gz
-
-common-hibench-preinstall-git = cd ~; git clone URL/HiBench.git;
-common-hibench-install-git = cd ~/HiBench; git checkout dev
 ### END -  Dependency and method-specific command lines ###

@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 
 #/*******************************************************************************
@@ -12,9 +13,7 @@
 
 '''
     Created on Jan 7, 2013
-
     vCloud Director Object Operations Library
-
     @author: Daniel R. Bowers
 '''
 
@@ -25,19 +24,28 @@ class VcdCmds(LibcloudCmds) :
     @trace
     def __init__ (self, pid, osci, expid = None) :
         LibcloudCmds.__init__(self, pid, osci, expid = expid, \
-                              description = "VCLOUD", \
-                              num_credentials = 1, \ # '1' is for the password. The username is assumed to be the first parameter and is included by default as 'tenant' below.
-                              use_sizes = False,
-                              use_locations = False,
-                              verify_ssl = False
+                              provider = "VCLOUD", \
+                              num_credentials = 1, \
+                              use_sizes = False, \
+                              use_locations = False, \
+                              verify_ssl = False, \
                               extra = {"foo" : "bar"} \
                              )
+
+    # num_credentials = 1: '1' is for the password. The username is assumed to be the first parameter and is included by default as 'tenant' below.
 
     # All clouds based on libcloud should define this function.
     # It performs the initial libcloud setup.
     @trace
     def get_libcloud_driver(self, libcloud_driver, tenant, password) :
         return libcloud_driver(tenant, password, self.access, api_version = '1.5')
+
+    @trace
+    def get_description(self) :
+        '''
+        TBD
+        '''
+        return "VMware VCloud"
 
     @trace
     def pre_vmcreate(self, obj_attr_list, extra) :

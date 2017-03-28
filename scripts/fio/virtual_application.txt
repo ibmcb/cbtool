@@ -5,30 +5,31 @@
 [AI_TEMPLATES : FIO]
 # Attributes MANDATORY for all Virtual Applications
 SUT = fio 
+LOAD_BALANCER_SUPPORTED = $False
+RESIZE_SUPPORTED = $True
+REGENERATE_DATA = $True
 LOAD_GENERATOR_ROLE = fio
-RESIZE_SUPPORTED = $False
-REGENERATE_DATA = $False 
 LOAD_MANAGER_ROLE = fio
 METRIC_AGGREGATOR_ROLE = fio
 CAPTURE_ROLE = fio
 LOAD_PROFILE = default
 LOAD_LEVEL = 1
-LOAD_DURATION = 1
+LOAD_DURATION = 30
+CATEGORY = synthetic
 REPORTED_METRICS = latency, throughput, write_latency, write_throughput, read_latency, read_troughput, errors, completion_time, quiescent_time
 
 # VApp-specific MANDATORY attributes
-DESCRIPTION = Deploys an SINGLE VM and runs the fio.\n
-DESCRIPTION +=- LOAD_PROFILE possible values: "default" (single VM).\n
+DESCRIPTION = Deploys a SINGLE VM and runs the \"fio\" synthetic (disk I/O) benchmark.\n
+DESCRIPTION +=- LOAD_PROFILE possible values: "default".\n
 DESCRIPTION +=- LOAD_LEVEL meaning: number of random IO (read or write) jobs.\n 
 DESCRIPTION +=- LOAD_DURATION meaning: not used, a run ends when the problem is solved.\n
-DESCRIPTION +=- COMMENT: For clustered (multi-VM) linpack execution, please use HPCC.
-FIO_SETUP1 = cb_setup_storage.sh
-START = cb_start_fio.sh
+FIO_SETUP1 = cb_start_fio.sh
+START = cb_fio.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
-FIO_DATA_DIR=/fiotest
-FIO_DATA_FSTYP=ext4
-FIO_DATA_VOLUME=NONE
+FIO_DATA_DIR = /fiotest
+FIO_DATA_FSTYP = ext4
+FIO_DATA_VOLUME = NONE
 FIO_BS = 64k
 FIO_FILE_SIZE = 128m
 FIO_RATE_IOPS = 100

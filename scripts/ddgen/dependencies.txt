@@ -1,5 +1,5 @@
 ### START - Dependency installation order ###
-dd-order = 50
+dd-order = 89
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -21,5 +21,7 @@ dd-ver = ANY
 ### END - Dependency versions ###
 
 ### START -  Dependency and method-specific compmd lines ###
-common-dd-install-pm = package_install coreutuils
+
+# AUTOMATICALLY EXTRACTED FROM DOCKERFILE ON ../../docker/workload/
+
 ### END -  Dependency and method-specific compmd lines ###

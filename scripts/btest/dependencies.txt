@@ -1,6 +1,5 @@
 ### START - Dependency installation order ###
-sshconfig-order = 50
-btest-order = 51
+btest-order = 90
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -10,27 +9,19 @@ btest-order = 51
 # git = git clone using above giturl
 # pip = python pip utility
 # man = "manual"
-sshconfig-install = man
 btest-install = man
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
-sshconfig-configure = cat ~/.ssh/config | grep StrictHostKeyChecking && cat ~/.ssh/config | grep UserKnownHostsFile
-btest-configure = ls -la 3RPARTYDIR/btest
+btest-configure = btest -V
 ### END - Tests ###
 
 ### START - Dependency versions ###
-sshconfig-ver = ANY
 btest-ver = ANY
 ### END - Dependency versions ###
 
 ### START -  Dependency and method-specific command lines ###
-common-sshconfig-preinstall-man = mkdir -p ~/.ssh; chmod 700 ~/.ssh
-common-sshconfig-install-man = echo "StrictHostKeyChecking=no" >> ~/.ssh/config && echo -e "UserKnownHostsFile=/dev/null" >> ~/.ssh/config && chmod 600 ~/.ssh/config
 
-ubuntu-btest-preinstall-man = package_install libaio-dev libaio1
-fedora-btest-preinstall-man = package_install libaio-devel libaio
-rhel-btest-preinstall-man = package_install libaio-devel libaio
-common-btest-install-man = wget -N -P 3RPARTYDIR http://downloads.sourceforge.net/project/btest/Version-161/Src/btest-161.tar.gz
-common-btest-postinstall-man = cd 3RPARTYDIR; tar -zxf btest-161.tar.gz; mv btest-161 btest; cd btest/; make
+# AUTOMATICALLY EXTRACTED FROM DOCKERFILE ON ../../docker/workload/
+
 ### END -  Dependency and method-specific command lines ###

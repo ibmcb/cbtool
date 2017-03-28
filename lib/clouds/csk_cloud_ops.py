@@ -1068,8 +1068,9 @@ class CskCmds(CommonCloudFunctions) :
 
                 obj_attr_list["mgt_102_capture_request_sent"] = _time_mark_crs - obj_attr_list["mgt_101_capture_request_originated"]
 
-                obj_attr_list["captured_image_name"] = obj_attr_list["imageid1"] + "_"
-                obj_attr_list["captured_image_name"] += str(obj_attr_list["mgt_101_capture_request_originated"])
+                if obj_attr_list["captured_image_name"] == "auto" :
+                    obj_attr_list["captured_image_name"] = obj_attr_list["imageid1"] + "_"
+                    obj_attr_list["captured_image_name"] += str(obj_attr_list["mgt_101_capture_request_originated"])
 
                 _msg = obj_attr_list["name"] + " capture request sent. "
                 _msg += "Will capture with image name \"" + obj_attr_list["captured_image_name"] + "\"."                 

@@ -1,5 +1,6 @@
 ### START - Dependency installation order ###
-sshconfig-order = 50
+haproxy-order = 70
+sshconfig-order = 71
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -10,18 +11,21 @@ sshconfig-order = 50
 # pip = python pip utility
 # man = "manual"
 sshconfig-install = man
+haproxy-install = pm
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
+haproxy-configure = sudo haproxy -v
 sshconfig-configure = cat ~/.ssh/config | grep StrictHostKeyChecking && cat ~/.ssh/config | grep UserKnownHostsFile 
-
 ### END - Tests ###
 
 ### START - Dependency versions ###
+haproxy-ver = ANY
 sshconfig-ver = ANY
 ### END - Dependency versions ###
 
 ### START -  Dependency and method-specific command lines ###
-common-sshconfig-preinstall-man = mkdir -p ~/.ssh; chmod 700 ~/.ssh
-common-sshconfig-install-man = echo "StrictHostKeyChecking=no" >> ~/.ssh/config && echo -e "UserKnownHostsFile=/dev/null" >> ~/.ssh/config && chmod 600 ~/.ssh/config
+
+# AUTOMATICALLY EXTRACTED FROM DOCKERFILE ON ../../docker/workload/
+
 ### END -  Dependency and method-specific command lines ###

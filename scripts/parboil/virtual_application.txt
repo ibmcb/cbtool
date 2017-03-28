@@ -1,0 +1,52 @@
+# Parameters for this Virtual Application (Application Instance - AI) type should
+# be set on YOUR private configuration configuration file, including the ones 
+# commented.
+
+[AI_TEMPLATES : PARBOIL]
+
+# Attributes MANDATORY for all Virtual Applications
+SUT = parboil
+LOAD_BALANCER_SUPPORTED = $False
+RESIZE_SUPPORTED = $False
+REGENERATE_DATA = $True
+LOAD_GENERATOR_ROLE = parboil
+LOAD_MANAGER_ROLE = parboil
+METRIC_AGGREGATOR_ROLE = parboil
+CAPTURE_ROLE = parboil
+LOAD_PROFILE = histo
+LOAD_LEVEL = 1
+LOAD_DURATION = 10
+CATEGORY = hpc
+REPORTED_METRICS = io_time,kernel_time,driver_time,compute_time,wall_time,completion_time,quiescent_time
+
+# VApp-specific MANDATORY attributes
+DESCRIPTION = Deploys a single VM, which can then run any of the "Parboil" benchmarks\n
+DESCRIPTION += from the University of Illionis. This set of "throughput computing"\n
+DESCRIPTION += applications are useful for studying the performance of computing\n
+DESCRIPTION += architecture and compilers.\n
+DESCRIPTION +=- LOAD_PROFILE possible values: histo, bfs, stencil, mri-q, \n
+DESCRIPTION += mri-gridding, lbm, tpacf, sad, spmv, sgemm, cutcp (with "histo"
+DESCRIPTION += as the default profile). IMPORTANT: you can indicate the binary\n
+DESCRIPTION += version (e.g., threaded, opencl_base, omp_base, cuda_base, base,\n
+DESCRIPTION += cuda-base, cuda, opencl_nvidia) by appending it to the name,\n
+DESCRIPTION += separated by a colon (e.g., histo:cuda).
+DESCRIPTION +=- LOAD_LEVEL meaning: size of problem (due to the need for numeric\n
+DESCRIPTION += values on CBTOOL, these numbers are mapped to profile-specific\n
+DESCRIPTION += , e.g., "1" for "default size" in "histo" and "2+" for "large size").\n 
+DESCRIPTION +=- LOAD_DURATION meaning: not used, a run ends when the \n
+DESCRIPTION += computational problem is solved.\n
+PARBOIL_SETUP1 = cb_setup_parboil.sh
+START = cb_parboil.sh
+
+# VApp-specific modifier parameters. Commented attributes imply default values assumed
+PARBOIL_DIR = ~/parboil
+CUDA_PATH = /usr/local/cuda
+CUDA_LIB_PATH = /usr/local/cuda/lib64
+OPENCL_PATH = /usr/local/cuda
+OPENCL_LIB_PATH = /usr/lib
+
+# Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
+#SYNC_COUNTER_NAME = synchronization_counter
+#CONCURRENT_AIS = 2
+#SYNC_CHANNEL_NAME = synchronization_channel
+#RUN_COUNTER_NAME = none

@@ -16,7 +16,7 @@
 # limitations under the License.
 #/*******************************************************************************
 
-source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_filebench_common.sh
+source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
 LOAD_PROFILE=$1
 LOAD_LEVEL=$2
@@ -32,6 +32,11 @@ fi
 
 FILEBENCH_IP=`get_ips_from_role filebench`
 
+FB_BINARY_NAME=filebench
+FILEBENCH_DATA_DIR=$(get_my_ai_attribute_with_default filebench_data_dir /fbtest)
+FILEBENCH_DATA_FSTYP=$(get_my_ai_attribute_with_default filebench_data_fstyp ext4)
+FILEBENCH_DATA_VOLUME=$(get_my_ai_attribute_with_default filebench_data_volume NONE)
+
 filebench=`which ${FB_BINARY_NAME}`
 
 cd ~
@@ -41,10 +46,11 @@ PERSONALITY_FILE=`mktemp`
 
 cat ${PERSONALITY_TEMPLATE} > ${PERSONALITY_FILE}
 
-sed -i "s/FILEBENCH_DATA_DIR/$FILEBENCH_DATA_DIR/g" ${PERSONALITY_FILE}
-sed -i "s/LOAD_DURATION/$LOAD_DURATION/g" ${PERSONALITY_FILE}
+sed -i "s^FILEBENCH_DATA_DIR^$FILEBENCH_DATA_DIR^g" ${PERSONALITY_FILE}
+sed -i "s^LOAD_DURATION^$LOAD_DURATION^g" ${PERSONALITY_FILE}
+sed -i "s^usage \"^#usage \"^g" ${PERSONALITY_FILE}
 
-CMDLINE="${filebench} -f ${PERSONALITY_FILE}"
+CMDLINE="sudo ${filebench} -f ${PERSONALITY_FILE}"
 
 syslog_netcat "Benchmarking filebench SUT: FILEBENCH=${FILEBENCH_IP} with LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID} and LOAD_PROFILE=${LOAD_PROFILE})"
 
@@ -54,9 +60,12 @@ execute_load_generator "${CMDLINE}" ${OUTPUT_FILE} ${LOAD_DURATION}
  
 syslog_netcat "filebench run complete. Will collect and report the results"
 
-tp=`cat ${OUTPUT_FILE} | grep Summary | cut -d "," -f 2 | tr -d ' ' | sed 's/\(.*\)...../\1/'`
-lat=`cat ${OUTPUT_FILE} | grep Summary | cut -d "," -f 6 | tr -d ' ' | sed 's/\(.*\)........./\1/'`
-bw=`cat ${OUTPUT_FILE} | grep Summary | cut -d "," -f 4 | tr -d ' ' | sed 's/\(.*\)..../\1/'`
+#tp=`cat ${OUTPUT_FILE} | grep Summary | cut -d "," -f 2 | tr -d ' ' | sed 's/\(.*\)...../\1/'`
+tp=$(cat ${OUTPUT_FILE} | grep Summary | awk '{ print $6 }')
+#lat=`cat ${OUTPUT_FILE} | grep Summary | cut -d "," -f 6 | tr -d ' ' | sed 's/\(.*\)........./\1/'`
+lat=$(cat ${OUTPUT_FILE} | grep Summary | awk '{ print $11 }' | sed 's^ms/op^^g')
+#bw=`cat ${OUTPUT_FILE} | grep Summary | cut -d "," -f 4 | tr -d ' ' | sed 's/\(.*\)..../\1/'`
+bw=$(cat ${OUTPUT_FILE} | grep Summary | awk '{ print $10 }' | sed 's^mb/s^^g')
 
 ~/cb_report_app_metrics.py load_id:${LOAD_ID}:seqnum \
 load_level:${LOAD_LEVEL}:load \

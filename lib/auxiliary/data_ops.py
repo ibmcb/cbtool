@@ -359,33 +359,50 @@ def get_boostrap_command(obj_attr_list, osci) :
     '''
     
     _rdh, _rdfp = get_rdir_fullp(obj_attr_list)
-    _rbf = _rdh + "/cb_os_parameters.txt"
     
     _bcmd = "mkdir -p " + _rdfp + ';'
 
-    _bcmd += "echo '#OSKN-redis' > " + _rbf + ';'
+    if obj_attr_list["role"] != "check" :
+        _rbf = _rdh + "/cb_os_parameters.txt"        
+        _bcmd += "echo '#OSKN-redis' > " + _rbf + ';'
+        
+        if obj_attr_list["vpn_only"].lower() != "false" :
+            _bcmd += "echo '#OSHN-" + obj_attr_list["vpn_server_bootstrap"] + "' >> " + _rbf + ';'
+        else :
+            _bcmd += "echo '#OSHN-" + osci.host + "' >> " + _rbf + ';'
     
-    if obj_attr_list["vpn_only"].lower() != "false" :
-        _bcmd += "echo '#OSHN-" + obj_attr_list["vpn_server_bootstrap"] + "' >> " + _rbf + ';'
+        _bcmd += "echo '#OSPN-" + str(osci.port) + "' >>  " + _rbf + ';'
+        _bcmd += "echo '#OSDN-" + str(osci.dbid) + "' >>  " + _rbf + ';'
+        _bcmd += "echo '#OSTO-" + str(osci.timout) + "' >>  " + _rbf + ';'
+        _bcmd += "echo '#OSCN-" + obj_attr_list["cloud_name"] + "' >>  " + _rbf + ';'
+        _bcmd += "echo '#OSMO-" + obj_attr_list["mode"] + "' >>  " + _rbf + ';'
+        _bcmd += "echo '#OSOI-" + "TEST_" + obj_attr_list["username"] + ":" + obj_attr_list["cloud_name"] + "' >>  " + _rbf + ';'
+        _bcmd += "echo '#VMUUID-" + obj_attr_list["uuid"] + "' >>  " + _rbf + ';'
+        _bcmd += "sudo chown -R " +  obj_attr_list["login"] + ':' + obj_attr_list["login"] + ' ' + _rbf + ';'    
+    
     else :
-        _bcmd += "echo '#OSHN-" + osci.host + "' >> " + _rbf + ';'
-
-    _bcmd += "echo '#OSPN-" + str(osci.port) + "' >>  " + _rbf + ';'
-    _bcmd += "echo '#OSDN-" + str(osci.dbid) + "' >>  " + _rbf + ';'
-    _bcmd += "echo '#OSTO-" + str(osci.timout) + "' >>  " + _rbf + ';'
-    _bcmd += "echo '#OSCN-" + obj_attr_list["cloud_name"] + "' >>  " + _rbf + ';'
-    _bcmd += "echo '#OSMO-" + obj_attr_list["mode"] + "' >>  " + _rbf + ';'
-    _bcmd += "echo '#OSOI-" + "TEST_" + obj_attr_list["username"] + ":" + obj_attr_list["cloud_name"] + "' >>  " + _rbf + ';'
-    _bcmd += "echo '#VMUUID-" + obj_attr_list["uuid"] + "' >>  " + _rbf + ';'
-    _bcmd += "sudo chown -R " +  obj_attr_list["login"] + ':' + obj_attr_list["login"] + ' ' + _rbf + ';'    
+        
+        _rbf = _rdh + "/cb_prepare_parameters.txt"        
+        _store_list = [ "objectstore", "metricstore", "logstore", "filestore" ]
+        for _store in _store_list :
+            _bcmd += "echo '" + _store.capitalize() + ' '  
+            _bcmd += obj_attr_list[_store + "_host"] + ' ' 
+            _bcmd += str(obj_attr_list[_store + "_port"]) + ' '
+            _bcmd += obj_attr_list[_store + "_protocol"] + ' '
+            
+            if _store + "_username" in obj_attr_list :
+                _bcmd += obj_attr_list[_store + "_username"] + ' '
+            else :
+                _bcmd += "NA" + ' '              
+            _bcmd += "' >>" + _rbf + ';'
 
     if obj_attr_list["login"] == "root" :
         obj_attr_list["remote_dir_full_path"] = " /root/" + obj_attr_list["remote_dir_name"]
     else :
-        obj_attr_list["remote_dir_full_path"] = " /home/" + obj_attr_list["login"] + '/' + obj_attr_list["remote_dir_name"]        
-        
-    _bcmd += "sudo chown -R " +  obj_attr_list["login"] + ':' + obj_attr_list["login"] + ' ' + obj_attr_list["remote_dir_full_path"]
+        obj_attr_list["remote_dir_full_path"] = " /home/" + obj_attr_list["login"] + '/' + obj_attr_list["remote_dir_name"]                    
             
+    _bcmd += "sudo chown -R " +  obj_attr_list["login"] + ':' + obj_attr_list["login"] + ' ' + obj_attr_list["remote_dir_full_path"]
+                
     return _bcmd
                 
 def create_user_data_contents(obj_attr_list, osci) :
@@ -437,12 +454,14 @@ def create_user_data_contents(obj_attr_list, osci) :
         _userdata_contents += "chmod 777 /var/log/openvpn\n"
         _file_fd = open(obj_attr_list["vpn_config_file"], 'r')
         _file_contents = _file_fd.read()
+        _file_fd.close()
 #       This is done by cloud-config. Not shell script. see lib/clouds/shared_functions.py
 #        _userdata_contents += "cat << EOF > /etc/openvpn/" + _cn.upper() + "_client-cb-openvpn.conf\n"
 #        _userdata_contents += _file_contents
 #        _userdata_contents += "EOF"
         _userdata_contents += "\n"
 
+        _userdata_contents += "# INSERT OPENVPN COMMAND\n"
         _userdata_contents += "counter=0\n"        
         _userdata_contents += "\nwhile [[ \"$counter\" -le " + _attempts + " ]]\n"
         _userdata_contents += "do\n"
@@ -559,12 +578,15 @@ def create_restart_script(scriptname, cmdline, username, searchcmd, objectname =
     
     return True
 
-def is_number(val) :
+def is_number(val, hexa = False) :
     '''
     TBD
     '''
     try:
-        _val = float(val)
+        if not hexa :
+            _val = float(val)
+        else :
+            _val = int(val, 16)
         return _val
     
     except ValueError:
@@ -572,6 +594,9 @@ def is_number(val) :
 
 # Thannks to Eli Bendersky
 def weighted_choice(weights):
+    '''
+    TBD
+    '''
     totals = []
     running_total = 0
 
@@ -583,6 +608,36 @@ def weighted_choice(weights):
     for i, total in enumerate(totals):
         if rnd < total:
             return i
+
+def selectively_print_message(step, obj_attr_list) :
+    '''
+    TBD
+    '''        
+    if obj_attr_list["role"] == "check": 
+        if obj_attr_list[step].lower() == "false" :
+            return False
+
+        if obj_attr_list[step].lower() == "pseudotrue" :
+            return True
+        
+    elif obj_attr_list["force_msg_print"].lower() == "true" :
+        return True
+    
+    else :
+        
+        if "ai" in obj_attr_list and obj_attr_list["ai"] != "none" and \
+        obj_attr_list["debug_remote_commands"].lower() == "false" :
+            return False
+                
+        if "ai" in obj_attr_list and obj_attr_list["ai"] != "none" and \
+        obj_attr_list["debug_remote_commands"].lower() == "true" :
+            return True
+
+        if obj_attr_list["debug_remote_commands"].lower() == "false" :
+            if obj_attr_list[step].lower() == "false" :
+                return False
+        
+    return True
     
 def summarize(summaries_dict, value, unit) :
     '''
@@ -614,6 +669,27 @@ def summarize(summaries_dict, value, unit) :
     
     return value, unit
 
+def add_ip_address(subnet, delta) :
+    '''
+    TBD
+    '''
+    _octects, _mask = subnet.split('/')
+    _octects = _octects.split('.')
+    
+    for _index in xrange(len(_octects)) :
+        _oav = int(_octects[- _index - 1]) + delta
+        _oqn = float(float(_oav) / float(256))
+        _orn = (_oav % 256)
+        
+        if _oqn >= 1 :
+            delta = int(_oqn)
+            _octects[- _index - 1] = str(_orn)            
+        else :
+            _octects[- _index - 1] = str(_oav)
+            break
+        
+    return '.'.join(_octects), _mask
+    
 def value_cleanup(object_dict, unit) :
     '''
     TBD

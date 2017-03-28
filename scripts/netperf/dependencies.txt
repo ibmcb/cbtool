@@ -1,5 +1,5 @@
 ### START - Dependency installation order ###
-netperf-order = 50
+netperf-order = 95
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -9,7 +9,7 @@ netperf-order = 50
 # git = git clone using above giturl
 # pip = python pip utility
 # man = "manual"
-netperf-install = man
+netperf-install = pm
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
@@ -21,11 +21,11 @@ netperf-ver = 2.4
 ### END - Dependency versions ###
 
 ### START - Dependency URLs ###
-rhel-netperf-x86_64-urls-man = ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home:/assmannst/RedHat_RHEL-6/x86_64/netperf-2.6.0-9.1.x86_64.rpm 
+
 ### END - Dependency URLs ###
 
 ### START -  Dependency and method-specific command lines ###
-rhel-netperf-install-man = sudo rpm -Uvh --replacefiles URL
-fedora-netperf-install-man = sudo rpm -Uvh --replacefiles URL
-ubuntu-netperf-install-man = package_install netperf
+
+# AUTOMATICALLY EXTRACTED FROM DOCKERFILE ON ../../docker/workload/
+
 ### END -  Dependency and method-specific command lines ###

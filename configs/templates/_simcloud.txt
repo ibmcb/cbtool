@@ -1,8 +1,9 @@
 [USER-DEFINED]
-SIM_INITIAL_VMCS = simzone_a:sut,simzone_b:sut,simzone_c:sut,simzone_d:lg
-# Name of the ssh key pair
-SIM_SSH_KEY_NAME = cbtool_rsa 
-SIM_LOGIN = klabuser
+SIM_INITIAL_VMCS = need_to_be_configured_by_user
+SIM_SSH_KEY_NAME = need_to_be_configured_by_user
+SIM_KEY_NAME = need_to_be_configured_by_user 
+SIM_SECURITY_GROUPS = need_to_be_configured_by_user
+SIM_LOGIN = need_to_be_configured_by_user
 
 # PEBCAK documentation for the Wizard and CLI
 SIM_LOGIN_DOC = $LOGIN_DOC
@@ -16,7 +17,7 @@ COLLECT_FROM_HOST = $False # simulated, nothing to monitor
 COLLECT_FROM_GUEST = $False # simulated, nothing to monitor
 
 [VMC_DEFAULTS : SIM_CLOUDCONFIG]
-INITIAL_VMCS = simzone_a:sut,simzone_b:sut,simzone_c:sut,simzone_d:lg
+INITIAL_VMCS = $SIM_INITIAL_VMCS
 INITIAL_HOSTS = $Empty
 HOSTS_PER_VMC = 5
 HOSTS_CPU = 4,8,12,16,24,32
@@ -29,27 +30,29 @@ DISCOVER_HOSTS = $True
 UPDATE_FREQUENCY = 1
 ACCESS = $Empty
 CREDENTIALS = $Empty
-SECURITY_GROUPS = $Empty
-KEY_NAME = $Empty
+SECURITY_GROUPS = $SIM_SECURITY_GROUPS
+KEY_NAME = $SIM_KEY_NAME
 ADDITIONAL_DISCOVERY = $Empty
 MIGRATE_SUPPORTED = $True
 PROTECT_SUPPORTED = $True
 HOST_USER_ROOT = $False
 
 [VM_DEFAULTS : SIM_CLOUDCONFIG]
+FORCE_MSG_PRINT = $True
+CHECK_SSH = $False
 TRANSFER_FILES = $False
+RUN_GENERIC_SCRIPTS = $False
 ACCESS = $Empty
 CREDENTIALS = $Empty
 EXTRA_INFO = $Empty
-RUN_GENERIC_SCRIPTS = $False
 PLACEMENT = random
 UPDATE_FREQUENCY = 1
 CAPTURE_SUPPORTED = $True
 RUNSTATE_SUPPORTED = $True
 RESIZE_SUPPORTED = $False
 LOGIN = $SIM_LOGIN
-SECURITY_GROUPS = $Empty
-KEY_NAME = $Empty
+SECURITY_GROUPS = $SIM_SECURITY_GROUPS
+KEY_NAME = $SIM_KEY_NAME
 SSH_KEY_NAME = $SIM_SSH_KEY_NAME
 CHECK_BOOT_STARTED = poll_cloud
 # Other methods could be used to check if a VM *STARTED* booting
@@ -66,6 +69,8 @@ FORCE_FAILURE = $False
 DISABLE_TIMESYNC = $False
 PRE_CREATION_DELAY = 0
 PCT_FAILURE = $Empty
+IMAGE_PREFIX = $EMPTY
+IMAGE_SUFFIX = $EMPTY
 
 [AI_DEFAULTS : SIM_CLOUDCONFIG]
 CAPTURE_SUPPORTED = $True
@@ -76,7 +81,7 @@ UPDATE_FREQUENCY = 1
 LOGIN = $SIM_LOGIN
 SSH_KEY_NAME = $SIM_SSH_KEY_NAME
 ATTACH_PARALLELISM = 5
-CREATE_PERFORMANCE_EMITTER = $False
+CREATE_PERFORMANCE_EMITTER = $True
 PRE_CREATION_DELAY = 0
 
 [AIDRS_DEFAULTS : SIM_CLOUDCONFIG]
@@ -95,12 +100,14 @@ UPDATE_FREQUENCY = 1
 SSH_KEY_NAME = $SIM_SSH_KEY_NAME
 
 [VM_TEMPLATES : SIM_CLOUDCONFIG]
-CLIENT_DAYTRADER = size:micro32, imageids:1, imageid1:cb_daytrader
+CHECK = size:micro32, imageids:1, imageid1:to_replace
+CLIENT_IBM_DAYTRADER = size:micro32, imageids:1, imageid1:cb_daytrader
+CLIENT_OPEN_DAYTRADER = size:micro32, imageids:1, imageid1:cb_open_daytrader
 DRIVER_DAYTRADER = size:micro32, imageids:1, imageid1:cb_daytrader
 CLIENT_TRADELITE = size:micro32, imageids:1, imageid1:cb_tradelite
 DRIVER_TRADELITE = size:micro32, imageids:1, imageid1:cb_tradelite
-MYSQL = size:copper32, lb_size:gold32, eclipsed_size:gold32, imageids:1, imageid1:cb_daytrader
-GERONIMO = size:iron32, eclipsed_size:gold32, imageids:1, imageid1:cb_daytrader
+MYSQL = size:copper32, lb_size:gold32, eclipsed_size:gold32, imageids:1, imageid1:cb_open_daytrader
+GERONIMO = size:iron32, eclipsed_size:gold32, imageids:1, imageid1:cb_open_daytrader
 DB2 = size:copper32, lb_size:gold32, eclipsed_size:gold32, imageids:1, imageid1:cb_daytrader
 WAS = size:iron32, eclipsed_size:gold32, imageids:1, imageid1:cb_daytrader
 DRIVER_HADOOP = size:nano32, imageids:1, imageid1:cb_hadoop
@@ -118,20 +125,24 @@ NUTTCPSERVER = size:iron32, imageids:1, imageid1:cb_nuttcp
 XPINGSENDER =  size:iron32, imageids:1, imageid1:cb_xping
 XPINGRECEIVER =  size:iron32, imageids:1, imageid1:cb_xping
 DRIVER_COREMARK = size:nano32, imageids:1, imageid1:cb_coremark
-COREMARK = size:iron32, eclipsed_size:gold32, imageids:1, imageid1:cb_netperf
+COREMARK = size:iron32, eclipsed_size:gold32, imageids:1, imageid1:cb_coremark
 CLIENT_WINDOWS = size:nano32, imageids:1, imageid1:cb_windows
 WINDOWS = size:iron32, imageids:1, imageid1:cb_windows
 DRIVER_FILEBENCH = size:nano32, imageids:1, imageid1:cb_filebench
 FILEBENCH = size:iron32, eclipsed_size:gold32, imageids:1, imageid1:cb_filebench
 DRIVER_FIO = size:nano32, imageids:1, imageid1:cb_fio
 FIO = size:iron32, imageids:1, imageid1:cb_fio
+BTEST = size:iron32, imageids:1, imageid1:cb_btest
+POSTMARK = size:iron32, imageids:1, imageid1:cb_postmark
 TINYVM = size:pico32, imageids:1, imageid1:cb_nullworkload
 YATINYVM = size:pico32, imageids:1, imageid1:cb_nullworkload
-FEN_HPC = size:bronze32, imageids:1, imageid1:cb_hpc
-CN_HPC = size:bronze32, imageids:1, imageid1:cb_hpc
+FEN_HPC = size:bronze32, imageids:1, imageid1:cb_hpcc
+CN_HPC = size:bronze32, imageids:1, imageid1:cb_hpcc
+LINPACK = size:bronze32, imageids:1, imageid1:cb_linpack
+PARBOIL = size:bronze32, imageids:1, imageid1:cb_parboil
 DDGEN = size:bronze32, imageids:1, imageid1:cb_ddgen
 SPECJBB = size:iron32, eclipsed_size:gold32, imageids:1, imageid1:cb_specjbb
-LB = size:iron32, eclipsed_size:gold32, imageids:1, imageid1:cb_daytrader
+LB = size:iron32, eclipsed_size:gold32, imageids:1, imageid1:cb_nullworkload
 MONGOS = size:silver32, eclipsed_size:gold32, imageid1:cb_ycsb
 MONGO_CFG_SERVER = size:copper32, imageid1:cb_ycsb
 MONGODB = size:silver32, eclipsed_size:gold32, imageid1:cb_ycsb

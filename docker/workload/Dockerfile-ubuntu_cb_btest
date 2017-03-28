@@ -1,0 +1,11 @@
+FROM REPLACE_NULLWORKLOAD_UBUNTU
+
+RUN apt-get update
+# btest-install-man
+RUN apt-get install -y libaio-dev libaio1
+RUN wget -N -q -P /home/REPLACE_USERNAME https://sourceforge.net/projects/btest/files/Version-161/Linux_bin_REPLACE_ARCH2/btest/download
+RUN mv /home/REPLACE_USERNAME/download /usr/local/bin/btest
+RUN chmod 755 /usr/local/bin/btest
+RUN cp /usr/local/bin/btest /home/REPLACE_USERNAME/cbtool/3rd_party/btest
+# btest-install-man
+RUN chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME

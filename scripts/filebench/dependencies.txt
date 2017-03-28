@@ -1,5 +1,5 @@
 ### START - Dependency installation order ###
-filebench-order = 50
+filebench-order = 91
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -21,11 +21,11 @@ filebench-ver = ANY
 ### END - Dependency versions ###
 
 ### START - Dependency URLs ###
-common-filebench-x86_64-urls-man = http://REPO_ADDR/filebench
+
 ### END - Dependency URLs ###
 
 ### START -  Dependency and method-specific command lines ###
-common-filebench-preinstall-man = package_install which; mkdir -p ~/3rd_party/; wget -N -P ~/3rd_party/ URL/filebench.tar; cd ~/3rd_party/; tar -xf ~/3rd_party/filebench.tar
-common-filebench-install-man = cd filebench; ./configure; sudo make install
-common-filebench-postinstall-man = mv ~/3rd_party/filebench ~/3rd_party/_filebench
+
+# AUTOMATICALLY EXTRACTED FROM DOCKERFILE ON ../../docker/workload/
+
 ### END -  Dependency and method-specific command lines ###

@@ -451,7 +451,6 @@ class PlmCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
             
-            obj_attr_list["cloud_vm_uuid"] = "NA"
             _instance = False
           
             obj_attr_list["tag"] = "cb-" + obj_attr_list["username"]

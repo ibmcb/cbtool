@@ -32,6 +32,13 @@ then
     sudo ln -s ${MPIEXECUTABLE_PATH} /usr/local/bin/mpirun
 fi
 
+if [[ ! -f ~/hpcc ]]
+then
+	sudo cp $(which hpcc) ~
+	CBUSERLOGIN=`get_my_ai_attribute login`
+	sudo chown -R ${CBUSERLOGIN}:${CBUSERLOGIN} ~/hpcc
+fi
+
 FEN_IP=`get_ips_from_role FEN_HPC`
 CN_IP=`get_ips_from_role CN_HPC`
 

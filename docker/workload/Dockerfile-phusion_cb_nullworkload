@@ -1,0 +1,95 @@
+FROM REPLACE_BASE_PHUSION
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV CB_SSH_PUB_KEY=NA
+ENV CB_LOGIN=NA
+
+RUN rm -f /etc/service/sshd/down
+
+RUN /etc/my_init.d/00_regen_ssh_host_keys.sh
+
+RUN apt-get update
+
+RUN apt-get install -y net-tools
+RUN ln -s /sbin/ifconfig /usr/local/bin/ifconfig
+RUN ln -s /sbin/ip /usr/local/bin/ip
+
+RUN apt-get update
+RUN apt-get install -y \
+coreutils \
+psmisc \
+ntp \
+ntpdate \
+git \
+wget \
+python-pip \
+gcc \
+make \
+sshpass \
+curl \
+screen \
+rsync \
+ncftp \
+lftp \
+bc \
+iputils-ping \
+haproxy \
+vim
+
+RUN apt-get install -y \
+netcat-openbsd
+RUN cp /bin/nc /usr/local/bin/netcat
+
+RUN apt-get install -y \
+nmap \
+openvpn 
+RUN ln -s /usr/sbin/openvpn /usr/local/bin/openvpn
+
+RUN apt-get install -y \
+ganglia-monitor
+RUN ln -s /usr/sbin/gmond /usr/local/bin/gmond
+
+RUN apt-get install -y \
+apache2 \
+redis-server
+RUN sed -i "s/.*bind 127.0.0.1/bind 0.0.0.0/" /etc/redis/redis.conf
+
+RUN apt-get install -y \
+python-dev \
+python-setuptools \
+python-prettytable
+
+RUN pip install --upgrade \
+prettytable \
+python-daemon \
+twisted \
+redis \
+pymongo
+
+RUN apt-get install -y \
+pssh
+
+RUN pip install --upgrade \
+docutils \
+setuptools \
+markup \
+pyyaml
+
+RUN rsync -az /root/.ssh/ /home/REPLACE_USERNAME/.ssh/
+RUN echo "StrictHostKeyChecking=no" > /home/REPLACE_USERNAME/.ssh/config 
+RUN echo "UserKnownHostsFile=/dev/null" >> /home/REPLACE_USERNAME/.ssh/config 
+RUN chmod 600 /home/REPLACE_USERNAME/.ssh/config
+RUN chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME/
+RUN chmod 755 /home/REPLACE_USERNAME/.ssh
+
+USER REPLACE_USERNAME
+WORKDIR /home/REPLACE_USERNAME/
+RUN git clone https://github.com/ibmcb/cbtool.git
+RUN mkdir /home/REPLACE_USERNAME/cbtool/3rd_party
+WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party
+RUN git clone https://github.com/ibmcb/monitor-core.git
+RUN git clone https://github.com/ibmcb/HTML.py.git
+WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party/HTML.py
+RUN sudo python setup.py install
+WORKDIR /home/REPLACE_USERNAME
+USER root

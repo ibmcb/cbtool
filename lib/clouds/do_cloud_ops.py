@@ -12,9 +12,7 @@
 
 '''
     Created on Oct 31, 2015
-
     DigitalOcean Object Operations Library
-
     @author: Michael R. Hines, Darrin Eden
 '''
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
@@ -24,7 +22,7 @@ class DoCmds(LibcloudCmds) :
     @trace
     def __init__ (self, pid, osci, expid = None) :
         LibcloudCmds.__init__(self, pid, osci, expid = expid, \
-                              description = "DIGITAL_OCEAN", \
+                              provider = "DIGITAL_OCEAN", \
                               num_credentials = 1, \
                               use_ssh_keys = True, \
                               use_cloud_init = True, \
@@ -39,3 +37,10 @@ class DoCmds(LibcloudCmds) :
         driver = libcloud_driver(access_token, api_version = 'v2')
 
         return driver
+    
+    @trace
+    def get_description(self) :
+        '''
+        TBD
+        '''
+        return "DigitalOcean Cloud"

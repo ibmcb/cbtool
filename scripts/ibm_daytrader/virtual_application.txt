@@ -5,7 +5,7 @@
 [AI_TEMPLATES : IBM_DAYTRADER]
 
 # Attributes MANDATORY for all Virtual Applications
-SUT = client_daytrader->was->db2
+SUT = client_ibm_daytrader->was->db2
 LOAD_BALANCER_SUPPORTED = $True
 LOAD_BALANCER = $False
 LOAD_BALANCER_TARGET_PORT = 9080
@@ -15,19 +15,20 @@ LOAD_BALANCER_PORT = 9080
 LOAD_BALANCER_URL = daytrader
 RESIZE_SUPPORTED = $True
 REGENERATE_DATA = $False
-LOAD_GENERATOR_ROLE = client_daytrader
-LOAD_MANAGER_ROLE = client_daytrader
-METRIC_AGGREGATOR_ROLE = client_daytrader
+LOAD_GENERATOR_ROLE = client_ibm_daytrader
+LOAD_MANAGER_ROLE = client_ibm_daytrader
+METRIC_AGGREGATOR_ROLE = client_ibm_daytrader
 CAPTURE_ROLE = db2
 LOAD_PROFILE = default
 LOAD_LEVEL = uniformIXIXI1I10
 # The load duration for daytrader should not be smaller than 90 seconds
 LOAD_DURATION = uniformIXIXI90I120
+CATEGORY = transactional
 REPORTED_METRICS = throughput,latency,datagen_time,datagen_size,completion_time,quiescent_time
 
 # VApp-specific MANDATORY attributes
 DESCRIPTION = Deploys an 2-tier stack, formed by N "application (Websphere) nodes"
-DESCRIPTION += VMs \n - if N > 1, then a "load balancer (IHS) node" VM is also deployed -\n
+DESCRIPTION += VMs \n - if N > 1, then a "load balancer (HAProxy) node" VM is also deployed -\n
 DESCRIPTION +=  and one "database (DB2) node" VM, and then runs the DayTrader benchmark
 DESCRIPTION += on the stack. The actual load is performed by an additional VM,
 DESCRIPTION += running the WebSphere Studio Workload Simulator (iwlengine).\n
@@ -40,21 +41,22 @@ DESCRIPTION +=- COMMENT: None.
 # This only has effect if the parameter LOAD_BALANCER is set to "$True"
 LB_SETUP1 = cb_restart_loadbalancer.sh
 LB_RESET1 = cb_restart_loadbalancer.sh
-# This only has effect if the parameter DB2_ON_RAMDISK is set to "$True"
-DB2_SETUP1 = cb_setup_ramdisk.sh
 # These are always executed
+DB2_SETUP1 = cb_restart_db2.sh
 WAS_SETUP2 = cb_restart_was.sh
-DB2_SETUP2 = cb_restart_db2.sh
 WAS_RESET1 = cb_restart_was.sh
 DB2_RESET1 = cb_restart_db2.sh
 START = cb_daytrader.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
+JAVA_HOME = auto
 TRADEDB_SIZE = small
 NR_QUOTES=40000
 NR_USERS=15000
-DB2_ON_RAMDISK = $False
+DB2_DATA_DIR = /tradedb
+DB2_DATA_FSTYP = ext4
 DB2_INSTANCE_NAME = klabuser
+DB2_DATABASE_NAME = tradedb
 PERIODIC_MEASUREMENTS = $False
 APP_COLLECTION = lazy
 

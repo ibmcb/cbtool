@@ -1,0 +1,27 @@
+### START - Dependency installation order ###
+postmark-order = 90
+### END - Dependency installation order ###
+
+### START - Dependency-specific installation method ###
+# pm = "package manager" (yum or apt-get)
+# sl = "soft link" (assume that the dependency is already installed, just has to
+# be properly exposed to the user's path.
+# git = git clone using above giturl
+# pip = python pip utility
+# man = "manual"
+postmark-install = man
+### END - Dependency-specific installation method ###
+
+### START - Tests ###
+postmark-configure = ls -la ~/postmark
+### END - Tests ###
+
+### START - Dependency versions ###
+postmark-ver = ANY
+### END - Dependency versions ###
+
+### START -  Dependency and method-specific command lines ###
+
+# AUTOMATICALLY EXTRACTED FROM DOCKERFILE ON ../../docker/workload/
+
+### END -  Dependency and method-specific command lines ###

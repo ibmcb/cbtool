@@ -31,7 +31,7 @@ SSH_KEY_NAME = $OSK_SSH_KEY_NAME
 
 [MON_DEFAULTS : OSK_CLOUDCONFIG ]
 COLLECT_FROM_HOST = $False # requires ganglia installation on hypervisor
-COLLECT_FROM_GUEST = $True
+COLLECT_FROM_GUEST = $False
 
 [VMC_DEFAULTS : OSK_CLOUDCONFIG]
 ACCESS = $OSK_ACCESS
@@ -84,6 +84,10 @@ LEAVE_INSTANCE_ON_FAILURE = $False
 FORCE_FAILURE = $False
 DISABLE_TIMESYNC = $False
 AVAILABILITY_ZONE = $Empty
+BOOT_VOLUME_IMAGEID1_INSTANCE = None
+FLAVOR_INSTANCE = None
+IMAGE_PREFIX = $EMPTY
+IMAGE_SUFFIX = $EMPTY
 
 [AI_DEFAULTS : OSK_CLOUDCONFIG]
 ATTACH_PARALLELISM = 10
@@ -115,12 +119,14 @@ LOGIN = $OSK_LOGIN
 SSH_KEY_NAME = $OSK_SSH_KEY_NAME
 
 [VM_TEMPLATES : OSK_CLOUDCONFIG]
-CLIENT_DAYTRADER = size:m1.medium, imageid1:cb_daytrader
+CHECK = size:m1.tiny, imageid1:to_replace
+CLIENT_IBM_DAYTRADER = size:m1.medium, imageid1:cb_daytrader
+CLIENT_OPEN_DAYTRADER = size:m1.medium, imageid1:cb_open_daytrader
 DRIVER_DAYTRADER = size:m1.medium, imageid1:cb_daytrader
 CLIENT_TRADELITE = size:m1.medium, imageid1:cb_tradelite
 DRIVER_TRADELITE = size:m1.medium, imageid1:cb_tradelite
-MYSQL = size:m1.medium, lb_size:m1.large, imageid1:cb_daytrader
-GERONIMO = size:m1.medium, imageid1:cb_daytrader
+MYSQL = size:m1.medium, lb_size:m1.large, imageid1:cb_open_daytrader
+GERONIMO = size:m1.medium, imageid1:cb_open_daytrader
 DB2 = size:m1.medium, lb_size:m1.large, imageid1:cb_daytrader
 WAS = size:m1.medium, imageid1:cb_daytrader
 DRIVER_HADOOP = size:m1.tiny, imageid1:cb_hadoop
@@ -145,13 +151,17 @@ DRIVER_FILEBENCH = size:m1.medium, imageid1:cb_filebench
 FILEBENCH = size:m1.small, imageid1:cb_filebench
 DRIVER_FIO = size:m1.medium, imageid1:cb_fio
 FIO = size:m1.medium, imageid1:cb_fio
+BTEST = size:m1.medium, imageid1:cb_btest
+POSTMARK = size:m1.medium, imageid1:cb_postmark
 TINYVM = size:m1.tiny, imageid1:cb_nullworkload
 YATINYVM = size:m1.tiny, imageid1:cb_nullworkload
 FEN_HPC = size:m1.medium, imageid1:cb_hpcc
 CN_HPC = size:m1.medium, imageid1:cb_hpcc
+LINPACK = size:m1.medium, imageid1:cb_linpack
+LINPACK = size:m1.medium, imageid1:cb_parboil
 DDGEN = size:m1.medium, imageid1:cb_ddgen
 SPECJBB = size:m1.medium, imageid1:cb_specjbb
-LB = size:m1.medium, imageid1:cb_daytrader
+LB = size:m1.medium, imageid1:cb_nullworkload
 MONGOS = size:m1.large, imageid1:cb_ycsb
 MONGO_CFG_SERVER = size:m1.small, imageid1:cb_ycsb
 MONGODB = size:m1.medium, imageid1:cb_ycsb

@@ -1,9 +1,8 @@
 ### START - Dependency installation order ###
-oraclejava-order = 50
-oracle-java-home-order = 51
-redis-order = 52
-maven-order = 53
-ycsb-order = 54
+#oraclejava-order = 80
+java-order = 81
+redis-order = 82
+ycsb-order = 83
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -14,46 +13,33 @@ ycsb-order = 54
 # pip = python pip utility
 # man = "manual"
 oraclejava-install = man
-oracle-java-home-install = man
-redis-install = man
-maven-install = man
-ycsb-install = git
+java-install = pm
+redis-install = pm
+ycsb-install = man
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
 oraclejava-configure = java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g' | sed 's/-internal//g'
-oracle-java-home-configure = cat .bashrc | grep -c latest
+java-configure = . ~/.bashrc; java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g' | sed 's/-internal//g'
 redis-configure = redis-server -v
-maven-configure = mvn --version | head -n 1 | cut -d ' ' -f 3
 ycsb-configure = ls -la ~/YCSB
 ### END - Tests ###
 
 ### START - Dependency versions ###
 oraclejava-ver = 1.7
-oracle-java-home-ver = 1.0
+java-ver = ANY
 redis-ver = 2.5.0
-maven-ver = 2
 ycsb-ver = ANY
 ### END - Dependency versions ###
 
 ### START - Dependency URLs ###
-rhel-oraclejava-x86_64-urls-man = http://REPO_ADDR/oracle_oraclejava/jdk-7u51-linux-x64.rpm
-ubuntu-oraclejava-x86_64-urls-man = http://ppa.launchpad.net/webupd8team/oraclejava/ubuntu/pool/main/o/oracle-oraclejava7-installer/oracle-jdk7-installer_7u51-0~webupd8~3_all.deb
-
-rhel-redis-ppc64-urls-man = ftp://rpmfind.net/linux/fedora-secondary/development/rawhide/ppc64/os/Packages/r/redis-2.6.16-1.fc21.ppc64.rpm
-rhel-redis-x86_64-urls-man = ftp://rpmfind.net/linux/remi/enterprise/6/remi/x86_64
-rhel-redis-urls-git = https://github.com/antirez
-
-ubuntu-redis-ppc64-urls-man = http://ppa.launchpad.net/chris-lea/redis-server/ubuntu/pool/main
-common-redis-urls-git = https://github.com/antirez
-
-rhel-maven-x86_64-urls-man = https://repos.fedorapeople.org/repos/dchen/apache-maven/epel-6/x86_64/apache-maven-3.2.1-2.el6.noarch.rpm
-
-common-ycsb-urls-git = https://github.com/brianfrankcooper
 
 ### END - Dependency URLs ###
 
 ### START -  Dependency and method-specific command lines ###
+
+# MOST OF THESE COMMAND LINES ARE AUTOMATICALLY EXTRACTED FROM DOCKERFILES ON ../../docker/workload/
+
 rhel-oraclejava-preinstall-man = package_install java-1.7.0-openjdk
 rhel-oraclejava-install-man = sudo rpm -Uvh URL; sudo alternatives --install /usr/bin/java java /usr/java/latest/jre/bin/java 200000
 fedora-oraclejava-preinstall-man = package_install java-1.7.0-openjdk
@@ -62,23 +48,4 @@ ubuntu-oraclejava-preinstall-man = wget -N -P ~ URL
 ubuntu-oraclejava-install-man = tar -xvf jdk-7u51-linux-x64.tar.gz; sudo mkdir -p /usr/lib/jvm; sudo mv ./jdk1.7.0_51/ /usr/lib/jvm/jdk1.7.0_51/; sudo ln -s /usr/lib/jvm/jdk1.7.0_51 /usr/lib/jvm/latest
 ubuntu-oraclejava-postinstall-man = sudo update-alternatives --install "/usr/bin/java" "java" "/usr/lib/jvm/jdk1.7.0_51/bin/java" 1; sudo update-alternatives --install "/usr/bin/javac" "javac" "/usr/lib/jvm/jdk1.7.0_51/bin/javac" 1; sudo update-alternatives --install "/usr/bin/javaws" "javaws" "/usr/lib/jvm/jdk1.7.0_51/bin/javaws" 1
 
-common-oracle-java-home-install-man = echo "export JAVA_HOME=/usr/java/latest/jre" >> ~/.bashrc
-
-rhel-redis-preinstall-man = lftp -c 'open -e "mget redis*remi*.rpm" URL'
-rhel-redis-install-man = package_install gperftools-libs && sudo rpm -Uvh $(ls -t | grep redis | head -n 1)
-rhel-redis-postinstall-man = sudo sed -i "s/^bind .*/bind 0.0.0.0/" /etc/redis.conf; source SCRIPTSDIR/common/cb_bootstrap.sh; service_stop_disable redis
-fedora-redis-install-man = package_install redis
-fedora-redis-postinstall-man = sudo sed -i "s/^bind .*/bind 0.0.0.0/" /etc/redis.conf; service_stop_disable redis
-ubuntu-redis-install-man = package_install redis-server
-ubuntu-redis-postinstall-man = sudo sed -i "s/^bind .*/bind 0.0.0.0/" /etc/redis/redis.conf; service_stop_disable redis-server
-
-rhel-maven-preinstall-man = sudo yum -y install java-devel
-rhel-maven-install-man = sudo rpm -Uvh URL
-rhel-maven-postinstall-man = sudo ln -s /usr/share/apache-maven/bin/mvn /usr/local/bin/; sudo mkdir /usr/share/apache-maven/conf/logging
-fedora-maven-install-man = package_install install maven2
-ubuntu-maven-install-man = package_install install maven2
-
-common-ycsb-preinstall-git = cd ~
-common-ycsb-install-git = git clone URL/YCSB.git
-common-ycsb-postinstall-git = cd ~/YCSB/; mvn clean package
 ### END -  Dependency and method-specific command lines ###

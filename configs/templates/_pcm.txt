@@ -1,0 +1,146 @@
+[USER-DEFINED]
+PCM_ACCESS = need_to_be_configured_by_user
+# Name of the ssh key pair 
+PCM_KEY_NAME = cbtool_rsa
+PCM_SSH_KEY_NAME = cbtool_rsa
+PCM_LOGIN = need_to_be_configured_by_user
+PCM_INITIAL_VMCS = need_to_be_configured_by_user
+PCM_NETNAME = need_to_be_configured_by_user
+
+# PEBCAK documentation for the Wizard and CLI
+PCM_ACCESS_DOC = Please enter the comma-separated list of URLs that should be use to remotely interact with multiple LXD hosts\nThis is usually in the form of https://<address1>:8443,https://<address2>:8443,
+PCM_ACCESS_DEFAULT = https://<address>:8443
+PCM_CREDENTIALS_DOC = Password used to establish trust with remote LXD servers
+PCM_CREDENTIALS_DEFAULT = password
+PCM_LOGIN_DOC = $LOGIN_DOC
+PCM_LOGIN_DEFAULT = klabuser
+PCM_SSH_KEY_NAME_DOC = $SSH_KEY_NAME_DOC
+PCM_SSH_KEY_NAME_DEFAULT = id_rsa.private
+PCM_INITIAL_VMCS_DOC = $INITIAL_VMCS_DOC 
+PCM_INITIAL_VMCS_DEFAULT = HostGroup1:sut
+PCM_NETNAME_DOC = "Please enter the name of the network that will connect all created Containers"
+PCM_NETNAME_DEFAULT = private
+
+[SPACE : PCM_CLOUDCONFIG ]
+SSH_KEY_NAME = $PCM_SSH_KEY_NAME
+
+[MON_DEFAULTS : PCM_CLOUDCONFIG ]
+COLLECT_FROM_HOST = $False
+COLLECT_FROM_GUEST = $False
+
+[VMC_DEFAULTS : PCM_CLOUDCONFIG]
+INITIAL_VMCS = $PCM_INITIAL_VMCS
+DISCOVER_HOSTS = $False
+ACCESS = $Empty
+CREDENTIALS = $Empty
+SECURITY_GROUPS = $Empty
+KEY_NAME = $PCM_KEY_NAME
+ADDITIONAL_DISCOVERY = $Empty
+MIGRATE_SUPPORTED = $False
+PROTECT_SUPPORTED = $False
+HOST_USER_ROOT = $False
+
+[VM_DEFAULTS : PCM_CLOUDCONFIG]
+TRANSFER_FILES = $True
+ACCESS = $Empty
+CREDENTIALS = $Empty
+EXTRA_INFO = $Empty
+RUN_GENERIC_SCRIPTS = $True
+HOSTS_PER_VMC = 5
+CAPTURE_SUPPORTED = $True
+RUNSTATE_SUPPORTED = $True
+RESIZE_SUPPORTED = $False
+LOGIN = $PCM_LOGIN
+SECURITY_GROUPS = $Empty
+KEY_NAME = $PCM_KEY_NAME
+SSH_KEY_NAME = $PCM_SSH_KEY_NAME
+CHECK_BOOT_STARTED = poll_cloud
+# Other methods could be used to check if a VM *STARTED* booting
+#CHECK_BOOT_STARTED = subscribe_on_starting
+CHECK_BOOT_COMPLETE = wait_for_0
+# Other methods could be used to check if a VM *FINISHED* booting
+#CHECK_BOOT_COMPLETE = subscribe_on_booting
+#CHECK_BOOT_COMPLETE = tcp_on_22
+NETNAME = private
+TENANT = default
+SIZE = from_vm_template
+LEAVE_INSTANCE_ON_FAILURE = $False
+FORCE_FAILURE = $False
+DISABLE_TIMESYNC = $True
+PORTS_BASE = $False
+IMAGE_PREFIX = $EMPTY
+IMAGE_SUFFIX = $EMPTY
+
+[AI_DEFAULTS : PCM_CLOUDCONFIG]
+CAPTURE_SUPPORTED = $True
+RUNSTATE_SUPPORTED = $True
+RESIZE_SUPPORTED = $True
+RUN_APPLICATION_SCRIPTS = $True
+LOGIN = $PCM_LOGIN
+SSH_KEY_NAME = $PCM_SSH_KEY_NAME
+ATTACH_PARALLELISM = 5
+
+[AIDRS_DEFAULTS : PCM_CLOUDCONFIG]
+LOGIN = $PCM_LOGIN
+SSH_KEY_NAME = $PCM_SSH_KEY_NAME
+
+[VMCRS_DEFAULTS : PCM_CLOUDCONFIG]
+LOGIN = $PCM_LOGIN
+SSH_KEY_NAME = $PCM_SSH_KEY_NAME
+
+[FIRS_DEFAULTS : PCM_CLOUDCONFIG]
+LOGIN = $PCM_LOGIN
+SSH_KEY_NAME = $PCM_SSH_KEY_NAME
+
+[VM_TEMPLATES : PCM_CLOUDCONFIG]
+CHECK = size:1-256, imageid1:to_replace
+CLIENT_IBM_DAYTRADER = size:2-4096, imageid1:cb_daytrader
+CLIENT_OPEN_DAYTRADER = size:2-4096, imageid1:cb_open_daytrader
+DRIVER_DAYTRADER = size:2-4096, imageid1:cb_daytrader
+CLIENT_TRADELITE = size:2-4096, imageid1:cb_tradelite
+DRIVER_TRADELITE = size:2-4096, imageid1:cb_tradelite
+MYSQL = size:2-4096, lb_size:gold32, eclipsed_size:gold32, imageid1:cb_open_daytrader
+GERONIMO = size:2-4096, eclipsed_size:gold32, imageid1:cb_open_daytrader
+DB2 = size:2-4096, lb_size:gold32, eclipsed_size:gold32, imageid1:cb_daytrader
+WAS = size:2-4096, eclipsed_size:gold32, imageid1:cb_daytrader
+DRIVER_HADOOP = size:1-1024, imageid1:cb_hadoop
+HADOOPMASTER = size:1-2048, eclipsed_size:gold32, imageid1:cb_hadoop
+HADOOPSLAVE = size:2-4096, eclipsed_size:gold32, imageid1:cb_hadoop
+GIRAPHMASTER = size:1-2048, eclipsed_size:gold32, imageid1:cb_giraph
+GIRAPHSLAVE = size:2-4096, eclipsed_size:gold32, imageid1:cb_giraph
+DRIVER_NETPERF = size:1-1024, imageid1:cb_netperf
+NETCLIENT = size:2-512, imageid1:cb_netperf
+NETSERVER = size:1-512, imageid1:cb_netperf
+IPERFCLIENT = size:1-512, imageid1:cb_iperf
+IPERFSERVER = size:1-512, imageid1:cb_iperf
+NUTTCPCLIENT = size:1-512, imageid1:cb_nuttcp
+NUTTCPSERVER = size:1-512, imageid1:cb_nuttcp
+XPINGSENDER =  size:1-256, imageid1:cb_xping
+XPINGRECEIVER =  size:1-256, imageid1:cb_xping
+DRIVER_COREMARK = size:1-1024, imageid1:cb_coremark
+COREMARK = size:1-1024, eclipsed_size:gold32, imageid1:cb_coremark
+CLIENT_WINDOWS = size:2-4096, imageid1:cb_windows
+WINDOWS = size:2-4096 imageids:1, imageid1:cb_windows
+DRIVER_FILEBENCH = size:2-4096, imageid1:cb_filebench
+FILEBENCH = size:1-2048, eclipsed_size:gold32, imageid1:cb_filebench
+DRIVER_FIO = size:2-4096, imageid1:cb_fio
+FIO = size:2-2048, imageid1:cb_fio
+BTEST = size:2-2048, imageid1:cb_btest
+POSTMARK = size:2-2048, imageid1:cb_postmark
+TINYVM = size:1-256, imageid1:cb_nullworkload
+YATINYVM = size:1-256, imageid1:cb_nullworkload
+FEN_HPC = size:2-4096, imageid1:cb_hpcc
+CN_HPC = size:2-4096, imageid1:cb_hpcc
+LINPACK = size:2-4096, imageid1:cb_linpack
+PARBOIL = size:2-4096, imageid1:cb_parboil
+DDGEN = size:2-2048, imageid1:cb_ddgen
+SPECJBB = size:2-4096, eclipsed_size:gold32, imageid1:cb_specjbb
+LB = size:2-4096, eclipsed_size:gold32, imageid1:cb_nullworkload
+MONGOS = size:4-8192, eclipsed_size:gold32, imageid1:cb_ycsb
+MONGO_CFG_SERVER = size:1-2048, imageid1:cb_ycsb
+MONGODB = size:2-4096, eclipsed_size:gold32, imageid1:cb_ycsb
+CASSANDRA = size:2-4096, eclipsed_size:gold32, imageid1:cb_ycsb
+SEED = size:2-4096, imageid1:cb_ycsb
+REDIS = size:2-4096, imageid1:cb_ycsb
+YCSB = size:2-4096, imageid1:cb_ycsb
+UNIXBENCH = size:2-2048, imageid1:cb_unixbench

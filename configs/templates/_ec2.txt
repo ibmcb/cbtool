@@ -28,7 +28,7 @@ SSH_KEY_NAME = $EC2_SSH_KEY_NAME
 
 [MON_DEFAULTS : EC2_CLOUDCONFIG ]
 COLLECT_FROM_HOST = $False # impossible for amazon
-COLLECT_FROM_GUEST = $True
+COLLECT_FROM_GUEST = $False
 
 [VMC_DEFAULTS : EC2_CLOUDCONFIG ]
 ACCESS = $EC2_ACCESS
@@ -64,6 +64,9 @@ SIZE = from_vm_template
 LEAVE_INSTANCE_ON_FAILURE = $False
 FORCE_FAILURE = $False
 DISABLE_TIMESYNC = $False
+CLOUD_VV_INSTANCE = None
+IMAGE_PREFIX = $EMPTY
+IMAGE_SUFFIX = $EMPTY
 
 [AI_DEFAULTS : EC2_CLOUDCONFIG ]
 ATTACH_PARALLELISM = 10
@@ -86,9 +89,54 @@ LOGIN = $EC2_LOGIN
 SSH_KEY_NAME = $EC2_SSH_KEY_NAME
 
 [VM_TEMPLATES : EC2_CLOUDCONFIG ]
-HADOOPMASTER = size:m1.large, imageid1:ami-9cee76f5
-HADOOPSLAVE = size:m1.medium, imageid1:ami-9cee76f5
-TINYVM = size:t1.micro, imageid1:ami-b485addc
-CASSANDRA = size:m1.medium, imageid1:ami-9cee76f5
-SEED = size:m1.medium, imageid1:ami-9cee76f5
-YCSB = size:m1.medium, imageid1:ami-9cee76f5
+CHECK = size:m3.medium, imageid1:to_replace
+CLIENT_IBM_DAYTRADER = size:2-4096, imageid1:cb_daytrader
+CLIENT_OPEN_DAYTRADER = size:2-4096, imageid1:cb_open_daytrader
+DRIVER_DAYTRADER = size:t2.medium, imageid1:cb_daytrader
+CLIENT_TRADELITE = size:t2.medium, imageid1:cb_tradelite
+DRIVER_TRADELITE = size:t2.medium, imageid1:cb_tradelite
+MYSQL = size:t2.medium, lb_size:t2.large, imageid1:cb_open_daytrader
+GERONIMO = size:t2.medium, imageid1:cb_open_daytrader
+DB2 = size:t2.medium, lb_size:t2.large, imageid1:cb_daytrader
+WAS = size:t2.medium, imageid1:cb_daytrader
+DRIVER_HADOOP = size:t2.micro, imageid1:cb_hadoop
+HADOOPMASTER = size:t2.large, imageid1:cb_hadoop
+HADOOPSLAVE = size:t2.medium, imageid1:cb_hadoop
+GIRAPHMASTER = size:t2.large, imageid1:cb_giraph
+GIRAPHSLAVE = size:t2.medium, imageid1:cb_giraph
+DRIVER_NETPERF = size:t2.micro, imageid1:cb_netperf
+NETCLIENT = size:t2.medium, imageid1:cb_netperf
+NETSERVER = size:t2.micro, imageid1:cb_netperf
+IPERFCLIENT = size:m3.medium, imageid1:cb_iperf
+IPERFSERVER = size:m3.medium, imageid1:cb_iperf
+NUTTCPCLIENT = size:m3.medium, imageid1:cb_nuttcp
+NUTTCPSERVER = size:m3.medium, imageid1:cb_nuttcp
+XPINGSENDER = size:m3.medium, imageid1:cb_xping
+XPINGRECEIVER = size:m3.medium, imageid1:cb_xping
+DRIVER_COREMARK = size:t2.micro, imageid1:cb_coremark
+COREMARK = size:t2.micro, imageid1:cb_coremark
+CLIENT_WINDOWS = size:t2.medium, imageid1:cb_windows
+WINDOWS = size:t2.medium, imageid1:cb_windows
+DRIVER_FILEBENCH = size:t2.medium, imageid1:cb_filebench
+FILEBENCH = size:m3.medium, imageid1:cb_filebench
+DRIVER_FIO = size:t2.medium, imageid1:cb_fio
+FIO = size:t2.medium, imageid1:cb_fio
+BTEST = size:t2.medium, imageid1:cb_btest
+POSTMARK = size:t2.medium, imageid1:cb_postmark
+TINYVM = size:t1.micro, imageid1:cb_nullworkload
+YATINYVM = size:t1.micro, imageid1:cb_nullworkload
+FEN_HPC = size:t2.medium, imageid1:cb_hpcc
+CN_HPC = size:t2.medium, imageid1:cb_hpcc
+LINPACK = size:t2.medium, imageid1:cb_linpack
+PARBOIL = size:t2.medium, imageid1:cb_parboil
+DDGEN = size:t2.medium, imageid1:cb_hpcc
+SPECJBB = size:t2.medium, imageid1:cb_specjbb
+LB = size:t2.medium, imageid1:cb_nullworkload
+MONGOS = size:t2.large, imageid1:cb_ycsb
+MONGO_CFG_SERVER = size:m3.medium, imageid1:cb_ycsb
+MONGODB = size:t2.medium, imageid1:cb_ycsb
+CASSANDRA = size:t2.medium, imageid1:cb_ycsb
+SEED = size:t2.medium, imageid1:cb_ycsb
+REDIS = size:t2.medium, imageid1:cb_ycsb
+YCSB = size:t2.medium, imageid1:cb_ycsb
+UNIXBENCH = size:m3.medium, imageid1:cb_unixbench

@@ -90,6 +90,7 @@ msgpub
 help
 shell
 echo
+imgdelete
 DNRTT
 cldattach sim TESTCLOUD
 cldattach
@@ -179,6 +180,7 @@ monlist
 msgpub
 help
 shell
+imgdelete
 echo
 shell TESTCLOUD date
 cldlist\; clddefault none\; clddefault
@@ -309,7 +311,7 @@ aiattach TESTCLOUD hadoop save_on_attach=true\; ailist TESTCLOUD\; vmlist TESTCL
 airestore TESTCLOUD ai_28\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD\; stateshow TESTCLOUD
 aiattach TESTCLOUD notype\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
 aidetach TESTCLOUD all\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
-typealter TESTCLOUD ibm_daytrader sut=client_daytrader->was->willfail\; aiattach TESTCLOUD ibm_daytrader\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
+typealter TESTCLOUD ibm_daytrader sut=client_ibm_daytrader->was->willfail\; aiattach TESTCLOUD ibm_daytrader\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
 vmlist TESTCLOUD finished
 vmlist TESTCLOUD failed 
 patternalter TESTCLOUD simplenw iait=10\; patternshow TESTCLOUD simplenw
@@ -357,4 +359,12 @@ monextract TESTCLOUD VM app\; shell TESTCLOUD cat CB_DIRECTORY/data/REGRESSION_B
 shell TESTCLOUD rm -rf CB_DIRECTORY/data/REGRESSION_B/*\; shell TESTCLOUD find CB_DIRECTORY/data/REGRESSION_B/
 monextract TESTCLOUD all\; shell TESTCLOUD ls -la CB_DIRECTORY/data/REGRESSION_B
 reserved for monplot
+vmdev TESTCLOUD
+vmundev TESTCLOUD
+appdev TESTCLOUD
+appundev TESTCLOUD
+appnoload TESTCLOUD
+appload TESTCLOUD
+vmcapture TESTCLOUD youngest imgtstabc
+imgdelete TESTCLOUD imgtstabc simzone_a
 clddetach TESTCLOUD
