@@ -1178,10 +1178,10 @@ class GceCmds(CommonCloudFunctions) :
             _fmsg = "An error has occurred, but no error message was captured"
             
             self.common_messages("IMG", obj_attr_list, "deleting", 0, '')
-
+                                   
             self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
-                         obj_attr_list["vmc_name"], obj_attr_list["name"])
-
+                         obj_attr_list["vmc_name"], obj_attr_list["vmc_name"])
+            
             _filter = "name eq " + obj_attr_list["imageid1"]
 
             _image_instances = self.gceconn.images().list(project = self.images_project, \

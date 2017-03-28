@@ -110,6 +110,7 @@ class OskCmds(CommonCloudFunctions) :
 
                 _credentials = { "username" : _username, \
                                 "version" : _version, \
+#                                "api_key" : _password, \
                                 "password" : _password, \
                                 "project_id" : _tenant, \
                                 "tenant_name" : _tenant,  
@@ -555,7 +556,7 @@ class OskCmds(CommonCloudFunctions) :
             _fmsg = str(e)
     
         finally :
-            self.disconnect()            
+            self.disconnect()
             _status, _msg = self.common_messages("VMC", obj_attr_list, "cleaned up", _status, _fmsg)
             return _status, _msg
 
@@ -693,10 +694,11 @@ class OskCmds(CommonCloudFunctions) :
 
                 _instances = self.oskconncompute.servers.list()
                 
-                for _instance in _instances :
+                for _instance in _instances :                    
                     if _instance.name.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) \
                     and not _instance.name.count("jumphost") :
-                        _nr_instances += 1
+                        if _instance.status == "ACTIVE" :
+                            _nr_instances += 1
 
         except Exception, e :
             _status = 23
@@ -1518,9 +1520,10 @@ class OskCmds(CommonCloudFunctions) :
                     while _instance and _curr_tries < _max_tries :
                         _instance = self.get_instances(obj_attr_list, "vm", \
                                                obj_attr_list["cloud_vm_name"])
-                        if _instance :
+                        if _instance :                            
                             if _instance.status != "ACTIVE" :
                                 break
+                            
                         sleep(_wait)
                         _curr_tries += 1
                                                                     
@@ -2728,6 +2731,7 @@ class OskCmds(CommonCloudFunctions) :
                 obj_attr_list["instance_creation_failure_message"] += " (Host \"" + obj_attr_list["host_name"] + "\")"
 
             _vminstance.delete()
+            sleep(20)
 
             if "cloud_vv" in obj_attr_list :
                 self.vvdestroy(obj_attr_list)

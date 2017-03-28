@@ -1,25 +1,40 @@
 FROM REPLACE_NULLWORKLOAD_UBUNTU
 
-RUN apt-get update
-RUN apt-get install -y software-properties-common
-RUN echo "mysql-server-5.7 mysql-server/root_password password temp4now" | sudo debconf-set-selections
-RUN echo "mysql-server-5.7 mysql-server/root_password_again password temp4now" | sudo debconf-set-selections
+# java-install-pm
+RUN apt-get update; apt-get install -y software-properties-common; add-apt-repository -y ppa:openjdk-r/ppa; apt-get update; apt-get install -y openjdk-7-jdk
+# java-install-pm
+
+# subversion-install-pm
+RUN apt-get install -y xinetd subversion unzip
+# subversion-install-pm
+
+# maven-install-pm
+RUN apt-get install -y maven ant
+# maven-install-pm
+
+# mysql-install-pm
+RUN echo "mysql-server-5.7 mysql-server/root_password password temp4now" | sudo debconf-set-selections; echo "mysql-server-5.7 mysql-server/root_password_again password temp4now" | sudo debconf-set-selections
 RUN apt-get install -y mysql-server python-mysqldb python-pip python-dev libmysqlclient-dev
-RUN apt-get install -y xinetd subversion 
-RUN add-apt-repository -y ppa:openjdk-r/ppa
-RUN apt-get update
-RUN apt-get install -y openjdk-7-jdk maven unzip
-RUN cd /home/cbuser; svn co http://svn.apache.org/repos/asf/geronimo/daytrader/tags/daytrader-parent-3.0.0/
-RUN cd /home/cbuser/daytrader-parent-3.0.0/; mvn clean install
-RUN wget -N -P /home/cbuser http://apache.mirrors.hoobly.com/geronimo/3.0.1/geronimo-tomcat7-javaee6-3.0.1-bin.tar.gz
-RUN cd /home/cbuser; tar -xzf geronimo-tomcat7-javaee6-3.0.1-bin.tar.gz
-RUN wget -N -P /home/cbuser http://mysql.mirrors.pair.com/Downloads/Connector-J/mysql-connector-java-5.1.40.zip
-RUN cd /home/cbuser/; unzip mysql-connector-java-5.1.40.zip
-RUN mkdir -p /home/cbuser/geronimo-tomcat7-javaee6-3.0.1/repository/mysql/mysql-connector-java/5.1.40/
-RUN mkdir -p /home/cbuser/geronimo-tomcat7-javaee6-3.0.1/repository/mysql/com.mysql.jdbc/5.1.40/
-RUN cp /home/cbuser/mysql-connector-java-5.1.40/mysql-connector-java-5.1.40-bin.jar /home/cbuser/geronimo-tomcat7-javaee6-3.0.1/repository/mysql/mysql-connector-java/5.1.40/mysql-connector-java-5.1.40.jar
-RUN cp /home/cbuser/mysql-connector-java-5.1.40/mysql-connector-java-5.1.40-bin.jar /home/cbuser/geronimo-tomcat7-javaee6-3.0.1/repository/mysql/com.mysql.jdbc/5.1.40/com.mysql.jdbc-5.1.40.jar
-RUN cp /home/cbuser/daytrader-parent-3.0.0/javaee6/plans/target/classes/daytrader-mysql-xa-plan.xml /home/cbuser/daytrader-parent-3.0.0/javaee6/plans/target/classes/daytrader-mysql-xa-plan.xml.orig
-RUN sed -i "s^<version>5.*^<version>5.1.40</version>^g" /home/cbuser/daytrader-parent-3.0.0/javaee6/plans/target/classes/daytrader-mysql-xa-plan.xml
-RUN cd /home/cbuser; git clone https://github.com/ibmcb/rain-workload-toolkit.git; cd /home/cbuser/rain-workload-toolkit; ant package; ant package-daytrader
-RUN chown -R cbuser:cbuser /home/cbuser/
+# mysql-install-pm
+
+# daytrader-install-man
+RUN /bin/true; cd /home/REPLACE_USERNAME; svn co http://svn.apache.org/repos/asf/geronimo/daytrader/tags/daytrader-parent-3.0.0/; cd /home/REPLACE_USERNAME/daytrader-parent-3.0.0/; mvn clean install
+# daytrader-install-man
+
+# geronimo-install-man
+RUN wget -N -q -P /home/REPLACE_USERNAME http://apache.mirrors.hoobly.com/geronimo/3.0.1/geronimo-tomcat7-javaee6-3.0.1-bin.tar.gz; cd /home/REPLACE_USERNAME; tar -xzf geronimo-tomcat7-javaee6-3.0.1-bin.tar.gz
+# geronimo-install-man
+
+# geronimo-jdbc-install-man
+RUN wget -N -q -P /home/REPLACE_USERNAME http://mysql.mirrors.pair.com/Downloads/Connector-J/mysql-connector-java-5.1.40.zip; cd /home/REPLACE_USERNAME/; unzip -qu mysql-connector-java-5.1.40.zip
+RUN mkdir -p /home/REPLACE_USERNAME/geronimo-tomcat7-javaee6-3.0.1/repository/mysql/mysql-connector-java/5.1.40/
+RUN mkdir -p /home/REPLACE_USERNAME/geronimo-tomcat7-javaee6-3.0.1/repository/mysql/com.mysql.jdbc/5.1.40/; chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME/
+RUN cp -f /home/REPLACE_USERNAME/mysql-connector-java-5.1.40/mysql-connector-java-5.1.40-bin.jar /home/REPLACE_USERNAME/geronimo-tomcat7-javaee6-3.0.1/repository/mysql/mysql-connector-java/5.1.40/mysql-connector-java-5.1.40.jar; cp -f /home/REPLACE_USERNAME/mysql-connector-java-5.1.40/mysql-connector-java-5.1.40-bin.jar /home/REPLACE_USERNAME/geronimo-tomcat7-javaee6-3.0.1/repository/mysql/com.mysql.jdbc/5.1.40/com.mysql.jdbc-5.1.40.jar
+RUN cp -f /home/REPLACE_USERNAME/daytrader-parent-3.0.0/javaee6/plans/target/classes/daytrader-mysql-xa-plan.xml /home/REPLACE_USERNAME/daytrader-parent-3.0.0/javaee6/plans/target/classes/daytrader-mysql-xa-plan.xml.orig; sed -i "s^<version>5.*^<version>5.1.40</version>^g" /home/REPLACE_USERNAME/daytrader-parent-3.0.0/javaee6/plans/target/classes/daytrader-mysql-xa-plan.xml
+# geronimo-jdbc-install-man
+
+# rain-wkt-install-man
+RUN /bin/true; cd /home/REPLACE_USERNAME; git clone https://github.com/ibmcb/rain-workload-toolkit.git; cd /home/REPLACE_USERNAME/rain-workload-toolkit; ant package; ant package-daytrader
+# rain-wkt-install-man
+
+RUN chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME/

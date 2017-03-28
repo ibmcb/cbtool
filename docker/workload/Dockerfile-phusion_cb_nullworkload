@@ -75,21 +75,21 @@ setuptools \
 markup \
 pyyaml
 
-RUN rsync -az /root/.ssh/ /home/cbuser/.ssh/
-RUN echo "StrictHostKeyChecking=no" > /home/cbuser/.ssh/config 
-RUN echo "UserKnownHostsFile=/dev/null" >> /home/cbuser/.ssh/config 
-RUN chmod 600 /home/cbuser/.ssh/config
-RUN chown -R cbuser:cbuser /home/cbuser/
-RUN chmod 755 /home/cbuser/.ssh
+RUN rsync -az /root/.ssh/ /home/REPLACE_USERNAME/.ssh/
+RUN echo "StrictHostKeyChecking=no" > /home/REPLACE_USERNAME/.ssh/config 
+RUN echo "UserKnownHostsFile=/dev/null" >> /home/REPLACE_USERNAME/.ssh/config 
+RUN chmod 600 /home/REPLACE_USERNAME/.ssh/config
+RUN chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME/
+RUN chmod 755 /home/REPLACE_USERNAME/.ssh
 
-USER cbuser
-WORKDIR /home/cbuser/
+USER REPLACE_USERNAME
+WORKDIR /home/REPLACE_USERNAME/
 RUN git clone https://github.com/ibmcb/cbtool.git
-RUN mkdir /home/cbuser/cbtool/3rd_party
-WORKDIR /home/cbuser/cbtool/3rd_party
+RUN mkdir /home/REPLACE_USERNAME/cbtool/3rd_party
+WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party
 RUN git clone https://github.com/ibmcb/monitor-core.git
 RUN git clone https://github.com/ibmcb/HTML.py.git
-WORKDIR /home/cbuser/cbtool/3rd_party/HTML.py
+WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party/HTML.py
 RUN sudo python setup.py install
-WORKDIR /home/cbuser
+WORKDIR /home/REPLACE_USERNAME
 USER root

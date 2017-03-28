@@ -16,7 +16,7 @@
 #/*******************************************************************************
 
 from sys import path, argv
-from time import sleep
+from time import sleep,time
 from optparse import OptionParser
 
 import fnmatch
@@ -215,6 +215,7 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         _meta_tags = "empty"
         _size = "default"
         _pause_step = "none"
+        _nop_cloud_ip = "172.16.0.254"
         _temp_attr_list = "empty=empty"
         
         if test_case.count("pubkey") :
@@ -245,7 +246,7 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
             _vm_role = "check:regressiontest:" + _login
 
         if cloud_model == "nop" :
-            _temp_attr_list += ",cloud_ip=172.16.0.254"
+            _temp_attr_list += ",cloud_ip=" + _nop_cloud_ip
 
         _vms_failed = int(apiconn.stats(cloud_name, "all", "noprint", "true")["experiment_counters"]["VM"]["failed"])
             
@@ -303,7 +304,7 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
                         _attach_error = True
                         _result = "FAIL"                        
                 else :
-                    print str(_vm["cloud_vv_uuid"]).lower()
+                    print "######## VV UUID: " + str(_vm["cloud_vv_uuid"]).lower()
                     if str(_vm["cloud_vv_uuid"]).lower() == "not supported" :
                         _result = "NA"
                     elif str(_vm["cloud_vv_uuid"]).lower() != "none" :
@@ -448,8 +449,8 @@ def check_img_delete(apiconn, cloud_model, cloud_name, options) :
         if cloud_name == "NA" :
             raise ValueError('No cloud (' + cloud_model + ") attached!")
 
-        print "## Testing IMAGE Delete ..."
-        _vmc = apiconn.vmclist(cloud_name)[0]["cloud_hostname"]        
+        _vmc = apiconn.vmclist(cloud_name)[0]["name"]        
+        print "## Testing IMAGE Delete ... (" + _vmc + ")"        
         _img = apiconn.imgdelete(cloud_name, "regressiontest", _vmc, True)
 
         if options.pause :
@@ -485,7 +486,7 @@ def main() :
     '''
     TBD
     '''
-    _options = cli_postional_argument_parser()    
+    _options = cli_postional_argument_parser()
         
     _test_results_table = prettytable.PrettyTable(["Cloud Model", \
                                                    "Cloud Attach", \
@@ -499,6 +500,7 @@ def main() :
                                                    "VM Attach (pubkey injection, force failure)"])
                                                   
     for _cloud_model in _options.cloud_models :
+        _start = int(time())
         print ''
         _command = _cb_cli_path + " --hard_reset --config " + _options.cloud_config_dir + '/' + _cloud_model + ".txt exit"
         print "Attaching Cloud Model \"" + _cloud_model + "\" by running the command \"" + _command + "\"..."
@@ -539,7 +541,7 @@ def main() :
                         
         _cloud_result, _cloud_name = check_cloud_attach(api, _cloud_model)
         _results_row.append(_cloud_result)
-
+        
         _test_cases = ["NA", "NA", "NA", "NA", "NA", "NA", "NA", "NA" ]
         if _options.test_instances :
             _test_cases[0] = "no pubkey injection, no volume"
@@ -558,6 +560,7 @@ def main() :
             _test_cases[7] = "pubkey injection, force failure"
 
         if _cloud_model == "kub" :
+            _test_cases[2] = "NA"            
             _test_cases[3] = "NA"
             _test_cases[4] = "NA"
             _test_cases[5] = "NA"            
@@ -571,7 +574,9 @@ def main() :
                 _results_row.append("NA")
             else :
                 _results_row.append(check_vm_attach(api, _cloud_model, _cloud_name, _test_case, _options) )        
-                            
+
+        _results_row[0] = _results_row[0] + " (" + str(int(time())-_start) + "s)"
+
         _test_results_table.add_row(_results_row)
 
         _fn = "/tmp/real_multicloud_regression_test.txt"

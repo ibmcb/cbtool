@@ -12,7 +12,8 @@ CB_VERB="-q"
 CB_PUSH="nopush"
 CB_ARCH=$(uname -a | awk '{ print $12 }')
 CB_PALL=0
-CB_USAGE="Usage: build_all.sh -r <repository> [-u Ubuntu base image] [-p Phusion base image] [-c Centos base image] [-w Workload] [--verbose] [--push] [--psall]"
+CB_USERNAME="cbuser"
+CB_USAGE="Usage: build_all.sh -r <repository> [-u Ubuntu base image] [-p Phusion base image] [-c Centos base image] [-w Workload] [-l CB Username/login] [--verbose] [--push] [--psall]"
 
 while [[ $# -gt 0 ]]
 do
@@ -58,7 +59,15 @@ do
         -w=*|--workload=*)
         CB_WKS=$(echo $key | cut -d '=' -f 2)
         shift
-        ;;        
+        ;;
+        -l|--login)
+        CB_USERNAME="$2"
+        shift
+        ;;
+        -l=*|--login=*)
+        CB_USERNAME=$(echo $key | cut -d '=' -f 2)
+        shift
+        ;;       
         -a|--arch)
         CB_ARCH="$2"
         shift
@@ -67,17 +76,16 @@ do
         CB_ARCH=$(echo $key | cut -d '=' -f 2)
         shift
         ;;
-        -r|--rsync)
+        --rsync)
         CB_RSYNC="$2"
         shift
         ;;
-        -r=*|--rsync=*)
+        --rsync=*)
         CB_RSYNC=$(echo $key | cut -d '=' -f 2)
         shift
         ;;                        
         -v|--verbose)
-        CB_VERB='--ve'
-        shift
+        CB_VERB="--ve
         ;;
         --push)
         CB_PUSH="push"
@@ -99,15 +107,15 @@ done
 
 if [[ $CB_REPO == NONE ]]
 then
-	echo $USAGE
+	echo $CB_USAGE
     exit 1
 fi
 
 cb_refresh_vanilla_images $CB_UBUNTU_BASE $CB_PHUSION_BASE $CB_CENTOS_BASE
-cb_build_orchestrator $CB_REPO $CB_VERB $CB_ARCH $CB_RSYNC
-cb_build_base_images $CB_REPO $CB_VERB $CB_ARCH $CB_RSYNC
-cb_build_nullworkloads $CB_REPO $CB_VERB $CB_ARCH $CB_RSYNC
-cb_build_workloads $CB_REPO $CB_VERB $CB_ARCH $CB_RSYNC
+cb_build_orchestrator $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC
+cb_build_base_images $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC
+cb_build_nullworkloads $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC
+cb_build_workloads $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC
 
 if [[ $CB_PUSH == "push" ]]
 then

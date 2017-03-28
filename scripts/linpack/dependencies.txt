@@ -1,5 +1,5 @@
 ### START - Dependency installation order ###
-linpack-order = 50
+linpack-order = 82
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -21,11 +21,11 @@ linpack-ver = ANY
 ### END - Dependency versions ###
 
 ### START - Dependency URLs ###
-common-linpack-x86_64-urls-man = http://registrationcenter.intel.com/irc_nas/7615/l_lpk_p_11.3.0.004.tgz
+
 ### END - Dependency URLs ###
 
 ### START -  Dependency and method-specific command lines ###
-common-linpack-preinstall-man = cd~; wget -N URL; mkdir -p ~/linpack/benchmarks/linpack
-common-linpack-install-man = ln -s ~/compilers_and_libraries_2016.0.038/linux/mkl/benchmarks/linpack/xlinpack_xeon64 ~/linpack/benchmarks/linpack/xlinpack_xeon64
-common-linpack-postinstall-man = sudo ln -s ~/compilers_and_libraries_2016.0.038/linux/mkl/benchmarks/linpack/xlinpack_xeon64 /usr/local/bin/xlinpack_xeon64
+
+# AUTOMATICALLY EXTRACTED FROM DOCKERFILE ON ../../docker/workload/
+
 ### END -  Dependency and method-specific command lines ###

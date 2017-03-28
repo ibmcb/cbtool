@@ -385,8 +385,17 @@ def get_boostrap_command(obj_attr_list, osci) :
         _rbf = _rdh + "/cb_prepare_parameters.txt"        
         _store_list = [ "objectstore", "metricstore", "logstore", "filestore" ]
         for _store in _store_list :
-            _bcmd += "echo '" + _store.capitalize() + ' ' +  obj_attr_list[_store + "_host"] + ' ' + str(obj_attr_list[_store + "_port"]) + ' ' + obj_attr_list[_store + "_protocol"] + "' >>" + _rbf + ';'
+            _bcmd += "echo '" + _store.capitalize() + ' '  
+            _bcmd += obj_attr_list[_store + "_host"] + ' ' 
+            _bcmd += str(obj_attr_list[_store + "_port"]) + ' '
+            _bcmd += obj_attr_list[_store + "_protocol"] + ' '
             
+            if _store + "_username" in obj_attr_list :
+                _bcmd += obj_attr_list[_store + "_username"] + ' '
+            else :
+                _bcmd += "NA" + ' '              
+            _bcmd += "' >>" + _rbf + ';'
+
     if obj_attr_list["login"] == "root" :
         obj_attr_list["remote_dir_full_path"] = " /root/" + obj_attr_list["remote_dir_name"]
     else :

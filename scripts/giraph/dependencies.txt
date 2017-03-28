@@ -1,9 +1,8 @@
 ### START - Dependency installation order ###
 java-order = 82
-java-home-order = 83
-hadoop-order = 95
-giraph-order = 96
-maven-order = 99
+hadoop-order = 83
+maven-order = 84
+giraph-order = 90
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -14,52 +13,31 @@ maven-order = 99
 # pip = python pip utility
 # man = "manual"
 java-install = pm
-java-home-install = man
 hadoop-install = man
+maven-install = pm
 giraph-install = git
-maven-install = man
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
 java-configure = java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g' | sed 's/-internal//g'
-java-home-configure = cat ~/.bashrc | grep -c openjdk
-hadoop-configure = . .bashrc; ~/hadoop-1.2.1/bin/hadoop version | head -n 1 | cut -d ' ' -f 2
-giraph-configure = find ~ | grep giraph-examples | grep dependencies | grep jar
+hadoop-configure = if [[ -z $JAVA_HOME ]]; then ls ~/hadoop-1.2.1/bin/hadoop; else ~/hadoop-1.2.1/bin/hadoop version | head -n 1 | cut -d ' ' -f 2; fi
 maven-configure = mvn --version | head -n 1 | cut -d ' ' -f 3
+giraph-configure = find ~ | grep giraph-examples | grep dependencies | grep jar
 ### END - Tests ###
 
 ### START - Dependency versions ###
 java-ver = 1.6
-java-home-ver = 1.0
-hadoop-ver = 1.0
-giraph-ver = ANY
+hadoop-ver = ANY
 maven-ver = 3
+giraph-ver = ANY
 ### END - Dependency versions ###
 
 ### START - Dependency URLs ###
-common-hadoop-x86_64-urls-man = http://www.carfab.com/apachesoftware/hadoop/common/hadoop-1.2.1/hadoop-1.2.1.tar.gz
 
-#common-hadoop-x86_64-urls-man = http://www.carfab.com/apachesoftware/hadoop/common/hadoop-2.3.0/hadoop-2.3.0.tar.gz
-
-common-giraph-urls-git = https://github.com/apache/giraph.git
 ### END - Dependency URLs ###
 
 ### START -  Dependency and method-specific command lines ###
-rhel-java-install-pm = package_install java-1.7.0-openjdk
-fedora-java-install-pm = package_install java-1.7.0-openjdk
-ubuntu-java-install-pm = package_install openjdk-6-jdk; package_install openjdk-7-jdk
-ubuntu-java-postinstall-pm = export JAVAALT=$(sudo update-java-alternatives -l 2>&1 | grep java | sort -r | head -n 1 | cut -d ' ' -f 1); sudo update-java-alternatives -s $JAVAALT
 
-common-java-home-install-man = echo "export JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre" >> ~/.bashrc
+# AUTOMATICALLY EXTRACTED FROM DOCKERFILE ON ../../docker/workload/
 
-common-hadoop-preinstall-man = wget -N -P ~ URL
-common-hadoop-install-man = cd ~; tar -xzf ~/hadoop*.gz
-
-rhel-maven-preinstall-man = package_install java-devel
-rhel-maven-install-man = sudo rpm -Uvh URL
-rhel-maven-postinstall-man = sudo ln -s /usr/share/apache-maven/bin/mvn /usr/local/bin/; sudo mkdir /usr/share/apache-maven/conf/logging
-fedora-maven-install-man = package_install maven2
-ubuntu-maven-install-man = package_install maven2
-
-common-giraph-preinstall-git = cd ~; git clone URL; cd ~/giraph; git checkout release-1.1; mvn package -Phadoop_1.0 -DskipTests
 ### END -  Dependency and method-specific command lines ###

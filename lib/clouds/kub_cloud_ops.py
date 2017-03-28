@@ -350,19 +350,11 @@ class KubCmds(CommonCloudFunctions) :
                 obj_attr_list["host_list"] = {}
                 obj_attr_list["host_count"] = "NA"
 
-            if "cloud_name" in obj_attr_list :
-                _file = expanduser("~") + "/cbrc-" + obj_attr_list["cloud_name"].lower()
-            else :
-                _file = expanduser("~") + "/cbrc"
-                
-            _file_fd = open(_file, 'w')
-#            _file_fd.write("export KUBERNETES_MASTER = " + obj_attr_list["access"] + "\n")
-
-            if "cloud_name" in obj_attr_list :                        
-                _file_fd.write("export CB_CLOUD_NAME=" + obj_attr_list["cloud_name"] + "\n")
-                _file_fd.write("export CB_USERNAME=" + obj_attr_list["username"] + "\n")
-                
-            _file_fd.close()
+            obj_attr_list["network_detected"] = "flannel"
+            _container_list = pykube.objects.Pod.objects(self.kubeconn).filter(namespace = "kube-system")
+            for _container in _container_list :
+                if _container.name.count("calico") :
+                    obj_attr_list["network_detected"] = "calico"
             
             _time_mark_prc = int(time())
             obj_attr_list["mgt_003_provisioning_request_completed"] = \
@@ -439,7 +431,6 @@ class KubCmds(CommonCloudFunctions) :
                 _container_list = pykube.objects.Pod.objects(self.kubeconn).filter()
                 for _container in _container_list :
                     if _container.name.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"].lower()) :
-                        print _container.obj["status"]
                         _nr_instances += 1
 
         except Exception, e :
@@ -548,9 +539,9 @@ class KubCmds(CommonCloudFunctions) :
                 else :
                     True
                         
-#            if len(_instances) == 1 :
-            for _x in _instances :
-                _instances = _x
+            if _instances :
+                for _x in _instances :
+                    _instances = _x
 
             _status = 0
 

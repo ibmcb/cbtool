@@ -14,15 +14,15 @@ RUN ln -s /usr/bin/python2.7 /usr/bin/python
 
 RUN useradd -m -p "$1$1rCJhvTo$nIoKRh4zdGdnk0Dntsdnq/" -s /bin/bash ubuntu
 RUN useradd -m -p "$1$1rCJhvTo$nIoKRh4zdGdnk0Dntsdnq/" -s /bin/bash fedora
-RUN useradd -m -p "$1$1rCJhvTo$nIoKRh4zdGdnk0Dntsdnq/" -s /bin/bash cbuser
+RUN useradd -m -p "$1$1rCJhvTo$nIoKRh4zdGdnk0Dntsdnq/" -s /bin/bash REPLACE_USERNAME
 
 RUN echo "ubuntu  ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers
 RUN echo "fedora  ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers
-RUN echo "cbuser  ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers
+RUN echo "REPLACE_USERNAME  ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 RUN echo 'ubuntu:temp4now' | chpasswd
 RUN echo 'fedora:temp4now' | chpasswd
-RUN echo 'cbuser:temp4now' | chpasswd
+RUN echo 'REPLACE_USERNAME:temp4now' | chpasswd
 
 RUN mkdir -p /etc/my_init.d
 ADD inject_pubkey.sh /etc/my_init.d/inject_pubkey.sh

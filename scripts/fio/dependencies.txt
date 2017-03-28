@@ -9,7 +9,7 @@ fio-order = 93
 # git = git clone using above giturl
 # pip = python pip utility
 # man = "manual"
-fio-install = man
+fio-install = pm
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
@@ -21,7 +21,7 @@ fio-ver = 2.0
 ### END - Dependency versions ###
 
 ### START -  Dependency and method-specific command lines ###
-rhel-fio-install-man = package_install fio
-fedora-fio-install-man = package_install fio
-ubuntu-fio-install-man = package_install fio
+
+# AUTOMATICALLY EXTRACTED FROM DOCKERFILE ON ../../docker/workload/
+
 ### END -  Dependency and method-specific command lines ###

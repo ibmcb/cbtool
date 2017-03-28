@@ -23,32 +23,32 @@
 #rhel-baseos-gpgcheckK = 0
 #rhel-baseos-gpgkey = 
 ### Packages from CentOS
-rhel-centos-original-url = http://mirror.net.cen.ct.gov/centos/REPO_RELEASE/os/REPO_ARCH/
-rhel-centos-local-url = http://REPO_ADDR/repo/rhel_repos/centos-6/REPO_ARCH/
-rhel-centos-name= centos-6
-rhel-centos-enabled = 1
-rhel-centos-skip_if_unavailable= 1
-rhel-centos-priority = 6
-rhel-centos-gpgcheckK = 0
-rhel-centos-gpgkey =
+#rhel-centos-original-url = http://mirror.net.cen.ct.gov/centos/REPO_RELEASE/os/REPO_ARCH/
+#rhel-centos-local-url = http://REPO_ADDR/repo/rhel_repos/centos-6/REPO_ARCH/
+#rhel-centos-name= centos-6
+#rhel-centos-enabled = 1
+#rhel-centos-skip_if_unavailable= 1
+#rhel-centos-priority = 6
+#rhel-centos-gpgcheckK = 0
+#rhel-centos-gpgkey =
 ### Packages from RPMForge
-rhel-rpmforge-original-url = http://apt.sw.be/redhat/elREPO_MAJOR_RELEASE/en/REPO_ARCH/rpmforge/
-rhel-rpmforge-local-url = http://REPO_ADDR/repo/rhel_repos/rpmforge-elREPO_MAJOR_RELEASE/REPO_ARCH/
-rhel-rpmforge-name= rpmforge
-rhel-rpmforge-enabled = 1
-rhel-rpmforge-skip_if_unavailable= 1
-rhel-rpmforge-priority = 6
-rhel-rpmforge-gpgcheckK = 0
-rhel-rpmforge-gpgkey =
+#rhel-rpmforge-original-url = http://apt.sw.be/redhat/elREPO_MAJOR_RELEASE/en/REPO_ARCH/rpmforge/
+#rhel-rpmforge-local-url = http://REPO_ADDR/repo/rhel_repos/rpmforge-elREPO_MAJOR_RELEASE/REPO_ARCH/
+#rhel-rpmforge-name= rpmforge
+#rhel-rpmforge-enabled = 1
+#rhel-rpmforge-skip_if_unavailable= 1
+#rhel-rpmforge-priority = 6
+#rhel-rpmforge-gpgcheckK = 0
+#rhel-rpmforge-gpgkey =
 ### Extra Packages for Enterprise Linux
-rhel-epel-original-url = http://mirror.itc.virginia.edu/fedora-epel/REPO_MAJOR_RELEASE/REPO_ARCH/
-rhel-epel-local-url = http://REPO_ADDR/repo/rhel_repos/epelREPO_MAJOR_RELEASE/REPO_ARCH/
-rhel-epel-name= epel6
-rhel-epel-enabled = 1
-rhel-epel-skip_if_unavailable= 1
-rhel-epel-priority = 6
-rhel-epel-gpgcheckK = 0
-rhel-epel-gpgkey =
+#rhel-epel-original-url = http://mirror.itc.virginia.edu/fedora-epel/REPO_MAJOR_RELEASE/REPO_ARCH/
+#rhel-epel-local-url = http://REPO_ADDR/repo/rhel_repos/epelREPO_MAJOR_RELEASE/REPO_ARCH/
+#rhel-epel-name= epel6
+#rhel-epel-enabled = 1
+#rhel-epel-skip_if_unavailable= 1
+#rhel-epel-priority = 6
+#rhel-epel-gpgcheckK = 0
+#rhel-epel-gpgkey =
 #### RHEL repos - END
 ### END - Repos ###
 
@@ -89,44 +89,43 @@ redis-order = 27
 mongodb-order = 28
 #chef-server-order = 29
 python-devel-order = 30
-python-setuptools-order = 31
-python-prettytable-order = 32 
-python-daemon-order = 33
-python-twisted-order = 34
-python-webob-order = 35
-python-beaker-order = 36
-pyredis-order = 37
-pymongo-order = 38
-pylibvirt-order = 39
-pypureomapi-order = 40
-pyhtml-order = 41
-gmetad-python-order = 42
-bootstrap-order = 43
-bootstrap-wizard-order = 44
-streamprox-order = 45
-d3-order = 46
-novaclient-order = 47
-neutronclient-order = 48
-cinderclient-order = 49
-glanceclient-order = 50
-softlayer-order = 51
-boto-order = 52
-libcloud-order = 53
-gcloud-order = 54
-pygce-order = 55
-pydocker-order = 56
-pylxd-order = 57
-pykube-order = 58
-iptables-order = 59
-R-order = 60
-sshkey-order = 61
-sshd-order = 62
-pssh-order = 63
-docutils-order = 64
-setuptools-order = 65
-markup-order = 66
-pyyaml-order = 67
-ruamelyaml-order = 68
+python-prettytable-order = 31 
+python-daemon-order = 32
+python-twisted-order = 33
+python-webob-order = 34
+python-beaker-order = 35
+pyredis-order = 36
+pymongo-order = 37
+pylibvirt-order = 38
+pypureomapi-order = 39
+pyhtml-order = 40
+gmetad-python-order = 41
+bootstrap-order = 42
+bootstrap-wizard-order = 43
+streamprox-order = 44
+d3-order = 45
+novaclient-order = 46
+neutronclient-order = 47
+cinderclient-order = 48
+glanceclient-order = 49
+softlayer-order = 50
+boto-order = 51
+libcloud-order = 52
+gcloud-order = 53
+pygce-order = 54
+pydocker-order = 55
+pylxd-order = 56
+pykube-order = 57
+iptables-order = 58
+R-order = 59
+sshkey-order = 60
+sshd-order = 61
+pssh-order = 62
+docutils-order = 63
+setuptools-order = 64
+markup-order = 65
+pyyaml-order = 66
+ruamelyaml-order = 67
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -163,16 +162,16 @@ chef-client-install = man
 rsyslog-install = pm
 rsyslog-filter-install = man
 apache-install = pm
-redis-install = man
-mongodb-install = man
+redis-install = pm
+mongodb-install = pm
 chef-server-install = man
 python-devel-install = pm
-python-setuptools-install = pm
+python-setuptools-install = pip
 python-prettytable-install = pip 
-python-daemon-install = pm
-python-twisted-install = man
-python-webob-install = man
-python-beaker-install = pm
+python-daemon-install = pip
+python-twisted-install = pip
+python-webob-install = pip
+python-beaker-install = pip
 gmetad-python-install = git
 pyredis-install = pip
 pymongo-install = pip
@@ -199,7 +198,7 @@ pykube-install = pip
 iptables-install = pm
 R-install = pm
 sshkey-install = man
-sshd-install = man
+sshd-install = pm
 pssh-install = pm
 docutils-install = pip
 setuptools-install = pip
@@ -425,250 +424,26 @@ ruamelyaml-tag = orchestrator
 ### END - Dependency versions ###
 
 ### START - Dependency URLs ###
-rhel-netcat-x86_64-urls-man = ftp://ftp.pbone.net/mirror/ftp.opensuse.org/distribution/11.4/repo/oss/suse/x86_64/netcat-openbsd-1.89-74.1.x86_64.rpm
-fedora-netcat-x86_64-urls-man = ftp://ftp.pbone.net/mirror/ftp.opensuse.org/distribution/11.4/repo/oss/suse/x86_64/netcat-openbsd-1.89-74.1.x86_64.rpm
-
-rhel-redis-ppc64-urls-man = ftp://rpmfind.net/linux/fedora-secondary/development/rawhide/ppc64/os/Packages/r/redis-2.6.16-1.fc21.ppc64.rpm
-rhel-redis-x86_64-urls-man = ftp://rpmfind.net/linux/remi/enterprise/REPO_MAJOR_RELEASE/remi/x86_64
-rhel-redis-urls-git = https://github.com/antirez
-
-ubuntu-redis-ppc64-urls-man = http://ppa.launchpad.net/chris-lea/redis-server/ubuntu/pool/main
-common-redis-urls-git = https://github.com/antirez
-
-rhel-chef-client-x86_64-urls-man = https://opscode-omnibus-packages.s3.amazonaws.com/el/REPO_MAJOR_RELEASE/x86_64/chef-11.10.4-1.elREPO_MAJOR_RELEASE.x86_64.rpm
-ubuntu-chef-client-x86_64-urls-man = https://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/REPO_RELEASE/x86_64/chef_11.10.4-1.ubuntu.REPO_RELEASE_amd64.deb
-
-rhel-chef-server-x86_64-urls-man = https://opscode-omnibus-packages.s3.amazonaws.com/el/REPO_MAJOR_RELEASE/x86_64/chef-server-11.0.10-1.elREPO_MAJOR_RELEASE.x86_64.rpm
-ubuntu-chef-server-x86_64-urls-man = https://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/REPO_RELEASE/x86_64/chef-server_11.0.10-1.ubuntu.REPO_RELEASE_amd64.deb
-
-rhel-mongodb-x86_64-urls-man = http://downloads-distro.mongodb.org/repo/redhat/os/ARCH/RPMS
-rhel-mongodb-urls-git = https://github.com/mongodb/mongo.git
-ubuntu-mongodb-urls-git = https://github.com/mongodb/mongo.git
-
-common-gmetad-python-urls-git = https://github.com/ibmcb
-
-common-pyhtml-urls-git = https://github.com/ibmcb
-
-common-bootstrap-urls-git = https://github.com/ibmcb
-
-common-bootstrap-wizard-urls-git = https://github.com/ibmcb
-
-common-streamprox-urls-git = https://github.com/ibmcb
-
-common-d3-urls-git = https://github.com/ibmcb
 ### END - Dependency URLs ###
 
 ### START -  Dependency and method-specific command lines ###
-common-sudo-install-man = echo "USERNAME  ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers; sed -i s/"Defaults requiretty"/"#Defaults requiretty"/g /etc/sudoers
+
+# MOST OF THESE COMMAND LINES ARE AUTOMATICALLY EXTRACTED FROM DOCKERFILES ON ../../docker/workload/ and ../../docker/orchestrator/
 
 rhel-repo-install-man = sudo mv -f /tmp/*.repo /etc/yum.repos.d; touch /tmp/repoupdated; service_stop_disable iptables; service_stop_disable firewalld; exit 0
 fedora-repo-install-man = sudo mv -f /tmp/*.repo /etc/yum.repos.d; touch /tmp/repoupdated; service_stop_disable iptables; service_stop_disable firewalld; exit 0
 ubuntu-repo-install-man = sudo mv -f /tmp/*.list /etc/apt/sources.list.d/; sudo apt-get update; service_stop_disable iptables; service_stop_disable ipfw; exit 0
-
-ubuntu-ifconfig-install-sl = package_install net-tools; sudo ln -sf /sbin/ifconfig /usr/local/bin/ifconfig
-rhel-ifconfig-install-sl = package_install net-tools; sudo ln -sf /sbin/ifconfig /usr/local/bin/ifconfig
-
-common-ip-install-sl = package_install net-tools; sudo ln -sf /sbin/ip /usr/local/bin/ip
-
-rhel-pkill-install-pm = package_install psmisc
-fedora-pkill-install-pm = package_install psmisc
-ubuntu-pkill-install-pm = package_install psmisc
-
-rhel-which-install-pm = package_install which
-rhel-which-postinstall-pm = package_install redhat-lsb-core
-fedora-which-install-pm = package_install which
-ubuntu-which-install-pm = /bin/true
-
-rhel-ntp-install-pm = package_install ntp
-fedora-ntp-install-pm = package_install ntp
-ubuntu-ntp-install-pm = package_install ntpd
-trusty-ntp-install-pm = package_install ntp
-xenial-ntp-install-pm = package_install ntp
-
-common-git-install-pm = package_install git bc
-
-common-wget-install-pm = package_install wget
-
-common-pip-install-pm = package_install python-pip
-
-common-gcc-install-pm = package_install gcc
-
-common-make-install-pm = package_install make
-
-common-emacs-install-pm = package_install emacs
-
-common-sshpass-install-pm = package_install sshpass
-
-common-curl-install-pm = package_install curl
-
-common-screen-install-pm = package_install screen
-
-common-rsync-install-pm = package_install rsync
-
-common-ncftp-install-pm = package_install ncftp
-
-common-lftp-install-pm = package_install lftp
-
-rhel-netcat-preinstall-man = wget -N -P 3RPARTYDIR URL; cd 3RPARTYDIR
-rhel-netcat-install-man = rpm2cpio 3RPARTYDIR/netcat-openbsd*.rpm | cpio -i --make-directories
-rhel-netcat-postinstall-man = sudo mv 3RPARTYDIR/usr/bin/nc /usr/local/bin/netcat; rm -rf 3RPARTYDIR/usr
-fedora-netcat-preinstall-man = wget -N -P 3RPARTYDIR URL; cd 3RPARTYDIR
-fedora-netcat-install-man = rpm2cpio 3RPARTYDIR/netcat-openbsd*.rpm | cpio -i --make-directories
-fedora-netcat-postinstall-man = sudo mv 3RPARTYDIR/usr/bin/nc /usr/local/bin/netcat; rm -rf 3RPARTYDIR/usr
-ubuntu-netcat-install-man = package_install netcat-openbsd; sudo cp /bin/nc /usr/local/bin/netcat
-
-common-nmap-install-pm = package_install nmap
-
-common-openvpn-install-pm = package_install openvpn
-common-openvpn-postinstall-pm = sudo ln -s /usr/sbin/openvpn /usr/local/bin/openvpn
-
-rhel-gmond-install-pm = package_install ganglia-gmond-python ganglia
-rhel-gmond-postinstall-pm = sudo ln -s /usr/sbin/gmond /usr/local/bin/gmond; service_stop_disable gmond
-fedora-gmond-install-pm = package_install ganglia-gmond-python ganglia
-fedora-gmond-postinstall-pm = sudo ln -s /usr/sbin/gmond /usr/local/bin/gmond; service_stop_disable gmond
-ubuntu-gmond-install-pm = package_install ganglia-monitor
-ubuntu-gmond-postinstall-pm = sudo ln -s /usr/sbin/gmond /usr/local/bin/gmond; service_stop_disable ganglia-monitor
 
 rhel-chef-client-install-man = sudo rpm -Uvh URL 
 fedora-chef-client-install-man = sudo rpm -Uvh URL 
 ubuntu-chef-client-preinstall-man =  wget -N -P 3RPARTYDIR URL
 ubuntu-chef-client-install-man = sudo dpkg -i 3RPARTYDIR/chef_*.deb
 
-rhel-rsyslog-install-pm = package_install rsyslog
-rhel-rsyslog-postinstall-pm = sudo ln -s /sbin/rsyslogd /usr/local/bin/rsyslogd
-fedora-rsyslog-install-pm = package_install rsyslog
-fedora-rsyslog-postinstall-pm = sudo ln -s /sbin/rsyslogd /usr/local/bin/rsyslogd
-ubuntu-rsyslog-install-pm = package_install rsyslog
-ubuntu-rsyslog-postinstall-pm = sudo ln -s /usr/sbin/rsyslogd /usr/local/bin/rsyslogd
-
-common-rsyslog-filter-preinstall-man =  sudo mkdir -p /var/log/cloudbench
-common-rsyslog-filter-install-man = sudo sed -i -e "s/#\$ModLoad imudp/\$ModLoad imudp/g" /etc/rsyslog.conf; sudo sed -i -e "s/#\$UDPServerRun 514/\$UDPServerRun 514/g" /etc/rsyslog.conf
-common-rsyslog-filter-postinstall-man = sudo bash -c "echo -e \"local5.*  \t\t\t\t /var/log/cloudbench/remote.log\" >> /etc/rsyslog.conf"; sudo bash -c "echo -e \"local6.* \t\t\t\t /var/log/cloudbench/local.log\" >> /etc/rsyslog.conf"; service_restart_enable rsyslog
-
-rhel-apache-install-pm = package_install httpd
-fedora-apache-install-pm = package_install httpd
-ubuntu-apache-install-pm = package_install apache2
-
-santiago-redis-preinstall-man = lftp -c 'open -e "mget redis*remi*.rpm" URL'
-santiago-redis-install-man = package_install gperftools-libs && sudo rpm -Uvh $(ls -t | grep redis | head -n 1)
-santiago-redis-postinstall-man = sudo sed -i "s/.*bind 127.0.0.1/bind 0.0.0.0/" /etc/redis.conf; service_restart_enable redis
-rhel-redis-install-man = package_install redis
-rhel-redis-postinstall-man = sudo sed -i "s/.*bind 127.0.0.1/bind 0.0.0.0/" /etc/redis.conf; service_restart_enable redis
-fedora-redis-install-man = package_install redis
-fedora-redis-postinstall-man = sudo sed -i "s/.*bind 127.0.0.1/bind 0.0.0.0/" /etc/redis.conf; service_restart_enable redis
-ubuntu-redis-install-man = package_install redis-server
-ubuntu-redis-postinstall-man = sudo sed -i "s/.*bind 127.0.0.1/bind 0.0.0.0/" /etc/redis/redis.conf; service_restart_enable redis-server
-
-common-redis-preinstall-git = cd 3RPARTYDIR; git clone URL/redis.git
-common-redis-install-git = cd 3RPARTYDIR;redis; make; sudo make install
-
-santiago-mongodb-install-man = sudo rpm -Uvh URL/mongo-10gen-2.4.9-mongodb_1.ARCH.rpm; sudo rpm -Uvh URL/mongo-10gen-server-2.4.9-mongodb_1.ARCH.rpm 
-santiago-mongodb-postinstall-man = sudo sed -i "s/.*bind_ip.*/bind_ip=0.0.0.0/" /etc/mongod.conf; service_restart_enable mongod
-rhel-mongodb-install-man = sudo package_install mongodb mongodb-server 
-rhel-mongodb-postinstall-man = sudo sed -i "s/.*bind_ip.*/bind_ip=0.0.0.0/" /etc/mongod.conf; service_restart_enable mongod
-fedora-mongodb-install-man = package_install mongodb mongodb-server
-fedora-mongodb-postinstall-man = sudo sed -i "s/.*bind_ip.*/bind_ip=0.0.0.0/" /etc/mongod.conf; service_restart_enable mongod
-ubuntu-mongodb-install-man = package_install mongodb
-ubuntu-mongodb-postinstall-man = sudo sed -i "s/.*bind_ip.*/bind_ip=0.0.0.0/" /etc/mongodb.conf; service_restart_enable mongodb
-
 rhel-chef-server-install-man = sudo rpm -Uvh URL 
 fedora-chef-server-install-man = sudo rpm -Uvh URL 
 ubuntu-chef-server-preinstall-man =  wget -N -P 3RPARTYDIR URL
 ubuntu-chef-server-install-man = sudo dpkg -i chef-server_11.0.10-1.ubuntu.12.04_amd64.deb
 
-rhel-python-devel-install-pm = package_install python-devel
-fedora-python-devel-install-pm = package_install python-devel
-ubuntu-python-devel-install-pm = package_install python-dev
-
-common-python-setuptools-install-pm = package_install python-setuptools
-
-common-python-prettytable-install-pm = package_install python-prettytable
-
-common-python-prettytable-install-pip = sudo pip install --upgrade INDEXURL prettytable
-
-common-python-daemon-install-pm = package_install python-daemon
-
-common-python-twisted-install-pm = package_install python-twisted-web
-common-python-twisted-install-man = sudo pip install --upgrade twisted
-
-common-python-webob-install-pm = package_install python-webob
-common-python-webob-install-man = sudo pip install --upgrade webob
-
-common-python-beaker-install-pm = package_install python-beaker
-
-common-pyredis-install-pip = sudo pip install --upgrade INDEXURL redis
-
-common-pymongo-install-pip = sudo pip install --upgrade INDEXURL pymongo
-
-rhel-pylibvirt-install-pm = package_install libvirt-python
-fedora-pylibvirt-install-pm = package_install libvirt-python
-ubuntu-pylibvirt-install-pm = package_install python-libvirt
-
-common-pypureomapi-install-pip = sudo pip install --upgrade INDEXURL pypureomapi
-
-common-pyhtml-preinstall-git = cd 3RPARTYDIR; git clone URL/HTML.py
-common-pyhtml-install-git = cd HTML.py; sudo python setup.py install
-
-common-gmetad-python-preinstall-git = cd 3RPARTYDIR; git clone URL/monitor-core.git
-
-common-bootstrap-preinstall-git = cd 3RPARTYDIR; git clone URL/bootstrap.git
-
-common-bootstrap-wizard-preinstall-git = cd 3RPARTYDIR; git clone URL/Bootstrap-Wizard.git
-
-common-streamprox-preinstall-git = cd 3RPARTYDIR; git clone URL/StreamProx.git
-
-common-d3-preinstall-git = cd 3RPARTYDIR; git clone URL/d3.git
-
-common-novaclient-preinstall-pip = sudo pip install --upgrade INDEXURL pbr; sudo pip install --upgrade INDEXURL netifaces
-common-novaclient-install-pip = sudo pip install --upgrade INDEXURL python-novaclient==6.0.0
-
-common-neutronclient-install-pip = sudo pip install --upgrade INDEXURL python-neutronclient
-
-common-cinderclient-install-pip = sudo pip install --upgrade INDEXURL python-cinderclient
-
-common-glanceclient-install-pip = sudo pip install --upgrade INDEXURL python-glanceclient
-
-common-softlayer-install-pip = sudo pip install --upgrade INDEXURL softlayer
-
-common-boto-install-pip = sudo pip install --upgrade INDEXURL boto
-
-common-libcloud-install-pip = sudo pip install --upgrade INDEXURL apache-libcloud
-
-common-gcloud-install-man =  rm -rf ~/google-cloud-sdk; export CLOUDSDK_CORE_DISABLE_PROMPTS=1 && curl https://sdk.cloud.google.com | bash
-common-gcloud-postinstall-man =  sudo ln -s ~/google-cloud-sdk/bin/gcloud /usr/local/bin/gcloud
-
-common-pygce-install-pip =  sudo pip install --upgrade INDEXURL gcloud google-api-python-client
-
-common-pydocker-install-pip =  sudo pip install --upgrade INDEXURL docker-py==1.8.1 wget
-
-common-pylxd-install-pip =  sudo pip install --upgrade INDEXURL pylxd
-
-common-pykube-install-pip =  sudo pip install --upgrade INDEXURL pykube
-
-rhel-iptables-install-pm = package_install iptables-services iptables
-rhel-iptables-postinstall-pm = sudo  touch /etc/sysconfig/iptables; sudo touch /etc/sysconfig/ip6table; service_stop_disable iptables
-fedora-iptables-install-pm = package_install iptables-services iptables
-fedora-iptables-postinstall-pm = sudo  touch /etc/sysconfig/iptables; sudo touch /etc/sysconfig/ip6table; service_stop_disable iptables
-ubuntu-iptables-install-pm = package_install iptables
-ubuntu-iptables-postinstall-pm = service_stop_disable iptables
-
-rhel-R-install-pm = package_install R
-fedora-R-install-pm = package_install R
-ubuntu-R-install-pm = package_install r-base-core
-
 common-sshkey-install-man = ssh-keygen -f CREDENTIALSDIR/cbtool_rsa -t rsa -N ''
 
-common-sshd-install-man = sudo sed -i 's/.*UseDNS.*/UseDNS no/g' /etc/ssh/sshd_config; sudo sed -i 's/.*GSSAPIAuthentication.*/GSSAPIAuthentication no/g' /etc/ssh/sshd_config
-
-common-pssh-install-pm = package_install pssh
-
-common-docutils-install-pip = sudo pip install --upgrade INDEXURL docutils
-
-common-setuptools-install-pip = sudo pip install --upgrade INDEXURL setuptools
-
-common-markup-install-pip = sudo pip install --upgrade INDEXURL markup
-
-common-pyyaml-install-pip = sudo pip install --upgrade INDEXURL pyyaml
-
-common-ruamelyaml-install-pip = sudo pip install --upgrade INDEXURL ruamel.yaml
 ### END -  Dependency and method-specific command lines ###

@@ -1,5 +1,5 @@
 ### START - Dependency installation order ###
-nuttcp-order = 96
+hpcc-order = 82
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -9,16 +9,21 @@ nuttcp-order = 96
 # git = git clone using above giturl
 # pip = python pip utility
 # man = "manual"
-nuttcp-install = man
+hpcc-install = pm
+
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
-nuttcp-configure = nuttcp -V 2>&1 | sed 's/nuttcp-//g'
+hpcc-configure = which hpcc
 ### END - Tests ###
 
 ### START - Dependency versions ###
-nuttcp-ver = 5.0
+hpcc-ver = ANY
 ### END - Dependency versions ###
+
+### START - Dependency URLs ###
+
+### END - Dependency URLs ###
 
 ### START -  Dependency and method-specific command lines ###
 

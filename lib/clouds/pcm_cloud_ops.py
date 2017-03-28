@@ -586,9 +586,14 @@ class PcmCmds(CommonCloudFunctions) :
             _candidate_images = []
 
             for _image in _image_list :
-                if self.is_cloud_image_uuid(obj_attr_list["imageid1"]) : 
-                    if _image.fingerprint == obj_attr_list["imageid1"] :
-                        _candidate_images.append(_image) 
+                if self.is_cloud_image_uuid(obj_attr_list["imageid1"]) :
+
+                    if len(obj_attr_list["imageid1"]) == 12 :
+                        if _image.fingerprint.count(obj_attr_list["imageid1"]) :
+                            _candidate_images.append(_image)                             
+                    else :                                                
+                        if _image.fingerprint == obj_attr_list["imageid1"] :
+                            _candidate_images.append(_image) 
                 else :
                     if len(_image.aliases) :
                         if _image.aliases[0]["name"] == obj_attr_list["imageid1"] :

@@ -21,5 +21,7 @@ dd-ver = ANY
 ### END - Dependency versions ###
 
 ### START -  Dependency and method-specific compmd lines ###
-common-dd-install-pm = package_install coreutuils
+
+# AUTOMATICALLY EXTRACTED FROM DOCKERFILE ON ../../docker/workload/
+
 ### END -  Dependency and method-specific compmd lines ###
