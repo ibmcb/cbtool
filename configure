@@ -56,6 +56,11 @@ def main() :
                        default= _path + "/3rd_party", \
                        help="Name of the third-party directory")
 
+    _parser.add_option("--dfdir", \
+                       dest="dfdir", \
+                       default= _path + "/docker", \
+                       help="Name of the Dockerfile directory")
+
     _parser.add_option("--creddir", \
                        dest="creddir", \
                        default=_path + "/credentials/", \
@@ -95,6 +100,11 @@ def main() :
                        dest = "addr", \
                        default = None, \
                        help = "Package (and pip) repository address")
+
+    _parser.add_option("-f","--filestore", \
+                       dest = "filestore", \
+                       default = "127.0.0.1-10000-root", \
+                       help = "The filestore URL in the form IP-PORT-DIR")
 
     _parser.add_option("--clouds", \
                        dest = "clouds", \
@@ -217,7 +227,9 @@ def main() :
         _msg = "Installing dependencies for " + _tool + " on this node........."
         cbinfo(_msg)
 
-    _status, _msg = dependency_checker_installer("127.0.0.1", getpwuid(os.getuid())[0], _bname, options)
+    _depsdict = {}
+
+    _status, _msg = dependency_checker_installer("127.0.0.1", _depsdict, getpwuid(os.getuid())[0], _bname, options)
     if _status :
         cberr(_msg)
         exit(_status)
@@ -239,7 +251,7 @@ def main() :
     else :
         cbinfo(_msg) 
         print '\n'
-        _status, _msg = instance_preparation("127.0.0.1", options)
+        _status, _msg = instance_preparation("127.0.0.1", _depsdict, options)
 
         if not _status :
             print '\n------------------------------------------------------------\n'

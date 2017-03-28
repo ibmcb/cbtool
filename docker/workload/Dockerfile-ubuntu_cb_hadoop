@@ -1,19 +1,21 @@
 FROM REPLACE_NULLWORKLOAD_UBUNTU
 
-RUN apt-get update
-RUN apt-get install -y software-properties-common
+RUN wget -N -P /home/REPLACE_USERNAME http://launchpadlibrarian.net/109052632/python-support_1.0.15_all.deb; dpkg -i /home/REPLACE_USERNAME/python-support*.deb
 
-RUN wget -N -P /home/cbuser http://launchpadlibrarian.net/109052632/python-support_1.0.15_all.deb
-RUN dpkg -i /home/cbuser/python-support*.deb
+# java-install-pm
+RUN apt-get update; apt-get install -y software-properties-common;
+RUN add-apt-repository -y ppa:openjdk-r/ppa
+RUN apt-get update; apt-get install -y openjdk-7-jdk
+# java-install-pm
 
-RUN add-apt-repository ppa:openjdk-r/ppa
-RUN apt-get update
-RUN apt-get install -y openjdk-7-jdk
+# hadoop-install-man
+RUN wget -N -q -P /home/REPLACE_USERNAME https://archive.apache.org/dist/hadoop/common/hadoop-1.2.1/hadoop-1.2.1.tar.gz
+#RUN wget -N -q -P /home/REPLACE_USERNAME https://archive.apache.org/dist/hadoop/common/hadoop-2.3.0/hadoop-2.3.0.tar.gz
+RUN /bin/true; cd /home/REPLACE_USERNAME; tar -xzf /home/REPLACE_USERNAME/hadoop*.gz
+# hadoop-install-man
 
-#RUN wget -N -P /home/cbuser http://www.carfab.com/apachesoftware/hadoop/common/hadoop-1.2.1/hadoop-1.2.1.tar.gz
-RUN wget -N -P /home/cbuser https://archive.apache.org/dist/hadoop/common/hadoop-2.3.0/hadoop-2.3.0.tar.gz
-RUN cd /home/cbuser; tar -xzf /home/cbuser/hadoop*.gz
+# hibench-install-git
+RUN /bin/true; cd /home/REPLACE_USERNAME; git clone https://github.com/ibmcb/HiBench.git; cd /home/REPLACE_USERNAME/HiBench; git checkout dev
+# hibench-install-git
 
-RUN cd /home/cbuser; git clone https://github.com/ibmcb/HiBench.git; cd /home/cbuser/HiBench; git checkout dev
-
-RUN chown -R cbuser:cbuser /home/cbuser
+RUN chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME

@@ -2441,8 +2441,10 @@ class BaseObjectOperations :
                 _vm_priv_keys.append(_obj_attr_list["identity"])
 
                 if str(_ai_attr_list["build"]).lower() != "false" :
-                    _cmd = "~/" + _obj_attr_list["remote_dir_name"] + "/install --role workload"
+                    _cmd = "~/" + _obj_attr_list["remote_dir_name"] + "/pre_install.sh; "
+                    _cmd += "~/" + _obj_attr_list["remote_dir_name"] + "/install --role workload"
                     _cmd += " --wks " + _obj_attr_list["type"] + " --addr bypass"
+                    _cmd += " --filestore " + _obj_attr_list["filestore_host"] + '-' + _obj_attr_list["filestore_port"] + '-' + _obj_attr_list["filestore_username"] 
                     _cmd += " --syslogh " + _obj_attr_list["logstore_host"]
                     _cmd += " --syslogp " + _obj_attr_list["logstore_port"] 
                     _cmd += " --syslogf 21 --logdest syslog && "
@@ -3921,7 +3923,7 @@ class BaseObjectOperations :
                                 _msg += "; ./cbssh " + obj_attr_list["name"] + "\""
                                 _msg += " to login on the VM. Once there, execute"
                                 _msg += " \"cd ~/" + obj_attr_list["remote_dir_name"] 
-                                _msg +=  "; ./install -r workload --wks nullworkload\" "
+                                _msg +=  "; ./pre_install.sh; ./install -r workload --wks nullworkload\" "
                                 _msg += "to automatically configure a new instance."
                                 _msg += "\nOnce done, execute \"vmcapture youngest " 
                                 _msg += obj_attr_list["image_prefix"] + "cb_nullworkload"

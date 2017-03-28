@@ -1,20 +1,19 @@
-FROM REPLACE_NULLWORKLOAD_UBUNTU
+FROM REPLACE_NULLWORKLOAD_CENTOS
 
 # gcc-install-pm
-RUN apt-get update
-RUN apt-get install -y gcc
+RUN yum install -y gcc php7.0-cli
 # gcc-install-pm
 
 # git-install-pm
-RUN apt-get install -y git-all
+RUN yum install -y git-all
 # git-install-pm
 
 # perl-install-pm
-RUN apt-get install -y perl
+RUN yum install -y perl-Time-HiRes
 # perl-install-pm
 
 # unixbench-install-git
-RUN mkdir -p /home/REPLACE_USERNAME/byte-unixbench; chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME/
+RUN mkdir -p /home/REPLACE_USERNAME/byte-unixbench
 RUN wget -N -q -P /home/REPLACE_USERNAME/byte-unixbench https://s3.amazonaws.com/cloudbench/software/UnixBench5.1.3.tgz
 RUN cd /home/REPLACE_USERNAME/byte-unixbench; tar -zxf UnixBench5.1.3.tgz; rm UnixBench5.1.3.tgz
 RUN cd /home/REPLACE_USERNAME/byte-unixbench/UnixBench; make all

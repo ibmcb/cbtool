@@ -215,6 +215,7 @@ class PdmCmds(CommonCloudFunctions) :
 
                 if not self.is_cloud_image_uuid(_imageid) :
                     try :
+                        True
                         self.dockconn[_endpoint].pull(_imageid)
                     except :
                         pass
@@ -578,16 +579,17 @@ class PdmCmds(CommonCloudFunctions) :
             _endpoints = self.dockconn.keys()
         else :
             _endpoints = [endpoints]
-                      
+
         try :
-            for _endpoint in _endpoints :            
+            for _endpoint in _endpoints :
                 if obj_type == "vm" :
                     _call = "containers()"
                     if identifier == "all" :
                         _instances += self.dockconn[_endpoint].containers(all=True)
-                                                                       
+                        
                     else :
                         _instances += self.dockconn[_endpoint].containers(filters = {"name" : identifier})
+                        
                 else :
                     _call = "volumes()"                    
                     if identifier == "all" :
@@ -605,25 +607,27 @@ class PdmCmds(CommonCloudFunctions) :
         
         except APIError, obj:
             _status = 18127
-            _xfmsg = str(obj.message) + " \"" + str(obj.explanation) + "\""
+            _xfmsg = "API Error " + str(obj.message) + " \"" + str(obj.explanation) + "\""
 
         except CldOpsException, obj :
             _status = obj.status
-            _xfmsg = str(obj.msg)
+            _xfmsg = "Cloud Exception " + str(obj.msg)
 
         except Exception, e :
             _status = 23
-            _xfmsg = str(e)
+            _xfmsg = "Exception " + str(e)
             
         finally :
+            
             if _status :
-                _fmsg = "(While getting instance(s) through API call \"" + _call + "\") " + _xfmsg
+                _fmsg = "(While getting instance(s) through API call \"" + _call + "\") : " + _xfmsg
+                
                 if identifier not in self.api_error_counter :
                     self.api_error_counter[identifier] = 0
-                
+
                 self.api_error_counter[identifier] += 1
-                
-                if self.api_error_counter[identifier] > self.max_api_errors :            
+
+                if self.api_error_counter[identifier] > self.max_api_errors :
                     raise CldOpsException(_fmsg, _status)
                 else :
                     cbwarn(_fmsg)
@@ -1084,7 +1088,7 @@ class PdmCmds(CommonCloudFunctions) :
                 self.dockconn[_host_ip].remove_container(_instance["Id"])
 
                 while len(_instance) and _curr_tries < _max_tries :
-                    _instance = self.get_instances(obj_attr_list, "vm", \
+                    _instance = self.get_instances(obj_attr_list, "vm", _host_ip, \
                                            obj_attr_list["cloud_vm_name"])
 
                     sleep(_wait)

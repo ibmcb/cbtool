@@ -1,8 +1,7 @@
-FROM REPLACE_NULLWORKLOAD_UBUNTU
+FROM REPLACE_NULLWORKLOAD_CENTOS
 
 # filebench-install-man
-RUN apt-get update
-RUN apt-get install -y libaio1 bison flex gawk
+RUN yum install -y libaio1 bison flex gawk
 RUN wget -N -q -P /home/REPLACE_USERNAME https://github.com/filebench/filebench/releases/download/1.5-alpha3/filebench-1.5-alpha3.tar.gz
 RUN cd /home/REPLACE_USERNAME; tar -xzf filebench-*.tar.gz
 RUN cd /home/REPLACE_USERNAME/filebench*; ./configure; make; make install

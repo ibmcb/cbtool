@@ -1,8 +1,7 @@
-FROM REPLACE_NULLWORKLOAD_UBUNTU
+FROM REPLACE_NULLWORKLOAD_CENTOS
 
 # fio-install-pm
-RUN apt-get update
-RUN apt-get install -y libaio1 fio
+RUN yum install -y libaio1 fio
 # fio-install-pm
 
 RUN chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME

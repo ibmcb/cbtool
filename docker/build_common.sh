@@ -4,9 +4,11 @@ function cb_docker_build {
     CB_REPOSITORY=$1
     CB_VERBQUIET=$2    
     CB_DOCKERFN=$3
-    CB_ARCH=$4
-    CB_RSYNC=$5
-    CB_FATAL=$6
+    CB_USERNAME=$4 
+    CB_ARCH=$5
+    CB_RSYNC=$6
+    CB_FATAL=$7
+    CB_SQUASH=$8
 
     if [[ $CB_ARCH == "x86_64" ]]
     then
@@ -21,10 +23,20 @@ function cb_docker_build {
         CB_ARCH2=ppc64
         CB_ARCH3=ppc64
     fi                        
-                                                                        
+
+    CB_ACTUAL_SQUASH=''
+    if [[ ! -z $CB_SQUASH ]]
+    then
+        if [[ $CB_SQUASH == "true" ]]
+        then
+#	        CB_ACTUAL_SQUASH="--squash"
+	        CB_ACTUAL_SQUASH=""	        
+        fi
+    fi                                                                                                                                                                                                                        
     sudo rm -rf Dockerfile && sudo cp -f $CB_DOCKERFN Dockerfile
-    sudo cp -f $CB_DOCKERFN ${CB_DOCKERFN}._processed_        
-    
+
+    sudo sed -i "s^REPLACE_USERNAME^$CB_USERNAME^g" Dockerfile    
+            
     CB_DNAME=$(echo $CB_DOCKERFN | sed 's/Dockerfile-//g')
 
     sudo sed -i "s^REPLACE_ARCH1^$CB_ARCH1^g" Dockerfile
@@ -64,9 +76,11 @@ function cb_docker_build {
     then          
         sudo sed -i "s^REPLACE_NULLWORKLOAD_CENTOS^${CB_REPOSITORY}/$CB_DNAME_NULLWORKLOAD_CENTOS^g" Dockerfile
     fi
-    
+
+    sudo cp -f Dockerfile ${CB_DOCKERFN}._processed_    
+            
     CB_ACTUAL_VERBQUIET=$(echo $CB_VERBQUIET | sed 's/--ve//g')
-    CB_DOCKER_CMD="sudo docker build -t ${CB_REPOSITORY}/$CB_DNAME $CB_ACTUAL_VERBQUIET ."
+    CB_DOCKER_CMD="sudo docker build -t ${CB_REPOSITORY}/$CB_DNAME $CB_ACTUAL_VERBQUIET $CB_ACTUAL_SQUASH ."
     echo "########## Building image ${CB_REPOSITORY}/$CB_DNAME by executing the command \"$CB_DOCKER_CMD\" ..."
     $CB_DOCKER_CMD
     ERROR=$?
@@ -85,21 +99,21 @@ function cb_docker_build {
         echo "############## INFO: Image \"${CB_REPOSITORY}/$CB_DNAME\" built successfully!!!" 
     fi
     sudo rm -rf Dockerfile
-    echo "########## Image ${CB_REPOSITORY}/$CB_DOCKER_CMD built successfully"    
 }
 export -f cb_docker_build
 
 function cb_build_orchestrator {
     CB_REPOSITORY=$1
     CB_VERBQUIET=$2
-    CB_ARCH=$3
+    CB_USERNAME=$3
+    CB_ARCH=$4
             
     echo "##### Building Docker orchestrator images"
     pushd orchestrator > /dev/null 2>&1
     sudo rm -rf Dockerfile
     for CB_DFILE in $(ls Dockerfile* | grep -v _processed_)
     do
-        cb_docker_build $CB_REPOSITORY $CB_VERBQUIET $CB_DFILE $CB_ARCH true
+        cb_docker_build $CB_REPOSITORY $CB_VERBQUIET $CB_DFILE $CB_USERNAME $CB_ARCH NONE true
     done
     echo "##### Done building Docker orchestrator images"
     echo
@@ -121,8 +135,9 @@ export -f cb_refresh_vanilla_images
 function cb_build_base_images {
     CB_REPOSITORY=$1
     CB_VERBQUIET=$2
-    CB_ARCH=$3
-    CB_RSYNC=$4
+    CB_USERNAME=$3
+    CB_ARCH=$4
+    CB_RSYNC=$5
                   
     echo "##### Building Docker base images"
     pushd base > /dev/null 2>&1
@@ -149,7 +164,7 @@ function cb_build_base_images {
             export CB_DNAME_BASE_CENTOS=$CB_DNAME
         fi
 
-        cb_docker_build $CB_REPOSITORY $CB_VERBQUIET $CB_DFILE $CB_ARCH $CB_RSYNC true
+        cb_docker_build $CB_REPOSITORY $CB_VERBQUIET $CB_DFILE $CB_USERNAME $CB_ARCH $CB_RSYNC true false
     done
     echo "##### Done building Docker base images"
     echo
@@ -160,8 +175,9 @@ export -f cb_build_base_images
 function cb_build_nullworkloads {
     CB_REPOSITORY=$1
     CB_VERBQUIET=$2
-    CB_ARCH=$3
-    CB_RSYNC=$4
+    CB_USERNAME=$3
+    CB_ARCH=$4
+    CB_RSYNC=$5
             
     echo "##### Building Docker nullworkload images"
     pushd workload > /dev/null 2>&1
@@ -186,10 +202,10 @@ function cb_build_nullworkloads {
         echo $CB_DNAME | grep centos > /dev/null 2>&1
         if [[ $? -eq 0 ]]
         then
-            export CB_DNAME_NULLWORKLOAD_PHUSION=$CB_DNAME
+            export CB_DNAME_NULLWORKLOAD_CENTOS=$CB_DNAME
         fi                
                                                 
-        cb_docker_build $CB_REPOSITORY $CB_VERBQUIET $CB_DFILE $CB_ARCH $CB_RSYNC true
+        cb_docker_build $CB_REPOSITORY $CB_VERBQUIET $CB_DFILE $CB_USERNAME $CB_ARCH $CB_RSYNC true true
     done
     echo "##### Done building Docker nullworkload images"
     echo
@@ -200,9 +216,10 @@ export -f cb_build_nullworkloads
 function cb_build_workloads {
     CB_REPOSITORY=$1
     CB_VERBQUIET=$2
-    CB_ARCH=$3    
-    CB_WORKLOAD=$4
-    CB_RSYNC=$5
+    CB_USERNAME=$3
+    CB_ARCH=$4
+    CB_WORKLOAD=$5
+    CB_RSYNC=$6
 
     if [[ $CB_WORKLOAD == "ALL" ]]
     then
@@ -214,7 +231,7 @@ function cb_build_workloads {
     echo "##### Building the rest of the Docker workload images"
     for CB_DFILE in $(ls Dockerfile*${CB_WORKLOAD} | grep -v nullworkload | grep -v _processed_ | grep -v ignore)
     do
-        cb_docker_build $CB_REPOSITORY $CB_VERBQUIET $CB_DFILE $CB_ARCH $CB_RSYNC false
+        cb_docker_build $CB_REPOSITORY $CB_VERBQUIET $CB_DFILE $CB_USERNAME $CB_ARCH $CB_RSYNC false false
     done
     echo "##### Done building the rest of the Docker workload images"
     popd > /dev/null 2>&1

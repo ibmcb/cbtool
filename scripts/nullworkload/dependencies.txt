@@ -1,6 +1,6 @@
 ### START - Dependency installation order ###
-haproxy-order = 50
-sshconfig-order = 51
+haproxy-order = 70
+sshconfig-order = 71
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -25,8 +25,7 @@ sshconfig-ver = ANY
 ### END - Dependency versions ###
 
 ### START -  Dependency and method-specific command lines ###
-common-sshconfig-preinstall-man = mkdir -p ~/.ssh; chmod 700 ~/.ssh
-common-sshconfig-install-man = echo "StrictHostKeyChecking=no" >> ~/.ssh/config && echo "UserKnownHostsFile=/dev/null" >> ~/.ssh/config && chmod 600 ~/.ssh/config
-common-haproxy-install-pm = package_install haproxy
-common-haproxy-postinstall-pm = service_stop_disable haproxy
+
+# AUTOMATICALLY EXTRACTED FROM DOCKERFILE ON ../../docker/workload/
+
 ### END -  Dependency and method-specific command lines ###

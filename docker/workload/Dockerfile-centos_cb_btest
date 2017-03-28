@@ -1,8 +1,7 @@
-FROM REPLACE_NULLWORKLOAD_UBUNTU
+FROM REPLACE_NULLWORKLOAD_CENTOS
 
-RUN apt-get update
 # btest-install-man
-RUN apt-get install -y libaio-dev libaio1
+RUN yum install -y libaio-devel
 RUN wget -N -q -P /home/REPLACE_USERNAME https://sourceforge.net/projects/btest/files/Version-161/Linux_bin_REPLACE_ARCH2/btest/download
 RUN mv /home/REPLACE_USERNAME/download /usr/local/bin/btest
 RUN chmod 755 /usr/local/bin/btest
