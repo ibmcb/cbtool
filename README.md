@@ -29,7 +29,7 @@ Subscribe to our mailing list:
 
 8. [If needed, debug the initial setup](https://github.com/maugustosilva/cbtool/wiki/HOWTO:-Debug-initial-setup)
 
-9. [Configure CBTOOL to run outside of the cloud (or with multiple tenant networks)](https://github.com/maugustosilva/cbtool/wiki/HOWTO:-Run-the-CloudBench-orchestrator-outside-of-the-cloud-(or-with-multiple-tenant-networks)
+9. [Configure CBTOOL to run outside of the cloud (or with multiple tenant networks)](https://github.com/maugustosilva/cbtool/wiki/HOWTO:-Run-the-CloudBench-orchestrator-outside-of-the-cloud-(or-with-multiple-tenant-networks))
 
     1. [Detailed instructions on how to use OpenVPN support](https://github.com/maugustosilva/cbtool/wiki/HOWTO:-Use-VPN-support-with-your-benchmarks)
     
