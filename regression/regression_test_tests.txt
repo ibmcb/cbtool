@@ -311,7 +311,7 @@ aiattach TESTCLOUD hadoop save_on_attach=true\; ailist TESTCLOUD\; vmlist TESTCL
 airestore TESTCLOUD ai_28\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD\; stateshow TESTCLOUD
 aiattach TESTCLOUD notype\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
 aidetach TESTCLOUD all\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
-typealter TESTCLOUD ibm_daytrader sut=client_daytrader->was->willfail\; aiattach TESTCLOUD ibm_daytrader\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
+typealter TESTCLOUD ibm_daytrader sut=client_ibm_daytrader->was->willfail\; aiattach TESTCLOUD ibm_daytrader\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
 vmlist TESTCLOUD finished
 vmlist TESTCLOUD failed 
 patternalter TESTCLOUD simplenw iait=10\; patternshow TESTCLOUD simplenw

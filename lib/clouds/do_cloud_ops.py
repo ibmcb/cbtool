@@ -26,6 +26,7 @@ class DoCmds(LibcloudCmds) :
                               num_credentials = 1, \
                               use_ssh_keys = True, \
                               use_cloud_init = True, \
+                              use_volumes = True, \
                               tldomain = "digitalocean.com", \
                               extra = {"private_networking" : True} \
                              )

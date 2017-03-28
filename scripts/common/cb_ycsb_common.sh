@@ -24,18 +24,14 @@
 
 source ~/.bashrc
 
-dir=$(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")
-if [[ -e $dir/cb_common.sh ]]
-then
-    source $dir/cb_common.sh
-else
-    source $dir/../common/cb_common.sh
-fi
+source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
 declare -A token
 
 LINUX_DISTRO=$(linux_distribution)
 BACKEND_TYPE=$(get_my_ai_attribute type | sed 's/_ycsb//g')
+
+set_java_home
 
 if [[ $BACKEND_TYPE == "cassandra" ]]
 then
@@ -43,46 +39,10 @@ then
     sudo chmod 777 /var/run/cassandra
 fi
 
-#MY_IP=`/sbin/ifconfig eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' | tr -d '\r\n'`
-
-#while [[ -z $MY_IP ]] 
-#do
-    #    syslog_netcat "MY IP is null"
-    #MY_IP=`/sbin/ifconfig eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' | tr -d '\r\n'`
-    #sleep 1
-#done
-
 MY_IP=$my_ip_addr
 
 YCSB_PATH=$(get_my_ai_attribute_with_default ycsb_path ~/YCSB)
 eval YCSB_PATH=${YCSB_PATH}
-    
-if [[ -z ${JAVA_HOME} ]]
-then
-    JAVA_HOME=$(get_my_ai_attribute_with_default java_home auto)            
-    if [[ ${JAVA_HOME} == "auto" ]]
-    then
-        syslog_netcat "JAVA_HOME is set to \"auto\". Attempting to find the most recent in /usr/lib/jvm"            
-        JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre
-    fi
-
-    syslog_netcat "JAVA_HOME determined to be \"${JAVA_HOME}\""    
-            
-    eval JAVA_HOME=${JAVA_HOME}
-    if [[ -f ~/.bashrc ]]
-    then
-        is_java_home_export=`grep -c "JAVA_HOME=${JAVA_HOME}" ~/.bashrc`
-        if [[ $is_java_home_export -eq 0 ]]
-        then
-            syslog_netcat "Adding JAVA_HOME=${JAVA_HOME} to bashrc"
-            echo "export JAVA_HOME=${JAVA_HOME}" >> ~/.bashrc
-        fi
-    fi
-else 
-    syslog_netcat "Line \"export JAVA_HOME=${JAVA_HOME}\" was already added to bashrc"    
-fi
-    
-export JAVA_HOME=${JAVA_HOME}
 
 if [[ $BACKEND_TYPE == "cassandra" ]]
 then 

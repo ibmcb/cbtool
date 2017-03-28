@@ -75,6 +75,7 @@ class KubCmds(CommonCloudFunctions) :
             for _x in pykube.Endpoint.objects(self.kubeconn) :
                 True
 
+            self.additional_rc_contents = "export KUBECONFIG=" + access + "\n"
             _status = 0
             
         except Exception, e :
@@ -349,19 +350,11 @@ class KubCmds(CommonCloudFunctions) :
                 obj_attr_list["host_list"] = {}
                 obj_attr_list["host_count"] = "NA"
 
-            if "cloud_name" in obj_attr_list :
-                _file = expanduser("~") + "/cbrc-" + obj_attr_list["cloud_name"].lower()
-            else :
-                _file = expanduser("~") + "/cbrc"
-                
-            _file_fd = open(_file, 'w')
-#            _file_fd.write("export KUBERNETES_MASTER = " + obj_attr_list["access"] + "\n")
-
-            if "cloud_name" in obj_attr_list :                        
-                _file_fd.write("export CB_CLOUD_NAME=" + obj_attr_list["cloud_name"] + "\n")
-                _file_fd.write("export CB_USERNAME=" + obj_attr_list["username"] + "\n")
-                
-            _file_fd.close()
+            obj_attr_list["network_detected"] = "flannel"
+            _container_list = pykube.objects.Pod.objects(self.kubeconn).filter(namespace = "kube-system")
+            for _container in _container_list :
+                if _container.name.count("calico") :
+                    obj_attr_list["network_detected"] = "calico"
             
             _time_mark_prc = int(time())
             obj_attr_list["mgt_003_provisioning_request_completed"] = \
@@ -438,7 +431,6 @@ class KubCmds(CommonCloudFunctions) :
                 _container_list = pykube.objects.Pod.objects(self.kubeconn).filter()
                 for _container in _container_list :
                     if _container.name.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"].lower()) :
-                        print _container.obj["status"]
                         _nr_instances += 1
 
         except Exception, e :
@@ -517,16 +509,25 @@ class KubCmds(CommonCloudFunctions) :
                 if identifier == "all" :
                     _instances = pykube.objects.ReplicaSet.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"])
                 else :
-                    if "selector" in obj_attr_list and "detected_cloud_vm_name" not in obj_attr_list :
+                    if "cloud_rs_exact_match_name" in obj_attr_list  :
+                        identifier = obj_attr_list["cloud_rs_exact_match_name"]
+                        _instances = pykube.objects.ReplicaSet.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"], \
+                                                                                      field_selector={"metadata.name": identifier})
+                                                
+                    elif "selector" in obj_attr_list :
                         _selector = str2dic(obj_attr_list["selector"])
                         _instances = pykube.objects.ReplicaSet.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"], \
                                                                                              selector= _selector)
+
+                    else :
+                        _instances = pykube.objects.ReplicaSet.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"], \
+                                                                                      field_selector={"metadata.name": identifier})
                         
             elif obj_type == "deployment" :
                 if identifier == "all" :
                     _instances = pykube.objects.Deployment.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"])
                 else :
-                    if "selector" in obj_attr_list and "detected_cloud_vm_name" not in obj_attr_list :
+                    if "selector" in obj_attr_list :
                         _selector = str2dic(obj_attr_list["selector"])
                         _instances = pykube.objects.Deployment.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"], \
                                                                                       selector= _selector)
@@ -538,7 +539,7 @@ class KubCmds(CommonCloudFunctions) :
                 else :
                     True
                         
-            if len(_instances) == 1 :
+            if _instances :
                 for _x in _instances :
                     _instances = _x
 
@@ -642,22 +643,44 @@ class KubCmds(CommonCloudFunctions) :
 
             _instance = self.get_instances(obj_attr_list, "pod", obj_attr_list["cloud_vm_name"])
 
+            _instance_status = False
             if _instance :
-                _instance_ready = _instance.obj["status"]["containerStatuses"][0]
-            else :
-                _instance_ready = False
-
-            if _instance_ready :
+                if "status" in _instance.obj :
+                    if "containerStatuses" in _instance.obj["status"] :
+                        if "state" in _instance.obj["status"]["containerStatuses"][0] : 
+                            _instance_status = _instance.obj["status"]["containerStatuses"][0]["state"].keys()[0]
+            
+            if str(_instance_status) == "running" :
                 self.instance_info = _instance.obj
                 obj_attr_list["cloud_vm_exact_match_name"] = _instance.name
                 obj_attr_list["cloud_vm_name"] = _instance.name
                 obj_attr_list["cloud_hostname"] = _instance.name
                 
-                _instance_status = self.instance_info["status"]["containerStatuses"][0]["state"].keys()[0]
-                
                 if "hostIP" in self.instance_info["status"] :
                     _host_ip = self.instance_info["status"]["hostIP"]
                     obj_attr_list["host_name"], obj_attr_list["host_cloud_ip"] = hostname2ip(_host_ip, True)     
+
+                if obj_attr_list["abstraction"] == "replicaset" or obj_attr_list["abstraction"] == "deployment" :
+                    if "cloud_rs_exact_match_name" not in obj_attr_list :
+                        _x_instance = self.get_instances(obj_attr_list, "replicaset", obj_attr_list["cloud_rs_name"])
+                        if _x_instance :
+                            obj_attr_list["cloud_rs_exact_match_name"] = _x_instance.name
+                            obj_attr_list["cloud_rs_name"] = _x_instance.name
+
+                            if "metadata" in _x_instance.obj :
+                                if "uid" in _x_instance.obj["metadata"] :                        
+                                    obj_attr_list["cloud_rs_uuid"] = _x_instance.obj["metadata"]["uid"]
+                                                 
+                if obj_attr_list["abstraction"] == "deployment" :
+                    if "cloud_d_exact_match_name" not in obj_attr_list :
+                        _x_instance = self.get_instances(obj_attr_list, "deployment", obj_attr_list["cloud_d_name"])
+                        if _x_instance :                        
+                            obj_attr_list["cloud_d_exact_match_name"] = _x_instance.name
+                            obj_attr_list["cloud_d_name"] = _x_instance.name
+
+                            if "metadata" in _x_instance.obj :
+                                if "uid" in _x_instance.obj["metadata"] :           
+                                    obj_attr_list["cloud_d_uuid"] = _x_instance.obj["metadata"]["uid"]
                             
                 return True
             else :
@@ -780,7 +803,12 @@ class KubCmds(CommonCloudFunctions) :
             
             self.determine_instance_name(obj_attr_list)
             obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"].lower()
-            obj_attr_list["cloud_vv_name"] = obj_attr_list["cloud_vv_name"].lower()                                           
+            obj_attr_list["cloud_vv_name"] = obj_attr_list["cloud_vv_name"].lower()
+            obj_attr_list["cloud_rs_name"] = obj_attr_list["cloud_vm_name"]
+            obj_attr_list["cloud_d_name"] = obj_attr_list["cloud_vm_name"]
+            obj_attr_list["cloud_rs_uuid"] = "NA"
+            obj_attr_list["cloud_d_uuid"] = "NA"
+                                                
             self.determine_key_name(obj_attr_list)
 
             self.take_action_if_requested("VM", obj_attr_list, "provision_originated")
@@ -826,9 +854,9 @@ class KubCmds(CommonCloudFunctions) :
             if obj_attr_list["abstraction"] == "replicaset" :
                 _obj = { "apiVersion": "extensions/v1beta1", \
                          "kind": "ReplicaSet", \
-                         "id": obj_attr_list["cloud_vm_name"], \
-                         "metadata": { "name": obj_attr_list["cloud_vm_name"], "namespace": obj_attr_list["namespace"]}, \
-                         "spec": { "replicas": 1, \
+                         "id": obj_attr_list["cloud_rs_name"], \
+                         "metadata": { "name": obj_attr_list["cloud_rs_name"], "namespace": obj_attr_list["namespace"]}, \
+                         "spec": { "replicas": int(obj_attr_list["replicas"]), \
                                    "template": {
                                                 "metadata": { "labels": { "app": obj_attr_list["cloud_vm_name"], "role": "master", "tier": "backend" } },\
                                                 "spec": { "containers": \
@@ -840,14 +868,14 @@ class KubCmds(CommonCloudFunctions) :
                                   } 
     
                         }
-                obj_attr_list["selector"] = "app:" + obj_attr_list["cloud_vm_name"] + ',' + "role:master,tier:backend" 
+                obj_attr_list["selector"] = "app:" + obj_attr_list["cloud_rs_name"] + ',' + "role:master,tier:backend" 
 
             if obj_attr_list["abstraction"] == "deployment" :
                 _obj = { "apiVersion": "extensions/v1beta1", \
                          "kind": "Deployment", \
-                         "id": obj_attr_list["cloud_vm_name"], \
-                         "metadata": { "name": obj_attr_list["cloud_vm_name"], "namespace": obj_attr_list["namespace"]}, \
-                         "spec": { "replicas": 1, \
+                         "id": obj_attr_list["cloud_d_name"], \
+                         "metadata": { "name": obj_attr_list["cloud_d_name"], "namespace": obj_attr_list["namespace"]}, \
+                         "spec": { "replicas": int(obj_attr_list["replicas"]), \
                                    "template": {
                                                 "metadata": { "labels": { "app": obj_attr_list["cloud_vm_name"], "role": "master", "tier": "backend" } },\
                                                 "spec": { "containers": \
@@ -859,7 +887,7 @@ class KubCmds(CommonCloudFunctions) :
                                   } 
     
                         }
-                obj_attr_list["selector"] = "app:" + obj_attr_list["cloud_vm_name"] + ',' + "role:master,tier:backend" 
+                obj_attr_list["selector"] = "app:" + obj_attr_list["cloud_d_name"] + ',' + "role:master,tier:backend" 
                         
             self.vm_placement(obj_attr_list)
 
@@ -894,8 +922,6 @@ class KubCmds(CommonCloudFunctions) :
                 pykube.Deployment(self.kubeconn, _obj).create()
                                                 
             self.annotate_time_breakdown(obj_attr_list, "instance_scheduling_time", _mark_a)
-
-            self.get_extended_info(obj_attr_list)
                                     
             self.take_action_if_requested("VM", obj_attr_list, "provision_started")
 
@@ -1098,23 +1124,62 @@ class KubCmds(CommonCloudFunctions) :
             _pattern = "%Y-%m-%dT%H:%M:%SZ"
 
             if self.instance_info :
+                                            
                 if "metadata" in self.instance_info :
                     if "resourceVersion" in self.instance_info["metadata"] :
                         obj_attr_list["cloud_resource_version"] = self.instance_info["metadata"]["resourceVersion"]
 
                     if "uid" in self.instance_info["metadata"] :                        
                         obj_attr_list["cloud_vm_uuid"] = self.instance_info["metadata"]["uid"]
-
-                    if "creationTimestamp" in self.instance_info["metadata"] :                        
+                                
+                    if "creationTimestamp" in self.instance_info["metadata"] and "cloud_vm_creation_timestamp" not in obj_attr_list :
                         obj_attr_list["cloud_vm_creation_timestamp"] = int(mktime(strptime(self.instance_info["metadata"]["creationTimestamp"], _pattern)))                       
 
-                _mark_a = obj_attr_list["cloud_vm_creation_timestamp"]
+                _mark_a = int(obj_attr_list["cloud_vm_creation_timestamp"])
+
+                if obj_attr_list["abstraction"] == "deployment" :
+                    for _event in pykube.objects.Event.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"], \
+                                                                                      field_selector={"involvedObject.name": obj_attr_list["cloud_d_name"]}) :
+                        _event_info = _event.obj
+
+                        #if _epoch > obj_attr_list["mgt_001_provisioning_request_originated"] :
+                                                
+                        if _event_info["involvedObject"]["uid"] == obj_attr_list["cloud_d_uuid"] :
+
+                            _epoch = int(mktime(strptime(_event_info["firstTimestamp"], _pattern)))
+                            
+                            if _epoch < _mark_a :
+                                _mark_a = _epoch
+                                obj_attr_list["cloud_vm_creation_timestamp"] = _epoch
+                                                        
+                            self.annotate_time_breakdown(obj_attr_list, "instance_" + _event_info["reason"].lower() + "_time", _epoch - _mark_a, False)
+                            _mark_a = _epoch
+
+                if obj_attr_list["abstraction"] == "replicaset" or obj_attr_list["abstraction"] == "deployment" :
+                    for _event in pykube.objects.Event.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"], \
+                                                                                      field_selector={"involvedObject.name": obj_attr_list["cloud_rs_name"]}) :
+                        _event_info = _event.obj
+                        
+                        #if _epoch > obj_attr_list["mgt_001_provisioning_request_originated"] :
+                        
+                        if _event_info["involvedObject"]["uid"] == obj_attr_list["cloud_rs_uuid"] :
+
+                            _epoch = int(mktime(strptime(_event_info["firstTimestamp"], _pattern)))
+                            
+                            if _epoch < _mark_a :
+                                _mark_a = _epoch
+                                obj_attr_list["cloud_vm_creation_timestamp"] = _epoch
+                                                        
+                            self.annotate_time_breakdown(obj_attr_list, "instance_" + _event_info["reason"].lower() + "_time", _epoch - _mark_a, False)
+                            _mark_a = _epoch
+
                 for _event in pykube.objects.Event.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"], \
                                                                                       field_selector={"involvedObject.name": obj_attr_list["cloud_vm_name"]}) :
                     _event_info = _event.obj
-                    if _event_info["involvedObject"]["uid"] == obj_attr_list["cloud_vm_uuid"] :
-                        _epoch = int(mktime(strptime(_event_info["firstTimestamp"], _pattern)))
                     
+                    if _event_info["involvedObject"]["uid"] == obj_attr_list["cloud_vm_uuid"] :
+                                                
+                        _epoch = int(mktime(strptime(_event_info["firstTimestamp"], _pattern)))
                         self.annotate_time_breakdown(obj_attr_list, "instance_" + _event_info["reason"].lower() + "_time", _epoch - _mark_a, False)
                         _mark_a = _epoch
                 

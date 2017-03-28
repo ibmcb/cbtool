@@ -869,6 +869,9 @@ class CommonCloudFunctions:
         if self.get_description() == "Parallel Container Manager Cloud" :
             if len(imageid) == 64 and is_number(imageid, True) :
                 return True
+
+            if len(imageid) == 12 and is_number(imageid, True) :
+                return True
         
         return False
 

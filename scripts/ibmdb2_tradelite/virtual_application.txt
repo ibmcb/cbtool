@@ -4,6 +4,9 @@
 [AI_TEMPLATES : IBMDB2_TRADELITE]
 DESCRIPTION = TBD
 SUT = client_daytrader->was->db2
+LOAD_BALANCER_SUPPORTED = $True
+RESIZE_SUPPORTED = $True
+REGENERATE_DATA = $True
 LOAD_GENERATOR_ROLE = client_daytrader
 LOAD_MANAGER_ROLE = client_daytrader
 METRIC_AGGREGATOR_ROLE = client_daytrader

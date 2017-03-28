@@ -55,10 +55,10 @@ SSH_KEY_NAME = $KUB_SSH_KEY_NAME
 CHECK_BOOT_STARTED = poll_cloud
 # Other methods could be used to check if a VM *STARTED* booting
 #CHECK_BOOT_STARTED = subscribe_on_starting
-CHECK_BOOT_COMPLETE = wait_for_0
+CHECK_BOOT_COMPLETE = tcp_on_22
 # Other methods could be used to check if a VM *FINISHED* booting
 #CHECK_BOOT_COMPLETE = subscribe_on_booting
-#CHECK_BOOT_COMPLETE = tcp_on_22
+#CHECK_BOOT_COMPLETE = wait_for_0
 NETNAME = private
 TENANT = default
 SIZE = from_vm_template
@@ -67,6 +67,7 @@ FORCE_FAILURE = $False
 DISABLE_TIMESYNC = $True
 NAMESPACE = default
 ABSTRACTION = pod
+REPLICAS = 1
 PORTS_BASE = 10000
 IMAGE_PREFIX = ibmcb/ubuntu_
 IMAGE_SUFFIX = $EMPTY
@@ -98,12 +99,13 @@ SSH_KEY_NAME = $KUB_SSH_KEY_NAME
 
 [VM_TEMPLATES : KUB_CLOUDCONFIG]
 CHECK = size:1-256, imageid1:to_replace
-CLIENT_DAYTRADER = size:2-4096, imageid1:cb_daytrader
+CLIENT_IBM_DAYTRADER = size:2-4096, imageid1:cb_daytrader
+CLIENT_OPEN_DAYTRADER = size:2-4096, imageid1:cb_open_daytrader
 DRIVER_DAYTRADER = size:2-4096, imageid1:cb_daytrader
 CLIENT_TRADELITE = size:2-4096, imageid1:cb_tradelite
 DRIVER_TRADELITE = size:2-4096, imageid1:cb_tradelite
-MYSQL = size:2-4096, lb_size:gold32, eclipsed_size:gold32, imageid1:cb_daytrader
-GERONIMO = size:2-4096, eclipsed_size:gold32, imageid1:cb_daytrader
+MYSQL = size:2-4096, lb_size:gold32, eclipsed_size:gold32, imageid1:cb_open_daytrader
+GERONIMO = size:2-4096, eclipsed_size:gold32, imageid1:cb_open_daytrader
 DB2 = size:2-4096, lb_size:gold32, eclipsed_size:gold32, imageid1:cb_daytrader
 WAS = size:2-4096, eclipsed_size:gold32, imageid1:cb_daytrader
 DRIVER_HADOOP = size:1-1024, imageid1:cb_hadoop
@@ -129,6 +131,7 @@ FILEBENCH = size:1-2048, eclipsed_size:gold32, imageid1:cb_filebench
 DRIVER_FIO = size:2-4096, imageid1:cb_fio
 FIO = size:2-2048, imageid1:cb_fio
 BTEST = size:2-2048, imageid1:cb_btest
+POSTMARK = size:2-2048, imageid1:cb_postmark
 TINYVM = size:1-256, imageid1:cb_nullworkload
 YATINYVM = size:1-256, imageid1:cb_nullworkload
 FEN_HPC = size:2-4096, imageid1:cb_hpcc

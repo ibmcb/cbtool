@@ -28,7 +28,7 @@ SSH_KEY_NAME = $GCE_SSH_KEY_NAME
 
 [MON_DEFAULTS : GCE_CLOUDCONFIG ]
 COLLECT_FROM_HOST = $False # impossible for amazon
-COLLECT_FROM_GUEST = $True
+COLLECT_FROM_GUEST = $False
 
 [VMC_DEFAULTS : GCE_CLOUDCONFIG ]
 ACCESS = $GCE_ACCESS
@@ -90,12 +90,13 @@ SSH_KEY_NAME = $GCE_SSH_KEY_NAME
 
 [VM_TEMPLATES : GCE_CLOUDCONFIG ]
 CHECK = size:f1-micro, imageid1:to_replace
-CLIENT_DAYTRADER = size:n1-standard-4, imageid1:cb-daytrader
+CLIENT_IBM_DAYTRADER = size:n1-standard-4, imageid1:cb_daytrader
+CLIENT_OPEN_DAYTRADER = size:n1-standard-4, imageid1:cb-open-daytrader
 DRIVER_DAYTRADER = size:n1-standard-4, imageid1:cb-daytrader
 CLIENT_TRADELITE = size:n1-standard-4, imageid1:cb-tradelite
 DRIVER_TRADELITE = size:n1-standard-4, imageid1:cb-tradelite
-MYSQL = size:n1-standard-4, lb_size:n1-standard-8, imageid1:cb-daytrader
-GERONIMO = size:n1-standard-4, imageid1:cb-daytrader
+MYSQL = size:n1-standard-4, lb_size:n1-standard-8, imageid1:cb-open-daytrader
+GERONIMO = size:n1-standard-4, imageid1:cb-open-daytrader
 DB2 = size:n1-standard-4, lb_size:n1-standard-8, imageid1:cb-daytrader
 WAS = size:n1-standard-4, imageid1:cb-daytrader
 DRIVER_HADOOP = size:f1-micro, imageid1:cb-hadoop
@@ -121,6 +122,7 @@ FILEBENCH = size:g1-small, imageid1:cb-filebench
 DRIVER_FIO = size:n1-standard-4, imageid1:cb-fio
 FIO = size:n1-standard-4, imageid1:cb-fio
 BTEST = size:n1-standard-4, imageid1:cb-btest
+POSTMARK = size:n1-standard-4, imageid1:cb-postmark
 TINYVM = size:f1-micro, imageid1:cb-nullworkload
 YATINYVM = size:f1-micro, imageid1:cb-nullworkload
 FEN_HPC = size:n1-standard-4, imageid1:cb-hpcc

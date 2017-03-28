@@ -41,8 +41,6 @@ def deps_file_parser(depsdict, username, options, hostname, process_manager = Fa
     TBD
     '''
 
-    _path = re.compile(".*\/").search(os.path.realpath(__file__)).group(0) + "/../"
-
     _file_name_list = []
 
     _file_name_list.append(options.defdir + "/PUBLIC_dependencies.txt")
@@ -117,7 +115,134 @@ def deps_file_parser(depsdict, username, options, hostname, process_manager = Fa
         process_manager.run_os_command("sudo rm -rf /tmp/repoupdated", False)
 
     return True
- 
+
+def docker_file_parser(depsdict, username, options, hostname, process_manager = False) :
+    '''
+    TBD
+    '''
+    _workloads_list = []
+    
+    if options.role.count("orchestrator") :
+        _workloads_list = ['orchestrator']
+        
+    if len(options.wks) > 1 :
+        if options.wks.count("_ycsb") :
+            options.wks += ",ycsb"
+            
+        _workloads_list = options.wks.split(',')
+            
+    print '\n'
+    
+    for _path, _dirs, _files in os.walk(options.dfdir + '/' + options.role) :
+        for _fnam in _files:
+            _full_fnam = os.path.join(_path, _fnam)
+            if not _fnam.count("._processed_") and _fnam.count("Dockerfile-") and os.access(_full_fnam, os.F_OK) :            
+
+                _x_fnam = _fnam.replace("Dockerfile-",'').split('_')
+                _key_prefix = _x_fnam[0]                
+                _f_workload = _x_fnam[2]
+
+                if len(_x_fnam) > 3 :
+                    _f_workload += '_' + _x_fnam[3]
+                
+                if _f_workload in _workloads_list :
+                    try:
+                        _fd = open(_full_fnam, 'r')
+                        _fc = _fd.readlines()
+                        _fd.close()
+                        _msg = "##### Parsing Dockerfile \"" + _full_fnam + "\"...."
+                        cbinfo(_msg)
+    
+                        _current_key = None
+                        
+                        for _line in _fc :
+                            _line = _line.strip()
+        
+                            if _current_key :
+                                
+                                if _line.count("#") and _line.count("-install-") :
+                                    depsdict[_current_key] = depsdict[_current_key][0:-1]
+                                    
+                                    if _current_key.count("centos-") :
+                                        depsdict[_current_key.replace("centos-","rhel-")] = depsdict[_current_key]
+                                        depsdict[_current_key.replace("centos-","fedora-")] = depsdict[_current_key]                                                                                
+                                    _current_key = None
+
+                                elif _line.count("#") and _line.count("RUN") :
+                                    True
+
+                                else :
+                                    _line = _line.replace("RUN apt-get install -y","package_install")
+                                    _line = _line.replace("RUN yum install -y","package_install")
+                                    _line = _line.replace("RUN pip install --upgrade", "sudo pip install --upgrade INDEXURL")
+                                    _line = _line.replace("RUN git", "git")
+                                    _line = _line.replace("; apt-get install", "; sudo apt-get install")
+                                    _line = _line.replace("; apt-get update", "; sudo apt-get update")                                    
+                                    _line = _line.replace("; add-apt-repository", "; sudo add-apt-repository")                                    
+                                    _line = _line.replace("; dpkg", "; sudo dpkg")
+                                    _line = _line.replace("; yum install", "; sudo yum install")
+                                    _line = _line.replace("; rpm", "; sudo rpm")
+                                    _line = _line.replace("; chown", "; sudo chown")
+                                    _line = _line.replace("; make install", "; sudo make install")
+                                    _line = _line.replace("RUN mkdir -p /home/REPLACE_USERNAME/cbtool/3rd_party", "mkdir -p 3RPARTYDIR")
+                                    _line = _line.replace("RUN ", "sudo ")
+                                    _line = _line.replace("sudo cd ", "cd ")
+                                    _line = _line.replace("sudo REPLACE_RSYNC", "REPLACE_RSYNC")
+                                    _line = _line.replace("WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party", "cd 3RPARTYDIR")
+                                    _line = _line.replace("# service_stop_disable", "service_stop_disable")
+                                    _line = _line.replace("# echo", "echo")                                                      
+                                    depsdict[_current_key] += _line + "; "
+        
+                            else :
+                                if _line.count("#") and _line.count("-install-") :
+                                    _current_key = _key_prefix + '-' + _line.replace("#",'').strip()
+                                    depsdict[_current_key] = ''
+            
+                    except Exception, e :
+                        _msg = "##### Error reading file \"" + _full_fnam  + "\":" + str(e)
+                        cberr(_msg)
+                        exit(4)
+
+    return True
+
+def preparation_file_parser(depsdict, username, options, hostname, process_manager = False) :
+    '''
+    TBD
+    '''
+    _file = home + "/cb_prepare_parameters.txt"
+
+    print '\n'
+
+    if os.access(_file, os.F_OK) :
+
+        _msg = "##### Parsing CB file \"" + _file + "\"...."
+        cbinfo(_msg)
+        
+        _fd = open(_file, 'r')
+        _fc = _fd.readlines()
+        _fd.close()
+
+        if "stores" not in depsdict :
+            depsdict["stores"] = []
+
+        for _line in _fc :
+            _line = _line.strip()
+
+            _store, _store_ip, _store_port, _store_protocol, _store_username = _line.split()
+                        
+            _cmd = "nc -z -w 3 -" + _store_protocol[0].lower() + ' ' + _store_ip + ' ' + _store_port
+
+            if _store not in depsdict["stores"] :
+                depsdict["stores"].append(_store) 
+
+            depsdict[_store + "_ip"] = _store_ip
+            depsdict[_store + "_port"] = _store_port
+            depsdict[_store + "_protocol"] = _store_protocol
+            depsdict[_store + "_username"] = _store_username                                                 
+            depsdict[_store + "_command_check"] = _cmd
+
+    return True
+    
 def get_linux_distro() :
     '''
     TBD
@@ -145,7 +270,7 @@ def get_linux_distro() :
 
 #    if _linux_distro_kind == "ubuntu" and _arch == "x86_64" :
 #        _arch = "amd64"
-        
+
     return _linux_distro_kind, _linux_distro_ver, _linux_major_ver, _linux_distro_name, _arch
 
 def get_cmdline(depkey, depsdict, operation, process_manager = False, exception_if_no_url = False) :
@@ -291,6 +416,10 @@ def expand_command(cmdline, depsdict, process_manager = False) :
                     _command = "sudo yum -y install PACKAGES"
                                     
             _command = _command.replace("PACKAGES", _packages)
+
+        if _command.count("sudo pip ") :
+            if depsdict["indocker"] :
+                _command = _command.replace("sudo pip", "export LC_ALL=C; sudo pip") 
     
         if _command.count("service_restart_enable") or _command.count("service_stop_disable") :
 
@@ -301,7 +430,10 @@ def expand_command(cmdline, depsdict, process_manager = False) :
                 _services = _command.replace("service_restart_enable",'')
     
             if _command.count("service_stop_disable") :
-                _services = _command.replace("service_stop_disable",'')
+                if depsdict["indocker"] :
+                    _services = ''
+                else :
+                    _services = _command.replace("service_stop_disable",'')
 
             _command = ''    
             for _service in _services.split() :
@@ -368,10 +500,15 @@ def get_actual_cmdline(commandline_keys, depsdict, _actual_url) :
             _commandline = _commandline.replace("CREDENTIALSDIR", depsdict["credentialsdir"].strip().replace("//",'/'))
             if _actual_url :
                 _commandline = _commandline.replace("URL", _actual_url.strip())
-            _commandline = _commandline.replace("ARCH", depsdict["carch"].strip())
+            _commandline = _commandline.replace("REPLACE_ARCH1", depsdict["carch1"].strip())
+            _commandline = _commandline.replace("REPLACE_ARCH2", depsdict["carch2"].strip())
+            _commandline = _commandline.replace("REPLACE_ARCH3", depsdict["carch3"].strip())
+            _commandline = _commandline.replace("ARCH", depsdict["carch"].strip())            
             _commandline = _commandline.replace("DISTRO", depsdict["cdistkind"].strip())
+            _commandline = _commandline.replace("REPLACE_USERNAME", depsdict["username"].strip())            
             _commandline = _commandline.replace("USERNAME", depsdict["username"].strip())
-    
+            _commandline = _commandline.replace("REPLACE_RSYNC", "rsync rsync://" + depsdict["Filestore_ip"] + ':' + depsdict["Filestore_port"] + '/' + depsdict["Filestore_username"] + "_cb/3rd_party/workload/")
+
             if depsdict["pip_addr"] :
                 _commandline = _commandline.replace("INDEXURL", "--index-url=http://" + depsdict["pip_addr"] + " --trusted-host " + depsdict["pip_addr"].split('/')[0] + ' ')
             else :
@@ -694,7 +831,7 @@ def compare_versions(depkey, depsdict, version_b) :
         else :
             return str(version_b) + " >= " + str(version_a) + " OK.\n"
 
-def dependency_checker_installer(hostname, username, operation, options) :
+def dependency_checker_installer(hostname, depsdict, username, operation, options) :
     '''
     TBD
     '''
@@ -702,37 +839,50 @@ def dependency_checker_installer(hostname, username, operation, options) :
         _status = 100
         _dep_missing = -1        
         _fmsg = "An error has occurred, but no error message was captured"
+                
+        deps_file_parser(depsdict, username, options, "127.0.0.1")
+        docker_file_parser(depsdict, username, options, "127.0.0.1")
+        preparation_file_parser(depsdict, username, options, "127.0.0.1")            
+
+        if "Filestore_ip" not in depsdict :
+            depsdict["Filestore_ip"], depsdict["Filestore_port"], depsdict["Filestore_username"] = options.filestore.split('-')
         
-        _depsdict = {}
-        
-        deps_file_parser(_depsdict, username, options, "127.0.0.1")
-    
-        _depsdict["cdistkind"], _depsdict["cdistver"], _depsdict["cdistmajorver"], _depsdict["cdistnam"],  _depsdict["carch"] = get_linux_distro()
-        _depsdict["3rdpartydir"] = options.tpdir
-        _depsdict["scriptsdir"] = options.wksdir
-        _depsdict["credentialsdir"] = options.creddir
-        _depsdict["username"] = username
+        depsdict["cdistkind"], depsdict["cdistver"], depsdict["cdistmajorver"], depsdict["cdistnam"], depsdict["carch"] = get_linux_distro()
+        depsdict["3rdpartydir"] = options.tpdir
+        depsdict["scriptsdir"] = options.wksdir
+        depsdict["credentialsdir"] = options.creddir
+        depsdict["username"] = username
 
         if options.addr :
-            _depsdict["repo-addr1"] = options.addr
-            _depsdict["pip-addr1"] = options.addr
+            depsdict["repo-addr1"] = options.addr
+            depsdict["pip-addr1"] = options.addr
+
+        if depsdict["carch"] == "x86_64" :
+            depsdict["carch1"] = "x86_64"           
+            depsdict["carch2"] = "x86-64"
+            depsdict["carch3"] = "amd64"
+
+        if depsdict["carch"] == "ppc64le" :
+            depsdict["carch1"] = "ppc64le"           
+            depsdict["carch2"] = "ppc64"
+            depsdict["carch3"] = "ppc64"
                         
         _missing_dep = []
         _dep_list = [0] * 5000
 
         if str(options.addr) != "bypass" :
-            select_url("repo", _depsdict)
-            select_url("pip", _depsdict)
+            select_url("repo", depsdict)
+            select_url("pip", depsdict)
             _raise_exception = True
         else :
-            _depsdict["pip_addr"] = None
-            _depsdict["repo_addr"] = None
+            depsdict["pip_addr"] = None
+            depsdict["repo_addr"] = None
             _raise_exception = False
             
-        for _key in _depsdict.keys() :
+        for _key in depsdict.keys() :
             if _key.count("-order")  :
                 _dependency = _key.replace("-order",'')
-                _order = int(_depsdict[_key]) * 20
+                _order = int(depsdict[_key]) * 20
                 _dep_list.insert(_order, _dependency)
 
         _dep_list = [x for x in _dep_list if x != 0]
@@ -763,8 +913,8 @@ def dependency_checker_installer(hostname, username, operation, options) :
         
         for _dep in _dep_list :
             for _tag in options.tag :
-                if _dep + "-tag" in _depsdict :
-                    _dep_tag_list = _depsdict[_dep + "-tag"].split(',')
+                if _dep + "-tag" in depsdict :
+                    _dep_tag_list = depsdict[_dep + "-tag"].split(',')
                 else :
                     _dep_tag_list = [ "workload" ]
 
@@ -773,36 +923,47 @@ def dependency_checker_installer(hostname, username, operation, options) :
                         _selected_dep_list.append(_dep)
 
         _dep_list = _selected_dep_list
+
+        _process_manager = ProcessManagement(hostname)
+
+        _status, _std_out, _y = _process_manager.run_os_command("sudo cat /proc/1/cgroup | grep -c docker")
+        if str(_std_out) == '0' :
+            depsdict["indocker"] = False            
+        else :
+            depsdict["indocker"] = True
         
-        _msg = "##### DETECTED OPERATING SYSTEM KIND: " + _depsdict["cdistkind"]
+        _msg = "##### DETECTED OPERATING SYSTEM KIND: " + depsdict["cdistkind"]
         cbinfo(_msg)
 
-        _msg = "##### DETECTED OPERATING SYSTEM VERSION: " + _depsdict["cdistver"] + " (" + _depsdict["cdistmajorver"] + ')'
+        _msg = "##### DETECTED OPERATING SYSTEM VERSION: " + depsdict["cdistver"] + " (" + depsdict["cdistmajorver"] + ')'
         cbinfo(_msg)
 
-        _msg = "##### DETECTED OPERATING SYSTEM NAME: " + _depsdict["cdistnam"]
+        _msg = "##### DETECTED OPERATING SYSTEM NAME: " + depsdict["cdistnam"]
         cbinfo(_msg)
 
-        _msg = "##### DETECTED ARCHITECTURE: " + _depsdict["carch"]
+        _msg = "##### DETECTED ARCHITECTURE: " + depsdict["carch"]
+        cbinfo(_msg)
+
+        _msg = "##### DETECTED RUNNING INSIDE DOCKER: " + str(depsdict["indocker"])
         cbinfo(_msg)
 
         print '\n' 
-               
+
         if operation == "configure" :
             if "repo" in _dep_list :
                 _dep_list.remove("repo")
 
-        if _depsdict["cdistkind"] == "AMI" :
-            _msg = "This node runs the \"" + _depsdict["cdistkind"] + "\" Linux "
+        if depsdict["cdistkind"] == "AMI" :
+            _msg = "This node runs the \"" + depsdict["cdistkind"] + "\" Linux "
             _msg += "distribution. Will treat it as \"rhel\", but will disable"
             _msg += "  the repository manipulation."
             cbinfo(_msg)
             
-            _depsdict["cdistkind"] = "rhel"
+            depsdict["cdistkind"] = "rhel"
             if "repo" in _dep_list :
                 _dep_list.remove("repo")
 
-        if _depsdict["carch"].count("ppc") and "mongdob" in _dep_list :
+        if depsdict["carch"].count("ppc") and "mongdob" in _dep_list :
             _msg = "##### The processors on this node have a \"Power\" architecture."
             _msg += "Removing MongoDB and Chef (client) from the dependency list"
             cbwarn(_msg)
@@ -821,7 +982,7 @@ def dependency_checker_installer(hostname, username, operation, options) :
 
         for _dep in _dep_list :
 
-            _status, _msg = execute_command("configure", _dep, _depsdict, \
+            _status, _msg = execute_command("configure", _dep, depsdict, \
                                             hostname = "127.0.0.1", \
                                             username = username, \
                                             venv = options.venv, \
@@ -834,7 +995,7 @@ def dependency_checker_installer(hostname, username, operation, options) :
                 
                 if operation == "install" :
 
-                    _status, _msg = execute_command("install", _dep, _depsdict, \
+                    _status, _msg = execute_command("install", _dep, depsdict, \
                                                     hostname = "127.0.0.1", \
                                                     username = username, \
                                                     venv = options.venv, \
@@ -876,7 +1037,7 @@ def dependency_checker_installer(hostname, username, operation, options) :
 
         return _status, _msg
 
-def instance_preparation(hostname, options) :
+def instance_preparation(hostname, depsdict, options) :
     '''
     TBD
     '''
@@ -887,47 +1048,47 @@ def instance_preparation(hostname, options) :
         _cleanup = False
         
         _fmsg = "An error has occurred, but no error message was captured"
-
-        _file = home + "/cb_prepare_parameters.txt"
-
-        print "----------------------------------------------------------\n"
-
-        if os.access(_file, os.F_OK) :
-
-            _process_manager = ProcessManagement(hostname)
-
-            _fd = open(_file, 'r')
-            _fc = _fd.readlines()
-            _fd.close()
-
-            for _line in _fc :
-                _line = _line.strip()
-
-                _store, _store_ip, _store_port, _store_protocol = _line.split()
-                _cmd = "nc -z -w 3 -" + _store_protocol[0].lower() + ' ' + _store_ip + ' ' + _store_port
-
+        
+        if "stores" in depsdict :
+            
+            for _store in depsdict["stores"] :
+    
+                _process_manager = ProcessManagement(hostname)
+    
+                _cmd = depsdict[_store + "_command_check"]
+                
                 _msg = "Checking accesss from this instance to the CB"
                 _msg += " Orchestrator's " + _store.capitalize() + " with"
                 _msg += " \"" + _cmd + "\"..."
                 cbinfo(_msg)
-
+    
                 _status, _x, _y = _process_manager.run_os_command(_cmd)
-
+    
                 _msg = "This instance was able to access CB Orchestrator's " + _store.capitalize()
                 _msg += " with \"" + _cmd + "\" (OK)"
                 cbinfo(_msg)
 
+                if _store.lower() == "filestore" :
+                    print '\n'
+                    _msg = "rsync rsync://" + depsdict["Filestore_ip"] + ':' + depsdict["Filestore_port"] + '/' + depsdict["Filestore_username"] + "_cb"
+                    print _msg
+
+                    print '\n'
+                    _msg = "--filestore " + depsdict["Filestore_ip"] + '-' + depsdict["Filestore_port"] + '-' + depsdict["Filestore_username"]
+                    print _msg
+                    print '\n'
+                    
             if str(options.addr) != "bypass" :
                 _cmd = options.wksdir + "/common/cb_cleanup.sh"
                 _msg = "Running the instance cleanup script \"" + _cmd + "\"..." 
                 cbinfo(_msg)
         
                 _process_manager.run_os_command(_cmd)
+    
+                _cleanup = True
 
-            _cleanup = True
-        
         _status = 0
-            
+
     except Exception, e :
         _status = 23
         _fmsg = str(e)
@@ -938,8 +1099,9 @@ def instance_preparation(hostname, options) :
             if _store and not _cleanup :
                 _msg = "ERROR while checking accesss from this instance to the CB"
                 _msg += " Orchestrator's " + _store.capitalize() + ": " + _fmsg
-                _msg += " (make sure that the " + _store_port + " port " + _store_port
-                _msg += " is open at IP address " + _store_ip
+                _msg += " (make sure that the " + depsdict[_store + "_protocol"] 
+                _msg += " port " + depsdict[_store + "_port"]
+                _msg += " is open at IP address " + depsdict[_store + "_ip"]
             if not _store and not _cleanup :
                 _msg = "ERROR while preparing to check access from this instance "
                 _msg += "to the CB Orchestrator's stores:" + _fmsg

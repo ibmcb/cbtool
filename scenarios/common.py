@@ -25,6 +25,7 @@ import os
 import pwd
 import redis
 import prettytable
+import subprocess
 import httplib, urllib
 
 from sys import path, argv, stdout
@@ -160,7 +161,53 @@ def cloud_detach(options, api) :
     except Exception, e:
         print 'Detaching from cloud %s failed:\n %s'%(options.cloud_name, str(e))
 
+def create_plots(options, api, cb_base_dir, cb_data_dir, experiment_id, url) :
+    '''
+    TBD
+    '''
+    
+    _dtb1 = ''
+    _dtb2 = ''
+    _mgt_info = api.cldshow(options.cloud_name, "mon_defaults")
+    if "time_breakdown_keys" in _mgt_info :
+        _dtbc = _mgt_info["time_breakdown_keys"][0:-1].split(',')
+        _dtbc.sort()
+        _dtb1 = " --breakdown " + ','.join(_dtbc)        
+        _dtb2 = " --breakdown " + ','.join(reversed(_dtbc))
+
+    _cmd = cb_base_dir + "/util/plot/cbplotgen.R " + " --directory "
+    _cmd += cb_data_dir + " --expid " + str(experiment_id) + " --cleanup "
+    _cmd += "--provisionmetrics --runtimemetrics "
+    #_cmd += "--layer --aggregate " 
+
+    _msg = "Data is available at url \"" + url + "\". \nAttempting to "
+    _msg += "automatically generate the plots by running \"" + _cmd + _dtb1 + "\" ..."
+
+    _fn = cb_data_dir + '/' + str(experiment_id) + '/plot.sh'
+    _fh = open(_fn, "w")
+    _fh.write("#!/bin/bash\n")
+    _fh.write(_cmd + _dtb1)
+    _fh.write('#' + _cmd + _dtb2)
+    _fh.close()
+    os.chmod(_fn, 0755)
+    
+    print _msg,
+
+    _proc_h = subprocess.Popen(_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    _resul = _proc_h.communicate()
+
+    _status = _proc_h.returncode
+    if _status :
+        print "ERROR!"
+        return False
+    
+    print "DONE!"
+    return True
+                
 def send_text(options, message):    
+    '''
+    TBD
+    '''
     if options.phone :
         _msg = "Experiment \"" + options.experiment_id + "\" on cloud \""
         _msg +=  options.cloud_name + "\": " + message

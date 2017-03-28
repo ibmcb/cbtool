@@ -39,7 +39,7 @@ GIRAPHSLAVE_RESIZE1 = cb_giraph_hadoop_cluster.sh
 START = cb_giraph_job.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
-JAVA_HOME = ~/jdk1.6.0_21
+JAVA_HOME = auto
 HADOOP_HOME = ~/hadoop-1.2.1
 HADOOP_EXAMPLES = hadoop-examples-1.2.1.jar
 DFS_NAME_DIR = /tmp/cbhadoopname

@@ -29,43 +29,7 @@ source ~/.bashrc
 
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
-if [[ -z ${JAVA_HOME} ]]
-then
-    JAVA_HOME=$(get_my_ai_attribute_with_default java_home auto)
-
-    if [[ ${JAVA_HOME} != "auto" ]]   
-    then
-        sudo ls $JAVA_HOME
-        if [[ $? -ne 0 ]]
-        then
-            syslog_netcat "The JAVA_HOME specified in the AI attributes \"${JAVA_HOME}\" could not be located: setting it to \"auto\"..."
-            JAVA_HOME="auto"
-        fi
-    fi
-    
-    if [[ ${JAVA_HOME} == "auto" ]]
-    then
-        syslog_netcat "The JAVA_HOME was set to \"auto\". Attempting to find the most recent in /usr/lib/jvm"            
-        JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre
-    fi
-
-    syslog_netcat "JAVA_HOME determined to be \"${JAVA_HOME}\""    
-            
-    eval JAVA_HOME=${JAVA_HOME}
-    if [[ -f ~/.bashrc ]]
-    then
-        is_java_home_export=`grep -c "JAVA_HOME=${JAVA_HOME}" ~/.bashrc`
-        if [[ $is_java_home_export -eq 0 ]]
-        then
-            syslog_netcat "Adding JAVA_HOME=${JAVA_HOME} to bashrc"
-            echo "export JAVA_HOME=${JAVA_HOME}" >> ~/.bashrc
-        fi
-    fi
-else 
-    syslog_netcat "Line \"export JAVA_HOME=${JAVA_HOME}\" was already added to bashrc"    
-fi
-
-export JAVA_HOME=${JAVA_HOME}
+set_java_home
 
 if [[ -z ${HADOOP_HOME} ]]
 then

@@ -1,9 +1,9 @@
-FROM ubuntu:latest
+FROM REPLACE_BASE_VANILLA_UBUNTU
 
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update
-RUN useradd -ms /bin/bash cbuser
+RUN useradd -ms /bin/bash REPLACE_USERNAME
 
 ENV OBJECTSTORE_PORT=10000
 ENV METRICSTORE_PORT=20000
@@ -21,122 +21,308 @@ EXPOSE $GUI_PORT
 EXPOSE $API_PORT
 EXPOSE $VPN_PORT
 
+# sudo-install-man
+RUN apt-get install -y sudo
+# echo "USERNAME  ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers; sed -i s/"Defaults requiretty"/"#Defaults requiretty"/g /etc/sudoers
+# sudo-install-man
+
+# ifconfig-install-sl
+RUN apt-get update
+RUN apt-get install -y net-tools
 RUN ln -s /sbin/ifconfig /usr/local/bin/ifconfig
+# ifconfig-install-sl
+
+# ip-install-sl
 RUN ln -s /sbin/ip /usr/local/bin/ip
+# ip-install-sl
 
-RUN apt-get install -y \
-psmisc \
-ntp \
-ntpdate \
-git \
-wget \
-python-pip \
-gcc \
-make \
-emacs \
-sshpass \
-curl \
-vim \
-screen \
-rsync \
-ncftp \
-lftp \
-libffi-dev \
-libssl-dev \
-python-webob \
-python-beaker \
-python-libvirt \
-netcat-openbsd \
-net-tools
+# pkill-install-pm
+RUN apt-get install -y psmisc coreutils
+# pkill-install-pm
+
+# which-install-pm
+RUN /bin/true
+# which-install-pm
+
+# ntp-install-pm
+RUN apt-get install -y ntp ntpdate 
+# ntp-install-pm
+
+# git-install-pm
+RUN apt-get install -y git bc
+# git-install-pm
+
+# wget-install-pm
+RUN apt-get install -y wget
+# wget-install-pm
+
+# pip-install-pm
+RUN apt-get update
+RUN apt-get install -y python-pip
+# pip-install-pm
+
+# gcc-install-pm
+RUN apt-get install -y gcc
+# gcc-install-pm
+
+# make-install-pm
+RUN apt-get install -y make
+# make-install-pm
+
+# sshpass-install-pm
+RUN apt-get install -y sshpass
+# sshpass-install-pm
+
+# curl-install-pm
+RUN apt-get install -y curl
+# curl-install-pm
+
+# screen-install-pm
+RUN apt-get install -y screen
+# screen-install-pm
+
+# rsync-install-pm
+RUN apt-get install -y rsync
+# rsync-install-pm
+
+# ncftp-install-pm
+RUN apt-get install -y ncftp
+# ncftp-install-pm
+
+# lftp-install-pm
+RUN apt-get install -y lftp iputils-ping
+# lftp-install-pm
+
+# haproxy-install-pm
+RUN apt-get install -y haproxy
+# service_stop_disable haproxy
+# haproxy-install-pm
+
+RUN apt-get install -y vim
+
+# netcat-install-man
+RUN apt-get install -y netcat-openbsd
 RUN cp /bin/nc /usr/local/bin/netcat
+# netcat-install-man
 
-RUN apt-get install -y \
-nmap \
-openvpn 
+# nmap-install-pm
+RUN apt-get install -y nmap
+# nmap-install-pm
+
+# openvpn-install-pm
+RUN apt-get install -y openvpn 
 RUN ln -s /usr/sbin/openvpn /usr/local/bin/openvpn
+# openvpn-install-pm
 
-RUN apt-get install -y \
-ganglia-monitor
+# gmond-install-pm
+RUN apt-get install -y ganglia-monitor
 RUN ln -s /usr/sbin/gmond /usr/local/bin/gmond
+# service_stop_disable ganglia-monitor
+# gmond-install-pm
 
-RUN apt-get install -y \
-rsyslog
-RUN ln -s /usr/sbin/rsyslogd /usr/local/bin/rsyslogd
+# rsyslog-install-pm
+RUN apt-get install -y rsyslog
+RUN ln -s /sbin/rsyslogd /usr/local/bin/rsyslogd
+RUN mkdir -p /var/log/cloudbench
+# rsyslog-install-pm
 
+# rsyslog-filter-pm
 RUN mkdir -p /var/log/cloudbench
 RUN sed -i -e "s/#\$ModLoad imudp/\$ModLoad imudp/g" /etc/rsyslog.conf
-RUN sed -i -e "s/#\$UDPServerRun.*/\$UDPServerRun $METRIC_STORE_PORT/g" /etc/rsyslog.conf
+RUN sed -i  "s/#\$UDPServerRun.*/\$UDPServerRun $METRIC_STORE_PORT/g" /etc/rsyslog.conf
+RUN bash -c "echo -e \"local5.*  \t\t\t\t /var/log/cloudbench/remote.log\" >> /etc/rsyslog.conf"
+RUN bash -c "echo -e \"local6.* \t\t\t\t /var/log/cloudbench/local.log\" >> /etc/rsyslog.conf"
+#service_restart_enable rsyslog
+# rsyslog-filter-pm
 
-RUN apt-get install -y \
-apache2 \
-redis-server
+# apache-install-pm
+RUN apt-get install -y apache2
+# apache-install-pm
+
+# redis-install-pm
+RUN apt-get install -y redis-server
 RUN sed -i "s/.*bind 127.0.0.1/bind 0.0.0.0/" /etc/redis/redis.conf
+# redis-install-pm
 RUN sed -i "s/.*port.*/port $OBJECTSTORE_PORT/" /etc/redis/redis.conf
 
-RUN apt-get install -y \
-mongodb
+# mongodb-install-pm
+RUN apt-get install -y mongodb
 RUN sed -i "s/.*bind_ip.*/bind_ip=0.0.0.0/" /etc/mongodb.conf
-RUN sed -i "s/.*port.*/port = $METRICSTORE_PORT/" /etc/redis/redis.conf
+# mongodb-install-pm
+RUN sed -i "s/.*port.*/port = $METRICSTORE_PORT/" /etc/mongodb.conf
 
-RUN apt-get install -y \
-sudo
-RUN echo "cbuser  ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers
+RUN apt-get install -y sudo
+RUN echo "REPLACE_USERNAME  ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-RUN apt-get install -y \
-python-dev \
-python-setuptools \
-python-prettytable
+# pylibvirt-install-pm
+RUN apt-get install -y python-libvirt
+# pylibvirt-install-pm
 
-RUN pip install --upgrade \
-prettytable \
-python-daemon \
-twisted \
-redis \
-pymongo \
-pypureomapi \
-pbr \
-netifaces \
-python-novaclient \
-python-neutronclient \
-softlayer \
-apache-libcloud \
-boto \
-gcloud \
-google-api-python-client
+# pypureomapi-install-pip
+RUN pip install --upgrade pypureomapi
+# pypureomapi-install-pip
 
-RUN apt-get install -y \
-r-base-core \
-pssh
+# python-devel-install-pm
+RUN apt-get install -y python-dev libffi-dev libssl-dev libxml2-dev libxslt1-dev libjpeg8-dev zlib1g-dev
+# python-devel-install-pm 
 
-RUN pip install --upgrade \
-docutils \
-setuptools \
-markup \
-pyyaml \
-ruamel.yaml
+# python-prettytable-install-pip
+RUN pip install --upgrade prettytable
+# python-prettytable-install-pip
 
-USER cbuser
+# python-daemon-install-pip
+RUN pip install --upgrade python-daemon
+# python-daemon-install-pip
+
+# python-twisted-install-pip
+RUN pip install --upgrade twisted
+# python-twisted-install-pip
+
+# python-beaker-install-pip
+RUN pip install --upgrade beaker
+# python-beaker-install-pip
+
+# python-webob-install-pip
+RUN pip install --upgrade webob
+# python-webob-install-pip
+
+# pyredis-install-pip
+RUN pip install --upgrade redis
+# pyredis-install-pip
+
+# pymongo-install-pip
+RUN pip install --upgrade mongo
+# pymongo-install-pip
+
+# pssh-install-pm
+RUN apt-get install -y pssh
+# pssh-install-pm
+
+# docutils-install-pip
+RUN pip install --upgrade docutils
+# docutils-install-pip
+
+# python-setuptools-install-pip
+RUN pip install --upgrade setuptools
+# python-setuptools-install-pip 
+
+# markup-install-pip
+RUN pip install --upgrade markup
+# markup-install-pip 
+
+# pyyaml-install-pip
+RUN pip install --upgrade pyyaml
+# pyyaml-install-pip 
+
+# ruamelyaml-install-pip
+RUN pip install --upgrade ruamel.yaml
+# ruamelyaml-install-pip
+
+# iptables-install-pm
+RUN apt-get install -y iptables
+# service_stop_disable iptables
+# iptables-install-pm
+
+# novaclient-install-pip
+RUN pip install --upgrade pbr
+RUN pip install --upgrade netifaces
+RUN pip install --upgrade python-novaclient==6.0.0
+# novaclient-install-pip
+
+# neutronclient-install-pip
+RUN pip install --upgrade python-neutronclient
+# neutronclient-install-pip
+
+# cinderclient-install-pip
+RUN pip install --upgrade python-cinderclient
+# cinderclient-install-pip
+
+# glanceclient-install-pip
+RUN pip install --upgrade python-glanceclient
+# glanceclient-install-pip
+
+# softlayer-install-pip
+RUN pip install --upgrade softlayer
+# softlayer-install-pip
+
+# boto-install-pip
+RUN pip install --upgrade boto
+# boto-install-pip
+
+# libcloud-install-pip
+RUN pip install --upgrade apache-libcloud
+# libcloud-install-pip
+
+# pygce-install-pip
+RUN pip install --upgrade gcloud google-api-python-client
+# pygce-install-pip
+
+# pydocker-install-pip
+RUN pip install --upgrade docker-py==1.8.1 wget
+# pydocker-install-pip
+
+# pylxd-install-pip
+RUN pip install --upgrade pylxd
+# pylxd-install-pip
+
+# pykube-install-pip
+RUN pip install --upgrade pykube
+# pykube-install-pip
+
+# R-install-pm
+RUN apt-get install -y r-base-core
+# R-install-pm
+
+USER REPLACE_USERNAME
+# gcloud-install-man
 ENV CLOUDSDK_CORE_DISABLE_PROMPTS=1
 RUN curl https://sdk.cloud.google.com | bash
-WORKDIR /home/cbuser/
-RUN git clone https://github.com/ibmcb/cbtool.git
-RUN mkdir /home/cbuser/cbtool/3rd_party
-WORKDIR /home/cbuser/cbtool/3rd_party
-RUN git clone https://github.com/ibmcb/monitor-core.git
-RUN git clone https://github.com/ibmcb/bootstrap.git
-RUN git clone https://github.com/ibmcb/Bootstrap-Wizard.git
-RUN git clone https://github.com/ibmcb/StreamProx.git
-RUN git clone https://github.com/ibmcb/d3.git
-RUN git clone https://github.com/ibmcb/HTML.py.git
-WORKDIR /home/cbuser/cbtool/3rd_party/HTML.py
-RUN sudo python setup.py install
-WORKDIR /home/cbuser/cbtool/configs
-RUN cp cloud_definitions.txt cbuser_cloud_definitions.txt
+RUN sudo ln -s /home/REPLACE_USERNAME/google-cloud-sdk/bin/gcloud /usr/local/bin/gcloud
+# gcloud-install-man
 
-RUN echo "\n[OBJECTSTORE]\nPORT = $OBJECTSTORE_PORT\nUSAGE = private" >> cbuser_cloud_definitions.txt
-RUN echo "\n[METRICSTORE]\nPORT = $METRICSTORE_PORT\nUSAGE = private" >> cbuser_cloud_definitions.txt
-RUN echo "\n[LOGSTORE]\nPORT = $LOGSTORE_PORT\nUSAGE = private" >> cbuser_cloud_definitions.txt
-RUN echo "\n[FILESTORE]\nPORT = $FILESTORE_PORT\nUSAGE = private" >> cbuser_cloud_definitions.txt
-RUN echo "\n[API_DEFAULTS]\nPORT = $API_PORT\n" >> cbuser_cloud_definitions.txt
-RUN echo "\n[GUI_DEFAULTS]\nPORT = $GUI_PORT\n" >> cbuser_cloud_definitions.txt
-RUN echo "\n[VPN]\nSERVER_PORT = $VPN_PORT\n" >> cbuser_cloud_definitions.txt
+WORKDIR /home/REPLACE_USERNAME/
+RUN git clone https://github.com/ibmcb/cbtool.git
+
+# gmetad-python-install-git
+RUN mkdir -p /home/REPLACE_USERNAME/cbtool/3rd_party
+WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party
+RUN git clone https://github.com/ibmcb/monitor-core.git
+# gmetad-python-install-git
+
+# pyhtml-install-git
+WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party
+RUN git clone https://github.com/ibmcb/HTML.py.git
+WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party/HTML.py
+RUN sudo python setup.py install
+# pyhtml-install-git
+
+# bootstrap-install-git
+WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party
+RUN git clone https://github.com/ibmcb/bootstrap.git
+# bootstrap-install-git
+
+# bootstrap-wizard-install-git
+WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party
+RUN git clone https://github.com/ibmcb/Bootstrap-Wizard.git
+# bootstrap-wizard-install-git
+
+# streamprox-install-git
+WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party
+RUN git clone https://github.com/ibmcb/StreamProx.git
+# streamprox-install-git
+
+# d3-install-git
+WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party
+RUN git clone https://github.com/ibmcb/d3.git
+# d3-install-git
+
+WORKDIR /home/REPLACE_USERNAME/cbtool/configs
+RUN cp cloud_definitions.txt REPLACE_USERNAME_cloud_definitions.txt
+
+RUN echo "\n[OBJECTSTORE]\nPORT = $OBJECTSTORE_PORT\nUSAGE = private" >> REPLACE_USERNAME_cloud_definitions.txt
+RUN echo "\n[METRICSTORE]\nPORT = $METRICSTORE_PORT\nUSAGE = private" >> REPLACE_USERNAME_cloud_definitions.txt
+RUN echo "\n[LOGSTORE]\nPORT = $LOGSTORE_PORT\nUSAGE = private" >> REPLACE_USERNAME_cloud_definitions.txt
+RUN echo "\n[FILESTORE]\nPORT = $FILESTORE_PORT\nUSAGE = private" >> REPLACE_USERNAME_cloud_definitions.txt
+RUN echo "\n[API_DEFAULTS]\nPORT = $API_PORT\n" >> REPLACE_USERNAME_cloud_definitions.txt
+RUN echo "\n[GUI_DEFAULTS]\nPORT = $GUI_PORT\n" >> REPLACE_USERNAME_cloud_definitions.txt
+RUN echo "\n[VPN]\nSERVER_PORT = $VPN_PORT\n" >> REPLACE_USERNAME_cloud_definitions.txt

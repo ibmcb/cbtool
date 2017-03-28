@@ -214,8 +214,12 @@ class PdmCmds(CommonCloudFunctions) :
                         _imageid = _map_id_to_name[_imageid]
 
                 if not self.is_cloud_image_uuid(_imageid) :
-                    self.dockconn[_endpoint].pull(_imageid)
-
+                    try :
+                        True
+                        self.dockconn[_endpoint].pull(_imageid)
+                    except :
+                        pass
+                
             _registered_image_list = self.dockconn[_endpoint].images()
             _registered_imageid_list = []
 
@@ -575,16 +579,17 @@ class PdmCmds(CommonCloudFunctions) :
             _endpoints = self.dockconn.keys()
         else :
             _endpoints = [endpoints]
-                      
+
         try :
-            for _endpoint in _endpoints :            
+            for _endpoint in _endpoints :
                 if obj_type == "vm" :
                     _call = "containers()"
                     if identifier == "all" :
                         _instances += self.dockconn[_endpoint].containers(all=True)
-                                                                       
+                        
                     else :
                         _instances += self.dockconn[_endpoint].containers(filters = {"name" : identifier})
+                        
                 else :
                     _call = "volumes()"                    
                     if identifier == "all" :
@@ -602,25 +607,27 @@ class PdmCmds(CommonCloudFunctions) :
         
         except APIError, obj:
             _status = 18127
-            _xfmsg = str(obj.message) + " \"" + str(obj.explanation) + "\""
+            _xfmsg = "API Error " + str(obj.message) + " \"" + str(obj.explanation) + "\""
 
         except CldOpsException, obj :
             _status = obj.status
-            _xfmsg = str(obj.msg)
+            _xfmsg = "Cloud Exception " + str(obj.msg)
 
         except Exception, e :
             _status = 23
-            _xfmsg = str(e)
+            _xfmsg = "Exception " + str(e)
             
         finally :
+            
             if _status :
-                _fmsg = "(While getting instance(s) through API call \"" + _call + "\") " + _xfmsg
+                _fmsg = "(While getting instance(s) through API call \"" + _call + "\") : " + _xfmsg
+                
                 if identifier not in self.api_error_counter :
                     self.api_error_counter[identifier] = 0
-                
+
                 self.api_error_counter[identifier] += 1
-                
-                if self.api_error_counter[identifier] > self.max_api_errors :            
+
+                if self.api_error_counter[identifier] > self.max_api_errors :
                     raise CldOpsException(_fmsg, _status)
                 else :
                     cbwarn(_fmsg)
@@ -914,11 +921,26 @@ class PdmCmds(CommonCloudFunctions) :
 
                 if obj_attr_list["check_boot_complete"] == "tcp_on_22":
                     obj_attr_list["check_boot_complete"] = "tcp_on_" + str(obj_attr_list["prov_cloud_port"])
-                
+
+                if str(obj_attr_list["extra_ports"]).lower() != "false" :
+                    _extra_port_list = obj_attr_list["extra_ports"].split(',')
+                    for _extra_port in _extra_port_list :
+                        _extra_mapped_port = int(obj_attr_list["extra_ports_base"]) + len(_extra_port_list) - 1 + int(obj_attr_list["name"].replace("vm_",''))
+                        _ports_mapping += [ (int(_extra_port), 'tcp') ]
+                        _port_bindings[ _extra_port + '/tcp'] = ('0.0.0.0', _extra_mapped_port)
             else :
                 _ports_mapping = None
                 _port_bindings = None
-                                                
+
+            _devices = []
+            if str(obj_attr_list["extra_devices"]).lower() != "false" :
+                for _device in obj_attr_list["extra_devices"].split(',') :
+                    _devices.append(_device) 
+
+            _privileged = False
+            if str(obj_attr_list["privileged"]).lower() != "false" :
+                _privileged = True
+
             self.vm_placement(obj_attr_list)
 
             _cpu, _memory = obj_attr_list["size"].split('-')
@@ -958,7 +980,9 @@ class PdmCmds(CommonCloudFunctions) :
             _host_config = self.dockconn[obj_attr_list["host_cloud_ip"]].create_host_config(network_mode = obj_attr_list["netname"], \
                                                                                             port_bindings = _port_bindings, 
                                                                                             binds = _binds, \
-                                                                                            mem_limit = str(_memory) + 'm')
+                                                                                            mem_limit = str(_memory) + 'm', \
+                                                                                            devices = _devices, \
+                                                                                            privileged = _privileged)
             self.annotate_time_breakdown(obj_attr_list, "create_host_config_time", _mark_a)
 
             _mark_a = time()
@@ -1064,7 +1088,7 @@ class PdmCmds(CommonCloudFunctions) :
                 self.dockconn[_host_ip].remove_container(_instance["Id"])
 
                 while len(_instance) and _curr_tries < _max_tries :
-                    _instance = self.get_instances(obj_attr_list, "vm", \
+                    _instance = self.get_instances(obj_attr_list, "vm", _host_ip, \
                                            obj_attr_list["cloud_vm_name"])
 
                     sleep(_wait)

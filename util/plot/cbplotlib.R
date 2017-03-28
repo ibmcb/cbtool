@@ -690,7 +690,59 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv, dtb) {
 	output_pdf_plot(ed, en, agg_prov_lat_plot, "005_average_vm_provision_latency_per_host", 
 			sps, number_of_vms)
 	################## END Provisioning vs Host ##################		
+
+	################## START Provisioning Failures vs VM ##################
+	msg <- paste("# Preparing Provisioning Latency for VMs/Containers.... #", sep = '')
+	cat(msg, sep='\n')
 	
+	prov_fail_data <- subset(mmdf, (expid %in% selected_expid) & 
+					(name %in% selected_vm_name), 
+			select = c("full_obj_name", 
+					   "name",
+					   "mgt_999_provisioning_request_failed"))
+
+	prov_fail_data <- prov_fail_data[!is.na(prov_fail_data$mgt_999_provisioning_request_failed),]
+	
+	output_table(ed, en, prov_fail_data, "006_individual_vm_provision_failure")
+	
+	number_of_vms <- length(prov_lat_data$name)
+	
+	#if (number_of_vms > mnv ) {
+	#	selected_vms <- c(c("1", "2", "3"), seq(number_of_vms - 2, number_of_vms))
+	#	msg <- paste("WARNING: The number of VMs is too large (", number_of_vms, 
+	#			"). Will", " plot only the 3 smallest and the 3 largest ", 
+	#			"provisioning time", sep = '')
+	#	cat(msg, sep='\n')
+	
+	#	prov_lat_data <- prov_lat_data[order(prov_lat_data$vm_arrival_diff), ]
+	#	rownames(prov_lat_data) <- NULL
+	#	prov_fail_data <- prov_fail_data[selected_vms,]
+	#	number_of_vms <- length(prov_lat_data$name)		
+	#}
+	
+	# Plot provisioning failure
+	prov_fail_plot_title <- paste("Provisioning Failure for all VMs/Containers \"", vmn, 
+			"\" on experiment \"", selected_expname, "\" (", selected_expid, ")",
+			sep = '')
+	cat(prov_fail_plot_title, sep='\n')	
+	
+	columns_remove <- c("full_obj_name")
+	
+	prov_fail_data <- prov_fail_data[,!(names(prov_fail_data) %in% columns_remove)]
+	prov_fail_data <- within(prov_fail_data, 
+			"name" <- as.integer(gsub("vm_", '', prov_fail_data$name)))
+	prov_fail_data <- prov_fail_data[order(prov_fail_data$name), ]
+	setnames(prov_fail_data, "name", "x_axis_id")
+	prov_fail_data <- melt(prov_fail_data, id.vars="x_axis_id")		
+	prov_fail_data <- ggplot(prov_fail_data, 
+					aes(x=x_axis_id, y=value, fill=variable)) + 
+			geom_bar(stat='identity') + 
+			xlab("VM/Container number") + 
+			ylab("Provisioning Failure (seconds)") + 
+			labs(title = prov_fail_plot_title)
+	output_pdf_plot(ed, en, prov_fail_data, "006_individual_vm_provision_failure",
+			sps)
+	################## END Provisioning Failures vs VM ##################
 	
 	################## START Provisioning Failures vs VApp Submitter ##################
 	msg <- paste("# Provisioning Successes + Failures for VMs/Containers.... #", sep = '')
@@ -759,7 +811,7 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv, dtb) {
 	
 	agg_prov_fail_data <- merge(arrivals, departures, by="partial_obj_name1")
 	
-	output_table(ed, en, agg_prov_fail_data, "005_total_vm_provision_failure")
+	output_table(ed, en, agg_prov_fail_data, "006_total_vm_provision_failure")
 	
 	agg_prov_fail_data <- melt(agg_prov_fail_data, id.vars="partial_obj_name1")
 
@@ -775,7 +827,7 @@ plot_management_data <- function(mmdf, ed, en, vmn, sps, mnv, dtb) {
 			theme(axis.text.x = element_text(angle = 45, hjust = 1)) +			
 			labs(title = agg_prov_fail_plot_title)
 	
-	output_pdf_plot(ed, en, agg_prov_fail_plot, "005_total_vm_provision_failure", sps, number_of_vms)	
+	output_pdf_plot(ed, en, agg_prov_fail_plot, "007_total_vm_provision_failure", sps, number_of_vms)	
 	################## END Provisioning Failures vs VApp Submitter ##################
 }
 

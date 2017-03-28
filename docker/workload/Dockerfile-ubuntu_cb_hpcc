@@ -1,4 +1,8 @@
 FROM REPLACE_NULLWORKLOAD_UBUNTU
 
+# hpcc-install-pm
 RUN apt-get update
 RUN apt-get install -y hpcc
+# hpcc-install-pm
+
+RUN chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME

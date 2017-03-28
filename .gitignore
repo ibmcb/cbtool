@@ -27,6 +27,9 @@ docs/*FTVM*
 docs/*STG*
 docs/*_metrics.ppt
 docker/workload/coremark*.tar
+docker/workload/*_processed_
+docker/orchestrator/*_processed_
+docker/base/*_processed_
 docker/workload/l_lpk*.tgz
 docker/workload/pb2.5*
 util/experimental

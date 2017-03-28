@@ -21,5 +21,7 @@ iperf-ver = 2.0
 ### END - Dependency versions ###
 
 ### START -  Dependency and method-specific command lines ###
-common-iperf-install-pm = package_install iperf
+
+# AUTOMATICALLY EXTRACTED FROM DOCKERFILE ON ../../docker/workload/
+
 ### END -  Dependency and method-specific command lines ###

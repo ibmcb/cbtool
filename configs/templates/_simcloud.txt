@@ -101,12 +101,13 @@ SSH_KEY_NAME = $SIM_SSH_KEY_NAME
 
 [VM_TEMPLATES : SIM_CLOUDCONFIG]
 CHECK = size:micro32, imageids:1, imageid1:to_replace
-CLIENT_DAYTRADER = size:micro32, imageids:1, imageid1:cb_daytrader
+CLIENT_IBM_DAYTRADER = size:micro32, imageids:1, imageid1:cb_daytrader
+CLIENT_OPEN_DAYTRADER = size:micro32, imageids:1, imageid1:cb_open_daytrader
 DRIVER_DAYTRADER = size:micro32, imageids:1, imageid1:cb_daytrader
 CLIENT_TRADELITE = size:micro32, imageids:1, imageid1:cb_tradelite
 DRIVER_TRADELITE = size:micro32, imageids:1, imageid1:cb_tradelite
-MYSQL = size:copper32, lb_size:gold32, eclipsed_size:gold32, imageids:1, imageid1:cb_daytrader
-GERONIMO = size:iron32, eclipsed_size:gold32, imageids:1, imageid1:cb_daytrader
+MYSQL = size:copper32, lb_size:gold32, eclipsed_size:gold32, imageids:1, imageid1:cb_open_daytrader
+GERONIMO = size:iron32, eclipsed_size:gold32, imageids:1, imageid1:cb_open_daytrader
 DB2 = size:copper32, lb_size:gold32, eclipsed_size:gold32, imageids:1, imageid1:cb_daytrader
 WAS = size:iron32, eclipsed_size:gold32, imageids:1, imageid1:cb_daytrader
 DRIVER_HADOOP = size:nano32, imageids:1, imageid1:cb_hadoop
@@ -132,6 +133,7 @@ FILEBENCH = size:iron32, eclipsed_size:gold32, imageids:1, imageid1:cb_filebench
 DRIVER_FIO = size:nano32, imageids:1, imageid1:cb_fio
 FIO = size:iron32, imageids:1, imageid1:cb_fio
 BTEST = size:iron32, imageids:1, imageid1:cb_btest
+POSTMARK = size:iron32, imageids:1, imageid1:cb_postmark
 TINYVM = size:pico32, imageids:1, imageid1:cb_nullworkload
 YATINYVM = size:pico32, imageids:1, imageid1:cb_nullworkload
 FEN_HPC = size:bronze32, imageids:1, imageid1:cb_hpcc

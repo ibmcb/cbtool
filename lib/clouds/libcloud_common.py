@@ -46,7 +46,7 @@ class LibcloudCmds(CommonCloudFunctions) :
 
     '''
      README: Parameters:
-     @provider: (Required) This is the libcloud-specific identifier string for your cloud,
+     @description: (Required) This is the libcloud-specific identifier string for your cloud,
         as listed here under the "Provider Constant" column:
         http://libcloud.readthedocs.io/en/latest/supported_providers.html
      @num_credentials: (Required, Default 2)
@@ -92,6 +92,8 @@ class LibcloudCmds(CommonCloudFunctions) :
                   with the public key that corresponds to FOO_SSH_KEY_NAME
     @use_cloud_init: (Optional, Default False)
             NOTE: If your cloud doesn't support cloud-init, you will need to make sure your images have baked in the SSH public key on your own.
+    @use_volumes: (Optional, Default False)
+            Leave this as false if you're not interested in block storage / volume support, or you're cloud doesn't support it.
     @use_sizes: (Optional, Default True)
             Use the VM image sizes as listed by your cloud.
     @use_locations: (Optional, Default True)
@@ -107,7 +109,7 @@ class LibcloudCmds(CommonCloudFunctions) :
     @trace
     def __init__ (self, pid, osci, expid = None, provider = "OverrideMe", \
                   num_credentials = 2, use_ssh_keys = False, \
-                  use_cloud_init = False,  use_locations = True, \
+                  use_cloud_init = False,  use_volumes = False, use_locations = True, \
                   use_sizes = True, tldomain = False, verify_ssl = True, extra = {}) :
         '''
         TBD
@@ -122,6 +124,7 @@ class LibcloudCmds(CommonCloudFunctions) :
         self.num_credentials = num_credentials
         self.use_ssh_keys = use_ssh_keys
         self.use_cloud_init = use_cloud_init
+        self.use_volumes = use_volumes
         self.use_locations = use_locations
         self.use_sizes = use_sizes
         self.tldomain = tldomain
@@ -370,30 +373,32 @@ class LibcloudCmds(CommonCloudFunctions) :
                         if _running_instances :
                             sleep(int(obj_attr_list["update_frequency"]))
 
-                self.common_messages("VMC", obj_attr_list, "cleaning up vvs", 0, '')
+                if self.use_volumes :    
+                    self.common_messages("VMC", obj_attr_list, "cleaning up vvs", 0, '')
     
-                _running_volumes = True
-                while _running_volumes :
-                    _running_volumes = False
-                    for credentials_list in obj_attr_list["credentials"].split(","):
-                        credentials = credentials_list.split(":")
-                        tenant = credentials[0]
     
-                        _volumes = LibcloudCmds.catalogs.cbtool[credentials_list].list_volumes()
-                        for _volume in _volumes :
-                            if _volume.name.count("cb-" + obj_attr_list["username"]) :
-                                try :
-                                    cbdebug("Destroying: " + _volume.name + " (" + tenant + ")", True)
-                                    _volume.destroy()
-                                except :
-                                    pass
-                                _running_volumes = True
-                            else :
-                                _msg = "Cleaning up DigitalOcean. Ignoring volume: " + _volume.name
-                                cbdebug(_msg)
-    
-                        if _running_volumes :
-                            sleep(int(obj_attr_list["update_frequency"]))
+                    _running_volumes = True
+                    while _running_volumes :
+                        _running_volumes = False
+                        for credentials_list in obj_attr_list["credentials"].split(","):
+                            credentials = credentials_list.split(":")
+                            tenant = credentials[0]
+        
+                            _volumes = LibcloudCmds.catalogs.cbtool[credentials_list].list_volumes()
+                            for _volume in _volumes :
+                                if _volume.name.count("cb-" + obj_attr_list["username"]) :
+                                    try :
+                                        cbdebug("Destroying: " + _volume.name + " (" + tenant + ")", True)
+                                        _volume.destroy()
+                                    except :
+                                        pass
+                                    _running_volumes = True
+                                else :
+                                    _msg = "Cleaning up DigitalOcean. Ignoring volume: " + _volume.name
+                                    cbdebug(_msg)
+        
+                            if _running_volumes :
+                                sleep(int(obj_attr_list["update_frequency"]))
 
             _status = 0
             
@@ -740,7 +745,11 @@ class LibcloudCmds(CommonCloudFunctions) :
             obj_attr_list["cloud_vv_instance"] = None
 
             if "cloud_vv_type" not in obj_attr_list :
-                obj_attr_list["cloud_vv_type"] = "DOC"
+
+                if self.use_volumes :                
+                    obj_attr_list["cloud_vv_type"] = "LCV"
+                else :
+                    obj_attr_list["cloud_vv_type"] = "NOT SUPPORTED"
 
             if "cloud_vv" in obj_attr_list :
 
@@ -749,20 +758,26 @@ class LibcloudCmds(CommonCloudFunctions) :
                 obj_attr_list["last_known_state"] = "about to send volume create request"
 
                 self.common_messages("VV", obj_attr_list, "creating", _status, _fmsg)
-                
-                _mark1 = int(time())
 
-                _volume = connection.create_volume(int(obj_attr_list["cloud_vv"]),
-                                                                              obj_attr_list["cloud_vv_name"],
-                                                                              location = [x for x in self.locations if x.id == obj_attr_list["vmc_name"]][0])
+                if self.use_volumes :
+                    
+                    _mark1 = int(time())
+    
+                    _volume = connection.create_volume(int(obj_attr_list["cloud_vv"]),
+                                                                                  obj_attr_list["cloud_vv_name"],
+                                                                                  location = [x for x in self.locations if x.id == obj_attr_list["vmc_name"]][0])
+    
+                    sleep(int(obj_attr_list["update_frequency"]))
+    
+                    obj_attr_list["cloud_vv_uuid"] = _volume.id
+                    obj_attr_list["cloud_vv_instance"] = _volume
+    
+                    _mark2 = int(time())
+                    obj_attr_list["do_015_create_volume_time"] = _mark2 - _mark1
 
-                sleep(int(obj_attr_list["update_frequency"]))
-
-                obj_attr_list["cloud_vv_uuid"] = _volume.id
-                obj_attr_list["cloud_vv_instance"] = _volume
-
-                _mark2 = int(time())
-                obj_attr_list["do_015_create_volume_time"] = _mark2 - _mark1
+                else :
+                        
+                    obj_attr_list["cloud_vv_uuid"] = "NOT SUPPORTED"
 
             _status = 0
 
@@ -1259,6 +1274,8 @@ class LibcloudCmds(CommonCloudFunctions) :
             _credentials_list = self.rotate_token(obj_attr_list["cloud_name"])
 
             obj_attr_list["credentials_list"] = _credentials_list
+
+            self.connect(_credentials_list, obj_attr_list)
 
             _image_instance = self.get_images(obj_attr_list)
                 

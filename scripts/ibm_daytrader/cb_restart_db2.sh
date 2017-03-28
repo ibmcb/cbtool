@@ -20,15 +20,16 @@ source ~/.bashrc
 source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
 DB2_INSTANCE_NAME=`get_my_ai_attribute_with_default db2_instance_name klabuser`
+DB2_DATABASE_NAME=`get_my_ai_attribute_with_default db2_database_name tradedb`
+DB2_DATA_DIR=`get_my_ai_attribute_with_default db2_data_dir /tradedb`
+TRADEDB_SIZE=`get_my_ai_attribute_with_default tradedb_size small`
+
 INSTANCE_PATH=/home/${DB2_INSTANCE_NAME}
 SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
 NETSTAT_CMD=`which netstat`
 SUDO_CMD=`which sudo`
 ATTEMPTS=3
 START=`provision_application_start`
-SIZE=`get_my_ai_attribute_with_default tradedb_size small`
-
-DB2_DATA_DIR=`get_my_ai_attribute_with_default db2_data_dir /tradedb`
 
 sudo ls $DB2_DATA_DIR/$DB2_INSTANCE_NAME/NODE0000/TRADEDB
 if [[ $? -ne 0 ]]
@@ -37,12 +38,12 @@ then
     
     if [[ $? -eq 0 ]]
     then
-        syslog_netcat "Copying /tradedb_${SIZE} to $DB2_DATA_DIR"
-        sudo cp -r /tradedb_${SIZE}/* ${DB2_DATA_DIR}/
+        syslog_netcat "Copying /tradedb_${TRADEDB_SIZE} to $DB2_DATA_DIR"
+        sudo cp -r /tradedb_${TRADEDB_SIZE}/* ${DB2_DATA_DIR}/
     else    
-        syslog_netcat "Moving /tradedb_${SIZE} to $DB2_DATA_DIR"
+        syslog_netcat "Moving /tradedb_${TRADEDB_SIZE} to $DB2_DATA_DIR"
         sudo rm -rf $DB2_DATA_DIR
-        sudo mv /tradedb_${SIZE} $DB2_DATA_DIR
+        sudo mv /tradedb_${TRADEDB_SIZE} $DB2_DATA_DIR
     fi
 fi    
     

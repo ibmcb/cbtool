@@ -1,8 +1,8 @@
 ### START - Dependency installation order ###
-git-order = 50
-gcc-order = 51
-perl-order = 52
-unixbench-order = 53
+git-order = 82
+gcc-order = 83
+perl-order = 84
+unixbench-order = 85
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -21,7 +21,7 @@ unixbench-install = git
 ### START - Tests ###
 git-configure = gcc -v
 git-configure = git --version
-perl-configure = perl -v; perl -e 'require Time::HiRes'
+perl-configure = perl -v -e 'require Time::HiRes'
 unixbench-configure = ls -la ~/byte-unixbench/UnixBench/Run
 ### END - Tests ###
 
@@ -33,19 +33,11 @@ unixbench-ver = ANY
 ### END - Dependency versions ###
 
 ### START - Dependency URLs ###
-common-unixbench-urls-man = https://github.com/kdlucas/byte-unixbench.git
+
 ### END - Dependency URLs ###
 
 ### START -  Dependency and method-specific command lines ###
-ubuntu-gcc-preinstall-pm = apt-get update -y
-ubuntu-gcc-install-pm = package_install build-essential
-fedora-gcc-install-pm = package_install gcc
 
-common-git-install-pm = package_install git-all
+# AUTOMATICALLY EXTRACTED FROM DOCKERFILE ON ../../docker/workload/
 
-# perl package only need to be explicitly installed on CentOS 6.x
-fedora-perl-install-pm = package_install perl-Time-HiRes
-
-common-unixbench-preinstall-git = cd ~
-common-unixbench-install-git = git clone URL
 ### END -  Dependency and method-specific command lines ###
