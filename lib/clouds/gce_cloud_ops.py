@@ -1030,6 +1030,8 @@ class GceCmds(CommonCloudFunctions) :
 
                 self.common_messages("VM", obj_attr_list, "capturing", 0, '')
 
+                obj_attr_list["captured_image_name"] = obj_attr_list["captured_image_name"].replace('_','-')
+
                 _operation = self.gceconn.instances().delete(project = self.instances_project, \
                                                              zone = self.zone, \
                                                              instance = obj_attr_list["cloud_vm_name"]).execute(http = self.http_conn[obj_attr_list["name"]])
