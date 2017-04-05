@@ -10,7 +10,6 @@ LOAD_BALANCER_SUPPORTED = $True
 LOAD_BALANCER = $False
 LOAD_BALANCER_TARGET_PORT = 9080
 LOAD_BALANCER_TARGET_URL = daytrader
-LOAD_BALANCER_TARGET_CHILDREN = 2
 LOAD_BALANCER_PORT = 9080
 LOAD_BALANCER_URL = daytrader
 RESIZE_SUPPORTED = $True
@@ -24,7 +23,10 @@ LOAD_LEVEL = uniformIXIXI1I10
 # The load duration for daytrader should not be smaller than 90 seconds
 LOAD_DURATION = uniformIXIXI90I120
 CATEGORY = transactional
-REPORTED_METRICS = throughput,latency,operations_ok,operations_err,datagen_time,datagen_size,completion_time,quiescent_time
+PROFILES = default
+REFERENCE = http://geronimo.apache.org/GMOxDOC22/daytrader-a-more-complex-application.html
+LICENSE = TBD
+REPORTED_METRICS = throughput,latency,operations_ok,operations_err,datagen_time,datagen_size,completion_time,quiescent_time,errors
 
 # VApp-specific MANDATORY attributes
 DESCRIPTION = Deploys an 2-tier stack, formed by N "application (Apache Gerônimo) nodes"
@@ -32,7 +34,7 @@ DESCRIPTION += VMs \n - if N > 1, then a "load balancer (HAProxy) node" VM is al
 DESCRIPTION +=  and one "database (MySQL) node" VM, and then runs the DayTrader benchmark
 DESCRIPTION += on the stack. The actual load is performed by an additional VM,
 DESCRIPTION += running the Rain Workload Toolkit (rain).\n
-DESCRIPTION +=- LOAD_PROFILE possible values: "default" (the only profile that we
+DESCRIPTION +=- LOAD_PROFILE possible values: _PROFILES_ (the only profile that we
 DESCRIPTION += have registered in rain).
 DESCRIPTION +=- LOAD_LEVEL meaning: number of clients simultaneously performing
 DESCRIPTION += transactions.\n 
@@ -47,10 +49,12 @@ MYSQL_SETUP1 = cb_restart_mysql.sh
 GERONIMO_SETUP2 = cb_restart_tomcat.sh
 MYSQL_RESET1 = cb_restart_mysql.sh
 GERONIMO_RESET2 = cb_restart_tomcat.sh
-START = cb_daytrader-open.sh
+START = cb_run_daytrader.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 JAVA_HOME = auto
+JAVA_MAX_MEM_HEAP = 0.8
+JAVA_EXTRA_CMD_OPTS = -Xms256m
 NR_QUOTES=4000
 NR_USERS=1500
 MYSQL_DATA_DIR = /tradedb

@@ -12,13 +12,13 @@ CAPTURE_ROLE = mlg
 LOAD_BALANCER = $False
 LOAD_BALANCER_TARGET_PORT = 80
 LOAD_BALANCER_TARGET_URL = unknown
-LOAD_BALANCER_TARGET_CHILDREN = 2
 MLG_SETUP1 = cb_setup_mlg.sh
 START = cb_mlg.sh
 LOAD_PROFILE = SEQ
 LOAD_LEVEL = 1
 LOAD_DURATION = 200
 CATEGORY = synthetic
+PROFILES = default
 
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
 #SYNC_COUNTER_NAME = synchronization_counter

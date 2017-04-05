@@ -3783,7 +3783,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                                      "vm_templates", False)
     
                                 _vm_t = str2dic(_vm_templates["tinyvm"])
-                                _vm_t["imageid1"] = "cb_nullworkload"
+                                _vm_t["imageid1"] = obj_attr_list["captured_image_name"]
                                 _vm_t = dic2str(_vm_t)
 
                                 self.osci.update_object_attribute(obj_attr_list["cloud_name"], \

@@ -17,7 +17,7 @@
 #--------------------------------- START CB API --------------------------------
 
 from sys import path, argv
-from time import sleep, time
+from time import sleep, time, strftime
 from optparse import OptionParser
 
 import fnmatch
@@ -117,12 +117,18 @@ def main(apiconn) :
 
     _exit_code = 0
     
-    _test_results_table = prettytable.PrettyTable(["Virtual Application", \
-                                                   "Hypervisor Type", \
-                                                   "Management Report?", \
-                                                   "Management Metrics (mgt_001 - mgt_007)", \
-                                                   "Runtime Report?", \
-                                                   "Runtime Metric (id,compl,gen,tput,bw,lat)"])
+    _test_results_table = prettytable.PrettyTable(["Virtual", \
+                                                   "SUT", \
+                                                   "Management", \
+                                                   " Management ", \
+                                                   "Runtime", \
+                                                   " Runtime ", \
+                                                   "  Runtime  "])
+
+    _second_header = ["Application", '', "Report", "Metrics", "Report", "Metrics", "Missing" ]
+    _test_results_table.add_row(_second_header)
+    _third_header = [strftime("%Y-%m-%d"), strftime("%H:%M:%S"), "", "mgt_001-mgt_007", "", "id, prof, dur, compl, gen, tput, bw, lat", "Metrics" ]
+    _test_results_table.add_row(_third_header)
 
     for _type in _options.typelist.split(',') :
 
@@ -140,12 +146,21 @@ def main(apiconn) :
         for _hypervisor_type in _hypervisor_list :
             
             _start = int(time())
-            _mgt_pass, _rt_pass = deploy_virtual_application(api, _actual_type, _hypervisor_type, _options.samples, _options.wait, _options.interval)
+            _mgt_pass, _rt_pass, _rt_missing, _sut = deploy_virtual_application(api, \
+                                                                                _actual_type, \
+                                                                                _hypervisor_type, \
+                                                                                _options.samples, \
+                                                                                _options.wait, \
+                                                                                _options.interval)
+
+            _actual_type = _actual_type.replace("_lb",'')
+            
             _duration = int(time()) - _start
             
             _results_row = []
-            _results_row.append(_type + " (" + str(_duration) + "s)")
-            _results_row.append(_hypervisor_type)
+            _results_row.append(_actual_type + " (" + str(_duration) + "s)")
+            _results_row.append(_sut)            
+#            _results_row.append(_hypervisor_type)
             
             if _mgt_pass :
                 _results_row.append("PASS")
@@ -162,15 +177,27 @@ def main(apiconn) :
                 _results_row.append("FAIL")                
                 _results_row.append(str(_rt_pass))
                 _exit_code = 1
-                
+
+            if len(_rt_missing) < 5 :
+                _results_row.append(','.join(_rt_missing).replace("app_",''))
+            else :
+                _results_row.append(','.join(_rt_missing[0:4]).replace("app_",'') + ",...")
+                                
             _test_results_table.add_row(_results_row)
+
+            _x_test_results_table = _test_results_table.get_string().split('\n')
+            _aux = _x_test_results_table[2]
+            _x_test_results_table[2] = _x_test_results_table[3]
+            _x_test_results_table[3] = _x_test_results_table[4]            
+            _x_test_results_table[4] = _aux
+            _x_test_results_table = '\n'.join(_x_test_results_table)
 
             _fn = "/tmp/real_application_regression_test.txt"
             _fh = open(_fn, "w")
-            _fh.write(str(_test_results_table))
+            _fh.write(str(_x_test_results_table))
             _fh.close()
 
-            print _test_results_table
+            print _x_test_results_table
                 
     return True
 
@@ -182,10 +209,11 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
     '''
     try :
         _vapp = None
+        _sut = ''
         _management_metrics_pass = False
         _runtime_metrics_pass = False
 
-        _rt_m_list = "load_id,completion_time,datagen_time,throughput,bandwidth,latency"
+        _rt_m_list = "load_id,load_profile,load_duration,completion_time,datagen_time,throughput,bandwidth,latency"
         _aux_run_time_metrics = ''
                         
         cloud_name = apiconn.cldlist()[0]["name"]
@@ -197,6 +225,11 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
         else :
             _actual_application_type = application_type
 
+        _temp_attr_list_str = ''
+        if _actual_application_type.count("_lb") :
+            _actual_application_type = _actual_application_type.replace("_lb",'')
+            _temp_attr_list_str = "load_balancer=true"
+
         if hypervisor_type :
             _msg = "Set hypervisor type to \"" + hypervisor_type + "\" on cloud \""
             _msg += cloud_name + "\"..."
@@ -206,8 +239,10 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
         _msg = "Creating a new Virtual Application Instance with type \"" 
         _msg += _actual_application_type + "\" on cloud \"" + cloud_name + "\"..."
         print _msg
-        _vapp = apiconn.appattach(cloud_name, application_type)
+        _vapp = apiconn.appattach(cloud_name, _actual_application_type, temp_attr_list = _temp_attr_list_str)
 
+        _sut = _vapp["sut"]
+        
         _msg = "    Virtual Application \"" + _vapp["name"] + "\" deployed successfully"    
         print _msg
 
@@ -251,8 +286,10 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
             _curr_time = 0
             _collected_samples = 0
 
-            _app_m = apiconn.typeshow(cloud_name, _actual_application_type)["reported_metrics"].split(',')
-            _app_m += [ "app_load_profile", "app_load_id", "app_load_level"]
+            _runtime_missing_metrics = []
+            
+            _app_m = apiconn.typeshow(cloud_name, _actual_application_type)["reported_metrics"].replace(", ",',').split(',')
+            _app_m += [ "app_load_profile", "app_load_id", "app_load_level" ]
             
             _load_manager_vm_uuid = _vapp["load_manager_vm"]
             while _curr_time < timeout and _collected_samples < runtime_samples :
@@ -267,22 +304,39 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
                             _msg = "        Checking metric \"" + _metric + "\"..."
                             print _msg,                
                             if _metric not in _runtime_metrics :
+                                if _metric not in _runtime_missing_metrics :
+                                    _runtime_missing_metrics.append(_metric)
                                 print "NOK"
                             else :
                                 if not _metric.count("load_profile") :
-                                    _value = float(_runtime_metrics[_metric]["val"])
+                                    try:
+                                        _value = float(_runtime_metrics[_metric]["val"])
+                                    except: 
+                                        _value = str(_value)
+                                else :
+                                    _value = _runtime_metrics[_metric]["val"]                                    
                                 print str(_value) + " OK"
                                 if _metric == "app_load_id" :
                                     _collected_samples = _value
 
                         _aux_run_time_metrics = ''
-                        for _m in _rt_m_list.split(',') :
-                            _x = "NA"          
-                            for _metric in _runtime_metrics :
-                                if _metric.count(_m) :
-                                    _x = _runtime_metrics[_metric]["val"]
-                            
-                            _aux_run_time_metrics += _x + ','
+                        
+                        if _collected_samples >= runtime_samples :
+                            for _m in _rt_m_list.split(',') :
+                                _value = "NA"
+    
+                                _m = "app_" + _m
+                                
+                                if _m in _runtime_metrics :
+                                    
+                                    if not _m == "app_load_profile" :
+                                        _value = str(round(float(_runtime_metrics[_m]["val"]),2))
+                                    else :
+                                        _value = _runtime_metrics[_m]["val"]
+                                
+                                _aux_run_time_metrics += _value + ', '
+
+                            _aux_run_time_metrics = _aux_run_time_metrics[0:-1]
                                     
                     print "---------------------------------------- Sample " + str(_collected_samples)                                    
                 except :
@@ -367,6 +421,6 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
             except APIException, obj :
                 print "Error finishing up: (" + str(obj.status) + "): " + obj.msg
 
-        return _management_metrics_pass, _runtime_metrics_pass
+        return _management_metrics_pass, _runtime_metrics_pass, _runtime_missing_metrics, _sut
     
 main(api)

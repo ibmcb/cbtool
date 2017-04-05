@@ -17,13 +17,16 @@ LOAD_PROFILE = default
 LOAD_LEVEL = uniformIXIXI1I100
 LOAD_DURATION = 30
 CATEGORY = fake
+PROFILES = default
+REFERENCE = NA
+LICENSE = TBD
 REPORTED_METRICS = bandwidth,throughput,latency,completion_time,errors,quiescent_time
 
 # VApp-specific MANDATORY attributes
 DESCRIPTION = Deploys one or more VMs, and then continuously executes
 DESCRIPTION += a variable-length sleep, followed by the reporting of fake 
 DESCRIPTION += performance numbers at the end.\n
-DESCRIPTION +=- LOAD_PROFILE possible values: "default" (since this is just
+DESCRIPTION +=- LOAD_PROFILE possible values: _PROFILES_ (since this is just
 DESCRIPTION += sleep call, multiple profiles don't make any sense).\n
 DESCRIPTION +=- LOAD_LEVEL meaning: does not matter/do not care.\n 
 DESCRIPTION +=- LOAD_DURATION meaning: the length of the sleep call.\n

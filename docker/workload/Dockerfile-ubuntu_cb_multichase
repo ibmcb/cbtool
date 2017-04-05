@@ -1,0 +1,9 @@
+FROM REPLACE_NULLWORKLOAD_UBUNTU
+
+RUN apt-get update
+
+# multichase-install-man
+RUN git clone https://github.com/google/multichase.git; cd /home/REPLACE_USERNAME/multichase; make
+# multichase-install-man
+
+RUN chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME

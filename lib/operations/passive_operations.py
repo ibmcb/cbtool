@@ -2780,6 +2780,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         obj_attr_list["global_object"] == "fi_templates" :
 
                             _result = {}
+                            _profiles = ""
                             for _key, _value in _object_contents.items() :
 
                                 if _key.count(obj_attr_list["attribute_name"]) :
@@ -2807,45 +2808,52 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                             _ww_value += _line
                                         _value = _ww_value
 
+                                    elif _key == "reference" :
+                                        _key = _key.replace(_key, "01___" + _key)                                        
                                     elif _key == "sut" :
-                                        _key = _key.replace(_key, "01___" + _key)
-                                    elif _key == "load_balancer_supported" :
                                         _key = _key.replace(_key, "02___" + _key)
+                                    elif _key == "load_balancer_supported" :
+                                        _key = _key.replace(_key, "03___" + _key)
                                         if _value.lower() == "true" :
                                             _load_balancer_supported = True
                                     elif _key == "resize_supported" :
-                                        _key = _key.replace(_key, "03___" + _key)
-                                    elif _key == "regenerate_data" :
                                         _key = _key.replace(_key, "04___" + _key)
+                                    elif _key == "regenerate_data" :
+                                        _key = _key.replace(_key, "05___" + _key)
                                     elif _key == "role_list" :
-                                        _key = _key.replace(_key, "05___" + _key)                                        
+                                        _key = _key.replace(_key, "06___" + _key)                                        
                                     elif _key == "load_generator_role" :
-                                        _key = _key.replace(_key, "06___" + _key)
+                                        _key = _key.replace(_key, "07___" + _key)
                                     elif _key == "load_manager_role" :
-                                        _key = _key.replace(_key, "07___" + _key)         
+                                        _key = _key.replace(_key, "08___" + _key)         
                                     elif _key == "metric_aggregator_role" :
-                                        _key = _key.replace(_key, "08___" + _key)
-                                    elif _key == "capture_role" :
                                         _key = _key.replace(_key, "09___" + _key)
+                                    elif _key == "capture_role" :
+                                        _key = _key.replace(_key, "10___" + _key)
                                     elif _key == "load_balancer" :
-                                        _key = _key.replace(_key, "10___" + _key)                                                                                                                        
+                                        _key = _key.replace(_key, "11___" + _key)                                                                                                                        
                                     elif _key == "load_profile" :
-                                        _key = _key.replace(_key, "11___" + _key)
-                                    elif _key == "load_level" :
                                         _key = _key.replace(_key, "12___" + _key)
+                                    elif _key == "load_level" :
+                                        _key = _key.replace(_key, "13___" + _key)
                                     elif _key == "load_duration" :
-                                        _key = _key.replace(_key, "13___" + _key)                                                                                                                        
+                                        _key = _key.replace(_key, "14___" + _key)                                                                                                                        
                                     elif _key == "reported_metrics" :
-                                        _key = _key.replace(_key, "14___" + _key)           
-
+                                        _key = _key.replace(_key, "15___" + _key)           
+                                    elif _key == "category" :
+                                        _key = _key.replace(_key, "16___" + _key) 
+                                    elif _key == "profiles" :
+                                        _key = _key.replace(_key, "17___" + _key)           
+                                        _profiles = _value
+                                        
                                     elif _key.count("setup") :
-                                        _key = _key.replace(_key, "15___" + _key)
-                                    elif _key.count("reset") :
-                                        _key = _key.replace(_key, "16___" + _key)
-                                    elif _key.count("resize") :
-                                        _key = _key.replace(_key, "17___" + _key)                                        
-                                    elif _key.count("start") :
                                         _key = _key.replace(_key, "18___" + _key)
+                                    elif _key.count("reset") :
+                                        _key = _key.replace(_key, "19___" + _key)
+                                    elif _key.count("resize") :
+                                        _key = _key.replace(_key, "20___" + _key)                                        
+                                    elif _key.count("start") :
+                                        _key = _key.replace(_key, "21___" + _key)
 
                                     elif _key == "type" :
                                         _key = _key.replace(_key, "00___" + _key)
@@ -2864,6 +2872,9 @@ class PassiveObjectOperations(BaseObjectOperations) :
                             _sh = 'Z'
                             for _line_number in range(0, len(_formatted_result)) :
 
+                                if _formatted_result[_line_number].count("_PROFILES_") :
+                                    _formatted_result[_line_number] = _formatted_result[_line_number].replace("_PROFILES_",_profiles)
+                                    
                                 if _formatted_result[_line_number].count("___") :
                                     if _formatted_result[_line_number].count("sut") :
                                         _formatted_result[_line_number] = "# Attributes MANDATORY for all Virtual Applications: \n\n" + _formatted_result[_line_number][5:]

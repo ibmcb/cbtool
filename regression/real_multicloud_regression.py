@@ -16,7 +16,7 @@
 #/*******************************************************************************
 
 from sys import path, argv
-from time import sleep,time
+from time import sleep,time,strftime
 from optparse import OptionParser
 
 import fnmatch
@@ -482,6 +482,8 @@ def check_img_delete(apiconn, cloud_model, cloud_name, options) :
             print _msg
             return "PASS"
 
+
+
 def main() :
     '''
     TBD
@@ -490,14 +492,23 @@ def main() :
         
     _test_results_table = prettytable.PrettyTable(["Cloud Model", \
                                                    "Cloud Attach", \
-                                                   "VM Attach (no pubkey injection, no volume)", \
-                                                   "VM Attach (pubkey injection, no volume)", \
-                                                   "VM Attach (pubkey injection, volume)", \
+                                                   "VM Attach", \
+                                                   " VM Attach ", \
+                                                   "  VM Attach  ", \
                                                    "VM Capture", \
-                                                   "VM Attach (newly captured image, no volume)", \
+                                                   "VM Attach  ", \
                                                    "IMAGE Delete", \
-                                                   "VM Attach (non-existent image failure)", \
-                                                   "VM Attach (pubkey injection, force failure)"])
+                                                   "   VM Attach   ", \
+                                                   "    VM Attach    "])
+
+    _second_header = ['', '', "no pubkey injection", "pubkey injection", "pubkey injection", '', "pubkey injection" , '', "pubkey injection", "pubkey injection"]
+    _test_results_table.add_row(_second_header)
+    _third_header = [strftime("%Y-%m-%d"), strftime("%H:%M:%S"), "pre-existing image", "pre-existing image", "pre-existing image", '', "newly captured image" , '', "non-existent image", "pre-existing image"]
+    _test_results_table.add_row(_third_header)
+    _fourth_header = ['', '', "no volume", "no volume", "volume", '', "no volume" , '', "no volume", "no volume"]
+    _test_results_table.add_row(_fourth_header)
+    _fifth_header = ['', '', "no failure", "no failure", "no failure", '', "no failure" , '', "failure", "forced failure"]
+    _test_results_table.add_row(_fifth_header)
                                                   
     for _cloud_model in _options.cloud_models :
         _start = int(time())
@@ -579,12 +590,21 @@ def main() :
 
         _test_results_table.add_row(_results_row)
 
+        _x_test_results_table = _test_results_table.get_string().split('\n')
+        _aux = _x_test_results_table[2]
+        _x_test_results_table[2] = _x_test_results_table[3]
+        _x_test_results_table[3] = _x_test_results_table[4]
+        _x_test_results_table[4] = _x_test_results_table[5]
+        _x_test_results_table[5] = _x_test_results_table[6]        
+        _x_test_results_table[6] = _aux
+        _x_test_results_table = '\n'.join(_x_test_results_table)
+        
         _fn = "/tmp/real_multicloud_regression_test.txt"
         _fh = open(_fn, "w")
-        _fh.write(str(_test_results_table))
+        _fh.write(str(_x_test_results_table))
         _fh.close()
 
-        print _test_results_table
+        print _x_test_results_table
 
         _error = False
              

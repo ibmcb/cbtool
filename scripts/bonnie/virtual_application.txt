@@ -1,0 +1,48 @@
+# Parameters for this Virtual Application (Application Instance - AI) type should
+# be set on YOUR private configuration configuration file, including the ones 
+# commented.
+
+[AI_TEMPLATES : BONNIE]
+
+# Attributes MANDATORY for all Virtual Applications
+SUT = bonnie
+LOAD_BALANCER_SUPPORTED = $False
+RESIZE_SUPPORTED = $True
+REGENERATE_DATA = $False
+LOAD_GENERATOR_ROLE = bonnie
+LOAD_MANAGER_ROLE = bonnie
+METRIC_AGGREGATOR_ROLE = bonnie
+CAPTURE_ROLE = bonnie
+LOAD_PROFILE = default
+LOAD_LEVEL = uniformIXIXI1I10
+LOAD_DURATION = 20
+CATEGORY = synthetic
+PROFILES = default,full
+REFERENCE = http://www.coker.com.au/bonnie++/
+LICENSE = TBD
+REPORTED_METRICS = throughput,latency,completion_time,errors,quiescent_time,errors,
+REPORTED_METRICS += tp_w_char,tp_w_block,tp_rw_block,tp_r_char,tp_r_block,
+REPORTED_METRICS += tp_rand_block,lat_w_char,lat_w_block,lat_rw_block,
+REPORTED_METRICS += lat_r_char,lat_r_block,lat_rand_block
+
+# VApp-specific MANDATORY attributes
+DESCRIPTION = = Deploys a SINGLE instance and runs the \"bonnie++\" synthetic (disk I/O) benchmark (from XtremeIO).\n
+DESCRIPTION +=- LOAD_PROFILE possible values: _PROFILES_. The "default" profiles
+DESCRIPTION +=executes a short version of the benchmark, limiting the amount of
+DESCRIPTION += ram and file size (1 GB and 2 GB, respectively). The "full" profile
+DESCRIPTION += simply uses all the available RAM.\n
+DESCRIPTION +=- LOAD_LEVEL meaning: concurrency (parameter -c).\n 
+DESCRIPTION +=- LOAD_DURATION meaning: not used, a run ends when all I/O operations are complete.\n
+BTEST_SETUP1 = cb_restart_bonnie.sh
+START = cb_run_bonnie.sh
+
+# VApp-specific modifier parameters. Commented attributes imply default values assumed
+BONNIE_DATA_DIR = /btestdir
+BONNIE_DATA_FSTYP = ext4
+BONNIE_DATA_VOLUME = NONE
+
+# Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
+#SYNC_COUNTER_NAME = synchronization_counter
+#CONCURRENT_AIS = 2
+#SYNC_CHANNEL_NAME = synchronization_channel
+#RUN_COUNTER_NAME = experiment_id_counter

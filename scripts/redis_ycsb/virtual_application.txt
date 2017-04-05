@@ -18,13 +18,16 @@ LOAD_PROFILE = workloadd
 LOAD_LEVEL = 1
 LOAD_DURATION = 60
 CATEGORY = transactional
-REPORTED_METRICS = bandwidth,throughput,latency,datagen_time,datagen_size,completion_time,errors,insert_operations,read_operations,quiescent_time
+PROFILES = workloada, workloadb, workloadc, workloadd, workloade, workloadf
+REFERENCE = https://github.com/brianfrankcooper/YCSB
+LICENSE = TBD
+REPORTED_METRICS = throughput,latency,datagen_time,datagen_size,completion_time,errors,insert_operations,read_operations,quiescent_time
 
 # VApp-specific MANDATORY attributes
 DESCRIPTION = Deploys one or more VMs running standalone Redis server(s), plus
 DESCRIPTION += one VM running the YCSB benchmark. This single VM sends requests
 DESCRIPTION += to all seed Redis VMs simultaneously.\n
-DESCRIPTION +=- LOAD_PROFILE possible values: "workload"{a-f} (for a proper
+DESCRIPTION +=- LOAD_PROFILE possible values: _PROFILES_ (for a proper
 DESCRIPTION += description, consult the section "Core Workloads" on the YCSB documentation)\n
 DESCRIPTION +=- LOAD_LEVEL meaning: number of threads on YCSB (parameter -threads).\n 
 DESCRIPTION +=- LOAD_DURATION meaning: not used, a run ends when all YCSB operations
@@ -36,7 +39,7 @@ DESCRIPTION += the VM running YCSB will automatically direct requests to these
 DESCRIPTION += new nodes.
 REDIS_SETUP1 = cb_restart_redis.sh
 YCSB_SETUP2 = cb_setup_ycsb.sh
-START = cb_ycsb.sh
+START = cb_run_ycsb.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 READ_RATIO = workloaddefault

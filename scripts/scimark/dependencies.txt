@@ -1,0 +1,42 @@
+### START - Dependency installation order ###
+git-order = 82
+gcc-order = 83
+java-order = 84
+scimark-order = 85
+### END - Dependency installation order ###
+
+### START - Dependency-specific installation method ###
+# pm = "package manager" (yum or apt-get)
+# sl = "soft link" (assume that the dependency is already installed, just has to
+# be properly exposed to the user's path.
+# git = git clone using above giturl
+# pip = python pip utility
+# man = "manual"
+gcc-install = pm
+git-install = pm
+java-install = pm
+### END - Dependency-specific installation method ###
+
+### START - Tests ###
+git-configure = gcc -v
+git-configure = git --version
+java-configure = . ~/.bashrc; java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g' | sed 's/-internal//g'
+scimark-configure = ls ~/jnt/scimark2/commandline.class
+### END - Tests ###
+
+### START - Dependency versions ###
+gcc-ver = ANY
+git-ver = ANY
+java-ver = 1.7
+scimark-ver = ANY
+### END - Dependency versions ###
+
+### START - Dependency URLs ###
+
+### END - Dependency URLs ###
+
+### START -  Dependency and method-specific command lines ###
+
+# AUTOMATICALLY EXTRACTED FROM DOCKERFILE ON ../../docker/workload/
+
+### END -  Dependency and method-specific command lines ###

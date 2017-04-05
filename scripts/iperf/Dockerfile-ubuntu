@@ -1,4 +1,0 @@
-FROM maugustosilva/ubuntu_cb_nullworkload
-
-RUN apt-get update
-RUN apt-get install -y iperf

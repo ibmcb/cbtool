@@ -17,12 +17,15 @@ LOAD_PROFILE = default
 LOAD_LEVEL = 1024
 LOAD_DURATION = 180
 CATEGORY = synthetic
-REPORTED_METRICS = bandwidth,completion_time,quiescent_time
+PROFILES = default
+REFERENCE = https://en.wikipedia.org/wiki/Dd_(Unix)
+LICENSE = TBD
+REPORTED_METRICS = bandwidth,completion_time,quiescent_time,errors
 
 # VApp-specific MANDATORY attributes
 DESCRIPTION = Deploys a single VM, which will use the "dd" to write a variable 
 DESCRIPTION += amount of data (by default from /dev/random) to one of its local file systems.\n
-DESCRIPTION +=- LOAD_PROFILE possible values: "default" (just run a single instance
+DESCRIPTION +=- LOAD_PROFILE possible values: _PROFILES_ (just run a single instance
 DESCRIPTION += of the dd process and write data to disk).\n
 DESCRIPTION +=- LOAD_LEVEL meaning: number of blocks written to disk.\n 
 DESCRIPTION +=- LOAD_DURATION meaning: not used, a run ends when all data (defined
@@ -33,7 +36,7 @@ DESCRIPTION += testing of "cloud image capture". By writing a specific amount of
 DESCRIPTION += data to an instance's disk, and then capturing the instance onto a
 DESCRIPTION += new image, cloud "capture" performance can be measured.
 DDGEN_SETUP1 = cb_check_dd_utility.sh
-START = cb_ddgen.sh
+START = cb_run_ddgen.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 BLOCK_SIZE=64K

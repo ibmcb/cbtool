@@ -17,12 +17,15 @@ LOAD_PROFILE = pagerank
 LOAD_LEVEL = uniformIXIXI1I3
 LOAD_DURATION = 60
 CATEGORY = bigdata
-REPORTED_METRICS = latency,completion_time,quiescent_time
+PROFILES = pagerank,topkpagerank
+REFERENCE = https://giraph.apache.org
+LICENSE = TBD
+REPORTED_METRICS = latency,completion_time,quiescent_time,errors
 
 # VApp-specific MANDATORY attributes
 DESCRIPTION = Deploys a Hadoop/Giraph cluster (1 master and N slave nodes). The master
 DESCRIPTION += node submits giraph jobs jobs to the cluster.\n
-DESCRIPTION +=- LOAD_PROFILE possible values: "pagerank", "topkpagerank" (for a proper
+DESCRIPTION +=- LOAD_PROFILE possible values: _PROFILES_ (for a proper
 DESCRIPTION += description, consult the section "Page Rank Example" on the Giraph documentation)\n
 DESCRIPTION +=- LOAD_LEVEL meaning: number of vertices on the graph (multiplied by
 DESCRIPTION += a NUM_VERTICES_FACTOR, with default "100").\n 
@@ -36,7 +39,7 @@ GIRAPHMASTER_SETUP2 = cb_start_giraph_cluster.sh
 GIRAPHSLAVE_SETUP2 = cb_start_giraph_cluster.sh
 GIRAPHMASTER_RESIZE1 = cb_giraph_hadoop_cluster.sh
 GIRAPHSLAVE_RESIZE1 = cb_giraph_hadoop_cluster.sh
-START = cb_giraph_job.sh
+START = cb_run_giraph.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 JAVA_HOME = auto

@@ -1,0 +1,40 @@
+# Parameters for this Virtual Application (Application Instance - AI) type should
+# be set on YOUR private configuration configuration file, including the ones 
+# commented.
+
+[AI_TEMPLATES : MULTICHASE] 
+
+# Attributes MANDATORY for all Virtual Applications
+SUT = multichase
+LOAD_BALANCER_SUPPORTED = $False
+RESIZE_SUPPORTED = $False
+REGENERATE_DATA = $False 
+LOAD_GENERATOR_ROLE = multichase
+LOAD_MANAGER_ROLE = multichase
+METRIC_AGGREGATOR_ROLE = multichase
+CAPTURE_ROLE = multichase
+LOAD_PROFILE = simple
+LOAD_LEVEL = uniformIXIXI1I5
+LOAD_DURATION = 30
+CATEGORY = hpc
+PROFILES = simple,work:N,t0-2,nta,movdqa,mvntdqa,parallel2-10,critword:N,critword2:N
+REFERENCE = https://github.com/google/multichase
+LICENSE = Apache_License_2
+REPORTED_METRICS = throughput, completion_time, errors, quiescent_time
+
+# VApp-specific MANDATORY attributes
+DESCRIPTION = Deploys an SINGLE INSTANCE and runs the "multichase" (pointer chaser) benchmark.\n
+DESCRIPTION +=- LOAD_PROFILE possible values: _PROFILES_ (for a proper description, consult the ./multichase -h)\n
+DESCRIPTION +=- LOAD_LEVEL meaning: number of threads (parameter -t).\n 
+DESCRIPTION +=- LOAD_DURATION meaning: number of 0.5-second samples.\n
+START = cb_run_multichase.sh
+
+# VApp-specific modifier parameters. Commented attributes imply default values assumed
+ARRAY_SIZE=1g
+STRIDE_SIZE=128
+
+# Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
+#SYNC_COUNTER_NAME = synchronization_counter
+#CONCURRENT_AIS = 2
+#SYNC_CHANNEL_NAME = synchronization_channel
+#RUN_COUNTER_NAME = experiment_id_counter

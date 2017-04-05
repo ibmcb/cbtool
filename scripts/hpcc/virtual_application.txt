@@ -17,15 +17,19 @@ LOAD_PROFILE = default
 LOAD_LEVEL = uniformIXIXI1I6
 LOAD_DURATION = 60
 CATEGORY = hpc
-REPORTED_METRICS = throughput_G_HPL, throughput_G_PTRANS, throughput_G_RandomAccess,
+PROFILES = default
+REFERENCE = http://icl.cs.utk.edu/hpcc/
+LICENSE = TBD
+REPORTED_METRICS = throughput_G_HPL, bandwidth_G_PTRANS, throughput_G_RandomAccess,
 REPORTED_METRICS += throughput_G_FFTE, throughput_EP_STREAM_Triad, throughput_EP_DGEMM,
-REPORTED_METRICS += throughput_RandomRing, lat_RandomRing,completion_time,quiescent_time
+REPORTED_METRICS += bandwidth_RandomRing, lat_RandomRing, completion_time, quiescent_time,
+REPORTED_METRICS += errors, bandwidth, throughput, latency
 
 # VApp-specific MANDATORY attributes
 DESCRIPTION = Deploys an HPC cluster formed by N "compute node" VMs and
 DESCRIPTION += one "frontend node" VM, and then runs the HPC Challenge benchmark
 DESCRIPTION += on the cluster.\n
-DESCRIPTION +=- LOAD_PROFILE possible values: "default", consisting of 7 individual
+DESCRIPTION +=- LOAD_PROFILE possible values: _PROFILES_, consisting of 7 individual
 DESCRIPTION += tests: HPL (Linpack TPP benchmark), DGEMM (measures the floating point
 DESCRIPTION += rate of execution of double precision real matrix-matrix multiplication),
 DESCRIPTION += STREAM (synthetic benchmark that measures sustainable memory bandwidth),
@@ -38,7 +42,7 @@ DESCRIPTION +=- LOAD_DURATION meaning: not used, a run ends when the problem is 
 DESCRIPTION +=- COMMENT: One of the "High Performance Computing" Workloads.
 FEN_HPC_SETUP1 = cb_config_fen_hpc.sh
 CN_HPC_SETUP1 = cb_config_cn_hpc.sh
-START = cb_hpcc.sh
+START = cb_run_hpcc.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 MAX_N_SIZE_PER_NODE = 40

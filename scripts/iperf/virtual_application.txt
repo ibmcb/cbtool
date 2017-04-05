@@ -17,18 +17,21 @@ LOAD_PROFILE = tcp
 LOAD_LEVEL = uniformIXIXI1I5
 LOAD_DURATION = uniformIXIXI70I90
 CATEGORY = synthetic
-REPORTED_METRICS = bandwidth,jitter,loss,completion_time,quiescent_time
+PROFILES = tcp, udp
+REFERENCE = https://iperf.fr
+LICENSE = TBD
+REPORTED_METRICS = bandwidth, jitter, loss, completion_time, quiescent_time, errors
 
 # VApp-specific MANDATORY attributes
 DESCRIPTION = Deploys a pair of VMs (client and server) and then runs the iperf
 DESCRIPTION += network benchmark, sending an unidirectional stream of packets between these.\n 
-DESCRIPTION +=- LOAD_PROFILE possible values: "tcp" or "udp".\n
+DESCRIPTION +=- LOAD_PROFILE possible values: _PROFILES_.\n
 DESCRIPTION +=- LOAD_LEVEL meaning: number of parallel client threads.\n 
 DESCRIPTION +=- LOAD_DURATION meaning: maximum length of time to run.\n
 DESCRIPTION +=- COMMENT: One of the "Synthetic" Workloads.
 IPERFCLIENT_SETUP1 = cb_check_iperf_client.sh
 IPERFSERVER_SETUP1 = cb_check_iperf_server.sh
-START = cb_iperf.sh
+START = cb_run_iperf.sh
 
 # VApp-specific modifier parameters. 
 TRAFFIC_MSS=auto

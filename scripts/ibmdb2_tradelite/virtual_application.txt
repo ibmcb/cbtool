@@ -18,6 +18,9 @@ LOAD_BALANCER_TARGET_CHILDREN = 2
 LOAD_BALANCER_PORT = 9080
 LOAD_BALANCER_URL = daytrader
 CATEGORY = transactional
+PROFILES = default
+REFERENCE = https://developer.ibm.com/wasdev/docs/measuring-performance-daytrader-3-benchmark-sample/
+LICENSE = TBD
 REPORTED_METRICS = throughput,latency,datagen_time,datagen_size,completion_time,quiescent_time
 
 # This only has effect if the parameter LOAD_BALANCER is set to "$True"

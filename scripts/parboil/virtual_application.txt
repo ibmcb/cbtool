@@ -17,15 +17,17 @@ LOAD_PROFILE = histo
 LOAD_LEVEL = 1
 LOAD_DURATION = 10
 CATEGORY = hpc
-REPORTED_METRICS = io_time,kernel_time,driver_time,compute_time,wall_time,completion_time,quiescent_time
+REFERENCE = http://impact.crhc.illinois.edu/parboil/parboil.aspx
+LICENSE = TBD
+PROFILES = histo, bfs, stencil, mri-q, mri-gridding, lbm, tpacf, sad, spmv, sgemm, cutcp
+REPORTED_METRICS = io_time,kernel_time,driver_time,compute_time,wall_time,completion_time,quiescent_time,errors
 
 # VApp-specific MANDATORY attributes
 DESCRIPTION = Deploys a single VM, which can then run any of the "Parboil" benchmarks\n
 DESCRIPTION += from the University of Illionis. This set of "throughput computing"\n
 DESCRIPTION += applications are useful for studying the performance of computing\n
 DESCRIPTION += architecture and compilers.\n
-DESCRIPTION +=- LOAD_PROFILE possible values: histo, bfs, stencil, mri-q, \n
-DESCRIPTION += mri-gridding, lbm, tpacf, sad, spmv, sgemm, cutcp (with "histo"
+DESCRIPTION +=- LOAD_PROFILE possible values: _PROFILES_ (with "histo"
 DESCRIPTION += as the default profile). IMPORTANT: you can indicate the binary\n
 DESCRIPTION += version (e.g., threaded, opencl_base, omp_base, cuda_base, base,\n
 DESCRIPTION += cuda-base, cuda, opencl_nvidia) by appending it to the name,\n
@@ -36,7 +38,7 @@ DESCRIPTION += , e.g., "1" for "default size" in "histo" and "2+" for "large siz
 DESCRIPTION +=- LOAD_DURATION meaning: not used, a run ends when the \n
 DESCRIPTION += computational problem is solved.\n
 PARBOIL_SETUP1 = cb_setup_parboil.sh
-START = cb_parboil.sh
+START = cb_run_parboil.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 PARBOIL_DIR = ~/parboil

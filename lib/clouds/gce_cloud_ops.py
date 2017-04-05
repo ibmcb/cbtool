@@ -206,7 +206,7 @@ class GceCmds(CommonCloudFunctions) :
             _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
 
             if _imageid != "to_replace" :
-                if _imageid in _map_name_to_id :                     
+                if _imageid in _map_name_to_id :
                     vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])
                 else :
                     _map_name_to_id[_imageid] = "00000" + ''.join(["%s" % randint(0, 9) for num in range(0, 14)])

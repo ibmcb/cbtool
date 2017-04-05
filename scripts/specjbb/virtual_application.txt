@@ -3,7 +3,8 @@
 # commented.
 
 [AI_TEMPLATES : SPECJBB]
-DESCRIPTION = TBD
+
+# Attributes MANDATORY for all Virtual Applications
 SUT = specjbb
 LOAD_BALANCER_SUPPORTED = $False
 RESIZE_SUPPORTED = $True
@@ -12,25 +13,28 @@ LOAD_GENERATOR_ROLE = specjbb
 LOAD_MANAGER_ROLE = specjbb
 METRIC_AGGREGATOR_ROLE = specjbb
 CAPTURE_ROLE = specjbb
-LOAD_BALANCER = $False
-LOAD_BALANCER_TARGET_PORT = 80 
-LOAD_BALANCER_TARGET_URL = unknown 
-SPECJBB_SETUP1 = cb_setup_specjbb.sh
-START = cb_specjbb.sh
 LOAD_PROFILE = default
 LOAD_LEVEL = 1
 LOAD_DURATION = uniformIXIXI90I120
 CATEGORY = transactional
+PROFILES = default
+REFERENCE = http://spec.org/jbb2015/
+LICENSE = TBD
+REPORTED_METRICS = latency,completion_time,quiescent_time,errors
 
-# VApp-specific modifier parameters. Commented attributes imply default values assumed
-#JAVA_HOME = j9vm_sdk
-RUN_COUNTER_NAME = experiment_id_counter
-#EXPERIMENT_OUTPUT_COLLECTION_DIR = specjbb_balloon_experiment_results
-#EXPERIMENT_OUTPUT_COLLECTION_HOST = 172.16.0.1
+# VApp-specific MANDATORY attributes
+DESCRIPTION = Deploys an SINGLE INSTANCE and runs SPECJbb 2015 on it.\n
+DESCRIPTION +=- LOAD_PROFILE possible values: _PROFILES_\n
+DESCRIPTION +=- LOAD_LEVEL meaning: number of "STARTING WAREHOUSES" + 2 and number of "ENDING WAREHOUSES" + 3.\n 
+DESCRIPTION +=- LOAD_DURATION meaning: not used, a run ends when all operations are complete.\n
+SPECJBB_SETUP1 = cb_setup_specjbb.sh
+START = cb_run_specjbb.sh
+
+# VApp-specific modifier parameters.
+JAVA_HOME = auto
+JAVA_MAX_MEM_HEAP = 0.8
+JAVA_EXTRA_CMD_OPTS = -Xms256m
 SPECJBB_RAMPUP=20
-SPECIFIC_PARAMETERS = BALLOON_SIZE:BALLOON_DELAY
-BALLOON_SIZE = 500
-BALLOON_DELAY = 300
 
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
 #SYNC_COUNTER_NAME = synchronization_counter

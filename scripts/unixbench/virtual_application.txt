@@ -13,19 +13,26 @@ LOAD_GENERATOR_ROLE = unixbench
 LOAD_MANAGER_ROLE = unixbench
 METRIC_AGGREGATOR_ROLE = unixbench
 CAPTURE_ROLE = unixbench
-# unused
 LOAD_PROFILE = dhrystone
 LOAD_LEVEL = uniformIXIXI1I5
 LOAD_DURATION = 60
 CATEGORY = synthetic
+PROFILES = arithmetic, dhrystone, whetstone, load, misc, speed, oldsystem, system, fs, shell, index
+REFERENCE = https://github.com/kdlucas/byte-unixbench/tree/master/UnixBench
+LICENSE = TBD
 REPORTED_METRICS = num_cores, dhry_result, dhry_index, whet_result, whet_index, execl_result, execl_index, fc1024_result, fc1024_index, fc256_result, fc256_index, fc4096_result, fc4096_index, pipe_result, pipe_index, ctxt_result, ctxt_index, proc_result, proc_index, sh1_result, sh1_index, sh8_result, sh8_index, syso_result, syso_index, total_index, mc_dhry_result, mc_dhry_index, mc_whet_result, mc_whet_index, mc_execl_result, mc_execl_index, mc_fc1024_result, mc_fc1024_index, mc_fc256_result, mc_fc256_index, mc_fc4096_result, mc_fc4096_index, mc_pipe_result, mc_pipe_index, mc_ctxt_result, mc_ctxt_index, mc_proc_result, mc_proc_index, mc_sh1_result, mc_sh1_index, mc_sh8_result, mc_sh8_index, mc_syso_result, mc_syso_index, mc_total_index, errors, completion_time, quiescent_time
-
 
 # VApp-specific MANDATORY attributes
 DESCRIPTION = Deploys an SINGLE INSTANCE and runs a series of tests in UnixBench.\n
-DESCRIPTION +=- LOAD_PROFILE possible values: "arithmetic", "dhrystone", "whetstone", 
-DESCRIPTION += "load", "misc", "speed", "oldsystem", "system", "fs", "shell", "index"
-DESCRIPTION += (for a proper description, consult the USAGE file)\n
+DESCRIPTION +=- LOAD_PROFILE possible values: _PROFILES_ (for a proper description, consult the USAGE file)\n
 DESCRIPTION +=- LOAD_LEVEL meaning: number of parallel copies (parameter -c).\n 
 DESCRIPTION +=- LOAD_DURATION meaning: not used, a run ends when all tests are complete.\n
-START = cb_unixbench.sh
+START = cb_run_unixbench.sh
+
+# VApp-specific modifier parameters. Commented attributes imply default values assumed
+
+# Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
+#SYNC_COUNTER_NAME = synchronization_counter
+#CONCURRENT_AIS = 2
+#SYNC_CHANNEL_NAME = synchronization_channel
+#RUN_COUNTER_NAME = experiment_id_counter
