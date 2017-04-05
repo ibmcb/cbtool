@@ -195,7 +195,11 @@ class GceCmds(CommonCloudFunctions) :
         _map_name_to_id = {}
         _map_id_to_name = {}
 
-        _registered_image_list = self.gceconn.images().list(project=self.images_project).execute(http = self.http_conn[http_conn_id])["items"]
+        _registered_image_list = []
+        _registered_images = self.gceconn.images().list(project=self.images_project).execute(http = self.http_conn[http_conn_id])
+        if "items" in _registered_images :
+            _registered_image_list = _registered_images["items"]
+        
         _registered_imageid_list = []
 
         for _registered_image in _registered_image_list :
