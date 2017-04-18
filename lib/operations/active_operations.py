@@ -4502,9 +4502,14 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                             obj_attr_list["temp_vms"] += _pobj_uuid + ','
                             obj_attr_list["parallel_operations"][_vm_counter]["uuid"] = _pobj_uuid
-                            obj_attr_list["parallel_operations"][_vm_counter]["ai"] = obj_attr_list["uuid"]
+                            obj_attr_list["parallel_operations"][_vm_counter]["ai"] = obj_attr_list["uuid"]                            
+                            obj_attr_list["parallel_operations"][_vm_counter]["ai_name"] = obj_attr_list["name"]
                             obj_attr_list["parallel_operations"][_vm_counter]["aidrs"] = obj_attr_list["aidrs"]
+                            obj_attr_list["parallel_operations"][_vm_counter]["aidrs_name"] = obj_attr_list["aidrs_name"]
+                            obj_attr_list["parallel_operations"][_vm_counter]["pattern"] = obj_attr_list["pattern"]
                             obj_attr_list["parallel_operations"][_vm_counter]["type"] = obj_attr_list["type"]
+                            obj_attr_list["parallel_operations"][_vm_counter]["base_type"] = obj_attr_list["base_type"]
+                            obj_attr_list["parallel_operations"][_vm_counter]["mode"] = obj_attr_list["mode"]
                             obj_attr_list["parallel_operations"][_vm_counter]["parameters"] = obj_attr_list["cloud_name"] +\
                              ' ' + _vm_role + ' ' + _pool + ' ' + _meta_tag + ' ' +\
                               _size + ' ' + _attach_action + ' ' + _extra_parms + _cloud_ip
@@ -4515,6 +4520,9 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             _vm_counter += 1
 
                         obj_attr_list["temp_vms"] = obj_attr_list["temp_vms"][:-1]
+
+                        _msg = "VM attach command list is: " + _vm_command_list
+                        cbdebug(_msg)
 
                         _status, _fmsg = self.parallel_obj_operation("attach", obj_attr_list)
 

@@ -20,7 +20,7 @@ LOAD_DURATION = 60
 CATEGORY = transactional
 PROFILES = workloada, workloadb, workloadc, workloadd, workloade, workloadf
 REFERENCE = https://github.com/brianfrankcooper/YCSB
-LICENSE = TBD
+LICENSE = Apache_v2
 REPORTED_METRICS = throughput,latency,datagen_time,datagen_size,completion_time,errors,insert_operations,read_operations,quiescent_time
 
 # VApp-specific MANDATORY attributes

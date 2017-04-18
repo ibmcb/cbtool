@@ -19,7 +19,7 @@ LOAD_DURATION = 20
 CATEGORY = synthetic
 PROFILES = default
 REFERENCE = https://github.com/wolfwood/postmark.git
-LICENSE = TBD
+LICENSE = Artistic
 REPORTED_METRICS = throughput,bandwidth,completion_time,errors,quiescent_time
 
 # VApp-specific MANDATORY attributes

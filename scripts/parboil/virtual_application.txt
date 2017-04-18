@@ -16,9 +16,9 @@ CAPTURE_ROLE = parboil
 LOAD_PROFILE = histo
 LOAD_LEVEL = 1
 LOAD_DURATION = 10
-CATEGORY = hpc
+CATEGORY = scientific
 REFERENCE = http://impact.crhc.illinois.edu/parboil/parboil.aspx
-LICENSE = TBD
+LICENSE = University_of_Illinois/NCSA
 PROFILES = histo, bfs, stencil, mri-q, mri-gridding, lbm, tpacf, sad, spmv, sgemm, cutcp
 REPORTED_METRICS = io_time,kernel_time,driver_time,compute_time,wall_time,completion_time,quiescent_time,errors
 

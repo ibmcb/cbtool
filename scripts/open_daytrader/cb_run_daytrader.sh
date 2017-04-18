@@ -42,11 +42,6 @@ MYSQL_IPS=`get_ips_from_role mysql`
 LOAD_GENERATOR_TARGET_IP=`get_my_ai_attribute load_generator_target_ip`
 NR_QUOTES=`get_my_ai_attribute_with_default nr_quotes 4000`
 NR_USERS=`get_my_ai_attribute_with_default nr_quotes 1500`
-APP_COLLECTION=`get_my_ai_attribute_with_default app_collection lazy`
-PERIODIC_MEASUREMENTS=`get_my_ai_attribute_with_default periodic_measurements false`
-
-GERONIMO_IPS_CSV=`echo ${GERONIMO_IPS_CSV} | sed ':a;N;$!ba;s/\n/, /g'`
-MYSQL_IPS_CSV=`echo ${MYSQL_IPS_CSV} | sed ':a;N;$!ba;s/\n/, /g'`
 
 GENERATE_DATA=$(echo $GENERATE_DATA | tr '[:upper:]' '[:lower:]')
 
@@ -84,7 +79,7 @@ then
     update_app_datagentime ${DATA_GENERATION_TIME}
     update_app_datagensize $(echo "$NR_USERS + $NR_QUOTES" | bc)
 else
-    syslog_netcat "The value of the parameter \"GENERATE_DATA\" is \"false\". Will bypass data generation for the hadoop load profile \"${LOAD_PROFILE}\""
+    syslog_netcat "The value of the parameter \"GENERATE_DATA\" is \"false\". Will bypass data generation for the DayTrader load profile \"${LOAD_PROFILE}\""
     
 fi
 

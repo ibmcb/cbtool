@@ -16,17 +16,19 @@ CAPTURE_ROLE = multichase
 LOAD_PROFILE = simple
 LOAD_LEVEL = uniformIXIXI1I5
 LOAD_DURATION = 30
-CATEGORY = hpc
+CATEGORY = scientific
 PROFILES = simple,work:N,t0-2,nta,movdqa,mvntdqa,parallel2-10,critword:N,critword2:N
 REFERENCE = https://github.com/google/multichase
-LICENSE = Apache_License_2
+LICENSE = Apache_v2
 REPORTED_METRICS = throughput, completion_time, errors, quiescent_time
 
 # VApp-specific MANDATORY attributes
-DESCRIPTION = Deploys an SINGLE INSTANCE and runs the "multichase" (pointer chaser) benchmark.\n
-DESCRIPTION +=- LOAD_PROFILE possible values: _PROFILES_ (for a proper description, consult the ./multichase -h)\n
-DESCRIPTION +=- LOAD_LEVEL meaning: number of threads (parameter -t).\n 
-DESCRIPTION +=- LOAD_DURATION meaning: number of 0.5-second samples.\n
+DESCRIPTION =Deploys a single instance and runs the "multichase" (pointer\n
+DESCRIPTION +=chaser) benchmark on it.\n
+DESCRIPTION +=  - LOAD_PROFILE possible values: _PROFILES_ (for a proper\n
+DESCRIPTION +=    description, consult the ./multichase -h)\n
+DESCRIPTION +=  - LOAD_LEVEL meaning: number of threads (parameter -t).\n 
+DESCRIPTION +=  - LOAD_DURATION meaning: number of 0.5-second samples.\n
 START = cb_run_multichase.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed

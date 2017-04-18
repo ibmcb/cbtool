@@ -17,22 +17,23 @@ LOAD_PROFILE = default
 LOAD_LEVEL = uniformIXIXI1I10
 LOAD_DURATION = 20
 CATEGORY = synthetic
-PROFILES = default,full
+PROFILES = default, full
 REFERENCE = http://www.coker.com.au/bonnie++/
-LICENSE = TBD
+LICENSE = GPL_v2
 REPORTED_METRICS = throughput,latency,completion_time,errors,quiescent_time,errors,
 REPORTED_METRICS += tp_w_char,tp_w_block,tp_rw_block,tp_r_char,tp_r_block,
 REPORTED_METRICS += tp_rand_block,lat_w_char,lat_w_block,lat_rw_block,
 REPORTED_METRICS += lat_r_char,lat_r_block,lat_rand_block
 
 # VApp-specific MANDATORY attributes
-DESCRIPTION = = Deploys a SINGLE instance and runs the \"bonnie++\" synthetic (disk I/O) benchmark (from XtremeIO).\n
-DESCRIPTION +=- LOAD_PROFILE possible values: _PROFILES_. The "default" profiles
-DESCRIPTION +=executes a short version of the benchmark, limiting the amount of
-DESCRIPTION += ram and file size (1 GB and 2 GB, respectively). The "full" profile
-DESCRIPTION += simply uses all the available RAM.\n
-DESCRIPTION +=- LOAD_LEVEL meaning: concurrency (parameter -c).\n 
-DESCRIPTION +=- LOAD_DURATION meaning: not used, a run ends when all I/O operations are complete.\n
+DESCRIPTION =Deploys a single instance and runs the "bonnie++" synthetic (disk I/O) benchmark.\n
+DESCRIPTION +=  - LOAD_PROFILE possible values: _PROFILES_. The "default" profiles\n
+DESCRIPTION +=    executes a short version of the benchmark, limiting the amount of\n
+DESCRIPTION +=    ram and file size (1 GB and 2 GB, respectively). The "full" profile\n
+DESCRIPTION +=    simply uses all the available RAM (and a file twice as large).\n
+DESCRIPTION +=  - LOAD_LEVEL meaning: concurrency (parameter -c).\n 
+DESCRIPTION +=  - LOAD_DURATION meaning: not used, a run ends when all I/O \n
+DESCRIPTION +=    operations are complete.\n
 BTEST_SETUP1 = cb_restart_bonnie.sh
 START = cb_run_bonnie.sh
 

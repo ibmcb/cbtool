@@ -94,12 +94,41 @@ function check_container {
     if [[ $(sudo cat /proc/1/cgroup | grep -c docker) -ne 0 ]]
     then
         export IS_CONTAINER=1
+        if [[ -z $LC_ALL ]]
+        then 
+            export LC_ALL=C
+        fi
+        export NR_CPUS=`echo $(get_my_vm_attribute size) | cut -d '-' -f 1`                  
     else
         export IS_CONTAINER=0
+        export NR_CPUS=`cat /proc/cpuinfo | grep processor | wc -l`                
     fi
 }
 export -f check_container
-
+    
+function check_gpu_cuda {    
+    syslog_netcat "Check if cuda is installed..."
+    sudo ls -la /usr/local/cuda
+    if [[ $? -eq 0 ]]
+    then
+        syslog_netcat "The cuda directory (/usr/local/cuda) was found"
+        syslog_netcat "Check if GPUs are present"
+        sudo bash -c "cd /usr/local/cuda/samples/1_Utilities/deviceQuery && make && ./deviceQuery"
+        if [[ $? -eq 0 ]]
+        then
+            syslog_netcat "GPU driver modules are loaded"
+            export IS_GPU=1
+        else
+            syslog_netcat "GPU driver modules cannot be found"
+            export IS_GPU=0            
+        fi
+    else
+        syslog_netcat "The cuda directory does not exist"
+        export IS_GPU=0
+    fi
+}
+export -f check_gpu_cuda
+    
 function linux_distribution {
     IS_UBUNTU=$(cat /etc/*release | grep -c "Ubuntu")
 
@@ -1040,7 +1069,7 @@ function provision_generic_stop {
         touch .genfirstrun
         END=$(date +%s)
         DIFF=$(( $END - $PASTART ))
-        syslog_netcat "Updating instance preaparation time with value ${DIFF}"
+        syslog_netcat "Updating instance preparation time with value ${DIFF}"
         put_my_pending_vm_attribute instance_preparation_on_vm $DIFF        
         #        put_my_pending_vm_attribute mgt_006_instance_preparation $DIFF
     else
@@ -1614,7 +1643,7 @@ function automount_data_dirs {
 export -f automount_data_dirs
 
 function haproxy_setup {
-    LOAD_BALANCER_PORT=$1
+    LOAD_BALANCER_PORTS=$1
     LOAD_BALANCER_BACKEND_SERVERS=$2
 
     LOAD_BALANCER_MODE="http"
@@ -1647,31 +1676,37 @@ defaults
   timeout  check 10s
 
 EOF
-    echo "listen ${my_type}" >> $f
-    echo "  bind 0.0.0.0:${LOAD_BALANCER_PORT}" >> $f   
+
+    LOAD_BALANCER_PORTS=$(echo $LOAD_BALANCER_PORTS | sed 's/,/ /g')
     
-    if [[ $LOAD_BALANCER_NODE == "http" ]]
-    then
-        echo "  mode http" >> $f            
-        echo "  retries 3" >> $f
-        echo "  option tcplog" >> $f
-        echo "  option redispatch" >> $f
-        echo "  balance roundrobin" >> $f
-    fi
-        
-    if [[ $LOAD_BALANCER_NODE == "tcp" ]]
-    then
-        echo "  mode tcp" >> $f
-        echo "  retries 3" >> $f
-        echo "  option tcplog" >> $f 
-        echo "  option redispatch" >> $f
-    fi        
-        
-    for BACKEND_IP in $LOAD_BALANCER_BACKEND_SERVERS
+    for LBP in $LOAD_BALANCER_PORTS
     do
-        echo "  server $(cat /etc/hosts | grep $BACKEND_IP | grep -v lost | awk '{ print $2 }') $BACKEND_IP:$LOAD_BALANCER_TARGET_PORT check" >> $f
-    done   
-    
+        echo "" >> $f    
+        echo "listen ${my_type}${LBP}" >> $f
+        echo "  bind 0.0.0.0:${LBP}" >> $f   
+        
+        if [[ $LOAD_BALANCER_NODE == "http" ]]
+        then
+            echo "  mode http" >> $f            
+            echo "  retries 3" >> $f
+            echo "  option tcplog" >> $f
+            echo "  option redispatch" >> $f
+            echo "  balance roundrobin" >> $f
+        fi
+            
+        if [[ $LOAD_BALANCER_NODE == "tcp" ]]
+        then
+            echo "  mode tcp" >> $f
+            echo "  retries 3" >> $f
+            echo "  option tcplog" >> $f 
+            echo "  option redispatch" >> $f
+        fi        
+            
+        for BACKEND_IP in $LOAD_BALANCER_BACKEND_SERVERS
+        do
+            echo "  server $(cat /etc/hosts | grep $BACKEND_IP | grep -v lost | awk '{ print $2 }') $BACKEND_IP:$LBP check" >> $f
+        done   
+    done    
     sudo ls /etc/haproxy/haproxy.cfg.backup
     if [[ $? -ne 0 ]]
     then
@@ -1679,7 +1714,7 @@ EOF
     fi
 
     sudo mv $f /etc/haproxy/haproxy.cfg
-
+    
     SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
     ATTEMPTS=3
     while [[ "$ATTEMPTS" -ge  0 ]]
@@ -1709,6 +1744,7 @@ EOF
 }
 export -f haproxy_setup
 
+#FIXME
 function ihs_setup {
     syslog_netcat "Fixing up httpd.conf..... to point to IPs ${LOAD_BALANCER_TARGET_IPS_CSV}"
     

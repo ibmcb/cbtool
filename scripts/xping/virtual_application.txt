@@ -19,16 +19,15 @@ LOAD_DURATION = uniformIXIXI70I90
 CATEGORY = synthetic
 PROFILES = icmp
 REFERENCE = https://en.wikipedia.org/wiki/Ping_(networking_utility)
-LICENSE = TBD
+LICENSE = GPL_v3
 REPORTED_METRICS = latency,completion_time,quiescent_time
 
 # VApp-specific MANDATORY attributes
-DESCRIPTION = Deploys a pair of VMs (sender and receiver) and then runs \"ping\"
-DESCRIPTION += between them sending a specific number of ICMP packets between these.\n 
-DESCRIPTION +=- LOAD_PROFILE possible values: _PROFILES_.\n
-DESCRIPTION +=- LOAD_LEVEL meaning: number of packets to send\n 
-DESCRIPTION +=- LOAD_DURATION meaning: not used, a run ends when all packets are sent.\n
-DESCRIPTION +=- COMMENT: One of the "Synthetic" Workloads.
+DESCRIPTION =Deploys a pair of instances (sender and receiver) and then runs "ping"\n
+DESCRIPTION +=between them, sending a specific number of ICMP packets.\n 
+DESCRIPTION +=  - LOAD_PROFILE possible values: _PROFILES_.\n
+DESCRIPTION +=  - LOAD_LEVEL meaning: number of packets to send\n 
+DESCRIPTION +=  - LOAD_DURATION meaning: not used, a run ends when all packets are sent.\n
 XPINGSENDER_SETUP1 = cb_check_xping_sender.sh
 XPINGRECEIVER_SETUP1 = cb_check_xping_receiver.sh
 START = cb_run_xping.sh

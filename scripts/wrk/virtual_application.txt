@@ -8,7 +8,7 @@
 SUT = wrk->apache
 LOAD_BALANCER_SUPPORTED = $True
 LOAD_BALANCER = $False
-LOAD_BALANCER_TARGET_PORT = 80
+LOAD_BALANCER_TARGET_PORTS = 80
 LOAD_BALANCER_TARGET_URL = 
 LOAD_BALANCER_PORT = 80
 LOAD_BALANCER_URL =
@@ -21,20 +21,20 @@ CAPTURE_ROLE = apache
 LOAD_PROFILE = default
 LOAD_LEVEL = uniformIXIXI1I5
 LOAD_DURATION = 30
-CATEGORY = transactional
+CATEGORY = application-stress
 PROFILES = default
 REFERENCE = https://github.com/wg/wrk/
-LICENSE = Apache_License_2
+LICENSE = Apache_v2
 REPORTED_METRICS = throughput,latency,completion_time,errors,quiescent_time
 
 # VApp-specific MANDATORY attributes
-DESCRIPTION = Deploys an instance running the wrk HTTP load generator and one or
-DESCRIPTION += more instance running the Apache Web Server (in case of multiple
-DESCRIPTION += instances, an additional load balancer instance running HAProxy
-DESCRIPTION += is also deployed).\n
-DESCRIPTION +=- LOAD_PROFILE possible values: _PROFILES_ \n
-DESCRIPTION +=- LOAD_LEVEL meaning: number of threads on wrk (parameter -t).\n 
-DESCRIPTION +=- LOAD_DURATION meaning: for how long should wrk run.\n
+DESCRIPTION =Deploys an instance running the wrk HTTP load generator and one or\n
+DESCRIPTION +=more instances running the Apache Web Server (in case of multiple\n
+DESCRIPTION +=instances, an additional load balancer instance running HAProxy\n
+DESCRIPTION +=is also deployed).\n
+DESCRIPTION +=  - LOAD_PROFILE possible values: _PROFILES_ \n
+DESCRIPTION +=  - LOAD_LEVEL meaning: number of threads on wrk (parameter -t).\n 
+DESCRIPTION +=  - LOAD_DURATION meaning: for how long should wrk run.\n
 # This only has effect if the parameter LOAD_BALANCER is set to "$True"
 LB_SETUP1 = cb_restart_loadbalancer.sh
 LB_RESET1 = cb_restart_loadbalancer.sh

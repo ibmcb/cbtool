@@ -153,8 +153,6 @@ fi
 CMDLINE="./parboil run $EXECUTABLE_NAME $EXECUTABLE_VERSION $PROBLEM_SIZE"
 
 execute_load_generator "${CMDLINE}" ${RUN_OUTPUT_FILE} ${LOAD_DURATION}
-            
-syslog_netcat "parboil run complete. Will collect and report the results"
 
 cat ${RUN_OUTPUT_FILE} | grep " failed "
 if [[ $? -eq 0 ]]

@@ -19,16 +19,16 @@ LOAD_DURATION = uniformIXIXI70I90
 CATEGORY = synthetic
 PROFILES = tcp, udp
 REFERENCE = https://www.nuttcp.net/
-LICENSE = TBD
+LICENSE = GPL_v2
 REPORTED_METRICS = bandwidth,completion_time,quiescent_time,errors
 
 # VApp-specific MANDATORY attributes
-DESCRIPTION = Deploys a pair of VMs (client and server) and then runs the nuttcp
-DESCRIPTION += network benchmark, sending an unidirectional stream of packets between these.\n 
-DESCRIPTION +=- LOAD_PROFILE possible values: _PROFILES_.\n
-DESCRIPTION +=- LOAD_LEVEL meaning: number of parallel client threads.\n 
-DESCRIPTION +=- LOAD_DURATION meaning: maximum length of time to run.\n
-DESCRIPTION +=- COMMENT: One of the "Synthetic" Workloads.
+DESCRIPTION =Deploys a pair of instances (client and server) and then runs the\n
+DESCRIPTION +="nuttcp" network benchmark, sending an unidirectional stream of\n
+DESCRIPTION +=packets between these.\n 
+DESCRIPTION +=  - LOAD_PROFILE possible values: _PROFILES_.\n
+DESCRIPTION +=  - LOAD_LEVEL meaning: number of parallel client threads.\n 
+DESCRIPTION +=  - LOAD_DURATION meaning: maximum length of time to run.\n
 NUTTCPCLIENT_SETUP1 = cb_check_nuttcp_client.sh
 NUTTCPSERVER_SETUP1 = cb_check_nuttcp_server.sh
 START = cb_run_nuttcp.sh

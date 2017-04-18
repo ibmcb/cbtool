@@ -19,22 +19,24 @@ LOAD_DURATION = 180
 CATEGORY = synthetic
 PROFILES = default
 REFERENCE = https://en.wikipedia.org/wiki/Dd_(Unix)
-LICENSE = TBD
+LICENSE = GPL_v3
 REPORTED_METRICS = bandwidth,completion_time,quiescent_time,errors
 
 # VApp-specific MANDATORY attributes
-DESCRIPTION = Deploys a single VM, which will use the "dd" to write a variable 
-DESCRIPTION += amount of data (by default from /dev/random) to one of its local file systems.\n
-DESCRIPTION +=- LOAD_PROFILE possible values: _PROFILES_ (just run a single instance
-DESCRIPTION += of the dd process and write data to disk).\n
-DESCRIPTION +=- LOAD_LEVEL meaning: number of blocks written to disk.\n 
-DESCRIPTION +=- LOAD_DURATION meaning: not used, a run ends when all data (defined
-DESCRIPTION += by BLOCK_SIZE * LOAD_LEVEL) is written.\n
-DESCRIPTION +=- COMMENT: One of the "Synthetic" Workloads.
-DESCRIPTION += The main use case of this Virtual Application type is the
-DESCRIPTION += testing of "cloud image capture". By writing a specific amount of
-DESCRIPTION += data to an instance's disk, and then capturing the instance onto a
-DESCRIPTION += new image, cloud "capture" performance can be measured.
+DESCRIPTION =Deploys a single instance, which will use the "dd" GNU utility to write\n
+DESCRIPTION +=a variable amount of data (by default from /dev/random) to one\n 
+DESCRIPTION +=of its local file systems.\n
+DESCRIPTION +=  - LOAD_PROFILE possible values: _PROFILES_ (just run a single\n
+DESCRIPTION +=    instance of the dd process and write data to disk).\n
+DESCRIPTION +=  - LOAD_LEVEL meaning: number of blocks written to disk.\n 
+DESCRIPTION +=  - LOAD_DURATION meaning: not used, a run ends when all data\n
+DESCRIPTION +=    (defined by BLOCK_SIZE * LOAD_LEVEL) is written.\n
+DESCRIPTION +=  - COMMENT: One of the "Synthetic" Workloads.\n
+DESCRIPTION +=    The main use case of this Virtual Application type is the\n
+DESCRIPTION +=    testing of "cloud image capture". By writing a specific\n
+DESCRIPTION +=    amount of data to an instance's disk, and then capturing the\n
+DESCRIPTION +=    instance onto a new image, the cloud "capture" performance\n
+DESCRIPTION +=    can be measured.
 DDGEN_SETUP1 = cb_check_dd_utility.sh
 START = cb_run_ddgen.sh
 

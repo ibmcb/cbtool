@@ -1,0 +1,153 @@
+Version 5.1.3 Based on the Byte Magazine Unix Benchmark
+
+Multi-CPU version Version 5 revisions by Ian Smith,
+Sunnyvale, CA, USA
+January 13, 2011 johantheghost at yahoo period com
+
+
+1 x Dhrystone 2 using register variables 1 2 3 4 5 6 7 8 9 10
+
+1 x Double-Precision Whetstone 1 2 3 4 5 6 7 8 9 10
+
+1 x Execl Throughput 1 2 3
+
+1 x File Copy 1024 bufsize 2000 maxblocks 1 2 3
+
+1 x File Copy 256 bufsize 500 maxblocks 1 2 3
+
+1 x File Copy 4096 bufsize 8000 maxblocks 1 2 3
+
+1 x Pipe Throughput 1 2 3 4 5 6 7 8 9 10
+
+1 x Pipe-based Context Switching 1 2 3 4 5 6 7 8 9 10
+
+1 x Process Creation 1 2 3
+
+1 x System Call Overhead 1 2 3 4 5 6 7 8 9 10
+
+1 x Shell Scripts (1 concurrent) 1 2 3
+
+1 x Shell Scripts (8 concurrent) 1 2 3
+
+12 x Dhrystone 2 using register variables 1 2 3 4 5 6 7 8 9 10
+
+12 x Double-Precision Whetstone 1 2 3 4 5 6 7 8 9 10
+
+12 x Execl Throughput 1 2 3
+
+12 x File Copy 1024 bufsize 2000 maxblocks 1 2 3
+
+12 x File Copy 256 bufsize 500 maxblocks 1 2 3
+
+12 x File Copy 4096 bufsize 8000 maxblocks 1 2 3
+
+12 x Pipe Throughput 1 2 3 4 5 6 7 8 9 10
+
+12 x Pipe-based Context Switching 1 2 3 4 5 6 7 8 9 10
+
+12 x Process Creation 1 2 3
+
+12 x System Call Overhead 1 2 3 4 5 6 7 8 9 10
+
+12 x Shell Scripts (1 concurrent) 1 2 3
+
+12 x Shell Scripts (8 concurrent) 1 2 3
+
+========================================================================
+BYTE UNIX Benchmarks (Version 5.1.3)
+
+System: cb-msilva-TESTPDM-vm1-unixbench-ai-1: GNU/Linux
+OS: GNU/Linux -- 4.4.0-18-generic -- #34-Ubuntu SMP Wed Apr 6 14:01:02 UTC 2016
+Machine: x86_64 (x86_64)
+Language: en_US.utf8 (charmap="UTF-8", collate="UTF-8")
+CPU 0: Intel(R) Xeon(R) CPU X5650 @ 2.67GHz (5333.6 bogomips)
+Hyper-Threading, x86-64, MMX, Physical Address Ext, SYSENTER/SYSEXIT, SYSCALL/SYSRET, Intel virtualization
+CPU 1: Intel(R) Xeon(R) CPU X5650 @ 2.67GHz (5333.6 bogomips)
+Hyper-Threading, x86-64, MMX, Physical Address Ext, SYSENTER/SYSEXIT, SYSCALL/SYSRET, Intel virtualization
+CPU 2: Intel(R) Xeon(R) CPU X5650 @ 2.67GHz (5333.6 bogomips)
+Hyper-Threading, x86-64, MMX, Physical Address Ext, SYSENTER/SYSEXIT, SYSCALL/SYSRET, Intel virtualization
+CPU 3: Intel(R) Xeon(R) CPU X5650 @ 2.67GHz (5333.6 bogomips)
+Hyper-Threading, x86-64, MMX, Physical Address Ext, SYSENTER/SYSEXIT, SYSCALL/SYSRET, Intel virtualization
+CPU 4: Intel(R) Xeon(R) CPU X5650 @ 2.67GHz (5333.6 bogomips)
+Hyper-Threading, x86-64, MMX, Physical Address Ext, SYSENTER/SYSEXIT, SYSCALL/SYSRET, Intel virtualization
+CPU 5: Intel(R) Xeon(R) CPU X5650 @ 2.67GHz (5333.6 bogomips)
+Hyper-Threading, x86-64, MMX, Physical Address Ext, SYSENTER/SYSEXIT, SYSCALL/SYSRET, Intel virtualization
+CPU 6: Intel(R) Xeon(R) CPU X5650 @ 2.67GHz (5333.5 bogomips)
+Hyper-Threading, x86-64, MMX, Physical Address Ext, SYSENTER/SYSEXIT, SYSCALL/SYSRET, Intel virtualization
+CPU 7: Intel(R) Xeon(R) CPU X5650 @ 2.67GHz (5333.5 bogomips)
+Hyper-Threading, x86-64, MMX, Physical Address Ext, SYSENTER/SYSEXIT, SYSCALL/SYSRET, Intel virtualization
+CPU 8: Intel(R) Xeon(R) CPU X5650 @ 2.67GHz (5333.5 bogomips)
+Hyper-Threading, x86-64, MMX, Physical Address Ext, SYSENTER/SYSEXIT, SYSCALL/SYSRET, Intel virtualization
+CPU 9: Intel(R) Xeon(R) CPU X5650 @ 2.67GHz (5333.5 bogomips)
+Hyper-Threading, x86-64, MMX, Physical Address Ext, SYSENTER/SYSEXIT, SYSCALL/SYSRET, Intel virtualization
+CPU 10: Intel(R) Xeon(R) CPU X5650 @ 2.67GHz (5333.5 bogomips)
+Hyper-Threading, x86-64, MMX, Physical Address Ext, SYSENTER/SYSEXIT, SYSCALL/SYSRET, Intel virtualization
+CPU 11: Intel(R) Xeon(R) CPU X5650 @ 2.67GHz (5333.5 bogomips)
+Hyper-Threading, x86-64, MMX, Physical Address Ext, SYSENTER/SYSEXIT, SYSCALL/SYSRET, Intel virtualization
+17:31:03 up 102 days, 21:23, 1 user, load average: 0.60, 0.61, 0.79; runlevel
+
+------------------------------------------------------------------------
+Benchmark Run: Tue Jul 26 2016 17:31:03 - 17:59:15
+12 CPUs in system; running 1 parallel copy of tests
+
+Dhrystone 2 using register variables 28122110.5 lps (10.0 s, 7 samples)
+Double-Precision Whetstone 3503.8 MWIPS (9.9 s, 7 samples)
+Execl Throughput 1971.2 lps (29.9 s, 2 samples)
+File Copy 1024 bufsize 2000 maxblocks 817200.0 KBps (30.0 s, 2 samples)
+File Copy 256 bufsize 500 maxblocks 222538.1 KBps (30.0 s, 2 samples)
+File Copy 4096 bufsize 8000 maxblocks 1577120.8 KBps (30.0 s, 2 samples)
+Pipe Throughput 1520396.6 lps (10.0 s, 7 samples)
+Pipe-based Context Switching 127063.5 lps (10.0 s, 7 samples)
+Process Creation 5395.8 lps (30.0 s, 2 samples)
+Shell Scripts (1 concurrent) 5917.6 lpm (60.0 s, 2 samples)
+Shell Scripts (8 concurrent) 3706.0 lpm (60.0 s, 2 samples)
+System Call Overhead 1010235.3 lps (10.0 s, 7 samples)
+
+System Benchmarks Index Values BASELINE RESULT INDEX
+Dhrystone 2 using register variables 116700.0 28122110.5 2409.8
+Double-Precision Whetstone 55.0 3503.8 637.0
+Execl Throughput 43.0 1971.2 458.4
+File Copy 1024 bufsize 2000 maxblocks 3960.0 817200.0 2063.6
+File Copy 256 bufsize 500 maxblocks 1655.0 222538.1 1344.6
+File Copy 4096 bufsize 8000 maxblocks 5800.0 1577120.8 2719.2
+Pipe Throughput 12440.0 1520396.6 1222.2
+Pipe-based Context Switching 4000.0 127063.5 317.7
+Process Creation 126.0 5395.8 428.2
+Shell Scripts (1 concurrent) 42.4 5917.6 1395.7
+Shell Scripts (8 concurrent) 6.0 3706.0 6176.7
+System Call Overhead 15000.0 1010235.3 673.5
+========
+System Benchmarks Index Score 1145.9
+
+------------------------------------------------------------------------
+Benchmark Run: Tue Jul 26 2016 17:59:15 - 18:27:44
+12 CPUs in system; running 12 parallel copies of tests
+
+Dhrystone 2 using register variables 310380800.2 lps (10.0 s, 7 samples)
+Double-Precision Whetstone 41974.0 MWIPS (9.9 s, 7 samples)
+Execl Throughput 23810.0 lps (29.9 s, 2 samples)
+File Copy 1024 bufsize 2000 maxblocks 768614.1 KBps (30.0 s, 2 samples)
+File Copy 256 bufsize 500 maxblocks 212846.9 KBps (30.0 s, 2 samples)
+File Copy 4096 bufsize 8000 maxblocks 2139577.6 KBps (30.0 s, 2 samples)
+Pipe Throughput 16960534.3 lps (10.0 s, 7 samples)
+Pipe-based Context Switching 2087761.0 lps (10.0 s, 7 samples)
+Process Creation 62799.8 lps (30.0 s, 2 samples)
+Shell Scripts (1 concurrent) 56059.4 lpm (60.0 s, 2 samples)
+Shell Scripts (8 concurrent) 7780.4 lpm (60.1 s, 2 samples)
+System Call Overhead 5214728.2 lps (10.0 s, 7 samples)
+
+System Benchmarks Index Values BASELINE RESULT INDEX
+Dhrystone 2 using register variables 116700.0 310380800.2 26596.5
+Double-Precision Whetstone 55.0 41974.0 7631.6
+Execl Throughput 43.0 23810.0 5537.2
+File Copy 1024 bufsize 2000 maxblocks 3960.0 768614.1 1940.9
+File Copy 256 bufsize 500 maxblocks 1655.0 212846.9 1286.1
+File Copy 4096 bufsize 8000 maxblocks 5800.0 2139577.6 3688.9
+Pipe Throughput 12440.0 16960534.3 13633.9
+Pipe-based Context Switching 4000.0 2087761.0 5219.4
+Process Creation 126.0 62799.8 4984.1
+Shell Scripts (1 concurrent) 42.4 56059.4 13221.6
+Shell Scripts (8 concurrent) 6.0 7780.4 12967.4
+System Call Overhead 15000.0 5214728.2 3476.5
+========
+System Benchmarks Index Score 6002.5

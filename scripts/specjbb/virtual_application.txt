@@ -13,20 +13,22 @@ LOAD_GENERATOR_ROLE = specjbb
 LOAD_MANAGER_ROLE = specjbb
 METRIC_AGGREGATOR_ROLE = specjbb
 CAPTURE_ROLE = specjbb
-LOAD_PROFILE = default
-LOAD_LEVEL = 1
-LOAD_DURATION = uniformIXIXI90I120
+LOAD_PROFILE = preset
+LOAD_LEVEL = uniformIXIXI1I2
+LOAD_DURATION = uniformIXIXI20I30
 CATEGORY = transactional
-PROFILES = default
+PROFILES = preset,hbir
 REFERENCE = http://spec.org/jbb2015/
-LICENSE = TBD
+LICENSE = SPEC
 REPORTED_METRICS = latency,completion_time,quiescent_time,errors
 
 # VApp-specific MANDATORY attributes
 DESCRIPTION = Deploys an SINGLE INSTANCE and runs SPECJbb 2015 on it.\n
 DESCRIPTION +=- LOAD_PROFILE possible values: _PROFILES_\n
-DESCRIPTION +=- LOAD_LEVEL meaning: number of "STARTING WAREHOUSES" + 2 and number of "ENDING WAREHOUSES" + 3.\n 
-DESCRIPTION +=- LOAD_DURATION meaning: not used, a run ends when all operations are complete.\n
+DESCRIPTION +=- LOAD_LEVEL meaning: injection rate, multiplied by the LOAD_FACTOR
+DESCRIPTION += default (1000). Used only with the "preset" load profile.\n 
+DESCRIPTION +=- LOAD_DURATION meaning: parameter specjbb.controller.preset.duration 
+DESCRIPTION += ("preset" load profile only).\n
 SPECJBB_SETUP1 = cb_setup_specjbb.sh
 START = cb_run_specjbb.sh
 
@@ -34,7 +36,7 @@ START = cb_run_specjbb.sh
 JAVA_HOME = auto
 JAVA_MAX_MEM_HEAP = 0.8
 JAVA_EXTRA_CMD_OPTS = -Xms256m
-SPECJBB_RAMPUP=20
+LOAD_FACTOR = 1000
 
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
 #SYNC_COUNTER_NAME = synchronization_counter

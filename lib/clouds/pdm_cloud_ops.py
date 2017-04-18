@@ -923,9 +923,10 @@ class PdmCmds(CommonCloudFunctions) :
                     obj_attr_list["check_boot_complete"] = "tcp_on_" + str(obj_attr_list["prov_cloud_port"])
 
                 if str(obj_attr_list["extra_ports"]).lower() != "false" :
+                    obj_attr_list["extra_ports"] = obj_attr_list["extra_ports"].replace('_',',')
                     _extra_port_list = obj_attr_list["extra_ports"].split(',')
                     for _extra_port in _extra_port_list :
-                        _extra_mapped_port = int(obj_attr_list["extra_ports_base"]) + len(_extra_port_list) - 1 + int(obj_attr_list["name"].replace("vm_",''))
+                        _extra_mapped_port = int(obj_attr_list["extra_ports_base"]) + len(_extra_port_list) - 1 + int(obj_attr_list["name"].replace("vm_",'')) + _extra_port_list.index(_extra_port)
                         _ports_mapping += [ (int(_extra_port), 'tcp') ]
                         _port_bindings[ _extra_port + '/tcp'] = ('0.0.0.0', _extra_mapped_port)
             else :

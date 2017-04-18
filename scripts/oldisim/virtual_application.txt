@@ -1,0 +1,43 @@
+# Parameters for this Virtual Application (Application Instance - AI) type should
+# be set on YOUR private configuration configuration file, including the ones 
+# commented.
+
+[AI_TEMPLATES : OLDISIM] 
+
+# Attributes MANDATORY for all Virtual Applications
+SUT = 1_x_oldisimdriver->1_x_oldisimlb->1_x_oldisimroot->2_x_oldisimleaf
+LOAD_BALANCER_SUPPORTED = $False
+RESIZE_SUPPORTED = $False
+REGENERATE_DATA = $False 
+LOAD_GENERATOR_ROLE = oldisimdriver
+LOAD_MANAGER_ROLE = oldisimdriver
+METRIC_AGGREGATOR_ROLE = oldisimdriver
+CAPTURE_ROLE = oldisimroot
+LOAD_PROFILE = default
+LOAD_LEVEL = uniformIXIXI1I5
+LOAD_DURATION = 60
+CATEGORY = application-stress
+PROFILES = default
+REFERENCE = https://github.com/GoogleCloudPlatform/oldisim
+LICENSE = Apache_v2
+REPORTED_METRICS = completion_time,quiescent_time,errors,throughput,latency,95_latency
+
+# VApp-specific MANDATORY attributes
+DESCRIPTION =Deploys a cluster (1 driver, 1 lb, 1 root, N leafs) and runs the
+DESCRIPTION +=Online Data- Intensive (OLDI) workloads simulator (oldisim) on it.\n
+DESCRIPTION +=  - LOAD_PROFILE possible values: _PROFILES_\n
+DESCRIPTION +=  - LOAD_LEVEL meaning: number of threads to spawn (parameter --threads).\n 
+DESCRIPTION +=  - LOAD_DURATION meaning: Time to wait for the execution of queries.\n
+OLDISIMLEAF_SETUP1 = cb_restart_oldisim.sh
+OLDISIMROOT_SETUP2 = cb_restart_oldisim.sh
+OLDISIMLB_SETUP3 = cb_restart_oldisim.sh
+START = cb_run_oldisim.sh
+
+# VApp-specific modifier parameters. Commented attributes imply default values assumed
+OLDISIM_DIR = ~/oldisim
+
+# Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
+#SYNC_COUNTER_NAME = synchronization_counter
+#CONCURRENT_AIS = 2
+#SYNC_CHANNEL_NAME = synchronization_channel
+#RUN_COUNTER_NAME = experiment_id_counter

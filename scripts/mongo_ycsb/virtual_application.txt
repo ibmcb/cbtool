@@ -20,18 +20,18 @@ LOAD_DURATION = 60
 CATEGORY = transactional
 PROFILES = workloada, workloadb, workloadc, workloadd, workloade, workloadf
 REFERENCE = https://github.com/brianfrankcooper/YCSB
-LICENSE = TBD
+LICENSE = Apache_v2
 REPORTED_METRICS = throughput, latency, datagen_time, datagen_size, completion_time, errors, insert_operations, read_operations, quiescent_time
 
 # VApp-specific MANDATORY attributes
-DESCRIPTION = Deploys a MongoDB cluster (N mongodb nodes and 1 cfg_server node and 1 mongos node), plus
-DESCRIPTION += one VM running the YCSB benchmark. This single VM sends requests
-DESCRIPTION += to all mongodb node VMs simultaneously.\n
-DESCRIPTION +=- LOAD_PROFILE possible values: _PROFILES_ (for a proper
-DESCRIPTION += description, consult the section "Core Workloads" on the YCSB documentation)\n
-DESCRIPTION +=- LOAD_LEVEL meaning: number of threads on YCSB (parameter -threads).\n 
-DESCRIPTION +=- LOAD_DURATION meaning: not used, a run ends when all YCSB operations
-DESCRIPTION += (default is 1000) are finished.\n
+DESCRIPTION =Deploys a MongoDB cluster (N mongodb instances, 1 cfg_server instance\n
+DESCRIPTION +=and 1 mongos instance), plus one instance running the YCSB benchmark.\n
+DESCRIPTION +=This single instance sends requests to all mongodb nodes simultaneously.\n
+DESCRIPTION +=  - LOAD_PROFILE possible values: _PROFILES_ (for a proper\n
+DESCRIPTION +=    description, consult the section "Core Workloads" on the YCSB documentation)\n
+DESCRIPTION +=  - LOAD_LEVEL meaning: number of threads on YCSB (parameter -threads).\n
+DESCRIPTION +=  - LOAD_DURATION meaning: not used, a run ends when all YCSB operations\n
+DESCRIPTION +=    (default is 1000) are finished.\n
 MONGO_CFG_SERVER_SETUP1 = cb_restart_mongo_cfg.sh
 MONGODB_SETUP1 = cb_restart_mongo.sh
 MONGOS_SETUP2 = cb_restart_mongos.sh

@@ -16,19 +16,19 @@ CAPTURE_ROLE = linpack
 LOAD_PROFILE = default
 LOAD_LEVEL = uniformIXIXI1I5
 LOAD_DURATION = 60
-CATEGORY = hpc
+CATEGORY = scientific
 PROFILES = default
 REFERENCE = https://software.intel.com/en-us/node/528615
-LICENSE = TBD
+LICENSE = Intel
 REPORTED_METRICS = throughput_max, throughput, errors, completion_time, quiescent_time
 
 # VApp-specific MANDATORY attributes
-DESCRIPTION = Deploys an SINGLE VM and runs the Intel-optimized linpack benchmark.\n
-DESCRIPTION +=- LOAD_PROFILE possible values: _PROFILES_ (single VM).\n
-DESCRIPTION +=- LOAD_LEVEL meaning: problem size (square root of the matrix size),
-DESCRIPTION += multiplied by the LOAD_FACTOR.\n 
-DESCRIPTION +=- LOAD_DURATION meaning: not used, a run ends when the problem is solved.\n
-DESCRIPTION +=- COMMENT: For clustered (multi-VM) linpack execution, please use HPCC.
+DESCRIPTION =Deploys a single instance and runs the Intel-optimized linpack benchmark.\n
+DESCRIPTION +=  - LOAD_PROFILE possible values: _PROFILES_ (single instance).\n
+DESCRIPTION +=  - LOAD_LEVEL meaning: problem size (square root of the matrix size),\n
+DESCRIPTION +=    multiplied by the LOAD_FACTOR.\n 
+DESCRIPTION +=  - LOAD_DURATION meaning: not used, a run ends when the problem is solved.\n
+DESCRIPTION +=  - COMMENT: For clustered (multi-instance) linpack execution, please use HPCC.
 START = cb_run_linpack.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed

@@ -16,10 +16,10 @@ CAPTURE_ROLE = scimark
 LOAD_PROFILE = default
 LOAD_LEVEL = uniformIXIXI1I2
 LOAD_DURATION = 60
-CATEGORY = hpc
+CATEGORY = scientific
 PROFILES = default
 REFERENCE = http://math.nist.gov/scimark2/index.html
-LICENSE = TBD
+LICENSE = Public_Domain
 REPORTED_METRICS = throughput,fft_throughput,sor_throughput,mc_throughput,mm_throughput,lu_throughput,completion_time,errors,quiescent_time
 
 # VApp-specific MANDATORY attributes

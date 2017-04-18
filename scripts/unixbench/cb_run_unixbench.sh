@@ -12,6 +12,8 @@ source $(echo $0 | sed -e "s/\(.*\/\)*.*/\1.\//g")/cb_common.sh
 
 set_load_gen $@
 
+linux_distribution
+
 UNIXBENCH_DIR="~/byte-unixbench/UnixBench"
 eval UNIXBENCH_DIR=${UNIXBENCH_DIR}
 
@@ -27,15 +29,6 @@ else
     cd ${UNIXBENCH_DIR}
     execute_load_generator "./Run -c $LOAD_LEVEL $LOAD_PROFILE" ${RUN_OUTPUT_FILE}
     cd -
-fi
-
-check_container 
-    
-if [[ $IS_CONTAINER -eq 1 ]]
-then
-    NR_CPUS=`echo $(get_my_vm_attribute size) | cut -d '-' -f 1`
-else 
-    NR_CPUS=`cat /proc/cpuinfo | grep processor | wc -l`
 fi
 
 NUM_CORES=`grep -P -m1 "CPUs? in system" ${RUN_OUTPUT_FILE} | cut -d' ' -f1`
