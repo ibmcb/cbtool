@@ -27,5 +27,7 @@ syslog_netcat "Starting SPECjbb benchmark setup on SPECJBB VM ($SHORT_HOSTNAME)"
 sleep 2
 
 syslog_netcat "SPECjbb benchmark sucessfully setup on SPECJBB VM $SHORT_HOSTNAME - OK"
+
 provision_application_stop $START
+
 exit 0

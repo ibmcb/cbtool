@@ -1,0 +1,49 @@
+# Parameters for this Virtual Application (Application Instance - AI) type should
+# be set on YOUR private configuration configuration file, including the ones 
+# commented.
+
+[AI_TEMPLATES : SYSBENCH] 
+
+# Attributes MANDATORY for all Virtual Applications
+SUT = sysbench->mysql
+LOAD_BALANCER_SUPPORTED = $False
+RESIZE_SUPPORTED = $True
+REGENERATE_DATA = $False 
+LOAD_GENERATOR_ROLE = sysbench
+LOAD_MANAGER_ROLE = sysbench
+METRIC_AGGREGATOR_ROLE = sysbench
+CAPTURE_ROLE = mysql
+LOAD_PROFILE = complex
+LOAD_LEVEL = uniformIXIXI1I5
+LOAD_DURATION = 30
+CATEGORY = transactional
+PROFILES = simple,complex,nontrx,sp
+REFERENCE = https://github.com/akopytov/sysbench
+LICENSE = GPL_v2
+REPORTED_METRICS = throughput,latency,95_latency,datagen_time,datagen_size,completion_time,errors,quiescent_time
+
+# VApp-specific MANDATORY attributes
+DESCRIPTION =Deploys an instance running the sysbench (OLTP) load generator and\n
+DESCRIPTION +=one instance running MySQL database.\n
+DESCRIPTION +=  - LOAD_PROFILE possible values: _PROFILES_ (parameter --oltp-test-mode)\n
+DESCRIPTION +=  - LOAD_LEVEL meaning: number of threads on sysbench (parameter --num-threads).\n 
+DESCRIPTION +=  - LOAD_DURATION meaning: for how long should sysbench run.\n
+
+MYSQL_SETUP1 = cb_restart_mysql.sh
+START = cb_run_sysbench.sh
+
+# VApp-specific modifier parameters. Commented attributes imply default values assumed
+MYSQL_DATA_DIR = /sysbench
+MYSQL_DATA_FSTYP = ext4
+MYSQL_DATABASE_NAME = sysbenchdb
+MYSQL_ROOT_PASSWORD = temp4now
+MYSQL_NONROOT_USER = sysbench
+MYSQL_NONROOT_PASSWORD = sysbench
+TABLE_SIZE = 10000
+READ_ONLY = off
+
+# Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
+#SYNC_COUNTER_NAME = synchronization_counter
+#CONCURRENT_AIS = 2
+#SYNC_CHANNEL_NAME = synchronization_channel
+#RUN_COUNTER_NAME = experiment_id_counter

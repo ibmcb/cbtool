@@ -94,12 +94,41 @@ function check_container {
     if [[ $(sudo cat /proc/1/cgroup | grep -c docker) -ne 0 ]]
     then
         export IS_CONTAINER=1
+        if [[ -z $LC_ALL ]]
+        then 
+            export LC_ALL=C
+        fi
+        export NR_CPUS=`echo $(get_my_vm_attribute size) | cut -d '-' -f 1`                  
     else
         export IS_CONTAINER=0
+        export NR_CPUS=`cat /proc/cpuinfo | grep processor | wc -l`                
     fi
 }
 export -f check_container
-
+    
+function check_gpu_cuda {    
+    syslog_netcat "Check if cuda is installed..."
+    sudo ls -la /usr/local/cuda
+    if [[ $? -eq 0 ]]
+    then
+        syslog_netcat "The cuda directory (/usr/local/cuda) was found"
+        syslog_netcat "Check if GPUs are present"
+        sudo bash -c "cd /usr/local/cuda/samples/1_Utilities/deviceQuery && make && ./deviceQuery"
+        if [[ $? -eq 0 ]]
+        then
+            syslog_netcat "GPU driver modules are loaded"
+            export IS_GPU=1
+        else
+            syslog_netcat "GPU driver modules cannot be found"
+            export IS_GPU=0            
+        fi
+    else
+        syslog_netcat "The cuda directory does not exist"
+        export IS_GPU=0
+    fi
+}
+export -f check_gpu_cuda
+    
 function linux_distribution {
     IS_UBUNTU=$(cat /etc/*release | grep -c "Ubuntu")
 
@@ -754,7 +783,7 @@ function get_ips_from_role {
     vmuuidlist=`get_vm_uuids_from_role ${urole}`
     for vmuuid in $vmuuidlist
     do
-    get_vm_attribute ${vmuuid} cloud_ip
+        get_vm_attribute ${vmuuid} cloud_ip
     done
 }
 
@@ -1040,7 +1069,7 @@ function provision_generic_stop {
         touch .genfirstrun
         END=$(date +%s)
         DIFF=$(( $END - $PASTART ))
-        syslog_netcat "Updating instance preaparation time with value ${DIFF}"
+        syslog_netcat "Updating instance preparation time with value ${DIFF}"
         put_my_pending_vm_attribute instance_preparation_on_vm $DIFF        
         #        put_my_pending_vm_attribute mgt_006_instance_preparation $DIFF
     else
@@ -1347,8 +1376,8 @@ function execute_load_generator {
     
     if [[ ${run_limit} -ge 0 ]]
     then
-        syslog_netcat "This AI will execute the load_generating process ${run_limit} more times" 
-        syslog_netcat "Command line is: ${CMDLINE}. Output file is ${OUTPUT_FILE}"
+        syslog_netcat "This AI will execute the load_generating process ${run_limit} more times (LOAD_ID=${LOAD_ID}, AI_UUID=$my_ai_uuid, VM_UUID=$my_vm_uuid)" 
+        syslog_netcat "Command line is: ${CMDLINE}. Output file is ${OUTPUT_FILE} (LOAD_ID=${LOAD_ID}, AI_UUID=$my_ai_uuid, VM_UUID=$my_vm_uuid)"
         if [[ x"${log_output_command}" == x"true" ]]
         then
             syslog_netcat "Command output will be shown"
@@ -1370,7 +1399,7 @@ function execute_load_generator {
         fi
     else
         LOAD_GENERATOR_START=$(date +%s)        
-        syslog_netcat "This AI reached the limit of load generation process executions. If you want this AI to continue to execute the load generator, reset the \"run_limit\" counter"
+        syslog_netcat "This AI reached the limit of load generation process executions. If you want this AI to continue to execute the load generator, reset the \"run_limit\" counter (LOAD_ID=${LOAD_ID}, AI_UUID=$my_ai_uuid, VM_UUID=$my_vm_uuid)"
         sleep ${LOAD_DURATION}
         LOAD_GENERATOR_END=$(date +%s)
         ERROR=$?
@@ -1380,11 +1409,16 @@ function execute_load_generator {
     update_app_completiontime $APP_COMPLETION_TIME
     
     echo $(date +%s) > /tmp/quiescent_time_start
-    
+
+    if [[ ! -z $LIDMSG ]]
+    then
+        syslog_netcat "RUN COMPLETE: ${LIDMSG}"    
+    fi
+                
     return 0
 }
 export -f execute_load_generator
-
+            
 function setup_passwordless_ssh {
 
     SSH_KEY_NAME=$(get_my_vm_attribute identity)
@@ -1609,7 +1643,7 @@ function automount_data_dirs {
 export -f automount_data_dirs
 
 function haproxy_setup {
-    LOAD_BALANCER_PORT=$1
+    LOAD_BALANCER_PORTS=$1
     LOAD_BALANCER_BACKEND_SERVERS=$2
 
     LOAD_BALANCER_MODE="http"
@@ -1642,31 +1676,37 @@ defaults
   timeout  check 10s
 
 EOF
-    echo "listen ${my_type}" >> $f
-    echo "  bind 0.0.0.0:${LOAD_BALANCER_PORT}" >> $f   
+
+    LOAD_BALANCER_PORTS=$(echo $LOAD_BALANCER_PORTS | sed 's/,/ /g')
     
-    if [[ $LOAD_BALANCER_NODE == "http" ]]
-    then
-        echo "  mode http" >> $f            
-        echo "  retries 3" >> $f
-        echo "  option tcplog" >> $f
-        echo "  option redispatch" >> $f
-        echo "  balance roundrobin" >> $f
-    fi
-        
-    if [[ $LOAD_BALANCER_NODE == "tcp" ]]
-    then
-        echo "  mode tcp" >> $f
-        echo "  retries 3" >> $f
-        echo "  option tcplog" >> $f 
-        echo "  option redispatch" >> $f
-    fi        
-        
-    for BACKEND_IP in $LOAD_BALANCER_BACKEND_SERVERS
+    for LBP in $LOAD_BALANCER_PORTS
     do
-        echo "  server $(cat /etc/hosts | grep $BACKEND_IP | grep -v lost | awk '{ print $2 }') $BACKEND_IP:$LOAD_BALANCER_TARGET_PORT check" >> $f
-    done   
-    
+        echo "" >> $f    
+        echo "listen ${my_type}${LBP}" >> $f
+        echo "  bind 0.0.0.0:${LBP}" >> $f   
+        
+        if [[ $LOAD_BALANCER_NODE == "http" ]]
+        then
+            echo "  mode http" >> $f            
+            echo "  retries 3" >> $f
+            echo "  option tcplog" >> $f
+            echo "  option redispatch" >> $f
+            echo "  balance roundrobin" >> $f
+        fi
+            
+        if [[ $LOAD_BALANCER_NODE == "tcp" ]]
+        then
+            echo "  mode tcp" >> $f
+            echo "  retries 3" >> $f
+            echo "  option tcplog" >> $f 
+            echo "  option redispatch" >> $f
+        fi        
+            
+        for BACKEND_IP in $LOAD_BALANCER_BACKEND_SERVERS
+        do
+            echo "  server $(cat /etc/hosts | grep $BACKEND_IP | grep -v lost | awk '{ print $2 }') $BACKEND_IP:$LBP check" >> $f
+        done   
+    done    
     sudo ls /etc/haproxy/haproxy.cfg.backup
     if [[ $? -ne 0 ]]
     then
@@ -1674,7 +1714,7 @@ EOF
     fi
 
     sudo mv $f /etc/haproxy/haproxy.cfg
-
+    
     SHORT_HOSTNAME=$(uname -n| cut -d "." -f 1)
     ATTEMPTS=3
     while [[ "$ATTEMPTS" -ge  0 ]]
@@ -1704,6 +1744,7 @@ EOF
 }
 export -f haproxy_setup
 
+#FIXME
 function ihs_setup {
     syslog_netcat "Fixing up httpd.conf..... to point to IPs ${LOAD_BALANCER_TARGET_IPS_CSV}"
     
@@ -1765,47 +1806,168 @@ function ihs_setup {
 export -f ihs_setup
 
 function set_java_home {
-	if [[ -z ${JAVA_HOME} ]]
-	then
-	    JAVA_HOME=$(get_my_ai_attribute_with_default java_home auto)
-	
-	    if [[ ${JAVA_HOME} != "auto" ]]   
-	    then
-	        sudo ls $JAVA_HOME
-	        if [[ $? -ne 0 ]]
-	        then
-	            syslog_netcat "The JAVA_HOME specified in the AI attributes \"${JAVA_HOME}\" could not be located: setting it to \"auto\"..."
-	            JAVA_HOME="auto"
-	        fi
-	    fi
-	    
-	    if [[ ${JAVA_HOME} == "auto" ]]
-	    then
-	        syslog_netcat "The JAVA_HOME was set to \"auto\". Attempting to find the most recent in /usr/lib/jvm"            
-	        JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre
-	    fi
-	
-	    syslog_netcat "JAVA_HOME determined to be \"${JAVA_HOME}\""    
-	            
-	    eval JAVA_HOME=${JAVA_HOME}
-	    if [[ -f ~/.bashrc ]]
-	    then
-	        is_java_home_export=`grep -c "JAVA_HOME=${JAVA_HOME}" ~/.bashrc`
-	        if [[ $is_java_home_export -eq 0 ]]
-	        then
-	            syslog_netcat "Adding JAVA_HOME=${JAVA_HOME} to bashrc"
-	            echo "export JAVA_HOME=${JAVA_HOME}" >> ~/.bashrc
-	        fi
-	    fi
-	else
-	    syslog_netcat "Line \"export JAVA_HOME=${JAVA_HOME}\" was already added to bashrc"    
-	fi
+    if [[ -z ${JAVA_HOME} ]]
+    then
+        JAVA_HOME=$(get_my_ai_attribute_with_default java_home auto)
+    
+        if [[ ${JAVA_HOME} != "auto" ]]   
+        then
+            sudo ls $JAVA_HOME
+            if [[ $? -ne 0 ]]
+            then
+                syslog_netcat "The JAVA_HOME specified in the AI attributes \"${JAVA_HOME}\" could not be located: setting it to \"auto\"..."
+                JAVA_HOME="auto"
+            fi
+        fi
+        
+        if [[ ${JAVA_HOME} == "auto" ]]
+        then
+            syslog_netcat "The JAVA_HOME was set to \"auto\". Attempting to find the most recent in /usr/lib/jvm"            
+            JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre
+        fi
+    
+        syslog_netcat "JAVA_HOME determined to be \"${JAVA_HOME}\""    
+                
+        eval JAVA_HOME=${JAVA_HOME}
+        if [[ -f ~/.bashrc ]]
+        then
+            is_java_home_export=`grep -c "JAVA_HOME=${JAVA_HOME}" ~/.bashrc`
+            if [[ $is_java_home_export -eq 0 ]]
+            then
+                syslog_netcat "Adding JAVA_HOME=${JAVA_HOME} to bashrc"
+                echo "export JAVA_HOME=${JAVA_HOME}" >> ~/.bashrc
+            fi
+        fi
+    else
+        syslog_netcat "Line \"export JAVA_HOME=${JAVA_HOME}\" was already added to bashrc"    
+    fi
 
-	export JAVA_HOME=${JAVA_HOME}
-	echo $PATH | grep ${JAVA_HOME}/bin
-	if [[ $? -ne 0 ]]
-	then
-		export PATH=${JAVA_HOME}/bin:$PATH
-	fi
+    export JAVA_HOME=${JAVA_HOME}
+    echo $PATH | grep ${JAVA_HOME}/bin
+    if [[ $? -ne 0 ]]
+    then
+        export PATH=${JAVA_HOME}/bin:$PATH
+    fi
+    
+    JAVA_MAX_MEM_HEAP=$(get_my_ai_attribute_with_default java_max_mem_heap 0.8)
+
+    check_container 
+    
+    if [[ $IS_CONTAINER -eq 1 ]]
+    then
+        mem=`echo $(get_my_vm_attribute size) | cut -d '-' -f 2`
+        export JAVA_MAX_MEM_HEAP=$(echo "scale=0; $mem*${JAVA_MAX_MEM_HEAP}" | bc -l)        
+    else 
+        mem=`cat /proc/meminfo | sed -n 's/MemTotal:[ ]*\([0-9]*\) kB.*/\1/p'`
+        export JAVA_MAX_MEM_HEAP=$(echo "scale=0; $mem*${JAVA_MAX_MEM_HEAP}/1024" | bc -l)        
+    fi
+    
+    JAVA_EXTRA_CMD_OPTS=$(get_my_ai_attribute_with_default java_extra_cmd_opts "-Xms256m")
+    
+    echo $JAVA_EXTRA_CMD_OPTS | grep Xmx
+    if [[ $? -ne 0 ]]
+    then
+        export JAVA_EXTRA_CMD_OPTS="-Xmx"$(echo ${JAVA_MAX_MEM_HEAP} | cut -d '.' -f 1)"m "$JAVA_EXTRA_CMD_OPTS
+    fi
 }
 export -f set_java_home
+
+my_sut=$(get_my_ai_attribute sut)
+    
+function set_load_gen {
+    LOAD_PROFILE=$1
+    LOAD_LEVEL=$2
+    LOAD_DURATION=$3
+    LOAD_ID=$4
+    SLA_RUNTIME_TARGETS=$5
+
+    if [[ -z "$LOAD_PROFILE" || -z "$LOAD_LEVEL" || -z "$LOAD_DURATION" || -z "$LOAD_ID" ]]
+    then
+        syslog_netcat "Usage: $0 <load_profile> <load level> <load duration> <load_id> [sla_targets]"
+        exit 1
+    else
+        export LOAD_PROFILE=$LOAD_PROFILE
+        export LOAD_LEVEL=$LOAD_LEVEL
+        export LOAD_DURATION=$LOAD_DURATION
+        export LOAD_ID=$LOAD_ID
+    fi
+    
+    if [[ -z "$SLA_RUNTIME_TARGETS" ]]
+    then
+        /bin/true
+    else
+        export SLA_RUNTIME_TARGETS=$SLA_RUNTIME_TARGETS
+    fi
+
+    export GEN_OUTPUT_FILE=$(mktemp)
+    export RUN_OUTPUT_FILE=$(mktemp)
+
+#    export RUN_ID=$(echo $OUTPUT_FILE | sed 's^/tmp/tmp.^^g')
+    lidmsgs="Benchmarking $my_type SUT: "
+    lidmsgm=''
+    
+    for ir in $(echo $my_sut | sed 's/->/ /g' | sed 's/[0-9]_x_//g')
+    do
+        lidmsgm=${lidmsgm}$(echo $ir | tr '[:lower:]' '[:upper:]')"="$(echo `get_ips_from_role $ir` | sed 's/ /,/g')" -> "
+    done
+    lidmsgm=${lidmsgm}"_+"
+    lidmsgm=$(echo ${lidmsgm} | sed 's/-> _+/ /g')
+    lidmsge="with LOAD_PROFILE=${LOAD_PROFILE}, LOAD_LEVEL=${LOAD_LEVEL} and LOAD_DURATION=${LOAD_DURATION} (LOAD_ID=${LOAD_ID}, AI_UUID=$my_ai_uuid, VM_UUID=$my_vm_uuid)"
+    
+    export LIDMSG=${lidmsgs}${lidmsgm}${lidmsge}
+                
+    update_app_errors 0 reset
+    syslog_netcat "PREPARING: ${LIDMSG}"
+}    
+export -f set_load_gen
+
+function unset_load_gen {
+    rm ${RUN_OUTPUT_FILE}
+    rm ${GEN_OUTPUT_FILE}
+    syslog_netcat "METRIC COLLECTION COMPLETE: ${LIDMSG}"
+}
+export -f unset_load_gen
+    
+function format_for_report {
+    metric_name=$1
+    metric_value=$2
+    
+    echo $metric_value | grep [0-9].us > /dev/null 2>&1
+    if [[ $? -eq 0 ]]
+    then
+        echo $metric_name":"$(echo $2 | sed 's/us//g')":us"
+        return 0
+    fi
+
+    echo $metric_value | grep [0-9].k > /dev/null 2>&1
+    if [[ $? -eq 0 ]]
+    then        
+        echo $metric_name":"$(echo "scale=2; $2 * 1000" | sed 's/k//g' | bc -l)":tps"
+        return 0
+    fi    
+
+    echo $metric_value | grep [0-9].ms > /dev/null 2>&1
+    if [[ $? -eq 0 ]]
+    then
+        echo $metric_name":"$(echo $2 | sed 's/ms//g')":ms"
+        return 0
+    fi    
+}
+export -f format_for_report
+
+function common_metrics {
+    mtr_str=''
+    mtr_str=${mtr_str}" load_id:${LOAD_ID}:seqnum"
+    mtr_str=${mtr_str}" load_profile:${LOAD_PROFILE}:name" 
+    mtr_str=${mtr_str}" load_level:${LOAD_LEVEL}:load"
+    mtr_str=${mtr_str}" load_duration:${LOAD_DURATION}:sec"
+    mtr_str=${mtr_str}" errors:$(update_app_errors):num"
+    mtr_str=${mtr_str}" completion_time:$(update_app_completiontime):sec"
+    mtr_str=${mtr_str}" quiescent_time:$(update_app_quiescent):sec"
+    if [[ -z $SLA_RUNTIME_TARGETS ]]
+    then
+        mtr_str=${mtr_str}" "$SLA_RUNTIME_TARGETS
+    fi
+    echo $mtr_str
+}
+export -f common_metrics

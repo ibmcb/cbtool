@@ -1,4 +1,5 @@
 ### START - Dependency installation order ###
+cuda-order = 88
 parboil-order = 89
 ### END - Dependency installation order ###
 
@@ -9,14 +10,17 @@ parboil-order = 89
 # git = git clone using above giturl
 # pip = python pip utility
 # man = "manual"
+cuda-install = man
 parboil-install = man
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
+cuda-configure = which cuda
 parboil-configure = ~/parboil/parboil list
 ### END - Tests ###
 
 ### START - Dependency versions ###
+cuda-ver = ANY
 parboil-ver = ANY
 ### END - Dependency versions ###
 

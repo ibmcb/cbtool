@@ -1,0 +1,42 @@
+# Parameters for this Virtual Application (Application Instance - AI) type should
+# be set on YOUR private configuration configuration file, including the ones 
+# commented.
+
+[AI_TEMPLATES : MEMTIER] 
+
+# Attributes MANDATORY for all Virtual Applications
+SUT = memtier->1_x_redis
+LOAD_BALANCER_SUPPORTED = $False
+RESIZE_SUPPORTED = $False
+REGENERATE_DATA = $False 
+LOAD_GENERATOR_ROLE = memtier
+LOAD_MANAGER_ROLE = memtier
+METRIC_AGGREGATOR_ROLE = memtier
+CAPTURE_ROLE = redis
+LOAD_PROFILE = default
+LOAD_LEVEL = uniformIXIXI1I5
+LOAD_DURATION = 60
+CATEGORY = application-stress
+PROFILES = default
+REFERENCE = https://github.com/RedisLabs/memtier_benchmark
+LICENSE = GPL_v2
+REPORTED_METRICS = throughput, latency, bandwidth, errors, completion_time, quiescent_time
+
+# VApp-specific MANDATORY attributes
+DESCRIPTION =Deploys N redis instances and one instance to execute the "memtier_benchmark".\n
+DESCRIPTION +=  - LOAD_PROFILE possible values: _PROFILES_.\n
+DESCRIPTION +=  - LOAD_LEVEL meaning: number of threads (parameter -t)\n 
+DESCRIPTION +=  - LOAD_DURATION meaning: maximum time to run (parameter --test-time)\n
+REDIS_SETUP1 = cb_restart_redis.sh
+START = cb_run_memtier.sh
+
+# VApp-specific modifier parameters. Commented attributes imply default values assumed
+RATIO = 5:10
+PIPELINE = 1
+CLIENTS_PER_THREAD = 10
+
+# Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
+#SYNC_COUNTER_NAME = synchronization_counter
+#CONCURRENT_AIS = 2
+#SYNC_CHANNEL_NAME = synchronization_channel
+#RUN_COUNTER_NAME = experiment_id_counter

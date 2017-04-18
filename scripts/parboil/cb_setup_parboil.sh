@@ -31,16 +31,21 @@ PARBOIL_EXECUTABLE=${PARBOIL_DIR}/parboil
 CBUSERLOGIN=`get_my_ai_attribute login`
 sudo chown -R ${CBUSERLOGIN}:${CBUSERLOGIN} ${PARBOIL_DIR}
 
-PATCH_LINE=$(grep -nri "grep cuda" $PARBOIL_DIR/common/mk | head -1 | cut -d ':' -f 2)
-comment_lines $PATCH_LINE $PARBOIL_DIR/common/mk/cuda.mk
+check_gpu_cuda
+
+if [[ $IS_GPU -eq 0 ]]
+then
+    PATCH_LINE=$(grep -nri "grep cuda" $PARBOIL_DIR/common/mk | head -1 | cut -d ':' -f 2)
+    comment_lines $PATCH_LINE $PARBOIL_DIR/common/mk/cuda.mk
+fi
 
 ${PARBOIL_EXECUTABLE} list
 if [[ $? -gt 0 ]]
 then
-	syslog_netcat "Can't find the parboil executable on ${SHORT_HOSTNAME} - NOK"
-	exit 1
+    syslog_netcat "Can't find the parboil executable on ${SHORT_HOSTNAME} - NOK"
+    exit 1
 else :
-	syslog_netcat "Parboil executable to be used on ${SHORT_HOSTNAME} is ${PARBOIL_EXECUTABLE} - OK"
+    syslog_netcat "Parboil executable to be used on ${SHORT_HOSTNAME} is ${PARBOIL_EXECUTABLE} - OK"
 fi
 provision_application_stop $START
 exit 0

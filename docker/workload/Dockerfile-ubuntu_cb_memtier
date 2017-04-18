@@ -1,0 +1,19 @@
+FROM REPLACE_NULLWORKLOAD_UBUNTU
+
+# autoreconf-install-pm
+RUN apt-get update
+RUN apt-get install -y build-essential autoconf automake libpcre3-dev libevent-dev pkg-config zlib1g-dev
+# autoreconf-install-pm
+
+# redis-install-pm
+RUN apt-get install -y redis-server
+RUN sed -i "s/.*bind.*/bind 0.0.0.0/" /etc/redis/redis.conf
+# service_stop_disable redis-server
+# redis-install-pm
+
+# memtier_benchmark-install-man
+RUN /bin/true; cd /home/REPLACE_USERNAME; git clone https://github.com/RedisLabs/memtier_benchmark.git
+RUN /bin/true; cd /home/REPLACE_USERNAME/memtier_benchmark/; autoreconf -ivf; ./configure; make
+RUN cd /home/REPLACE_USERNAME/memtier_benchmark/; make install
+# memtier_benchmark-install-man
+RUN chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME

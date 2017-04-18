@@ -3,7 +3,8 @@
 # commented.
 
 [AI_TEMPLATES : MONGO_YCSB]
-DESCRIPTION = TBD
+
+# Attributes MANDATORY for all Virtual Applications
 SUT = ycsb->mongos->mongo_cfg_server->3_x_mongodb
 LOAD_BALANCER_SUPPORTED = $False
 RESIZE_SUPPORTED = $True
@@ -17,8 +18,20 @@ LOAD_PROFILE = workloada
 LOAD_LEVEL = 1
 LOAD_DURATION = 60
 CATEGORY = transactional
-REPORTED_METRICS = bandwidth,throughput,latency,datagen_time,datagen_size,completion_time,errors,insert_operations,read_operations,quiescent_time
+PROFILES = workloada, workloadb, workloadc, workloadd, workloade, workloadf
+REFERENCE = https://github.com/brianfrankcooper/YCSB
+LICENSE = Apache_v2
+REPORTED_METRICS = throughput, latency, datagen_time, datagen_size, completion_time, errors, insert_operations, read_operations, quiescent_time
 
+# VApp-specific MANDATORY attributes
+DESCRIPTION =Deploys a MongoDB cluster (N mongodb instances, 1 cfg_server instance\n
+DESCRIPTION +=and 1 mongos instance), plus one instance running the YCSB benchmark.\n
+DESCRIPTION +=This single instance sends requests to all mongodb nodes simultaneously.\n
+DESCRIPTION +=  - LOAD_PROFILE possible values: _PROFILES_ (for a proper\n
+DESCRIPTION +=    description, consult the section "Core Workloads" on the YCSB documentation)\n
+DESCRIPTION +=  - LOAD_LEVEL meaning: number of threads on YCSB (parameter -threads).\n
+DESCRIPTION +=  - LOAD_DURATION meaning: not used, a run ends when all YCSB operations\n
+DESCRIPTION +=    (default is 1000) are finished.\n
 MONGO_CFG_SERVER_SETUP1 = cb_restart_mongo_cfg.sh
 MONGODB_SETUP1 = cb_restart_mongo.sh
 MONGOS_SETUP2 = cb_restart_mongos.sh
@@ -27,7 +40,7 @@ MONGODB_RESIZE1 = cb_modify_hosts.sh
 MONGOS_RESIZE2 = cb_modify_shard.sh
 MONGODB_RESIZE1 = cb_restart_mongo.sh
 MONGO_CFG_SERVER_RESIZE1 = cb_modify_hosts.sh
-START = cb_ycsb.sh
+START = cb_run_ycsb.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 APP_COLLECTION = lazy

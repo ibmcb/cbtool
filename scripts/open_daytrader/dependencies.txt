@@ -2,11 +2,12 @@
 java-order = 82
 subversion-order = 83
 maven-order = 84
-mysql-order = 85
-daytrader-order = 86
-geronimo-order = 87
-geronimo-jdbc-order = 92
-rain-wkt-order = 93
+apache-order = 85
+mysql-order = 86
+daytrader-order = 87
+geronimo-order = 88
+geronimo-jdbc-order = 93
+rain-wkt-order = 94
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -19,6 +20,7 @@ rain-wkt-order = 93
 java-install = pm
 subversion-install = pm
 maven-install = pm
+apache-install = pm
 mysql-install = pm
 daytrader-install = man
 geronimo-install = man
@@ -30,6 +32,7 @@ rain-wkt-install = man
 java-configure = java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g' | sed 's/-internal//g'
 subversion-configure = svn --version | head -n 1 | grep version | cut -d ' ' -f 3
 maven-configure = mvn --version | head -n 1 | cut -d ' ' -f 3
+apache-configure = apache2 -v
 mysql-configure = mysql --version | cut -d ' ' -f 6
 daytrader-configure = ls -la ~/daytrader-parent-3.0.0/
 geronimo-configure = ls -la ~/geronimo-tomcat7-*
@@ -41,6 +44,7 @@ rain-wkt-configure = ls -la ~/rain-workload-toolkit/
 java-ver = 1.7
 subversion-ver = 1.4
 maven-ver = 2
+apache-ver = ANY
 mysql-ver = 5.0
 daytrader-ver = ANY
 geronimo-ver = ANY
