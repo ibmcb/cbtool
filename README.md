@@ -80,39 +80,40 @@ To get the most current list, start CBTOOL and type ```typelist``` on the CLI. T
 AIs with the following types can be attached to to this experiment (Cloud TESTPDM) :
 
 synthetic:
-  btest
-  coremark
-  ddgen
-  filebench
-  fio
-  iperf
-  netperf
-  nuttcp
-  postmark
-  unixbench
-  windesktop
-  xping
+  btest (default)
+  coremark (default)
+  ddgen (default)
+  filebench (fileserver, oltp_noism, varmail, videoserver, webproxy)
+  fio (default)
+  iperf (tcp, udp)
+  mlg (default)
+  netperf (tcp_stream, tcp_maerts, udp_stream, tcp_rr, tcp_cc, tcp_crr, udp_rr)
+  nuttcp (tcp, udp)
+  postmark (default)
+  unixbench (default)
+  windesktop (default)
+  xping (icmp)
 
 hpc:
-  hpcc
-  linpack
-  parboil
+  hpcc (default)
+  linpack (default)
+  parboil (histo, bfs, stencil, mri-q, mri-gridding, lbm, tpacf, sad, spmv, sgemm, cutcp)
 
 transactional:
-  cassandra_ycsb
-  ibm_daytrader
-  mongo_ycsb
-  open_daytrader
-  redis_ycsb
-  specimap
-  specjbb
+  cassandra_ycsb (workloada, workloadb, workloadc, workloadd, workloadf)
+  ibm_daytrader (default)
+  mongo_ycsb (workloada, workloadb, workloadc, workloadd, workloade, workloadf)
+  open_daytrader (default)
+  redis_ycsb (workloada, workloadb, workloadc, workloadd, workloade, workloadf)
+  specimap (default)
+  specjbb (default)
 
 bigdata:
-  giraph
-  hadoop
+  giraph (pagerank, topkpagerank)
+  hadoop (sort, wordcount, terasort, dfsioe, nutchindexing, pagerank, bayes, kmeans, hivebench)
 
 fake:
-  nullworkload
+  nullworkload (default)
 ```
 Contacts:
 
