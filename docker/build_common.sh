@@ -30,7 +30,7 @@ function cb_docker_build {
         if [[ $CB_SQUASH == "true" ]]
         then
 #	        CB_ACTUAL_SQUASH="--squash"
-	        CB_ACTUAL_SQUASH=""	        
+	        CB_ACTUAL_SQUASH=""
         fi
     fi                                                                                                                                                                                                                        
     sudo rm -rf Dockerfile && sudo cp -f $CB_DOCKERFN Dockerfile
@@ -45,7 +45,7 @@ function cb_docker_build {
     sudo sed -i "s^REPLACE_BASE_VANILLA_UBUNTU^$CB_UBUNTU_BASE^g" Dockerfile
     sudo sed -i "s^REPLACE_BASE_VANILLA_PHUSION^$CB_PHUSION_BASE^g" Dockerfile
     sudo sed -i "s^REPLACE_BASE_VANILLA_CENTOS^$CB_CENTOS_BASE^g" Dockerfile
-    sudo sed -i "s^REPLACE_RSYNC^rsync rsync://$CB_RSYNC/3rd_party/workload/^g" Dockerfile
+    sudo sed -i "s^REPLACE_RSYNC^rsync -a rsync://$CB_RSYNC/3rd_party/workload/^g" Dockerfile
                 
     if [[ ! -z $CB_DNAME_BASE_UBUNTU ]]
     then

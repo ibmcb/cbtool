@@ -222,7 +222,7 @@ class RedisMgdConn :
                                         "load_generator_role", "load_manager_role",\
                                         "metric_aggregator_role", "capture_role",\
                                         "start", "load_profile", "load_level",\
-                                        "load_duration", "category" ] :
+                                        "load_duration", "profiles", "category" ] :
                         
                         if _actual_ai_type_name + '_' + _key_suffix not in cloud_kv_list["ai_templates"] :
                             _msg = "The AI type \"" + _actual_ai_type_name + "\""
@@ -233,8 +233,13 @@ class RedisMgdConn :
                         _category = _actual_ai_type_name + '_' + _key_suffix
 
                     if path.exists(cloud_kv_list["space"]["scripts_dir"] + '/' + _actual_ai_type_name) :
-                        self.add_to_list(cloud_name, "GLOBAL", "ai_types", _actual_ai_type_name)                        
-                        self.add_to_list(cloud_name, "GLOBAL", "ai_types", cloud_kv_list["ai_templates"][_category] + '/' + _actual_ai_type_name)
+                        self.add_to_list(cloud_name, "GLOBAL", "ai_types", _actual_ai_type_name)
+
+                        _typelist_entry = cloud_kv_list["ai_templates"][_category] 
+                        _typelist_entry += '/' + _actual_ai_type_name 
+                        _typelist_entry += " (" + cloud_kv_list["ai_templates"][_actual_ai_type_name + "_profiles"].replace(',',", ") + ")"
+
+                        self.add_to_list(cloud_name, "GLOBAL", "ai_types", _typelist_entry)
 
             if "aidrs_templates" in cloud_kv_list :
                 for _key in cloud_kv_list["aidrs_templates"].keys() :

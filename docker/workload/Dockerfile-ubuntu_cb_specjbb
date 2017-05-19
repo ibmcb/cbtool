@@ -1,0 +1,15 @@
+FROM REPLACE_NULLWORKLOAD_UBUNTU
+
+RUN wget -N -P /home/REPLACE_USERNAME http://launchpadlibrarian.net/109052632/python-support_1.0.15_all.deb; dpkg -i /home/REPLACE_USERNAME/python-support*.deb
+
+# java-install-pm
+RUN apt-get update; apt-get install -y software-properties-common;
+RUN add-apt-repository -y ppa:openjdk-r/ppa
+RUN apt-get update; apt-get install -y openjdk-7-jdk
+# java-install-pm
+
+# specjbb-install-man
+RUN REPLACE_RSYNC/SPECjbb2015_1_00/ /home/REPLACE_USERNAME/SPECjbb2015_1_00/
+# specjbb-install-man
+
+RUN chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME

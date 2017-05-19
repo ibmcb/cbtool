@@ -85,7 +85,7 @@ do
         shift
         ;;                        
         -v|--verbose)
-        CB_VERB="--ve
+        CB_VERB="--ve"
         ;;
         --push)
         CB_PUSH="push"

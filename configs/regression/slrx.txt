@@ -1,0 +1,34 @@
+[USER-DEFINED]
+MANAGER_IP = $IP_AUTO
+MAIN_UPDATE_ATTEMPTS = 720
+
+CLOUDOPTION_TESTSLR = cldattach slr, vmcattach all, vmattach check:1373563 auto empty default none empty=empty, stats vm print true, vmdetach youngest, stats vm print true, vmattach check:1373563:root auto empty default none empty=empty, stats vm print true, vmdetach youngest, stats vm print true, vmattach check:1373563 auto empty default none cloud_vv=10, stats vm print true, vmcapture youngest regressiontest, stats vm print true, vmattach check:regressiontest:ubuntu auto empty default none empty=empty, stats vm print true, vmdetach youngest, stats vm print true, imgdelete regressiontest dal05, vmattach check:regressiontest:root auto empty default none empty=empty, stats vm print true, vmattach check:1373563 auto empty default none force_failure=true, stats vm print true
+STARTUP_CLOUD = TESTSLR
+
+[USER-DEFINED : CLOUDOPTION_TESTSLR]
+SLR_ACCESS = public
+SLR_CREDENTIALS = <username>-ABCDEFGHIJKLMNOPQRSTUVXYWZ01234567890-+*0123456789001234567890-cci
+SLR_LOGIN = root
+SLR_INITIAL_VMCS = dal10
+
+# Override Examples (Do NOT modify the templates)
+[OBJECTSTORE]
+DBID=10
+USAGE = shared
+
+[LOGSTORE]
+VERBOSITY = 5
+
+[METRICSTORE]
+USAGE = shared
+PASSWORD = cbpwdZ9
+
+[FILESTORE]
+PORT = 10000
+
+[SPACE]
+STORES_WORKING_DIR = /home/$MAIN_USERNAME/stores
+
+[VM_DEFAULTS : SLR_CLOUDCONFIG]
+RUN_NETNAME = public
+PROV_NETNAME = public

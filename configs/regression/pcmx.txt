@@ -1,0 +1,38 @@
+[USER-DEFINED]
+MANAGER_IP = $IP_AUTO
+MAIN_UPDATE_ATTEMPTS = 720
+
+CLOUDOPTION_TESTPCM = cldattach pcm, vmcattach all, vmattach check:xenial auto empty default none empty=empty, stats vm print true, vmdetach youngest, stats vm print true, vmattach check:xenial:ubuntu auto empty default none empty=empty, stats vm print true, vmdetach youngest, stats vm print true, vmattach check:xenial auto empty default none cloud_vv=10, stats vm print true, vmcapture youngest regressiontest, stats vm print true, vmattach check:regressiontest:ubuntu auto empty default none empty=empty, stats vm print true, vmdetach youngest, stats vm print true, imgdelete regressiontest world, vmattach check:regressiontest:ubuntu auto empty default none empty=empty, stats vm print true, vmattach check:xenial auto empty default none force_failure=true, stats vm print true
+
+STARTUP_CLOUD = TESTPCM
+
+[USER-DEFINED : CLOUDOPTION_TESTPCM]
+PCM_ACCESS = https://127.0.0.1:8443
+PCM_CREDENTIALS = temp4now
+PCM_LOGIN = ubuntu
+PCM_INITIAL_VMCS = world
+PCM_NETNAME = lxdbr0
+
+# Override Examples (Do NOT modify the templates)
+[OBJECTSTORE]
+DBID=10
+USAGE = shared
+
+[LOGSTORE]
+VERBOSITY = 5
+
+[METRICSTORE]
+USAGE = shared
+PASSWORD = cbpwdZ9
+
+[FILESTORE]
+PORT = 10000
+
+[SPACE]
+STORES_WORKING_DIR = /home/$MAIN_USERNAME/stores
+
+[VMC_DEFAULTS : PCM_CLOUDCONFIG]
+DISCOVER_HOSTS = $False
+
+[VM_DEFAULTS : PCM_CLOUDCONFIG ]
+PORTS_BASE = 10000

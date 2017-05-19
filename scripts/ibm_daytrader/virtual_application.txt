@@ -8,9 +8,8 @@
 SUT = client_ibm_daytrader->was->db2
 LOAD_BALANCER_SUPPORTED = $True
 LOAD_BALANCER = $False
-LOAD_BALANCER_TARGET_PORT = 9080
+LOAD_BALANCER_TARGET_PORTS = 9080
 LOAD_BALANCER_TARGET_URL = daytrader
-LOAD_BALANCER_TARGET_CHILDREN = 2
 LOAD_BALANCER_PORT = 9080
 LOAD_BALANCER_URL = daytrader
 RESIZE_SUPPORTED = $True
@@ -24,20 +23,23 @@ LOAD_LEVEL = uniformIXIXI1I10
 # The load duration for daytrader should not be smaller than 90 seconds
 LOAD_DURATION = uniformIXIXI90I120
 CATEGORY = transactional
-REPORTED_METRICS = throughput,latency,datagen_time,datagen_size,completion_time,quiescent_time
+PROFILES = default
+REFERENCE = http://geronimo.apache.org/GMOxDOC22/daytrader-a-more-complex-application.html
+LICENSE = IBM
+REPORTED_METRICS = throughput,latency,completion_time,quiescent_time,errors
 
 # VApp-specific MANDATORY attributes
-DESCRIPTION = Deploys an 2-tier stack, formed by N "application (Websphere) nodes"
-DESCRIPTION += VMs \n - if N > 1, then a "load balancer (HAProxy) node" VM is also deployed -\n
-DESCRIPTION +=  and one "database (DB2) node" VM, and then runs the DayTrader benchmark
-DESCRIPTION += on the stack. The actual load is performed by an additional VM,
-DESCRIPTION += running the WebSphere Studio Workload Simulator (iwlengine).\n
-DESCRIPTION +=- LOAD_PROFILE possible values: "default" (the only profile that we
-DESCRIPTION += have registered in the iwlengine).
-DESCRIPTION +=- LOAD_LEVEL meaning: number of clients simultaneously performing
-DESCRIPTION += transactions (parameter "-c" on iwlengine).\n 
-DESCRIPTION +=- LOAD_DURATION meaning: total transaction time for all clients.\n
-DESCRIPTION +=- COMMENT: None.
+DESCRIPTION =Deploys an 2-tier stack, formed by N "application (Websphere)"\n
+DESCRIPTION +=instances - if N > 1, then a "load balancer (HAProxy)" instance\n
+DESCRIPTION +=is also deployed - and one "database (DB2)" instance, and then\n
+DESCRIPTION +=runs the "DayTrader" benchmark on the stack. The actual load is\n
+DESCRIPTION +=performed by an additional instance, running the WebSphere Studio\n
+DESCRIPTION +=Workload Simulator (iwlengine).\n
+DESCRIPTION +=  - LOAD_PROFILE possible values: _PROFILES_ (the only profile that\n
+DESCRIPTION +=    we have registered in the iwlengine).
+DESCRIPTION +=  - LOAD_LEVEL meaning: number of clients simultaneously performing\n
+DESCRIPTION +=    transactions (parameter "-c" on iwlengine).\n 
+DESCRIPTION +=  - LOAD_DURATION meaning: total transaction time for all clients.\n
 # This only has effect if the parameter LOAD_BALANCER is set to "$True"
 LB_SETUP1 = cb_restart_loadbalancer.sh
 LB_RESET1 = cb_restart_loadbalancer.sh
@@ -46,7 +48,7 @@ DB2_SETUP1 = cb_restart_db2.sh
 WAS_SETUP2 = cb_restart_was.sh
 WAS_RESET1 = cb_restart_was.sh
 DB2_RESET1 = cb_restart_db2.sh
-START = cb_daytrader.sh
+START = cb_run_daytrader.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 JAVA_HOME = auto

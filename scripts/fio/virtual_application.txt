@@ -16,15 +16,20 @@ LOAD_PROFILE = default
 LOAD_LEVEL = 1
 LOAD_DURATION = 30
 CATEGORY = synthetic
+PROFILES = default
+REFERENCE = https://github.com/axboe/fio
+LICENSE = GPL_v2
 REPORTED_METRICS = latency, throughput, write_latency, write_throughput, read_latency, read_troughput, errors, completion_time, quiescent_time
 
 # VApp-specific MANDATORY attributes
-DESCRIPTION = Deploys a SINGLE VM and runs the \"fio\" synthetic (disk I/O) benchmark.\n
-DESCRIPTION +=- LOAD_PROFILE possible values: "default".\n
-DESCRIPTION +=- LOAD_LEVEL meaning: number of random IO (read or write) jobs.\n 
-DESCRIPTION +=- LOAD_DURATION meaning: not used, a run ends when the problem is solved.\n
+DESCRIPTION =Deploys a single instance and runs the "fio" synthetic (disk I/O)\n
+DESCRIPTION +=benchmark.\n
+DESCRIPTION +=  - LOAD_PROFILE possible values: _PROFILES_.\n
+DESCRIPTION +=  - LOAD_LEVEL meaning: number of random IO (read or write) jobs.\n 
+DESCRIPTION +=  - LOAD_DURATION meaning: not used, a run ends when a specific\n
+DESCRIPTION +=    number of I/O operations is reached.\n
 FIO_SETUP1 = cb_start_fio.sh
-START = cb_fio.sh
+START = cb_run_fio.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 FIO_DATA_DIR = /fiotest

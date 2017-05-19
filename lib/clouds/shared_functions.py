@@ -850,6 +850,9 @@ class CommonCloudFunctions:
                 return True
 
         if self.get_description() == "Google Compute Engine" :
+            if len(imageid) == 18 and is_number(imageid) :
+                return True
+            
             if len(imageid) == 19 and is_number(imageid) :
                 return True
 
@@ -991,7 +994,7 @@ class CommonCloudFunctions:
                                 self.sshman.delete_key(_keyid)
 
                             if self.get_description() == "Google Compute Engine" :
-                                _temp_key_metadata[key_name] = key_name + ':' + _key_type + ' ' + _key_contents + " cbtool@orchestrator"
+                                _temp_key_metadata[key_name] = key_name + ':' + _key_type + ' ' + _key_contents + ' ' + vm_defaults["login"] + "@orchestrator"
 
                             if self.get_description() == "DigitalOcean Cloud" :
                                 connection.delete_key_pair(_registered_key_pair_objects[key_name])                                
@@ -1019,19 +1022,25 @@ class CommonCloudFunctions:
                     self.sshman.add_key(_key_type + ' ' + _key_contents, key_name)
 
                 if self.get_description() == "Google Compute Engine" :
-                    _temp_key_metadata[key_name] = key_name + ':' + _key_type + ' ' + _key_contents + " cbtool@orchestrator"
-                    
+                    for _kn in [ key_name + "  cbtool", vm_defaults["login"] + "  " + vm_defaults["login"]] :
+                        
+                        _actual_key_name, _actual_user_name = _kn.split("  ")
+                        
+                        _temp_key_metadata[_actual_key_name] = _actual_key_name + ':' + _key_type + ' ' + _key_contents + ' ' + _actual_user_name + "@orchestrator"
+                        
                     _key_list_str = ''
+                    
                     for _key in _temp_key_metadata.keys() :
                         _key_list_str += _temp_key_metadata[_key] + '\n'
 
                     _key_list_str = _key_list_str[0:-1]
 
-                    if "items" in _metadata["commonInstanceMetadata"] :                    
+                    if "items" in _metadata["commonInstanceMetadata"] :
                         for _element in _metadata['commonInstanceMetadata']['items'] :
                             if _element["key"] == "sshKeys" :
-                                _element["value"] = _key_list_str
+                                _element["value"] += _key_list_str
                     else :
+                        _metadata['commonInstanceMetadata']["items"] = []
                         _metadata['commonInstanceMetadata']['items'].append({"key": "sshKeys", "value" : _key_list_str})
                                                 
                     self.gceconn.projects().setCommonInstanceMetadata(project=self.instances_project, body=_metadata["commonInstanceMetadata"]).execute(http = self.http_conn[connection])

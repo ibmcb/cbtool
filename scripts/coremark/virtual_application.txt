@@ -17,23 +17,26 @@ LOAD_PROFILE = default
 LOAD_LEVEL = uniformIXIXI1I7
 LOAD_DURATION = uniformIXIXI40I60
 CATEGORY = synthetic
-REPORTED_METRICS = throughput,latency,completion_time,quiescent_time
+PROFILES = default
+REFERENCE = http://www.eembc.org/coremark/index.php
+LICENSE = EEMBC
+REPORTED_METRICS = throughput,latency,completion_time,quiescent_time,errors
 
 # VApp-specific MANDATORY attributes
-DESCRIPTION = Deploys a single VM running the coremark benchmark.\n
-DESCRIPTION +=- LOAD_PROFILE possible values: "default" (the benchmark is always
-DESCRIPTION +=run with the following parameters "7 1 2000").\n
-DESCRIPTION +=- LOAD_LEVEL meaning: number of benchmark iterations, multiplied
-DESCRIPTION +=by a "load factor" (default 1000).\n 
-DESCRIPTION +=- LOAD_DURATION meaning: not used, a run ends when all iterations
-DESCRIPTION += are finished.\n
-DESCRIPTION +=- COMMENT: One of the "Synthetic" Workloads. The coremark benchmark
-DESCRIPTION += is CPU (core)-centric and deliberately tries to ignore
-DESCRIPTION += I/O and memory effects. During initial setup, the benchmark is compiled 
-DESCRIPTION += to run in a specific number of CPUs (this number may vary, since 
-DESCRIPTION += VMs can be resized by the cloud).\n
+DESCRIPTION =Deploys a single instance running the "coremark" benchmark.\n
+DESCRIPTION +=  - LOAD_PROFILE possible values: _PROFILES_ (the benchmark is\n
+DESCRIPTION +=    always executed with the following parameters "7 1 2000").\n
+DESCRIPTION +=  - LOAD_LEVEL meaning: number of benchmark iterations, multiplied\n
+DESCRIPTION +=    by a "load factor" (default 1000).\n 
+DESCRIPTION +=  - LOAD_DURATION meaning: not used, a run ends when all iterations\n
+DESCRIPTION +=    are finished.\n
+DESCRIPTION +=  - COMMENT: One of the "Synthetic" Workloads. The coremark benchmark\n
+DESCRIPTION +=    is CPU (core)-centric and deliberately tries to ignore I/O and\n
+DESCRIPTION +=    memory effects. During initial setup, the benchmark is compiled\n 
+DESCRIPTION +=    to run on a specific number of CPUs (this number may vary, since\n 
+DESCRIPTION +=    instances can be resized by the cloud).\n
 COREMARK_SETUP1 = cb_setup_cmk.sh
-START = cb_coremark.sh
+START = cb_run_coremark.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 LOAD_FACTOR = 10000

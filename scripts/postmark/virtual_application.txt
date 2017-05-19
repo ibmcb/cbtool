@@ -17,16 +17,18 @@ LOAD_PROFILE = default
 LOAD_LEVEL = uniformIXIXI1I10
 LOAD_DURATION = 20
 CATEGORY = synthetic
+PROFILES = default
+REFERENCE = https://github.com/wolfwood/postmark.git
+LICENSE = Artistic
 REPORTED_METRICS = throughput,bandwidth,completion_time,errors,quiescent_time
 
 # VApp-specific MANDATORY attributes
 DESCRIPTION = = Deploys a SINGLE VM and runs the \"postmark\" synthetic (disk I/O) benchmark.\n
-DESCRIPTION +=- LOAD_PROFILE possible values: "default" (does not mean anything, not really used).\n
+DESCRIPTION +=- LOAD_PROFILE possible values: _PROFILES_ (does not mean anything, not really used).\n
 DESCRIPTION +=- LOAD_LEVEL meaning: number of transactions ("set transactions").\n 
 DESCRIPTION +=- LOAD_DURATION meaning: not used, a run ends when all transactions are finished.\n
-
 POSTMARK_SETUP1 = cb_start_postmark.sh
-START = cb_postmark.sh
+START = cb_run_postmark.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
 POSTMARK_DATA_DIR = /postmarkdir

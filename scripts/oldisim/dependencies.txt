@@ -1,0 +1,43 @@
+### START - Dependency installation order ###
+git-order = 82
+gcc-order = 83
+perl-order = 84
+unixbench-order = 85
+### END - Dependency installation order ###
+
+### START - Dependency-specific installation method ###
+# pm = "package manager" (yum or apt-get)
+# sl = "soft link" (assume that the dependency is already installed, just has to
+# be properly exposed to the user's path.
+# git = git clone using above giturl
+# pip = python pip utility
+# man = "manual"
+gcc-install = pm
+git-install = pm
+perl-install = pm
+unixbench-install = git
+### END - Dependency-specific installation method ###
+
+### START - Tests ###
+git-configure = gcc -v
+git-configure = git --version
+perl-configure = perl -v -e 'require Time::HiRes'
+unixbench-configure = ls -la ~/byte-unixbench/UnixBench/Run
+### END - Tests ###
+
+### START - Dependency versions ###
+gcc-ver = ANY
+git-ver = ANY
+perl-ver = 5.10
+unixbench-ver = ANY
+### END - Dependency versions ###
+
+### START - Dependency URLs ###
+
+### END - Dependency URLs ###
+
+### START -  Dependency and method-specific command lines ###
+
+# AUTOMATICALLY EXTRACTED FROM DOCKERFILE ON ../../docker/workload/
+
+### END -  Dependency and method-specific command lines ###

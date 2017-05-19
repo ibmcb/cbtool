@@ -2084,6 +2084,9 @@ class BaseObjectOperations :
             '''
             Support load balancer configurations on-the-fly.
             '''
+
+            if "load_balancer_targets" not in obj_attr_list :
+                obj_attr_list["load_balancer_targets"] = '2'
             
             if "load_balancer" not in obj_attr_list :
                 obj_attr_list["load_balancer"] = "false"
@@ -2093,7 +2096,7 @@ class BaseObjectOperations :
                     if _tiers[_tier_nr].split("_x_")[1] == obj_attr_list["load_generator_role"] :
                         _nr_child_vms, _child_role = self.get_vms_and_role(_tiers[_tier_nr + 1])
                         obj_attr_list["load_balancer_target_role"] = _child_role
-                        _tiers[_tier_nr + 1] = obj_attr_list["load_balancer_target_children"] + "_x_" + _child_role
+                        _tiers[_tier_nr + 1] = obj_attr_list["load_balancer_targets"] + "_x_" + _child_role
                         _tiers.insert(_tier_nr + 1, "1_x_lb")
 
                 obj_attr_list["sut"] = "->".join(_tiers)
