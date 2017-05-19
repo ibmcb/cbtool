@@ -77,9 +77,10 @@ To get the most current list, start CBTOOL and type ```typelist``` on the CLI. T
 
 ```
 (MYCLOUD) typelist
-AIs with the following types can be attached to to this experiment (Cloud TESTPDM) :
+AIs with the following types can be attached to to this experiment (Cloud MYSIMCLOUD) :
 
 synthetic:
+  bonnie (default, full)
   btest (default)
   coremark (default)
   ddgen (default)
@@ -90,25 +91,31 @@ synthetic:
   netperf (tcp_stream, tcp_maerts, udp_stream, tcp_rr, tcp_cc, tcp_crr, udp_rr)
   nuttcp (tcp, udp)
   postmark (default)
-  unixbench (default)
-  windesktop (default)
+  unixbench (arithmetic, dhrystone, whetstone, load, misc, speed, oldsystem, system, fs, shell, index)
   xping (icmp)
 
-hpc:
+application-stress:
+  memtier (default)
+  oldisim (default)
+  wrk (default)
+
+scientific:
   hpcc (default)
   linpack (default)
+  multichase (simple, work:N, t0-2, nta, movdqa, mvntdqa, parallel2-10, critword:N, critword2:N)
   parboil (histo, bfs, stencil, mri-q, mri-gridding, lbm, tpacf, sad, spmv, sgemm, cutcp)
+  scimark (default)
 
 transactional:
-  cassandra_ycsb (workloada, workloadb, workloadc, workloadd, workloadf)
+  cassandra_ycsb (workloada, workloadb, workloadc, workloadd, workloade, workloadf)
   ibm_daytrader (default)
   mongo_ycsb (workloada, workloadb, workloadc, workloadd, workloade, workloadf)
   open_daytrader (default)
   redis_ycsb (workloada, workloadb, workloadc, workloadd, workloade, workloadf)
-  specimap (default)
-  specjbb (default)
+  specjbb (preset, hbir)
+  sysbench (simple, complex, nontrx, sp)
 
-bigdata:
+data-centric:
   giraph (pagerank, topkpagerank)
   hadoop (sort, wordcount, terasort, dfsioe, nutchindexing, pagerank, bayes, kmeans, hivebench)
 
