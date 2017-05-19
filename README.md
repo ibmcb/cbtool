@@ -31,6 +31,8 @@ Subscribe to our mailing list:
 
 9. [Configure CBTOOL to run outside of the cloud (or with multiple tenant networks)](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Run-the-CloudBench-orchestrator-outside-of-the-cloud-(or-with-multiple-tenant-networks))
 
+9. [Configure CBTOOL to run outside of the cloud (or with multiple tenant networks)](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Run-the-CloudBench-orchestrator-outside-of-the-cloud-(or-with-multiple-tenant-networks))
+
     1. [Detailed instructions on how to use OpenVPN support](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Use-VPN-support-with-your-benchmarks)
     
 10. Look at some [auto generated plots](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Save-Monitoring-Data-on-the-Command-Line) made from the data collected.
@@ -112,7 +114,6 @@ bigdata:
 fake:
   nullworkload
 ```
-
 Contacts:
 
 Marcio Silva marcios@us.ibm.com

@@ -195,7 +195,11 @@ class GceCmds(CommonCloudFunctions) :
         _map_name_to_id = {}
         _map_id_to_name = {}
 
-        _registered_image_list = self.gceconn.images().list(project=self.images_project).execute(http = self.http_conn[http_conn_id])["items"]
+        _registered_image_list = []
+        _registered_images = self.gceconn.images().list(project=self.images_project).execute(http = self.http_conn[http_conn_id])
+        if "items" in _registered_images :
+            _registered_image_list = _registered_images["items"]
+        
         _registered_imageid_list = []
 
         for _registered_image in _registered_image_list :
@@ -206,7 +210,7 @@ class GceCmds(CommonCloudFunctions) :
             _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
 
             if _imageid != "to_replace" :
-                if _imageid in _map_name_to_id :                     
+                if _imageid in _map_name_to_id :
                     vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])
                 else :
                     _map_name_to_id[_imageid] = "00000" + ''.join(["%s" % randint(0, 9) for num in range(0, 14)])
@@ -1029,6 +1033,8 @@ class GceCmds(CommonCloudFunctions) :
                     obj_attr_list["captured_image_name"] += str(obj_attr_list["mgt_101_capture_request_originated"])
 
                 self.common_messages("VM", obj_attr_list, "capturing", 0, '')
+
+                obj_attr_list["captured_image_name"] = obj_attr_list["captured_image_name"].replace('_','-')
 
                 _operation = self.gceconn.instances().delete(project = self.instances_project, \
                                                              zone = self.zone, \

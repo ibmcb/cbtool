@@ -25,6 +25,8 @@ START=`provision_application_start`
 COREMARK_HOME=~/3rd_party/_coremark-1.0
 eval COREMARK_HOME=${COREMARK_HOME}
 
+linux_distribution
+
 CBUSERLOGIN=`get_my_ai_attribute login`
 
 sudo touch $COREMARK_HOME/run1.log
@@ -34,14 +36,6 @@ sudo chown ${CBUSERLOGIN}:${CBUSERLOGIN} $COREMARK_HOME/run2.log
 
 sudo chown -R ${CBUSERLOGIN}:${CBUSERLOGIN} ${COREMARK_HOME}
 
-check_container 
-    
-if [[ $IS_CONTAINER -eq 1 ]]
-then
-    NR_CPUS=`echo $(get_my_vm_attribute size) | cut -d '-' -f 1`
-else 
-    NR_CPUS=`cat /proc/cpuinfo | grep processor | wc -l`
-fi
 THREADS_PER_CPU=`get_my_ai_attribute_with_default threads_per_cpu 2`
 let NR_THREADS=${NR_CPUS}*${THREADS_PER_CPU}
 

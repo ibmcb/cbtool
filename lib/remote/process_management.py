@@ -227,7 +227,7 @@ class ProcessManagement :
 
             if _status and len(_result_stderr) :
                 _msg = "Command \"" + cmdline + "\" failed to execute on "
-                _msg += "hostname " + str(override_hostname) + " after attempt "
+                _msg += "hostname " + str(override_hostname) + ", port " + str(port) + " after attempt "
                 _msg += str(_attempts) + ". Will try " + str(total_attempts - _attempts)
                 _msg += " more times."
                 cbdebug(_msg, True)

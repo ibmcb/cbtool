@@ -1,0 +1,35 @@
+### START - Dependency installation order ###
+java-order = 81
+specjbb-order = 82
+### END - Dependency installation order ###
+
+### START - Dependency-specific installation method ###
+# pm = "package manager" (yum or apt-get)
+# sl = "soft link" (assume that the dependency is already installed, just has to
+# be properly exposed to the user's path.
+# git = git clone using above giturl
+# pip = python pip utility
+# man = "manual"
+oraclejava-install = man
+specjbb-install = man
+### END - Dependency-specific installation method ###
+
+### START - Tests ###
+java-configure = . ~/.bashrc; java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g' | sed 's/-internal//g'
+specjbb-configure = redis-server -v
+### END - Tests ###
+
+### START - Dependency versions ###
+java-ver = ANY
+speccjbb-ver = ANY
+### END - Dependency versions ###
+
+### START - Dependency URLs ###
+
+### END - Dependency URLs ###
+
+### START -  Dependency and method-specific command lines ###
+
+# AUTOMATICALLY EXTRACTED FROM DOCKERFILE ON ../../docker/workload/
+
+### END -  Dependency and method-specific command lines ###

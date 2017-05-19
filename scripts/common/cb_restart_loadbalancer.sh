@@ -26,11 +26,11 @@ fi
 
 START=`provision_application_start`
 LOAD_BALANCER_TARGET=`get_my_ai_attribute load_balancer_target_role`
-LOAD_BALANCER_TARGET_PORT=`get_my_ai_attribute load_balancer_target_port`
+LOAD_BALANCER_TARGET_PORTS=`get_my_ai_attribute load_balancer_target_ports`
 LOAD_BALANCER_TARGET_URL=`get_my_ai_attribute load_balancer_target_url`
 LOAD_BALANCER_TARGET_IPS=`get_my_ai_attribute load_balancer_target_ip`
 
 LOAD_BALANCER_TARGET_IPS_CSV=`echo ${LOAD_BALANCER_TARGET_IPS} | sed ':a;N;$!ba;s/\n/, /g'`
 LOAD_BALANCER_TARGET_IPS=`echo ${LOAD_BALANCER_TARGET_IPS} | sed -e 's/, */ /g'`
 
-haproxy_setup $LOAD_BALANCER_TARGET_PORT "$LOAD_BALANCER_TARGET_IPS"
+haproxy_setup $LOAD_BALANCER_TARGET_PORTS "$LOAD_BALANCER_TARGET_IPS"

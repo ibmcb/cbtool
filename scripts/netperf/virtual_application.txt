@@ -17,19 +17,21 @@ LOAD_PROFILE = tcp_stream
 LOAD_LEVEL = 1
 LOAD_DURATION = uniformIXIXI70I90
 CATEGORY = synthetic
-REPORTED_METRICS = bandwidth,throughput,completion_time,quiescent_time
+PROFILES = tcp_stream, tcp_maerts, udp_stream, tcp_rr, tcp_cc, tcp_crr, udp_rr
+REFERENCE = http://www.netperf.org/netperf/
+LICENSE = HP
+REPORTED_METRICS = bandwidth,throughput,completion_time,quiescent_time,errors
 
 # VApp-specific MANDATORY attributes
-DESCRIPTION = Deploys a pair of VMs (client and server) and then runs the netperf
-DESCRIPTION += network benchmark, sending packets (stream or request/response) between these.\n 
-DESCRIPTION +=- LOAD_PROFILE possible values: "tcp_stream", "tcp_maerts", "udp_stream"
-DESCRIPTION += "tcp_rr", "tcp_cc", "tcp_crr", "udp_rr".\n
-DESCRIPTION +=- LOAD_LEVEL meaning: not applicatble/not used.\n 
-DESCRIPTION +=- LOAD_DURATION meaning: maximum length of time to run.\n
-DESCRIPTION +=- COMMENT: One of the "Synthetic" Workloads.
+DESCRIPTION =Deploys a pair of instances (client and server) and then runs\n
+DESCRIPTION +=the "netperf" network benchmark, sending packets (stream or\n
+DESCRIPTION +=request/response) between these.\n 
+DESCRIPTION +=  - LOAD_PROFILE possible values: _PROFILES_\n
+DESCRIPTION +=  - LOAD_LEVEL meaning: not applicable/not used.\n 
+DESCRIPTION +=  - LOAD_DURATION meaning: maximum length of time to run.\n
 NETCLIENT_SETUP1 = cb_check_netperf_client.sh
 NETSERVER_SETUP1 = cb_check_netperf_server.sh
-START = cb_netperf.sh
+START = cb_run_netperf.sh
 
 # VApp-specific modifier parameters. 
 SEND_BUFFER_SIZE=auto

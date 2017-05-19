@@ -1,0 +1,47 @@
+[USER-DEFINED]
+MANAGER_IP = $IP_AUTO
+MAIN_UPDATE_ATTEMPTS = 720
+
+CLOUDOPTION_TESTOSK = cldattach osk, vmcattach all, vmattach check:xenial0 auto empty default none empty=empty, stats vm print true, vmdetach youngest, stats vm print true, vmattach check:xenial0:ubuntu auto empty default none empty=empty, stats vm print true, vmdetach youngest, stats vm print true, vmattach check:xenial0 auto empty default none cloud_vv=1, stats vm print true, vmcapture youngest regressiontest, stats vm print true, vmattach check:regressiontest:ubuntu auto empty default none empty=empty, stats vm print true, vmdetach youngest, stats vm print true, imgdelete regressiontest RegionOne, vmattach check:regressiontest:ubuntu auto empty default none empty=empty, stats vm print true, vmattach check:xenial0 auto empty default none force_failure=true, stats vm print true
+
+STARTUP_CLOUD = TESTOSK
+
+[USER-DEFINED : CLOUDOPTION_TESTOSK]
+OSK_ACCESS = http://127.0.0.1:5000/v2.0/
+OSK_CREDENTIALS = admin-temp4now-admin
+OSK_SECURITY_GROUPS = default
+OSK_INITIAL_VMCS = RegionOne:sut
+OSK_NETNAME = private1
+OSK_LOGIN = fedora
+
+# Override Examples (Do NOT modify the templates)
+[OBJECTSTORE]
+DBID=10
+USAGE = shared
+
+[LOGSTORE]
+VERBOSITY = 5
+
+[METRICSTORE]
+USAGE = shared
+PASSWORD = cbpwdZ9
+
+[FILESTORE]
+PORT = 10000
+
+[SPACE]
+STORES_WORKING_DIR = /home/$MAIN_USERNAME/stores
+
+[VMC_DEFAULTS : OSK_CLOUDCONFIG]
+DISCOVER_HOSTS = $False
+USE_CINDERCLIENT = $True
+
+[VM_DEFAULTS : OSK_CLOUDCONFIG]
+USE_FLOATING_IP = $True
+ALWAYS_CREATE_FLOATING_IP = $False
+FLOATING_POOL = ext_net
+USE_CINDERCLIENT = $True
+
+[MON_DEFAULTS : OSK_CLOUDCONFIG]
+COLLECT_FROM_HOST = $False
+COLLECT_FROM_GUEST = $False

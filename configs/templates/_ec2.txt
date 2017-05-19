@@ -90,8 +90,8 @@ SSH_KEY_NAME = $EC2_SSH_KEY_NAME
 
 [VM_TEMPLATES : EC2_CLOUDCONFIG ]
 CHECK = size:m3.medium, imageid1:to_replace
-CLIENT_IBM_DAYTRADER = size:2-4096, imageid1:cb_daytrader
-CLIENT_OPEN_DAYTRADER = size:2-4096, imageid1:cb_open_daytrader
+CLIENT_IBM_DAYTRADER = size:t2.micro, imageid1:cb_daytrader
+CLIENT_OPEN_DAYTRADER = size:t2.micro, imageid1:cb_open_daytrader
 DRIVER_DAYTRADER = size:t2.medium, imageid1:cb_daytrader
 CLIENT_TRADELITE = size:t2.medium, imageid1:cb_tradelite
 DRIVER_TRADELITE = size:t2.medium, imageid1:cb_tradelite
@@ -140,3 +140,14 @@ SEED = size:t2.medium, imageid1:cb_ycsb
 REDIS = size:t2.medium, imageid1:cb_ycsb
 YCSB = size:t2.medium, imageid1:cb_ycsb
 UNIXBENCH = size:m3.medium, imageid1:cb_unixbench
+BONNIE = size:t2.medium, imageid1:cb_bonnie
+WRK = size:t2.medium, imageid1:cb_wrk
+APACHE = size:t2.medium, imageid1:cb_wrk
+SCIMARK = size:t2.micro, imageid1:cb_scimark
+MULTICHASE = size:t2.micro, imageid1:cb_multichase
+MEMTIER = size:t2.medium, imageid1:cb_memtier
+SYSBENCH = size:t2.medium, imageid1:cb_sysbench
+OLDISIMLB = size:t2.micro, imageid1:cb_oldisim
+OLDISIMROOT = size:t2.micro, imageid1:cb_oldisim
+OLDISIMLEAF = size:t2.micro, imageid1:cb_oldisim
+OLDISIMDRIVER = size:t2.micro, imageid1:cb_oldisim

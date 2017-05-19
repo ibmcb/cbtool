@@ -1,0 +1,16 @@
+FROM REPLACE_NULLWORKLOAD_UBUNTU
+
+RUN wget -N -P /home/REPLACE_USERNAME http://launchpadlibrarian.net/109052632/python-support_1.0.15_all.deb; dpkg -i /home/REPLACE_USERNAME/python-support*.deb
+
+# java-install-pm
+RUN apt-get update; apt-get install -y software-properties-common;
+RUN add-apt-repository -y ppa:openjdk-r/ppa
+RUN apt-get update; apt-get install -y openjdk-7-jdk unzip
+# java-install-pm
+
+# scimark-install-man
+RUN wget -N -q -P /home/REPLACE_USERNAME http://math.nist.gov/scimark2/scimark2lib.zip
+RUN /bin/true; cd /home/REPLACE_USERNAME; unzip -qu /home/REPLACE_USERNAME/scimark2lib.zip
+# scimark-install-man
+
+RUN chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME

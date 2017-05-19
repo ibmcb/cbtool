@@ -232,6 +232,8 @@ function lazy_collection {
 
     echo $(date +%s) > /tmp/quiescent_time_start
 
+	syslog_netcat "RUN COMPLETE: ${LIDMSG}"    
+    
     if [[ $BACKEND_TYPE == "cassandra" ]]
     then
         FIRST_SEED=$(echo $seed_ips_csv | cut -d ',' -f 1)
@@ -448,6 +450,8 @@ function eager_collection {
     
     LOAD_GENERATOR_END=$(date +%s)
     update_app_completiontime $(( $LOAD_GENERATOR_END - $LOAD_GENERATOR_START ))       
+
+	syslog_netcat "RUN COMPLETE: ${LIDMSG}"
 
     FIRST_SEED=$(echo $seed_ips_csv | cut -d ',' -f 1)
 

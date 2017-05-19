@@ -1,0 +1,39 @@
+# Parameters for this Virtual Application (Application Instance - AI) type should
+# be set on YOUR private configuration configuration file, including the ones 
+# commented.
+
+[AI_TEMPLATES : SCIMARK] 
+
+# Attributes MANDATORY for all Virtual Applications
+SUT = scimark
+LOAD_BALANCER_SUPPORTED = $False
+RESIZE_SUPPORTED = $False
+REGENERATE_DATA = $False 
+LOAD_GENERATOR_ROLE = scimark
+LOAD_MANAGER_ROLE = scimark
+METRIC_AGGREGATOR_ROLE = scimark
+CAPTURE_ROLE = scimark
+LOAD_PROFILE = default
+LOAD_LEVEL = uniformIXIXI1I2
+LOAD_DURATION = 60
+CATEGORY = scientific
+PROFILES = default
+REFERENCE = http://math.nist.gov/scimark2/index.html
+LICENSE = Public_Domain
+REPORTED_METRICS = throughput,fft_throughput,sor_throughput,mc_throughput,mm_throughput,lu_throughput,completion_time,errors,quiescent_time
+
+# VApp-specific MANDATORY attributes
+DESCRIPTION = Deploys an SINGLE INSTANCE and runs the Scimark 2.0 benchmark.\n
+DESCRIPTION +=- LOAD_PROFILE possible values: _PROFILES_\n
+DESCRIPTION +=- LOAD_LEVEL meaning: small datasize (load level 1) or large datasize (load leve 2+).\n 
+DESCRIPTION +=- LOAD_DURATION meaning: not used, a run ends when all tests are complete.\n
+START = cb_run_scimark.sh
+
+# VApp-specific modifier parameters. Commented attributes imply default values assumed
+JAVA_HOME = auto
+
+# Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
+#SYNC_COUNTER_NAME = synchronization_counter
+#CONCURRENT_AIS = 2
+#SYNC_CHANNEL_NAME = synchronization_channel
+#RUN_COUNTER_NAME = experiment_id_counter

@@ -2780,6 +2780,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         obj_attr_list["global_object"] == "fi_templates" :
 
                             _result = {}
+                            _profiles = ""
                             for _key, _value in _object_contents.items() :
 
                                 if _key.count(obj_attr_list["attribute_name"]) :
@@ -2806,7 +2807,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                             _line = textwrap.fill(_line, 80) + "\n"
                                             _ww_value += _line
                                         _value = _ww_value
-
+                                        
                                     elif _key == "sut" :
                                         _key = _key.replace(_key, "01___" + _key)
                                     elif _key == "load_balancer_supported" :
@@ -2837,15 +2838,24 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                         _key = _key.replace(_key, "13___" + _key)                                                                                                                        
                                     elif _key == "reported_metrics" :
                                         _key = _key.replace(_key, "14___" + _key)           
-
+                                    elif _key == "category" :
+                                        _key = _key.replace(_key, "15___" + _key) 
+                                    elif _key == "profiles" :
+                                        _key = _key.replace(_key, "16___" + _key)           
+                                        _profiles = _value
+                                    elif _key == "reference" :
+                                        _key = _key.replace(_key, "17___" + _key)
+                                    elif _key == "license" :
+                                        _key = _key.replace(_key, "18___" + _key)                                                                                
+                                        
                                     elif _key.count("setup") :
-                                        _key = _key.replace(_key, "15___" + _key)
+                                        _key = _key.replace(_key, "19___" + _key)
                                     elif _key.count("reset") :
-                                        _key = _key.replace(_key, "16___" + _key)
+                                        _key = _key.replace(_key, "20___" + _key)
                                     elif _key.count("resize") :
-                                        _key = _key.replace(_key, "17___" + _key)                                        
+                                        _key = _key.replace(_key, "21___" + _key)                                        
                                     elif _key.count("start") :
-                                        _key = _key.replace(_key, "18___" + _key)
+                                        _key = _key.replace(_key, "22___" + _key)
 
                                     elif _key == "type" :
                                         _key = _key.replace(_key, "00___" + _key)
@@ -2864,6 +2874,9 @@ class PassiveObjectOperations(BaseObjectOperations) :
                             _sh = 'Z'
                             for _line_number in range(0, len(_formatted_result)) :
 
+                                if _formatted_result[_line_number].count("_PROFILES_") :
+                                    _formatted_result[_line_number] = _formatted_result[_line_number].replace("_PROFILES_",_profiles)
+                                    
                                 if _formatted_result[_line_number].count("___") :
                                     if _formatted_result[_line_number].count("sut") :
                                         _formatted_result[_line_number] = "# Attributes MANDATORY for all Virtual Applications: \n\n" + _formatted_result[_line_number][5:]
@@ -2872,6 +2885,11 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                         _formatted_result[_line_number] += "\n\n# Virtual Application-specific MANDATORY attributes: \n"
                                     else :
                                         _formatted_result[_line_number] = _formatted_result[_line_number][5:]
+                                        if _formatted_result[_line_number].count("description:") :
+                                            _formatted_result[_line_number] = '\n' + _formatted_result[_line_number]                                        
+                                        if _formatted_result[_line_number].count("license") :
+                                            _formatted_result[_line_number] = _formatted_result[_line_number].replace('_',' ') + '\n'
+
                                 else :
                                     if len(_sh) == 1 :
                                         _sh = "\n# Virtual Application-specific OPTIONAL attributes: \n\n"
