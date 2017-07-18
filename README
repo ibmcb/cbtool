@@ -45,7 +45,7 @@ Subscribe to our mailing list:
 
     3. You can also try to use the [Graphical Wizard](https://github.ibm.com/marcios/cbtool/wiki/HOWTO:-Using-the-Wizard-for-first-time-connection) for a first-time connection.
 
-13. Read the [Frequently Asked Questions](https://github.com/ibmcb/cbtool/wiki/FAQ)
+16. Read the [Frequently Asked Questions](https://github.com/ibmcb/cbtool/wiki/FAQ)
 
 ## Features:
 - Automatic deployment and controlled execution of multiple multi-tier applications.
@@ -71,54 +71,46 @@ Each individual application can have a specific load profile using probability d
 
 ## <a name="workloads">[Supported Workloads](https://github.com/ibmcb/cbtool/wiki/DOC:-Supported-Virtual-Applications)
 
-To get the most current list, start CBTOOL and type ```typelist``` on the CLI. To get more information about a given workload, ```typeshow <workload name>```:
+To get the most current list, start CBTOOL and type ```typelist``` on the CLI. To get more information about a given workload, ```typeshow <workload name>```.
 
 ```
 (MYCLOUD) typelist
-AIs with the following types can be attached to to this experiment (Cloud MYSIMCLOUD) :
+AIs with the following types can be attached to to this experiment (Cloud TESTPDM) :
 
 synthetic:
-  bonnie (default, full)
-  btest (default)
-  coremark (default)
-  ddgen (default)
-  filebench (fileserver, oltp_noism, varmail, videoserver, webproxy)
-  fio (default)
-  iperf (tcp, udp)
-  mlg (default)
-  netperf (tcp_stream, tcp_maerts, udp_stream, tcp_rr, tcp_cc, tcp_crr, udp_rr)
-  nuttcp (tcp, udp)
-  postmark (default)
-  unixbench (arithmetic, dhrystone, whetstone, load, misc, speed, oldsystem, system, fs, shell, index)
-  xping (icmp)
+  btest
+  coremark
+  ddgen
+  filebench
+  fio
+  iperf
+  netperf
+  nuttcp
+  postmark
+  unixbench
+  windesktop
+  xping
 
-application-stress:
-  memtier (default)
-  oldisim (default)
-  wrk (default)
-
-scientific:
-  hpcc (default)
-  linpack (default)
-  multichase (simple, work:N, t0-2, nta, movdqa, mvntdqa, parallel2-10, critword:N, critword2:N)
-  parboil (histo, bfs, stencil, mri-q, mri-gridding, lbm, tpacf, sad, spmv, sgemm, cutcp)
-  scimark (default)
+hpc:
+  hpcc
+  linpack
+  parboil
 
 transactional:
-  cassandra_ycsb (workloada, workloadb, workloadc, workloadd, workloade, workloadf)
-  ibm_daytrader (default)
-  mongo_ycsb (workloada, workloadb, workloadc, workloadd, workloade, workloadf)
-  open_daytrader (default)
-  redis_ycsb (workloada, workloadb, workloadc, workloadd, workloade, workloadf)
-  specjbb (preset, hbir)
-  sysbench (simple, complex, nontrx, sp)
+  cassandra_ycsb
+  ibm_daytrader
+  mongo_ycsb
+  open_daytrader
+  redis_ycsb
+  specimap
+  specjbb
 
-data-centric:
-  giraph (pagerank, topkpagerank)
-  hadoop (sort, wordcount, terasort, dfsioe, nutchindexing, pagerank, bayes, kmeans, hivebench)
+bigdata:
+  giraph
+  hadoop
 
 fake:
-  nullworkload (default)
+  nullworkload
 ```
 Contacts:
 

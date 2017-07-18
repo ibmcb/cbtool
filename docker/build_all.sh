@@ -85,7 +85,7 @@ do
         shift
         ;;                        
         -v|--verbose)
-        CB_VERB="--ve
+        CB_VERB="--ve"
         ;;
         --push)
         CB_PUSH="push"
@@ -120,4 +120,8 @@ cb_build_workloads $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC
 if [[ $CB_PUSH == "push" ]]
 then
     cb_push_images $CB_REPO $CB_PALL
+<<<<<<< HEAD
 fi
+=======
+fi
+>>>>>>> master
