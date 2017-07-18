@@ -1879,6 +1879,9 @@ class PassiveObjectOperations(BaseObjectOperations) :
     
                     _metric_type = _obj_attr_list["metric_type"].lower()
 
+                    if _obj_attr_list["unchanged_string"] == "None" :
+                        _obj_attr_list["unchanged_string"] = ''
+
                     if _metric_type == "m" or _metric_type == "mgt" or _metric_type == "man" or _metric_type == "management" :
                         _metric_type = "management"
                     elif _metric_type == "a" or _metric_type == "app" or _metric_type == "application" and _obj_type == "VM" :
@@ -2092,7 +2095,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                     if _key in _last_unchanged_metric[_current_uuid] :
                                         # Every time a metric is not found, we just
                                         # replay it from the in-memory cache (dictionary)
-                                        _val = str(_last_unchanged_metric[_current_uuid][_key]) + " (unchanged)"
+                                        _val = str(_last_unchanged_metric[_current_uuid][_key]) + ' ' + _obj_attr_list["unchanged_string"]
                                     else :
                                         _val = _obj_attr_list["filler_string"]
                                 _csv_contents_line += _val + ','
