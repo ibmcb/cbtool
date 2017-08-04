@@ -71,6 +71,8 @@ export HADOOP_HOME=${HADOOP_HOME}
 
 syslog_netcat "HADOOP_HOME was determined to be $HADOOP_HOME"     
 
+sudo chown -R $(whoami):$(whoami) ${HADOOP_HOME}
+
 if [[ -f ~/.bashrc ]]
 then
     is_hadoop_home_export=`grep -c "HADOOP_HOME=${HADOOP_HOME}" ~/.bashrc`
