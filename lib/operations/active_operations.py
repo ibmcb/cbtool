@@ -4643,6 +4643,19 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                         for _vm in obj_attr_list["vms"].split(',') :
                             _vm_uuid, _vm_role, _vm_name = _vm.split('|')
+                            
+                            _vm_obj_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
+                                                                     "VM", \
+                                                                     False, \
+                                                                     _vm_uuid, \
+                                                                     False)
+
+                            self.record_management_metrics(obj_attr_list["cloud_name"], \
+                                                           "VM", \
+                                                           _vm_obj_attr_list, \
+                                                           "attach")
+                            
+                            
                             self.osci.update_object_attribute(obj_attr_list["cloud_name"],\
                                                                "VM",\
                                                                 _vm_uuid,\
