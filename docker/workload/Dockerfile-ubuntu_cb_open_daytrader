@@ -31,7 +31,7 @@ RUN wget -N -q -P /home/REPLACE_USERNAME http://apache.mirrors.hoobly.com/geroni
 # geronimo-install-man
 
 # geronimo-jdbc-install-man
-RUN wget -N -q -P /home/REPLACE_USERNAME http://mysql.mirrors.pair.com/Downloads/Connector-J/mysql-connector-java-5.1.40.zip; cd /home/REPLACE_USERNAME/; unzip -qu mysql-connector-java-5.1.40.zip
+RUN wget -N -q -P /home/REPLACE_USERNAME https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.40.zip; cd /home/REPLACE_USERNAME/; unzip -qu mysql-connector-java-5.1.40.zip
 RUN mkdir -p /home/REPLACE_USERNAME/geronimo-tomcat7-javaee6-3.0.1/repository/mysql/mysql-connector-java/5.1.40/
 RUN mkdir -p /home/REPLACE_USERNAME/geronimo-tomcat7-javaee6-3.0.1/repository/mysql/com.mysql.jdbc/5.1.40/; chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME/
 RUN cp -f /home/REPLACE_USERNAME/mysql-connector-java-5.1.40/mysql-connector-java-5.1.40-bin.jar /home/REPLACE_USERNAME/geronimo-tomcat7-javaee6-3.0.1/repository/mysql/mysql-connector-java/5.1.40/mysql-connector-java-5.1.40.jar; cp -f /home/REPLACE_USERNAME/mysql-connector-java-5.1.40/mysql-connector-java-5.1.40-bin.jar /home/REPLACE_USERNAME/geronimo-tomcat7-javaee6-3.0.1/repository/mysql/com.mysql.jdbc/5.1.40/com.mysql.jdbc-5.1.40.jar

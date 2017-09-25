@@ -105,7 +105,7 @@ RUN ln -s /usr/sbin/gmond /usr/local/bin/gmond
 
 # rsyslog-install-pm
 RUN apt-get install -y rsyslog
-RUN ln -s /sbin/rsyslogd /usr/local/bin/rsyslogd
+RUN ln -s $(sudo which rsyslogd) /usr/local/bin/rsyslogd
 RUN mkdir -p /var/log/cloudbench
 # rsyslog-install-pm
 

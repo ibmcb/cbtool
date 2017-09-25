@@ -68,7 +68,6 @@ then
 fi
 
 export HADOOP_HOME=${HADOOP_HOME}
-
 syslog_netcat "HADOOP_HOME was determined to be $HADOOP_HOME"     
 
 sudo chown -R $(whoami):$(whoami) ${HADOOP_HOME}

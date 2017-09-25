@@ -288,8 +288,9 @@ for (experiment in experiment_list) {
             } else {
                 named_events <- "none"
                 }
-				
-		actual_expid <- digest(object = experiment, algo = "crc32", serialize = FALSE)
+
+		actual_expid <- paste("K", toString(digest(object = experiment, algo = "crc32", serialize = FALSE)), sep='')
+		
         if (opt$layer && opt$namedevent == "none") {
             msg <- paste("### Layering provisioning events on top of the runtime",
                     "host metrics plot for experiment", "\"", experiment,
@@ -308,13 +309,15 @@ for (experiment in experiment_list) {
             }
 
 	    experiment_host_list <- subset(mgt_metrics, expid == actual_expid, select = c("host_name", "expid"))
+
         experiment_host_list <- experiment_host_list[experiment_host_list$host_name != "unknown",]
 
         if (length(experiment_host_list$host_name) > 0 ) {
-    
+
             experiment_host_list <- c(levels(factor(experiment_host_list$host_name)))
+
             experiment_host_list <- paste("host_", experiment_host_list, sep = '')
-    
+
             msg <- paste("### Generating runtime HOST os resource usage plot for experiment ", 
                     "\"", experiment, "\".... ###", sep = '')
             cat(msg, sep='\n')

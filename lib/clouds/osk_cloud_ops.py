@@ -575,6 +575,14 @@ class OskCmds(CommonCloudFunctions) :
                     if _instance.name.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) \
                     and not _instance.name.count("jumphost") :
 
+                        _instance_metadata = _instance.metadata
+                        if "cloud_floating_ip_uuid" in _instance_metadata :
+                            _msg = "    Deleting floating IP " + _instance_metadata["cloud_floating_ip_uuid"]
+                            _msg += ", associated with instance "
+                            _msg += _instance.id + " (" + _instance.name + ")"
+                            cbdebug(_msg, True)                            
+                            self.oskconncompute.floating_ips.delete(_instance_metadata["cloud_floating_ip_uuid"])
+                                                                        
                         _running_instances = True
                         if  _instance.status == "ACTIVE" :
                             _msg = "Terminating instance: " 
@@ -1418,7 +1426,19 @@ class OskCmds(CommonCloudFunctions) :
                 obj_attr_list["meta_tags"].count(',') :
                     _meta = str2dic(obj_attr_list["meta_tags"])
 
+            _fip = None
+            if str(obj_attr_list["use_floating_ip"]).lower() == "true" :
+                _msg = "    Attempting to create a floating IP to " + obj_attr_list["name"] + "..."
+                cbdebug(_msg, True)
+
+                obj_attr_list["last_known_state"] = "about to create floating IP"
+                
+                _fip = self.floating_ip_allocate(obj_attr_list)
+
             _meta["experiment_id"] = obj_attr_list["experiment_id"]
+
+            if "cloud_floating_ip_uuid" in obj_attr_list :
+                _meta["cloud_floating_ip_uuid"] = obj_attr_list["cloud_floating_ip_uuid"]
 
             _time_mark_prs = int(time())
             
@@ -1453,11 +1473,11 @@ class OskCmds(CommonCloudFunctions) :
 
                 self.take_action_if_requested("VM", obj_attr_list, "provision_started")
 
-                while not self.floating_ip_attach(obj_attr_list, _instance) :
+                while not self.floating_ip_attach(obj_attr_list, _instance, _fip) :
                     True
 
                 _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
-
+                
                 _mark_a = time()
                 self.annotate_time_breakdown(obj_attr_list, "instance_scheduling_time", _mark_a)
                 _mark_a = time()
@@ -2705,7 +2725,7 @@ class OskCmds(CommonCloudFunctions) :
                 return False
     
     @trace
-    def floating_ip_attach(self, obj_attr_list, _instance) :
+    def floating_ip_attach(self, obj_attr_list, _instance, fip) :
         '''
         TBD
         '''
@@ -2716,13 +2736,9 @@ class OskCmds(CommonCloudFunctions) :
             identifier = obj_attr_list["cloud_vm_name"]
 
             if str(obj_attr_list["use_floating_ip"]).lower() == "true" :
-                _msg = "Attempting to add a floating IP to " + obj_attr_list["name"] + "..."
+                _msg = "    Attempting to attach a floating IP to " + obj_attr_list["name"] + "..."
                 cbdebug(_msg, True)
-
-                obj_attr_list["last_known_state"] = "about to create floating IP"
-                
-                _fip = self.floating_ip_allocate(obj_attr_list)
-
+                                
                 _curr_tries = 0
                 _max_tries = int(obj_attr_list["update_attempts"])
                 _wait = int(obj_attr_list["update_frequency"])
@@ -2744,7 +2760,7 @@ class OskCmds(CommonCloudFunctions) :
                 if "hypervisor_type" in obj_attr_list and obj_attr_list["hypervisor_type"].lower() == "fake" :
                     True
                 else :
-                    _instance.add_floating_ip(_fip)
+                    _instance.add_floating_ip(fip)
                     self.annotate_time_breakdown(obj_attr_list, "attach_fip_time", _mark_a)
 
             return True

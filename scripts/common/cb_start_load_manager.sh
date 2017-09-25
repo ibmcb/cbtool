@@ -73,12 +73,31 @@ fi
 cat > /tmp/cbloadman <<EOF
 #!/usr/bin/env bash
 
-if [[ \$(sudo ps aux | grep -v grep | grep cbact | grep -c ai-execute) -eq 0 ]]
+CBLOADMANEXEC="~/${my_remote_dir}/cbact"
+eval CBLOADMANEXEC=\${CBLOADMANEXEC}
+CBLOADMANBASECMD="\$CBLOADMANEXEC --procid=${osprocid} --uuid=${my_ai_uuid} --syslogp=${NC_PORT_SYSLOG} --syslogf=19 --syslogh=${NC_HOST_SYSLOG} --operation=$operation"
+if [[ -z \$1 ]]
 then
-    echo "Starting Load Manager"
-    ~/${my_remote_dir}/cbact --procid=${osprocid} --uuid=${my_ai_uuid} --syslogp=${NC_PORT_SYSLOG} --syslogf=19 --syslogh=${NC_HOST_SYSLOG} --operation=$operation $daemonize $options
-else
-    echo "A Load Manager is already running"
+    if [[ \$(sudo ps aux | grep -v grep | grep cbact | grep -c ai-execute) -eq 0 ]]
+    then
+	CBLOADMANCMD="\$CBLOADMANBASECMD $daemonize $options"    
+        echo "Starting Load Manager with command \"\$CBLOADMANCMD\""
+        \$CBLOADMANCMD
+    else
+        echo "A Load Manager is already running"
+    fi
+else 
+    if [[ \$(echo \${1} | tr '[:upper:]' '[:lower:]') == "debug" ]]
+    then
+        echo "CBTOOL Load Manager will be started in DEBUG mode. All output will be sent to the console"
+        echo "Killing the \"Load Manager Watcher\" process (a screen session)..."
+        sudo screen -X -S cbloadmanwatch  quit
+        sudo pkill -9 -f cbloadmanwatch
+        echo "Done"
+        CBLOADMANCMD="\$CBLOADMANBASECMD --logdest console -v 5 $options"
+        echo "Starting Load Manager with command \"\$CBLOADMANCMD\""
+        \$CBLOADMANCMD
+    fi
 fi
 exit 0
 EOF

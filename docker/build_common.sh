@@ -30,7 +30,7 @@ function cb_docker_build {
         if [[ $CB_SQUASH == "true" ]]
         then
 #	        CB_ACTUAL_SQUASH="--squash"
-	        CB_ACTUAL_SQUASH=""	        
+	        CB_ACTUAL_SQUASH=""
         fi
     fi                                                                                                                                                                                                                        
     sudo rm -rf Dockerfile && sudo cp -f $CB_DOCKERFN Dockerfile
@@ -250,12 +250,16 @@ function cb_push_images {
         echo $IMG | grep linpack
         NOT_LINPACK=$?
         echo $IMG | grep parboil
-        NOT_PARBOIL=$?    
+        NOT_PARBOIL=$?
         echo $IMG | grep spec
-        NOT_SPEC=$?       
+        NOT_SPEC=$?
         echo $IMG | grep caffe
-        NOT_CAFFE=$?           
-        if [[ $NOT_COREMARK -eq 1 && $NOT_LINPACK -eq 1 && $NOT_PARBOIL -eq 1 && $NOT_SPEC -eq 1 && $NOT_CAFFE -eq 1 || $CB_PUSHALL -eq 1 ]]
+        NOT_CAFFE=$?
+        echo $IMG | grep rubis
+        NOT_RUBIS=$?
+        echo $IMG | grep rubbos
+        NOT_RUBBOS=$?
+        if [[ $NOT_COREMARK -eq 1 && $NOT_LINPACK -eq 1 && $NOT_PARBOIL -eq 1 && $NOT_SPEC -eq 1 && $NOT_CAFFE -eq 1 && $NOT_RUBIS -eq 1 && $NOT_RUBBOS -eq 1 || $CB_PUSHALL -eq 1 ]]
         then
             CMD="docker push $IMG"
             echo "########## Pushing image ${IMG} by executing the command \"$CMD\" ..."             

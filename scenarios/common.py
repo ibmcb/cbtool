@@ -177,7 +177,7 @@ def create_plots(options, api, cb_base_dir, cb_data_dir, experiment_id, url) :
 
     _cmd = cb_base_dir + "/util/plot/cbplotgen.R " + " --directory "
     _cmd += cb_data_dir + " --expid " + str(experiment_id) + " --cleanup "
-    _cmd += "--provisionmetrics --runtimemetrics "
+    _cmd += "--provisionmetrics --runtimemetrics " + options.extra_plot_options
     #_cmd += "--layer --aggregate " 
 
     _msg = "Data is available at url \"" + url + "\". \nAttempting to "
@@ -187,7 +187,7 @@ def create_plots(options, api, cb_base_dir, cb_data_dir, experiment_id, url) :
     _fh = open(_fn, "w")
     _fh.write("#!/bin/bash\n")
     _fh.write(_cmd + _dtb1)
-    _fh.write('#' + _cmd + _dtb2)
+    _fh.write("\n#" + _cmd + _dtb2)
     _fh.close()
     os.chmod(_fn, 0755)
     
@@ -202,6 +202,7 @@ def create_plots(options, api, cb_base_dir, cb_data_dir, experiment_id, url) :
         return False
     
     print "DONE!"
+    
     return True
                 
 def send_text(options, message):    
