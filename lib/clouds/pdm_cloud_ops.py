@@ -231,14 +231,14 @@ class PdmCmds(CommonCloudFunctions) :
             for _vm_role in vm_templates.keys() :      
                 _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
                 if _imageid != "to_replace" :
-                    if _imageid in _map_name_to_id :                     
+                    if _imageid in _map_name_to_id :
                         vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])
                     else :
                         _map_name_to_id[_imageid] = "aaaa0" + ''.join(["%s" % randint(0, 9) for num in range(0, 59)])
                         vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])                        
 
                     _map_id_to_name[_map_name_to_id[_imageid]] = _imageid
-    
+            
             _detected_imageids = self.base_check_images(vmc_name, vm_templates, _registered_imageid_list, _map_id_to_name)
 
             if not _detected_imageids :

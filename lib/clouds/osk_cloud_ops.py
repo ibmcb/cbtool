@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
 
@@ -35,6 +34,13 @@ import iso8601
 
 import requests.packages.urllib3
 requests.packages.urllib3.disable_warnings()
+
+try :
+    from keystoneauth1.identity import v3
+    from keystoneauth1 import session
+    _use_keystone_session = True    
+except: 
+    _use_keystone_session = False
 
 from novaclient import client as novac
 from novaclient import exceptions as novaexceptions
@@ -83,7 +89,16 @@ class OskCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
             _dmsg = ''
+
             _version = '2'
+            
+            _auth = None
+            _session = None
+            _credentials = None
+
+            _user_domain_id = "default"
+            _project_domain_id = "default"
+                        
             if len(access_url.split('-')) == 1 :
                 _endpoint_type = "publicURL"
             if len(access_url.split('-')) == 2 :
@@ -108,18 +123,29 @@ class OskCmds(CommonCloudFunctions) :
                 if _cacert :
                     _cacert = _cacert.replace("_dash_",'-')
 
-                _credentials = { "username" : _username, \
-                                "version" : _version, \
-#                                "api_key" : _password, \
-                                "password" : _password, \
-                                "project_id" : _tenant, \
-                                "tenant_name" : _tenant,  
-                                "auth_url" : access_url, \
-                                "region_name" : region, \
-                                "service_type" : "compute", \
-                                "endpoint_type" : _endpoint_type, \
-                                "cacert": _cacert, \
-                                "insecure": _insecure }
+                if _use_keystone_session :
+                    access_url = access_url.replace('v2.0/','v3')
+                    _auth = v3.Password(auth_url = access_url, \
+                                     username = _username, \
+                                     password = _password, \
+                                     project_name = _tenant, \
+                                     user_domain_id = _user_domain_id, \
+                                     project_domain_id=_project_domain_id)
+                    
+                    _session = session.Session(auth = _auth)
+                else :
+                    _credentials = { "username" : _username, \
+                                    "version" : _version, \
+    #                                "api_key" : _password, \
+                                    "password" : _password, \
+                                    "project_id" : _tenant, \
+                                    "tenant_name" : _tenant,  
+                                    "auth_url" : access_url, \
+                                    "region_name" : region, \
+                                    "service_type" : "compute", \
+                                    "endpoint_type" : _endpoint_type, \
+                                    "cacert": _cacert, \
+                                    "insecure": _insecure }
 
                 _msg = self.get_description() + " connection parameters: username=" + _username
                 _msg += ", password=<omitted>, tenant=" + _tenant + ", "
@@ -138,54 +164,63 @@ class OskCmds(CommonCloudFunctions) :
                 #                             cacert = _cacert, \
                 #                             insecure = _insecure)
 
-                self.oskconncompute = novac.Client(**_credentials)
-    
+                if _session :
+                    self.oskconncompute = novac.Client("2.1", session = _session)
+                else :
+                    self.oskconncompute = novac.Client(**_credentials)
+
                 self.oskconncompute.flavors.list()
                 _nova_client = True
                 if "use_cinderclient" in extra_parms :
                     self.use_cinderclient = str(extra_parms["use_cinderclient"]).lower()
                 else :
                     self.use_cinderclient = "false"
-                    
+
                 _cinder_client = True                    
                 if self.use_cinderclient == "true" :
                     _cinder_client = False
                     from cinderclient import client as cinderc 
 
-                    self.oskconnstorage = cinderc.Client('1', \
-                                                         _username, \
-                                                         _password, \
-                                                         _tenant, \
-                                                         auth_url = access_url, \
-                                                         region_name = region, \
-                                                         service_type="volume", \
-                                                         endpoint_type = _endpoint_type, \
-                                                         cacert = _cacert, \
-                                                         insecure = _insecure)                    
-                            
-                    self.oskconnstorage.volumes.list()                
+                    if _session :
+                        self.oskconnstorage = cinderc.Client("2.1", session = _session)                    
+                    else :
+                        self.oskconnstorage = cinderc.Client('1', \
+                                                             _username, \
+                                                             _password, \
+                                                             _tenant, \
+                                                             auth_url = access_url, \
+                                                             region_name = region, \
+                                                             service_type="volume", \
+                                                             endpoint_type = _endpoint_type, \
+                                                             cacert = _cacert, \
+                                                             insecure = _insecure)                    
+
+                    self.oskconnstorage.volumes.list()
                     _cinder_client = True                                    
                     
                 if "use_neutronclient" in extra_parms :
                     self.use_neutronclient = str(extra_parms["use_neutronclient"]).lower()
                 else :
                     self.use_neutronclient = "false"
- 
+
                 _neutron_client = True
                 if self.use_neutronclient == "true" :
                     _neutron_client = False
-                    _credentials["service_type"] = "network"
-                    del _credentials["project_id"]                    
                     
                     from neutronclient.v2_0 import client as neutronc                           
-                    
-                    self.oskconnnetwork = neutronc.Client(**_credentials)
+
+                    if _session :
+                        self.oskconnnetwork = neutronc.Client(session = _session)
+                    else :
+                        _credentials["service_type"] = "network"
+                        del _credentials["project_id"]
+                        self.oskconnnetwork = neutronc.Client(**_credentials)
         
                     self.oskconnnetwork.list_networks()
-                    _neutron_client = True                       
+                    _neutron_client = True
                 else :
                     self.oskconnnetwork = False
-                
+
                 _region = region
                 _msg = "Selected region is " + str(region)
                 cbdebug(_msg)
@@ -219,36 +254,75 @@ class OskCmds(CommonCloudFunctions) :
                 if _data_auth_parse :
                     
                     if not _nova_client :
-                        _dmsg = "Please attempt to execute the following : \"python -c \""
-                        _dmsg += "from novaclient import client as novac; "
-                        _dmsg += "_credentials = { 'username' : '" + str(_username) 
-                        _dmsg += "', 'password' : 'REPLACE_PASSWORD', 'project_id' : '"
-                        _dmsg += str(_tenant) + "', 'auth_url' : '" + str(access_url) 
-                        _dmsg += "', 'region_name' : '" + str(region) + "', 'service_type' : "
-                        _dmsg += "'compute', 'endpoint_type':'" + str(_endpoint_type) 
-                        _dmsg += "', 'cacert' : '" + str(_cacert) + "', 'insecure': "
-                        _dmsg += str(_insecure) + ", 'version':'" + str(_version) + "'}; "
-                        _dmsg += "ct = novac.Client(**_credentials); print ct.flavors.list()\"\""
+                        if _session :
+                            _dmsg = "Please attempt to execute the following : \"python -c \""
+                            _dmsg += "from keystoneauth1.identity import v3; "
+                            _dmsg += "from keystoneauth1 import session; "
+                            _dmsg += "from novaclient import client as novac; "
+                            _dmsg += "_auth = v3.Password(username = '" + str(_username) 
+                            _dmsg += "', password = 'REPLACE_PASSWORD', project_name = '"
+                            _dmsg += str(_tenant) + "', auth_url = '" + str(access_url) 
+                            _dmsg += "', user_domain_id = '" + str(_user_domain_id) + "', "
+                            _dmsg += "project_domain_id = '" + str(_project_domain_id) + "'); "
+                            _dmsg += "_session = session.Session(auth = _auth); "
+                            _dmsg += "ct = novac.Client(\"2.1\", session = _session); print ct.flavors.list()\"\""
+                        else :
+                            _dmsg = "Please attempt to execute the following : \"python -c \""
+                            _dmsg += "from novaclient import client as novac; "
+                            _dmsg += "_credentials = { 'username' : '" + str(_username) 
+                            _dmsg += "', 'password' : 'REPLACE_PASSWORD', 'project_id' : '"
+                            _dmsg += str(_tenant) + "', 'auth_url' : '" + str(access_url) 
+                            _dmsg += "', 'region_name' : '" + str(region) + "', 'service_type' : "
+                            _dmsg += "'compute', 'endpoint_type':'" + str(_endpoint_type) 
+                            _dmsg += "', 'cacert' : '" + str(_cacert) + "', 'insecure': "
+                            _dmsg += str(_insecure) + ", 'version':'" + str(_version) + "'}; "
+                            _dmsg += "ct = novac.Client(**_credentials); print ct.flavors.list()\"\""
                     
                     elif not _cinder_client :
-                        _dmsg = "Please attempt to execute the following : \"python -c \""
-                        _dmsg += "from cinderclient import client as cinderc;"
-                        _dmsg += "ct = cinderc.Client('" + _version + "','" + str(_username) + "', '"
-                        _dmsg += "REPLACE_PASSWORD', '" + str(_tenant) + "', '" + str(access_url)
-                        _dmsg += "', region_name='" + str(region) + "', service_type='volume', "
-                        _dmsg += "endpoint_type='" + str(_endpoint_type) + "', cacert='" + str(_cacert)
-                        _dmsg += "', insecure='" + str(_insecure) + "'); print ct.volumes.list()\"\""                    
+                        if _session :
+                            _dmsg = "Please attempt to execute the following : \"python -c \""
+                            _dmsg += "from keystoneauth1.identity import v3; "
+                            _dmsg += "from keystoneauth1 import session; "
+                            _dmsg += "from cinderclient import client as cinderc; "
+                            _dmsg += "_auth = v3.Password(username = '" + str(_username) 
+                            _dmsg += "', password = 'REPLACE_PASSWORD', project_name = '"
+                            _dmsg += str(_tenant) + "', auth_url = '" + str(access_url) 
+                            _dmsg += "', user_domain_id = '" + str(_user_domain_id) + "', "
+                            _dmsg += "project_domain_id = '" + str(_project_domain_id) + "'); "
+                            _dmsg += "_session = session.Session(auth = _auth); "
+                            _dmsg += "ct = cinderc.Client(\"2.1\", session = _session); print ct.volumes.list()\"\""                                                        
+                        else :
+                            _dmsg = "Please attempt to execute the following : \"python -c \""
+                            _dmsg += "from cinderclient import client as cinderc;"
+                            _dmsg += "ct = cinderc.Client('" + _version + "','" + str(_username) + "', '"
+                            _dmsg += "REPLACE_PASSWORD', '" + str(_tenant) + "', '" + str(access_url)
+                            _dmsg += "', region_name='" + str(region) + "', service_type='volume', "
+                            _dmsg += "endpoint_type='" + str(_endpoint_type) + "', cacert='" + str(_cacert)
+                            _dmsg += "', insecure='" + str(_insecure) + "'); print ct.volumes.list()\"\""                    
                     
                     elif not _neutron_client :
-                        _dmsg = "Please attempt to execute the following : \"python -c \""
-                        _dmsg += "from neutronclient.v2_0 import client as neutronc;"                        
-                        _dmsg += "_credentials = {'username':'" + str(_username) + "', "
-                        _dmsg += "'password':'REPLACE_PASSWORD', 'tenant_name':'"
-                        _dmsg += str(_tenant) + "', 'auth_url':'" + str(access_url)
-                        _dmsg += "', 'region_name':'" + str(region) + "', 'service_type':'network', "
-                        _dmsg += "'endpoint_type':'" + str(_endpoint_type) + "', 'cacert':" + str(_cacert)
-                        _dmsg += ", 'insecure':" + str(_insecure) + "}; " 
-                        _dmsg += "ct = neutronc.Client(**_credentials); print ct.list_networks()\"\""                          
+                        if _session :
+                            _dmsg = "Please attempt to execute the following : \"python -c \""
+                            _dmsg += "from keystoneauth1.identity import v3; "
+                            _dmsg += "from keystoneauth1 import session; "
+                            _dmsg += "from neutronclient.v2_0 import client as neutronc; "
+                            _dmsg += "_auth = v3.Password(username = '" + str(_username) 
+                            _dmsg += "', password = 'REPLACE_PASSWORD', project_name = '"
+                            _dmsg += str(_tenant) + "', auth_url = '" + str(access_url) 
+                            _dmsg += "', user_domain_id = '" + str(_user_domain_id) + "', "
+                            _dmsg += "project_domain_id = '" + str(_project_domain_id) + "'); "
+                            _dmsg += "_session = session.Session(auth = _auth); "
+                            _dmsg += "ct = neutronc.Client(session = _session); print ct.list_networks()\"\""                            
+                        else :
+                            _dmsg = "Please attempt to execute the following : \"python -c \""
+                            _dmsg += "from neutronclient.v2_0 import client as neutronc;"                        
+                            _dmsg += "_credentials = {'username':'" + str(_username) + "', "
+                            _dmsg += "'password':'REPLACE_PASSWORD', 'tenant_name':'"
+                            _dmsg += str(_tenant) + "', 'auth_url':'" + str(access_url)
+                            _dmsg += "', 'region_name':'" + str(region) + "', 'service_type':'network', "
+                            _dmsg += "'endpoint_type':'" + str(_endpoint_type) + "', 'cacert':" + str(_cacert)
+                            _dmsg += ", 'insecure':" + str(_insecure) + "}; " 
+                            _dmsg += "ct = neutronc.Client(**_credentials); print ct.list_networks()\"\""                          
                     print _dmsg
                     
                 raise CldOpsException(_msg, _status)
@@ -501,6 +575,14 @@ class OskCmds(CommonCloudFunctions) :
                     if _instance.name.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) \
                     and not _instance.name.count("jumphost") :
 
+                        _instance_metadata = _instance.metadata
+                        if "cloud_floating_ip_uuid" in _instance_metadata :
+                            _msg = "    Deleting floating IP " + _instance_metadata["cloud_floating_ip_uuid"]
+                            _msg += ", associated with instance "
+                            _msg += _instance.id + " (" + _instance.name + ")"
+                            cbdebug(_msg, True)                            
+                            self.oskconncompute.floating_ips.delete(_instance_metadata["cloud_floating_ip_uuid"])
+                                                                        
                         _running_instances = True
                         if  _instance.status == "ACTIVE" :
                             _msg = "Terminating instance: " 
@@ -1344,7 +1426,19 @@ class OskCmds(CommonCloudFunctions) :
                 obj_attr_list["meta_tags"].count(',') :
                     _meta = str2dic(obj_attr_list["meta_tags"])
 
+            _fip = None
+            if str(obj_attr_list["use_floating_ip"]).lower() == "true" :
+                _msg = "    Attempting to create a floating IP to " + obj_attr_list["name"] + "..."
+                cbdebug(_msg, True)
+
+                obj_attr_list["last_known_state"] = "about to create floating IP"
+                
+                _fip = self.floating_ip_allocate(obj_attr_list)
+
             _meta["experiment_id"] = obj_attr_list["experiment_id"]
+
+            if "cloud_floating_ip_uuid" in obj_attr_list :
+                _meta["cloud_floating_ip_uuid"] = obj_attr_list["cloud_floating_ip_uuid"]
 
             _time_mark_prs = int(time())
             
@@ -1379,11 +1473,11 @@ class OskCmds(CommonCloudFunctions) :
 
                 self.take_action_if_requested("VM", obj_attr_list, "provision_started")
 
-                while not self.floating_ip_attach(obj_attr_list, _instance) :
+                while not self.floating_ip_attach(obj_attr_list, _instance, _fip) :
                     True
 
                 _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
-
+                
                 _mark_a = time()
                 self.annotate_time_breakdown(obj_attr_list, "instance_scheduling_time", _mark_a)
                 _mark_a = time()
@@ -2631,7 +2725,7 @@ class OskCmds(CommonCloudFunctions) :
                 return False
     
     @trace
-    def floating_ip_attach(self, obj_attr_list, _instance) :
+    def floating_ip_attach(self, obj_attr_list, _instance, fip) :
         '''
         TBD
         '''
@@ -2642,13 +2736,9 @@ class OskCmds(CommonCloudFunctions) :
             identifier = obj_attr_list["cloud_vm_name"]
 
             if str(obj_attr_list["use_floating_ip"]).lower() == "true" :
-                _msg = "Attempting to add a floating IP to " + obj_attr_list["name"] + "..."
+                _msg = "    Attempting to attach a floating IP to " + obj_attr_list["name"] + "..."
                 cbdebug(_msg, True)
-
-                obj_attr_list["last_known_state"] = "about to create floating IP"
-                
-                _fip = self.floating_ip_allocate(obj_attr_list)
-
+                                
                 _curr_tries = 0
                 _max_tries = int(obj_attr_list["update_attempts"])
                 _wait = int(obj_attr_list["update_frequency"])
@@ -2670,7 +2760,7 @@ class OskCmds(CommonCloudFunctions) :
                 if "hypervisor_type" in obj_attr_list and obj_attr_list["hypervisor_type"].lower() == "fake" :
                     True
                 else :
-                    _instance.add_floating_ip(_fip)
+                    _instance.add_floating_ip(fip)
                     self.annotate_time_breakdown(obj_attr_list, "attach_fip_time", _mark_a)
 
             return True

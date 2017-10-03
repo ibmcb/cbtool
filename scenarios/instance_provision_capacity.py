@@ -34,7 +34,6 @@ import pwd
 import redis
 import prettytable
 
-from sys import path, argv
 from time import sleep, time
 from optparse import OptionParser
 from random import sample
@@ -49,7 +48,6 @@ def parse_cli() :
     '''
 
     _parser = OptionParser(usage)
-
 
     _parser.add_option("-c","--cloud", \
                        dest="cloud_name", \
@@ -202,11 +200,22 @@ def parse_cli() :
                        default=False, \
                        help="Resume from a previous execution")
 
-    _parser.add_option("--create_only",\
+    _parser.add_option("--create_only", "--createonly",\
                        action="store_true", \
                        dest="create_only", \
                        default=False, \
-                       help="Do not attempt to contact the deployed VMs")
+                       help="Do not attempt to contact the deployed instances")
+
+    _parser.add_option("--minimal_checks", "--minimalchecks",\
+                       action="store_true", \
+                       dest="minimal_checks", \
+                       default=False, \
+                       help="Neither transfer files nor run scripts on the instances")
+
+    _parser.add_option("--max_wait", "--maxwait",\
+                       dest="max_wait", \
+                       default="auto", \
+                       help="How long to wait for a batch to complete (by default 40 times the average deployment time)")
 
     _parser.add_option("--cleanup", \
                        action="store_true", \
@@ -571,7 +580,11 @@ def deploy_background_workloads(api, options, performance_data) :
     print _msg            
 
     _max_average_deployment_time = performance_data["average"] * (1 + float(options.increase/100))
-    _max_wait_time = 40 * _max_average_deployment_time
+    
+    if options.max_wait == "auto" :
+        _max_wait_time = 40 * _max_average_deployment_time
+    else :
+        _max_wait_time = int(options.max_wait)
         
     for _item in options.bgwks.split(',') :
         _workload, _nr_ais = _item.split(':')
@@ -738,8 +751,12 @@ def capacity_phase(api, options, performance_data, directory) :
     _failed_vms = int(_vm_stats["failed"])
     _arrived_vms = int(_vm_stats["arrived"])
     _issued_vms = int(_vm_stats["issued"])
+
+    if options.max_wait == "auto" :
+        _max_wait_time = 10 * _max_average_deployment_time
+    else :
+        _max_wait_time = int(options.max_wait)
     
-    _max_wait_time = 10 * _max_average_deployment_time
     _single_vm_failure_counter = 1
     _experiment_end = False
 
@@ -813,7 +830,8 @@ def capacity_phase(api, options, performance_data, directory) :
 
             sleep(10)
         
-        _msg = "####### Waiting until " + str(options.completion) + "% of the " + options.obj + "s"
+        _msg = "####### Waiting for " + str(_max_wait_time) + " seconds OR until " 
+        _msg += str(options.completion) + "% of the " + options.obj + "s"
         _msg += " forming the batch " + str(_batch_nr) + " (" + str(_deployed)
         _msg += " VMs) are deployed (" + options.obj + " ARRIVING=" + str(_target) + ")....."
         print _msg
@@ -823,8 +841,8 @@ def capacity_phase(api, options, performance_data, directory) :
                              5, time_limit = _max_wait_time)
                 
         if _counters['experiment_counters'][options.obj]["arriving"] != str(_target) :
-            _msg = "####### WARNING: " + options.obj + " ARRIVING counter still not \""
-            _msg += str(_target) + " even after " + str(_max_wait_time) + " seconds!"
+            _msg = "\n####### WARNING: " + options.obj + " ARRIVING counter still not \""
+            _msg += str(_target) + " even after " + str(_max_wait_time) + " seconds!\n"
             print _msg
             send_text(options, _msg)
             
@@ -1167,9 +1185,11 @@ def main() :
     _error = False
     _perf_dict = {}
     _perf_dict["experiment_start"] = time()
-    
+
     _phase = "connection"
     _options = parse_cli()
+
+    _options.cmdline = ' '.join(argv).replace(os.getenv("HOME"),'~')
 
     if not _options.cloud_name :
         print "A cloud name (\"-c\") is mandatory"
@@ -1185,14 +1205,22 @@ def main() :
     api = connect_to_cb(_options.cloud_name)
 
     _cloud_model = api.cldlist()[0]["model"]
-
+    
+    if _cloud_model == "kub" and ( _options.hypervisor.lower() == "kvm" or _options.hypervisor.lower() == "qemu" ) :
+        _options.hypervisor = "DOCKER"
+        _msg = "Hypervisor type set to \"" + _options.hypervisor + "\" on a Kubernetes"
+        _msg += " cloud. Switching hypervisor type back to \"DOCKER\" and specifying "
+        _msg += "\"virtlet\" as the value for the attribute \"kubernetes.io/target-runtime\" (Pod annotations)"
+        print _msg
+        api.cldalter(_options.cloud_name, "vm_defaults", "annotations", "kubernetes.io/target-runtime:virtlet,override_imageid1:virtlet/image-service.kube-system/cirros")
+        
     _hyper_type = get_compute_parms(_options, api)
     _net_type, _net_mechanism = get_network_parms(_options, api)
     
     if not _hyper_type.lower().count(_options.hypervisor.lower()) :
         _msg = "ERROR: There are no hypervisors with type \"" + _options.hypervisor
         _msg += "\" on the cloud \"" + _options.cloud_name + "\". The hypervisor"
-        _msg += "types detected on the cloud are: " + _hyper_type
+        _msg += " types detected on the cloud are: " + _hyper_type
         print _msg
         exit(2)
          
@@ -1213,6 +1241,12 @@ def main() :
     
     _cb_base_dir = os.path.abspath(_cb_dirs["base_dir"])
     _cb_data_dir = os.path.abspath(_cb_dirs["data_working_dir"])
+
+    _options.extra_plot_options = ''
+    _mon_defaults = api.cldshow(_options.cloud_name, "mon_defaults")
+    if "collect_from_host" in _mon_defaults :
+        if str(_mon_defaults["collect_from_host"]).lower() == "true" :
+            _options.extra_plot_options = " --hostosmetrics"
 
     if _options.fip :
         _msg = "# Instances will use floating IPs from pool \"" + _options.fip + "\""
@@ -1255,6 +1289,17 @@ def main() :
             print _msg        
             
         api.cldalter(_options.cloud_name, "vm_defaults", "check_boot_complete", "wait_for_0")
+        api.cldalter(_options.cloud_name, "vm_defaults", "transfer_files", "false")
+        api.cldalter(_options.cloud_name, "vm_defaults", "run_generic_scripts", "false")
+        api.cldalter(_options.cloud_name, "vm_defaults", "check_ssh", "false")        
+        api.cldalter(_options.cloud_name, "vm_defaults", "update_frequency", "1")
+        api.cldalter(_options.cloud_name, "ai_defaults", "run_application_scripts", "false")
+        api.cldalter(_options.cloud_name, "ai_defaults", "dont_start_load_manager", "true")
+
+    if _options.minimal_checks :        
+        _msg = "# Option \"minimal_checks\" detected, will disable file transfer and script execution on the instances"
+        print _msg        
+        
         api.cldalter(_options.cloud_name, "vm_defaults", "transfer_files", "false")
         api.cldalter(_options.cloud_name, "vm_defaults", "run_generic_scripts", "false")
         api.cldalter(_options.cloud_name, "vm_defaults", "check_ssh", "false")        
@@ -1384,6 +1429,11 @@ def main() :
     _url = api.monextract(_options.cloud_name, "all", "all")
 
     create_plots(_options, api, _cb_base_dir, _cb_data_dir, _experiment_id, _url)
+
+    _fn = _cb_data_dir + '/' + str(_experiment_id) + '/cmdline.txt'
+    _fh = open(_fn, "w")
+    _fh.write(_options.cmdline)
+    _fh.close()
 
     if _options.cleanup :
         _start = int(time())

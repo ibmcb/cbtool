@@ -13,41 +13,39 @@ Subscribe to our mailing list:
 
 ## To get started:
 
-1. [Learn more about the tool](https://github.com/ibmcb/cbtool/wiki/DOC:-Table-of-Contents)
+1. [Learn more about the tool](https://github.com/maugustosilva/cbtool/wiki/DOC:-Table-of-Contents)
 
-2. [Perform the initial installation](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Initial-Installation)
+2. [Perform the initial installation](https://github.com/maugustosilva/cbtool/wiki/HOWTO:-Initial-Installation)
 
-3. [Run the tool for the first time](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Running-the-tool-for-the-first-time)
+3. [Run the tool for the first time](https://github.com/maugustosilva/cbtool/wiki/HOWTO:-Running-the-tool-for-the-first-time)
 
-4. [Prepare your cloud to be driven by the tool](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Preparing-your-cloud-to-be-driven-by-CBTOOL)
+4. [Prepare your cloud to be driven by the tool](https://github.com/maugustosilva/cbtool/wiki/HOWTO:-Preparing-your-cloud-to-be-driven-by-CBTOOL)
 
-5. [Prepare a VM image to be used with the tool](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Preparing-a-VM-to-be-used-with-CBTOOL-on-a-real-cloud)
+5. [Prepare a VM image to be used with the tool](https://github.com/maugustosilva/cbtool/wiki/HOWTO:-Preparing-a-VM-to-be-used-with-CBTOOL-on-a-real-cloud)
 
-6. [Deploy your first Virtual Application](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Deploy-your-first-virtual-application)
+6. [Deploy your first Virtual Application](https://github.com/maugustosilva/cbtool/wiki/HOWTO:-Deploy-your-first-virtual-application)
 
-7. [Run simple experiments](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Run-simple-experiments)
+7. [Run simple experiments](https://github.com/maugustosilva/cbtool/wiki/HOWTO:-Run-simple-experiments)
 
-8. [If needed, debug the initial setup](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Debug-initial-setup)
+8. [If needed, debug the initial setup](https://github.com/maugustosilva/cbtool/wiki/HOWTO:-Debug-initial-setup)
 
-9. [Configure CBTOOL to run outside of the cloud (or with multiple tenant networks)](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Run-the-CloudBench-orchestrator-outside-of-the-cloud-(or-with-multiple-tenant-networks))
+9. [Configure CBTOOL to run outside of the cloud (or with multiple tenant networks)](https://github.com/maugustosilva/cbtool/wiki/HOWTO:-Run-the-CloudBench-orchestrator-outside-of-the-cloud-(or-with-multiple-tenant-networks))
 
-9. [Configure CBTOOL to run outside of the cloud (or with multiple tenant networks)](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Run-the-CloudBench-orchestrator-outside-of-the-cloud-(or-with-multiple-tenant-networks))
-
-    1. [Detailed instructions on how to use OpenVPN support](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Use-VPN-support-with-your-benchmarks)
+    1. [Detailed instructions on how to use OpenVPN support](https://github.com/maugustosilva/cbtool/wiki/HOWTO:-Use-VPN-support-with-your-benchmarks)
     
-10. Look at some [auto generated plots](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Save-Monitoring-Data-on-the-Command-Line) made from the data collected.
+10. Look at some [auto generated plots](https://github.com/maugustosilva/cbtool/wiki/HOWTO:-Save-Monitoring-Data-on-the-Command-Line) made from the data collected.
 
 11. Read our latest paper [IC2E 2013](http://dl.acm.org/citation.cfm?id=2497243).
 
-13. Try administrating the tool with the [Graphical Environment](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Using-the-Graphical-Environment)
+12. Try administrating the tool with the [Graphical Environment](https://github.ibm.com/marcios/cbtool/wiki/HOWTO:-Using-the-Graphical-Environment)
 
-    1. Then try [monitoring your experiments with the Graphical Environment](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Monitoring-with-the-Graphical-Environment)
+    1. Then try [monitoring your experiments with the Graphical Environment](https://github.ibm.com/marcios/cbtool/wiki/HOWTO:-Monitoring-with-the-Graphical-Environment)
 
-    2. Try to [customize your dashboard monitoring data with filters in the Graphical Environment](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Customize-Dashboard-Monitoring-in-the-Graphical-Environment)
+    2. Try to [customize your dashboard monitoring data with filters in the Graphical Environment](https://github.ibm.com/marcios/cbtool/wiki/HOWTO:-Customize-Dashboard-Monitoring-in-the-Graphical-Environment)
 
-    3. You can also try to use the [Graphical Wizard](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Using-the-Wizard-for-first-time-connection) for a first-time connection.
+    3. You can also try to use the [Graphical Wizard](https://github.ibm.com/marcios/cbtool/wiki/HOWTO:-Using-the-Wizard-for-first-time-connection) for a first-time connection.
 
-16. Read the [Frequently Asked Questions](https://github.com/ibmcb/cbtool/wiki/FAQ)
+16. Read the [Frequently Asked Questions](https://github.com/maugustosilva/cbtool/wiki/FAQ)
 
 ## Features:
 - Automatic deployment and controlled execution of multiple multi-tier applications.
@@ -57,7 +55,7 @@ Each individual application can have a specific load profile using probability d
 - Collects application and system (OS) performance data from hosts and guests in real time.
 - It is designed from the ground up to be highly scalable and parallel.
 
-## <a name="adapters">[Supported Clouds](https://github.com/ibmcb/cbtool/wiki/DOC:-Supported-Clouds):
+## <a name="adapters">[Supported Clouds](https://github.com/maugustosilva/cbtool/wiki/DOC:-Supported-Clouds):
 
 1. Amazon EC2
 2. OpenStack (and RackSpace)
@@ -71,56 +69,48 @@ Each individual application can have a specific load profile using probability d
 10. CloudStack
 11. SoftLayer
 
-## <a name="workloads">[Supported Workloads](https://github.com/ibmcb/cbtool/wiki/DOC:-Supported-Virtual-Applications)
+## <a name="workloads">[Supported Workloads](https://github.com/maugustosilva/cbtool/wiki/DOC:-Supported-Virtual-Applications)
 
-To get the most current list, start CBTOOL and type ```typelist``` on the CLI. To get more information about a given workload, ```typeshow <workload name>```:
+To get the most current list, start CBTOOL and type ```typelist``` on the CLI. To get more information about a given workload, ```typeshow <workload name>```.
 
 ```
 (MYCLOUD) typelist
-AIs with the following types can be attached to to this experiment (Cloud MYSIMCLOUD) :
+AIs with the following types can be attached to to this experiment (Cloud TESTPDM) :
 
 synthetic:
-  bonnie (default, full)
-  btest (default)
-  coremark (default)
-  ddgen (default)
-  filebench (fileserver, oltp_noism, varmail, videoserver, webproxy)
-  fio (default)
-  iperf (tcp, udp)
-  mlg (default)
-  netperf (tcp_stream, tcp_maerts, udp_stream, tcp_rr, tcp_cc, tcp_crr, udp_rr)
-  nuttcp (tcp, udp)
-  postmark (default)
-  unixbench (arithmetic, dhrystone, whetstone, load, misc, speed, oldsystem, system, fs, shell, index)
-  xping (icmp)
+  btest
+  coremark
+  ddgen
+  filebench
+  fio
+  iperf
+  netperf
+  nuttcp
+  postmark
+  unixbench
+  windesktop
+  xping
 
-application-stress:
-  memtier (default)
-  oldisim (default)
-  wrk (default)
-
-scientific:
-  hpcc (default)
-  linpack (default)
-  multichase (simple, work:N, t0-2, nta, movdqa, mvntdqa, parallel2-10, critword:N, critword2:N)
-  parboil (histo, bfs, stencil, mri-q, mri-gridding, lbm, tpacf, sad, spmv, sgemm, cutcp)
-  scimark (default)
+hpc:
+  hpcc
+  linpack
+  parboil
 
 transactional:
-  cassandra_ycsb (workloada, workloadb, workloadc, workloadd, workloade, workloadf)
-  ibm_daytrader (default)
-  mongo_ycsb (workloada, workloadb, workloadc, workloadd, workloade, workloadf)
-  open_daytrader (default)
-  redis_ycsb (workloada, workloadb, workloadc, workloadd, workloade, workloadf)
-  specjbb (preset, hbir)
-  sysbench (simple, complex, nontrx, sp)
+  cassandra_ycsb
+  ibm_daytrader
+  mongo_ycsb
+  open_daytrader
+  redis_ycsb
+  specimap
+  specjbb
 
-data-centric:
-  giraph (pagerank, topkpagerank)
-  hadoop (sort, wordcount, terasort, dfsioe, nutchindexing, pagerank, bayes, kmeans, hivebench)
+bigdata:
+  giraph
+  hadoop
 
 fake:
-  nullworkload (default)
+  nullworkload
 ```
 Contacts:
 
