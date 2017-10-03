@@ -105,7 +105,7 @@ RUN ln -s /usr/sbin/gmond /usr/local/bin/gmond
 
 # rsyslog-install-pm
 RUN apt-get install -y rsyslog
-RUN ln -s /sbin/rsyslogd /usr/local/bin/rsyslogd
+RUN ln -s $(sudo which rsyslogd) /usr/local/bin/rsyslogd
 RUN mkdir -p /var/log/cloudbench
 # rsyslog-install-pm
 
@@ -193,6 +193,7 @@ RUN chmod 700 ~/.ssh
 RUN echo "StrictHostKeyChecking=no" > /home/REPLACE_USERNAME/.ssh/config 
 RUN echo "UserKnownHostsFile=/dev/null" >> /home/REPLACE_USERNAME/.ssh/config 
 RUN chmod 600 /home/REPLACE_USERNAME/.ssh/config
+RUN chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME/.ssh/config
 # sshconfig-install-man
 RUN chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME/
 

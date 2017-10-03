@@ -13,6 +13,13 @@ function all_clear () {
 #    for NS in $(kubectl get namespaces | grep ${KUB_NAMESPACE_NAME} | awk '{ print $1 }')
     for NS in $(kubectl get namespaces | awk '{ print $1 }')
     do
+
+        for S in $(kubectl --namespace $NS get services | grep ${CB_CLOUD_NAME} | grep ${CB_USERNAME} | awk '{ print $1 }')
+        do  
+            echo "deleting service $S (namespace $NS)"
+            kubectl --namespace $NS delete service ${S}
+        done    	
+    	    	    	
         for D in $(kubectl --namespace $NS get deployments | grep ${CB_CLOUD_NAME} | grep ${CB_USERNAME} | awk '{ print $1 }')
         do  
             echo "deleting deployment $D (namespace $NS)"

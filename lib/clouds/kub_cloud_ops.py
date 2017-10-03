@@ -256,13 +256,16 @@ class KubCmds(CommonCloudFunctions) :
 
             self.common_messages("VMC", obj_attr_list, "cleaning up vms", 0, '')
             
-            for _abstraction_type in [ "deployment", "replicaset", "pod" ] :
+            for _abstraction_type in [ "service", "deployment", "replicaset", "pod" ] :
                 for _item in pykube.objects.Namespace.objects(self.kubeconn) :
                     _namespace = _item.name
                     _running_instances = True
         
                     while _running_instances and _curr_tries < _max_tries :
                         _running_instances = False
+    
+                        if _abstraction_type == "service" :
+                            _object_list = pykube.objects.Service.objects(self.kubeconn).filter(namespace = _namespace)
     
                         if _abstraction_type == "deployment" :
                             _object_list = pykube.objects.Deployment.objects(self.kubeconn).filter(namespace = _namespace)
@@ -531,7 +534,13 @@ class KubCmds(CommonCloudFunctions) :
                         _selector = str2dic(obj_attr_list["selector"])
                         _instances = pykube.objects.Deployment.objects(self.kubeconn).filter(namespace = obj_attr_list["namespace"], \
                                                                                       selector= _selector)
-                                            
+            
+            elif obj_type == "service" :
+                if identifier == "all" :
+                    _instances = pykube.Service.objects(self.kubeconn).filter(namespace=obj_attr_list["namespace"])
+                else :
+                    _instances = pykube.Service.objects(self.kubeconn).filter(namespace=obj_attr_list["namespace"], \
+                                                                              field_selector={"metadata.name": identifier})                    
             else :
                 _call = "volumes()"                    
                 if identifier == "all" :
@@ -827,44 +836,73 @@ class KubCmds(CommonCloudFunctions) :
                 raise CldOpsException(_msg, _status)    
             self.annotate_time_breakdown(obj_attr_list, "check_existing_instance_time", _mark_a)
                         
-            _env = [  { "name": "CB_SSH_PUB_KEY", "value" : obj_attr_list["pubkey_contents"]}, {"name": "CB_LOGIN", "value" : obj_attr_list["login"]} ]
+            _env = [  
+                       { "name": "CB_SSH_PUB_KEY", \
+                         "value" : obj_attr_list["pubkey_contents"]
+                       },\
+                       { "name": "CB_LOGIN", \
+                         "value" : obj_attr_list["login"]
+                       } 
+                   ]
 
             if str(obj_attr_list["ports_base"]).lower() != "false" :
                 obj_attr_list["prov_cloud_port"] = int(obj_attr_list["ports_base"]) + int(obj_attr_list["name"].replace("vm_",''))
-                _ports = [ { "hostPort": obj_attr_list["prov_cloud_port"], "containerPort": int(obj_attr_list["run_cloud_port"])} ]
 
                 if obj_attr_list["check_boot_complete"] == "tcp_on_22":
                     obj_attr_list["check_boot_complete"] = "tcp_on_" + str(obj_attr_list["prov_cloud_port"])
-                
-            else :
-                _ports = []
 
+            _annotations = { "creator" : "cbtool" }
+            if len(obj_attr_list["annotations"]) > 2 :
+                _annotations = str2dic(obj_attr_list["annotations"])
+
+                if "override_imageid1" in _annotations :
+                    obj_attr_list["imageid1"] = _annotations["override_imageid1"]
+            
             if obj_attr_list["abstraction"] == "pod" :
                 _obj = { "apiVersion": "v1", \
                          "kind": "Pod", \
                          "id":  obj_attr_list["cloud_vm_name"], \
-                         "metadata": { "name":  obj_attr_list["cloud_vm_name"], "namespace": obj_attr_list["namespace"] }, \
-                         "spec": { "containers": \
-                                 [ { "env": _env, \
-                                     "name": obj_attr_list["cloud_vm_name"], \
-                                     "image": obj_attr_list["imageid1"], \
-                                     "ports": _ports } ] }
+                         "metadata": { "name":  obj_attr_list["cloud_vm_name"], \
+                                       "namespace": obj_attr_list["namespace"] , \
+                                       "labels" : { "creator" : "cbtool", \
+                                                    "app" :  obj_attr_list["cloud_vm_name"] 
+                                                  }, \
+                                        "annotations" : _annotations
+                                      }, \
+                         "spec": { "containers":
+                                     [ 
+                                        { "env": _env, \
+                                           "name": obj_attr_list["cloud_vm_name"], \
+                                           "image": obj_attr_list["imageid1"]
+                                        }
+                                     ]
+                                 }
                        }
 
             if obj_attr_list["abstraction"] == "replicaset" :
                 _obj = { "apiVersion": "extensions/v1beta1", \
                          "kind": "ReplicaSet", \
                          "id": obj_attr_list["cloud_rs_name"], \
-                         "metadata": { "name": obj_attr_list["cloud_rs_name"], "namespace": obj_attr_list["namespace"]}, \
+                         "metadata": { "name": obj_attr_list["cloud_rs_name"], \
+                                       "namespace": obj_attr_list["namespace"] 
+                                     }, \
                          "spec": { "replicas": int(obj_attr_list["replicas"]), \
                                    "template": {
-                                                "metadata": { "labels": { "app": obj_attr_list["cloud_vm_name"], "role": "master", "tier": "backend" } },\
-                                                "spec": { "containers": \
-                                                        [ { "env": _env, \
-                                                            "name": obj_attr_list["cloud_vm_name"], \
-                                                            "image": obj_attr_list["imageid1"], \
-                                                            "ports": _ports } ] }
+                                                "metadata": { "labels": { "app": obj_attr_list["cloud_vm_name"], \
+                                                                          "role": "master", \
+                                                                          "tier": "backend", \
+                                                                          "creator" : "cbtool" 
+                                                                        } 
+                                                             },\
+                                                "spec": { "containers":
+                                                            [ 
+                                                               { "env": _env, \
+                                                                 "name": obj_attr_list["cloud_vm_name"], \
+                                                                 "image": obj_attr_list["imageid1"] 
+                                                               } 
+                                                            ] 
                                                         }
+                                               }
                                   } 
     
                         }
@@ -874,19 +912,30 @@ class KubCmds(CommonCloudFunctions) :
                 _obj = { "apiVersion": "extensions/v1beta1", \
                          "kind": "Deployment", \
                          "id": obj_attr_list["cloud_d_name"], \
-                         "metadata": { "name": obj_attr_list["cloud_d_name"], "namespace": obj_attr_list["namespace"]}, \
+                         "metadata": { "name": obj_attr_list["cloud_d_name"], \
+                                       "namespace": obj_attr_list["namespace"]
+                                     }, \
                          "spec": { "replicas": int(obj_attr_list["replicas"]), \
                                    "template": {
-                                                "metadata": { "labels": { "app": obj_attr_list["cloud_vm_name"], "role": "master", "tier": "backend" } },\
+                                                "metadata": { "labels": { "app": obj_attr_list["cloud_vm_name"], \
+                                                                          "role": "master", \
+                                                                          "tier": "backend", \
+                                                                          "creator":  "cbtool"
+                                                                        } 
+                                                             },\
                                                 "spec": { "containers": \
-                                                        [ { "env": _env, \
-                                                            "name": obj_attr_list["cloud_vm_name"], \
-                                                            "image": obj_attr_list["imageid1"], \
-                                                            "ports": _ports } ] }
+                                                            [ 
+                                                               { "env": _env, \
+                                                                 "name": obj_attr_list["cloud_vm_name"], \
+                                                                 "image": obj_attr_list["imageid1"] 
+                                                               } 
+                                                            ] 
                                                         }
+                                               }
                                   } 
     
                         }
+
                 obj_attr_list["selector"] = "app:" + obj_attr_list["cloud_d_name"] + ',' + "role:master,tier:backend" 
                         
             self.vm_placement(obj_attr_list)
@@ -926,6 +975,29 @@ class KubCmds(CommonCloudFunctions) :
             self.take_action_if_requested("VM", obj_attr_list, "provision_started")
 
             _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
+
+            if str(obj_attr_list["ports_base"]).lower() != "false" and str(obj_attr_list["check_boot_complete"]).lower() != "wait_for_0" :
+
+                if obj_attr_list["abstraction"] == "pod" :
+                    _actual_app_name = obj_attr_list["cloud_vm_name"]
+
+                if obj_attr_list["abstraction"] == "replicaset" :
+                    _actual_app_name = obj_attr_list["cloud_rs_name"]
+
+                if obj_attr_list["abstraction"] == "deployment" :
+                    _actual_app_name = obj_attr_list["cloud_d_name"]
+                
+                _obj = { "kind": "Service", \
+                                 "apiVersion": "v1", \
+                                 "metadata": { "name":  obj_attr_list["cloud_vm_name"] }, \
+                                 "spec": { 
+                                          "selector": { "creator" : "cbtool", "app" : _actual_app_name }, \
+                                          "ports": [ { "name": "ssh", "protocol": "TCP", "port": obj_attr_list["prov_cloud_port"], "targetPort": int(obj_attr_list["run_cloud_port"]) } ], \
+                                          "externalIPs": [ obj_attr_list["prov_cloud_ip"] ]
+                                          }
+                                }
+        
+                pykube.Service(self.kubeconn, _obj).create()
 
             self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
             
@@ -986,6 +1058,11 @@ class KubCmds(CommonCloudFunctions) :
                 
             if _p_instance :
                 self.common_messages("VM", obj_attr_list, "destroying", 0, '')
+
+                _s_instance = self.get_instances(obj_attr_list, "service", obj_attr_list["cloud_vm_name"])
+
+                if _s_instance :
+                    _s_instance.delete()
 
                 _d_instance = self.get_instances(obj_attr_list, "deployment", obj_attr_list["cloud_vm_name"])
     
