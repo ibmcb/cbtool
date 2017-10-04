@@ -183,7 +183,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                     cbdebug("Caching " + self.get_description()  + " Locations...", True)
                     LibcloudCmds.locations = LibcloudCmds.catalogs.cbtool[credentials_list].list_locations()
 
-                    if "name" in obj_attr_list :
+                    if obj_attr_list and "name" in obj_attr_list :
                         _hostname = obj_attr_list["name"]                    
                     
                 assert(LibcloudCmds.locations)
@@ -297,6 +297,7 @@ class LibcloudCmds(CommonCloudFunctions) :
         for _registered_image in _registered_image_list :
             _registered_imageid_list.append(_registered_image.id)
             _map_name_to_id[str(_registered_image.name.encode('utf-8').strip())] = str(_registered_image.id)
+            _map_name_to_id[str(_registered_image.id.encode('utf-8').strip())] = str(_registered_image.id)
 
         for _vm_role in vm_templates.keys() :            
             _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
@@ -342,36 +343,36 @@ class LibcloudCmds(CommonCloudFunctions) :
                 
                 self.common_messages("VMC", obj_attr_list, "cleaning up vms", 0, '')
     
-                _running_instances = True
-                while _running_instances :
-                    _running_instances = False
-                    for credentials_list in obj_attr_list["credentials"].split(","):
-                        credentials = credentials_list.split(":")
-                        tenant = credentials[0]
+            _running_instances = True
+            while _running_instances :
+                _running_instances = False
+                for credentials_list in obj_attr_list["credentials"].split(","):
+                    credentials = credentials_list.split(":")
+                    tenant = credentials[0]
 
-                        _reservations = LibcloudCmds.catalogs.cbtool[credentials_list].list_nodes()
+                    _reservations = LibcloudCmds.catalogs.cbtool[credentials_list].list_nodes()
 
-                        for _reservation in _reservations :
-                            if _reservation.name.count("cb-" + obj_attr_list["username"]) :
-                                if _reservation.state == NodeState.PENDING :
-                                    cbdebug("Instance still has a pending event. waiting to destroy...")
-                                    sleep(10)
-                                    _msg = "Cleaning up " + self.get_description() + ". Destroying CB instantiated node: " + _reservation.name
-                                    cbdebug(_msg)
-                                    continue
-    
-                                try :
-                                    cbdebug("Killing: " + _reservation.name + " (" + tenant + ")", True)
-                                    _reservation.destroy()
-                                except :
-                                    pass
-                                _running_instances = True
-                            else :
-                                _msg = "Cleaning up " + self.get_description() + ".  Ignoring instance: " + _reservation.name
+                    for _reservation in _reservations :
+                        if _reservation.name.count("cb-" + obj_attr_list["username"]) :
+                            if _reservation.state == NodeState.PENDING :
+                                cbdebug("Instance still has a pending event. waiting to destroy...")
+                                sleep(10)
+                                _msg = "Cleaning up " + self.get_description() + ". Destroying CB instantiated node: " + _reservation.name
                                 cbdebug(_msg)
-    
-                        if _running_instances :
-                            sleep(int(obj_attr_list["update_frequency"]))
+                                continue
+
+                            try :
+                                cbdebug("Killing: " + _reservation.name + " (" + tenant + ")", True)
+                                _reservation.destroy()
+                            except :
+                                pass
+                            _running_instances = True
+                        else :
+                            _msg = "Cleaning up " + self.get_description() + ".  Ignoring instance: " + _reservation.name
+                            cbdebug(_msg)
+
+                    if _running_instances :
+                        sleep(int(obj_attr_list["update_frequency"]))
 
                 if self.use_volumes :    
                     self.common_messages("VMC", obj_attr_list, "cleaning up vvs", 0, '')
@@ -751,7 +752,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                 else :
                     obj_attr_list["cloud_vv_type"] = "NOT SUPPORTED"
 
-            if "cloud_vv" in obj_attr_list :
+            if self.use_volumes and "cloud_vv" in obj_attr_list and str(obj_attr_list["cloud_vv"]).lower() != "false" :
 
                 obj_attr_list["cloud_vv_name"] = obj_attr_list["cloud_vv_name"].lower()
                 
@@ -765,7 +766,7 @@ class LibcloudCmds(CommonCloudFunctions) :
     
                     _volume = connection.create_volume(int(obj_attr_list["cloud_vv"]),
                                                                                   obj_attr_list["cloud_vv_name"],
-                                                                                  location = [x for x in self.locations if x.id == obj_attr_list["vmc_name"]][0])
+                                                                                  location = [x for x in LibcloudCmds.locations if x.id == obj_attr_list["region"]][0])
     
                     sleep(int(obj_attr_list["update_frequency"]))
     
@@ -903,10 +904,10 @@ class LibcloudCmds(CommonCloudFunctions) :
                 for dontcare in range(0, 2) :
                     for tmp_key in tmp_keys :
                         for key in LibcloudCmds.keys[_credentials_list] :
-                            if tmp_key in [key.name, key.extra["id"]] and key.extra["id"] not in keys :
+                            if tmp_key in [key.name, key.extra["id"]] and key.extra["id"] not in keys and key.name not in keys :
                                 keys.append(key.extra["id"])
     
-                    if len(keys) == len(tmp_keys) :
+                    if len(keys) >= len(tmp_keys) :
                         break
     
                     cbdebug("Only found " + str(len(keys)) + " keys. Refreshing key list...", True)
@@ -915,7 +916,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                 extra["ssh_keys"] = keys
 
                 if len(keys) != len(tmp_keys) :
-                    raise CldOpsException("Not all SSH keys exist. Check your configuration: " + obj_attr_list["key_name"], _status)
+                    raise CldOpsException("Not all SSH keys exist. Check your configuration: " + obj_attr_list["key_name"], _status, True)
 
             # Currently, regions and VMCs are the same in libcloud based adapters
             obj_attr_list["region"] = _region = obj_attr_list["vmc_name"]
@@ -944,10 +945,14 @@ class LibcloudCmds(CommonCloudFunctions) :
                 **kwargs
                 )
 
+            if "image" in obj_attr_list :
+                del obj_attr_list["image"]
+
             obj_attr_list["last_known_state"] = "sent create request"
 
             if _reservation :
                 
+                cbdebug("ID: " + str(_reservation.id), True)
                 obj_attr_list["last_known_state"] = "vm created"
                 sleep(int(obj_attr_list["update_frequency"]))
 
@@ -965,7 +970,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                         raise CldOpsException(_fmsg, _status)
 
                 self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
-                obj_attr_list["host_name"] = "unknown"
+                obj_attr_list["host_name"] = _reservation.id
 
                 _status = 0
 
@@ -974,6 +979,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                     _status = 916                
                 
             else :
+                obj_attr_list["host_name"] = "unknown"
                 obj_attr_list["last_known_state"] = "vm creation failed"
                 _fmsg = "Failed to obtain instance's (cloud-assigned) uuid. The "
                 _fmsg += "instance creation failed for some unknown reason."
@@ -1074,7 +1080,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                             if "mgt_901_deprovisioning_request_originated" not in obj_attr_list :
                                 obj_attr_list["mgt_901_deprovisioning_request_originated"] = _time_mark_drs
     
-                        result = _instance.destroy()
+                        _instance.destroy()
     
                         if firsttime :
                             obj_attr_list["mgt_902_deprovisioning_request_sent"] = int(time()) - int(obj_attr_list["mgt_901_deprovisioning_request_originated"])
@@ -1193,36 +1199,70 @@ class LibcloudCmds(CommonCloudFunctions) :
             _status, _msg = self.common_messages("VM", obj_attr_list, "captured", _status, _fmsg)
             return _status, _msg
 
-    def vmrunstate(self, obj_attr_list) :
-        '''
-        TBD
-        '''
-        try :
-            _status = 100
+    def vmrunstate_do(self, instance, credentials_list, obj_attr_list) :
+        _ts = obj_attr_list["target_state"]
+        _cs = obj_attr_list["current_state"]
 
+        if instance :
+            if _ts == "fail" :
+                LibcloudCmds.catalogs.cbtool[credentials_list].ex_shutdown_node(instance)
+            elif _ts == "save" :
+                LibcloudCmds.catalogs.cbtool[credentials_list].ex_shutdown_node(instance)
+            elif (_ts == "attached" or _ts == "resume") and _cs == "fail" :
+                LibcloudCmds.catalogs.cbtool[credentials_list].ex_power_on_node(instance)
+            elif (_ts == "attached" or _ts == "restore") and _cs == "save" :
+                LibcloudCmds.catalogs.cbtool[credentials_list].ex_power_on_node(instance)
+
+    def vmrunstate(self, obj_attr_list) :
+        _status = 100
+        _fmsg = "An error has occurred, but no error message was captured"
+        try :
             _ts = obj_attr_list["target_state"]
             _cs = obj_attr_list["current_state"]
 
             _credentials_list = obj_attr_list["credentials_list"]
             self.connect(_credentials_list)
 
-            if "mgt_201_runstate_request_originated" in obj_attr_list :
-                _time_mark_rrs = int(time())
-                obj_attr_list["mgt_202_runstate_request_sent"] = _time_mark_rrs - obj_attr_list["mgt_201_runstate_request_originated"]
-
+            _curr_tries = 0
+            _wait = int(obj_attr_list["update_frequency"])
             self.common_messages("VM", obj_attr_list, "runstate altering", 0, '')
 
-            _instance = self.get_instances(obj_attr_list)
+            firsttime = True
+            _time_mark_rrs = int(time())
+            _instance = False
+            while True :
+                _errmsg = "get_vm_instance"
+                cbdebug("Getting instance...")
+                _instance = self.get_vm_instance(obj_attr_list)
 
-            if _instance :
-                if _ts == "fail" :
-                    _instance.stop()
-                elif _ts == "save" :
-                    _instance.stop()
-                elif (_ts == "attached" or _ts == "resume") and _cs == "fail" :
-                    _instance.start()
-                elif (_ts == "attached" or _ts == "restore") and _cs == "save" :
-                    _instance.start()
+                _curr_tries += 1
+                _msg = "Inside runstate: " + _errmsg
+                _msg += " after " + str(_curr_tries) + " attempts. Will retry in " + str(_wait) + " seconds."
+                cbdebug(_msg)
+
+                if (_ts in ["fail", "save"] and _instance.state != NodeState.STOPPED) or (_ts in ["attached", "resume", "restore"] and _instance.state != NodeState.RUNNING) :
+                    try :
+                        if firsttime :
+                            if "mgt_201_runstate_request_originated" not in obj_attr_list :
+                                obj_attr_list["mgt_201_runstate_request_originated"] = _time_mark_rrs
+                        self.vmrunstate_do(_instance, credentials_list, obj_attr_list)
+                        if firsttime :
+                            obj_attr_list["mgt_202_runstate_request_sent"] = int(time()) - int(obj_attr_list["mgt_201_runstate_request_originated"])
+                        firsttime = False
+                    except Exception, e :
+                        cbwarn(str(e), True)
+
+                    cbdebug(self.description + " request still not complete. Will try again momentarily...", True)
+                    sleep(_wait)
+                    continue
+
+                break
+
+            if "mgt_201_runstate_request_originated" not in obj_attr_list :
+                obj_attr_list["mgt_201_runstate_request_originated"] = _time_mark_rrs
+
+            if "mgt_202_runstate_request_sent" not in obj_attr_list :
+                obj_attr_list["mgt_202_runstate_request_sent"] = int(time()) - int(obj_attr_list["mgt_201_runstate_request_originated"])
 
             _time_mark_rrc = int(time())
             obj_attr_list["mgt_203_runstate_request_completed"] = _time_mark_rrc - _time_mark_rrs

@@ -49,6 +49,7 @@ FORCE_FAILURE = $False
 DISABLE_TIMESYNC = $False
 IMAGE_PREFIX = $EMPTY
 IMAGE_SUFFIX = $EMPTY
+USERDATA = $True
 
 # We're not as big as amazon yet. Go easy on us please.
 [AI_DEFAULTS : DO_CLOUDCONFIG ]
@@ -79,12 +80,17 @@ HADOOP_HOME = /usr/local/hadoop
 [VM_TEMPLATES : DO_CLOUDCONFIG ]
 CHECK = size:512mb, imageids:1, imageid1:to_replace
 # imageid can be either the actual ID number or more easily the name in the case of a private account
-TINYVM = size:512mb, imageids:1, imageid1:16082940
-YATINYVM = size:512mb, imageids:1, imageid1:16082940
-CASSANDRA = size:4gb, imageids:1, imageid1:16071652
-YCSB = size:4gb, imageids:1, imageid1:16071652
-SEED = size:4gb, imageids:1, imageid1:16071652
-HADOOPMASTER = size:4gb, imageids:1, imageid1:16071743
-HADOOPSLAVE = size:4gb, imageids:1, imageid1:16071743
+TINYVM = size:512mb, imageids:1, imageid1:cloudbench-nullworkload-on-1604.060117-1, cloudinit_packages:openvpn;netperf
+NETCLIENT = size:512mb, imageids:1, imageid1:cloudbench-nullworkload-on-1604.060117-1, cloudinit_packages:netperf;openvpn
+NETSERVER = size:512mb, imageids:1, imageid1:cloudbench-nullworkload-on-1604.060117-1, cloudinit_packages:netperf;openvpn
+YATINYVM = size:512mb, imageids:1, imageid1:cloudbench-nullworkload-on-1604.060117-1, cloudinit_packages:openvpn
+CASSANDRA = size:4gb, imageids:1, imageid1:cloudbench-ycsb-cassandra-on-1604.060117-1, cloudinit_packages:openvpn
+YCSB = size:4gb, imageids:1, imageid1:cloudbench-ycsb-cassandra-on-1604.060117-1, cloudinit_packages:openvpn
+SEED = size:4gb, imageids:1, imageid1:cloudbench-ycsb-cassandra-on-1604.060117-1, cloudinit_packages:openvpn
+HADOOPMASTER = size:4gb, imageids:1, imageid1:cloudbench-hibench-hadoop-on-1604.060117-1, cloudinit_packages:openvpn
+HADOOPSLAVE = size:4gb, imageids:1, imageid1:cloudbench-hibench-hadoop-on-1604.060117-1, cloudinit_packages:openvpn
+UNIXBENCH = size:512mb,imageids:1,imageid1:cloudbench-nullworkload-on-1604.060117-1,cloudinit_packages:openvpn
+
+
 # Other images can be made on an as-needed basis or by creating your own
 # in your own private account

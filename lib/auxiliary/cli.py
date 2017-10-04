@@ -29,6 +29,7 @@ import sys
 import readline
 import re
 import xmlrpclib
+import socket
 
 from cmd import Cmd
 from pwd import getpwuid
@@ -541,8 +542,8 @@ class CBCLI(Cmd) :
             hdlr = RotatingFileHandler(options.logdest, maxBytes=20971520, \
                                        backupCount=20)
             
-        formatter = Formatter("[%(asctime)s] [%(levelname)s] %(message)s")
-#        formatter = Formatter('%(asctime)s %(levelname)s %(message)s')
+        # Need to make this rfc3164-compliant by including the 'hostname' and the 'program name'
+        formatter = Formatter(socket.getfqdn() + " cloudbench [%(levelname)s] %(message)s")
 
         status_formatter = Formatter('%(message)s')
         status_handler.setFormatter(status_formatter)

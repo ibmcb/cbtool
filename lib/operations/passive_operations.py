@@ -1214,7 +1214,8 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 _exp_counters = _stats["experiment_counters"]
                 
                 _aidrs = int(_exp_counters["AIDRS"]["reservations"]) 
-                _aidrs += int(_exp_counters["AIDRS"]["arrived"]) 
+                # Arrived doesn't mean that a submitter is present.
+                #_aidrs += int(_exp_counters["AIDRS"]["arrived"])
                 _aidrs += int(_exp_counters["AIDRS"]["arriving"]) 
 
                 if _aidrs :

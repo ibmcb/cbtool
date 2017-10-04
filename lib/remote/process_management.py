@@ -84,10 +84,13 @@ class ProcessManagement :
         _port = port
         
         if _local :
-            if self.username == "root" :
-                _cmd = "sudo su -c \"" + cmdline + "\""
-            else :    
-                _cmd = cmdline
+            # This is causing problems, but generally seems kind of wierd anyway.
+            # For whatever the original problem was, let's try to find a better solution.
+            # Seems to work fine without it.
+            #if self.username == "root" :
+            #    _cmd = "sudo su -c \"" + cmdline + "\""
+            #else :
+            _cmd = cmdline
         else :
             if self.username :
                 _username = " -l " + self.username + ' '
@@ -227,7 +230,7 @@ class ProcessManagement :
 
             if _status and len(_result_stderr) :
                 _msg = "Command \"" + cmdline + "\" failed to execute on "
-                _msg += "hostname " + str(override_hostname) + ", port " + str(port) + " after attempt "
+                _msg += "hostname " + str(override_hostname) + ", error: " + str(_result_stderr) + ", port " + str(port) + " after attempt "
                 _msg += str(_attempts) + ". Will try " + str(total_attempts - _attempts)
                 _msg += " more times."
                 cbdebug(_msg, True)

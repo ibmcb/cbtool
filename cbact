@@ -33,6 +33,7 @@ import sys
 import os
 import signal
 import threading
+import socket
 
 from lib.operations.active_operations import ActiveObjectOperations
 from lib.operations.passive_operations import PassiveObjectOperations
@@ -237,8 +238,9 @@ def setup_syslog(operation, facility, verbosity, port, hostname, quiet, logdest)
                                             int(port)), \
                                             facility=_syslog_selector[str(_facility)])
 
-        formatter = Formatter("[%(asctime)s] [%(levelname)s] %(message)s")
-#        formatter = Formatter('%(asctime)s %(levelname)s %(module)s %(message)s')
+        # Need to make this rfc3164-compliant by including the 'hostname' and the 'program name'
+        formatter = Formatter(socket.getfqdn() + " cloudbench [%(levelname)s] %(message)s")
+
         hdlr.setFormatter(formatter)
         logger.addHandler(hdlr)
 

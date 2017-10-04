@@ -198,16 +198,31 @@ collection_group {
     title = "CPU wio"
   }
 
-#  metric {
-#    name = "cpu_intr"
-#    value_threshold = "1.0"
-#    title = "CPU intr"
-#  }
-#  metric {
-#    name = "cpu_sintr"
-#    value_threshold = "1.0"
-#    title = "CPU sintr"
-#  }
+  metric {
+    name = "cpu_intr"
+    value_threshold = "1.0"
+    title = "CPU intr"
+  }
+  metric {
+    name = "cpu_sintr"
+    value_threshold = "1.0"
+    title = "CPU sintr"
+  }
+  metric {
+    name = "cpu_steal"
+    value_threshold = "1.0"
+    title = "CPU steal"
+  }
+  metric {
+    name = "cpu_guest"
+    value_threshold = "1.0"
+    title = "CPU guest"
+  }
+  metric {
+    name = "cpu_gnice"
+    value_threshold = "1.0"
+    title = "CPU gnice"
+  }
 }
 
 collection_group {
