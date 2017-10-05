@@ -394,7 +394,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                                     pass
                                 _running_volumes = True
                             else :
-                                _msg = "Cleaning up DigitalOcean. Ignoring volume: " + _volume.name
+                                _msg = "Cleaning up " + self.get_description() + ". Ignoring volume: " + _volume.name
                                 cbdebug(_msg)
     
                         if _running_volumes :
@@ -995,7 +995,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                 cbwarn(line, True)
             _status = 23
             _fmsg = str(e)
-            cbwarn("Error reaching digitalocean: " + _fmsg)
+            cbwarn("Error reaching " + self.get_description() + ":" + _fmsg)
 
         finally :
             if not _status :
