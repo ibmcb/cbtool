@@ -2249,7 +2249,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             return self.package(_status, _msg, _result)
             
     @trace
-    def run_api_service(self, passive, active, background, debug, port, hostnames) :
+    def run_api_service(self, passive, active, debug, port, hostnames) :
         '''
         TBD
         '''
@@ -2264,7 +2264,6 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 apiservice = APIService(self.pid, \
                                         passive, \
                                         active, \
-                                        background, \
                                         debug, \
                                         port, \
                                         hostname)

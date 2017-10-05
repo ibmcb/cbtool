@@ -421,6 +421,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
         '''
         TBD
         '''
+
+        if cld_attr_lst["model"].lower() == "sim" :
+            cbdebug("No need for a VPN server on simcloud.")
+            return
             
         _type = cld_attr_lst["vpn"]["kind"]
         _vpn_server_config = cld_attr_lst["space"]["generated_configurations_dir"] 
