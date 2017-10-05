@@ -1690,7 +1690,7 @@ packages:"""
                     return status, _msg
                 
             if operation == "cleaning up vms" :
-                _msg = "Removing all VMs previously created on VMC \""
+                _msg = "(" + str(obj_attr_list["tenant"] if "tenant" in obj_attr_list else "default") + ") " + "Removing all VMs previously created on VMC \""
                 _msg += obj_attr_list["name"] + "\" (only VM names starting with"
                 _msg += " \"" + "cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]
                 _msg += "\")....."
@@ -1698,7 +1698,7 @@ packages:"""
                 return status, _msg
 
             if operation == "cleaning up vvs" :
-                _msg = "Removing all VVs previously created on VMC \""
+                _msg = "(" + str(obj_attr_list["tenant"] if "tenant" in obj_attr_list else "default") + ") " + "Removing all VVs previously created on VMC \""
                 _msg += obj_attr_list["name"] + "\" (only VV names starting with"
                 _msg += " \"" + "cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]
                 _msg += "\")....."

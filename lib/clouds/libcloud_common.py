@@ -340,8 +340,6 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             for credentials_list in obj_attr_list["credentials"].split(","):
                 _status, _msg, _local_conn, _hostname = self.connect(credentials_list)
-                
-                self.common_messages("VMC", obj_attr_list, "cleaning up vms", 0, '')
     
             _running_instances = True
             while _running_instances :
@@ -349,6 +347,8 @@ class LibcloudCmds(CommonCloudFunctions) :
                 for credentials_list in obj_attr_list["credentials"].split(","):
                     credentials = credentials_list.split(":")
                     tenant = credentials[0]
+                    obj_attr_list["tenant"] = tenant
+                    self.common_messages("VMC", obj_attr_list, "cleaning up vms", 0, '')
 
                     _reservations = LibcloudCmds.catalogs.cbtool[credentials_list].list_nodes()
 
@@ -374,32 +374,31 @@ class LibcloudCmds(CommonCloudFunctions) :
                     if _running_instances :
                         sleep(int(obj_attr_list["update_frequency"]))
 
-                if self.use_volumes :    
-                    self.common_messages("VMC", obj_attr_list, "cleaning up vvs", 0, '')
+            if self.use_volumes :    
+                _running_volumes = True
+                while _running_volumes :
+                    _running_volumes = False
+                    for credentials_list in obj_attr_list["credentials"].split(","):
+                        credentials = credentials_list.split(":")
+                        tenant = credentials[0]
+                        self.common_messages("VMC", obj_attr_list, "cleaning up vvs", 0, '')
+                        obj_attr_list["tenant"] = tenant
     
+                        _volumes = LibcloudCmds.catalogs.cbtool[credentials_list].list_volumes()
+                        for _volume in _volumes :
+                            if _volume.name.count("cb-" + obj_attr_list["username"]) :
+                                try :
+                                    cbdebug("Destroying: " + _volume.name + " (" + tenant + ")", True)
+                                    _volume.destroy()
+                                except :
+                                    pass
+                                _running_volumes = True
+                            else :
+                                _msg = "Cleaning up DigitalOcean. Ignoring volume: " + _volume.name
+                                cbdebug(_msg)
     
-                    _running_volumes = True
-                    while _running_volumes :
-                        _running_volumes = False
-                        for credentials_list in obj_attr_list["credentials"].split(","):
-                            credentials = credentials_list.split(":")
-                            tenant = credentials[0]
-        
-                            _volumes = LibcloudCmds.catalogs.cbtool[credentials_list].list_volumes()
-                            for _volume in _volumes :
-                                if _volume.name.count("cb-" + obj_attr_list["username"]) :
-                                    try :
-                                        cbdebug("Destroying: " + _volume.name + " (" + tenant + ")", True)
-                                        _volume.destroy()
-                                    except :
-                                        pass
-                                    _running_volumes = True
-                                else :
-                                    _msg = "Cleaning up DigitalOcean. Ignoring volume: " + _volume.name
-                                    cbdebug(_msg)
-        
-                            if _running_volumes :
-                                sleep(int(obj_attr_list["update_frequency"]))
+                        if _running_volumes :
+                            sleep(int(obj_attr_list["update_frequency"]))
 
             _status = 0
             

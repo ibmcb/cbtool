@@ -37,7 +37,6 @@ import socket
 
 from lib.operations.active_operations import ActiveObjectOperations
 from lib.operations.passive_operations import PassiveObjectOperations
-from lib.operations.background_operations import BackgroundObjectOperations
 from lib.auxiliary.code_instrumentation import cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import str2dic, dic2str
 from lib.stores.mongodb_datastore_adapter import MongodbMgdConn
@@ -455,7 +454,6 @@ def main(options) :
 
         _active_obj_command = ActiveObjectOperations(_osci, _msci)
         _passive_obj_command = PassiveObjectOperations(_osci, _msci)
-        _background_obj_command = BackgroundObjectOperations(_osci, _msci)
             
         if _operation.count("attach") :
             
@@ -532,7 +530,6 @@ def main(options) :
             _obj_type = "GLOBAL"
             _status, _fmsg = _passive_obj_command.run_api_service(_passive_obj_command, \
                                                                  _active_obj_command, \
-                                                                 _background_obj_command, \
                                                                  options.debug_host,
                                                                  options.apiport,
                                                                  options.apihost.split(","))
