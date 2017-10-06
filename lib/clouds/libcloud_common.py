@@ -1244,14 +1244,14 @@ class LibcloudCmds(CommonCloudFunctions) :
                         if firsttime :
                             if "mgt_201_runstate_request_originated" not in obj_attr_list :
                                 obj_attr_list["mgt_201_runstate_request_originated"] = _time_mark_rrs
-                        self.vmrunstate_do(_instance, credentials_list, obj_attr_list)
+                        self.vmrunstate_do(_instance, _credentials_list, obj_attr_list)
                         if firsttime :
                             obj_attr_list["mgt_202_runstate_request_sent"] = int(time()) - int(obj_attr_list["mgt_201_runstate_request_originated"])
                         firsttime = False
                     except Exception, e :
                         cbwarn(str(e), True)
 
-                    cbdebug(self.description + " request still not complete. Will try again momentarily...", True)
+                    cbdebug(self.get_description() + " request still not complete. Will try again momentarily...", True)
                     sleep(_wait)
                     continue
 
