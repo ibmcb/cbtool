@@ -87,6 +87,7 @@ HADOOP_HOME = /usr/local/hadoop
 # DigitalOcean has made public images available for the following 3 workloads:
 [VM_TEMPLATES : DO_CLOUDCONFIG ]
 CHECK = size:512mb, imageids:1, imageid1:to_replace
+# These are public DigitalOcean images accessible by anyone with a valid DigitalOcean account.
 # imageid can be either the actual ID number or more easily the name in the case of a private account
 TINYVM = size:512mb, imageids:1, imageid1:cloudbench-nullworkload-on-1604.060117-1, cloudinit_packages:openvpn;netperf
 NETCLIENT = size:512mb, imageids:1, imageid1:cloudbench-nullworkload-on-1604.060117-1, cloudinit_packages:netperf;openvpn
