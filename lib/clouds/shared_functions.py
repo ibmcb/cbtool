@@ -1081,8 +1081,15 @@ class CommonCloudFunctions:
                     _registered_security_groups.append(_security_group.name)       
 
             if self.get_description() == "OpenStack Cloud" :
-                for _security_group in self.oskconncompute.security_groups.list() :
-                    _registered_security_groups.append(_security_group.name)                                        
+
+                if self.oskconnnetwork :
+                    for _security_group in self.oskconnnetwork.list_security_groups()["security_groups"] :
+                        
+                        if _security_group["name"] not in _registered_security_groups :
+                            _registered_security_groups.append(_security_group["name"])
+                else :
+                    for _security_group in self.oskconncompute.security_groups.list() :
+                        _registered_security_groups.append(_security_group.name)
             
             for _registered_security_group in _registered_security_groups :
                 if _registered_security_group == security_group_name :

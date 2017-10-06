@@ -206,7 +206,7 @@ class OskCmds(CommonCloudFunctions) :
                 _neutron_client = True
                 if self.use_neutronclient == "true" :
                     _neutron_client = False
-                    
+
                     from neutronclient.v2_0 import client as neutronc                           
 
                     if _session :
@@ -458,14 +458,15 @@ class OskCmds(CommonCloudFunctions) :
         _map_name_to_id = {}
         _map_id_to_name = {}
 
-        _registered_image_list = self.oskconncompute.images.list()
+        _registered_image_list = self.oskconncompute.glance.list()               
+#        _registered_image_list = self.oskconncompute.images.list()
         _registered_imageid_list = []
             
         for _registered_image in _registered_image_list :
             if "hypervisor_type" in vm_defaults :
                 if str(vm_defaults["hypervisor_type"]).lower() != "fake" :
-                    if "hypervisor_type" in _registered_image.metadata :
-                        if _registered_image.metadata["hypervisor_type"] == vm_defaults["hypervisor_type"] :                        
+                    if "hypervisor_type" in _registered_image._info :
+                        if _registered_image._info["hypervisor_type"] == vm_defaults["hypervisor_type"] :                        
                             _registered_imageid_list.append(_registered_image.id)
                             _map_name_to_id[_registered_image.name] = _registered_image.id
                 else :
@@ -580,8 +581,9 @@ class OskCmds(CommonCloudFunctions) :
                             _msg = "    Deleting floating IP " + _instance_metadata["cloud_floating_ip_uuid"]
                             _msg += ", associated with instance "
                             _msg += _instance.id + " (" + _instance.name + ")"
-                            cbdebug(_msg, True)                            
-                            self.oskconncompute.floating_ips.delete(_instance_metadata["cloud_floating_ip_uuid"])
+                            cbdebug(_msg, True)
+                            self.oskconnnetwork.delete_floatingip(_instance_metadata["cloud_floating_ip_uuid"])                             
+#                            self.oskconncompute.floating_ips.delete(_instance_metadata["cloud_floating_ip_uuid"])
                                                                         
                         _running_instances = True
                         if  _instance.status == "ACTIVE" :
@@ -976,7 +978,7 @@ class OskCmds(CommonCloudFunctions) :
             
             _fmsg = "An error has occurred, but no error message was captured"
 
-            _image_list = self.oskconncompute.images.list()
+            _image_list = self.oskconncompute.glance.list()
 
             _fmsg = "Please check if the defined image name is present on this "
             _fmsg += self.get_description()
@@ -999,11 +1001,11 @@ class OskCmds(CommonCloudFunctions) :
                     _hyper = obj_attr_list["hypervisor_type"]
     
                     for _image in list(_candidate_images) :
-                        if "hypervisor_type" in _image.metadata :
-                            if _image.metadata["hypervisor_type"] != obj_attr_list["hypervisor_type"] :
+                        if "hypervisor_type" in _image._info :
+                            if _image._info["hypervisor_type"] != obj_attr_list["hypervisor_type"] :
                                 _candidate_images.remove(_image)
                             else :
-                                _hyper = _image.metadata["hypervisor_type"]
+                                _hyper = _image._info["hypervisor_type"]
                 else :
                     obj_attr_list["hypervisor_type"] = ''
 
@@ -1926,8 +1928,8 @@ class OskCmds(CommonCloudFunctions) :
                 if self.is_cloud_image_uuid(obj_attr_list["imageid1"]) :
                     if "hypervisor_type" in obj_attr_list :
                         if str(obj_attr_list["hypervisor_type"]).lower() != "fake" :
-                            if "hypervisor_type" in _image.metadata :
-                                if _image.metadata["hypervisor_type"] == obj_attr_list["hypervisor_type"] :                        
+                            if "hypervisor_type" in _image._info :
+                                if _image._info["hypervisor_type"] == obj_attr_list["hypervisor_type"] :                        
                                     if _image.id == obj_attr_list["imageid1"] :
                                         _image.delete()
                                         break
@@ -1942,8 +1944,8 @@ class OskCmds(CommonCloudFunctions) :
                 else : 
                     if "hypervisor_type" in obj_attr_list :
                         if str(obj_attr_list["hypervisor_type"]).lower() != "fake" :
-                            if "hypervisor_type" in _image.metadata :
-                                if _image.metadata["hypervisor_type"] == obj_attr_list["hypervisor_type"] :
+                            if "hypervisor_type" in _image._info :
+                                if _image._info["hypervisor_type"] == obj_attr_list["hypervisor_type"] :
                                     if _image.name == obj_attr_list["imageid1"] :
                                         _image.delete()
                                         break
@@ -2157,12 +2159,19 @@ class OskCmds(CommonCloudFunctions) :
         if str(vm_defaults["create_jumphost"]).lower() != "false" or \
         str(vm_defaults["use_floating_ip"]).lower() != "false" :
 
-            _floating_pool_list = self.oskconncompute.floating_ip_pools.list()
-    
+            _floating_pool_dict = {}
+            for _network in self.oskconnnetwork.list_networks()["networks"] :
+                if _network["provider:physical_network"] and _network["provider:network_type"] == "flat" :
+                    if _network["name"] not in _floating_pool_dict :
+                        _floating_pool_dict[_network["name"]] = _network["id"]
+                        
+#            _floating_pool_list = self.oskconncompute.floating_ip_pools.list()
+
             if len(vm_defaults["floating_pool"]) < 2 :
-                if len(_floating_pool_list) == 1 :
-                    vm_defaults["floating_pool"] = _floating_pool_list[0].name
-                    
+                if len(_floating_pool_dict) == 1 :
+                    vm_defaults["floating_pool"] = _floating_pool_dict.keys()[0]
+#                    vm_defaults["floating_pool"] = _floating_pool_list[0].name
+ 
                     _msg = "A single floating IP pool (\"" 
                     _msg += vm_defaults["floating_pool"] + "\") was found on this"
                     _msg += " VMC. Will use this as the floating pool."
@@ -2175,9 +2184,13 @@ class OskCmds(CommonCloudFunctions) :
             
             _floating_pool_found = False
     
-            for _floating_pool in _floating_pool_list :
-                if _floating_pool.name == vm_defaults["floating_pool"] :
-                    _floating_pool_found = True
+            for _floating_pool in _floating_pool_dict.keys() :
+                if _floating_pool == vm_defaults["floating_pool"] :
+                    vm_defaults["floating_pool_id"] = _floating_pool_dict[_floating_pool]
+                    _floating_pool_found = True                        
+
+#                    if _floating_pool.name == vm_defaults["floating_pool"] :
+#                        _floating_pool_found = True
                             
             if not (_floating_pool_found) :
                 _msg = "ERROR! Please make sure that the floating IP pool "
@@ -2615,30 +2628,31 @@ class OskCmds(CommonCloudFunctions) :
             _call = "NAfpc"
             identifier = obj_attr_list["cloud_vm_name"]
             
-            if not self.oskconncompute :
+            if not self.oskconnnetwork :
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
                              obj_attr_list["vmc_name"])
 
             _fip = False
 
-            if str(obj_attr_list["always_create_floating_ip"]).lower() == "false" :
+#            if str(obj_attr_list["always_create_floating_ip"]).lower() == "false" :
+
+#                _call = "floating ip list"
+#                fips = self.oskconnnetwork.list_floatingips()
+#                fips = self.oskconnnetwork.floating_ips.list()
                 
-                _call = "floating ip list"
-                fips = self.oskconncompute.floating_ips.list()
-                
-                for _fip in fips :
-                    if _fip.instance_id == None :
-                        _fip = _fip.ip
-                        break
+#                for _fip in fips :
+#                    if _fip.instance_id == None :
+#                        _fip = _fip.ip
+#                        break
 
             if not _fip :
                 _call = "floating ip create"
                 _mark_a = time()
-                _fip_h = self.oskconncompute.floating_ips.create(obj_attr_list["floating_pool"])
+                _fip_h = self.oskconnnetwork.create_floatingip({"floatingip": {"floating_network_id": obj_attr_list["floating_pool_id"]}}) 
+#                _fip_h = self.oskconncompute.floating_ips.create(obj_attr_list["floating_pool"])
                 self.annotate_time_breakdown(obj_attr_list, "create_fip_time", _mark_a)
-                                    
-                _fip = _fip_h.ip
-                obj_attr_list["cloud_floating_ip_uuid"] = _fip_h.id
+                _fip = _fip_h["floatingip"]["floating_ip_address"]
+                obj_attr_list["cloud_floating_ip_uuid"] = _fip_h["floatingip"]["id"]
 
             return _fip
 
@@ -2690,8 +2704,8 @@ class OskCmds(CommonCloudFunctions) :
 
             if "cloud_floating_ip_uuid" in obj_attr_list :
                 _call = "floating ip delete"
-                self.oskconncompute.floating_ips.delete(obj_attr_list["cloud_floating_ip_uuid"])
-                
+#                self.oskconncompute.floating_ips.delete(obj_attr_list["cloud_floating_ip_uuid"])
+                self.oskconnnetwork.delete_floatingip(obj_attr_list["cloud_floating_ip_uuid"])                
             return True
 
         except novaexceptions, obj:
