@@ -216,7 +216,7 @@ RUN yum install -y iptables
 # novaclient-install-pip
 RUN pip install --upgrade pbr
 RUN pip install --upgrade netifaces
-RUN pip install --upgrade python-novaclient==6.0.0
+RUN pip install --upgrade python-novaclient
 # novaclient-install-pip
 
 # neutronclient-install-pip
