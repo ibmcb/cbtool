@@ -1275,8 +1275,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     assert(len(_vmc_uuid_list))
                     obj_attr_list["vmc"] = choice(_vmc_uuid_list).split('|')[0]
 
-                    if True : # use round-robin
-                        self.osci.update_object_attribute(_cn, "VMC", obj_attr_list["vmc"], False, "visited", True)
+                    self.osci.update_object_attribute(_cn, "VMC", obj_attr_list["vmc"], False, "visited", True)
                     
                     if not obj_attr_list["vmc"] :
                         _fmsg = "No VMCs on pool \"" +  obj_attr_list["vmc_pool"] + "\""
