@@ -217,18 +217,18 @@ class RedisMgdConn :
             for _key in cloud_kv_list["ai_templates"].keys() :
                 if _key.count("_sut") :
                     _actual_ai_type_name = _key.replace("_sut", '')
-                        
+
                     for _key_suffix in ["load_profile", "sut", \
                                         "load_generator_role", "load_manager_role",\
                                         "metric_aggregator_role", "capture_role",\
                                         "start", "load_profile", "load_level",\
                                         "load_duration", "profiles", "category" ] :
-                        
+
                         if _actual_ai_type_name + '_' + _key_suffix not in cloud_kv_list["ai_templates"] :
                             _msg = "The AI type \"" + _actual_ai_type_name + "\""
                             _msg += " is missing the mandatory parameter \"" 
                             _msg += _key_suffix + "\"." 
-                            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+                            raise self.ObjectStoreMgdConnException(str(_msg), 90)
 
                         _category = _actual_ai_type_name + '_' + _key_suffix
 
@@ -710,7 +710,10 @@ class RedisMgdConn :
 
         if counter_name != "none" :
             _obj_inst_fn = obj_inst + ':' + obj_type + ':' + counter_name
-            _nr_objects = self.redis_conn.get(_obj_inst_fn)
+            if self.redis_conn.type(_obj_inst_fn) == "set" :
+                _nr_objects = self.redis_conn.scard(_obj_inst_fn)
+            else :
+                _nr_objects = self.redis_conn.get(_obj_inst_fn)
         else :
             _obj_inst_fn = obj_inst + ':' + obj_type
             _nr_objects = self.redis_conn.scard(_obj_inst_fn)

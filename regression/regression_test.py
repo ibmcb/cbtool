@@ -34,6 +34,8 @@ import HTML
 import re
 import sys
 
+home = os.path.expanduser("~")
+
 def make_regression_test(reg_tst_f_contents, reg_tst_expl_fn, override_cb_dir) :
     '''
     TBD
@@ -47,14 +49,21 @@ def make_regression_test(reg_tst_f_contents, reg_tst_expl_fn, override_cb_dir) :
 
     if not override_cb_dir :
         _cb_dir = path[0] + "/../"
+        # Let's make CB_DIRECTORY user-agnostic by expanding and replacing '~' at runtime
+        # instead of hard-coding it. This way, we don't have to type 'make' all the time.
+        # Make should only typed if the test plan actually changes.
+
+        if len(_cb_dir) > len(home) and _cb_dir[:len(home)] == home :
+            _cb_dir = "~" + _cb_dir[len(home):]
     else :
         _cb_dir = override_cb_dir
 
     for _nr in range(0,2) :
         for _line_number, _line_contents in enumerate(reg_tst_f_contents) :
+            if _line_contents.strip() > 0 and _line_contents[0] == "#" :
+                continue
             _line_contents = _line_contents.strip('\n')
-            _line_contents = _line_contents.replace("CB_DIRECTORY", 
-                                _cb_dir)
+            _line_contents = _line_contents.replace("CB_DIRECTORY", _cb_dir)
     
             if _line_contents == "DNRTT" :
                 _line_contents = False

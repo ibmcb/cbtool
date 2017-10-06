@@ -13,7 +13,6 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 *******************************************************************************/
-  debugger;
 var bootdest = "";
 //var bootdest = window.location.href.match(/[^/]*\/([^/]*)/g)[2];
 var last_data = '';
