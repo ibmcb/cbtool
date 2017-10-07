@@ -224,7 +224,7 @@ class MongodbMgdConn :
 
             for _collection in _collections :
                 _collection_handle = self.mongodb_conn[self.database][_collection]
-                _collection_handle.drop()
+                #_collection_handle.drop()
                 
             _collections = [ "trace_" + username, \
                             "management_HOST_" + username, \
