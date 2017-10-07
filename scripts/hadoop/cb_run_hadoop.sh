@@ -163,7 +163,7 @@ then
     update_app_datagentime ${DATA_GENERATION_TIME}
     if [[ $(cat ${GEN_OUTPUT_FILE} | grep -c 'HDFS_BYTES_WRITTEN\|Bytes Written') -ne 0 ]]
     then
-        update_app_datagensize $(cat ${RUN_OUTPUT_FILE} | grep 'HDFS_BYTES_WRITTEN\|Bytes Written' | head -n 1 | cut -d '=' -f 2)
+        update_app_datagensize $(cat ${GEN_OUTPUT_FILE} | grep 'HDFS_BYTES_WRITTEN\|Bytes Written' | head -n 1 | cut -d '=' -f 2)
     fi
     
 else
