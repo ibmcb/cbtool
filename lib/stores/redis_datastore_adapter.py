@@ -98,7 +98,7 @@ class RedisMgdConn :
             _msg += str(self.port) + "database " + str(self.dbid) + ": "
             _msg += str(msg) + '.'
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 1)
+            raise self.ObjectStoreMgdConnException(str(_msg), 74)
 
     @trace
     def disconnect(self) :
@@ -123,7 +123,7 @@ class RedisMgdConn :
             _msg += str(self.port) + "database " + str(self.dbid) + ": "
             _msg += str(msg) + '.'
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 1)
+            raise self.ObjectStoreMgdConnException(str(_msg), 75)
 
     @trace
     def conn_check(self) :
@@ -134,7 +134,7 @@ class RedisMgdConn :
             try :
                 self.connect(self.timout)
             except self.ObjectStoreMgdConnException, obj :
-                raise self.ObjectStoreMgdConnException(obj.msg, 2)
+                raise self.ObjectStoreMgdConnException(obj.msg, 3)
 
     @trace        
     def initialize_object_store(self, cloud_name, cloud_kv_list, cond) :
@@ -217,18 +217,18 @@ class RedisMgdConn :
             for _key in cloud_kv_list["ai_templates"].keys() :
                 if _key.count("_sut") :
                     _actual_ai_type_name = _key.replace("_sut", '')
-                        
+
                     for _key_suffix in ["load_profile", "sut", \
                                         "load_generator_role", "load_manager_role",\
                                         "metric_aggregator_role", "capture_role",\
                                         "start", "load_profile", "load_level",\
                                         "load_duration", "profiles", "category" ] :
-                        
+
                         if _actual_ai_type_name + '_' + _key_suffix not in cloud_kv_list["ai_templates"] :
                             _msg = "The AI type \"" + _actual_ai_type_name + "\""
                             _msg += " is missing the mandatory parameter \"" 
                             _msg += _key_suffix + "\"." 
-                            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+                            raise self.ObjectStoreMgdConnException(str(_msg), 90)
 
                         _category = _actual_ai_type_name + '_' + _key_suffix
 
@@ -273,7 +273,7 @@ class RedisMgdConn :
             _msg = "The connection to the data store seems to be "
             _msg += "severed: " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 93)
 
         except ResponseError, msg :
             _msg = "Unable to initialize the contents of the Redis "
@@ -281,7 +281,7 @@ class RedisMgdConn :
             _msg += str(self.port) + " database " + str(self.dbid) + ": "
             _msg += str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 1)
+            raise self.ObjectStoreMgdConnException(str(_msg), 76)
 
     def reset_counters(self, cloud_name, cloud_kv_list, reset_exp_counter = True, counter_list = None) :
         '''
@@ -316,7 +316,7 @@ class RedisMgdConn :
             _msg = "The connection to the data store seems to be "
             _msg += "severed: " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 6)
 
         except ResponseError, msg :
             _msg = "Unable to initialize the contents of the Redis "
@@ -324,7 +324,7 @@ class RedisMgdConn :
             _msg += str(self.port) + " database " + str(self.dbid) + ": "
             _msg += str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 1)
+            raise self.ObjectStoreMgdConnException(str(_msg), 77)
 
     @trace
     def flush_object_store(self) :
@@ -392,7 +392,7 @@ class RedisMgdConn :
             _msg = "The connection to the data store seems to be "
             _msg += "severed: " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 7)
 
         except ResponseError, msg :
             _msg = "Unable to flush the contents of the Redis "
@@ -400,7 +400,7 @@ class RedisMgdConn :
             _msg += str(self.port) + " database " + str(self.dbid) + ": "
             _msg += str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 1)
+            raise self.ObjectStoreMgdConnException(str(_msg), 78)
     
     @trace    
     def update_cloud(self, cloud_name, cld_attrs) :
@@ -420,7 +420,7 @@ class RedisMgdConn :
             _msg = "The connection to the data store seems to be "
             _msg += "severed: " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 8)
 
         except ResponseError, msg :
             _msg = "Unable to update cloud attributes for "
@@ -428,7 +428,7 @@ class RedisMgdConn :
             _msg += str(self.port) + " database " + str(self.dbid) + ": "
             _msg += str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 1)
+            raise self.ObjectStoreMgdConnException(str(_msg), 79)
 
     @trace
     def signal_api_refresh(self, cloud_name) :
@@ -444,12 +444,12 @@ class RedisMgdConn :
             _msg = "The connection to the data store seems to be "
             _msg += "severed: " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 9)
 
         except ResponseError, msg :
             _msg = "Failed to signal API refresh! "  + msg
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 10)
             
     @trace
     def object_exists(self, cloud_name, obj_type, obj_id, can_be_tag, check_timeout = False) :
@@ -514,13 +514,13 @@ class RedisMgdConn :
             _msg = "The connection to the data store seems to be "
             _msg += "severed: " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 11)
 
         except ResponseError, msg :
             _msg = obj_type + " object " + obj_id + "'s existence could not be " 
             _msg += "checked: " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 12)
 
     @trace
     def create_object(self, cloud_name, obj_type, obj_uuid, obj_attr_list, lock, cond, \
@@ -549,7 +549,7 @@ class RedisMgdConn :
                     _msg += "added to object list because it already exists "
                     _msg += "there (FQIN: " + _obj_inst_fn + ")." 
                     cberr(_msg)
-                    raise self.ObjectStoreMgdConnException(str(_msg), 2)
+                    raise self.ObjectStoreMgdConnException(str(_msg), 13)
 
             self.redis_conn.sadd(_obj_inst_fn, obj_uuid)
             _msg = obj_type + " object " + obj_uuid + " added to object list "
@@ -641,7 +641,7 @@ class RedisMgdConn :
             cberr(_msg)
             if lock :
                 self.release_lock(cloud_name, obj_type, obj_uuid, _create_lock)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 14)
 
         except ResponseError, msg :
             _msg = obj_type + " object " + obj_uuid + " could not be created: " 
@@ -649,7 +649,7 @@ class RedisMgdConn :
             cberr(_msg)
             if lock :
                 self.release_lock(cloud_name, obj_type, obj_uuid, _create_lock)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 15)
 
     @trace
     def get_object_list(self, cloud_name, obj_type, auto_cleanup = False) :
@@ -692,13 +692,13 @@ class RedisMgdConn :
             _msg = "The connection to the data store seems to be "
             _msg += "severed: " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 16)
 
         except ResponseError, msg :
             _msg = obj_type + " object list could not be retrieved:"
             _msg += str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 17)
 
     @trace
     def count_object(self, cloud_name, obj_type, counter_name = "none") :
@@ -710,7 +710,10 @@ class RedisMgdConn :
 
         if counter_name != "none" :
             _obj_inst_fn = obj_inst + ':' + obj_type + ':' + counter_name
-            _nr_objects = self.redis_conn.get(_obj_inst_fn)
+            if self.redis_conn.type(_obj_inst_fn) == "set" :
+                _nr_objects = self.redis_conn.scard(_obj_inst_fn)
+            else :
+                _nr_objects = self.redis_conn.get(_obj_inst_fn)
         else :
             _obj_inst_fn = obj_inst + ':' + obj_type
             _nr_objects = self.redis_conn.scard(_obj_inst_fn)
@@ -725,13 +728,13 @@ class RedisMgdConn :
             _msg = "The connection to the data store seems to be "
             _msg += "severed: " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 18)
 
         except ResponseError, msg :
             _msg = obj_type + " object list could not be retrieved:"
             _msg += str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 19)
 
     @trace
     def get_object_state(self, cloud_name, obj_type, obj_uuid) :
@@ -755,13 +758,13 @@ class RedisMgdConn :
             _msg = "The connection to the data store seems to be "
             _msg += "severed: " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 20)
 
         except ResponseError, msg :
             _msg = obj_type + " object state could not be retrieved:"
             _msg += str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 21)
 
     @trace
     def set_object_state(self, cloud_name, obj_type, obj_uuid, value) :
@@ -785,13 +788,13 @@ class RedisMgdConn :
             _msg = "The connection to the data store seems to be "
             _msg += "severed: " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 21)
 
         except ResponseError, msg :
             _msg = obj_type + " object state could not be updated:"
             _msg += str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 22)
 
     @trace
     def get_object(self, cloud_name, obj_type, can_be_tag, obj_id, lock) :
@@ -817,7 +820,7 @@ class RedisMgdConn :
                 _msg += "retrieved from object list (FQIN: " + _obj_inst_fn
                 _msg += ")."
                 cberr(_msg)
-                raise self.ObjectStoreMgdConnException(str(_msg), 2)
+                raise self.ObjectStoreMgdConnException(str(_msg), 23)
 
             _obj_id_fn = _obj_inst_fn + ':' + _obj_uuid    
             _obj_id_dict = self.redis_conn.hgetall(_obj_id_fn)
@@ -831,7 +834,7 @@ class RedisMgdConn :
                 _msg += "list could not be retrieved (FQON: " + _obj_id_fn
                 _msg += ")."
                 cberr(_msg)
-                raise self.ObjectStoreMgdConnException(str(_msg), 3)
+                raise self.ObjectStoreMgdConnException(str(_msg), 80)
 
             if lock :
                 self.release_lock(cloud_name, obj_type, obj_id, _get_lock)
@@ -843,7 +846,7 @@ class RedisMgdConn :
             cberr(_msg)
             if lock :
                 self.release_lock(cloud_name, obj_type, obj_id, _get_lock)
-            raise self.ObjectStoreMgdConnException(str(_msg), 4)
+            raise self.ObjectStoreMgdConnException(str(_msg), 91)
 
         except ResponseError, msg :
             _msg = obj_type + " object " + str(_obj_uuid) + " could not be " 
@@ -851,7 +854,7 @@ class RedisMgdConn :
             cberr(_msg)
             if lock :
                 self.release_lock(cloud_name, obj_type, obj_id, _get_lock)
-            raise self.ObjectStoreMgdConnException(str(_msg), 5)
+            raise self.ObjectStoreMgdConnException(str(_msg), 92)
 
 ################################################################################
     @trace
@@ -891,7 +894,7 @@ class RedisMgdConn :
             _msg = "The connection to the data store seems to be "
             _msg += "severed: " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 24)
 
         except ResponseError, msg :
             _msg =  obj_type + " FAILED object " + obj_uuid + " pending " + obj_key
@@ -899,7 +902,7 @@ class RedisMgdConn :
             _msg += str(obj_value) + "\" (FQON: " + _obj_id_fn + "): "
             _msg += str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 25)
         
     @trace        
     def pending_object_remove(self, cloud_name, obj_type, obj_uuid, obj_key, lock = False) :
@@ -928,7 +931,7 @@ class RedisMgdConn :
             _msg = "The connection to the data store seems to be "
             _msg += "severed: " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 26)
 
         except ResponseError, msg :
             _msg =  obj_type + " FAILED object " + obj_uuid + " pending " + obj_key
@@ -936,7 +939,7 @@ class RedisMgdConn :
             _msg += " (FQON: " + _obj_id_fn + "): "
             _msg += str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 27)
         
     @trace        
     def pending_object_exists(self, cloud_name, obj_type, obj_uuid, obj_key, lock = False) :
@@ -960,7 +963,7 @@ class RedisMgdConn :
             _msg = "The connection to the data store seems to be "
             _msg += "severed: " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 28)
 
         except ResponseError, msg :
             _msg =  obj_type + " FAILED object " + obj_uuid + " pending status " 
@@ -968,7 +971,7 @@ class RedisMgdConn :
             _msg += " (FQON: " + _obj_id_fn + "): "
             _msg += str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 29)
     @trace        
     def pending_object_get(self, cloud_name, obj_type, obj_uuid, obj_key = "all", failcheck = True, lock = False) :
         '''
@@ -993,7 +996,7 @@ class RedisMgdConn :
                 _msg += ")."
                 cberr(_msg)
                 if failcheck :
-                    raise self.ObjectStoreMgdConnException(str(_msg), 2)
+                    raise self.ObjectStoreMgdConnException(str(_msg), 30)
                 return False
 
             if obj_key == "all" :
@@ -1012,7 +1015,7 @@ class RedisMgdConn :
             _msg = "The connection to the data store seems to be "
             _msg += "severed: " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 31)
 
         except ResponseError, msg :
             _msg =  obj_type + " FAILED object " + obj_uuid + " pending status " 
@@ -1020,7 +1023,7 @@ class RedisMgdConn :
             _msg += " (FQON: " + _obj_id_fn + "): "
             _msg += str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 32)
 ################################################################################
 
     @trace        
@@ -1040,7 +1043,6 @@ class RedisMgdConn :
                 _update_lock = self.acquire_lock(cloud_name, obj_type, obj_id, \
                                                  "update_object", 1)
 
-
             _obj_uuid = self.object_exists(cloud_name, obj_type, obj_id, can_be_tag)
 
             if not _obj_uuid :
@@ -1048,15 +1050,13 @@ class RedisMgdConn :
                 _msg += "retrieved from object list (FQIN: " + _obj_inst_fn
                 _msg += ")."
                 cberr(_msg)
-                raise self.ObjectStoreMgdConnException(str(_msg), 2)
+                raise self.ObjectStoreMgdConnException(str(_msg), 33)
 
             _obj_id_fn = _obj_inst_fn + ':' + _obj_uuid    
 
             if counter :
-
                 _val = self.redis_conn.hincrby(_obj_id_fn, obj_key, obj_value)
             else :
-
                 _val = self.redis_conn.hset(_obj_id_fn, obj_key, obj_value)
 
             _msg =  obj_type + " object " + _obj_uuid + " attribute \"" 
@@ -1074,7 +1074,7 @@ class RedisMgdConn :
             cberr(_msg)
             if lock :
                 self.release_lock(cloud_name, obj_type, _obj_uuid, _update_lock)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 34)
 
         except ResponseError, msg :
             _msg =  obj_type + " object " + _obj_uuid + " attribute \"" 
@@ -1084,7 +1084,7 @@ class RedisMgdConn :
             cberr(_msg)
             if lock :
                 self.release_lock(cloud_name, obj_type, _obj_uuid, _update_lock)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 35)
 
     @trace
     def remove_object_attribute(self, cloud_name, obj_type, obj_id, can_be_tag, obj_key) :
@@ -1104,7 +1104,7 @@ class RedisMgdConn :
                 _msg += " retrieved from object list (FQIN: " + _obj_inst_fn
                 _msg += ")."
                 cberr(_msg)
-                raise self.ObjectStoreMgdConnException(str(_msg), 2)
+                raise self.ObjectStoreMgdConnException(str(_msg), 36)
             
             _obj_id_fn = _obj_inst_fn + ':' + str(_obj_uuid)
 
@@ -1120,14 +1120,14 @@ class RedisMgdConn :
             _msg = "The connection to the data store seems to be "
             _msg += "severed: " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 37)
 
         except ResponseError, msg :
             _msg = obj_type + " object " + obj_id + " could not have the "
             _msg += "attribute \"" + obj_key + "\" removed (FQON: " + _obj_id_fn
             _msg += ")."
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 38)
 
     @trace
     def update_object_views(self, cloud_name, obj_type, obj_uuid, obj_attr_list, action, lock):
@@ -1175,7 +1175,7 @@ class RedisMgdConn :
             cberr(_msg)
             if lock :
                 self.release_lock(cloud_name, obj_type, obj_uuid, _destroy_lock)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 39)
 
         except ResponseError, msg :
             _msg = obj_type + " object " + obj_uuid + " could not be destroyed:" 
@@ -1183,7 +1183,7 @@ class RedisMgdConn :
             cberr(_msg)
             if lock :
                 self.release_lock(cloud_name, obj_type, obj_uuid, _destroy_lock)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 40)
         
     @trace
     def destroy_object(self, cloud_name, obj_type, obj_uuid, obj_attr_list, lock) :
@@ -1274,7 +1274,7 @@ class RedisMgdConn :
             cberr(_msg)
             if lock :
                 self.release_lock(cloud_name, obj_type, obj_uuid, _destroy_lock)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 41)
 
         except ResponseError, msg :
             _msg = obj_type + " object " + obj_uuid + " could not be destroyed:" 
@@ -1282,7 +1282,7 @@ class RedisMgdConn :
             cberr(_msg)
             if lock :
                 self.release_lock(cloud_name, obj_type, obj_uuid, _destroy_lock)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 42)
 
     @trace
     def tag_object(self, cloud_name, tag_type, tag_value, obj_type, obj_uuid) :
@@ -1330,14 +1330,14 @@ class RedisMgdConn :
             _msg = "The connection to the data store seems to be "
             _msg += "severed: " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 43)
 
         except ResponseError, msg :
             _msg = obj_type + " object " + obj_uuid + " could not be tagged "
             _msg += " with \"" + tag_type + "\" = \"" + tag_value + " (FQTN: "
             _msg += _tag_inst_fn + "): " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 44)
 
     @trace
     def untag_object(self, cloud_name, tag_type, tag_value, obj_type, obj_uuid) :
@@ -1377,13 +1377,13 @@ class RedisMgdConn :
             _msg = "The connection to the data store seems to be "
             _msg += "severed: " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 45)
 
         except ResponseError, msg :
             _msg = obj_type + " object " + obj_uuid + " could not be untagged "
             _msg += "  (FQTN: " + _tag_type_fn + "): " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 46)
 
     @trace
     def add_to_list(self, cloud_name, obj_type, list_name, obj_identifier, score = False) :
@@ -1406,14 +1406,14 @@ class RedisMgdConn :
             _msg = "The connection to the data store seems to be "
             _msg += "severed: " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 47)
 
         except ResponseError, msg :
             _msg = obj_type + " object " + obj_identifier + " could not be added "
             _msg += " to the list " + list_name + " (FQLN: " + _obj_inst_fn
             _msg += "): " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 48)
 
     @trace
     def get_list(self, cloud_name, obj_type, list_name, score = False) :
@@ -1438,13 +1438,13 @@ class RedisMgdConn :
             _msg = "The connection to the data store seems to be "
             _msg += "severed: " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 49)
 
         except ResponseError, msg :
             _msg = obj_type + " object list " + list_name + " could not be "
             _msg += "retrieved (FQLN: " + _obj_inst_fn + "): " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 50)
 
     @trace
     def remove_from_list(self, cloud_name, obj_type, list_name, obj_identifier, score = False) :
@@ -1467,14 +1467,14 @@ class RedisMgdConn :
             _msg = "The connection to the data store seems to be "
             _msg += "severed: " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 51)
 
         except ResponseError, msg :
             _msg = obj_type + " object " + obj_identifier + " could not be removed "
             _msg += "from the list " + list_name + " (FQLN: " + _obj_inst_fn
             _msg += "): " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 52)
 
     @trace
     def add_to_view(self, cloud_name, obj_type, obj_attr_list, criterion, ordering) :
@@ -1527,14 +1527,14 @@ class RedisMgdConn :
             _msg = "The connection to the data store seems to be "
             _msg += "severed: " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 53)
 
         except ResponseError, msg :
             _msg = obj_type + " object " + _object_identifier + " could not be "
             _msg = " added to the \"" + criterion + " view (FQVN: "
             _msg += _view_expression_fn + "): " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 54)
 
     @trace
     def query_by_view(self, cloud_name, obj_type, criterion, expression, \
@@ -1582,7 +1582,7 @@ class RedisMgdConn :
             _msg = "The connection to the data store seems to be "
             _msg += "severed: " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 55)
 
         except ResponseError, msg :
             _msg = obj_type + " object id(s) could not be retrieved from the \""
@@ -1590,7 +1590,7 @@ class RedisMgdConn :
             _msg += "sorted by \"" + ordering + "\" time : "
             _msg += str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 56)
 
     def get_remote_time(self):
         '''
@@ -1660,14 +1660,14 @@ class RedisMgdConn :
             _msg = "The connection to the data store seems to be "
             _msg += "severed: " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 57)
 
         except ResponseError, msg :
             _msg = obj_type + " object " + _object_identifier + " could not be "
             _msg = " removed from the \"" + criterion + " view (FQVN: "
             _msg += _view_expression_fn + "): " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 58)
 
     @trace        
     def publish_message(self, cloud_name, obj_type, channel, message, tries, tout) :
@@ -1711,13 +1711,13 @@ class RedisMgdConn :
                 _msg = "The connection to the data store seems to be "
                 _msg += "severed: " + str(msg)
                 cberr(_msg)
-                raise self.ObjectStoreMgdConnException(str(_msg), 2)
+                raise self.ObjectStoreMgdConnException(str(_msg), 59)
 
             except ResponseError, msg :
                 _msg = "Message " + message + " could not be published on the "
                 _msg += "channel " + _comm_chn + ": " + str(msg)
                 cberr(_msg)
-                raise self.ObjectStoreMgdConnException(str(_msg), 2)
+                raise self.ObjectStoreMgdConnException(str(_msg), 60)
 
     @trace    
     def subscribe(self, cloud_name, obj_type, channel, timeout = 86500) :
@@ -1748,13 +1748,13 @@ class RedisMgdConn :
                 _msg = "The connection to the data store seems to be "
                 _msg += "severed: " + str(msg)
                 cberr(_msg)
-                raise self.ObjectStoreMgdConnException(str(_msg), 2)
+                raise self.ObjectStoreMgdConnException(str(_msg), 61)
     
             except ResponseError, msg :
                 _msg = "Channel " + channel + " could not be subscribed "
                 _msg += ": " + str(msg)
                 cberr(_msg)
-                raise self.ObjectStoreMgdConnException(str(_msg), 2)
+                raise self.ObjectStoreMgdConnException(str(_msg), 62)
 
     @trace
     def update_counter(self, cloud_name, obj_type, obj_id, delta) :
@@ -1787,13 +1787,13 @@ class RedisMgdConn :
             _msg = "The connection to the data store seems to be "
             _msg += "severed: " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 63)
 
         except ResponseError, msg :
             _msg = "Object " + _obj_id_fn + " could not be atomically " + delta
             _msg += "ed: " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 64)
 
     @trace
     def get_counter(self, cloud_name, obj_type, obj_id) :
@@ -1816,12 +1816,12 @@ class RedisMgdConn :
             _msg = "The connection to the data store seems to be "
             _msg += "severed: " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 65)
 
         except ResponseError, msg :
             _msg = "Object " + _obj_id_fn + " could not retrieved: " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 66)
 
     @trace
     def acquire_lock(self, cloud_name, obj_type, obj_id, id_str, tout_fct) :
@@ -1861,7 +1861,7 @@ class RedisMgdConn :
                     _msg += ". After a tout of " + str(self.timout/tout_fct )
                     _msg += " seconds. "
                     cberr(_msg)
-                    raise self.ObjectStoreMgdConnException(str(_msg), 2) 
+                    raise self.ObjectStoreMgdConnException(str(_msg), 67) 
 
             # retrieve the lock string again
             _lock = self.redis_conn.get(_obj_lock_id_fn)
@@ -1876,7 +1876,7 @@ class RedisMgdConn :
                 _msg += "Do not have the lock on the key."
                 _msg += _obj_lock_id_fn
                 cberr(_msg)
-                raise self.ObjectStoreMgdConnException(str(_msg), 2) 
+                raise self.ObjectStoreMgdConnException(str(_msg), 68)
 
             _msg = "Will set an expiration time on the lock "
             _msg += "at the key " + _obj_lock_id_fn
@@ -1894,13 +1894,13 @@ class RedisMgdConn :
             _msg = "The connection to the data store seems to be "
             _msg += "severed: " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 69)
 
         except ResponseError, msg :
             _msg = "Unable to get the lock on key " + _obj_lock_id_fn + ": "
             _msg += str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 70)
 
     @trace
     def release_lock(self, cloud_name, obj_type, obj_id, lock_str) :
@@ -1927,7 +1927,7 @@ class RedisMgdConn :
                 _msg += ". I am not the owner of the lock. "
                 _msg += " The lock string is " + _lock_str_got
                 cberr(_msg)
-                raise self.ObjectStoreMgdConnException(str(_msg), 2)
+                raise self.ObjectStoreMgdConnException(str(_msg), 71)
 
             elif _lock_str_got == lock_str :
                 _msg = "I am the process who has lock on the key " + _obj_lock_id_fn
@@ -1946,13 +1946,13 @@ class RedisMgdConn :
             _msg = "The connection to the data store seems to be "
             _msg += "severed: " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 72)
 
         except ResponseError, msg :
             _msg = "Unable to get the lock on key " + _obj_lock_id_fn + ": "
             _msg += str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 73)
 
     @trace
     def get_info(self) :
@@ -1978,4 +1978,4 @@ class RedisMgdConn :
             _msg = "The connection to the data store seems to be "
             _msg += "severed: " + str(msg)
             cberr(_msg)
-            raise self.ObjectStoreMgdConnException(str(_msg), 2)
+            raise self.ObjectStoreMgdConnException(str(_msg), 89)

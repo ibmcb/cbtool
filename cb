@@ -52,7 +52,7 @@ def main() :
             break
 
     _path = re.compile(".*\/").search(os.path.realpath(__file__)).group(0)
-    _history = _path + "/.cb_history"
+    _history = os.path.expanduser("~") + "/.cb_history"
     _3rd_party = _path + "/3rd_party"
 
     _version = get_version(_path)
@@ -142,6 +142,6 @@ def main() :
                 break
             except KeyboardInterrupt :
                 print ("CTRL-D or quit to exit")
-    readline.write_history_file(path[0] + "/.cb_history")
+    readline.write_history_file(os.path.expanduser("~") + "/.cb_history")
     
 main()

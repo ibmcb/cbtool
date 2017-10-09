@@ -133,6 +133,8 @@ MIGRATE_SUPPORTED = $False
 PROTECT_SUPPORTED = $False
 FORCE_WALKTHROUGH = $False
 ADDITIONAL_DISCOVERY = $EMPTY
+# Choose from VMCs in a pool in a round-robin manner.
+ROUND_ROBIN = $True
 
 [VM_DEFAULTS]
 USERNAME = $MAIN_USERNAME
@@ -197,6 +199,7 @@ JUMPHOST_BASE_NAME = cb-jumphost
 JUMPHOST_LOGIN = auto
 JUMPHOST_NETNAMES = all
 TIME_BREAKDOWN_STEP = 1
+ABORT_AFTER_SSH_UPLOAD_FAILURE = $True
 
 [AI_DEFAULTS]
 USERNAME = $MAIN_USERNAME
@@ -358,8 +361,8 @@ VM_ID2 = uuid, name, role, ai_name, type, host_name, aidrs_name, sla_provisionin
 HS_ID2 = uuid, name
 #CPU_M = cpu_speed, cores, cpu_num, proc_total, proc_run, cpu_idle, cpu_aidle, 
 #CPU_M += cpu_user, cpu_system, cpu_wio, cpu_intr, cpu_sintr, cpu_nice
-CPU_M = cpu_speed, cores, cpu_num, proc_total, proc_run, cpu_idle, cpu_aidle, 
-CPU_M += cpu_user, cpu_system, cpu_wio, cpu_nice
+CPU_M = cpu_speed, cores, cpu_num, proc_total, proc_run, cpu_idle, cpu_aidle,
+CPU_M += cpu_user, cpu_system, cpu_wio, cpu_nice, cpu_steal, cpu_guest, cpu_gnice
 MEM_M = mem_total, mem_free, mem_cached, mem_buffers, mem_shared
 SWAP_M = swap_total, swap_free, swap_procs_running, swap_in_flight, 
 SWAP_M += swap_procs_blocked, swap_KB_read, swap_ios_read, swap_KB_write, swap_ios_write
@@ -408,7 +411,7 @@ OPENSTACK_M += procstat_nova-scheduler_cpu, procstat_nova-scheduler_mem
  
 APP_M = app_load_id, app_load_profile, app_load_level, app_datagen_size, 
 APP_M += app_datagen_time, app_throughput, app_latency, app_loss, app_jitter,
-APP_M += app_bandwidth, app_errors, app_completion_time, app_sla_runtime
+APP_M += app_bandwidth, app_errors, app_completion_time, app_sla_runtime, app_iterations
 # Actual layout (do not prefix these variables with $)
 VM_RUNTIME_OS_METRICS_HEADER = TSTAMP_OS, VM_ID2, CPU_M, MEM_M, SWAP_M, NET_M, DSK_M
 VM_RUNTIME_APP_METRICS_HEADER = TSTAMP_APP, VM_ID2, APP_M
@@ -420,8 +423,8 @@ REPORTED_RUNTIME_OS_VM_METRIC_NAMES = CPU_M, MEM_M, SWAP_M, NET_M, DSK_M
 REPORTED_RUNTIME_APP_VM_METRIC_NAMES = app_load_id, app_load_profile, 
 REPORTED_RUNTIME_APP_VM_METRIC_NAMES += app_load_level, app_datagen_size, 
 REPORTED_RUNTIME_APP_VM_METRIC_NAMES += app_datagen_time, app_throughput, 
-REPORTED_RUNTIME_APP_VM_METRIC_NAMES += app_latency, app_bandwidth, app_loss, app_jitter, 
-REPORTED_RUNTIME_APP_VM_METRIC_NAMES += app_errors, app_completion_time
+REPORTED_RUNTIME_APP_VM_METRIC_NAMES += app_latency, app_bandwidth, app_loss, app_jitter,
+REPORTED_RUNTIME_APP_VM_METRIC_NAMES += app_errors, app_completion_time, app_iterations
 
 [API_DEFAULTS]
 PORT = 7070

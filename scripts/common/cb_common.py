@@ -748,12 +748,14 @@ def report_app_metrics(metriclist, sla_targets_list, ms_conn = "auto", \
                                 True
                             else :
                                 _sla_status = "violated"
+                                cbwarn("SLA VIOLATION!!!!!")
 
                         if _condition == "lt" :
                             if float(_metric[1]) <= float(_sla_target) :
                                 True
                             else :
                                 _sla_status = "violated"
+                                cbwarn("SLA VIOLATION!!!!!")
 
         if "app_sla_runtime" in _metrics_dict :
             _metrics_dict["app_sla_runtime"]["val"] = _sla_status

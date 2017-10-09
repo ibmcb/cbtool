@@ -53,7 +53,7 @@ def parse_evaluate_variable(_variable, _orig_string, \
         else :
             _aux_tmp = aux_var.split()
             if len(_aux_tmp) < 2 :
-                raise Exception("configuration error: " + _orig_string)
+                raise Exception("configuration error (user auto): " + _orig_string)
                 _variable_value = getpwuid(os.getuid())[0] + '_' + _aux_tmp[1]
     elif aux_var.count("processid") and len(aux_var) == 9 :
         _variable_value = getpwuid(os.getuid())[0]
@@ -193,7 +193,7 @@ def parse_cld_defs_file(cloud_definitions, print_message = False, \
                     if _line.count("INCLUDE") and not _line.count("#"):
                         _include_tmp = _line.split("INCLUDE")
                         if len(_include_tmp) != 2 :
-                            raise Exception("configuration error: " + _line)
+                            raise Exception("configuration error (include): " + _line + ": " + str(include_tmp))
                             exit(1)
     
                         _include_fn = _include_tmp[1].strip()

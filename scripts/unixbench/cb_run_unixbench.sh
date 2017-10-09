@@ -14,6 +14,8 @@ set_load_gen $@
 
 linux_distribution
 
+ln -sf ${dir}/cbtool/3rd_party/byte-unixbench ~/
+
 UNIXBENCH_DIR="~/byte-unixbench/UnixBench"
 eval UNIXBENCH_DIR=${UNIXBENCH_DIR}
 
@@ -22,12 +24,19 @@ sudo chown -R ${CBUSERLOGIN}:${CBUSERLOGIN} ${UNIXBENCH_DIR}
 
 UNIXBENCH_IP=`get_ips_from_role unixbench`
 
+CPUS=$(lscpu -p | grep -v "#" | wc -l)
+
 if [[ $LOAD_PROFILE == "test" ]]
 then
     execute_load_generator "cat ./test_output.txt" ${RUN_OUTPUT_FILE}
 else
     cd ${UNIXBENCH_DIR}
-    execute_load_generator "./Run -c $LOAD_LEVEL $LOAD_PROFILE" ${RUN_OUTPUT_FILE}
+	make
+    if [ $LOAD_LEVEL == "auto" ] ; then
+        execute_load_generator "./Run -c $CPUS" ${OUTPUT_FILE}
+    else
+        execute_load_generator "./Run -c $LOAD_LEVEL $LOAD_PROFILE" ${RUN_OUTPUT_FILE}
+    fi
     cd -
 fi
 

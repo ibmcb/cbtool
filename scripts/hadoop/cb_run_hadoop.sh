@@ -173,6 +173,8 @@ fi
 
 CMDLINE="${HIBENCH_HOME}/${LOAD_PROFILE}/bin/run.sh"
 
+#sed -ie "s/-cd 0.5/-cd 0.001/g" ${CMDLINE}
+
 execute_load_generator "${CMDLINE}" ${RUN_OUTPUT_FILE} ${LOAD_DURATION}
 
 #Parse and report the performace
@@ -180,6 +182,7 @@ execute_load_generator "${CMDLINE}" ${RUN_OUTPUT_FILE} ${LOAD_DURATION}
 lat=`cat ${HIBENCH_HOME}/hibench.report | grep -v Type | tr -s ' ' | cut -d ' ' -f 5`
 lat=`echo "${lat} * 1000" | bc`
 tput=`cat ${HIBENCH_HOME}/hibench.report | grep -v Type | tr -s ' ' | cut -d ' ' -f 6`
+iterations=`grep iteration ${OUTPUT_FILE} | cut -d ' ' -f 5 | tail -1`
 
 check_hadoop_cluster_state 1 1
 ERROR=$?
@@ -187,6 +190,7 @@ update_app_errors $ERROR
 
 ~/cb_report_app_metrics.py \
 throughput:$tput:tps \
+iterations:$iterations:num \
 latency:$lat:msec \
 datagen_time:$(update_app_datagentime):sec \
 datagen_size:$(update_app_datagensize):records \

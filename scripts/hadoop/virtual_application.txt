@@ -20,7 +20,7 @@ CATEGORY = data-centric
 PROFILES = sort, wordcount, terasort, dfsioe, nutchindexing, pagerank, bayes, kmeans, hivebench
 REFERENCE = https://github.com/intel-hadoop/HiBench
 LICENSE = Apache_v2
-REPORTED_METRICS = throughput,latency,datagen_time,datagen_size,completion_time,errors,quiescent_time
+REPORTED_METRICS = throughput,latency,datagen_time,datagen_size,completion_time,errors,quiescent_time,iterations
 
 # VApp-specific MANDATORY attributes
 DESCRIPTION =Deploys a Hadoop cluster (1 master instance and N slave instances).\n
@@ -76,4 +76,3 @@ SEED_BASE=1234567890
 #SYNC_COUNTER_NAME = synchronization_counter
 #CONCURRENT_AIS = 2
 #SYNC_CHANNEL_NAME = synchronization_channel
-#RUN_COUNTER_NAME = experiment_id_counter

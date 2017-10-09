@@ -29,6 +29,7 @@ import sys
 import readline
 import re
 import xmlrpclib
+import socket
 
 from cmd import Cmd
 from pwd import getpwuid
@@ -46,7 +47,6 @@ from lib.auxiliary.data_ops import message_beautifier, dic2str, is_valid_temp_at
 from lib.remote.process_management import ProcessManagement
 from lib.operations.active_operations import ActiveObjectOperations
 from lib.operations.passive_operations import PassiveObjectOperations
-from lib.operations.background_operations import BackgroundObjectOperations
 from lib.operations.base_operations import BaseObjectOperations
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.stores.mongodb_datastore_adapter import MongodbMgdConn
@@ -66,11 +66,11 @@ class CBCLI(Cmd) :
         self.cld_attr_lst = {"logstore" : {}, "user-defined" : {}, "api_defaults" : {}} # will be overriden later, used for setup_default_options()
         self.username = getpwuid(os.getuid())[0]
         self.pid = "TEST_" + self.username 
-        history = self.path + "/.cb_history"
+        history = os.path.expanduser("~") + "/.cb_history"
+        
         self.console = None
         self.active_operations = None
         self.passive_operations = None
-        self.background_operations = None
         self.attached_clouds = []
         
         _status = 100
@@ -541,8 +541,8 @@ class CBCLI(Cmd) :
             hdlr = RotatingFileHandler(options.logdest, maxBytes=20971520, \
                                        backupCount=20)
             
-        formatter = Formatter("[%(asctime)s] [%(levelname)s] %(message)s")
-#        formatter = Formatter('%(asctime)s %(levelname)s %(message)s')
+        # Need to make this rfc3164-compliant by including the 'hostname' and the 'program name'
+        formatter = Formatter(socket.getfqdn() + " cloudbench [%(levelname)s] %(message)s")
 
         status_formatter = Formatter('%(message)s')
         status_handler.setFormatter(status_formatter)
@@ -917,8 +917,9 @@ class CBCLI(Cmd) :
                                                                   "cloud-detach")
 
         if not _status and BaseObjectOperations.default_cloud == self.cld_attr_lst["name"] :
-            print("Disassociating default cloud: " + BaseObjectOperations.default_cloud)
-            self.do_clddefault("none")
+            # Not sure why we do this. Was there a historical reason for this?
+            # print("Disassociating default cloud: " + BaseObjectOperations.default_cloud)
+            # self.do_clddefault("none")
             self.do_cldlist("", False)
             
         print(message_beautifier(_msg))
@@ -985,17 +986,9 @@ class CBCLI(Cmd) :
                                                 self.msci, \
                                                 self.attached_clouds)
 
-        self.background_operations = BackgroundObjectOperations(self.osci, \
-                                                                self.msci, \
-                                                                self.attached_clouds)
-
         if not self.options.remote :
             # Use a local copy of the API so that we can do local debugging
-            self.api = API(self.pid, self.passive_operations, 
-                           self.active_operations, self.background_operations,
-                           None,
-                           False
-                           )
+            self.api = API(self.pid, self.passive_operations, self.active_operations, None, False)
             self.install_functions()
                 
         if print_message :

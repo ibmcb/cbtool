@@ -276,6 +276,7 @@ def syslog_logstore_setup(global_objects, operation = "check") :
                     _config_file_contents = global_objects["logstore"]["config_string"].replace('_', ' ')
                     _config_file_contents = _config_file_contents.replace("DOLLAR", '$')
                     _config_file_contents = _config_file_contents.replace("RSYSLOG", "RSYSLOG_")
+                    _config_file_contents = _config_file_contents.replace("**", "_")
                     _config_file_contents = _config_file_contents.replace("REPLPORT", str(_hostport))
                     _config_file_contents = _config_file_contents.replace("REPLLOGDIR", _log_dir)
                     _config_file_contents = _config_file_contents.replace("REPLUSER", _username + '_')                    
