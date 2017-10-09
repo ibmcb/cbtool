@@ -64,10 +64,9 @@ def unwrap_kwargs(func, spec):
 
 class API():
     @trace
-    def __init__(self, pid, passive, active, background, port, debug) :
+    def __init__(self, pid, passive, active, port, debug) :
         self.passive = passive
         self.active = active
-        self.background = background
         self.pid = pid
         self.port = port
         self.debug = debug
@@ -94,7 +93,6 @@ class API():
             service = APIService(self.pid, \
                                     self.passive, \
                                     self.active, \
-                                    self.background, \
                                     self.debug, \
                                     self.port, \
                                     address)
@@ -633,10 +631,8 @@ def remove_service(hostname):
     return False
 
 class APIService ( threading.Thread ):
-    
-    
     @trace
-    def __init__(self, pid, passive, active, background, debug, port, hostname) :
+    def __init__(self, pid, passive, active, debug, port, hostname) :
         super(APIService, self).__init__()
         
         self._stop = threading.Event()
@@ -645,7 +641,7 @@ class APIService ( threading.Thread ):
         self.aborted = False
         self.port = port 
         self.hostname = hostname 
-        self.api = API(pid, passive, active, background, port, debug)
+        self.api = API(pid, passive, active, port, debug)
         cbdebug("Initializing API Service on " + hostname + ":" + str(port))
         if debug is None :
             self.server = AsyncDocXMLRPCServer((self.hostname, int(self.port)), allow_none = True)

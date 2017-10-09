@@ -88,7 +88,7 @@ else
     fi
 fi
 
-SCRIPT_NAME=$0
+SCRIPT_NAME=$(echo "$BASH_SOURCE" | sed -e "s/.*\///g")
 
 function check_container {
     if [[ $(sudo cat /proc/1/cgroup | grep -c docker) -ne 0 ]]
@@ -979,11 +979,20 @@ fi
 
 NC_CMD=${NC}" "${NC_OPTIONS}" "${NC_HOST_SYSLOG}" "${NC_PORT_SYSLOG}
 
+# Need to make this rfc3164-compliant by including the 'hostname' and the 'program name'
+hn=$(uname -n)
+default=$(/sbin/ip route | grep default)
+if [ x"$default" != x ] ; then
+    interface=$(echo "$default" | sed -e 's/.* dev \+//g' | sed -e "s/ .*//g")
+    self=$(/sbin/ifconfig $interface | grep -oE "inet addr:[0-9]+.[0-9]+.[0-9]+.[0-9]+" | sed -e "s/inet addr\://g" | tr "." "-")
+    hn="${hn}_${self}"
+fi
+
 function syslog_netcat {
     if [[ $osmode == "controllable" ]]
     then 
-        echo "${NC_FACILITY_SYSLOG} - ${HOSTNAME} $SCRIPT_NAME ($$): ${1}"
-        echo "${NC_FACILITY_SYSLOG} - ${HOSTNAME} $SCRIPT_NAME ($$): ${1}" | $NC_CMD &
+        echo "${NC_FACILITY_SYSLOG}$hn cloudbench $SCRIPT_NAME ($$): ${1}"
+        echo "${NC_FACILITY_SYSLOG}$hn cloudbench $SCRIPT_NAME ($$): ${1}" | $NC_CMD &
     else
         echo "$1"
     fi

@@ -1214,7 +1214,8 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 _exp_counters = _stats["experiment_counters"]
                 
                 _aidrs = int(_exp_counters["AIDRS"]["reservations"]) 
-                _aidrs += int(_exp_counters["AIDRS"]["arrived"]) 
+                # Arrived doesn't mean that a submitter is present.
+                #_aidrs += int(_exp_counters["AIDRS"]["arrived"])
                 _aidrs += int(_exp_counters["AIDRS"]["arriving"]) 
 
                 if _aidrs :
@@ -2248,7 +2249,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             return self.package(_status, _msg, _result)
             
     @trace
-    def run_api_service(self, passive, active, background, debug, port, hostnames) :
+    def run_api_service(self, passive, active, debug, port, hostnames) :
         '''
         TBD
         '''
@@ -2263,7 +2264,6 @@ class PassiveObjectOperations(BaseObjectOperations) :
                 apiservice = APIService(self.pid, \
                                         passive, \
                                         active, \
-                                        background, \
                                         debug, \
                                         port, \
                                         hostname)

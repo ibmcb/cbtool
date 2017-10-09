@@ -413,7 +413,7 @@ def create_user_data_contents(obj_attr_list, osci) :
     _attempts = str(5)
     _sleep = str(2)
     
-    _fshn = obj_attr_list["filestore_hostname"]
+    _fshn = obj_attr_list["filestore_host"]
     _fspn = obj_attr_list["filestore_port"]
     _fsun = obj_attr_list["filestore_username"]
     _ldn = obj_attr_list["local_dir_name"]
@@ -443,7 +443,7 @@ def create_user_data_contents(obj_attr_list, osci) :
     if obj_attr_list["use_vpn_ip"].lower() != "false" :    
 #       This is done by cloud-config. Not shell script. see lib/clouds/shared_functions.py
 #        _userdata_contents += "\nsudo cp " + obj_attr_list["remote_dir_full_path"] + "/util/openvpn/client_connected.sh /etc/openvpn\n"
-        _userdata_contents += "sudo sed -i 's/USER/" + obj_attr_list["username"] + "/g' /etc/openvpn/client_connected.sh\n"
+        _userdata_contents += "\nsudo sed -i 's/USER/" + obj_attr_list["username"] + "/g' /etc/openvpn/client_connected.sh\n"
         _userdata_contents += "sudo sed -i 's/CLOUD_NAME/" + obj_attr_list["cloud_name"] + "/g' /etc/openvpn/client_connected.sh\n"
         _userdata_contents += "sudo sed -i 's/SERVER_BOOTSTRAP/" + _ohn  + "/g' /etc/openvpn/client_connected.sh\n"
         _userdata_contents += "sudo sed -i 's/UUID/" + obj_attr_list["uuid"]  + "/g' /etc/openvpn/client_connected.sh\n"

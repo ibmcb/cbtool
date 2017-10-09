@@ -19,6 +19,5 @@
 __version__ = '2.0'
 
 __all__ = [ 'active_operations', \
-           'background_operations', \
            'base_operations', \
            'passive_operations' ]

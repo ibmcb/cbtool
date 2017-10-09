@@ -421,6 +421,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
         '''
         TBD
         '''
+
+        if cld_attr_lst["model"].lower() == "sim" :
+            cbdebug("No need for a VPN server on simcloud.")
+            return
             
         _type = cld_attr_lst["vpn"]["kind"]
         _vpn_server_config = cld_attr_lst["space"]["generated_configurations_dir"] 
@@ -1139,6 +1143,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
         _fmsg = "An error has occurred, but no error message was captured"
         _vm_location = obj_attr_list["pool"]
         _cn = obj_attr_list["cloud_name"]
+        _vmc_lock = False
         
         del obj_attr_list["pool"]
 
@@ -1233,9 +1238,44 @@ class ActiveObjectOperations(BaseObjectOperations) :
             if not "vmc" in obj_attr_list and "vmc_pool" in obj_attr_list :
                 _vmc_uuid_list = self.osci.query_by_view(_cn, "VMC", "BYPOOL", \
                                                          obj_attr_list["vmc_pool"])
+
     
                 if len(_vmc_uuid_list) :
+                    _vmc_defaults = self.osci.get_object(_cn, "GLOBAL", False, \
+                                                         "vmc_defaults", False)
+                    if str(_vmc_defaults["round_robin"]).lower() == "true" : # use round-robin
+                        # Intra-Pool Round-robin support.
+                        _visited = []
+                        _vmc_lock = self.osci.acquire_lock(_cn, "VMC", "vmc_round_robin", obj_attr_list["vmc_pool"], 1)
+                        assert(_vmc_lock)
+
+                        for _vmc_uuid_entry in _vmc_uuid_list :
+                            _vmc_attr_list = self.osci.get_object(_cn, "VMC", False, _vmc_uuid_entry.split('|')[0], False)
+
+                            if "visited" not in _vmc_attr_list or str(_vmc_attr_list["visited"]).lower() == "false" :
+                                continue
+
+                            _visited.append(_vmc_uuid_entry)
+
+                        if len(_visited) == len(_vmc_uuid_list) :
+                            for _vmc_uuid_entry in _vmc_uuid_list :
+                                self.osci.update_object_attribute(_cn, "VMC", _vmc_uuid_entry.split('|')[0], False, "visited", False)
+                            _visited = []
+
+                        while len(_visited) :
+                           assert(_visited[0] in _vmc_uuid_list)
+                           for idx in range(0, len(_vmc_uuid_list)) :
+                               if _visited[0] == _vmc_uuid_list[idx] :
+                                   del _vmc_uuid_list[idx]
+                                   del _visited[0]
+                                   break
+
+                        cbdebug("After Visited: " + str(len(_visited)) + " total: " + str(len(_vmc_uuid_list)))
+
+                    assert(len(_vmc_uuid_list))
                     obj_attr_list["vmc"] = choice(_vmc_uuid_list).split('|')[0]
+
+                    self.osci.update_object_attribute(_cn, "VMC", obj_attr_list["vmc"], False, "visited", True)
                     
                     if not obj_attr_list["vmc"] :
                         _fmsg = "No VMCs on pool \"" +  obj_attr_list["vmc_pool"] + "\""
@@ -1306,8 +1346,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
         except Exception, e :
             _status = 23
             _fmsg = str(e)
+            for line in traceback.format_exc().splitlines() :
+                cberr(line, True)
 
         finally :
+            if _vmc_lock :
+                self.osci.release_lock(_cn, "VMC", "vmc_round_robin", _vmc_lock)
             if _status :
                 _msg = "VM pre-attachment operations failure: " + _fmsg
                 cberr(_msg)
@@ -4132,19 +4176,21 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                         self.osci.remove_from_list(_cloud_name, "VM", "VMS_UNDERGOING_SUSPEND", obj_attr_list["uuid"]) 
                                         self.osci.remove_from_list(_cloud_name, "VM", "VMS_UNDERGOING_FAIL", obj_attr_list["uuid"]) 
         
-                                    self.osci.update_object_attribute(_cloud_name, "VM", \
+                                    if "mgt_201_runstate_request_originated" in obj_attr_list :
+                                        self.osci.update_object_attribute(_cloud_name, "VM", \
                                                                       obj_attr_list["uuid"], \
                                                                       False, \
                                                                       "mgt_201_runstate_request_originated", \
                                                                       obj_attr_list["mgt_201_runstate_request_originated"])
-        
-                                    self.osci.update_object_attribute(_cloud_name, "VM", \
+                                    if "mgt_202_runstate_request_sent" in obj_attr_list :
+                                        self.osci.update_object_attribute(_cloud_name, "VM", \
                                                                       obj_attr_list["uuid"], \
                                                                       False, \
                                                                       "mgt_202_runstate_request_sent", \
                                                                       obj_attr_list["mgt_202_runstate_request_sent"])
                                     
-                                    self.osci.update_object_attribute(_cloud_name, "VM", \
+                                    if "mgt_203_runstate_request_completed" in obj_attr_list :
+                                        self.osci.update_object_attribute(_cloud_name, "VM", \
                                                                       obj_attr_list["uuid"], \
                                                                       False, \
                                                                       "mgt_203_runstate_request_completed", \

@@ -84,10 +84,13 @@ class ProcessManagement :
         _port = port
         
         if _local :
-            if self.username == "root" :
-                _cmd = "sudo su -c \"" + cmdline + "\""
-            else :    
-                _cmd = cmdline
+            # This is causing problems, but generally seems kind of wierd anyway.
+            # For whatever the original problem was, let's try to find a better solution.
+            # Seems to work fine without it.
+            #if self.username == "root" :
+            #    _cmd = "sudo su -c \"" + cmdline + "\""
+            #else :
+            _cmd = cmdline
         else :
             if self.username :
                 _username = " -l " + self.username + ' '
@@ -140,10 +143,9 @@ class ProcessManagement :
                         _stderr_len = 1
                     
                     if _proc_h.returncode and _stderr_len :
-                        
                         _msg = "Error while executing the command line "
                         _msg += "\"" + cmdline + "\" (returncode = "
-                        _msg += str(_proc_h.pid) + ") :" + str(_result[1])
+                        _msg += str(_proc_h.returncode) + ") :" + str(_result[1]) + str(_result[0])
                         cbdebug(_msg)
                         if tell_me_if_stderr_contains is not False and _result[1].count(tell_me_if_stderr_contains) :
                             cbdebug("Command failed with: " + tell_me_if_stderr_contains, True)
@@ -227,7 +229,7 @@ class ProcessManagement :
 
             if _status and len(_result_stderr) :
                 _msg = "Command \"" + cmdline + "\" failed to execute on "
-                _msg += "hostname " + str(override_hostname) + ", port " + str(port) + " after attempt "
+                _msg += "hostname " + str(override_hostname) + " after attempt "
                 _msg += str(_attempts) + ". Will try " + str(total_attempts - _attempts)
                 _msg += " more times."
                 cbdebug(_msg, True)

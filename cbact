@@ -33,10 +33,10 @@ import sys
 import os
 import signal
 import threading
+import socket
 
 from lib.operations.active_operations import ActiveObjectOperations
 from lib.operations.passive_operations import PassiveObjectOperations
-from lib.operations.background_operations import BackgroundObjectOperations
 from lib.auxiliary.code_instrumentation import cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import str2dic, dic2str
 from lib.stores.mongodb_datastore_adapter import MongodbMgdConn
@@ -237,8 +237,9 @@ def setup_syslog(operation, facility, verbosity, port, hostname, quiet, logdest)
                                             int(port)), \
                                             facility=_syslog_selector[str(_facility)])
 
-        formatter = Formatter("[%(asctime)s] [%(levelname)s] %(message)s")
-#        formatter = Formatter('%(asctime)s %(levelname)s %(module)s %(message)s')
+        # Need to make this rfc3164-compliant by including the 'hostname' and the 'program name'
+        formatter = Formatter(socket.getfqdn() + " cloudbench [%(levelname)s] %(message)s")
+
         hdlr.setFormatter(formatter)
         logger.addHandler(hdlr)
 
@@ -453,7 +454,6 @@ def main(options) :
 
         _active_obj_command = ActiveObjectOperations(_osci, _msci)
         _passive_obj_command = PassiveObjectOperations(_osci, _msci)
-        _background_obj_command = BackgroundObjectOperations(_osci, _msci)
             
         if _operation.count("attach") :
             
@@ -530,7 +530,6 @@ def main(options) :
             _obj_type = "GLOBAL"
             _status, _fmsg = _passive_obj_command.run_api_service(_passive_obj_command, \
                                                                  _active_obj_command, \
-                                                                 _background_obj_command, \
                                                                  options.debug_host,
                                                                  options.apiport,
                                                                  options.apihost.split(","))

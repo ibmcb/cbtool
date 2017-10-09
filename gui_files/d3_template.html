@@ -128,7 +128,7 @@
 		                    unit = d[label]["unit"]
 	                   }
 	                    if (label in d && value != "-1") {
-	                    	if (unit == "float")
+                                if (unit == "float" || unit == "%")
 		                        d.value = parseFloat(value);
 	                        else
 		                        d.value = parseInt(value);

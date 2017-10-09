@@ -25,6 +25,7 @@ from string import _int
     @author: Marcio A. Silva
 '''
 import httplib2
+import traceback
 
 from time import time, sleep
 from random import randint
@@ -83,6 +84,9 @@ class GceCmds(CommonCloudFunctions) :
                     self.images_project = self.instances_project
 
             _credentials = GoogleCredentials.get_application_default()
+
+            if _credentials.create_scoped_required():
+                _credentials = _credentials.create_scoped('https://www.googleapis.com/auth/compute')
                                     
             self.gceconn = build('compute', 'v1', credentials=_credentials)
 
@@ -111,10 +115,14 @@ class GceCmds(CommonCloudFunctions) :
                 _fmsg = "Unknown " + self.get_description() + " zone (" + zone + ")"
                 
         except GCEException, obj:
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
         except Exception, msg :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             _fmsg = str(msg)
             _status = 23
 
@@ -161,10 +169,14 @@ class GceCmds(CommonCloudFunctions) :
                 _status = 1
 
         except CldOpsException, obj :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             _fmsg = str(obj.msg)
             _status = 2
 
         except Exception, msg :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             _fmsg = str(msg)
             _status = 23
 
@@ -446,6 +458,8 @@ class GceCmds(CommonCloudFunctions) :
 
             _private_ip_address = self.instance_info["networkInterfaces"][0]["networkIP"]
             _public_ip_address = self.instance_info["networkInterfaces"][0]["accessConfigs"][0]["natIP"]
+
+            cbdebug("Got IPs for " + obj_attr_list["name"] + ": " + str(_private_ip_address) + ", " + str(_public_ip_address))
                        
             _public_hostname = obj_attr_list["cloud_vm_name"] + '.' + obj_attr_list["vmc_name"]
             _private_hostname = obj_attr_list["cloud_vm_name"] + '.' + obj_attr_list["vmc_name"]
@@ -464,9 +478,24 @@ class GceCmds(CommonCloudFunctions) :
 
             # NOTE: "cloud_ip" is always equal to "run_cloud_ip"
             obj_attr_list["cloud_ip"] = obj_attr_list["run_cloud_ip"]
+
+            if str(obj_attr_list["use_vpn_ip"]).lower() == "true" and str(obj_attr_list["vpn_only"]).lower() == "true" :
+                assert(self.get_attr_from_pending(obj_attr_list))
+
+                if "cloud_init_vpn" not in obj_attr_list :
+                    cbdebug("Instance VPN address not yet available.")
+                    return False
+                cbdebug("Found VPN IP: " + obj_attr_list["cloud_init_vpn"])
+                obj_attr_list["prov_cloud_ip"] = obj_attr_list["cloud_init_vpn"]
+            else :
+                if obj_attr_list["prov_netname"].lower() == "private" :
+                    obj_attr_list["prov_cloud_ip"] = _private_ip_address
+                else :
+                    obj_attr_list["prov_cloud_ip"] = _public_ip_address
             
             return True
-        except :
+        except Exception, e:
+            cbdebug("Failed to retrieve IP for: " + obj_attr_list["name"] + ": " + str(e))
             return False
 
     @trace
@@ -660,15 +689,20 @@ class GceCmds(CommonCloudFunctions) :
         '''
         TBD
         '''        
+        cbdebug("Waiting for " + obj_attr_list["name"] + " to be running...")
         if self.is_vm_running(obj_attr_list) :
 
+            cbdebug("Getting IP for " + obj_attr_list["name"])
             if self.get_ip_address(obj_attr_list) :
+                cbdebug("IP found for " + obj_attr_list["name"])
                 obj_attr_list["last_known_state"] = "running with ip assigned"
                 return True
             else :
+                cbdebug("IP not found for " + obj_attr_list["name"])
                 obj_attr_list["last_known_state"] = "running with ip unassigned"
                 return False
         else :
+            cbdebug("VM still not running yet: " + obj_attr_list["name"])
             obj_attr_list["last_known_state"] = "not running"
             return False    
 
@@ -686,7 +720,7 @@ class GceCmds(CommonCloudFunctions) :
             if "cloud_vv_type" not in obj_attr_list :
                 obj_attr_list["cloud_vv_type"] = "GV"
             
-            if "cloud_vv" in obj_attr_list :
+            if "cloud_vv" in obj_attr_list and str(obj_attr_list["cloud_vv"]).lower() != "false":
 
                 self.common_messages("VV", obj_attr_list, "creating", _status, _fmsg)
     
@@ -712,10 +746,14 @@ class GceCmds(CommonCloudFunctions) :
             _status = 0
 
         except CldOpsException, obj :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             _status = obj.status
             _fmsg = str(obj.msg)
 
         except GCEException, obj :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             _status = int(obj.error_code)
             _fmsg = str(obj.error_message)
 
@@ -725,6 +763,8 @@ class GceCmds(CommonCloudFunctions) :
             cbdebug("VM create keyboard interrupt...", True)
 
         except Exception, e :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             _status = 23
             _fmsg = str(e)
     
@@ -876,6 +916,11 @@ class GceCmds(CommonCloudFunctions) :
                 }
             }
 
+            user_data = self.populate_cloudconfig(obj_attr_list)
+
+            if user_data :
+                _config["metadata"]["items"].append({"key" : "user-data", "value" : user_data})
+                cbdebug("Appended userdata...", True)
 
             if str(obj_attr_list["cloud_vv_uuid"]).lower() != "none":
                 self.common_messages("VV", obj_attr_list, "attaching", _status, _fmsg)
@@ -1239,7 +1284,7 @@ class GceCmds(CommonCloudFunctions) :
         '''
 
         _msg = "Waiting for " + obj_attr_list["name"] + " operation to finish..."
-        cbdebug(_msg, True)
+        cbdebug(_msg)
     
         _curr_tries = 0
         _max_tries = int(obj_attr_list["update_attempts"])
@@ -1269,4 +1314,4 @@ class GceCmds(CommonCloudFunctions) :
         _fmsg += str(_max_tries * _wait) + " seconds... "
         _fmsg += "Giving up."
         
-        raise CldOpsException(_op["error"], 2001)        
+        raise CldOpsException(_op["error"], 2001)

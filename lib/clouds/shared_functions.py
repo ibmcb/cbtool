@@ -28,6 +28,7 @@ import re
 import os 
 import copy
 import json
+import traceback
 import socket
 
 from time import time, sleep
@@ -730,6 +731,8 @@ class CommonCloudFunctions:
             _fmsg = str(obj.msg)
 
         except Exception, e :
+            for line in traceback.format_exc().splitlines() :
+                cberr(line, True)
             _status = 23
             _fmsg = str(e)
 
@@ -879,176 +882,188 @@ class CommonCloudFunctions:
         return False
 
     @trace
-    def check_ssh_key(self, vmc_name, key_name, vm_defaults, internal = False, connection = None) :
+    def check_ssh_key(self, vmc_name, key_names, vm_defaults, internal = False, connection = None) :
         '''
         TBD
         '''
 
         _key_pair_found = False      
         
-        if not key_name :
-            _key_pair_found = True
-        else :
-            _msg = "Checking if the ssh key pair \"" + key_name + "\" is created"
-            _msg += " on VMC " + vmc_name + "...."
-            if not internal :
-                cbdebug(_msg, True)
+        for key_name in key_names :
+            if not key_names :
+                _key_pair_found = True
+                break
             else :
-                cbdebug(_msg)            
-                
-            _pub_key_fn = vm_defaults["credentials_dir"] + '/'
-            _pub_key_fn += vm_defaults["ssh_key_name"] + ".pub"
-
-            _key_type, _key_contents, _key_fingerprint = get_ssh_key(_pub_key_fn, self.get_description())
-
-            vm_defaults["pubkey_contents"] = _key_type + ' ' + _key_contents
-
-            if not _key_contents :
-                _fmsg = _key_type 
-                cberr(_fmsg, True)
-                return False
-            
-            _key_pair_found = False
-
-            _registered_key_pairs = {}
-            if self.get_description() == "Cloudbench SimCloud" or \
-            self.get_description() == "Parallel Container Manager Cloud" or\
-             self.get_description() == "Parallel Docker Manager Cloud" or\
-              self.get_description() == "Cloudbench NoOpCloud" or \
-              self.get_description() == "Kubernetes Cloud" :
-                _registered_key_pairs[key_name] =_key_fingerprint + "-NA"            
-
-            if self.get_description() == "Cloudbench SimCloud" :
-                _registered_key_pairs[key_name] =_key_fingerprint + "-NA"            
-            
-            if self.get_description() == "Amazon Elastic Compute Cloud" :
-                for _key_pair in self.ec2conn.get_all_key_pairs() :
-                    _registered_key_pairs[_key_pair.name] = _key_pair.fingerprint + "-NA"
-
-            if self.get_description() == "OpenStack Cloud" :
-                for _key_pair in self.oskconncompute.keypairs.list() :
-                    _registered_key_pairs[_key_pair.name] = _key_pair.fingerprint + "-NA"
-
-            if self.get_description() == "SoftLayer Cloud" :
-                for _key_pair in self.sshman.list_keys() :
-                    _registered_key_pairs[_key_pair["label"]] = _key_pair["fingerprint"] + '-' + str(_key_pair["id"])
-
-            if self.get_description() == "Google Compute Engine" :
-                _temp_key_metadata = {}
-                _metadata = self.gceconn.projects().get(project=self.instances_project).execute(http = self.http_conn[connection])
-
-                if "items" in _metadata["commonInstanceMetadata"] :
-                    for _element in _metadata["commonInstanceMetadata"]["items"] :
-                        if _element["key"] == "sshKeys" :
-                            for _component in _element["value"].split('\n') :
-                                if len(_component.split(' ')) == 3 :
-                                    _r_key_tag, _r_key_contents, _r_key_user = _component.split(' ')
-                                    _r_key_name, _r_key_type = _r_key_tag.split(':')
-                                    _temp_key_metadata[_r_key_name] = _r_key_tag + ' ' + _r_key_contents + ' ' + _r_key_user                                
-                                    _r_key_type, _r_key_contents, _r_key_fingerprint = \
-                                    get_ssh_key(_r_key_type + ' ' + _r_key_contents + ' ' + _r_key_user, self.get_description(), False)
-    
-                                    _registered_key_pairs[_r_key_name] = _r_key_fingerprint + "-NA"
-
-            if self.get_description() == "DigitalOcean Cloud" :
-                _registered_key_pair_objects = {}
-                for _key_pair in connection.list_key_pairs() :
-                    _registered_key_pairs[_key_pair.name] = str(_key_pair.fingerprint) + '-' + str(_key_pair.extra["id"])
-                    _registered_key_pair_objects[_key_pair.name] = _key_pair
-                    
-            for _key_pair in _registered_key_pairs.keys() :
-                if _key_pair == key_name :
-                    _msg = "A key named \"" + key_name + "\" was found "
-                    _msg += "on VMC " + vmc_name + ". Checking if the key"
-                    _msg += " contents are correct."
-                    cbdebug(_msg)                    
-                    _keyfp, _keyid = _registered_key_pairs[_key_pair].split('-')
-                    
-                    if len(_key_fingerprint) > 1 and len(_keyfp) > 1 :
-
-                        if _key_fingerprint == _keyfp :
-                            _msg = "The contents of the key \"" + key_name
-                            _msg += "\" on the VMC " + vmc_name + " and the"
-                            _msg += " one present on directory \"" 
-                            _msg += vm_defaults["credentials_dir"] + "\" ("
-                            _msg += vm_defaults["ssh_key_name"] + ") are the same."
-                            cbdebug(_msg)
-                            _key_pair_found = True
-                            break
-                        else :
-                            _msg = "The contents of the key \"" + key_name
-                            _msg += "\" on the VMC " + vmc_name + " and the"
-                            _msg += " one present on directory \"" 
-                            _msg += vm_defaults["credentials_dir"] + "\" ("
-                            _msg += vm_defaults["ssh_key_name"] + ") differ."
-                            _msg += "Will delete the key and re-created it"
-                            cbdebug(_msg)
-                            
-                            if self.get_description() == "Amazon Elastic Compute Cloud" :
-                                self.ec2conn.delete_key_pair(key_name)
-                                
-                            if self.get_description() == "OpenStack Cloud" :
-                                self.oskconncompute.keypairs.delete(_key_pair)
-
-                            if self.get_description() == "SoftLayer Cloud" :
-                                self.sshman.delete_key(_keyid)
-
-                            if self.get_description() == "Google Compute Engine" :
-                                _temp_key_metadata[key_name] = key_name + ':' + _key_type + ' ' + _key_contents + ' ' + vm_defaults["login"] + "@orchestrator"
-
-                            if self.get_description() == "DigitalOcean Cloud" :
-                                connection.delete_key_pair(_registered_key_pair_objects[key_name])                                
-                            break
-
-            if not _key_pair_found :
-
-                _msg = "    Creating the ssh key pair \"" + key_name + "\""
-                _msg += " on VMC " + vmc_name + ", using the public key \""
-                _msg += _pub_key_fn + "\"..."
-                
+                _msg = "Checking if the ssh key pair \"" + key_name + "\" is created"
+                _msg += " on VMC " + vmc_name + "...."
                 if not internal :
                     cbdebug(_msg, True)
                 else :
-                    cbdebug(_msg)                
+                    cbdebug(_msg)
+                    
+                _pub_key_fn = vm_defaults["credentials_dir"] + '/'
+                _pub_key_fn += vm_defaults["ssh_key_name"] + ".pub"
+
+                _key_type, _key_contents, _key_fingerprint = get_ssh_key(_pub_key_fn, self.get_description())
+
+                vm_defaults["pubkey_contents"] = _key_type + ' ' + _key_contents
+
+                if not _key_contents :
+                    _fmsg = _key_type
+                    cberr(_fmsg, True)
+                    return False
+
+                _key_pair_found = False
+
+                _registered_key_pairs = {}
+                if self.get_description() == "Cloudbench SimCloud" or \
+                self.get_description() == "Parallel Container Manager Cloud" or\
+                 self.get_description() == "Parallel Docker Manager Cloud" or\
+                  self.get_description() == "Cloudbench NoOpCloud" or \
+                  self.get_description() == "Kubernetes Cloud" :
+                    _registered_key_pairs[key_name] =_key_fingerprint + "-NA"
+
+                if self.get_description() == "Cloudbench SimCloud" :
+                    _registered_key_pairs[key_name] =_key_fingerprint + "-NA"
 
                 if self.get_description() == "Amazon Elastic Compute Cloud" :
-                    self.ec2conn.import_key_pair(key_name, _key_type + ' ' + _key_contents)
+                    for _key_pair in self.ec2conn.get_all_key_pairs() :
+                        _registered_key_pairs[_key_pair.name] = _key_pair.fingerprint + "-NA"
 
                 if self.get_description() == "OpenStack Cloud" :
-                    self.oskconncompute.keypairs.create(key_name, \
-                                                        public_key = _key_type + ' ' + _key_contents)                
+                    for _key_pair in self.oskconncompute.keypairs.list() :
+                        _registered_key_pairs[_key_pair.name] = _key_pair.fingerprint + "-NA"
 
                 if self.get_description() == "SoftLayer Cloud" :
-                    self.sshman.add_key(_key_type + ' ' + _key_contents, key_name)
+                    for _key_pair in self.sshman.list_keys() :
+                        _registered_key_pairs[_key_pair["label"]] = _key_pair["fingerprint"] + '-' + str(_key_pair["id"])
 
                 if self.get_description() == "Google Compute Engine" :
-                    for _kn in [ key_name + "  cbtool", vm_defaults["login"] + "  " + vm_defaults["login"]] :
-                        
-                        _actual_key_name, _actual_user_name = _kn.split("  ")
-                        
-                        _temp_key_metadata[_actual_key_name] = _actual_key_name + ':' + _key_type + ' ' + _key_contents + ' ' + _actual_user_name + "@orchestrator"
-                        
-                    _key_list_str = ''
-                    
-                    for _key in _temp_key_metadata.keys() :
-                        _key_list_str += _temp_key_metadata[_key] + '\n'
-
-                    _key_list_str = _key_list_str[0:-1]
+                    _temp_key_metadata = {}
+                    _metadata = self.gceconn.projects().get(project=self.instances_project).execute(http = self.http_conn[connection])
 
                     if "items" in _metadata["commonInstanceMetadata"] :
-                        for _element in _metadata['commonInstanceMetadata']['items'] :
+                        for _element in _metadata["commonInstanceMetadata"]["items"] :
                             if _element["key"] == "sshKeys" :
-                                _element["value"] += _key_list_str
-                    else :
-                        _metadata['commonInstanceMetadata']["items"] = []
-                        _metadata['commonInstanceMetadata']['items'].append({"key": "sshKeys", "value" : _key_list_str})
-                                                
-                    self.gceconn.projects().setCommonInstanceMetadata(project=self.instances_project, body=_metadata["commonInstanceMetadata"]).execute(http = self.http_conn[connection])
+                                for _component in _element["value"].split('\n') :
+                                    if len(_component.split(' ')) == 3 :
+                                        _r_key_tag, _r_key_contents, _r_key_user = _component.split(' ')
+                                        _r_key_name, _r_key_type = _r_key_tag.split(':')
+                                        _temp_key_metadata[_r_key_name] = _r_key_tag + ' ' + _r_key_contents + ' ' + _r_key_user
+                                        _r_key_type, _r_key_contents, _r_key_fingerprint = \
+                                        get_ssh_key(_r_key_type + ' ' + _r_key_contents + ' ' + _r_key_user, self.get_description(), False)
+
+                                        _registered_key_pairs[_r_key_name] = _r_key_fingerprint + "-NA"
 
                 if self.get_description() == "DigitalOcean Cloud" :
-                    connection.create_key_pair(key_name, _key_type + ' ' + _key_contents + " cbtool@orchestrator")
+                    _registered_key_pair_objects = {}
+                    for _key_pair in connection.list_key_pairs() :
+                        _registered_key_pairs[_key_pair.name] = str(_key_pair.fingerprint) + '-' + str(_key_pair.extra["id"])
+                        _registered_key_pair_objects[_key_pair.name] = _key_pair
+
+                for _key_pair in _registered_key_pairs.keys() :
+                    if _key_pair == key_name :
+                        _msg = "A key named \"" + key_name + "\" was found "
+                        _msg += "on VMC " + vmc_name + ". Checking if the key"
+                        _msg += " contents are correct."
+                        cbdebug(_msg)
+                        _keyfp, _keyid = _registered_key_pairs[_key_pair].split('-')
+
+                        if len(_key_fingerprint) > 1 and len(_keyfp) > 1 :
+
+                            if _key_fingerprint == _keyfp :
+                                _msg = "The contents of the key \"" + key_name
+                                _msg += "\" on the VMC " + vmc_name + " and the"
+                                _msg += " one present on directory \""
+                                _msg += vm_defaults["credentials_dir"] + "\" ("
+                                _msg += vm_defaults["ssh_key_name"] + ") are the same."
+                                cbdebug(_msg)
+                                _key_pair_found = True
+                                break
+                            else :
+                                _msg = "The contents of the key \"" + key_name
+                                _msg += "\" on the VMC " + vmc_name + " and the"
+                                _msg += " one present on directory \""
+                                _msg += vm_defaults["credentials_dir"] + "\" ("
+                                _msg += vm_defaults["ssh_key_name"] + ") differ."
+                                _msg += ". Either delete this key's fingerprint or pick a new one."
+                                cbdebug(_msg, True)
+
+                                '''
+                                This isn't gonna work. We can't delete keys without permission.
+                                if self.get_description() == "Amazon Elastic Compute Cloud" :
+                                    self.ec2conn.delete_key_pair(key_name)
+
+                                if self.get_description() == "OpenStack Cloud" :
+                                    self.oskconncompute.keypairs.delete(_key_pair)
+
+                                if self.get_description() == "SoftLayer Cloud" :
+                                    self.sshman.delete_key(_keyid)
+
+                                if self.get_description() == "Google Compute Engine" :
+                                    _temp_key_metadata[key_name] = key_name + ':' + _key_type + ' ' + _key_contents + ' ' + vm_defaults["login"] + "@orchestrator"
+
+                                if self.get_description() == "DigitalOcean Cloud" :
+                                    connection.delete_key_pair(_registered_key_pair_objects[key_name])
+                                '''
+                                break
+
+                if not _key_pair_found :
+
+                    _msg = "    Creating the ssh key pair \"" + key_name + "\""
+                    _msg += " on VMC " + vmc_name + ", using the public key \""
+                    _msg += _pub_key_fn + "\"..."
                     
-                _key_pair_found = True
+                    if not internal :
+                        cbdebug(_msg, True)
+                    else :
+                        cbdebug(_msg)
+
+                    try :
+                        if self.get_description() == "Amazon Elastic Compute Cloud" :
+                            self.ec2conn.import_key_pair(key_name, _key_type + ' ' + _key_contents)
+
+                        if self.get_description() == "OpenStack Cloud" :
+                            self.oskconncompute.keypairs.create(key_name, \
+                                                                public_key = _key_type + ' ' + _key_contents)
+
+                        if self.get_description() == "SoftLayer Cloud" :
+                            self.sshman.add_key(_key_type + ' ' + _key_contents, key_name)
+
+                        if self.get_description() == "Google Compute Engine" :
+                            for _kn in [ key_name + "  cbtool", vm_defaults["login"] + "  " + vm_defaults["login"]] :
+
+                                _actual_key_name, _actual_user_name = _kn.split("  ")
+
+                                _temp_key_metadata[_actual_key_name] = _actual_key_name + ':' + _key_type + ' ' + _key_contents + ' ' + _actual_user_name + "@orchestrator"
+
+                            _key_list_str = ''
+
+                            for _key in _temp_key_metadata.keys() :
+                                _key_list_str += _temp_key_metadata[_key] + '\n'
+
+                            _key_list_str = _key_list_str[0:-1]
+
+                            if "items" in _metadata["commonInstanceMetadata"] :
+                                for _element in _metadata['commonInstanceMetadata']['items'] :
+                                    if _element["key"] == "sshKeys" :
+                                        _element["value"] += _key_list_str
+                            else :
+                                _metadata['commonInstanceMetadata']["items"] = []
+                                _metadata['commonInstanceMetadata']['items'].append({"key": "sshKeys", "value" : _key_list_str})
+
+                            self.gceconn.projects().setCommonInstanceMetadata(project=self.instances_project, body=_metadata["commonInstanceMetadata"]).execute(http = self.http_conn[connection])
+
+                        if self.get_description() == "DigitalOcean Cloud" :
+                            connection.create_key_pair(key_name, _key_type + ' ' + _key_contents + " cbtool@orchestrator")
+                    except Exception, e :
+                        if vm_defaults["abort_after_ssh_upload_failure"] :
+                            raise e
+                        else :
+                            cbwarn("Key upload failed, but user has asked us to continue: " + str(e), True)
+
+                    _key_pair_found = True
+
 
             return _key_pair_found    
 
@@ -1170,7 +1185,8 @@ class CommonCloudFunctions:
         userdata in formal cloud-config syntax in order to be able to use
         if with cloud images that have cloud-init configured correctly.
         '''
-        if ("userdata" not in obj_attr_list or obj_attr_list["userdata"]) and obj_attr_list["use_vpn_ip"].lower() == "false" :
+        if ("userdata" not in obj_attr_list or not obj_attr_list["userdata"]) and obj_attr_list["use_vpn_ip"].lower() == "false" :
+            #cbdebug("Skipping userdata: " + str(obj_attr_list["userdata"]), True)
             return False
 
         cloudconfig = """
@@ -1221,7 +1237,7 @@ write_files:"""
                     cloudconfig += "      " + line
 
                     if line.count("remote") :
-                        cloudconfig += "      up /etc/openvpn/client_connected.sh"
+                        cloudconfig += "      up /etc/openvpn/client_connected.sh\n"
                 fh.close()
 
         cloudconfig += """
@@ -1240,9 +1256,20 @@ runcmd:
   - mv """ + conf_destination + """ /tmp/cbvpn.conf
   - rm -f /etc/openvpn/*.conf /etc/openvpn/*.ovpn
   - mv /tmp/cbvpn.conf """ + conf_destination + """
-  - service openvpn restart
+  - mkdir -p /var/log/openvpn
+  - openvpn --daemon --config """ + conf_destination + """
 """
-        #cbdebug("Final userdata: \n" + cloudconfig)
+  #- systemctl start openvpn@""" + obj_attr_list["cloud_name"] + """_client-cb-openvpn-cloud.service
+  #- service openvpn start
+        # Check to see if the user requested packages to be installed for this VM role via cloud-init
+        if "cloudinit_packages" in obj_attr_list and obj_attr_list["cloudinit_packages"].lower() != "false" :
+            cbdebug("Will instruct cloud-init to install: " + obj_attr_list["cloudinit_packages"], True)
+            cloudconfig += """
+packages:"""
+            for package in obj_attr_list["cloudinit_packages"].split(";") :
+                cloudconfig += """
+  - """ + package
+        #cbdebug("Final userdata: \n" + str(cloudconfig))
         return cloudconfig
 
     @trace                                                                        
@@ -1585,10 +1612,10 @@ runcmd:
         else :
             _x = '_'
 
-        if not obj_attr_list["key_name"].count(obj_attr_list["username"] + '_') :
+        if not obj_attr_list["key_name"].count(",") and not obj_attr_list["key_name"].count(obj_attr_list["username"] + '_') :
             obj_attr_list["key_name"] = obj_attr_list["username"] + '_' + obj_attr_list["key_name"]
 
-        return obj_attr_list["key_name"]
+        return obj_attr_list["key_name"].split(",")
 
     @trace
     def pre_vmcreate_process(self, obj_attr_list) :
@@ -1663,7 +1690,7 @@ runcmd:
                     return status, _msg
                 
             if operation == "cleaning up vms" :
-                _msg = "Removing all VMs previously created on VMC \""
+                _msg = "(" + str(obj_attr_list["tenant"] if "tenant" in obj_attr_list else "default") + ") " + "Removing all VMs previously created on VMC \""
                 _msg += obj_attr_list["name"] + "\" (only VM names starting with"
                 _msg += " \"" + "cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]
                 _msg += "\")....."
@@ -1671,7 +1698,7 @@ runcmd:
                 return status, _msg
 
             if operation == "cleaning up vvs" :
-                _msg = "Removing all VVs previously created on VMC \""
+                _msg = "(" + str(obj_attr_list["tenant"] if "tenant" in obj_attr_list else "default") + ") " + "Removing all VVs previously created on VMC \""
                 _msg += obj_attr_list["name"] + "\" (only VV names starting with"
                 _msg += " \"" + "cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]
                 _msg += "\")....."

@@ -174,7 +174,7 @@ class Dashboard () :
     Generate a visualization of the latest metrics only and write
     the visualization out in HTML format
     """
-    def gather_contents(self) :
+    def gather_contents(self, expid) :
         '''
         TBD
         '''
@@ -200,7 +200,7 @@ class Dashboard () :
 
         for _obj_type in self.manage_collection.keys() :
             _obj_list += self.msci.find_document(self.manage_collection[_obj_type], \
-                            {'mgt_901_deprovisioning_request_originated' : { "$exists" : False}, \
+                            {'expid' : expid, 'mgt_901_deprovisioning_request_originated' : { "$exists" : False}, \
                              'mgt_903_deprovisioning_request_completed' : { "$exists" : False}}, \
                             True, [("mgt_001_provisioning_request_originated", 1)])
 
@@ -209,7 +209,7 @@ class Dashboard () :
             
             if _obj_type == "VM" :
                 attrs["age"] = curr_time - int(attrs["mgt_001_provisioning_request_originated"])
-            metrics = self.msci.find_document(self.latest_os_collection[_obj_type], {"_id" : attrs["uuid"]})
+            metrics = self.msci.find_document(self.latest_os_collection[_obj_type], {'expid' : expid, "_id" : attrs["uuid"]})
 
             if metrics is None :
                 # Gmetad may not have reported in yet...
@@ -219,7 +219,7 @@ class Dashboard () :
                 metrics.update(attrs)
             
             if _obj_type in self.latest_app_collection :
-                _app_metrics = self.msci.find_document(self.latest_app_collection[_obj_type], {"_id" : attrs["uuid"]})
+                _app_metrics = self.msci.find_document(self.latest_app_collection[_obj_type], {'expid' : expid, "_id" : attrs["uuid"]})
 
                 if _app_metrics :
                     _reported_app_metrics = self.msci.find_document(self.reported_app_metrics_collections[_obj_type], {"expid" : _app_metrics["expid"]})
@@ -1028,6 +1028,8 @@ class GUI(object):
                 req.session.save()
                 if not req.action.count("wizard") :
                     return self.bootstrap(req, self.heromsg + "\n<h4>You need to connect, first.</h4></div>")
+
+            expid = self.api.cldshow(req.cloud_name, "time")["experiment_id"]
                 
             if req.action == "monitor" : 
                 if req.http.params.get("show") is not None :
@@ -1157,11 +1159,6 @@ class GUI(object):
                 host = req.http.params.get("host")
                 role = req.http.params.get("role")
                 self.api.dashboard_conn_check(req.cloud_name, msattrs = req.session['msattrs'], username = req.session['time_vars']['username'])
-                try :
-                    expid = self.api.cldshow(req.cloud_name, "time")["experiment_id"]
-                except APIException, obj :
-                    return self.bootstrap(req, self.heromsg + "<h4>Could not retrieve current experiment ID from the API</h4></div>", error = True)
-                        
                 mon = Dashboard(self.api.msci, req.unparsed_uri, req.session['time_vars'], req.session['msattrs'], req.session['cloud_name'])
                 result = []
                 if category != 'p' :
@@ -1240,7 +1237,7 @@ class GUI(object):
                 self.api.dashboard_conn_check(req.cloud_name, msattrs = req.session['msattrs'], username = req.session['time_vars']['username'])
                 mon = Dashboard(self.api.msci, req.unparsed_uri, req.session['time_vars'], req.session['msattrs'], req.session['cloud_name'])
                 mon.parse_url(req.session["dashboard_parameters"])
-                mon.gather_contents()
+                mon.gather_contents(expid)
                 output_fd = open(cwd + "/gui_files/cli_template.html", "r")
                 cli_html = output_fd.read()
                 output_fd.close()
@@ -1294,7 +1291,7 @@ class GUI(object):
                     """
                     
                 result = []
-                commands = self.api.msci.find_document("trace_" + req.session['time_vars']["username"], None, True, [("command_originated" , -1)], 10, ["command"], disconnect_finish = True)
+                commands = self.api.msci.find_document("trace_" + req.session['time_vars']["username"], None, True, [("expid", expid), ("command_originated" , -1)], 10, ["command"], disconnect_finish = True)
                 for command in commands :
                     command = command["command"].replace(req.cloud_name, "")
                     contents += "<tr><td style='word-break: break-all;'>" + command.replace("default", "").replace("none", "").strip() + "</td></tr>"

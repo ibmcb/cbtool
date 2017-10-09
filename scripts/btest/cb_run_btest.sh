@@ -34,7 +34,7 @@ BTEST_DATA_DIR=$(get_my_ai_attribute_with_default btest_data_dir ~/btestfile)
 
 if [[ $LOAD_PROFILE == "default" ]]
 then
-    LOAD_PROFILE="4096;32;50;100;500"
+    LOAD_PROFILE="4096;32;50;100;500;1"
 fi
     
 threads=$LOAD_LEVEL
@@ -43,6 +43,7 @@ queuedepth=$(echo $LOAD_PROFILE | cut -d ";" -f 2)
 read_percent=$(echo $LOAD_PROFILE | cut -d ";" -f 3)
 random_percent=$(echo $LOAD_PROFILE | cut -d ";" -f 4)
 sizemb=$(echo $LOAD_PROFILE | cut -d ";" -f 5)
+threads=$(echo $LOAD_PROFILE | cut -d ";" -f 6)
 
 sudo rm -f $BTEST_DATA_DIR/btestfile;
 
@@ -52,7 +53,7 @@ if [ x"$(ldconfig -p | grep libaio)" == x ] ; then
     export LD_PRELOAD=${dir}/libaio.so.1.0.1
 fi
 
-CMDLINE="sudo $BTEST_EXECUTABLE -F -T $threads -b $block -D -l ${sizemb}m -w $queuedepth -t $LOAD_DURATION -F $random_percent $read_percent $BTEST_DATA_DIR/btestfile"
+CMDLINE="sudo $BTEST_EXECUTABLE -F -T $threads -b $block -D -l ${sizemb}m -T ${threads} -w $queuedepth -t $LOAD_DURATION -F $random_percent $read_percent $BTEST_DATA_DIR/btestfile"
 
 execute_load_generator "${CMDLINE}" ${RUN_OUTPUT_FILE} ${LOAD_DURATION}
 

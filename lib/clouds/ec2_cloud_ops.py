@@ -646,7 +646,7 @@ class Ec2Cmds(CommonCloudFunctions) :
             if "cloud_vv_type" not in obj_attr_list :
                 obj_attr_list["cloud_vv_type"] = "EBS"
             
-            if "cloud_vv" in obj_attr_list :
+            if "cloud_vv" in obj_attr_list and str(obj_attr_list["cloud_vv"]).lower() != "false" :
 
                 self.common_messages("VV", obj_attr_list, "creating", _status, _fmsg)
     
