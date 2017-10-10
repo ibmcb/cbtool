@@ -1366,7 +1366,6 @@ packages:"""
 
             _host_ip = _host_attr_list["cloud_ip"]
 
-
             obj_attr_list["resource_limits"] = str2dic(obj_attr_list["resource_limits"].replace(';',',').replace('-',':'))
 
             _proc_man = ProcessManagement(username = "root", \

@@ -471,7 +471,7 @@ class OskCmds(CommonCloudFunctions) :
             else : 
                 _registered_imageid_list.append(_registered_image.id)
                 _map_name_to_id[_registered_image.name] = _registered_image.id
-        
+                
         for _vm_role in vm_templates.keys() :            
             _imageid = str2dic(vm_templates[_vm_role])["imageid1"]                
             if _imageid != "to_replace" :
@@ -2158,10 +2158,8 @@ class OskCmds(CommonCloudFunctions) :
 
         vm_defaults["jumphost_name"] = vm_defaults["username"] + '-' + vm_defaults["jumphost_base_name"]
 
-        if "floating_pool" in vm_defaults and "cb_nullworkload" in detected_imageids :
-            _can_create_jumphost = True
-
         try :
+            
             _cjh = str(vm_defaults["create_jumphost"]).lower()
             _jhn = vm_defaults["jumphost_name"]
                        
@@ -2175,10 +2173,15 @@ class OskCmds(CommonCloudFunctions) :
                 _obj_attr_list = copy.deepcopy(vm_defaults)
 
                 _obj_attr_list.update(str2dic(vm_templates[vm_defaults["jumphost_role"]]))
+
+                if "floating_pool" in vm_defaults and _obj_attr_list["imageid1"] in detected_imageids :
+                    _can_create_jumphost = True
+
                 _obj_attr_list["cloud_vm_name"] = _jhn
                 _obj_attr_list["cloud_name"] = ""
                 _obj_attr_list["role"] = vm_defaults["jumphost_role"]      
                 _obj_attr_list["name"] = "vm_0"
+                _obj_attr_list["model"] = "osk"                
                 _obj_attr_list["size"] = vm_defaults["jumphost_size"]                        
                 _obj_attr_list["use_floating_ip"] = "true"
                 _obj_attr_list["randomize_image_name"] = "false"
@@ -2189,7 +2192,9 @@ class OskCmds(CommonCloudFunctions) :
                 _obj_attr_list["is_jumphost"] = True
                 _obj_attr_list["use_jumphost"] = False                
                 _obj_attr_list["check_boot_complete"] = "tcp_on_22"
-                _obj_attr_list["userdata"] = None
+                _obj_attr_list["userdata"] = False
+                _obj_attr_list["uuid"] = "00000000-0000-0000-0000-000000000000"
+                _obj_attr_list["log_string"] = _obj_attr_list["name"] + " (" + _obj_attr_list["uuid"] + ")"
 
                 _netname = _obj_attr_list["jumphost_netnames"]
                 if _netname == "all" :
@@ -2211,6 +2216,7 @@ class OskCmds(CommonCloudFunctions) :
                             del _obj_attr_list["jumphost_ip"]
 
                         self.vmcreate(_obj_attr_list)
+                        
                     else :
                         _msg = "The jump_host address was set to \"$True\", meaning"
                         _msg += " that a \"cb_jumphost\" VM should be automatically"

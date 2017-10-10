@@ -72,5 +72,7 @@ sudo rm -rf ~/rsyslog.pid >/dev/null 2>&1
 sudo rm -rf ~/cb_* >/dev/null 2>&1
 syslog_netcat "Done"
 
+sudo sed -i "/127.0.0.1 $(hostname)/d" /etc/hosts
+
 syslog_netcat "OK"
 exit 0
