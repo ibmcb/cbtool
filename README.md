@@ -37,13 +37,13 @@ Subscribe to our mailing list:
 
 11. Read our latest paper [IC2E 2013](http://dl.acm.org/citation.cfm?id=2497243).
 
-12. Try administrating the tool with the [Graphical Environment](https://github.ibm.com/marcios/cbtool/wiki/HOWTO:-Using-the-Graphical-Environment)
+13. Try administrating the tool with the [Graphical Environment](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Using-the-Graphical-Environment)
 
-    1. Then try [monitoring your experiments with the Graphical Environment](https://github.ibm.com/marcios/cbtool/wiki/HOWTO:-Monitoring-with-the-Graphical-Environment)
+    1. Then try [monitoring your experiments with the Graphical Environment](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Monitoring-with-the-Graphical-Environment)
 
-    2. Try to [customize your dashboard monitoring data with filters in the Graphical Environment](https://github.ibm.com/marcios/cbtool/wiki/HOWTO:-Customize-Dashboard-Monitoring-in-the-Graphical-Environment)
+    2. Try to [customize your dashboard monitoring data with filters in the Graphical Environment](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Customize-Dashboard-Monitoring-in-the-Graphical-Environment)
 
-    3. You can also try to use the [Graphical Wizard](https://github.ibm.com/marcios/cbtool/wiki/HOWTO:-Using-the-Wizard-for-first-time-connection) for a first-time connection.
+    3. You can also try to use the [Graphical Wizard](https://github.com/ibmcb/cbtool/wiki/HOWTO:-Using-the-Wizard-for-first-time-connection) for a first-time connection.
 
 16. Read the [Frequently Asked Questions](https://github.com/ibmcb/cbtool/wiki/FAQ)
 
