@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 
 SUDOCMD=$(which sudo)
+
+$SUDOCMD cat /etc/hosts | grep $(hostname) > /dev/null 2>&1
+if [[ $? -ne 0 ]]
+then
+    $SUDOCMD bash -c "echo \"127.0.0.1 $(hostname)\" >> /etc/hosts"
+fi
+
 python -V 2>&1 | grep 2.7.*
 if [[ $? -ne 0 ]]
 then

@@ -1,0 +1,17 @@
+expid SLATEST
+cldalter vm_defaults sla_provisioning_abort true
+typealter hadoop hadoopmaster_sla_provisioning_target=10
+typealter hadoop hadoopslave_sla_provisioning_target=10
+aiattach hadoop
+cldalter ai_defaults post_application_scripts_delay 2
+aiattach hadoop
+cldalter ai_defaults post_application_scripts_delay 0
+cldalter ai_defaults post_generic_scripts_delay 5
+aiattach hadoop
+cldalter ai_defaults post_generic_scripts_delay 0
+cldalter vm_defaults pre_creation_delay 7
+aiattach hadoop
+cldalter ai_defaults post_generic_scripts_delay 0
+cldalter vm_defaults pre_creation_delay 8
+aiattach hadoop
+monextract all

@@ -192,7 +192,7 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         _model_to_imguuid["pcm"] = "xenial" 
         _model_to_imguuid["pdm"] = "ibmcb/cbtoolbt-ubuntu"
         _model_to_imguuid["nop"] = "baseimg"
-        _model_to_imguuid["osk"] = "xenial0"
+        _model_to_imguuid["osk"] = "xenial"
         _model_to_imguuid["ec2"] = "ami-a9d276c9"
         _model_to_imguuid["gce"] = "ubuntu-1604-xenial-v20161221"
         _model_to_imguuid["do"] = "21669205"        

@@ -14,7 +14,7 @@ LOAD_MANAGER_ROLE = unixbench
 METRIC_AGGREGATOR_ROLE = unixbench
 CAPTURE_ROLE = unixbench
 LOAD_PROFILE = dhrystone
-LOAD_LEVEL = auto
+LOAD_LEVEL = 1
 LOAD_DURATION = 60
 CATEGORY = synthetic
 PROFILES = arithmetic, dhrystone, whetstone, load, misc, speed, oldsystem, system, fs, shell, index
@@ -28,6 +28,7 @@ DESCRIPTION +="UnixBench" benchmark.\n
 DESCRIPTION +=  - LOAD_PROFILE possible values: _PROFILES_ (for a proper\n
 DESCRIPTION +=description, consult the USAGE file)\n
 DESCRIPTION +=  - LOAD_LEVEL meaning: number of parallel copies (parameter -c).\n 
+DESCRIPTION +=If you want to use all available CPUs, just set the value "10000".\n
 DESCRIPTION +=  - LOAD_DURATION meaning: not used, a run ends when all tests are completed.\n
 START = cb_run_unixbench.sh
 
