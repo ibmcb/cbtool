@@ -197,16 +197,12 @@ class OskCmds(CommonCloudFunctions) :
 
                     self.oskconnstorage.volumes.list()
                     _cinder_client = True                                    
-                    
-                if "use_neutronclient" in extra_parms :
-                    self.use_neutronclient = str(extra_parms["use_neutronclient"]).lower()
-                else :
-                    self.use_neutronclient = "false"
 
+                self.use_neutronclient = "true"
                 _neutron_client = True
                 if self.use_neutronclient == "true" :
                     _neutron_client = False
-                    
+
                     from neutronclient.v2_0 import client as neutronc                           
 
                     if _session :
@@ -458,14 +454,15 @@ class OskCmds(CommonCloudFunctions) :
         _map_name_to_id = {}
         _map_id_to_name = {}
 
-        _registered_image_list = self.oskconncompute.images.list()
+        _registered_image_list = self.oskconncompute.glance.list()               
+#        _registered_image_list = self.oskconncompute.images.list()
         _registered_imageid_list = []
             
         for _registered_image in _registered_image_list :
             if "hypervisor_type" in vm_defaults :
                 if str(vm_defaults["hypervisor_type"]).lower() != "fake" :
-                    if "hypervisor_type" in _registered_image.metadata :
-                        if _registered_image.metadata["hypervisor_type"] == vm_defaults["hypervisor_type"] :                        
+                    if "hypervisor_type" in _registered_image._info :
+                        if _registered_image._info["hypervisor_type"] == vm_defaults["hypervisor_type"] :                        
                             _registered_imageid_list.append(_registered_image.id)
                             _map_name_to_id[_registered_image.name] = _registered_image.id
                 else :
@@ -474,7 +471,7 @@ class OskCmds(CommonCloudFunctions) :
             else : 
                 _registered_imageid_list.append(_registered_image.id)
                 _map_name_to_id[_registered_image.name] = _registered_image.id
-        
+                
         for _vm_role in vm_templates.keys() :            
             _imageid = str2dic(vm_templates[_vm_role])["imageid1"]                
             if _imageid != "to_replace" :
@@ -552,9 +549,8 @@ class OskCmds(CommonCloudFunctions) :
             if not self.oskconncompute :
                 self.connect(obj_attr_list["access"], \
                              obj_attr_list["credentials"], \
-                             obj_attr_list["name"], 
-                             {"use_neutronclient" : str(obj_attr_list["use_neutronclient"]), \
-                              "use_cinderclient" : str(obj_attr_list["use_cinderclient"])})
+                             obj_attr_list["name"],
+                              {"use_cinderclient" : str(obj_attr_list["use_cinderclient"])})
 
             _curr_tries = 0
             _max_tries = int(obj_attr_list["update_attempts"])
@@ -580,8 +576,9 @@ class OskCmds(CommonCloudFunctions) :
                             _msg = "    Deleting floating IP " + _instance_metadata["cloud_floating_ip_uuid"]
                             _msg += ", associated with instance "
                             _msg += _instance.id + " (" + _instance.name + ")"
-                            cbdebug(_msg, True)                            
-                            self.oskconncompute.floating_ips.delete(_instance_metadata["cloud_floating_ip_uuid"])
+                            cbdebug(_msg, True)
+                            self.oskconnnetwork.delete_floatingip(_instance_metadata["cloud_floating_ip_uuid"])                             
+#                            self.oskconncompute.floating_ips.delete(_instance_metadata["cloud_floating_ip_uuid"])
                                                                         
                         _running_instances = True
                         if  _instance.status == "ACTIVE" :
@@ -976,7 +973,7 @@ class OskCmds(CommonCloudFunctions) :
             
             _fmsg = "An error has occurred, but no error message was captured"
 
-            _image_list = self.oskconncompute.images.list()
+            _image_list = self.oskconncompute.glance.list()
 
             _fmsg = "Please check if the defined image name is present on this "
             _fmsg += self.get_description()
@@ -999,11 +996,11 @@ class OskCmds(CommonCloudFunctions) :
                     _hyper = obj_attr_list["hypervisor_type"]
     
                     for _image in list(_candidate_images) :
-                        if "hypervisor_type" in _image.metadata :
-                            if _image.metadata["hypervisor_type"] != obj_attr_list["hypervisor_type"] :
+                        if "hypervisor_type" in _image._info :
+                            if _image._info["hypervisor_type"] != obj_attr_list["hypervisor_type"] :
                                 _candidate_images.remove(_image)
                             else :
-                                _hyper = _image.metadata["hypervisor_type"]
+                                _hyper = _image._info["hypervisor_type"]
                 else :
                     obj_attr_list["hypervisor_type"] = ''
 
@@ -1178,10 +1175,7 @@ class OskCmds(CommonCloudFunctions) :
     def vvcreate(self, obj_attr_list) :
         '''
         TBD
-        '''
-        # Too many problems with neutronclient. Failures, API calls hanging, etc.
-        obj_attr_list["use_neutronclient"] = "false"
-        
+        '''        
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
@@ -1278,9 +1272,6 @@ class OskCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
-        # Too many problems with neutronclient. Failures, API calls hanging, etc.
-        obj_attr_list["use_neutronclient"] = "false"
-
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
@@ -1328,11 +1319,7 @@ class OskCmds(CommonCloudFunctions) :
         TBD
         '''
         
-        try :
-
-            # Too many problems with neutronclient. Failures, API calls hanging, etc.
-            obj_attr_list["use_neutronclient"] = "false"
-                        
+        try :                        
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
             
@@ -1368,8 +1355,7 @@ class OskCmds(CommonCloudFunctions) :
                 _mark_a = time()
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
                              obj_attr_list["vmc_name"], \
-                             {"use_neutronclient" : obj_attr_list["use_neutronclient"], \
-                              "use_cinderclient" : obj_attr_list["use_cinderclient"]})
+                              {"use_cinderclient" : obj_attr_list["use_cinderclient"]})
                 
                 self.annotate_time_breakdown(obj_attr_list, "authenticate_time", _mark_a)
 
@@ -1511,8 +1497,7 @@ class OskCmds(CommonCloudFunctions) :
  
                     if "admin_credentials" in obj_attr_list :
                         self.connect(obj_attr_list["access"], obj_attr_list["admin_credentials"], \
-                                     obj_attr_list["vmc_name"], \
-                                     {"use_neutronclient" : obj_attr_list["use_neutronclient"]})                        
+                                     obj_attr_list["vmc_name"])
 
                     self.get_mac_address(obj_attr_list, _instance)
 
@@ -1582,8 +1567,6 @@ class OskCmds(CommonCloudFunctions) :
             if int(obj_attr_list["instance_creation_status"]) :
                 _status, _fmsg = self.instance_cleanup_on_failure(obj_attr_list)
             else :
-                # Too many problems with neutronclient. Failures, API calls hanging, etc.
-                obj_attr_list["use_neutronclient"] = "false"
                                 
                 _time_mark_drs = int(time())
                 if "mgt_901_deprovisioning_request_originated" not in obj_attr_list :
@@ -1594,8 +1577,7 @@ class OskCmds(CommonCloudFunctions) :
     
                 if not self.oskconncompute :
                     self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
-                                 obj_attr_list["vmc_name"], \
-                                 {"use_neutronclient" : obj_attr_list["use_neutronclient"]})
+                                 obj_attr_list["vmc_name"])
                 
                 _wait = int(obj_attr_list["update_frequency"])
                 _max_tries = int(obj_attr_list["update_attempts"])
@@ -1653,18 +1635,14 @@ class OskCmds(CommonCloudFunctions) :
     def vmcapture(self, obj_attr_list) :
         '''
         TBD
-        '''
-        # Too many problems with neutronclient. Failures, API calls hanging, etc.
-        obj_attr_list["use_neutronclient"] = "false"
-                
+        '''                
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
             if not self.oskconncompute :
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
-                             obj_attr_list["vmc_name"], \
-                             {"use_neutronclient" : obj_attr_list["use_neutronclient"]})
+                             obj_attr_list["vmc_name"])
 
             _wait = int(obj_attr_list["update_frequency"])
             _curr_tries = 0
@@ -1686,16 +1664,14 @@ class OskCmds(CommonCloudFunctions) :
                     obj_attr_list["captured_image_name"] += str(obj_attr_list["mgt_101_capture_request_originated"])
 
                 self.common_messages("VM", obj_attr_list, "capturing", 0, '')
-
                 _instance.create_image(obj_attr_list["captured_image_name"], None)
-                sleep(_wait)
-
                 _vm_image_created = False
-                while not _vm_image_created and _curr_tries < _max_tries : 
-                    _vm_images = self.oskconncompute.images.list()
+                while not _vm_image_created and _curr_tries < _max_tries :
+                    _vm_images = self.oskconncompute.glance.list()
+#                    _vm_images = self.oskconncompute.images.list()
                     for _vm_image in _vm_images :
                         if _vm_image.name == obj_attr_list["captured_image_name"] :
-                            if _vm_image.status == "ACTIVE" :
+                            if _vm_image.status.lower() == "active" :
                                 _vm_image_created = True
                                 _time_mark_crc = int(time())
                                 obj_attr_list["mgt_103_capture_request_completed"] = _time_mark_crc - _time_mark_crs
@@ -1742,9 +1718,6 @@ class OskCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
-        # Too many problems with neutronclient. Failures, API calls hanging, etc.
-        obj_attr_list["use_neutronclient"] = "false"
-
         try :
             _status = 100
 
@@ -1753,8 +1726,7 @@ class OskCmds(CommonCloudFunctions) :
     
             if not self.oskconncompute :
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
-                             obj_attr_list["vmc_name"], \
-                             {"use_neutronclient" : obj_attr_list["use_neutronclient"]})
+                             obj_attr_list["vmc_name"])
 
             _wait = int(obj_attr_list["update_frequency"])
             _curr_tries = 0
@@ -1809,17 +1781,13 @@ class OskCmds(CommonCloudFunctions) :
     def vmmigrate(self, obj_attr_list) :
         '''
         TBD
-        '''
-        # Too many problems with neutronclient. Failures, API calls hanging, etc.
-        obj_attr_list["use_neutronclient"] = "false"        
-        
+        '''        
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
 
         if not self.oskconncompute :
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
-                             obj_attr_list["vmc_name"], \
-                             {"use_neutronclient" : obj_attr_list["use_neutronclient"]})
+                             obj_attr_list["vmc_name"])
 
         operation = obj_attr_list["mtype"]
 
@@ -1842,8 +1810,7 @@ class OskCmds(CommonCloudFunctions) :
         try :
             if not self.oskconncompute :
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
-                             obj_attr_list["vmc_name"], \
-                             {"use_neutronclient" : obj_attr_list["use_neutronclient"]})
+                             obj_attr_list["vmc_name"]) 
     
             _instance = self.get_instances(obj_attr_list, "vm", obj_attr_list["cloud_vm_name"])
             
@@ -1926,8 +1893,8 @@ class OskCmds(CommonCloudFunctions) :
                 if self.is_cloud_image_uuid(obj_attr_list["imageid1"]) :
                     if "hypervisor_type" in obj_attr_list :
                         if str(obj_attr_list["hypervisor_type"]).lower() != "fake" :
-                            if "hypervisor_type" in _image.metadata :
-                                if _image.metadata["hypervisor_type"] == obj_attr_list["hypervisor_type"] :                        
+                            if "hypervisor_type" in _image._info :
+                                if _image._info["hypervisor_type"] == obj_attr_list["hypervisor_type"] :                        
                                     if _image.id == obj_attr_list["imageid1"] :
                                         _image.delete()
                                         break
@@ -1942,8 +1909,8 @@ class OskCmds(CommonCloudFunctions) :
                 else : 
                     if "hypervisor_type" in obj_attr_list :
                         if str(obj_attr_list["hypervisor_type"]).lower() != "fake" :
-                            if "hypervisor_type" in _image.metadata :
-                                if _image.metadata["hypervisor_type"] == obj_attr_list["hypervisor_type"] :
+                            if "hypervisor_type" in _image._info :
+                                if _image._info["hypervisor_type"] == obj_attr_list["hypervisor_type"] :
                                     if _image.name == obj_attr_list["imageid1"] :
                                         _image.delete()
                                         break
@@ -2054,7 +2021,6 @@ class OskCmds(CommonCloudFunctions) :
             if self.oskconnstorage and self.use_cinderclient == "true":
                 self.oskconnstorage.novaclient.http.close()
 
-
             if self.oskconnnetwork :
                 self.oskconnnetwork.neutronclient.http.close()
 
@@ -2089,36 +2055,23 @@ class OskCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
-
-        if "use_neutronclient" in obj_attr_list :
-            _use_neutronclient = str(obj_attr_list["use_neutronclient"]).lower()
-                            
-        if _use_neutronclient == "true" :
-            _name = network_attr_list["name"]
-            if "provider:network_type" in network_attr_list :
-                _type = network_attr_list["provider:network_type"]
-            else :
-                _type = "NA"
-            _uuid = network_attr_list["id"]
-            
-            if _type == "flat":
-                _model = "flat"
-            else :
-                if "router:external" in network_attr_list :
-                    if network_attr_list["router:external"] :
-                        _model = "external"
-                    else :
-                        _model = "tenant"
-                else :
-                    _model = "NA"
+        _name = network_attr_list["name"]
+        if "provider:network_type" in network_attr_list :
+            _type = network_attr_list["provider:network_type"]
         else :
-            _name = network_attr_list.label
-            _uuid = network_attr_list.id 
-            if _name.count("ext") :
-                _model = "external"
-            else :
-                _model = "tenant"
             _type = "NA"
+        _uuid = network_attr_list["id"]
+        
+        if _type == "flat":
+            _model = "flat"
+        else :
+            if "router:external" in network_attr_list :
+                if network_attr_list["router:external"] :
+                    _model = "external"
+                else :
+                    _model = "tenant"
+            else :
+                _model = "NA"
 
         self.networks_attr_list[_name] = {"uuid" : _uuid, "model" : _model, \
                                            "type" : _type }
@@ -2134,14 +2087,8 @@ class OskCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
-        if "use_neutronclient" in obj_attr_list :
-            _use_neutronclient = str(obj_attr_list["use_neutronclient"]).lower()
-            
-        if _use_neutronclient == "false" :
-            _network_list = self.oskconncompute.networks.list()
-        else :
-            _network_list = self.oskconnnetwork.list_networks()["networks"]
-        
+        _network_list = self.oskconnnetwork.list_networks()["networks"]
+
         for _network_attr_list in _network_list :
             self.get_network_attr(obj_attr_list, _network_attr_list)
 
@@ -2157,12 +2104,19 @@ class OskCmds(CommonCloudFunctions) :
         if str(vm_defaults["create_jumphost"]).lower() != "false" or \
         str(vm_defaults["use_floating_ip"]).lower() != "false" :
 
-            _floating_pool_list = self.oskconncompute.floating_ip_pools.list()
-    
+            _floating_pool_dict = {}
+            for _network in self.oskconnnetwork.list_networks()["networks"] :                
+                if _network["router:external"] :
+                    if _network["name"] not in _floating_pool_dict :
+                        _floating_pool_dict[_network["name"]] = _network["id"]
+                        
+#            _floating_pool_list = self.oskconncompute.floating_ip_pools.list()
+
             if len(vm_defaults["floating_pool"]) < 2 :
-                if len(_floating_pool_list) == 1 :
-                    vm_defaults["floating_pool"] = _floating_pool_list[0].name
-                    
+                if len(_floating_pool_dict) == 1 :
+                    vm_defaults["floating_pool"] = _floating_pool_dict.keys()[0]
+#                    vm_defaults["floating_pool"] = _floating_pool_list[0].name
+ 
                     _msg = "A single floating IP pool (\"" 
                     _msg += vm_defaults["floating_pool"] + "\") was found on this"
                     _msg += " VMC. Will use this as the floating pool."
@@ -2175,9 +2129,13 @@ class OskCmds(CommonCloudFunctions) :
             
             _floating_pool_found = False
     
-            for _floating_pool in _floating_pool_list :
-                if _floating_pool.name == vm_defaults["floating_pool"] :
-                    _floating_pool_found = True
+            for _floating_pool in _floating_pool_dict.keys() :
+                if _floating_pool == vm_defaults["floating_pool"] :
+                    vm_defaults["floating_pool_id"] = _floating_pool_dict[_floating_pool]
+                    _floating_pool_found = True                        
+
+#                    if _floating_pool.name == vm_defaults["floating_pool"] :
+#                        _floating_pool_found = True
                             
             if not (_floating_pool_found) :
                 _msg = "ERROR! Please make sure that the floating IP pool "
@@ -2200,10 +2158,8 @@ class OskCmds(CommonCloudFunctions) :
 
         vm_defaults["jumphost_name"] = vm_defaults["username"] + '-' + vm_defaults["jumphost_base_name"]
 
-        if "floating_pool" in vm_defaults and "cb_nullworkload" in detected_imageids :
-            _can_create_jumphost = True
-
         try :
+            
             _cjh = str(vm_defaults["create_jumphost"]).lower()
             _jhn = vm_defaults["jumphost_name"]
                        
@@ -2217,10 +2173,15 @@ class OskCmds(CommonCloudFunctions) :
                 _obj_attr_list = copy.deepcopy(vm_defaults)
 
                 _obj_attr_list.update(str2dic(vm_templates[vm_defaults["jumphost_role"]]))
+
+                if "floating_pool" in vm_defaults and _obj_attr_list["imageid1"] in detected_imageids :
+                    _can_create_jumphost = True
+
                 _obj_attr_list["cloud_vm_name"] = _jhn
                 _obj_attr_list["cloud_name"] = ""
                 _obj_attr_list["role"] = vm_defaults["jumphost_role"]      
                 _obj_attr_list["name"] = "vm_0"
+                _obj_attr_list["model"] = "osk"                
                 _obj_attr_list["size"] = vm_defaults["jumphost_size"]                        
                 _obj_attr_list["use_floating_ip"] = "true"
                 _obj_attr_list["randomize_image_name"] = "false"
@@ -2231,7 +2192,9 @@ class OskCmds(CommonCloudFunctions) :
                 _obj_attr_list["is_jumphost"] = True
                 _obj_attr_list["use_jumphost"] = False                
                 _obj_attr_list["check_boot_complete"] = "tcp_on_22"
-                _obj_attr_list["userdata"] = None
+                _obj_attr_list["userdata"] = False
+                _obj_attr_list["uuid"] = "00000000-0000-0000-0000-000000000000"
+                _obj_attr_list["log_string"] = _obj_attr_list["name"] + " (" + _obj_attr_list["uuid"] + ")"
 
                 _netname = _obj_attr_list["jumphost_netnames"]
                 if _netname == "all" :
@@ -2253,6 +2216,7 @@ class OskCmds(CommonCloudFunctions) :
                             del _obj_attr_list["jumphost_ip"]
 
                         self.vmcreate(_obj_attr_list)
+                        
                     else :
                         _msg = "The jump_host address was set to \"$True\", meaning"
                         _msg += " that a \"cb_jumphost\" VM should be automatically"
@@ -2615,30 +2579,31 @@ class OskCmds(CommonCloudFunctions) :
             _call = "NAfpc"
             identifier = obj_attr_list["cloud_vm_name"]
             
-            if not self.oskconncompute :
+            if not self.oskconnnetwork :
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
                              obj_attr_list["vmc_name"])
 
             _fip = False
 
-            if str(obj_attr_list["always_create_floating_ip"]).lower() == "false" :
+#            if str(obj_attr_list["always_create_floating_ip"]).lower() == "false" :
+
+#                _call = "floating ip list"
+#                fips = self.oskconnnetwork.list_floatingips()
+#                fips = self.oskconnnetwork.floating_ips.list()
                 
-                _call = "floating ip list"
-                fips = self.oskconncompute.floating_ips.list()
-                
-                for _fip in fips :
-                    if _fip.instance_id == None :
-                        _fip = _fip.ip
-                        break
+#                for _fip in fips :
+#                    if _fip.instance_id == None :
+#                        _fip = _fip.ip
+#                        break
 
             if not _fip :
                 _call = "floating ip create"
                 _mark_a = time()
-                _fip_h = self.oskconncompute.floating_ips.create(obj_attr_list["floating_pool"])
+                _fip_h = self.oskconnnetwork.create_floatingip({"floatingip": {"floating_network_id": obj_attr_list["floating_pool_id"]}}) 
+#                _fip_h = self.oskconncompute.floating_ips.create(obj_attr_list["floating_pool"])
                 self.annotate_time_breakdown(obj_attr_list, "create_fip_time", _mark_a)
-                                    
-                _fip = _fip_h.ip
-                obj_attr_list["cloud_floating_ip_uuid"] = _fip_h.id
+                _fip = _fip_h["floatingip"]["floating_ip_address"]
+                obj_attr_list["cloud_floating_ip_uuid"] = _fip_h["floatingip"]["id"]
 
             return _fip
 
@@ -2690,8 +2655,8 @@ class OskCmds(CommonCloudFunctions) :
 
             if "cloud_floating_ip_uuid" in obj_attr_list :
                 _call = "floating ip delete"
-                self.oskconncompute.floating_ips.delete(obj_attr_list["cloud_floating_ip_uuid"])
-                
+#                self.oskconncompute.floating_ips.delete(obj_attr_list["cloud_floating_ip_uuid"])
+                self.oskconnnetwork.delete_floatingip(obj_attr_list["cloud_floating_ip_uuid"])                
             return True
 
         except novaexceptions, obj:

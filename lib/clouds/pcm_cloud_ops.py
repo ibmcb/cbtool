@@ -844,7 +844,7 @@ class PcmCmds(CommonCloudFunctions) :
             obj_attr_list["pcm_005_start_container_time"] = _mark4 - _mark3
                                     
             obj_attr_list["cloud_vm_uuid"] = self.generate_random_uuid(obj_attr_list["cloud_vm_name"])
-                                    
+
             self.take_action_if_requested("VM", obj_attr_list, "provision_started")
 
             _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
