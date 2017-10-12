@@ -1,0 +1,39 @@
+Virtual Application: coremark
+Files: coremark_v1.0.tar
+URL: http://www.eembc.org/coremark/download_coremark.php
+
+Virtual Application: parboil
+Files: pb2.5benchmarks-2.tgz  pb2.5datasets_standard-2.tgz  pb2.5driver.tar
+URL:  http://impact.crhc.illinois.edu/Parboil/parboil_download_page.aspx
+
+Virtual Application: linpack
+Files: l_lpk_p_11.3.0.004.tgz
+URL: http://registrationcenter.intel.com/irc_nas/7615/l_lpk_p_11.3.0.004.tgz
+
+Virtual Application: parboil,caffe,tensorflow
+Files: cuda-repo-fedora23-8-0-local-8.0.44-1.x86_64-rpm OR cuda-repo-ubuntu1604-8-0-local_8.0.44-1_amd64-deb
+URL: https://developer.nvidia.com/cuda-downloads
+
+Virtual Application: parboil,caffe,tensorflow
+Files: cudnn-8.0-linux-x64-v6.0.tgz
+URL: https://developer.nvidia.com/rdp/cudnn-download  
+
+Virtual Application: SPECJbb
+File: SPECjbb2015_1_00.iso
+URL: https://pro.spec.org/private/osg/benchmarks/
+COMMENT: sudo mount -o loop ./SPECjbb2015_1_00.iso /mnt; rsync -avz /mnt/ ./SPECjbb2015_1_00/; sudo umount /mnt; rm ./SPECjbb2015_1_00
+
+Virtual Application: SPECimap
+File: SPECvirt_sc2013-1_1.iso
+URL: https://pro.spec.org/private/osg/benchmarks/
+AFTER DOWNLOAD: sudo mount -o loop ./SPECvirt_sc2013-1_1.iso /mnt; rsync -avz /mnt/ ./SPECvirt_sc2013-1_1/; sudo umount /mnt; rm ./SPECvirt_sc2013-1_1.iso
+
+Virtual Application: SPECsfs
+File: SPECsfs2014_SP1.iso
+URL: https://pro.spec.org/private/osg/benchmarks/
+AFTER DOWNLOAD: sudo mount -o loop ./SPECsfs2014_SP1.iso /mnt; rsync -avz /mnt/ ./SPECsfs2014_SP1/; sudo umount /mnt; rm ./SPECsfs2014_SP1.iso
+
+Virtual Application: SPECcpu
+File: cpu2006-1.2.iso
+URL: https://pro.spec.org/private/osg/benchmarks/
+AFTER DOWNLOAD: sudo mount -o loop ./cpu2006-1.2.iso /mnt; rsync -avz /mnt/ ./SPECcpu2016/; sudo umount /mnt; rm ./cpu2006-1.2.iso
