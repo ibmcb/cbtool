@@ -3926,7 +3926,7 @@ class BaseObjectOperations :
                                 _msg += "; ./cbssh " + obj_attr_list["name"] + "\""
                                 _msg += " to login on the VM. Once there, execute"
                                 _msg += " \"cd ~/" + obj_attr_list["remote_dir_name"] 
-                                _msg +=  "; ./pre_install.sh; ./install -r workload --wks nullworkload\" "
+                                _msg +=  "; ./pre_install.sh && ./install -r workload --wks nullworkload\" "
                                 _msg += "to automatically configure a new instance."
                                 _msg += "\nOnce done, execute \"vmcapture youngest " 
                                 _msg += obj_attr_list["image_prefix"] + "cb_nullworkload"

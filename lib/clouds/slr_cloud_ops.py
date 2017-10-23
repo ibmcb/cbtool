@@ -134,7 +134,7 @@ class SlrCmds(CommonCloudFunctions) :
             
             _key_pair_found = self.check_ssh_key(vmc_name, self.determine_key_name(vm_defaults), vm_defaults, False, vmc_name)
             
-            _detected_imageids = self.check_images(vmc_name, vm_templates, vmc_name)
+            _detected_imageids = self.check_images(vmc_name, vm_templates, access)
 
             if not (_run_netname_found and _prov_netname_found and _key_pair_found) :
                 _msg = "Check the previous errors, fix it (using GCE's web"
