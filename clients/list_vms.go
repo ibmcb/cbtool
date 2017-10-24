@@ -15,7 +15,7 @@
 */
 
 /*
-    Example use of of the CloudBench golang bindings.
+    Example use of the CloudBench golang bindings.
 
     @author: Michael R. Hines
  */
