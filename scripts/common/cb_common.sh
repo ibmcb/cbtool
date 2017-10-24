@@ -951,20 +951,26 @@ function subscribeai {
 load_manager_ip=`get_my_ai_attribute load_manager_ip`
 
 if [ x"${NC_HOST_SYSLOG}" == x ]; then
-    if [ x"${osmode}" != x"scalable" ]; then
-        USE_VPN_IP=`get_global_sub_attribute vm_defaults use_vpn_ip`
-        VPN_ONLY=`get_global_sub_attribute vm_defaults vpn_only`
+	# These are cacheable now. (Thank you. =). No need to skip them in scalable mode.
+    # We still want rsyslog support in scalable mode.
+    USE_VPN_IP=`get_global_sub_attribute vm_defaults use_vpn_ip`
+    VPN_ONLY=`get_global_sub_attribute vm_defaults vpn_only`
 
-        # We cannot log anything with VPN_ONLY if we don't use the VPN server's IP address
+    # We cannot log anything with VPN_ONLY if we don't use the VPN server's IP address
 
-        if [ x"$USE_VPN_IP" == x"True" ] && [ x"$VPN_ONLY" == x"True" ] ; then
-            NC_HOST_SYSLOG=`get_global_sub_attribute vpn server_bootstrap`
-        else
+    if [ x"$USE_VPN_IP" == x"True" ] && [ x"$VPN_ONLY" == x"True" ] ; then
+        NC_HOST_SYSLOG=`get_global_sub_attribute vpn server_bootstrap`
+    else
+        if [ x"${osmode}" != x"scalable" ]; then
             NC_HOST_SYSLOG=`get_global_sub_attribute logstore hostname`
+        else 
+            NC_HOST_SYSLOG=${load_manager_ip}
         fi
+    fi
+
+    if [ x"${osmode}" != x"scalable" ]; then
         NC_OPTIONS="-w1 -u"
     else 
-        NC_HOST_SYSLOG=`get_my_ai_attribute load_manager_ip`
         NC_OPTIONS="-w1 -u -q1"
     fi
 fi
@@ -988,14 +994,18 @@ if [ x"$default" != x ] ; then
     hn="${hn}_${self}"
 fi
 
+
 function syslog_netcat {
-    if [[ $osmode == "controllable" ]]
-    then 
-        echo "${NC_FACILITY_SYSLOG}$hn cloudbench $SCRIPT_NAME ($$): ${1}"
-        echo "${NC_FACILITY_SYSLOG}$hn cloudbench $SCRIPT_NAME ($$): ${1}" | $NC_CMD &
-    else
-        echo "$1"
-    fi
+    # I'm modifying this slightly. There's nothing wrong with logging in scalable mode,
+    # except that we should not be calling slow functions in scalable mode. We still
+    # want rsyslog functions to work in scalable mode when cloudbench is running as a service.
+	EXPID="$(get_my_vm_attribute experiment_id)"
+
+    echo "$SCRIPT_NAME ($$): ${1}"
+
+	# In rfc3164 format, there cannot be a space between the hostname and the facility number.
+    # It's pretty silly, but it doesn't work without removing the space.
+    echo "${NC_FACILITY_SYSLOG}$hn cloudbench ${EXPID} $SCRIPT_NAME ($$): ${1}" | $NC_CMD &
 }
 
 function refresh_hosts_file {
