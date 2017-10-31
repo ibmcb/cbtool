@@ -32,7 +32,8 @@ then
 else
     cd ${UNIXBENCH_DIR}
 	make
-    if [ $LOAD_LEVEL == "auto" ] ; then
+    if [ $LOAD_LEVEL == "10000" ]
+    then
         execute_load_generator "./Run -c $CPUS" ${OUTPUT_FILE}
     else
         execute_load_generator "./Run -c $LOAD_LEVEL $LOAD_PROFILE" ${RUN_OUTPUT_FILE}
