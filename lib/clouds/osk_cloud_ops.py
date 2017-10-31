@@ -126,13 +126,13 @@ class OskCmds(CommonCloudFunctions) :
                 if _use_keystone_session :
                     access_url = access_url.replace('v2.0/','v3')
                     _auth = v3.Password(auth_url = access_url, \
-                                     username = _username, \
-                                     password = _password, \
-                                     project_name = _tenant, \
-                                     user_domain_id = _user_domain_id, \
-                                     project_domain_id=_project_domain_id)
+                                        username = _username, \
+                                        password = _password, \
+                                        project_name = _tenant, \
+                                        user_domain_id = _user_domain_id, \
+                                        project_domain_id = _project_domain_id)
                     
-                    _session = session.Session(auth = _auth)
+                    _session = session.Session(auth = _auth, verify = _insecure, cert = _cacert)
                 else :
                     _credentials = { "username" : _username, \
                                     "version" : _version, \

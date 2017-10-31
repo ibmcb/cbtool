@@ -1114,7 +1114,7 @@ function security_configuration {
         if [[ ${LINUX_DISTRO} -eq 1 ]]
         then
             syslog_netcat "Disabling Apparmor..."
-            service_stop_disable_apparmor
+            service_stop_disable apparmor
             sudo service apparmor teardown
         fi
                 
