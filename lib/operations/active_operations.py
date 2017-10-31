@@ -1263,12 +1263,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             _visited = []
 
                         while len(_visited) :
-                           assert(_visited[0] in _vmc_uuid_list)
-                           for idx in range(0, len(_vmc_uuid_list)) :
-                               if _visited[0] == _vmc_uuid_list[idx] :
-                                   del _vmc_uuid_list[idx]
-                                   del _visited[0]
-                                   break
+                            assert(_visited[0] in _vmc_uuid_list)
+                            for idx in range(0, len(_vmc_uuid_list)) :
+                                if _visited[0] == _vmc_uuid_list[idx] :
+                                    del _vmc_uuid_list[idx]
+                                    del _visited[0]
+                                    break
 
                         cbdebug("After Visited: " + str(len(_visited)) + " total: " + str(len(_vmc_uuid_list)))
 
