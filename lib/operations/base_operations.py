@@ -2465,7 +2465,7 @@ class BaseObjectOperations :
             if operation == "setup" or operation == "resize" :
 
                 _msg = "Performing generic application instance post_boot "
-                _msg += "configuration" + _x_str + "on all VMs belonging to " + _ai_attr_list["log_string"] + "..."                
+                _msg += "configuration" + _x_str + " on all VMs belonging to " + _ai_attr_list["log_string"] + "..."                
                 cbdebug(_msg, True)
                 self.osci.pending_object_set(cloud_name, "AI", ai_uuid, "status", _msg)
 
