@@ -353,7 +353,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                     _reservations = LibcloudCmds.catalogs.cbtool[credentials_list].list_nodes()
 
                     for _reservation in _reservations :
-                        if _reservation.name.count("cb-" + obj_attr_list["username"]) :
+                        if _reservation.name.count("cb-" + obj_attr_list["username"] + "-" + obj_attr_list["cloud_name"]) :
                             if _reservation.state == NodeState.PENDING :
                                 cbdebug("Instance still has a pending event. waiting to destroy...")
                                 sleep(10)
@@ -386,7 +386,7 @@ class LibcloudCmds(CommonCloudFunctions) :
     
                         _volumes = LibcloudCmds.catalogs.cbtool[credentials_list].list_volumes()
                         for _volume in _volumes :
-                            if _volume.name.count("cb-" + obj_attr_list["username"]) :
+                            if _volume.name.count("cb-" + obj_attr_list["username"] + "-" + obj_attr_list["cloud_name"].lower()) :
                                 try :
                                     cbdebug("Destroying: " + _volume.name + " (" + tenant + ")", True)
                                     _volume.destroy()
@@ -753,7 +753,8 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             if self.use_volumes and "cloud_vv" in obj_attr_list and str(obj_attr_list["cloud_vv"]).lower() != "false" :
 
-                obj_attr_list["cloud_vv_name"] = obj_attr_list["cloud_vv_name"].lower()
+                obj_attr_list["region"] = _region = obj_attr_list["vmc_name"]
+                obj_attr_list["cloud_vv_name"] = obj_attr_list["cloud_vv_name"].lower().replace("_", "-")
                 
                 obj_attr_list["last_known_state"] = "about to send volume create request"
 
@@ -764,8 +765,8 @@ class LibcloudCmds(CommonCloudFunctions) :
                     _mark1 = int(time())
     
                     _volume = connection.create_volume(int(obj_attr_list["cloud_vv"]),
-                                                                                  obj_attr_list["cloud_vv_name"],
-                                                                                  location = [x for x in LibcloudCmds.locations if x.id == obj_attr_list["region"]][0])
+                                                      obj_attr_list["cloud_vv_name"],
+                                                      location = [x for x in LibcloudCmds.locations if x.id == obj_attr_list["region"]][0])
     
                     sleep(int(obj_attr_list["update_frequency"]))
     
@@ -776,7 +777,6 @@ class LibcloudCmds(CommonCloudFunctions) :
                     obj_attr_list["do_015_create_volume_time"] = _mark2 - _mark1
 
                 else :
-                        
                     obj_attr_list["cloud_vv_uuid"] = "NOT SUPPORTED"
 
             _status = 0
