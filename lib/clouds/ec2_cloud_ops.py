@@ -251,7 +251,7 @@ class Ec2Cmds(CommonCloudFunctions) :
 
             if len(_volumes) :
                 for unattachedvol in _volumes :
-                    if unattachedvol.name.count("cb-" + obj_attr_list["username"] + "-" + obj_attr_list["cloud_name"]) and unattachedvol.status == 'available' :
+                    if "Name" in unattachedvol.tags and unattachedvol.tags[u'Name'].count("cb-" + obj_attr_list["username"] + "-" + obj_attr_list["cloud_name"]) and unattachedvol.status == 'available' :
                         _msg = unattachedvol.id + ' ' + unattachedvol.status
                         _msg += "... was deleted"
                         cbdebug(_msg)
