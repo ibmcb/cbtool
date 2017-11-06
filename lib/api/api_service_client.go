@@ -40,10 +40,14 @@ type APIClient struct {
 
 func (api *APIClient) Call(method string, args ...interface{}) (result map[string]interface{}, err error) {
     if api.Address == "" {
-	return nil, errors.New("Failed to provide CloudBench URL.")
+		return nil, errors.New("Failed to provide CloudBench URL.")
     }
 
     response := xmlrpc.Request(api.Address, method, args...)
+
+	if response == nil || len(response) == 0 {
+			return nil, errors.New("Error: empty response")
+	}
     j, err := json.Marshal(response[0])
     var f map[string]interface{}
     if err == nil {
