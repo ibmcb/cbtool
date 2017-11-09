@@ -238,7 +238,7 @@ class Ec2Cmds(CommonCloudFunctions) :
                 for _reservation in _reservations :
                     for _instance in _reservation.instances :
                         if "Name" in _instance.tags :
-                            if _instance.tags[u'Name'].count("cb-" + obj_attr_list["username"]) and _instance.state == u'running' :
+                            if _instance.tags[u'Name'].count("cb-" + obj_attr_list["username"] + "-" + obj_attr_list["cloud_name"]) and _instance.state == u'running' :
                                 _instance.terminate()
                                 _running_instances = True
                 sleep(int(obj_attr_list["update_frequency"]))
@@ -251,7 +251,7 @@ class Ec2Cmds(CommonCloudFunctions) :
 
             if len(_volumes) :
                 for unattachedvol in _volumes :
-                    if unattachedvol.status == 'available' :
+                    if "Name" in unattachedvol.tags and unattachedvol.tags[u'Name'].count("cb-" + obj_attr_list["username"] + "-" + obj_attr_list["cloud_name"]) and unattachedvol.status == 'available' :
                         _msg = unattachedvol.id + ' ' + unattachedvol.status
                         _msg += "... was deleted"
                         cbdebug(_msg)
