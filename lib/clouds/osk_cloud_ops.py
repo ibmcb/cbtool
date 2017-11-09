@@ -260,7 +260,7 @@ class OskCmds(CommonCloudFunctions) :
                             _dmsg += str(_tenant) + "', auth_url = '" + str(access_url) 
                             _dmsg += "', user_domain_id = '" + str(_user_domain_id) + "', "
                             _dmsg += "project_domain_id = '" + str(_project_domain_id) + "'); "
-                            _dmsg += "_session = session.Session(auth = _auth); "
+                            _dmsg += "_session = session.Session(auth = _auth, verify = " + str(_insecure) + ", cert = " + str(_cacert) + "); "
                             _dmsg += "ct = novac.Client(\"2.1\", session = _session); print ct.flavors.list()\"\""
                         else :
                             _dmsg = "Please attempt to execute the following : \"python -c \""
@@ -285,7 +285,7 @@ class OskCmds(CommonCloudFunctions) :
                             _dmsg += str(_tenant) + "', auth_url = '" + str(access_url) 
                             _dmsg += "', user_domain_id = '" + str(_user_domain_id) + "', "
                             _dmsg += "project_domain_id = '" + str(_project_domain_id) + "'); "
-                            _dmsg += "_session = session.Session(auth = _auth); "
+                            _dmsg += "_session = session.Session(auth = _auth, verify = " + str(_insecure) + ", cert = " + str(_cacert) + "); "
                             _dmsg += "ct = cinderc.Client(\"2.1\", session = _session); print ct.volumes.list()\"\""                                                        
                         else :
                             _dmsg = "Please attempt to execute the following : \"python -c \""
@@ -307,7 +307,7 @@ class OskCmds(CommonCloudFunctions) :
                             _dmsg += str(_tenant) + "', auth_url = '" + str(access_url) 
                             _dmsg += "', user_domain_id = '" + str(_user_domain_id) + "', "
                             _dmsg += "project_domain_id = '" + str(_project_domain_id) + "'); "
-                            _dmsg += "_session = session.Session(auth = _auth); "
+                            _dmsg += "_session = session.Session(auth = _auth, verify = " + str(_insecure) + ", cert = " + str(_cacert) + "); "
                             _dmsg += "ct = neutronc.Client(session = _session); print ct.list_networks()\"\""                            
                         else :
                             _dmsg = "Please attempt to execute the following : \"python -c \""
