@@ -981,6 +981,10 @@ if [ x"${NC_HOST_SYSLOG}" == x ]; then
     fi
 fi
 
+if [ x"${NC_PROTO_SYSLOG}" == x ]; then
+    NC_PROTO_SYSLOG=`get_global_sub_attribute logstore protocol`
+fi
+
 if [ x"${NC_PORT_SYSLOG}" == x ]; then
     NC_PORT_SYSLOG=`get_global_sub_attribute logstore port`
 fi

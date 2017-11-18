@@ -202,7 +202,7 @@ def actuator_cli_parsing() :
                 print "The following parameters are mandatory: --apiport, --apihost, --syslogf, --syslogh, --syslogp, --syslogr"
                 exit(20)
 
-def setup_syslog(operation, facility, verbosity, port, hostname, quiet, logdest, proto) :
+def setup_syslog(operation, facility, verbosity, port, hostname, quiet, logdest, protocol) :
     '''
     TBD
     '''
