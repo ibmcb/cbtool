@@ -968,10 +968,16 @@ if [ x"${NC_HOST_SYSLOG}" == x ]; then
         fi
     fi
 
+    NC_PROTO_SYSLOG=`get_global_sub_attribute logstore protocol`
+
+    PROTO=" "
+    if [ "$NC_PROTO_SYSLOG" == "UDP" ] ; then
+       PROTO="-u"
+    fi
     if [ x"${osmode}" != x"scalable" ]; then
-        NC_OPTIONS="-w1 -u"
+        NC_OPTIONS="-w1 $PROTO"
     else 
-        NC_OPTIONS="-w1 -u -q1"
+        NC_OPTIONS="-w1 $PROTO -q1"
     fi
 fi
 
