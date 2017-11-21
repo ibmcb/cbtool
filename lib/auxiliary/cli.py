@@ -678,6 +678,7 @@ class CBCLI(Cmd) :
             _base_cmd += " --syslogp=" + self.cld_attr_lst["logstore"]["port"]
             _base_cmd += " --syslogf=" + self.cld_attr_lst["logstore"]["api_facility"]
             _base_cmd += " --syslogh=" + self.cld_attr_lst["logstore"]["hostname"]
+            _base_cmd += " --syslogr=" + self.cld_attr_lst["logstore"]["protocol"]
             _base_cmd += " --verbosity=" + self.cld_attr_lst["logstore"]["verbosity"]
             _cmd = _base_cmd + " --daemon"
             #_cmd = _base_cmd + " --debug_host=localhost"
@@ -758,6 +759,7 @@ class CBCLI(Cmd) :
             _base_cmd += " --syslogp=" + self.cld_attr_lst["logstore"]["port"]
             _base_cmd += " --syslogf=" + self.cld_attr_lst["logstore"]["gui_facility"]
             _base_cmd += " --syslogh=" + self.cld_attr_lst["logstore"]["hostname"]
+            _base_cmd += " --syslogr=" + self.cld_attr_lst["logstore"]["protocol"]
             _base_cmd += " --verbosity=" + self.cld_attr_lst["logstore"]["verbosity"]
 
             # DaemonContext Doesn't work with Twisted 

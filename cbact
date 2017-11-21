@@ -87,6 +87,9 @@ def actuator_cli_parsing() :
     parser.add_option("--syslogh", dest = "syslogh", metavar = "SYSLOGH", \
                       default = None, \
                       help ="Set syslog hostname")
+    parser.add_option("--syslogr", dest = "syslogr", metavar = "SYSLOGR", \
+                      default = 'UDP', \
+                      help ="Set syslog protocol")
     parser.add_option("--syslogf", dest = "syslogf", metavar = "SYSLOGF", \
                       default = None, \
                       help ="Set syslog facility")
@@ -195,11 +198,11 @@ def actuator_cli_parsing() :
             print "The following parameters are mandatory: --osp, --msp, --operation, --oop, --cn"
             exit(18)
             
-        if not _options.cn and (not _options.syslogp or not _options.syslogf or not _options.syslogh):
-                print "The following parameters are mandatory: --apiport, --apihost, --syslogf, --syslogh, --syslogp"
+        if not _options.cn and (not _options.syslogp or not _options.syslogf or not _options.syslogh or not _options.syslogr):
+                print "The following parameters are mandatory: --apiport, --apihost, --syslogf, --syslogh, --syslogp, --syslogr"
                 exit(20)
 
-def setup_syslog(operation, facility, verbosity, port, hostname, quiet, logdest) :
+def setup_syslog(operation, facility, verbosity, port, hostname, quiet, logdest, protocol) :
     '''
     TBD
     '''
@@ -235,7 +238,8 @@ def setup_syslog(operation, facility, verbosity, port, hostname, quiet, logdest)
 
             hdlr = SysLogHandler(address = (hostname, \
                                             int(port)), \
-                                            facility=_syslog_selector[str(_facility)])
+                                            facility=_syslog_selector[str(_facility)], \
+                                           socktype = socket.SOCK_STREAM if protocol == "TCP" else socket.SOCK_DGRAM)
 
         # Need to make this rfc3164-compliant by including the 'hostname' and the 'program name'
         formatter = Formatter(socket.getfqdn() + " cloudbench [%(levelname)s] %(message)s")
@@ -412,7 +416,8 @@ def main(options) :
 			     "hostname" : options.syslogh,
 			     "port" : options.syslogp,
 			     _operation + "_facility" : options.syslogf,
-			     "verbosity" : options.verbosity
+                             "verbosity" : options.verbosity,
+                             "protocol" : options.syslogr
 			     }
 
         if str(options.verbosity).strip() != "-1" :
@@ -423,6 +428,7 @@ def main(options) :
 			_log_defaults["verbosity"], \
 			_log_defaults["port"], \
 			_log_defaults["hostname"], \
+                        _log_defaults["protocol"], \
 			options.quiet,
 			options.logdest)
 

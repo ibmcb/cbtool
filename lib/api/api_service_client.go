@@ -19,7 +19,7 @@
 
     @author: Michael R. Hines
  */
-package api_service_client 
+package api_service_client
 
 import (
     "errors"
