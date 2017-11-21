@@ -270,7 +270,7 @@ def syslog_logstore_setup(global_objects, operation = "check") :
                 if not _rsyslog_pid :
 
                     global_objects["logstore"]["port"] = _proc_man.get_free_port(global_objects["logstore"]["port"],\
-                                                                                 protocol = "udp")
+                                                                                 protocol = _protocol)
                     _hostport = int(global_objects["logstore"]["port"])
 
                     _config_file_contents = global_objects["logstore"]["config_string"].replace('_', ' ')

@@ -60,7 +60,7 @@ then
     options=$(echo $options | sed 's/debug//g')
     sudo pkill -9 -f cbloadmanwatch
     sudo screen -wipe
-    sudo pkill -9 -f "\\-\\-procid=${osprocid} \\-\\-uuid=${my_ai_uuid} \\-\\-syslogp=${NC_PORT_SYSLOG} \\-\\-syslogf=19 \\-\\-syslogh=${NC_HOST_SYSLOG} \\-\\-operation=$operation"
+    sudo pkill -9 -f "\\-\\-procid=${osprocid} \\-\\-uuid=${my_ai_uuid} \\-\\-syslogp=${NC_PORT_SYSLOG} \\-\\-syslogf=19 \\-\\-syslogr=${NC_PROTO_SYSLOG} \\-\\-syslogh=${NC_HOST_SYSLOG} \\-\\-operation=$operation"
     run_application_scripts="false"
     debug_remote_commands="true"        
 fi
@@ -75,7 +75,7 @@ cat > /tmp/cbloadman <<EOF
 
 CBLOADMANEXEC="~/${my_remote_dir}/cbact"
 eval CBLOADMANEXEC=\${CBLOADMANEXEC}
-CBLOADMANBASECMD="\$CBLOADMANEXEC --procid=${osprocid} --uuid=${my_ai_uuid} --syslogp=${NC_PORT_SYSLOG} --syslogf=19 --syslogh=${NC_HOST_SYSLOG} --operation=$operation"
+CBLOADMANBASECMD="\$CBLOADMANEXEC --procid=${osprocid} --uuid=${my_ai_uuid} --syslogp=${NC_PORT_SYSLOG} --syslogf=19 --syslogr=${NC_PROTO_SYSLOG} --syslogh=${NC_HOST_SYSLOG} --operation=$operation"
 if [[ -z \$1 ]]
 then
     if [[ \$(sudo ps aux | grep -v grep | grep cbact | grep -c ai-execute) -eq 0 ]]

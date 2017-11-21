@@ -2449,6 +2449,7 @@ class BaseObjectOperations :
                     _cmd += " --wks " + _obj_attr_list["type"] + " --addr bypass"
                     _cmd += " --filestore " + _obj_attr_list["filestore_host"] + '-' + _obj_attr_list["filestore_port"] + '-' + _obj_attr_list["filestore_username"] 
                     _cmd += " --syslogh " + _obj_attr_list["logstore_host"]
+                    _cmd += " --syslogr " + _obj_attr_list["logstore_protocol"]
                     _cmd += " --syslogp " + _obj_attr_list["logstore_port"] 
                     _cmd += " --syslogf 21 --logdest syslog && "
                     _x_str = " (including the installation script for an AI of type \""

@@ -430,7 +430,9 @@ my_cloud_model=`get_my_vm_attribute model`
 my_ip_addr=`get_my_vm_attribute cloud_ip`
 
 function get_attached_volumes {
-    ROOT_VOLUME=$(sudo mount | grep "/ " | cut -d ' ' -f 1 | tr -d 0-9)
+    # Wierdo clouds, like Amazon expose naming schemes like `/dev/nvme0n1p1` for the root volume.
+    # So, we need a beefier regex.
+    ROOT_VOLUME=$(sudo mount | grep "/ " | cut -d ' ' -f 1 | sed "s/\([a-z]*[0-9]\+\|[0-9]\+\)$//g")
     SWAP_VOLUME=$(sudo swapon -s | grep dev | cut -d ' ' -f 1 | tr -d 0-9)
     if [[ -z ${SWAP_VOLUME} ]]
     then
@@ -968,11 +970,21 @@ if [ x"${NC_HOST_SYSLOG}" == x ]; then
         fi
     fi
 
-    if [ x"${osmode}" != x"scalable" ]; then
-        NC_OPTIONS="-w1 -u"
-    else 
-        NC_OPTIONS="-w1 -u -q1"
+    NC_PROTO_SYSLOG=`get_global_sub_attribute logstore protocol`
+
+    PROTO=" "
+    if [ "$NC_PROTO_SYSLOG" == "UDP" ] ; then
+       PROTO="-u"
     fi
+    if [ x"${osmode}" != x"scalable" ]; then
+        NC_OPTIONS="-w1 $PROTO"
+    else 
+        NC_OPTIONS="-w1 $PROTO -q1"
+    fi
+fi
+
+if [ x"${NC_PROTO_SYSLOG}" == x ]; then
+    NC_PROTO_SYSLOG=`get_global_sub_attribute logstore protocol`
 fi
 
 if [ x"${NC_PORT_SYSLOG}" == x ]; then
