@@ -8,7 +8,7 @@ STARTUP_CLOUD = TESTDO
 
 [USER-DEFINED : CLOUDOPTION_TESTDO ]
 DO_INITIAL_VMCS = nyc1:sut
-DO_CREDENTIALS = long_hex_token_from_digitalocean.com:arbitrarytag1,another_token:arbitrarytag2,another_token:arbitrarytag3
+DO_CREDENTIALS = arbitrarytag1:long_hex_token_from_digitalocean.com,arbitrarytag2:another_token
 DO_SSH_KEY_NAME = cbtool_rsa
 DO_KEY_NAME = cbtool_rsa
 DO_LOGIN = root

@@ -65,7 +65,7 @@ RUN yum install -y python-pip
 # pip-install-pm
 
 # gcc-install-pm
-RUN yum install -y gcc
+RUN yum install -y gcc gcc-c++ 
 # gcc-install-pm
 
 # make-install-pm

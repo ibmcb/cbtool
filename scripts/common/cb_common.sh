@@ -318,7 +318,7 @@ function get_time {
 }
 
 function get_vm_uuid_from_ip {
-    uip=$1
+    uip=(echo $1 | cut -d '-' -f 1)
     fqon=`retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber get ${osinstance}:VM:TAG:CLOUD_IP:${uip}" 0`
     echo $fqon | cut -d ':' -f 4
 }
@@ -953,7 +953,7 @@ function subscribeai {
 load_manager_ip=`get_my_ai_attribute load_manager_ip`
 
 if [ x"${NC_HOST_SYSLOG}" == x ]; then
-	# These are cacheable now. (Thank you. =). No need to skip them in scalable mode.
+    # These are cacheable now. (Thank you. =). No need to skip them in scalable mode.
     # We still want rsyslog support in scalable mode.
     USE_VPN_IP=`get_global_sub_attribute vm_defaults use_vpn_ip`
     VPN_ONLY=`get_global_sub_attribute vm_defaults vpn_only`
@@ -1011,11 +1011,11 @@ function syslog_netcat {
     # I'm modifying this slightly. There's nothing wrong with logging in scalable mode,
     # except that we should not be calling slow functions in scalable mode. We still
     # want rsyslog functions to work in scalable mode when cloudbench is running as a service.
-	EXPID="$(get_my_vm_attribute experiment_id)"
+    EXPID="$(get_my_vm_attribute experiment_id)"
 
     echo "$SCRIPT_NAME ($$): ${1}"
 
-	# In rfc3164 format, there cannot be a space between the hostname and the facility number.
+    # In rfc3164 format, there cannot be a space between the hostname and the facility number.
     # It's pretty silly, but it doesn't work without removing the space.
     echo "${NC_FACILITY_SYSLOG}$hn cloudbench ${EXPID} $SCRIPT_NAME ($$): ${1}" | $NC_CMD &
 }
@@ -1853,8 +1853,16 @@ function set_java_home {
         
         if [[ ${JAVA_HOME} == "auto" ]]
         then
-            syslog_netcat "The JAVA_HOME was set to \"auto\". Attempting to find the most recent in /usr/lib/jvm"            
-            JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre
+
+            syslog_netcat "The JAVA_HOME was set to \"auto\". Attempting to find the most recent in /opt/ibm"
+            sudo ls /opt/ibm/java-*
+            if [[ $? -eq 0 ]]
+            then
+                JAVA_HOME=$(sudo find /opt/ibm/ | grep jre/bin/javaws | sed 's^/bin/javaws^^g' | sort -r | head -n 1)
+            else            
+                syslog_netcat "The JAVA_HOME was set to \"auto\". Attempting to find the most recent in /usr/lib/jvm"
+                JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre
+            fi
         fi
     
         syslog_netcat "JAVA_HOME determined to be \"${JAVA_HOME}\""    

@@ -60,7 +60,7 @@ def cli_postional_argument_parser() :
     _options.pause = False
     
     if len(argv) > 3 :
-        if argv[3] == "minimal" :
+        if argv[3] == "minimal" or argv[3] == "lowest" :
             _options.test_instances = False
             _options.test_ssh = False
             _options.test_capture = False
@@ -192,12 +192,13 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         _model_to_imguuid["pcm"] = "xenial" 
         _model_to_imguuid["pdm"] = "ibmcb/cbtoolbt-ubuntu"
         _model_to_imguuid["nop"] = "baseimg"
-        _model_to_imguuid["osk"] = "xenial"
+        _model_to_imguuid["osk"] = "xenial3"
         _model_to_imguuid["ec2"] = "ami-a9d276c9"
         _model_to_imguuid["gce"] = "ubuntu-1604-xenial-v20161221"
         _model_to_imguuid["do"] = "21669205"        
-        _model_to_imguuid["slr"] = "1373563"        
+        _model_to_imguuid["slr"] = "1836627"        
         _model_to_imguuid["kub"] = "ibmcb/cbtoolbt-ubuntu"
+        _model_to_imguuid["asm"] = "b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-16_04-LTS-amd64-server-20180112-en-us-30GB"
 
         _model_to_login = {}
         _model_to_login["sim"] = "ubuntu"
@@ -210,7 +211,8 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         _model_to_login["do"] = "root"        
         _model_to_login["slr"] = "root"
         _model_to_login["kub"] = "cbuser"
-
+        _model_to_login["asm"] = "cbuser"
+        
         _vm_location = "auto"
         _meta_tags = "empty"
         _size = "default"

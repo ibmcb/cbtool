@@ -168,6 +168,8 @@ def get_uuid_from_ip(ipaddr) :
 
         _uuid = None
 
+        _ipaddr = ipaddr.split('-')[0]
+
         _fn = "/etc/hosts"
         _fh = open(_fn, "r")
         _fc = _fh.readlines()
@@ -175,7 +177,7 @@ def get_uuid_from_ip(ipaddr) :
 
         for _line in _fc :
             _line = _line.strip()
-            if _line.count(ipaddr) and not _line.count("just_for_lost") :
+            if _line.count(_ipaddr) and not _line.count("just_for_lost") :
                 _line = _line.split(",")
                 _uuid = _line[-1]
             else :

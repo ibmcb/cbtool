@@ -386,6 +386,23 @@ class PlmCmds(CommonCloudFunctions) :
         '''
         return "NA"
 
+    @trace    
+    def get_ssh_keys(self, key_name, key_contents, key_fingerprint, registered_key_pairs, internal, connection) :
+        '''
+        TBD
+        '''
+
+        registered_key_pairs[key_name] = key_fingerprint + "-NA"
+
+        return True
+
+    @trace            
+    def create_ssh_key(self, key_name, key_type, key_contents, key_fingerprint, vm_defaults, connection) :
+        '''
+        TBD
+        '''
+        return True
+
     def is_vm_running(self, obj_attr_list) :
         '''
         TBD
@@ -441,6 +458,29 @@ class PlmCmds(CommonCloudFunctions) :
         else :
             obj_attr_list["last_known_state"] = "not ACTIVE"
             return False
+
+    @trace        
+    def vm_placement(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+
+            _status = 0
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+            
+        finally :
+            if _status :
+                _msg = "VM placement failed: " + _fmsg
+                cberr(_msg, True)
+                raise CldOpsException(_msg, _status)
+            else :
+                return True
 
     @trace
     def vmcreate(self, obj_attr_list) :

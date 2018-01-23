@@ -38,7 +38,7 @@ from subprocess import Popen, PIPE
 
 from lib.auxiliary.code_instrumentation import trace, cblog, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.value_generation import ValueGeneration
-from lib.auxiliary.data_ops import message_beautifier, dic2str, str2dic, is_valid_temp_attr_list, selective_dict_update, create_user_data_contents, create_restart_script, DataOpsException
+from lib.auxiliary.data_ops import message_beautifier, dic2str, str2dic, is_valid_temp_attr_list, selective_dict_update, create_restart_script, DataOpsException
 from lib.remote.network_functions import Nethashget 
 from lib.remote.ssh_ops import repeated_ssh
 from lib.remote.process_management import ProcessManagement
@@ -1199,9 +1199,13 @@ class BaseObjectOperations :
                             del obj_attr_list["login"]
 
                         obj_attr_list.update(_vm_template_attr_list)
-                                                
+
+                        if str(obj_attr_list["userdata_post_boot"]).lower() == "true" \
+                        or str(obj_attr_list["userdata_ssh"]).lower() == "true" :
+                            obj_attr_list["userdata"] = "true"
+
                         if str(obj_attr_list["userdata"]).lower() == "true" :
-                            obj_attr_list["userdata"] = create_user_data_contents(obj_attr_list, self.osci)
+                            True
                         elif str(obj_attr_list["userdata"]).lower() == "false" :
                             True
                         else :
@@ -1507,8 +1511,18 @@ class BaseObjectOperations :
         obj_attr_list["logstore_protocol"] = _log_store["protocol"]
         
         obj_attr_list["objectstore_host"] = self.osci.host
-        obj_attr_list["objectstore_port"] = self.osci.port 
+        obj_attr_list["objectstore_port"] = self.osci.port
+        obj_attr_list["objectstore_dbid"] = self.osci.dbid
+        obj_attr_list["objectstore_timeout"] = self.osci.timout
+                
         obj_attr_list["objectstore_protocol"] = "TCP"         
+
+        if obj_attr_list["login"] != "root" :
+            obj_attr_list["remote_dir_home"] = "/home/" + obj_attr_list["login"]
+        else :
+            obj_attr_list["remote_dir_home"] = "/root"
+    
+        obj_attr_list["remote_dir_path"] = obj_attr_list["remote_dir_home"] + '/' + obj_attr_list["remote_dir_name"]
 
         return True
 
