@@ -126,13 +126,13 @@ class OskCmds(CommonCloudFunctions) :
                 if _use_keystone_session :
                     access_url = access_url.replace('v2.0/','v3')
                     _auth = v3.Password(auth_url = access_url, \
-                                     username = _username, \
-                                     password = _password, \
-                                     project_name = _tenant, \
-                                     user_domain_id = _user_domain_id, \
-                                     project_domain_id=_project_domain_id)
+                                        username = _username, \
+                                        password = _password, \
+                                        project_name = _tenant, \
+                                        user_domain_id = _user_domain_id, \
+                                        project_domain_id = _project_domain_id)
                     
-                    _session = session.Session(auth = _auth)
+                    _session = session.Session(auth = _auth, verify = _insecure, cert = _cacert)
                 else :
                     _credentials = { "username" : _username, \
                                     "version" : _version, \
@@ -248,7 +248,7 @@ class OskCmds(CommonCloudFunctions) :
                 _msg = self.get_description() + " connection failure: " + _fmsg
                 cberr(_msg)
                 if _data_auth_parse :
-                    
+
                     if not _nova_client :
                         if _session :
                             _dmsg = "Please attempt to execute the following : \"python -c \""
@@ -260,7 +260,7 @@ class OskCmds(CommonCloudFunctions) :
                             _dmsg += str(_tenant) + "', auth_url = '" + str(access_url) 
                             _dmsg += "', user_domain_id = '" + str(_user_domain_id) + "', "
                             _dmsg += "project_domain_id = '" + str(_project_domain_id) + "'); "
-                            _dmsg += "_session = session.Session(auth = _auth); "
+                            _dmsg += "_session = session.Session(auth = _auth, verify = " + str(_insecure) + ", cert = " + str(_cacert) + "); "
                             _dmsg += "ct = novac.Client(\"2.1\", session = _session); print ct.flavors.list()\"\""
                         else :
                             _dmsg = "Please attempt to execute the following : \"python -c \""
@@ -285,7 +285,7 @@ class OskCmds(CommonCloudFunctions) :
                             _dmsg += str(_tenant) + "', auth_url = '" + str(access_url) 
                             _dmsg += "', user_domain_id = '" + str(_user_domain_id) + "', "
                             _dmsg += "project_domain_id = '" + str(_project_domain_id) + "'); "
-                            _dmsg += "_session = session.Session(auth = _auth); "
+                            _dmsg += "_session = session.Session(auth = _auth, verify = " + str(_insecure) + ", cert = " + str(_cacert) + "); "
                             _dmsg += "ct = cinderc.Client(\"2.1\", session = _session); print ct.volumes.list()\"\""                                                        
                         else :
                             _dmsg = "Please attempt to execute the following : \"python -c \""
@@ -307,7 +307,7 @@ class OskCmds(CommonCloudFunctions) :
                             _dmsg += str(_tenant) + "', auth_url = '" + str(access_url) 
                             _dmsg += "', user_domain_id = '" + str(_user_domain_id) + "', "
                             _dmsg += "project_domain_id = '" + str(_project_domain_id) + "'); "
-                            _dmsg += "_session = session.Session(auth = _auth); "
+                            _dmsg += "_session = session.Session(auth = _auth, verify = " + str(_insecure) + ", cert = " + str(_cacert) + "); "
                             _dmsg += "ct = neutronc.Client(session = _session); print ct.list_networks()\"\""                            
                         else :
                             _dmsg = "Please attempt to execute the following : \"python -c \""
@@ -788,6 +788,36 @@ class OskCmds(CommonCloudFunctions) :
             return _nr_instances
 
     @trace
+    def get_ssh_keys(self, key_name, key_contents, key_fingerprint, registered_key_pairs, internal, connection) :
+        '''
+        TBD
+        '''
+
+        for _key_pair in self.oskconncompute.keypairs.list() :
+            registered_key_pairs[_key_pair.name] = _key_pair.fingerprint + "-NA"
+
+            #self.oskconncompute.keypairs.delete(_key_pair)
+                                                
+        return True
+
+    @trace
+    def get_security_groups(self, security_group_name, registered_security_groups) :
+        '''
+        TBD
+        '''
+
+        if self.oskconnnetwork :
+            for _security_group in self.oskconnnetwork.list_security_groups()["security_groups"] :
+                
+                if _security_group["name"] not in registered_security_groups :
+                    registered_security_groups.append(_security_group["name"])
+        else :
+            for _security_group in self.oskconncompute.security_groups.list() :
+                registered_security_groups.append(_security_group.name)
+
+        return True
+
+    @trace
     def get_ip_address(self, obj_attr_list, instance) :
         '''
         TBD
@@ -973,7 +1003,7 @@ class OskCmds(CommonCloudFunctions) :
             
             _fmsg = "An error has occurred, but no error message was captured"
 
-            _image_list = self.oskconncompute.glance.list()
+#            _image_list = self.oskconncompute.glance.list()
 
             _fmsg = "Please check if the defined image name is present on this "
             _fmsg += self.get_description()
@@ -982,13 +1012,15 @@ class OskCmds(CommonCloudFunctions) :
 
             _candidate_images = []
 
-            for _idx in range(0,len(_image_list)) :
-                if self.is_cloud_image_uuid(obj_attr_list["imageid1"]) :
-                    if _image_list[_idx].id == obj_attr_list["imageid1"] :
-                        _candidate_images.append(_image_list[_idx])
-                else :                        
-                    if _image_list[_idx].name.count(obj_attr_list["imageid1"]) :
-                        _candidate_images.append(_image_list[_idx])
+#            for _idx in range(0,len(_image_list)) :
+#                if self.is_cloud_image_uuid(obj_attr_list["imageid1"]) :
+#                    if _image_list[_idx].id == obj_attr_list["imageid1"] :
+#                        _candidate_images.append(_image_list[_idx])
+#                else :
+#                    if _image_list[_idx].name.count(obj_attr_list["imageid1"]) :
+#                        _candidate_images.append(_image_list[_idx])
+
+            _candidate_images = [ self.oskconncompute.glance.find_image(obj_attr_list["imageid1"]) ]
 
             if "hypervisor_type" in obj_attr_list :
                 if str(obj_attr_list["hypervisor_type"]).lower() != "fake" :
@@ -1087,6 +1119,25 @@ class OskCmds(CommonCloudFunctions) :
             else :
                 _netnames = ','.join(_netnames)                
                 return _netnames, _netids
+
+    @trace            
+    def create_ssh_key(self, key_name, key_type, key_contents, key_fingerprint, vm_defaults, connection) :
+        '''
+        TBD
+        '''
+        self.oskconncompute.keypairs.create(key_name, \
+                                            public_key = key_type + ' ' + key_contents)
+        return True
+
+    @trace
+    def is_cloud_image_uuid(self, imageid) :
+        '''
+        TBD
+        '''
+        if len(imageid) == 36 and imageid.count('-') == 4 :
+            return True
+
+        return False
 
     @trace
     def is_vm_running(self, obj_attr_list, fail = True) :
@@ -1394,9 +1445,9 @@ class OskCmds(CommonCloudFunctions) :
             self.annotate_time_breakdown(obj_attr_list, "get_imageid_time", _mark_a)
 
             if "userdata" in obj_attr_list and str(obj_attr_list["userdata"]).lower() != "false" :
-                obj_attr_list["userdata"] = obj_attr_list["userdata"].replace("# INSERT OPENVPN COMMAND", \
-                                                              "openvpn --config /etc/openvpn/" + obj_attr_list["cloud_name"].upper() + "_client-cb-openvpn.conf --daemon --client")
+                obj_attr_list["userdata"] = self.populate_cloudconfig(obj_attr_list)
                 obj_attr_list["config_drive"] = True
+                
             else :
                 obj_attr_list["config_drive"] = None
                 obj_attr_list["userdata"] = None
@@ -1967,7 +2018,7 @@ class OskCmds(CommonCloudFunctions) :
         elif len(authentication_data.split(_separator)) == 4 :
             _username, _password, _tenant, _cacert = authentication_data.split(_separator)
             _insecure = False
-            
+
         elif len(authentication_data.split(_separator)) == 5 :
             _username, _password, _tenant, _cacert, _insecure = authentication_data.split(_separator)
             _insecure = True

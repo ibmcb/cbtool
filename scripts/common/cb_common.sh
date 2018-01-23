@@ -318,7 +318,7 @@ function get_time {
 }
 
 function get_vm_uuid_from_ip {
-    uip=$1
+    uip=(echo $1 | cut -d '-' -f 1)
     fqon=`retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber get ${osinstance}:VM:TAG:CLOUD_IP:${uip}" 0`
     echo $fqon | cut -d ':' -f 4
 }
@@ -430,7 +430,9 @@ my_cloud_model=`get_my_vm_attribute model`
 my_ip_addr=`get_my_vm_attribute cloud_ip`
 
 function get_attached_volumes {
-    ROOT_VOLUME=$(sudo mount | grep "/ " | cut -d ' ' -f 1 | tr -d 0-9)
+    # Wierdo clouds, like Amazon expose naming schemes like `/dev/nvme0n1p1` for the root volume.
+    # So, we need a beefier regex.
+    ROOT_VOLUME=$(sudo mount | grep "/ " | cut -d ' ' -f 1 | sed "s/\([a-z]*[0-9]\+\|[0-9]\+\)$//g")
     SWAP_VOLUME=$(sudo swapon -s | grep dev | cut -d ' ' -f 1 | tr -d 0-9)
     if [[ -z ${SWAP_VOLUME} ]]
     then
@@ -951,7 +953,7 @@ function subscribeai {
 load_manager_ip=`get_my_ai_attribute load_manager_ip`
 
 if [ x"${NC_HOST_SYSLOG}" == x ]; then
-	# These are cacheable now. (Thank you. =). No need to skip them in scalable mode.
+    # These are cacheable now. (Thank you. =). No need to skip them in scalable mode.
     # We still want rsyslog support in scalable mode.
     USE_VPN_IP=`get_global_sub_attribute vm_defaults use_vpn_ip`
     VPN_ONLY=`get_global_sub_attribute vm_defaults vpn_only`
@@ -968,11 +970,21 @@ if [ x"${NC_HOST_SYSLOG}" == x ]; then
         fi
     fi
 
-    if [ x"${osmode}" != x"scalable" ]; then
-        NC_OPTIONS="-w1 -u"
-    else 
-        NC_OPTIONS="-w1 -u -q1"
+    NC_PROTO_SYSLOG=`get_global_sub_attribute logstore protocol`
+
+    PROTO=" "
+    if [ "$NC_PROTO_SYSLOG" == "UDP" ] ; then
+       PROTO="-u"
     fi
+    if [ x"${osmode}" != x"scalable" ]; then
+        NC_OPTIONS="-w1 $PROTO"
+    else 
+        NC_OPTIONS="-w1 $PROTO -q1"
+    fi
+fi
+
+if [ x"${NC_PROTO_SYSLOG}" == x ]; then
+    NC_PROTO_SYSLOG=`get_global_sub_attribute logstore protocol`
 fi
 
 if [ x"${NC_PORT_SYSLOG}" == x ]; then
@@ -999,11 +1011,11 @@ function syslog_netcat {
     # I'm modifying this slightly. There's nothing wrong with logging in scalable mode,
     # except that we should not be calling slow functions in scalable mode. We still
     # want rsyslog functions to work in scalable mode when cloudbench is running as a service.
-	EXPID="$(get_my_vm_attribute experiment_id)"
+    EXPID="$(get_my_vm_attribute experiment_id)"
 
     echo "$SCRIPT_NAME ($$): ${1}"
 
-	# In rfc3164 format, there cannot be a space between the hostname and the facility number.
+    # In rfc3164 format, there cannot be a space between the hostname and the facility number.
     # It's pretty silly, but it doesn't work without removing the space.
     echo "${NC_FACILITY_SYSLOG}$hn cloudbench ${EXPID} $SCRIPT_NAME ($$): ${1}" | $NC_CMD &
 }
@@ -1114,7 +1126,7 @@ function security_configuration {
         if [[ ${LINUX_DISTRO} -eq 1 ]]
         then
             syslog_netcat "Disabling Apparmor..."
-            service_stop_disable_apparmor
+            service_stop_disable apparmor
             sudo service apparmor teardown
         fi
                 
@@ -1841,8 +1853,16 @@ function set_java_home {
         
         if [[ ${JAVA_HOME} == "auto" ]]
         then
-            syslog_netcat "The JAVA_HOME was set to \"auto\". Attempting to find the most recent in /usr/lib/jvm"            
-            JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre
+
+            syslog_netcat "The JAVA_HOME was set to \"auto\". Attempting to find the most recent in /opt/ibm"
+            sudo ls /opt/ibm/java-*
+            if [[ $? -eq 0 ]]
+            then
+                JAVA_HOME=$(sudo find /opt/ibm/ | grep jre/bin/javaws | sed 's^/bin/javaws^^g' | sort -r | head -n 1)
+            else            
+                syslog_netcat "The JAVA_HOME was set to \"auto\". Attempting to find the most recent in /usr/lib/jvm"
+                JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre
+            fi
         fi
     
         syslog_netcat "JAVA_HOME determined to be \"${JAVA_HOME}\""    

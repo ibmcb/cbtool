@@ -1,0 +1,59 @@
+# Parameters for this Virtual Application (Application Instance - AI) type should
+# be set on YOUR private configuration configuration file, including the ones 
+# commented.
+
+[AI_TEMPLATES : MONGO_ACMEAIR]
+
+# Attributes MANDATORY for all Virtual Applications
+SUT = acmeair->liberty->mongos->mongo_cfg_server->3_x_mongodb
+LOAD_BALANCER_SUPPORTED = $False
+RESIZE_SUPPORTED = $True
+REGENERATE_DATA = $True
+LOAD_GENERATOR_ROLE = acmeair
+LOAD_MANAGER_ROLE = acmeair
+METRIC_AGGREGATOR_ROLE = acmeair
+CAPTURE_ROLE = liberty
+LOAD_PROFILE = default
+LOAD_LEVEL = uniformIXIXI1I10
+LOAD_DURATION = 30
+CATEGORY = transactional
+PROFILES = default
+REFERENCE = https://github.com/acmeair/acmeair
+LICENSE = GPL_v2
+REPORTED_METRICS = throughput,latency,completion_time,errors,quiescent_time,errors,
+REPORTED_METRICS += transaction_errors,min_latency,max_latency
+
+# VApp-specific MANDATORY attributes
+DESCRIPTION =Deploys a MongoDB cluster (N mongodb instances, 1 cfg_server instance\n
+DESCRIPTION +=and 1 mongos instance), plus one instance running the WebSphere Liberty.\n
+DESCRIPTION +=The WebSphere Liberty executes the application AcmeAir (fictitious AirLine), with the actual\n
+DESCRIPTION +=application load provided by the AcmeAir (application load driver) instance.\n
+DESCRIPTION +=  - LOAD_PROFILE possible values: _PROFILES_.\n
+DESCRIPTION +=  - LOAD_LEVEL meaning: number of threads (parameter -t).\n 
+DESCRIPTION +=  - LOAD_DURATION meaning: total transaction time for all clients.\n
+MONGO_CFG_SERVER_SETUP1 = cb_restart_mongo_cfg.sh
+MONGODB_SETUP1 = cb_restart_mongo.sh
+MONGOS_SETUP2 = cb_restart_mongos.sh
+LIBERTY_SETUP3 = cb_restart_liberty.sh
+MONGODB_RESIZE1 = cb_modify_hosts.sh
+MONGOS_RESIZE2 = cb_modify_shard.sh
+MONGODB_RESIZE1 = cb_restart_mongo.sh
+MONGO_CFG_SERVER_RESIZE1 = cb_modify_hosts.sh
+START = cb_run_acme.sh
+
+# VApp-specific modifier parameters. Commented attributes imply default values assumed
+# ACMEAIR_PATH = ~/acmeair
+# ACMEAIR_PROPERTIES = ~/acmeair.properties
+# ACMEAIR_DRIVER_PATH = ~/acmeair-driver
+# ACMEAIR_DRIVER_RAMPUP_TIME = 10
+# ACMEAIR_HTTP_PORT = 9085
+# ACMEAIR_HTTPS_PORT = 9485
+# JAVA_HOME = auto
+# WLP_SERVERDIR = /opt/ibm/wlp
+# NUM_CUSTOMERS = 1000
+
+# Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
+#SYNC_COUNTER_NAME = synchronization_counter
+#CONCURRENT_AIS = 2
+#SYNC_CHANNEL_NAME = synchronization_channel
+#RUN_COUNTER_NAME = experiment_id_counter

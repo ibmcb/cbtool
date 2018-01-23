@@ -32,7 +32,7 @@ from uuid import uuid5, NAMESPACE_DNS
 
 from lib.remote.process_management import ProcessManagement
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from lib.auxiliary.data_ops import str2dic, dic2str, DataOpsException, get_boostrap_command, selectively_print_message
+from lib.auxiliary.data_ops import str2dic, dic2str, get_boostrap_command, selectively_print_message, DataOpsException
 from lib.auxiliary.value_generation import ValueGeneration
 from lib.stores.stores_initial_setup import StoreSetupException
 from lib.auxiliary.thread_pool import ThreadPool
@@ -203,6 +203,16 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _msg += " same Global Object ([VM_DEFAULTS]) also to \"True\"."
                     cbdebug(_msg, True)
                     cld_attr_lst["vm_defaults"]["userdata"] = "true"
+
+                if str(cld_attr_lst["vm_defaults"]["vpn_only"]).lower() == "true" and \
+                str(cld_attr_lst["vm_defaults"]["userdata_post_boot"]).lower() == "false" :
+
+                    _msg = " The attribute \"VPN_ONLY\" in Global Object "
+                    _msg += "[VM_DEFAULTS] is set to \"True\". "                    
+                    _msg += "Will set the attribute \"USERDATA_POST_BOOT\" in the" 
+                    _msg += " same Global Object ([VM_DEFAULTS]) also to \"True\"."
+                    cbdebug(_msg, True)
+                    cld_attr_lst["vm_defaults"]["userdata_post_boot"] = "true"
     
                 _msg = "Attempting to connect to all VMCs described in the cloud "
                 _msg += "defaults file, in order to check the access parameters "
@@ -1263,12 +1273,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
                             _visited = []
 
                         while len(_visited) :
-                           assert(_visited[0] in _vmc_uuid_list)
-                           for idx in range(0, len(_vmc_uuid_list)) :
-                               if _visited[0] == _vmc_uuid_list[idx] :
-                                   del _vmc_uuid_list[idx]
-                                   del _visited[0]
-                                   break
+                            assert(_visited[0] in _vmc_uuid_list)
+                            for idx in range(0, len(_vmc_uuid_list)) :
+                                if _visited[0] == _vmc_uuid_list[idx] :
+                                    del _vmc_uuid_list[idx]
+                                    del _visited[0]
+                                    break
 
                         cbdebug("After Visited: " + str(len(_visited)) + " total: " + str(len(_vmc_uuid_list)))
 
@@ -2123,14 +2133,17 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     if not "submitter" in obj_attr_list :
                         if _obj_type == "VM" :
                             if obj_attr_list["prov_cloud_ip"] == obj_attr_list["run_cloud_ip"] :
-                                _ip = "IP address " + obj_attr_list["cloud_ip"]
+                                _ip = "IP address " + obj_attr_list["cloud_ip"] + " (port " + str(obj_attr_list["prov_cloud_port"]) + ")"
                             else :
-                                _ip = "IP addresses " + obj_attr_list["prov_cloud_ip"] + " and " + obj_attr_list["run_cloud_ip"] 
+                                _ip = "IP addresses " + obj_attr_list["prov_cloud_ip"] + " (port " + str(obj_attr_list["prov_cloud_port"]) + ")"+ " and " + obj_attr_list["run_cloud_ip"] 
                         else :
                             _ip = "IP address " + obj_attr_list["cloud_ip"]
 
+                        if _ip.count('-') :
+                            _ip = _ip.split('-')[0]
+                        
                         _msg += " It is ssh-accessible at the " + _ip
-                        _msg += " (" + obj_attr_list["cloud_hostname"] + ")."
+                        _msg += " (hostname is " + obj_attr_list["cloud_hostname"] + ")."
                                                 
                     obj_attr_list["tracking"] = "Attach: success." 
 
@@ -2299,7 +2312,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 else :
                     _actual_tries = int(obj_attr_list["update_attempts"])                
                 
-                _bcmd = get_boostrap_command(obj_attr_list, self.osci)
+                _bcmd = get_boostrap_command(obj_attr_list)
                 
                 _msg = "BOOTSTRAP: " + _bcmd
                 cbdebug(_msg)
@@ -2337,7 +2350,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _rcmd = "rsync -e \"" + _proc_man.rsync_conn + "\""
                 _rcmd += " --exclude-from "
                 _rcmd += "'" +  obj_attr_list["exclude_list"] + "' -az "
-                _rcmd += "--delete --no-o --no-g --inplace -O " 
+                _rcmd += "--delete --no-o --no-g --inplace --rsync-path='sudo rsync' -O " 
                 _rcmd += obj_attr_list["base_dir"] + "/* " 
                 _rcmd += obj_attr_list["prov_cloud_ip"] + ":~/" 
                 _rcmd += obj_attr_list["remote_dir_name"] + '/'
@@ -2361,7 +2374,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 obj_attr_list["last_known_state"] = "sent copy of code tree"
 
             _time_mark_ift = int(time())
-            _delay = _time_mark_ift - obj_attr_list["time_mark_aux"]
+
+            if "time_mark_aux" in obj_attr_list :
+                _delay = _time_mark_ift - obj_attr_list["time_mark_aux"]
+            else :
+                _delay = -1
+
             self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "status", "Files transferred...")
             obj_attr_list["mgt_005_file_transfer"] = _delay
             self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], \
@@ -2395,8 +2413,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                          port = obj_attr_list["prov_cloud_port"])                    
 
                 _time_mark_ipbc = int(time())
-                _delay = _time_mark_ipbc - obj_attr_list["time_mark_aux"]
-                             
+                if "time_mark_aux" in obj_attr_list :
+                    _delay = _time_mark_ipbc - obj_attr_list["time_mark_aux"]
+                else :
+                    _delay = -1
+
                 if _status :
                     _fmsg = "Failure while executing generic VM "
                     _fmsg += "post_boot configuration on "

@@ -27,7 +27,7 @@ from random import randint
 from socket import gethostbyname
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from lib.auxiliary.data_ops import str2dic, DataOpsException
+from lib.auxiliary.data_ops import str2dic, is_number, DataOpsException
 from lib.remote.network_functions import hostname2ip
 
 from shared_functions import CldOpsException, CommonCloudFunctions 
@@ -238,12 +238,12 @@ class Ec2Cmds(CommonCloudFunctions) :
                 for _reservation in _reservations :
                     for _instance in _reservation.instances :
                         if "Name" in _instance.tags :
-                            if _instance.tags[u'Name'].count("cb-" + obj_attr_list["username"]) and _instance.state == u'running' :
+                            if _instance.tags[u'Name'].count("cb-" + obj_attr_list["username"] + "-" + obj_attr_list["cloud_name"]) and _instance.state == u'running' :
                                 _instance.terminate()
                                 _running_instances = True
                 sleep(int(obj_attr_list["update_frequency"]))
 
-            sleep(int(obj_attr_list["update_frequency"])*5)
+            sleep(int(obj_attr_list["update_frequency"]) * 5)
 
             self.common_messages("VMC", obj_attr_list, "cleaning up vvs", 0, '')
 
@@ -251,7 +251,7 @@ class Ec2Cmds(CommonCloudFunctions) :
 
             if len(_volumes) :
                 for unattachedvol in _volumes :
-                    if unattachedvol.status == 'available' :
+                    if "Name" in unattachedvol.tags and unattachedvol.tags[u'Name'].count("cb-" + obj_attr_list["username"] + "-" + obj_attr_list["cloud_name"]) and unattachedvol.status == 'available' :
                         _msg = unattachedvol.id + ' ' + unattachedvol.status
                         _msg += "... was deleted"
                         cbdebug(_msg)
@@ -406,6 +406,30 @@ class Ec2Cmds(CommonCloudFunctions) :
             return _nr_instances
 
     @trace
+    def get_ssh_keys(self, key_name, key_contents, key_fingerprint, registered_key_pairs, internal, connection) :
+        '''
+        TBD
+        '''
+
+        for _key_pair in self.ec2conn.get_all_key_pairs() :
+            registered_key_pairs[_key_pair.name] = _key_pair.fingerprint + "-NA"
+
+            #self.ec2conn.delete_key_pair(key_name)
+            
+        return True
+
+    @trace
+    def get_security_groups(self, security_group_name, registered_security_groups) :
+        '''
+        TBD
+        '''
+
+        for _security_group in self.ec2conn.get_all_security_groups() :
+            registered_security_groups.append(_security_group.name)
+
+        return True
+
+    @trace
     def get_ip_address(self, obj_attr_list) :
         '''
         TBD
@@ -425,21 +449,13 @@ class Ec2Cmds(CommonCloudFunctions) :
             # NOTE: "cloud_ip" is always equal to "run_cloud_ip"
             obj_attr_list["cloud_ip"] = obj_attr_list["run_cloud_ip"]
 
-            if str(obj_attr_list["use_vpn_ip"]).lower() == "true" and str(obj_attr_list["vpn_only"]).lower() == "true" :
-                assert(self.get_attr_from_pending(obj_attr_list))
-
-                if "cloud_init_vpn" not in obj_attr_list :
-                    cbdebug("Instance VPN address not yet available.")
-                    return False
-                cbdebug("Found VPN IP: " + obj_attr_list["cloud_init_vpn"])
-                obj_attr_list["prov_cloud_ip"] = obj_attr_list["cloud_init_vpn"]
+            if obj_attr_list["prov_netname"] == "private" :
+                obj_attr_list["prov_cloud_ip"] = _private_ip_address
             else :
-                if obj_attr_list["prov_netname"] == "private" :
-                    obj_attr_list["prov_cloud_ip"] = _private_ip_address
-                else :
-                    obj_attr_list["prov_cloud_ip"]  = _public_ip_address
+                obj_attr_list["prov_cloud_ip"]  = _public_ip_address
 
             return True
+        
         except :
             return False
 
@@ -560,28 +576,27 @@ class Ec2Cmds(CommonCloudFunctions) :
             else :
                 return True
 
-    @trace
-    def vm_placement(self, obj_attr_list) :
+    @trace            
+    def create_ssh_key(self, key_name, key_type, key_contents, key_fingerprint, vm_defaults, connection) :
         '''
         TBD
         '''
-        try :
-            _status = 100
-            _fmsg = "An error has occurred, but no error message was captured"
+        self.ec2conn.import_key_pair(key_name, key_type + ' ' + key_contents)
 
-            _status = 0
+        return True
 
-        except Exception, e :
-            _status = 23
-            _fmsg = str(e)
-            
-        finally :
-            if _status :
-                _msg = "VM placement failed: " + _fmsg
-                cberr(_msg, True)
-                raise CldOpsException(_msg, _status)
-            else :
-                return True
+    @trace
+    def is_cloud_image_uuid(self, imageid) :
+        '''
+        TBD
+        '''
+        
+        if len(imageid) > 4 :
+            if imageid[0:4] == "ami-" :
+                if is_number(imageid[5:], True) :
+                    return True
+                    
+        return False
 
     def is_vm_running(self, obj_attr_list):
         '''
@@ -631,6 +646,29 @@ class Ec2Cmds(CommonCloudFunctions) :
         else :
             obj_attr_list["last_known_state"] = "not running"
             return False
+
+    @trace
+    def vm_placement(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+
+            _status = 0
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+            
+        finally :
+            if _status :
+                _msg = "VM placement failed: " + _fmsg
+                cberr(_msg, True)
+                raise CldOpsException(_msg, _status)
+            else :
+                return True
 
     @trace
     def vvcreate(self, obj_attr_list) :

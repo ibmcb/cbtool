@@ -65,7 +65,7 @@ RUN yum install -y python-pip
 # pip-install-pm
 
 # gcc-install-pm
-RUN yum install -y gcc
+RUN yum install -y gcc gcc-c++ 
 # gcc-install-pm
 
 # make-install-pm
@@ -274,8 +274,7 @@ WORKDIR /home/REPLACE_USERNAME/
 RUN git clone https://github.com/ibmcb/cbtool.git
 
 # gmetad-python-install-git
-RUN mkdir -p /home/REPLACE_USERNAME/cbtool/3rd_party/workload
-RUN cp -f /home/REPLACE_USERNAME/cbtool/util/manually_download_files.txt /home/REPLACE_USERNAME/cbtool/3rd_party/workload
+RUN mkdir -p /home/REPLACE_USERNAME/cbtool/3rd_party
 WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party
 RUN git clone https://github.com/ibmcb/monitor-core.git
 # gmetad-python-install-git

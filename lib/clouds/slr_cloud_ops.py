@@ -30,7 +30,7 @@ import SoftLayer
 from SoftLayer import exceptions as slexceptions
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from lib.auxiliary.data_ops import str2dic
+from lib.auxiliary.data_ops import str2dic, is_number
 from lib.remote.network_functions import hostname2ip
 from shared_functions import CldOpsException, CommonCloudFunctions 
 
@@ -428,6 +428,18 @@ class SlrCmds(CommonCloudFunctions) :
             return _nr_instances
 
     @trace
+    def get_ssh_keys(self, key_name, key_contents, key_fingerprint, registered_key_pairs, internal, connection) :
+        '''
+        TBD
+        '''
+
+        for _key_pair in self.sshman.list_keys() :
+            registered_key_pairs[_key_pair["label"]] = _key_pair["fingerprint"] + '-' + str(_key_pair["id"])
+            #self.sshman.delete_key(_keyid)
+
+        return True
+
+    @trace
     def get_ip_address(self, obj_attr_list, instance) :
         '''
         TBD
@@ -460,10 +472,12 @@ class SlrCmds(CommonCloudFunctions) :
         try :
             _search_opts = {}
 
+            object_mask = 'id, globalIdentifier, hostname, domain, fullyQualifiedDomainName, primaryBackendIpAddress, primaryIpAddress, lastKnownPowerState.name, powerState, maxCpu, maxMemory, datacenter, activeTransaction.transactionStatus[friendlyName,name], status, provisionDate'
+
             if identifier != "all" :
-                _instances = self.nodeman.list_instances(datacenter = obj_attr_list["vmc_name"], hostname = identifier)
+                _instances = self.nodeman.list_instances(mask=object_mask,datacenter = obj_attr_list["vmc_name"], hostname = identifier)
             else :
-                _instances = self.nodeman.list_instances(datacenter = obj_attr_list["vmc_name"])
+                _instances = self.nodeman.list_instances(mask=object_mask,datacenter = obj_attr_list["vmc_name"])
 
             if not self.nodeman:
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
@@ -588,6 +602,25 @@ class SlrCmds(CommonCloudFunctions) :
             else :
                 return True
 
+    @trace            
+    def create_ssh_key(self, key_name, key_type, key_contents, key_fingerprint, vm_defaults, connection) :
+        '''
+        TBD
+        '''
+        self.sshman.add_key(key_type + ' ' + key_contents, key_name)
+
+        return True
+
+    @trace
+    def is_cloud_image_uuid(self, imageid) :
+        '''
+        TBD
+        '''
+        if len(imageid) == 7 and is_number(imageid) :
+            return True
+
+        return False
+
     @trace
     def is_vm_running(self, obj_attr_list, fail = True) :
         '''
@@ -599,19 +632,13 @@ class SlrCmds(CommonCloudFunctions) :
             
             if _instance :
                 
-                if "activeTransaction" in _instance :
+                if "provisionDate" not in _instance :
                     return False
                 
-                if _instance["status"]["name"].lower().count("active") : 
-                    return True
+                if _instance["provisionDate"] == "" :
+                    return False
 
-                if _instance["status"]["name"].lower().count("error") :
-                    _msg = "Instance \"" + obj_attr_list["cloud_vm_name"] + "\"" 
-                    _msg += " reported an error (from " + self.get_description() + ")"
-                    _status = 1870
-                    cberr(_msg)
-                    if fail :
-                        raise CldOpsException(_msg, _status)                    
+                return True
 
             return False
 
