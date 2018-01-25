@@ -412,7 +412,7 @@ class OskCmds(CommonCloudFunctions) :
                     _net_str = _net_type
                 else :
                     _net_str = _net_type + ' ' + _net_model
-                _msg = "done. This " + _net_str + " network will be used as the default for provisioning."
+                _msg = "done. This " + _net_str + " will be used as the default for provisioning."
                 cbdebug(_msg)
             else: 
                 _msg = "\nERROR! The default provisioning network (" 
@@ -429,7 +429,7 @@ class OskCmds(CommonCloudFunctions) :
                     _net_str = _net_type
                 else :
                     _net_str = _net_type + ' ' + _net_model                
-                _msg = "a " + _net_type + ' ' + _net_model + " network will be used as the default for running."
+                _msg = "a " + _net_type + ' ' + _net_model + " will be used as the default for running."
                 cbdebug(_msg)
             else: 
                 _msg = "ERROR! The default running network (" 
@@ -2506,11 +2506,13 @@ class OskCmds(CommonCloudFunctions) :
             _fmsg += self.get_description()
 
             _flavor = False
+            
             for _idx in range(0,len(_flavor_list)) :
-                if _flavor_list[_idx].name.count(obj_attr_list["size"]) :
+#                if _flavor_list[_idx].name.count(obj_attr_list["size"]) :                
+                if _flavor_list[_idx].name == obj_attr_list["size"] :
                     _flavor = _flavor_list[_idx]
                     _status = 0
-                    break
+                    break            
 
             obj_attr_list["flavor_instance"] = _flavor
             obj_attr_list["flavor"] = _flavor.id
