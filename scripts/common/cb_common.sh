@@ -318,7 +318,7 @@ function get_time {
 }
 
 function get_vm_uuid_from_ip {
-    uip=(echo $1 | cut -d '-' -f 1)
+    uip=$(echo $1 | cut -d '-' -f 1)
     fqon=`retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber get ${osinstance}:VM:TAG:CLOUD_IP:${uip}" 0`
     echo $fqon | cut -d ':' -f 4
 }
