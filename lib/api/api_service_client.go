@@ -43,11 +43,15 @@ func (api *APIClient) Call(method string, args ...interface{}) (result map[strin
 		return nil, errors.New("Failed to provide CloudBench URL.")
     }
 
-    response := xmlrpc.Request(api.Address, method, args...)
+    response, err := xmlrpc.Request(api.Address, method, args...)
 
-	if response == nil || len(response) == 0 {
-			return nil, errors.New("Error: empty response")
-	}
+    if err == nil {
+        if response == nil || len(response) == 0 {
+	    return nil, errors.New("Error: empty response")
+       }
+    } else {
+       return nil, err
+    }
     j, err := json.Marshal(response[0])
     var f map[string]interface{}
     if err == nil {
@@ -69,7 +73,7 @@ func (api *APIClient) Call(method string, args ...interface{}) (result map[strin
 
 func (api *APIClient) Close() {
 	if api.mongo != nil {
-		api.mongo.Close()
+		defer api.mongo.Close()
 		api.mongo = nil
 	}
 	api.msattrs = nil
@@ -188,4 +192,3 @@ func (api *APIClient) Get_system_data(cloud_name string, uuid string, expid stri
 func (api *APIClient) Get_management_data(cloud_name string, uuid string, expid string) (result *mgo.Iter, err error) {
 	return api.Get_performance_data(cloud_name, uuid, "management", "VM", "os", false, 0, expid, false)
 }
-
