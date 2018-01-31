@@ -717,11 +717,12 @@ class CBCLI(Cmd) :
                     create_restart_script("restart_cb_api", _cmd, self.cld_attr_lst["logstore"]["username"], "cloud-api")
                     
                     try :
-                        _fn = "/tmp/cb_api_" + self.cld_attr_lst["api_defaults"]["username"]
+                        self.cld_attr_lst["api_defaults"]["file_identifier"] = self.cld_attr_lst["api_defaults"]["file_identifier"].strip()
+                        _fn = "/tmp/cb_api_" + self.cld_attr_lst["api_defaults"]["username"] + self.cld_attr_lst["api_defaults"]["file_identifier"]
                         _fd = open(_fn, 'w')
                         _fd.write(_api_conn_string)
                         _fd.close()
-                    
+                        
                     except Exception, e :
                         _msg = "    Error writing file \"" + _fn  + "\":" + str(e)
                         print _msg

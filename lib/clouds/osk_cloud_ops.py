@@ -71,6 +71,7 @@ class OskCmds(CommonCloudFunctions) :
         self.host_map = {}
         self.api_error_counter = {}
         self.additional_rc_contents = ''
+        self.connauth_pamap = {}
         self.max_api_errors = 10
         
     @trace
@@ -93,59 +94,32 @@ class OskCmds(CommonCloudFunctions) :
             _version = '2'
             
             _auth = None
-            _session = None
             _credentials = None
-
-            _user_domain_id = "default"
-            _project_domain_id = "default"
-                        
-            if len(access_url.split('-')) == 1 :
-                _endpoint_type = "publicURL"
-            if len(access_url.split('-')) == 2 :
-                access_url, _endpoint_type = access_url.split('-')                               
-            else :
-                access_url = access_url.split('-')[0]
-                _endpoint_type = "publicURL"
-            access_url = access_url.replace("_dash_",'-')
-            
             _data_auth_parse = False
-            _username, _password, _tenant, _cacert, _insecure = \
-            self.parse_authentication_data(authentication_data)
-            _data_auth_parse = True
+            _nova_client = False
+
+            if not self.connauth_pamap :
+                self.connauth_pamap = self.parse_cloud_connection_file(access_url)
             
+            access_url, _endpoint_type, region = self.parse_connection_data(access_url, region, extra_parms)
+
+            _username, _password, _tenant, _project_name, _cacert, _insecure, _user_domain_id, _project_domain_id = self.parse_authentication_data(authentication_data)
+            _data_auth_parse = True
+
             if not _username :
                 _fmsg = _password
             else :
-                _username = _username.replace("_dash_",'-')
-                _password = _password.replace("_dash_",'-')
-                _tenant = _tenant.replace("_dash_",'-')
 
-                if _cacert :
-                    _cacert = _cacert.replace("_dash_",'-')
+                access_url = access_url.replace('v2.0/','v3')
 
-                if _use_keystone_session :
-                    access_url = access_url.replace('v2.0/','v3')
-                    _auth = v3.Password(auth_url = access_url, \
-                                        username = _username, \
-                                        password = _password, \
-                                        project_name = _tenant, \
-                                        user_domain_id = _user_domain_id, \
-                                        project_domain_id = _project_domain_id)
-                    
-                    _session = session.Session(auth = _auth, verify = _insecure, cert = _cacert)
-                else :
-                    _credentials = { "username" : _username, \
-                                    "version" : _version, \
-    #                                "api_key" : _password, \
-                                    "password" : _password, \
-                                    "project_id" : _tenant, \
-                                    "tenant_name" : _tenant,  
-                                    "auth_url" : access_url, \
-                                    "region_name" : region, \
-                                    "service_type" : "compute", \
-                                    "endpoint_type" : _endpoint_type, \
-                                    "cacert": _cacert, \
-                                    "insecure": _insecure }
+                _auth = v3.Password(auth_url = access_url, \
+                                    username = _username, \
+                                    password = _password, \
+                                    project_name = _project_name, \
+                                    user_domain_id = _user_domain_id, \
+                                    project_domain_id = _project_domain_id)
+                
+                _session = session.Session(auth = _auth, verify = _insecure, cert = _cacert)
 
                 _msg = self.get_description() + " connection parameters: username=" + _username
                 _msg += ", password=<omitted>, tenant=" + _tenant + ", "
@@ -155,19 +129,8 @@ class OskCmds(CommonCloudFunctions) :
                 cbdebug(_msg, diag)
     
                 _fmsg = "About to attempt a connection to " + self.get_description()
-                
-                _nova_client = False
-                #self.oskconncompute = novac.Client(2, _username, _password, _tenant, \
-                #                             access_url, region_name = region, \
-                #                             service_type="compute", \
-                #                             endpoint_type = _endpoint_type, \
-                #                             cacert = _cacert, \
-                #                             insecure = _insecure)
 
-                if _session :
-                    self.oskconncompute = novac.Client("2.1", session = _session)
-                else :
-                    self.oskconncompute = novac.Client(**_credentials)
+                self.oskconncompute = novac.Client("2.1", session = _session)
 
                 self.oskconncompute.flavors.list()
                 _nova_client = True
@@ -181,19 +144,7 @@ class OskCmds(CommonCloudFunctions) :
                     _cinder_client = False
                     from cinderclient import client as cinderc 
 
-                    if _session :
-                        self.oskconnstorage = cinderc.Client("2.1", session = _session)                    
-                    else :
-                        self.oskconnstorage = cinderc.Client('1', \
-                                                             _username, \
-                                                             _password, \
-                                                             _tenant, \
-                                                             auth_url = access_url, \
-                                                             region_name = region, \
-                                                             service_type="volume", \
-                                                             endpoint_type = _endpoint_type, \
-                                                             cacert = _cacert, \
-                                                             insecure = _insecure)                    
+                    self.oskconnstorage = cinderc.Client("2.1", session = _session)                    
 
                     self.oskconnstorage.volumes.list()
                     _cinder_client = True                                    
@@ -205,12 +156,7 @@ class OskCmds(CommonCloudFunctions) :
 
                     from neutronclient.v2_0 import client as neutronc                           
 
-                    if _session :
-                        self.oskconnnetwork = neutronc.Client(session = _session)
-                    else :
-                        _credentials["service_type"] = "network"
-                        del _credentials["project_id"]
-                        self.oskconnnetwork = neutronc.Client(**_credentials)
+                    self.oskconnnetwork = neutronc.Client(session = _session)
         
                     self.oskconnnetwork.list_networks()
                     _neutron_client = True
@@ -250,75 +196,43 @@ class OskCmds(CommonCloudFunctions) :
                 if _data_auth_parse :
 
                     if not _nova_client :
-                        if _session :
-                            _dmsg = "Please attempt to execute the following : \"python -c \""
-                            _dmsg += "from keystoneauth1.identity import v3; "
-                            _dmsg += "from keystoneauth1 import session; "
-                            _dmsg += "from novaclient import client as novac; "
-                            _dmsg += "_auth = v3.Password(username = '" + str(_username) 
-                            _dmsg += "', password = 'REPLACE_PASSWORD', project_name = '"
-                            _dmsg += str(_tenant) + "', auth_url = '" + str(access_url) 
-                            _dmsg += "', user_domain_id = '" + str(_user_domain_id) + "', "
-                            _dmsg += "project_domain_id = '" + str(_project_domain_id) + "'); "
-                            _dmsg += "_session = session.Session(auth = _auth, verify = " + str(_insecure) + ", cert = " + str(_cacert) + "); "
-                            _dmsg += "ct = novac.Client(\"2.1\", session = _session); print ct.flavors.list()\"\""
-                        else :
-                            _dmsg = "Please attempt to execute the following : \"python -c \""
-                            _dmsg += "from novaclient import client as novac; "
-                            _dmsg += "_credentials = { 'username' : '" + str(_username) 
-                            _dmsg += "', 'password' : 'REPLACE_PASSWORD', 'project_id' : '"
-                            _dmsg += str(_tenant) + "', 'auth_url' : '" + str(access_url) 
-                            _dmsg += "', 'region_name' : '" + str(region) + "', 'service_type' : "
-                            _dmsg += "'compute', 'endpoint_type':'" + str(_endpoint_type) 
-                            _dmsg += "', 'cacert' : '" + str(_cacert) + "', 'insecure': "
-                            _dmsg += str(_insecure) + ", 'version':'" + str(_version) + "'}; "
-                            _dmsg += "ct = novac.Client(**_credentials); print ct.flavors.list()\"\""
+                        _dmsg = "Please attempt to execute the following : \"python -c \""
+                        _dmsg += "from keystoneauth1.identity import v3; "
+                        _dmsg += "from keystoneauth1 import session; "
+                        _dmsg += "from novaclient import client as novac; "
+                        _dmsg += "_auth = v3.Password(username = '" + str(_username) 
+                        _dmsg += "', password = 'REPLACE_PASSWORD', project_name = '"
+                        _dmsg += str(_tenant) + "', auth_url = '" + str(access_url) 
+                        _dmsg += "', user_domain_id = '" + str(_user_domain_id) + "', "
+                        _dmsg += "project_domain_id = '" + str(_project_domain_id) + "'); "
+                        _dmsg += "_session = session.Session(auth = _auth, verify = " + str(_insecure) + ", cert = " + str(_cacert) + "); "
+                        _dmsg += "ct = novac.Client(\"2.1\", session = _session); print ct.flavors.list()\"\""
                     
                     elif not _cinder_client :
-                        if _session :
-                            _dmsg = "Please attempt to execute the following : \"python -c \""
-                            _dmsg += "from keystoneauth1.identity import v3; "
-                            _dmsg += "from keystoneauth1 import session; "
-                            _dmsg += "from cinderclient import client as cinderc; "
-                            _dmsg += "_auth = v3.Password(username = '" + str(_username) 
-                            _dmsg += "', password = 'REPLACE_PASSWORD', project_name = '"
-                            _dmsg += str(_tenant) + "', auth_url = '" + str(access_url) 
-                            _dmsg += "', user_domain_id = '" + str(_user_domain_id) + "', "
-                            _dmsg += "project_domain_id = '" + str(_project_domain_id) + "'); "
-                            _dmsg += "_session = session.Session(auth = _auth, verify = " + str(_insecure) + ", cert = " + str(_cacert) + "); "
-                            _dmsg += "ct = cinderc.Client(\"2.1\", session = _session); print ct.volumes.list()\"\""                                                        
-                        else :
-                            _dmsg = "Please attempt to execute the following : \"python -c \""
-                            _dmsg += "from cinderclient import client as cinderc;"
-                            _dmsg += "ct = cinderc.Client('" + _version + "','" + str(_username) + "', '"
-                            _dmsg += "REPLACE_PASSWORD', '" + str(_tenant) + "', '" + str(access_url)
-                            _dmsg += "', region_name='" + str(region) + "', service_type='volume', "
-                            _dmsg += "endpoint_type='" + str(_endpoint_type) + "', cacert='" + str(_cacert)
-                            _dmsg += "', insecure='" + str(_insecure) + "'); print ct.volumes.list()\"\""                    
+                        _dmsg = "Please attempt to execute the following : \"python -c \""
+                        _dmsg += "from keystoneauth1.identity import v3; "
+                        _dmsg += "from keystoneauth1 import session; "
+                        _dmsg += "from cinderclient import client as cinderc; "
+                        _dmsg += "_auth = v3.Password(username = '" + str(_username) 
+                        _dmsg += "', password = 'REPLACE_PASSWORD', project_name = '"
+                        _dmsg += str(_tenant) + "', auth_url = '" + str(access_url) 
+                        _dmsg += "', user_domain_id = '" + str(_user_domain_id) + "', "
+                        _dmsg += "project_domain_id = '" + str(_project_domain_id) + "'); "
+                        _dmsg += "_session = session.Session(auth = _auth, verify = " + str(_insecure) + ", cert = " + str(_cacert) + "); "
+                        _dmsg += "ct = cinderc.Client(\"2.1\", session = _session); print ct.volumes.list()\"\""                                                        
                     
                     elif not _neutron_client :
-                        if _session :
-                            _dmsg = "Please attempt to execute the following : \"python -c \""
-                            _dmsg += "from keystoneauth1.identity import v3; "
-                            _dmsg += "from keystoneauth1 import session; "
-                            _dmsg += "from neutronclient.v2_0 import client as neutronc; "
-                            _dmsg += "_auth = v3.Password(username = '" + str(_username) 
-                            _dmsg += "', password = 'REPLACE_PASSWORD', project_name = '"
-                            _dmsg += str(_tenant) + "', auth_url = '" + str(access_url) 
-                            _dmsg += "', user_domain_id = '" + str(_user_domain_id) + "', "
-                            _dmsg += "project_domain_id = '" + str(_project_domain_id) + "'); "
-                            _dmsg += "_session = session.Session(auth = _auth, verify = " + str(_insecure) + ", cert = " + str(_cacert) + "); "
-                            _dmsg += "ct = neutronc.Client(session = _session); print ct.list_networks()\"\""                            
-                        else :
-                            _dmsg = "Please attempt to execute the following : \"python -c \""
-                            _dmsg += "from neutronclient.v2_0 import client as neutronc;"                        
-                            _dmsg += "_credentials = {'username':'" + str(_username) + "', "
-                            _dmsg += "'password':'REPLACE_PASSWORD', 'tenant_name':'"
-                            _dmsg += str(_tenant) + "', 'auth_url':'" + str(access_url)
-                            _dmsg += "', 'region_name':'" + str(region) + "', 'service_type':'network', "
-                            _dmsg += "'endpoint_type':'" + str(_endpoint_type) + "', 'cacert':" + str(_cacert)
-                            _dmsg += ", 'insecure':" + str(_insecure) + "}; " 
-                            _dmsg += "ct = neutronc.Client(**_credentials); print ct.list_networks()\"\""                          
+                        _dmsg = "Please attempt to execute the following : \"python -c \""
+                        _dmsg += "from keystoneauth1.identity import v3; "
+                        _dmsg += "from keystoneauth1 import session; "
+                        _dmsg += "from neutronclient.v2_0 import client as neutronc; "
+                        _dmsg += "_auth = v3.Password(username = '" + str(_username) 
+                        _dmsg += "', password = 'REPLACE_PASSWORD', project_name = '"
+                        _dmsg += str(_tenant) + "', auth_url = '" + str(access_url) 
+                        _dmsg += "', user_domain_id = '" + str(_user_domain_id) + "', "
+                        _dmsg += "project_domain_id = '" + str(_project_domain_id) + "'); "
+                        _dmsg += "_session = session.Session(auth = _auth, verify = " + str(_insecure) + ", cert = " + str(_cacert) + "); "
+                        _dmsg += "ct = neutronc.Client(session = _session); print ct.list_networks()\"\""                            
                     print _dmsg
                     
                 raise CldOpsException(_msg, _status)
@@ -663,16 +577,21 @@ class OskCmds(CommonCloudFunctions) :
                                                  obj_attr_list, \
                                                  False, \
                                                  True)
-    
+
                 obj_attr_list["cloud_hostname"] = _hostname
 
-                _resolve = obj_attr_list["access"].split(':')[1].replace('//','')
+                if "access_from_rc" in obj_attr_list :
+                    _actual_access = obj_attr_list["access_from_rc"]
+                else :
+                    _actual_access = obj_attr_list["access"]
+                                        
+                _resolve = _actual_access.split(':')[1].replace('//','')
+
                 _resolve = _resolve.split('/')[0]
                 _resolve = _resolve.replace("_dash_","-")
 
                 _x, obj_attr_list["cloud_ip"] = hostname2ip(_resolve, True)
                 obj_attr_list["arrival"] = int(time())
-
 
                 if str(obj_attr_list["discover_hosts"]).lower() == "true" :                   
                     _status, _fmsg = self.discover_hosts(obj_attr_list, _time_mark_prs)
@@ -681,8 +600,9 @@ class OskCmds(CommonCloudFunctions) :
                     obj_attr_list["host_list"] = {}
                     obj_attr_list["host_count"] = "NA"
                     _status = 0
-                    
+
                 if not _status :
+
                     self.get_network_list(obj_attr_list)
     
                     _networks = {}
@@ -1266,7 +1186,7 @@ class OskCmds(CommonCloudFunctions) :
                                                                    availability_zone = None, \
                                                                    imageRef = _imageid)
 
-                self.annotate_time_breakdown(obj_attr_list, "create_creation_time", _mark_a)
+                self.annotate_time_breakdown(obj_attr_list, "create_volume_time", _mark_a)
                 
                 sleep(int(obj_attr_list["update_frequency"]))
 
@@ -1438,7 +1358,7 @@ class OskCmds(CommonCloudFunctions) :
 
             _mark_a = time()
             self.get_flavors(obj_attr_list)
-            self.annotate_time_breakdown(obj_attr_list, "get_flavors_time", _mark_a)
+            self.annotate_time_breakdown(obj_attr_list, "get_flavor_time", _mark_a)
             
             _mark_a = time()
             self.get_images(obj_attr_list)
@@ -1771,6 +1691,7 @@ class OskCmds(CommonCloudFunctions) :
         '''
         try :
             _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
 
             _ts = obj_attr_list["target_state"]
             _cs = obj_attr_list["current_state"]
@@ -1990,59 +1911,127 @@ class OskCmds(CommonCloudFunctions) :
         finally :
             _status, _msg = self.common_messages("IMG", obj_attr_list, "deleted", _status, _fmsg)
             return _status, _msg
+    
+    @trace
+    def parse_connection_data(self, connection_data, region, obj_attr_list) :
+        '''
+        TBD
+        '''
+        _access_url = None
+        _endpoint_type = "publicURL"
+        _region = region
+        
+        if not self.connauth_pamap :        
+                
+            if len(connection_data.split('-')) == 2 :
+                _access_url, _endpoint_type = connection_data.split('-')                               
+            else :
+                _access_url = connection_data.split('-')[0]    
+        else :
+            if "OS_AUTH_URL" in self.connauth_pamap :
+                _access_url = self.connauth_pamap["OS_AUTH_URL"]
+
+            if "OS_ENDPOINT_TYPE" in self.connauth_pamap :
+                _endpoint_type = self.connauth_pamap["OS_ENDPOINT_TYPE"]
+
+            if "OS_REGION_NAME" in self.connauth_pamap :
+                _region = self.connauth_pamap["OS_REGION_NAME"]
+
+        obj_attr_list["access_from_rc"] = _access_url + '-' + _endpoint_type
+        
+        return _access_url, _endpoint_type, _region
         
     @trace
     def parse_authentication_data(self, authentication_data, tenant = "default", username = "default", single = False):
         '''
         TBD
         '''
-        if authentication_data.count(':') >= 2 :
-            _separator = ':'
-        else :
-            _separator = '-'
 
-        if len(authentication_data.split(_separator)) < 3 :
-            _msg = "ERROR: Insufficient number of parameters in OSK_CREDENTIALS."
-            _msg += "Please make sure that at least username, password and tenant"
-            _msg += " are present."
-            if single :
-                return _msg
+        _username = ''
+        _password = ''
+        _tenant = ''
+        _project_name = None
+        _cacert = None
+        _insecure = False
+        _user_domain_id = "default"
+        _project_domain_id = "default"
+        
+        if not self.connauth_pamap :
+            if authentication_data.count(':') >= 2 :
+                _separator = ':'
             else :
-                return False, _msg, False, False, False
-
-        if len(authentication_data.split(_separator)) == 3 :
-            _username, _password, _tenant = authentication_data.split(_separator)
-            _cacert = None
-            _insecure = False
-            
-        elif len(authentication_data.split(_separator)) == 4 :
-            _username, _password, _tenant, _cacert = authentication_data.split(_separator)
-            _insecure = False
-
-        elif len(authentication_data.split(_separator)) == 5 :
-            _username, _password, _tenant, _cacert, _insecure = authentication_data.split(_separator)
-            _insecure = True
-
-        elif len(authentication_data.split(_separator)) > 5 and _separator == '-' :            
-            _msg = "ERROR: Please make sure that the none of the parameters in"
-            _msg += "OSK_CREDENTIALS have any dashes (i.e., \"-\") on it. If"
-            _msg += "a dash is required, please use the string \"_dash\", and"
-            _msg += "it will be automatically replaced."
-            if single :
-                return _msg
-            else :
-                return False, _msg, False, False, False
-            
+                _separator = '-'
+    
+            if len(authentication_data.split(_separator)) < 3 :
+                _msg = "ERROR: Insufficient number of parameters in OSK_CREDENTIALS."
+                _msg += "Please make sure that at least username, password and tenant"
+                _msg += " are present."
+                if single :
+                    return _msg
+                else :
+                    return False, _msg, False, False, False, False, False, False
+    
+            if len(authentication_data.split(_separator)) == 3 :
+                _username, _password, _tenant = authentication_data.split(_separator)
+                
+            elif len(authentication_data.split(_separator)) == 4 :
+                _username, _password, _tenant, _cacert = authentication_data.split(_separator)
+    
+            elif len(authentication_data.split(_separator)) == 5 :
+                _username, _password, _tenant, _cacert, _insecure = authentication_data.split(_separator)
+    
+            elif len(authentication_data.split(_separator)) > 5 and _separator == '-' :            
+                _msg = "ERROR: Please make sure that the none of the parameters in"
+                _msg += "OSK_CREDENTIALS have any dashes (i.e., \"-\") on it. If"
+                _msg += "a dash is required, please use the string \"_dash\", and"
+                _msg += "it will be automatically replaced."
+                if single :
+                    return _msg
+                else :
+                    return False, _msg, False, False, False, False, False, False
+                
         else :
-            _username = ''
-            _password = ''
-            _tenant = ''
+
+            if "OS_USERNAME" in self.connauth_pamap :
+                _username = self.connauth_pamap["OS_USERNAME"]
+
+            if "OS_PASSWORD" in self.connauth_pamap :
+                _password = self.connauth_pamap["OS_PASSWORD"]
+
+            if "OS_TENANT_NAME" in self.connauth_pamap :
+                _tenant = self.connauth_pamap["OS_TENANT_NAME"]
+
+            if "OS_PROJECT_NAME" in self.connauth_pamap :
+                _project_name = self.connauth_pamap["OS_PROJECT_NAME"]
+
+            if "OS_CACERT" in self.connauth_pamap :
+                _cacert = self.connauth_pamap["OS_CACERT"]
+
+            if "OS_INSECURE" in self.connauth_pamap :
+                if self.connauth_pamap["OS_INSECURE"] == "1" :
+                    _insecure = True
+
+            if "OS_PROJECT_DOMAIN_ID" in self.connauth_pamap :
+                _project_domain_id = self.connauth_pamap["OS_PROJECT_DOMAIN_ID"]
+
+            if "OS_USER_DOMAIN_ID" in self.connauth_pamap :
+                _user_domain_id = self.connauth_pamap["OS_USER_DOMAIN_ID"]
 
         if tenant != "default" :
             _tenant = tenant
         
         if username != "default" :
             _username = username
+
+        _username = _username.replace("_dash_",'-')
+        _password = _password.replace("_dash_",'-')
+        _tenant = _tenant.replace("_dash_",'-')
+
+        if not _project_name :
+            _project_name = _tenant
+
+        if _cacert :
+            _cacert = _cacert.replace("_dash_",'-')
 
         if single :
             _str = str(_username) + ':' + str(_password) + ':' + str(_tenant)
@@ -2054,7 +2043,7 @@ class OskCmds(CommonCloudFunctions) :
 
             return _str
         else :
-            return _username, _password, _tenant, _cacert, _insecure
+            return _username, _password, _tenant, _project_name, _cacert, _insecure, _user_domain_id, _project_domain_id
 
     @trace
     def disconnect(self) :

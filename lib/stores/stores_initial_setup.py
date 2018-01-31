@@ -94,7 +94,7 @@ def redis_objectstore_setup(global_objects, operation, cloud_name = None) :
                 _redis_pid = _proc_man.get_pid_from_cmdline("redis-server")      
 
                 if not _redis_pid :
-                    global_objects["objectstore"]["port"] = _proc_man.get_free_port(global_objects["objectstore"]["port"], protocol = "tcp")
+#                    global_objects["objectstore"]["port"] = _proc_man.get_free_port(global_objects["objectstore"]["port"], protocol = "tcp")
                     _hostport = int(global_objects["objectstore"]["port"])
 
                     _config_file_contents = global_objects["objectstore"]["config_string"].replace('_', ' ')
@@ -233,7 +233,6 @@ def syslog_logstore_setup(global_objects, operation = "check") :
         if operation == "check" :
 
             if _usage == "shared" :
-
                 _hostport = int(global_objects["logstore"]["port"])
                 
                 if not pre_check_port(_hostname, _hostport, _protocol) :
@@ -269,8 +268,7 @@ def syslog_logstore_setup(global_objects, operation = "check") :
 
                 if not _rsyslog_pid :
 
-                    global_objects["logstore"]["port"] = _proc_man.get_free_port(global_objects["logstore"]["port"],\
-                                                                                 protocol = _protocol)
+#                    global_objects["logstore"]["port"] = _proc_man.get_free_port(global_objects["logstore"]["port"], protocol = _protocol)
                     _hostport = int(global_objects["logstore"]["port"])
 
                     _config_file_contents = global_objects["logstore"]["config_string"].replace('_', ' ')
@@ -371,7 +369,7 @@ def mongodb_metricstore_setup(global_objects, operation = "check") :
                 _mongodb_pid = _proc_man.get_pid_from_cmdline("mongod -f")
 
                 if not _mongodb_pid :
-                    global_objects["metricstore"]["port"] = _proc_man.get_free_port(global_objects["metricstore"]["port"], protocol = "tcp")
+#                    global_objects["metricstore"]["port"] = _proc_man.get_free_port(global_objects["metricstore"]["port"], protocol = "tcp")
                     _hostport = int(global_objects["metricstore"]["port"])
 
                     _config_file_contents = global_objects["metricstore"]["config_string"].replace('_', ' ')
@@ -492,13 +490,13 @@ def rsync_filestore_setup(global_objects, operation = "check") :
                     # File was deleted, but the rsync process is still dangling
                     _proc_man.run_os_command("sudo pkill -9 -f " + _config_file_fn)
 
-                _rsyslog_pid = _proc_man.get_pid_from_cmdline(_cmd)
+                _rsync_pid = _proc_man.get_pid_from_cmdline(_cmd)
 
-                if not _rsyslog_pid :
+                if not _rsync_pid :
 
                     _proc_man.run_os_command("sudo rm -rf " + _stores_wk_dir + '/' + _username + "_rsyncd.pid")
                     
-                    global_objects["filestore"]["port"] = _proc_man.get_free_port(global_objects["filestore"]["port"], protocol = "tcp")
+#                    global_objects["filestore"]["port"] = _proc_man.get_free_port(global_objects["filestore"]["port"], protocol = "tcp")
 
                     _hostport = int(global_objects["filestore"]["port"])
                     
@@ -519,9 +517,9 @@ def rsync_filestore_setup(global_objects, operation = "check") :
                     _config_file_fd.write(_config_file_contents)
                     _config_file_fd.close()
                     
-                    _rsyslog_pid = _proc_man.start_daemon("sudo " + _cmd)
+                    _rsync_pid = _proc_man.start_daemon("sudo " + _cmd)
 
-                    if not _rsyslog_pid :
+                    if not _rsync_pid :
                         _msg = "Unable to detect a private rsyslog server daemon running. "
                         _msg += "Please try to start one (e.g., " + _cmd + ")"
                         print _msg

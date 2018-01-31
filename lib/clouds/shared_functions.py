@@ -1030,6 +1030,7 @@ class CommonCloudFunctions:
         cloudconfig = "#cloud-config\n"
         
         if obj_attr_list["userdata_ssh"].lower() == "true" :
+#            cloudconfig += "disable_root: false\n"            
             cloudconfig += "ssh_authorized_keys:\n - " + obj_attr_list["pubkey_contents"]
             cloudconfig += "\n"            
 
@@ -1229,6 +1230,41 @@ packages:"""
         _file_fd.write("export CB_USERNAME=" + obj_attr_list["username"] + "\n")
         _file_fd.close()
         return True
+
+    @trace
+    def parse_cloud_connection_file(self, file_name) :
+        '''
+        TBD
+        '''
+        
+        _parameter_map = {}
+                    
+        if file_name.count('~') :
+            file_name = file_name.replace('~', os.path.expanduser('~'))
+
+        if file_name.count('/') and not (file_name.count("http://") or file_name.count("https://")):
+            _msg = "    Attempting to parse cloud connection file \"" + file_name + "\"..."
+            cbdebug(_msg, True)
+            _fh = open(file_name, 'r')
+            _contents = _fh.read()
+            _fh.close()
+            
+            for _line in _contents.split('\n') :
+                if len(_line) :
+                    if _line[0] != "#" :
+                        if _line[0:7] == "export " :
+                            _line = _line.replace("export ", '')
+            
+                        if _line.count("=") :
+                            _key, _value = _line.split('=')
+                            if _value.count("${") and _value.count(':') :
+                                _value = _value.split(':')[1][1:-1]
+                            _parameter_map[_key] = _value.replace('"','')     
+
+            _msg = "Done parsing cloud connection file \"" + file_name + "\."
+            cbdebug(_msg)
+                    
+        return _parameter_map
 
     @trace
     def set_cgroup(self, obj_attr_list) :
@@ -1763,6 +1799,15 @@ packages:"""
                 _msg = "Attaching the newly created Volume \""
                 _msg += obj_attr_list["cloud_vv_name"] + "\" (cloud-assigned uuid \""
                 _msg += obj_attr_list["cloud_vv_uuid"] + "\") to instance \""
+                _msg += obj_attr_list["cloud_vm_name"] + "\" (cloud-assigned uuid \""
+                _msg += obj_attr_list["cloud_vm_uuid"] + "\")"
+                cbdebug(_msg, True)
+                return '', ''
+
+            if operation == "detaching" :
+                _msg = "Detaching the Volume \""
+                _msg += obj_attr_list["cloud_vv_name"] + "\" (cloud-assigned uuid \""
+                _msg += obj_attr_list["cloud_vv_uuid"] + "\") from instance \""
                 _msg += obj_attr_list["cloud_vm_name"] + "\" (cloud-assigned uuid \""
                 _msg += obj_attr_list["cloud_vm_uuid"] + "\")"
                 cbdebug(_msg, True)

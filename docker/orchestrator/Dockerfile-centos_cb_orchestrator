@@ -129,7 +129,7 @@ RUN ln -s /sbin/rsyslogd /usr/local/bin/rsyslogd
 # rsyslog-install-pm
 
 # apache-install-pm
-# RUN yum install -y httpd
+RUN yum____-y____install____httpd; /bin/true
 # apache-install-pm
 
 # redis-install-pm
@@ -213,6 +213,13 @@ RUN yum install -y iptables
 # service_stop_disable iptables
 # iptables-install-pm
 
+# sshd-install-pm
+RUN yum -y install openssh-server
+RUN sudo bash -c "echo 'UseDNS no' >> /etc/ssh/sshd_config"
+RUN sed -i 's/.*UseDNS.*/UseDNS no/g' /etc/ssh/sshd_config
+RUN sed -i 's/.*GSSAPIAuthentication.*/GSSAPIAuthentication no/g' /etc/ssh/sshd_config
+# sshd-install-pm
+
 # novaclient-install-pip
 RUN pip install --upgrade pbr
 RUN pip install --upgrade netifaces
@@ -271,7 +278,7 @@ RUN sudo ln -s /home/REPLACE_USERNAME/google-cloud-sdk/bin/gcloud /usr/local/bin
 # gcloud-install-man
 
 WORKDIR /home/REPLACE_USERNAME/
-RUN git clone https://github.com/ibmcb/cbtool.git
+RUN git clone https://github.com/ibmcb/cbtool.git; cd /home/REPLACE_USERNAME/cbtool; git checkout REPLACE_BRANCH
 
 # gmetad-python-install-git
 RUN mkdir -p /home/REPLACE_USERNAME/cbtool/3rd_party

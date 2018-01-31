@@ -777,7 +777,7 @@ function start_master_hadooop_services {
                 syslog_netcat "Error when formatting namenode (on $DFS_NAME_DIR) as user ${dfs_name_dir_owner} - NOK"
                 exit 1
             fi
-    
+
             syslog_netcat "...Namenode formatted."
     
             syslog_netcat "...Starting primary Namenode service..."

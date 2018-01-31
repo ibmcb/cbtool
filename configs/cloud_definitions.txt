@@ -48,10 +48,11 @@ OSK_ACCESS = http://<address>:5000/v2.0/                                        
 OSK_CREDENTIALS =  <user>-<password>-<tenant>
 OSK_INITIAL_VMCS = RegionOne:sut                                                                                      # Change "RegionOne" accordingly
 OSK_SECURITY_GROUPS = default	                                                                                      # Make sure that this group exists first
+OSK_NETNAME = private                                                                                                 # Make sure that this network exists first
 OSK_LOGIN = cbuser                                                                                                    # The username that logins on the VMs
 #-------------------------------------------------------------------------------
 # Elastic Compute Cloud (EC2) requires the following parameters 
-[USER-DEFINED : CLOUDOPTION_MYAMAZON]
+[USER-DEFINED : CLOUDOPTION_MYAMAZON] 
 EC2_ACCESS = ABCDEFGHIJKLMNOPQRST                                                                                     # This is the AWS access key id
 EC2_CREDENTIALS = ABCDEFGHIJKLMNOPQRSTUVXYWZ01234567890-+*                                                            # This is the AWS secret access key 
 EC2_SECURITY_GROUPS = cloudbench                                                                                      # Make sure that this group exists first 
@@ -95,7 +96,7 @@ GCE_INITIAL_VMCS = us-east1-b:sut                                               
 GCE_SECURITY_GROUPS = cloudbench                                                                                      # Currently, not used
 GCE_LOGIN = cbuser                                                                                                    # The username that logins on the VMs
 #-------------------------------------------------------------------------------
-# DigitalOcean (DO) requires the following parameters
+# DigitalOcean (DO) requires the following parameters (via LibCloud)
 [USER-DEFINED : CLOUDOPTION_MYDIGITALOCEAN]
 DO_CREDENTIALS = arbitrarytag1:long_hex_token_from_digitalocean.com,arbitrarytag2:another_token                       # This is your DO access token. The driver supports multiple accounts and will distribute AIs across all accounts in a round-robin fashion.
 DO_INITIAL_VMCS = tor1:sut                                                                                            # VMC == DO data center (we don't have availability zones yet)
@@ -127,14 +128,20 @@ KUB_INITIAL_VMCS = world                                                        
 KUB_NETNAME = NOTUSED                                                                                                 # Currently not used
 KUB_LOGIN = root                                                                                                      # The username that logins on the VMs
 #-------------------------------------------------------------------------------
-# Azure Service Manager (ASM) requires the following parameters
-[USER-DEFINED : CLOUDOPTION_MYASM ]
-ASM_CREDENTIALS = arbitrarytag1:subscription_id1+certificate_path1,arbitrarytag2:subscription_id2+certificate_path2   # The subscription id is obtained from the Azure portal. The certificate is generated locally and uploaded through the portal,
-ASM_INITIAL_VMCS = Central____US:sut                                                                                  # Use four consecutives underscores (____) to indicate a space in the name
-ASM_NETNAME = public                                                                                                  # Currently not used
-ASM_LOGIN = cbuser                                                                                                    # The username that logins on the VMs
+# Azure Service Manager (AS) requires the following parameters (via LibCloud)
+[USER-DEFINED : CLOUDOPTION_MYAS ]
+AS_CREDENTIALS = arbitrarytag1:subscription_id1+certificate_path1,arbitrarytag2:subscription_id2+certificate_path2   # The subscription id is obtained from the Azure portal. The certificate is generated locally and uploaded through the portal,
+AS_INITIAL_VMCS = Central____US:sut                                                                                  # Use four consecutives underscores (____) to indicate a space in the name
+AS_NETNAME = public                                                                                                  # Currently not used
+AS_LOGIN = cbuser                                                                                                    # The username that logins on the VMs
 #-------------------------------------------------------------------------------
-
+# Openstack (OS) requires the following parameters (via LibCloud)
+[USER-DEFINED : CLOUDOPTION_MYOS ]
+OS_CREDENTIALS = arbitrarytag1:file1,arbitrarytag1:file2                                                             # File referes to the "rc" file used to connect to the cloud
+OS_INITIAL_VMCS = RegionOne:sut                                                                                      # This value will be overriden by whatever is defined on the "rc" file (i.e., make sure that they do match)
+OS_NETNAME = private                                                                                                 # Make sure that this network exists first
+OS_LOGIN = cbuser                                                                                                    # The username that logins on the VMs
+#-------------------------------------------------------------------------------
 
 [OBJECTSTORE]
 USAGE = shared

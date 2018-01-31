@@ -43,6 +43,9 @@ class LibcloudCmds(CommonCloudFunctions) :
     services = False
     sizes = False
     images = False
+    networks = False
+    security_groups = False
+    floating_ip_pools = False
     keys = {}
 
     '''
@@ -99,6 +102,14 @@ class LibcloudCmds(CommonCloudFunctions) :
             Use the Regions as listed by your cloud.
     @use_services: (Optional, Default False)
             Use the Services as listed by your cloud.
+    @use_networks: (Optional, Default False)
+            Use the Networks (in case of multi-network clouds) as listed by your cloud.
+    @use_security_groups: (Optional, Default False)
+            Use the Security Groups as listed by your cloud.
+    @use_floating_ips: (Optional, Default False)
+            Use the Floating IPs as listed by your cloud.
+    @use_public_ips: (Optional, Default True)
+            Does your cloud provide public/private IP pair
     @use_get_image: (Optional, Default True)
             Should be set to false only if the get_image() method is not implemented for the libcloud backend.  
     @verify_ssl: (Optional, Default True)
@@ -112,13 +123,14 @@ class LibcloudCmds(CommonCloudFunctions) :
     @trace
     def __init__ (self, pid, osci, expid = None, provider = "OverrideMe", \
                   num_credentials = 2, use_ssh_keys = False, use_volumes = False, \
-                  use_locations = True, use_services = False, use_sizes = True, \
-                  use_get_image = True, tldomain = False, verify_ssl = True, extra = {}) :
+                  use_locations = True, use_services = False, use_networks = False, \
+                  use_security_groups = False, use_floating_ips = False, \
+                  use_public_ips = True, use_sizes = True, use_get_image = True, \
+                  tldomain = False, verify_ssl = True, extra = {}) :
         '''
         TBD
         '''
         CommonCloudFunctions.__init__(self, pid, osci, expid)
-        self.access_url = False
         self.ft_supported = False
         self.current_token = 0
         self.cache_mutex = threading.Lock()
@@ -129,6 +141,10 @@ class LibcloudCmds(CommonCloudFunctions) :
         self.use_volumes = use_volumes
         self.use_locations = use_locations
         self.use_services = use_services
+        self.use_networks = use_networks
+        self.use_security_groups = use_security_groups
+        self.use_floating_ips = use_floating_ips
+        self.use_public_ips = use_public_ips        
         self.use_sizes = use_sizes
         self.use_get_image = use_get_image
         self.tldomain = tldomain
@@ -136,6 +152,7 @@ class LibcloudCmds(CommonCloudFunctions) :
         self.additional_rc_contents = ''        
         self.vmcreate_kwargs = {}
         self.vmlist_args = []
+        self.connauth_pamap = {}
         self.access = False
 
         libcloud.security.VERIFY_SSL_CERT = verify_ssl
@@ -150,12 +167,16 @@ class LibcloudCmds(CommonCloudFunctions) :
     @trace
     def connect(self, credentials_list, obj_attr_list = False) :
         
-        if not self.access and obj_attr_list and "access" in obj_attr_list :
-            self.access = obj_attr_list["access"]
+#        if not self.access and obj_attr_list and "access" in obj_attr_list :
+#            self.access = obj_attr_list["access"]
 
         credentials = credentials_list.split(":")
         if len(credentials) != (self.num_credentials + 1) :
-            raise CldOpsException(self.get_description() + " needs at least " + str(self.num_credentials) + " credentials, including an arbitrary tag representing the tenant. Refer to the templates for examples.", 8499)
+            _status = 8499
+            _fmsg = self.get_description() + " needs at least " 
+            _fmsg += str(self.num_credentials) + " credentials, including an "
+            _fmsg += "arbitrary tag representing the tenant. Refer to the templates for examples."
+            raise CldOpsException(_fmsg, _status)
 
         tenant = credentials[0]
 
@@ -209,6 +230,21 @@ class LibcloudCmds(CommonCloudFunctions) :
                 if not LibcloudCmds.services :
                     cbdebug(" Caching " + self.get_description()  + " Services...", True)
                     LibcloudCmds.services = LibcloudCmds.catalogs.cbtool[credentials_list].ex_list_cloud_services()
+
+            if self.use_networks :
+                if not LibcloudCmds.networks :
+                    cbdebug(" Caching " + self.get_description()  + " Networks...", True)
+                    LibcloudCmds.networks = LibcloudCmds.catalogs.cbtool[credentials_list].ex_list_networks()
+
+            if self.use_security_groups :
+                if not LibcloudCmds.security_groups :
+                    cbdebug(" Caching " + self.get_description()  + " Security Groups...", True)
+                    LibcloudCmds.security_groups = LibcloudCmds.catalogs.cbtool[credentials_list].ex_list_security_groups()
+
+            if self.use_floating_ips :
+                if not LibcloudCmds.floating_ip_pools :
+                    cbdebug(" Caching " + self.get_description()  + " Floating IP pools...", True)
+                    LibcloudCmds.floating_ip_pools = LibcloudCmds.catalogs.cbtool[credentials_list].ex_list_floating_ip_pools()
 
             cbdebug("Done caching.")
 
@@ -286,11 +322,29 @@ class LibcloudCmds(CommonCloudFunctions) :
         '''
         TBD
         '''
-        _prov_netname = vm_defaults["netname"]
-        _run_netname = vm_defaults["netname"]
+        if "prov_netname" in vm_defaults :
+            _prov_netname = vm_defaults["prov_netname"]
+        else :            
+            _prov_netname = vm_defaults["netname"]
+            
+        if "run_netname" in vm_defaults :
+            _prov_netname = vm_defaults["run_netname"]
+        else :            
+            _run_netname = vm_defaults["netname"]
 
-        _prov_netname_found = True
-        _run_netname_found = True
+        _prov_netname_found = False
+        _run_netname_found = False
+
+        if LibcloudCmds.networks :
+            for _network in LibcloudCmds.networks :
+                if _network.name == _prov_netname :
+                    _prov_netname_found = True
+                    
+                if _network.name == _run_netname :
+                    _run_netname_found = True                    
+        else :
+            _prov_netname_found = True
+            _run_netname_found = True
             
         return _prov_netname_found, _run_netname_found
 
@@ -556,8 +610,12 @@ class LibcloudCmds(CommonCloudFunctions) :
         '''
 
         _registered_key_pair_objects = {}
-        for _key_pair in connection.list_key_pairs() :
-            registered_key_pairs[_key_pair.name] = str(_key_pair.fingerprint) + '-' + str(_key_pair.extra["id"])
+        for _key_pair in connection.list_key_pairs() :                        
+            registered_key_pairs[_key_pair.name] = str(_key_pair.fingerprint) + '-' 
+            if "id" in _key_pair.extra :
+                registered_key_pairs[_key_pair.name] += str(_key_pair.extra["id"])
+            else :
+                registered_key_pairs[_key_pair.name] += "NA"                
             _registered_key_pair_objects[_key_pair.name] = _key_pair
             #connection.delete_key_pair(_registered_key_pair_objects[key_name])
             
@@ -572,8 +630,12 @@ class LibcloudCmds(CommonCloudFunctions) :
             _status = 100
             node = self.get_instances(obj_attr_list)
 
-            if len(node.private_ips) > 0 and obj_attr_list["run_netname"].lower() == "private" :
-                obj_attr_list["run_cloud_ip"] = node.private_ips[0]
+            if len(node.private_ips) > 0 : 
+                if obj_attr_list["run_netname"].lower() == "private" :
+                    obj_attr_list["run_cloud_ip"] = node.private_ips[0]
+                
+                if not self.use_public_ips :
+                    obj_attr_list["run_cloud_ip"] = node.private_ips[0]                    
             else :
                 if len(node.public_ips) > 0 :
                     obj_attr_list["run_cloud_ip"] = node.public_ips[0]
@@ -593,8 +655,21 @@ class LibcloudCmds(CommonCloudFunctions) :
             _msg += " Private IP = " + str(node.private_ips)
             cbdebug(_msg)
 
-            if len(node.private_ips) > 0 and obj_attr_list["prov_netname"].lower() == "private" :
-                obj_attr_list["prov_cloud_ip"] = node.private_ips[0]
+            if len(node.private_ips) > 0 :
+                if obj_attr_list["prov_netname"].lower() == "private" :
+                    obj_attr_list["prov_cloud_ip"] = node.private_ips[0]
+                else :
+                    obj_attr_list["prov_cloud_ip"] = node.public_ips[0]
+                                            
+                if not self.use_public_ips :
+                    if obj_attr_list["use_floating_ip"].lower() == "true" :
+                        obj_attr_list["prov_cloud_ip"] = node.public_ips[0]
+                    else :
+                        obj_attr_list["prov_cloud_ip"] = node.private_ips[0]
+                else :
+                    if obj_attr_list["prov_netname"].lower() == "private" :                    
+                        obj_attr_list["prov_cloud_ip"] = node.private_ips[0]
+                        
             else :
                 obj_attr_list["prov_cloud_ip"] = node.public_ips[0]
 
@@ -690,29 +765,6 @@ class LibcloudCmds(CommonCloudFunctions) :
             else :
                 return _candidate_images
 
-    @trace
-    def get_networks(self, obj_attr_list) :
-        '''
-        TBD
-        '''
-        try :
-            _status = 100
-            _fmsg = "An error has occurred, but no error message was captured"
-
-            _status = 0
-
-        except Exception, e :
-            _status = 23
-            _fmsg = str(e)
-            
-        finally :
-            if _status :
-                _msg = "Network (" +  obj_attr_list["prov_netname"] + " ) not found: " + _fmsg
-                cberr(_msg, True)
-                raise CldOpsException(_msg, _status)
-            else :
-                return True
-
     @trace            
     def create_ssh_key(self, key_name, key_type, key_contents, key_fingerprint, vm_defaults, connection) :
         '''
@@ -804,19 +856,17 @@ class LibcloudCmds(CommonCloudFunctions) :
 
                 if self.use_volumes :
                     
-                    _mark1 = int(time())
-    
+                    _mark_a = int(time())    
                     _volume = connection.create_volume(int(obj_attr_list["cloud_vv"]),
                                                       obj_attr_list["cloud_vv_name"],
                                                       location = [x for x in LibcloudCmds.locations if x.id == obj_attr_list["region"]][0])
+                    self.annotate_time_breakdown(obj_attr_list, "create_volume_time", _mark_a)
     
                     sleep(int(obj_attr_list["update_frequency"]))
     
                     obj_attr_list["cloud_vv_uuid"] = _volume.id
                     obj_attr_list["cloud_vv_instance"] = _volume
     
-                    _mark2 = int(time())
-                    obj_attr_list["do_015_create_volume_time"] = _mark2 - _mark1
 
                 else :
                     obj_attr_list["cloud_vv_uuid"] = "NOT SUPPORTED"
@@ -910,15 +960,19 @@ class LibcloudCmds(CommonCloudFunctions) :
             obj_attr_list["credential"] = _credentials_list.split(":")[1]
             obj_attr_list["credentials_list"] = _credentials_list
 
+            _mark_a = time()
             self.connect(_credentials_list, obj_attr_list)
-            
+            self.annotate_time_breakdown(obj_attr_list, "authenticate_time", _mark_a)
+
+            _mark_a = time()           
             if self.is_vm_running(obj_attr_list) :
                 _msg = "An instance named \"" + obj_attr_list["cloud_vm_name"]
                 _msg += "\" is already running. It needs to be destroyed first."
                 _status = 187
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
-
+            self.annotate_time_breakdown(obj_attr_list, "check_existing_instance_time", _mark_a)
+            
             _time_mark_prs = int(time())
             obj_attr_list["mgt_002_provisioning_request_sent"] = _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
 
@@ -927,8 +981,9 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             obj_attr_list["last_known_state"] = "about to send create request"
 
-            _image = self.get_images(obj_attr_list)
-            self.get_networks(obj_attr_list)
+            _mark_a = time()
+            obj_attr_list["libcloud_image_inst"] = self.get_images(obj_attr_list)
+            self.annotate_time_breakdown(obj_attr_list, "get_imageid_time", _mark_a)
 
             obj_attr_list["config_drive"] = False
 
@@ -938,59 +993,75 @@ class LibcloudCmds(CommonCloudFunctions) :
                 obj_attr_list["userdata"] = self.populate_cloudconfig(obj_attr_list)
                 obj_attr_list["config_drive"] = True
             else :
-                obj_attr_list["config_drive"] = None
+                obj_attr_list["config_drive"] = False
                 obj_attr_list["userdata"] = None
                 
             self.common_messages("VM", obj_attr_list, "creating", 0, '')
 
             extra = deepcopy(self.extra)
 
-            keys = []
-
-            if self.use_ssh_keys :
-    
-                tmp_keys = obj_attr_list["key_name"].split(",")
-                for dontcare in range(0, 2) :
-                    for tmp_key in tmp_keys :
-                        for key in LibcloudCmds.keys[_credentials_list] :
-                            if tmp_key in [key.name, key.extra["id"]] and key.extra["id"] not in keys and key.name not in keys :
-                                keys.append(key.extra["id"])
-    
-                    if len(keys) >= len(tmp_keys) :
-                        break
-    
-                    cbdebug("Only found " + str(len(keys)) + " keys. Refreshing key list...", True)
-                    LibcloudCmds.keys[_credentials_list] = LibcloudCmds.catalogs.cbtool[_credentials_list].list_key_pairs()
-
-                if len(keys) != len(tmp_keys) :
-                    raise CldOpsException("Not all SSH keys exist. Check your configuration: " + obj_attr_list["key_name"], _status, True)
-
             _location = self.get_region_from_vmc_name(obj_attr_list)
             
             extra.update(self.pre_vmcreate(obj_attr_list, extra))
 
+            obj_attr_list["libcloud_size_inst"] = False
+                        
             if self.use_sizes :
-                _size = [x for x in LibcloudCmds.sizes if x.id == _requested_size][0]
-            else :
-                _size = False
+                _mark_a = time()
+                for _sz in LibcloudCmds.sizes :
+                    if _sz.id == _requested_size :
+                        obj_attr_list["libcloud_size_inst"] = _sz
+                        break
 
-            self.get_cloud_specific_parameters(obj_attr_list, keys, extra)
+                    if _sz.name == _requested_size :
+                        obj_attr_list["libcloud_size_inst"] = _sz
+                        break
+                self.annotate_time_breakdown(obj_attr_list, "get_size_time", _mark_a)
 
-            _reservation = LibcloudCmds.catalogs.cbtool[_credentials_list].create_node(
-                obj_attr_list["cloud_vm_name"],
-                _size,
-                _image,
-                _location,
-                **self.vmcreate_kwargs
-                )
+            _fip = None            
+            if self.use_floating_ips :
+                obj_attr_list["cloud_floating_ip_uuid"] = "NA"
+                obj_attr_list["cloud_floating_ip"] = "NA"
+                if obj_attr_list["use_floating_ip"].lower() == "true" :
+                    
+                    for _floating_pool in LibcloudCmds.floating_ip_pools :
+                        if _floating_pool.name == obj_attr_list["floating_pool"] :
+                            break
+                    
+                    _mark_a = time()
+                    _fip = LibcloudCmds.catalogs.cbtool[_credentials_list].ex_create_floating_ip(ip_pool = _floating_pool.name)
+                    self.annotate_time_breakdown(obj_attr_list, "create_fip_time", _mark_a)                    
+                    obj_attr_list["cloud_floating_ip_uuid"] = _fip.id
+                    obj_attr_list["cloud_floating_ip"] = _fip.ip_address
 
-            if "image" in obj_attr_list :
-                del obj_attr_list["image"]
+            self.get_cloud_specific_parameters(obj_attr_list, extra, _credentials_list, _status)
+
+            _mark_a = time()            
+            if obj_attr_list["libcloud_call_type"] == 1 :
+                _reservation = LibcloudCmds.catalogs.cbtool[_credentials_list].create_node(
+                    obj_attr_list["cloud_vm_name"],
+                    obj_attr_list["libcloud_size_inst"],
+                    obj_attr_list["libcloud_image_inst"],
+                    _location,
+                    **self.vmcreate_kwargs
+                    )
+
+            if obj_attr_list["libcloud_call_type"] == 2 :
+                _reservation = LibcloudCmds.catalogs.cbtool[_credentials_list].create_node(
+                    **self.vmcreate_kwargs
+                    )
+
+            if "libcloud_image_inst" in obj_attr_list :
+                del obj_attr_list["libcloud_image_inst"]
+
+            if "libcloud_size_inst" in obj_attr_list :
+                del obj_attr_list["libcloud_size_inst"]
 
             obj_attr_list["last_known_state"] = "sent create request"
 
             if _reservation :
-                
+                self.annotate_time_breakdown(obj_attr_list, "instance_creation_time", _mark_a)
+                                
                 cbdebug(" Reservation ID for " + obj_attr_list["log_string"] + " is: " + str(_reservation.id), True)
                 obj_attr_list["last_known_state"] = "vm created"
                 sleep(int(obj_attr_list["update_frequency"]))
@@ -999,14 +1070,22 @@ class LibcloudCmds(CommonCloudFunctions) :
 
                 self.take_action_if_requested("VM", obj_attr_list, "provision_started")
 
+                if _fip :
+                    _mark_a = time()
+                    _fip = LibcloudCmds.catalogs.cbtool[_credentials_list].ex_attach_floating_ip_to_node(self.get_instances(obj_attr_list), obj_attr_list["cloud_floating_ip"])
+                    self.annotate_time_breakdown(obj_attr_list, "attach_fip_time", _mark_a)    
+                                        
                 _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
 
                 if obj_attr_list["cloud_vv_instance"] :
 
+                    _mark_a = time()
                     if not obj_attr_list["cloud_vv_instance"].attach(_reservation) :
                         _fmsg = "Volume attach failed. Aborting VM creation..."
                         obj_attr_list["cloud_vv_instance"].destroy()
                         raise CldOpsException(_fmsg, _status)
+                    else :
+                        self.annotate_time_breakdown(obj_attr_list, "attach_volume_time", _mark_a)
 
                 self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
 
@@ -1039,6 +1118,12 @@ class LibcloudCmds(CommonCloudFunctions) :
             cbwarn("Error reaching " + self.get_description() + ":" + _fmsg)
 
         finally :
+            if "mgt_003_provisioning_request_completed" in obj_attr_list :
+                self.annotate_time_breakdown(obj_attr_list, "instance_active_time", obj_attr_list["mgt_003_provisioning_request_completed"], False)
+            
+            if "mgt_004_network_acessible" in obj_attr_list :
+                self.annotate_time_breakdown(obj_attr_list, "instance_reachable_time", obj_attr_list["mgt_004_network_acessible"], False)            
+            
             if not _status :
                 if "instance_obj" in obj_attr_list :
                     del obj_attr_list["instance_obj"]
@@ -1142,6 +1227,11 @@ class LibcloudCmds(CommonCloudFunctions) :
             _status, _fmsg = self.vvdestroy(obj_attr_list, LibcloudCmds.catalogs.cbtool[_credentials_list])
 
             obj_attr_list["last_known_state"] = "vm destoyed"
+
+            if self.use_floating_ips :
+                if obj_attr_list["cloud_floating_ip"] != "NA" :
+                    LibcloudCmds.catalogs.cbtool[_credentials_list].ex_delete_floating_ip(LibcloudCmds.catalogs.cbtool[_credentials_list].ex_get_floating_ip(obj_attr_list["cloud_floating_ip"]))
+                    
             self.take_action_if_requested("VM", obj_attr_list, "deprovision_finished")
 
         except CldOpsException, obj :
@@ -1240,6 +1330,9 @@ class LibcloudCmds(CommonCloudFunctions) :
             return _status, _msg
 
     def vmrunstate_do(self, instance, credentials_list, obj_attr_list) :
+        '''
+        TBD
+        '''
         _ts = obj_attr_list["target_state"]
         _cs = obj_attr_list["current_state"]
 
@@ -1254,6 +1347,9 @@ class LibcloudCmds(CommonCloudFunctions) :
                 LibcloudCmds.catalogs.cbtool[credentials_list].ex_power_on_node(instance)
 
     def vmrunstate(self, obj_attr_list) :
+        '''
+        TBD
+        '''
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
         try :

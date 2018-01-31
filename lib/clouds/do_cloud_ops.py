@@ -15,9 +15,15 @@
     DigitalOcean Object Operations Library
     @author: Michael R. Hines, Darrin Eden
 '''
+
+from time import time
+
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import is_number
 from libcloud_common import LibcloudCmds
+
+from shared_functions import CldOpsException
+
 
 class DoCmds(LibcloudCmds) :
     @trace
@@ -81,18 +87,38 @@ class DoCmds(LibcloudCmds) :
         return False
     
     @trace
-    def get_cloud_specific_parameters(self, obj_attr_list, keys, extra) :
+    def get_cloud_specific_parameters(self, obj_attr_list, extra, credentials_list, status) :
         '''
         TBD
         '''
-        if len(keys) :
-            extra["ssh_keys"] = keys
+        _mark_a = time()
+        keys = []
+
+        tmp_keys = obj_attr_list["key_name"].split(",")
+        for dontcare in range(0, 2) :
+            for tmp_key in tmp_keys :
+                for key in LibcloudCmds.keys[credentials_list] :
+                    if tmp_key in [key.name, key.extra["id"]] and key.extra["id"] not in keys and key.name not in keys :
+                        keys.append(key.extra["id"])
+
+            if len(keys) >= len(tmp_keys) :
+                break
+
+            cbdebug("Only found " + str(len(keys)) + " keys. Refreshing key list...", True)
+            LibcloudCmds.keys[credentials_list] = LibcloudCmds.catalogs.cbtool[credentials_list].list_key_pairs()
+
+        if len(keys) != len(tmp_keys) :
+            raise CldOpsException("Not all SSH keys exist. Check your configuration: " + obj_attr_list["key_name"], status, True)
+        self.annotate_time_breakdown(obj_attr_list, "get_sshkey_time", _mark_a)
+                
+        extra["ssh_keys"] = keys
         
         if obj_attr_list["netname"] == "private" :
             extra["private_networking"] = True
 
-        self.vmcreate_kwargs["ex_create_attr"] = extra
-        
+        obj_attr_list["libcloud_call_type"] = 1
+
+        self.vmcreate_kwargs["ex_create_attr"] = extra        
         self.vmcreate_kwargs["ex_user_data"] = obj_attr_list["userdata"]
 
         return True

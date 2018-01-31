@@ -1,0 +1,102 @@
+[USER-DEFINED]
+# We have a lot of servers, but sometimes VM requests take time.
+MAIN_UPDATE_ATTEMPTS = 180
+DO_ACCESS = https://api.digitalocean.com/v2/
+DO_CREDENTIALS = need_to_be_configured_by_user
+DO_LOGIN = need_to_be_configured_by_user
+DO_SSH_KEY_NAME = need_to_be_configured_by_user
+DO_INITIAL_VMCS = need_to_be_configured_by_user
+DO_KEY_NAME = need_to_be_configured_by_user
+DO_NETNAME = private
+
+# PEBCAK documentation for the Wizard and CLI
+DO_INITIAL_VMCS_DOC = There are more than 10 DigitalOcean regions to choose from @ https://developers.digitalocean.com
+DO_INITIAL_VMCS_DEFAULT = tor1:sut
+DO_INITIAL_VMCS = tor1:sut  # VMC == DO data center (we don't have availability zones yet)
+
+DO_CREDENTIALS_DOC = Comma-separated list of account API Bearer tokens to use. This field should be in the form of tag1:bearer_token1,tag2:bearer_token2,... where the tag is an arbitrary name chosen by you to identify which account the bearer token came from. CloudBench will round-robin distribute VMs and Applications amongst all the accounts.
+DO_CREDENTIALS_DEFAULT = tag1:some_hex_token
+
+DO_KEY_NAME_DOC = Comma-separated list of SSH key names or IDs used in your account.
+DO_KEY_NAME_DEFAULT = foo,bar
+DO_LOGIN_DOC = username to which your ssh key corresponds
+DO_LOGIN_DEFAULT = root
+
+DO_SSH_KEY_NAME_DOC = Name of the ssh key from digitalocean.com
+DO_SSH_KEY_NAME_DEFAULT = cbtool_rsa
+
+DO_NETNAME_DOC = Use the public or private network for benchmark traffic. For more complex networks, refer to the documentation.
+DO_NETNAME_DEFAULT = private
+
+[SPACE : DO_CLOUDCONFIG ]
+SSH_KEY_NAME = $DO_SSH_KEY_NAME
+
+[VM_DEFAULTS : DO_CLOUDCONFIG ]
+CREDENTIALS = $DO_CREDENTIALS
+SSH_KEY_NAME = $DO_SSH_KEY_NAME
+KEY_NAME = $DO_KEY_NAME
+LOGIN = $DO_LOGIN
+NETNAME = $DO_NETNAME
+CAPTURE_SUPPORTED = $True
+RUNSTATE_SUPPORTED = $True
+RESIZE_SUPPORTED = $False
+CLONE_TIMEOUT = 600
+CHECK_BOOT_STARTED = poll_cloud30
+CHECK_BOOT_COMPLETE = tcp_on_22
+SECURITY_GROUPS = not_yet_applicable
+HOSTNAME_KEY = cloud_vm_name
+SIZE = from_vm_template
+LEAVE_INSTANCE_ON_FAILURE = $False
+FORCE_FAILURE = $False
+DISABLE_TIMESYNC = $False
+IMAGE_PREFIX = $EMPTY
+IMAGE_SUFFIX = $EMPTY
+
+# We're not as big as amazon yet. Go easy on us please.
+[AI_DEFAULTS : DO_CLOUDCONFIG ]
+ATTACH_PARALLELISM = 1
+CAPTURE_SUPPORTED = $True
+RUNSTATE_SUPPORTED = $True
+RESIZE_SUPPORTED = $True
+LOGIN = $DO_LOGIN
+SSH_KEY_NAME = $DO_SSH_KEY_NAME
+CREDENTIALS = $DO_CREDENTIALS
+DONT_START_QEMU_SCRAPER = $True
+
+# We're not as big as amazon yet. Go easy on us please.
+[AIDRS_DEFAULTS : DO_CLOUDCONFIG ]
+DAEMON_PARALLELISM = 1
+
+[MON_DEFAULTS : DO_CLOUDCONFIG ]
+COLLECT_FROM_GUEST = $False
+
+[VMC_DEFAULTS : DO_CLOUDCONFIG ]
+CREDENTIALS = $DO_CREDENTIALS
+INITIAL_VMCS = $DO_INITIAL_VMCS
+KEY_NAME = $DO_KEY_NAME
+SSH_KEY_NAME = $DO_SSH_KEY_NAME
+ACCESS = $DO_ACCESS
+SECURITY_GROUPS = not_yet_applicable
+
+[AI_TEMPLATES : HADOOP ]
+HADOOP_HOME = /usr/local/hadoop
+
+# DigitalOcean has made public images available for the following 3 workloads:
+[VM_TEMPLATES : DO_CLOUDCONFIG ]
+# imageid can be either the actual ID number or more easily the name in the case of a private account
+# These are public DigitalOcean images accessible by anyone with a valid DigitalOcean account.
+CASSANDRA = size:4gb, imageids:1, imageid1:cloudbench-ycsb-cassandra-on-1604.060117-1, cloudinit_packages:openvpn
+CHECK = size:512mb, imageids:1, imageid1:to_replace, cloudinit_packages:openvpn;redis-tools
+HADOOPMASTER = size:4gb, imageids:1, imageid1:cloudbench-hibench-hadoop-on-1604.060117-1, cloudinit_packages:openvpn
+HADOOPSLAVE = size:4gb, imageids:1, imageid1:cloudbench-hibench-hadoop-on-1604.060117-1, cloudinit_packages:openvpn
+NETCLIENT = size:512mb, imageids:1, imageid1:cloudbench-nullworkload-on-1604.060117-1, cloudinit_packages:netperf;openvpn
+NETSERVER = size:512mb, imageids:1, imageid1:cloudbench-nullworkload-on-1604.060117-1, cloudinit_packages:netperf;openvpn
+SEED = size:4gb, imageids:1, imageid1:cloudbench-ycsb-cassandra-on-1604.060117-1, cloudinit_packages:openvpn
+TINYVM = size:512mb, imageids:1, imageid1:cloudbench-nullworkload-on-1604.060117-1, cloudinit_packages:openvpn;netperf
+UNIXBENCH = size:512mb,imageids:1,imageid1:cloudbench-nullworkload-on-1604.060117-1,cloudinit_packages:openvpn
+YATINYVM = size:512mb, imageids:1, imageid1:cloudbench-nullworkload-on-1604.060117-1, cloudinit_packages:openvpn
+YCSB = size:4gb, imageids:1, imageid1:cloudbench-ycsb-cassandra-on-1604.060117-1, cloudinit_packages:openvpn
+
+
+# Other images can be made on an as-needed basis or by creating your own
+# in your own private account
