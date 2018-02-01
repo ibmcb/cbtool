@@ -190,7 +190,9 @@ def docker_file_parser(depsdict, username, options, hostname, process_manager = 
                                     _line = _line.replace("sudo REPLACE_RSYNC", "REPLACE_RSYNC")
                                     _line = _line.replace("WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party", "cd 3RPARTYDIR")
                                     _line = _line.replace("# service_stop_disable", "service_stop_disable")
-                                    _line = _line.replace("# echo", "echo")                                                      
+                                    _line = _line.replace("# echo", "echo")
+                                    _line = _line.replace("/home/root", "/root")
+                                    _line = _line.replace("____",' ')
                                     depsdict[_current_key] += _line + "; "
         
                             else :
@@ -420,7 +422,13 @@ def expand_command(cmdline, depsdict, process_manager = False) :
         if _command.count("sudo pip ") :
             if depsdict["indocker"] :
                 _command = _command.replace("sudo pip", "export LC_ALL=C; sudo pip") 
-    
+
+        if _command.count("IF DOCKER") :
+            if depsdict["indocker"] :
+                _command = "/bin/false"            
+            else :
+                _command = _command.replace("IF DOCKER", '') 
+                                
         if _command.count("service_restart_enable") or _command.count("service_stop_disable") :
 
             if not process_manager :
@@ -927,7 +935,7 @@ def dependency_checker_installer(hostname, depsdict, username, operation, option
         _process_manager = ProcessManagement(hostname)
 
         _status, _std_out, _y = _process_manager.run_os_command("sudo cat /proc/1/cgroup | grep -c docker")
-        if str(_std_out) == '0' :
+        if str(_std_out.replace("\n",'')) == '0' :
             depsdict["indocker"] = False            
         else :
             depsdict["indocker"] = True
@@ -1008,7 +1016,7 @@ def dependency_checker_installer(hostname, depsdict, username, operation, option
                     else :
                         cberr(_msg)
             else :
-                cbinfo(_msg)                
+                cbinfo(_msg)
 
         _status = _dep_missing
         _fmsg += ','.join(_missing_dep)

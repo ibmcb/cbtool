@@ -26,7 +26,7 @@ echo "client connected $(date) params: $@" >> $logpath
 (bash -c "sleep 5; redis-cli -h SERVER_BOOTSTRAP -n OSCI_DBID -p OSCI_PORT hset TEST_USER:CLOUD_NAME:VM:PENDING:UUID cloud_init_vpn $VPNIP" &)
 
 # Run cloudbench's cloud-agnostic userdata later. Backwards compatible with VPN_ONLY = False
-(/tmp/userscript.sh &)
+(/tmp/cb_post_boot.sh &)
 
 env | sort >> $logpath
 

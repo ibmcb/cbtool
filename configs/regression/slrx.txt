@@ -2,7 +2,7 @@
 MANAGER_IP = $IP_AUTO
 MAIN_UPDATE_ATTEMPTS = 720
 
-CLOUDOPTION_TESTSLR = cldattach slr, vmcattach all, vmattach check:1373563 auto empty default none empty=empty, stats vm print true, vmdetach youngest, stats vm print true, vmattach check:1373563:root auto empty default none empty=empty, stats vm print true, vmdetach youngest, stats vm print true, vmattach check:1373563 auto empty default none cloud_vv=10, stats vm print true, vmcapture youngest regressiontest, stats vm print true, vmattach check:regressiontest:ubuntu auto empty default none empty=empty, stats vm print true, vmdetach youngest, stats vm print true, imgdelete regressiontest dal05, vmattach check:regressiontest:root auto empty default none empty=empty, stats vm print true, vmattach check:1373563 auto empty default none force_failure=true, stats vm print true
+CLOUDOPTION_TESTSLR = cldattach slr, vmcattach all, vmattach check:1836627 auto empty default none empty=empty, stats vm print true, vmdetach youngest, stats vm print true, vmattach check:1836627:root auto empty default none empty=empty, stats vm print true, vmdetach youngest, stats vm print true, vmattach check:1836627 auto empty default none cloud_vv=10, stats vm print true, vmcapture youngest regressiontest, stats vm print true, vmattach check:regressiontest:ubuntu auto empty default none empty=empty, stats vm print true, vmdetach youngest, stats vm print true, imgdelete regressiontest dal05, vmattach check:regressiontest:root auto empty default none empty=empty, stats vm print true, vmattach check:1836627 auto empty default none force_failure=true, stats vm print true
 STARTUP_CLOUD = TESTSLR
 
 [USER-DEFINED : CLOUDOPTION_TESTSLR]
@@ -30,5 +30,5 @@ PORT = 10000
 STORES_WORKING_DIR = /home/$MAIN_USERNAME/stores
 
 [VM_DEFAULTS : SLR_CLOUDCONFIG]
-RUN_NETNAME = public
+RUN_NETNAME = private
 PROV_NETNAME = public

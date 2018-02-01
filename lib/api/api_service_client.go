@@ -43,15 +43,11 @@ func (api *APIClient) Call(method string, args ...interface{}) (result map[strin
 		return nil, errors.New("Failed to provide CloudBench URL.")
     }
 
-    response, err := xmlrpc.Request(api.Address, method, args...)
+    response := xmlrpc.Request(api.Address, method, args...)
 
-    if err == nil {
-        if response == nil || len(response) == 0 {
-	    return nil, errors.New("Error: empty response")
-       }
-    } else {
-       return nil, err
-    }
+	if response == nil || len(response) == 0 {
+			return nil, errors.New("Error: empty response")
+	}
     j, err := json.Marshal(response[0])
     var f map[string]interface{}
     if err == nil {
@@ -73,7 +69,7 @@ func (api *APIClient) Call(method string, args ...interface{}) (result map[strin
 
 func (api *APIClient) Close() {
 	if api.mongo != nil {
-		defer api.mongo.Close()
+		api.mongo.Close()
 		api.mongo = nil
 	}
 	api.msattrs = nil
