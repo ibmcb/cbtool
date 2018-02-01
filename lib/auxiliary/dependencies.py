@@ -192,7 +192,7 @@ def docker_file_parser(depsdict, username, options, hostname, process_manager = 
                                     _line = _line.replace("# service_stop_disable", "service_stop_disable")
                                     _line = _line.replace("# echo", "echo")
                                     _line = _line.replace("/home/root", "/root")
-                                    _line = _line.repalce("____",' ')
+                                    _line = _line.replace("____",' ')
                                     depsdict[_current_key] += _line + "; "
         
                             else :
