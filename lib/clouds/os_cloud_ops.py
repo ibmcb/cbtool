@@ -181,6 +181,14 @@ class OsCmds(LibcloudCmds) :
 
         return False
 
+    @trace            
+    def create_ssh_key(self, key_name, key_type, key_contents, key_fingerprint, vm_defaults, connection) :
+        '''
+        TBD
+        '''
+        connection.import_key_pair_from_string(key_name, key_type + ' ' + key_contents + " cbtool@orchestrator")        
+        return True
+
     @trace
     def get_region_from_vmc_name(self, obj_attr_list) :
         '''

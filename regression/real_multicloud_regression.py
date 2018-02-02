@@ -224,7 +224,7 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         _meta_tags = "empty"
         _size = "default"
         _pause_step = "none"
-        _nop_cloud_ip = "172.16.0.254"
+        _nop_cloud_ip = "self"
         _temp_attr_list = "empty=empty"
         
         if test_case.count("pubkey") :
@@ -255,6 +255,11 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
             _vm_role = "check:regressiontest:" + _login
 
         if cloud_model == "nop" :
+            if _nop_cloud_ip == "self" :
+                _command = "sudo ifconfig docker0 | grep \"inet addr\" | cut -d ':' -f 2 | cut -d ' ' -f 1"
+                _proc_h = subprocess.Popen(_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                _resul = _proc_h.communicate()
+                _nop_cloud_ip = _resul[0].replace('\n','')
             _temp_attr_list += ",cloud_ip=" + _nop_cloud_ip
 
         _vms_failed = int(apiconn.stats(cloud_name, "all", "noprint", "true")["experiment_counters"]["VM"]["failed"])

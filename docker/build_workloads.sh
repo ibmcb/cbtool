@@ -2,21 +2,6 @@
 
 source ./build_common.sh
 
-CB_REPO=NONE
-CB_RSYNC=$(sudo ifconfig docker0 | grep "inet addr" | cut -d ':' -f 2 | cut -d ' ' -f 1):10000/$(whoami)_cb
-CB_WKS="ALL"
-CB_UBUNTU_BASE=ubuntu:16.04
-CB_PHUSION_BASE=phusion/baseimage:latest
-CB_CENTOS_BASE=centos:latest
-CB_VERB="-q"
-CB_PUSH="nopush"
-CB_ARCH=$(uname -a | awk '{ print $12 }')
-
-CB_PALL=0
-CB_USERNAME="cbuser"
-CB_BRANCH="master"
-CB_USAGE="Usage: build_all.sh -r <repository> [-u Ubuntu base image] [-p Phusion base image] [-c Centos base image] [-w Workload] [-l CB Username/login] [-b branch] [--verbose] [--push] [--psall]"
-
 while [[ $# -gt 0 ]]
 do
     key="$1"

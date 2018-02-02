@@ -202,11 +202,15 @@ class PdmCmds(CommonCloudFunctions) :
 
             self.common_messages("IMG", { "name": vmc_name, "endpoint" : _endpoint }, "checking", 0, '')
 
-            _msg = "Attempting to pull images from \"" 
-            _msg += vm_defaults["image_prefix"].split('/')[0] + "\" repository"
-            _msg += " (may take several minutes on the first execution)..."
-            cbdebug(_msg, True)
-            
+            _registered_image_list = self.dockconn[_endpoint].images()
+
+            _registered_image_tags = []
+            for _image in _registered_image_list :
+                if _image["RepoTags"] :
+                    _image_tag = _image["RepoTags"][0].split(':')[0]
+                    if _image_tag not in _registered_image_tags :
+                        _registered_image_tags.append(_image_tag)
+
             for _vm_role in vm_templates.keys() :            
                 _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
                 if self.is_cloud_image_uuid(_imageid) :
@@ -215,8 +219,10 @@ class PdmCmds(CommonCloudFunctions) :
 
                 if not self.is_cloud_image_uuid(_imageid) :
                     try :
-                        True
-                        self.dockconn[_endpoint].pull(_imageid)
+                        if _imageid not in _registered_image_tags :
+                            _msg = "    Pulling docker image \"" + _imageid + "\"..."
+                            cbdebug(_msg, True)
+                            self.dockconn[_endpoint].pull(_imageid)
                     except :
                         pass
                 
@@ -226,7 +232,7 @@ class PdmCmds(CommonCloudFunctions) :
             for _registered_image in _registered_image_list :
                 _registered_imageid_list.append(_registered_image["Id"].split(':')[1])
                 if _registered_image["RepoTags"] :
-                    _map_name_to_id[_registered_image["RepoTags"][0].replace(":latest",'')] = _registered_image["Id"].split(':')[1]
+                    _map_name_to_id[_registered_image["RepoTags"][0].split(':')[0]] = _registered_image["Id"].split(':')[1]
                 
             for _vm_role in vm_templates.keys() :      
                 _imageid = str2dic(vm_templates[_vm_role])["imageid1"]

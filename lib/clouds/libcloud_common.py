@@ -764,14 +764,6 @@ class LibcloudCmds(CommonCloudFunctions) :
                     return False
             else :
                 return _candidate_images
-
-    @trace            
-    def create_ssh_key(self, key_name, key_type, key_contents, key_fingerprint, vm_defaults, connection) :
-        '''
-        TBD
-        '''
-        connection.create_key_pair(key_name, key_type + ' ' + key_contents + " cbtool@orchestrator")        
-        return True
     
     @trace
     def is_vm_running(self, obj_attr_list):

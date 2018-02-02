@@ -35,12 +35,8 @@ import iso8601
 import requests.packages.urllib3
 requests.packages.urllib3.disable_warnings()
 
-try :
-    from keystoneauth1.identity import v3
-    from keystoneauth1 import session
-    _use_keystone_session = True    
-except: 
-    _use_keystone_session = False
+from keystoneauth1.identity import v3
+from keystoneauth1 import session
 
 from novaclient import client as novac
 from novaclient import exceptions as novaexceptions

@@ -27,7 +27,7 @@ RUN /bin/true; cd /home/REPLACE_USERNAME; svn co http://svn.apache.org/repos/asf
 # daytrader-install-man
 
 # geronimo-install-man
-RUN wget -N -q -P /home/REPLACE_USERNAME http://apache.mirrors.hoobly.com/geronimo/3.0.1/geronimo-tomcat7-javaee6-3.0.1-bin.tar.gz; cd /home/REPLACE_USERNAME; tar -xzf geronimo-tomcat7-javaee6-3.0.1-bin.tar.gz
+RUN wget -N -q -P /home/REPLACE_USERNAME https://fossies.org/linux/www/geronimo-tomcat7-javaee6-3.0.1-bin.tar.gz; cd /home/REPLACE_USERNAME; tar -xzf geronimo-tomcat7-javaee6-3.0.1-bin.tar.gz
 # geronimo-install-man
 
 # geronimo-jdbc-install-man
