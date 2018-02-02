@@ -659,17 +659,21 @@ class LibcloudCmds(CommonCloudFunctions) :
                 if obj_attr_list["prov_netname"].lower() == "private" :
                     obj_attr_list["prov_cloud_ip"] = node.private_ips[0]
                 else :
-                    obj_attr_list["prov_cloud_ip"] = node.public_ips[0]
+                    if len(node.public_ips) > 0 :
+                        obj_attr_list["prov_cloud_ip"] = node.public_ips[0]
                                             
                 if not self.use_public_ips :
                     if obj_attr_list["use_floating_ip"].lower() == "true" :
-                        obj_attr_list["prov_cloud_ip"] = node.public_ips[0]
+                        if len(node.public_ips) > 0 :
+                            obj_attr_list["prov_cloud_ip"] = node.public_ips[0]
                     else :
-                        obj_attr_list["prov_cloud_ip"] = node.private_ips[0]
+                        if len(node.private_ips) > 0 :
+                            obj_attr_list["prov_cloud_ip"] = node.private_ips[0]
                 else :
-                    if obj_attr_list["prov_netname"].lower() == "private" :                    
-                        obj_attr_list["prov_cloud_ip"] = node.private_ips[0]
-                        
+                    if obj_attr_list["prov_netname"].lower() == "private" : 
+                        if len(node.private_ips) > 0 :
+                            obj_attr_list["prov_cloud_ip"] = node.private_ips[0]
+
             else :
                 if len(node.public_ips) > 0 :
                     obj_attr_list["prov_cloud_ip"] = node.public_ips[0]
