@@ -208,7 +208,7 @@ class OsCmds(LibcloudCmds) :
         TBD
         '''
         _mark_a = time()        
-        _keyname = False
+        keyname = False
         
         for dontcare in range(0, 2) :
             for key in LibcloudCmds.keys[credentials_list] :
