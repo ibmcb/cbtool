@@ -156,7 +156,9 @@ class OsCmds(LibcloudCmds) :
         '''
         TBD
         '''
-                        
+        if "OS_TENANT_NAME" in self.connauth_pamap :
+            vm_defaults["tenant_from_rc"] = self.connauth_pamap["OS_TENANT_NAME"]
+
         vm_defaults["access"] = self.access
 
         vmc_defaults["access"] = self.access

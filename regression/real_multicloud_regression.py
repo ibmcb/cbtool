@@ -79,12 +79,18 @@ def cli_postional_argument_parser() :
             _options.test_volumes = False
             _options.test_capture = False
 
-        if argv[3] == "high" or argv[3] == "highest" :
+        if argv[3] == "high" :
             _options.test_instances = True
             _options.test_ssh = True 
             _options.test_volumes = True
             _options.test_capture = False
-    
+
+        if argv[3] == "highest" :
+            _options.test_instances = True
+            _options.test_ssh = True 
+            _options.test_volumes = True
+            _options.test_capture = True
+                
         if argv[3] == "pause" :        
             _options.pause = True
 

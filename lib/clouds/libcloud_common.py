@@ -671,7 +671,8 @@ class LibcloudCmds(CommonCloudFunctions) :
                         obj_attr_list["prov_cloud_ip"] = node.private_ips[0]
                         
             else :
-                obj_attr_list["prov_cloud_ip"] = node.public_ips[0]
+                if len(node.public_ips) > 0 :
+                    obj_attr_list["prov_cloud_ip"] = node.public_ips[0]
 
             # This is needed for Azure Service Manager
             if "ssh_port" in node.extra :
@@ -948,7 +949,11 @@ class LibcloudCmds(CommonCloudFunctions) :
             else :
                 _credentials_list = self.rotate_token(obj_attr_list["cloud_name"])
 
-            obj_attr_list["tenant"] = _credentials_list.split(":")[0]
+            if "tenant_from_rc" in obj_attr_list :
+                obj_attr_list["tenant"] = obj_attr_list["tenant_from_rc"]
+            else :
+                obj_attr_list["tenant"] = _credentials_list.split(":")[0]
+
             obj_attr_list["credential"] = _credentials_list.split(":")[1]
             obj_attr_list["credentials_list"] = _credentials_list
 
