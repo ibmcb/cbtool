@@ -104,12 +104,13 @@ then
         echo "export HADOOP_CONF_DIR=${HADOOP_CONF_DIR}" >> ~/.bashrc
     fi
 fi            
-    
+
 export HADOOP_CONF_DIR=${HADOOP_CONF_DIR}
 
 if [[ -z ${HADOOP_EXECUTABLE} ]]
 then
-    HADOOP_EXECUTABLE=$(find $HADOOP_HOME -name hadoop.cmd | grep -v templates | sed 's/.cmd//g' | tail -1)
+#    HADOOP_EXECUTABLE=$(find $HADOOP_HOME -name hadoop.cmd | grep -v templates | sed 's/.cmd//g' | tail -1)
+    HADOOP_EXECUTABLE=$(find $HADOOP_HOME -name rcc | grep -v templates | sed 's/rcc/hadoop/g' | tail -1)
     syslog_netcat "HADOOP_EXECUTABLE not defined on the environment. Assuming \"$HADOOP_EXECUTABLE\" as the executable"
 fi
 

@@ -5,21 +5,21 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update
 RUN useradd -ms /bin/bash REPLACE_USERNAME
 
-ENV OBJECTSTORE_PORT=10000
-ENV METRICSTORE_PORT=20000
-ENV LOGSTORE_PORT=30000
-ENV FILESTORE_PORT=40000
-ENV GUI_PORT=50000
-ENV API_PORT=60000
-ENV VPN_PORT=65000
+#ENV OBJECTSTORE_PORT=10000
+#ENV METRICSTORE_PORT=20000
+#ENV LOGSTORE_PORT=30000
+#ENV FILESTORE_PORT=40000
+#ENV GUI_PORT=50000
+#ENV API_PORT=60000
+#ENV VPN_PORT=65000
 
-EXPOSE $OBJECTSTORE_PORT
-EXPOSE $METRICSTORE_PORT
-EXPOSE $LOGSTORE_PORT
-EXPOSE $FILESTORE_PORT
-EXPOSE $GUI_PORT
-EXPOSE $API_PORT
-EXPOSE $VPN_PORT
+#EXPOSE $OBJECTSTORE_PORT
+#EXPOSE $METRICSTORE_PORT
+#EXPOSE $LOGSTORE_PORT
+#EXPOSE $FILESTORE_PORT
+#EXPOSE $GUI_PORT
+#EXPOSE $API_PORT
+#EXPOSE $VPN_PORT
 
 # sudo-install-man
 RUN apt-get install -y sudo
@@ -289,6 +289,7 @@ RUN sudo ln -s /home/REPLACE_USERNAME/google-cloud-sdk/bin/gcloud /usr/local/bin
 
 WORKDIR /home/REPLACE_USERNAME/
 RUN git clone https://github.com/ibmcb/cbtool.git; cd /home/REPLACE_USERNAME/cbtool; git checkout REPLACE_BRANCH
+RUN cd /home/REPLACE_USERNAME/cbtool; mv configs private_configs; mv data private_data
 
 # gmetad-python-install-git
 RUN mkdir -p /home/REPLACE_USERNAME/cbtool/3rd_party/workload
@@ -324,13 +325,13 @@ WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party
 RUN git clone https://github.com/ibmcb/d3.git
 # d3-install-git
 
-WORKDIR /home/REPLACE_USERNAME/cbtool/configs
-RUN cp cloud_definitions.txt REPLACE_USERNAME_cloud_definitions.txt
+#WORKDIR /home/REPLACE_USERNAME/cbtool/configs
+#RUN cp cloud_definitions.txt REPLACE_USERNAME_cloud_definitions.txt
 
-RUN echo "\n[OBJECTSTORE]\nPORT = $OBJECTSTORE_PORT\nUSAGE = private" >> REPLACE_USERNAME_cloud_definitions.txt
-RUN echo "\n[METRICSTORE]\nPORT = $METRICSTORE_PORT\nUSAGE = private" >> REPLACE_USERNAME_cloud_definitions.txt
-RUN echo "\n[LOGSTORE]\nPORT = $LOGSTORE_PORT\nUSAGE = private" >> REPLACE_USERNAME_cloud_definitions.txt
-RUN echo "\n[FILESTORE]\nPORT = $FILESTORE_PORT\nUSAGE = private" >> REPLACE_USERNAME_cloud_definitions.txt
-RUN echo "\n[API_DEFAULTS]\nPORT = $API_PORT\n" >> REPLACE_USERNAME_cloud_definitions.txt
-RUN echo "\n[GUI_DEFAULTS]\nPORT = $GUI_PORT\n" >> REPLACE_USERNAME_cloud_definitions.txt
-RUN echo "\n[VPN]\nSERVER_PORT = $VPN_PORT\n" >> REPLACE_USERNAME_cloud_definitions.txt
+#RUN echo "\n[OBJECTSTORE]\nPORT = $OBJECTSTORE_PORT\nUSAGE = private" >> REPLACE_USERNAME_cloud_definitions.txt
+#RUN echo "\n[METRICSTORE]\nPORT = $METRICSTORE_PORT\nUSAGE = private" >> REPLACE_USERNAME_cloud_definitions.txt
+#RUN echo "\n[LOGSTORE]\nPORT = $LOGSTORE_PORT\nUSAGE = private" >> REPLACE_USERNAME_cloud_definitions.txt
+#RUN echo "\n[FILESTORE]\nPORT = $FILESTORE_PORT\nUSAGE = private" >> REPLACE_USERNAME_cloud_definitions.txt
+#RUN echo "\n[API_DEFAULTS]\nPORT = $API_PORT\n" >> REPLACE_USERNAME_cloud_definitions.txt
+#RUN echo "\n[GUI_DEFAULTS]\nPORT = $GUI_PORT\n" >> REPLACE_USERNAME_cloud_definitions.txt
+#RUN echo "\n[VPN]\nSERVER_PORT = $VPN_PORT\n" >> REPLACE_USERNAME_cloud_definitions.txt

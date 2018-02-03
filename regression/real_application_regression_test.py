@@ -212,7 +212,8 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
         _sut = ''
         _management_metrics_pass = False
         _runtime_metrics_pass = False
-
+        _runtime_missing_metrics = []
+            
         _rt_m_list = "load_id,load_profile,load_duration,completion_time,datagen_time,throughput,bandwidth,latency"
         _aux_run_time_metrics = ''
                         
@@ -285,8 +286,6 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
             _initial_time = int(time())
             _curr_time = 0
             _collected_samples = 0
-
-            _runtime_missing_metrics = []
             
             _app_m = apiconn.typeshow(cloud_name, _actual_application_type)["reported_metrics"].replace(", ",',').split(',')
             _app_m += [ "app_load_profile", "app_load_id", "app_load_level" ]

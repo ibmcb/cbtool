@@ -12,17 +12,17 @@ MAIN_USERNAME = $USER_AUTO
 # "credentials" directory, bogus_id_rsa and bogus_id_rsa.pub
 MAIN_SSH_KEY_NAME = bogus_id_rsa
 # This is the username created inside the VMs
-MAIN_LOGIN = klabuser
+MAIN_LOGIN = cbuser
 # Variable $PATH_TO_TOOL attempts to auto-selects the appropriate path 
 MAIN_BASE_DIR = $PATH_TO_TOOL
 
 # Which cloud to pick first when the tool first starts
-STARTUP_CLOUD = MYSIMCLOUD
+STARTUP_CLOUD = MYSIM
 
 # List the clouds you want to define
-CLOUDOPTION_MYSIMCLOUD = cldattach sim, vmcattach all
-CLOUDOPTION_MYOPENSTACK = cldattach osk, vmcattach all
-CLOUDOPTION_MYAMAZON = cldattach ec2, vmcattach all
+CLOUDOPTION_MYSIM = cldattach sim, vmcattach all
+CLOUDOPTION_MYOS = cldattach osk, vmcattach all
+CLOUDOPTION_MYEC2 = cldattach ec2, vmcattach all
 CLOUDOPTION_MYVCD = cldattach vcd, vmcattach all
 CLOUDOPTION_MYPLM = cldattach plm, vmcattach all
 CLOUDOPTION_MYSLR = cldattach slr, vmcattach all
@@ -31,11 +31,13 @@ CLOUDOPTION_MYDO = cldattach do, vmcattach all
 CLOUDOPTION_MYPDM = cldattach pdm, vmcattach all
 CLOUDOPTION_MYPCM = cldattach pcm, vmcattach all
 CLOUDOPTION_MYKUB = cldattach kub, vmcattach all
+CLOUDOPTION_MYOS = cldattach os, vmcattach all
+CLOUDOPTION_MYAS = cldattach os, vmcattach all
 
-# Now, Specify the individual parameters for each cloud
+# START: Specify the individual parameters for each cloud
 #-------------------------------------------------------------------------------
 # Simulated Cloud (SIM) requires the following parameters
-[USER-DEFINED : CLOUDOPTION_MYSIMCLOUD]
+[USER-DEFINED : CLOUDOPTION_MYSIM]
 SIM_INITIAL_VMCS = simzone_a:sut,simzone_b:lg
 SIM_SSH_KEY_NAME = cbtool_rsa
 SIM_KEY_NAME = cbtool_rsa 
@@ -43,7 +45,7 @@ SIM_SECURITY_GROUPS = simsecgrp
 SIM_LOGIN = cbuser
 #-------------------------------------------------------------------------------
 # OpenStack (OSK) requires the following parameters (replace everything between <>, *including* the signs!)
-[USER-DEFINED : CLOUDOPTION_MYOPENSTACK]
+[USER-DEFINED : CLOUDOPTION_MYOS]
 OSK_ACCESS = http://<address>:5000/v2.0/                                                                              # Address of the controller node (where nova-api runs)
 OSK_CREDENTIALS =  <user>-<password>-<tenant>
 OSK_INITIAL_VMCS = RegionOne:sut                                                                                      # Change "RegionOne" accordingly
@@ -52,7 +54,7 @@ OSK_NETNAME = private                                                           
 OSK_LOGIN = cbuser                                                                                                    # The username that logins on the VMs
 #-------------------------------------------------------------------------------
 # Elastic Compute Cloud (EC2) requires the following parameters 
-[USER-DEFINED : CLOUDOPTION_MYAMAZON] 
+[USER-DEFINED : CLOUDOPTION_MYEC2] 
 EC2_ACCESS = ABCDEFGHIJKLMNOPQRST                                                                                     # This is the AWS access key id
 EC2_CREDENTIALS = ABCDEFGHIJKLMNOPQRSTUVXYWZ01234567890-+*                                                            # This is the AWS secret access key 
 EC2_SECURITY_GROUPS = cloudbench                                                                                      # Make sure that this group exists first 
@@ -142,6 +144,7 @@ OS_INITIAL_VMCS = RegionOne:sut                                                 
 OS_NETNAME = private                                                                                                 # Make sure that this network exists first
 OS_LOGIN = cbuser                                                                                                    # The username that logins on the VMs
 #-------------------------------------------------------------------------------
+# END: Specify the individual parameters for each cloud
 
 [OBJECTSTORE]
 USAGE = shared
