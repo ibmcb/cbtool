@@ -110,7 +110,9 @@ def main(apiconn) :
     _options = cli_postional_argument_parser()
     
     try :
-        cloud_name = apiconn.cldlist()[0]["name"]
+        cloud_attrs = apiconn.cldlist()[0]
+        cloud_name = cloud_attrs["name"]
+        cloud_model = cloud_attrs["model"]
     except :
         _msg = "ERROR: Unable to connect to API and get a list of attached clouds"
         exit(1)
@@ -137,6 +139,23 @@ def main(apiconn) :
             _hypervisor_list = _hypervisor_list.split(',')
         else :
             _hypervisor_list = [ None ]
+
+        _model_to_imguuid = {}
+        _model_to_imguuid["sim"] = "baseimg"
+        _model_to_imguuid["pcm"] = "xenial" 
+        _model_to_imguuid["pdm"] = "ibmcb/cbtoolbt-ubuntu"
+        _model_to_imguuid["nop"] = "baseimg"
+        _model_to_imguuid["osk"] = "xenial3"
+        _model_to_imguuid["os"] = "xenial3"        
+        _model_to_imguuid["ec2"] = "ami-a9d276c9"
+        _model_to_imguuid["gce"] = "ubuntu-1604-xenial-v20161221"
+        _model_to_imguuid["do"] = "21669205"        
+        _model_to_imguuid["slr"] = "1836627"        
+        _model_to_imguuid["kub"] = "ibmcb/cbtoolbt-ubuntu"
+        _model_to_imguuid["as"] = "b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-16_04-LTS-amd64-server-20180112-en-us-30GB"
+
+        if _options.build.lower() == "auto" :
+            _options.build = _model_to_imguuid[cloud_model]
 
         if _options.build :
             _actual_type = "build:" + _options.build + ':' + _type

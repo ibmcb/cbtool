@@ -478,7 +478,11 @@ class SimCmds(CommonCloudFunctions) :
                     _fmsg = "image does not exist"
                     _status = 1817
 #                    obj_attr_list["boot_volume_imageid1"] = self.generate_random_uuid(obj_attr_list["imageid1"])
-            
+
+            if str(obj_attr_list["build"]).lower() == "true" :
+                obj_attr_list["boot_volume_imageid1"] = self.generate_random_uuid(obj_attr_list["imageid1"])
+                _status = 0
+
         except Exception, e :
             _status = 23
             _fmsg = str(e)
@@ -1030,7 +1034,7 @@ class SimCmds(CommonCloudFunctions) :
 
                 if _vm.count("faildb2") :
                     _fmsg = "Forced failure during AI definition"
-                                      
+
             if current_step == "all_vms_booted" :
 
                 _vg = ValueGeneration("NA")

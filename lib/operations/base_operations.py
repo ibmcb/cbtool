@@ -2047,6 +2047,9 @@ class BaseObjectOperations :
         if "access" in obj_attr_list :
             _extra_parms += ",access=" + obj_attr_list["access"]
 
+        if "build" in obj_attr_list :
+            _extra_parms += ",build=" + str(obj_attr_list["build"]).lower()
+                        
         if str(obj_attr_list["override_imageid1"]).lower() != "false" :
             _extra_parms += ",imageid1=" + obj_attr_list["override_imageid1"]
 
@@ -2058,7 +2061,7 @@ class BaseObjectOperations :
         if "vm_extra_parms" in obj_attr_list :
             obj_attr_list["vm_extra_parms"] = obj_attr_list["vm_extra_parms"].replace("_EQUAL_","=").replace("_COMMA_",',')
             _extra_parms += "," + obj_attr_list["vm_extra_parms"]
-                        
+                                
         if vm_role + "_cloud_ips" in obj_attr_list :
             if not vm_role in cloud_ips :
                 cloud_ips[vm_role] = obj_attr_list[vm_role + "_cloud_ips"].split(';')

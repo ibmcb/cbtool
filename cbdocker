@@ -8,6 +8,12 @@ if [ $0 != "-bash" ] ; then
     popd 2>&1 > /dev/null
 fi
 
+if [[ $(sudo cat /proc/1/cgroup | grep -c docker) -ne 0 ]]
+then
+    echo "It appears that we are already running inside a docker. The executable $0 was designed to be used outside of a Docker container"
+    exit -1
+fi
+
 CB_USER=$HOME
 CB_DOCKER_USER=cbuser
 CB_BRANCH=experimental
@@ -21,7 +27,7 @@ CB_KILL_DOCKER=0
 CB_PRIVATE_CONFIG=0
 CB_PRIVATE_DATA=0
 
-CB_DOCKER_COMMAND="bash"
+CB_DOCKER_COMMAND="auto"
 
 CB_USAGE="Usage: $0 [-r/--repo <repository>] [-i/--image image name] [-b/--branch branch] [-c/--command command ] [-p/--private] [-d/--debug] [-f/--reset]"
 
@@ -83,78 +89,92 @@ do
         shift
 done
 
-if [[ $(echo "${@:1}" | grep -c soft_reset) -gt 0 ]]
+CB_DOCKER_NAME=$(echo ${CB_USER}_cbon | rev | cut -d '/' -f 1 | rev)
+
+if [[ $(sudo docker ps | grep -c $CB_DOCKER_NAME) -eq 0 ]]
 then
-    echo "parameter \"--soft_reset\" was invoked. Destroying the currently running CB Orchestrator in a Docker"
     CB_KILL_DOCKER=1
 fi
 
-if [[ $(echo "${@:1}" | grep -c hard_reset) -gt 0 ]]
+if [[ $CB_DOCKER_COMMAND == "auto" ]]
 then
-    echo "parameter \"--hard_reset\" was invoked. Destroying the currently running CB Orchestrator in a Docker"
-    CB_KILL_DOCKER=1
+    if [[ $CB_KILL_DOCKER -eq 1  ]]
+    then
+        echo "Docker not running, or parameter \"-f/reset\" was invoked. Destroying any currently running CB Orchestrator in a Docker"
+        docker kill $CB_DOCKER_NAME >/dev/null 2>&1
+        docker rm $CB_DOCKER_NAME >/dev/null 2>&1
+        CB_DOCKER_COMMAND="/home/$CB_DOCKER_USER/cbtool/docker/build_cloud_config_file_from_env.sh; ~/cbtool/cb --hard_reset"
+    else :
+        CB_DOCKER_COMMAND="/home/$CB_DOCKER_USER/cbtool/cb"
+    fi
 fi
 
-if [[ $CB_KILL_DOCKER ]]
+if [[ $CB_DOCKER_DEBUG -eq 1 ]]
 then
-    docker kill ${CB_USER}_cbon >/dev/null 2>&1
-    docker rm ${CB_USER}_cbon >/dev/null 2>&1
+    CB_DOCKER_COMMAND="bash"
 fi
 
-CB_DOCKER_BASE_CMDLINE="docker run -itd "
-CB_DOCKER_CMDLINE_NAME="--name $(echo ${CB_USER}_cbon | rev | cut -d '/' -f 1 | rev) "
-CB_DOCKER_SEC_CMDLINE="--cap-add=SYS_PTRACE --cap-add=NET_ADMIN --privileged=true"
-if [[ $CB_DOCKER_NETHOST -eq 1 ]]
+if [[ $CB_KILL_DOCKER -eq 1 ]]
 then
-    CB_DOCKER_NET_CMDLINE=" --net=host "
-else 
-    CB_DOCKER_NET_CMDLINE="-p $CB_OBJECTSTORE_PORT:$CB_OBJECTSTORE_PORT -p $CB_LOGSTORE_PORT:$CB_LOGSTORE_PORT -p $CB_METRICSTORE_PORT:$CB_METRICSTORE_PORT -p $CB_FILESTORE_PORT:$CB_FILESTORE_PORT"
-fi
 
-CB_DOCKER_VOL_CMDLINE=""
-if [[ $CB_PRIVATE_CONFIG -eq 0 ]]
-then
-    CB_DOCKER_VOL_CMDLINE=" -v $CB_BASE_DIR/configs:/home/$CB_DOCKER_USER/cbtool/configs "
-fi
-
-if [[ $CB_PRIVATE_DATA -eq 0 ]]
-then
-    CB_DOCKER_VOL_CMDLINE=${CB_DOCKER_VOL_CMDLINE}" -v $CB_BASE_DIR/data:/home/$CB_DOCKER_USER/cbtool/data "
-fi
-
-CB_DOCKER_ENV_CMDLINE=" -e CB_PRIVATE_CONFIG=$CB_PRIVATE_CONFIG -e CB_PRIVATE_DATA=$CB_PRIVATE_DATA "
-
-for store in OBJECTSTORE LOGSTORE METRICSTORE FILESTORE
-do
-    for param in HOST PORT USAGE DBIB VERBOSITY DATABASE
+    CB_DOCKER_BASE_CMDLINE="run -itd "
+    CB_DOCKER_CMDLINE_NAME="--name ${CB_DOCKER_NAME} "
+    CB_DOCKER_SEC_CMDLINE="--cap-add=SYS_PTRACE --cap-add=NET_ADMIN --privileged=true"
+    if [[ $CB_DOCKER_NETHOST -eq 1 ]]
+    then
+        CB_DOCKER_NET_CMDLINE=" --net=host "
+    else 
+        CB_DOCKER_NET_CMDLINE="-p $CB_OBJECTSTORE_PORT:$CB_OBJECTSTORE_PORT -p $CB_LOGSTORE_PORT:$CB_LOGSTORE_PORT -p $CB_METRICSTORE_PORT:$CB_METRICSTORE_PORT -p $CB_FILESTORE_PORT:$CB_FILESTORE_PORT"
+    fi
+    
+    CB_DOCKER_VOL_CMDLINE=""
+    if [[ $CB_PRIVATE_CONFIG -eq 0 ]]
+    then
+        CB_DOCKER_VOL_CMDLINE=" -v $CB_BASE_DIR/configs:/home/$CB_DOCKER_USER/cbtool/configs "
+    fi
+    
+    if [[ $CB_PRIVATE_DATA -eq 0 ]]
+    then
+        CB_DOCKER_VOL_CMDLINE=${CB_DOCKER_VOL_CMDLINE}" -v $CB_BASE_DIR/data:/home/$CB_DOCKER_USER/cbtool/data "
+    fi
+    
+    CB_DOCKER_ENV_CMDLINE=" -e CB_PRIVATE_CONFIG=$CB_PRIVATE_CONFIG -e CB_PRIVATE_DATA=$CB_PRIVATE_DATA "
+    
+    for store in OBJECTSTORE LOGSTORE METRICSTORE FILESTORE
     do
-        cb_env_var_name=CB_${store}_${param}
-        cb_env_var_value=$(echo ${!cb_env_var_name})
-        if [[ ! -z ${!cb_env_var_name} ]]
-        then
-            CB_DOCKER_ENV_CMDLINE=$CB_DOCKER_ENV_CMDLINE" -e ${cb_env_var_name}=${!cb_env_var_name} "
-        fi
+        for param in HOST PORT USAGE DBIB VERBOSITY DATABASE
+        do
+            cb_env_var_name=CB_${store}_${param}
+            cb_env_var_value=$(echo ${!cb_env_var_name})
+            if [[ ! -z ${!cb_env_var_name} ]]
+            then
+                CB_DOCKER_ENV_CMDLINE=$CB_DOCKER_ENV_CMDLINE" -e ${cb_env_var_name}=${!cb_env_var_name} "
+            fi
+        done
     done
-done
-
-for cmodel in SIM OSK EC2 VCD PLM SLR GCE DO PDM PCM KUB AS OS
-do
-    for param in ACCESS CREDENTIALS SECURITY_GROUPS INITIAL_VMCS SSH_KEY_NAME NETNAME LOGIN
+    
+    for cmodel in SIM OSK EC2 VCD PLM SLR GCE DO PDM PCM KUB AS OS
     do
-        cb_env_var_name=CB_${cmodel}_${param}
-        cb_env_var_value=$(echo ${!cb_env_var_name})
-        if [[ ! -z ${!cb_env_var_name} ]]
-        then
-            CB_DOCKER_ENV_CMDLINE=$CB_DOCKER_ENV_CMDLINE" -e ${cb_env_var_name}=${!cb_env_var_name} "
-        fi
+        for param in ACCESS CREDENTIALS SECURITY_GROUPS INITIAL_VMCS SSH_KEY_NAME NETNAME LOGIN
+        do
+            cb_env_var_name=CB_${cmodel}_${param}
+            cb_env_var_value=$(echo ${!cb_env_var_name})
+            if [[ ! -z ${!cb_env_var_name} ]]
+            then
+                CB_DOCKER_ENV_CMDLINE=$CB_DOCKER_ENV_CMDLINE" -e ${cb_env_var_name}=${!cb_env_var_name} "
+            fi
+        done
     done
-done
+    
+    CB_DOCKER_IMAGE_CMDLINE=" "${CB_DOCKER_REPO}"/"${CB_DOCKER_IMAGE}":"${CB_DOCKER_TAG}
+    
+    CB_DOCKER_EXE_CMDLINE=" bash -c \"$CB_DOCKER_COMMAND\""
 
-CB_DOCKER_IMAGE_CMDLINE=" "${CB_DOCKER_REPO}"/"${CB_DOCKER_IMAGE}":"${CB_DOCKER_TAG}
-
-CB_DOCKER_EXE_CMDLINE=" "$CB_DOCKER_COMMAND
-
-CB_DOCKER_CMDLINE=${CB_DOCKER_BASE_CMDLINE}${CB_DOCKER_CMDLINE_NAME}${CB_DOCKER_SEC_CMDLINE}${CB_DOCKER_NET_CMDLINE}${CB_DOCKER_VOL_CMDLINE}${CB_DOCKER_ENV_CMDLINE}${CB_DOCKER_IMAGE_CMDLINE}${CB_DOCKER_EXE_CMDLINE}
-
-echo $CB_DOCKER_CMDLINE
-#$CB_DOCKER_CMDLINE
+    CB_DOCKER_AUX_CMDLINE=${CB_DOCKER_BASE_CMDLINE}${CB_DOCKER_CMDLINE_NAME}${CB_DOCKER_SEC_CMDLINE}${CB_DOCKER_NET_CMDLINE}${CB_DOCKER_VOL_CMDLINE}${CB_DOCKER_ENV_CMDLINE}${CB_DOCKER_IMAGE_CMDLINE}    
+    CB_DOCKER_CMDLINE=${CB_DOCKER_BASE_CMDLINE}${CB_DOCKER_CMDLINE_NAME}${CB_DOCKER_SEC_CMDLINE}${CB_DOCKER_NET_CMDLINE}${CB_DOCKER_VOL_CMDLINE}${CB_DOCKER_ENV_CMDLINE}${CB_DOCKER_IMAGE_CMDLINE}${CB_DOCKER_EXE_CMDLINE}
+    
+    echo "Creating docker with the command: \"docker $CB_DOCKER_CMDLINE\""
+    docker $CB_DOCKER_AUX_CMDLINE bash -c "$CB_DOCKER_COMMAND"
+else
+    docker exec -it $CB_DOCKER_NAME bash -c "$CB_DOCKER_COMMAND"
+fi

@@ -223,19 +223,19 @@ RUN sed -i 's/.*GSSAPIAuthentication.*/GSSAPIAuthentication no/g' /etc/ssh/sshd_
 # novaclient-install-pip
 RUN pip install --upgrade pbr
 RUN pip install --upgrade netifaces
-RUN pip install --upgrade python-novaclient=9.1.1
+RUN pip install --upgrade python-novaclient==9.1.1
 # novaclient-install-pip
 
 # neutronclient-install-pip
-RUN pip install --upgrade python-neutronclient=6.5.0
+RUN pip install --upgrade python-neutronclient==6.5.0
 # neutronclient-install-pip
 
 # cinderclient-install-pip
-RUN pip install --upgrade python-cinderclient=3.2.0
+RUN pip install --upgrade python-cinderclient==3.2.0
 # cinderclient-install-pip
 
 # glanceclient-install-pip
-RUN pip install --upgrade python-glanceclient=2.8.0
+RUN pip install --upgrade python-glanceclient==2.8.0
 # glanceclient-install-pip
 
 # softlayer-install-pip
