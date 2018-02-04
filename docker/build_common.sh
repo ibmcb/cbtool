@@ -11,6 +11,9 @@ CB_PUSH="nopush"
 CB_ARCH=$(uname -a | awk '{ print $12 }')
 CB_PALL=0
 CB_USERNAME="cbuser"
+CB_MYUSERNAME=$(whoami)
+CB_MYUID=$(id -u $(whoami))
+CB_MYGID=$(id -g $(whoami))
 CB_BRANCH="master"
 CB_USAGE="Usage: $0 -r <repository> [-u Ubuntu base image] [-p Phusion base image] [-c Centos base image] [-w Workload] [-l CB Username/login] [-b branch] [--verbose] [--push] [--psall]"
 

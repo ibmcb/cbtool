@@ -1,7 +1,7 @@
 #!/bin/bash
 
-CB_BASE_DIR=~/repos/cloudbench
-CB_DOCKER_USERNAME=cbuser2
+CB_DOCKER_USERNAME=cbuser
+CB_BASE_DIR=/home/$CB_DOCKER_USERNAME/cbtool
 
 CB_CONFIG_FILE=$CB_BASE_DIR/configs/${CB_DOCKER_USERNAME}_cloud_definitions.txt
 
@@ -13,9 +13,9 @@ then
     mv $CB_BASE_DIR/private_configs $CB_BASE_DIR/configs
 fi
 
-if [[ $CB_PRIVATE_DATA -eq 1 || ! -d $CB_BASE_DIR/data]]
+if [[ $CB_PRIVATE_DATA -eq 1 || ! -d $CB_BASE_DIR/data ]]
 then
-    mv $CB_BASE_DIR/private_data $CB_BASE_DIR/data
+    mkdir $CB_BASE_DIR/data
 fi
 
 cat $CB_BASE_DIR/configs/cloud_definitions.txt | sed '/# END: Specify the individual parameters for each cloud/,$d' > $CB_CONFIG_FILE
