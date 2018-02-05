@@ -265,6 +265,7 @@ then
 		        then
                     cbcf=${!cb_env_var_name}
 		            eval cbcf=${cbcf}
+		            cbcf=$(echo $cbcf | cut -d ':' -f 2)
 		            if [[ -f $cbcf ]]
 		            then
                         CB_DOCKER_VOL_CMDLINE=${CB_DOCKER_VOL_CMDLINE}" -v ${cbcf}:${cbcf} "
@@ -273,7 +274,7 @@ then
             fi
         done
     done
-    
+
     CB_DOCKER_IMAGE_CMDLINE=" "${CB_DOCKER_REPO}"/"${CB_DOCKER_IMAGE}":"${CB_DOCKER_TAG}
     
     CB_DOCKER_EXE_CMDLINE=" bash -c \"$CB_DOCKER_COMMAND\""
