@@ -425,7 +425,7 @@ def expand_command(cmdline, depsdict, process_manager = False) :
 
         if _command.count("IF DOCKER") :
             if depsdict["indocker"] :
-                _command = "/bin/false"            
+                _command = "/bin/true"            
             else :
                 _command = _command.replace("IF DOCKER", '') 
                                 
@@ -906,6 +906,46 @@ def dependency_checker_installer(hostname, depsdict, username, operation, option
             _msg += "\n"
             cbinfo(_msg)
 
+            _hadoop_helper = "#!/usr/bin/env bash\n"
+            _hadoop_helper += "for HADOOP_CPATH in ~ /usr/local\n"
+            _hadoop_helper += "do\n"
+            _hadoop_helper += "   if [[ $(sudo ls $HADOOP_CPATH | grep -v tar | grep -c hadoop) -ne 0 ]]\n"
+            _hadoop_helper += "   then\n"
+            _hadoop_helper += "       eval HADOOP_CPATH=${HADOOP_CPATH}\n"
+            _hadoop_helper += "       HADOOP_HOME=$(ls ${HADOOP_CPATH} | grep -v tar | grep -v hadoop_store | grep hadoop | sort -r | head -n1)\n"
+            _hadoop_helper += "       eval HADOOP_HOME=\"$HADOOP_CPATH/${HADOOP_HOME}\"\n"
+            _hadoop_helper += "       if [[ -d $HADOOP_HOME ]]\n"
+            _hadoop_helper += "       then\n"
+            _hadoop_helper += "           echo \"1\"\n"
+            _hadoop_helper += "           exit 0\n"
+            _hadoop_helper += "       fi\n"
+            _hadoop_helper += "   fi\n"
+            _hadoop_helper += "done\n"
+            _hadoop_helper += "echo \"0\"\n"
+            _hadoop_helper += "exit 1\n"
+
+            try:
+                _file_name = "/tmp/get_hadoop"
+                _file_descriptor = file(_file_name, 'w')
+                _file_descriptor.write(_hadoop_helper)
+                _file_descriptor.close()
+                os.chmod(_file_name, 0755)
+
+            except IOError, msg :
+                _msg = "######## Error writing file \"" + _file_name  + "\":" + str(msg)
+                cberr(_msg)
+                exit(4)
+
+            except OSError, msg :
+                _msg = "######## Error writing file \"" + _file_name  + "\":" + str(msg)
+                cberr(_msg)
+                exit(4)
+
+            except Exception, e :
+                _msg = "######## Error writing file \"" + _file_name  + "\":" + str(e)
+                cberr(_msg)
+                exit(4)
+         
         else :
 
             options.tag = "base," + options.role + ',' + options.clouds

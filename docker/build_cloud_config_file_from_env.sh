@@ -13,12 +13,27 @@ then
     mv $CB_BASE_DIR/private_configs $CB_BASE_DIR/configs
 fi
 
+if [[ $CB_PRIVATE_CONFIG -eq 0 && -d $CB_BASE_DIR ]]
+then
+    sudo rsync -az $CB_BASE_DIR/private_configs/ $CB_BASE_DIR/configs/
+    sudo chown -R $CB_DOCKER_USERNAME:$CB_DOCKER_USERNAME $CB_BASE_DIR/configs 
+fi
+
 if [[ $CB_PRIVATE_DATA -eq 1 || ! -d $CB_BASE_DIR/data ]]
 then
     mkdir $CB_BASE_DIR/data
 fi
 
+if [[ $CB_PRIVATE_DATA -eq 0 && -d $CB_BASE_DIR/data ]]
+then
+    sudo rsync -az $CB_BASE_DIR/private_configs/ $CB_BASE_DIR/configs/
+    sudo chown -R $CB_DOCKER_USERNAME:$CB_DOCKER_USERNAME $CB_BASE_DIR/configs 
+fi
+
 cat $CB_BASE_DIR/configs/cloud_definitions.txt | sed '/# END: Specify the individual parameters for each cloud/,$d' > $CB_CONFIG_FILE
+
+CB_STARTUP_CLOUD=${CB_STARTUP_CLOUD:-MYSIM}
+sed -i "s/STARTUP_CLOUD.*/STARTUP_CLOUD = ${CB_STARTUP_CLOUD}/g" $CB_CONFIG_FILE
 
 CB_OBJECTSTORE_HOST=${CB_OBJECTSTORE_HOST-\$MANAGER_IP}
 CB_OBJECTSTORE_PORT=${CB_OBJECTSTORE_PORT:-30000}
@@ -85,7 +100,7 @@ do
         cb_env_var_value=$(echo ${!cb_env_var_name})
         if [[ ! -z ${!cb_env_var_name} ]]
         then
-            sed -i "s/${cmodel}_${param}.*/${cmodel}_${param} = ${!cb_env_var_name}/g" $CB_CONFIG_FILE
+            sed -i "s^${cmodel}_${param}.*^${cmodel}_${param} = ${!cb_env_var_name}^g" $CB_CONFIG_FILE
         fi
     done
 done
