@@ -5,10 +5,12 @@ CB_BASE_DIR=/home/$CB_DOCKER_USERNAME/cbtool
 
 CB_CONFIG_FILE=$CB_BASE_DIR/configs/${CB_DOCKER_USERNAME}_cloud_definitions.txt
 
+echo "START: Building private cloud configuration file \"$CB_CONFIG_FILE\" combining both \"$CB_BASE_DIR/configs/cloud_definitions.txt\" and environment variables (all variables start with \"CB_\")"  
+
 CB_PRIVATE_CONFIG=${CB_PRIVATE_CONFIG:-0}
 CB_PRIVATE_DATA=${CB_PRIVATE_DATA:-0}
 
-if [[ $CB_PRIVATE_CONFIG -eq 1 || ! -d $CB_BASE_DIR/configs ]]
+if [[ $CB_PRIVATE_CONFIG -eq 1 && ! -d $CB_BASE_DIR/configs ]]
 then
     mv $CB_BASE_DIR/private_configs $CB_BASE_DIR/configs
 fi
@@ -33,6 +35,7 @@ fi
 cat $CB_BASE_DIR/configs/cloud_definitions.txt | sed '/# END: Specify the individual parameters for each cloud/,$d' > $CB_CONFIG_FILE
 
 CB_STARTUP_CLOUD=${CB_STARTUP_CLOUD:-MYSIM}
+echo "    Setting the parameter \"STARTUP_CLOUD\", on the \"[USER-DEFINED]\" section to \"$CB_STARTUP_CLOUD\""
 sed -i "s/STARTUP_CLOUD.*/STARTUP_CLOUD = ${CB_STARTUP_CLOUD}/g" $CB_CONFIG_FILE
 
 CB_OBJECTSTORE_HOST=${CB_OBJECTSTORE_HOST-\$MANAGER_IP}
@@ -59,6 +62,12 @@ CB_API_DEFAULTS_PORT=${CB_API_DEFAULTS_PORT:-30004}
 
 CB_GUI_DEFAULTS_HOST=${CB_GUI_DEFAULTS_HOST-\$MANAGER_IP}
 CB_GUI_DEFAULTS_PORT=${CB_GUI_DEFAULTS_PORT:-30005}
+
+CB_VPN_START_SERVER=${CB_VPN_START_SERVER:-\$False}
+CB_VPN_SERVER_IP=${CB_VPN_SERVER_IP:-\$MANAGER_IP}
+CB_VPN_SERVER_PORT=${CB_VPN_SERVER_PORT:-\1194}
+CB_VPN_NETWORK=${CB_VPN_NETWORK:-192.168.0.0}
+CB_VPN_NETMASK=${CB_VPN_NETMASK:-255.255.0.0}
 
 echo "" >> $CB_CONFIG_FILE
 echo "[OBJECTSTORE]" >> $CB_CONFIG_FILE
@@ -91,6 +100,13 @@ echo "" >> $CB_CONFIG_FILE
 echo "[GUI_DEFAULTS]" >> $CB_CONFIG_FILE
 echo "HOST=${CB_GUI_DEFAULTS_HOST}" >> $CB_CONFIG_FILE
 echo "PORT=${CB_GUI_DEFAULTS_PORT}" >> $CB_CONFIG_FILE
+echo "" >> $CB_CONFIG_FILE
+echo "[VPN]" >> $CB_CONFIG_FILE
+echo "START_SERVER=${CB_VPN_START_SERVER}" >> $CB_CONFIG_FILE
+echo "SERVER_IP=${CB_VPN_SERVER_IP}" >> $CB_CONFIG_FILE
+echo "SERVER_PORT=${CB_VPN_SERVER_PORT}" >> $CB_CONFIG_FILE
+echo "NETWORK=${CB_VPN_NETWORK}" >> $CB_CONFIG_FILE
+echo "NETMASK=${CB_VPN_NETMASK}" >> $CB_CONFIG_FILE
 
 for cmodel in SIM OSK EC2 VCD PLM SLR GCE DO PDM PCM KUB AS OS
 do
@@ -100,7 +116,9 @@ do
         cb_env_var_value=$(echo ${!cb_env_var_name})
         if [[ ! -z ${!cb_env_var_name} ]]
         then
+        	echo "    Setting the parameter \"$param\", on the \"[USER-DEFINED : CLOUDOPTION_MY${cmodel}]\" section to \"${!cb_env_var_name}\""
             sed -i "s^${cmodel}_${param}.*^${cmodel}_${param} = ${!cb_env_var_name}^g" $CB_CONFIG_FILE
         fi
     done
 done
+echo "END: Built private cloud configuration file \"$CB_CONFIG_FILE\" combining both \"$CB_BASE_DIR/configs/cloud_definitions.txt\" and environment variables (all variables start with \"CB_\")"  

@@ -7,7 +7,7 @@ CB_BASE_DIR=$(pwd)
 if [ $0 != "-bash" ] ; then
     popd 2>&1 > /dev/null
 fi
-
+    
 if [[ $(sudo cat /proc/1/cgroup | grep -c docker) -ne 0 ]]
 then
     echo "It appears that we are already running inside a docker. The executable $0 was designed to be used outside of a Docker container"
@@ -27,6 +27,7 @@ CB_PRIVATE_DATA=1
 CB_DRY_RUN=0
 CB_DOCKER_COMMAND="auto"
 CB_DOCKER_EXTRA_OPTS=${CB_DOCKER_EXTRA_OPTS:-""}
+CB_DOCKER_IN_CLI=${CB_DOCKER_IN_CLI:-1}
 CB_EXECUTABLE_PARMS=" "
 
 CB_USAGE="Usage: $0 [-r/--repo <repository>] [-i/--image image name] [-b/--branch branch] [-c/--config config] [-e/--execute command] [-p/--private] [-P/--propagate] [-d/--debug] [--reset] [-f/--soft_reset] [-x/--hard_reset] [-t/--trace tracefile] [-k/--kill] [-n/--dryrun]"
@@ -131,15 +132,29 @@ CB_DOCKER_NAME=$(echo ${CB_USER}_cbon | rev | cut -d '/' -f 1 | rev)
 
 if [[ $(sudo docker ps | grep -c $CB_DOCKER_NAME) -eq 0 ]]
 then
+    echo -n "Docker \"$CB_DOCKER_NAME\" not running."
     if [[ $CB_KILL_DOCKER -eq 0 ]]
     then
+        echo " Will start a new one."
         CB_KILL_DOCKER=2
+    else 
+        echo " "
     fi
+elif [[ $(sudo docker ps | grep -c $CB_DOCKER_NAME) -gt 0 ]]
+then
+    echo -n "Docker \"$CB_DOCKER_NAME\" is already running."
+    if [[ $CB_KILL_DOCKER -ne 0 ]]
+    then
+        echo " One of the following options \"--reset, -f/--soft_reset, -x/--hard_reset, -k/--kill\" was set. Container will be recreated"
+    else 
+        echo " "
+    fi    
 else
     if [[ $(sudo docker ps -a | grep -c $CB_DOCKER_NAME) -eq 1 ]]
     then
         if [[ $CB_KILL_DOCKER -eq 0 ]]
         then
+            echo "Docker \"$CB_DOCKER_NAME\" exists, but is not running. Will remove and recreate."        
             CB_KILL_DOCKER=2
         fi
     fi
@@ -149,27 +164,30 @@ if [[ $CB_DOCKER_COMMAND == "auto" ]]
 then
     if [[ $CB_KILL_DOCKER -gt 0  ]]
     then
-        echo "Docker not running, or parameter \"-f/--soft_reset/-x/--hard_reset/--reset/-k/--kill\" was invoked. Destroying any currently running CB Orchestrator in a Docker"
-        docker kill $CB_DOCKER_NAME >/dev/null 2>&1
-        docker rm $CB_DOCKER_NAME >/dev/null 2>&1
+        sudo docker kill $CB_DOCKER_NAME >/dev/null 2>&1
+        sudo docker rm $CB_DOCKER_NAME >/dev/null 2>&1
 
         if [[ $CB_KILL_DOCKER -gt 1  ]]
         then
-	    if [[ $(echo $CB_EXECUTABLE_PARMS | grep -c reset) -eq 0 ]]
-	    then
+	        if [[ $(echo $CB_EXECUTABLE_PARMS | grep -c reset) -eq 0 ]]
+	        then
                 CB_EXECUTABLE_PARMS=${CB_EXECUTABLE_PARMS}" --soft_reset "
+	        fi
+	        
+	        if [[ ${CB_DOCKER_IN_CLI} -eq 0 ]]
+	        then
+	            CB_EXECUTABLE_PARMS=${CB_EXECUTABLE_PARMS}" vmclist; bash"
+	        fi
+            CB_DOCKER_COMMAND="/home/$CB_DOCKER_USER/cbtool/docker/build_cloud_config_file_from_env.sh; /home/$CB_DOCKER_USER/cbtool/cb $CB_EXECUTABLE_PARMS"
 	    fi
-            CB_DOCKER_COMMAND="/home/$CB_DOCKER_USER/cbtool/docker/build_cloud_config_file_from_env.sh; ~/cbtool/cb $CB_EXECUTABLE_PARMS"
-	fi
     else
         CB_DOCKER_COMMAND="/home/$CB_DOCKER_USER/cbtool/cb"
     fi
 else 
     if [[ $CB_KILL_DOCKER -gt 0  ]]
     then
-        echo "Docker not running, or parameter \"-f/--soft_reset/-x/--hard_reset/--reset/-k/--kill\" was invoked. Destroying any currently running CB Orchestrator in a Docker"
-        docker kill $CB_DOCKER_NAME >/dev/null 2>&1
-        docker rm $CB_DOCKER_NAME >/dev/null 2>&1
+        sudo docker kill $CB_DOCKER_NAME >/dev/null 2>&1
+        sudo docker rm $CB_DOCKER_NAME >/dev/null 2>&1
     fi
 fi
 
@@ -196,9 +214,9 @@ then
     CB_DOCKER_VOL_CMDLINE=""
     if [[ $CB_PRIVATE_CONFIG -eq 0 ]]
     then
-        if [[ $(docker volumes ls | grep -c cbon_configs) -eq 0 ]]
-	then
-	    docker volume create cbon_configs
+        if [[ $(sudo docker volume ls | grep -c cbon_configs) -eq 0 ]]
+	    then
+	        sudo docker volume create cbon_configs
         fi
         #CB_DOCKER_VOL_CMDLINE=" -v $CB_BASE_DIR/configs:/home/$CB_DOCKER_USER/cbtool/configs:rw "
         CB_DOCKER_VOL_CMDLINE=" -v cbon_configs:/home/$CB_DOCKER_USER/cbtool/configs "
@@ -206,9 +224,9 @@ then
     
     if [[ $CB_PRIVATE_DATA -eq 0 ]]
     then
-        if [[ $(docker volumes ls | grep -c cbon_data) -eq 0 ]]
-	then
-	    docker volume create cbon_data
+        if [[ $(sudo docker volume ls | grep -c cbon_data) -eq 0 ]]
+	    then
+	        sudo docker volume create cbon_data
         fi
         #CB_DOCKER_VOL_CMDLINE=${CB_DOCKER_VOL_CMDLINE}" -v $CB_BASE_DIR/data:/home/$CB_DOCKER_USER/cbtool/data "
         CB_DOCKER_VOL_CMDLINE=${CB_DOCKER_VOL_CMDLINE}" -v cbon_data:/home/$CB_DOCKER_USER/cbtool/data "
@@ -243,15 +261,15 @@ then
             if [[ ! -z ${!cb_env_var_name} ]]
             then
                 CB_DOCKER_ENV_CMDLINE=$CB_DOCKER_ENV_CMDLINE" -e ${cb_env_var_name}=${!cb_env_var_name} "
-		if [[ $param == "ACCESS" || $param == "CREDENTIALS" ]]
-		then
+		        if [[ $param == "ACCESS" || $param == "CREDENTIALS" ]]
+		        then
                     cbcf=${!cb_env_var_name}
-		    eval cbcf=${cbcf}
-		    if [[ -f $cbcf ]]
-		    then
+		            eval cbcf=${cbcf}
+		            if [[ -f $cbcf ]]
+		            then
                         CB_DOCKER_VOL_CMDLINE=${CB_DOCKER_VOL_CMDLINE}" -v ${cbcf}:${cbcf} "
                     fi 
-		fi
+		        fi
             fi
         done
     done
@@ -266,7 +284,7 @@ then
     echo "Creating docker with the command: \"docker $CB_DOCKER_CMDLINE\""
     if [[ $CB_DRY_RUN -eq 0 ]]
     then
-        docker $CB_DOCKER_AUX_CMDLINE bash -c "$CB_DOCKER_COMMAND"
+        sudo docker $CB_DOCKER_AUX_CMDLINE bash -c "$CB_DOCKER_COMMAND"
     fi
 fi
 
@@ -274,6 +292,8 @@ if [[ $CB_KILL_DOCKER -eq 0 ]]
 then
     if [[ $CB_DRY_RUN -eq 0 ]]
     then
-        docker exec -it $CB_DOCKER_NAME bash -c "$CB_DOCKER_COMMAND"
+        sudo docker exec -it $CB_DOCKER_NAME bash -c "$CB_DOCKER_COMMAND"
     fi
 fi
+
+exit $?
