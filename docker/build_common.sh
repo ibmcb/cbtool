@@ -287,9 +287,25 @@ export -f cb_build_workloads
 function cb_push_images {
     CB_REPOSITORY=$1
     CB_PUSHALL=$2
-    
+    CB_IMGTYPE=$3
+
+    if [[ -z $3 ]]
+    then
+    	CB_IMGTYPE=$2
+	fi
+	
+	if [[ $CB_IMGTYPE == "orchestrator" ]]
+	then
+		CB_IMG_GREP_CMD="grep $CB_IMGTYPE"
+	fi
+	
+	if [[ $CB_IMGTYPE == "workload" ]]
+	then
+		CB_IMG_GREP_CMD="grep -v orchestrator"
+	fi	
+
     echo "##### Pushing all images to Docker repository"
-    for IMG in $(docker images | grep ${CB_REPOSITORY} | awk '{ print $1 }')
+    for IMG in $(docker images | grep ${CB_REPOSITORY} | $CB_IMG_GREP_CMD | awk '{ print $1 }')
     do
         echo $IMG | grep coremark
         NOT_COREMARK=$?
