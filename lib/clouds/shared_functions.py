@@ -183,33 +183,49 @@ class CommonCloudFunctions:
                     raise CldOpsException(_msg, _status)
 
             if obj_attr_list["check_boot_started"].count("poll_cloud") :
-                _msg = "Check if " + obj_attr_list["log_string"]  + " has started by querying the" 
+                _msg = "Check if " + obj_attr_list["log_string"]  + " has started by querying the"
                 _msg += "cloud directly."
-                cbdebug(_msg)                
-                _vm_started = self.is_vm_ready(obj_attr_list) 
+                cbdebug(_msg)
+                _vm_started = self.is_vm_ready(obj_attr_list)
 
             elif obj_attr_list["check_boot_started"].count("subscribe_on_") :
 
-                _string_to_search = obj_attr_list["cloud_vm_uuid"] + " has started"
+                if obj_attr_list["role"] == "predictablevm" :
+                    _string_to_search = "11111111-1111-1111-1111-111111111111 has started"
+                else :
+                    _string_to_search = obj_attr_list["cloud_vm_uuid"] + " has started"
 
                 _channel_to_subscribe = obj_attr_list["check_boot_started"].replace("subscribe_on_",'')
 
-                _msg = "Check if " + obj_attr_list["log_string"] + " has started by subscribing"
-                _msg += " to channel \"" + str(_channel_to_subscribe)
-                _msg += "\" and waiting for the message \""
-                _msg += _string_to_search + "\"."
-                cbdebug(_msg)
+                done_key = obj_attr_list["check_boot_started"]
+                if done_key not in obj_attr_list or not obj_attr_list[done_key] :
+                    _msg = "Check if " + obj_attr_list["log_string"] + " has started by subscribing"
+                    _msg += " to channel \"" + str(_channel_to_subscribe)
+                    _msg += "\" and waiting for the message \""
+                    _msg += _string_to_search + "\"."
+                    cbdebug(_msg)
 
-                self.osci.add_to_list(obj_attr_list["cloud_name"], "VM", "VMS_STARTING", obj_attr_list["cloud_vm_uuid"])                 
-                _sub_channel = self.osci.subscribe(obj_attr_list["cloud_name"], "VM", _channel_to_subscribe, _max_tries * _wait)
-                for _message in _sub_channel.listen() :
-                    if str(_message["data"]).count(_string_to_search) :
-                        _vm_started = True
-                        break
-    
-                _sub_channel.unsubscribe()
-                self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "VMS_STARTING", obj_attr_list["cloud_vm_uuid"])
-                _vm_started = self.is_vm_ready(obj_attr_list) 
+                    obj_attr_list[done_key] = False
+                    _sub_channel = self.osci.subscribe(obj_attr_list["cloud_name"], "VM", _channel_to_subscribe, _max_tries * _wait)
+                    self.osci.add_to_list(obj_attr_list["cloud_name"], "VM", "STARTING", obj_attr_list["cloud_vm_uuid"])
+                
+                    try :
+                        for _message in _sub_channel.listen() :
+                            if str(_message["data"]).count(_string_to_search) :
+                                _vm_started = True
+                                cbdebug(obj_attr_list["log_string"] + ": Message received: " + str(_message["data"]), True)
+                                break
+                            cbdebug(obj_attr_list["log_string"] + ": Ignoring message: " + str(_message["data"]), True)
+
+                        _sub_channel.unsubscribe()
+                        obj_attr_list[done_key] = True 
+                    except Exception, e :
+                        cberr(obj_attr_list["log_string"] + " listen starting failed: " + str(e), True)
+                        self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "STARTING", obj_attr_list["cloud_vm_uuid"])
+                        _sub_channel.unsubscribe()
+                        raise e
+                    self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "STARTING", obj_attr_list["cloud_vm_uuid"])
+                _vm_started = self.is_vm_ready(obj_attr_list)
 
             elif obj_attr_list["check_boot_started"].count("wait_for_") :
                 _boot_wait_time = int(obj_attr_list["check_boot_started"].replace("wait_for_",''))
@@ -373,33 +389,44 @@ class CommonCloudFunctions:
                     _msg += "attempting to establish network connectivity "
                     _msg += "through the cloud's API"
                     cbdebug(_msg)
-                    
+
                     _vm_is_booted = self.is_vm_alive(obj_attr_list)
 
                 elif obj_attr_list["check_boot_complete"].count("subscribe_on_") :
 
                     _string_to_search = obj_attr_list["prov_cloud_ip"] + " is "
                     _string_to_search += "booted"
-                    
+
                     _channel_to_subscribe = obj_attr_list["check_boot_complete"].replace("subscribe_on_",'')
 
-                    _msg = "Check if " + obj_attr_list["log_string"] + " has booted by "
-                    _msg += "subscribing to channel \"" + str(_channel_to_subscribe)
-                    _msg += "\" and waiting for the message \""
-                    _msg += _string_to_search + "\"."
-                    cbdebug(_msg)
+                    done_key = obj_attr_list["check_boot_complete"]
+                    if done_key not in obj_attr_list or not obj_attr_list[done_key] :
+                        _msg = "Check if " + obj_attr_list["log_string"] + " has booted by "
+                        _msg += "subscribing to channel \"" + str(_channel_to_subscribe)
+                        _msg += "\" and waiting for the message \""
+                        _msg += _string_to_search + "\"."
+                        cbdebug(_msg)
 
-                    self.osci.add_to_list(obj_attr_list["cloud_name"], "VM", "VMS_BOOTING", obj_attr_list["prov_cloud_ip"])
-                    
-                    _sub_channel = self.osci.subscribe(obj_attr_list["cloud_name"], "VM", _channel_to_subscribe, _max_tries * _wait)
-                    for _message in _sub_channel.listen() :
+                        obj_attr_list[done_key] = False
 
-                        if str(_message["data"]).count(_string_to_search) :
-                            _vm_is_booted = True
-                            break
-        
-                    _sub_channel.unsubscribe()
-                    self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "VMS_BOOTING", obj_attr_list["prov_cloud_ip"])
+                        self.osci.add_to_list(obj_attr_list["cloud_name"], "VM", "VMS_BOOTING", obj_attr_list["prov_cloud_ip"])
+
+                        try :
+                            _sub_channel = self.osci.subscribe(obj_attr_list["cloud_name"], "VM", _channel_to_subscribe, _max_tries * _wait)
+                            for _message in _sub_channel.listen() :
+
+                                if str(_message["data"]).count(_string_to_search) :
+                                    _vm_is_booted = True
+                                    break
+
+                            obj_attr_list[done_key] = True 
+                            _sub_channel.unsubscribe()
+                        except Exception, e :
+                            cberr(obj_attr_list["log_string"] + " listen vms_booting failed: " + str(e), True)
+                            self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "VMS_BOOTING", obj_attr_list["prov_cloud_ip"])
+                            _sub_channel.unsubscribe()
+                            raise e
+                        self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "VMS_BOOTING", obj_attr_list["prov_cloud_ip"])
 
                 elif obj_attr_list["check_boot_complete"].count("wait_for_") :
                     _boot_wait_time = int(obj_attr_list["check_boot_complete"].replace("wait_for_",''))
@@ -645,31 +672,44 @@ class CommonCloudFunctions:
                                            1, \
                                            3600)
 
-                _msg = obj_type + ' ' + _cloud_vm_uuid + " ("
-                _msg += _target_name + ") pausing on attach for continue signal ...."
-                cbdebug(_msg, True)
+                done_key = "pause_" + current_step
+                if done_key not in obj_attr_list or not obj_attr_list[done_key] :
+                    _msg = obj_type + ' ' + _cloud_vm_uuid + " ("
+                    _msg += _target_name + ") pausing on attach for continue signal ...."
+                    cbdebug(_msg, True)
 
-                for _message in _sub_channel.listen() :
-                    _args = str(_message["data"]).split(";")
-                    
-                    if len(_args) != 3 :
-#                        cbdebug("Message is not for me: " + str(_args))
-                        continue
+                    obj_attr_list[done_key] = False
+                    self.osci.add_to_list(obj_attr_list["cloud_name"], "VM", "PAUSING", _cloud_vm_uuid)
+                    try :
+                        for _message in _sub_channel.listen() :
+                            _args = str(_message["data"]).split(";")
 
-                    _id, _status, _info = _args
-    
-                    if (_id == _target_uuid or _id == _target_name) and _status == "continue" :
-                        obj_attr_list[obj_attr_list["staging"] + "_complete"] = int(time())
+                            if len(_args) != 3 :
+        #                        cbdebug("Message is not for me: " + str(_args))
+                                continue
 
-                        if _info.count(":") :
+                            _id, _status, _info = _args
 
-                            _add_obj_attr_list = str2dic(_info) 
-                            obj_attr_list.update(_add_obj_attr_list)
-                            
-                        _status = 0
-                        break
+                            if (_id == _target_uuid or _id == _target_name) and _status == "continue" :
+                                obj_attr_list[obj_attr_list["staging"] + "_complete"] = int(time())
 
-                _sub_channel.unsubscribe()
+                                if _info.count(":") :
+
+                                    _add_obj_attr_list = str2dic(_info)
+                                    obj_attr_list.update(_add_obj_attr_list)
+
+                                _status = 0
+                                break
+
+                        obj_attr_list[done_key] = True 
+                        _sub_channel.unsubscribe()
+                    except Exception, e :
+                        cberr(_target_name + " listen pausing failed: " + str(e), True)
+                        self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "PAUSING", _cloud_vm_uuid)
+                        _sub_channel.unsubscribe()
+                        raise e
+
+                    self.osci.remove_from_list(obj_attr_list["cloud_name"], "VM", "PAUSING", _cloud_vm_uuid)
 
                 _status = 0
 
