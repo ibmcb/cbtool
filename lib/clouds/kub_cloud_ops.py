@@ -877,7 +877,7 @@ class KubCmds(CommonCloudFunctions) :
             if str(obj_attr_list["ports_base"]).lower() != "false" :
                 obj_attr_list["prov_cloud_port"] = int(obj_attr_list["ports_base"]) + int(obj_attr_list["name"].replace("vm_",''))
 
-                if obj_attr_list["check_boot_complete"] == "tcp_on_22":
+                if obj_attr_list["check_boot_complete"].lower() == "tcp_on_22":
                     obj_attr_list["check_boot_complete"] = "tcp_on_" + str(obj_attr_list["prov_cloud_port"])
 
             _annotations = { "creator" : "cbtool" }

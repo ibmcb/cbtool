@@ -248,6 +248,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _aux = str2dic(cld_attr_lst["vm_templates"][_vm_role])
                     _aux["imageid1"] = cld_attr_lst["vm_defaults"]["image_prefix"].strip() + _aux["imageid1"] + cld_attr_lst["vm_defaults"]["image_suffix"].strip()
                     cld_attr_lst["vm_templates"][_vm_role] = dic2str(_aux)
+
+                self.create_image_build_map(cld_attr_lst)
                     
                 for _vmc_entry in _initial_vmcs :
                     _cld_conn = _cld_ops_class(self.pid, None, None)
@@ -369,7 +371,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 cld_attr_lst["mon_defaults"]["collector_host_summarizer_port"] = _proc_man.get_free_port(cld_attr_lst["mon_defaults"]["collector_host_summarizer_port"], protocol = "tcp")
     
                 os_func, ms_func, unused, unused = load_store_functions(cld_attr_lst)
-
+                
                 os_func(cld_attr_lst, "initialize", cloud_name = cld_attr_lst["name"])
                 ms_func(cld_attr_lst, "initialize")
 
@@ -2398,14 +2400,19 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     obj_attr_list["identity"] = obj_attr_list["identity"].replace(obj_attr_list["username"], \
                                                                                   obj_attr_list["login"])
 
-                _msg = "Performing generic VM post_boot configuration on " + obj_attr_list["log_string"] 
-                _msg += ", on IP address "+ obj_attr_list["prov_cloud_ip"] + "..."     
+
+                if str(obj_attr_list["prepare_workload_names"]).lower() != "none" \
+                and str(obj_attr_list["prepare_image_name"]).lower() != "none" :
+                    _msg = "Performing workload (" + obj_attr_list["prepare_workload_names"] 
+                    _msg += ") image build operation on " + obj_attr_list["log_string"]
+                    _msg += ", on IP address "+ obj_attr_list["prov_cloud_ip"] + "..."     
+                else :
+                    _msg = "Performing generic instance post_boot configuration on " + obj_attr_list["log_string"] 
+                    _msg += ", on IP address "+ obj_attr_list["prov_cloud_ip"] + "..."     
                 cbdebug(_msg, selectively_print_message("run_generic_scripts", obj_attr_list))
 
-                _cmd = "~/" + obj_attr_list["remote_dir_name"] + "/scripts/common/cb_post_boot.sh"
-                
                 _status, _xfmsg, _object = \
-                _proc_man.run_os_command(_cmd, obj_attr_list["prov_cloud_ip"], \
+                _proc_man.run_os_command(obj_attr_list["generic_post_boot_command"], obj_attr_list["prov_cloud_ip"], \
                                          obj_attr_list["run_generic_scripts"], \
                                          obj_attr_list["debug_remote_commands"], \
                                          True, \
@@ -2434,9 +2441,19 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                       "generic post-boot script executed")                    
                     obj_attr_list["last_known_state"] = "generic post-boot script executed"
 
-                _msg = "Performed generic VM post_boot configuration on " + obj_attr_list["log_string"] 
-                _msg += ", on IP address "+ obj_attr_list["prov_cloud_ip"] + "..."     
-                cbdebug(_msg)
+                if str(obj_attr_list["prepare_workload_names"]).lower() != "none" \
+                and str(obj_attr_list["prepare_image_name"]).lower() != "none" :
+                    _msg = "Performed workload image build operation on " + obj_attr_list["log_string"]
+                    _msg += ", on IP address "+ obj_attr_list["prov_cloud_ip"] + "."
+                    _msg += "You can now capture this image with \"vmcapture youngest "
+                    _msg += obj_attr_list["image_prefix"].strip() + obj_attr_list["prepare_image_name"]
+                    _msg += obj_attr_list["image_suffix"].strip() + "\" on the CLI\n"
+                    cbdebug(_msg)
+                    print '\n' + _msg                    
+                else :
+                    _msg = "Performed generic VM post_boot configuration on " + obj_attr_list["log_string"] 
+                    _msg += ", on IP address "+ obj_attr_list["prov_cloud_ip"] + "..."     
+                    cbdebug(_msg)
                      
             else :                
                 _status = 0

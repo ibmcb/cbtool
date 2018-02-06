@@ -54,6 +54,7 @@ then
     syslog_netcat "Starting (AI) Object store..."
     start_redis ${osportnumber}
     syslog_netcat "Local (AI) Object store started"
+    setup_rclocal_restarts
 fi
 
 refresh_hosts_file

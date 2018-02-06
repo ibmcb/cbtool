@@ -903,6 +903,10 @@ class PcmCmds(CommonCloudFunctions) :
 
             obj_attr_list["pcm_006_instance_port_mapping_time"] = _mark5 - _time_mark_prc
 
+            if str(obj_attr_list["ports_base"]).lower() != "false" :
+                if obj_attr_list["check_boot_complete"].lower() == "tcp_on_22" :
+                    obj_attr_list["check_boot_complete"] = "tcp_on_" + str(obj_attr_list["prov_cloud_port"])
+
             self.wait_for_instance_boot(obj_attr_list, _mark5)
 
             obj_attr_list["pcm_007_instance_reachable"] = obj_attr_list["mgt_004_network_acessible"]
@@ -962,25 +966,23 @@ class PcmCmds(CommonCloudFunctions) :
             if "host_cloud_ip" in obj_attr_list :
                 _host_ip = obj_attr_list["host_cloud_ip"]
     
-                _instance = self.get_instances(obj_attr_list, "vm", _host_ip, obj_attr_list["cloud_vm_name"])
-    
+                _instance = self.get_instances(obj_attr_list, "vm", _host_ip, \
+                                               obj_attr_list["cloud_vm_name"])
+                
                 if _instance :
                     self.common_messages("VM", obj_attr_list, "destroying", 0, '')
-                                        
-                    if  _instance.status == "Running" :                    
-                        _instance.stop()
-
-                    _instance = self.get_instances(obj_attr_list, "vm", _host_ip, obj_attr_list["cloud_vm_name"])
-        
-                    if _instance :
-                        if  _instance.status == "Running" :                    
-                            _instance.stop()
-    
-                    _instance.delete()
     
                     while _instance and _curr_tries < _max_tries :
-                        _instance = self.get_instances(obj_attr_list, "vm", \
-                                               obj_attr_list["cloud_vm_name"])
+                        
+                        _instance = self.get_instances(obj_attr_list, "vm", _host_ip, \
+                                                       obj_attr_list["cloud_vm_name"])
+
+                        if _instance :
+                            if  _instance.status == "Running" :                    
+                                _instance.stop()
+                            else :
+                                _instance.delete()
+                                                    
                         sleep(_wait)
                         _curr_tries += 1
     

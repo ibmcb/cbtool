@@ -47,8 +47,8 @@ function cb_docker_build {
     then
         if [[ $CB_SQUASH == "true" ]]
         then
-#	        CB_ACTUAL_SQUASH="--squash"
-	        CB_ACTUAL_SQUASH=""
+#            CB_ACTUAL_SQUASH="--squash"
+            CB_ACTUAL_SQUASH=""
         fi
     fi                                                                                                                                                                                                                        
     sudo rm -rf Dockerfile && sudo cp -f $CB_DOCKERFN Dockerfile
@@ -291,18 +291,18 @@ function cb_push_images {
 
     if [[ -z $3 ]]
     then
-    	CB_IMGTYPE=$2
-	fi
-	
-	if [[ $CB_IMGTYPE == "orchestrator" ]]
-	then
-		CB_IMG_GREP_CMD="grep $CB_IMGTYPE"
-	fi
-	
-	if [[ $CB_IMGTYPE == "workload" ]]
-	then
-		CB_IMG_GREP_CMD="grep -v orchestrator"
-	fi	
+        CB_IMGTYPE=$2
+    fi
+    
+    if [[ $CB_IMGTYPE == "orchestrator" ]]
+    then
+        CB_IMG_GREP_CMD="grep $CB_IMGTYPE"
+    fi
+    
+    if [[ $CB_IMGTYPE == "workload" ]]
+    then
+        CB_IMG_GREP_CMD="grep -v orchestrator"
+    fi    
 
     echo "##### Pushing all images to Docker repository"
     for IMG in $(docker images | grep ${CB_REPOSITORY} | $CB_IMG_GREP_CMD | awk '{ print $1 }')
@@ -329,4 +329,15 @@ function cb_push_images {
         fi
     done
     echo "##### Images to Docker repository"    
+}
+
+function cb_remove_images {
+    CB_REPOSITORY=$1
+    CB_IMG_CLASS=$2
+    CB_BRANCH=$3
+    
+    for img in $(sudo docker images | grep $CB_REPO | grep $CB_IMG_CLASS | grep $CB_BRANCH | awk '{ print $3 }')
+    do
+        sudo docker rmi -f $img
+    done
 }
