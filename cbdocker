@@ -29,8 +29,9 @@ CB_DOCKER_COMMAND="auto"
 CB_DOCKER_EXTRA_OPTS=${CB_DOCKER_EXTRA_OPTS:-""}
 CB_DOCKER_IN_CLI=${CB_DOCKER_IN_CLI:-1}
 CB_EXECUTABLE_PARMS=" "
+CB_DOCKER_ADDITIONAL_VOLUME="none"
 
-CB_USAGE="Usage: $0 [-r/--repo <repository>] [-i/--image image name] [-b/--branch branch] [-c/--config config] [-e/--execute command] [-p/--private] [-P/--propagate] [-d/--debug] [--reset] [-f/--soft_reset] [-x/--hard_reset] [-t/--trace tracefile] [-k/--kill] [-n/--dryrun]"
+CB_USAGE="Usage: $0 [-r/--repo <repository>] [-i/--image image name] [-b/--branch branch] [-c/--config config] [-e/--execute command] [-v/--volumes] [-p/--private] [-P/--propagate] [-d/--debug] [--reset] [-f/--soft_reset] [-x/--hard_reset] [-t/--trace tracefile] [-k/--kill] [-n/--dryrun]"
 
 while [[ $# -gt 0 ]]
 do
@@ -69,6 +70,14 @@ do
         CB_EXECUTABLE_PARMS=${CB_EXECUTABLE_PARMS}" --config $(echo $key | cut -d '=' -f 2)"
         shift
         ;;
+        -v|--volume)
+        CB_DOCKER_ADDITIONAL_VOLUME="$2"
+        shift
+        ;;
+        -v=*|--volume=*)
+        CB_DOCKER_ADDITIONAL_VOLUME=$(echo $key | cut -d '=' -f 2)
+        shift
+        ;;        
         -p|--private)
         CB_PRIVATE_CONFIG=1
         CB_PRIVATE_DATA=1
@@ -231,7 +240,12 @@ then
         #CB_DOCKER_VOL_CMDLINE=${CB_DOCKER_VOL_CMDLINE}" -v $CB_BASE_DIR/data:/home/$CB_DOCKER_USER/cbtool/data "
         CB_DOCKER_VOL_CMDLINE=${CB_DOCKER_VOL_CMDLINE}" -v cbon_data:/home/$CB_DOCKER_USER/cbtool/data "
     fi
-    
+ 
+    if [[ $CB_DOCKER_ADDITIONAL_VOLUME != "none" ]]
+    then
+        CB_DOCKER_VOL_CMDLINE=${CB_DOCKER_VOL_CMDLINE}" -v $CB_DOCKER_ADDITIONAL_VOLUME "
+    fi
+
     CB_DOCKER_ENV_CMDLINE=" -e CB_PRIVATE_CONFIG=$CB_PRIVATE_CONFIG -e CB_PRIVATE_DATA=$CB_PRIVATE_DATA "
    
     if [[ ! -z $CB_STARTUP_CLOUD ]]
@@ -275,7 +289,12 @@ then
         done
     done
 
-    CB_DOCKER_IMAGE_CMDLINE=" "${CB_DOCKER_REPO}"/"${CB_DOCKER_IMAGE}":"${CB_DOCKER_TAG}
+    if [[ $CB_DOCKER_REPO == "local" ]]
+    then
+        CB_DOCKER_IMAGE_CMDLINE=${CB_DOCKER_IMAGE}":"${CB_DOCKER_TAG}
+    else
+        CB_DOCKER_IMAGE_CMDLINE=" "${CB_DOCKER_REPO}"/"${CB_DOCKER_IMAGE}":"${CB_DOCKER_TAG}
+    fi
     
     CB_DOCKER_EXE_CMDLINE=" bash -c \"$CB_DOCKER_COMMAND\""
 
