@@ -1633,6 +1633,18 @@ function get_offline_ip {
     ip -o addr show $(ip route | grep default | grep -oE "dev [a-z]+[0-9]+" | sed "s/dev //g") | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | grep -v 255
 }
 
+function setup_rclocal_restarts {
+    if [ x"$(grep cb_start_load_manager.sh /etc/rc.local)" == x ] ; then
+        echo "cb_start_load_manager.sh is missing from /etc/rc.local"
+        cat /etc/rc.local | grep -v "exit 0" > /tmp/rc.local
+        chmod +x /tmp/rc.local
+		echo "su $(whoami) -c \"$dir/cb_start_load_manager.sh\"" >> /tmp/rc.local
+        echo "exit 0" >> /tmp/rc.local
+        mv -f /tmp/rc.local /etc/rc.local
+        
+    fi
+}
+
 function automount_data_dirs {
     #    ROLE_DATA_DIR=$(get_my_ai_attribute_with_default ${my_role}_data_dir none)
     #    ROLE_DATA_FSTYP=$(get_my_ai_attribute_with_default ${my_role}_data_fstyp local)
