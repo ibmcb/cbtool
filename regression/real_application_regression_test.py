@@ -90,7 +90,7 @@ def cli_named_option_parser() :
     parser = OptionParser(usage)
 
     parser.add_option("-t", "--types", dest="typelist", default = "nullworklaod", help="Virtual Application Types to test")
-    parser.add_option("-b", "--build", dest="build", default = None, help="Base image to build from")
+    parser.add_option("-b", "--build", dest="build", default = "none", help="Base image to build from")
     parser.add_option("-w", "--wait", dest="wait", default = 900, help="How long to wait before declaring the test a failure (seconds)")
     parser.add_option("-i", "--interval", dest="interval", default = 30, help="Interval between attempts to obtain application performance samples (seconds)")
     parser.add_option("-s", "--samples", dest="samples", default = 3, help="How many application performance samples are required?")
@@ -154,7 +154,7 @@ def main(apiconn) :
         _model_to_imguuid["kub"] = "ibmcb/cbtoolbt-ubuntu"
         _model_to_imguuid["as"] = "b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-16_04-LTS-amd64-server-20180112-en-us-30GB"
 
-        if _options.build.lower() == "auto" :
+        if str(_options.build).lower() == "auto" :
             _options.build = _model_to_imguuid[cloud_model]
 
         if _options.build :

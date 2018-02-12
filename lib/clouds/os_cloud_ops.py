@@ -29,7 +29,7 @@
 '''
     Created on Jan 30, 2018
     OpenStack Object Operations Library
-    @author: Marcio Silva, Michael R. Hines, Darrin Eden
+    @author: Marcio Silva, Michael R. Hines
 '''
 
 from time import time
@@ -79,7 +79,8 @@ class OsCmds(LibcloudCmds) :
         _insecure = False
         _user_domain_id = "default"
         _project_domain_id = "default"
-        
+        _domain_name = "Default"
+
         if not self.connauth_pamap :
             self.connauth_pamap = self.parse_cloud_connection_file(access_token)
 
@@ -114,8 +115,14 @@ class OsCmds(LibcloudCmds) :
         if "OS_PROJECT_DOMAIN_ID" in self.connauth_pamap :
             _project_domain_id = self.connauth_pamap["OS_PROJECT_DOMAIN_ID"]
 
+        if "OS_DOMAIN_NAME" in self.connauth_pamap :
+            _domain_name = self.connauth_pamap["OS_DOMAIN_NAME"]
+
         if "OS_USER_DOMAIN_ID" in self.connauth_pamap :
             _user_domain_id = self.connauth_pamap["OS_USER_DOMAIN_ID"]
+
+        if "OS_USER_DOMAIN_NAME" in self.connauth_pamap :
+            _user_domain_name = self.connauth_pamap["OS_USER_DOMAIN_NAME"]
 
         _access_url = _access_url.replace("/v2.0/",'').replace("/v3/",'').replace("/identity",'')
 
@@ -133,7 +140,8 @@ class OsCmds(LibcloudCmds) :
                                  ex_tenant_name = _tenant, \
                                  ex_project_name = _project_name, \
                                  ex_project_domain_id =  _project_domain_id, \
-                                 ex_user_domain_id = _user_domain_id)
+                                 ex_user_domain_id = _user_domain_id, \
+                                 ex_domain_name = _domain_name)
 
         _msg = "Libcloud connection code is \"python -c 'from libcloud.compute."
         _msg += "providers import get_driver; from libcloud.compute.types import"
@@ -184,7 +192,7 @@ class OsCmds(LibcloudCmds) :
         return False
 
     @trace            
-    def create_ssh_key(self, key_name, key_type, key_contents, key_fingerprint, vm_defaults, connection) :
+    def create_ssh_key(self, vmc_name, key_name, key_type, key_contents, key_fingerprint, vm_defaults, connection) :
         '''
         TBD
         '''

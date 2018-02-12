@@ -180,6 +180,85 @@ fi
 
 export ZOOKEPER_HOME=${ZOOKEPER_HOME}
 
+if [[ $my_type == "spark" ]]
+then
+    
+    if [[ -z ${SPARK_HOME} ]]
+    then
+        SPARK_HOME=`get_my_ai_attribute_with_default spark_home ~/spark-2.2.1-bin-hadoop2.7`
+        eval SPARK_HOME=${SPARK_HOME}
+        syslog_netcat "SPARK_HOME not defined on the environment. Value obtained from CB's Object Store was \"$SPARK_HOME\""
+    else
+        syslog_netcat "SPARK_HOME already defined on the environment (\"$SPARK_HOME\")" 
+    fi
+    
+    if [[ ! -d ${SPARK_HOME} ]]
+    then
+        syslog_netcat "The value specified in the AI attribute SPARK_HOME (\"$SPARK_HOME\") points to a non-existing directory."     
+        for SPARK_CPATH in ~ /usr/local
+        do
+            syslog_netcat "Searching ${SPARK_CPATH} for a spark dir."
+            if [[ $(sudo ls $SPARK_CPATH | grep -v tar | grep -c spark) -ne 0 ]]
+            then
+                eval SPARK_CPATH=${SPARK_CPATH}
+                syslog_netcat "Directory \"${SPARK_CPATH}\" found."
+                SPARK_HOME=$(ls ${SPARK_CPATH} | grep -v tar | grep -v spark_store | grep spark | sort -r | head -n1)
+                eval SPARK_HOME="$SPARK_CPATH/${SPARK_HOME}"
+                if [[ -d $SPARK_HOME ]]
+                then
+                    syslog_netcat "SPARK_HOME determined to be \"${SPARK_HOME}\""
+                    break
+                fi
+            fi
+        done
+            
+        if [[ ! -d $SPARK_HOME ]]
+        then
+            syslog_netcat "Unable to find a directory with a Spark installation - NOK"
+            exit 1
+        fi
+    fi
+    
+    if [[ -f ~/.bashrc ]]
+    then
+        is_spark_home_export=`grep -c "SPARK_HOME=${SPARK_HOME}" ~/.bashrc`
+        if [[ $is_spark_home_export -eq 0 ]]
+        then
+            syslog_netcat "Adding SPARK_HOME ($SPARK_HOME) to bashrc"
+            echo "export SPARK_HOME=${SPARK_HOME}" >> ~/.bashrc
+            echo "export PATH=\$PATH:$SPARK_HOME/bin" >> ~/.bashrc
+        fi
+    fi
+
+    if [[ -z ${SPARK_CONF_DIR} ]]
+    then
+        SPARK_CONF_DIR=$(find $SPARK_HOME -name spark-defaults.conf.template | grep -v src | grep -v share | grep -v templates | sed 's/spark-defaults.conf.template//g' | tail -1)
+        syslog_netcat "SPARK_CONF_DIR not defined on the environment. Assuming \"$SPARK_CONF_DIR\" as the directory"
+    fi
+
+    if [[ ! -d $SPARK_CONF_DIR ]]
+    then
+        syslog_netcat "Error. The detected SPARK_CONF_DIR ($SPARK_CONF_DIR) is not a directory - NOK"
+        exit 1
+    fi
+  
+    if [[ -f ~/.bashrc ]]
+    then
+        is_spark_conf_export=`grep -c "SPARK_CONF_DIR=${SPARK_CONF_DIR}" ~/.bashrc`
+        if [[ $is_spark_conf_export -eq 0 ]]
+        then
+            syslog_netcat "Adding SPARK_CONF_DIR ($SPARK_CONF_DIR) to bashrc"
+            echo "export SPARK_CONF_DIR=${SPARK_CONF_DIR}" >> ~/.bashrc
+        fi
+    fi            
+    
+    export SPARK_CONF_DIR=${SPARK_CONF_DIR}
+
+fi
+
+export SPARK_HOME=${SPARK_HOME}
+syslog_netcat "SPARK_HOME was determined to be $SPARK_HOME"   
+
 if [[ -z ${HIBENCH_HOME} ]]
 then
     HIBENCH_HOME=`get_my_ai_attribute_with_default hibench_home ~/HiBench`
@@ -208,17 +287,21 @@ then
 else
     HADOOP_BIN_DIR=${HADOOP_HOME}/bin
 fi
-
+    
 if [[ $(echo $my_type | grep -c giraph) -ne 0 ]]
 then
     hadoop_master_ip=`get_ips_from_role giraphmaster`
 
     slave_ips=`get_ips_from_role giraphslave`
+elif [[ $(echo $my_type | grep -c spark) -ne 0 ]]
+then
+    hadoop_master_ip=`get_ips_from_role sparkmaster`
+    spark_master_ip=`get_ips_from_role sparkmaster`
+    slave_ips=`get_ips_from_role sparkslave`
 else
     hadoop_master_ip=`get_ips_from_role hadoopmaster`
 
     slave_ips=`get_ips_from_role hadoopslave`
-
 fi
 
 slave_ips_csv=$(echo ${slave_ips} | sed ':a;N;$!ba;s/\n/,/g')
@@ -296,14 +379,16 @@ function create_master_and_slaves_files {
        syslog_netcat "Error creating $HADOOP_CONF_DIR/masters - NOK"
        exit 1
     fi
-    
+            
     echo "${slave_ips}" > $HADOOP_CONF_DIR/slaves
     if [[ $? -ne 0 ]]
     then
-       syslog_netcat "Error creating $HADOOP_CONF_DIR/slavess - NOK"
+       syslog_netcat "Error creating $HADOOP_CONF_DIR/slaves - NOK"
        exit 1
     fi
+
     syslog_netcat "...masters, slaves files updated."
+    
 }
 export -f create_master_and_slaves_files
 
@@ -642,7 +727,7 @@ function check_hadoop_cluster_state {
         QUICK_CHECK=0
     fi
     
-    if [[ x"$my_role" == x"hadoopmaster" || x"$my_role" == x"giraphmaster" ]] 
+    if [[ x"$my_role" == x"hadoopmaster" || x"$my_role" == x"giraphmaster" || x"$my_role" == x"sparkmaster" ]] 
     then
         syslog_netcat "Waiting for all Datanodes to become available..."
     

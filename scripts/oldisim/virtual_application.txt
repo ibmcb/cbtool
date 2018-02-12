@@ -24,7 +24,7 @@ REPORTED_METRICS = completion_time,quiescent_time,errors,throughput,latency,95_l
 
 # VApp-specific MANDATORY attributes
 DESCRIPTION =Deploys a cluster (1 driver, 1 lb, 1 root, N leafs) and runs the
-DESCRIPTION +=Online Data- Intensive (OLDI) workloads simulator (oldisim) on it.\n
+DESCRIPTION +=Online Data-Intensive (OLDI) workloads simulator (oldisim) on it.\n
 DESCRIPTION +=  - LOAD_PROFILE possible values: _PROFILES_\n
 DESCRIPTION +=  - LOAD_LEVEL meaning: number of threads to spawn (parameter --threads).\n 
 DESCRIPTION +=  - LOAD_DURATION meaning: Time to wait for the execution of queries.\n

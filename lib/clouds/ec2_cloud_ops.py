@@ -406,7 +406,7 @@ class Ec2Cmds(CommonCloudFunctions) :
             return _nr_instances
 
     @trace
-    def get_ssh_keys(self, key_name, key_contents, key_fingerprint, registered_key_pairs, internal, connection) :
+    def get_ssh_keys(self, vmc_name, key_name, key_contents, key_fingerprint, registered_key_pairs, internal, connection) :
         '''
         TBD
         '''
@@ -419,7 +419,7 @@ class Ec2Cmds(CommonCloudFunctions) :
         return True
 
     @trace
-    def get_security_groups(self, security_group_name, registered_security_groups) :
+    def get_security_groups(self, vmc_name, security_group_name, registered_security_groups) :
         '''
         TBD
         '''
@@ -577,7 +577,7 @@ class Ec2Cmds(CommonCloudFunctions) :
                 return True
 
     @trace            
-    def create_ssh_key(self, key_name, key_type, key_contents, key_fingerprint, vm_defaults, connection) :
+    def create_ssh_key(self, vmc_name, key_name, key_type, key_contents, key_fingerprint, vm_defaults, connection) :
         '''
         TBD
         '''

@@ -211,6 +211,7 @@ class PdmCmds(CommonCloudFunctions) :
                     if _image_tag not in _registered_image_tags :
                         _registered_image_tags.append(_image_tag)
 
+            _attempted_pulls = []
             for _vm_role in vm_templates.keys() :            
                 _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
                 if self.is_cloud_image_uuid(_imageid) :
@@ -219,9 +220,11 @@ class PdmCmds(CommonCloudFunctions) :
 
                 if not self.is_cloud_image_uuid(_imageid) :
                     try :
-                        if _imageid not in _registered_image_tags :
+                        if _imageid not in _registered_image_tags and _imageid not in _attempted_pulls and not _imageid.count("_to_replace") :
                             _msg = "    Pulling docker image \"" + _imageid + "\"..."
                             cbdebug(_msg, True)
+                            if _imageid not in _attempted_pulls :
+                                _attempted_pulls.append(_imageid)
                             self.dockconn[_endpoint].pull(_imageid)
                     except :
                         pass
@@ -529,7 +532,7 @@ class PdmCmds(CommonCloudFunctions) :
             return _nr_instances
 
     @trace    
-    def get_ssh_keys(self, key_name, key_contents, key_fingerprint, registered_key_pairs, internal, connection) :
+    def get_ssh_keys(self, vmc_name, key_name, key_contents, key_fingerprint, registered_key_pairs, internal, connection) :
         '''
         TBD
         '''
@@ -539,12 +542,12 @@ class PdmCmds(CommonCloudFunctions) :
         return True
 
     @trace
-    def get_security_groups(self, security_group_name, registered_security_groups) :
+    def get_security_groups(self, vmc_name, security_group_name, registered_security_groups) :
         '''
         TBD
         '''
 
-        registered_security_groups.append(security_group_name)              
+        registered_security_groups.append(security_group_name)       
 
         return True
 
@@ -755,7 +758,7 @@ class PdmCmds(CommonCloudFunctions) :
                 return True
 
     @trace            
-    def create_ssh_key(self, key_name, key_type, key_contents, key_fingerprint, vm_defaults, connection) :
+    def create_ssh_key(self, vmc_name, key_name, key_type, key_contents, key_fingerprint, vm_defaults, connection) :
         '''
         TBD
         '''

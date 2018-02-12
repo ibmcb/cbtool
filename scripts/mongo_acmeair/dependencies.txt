@@ -16,7 +16,6 @@ mongo-order = 97
 # git = git clone using above giturl
 # pip = python pip utility
 # man = "manual"
-bonnie-install = pm
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###

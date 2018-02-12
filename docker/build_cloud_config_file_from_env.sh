@@ -112,7 +112,7 @@ echo "SERVER_PORT=${CB_VPN_SERVER_PORT}" >> $CB_CONFIG_FILE
 echo "NETWORK=${CB_VPN_NETWORK}" >> $CB_CONFIG_FILE
 echo "NETMASK=${CB_VPN_NETMASK}" >> $CB_CONFIG_FILE
 
-for cmodel in SIM OSK EC2 VCD PLM SLR GCE DO PDM PCM KUB AS OS
+for cmodel in SIM PLM PDM PCM KUB NOP OSK OS CSK VCD EC2 SLR GCE DO AS
 do
     for param in ACCESS CREDENTIALS SECURITY_GROUPS INITIAL_VMCS SSH_KEY_NAME NETNAME LOGIN
     do
@@ -120,9 +120,36 @@ do
         cb_env_var_value=$(echo ${!cb_env_var_name})
         if [[ ! -z ${!cb_env_var_name} ]]
         then
-        	echo "    Setting the parameter \"$param\", on the \"[USER-DEFINED : CLOUDOPTION_MY${cmodel}]\" section to \"${!cb_env_var_name}\""
+            echo "    Setting the parameter \"$param\", on the \"[USER-DEFINED : CLOUDOPTION_MY${cmodel}]\" section to \"${!cb_env_var_name}\""
             sed -i "s^${cmodel}_${param}.*^${cmodel}_${param} = ${!cb_env_var_name}^g" $CB_CONFIG_FILE
         fi
     done
 done
-echo "END: Built private cloud configuration file \"$CB_CONFIG_FILE\" combining both \"$CB_BASE_DIR/configs/cloud_definitions.txt\" and environment variables (all variables start with \"CB_\")"  
+    
+for obj in VMC_DEFAULTS VM_DEFAULTS AI_DEFAULTS AIDRS_DEFAULTS
+do
+    for cmodel in EMPTY SIM PLM PDM PCM KUB NOP OSK OS CSK VCD EC2 SLR GCE DO AS
+    do
+        section_exists=0
+        for param in EMPTY REMOTE_DIR_NAME RUN_NETNAME PROV_NETNAME EXECUTE_SCRIPT_NAME CHECK_BOOT_STARTED CHECK_BOOT_COMPLETE LEAVE_INSTANCE_ON_FAILURE PORTS_BASE USE_VPN_IP VPN_ONLY USE_FLOATING_IP FLOATING_POOL USE_JUMPHOST
+        do
+            cb_env_var_name=CB_${obj}_${cmodel}_${param}
+            cb_env_var_name=$(echo $cb_env_var_name | sed 's/_EMPTY//g')
+            cb_section_name="[${obj} : ${cmodel}_CLOUDCONFIG]"
+            cb_section_name=$(echo $cb_section_name | sed 's/ : EMPTY_CLOUDCONFIG//g')
+            if [[ ! -z ${!cb_env_var_name} ]]
+            then
+                echo "Setting the parameter \"$param\", on the section \"$cb_section_name\" to \"${!cb_env_var_name}"
+                if [[ $section_exists -eq 0 ]]
+                then
+                    echo "" >> $CB_CONFIG_FILE
+                    echo "$cb_section_name" >> $CB_CONFIG_FILE
+                    section_exists=1
+                fi
+                echo "${param} = ${!cb_env_var_name}" >> $CB_CONFIG_FILE
+            fi
+        done
+    done
+done
+
+echo "END: Built private cloud configuration file \"$CB_CONFIG_FILE\" combining both \"$CB_BASE_DIR/configs/cloud_definitions.txt\" and environment variables (all variables start with \"CB_\")"

@@ -123,87 +123,90 @@ def docker_file_parser(depsdict, username, options, hostname, process_manager = 
     _workloads_list = []
     
     if options.role.count("orchestrator") :
-        _workloads_list = ['orchestrator']
+        _workloads_list = [ "orchestrator", "orchprereqs" ]
+        _role_list = [ options.role, "orchprereqs" ]
         
     if len(options.wks) > 1 :
         if options.wks.count("_ycsb") :
             options.wks += ",ycsb"
             
         _workloads_list = options.wks.split(',')
-            
+        _role_list = [ options.role ]
+                    
     print '\n'
+
+    for _role in _role_list :    
+        for _path, _dirs, _files in os.walk(options.dfdir + '/' + _role) :
+            for _fnam in _files:
+                _full_fnam = os.path.join(_path, _fnam)
+                if not _fnam.count("._processed_") and _fnam.count("Dockerfile-") and os.access(_full_fnam, os.F_OK) :            
     
-    for _path, _dirs, _files in os.walk(options.dfdir + '/' + options.role) :
-        for _fnam in _files:
-            _full_fnam = os.path.join(_path, _fnam)
-            if not _fnam.count("._processed_") and _fnam.count("Dockerfile-") and os.access(_full_fnam, os.F_OK) :            
-
-                _x_fnam = _fnam.replace("Dockerfile-",'').split('_')
-                _key_prefix = _x_fnam[0]                
-                _f_workload = _x_fnam[2]
-
-                if len(_x_fnam) > 3 :
-                    _f_workload += '_' + _x_fnam[3]
-                
-                if _f_workload in _workloads_list :
-                    try:
-                        _fd = open(_full_fnam, 'r')
-                        _fc = _fd.readlines()
-                        _fd.close()
-                        _msg = "##### Parsing Dockerfile \"" + _full_fnam + "\"...."
-                        cbinfo(_msg)
+                    _x_fnam = _fnam.replace("Dockerfile-",'').split('_')
+                    _key_prefix = _x_fnam[0]                
+                    _f_workload = _x_fnam[2]
     
-                        _current_key = None
-                        
-                        for _line in _fc :
-                            _line = _line.strip()
+                    if len(_x_fnam) > 3 :
+                        _f_workload += '_' + _x_fnam[3]
+                    
+                    if _f_workload in _workloads_list :
+                        try:
+                            _fd = open(_full_fnam, 'r')
+                            _fc = _fd.readlines()
+                            _fd.close()
+                            _msg = "##### Parsing Dockerfile \"" + _full_fnam + "\"...."
+                            cbinfo(_msg)
         
-                            if _current_key :
-                                
-                                if _line.count("#") and _line.count("-install-") :
-                                    depsdict[_current_key] = depsdict[_current_key][0:-1]
-                                    
-                                    if _current_key.count("centos-") :
-                                        depsdict[_current_key.replace("centos-","rhel-")] = depsdict[_current_key]
-                                        depsdict[_current_key.replace("centos-","fedora-")] = depsdict[_current_key]                                                                                
-                                    _current_key = None
-
-                                elif _line.count("#") and _line.count("RUN") :
-                                    True
-
-                                else :
-                                    _line = _line.replace("RUN apt-get install -y","package_install")
-                                    _line = _line.replace("RUN yum install -y","package_install")
-                                    _line = _line.replace("RUN pip install --upgrade", "sudo pip install --upgrade INDEXURL")
-                                    _line = _line.replace("RUN git", "git")
-                                    _line = _line.replace("; apt-get install", "; sudo apt-get install")
-                                    _line = _line.replace("; apt-get update", "; sudo apt-get update")                                    
-                                    _line = _line.replace("; add-apt-repository", "; sudo add-apt-repository")                                    
-                                    _line = _line.replace("; dpkg", "; sudo dpkg")
-                                    _line = _line.replace("; yum install", "; sudo yum install")
-                                    _line = _line.replace("; rpm", "; sudo rpm")
-                                    _line = _line.replace("; chown", "; sudo chown")
-                                    _line = _line.replace("; make install", "; sudo make install")
-                                    _line = _line.replace("RUN mkdir -p /home/REPLACE_USERNAME/cbtool/3rd_party", "mkdir -p 3RPARTYDIR")
-                                    _line = _line.replace("RUN ", "sudo ")
-                                    _line = _line.replace("sudo cd ", "cd ")
-                                    _line = _line.replace("sudo REPLACE_RSYNC", "REPLACE_RSYNC")
-                                    _line = _line.replace("WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party", "cd 3RPARTYDIR")
-                                    _line = _line.replace("# service_stop_disable", "service_stop_disable")
-                                    _line = _line.replace("# echo", "echo")
-                                    _line = _line.replace("/home/root", "/root")
-                                    _line = _line.replace("____",' ')
-                                    depsdict[_current_key] += _line + "; "
-        
-                            else :
-                                if _line.count("#") and _line.count("-install-") :
-                                    _current_key = _key_prefix + '-' + _line.replace("#",'').strip()
-                                    depsdict[_current_key] = ''
+                            _current_key = None
+                            
+                            for _line in _fc :
+                                _line = _line.strip()
             
-                    except Exception, e :
-                        _msg = "##### Error reading file \"" + _full_fnam  + "\":" + str(e)
-                        cberr(_msg)
-                        exit(4)
+                                if _current_key :
+                                    
+                                    if _line.count("#") and _line.count("-install-") :
+                                        depsdict[_current_key] = depsdict[_current_key][0:-1]
+                                        
+                                        if _current_key.count("centos-") :
+                                            depsdict[_current_key.replace("centos-","rhel-")] = depsdict[_current_key]
+                                            depsdict[_current_key.replace("centos-","fedora-")] = depsdict[_current_key]                                                                                
+                                        _current_key = None
+    
+                                    elif _line.count("#") and _line.count("RUN") :
+                                        True
+    
+                                    else :
+                                        _line = _line.replace("RUN apt-get install -y","package_install")
+                                        _line = _line.replace("RUN yum install -y","package_install")
+                                        _line = _line.replace("RUN pip install --upgrade", "sudo pip install --upgrade INDEXURL")
+                                        _line = _line.replace("RUN git", "git")
+                                        _line = _line.replace("; apt-get install", "; sudo apt-get install")
+                                        _line = _line.replace("; apt-get update", "; sudo apt-get update")                                    
+                                        _line = _line.replace("; add-apt-repository", "; sudo add-apt-repository")                                    
+                                        _line = _line.replace("; dpkg", "; sudo dpkg")
+                                        _line = _line.replace("; yum install", "; sudo yum install")
+                                        _line = _line.replace("; rpm", "; sudo rpm")
+                                        _line = _line.replace("; chown", "; sudo chown")
+                                        _line = _line.replace("; make install", "; sudo make install")
+                                        _line = _line.replace("RUN mkdir -p /home/REPLACE_USERNAME/cbtool/3rd_party", "mkdir -p 3RPARTYDIR")
+                                        _line = _line.replace("RUN ", "sudo ")
+                                        _line = _line.replace("sudo cd ", "cd ")
+                                        _line = _line.replace("sudo REPLACE_RSYNC", "REPLACE_RSYNC")
+                                        _line = _line.replace("WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party", "cd 3RPARTYDIR")
+                                        _line = _line.replace("# service_stop_disable", "service_stop_disable")
+                                        _line = _line.replace("# echo", "echo")
+                                        _line = _line.replace("/home/root", "/root")
+                                        _line = _line.replace("____",' ')
+                                        depsdict[_current_key] += _line + "; "
+            
+                                else :
+                                    if _line.count("#") and _line.count("-install-") :
+                                        _current_key = _key_prefix + '-' + _line.replace("#",'').strip()
+                                        depsdict[_current_key] = ''
+            
+                        except Exception, e :
+                            _msg = "##### Error reading file \"" + _full_fnam  + "\":" + str(e)
+                            cberr(_msg)
+                            exit(4)
 
     return True
 

@@ -428,7 +428,7 @@ class SlrCmds(CommonCloudFunctions) :
             return _nr_instances
 
     @trace
-    def get_ssh_keys(self, key_name, key_contents, key_fingerprint, registered_key_pairs, internal, connection) :
+    def get_ssh_keys(self, vmc_name, key_name, key_contents, key_fingerprint, registered_key_pairs, internal, connection) :
         '''
         TBD
         '''
@@ -603,7 +603,7 @@ class SlrCmds(CommonCloudFunctions) :
                 return True
 
     @trace            
-    def create_ssh_key(self, key_name, key_type, key_contents, key_fingerprint, vm_defaults, connection) :
+    def create_ssh_key(self, vmc_name, key_name, key_type, key_contents, key_fingerprint, vm_defaults, connection) :
         '''
         TBD
         '''

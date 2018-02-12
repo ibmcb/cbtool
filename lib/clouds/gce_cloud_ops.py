@@ -451,7 +451,7 @@ class GceCmds(CommonCloudFunctions) :
             return _nr_instances
 
     @trace
-    def get_ssh_keys(self, key_name, key_contents, key_fingerprint, registered_key_pairs, internal, connection) :
+    def get_ssh_keys(self, vmc_name, key_name, key_contents, key_fingerprint, registered_key_pairs, internal, connection) :
         '''
         TBD
         '''
@@ -643,7 +643,7 @@ class GceCmds(CommonCloudFunctions) :
                 return True
 
     @trace            
-    def create_ssh_key(self, key_name, key_type, key_contents, key_fingerprint, vm_defaults, connection) :
+    def create_ssh_key(self, vmc_name, key_name, key_type, key_contents, key_fingerprint, vm_defaults, connection) :
         '''
         TBD
         '''
@@ -976,6 +976,10 @@ class GceCmds(CommonCloudFunctions) :
                     }]            
                 }
             }
+
+            if "preemptible" in obj_attr_list and str(obj_attr_list["preemptible"]).lower() == "true" :
+                cbdebug("Will create a pre-emptible instance.", True)
+                _config["scheduling"] = { "preemptible" : True }
 
             user_data = self.populate_cloudconfig(obj_attr_list)
 

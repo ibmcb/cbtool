@@ -865,7 +865,7 @@ class CommonCloudFunctions:
     
                     _registered_key_pairs = {}
                     
-                    self.get_ssh_keys(key_name, _key_contents, _key_fingerprint, _registered_key_pairs, internal, connection)
+                    self.get_ssh_keys(vmc_name, key_name, _key_contents, _key_fingerprint, _registered_key_pairs, internal, connection)
     
                     for _key_pair in _registered_key_pairs.keys() :
                         if _key_pair == key_name :
@@ -908,7 +908,7 @@ class CommonCloudFunctions:
                             cbdebug(_msg)
     
                         try :
-                            self.create_ssh_key(key_name, _key_type, _key_contents, _key_fingerprint, vm_defaults, connection)
+                            self.create_ssh_key(vmc_name, key_name, _key_type, _key_contents, _key_fingerprint, vm_defaults, connection)
     
                         except Exception, e :
                             if vm_defaults["abort_after_ssh_upload_failure"] :
@@ -921,7 +921,7 @@ class CommonCloudFunctions:
             return _key_pair_found    
 
     @trace
-    def check_security_group(self,vmc_name, security_group_name) :
+    def check_security_group(self, vmc_name, security_group_name) :
         '''
         TBD
         '''
@@ -938,7 +938,7 @@ class CommonCloudFunctions:
             
             _registered_security_groups = []
 
-            self.get_security_groups(security_group_name, _registered_security_groups)
+            self.get_security_groups(vmc_name, security_group_name, _registered_security_groups)
             
             for _registered_security_group in _registered_security_groups :
                 if _registered_security_group == security_group_name :
