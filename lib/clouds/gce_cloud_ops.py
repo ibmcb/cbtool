@@ -916,6 +916,10 @@ class GceCmds(CommonCloudFunctions) :
                 }
             }
 
+            if "preemptible" in obj_attr_list and str(obj_attr_list["preemptible"]).lower() == "true" :
+                cbdebug("Will create a pre-emptible instance.", True)
+                _config["scheduling"] = { "preemptible" : True }
+
             user_data = self.populate_cloudconfig(obj_attr_list)
 
             if user_data :
