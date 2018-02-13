@@ -36,7 +36,7 @@ cat $CB_BASE_DIR/configs/cloud_definitions.txt | sed '/# END: Specify the indivi
 
 CB_MANAGER_IP=${CB_MANAGER_IP:-\$IP_AUTO}
 echo "    Setting the parameter \"MANAGER_IP\", on the \"[USER-DEFINED]\" section to \"$CB_MANAGER_IP\""
-sed -i "s/MANAGER_IP.*/MANAGER_IP = ${MANAGER_IP}/g" $CB_CONFIG_FILE
+sed -i "s/MANAGER_IP.*/MANAGER_IP = ${CB_MANAGER_IP}/g" $CB_CONFIG_FILE
 
 CB_STARTUP_CLOUD=${CB_STARTUP_CLOUD:-MYSIM}
 echo "    Setting the parameter \"STARTUP_CLOUD\", on the \"[USER-DEFINED]\" section to \"$CB_STARTUP_CLOUD\""
@@ -139,7 +139,7 @@ do
             cb_section_name=$(echo $cb_section_name | sed 's/ : EMPTY_CLOUDCONFIG//g')
             if [[ ! -z ${!cb_env_var_name} ]]
             then
-                echo "Setting the parameter \"$param\", on the section \"$cb_section_name\" to \"${!cb_env_var_name}"
+                echo "    Setting the parameter \"$param\", on the section \"$cb_section_name\" to \"${!cb_env_var_name}"
                 if [[ $section_exists -eq 0 ]]
                 then
                     echo "" >> $CB_CONFIG_FILE

@@ -116,5 +116,5 @@ cb_build_installtest $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC $CB_BRANC
 
 if [[ $CB_PUSH == "push" ]]
 then
-    cb_push_images $CB_REPO $CB_PALL orchestrator
+    cb_push_images $CB_REPO $CB_PALL orchestrator $CB_BRANCH
 fi

@@ -100,7 +100,7 @@ class OskCmds(CommonCloudFunctions) :
             
             access_url, _endpoint_type, region = self.parse_connection_data(access_url, region, extra_parms)
 
-            _username, _password, _tenant, _project_name, _cacert, _insecure, _user_domain_id, _project_domain_id = self.parse_authentication_data(authentication_data)
+            _username, _password, _tenant, _project_name, _cacert, _verify, _user_domain_id, _project_domain_id = self.parse_authentication_data(authentication_data)
             _data_auth_parse = True
 
             _client_conn_id = "common"
@@ -120,11 +120,11 @@ class OskCmds(CommonCloudFunctions) :
                                     user_domain_id = _user_domain_id, \
                                     project_domain_id = _project_domain_id)
                 
-                _session = session.Session(auth = _auth, verify = _insecure, cert = _cacert)
+                _session = session.Session(auth = _auth, verify = _verify, cert = _cacert)
 
                 _msg = self.get_description() + " connection parameters: username=" + _username
                 _msg += ", password=<omitted>, tenant=" + _tenant + ", "
-                _msg += "cacert=" + str(_cacert) + ", insecure=" + str(_insecure)
+                _msg += "cacert=" + str(_cacert) + ", verify=" + str(_verify)
                 _msg += ", region_name=" + region + ", access_url=" + access_url
                 _msg += ", endpoint_type=" + str(_endpoint_type)
                 cbdebug(_msg, diag)
@@ -212,7 +212,7 @@ class OskCmds(CommonCloudFunctions) :
                         _dmsg += str(_tenant) + "', auth_url = '" + str(access_url) 
                         _dmsg += "', user_domain_id = '" + str(_user_domain_id) + "', "
                         _dmsg += "project_domain_id = '" + str(_project_domain_id) + "'); "
-                        _dmsg += "_session = session.Session(auth = _auth, verify = " + str(_insecure) + ", cert = " + str(_cacert) + "); "
+                        _dmsg += "_session = session.Session(auth = _auth, verify = " + str(_verify) + ", cert = " + str(_cacert) + "); "
                         _dmsg += "ct = novac.Client(\"2.1\", session = _session); print ct.flavors.list()\"\""
                     
                     elif not _cinder_client :
@@ -225,7 +225,7 @@ class OskCmds(CommonCloudFunctions) :
                         _dmsg += str(_tenant) + "', auth_url = '" + str(access_url) 
                         _dmsg += "', user_domain_id = '" + str(_user_domain_id) + "', "
                         _dmsg += "project_domain_id = '" + str(_project_domain_id) + "'); "
-                        _dmsg += "_session = session.Session(auth = _auth, verify = " + str(_insecure) + ", cert = " + str(_cacert) + "); "
+                        _dmsg += "_session = session.Session(auth = _auth, verify = " + str(_verify) + ", cert = " + str(_cacert) + "); "
                         _dmsg += "ct = cinderc.Client(\"2.1\", session = _session); print ct.volumes.list()\"\""                                                        
                     
                     elif not _neutron_client :
@@ -238,7 +238,7 @@ class OskCmds(CommonCloudFunctions) :
                         _dmsg += str(_tenant) + "', auth_url = '" + str(access_url) 
                         _dmsg += "', user_domain_id = '" + str(_user_domain_id) + "', "
                         _dmsg += "project_domain_id = '" + str(_project_domain_id) + "'); "
-                        _dmsg += "_session = session.Session(auth = _auth, verify = " + str(_insecure) + ", cert = " + str(_cacert) + "); "
+                        _dmsg += "_session = session.Session(auth = _auth, verify = " + str(_verify) + ", cert = " + str(_cacert) + "); "
                         _dmsg += "ct = neutronc.Client(session = _session); print ct.list_networks()\"\""                            
                     print _dmsg
                     
@@ -1995,8 +1995,11 @@ class OskCmds(CommonCloudFunctions) :
         _password = ''
         _tenant = ''
         _project_name = None
+        # Insecure (don't verify CACERT: _verify = False and _cacert = None)
+        # Verify CACERT (_verify = False and _cacert = <valid path to cert file>)
         _cacert = None
-        _insecure = False
+        _ckcert = None
+        _verify = False
         _user_domain_id = "default"
         _project_domain_id = "default"
         
@@ -2020,9 +2023,18 @@ class OskCmds(CommonCloudFunctions) :
                 
             elif len(authentication_data.split(_separator)) == 4 :
                 _username, _password, _tenant, _cacert = authentication_data.split(_separator)
+                _verify = True
     
             elif len(authentication_data.split(_separator)) == 5 :
-                _username, _password, _tenant, _cacert, _insecure = authentication_data.split(_separator)
+                _username, _password, _tenant, _cacert, _ckcert = authentication_data.split(_separator)
+                if ( str(_ckcert).lower() == "verify" ) :
+                   _verify = True
+                elif ( str(_ckcert).lower() == "insecure" ) :
+                   _verify = False
+                   _cacert = None
+                else :
+                   _verify = False
+                   _cacert = None
     
             elif len(authentication_data.split(_separator)) > 5 and _separator == '-' :            
                 _msg = "ERROR: Please make sure that the none of the parameters in"
@@ -2052,8 +2064,11 @@ class OskCmds(CommonCloudFunctions) :
                 _cacert = self.connauth_pamap["OS_CACERT"]
 
             if "OS_INSECURE" in self.connauth_pamap :
-                if self.connauth_pamap["OS_INSECURE"] == "1" :
-                    _insecure = True
+                if self.connauth_pamap["OS_INSECURE"] == "1" or str(self.connauth_pamap["OS_INSECURE"]).lower() == "insecure":
+                    _verify = False
+                    _cacert = None
+                else :
+                    _verify = True
 
             if "OS_PROJECT_DOMAIN_ID" in self.connauth_pamap :
                 _project_domain_id = self.connauth_pamap["OS_PROJECT_DOMAIN_ID"]
@@ -2082,12 +2097,12 @@ class OskCmds(CommonCloudFunctions) :
 
             if _cacert :
                 _str += ':' + str(_cacert) 
-            if _insecure :
-                _str += ':' +  str(_insecure)
+            if _verify :
+                _str += ':' +  str(_verify)
 
             return _str
         else :
-            return _username, _password, _tenant, _project_name, _cacert, _insecure, _user_domain_id, _project_domain_id
+            return _username, _password, _tenant, _project_name, _cacert, _verify, _user_domain_id, _project_domain_id
 
     @trace
     def disconnect(self) :

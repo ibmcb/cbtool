@@ -144,7 +144,7 @@ function cb_build_orchprereqs {
     sudo rm -rf Dockerfile
     for CB_DFILE in $(ls Dockerfile* | grep -v _processed_)
     do
-    	
+        
         CB_DNAME=$(echo $CB_DFILE | sed 's/Dockerfile-//g')
         
         echo $CB_DNAME | grep ubuntu > /dev/null 2>&1
@@ -157,8 +157,8 @@ function cb_build_orchprereqs {
         if [[ $? -eq 0 ]]
         then
             export CB_DNAME_PREREQS_CENTOS=$CB_DNAME
-        fi    	
-    	
+        fi        
+        
         cb_docker_build $CB_REPOSITORY $CB_VERBQUIET $CB_DFILE latest $CB_USERNAME $CB_ARCH $CB_RSYNC true
     done
     echo "##### Done building Docker orchestrator images"
@@ -332,12 +332,20 @@ function cb_push_images {
     CB_REPOSITORY=$1
     CB_PUSHALL=$2
     CB_IMGTYPE=$3
-
+    CB_BRANCH=$4
+    
     if [[ -z $3 ]]
     then
         CB_IMGTYPE=$2
     fi
-    
+
+    if [[ -z $4 ]]
+    then
+        CB_BRANCH=""
+	else
+		CB_BRANCH=":"$CB_BRANCH 
+    fi
+            
     if [[ $CB_IMGTYPE == "orchestrator" ]]
     then
         CB_IMG_GREP_CMD="grep $CB_IMGTYPE"
@@ -367,8 +375,8 @@ function cb_push_images {
         NOT_RUBBOS=$?
         if [[ $NOT_COREMARK -eq 1 && $NOT_LINPACK -eq 1 && $NOT_PARBOIL -eq 1 && $NOT_SPEC -eq 1 && $NOT_CAFFE -eq 1 && $NOT_RUBIS -eq 1 && $NOT_RUBBOS -eq 1 || $CB_PUSHALL -eq 1 ]]
         then
-            CMD="docker push $IMG"
-            echo "########## Pushing image ${IMG} by executing the command \"$CMD\" ..."             
+            CMD="docker push ${IMG}${CB_BRANCH}"
+            echo "########## Pushing image ${IMG}${CB_BRANCH} by executing the command \"$CMD\" ..."             
             $CMD
         fi
     done

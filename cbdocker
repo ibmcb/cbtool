@@ -313,6 +313,24 @@ then
         done
     done
 
+    for obj in VMC_DEFAULTS VM_DEFAULTS AI_DEFAULTS AIDRS_DEFAULTS
+    do
+        for cmodel in EMPTY SIM PLM PDM PCM KUB NOP OSK OS CSK VCD EC2 SLR GCE DO AS
+        do
+            section_exists=0
+            for param in EMPTY REMOTE_DIR_NAME RUN_NETNAME PROV_NETNAME EXECUTE_SCRIPT_NAME CHECK_BOOT_STARTED CHECK_BOOT_COMPLETE LEAVE_INSTANCE_ON_FAILURE PORTS_BASE USE_VPN_IP VPN_ONLY USE_FLOATING_IP FLOATING_POOL USE_JUMPHOST
+            do
+                cb_env_var_name=CB_${obj}_${cmodel}_${param}
+                cb_env_var_name=$(echo $cb_env_var_name | sed 's/_EMPTY//g')
+                if [[ ! -z ${!cb_env_var_name} ]]
+                then
+                    CB_DOCKER_ENV_CMDLINE=$CB_DOCKER_ENV_CMDLINE" -e ${cb_env_var_name}=${!cb_env_var_name} "
+                fi
+            done
+        done
+    done
+
+
     if [[ $CB_DOCKER_REPO == "local" ]]
     then
         CB_DOCKER_IMAGE_CMDLINE=${CB_DOCKER_IMAGE}":"${CB_DOCKER_TAG}
