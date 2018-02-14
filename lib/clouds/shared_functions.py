@@ -1239,11 +1239,11 @@ write_files:"""
                     line = line.replace("UUID", obj_attr_list["uuid"])
                     line = line.replace("OSCI_PORT", str(self.osci.port))
                     line = line.replace("OSCI_DBID", str(self.osci.dbid))
-                    if line.count("remote") :
+                    if line.count("remote ") :
                         line = "remote " + obj_attr_list["vpn_server_ip"] + " " + obj_attr_list["vpn_server_port"] + "\n"
                     cloudconfig += "      " + line
 
-                    if line.count("remote") :
+                    if line.count("remote ") :
                         cloudconfig += "      up /etc/openvpn/client_connected.sh\n"
                 fh.close()
 

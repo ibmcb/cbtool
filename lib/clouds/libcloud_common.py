@@ -897,10 +897,9 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             if self.use_ssh_keys :
 
-                keys = []
-    
                 tmp_keys = obj_attr_list["key_name"].split(",")
                 for dontcare in range(0, 2) :
+                    keys = []
                     for tmp_key in tmp_keys :
                         for key in LibcloudCmds.keys[_credentials_list] :
                             if tmp_key in [key.name, key.extra["id"]] and key.extra["id"] not in keys and key.name not in keys :
