@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-CB_REPO=NONE
+CB_REPO=ibmcb
 CB_WKS="ALL"
-CB_RSYNC=$(sudo ifconfig docker0 | grep "inet addr" | cut -d ':' -f 2 | cut -d ' ' -f 1):10000/$(whoami)_cb
+CB_RSYNC=$(sudo ifconfig docker0 | grep "inet " | awk '{ print $2 }' | sed 's/addr://g'):873/$(whoami)_cb
 CB_UBUNTU_BASE=ubuntu:16.04
 CB_PHUSION_BASE=phusion/baseimage:latest
 CB_CENTOS_BASE=centos:latest
@@ -15,7 +15,7 @@ CB_MYUSERNAME=$(whoami)
 CB_MYUID=$(id -u $(whoami))
 CB_MYGID=$(id -g $(whoami))
 CB_BRANCH="master"
-CB_USAGE="Usage: $0 -r <repository> [-u Ubuntu base image] [-p Phusion base image] [-c Centos base image] [-w Workload] [-l CB Username/login] [-b branch] [--verbose] [--push] [--psall]"
+CB_USAGE="Usage: $0 [-r <repository>] [-u Ubuntu base image] [-p Phusion base image] [-c Centos base image] [-w Workload] [-l CB Username/login] [-b branch] [--verbose] [--push] [--psall]"
 
 function cb_docker_build {
     _CB_REPOSITORY=$1

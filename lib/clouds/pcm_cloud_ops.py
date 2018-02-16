@@ -854,10 +854,12 @@ class PcmCmds(CommonCloudFunctions) :
 
             self.get_images(obj_attr_list)
             self.get_networks(obj_attr_list)
-            self.pre_vmcreate_process(obj_attr_list)            
+
             self.vvcreate(obj_attr_list)
 
             self.common_messages("VM", obj_attr_list, "creating", 0, '')
+
+            self.pre_vmcreate_process(obj_attr_list)
 
             _mark1 = int(time())
             

@@ -977,7 +977,6 @@ class LibcloudCmds(CommonCloudFunctions) :
             _time_mark_prs = int(time())
             obj_attr_list["mgt_002_provisioning_request_sent"] = _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
 
-            self.pre_vmcreate_process(obj_attr_list)
             self.vm_placement(obj_attr_list)
 
             obj_attr_list["last_known_state"] = "about to send create request"
@@ -998,15 +997,37 @@ class LibcloudCmds(CommonCloudFunctions) :
                 obj_attr_list["userdata"] = None
                 
             self.common_messages("VM", obj_attr_list, "creating", 0, '')
-
-            extra = deepcopy(self.extra)
-
-            _location = self.get_region_from_vmc_name(obj_attr_list)
             
-            extra.update(self.pre_vmcreate(obj_attr_list, extra))
-
             obj_attr_list["libcloud_size_inst"] = False
-                        
+
+            _keys = []
+            if self.use_ssh_keys :
+                _mark_a = time()
+        
+                _tmp_keys = obj_attr_list["key_name"].split(",")
+                for dontcare in range(0, 2) :
+                    for _tmp_key in _tmp_keys :
+                        for _key in LibcloudCmds.keys[_credentials_list] :
+                            if "id" in _key.extra :
+                                _key_id = _key.extra["id"]
+                                if _tmp_key in [_key.name, _key_id] and _key_id not in _keys and _key.name not in _keys :
+                                    _keys.append(_key_id)
+                            else :
+                                if _key.name in _tmp_keys :
+                                    _keys.append(_key.name)
+        
+                    if len(_keys) >= len(_tmp_keys) :
+                        break
+        
+                    cbdebug("Only found " + str(len(_keys)) + " keys. Refreshing key list...", True)
+                    LibcloudCmds.keys[_credentials_list] = LibcloudCmds.catalogs.cbtool[_credentials_list].list_key_pairs()
+
+                if len(_keys) != len(_tmp_keys) :
+                    raise CldOpsException("Not all SSH keys exist. Check your configuration: " + obj_attr_list["key_name"], _status, True)
+                self.annotate_time_breakdown(obj_attr_list, "get_sshkey_time", _mark_a)
+
+            print _keys
+
             if self.use_sizes :
                 _mark_a = time()
                 for _sz in LibcloudCmds.sizes :
@@ -1035,7 +1056,8 @@ class LibcloudCmds(CommonCloudFunctions) :
                     obj_attr_list["cloud_floating_ip_uuid"] = _fip.id
                     obj_attr_list["cloud_floating_ip"] = _fip.ip_address
 
-            self.get_cloud_specific_parameters(obj_attr_list, extra, _credentials_list, _status)
+            extra = deepcopy(self.extra)
+            extra.update(self.pre_vmcreate_process(obj_attr_list, extra, _keys))
 
             _mark_a = time()            
             if obj_attr_list["libcloud_call_type"] == 1 :
@@ -1043,7 +1065,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                     obj_attr_list["cloud_vm_name"],
                     obj_attr_list["libcloud_size_inst"],
                     obj_attr_list["libcloud_image_inst"],
-                    _location,
+                    obj_attr_list["libcloud_location_inst"],
                     **self.vmcreate_kwargs
                     )
 
@@ -1057,6 +1079,9 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             if "libcloud_size_inst" in obj_attr_list :
                 del obj_attr_list["libcloud_size_inst"]
+
+            if "libcloud_location_inst" in obj_attr_list :
+                del obj_attr_list["libcloud_location_inst"]
 
             obj_attr_list["last_known_state"] = "sent create request"
 
@@ -1545,10 +1570,6 @@ class LibcloudCmds(CommonCloudFunctions) :
         If parameters are added that are common to all libcloud adapters, please submit a pull
         request and update this file directly.
     '''
-        
-    @trace
-    def pre_vmcreate(self, obj_attr_list, extra) :
-        return extra
 
     @trace
     def get_real_driver(self, who) :

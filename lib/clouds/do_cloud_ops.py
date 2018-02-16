@@ -82,43 +82,18 @@ class DoCmds(LibcloudCmds) :
         return True
     
     @trace
-    def get_region_from_vmc_name(self, obj_attr_list) :
+    def pre_vmcreate_process(self, obj_attr_list, extra, keys) :
         '''
         TBD
         '''
+
         obj_attr_list["region"] = obj_attr_list["vmc_name"]
 
         for _location in LibcloudCmds.locations :
             if _location.id == obj_attr_list["region"] :
-                return _location
-
-        return False
-    
-    @trace
-    def get_cloud_specific_parameters(self, obj_attr_list, extra, credentials_list, status) :
-        '''
-        TBD
-        '''
-        _mark_a = time()
-        keys = []
-
-        tmp_keys = obj_attr_list["key_name"].split(",")
-        for dontcare in range(0, 2) :
-            for tmp_key in tmp_keys :
-                for key in LibcloudCmds.keys[credentials_list] :
-                    if tmp_key in [key.name, key.extra["id"]] and key.extra["id"] not in keys and key.name not in keys :
-                        keys.append(key.extra["id"])
-
-            if len(keys) >= len(tmp_keys) :
+                obj_attr_list["libcloud_location_inst"] = _location
                 break
 
-            cbdebug("Only found " + str(len(keys)) + " keys. Refreshing key list...", True)
-            LibcloudCmds.keys[credentials_list] = LibcloudCmds.catalogs.cbtool[credentials_list].list_key_pairs()
-
-        if len(keys) != len(tmp_keys) :
-            raise CldOpsException("Not all SSH keys exist. Check your configuration: " + obj_attr_list["key_name"], status, True)
-        self.annotate_time_breakdown(obj_attr_list, "get_sshkey_time", _mark_a)
-                
         extra["ssh_keys"] = keys
         
         if obj_attr_list["netname"] == "private" :
@@ -129,7 +104,7 @@ class DoCmds(LibcloudCmds) :
         self.vmcreate_kwargs["ex_create_attr"] = extra        
         self.vmcreate_kwargs["ex_user_data"] = obj_attr_list["userdata"]
 
-        return True
+        return extra
 
     @trace
     def get_description(self) :

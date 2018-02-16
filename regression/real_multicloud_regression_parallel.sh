@@ -64,6 +64,9 @@ then
 elif [[ $CB_ADAPTERS == "public" ]]
 then
     CB_ADAPTERS="ec2 gce do as slr"
+elif [[ $CB_ADAPTERS == "libcloud" ]]
+then
+    CB_ADAPTERS="osl,oslfip do as"    	
 elif [[ $CB_ADAPTERS == "fast" ]]
 then
     CB_ADAPTERS="sim nop"

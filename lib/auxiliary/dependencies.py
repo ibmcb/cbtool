@@ -977,11 +977,14 @@ def dependency_checker_installer(hostname, depsdict, username, operation, option
 
         _process_manager = ProcessManagement(hostname)
 
-        _status, _std_out, _y = _process_manager.run_os_command("sudo cat /proc/1/cgroup | grep -c docker")
-        if str(_std_out.replace("\n",'')) == '0' :
-            depsdict["indocker"] = False            
+        _status, _std_out, _y = _process_manager.run_os_command("sudo cat /proc/1/cgroup | grep -c docker", raise_exception = False)
+        if _status :
+            depsdict["indocker"] = False
         else :
-            depsdict["indocker"] = True
+            if str(_std_out.replace("\n",'')) == '0' :
+                depsdict["indocker"] = False            
+            else :
+                depsdict["indocker"] = True
         
         _msg = "##### DETECTED OPERATING SYSTEM KIND: " + depsdict["cdistkind"]
         cbinfo(_msg)

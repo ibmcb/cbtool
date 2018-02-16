@@ -784,7 +784,6 @@ class SlrCmds(CommonCloudFunctions) :
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
 
-            self.pre_vmcreate_process(obj_attr_list)
             self.vm_placement(obj_attr_list)
 
             obj_attr_list["last_known_state"] = "about to send create request"
@@ -822,6 +821,8 @@ class SlrCmds(CommonCloudFunctions) :
 
             if obj_attr_list["private_network_only"].lower() == "true" :
                 _kwargs["private"] = True
+
+            self.pre_vmcreate_process(obj_attr_list)
                 
             _instance = self.nodeman.create_instance(**_kwargs)
 

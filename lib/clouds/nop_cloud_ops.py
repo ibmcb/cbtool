@@ -613,9 +613,11 @@ class NopCmds(CommonCloudFunctions) :
 
             self.get_images(obj_attr_list)
             self.get_networks(obj_attr_list)
-            self.pre_vmcreate_process(obj_attr_list)            
+
             self.vvcreate(obj_attr_list)
- 
+
+            self.pre_vmcreate_process(obj_attr_list)            
+
             self.take_action_if_requested("VM", obj_attr_list, "provision_started")
  
             _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)

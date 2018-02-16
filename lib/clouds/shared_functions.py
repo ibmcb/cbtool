@@ -1255,7 +1255,7 @@ packages:"""
                         if _line[0:7] == "export " :
                             _line = _line.replace("export ", '')
             
-                        if _line.count("=") :
+                        if _line.count("=") == 1 :
                             _key, _value = _line.split('=')
                             if _value.count("${") and _value.count(':') :
                                 _value = _value.split(':')[1][1:-1]
@@ -1571,7 +1571,7 @@ packages:"""
         return obj_attr_list["key_name"].split(",")
 
     @trace
-    def pre_vmcreate_process(self, obj_attr_list) :
+    def pre_vmcreate_process(self, obj_attr_list, extra = None) :
         '''
         TBD
         '''

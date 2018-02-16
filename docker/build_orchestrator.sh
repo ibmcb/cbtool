@@ -100,12 +100,6 @@ do
         shift
 done
 
-if [[ $CB_REPO == NONE ]]
-then
-    echo $CB_USAGE
-    exit 1
-fi
-
 cb_refresh_vanilla_images $CB_UBUNTU_BASE $CB_PHUSION_BASE $CB_CENTOS_BASE
 cb_build_base_images $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC
 cb_build_orchprereqs $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC

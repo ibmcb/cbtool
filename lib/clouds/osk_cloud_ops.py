@@ -1373,7 +1373,6 @@ class OskCmds(CommonCloudFunctions) :
                 _security_groups = []
                 _security_groups.append(obj_attr_list["security_groups"])
 
-            self.pre_vmcreate_process(obj_attr_list)
             self.vm_placement(obj_attr_list)
 
             obj_attr_list["last_known_state"] = "about to send create request"
@@ -1427,6 +1426,8 @@ class OskCmds(CommonCloudFunctions) :
             self.vvcreate(obj_attr_list)
 
             self.common_messages("VM", obj_attr_list, "creating", 0, '')
+
+            self.pre_vmcreate_process(obj_attr_list)
 
             _mark_a = time()
             _instance = self.oskconncompute[obj_attr_list["name"]].servers.create(name = obj_attr_list["cloud_vm_name"], \

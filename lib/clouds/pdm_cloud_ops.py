@@ -1006,7 +1006,7 @@ class PdmCmds(CommonCloudFunctions) :
 
             self.get_images(obj_attr_list)
             self.get_networks(obj_attr_list)
-            self.pre_vmcreate_process(obj_attr_list)            
+
             self.vvcreate(obj_attr_list)
 
             self.common_messages("VM", obj_attr_list, "creating", 0, '')
@@ -1021,6 +1021,9 @@ class PdmCmds(CommonCloudFunctions) :
                     _mapped_dir = "/mnt/cbvol1"
                 _binds = [ obj_attr_list["cloud_vv_name"] + ':' + _mapped_dir + ":rw"]                
                 _volumes = [ _mapped_dir ]
+
+
+            self.pre_vmcreate_process(obj_attr_list)
 
             _mark_a = time()
             _host_config = self.dockconn[obj_attr_list["host_cloud_ip"]].create_host_config(network_mode = obj_attr_list["netname"], \

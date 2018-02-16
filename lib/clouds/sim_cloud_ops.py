@@ -724,7 +724,6 @@ class SimCmds(CommonCloudFunctions) :
             self.annotate_time_breakdown(obj_attr_list, "get_imageid_time", _mark_a)
                                     
             self.get_networks(obj_attr_list) 
-            self.pre_vmcreate_process(obj_attr_list)
             
             if obj_attr_list["role"] != "willfail" :
                 True
@@ -750,6 +749,8 @@ class SimCmds(CommonCloudFunctions) :
 
             self.vvcreate(obj_attr_list)
 
+            self.pre_vmcreate_process(obj_attr_list)
+            
             self.common_messages("VM", obj_attr_list, "creating", 0, '')
 
             _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)

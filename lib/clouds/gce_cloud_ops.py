@@ -906,7 +906,6 @@ class GceCmds(CommonCloudFunctions) :
             _time_mark_prs = int(time())
             obj_attr_list["mgt_002_provisioning_request_sent"] = _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
 
-            self.pre_vmcreate_process(obj_attr_list)
             self.vm_placement(obj_attr_list)
 
             obj_attr_list["last_known_state"] = "about to send create request"
@@ -997,6 +996,8 @@ class GceCmds(CommonCloudFunctions) :
             self.common_messages("VM", obj_attr_list, "creating", 0, '')
 
             sleep(float(obj_attr_list["name"].replace("vm_",'')) + 1.0)
+
+            self.pre_vmcreate_process(obj_attr_list)
 
             _operation = self.gceconn.instances().insert(project = self.instances_project, \
                                                          zone = self.zone, \

@@ -832,7 +832,6 @@ class Ec2Cmds(CommonCloudFunctions) :
             _time_mark_prs = int(time())
             obj_attr_list["mgt_002_provisioning_request_sent"] = _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
 
-            self.pre_vmcreate_process(obj_attr_list)
             self.vm_placement(obj_attr_list)
 
             obj_attr_list["last_known_state"] = "about to send create request"
@@ -846,7 +845,8 @@ class Ec2Cmds(CommonCloudFunctions) :
             #self.vvcreate(obj_attr_list)
 
             self.common_messages("VM", obj_attr_list, "creating", 0, '')
-            
+
+            self.pre_vmcreate_process(obj_attr_list)            
             _reservation = self.ec2conn.run_instances(image_id = obj_attr_list["boot_volume_imageid1"], \
                                                       instance_type = obj_attr_list["size"], \
                                                       key_name = obj_attr_list["key_name"], \

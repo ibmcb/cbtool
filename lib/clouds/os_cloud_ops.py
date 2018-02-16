@@ -198,42 +198,19 @@ class OsCmds(LibcloudCmds) :
         '''
         connection.import_key_pair_from_string(key_name, key_type + ' ' + key_contents + " cbtool@orchestrator")        
         return True
-
+    
     @trace
-    def get_region_from_vmc_name(self, obj_attr_list) :
+    def pre_vmcreate_process(self, obj_attr_list, extra, keys) :
         '''
         TBD
         '''
+        
         obj_attr_list["region"] = obj_attr_list["vmc_name"]
 
         for _location in LibcloudCmds.locations :
             if _location.id == obj_attr_list["region"] :
-                return _location
-
-        return False
-    
-    @trace
-    def get_cloud_specific_parameters(self, obj_attr_list, extra, credentials_list, status) :
-        '''
-        TBD
-        '''
-        _mark_a = time()        
-        keyname = False
-        
-        for dontcare in range(0, 2) :
-            for key in LibcloudCmds.keys[credentials_list] :
-                if key.name == obj_attr_list["key_name"] :
-                    keyname = key.name
-
-            if keyname :
+                obj_attr_list["libcloud_location_inst"] = _location
                 break
-
-            cbdebug("Could not find " + obj_attr_list["key_name"] + " keys. Refreshing key list...", True)
-            LibcloudCmds.keys[credentials_list] = LibcloudCmds.catalogs.cbtool[credentials_list].list_key_pairs()
-
-        if not keyname :
-            raise CldOpsException("Not all SSH keys exist. Check your configuration: " + obj_attr_list["key_name"], status, True)        
-        self.annotate_time_breakdown(obj_attr_list, "get_sshkey_time", _mark_a)
 
         _mark_a = time()
         _security_groups = []
@@ -266,7 +243,7 @@ class OsCmds(LibcloudCmds) :
         self.vmcreate_kwargs["ex_security_groups"] = _security_groups
         self.vmcreate_kwargs["ex_userdata"] = obj_attr_list["userdata"]
         self.vmcreate_kwargs["ex_config_drive"] = obj_attr_list["config_drive"]        
-        self.vmcreate_kwargs["ex_keyname"] = keyname
+        self.vmcreate_kwargs["ex_keyname"] = keys[0]
         self.vmcreate_kwargs["networks"] = _networks       
         self.vmcreate_kwargs["ex_metadata"] =  {}
         
@@ -274,9 +251,8 @@ class OsCmds(LibcloudCmds) :
             self.vmcreate_kwargs["ex_metadata"]["cloud_floating_ip_uuid"] = obj_attr_list["cloud_floating_ip_uuid"]
         if "cloud_floating_ip" in obj_attr_list :            
             self.vmcreate_kwargs["ex_metadata"]["cloud_floating_ip"] = obj_attr_list["cloud_floating_ip"]
-
                 
-        return True
+        return extra
 
     @trace
     def get_description(self) :

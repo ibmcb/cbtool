@@ -115,23 +115,18 @@ class AsCmds(LibcloudCmds) :
                 return True
 
         return False
-
-    @trace
-    def get_region_from_vmc_name(self, obj_attr_list) :
-        '''
-        TBD
-        '''
-        for _service in LibcloudCmds.services :
-            if _service.service_name == obj_attr_list["cloud_service_name"] :
-                return _service.service_name
-
-        return False
     
     @trace
-    def get_cloud_specific_parameters(self, obj_attr_list, extra, credentials_list, status) :
+    def pre_vmcreate_process(self, obj_attr_list, extra, keys) :
         '''
         TBD
         '''
+        
+        for _service in LibcloudCmds.services :
+            if _service.service_name == obj_attr_list["cloud_service_name"] :
+                obj_attr_list["libcloud_location_inst"] = _service.service_name
+                break
+                    
         self.vmcreate_kwargs["ex_custom_data"] = obj_attr_list["userdata"]
         self.vmcreate_kwargs["ex_admin_user_id"] = obj_attr_list["login"]
         obj_attr_list["libcloud_call_type"] = 1        
@@ -141,7 +136,7 @@ class AsCmds(LibcloudCmds) :
         
 #        self.vmcreate_kwargs["ex_network_config"] = network
         
-        return True
+        return extra
 
     @trace
     def get_description(self) :
