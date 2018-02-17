@@ -152,4 +152,10 @@ do
     done
 done
 
+if [[ ! -z $CB_CLOUD_RENAME ]]
+then
+    echo "    Renaming STARTUP_CLOUD \"$CB_STARTUP_CLOUD\" to \"$CB_CLOUD_RENAME\""
+    sed -i "s/$CB_STARTUP_CLOUD/$CB_CLOUD_RENAME/g" $CB_CONFIG_FILE
+fi
+
 echo "END: Built private cloud configuration file \"$CB_CONFIG_FILE\" combining both \"$CB_BASE_DIR/configs/cloud_definitions.txt\" and environment variables (all variables start with \"CB_\")"

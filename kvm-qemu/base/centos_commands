@@ -1,6 +1,10 @@
 install  openssh-server,passwd,sudo,rsync,git
 root-password password:temp4now
 edit /etc/ssh/sshd_config:s/PermitRootLogin without-password/PermitRootLogin yes/
+#upload REPLACE_PATH/base/extra_nic.cfg:/etc/network/interfaces.d/extra_nic.cfg
+upload REPLACE_PATH/base/rc.local:/etc/rc.local
+
+chmod 0755:/etc/rc.local
 
 run-command useradd -m -p "$1$1rCJhvTo$nIoKRh4zdGdnk0Dntsdnq/" -s /bin/bash ubuntu
 run-command useradd -m -p "$1$1rCJhvTo$nIoKRh4zdGdnk0Dntsdnq/" -s /bin/bash fedora; 

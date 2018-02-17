@@ -1026,8 +1026,6 @@ class LibcloudCmds(CommonCloudFunctions) :
                     raise CldOpsException("Not all SSH keys exist. Check your configuration: " + obj_attr_list["key_name"], _status, True)
                 self.annotate_time_breakdown(obj_attr_list, "get_sshkey_time", _mark_a)
 
-            print _keys
-
             if self.use_sizes :
                 _mark_a = time()
                 for _sz in LibcloudCmds.sizes :
@@ -1055,7 +1053,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                     self.annotate_time_breakdown(obj_attr_list, "create_fip_time", _mark_a)                    
                     obj_attr_list["cloud_floating_ip_uuid"] = _fip.id
                     obj_attr_list["cloud_floating_ip"] = _fip.ip_address
-
+ 
             extra = deepcopy(self.extra)
             extra.update(self.pre_vmcreate_process(obj_attr_list, extra, _keys))
 

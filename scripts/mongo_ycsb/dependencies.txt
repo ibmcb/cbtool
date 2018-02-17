@@ -1,6 +1,6 @@
 ### START - Dependency installation order ###
-#java-order = 82
-ibm-java-order = 82
+java-order = 82
+#ibm-java-order = 82
 ycsb-order = 83
 mongo-order = 84
 ### END - Dependency installation order ###
@@ -12,31 +12,28 @@ mongo-order = 84
 # git = git clone using above giturl
 # pip = python pip utility
 # man = "manual"
-#java-install = pm
-ibm-java-install = man
+java-install = pm
+#ibm-java-install = man
 mongo-install = pm
 ycsb-install = man
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
-#java-configure = . ~/.bashrc; java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g' | sed 's/-internal//g'
-ibm-java-configure = . ~/.bashrc; java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g' | sed 's/-internal//g'
+java-configure = . ~/.bashrc; java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g' | sed 's/-internal//g'
+#ibm-java-configure = sudo ls /opt/ibm/java-*
 mongo-configure =  mongod --version
 maven-configure = mvn --version | head -n 1 | cut -d ' ' -f 3
 ycsb-configure = ls -la ~/YCSB
 ### END - Tests ###
 
 ### START - Dependency versions ###
-#java-ver = 1.7
-ibm-java-ver = 1.8
+java-ver = 1.7
+#ibm-java-ver = 1.8
 mongo-ver = 2.4.0
 ycsb-ver = ANY
 ### END - Dependency versions ###
 
 ### START - Dependency URLs ###
-rhel-mongo-x86_64-urls-man = http://downloads-distro.mongodb.org/repo/redhat/os/ARCH/RPMS
-
-rhel-maven-x86_64-urls-man = https://repos.fedorapeople.org/repos/dchen/apache-maven/epel-6/x86_64/apache-maven-3.2.1-2.el6.noarch.rpm
 
 ### END - Dependency URLs ###
 

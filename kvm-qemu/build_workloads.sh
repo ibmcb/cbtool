@@ -9,7 +9,9 @@ CB_BRANCH="experimental"
 CB_WKS="all"
 CB_VERB=''
 CB_BASE_IMAGE_SKIP=0
-
+CB_NULLWORKLOAD_IMAGE_SKIP=0
+CB_RSYNC=$(ifconfig $(netstat -rn | grep UG | awk '{ print $8 }') | grep "inet " | awk '{ print $2 }' | sed 's/addr://g')-$(sudo netstat -puntl | grep rsync | grep tcp[[:space:]] | awk '{ print $4 }' | cut -d ':' -f 2)-$(whoami)
+    
 if [ $0 != "-bash" ] ; then
     pushd `dirname "$0"` 2>&1 > /dev/null
 fi
@@ -75,6 +77,7 @@ do
         ;;
         --skip)
         CB_BASE_IMAGE_SKIP=1
+        CB_NULLWORKLOAD_IMAGE_SKIP=1        
         ;;                                                 
         -v|--verbose)
         CB_VERB='-v'
@@ -112,7 +115,7 @@ function download_base_images {
     pushd $CB_KVMQEMU_BIMG_DIR > /dev/null 2>&1
     for CB_KVMQEMU_IMG in $CB_KVMQEMU_DISTROS_IMG_LIST
     do
-        wget -N $CB_KVMQEMU_IMG        
+        wget -N $CB_KVMQEMU_IMG
     done
     echo "##### Done downloading the latest version of the vanilla cloud images"
     echo
@@ -132,10 +135,15 @@ function create_base_images {
         else
             CB_KVMQEMU_BIMG="ubuntu"
         fi
-        cp -f $CB_KVMQEMU_CIMG_FN cb_base_${CB_KVMQEMU_BIMG}
+	qemu-img create -f qcow2 cb_base_${CB_KVMQEMU_BIMG} 20G
+        virt-resize --expand /dev/sda1 $CB_KVMQEMU_CIMG_FN cb_base_${CB_KVMQEMU_BIMG}
+        #cp -f $CB_KVMQEMU_CIMG_FN cb_base_${CB_KVMQEMU_BIMG}
+        #sudo qemu-img resize cb_base_${CB_KVMQEMU_BIMG} +18G	
         cp -f $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands._processed_
         sudo sed -i "s^REPLACE_USERNAME^${CB_USERNAME}^g" $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands._processed_
         sudo sed -i "s^REPLACE_BRANCH^${CB_BRANCH}^g" $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands._processed_
+        sudo sed -i "s^REPLACE_PATH^${CB_KVMQEMU_S_DIR}^g" $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands._processed_
+        	        	
         virt-customize -a cb_base_${CB_KVMQEMU_BIMG} $CB_VERB --commands-from-file $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands._processed_
         COUT=$?
         let ERROR+=$COUT
@@ -168,23 +176,29 @@ function create_workload_images {
     do
         if [[ $CB_WKS_LIST == "all" ]]
         then
-            CB_WKS_LIST=$(ls $CB_KVMQEMU_S_DIR/../docker/workload/ | grep ${_CB_DISTRO} | grep -v ._processed_ | sed "s/Dockerfile-${_CB_DISTRO}_cb_//g")
+            CB_WKS_LIST=$(ls $CB_KVMQEMU_S_DIR/../docker/workload/ | grep ${_CB_DISTRO} | grep -v nullworkload | grep -v ._processed_ | sed "s/Dockerfile-${_CB_DISTRO}_cb_//g")
         else
             CB_WKS_LIST=$(ls $CB_KVMQEMU_S_DIR/../docker/workload/ | grep $CB_WKS_LIST | grep ${_CB_DISTRO} | grep -v ._processed_ | sed "s/Dockerfile-${_CB_DISTRO}_cb_//g")
         fi
         
         for _CB_WKS in $CB_WKS_LIST
-        do    
-            CB_KVMQEMU_BIMG_FN=cb_base_${_CB_DISTRO}
-            cp -f $CB_KVMQEMU_BIMG_FN cb_${_CB_WKS}
-            echo "####### Creating workload image \"${_CB_WKS}\" by executing the command \"cd /home/$CB_USERNAME/cbtool; ./install -r workload --wks ${_CB_WKS}\""
-            virt-customize -a cb_${_CB_WKS} $CB_VERB --run-command "cd /home/$CB_USERNAME/cbtool; ./install -r workload --wks ${_CB_WKS}"
+        do  
+            if [[ ${_CB_WKS} == "nullworkload" ]]
+            then
+                CB_KVMQEMU_BIMG_FN=cb_base_${_CB_DISTRO}
+            else
+                CB_KVMQEMU_BIMG_FN=cb_nullworkload_${_CB_DISTRO}
+            fi
+            cp -f $CB_KVMQEMU_BIMG_FN cb_${_CB_WKS}_${_CB_DISTRO}
+            CMD="sudo -u $CB_USERNAME /home/$CB_USERNAME/cbtool/install -r workload --wks ${_CB_WKS} --filestore $CB_RSYNC"
+            echo "####### Creating workload image \"cb_${_CB_WKS}_${_CB_DISTRO}\" by executing the command \"$CMD\""
+            virt-customize -a cb_${_CB_WKS}_${_CB_DISTRO} $CB_VERB --run-command "$CMD"
             COUT=$?
             if [[ $COUT -ne 0 ]]
             then
-                echo "############## ERROR: workload image \"${_CB_WKS}\" failed while executing command \"cd /home/$CB_USERNAME/cbtool; ./install -r workload --wks ${_CB_WKS}\""
+                echo "############## ERROR: workload image \"cb_${_CB_WKS}_${_CB_DISTRO}\" failed while executing command \"$CMD\""
             else
-                echo "############## INFO: workload image \"${_CB_WKS}\" built successfully!!!" 
+                echo "############## INFO: workload image \"cb_${_CB_WKS}_${_CB_DISTRO}\" built successfully!!!" 
             fi 
             let ERROR+=$COUT
         done
@@ -207,4 +221,12 @@ then
     create_base_images
 fi
 
-create_workload_images $CB_WKS $CB_DISTROS
+if [[ $CB_NULLWORKLOAD_IMAGE_SKIP -eq 0 ]]
+then
+    create_workload_images nullworkload $CB_DISTROS
+fi
+
+if [[ $(echo $CB_WKS | grep -c none) -eq 0 ]]
+then 
+    create_workload_images $CB_WKS $CB_DISTROS
+fi

@@ -29,7 +29,7 @@
 '''
     Created on Jan 26, 2018
     Azure Object Operations Library
-    @author: Marcio Silva, Michael R. Hines, Darrin Eden
+    @author: Marcio Silva, Michael R. Hines
 '''
 from time import time
 
@@ -135,7 +135,6 @@ class AsCmds(LibcloudCmds) :
 #        network.input_endpoints.items.append(ConfigurationSetInputEndpoint('SSHDirect', 'tcp', '22', '22', None, True))
         
 #        self.vmcreate_kwargs["ex_network_config"] = network
-        
         return extra
 
     @trace

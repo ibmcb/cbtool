@@ -126,13 +126,13 @@ def docker_file_parser(depsdict, username, options, hostname, process_manager = 
         _workloads_list = [ "orchestrator", "orchprereqs" ]
         _role_list = [ options.role, "orchprereqs" ]
         
-    if len(options.wks) > 1 :
-        if options.wks.count("_ycsb") :
-            options.wks += ",ycsb"
-            
         _workloads_list = options.wks.split(',')
         _role_list = [ options.role ]
-                    
+    
+    if len(options.wks) > 1 :
+        _workloads_list = options.wks.split(',')
+        _role_list = [ options.role ]
+
     print '\n'
 
     for _role in _role_list :    
@@ -850,7 +850,17 @@ def dependency_checker_installer(hostname, depsdict, username, operation, option
         _status = 100
         _dep_missing = -1        
         _fmsg = "An error has occurred, but no error message was captured"
-                
+
+        if len(options.wks) > 1 :
+            if options.wks.count("_ycsb") :
+                options.wks += ",ycsb"
+
+            if options.wks.count(",ycsb") :
+                options.wks += ",mongo_ycsb,cassandra_ycsb,redis_ycsb"
+
+            if options.wks.count(",acemair") :
+                options.wk += ",mongo_acmeair"
+        
         deps_file_parser(depsdict, username, options, "127.0.0.1")
         docker_file_parser(depsdict, username, options, "127.0.0.1")
         preparation_file_parser(depsdict, username, options, "127.0.0.1")            

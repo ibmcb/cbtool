@@ -1,8 +1,25 @@
 #!/usr/bin/env bash
 
+if [ $0 != "-bash" ] ; then
+    pushd `dirname "$0"` 2>&1 > /dev/null
+fi
+CB_DOCKER_BASE_DIR=$(pwd)
+if [ $0 != "-bash" ] ; then
+    popd 2>&1 > /dev/null
+fi
+
 CB_REPO=ibmcb
 CB_WKS="ALL"
-CB_RSYNC=$(sudo ifconfig docker0 | grep "inet " | awk '{ print $2 }' | sed 's/addr://g'):873/$(whoami)_cb
+CB_RSYNC_ADDR=$(sudo ifconfig docker0 | grep "inet " | awk '{ print $2 }' | sed 's/addr://g')
+for pi in $(sudo netstat -puntel | grep rsync | grep tcp[[:space:]] | awk '{ print $9 }' | sed 's^/rsync^^g')
+do
+    if [[ $(echo $(sudo ps aux | grep $pi | grep -c $(whoami)_rsync.conf)) -ne 0 ]]
+    then
+        CB_RSYNC_PORT=$(sudo netstat -puntel | grep $pi | awk '{ print $4 }' | cut -d ':' -f 2)
+	break
+    fi
+done
+CB_RSYNC=$CB_RSYNC_ADDR:${CB_RSYNC_PORT}/$(whoami)_cb
 CB_UBUNTU_BASE=ubuntu:16.04
 CB_PHUSION_BASE=phusion/baseimage:latest
 CB_CENTOS_BASE=centos:latest

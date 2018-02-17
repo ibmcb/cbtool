@@ -262,7 +262,7 @@ class OskCmds(CommonCloudFunctions) :
 
             self.generate_rc(cloud_name, vmc_defaults, self.additional_rc_contents)
 
-            _key_pair_found = self.check_ssh_key(vmc_name, self.determine_key_name(vm_defaults), vm_defaults)
+            _key_pair_found = self.check_ssh_key(vmc_name, self.determine_key_name(vm_defaults), vm_defaults, False, vmc_name)
 
             _security_group_found = self.check_security_group(vmc_name, security_group_name)
 

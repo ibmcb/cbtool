@@ -4,9 +4,13 @@ edit /etc/default/grub:s/^GRUB_CMDLINE_LINUX=.*/GRUB_CMDLINE_LINUX=\"biosdevname
 run-command update-grub
 root-password password:temp4now
 edit /etc/ssh/sshd_config:s/PermitRootLogin without-password/PermitRootLogin yes/
-write /etc/network/interfaces.d/extra.cfg:auto eth1
-run-command echo '' >> /etc/network/interfaces.d/extra.cfg
-run-command echo 'iface eth1 inet dhcp' >> /etc/network/interfaces.d/extra.cfg
+upload REPLACE_PATH/base/extra_nic.cfg:/etc/network/interfaces.d/extra_nic.cfg
+upload REPLACE_PATH/base/fixdefaultgw.sh:/usr/local/bin/fixdefaultgw.sh
+upload REPLACE_PATH/base/fixdefaultgw.service:/etc/systemd/system/fixdefaultgw.service
+
+chmod 0755:/usr/local/bin/fixdefaultgw.sh
+
+run-command systemctl enable fixdefaultgw
 
 run-command useradd -m -p "$1$1rCJhvTo$nIoKRh4zdGdnk0Dntsdnq/" -s /bin/bash ubuntu
 run-command useradd -m -p "$1$1rCJhvTo$nIoKRh4zdGdnk0Dntsdnq/" -s /bin/bash fedora; 

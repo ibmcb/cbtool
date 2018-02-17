@@ -3,7 +3,8 @@
 CB_TEST_LEVEL="lowest"
 CB_ADAPTERS="fast"
 CB_RESET=0
-CB_USAGE="Usage: $0 [-l/--level test level] [-a/--adapters adapters] [-r/--reset]"
+CB_SLEEP=15
+CB_USAGE="Usage: $0 [-l/--level test level] [-a/--adapters adapters] [-s/--sleep] [-r/--reset]"
 
 while [[ $# -gt 0 ]]
 do
@@ -26,6 +27,14 @@ do
         CB_ADAPTERS=$(echo $key | cut -d '=' -f 2)
         shift
         ;;
+        -s|--sleep)
+        CB_SLEEP="$2"
+        shift
+        ;;
+        -s=*|--sleep=*)
+        CB_SLEEP=$(echo $key | cut -d '=' -f 2)
+        shift
+        ;;        
         -r|--reset)
         CB_RESET=1
         ;;
@@ -57,16 +66,16 @@ fi
 
 if [[ $CB_ADAPTERS == "all" ]]
 then
-    CB_ADAPTERS="sim pdm pcm kub osk,oskfile,oskfip nop osl,oslfip ec2 gce do as slr"
+    CB_ADAPTERS="sim pdm pcm kub osk,oskfile,oskfip nop gen osl,oslfip ec2 gce do as slr"
 elif [[ $CB_ADAPTERS == "private" ]]
 then
-    CB_ADAPTERS="sim pdm pcm kub osk,oskfile,oskfip nop osl,oslfip"
+    CB_ADAPTERS="sim pdm pcm kub osk,oskfile,oskfip nop gen osl,oslfip"
 elif [[ $CB_ADAPTERS == "public" ]]
 then
     CB_ADAPTERS="ec2 gce do as slr"
 elif [[ $CB_ADAPTERS == "libcloud" ]]
 then
-    CB_ADAPTERS="osl,oslfip do as"    	
+    CB_ADAPTERS="osl,oslfip do as"
 elif [[ $CB_ADAPTERS == "fast" ]]
 then
     CB_ADAPTERS="sim nop"
@@ -104,8 +113,19 @@ while [[ "$ecodes" -lt "$acount" ]]
 do
     aclist=$(sudo ls -la /tmp/*_real_multicloud_regression_ecode.txt 2>&1 | grep -v 'cannot access' | awk '{ print $9 }' | sed 's^/tmp/^^g' | sed 's^_real_multicloud_regression_ecode.txt^^g' | sort | sed ':a;N;$!ba;s/\n/ /g')
     ecodes=$(sudo ls /tmp/*_real_multicloud_regression_ecode.txt 2>&1 | grep -v 'cannot access' | wc -l)
-    echo "$ecodes ($aclist) out of $acount tests completed so far"
-    sleep 15
+    diff=$(python -c "a=\"$alist\"; b=\"$aclist\"; a=set(a.split()); b=set(b.split()); print ' '.join(sorted(a-b))") 
+    echo "$ecodes ($aclist) out of $acount tests completed so far (missing: $diff)"
+    sudo ls /tmp/*_real_multicloud_regression_test.txt > /dev/null 2>&1
+    if [[ $? -eq 0 ]]
+    then
+        echo "---------------------------------------------------------------------------------------------------"
+	for fn in $(ls /tmp/*_real_multicloud_regression_test.txt)
+        do 
+            cat $fn | tail -1
+        done
+    	echo "---------------------------------------------------------------------------------------------------"
+    fi
+    sleep $CB_SLEEP
 done
 
 date2=`date +%s`

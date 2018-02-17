@@ -842,20 +842,14 @@ class PcmCmds(CommonCloudFunctions) :
             self.vm_placement(obj_attr_list)
             _cpu, _memory = obj_attr_list["size"].split('-')
 
-            if "userdata" not in obj_attr_list :
-                obj_attr_list["userdata"] = "auto"
-                
-            if obj_attr_list["userdata"] != "none" :
-                obj_attr_list["config_drive"] = True
-            else :
-                obj_attr_list["config_drive"] = False                
-
             obj_attr_list["last_known_state"] = "about to send create request"
 
             self.get_images(obj_attr_list)
             self.get_networks(obj_attr_list)
 
             self.vvcreate(obj_attr_list)
+
+            obj_attr_list["config_drive"] = True
 
             self.common_messages("VM", obj_attr_list, "creating", 0, '')
 
@@ -871,12 +865,9 @@ class PcmCmds(CommonCloudFunctions) :
 
             _mark2 = int(time())
             
-            obj_attr_list["pcm_003_create_container_time"] = _mark2 - _mark1
-
-            obj_attr_list["userdata_ssh"] = "true"
-            obj_attr_list["userdata"] = "true"            
-            
             _instance.config["user.user-data"] = self.populate_cloudconfig(obj_attr_list)
+
+            obj_attr_list["pcm_003_create_container_time"] = _mark2 - _mark1
 
             _instance.save(wait=True)
 

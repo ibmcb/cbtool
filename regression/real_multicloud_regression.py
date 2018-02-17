@@ -86,7 +86,7 @@ def cli_postional_argument_parser() :
             _options.test_volumes = True
             _options.test_capture = False
 
-        if argv[3] == "highest" :
+        if argv[3] == "complete" or argv[3] == "highest" :
             _options.test_instances = True
             _options.test_ssh = True 
             _options.test_volumes = True
@@ -210,6 +210,7 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         _model_to_imguuid["nop"] = "baseimg"
         _model_to_imguuid["osk"] = "xenial3"
         _model_to_imguuid["os"] = "xenial3"        
+        _model_to_imguuid["gen"] = "xenial3"        
         _model_to_imguuid["ec2"] = "ami-a9d276c9"
         _model_to_imguuid["gce"] = "ubuntu-1604-xenial-v20161221"
         _model_to_imguuid["do"] = "21669205"        
@@ -224,6 +225,7 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         _model_to_login["nop"] = "ubuntu"
         _model_to_login["osk"] = "ubuntu"
         _model_to_login["os"] = "ubuntu"        
+        _model_to_login["gen"] = "cbuser"        
         _model_to_login["ec2"] = "ubuntu"
         _model_to_login["gce"] = "ubuntu"
         _model_to_login["do"] = "root"        
@@ -512,7 +514,58 @@ def check_img_delete(apiconn, cloud_model, cloud_name, options) :
             print _msg
             return "PASS"
 
+def retriable_cloud_connection(options, actual_cloud_model, command) :
+    '''
+    TBD
+    '''
+    
+    _api = False
+    _attempts = 3
+    _attempt = 0
+    
+    while not _api and _attempt < _attempts :
 
+        try : 
+            print "Attaching Cloud Model \"" + actual_cloud_model + "\" by running the command \"" + command + "\"..."
+            _proc_h = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            _resul = _proc_h.communicate()
+    
+            _status = _proc_h.returncode
+
+            if _status :
+                print "ERROR while attempting to attach Cloud Model \"" + _cloud_model + "\""
+                exit(_status)
+    
+            if options.private_results :
+                api_file_name = "/tmp/cb_api_" + username + '_' + actual_cloud_model            
+            else :
+                api_file_name = "/tmp/cb_api_" + username
+
+            if os.access(api_file_name, os.F_OK) :    
+                try :
+                    _fd = open(api_file_name, 'r')
+                    _api_conn_info = _fd.read()
+                    _fd.close()
+                except :
+                    _msg = "Unable to open file containing API connection information "
+                    _msg += "(" + api_file_name + ")."
+                    print _msg
+                    exit(4)
+            else :
+                _msg = "Unable to locate file containing API connection information "
+                _msg += "(" + api_file_name + ")."
+                print _msg
+                exit(4)
+        
+            _msg = "Connecting to API daemon (" + _api_conn_info + ")..."
+            print _msg
+            _api = APIClient(_api_conn_info)
+            return _api
+
+        except :
+            _api = False
+            _attempt += 1
+            sleep(10)
 
 def main() :
     '''
@@ -557,39 +610,7 @@ def main() :
 
         _display_cloud_model = _cloud_model.replace("file"," (file)").replace("fip", " (fip)")
         
-        print "Attaching Cloud Model \"" + _actual_cloud_model + "\" by running the command \"" + _command + "\"..."
-        _proc_h = subprocess.Popen(_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        _resul = _proc_h.communicate()
-    
-        _status = _proc_h.returncode
-        if _status :
-            print "ERROR while attempting to attach Cloud Model \"" + _cloud_model + "\""
-            exit(_status)
-    
-        if _options.private_results :
-            api_file_name = "/tmp/cb_api_" + username + '_' + _actual_cloud_model            
-        else :
-            api_file_name = "/tmp/cb_api_" + username
-
-        if os.access(api_file_name, os.F_OK) :    
-            try :
-                _fd = open(api_file_name, 'r')
-                _api_conn_info = _fd.read()
-                _fd.close()
-            except :
-                _msg = "Unable to open file containing API connection information "
-                _msg += "(" + api_file_name + ")."
-                print _msg
-                exit(4)
-        else :
-            _msg = "Unable to locate file containing API connection information "
-            _msg += "(" + api_file_name + ")."
-            print _msg
-            exit(4)
-        
-        _msg = "Connecting to API daemon (" + _api_conn_info + ")..."
-        print _msg
-        api = APIClient(_api_conn_info)
+        api = retriable_cloud_connection(_options, _actual_cloud_model, _command)
 
         _results_row = []
         _results_row.append(_display_cloud_model)
