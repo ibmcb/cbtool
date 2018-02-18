@@ -858,8 +858,8 @@ def dependency_checker_installer(hostname, depsdict, username, operation, option
             if options.wks.count(",ycsb") :
                 options.wks += ",mongo_ycsb,cassandra_ycsb,redis_ycsb"
 
-            if options.wks.count(",acemair") :
-                options.wk += ",mongo_acmeair"
+            if options.wks.count(",acmeair") :
+                options.wks += ",mongo_acmeair"
         
         deps_file_parser(depsdict, username, options, "127.0.0.1")
         docker_file_parser(depsdict, username, options, "127.0.0.1")
