@@ -176,7 +176,7 @@ function create_workload_images {
     do
         if [[ $CB_WKS_LIST == "all" ]]
         then
-            CB_WKS_LIST=$(ls $CB_KVMQEMU_S_DIR/../docker/workload/ | grep ${_CB_DISTRO} | grep -v nullworkload | grep -v ._processed_ | sed "s/Dockerfile-${_CB_DISTRO}_cb_//g")
+            CB_WKS_LIST=$(ls $CB_KVMQEMU_S_DIR/../docker/workload/ | grep ${_CB_DISTRO} | grep -v caffe | grep -v rubbos | grep -v rubis | grep -v spark | grep -v speccpu | grep -v specsfs | grep -v specweb | grep -v nullworkload | grep -v ._processed_ | sed "s/Dockerfile-${_CB_DISTRO}_cb_//g")
         else
             CB_WKS_LIST=$(ls $CB_KVMQEMU_S_DIR/../docker/workload/ | grep $CB_WKS_LIST | grep ${_CB_DISTRO} | grep -v ._processed_ | sed "s/Dockerfile-${_CB_DISTRO}_cb_//g")
         fi
