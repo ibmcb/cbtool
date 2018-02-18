@@ -1,0 +1,39 @@
+### START - Dependency installation order ###
+autoreconf-order = 81
+redis-order = 82
+memtier_benchmark-order = 83
+### END - Dependency installation order ###
+
+### START - Dependency-specific installation method ###
+# pm = "package manager" (yum or apt-get)
+# sl = "soft link" (assume that the dependency is already installed, just has to
+# be properly exposed to the user's path.
+# git = git clone using above giturl
+# pip = python pip utility
+# man = "manual"
+autoreconf-install = pm
+redis-install = pm
+memtier_benchmark-install = man
+### END - Dependency-specific installation method ###
+
+### START - Tests ###
+autoreconf-configure = autoconf --version 2>&1 | head -n 1 | awk '{ print $4 }'
+redis-configure = redis-server -v
+memtier_benchmark-configure = ls -la ~/memtier_benchmark
+### END - Tests ###
+
+### START - Dependency versions ###
+autoreconf-ver = 1.0
+redis-ver = 2.5.0
+memtier_benchmark-ver = ANY
+### END - Dependency versions ###
+
+### START - Dependency URLs ###
+
+### END - Dependency URLs ###
+
+### START -  Dependency and method-specific command lines ###
+
+# MOST OF THESE COMMAND LINES ARE AUTOMATICALLY EXTRACTED FROM DOCKERFILES ON ../../docker/workload/
+
+### END -  Dependency and method-specific command lines ###
