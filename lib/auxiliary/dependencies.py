@@ -191,6 +191,7 @@ def docker_file_parser(depsdict, username, options, hostname, process_manager = 
                                         _line = _line.replace("RUN ", "sudo ")
                                         _line = _line.replace("sudo cd ", "cd ")
                                         _line = _line.replace("sudo export", "export ")
+                                        _line = _line.replace("sudo sudo ", "sudo ")
                                         _line = _line.replace("sudo REPLACE_RSYNC", "REPLACE_RSYNC")
                                         _line = _line.replace("WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party", "cd 3RPARTYDIR")
                                         _line = _line.replace("# service_stop_disable", "service_stop_disable")

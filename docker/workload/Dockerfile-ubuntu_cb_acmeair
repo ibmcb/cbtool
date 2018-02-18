@@ -21,13 +21,13 @@ RUN apt-get install -y gradle unzip
 RUN cd /home/REPLACE_USERNAME; git clone https://github.com/blueperf/acmeair -b simple --single-branch; 
 RUN echo "loader.timeout=180" > /home/REPLACE_USERNAME/acmeair/src/main/resources/loader.properties; echo "loader.numCustomers=200" >> /home/REPLACE_USERNAME/acmeair/src/main/resources/loader.properties 
 RUN export JAVA_HOME=/opt/ibm/java-x86_64-80/jre; cd /home/REPLACE_USERNAME/acmeair; mvn clean package 
-RUN mv /root/.m2/ /home/REPLACE_USERNAME/
+RUN sudo mkdir -p /root/.m2/; sudo rsync -az /root/.m2/ /home/REPLACE_USERNAME/
 #RUN mv /root/.gradle/ /home/REPLACE_USERNAME/
 # acmeair-install-man
 
 # websphere-liberty-install-man
-RUN REPLACE_RSYNC/wlp-webProfile7-17.0.0.3.zip /home/REPLACE_USERNAME/wlp-webProfile7-17.0.0.3.zip
-RUN mkdir -p /opt/ibm; sudo mv /home/REPLACE_USERNAME/wlp-webProfile7-17.0.0.3.zip /opt/ibm/wlp-webProfile7-17.0.0.3.zip
+RUN REPLACE_RSYNC/wlp-webProfile7-17.0.0.3.zip /tmp/wlp-webProfile7-17.0.0.3.zip
+RUN mkdir -p /opt/ibm; sudo mv /tmp/wlp-webProfile7-17.0.0.3.zip /opt/ibm/wlp-webProfile7-17.0.0.3.zip
 RUN cd /opt/ibm/; sudo unzip -q wlp-webProfile7-17.0.0.3.zip
 RUN rm /opt/ibm/wlp-webProfile7-17.0.0.3.zip
 # websphere-liberty-install-man
