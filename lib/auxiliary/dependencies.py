@@ -1097,6 +1097,10 @@ def dependency_checker_installer(hostname, depsdict, username, operation, option
                 _msg = _fmsg + '\n'
                 _msg += "Please fix the reported problems re-run " + operation +  " again."               
         else :
+            _process_manager = ProcessManagement(hostname)
+            _cmd = "sudo chown -R " + depsdict["username"] + ':' + depsdict["username"] + " /home/" + depsdict["username"] + '/'
+            _cmd = _cmd.replace("/home/root", "/root")
+            _status, _x, _y = _process_manager.run_os_command(_cmd, raise_exception = False)
             _msg = "All dependencies are in place"
             if len(options.wks) :
                 _msg += " for workload(s) \"" + str(options.wks) + "\""
