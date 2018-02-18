@@ -27,8 +27,8 @@ RUN mv /root/.m2/ /home/REPLACE_USERNAME/
 
 # websphere-liberty-install-man
 RUN REPLACE_RSYNC/wlp-webProfile7-17.0.0.3.zip /home/REPLACE_USERNAME/wlp-webProfile7-17.0.0.3.zip
-RUN mkdir -p /opt/ibm; mv /home/REPLACE_USERNAME/wlp-webProfile7-17.0.0.3.zip /opt/ibm/wlp-webProfile7-17.0.0.3.zip
-RUN cd /opt/ibm/; unzip -q wlp-webProfile7-17.0.0.3.zip
+RUN mkdir -p /opt/ibm; sudo mv /home/REPLACE_USERNAME/wlp-webProfile7-17.0.0.3.zip /opt/ibm/wlp-webProfile7-17.0.0.3.zip
+RUN cd /opt/ibm/; sudo unzip -q wlp-webProfile7-17.0.0.3.zip
 RUN rm /opt/ibm/wlp-webProfile7-17.0.0.3.zip
 # websphere-liberty-install-man
 
@@ -39,7 +39,7 @@ RUN apt-get install -y jmeter
 # acmeairdriver-install-man
 RUN cd /home/REPLACE_USERNAME; git clone https://github.com/acmeair/acmeair-driver.git; export JAVA_HOME=/opt/ibm/java-x86_64-80/jre; cd acmeair-driver; ./gradlew build
 RUN cp /home/REPLACE_USERNAME/acmeair-driver/acmeair-jmeter/build/libs/acmeair-jmeter-1.1.0-SNAPSHOT.jar /usr/share/jmeter/lib/ext/
-RUN cd /usr/share/jmeter/lib/ext/; wget -N -q https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/json-simple/json-simple-1.1.1.jar
+RUN cd /usr/share/jmeter/lib/ext/; sudo wget -N -q https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/json-simple/json-simple-1.1.1.jar
 # acmeairdriver-install-man
 
 # mongo-install-pm
@@ -50,7 +50,7 @@ RUN sed -i "s/.*bind_ip.*/bind_ip=0.0.0.0/" /etc/mongodb.conf
 
 # mongo-driver-java-install-man
 #RUN mkdir -p /opt/ibm/wlp/usr/shared/resources/mongodb; cd /opt/ibm/wlp/usr/shared/resources/mongodb; wget -N -q http://central.maven.org/maven2/org/mongodb/mongo-java-driver/2.12.2/mongo-java-driver-2.12.2.jar
-RUN mkdir -p /opt/ibm/wlp/usr/shared/resources/mongodb; cp -f $(find /home/REPLACE_USERNAME/acmeair | grep mongo-java-driver-.*.jar) /opt/ibm/wlp/usr/shared/resources/mongodb/
+RUN mkdir -p /opt/ibm/wlp/usr/shared/resources/mongodb; sudo cp -f $(find /home/REPLACE_USERNAME/acmeair | grep mongo-java-driver-.*.jar) /opt/ibm/wlp/usr/shared/resources/mongodb/
 # mongo-driver-java-install-man
 
 RUN chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME

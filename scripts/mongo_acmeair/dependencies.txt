@@ -7,6 +7,7 @@ websphere-liberty-order = 94
 jmeter-order = 95
 acmeairdriver-order = 96
 mongo-order = 97
+mongo-driver-java-order = 98
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -16,6 +17,16 @@ mongo-order = 97
 # git = git clone using above giturl
 # pip = python pip utility
 # man = "manual"
+
+ibm-java-install = man
+maven-install = pm
+gradle-install = pm
+acmeair-install = man
+websphere-liberty-install = man
+jmeter-install = pm
+acmeairdriver-install = man
+mongo-install = pm
+mongo-driver-java-install = man
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
@@ -27,17 +38,19 @@ websphere-liberty-configure = ls -la /opt/ibm/wlp
 jmeter-configure = jmeter --version | grep Version | cut -d ' ' -f 2
 acmeairdriver-configure = ls -la ~/acmeair-driver
 mongo-configure =  mongod --version
+mongo-driver-java-configure = ls -la /opt/ibm/wlp/usr/shared/resources/mongodb
 ### END - Tests ###
 
 ### START - Dependency versions ###
 ibm-java-ver = ANY
-maven-ver = ANY
+maven-ver = 1.0 
 gradle-ver = 2.0
 acmeair-ver = ANY
 websphere-liberty-ver = ANY
 jmeter-ver = 2.0
 acmeairdriver-ver = ANY
 mongo-ver = 2.4.0
+mongo-driver-java-ver = ANY
 ### END - Dependency versions ###
 
 ### START -  Dependency and method-specific command lines ###
