@@ -164,6 +164,7 @@ OS_SSH_KEY_NAME = cbtool_rsa                                                    
 OS_KEY_NAME = cbtool_rsa                                                                                             # Name of the private key present in the cloud to be injected on VMs
 OS_LOGIN = cbuser                                                                                                    # The username that logins on the VMs
 #-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 # END: Specify the individual parameters for each cloud
 
 [OBJECTSTORE]
