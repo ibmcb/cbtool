@@ -126,9 +126,6 @@ def docker_file_parser(depsdict, username, options, hostname, process_manager = 
         _workloads_list = [ "orchestrator", "orchprereqs" ]
         _role_list = [ options.role, "orchprereqs" ]
         
-        _workloads_list = options.wks.split(',')
-        _role_list = [ options.role ]
-    
     if len(options.wks) > 1 :
         _workloads_list = options.wks.split(',')
         _role_list = [ options.role ]

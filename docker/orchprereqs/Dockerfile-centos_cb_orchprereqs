@@ -317,5 +317,6 @@ RUN git clone https://github.com/ibmcb/d3.git
 WORKDIR /home/REPLACE_USERNAME
 RUN mkdir -p /home/REPLACE_USERNAME/cbtool/lib/clouds/
 RUN mkdir -p /home/REPLACE_USERNAME/cbtool/configs/templates/
+COPY cloud_definitions.txt /home/REPLACE_USERNAME/cbtool/configs/
 RUN sudo chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME
 RUN mv /home/REPLACE_USERNAME/cbtool /home/REPLACE_USERNAME/cbtooltmp

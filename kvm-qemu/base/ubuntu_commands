@@ -1,4 +1,5 @@
-install sudo,rsync,python2.7,git
+install sudo,rsync,python2.7,git,wget,unzip,python-setuptools,python-pip,python-requests,python-requests-toolbelt
+
 run-command ln -s /usr/bin/python2.7 /usr/bin/python; /bin/true
 edit /etc/default/grub:s/^GRUB_CMDLINE_LINUX=.*/GRUB_CMDLINE_LINUX=\"biosdevname=0 net.ifnames=0\"/
 run-command update-grub
@@ -45,3 +46,4 @@ run-command cd /home/REPLACE_USERNAME/cbtool; git checkout REPLACE_BRANCH
 edit /etc/cloud/cloud.cfg:s/name: ubuntu/name: REPLACE_USERNAME/
 edit /etc/cloud/cloud.cfg:s/lock_passwd: True/lock_passwd: False/
 edit /etc/cloud/cloud.cfg:s/gecos: Ubuntu/gecos: Cloudbench/
+
