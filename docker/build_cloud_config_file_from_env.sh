@@ -17,8 +17,13 @@ fi
 
 if [[ $CB_PRIVATE_CONFIG -eq 0 && -d $CB_BASE_DIR ]]
 then
-    sudo rsync -az $CB_BASE_DIR/private_configs/ $CB_BASE_DIR/configs/
+    sudo ls $CB_BASE_DIR/private_configs/ > /dev/null 2>&1
+    if [[ $? -eq 0 ]]
+    then
+        sudo rsync -az $CB_BASE_DIR/private_configs/ $CB_BASE_DIR/configs/
+    fi
     sudo chown -R $CB_DOCKER_USERNAME:$CB_DOCKER_USERNAME $CB_BASE_DIR/configs 
+        
 fi
 
 if [[ $CB_PRIVATE_DATA -eq 1 || ! -d $CB_BASE_DIR/data ]]
@@ -28,10 +33,14 @@ fi
 
 if [[ $CB_PRIVATE_DATA -eq 0 && -d $CB_BASE_DIR/data ]]
 then
-    sudo rsync -az $CB_BASE_DIR/private_configs/ $CB_BASE_DIR/configs/
-    sudo chown -R $CB_DOCKER_USERNAME:$CB_DOCKER_USERNAME $CB_BASE_DIR/configs 
+    sudo ls $CB_BASE_DIR/private_data/ > /dev/null 2>&1
+    if [[ $? -eq 0 ]]
+    then    
+        sudo rsync -az $CB_BASE_DIR/private_data/ $CB_BASE_DIR/data/
+    fi
+    sudo chown -R $CB_DOCKER_USERNAME:$CB_DOCKER_USERNAME $CB_BASE_DIR/data 
 fi
-
+    
 cat $CB_BASE_DIR/configs/cloud_definitions.txt | sed '/# END: Specify the individual parameters for each cloud/,$d' > $CB_CONFIG_FILE
 
 CB_MANAGER_IP=${CB_MANAGER_IP:-\$IP_AUTO}

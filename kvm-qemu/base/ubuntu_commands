@@ -47,3 +47,5 @@ edit /etc/cloud/cloud.cfg:s/name: ubuntu/name: REPLACE_USERNAME/
 edit /etc/cloud/cloud.cfg:s/lock_passwd: True/lock_passwd: False/
 edit /etc/cloud/cloud.cfg:s/gecos: Ubuntu/gecos: Cloudbench/
 
+upload REPLACE_PATH/../configs/cloud_definitions.txt:/home/REPLACE_USERNAME/cbtool/configs/cloud_definitions.txt
+run-command chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME/
