@@ -1,9 +1,17 @@
 #!/bin/bash
 
-CB_DOCKER_USERNAME=cbuser
-CB_BASE_DIR=/home/$CB_DOCKER_USERNAME/cbtool
+CB_USERNAME=$USER
 
-CB_CONFIG_FILE=$CB_BASE_DIR/configs/${CB_DOCKER_USERNAME}_cloud_definitions.txt
+if [ $0 != "-bash" ] ; then
+    pushd `dirname "$0"` 2>&1 > /dev/null
+fi
+CB_BASE_DIR=$(pwd)
+if [ $0 != "-bash" ] ; then
+    popd 2>&1 > /dev/null
+fi
+CB_BASE_DIR=$(echo $CB_BASE_DIR | sed 's^/configs^^g')
+
+CB_CONFIG_FILE=$CB_BASE_DIR/configs/${CB_USERNAME}_cloud_definitions.txt
 
 echo "START: Building private cloud configuration file \"$CB_CONFIG_FILE\" combining both \"$CB_BASE_DIR/configs/cloud_definitions.txt\" and environment variables (all variables start with \"CB_\")"  
     

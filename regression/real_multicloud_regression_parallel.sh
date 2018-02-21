@@ -85,22 +85,23 @@ CB_ADAPTERS=$(echo $CB_ADAPTERS | sed 's/do[[:space:]]/dozz /g' | sed 's/as[[:sp
 
 alist=''
 acount=0
+time ./regression/real_multicloud_regression.py configs/softlayer_ris a0 lowest private headeronly
 for adapter in $CB_ADAPTERS
 do
     adapter=$(echo $adapter | sed 's/zz//g')
     actual_user=$(echo $adapter | cut -d ',' -f 1)
     adapter=$(echo $adapter | sed 's/osl/os/g')
     actual_adapter=$(echo $adapter | cut -d ',' -f 1)
-    sudo tmux kill-session -t cb${actual_user} > /dev/null 2>&1
-    sudo rm /tmp/${actual_adapter}_real_multicloud_regression_test.txt > /dev/null 2>&1
-    sudo rm /tmp/${actual_adapter}_real_cloud_regression_ecode.txt    > /dev/null 2>&1
-    sudo tmux new -d -s cb${actual_user}
-    sudo tmux send-keys -t cb${actual_user} "su - cb${actual_user}" Enter
-    sudo tmux send-keys -t cb${actual_user} "cd ~/repos/cloudbench/" Enter
-    sudo tmux send-keys -t cb${actual_user} "~/cbsync.sh" Enter
-    sudo tmux send-keys -t cb${actual_user} "time ./regression/real_multicloud_regression.py configs/softlayer_ris ${adapter} ${CB_TEST_LEVEL} private noheader" Enter
-#    sudo tmux send-keys -t cb${actual_user} "echo \$ECODE > /tmp/${actual_adapter}_real_cloud_regression_ecode.txt" Enter
-#    sudo tmux send-keys -t cb${actual_user} "echo \$ECODE > /tmp/${actual_adapter}_real_cloud_regression_ecode.txt" Enter    
+    
+	sudo tmux kill-session -t cb${actual_user} > /dev/null 2>&1
+	sudo rm /tmp/${actual_adapter}_real_multicloud_regression_test.txt > /dev/null 2>&1
+	sudo rm /tmp/${actual_adapter}_real_cloud_regression_ecode.txt    > /dev/null 2>&1
+	sudo tmux new -d -s cb${actual_user}
+	sudo tmux send-keys -t cb${actual_user} "su - cb${actual_user}" Enter
+	sudo tmux send-keys -t cb${actual_user} "cd ~/repos/cloudbench/" Enter
+	sudo tmux send-keys -t cb${actual_user} "~/cbsync.sh" Enter
+	sudo tmux send-keys -t cb${actual_user} "time ./regression/real_multicloud_regression.py configs/softlayer_ris ${adapter} ${CB_TEST_LEVEL} private noheader" Enter
+	
     alist=$adapter' '$alist
 done
 
@@ -118,12 +119,11 @@ do
     sudo ls /tmp/*_real_multicloud_regression_test.txt > /dev/null 2>&1
     if [[ $? -eq 0 ]]
     then
-        echo "---------------------------------------------------------------------------------------------------"
-	for fn in $(ls /tmp/*_real_multicloud_regression_test.txt)
+	sudo cat /tmp/a0_real_multicloud_regression_test.txt        
+    for fn in $(ls /tmp/*_real_multicloud_regression_test.txt | grep -v a0_)
         do 
             cat $fn | tail -1
         done
-    	echo "---------------------------------------------------------------------------------------------------"
     fi
     sleep $CB_SLEEP
 done

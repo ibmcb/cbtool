@@ -60,6 +60,7 @@ def cli_postional_argument_parser() :
     _options.pause = False
     _options.private_results = False
     _options.noheader = False
+    _options.headeronly = False
     
     if len(argv) > 3 :
         if argv[3] == "minimal" or argv[3] == "lowest" :
@@ -103,6 +104,9 @@ def cli_postional_argument_parser() :
         if argv[5] == "noheader" :
             _options.noheader = True
 
+        if argv[5] == "headeronly" :
+            _options.headeronly = True
+
     return _options
 
 def cli_named_option_parser() :
@@ -138,7 +142,7 @@ print "CBTOOL executable CLI found on \"" + _cb_cli_path + "\""
     
 from lib.api.api_service_client import *
 
-def check_cloud_attach(apiconn, cloud_model) :
+def check_cloud_attach(apiconn, cloud_model, time_mark) :
     '''
     TBD
     '''
@@ -163,6 +167,8 @@ def check_cloud_attach(apiconn, cloud_model) :
             _msg += "Setting new expid" 
             apiconn.expid(_cloud_name, "NEWEXPID")
 
+        _cloud_attach_time = int(time() - time_mark)
+        
     except APIException, obj :
         _error = True
         _fmsg = "API Problem (" + str(obj.status) + "): " + obj.msg
@@ -174,7 +180,7 @@ def check_cloud_attach(apiconn, cloud_model) :
     finally :
         if _cloud_attached :
             print _msg
-            _result = "PASS"
+            _result = "PASS (" + str(_cloud_attach_time).center(3,' ') + " )"
         else :
             if not _error :
                 print _msg
@@ -278,8 +284,10 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         _vms_failed = int(apiconn.stats(cloud_name, "all", "noprint", "true")["experiment_counters"]["VM"]["failed"])
             
         print "## Testing VM Attach (" + test_case + ") using \"" + _vm_role +  "\" (" + _temp_attr_list + ")..."
+        _mark_a = time()
         _vm = apiconn.vmattach(cloud_name, _vm_role, _vm_location, _meta_tags, _size, _pause_step, _temp_attr_list)
-
+        _create_time = int(time() - _mark_a)
+        
         if options.pause :
             print json.dumps(_vm, indent=4, sort_keys=True)
             raw_input("Press Enter to continue...")
@@ -324,23 +332,25 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
                        
         if not test_case.count("failure") :
             if int(_vm_counters["reservations"]) == 1 and int(_vm_counters["failed"]) - _vms_failed == 0 and int(_vm_counters["reported"]) == 1 :
-                if test_case.count("no volume") :
+                if test_case.count("no volume")  :
                     if "cloud_vv_uuid" in _vm and str(_vm["cloud_vv_uuid"]).lower() == "none" :
                         _result = "PASS" 
-                        if _vm["prov_cloud_ip"] ==  _vm["run_cloud_ip"] :
-                            _result += " p=r=" + _vm["run_cloud_ip"]                            
-                        else :
-                            _result += " p=" + _vm["prov_cloud_ip"] + ",r=" + _vm["run_cloud_ip"]
+                        if not test_case.count("newly") and test_case.count("no pubkey injection") :
+                            if _vm["prov_cloud_ip"] ==  _vm["run_cloud_ip"] :
+                                _result += (" p=r=" + _vm["run_cloud_ip"]).center(35,' ')
+                            else :
+                                _result += (" p=" + _vm["prov_cloud_ip"] + ",r=" + _vm["run_cloud_ip"]).center(35, ' ')
+                        _result += " (" + str(_create_time).center(3,' ')
                     else :
                         _attach_error = True
                         _result = "FAIL"
-                    _result = _result.center(40, ' ')                        
                 else :
                     print "######## VV UUID: " + str(_vm["cloud_vv_uuid"]).lower()
                     if str(_vm["cloud_vv_uuid"]).lower() == "not supported" :
                         _result = "NA"
                     elif str(_vm["cloud_vv_uuid"]).lower() != "none" :
-                        _result = "PASS" 
+                        _result = "PASS"
+                        _result += " (" + str(_create_time).center(3,' ') + ")"                        
                     else :
                         _attach_error = True
                         _result = "FAIL"
@@ -358,8 +368,10 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         if not test_case.count("failure") and not test_case.count(", volume") and "uuid" in _vm :    
             print "#### Testing VM Detach (" + test_case + ")..."
             try :
+                _mark_a = time()                
                 apiconn.vmdetach(cloud_name, _vm["uuid"])
-
+                _delete_time = int(time() - _mark_a)
+        
             except APIException, obj :
                 _delete_error = True
                 _fmsg = "API Problem (" + str(obj.status) + "): " + obj.msg
@@ -390,7 +402,10 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
                     _result = "FAIL"
                 else :
                     print "#### Successfully tested VM Detach (" + test_case + ")"
-
+                    _result += '/' + str(_delete_time).center(3,' ') + ')'
+                    if _result.count("p=") :
+                        _result = _result.center(40, ' ')                        
+                    
         if test_case.count("failure") :
             print "######### " + _fmsg            
             _vm_counters = apiconn.stats(cloud_name, "all", "noprint", "true")["experiment_counters"]["VM"]
@@ -426,7 +441,9 @@ def check_vm_capture(apiconn, cloud_model, cloud_name, options) :
             raise ValueError('No cloud (' + cloud_model + ") attached!")
             
         print "## Testing VM Capture ..."
+        _mark_a = time()        
         _vm = apiconn.vmcapture(cloud_name, "youngest", "regressiontest", "none", False)
+        _capture_time = int(time() - _mark_a)
 
         if options.pause :
             print json.dumps(_vm, indent=4, sort_keys=True)
@@ -466,7 +483,7 @@ def check_vm_capture(apiconn, cloud_model, cloud_name, options) :
             return "FAIL"
         else :
             print _msg
-            return "PASS"
+            return "PASS (" + str(_capture_time).center(3,' ') + ')'
 
 def check_img_delete(apiconn, cloud_model, cloud_name, options) :
     '''
@@ -482,8 +499,10 @@ def check_img_delete(apiconn, cloud_model, cloud_name, options) :
             raise ValueError('No cloud (' + cloud_model + ") attached!")
 
         _vmc = apiconn.vmclist(cloud_name)[0]["name"]        
-        print "## Testing IMAGE Delete ... (" + _vmc + ")"        
+        print "## Testing IMAGE Delete ... (" + _vmc + ")"
+        _mark_a = time()        
         _img = apiconn.imgdelete(cloud_name, "regressiontest", _vmc, True)
+        _imgdelete_time = int(time() - _mark_a)
 
         if options.pause :
             print json.dumps(_img, indent=4, sort_keys=True)
@@ -512,7 +531,7 @@ def check_img_delete(apiconn, cloud_model, cloud_name, options) :
             return "FAIL"
         else :
             print _msg
-            return "PASS"
+            return "PASS (" + str(_imgdelete_time).center(3,' ') + ')'
 
 def retriable_cloud_connection(options, actual_cloud_model, command) :
     '''
@@ -533,7 +552,7 @@ def retriable_cloud_connection(options, actual_cloud_model, command) :
             _status = _proc_h.returncode
 
             if _status :
-                print "ERROR while attempting to attach Cloud Model \"" + _cloud_model + "\""
+                print "ERROR while attempting to attach Cloud Model \"" + actual_cloud_model + "\""
                 exit(_status)
     
             if options.private_results :
@@ -567,6 +586,57 @@ def retriable_cloud_connection(options, actual_cloud_model, command) :
             _attempt += 1
             sleep(10)
 
+def write_results(options, test_results_table, cloud_model) : 
+    '''
+    TBD
+    '''
+    if options.headeronly :
+        test_results_table.add_row(["         ".center(22, ' '),\
+                                    "    ", \
+                                    "                                                 ", \
+                                    "    ", \
+                                    "    ", \
+                                    "    ", \
+                                    "    ", \
+                                    "    ", \
+                                    "    ", \
+                                    "    "])
+            
+    _x_test_results_table = test_results_table.get_string().split('\n')
+    if options.noheader :
+        _x_test_results_table = '\n'.join(_x_test_results_table[7:-1])
+    else :
+        _x_test_results_table = test_results_table.get_string().split('\n')
+        _aux = _x_test_results_table[2]
+        _x_test_results_table[2] = _x_test_results_table[3]
+        _x_test_results_table[3] = _x_test_results_table[4]
+        _x_test_results_table[4] = _x_test_results_table[5]
+        _x_test_results_table[5] = _x_test_results_table[6]        
+        _x_test_results_table[6] = _aux
+        
+        if options.headeronly :
+            _x_test_results_table = _x_test_results_table[0:-2]
+            
+        _x_test_results_table = '\n'.join(_x_test_results_table)
+    
+    if options.private_results :
+        _fn = "/tmp/" + cloud_model + "_real_multicloud_regression_test.txt"
+    else :
+        _fn = "/tmp/real_multicloud_regression_test.txt"
+
+    _fh = open(_fn, "w")
+    _fh.write(str(_x_test_results_table))
+    
+    if options.private_results :
+        _fh.write('\n')
+
+    _fh.close()
+    
+    if not options.headeronly :
+        print _x_test_results_table
+    
+    return True
+    
 def main() :
     '''
     TBD
@@ -593,6 +663,10 @@ def main() :
     _fifth_header = ['', '', "no failure", "no failure", "no failure", '', "no failure" , '', "failure", "forced failure"]
     _test_results_table.add_row(_fifth_header)
 
+    if _options.headeronly :
+        write_results(_options, _test_results_table, _options.cloud_models[0])
+        exit(0)
+
     _at_least_one_error = False
                                                       
     for _cloud_model in _options.cloud_models :
@@ -610,6 +684,7 @@ def main() :
 
         _display_cloud_model = _cloud_model.replace("file"," (file)").replace("fip", " (fip)")
         
+        _mark_a = time()
         api = retriable_cloud_connection(_options, _actual_cloud_model, _command)
 
         _results_row = []
@@ -618,7 +693,7 @@ def main() :
         if _options.pause :
             raw_input("Press Enter to continue...")
             
-        _cloud_result, _cloud_name = check_cloud_attach(api, _actual_cloud_model)
+        _cloud_result, _cloud_name = check_cloud_attach(api, _actual_cloud_model, _mark_a)
         _results_row.append(_cloud_result)
         
         _test_cases = ["NA", "NA", "NA", "NA", "NA", "NA", "NA", "NA" ]
@@ -664,38 +739,15 @@ def main() :
             else :
                 _results_row.append(check_vm_attach(api, _actual_cloud_model, _cloud_name, _test_case, _options) )        
 
-        _results_row[0] = _results_row[0] + " (" + str(int(time())-_start) + "s)"
+        _results_row[0] = _results_row[0] + " ( " + str(int(time())-_start) + "s )"
         _results_row[0] = _results_row[0].center(22, ' ')
+
+        if _results_row[2] == "NA" :
+            _results_row[2] = _results_row[2].center(49,' ')
 
         _test_results_table.add_row(_results_row)
 
-        _x_test_results_table = _test_results_table.get_string().split('\n')
-        if _options.noheader :
-            _x_test_results_table = '\n'.join(_x_test_results_table[7:-1])
-        else :
-            _x_test_results_table = _test_results_table.get_string().split('\n')
-            _aux = _x_test_results_table[2]
-            _x_test_results_table[2] = _x_test_results_table[3]
-            _x_test_results_table[3] = _x_test_results_table[4]
-            _x_test_results_table[4] = _x_test_results_table[5]
-            _x_test_results_table[5] = _x_test_results_table[6]        
-            _x_test_results_table[6] = _aux
-            _x_test_results_table = '\n'.join(_x_test_results_table)
-        
-        if _options.private_results :
-            _fn = "/tmp/" + _cloud_model + "_real_multicloud_regression_test.txt"
-        else :
-            _fn = "/tmp/real_multicloud_regression_test.txt"
-
-        _fh = open(_fn, "w")
-        _fh.write(str(_x_test_results_table))
-        
-        if _options.private_results :
-            _fh.write('\n')
-
-        _fh.close()
-
-        print _x_test_results_table
+        write_results(_options, _test_results_table, _cloud_model)
 
         _error = False
 
