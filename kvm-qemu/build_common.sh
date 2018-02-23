@@ -49,7 +49,7 @@ function create_base_images {
             CB_KVMQEMU_BIMG="ubuntu"
         fi
 	rm -rf cb_base_${CB_KVMQEMU_BIMG}
-	qemu-img create -f qcow2 cb_base_${CB_KVMQEMU_BIMG} 20G
+	qemu-img create -f qcow2 cb_base_${CB_KVMQEMU_BIMG} 15G
         virt-resize --expand /dev/sda1 $CB_KVMQEMU_CIMG_FN cb_base_${CB_KVMQEMU_BIMG}
         #cp -f $CB_KVMQEMU_CIMG_FN cb_base_${CB_KVMQEMU_BIMG}
         #sudo qemu-img resize cb_base_${CB_KVMQEMU_BIMG} +18G	

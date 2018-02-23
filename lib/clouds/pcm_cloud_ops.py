@@ -844,7 +844,10 @@ class PcmCmds(CommonCloudFunctions) :
 
             obj_attr_list["last_known_state"] = "about to send create request"
 
+            _mark_a = time()
             self.get_images(obj_attr_list)
+            self.annotate_time_breakdown(obj_attr_list, "get_image_time", _mark_a)
+                        
             self.get_networks(obj_attr_list)
 
             self.vvcreate(obj_attr_list)
@@ -855,31 +858,22 @@ class PcmCmds(CommonCloudFunctions) :
 
             self.pre_vmcreate_process(obj_attr_list)
 
-            _mark1 = int(time())
-            
+            _mark_a = time()            
             _config = {"name": obj_attr_list["cloud_vm_name"], \
                        "source": { "type": "image", "fingerprint": obj_attr_list["boot_volume_imageid1"] }}
 
-
             _instance = self.lxdconn[obj_attr_list["host_cloud_ip"]].containers.create(_config, wait=True)
-
-            _mark2 = int(time())
+            self.annotate_time_breakdown(obj_attr_list, "container_creation_time", _mark_a)
             
             _instance.config["user.user-data"] = self.populate_cloudconfig(obj_attr_list)
 
-            obj_attr_list["pcm_003_create_container_time"] = _mark2 - _mark1
-
+            _mark_a = time()            
             _instance.save(wait=True)
+            self.annotate_time_breakdown(obj_attr_list, "container_update_time", _mark_a)
 
-            _mark3 = int(time())
-
-            obj_attr_list["pcm_004_update_container_time"] = _mark3 - _mark2
-
+            _mark_a = time()
             _instance.start()
-
-            _mark4 = int(time())
-            
-            obj_attr_list["pcm_005_start_container_time"] = _mark4 - _mark3
+            self.annotate_time_breakdown(obj_attr_list, "container_start_time", _mark_a)
                                     
             obj_attr_list["cloud_vm_uuid"] = self.generate_random_uuid(obj_attr_list["cloud_vm_name"])
 
@@ -887,22 +881,16 @@ class PcmCmds(CommonCloudFunctions) :
 
             _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
 
-            obj_attr_list["pcm_005_instance_creation_time"] = obj_attr_list["mgt_003_provisioning_request_completed"]
-
+            _mark_a = time()            
             if str(obj_attr_list["ports_base"]).lower() != "false" :
                 self.configure_port_mapping(obj_attr_list, "setup")
-
-            _mark5 = int(time())
-
-            obj_attr_list["pcm_006_instance_port_mapping_time"] = _mark5 - _time_mark_prc
+            self.annotate_time_breakdown(obj_attr_list, "container_port_mapping_time", _mark_a)
 
             if str(obj_attr_list["ports_base"]).lower() != "false" :
                 if obj_attr_list["check_boot_complete"].lower() == "tcp_on_22" :
                     obj_attr_list["check_boot_complete"] = "tcp_on_" + str(obj_attr_list["prov_cloud_port"])
 
-            self.wait_for_instance_boot(obj_attr_list, _mark5)
-
-            obj_attr_list["pcm_007_instance_reachable"] = obj_attr_list["mgt_004_network_acessible"]
+            self.wait_for_instance_boot(obj_attr_list, time())
             
             obj_attr_list["arrival"] = int(time())
 

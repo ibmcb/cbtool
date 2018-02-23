@@ -69,7 +69,7 @@ then
     CB_ADAPTERS="sim pdm pcm kub osk,oskfile,oskfip nop gen osl,oslfip ec2 gce do as slr"
 elif [[ $CB_ADAPTERS == "private" ]]
 then
-    CB_ADAPTERS="sim pdm pcm kub osk,oskfile,oskfip nop gen osl,oslfip"
+    CB_ADAPTERS="sim plm pdm pcm kub osk,oskfile,oskfip nop gen osl,oslfip"
 elif [[ $CB_ADAPTERS == "public" ]]
 then
     CB_ADAPTERS="ec2 gce do as slr"

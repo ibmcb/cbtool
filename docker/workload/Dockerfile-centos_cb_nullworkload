@@ -32,7 +32,7 @@ RUN yum install -y ntp ntpdate
 # ntp-install-pm
 
 # git-install-pm
-RUN yum install -y git bc
+RUN yum install -y git
 # git-install-pm
 
 # wget-install-pm
@@ -51,6 +51,10 @@ RUN yum install -y gcc
 # make-install-pm
 RUN yum install -y make
 # make-install-pm
+
+# bc-install-pm
+RUN yum install -y bc
+# bc-install-pm
 
 # sshpass-install-pm
 RUN yum install -y sshpass
