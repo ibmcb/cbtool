@@ -444,8 +444,14 @@ class PassiveObjectOperations(BaseObjectOperations) :
                         _fmt_obj_attr_list = ''.join(_fields) + '\n'
         
                         for _obj_id in _obj_ids :
-                            _obj_attribs = self.osci.get_object(obj_attr_list["cloud_name"], _obj_type, False, \
+                            try :
+                                   _obj_attribs = self.osci.get_object(obj_attr_list["cloud_name"], _obj_type, False, \
                                                                 _obj_id, False)
+                            except self.osci.ObjectStoreMgdConnException, e :
+                                if e.status == 23 :
+                                    cbwarn("Could not find: " + _obj_id + ". Continuing.")
+                                else :
+                                    raise e
                             
                             _result[_obj_id] = {}
     
@@ -537,6 +543,8 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _fmsg = str(obj.msg)
 
         except self.osci.ObjectStoreMgdConnException, obj :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             _status = 8
             _fmsg = str(obj.msg)
 
