@@ -205,7 +205,7 @@ then
 	        then
 	            CB_EXECUTABLE_PARMS=${CB_EXECUTABLE_PARMS}" vmclist; bash"
 	        fi
-            CB_DOCKER_COMMAND="/home/$CB_DOCKER_USER/cbtool/configs/build_cloud_config_file_from_env.sh cbuser /home/cbuser/cbtool; /home/$CB_DOCKER_USER/cbtool/cb $CB_EXECUTABLE_PARMS"
+            CB_DOCKER_COMMAND="/home/$CB_DOCKER_USER/cbtool/private_configs/build_cloud_config_file_from_env.sh cbuser /home/cbuser/cbtool docker; /home/$CB_DOCKER_USER/cbtool/cb $CB_EXECUTABLE_PARMS"
 	    fi
     else
         CB_DOCKER_COMMAND="/home/$CB_DOCKER_USER/cbtool/cb"
