@@ -90,10 +90,10 @@ def cli_named_option_parser() :
     parser = OptionParser(usage)
 
     parser.add_option("-t", "--types", dest="typelist", default = "nullworklaod", help="Virtual Application Types to test")
-    parser.add_option("-b", "--build", dest="build", default = None, help="Base image to build from")
+    parser.add_option("-b", "--build", dest="build", default = "none", help="Base image to build from")
     parser.add_option("-w", "--wait", dest="wait", default = 900, help="How long to wait before declaring the test a failure (seconds)")
     parser.add_option("-i", "--interval", dest="interval", default = 30, help="Interval between attempts to obtain application performance samples (seconds)")
-    parser.add_option("-s", "--samples", dest="samples", default = 3, help="How many application performance samples are required?")
+    parser.add_option("-s", "--samples", dest="samples", default = 2, help="How many application performance samples are required?")
 
     (options, args) = parser.parse_args()
 
@@ -110,7 +110,9 @@ def main(apiconn) :
     _options = cli_postional_argument_parser()
     
     try :
-        cloud_name = apiconn.cldlist()[0]["name"]
+        cloud_attrs = apiconn.cldlist()[0]
+        cloud_name = cloud_attrs["name"]
+        cloud_model = cloud_attrs["model"]
     except :
         _msg = "ERROR: Unable to connect to API and get a list of attached clouds"
         exit(1)
@@ -137,6 +139,24 @@ def main(apiconn) :
             _hypervisor_list = _hypervisor_list.split(',')
         else :
             _hypervisor_list = [ None ]
+
+        _model_to_imguuid = {}
+        _model_to_imguuid["sim"] = "baseimg"
+        _model_to_imguuid["pcm"] = "xenial"
+        _model_to_imguuid["plm"] = "xenial"        
+        _model_to_imguuid["pdm"] = "ibmcb/cbtoolbt-ubuntu"
+        _model_to_imguuid["nop"] = "baseimg"
+        _model_to_imguuid["osk"] = "xenial3"
+        _model_to_imguuid["os"] = "xenial3"        
+        _model_to_imguuid["ec2"] = "ami-a9d276c9"
+        _model_to_imguuid["gce"] = "ubuntu-1604-xenial-v20161221"
+        _model_to_imguuid["do"] = "21669205"        
+        _model_to_imguuid["slr"] = "1836627"        
+        _model_to_imguuid["kub"] = "ibmcb/cbtoolbt-ubuntu"
+        _model_to_imguuid["as"] = "b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-16_04-LTS-amd64-server-20180112-en-us-30GB"
+
+        if str(_options.build).lower() == "auto" :
+            _options.build = _model_to_imguuid[cloud_model]
 
         if _options.build :
             _actual_type = "build:" + _options.build + ':' + _type
@@ -192,7 +212,7 @@ def main(apiconn) :
             _x_test_results_table[4] = _aux
             _x_test_results_table = '\n'.join(_x_test_results_table)
 
-            _fn = "/tmp/real_application_regression_test.txt"
+            _fn = "/tmp/" + cloud_model + "_real_application_regression_test.txt"
             _fh = open(_fn, "w")
             _fh.write(str(_x_test_results_table))
             _fh.close()
@@ -212,7 +232,8 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
         _sut = ''
         _management_metrics_pass = False
         _runtime_metrics_pass = False
-
+        _runtime_missing_metrics = []
+            
         _rt_m_list = "load_id,load_profile,load_duration,completion_time,datagen_time,throughput,bandwidth,latency"
         _aux_run_time_metrics = ''
                         
@@ -285,8 +306,6 @@ def deploy_virtual_application(apiconn, application_type, hypervisor_type, runti
             _initial_time = int(time())
             _curr_time = 0
             _collected_samples = 0
-
-            _runtime_missing_metrics = []
             
             _app_m = apiconn.typeshow(cloud_name, _actual_application_type)["reported_metrics"].replace(", ",',').split(',')
             _app_m += [ "app_load_profile", "app_load_id", "app_load_level" ]
