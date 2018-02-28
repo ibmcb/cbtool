@@ -371,7 +371,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 cld_attr_lst["mon_defaults"]["collector_host_summarizer_port"] = _proc_man.get_free_port(cld_attr_lst["mon_defaults"]["collector_host_summarizer_port"], protocol = "tcp")
     
                 os_func, ms_func, unused, unused = load_store_functions(cld_attr_lst)
-                
+
                 os_func(cld_attr_lst, "initialize", cloud_name = cld_attr_lst["name"])
                 ms_func(cld_attr_lst, "initialize")
 
@@ -2249,7 +2249,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
         _proc_man = ProcessManagement(username = obj_attr_list["login"], \
                                       cloud_name = obj_attr_list["cloud_name"], \
                                       priv_key = obj_attr_list["identity"], \
-                                      config_file = _config_file)
+                                      config_file = _config_file,
+                                      connection_timeout = 120)
 
         try :
             
@@ -2279,14 +2280,17 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _msg += ": " + _ssh_cmd_log + " \"" + _cmd + "\"..."
                 cbdebug(_msg, selectively_print_message("check_ssh", obj_attr_list))
                 _proc_man.retriable_run_os_command(_cmd, \
-                                                   obj_attr_list["prov_cloud_ip"], \
+                                                   obj_attr_list["uuid"], \
                                                    _actual_tries, \
                                                    _retry_interval, \
                                                    obj_attr_list["check_ssh"], \
                                                    obj_attr_list["debug_remote_commands"], \
                                                    True,
                                                    tell_me_if_stderr_contains = False, \
-                                                   port = obj_attr_list["prov_cloud_port"])
+                                                   port = obj_attr_list["prov_cloud_port"], \
+                                                           osci = self.osci, \
+                                                           get_hostname_using_key = "prov_cloud_ip" \
+                                                   )
 
             self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], \
                                               False, "last_known_state", \
@@ -2314,20 +2318,22 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 else :
                     _actual_tries = int(obj_attr_list["update_attempts"])                
                 
-                _bcmd = get_boostrap_command(obj_attr_list)
+                _bcmd = get_boostrap_command(obj_attr_list, self.osci)
                 
                 _msg = "BOOTSTRAP: " + _bcmd
                 cbdebug(_msg)
 
                 _proc_man.retriable_run_os_command(_bcmd, \
-                                                   obj_attr_list["prov_cloud_ip"], \
+                                                   obj_attr_list["uuid"], \
                                                    _actual_tries, \
                                                    _retry_interval, \
                                                    obj_attr_list["transfer_files"], \
                                                    obj_attr_list["debug_remote_commands"], \
                                                    True, \
                                                    tell_me_if_stderr_contains = "Connection reset by peer", \
-                                                   port = obj_attr_list["prov_cloud_port"])
+                                                   port = obj_attr_list["prov_cloud_port"], \
+                                                           osci = self.osci, \
+                                                           get_hostname_using_key = "prov_cloud_ip")
 
             _msg = "Bootstrapped " + obj_attr_list["log_string"]
             cbdebug(_msg)
@@ -2411,13 +2417,18 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _msg += ", on IP address "+ obj_attr_list["prov_cloud_ip"] + "..."     
                 cbdebug(_msg, selectively_print_message("run_generic_scripts", obj_attr_list))
 
-                _status, _xfmsg, _object = \
-                _proc_man.run_os_command(obj_attr_list["generic_post_boot_command"], obj_attr_list["prov_cloud_ip"], \
-                                         obj_attr_list["run_generic_scripts"], \
-                                         obj_attr_list["debug_remote_commands"], \
-                                         True, \
-                                         tell_me_if_stderr_contains = "Connection reset by peer", \
-                                         port = obj_attr_list["prov_cloud_port"])                    
+                _status, _result_stdout, _result_stderr = \
+                        _proc_man.retriable_run_os_command(obj_attr_list["generic_post_boot_command"], obj_attr_list["uuid"], \
+                                                           really_execute = obj_attr_list["run_generic_scripts"], \
+                                                           debug_cmd = obj_attr_list["debug_remote_commands"], \
+                                                           total_attempts = int(obj_attr_list["update_attempts"]),\
+                                                           retry_interval = int(obj_attr_list["update_frequency"]), \
+                                                           raise_exception_on_error = True, \
+                                                           tell_me_if_stderr_contains = "Connection reset by peer", \
+                                                           port = obj_attr_list["prov_cloud_port"], \
+                                                           osci = self.osci, \
+                                                           get_hostname_using_key = "prov_cloud_ip"  \
+                                                           )                   
 
                 _time_mark_ipbc = int(time())
                 if "time_mark_aux" in obj_attr_list :
@@ -2429,7 +2440,6 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _fmsg = "Failure while executing generic VM "
                     _fmsg += "post_boot configuration on "
                     _fmsg += obj_attr_list["name"] + '.\n'
-#                            _fmsg += _xfmsg
                 else :
 
                     self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], \

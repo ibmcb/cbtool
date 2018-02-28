@@ -949,7 +949,7 @@ class PlmCmds(CommonCloudFunctions) :
                 if obj_attr_list["check_boot_complete"].lower() == "tcp_on_22" :
                     obj_attr_list["check_boot_complete"] = "tcp_on_" + str(obj_attr_list["prov_cloud_port"])
 
-            self.wait_for_instance_boot(obj_attr_list, _mark_a)
+            self.wait_for_instance_boot(obj_attr_list, _time_mark_prc)
             
             obj_attr_list["arrival"] = int(time())
 

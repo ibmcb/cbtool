@@ -49,7 +49,7 @@ class BaseObjectOperations :
     TBD
     '''
     default_cloud = None
-    proc_man_os_command = ProcessManagement()
+    proc_man_os_command = ProcessManagement(connection_timeout = 120)
 
     @trace
     def __init__ (self, osci, msci, attached_clouds = []) :
@@ -2102,7 +2102,7 @@ class BaseObjectOperations :
         if "vm_extra_parms" in obj_attr_list :
             obj_attr_list["vm_extra_parms"] = obj_attr_list["vm_extra_parms"].replace("_EQUAL_","=").replace("_COMMA_",',')
             _extra_parms += "," + obj_attr_list["vm_extra_parms"]
-                                
+                        
         if vm_role + "_cloud_ips" in obj_attr_list :
             if not vm_role in cloud_ips :
                 cloud_ips[vm_role] = obj_attr_list[vm_role + "_cloud_ips"].split(';')
@@ -2446,7 +2446,7 @@ class BaseObjectOperations :
             _vm_hns = []
             _vm_pns = []
             _vm_roles = []
-            _vm_ip_addrs = []
+            _vm_uuids = []
             _vm_logins = []
             _vm_passwds = []
             _vm_priv_keys = []
@@ -2481,11 +2481,12 @@ class BaseObjectOperations :
                 _vm_hns.append(_obj_attr_list["cloud_hostname"])
                 
                 _vm_roles.append(_obj_attr_list["role"])
+                _vm_uuids.append(_vm_uuid)
                 if operation != "reset" :
-                    _vm_ip_addrs.append(_obj_attr_list["prov_cloud_ip"])
-                    _vm_pns.append(_obj_attr_list["prov_cloud_port"])                    
+                    _which_key = "prov_cloud_ip"
+                    _vm_pns.append(_obj_attr_list["prov_cloud_port"])
                 else :
-                    _vm_ip_addrs.append(_obj_attr_list["run_cloud_ip"])
+                    _which_key = "run_cloud_ip"
                     _vm_pns.append(_obj_attr_list["run_cloud_port"])
                                         
                 _vm_logins.append(_obj_attr_list["login"])
@@ -2552,15 +2553,17 @@ class BaseObjectOperations :
                 if _actual_attempts > 0 :
                     _post_boot_start = int(time())
                     _status, _xfmsg = self.proc_man_os_command.parallel_run_os_command(_vm_post_boot_commands, \
-                                                                        _vm_ip_addrs, \
+                                                                        _vm_uuids, \
                                                                         _vm_pns, \
                                                                         _actual_attempts, \
                                                                         int(_ai_attr_list["update_frequency"]), \
                                                                         _ai_attr_list["execute_parallelism"], \
-                                                                        _obj_attr_list["run_generic_scripts"], \
-                                                                        _obj_attr_list["debug_remote_commands"], \
-                                                                        "0", \
-                                                                        _smallest_remaining_time)
+                                                                        really_execute = _obj_attr_list["run_generic_scripts"], \
+                                                                        debug_cmd = _obj_attr_list["debug_remote_commands"], \
+                                                                        step = "0", \
+                                                                        remaining_time = _smallest_remaining_time, \
+                                                                        osci = self.osci, \
+                                                                        get_hostname_using_key = _which_key)
                     sleep(float(_ai_attr_list["post_generic_scripts_delay"]))                    
                     _post_boot_spent_time = int(time()) - _post_boot_start
                 else :
@@ -2718,7 +2721,7 @@ class BaseObjectOperations :
                     if _actual_attempts > 0 :
                         _application_start = int(time())                        
                         _status, _xfmsg = self.proc_man_os_command.parallel_run_os_command(_vm_command_list, \
-                                                                            _vm_ip_addrs, \
+                                                                            _vm_uuids, \
                                                                             _vm_pns, \
                                                                             _actual_attempts, \
                                                                             int(_ai_attr_list["update_frequency"]), \
@@ -2726,7 +2729,9 @@ class BaseObjectOperations :
                                                                             _ai_attr_list["run_application_scripts"], 
                                                                             _ai_attr_list["debug_remote_commands"],
                                                                             _num, \
-                                                                            _smallest_remaining_time)
+                                                                            _smallest_remaining_time, \
+                                                                            osci = self.osci, \
+                                                                            get_hostname_using_key = _which_key)
                         
                         sleep(float(_ai_attr_list["post_application_scripts_delay"]))
                         _application_spent_time = int(time()) - _application_start                        

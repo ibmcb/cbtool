@@ -1031,6 +1031,7 @@ class PdmCmds(CommonCloudFunctions) :
                                                                                             binds = _binds, \
                                                                                             mem_limit = str(_memory) + 'm', \
                                                                                             devices = _devices, \
+                                                                                            shm_size = obj_attr_list["shm_size"], \
                                                                                             privileged = _privileged)
             self.annotate_time_breakdown(obj_attr_list, "create_host_config_time", _mark_a)
 

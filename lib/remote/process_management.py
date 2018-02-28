@@ -109,14 +109,17 @@ class ProcessManagement :
 
             if self.connection_timeout :
                 _connection_timeout = " -o ConnectTimeout=" + str(self.connection_timeout) + ' '
+                _established_timeout = " -o ServerAliveCountMax=1 -o ServerAliveInterval=" + str(self.connection_timeout) + ' '
             else :
                 _connection_timeout = ''
+                _established_timeout = ''
 
             _cmd = "ssh "
             _cmd += " -p " + str(_port) + ' ' 
             _cmd += _priv_key 
             _cmd += _config_file 
             _cmd += _connection_timeout            
+            _cmd += _established_timeout
             _cmd += " -o StrictHostKeyChecking=no"
             _cmd += " -o UserKnownHostsFile=/dev/null "
             _cmd += " -o BatchMode=yes " 
@@ -190,7 +193,21 @@ class ProcessManagement :
 
         return _status, _result_stdout, _result_stderr
 
-    def retriable_run_os_command(self, cmdline, override_hostname = None, \
+    '''
+        This function has been modified to optionally take a VM's uuid instead
+        of the hostname/IP addresses. This is because the IP can change between
+        invocations (particularly if VPN ip addresses change). By taking
+        a UUID, we can lookup the IP from the object store on-the-fly if
+        the IP changes and survive errors in remote execution after the
+        SSH command times out.
+
+        The field `override_hostname` will be a UUID instead of an IP address
+        if and only if the field `osci` is not False and holds a reference
+        the currently used osci object and the field 'get_hostname_using_key`
+        indicates whether or not the key 'prov_cloud_ip` or `run_cloud_ip`
+        should be used when looking up the VM object from the object store.
+    '''
+    def retriable_run_os_command(self, cmdline, override_hostname_or_uuid = None, \
                                  total_attempts = 2, retry_interval = 3,
                                  really_execute = True, \
                                  debug_cmd = False, \
@@ -198,7 +215,9 @@ class ProcessManagement :
                                  step = None,
                                  tell_me_if_stderr_contains = False, \
                                  port = 22, \
-                                 remaining_time = 100000) :
+                                 remaining_time = 100000, \
+                                 osci = False, \
+                                 get_hostname_using_key = False):
         '''
         TBD
         '''
@@ -209,10 +228,17 @@ class ProcessManagement :
         _start = int(time())
         _spent_time = 0
         
+        _override_hostname = "x.x.x.x-invalid"
+
         while _attempts < int(total_attempts) and _abort != "yes" :
             try :
+                if osci is not False and get_hostname_using_key is not False :
+                    _obj_attr_list = osci.get_object(self.cloud_name, "VM", False, override_hostname_or_uuid, False)                        
+                    _override_hostname = _obj_attr_list[get_hostname_using_key]
+                else :
+                    _override_hostname = override_hostname_or_uuid
                 _status, _result_stdout, _result_stderr = self.run_os_command(cmdline, \
-                                                                              override_hostname, \
+                                                                              _override_hostname, \
                                                                               really_execute, \
                                                                               debug_cmd, \
                                                                               raise_exception_on_error, \
@@ -229,7 +255,7 @@ class ProcessManagement :
 
             if _status and len(_result_stderr) :
                 _msg = "Command \"" + cmdline + "\" failed to execute on "
-                _msg += "hostname " + str(override_hostname) + " after attempt "
+                _msg += "hostname " + str(_override_hostname) + " after attempt "
                 _msg += str(_attempts) + ". Will try " + str(total_attempts - _attempts)
                 _msg += " more times."
                 cbdebug(_msg, True)
@@ -245,7 +271,7 @@ class ProcessManagement :
         if _attempts >= int(total_attempts) :
             _status = 17368
             _fmsg = "Giving up on executing command \"" + cmdline + "\" on hostname "
-            _fmsg += str(override_hostname) + ". Too many attempts (" + str(_attempts) + ").\n"
+            _fmsg += str(_override_hostname) + ". Too many attempts (" + str(_attempts) + ").\n"
             #_fmsg += "STDOUT is :\n" + str(_result_stdout) + '\n'
             #_fmsg += "STDERR is :\n" + str(_result_stderr) + '\n'
             cberr(_fmsg)
@@ -258,13 +284,13 @@ class ProcessManagement :
             if _abort != "yes" :
                 _status = 0
                 _msg = "Command \"" + cmdline + "\" executed on hostname "
-                _msg += str(override_hostname) + " successfully."
+                _msg += str(_override_hostname) + " successfully."
                 cbdebug(_msg)
                 return _status, _msg, {"status" : _status, "msg" : _msg, "result" : _status}
             else :
                 _status = 8167
                 _fmsg = "Execution of command \"" + cmdline + "\", on hostname "
-                _fmsg += str(override_hostname) + " was aborted."
+                _fmsg += str(_override_hostname) + " was aborted."
                 #_fmsg += "STDOUT is :\n" + str(_result_stdout) + '\n'
                 #_fmsg += "STDERR is :\n" + str(_result_stderr) + '\n'
                 cberr(_fmsg)
@@ -273,10 +299,10 @@ class ProcessManagement :
     
                 return _status, _fmsg, {"status" : _status, "msg" : _fmsg, "result" : _status}
 
-    def parallel_run_os_command(self, cmdline_list, override_hostname_list, port_list, \
+    def parallel_run_os_command(self, cmdline_list, override_hostname_or_uuid_list, port_list, \
                                 total_attempts, retry_interval, \
                                 execute_parallelism, really_execute = True, \
-                                debug_cmd = False, step = None, remaining_time = 100000) :
+                                debug_cmd = False, step = None, remaining_time = 100000, osci = False, get_hostname_using_key = False) :
         '''
         TBD
         '''
@@ -287,7 +313,7 @@ class ProcessManagement :
         _child_failure = False
 
         try :
-            for _index in range(0, len(override_hostname_list)) :
+            for _index in range(0, len(override_hostname_or_uuid_list)) :
                 serial_mode = False # only used for debugging
 
                 if not _thread_pool and not serial_mode :
@@ -302,7 +328,7 @@ class ProcessManagement :
                     if len(cmdline_list[_index]) > 0:
                         _status, _fmsg, _object = \
                         self.retriable_run_os_command(cmdline_list[_index], \
-                                                      override_hostname_list[_index], \
+                                                      override_hostname_or_uuid_list[_index], \
                                                       total_attempts, \
                                                       retry_interval, \
                                                       really_execute, \
@@ -311,7 +337,10 @@ class ProcessManagement :
                                                       step, \
                                                       False, \
                                                       port_list[_index], \
-                                                      remaining_time)
+                                                      remaining_time,
+                                                      osci = osci,
+                                                      get_hostname_using_key = get_hostname_using_key
+                                                      )
                     else :
                         _status = 0
                         _xfmsg = "OK"
@@ -324,7 +353,7 @@ class ProcessManagement :
                     if len(cmdline_list[_index]) > 0:
                         _thread_pool.add_task(self.retriable_run_os_command, \
                                               cmdline_list[_index], \
-                                              override_hostname_list[_index], \
+                                              override_hostname_or_uuid_list[_index], \
                                               total_attempts, \
                                               retry_interval, \
                                               really_execute, \
@@ -333,7 +362,9 @@ class ProcessManagement :
                                               step, \
                                               False, \
                                               port_list[_index], \
-                                              remaining_time)
+                                              remaining_time, \
+                                              osci = osci, \
+                                              get_hostname_using_key = get_hostname_using_key)
 
             if _thread_pool and not serial_mode:
                 _xfmsg = ''

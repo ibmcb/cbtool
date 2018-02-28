@@ -93,7 +93,7 @@ def cli_named_option_parser() :
     parser.add_option("-b", "--build", dest="build", default = "none", help="Base image to build from")
     parser.add_option("-w", "--wait", dest="wait", default = 900, help="How long to wait before declaring the test a failure (seconds)")
     parser.add_option("-i", "--interval", dest="interval", default = 30, help="Interval between attempts to obtain application performance samples (seconds)")
-    parser.add_option("-s", "--samples", dest="samples", default = 3, help="How many application performance samples are required?")
+    parser.add_option("-s", "--samples", dest="samples", default = 2, help="How many application performance samples are required?")
 
     (options, args) = parser.parse_args()
 
@@ -142,7 +142,8 @@ def main(apiconn) :
 
         _model_to_imguuid = {}
         _model_to_imguuid["sim"] = "baseimg"
-        _model_to_imguuid["pcm"] = "xenial" 
+        _model_to_imguuid["pcm"] = "xenial"
+        _model_to_imguuid["plm"] = "xenial"        
         _model_to_imguuid["pdm"] = "ibmcb/cbtoolbt-ubuntu"
         _model_to_imguuid["nop"] = "baseimg"
         _model_to_imguuid["osk"] = "xenial3"
@@ -211,7 +212,7 @@ def main(apiconn) :
             _x_test_results_table[4] = _aux
             _x_test_results_table = '\n'.join(_x_test_results_table)
 
-            _fn = "/tmp/real_application_regression_test.txt"
+            _fn = "/tmp/" + cloud_model + "_real_application_regression_test.txt"
             _fh = open(_fn, "w")
             _fh.write(str(_x_test_results_table))
             _fh.close()

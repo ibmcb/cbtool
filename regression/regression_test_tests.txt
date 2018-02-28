@@ -326,7 +326,7 @@ aidrsdetach TESTCLOUD aidrs_1\; aidrslist TESTCLOUD\; ailist TESTCLOUD\; vmlist 
 aidrsattach TESTCLOUD simplenw\; aidrsalter TESTCLOUD aidrs_2 max_ais=5\; aidrsalter TESTCLOUD aidrs_2 iait=6\; aidrsshow TESTCLOUD aidrs_2 all\; aidrslist TESTCLOUD\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
 waitfor TESTCLOUD 1m\; aidrsshow TESTCLOUD aidrs_2 all\; aidrslist TESTCLOUD\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
 aidrsdetach TESTCLOUD all\; aidetach TESTCLOUD all\; aidrslist TESTCLOUD\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
-vmcattach TESTCLOUD simzone_source initial_hosts=source\; vmcattach TESTCLOUD simzone_dest initial_hosts=dest
+vmcattach TESTCLOUD simzone_source initial_hosts=source\; hostlist TESTCLOUD\; vmcattach TESTCLOUD simzone_dest initial_hosts=dest\; hostlist TESTCLOUD
 vmattach TESTCLOUD tinyvm simzone_source\; stats TESTCLOUD\; vmlist TESTCLOUD
 vmmigrate TESTCLOUD youngest dest\; stats TESTCLOUD\; vmlist TESTCLOUD
 vmmigrate TESTCLOUD youngest source async\; waitfor TESTCLOUD 10s\; stats TESTCLOUD\; vmlist TESTCLOUD
@@ -367,4 +367,5 @@ appnoload TESTCLOUD
 appload TESTCLOUD
 vmcapture TESTCLOUD youngest imgtstabc
 imgdelete TESTCLOUD imgtstabc simzone_a
+stats TESTCLOUD\; reset TESTCLOUD VM,AI\; stats TESTCLOUD
 clddetach TESTCLOUD

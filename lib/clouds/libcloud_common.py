@@ -1000,12 +1000,12 @@ class LibcloudCmds(CommonCloudFunctions) :
             
             obj_attr_list["libcloud_size_inst"] = False
 
-            _keys = []
             if self.use_ssh_keys :
                 _mark_a = time()
         
                 _tmp_keys = obj_attr_list["key_name"].split(",")
                 for dontcare in range(0, 2) :
+                    _keys = []                    
                     for _tmp_key in _tmp_keys :
                         for _key in LibcloudCmds.keys[_credentials_list] :
                             if "id" in _key.extra :
@@ -1025,6 +1025,8 @@ class LibcloudCmds(CommonCloudFunctions) :
                 if len(_keys) != len(_tmp_keys) :
                     raise CldOpsException("Not all SSH keys exist. Check your configuration: " + obj_attr_list["key_name"], _status, True)
                 self.annotate_time_breakdown(obj_attr_list, "get_sshkey_time", _mark_a)
+            else :
+                _keys = []
 
             if self.use_sizes :
                 _mark_a = time()

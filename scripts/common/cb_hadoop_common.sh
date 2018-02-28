@@ -198,11 +198,11 @@ then
         for SPARK_CPATH in ~ /usr/local
         do
             syslog_netcat "Searching ${SPARK_CPATH} for a spark dir."
-            if [[ $(sudo ls $SPARK_CPATH | grep -v tar | grep -c spark) -ne 0 ]]
+            if [[ $(sudo ls $SPARK_CPATH | grep -v tar | grep -v "\.sh" | grep -v tgz | grep -v spark-perf | grep -v spark-bench | grep -c spark) -ne 0 ]]
             then
                 eval SPARK_CPATH=${SPARK_CPATH}
                 syslog_netcat "Directory \"${SPARK_CPATH}\" found."
-                SPARK_HOME=$(ls ${SPARK_CPATH} | grep -v tar | grep -v spark_store | grep spark | sort -r | head -n1)
+                SPARK_HOME=$(sudo ls ${SPARK_CPATH} | grep -v tar | grep -v "\.sh" | grep -v tgz | grep -v spark-perf | grep -v spark-bench | grep spark | sort -r | head -n1)
                 eval SPARK_HOME="$SPARK_CPATH/${SPARK_HOME}"
                 if [[ -d $SPARK_HOME ]]
                 then
@@ -819,8 +819,11 @@ export -f create_mapreduce_history
     
 function start_master_hadooop_services {
     syslog_netcat "Starting Hadoop Master services..."
+    DFS_NAME_DIR=`get_my_ai_attribute_with_default dfs_name_dir /tmp/cbhadoopname`
+
     if [[ ${hadoop_use_yarn} -eq 1 ]]
         then
+                                	
             syslog_netcat "...Formatting Namenode..."
             $HADOOP_HOME/bin/hadoop namenode -format -force
             if [[ $? -ne 0 ]]
@@ -845,8 +848,6 @@ function start_master_hadooop_services {
             # Default Hadoop permissions require hadoop superuser to format namenode
             #  Attempt to identify superuser, with default value of hdfs
 
-            DFS_NAME_DIR=`get_my_ai_attribute_with_default dfs_name_dir /tmp/cbhadoopname`        
-            
             set -- `sudo ls -l ${DFS_NAME_DIR}`
             dfs_name_dir_owner=$5
     
@@ -856,7 +857,7 @@ function start_master_hadooop_services {
                 dfs_name_dir_owner=$(whoami)
                 sudo chown -R $(whoami) ${DFS_NAME_DIR}
             fi
-    
+            
             sudo -E -u ${dfs_name_dir_owner} $HADOOP_HOME/bin/hadoop namenode -format -force
             if [[ $? -ne 0 ]]
             then
