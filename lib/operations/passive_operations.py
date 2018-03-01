@@ -1216,12 +1216,13 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _status, _fmsg = self.parse_cli(obj_attr_list, parameters, command)
                 
             if not _status :
+
                 _status, _fmsg = self.initialize_object(obj_attr_list, command)
 
                 _x, _y, _stats = self.stats(obj_attr_list, obj_attr_list["cloud_name"] + " all noprint false", "stats-get", True)
 
                 _exp_counters = _stats["experiment_counters"]
-                
+
                 _aidrs = int(_exp_counters["AIDRS"]["reservations"]) 
                 # Arrived doesn't mean that a submitter is present.
                 #_aidrs += int(_exp_counters["AIDRS"]["arrived"])
@@ -1248,8 +1249,8 @@ class PassiveObjectOperations(BaseObjectOperations) :
                             _status = 1972
                     
                     if not _status :
-                        self.osci.reset_counters(obj_attr_list["cloud_name"], {}, False, counter_list = obj_attr_list["object_list"])
-                        _x, _y, _stats = self.stats(obj_attr_list, obj_attr_list["cloud_name"] + " all noprint false", "stats-get", True)                        
+                        self.osci.reset_counters(obj_attr_list["cloud_name"], {}, False, counter_list = obj_attr_list["object_list"].upper())
+                        _x, _y, _stats = self.stats(obj_attr_list, obj_attr_list["cloud_name"] + " all noprint false", "stats-get", True)                    
                         _status = 0
 
         except self.ObjectOperationException, obj :
