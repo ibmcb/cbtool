@@ -251,7 +251,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                                       cld_attr_lst["vm_defaults"], \
                                                                       cld_attr_lst["vmc_defaults"])
 
-                    if _x_status == 1 or str(cld_attr_lst["vmc_defaults"]["force_walkthrough"]).lower() == "true" :
+                    if _x_status == 1 and str(cld_attr_lst["vmc_defaults"]["force_walkthrough"]).lower() == "true" :
                         cld_attr_lst["walkthrough"] = "true"
                 
                 cld_attr_lst["vmc_defaults"]["walkthrough"] = cld_attr_lst["walkthrough"]

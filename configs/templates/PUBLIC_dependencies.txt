@@ -205,6 +205,8 @@ setuptools-install = pip
 markup-install = pip
 pyyaml-install = pip
 ruamelyaml-install = pip 
+urllib3[secure] = pip
+httplib2shim = pip
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
