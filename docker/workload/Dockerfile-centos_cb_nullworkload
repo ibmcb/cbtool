@@ -32,7 +32,7 @@ RUN yum install -y ntp ntpdate
 # ntp-install-pm
 
 # git-install-pm
-RUN yum install -y git bc
+RUN yum install -y git
 # git-install-pm
 
 # wget-install-pm
@@ -51,6 +51,10 @@ RUN yum install -y gcc
 # make-install-pm
 RUN yum install -y make
 # make-install-pm
+
+# bc-install-pm
+RUN yum install -y bc
+# bc-install-pm
 
 # sshpass-install-pm
 RUN yum install -y sshpass
@@ -109,7 +113,7 @@ RUN ln -s $(sudo which rsyslogd) /usr/local/bin/rsyslogd
 # rsyslog-install-pm
 
 # apache-install-pm
-# RUN yum install -y httpd
+RUN yum____-y____install____httpd; /bin/true
 # apache-install-pm
 
 # redis-install-pm
@@ -180,6 +184,7 @@ RUN yum install -y iptables
 
 # sshd-install-pm
 RUN yum -y install openssh-server
+RUN sudo bash -c "echo 'UseDNS no' >> /etc/ssh/sshd_config"
 RUN sed -i 's/.*UseDNS.*/UseDNS no/g' /etc/ssh/sshd_config
 RUN sed -i 's/.*GSSAPIAuthentication.*/GSSAPIAuthentication no/g' /etc/ssh/sshd_config
 # sshd-install-pm 
