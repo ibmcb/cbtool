@@ -375,6 +375,7 @@ def setup_syslog(operation, facility, verbosity, port, hostname, quiet, logdest,
             exit(2)
         else :
             _msg = "Syslog channel set up successfully."
+            print _msg
             return True
 
 def main(options) :
@@ -428,9 +429,9 @@ def main(options) :
 			_log_defaults["verbosity"], \
 			_log_defaults["port"], \
 			_log_defaults["hostname"], \
-                        _log_defaults["protocol"], \
 			options.quiet,
-			options.logdest)
+			options.logdest,
+            _log_defaults["protocol"])
 
         if options.oop :
             _parameters = options.oop.split(',')
