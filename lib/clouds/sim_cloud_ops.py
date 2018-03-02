@@ -401,6 +401,26 @@ class SimCmds(CommonCloudFunctions) :
 
         finally :
             return _nr_instances                    
+
+    @trace
+    def get_ssh_keys(self, vmc_name, key_name, key_contents, key_fingerprint, registered_key_pairs, internal, connection) :
+        '''
+        TBD
+        '''
+
+        registered_key_pairs[key_name] = key_fingerprint + "-NA"
+
+        return True
+
+    @trace
+    def get_security_groups(self, vmc_name, security_group_name, registered_security_groups) :
+        '''
+        TBD
+        '''
+
+        registered_security_groups.append(security_group_name)              
+
+        return True
         
     @trace
     def get_ip_address(self, obj_attr_list):
@@ -458,7 +478,11 @@ class SimCmds(CommonCloudFunctions) :
                     _fmsg = "image does not exist"
                     _status = 1817
 #                    obj_attr_list["boot_volume_imageid1"] = self.generate_random_uuid(obj_attr_list["imageid1"])
-            
+
+            if str(obj_attr_list["build"]).lower() == "true" :
+                obj_attr_list["boot_volume_imageid1"] = self.generate_random_uuid(obj_attr_list["imageid1"])
+                _status = 0
+
         except Exception, e :
             _status = 23
             _fmsg = str(e)
@@ -493,7 +517,24 @@ class SimCmds(CommonCloudFunctions) :
                 raise CldOpsException(_msg, _status)
             else :
                 return True
-    
+
+    @trace            
+    def create_ssh_key(self, vmc_name, key_name, key_type, key_contents, key_fingerprint, vm_defaults, connection) :
+        '''
+        TBD
+        '''
+        return True
+
+    @trace
+    def is_cloud_image_uuid(self, imageid) :
+        '''
+        TBD
+        '''        
+        if len(imageid) == 36 and imageid.count('-') == 4 :
+            return True
+        
+        return False
+
     @trace
     def is_vm_running(self, obj_attr_list):
         '''
@@ -683,7 +724,6 @@ class SimCmds(CommonCloudFunctions) :
             self.annotate_time_breakdown(obj_attr_list, "get_imageid_time", _mark_a)
                                     
             self.get_networks(obj_attr_list) 
-            self.pre_vmcreate_process(obj_attr_list)
             
             if obj_attr_list["role"] != "willfail" :
                 True
@@ -708,6 +748,8 @@ class SimCmds(CommonCloudFunctions) :
             self.annotate_time_breakdown(obj_attr_list, "vm_placement_time", _mark_a)
 
             self.vvcreate(obj_attr_list)
+
+            self.pre_vmcreate_process(obj_attr_list)
 
             self.common_messages("VM", obj_attr_list, "creating", 0, '')
 
@@ -993,7 +1035,7 @@ class SimCmds(CommonCloudFunctions) :
 
                 if _vm.count("faildb2") :
                     _fmsg = "Forced failure during AI definition"
-                                      
+
             if current_step == "all_vms_booted" :
 
                 _vg = ValueGeneration("NA")

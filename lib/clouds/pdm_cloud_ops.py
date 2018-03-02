@@ -30,7 +30,7 @@ import docker
 from docker.errors import APIError
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from lib.auxiliary.data_ops import str2dic, DataOpsException
+from lib.auxiliary.data_ops import str2dic, is_number, DataOpsException
 from lib.remote.network_functions import hostname2ip
 from shared_functions import CldOpsException, CommonCloudFunctions 
 
@@ -202,11 +202,16 @@ class PdmCmds(CommonCloudFunctions) :
 
             self.common_messages("IMG", { "name": vmc_name, "endpoint" : _endpoint }, "checking", 0, '')
 
-            _msg = "Attempting to pull images from \"" 
-            _msg += vm_defaults["image_prefix"].split('/')[0] + "\" repository"
-            _msg += " (may take several minutes on the first execution)..."
-            cbdebug(_msg, True)
-            
+            _registered_image_list = self.dockconn[_endpoint].images()
+
+            _registered_image_tags = []
+            for _image in _registered_image_list :
+                if _image["RepoTags"] :
+                    _image_tag = _image["RepoTags"][0].split(':')[0]
+                    if _image_tag not in _registered_image_tags :
+                        _registered_image_tags.append(_image_tag)
+
+            _attempted_pulls = []
             for _vm_role in vm_templates.keys() :            
                 _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
                 if self.is_cloud_image_uuid(_imageid) :
@@ -215,8 +220,12 @@ class PdmCmds(CommonCloudFunctions) :
 
                 if not self.is_cloud_image_uuid(_imageid) :
                     try :
-                        True
-                        self.dockconn[_endpoint].pull(_imageid)
+                        if _imageid not in _registered_image_tags and _imageid not in _attempted_pulls and not _imageid.count("_to_replace") :
+                            _msg = "    Pulling docker image \"" + _imageid + "\"..."
+                            cbdebug(_msg, True)
+                            if _imageid not in _attempted_pulls :
+                                _attempted_pulls.append(_imageid)
+                            self.dockconn[_endpoint].pull(_imageid)
                     except :
                         pass
                 
@@ -226,7 +235,7 @@ class PdmCmds(CommonCloudFunctions) :
             for _registered_image in _registered_image_list :
                 _registered_imageid_list.append(_registered_image["Id"].split(':')[1])
                 if _registered_image["RepoTags"] :
-                    _map_name_to_id[_registered_image["RepoTags"][0].replace(":latest",'')] = _registered_image["Id"].split(':')[1]
+                    _map_name_to_id[_registered_image["RepoTags"][0].split(':')[0]] = _registered_image["Id"].split(':')[1]
                 
             for _vm_role in vm_templates.keys() :      
                 _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
@@ -522,6 +531,26 @@ class PdmCmds(CommonCloudFunctions) :
         finally :
             return _nr_instances
 
+    @trace    
+    def get_ssh_keys(self, vmc_name, key_name, key_contents, key_fingerprint, registered_key_pairs, internal, connection) :
+        '''
+        TBD
+        '''
+
+        registered_key_pairs[key_name] = key_fingerprint + "-NA"
+
+        return True
+
+    @trace
+    def get_security_groups(self, vmc_name, security_group_name, registered_security_groups) :
+        '''
+        TBD
+        '''
+
+        registered_security_groups.append(security_group_name)       
+
+        return True
+
     @trace
     def get_ip_address(self, obj_attr_list) :
         '''
@@ -728,6 +757,22 @@ class PdmCmds(CommonCloudFunctions) :
             else :
                 return True
 
+    @trace            
+    def create_ssh_key(self, vmc_name, key_name, key_type, key_contents, key_fingerprint, vm_defaults, connection) :
+        '''
+        TBD
+        '''
+        return True
+
+    @trace
+    def is_cloud_image_uuid(self, imageid) :
+        '''
+        TBD
+        '''
+        if len(imageid) == 64 and is_number(imageid, True) :
+            return True
+        
+        return False
 
     @trace
     def is_vm_running(self, obj_attr_list):
@@ -961,7 +1006,7 @@ class PdmCmds(CommonCloudFunctions) :
 
             self.get_images(obj_attr_list)
             self.get_networks(obj_attr_list)
-            self.pre_vmcreate_process(obj_attr_list)            
+
             self.vvcreate(obj_attr_list)
 
             self.common_messages("VM", obj_attr_list, "creating", 0, '')
@@ -977,12 +1022,15 @@ class PdmCmds(CommonCloudFunctions) :
                 _binds = [ obj_attr_list["cloud_vv_name"] + ':' + _mapped_dir + ":rw"]                
                 _volumes = [ _mapped_dir ]
 
+            self.pre_vmcreate_process(obj_attr_list)
+
             _mark_a = time()
             _host_config = self.dockconn[obj_attr_list["host_cloud_ip"]].create_host_config(network_mode = obj_attr_list["netname"], \
                                                                                             port_bindings = _port_bindings, 
                                                                                             binds = _binds, \
                                                                                             mem_limit = str(_memory) + 'm', \
                                                                                             devices = _devices, \
+                                                                                            shm_size = obj_attr_list["shm_size"], \
                                                                                             privileged = _privileged)
             self.annotate_time_breakdown(obj_attr_list, "create_host_config_time", _mark_a)
 

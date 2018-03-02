@@ -27,7 +27,7 @@ from random import randint
 from socket import gethostbyname
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from lib.auxiliary.data_ops import str2dic, DataOpsException
+from lib.auxiliary.data_ops import str2dic, is_number, DataOpsException
 from lib.remote.network_functions import hostname2ip
 
 from shared_functions import CldOpsException, CommonCloudFunctions 
@@ -243,7 +243,7 @@ class Ec2Cmds(CommonCloudFunctions) :
                                 _running_instances = True
                 sleep(int(obj_attr_list["update_frequency"]))
 
-            sleep(int(obj_attr_list["update_frequency"])*5)
+            sleep(int(obj_attr_list["update_frequency"]) * 5)
 
             self.common_messages("VMC", obj_attr_list, "cleaning up vvs", 0, '')
 
@@ -406,6 +406,30 @@ class Ec2Cmds(CommonCloudFunctions) :
             return _nr_instances
 
     @trace
+    def get_ssh_keys(self, vmc_name, key_name, key_contents, key_fingerprint, registered_key_pairs, internal, connection) :
+        '''
+        TBD
+        '''
+
+        for _key_pair in self.ec2conn.get_all_key_pairs() :
+            registered_key_pairs[_key_pair.name] = _key_pair.fingerprint + "-NA"
+
+            #self.ec2conn.delete_key_pair(key_name)
+            
+        return True
+
+    @trace
+    def get_security_groups(self, vmc_name, security_group_name, registered_security_groups) :
+        '''
+        TBD
+        '''
+
+        for _security_group in self.ec2conn.get_all_security_groups() :
+            registered_security_groups.append(_security_group.name)
+
+        return True
+
+    @trace
     def get_ip_address(self, obj_attr_list) :
         '''
         TBD
@@ -560,28 +584,27 @@ class Ec2Cmds(CommonCloudFunctions) :
             else :
                 return True
 
-    @trace
-    def vm_placement(self, obj_attr_list) :
+    @trace            
+    def create_ssh_key(self, vmc_name, key_name, key_type, key_contents, key_fingerprint, vm_defaults, connection) :
         '''
         TBD
         '''
-        try :
-            _status = 100
-            _fmsg = "An error has occurred, but no error message was captured"
+        self.ec2conn.import_key_pair(key_name, key_type + ' ' + key_contents)
 
-            _status = 0
+        return True
 
-        except Exception, e :
-            _status = 23
-            _fmsg = str(e)
-            
-        finally :
-            if _status :
-                _msg = "VM placement failed: " + _fmsg
-                cberr(_msg, True)
-                raise CldOpsException(_msg, _status)
-            else :
-                return True
+    @trace
+    def is_cloud_image_uuid(self, imageid) :
+        '''
+        TBD
+        '''
+        
+        if len(imageid) > 4 :
+            if imageid[0:4] == "ami-" :
+                if is_number(imageid[5:], True) :
+                    return True
+                    
+        return False
 
     def is_vm_running(self, obj_attr_list):
         '''
@@ -631,6 +654,29 @@ class Ec2Cmds(CommonCloudFunctions) :
         else :
             obj_attr_list["last_known_state"] = "not running"
             return False
+
+    @trace
+    def vm_placement(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+
+            _status = 0
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+            
+        finally :
+            if _status :
+                _msg = "VM placement failed: " + _fmsg
+                cberr(_msg, True)
+                raise CldOpsException(_msg, _status)
+            else :
+                return True
 
     @trace
     def vvcreate(self, obj_attr_list) :
@@ -794,7 +840,6 @@ class Ec2Cmds(CommonCloudFunctions) :
             _time_mark_prs = int(time())
             obj_attr_list["mgt_002_provisioning_request_sent"] = _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
 
-            self.pre_vmcreate_process(obj_attr_list)
             self.vm_placement(obj_attr_list)
 
             obj_attr_list["last_known_state"] = "about to send create request"
@@ -808,7 +853,8 @@ class Ec2Cmds(CommonCloudFunctions) :
             #self.vvcreate(obj_attr_list)
 
             self.common_messages("VM", obj_attr_list, "creating", 0, '')
-            
+
+            self.pre_vmcreate_process(obj_attr_list)
             _reservation = self.ec2conn.run_instances(image_id = obj_attr_list["boot_volume_imageid1"], \
                                                       instance_type = obj_attr_list["size"], \
                                                       key_name = obj_attr_list["key_name"], \

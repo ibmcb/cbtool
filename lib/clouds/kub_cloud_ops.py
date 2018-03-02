@@ -30,7 +30,7 @@ import operator
 import pykube
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from lib.auxiliary.data_ops import str2dic, DataOpsException
+from lib.auxiliary.data_ops import str2dic, is_number, DataOpsException
 from lib.remote.network_functions import hostname2ip, check_url
 from shared_functions import CldOpsException, CommonCloudFunctions 
 
@@ -445,6 +445,16 @@ class KubCmds(CommonCloudFunctions) :
             return _nr_instances
 
     @trace
+    def get_ssh_keys(self, vmc_name, key_name, key_contents, key_fingerprint, registered_key_pairs, internal, connection) :
+        '''
+        TBD
+        '''
+
+        registered_key_pairs[key_name] = key_fingerprint + "-NA"
+
+        return True
+
+    @trace
     def get_ip_address(self, obj_attr_list) :
         '''
         TBD
@@ -642,6 +652,25 @@ class KubCmds(CommonCloudFunctions) :
             else :
                 return True
 
+    @trace            
+    def create_ssh_key(self, vmc_name, key_name, key_type, key_contents, key_fingerprint, vm_defaults, connection) :
+        '''
+        TBD
+        '''
+        return True
+
+    @trace
+    def is_cloud_image_uuid(self, imageid) :
+        '''
+        TBD
+        '''
+
+        return True
+    
+        if len(imageid) == 64 and is_number(imageid, True) :
+            return True
+        
+        return False
 
     @trace
     def is_vm_running(self, obj_attr_list):
@@ -848,7 +877,7 @@ class KubCmds(CommonCloudFunctions) :
             if str(obj_attr_list["ports_base"]).lower() != "false" :
                 obj_attr_list["prov_cloud_port"] = int(obj_attr_list["ports_base"]) + int(obj_attr_list["name"].replace("vm_",''))
 
-                if obj_attr_list["check_boot_complete"] == "tcp_on_22":
+                if obj_attr_list["check_boot_complete"].lower() == "tcp_on_22":
                     obj_attr_list["check_boot_complete"] = "tcp_on_" + str(obj_attr_list["prov_cloud_port"])
 
             _annotations = { "creator" : "cbtool" }
@@ -957,11 +986,12 @@ class KubCmds(CommonCloudFunctions) :
 
             self.get_images(obj_attr_list)
             self.get_networks(obj_attr_list)
-            self.pre_vmcreate_process(obj_attr_list)            
             self.vvcreate(obj_attr_list)
 
             self.common_messages("VM", obj_attr_list, "creating", 0, '')
-            
+
+            self.pre_vmcreate_process(obj_attr_list)
+
             _mark_a = time()
             if obj_attr_list["abstraction"] == "pod" :
                 pykube.Pod(self.kubeconn, _obj).create()
