@@ -2343,7 +2343,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _rcmd = "rsync -e \"" + _proc_man.rsync_conn + "\""
                 _rcmd += " --exclude-from "
                 _rcmd += "'" +  obj_attr_list["exclude_list"] + "' -az "
-                _rcmd += "--delete --no-o --no-g --inplace -O " 
+                _rcmd += "--delete --no-o --no-g --inplace --rsync-path='sudo rsync' -O " 
                 _rcmd += obj_attr_list["base_dir"] + "/* " 
                 _rcmd += obj_attr_list["prov_cloud_ip"] + ":~/" 
                 _rcmd += obj_attr_list["remote_dir_name"] + '/'
@@ -2367,7 +2367,12 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 obj_attr_list["last_known_state"] = "sent copy of code tree"
 
             _time_mark_ift = int(time())
-            _delay = _time_mark_ift - obj_attr_list["time_mark_aux"]
+
+            if "time_mark_aux" in obj_attr_list :
+                _delay = _time_mark_ift - obj_attr_list["time_mark_aux"]
+            else :
+                _delay = -1
+
             self.osci.pending_object_set(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], "status", "Files transferred...")
             obj_attr_list["mgt_005_file_transfer"] = _delay
             self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], \
@@ -2405,8 +2410,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                            get_hostname_using_key = "prov_cloud_ip"  \
                                                            )
                 _time_mark_ipbc = int(time())
-                _delay = _time_mark_ipbc - obj_attr_list["time_mark_aux"]
-                             
+                if "time_mark_aux" in obj_attr_list :
+                    _delay = _time_mark_ipbc - obj_attr_list["time_mark_aux"]
+                else :
+                    _delay = -1
+
                 if _status :
                     _fmsg = "Failure while executing generic VM "
                     _fmsg += "post_boot configuration on "
