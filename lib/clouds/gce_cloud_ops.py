@@ -287,7 +287,7 @@ class GceCmds(CommonCloudFunctions) :
                 for _instance in _instance_list :
 
                     if _instance["name"].count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"].lower()) :
-                       cbdebug("Cleanup: " + _instance["name"], True)
+                        cbdebug("Cleanup: " + _instance["name"], True)
                         self.gceconn.instances().delete(project = self.instances_project, \
                                                         zone = obj_attr_list["name"], \
                                                         instance = _instance["name"]).execute(http = self.http_conn[obj_attr_list["name"]])
