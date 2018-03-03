@@ -282,13 +282,14 @@ class GceCmds(CommonCloudFunctions) :
             while _running_instances :
                 _running_instances = False
 
-                _instance_list = self.get_instances({}, "vm", "all")                
+                _instance_list = self.get_instances({"vmc_name" : obj_attr_list["name"], "name" : obj_attr_list["name"]}, "vm", "all")
                 
                 for _instance in _instance_list :
 
-                    if _instance["name"].count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"].lower()) and _instance["status"] == u'RUNNING' :
+                    if _instance["name"].count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"].lower()) :
+                       cbdebug("Cleanup: " + _instance["name"], True)
                         self.gceconn.instances().delete(project = self.instances_project, \
-                                                        zone = obj_attr_list["vmc_name"], \
+                                                        zone = obj_attr_list["name"], \
                                                         instance = _instance["name"]).execute(http = self.http_conn[obj_attr_list["name"]])
 
                         _running_instances = True
@@ -297,18 +298,19 @@ class GceCmds(CommonCloudFunctions) :
 
             sleep(int(obj_attr_list["update_frequency"])*5)
 
-            _volume_list = self.get_instances({}, "vv", "all")
+            _volume_list = self.get_instances({"vmc_name" : obj_attr_list["name"], "name" : obj_attr_list["name"]}, "vv", "all")
 
             if len(_volume_list) :
                 self.common_messages("VMC", obj_attr_list, "cleaning up vvs", 0, '')
                 for _volume in _volume_list :
                     if _volume["name"].count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"].lower()) :
+                        cbdebug("Cleanup: " + _volume["name"], True)
                         if not "users" in _volume :
                             _msg = _volume["id"] + " detached "
                             _msg += "... was deleted"
                             cbdebug(_msg)
                             self.gceconn.disks().delete(project = self.instances_project, \
-                                                        zone = obj_attr_list["vmc_name"], \
+                                                        zone = obj_attr_list["name"], \
                                                         disk = _volume["name"]).execute(http = self.http_conn[obj_attr_list["name"]])
                         else:
                             _msg = _volume["id"] + ' '
@@ -446,7 +448,7 @@ class GceCmds(CommonCloudFunctions) :
 
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], _vmc_attr_list["name"])
 
-                _instance_list = self.get_instances({}, "vm", "all")                
+                _instance_list = self.get_instances({"vmc_name" : _vmc_attr_list["name"], "name" : obj_attr_list["name"]}, "vm", "all")
                 
                 for _instance in _instance_list :
 
@@ -523,8 +525,7 @@ class GceCmds(CommonCloudFunctions) :
             if obj_type == "vm" :
                 if identifier == "all" :
                     _instance_list = self.gceconn.instances().list(project = self.instances_project, \
-                                                                   zone =  obj_attr_list["vmc_name"]).execute()
-                                                                   
+                                                                   zone = obj_attr_list["vmc_name"]).execute(http = self.http_conn[obj_attr_list["name"]])
                 else :
                     _instance_list = self.gceconn.instances().get(project = self.instances_project, \
                                                                    zone =  obj_attr_list["vmc_name"], \
@@ -533,7 +534,7 @@ class GceCmds(CommonCloudFunctions) :
             else :
                 if identifier == "all" :
                     _instance_list = self.gceconn.disks().list(project = self.instances_project, \
-                                                                   zone =  obj_attr_list["vmc_name"]).execute()
+                                                                   zone =  obj_attr_list["vmc_name"]).execute(http = self.http_conn[obj_attr_list["name"]])
  
                 else :
                     _instance_list = self.gceconn.disks().get(project = self.instances_project, \
@@ -554,6 +555,8 @@ class GceCmds(CommonCloudFunctions) :
             raise CldOpsException(_fmsg, _status)
         
         except Exception, _fmsg :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             return []
 
     @trace
@@ -602,6 +605,8 @@ class GceCmds(CommonCloudFunctions) :
             raise CldOpsException(_fmsg, _status)
         
         except Exception, e :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             _status = 23
             _fmsg = str(e)
             
@@ -625,6 +630,8 @@ class GceCmds(CommonCloudFunctions) :
             _status = 0
 
         except Exception, e :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             _status = 23
             _fmsg = str(e)
             
@@ -648,6 +655,8 @@ class GceCmds(CommonCloudFunctions) :
             _status = 0
 
         except Exception, e :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             _status = 23
             _fmsg = str(e)
             
@@ -691,6 +700,8 @@ class GceCmds(CommonCloudFunctions) :
             raise CldOpsException(_fmsg, _status)
         
         except Exception, msg :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             _fmsg = str(msg)
             cberr(_fmsg)
             _status = 23
