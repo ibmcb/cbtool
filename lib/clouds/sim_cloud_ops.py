@@ -534,7 +534,7 @@ class SimCmds(CommonCloudFunctions) :
             return True
         
         return False
-        
+
     @trace
     def is_vm_running(self, obj_attr_list):
         '''
@@ -750,7 +750,7 @@ class SimCmds(CommonCloudFunctions) :
             self.vvcreate(obj_attr_list)
 
             self.pre_vmcreate_process(obj_attr_list)
-            
+
             self.common_messages("VM", obj_attr_list, "creating", 0, '')
 
             _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)

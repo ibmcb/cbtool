@@ -94,7 +94,6 @@ def redis_objectstore_setup(global_objects, operation, cloud_name = None) :
                 _redis_pid = _proc_man.get_pid_from_cmdline("redis-server")      
 
                 if not _redis_pid :
-#                    global_objects["objectstore"]["port"] = _proc_man.get_free_port(global_objects["objectstore"]["port"], protocol = "tcp")
                     _hostport = int(global_objects["objectstore"]["port"])
 
                     _config_file_contents = global_objects["objectstore"]["config_string"].replace('_', ' ')
@@ -267,8 +266,6 @@ def syslog_logstore_setup(global_objects, operation = "check") :
                 _rsyslog_pid = _proc_man.get_pid_from_cmdline(_cmd)     
 
                 if not _rsyslog_pid :
-
-#                    global_objects["logstore"]["port"] = _proc_man.get_free_port(global_objects["logstore"]["port"], protocol = _protocol)
                     _hostport = int(global_objects["logstore"]["port"])
 
                     _config_file_contents = global_objects["logstore"]["config_string"].replace('_', ' ')
@@ -369,7 +366,6 @@ def mongodb_metricstore_setup(global_objects, operation = "check") :
                 _mongodb_pid = _proc_man.get_pid_from_cmdline("mongod -f")
 
                 if not _mongodb_pid :
-#                    global_objects["metricstore"]["port"] = _proc_man.get_free_port(global_objects["metricstore"]["port"], protocol = "tcp")
                     _hostport = int(global_objects["metricstore"]["port"])
 
                     _config_file_contents = global_objects["metricstore"]["config_string"].replace('_', ' ')
@@ -496,8 +492,6 @@ def rsync_filestore_setup(global_objects, operation = "check") :
 
                     _proc_man.run_os_command("sudo rm -rf " + _stores_wk_dir + '/' + _username + "_rsyncd.pid")
                     
-#                    global_objects["filestore"]["port"] = _proc_man.get_free_port(global_objects["filestore"]["port"], protocol = "tcp")
-
                     _hostport = int(global_objects["filestore"]["port"])
                     
                     _config_file_contents = global_objects["filestore"]["config_string"].replace('_', ' ')

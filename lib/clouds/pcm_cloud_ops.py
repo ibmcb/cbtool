@@ -89,7 +89,7 @@ class PcmCmds(CommonCloudFunctions) :
                         _status = 101
 
             _status -= 100
-            
+
         except LXDError.ClientConnectionFailed, obj:
             _status = 18127
             _fmsg = str(obj.message)
@@ -881,7 +881,7 @@ class PcmCmds(CommonCloudFunctions) :
 
             _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
 
-            _mark_a = time()            
+            _mark_a = time()
             if str(obj_attr_list["ports_base"]).lower() != "false" :
                 self.configure_port_mapping(obj_attr_list, "setup")
             self.annotate_time_breakdown(obj_attr_list, "container_port_mapping_time", _mark_a)
@@ -949,7 +949,7 @@ class PcmCmds(CommonCloudFunctions) :
     
                 _instance = self.get_instances(obj_attr_list, "vm", _host_ip, \
                                                obj_attr_list["cloud_vm_name"])
-                
+
                 if _instance :
                     self.common_messages("VM", obj_attr_list, "destroying", 0, '')
     
@@ -963,7 +963,7 @@ class PcmCmds(CommonCloudFunctions) :
                                 _instance.stop()
                             else :
                                 _instance.delete()
-                                                    
+
                         sleep(_wait)
                         _curr_tries += 1
     

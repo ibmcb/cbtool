@@ -846,7 +846,7 @@ class Ec2Cmds(CommonCloudFunctions) :
 
             self.common_messages("VM", obj_attr_list, "creating", 0, '')
 
-            self.pre_vmcreate_process(obj_attr_list)            
+            self.pre_vmcreate_process(obj_attr_list)
             _reservation = self.ec2conn.run_instances(image_id = obj_attr_list["boot_volume_imageid1"], \
                                                       instance_type = obj_attr_list["size"], \
                                                       key_name = obj_attr_list["key_name"], \

@@ -1536,7 +1536,7 @@ packages:"""
 
             if "vm_name_suffix" in obj_attr_list :
                 obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"] + '-' + obj_attr_list["vm_name_suffix"]
-       
+
         if "cloud_vv_name" not in obj_attr_list :       
             obj_attr_list["cloud_vv_name"] = "cb-" + obj_attr_list["username"]
             obj_attr_list["cloud_vv_name"] += '-' + obj_attr_list["cloud_name"]

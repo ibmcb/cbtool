@@ -203,7 +203,6 @@ class MongodbMgdConn :
                     _msg += "\":" + str(errmsg) + ". \nPlease create the user there (i.e., directly on "
                     _msg += self.host + ") using the following command:\n"                    
                     _msg += _auth_cmd
-#                    _msg += "mongo localhost/" + self.database + " --eval \"db.addUser({user: '" + self.username  + "', pwd:'" + self.password + "', roles:['readWrite']})\""                
                     raise self.MetricStoreMgdConnException(_msg, 2)
     
                 except Exception, e:

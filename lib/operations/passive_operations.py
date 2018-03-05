@@ -2568,6 +2568,7 @@ class PassiveObjectOperations(BaseObjectOperations) :
             _msg = ""
 
             _vm = None
+            _actual_cmd = ''
             
             if not _status :
 
@@ -2587,24 +2588,33 @@ class PassiveObjectOperations(BaseObjectOperations) :
                                                  True, \
                                                  _vm, \
                                                  False)
+                        else :
+                            _actual_cmd += _word + ' ' 
 
                     if not _vm :
-                        True
+                        _proc_man =  ProcessManagement()                                                 
+
                     else :
-                        _ssh_cmd = "ssh -i " + _vm_attr_list["identity"]
+                        _proc_man =  ProcessManagement(hostname = _vm_attr_list["prov_cloud_ip"], \
+                                                       port = _vm_attr_list["prov_cloud_port"], \
+                                                       username = _vm_attr_list["login"], \
+                                                       cloud_name = _vm_attr_list["cloud_name"], \
+                                                       priv_key = _vm_attr_list["identity"])
+                        
+#                        _ssh_cmd = "ssh -i " + _vm_attr_list["identity"]
 
-                        if "ssh_config_file" in _vm_attr_list :
-                            _ssh_cmd += " -F " + _vm_attr_list["ssh_config_file"]
+#                        if "ssh_config_file" in _vm_attr_list :
+#                            _ssh_cmd += " -F " + _vm_attr_list["ssh_config_file"]
 
-                        _ssh_cmd += " -o StrictHostKeyChecking=no"
-                        _ssh_cmd += " -o UserKnownHostsFile=/dev/null" 
-                        _ssh_cmd += " -l " + _vm_attr_list["login"] + ' '
+#                        _ssh_cmd += " -o StrictHostKeyChecking=no"
+#                        _ssh_cmd += " -o UserKnownHostsFile=/dev/null" 
+#                        _ssh_cmd += " -l " + _vm_attr_list["login"] + ' '
 
-                        _cmd = _ssh_cmd + ' ' + _vm_attr_list["prov_cloud_ip"] + " \"" + _cmd.replace(_vm,'') + "\""
+#                        _cmd = _ssh_cmd + ' ' + _vm_attr_list["prov_cloud_ip"] + " \"" + _cmd.replace(_vm,'') + "\""
 
-                    _proc_man =  ProcessManagement()                                                 
-                    print "running shell command: \"" + _cmd + "\"...."
-                    _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_cmd)
+#                    _proc_man =  ProcessManagement()                                                 
+                    print "running shell command: \"" + _actual_cmd + "\"...."
+                    _status, _result_stdout, _result_stderr = _proc_man.run_os_command(_actual_cmd)
                     result_dict = {"stdout": _result_stdout, "stderr": _result_stderr}
  
                     if not _status :

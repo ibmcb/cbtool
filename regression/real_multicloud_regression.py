@@ -216,7 +216,8 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         _model_to_imguuid["nop"] = "baseimg"
         _model_to_imguuid["osk"] = "xenial3"
         _model_to_imguuid["os"] = "xenial3"        
-        _model_to_imguuid["gen"] = "xenial3"        
+        _model_to_imguuid["gen"] = "xenial3"
+        _model_to_imguuid["plm"] = "xenial"        
         _model_to_imguuid["ec2"] = "ami-a9d276c9"
         _model_to_imguuid["gce"] = "ubuntu-1604-xenial-v20161221"
         _model_to_imguuid["do"] = "21669205"        
@@ -228,6 +229,7 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         _model_to_login["sim"] = "ubuntu"
         _model_to_login["pcm"] = "ubuntu" 
         _model_to_login["pdm"] = "cbuser"
+        _model_to_login["plm"] = "ubuntu"        
         _model_to_login["nop"] = "ubuntu"
         _model_to_login["osk"] = "ubuntu"
         _model_to_login["os"] = "ubuntu"        
@@ -331,9 +333,13 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         print "###### VM REPORTED: " + str(_vm_counters["reported"])
                        
         if not test_case.count("failure") :
+
             if int(_vm_counters["reservations"]) == 1 and int(_vm_counters["failed"]) - _vms_failed == 0 and int(_vm_counters["reported"]) == 1 :
+
                 if test_case.count("no volume")  :
+
                     if "cloud_vv_uuid" in _vm and str(_vm["cloud_vv_uuid"]).lower() == "none" :
+
                         _result = "PASS" 
                         if not test_case.count("newly") and test_case.count("no pubkey injection") :
                             if _vm["prov_cloud_ip"] ==  _vm["run_cloud_ip"] :
@@ -342,9 +348,11 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
                                 _result += (" p=" + _vm["prov_cloud_ip"] + ",r=" + _vm["run_cloud_ip"]).center(35, ' ')
                         _result += " (" + str(_create_time).center(3,' ')
                     else :
+
                         _attach_error = True
                         _result = "FAIL"
                 else :
+
                     print "######## VV UUID: " + str(_vm["cloud_vv_uuid"]).lower()
                     if str(_vm["cloud_vv_uuid"]).lower() == "not supported" :
                         _result = "NA"
@@ -355,6 +363,7 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
                         _attach_error = True
                         _result = "FAIL"
             else :
+
                 _attach_error = True
                 _result = "FAIL"                
         else :
@@ -417,7 +426,7 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         
             if int(_vm_counters["reservations"]) == 0 and int(_vm_counters["reported"]) == 0:
                 _attach_error = False
-        
+                
         if not _attach_error and not _delete_error :
             _msg = "## Successfully tested VM Attach (" + test_case + ") using image \"" + _img_name +  "\""
             print _msg

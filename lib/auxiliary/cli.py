@@ -722,7 +722,7 @@ class CBCLI(Cmd) :
                         _fd = open(_fn, 'w')
                         _fd.write(_api_conn_string)
                         _fd.close()
-                        
+
                     except Exception, e :
                         _msg = "    Error writing file \"" + _fn  + "\":" + str(e)
                         print _msg

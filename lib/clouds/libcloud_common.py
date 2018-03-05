@@ -678,7 +678,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                 if len(node.public_ips) > 0 :
                     obj_attr_list["prov_cloud_ip"] = node.public_ips[0]
 
-            # This is needed for Azure Service Manager
+            # Some clouds do not provide an IP per instance, but a (SSH) port per instance instead
             if "ssh_port" in node.extra :
                 obj_attr_list["prov_cloud_port"] = node.extra["ssh_port"]
 
@@ -769,7 +769,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                     return False
             else :
                 return _candidate_images
-    
+
     @trace
     def is_vm_running(self, obj_attr_list):
         '''
@@ -1257,7 +1257,7 @@ class LibcloudCmds(CommonCloudFunctions) :
             if self.use_floating_ips :
                 if obj_attr_list["cloud_floating_ip"] != "NA" :
                     LibcloudCmds.catalogs.cbtool[_credentials_list].ex_delete_floating_ip(LibcloudCmds.catalogs.cbtool[_credentials_list].ex_get_floating_ip(obj_attr_list["cloud_floating_ip"]))
-                    
+
             self.take_action_if_requested("VM", obj_attr_list, "deprovision_finished")
 
         except CldOpsException, obj :

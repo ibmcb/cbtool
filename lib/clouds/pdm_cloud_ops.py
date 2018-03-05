@@ -1022,7 +1022,6 @@ class PdmCmds(CommonCloudFunctions) :
                 _binds = [ obj_attr_list["cloud_vv_name"] + ':' + _mapped_dir + ":rw"]                
                 _volumes = [ _mapped_dir ]
 
-
             self.pre_vmcreate_process(obj_attr_list)
 
             _mark_a = time()

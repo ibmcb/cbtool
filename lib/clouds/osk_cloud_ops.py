@@ -375,8 +375,7 @@ class OskCmds(CommonCloudFunctions) :
         _map_name_to_id = {}
         _map_id_to_name = {}
 
-        _registered_image_list = self.oskconncompute[vmc_name].glance.list()   
-#        _registered_image_list = self.oskconncompute.images.list()
+        _registered_image_list = self.oskconncompute[vmc_name].glance.list()
         _registered_imageid_list = []
             
         for _registered_image in _registered_image_list :
@@ -700,7 +699,6 @@ class OskCmds(CommonCloudFunctions) :
                 _vmc_attr_list = self.osci.get_object(obj_attr_list["cloud_name"], \
                                                       "VMC", False, _vmc_uuid, \
                                                       False)
-
 
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
                              _vmc_attr_list["name"], {}, False, False, _vmc_attr_list["name"])
@@ -1343,7 +1341,6 @@ class OskCmds(CommonCloudFunctions) :
                 if obj_attr_list["name"] in self.oskconncompute :
                     del self.oskconncompute[obj_attr_list["name"]]
 
-
             _mark_a = time()
             self.connect(obj_attr_list["access"], \
                          obj_attr_list["credentials"], \
@@ -1675,7 +1672,6 @@ class OskCmds(CommonCloudFunctions) :
                 _vm_image_created = False
                 while not _vm_image_created and _curr_tries < _max_tries :
                     _vm_images = self.oskconncompute[obj_attr_list["name"]].glance.list()
-#                    _vm_images = self.oskconncompute.images.list()
                     for _vm_image in _vm_images :
                         if _vm_image.name == obj_attr_list["captured_image_name"] :
                             if _vm_image.status.lower() == "active" :
@@ -1956,7 +1952,7 @@ class OskCmds(CommonCloudFunctions) :
         finally :
             _status, _msg = self.common_messages("IMG", obj_attr_list, "deleted", _status, _fmsg)
             return _status, _msg
-    
+
     @trace
     def parse_connection_data(self, connection_data, region, obj_attr_list) :
         '''
@@ -2205,7 +2201,7 @@ class OskCmds(CommonCloudFunctions) :
         str(vm_defaults["use_floating_ip"]).lower() != "false" :
 
             _floating_pool_dict = {}
-            for _network in self.oskconnnetwork[vmc_name].list_networks()["networks"] :                
+            for _network in self.oskconnnetwork[vmc_name].list_networks()["networks"] :
                 if _network["router:external"] :
                     if _network["name"] not in _floating_pool_dict :
                         _floating_pool_dict[_network["name"]] = _network["id"]
@@ -2462,7 +2458,7 @@ class OskCmds(CommonCloudFunctions) :
         elif project == "volume" and self.use_cinderclient == "true" :
             return self.oskconnstorage[vmc_name].services.list()
         elif project == "network" :
-            return self.oskconnnetwork[vmc_name].list_agents()["agents"]        
+            return self.oskconnnetwork[vmc_name].list_agents()["agents"]
         else :
             return []
 
@@ -2555,9 +2551,8 @@ class OskCmds(CommonCloudFunctions) :
             _fmsg += self.get_description()
 
             _flavor = False
-            
+
             for _idx in range(0,len(_flavor_list)) :
-#                if _flavor_list[_idx].name.count(obj_attr_list["size"]) :                
                 if _flavor_list[_idx].name == obj_attr_list["size"] :
                     _flavor = _flavor_list[_idx]
                     _status = 0
@@ -2765,7 +2760,6 @@ class OskCmds(CommonCloudFunctions) :
 
             if "cloud_floating_ip_uuid" in obj_attr_list :
                 _call = "floating ip delete"
-#                self.oskconncompute.floating_ips.delete(obj_attr_list["cloud_floating_ip_uuid"])
                 self.oskconnnetwork[obj_attr_list["name"]].delete_floatingip(obj_attr_list["cloud_floating_ip_uuid"])                
             return True
 

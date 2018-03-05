@@ -126,6 +126,8 @@ setuptools-order = 64
 markup-order = 65
 pyyaml-order = 66
 ruamelyaml-order = 67
+urllib3 = 68
+httplib2shim = 69
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -206,6 +208,8 @@ setuptools-install = pip
 markup-install = pip
 pyyaml-install = pip
 ruamelyaml-install = pip 
+urllib3 = pip
+httplib2shim = pip
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
@@ -279,6 +283,8 @@ setuptools-configure = python -c "import setuptools; print str(setuptools.__vers
 markup-configure = python -c "import markup;"
 pyyaml-configure = python -c "import yaml; print str(yaml.__version__).strip()"
 ruamelyaml-configure = python -c "import ruamel.yaml; print ruamel.yaml.__version__"
+urllib3 = python -c "import urllib3; print urllib3.__version__"
+httplib2shim = python -c "import httplib2shim"
 ### END - Tests ###
 
 ### START - Dependency versions ###
@@ -352,6 +358,8 @@ setuptools-ver = 7.0
 markup-ver = ANY
 pyyaml-ver = 3.10
 ruamelyaml-ver = ANY
+urllib3-ver = 1.0
+httplib2shim = ANY
 ### END - Dependency versions ###
 
 ### START - Dependency tags ###
@@ -425,6 +433,8 @@ setuptools-tag = base
 markup-tag = orchestrator
 pyyaml-tag = orchestrator
 ruamelyaml-tag = orchestrator
+urllib3-tag = orchestrator
+httplib2shim-tag = orchestrator
 ### END - Dependency versions ###
 
 ### START - Dependency URLs ###

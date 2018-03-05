@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-from string import _int
-
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
 
@@ -25,6 +23,7 @@ from string import _int
     @author: Marcio A. Silva
 '''
 import httplib2
+import httplib2shim
 import traceback
 
 from time import time, sleep
@@ -42,9 +41,16 @@ from googleapiclient.discovery import build
 import googleapiclient.errors as GCEException
 
 class GceCmds(CommonCloudFunctions) :
+    # GCE uses the same image IDs for all regions and all zones.
+    # Attempting to discover them more than once invalidates the
+    # last attempt at discovering them by inadvertenly rewriting the image IDs
+    # with random numbers, so let's make sure we only do it once.
+    base_images_checked = False
+
     '''
     TBD
     '''
+
     @trace
     def __init__ (self, pid, osci, expid = None) :
         '''
@@ -59,7 +65,7 @@ class GceCmds(CommonCloudFunctions) :
         self.zone = None
         self.instance_info = None
         self.expid = expid
-        self.additional_rc_contents = ''        
+        self.additional_rc_contents = ''
         self.http_conn = {}
 
     @trace
@@ -88,17 +94,17 @@ class GceCmds(CommonCloudFunctions) :
 
             if _credentials.create_scoped_required():
                 _credentials = _credentials.create_scoped('https://www.googleapis.com/auth/compute')
-                                    
+
             self.gceconn = build('compute', 'v1', credentials=_credentials)
 
             _http_conn_id = "common"
             if http_conn_id :
                 _http_conn_id = http_conn_id
 
-            if _http_conn_id not in self.http_conn :  
-                self.http_conn[_http_conn_id] = _credentials.authorize(http = httplib2.Http())
-                        
-            _zone_list = self.gceconn.zones().list(project=self.instances_project).execute()["items"]            
+            if _http_conn_id not in self.http_conn :
+                self.http_conn[_http_conn_id] = _credentials.authorize(http = httplib2shim.Http())
+
+            _zone_list = self.gceconn.zones().list(project=self.instances_project).execute()["items"]
 
             _zone_info = False
             for _idx in range(0,len(_zone_list)) :
@@ -156,18 +162,23 @@ class GceCmds(CommonCloudFunctions) :
             
             _key_pair_found = self.check_ssh_key(vmc_name, self.determine_key_name(vm_defaults), vm_defaults, False, vmc_name)
             
-            _detected_imageids = self.check_images(vmc_name, vm_templates, vmc_name)
+            if not GceCmds.base_images_checked :
+                _detected_imageids = self.check_images(vmc_name, vm_templates, vmc_name)
 
-            if not (_run_netname_found and _prov_netname_found and _key_pair_found) :
-                _msg = "Check the previous errors, fix it (using GCE's web"
-                _msg += " GUI (Google Developer's Console) or gcloud CLI utility"
-                _status = 1178
-                raise CldOpsException(_msg, _status) 
+                if not (_run_netname_found and _prov_netname_found and _key_pair_found) :
+                    _msg = "Check the previous errors, fix it (using GCE's web"
+                    _msg += " GUI (Google Developer's Console) or gcloud CLI utility"
+                    _status = 1178
+                    raise CldOpsException(_msg, _status)
 
-            if len(_detected_imageids) :
-                _status = 0               
+                GceCmds.base_images_checked = True
+
+                if len(_detected_imageids) :
+                    _status = 0
+                else :
+                    _status = 1
             else :
-                _status = 1
+                _status = 0
 
         except CldOpsException, obj :
             for line in traceback.format_exc().splitlines() :
@@ -270,13 +281,13 @@ class GceCmds(CommonCloudFunctions) :
             while _running_instances :
                 _running_instances = False
 
-                _instance_list = self.get_instances({}, "vm", "all")                
+                _instance_list = self.get_instances(obj_attr_list, "vm", "all")
                 
                 for _instance in _instance_list :
 
                     if _instance["name"].count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"].lower()) and _instance["status"] == u'RUNNING' :
                         self.gceconn.instances().delete(project = self.instances_project, \
-                                                        zone = self.zone, \
+                                                        zone = obj_attr_list["name"], \
                                                         instance = _instance["name"]).execute(http = self.http_conn[obj_attr_list["name"]])
 
                         _running_instances = True
@@ -287,7 +298,7 @@ class GceCmds(CommonCloudFunctions) :
 
             self.common_messages("VMC", obj_attr_list, "cleaning up vvs", 0, '')
             
-            _volume_list = self.get_instances({}, "vv", "all")
+            _volume_list = self.get_instances(obj_attr_list, "vv", "all")
 
             if len(_volume_list) :
                 for _volume in _volume_list :
@@ -297,7 +308,7 @@ class GceCmds(CommonCloudFunctions) :
                             _msg += "... was deleted"
                             cbdebug(_msg)
                             self.gceconn.disks().delete(project = self.instances_project, \
-                                                        zone = self.zone, \
+                                                        zone = obj_attr_list["name"], \
                                                         disk = _volume["name"]).execute(http = self.http_conn[obj_attr_list["name"]])
                         else:
                             _msg = _volume["id"] + ' '
@@ -435,8 +446,8 @@ class GceCmds(CommonCloudFunctions) :
 
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], _vmc_attr_list["name"])
 
-                _instance_list = self.get_instances({}, "vm", "all")                
-                
+                _instance_list = self.get_instances(_vmc_attr_list, "vm", "all")                
+
                 for _instance in _instance_list :
 
                     if _instance["name"].count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"].lower()) :
@@ -524,26 +535,31 @@ class GceCmds(CommonCloudFunctions) :
 
         _instances = []
         _fmsg = "Error while getting instances"
-              
+
+        if "vmc_name" in obj_attr_list :
+            _actual_zone = obj_attr_list["vmc_name"]
+        else :
+            _actual_zone = obj_attr_list["name"]
+
         try :
             if obj_type == "vm" :
                 if identifier == "all" :
                     _instance_list = self.gceconn.instances().list(project = self.instances_project, \
-                                                                   zone = self.zone).execute()
+                                                                   zone =  _actual_zone).execute()
                                                                    
                 else :
                     _instance_list = self.gceconn.instances().get(project = self.instances_project, \
-                                                                   zone = self.zone, \
+                                                                   zone =  _actual_zone, \
                                                                    instance = identifier).execute(http = self.http_conn[obj_attr_list["name"]])
            
             else :
                 if identifier == "all" :
                     _instance_list = self.gceconn.disks().list(project = self.instances_project, \
-                                                                   zone = self.zone).execute()
+                                                                   zone =  _actual_zone).execute()
  
                 else :
                     _instance_list = self.gceconn.disks().get(project = self.instances_project, \
-                                                                   zone = self.zone, \
+                                                                   zone =  _actual_zone, \
                                                                    disk = identifier).execute(http = self.http_conn[obj_attr_list["name"]])
                     
             if "items" in _instance_list :
@@ -795,7 +811,7 @@ class GceCmds(CommonCloudFunctions) :
 
 
                 _operation = self.gceconn.disks().insert(project = self.instances_project, \
-                                                         zone = self.zone, \
+                                                         zone =  obj_attr_list["vmc_name"], \
                                                          body = _config).execute(http = self.http_conn[obj_attr_list["name"]])
 
                 if self.wait_until_operation(obj_attr_list, _operation) :
@@ -852,8 +868,8 @@ class GceCmds(CommonCloudFunctions) :
                 self.common_messages("VV", obj_attr_list, "destroying", 0, '')
 
                 _operation = self.gceconn.disks().delete(project = self.instances_project, \
-                                                             zone = self.zone, \
-                                                             disk = obj_attr_list[identifier]).execute(http = self.http_conn[obj_attr_list["name"]])
+                                                         zone =  obj_attr_list["vmc_name"], \
+                                                         disk = obj_attr_list[identifier]).execute(http = self.http_conn[obj_attr_list["name"]])
 
                 self.wait_until_operation(obj_attr_list, _operation)
 
@@ -932,7 +948,7 @@ class GceCmds(CommonCloudFunctions) :
                 'disks': [
                     {
                         'boot': True,
-                        'autoDelete': False,
+                        'autoDelete': True,
                         'initializeParams': {
                             'sourceImage': _source_disk_image,
                         }
@@ -1000,7 +1016,7 @@ class GceCmds(CommonCloudFunctions) :
             self.pre_vmcreate_process(obj_attr_list)
 
             _operation = self.gceconn.instances().insert(project = self.instances_project, \
-                                                         zone = self.zone, \
+                                                         zone = obj_attr_list["vmc_name"], \
                                                          body = _config).execute(http = self.http_conn[obj_attr_list["name"]])
             
             if self.wait_until_operation(obj_attr_list, _operation) :
@@ -1073,7 +1089,7 @@ class GceCmds(CommonCloudFunctions) :
                 self.common_messages("VM", obj_attr_list, "destroying", 0, '')
 
                 _operation = self.gceconn.instances().delete(project = self.instances_project, \
-                                                             zone = self.zone, \
+                                                             zone = obj_attr_list["vmc_name"], \
                                                              instance = obj_attr_list["cloud_vm_name"]).execute(http = self.http_conn[obj_attr_list["name"]])
 
                 self.wait_until_operation(obj_attr_list, _operation)
@@ -1148,7 +1164,7 @@ class GceCmds(CommonCloudFunctions) :
                 obj_attr_list["captured_image_name"] = obj_attr_list["captured_image_name"].replace('_','-')
 
                 _operation = self.gceconn.instances().delete(project = self.instances_project, \
-                                                             zone = self.zone, \
+                                                             zone = obj_attr_list["vmc_name"], \
                                                              instance = obj_attr_list["cloud_vm_name"]).execute(http = self.http_conn[obj_attr_list["name"]])
 
                 self.wait_until_operation(obj_attr_list, _operation)
@@ -1229,22 +1245,22 @@ class GceCmds(CommonCloudFunctions) :
             if _instance :
                 if _ts == "fail" :
                     _operation = self.gceconn.instances().stop(project = self.instances_project, \
-                                                               zone = self.zone, \
+                                                               zone =  obj_attr_list["vmc_name"], \
                                                                instance = obj_attr_list["cloud_vm_name"]).execute(http = self.http_conn[obj_attr_list["name"]])
 
                 elif _ts == "save" :
                     _operation = self.gceconn.instances().stop(project = self.instances_project, \
-                                                               zone = self.zone, \
+                                                               zone =  obj_attr_list["vmc_name"], \
                                                                instance = obj_attr_list["cloud_vm_name"]).execute(http = self.http_conn[obj_attr_list["name"]])
                                                                
                 elif (_ts == "attached" or _ts == "resume") and _cs == "fail" :
                     _operation = self.gceconn.instances().start(project = self.instances_project, \
-                                                                zone = self.zone, \
+                                                               zone =  obj_attr_list["vmc_name"], \
                                                                 instance = obj_attr_list["cloud_vm_name"]).execute(http = self.http_conn[obj_attr_list["name"]])
                                                                 
                 elif (_ts == "attached" or _ts == "restore") and _cs == "save" :
                     _operation = self.gceconn.instances().start(project = self.instances_project, \
-                                                                zone = self.zone, \
+                                                                zone =  obj_attr_list["vmc_name"], \
                                                                 instance = obj_attr_list["cloud_vm_name"]).execute(http = self.http_conn[obj_attr_list["name"]])
 
                 self.wait_until_operation(obj_attr_list, _operation)
@@ -1361,7 +1377,7 @@ class GceCmds(CommonCloudFunctions) :
             _start_pooling = int(time())
 
             _op = self.gceconn.zoneOperations().get(project = self.instances_project, \
-                                                           zone = self.zone, \
+                                                           zone =  obj_attr_list["vmc_name"], \
                                                            operation = opid["name"]).execute(http = self.http_conn[obj_attr_list["name"]])
             
             if _op['status'] == 'DONE':

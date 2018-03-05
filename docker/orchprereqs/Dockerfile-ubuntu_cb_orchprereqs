@@ -202,6 +202,14 @@ RUN pip install --upgrade pyyaml
 RUN pip install --upgrade ruamel.yaml
 # ruamelyaml-install-pip
 
+# urllib3-install-pip
+RUN pip install --upgrade  urllib3[secure]
+# urllib3-install-pip
+
+# httplib2shim-install-pip
+RUN pip install --upgrade httplib2shim
+# httplib2shim-install-pip
+
 # iptables-install-pm
 RUN apt-get install -y iptables
 # service_stop_disable iptables

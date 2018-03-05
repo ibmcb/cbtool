@@ -66,7 +66,7 @@ fi
 
 if [[ $CB_ADAPTERS == "all" ]]
 then
-    CB_ADAPTERS="sim pdm pcm kub osk,oskfile,oskfip nop gen osl,oslfip ec2 gce do as slr"
+    CB_ADAPTERS="sim pdm plm pcm kub osk,oskfile,oskfip nop gen osl,oslfip ec2 gce do as slr"
 elif [[ $CB_ADAPTERS == "private" ]]
 then
     CB_ADAPTERS="sim plm pdm pcm kub osk,oskfile,oskfip nop gen osl,oslfip"
