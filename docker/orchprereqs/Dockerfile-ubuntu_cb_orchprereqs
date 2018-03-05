@@ -53,6 +53,10 @@ RUN apt-get install -y gcc
 RUN apt-get install -y make
 # make-install-pm
 
+# bc-install-pm
+RUN apt-get install -y bc
+# bc-install-pm
+
 # sshpass-install-pm
 RUN apt-get install -y sshpass
 # sshpass-install-pm
