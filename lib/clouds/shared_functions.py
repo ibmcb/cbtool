@@ -1131,10 +1131,10 @@ class CommonCloudFunctions:
 
         for _vm_role in vm_templates.keys() :
             _imageid = str2dic(vm_templates[_vm_role])["imageid1"]
-            if self.is_cloud_image_uuid(_imageid) :
-                if _imageid not in _required_imageid_list :
-                    _required_imageid_list[_imageid] = []
-                _required_imageid_list[_imageid].append(_vm_role)
+            #if self.is_cloud_image_uuid(_imageid) :
+            if _imageid not in _required_imageid_list :
+                _required_imageid_list[_imageid] = []
+            _required_imageid_list[_imageid].append(_vm_role)
                 
         _msg = 'y'
 

@@ -178,13 +178,14 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             cbdebug("Caching " + self.get_description() + " locations. If stale, then restart...")
 
+            if obj_attr_list and "name" in obj_attr_list :
+                _hostname = obj_attr_list["name"]
+
             if self.use_locations :
                 if not LibcloudCmds.locations :
                     cbdebug("Caching " + self.get_description()  + " Locations...", True)
                     LibcloudCmds.locations = LibcloudCmds.catalogs.cbtool[credentials_list].list_locations()
 
-                    if obj_attr_list and "name" in obj_attr_list :
-                        _hostname = obj_attr_list["name"]                    
                     
                 assert(LibcloudCmds.locations)
 
@@ -233,14 +234,14 @@ class LibcloudCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
+            _key_pair_found = False
             for credentials_list in credentials.split(","):
                 _status, _msg, _local_conn, _hostname = self.connect(credentials_list, vmc_defaults)
+                _key_pair_found = self.check_ssh_key(vmc_name, self.determine_key_name(vm_defaults), vm_defaults, False, _local_conn)
 
             self.generate_rc(cloud_name, vmc_defaults, self.additional_rc_contents)
 
             _prov_netname_found, _run_netname_found = self.check_networks(vmc_name, vm_defaults)
-            
-            _key_pair_found = self.check_ssh_key(vmc_name, self.determine_key_name(vm_defaults), vm_defaults, False, _local_conn)
             
             _detected_imageids = self.check_images(vmc_name, vm_templates, _local_conn)
 
@@ -436,7 +437,16 @@ class LibcloudCmds(CommonCloudFunctions) :
                 _x, _y, _z, _hostname = self.connect(credentials_list, obj_attr_list)
             
             obj_attr_list["cloud_hostname"] = _hostname
-            obj_attr_list["cloud_ip"] = gethostbyname(self.tldomain)
+
+            # Public clouds don't really have "hostnames" - they have a single endpoint for all
+            # regions and VMCs. However, in Redis this IP gets tagged
+            # and must be unique, so we have to prefix this so it will be unique.
+            # That makes this "cloud_ip" not a real IP, but unless we stop tagging it,
+            # it still has to be unique to every VMC. 
+            # I'm not totally sure what this means for an Openstack + Libcloud adapter,
+            # but we'll cross that bridge when we get to it.
+            
+            obj_attr_list["cloud_ip"] = _hostname + "." + gethostbyname(self.tldomain)
             obj_attr_list["arrival"] = int(time())
 
             if str(obj_attr_list["discover_hosts"]).lower() == "true" :
@@ -629,7 +639,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                 _candidate_images = LibcloudCmds.catalogs.cbtool[obj_attr_list["credentials_list"]].get_image(obj_attr_list["imageid1"])
             else :
                 for _image in LibcloudCmds.catalogs.cbtool[obj_attr_list["credentials_list"]].list_images() :
-                    if _image.name == obj_attr_list["imageid1"] :
+                    if _image.name == obj_attr_list["imageid1"] or _image.id == obj_attr_list["imageid1"] :
                         _candidate_images = _image
                         break
 
@@ -985,6 +995,8 @@ class LibcloudCmds(CommonCloudFunctions) :
                 _status = 100
 
         except CldOpsException, obj :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             _status = obj.status
             _fmsg = str(obj.msg)
             cbwarn("Error during reservation creation: " + _fmsg)
@@ -1229,9 +1241,9 @@ class LibcloudCmds(CommonCloudFunctions) :
             _time_mark_rrs = int(time())
             _instance = False
             while True :
-                _errmsg = "get_vm_instance"
+                _errmsg = "get_instances"
                 cbdebug("Getting instance...")
-                _instance = self.get_vm_instance(obj_attr_list)
+                _instance = self.get_instances(obj_attr_list)
 
                 _curr_tries += 1
                 _msg = "Inside runstate: " + _errmsg
