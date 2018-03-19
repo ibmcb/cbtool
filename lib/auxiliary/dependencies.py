@@ -123,85 +123,89 @@ def docker_file_parser(depsdict, username, options, hostname, process_manager = 
     _workloads_list = []
     
     if options.role.count("orchestrator") :
-        _workloads_list = ['orchestrator']
+        _workloads_list = [ "orchestrator", "orchprereqs" ]
+        _role_list = [ options.role, "orchprereqs" ]
         
     if len(options.wks) > 1 :
-        if options.wks.count("_ycsb") :
-            options.wks += ",ycsb"
-            
         _workloads_list = options.wks.split(',')
-            
+        _role_list = [ options.role ]
+
     print '\n'
+
+    for _role in _role_list :    
+        for _path, _dirs, _files in os.walk(options.dfdir + '/' + _role) :
+            for _fnam in _files:
+                _full_fnam = os.path.join(_path, _fnam)
+                if not _fnam.count("._processed_") and _fnam.count("Dockerfile-") and os.access(_full_fnam, os.F_OK) :            
     
-    for _path, _dirs, _files in os.walk(options.dfdir + '/' + options.role) :
-        for _fnam in _files:
-            _full_fnam = os.path.join(_path, _fnam)
-            if not _fnam.count("._processed_") and _fnam.count("Dockerfile-") and os.access(_full_fnam, os.F_OK) :            
-
-                _x_fnam = _fnam.replace("Dockerfile-",'').split('_')
-                _key_prefix = _x_fnam[0]                
-                _f_workload = _x_fnam[2]
-
-                if len(_x_fnam) > 3 :
-                    _f_workload += '_' + _x_fnam[3]
-                
-                if _f_workload in _workloads_list :
-                    try:
-                        _fd = open(_full_fnam, 'r')
-                        _fc = _fd.readlines()
-                        _fd.close()
-                        _msg = "##### Parsing Dockerfile \"" + _full_fnam + "\"...."
-                        cbinfo(_msg)
+                    _x_fnam = _fnam.replace("Dockerfile-",'').split('_')
+                    _key_prefix = _x_fnam[0]                
+                    _f_workload = _x_fnam[2]
     
-                        _current_key = None
-                        
-                        for _line in _fc :
-                            _line = _line.strip()
+                    if len(_x_fnam) > 3 :
+                        _f_workload += '_' + _x_fnam[3]
+                    
+                    if _f_workload in _workloads_list :
+                        try:
+                            _fd = open(_full_fnam, 'r')
+                            _fc = _fd.readlines()
+                            _fd.close()
+                            _msg = "##### Parsing Dockerfile \"" + _full_fnam + "\"...."
+                            cbinfo(_msg)
         
-                            if _current_key :
-                                
-                                if _line.count("#") and _line.count("-install-") :
-                                    depsdict[_current_key] = depsdict[_current_key][0:-1]
-                                    
-                                    if _current_key.count("centos-") :
-                                        depsdict[_current_key.replace("centos-","rhel-")] = depsdict[_current_key]
-                                        depsdict[_current_key.replace("centos-","fedora-")] = depsdict[_current_key]                                                                                
-                                    _current_key = None
-
-                                elif _line.count("#") and _line.count("RUN") :
-                                    True
-
-                                else :
-                                    _line = _line.replace("RUN apt-get install -y","package_install")
-                                    _line = _line.replace("RUN yum install -y","package_install")
-                                    _line = _line.replace("RUN pip install --upgrade", "sudo pip install --upgrade INDEXURL")
-                                    _line = _line.replace("RUN git", "git")
-                                    _line = _line.replace("; apt-get install", "; sudo apt-get install")
-                                    _line = _line.replace("; apt-get update", "; sudo apt-get update")                                    
-                                    _line = _line.replace("; add-apt-repository", "; sudo add-apt-repository")                                    
-                                    _line = _line.replace("; dpkg", "; sudo dpkg")
-                                    _line = _line.replace("; yum install", "; sudo yum install")
-                                    _line = _line.replace("; rpm", "; sudo rpm")
-                                    _line = _line.replace("; chown", "; sudo chown")
-                                    _line = _line.replace("; make install", "; sudo make install")
-                                    _line = _line.replace("RUN mkdir -p /home/REPLACE_USERNAME/cbtool/3rd_party", "mkdir -p 3RPARTYDIR")
-                                    _line = _line.replace("RUN ", "sudo ")
-                                    _line = _line.replace("sudo cd ", "cd ")
-                                    _line = _line.replace("sudo REPLACE_RSYNC", "REPLACE_RSYNC")
-                                    _line = _line.replace("WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party", "cd 3RPARTYDIR")
-                                    _line = _line.replace("# service_stop_disable", "service_stop_disable")
-                                    _line = _line.replace("# echo", "echo")                                                      
-                                    depsdict[_current_key] += _line + "; "
-        
-                            else :
-                                if _line.count("#") and _line.count("-install-") :
-                                    _current_key = _key_prefix + '-' + _line.replace("#",'').strip()
-                                    depsdict[_current_key] = ''
+                            _current_key = None
+                            
+                            for _line in _fc :
+                                _line = _line.strip()
             
-                    except Exception, e :
-                        _msg = "##### Error reading file \"" + _full_fnam  + "\":" + str(e)
-                        cberr(_msg)
-                        exit(4)
+                                if _current_key :
+                                    
+                                    if _line.count("#") and _line.count("-install-") :
+                                        depsdict[_current_key] = depsdict[_current_key][0:-1]
+                                        
+                                        if _current_key.count("centos-") :
+                                            depsdict[_current_key.replace("centos-","rhel-")] = depsdict[_current_key]
+                                            depsdict[_current_key.replace("centos-","fedora-")] = depsdict[_current_key]                                                                                
+                                        _current_key = None
+    
+                                    elif _line.count("#") and _line.count("RUN") :
+                                        True
+    
+                                    else :
+                                        _line = _line.replace("RUN apt-get install -y","package_install")
+                                        _line = _line.replace("RUN yum install -y","package_install")
+                                        _line = _line.replace("RUN pip install --upgrade", "sudo pip install --upgrade INDEXURL")
+                                        _line = _line.replace("RUN git", "git")
+                                        _line = _line.replace("; apt-get install", "; sudo apt-get install")
+                                        _line = _line.replace("; apt-get update", "; sudo apt-get update")                                    
+                                        _line = _line.replace("; add-apt-repository", "; sudo add-apt-repository")                                    
+                                        _line = _line.replace("; dpkg", "; sudo dpkg")
+                                        _line = _line.replace("; yum install", "; sudo yum install")
+                                        _line = _line.replace("; rpm", "; sudo rpm")
+                                        _line = _line.replace("; chown", "; sudo chown")
+                                        _line = _line.replace("; make install", "; sudo make install")
+                                        _line = _line.replace("RUN mkdir -p /home/REPLACE_USERNAME/cbtool/3rd_party", "mkdir -p 3RPARTYDIR")
+                                        _line = _line.replace("RUN ", "sudo ")
+                                        _line = _line.replace("sudo cd ", "cd ")
+                                        _line = _line.replace("sudo export", "export ")
+                                        _line = _line.replace("sudo sudo ", "sudo ")
+                                        _line = _line.replace("sudo REPLACE_RSYNC", "REPLACE_RSYNC")
+                                        _line = _line.replace("WORKDIR /home/REPLACE_USERNAME/cbtool/3rd_party", "cd 3RPARTYDIR")
+                                        _line = _line.replace("# service_stop_disable", "service_stop_disable")
+                                        _line = _line.replace("# echo", "echo")
+                                        _line = _line.replace("/home/root", "/root")
+                                        _line = _line.replace("____",' ')
+                                        depsdict[_current_key] += _line + "; "
+            
+                                else :
+                                    if _line.count("#") and _line.count("-install-") :
+                                        _current_key = _key_prefix + '-' + _line.replace("#",'').strip()
+                                        depsdict[_current_key] = ''
+            
+                        except Exception, e :
+                            _msg = "##### Error reading file \"" + _full_fnam  + "\":" + str(e)
+                            cberr(_msg)
+                            exit(4)
 
     return True
 
@@ -420,7 +424,13 @@ def expand_command(cmdline, depsdict, process_manager = False) :
         if _command.count("sudo pip ") :
             if depsdict["indocker"] :
                 _command = _command.replace("sudo pip", "export LC_ALL=C; sudo pip") 
-    
+
+        if _command.count("IF DOCKER") :
+            if depsdict["indocker"] :
+                _command = "/bin/true"            
+            else :
+                _command = _command.replace("IF DOCKER", '') 
+                                
         if _command.count("service_restart_enable") or _command.count("service_stop_disable") :
 
             if not process_manager :
@@ -839,7 +849,17 @@ def dependency_checker_installer(hostname, depsdict, username, operation, option
         _status = 100
         _dep_missing = -1        
         _fmsg = "An error has occurred, but no error message was captured"
-                
+
+        if len(options.wks) > 1 :
+            if options.wks.count("_ycsb") :
+                options.wks += ",ycsb"
+
+            if options.wks.count(",ycsb") :
+                options.wks += ",mongo_ycsb,cassandra_ycsb,redis_ycsb"
+
+            if options.wks.count(",acmeair") :
+                options.wks += ",mongo_acmeair"
+        
         deps_file_parser(depsdict, username, options, "127.0.0.1")
         docker_file_parser(depsdict, username, options, "127.0.0.1")
         preparation_file_parser(depsdict, username, options, "127.0.0.1")            
@@ -898,6 +918,46 @@ def dependency_checker_installer(hostname, depsdict, username, operation, option
             _msg += "\n"
             cbinfo(_msg)
 
+            _hadoop_helper = "#!/usr/bin/env bash\n"
+            _hadoop_helper += "for HADOOP_CPATH in ~ /usr/local\n"
+            _hadoop_helper += "do\n"
+            _hadoop_helper += "   if [[ $(sudo ls $HADOOP_CPATH | grep -v tar | grep -c hadoop) -ne 0 ]]\n"
+            _hadoop_helper += "   then\n"
+            _hadoop_helper += "       eval HADOOP_CPATH=${HADOOP_CPATH}\n"
+            _hadoop_helper += "       HADOOP_HOME=$(ls ${HADOOP_CPATH} | grep -v tar | grep -v hadoop_store | grep hadoop | sort -r | head -n1)\n"
+            _hadoop_helper += "       eval HADOOP_HOME=\"$HADOOP_CPATH/${HADOOP_HOME}\"\n"
+            _hadoop_helper += "       if [[ -d $HADOOP_HOME ]]\n"
+            _hadoop_helper += "       then\n"
+            _hadoop_helper += "           echo \"1\"\n"
+            _hadoop_helper += "           exit 0\n"
+            _hadoop_helper += "       fi\n"
+            _hadoop_helper += "   fi\n"
+            _hadoop_helper += "done\n"
+            _hadoop_helper += "echo \"0\"\n"
+            _hadoop_helper += "exit 1\n"
+
+            try:
+                _file_name = "/tmp/get_hadoop"
+                _file_descriptor = file(_file_name, 'w')
+                _file_descriptor.write(_hadoop_helper)
+                _file_descriptor.close()
+                os.chmod(_file_name, 0755)
+
+            except IOError, msg :
+                _msg = "######## Error writing file \"" + _file_name  + "\":" + str(msg)
+                cberr(_msg)
+                exit(4)
+
+            except OSError, msg :
+                _msg = "######## Error writing file \"" + _file_name  + "\":" + str(msg)
+                cberr(_msg)
+                exit(4)
+
+            except Exception, e :
+                _msg = "######## Error writing file \"" + _file_name  + "\":" + str(e)
+                cberr(_msg)
+                exit(4)
+         
         else :
 
             options.tag = "base," + options.role + ',' + options.clouds
@@ -926,11 +986,14 @@ def dependency_checker_installer(hostname, depsdict, username, operation, option
 
         _process_manager = ProcessManagement(hostname)
 
-        _status, _std_out, _y = _process_manager.run_os_command("sudo cat /proc/1/cgroup | grep -c docker")
-        if str(_std_out) == '0' :
-            depsdict["indocker"] = False            
+        _status, _std_out, _y = _process_manager.run_os_command("sudo cat /proc/1/cgroup | grep -c docker", raise_exception = False)
+        if _status :
+            depsdict["indocker"] = False
         else :
-            depsdict["indocker"] = True
+            if str(_std_out.replace("\n",'')) == '0' :
+                depsdict["indocker"] = False            
+            else :
+                depsdict["indocker"] = True
         
         _msg = "##### DETECTED OPERATING SYSTEM KIND: " + depsdict["cdistkind"]
         cbinfo(_msg)
@@ -1008,7 +1071,7 @@ def dependency_checker_installer(hostname, depsdict, username, operation, option
                     else :
                         cberr(_msg)
             else :
-                cbinfo(_msg)                
+                cbinfo(_msg)
 
         _status = _dep_missing
         _fmsg += ','.join(_missing_dep)
@@ -1031,6 +1094,10 @@ def dependency_checker_installer(hostname, depsdict, username, operation, option
                 _msg = _fmsg + '\n'
                 _msg += "Please fix the reported problems re-run " + operation +  " again."               
         else :
+            _process_manager = ProcessManagement(hostname)
+            _cmd = "sudo chown -R " + depsdict["username"] + ':' + depsdict["username"] + " /home/" + depsdict["username"] + '/'
+            _cmd = _cmd.replace("/home/root", "/root")
+            _status, _x, _y = _process_manager.run_os_command(_cmd, raise_exception = False)
             _msg = "All dependencies are in place"
             if len(options.wks) :
                 _msg += " for workload(s) \"" + str(options.wks) + "\""

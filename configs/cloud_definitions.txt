@@ -12,7 +12,7 @@ MAIN_USERNAME = $USER_AUTO
 # "credentials" directory, bogus_id_rsa and bogus_id_rsa.pub
 MAIN_SSH_KEY_NAME = bogus_id_rsa
 # This is the username created inside the VMs
-MAIN_LOGIN = klabuser
+MAIN_LOGIN = cbuser
 # Variable $PATH_TO_TOOL attempts to auto-selects the appropriate path 
 MAIN_BASE_DIR = $PATH_TO_TOOL
 
@@ -32,7 +32,7 @@ CLOUDOPTION_MYPDM = cldattach pdm, vmcattach all
 CLOUDOPTION_MYPCM = cldattach pcm, vmcattach all
 CLOUDOPTION_MYKUB = cldattach kub, vmcattach all
 
-# Now, Specify the individual parameters for each cloud
+# START: Specify the individual parameters for each cloud
 #-------------------------------------------------------------------------------
 # Smart Cloud Provisioning (SCP) requires the following parameters
 [USER-DEFINED : CLOUDOPTION_MYSIMCLOUD]
@@ -124,6 +124,7 @@ KUB_ACCESS = ~/.kube/config                              # The full path to the 
 KUB_NETNAME = NOTUSED                                    # Currently not used
 KUB_LOGIN = root                                         # The username that logins on the VMs
 #-------------------------------------------------------------------------------
+# END: Specify the individual parameters for each cloud
 
 [OBJECTSTORE]
 USAGE = shared

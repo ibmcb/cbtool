@@ -1,0 +1,13 @@
+do NOT use "docker build directly"
+
+Assuming that the Docker engine is co-located with the CBTOOL Orchestrator Node, just execute :
+
+1. ORCHESTRATOR
+
+cd cbtool/docker
+./build_orchestrator.sh -r <myrepository>
+
+2. WORKLOADS
+
+cd cbtool/docker
+./build_workloads.sh -r <myrepository>

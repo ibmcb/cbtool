@@ -2,19 +2,6 @@
 
 source ./build_common.sh
 
-CB_REPO=NONE
-CB_WKS="ALL"
-CB_RSYNC=$(sudo ifconfig docker0 | grep "inet addr" | cut -d ':' -f 2 | cut -d ' ' -f 1):10000/$(whoami)_cb
-CB_UBUNTU_BASE=ubuntu:16.04
-CB_PHUSION_BASE=phusion/baseimage:latest
-CB_CENTOS_BASE=centos:latest
-CB_VERB="-q"
-CB_PUSH="nopush"
-CB_ARCH=$(uname -a | awk '{ print $12 }')
-CB_PALL=0
-CB_USERNAME="cbuser"
-CB_USAGE="Usage: build_all.sh -r <repository> [-u Ubuntu base image] [-p Phusion base image] [-c Centos base image] [-w Workload] [-l CB Username/login] [--verbose] [--push] [--psall]"
-
 while [[ $# -gt 0 ]]
 do
     key="$1"
@@ -76,6 +63,14 @@ do
         CB_ARCH=$(echo $key | cut -d '=' -f 2)
         shift
         ;;
+        -b|--branch)
+        CB_BRANCH="$2"
+        shift
+        ;;
+        -b=*|--branch=*)
+        CB_BRANCH=$(echo $key | cut -d '=' -f 2)
+        shift
+        ;;        
         --rsync)
         CB_RSYNC="$2"
         shift
@@ -105,17 +100,15 @@ do
         shift
 done
 
-if [[ $CB_REPO == NONE ]]
-then
-	echo $CB_USAGE
-    exit 1
-fi
-
 cb_refresh_vanilla_images $CB_UBUNTU_BASE $CB_PHUSION_BASE $CB_CENTOS_BASE
-cb_build_orchestrator $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC
 cb_build_base_images $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC
-cb_build_nullworkloads $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC
-cb_build_workloads $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC
+cb_build_orchprereqs $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC
+cb_remove_images $CB_REPO orchestrator $CB_BRANCH
+cb_build_orchestrator $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC $CB_BRANCH
+cb_remove_images $CB_REPO installtest $CB_BRANCH
+cb_build_installtest $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC $CB_BRANCH
+cb_build_nullworkloads $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC $CB_BRANCH
+cb_build_workloads $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_WKS $CB_RSYNC $CB_BRANCH
 
 if [[ $CB_PUSH == "push" ]]
 then
