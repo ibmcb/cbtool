@@ -881,11 +881,14 @@ def dependency_checker_installer(hostname, depsdict, username, operation, option
             depsdict["carch1"] = "x86_64"           
             depsdict["carch2"] = "x86-64"
             depsdict["carch3"] = "amd64"
-
-        if depsdict["carch"] == "ppc64le" :
+        elif depsdict["carch"] == "ppc64le" :
             depsdict["carch1"] = "ppc64le"           
             depsdict["carch2"] = "ppc64"
             depsdict["carch3"] = "ppc64"
+        else:
+            depsdict["carch1"] = "aarch64"
+            depsdict["carch2"] = "aarch64"
+            depsdict["carch3"] = "aarch64"
                         
         _missing_dep = []
         _dep_list = [0] * 5000

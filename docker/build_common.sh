@@ -50,13 +50,15 @@ function cb_docker_build {
         CB_ARCH1=x86_64
         CB_ARCH2=x86-64
         CB_ARCH3=amd64
-    fi
-
-    if [[ ${_CB_ARCH} == "ppc64le" ]]
+    elif [[ ${_CB_ARCH} == "ppc64le" ]]
     then
         CB_ARCH1=ppc64le
         CB_ARCH2=ppc64
         CB_ARCH3=ppc64
+    else
+        CB_ARCH1=$CB_ARCH
+        CB_ARCH2=$CB_ARCH
+        CB_ARCH3=$CB_ARCH
     fi                        
 
     CB_ACTUAL_SQUASH=''
