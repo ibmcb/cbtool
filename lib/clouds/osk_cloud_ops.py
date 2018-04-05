@@ -44,6 +44,7 @@ except:
 
 from novaclient import client as novac
 from novaclient import exceptions as novaexceptions
+from glanceclient import client as glancec
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import str2dic
@@ -63,6 +64,7 @@ class OskCmds(CommonCloudFunctions) :
         self.pid = pid
         self.osci = osci
         self.oskconncompute = False
+        self.oskconnimage = False
         self.oskconnstorage = False
         self.expid = expid
         self.ft_supported = False
@@ -166,8 +168,10 @@ class OskCmds(CommonCloudFunctions) :
 
                 if _session :
                     self.oskconncompute = novac.Client("2.1", session = _session)
+                    self.oskconnimage = glancec.Client("2", session = _session)
                 else :
                     self.oskconncompute = novac.Client(**_credentials)
+                    self.oskconnimage = glancec.Client(**_credentials)
 
                 self.oskconncompute.flavors.list()
                 _nova_client = True
@@ -454,7 +458,7 @@ class OskCmds(CommonCloudFunctions) :
         _map_name_to_id = {}
         _map_id_to_name = {}
 
-        _registered_image_list = self.oskconncompute.glance.list()               
+        _registered_image_list = self.oskconnimage.images.list()
 #        _registered_image_list = self.oskconncompute.images.list()
         _registered_imageid_list = []
             
@@ -973,7 +977,7 @@ class OskCmds(CommonCloudFunctions) :
             
             _fmsg = "An error has occurred, but no error message was captured"
 
-            _image_list = self.oskconncompute.glance.list()
+            _image_list = self.oskconnimage.images.list()
 
             _fmsg = "Please check if the defined image name is present on this "
             _fmsg += self.get_description()
@@ -982,13 +986,13 @@ class OskCmds(CommonCloudFunctions) :
 
             _candidate_images = []
 
-            for _idx in range(0,len(_image_list)) :
+            for _image in _image_list:
                 if self.is_cloud_image_uuid(obj_attr_list["imageid1"]) :
-                    if _image_list[_idx].id == obj_attr_list["imageid1"] :
-                        _candidate_images.append(_image_list[_idx])
+                    if _image.id == obj_attr_list["imageid1"] :
+                        _candidate_images.append(_image)
                 else :                        
-                    if _image_list[_idx].name.count(obj_attr_list["imageid1"]) :
-                        _candidate_images.append(_image_list[_idx])
+                    if _image.name.count(obj_attr_list["imageid1"]) :
+                        _candidate_images.append(_image)
 
             if "hypervisor_type" in obj_attr_list :
                 if str(obj_attr_list["hypervisor_type"]).lower() != "fake" :
@@ -1667,7 +1671,7 @@ class OskCmds(CommonCloudFunctions) :
                 _instance.create_image(obj_attr_list["captured_image_name"], None)
                 _vm_image_created = False
                 while not _vm_image_created and _curr_tries < _max_tries :
-                    _vm_images = self.oskconncompute.glance.list()
+                    _vm_images = self.oskconnimage.images.list()
 #                    _vm_images = self.oskconncompute.images.list()
                     for _vm_image in _vm_images :
                         if _vm_image.name == obj_attr_list["captured_image_name"] :
