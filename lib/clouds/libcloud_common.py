@@ -35,6 +35,10 @@ from copy import deepcopy
 import threading
 import traceback
 
+import sys
+reload(sys)
+sys.setdefaultencoding("utf8")
+
 import libcloud.security
 
 class LibcloudCmds(CommonCloudFunctions) :
@@ -151,6 +155,7 @@ class LibcloudCmds(CommonCloudFunctions) :
         self.extra = extra
         self.additional_rc_contents = ''        
         self.vmcreate_kwargs = {}
+        self.vvcreate_kwargs = {}        
         self.vmlist_args = []
         self.connauth_pamap = {}
         self.access = False
@@ -828,8 +833,9 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             if "cloud_vv_type" not in obj_attr_list :
 
-                if self.use_volumes :                
-                    obj_attr_list["cloud_vv_type"] = "LCV"
+                if self.use_volumes :
+                    if "cloud_vv_type" not in obj_attr_list :            
+                        obj_attr_list["cloud_vv_type"] = "LCV"
                 else :
                     obj_attr_list["cloud_vv_type"] = "NOT SUPPORTED"
 
@@ -839,22 +845,29 @@ class LibcloudCmds(CommonCloudFunctions) :
                 obj_attr_list["cloud_vv_name"] = obj_attr_list["cloud_vv_name"].lower().replace("_", "-")
                 
                 obj_attr_list["last_known_state"] = "about to send volume create request"
-
                 self.common_messages("VV", obj_attr_list, "creating", _status, _fmsg)
 
                 if self.use_volumes :
-                    
                     _mark_a = int(time())    
+
+                    for _location in LibcloudCmds.locations :
+                        if _location.id == obj_attr_list["region"] :
+                            self.vvcreate_kwargs["location"] = _location
+
+                    if not self.vvcreate_kwargs :
+                        self.vvcreate_kwargs["location"] = obj_attr_list["availability_zone"]
+                        self.vvcreate_kwargs["ex_volume_type"] = obj_attr_list["cloud_vv_type"]
+
                     _volume = connection.create_volume(int(obj_attr_list["cloud_vv"]),
                                                       obj_attr_list["cloud_vv_name"],
-                                                      location = [x for x in LibcloudCmds.locations if x.id == obj_attr_list["region"]][0])
+                                                      **self.vvcreate_kwargs)
+
                     self.annotate_time_breakdown(obj_attr_list, "create_volume_time", _mark_a)
     
                     sleep(int(obj_attr_list["update_frequency"]))
-    
+
                     obj_attr_list["cloud_vv_uuid"] = _volume.id
                     obj_attr_list["cloud_vv_instance"] = _volume
-    
 
                 else :
                     obj_attr_list["cloud_vv_uuid"] = "NOT SUPPORTED"
@@ -1051,7 +1064,7 @@ class LibcloudCmds(CommonCloudFunctions) :
             extra.update(self.pre_vmcreate_process(obj_attr_list, extra, _keys))
 
             _mark_a = time()            
-            if obj_attr_list["libcloud_call_type"] == 1 :
+            if obj_attr_list["libcloud_call_type"] == "create_node_with_mixed_arguments" :
                 _reservation = LibcloudCmds.catalogs.cbtool[_credentials_list].create_node(
                     obj_attr_list["cloud_vm_name"],
                     obj_attr_list["libcloud_size_inst"],
@@ -1060,7 +1073,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                     **self.vmcreate_kwargs
                     )
 
-            if obj_attr_list["libcloud_call_type"] == 2 :
+            if obj_attr_list["libcloud_call_type"] == "create_node_with_keyword_arguments_only" :
                 _reservation = LibcloudCmds.catalogs.cbtool[_credentials_list].create_node(
                     **self.vmcreate_kwargs
                     )
@@ -1246,8 +1259,9 @@ class LibcloudCmds(CommonCloudFunctions) :
             obj_attr_list["last_known_state"] = "vm destoyed"
 
             if self.use_floating_ips :
-                if obj_attr_list["cloud_floating_ip"] != "NA" :
-                    LibcloudCmds.catalogs.cbtool[_credentials_list].ex_delete_floating_ip(LibcloudCmds.catalogs.cbtool[_credentials_list].ex_get_floating_ip(obj_attr_list["cloud_floating_ip"]))
+                if "cloud_floating_ip" in obj_attr_list :               
+                    if obj_attr_list["cloud_floating_ip"] != "NA" :
+                        LibcloudCmds.catalogs.cbtool[_credentials_list].ex_delete_floating_ip(LibcloudCmds.catalogs.cbtool[_credentials_list].ex_get_floating_ip(obj_attr_list["cloud_floating_ip"]))
 
             self.take_action_if_requested("VM", obj_attr_list, "deprovision_finished")
 
