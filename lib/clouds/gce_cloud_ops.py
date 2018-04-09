@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-from string import _int
-
 #/*******************************************************************************
 # Copyright (c) 2012 IBM Corp.
 
@@ -33,7 +31,8 @@ from random import randint
 from socket import gethostbyname
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from lib.auxiliary.data_ops import str2dic, DataOpsException
+from lib.auxiliary.data_ops import str2dic, is_number, DataOpsException
+from lib.remote.ssh_ops import get_ssh_key
 
 from shared_functions import CldOpsException, CommonCloudFunctions 
 
@@ -282,13 +281,13 @@ class GceCmds(CommonCloudFunctions) :
             while _running_instances :
                 _running_instances = False
 
-                _instance_list = self.get_instances({}, "vm", "all")                
+                _instance_list = self.get_instances(obj_attr_list, "vm", "all")
                 
                 for _instance in _instance_list :
 
                     if _instance["name"].count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"].lower()) and _instance["status"] == u'RUNNING' :
                         self.gceconn.instances().delete(project = self.instances_project, \
-                                                        zone = obj_attr_list["vmc_name"], \
+                                                        zone = obj_attr_list["name"], \
                                                         instance = _instance["name"]).execute(http = self.http_conn[obj_attr_list["name"]])
 
                         _running_instances = True
@@ -297,10 +296,11 @@ class GceCmds(CommonCloudFunctions) :
 
             sleep(int(obj_attr_list["update_frequency"])*5)
 
-            _volume_list = self.get_instances({}, "vv", "all")
+            self.common_messages("VMC", obj_attr_list, "cleaning up vvs", 0, '')
+            
+            _volume_list = self.get_instances(obj_attr_list, "vv", "all")
 
             if len(_volume_list) :
-                self.common_messages("VMC", obj_attr_list, "cleaning up vvs", 0, '')
                 for _volume in _volume_list :
                     if _volume["name"].count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"].lower()) :
                         if not "users" in _volume :
@@ -308,7 +308,7 @@ class GceCmds(CommonCloudFunctions) :
                             _msg += "... was deleted"
                             cbdebug(_msg)
                             self.gceconn.disks().delete(project = self.instances_project, \
-                                                        zone = obj_attr_list["vmc_name"], \
+                                                        zone = obj_attr_list["name"], \
                                                         disk = _volume["name"]).execute(http = self.http_conn[obj_attr_list["name"]])
                         else:
                             _msg = _volume["id"] + ' '
@@ -446,8 +446,8 @@ class GceCmds(CommonCloudFunctions) :
 
                 self.connect(obj_attr_list["access"], obj_attr_list["credentials"], _vmc_attr_list["name"])
 
-                _instance_list = self.get_instances({}, "vm", "all")                
-                
+                _instance_list = self.get_instances(_vmc_attr_list, "vm", "all")                
+
                 for _instance in _instance_list :
 
                     if _instance["name"].count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"].lower()) :
@@ -460,6 +460,31 @@ class GceCmds(CommonCloudFunctions) :
 
         finally :
             return _nr_instances
+
+    @trace
+    def get_ssh_keys(self, vmc_name, key_name, key_contents, key_fingerprint, registered_key_pairs, internal, connection) :
+        '''
+        TBD
+        '''
+
+        self.temp_key_metadata = {}
+        self.project_metadata = self.gceconn.projects().get(project=self.instances_project).execute(http = self.http_conn[connection])
+
+        if "items" in self.project_metadata["commonInstanceMetadata"] :
+            for _element in self.project_metadata["commonInstanceMetadata"]["items"] :
+                if _element["key"] == "sshKeys" :
+                    for _component in _element["value"].split('\n') :
+                        if len(_component.split(' ')) == 3 :
+                            _r_key_tag, _r_key_contents, _r_key_user = _component.split(' ')
+                            _r_key_name, _r_key_type = _r_key_tag.split(':')
+                            self.temp_key_metadata[_r_key_name] = _r_key_tag + ' ' + _r_key_contents + ' ' + _r_key_user
+                            _r_key_type, _r_key_contents, _r_key_fingerprint = \
+                            get_ssh_key(_r_key_type + ' ' + _r_key_contents + ' ' + _r_key_user, self.get_description(), False)
+
+                            registered_key_pairs[_r_key_name] = _r_key_fingerprint + "-NA"
+                            #_temp_key_metadata[key_name] = key_name + ':' + _key_type + ' ' + _key_contents + ' ' + vm_defaults["login"] + "@orchestrator"
+            
+        return True
 
     @trace
     def get_ip_address(self, obj_attr_list) :
@@ -518,26 +543,31 @@ class GceCmds(CommonCloudFunctions) :
 
         _instances = []
         _fmsg = "Error while getting instances"
-              
+
+        if "vmc_name" in obj_attr_list :
+            _actual_zone = obj_attr_list["vmc_name"]
+        else :
+            _actual_zone = obj_attr_list["name"]
+
         try :
             if obj_type == "vm" :
                 if identifier == "all" :
                     _instance_list = self.gceconn.instances().list(project = self.instances_project, \
-                                                                   zone =  obj_attr_list["vmc_name"]).execute()
+                                                                   zone =  _actual_zone).execute()
                                                                    
                 else :
                     _instance_list = self.gceconn.instances().get(project = self.instances_project, \
-                                                                   zone =  obj_attr_list["vmc_name"], \
+                                                                   zone =  _actual_zone, \
                                                                    instance = identifier).execute(http = self.http_conn[obj_attr_list["name"]])
            
             else :
                 if identifier == "all" :
                     _instance_list = self.gceconn.disks().list(project = self.instances_project, \
-                                                                   zone =  obj_attr_list["vmc_name"]).execute()
+                                                                   zone =  _actual_zone).execute()
  
                 else :
                     _instance_list = self.gceconn.disks().get(project = self.instances_project, \
-                                                                   zone =  obj_attr_list["vmc_name"], \
+                                                                   zone =  _actual_zone, \
                                                                    disk = identifier).execute(http = self.http_conn[obj_attr_list["name"]])
                     
             if "items" in _instance_list :
@@ -636,28 +666,48 @@ class GceCmds(CommonCloudFunctions) :
             else :
                 return True
 
-    @trace
-    def vm_placement(self, obj_attr_list) :
+    @trace            
+    def create_ssh_key(self, vmc_name, key_name, key_type, key_contents, key_fingerprint, vm_defaults, connection) :
         '''
         TBD
         '''
-        try :
-            _status = 100
-            _fmsg = "An error has occurred, but no error message was captured"
+        for _kn in [ key_name + "  cbtool", vm_defaults["login"] + "  " + vm_defaults["login"]] :
 
-            _status = 0
+            _actual_key_name, _actual_user_name = _kn.split("  ")
 
-        except Exception, e :
-            _status = 23
-            _fmsg = str(e)
-            
-        finally :
-            if _status :
-                _msg = "VM placement failed: " + _fmsg
-                cberr(_msg, True)
-                raise CldOpsException(_msg, _status)
-            else :
-                return True
+            self.temp_key_metadata[_actual_key_name] = _actual_key_name + ':' + key_type + ' ' + key_contents + ' ' + _actual_user_name + "@orchestrator"
+
+        _key_list_str = ''
+
+        for _key in self.temp_key_metadata.keys() :
+            _key_list_str += self.temp_key_metadata[_key] + '\n'
+
+        _key_list_str = _key_list_str[0:-1]
+
+        if "items" in self.project_metadata["commonInstanceMetadata"] :
+            for _element in self.project_metadata['commonInstanceMetadata']['items'] :
+                if _element["key"] == "sshKeys" :
+                    _element["value"] += _key_list_str
+        else :
+            self.project_metadata['commonInstanceMetadata']["items"] = []
+            self.project_metadata['commonInstanceMetadata']['items'].append({"key": "sshKeys", "value" : _key_list_str})
+
+        self.gceconn.projects().setCommonInstanceMetadata(project=self.instances_project, body=self.project_metadata["commonInstanceMetadata"]).execute(http = self.http_conn[connection])
+
+        return True
+
+    @trace
+    def is_cloud_image_uuid(self, imageid) :
+        '''
+        TBD
+        '''
+        if len(imageid) == 18 and is_number(imageid) :
+            return True
+        
+        if len(imageid) == 19 and is_number(imageid) :
+            return True
+        
+        return False
 
     @trace
     def is_vm_running(self, obj_attr_list):
@@ -717,6 +767,29 @@ class GceCmds(CommonCloudFunctions) :
             cbdebug("VM still not running yet: " + obj_attr_list["name"])
             obj_attr_list["last_known_state"] = "not running"
             return False    
+
+    @trace
+    def vm_placement(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+
+            _status = 0
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+            
+        finally :
+            if _status :
+                _msg = "VM placement failed: " + _fmsg
+                cberr(_msg, True)
+                raise CldOpsException(_msg, _status)
+            else :
+                return True
 
     @trace
     def vvcreate(self, obj_attr_list) :
@@ -803,8 +876,8 @@ class GceCmds(CommonCloudFunctions) :
                 self.common_messages("VV", obj_attr_list, "destroying", 0, '')
 
                 _operation = self.gceconn.disks().delete(project = self.instances_project, \
-                                                             zone =  obj_attr_list["vmc_name"], \
-                                                             disk = obj_attr_list[identifier]).execute(http = self.http_conn[obj_attr_list["name"]])
+                                                         zone =  obj_attr_list["vmc_name"], \
+                                                         disk = obj_attr_list[identifier]).execute(http = self.http_conn[obj_attr_list["name"]])
 
                 self.wait_until_operation(obj_attr_list, _operation)
 
@@ -857,7 +930,6 @@ class GceCmds(CommonCloudFunctions) :
             _time_mark_prs = int(time())
             obj_attr_list["mgt_002_provisioning_request_sent"] = _time_mark_prs - int(obj_attr_list["mgt_001_provisioning_request_originated"])
 
-            self.pre_vmcreate_process(obj_attr_list)
             self.vm_placement(obj_attr_list)
 
             obj_attr_list["last_known_state"] = "about to send create request"
@@ -948,6 +1020,8 @@ class GceCmds(CommonCloudFunctions) :
             self.common_messages("VM", obj_attr_list, "creating", 0, '')
 
             sleep(float(obj_attr_list["name"].replace("vm_",'')) + 1.0)
+
+            self.pre_vmcreate_process(obj_attr_list)
 
             _operation = self.gceconn.instances().insert(project = self.instances_project, \
                                                          zone = obj_attr_list["vmc_name"], \
@@ -1189,7 +1263,7 @@ class GceCmds(CommonCloudFunctions) :
                                                                
                 elif (_ts == "attached" or _ts == "resume") and _cs == "fail" :
                     _operation = self.gceconn.instances().start(project = self.instances_project, \
-                                                                zone =  obj_attr_list["vmc_name"], \
+                                                               zone =  obj_attr_list["vmc_name"], \
                                                                 instance = obj_attr_list["cloud_vm_name"]).execute(http = self.http_conn[obj_attr_list["name"]])
                                                                 
                 elif (_ts == "attached" or _ts == "restore") and _cs == "save" :

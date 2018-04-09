@@ -62,6 +62,7 @@ CHECK_BOOT_COMPLETE = tcp_on_22
 NETNAME = private
 TENANT = default
 SIZE = from_vm_template
+SHM_SIZE = 8g
 LEAVE_INSTANCE_ON_FAILURE = $False
 FORCE_FAILURE = $False
 DISABLE_TIMESYNC = $True
