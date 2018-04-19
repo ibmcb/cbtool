@@ -64,10 +64,12 @@ Each individual application can have a specific load profile using probability d
 5. Docker/Swarm
 6. LXD/LXC
 7. Kubernetes
-8. Libvirt+KVM or Libvirt+XEN (soon)
-9. VMWare vCloud
-10. CloudStack
+8. Libvirt+KVM
+9. VMWare vCloud (NOT actively maintained)
+10. CloudStack (NOT actively maintained)
 11. SoftLayer
+
+Want to add support for a new Cloud? Take a look at our [Frequently Asked Questions](https://github.com/ibmcb/cbtool/wiki/FAQ)
 
 ## <a name="workloads">[Supported Workloads](https://github.com/ibmcb/cbtool/wiki/DOC:-Supported-Virtual-Applications)
 
