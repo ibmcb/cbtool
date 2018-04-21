@@ -2704,7 +2704,7 @@ class OskCmds(CommonCloudFunctions) :
                 _fip_h = self.oskconnnetwork[obj_attr_list["name"]].create_floatingip({"floatingip": {"floating_network_id": obj_attr_list["floating_pool_id"]}}) 
 #                _fip_h = self.oskconncompute.floating_ips.create(obj_attr_list["floating_pool"])
                 self.annotate_time_breakdown(obj_attr_list, "create_fip_time", _mark_a)
-                _fip = _fip_h["floatingip"]["floating_ip_address"]
+                _fip = _fip_h["floatingip"]["id"]
                 obj_attr_list["cloud_floating_ip_uuid"] = _fip_h["floatingip"]["id"]
 
             return _fip
@@ -2829,7 +2829,8 @@ class OskCmds(CommonCloudFunctions) :
                 if "hypervisor_type" in obj_attr_list and obj_attr_list["hypervisor_type"].lower() == "fake" :
                     True
                 else :
-                    _instance.add_floating_ip(fip)
+                    update_info = {"port_id":_instance.interface_list()[0].id}
+                    self.oskconnnetwork.update_floatingip(fip, {"floatingip": update_info})
                     self.annotate_time_breakdown(obj_attr_list, "attach_fip_time", _mark_a)
 
             return True
