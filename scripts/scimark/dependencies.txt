@@ -15,6 +15,7 @@ scimark-order = 85
 gcc-install = pm
 git-install = pm
 java-install = pm
+scimark-install = man
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###

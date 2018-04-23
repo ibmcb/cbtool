@@ -750,7 +750,7 @@ class SimCmds(CommonCloudFunctions) :
             self.annotate_time_breakdown(obj_attr_list, "vm_placement_time", _mark_a)
 
             obj_attr_list["volume_list"] = "/dev/sda,/dev/hda"
-
+            
             self.vvcreate(obj_attr_list)
 
             self.pre_vmcreate_process(obj_attr_list)

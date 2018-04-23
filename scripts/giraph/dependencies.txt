@@ -20,7 +20,8 @@ giraph-install = git
 
 ### START - Tests ###
 java-configure = java -version 2>&1 | grep version | cut -d ' ' -f 3 | sed -e 's/_/./g' | sed 's/-internal//g'
-hadoop-configure = if [[ -z $JAVA_HOME ]]; then ls ~/hadoop-1.2.1/bin/hadoop; else ~/hadoop-1.2.1/bin/hadoop version | head -n 1 | cut -d ' ' -f 2; fi
+#hadoop-configure = if [[ -z $JAVA_HOME ]]; then ls ~/hadoop-1.2.1/bin/hadoop; else ~/hadoop-1.2.1/bin/hadoop version | head -n 1 | cut -d ' ' -f 2; fi
+hadoop-configure = /tmp/get_hadoop
 maven-configure = mvn --version | head -n 1 | cut -d ' ' -f 3
 giraph-configure = find ~ | grep giraph-examples | grep dependencies | grep jar
 ### END - Tests ###

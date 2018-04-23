@@ -48,16 +48,16 @@ function create_base_images {
         else
             CB_KVMQEMU_BIMG="ubuntu"
         fi
-	rm -rf cb_base_${CB_KVMQEMU_BIMG}
-	qemu-img create -f qcow2 cb_base_${CB_KVMQEMU_BIMG} 15G
+        rm -rf cb_base_${CB_KVMQEMU_BIMG}
+        qemu-img create -f qcow2 cb_base_${CB_KVMQEMU_BIMG} 15G
         virt-resize --expand /dev/sda1 $CB_KVMQEMU_CIMG_FN cb_base_${CB_KVMQEMU_BIMG}
         #cp -f $CB_KVMQEMU_CIMG_FN cb_base_${CB_KVMQEMU_BIMG}
-        #sudo qemu-img resize cb_base_${CB_KVMQEMU_BIMG} +18G	
+        #sudo qemu-img resize cb_base_${CB_KVMQEMU_BIMG} +18G    
         cp -f $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands._processed_
         sudo sed -i "s^REPLACE_USERNAME^${CB_USERNAME}^g" $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands._processed_
         sudo sed -i "s^REPLACE_BRANCH^${CB_BRANCH}^g" $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands._processed_
         sudo sed -i "s^REPLACE_PATH^${CB_KVMQEMU_S_DIR}^g" $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands._processed_
-        	        	
+
         virt-customize -a cb_base_${CB_KVMQEMU_BIMG} $CB_VERB --commands-from-file $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands._processed_
         COUT=$?
         let ERROR+=$COUT

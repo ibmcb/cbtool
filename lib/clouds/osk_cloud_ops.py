@@ -106,7 +106,7 @@ class OskCmds(CommonCloudFunctions) :
             _client_conn_id = "common"
             if client_conn_id :
                 _client_conn_id = client_conn_id
-
+            
             if not _username :
                 _fmsg = _password
             else :
@@ -852,7 +852,7 @@ class OskCmds(CommonCloudFunctions) :
                     _search_opts["display_name"] = identifier
 
             self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
-                         obj_attr_list["vmc_name"], {}, False, False, identifier)
+                         obj_attr_list["vmc_name"], obj_attr_list, False, False, identifier)
 
             if obj_type == "vm" :
                                 
@@ -864,9 +864,11 @@ class OskCmds(CommonCloudFunctions) :
                     _call = "list"
                     _instances = self.oskconncompute[identifier].servers.list(search_opts = _search_opts)
             else :
+
                 if "cloud_vv_uuid" in obj_attr_list and len(obj_attr_list["cloud_vv_uuid"]) >= 36 :
                     _call = "get"
                     _instances = [ self.oskconnstorage[identifier].volumes.get(obj_attr_list["cloud_vv_uuid"]) ]
+
                 else :
                     _call = "list"
                     _instances = self.oskconnstorage[identifier].volumes.list(search_opts = _search_opts)
@@ -1266,13 +1268,13 @@ class OskCmds(CommonCloudFunctions) :
             _fmsg = "An error has occurred, but no error message was captured"
                         
             if str(obj_attr_list["cloud_vv_uuid"]).lower() != "none" :
-                
-                _instance = self.get_instances(obj_attr_list, "vv", obj_attr_list["cloud_vv_name"])
-    
+
+                _instance = self.get_instances(obj_attr_list, "vv", obj_attr_list["cloud_vm_name"])
+
                 if _instance :
     
                     self.common_messages("VV", obj_attr_list, "destroying", 0, '')
-    
+
                     if len(_instance.attachments) :
                         _server_id = _instance.attachments[0]["server_id"]
                         _attachment_id = _instance.attachments[0]["id"]
@@ -1382,13 +1384,11 @@ class OskCmds(CommonCloudFunctions) :
             self.get_images(obj_attr_list)
             self.annotate_time_breakdown(obj_attr_list, "get_imageid_time", _mark_a)
 
-            if "userdata" in obj_attr_list and str(obj_attr_list["userdata"]).lower() != "false" :
-                obj_attr_list["userdata"] = obj_attr_list["userdata"].replace("# INSERT OPENVPN COMMAND", \
-                                                              "openvpn --config /etc/openvpn/" + obj_attr_list["cloud_name"].upper() + "_client-cb-openvpn.conf --daemon --client")
-                obj_attr_list["config_drive"] = True
+            obj_attr_list["userdata"] = self.populate_cloudconfig(obj_attr_list)
+            if obj_attr_list["userdata"] :
+                obj_attr_list["config_drive"] = True                
             else :
                 obj_attr_list["config_drive"] = None
-                obj_attr_list["userdata"] = None
 
             _mark_a = time()
             _netnames, _netids = self.get_networks(obj_attr_list)
@@ -1450,7 +1450,7 @@ class OskCmds(CommonCloudFunctions) :
 
                 self.take_action_if_requested("VM", obj_attr_list, "provision_started")
 
-                while not self.floating_ip_attach(obj_attr_list, _instance, _fip) :
+                while not self.floating_ip_attach(obj_attr_list, _instance) :
                     True
 
                 _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
@@ -2025,13 +2025,13 @@ class OskCmds(CommonCloudFunctions) :
             elif len(authentication_data.split(_separator)) == 5 :
                 _username, _password, _tenant, _cacert, _ckcert = authentication_data.split(_separator)
                 if ( str(_ckcert).lower() == "verify" ) :
-                   _verify = True
+                    _verify = True
                 elif ( str(_ckcert).lower() == "insecure" ) :
-                   _verify = False
-                   _cacert = None
+                    _verify = False
+                    _cacert = None
                 else :
-                   _verify = False
-                   _cacert = None
+                    _verify = False
+                    _cacert = None
     
             elif len(authentication_data.split(_separator)) > 5 and _separator == '-' :            
                 _msg = "ERROR: Please make sure that the none of the parameters in"
@@ -2687,26 +2687,17 @@ class OskCmds(CommonCloudFunctions) :
 
             _fip = False
 
-#            if str(obj_attr_list["always_create_floating_ip"]).lower() == "false" :
-
-#                _call = "floating ip list"
-#                fips = self.oskconnnetwork.list_floatingips()
-#                fips = self.oskconnnetwork.floating_ips.list()
-                
-#                for _fip in fips :
-#                    if _fip.instance_id == None :
-#                        _fip = _fip.ip
-#                        break
-
             if not _fip :
                 _call = "floating ip create"
                 _mark_a = time()
                 _fip_h = self.oskconnnetwork[obj_attr_list["name"]].create_floatingip({"floatingip": {"floating_network_id": obj_attr_list["floating_pool_id"]}}) 
 #                _fip_h = self.oskconncompute.floating_ips.create(obj_attr_list["floating_pool"])
                 self.annotate_time_breakdown(obj_attr_list, "create_fip_time", _mark_a)
-                _fip = _fip_h["floatingip"]["floating_ip_address"]
+                obj_attr_list["cloud_floating_ip_address"] = _fip_h["floatingip"]["floating_ip_address"]
                 obj_attr_list["cloud_floating_ip_uuid"] = _fip_h["floatingip"]["id"]
 
+                _fip = obj_attr_list["cloud_floating_ip_address"]
+                
             return _fip
 
         except novaexceptions, obj:
@@ -2794,7 +2785,7 @@ class OskCmds(CommonCloudFunctions) :
                 return False
     
     @trace
-    def floating_ip_attach(self, obj_attr_list, _instance, fip) :
+    def floating_ip_attach(self, obj_attr_list, _instance) :
         '''
         TBD
         '''
@@ -2829,7 +2820,13 @@ class OskCmds(CommonCloudFunctions) :
                 if "hypervisor_type" in obj_attr_list and obj_attr_list["hypervisor_type"].lower() == "fake" :
                     True
                 else :
-                    _instance.add_floating_ip(fip)
+                    
+                    try :
+                        update_info = {"port_id":_instance.interface_list()[0].id}
+                        self.oskconnnetwork.update_floatingip(obj_attr_list["cloud_floating_ip_uuid"], {"floatingip": update_info})
+                    except :
+                        _instance.add_floating_ip(obj_attr_list["cloud_floating_ip_address"])
+                    
                     self.annotate_time_breakdown(obj_attr_list, "attach_fip_time", _mark_a)
 
             return True

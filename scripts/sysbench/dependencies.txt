@@ -1,8 +1,6 @@
 ### START - Dependency installation order ###
-git-order = 82
-gcc-order = 83
-apache-order = 84
-wrk-order = 85
+mysql-order = 82
+sysbench-order = 83
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -12,24 +10,18 @@ wrk-order = 85
 # git = git clone using above giturl
 # pip = python pip utility
 # man = "manual"
-gcc-install = pm
-git-install = pm
-apache-install = pm
-wrk-install = man
+mysql-install = pm
+sysbench-install = pm
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
-git-configure = gcc -v
-git-configure = git --version
-apache-configure = apache2 -v
-wrk-configure = ls -la ~/wrk/wrk
+mysql-configure = mysql --version | cut -d ' ' -f 6
+sysbench-configure = sysbench --version | awk '{ print $2 }'
 ### END - Tests ###
 
 ### START - Dependency versions ###
-gcc-ver = ANY
-git-ver = ANY
-apache-ver = ANY
-wrk-ver = ANY
+mysql-ver = 2.0
+sysbench-ver = 1.0
 ### END - Dependency versions ###
 
 ### START - Dependency URLs ###

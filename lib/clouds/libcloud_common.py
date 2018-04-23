@@ -368,6 +368,7 @@ class LibcloudCmds(CommonCloudFunctions) :
         _map_id_to_name = {}
 
         for _registered_image in _registered_image_list :
+
             _registered_imageid_list.append(_registered_image.id)
             _map_name_to_id[str(_registered_image.name.encode('utf-8').strip())] = str(_registered_image.id)
             _map_name_to_id[str(_registered_image.id.encode('utf-8').strip())] = str(_registered_image.id)
@@ -402,6 +403,21 @@ class LibcloudCmds(CommonCloudFunctions) :
     
         return True
 
+    @trace
+    def extra_vmc_setup(self, vmc_name, vmc_defaults, vm_defaults, vm_templates, connection) :
+        '''
+        TBD
+        '''
+        return True
+
+    @trace
+    def get_list_node_args(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+        
+        return [ ]
+    
     @trace
     def vmccleanup(self, obj_attr_list) :
         '''
@@ -660,18 +676,27 @@ class LibcloudCmds(CommonCloudFunctions) :
             _msg += " Private IP = " + str(node.private_ips)
             cbdebug(_msg)
 
-            if str(obj_attr_list["use_vpn_ip"]).lower() == "true" and str(obj_attr_list["vpn_only"]).lower() == "true" :
-                assert(self.get_attr_from_pending(obj_attr_list))
-
-                if "cloud_init_vpn" not in obj_attr_list :
-                    cbdebug("Instance VPN address not yet available.")
-                    return False
-                cbdebug("Found VPN IP: " + obj_attr_list["cloud_init_vpn"])
-                obj_attr_list["prov_cloud_ip"] = obj_attr_list["cloud_init_vpn"]
-            else :
-                if len(node.private_ips) > 0 and obj_attr_list["prov_netname"].lower() == "private" :
+            if len(node.private_ips) > 0 :
+                if obj_attr_list["prov_netname"].lower() == "private" :
                     obj_attr_list["prov_cloud_ip"] = node.private_ips[0]
                 else :
+                    if len(node.public_ips) > 0 :
+                        obj_attr_list["prov_cloud_ip"] = node.public_ips[0]
+                                            
+                if not self.use_public_ips :
+                    if obj_attr_list["use_floating_ip"].lower() == "true" :
+                        if len(node.public_ips) > 0 :
+                            obj_attr_list["prov_cloud_ip"] = node.public_ips[0]
+                    else :
+                        if len(node.private_ips) > 0 :
+                            obj_attr_list["prov_cloud_ip"] = node.private_ips[0]
+                else :
+                    if obj_attr_list["prov_netname"].lower() == "private" : 
+                        if len(node.private_ips) > 0 :
+                            obj_attr_list["prov_cloud_ip"] = node.private_ips[0]
+
+            else :
+                if len(node.public_ips) > 0 :
                     obj_attr_list["prov_cloud_ip"] = node.public_ips[0]
 
             # Some clouds do not provide an IP per instance, but a (SSH) port per instance instead
@@ -993,12 +1018,11 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             _status, _fmsg = self.vvcreate(obj_attr_list, LibcloudCmds.catalogs.cbtool[_credentials_list])
 
-            if "userdata" in obj_attr_list and str(obj_attr_list["userdata"]).lower() != "false" :                
-                obj_attr_list["userdata"] = self.populate_cloudconfig(obj_attr_list)
-                obj_attr_list["config_drive"] = True
+            obj_attr_list["userdata"] = self.populate_cloudconfig(obj_attr_list)
+            if obj_attr_list["userdata"] :
+                obj_attr_list["config_drive"] = True                
             else :
                 obj_attr_list["config_drive"] = False
-                obj_attr_list["userdata"] = None
                 
             self.common_messages("VM", obj_attr_list, "creating", 0, '')
             

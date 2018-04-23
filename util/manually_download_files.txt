@@ -21,7 +21,7 @@ URL: https://developer.nvidia.com/rdp/cudnn-download
 Virtual Application: SPECJbb
 File: SPECjbb2015_1_00.iso
 URL: https://pro.spec.org/private/osg/benchmarks/
-COMMENT: sudo mount -o loop ./SPECjbb2015_1_00.iso /mnt; rsync -avz /mnt/ ./SPECjbb2015_1_00/; sudo umount /mnt; rm ./SPECjbb2015_1_00
+AFTER DOWNLOAD: sudo mount -o loop ./SPECjbb2015_1_00.iso /mnt; rsync -avz /mnt/ ./SPECjbb2015_1_00/; sudo umount /mnt; rm ./SPECjbb2015_1_00
 
 Virtual Application: SPECimap
 File: SPECvirt_sc2013-1_1.iso
