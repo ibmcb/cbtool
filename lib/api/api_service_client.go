@@ -99,8 +99,9 @@ func (api *APIClient) Get_performance_data(cloud_name string, uuid string, metri
 					r, err = api.Call("cldshow", cloud_name, "vm_defaults")
 					if err == nil {
 						use_vpn_ip := (r["result"].(map[string]interface{}))["use_vpn_ip"]
-						vpn_only := (r["result"].(map[string]interface{}))["vpn_only"]
-						if (use_vpn_ip == "True" && vpn_only == "True") || (use_vpn_ip == true && vpn_only == true) {
+//						vpn_only := (r["result"].(map[string]interface{}))["vpn_only"]
+//						if (use_vpn_ip == "True" && vpn_only == "True") || (use_vpn_ip == true && vpn_only == true) {
+						if (use_vpn_ip == "True") || (use_vpn_ip == true) {
 							r, err = api.Call("cldshow", cloud_name, "vpn")
 							if err == nil {
 								api.msattrs["host"] = (r["result"].(map[string]interface{}))["server_bootstrap"].(string)

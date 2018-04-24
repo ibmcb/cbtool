@@ -36,7 +36,7 @@ from uuid import uuid5, UUID, NAMESPACE_DNS
 from socket import gethostbyname
 from random import randint
 
-from lib.auxiliary.data_ops import str2dic, dic2str, value_suffix, DataOpsException
+from lib.auxiliary.data_ops import str2dic, dic2str, value_suffix, get_boostrap_command, DataOpsException
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.remote.network_functions import Nethashget
 from lib.stores.redis_datastore_adapter import RedisMgdConn
@@ -237,16 +237,15 @@ class CommonCloudFunctions:
                 cbdebug(_msg, True)
                 _actual_wait = 0
 
-            # There is still some reconciliation to be done here. If vpn_only is used, then only openvpn-initiated callbacks should set the pending attribute, not userdata scripts. There is a distinction. It also means that public_cloud_ip should be set as well and that access to pending attributes is a requirement. See get_ip_address from do_cloud_ops.py
-            # Also "use_vpn_ip" is used throughout the scripts and codebase, so use_vpn_ip is already reserved to ensure that vpn_only works as it did before.
-            # So any changes to use_vpn_ip need to be conditionalized with an extra check to vpn_only as well.
-            if str(obj_attr_list["use_vpn_ip"]).lower() != "false" and str(obj_attr_list["vpn_only"]).lower() == "false" :
+            if str(obj_attr_list["use_vpn_ip"]).lower() != "false" :
                 if self.get_attr_from_pending(obj_attr_list, "cloud_init_vpn") :
                     obj_attr_list["last_known_state"] = "ACTIVE with (vpn) ip assigned"
                     obj_attr_list["prov_cloud_ip"] = obj_attr_list["cloud_init_vpn"]  
+                    cbdebug("VPN address for " + obj_attr_list["log_string"] + " found: " + obj_attr_list["prov_cloud_ip"])                    
                     _vm_started = True
                 else :
                     obj_attr_list["last_known_state"] = "ACTIVE with (vpn) ip unassigned"
+                    cbdebug("VPN address for " + obj_attr_list["log_string"] + " not yet available.")                    
                     _vm_started = False
                                         
             if  _vm_started :
@@ -298,7 +297,8 @@ class CommonCloudFunctions:
             _pending_attr_list = self.osci.pending_object_get(obj_attr_list["cloud_name"], \
                                                               "VM", obj_attr_list["uuid"], \
                                                               key, False)
-            if _pending_attr_list :
+            
+            if _pending_attr_list :                
                 
                 if key == "all" :
                     for _key in [ "cloud_init_rsync", \
@@ -1022,33 +1022,37 @@ class CommonCloudFunctions:
     @trace
     def populate_cloudconfig(self, obj_attr_list) :
         '''
-        CloudBench should be passing us a more complex object for userdata,
-        but is only passing us a script instead. So, we have to wrap the
-        userdata in formal cloud-config syntax in order to be able to use
-        if with cloud images that have cloud-init configured correctly.
+        TBD
         '''
-        if ("userdata" not in obj_attr_list or not obj_attr_list["userdata"]) and obj_attr_list["use_vpn_ip"].lower() == "false" :
+        if ("userdata" not in obj_attr_list or str(obj_attr_list["userdata"]).lower() == "false") and obj_attr_list["use_vpn_ip"].lower() == "false" :
             #cbdebug("Skipping userdata: " + str(obj_attr_list["userdata"]), True)
-            return False
+            return None
 
-        cloudconfig = """
-#cloud-config
-write_files:"""
-        if "userdata" in obj_attr_list and obj_attr_list["userdata"] :
-            cloudconfig += """
-  - path: /tmp/userscript.sh
-    content: |
-"""
-            for line in obj_attr_list["userdata"].split("\n")[:-1] :
-                cloudconfig += "      " + line + "\n"
+        cloudconfig = "#cloud-config\n"
+        
+        if obj_attr_list["userdata_ssh"].lower() == "true" :
+#            cloudconfig += "disable_root: false\n"            
+            cloudconfig += "ssh_authorized_keys:\n - " + obj_attr_list["pubkey_contents"]
+            cloudconfig += "\n"            
 
-        # We need the VPN's IP address in advance, which was solved before
-        # the previous VPN support was gutted, but since we're left to do it
-        # on our own, we need cloud-config to send our VPN configuration file
-        # in advance.
-        conf_destination = "/etc/openvpn/" + obj_attr_list["cloud_name"] + "_client-cb-openvpn-cloud.conf"
+        cloudconfig += "write_files:\n"
+        cloudconfig += "  - path: /tmp/cb_post_boot.sh\n"
+        cloudconfig += "    content: |\n"
+            
+        if obj_attr_list["userdata_post_boot"].lower() == "true" :
+            cloudconfig += self.create_bootstrap_script(obj_attr_list)
+        else :
+            cloudconfig += "      #!/bin/bash\n"
+            cloudconfig += "      /bin/true\n"
 
         if obj_attr_list["use_vpn_ip"].lower() == "true" :
+            
+            if "cloudinit_packages" in obj_attr_list and obj_attr_list["cloudinit_packages"].lower() != "false" :
+                obj_attr_list["cloudinit_packages"] += obj_attr_list["cloudinit_packages"] + "openvpn;redis-tools" 
+            else :
+                obj_attr_list["cloudinit_packages"] = "openvpn;redis-tools"
+            
+            conf_destination = "/etc/openvpn/" + obj_attr_list["cloud_name"] + "_client-cb-openvpn-cloud.conf"            
             targets = []
             targets.append(("/configs/generated/" + obj_attr_list["cloud_name"] + "_client-cb-openvpn.conf", conf_destination))
             targets.append(("/util/openvpn/client_connected.sh", "/etc/openvpn/client_connected.sh"))
@@ -1082,37 +1086,114 @@ write_files:"""
                         cloudconfig += "      up /etc/openvpn/client_connected.sh\n"
                 fh.close()
 
-        cloudconfig += """
-runcmd:
-  - chmod +x /tmp/userscript.sh"""
+        if obj_attr_list["userdata_post_boot"].lower() == "true" or obj_attr_list["use_vpn_ip"].lower() != "false" :
+            cloudconfig += "\nruncmd:\n"
+            cloudconfig += "  - chmod +x /tmp/cb_post_boot.sh\n"
+                    
+            # We can't run the userdata from cloudbench until the VPN is connected,
+            # so only run it if we're not using the VPN.
+            # Otherwise, /etc/openvpn/client_connected.sh will do it.
+            if obj_attr_list["use_vpn_ip"].lower() == "false" :
+                cloudconfig += "  - /tmp/cb_post_boot.sh\n"
+            else :
+                cloudconfig += "  - chmod +x /etc/openvpn/client_connected.sh\n"
+                cloudconfig += "  - mv " + conf_destination + " /tmp/cbvpn.conf\n"
+                cloudconfig += "  - rm -f /etc/openvpn/*.conf /etc/openvpn/*.ovpn\n"
+                cloudconfig += "  - mv /tmp/cbvpn.conf " + conf_destination + "\n"
+                cloudconfig += "  - mkdir -p /var/log/openvpn\n"
+                cloudconfig += "  - openvpn --daemon --config " + conf_destination + "\n"
 
-        # We can't run the userdata from cloudbench until the VPN is connected,
-        # so only run it if we're not using the VPN.
-        # Otherwise, /etc/openvpn/client_connected.sh will do it.
-        if obj_attr_list["use_vpn_ip"].lower() == "false" :
-            cloudconfig += """
-  - /tmp/userscript.sh"""
-        else :
-            cloudconfig += """
-  - chmod +x /etc/openvpn/client_connected.sh
-  - mv """ + conf_destination + """ /tmp/cbvpn.conf
-  - rm -f /etc/openvpn/*.conf /etc/openvpn/*.ovpn
-  - mv /tmp/cbvpn.conf """ + conf_destination + """
-  - mkdir -p /var/log/openvpn
-  - openvpn --daemon --config """ + conf_destination + """
-"""
-  #- systemctl start openvpn@""" + obj_attr_list["cloud_name"] + """_client-cb-openvpn-cloud.service
-  #- service openvpn start
+            # cloudconfig += "  - systemctl start openvpn@" + obj_attr_list["cloud_name"] + "_client-cb-openvpn-cloud.service\n"
+            # cloudconfig += "  - service openvpn start\n"
+                
         # Check to see if the user requested packages to be installed for this VM role via cloud-init
         if "cloudinit_packages" in obj_attr_list and obj_attr_list["cloudinit_packages"].lower() != "false" :
-            cbdebug("Will instruct cloud-init to install: " + obj_attr_list["cloudinit_packages"], True)
+            cbdebug("Will instruct cloud-init to install: " + obj_attr_list["cloudinit_packages"] + " on " + obj_attr_list["log_string"], True)
             cloudconfig += """
 packages:"""
             for package in obj_attr_list["cloudinit_packages"].split(";") :
                 cloudconfig += """
   - """ + package
         #cbdebug("Final userdata: \n" + str(cloudconfig))
+
         return cloudconfig
+
+    def create_bootstrap_script(self, obj_attr_list) :
+        '''
+        TBD
+        '''
+    
+        _attempts = str(5)
+        _sleep = str(2)
+        
+        _fshn = obj_attr_list["filestore_host"]
+        _fspn = obj_attr_list["filestore_port"]
+        _fsun = obj_attr_list["filestore_username"]
+        _ldn = obj_attr_list["local_dir_name"]
+    
+        _rln = obj_attr_list["login"] 
+        
+        _ohn = obj_attr_list["objectstore_host"]
+        _opn = obj_attr_list["objectstore_port"]
+        _odb = obj_attr_list["objectstore_dbid"]
+        
+        _cn = obj_attr_list["cloud_name"]
+        
+#        if obj_attr_list["vpn_only"].lower() != "false" :
+        _ohn = obj_attr_list["vpn_server_bootstrap"]
+        _fshn = obj_attr_list["vpn_server_bootstrap"]
+
+        _pad = "      " 
+    
+        _bootstrap_script = _pad + "#!/bin/bash\n\n"
+        _bootstrap_script += _pad + "# This VM is part of experiment id \"" + obj_attr_list["experiment_id"] + "\""
+        _bootstrap_script += _pad + "\n"            
+        _bootstrap_script += _pad + "mkdir -p /var/log/cloudbench\n"    
+        _bootstrap_script += _pad + "\n"        
+        _bootstrap_script += _pad + "chmod 777 /var/log/cloudbench\n"
+        _bootstrap_script += _pad + "\n"
+        
+        _bootstrap_script += get_boostrap_command(obj_attr_list, True)
+        
+        _bootstrap_script += _pad + "if [[ $(cat " + obj_attr_list["remote_dir_home"] + "/cb_os_parameters.txt | grep -c \"#OSOI-" + "TEST_" + obj_attr_list["username"] + ":" + obj_attr_list["cloud_name"] + "\") -ne 0 ]]\n"
+        _bootstrap_script += _pad + "then\n"
+        _bootstrap_script += _pad + "    redis-cli -h " + _ohn + " -n " + str(_odb) + " -p " + str(_opn) + " hset TEST_" + _fsun + ':' + obj_attr_list["cloud_name"] + ":VM:PENDING:" + obj_attr_list["uuid"] + " cloud_init_bootstrap  true\n"
+        _bootstrap_script += _pad + "fi\n"
+        _bootstrap_script += _pad + "\n"
+        _bootstrap_script += _pad + "counter=0\n\n"    
+        _bootstrap_script += _pad + "while [[ \"$counter\" -le " + _attempts + " ]]\n"
+        _bootstrap_script += _pad + "do\n"
+        _bootstrap_script += _pad + "    rsync -az --delete --no-o --no-g --inplace rsync://" + _fshn + ':' + _fspn + '/' + _fsun + "_cb" + "/exclude_list.txt /tmp/exclude_list\n"
+        _bootstrap_script += _pad + "    if [[ $? -eq 0 ]]\n"
+        _bootstrap_script += _pad + "    then\n"
+        _bootstrap_script += _pad + "        break\n"
+        _bootstrap_script += _pad + "    else\n"    
+        _bootstrap_script += _pad + "        sleep " + _sleep + "\n"
+        _bootstrap_script += _pad + "        counter=\"$(( $counter + 1 ))\"\n"        
+        _bootstrap_script += _pad + "    fi\n"
+        _bootstrap_script += _pad + "done\n"
+        _bootstrap_script += _pad + "counter=0\n\n"        
+        _bootstrap_script += _pad + "while [[ \"$counter\" -le " + _attempts + " ]]\n"
+        _bootstrap_script += _pad + "do\n"
+        _bootstrap_script += _pad + "    rsync -az --exclude-from '/tmp/exclude_list' --delete --no-o --no-g --inplace rsync://" + _fshn + ':' + _fspn + '/' + _fsun + "_cb/ " +  obj_attr_list["remote_dir_path"] + "/\n"
+        _bootstrap_script += _pad + "    if [[ $? -eq 0 ]]\n"
+        _bootstrap_script += _pad + "    then\n"
+        _bootstrap_script += _pad + "        redis-cli -h " + _ohn + " -n " + str(_odb) + " -p " + str(_opn) + " hset TEST_" + _fsun + ':' + obj_attr_list["cloud_name"] + ":VM:PENDING:" + obj_attr_list["uuid"] + " cloud_init_rsync true\n"    
+        _bootstrap_script += _pad + "        break\n"    
+        _bootstrap_script += _pad + "    else\n"    
+        _bootstrap_script += _pad + "        sleep " + _sleep + "\n"
+        _bootstrap_script += _pad + "        counter=\"$(( $counter + 1 ))\"\n"    
+        _bootstrap_script += _pad + "    fi\n"
+        _bootstrap_script += _pad + "done\n"
+        _bootstrap_script += _pad + "chown -R " + _rln + ':' + _rln + ' ' + obj_attr_list["remote_dir_path"] + "/\n" 
+                
+        _bootstrap_script += _pad + "\n"      
+        _bootstrap_script += _pad + "\n"                    
+        _bootstrap_script += _pad + "VMUUID=$(grep -ri " + obj_attr_list["experiment_id"] + " /var/lib/cloud/ | grep user-data | cut -d '/' -f 6 | head -n 1)\n"
+        _bootstrap_script += _pad + "redis-cli -h " + _ohn + " -n " + str(_odb) + " -p " + str(_opn) + " publish TEST_" + _fsun + ':' + obj_attr_list["cloud_name"] + ":VM:BOOT " + "\"VM $VMUUID is booted\"\n"
+        _bootstrap_script += _pad + "exit 0\n"    
+            
+        return _bootstrap_script
 
     @trace                                                                        
     def generate_random_uuid(self, name = None, seed = '6cb8e707-0fc5-5f55-88d4-d4fed43e64a8') :
@@ -1187,7 +1268,7 @@ packages:"""
                                 _value = _value.split(':')[1][1:-1]
                             _parameter_map[_key] = _value.replace('"','')     
 
-            _msg = "Done parsing cloud connection file \"" + file_name + "\."
+            _msg = "Done parsing cloud connection file \"" + file_name + "\"."
             cbdebug(_msg)
                     
         return _parameter_map

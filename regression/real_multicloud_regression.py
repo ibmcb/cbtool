@@ -216,7 +216,8 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         _model_to_imguuid["nop"] = "baseimg"
         _model_to_imguuid["osk"] = "xenial3"
         _model_to_imguuid["os"] = "xenial3"        
-        _model_to_imguuid["gen"] = "xenial3"        
+        _model_to_imguuid["gen"] = "xenial3"
+        _model_to_imguuid["plm"] = "xenial"        
         _model_to_imguuid["ec2"] = "ami-a9d276c9"
         _model_to_imguuid["gce"] = "ubuntu-1604-xenial-v20161221"
         _model_to_imguuid["do"] = "21669205"        
@@ -228,10 +229,11 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         _model_to_login["sim"] = "ubuntu"
         _model_to_login["pcm"] = "ubuntu" 
         _model_to_login["pdm"] = "cbuser"
+        _model_to_login["plm"] = "ubuntu"        
         _model_to_login["nop"] = "ubuntu"
         _model_to_login["osk"] = "ubuntu"
         _model_to_login["os"] = "ubuntu"        
-        _model_to_login["gen"] = "cbuser"        
+        _model_to_login["gen"] = "cbuser"
         _model_to_login["ec2"] = "ubuntu"
         _model_to_login["gce"] = "ubuntu"
         _model_to_login["do"] = "root"        
@@ -239,18 +241,36 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         _model_to_login["kub"] = "cbuser"
         _model_to_login["as"] = "cbuser"
         
+        _model_to_command = {}
+        _model_to_command["sim"] = "echo 'volume_list'"
+        _model_to_command["pcm"] = "echo NA"
+        _model_to_command["pdm"] = "vm_name sudo mount | grep overlay | awk '{ print \$1 }' && sudo ls /mnt"
+        _model_to_command["plm"] = "vm_name sudo fdisk -l | grep Disk | grep bytes | cut -d ' ' -f 2 | sed 's/://g'"
+        _model_to_command["nop"] = "echo NA"
+        _model_to_command["osk"] = "vm_name sudo fdisk -l | grep Disk | grep bytes | cut -d ' ' -f 2 | sed 's/://g'"
+        _model_to_command["os"] = "vm_name sudo fdisk -l | grep Disk | grep bytes | cut -d ' ' -f 2 | sed 's/://g'"        
+        _model_to_command["gen"] = "vm_name sudo fdisk -l | grep Disk | grep bytes | cut -d ' ' -f 2 | sed 's/://g'"
+        _model_to_command["ec2"] = "vm_name sudo fdisk -l | grep Disk | grep bytes | grep -v /dev/ram | cut -d ' ' -f 2 | sed 's/://g'"
+        _model_to_command["gce"] = "vm_name sudo fdisk -l | grep Disk | grep bytes | grep -v /dev/ram | cut -d ' ' -f 2 | sed 's/://g'"
+        _model_to_command["do"] = "vm_name sudo fdisk -l | grep Disk | grep bytes | grep -v /dev/ram | cut -d ' ' -f 2 | sed 's/://g'" 
+        _model_to_command["slr"] = "vm_name sudo fdisk -l | grep Disk | grep bytes | cut -d ' ' -f 2 | sed 's/://g'"
+        _model_to_command["kub"] = "echo NA"
+        _model_to_command["as"] = "vm_name sudo fdisk -l | grep Disk | grep bytes | grep -v /dev/ram | cut -d ' ' -f 2 | sed 's/://g'"
+
+        
         _vm_location = "auto"
         _meta_tags = "empty"
         _size = "default"
         _pause_step = "none"
         _nop_cloud_ip = "self"
-        _temp_attr_list = "empty=empty"
+        _login = _model_to_login[cloud_model]
+        _temp_attr_list = "login=" + _login
         
         if test_case.count("pubkey") :
             _img_name = _model_to_imguuid[cloud_model]
         else :
             _img_name = "regressiontest"
-        _login = _model_to_login[cloud_model]
+
 
         #if test_case == "no pubkey injection, no volume" :
         _vm_role = "check:" + _img_name
@@ -259,13 +279,13 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
             _vm_role = "check:" + _img_name + ':' + _login    
 
         if test_case.count(", volume") :
-            if cloud_model == "osk" :            
-                _temp_attr_list = "cloud_vv=1"
-            else :
-                _temp_attr_list = "cloud_vv=10"
-                                
+            _temp_attr_list += ",cloud_vv=5"
+
+        if test_case.count(", vpn") :
+            _temp_attr_list += ",use_vpn_ip=true"
+
         if test_case.count("force failure") :
-            _temp_attr_list = "force_failure=true"
+            _temp_attr_list += ",force_failure=true"
             
         if test_case == "newly captured image" :
             _vm_role = "check:regressiontest:" + _login
@@ -275,7 +295,7 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
 
         if cloud_model == "nop" :
             if _nop_cloud_ip == "self" :
-                _command = "sudo ifconfig docker0 | grep \"inet addr\" | cut -d ':' -f 2 | cut -d ' ' -f 1"
+                _command = "sudo ifconfig docker0 | grep inet[[:space:]] | awk '{ print $2 }'"
                 _proc_h = subprocess.Popen(_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 _resul = _proc_h.communicate()
                 _nop_cloud_ip = _resul[0].replace('\n','')
@@ -287,6 +307,9 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         _mark_a = time()
         _vm = apiconn.vmattach(cloud_name, _vm_role, _vm_location, _meta_tags, _size, _pause_step, _temp_attr_list)
         _create_time = int(time() - _mark_a)
+
+        if "volume_list" not in _vm :
+            _vm["volume_list"] = ''
         
         if options.pause :
             print json.dumps(_vm, indent=4, sort_keys=True)
@@ -331,41 +354,52 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         print "###### VM REPORTED: " + str(_vm_counters["reported"])
                        
         if not test_case.count("failure") :
+
             if int(_vm_counters["reservations"]) == 1 and int(_vm_counters["failed"]) - _vms_failed == 0 and int(_vm_counters["reported"]) == 1 :
+
                 if test_case.count("no volume")  :
+
                     if "cloud_vv_uuid" in _vm and str(_vm["cloud_vv_uuid"]).lower() == "none" :
+
                         _result = "PASS" 
-                        if not test_case.count("newly") and test_case.count("no pubkey injection") :
+                        if not test_case.count("newly") and (test_case.count("no pubkey injection") or test_case.count(", vpn")) :
                             if _vm["prov_cloud_ip"] ==  _vm["run_cloud_ip"] :
                                 _result += (" p=r=" + _vm["run_cloud_ip"]).center(35,' ')
                             else :
                                 _result += (" p=" + _vm["prov_cloud_ip"] + ",r=" + _vm["run_cloud_ip"]).center(35, ' ')
+                        else :
+                            _result += (' ' + retriable_execute_command(options, apiconn, cloud_name, cloud_model, _vm, _model_to_command) + ' ').center(35,' ')
+                            
                         _result += " (" + str(_create_time).center(3,' ')
                     else :
+
                         _attach_error = True
                         _result = "FAIL"
                 else :
+
                     print "######## VV UUID: " + str(_vm["cloud_vv_uuid"]).lower()
                     if str(_vm["cloud_vv_uuid"]).lower() == "not supported" :
-                        _result = "NA"
+                        _result = "NA".center(49,' ')
                     elif str(_vm["cloud_vv_uuid"]).lower() != "none" :
                         _result = "PASS"
-                        _result += " (" + str(_create_time).center(3,' ') + ")"                        
+                        _result += (' ' + retriable_execute_command(options, apiconn, cloud_name, cloud_model, _vm, _model_to_command) + ' ').center(35,' ')
+                        _result += " (" + str(_create_time).center(3,' ')                      
                     else :
                         _attach_error = True
                         _result = "FAIL"
             else :
+
                 _attach_error = True
-                _result = "FAIL"                
+                _result = "FAIL".center(49, ' ')                
         else :
             if int(_vm_counters["reservations"]) == 0 and int(_vm_counters["failed"]) - _vms_failed != 0 and int(_vm_counters["reported"]) == 0 :
                 _result = "PASS"
                 _attach_error = False
             else :
-                _result = "FAIL"
+                _result = "FAILW".center(30, ' ')
                 _attach_error = True
 
-        if not test_case.count("failure") and not test_case.count(", volume") and "uuid" in _vm :    
+        if not test_case.count("failure") and "uuid" in _vm :    
             print "#### Testing VM Detach (" + test_case + ")..."
             try :
                 _mark_a = time()                
@@ -402,9 +436,10 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
                     _result = "FAIL"
                 else :
                     print "#### Successfully tested VM Detach (" + test_case + ")"
-                    _result += '/' + str(_delete_time).center(3,' ') + ')'
+                    if _result.count('(') :
+                        _result += '/' + str(_delete_time).center(3,' ') + ')'
                     if _result.count("p=") :
-                        _result = _result.center(40, ' ')                        
+                        _result = _result.center(41, ' ')                        
                     
         if test_case.count("failure") :
             print "######### " + _fmsg            
@@ -417,7 +452,7 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         
             if int(_vm_counters["reservations"]) == 0 and int(_vm_counters["reported"]) == 0:
                 _attach_error = False
-        
+                
         if not _attach_error and not _delete_error :
             _msg = "## Successfully tested VM Attach (" + test_case + ") using image \"" + _img_name +  "\""
             print _msg
@@ -586,16 +621,39 @@ def retriable_cloud_connection(options, actual_cloud_model, command) :
             _attempt += 1
             sleep(10)
 
+def retriable_execute_command(options, apiconn, cloud_name, actual_cloud_model, vm_attr_list, command_to_model) :
+    '''
+    TBD
+    '''
+    _attempts = 60
+    _attempt = 0
+
+    _volume_list = "NA"    
+    while _attempt < _attempts :    
+
+        try :
+            _volume_list = apiconn.shell(cloud_name, command_to_model[actual_cloud_model].replace("vm_name", vm_attr_list["name"]).replace("volume_list", vm_attr_list["volume_list"]))["stdout"]
+            _volume_list = _volume_list.replace(' ','').replace("\n",',')[0:-1]
+            return _volume_list
+        
+        except :
+            _attempt += 1
+            sleep(10)
+
+    return _volume_list
+
+
 def write_results(options, test_results_table, cloud_model) : 
     '''
     TBD
     '''
     if options.headeronly :
         test_results_table.add_row(["         ".center(22, ' '),\
-                                    "    ", \
+                                    "     ", \
                                     "                                                 ", \
-                                    "    ", \
-                                    "    ", \
+                                    "                                                 ", \
+                                    "                                                 ", \
+                                    "                                                 ", \
                                     "    ", \
                                     "    ", \
                                     "    ", \
@@ -611,8 +669,9 @@ def write_results(options, test_results_table, cloud_model) :
         _x_test_results_table[2] = _x_test_results_table[3]
         _x_test_results_table[3] = _x_test_results_table[4]
         _x_test_results_table[4] = _x_test_results_table[5]
-        _x_test_results_table[5] = _x_test_results_table[6]        
-        _x_test_results_table[6] = _aux
+        _x_test_results_table[5] = _x_test_results_table[6]
+        _x_test_results_table[6] = _x_test_results_table[7]  
+        _x_test_results_table[7] = _aux
         
         if options.headeronly :
             _x_test_results_table = _x_test_results_table[0:-2]
@@ -643,25 +702,85 @@ def main() :
     '''
     _options = cli_postional_argument_parser()
 
-    _test_results_table = prettytable.PrettyTable(["Cloud Model", \
-                                                   "Cloud Attach", \
-                                                   "VM Attach", \
-                                                   " VM Attach ", \
-                                                   "  VM Attach  ", \
-                                                   "VM Capture", \
-                                                   "VM Attach  ", \
-                                                   "IMAGE Delete", \
-                                                   "   VM Attach   ", \
-                                                   "    VM Attach    "])
+    _first_header = ["Cloud Model", \
+                     "Cloud Attach", \
+                     "VM Attach", \
+                     " VM Attach ", \
+                     "  VM Attach ", \
+                     "  VM Attach  ", \
+                     "VM Capture", \
+                     "VM Attach  ", \
+                     "IMAGE Delete", \
+                     "   VM Attach   ", \
+                     "    VM Attach    "]
 
-    _second_header = ['', '', "no pubkey injection", "pubkey injection", "pubkey injection", '', "pubkey injection" , '', "pubkey injection", "pubkey injection"]
+
+    _second_header = ['', \
+                      '', \
+                      "no pubkey injection", \
+                      "pubkey injection", \
+                      "pubkey injection", \
+                      "pubkey injection", \
+                      '', \
+                      "pubkey injection" , \
+                      '', \
+                      "pubkey injection", \
+                      "pubkey injection"]
+    
+    _third_header = [strftime("%Y-%m-%d"), \
+                     strftime("%H:%M:%S"), \
+                     "pre-existing image", \
+                     "pre-existing image", \
+                     "pre-existing image", \
+                     "pre-existing image", \
+                     '', \
+                     "newly captured image" , \
+                     '', \
+                     "non-existent image", \
+                     "pre-existing image"]
+    
+    _fourth_header = ['', \
+                      '', \
+                      "no volume", \
+                      "no volume", \
+                      "no volume", \
+                      "volume", \
+                      '', \
+                      "no volume" , \
+                      '', \
+                      "no volume", \
+                      "no volume"]
+    
+    _fifth_header = ['', \
+                     '', \
+                     "no failure", \
+                     "no failure", \
+                     "no failure", \
+                     "no failure", \
+                     '', \
+                     "no failure" , \
+                     '', \
+                     "failure", \
+                     "forced failure"]
+
+    _sixth_header = ['', \
+                     '', \
+                     "no vpn", \
+                     "no vpn", \
+                     "vpn", \
+                     "no vpn", \
+                     '', \
+                     "no vpn", \
+                     '', \
+                     "no vpn", \
+                     "no vpn"]
+
+    _test_results_table = prettytable.PrettyTable(_first_header)    
     _test_results_table.add_row(_second_header)
-    _third_header = [strftime("%Y-%m-%d"), strftime("%H:%M:%S"), "pre-existing image", "pre-existing image", "pre-existing image", '', "newly captured image" , '', "non-existent image", "pre-existing image"]
-    _test_results_table.add_row(_third_header)
-    _fourth_header = ['', '', "no volume", "no volume", "volume", '', "no volume" , '', "no volume", "no volume"]
+    _test_results_table.add_row(_third_header)    
     _test_results_table.add_row(_fourth_header)
-    _fifth_header = ['', '', "no failure", "no failure", "no failure", '', "no failure" , '', "failure", "forced failure"]
     _test_results_table.add_row(_fifth_header)
+    _test_results_table.add_row(_sixth_header)
 
     if _options.headeronly :
         write_results(_options, _test_results_table, _options.cloud_models[0])
@@ -696,39 +815,69 @@ def main() :
         _cloud_result, _cloud_name = check_cloud_attach(api, _actual_cloud_model, _mark_a)
         _results_row.append(_cloud_result)
         
-        _test_cases = ["NA", "NA", "NA", "NA", "NA", "NA", "NA", "NA" ]
+        _test_cases = ["NA", "NA", "NA", "NA", "NA", "NA", "NA", "NA", "NA" ]
         if _options.test_instances :
-            _test_cases[0] = "no pubkey injection, no volume"
+            _test_cases[0] = "no pubkey injection, no volume, no vpn"
         
         if _options.test_ssh :
-            _test_cases[1] = "pubkey injection, no volume"
+            _test_cases[1] = "pubkey injection, no volume, no vpn"
+
+        if _options.test_ssh :
+            _test_cases[2] = "pubkey injection, no volume, vpn"
             
         if _options.test_volumes :
-            _test_cases[2] = "pubkey injection, volume"
+            _test_cases[3] = "pubkey injection, volume, no vpn"
 
         if _options.test_capture :
-            _test_cases[3] = "vm capture"
-            _test_cases[4] = "newly captured image, no volume"
-            _test_cases[5] = "image delete"
-            _test_cases[6] = "non-existent image failure"
-            _test_cases[7] = "pubkey injection, force failure"
+            _test_cases[4] = "vm capture"
+            _test_cases[5] = "newly captured image, no volume"
+            _test_cases[6] = "image delete"
+            _test_cases[7] = "non-existent image failure, no vpn"
+            _test_cases[8] = "pubkey injection, force failure, no vpn"
+
+        if _actual_cloud_model == "sim" :
+            _test_cases[2] = "NA"
+
+        if _actual_cloud_model == "pdm" :
+            _test_cases[2] = "NA"
+
+        if _actual_cloud_model == "pcm" :
+            _test_cases[2] = "NA"
+
+        if _actual_cloud_model == "nop" :
+            _test_cases[2] = "NA"
 
         if _actual_cloud_model == "kub" :
-            _test_cases[2] = "NA"            
-            _test_cases[3] = "NA"
-            _test_cases[4] = "NA"
-            _test_cases[5] = "NA"            
-
-        if _actual_cloud_model == "as" :
-            _test_cases[2] = "NA" 
+            _test_cases[2] = "NA"
             _test_cases[3] = "NA"
             _test_cases[4] = "NA"
             _test_cases[5] = "NA"
+            _test_cases[6] = "NA"
 
-        if _actual_cloud_model == "gen" :
+        if _cloud_model.count("file") or _cloud_model.count("fip") :
+            _test_cases[2] = "NA"
             _test_cases[3] = "NA"
             _test_cases[4] = "NA"
-            
+            _test_cases[5] = "NA"
+            _test_cases[6] = "NA"
+                        
+        if _actual_cloud_model == "as" :
+            _test_cases[2] = "NA"
+            _test_cases[3] = "NA"
+            _test_cases[4] = "NA"
+            _test_cases[5] = "NA"
+            _test_cases[6] = "NA"
+
+        if _actual_cloud_model == "gen" :
+            _test_cases[2] = "NA"            
+            _test_cases[4] = "NA"
+            _test_cases[5] = "NA"
+            _test_cases[6] = "NA"
+
+        if _actual_cloud_model == "slr" :
+            _test_cases[2] = "NA"
+            _test_cases[3] = "NA"
+                                    
         for _test_case in _test_cases :
             if _test_case.count("vm capture") :
                 _results_row.append(check_vm_capture(api, _actual_cloud_model, _cloud_name, _options))
@@ -742,8 +891,20 @@ def main() :
         _results_row[0] = _results_row[0] + " ( " + str(int(time())-_start) + "s )"
         _results_row[0] = _results_row[0].center(22, ' ')
 
+        if _results_row[1] == "NA" :
+            _results_row[1] = _results_row[1].center(52,' ')
+
         if _results_row[2] == "NA" :
-            _results_row[2] = _results_row[2].center(49,' ')
+            _results_row[2] = _results_row[2].center(51,' ')
+
+        if _results_row[3] == "NA" :
+            _results_row[3] = _results_row[3].center(49,' ')
+
+        if _results_row[4] == "NA" :
+            _results_row[4] = _results_row[4].center(49,' ')
+        
+        if _results_row[5] == "NA" :
+            _results_row[5] = _results_row[5].center(49,' ')
 
         _test_results_table.add_row(_results_row)
 

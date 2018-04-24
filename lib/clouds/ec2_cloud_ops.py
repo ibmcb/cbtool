@@ -449,21 +449,13 @@ class Ec2Cmds(CommonCloudFunctions) :
             # NOTE: "cloud_ip" is always equal to "run_cloud_ip"
             obj_attr_list["cloud_ip"] = obj_attr_list["run_cloud_ip"]
 
-            if str(obj_attr_list["use_vpn_ip"]).lower() == "true" and str(obj_attr_list["vpn_only"]).lower() == "true" :
-                assert(self.get_attr_from_pending(obj_attr_list))
-
-                if "cloud_init_vpn" not in obj_attr_list :
-                    cbdebug("Instance VPN address not yet available.")
-                    return False
-                cbdebug("Found VPN IP: " + obj_attr_list["cloud_init_vpn"])
-                obj_attr_list["prov_cloud_ip"] = obj_attr_list["cloud_init_vpn"]
+            if obj_attr_list["prov_netname"] == "private" :
+                obj_attr_list["prov_cloud_ip"] = _private_ip_address
             else :
-                if obj_attr_list["prov_netname"] == "private" :
-                    obj_attr_list["prov_cloud_ip"] = _private_ip_address
-                else :
-                    obj_attr_list["prov_cloud_ip"]  = _public_ip_address
+                obj_attr_list["prov_cloud_ip"]  = _public_ip_address
 
             return True
+        
         except :
             return False
 

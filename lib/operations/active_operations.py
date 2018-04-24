@@ -32,7 +32,7 @@ from uuid import uuid5, NAMESPACE_DNS
 
 from lib.remote.process_management import ProcessManagement
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from lib.auxiliary.data_ops import str2dic, dic2str, DataOpsException, get_boostrap_command, selectively_print_message
+from lib.auxiliary.data_ops import str2dic, dic2str, get_boostrap_command, selectively_print_message, DataOpsException
 from lib.auxiliary.value_generation import ValueGeneration
 from lib.stores.stores_initial_setup import StoreSetupException
 from lib.auxiliary.thread_pool import ThreadPool
@@ -203,6 +203,16 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _msg += " same Global Object ([VM_DEFAULTS]) also to \"True\"."
                     cbdebug(_msg, True)
                     cld_attr_lst["vm_defaults"]["userdata"] = "true"
+
+#                if str(cld_attr_lst["vm_defaults"]["vpn_only"]).lower() == "true" and \
+#                str(cld_attr_lst["vm_defaults"]["userdata_post_boot"]).lower() == "false" :
+
+#                    _msg = " The attribute \"VPN_ONLY\" in Global Object "
+#                    _msg += "[VM_DEFAULTS] is set to \"True\". "                    
+#                    _msg += "Will set the attribute \"USERDATA_POST_BOOT\" in the" 
+#                    _msg += " same Global Object ([VM_DEFAULTS]) also to \"True\"."
+#                    cbdebug(_msg, True)
+#                    cld_attr_lst["vm_defaults"]["userdata_post_boot"] = "true"
     
                 _msg = "Attempting to connect to all VMCs described in the cloud "
                 _msg += "defaults file, in order to check the access parameters "
