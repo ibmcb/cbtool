@@ -842,34 +842,30 @@ class PcmCmds(CommonCloudFunctions) :
             self.vm_placement(obj_attr_list)
             _cpu, _memory = obj_attr_list["size"].split('-')
 
-            if "userdata" not in obj_attr_list :
-                obj_attr_list["userdata"] = "auto"
-                
-            if obj_attr_list["userdata"] != "none" :
-                obj_attr_list["config_drive"] = True
-            else :
-                obj_attr_list["config_drive"] = False                
-
             obj_attr_list["last_known_state"] = "about to send create request"
 
             _mark_a = time()
             self.get_images(obj_attr_list)
             self.annotate_time_breakdown(obj_attr_list, "get_image_time", _mark_a)
-
+                        
             self.get_networks(obj_attr_list)
-            self.pre_vmcreate_process(obj_attr_list)            
+
             self.vvcreate(obj_attr_list)
+
+            obj_attr_list["config_drive"] = True
 
             self.common_messages("VM", obj_attr_list, "creating", 0, '')
 
-            _mark_a = time()                        
+            self.pre_vmcreate_process(obj_attr_list)
+
+            _mark_a = time()            
             _config = {"name": obj_attr_list["cloud_vm_name"], \
                        "source": { "type": "image", "fingerprint": obj_attr_list["boot_volume_imageid1"] }}
 
             _instance = self.lxdconn[obj_attr_list["host_cloud_ip"]].containers.create(_config, wait=True)
             self.annotate_time_breakdown(obj_attr_list, "container_creation_time", _mark_a)
-
-            _instance.config["user.user-data"] = "#cloud-config\nssh_authorized_keys:\n - " + obj_attr_list["pubkey_contents"]
+            
+            _instance.config["user.user-data"] = self.populate_cloudconfig(obj_attr_list)
 
             _mark_a = time()            
             _instance.save(wait=True)
