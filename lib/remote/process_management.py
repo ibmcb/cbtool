@@ -67,7 +67,7 @@ class ProcessManagement :
     @trace
     def run_os_command(self, cmdline, override_hostname = None, really_execute = True, \
                        debug_cmd = False, raise_exception = True, step = None, \
-                       tell_me_if_stderr_contains = False, port = 22, check_stderr_len = True) :
+                       tell_me_if_stderr_contains = False, port = None, check_stderr_len = True) :
         '''
         TBD
         '''
@@ -81,7 +81,10 @@ class ProcessManagement :
         else :
             _local = False
 
-        _port = port
+        if port :
+            _port = port
+        else :
+            _port = self.port
         
         if _local :
             # This is causing problems, but generally seems kind of wierd anyway.

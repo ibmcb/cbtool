@@ -2133,14 +2133,17 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     if not "submitter" in obj_attr_list :
                         if _obj_type == "VM" :
                             if obj_attr_list["prov_cloud_ip"] == obj_attr_list["run_cloud_ip"] :
-                                _ip = "IP address " + obj_attr_list["cloud_ip"]
+                                _ip = "IP address " + obj_attr_list["cloud_ip"] + " (port " + str(obj_attr_list["prov_cloud_port"]) + ")"
                             else :
-                                _ip = "IP addresses " + obj_attr_list["prov_cloud_ip"] + " and " + obj_attr_list["run_cloud_ip"] 
+                                _ip = "IP addresses " + obj_attr_list["prov_cloud_ip"] + " (port " + str(obj_attr_list["prov_cloud_port"]) + ")"+ " and " + obj_attr_list["run_cloud_ip"] 
                         else :
                             _ip = "IP address " + obj_attr_list["cloud_ip"]
 
+                        if _ip.count('-') :
+                            _ip = _ip.split('-')[0]
+                        
                         _msg += " It is ssh-accessible at the " + _ip
-                        _msg += " (" + obj_attr_list["cloud_hostname"] + ")."
+                        _msg += " (hostname is " + obj_attr_list["cloud_hostname"] + ")."
                                                 
                     obj_attr_list["tracking"] = "Attach: success." 
 
