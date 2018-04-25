@@ -22,7 +22,7 @@ AS_KEY_NAME_DEFAULT = foo,bar
 AS_LOGIN_DOC = username to which your ssh key corresponds
 AS_LOGIN_DEFAULT = root
 
-AS_SSH_KEY_NAME_DOC = Name of the ssh key from digitalocean.com
+AS_SSH_KEY_NAME_DOC = Name of the ssh key from azure.com
 AS_SSH_KEY_NAME_DEFAULT = cbtool_rsa
 
 AS_NETNAME_DOC = Use the public or private network for benchmark traffic. For more complex networks, refer to the documentation.
@@ -85,7 +85,6 @@ SECURITY_GROUPS = not_yet_applicable
 [AI_TEMPLATES : HADOOP ]
 HADOOP_HOME = /usr/local/hadoop
 
-# DigitalOcean has made public images available for the following 3 workloads:
 [VM_TEMPLATES : AS_CLOUDCONFIG ]
 CHECK = size:ExtraSmall, imageids:1, imageid1:to_replace
 TINYVM = size:ExtraSmall, imageids:1, imageid1:cloudbench-nullworkload-on-1604.060117-1
