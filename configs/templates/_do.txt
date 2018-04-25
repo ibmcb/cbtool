@@ -40,8 +40,6 @@ NETNAME = $DO_NETNAME
 CAPTURE_SUPPORTED = $True
 RUNSTATE_SUPPORTED = $True
 RESIZE_SUPPORTED = $False
-PROV_NETNAME = $DO_NETNAME
-RUN_NETNAME = $DO_NETNAME
 CLONE_TIMEOUT = 600
 CHECK_BOOT_STARTED = poll_cloud30
 CHECK_BOOT_COMPLETE = tcp_on_22
@@ -83,22 +81,78 @@ SECURITY_GROUPS = not_yet_applicable
 [AI_TEMPLATES : HADOOP ]
 HADOOP_HOME = /usr/local/hadoop
 
-# DigitalOcean has made public images available for the following 3 workloads:
 [VM_TEMPLATES : DO_CLOUDCONFIG ]
-CHECK = size:512mb, imageids:1, imageid1:to_replace
-# These are public DigitalOcean images accessible by anyone with a valid DigitalOcean account.
 # imageid can be either the actual ID number or more easily the name in the case of a private account
-TINYVM = size:512mb, imageids:1, imageid1:cloudbench-nullworkload-on-1604.060117-1
-NETCLIENT = size:512mb, imageids:1, imageid1:cloudbench-nullworkload-on-1604.060117-1
-NETSERVER = size:512mb, imageids:1, imageid1:cloudbench-nullworkload-on-1604.060117-1
-YATINYVM = size:512mb, imageids:1, imageid1:cloudbench-nullworkload-on-1604.060117-1
+# The images named cloudbench-*-on-1604.060117-1 are accessible by anyone with a valid DigitalOcean account
+ACMEAIR = size:4gb, imageid1:cb_acmeair
+APACHE = size:4gb, imageid1:cb_wrk
+BONNIE = size:2gb, imageid1:cb_bonnie
+BTEST = size:2gb, imageid1:cb_btest
+CAFFE = size:4gb, imageid1:cb_caffe
 CASSANDRA = size:4gb, imageids:1, imageid1:cloudbench-ycsb-cassandra-on-1604.060117-1
-YCSB = size:4gb, imageids:1, imageid1:cloudbench-ycsb-cassandra-on-1604.060117-1
-SEED = size:4gb, imageids:1, imageid1:cloudbench-ycsb-cassandra-on-1604.060117-1
+CHECK = size:512mb, imageids:1, imageid1:to_replace
+CLIENT_IBM_DAYTRADER = size:4gb, imageid1:cb_daytrader
+CLIENT_OPEN_DAYTRADER = size:4gb, imageid1:cb_open_daytrader
+CLIENT_RUBBOS = size:4gb, imageid1:cb_rubbos
+CLIENT_RUBIS = size:2gb, imageid1:cb_rubis
+CLIENT_TRADELITE = size:4gb, imageid1:cb_tradelite
+CLIENT_WINDOWS = size:4gb, imageid1:cb_windows
+CN_HPC = size:4gb, imageid1:cb_hpcc
+COREMARK = size:1gb, imageid1:cb_coremark
+DB2 = size:4gb, imageid1:cb_daytrader
+DDGEN = size:2gb, imageid1:cb_ddgen
+DRIVER_COREMARK = size:1gb, imageid1:cb_coremark
+DRIVER_DAYTRADER = size:4gb, imageid1:cb_daytrader
+DRIVER_FILEBENCH = size:4gb, imageid1:cb_filebench
+DRIVER_FIO = size:4gb, imageid1:cb_fio
+DRIVER_HADOOP = size:1gb, imageid1:cb_hadoop
+DRIVER_NETPERF = size:1gb, imageid1:cb_netperf
+DRIVER_TRADELITE = size:4gb, imageid1:cb_tradelite
+FEN_HPC = size:4gb, imageid1:cb_hpcc
+FILEBENCH = size:2gb, imageid1:cb_filebench
+FIO = size:2gb, imageid1:cb_fio
+GERONIMO = size:4gb, imageid1:cb_open_daytrader
+GIRAPHMASTER = size:2gb, imageid1:cb_giraph
+GIRAPHSLAVE = size:4gb, imageid1:cb_giraph
 HADOOPMASTER = size:4gb, imageids:1, imageid1:cloudbench-hibench-hadoop-on-1604.060117-1
 HADOOPSLAVE = size:4gb, imageids:1, imageid1:cloudbench-hibench-hadoop-on-1604.060117-1
+IPERFCLIENT = size:512mb, imageid1:cb_iperf
+IPERFSERVER = size:512mb, imageid1:cb_iperf
+LB = size:4gb, imageid1:cb_nullworkload
+LIBERTY = size:4gb, imageid1:cb_acmeair
+LINPACK = size:4gb, imageid1:cb_linpack
+MEMTIER = size:4gb, imageid1:cb_memtier
+MONGO_CFG_SERVER = size:2gb, imageid1:cb_ycsb
+MONGODB = size:4gb, imageid1:cb_ycsb
+MONGOS = size:4-8192, imageid1:cb_ycsb
+MULTICHASE = size:4gb, imageid1:cb_multichase
+MYSQL = size:4gb, imageid1:cb_open_daytrader
+NETCLIENT = size:512mb, imageids:1, imageid1:cloudbench-nullworkload-on-1604.060117-1
+NETSERVER = size:512mb, imageids:1, imageid1:cloudbench-nullworkload-on-1604.060117-1
+NUTTCPCLIENT = size:512mb, imageid1:cb_nuttcp
+NUTTCPSERVER = size:512mb, imageid1:cb_nuttcp
+OLDISIMDRIVER = size:1gb, imageid1:cb_oldisim
+OLDISIMLB = size:1gb, imageid1:cb_oldisim
+OLDISIMLEAF = size:1gb, imageid1:cb_oldisim
+OLDISIMROOT = size:1gb, imageid1:cb_oldisim
+PARBOIL = size:4gb, imageid1:cb_parboil
+POSTMARK = size:2gb, imageid1:cb_postmark
+REDIS = size:4gb, imageid1:cb_ycsb
+RUBBOS = size:4gb, imageid1:cb_rubbos
+RUBIS_DB = size:4gb, imageid1:cb_rubis
+RUBIS = size:4gb, imageid1:cb_rubis
+SCIMARK = size:2gb, imageid1:cb_scimark
+SEED = size:4gb, imageids:1, imageid1:cloudbench-ycsb-cassandra-on-1604.060117-1
+SPARKMASTER = size:8gb, imageid1:cb_spark
+SPARKSLAVE = size:8gb, imageid1:cb_spark
+SPECJBB = size:4gb, imageid1:cb_specjbb
+SYSBENCH = size:4gb, imageid1:cb_sysbench
+TINYVM = size:512mb, imageids:1, imageid1:cloudbench-nullworkload-on-1604.060117-1
 UNIXBENCH = size:512mb,imageids:1,imageid1:cloudbench-nullworkload-on-1604.060117-1
-
-
-# Other images can be made on an as-needed basis or by creating your own
-# in your own private account
+WAS = size:4gb, imageid1:cb_daytrader
+WINDOWS = size:4gb imageids:1, imageid1:cb_windows
+WRK = size:2gb, imageid1:cb_wrk
+XPINGRECEIVER =  size:512mb, imageid1:cb_xping
+XPINGSENDER =  size:512mb, imageid1:cb_xping
+YATINYVM = size:512mb, imageids:1, imageid1:cloudbench-nullworkload-on-1604.060117-1
+YCSB = size:4gb, imageids:1, imageid1:cloudbench-ycsb-cassandra-on-1604.060117-1
