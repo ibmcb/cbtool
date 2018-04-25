@@ -55,7 +55,6 @@ USERDATA_SSH = $True
 IMAGE_PREFIX = $EMPTY
 IMAGE_SUFFIX = $EMPTY
 
-# We're not as big as amazon yet. Go easy on us please.
 [AI_DEFAULTS : AS_CLOUDCONFIG ]
 ATTACH_PARALLELISM = 1
 CAPTURE_SUPPORTED = $True
@@ -66,7 +65,6 @@ SSH_KEY_NAME = $AS_SSH_KEY_NAME
 CREDENTIALS = $AS_CREDENTIALS
 DONT_START_QEMU_SCRAPER = $True
 
-# We're not as big as amazon yet. Go easy on us please.
 [AIDRS_DEFAULTS : AS_CLOUDCONFIG ]
 DAEMON_PARALLELISM = 1
 
@@ -86,8 +84,75 @@ SECURITY_GROUPS = not_yet_applicable
 HADOOP_HOME = /usr/local/hadoop
 
 [VM_TEMPLATES : AS_CLOUDCONFIG ]
+ACMEAIR = size:Large, imageid1:cb_acmeair
+APACHE = size:Large, imageid1:cb_wrk
+BONNIE = size:Medium, imageid1:cb_bonnie
+BTEST = size:Medium, imageid1:cb_btest
+CAFFE = size:Large, imageid1:cb_caffe
+CASSANDRA = size:Large, imageids:1, imageid1:cb_ycsb
 CHECK = size:ExtraSmall, imageids:1, imageid1:to_replace
-TINYVM = size:ExtraSmall, imageids:1, imageid1:cloudbench-nullworkload-on-1604.060117-1
-
-# Other images can be made on an as-needed basis or by creating your own
-# in your own private account
+CLIENT_IBM_DAYTRADER = size:Large, imageid1:cb_daytrader
+CLIENT_OPEN_DAYTRADER = size:Large, imageid1:cb_open_daytrader
+CLIENT_RUBBOS = size:Large, imageid1:cb_rubbos
+CLIENT_RUBIS = size:Medium, imageid1:cb_rubis
+CLIENT_TRADELITE = size:Large, imageid1:cb_tradelite
+CLIENT_WINDOWS = size:Large, imageid1:cb_windows
+CN_HPC = size:Large, imageid1:cb_hpcc
+COREMARK = size:Small, imageid1:cb_coremark
+DB2 = size:Large, imageid1:cb_daytrader
+DDGEN = size:Medium, imageid1:cb_ddgen
+DRIVER_COREMARK = size:1gb, imageid1:cb_coremark
+DRIVER_DAYTRADER = size:Large, imageid1:cb_daytrader
+DRIVER_FILEBENCH = size:Large, imageid1:cb_filebench
+DRIVER_FIO = size:Large, imageid1:cb_fio
+DRIVER_HADOOP = size:1gb, imageid1:cb_hadoop
+DRIVER_NETPERF = size:1gb, imageid1:cb_netperf
+DRIVER_TRADELITE = size:Large, imageid1:cb_tradelite
+FEN_HPC = size:Large, imageid1:cb_hpcc
+FILEBENCH = size:Medium, imageid1:cb_filebench
+FIO = size:Medium, imageid1:cb_fio
+GERONIMO = size:Large, imageid1:cb_open_daytrader
+GIRAPHMASTER = size:Medium, imageid1:cb_giraph
+GIRAPHSLAVE = size:Large, imageid1:cb_giraph
+HADOOPMASTER = size:Large, imageids:1, imageid1:cb_hadoop
+HADOOPSLAVE = size:Large, imageids:1, imageid1:cb_hadoop
+IPERFCLIENT = size:ExtraSmall, imageid1:cb_iperf
+IPERFSERVER = size:ExtraSmall, imageid1:cb_iperf
+LB = size:Large, imageid1:cb_nullworkload
+LIBERTY = size:Large, imageid1:cb_acmeair
+LINPACK = size:Large, imageid1:cb_linpack
+MEMTIER = size:Large, imageid1:cb_memtier
+MONGO_CFG_SERVER = size:Medium, imageid1:cb_ycsb
+MONGODB = size:Large, imageid1:cb_ycsb
+MONGOS = size:ExtraLarge, imageid1:cb_ycsb
+MULTICHASE = size:Large, imageid1:cb_multichase
+MYSQL = size:Large, imageid1:cb_open_daytrader
+NETCLIENT = size:ExtraSmall, imageids:1, imageid1:cb_netperf
+NETSERVER = size:ExtraSmall, imageids:1, imageid1:cb_netperf
+NUTTCPCLIENT = size:ExtraSmall, imageid1:cb_nuttcp
+NUTTCPSERVER = size:ExtraSmall, imageid1:cb_nuttcp
+OLDISIMDRIVER = size:1gb, imageid1:cb_oldisim
+OLDISIMLB = size:1gb, imageid1:cb_oldisim
+OLDISIMLEAF = size:1gb, imageid1:cb_oldisim
+OLDISIMROOT = size:1gb, imageid1:cb_oldisim
+PARBOIL = size:Large, imageid1:cb_parboil
+POSTMARK = size:Medium, imageid1:cb_postmark
+REDIS = size:Large, imageid1:cb_ycsb
+RUBBOS = size:Large, imageid1:cb_rubbos
+RUBIS_DB = size:Large, imageid1:cb_rubis
+RUBIS = size:Large, imageid1:cb_rubis
+SCIMARK = size:Medium, imageid1:cb_scimark
+SEED = size:Large, imageids:1, imageid1:cb_ycsb
+SPARKMASTER = size:ExtraLarge, imageid1:cb_spark
+SPARKSLAVE = size:ExtraLarge, imageid1:cb_spark
+SPECJBB = size:Large, imageid1:cb_specjbb
+SYSBENCH = size:Large, imageid1:cb_sysbench
+TINYVM = size:ExtraSmall, imageids:1, imageid1:cb_nullworkload
+UNIXBENCH = size:ExtraSmall,imageids:1,imageid1:cb_unixbench
+WAS = size:Large, imageid1:cb_daytrader
+WINDOWS = size:Large imageids:1, imageid1:cb_windows
+WRK = size:Medium, imageid1:cb_wrk
+XPINGRECEIVER =  size:ExtraSmall, imageid1:cb_xping
+XPINGSENDER =  size:ExtraSmall, imageid1:cb_xping
+YATINYVM = size:ExtraSmall, imageids:1, imageid1:cb_nullworkload
+YCSB = size:Large, imageids:1, imageid1:cb_ycsb
