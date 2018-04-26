@@ -1,0 +1,158 @@
+[USER-DEFINED]
+MAIN_UPDATE_ATTEMPTS = 180
+AS_ACCESS = https://portal.azure.com/
+AS_CREDENTIALS = need_to_be_configured_by_user
+AS_LOGIN = need_to_be_configured_by_user
+AS_SSH_KEY_NAME = cbtool_rsa
+AS_INITIAL_VMCS = need_to_be_configured_by_user
+AS_KEY_NAME = cbtool_rsa
+AS_CLOUD_SERVICE_PREFIX = cbtool
+AS_NETNAME = private
+
+# PEBCAK documentation for the Wizard and CLI
+AS_INITIAL_VMCS_DOC = There are multiple regions to choose from @ https://azure.microsoft.com/en-us/regions/
+AS_INITIAL_VMCS_DEFAULT = Central____US:sut
+AS_INITIAL_VMCS = Central____US:sut 
+
+AS_CREDENTIALS_DOC = Comma-separated list of subscription ids and certificate files to use. This field should be in the form of tag1:subscription_id1+certificate_file_path1,tag2:subscription_id2+certificate_file_path2,... where the tag is an arbitrary name chosen by you to identify which account the bearer token came from. CloudBench will round-robin distribute VMs and Applications amongst all the accounts.
+AS_CREDENTIALS_DEFAULT = tag1:subscription_id+certificate_file_path
+
+AS_KEY_NAME_DOC = Comma-separated list of SSH key names or IDs used in your account.
+AS_KEY_NAME_DEFAULT = foo,bar
+AS_LOGIN_DOC = username to which your ssh key corresponds
+AS_LOGIN_DEFAULT = root
+
+AS_SSH_KEY_NAME_DOC = Name of the ssh key from azure.com
+AS_SSH_KEY_NAME_DEFAULT = cbtool_rsa
+
+AS_NETNAME_DOC = Use the public or private network for benchmark traffic. For more complex networks, refer to the documentation.
+AS_NETNAME_DEFAULT = private
+
+[SPACE : AS_CLOUDCONFIG ]
+SSH_KEY_NAME = $AS_SSH_KEY_NAME
+
+[VM_DEFAULTS : AS_CLOUDCONFIG ]
+CREDENTIALS = $AS_CREDENTIALS
+SSH_KEY_NAME = $AS_SSH_KEY_NAME
+KEY_NAME = $AS_KEY_NAME
+LOGIN = $AS_LOGIN
+NETNAME = $AS_NETNAME
+CAPTURE_SUPPORTED = $True
+RUNSTATE_SUPPORTED = $True
+RESIZE_SUPPORTED = $False
+CLONE_TIMEOUT = 600
+CLOUD_SERVICE_PREFIX = $AS_CLOUD_SERVICE_PREFIX
+CHECK_BOOT_STARTED = poll_cloud30
+CHECK_BOOT_COMPLETE = tcp_on_22
+SECURITY_GROUPS = not_yet_applicable
+HOSTNAME_KEY = cloud_vm_name
+SIZE = from_vm_template
+LEAVE_INSTANCE_ON_FAILURE = $False
+FORCE_FAILURE = $False
+DISABLE_TIMESYNC = $False
+USERDATA = $True
+USERDATA_SSH = $True
+IMAGE_PREFIX = $EMPTY
+IMAGE_SUFFIX = $EMPTY
+
+[AI_DEFAULTS : AS_CLOUDCONFIG ]
+ATTACH_PARALLELISM = 1
+CAPTURE_SUPPORTED = $True
+RUNSTATE_SUPPORTED = $True
+RESIZE_SUPPORTED = $True
+LOGIN = $AS_LOGIN
+SSH_KEY_NAME = $AS_SSH_KEY_NAME
+CREDENTIALS = $AS_CREDENTIALS
+DONT_START_QEMU_SCRAPER = $True
+
+[AIDRS_DEFAULTS : AS_CLOUDCONFIG ]
+DAEMON_PARALLELISM = 1
+
+[MON_DEFAULTS : AS_CLOUDCONFIG ]
+COLLECT_FROM_GUEST = $False
+
+[VMC_DEFAULTS : AS_CLOUDCONFIG ]
+CREDENTIALS = $AS_CREDENTIALS
+INITIAL_VMCS = $AS_INITIAL_VMCS
+CLOUD_SERVICE_PREFIX = $AS_CLOUD_SERVICE_PREFIX
+KEY_NAME = $AS_KEY_NAME
+SSH_KEY_NAME = $AS_SSH_KEY_NAME
+ACCESS = $AS_ACCESS
+SECURITY_GROUPS = not_yet_applicable
+
+[AI_TEMPLATES : HADOOP ]
+HADOOP_HOME = /usr/local/hadoop
+
+[VM_TEMPLATES : AS_CLOUDCONFIG ]
+ACMEAIR = size:Large, imageid1:cb_acmeair
+APACHE = size:Large, imageid1:cb_wrk
+BONNIE = size:Medium, imageid1:cb_bonnie
+BTEST = size:Medium, imageid1:cb_btest
+CAFFE = size:Large, imageid1:cb_caffe
+CASSANDRA = size:Large, imageids:1, imageid1:cb_ycsb
+CHECK = size:ExtraSmall, imageids:1, imageid1:to_replace
+CLIENT_IBM_DAYTRADER = size:Large, imageid1:cb_daytrader
+CLIENT_OPEN_DAYTRADER = size:Large, imageid1:cb_open_daytrader
+CLIENT_RUBBOS = size:Large, imageid1:cb_rubbos
+CLIENT_RUBIS = size:Medium, imageid1:cb_rubis
+CLIENT_TRADELITE = size:Large, imageid1:cb_tradelite
+CLIENT_WINDOWS = size:Large, imageid1:cb_windows
+CN_HPC = size:Large, imageid1:cb_hpcc
+COREMARK = size:Small, imageid1:cb_coremark
+DB2 = size:Large, imageid1:cb_daytrader
+DDGEN = size:Medium, imageid1:cb_ddgen
+DRIVER_COREMARK = size:1gb, imageid1:cb_coremark
+DRIVER_DAYTRADER = size:Large, imageid1:cb_daytrader
+DRIVER_FILEBENCH = size:Large, imageid1:cb_filebench
+DRIVER_FIO = size:Large, imageid1:cb_fio
+DRIVER_HADOOP = size:1gb, imageid1:cb_hadoop
+DRIVER_NETPERF = size:1gb, imageid1:cb_netperf
+DRIVER_TRADELITE = size:Large, imageid1:cb_tradelite
+FEN_HPC = size:Large, imageid1:cb_hpcc
+FILEBENCH = size:Medium, imageid1:cb_filebench
+FIO = size:Medium, imageid1:cb_fio
+GERONIMO = size:Large, imageid1:cb_open_daytrader
+GIRAPHMASTER = size:Medium, imageid1:cb_giraph
+GIRAPHSLAVE = size:Large, imageid1:cb_giraph
+HADOOPMASTER = size:Large, imageids:1, imageid1:cb_hadoop
+HADOOPSLAVE = size:Large, imageids:1, imageid1:cb_hadoop
+IPERFCLIENT = size:ExtraSmall, imageid1:cb_iperf
+IPERFSERVER = size:ExtraSmall, imageid1:cb_iperf
+LB = size:Large, imageid1:cb_nullworkload
+LIBERTY = size:Large, imageid1:cb_acmeair
+LINPACK = size:Large, imageid1:cb_linpack
+MEMTIER = size:Large, imageid1:cb_memtier
+MONGO_CFG_SERVER = size:Medium, imageid1:cb_ycsb
+MONGODB = size:Large, imageid1:cb_ycsb
+MONGOS = size:ExtraLarge, imageid1:cb_ycsb
+MULTICHASE = size:Large, imageid1:cb_multichase
+MYSQL = size:Large, imageid1:cb_open_daytrader
+NETCLIENT = size:ExtraSmall, imageids:1, imageid1:cb_netperf
+NETSERVER = size:ExtraSmall, imageids:1, imageid1:cb_netperf
+NUTTCPCLIENT = size:ExtraSmall, imageid1:cb_nuttcp
+NUTTCPSERVER = size:ExtraSmall, imageid1:cb_nuttcp
+OLDISIMDRIVER = size:1gb, imageid1:cb_oldisim
+OLDISIMLB = size:1gb, imageid1:cb_oldisim
+OLDISIMLEAF = size:1gb, imageid1:cb_oldisim
+OLDISIMROOT = size:1gb, imageid1:cb_oldisim
+PARBOIL = size:Large, imageid1:cb_parboil
+POSTMARK = size:Medium, imageid1:cb_postmark
+REDIS = size:Large, imageid1:cb_ycsb
+RUBBOS = size:Large, imageid1:cb_rubbos
+RUBIS_DB = size:Large, imageid1:cb_rubis
+RUBIS = size:Large, imageid1:cb_rubis
+SCIMARK = size:Medium, imageid1:cb_scimark
+SEED = size:Large, imageids:1, imageid1:cb_ycsb
+SPARKMASTER = size:ExtraLarge, imageid1:cb_spark
+SPARKSLAVE = size:ExtraLarge, imageid1:cb_spark
+SPECJBB = size:Large, imageid1:cb_specjbb
+SYSBENCH = size:Large, imageid1:cb_sysbench
+TINYVM = size:ExtraSmall, imageids:1, imageid1:cb_nullworkload
+UNIXBENCH = size:ExtraSmall,imageids:1,imageid1:cb_unixbench
+WAS = size:Large, imageid1:cb_daytrader
+WINDOWS = size:Large imageids:1, imageid1:cb_windows
+WRK = size:Medium, imageid1:cb_wrk
+XPINGRECEIVER =  size:ExtraSmall, imageid1:cb_xping
+XPINGSENDER =  size:ExtraSmall, imageid1:cb_xping
+YATINYVM = size:ExtraSmall, imageids:1, imageid1:cb_nullworkload
+YCSB = size:Large, imageids:1, imageid1:cb_ycsb

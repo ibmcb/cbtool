@@ -31,6 +31,7 @@ CLOUDOPTION_MYDO = cldattach do, vmcattach all
 CLOUDOPTION_MYPDM = cldattach pdm, vmcattach all
 CLOUDOPTION_MYPCM = cldattach pcm, vmcattach all
 CLOUDOPTION_MYKUB = cldattach kub, vmcattach all
+CLOUDOPTION_MYAS = cldattach os, vmcattach all
 
 # START: Specify the individual parameters for each cloud
 #-------------------------------------------------------------------------------
@@ -116,6 +117,15 @@ PCM_CREDENTIALS = trustpassword                            # LXD's "trust passwo
 PCM_ACCESS = https://<address>:8443,https://<address>:8443 # A comma-separated list of LXD hosts (usually port 8443)
 PCM_NETNAME = lxdbr0                                       # The name of an already existing network on LXD
 PCM_LOGIN = cbuser                                         # The username that logins on the VMs
+#-------------------------------------------------------------------------------
+# Azure Service Manager (AS) requires the following parameters (via LibCloud)
+[USER-DEFINED : CLOUDOPTION_MYAS ]
+AS_CREDENTIALS = arbitrarytag1:subscription_id1+certificate_path1,arbitrarytag2:subscription_id2+certificate_path2   # The subscription id is obtained from the Azure portal. The certificate is generated locally and uploaded through the portal,
+AS_INITIAL_VMCS = Central____US:sut                                                                                  # Use four consecutives underscores (____) to indicate a space in the name
+AS_NETNAME = public                                                                                                  # Currently not used
+AS_SSH_KEY_NAME = cbtool_rsa                                                                                         # Name of the private/public key pair - locally available - used to login on the VMs
+AS_KEY_NAME = cbtool_rsa                                                                                             # Name of the private key present in the cloud to be injected on VMs
+AS_LOGIN = cbuser                                                                                                    # The username that logins on the VMs
 #-------------------------------------------------------------------------------
 [USER-DEFINED : CLOUDOPTION_MYKUB ]
 KUB_INITIAL_VMCS = world                                 # This really does not matter, could be anything
