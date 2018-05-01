@@ -40,6 +40,7 @@ from keystoneauth1 import session
 
 from novaclient import client as novac
 from novaclient import exceptions as novaexceptions
+from glanceclient import client as glancec
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import str2dic
@@ -61,6 +62,7 @@ class OskCmds(CommonCloudFunctions) :
         self.oskconncompute = {}
         self.oskconnstorage = {}
         self.oskconnnetwork = {}
+        self.oskconnimage = {} 
         self.expid = expid
         self.ft_supported = False
         self.lvirt_conn = {}
@@ -133,6 +135,7 @@ class OskCmds(CommonCloudFunctions) :
 
                 if _client_conn_id not in self.oskconncompute :
                     self.oskconncompute[_client_conn_id] = novac.Client("2.1", session = _session)
+                    self.oskconnimage[_client_conn_id] = glancec.Client("2", session = _session) 
 
                     self.oskconncompute[_client_conn_id].flavors.list()
 
@@ -375,7 +378,8 @@ class OskCmds(CommonCloudFunctions) :
         _map_name_to_id = {}
         _map_id_to_name = {}
 
-        _registered_image_list = self.oskconncompute[vmc_name].glance.list()
+#        _registered_image_list = self.oskconncompute[vmc_name].glance.list()
+        _registered_image_list = self.oskconnimage[vmc_name].images.list()
         _registered_imageid_list = []
             
         for _registered_image in _registered_image_list :
@@ -1671,7 +1675,8 @@ class OskCmds(CommonCloudFunctions) :
                 _instance.create_image(obj_attr_list["captured_image_name"], None)
                 _vm_image_created = False
                 while not _vm_image_created and _curr_tries < _max_tries :
-                    _vm_images = self.oskconncompute[obj_attr_list["name"]].glance.list()
+#                    _vm_images = self.oskconncompute[obj_attr_list["name"]].glance.list()
+                    _vm_images = self.oskconnimage[obj_attr_list["name"]].images.list()
                     for _vm_image in _vm_images :
                         if _vm_image.name == obj_attr_list["captured_image_name"] :
                             if _vm_image.status.lower() == "active" :
@@ -1900,7 +1905,7 @@ class OskCmds(CommonCloudFunctions) :
                          False, \
                          None)
 
-            _image_list = self.oskconncompute["common"].images.list()
+            _image_list = self.oskconnimage["common"].images.list()
                 
             for _image in _image_list :
                 if self.is_cloud_image_uuid(obj_attr_list["imageid1"]) :
