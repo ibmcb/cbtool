@@ -354,6 +354,27 @@ class NopCmds(CommonCloudFunctions) :
         finally :
             return _nr_instances    
 
+    @trace
+    def get_ssh_keys(self, vmc_name, key_name, key_contents, key_fingerprint, registered_key_pairs, internal, connection) :
+        '''
+        TBD
+        '''
+
+        registered_key_pairs[key_name] = key_fingerprint + "-NA"
+
+        return True
+
+    @trace
+    def get_security_groups(self, vmc_name, security_group_name, registered_security_groups) :
+        '''
+        TBD
+        '''
+
+        registered_security_groups.append(security_group_name)              
+
+        return True
+
+    @trace
     def get_ip_address(self, obj_attr_list) :
         '''
         TBD
@@ -447,6 +468,23 @@ class NopCmds(CommonCloudFunctions) :
                 raise CldOpsException(_msg, _status)
             else :
                 return True
+
+    @trace            
+    def create_ssh_key(self, vmc_name, key_name, key_type, key_contents, key_fingerprint, vm_defaults, connection) :
+        '''
+        TBD
+        '''
+        return True
+
+    @trace
+    def is_cloud_image_uuid(self, imageid) :
+        '''
+        TBD
+        '''        
+        if len(imageid) == 36 and imageid.count('-') == 4 :
+            return True
+        
+        return False
     
     @trace
     def is_vm_running(self, obj_attr_list):
@@ -575,9 +613,11 @@ class NopCmds(CommonCloudFunctions) :
 
             self.get_images(obj_attr_list)
             self.get_networks(obj_attr_list)
-            self.pre_vmcreate_process(obj_attr_list)            
+
             self.vvcreate(obj_attr_list)
- 
+
+            self.pre_vmcreate_process(obj_attr_list)            
+
             self.take_action_if_requested("VM", obj_attr_list, "provision_started")
  
             _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)

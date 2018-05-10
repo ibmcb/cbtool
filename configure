@@ -27,6 +27,7 @@
 
 import os
 import re
+import socket
 
 from pwd import getpwuid
 from shutil import copyfile
@@ -132,6 +133,10 @@ def main() :
                       default = None, \
                       help ="Set syslog facility")
 
+    _parser.add_option("--syslogr", dest = "syslogr", metavar = "SYSLOGR", \
+                       default = 'UDP', \
+                       help ="Set syslog protocol")
+
     _parser.add_option("-v", "--verbosity", dest = "verbosity", metavar = "LV", \
                       default = -1, help = "Set verbosity level.")
     
@@ -167,9 +172,14 @@ def main() :
     
         if _facility > 23 or _facility < 16 :
             _facility = 23
-    
+        
+        _socktype = socket.SOCK_DGRAM
+        if options.syslogr == "TCP" :
+            _socktype = socket.SOCK_STREAM
+
         hdlr = SysLogHandler(address = (options.syslogh, int(options.syslogp)), \
-                             facility=_syslog_selector[str(_facility)])
+                             facility=_syslog_selector[str(_facility)], \
+                             socktype = _socktype)
     
     formatter = Formatter("[%(asctime)s] [%(levelname)s] %(message)s")
     #        formatter = Formatter('%(asctime)s %(levelname)s %(module)s %(message)s')

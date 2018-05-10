@@ -35,15 +35,12 @@ import iso8601
 import requests.packages.urllib3
 requests.packages.urllib3.disable_warnings()
 
-try :
-    from keystoneauth1.identity import v3
-    from keystoneauth1 import session
-    _use_keystone_session = True    
-except: 
-    _use_keystone_session = False
+from keystoneauth1.identity import v3
+from keystoneauth1 import session
 
 from novaclient import client as novac
 from novaclient import exceptions as novaexceptions
+from glanceclient import client as glancec
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.data_ops import str2dic
@@ -62,8 +59,10 @@ class OskCmds(CommonCloudFunctions) :
         CommonCloudFunctions.__init__(self, pid, osci)
         self.pid = pid
         self.osci = osci
-        self.oskconncompute = False
-        self.oskconnstorage = False
+        self.oskconncompute = {}
+        self.oskconnstorage = {}
+        self.oskconnnetwork = {}
+        self.oskconnimage = {} 
         self.expid = expid
         self.ft_supported = False
         self.lvirt_conn = {}
@@ -71,6 +70,7 @@ class OskCmds(CommonCloudFunctions) :
         self.host_map = {}
         self.api_error_counter = {}
         self.additional_rc_contents = ''
+        self.connauth_pamap = {}
         self.max_api_errors = 10
         
     @trace
@@ -81,7 +81,7 @@ class OskCmds(CommonCloudFunctions) :
         return "OpenStack Cloud"
         
     @trace
-    def connect(self, access_url, authentication_data, region, extra_parms = {}, diag = False, generate_rc = False) :
+    def connect(self, access_url, authentication_data, region, extra_parms = {}, diag = False, generate_rc = False, client_conn_id = None) :
         '''
         TBD
         '''        
@@ -93,83 +93,52 @@ class OskCmds(CommonCloudFunctions) :
             _version = '2'
             
             _auth = None
-            _session = None
             _credentials = None
-
-            _user_domain_id = "default"
-            _project_domain_id = "default"
-                        
-            if len(access_url.split('-')) == 1 :
-                _endpoint_type = "publicURL"
-            if len(access_url.split('-')) == 2 :
-                access_url, _endpoint_type = access_url.split('-')                               
-            else :
-                access_url = access_url.split('-')[0]
-                _endpoint_type = "publicURL"
-            access_url = access_url.replace("_dash_",'-')
-            
             _data_auth_parse = False
-            _username, _password, _tenant, _cacert, _insecure = \
-            self.parse_authentication_data(authentication_data)
-            _data_auth_parse = True
+            _nova_client = False
+
+            if not self.connauth_pamap :
+                self.connauth_pamap = self.parse_cloud_connection_file(access_url)
             
+            access_url, _endpoint_type, region = self.parse_connection_data(access_url, region, extra_parms)
+
+            _username, _password, _tenant, _project_name, _cacert, _verify, _user_domain_id, _project_domain_id = self.parse_authentication_data(authentication_data)
+            _data_auth_parse = True
+
+            _client_conn_id = "common"
+            if client_conn_id :
+                _client_conn_id = client_conn_id
+
             if not _username :
                 _fmsg = _password
             else :
-                _username = _username.replace("_dash_",'-')
-                _password = _password.replace("_dash_",'-')
-                _tenant = _tenant.replace("_dash_",'-')
 
-                if _cacert :
-                    _cacert = _cacert.replace("_dash_",'-')
+                access_url = access_url.replace('v2.0/','v3')
 
-                if _use_keystone_session :
-                    access_url = access_url.replace('v2.0/','v3')
-                    _auth = v3.Password(auth_url = access_url, \
-                                     username = _username, \
-                                     password = _password, \
-                                     project_name = _tenant, \
-                                     user_domain_id = _user_domain_id, \
-                                     project_domain_id=_project_domain_id)
-                    
-                    _session = session.Session(auth = _auth)
-                else :
-                    _credentials = { "username" : _username, \
-                                    "version" : _version, \
-    #                                "api_key" : _password, \
-                                    "password" : _password, \
-                                    "project_id" : _tenant, \
-                                    "tenant_name" : _tenant,  
-                                    "auth_url" : access_url, \
-                                    "region_name" : region, \
-                                    "service_type" : "compute", \
-                                    "endpoint_type" : _endpoint_type, \
-                                    "cacert": _cacert, \
-                                    "insecure": _insecure }
+                _auth = v3.Password(auth_url = access_url, \
+                                    username = _username, \
+                                    password = _password, \
+                                    project_name = _project_name, \
+                                    user_domain_id = _user_domain_id, \
+                                    project_domain_id = _project_domain_id)
+                
+                _session = session.Session(auth = _auth, verify = _verify, cert = _cacert)
 
                 _msg = self.get_description() + " connection parameters: username=" + _username
                 _msg += ", password=<omitted>, tenant=" + _tenant + ", "
-                _msg += "cacert=" + str(_cacert) + ", insecure=" + str(_insecure)
+                _msg += "cacert=" + str(_cacert) + ", verify=" + str(_verify)
                 _msg += ", region_name=" + region + ", access_url=" + access_url
                 _msg += ", endpoint_type=" + str(_endpoint_type)
                 cbdebug(_msg, diag)
     
                 _fmsg = "About to attempt a connection to " + self.get_description()
-                
-                _nova_client = False
-                #self.oskconncompute = novac.Client(2, _username, _password, _tenant, \
-                #                             access_url, region_name = region, \
-                #                             service_type="compute", \
-                #                             endpoint_type = _endpoint_type, \
-                #                             cacert = _cacert, \
-                #                             insecure = _insecure)
 
-                if _session :
-                    self.oskconncompute = novac.Client("2.1", session = _session)
-                else :
-                    self.oskconncompute = novac.Client(**_credentials)
+                if _client_conn_id not in self.oskconncompute :
+                    self.oskconncompute[_client_conn_id] = novac.Client("2.1", session = _session)
+                    self.oskconnimage[_client_conn_id] = glancec.Client("2", session = _session) 
 
-                self.oskconncompute.flavors.list()
+                    self.oskconncompute[_client_conn_id].flavors.list()
+
                 _nova_client = True
                 if "use_cinderclient" in extra_parms :
                     self.use_cinderclient = str(extra_parms["use_cinderclient"]).lower()
@@ -179,23 +148,13 @@ class OskCmds(CommonCloudFunctions) :
                 _cinder_client = True                    
                 if self.use_cinderclient == "true" :
                     _cinder_client = False
-                    from cinderclient import client as cinderc 
+                    if _client_conn_id not in self.oskconnstorage :                    
+                        from cinderclient import client as cinderc 
 
-                    if _session :
-                        self.oskconnstorage = cinderc.Client("2.1", session = _session)                    
-                    else :
-                        self.oskconnstorage = cinderc.Client('1', \
-                                                             _username, \
-                                                             _password, \
-                                                             _tenant, \
-                                                             auth_url = access_url, \
-                                                             region_name = region, \
-                                                             service_type="volume", \
-                                                             endpoint_type = _endpoint_type, \
-                                                             cacert = _cacert, \
-                                                             insecure = _insecure)                    
+                        self.oskconnstorage[_client_conn_id] = cinderc.Client("2.1", session = _session)                    
 
-                    self.oskconnstorage.volumes.list()
+                        self.oskconnstorage[_client_conn_id].volumes.list()
+                    
                     _cinder_client = True                                    
 
                 self.use_neutronclient = "true"
@@ -203,16 +162,13 @@ class OskCmds(CommonCloudFunctions) :
                 if self.use_neutronclient == "true" :
                     _neutron_client = False
 
-                    from neutronclient.v2_0 import client as neutronc                           
+                    if _client_conn_id not in self.oskconnnetwork :
+                        from neutronclient.v2_0 import client as neutronc                           
 
-                    if _session :
-                        self.oskconnnetwork = neutronc.Client(session = _session)
-                    else :
-                        _credentials["service_type"] = "network"
-                        del _credentials["project_id"]
-                        self.oskconnnetwork = neutronc.Client(**_credentials)
+                        self.oskconnnetwork[_client_conn_id] = neutronc.Client(session = _session)
         
-                    self.oskconnnetwork.list_networks()
+                        self.oskconnnetwork[_client_conn_id].list_networks()
+
                     _neutron_client = True
                 else :
                     self.oskconnnetwork = False
@@ -248,77 +204,45 @@ class OskCmds(CommonCloudFunctions) :
                 _msg = self.get_description() + " connection failure: " + _fmsg
                 cberr(_msg)
                 if _data_auth_parse :
-                    
+
                     if not _nova_client :
-                        if _session :
-                            _dmsg = "Please attempt to execute the following : \"python -c \""
-                            _dmsg += "from keystoneauth1.identity import v3; "
-                            _dmsg += "from keystoneauth1 import session; "
-                            _dmsg += "from novaclient import client as novac; "
-                            _dmsg += "_auth = v3.Password(username = '" + str(_username) 
-                            _dmsg += "', password = 'REPLACE_PASSWORD', project_name = '"
-                            _dmsg += str(_tenant) + "', auth_url = '" + str(access_url) 
-                            _dmsg += "', user_domain_id = '" + str(_user_domain_id) + "', "
-                            _dmsg += "project_domain_id = '" + str(_project_domain_id) + "'); "
-                            _dmsg += "_session = session.Session(auth = _auth); "
-                            _dmsg += "ct = novac.Client(\"2.1\", session = _session); print ct.flavors.list()\"\""
-                        else :
-                            _dmsg = "Please attempt to execute the following : \"python -c \""
-                            _dmsg += "from novaclient import client as novac; "
-                            _dmsg += "_credentials = { 'username' : '" + str(_username) 
-                            _dmsg += "', 'password' : 'REPLACE_PASSWORD', 'project_id' : '"
-                            _dmsg += str(_tenant) + "', 'auth_url' : '" + str(access_url) 
-                            _dmsg += "', 'region_name' : '" + str(region) + "', 'service_type' : "
-                            _dmsg += "'compute', 'endpoint_type':'" + str(_endpoint_type) 
-                            _dmsg += "', 'cacert' : '" + str(_cacert) + "', 'insecure': "
-                            _dmsg += str(_insecure) + ", 'version':'" + str(_version) + "'}; "
-                            _dmsg += "ct = novac.Client(**_credentials); print ct.flavors.list()\"\""
+                        _dmsg = "Please attempt to execute the following : \"python -c \""
+                        _dmsg += "from keystoneauth1.identity import v3; "
+                        _dmsg += "from keystoneauth1 import session; "
+                        _dmsg += "from novaclient import client as novac; "
+                        _dmsg += "_auth = v3.Password(username = '" + str(_username) 
+                        _dmsg += "', password = 'REPLACE_PASSWORD', project_name = '"
+                        _dmsg += str(_tenant) + "', auth_url = '" + str(access_url) 
+                        _dmsg += "', user_domain_id = '" + str(_user_domain_id) + "', "
+                        _dmsg += "project_domain_id = '" + str(_project_domain_id) + "'); "
+                        _dmsg += "_session = session.Session(auth = _auth, verify = " + str(_verify) + ", cert = " + str(_cacert) + "); "
+                        _dmsg += "ct = novac.Client(\"2.1\", session = _session); print ct.flavors.list()\"\""
                     
                     elif not _cinder_client :
-                        if _session :
-                            _dmsg = "Please attempt to execute the following : \"python -c \""
-                            _dmsg += "from keystoneauth1.identity import v3; "
-                            _dmsg += "from keystoneauth1 import session; "
-                            _dmsg += "from cinderclient import client as cinderc; "
-                            _dmsg += "_auth = v3.Password(username = '" + str(_username) 
-                            _dmsg += "', password = 'REPLACE_PASSWORD', project_name = '"
-                            _dmsg += str(_tenant) + "', auth_url = '" + str(access_url) 
-                            _dmsg += "', user_domain_id = '" + str(_user_domain_id) + "', "
-                            _dmsg += "project_domain_id = '" + str(_project_domain_id) + "'); "
-                            _dmsg += "_session = session.Session(auth = _auth); "
-                            _dmsg += "ct = cinderc.Client(\"2.1\", session = _session); print ct.volumes.list()\"\""                                                        
-                        else :
-                            _dmsg = "Please attempt to execute the following : \"python -c \""
-                            _dmsg += "from cinderclient import client as cinderc;"
-                            _dmsg += "ct = cinderc.Client('" + _version + "','" + str(_username) + "', '"
-                            _dmsg += "REPLACE_PASSWORD', '" + str(_tenant) + "', '" + str(access_url)
-                            _dmsg += "', region_name='" + str(region) + "', service_type='volume', "
-                            _dmsg += "endpoint_type='" + str(_endpoint_type) + "', cacert='" + str(_cacert)
-                            _dmsg += "', insecure='" + str(_insecure) + "'); print ct.volumes.list()\"\""                    
+                        _dmsg = "Please attempt to execute the following : \"python -c \""
+                        _dmsg += "from keystoneauth1.identity import v3; "
+                        _dmsg += "from keystoneauth1 import session; "
+                        _dmsg += "from cinderclient import client as cinderc; "
+                        _dmsg += "_auth = v3.Password(username = '" + str(_username) 
+                        _dmsg += "', password = 'REPLACE_PASSWORD', project_name = '"
+                        _dmsg += str(_tenant) + "', auth_url = '" + str(access_url) 
+                        _dmsg += "', user_domain_id = '" + str(_user_domain_id) + "', "
+                        _dmsg += "project_domain_id = '" + str(_project_domain_id) + "'); "
+                        _dmsg += "_session = session.Session(auth = _auth, verify = " + str(_verify) + ", cert = " + str(_cacert) + "); "
+                        _dmsg += "ct = cinderc.Client(\"2.1\", session = _session); print ct.volumes.list()\"\""                                                        
                     
                     elif not _neutron_client :
-                        if _session :
-                            _dmsg = "Please attempt to execute the following : \"python -c \""
-                            _dmsg += "from keystoneauth1.identity import v3; "
-                            _dmsg += "from keystoneauth1 import session; "
-                            _dmsg += "from neutronclient.v2_0 import client as neutronc; "
-                            _dmsg += "_auth = v3.Password(username = '" + str(_username) 
-                            _dmsg += "', password = 'REPLACE_PASSWORD', project_name = '"
-                            _dmsg += str(_tenant) + "', auth_url = '" + str(access_url) 
-                            _dmsg += "', user_domain_id = '" + str(_user_domain_id) + "', "
-                            _dmsg += "project_domain_id = '" + str(_project_domain_id) + "'); "
-                            _dmsg += "_session = session.Session(auth = _auth); "
-                            _dmsg += "ct = neutronc.Client(session = _session); print ct.list_networks()\"\""                            
-                        else :
-                            _dmsg = "Please attempt to execute the following : \"python -c \""
-                            _dmsg += "from neutronclient.v2_0 import client as neutronc;"                        
-                            _dmsg += "_credentials = {'username':'" + str(_username) + "', "
-                            _dmsg += "'password':'REPLACE_PASSWORD', 'tenant_name':'"
-                            _dmsg += str(_tenant) + "', 'auth_url':'" + str(access_url)
-                            _dmsg += "', 'region_name':'" + str(region) + "', 'service_type':'network', "
-                            _dmsg += "'endpoint_type':'" + str(_endpoint_type) + "', 'cacert':" + str(_cacert)
-                            _dmsg += ", 'insecure':" + str(_insecure) + "}; " 
-                            _dmsg += "ct = neutronc.Client(**_credentials); print ct.list_networks()\"\""                          
+                        _dmsg = "Please attempt to execute the following : \"python -c \""
+                        _dmsg += "from keystoneauth1.identity import v3; "
+                        _dmsg += "from keystoneauth1 import session; "
+                        _dmsg += "from neutronclient.v2_0 import client as neutronc; "
+                        _dmsg += "_auth = v3.Password(username = '" + str(_username) 
+                        _dmsg += "', password = 'REPLACE_PASSWORD', project_name = '"
+                        _dmsg += str(_tenant) + "', auth_url = '" + str(access_url) 
+                        _dmsg += "', user_domain_id = '" + str(_user_domain_id) + "', "
+                        _dmsg += "project_domain_id = '" + str(_project_domain_id) + "'); "
+                        _dmsg += "_session = session.Session(auth = _auth, verify = " + str(_verify) + ", cert = " + str(_cacert) + "); "
+                        _dmsg += "ct = neutronc.Client(session = _session); print ct.list_networks()\"\""                            
                     print _dmsg
                     
                 raise CldOpsException(_msg, _status)
@@ -337,11 +261,11 @@ class OskCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
-            self.connect(access, credentials, vmc_name, vm_defaults, True, True)
+            self.connect(access, credentials, vmc_name, vm_defaults, True, True, vmc_name)
 
             self.generate_rc(cloud_name, vmc_defaults, self.additional_rc_contents)
 
-            _key_pair_found = self.check_ssh_key(vmc_name, self.determine_key_name(vm_defaults), vm_defaults)
+            _key_pair_found = self.check_ssh_key(vmc_name, self.determine_key_name(vm_defaults), vm_defaults, False, vmc_name)
 
             _security_group_found = self.check_security_group(vmc_name, security_group_name)
 
@@ -397,7 +321,7 @@ class OskCmds(CommonCloudFunctions) :
         _msg = "Checking if the " + _net_str + " can be found on VMC " + vmc_name + "..."
         cbdebug(_msg, True)
 
-        self.get_network_list(vm_defaults)
+        self.get_network_list(vmc_name, vm_defaults)
                         
         _prov_netname_found = False
         _run_netname_found = False
@@ -412,7 +336,7 @@ class OskCmds(CommonCloudFunctions) :
                     _net_str = _net_type
                 else :
                     _net_str = _net_type + ' ' + _net_model
-                _msg = "done. This " + _net_str + " network will be used as the default for provisioning."
+                _msg = "done. This " + _net_str + " will be used as the default for provisioning."
                 cbdebug(_msg)
             else: 
                 _msg = "\nERROR! The default provisioning network (" 
@@ -429,7 +353,7 @@ class OskCmds(CommonCloudFunctions) :
                     _net_str = _net_type
                 else :
                     _net_str = _net_type + ' ' + _net_model                
-                _msg = "a " + _net_type + ' ' + _net_model + " network will be used as the default for running."
+                _msg = "a " + _net_type + ' ' + _net_model + " will be used as the default for running."
                 cbdebug(_msg)
             else: 
                 _msg = "ERROR! The default running network (" 
@@ -454,8 +378,8 @@ class OskCmds(CommonCloudFunctions) :
         _map_name_to_id = {}
         _map_id_to_name = {}
 
-        _registered_image_list = self.oskconncompute.glance.list()               
-#        _registered_image_list = self.oskconncompute.images.list()
+#        _registered_image_list = self.oskconncompute[vmc_name].glance.list()
+        _registered_image_list = self.oskconnimage[vmc_name].images.list()
         _registered_imageid_list = []
             
         for _registered_image in _registered_image_list :
@@ -496,15 +420,18 @@ class OskCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
-            if not self.oskconncompute :
-                self.connect(obj_attr_list["access"], \
-                             obj_attr_list["credentials"], \
-                             obj_attr_list["name"])
+            self.connect(obj_attr_list["access"], \
+                         obj_attr_list["credentials"], \
+                         obj_attr_list["name"],
+                         {},
+                         False,
+                         False,
+                         obj_attr_list["name"])
 
             obj_attr_list["hosts"] = ''
             obj_attr_list["host_list"] = {}
     
-            self.build_host_map()
+            self.build_host_map(obj_attr_list["name"])
             _host_list = self.host_map.keys()
 
             obj_attr_list["host_count"] = len(_host_list)
@@ -546,11 +473,13 @@ class OskCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
-            if not self.oskconncompute :
-                self.connect(obj_attr_list["access"], \
-                             obj_attr_list["credentials"], \
-                             obj_attr_list["name"],
-                              {"use_cinderclient" : str(obj_attr_list["use_cinderclient"])})
+            self.connect(obj_attr_list["access"], \
+                         obj_attr_list["credentials"], \
+                         obj_attr_list["name"],
+                        {"use_cinderclient" : str(obj_attr_list["use_cinderclient"])}, \
+                        False, \
+                        False, \
+                        obj_attr_list["name"])
 
             _curr_tries = 0
             _max_tries = int(obj_attr_list["update_attempts"])
@@ -564,8 +493,9 @@ class OskCmds(CommonCloudFunctions) :
                 _running_instances = False
                 
                 _criteria = {}                              
-                _criteria['all_tenants'] = 1                
-                _instances = self.oskconncompute.servers.list(search_opts = _criteria)
+                _criteria['all_tenants'] = 1
+                _vmc_name = obj_attr_list["name"]
+                _instances = self.oskconncompute[_vmc_name].servers.list(search_opts = _criteria)
                 
                 for _instance in _instances :
                     if _instance.name.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) \
@@ -577,7 +507,7 @@ class OskCmds(CommonCloudFunctions) :
                             _msg += ", associated with instance "
                             _msg += _instance.id + " (" + _instance.name + ")"
                             cbdebug(_msg, True)
-                            self.oskconnnetwork.delete_floatingip(_instance_metadata["cloud_floating_ip_uuid"])                             
+                            self.oskconnnetwork[_vmc_name].delete_floatingip(_instance_metadata["cloud_floating_ip_uuid"])                             
 #                            self.oskconncompute.floating_ips.delete(_instance_metadata["cloud_floating_ip_uuid"])
                                                                         
                         _running_instances = True
@@ -611,7 +541,7 @@ class OskCmds(CommonCloudFunctions) :
 
             if self.oskconnstorage and self.use_cinderclient == "true" :
                 self.common_messages("VMC", obj_attr_list, "cleaning up vvs", 0, '')
-                _volumes = self.oskconnstorage.volumes.list()
+                _volumes = self.oskconnstorage[_vmc_name].volumes.list()
     
                 for _volume in _volumes :
                     if "display_name" in dir(_volume) :
@@ -662,17 +592,23 @@ class OskCmds(CommonCloudFunctions) :
                                                  obj_attr_list["name"], 
                                                  obj_attr_list, \
                                                  False, \
-                                                 True)
-    
+                                                 True, \
+                                                 obj_attr_list["name"])
+
                 obj_attr_list["cloud_hostname"] = _hostname
 
-                _resolve = obj_attr_list["access"].split(':')[1].replace('//','')
+                if "access_from_rc" in obj_attr_list :
+                    _actual_access = obj_attr_list["access_from_rc"]
+                else :
+                    _actual_access = obj_attr_list["access"]
+                                        
+                _resolve = _actual_access.split(':')[1].replace('//','')
+
                 _resolve = _resolve.split('/')[0]
                 _resolve = _resolve.replace("_dash_","-")
 
                 _x, obj_attr_list["cloud_ip"] = hostname2ip(_resolve, True)
                 obj_attr_list["arrival"] = int(time())
-
 
                 if str(obj_attr_list["discover_hosts"]).lower() == "true" :                   
                     _status, _fmsg = self.discover_hosts(obj_attr_list, _time_mark_prs)
@@ -681,9 +617,10 @@ class OskCmds(CommonCloudFunctions) :
                     obj_attr_list["host_list"] = {}
                     obj_attr_list["host_count"] = "NA"
                     _status = 0
-                    
+
                 if not _status :
-                    self.get_network_list(obj_attr_list)
+
+                    self.get_network_list(obj_attr_list["name"], obj_attr_list)
     
                     _networks = {}
                     for _net in self.networks_attr_list.keys() :
@@ -767,11 +704,10 @@ class OskCmds(CommonCloudFunctions) :
                                                       "VMC", False, _vmc_uuid, \
                                                       False)
 
-                if not self.oskconncompute :
-                    self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
-                                 _vmc_attr_list["name"])
+                self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
+                             _vmc_attr_list["name"], {}, False, False, _vmc_attr_list["name"])
 
-                _instances = self.oskconncompute.servers.list()
+                _instances = self.oskconncompute[_vmc_attr_list["name"]].servers.list()
                 
                 for _instance in _instances :                    
                     if _instance.name.count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"]) \
@@ -786,6 +722,36 @@ class OskCmds(CommonCloudFunctions) :
 
         finally :
             return _nr_instances
+
+    @trace
+    def get_ssh_keys(self, vmc_name, key_name, key_contents, key_fingerprint, registered_key_pairs, internal, connection) :
+        '''
+        TBD
+        '''
+
+        for _key_pair in self.oskconncompute[vmc_name].keypairs.list() :
+            registered_key_pairs[_key_pair.name] = _key_pair.fingerprint + "-NA"
+
+            #self.oskconncompute.keypairs.delete(_key_pair)
+                                                
+        return True
+
+    @trace
+    def get_security_groups(self, vmc_name, security_group_name, registered_security_groups) :
+        '''
+        TBD
+        '''
+
+        if vmc_name in self.oskconnnetwork :
+            for _security_group in self.oskconnnetwork[vmc_name].list_security_groups()["security_groups"] :
+                
+                if _security_group["name"] not in registered_security_groups :
+                    registered_security_groups.append(_security_group["name"])
+        else :
+            for _security_group in self.oskconncompute[vmc_name].security_groups.list() :
+                registered_security_groups.append(_security_group.name)
+
+        return True
 
     @trace
     def get_ip_address(self, obj_attr_list, instance) :
@@ -889,26 +855,27 @@ class OskCmds(CommonCloudFunctions) :
                 else :
                     _search_opts["display_name"] = identifier
 
-            if not self.oskconncompute :
-                self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
-                             obj_attr_list["vmc_name"])
+            self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
+                         obj_attr_list["vmc_name"], obj_attr_list, False, False, identifier)
 
             if obj_type == "vm" :
                                 
                 if "cloud_vm_uuid" in obj_attr_list and len(obj_attr_list["cloud_vm_uuid"]) >= 36 and not force_list :
                     _call = "get"
-                    _instances = [ self.oskconncompute.servers.get(obj_attr_list["cloud_vm_uuid"]) ]
+                    _instances = [ self.oskconncompute[identifier].servers.get(obj_attr_list["cloud_vm_uuid"]) ]
 
                 else :
                     _call = "list"
-                    _instances = self.oskconncompute.servers.list(search_opts = _search_opts)
+                    _instances = self.oskconncompute[identifier].servers.list(search_opts = _search_opts)
             else :
+
                 if "cloud_vv_uuid" in obj_attr_list and len(obj_attr_list["cloud_vv_uuid"]) >= 36 :
                     _call = "get"
-                    _instances = [ self.oskconnstorage.volumes.get(obj_attr_list["cloud_vv_uuid"]) ]
+                    _instances = [ self.oskconnstorage[identifier].volumes.get(obj_attr_list["cloud_vv_uuid"]) ]
+
                 else :
                     _call = "list"
-                    _instances = self.oskconnstorage.volumes.list(search_opts = _search_opts)
+                    _instances = self.oskconnstorage[identifier].volumes.list(search_opts = _search_opts)
             
             if len(_instances) > 0 :
 
@@ -973,7 +940,7 @@ class OskCmds(CommonCloudFunctions) :
             
             _fmsg = "An error has occurred, but no error message was captured"
 
-            _image_list = self.oskconncompute.glance.list()
+#            _image_list = self.oskconncompute.glance.list()
 
             _fmsg = "Please check if the defined image name is present on this "
             _fmsg += self.get_description()
@@ -982,13 +949,16 @@ class OskCmds(CommonCloudFunctions) :
 
             _candidate_images = []
 
-            for _idx in range(0,len(_image_list)) :
-                if self.is_cloud_image_uuid(obj_attr_list["imageid1"]) :
-                    if _image_list[_idx].id == obj_attr_list["imageid1"] :
-                        _candidate_images.append(_image_list[_idx])
-                else :                        
-                    if _image_list[_idx].name.count(obj_attr_list["imageid1"]) :
-                        _candidate_images.append(_image_list[_idx])
+#            for _idx in range(0,len(_image_list)) :
+#                if self.is_cloud_image_uuid(obj_attr_list["imageid1"]) :
+#                    if _image_list[_idx].id == obj_attr_list["imageid1"] :
+#                        _candidate_images.append(_image_list[_idx])
+#                else :
+#                    if _image_list[_idx].name.count(obj_attr_list["imageid1"]) :
+#                        _candidate_images.append(_image_list[_idx])
+
+            _vmc_name = obj_attr_list["name"]
+            _candidate_images = [ self.oskconncompute[_vmc_name].glance.find_image(obj_attr_list["imageid1"]) ]
 
             if "hypervisor_type" in obj_attr_list :
                 if str(obj_attr_list["hypervisor_type"]).lower() != "fake" :
@@ -1059,7 +1029,13 @@ class OskCmds(CommonCloudFunctions) :
                     _status = 168
                     _fmsg = "Please check if the defined network is present on this "
                     _fmsg += self.get_description()
-                    self.get_network_list(obj_attr_list)
+                    
+                    if "name" in obj_attr_list :
+                        _conn_id = obj_attr_list["name"]
+                    else :
+                        _conn_id = "common"
+                        
+                    self.get_network_list(_conn_id, obj_attr_list)
                 
                 if _netname in self.networks_attr_list :
                     _networkid = self.networks_attr_list[_netname]["uuid"]
@@ -1087,6 +1063,25 @@ class OskCmds(CommonCloudFunctions) :
             else :
                 _netnames = ','.join(_netnames)                
                 return _netnames, _netids
+
+    @trace            
+    def create_ssh_key(self, vmc_name, key_name, key_type, key_contents, key_fingerprint, vm_defaults, connection) :
+        '''
+        TBD
+        '''
+        self.oskconncompute[vmc_name].keypairs.create(key_name, \
+                                            public_key = key_type + ' ' + key_contents)
+        return True
+
+    @trace
+    def is_cloud_image_uuid(self, imageid) :
+        '''
+        TBD
+        '''
+        if len(imageid) == 36 and imageid.count('-') == 4 :
+            return True
+
+        return False
 
     @trace
     def is_vm_running(self, obj_attr_list, fail = True) :
@@ -1154,7 +1149,7 @@ class OskCmds(CommonCloudFunctions) :
                 
         if "compute_node" in obj_attr_list and _availability_zone :
 #                _scheduler_hints = { "force_hosts" : obj_attr_list["host_name"] }
-            for _host in self.oskconncompute.hypervisors.list() :
+            for _host in self.oskconncompute[obj_attr_list["name"]].hypervisors.list() :
                 if _host.hypervisor_hostname.count(obj_attr_list["compute_node"]) :
                     obj_attr_list["host_name"] = _host.hypervisor_hostname
                     break
@@ -1198,8 +1193,8 @@ class OskCmds(CommonCloudFunctions) :
                 
                 obj_attr_list["last_known_state"] = "about to send volume create request"
                 _mark_a = time()
-                if str(self.oskconnstorage.version) == '1' :
-                    _instance = self.oskconnstorage.volumes.create(obj_attr_list["cloud_vv"], \
+                if str(self.oskconnstorage[obj_attr_list["name"]].version) == '1' :
+                    _instance = self.oskconnstorage[obj_attr_list["name"]].volumes.create(obj_attr_list["cloud_vv"], \
                                                                    snapshot_id = None, \
                                                                    display_name = obj_attr_list["cloud_vv_name"], \
                                                                    display_description = obj_attr_list["cloud_vv_name"], \
@@ -1207,7 +1202,7 @@ class OskCmds(CommonCloudFunctions) :
                                                                    availability_zone = None, \
                                                                    imageRef = _imageid)
                 else :
-                    _instance = self.oskconnstorage.volumes.create(obj_attr_list["cloud_vv"], \
+                    _instance = self.oskconnstorage[obj_attr_list["name"]].volumes.create(obj_attr_list["cloud_vv"], \
                                                                    snapshot_id = None, \
                                                                    name = obj_attr_list["cloud_vv_name"], \
                                                                    description = obj_attr_list["cloud_vv_name"], \
@@ -1215,7 +1210,7 @@ class OskCmds(CommonCloudFunctions) :
                                                                    availability_zone = None, \
                                                                    imageRef = _imageid)
 
-                self.annotate_time_breakdown(obj_attr_list, "create_creation_time", _mark_a)
+                self.annotate_time_breakdown(obj_attr_list, "create_volume_time", _mark_a)
                 
                 sleep(int(obj_attr_list["update_frequency"]))
 
@@ -1224,7 +1219,7 @@ class OskCmds(CommonCloudFunctions) :
                 _mark_a = time()
                 _wait_for_volume = 180
                 for i in range(1, _wait_for_volume) :
-                    _vol_status = self.oskconnstorage.volumes.get(_instance.id).status
+                    _vol_status = self.oskconnstorage[obj_attr_list["name"]].volumes.get(_instance.id).status
                     if _vol_status == "available" :
                         cbdebug("Volume " + obj_attr_list["cloud_vv_name"] + " took " + str(i) + " second(s) to become available",True)
                         break
@@ -1237,7 +1232,7 @@ class OskCmds(CommonCloudFunctions) :
 
                 if str(obj_attr_list["boot_from_volume"]).lower() == "true" :
                     obj_attr_list["boot_volume_imageid1"] = None                 
-                    obj_attr_list['cloud_vv'] = self.oskconnstorage.volumes.get(_instance.id).size 
+                    obj_attr_list['cloud_vv'] = self.oskconnstorage[obj_attr_list["name"]].volumes.get(_instance.id).size 
                     obj_attr_list["block_device_mapping"] = {'vda':'%s' % obj_attr_list["cloud_vv_uuid"]}
 
             if _vol_status == "error" :
@@ -1277,22 +1272,22 @@ class OskCmds(CommonCloudFunctions) :
             _fmsg = "An error has occurred, but no error message was captured"
                         
             if str(obj_attr_list["cloud_vv_uuid"]).lower() != "none" :
-                
-                _instance = self.get_instances(obj_attr_list, "vv", obj_attr_list["cloud_vv_name"])
-    
+
+                _instance = self.get_instances(obj_attr_list, "vv", obj_attr_list["cloud_vm_name"])
+
                 if _instance :
     
                     self.common_messages("VV", obj_attr_list, "destroying", 0, '')
-    
+
                     if len(_instance.attachments) :
                         _server_id = _instance.attachments[0]["server_id"]
                         _attachment_id = _instance.attachments[0]["id"]
                         # There is weird bug on the python novaclient code. Don't change the
                         # following line, it is supposed to be "oskconncompute", even though
                         # is dealing with volumes. Will explain latter.
-                        self.oskconncompute.volumes.delete_server_volume(_server_id, _attachment_id)
+                        self.oskconncompute[obj_attr_list["name"]].volumes.delete_server_volume(_server_id, _attachment_id)
     
-                    self.oskconnstorage.volumes.delete(_instance)
+                    self.oskconnstorage[obj_attr_list["name"]].volumes.delete(_instance)
                     
             _status =  0
                     
@@ -1349,26 +1344,27 @@ class OskCmds(CommonCloudFunctions) :
                                                                               obj_attr_list["tenant"], \
                                                                               obj_attr_list["user"], \
                                                                               True)
-                self.oskconncompute = False
+                if obj_attr_list["name"] in self.oskconncompute :
+                    del self.oskconncompute[obj_attr_list["name"]]
 
-            if not self.oskconncompute :
-                _mark_a = time()
-                self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
-                             obj_attr_list["vmc_name"], \
-                              {"use_cinderclient" : obj_attr_list["use_cinderclient"]})
-                
-                self.annotate_time_breakdown(obj_attr_list, "authenticate_time", _mark_a)
+            _mark_a = time()
+            self.connect(obj_attr_list["access"], \
+                         obj_attr_list["credentials"], \
+                         obj_attr_list["vmc_name"], \
+                         {"use_cinderclient" : obj_attr_list["use_cinderclient"]}, \
+                         False, \
+                         False, \
+                         obj_attr_list["name"])
+            
+            self.annotate_time_breakdown(obj_attr_list, "authenticate_time", _mark_a)
 
-            else :
-                _mark_a = time()
-
+            _mark_a = time()
             if self.is_vm_running(obj_attr_list) :
                 _msg = "An instance named \"" + obj_attr_list["cloud_vm_name"]
                 _msg += "\" is already running. It needs to be destroyed first."
                 _status = 187
                 cberr(_msg)
                 raise CldOpsException(_msg, _status)
-
             self.annotate_time_breakdown(obj_attr_list, "check_existing_instance_time", _mark_a)
                     
             obj_attr_list["last_known_state"] = "about to get flavor and image list"
@@ -1380,26 +1376,23 @@ class OskCmds(CommonCloudFunctions) :
                 _security_groups = []
                 _security_groups.append(obj_attr_list["security_groups"])
 
-            self.pre_vmcreate_process(obj_attr_list)
             self.vm_placement(obj_attr_list)
 
             obj_attr_list["last_known_state"] = "about to send create request"
 
             _mark_a = time()
             self.get_flavors(obj_attr_list)
-            self.annotate_time_breakdown(obj_attr_list, "get_flavors_time", _mark_a)
+            self.annotate_time_breakdown(obj_attr_list, "get_flavor_time", _mark_a)
             
             _mark_a = time()
             self.get_images(obj_attr_list)
             self.annotate_time_breakdown(obj_attr_list, "get_imageid_time", _mark_a)
 
-            if "userdata" in obj_attr_list and str(obj_attr_list["userdata"]).lower() != "false" :
-                obj_attr_list["userdata"] = obj_attr_list["userdata"].replace("# INSERT OPENVPN COMMAND", \
-                                                              "openvpn --config /etc/openvpn/" + obj_attr_list["cloud_name"].upper() + "_client-cb-openvpn.conf --daemon --client")
-                obj_attr_list["config_drive"] = True
+            obj_attr_list["userdata"] = self.populate_cloudconfig(obj_attr_list)
+            if obj_attr_list["userdata"] :
+                obj_attr_list["config_drive"] = True                
             else :
                 obj_attr_list["config_drive"] = None
-                obj_attr_list["userdata"] = None
 
             _mark_a = time()
             _netnames, _netids = self.get_networks(obj_attr_list)
@@ -1435,8 +1428,10 @@ class OskCmds(CommonCloudFunctions) :
 
             self.common_messages("VM", obj_attr_list, "creating", 0, '')
 
+            self.pre_vmcreate_process(obj_attr_list)
+
             _mark_a = time()
-            _instance = self.oskconncompute.servers.create(name = obj_attr_list["cloud_vm_name"], \
+            _instance = self.oskconncompute[obj_attr_list["name"]].servers.create(name = obj_attr_list["cloud_vm_name"], \
                                                            block_device_mapping = obj_attr_list["block_device_mapping"], \
                                                            image = obj_attr_list["boot_volume_imageid1_instance"], \
                                                            flavor = obj_attr_list["flavor_instance"], \
@@ -1459,7 +1454,7 @@ class OskCmds(CommonCloudFunctions) :
 
                 self.take_action_if_requested("VM", obj_attr_list, "provision_started")
 
-                while not self.floating_ip_attach(obj_attr_list, _instance, _fip) :
+                while not self.floating_ip_attach(obj_attr_list, _instance) :
                     True
 
                 _time_mark_prc = self.wait_for_instance_ready(obj_attr_list, _time_mark_prs)
@@ -1483,7 +1478,7 @@ class OskCmds(CommonCloudFunctions) :
                         # following line, it is supposed to be "oskconncompute", even though
                         # is dealing with volumes. Will explain later.
                         _mark_a = time()    
-                        self.oskconncompute.volumes.create_server_volume(obj_attr_list["cloud_vm_uuid"], \
+                        self.oskconncompute[obj_attr_list["name"]].volumes.create_server_volume(obj_attr_list["cloud_vm_uuid"], \
                                                                          obj_attr_list["cloud_vv_uuid"], \
                                                                          "/dev/vdd")
     
@@ -1496,8 +1491,13 @@ class OskCmds(CommonCloudFunctions) :
                         _status = 0
  
                     if "admin_credentials" in obj_attr_list :
-                        self.connect(obj_attr_list["access"], obj_attr_list["admin_credentials"], \
-                                     obj_attr_list["vmc_name"])
+                        self.connect(obj_attr_list["access"], \
+                                     obj_attr_list["admin_credentials"], \
+                                     obj_attr_list["vmc_name"], \
+                                     {}, 
+                                     False, \
+                                     False, \
+                                     obj_attr_list["name"])
 
                     self.get_mac_address(obj_attr_list, _instance)
 
@@ -1506,7 +1506,7 @@ class OskCmds(CommonCloudFunctions) :
                     self.get_host_and_instance_name(obj_attr_list)
     
                     if obj_attr_list["tenant"] != "default" :
-                        self.oskconncompute = False
+                        del self.oskconncompute[obj_attr_list["name"]]
 
                     if "resource_limits" in obj_attr_list :
                         _status, _fmsg = self.set_cgroup(obj_attr_list)
@@ -1575,10 +1575,14 @@ class OskCmds(CommonCloudFunctions) :
                 obj_attr_list["mgt_902_deprovisioning_request_sent"] = \
                     _time_mark_drs - int(obj_attr_list["mgt_901_deprovisioning_request_originated"])
     
-                if not self.oskconncompute :
-                    self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
-                                 obj_attr_list["vmc_name"])
-                
+                self.connect(obj_attr_list["access"], \
+                             obj_attr_list["credentials"], \
+                             obj_attr_list["vmc_name"], 
+                             {}, \
+                             False, \
+                             False, \
+                             obj_attr_list["name"])
+
                 _wait = int(obj_attr_list["update_frequency"])
                 _max_tries = int(obj_attr_list["update_attempts"])
                 _curr_tries = 0
@@ -1640,9 +1644,13 @@ class OskCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
-            if not self.oskconncompute :
-                self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
-                             obj_attr_list["vmc_name"])
+            self.connect(obj_attr_list["access"], \
+                         obj_attr_list["credentials"], \
+                         obj_attr_list["vmc_name"], \
+                         {}, \
+                         False, \
+                         False, \
+                         obj_attr_list["name"])
 
             _wait = int(obj_attr_list["update_frequency"])
             _curr_tries = 0
@@ -1667,8 +1675,8 @@ class OskCmds(CommonCloudFunctions) :
                 _instance.create_image(obj_attr_list["captured_image_name"], None)
                 _vm_image_created = False
                 while not _vm_image_created and _curr_tries < _max_tries :
-                    _vm_images = self.oskconncompute.glance.list()
-#                    _vm_images = self.oskconncompute.images.list()
+#                    _vm_images = self.oskconncompute[obj_attr_list["name"]].glance.list()
+                    _vm_images = self.oskconnimage[obj_attr_list["name"]].images.list()
                     for _vm_image in _vm_images :
                         if _vm_image.name == obj_attr_list["captured_image_name"] :
                             if _vm_image.status.lower() == "active" :
@@ -1720,13 +1728,18 @@ class OskCmds(CommonCloudFunctions) :
         '''
         try :
             _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
 
             _ts = obj_attr_list["target_state"]
             _cs = obj_attr_list["current_state"]
     
-            if not self.oskconncompute :
-                self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
-                             obj_attr_list["vmc_name"])
+            self.connect(obj_attr_list["access"], \
+                         obj_attr_list["credentials"], \
+                         obj_attr_list["vmc_name"], \
+                         {}, \
+                         False, \
+                         False, \
+                         obj_attr_list["name"])
 
             _wait = int(obj_attr_list["update_frequency"])
             _curr_tries = 0
@@ -1785,9 +1798,13 @@ class OskCmds(CommonCloudFunctions) :
         _status = 100
         _fmsg = "An error has occurred, but no error message was captured"
 
-        if not self.oskconncompute :
-                self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
-                             obj_attr_list["vmc_name"])
+        self.connect(obj_attr_list["access"], \
+                     obj_attr_list["credentials"], \
+                     obj_attr_list["vmc_name"], \
+                     {}, \
+                     False, \
+                     False, \
+                     obj_attr_list["name"])
 
         operation = obj_attr_list["mtype"]
 
@@ -1808,9 +1825,6 @@ class OskCmds(CommonCloudFunctions) :
         
         _time_mark_crs = int(time())            
         try :
-            if not self.oskconncompute :
-                self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
-                             obj_attr_list["vmc_name"]) 
     
             _instance = self.get_instances(obj_attr_list, "vm", obj_attr_list["cloud_vm_name"])
             
@@ -1885,9 +1899,13 @@ class OskCmds(CommonCloudFunctions) :
 
             self.connect(obj_attr_list["access"], \
                          obj_attr_list["credentials"], \
-                         obj_attr_list["vmc_name"], obj_attr_list)
+                         obj_attr_list["vmc_name"], \
+                         obj_attr_list, \
+                         False, \
+                         False, \
+                         None)
 
-            _image_list = self.oskconncompute.images.list()
+            _image_list = self.oskconnimage["common"].images.list()
                 
             for _image in _image_list :
                 if self.is_cloud_image_uuid(obj_attr_list["imageid1"]) :
@@ -1939,53 +1957,126 @@ class OskCmds(CommonCloudFunctions) :
         finally :
             _status, _msg = self.common_messages("IMG", obj_attr_list, "deleted", _status, _fmsg)
             return _status, _msg
+
+    @trace
+    def parse_connection_data(self, connection_data, region, obj_attr_list) :
+        '''
+        TBD
+        '''
+        _access_url = None
+        _endpoint_type = "publicURL"
+        _region = region
+        
+        if not self.connauth_pamap :        
+                
+            if len(connection_data.split('-')) == 2 :
+                _access_url, _endpoint_type = connection_data.split('-')                               
+            else :
+                _access_url = connection_data.split('-')[0]    
+        else :
+            if "OS_AUTH_URL" in self.connauth_pamap :
+                _access_url = self.connauth_pamap["OS_AUTH_URL"]
+
+            if "OS_ENDPOINT_TYPE" in self.connauth_pamap :
+                _endpoint_type = self.connauth_pamap["OS_ENDPOINT_TYPE"]
+
+            if "OS_REGION_NAME" in self.connauth_pamap :
+                _region = self.connauth_pamap["OS_REGION_NAME"]
+
+        obj_attr_list["access_from_rc"] = _access_url + '-' + _endpoint_type
+        
+        return _access_url, _endpoint_type, _region
         
     @trace
     def parse_authentication_data(self, authentication_data, tenant = "default", username = "default", single = False):
         '''
         TBD
         '''
-        if authentication_data.count(':') >= 2 :
-            _separator = ':'
-        else :
-            _separator = '-'
 
-        if len(authentication_data.split(_separator)) < 3 :
-            _msg = "ERROR: Insufficient number of parameters in OSK_CREDENTIALS."
-            _msg += "Please make sure that at least username, password and tenant"
-            _msg += " are present."
-            if single :
-                return _msg
+        _username = ''
+        _password = ''
+        _tenant = ''
+        _project_name = None
+        # Insecure (don't verify CACERT: _verify = False and _cacert = None)
+        # Verify CACERT (_verify = False and _cacert = <valid path to cert file>)
+        _cacert = None
+        _ckcert = None
+        _verify = False
+        _user_domain_id = "default"
+        _project_domain_id = "default"
+        
+        if not self.connauth_pamap :
+            if authentication_data.count(':') >= 2 :
+                _separator = ':'
             else :
-                return False, _msg, False, False, False
-
-        if len(authentication_data.split(_separator)) == 3 :
-            _username, _password, _tenant = authentication_data.split(_separator)
-            _cacert = None
-            _insecure = False
-            
-        elif len(authentication_data.split(_separator)) == 4 :
-            _username, _password, _tenant, _cacert = authentication_data.split(_separator)
-            _insecure = False
-            
-        elif len(authentication_data.split(_separator)) == 5 :
-            _username, _password, _tenant, _cacert, _insecure = authentication_data.split(_separator)
-            _insecure = True
-
-        elif len(authentication_data.split(_separator)) > 5 and _separator == '-' :            
-            _msg = "ERROR: Please make sure that the none of the parameters in"
-            _msg += "OSK_CREDENTIALS have any dashes (i.e., \"-\") on it. If"
-            _msg += "a dash is required, please use the string \"_dash\", and"
-            _msg += "it will be automatically replaced."
-            if single :
-                return _msg
-            else :
-                return False, _msg, False, False, False
-            
+                _separator = '-'
+    
+            if len(authentication_data.split(_separator)) < 3 :
+                _msg = "ERROR: Insufficient number of parameters in OSK_CREDENTIALS."
+                _msg += "Please make sure that at least username, password and tenant"
+                _msg += " are present."
+                if single :
+                    return _msg
+                else :
+                    return False, _msg, False, False, False, False, False, False
+    
+            if len(authentication_data.split(_separator)) == 3 :
+                _username, _password, _tenant = authentication_data.split(_separator)
+                
+            elif len(authentication_data.split(_separator)) == 4 :
+                _username, _password, _tenant, _cacert = authentication_data.split(_separator)
+                _verify = True
+    
+            elif len(authentication_data.split(_separator)) == 5 :
+                _username, _password, _tenant, _cacert, _ckcert = authentication_data.split(_separator)
+                if ( str(_ckcert).lower() == "verify" ) :
+                    _verify = True
+                elif ( str(_ckcert).lower() == "insecure" ) :
+                    _verify = False
+                    _cacert = None
+                else :
+                    _verify = False
+                    _cacert = None
+    
+            elif len(authentication_data.split(_separator)) > 5 and _separator == '-' :            
+                _msg = "ERROR: Please make sure that the none of the parameters in"
+                _msg += "OSK_CREDENTIALS have any dashes (i.e., \"-\") on it. If"
+                _msg += "a dash is required, please use the string \"_dash\", and"
+                _msg += "it will be automatically replaced."
+                if single :
+                    return _msg
+                else :
+                    return False, _msg, False, False, False, False, False, False
+                
         else :
-            _username = ''
-            _password = ''
-            _tenant = ''
+
+            if "OS_USERNAME" in self.connauth_pamap :
+                _username = self.connauth_pamap["OS_USERNAME"]
+
+            if "OS_PASSWORD" in self.connauth_pamap :
+                _password = self.connauth_pamap["OS_PASSWORD"]
+
+            if "OS_TENANT_NAME" in self.connauth_pamap :
+                _tenant = self.connauth_pamap["OS_TENANT_NAME"]
+
+            if "OS_PROJECT_NAME" in self.connauth_pamap :
+                _project_name = self.connauth_pamap["OS_PROJECT_NAME"]
+
+            if "OS_CACERT" in self.connauth_pamap :
+                _cacert = self.connauth_pamap["OS_CACERT"]
+
+            if "OS_INSECURE" in self.connauth_pamap :
+                if self.connauth_pamap["OS_INSECURE"] == "1" or str(self.connauth_pamap["OS_INSECURE"]).lower() == "insecure":
+                    _verify = False
+                    _cacert = None
+                else :
+                    _verify = True
+
+            if "OS_PROJECT_DOMAIN_ID" in self.connauth_pamap :
+                _project_domain_id = self.connauth_pamap["OS_PROJECT_DOMAIN_ID"]
+
+            if "OS_USER_DOMAIN_ID" in self.connauth_pamap :
+                _user_domain_id = self.connauth_pamap["OS_USER_DOMAIN_ID"]
 
         if tenant != "default" :
             _tenant = tenant
@@ -1993,17 +2084,27 @@ class OskCmds(CommonCloudFunctions) :
         if username != "default" :
             _username = username
 
+        _username = _username.replace("_dash_",'-')
+        _password = _password.replace("_dash_",'-')
+        _tenant = _tenant.replace("_dash_",'-')
+
+        if not _project_name :
+            _project_name = _tenant
+
+        if _cacert :
+            _cacert = _cacert.replace("_dash_",'-')
+
         if single :
             _str = str(_username) + ':' + str(_password) + ':' + str(_tenant)
 
             if _cacert :
                 _str += ':' + str(_cacert) 
-            if _insecure :
-                _str += ':' +  str(_insecure)
+            if _verify :
+                _str += ':' +  str(_verify)
 
             return _str
         else :
-            return _username, _password, _tenant, _cacert, _insecure
+            return _username, _password, _tenant, _project_name, _cacert, _verify, _user_domain_id, _project_domain_id
 
     @trace
     def disconnect(self) :
@@ -2014,15 +2115,14 @@ class OskCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
-            if self.oskconncompute :
-                self.oskconncompute.novaclient.http.close()
+#            if self.oskconncompute :
+#                self.oskconncompute.novaclient.http.close()
 
+#            if self.oskconnstorage and self.use_cinderclient == "true":
+#                self.oskconnstorage.novaclient.http.close()
 
-            if self.oskconnstorage and self.use_cinderclient == "true":
-                self.oskconnstorage.novaclient.http.close()
-
-            if self.oskconnnetwork :
-                self.oskconnnetwork.neutronclient.http.close()
+#            if self.oskconnnetwork :
+#                self.oskconnnetwork.neutronclient.http.close()
 
             _status = 0
 
@@ -2083,11 +2183,12 @@ class OskCmds(CommonCloudFunctions) :
         return True
 
     @trace    
-    def get_network_list(self, obj_attr_list) :
+    def get_network_list(self, vmc_name, obj_attr_list) :
         '''
         TBD
         '''
-        _network_list = self.oskconnnetwork.list_networks()["networks"]
+        
+        _network_list = self.oskconnnetwork[vmc_name].list_networks()["networks"]
 
         for _network_attr_list in _network_list :
             self.get_network_attr(obj_attr_list, _network_attr_list)
@@ -2105,7 +2206,7 @@ class OskCmds(CommonCloudFunctions) :
         str(vm_defaults["use_floating_ip"]).lower() != "false" :
 
             _floating_pool_dict = {}
-            for _network in self.oskconnnetwork.list_networks()["networks"] :                
+            for _network in self.oskconnnetwork[vmc_name].list_networks()["networks"] :
                 if _network["router:external"] :
                     if _network["name"] not in _floating_pool_dict :
                         _floating_pool_dict[_network["name"]] = _network["id"]
@@ -2353,16 +2454,16 @@ class OskCmds(CommonCloudFunctions) :
             return _status, _msg        
 
     @trace
-    def get_service_list(self, project) :
+    def get_service_list(self, vmc_name, project) :
         '''
         TBD
         '''
         if project == "compute" :
-            return self.oskconncompute.services.list()
+            return self.oskconncompute[vmc_name].services.list()
         elif project == "volume" and self.use_cinderclient == "true" :
-            return self.oskconnstorage.services.list()
+            return self.oskconnstorage[vmc_name].services.list()
         elif project == "network" :
-            return self.oskconnnetwork.list_agents()["agents"]        
+            return self.oskconnnetwork[vmc_name].list_agents()["agents"]
         else :
             return []
 
@@ -2396,7 +2497,7 @@ class OskCmds(CommonCloudFunctions) :
             return service["binary"]
 
     @trace
-    def build_host_map(self) :
+    def build_host_map(self, vmc_name) :
         '''
         TBD
         '''
@@ -2404,7 +2505,7 @@ class OskCmds(CommonCloudFunctions) :
         try :        
             for _project in ["compute", "volume", "network"] :
     
-                for _service in self.get_service_list(_project) :
+                for _service in self.get_service_list(vmc_name, _project) :
     
                     _host = self.get_service_host(_service, _project)
                     
@@ -2421,7 +2522,7 @@ class OskCmds(CommonCloudFunctions) :
                     if _name not in self.host_map[_host]["services"] :
                         self.host_map[_host]["services"].append(_name)
     
-            for _entry in self.oskconncompute.hypervisors.list() :
+            for _entry in self.oskconncompute[vmc_name].hypervisors.list() :
                 _host = _entry.hypervisor_hostname.split('.')[0]
                 if _host not in self.host_map :
                     self.host_map[_host] = {}
@@ -2447,19 +2548,20 @@ class OskCmds(CommonCloudFunctions) :
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
-            
-            _flavor_list = self.oskconncompute.flavors.list()
+
+            _flavor_list = self.oskconncompute[obj_attr_list["name"]].flavors.list()
 
             _status = 168
             _fmsg = "Please check if the defined flavor is present on this "
             _fmsg += self.get_description()
 
             _flavor = False
+
             for _idx in range(0,len(_flavor_list)) :
-                if _flavor_list[_idx].name.count(obj_attr_list["size"]) :
+                if _flavor_list[_idx].name == obj_attr_list["size"] :
                     _flavor = _flavor_list[_idx]
                     _status = 0
-                    break
+                    break            
 
             obj_attr_list["flavor_instance"] = _flavor
             obj_attr_list["flavor"] = _flavor.id
@@ -2487,7 +2589,7 @@ class OskCmds(CommonCloudFunctions) :
         '''
 
         try :
-            _virtual_interfaces = self.oskconncompute.virtual_interfaces.list(instance.id)
+            _virtual_interfaces = self.oskconncompute[obj_attr_list["name"]].virtual_interfaces.list(instance.id)
             if _virtual_interfaces and len(_virtual_interfaces) :
                 obj_attr_list["cloud_mac"] = _virtual_interfaces[0].mac_address
         except :
@@ -2580,31 +2682,27 @@ class OskCmds(CommonCloudFunctions) :
             identifier = obj_attr_list["cloud_vm_name"]
             
             if not self.oskconnnetwork :
-                self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
-                             obj_attr_list["vmc_name"])
+                self.connect(obj_attr_list["access"], \
+                             obj_attr_list["credentials"], \
+                             obj_attr_list["vmc_name"], \
+                             {}, \
+                             False, \
+                             False, \
+                             obj_attr_list["name"])
 
             _fip = False
-
-#            if str(obj_attr_list["always_create_floating_ip"]).lower() == "false" :
-
-#                _call = "floating ip list"
-#                fips = self.oskconnnetwork.list_floatingips()
-#                fips = self.oskconnnetwork.floating_ips.list()
-                
-#                for _fip in fips :
-#                    if _fip.instance_id == None :
-#                        _fip = _fip.ip
-#                        break
 
             if not _fip :
                 _call = "floating ip create"
                 _mark_a = time()
-                _fip_h = self.oskconnnetwork.create_floatingip({"floatingip": {"floating_network_id": obj_attr_list["floating_pool_id"]}}) 
+                _fip_h = self.oskconnnetwork[obj_attr_list["name"]].create_floatingip({"floatingip": {"floating_network_id": obj_attr_list["floating_pool_id"]}}) 
 #                _fip_h = self.oskconncompute.floating_ips.create(obj_attr_list["floating_pool"])
                 self.annotate_time_breakdown(obj_attr_list, "create_fip_time", _mark_a)
-                _fip = _fip_h["floatingip"]["floating_ip_address"]
+                obj_attr_list["cloud_floating_ip_address"] = _fip_h["floatingip"]["floating_ip_address"]
                 obj_attr_list["cloud_floating_ip_uuid"] = _fip_h["floatingip"]["id"]
 
+                _fip = obj_attr_list["cloud_floating_ip_address"]
+                
             return _fip
 
         except novaexceptions, obj:
@@ -2648,15 +2746,17 @@ class OskCmds(CommonCloudFunctions) :
             _call = "NAfpd"
             identifier = obj_attr_list["cloud_vm_name"]
             
-            if not self.oskconncompute :
-                self.connect(obj_attr_list["access"], obj_attr_list["credentials"], \
-                             obj_attr_list["vmc_name"])
-
+            self.connect(obj_attr_list["access"], \
+                         obj_attr_list["credentials"], \
+                         obj_attr_list["vmc_name"], \
+                         {}, \
+                         False, \
+                         False, \
+                         obj_attr_list["name"])
 
             if "cloud_floating_ip_uuid" in obj_attr_list :
                 _call = "floating ip delete"
-#                self.oskconncompute.floating_ips.delete(obj_attr_list["cloud_floating_ip_uuid"])
-                self.oskconnnetwork.delete_floatingip(obj_attr_list["cloud_floating_ip_uuid"])                
+                self.oskconnnetwork[obj_attr_list["name"]].delete_floatingip(obj_attr_list["cloud_floating_ip_uuid"])                
             return True
 
         except novaexceptions, obj:
@@ -2690,7 +2790,7 @@ class OskCmds(CommonCloudFunctions) :
                 return False
     
     @trace
-    def floating_ip_attach(self, obj_attr_list, _instance, fip) :
+    def floating_ip_attach(self, obj_attr_list, _instance) :
         '''
         TBD
         '''
@@ -2725,7 +2825,13 @@ class OskCmds(CommonCloudFunctions) :
                 if "hypervisor_type" in obj_attr_list and obj_attr_list["hypervisor_type"].lower() == "fake" :
                     True
                 else :
-                    _instance.add_floating_ip(fip)
+                    
+                    try :
+                        update_info = {"port_id":_instance.interface_list()[0].id}
+                        self.oskconnnetwork.update_floatingip(obj_attr_list["cloud_floating_ip_uuid"], {"floatingip": update_info})
+                    except :
+                        _instance.add_floating_ip(obj_attr_list["cloud_floating_ip_address"])
+                    
                     self.annotate_time_breakdown(obj_attr_list, "attach_fip_time", _mark_a)
 
             return True

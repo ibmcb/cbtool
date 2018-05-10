@@ -1395,7 +1395,7 @@ function execute_load_generator {
     log_output_command=$(get_my_ai_attribute log_output_command)
     log_output_command=$(echo ${log_output_command} | tr '[:upper:]' '[:lower:]')
 
-    run_limit=`decrement_my_ai_attribute run_limit`
+    run_limit=`get_my_ai_attribute run_limit`
 
     if [[ -f /tmp/quiescent_time_start ]]
     then
@@ -1405,7 +1405,7 @@ function execute_load_generator {
         echo $DIFF > /tmp/quiescent_time        
     fi
     
-    if [[ ${run_limit} -ge 0 ]]
+    if [[ ${run_limit} -gt 0 ]]
     then
         syslog_netcat "This AI will execute the load_generating process ${run_limit} more times (LOAD_ID=${LOAD_ID}, AI_UUID=$my_ai_uuid, VM_UUID=$my_vm_uuid)" 
         syslog_netcat "Command line is: ${CMDLINE}. Output file is ${OUTPUT_FILE} (LOAD_ID=${LOAD_ID}, AI_UUID=$my_ai_uuid, VM_UUID=$my_vm_uuid)"
@@ -1428,6 +1428,7 @@ function execute_load_generator {
             LOAD_GENERATOR_END=$(date +%s)
             APP_COMPLETION_TIME=$(( $LOAD_GENERATOR_END - $LOAD_GENERATOR_START ))            
         fi
+        run_limit=`decrement_my_ai_attribute run_limit`
     else
         LOAD_GENERATOR_START=$(date +%s)        
         syslog_netcat "This AI reached the limit of load generation process executions. If you want this AI to continue to execute the load generator, reset the \"run_limit\" counter (LOAD_ID=${LOAD_ID}, AI_UUID=$my_ai_uuid, VM_UUID=$my_vm_uuid)"
@@ -1631,6 +1632,18 @@ export -f vercomp
 
 function get_offline_ip {
     ip -o addr show $(ip route | grep default | grep -oE "dev [a-z]+[0-9]+" | sed "s/dev //g") | grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | grep -v 255
+}
+
+function setup_rclocal_restarts {
+    if [ x"$(grep cb_start_load_manager.sh /etc/rc.local)" == x ] ; then
+        echo "cb_start_load_manager.sh is missing from /etc/rc.local"
+        cat /etc/rc.local | grep -v "exit 0" > /tmp/rc.local
+        chmod +x /tmp/rc.local
+		echo "su $(whoami) -c \"$dir/cb_start_load_manager.sh\"" >> /tmp/rc.local
+        echo "exit 0" >> /tmp/rc.local
+        mv -f /tmp/rc.local /etc/rc.local
+        
+    fi
 }
 
 function automount_data_dirs {
