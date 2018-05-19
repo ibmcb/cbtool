@@ -1223,7 +1223,11 @@ class PassiveObjectOperations(BaseObjectOperations) :
 
                 _exp_counters = _stats["experiment_counters"]
 
-                _aidrs = int(_exp_counters["AIDRS"]["reservations"]) 
+                _aidrs = 0
+
+                # Not sure what's going on here in simcloud. Needed a dirty fix.
+                if str(_exp_counters["AIDRS"]["reservations"]) != "None" :
+                    _aidrs += int(_exp_counters["AIDRS"]["reservations"])
                 # Arrived doesn't mean that a submitter is present.
                 #_aidrs += int(_exp_counters["AIDRS"]["arrived"])
                 _aidrs += int(_exp_counters["AIDRS"]["arriving"]) 
