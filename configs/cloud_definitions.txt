@@ -99,7 +99,7 @@ GCE_LOGIN = cbuser                                         # The username that l
 # DigitalOcean (DO) requires the following parameters
 [USER-DEFINED : CLOUDOPTION_MYDIGITALOCEAN]
 DO_INITIAL_VMCS = tor1:sut                                                                       # VMC == DO data center (we don't have availability zones yet)
-DO_CREDENTIALS = long_hex_token_from_digitalocean.com:arbitrarytag1,another_token:arbitrarytag2  # This is your DO access token. The driver supports multiple accounts and will distribute AIs across all accounts in a round-robin fashion.
+DO_CREDENTIALS = long_hex_token_from_digitalocean.com:arbitrarytag1;another_token:arbitrarytag2  # This is your DO access token. The driver supports multiple accounts and will distribute AIs across all accounts in a round-robin fashion.
 DO_SSH_KEY_NAME = cbtool_rsa                                                                     # Either upload credentials/cbtool_rsa.pub to DO or tell us where your private key is
 DO_KEY_NAME = key_name_from_digitialocean.com                                                    # Comma-separated list of IDs (or names) of your DO ssh keys
 DO_LOGIN = root                                                                                  # The username that logins on the VMs

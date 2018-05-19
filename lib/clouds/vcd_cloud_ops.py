@@ -29,7 +29,6 @@ class VcdCmds(LibcloudCmds) :
                               use_sizes = False, \
                               use_locations = False, \
                               verify_ssl = False, \
-                              extra = {"foo" : "bar"} \
                              )
 
     # num_credentials = 1: '1' is for the password. The username is assumed to be the first parameter and is included by default as 'tenant' below.
@@ -48,10 +47,11 @@ class VcdCmds(LibcloudCmds) :
         return "VMware VCloud"
 
     @trace
-    def pre_vmcreate(self, obj_attr_list, extra) :
-        extra["kwargs"]["ex_force_customization"] = False
-        extra["kwargs"]["ex_clone_timeout"] = int(obj_attr_list["clone_timeout"])
-        extra["kwargs"]["ex_vm_names"] = ["vm" + obj_attr_list["name"].split("_")[1]]
+    def pre_vmcreate_process(self, obj_attr_list, keys) :
+        self.vmcreate_kwargs["ex_create_attr"] = {}
+        self.vmcreate_kwargs["ex_force_customization"] = False
+        self.vmcreate_kwargs["ex_clone_timeout"] = int(obj_attr_list["clone_timeout"])
+        self.vmcreate_kwargs["ex_vm_names"] = ["vm" + obj_attr_list["name"].split("_")[1]]
 
         _image_id_name = "https://" + obj_attr_list["access"] + "/api/vAppTemplate/vappTemplate-" + obj_attr_list["imageid1"]
         # The common code has already done a search against all image names.
@@ -88,10 +88,9 @@ class VcdCmds(LibcloudCmds) :
 
                 if image is not None :
                     obj_attr_list["image"] = image
-                    extra["kwargs"]["ex_force_customization"] = True 
+                    self.vmcreate_kwargs["ex_force_customization"] = True
                     _msg = "Found an instantiated vApp named "
                     _msg += obj_attr_list["imageid1"]
                     _msg += " Will attempt to clone this vApp."
                     cbdebug (_msg, True)
 
-        return extra

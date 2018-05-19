@@ -72,14 +72,14 @@ class LibcloudCmds(CommonCloudFunctions) :
                 3. Each tenant only has one (1) credential for authentication: "bar" and "baz".
                 4. The configuration file would look like this:
                  [USER-DEFINED : CLOUDOPTION_FOO ]
-                 FOO_CREDENTIALS = user1:bar,user2:baz
+                 FOO_CREDENTIALS = user1:bar;user2:baz
              Example 2)
                 1. Cloud is named "HAPPY"
                 2. There are three tenants named "not", "so", and "lucky"
                 3. Each tenant has the same access_key and access_token, two (2) credentials each as "foo" and "bar"
                 4. The configuration file would look like this:
                  [USER-DEFINED : CLOUDOPTION_HAPPY ]
-                 HAPPY_CREDENTIALS = not:foo:bar,so:foo:bar,lucky:foo:bar
+                 HAPPY_CREDENTIALS = not:foo:bar;so:foo:bar;lucky:foo:bar
             In Example 1), @num_credentials = 1
             In Example 2), @num_credentials = 2
             By, default we assume Oauth-driven clouds that have both an access token and an access key.
@@ -152,7 +152,6 @@ class LibcloudCmds(CommonCloudFunctions) :
         self.use_sizes = use_sizes
         self.use_get_image = use_get_image
         self.tldomain = tldomain
-        self.extra = extra
         self.additional_rc_contents = ''        
         self.vmcreate_kwargs = {}
         self.vvcreate_kwargs = {}        
@@ -209,13 +208,13 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             cbdebug(" Caching " + self.get_description() + " locations. If stale, then restart...")
 
+            if obj_attr_list and "name" in obj_attr_list :
+                _hostname = obj_attr_list["name"]
+
             if self.use_locations :
                 if not LibcloudCmds.locations :
                     cbdebug(" Caching " + self.get_description()  + " Locations...", True)
                     LibcloudCmds.locations = LibcloudCmds.catalogs.cbtool[credentials_list].list_locations()
-
-                    if obj_attr_list and "name" in obj_attr_list :
-                        _hostname = obj_attr_list["name"]                    
                     
                 assert(LibcloudCmds.locations)
             
@@ -286,15 +285,15 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             vmc_name = vmc_name.replace("____",' ')
 
-            for credentials_list in credentials.split(","):
+            _key_pair_found = False
+            for credentials_list in credentials.split(";"):
                 _status, _msg, _local_conn, _hostname = self.connect(credentials_list, vmc_defaults)
+                _key_pair_found = self.check_ssh_key(vmc_name, self.determine_key_name(vm_defaults), vm_defaults, False, _local_conn, self.use_ssh_keys)
 
             self.generate_rc(cloud_name, vmc_defaults, self.additional_rc_contents)
 
             _prov_netname_found, _run_netname_found = self.check_networks(vmc_name, vm_defaults)
 
-            _key_pair_found = self.check_ssh_key(vmc_name, self.determine_key_name(vm_defaults), vm_defaults, False, _local_conn, self.use_ssh_keys)
-            
             _detected_imageids = self.check_images(vmc_name, vm_templates, _local_conn)
 
             _extra_vmc_setup_complete = self.extra_vmc_setup(vmc_name, vmc_defaults, vm_defaults, vm_templates, _local_conn)
@@ -427,13 +426,13 @@ class LibcloudCmds(CommonCloudFunctions) :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
 
-            for credentials_list in obj_attr_list["credentials"].split(","):
+            for credentials_list in obj_attr_list["credentials"].split(";"):
                 _status, _msg, _local_conn, _hostname = self.connect(credentials_list)
     
             _running_instances = True
             while _running_instances :
                 _running_instances = False
-                for credentials_list in obj_attr_list["credentials"].split(","):
+                for credentials_list in obj_attr_list["credentials"].split(";"):
                     credentials = credentials_list.split(":")
                     tenant = credentials[0]
                     obj_attr_list["tenant"] = tenant
@@ -467,7 +466,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                 _running_volumes = True
                 while _running_volumes :
                     _running_volumes = False
-                    for credentials_list in obj_attr_list["credentials"].split(","):
+                    for credentials_list in obj_attr_list["credentials"].split(";"):
                         credentials = credentials_list.split(":")
                         tenant = credentials[0]
                         self.common_messages("VMC", obj_attr_list, "cleaning up vvs", 0, '')
@@ -523,11 +522,20 @@ class LibcloudCmds(CommonCloudFunctions) :
             else :
                 _status = 0
 
-            for credentials_list in obj_attr_list["credentials"].split(","):                
+            for credentials_list in obj_attr_list["credentials"].split(";"):
                 _x, _y, _z, _hostname = self.connect(credentials_list, obj_attr_list)
             
-            obj_attr_list["cloud_hostname"] = _hostname
-            obj_attr_list["cloud_ip"] = gethostbyname(self.tldomain)
+            obj_attr_list["cloud_hostname"] = _hostname + "_" + obj_attr_list["name"]
+
+            # Public clouds don't really have "hostnames" - they have a single endpoint for all
+            # regions and VMCs. However, in Redis this IP gets tagged
+            # and must be unique, so we have to prefix this so it will be unique.
+            # That makes this "cloud_ip" not a real IP, but unless we stop tagging it,
+            # it still has to be unique to every VMC. 
+            # I'm not totally sure what this means for an Openstack + Libcloud adapter,
+            # but we'll cross that bridge when we get to it.
+            
+            obj_attr_list["cloud_ip"] = _hostname + "." + gethostbyname(self.tldomain) + "_" + obj_attr_list["name"]
             obj_attr_list["arrival"] = int(time())
 
             if str(obj_attr_list["discover_hosts"]).lower() == "true" :
@@ -606,7 +614,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                                                       "VMC", False, _vmc_uuid, \
                                                       False)
                 
-                for credentials_list in _vmc_attr_list["credentials"].split(","):
+                for credentials_list in _vmc_attr_list["credentials"].split(";"):
                     _status, _msg, _local_conn, _hostname = self.connect(credentials_list)
 
                     _instance_list = _local_conn.list_nodes(*self.get_list_node_args(obj_attr_list))
@@ -739,6 +747,8 @@ class LibcloudCmds(CommonCloudFunctions) :
             return node
 
         except Exception, e :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             _status = 23
             _fmsg = str(e)
             raise CldOpsException(_fmsg, _status)
@@ -764,7 +774,7 @@ class LibcloudCmds(CommonCloudFunctions) :
                             break
             else :
                 for _image in LibcloudCmds.catalogs.cbtool[obj_attr_list["credentials_list"]].list_images() :
-                    if _image.name == obj_attr_list["imageid1"] :
+                    if _image.name == obj_attr_list["imageid1"] or _image.id == obj_attr_list["imageid1"] :
                         _candidate_images = _image
                         break
 
@@ -904,6 +914,8 @@ class LibcloudCmds(CommonCloudFunctions) :
             _fmsg = str(obj.msg)
 
         except Exception, e :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             _status = 23
             _fmsg = str(e)
     
@@ -1016,8 +1028,6 @@ class LibcloudCmds(CommonCloudFunctions) :
 
             obj_attr_list["config_drive"] = False
 
-            _status, _fmsg = self.vvcreate(obj_attr_list, LibcloudCmds.catalogs.cbtool[_credentials_list])
-
             obj_attr_list["userdata"] = self.populate_cloudconfig(obj_attr_list)
             if obj_attr_list["userdata"] :
                 obj_attr_list["config_drive"] = True                
@@ -1050,8 +1060,8 @@ class LibcloudCmds(CommonCloudFunctions) :
                     cbdebug("Only found " + str(len(_keys)) + " keys. Refreshing key list...", True)
                     LibcloudCmds.keys[_credentials_list] = LibcloudCmds.catalogs.cbtool[_credentials_list].list_key_pairs()
 
-                if len(_keys) != len(_tmp_keys) :
-                    raise CldOpsException("Not all SSH keys exist. Check your configuration: " + obj_attr_list["key_name"], _status, True)
+                if len(_keys) < len(_tmp_keys) :
+                    raise CldOpsException("Not all SSH keys exist. Check your configuration: " + obj_attr_list["key_name"] + " _keys: " + str(_keys) + " _tmp_keys: " + str(_tmp_keys), _status)
                 self.annotate_time_breakdown(obj_attr_list, "get_sshkey_time", _mark_a)
             else :
                 _keys = []
@@ -1084,8 +1094,16 @@ class LibcloudCmds(CommonCloudFunctions) :
                     obj_attr_list["cloud_floating_ip_uuid"] = _fip.id
                     obj_attr_list["cloud_floating_ip"] = _fip.ip_address
  
-            extra = deepcopy(self.extra)
-            extra.update(self.pre_vmcreate_process(obj_attr_list, extra, _keys))
+            # This needs to be empty on each creation.
+            # It changes from create to create, depending
+            # on which tenant is used and what the userdata
+            # will be.
+
+            self.vmcreate_kwargs["ex_create_attr"] = {}
+
+            self.pre_vmcreate_process(obj_attr_list, _keys)
+
+            _status, _fmsg = self.vvcreate(obj_attr_list, LibcloudCmds.catalogs.cbtool[_credentials_list])
 
             _mark_a = time()            
             if obj_attr_list["libcloud_call_type"] == "create_node_with_mixed_arguments" :
@@ -1160,6 +1178,8 @@ class LibcloudCmds(CommonCloudFunctions) :
                 _status = 100
 
         except CldOpsException, obj :
+            for line in traceback.format_exc().splitlines() :
+                cbwarn(line, True)
             _status = obj.status
             _fmsg = str(obj.msg)
             cbwarn("Error during reservation creation: " + _fmsg)
@@ -1422,9 +1442,9 @@ class LibcloudCmds(CommonCloudFunctions) :
             _time_mark_rrs = int(time())
             _instance = False
             while True :
-                _errmsg = "get_vm_instance"
+                _errmsg = "get_instances"
                 cbdebug("Getting instance...")
-                _instance = self.get_vm_instance(obj_attr_list)
+                _instance = self.get_instances(obj_attr_list)
 
                 _curr_tries += 1
                 _msg = "Inside runstate: " + _errmsg
@@ -1622,7 +1642,7 @@ class LibcloudCmds(CommonCloudFunctions) :
         TBD
         ''' 
         vmc_defaults = self.osci.get_object(cloud_name, "GLOBAL", False, "vmc_defaults", False)
-        _credentials_lists = vmc_defaults["credentials"].split(",")
+        _credentials_lists = vmc_defaults["credentials"].split(";")
         lock = self.lock(cloud_name, "VMC", "shared_access_token_counter", "credentials_list")
 
         assert(lock)
