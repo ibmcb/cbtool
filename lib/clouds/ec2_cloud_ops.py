@@ -34,6 +34,8 @@ from shared_functions import CldOpsException, CommonCloudFunctions
 
 from boto.ec2 import regions
 from boto import exception as AWSException 
+from boto.ec2.blockdevicemapping import BlockDeviceType, BlockDeviceMapping
+
 
 class Ec2Cmds(CommonCloudFunctions) :
     '''
@@ -239,6 +241,7 @@ class Ec2Cmds(CommonCloudFunctions) :
                     for _instance in _reservation.instances :
                         if "Name" in _instance.tags :
                             if _instance.tags[u'Name'].count("cb-" + obj_attr_list["username"] + "-" + obj_attr_list["cloud_name"]) and _instance.state == u'running' :
+                                cbdebug("Terminating instance: " + _instance.tags[u'Name'], True)
                                 _instance.terminate()
                                 _running_instances = True
                 sleep(int(obj_attr_list["update_frequency"]))
@@ -252,9 +255,7 @@ class Ec2Cmds(CommonCloudFunctions) :
             if len(_volumes) :
                 for unattachedvol in _volumes :
                     if "Name" in unattachedvol.tags and unattachedvol.tags[u'Name'].count("cb-" + obj_attr_list["username"] + "-" + obj_attr_list["cloud_name"]) and unattachedvol.status == 'available' :
-                        _msg = unattachedvol.id + ' ' + unattachedvol.status
-                        _msg += "... was deleted"
-                        cbdebug(_msg)
+                        cbdebug("Terminating volume: " + unattachedvol.tags[u'Name'], True)
                         unattachedvol.delete()
                     else:
                         _msg = unattachedvol.id + ' ' + unattachedvol.status
@@ -298,8 +299,8 @@ class Ec2Cmds(CommonCloudFunctions) :
 
             _x, _y, _hostname = self.connect(obj_attr_list["access"], obj_attr_list["credentials"], obj_attr_list["name"])
 
-            obj_attr_list["cloud_hostname"] = _hostname
-            obj_attr_list["cloud_ip"] = gethostbyname(_hostname)
+            obj_attr_list["cloud_hostname"] = _hostname + "_" + obj_attr_list["name"]
+            obj_attr_list["cloud_ip"] = gethostbyname(_hostname) + "_" + obj_attr_list["name"]
             obj_attr_list["arrival"] = int(time())
 
             if str(obj_attr_list["discover_hosts"]).lower() == "true" :
@@ -499,6 +500,7 @@ class Ec2Cmds(CommonCloudFunctions) :
 
                 if len(_instance) :    
                     _volume=_instance[0]
+                    return _volume
                 else :
                     return False
                     
@@ -682,7 +684,7 @@ class Ec2Cmds(CommonCloudFunctions) :
             obj_attr_list["cloud_vv_instance"] = False
 
             if "cloud_vv_type" not in obj_attr_list :
-                obj_attr_list["cloud_vv_type"] = "EBS"
+                obj_attr_list["cloud_vv_type"] = "standard"
             
             if "cloud_vv" in obj_attr_list and str(obj_attr_list["cloud_vv"]).lower() != "false" :
 
@@ -694,7 +696,17 @@ class Ec2Cmds(CommonCloudFunctions) :
                 else :
                     _location = obj_attr_list["vmc_name"] + 'a'
                     
-                obj_attr_list["cloud_vv_instance"] = self.ec2conn.create_volume(obj_attr_list["cloud_vv"], _location)
+                if obj_attr_list["cloud_vv_iops"] != "0":
+                    obj_attr_list["cloud_vv_instance"] = self.ec2conn.create_volume(
+                            int(obj_attr_list["cloud_vv"]),
+                            _location,
+                            volume_type = obj_attr_list["cloud_vv_type"],
+                            iops = obj_attr_list["cloud_vv_iops"])
+                else:
+                    obj_attr_list["cloud_vv_instance"] = self.ec2conn.create_volume(
+                            int(obj_attr_list["cloud_vv"]),
+                            _location,
+                            volume_type = obj_attr_list["cloud_vv_type"])
 
                 sleep(int(obj_attr_list["update_frequency"]))
 
@@ -752,7 +764,9 @@ class Ec2Cmds(CommonCloudFunctions) :
                         _status = _instance.status
     
                         if _status == 'available' :
+                            cbdebug("Deleting...", True)
                             _instance.delete()                 
+                            cbdebug("Deleted.", True)
                             _volume_detached = True
     
                         else :
@@ -763,9 +777,10 @@ class Ec2Cmds(CommonCloudFunctions) :
                             _msg += "is still \"" + _status + "\". "
                             _msg += "Will wait " + str(_wait)
                             _msg += " seconds and try again."
-                            cbdebug(_msg)
+                            cbdebug(_msg, True)
     
                             sleep(_wait)
+                            _instance = self.get_instances(obj_attr_list, "vv", identifier)
                             _curr_tries += 1                           
     
             if _curr_tries > _max_tries  :
@@ -844,6 +859,31 @@ class Ec2Cmds(CommonCloudFunctions) :
             # We need the instance placemente information before creating the actual volume
             #self.vvcreate(obj_attr_list)
 
+            if "cloud_rv_type" not in obj_attr_list :
+                obj_attr_list["cloud_rv_type"] = "standard"
+
+            _bdm = BlockDeviceMapping()
+            '''
+            Options:
+            gp2 (== ssd)
+            io1 (also ssd)
+            st1 (not sure)
+            sc1 (cold?)
+            standard (spinners)
+            '''
+
+            if obj_attr_list["cloud_rv_iops"] == "0":
+                _iops = None
+            else:
+                _iops = obj_attr_list["cloud_rv_iops"]
+
+            if "cloud_rv" in obj_attr_list and obj_attr_list["cloud_rv"] != "0":
+                _size = obj_attr_list["cloud_rv"]
+            else:
+                _size = None
+
+            _bdm['/dev/sda1'] = BlockDeviceType(volume_type = obj_attr_list["cloud_rv_type"], delete_on_termination=True, iops=_iops, size=_size)
+
             self.common_messages("VM", obj_attr_list, "creating", 0, '')
 
             self.pre_vmcreate_process(obj_attr_list)
@@ -851,6 +891,7 @@ class Ec2Cmds(CommonCloudFunctions) :
                                                       instance_type = obj_attr_list["size"], \
                                                       key_name = obj_attr_list["key_name"], \
                                                       user_data = self.populate_cloudconfig(obj_attr_list),
+                                                      block_device_map = _bdm,
                                                       security_groups = _security_groups)
 
             if _reservation :

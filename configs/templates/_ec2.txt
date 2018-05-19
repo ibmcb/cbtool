@@ -77,6 +77,13 @@ DISABLE_TIMESYNC = $False
 CLOUD_VV_INSTANCE = None
 IMAGE_PREFIX = $EMPTY
 IMAGE_SUFFIX = $EMPTY
+CLOUD_VV_TYPE = standard
+CLOUD_RV_TYPE = standard
+# By default, do not specify provisioned iops limit
+CLOUD_VV_IOPS = 0
+CLOUD_RV_IOPS = 0
+# Size of the root volume. Maximum ratio of 50:1 is permitted between IOPS and volume size
+CLOUD_RV = 0
 
 [AI_DEFAULTS : EC2_CLOUDCONFIG ]
 ATTACH_PARALLELISM = 10
