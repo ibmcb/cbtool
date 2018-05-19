@@ -2288,8 +2288,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                    True,
                                                    tell_me_if_stderr_contains = False, \
                                                    port = obj_attr_list["prov_cloud_port"], \
-                                                           osci = self.osci, \
-                                                           get_hostname_using_key = "prov_cloud_ip" \
+                                                   osci = self.osci, \
+                                                   get_hostname_using_key = "prov_cloud_ip" \
                                                    )
 
             self.osci.update_object_attribute(obj_attr_list["cloud_name"], "VM", obj_attr_list["uuid"], \
@@ -2332,8 +2332,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                                                    True, \
                                                    tell_me_if_stderr_contains = "Connection reset by peer", \
                                                    port = obj_attr_list["prov_cloud_port"], \
-                                                           osci = self.osci, \
-                                                           get_hostname_using_key = "prov_cloud_ip")
+                                                   osci = self.osci, \
+                                                   get_hostname_using_key = "prov_cloud_ip")
 
             _msg = "Bootstrapped " + obj_attr_list["log_string"]
             cbdebug(_msg)
@@ -2417,8 +2417,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _msg += ", on IP address "+ obj_attr_list["prov_cloud_ip"] + "..."     
                 cbdebug(_msg, selectively_print_message("run_generic_scripts", obj_attr_list))
 
+                _cmd = "~/" + obj_attr_list["remote_dir_name"] + "/scripts/common/cb_post_boot.sh"
+
                 _status, _result_stdout, _result_stderr = \
-                        _proc_man.retriable_run_os_command(obj_attr_list["generic_post_boot_command"], obj_attr_list["uuid"], \
+                        _proc_man.retriable_run_os_command(_cmd, obj_attr_list["uuid"], \
                                                            really_execute = obj_attr_list["run_generic_scripts"], \
                                                            debug_cmd = obj_attr_list["debug_remote_commands"], \
                                                            total_attempts = int(obj_attr_list["update_attempts"]),\
