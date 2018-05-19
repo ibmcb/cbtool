@@ -76,4 +76,3 @@ fi
 
 syslog_netcat "Ended generic VM post_boot configuration - OK"
 exit 0
-exit 0

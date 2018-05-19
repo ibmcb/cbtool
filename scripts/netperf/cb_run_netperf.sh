@@ -27,6 +27,7 @@ netperf=$(which netperf)
 
 LOAD_PROFILE=$(echo ${LOAD_PROFILE} | tr '[:upper:]' '[:lower:]')
 
+
 SEND_BUFFER_SIZE=$(get_my_ai_attribute_with_default send_buffer_size auto)
 RECV_BUFFER_SIZE=$(get_my_ai_attribute_with_default recv_buffer_size auto)
 CLIENT_BUFFER_SIZE=$(get_my_ai_attribute_with_default client_buffer_size auto)
@@ -53,6 +54,9 @@ CMDLINE_START["udp_rr"]="-t UDP_RR"
 if [[ $SEND_BUFFER_SIZE != "auto" || $RECV_BUFFER_SIZE != "auto" || $CLIENT_BUFFER_SIZE != "auto" || $SERVER_BUFFER_SIZE != "auto" || $REQUEST_RESPONSE_SIZE != auto ]]
 then
     PROFILE_SPECIFIC="--"
+elif [ x"$LOAD_LEVEL" != x"1" ] ; then
+    # Repurpose the load level for use as the packet size
+    PROFILE_SPECIFIC="-- -m $LOAD_LEVEL"
 else
     PROFILE_SPECIFIC=""    
 fi
