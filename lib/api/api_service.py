@@ -22,6 +22,7 @@
 '''
 from lib.auxiliary.code_instrumentation import trace, cblog, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.auxiliary.config import parse_cld_defs_file, get_available_clouds
+from time import sleep
 
 from DocXMLRPCServer import DocXMLRPCServer
 import sys
@@ -468,9 +469,14 @@ class API():
             async=async.replace('=','')            
 
             if str(async.split(':')[0]).isdigit() :
-                return self.active.background_execute(parameters + (" async=" + str(async)), "ai-attach")[2]
+                _res = self.active.background_execute(parameters + (" async=" + str(async)), "ai-attach")[2]
             else :
-                return self.active.background_execute(parameters + (" async"), "ai-attach")[2]
+                _res = self.active.background_execute(parameters + (" async"), "ai-attach")[2]
+            # This is hacky, but in order for an asynchronous attach to appear, introduce a delay between when the attach starts
+            # and when a user can safely issue `applist pending`, in order for the pending object to actually show up.
+            # We need a better fix for this later to ensure that the pending object is registered before the API command returns.
+            sleep(10)
+            return _res
         else :
             return self.active.objattach({}, parameters, "ai-attach")[2]
     

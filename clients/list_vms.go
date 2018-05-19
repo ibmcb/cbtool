@@ -28,14 +28,15 @@ import (
 
 func main() {
 	api := api_service_client.APIClient{Address: "http://localhost:7070"}
-	r, err := api.Call("vmlist", "MYSIMCLOUD")
+	name := "MYSIMCLOUD"
+	r, err := api.Call("vmlist", name)
 
 	if err == nil && r["result"] != nil {
 		vms := r["result"].([]interface{})
 		for idx := range vms {
 			vm := vms[idx].(map[string]interface{})
 
-			iter, err := api.Get_latest_management_data("MYSIMCLOUD", vm["uuid"].(string), vm["experiment_id"].(string))
+			iter, err := api.Get_latest_management_data(name, vm["uuid"].(string), vm["experiment_id"].(string))
 			if err != nil {
 				fmt.Printf("ERROR! %s\n", err)
 			}
