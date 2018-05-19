@@ -86,7 +86,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 if not self.expid :                
                     _time_attr_list = self.osci.get_object(cld_attr_lst["name"], "GLOBAL", False, "time", False)
                     self.expid = _time_attr_list["experiment_id"]
-                    _expid = self.expid
+
+                _expid = self.expid
                     
                 _cld_name = cld_attr_lst["name"]
 
@@ -683,6 +684,8 @@ class ActiveObjectOperations(BaseObjectOperations) :
                         for _obj_uuid in _obj_list :
                             _obj_attr_list = self.osci.get_object(cld_attr_list["name"], _object_typ, False, _obj_uuid, False)
                             _x_attr_list = {}
+                            if "name" not in _obj_attr_list :
+                                continue
                             if BaseObjectOperations.default_cloud is not None :
                                 _parameters = _obj_attr_list["name"] + " true"
                             else :
