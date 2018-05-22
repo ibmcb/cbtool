@@ -298,10 +298,10 @@ class RedisMgdConn :
             
             if not counter_list :
                 _object_list = cloud_kv_list["query"]["object_type_list"].upper().split(',')
+                _query_list = cloud_kv_list["query"]["object_type_list"]
             else :
                 _object_list = counter_list.split(',')
-
-            _query_list = _object_list
+                _query_list = _object_list
             
             for _object_type in _object_list :
                 if _object_type in _query_list :
