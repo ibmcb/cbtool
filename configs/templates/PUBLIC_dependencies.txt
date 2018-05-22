@@ -126,6 +126,7 @@ setuptools-order = 64
 markup-order = 65
 pyyaml-order = 66
 ruamelyaml-order = 67
+jq-order = 68
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -208,6 +209,7 @@ pyyaml-install = pip
 ruamelyaml-install = pip 
 urllib3[secure] = pip
 httplib2shim = pip
+jq-install = pm
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
@@ -281,6 +283,7 @@ setuptools-configure = python -c "import setuptools; print str(setuptools.__vers
 markup-configure = python -c "import markup;"
 pyyaml-configure = python -c "import yaml; print str(yaml.__version__).strip()"
 ruamelyaml-configure = python -c "import ruamel.yaml; print ruamel.yaml.__version__"
+jq-configure = jq --version | grep jq
 ### END - Tests ###
 
 ### START - Dependency versions ###
@@ -354,6 +357,7 @@ setuptools-ver = 7.0
 markup-ver = ANY
 pyyaml-ver = 3.10
 ruamelyaml-ver = ANY
+jq-ver = ANY
 ### END - Dependency versions ###
 
 ### START - Dependency tags ###
@@ -427,6 +431,7 @@ setuptools-tag = base
 markup-tag = orchestrator
 pyyaml-tag = orchestrator
 ruamelyaml-tag = orchestrator
+jq-tag = base
 ### END - Dependency versions ###
 
 ### START - Dependency URLs ###
