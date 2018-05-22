@@ -432,7 +432,11 @@ my_ip_addr=`get_my_vm_attribute cloud_ip`
 function get_attached_volumes {
     # Wierdo clouds, like Amazon expose naming schemes like `/dev/nvme0n1p1` for the root volume.
     # So, we need a beefier regex.
-    ROOT_VOLUME=$(sudo mount | grep "/ " | cut -d ' ' -f 1 | sed "s/\([a-z]*[0-9]\+\|[0-9]\+\)$//g")
+    ROOT_PARTITION=$(sudo mount | grep "/ " | cut -d ' ' -f 1)
+    ROOT_VOLUME=$(echo "$ROOT_PARTITION" | sed -e "s/\(.*[0-9]\)[a-z]\+[0-9]\+$/\1/g")
+    if [ ${ROOT_PARTITION} == ${ROOT_VOLUME} ] ; then
+        ROOT_VOLUME=$(echo "$ROOT_PARTITION" | sed -e "s/\(.\)[0-9]\+$/\1/g")
+    fi
     SWAP_VOLUME=$(sudo swapon -s | grep dev | cut -d ' ' -f 1 | tr -d 0-9)
     if [[ -z ${SWAP_VOLUME} ]]
     then
@@ -1677,6 +1681,7 @@ function automount_data_dirs {
         then         
             mount_remote_filesystem ${ROLE_DATA_DIR} ${ROLE_DATA_FSTYP} ${ROLE_DATA_FILESERVER_IP} ${ROLE_DATA_FILESERVER_PATH}    
         fi
+        run_limit=`decrement_my_ai_attribute run_limit`
     else
         if [[ $(get_attached_volumes) != "NONE" ]]
         then
