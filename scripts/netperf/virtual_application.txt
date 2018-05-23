@@ -42,6 +42,12 @@ REQUEST_RESPONSE_SIZE=auto
 IF_MTU=auto
 EXTERNAL_TARGET=none
 
+NETCLIENT_DATA_DIR = /netclient
+NETCLIENT_DATA_FSTYP = ext4
+
+NETSERVER_DATA_DIR = /netclient
+NETSERVER_DATA_FSTYP = ext4
+
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
 #SYNC_COUNTER_NAME = synchronization_counter
 #CONCURRENT_AIS = 2

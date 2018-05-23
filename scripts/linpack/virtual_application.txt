@@ -14,8 +14,23 @@ LOAD_MANAGER_ROLE = linpack
 METRIC_AGGREGATOR_ROLE = linpack
 CAPTURE_ROLE = linpack
 LOAD_PROFILE = default
-LOAD_LEVEL = uniformIXIXI1I5
-LOAD_DURATION = 60
+# We can't start users off with a random load level, because
+# linpack uses an extremely large amount of RAM and would likely
+# just crash.
+LOAD_LEVEL = 1
+# produces a 7GB ram dataset, 50 secs per sample.
+LOAD_LEVEL = 6
+# produces a 5GB ram dataset, 35 secs per sample.
+#LOAD_LEVEL = 5
+# produces a 3.2GB ram dataset, 18 secs per sample.
+#LOAD_LEVEL = 4
+# produces a 1.8GB ram dataset, 8 secs per sample.
+#LOAD_LEVEL = 3
+# produces a 800MB ram dataset, 2 secs per sample.
+#LOAD_LEVEL = 2
+# produces a 200MB ram dataset, <1 sec per sample.
+#LOAD_LEVEL = 1
+LOAD_DURATION = 2 # for linpack, this is times to run a test, or the number of samples per run of linpack, averaged.
 CATEGORY = scientific
 PROFILES = default
 REFERENCE = https://software.intel.com/en-us/node/528615
@@ -32,7 +47,7 @@ DESCRIPTION +=  - COMMENT: For clustered (multi-instance) linpack execution, ple
 START = cb_run_linpack.sh
 
 # VApp-specific modifier parameters. Commented attributes imply default values assumed
-LOAD_FACTOR = 1000
+LOAD_FACTOR = 5000
 LINPACK=~/linpack/benchmarks/linpack/xlinpack_xeon64
 
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional

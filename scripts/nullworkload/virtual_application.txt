@@ -41,6 +41,10 @@ TINYVM_SETUP1 = cb_start_nothing.sh
 TINYVM_RESET1 = cb_reset_nothing.sh
 START = cb_run_nothing.sh
 
+TINYVM_DATA_DIR = /nulltest
+TINYVM_DATA_FSTYP = ext4
+TINYVM_DATA_VOLUME = NONE
+
 # Inter-Virtual Application instances (inter-AI) synchronized execution. Entirely optional
 #SYNC_COUNTER_NAME = synchronization_counter
 #CONCURRENT_AIS = 2
