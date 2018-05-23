@@ -103,7 +103,7 @@ class GceCmds(CommonCloudFunctions) :
             if _http_conn_id not in self.http_conn :
                 self.http_conn[_http_conn_id] = _credentials.authorize(http = httplib2shim.Http())
 
-            _zone_list = self.gceconn.zones().list(project=self.instances_project).execute(http = self.http_conn[obj_attr_list["name"]])["items"]
+            _zone_list = self.gceconn.zones().list(project=self.instances_project).execute()["items"]
 
             _zone_info = False
             for _idx in range(0,len(_zone_list)) :
