@@ -1076,6 +1076,12 @@ class CommonCloudFunctions:
             cloudconfig += "\n"            
 
         cloudconfig += "write_files:\n"
+        cloudconfig += """
+  - path: /etc/apt/apt.conf.d/10disable-auto-apt
+    content: |
+      APT::Periodic::Enable "0";
+    permissions: '0644'
+"""
         cloudconfig += "  - path: /tmp/cb_post_boot.sh\n"
         cloudconfig += "    content: |\n"
             
@@ -1088,7 +1094,7 @@ class CommonCloudFunctions:
         if obj_attr_list["use_vpn_ip"].lower() == "true" :
             
             if "cloudinit_packages" in obj_attr_list and obj_attr_list["cloudinit_packages"].lower() != "false" :
-                obj_attr_list["cloudinit_packages"] += obj_attr_list["cloudinit_packages"] + "openvpn;redis-tools" 
+                obj_attr_list["cloudinit_packages"] += ";openvpn;redis-tools" 
             else :
                 obj_attr_list["cloudinit_packages"] = "openvpn;redis-tools"
             
@@ -1837,7 +1843,7 @@ packages:"""
                 if str(obj_attr_list["boot_from_volume"]).lower() == "true" :
                     _msg += ", from image \"" + obj_attr_list["imageid1"] + "\" (boot_volume)"
                 else :                
-                    _msg += ", with size "+ obj_attr_list["cloud_vv"] + " GB," 
+                    _msg += ", with size " + str(obj_attr_list["cloud_vv"]) + " GB,"
                 _msg += " on VMC \"" + obj_attr_list["vmc_name"] + "\""
                 cbdebug(_msg, True)
                 return '', ''
