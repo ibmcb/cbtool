@@ -5022,6 +5022,7 @@ class ActiveObjectOperations(BaseObjectOperations) :
         '''
         TBD
         '''
+        first_stop = False
         _ai_state = True
         _prev_load_level = 0
         _prev_load_duration = 0
@@ -5029,19 +5030,18 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
         _initial_ai_attr_list = self.osci.get_object(cloud_name, "AI", False, object_uuid, False)
         
-        _mode = _initial_ai_attr_list["mode"]
         _check_frequency = float(_initial_ai_attr_list["update_frequency"])
 
         while _ai_state :
 
-            if _mode == "controllable" :
-                _ai_state = self.osci.get_object_state(cloud_name, "AI", object_uuid)
-                _ai_attr_list = self.osci.get_object(cloud_name, "AI", False, object_uuid, False)
-                _mode = _ai_attr_list["mode"]
-                _check_frequency = float(_ai_attr_list["update_frequency"])
-            else :
-                _ai_state = "attached"
-                _ai_attr_list = _initial_ai_attr_list
+            # We should always be talking to from redis, regardless
+            # whether or not we have a scalable mode or controllable mode.
+            # Without it, we cannot accurately update large scale tests when
+            # running on multiple clouds at the same time.
+
+            _ai_state = self.osci.get_object_state(cloud_name, "AI", object_uuid)
+            _ai_attr_list = self.osci.get_object(cloud_name, "AI", False, object_uuid, False)
+            _check_frequency = float(_ai_attr_list["update_frequency"])
 
             _sla_runtime_targets = ''
             for _key in _ai_attr_list :
@@ -5052,6 +5052,13 @@ class ActiveObjectOperations(BaseObjectOperations) :
                 _sla_runtime_targets = _sla_runtime_targets[:-1]
 
             if _ai_state and _ai_state == "attached" :
+                if not first_stop and str(_ai_attr_list["pause_after_attached"]).lower() == "true" :
+                    self.osci.set_object_state(cloud_name, "AI", object_uuid, "stopped")
+                    sleep(_check_frequency)
+                    first_stop = True
+                    cbdebug("Attach complete. Pausing myself")
+                    continue
+
                 _load = self.get_load(cloud_name, _ai_attr_list, False, \
                                       _prev_load_level, _prev_load_duration, \
                                       _prev_load_id)
@@ -5061,24 +5068,23 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     _prev_load_duration = _ai_attr_list["current_load_duration"]
                     _prev_load_id = _ai_attr_list["current_load_id"]
 
-                if _mode == "controllable" :
-                    self.update_object_attribute(cloud_name, \
-                                                 object_type.upper(), \
-                                                 object_uuid, \
-                                                 "current_load_level", \
-                                                 _ai_attr_list["current_load_level"]) 
-                        
-                    self.update_object_attribute(cloud_name, \
-                                                 object_type.upper(), \
-                                                 object_uuid, \
-                                                 "current_load_duration", \
-                                                 _ai_attr_list["current_load_duration"])
-    
-                    self.update_object_attribute(cloud_name, \
-                                                 object_type.upper(), \
-                                                 object_uuid, \
-                                                 "current_load_id", \
-                                                 _ai_attr_list["current_load_id"])
+                self.update_object_attribute(cloud_name, \
+                                             object_type.upper(), \
+                                             object_uuid, \
+                                             "current_load_level", \
+                                             _ai_attr_list["current_load_level"]) 
+                    
+                self.update_object_attribute(cloud_name, \
+                                             object_type.upper(), \
+                                             object_uuid, \
+                                             "current_load_duration", \
+                                             _ai_attr_list["current_load_duration"])
+
+                self.update_object_attribute(cloud_name, \
+                                             object_type.upper(), \
+                                             object_uuid, \
+                                             "current_load_id", \
+                                             _ai_attr_list["current_load_id"])
  
                 _msg = "Preparing to execute AI reset"
                 cbdebug(_msg)
@@ -5096,12 +5102,11 @@ class ActiveObjectOperations(BaseObjectOperations) :
                     # If we fail, sleep a little and retry
                     sleep(_check_frequency * 2)
 
-                if _mode == "controllable" :
-                    self.update_object_attribute(cloud_name, \
-                                                 object_type.upper(), \
-                                                 object_uuid, \
-                                                 "current_reset_status", \
-                                                 _reset_status) 
+                self.update_object_attribute(cloud_name, \
+                                             object_type.upper(), \
+                                             object_uuid, \
+                                             "current_reset_status", \
+                                             _reset_status) 
 
                 if not _reset_status and _ai_attr_list["load_generator_ip"] == _ai_attr_list["load_manager_ip"] :
                     _cmd = "~/" + _ai_attr_list["start"] + ' '
@@ -5131,6 +5136,10 @@ class ActiveObjectOperations(BaseObjectOperations) :
 
                         #waitpid(-1, 0)
                         _proc_h.wait()
+
+                    if str(_ai_attr_list["pause_after_run"]).lower() == "true" :
+                        cbdebug("Run complete. Pausing myself")
+                        self.osci.set_object_state(cloud_name, "AI", object_uuid, "stopped")
                 else :
                     # Will have to create something here later, probably using
                     # pubsub

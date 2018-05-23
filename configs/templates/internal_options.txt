@@ -245,6 +245,12 @@ RUNSTATE_PARALLELISM = 5
 EXECUTE_SCRIPT_NAME = execute_on_staging.sh 
 EXECUTE_JSON_FILENAME_PREFIX = cb
 VM_ATTACH_ACTION = $Empty
+# This allows the tester to set the AI state to 'stopped' after each run
+# So that they can change the parameters of the test
+PAUSE_AFTER_RUN = $False
+# This allows the tester to prevent the load manager from doing anything
+# upon initial startup
+PAUSE_AFTER_ATTACHED = $False
 
 [AIDRS_DEFAULTS]
 USERNAME = $MAIN_USERNAME
