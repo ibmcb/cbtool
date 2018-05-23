@@ -192,7 +192,7 @@ class OsCmds(LibcloudCmds) :
         return True
     
     @trace
-    def pre_vmcreate_process(self, obj_attr_list, extra, keys) :
+    def pre_vmcreate_process(self, obj_attr_list, keys) :
         '''
         TBD
         '''
@@ -244,8 +244,6 @@ class OsCmds(LibcloudCmds) :
         if "cloud_floating_ip" in obj_attr_list :            
             self.vmcreate_kwargs["ex_metadata"]["cloud_floating_ip"] = obj_attr_list["cloud_floating_ip"]
                 
-        return extra
-
     @trace
     def get_description(self) :
         '''
