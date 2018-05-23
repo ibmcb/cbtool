@@ -1076,12 +1076,6 @@ class CommonCloudFunctions:
             cloudconfig += "\n"            
 
         cloudconfig += "write_files:\n"
-        cloudconfig += """
-  - path: /etc/apt/apt.conf.d/10disable-auto-apt
-    content: |
-      APT::Periodic::Enable "0";
-    permissions: '0644'
-"""
         cloudconfig += "  - path: /tmp/cb_post_boot.sh\n"
         cloudconfig += "    content: |\n"
             
