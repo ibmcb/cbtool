@@ -52,7 +52,7 @@ RUN yum install -y ntp ntpdate
 # ntp-install-pm
 
 # git-install-pm
-RUN yum install -y git bc
+RUN yum install -y git
 # git-install-pm
 
 # wget-install-pm
@@ -71,6 +71,10 @@ RUN yum install -y gcc gcc-c++
 # make-install-pm
 RUN yum install -y make
 # make-install-pm
+
+# bc-install-pm
+RUN yum install -y bc
+# bc-install-pm
 
 # sshpass-install-pm
 RUN yum install -y sshpass
@@ -208,6 +212,18 @@ RUN pip install --upgrade pyyaml
 RUN pip install --upgrade ruamel.yaml
 # ruamelyaml-install-pip
 
+# urllib3-install-pip
+RUN pip install --upgrade  urllib3[secure]
+# urllib3-install-pip
+
+# jq-install-pm
+RUN yum install -y jq
+# jq-install-pm
+
+# httplib2shim-install-pip
+RUN pip install --upgrade httplib2shim
+# httplib2shim-install-pip
+
 # iptables-install-pm
 RUN yum install -y iptables
 # service_stop_disable iptables
@@ -270,9 +286,6 @@ RUN pip install --upgrade pykube
 RUN yum install -y R
 # R-install-pm
 
-RUN wget -N -P /home/REPLACE_USERNAME http://sderepo.watson.ibm.com/repo/dropbox/genesis/genesis3; mv /home/REPLACE_USERNAME/genesis3 /usr/local/bin/genesis3
-RUN wget -N -P /home/REPLACE_USERNAME http://sderepo.watson.ibm.com/repo/dropbox/genesis/python-genesis-master.zip; cd /home/REPLACE_USERNAME; unzip python-genesis-master.zip; cd python-genesis-master; python setup.py install
-
 USER REPLACE_USERNAME
 # gcloud-install-man
 ENV CLOUDSDK_CORE_DISABLE_PROMPTS=1
@@ -318,10 +331,7 @@ RUN git clone https://github.com/ibmcb/d3.git
 
 WORKDIR /home/REPLACE_USERNAME
 RUN mkdir -p /home/REPLACE_USERNAME/cbtool/lib/clouds/
-COPY gen_cloud_ops.py /home/REPLACE_USERNAME/cbtool/lib/clouds/gen_cloud_ops.py
 RUN mkdir -p /home/REPLACE_USERNAME/cbtool/configs/templates/
 COPY cloud_definitions.txt /home/REPLACE_USERNAME/cbtool/configs/
-COPY _gen.txt /home/REPLACE_USERNAME/cbtool/configs/templates/_gen.txt
-COPY genesis3 /usr/local/bin/genesis3
 RUN sudo chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME
 RUN mv /home/REPLACE_USERNAME/cbtool /home/REPLACE_USERNAME/cbtooltmp
