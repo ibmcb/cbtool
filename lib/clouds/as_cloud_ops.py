@@ -117,7 +117,7 @@ class AsCmds(LibcloudCmds) :
         return False
     
     @trace
-    def pre_vmcreate_process(self, obj_attr_list, extra, keys) :
+    def pre_vmcreate_process(self, obj_attr_list, keys) :
         '''
         TBD
         '''
@@ -135,7 +135,6 @@ class AsCmds(LibcloudCmds) :
 #        network.input_endpoints.items.append(ConfigurationSetInputEndpoint('SSHDirect', 'tcp', '22', '22', None, True))
         
 #        self.vmcreate_kwargs["ex_network_config"] = network
-        return extra
 
     @trace
     def get_description(self) :
