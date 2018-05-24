@@ -59,7 +59,7 @@ function cb_docker_build {
         CB_ARCH1=$CB_ARCH
         CB_ARCH2=$CB_ARCH
         CB_ARCH3=$CB_ARCH
-    fi                        
+    fi                     
 
     CB_ACTUAL_SQUASH=''
     if [[ ! -z ${_CB_SQUASH} ]]
