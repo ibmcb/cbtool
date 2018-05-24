@@ -243,7 +243,8 @@ class PdmCmds(CommonCloudFunctions) :
                     if _imageid in _map_name_to_id :
                         vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])
                     else :
-                        _map_name_to_id[_imageid] = "aaaa0" + ''.join(["%s" % randint(0, 9) for num in range(0, 59)])
+#                        _map_name_to_id[_imageid] = "aaaa0" + ''.join(["%s" % randint(0, 9) for num in range(0, 59)])
+                        _map_name_to_id[_imageid] = _imageid
                         vm_templates[_vm_role] = vm_templates[_vm_role].replace(_imageid, _map_name_to_id[_imageid])                        
 
                     _map_id_to_name[_map_name_to_id[_imageid]] = _imageid

@@ -442,7 +442,7 @@ class GceCmds(CommonCloudFunctions) :
                                                       "VMC", False, _vmc_uuid, \
                                                       False)
 
-                self.connect(obj_attr_list["access"], obj_attr_list["credentials"], _vmc_attr_list["name"])
+                self.connect(obj_attr_list["access"], obj_attr_list["credentials"], _vmc_attr_list["name"], _vmc_attr_list["name"])
 
                 _instance_list = self.get_instances(_vmc_attr_list, "vm", "all")                
 
