@@ -5,12 +5,21 @@ CB_KVMQEMU_UBUNTU_BASE=https://cloud-images.ubuntu.com/xenial/current/xenial-ser
 CB_KVMQEMU_CENTOS_BASE=https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2
 CB_DISTROS="ubuntu"
 CB_USERNAME="cbuser"
-CB_BRANCH="experimental"
+CB_BRANCH="master"
 CB_WKS="all"
 CB_VERB=''
 CB_BASE_IMAGE_SKIP=0
 CB_NULLWORKLOAD_IMAGE_SKIP=0
-CB_RSYNC=$(ifconfig $(netstat -rn | grep UG | awk '{ print $8 }') | grep "inet " | awk '{ print $2 }' | sed 's/addr://g')-$(sudo netstat -puntl | grep rsync | grep tcp[[:space:]] | awk '{ print $4 }' | cut -d ':' -f 2)-$(whoami)
+CB_RSYNC_ADDR=$(sudo ifconfig docker0 | grep "inet " | awk '{ print $2 }' | sed 's/addr://g')
+for pi in $(sudo netstat -puntel | grep rsync | grep tcp[[:space:]] | awk '{ print $9 }' | sed 's^/rsync^^g')
+do
+    if [[ $(echo $(sudo ps aux | grep $pi | grep -c $(whoami)_rsync.conf)) -ne 0 ]]
+    then
+        CB_RSYNC_PORT=$(sudo netstat -puntel | grep $pi | awk '{ print $4 }' | cut -d ':' -f 2)
+	break
+    fi
+done
+CB_RSYNC=$CB_RSYNC_ADDR-${CB_RSYNC_PORT}-$(whoami)
     
 if [ $0 != "-bash" ] ; then
     pushd `dirname "$0"` 2>&1 > /dev/null
@@ -27,7 +36,7 @@ function download_base_images {
     pushd $CB_KVMQEMU_BIMG_DIR > /dev/null 2>&1
     for CB_KVMQEMU_IMG in $CB_KVMQEMU_DISTROS_IMG_LIST
     do
-        wget -N $CB_KVMQEMU_IMG
+        sudo wget -N $CB_KVMQEMU_IMG
     done
     echo "##### Done downloading the latest version of the vanilla cloud images"
     echo
@@ -48,17 +57,17 @@ function create_base_images {
         else
             CB_KVMQEMU_BIMG="ubuntu"
         fi
-	rm -rf cb_base_${CB_KVMQEMU_BIMG}
-	qemu-img create -f qcow2 cb_base_${CB_KVMQEMU_BIMG} 15G
-        virt-resize --expand /dev/sda1 $CB_KVMQEMU_CIMG_FN cb_base_${CB_KVMQEMU_BIMG}
+        sudo rm -rf cb_base_${CB_KVMQEMU_BIMG}
+        sudo qemu-img create -f qcow2 cb_base_${CB_KVMQEMU_BIMG} 15G
+        sudo virt-resize --expand /dev/sda1 $CB_KVMQEMU_CIMG_FN cb_base_${CB_KVMQEMU_BIMG}
         #cp -f $CB_KVMQEMU_CIMG_FN cb_base_${CB_KVMQEMU_BIMG}
-        #sudo qemu-img resize cb_base_${CB_KVMQEMU_BIMG} +18G	
+        #sudo qemu-img resize cb_base_${CB_KVMQEMU_BIMG} +18G    
         cp -f $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands._processed_
         sudo sed -i "s^REPLACE_USERNAME^${CB_USERNAME}^g" $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands._processed_
         sudo sed -i "s^REPLACE_BRANCH^${CB_BRANCH}^g" $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands._processed_
         sudo sed -i "s^REPLACE_PATH^${CB_KVMQEMU_S_DIR}^g" $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands._processed_
-        	        	
-        virt-customize -a cb_base_${CB_KVMQEMU_BIMG} $CB_VERB --commands-from-file $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands._processed_
+
+        sudo virt-customize -a cb_base_${CB_KVMQEMU_BIMG} $CB_VERB --commands-from-file $CB_KVMQEMU_S_DIR/base/${CB_KVMQEMU_BIMG}_commands._processed_
         COUT=$?
         let ERROR+=$COUT
     done
@@ -105,9 +114,9 @@ function create_workload_images {
                 CB_KVMQEMU_BIMG_FN=cb_nullworkload_${_CB_DISTRO}
             fi
             cp -f $CB_KVMQEMU_BIMG_FN cb_${_CB_WKS}_${_CB_DISTRO}
-            CMD="sudo -u $CB_USERNAME /home/$CB_USERNAME/cbtool/install -r workload --wks ${_CB_WKS} --filestore $CB_RSYNC"
+            CMD="sudo -u $CB_USERNAME /home/$CB_USERNAME/cloudbench/install -r workload --wks ${_CB_WKS} --filestore $CB_RSYNC"
             echo "####### Creating workload image \"cb_${_CB_WKS}_${_CB_DISTRO}\" by executing the command \"$CMD\""
-            virt-customize -m 4096 -a cb_${_CB_WKS}_${_CB_DISTRO} $CB_VERB --run-command "$CMD"
+            sudo virt-customize -m 4096 -a cb_${_CB_WKS}_${_CB_DISTRO} $CB_VERB --run-command "$CMD"
             COUT=$?
             if [[ $COUT -ne 0 ]]
             then
@@ -147,9 +156,9 @@ function create_orchestrator_images {
     do
 
         cp -f cb_base_${_CB_DISTRO} cb_orchestrator_${_CB_DISTRO}
-        CMD="sudo -u $CB_USERNAME /home/$CB_USERNAME/cbtool/install -r orchestrator"
+        CMD="sudo -u $CB_USERNAME /home/$CB_USERNAME/cloudbench/install -r orchestrator"
         echo "####### Creating orchestrator image \"cb_orchestrator_${_CB_DISTRO}\" by executing the command \"$CMD\""
-        virt-customize -a cb_orchestrator_${_CB_DISTRO} $CB_VERB --run-command "$CMD"
+        sudo virt-customize -a cb_orchestrator_${_CB_DISTRO} $CB_VERB --run-command "$CMD"
         COUT=$?
         if [[ $COUT -ne 0 ]]
         then
@@ -171,4 +180,3 @@ function create_orchestrator_images {
     popd > /dev/null 2>&1
 }
 export -f create_orchestrator_images
-
