@@ -5,6 +5,7 @@ size=FIO_FILE_SIZE
 filename=FIO_FILENAME
 runtime=FIO_RUNTIME
 create_on_open=1
+time_based
 
 [JOB]
 name=fiofile
