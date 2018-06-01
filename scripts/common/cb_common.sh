@@ -1661,6 +1661,7 @@ function automount_data_dirs {
     then
         syslog_netcat "Creating directory \"$ROLE_DATA_DIR\""
         sudo mkdir -p $ROLE_DATA_DIR
+        sudo chown -R ${my_login_username}:${my_login_username} $ROLE_DATA_DIR
     fi
             
     if [[ $ROLE_DATA_FSTYP == "ramdisk" || $ROLE_DATA_FSTYP == "tmpfs" ]]
