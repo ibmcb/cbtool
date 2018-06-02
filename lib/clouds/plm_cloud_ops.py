@@ -791,13 +791,14 @@ class PlmCmds(CommonCloudFunctions) :
         try :
             _status = 100
             _fmsg = "An error has occurred, but no error message was captured"
-
+            
             if not boot and "cloud_vv" not in obj_attr_list :
                 obj_attr_list["cloud_vv_uuid"] = "none"
 
             else :
+                
                 _xml_file = self.generate_libvirt_vv_template(obj_attr_list, boot)
-
+                
                 obj_attr_list["last_known_state"] = "about to send volume create request"
 
                 if not boot :        
@@ -805,11 +806,12 @@ class PlmCmds(CommonCloudFunctions) :
                 else :
                     obj_attr_list["boot_from_volume"] = "true"
 
-                _storage_pool_handle = self.lvirtconn[obj_attr_list["host_cloud_ip"]].storagePoolLookupByName(obj_attr_list["poolname"])
-                _storage_pool_handle.createXML(_xml_file, 0)
-                                                  
                 self.common_messages("VV", obj_attr_list, "creating", _status, _fmsg)
 
+                _storage_pool_handle = self.lvirtconn[obj_attr_list["host_cloud_ip"]].storagePoolLookupByName(obj_attr_list["poolname"])
+
+                _storage_pool_handle.createXML(_xml_file, 0)
+                                                  
             _status = 0
 
         except CldOpsException, obj :
@@ -1337,7 +1339,6 @@ class PlmCmds(CommonCloudFunctions) :
         if boot :
             obj_attr_list["cloud_vv_data_name"] = obj_attr_list["cloud_vv_name"]
             obj_attr_list["cloud_vv_name"] = obj_attr_list["cloud_vv_name"].replace("-vv","-vbv")
-            _vol_name = obj_attr_list["cloud_vv_name"]
             if "override_boot_vv_size" in obj_attr_list :
                 _xml_file += "\t<capacity unit=\"G\">" + str(int(obj_attr_list["override_boot_vv_size"])) + "</capacity>\n"
             else :
@@ -1345,6 +1346,8 @@ class PlmCmds(CommonCloudFunctions) :
         else :
             obj_attr_list["cloud_vv_name"] = obj_attr_list["cloud_vv_data_name"]
             _xml_file += "\t<capacity unit=\"G\">" + obj_attr_list["cloud_vv"] + "</capacity>\n"
+
+        _vol_name = obj_attr_list["cloud_vv_name"]
             
         _xml_file += "\t<name>" + obj_attr_list["cloud_vv_name"] + "</name>\n"                    
         _xml_file += "\t<target>\n"

@@ -24,7 +24,6 @@ from libcloud_common import LibcloudCmds
 
 from shared_functions import CldOpsException
 
-
 class DoCmds(LibcloudCmds) :
     @trace
     def __init__ (self, pid, osci, expid = None) :
@@ -34,7 +33,6 @@ class DoCmds(LibcloudCmds) :
                               use_ssh_keys = True, \
                               use_volumes = True, \
                               tldomain = "digitalocean.com", \
-                              extra = {} \
                              )
     # All clouds based on libcloud should define this function.
     # It performs the initial libcloud setup.
@@ -49,28 +47,13 @@ class DoCmds(LibcloudCmds) :
         return driver
 
     @trace
-    def extra_vmc_setup(self, vmc_name, vmc_defaults, vm_defaults, vm_templates, connection) :
-        '''
-        TBD
-        '''
-        return True
-
-    @trace
-    def get_list_node_args(self, obj_attr_list) :
-        '''
-        TBD
-        '''
-        
-        return [ ]
-
-    @trace
     def is_cloud_image_uuid(self, imageid) :
-        '''
-        TBD
-        '''
-        if len(imageid) == 8 and is_number(imageid) :
-            return True
+        # DigitalOcean image IDs are just integers, and can be of
+        # arbitrary length. At best we can detect whether or not they
+        # are integers, but the number of digits is never a guarantee.
 
+        if is_number(imageid) :
+            return True
         return False
 
     @trace            
@@ -82,7 +65,7 @@ class DoCmds(LibcloudCmds) :
         return True
     
     @trace
-    def pre_vmcreate_process(self, obj_attr_list, extra, keys) :
+    def pre_vmcreate_process(self, obj_attr_list, keys) :
         '''
         TBD
         '''
@@ -94,17 +77,13 @@ class DoCmds(LibcloudCmds) :
                 obj_attr_list["libcloud_location_inst"] = _location
                 break
 
-        extra["ssh_keys"] = keys
-        
         if obj_attr_list["netname"] == "private" :
-            extra["private_networking"] = True
+            self.vmcreate_kwargs["ex_create_attr"]["private_networking"] = True
 
-        obj_attr_list["libcloud_call_type"] = 1
+        obj_attr_list["libcloud_call_type"] = "create_node_with_mixed_arguments"
 
-        self.vmcreate_kwargs["ex_create_attr"] = extra        
+        self.vmcreate_kwargs["ex_create_attr"]["ssh_keys"] = keys
         self.vmcreate_kwargs["ex_user_data"] = obj_attr_list["userdata"]
-
-        return extra
 
     @trace
     def get_description(self) :

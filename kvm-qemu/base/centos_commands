@@ -36,4 +36,3 @@ run-command ssh-keygen -q -t rsa -N '' -f /home/REPLACE_USERNAME/.ssh/id_rsa
 run-command touch /home/REPLACE_USERNAME/.ssh/authorized_keys; chmod 644 /home/REPLACE_USERNAME/.ssh/authorized_keys; chown -R REPLACE_USERNAME:REPLACE_USERNAME /home/REPLACE_USERNAME/
 
 run-command cd /home/REPLACE_USERNAME/cbtool; git checkout REPLACE_BRANCH
-

@@ -210,6 +210,10 @@ RUN pip install --upgrade ruamel.yaml
 RUN pip install --upgrade  urllib3[secure]
 # urllib3-install-pip
 
+# jq-install-pm
+RUN apt-get install -y jq
+# jq-install-pm
+
 # httplib2shim-install-pip
 RUN pip install --upgrade httplib2shim
 # httplib2shim-install-pip
@@ -276,6 +280,13 @@ RUN pip install --upgrade pykube
 RUN apt-get install -y r-base-core
 # R-install-pm
 
+# bc-install-pm
+RUN apt-get install -y bc
+# bc-install-pm
+
+# jq-install-pm
+RUN apt-get install -y jq
+# jq-install-pm
 
 USER REPLACE_USERNAME
 # gcloud-install-man

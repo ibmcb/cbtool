@@ -356,7 +356,7 @@ def get_boostrap_command(obj_attr_list, cloud_init = False) :
         _rbf = obj_attr_list["remote_dir_home"] + "/cb_os_parameters.txt"
         _bcmd += _pad + "echo '#OSKN-redis' > " + _rbf + _eolc
         
-        if obj_attr_list["vpn_only"].lower() != "false" :
+        if obj_attr_list["use_vpn_ip"].lower() != "false" :
             _bcmd += _pad + "echo '#OSHN-" + obj_attr_list["vpn_server_bootstrap"] + "' >> " + _rbf + _eolc
         else :
             _bcmd += _pad + "echo '#OSHN-" + obj_attr_list["objectstore_host"] + "' >> " + _rbf + _eolc

@@ -174,14 +174,6 @@ class OsCmds(LibcloudCmds) :
         return True
 
     @trace
-    def get_list_node_args(self, obj_attr_list) :
-        '''
-        TBD
-        '''
-        
-        return [ ]
-
-    @trace
     def is_cloud_image_uuid(self, imageid) :
         '''
         TBD
@@ -200,7 +192,7 @@ class OsCmds(LibcloudCmds) :
         return True
     
     @trace
-    def pre_vmcreate_process(self, obj_attr_list, extra, keys) :
+    def pre_vmcreate_process(self, obj_attr_list, keys) :
         '''
         TBD
         '''
@@ -235,7 +227,7 @@ class OsCmds(LibcloudCmds) :
 
         obj_attr_list["availability_zone"] = "none"
 
-        obj_attr_list["libcloud_call_type"] = 2
+        obj_attr_list["libcloud_call_type"] = "create_node_with_keyword_arguments_only"
 
         self.vmcreate_kwargs["name"] = obj_attr_list["cloud_vm_name"]
         self.vmcreate_kwargs["size"] = obj_attr_list["libcloud_size_inst"]
@@ -252,8 +244,6 @@ class OsCmds(LibcloudCmds) :
         if "cloud_floating_ip" in obj_attr_list :            
             self.vmcreate_kwargs["ex_metadata"]["cloud_floating_ip"] = obj_attr_list["cloud_floating_ip"]
                 
-        return extra
-
     @trace
     def get_description(self) :
         '''

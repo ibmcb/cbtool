@@ -318,7 +318,7 @@ function get_time {
 }
 
 function get_vm_uuid_from_ip {
-    uip=$(echo $1 | cut -d '-' -f 1)
+    uip=$1
     fqon=`retriable_execution "$rediscli -h $oshostname -p $osportnumber -n $osdatabasenumber get ${osinstance}:VM:TAG:CLOUD_IP:${uip}" 0`
     echo $fqon | cut -d ':' -f 4
 }
@@ -432,7 +432,11 @@ my_ip_addr=`get_my_vm_attribute cloud_ip`
 function get_attached_volumes {
     # Wierdo clouds, like Amazon expose naming schemes like `/dev/nvme0n1p1` for the root volume.
     # So, we need a beefier regex.
-    ROOT_VOLUME=$(sudo mount | grep "/ " | cut -d ' ' -f 1 | sed "s/\([a-z]*[0-9]\+\|[0-9]\+\)$//g")
+    ROOT_PARTITION=$(sudo mount | grep "/ " | cut -d ' ' -f 1)
+    ROOT_VOLUME=$(echo "$ROOT_PARTITION" | sed -e "s/\(.*[0-9]\)[a-z]\+[0-9]\+$/\1/g")
+    if [ ${ROOT_PARTITION} == ${ROOT_VOLUME} ] ; then
+        ROOT_VOLUME=$(echo "$ROOT_PARTITION" | sed -e "s/\(.\)[0-9]\+$/\1/g")
+    fi
     SWAP_VOLUME=$(sudo swapon -s | grep dev | cut -d ' ' -f 1 | tr -d 0-9)
     if [[ -z ${SWAP_VOLUME} ]]
     then
@@ -953,7 +957,7 @@ function subscribeai {
 load_manager_ip=`get_my_ai_attribute load_manager_ip`
 
 if [ x"${NC_HOST_SYSLOG}" == x ]; then
-    # These are cacheable now. (Thank you. =). No need to skip them in scalable mode.
+	# These are cacheable now. (Thank you. =). No need to skip them in scalable mode.
     # We still want rsyslog support in scalable mode.
     USE_VPN_IP=`get_global_sub_attribute vm_defaults use_vpn_ip`
     VPN_ONLY=`get_global_sub_attribute vm_defaults vpn_only`
@@ -1011,11 +1015,11 @@ function syslog_netcat {
     # I'm modifying this slightly. There's nothing wrong with logging in scalable mode,
     # except that we should not be calling slow functions in scalable mode. We still
     # want rsyslog functions to work in scalable mode when cloudbench is running as a service.
-    EXPID="$(get_my_vm_attribute experiment_id)"
+	EXPID="$(get_my_vm_attribute experiment_id)"
 
     echo "$SCRIPT_NAME ($$): ${1}"
 
-    # In rfc3164 format, there cannot be a space between the hostname and the facility number.
+	# In rfc3164 format, there cannot be a space between the hostname and the facility number.
     # It's pretty silly, but it doesn't work without removing the space.
     echo "${NC_FACILITY_SYSLOG}$hn cloudbench ${EXPID} $SCRIPT_NAME ($$): ${1}" | $NC_CMD &
 }
@@ -1126,7 +1130,7 @@ function security_configuration {
         if [[ ${LINUX_DISTRO} -eq 1 ]]
         then
             syslog_netcat "Disabling Apparmor..."
-            service_stop_disable apparmor
+            service_stop_disable_apparmor
             sudo service apparmor teardown
         fi
                 
@@ -1395,7 +1399,7 @@ function execute_load_generator {
     log_output_command=$(get_my_ai_attribute log_output_command)
     log_output_command=$(echo ${log_output_command} | tr '[:upper:]' '[:lower:]')
 
-    run_limit=`decrement_my_ai_attribute run_limit`
+    run_limit=`get_my_ai_attribute run_limit`
 
     if [[ -f /tmp/quiescent_time_start ]]
     then
@@ -1405,7 +1409,7 @@ function execute_load_generator {
         echo $DIFF > /tmp/quiescent_time        
     fi
     
-    if [[ ${run_limit} -ge 0 ]]
+    if [[ ${run_limit} -gt 0 ]]
     then
         syslog_netcat "This AI will execute the load_generating process ${run_limit} more times (LOAD_ID=${LOAD_ID}, AI_UUID=$my_ai_uuid, VM_UUID=$my_vm_uuid)" 
         syslog_netcat "Command line is: ${CMDLINE}. Output file is ${OUTPUT_FILE} (LOAD_ID=${LOAD_ID}, AI_UUID=$my_ai_uuid, VM_UUID=$my_vm_uuid)"
@@ -1428,6 +1432,7 @@ function execute_load_generator {
             LOAD_GENERATOR_END=$(date +%s)
             APP_COMPLETION_TIME=$(( $LOAD_GENERATOR_END - $LOAD_GENERATOR_START ))            
         fi
+        run_limit=`decrement_my_ai_attribute run_limit`
     else
         LOAD_GENERATOR_START=$(date +%s)        
         syslog_netcat "This AI reached the limit of load generation process executions. If you want this AI to continue to execute the load generator, reset the \"run_limit\" counter (LOAD_ID=${LOAD_ID}, AI_UUID=$my_ai_uuid, VM_UUID=$my_vm_uuid)"
@@ -1634,14 +1639,14 @@ function get_offline_ip {
 }
 
 function setup_rclocal_restarts {
-    if [ x"$(grep cb_start_load_manager.sh /etc/rc.local)" == x ]
-    then
+    if [ x"$(grep cb_start_load_manager.sh /etc/rc.local)" == x ] ; then
         echo "cb_start_load_manager.sh is missing from /etc/rc.local"
         cat /etc/rc.local | grep -v "exit 0" > /tmp/rc.local
         chmod +x /tmp/rc.local
 		echo "su $(whoami) -c \"$dir/cb_start_load_manager.sh\"" >> /tmp/rc.local
         echo "exit 0" >> /tmp/rc.local
-        sudo mv -f /tmp/rc.local /etc/rc.local  
+        mv -f /tmp/rc.local /etc/rc.local
+        
     fi
 }
 
@@ -1656,6 +1661,7 @@ function automount_data_dirs {
     then
         syslog_netcat "Creating directory \"$ROLE_DATA_DIR\""
         sudo mkdir -p $ROLE_DATA_DIR
+        sudo chown -R ${my_login_username}:${my_login_username} $ROLE_DATA_DIR
     fi
             
     if [[ $ROLE_DATA_FSTYP == "ramdisk" || $ROLE_DATA_FSTYP == "tmpfs" ]]
@@ -1676,6 +1682,7 @@ function automount_data_dirs {
         then         
             mount_remote_filesystem ${ROLE_DATA_DIR} ${ROLE_DATA_FSTYP} ${ROLE_DATA_FILESERVER_IP} ${ROLE_DATA_FILESERVER_PATH}    
         fi
+        run_limit=`decrement_my_ai_attribute run_limit`
     else
         if [[ $(get_attached_volumes) != "NONE" ]]
         then
@@ -1865,16 +1872,8 @@ function set_java_home {
         
         if [[ ${JAVA_HOME} == "auto" ]]
         then
-
-            syslog_netcat "The JAVA_HOME was set to \"auto\". Attempting to find the most recent in /opt/ibm"
-            sudo ls /opt/ibm/java-*
-            if [[ $? -eq 0 ]]
-            then
-                JAVA_HOME=$(sudo find /opt/ibm/ | grep jre/bin/javaws | sed 's^/bin/javaws^^g' | sort -r | head -n 1)
-            else            
-                syslog_netcat "The JAVA_HOME was set to \"auto\". Attempting to find the most recent in /usr/lib/jvm"
-                JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre
-            fi
+            syslog_netcat "The JAVA_HOME was set to \"auto\". Attempting to find the most recent in /usr/lib/jvm"            
+            JAVA_HOME=/usr/lib/jvm/$(ls -t /usr/lib/jvm | grep java | sed '/^$/d' | sort -r | head -n 1)/jre
         fi
     
         syslog_netcat "JAVA_HOME determined to be \"${JAVA_HOME}\""    

@@ -8,7 +8,7 @@ if [ $0 != "-bash" ] ; then
     popd 2>&1 > /dev/null
 fi
 
-CB_REPO=ibmcb
+CB_REPO=cloudbench-docker-local.artifactory.swg-devops.com
 CB_WKS="ALL"
 CB_RSYNC_ADDR=$(sudo ifconfig docker0 | grep "inet " | awk '{ print $2 }' | sed 's/addr://g')
 for pi in $(sudo netstat -puntel | grep rsync | grep tcp[[:space:]] | awk '{ print $9 }' | sed 's^/rsync^^g')
@@ -50,14 +50,16 @@ function cb_docker_build {
         CB_ARCH1=x86_64
         CB_ARCH2=x86-64
         CB_ARCH3=amd64
-    fi
-
-    if [[ ${_CB_ARCH} == "ppc64le" ]]
+    elif [[ ${_CB_ARCH} == "ppc64le" ]]
     then
         CB_ARCH1=ppc64le
         CB_ARCH2=ppc64
         CB_ARCH3=ppc64
-    fi                        
+    else
+        CB_ARCH1=$CB_ARCH
+        CB_ARCH2=$CB_ARCH
+        CB_ARCH3=$CB_ARCH
+    fi                     
 
     CB_ACTUAL_SQUASH=''
     if [[ ! -z ${_CB_SQUASH} ]]

@@ -117,7 +117,7 @@ class AsCmds(LibcloudCmds) :
         return False
     
     @trace
-    def pre_vmcreate_process(self, obj_attr_list, extra, keys) :
+    def pre_vmcreate_process(self, obj_attr_list, keys) :
         '''
         TBD
         '''
@@ -129,13 +129,12 @@ class AsCmds(LibcloudCmds) :
                     
         self.vmcreate_kwargs["ex_custom_data"] = obj_attr_list["userdata"]
         self.vmcreate_kwargs["ex_admin_user_id"] = obj_attr_list["login"]
-        obj_attr_list["libcloud_call_type"] = 1        
+        obj_attr_list["libcloud_call_type"] = "create_node_with_mixed_arguments"        
 #        network = ConfigurationSet()
 #        network.configuration_set_type = 'NetworkConfiguration'
 #        network.input_endpoints.items.append(ConfigurationSetInputEndpoint('SSHDirect', 'tcp', '22', '22', None, True))
         
 #        self.vmcreate_kwargs["ex_network_config"] = network
-        return extra
 
     @trace
     def get_description(self) :

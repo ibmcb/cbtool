@@ -182,6 +182,10 @@ RUN yum install -y iptables
 # service_stop_disable iptables
 # iptables-install-pm
 
+# jq-install-pm
+RUN yum install -y jq
+# jq-install-pm
+
 # sshd-install-pm
 RUN yum -y install openssh-server
 RUN sudo bash -c "echo 'UseDNS no' >> /etc/ssh/sshd_config"

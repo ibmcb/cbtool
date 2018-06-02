@@ -642,6 +642,8 @@ class SimCmds(CommonCloudFunctions) :
 
                 self.common_messages("VV", obj_attr_list, "creating", _status, _fmsg)
 
+                obj_attr_list["volume_list"] += ",/dev/sdb"
+
             _status = 0
 
         except CldOpsException, obj :
@@ -746,6 +748,8 @@ class SimCmds(CommonCloudFunctions) :
             _mark_a = time()
             self.vm_placement(obj_attr_list)
             self.annotate_time_breakdown(obj_attr_list, "vm_placement_time", _mark_a)
+
+            obj_attr_list["volume_list"] = "/dev/sda,/dev/hda"
 
             self.vvcreate(obj_attr_list)
 

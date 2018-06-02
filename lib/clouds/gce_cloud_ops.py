@@ -62,7 +62,6 @@ class GceCmds(CommonCloudFunctions) :
         self.gceconn = False
         self.instances_project= None
         self.images_project = None
-        self.zone = None
         self.instance_info = None
         self.expid = expid
         self.additional_rc_contents = ''
@@ -116,7 +115,6 @@ class GceCmds(CommonCloudFunctions) :
                     break
 
             if _zone_info :
-                self.zone = zone
                 _status = 0
             else :
                 _fmsg = "Unknown " + self.get_description() + " zone (" + zone + ")"
@@ -304,12 +302,12 @@ class GceCmds(CommonCloudFunctions) :
                 for _volume in _volume_list :
                     if _volume["name"].count("cb-" + obj_attr_list["username"] + '-' + obj_attr_list["cloud_name"].lower()) :
                         if not "users" in _volume :
-                            _msg = _volume["id"] + " detached "
-                            _msg += "... was deleted"
-                            cbdebug(_msg)
                             self.gceconn.disks().delete(project = self.instances_project, \
                                                         zone = obj_attr_list["name"], \
                                                         disk = _volume["name"]).execute(http = self.http_conn[obj_attr_list["name"]])
+                            _msg = _volume["id"] + " detached "
+                            _msg += "... was deleted"
+                            cbdebug(_msg)
                         else:
                             _msg = _volume["id"] + ' '
                             _msg += "... still attached and could not be deleted"
@@ -356,8 +354,8 @@ class GceCmds(CommonCloudFunctions) :
 
             _x, _y, _hostname = self.connect(obj_attr_list["access"], obj_attr_list["credentials"], obj_attr_list["name"], obj_attr_list["name"])
 
-            obj_attr_list["cloud_hostname"] = _hostname
-            obj_attr_list["cloud_ip"] = gethostbyname(_hostname.split('/')[2])
+            obj_attr_list["cloud_hostname"] = _hostname + "-" + obj_attr_list["name"]
+            obj_attr_list["cloud_ip"] = gethostbyname(_hostname.split('/')[2]) + "-" + obj_attr_list["name"]
             obj_attr_list["arrival"] = int(time())
 
             if str(obj_attr_list["discover_hosts"]).lower() == "true" :
@@ -444,7 +442,7 @@ class GceCmds(CommonCloudFunctions) :
                                                       "VMC", False, _vmc_uuid, \
                                                       False)
 
-                self.connect(obj_attr_list["access"], obj_attr_list["credentials"], _vmc_attr_list["name"])
+                self.connect(obj_attr_list["access"], obj_attr_list["credentials"], _vmc_attr_list["name"], _vmc_attr_list["name"])
 
                 _instance_list = self.get_instances(_vmc_attr_list, "vm", "all")                
 
@@ -545,7 +543,7 @@ class GceCmds(CommonCloudFunctions) :
             if obj_type == "vm" :
                 if identifier == "all" :
                     _instance_list = self.gceconn.instances().list(project = self.instances_project, \
-                                                                   zone =  _actual_zone).execute()
+                                                                   zone =  _actual_zone).execute(http = self.http_conn[obj_attr_list["name"]])
                                                                    
                 else :
                     _instance_list = self.gceconn.instances().get(project = self.instances_project, \
@@ -555,7 +553,7 @@ class GceCmds(CommonCloudFunctions) :
             else :
                 if identifier == "all" :
                     _instance_list = self.gceconn.disks().list(project = self.instances_project, \
-                                                                   zone =  _actual_zone).execute()
+                                                                   zone =  _actual_zone).execute(http = self.http_conn[obj_attr_list["name"]])
  
                 else :
                     _instance_list = self.gceconn.disks().get(project = self.instances_project, \
@@ -795,8 +793,16 @@ class GceCmds(CommonCloudFunctions) :
             obj_attr_list["cloud_vv_instance"] = False
 
             if "cloud_vv_type" not in obj_attr_list :
-                obj_attr_list["cloud_vv_type"] = "GV"
-            
+                '''
+                GCE types as of 2018:
+                pd-standard
+                local-ssd
+                pd-ssd
+                '''
+                obj_attr_list["cloud_vv_type"] = "pd-standard"
+             
+            _disk_type = "zones/" + obj_attr_list["vmc_name"] + "/diskTypes/" + obj_attr_list["cloud_vv_type"]
+
             if "cloud_vv" in obj_attr_list and str(obj_attr_list["cloud_vv"]).lower() != "false":
 
                 self.common_messages("VV", obj_attr_list, "creating", _status, _fmsg)
@@ -807,6 +813,7 @@ class GceCmds(CommonCloudFunctions) :
                     'name': obj_attr_list["cloud_vv_name"], 
                     'description' : "used by " + obj_attr_list["cloud_vm_name"],
                     'sizeGb' : obj_attr_list["cloud_vv"],
+                    'type' : _disk_type,
                 }
 
 
@@ -902,7 +909,7 @@ class GceCmds(CommonCloudFunctions) :
             
             self.determine_instance_name(obj_attr_list)
             obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"].lower()
-            obj_attr_list["cloud_vv_name"] = obj_attr_list["cloud_vv_name"].lower()                   
+            obj_attr_list["cloud_vv_name"] = obj_attr_list["cloud_vv_name"].lower().replace("_", "-")
             self.determine_key_name(obj_attr_list)
 
             obj_attr_list["last_known_state"] = "about to connect to " + self.get_description() + " manager"
@@ -940,6 +947,10 @@ class GceCmds(CommonCloudFunctions) :
             _source_disk_image = "projects/" + obj_attr_list["images_project"] + "/global/images/" + obj_attr_list["imageid1"]
             _machine_type = "zones/" + obj_attr_list["vmc_name"] + "/machineTypes/" + obj_attr_list["size"]
 
+            if "cloud_rv_type" not in obj_attr_list :
+                obj_attr_list["cloud_rv_type"] = "pd-standard"
+            _root_type = "zones/" + obj_attr_list["vmc_name"] + "/diskTypes/" + obj_attr_list["cloud_rv_type"]
+
             _config = {
                 'name': obj_attr_list["cloud_vm_name"],
                 'machineType': _machine_type,
@@ -951,6 +962,7 @@ class GceCmds(CommonCloudFunctions) :
                         'autoDelete': True,
                         'initializeParams': {
                             'sourceImage': _source_disk_image,
+                            'diskType' : _root_type,
                         }
                     }
                 ],

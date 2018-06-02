@@ -1134,14 +1134,15 @@ class BaseObjectOperations :
                         obj_attr_list["vms"] = ''
                         obj_attr_list["build"] = False
                         obj_attr_list["override_imageid1"] = False
-                        
+                                                
                         obj_attr_list["type"].replace("build->","build:")
+
                         if obj_attr_list["type"].count("build:") :
                             obj_attr_list["build"] = True
                             _x, _override_image, _actual_type = obj_attr_list["type"].split(':')
                             obj_attr_list["type"] = _actual_type
-                            obj_attr_list["override_imageid1"] = _override_image 
-                                                    
+                            obj_attr_list["override_imageid1"] = _override_image
+                            
                     if _obj_type == "VM" :
                                                 
                         self.pre_populate_host_info(obj_attr_list)
@@ -1152,18 +1153,26 @@ class BaseObjectOperations :
 
                         obj_attr_list["cloud_init_bootstrap"] = False
                         obj_attr_list["cloud_init_rsync"] = False
+                        
+                        obj_attr_list["role"].replace("check->","check:")
 
                         _vm_templates = self.osci.get_object(obj_attr_list["cloud_name"], \
                                                              "GLOBAL", False, \
                                                              "vm_templates", False)
-                        
+
+                        if str(obj_attr_list["build"]).lower() == "true" :
+                            _role_tmp = "check:" + obj_attr_list["imageid1"] + ':' + obj_attr_list["login"] + ':' + obj_attr_list["type"] + ":build"
+                        else :
+                            _role_tmp = obj_attr_list["role"]
+                            if obj_attr_list["role"].count("check:") :
+                                obj_attr_list["role"] = "check"
+
                         _generic_boot_cmd = "~/" + obj_attr_list["remote_dir_name"] 
                         _generic_boot_cmd += "/scripts/common/cb_post_boot.sh"
                         
-                        obj_attr_list["role"].replace("check->","check:")
-                        
-                        if obj_attr_list["role"].count("check:") :
-                            _role_tmp = obj_attr_list["role"].replace("check:",'')
+                        if _role_tmp.count("check:") :
+                            _role_tmp = _role_tmp.replace("check:",'')
+                            
                             obj_attr_list["run_generic_scripts"] = "false"
                                                         
                             if _role_tmp.count(':') == 1 :                                
@@ -1211,8 +1220,6 @@ class BaseObjectOperations :
                                 obj_attr_list["check_ssh"] = "false"
                                 obj_attr_list["check_boot_complete"] = "wait_for_0"
                                 obj_attr_list["transfer_files"] = "false"
-                                
-                            obj_attr_list["role"] = "check"
 
                         obj_attr_list["generic_post_boot_command"] = _generic_boot_cmd  
                         obj_attr_list["boot_volume_imageid1"] = "NA"
@@ -2090,7 +2097,7 @@ class BaseObjectOperations :
 
         if "build" in obj_attr_list :
             _extra_parms += ",build=" + str(obj_attr_list["build"]).lower()
-                        
+
         if str(obj_attr_list["override_imageid1"]).lower() != "false" :
             _extra_parms += ",imageid1=" + obj_attr_list["override_imageid1"]
 

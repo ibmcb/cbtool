@@ -126,8 +126,9 @@ setuptools-order = 64
 markup-order = 65
 pyyaml-order = 66
 ruamelyaml-order = 67
-urllib3 = 68
-httplib2shim = 69
+jq-order = 68
+urllib3-order = 69
+httplib2shim-order = 70
 ### END - Dependency installation order ###
 
 ### START - Dependency-specific installation method ###
@@ -207,9 +208,10 @@ docutils-install = pip
 setuptools-install = pip
 markup-install = pip
 pyyaml-install = pip
-ruamelyaml-install = pip 
-urllib3 = pip
-httplib2shim = pip
+ruamelyaml-install = pip
+jq-install = pm
+urllib3-install = pip
+httplib2shim-install = pip
 ### END - Dependency-specific installation method ###
 
 ### START - Tests ###
@@ -268,7 +270,7 @@ glanceclient-configure = python -c "import glanceclient; from glanceclient.v2 im
 softlayer-configure = python -c "import SoftLayer; print "SoftLayer.__version__".replace('v','')"
 boto-configure = python -c "import boto; print str(boto.__version__).strip().replace('-dev','')"
 libcloud-configure = python -c "import libcloud; print str(libcloud.__version__).replace('-dev','').strip()"
-gcloud-configure =  source ~/.bashrc 2>&1 | grep -v No; source ~/.profile 2>&1 | grep -v No; gcloud -v | grep SDK | cut -d ' ' -f 4;
+gcloud-configure =  source ~/.bashrc > /dev/null 2>&1; source ~/.profile > /dev/null 2>&1; gcloud -v 2>&1 | grep SDK | cut -d ' ' -f 4
 pygce-configure = python -c "from oauth2client.client import GoogleCredentials; from googleapiclient.discovery import build"
 pydocker-configure = python -c "import docker"
 pylxd-configure = python -c "import pylxd"
@@ -283,8 +285,9 @@ setuptools-configure = python -c "import setuptools; print str(setuptools.__vers
 markup-configure = python -c "import markup;"
 pyyaml-configure = python -c "import yaml; print str(yaml.__version__).strip()"
 ruamelyaml-configure = python -c "import ruamel.yaml; print ruamel.yaml.__version__"
-urllib3 = python -c "import urllib3; print urllib3.__version__"
-httplib2shim = python -c "import httplib2shim"
+jq-configure = jq --version | grep jq
+urllib3-configure = python -c "import urllib3; print urllib3.__version__"
+httplib2shim-configure = python -c "import httplib2shim"
 ### END - Tests ###
 
 ### START - Dependency versions ###
@@ -343,7 +346,7 @@ glanceclient-ver = ANY
 softlayer-ver = 3.1
 boto-ver = 2.1.8
 libcloud-ver = 0.11.0
-gcloud-ver = 0.8
+gcloud-ver = 100
 pygce-ver = ANY
 pydocker-ver = ANY
 pylxd-ver = ANY
@@ -358,6 +361,7 @@ setuptools-ver = 7.0
 markup-ver = ANY
 pyyaml-ver = 3.10
 ruamelyaml-ver = ANY
+jq-ver = ANY
 urllib3-ver = 1.0
 httplib2shim = ANY
 ### END - Dependency versions ###
@@ -433,8 +437,9 @@ setuptools-tag = base
 markup-tag = orchestrator
 pyyaml-tag = orchestrator
 ruamelyaml-tag = orchestrator
-urllib3-tag = orchestrator
-httplib2shim-tag = orchestrator
+jq-tag = base
+urllib3-tag = gce,all
+httplib2shim-tag = gce,all
 ### END - Dependency versions ###
 
 ### START - Dependency URLs ###

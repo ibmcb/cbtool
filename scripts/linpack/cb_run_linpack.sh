@@ -30,7 +30,7 @@ if [[ $? -ne 0 ]]
 then
 	LINPACK=$(sudo find ~ | grep xlinpack_xeon64)
 fi
-LOAD_FACTOR=`get_my_ai_attribute_with_default load_factor 1000`
+LOAD_FACTOR=`get_my_ai_attribute_with_default load_factor 5000`
 LINPACK_DAT='~/linpack.dat'
 eval LINPACK_DAT=${LINPACK_DAT}
 
@@ -46,7 +46,7 @@ echo "Intel(R) LINPACK data" >> ${LINPACK_DAT}
 echo "1 # number of tests" >> ${LINPACK_DAT}
 echo "$PROBLEM_SIZES # problem sizes" >> ${LINPACK_DAT}
 echo "$LEADING_DIMENSIONS # leading dimensions" >> ${LINPACK_DAT}
-echo "2 # times to run a test " >> ${LINPACK_DAT}
+echo "${LOAD_DURATION} # times to run a test " >> ${LINPACK_DAT}
 echo "4 # alignment values (in KBytes)" >> ${LINPACK_DAT}
 
 CMDLINE="${LINPACK} ${LINPACK_DAT}" 
