@@ -13,8 +13,7 @@ CB_PUSH="nopush"
 CB_ARCH=$(uname -a | awk '{ print $12 }')
 CB_PALL=0
 CB_USERNAME="cbuser"
-CB_BRANCH="master"
-CB_USAGE="Usage: build_all.sh -r <repository> [-u Ubuntu base image] [-p Phusion base image] [-c Centos base image] [-w Workload] [-l CB Username/login] [-b branch] [--verbose] [--push] [--psall]"
+CB_USAGE="Usage: build_all.sh -r <repository> [-u Ubuntu base image] [-p Phusion base image] [-c Centos base image] [-w Workload] [-l CB Username/login] [--verbose] [--push] [--psall]"
 
 while [[ $# -gt 0 ]]
 do
@@ -77,14 +76,6 @@ do
         CB_ARCH=$(echo $key | cut -d '=' -f 2)
         shift
         ;;
-        -b|--branch)
-        CB_BRANCH="$2"
-        shift
-        ;;
-        -b=*|--branch=*)
-        CB_BRANCH=$(echo $key | cut -d '=' -f 2)
-        shift
-        ;;        
         --rsync)
         CB_RSYNC="$2"
         shift
@@ -121,10 +112,10 @@ then
 fi
 
 cb_refresh_vanilla_images $CB_UBUNTU_BASE $CB_PHUSION_BASE $CB_CENTOS_BASE
-cb_build_orchestrator $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC $CB_BRANCH
-cb_build_base_images $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC $CB_BRANCH
-cb_build_nullworkloads $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC $CB_BRANCH
-cb_build_workloads $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_WKS $CB_RSYNC $CB_BRANCH
+cb_build_orchestrator $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC
+cb_build_base_images $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC
+cb_build_nullworkloads $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC
+cb_build_workloads $CB_REPO $CB_VERB $CB_USERNAME $CB_ARCH $CB_RSYNC
 
 if [[ $CB_PUSH == "push" ]]
 then

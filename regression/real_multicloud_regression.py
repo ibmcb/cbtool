@@ -58,10 +58,9 @@ def cli_postional_argument_parser() :
     _options.test_volumes = True    
     _options.test_capture = True
     _options.pause = False
-    _options.private_results = False
     
     if len(argv) > 3 :
-        if argv[3] == "minimal" or argv[3] == "lowest" :
+        if argv[3] == "minimal" :
             _options.test_instances = False
             _options.test_ssh = False
             _options.test_capture = False
@@ -79,7 +78,7 @@ def cli_postional_argument_parser() :
             _options.test_volumes = False
             _options.test_capture = False
 
-        if argv[3] == "high" or argv[3] == "highest" :
+        if argv[3] == "high" :
             _options.test_instances = True
             _options.test_ssh = True 
             _options.test_volumes = True
@@ -87,11 +86,7 @@ def cli_postional_argument_parser() :
     
         if argv[3] == "pause" :        
             _options.pause = True
-
-    if len(argv) > 4 :
-        if argv[4] == "private" :
-            _options.private_results = True
-
+            
     return _options
 
 def cli_named_option_parser() :
@@ -197,14 +192,12 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         _model_to_imguuid["pcm"] = "xenial" 
         _model_to_imguuid["pdm"] = "ibmcb/cbtoolbt-ubuntu"
         _model_to_imguuid["nop"] = "baseimg"
-        _model_to_imguuid["osk"] = "xenial3"
-        _model_to_imguuid["os"] = "xenial3"        
+        _model_to_imguuid["osk"] = "xenial"
         _model_to_imguuid["ec2"] = "ami-a9d276c9"
         _model_to_imguuid["gce"] = "ubuntu-1604-xenial-v20161221"
         _model_to_imguuid["do"] = "21669205"        
-        _model_to_imguuid["slr"] = "1836627"        
+        _model_to_imguuid["slr"] = "1373563"        
         _model_to_imguuid["kub"] = "ibmcb/cbtoolbt-ubuntu"
-        _model_to_imguuid["as"] = "b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-16_04-LTS-amd64-server-20180112-en-us-30GB"
 
         _model_to_login = {}
         _model_to_login["sim"] = "ubuntu"
@@ -212,14 +205,12 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
         _model_to_login["pdm"] = "cbuser"
         _model_to_login["nop"] = "ubuntu"
         _model_to_login["osk"] = "ubuntu"
-        _model_to_login["os"] = "ubuntu"        
         _model_to_login["ec2"] = "ubuntu"
         _model_to_login["gce"] = "ubuntu"
         _model_to_login["do"] = "root"        
         _model_to_login["slr"] = "root"
         _model_to_login["kub"] = "cbuser"
-        _model_to_login["as"] = "cbuser"
-        
+
         _vm_location = "auto"
         _meta_tags = "empty"
         _size = "default"
@@ -308,11 +299,7 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
             if int(_vm_counters["reservations"]) == 1 and int(_vm_counters["failed"]) - _vms_failed == 0 and int(_vm_counters["reported"]) == 1 :
                 if test_case.count("no volume") :
                     if "cloud_vv_uuid" in _vm and str(_vm["cloud_vv_uuid"]).lower() == "none" :
-                        _result = "PASS" 
-                        if _vm["prov_cloud_ip"] ==  _vm["run_cloud_ip"] :
-                            _result += " p=r=" + _vm["run_cloud_ip"]                            
-                        else :
-                            _result += " p=" + _vm["prov_cloud_ip"] + ",r=" + _vm["run_cloud_ip"]
+                        _result = "PASS"
                     else :
                         _attach_error = True
                         _result = "FAIL"                        
@@ -321,7 +308,7 @@ def check_vm_attach(apiconn, cloud_model, cloud_name, test_case, options) :
                     if str(_vm["cloud_vv_uuid"]).lower() == "not supported" :
                         _result = "NA"
                     elif str(_vm["cloud_vv_uuid"]).lower() != "none" :
-                        _result = "PASS" 
+                        _result = "PASS"
                     else :
                         _attach_error = True
                         _result = "FAIL"
@@ -526,19 +513,8 @@ def main() :
     for _cloud_model in _options.cloud_models :
         _start = int(time())
         print ''
-        
-        if _options.private_results :
-            _reset = " --soft_reset"            
-        else :
-            _reset = " --hard_reset"
-
-        _command = _cb_cli_path + _reset + "  --config " + _options.cloud_config_dir + '/' + _cloud_model + ".txt exit"
-        
-        _actual_cloud_model = _cloud_model.replace("file",'').replace("fip",'')
-
-        _cloud_model = _cloud_model.replace("file"," (file)").replace("fip", " (fip)")
-        
-        print "Attaching Cloud Model \"" + _actual_cloud_model + "\" by running the command \"" + _command + "\"..."
+        _command = _cb_cli_path + " --hard_reset --config " + _options.cloud_config_dir + '/' + _cloud_model + ".txt exit"
+        print "Attaching Cloud Model \"" + _cloud_model + "\" by running the command \"" + _command + "\"..."
         _proc_h = subprocess.Popen(_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         _resul = _proc_h.communicate()
     
@@ -547,11 +523,7 @@ def main() :
             print "ERROR while attempting to attach Cloud Model \"" + _cloud_model + "\""
             exit(_status)
     
-        if _options.private_results :
-            api_file_name = "/tmp/cb_api_" + username + '_' + _actual_cloud_model            
-        else :
-            api_file_name = "/tmp/cb_api_" + username
-
+        api_file_name = "/tmp/cb_api_" + username
         if os.access(api_file_name, os.F_OK) :    
             try :
                 _fd = open(api_file_name, 'r')
@@ -577,8 +549,8 @@ def main() :
 
         if _options.pause :
             raw_input("Press Enter to continue...")
-            
-        _cloud_result, _cloud_name = check_cloud_attach(api, _actual_cloud_model)
+                        
+        _cloud_result, _cloud_name = check_cloud_attach(api, _cloud_model)
         _results_row.append(_cloud_result)
         
         _test_cases = ["NA", "NA", "NA", "NA", "NA", "NA", "NA", "NA" ]
@@ -598,31 +570,21 @@ def main() :
             _test_cases[6] = "non-existent image failure"
             _test_cases[7] = "pubkey injection, force failure"
 
-        if _actual_cloud_model == "kub" :
+        if _cloud_model == "kub" :
             _test_cases[2] = "NA"            
             _test_cases[3] = "NA"
             _test_cases[4] = "NA"
             _test_cases[5] = "NA"            
-
-        if _actual_cloud_model == "as" :
-            _test_cases[2] = "NA" 
-            _test_cases[3] = "NA"
-            _test_cases[4] = "NA"
-            _test_cases[5] = "NA"
-
-        if _actual_cloud_model == "gen" :
-            _test_cases[3] = "NA"
-            _test_cases[4] = "NA"
             
         for _test_case in _test_cases :
             if _test_case.count("vm capture") :
-                _results_row.append(check_vm_capture(api, _actual_cloud_model, _cloud_name, _options))
+                _results_row.append(check_vm_capture(api, _cloud_model, _cloud_name, _options))
             elif _test_case.count("image delete") :
-                _results_row.append(check_img_delete(api, _actual_cloud_model, _cloud_name, _options))
+                _results_row.append(check_img_delete(api, _cloud_model, _cloud_name, _options))
             elif _test_case == "NA":
                 _results_row.append("NA")
             else :
-                _results_row.append(check_vm_attach(api, _actual_cloud_model, _cloud_name, _test_case, _options) )        
+                _results_row.append(check_vm_attach(api, _cloud_model, _cloud_name, _test_case, _options) )        
 
         _results_row[0] = _results_row[0] + " (" + str(int(time())-_start) + "s)"
 
@@ -637,17 +599,9 @@ def main() :
         _x_test_results_table[6] = _aux
         _x_test_results_table = '\n'.join(_x_test_results_table)
         
-        if _options.private_results :
-            _fn = "/tmp/" + _actual_cloud_model + "_real_multicloud_regression_test.txt"            
-        else :
-            _fn = "/tmp/real_multicloud_regression_test.txt"
-
+        _fn = "/tmp/real_multicloud_regression_test.txt"
         _fh = open(_fn, "w")
         _fh.write(str(_x_test_results_table))
-        
-        if _options.private_results :
-            _fh.write('\n')
-
         _fh.close()
 
         print _x_test_results_table

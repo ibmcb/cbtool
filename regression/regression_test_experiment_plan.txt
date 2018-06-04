@@ -789,7 +789,7 @@ echo ######################################################## [TEST] 196: END vm
 echo 
 echo #################################################### [TEST] 197: START vmcattach TESTCLOUD simzone_b async #####################################################
 vmcattach TESTCLOUD simzone_b async
-waitfor TESTCLOUD 16s
+waitfor TESTCLOUD 8s
 vmclist TESTCLOUD
 vmcshow TESTCLOUD simzone_b update_attempts,update_frequency
 stats TESTCLOUD
@@ -804,7 +804,7 @@ echo ##################################### [TEST] 198: END vmcattach TESTCLOUD s
 echo 
 echo ################################# [TEST] 199: START vmcattach TESTCLOUD simzone_d update_attempts=156,update_frequency=6 async #################################
 vmcattach TESTCLOUD simzone_d update_attempts=156,update_frequency=6 async
-waitfor TESTCLOUD 16s
+waitfor TESTCLOUD 8s
 vmclist TESTCLOUD
 vmcshow TESTCLOUD simzone_d update_attempts,update_frequency
 stats TESTCLOUD
@@ -820,7 +820,7 @@ echo ######################################################## [TEST] 200: END vm
 echo 
 echo #################################################### [TEST] 201: START vmcdetach TESTCLOUD simzone_a async #####################################################
 vmcdetach TESTCLOUD simzone_a async
-waitfor TESTCLOUD 16s
+waitfor TESTCLOUD 8s
 vmclist TESTCLOUD
 stats TESTCLOUD
 echo ##################################################### [TEST] 201: END vmcdetach TESTCLOUD simzone_a async ######################################################
@@ -858,14 +858,14 @@ echo ####################################### [TEST] 206: END vmcattach TESTCLOUD
 echo 
 echo ####################################################### [TEST] 207: START vmcdetach TESTCLOUD all async ########################################################
 vmcdetach TESTCLOUD all async
-waitfor TESTCLOUD 16s
+waitfor TESTCLOUD 8s
 vmclist TESTCLOUD
 stats TESTCLOUD
 echo ######################################################## [TEST] 207: END vmcdetach TESTCLOUD all async #########################################################
 echo 
 echo ####################################################### [TEST] 208: START vmcattach TESTCLOUD all async ########################################################
 vmcattach TESTCLOUD all async
-waitfor TESTCLOUD 16s
+waitfor TESTCLOUD 8s
 vmclist TESTCLOUD
 vmcshow TESTCLOUD simzone_c update_attempts,update_frequency
 stats TESTCLOUD

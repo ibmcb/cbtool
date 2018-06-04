@@ -338,44 +338,54 @@ def value_suffix(value, in_kilobytes = False) :
         _value = int(value)
     return _value
 
-def get_boostrap_command(obj_attr_list, cloud_init = False) :
+def get_rdir_fullp(obj_attr_list) :
     '''
     TBD
     '''
+    _rdn = obj_attr_list["remote_dir_name"]
 
-    if not cloud_init :
-        _pad = ''
-        _eolc = ';'
+    if obj_attr_list["login"] != "root" :
+        _rln = "/home/" + obj_attr_list["login"]
     else :
-        _pad = "      " 
-        _eolc = '\n'
-                
-    _bcmd = _pad + "mkdir -p " + obj_attr_list["remote_dir_path"] + _eolc
+        _rln = "/root"
+
+    _rdir_full_path = _rln + '/' + obj_attr_list["remote_dir_name"]
+    
+    return _rln, _rdir_full_path
+
+def get_boostrap_command(obj_attr_list, osci) :
+    '''
+    TBD
+    '''
+    
+    _rdh, _rdfp = get_rdir_fullp(obj_attr_list)
+    
+    _bcmd = "mkdir -p " + _rdfp + ';'
 
     if obj_attr_list["role"] != "check" :
-        _rbf = obj_attr_list["remote_dir_home"] + "/cb_os_parameters.txt"
-        _bcmd += _pad + "echo '#OSKN-redis' > " + _rbf + _eolc
+        _rbf = _rdh + "/cb_os_parameters.txt"        
+        _bcmd += "echo '#OSKN-redis' > " + _rbf + ';'
         
         if obj_attr_list["vpn_only"].lower() != "false" :
-            _bcmd += _pad + "echo '#OSHN-" + obj_attr_list["vpn_server_bootstrap"] + "' >> " + _rbf + _eolc
+            _bcmd += "echo '#OSHN-" + obj_attr_list["vpn_server_bootstrap"] + "' >> " + _rbf + ';'
         else :
-            _bcmd += _pad + "echo '#OSHN-" + obj_attr_list["objectstore_host"] + "' >> " + _rbf + _eolc
+            _bcmd += "echo '#OSHN-" + osci.host + "' >> " + _rbf + ';'
     
-        _bcmd += _pad + "echo '#OSPN-" + str(obj_attr_list["objectstore_port"]) + "' >>  " + _rbf + _eolc
-        _bcmd += _pad + "echo '#OSDN-" + str(obj_attr_list["objectstore_dbid"]) + "' >>  " + _rbf + _eolc
-        _bcmd += _pad + "echo '#OSTO-" + str(obj_attr_list["objectstore_timeout"]) + "' >>  " + _rbf + _eolc
-        _bcmd += _pad + "echo '#OSCN-" + obj_attr_list["cloud_name"] + "' >>  " + _rbf + _eolc
-        _bcmd += _pad + "echo '#OSMO-" + obj_attr_list["mode"] + "' >>  " + _rbf + _eolc
-        _bcmd += _pad + "echo '#OSOI-" + "TEST_" + obj_attr_list["username"] + ":" + obj_attr_list["cloud_name"] + "' >>  " + _rbf + _eolc
-        _bcmd += _pad + "echo '#VMUUID-" + obj_attr_list["uuid"] + "' >>  " + _rbf + _eolc
-        _bcmd += _pad + "sudo chown -R " +  obj_attr_list["login"] + ':' + obj_attr_list["login"] + ' ' + _rbf + _eolc    
+        _bcmd += "echo '#OSPN-" + str(osci.port) + "' >>  " + _rbf + ';'
+        _bcmd += "echo '#OSDN-" + str(osci.dbid) + "' >>  " + _rbf + ';'
+        _bcmd += "echo '#OSTO-" + str(osci.timout) + "' >>  " + _rbf + ';'
+        _bcmd += "echo '#OSCN-" + obj_attr_list["cloud_name"] + "' >>  " + _rbf + ';'
+        _bcmd += "echo '#OSMO-" + obj_attr_list["mode"] + "' >>  " + _rbf + ';'
+        _bcmd += "echo '#OSOI-" + "TEST_" + obj_attr_list["username"] + ":" + obj_attr_list["cloud_name"] + "' >>  " + _rbf + ';'
+        _bcmd += "echo '#VMUUID-" + obj_attr_list["uuid"] + "' >>  " + _rbf + ';'
+        _bcmd += "sudo chown -R " +  obj_attr_list["login"] + ':' + obj_attr_list["login"] + ' ' + _rbf + ';'    
     
     else :
         
-        _rbf = obj_attr_list["remote_dir_home"] + "/cb_prepare_parameters.txt"        
+        _rbf = _rdh + "/cb_prepare_parameters.txt"        
         _store_list = [ "objectstore", "metricstore", "logstore", "filestore" ]
         for _store in _store_list :
-            _bcmd += _pad + "echo '" + _store.capitalize() + ' '  
+            _bcmd += "echo '" + _store.capitalize() + ' '  
             _bcmd += obj_attr_list[_store + "_host"] + ' ' 
             _bcmd += str(obj_attr_list[_store + "_port"]) + ' '
             _bcmd += obj_attr_list[_store + "_protocol"] + ' '
@@ -384,16 +394,128 @@ def get_boostrap_command(obj_attr_list, cloud_init = False) :
                 _bcmd += obj_attr_list[_store + "_username"] + ' '
             else :
                 _bcmd += "NA" + ' '              
-            _bcmd += "' >>" + _rbf + _eolc
+            _bcmd += "' >>" + _rbf + ';'
 
     if obj_attr_list["login"] == "root" :
         obj_attr_list["remote_dir_full_path"] = " /root/" + obj_attr_list["remote_dir_name"]
     else :
         obj_attr_list["remote_dir_full_path"] = " /home/" + obj_attr_list["login"] + '/' + obj_attr_list["remote_dir_name"]                    
             
-    _bcmd += _pad + "sudo chown -R " +  obj_attr_list["login"] + ':' + obj_attr_list["login"] + ' ' + obj_attr_list["remote_dir_full_path"] + _eolc
+    _bcmd += "sudo chown -R " +  obj_attr_list["login"] + ':' + obj_attr_list["login"] + ' ' + obj_attr_list["remote_dir_full_path"]
                 
     return _bcmd
+                
+def create_user_data_contents(obj_attr_list, osci) :
+    '''
+    TBD
+    '''
+
+    _attempts = str(5)
+    _sleep = str(2)
+    
+    _fshn = obj_attr_list["filestore_host"]
+    _fspn = obj_attr_list["filestore_port"]
+    _fsun = obj_attr_list["filestore_username"]
+    _ldn = obj_attr_list["local_dir_name"]
+
+    _rdh, _rdfp = get_rdir_fullp(obj_attr_list)
+    _rln = obj_attr_list["login"] 
+    
+    _ohn = osci.host 
+    _opn = osci.port
+    _odb = osci.dbid
+    _cn = obj_attr_list["cloud_name"]
+
+    if obj_attr_list["vpn_only"].lower() != "false" :
+        _ohn = obj_attr_list["vpn_server_bootstrap"]
+        _fshn = obj_attr_list["vpn_server_bootstrap"]
+
+    _userdata_contents = "#!/bin/bash\n\n"
+    _userdata_contents += "# This VM is part of experiment id \"" + obj_attr_list["experiment_id"] + "\""
+    _userdata_contents += "\n"            
+    _userdata_contents += "mkdir -p /var/log/cloudbench\n"    
+    _userdata_contents += "\n"        
+    _userdata_contents += "chmod 777 /var/log/cloudbench\n"
+    _userdata_contents += "\n"
+
+    _userdata_contents += get_boostrap_command(obj_attr_list, osci).replace(';','\n')
+
+    if obj_attr_list["use_vpn_ip"].lower() != "false" :    
+#       This is done by cloud-config. Not shell script. see lib/clouds/shared_functions.py
+#        _userdata_contents += "\nsudo cp " + obj_attr_list["remote_dir_full_path"] + "/util/openvpn/client_connected.sh /etc/openvpn\n"
+        _userdata_contents += "\nsudo sed -i 's/USER/" + obj_attr_list["username"] + "/g' /etc/openvpn/client_connected.sh\n"
+        _userdata_contents += "sudo sed -i 's/CLOUD_NAME/" + obj_attr_list["cloud_name"] + "/g' /etc/openvpn/client_connected.sh\n"
+        _userdata_contents += "sudo sed -i 's/SERVER_BOOTSTRAP/" + _ohn  + "/g' /etc/openvpn/client_connected.sh\n"
+        _userdata_contents += "sudo sed -i 's/UUID/" + obj_attr_list["uuid"]  + "/g' /etc/openvpn/client_connected.sh\n"
+        _userdata_contents += "sudo sed -i 's/OSCI_PORT/" + str(_opn)  + "/g' /etc/openvpn/client_connected.sh\n"
+        _userdata_contents += "sudo sed -i 's/OSCI_DBID/" + str(_odb)  + "/g' /etc/openvpn/client_connected.sh\n"
+
+        _userdata_contents += "\nmkdir /var/log/openvpn\n"
+        _userdata_contents += "chmod 777 /var/log/openvpn\n"
+        _file_fd = open(obj_attr_list["vpn_config_file"], 'r')
+        _file_contents = _file_fd.read()
+        _file_fd.close()
+#       This is done by cloud-config. Not shell script. see lib/clouds/shared_functions.py
+#        _userdata_contents += "cat << EOF > /etc/openvpn/" + _cn.upper() + "_client-cb-openvpn.conf\n"
+#        _userdata_contents += _file_contents
+#        _userdata_contents += "EOF"
+        _userdata_contents += "\n"
+
+        _userdata_contents += "# INSERT OPENVPN COMMAND\n"
+        _userdata_contents += "counter=0\n"        
+        _userdata_contents += "\nwhile [[ \"$counter\" -le " + _attempts + " ]]\n"
+        _userdata_contents += "do\n"
+        _userdata_contents += "    ifconfig tun0\n"
+        _userdata_contents += "    if [[ $? -eq 0 ]]\n"
+        _userdata_contents += "    then\n"
+        _userdata_contents += "        VPNIP=$(ifconfig tun0 | grep inet[[:space:]] | sed 's/addr://g' | awk '{ print $2 }' | tr -d '\\n')\n"
+        _userdata_contents += "        redis-cli -h " + _ohn + " -n " + str(_odb) + " -p " + str(_opn) + " hset TEST_" + _fsun + ':' + obj_attr_list["cloud_name"] + ":VM:PENDING:" + obj_attr_list["uuid"] + " cloud_init_vpn $VPNIP\n"
+        _userdata_contents += "        break\n"    
+        _userdata_contents += "    else\n"    
+        _userdata_contents += "        sleep " + _sleep + "\n"
+        _userdata_contents += "        counter=\"$(( $counter + 1 ))\"\n"    
+        _userdata_contents += "    fi\n"
+        _userdata_contents += "done\n"
+
+    _userdata_contents += "\nif [[ $(cat " + _rdh + "/cb_os_parameters.txt | grep -c \"#OSOI-" + "TEST_" + obj_attr_list["username"] + ":" + obj_attr_list["cloud_name"] + "\") -ne 0 ]]\n"
+    _userdata_contents += "then\n"
+    _userdata_contents += "    redis-cli -h " + _ohn + " -n " + str(_odb) + " -p " + str(_opn) + " hset TEST_" + _fsun + ':' + obj_attr_list["cloud_name"] + ":VM:PENDING:" + obj_attr_list["uuid"] + " cloud_init_bootstrap  true\n"
+    _userdata_contents += "fi\n"
+    _userdata_contents += "\n"
+    _userdata_contents += "counter=0\n"    
+    _userdata_contents += "\nwhile [[ \"$counter\" -le " + _attempts + " ]]\n"
+    _userdata_contents += "do\n"
+    _userdata_contents += "    rsync -az --delete --no-o --no-g --inplace rsync://" + _fshn + ':' + _fspn + '/' + _fsun + "_cb" + "/exclude_list.txt /tmp/exclude_list\n"
+    _userdata_contents += "    if [[ $? -eq 0 ]]\n"
+    _userdata_contents += "    then\n"
+    _userdata_contents += "        break\n"
+    _userdata_contents += "    else\n"    
+    _userdata_contents += "        sleep " + _sleep + "\n"
+    _userdata_contents += "        counter=\"$(( $counter + 1 ))\"\n"        
+    _userdata_contents += "    fi\n"
+    _userdata_contents += "done\n"
+    _userdata_contents += "counter=0\n"        
+    _userdata_contents += "\nwhile [[ \"$counter\" -le " + _attempts + " ]]\n"
+    _userdata_contents += "do\n"
+    _userdata_contents += "    rsync -az --exclude-from '/tmp/exclude_list' --delete --no-o --no-g --inplace rsync://" + _fshn + ':' + _fspn + '/' + _fsun + "_cb/ " + _rdfp + "/\n"
+    _userdata_contents += "    if [[ $? -eq 0 ]]\n"
+    _userdata_contents += "    then\n"
+    _userdata_contents += "        redis-cli -h " + _ohn + " -n " + str(_odb) + " -p " + str(_opn) + " hset TEST_" + _fsun + ':' + obj_attr_list["cloud_name"] + ":VM:PENDING:" + obj_attr_list["uuid"] + " cloud_init_rsync true\n"    
+    _userdata_contents += "        break\n"    
+    _userdata_contents += "    else\n"    
+    _userdata_contents += "        sleep " + _sleep + "\n"
+    _userdata_contents += "        counter=\"$(( $counter + 1 ))\"\n"    
+    _userdata_contents += "    fi\n"
+    _userdata_contents += "done\n"
+    _userdata_contents += "chown -R " + _rln + ':' + _rln + ' ' + _rdfp + "/\n" 
+            
+    _userdata_contents += "\n"        
+    _userdata_contents += "\n"                    
+    _userdata_contents += "VMUUID=$(grep -ri " + obj_attr_list["experiment_id"] + " /var/lib/cloud/ | grep user-data | cut -d '/' -f 6 | head -n 1)\n"
+    _userdata_contents += "redis-cli -h " + _ohn + " -n " + str(_odb) + " -p " + str(_opn) + " publish TEST_" + _fsun + ':' + obj_attr_list["cloud_name"] + ":VM:BOOT " + "\"VM $VMUUID is booted\"\n"
+    _userdata_contents += "exit 0\n"    
+        
+    return _userdata_contents
 
 def create_restart_script(scriptname, cmdline, username, searchcmd, objectname = '', uuid = '', scriptpath="/tmp", vtycmd = None) :
     '''

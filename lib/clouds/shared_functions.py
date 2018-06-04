@@ -36,12 +36,12 @@ from uuid import uuid5, UUID, NAMESPACE_DNS
 from socket import gethostbyname
 from random import randint
 
-from lib.auxiliary.data_ops import str2dic, dic2str, value_suffix, get_boostrap_command, DataOpsException
+from lib.auxiliary.data_ops import str2dic, dic2str, is_number, value_suffix
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
 from lib.remote.network_functions import Nethashget
 from lib.stores.redis_datastore_adapter import RedisMgdConn
-from lib.remote.process_management import ProcessManagement
 from lib.remote.ssh_ops import get_ssh_key
+from lib.remote.process_management import ProcessManagement
 
 import re, os
 cwd = (re.compile(".*\/").search(os.path.realpath(__file__)).group(0)) + "/../../"
@@ -178,13 +178,13 @@ class CommonCloudFunctions:
 
             if "async" not in obj_attr_list or str(obj_attr_list["async"]).lower() == "false" :
                 if threading.current_thread().abort :
-                    _msg = obj_attr_list["log_string"] + " Create Aborting..."
+                    _msg = "VM Create Aborting..."
                     _status = 123
                     raise CldOpsException(_msg, _status)
 
             if obj_attr_list["check_boot_started"].count("poll_cloud") :
                 _msg = "Check if " + obj_attr_list["log_string"]  + " has started by querying the" 
-                _msg += " cloud directly."
+                _msg += "cloud directly."
                 cbdebug(_msg)                
                 _vm_started = self.is_vm_ready(obj_attr_list) 
 
@@ -230,22 +230,22 @@ class CommonCloudFunctions:
             if _pooling_time <= _wait :
                 _actual_wait = _wait - _pooling_time
             else :
-                _msg = "The time spent on pooling for \"ready\" status for "
-                _msg += obj_attr_list["log_string"] + "(" + str(_pooling_time) 
+                _msg = "The time spent on pooling for \"ready\" status (" + str(_pooling_time) 
                 _msg += " s) is actually longer than the "
                 _msg += "interval between pooling attempts (" + str(_wait) + " s)."
                 cbdebug(_msg, True)
                 _actual_wait = 0
 
-            if str(obj_attr_list["use_vpn_ip"]).lower() != "false" :
+            # There is still some reconciliation to be done here. If vpn_only is used, then only openvpn-initiated callbacks should set the pending attribute, not userdata scripts. There is a distinction. It also means that public_cloud_ip should be set as well and that access to pending attributes is a requirement. See get_ip_address from do_cloud_ops.py
+            # Also "use_vpn_ip" is used throughout the scripts and codebase, so use_vpn_ip is already reserved to ensure that vpn_only works as it did before.
+            # So any changes to use_vpn_ip need to be conditionalized with an extra check to vpn_only as well.
+            if str(obj_attr_list["use_vpn_ip"]).lower() != "false" and str(obj_attr_list["vpn_only"]).lower() == "false" :
                 if self.get_attr_from_pending(obj_attr_list, "cloud_init_vpn") :
                     obj_attr_list["last_known_state"] = "ACTIVE with (vpn) ip assigned"
                     obj_attr_list["prov_cloud_ip"] = obj_attr_list["cloud_init_vpn"]  
-                    cbdebug("VPN address for " + obj_attr_list["log_string"] + " found: " + obj_attr_list["prov_cloud_ip"])                    
                     _vm_started = True
                 else :
                     obj_attr_list["last_known_state"] = "ACTIVE with (vpn) ip unassigned"
-                    cbdebug("VPN address for " + obj_attr_list["log_string"] + " not yet available.")                    
                     _vm_started = False
                                         
             if  _vm_started :
@@ -825,9 +825,64 @@ class CommonCloudFunctions:
                     except Exception, msg :
                         _fmsg = "Could not lookup interface " + iface + " for hostname " + hostname + " (probably bad /etc/hosts): " + str(msg)
                         raise CldOpsException(_fmsg, 1295)
+                    
+    @trace
+    def is_cloud_image_uuid(self, imageid) :
+        '''
+        TBD
+        '''
+        if imageid == "to_replace" :
+            return False
+        
+        if self.get_description() == "Amazon Elastic Compute Cloud" :
+            if len(imageid) > 4 :
+                if imageid[0:4] == "ami-" :
+                    if is_number(imageid[5:], True) :
+                        return True
+
+        if self.get_description() == "Cloudbench SimCloud" or self.get_description() == "Cloudbench NoOpCloud" :
+            if len(imageid) == 36 and imageid.count('-') == 4 :
+                return True
+        
+        if self.get_description() == "OpenStack Cloud" :
+            if len(imageid) == 36 and imageid.count('-') == 4 :
+                return True
+
+        if self.get_description() == "SoftLayer Cloud" :
+            if len(imageid) == 7 and is_number(imageid) :
+                return True
+
+        if self.get_description() == "Google Compute Engine" :
+            if len(imageid) == 18 and is_number(imageid) :
+                return True
+            
+            if len(imageid) == 19 and is_number(imageid) :
+                return True
+
+        if self.get_description() == "DigitalOcean Cloud" :
+            if len(imageid) == 8 and is_number(imageid) :
+                return True
+
+        if self.get_description() == "Parallel Docker Manager Cloud" :
+            if len(imageid) == 64 and is_number(imageid, True) :
+                return True
+
+        if self.get_description() == "Kubernetes Cloud" :
+            return True
+            if len(imageid) == 64 and is_number(imageid, True) :
+                return True
+
+        if self.get_description() == "Parallel Container Manager Cloud" :
+            if len(imageid) == 64 and is_number(imageid, True) :
+                return True
+
+            if len(imageid) == 12 and is_number(imageid, True) :
+                return True
+        
+        return False
 
     @trace
-    def check_ssh_key(self, vmc_name, key_names, vm_defaults, internal = False, connection = None, check = True) :
+    def check_ssh_key(self, vmc_name, key_names, vm_defaults, internal = False, connection = None) :
         '''
         TBD
         '''
@@ -858,65 +913,157 @@ class CommonCloudFunctions:
                     cberr(_fmsg, True)
                     return False
 
-                if not check :
-                    _key_pair_found = True
-                else :
-                    _key_pair_found = False
-    
-                    _registered_key_pairs = {}
-                    
-                    self.get_ssh_keys(key_name, _key_contents, _key_fingerprint, _registered_key_pairs, internal, connection)
-    
-                    for _key_pair in _registered_key_pairs.keys() :
-                        if _key_pair == key_name :
-                            _msg = "A key named \"" + key_name + "\" was found "
-                            _msg += "on VMC " + vmc_name + ". Checking if the key"
-                            _msg += " contents are correct."
-                            cbdebug(_msg)
-                            _keyfp, _keyid = _registered_key_pairs[_key_pair].split('-')
-    
-                            if len(_key_fingerprint) > 1 and len(_keyfp) > 1 :
-    
-                                if _key_fingerprint == _keyfp :
-                                    _msg = "The contents of the key \"" + key_name
-                                    _msg += "\" on the VMC " + vmc_name + " and the"
-                                    _msg += " one present on directory \""
-                                    _msg += vm_defaults["credentials_dir"] + "\" ("
-                                    _msg += vm_defaults["ssh_key_name"] + ") are the same."
-                                    cbdebug(_msg)
-                                    _key_pair_found = True
-                                    break
-                                else :
-                                    _msg = "The contents of the key \"" + key_name
-                                    _msg += "\" on the VMC " + vmc_name + " and the"
-                                    _msg += " one present on directory \""
-                                    _msg += vm_defaults["credentials_dir"] + "\" ("
-                                    _msg += vm_defaults["ssh_key_name"] + ") differ."
-                                    _msg += ". Either delete this key's fingerprint or pick a new one."
-                                    cbdebug(_msg, True)
-                                    break
-    
-                    if not _key_pair_found :
-    
-                        _msg = "    Creating the ssh key pair \"" + key_name + "\""
-                        _msg += " on VMC " + vmc_name + ", using the public key \""
-                        _msg += _pub_key_fn + "\"..."
-                        
-                        if not internal :
-                            cbdebug(_msg, True)
-                        else :
-                            cbdebug(_msg)
-    
-                        try :
-                            self.create_ssh_key(key_name, _key_type, _key_contents, _key_fingerprint, vm_defaults, connection)
-    
-                        except Exception, e :
-                            if vm_defaults["abort_after_ssh_upload_failure"] :
-                                raise e
+                _key_pair_found = False
+
+                _registered_key_pairs = {}
+                if self.get_description() == "Cloudbench SimCloud" or \
+                self.get_description() == "Parallel Container Manager Cloud" or\
+                 self.get_description() == "Parallel Docker Manager Cloud" or\
+                  self.get_description() == "Cloudbench NoOpCloud" or \
+                  self.get_description() == "Kubernetes Cloud" :
+                    _registered_key_pairs[key_name] =_key_fingerprint + "-NA"
+
+                if self.get_description() == "Cloudbench SimCloud" :
+                    _registered_key_pairs[key_name] =_key_fingerprint + "-NA"
+
+                if self.get_description() == "Amazon Elastic Compute Cloud" :
+                    for _key_pair in self.ec2conn.get_all_key_pairs() :
+                        _registered_key_pairs[_key_pair.name] = _key_pair.fingerprint + "-NA"
+
+                if self.get_description() == "OpenStack Cloud" :
+                    for _key_pair in self.oskconncompute.keypairs.list() :
+                        _registered_key_pairs[_key_pair.name] = _key_pair.fingerprint + "-NA"
+
+                if self.get_description() == "SoftLayer Cloud" :
+                    for _key_pair in self.sshman.list_keys() :
+                        _registered_key_pairs[_key_pair["label"]] = _key_pair["fingerprint"] + '-' + str(_key_pair["id"])
+
+                if self.get_description() == "Google Compute Engine" :
+                    _temp_key_metadata = {}
+                    _metadata = self.gceconn.projects().get(project=self.instances_project).execute(http = self.http_conn[connection])
+
+                    if "items" in _metadata["commonInstanceMetadata"] :
+                        for _element in _metadata["commonInstanceMetadata"]["items"] :
+                            if _element["key"] == "sshKeys" :
+                                for _component in _element["value"].split('\n') :
+                                    if len(_component.split(' ')) == 3 :
+                                        _r_key_tag, _r_key_contents, _r_key_user = _component.split(' ')
+                                        _r_key_name, _r_key_type = _r_key_tag.split(':')
+                                        _temp_key_metadata[_r_key_name] = _r_key_tag + ' ' + _r_key_contents + ' ' + _r_key_user
+                                        _r_key_type, _r_key_contents, _r_key_fingerprint = \
+                                        get_ssh_key(_r_key_type + ' ' + _r_key_contents + ' ' + _r_key_user, self.get_description(), False)
+
+                                        _registered_key_pairs[_r_key_name] = _r_key_fingerprint + "-NA"
+
+                if self.get_description() == "DigitalOcean Cloud" :
+                    _registered_key_pair_objects = {}
+                    for _key_pair in connection.list_key_pairs() :
+                        _registered_key_pairs[_key_pair.name] = str(_key_pair.fingerprint) + '-' + str(_key_pair.extra["id"])
+                        _registered_key_pair_objects[_key_pair.name] = _key_pair
+
+                for _key_pair in _registered_key_pairs.keys() :
+                    if _key_pair == key_name :
+                        _msg = "A key named \"" + key_name + "\" was found "
+                        _msg += "on VMC " + vmc_name + ". Checking if the key"
+                        _msg += " contents are correct."
+                        cbdebug(_msg)
+                        _keyfp, _keyid = _registered_key_pairs[_key_pair].split('-')
+
+                        if len(_key_fingerprint) > 1 and len(_keyfp) > 1 :
+
+                            if _key_fingerprint == _keyfp :
+                                _msg = "The contents of the key \"" + key_name
+                                _msg += "\" on the VMC " + vmc_name + " and the"
+                                _msg += " one present on directory \""
+                                _msg += vm_defaults["credentials_dir"] + "\" ("
+                                _msg += vm_defaults["ssh_key_name"] + ") are the same."
+                                cbdebug(_msg)
+                                _key_pair_found = True
+                                break
                             else :
-                                cbwarn("Key upload failed, but user has asked us to continue: " + str(e), True)
-    
-                        _key_pair_found = True
+                                _msg = "The contents of the key \"" + key_name
+                                _msg += "\" on the VMC " + vmc_name + " and the"
+                                _msg += " one present on directory \""
+                                _msg += vm_defaults["credentials_dir"] + "\" ("
+                                _msg += vm_defaults["ssh_key_name"] + ") differ."
+                                _msg += ". Either delete this key's fingerprint or pick a new one."
+                                cbdebug(_msg, True)
+
+                                '''
+                                This isn't gonna work. We can't delete keys without permission.
+                                if self.get_description() == "Amazon Elastic Compute Cloud" :
+                                    self.ec2conn.delete_key_pair(key_name)
+
+                                if self.get_description() == "OpenStack Cloud" :
+                                    self.oskconncompute.keypairs.delete(_key_pair)
+
+                                if self.get_description() == "SoftLayer Cloud" :
+                                    self.sshman.delete_key(_keyid)
+
+                                if self.get_description() == "Google Compute Engine" :
+                                    _temp_key_metadata[key_name] = key_name + ':' + _key_type + ' ' + _key_contents + ' ' + vm_defaults["login"] + "@orchestrator"
+
+                                if self.get_description() == "DigitalOcean Cloud" :
+                                    connection.delete_key_pair(_registered_key_pair_objects[key_name])
+                                '''
+                                break
+
+                if not _key_pair_found :
+
+                    _msg = "    Creating the ssh key pair \"" + key_name + "\""
+                    _msg += " on VMC " + vmc_name + ", using the public key \""
+                    _msg += _pub_key_fn + "\"..."
+                    
+                    if not internal :
+                        cbdebug(_msg, True)
+                    else :
+                        cbdebug(_msg)
+
+                    try :
+                        if self.get_description() == "Amazon Elastic Compute Cloud" :
+                            self.ec2conn.import_key_pair(key_name, _key_type + ' ' + _key_contents)
+
+                        if self.get_description() == "OpenStack Cloud" :
+                            self.oskconncompute.keypairs.create(key_name, \
+                                                                public_key = _key_type + ' ' + _key_contents)
+
+                        if self.get_description() == "SoftLayer Cloud" :
+                            self.sshman.add_key(_key_type + ' ' + _key_contents, key_name)
+
+                        if self.get_description() == "Google Compute Engine" :
+                            for _kn in [ key_name + "  cbtool", vm_defaults["login"] + "  " + vm_defaults["login"]] :
+
+                                _actual_key_name, _actual_user_name = _kn.split("  ")
+
+                                _temp_key_metadata[_actual_key_name] = _actual_key_name + ':' + _key_type + ' ' + _key_contents + ' ' + _actual_user_name + "@orchestrator"
+
+                            _key_list_str = ''
+
+                            for _key in _temp_key_metadata.keys() :
+                                _key_list_str += _temp_key_metadata[_key] + '\n'
+
+                            _key_list_str = _key_list_str[0:-1]
+
+                            if "items" in _metadata["commonInstanceMetadata"] :
+                                for _element in _metadata['commonInstanceMetadata']['items'] :
+                                    if _element["key"] == "sshKeys" :
+                                        _element["value"] += _key_list_str
+                            else :
+                                _metadata['commonInstanceMetadata']["items"] = []
+                                _metadata['commonInstanceMetadata']['items'].append({"key": "sshKeys", "value" : _key_list_str})
+
+                            self.gceconn.projects().setCommonInstanceMetadata(project=self.instances_project, body=_metadata["commonInstanceMetadata"]).execute(http = self.http_conn[connection])
+
+                        if self.get_description() == "DigitalOcean Cloud" :
+                            connection.create_key_pair(key_name, _key_type + ' ' + _key_contents + " cbtool@orchestrator")
+                    except Exception, e :
+                        if vm_defaults["abort_after_ssh_upload_failure"] :
+                            raise e
+                        else :
+                            cbwarn("Key upload failed, but user has asked us to continue: " + str(e), True)
+
+                    _key_pair_found = True
+
 
             return _key_pair_found    
 
@@ -938,7 +1085,26 @@ class CommonCloudFunctions:
             
             _registered_security_groups = []
 
-            self.get_security_groups(security_group_name, _registered_security_groups)
+            if self.get_description() == "Cloudbench SimCloud" or \
+            self.get_description() == "Parallel Container Manager Cloud" or\
+             self.get_description() == "Parallel Docker Manager Cloud" or\
+              self.get_description() == "Cloudbench NoOpCloud" :
+                _registered_security_groups.append(security_group_name)              
+            
+            if self.get_description() == "Amazon Elastic Compute Cloud" :
+                for _security_group in self.ec2conn.get_all_security_groups() :
+                    _registered_security_groups.append(_security_group.name)       
+
+            if self.get_description() == "OpenStack Cloud" :
+
+                if self.oskconnnetwork :
+                    for _security_group in self.oskconnnetwork.list_security_groups()["security_groups"] :
+                        
+                        if _security_group["name"] not in _registered_security_groups :
+                            _registered_security_groups.append(_security_group["name"])
+                else :
+                    for _security_group in self.oskconncompute.security_groups.list() :
+                        _registered_security_groups.append(_security_group.name)
             
             for _registered_security_group in _registered_security_groups :
                 if _registered_security_group == security_group_name :
@@ -1021,31 +1187,33 @@ class CommonCloudFunctions:
     @trace
     def populate_cloudconfig(self, obj_attr_list) :
         '''
-        TBD
+        CloudBench should be passing us a more complex object for userdata,
+        but is only passing us a script instead. So, we have to wrap the
+        userdata in formal cloud-config syntax in order to be able to use
+        if with cloud images that have cloud-init configured correctly.
         '''
-        if ("userdata" not in obj_attr_list or str(obj_attr_list["userdata"]).lower() == "false") and obj_attr_list["use_vpn_ip"].lower() == "false" :
+        if ("userdata" not in obj_attr_list or not obj_attr_list["userdata"]) and obj_attr_list["use_vpn_ip"].lower() == "false" :
             #cbdebug("Skipping userdata: " + str(obj_attr_list["userdata"]), True)
             return False
 
-        cloudconfig = "#cloud-config\n"
-        
-        if obj_attr_list["userdata_ssh"].lower() == "true" :
-#            cloudconfig += "disable_root: false\n"            
-            cloudconfig += "ssh_authorized_keys:\n - " + obj_attr_list["pubkey_contents"]
-            cloudconfig += "\n"            
+        cloudconfig = """
+#cloud-config
+write_files:"""
+        if "userdata" in obj_attr_list and obj_attr_list["userdata"] :
+            cloudconfig += """
+  - path: /tmp/userscript.sh
+    content: |
+"""
+            for line in obj_attr_list["userdata"].split("\n")[:-1] :
+                cloudconfig += "      " + line + "\n"
 
-        cloudconfig += "write_files:\n"
-        cloudconfig += "  - path: /tmp/cb_post_boot.sh\n"
-        cloudconfig += "    content: |\n"
-            
-        if obj_attr_list["userdata_post_boot"].lower() == "true" :
-            cloudconfig += self.create_bootstrap_script(obj_attr_list)
-        else :
-            cloudconfig += "      #!/bin/bash\n"
-            cloudconfig += "      /bin/true\n"
+        # We need the VPN's IP address in advance, which was solved before
+        # the previous VPN support was gutted, but since we're left to do it
+        # on our own, we need cloud-config to send our VPN configuration file
+        # in advance.
+        conf_destination = "/etc/openvpn/" + obj_attr_list["cloud_name"] + "_client-cb-openvpn-cloud.conf"
 
         if obj_attr_list["use_vpn_ip"].lower() == "true" :
-            conf_destination = "/etc/openvpn/" + obj_attr_list["cloud_name"] + "_client-cb-openvpn-cloud.conf"            
             targets = []
             targets.append(("/configs/generated/" + obj_attr_list["cloud_name"] + "_client-cb-openvpn.conf", conf_destination))
             targets.append(("/util/openvpn/client_connected.sh", "/etc/openvpn/client_connected.sh"))
@@ -1079,114 +1247,37 @@ class CommonCloudFunctions:
                         cloudconfig += "      up /etc/openvpn/client_connected.sh\n"
                 fh.close()
 
-        if obj_attr_list["userdata_post_boot"].lower() == "true" or obj_attr_list["use_vpn_ip"].lower() != "false" :
-            cloudconfig += "\nruncmd:\n"
-            cloudconfig += "  - chmod +x /tmp/cb_post_boot.sh\n"
-                    
-            # We can't run the userdata from cloudbench until the VPN is connected,
-            # so only run it if we're not using the VPN.
-            # Otherwise, /etc/openvpn/client_connected.sh will do it.
-            if obj_attr_list["use_vpn_ip"].lower() == "false" :
-                cloudconfig += "  - /tmp/cb_post_boot.sh\n"
-            else :
-                cloudconfig += "  - chmod +x /etc/openvpn/client_connected.sh\n"
-                cloudconfig += "  - mv " + conf_destination + " /tmp/cbvpn.conf\n"
-                cloudconfig += "  - rm -f /etc/openvpn/*.conf /etc/openvpn/*.ovpn\n"
-                cloudconfig += "  - mv /tmp/cbvpn.conf " + conf_destination + "\n"
-                cloudconfig += "  - mkdir -p /var/log/openvpn\n"
-                cloudconfig += "  - openvpn --daemon --config " + conf_destination + "\n"
+        cloudconfig += """
+runcmd:
+  - chmod +x /tmp/userscript.sh"""
 
-            # cloudconfig += "  - systemctl start openvpn@" + obj_attr_list["cloud_name"] + "_client-cb-openvpn-cloud.service\n"
-            # cloudconfig += "  - service openvpn start\n"
-                
+        # We can't run the userdata from cloudbench until the VPN is connected,
+        # so only run it if we're not using the VPN.
+        # Otherwise, /etc/openvpn/client_connected.sh will do it.
+        if obj_attr_list["use_vpn_ip"].lower() == "false" :
+            cloudconfig += """
+  - /tmp/userscript.sh"""
+        else :
+            cloudconfig += """
+  - chmod +x /etc/openvpn/client_connected.sh
+  - mv """ + conf_destination + """ /tmp/cbvpn.conf
+  - rm -f /etc/openvpn/*.conf /etc/openvpn/*.ovpn
+  - mv /tmp/cbvpn.conf """ + conf_destination + """
+  - mkdir -p /var/log/openvpn
+  - openvpn --daemon --config """ + conf_destination + """
+"""
+  #- systemctl start openvpn@""" + obj_attr_list["cloud_name"] + """_client-cb-openvpn-cloud.service
+  #- service openvpn start
         # Check to see if the user requested packages to be installed for this VM role via cloud-init
         if "cloudinit_packages" in obj_attr_list and obj_attr_list["cloudinit_packages"].lower() != "false" :
-            cbdebug("Will instruct cloud-init to install: " + obj_attr_list["cloudinit_packages"] + " on " + obj_attr_list["log_string"], True)
+            cbdebug("Will instruct cloud-init to install: " + obj_attr_list["cloudinit_packages"], True)
             cloudconfig += """
 packages:"""
             for package in obj_attr_list["cloudinit_packages"].split(";") :
                 cloudconfig += """
   - """ + package
         #cbdebug("Final userdata: \n" + str(cloudconfig))
-
         return cloudconfig
-
-    def create_bootstrap_script(self, obj_attr_list) :
-        '''
-        TBD
-        '''
-    
-        _attempts = str(5)
-        _sleep = str(2)
-        
-        _fshn = obj_attr_list["filestore_host"]
-        _fspn = obj_attr_list["filestore_port"]
-        _fsun = obj_attr_list["filestore_username"]
-        _ldn = obj_attr_list["local_dir_name"]
-    
-        _rln = obj_attr_list["login"] 
-        
-        _ohn = obj_attr_list["objectstore_host"]
-        _opn = obj_attr_list["objectstore_port"]
-        _odb = obj_attr_list["objectstore_dbid"]
-        
-        _cn = obj_attr_list["cloud_name"]
-    
-        if obj_attr_list["vpn_only"].lower() != "false" :
-            _ohn = obj_attr_list["vpn_server_bootstrap"]
-            _fshn = obj_attr_list["vpn_server_bootstrap"]
-    
-        _pad = "      " 
-    
-        _bootstrap_script = _pad + "#!/bin/bash\n\n"
-        _bootstrap_script += _pad + "# This VM is part of experiment id \"" + obj_attr_list["experiment_id"] + "\""
-        _bootstrap_script += _pad + "\n"            
-        _bootstrap_script += _pad + "mkdir -p /var/log/cloudbench\n"    
-        _bootstrap_script += _pad + "\n"        
-        _bootstrap_script += _pad + "chmod 777 /var/log/cloudbench\n"
-        _bootstrap_script += _pad + "\n"
-        
-        _bootstrap_script += get_boostrap_command(obj_attr_list, True)
-        
-        _bootstrap_script += _pad + "if [[ $(cat " + obj_attr_list["remote_dir_home"] + "/cb_os_parameters.txt | grep -c \"#OSOI-" + "TEST_" + obj_attr_list["username"] + ":" + obj_attr_list["cloud_name"] + "\") -ne 0 ]]\n"
-        _bootstrap_script += _pad + "then\n"
-        _bootstrap_script += _pad + "    redis-cli -h " + _ohn + " -n " + str(_odb) + " -p " + str(_opn) + " hset TEST_" + _fsun + ':' + obj_attr_list["cloud_name"] + ":VM:PENDING:" + obj_attr_list["uuid"] + " cloud_init_bootstrap  true\n"
-        _bootstrap_script += _pad + "fi\n"
-        _bootstrap_script += _pad + "\n"
-        _bootstrap_script += _pad + "counter=0\n\n"    
-        _bootstrap_script += _pad + "while [[ \"$counter\" -le " + _attempts + " ]]\n"
-        _bootstrap_script += _pad + "do\n"
-        _bootstrap_script += _pad + "    rsync -az --delete --no-o --no-g --inplace rsync://" + _fshn + ':' + _fspn + '/' + _fsun + "_cb" + "/exclude_list.txt /tmp/exclude_list\n"
-        _bootstrap_script += _pad + "    if [[ $? -eq 0 ]]\n"
-        _bootstrap_script += _pad + "    then\n"
-        _bootstrap_script += _pad + "        break\n"
-        _bootstrap_script += _pad + "    else\n"    
-        _bootstrap_script += _pad + "        sleep " + _sleep + "\n"
-        _bootstrap_script += _pad + "        counter=\"$(( $counter + 1 ))\"\n"        
-        _bootstrap_script += _pad + "    fi\n"
-        _bootstrap_script += _pad + "done\n"
-        _bootstrap_script += _pad + "counter=0\n\n"        
-        _bootstrap_script += _pad + "while [[ \"$counter\" -le " + _attempts + " ]]\n"
-        _bootstrap_script += _pad + "do\n"
-        _bootstrap_script += _pad + "    rsync -az --exclude-from '/tmp/exclude_list' --delete --no-o --no-g --inplace rsync://" + _fshn + ':' + _fspn + '/' + _fsun + "_cb/ " +  obj_attr_list["remote_dir_path"] + "/\n"
-        _bootstrap_script += _pad + "    if [[ $? -eq 0 ]]\n"
-        _bootstrap_script += _pad + "    then\n"
-        _bootstrap_script += _pad + "        redis-cli -h " + _ohn + " -n " + str(_odb) + " -p " + str(_opn) + " hset TEST_" + _fsun + ':' + obj_attr_list["cloud_name"] + ":VM:PENDING:" + obj_attr_list["uuid"] + " cloud_init_rsync true\n"    
-        _bootstrap_script += _pad + "        break\n"    
-        _bootstrap_script += _pad + "    else\n"    
-        _bootstrap_script += _pad + "        sleep " + _sleep + "\n"
-        _bootstrap_script += _pad + "        counter=\"$(( $counter + 1 ))\"\n"    
-        _bootstrap_script += _pad + "    fi\n"
-        _bootstrap_script += _pad + "done\n"
-        _bootstrap_script += _pad + "chown -R " + _rln + ':' + _rln + ' ' + obj_attr_list["remote_dir_path"] + "/\n" 
-                
-        _bootstrap_script += _pad + "\n"      
-        _bootstrap_script += _pad + "\n"                    
-        _bootstrap_script += _pad + "VMUUID=$(grep -ri " + obj_attr_list["experiment_id"] + " /var/lib/cloud/ | grep user-data | cut -d '/' -f 6 | head -n 1)\n"
-        _bootstrap_script += _pad + "redis-cli -h " + _ohn + " -n " + str(_odb) + " -p " + str(_opn) + " publish TEST_" + _fsun + ':' + obj_attr_list["cloud_name"] + ":VM:BOOT " + "\"VM $VMUUID is booted\"\n"
-        _bootstrap_script += _pad + "exit 0\n"    
-            
-        return _bootstrap_script
 
     @trace                                                                        
     def generate_random_uuid(self, name = None, seed = '6cb8e707-0fc5-5f55-88d4-d4fed43e64a8') :
@@ -1230,41 +1321,6 @@ packages:"""
         _file_fd.write("export CB_USERNAME=" + obj_attr_list["username"] + "\n")
         _file_fd.close()
         return True
-
-    @trace
-    def parse_cloud_connection_file(self, file_name) :
-        '''
-        TBD
-        '''
-        
-        _parameter_map = {}
-                    
-        if file_name.count('~') :
-            file_name = file_name.replace('~', os.path.expanduser('~'))
-
-        if file_name.count('/') and not (file_name.count("http://") or file_name.count("https://")):
-            _msg = "    Attempting to parse cloud connection file \"" + file_name + "\"..."
-            cbdebug(_msg, True)
-            _fh = open(file_name, 'r')
-            _contents = _fh.read()
-            _fh.close()
-            
-            for _line in _contents.split('\n') :
-                if len(_line) :
-                    if _line[0] != "#" :
-                        if _line[0:7] == "export " :
-                            _line = _line.replace("export ", '')
-            
-                        if _line.count("=") :
-                            _key, _value = _line.split('=')
-                            if _value.count("${") and _value.count(':') :
-                                _value = _value.split(':')[1][1:-1]
-                            _parameter_map[_key] = _value.replace('"','')     
-
-            _msg = "Done parsing cloud connection file \"" + file_name + "\."
-            cbdebug(_msg)
-                    
-        return _parameter_map
 
     @trace
     def set_cgroup(self, obj_attr_list) :
@@ -1533,9 +1589,6 @@ packages:"""
             
             if obj_attr_list["ai"] != "none" :            
                 obj_attr_list["cloud_vm_name"] += '-' + obj_attr_list["ai_name"]  
-
-            if "vm_name_suffix" in obj_attr_list :
-                obj_attr_list["cloud_vm_name"] = obj_attr_list["cloud_vm_name"] + '-' + obj_attr_list["vm_name_suffix"]
        
         if "cloud_vv_name" not in obj_attr_list :       
             obj_attr_list["cloud_vv_name"] = "cb-" + obj_attr_list["username"]
@@ -1799,15 +1852,6 @@ packages:"""
                 _msg = "Attaching the newly created Volume \""
                 _msg += obj_attr_list["cloud_vv_name"] + "\" (cloud-assigned uuid \""
                 _msg += obj_attr_list["cloud_vv_uuid"] + "\") to instance \""
-                _msg += obj_attr_list["cloud_vm_name"] + "\" (cloud-assigned uuid \""
-                _msg += obj_attr_list["cloud_vm_uuid"] + "\")"
-                cbdebug(_msg, True)
-                return '', ''
-
-            if operation == "detaching" :
-                _msg = "Detaching the Volume \""
-                _msg += obj_attr_list["cloud_vv_name"] + "\" (cloud-assigned uuid \""
-                _msg += obj_attr_list["cloud_vv_uuid"] + "\") from instance \""
                 _msg += obj_attr_list["cloud_vm_name"] + "\" (cloud-assigned uuid \""
                 _msg += obj_attr_list["cloud_vm_uuid"] + "\")"
                 cbdebug(_msg, True)

@@ -109,7 +109,7 @@ RUN ln -s $(sudo which rsyslogd) /usr/local/bin/rsyslogd
 # rsyslog-install-pm
 
 # apache-install-pm
-RUN yum____-y____install____httpd; /bin/true
+# RUN yum install -y httpd
 # apache-install-pm
 
 # redis-install-pm
@@ -180,7 +180,6 @@ RUN yum install -y iptables
 
 # sshd-install-pm
 RUN yum -y install openssh-server
-RUN sudo bash -c "echo 'UseDNS no' >> /etc/ssh/sshd_config"
 RUN sed -i 's/.*UseDNS.*/UseDNS no/g' /etc/ssh/sshd_config
 RUN sed -i 's/.*GSSAPIAuthentication.*/GSSAPIAuthentication no/g' /etc/ssh/sshd_config
 # sshd-install-pm 

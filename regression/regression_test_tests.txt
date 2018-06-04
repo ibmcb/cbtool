@@ -195,18 +195,18 @@ stats TESTCLOUD
 waitfor TESTCLOUD 10s
 vmcattach TESTCLOUD simzone_a\; vmclist TESTCLOUD\; vmcshow TESTCLOUD simzone_a\; stats TESTCLOUD
 vmccleanup TESTCLOUD simzone_a
-vmcattach TESTCLOUD simzone_b async\; waitfor TESTCLOUD 16s\; vmclist TESTCLOUD\; vmcshow TESTCLOUD simzone_b update_attempts,update_frequency\; stats TESTCLOUD
+vmcattach TESTCLOUD simzone_b async\; waitfor TESTCLOUD 8s\; vmclist TESTCLOUD\; vmcshow TESTCLOUD simzone_b update_attempts,update_frequency\; stats TESTCLOUD
 vmcattach TESTCLOUD simzone_c update_attempts=78,update_frequency=3\; vmclist TESTCLOUD\; vmcshow TESTCLOUD simzone_c update_attempts,update_frequency\; stats TESTCLOUD
-vmcattach TESTCLOUD simzone_d update_attempts=156,update_frequency=6 async\; waitfor TESTCLOUD 16s\; vmclist TESTCLOUD\; vmcshow TESTCLOUD simzone_d update_attempts,update_frequency\; stats TESTCLOUD
+vmcattach TESTCLOUD simzone_d update_attempts=156,update_frequency=6 async\; waitfor TESTCLOUD 8s\; vmclist TESTCLOUD\; vmcshow TESTCLOUD simzone_d update_attempts,update_frequency\; stats TESTCLOUD
 vmcdetach TESTCLOUD simzone_d\; vmcdetach TESTCLOUD simzone_c\; vmcdetach TESTCLOUD simzone_b\; vmclist TESTCLOUD\; stats TESTCLOUD
-vmcdetach TESTCLOUD simzone_a async\; waitfor TESTCLOUD 16s\; vmclist TESTCLOUD\; stats TESTCLOUD
+vmcdetach TESTCLOUD simzone_a async\; waitfor TESTCLOUD 8s\; vmclist TESTCLOUD\; stats TESTCLOUD
 vmcattach TESTCLOUD all\; vmclist TESTCLOUD\; stats TESTCLOUD
 vmcattach TESTCLOUD all\; vmclist TESTCLOUD\; stats TESTCLOUD
 vmcdetach TESTCLOUD simzone_a\; vmclist TESTCLOUD\; stats TESTCLOUD
 vmcdetach TESTCLOUD all\; vmclist TESTCLOUD\; stats TESTCLOUD
 vmcattach TESTCLOUD update_attempts=312,update_frequency=12 all\; vmclist TESTCLOUD\; vmcshow TESTCLOUD simzone_c update_attempts,update_frequency\; stats TESTCLOUD
-vmcdetach TESTCLOUD all async\; waitfor TESTCLOUD 20s\; vmclist TESTCLOUD\; stats TESTCLOUD
-vmcattach TESTCLOUD all async\; waitfor TESTCLOUD 30s\; vmclist TESTCLOUD\; vmcshow TESTCLOUD simzone_c update_attempts,update_frequency\; stats TESTCLOUD
+vmcdetach TESTCLOUD all async\; waitfor TESTCLOUD 8s\; vmclist TESTCLOUD\; stats TESTCLOUD
+vmcattach TESTCLOUD all async\; waitfor TESTCLOUD 8s\; vmclist TESTCLOUD\; vmcshow TESTCLOUD simzone_c update_attempts,update_frequency\; stats TESTCLOUD
 vmcalter TESTCLOUD simzone_a replication_vmcs=TESTE\; vmcshow TESTCLOUD simzone_a replication_vmcs
 hostlist TESTCLOUD
 hostshow TESTCLOUD simhosta3 all
@@ -222,15 +222,15 @@ vmattach TESTCLOUD tinyvm simhostb1\; vmlist TESTCLOUD\; vmshow TESTCLOUD vm_3 v
 vmattach TESTCLOUD db2 auto a:b,x:y,r:2\; vmlist TESTCLOUD\; vmshow TESTCLOUD vm_4 vmc_name,vmc_pool,host_name,meta_tags,size\; stats TESTCLOUD
 vmattach TESTCLOUD netclient auto a:b,x:y,r:2 size=platinum64,vmc_pool=SUT\; vmlist TESTCLOUD\; vmshow TESTCLOUD vm_5 vmc_name,vmc_pool,host_name,meta_tags,size\; stats TESTCLOUD
 vmcapture TESTCLOUD vm_2\; vmlist TESTCLOUD\; stats TESTCLOUD
-vmattach TESTCLOUD tinyvm async\; waitfor TESTCLOUD 1s\; vmlist TESTCLOUD pending\; waitfor TESTCLOUD 16s\; vmlist TESTCLOUD\; stats TESTCLOUD
+vmattach TESTCLOUD tinyvm async\; waitfor TESTCLOUD 1s\; vmlist TESTCLOUD pending\; waitfor TESTCLOUD 8s\; vmlist TESTCLOUD\; stats TESTCLOUD
 vmattach TESTCLOUD tinyvm async=2\; waitfor TESTCLOUD 1s\; vmlist TESTCLOUD pending\; waituntil TESTCLOUD VM ARRIVED=8 increasing 1\; vmlist TESTCLOUD\; stats TESTCLOUD
 rolealter TESTCLOUD db2 size=platinum64
-vmattach TESTCLOUD db2 SUT A:B,X:Y,R:2 async\; waitfor TESTCLOUD 1s\; vmlist TESTCLOUD pending\; waitfor TESTCLOUD 16s\; vmlist TESTCLOUD\; vmshow TESTCLOUD vm_9 role,vmc_name,vmc_pool,host_name,meta_tags,size\; stats TESTCLOUD
-vmattach TESTCLOUD netclient simhosta2 A:B,X:Y,R:2 async\; waitfor TESTCLOUD 1s\; vmlist TESTCLOUD pending\; waitfor TESTCLOUD 16s\; vmlist TESTCLOUD\; vmshow TESTCLOUD vm_10 role,vmc_name,vmc_pool,host_name,meta_tags,size\; stats TESTCLOUD
-vmattach TESTCLOUD fen_hpc auto empty size=platinum64,vmc_pool=LG async\; waitfor TESTCLOUD 16s\; vmlist TESTCLOUD\; vmshow TESTCLOUD vm_11 vmc_name,vmc_pool,host_name,meta_tags,size\; stats TESTCLOUD
-vmattach TESTCLOUD tinyvm auto empty iron32 pause_provision_complete async\; waitfor TESTCLOUD 16s\; msgpub TESTCLOUD VM staging vm_12;continue;something\; waituntil TESTCLOUD VM ARRIVING=0 decreasing 1\; vmlist TESTCLOUD\; stats TESTCLOUD
+vmattach TESTCLOUD db2 SUT A:B,X:Y,R:2 async\; waitfor TESTCLOUD 1s\; vmlist TESTCLOUD pending\; waitfor TESTCLOUD 8s\; vmlist TESTCLOUD\; vmshow TESTCLOUD vm_9 role,vmc_name,vmc_pool,host_name,meta_tags,size\; stats TESTCLOUD
+vmattach TESTCLOUD netclient simhosta2 A:B,X:Y,R:2 async\; waitfor TESTCLOUD 1s\; vmlist TESTCLOUD pending\; waitfor TESTCLOUD 8s\; vmlist TESTCLOUD\; vmshow TESTCLOUD vm_10 role,vmc_name,vmc_pool,host_name,meta_tags,size\; stats TESTCLOUD
+vmattach TESTCLOUD fen_hpc auto empty size=platinum64,vmc_pool=LG async\; waitfor TESTCLOUD 8s\; vmlist TESTCLOUD\; vmshow TESTCLOUD vm_11 vmc_name,vmc_pool,host_name,meta_tags,size\; stats TESTCLOUD
+vmattach TESTCLOUD tinyvm auto empty iron32 pause_provision_complete async\; waitfor TESTCLOUD 8s\; msgpub TESTCLOUD VM staging vm_12;continue;something\; waituntil TESTCLOUD VM ARRIVING=0 decreasing 1\; vmlist TESTCLOUD\; stats TESTCLOUD
 shell TESTCLOUD rm -rf /tmp/cb*_was_used_on_execution\; cldalter TESTCLOUD vm_defaults execute_script_name=CB_DIRECTORY/regression/scripts/execute_on_staging.sh\; vmattach TESTCLOUD tinyvm auto empty iron32 execute_provision_complete async\; waituntil TESTCLOUD VM ARRIVING=0 decreasing 1\; shell TESTCLOUD ls /tmp/cb*_was_used_on_execution\; vmlist TESTCLOUD\; stats TESTCLOUD
-vmattach TESTCLOUD predictablevm auto empty check_boot_started=subscribe_on_starting async\; waitfor TESTCLOUD 16s\; msgpub TESTCLOUD VM starting 11111111-1111-1111-1111-111111111111 has started\; waitfor TESTCLOUD 16s\; vmlist TESTCLOUD\; stats TESTCLOUD
+vmattach TESTCLOUD predictablevm auto empty check_boot_started=subscribe_on_starting async\; waitfor TESTCLOUD 8s\; msgpub TESTCLOUD VM starting 11111111-1111-1111-1111-111111111111 has started\; waitfor TESTCLOUD 8s\; vmlist TESTCLOUD\; stats TESTCLOUD
 vmattach TESTCLOUD tinyvm\; vmlist TESTCLOUD\; stats TESTCLOUD
 vmattach TESTCLOUD tinyvm\; vmlist TESTCLOUD\; stats TESTCLOUD
 vmattach TESTCLOUD tinyvm\; vmlist TESTCLOUD\; stats TESTCLOUD
@@ -263,7 +263,7 @@ aiattach TESTCLOUD ibm_daytrader\; ailist TESTCLOUD\; vmlist TESTCLOUD\; aishow 
 ailist TESTCLOUD
 aishow TESTCLOUD ai_1 all
 aialter TESTCLOUD ai_1 mode=scalable\; aishow TESTCLOUD ai_1 mode
-aiattach TESTCLOUD hadoop async\; waitfor TESTCLOUD 30s\; ailist TESTCLOUD\; vmlist TESTCLOUD\; aishow TESTCLOUD ai_2 detach_parallelism,ssh_key_name,sut\; stats TESTCLOUD
+aiattach TESTCLOUD hadoop async\; waitfor TESTCLOUD 12s\; ailist TESTCLOUD\; vmlist TESTCLOUD\; aishow TESTCLOUD ai_2 detach_parallelism,ssh_key_name,sut\; stats TESTCLOUD
 aiattach TESTCLOUD ibm_daytrader detach_parallelism=9,ssh_key_name=AAAABBBBCCCCDDDDEEEE\; ailist TESTCLOUD\; vmlist TESTCLOUD\; aishow TESTCLOUD ai_3 detach_parallelism,ssh_key_name,sut\; stats TESTCLOUD
 airunstate TESTCLOUD ai_3 suspend\; stateshow TESTCLOUD\; stats TESTCLOUD
 airunstate TESTCLOUD ai_3 attached\; stateshow TESTCLOUD\; stats TESTCLOUD
@@ -305,7 +305,7 @@ aicapture TESTCLOUD ai_10\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOU
 aicapture TESTCLOUD oldest\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
 aicapture TESTCLOUD youngest async\; waituntil TESTCLOUD AI CAPTURING=0\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
 aidetach TESTCLOUD random\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
-aiattach TESTCLOUD ibm_daytrader default default none none pause_all_vms_booted async\; waitfor TESTCLOUD 40s\; msgpub TESTCLOUD VM staging ai_26;continue;something\; waituntil TESTCLOUD AI ARRIVING=0 decreasing 1\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
+aiattach TESTCLOUD ibm_daytrader default default none none pause_all_vms_booted async\; waitfor TESTCLOUD 15s\; msgpub TESTCLOUD VM staging ai_26;continue;something\; waituntil TESTCLOUD AI ARRIVING=0 decreasing 1\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
 shell TESTCLOUD rm -rf /tmp/cb*_was_used_on_execution\; cldalter TESTCLOUD ai_defaults execute_script_name=CB_DIRECTORY/regression/scripts/execute_on_staging.sh\; aiattach TESTCLOUD ibm_daytrader default default none none execute_all_vms_booted\; shell TESTCLOUD ls /tmp/cb*_was_used_on_execution\; waitfor TESTCLOUD 5s\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD
 aiattach TESTCLOUD hadoop save_on_attach=true\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD\; stateshow TESTCLOUD
 airestore TESTCLOUD ai_28\; ailist TESTCLOUD\; vmlist TESTCLOUD\; stats TESTCLOUD\; stateshow TESTCLOUD

@@ -32,8 +32,7 @@ from random import randint
 from socket import gethostbyname
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from lib.auxiliary.data_ops import str2dic, is_number, DataOpsException
-from lib.remote.ssh_ops import get_ssh_key
+from lib.auxiliary.data_ops import str2dic, DataOpsException
 
 from shared_functions import CldOpsException, CommonCloudFunctions 
 
@@ -451,31 +450,6 @@ class GceCmds(CommonCloudFunctions) :
             return _nr_instances
 
     @trace
-    def get_ssh_keys(self, key_name, key_contents, key_fingerprint, registered_key_pairs, internal, connection) :
-        '''
-        TBD
-        '''
-
-        self.temp_key_metadata = {}
-        self.project_metadata = self.gceconn.projects().get(project=self.instances_project).execute(http = self.http_conn[connection])
-
-        if "items" in self.project_metadata["commonInstanceMetadata"] :
-            for _element in self.project_metadata["commonInstanceMetadata"]["items"] :
-                if _element["key"] == "sshKeys" :
-                    for _component in _element["value"].split('\n') :
-                        if len(_component.split(' ')) == 3 :
-                            _r_key_tag, _r_key_contents, _r_key_user = _component.split(' ')
-                            _r_key_name, _r_key_type = _r_key_tag.split(':')
-                            self.temp_key_metadata[_r_key_name] = _r_key_tag + ' ' + _r_key_contents + ' ' + _r_key_user
-                            _r_key_type, _r_key_contents, _r_key_fingerprint = \
-                            get_ssh_key(_r_key_type + ' ' + _r_key_contents + ' ' + _r_key_user, self.get_description(), False)
-
-                            registered_key_pairs[_r_key_name] = _r_key_fingerprint + "-NA"
-                            #_temp_key_metadata[key_name] = key_name + ':' + _key_type + ' ' + _key_contents + ' ' + vm_defaults["login"] + "@orchestrator"
-            
-        return True
-
-    @trace
     def get_ip_address(self, obj_attr_list) :
         '''
         TBD
@@ -505,13 +479,21 @@ class GceCmds(CommonCloudFunctions) :
             # NOTE: "cloud_ip" is always equal to "run_cloud_ip"
             obj_attr_list["cloud_ip"] = obj_attr_list["run_cloud_ip"]
 
-            if obj_attr_list["prov_netname"].lower() == "private" :
-                obj_attr_list["prov_cloud_ip"] = _private_ip_address
+            if str(obj_attr_list["use_vpn_ip"]).lower() == "true" and str(obj_attr_list["vpn_only"]).lower() == "true" :
+                assert(self.get_attr_from_pending(obj_attr_list))
+
+                if "cloud_init_vpn" not in obj_attr_list :
+                    cbdebug("Instance VPN address not yet available.")
+                    return False
+                cbdebug("Found VPN IP: " + obj_attr_list["cloud_init_vpn"])
+                obj_attr_list["prov_cloud_ip"] = obj_attr_list["cloud_init_vpn"]
             else :
-                obj_attr_list["prov_cloud_ip"] = _public_ip_address
-
+                if obj_attr_list["prov_netname"].lower() == "private" :
+                    obj_attr_list["prov_cloud_ip"] = _private_ip_address
+                else :
+                    obj_attr_list["prov_cloud_ip"] = _public_ip_address
+            
             return True
-
         except Exception, e:
             cbdebug("Failed to retrieve IP for: " + obj_attr_list["name"] + ": " + str(e))
             return False
@@ -642,48 +624,28 @@ class GceCmds(CommonCloudFunctions) :
             else :
                 return True
 
-    @trace            
-    def create_ssh_key(self, key_name, key_type, key_contents, key_fingerprint, vm_defaults, connection) :
-        '''
-        TBD
-        '''
-        for _kn in [ key_name + "  cbtool", vm_defaults["login"] + "  " + vm_defaults["login"]] :
-
-            _actual_key_name, _actual_user_name = _kn.split("  ")
-
-            self.temp_key_metadata[_actual_key_name] = _actual_key_name + ':' + key_type + ' ' + key_contents + ' ' + _actual_user_name + "@orchestrator"
-
-        _key_list_str = ''
-
-        for _key in self.temp_key_metadata.keys() :
-            _key_list_str += self.temp_key_metadata[_key] + '\n'
-
-        _key_list_str = _key_list_str[0:-1]
-
-        if "items" in self.project_metadata["commonInstanceMetadata"] :
-            for _element in self.project_metadata['commonInstanceMetadata']['items'] :
-                if _element["key"] == "sshKeys" :
-                    _element["value"] += _key_list_str
-        else :
-            self.project_metadata['commonInstanceMetadata']["items"] = []
-            self.project_metadata['commonInstanceMetadata']['items'].append({"key": "sshKeys", "value" : _key_list_str})
-
-        self.gceconn.projects().setCommonInstanceMetadata(project=self.instances_project, body=self.project_metadata["commonInstanceMetadata"]).execute(http = self.http_conn[connection])
-
-        return True
-
     @trace
-    def is_cloud_image_uuid(self, imageid) :
+    def vm_placement(self, obj_attr_list) :
         '''
         TBD
         '''
-        if len(imageid) == 18 and is_number(imageid) :
-            return True
-        
-        if len(imageid) == 19 and is_number(imageid) :
-            return True
-        
-        return False
+        try :
+            _status = 100
+            _fmsg = "An error has occurred, but no error message was captured"
+
+            _status = 0
+
+        except Exception, e :
+            _status = 23
+            _fmsg = str(e)
+            
+        finally :
+            if _status :
+                _msg = "VM placement failed: " + _fmsg
+                cberr(_msg, True)
+                raise CldOpsException(_msg, _status)
+            else :
+                return True
 
     @trace
     def is_vm_running(self, obj_attr_list):
@@ -743,29 +705,6 @@ class GceCmds(CommonCloudFunctions) :
             cbdebug("VM still not running yet: " + obj_attr_list["name"])
             obj_attr_list["last_known_state"] = "not running"
             return False    
-
-    @trace
-    def vm_placement(self, obj_attr_list) :
-        '''
-        TBD
-        '''
-        try :
-            _status = 100
-            _fmsg = "An error has occurred, but no error message was captured"
-
-            _status = 0
-
-        except Exception, e :
-            _status = 23
-            _fmsg = str(e)
-            
-        finally :
-            if _status :
-                _msg = "VM placement failed: " + _fmsg
-                cberr(_msg, True)
-                raise CldOpsException(_msg, _status)
-            else :
-                return True
 
     @trace
     def vvcreate(self, obj_attr_list) :

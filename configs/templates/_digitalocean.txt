@@ -40,6 +40,8 @@ NETNAME = $DO_NETNAME
 CAPTURE_SUPPORTED = $True
 RUNSTATE_SUPPORTED = $True
 RESIZE_SUPPORTED = $False
+PROV_NETNAME = $DO_NETNAME
+RUN_NETNAME = $DO_NETNAME
 CLONE_TIMEOUT = 600
 CHECK_BOOT_STARTED = poll_cloud30
 CHECK_BOOT_COMPLETE = tcp_on_22
@@ -51,6 +53,7 @@ FORCE_FAILURE = $False
 DISABLE_TIMESYNC = $False
 IMAGE_PREFIX = $EMPTY
 IMAGE_SUFFIX = $EMPTY
+USERDATA = $True
 
 # We're not as big as amazon yet. Go easy on us please.
 [AI_DEFAULTS : DO_CLOUDCONFIG ]
@@ -83,19 +86,19 @@ HADOOP_HOME = /usr/local/hadoop
 
 # DigitalOcean has made public images available for the following 3 workloads:
 [VM_TEMPLATES : DO_CLOUDCONFIG ]
-# imageid can be either the actual ID number or more easily the name in the case of a private account
+CHECK = size:512mb, imageids:1, imageid1:to_replace
 # These are public DigitalOcean images accessible by anyone with a valid DigitalOcean account.
-CASSANDRA = size:4gb, imageids:1, imageid1:cloudbench-ycsb-cassandra-on-1604.060117-1, cloudinit_packages:openvpn
-CHECK = size:512mb, imageids:1, imageid1:to_replace, cloudinit_packages:openvpn;redis-tools
-HADOOPMASTER = size:4gb, imageids:1, imageid1:cloudbench-hibench-hadoop-on-1604.060117-1, cloudinit_packages:openvpn
-HADOOPSLAVE = size:4gb, imageids:1, imageid1:cloudbench-hibench-hadoop-on-1604.060117-1, cloudinit_packages:openvpn
+# imageid can be either the actual ID number or more easily the name in the case of a private account
+TINYVM = size:512mb, imageids:1, imageid1:cloudbench-nullworkload-on-1604.060117-1, cloudinit_packages:openvpn;netperf
 NETCLIENT = size:512mb, imageids:1, imageid1:cloudbench-nullworkload-on-1604.060117-1, cloudinit_packages:netperf;openvpn
 NETSERVER = size:512mb, imageids:1, imageid1:cloudbench-nullworkload-on-1604.060117-1, cloudinit_packages:netperf;openvpn
-SEED = size:4gb, imageids:1, imageid1:cloudbench-ycsb-cassandra-on-1604.060117-1, cloudinit_packages:openvpn
-TINYVM = size:512mb, imageids:1, imageid1:cloudbench-nullworkload-on-1604.060117-1, cloudinit_packages:openvpn;netperf
-UNIXBENCH = size:512mb,imageids:1,imageid1:cloudbench-nullworkload-on-1604.060117-1,cloudinit_packages:openvpn
 YATINYVM = size:512mb, imageids:1, imageid1:cloudbench-nullworkload-on-1604.060117-1, cloudinit_packages:openvpn
+CASSANDRA = size:4gb, imageids:1, imageid1:cloudbench-ycsb-cassandra-on-1604.060117-1, cloudinit_packages:openvpn
 YCSB = size:4gb, imageids:1, imageid1:cloudbench-ycsb-cassandra-on-1604.060117-1, cloudinit_packages:openvpn
+SEED = size:4gb, imageids:1, imageid1:cloudbench-ycsb-cassandra-on-1604.060117-1, cloudinit_packages:openvpn
+HADOOPMASTER = size:4gb, imageids:1, imageid1:cloudbench-hibench-hadoop-on-1604.060117-1, cloudinit_packages:openvpn
+HADOOPSLAVE = size:4gb, imageids:1, imageid1:cloudbench-hibench-hadoop-on-1604.060117-1, cloudinit_packages:openvpn
+UNIXBENCH = size:512mb,imageids:1,imageid1:cloudbench-nullworkload-on-1604.060117-1,cloudinit_packages:openvpn
 
 
 # Other images can be made on an as-needed basis or by creating your own

@@ -34,7 +34,7 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 from lib.auxiliary.code_instrumentation import trace, cbdebug, cberr, cbwarn, cbinfo, cbcrit
-from lib.auxiliary.data_ops import str2dic, is_number, DataOpsException
+from lib.auxiliary.data_ops import str2dic, DataOpsException
 from lib.remote.process_management import ProcessManagement
 from lib.remote.network_functions import hostname2ip
 from shared_functions import CldOpsException, CommonCloudFunctions 
@@ -89,7 +89,7 @@ class PcmCmds(CommonCloudFunctions) :
                         _status = 101
 
             _status -= 100
-            
+
         except LXDError.ClientConnectionFailed, obj:
             _status = 18127
             _fmsg = str(obj.message)
@@ -490,27 +490,6 @@ class PcmCmds(CommonCloudFunctions) :
             return _nr_instances
 
     @trace
-    def get_ssh_keys(self, key_name, key_contents, key_fingerprint, registered_key_pairs, internal, connection) :
-        '''
-        TBD
-        '''
-
-        registered_key_pairs[key_name] = key_fingerprint + "-NA"
-
-        return True
-
-
-    @trace
-    def get_security_groups(self, security_group_name, registered_security_groups) :
-        '''
-        TBD
-        '''
-
-        registered_security_groups.append(security_group_name)              
-
-        return True
-
-    @trace
     def get_ip_address(self, obj_attr_list) :
         '''
         TBD
@@ -671,26 +650,6 @@ class PcmCmds(CommonCloudFunctions) :
                 raise CldOpsException(_msg, _status)
             else :
                 return True
-
-    @trace            
-    def create_ssh_key(self, key_name, key_type, key_contents, key_fingerprint, vm_defaults, connection) :
-        '''
-        TBD
-        '''
-        return True
-
-    @trace
-    def is_cloud_image_uuid(self, imageid) :
-        '''
-        TBD
-        '''
-        if len(imageid) == 64 and is_number(imageid, True) :
-            return True
-
-        if len(imageid) == 12 and is_number(imageid, True) :
-            return True
-        
-        return False
 
     @trace
     def is_vm_running(self, obj_attr_list):
@@ -864,26 +823,22 @@ class PcmCmds(CommonCloudFunctions) :
             _config = {"name": obj_attr_list["cloud_vm_name"], \
                        "source": { "type": "image", "fingerprint": obj_attr_list["boot_volume_imageid1"] }}
 
-
             _instance = self.lxdconn[obj_attr_list["host_cloud_ip"]].containers.create(_config, wait=True)
 
             _mark2 = int(time())
             
             obj_attr_list["pcm_003_create_container_time"] = _mark2 - _mark1
 
-            obj_attr_list["userdata_ssh"] = "true"
-            obj_attr_list["userdata"] = "true"            
-            
-            _instance.config["user.user-data"] = self.populate_cloudconfig(obj_attr_list)
+            _instance.config["user.user-data"] = "#cloud-config\nssh_authorized_keys:\n - " + obj_attr_list["pubkey_contents"]
 
             _instance.save(wait=True)
-
+            
             _mark3 = int(time())
 
             obj_attr_list["pcm_004_update_container_time"] = _mark3 - _mark2
 
             _instance.start()
-
+            
             _mark4 = int(time())
             
             obj_attr_list["pcm_005_start_container_time"] = _mark4 - _mark3

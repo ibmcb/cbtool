@@ -30,9 +30,9 @@ REPORTED_METRICS = throughput,latency,operations_ok,operations_err,datagen_time,
 
 # VApp-specific MANDATORY attributes
 DESCRIPTION = Deploys an 2-tier stack, formed by N "application (Apache Geronimo) nodes"
-DESCRIPTION += instances - if N > 1, then a "load balancer (HAProxy) node" instance is also deployed -\n
+DESCRIPTION += instances - if N > 1, then a "load balancer (HAProxy) node" VM is also deployed -\n
 DESCRIPTION +=  and one "database (MySQL) node" instance, and then runs the DayTrader benchmark
-DESCRIPTION += on the stack. The actual load is performed by an additional instance,
+DESCRIPTION += on the stack. The actual load is performed by an additional VM,
 DESCRIPTION += running the Rain Workload Toolkit (rain).\n
 DESCRIPTION +=- LOAD_PROFILE possible values: _PROFILES_ (the only profile that we
 DESCRIPTION += have registered in rain).
