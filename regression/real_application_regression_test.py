@@ -66,7 +66,43 @@ api = APIClient(api_conn_info)
 
 import prettytable
 
+def get_type_list(options) :
+    '''
+    TBD
+    '''
+
+    if not options.typelist.count(',') :
+        options.file_identifier = '_' + options.typelist
+    else :
+        options.file_identifier = ''
+        
+    if options.typelist == "all" :        
+        options.typelist = "nullworkload,bonnie,btest,ddgen,fio,filebench,postmark,iperf,netperf,nuttcp,xping,unixbench,coremark,memtier,oldisim,wrk,wrk_lb,hpcc,linpack,multichase,parboil,scimark,cassandra_ycsb,mongo_ycsb,redis_ycsb,open_daytrader,open_daytrader_lb,specjbb,sysbench,hadoop,giraph,mongo_acmeair" 
     
+    if options.typelist == "fake" :
+        options.typelist = "nullworkload"
+
+    if options.typelist == "synthetic" :
+        options.typelist = "bonnie,btest,ddgen,fio,filebench,postmark,iperf,netperf,nuttcp,xping,unixbench,coremark"
+
+    if options.typelist == "application-stress" :
+        options.typelist = "memtier,oldisim,wrk,wrk_lb"
+        
+    if options.typelist == "scientific" :    
+        options.typelist = "hpcc,linpack,multichase,parboil,scimark"
+        
+    if options.typelist == "transactional" :
+        options.typelist = "cassandra_ycsb,mongo_ycsb,redis_ycsb,open_daytrader,open_daytrader_lb,specjbb,sysbench,mongo_acmeair"
+
+    if options.typelist == "data-centric" :
+        options.typelist = "hadoop,giraph"
+
+    if options.headeronly :
+        options.file_identifier = '_a0'
+        options.typelist = ''
+
+    return True
+            
 def cli_postional_argument_parser() :
     '''
     TBD
@@ -94,7 +130,8 @@ def cli_named_option_parser() :
     parser.add_option("-w", "--wait", dest="wait", default = 900, help="How long to wait before declaring the test a failure (seconds)")
     parser.add_option("-i", "--interval", dest="interval", default = 30, help="Interval between attempts to obtain application performance samples (seconds)")
     parser.add_option("-s", "--samples", dest="samples", default = 2, help="How many application performance samples are required?")
-
+    parser.add_option("--noheader", dest = "noheader", action = "store_true", help = "Do not print header")
+    parser.add_option("--headeronly", dest = "headeronly", action = "store_true", help = "Print only header")
     (options, args) = parser.parse_args()
 
     return options, args
@@ -119,18 +156,20 @@ def main(apiconn) :
 
     _exit_code = 0
     
-    _test_results_table = prettytable.PrettyTable(["Virtual", \
-                                                   "SUT", \
+    _test_results_table = prettytable.PrettyTable(["Virtual".center(37, ' '), \
+                                                   "SUT".center(72, ' '), \
                                                    "Management", \
-                                                   " Management ", \
+                                                   " Management ".center(30, ' '), \
                                                    "Runtime", \
-                                                   " Runtime ", \
-                                                   "  Runtime  "])
+                                                   " Runtime ".center(64, ' '), \
+                                                   "  Runtime  ".center(51, ' ')])
 
     _second_header = ["Application", '', "Report", "Metrics", "Report", "Metrics", "Missing" ]
     _test_results_table.add_row(_second_header)
     _third_header = [strftime("%Y-%m-%d"), strftime("%H:%M:%S"), "", "mgt_001-mgt_007", "", "id, prof, dur, compl, gen, tput, bw, lat", "Metrics" ]
     _test_results_table.add_row(_third_header)
+
+    get_type_list(_options)
 
     for _type in _options.typelist.split(',') :
 
@@ -166,57 +205,71 @@ def main(apiconn) :
         for _hypervisor_type in _hypervisor_list :
             
             _start = int(time())
-            _mgt_pass, _rt_pass, _rt_missing, _sut = deploy_virtual_application(api, \
-                                                                                _actual_type, \
-                                                                                _hypervisor_type, \
-                                                                                _options.samples, \
-                                                                                _options.wait, \
-                                                                                _options.interval)
 
-            _actual_type = _actual_type.replace("_lb",'')
-            
-            _duration = int(time()) - _start
-            
-            _results_row = []
-            _results_row.append(_actual_type + " (" + str(_duration) + "s)")
-            _results_row.append(_sut)            
-#            _results_row.append(_hypervisor_type)
-            
-            if _mgt_pass :
-                _results_row.append("PASS")
-                _results_row.append(_mgt_pass)
-            else :
-                _results_row.append("FAIL")
-                _results_row.append(str(_mgt_pass))
-                _exit_code = 1
-
-            if _rt_pass :
-                _results_row.append("PASS")                
-                _results_row.append(str(_rt_pass))
-            else :
-                _results_row.append("FAIL")                
-                _results_row.append(str(_rt_pass))
-                _exit_code = 1
-
-            if len(_rt_missing) < 5 :
-                _results_row.append(','.join(_rt_missing).replace("app_",''))
-            else :
-                _results_row.append(','.join(_rt_missing[0:4]).replace("app_",'') + ",...")
-                                
-            _test_results_table.add_row(_results_row)
+            if _actual_type != "build:none:" :
+                _mgt_pass, _rt_pass, _rt_missing, _sut = deploy_virtual_application(api, \
+                                                                                    _actual_type, \
+                                                                                    _hypervisor_type, \
+                                                                                    _options.samples, \
+                                                                                    _options.wait, \
+                                                                                    _options.interval)
+    
+#                _actual_type = _actual_type.replace("_lb",'')
+                
+                _duration = int(time()) - _start
+                
+                _results_row = []
+                _results_row.append((_actual_type + " (" + str(_duration) + "s)").center(37, ' '))
+                _results_row.append(_sut.center(72, ' '))            
+    #            _results_row.append(_hypervisor_type)
+                
+                if _mgt_pass :
+                    _results_row.append("PASS")
+                    _results_row.append(_mgt_pass.center(30, ' '))
+                else :
+                    _results_row.append("FAIL")
+                    _results_row.append(str(_mgt_pass).center(30, ' '))
+                    _exit_code = 1
+    
+                if _rt_pass :
+                    _results_row.append("PASS")                
+                    _results_row.append(str(_rt_pass).center(64, ' '))
+                else :
+                    _results_row.append("FAIL")                
+                    _results_row.append(str(_rt_pass).center(64, ' '))
+                    _exit_code = 1
+    
+                if len(_rt_missing) < 5 :
+                    _results_row.append(','.join(_rt_missing).replace("app_",''))
+                else :
+                    _results_row.append(','.join(_rt_missing[0:4]).replace("app_",'') + ",...")
+    
+                _test_results_table.add_row(_results_row)
 
             _x_test_results_table = _test_results_table.get_string().split('\n')
+
             _aux = _x_test_results_table[2]
             _x_test_results_table[2] = _x_test_results_table[3]
             _x_test_results_table[3] = _x_test_results_table[4]            
             _x_test_results_table[4] = _aux
-            _x_test_results_table = '\n'.join(_x_test_results_table)
 
-            _fn = "/tmp/" + cloud_model + "_real_application_regression_test.txt"
-            _fh = open(_fn, "w")
-            _fh.write(str(_x_test_results_table))
-            _fh.close()
+            if not _options.headeronly :
+                print '\n'.join(_x_test_results_table)
 
+            if _options.noheader :
+                _x_test_results_table = '\n'.join(_x_test_results_table[4:-1])
+            else :
+                if _options.headeronly :
+                    _x_test_results_table = '\n'.join(_x_test_results_table[0:5])
+                else :
+                    _x_test_results_table = '\n'.join(_x_test_results_table)
+        
+        _fn = "/tmp/" + cloud_model + _options.file_identifier + "_real_application_regression_test.txt"
+        _fh = open(_fn, "w")
+        _fh.write(str(_x_test_results_table)+'\n')
+        _fh.close()
+
+        if not _options.noheader :
             print _x_test_results_table
                 
     return True
